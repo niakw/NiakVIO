@@ -6,7 +6,7 @@ NiakVIO StreamBadges are not a quality score. They are a compact vocabulary for 
 
 > **Rule:** show what is known, keep what is unknown unknown. A truthful `HLS` badge is better than inventing `1080p`, `HEVC` or `HDR`.
 
-Current stable feed: `assets/stream-badges-fusion-v7.json` — **309 badges / 17 groups**.
+Current stable feed: `assets/stream-badges-fusion-v8.json` — **309 badges / 17 groups**.
 
 ## Quick visual ranking
 
@@ -274,7 +274,7 @@ Network quality does **not** treat raw Mbps as a verdict. It primarily uses **th
 | 40–59 | **D** |
 | 0–39 | **E** |
 
-**Truth rule:** no global badge should be fabricated without sufficient playback/network evidence. Wrong-media, placeholder and invalid-media failures are rejected before scoring. A technically excellent stream that actually buffers must be penalized heavily.
+**Truth rule:** no global badge should be fabricated without sufficient playback/network evidence. HLS network evidence comes from bounded media-segment samples (up to two segments), not from timing the `.m3u8` manifest. Player stall metrics are used only when the host actually supplies them; they are never fabricated. Wrong-media, placeholder and invalid-media failures are rejected before scoring. A technically excellent stream that actually buffers must be penalized heavily.
 
 The v6 scoring contract lives in `scripts/stream_score.py` so it can be tested without touching providers or an active Repair run. Later Core integration must preserve the same boundary: **media facts + playback observation + confidence**.
 
@@ -342,9 +342,9 @@ Every material badge/rule change creates a new immutable version of **all four**
 
 Current version:
 
-- `assets/stream-badges-fusion-v7.json`
-- `assets/stream-badges-dark-v7.json`
-- `assets/stream-badges-light-v7.json`
-- `assets/stream-badges-transparent-v7.json`
+- `assets/stream-badges-fusion-v8.json`
+- `assets/stream-badges-dark-v8.json`
+- `assets/stream-badges-light-v8.json`
+- `assets/stream-badges-transparent-v8.json`
 
 Older versioned feeds remain available for pinned installations.

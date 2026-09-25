@@ -209,12 +209,12 @@ Le chemin HLS commun est volontairement séparé en Blocs :
 3. un VOD fini ou un faux media playlist statique dont la durée est anormalement courte est rejeté avant exposition au player — le contrat couvre explicitement le cas d'un placeholder d'environ **4,5 s** ;
 4. un master HLS exploitable enrichit le stream avec les faits prouvés : `RESOLUTION`, `AVERAGE-BANDWIDTH/BANDWIDTH`, `CODECS`, `FRAME-RATE`, `VIDEO-RANGE`, audio `LANGUAGE/CHANNELS` et sous-titres ;
 5. **Stream Presentation** transforme ensuite ces faits en qualité/titre, description technique et `badgeIds` ;
-6. le **sanitizer terminal v10** conserve une preuve réseau bornée issue du probe réellement exécuté ;
+6. le **sanitizer terminal v10** conserve une preuve réseau bornée issue du probe réellement exécuté ; pour HLS, la preuve de débit provient d'échantillons de vrais segments média (jusqu'à deux) et non du manifeste ;
 7. **Stream Score**, Bloc Core externe final, combine les faits média et cette preuve réseau, supprime les données privées de probe puis préfixe au besoin un unique badge `S+`…`E` en tête de `badgeIds`.
 
 Exemple contractuel : `RESOLUTION=1440x720` doit produire **720p**, et un placeholder `Inconnue/Unknown/N/A/Auto` ne doit jamais devenir un suffixe visible. Un flux HLS sans résolution prouvée garde le nom du provider et peut afficher seulement les faits certains, par exemple `HLS`.
 
-Le catalogue StreamBadge public actuel est **v7** : les quatre snapshots Fusion/Dark/Light/Transparent sont versionnés ensemble et restent immuables après publication. Les huit badges Stream Score sont placés en premier dans l’ordre public. Les versions antérieures restent disponibles pour compatibilité.
+Le catalogue StreamBadge public actuel est **v8** : les quatre snapshots Fusion/Dark/Light/Transparent sont versionnés ensemble et restent immuables après publication. Les huit badges Stream Score sont placés en premier dans l’ordre public. Les versions antérieures restent disponibles pour compatibilité.
 
 ### Finalisation d’une release acceptée
 
@@ -353,6 +353,7 @@ Voir [`SECURITY.md`](SECURITY.md).
 20. Un HLS court/placeholder prouvé ne doit jamais être exposé comme stream jouable.
 21. Une qualité inconnue ne doit jamais apparaître dans le titre ; seule la meilleure qualité réellement prouvée peut suffixer le nom provider.
 22. Stream Score est Core-global, provider-agnostic et evidence-gated : aucun grade sans preuve réseau suffisante ; le badge de score, lorsqu’il existe, reste le premier badge visible.
+23. Le score réseau ne fabrique jamais des stalls : HLS mesure des segments réels et leur taux de succès ; les stalls/rebuffering du player ne comptent que si une télémétrie hôte réelle est fournie.
 
 ## Références
 

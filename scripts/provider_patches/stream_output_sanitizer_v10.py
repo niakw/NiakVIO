@@ -107,6 +107,8 @@ def validate(text: str) -> None:
         "sampleKind:manifest?\"manifest\":\"direct-media-prefix\"",
         "sampleConfidence:sampleMbps!=null?0.55:0",
         "source:\"terminal-media-probe-v10\"",
+        "terminalProbeLatencyMs",
+        "Object.assign({},evidence,prior",
         "return verdict===true?clearPrivateProofs(item.stream):null;",
         "NUVIO_STREAM_OUTPUT_STRICT_PROBE_V8",
     ):

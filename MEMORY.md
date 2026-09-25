@@ -1,5 +1,13 @@
 # NiakVIO — Recovery Memory
 
+## 2026-09-25 — Stream Score v8 segment-network evidence
+
+- v8 preserves the same 309 badges and score-first ordering, but refines the public Stream Score evidence contract. v7 remains immutable.
+- HLS throughput is measured from bounded real media-segment prefix samples (up to two segments), never from the `.m3u8` manifest response time. Evidence carries effective sample Mbps, media-probe latency and segment success ratio.
+- The terminal sanitizer merges/preserves stronger HLS segment evidence instead of overwriting it with manifest timing.
+- Player stalls/rebuffering are considered only when genuine `playbackMetrics` are supplied by the host. They are never inferred or fabricated.
+- Network headroom remains relative to proven media bitrate when available; low headroom or poor segment success can hard-cap the global score.
+
 ## 2026-09-25 — StreamBadge v7 score-first order + dynamic provider cardinality
 
 - StreamBadge v7 changes the public ordering contract: the eight compact Stream Score badges are first in the canonical catalogue/feed order so a proven grade is the first visible badge. v6 remains immutable and available.

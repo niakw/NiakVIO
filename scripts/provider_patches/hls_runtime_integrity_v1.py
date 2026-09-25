@@ -69,6 +69,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
     inspect_master_facts = bool(cfg.get("inspect_master_facts", True))
     drop_unprobed_hls_after_budget = bool(cfg.get("drop_unprobed_hls_after_budget", True))
     short_static_media_seconds = max(5, min(int(cfg.get("short_static_media_seconds", 30)), 60))
+    network_sample_bytes = max(16384, min(int(cfg.get("network_sample_bytes", 65536)), 262144))
     payload_config = {
         "timeoutMs": timeout_ms,
         "maxChildren": max_children,
@@ -96,6 +97,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
                 "minimumVodDurationSeconds": minimum_vod_duration_seconds,
                 "dropUnprobedHlsAfterBudget": drop_unprobed_hls_after_budget,
                 "shortStaticMediaSeconds": short_static_media_seconds,
+                "networkSampleBytes": network_sample_bytes,
                 "implementationRevision": "native-vod-duration-proof-v10",
             }
         )
@@ -103,7 +105,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
         payload_config.update(
             {
                 "inspectMasterFacts": True,
-                "implementationRevision": "native-master-facts-v12",
+                "implementationRevision": "native-master-facts-network-v13",
             }
         )
     payload = json.dumps(payload_config, separators=(",", ":"))
@@ -155,7 +157,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
         out.Referer=referer;try{out.Origin=new URL(referer).origin}catch(_e){}
       }
     }
-    if(range&&!Object.keys(out).some(function(k){return k.toLowerCase()==="range"}))out.Range="bytes=0-4095";
+    if(range&&!Object.keys(out).some(function(k){return k.toLowerCase()==="range"})){var cap=typeof range==="number"?Math.max(188,Math.floor(range)):4096;out.Range="bytes=0-"+String(cap-1)}
     if(!out.Accept)out.Accept="application/vnd.apple.mpegurl,application/x-mpegURL,application/dash+xml,video/*,text/plain,*/*";
     return out;
   }
@@ -213,13 +215,32 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
     return {state:"unknown",reason:"segment_container_unknown"};
   }
   async function proveMediaPlaylist(body,playlistUrl,stream,referer){
-    var encrypted=playlistEncrypted(body),init=mapUri(body,playlistUrl),target=init||firstMediaUri(body,playlistUrl);
-    if(!target)return {state:"unknown",reason:"segment_uri_missing"};
-    var result=await fetchBounded(target,stream,referer,true,config.nativeProbeTimeoutMs||config.timeoutMs);
-    if(result.state==="invalid")return result;if(result.state!=="ok")return {state:"unknown",reason:result.reason||"segment_fetch_unknown"};
-    var bytes=await responseBytes(result,4096),proof=segmentProof(bytes,result.contentType,result.url||target,!!init,encrypted);
-    if(init&&proof.state==="valid"&&proof.kind==="fmp4")return proof;
-    return proof;
+    var encrypted=playlistEncrypted(body),init=mapUri(body,playlistUrl),targets=mediaUris(body,playlistUrl,2),initProof=null;
+    if(init){
+      var initResult=await fetchBounded(init,stream,referer,4096,config.nativeProbeTimeoutMs||config.timeoutMs);
+      if(initResult.state==="invalid")return initResult;if(initResult.state!=="ok")return {state:"unknown",reason:initResult.reason||"init_fetch_unknown"};
+      var initBytes=await responseBytes(initResult,4096);initProof=segmentProof(initBytes,initResult.contentType,initResult.url||init,true,encrypted);
+      if(initProof.state==="invalid")return initProof;
+    }
+    if(!targets.length)return initProof||{state:"unknown",reason:"segment_uri_missing"};
+    var sampleCap=Math.max(16384,Number(config.networkSampleBytes||65536)||65536),success=0,totalBytes=0,totalElapsed=0,firstProof=null,attempts=Math.min(2,targets.length);
+    for(var i=0;i<attempts;i++){
+      var started=(typeof Date!=="undefined"&&Date.now)?Date.now():0;
+      var result=await fetchBounded(targets[i],stream,referer,sampleCap,config.nativeProbeTimeoutMs||config.timeoutMs);
+      if(result.state==="invalid"){if(i===0)return result;continue}
+      if(result.state!=="ok"){if(i===0)return {state:"unknown",reason:result.reason||"segment_fetch_unknown"};continue}
+      var bytes=await responseBytes(result,sampleCap),ended=(typeof Date!=="undefined"&&Date.now)?Date.now():started,elapsed=Math.max(1,Number(ended-started)||1);
+      var proof=segmentProof(bytes,result.contentType,result.url||targets[i],!!init,encrypted);
+      if(i===0)firstProof=proof;
+      if(proof.state==="invalid"){if(i===0)return proof;continue}
+      if(proof.state==="valid"){success+=1;totalBytes+=Number(bytes&&bytes.length||0)||0;totalElapsed+=elapsed}
+    }
+    var base=firstProof||initProof||{state:"unknown",reason:"segment_container_unknown"};
+    if(base.state==="valid"){
+      var ratio=attempts?success/attempts:1,sampleMbps=totalBytes>0&&totalElapsed>0?totalBytes*8/totalElapsed/1000:null;
+      base.networkEvidence={success:true,latencyMs:success?Math.round(totalElapsed/success):null,sampleBytes:totalBytes,sampleMbps:sampleMbps,sampleConfidence:totalBytes>=131072?.75:totalBytes>=65536?.65:totalBytes>=32768?.55:.4,segmentSuccessRatio:ratio,sampleKind:"hls-segment-prefix",source:"hls-first-segment-probe-v13"};
+    }
+    return base;
   }
   async function nativeFirstSegmentProof(stream){
     var referer=headerValue(stream,"referer"),root=await fetchBounded(String(stream.url||""),stream,referer,false,config.nativeProbeTimeoutMs||config.timeoutMs);
@@ -466,7 +487,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
         if(proof.state==="invalid"||(proof.state==="unknown"&&config.failClosedUnknown)){
           return null;
         }
-        return config.inspectMasterFacts&&proof.facts?enrichMasterFacts(stream,proof.facts):stream;
+        var output=config.inspectMasterFacts&&proof.facts?enrichMasterFacts(stream,proof.facts):stream;if(proof.networkEvidence&&output&&typeof output==="object"){output=Object.assign({},output);output.__nuvioStreamNetworkEvidenceV1=proof.networkEvidence}return output;
       }));
       var nativeFiltered=checks.filter(Boolean);
       if(Array.isArray(value))return nativeFiltered;
@@ -501,7 +522,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
   install();
 })(typeof globalThis!=="undefined"?globalThis:this,CONFIG_PLACEHOLDER);
 '''.replace("MARKER_PLACEHOLDER", marker).replace("CONFIG_PLACEHOLDER", payload)
-    # Clean v3 placement is compositor-owned. The HLS Lego can only replace its
+    # Clean v3 placement is compositor-owned. The HLS Bloc can only replace its
     # own STARTFIX/CLOSEFIX rectangle; it is never allowed to move itself.
     if is_v3:
         return replace_managed_fix(

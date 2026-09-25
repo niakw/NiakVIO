@@ -46,7 +46,7 @@ assert "NUVIO_HLS_RUNTIME_INTEGRITY_V1" in wrapped
 # Native first-segment/VOD proof is enabled by default and is the current
 # strongest revision for the default HLS guard. Older v5 was only the base
 # recovery layer before native proof was added.
-assert "native-master-facts-v12" in wrapped
+assert "native-master-facts-network-v13" in wrapped
 assert '"probeFirstSegmentNative":true' in wrapped
 assert 'typeof setTimeout==="function"' in wrapped
 assert 'typeof clearTimeout==="function"' in wrapped
@@ -134,7 +134,7 @@ assert ordered.count(hls_end) == 1
 assert ordered.rfind(hls_begin) > ordered.rfind("streamzo #1")
 # Strict final-output flags must survive even though the implementation revision
 # is then upgraded by the default native first-segment proof layer.
-assert "native-master-facts-v12" in ordered
+assert "native-master-facts-network-v13" in ordered
 assert '"probeAllUrls":true' in ordered
 assert '"failClosedUnknown":true' in ordered
 run_node(r'''
@@ -157,6 +157,22 @@ const master=''' + repr(master) + r''';const media=''' + repr(media) + r''';
 globalThis.fetch=async function(url){var u=String(url);return {ok:true,status:200,url:u,headers:{get:function(){return "application/vnd.apple.mpegurl"}},text:async function(){return u.indexOf("master.m3u8")>=0?master:media}}};
 ''' + wrapped + r'''
 (async function(){var rows=await globalThis.getStreams("1","movie");if(rows.length!==1||rows[0].url!=="https://media.test/master.m3u8")throw new Error("valid A/V HLS master was not preserved")})().catch(function(e){console.error(e);process.exit(1)});
+''')
+
+# Native HLS network evidence must come from actual media-segment bytes, not
+# from timing the .m3u8 manifest itself.
+network_wrapped = integrity.apply(
+    r'''globalThis.getStreams=async function(){return [{url:"https://media.test/master.m3u8",type:"hls"}]};''',
+    {"timeout_ms": 2000, "network_sample_bytes": 32768},
+)
+run_node(r'''
+globalThis.__native_fetch=function(){};
+const master="#EXTM3U\n#EXT-X-STREAM-INF:BANDWIDTH=4000000\nvideo.m3u8\n";
+const media="#EXTM3U\n#EXT-X-TARGETDURATION:60\n#EXTINF:60,\nseg-a.ts\n#EXTINF:60,\nseg-b.ts\n#EXT-X-ENDLIST\n";
+function segmentBytes(){var a=new Uint8Array(32768);for(var i=0;i<a.length;i+=188)a[i]=0x47;return a.buffer}
+globalThis.fetch=async function(url,init){var u=String(url);if(u.endsWith("master.m3u8"))return {ok:true,status:200,url:u,headers:{get:function(){return "application/vnd.apple.mpegurl"}},text:async function(){return master}};if(u.endsWith("video.m3u8"))return {ok:true,status:200,url:u,headers:{get:function(){return "application/vnd.apple.mpegurl"}},text:async function(){return media}};if(u.includes("seg-"))return {ok:true,status:206,url:u,headers:{get:function(){return "video/mp2t"}},arrayBuffer:async function(){return segmentBytes()}};return {ok:false,status:404,url:u,headers:{get:function(){return "text/plain"}}}};
+''' + network_wrapped + r'''
+(async function(){var rows=await globalThis.getStreams("1","movie");if(rows.length!==1)throw new Error("native HLS row dropped");var e=rows[0].__nuvioStreamNetworkEvidenceV1;if(!e||e.source!=="hls-first-segment-probe-v13")throw new Error("missing segment network evidence: "+JSON.stringify(rows[0]));if(!(e.sampleMbps>0)||e.sampleBytes<32768)throw new Error("invalid segment throughput evidence: "+JSON.stringify(e));if(e.segmentSuccessRatio!==1)throw new Error("segment success ratio missing: "+JSON.stringify(e))})().catch(function(e){console.error(e);process.exit(1)});
 ''')
 
 print("HLS playback integrity tests passed")

@@ -6,7 +6,7 @@ Les StreamBadges NiakVIO ne sont pas une note de qualité. Ils constituent un vo
 
 > **Règle :** afficher ce qui est connu, laisser inconnu ce qui ne l'est pas. Un badge `HLS` vrai vaut mieux qu'un faux `1080p`, `HEVC` ou `HDR`.
 
-Feed stable actuel : `assets/stream-badges-fusion-v7.json` — **309 badges / 17 groupes**.
+Feed stable actuel : `assets/stream-badges-fusion-v8.json` — **309 badges / 17 groupes**.
 
 ## Repère visuel rapide
 
@@ -274,7 +274,7 @@ Le score réseau n'utilise **pas** le Mbps brut comme verdict. Il mesure surtout
 | 40–59 | **D** |
 | 0–39 | **E** |
 
-**Règle de vérité :** aucun badge global ne doit être inventé sans preuve de lecture/réseau suffisante. Un flux faux, placeholder, mauvais média ou invalide est rejeté avant scoring. Un excellent fichier qui bufferise réellement doit être fortement pénalisé.
+**Règle de vérité :** aucun badge global ne doit être inventé sans preuve de lecture/réseau suffisante. La preuve réseau HLS provient d'échantillons bornés de segments média (jusqu'à deux segments), jamais du simple temps de réponse du manifeste `.m3u8`. Les métriques de stalls du player ne sont utilisées que si l'hôte les fournit réellement ; elles ne sont jamais inventées. Un flux faux, placeholder, mauvais média ou invalide est rejeté avant scoring. Un excellent fichier qui bufferise réellement doit être fortement pénalisé.
 
 Le contrat de score v6 est isolé dans `scripts/stream_score.py` afin d'être testée sans modifier les providers ou un Repair en cours. L'intégration Core devra conserver cette frontière : **faits média + observation de lecture + confiance**.
 
@@ -342,9 +342,9 @@ Toute modification matérielle crée une nouvelle version immuable des **quatre*
 
 Version actuelle :
 
-- `assets/stream-badges-fusion-v7.json`
-- `assets/stream-badges-dark-v7.json`
-- `assets/stream-badges-light-v7.json`
-- `assets/stream-badges-transparent-v7.json`
+- `assets/stream-badges-fusion-v8.json`
+- `assets/stream-badges-dark-v8.json`
+- `assets/stream-badges-light-v8.json`
+- `assets/stream-badges-transparent-v8.json`
 
 Les anciennes versions restent disponibles pour les installations épinglées.
