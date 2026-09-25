@@ -13,12 +13,13 @@ const context = {
   networkLimits: { maxFetches: 4, maxRedirects: 2, maxResponseBytes: 65536, maxTotalResponseBytes: 131072, maxDistinctHosts: 4 },
 };
 
-function execute(source) {
+function execute(source, extraEnv = {}) {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'nuvio-worker-invoke-'));
   const provider = path.join(dir, 'provider.js');
   fs.writeFileSync(provider, source);
   const run = spawnSync(process.execPath, [WORKER, provider, JSON.stringify(fixture), JSON.stringify(context)], {
     cwd: ROOT, encoding: 'utf8', timeout: 15000,
+    env: { PATH: process.env.PATH || '', HOME: process.env.HOME || '', ...extraEnv },
   });
   fs.rmSync(dir, { recursive: true, force: true });
   const markers = String(run.stdout || '').split(/\r?\n/).filter((line) => line.startsWith('NUVIO_HEALTH_RESULT='));
@@ -57,6 +58,33 @@ assert.equal(wrappedObject.invocation_diagnostics[0].result, 'empty');
 assert.equal(wrappedObject.invocation_diagnostics[0].provider_observations, 0);
 assert.equal(wrappedObject.invocation_diagnostics[1].name, 'object');
 assert.equal(wrappedObject.invocation_diagnostics[1].result, 'streams');
+
+
+const tmdbBootstrap = execute(`
+const capturedKey = globalThis.TMDB_API_KEY;
+const capturedToken = globalThis.TMDB_ACCESS_TOKEN;
+const envWasHiddenAtInit = !process.env.NIAKVIO_TMDB_BOOTSTRAP_KEY
+  && !process.env.NIAKVIO_TMDB_BOOTSTRAP_TOKEN
+  && !process.env.TMDB_API_KEY
+  && !process.env.TMDB_ACCESS_TOKEN;
+module.exports={
+  getStreams:async function(){
+    if(capturedKey!=='bootstrap-key') throw new Error('Core did not capture TMDB key at module init');
+    if(capturedToken!=='bootstrap-token') throw new Error('Core did not capture TMDB token at module init');
+    if(!envWasHiddenAtInit) throw new Error('TMDB bootstrap leaked through process.env during provider init');
+    if(globalThis.TMDB_API_KEY||globalThis.TMDB_ACCESS_TOKEN) throw new Error('TMDB global leaked into getStreams');
+    if(process.env.NIAKVIO_TMDB_BOOTSTRAP_KEY||process.env.NIAKVIO_TMDB_BOOTSTRAP_TOKEN) throw new Error('bootstrap env leaked into getStreams');
+    return [];
+  }
+};
+`, {
+  NIAKVIO_TMDB_BOOTSTRAP_KEY: 'bootstrap-key',
+  NIAKVIO_TMDB_BOOTSTRAP_TOKEN: 'bootstrap-token',
+});
+assert.equal(tmdbBootstrap.ok, true);
+assert.equal(tmdbBootstrap.invocation_diagnostics[0].result, 'empty');
+assert.ok(!JSON.stringify(tmdbBootstrap).includes('bootstrap-key'));
+assert.ok(!JSON.stringify(tmdbBootstrap).includes('bootstrap-token'));
 
 const broken = execute(`module.exports={getStreams:async function(id,type){const e=new Error('provider exploded');e.code='SAMPLE_RUNTIME';throw e;}};`);
 assert.equal(broken.ok, false);
