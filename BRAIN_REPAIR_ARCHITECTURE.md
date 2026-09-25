@@ -225,6 +225,38 @@ For explicit Force:
 
 An empty Force artifact is not a successful Force repair.
 
+### 6.1 Multiple advisor hypotheses
+
+A provider may receive up to three distinct sanitized Brain-LLM advisor
+experiment fingerprints for the same causal failure. They are **alternative
+experiments**, never a combined patch.
+
+Execution is strictly sequential and attributable:
+
+~~~text
+baseline + advisor A -> test
+  failure -> record fingerprint A only
+baseline + advisor B -> test
+  failure -> record fingerprint B only
+baseline + advisor C -> test
+  success/failure -> attribute only to C
+~~~
+
+Fast Repair automatically expands its effective wave budget to the number of
+distinct still-eligible advisor fingerprints in the selected portfolio, capped
+at three. A provider must remain in the same Repair portfolio while an untried
+advisor fingerprint exists; it may not be moved to Learning merely because the
+first advisor experiment failed.
+
+Only after all current advisor alternatives are failed, unavailable or
+otherwise non-executable may that provider become Learning debt.
+
+For a multi-provider portfolio, this happens concurrently by provider: the
+14-provider cohort is not serialized into 14 independent runs. Each provider
+advances through its own A/B/C sequence inside the same bounded portfolio run,
+while validated reusable strategies may transfer across compatible provider
+families in later waves.
+
 ## 7. Learning without loops
 
 Learning is not the fallback for every failed Repair.
