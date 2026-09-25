@@ -1138,21 +1138,21 @@ jobs:
             echo "FIELD_REPAIR_STALE_ESCALATION_SKIPPED source=$GITHUB_SHA remote=$remote_main"
           fi
           if [ "$canonical_ledger_current" = "1" ] && [ -s "$tmp/provider-brain-repair-latest.json" ]; then
-            deferred="$(python - "$tmp/provider-brain-repair-latest.json" <<'PY'
+            read -r deferred deferred_csv < <(python - "$tmp/provider-brain-repair-latest.json" <<'PY'
           import json,sys
           data=json.load(open(sys.argv[1],encoding='utf-8'))
-          rows=sorted({str(x or '').strip().lower() for x in data.get('deferredLearningProviders') or [] if str(x or '').strip()})
-          print(len(rows))
-          if rows:
-              print(','.join(rows), file=sys.stderr)
+          rows=sorted({str(x or '').strip().lower().replace('_','-') for x in data.get('deferredLearningProviders') or [] if str(x or '').strip()})
+          print(len(rows), ','.join(rows))
           PY
-            )"
+            )
             if [ "$deferred" -gt 0 ]; then
-              echo "FIELD_PROVIDER_BRAIN_ESCALATE deferred=$deferred target=brain-learning-lab"
+              test -n "$deferred_csv" || { echo "deferred Learning cohort unexpectedly empty" >&2; exit 1; }
+              echo "FIELD_PROVIDER_BRAIN_ESCALATE deferred=$deferred providers=$deferred_csv target=brain-learning-lab"
               gh workflow run brain-learning-lab.yml \
                 --repo "$GITHUB_REPOSITORY" \
                 --ref main \
                 -f publish_proposal=true \
+                -f target_providers="$deferred_csv" \
                 -f slot_remaining_minutes=20 \
                 -f slot_phase=1
             fi
