@@ -47,4 +47,6 @@ for required in (
 ):
     assert required in workflow, required
 
-assert "key: llama-cpp-b11140-ubuntu-x64" not in llm, "executable llama.cpp binary must not be restored from actions/cache"\n\nprint("Brain LLM Learning workflow interpolation contract passed")
+assert "key: llama-cpp-b11140-ubuntu-x64" not in llm, "executable llama.cpp binary must not be restored from actions/cache"
+
+print("Brain LLM Learning workflow interpolation contract passed")
