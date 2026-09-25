@@ -455,6 +455,22 @@ function defineGlobal(name, value) {
 }
 
 
+function clearVisibleTmdbCredentials() {
+  for (const name of [
+    'TMDB_API_KEY',
+    'TMDB_ACCESS_TOKEN',
+    'NIAKVIO_TMDB_BOOTSTRAP_KEY',
+    'NIAKVIO_TMDB_BOOTSTRAP_TOKEN',
+  ]) {
+    try { delete process.env[name]; } catch {}
+    try { delete globalThis[name]; } catch {}
+    try {
+      if (Object.prototype.hasOwnProperty.call(globalThis, name)) globalThis[name] = undefined;
+    } catch {}
+  }
+}
+
+
 function syntheticTmdbResponse(input, fixture = {}) {
   try {
     const raw = typeof input === 'string' ? input : input?.url;
@@ -514,8 +530,31 @@ function syntheticTmdbResponse(input, fixture = {}) {
 
 function installPolyfills(context = {}) {
   if (!globalThis.crypto) defineGlobal('crypto', webcrypto);
-  const tmdbApiKey = String(context.TMDB_API_KEY || context.tmdbApiKey || process.env.TMDB_API_KEY || '').trim();
-  const tmdbAccessToken = String(context.TMDB_ACCESS_TOKEN || context.tmdbAccessToken || process.env.TMDB_ACCESS_TOKEN || '').trim();
+  const tmdbApiKey = String(
+    context.TMDB_API_KEY
+      || context.tmdbApiKey
+      || process.env.NIAKVIO_TMDB_BOOTSTRAP_KEY
+      || process.env.TMDB_API_KEY
+      || '',
+  ).trim();
+  const tmdbAccessToken = String(
+    context.TMDB_ACCESS_TOKEN
+      || context.tmdbAccessToken
+      || process.env.NIAKVIO_TMDB_BOOTSTRAP_TOKEN
+      || process.env.TMDB_ACCESS_TOKEN
+      || '',
+  ).trim();
+  // Capture the credential into Core's module-initialization closure only.
+  // Never leave bootstrap secrets readable through process.env while provider
+  // code executes. Globals are removed immediately after loadProvider().
+  for (const name of [
+    'TMDB_API_KEY',
+    'TMDB_ACCESS_TOKEN',
+    'NIAKVIO_TMDB_BOOTSTRAP_KEY',
+    'NIAKVIO_TMDB_BOOTSTRAP_TOKEN',
+  ]) {
+    try { delete process.env[name]; } catch {}
+  }
   if (tmdbApiKey) defineGlobal('TMDB_API_KEY', tmdbApiKey);
   if (tmdbAccessToken) defineGlobal('TMDB_ACCESS_TOKEN', tmdbAccessToken);
   if (!globalThis.atob) defineGlobal('atob', (value) => Buffer.from(String(value), 'base64').toString('binary'));
@@ -1048,7 +1087,14 @@ async function main() {
     };
   }
   const startedAt = Date.now();
-  const loaded = await loadProvider(providerPath);
+  let loaded;
+  try {
+    loaded = await loadProvider(providerPath);
+  } finally {
+    // Match the production-like Nuvio probe: provider/Core initialization may
+    // capture TMDB authority, but getStreams never sees the raw credential.
+    clearVisibleTmdbCredentials();
+  }
   const getStreams = findGetStreams(loaded);
   if (!getStreams) throw new Error('module does not export getStreams');
 
