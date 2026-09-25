@@ -7,16 +7,17 @@ import subprocess
 import sys
 import tempfile
 from pathlib import Path
-from current_provider_scope import active_provider_count
 
 ROOT = Path(__file__).resolve().parents[1]
-EXPECTED = active_provider_count()
 sys.path.insert(0, str(ROOT / "scripts"))
+from current_provider_scope import active_provider_count
+
+EXPECTED = active_provider_count()
 
 materialization = json.loads((ROOT / "provider-v3-materialization.json").read_text(encoding="utf-8"))
 rows = [row for row in materialization.get("providers") or [] if isinstance(row, dict)]
-assert materialization.get("providerCount") == CURRENT_PROVIDER_COUNT, materialization.get("providerCount")
-assert len(rows) == CURRENT_PROVIDER_COUNT, len(rows)
+assert materialization.get("providerCount") == EXPECTED, materialization.get("providerCount")
+assert len(rows) == EXPECTED, len(rows)
 required_core = {
     "CORE.STREAM_FACTS.V1",
     "CORE.STREAM_IDENTITY.V1",
@@ -151,4 +152,4 @@ assert row.get("opaqueProviderField") == "keep-me", row
 assert row.get("size") == row.get("description"), row
 assert row.get("sourceSize") == "9.8 GB", row
 
-print(f"global stream metadata preservation contract passed for shared {CURRENT_PROVIDER_COUNT}-provider Core")
+print(f"global stream metadata preservation contract passed for shared {EXPECTED}-provider Core")
