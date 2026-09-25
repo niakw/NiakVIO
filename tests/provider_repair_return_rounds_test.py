@@ -17,7 +17,7 @@ for required in (
     '"--max-rounds-per-batch", str(brain_rounds_per_batch)',
     'brain_waves = 1 if args.mode == "repair" else 3',
     '"--waves", str(brain_waves)',
-    'targeted_only=args.mode == "repair"',
+    'targeted_only=args.mode in {"repair", "force"}',
     '"FIELD_PROVIDER_REPAIR_BRAIN_ROUNDS "',
 ):
     assert required in source, required
@@ -48,8 +48,9 @@ assert selected["providers"] == ["alpha"], selected
 force_scope = pipeline.effective_repair_materialization_scope(
     all_scope,
     ["alpha"],
-    targeted_only=False,
+    targeted_only=True,
 )
-assert force_scope["mode"] == "all", force_scope
+assert force_scope["mode"] == "providers", force_scope
+assert force_scope["providers"] == ["alpha"], force_scope
 
 print("provider canonical Repair return round/materialization contract passed")
