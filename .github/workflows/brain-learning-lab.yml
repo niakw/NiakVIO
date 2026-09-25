@@ -688,8 +688,15 @@ jobs:
           print(f'FIELD_BRAIN_LLM_FAST_CACHE required={len(required)} covered={len(covered)} missing={len(missing)} complete={str(complete).lower()}')
           PY
           cat "$RUNNER_TEMP/brain-llm-cache-import.log" || true
-      - name: Download and verify official llama.cpp binary when needed
+      - uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25
+        id: brain_llm_bin_cache
         if: steps.brain_llm_route.outputs.llm_needed == 'true' && (steps.learning-slot.outputs.fast_handoff != 'true' || steps.brain_llm_fast_cache.outputs.complete != 'true')
+        with:
+          path: .brain-llm-runtime/llama-prebuilt
+          key: llama-cpp-b11140-ubuntu-x64
+
+      - name: Download and verify official llama.cpp binary when needed
+        if: steps.brain_llm_route.outputs.llm_needed == 'true' && (steps.learning-slot.outputs.fast_handoff != 'true' || steps.brain_llm_fast_cache.outputs.complete != 'true') && steps.brain_llm_bin_cache.outputs.cache-hit != 'true'
         continue-on-error: true
         shell: bash
         run: |
