@@ -1,10 +1,10 @@
 {
   "schemaVersion": 6,
-  "requestedAt": "2026-09-25T08:49:00+02:00",
-  "retry": 152,
+  "requestedAt": "2026-09-25T12:01:00+02:00",
+  "retry": 153,
   "mode": "force",
   "directApplyValidated": true,
-  "scope": "current-repair-queue-exact-guidance-bounded-residential-probe",
+  "scope": "fresh-post-clean-canonical-repair-queue",
   "targetProviders": [
     "4khdhub",
     "allanime",
@@ -21,13 +21,11 @@
     "vidfast",
     "yflix"
   ],
-  "goal": "Final explicit Force on current 14-provider repairQueue. Consume exact Brain-LLM guidance generated from NiakVIO 1cae0e2c with zero negative-memory collisions. Residential WAF qualification is bounded/soft-fail; require canonical Repair success, playable/identity/non-regression candidate proof, direct validated application, and durable census persistence.",
+  "goal": "Apply the fresh 14-provider Brain-LLM guidance after filtering against both canonical Repair negative memory and persistent Learning experiment memory. Use the persisted retest census 36120999320-retest as authority. Force may publish provider-local corrections only after canonical Repair, playable/identity preservation and candidate/non-regression gates all succeed; persist the resulting census.",
   "branch": "main",
   "publication": true,
-  "sourceRef": "1cae0e2c4d2b7defa102875b6538ce942c503f90",
-  "brainLlmGuidanceSha": "efd903724e931c173b1b87aed08e1c03bc39ef09",
-  "previousInterruptedRuns": [
-    36087457494,
-    36088679711
-  ]
+  "sourceRef": "ce559d7129883062abea0c05067b9cc6159cfd11",
+  "sourceCensusRun": "36120999320-retest",
+  "brainLlmGuidanceSha": "9bf5fe72e917b5ac57bb6b95ba64402b459fe180",
+  "branchPolicy": "main-plus-brain-learning-proposals-only"
 }
