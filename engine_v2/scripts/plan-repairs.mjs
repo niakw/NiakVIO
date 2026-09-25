@@ -948,8 +948,12 @@ function profilesForRepairTarget(plan, repairTarget) {
     .filter(Boolean);
   const explicit = stringArray(repairTarget.profiles);
   // An explicitly selected evolved strategy is the causal experiment being
-  // tested now. Learned generic profiles remain fallbacks, but must not execute
-  // ahead of that strategy and consume the bounded attempt first.
+  // tested now. A strict same-provider positive replay is even narrower: its
+  // exact program fingerprint owns this attempt, so generic learned fallbacks
+  // must not share the same bounded experiment and blur attribution.
+  if (stringValue(repairTarget.learningDisposition) === "replay_strict_same_provider_positive_program") {
+    return [...new Set(explicit)];
+  }
   return stringValue(repairTarget.repairType) === "evolved_strategy"
     ? [...new Set([...explicit, ...transferred])]
     : [...new Set([...transferred, ...explicit])];
