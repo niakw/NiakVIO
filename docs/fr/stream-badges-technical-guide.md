@@ -6,7 +6,7 @@ Les StreamBadges NiakVIO ne sont pas une note de qualité. Ils constituent un vo
 
 > **Règle :** afficher ce qui est connu, laisser inconnu ce qui ne l'est pas. Un badge `HLS` vrai vaut mieux qu'un faux `1080p`, `HEVC` ou `HDR`.
 
-Feed stable actuel : `assets/stream-badges-fusion-v5.json` — **309 badges / 17 groupes**.
+Feed stable actuel : `assets/stream-badges-fusion-v6.json` — **309 badges / 17 groupes**.
 
 ## Repère visuel rapide
 
@@ -251,7 +251,7 @@ Cette séparation évite « l'inflation de badges » et rend réellement les don
 
 ## Score global de flux
 
-La v5 ajoute un vocabulaire compact de score global : **`S+` · `S` · `A+` · `A` · `B` · `C` · `D` · `E`**. Le badge n'affiche volontairement que la lettre afin de ne pas multiplier les variantes ; la valeur numérique `0–100` reste dans le détail technique.
+La v6 expose le vocabulaire compact de score global : **`S+` · `S` · `A+` · `A` · `B` · `C` · `D` · `E`**. Le badge n'affiche volontairement que la lettre afin de ne pas multiplier les variantes ; la valeur numérique `0–100` reste dans le détail technique.
 
 | Bloc | Poids cible |
 | --- | ---: |
@@ -276,7 +276,7 @@ Le score réseau n'utilise **pas** le Mbps brut comme verdict. Il mesure surtout
 
 **Règle de vérité :** aucun badge global ne doit être inventé sans preuve de lecture/réseau suffisante. Un flux faux, placeholder, mauvais média ou invalide est rejeté avant scoring. Un excellent fichier qui bufferise réellement doit être fortement pénalisé.
 
-La logique v5 est isolée dans `scripts/stream_score.py` afin d'être testée sans modifier les providers ou un Repair en cours. L'intégration Core devra conserver cette frontière : **faits média + observation de lecture + confiance**.
+Le contrat de score v6 est isolé dans `scripts/stream_score.py` afin d'être testée sans modifier les providers ou un Repair en cours. L'intégration Core devra conserver cette frontière : **faits média + observation de lecture + confiance**.
 
 ## FAQ — comprendre rapidement la qualité d'un flux
 
@@ -342,9 +342,9 @@ Toute modification matérielle crée une nouvelle version immuable des **quatre*
 
 Version actuelle :
 
-- `assets/stream-badges-fusion-v5.json`
-- `assets/stream-badges-dark-v5.json`
-- `assets/stream-badges-light-v5.json`
-- `assets/stream-badges-transparent-v5.json`
+- `assets/stream-badges-fusion-v6.json`
+- `assets/stream-badges-dark-v6.json`
+- `assets/stream-badges-light-v6.json`
+- `assets/stream-badges-transparent-v6.json`
 
 Les anciennes versions restent disponibles pour les installations épinglées.

@@ -66,7 +66,7 @@ https://raw.githubusercontent.com/niakw/NiakVIO/refs/heads/main/vf-no-anime/mani
 ### Feed StreamBadge
 
 ```text
-https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/stream-badges-fusion-v5.json
+https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/stream-badges-fusion-v6.json
 ```
 
 **Guide StreamBadge :** [`docs/fr/how-to-add-stream-badges.md`](docs/fr/how-to-add-stream-badges.md) · **Comprendre les badges techniques :** [`docs/fr/stream-badges-technical-guide.md`](docs/fr/stream-badges-technical-guide.md)

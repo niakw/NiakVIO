@@ -6,7 +6,7 @@ from scripts.badge_versioning import latest_catalog, latest_mapping
 ROOT=Path(__file__).resolve().parents[1]
 catalog_version,catalog_path=latest_catalog(ROOT)
 mapping_version,mapping_path=latest_mapping(ROOT)
-assert catalog_version>=5
+assert catalog_version>=6
 assert mapping_version==catalog_version
 for rel in (
     "assets/badge_catalog_v2_complete.json",

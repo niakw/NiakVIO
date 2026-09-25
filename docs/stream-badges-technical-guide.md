@@ -6,7 +6,7 @@ NiakVIO StreamBadges are not a quality score. They are a compact vocabulary for 
 
 > **Rule:** show what is known, keep what is unknown unknown. A truthful `HLS` badge is better than inventing `1080p`, `HEVC` or `HDR`.
 
-Current stable feed: `assets/stream-badges-fusion-v5.json` — **309 badges / 17 groups**.
+Current stable feed: `assets/stream-badges-fusion-v6.json` — **309 badges / 17 groups**.
 
 ## Quick visual ranking
 
@@ -251,7 +251,7 @@ This distinction prevents “badge inflation” and makes the UI useful to users
 
 ## Global Stream Score
 
-v5 adds a compact global grade vocabulary: **`S+` · `S` · `A+` · `A` · `B` · `C` · `D` · `E`**. The badge intentionally shows only the grade; the numeric `0–100` value remains in technical detail.
+v6 exposes the compact global grade vocabulary: **`S+` · `S` · `A+` · `A` · `B` · `C` · `D` · `E`**. The badge intentionally shows only the grade; the numeric `0–100` value remains in technical detail.
 
 | Component | Target weight |
 | --- | ---: |
@@ -276,7 +276,7 @@ Network quality does **not** treat raw Mbps as a verdict. It primarily uses **th
 
 **Truth rule:** no global badge should be fabricated without sufficient playback/network evidence. Wrong-media, placeholder and invalid-media failures are rejected before scoring. A technically excellent stream that actually buffers must be penalized heavily.
 
-The v5 logic lives in `scripts/stream_score.py` so it can be tested without touching providers or an active Repair run. Later Core integration must preserve the same boundary: **media facts + playback observation + confidence**.
+The v6 scoring contract lives in `scripts/stream_score.py` so it can be tested without touching providers or an active Repair run. Later Core integration must preserve the same boundary: **media facts + playback observation + confidence**.
 
 ## FAQ — reading stream quality quickly
 
@@ -342,9 +342,9 @@ Every material badge/rule change creates a new immutable version of **all four**
 
 Current version:
 
-- `assets/stream-badges-fusion-v5.json`
-- `assets/stream-badges-dark-v5.json`
-- `assets/stream-badges-light-v5.json`
-- `assets/stream-badges-transparent-v5.json`
+- `assets/stream-badges-fusion-v6.json`
+- `assets/stream-badges-dark-v6.json`
+- `assets/stream-badges-light-v6.json`
+- `assets/stream-badges-transparent-v6.json`
 
 Older versioned feeds remain available for pinned installations.
