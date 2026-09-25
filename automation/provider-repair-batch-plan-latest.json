@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "sourceRunId": "36058132100-post-repair-candidate",
-  "sourceTriggerSha": "f63c0f89f6927bb24b6b4631c3fa584c3a2b6ee8",
+  "sourceRunId": "36120999320-retest",
+  "sourceTriggerSha": "6eb4ded6f1f6c99bc2550027f00743b2724a188a",
   "unresolvedProviderCount": 14,
   "groupCount": 8,
   "executionModel": {
@@ -11,39 +11,6 @@
     "providerLocalRepair": "exception path only"
   },
   "groups": [
-    {
-      "groupId": "route-to-terminal|html_scraper",
-      "repairScope": "route-to-terminal",
-      "runtimeFamilies": [
-        "html_scraper",
-        "mallumv-catalogue-confirm-internal-v1"
-      ],
-      "capabilityStrategy": "html_scraper",
-      "evidenceDepths": [
-        "lookup",
-        "none"
-      ],
-      "dominantIssues": [
-        "network_exception",
-        "network_zero_result",
-        "waf_challenge"
-      ],
-      "harnessTransportClasses": [
-        "browser-profile-only",
-        "residential-exit-all-challenged"
-      ],
-      "transportSignature": "not-applicable",
-      "providerCount": 4,
-      "providers": [
-        "4khdhub",
-        "animesalt",
-        "mallumv",
-        "moviesmod"
-      ],
-      "action": "replay proven routes in batch and apply shared detail/player traversal profile",
-      "executionPolicy": "batch-first",
-      "providerLocalFallback": "only-after-shared-profile-failure"
-    },
     {
       "groupId": "route-to-terminal|mixed_embed_resolver",
       "repairScope": "route-to-terminal",
@@ -75,6 +42,62 @@
         "yflix"
       ],
       "action": "replay proven routes in batch and apply shared detail/player traversal profile",
+      "executionPolicy": "batch-first",
+      "providerLocalFallback": "only-after-shared-profile-failure"
+    },
+    {
+      "groupId": "route-to-terminal|html_scraper",
+      "repairScope": "route-to-terminal",
+      "runtimeFamilies": [
+        "html_scraper"
+      ],
+      "capabilityStrategy": "html_scraper",
+      "evidenceDepths": [
+        "lookup",
+        "none"
+      ],
+      "dominantIssues": [
+        "network_zero_result",
+        "waf_challenge"
+      ],
+      "harnessTransportClasses": [
+        "browser-profile-only",
+        "residential-exit-all-challenged"
+      ],
+      "transportSignature": "not-applicable",
+      "providerCount": 3,
+      "providers": [
+        "4khdhub",
+        "animesalt",
+        "moviesmod"
+      ],
+      "action": "replay proven routes in batch and apply shared detail/player traversal profile",
+      "executionPolicy": "batch-first",
+      "providerLocalFallback": "only-after-shared-profile-failure"
+    },
+    {
+      "groupId": "terminal-extraction|html_scraper",
+      "repairScope": "terminal-extraction",
+      "runtimeFamilies": [
+        "api_stream_resolver",
+        "mallumv-catalogue-confirm-internal-v1"
+      ],
+      "capabilityStrategy": "html_scraper",
+      "evidenceDepths": [
+        "chain"
+      ],
+      "dominantIssues": [
+        "network_http_error",
+        "network_zero_result"
+      ],
+      "harnessTransportClasses": [],
+      "transportSignature": "not-applicable",
+      "providerCount": 2,
+      "providers": [
+        "mallumv",
+        "moviebox"
+      ],
+      "action": "apply/test shared terminal-player extraction profile to the whole capability family",
       "executionPolicy": "batch-first",
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
@@ -192,29 +215,6 @@
       "providerCount": 1,
       "providers": [
         "allanime"
-      ],
-      "action": "apply/test shared terminal-player extraction profile to the whole capability family",
-      "executionPolicy": "batch-first",
-      "providerLocalFallback": "only-after-shared-profile-failure"
-    },
-    {
-      "groupId": "terminal-extraction|html_scraper",
-      "repairScope": "terminal-extraction",
-      "runtimeFamilies": [
-        "api_stream_resolver"
-      ],
-      "capabilityStrategy": "html_scraper",
-      "evidenceDepths": [
-        "chain"
-      ],
-      "dominantIssues": [
-        "network_http_error"
-      ],
-      "harnessTransportClasses": [],
-      "transportSignature": "not-applicable",
-      "providerCount": 1,
-      "providers": [
-        "moviebox"
       ],
       "action": "apply/test shared terminal-player extraction profile to the whole capability family",
       "executionPolicy": "batch-first",
