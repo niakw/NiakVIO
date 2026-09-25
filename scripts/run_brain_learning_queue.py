@@ -571,6 +571,44 @@ def causal_family_waves(
     return waves
 
 
+def causal_family_frontier(
+    order: list[str],
+    batch_plan: dict[str, Any],
+) -> tuple[list[str], list[str]]:
+    """Select one Learning representative per causal family for this phase.
+
+    Fast-Handoff Learning exists to discover a materially new strategy, not to
+    serially replay the same hypothesis across every sibling. One representative
+    per family is enough to produce cross-provider memory; siblings remain
+    pending and return through canonical Repair, which must still prove each
+    provider independently before publication.
+    """
+    groups = batch_plan.get("groups") if isinstance(batch_plan.get("groups"), list) else []
+    provider_group: dict[str, str] = {}
+    for row in groups:
+        if not isinstance(row, dict):
+            continue
+        group_id = str(row.get("groupId") or "").strip()
+        if not group_id:
+            continue
+        for value in row.get("providers") or []:
+            provider = norm(value)
+            if provider and provider not in provider_group:
+                provider_group[provider] = group_id
+
+    seen_families: set[str] = set()
+    frontier: list[str] = []
+    deferred: list[str] = []
+    for provider in unique(order):
+        group_id = provider_group.get(provider) or f"provider-local:{provider}"
+        if group_id in seen_families:
+            deferred.append(provider)
+            continue
+        seen_families.add(group_id)
+        frontier.append(provider)
+    return frontier, deferred
+
+
 def build_queue(
     report: dict[str, Any],
     previous: dict[str, Any],
@@ -1261,21 +1299,36 @@ def main() -> int:
     if handoff_priority and not args.provider:
         order, causal_group_order = causal_batch_round_robin(order, batch_plan)
 
+    # Fast-Handoff Learning learns one representative per causal family, then
+    # returns new strategy memory to canonical Repair. Siblings are deliberately
+    # deferred to Repair/next Learning phase instead of replaying the same
+    # expensive sandbox path serially in one slot.
+    fair_handoff = bool(handoff_priority) and not bool(args.provider)
+    full_handoff_order = list(order)
+    family_frontier: list[str] = []
+    family_deferred: list[str] = []
+    if fair_handoff:
+        family_frontier, family_deferred = causal_family_frontier(order, batch_plan)
+        order = family_frontier
+
     queue["fastRepairHandoffProviders"] = handoff_priority
     queue["fastRepairHandoffProviderCount"] = len(handoff_priority)
     queue["fastRepairHandoffAuthority"] = "provider-repair-learn-handoff-v1.json"
     queue["fastRepairHandoffCausalBatchOrder"] = causal_group_order
     queue["fastRepairHandoffCausalBatchCount"] = len(causal_group_order)
     queue["fastRepairHandoffOrderingPolicy"] = "causal-batch-round-robin"
-    # Fast-Handoff mode is an input to causal-wave materialization. Compute it
-    # before the wave builder so the real Repair->Learning handoff cannot reach
-    # an uninitialized local even though static helper tests pass.
-    fair_handoff = bool(handoff_priority) and not bool(args.provider)
-    causal_waves = causal_family_waves(order, batch_plan, max_parallel=4) if fair_handoff else []
+    # Keep the complete family wave map for observability even though this phase
+    # executes only the first representative frontier.
+    causal_waves = causal_family_waves(full_handoff_order, batch_plan, max_parallel=4) if fair_handoff else []
     queue["fastRepairHandoffCausalWaves"] = causal_waves
     queue["fastRepairHandoffCausalWaveCount"] = len(causal_waves)
     queue["fastRepairHandoffCausalWaveMaxParallel"] = 4
     queue["fastRepairHandoffParallelExecutionEnabled"] = False
+    queue["fastRepairHandoffFamilyFrontierProviders"] = family_frontier
+    queue["fastRepairHandoffFamilyFrontierCount"] = len(family_frontier)
+    queue["fastRepairHandoffDeferredFamilySiblings"] = family_deferred
+    queue["fastRepairHandoffDeferredFamilySiblingCount"] = len(family_deferred)
+    queue["fastRepairHandoffFamilyFrontierPolicy"] = "one-representative-per-causal-family-then-return-to-repair"
     queue["fastRepairHandoffMaxAttemptsPerProviderThisPhase"] = 1 if fair_handoff else 0
     queue["fastRepairHandoffMaxEvolvedAttemptsPerProviderThisPhase"] = 3 if fair_handoff else 0
     queue["deferredRepairProviders"] = repair_deferred
@@ -1567,7 +1620,11 @@ def main() -> int:
     queue["retryProviders"] = unique(retry_next)
     queue["pendingProviders"] = interleave(
         queue["retryProviders"],
-        unique([*(queue.get("pendingProviders") or []), *remaining_order]),
+        unique([
+            *(queue.get("pendingProviders") or []),
+            *remaining_order,
+            *family_deferred,
+        ]),
     )
     queue["processedThisRun"] = processed
     queue["generatedAt"] = datetime.now(timezone.utc).isoformat()
@@ -1639,6 +1696,11 @@ def main() -> int:
         "fastRepairHandoffCausalWaveCount": len(causal_waves),
         "fastRepairHandoffCausalWaveMaxParallel": 4,
         "fastRepairHandoffParallelExecutionEnabled": False,
+        "fastRepairHandoffFamilyFrontierProviders": family_frontier,
+        "fastRepairHandoffFamilyFrontierCount": len(family_frontier),
+        "fastRepairHandoffDeferredFamilySiblings": family_deferred,
+        "fastRepairHandoffDeferredFamilySiblingCount": len(family_deferred),
+        "fastRepairHandoffFamilyFrontierPolicy": "one-representative-per-causal-family-then-return-to-repair",
         "fastRepairHandoffMaxAttemptsPerProviderThisPhase": 1 if fair_handoff else 0,
         "fastRepairHandoffMaxEvolvedAttemptsPerProviderThisPhase": 3 if fair_handoff else 0,
         "cleanReconstructionRequiredProviders": reconstruction_required,
