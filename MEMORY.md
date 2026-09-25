@@ -5067,3 +5067,14 @@ This ledger is not complete merely because provider yield improves. Final comple
 - `BRAIN_REPAIR_ARCHITECTURE.md` now records the per-provider fingerprint history and requires Canonical Repair, Fast Repair and Brain Autopilot to share the same anti-replay dispatch authority.
 - No broad Repair or Learning run was launched while making these architecture fixes. Runtime completion still requires representative current-code proof as defined in the Brain Repair architecture completion criteria.
 
+### 2026-09-25 — Representative MalluMV runtime proof after Brain harness repair
+
+- Architecture SHA `c7c8de887f0b704e6db139baf83c1c12616ce7a8` passed the full **CORE - Workflow Gate** after the TMDB init-only bootstrap, same-byte harness differential routing, causal Learning anti-replay and Fast Repair preflight contracts were wired together.
+- Representative Fast Brain Repair run `36188709183` was deliberately limited to **MalluMV only**, one wave, one Deep round and a 600 s outer budget. Trigger SHA: `a6b6f0098694d868c8719c8ddaa538aa41527603`.
+- The former false upstream symptom **did not reproduce**: Deep reported MalluMV as `no_streams` with failure `content_lookup_completed_no_streams`; the Brain plan remained `chain_terminal_gap`, and `harnessDifferentialProviders=[]`. Therefore Deep now reaches provider-owned lookup execution instead of stopping at `no_provider_request_observed`.
+- The provider is **not repaired yet**: `accepted=0`, `fixed_lab=0`, `deferred_learning=1`. Its deterministic experiment family is exhausted (`experimentVariant=4/5`, generation 2, `negativeMemoryMatches=13`), so no provider candidate was generated.
+- The new anti-loop gate behaved correctly: Fast Repair produced a LEARN handoff for MalluMV, but `provider_learning_dispatch_gate` returned `eligible=0 missing=1`; **no automatic Learning run was launched** because no new causal method/fingerprint existed.
+- External Brain-LLM guidance was rejected correctly because the published prior was still sourced from old NiakVIO SHA `eb5ee2534f4351176b5a1d5f2ae324b368d7ed69` and current provider/global inputs had materially drifted. NiakVIO fell back to older Learning guidance, which contained no new MalluMV experiment.
+- Brain-LLM targeted regeneration was therefore launched from exact current NiakVIO evidence SHA `833e350a45e9bf0dd5b52ded736241b1927bce36`, MalluMV only, via Private-Guided Advisor run `36189111014`. This is advisory only; current-byte sandbox/Retest remains publication authority.
+- Next valid step: consume the newly generated current-source MalluMV guidance, run one more MalluMV-only Fast Repair, and expand to another failure family only if that representative repair path produces executable progress. No 14-provider rerun before this proof.
+
