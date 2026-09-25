@@ -106,7 +106,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
     payload = {
         "movieSite": str(cfg.get("movie_site") or "https://voir-anime.to").rstrip("/"),
         "userAgent": str(cfg.get("user_agent") or "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145 Safari/537.36"),
-        "maxStreams": int(cfg.get("max_streams") or 4),
+        "maxStreams": max(1, min(12, int(cfg.get("max_streams") or 12))),
     }
     wrapper = WRAPPER.replace("CONFIG_PLACEHOLDER", json.dumps(payload, ensure_ascii=False, separators=(",", ":")))
     return replace_managed_fix(
