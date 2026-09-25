@@ -35,11 +35,17 @@ for needle in required:
     assert needle in workflow, f"missing causal Learning escalation contract: {needle}"
 
 learning_import=workflow.index("- name: Import sanitized Brain Learning priors for canonical Repair")
-force_mutation=workflow.index("- name: Apply bounded Brain LLM Force mutations to sandbox")
+force_mutation=workflow.index("- name: Evaluate isolated Brain LLM Force candidates")
 canonical=workflow.index("- name: Run canonical recognition and correction only for unresolved providers")
 assert learning_import < force_mutation < canonical
 force_mutation_block=workflow[force_mutation:canonical]
+assert "scripts/evaluate_brain_llm_force_candidates.py" in force_mutation_block
 assert "scripts/apply_brain_llm_force_mutations.py" in force_mutation_block
+assert "brain-llm-force-candidate-evaluation.json" in force_mutation_block
+assert "accepted-brain-llm-force-mutations.json" in force_mutation_block
+assert "materialize_provider_v3_one.py" in force_mutation_block
+assert "run_provider_retest.py" in force_mutation_block
+assert "accepted_csv=" in force_mutation_block
 assert "niakvio-force-mutations.json" in force_mutation_block
 assert "directApplyValidated" in force_mutation_block
 assert "not-explicit-force" in force_mutation_block
@@ -132,8 +138,12 @@ assert 'force_requested=1' in force_block
 assert "require_external_force_mutations" in workflow
 assert "requireExternalForceMutations" in workflow
 assert "FIELD_BRAIN_LLM_FORCE_REQUIREMENT" in force_mutation_block
+assert "isolated_accepted=" in force_mutation_block
 assert "appliedProviderCount" in force_mutation_block
-assert "Explicit Force required external Brain mutations but none were applied" in force_mutation_block
+assert "Explicit Force required an independently validated external Brain mutation but none passed" in force_mutation_block
+assert "FIELD_BRAIN_LLM_FORCE_CURRENT_BYTES" in force_mutation_block
+assert "steps.force-mutations.outputs.accepted_csv" in workflow
+assert "all-explicit-targets-resolved-by-isolated-force" in workflow
 assert force_mutation < canonical
 
 learning_workflow=(ROOT/".github/workflows/brain-learning-lab.yml").read_text(encoding="utf-8")
