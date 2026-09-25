@@ -101,7 +101,12 @@ def main() -> int:
         for token in required:
             if token not in global_text:
                 raise AssertionError(f"universal v3 presentation test missing {token}")
-        stale_assertions = ('"vf" in vf["badgeIds"]', '"vfq" in vfq["badgeIds"]', '"vostfr"')
+        stale_assertions = (
+            '"vf" in vf["badgeIds"]',
+            '"vfq" in vfq["badgeIds"]',
+            '"vostfr" in vost["badgeIds"]',
+            '{"4k-ultra-hd", "webdl", "hevc", "vf", "vostfr"}',
+        )
         for token in stale_assertions:
             if token in global_text:
                 raise AssertionError(f"legacy public badge assertion remains: {token}")
