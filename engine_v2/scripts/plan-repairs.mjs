@@ -669,7 +669,9 @@ function buildPlan(item) {
         rotateEvery,
       )
     : { profile: "", caseId: "", solutionClass: "" };
-  const effectiveRepairTarget = repairTarget;
+  const effectiveRepairTarget = llmAdvisorProductionRescue
+    ? baseRepairTarget
+    : repairTarget;
   const causalProfile = strategyEscalated
     ? postExhaustionHint.profile
     : (
