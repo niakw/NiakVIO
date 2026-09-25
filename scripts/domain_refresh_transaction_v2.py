@@ -147,11 +147,11 @@ def sync_registry_terminal(registry: dict[str, Any], provider_id: str, terminal:
 
     authority = canonical(row.get("direct_authority"))
     pinned_direct = str(row.get("direct") or "").strip().rstrip("/")
-    if authority == "explicit_current" and resolver.is_http_url(pinned_direct):
+    if authority == "operator_pin" and resolver.is_http_url(pinned_direct):
         if pinned_direct.casefold() != terminal.casefold():
             raise RuntimeError(
                 f"{provider_id}: refuses observed terminal {terminal!r}; "
-                f"registry explicit_current is pinned to {pinned_direct!r}"
+                f"registry operator_pin is pinned to {pinned_direct!r}"
             )
 
     normalized = terminal + "/"
@@ -166,6 +166,13 @@ def sync_registry_terminal(registry: dict[str, Any], provider_id: str, terminal:
     manual_off_reason = str(row.get("manual_off_reason") or "").strip()
     row["direct"] = None if manual_off_reason else normalized
     row["direct_candidates"] = _unique_urls([normalized, old_direct, *old_candidates])
+    if (
+        authority == "explicit_current"
+        and pinned_direct
+        and pinned_direct.casefold() != terminal.casefold()
+    ):
+        row["direct_authority_source"] = "domain-refresh-authoritative-source"
+        row["direct_authority_observed_at"] = resolver.now_iso().split("T", 1)[0]
 
     allowed: list[str] = []
     for value in [terminal_host, *(row.get("allowed_terminal_hosts") or [])]:
