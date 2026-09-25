@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import subprocess
 import tempfile
 from pathlib import Path
 
@@ -22,6 +23,7 @@ with tempfile.TemporaryDirectory() as tmp:
 
     patch = root / "scripts/provider_patches/demo_runtime_v1.py"
     patch.write_text("def apply(value):\n    return value\n", encoding="utf-8")
+    subprocess.run(["git", "init", "-q"], cwd=root, check=True)
 
     overrides = {
         "schema_version": 7,
@@ -91,6 +93,27 @@ with tempfile.TemporaryDirectory() as tmp:
     updated = json.loads((root / "provider-overrides.json").read_text())
     assert updated["provider_patches"]["demo"]["learned_routes"] == ["/old", "/new"]
     assert updated["provider_patches"]["healthy"]["learned_routes"] == ["/healthy"]
+
+    safe = {
+        "scope": "provider_patch",
+        "operation": "unified_diff",
+        "path": "scripts/provider_patches/demo_runtime_v1.py",
+        "diff": (
+            "--- a/scripts/provider_patches/demo_runtime_v1.py\n"
+            "+++ b/scripts/provider_patches/demo_runtime_v1.py\n"
+            "@@ -1,2 +1,2 @@\n"
+            " def apply(value):\n"
+            "-    return value\n"
+            "+    return str(value)\n"
+        ),
+    }
+    changed = mod._apply_file_mutation(
+        "demo",
+        updated["provider_patches"]["demo"],
+        safe,
+    )
+    assert changed == "scripts/provider_patches/demo_runtime_v1.py"
+    assert "return str(value)" in patch.read_text(encoding="utf-8")
 
     unsafe = {
         "scope": "provider_patch",
