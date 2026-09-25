@@ -91,4 +91,15 @@ finally:
     mod.learned_skills = old_learned
     mod.policy = old_policy
 
+runtime_source = SCRIPT.read_text(encoding="utf-8")
+portfolio_source = (ROOT / "scripts" / "run_provider_brain_repair.py").read_text(encoding="utf-8")
+for token in (
+    '"providerPositiveProgramReplay"',
+    '"providerPositiveProgramProductionRescue"',
+    '"postExhaustionStrategyProfile"',
+    '"postExhaustionStrategyMethod"',
+):
+    assert token in runtime_source, token
+    assert token in portfolio_source, token
+
 print("Brain Repair strict positive-program visibility contract passed")
