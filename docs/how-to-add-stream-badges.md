@@ -3,7 +3,7 @@
 [Français](fr/how-to-add-stream-badges.md) · [Back to README](../README.md)
 
 > [!TIP]
-> For most users, **Fusion v2** is the correct feed.
+> For most users, **Fusion v3** is the correct feed.
 
 ## ⚡ Recommended feed
 
@@ -20,10 +20,11 @@ NiakVIO provides Fusion-style StreamBadge rules for stream cards.
 
 Optional theme-specific feeds also exist:
 
-- Dark: `assets/stream-badges-dark.json`
-- Light: `assets/stream-badges-light.json`
+- Dark v3: `https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/stream-badges-dark-v3.json`
+- Light v3: `https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/stream-badges-light-v3.json`
+- Transparent v3: `https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/stream-badges-transparent-v3.json`
 
-Use these only when you specifically want the theme-bound variants; **Fusion v2 remains the normal setup**.
+Use these only when you specifically want the theme-bound variants; **Fusion v3 remains the normal setup**.
 
 </details>
 
@@ -35,7 +36,7 @@ Use these only when you specifically want the theme-bound variants; **Fusion v2 
 2. Open **Appearance**.
 3. Open **Streams**.
 4. Under **FUSION STYLE**, open **Fusion badge URLs**.
-5. Paste the NiakVIO Fusion v2 JSON URL.
+5. Paste the NiakVIO Fusion v3 JSON URL.
 6. Select **Import**.
 7. Confirm that the URL appears in the imported list and is **Active**.
 8. Optional: use **Preview** to verify the imported badges.
@@ -54,13 +55,13 @@ Use these only when you specifically want the theme-bound variants; **Fusion v2 
 4. Under **Fusion Style**, open **Fusion badge URLs**.
 5. NuvioTV starts its local badge configuration screen and shows a **QR code**.
 6. Scan the QR code with your phone while the phone and TV are on the same local network.
-7. In the web page opened on your phone, paste the NiakVIO Fusion v2 JSON URL.
+7. In the web page opened on your phone, paste the NiakVIO Fusion v3 JSON URL.
 8. Select **Import**.
 9. Verify that the feed is shown as **Active** and optionally use **Preview**.
 10. You can also change **Badge position** from the same configuration flow / TV settings.
 
 > [!IMPORTANT]
-> The TV stores imported badge rules locally. If an older NiakVIO Fusion feed does not refresh as expected, delete the old import and add the current **Fusion v2** URL again.
+> The TV stores imported badge rules locally. If an older NiakVIO Fusion feed does not refresh as expected, delete the old import and add the current **Fusion v3** URL again.
 
 ---
 
@@ -75,7 +76,7 @@ Open a title with available streams. Compatible stream cards should display the 
 
 - verify that the imported URL is active;
 - use **Preview** to confirm that badges were loaded;
-- refresh/re-import the current Fusion v2 URL;
+- refresh/re-import the current Fusion v3 URL;
 - remember that a badge only appears when the stream metadata matches its rule.
 
 </details>

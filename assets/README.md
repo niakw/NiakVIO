@@ -6,11 +6,12 @@ Ce dossier contient les assets visuels et les feeds **StreamBadge** utilisés av
 
 | Feed | Usage | URL brute |
 | --- | --- | --- |
-| **Fusion v2** | **Recommandé** pour un réglage unique, lisible sur fonds sombres et clairs | `https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/stream-badges-fusion-v3.json` |
-| Dark | Variante pour interfaces sombres | `https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/stream-badges-dark.json` |
-| Light | Variante pour interfaces claires | `https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/stream-badges-light.json` |
+| **Fusion v3** | **Recommandé** pour un réglage unique, lisible sur fonds sombres et clairs | `https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/stream-badges-fusion-v3.json` |
+| Dark v3 | Variante pour interfaces sombres | `https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/stream-badges-dark-v3.json` |
+| Light v3 | Variante pour interfaces claires | `https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/stream-badges-light-v3.json` |
+| Transparent v3 | Artwork transparent / intégrations dédiées | `https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/stream-badges-transparent-v3.json` |
 
-Le feed historique `stream-badges-fusion.json` reste présent pour compatibilité. Pour un nouvel import, utilisez **Fusion v2**.
+Les fichiers sans numéro restent des alias mobiles `latest`. Pour tout nouvel import ou toute documentation publique, utilisez une URL **v3** explicite.
 
 ## Feed badges et manifest providers sont séparés
 
@@ -31,8 +32,8 @@ Symptôme typique :
 Dans ce cas :
 
 1. supprimez l'ancien import StreamBadge ;
-2. importez **Fusion v2** avec l'URL versionnée ci-dessus ;
-3. vérifiez que Fusion v2 est l'import actif ;
+2. importez **Fusion v3** avec l'URL versionnée ci-dessus ;
+3. vérifiez que Fusion v3 est l'import actif ;
 4. revenez à l'écran des streams.
 
 L'URL versionnée permet de forcer un import neuf et évite de dépendre de l'ancienne copie locale de `stream-badges-fusion.json`.
@@ -47,7 +48,7 @@ NuvioTV compile directement le champ `pattern` de chaque filtre comme expression
 - `description` ;
 - les informations techniques parsées quand elles existent.
 
-NiakVIO veille donc à faire survivre les faits utiles dans la présentation des streams : qualité, source, codec, HDR, audio, langue, etc. C'est ce qui permet aux règles de reconnaître des tokens comme `2160p`, `WEB-DL`, `HEVC`, `HDR10+`, `MULTI`, `VFF`, etc.
+NiakVIO veille donc à faire survivre les faits utiles dans la présentation des streams : qualité, source, codec, HDR, audio, langue, etc. C'est ce qui permet aux règles de reconnaître des tokens comme `2160p`, `WEB-DL`, `HEVC`, `HDR10+`, `FR`, `FR-CA`, `SUB FR`, etc. Les anciens tokens comme `VF/VFF/VFQ/VO/VOSTFR` restent uniquement des alias d'entrée de compatibilité.
 
 ## Regex
 
@@ -59,19 +60,20 @@ Les tests NiakVIO interdisent désormais les patterns double-échappés qui rend
 
 - `badge_catalog_v2_complete.json` : catalogue canonique ;
 - `mapping_core_brain_ui_v2_complete.json` : mapping Core / Brain / UI ;
-- `stream-badges-fusion-v3.json` : feed Fusion recommandé ;
-- `stream-badges-dark.json` : feed Dark ;
-- `stream-badges-light.json` : feed Light.
+- `stream-badges-fusion-v3.json` : feed Fusion stable recommandé ;
+- `stream-badges-dark-v3.json` : feed Dark stable ;
+- `stream-badges-light-v3.json` : feed Light stable ;
+- `stream-badges-transparent-v3.json` : feed Transparent stable.
 
-Les assets sont générés et validés de façon déterministe par les scripts/tests du dépôt. Évitez de modifier uniquement un feed généré à la main : la source canonique doit rester cohérente avec les trois variantes.
+Les assets sont générés et validés de façon déterministe par les scripts/tests du dépôt. Évitez de modifier uniquement un feed généré à la main : la source canonique doit rester cohérente avec les quatre variantes.
 
-## Couverture technique v2.2
+## Couverture technique v3
 
-Le catalogue canonique couvre désormais 122 badges répartis dans 15 groupes. Il inclut les sources vidéo usuelles, les résolutions de 240p à 8K/4320p, les conteneurs courants, codecs vidéo, HDR/bit depth, fréquences d'image usuelles, débit vidéo, technologies/codecs/canaux audio, fréquences d'échantillonnage, langues normalisées du Core, sous-titres et classifications d'âge.
+Le catalogue canonique v3 couvre désormais **299 badges répartis dans 15 groupes**, dont **47 langues**, **49 variantes de sous-titres** et **118 classifications d'âge**. Il couvre aussi les sources vidéo usuelles, les résolutions de 240p à 8K/4320p, les conteneurs courants, codecs vidéo, HDR/bit depth, fréquences d'image usuelles, débit vidéo, technologies/codecs/canaux audio et fréquences d'échantillonnage.
 
 Les mesures continues restent exactes dans la ligne technique : par exemple `6.0 Mbps` reste la valeur affichée, tandis que le badge `BITRATE` indique la présence fiable de cette donnée. Les fréquences d'image et d'échantillonnage utilisent des badges pour les valeurs usuelles normalisées.
 
-`stream-badges-fusion-v3.json`, le feed recommandé, est désormais régénéré et validé depuis la même source canonique que Dark, Light et Fusion afin d'empêcher toute dérive.
+Les quatre feeds v3 (`fusion`, `dark`, `light`, `transparent`) sont générés et validés depuis la même source canonique afin d'empêcher toute dérive de version.
 
 ## Politique de version des feeds publics
 
