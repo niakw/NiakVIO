@@ -5060,9 +5060,10 @@ This ledger is not complete merely because provider yield improves. Final comple
 ### 2026-09-25 — Brain Learning anti-replay completed across Autopilot
 
 - Final anti-loop audit found two remaining orchestration holes after the causal dispatch gate landed: the ledger remembered only the last fingerprint, so a historical `A -> B -> A` sequence could replay A; and `.github/workflows/provider-brain-autopilot.yml` still dispatched BRAIN_LEARNING / CORE_CLIENT_LEARNING directly without the ledger.
-- `scripts/provider_learning_dispatch_gate.py` now keeps a bounded history (32 fingerprints/provider), remains backward-compatible with legacy last-only rows, and suppresses any previously dispatched fingerprint rather than only the immediately previous one.
+- `scripts/provider_learning_dispatch_gate.py` now keeps the complete deduplicated fingerprint history per provider, remains backward-compatible with legacy last-only rows, and suppresses any previously dispatched fingerprint rather than only the immediately previous one.
 - The same gate now accepts sanitized execution-plan fingerprints for `BRAIN_LEARNING` and `CORE_CLIENT_LEARNING`. Brain Autopilot still refreshes WAF/transport evidence when needed, but Learning is dispatched only for a new stable cause/method fingerprint and an exact target cohort.
 - Autopilot `contents: write` is deliberately restricted by regression contract to the sanitized `automation/provider-learning-dispatch-ledger.json` transaction after a successful Learning dispatch; it has no provider/Core write authority.
+- Brain Autopilot also fails closed when `origin/main` no longer equals the event `GITHUB_SHA`: it requeues against current main rather than dispatching child lanes from a stale census/execution plan.
 - `BRAIN_REPAIR_ARCHITECTURE.md` now records the per-provider fingerprint history and requires Canonical Repair, Fast Repair and Brain Autopilot to share the same anti-replay dispatch authority.
 - No broad Repair or Learning run was launched while making these architecture fixes. Runtime completion still requires representative current-code proof as defined in the Brain Repair architecture completion criteria.
 
