@@ -114,7 +114,7 @@ jobs:
           fetch-depth: 1
           persist-credentials: false
           sparse-checkout: |
-            raw/chatgpt-project/g-p-6a7f1d27495c819182b4081bfccdafd8
+            raw/chatgpt-project
           sparse-checkout-cone-mode: true
 
       - name: Install pinned Brain LLM advisor package
@@ -595,8 +595,13 @@ jobs:
             --output brain-sandbox/brain-llm/public-documents.jsonl \
             > brain-sandbox/brain-llm/public-document-report.json
 
-          private_project="brain-llm-private/raw/chatgpt-project/g-p-6a7f1d27495c819182b4081bfccdafd8"
-          if [ -d "$private_project" ]; then
+          mapfile -t private_projects < <(find brain-llm-private/raw/chatgpt-project -mindepth 1 -maxdepth 1 -type d -print | sort)
+          if [ "${#private_projects[@]}" -gt 1 ]; then
+            echo "Expected at most one private ChatGPT project directory, found ${#private_projects[@]}" >&2
+            exit 1
+          fi
+          private_project="${private_projects[0]:-}"
+          if [ -n "$private_project" ] && [ -d "$private_project" ]; then
             python brain-llm/scripts/import_private_chat_project.py \
               --project-root "$private_project" \
               --output brain-sandbox/brain-llm/private-documents.jsonl \
