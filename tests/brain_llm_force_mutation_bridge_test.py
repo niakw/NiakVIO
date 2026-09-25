@@ -136,6 +136,44 @@ with tempfile.TemporaryDirectory() as tmp:
     else:
         raise AssertionError("unregistered provider Bloc mutation was accepted")
 
+
+    mod.source_drift = lambda *_args, **_kwargs: ([], set())
+    duplicate_payload = {
+        **payload,
+        "rows": [
+            payload["rows"][0],
+            {
+                **payload["rows"][0],
+                "mutationFingerprint": mod._fingerprint([
+                    {
+                        "scope": "provider_data",
+                        "operation": "set",
+                        "path": "notes",
+                        "value": "alternate-candidate",
+                    }
+                ]),
+                "mutations": [
+                    {
+                        "scope": "provider_data",
+                        "operation": "set",
+                        "path": "notes",
+                        "value": "alternate-candidate",
+                    }
+                ],
+            },
+        ],
+    }
+    try:
+        mod.apply_payload(
+            duplicate_payload,
+            current_sha="c" * 40,
+            selected={"demo"},
+        )
+    except ValueError as exc:
+        assert "multiple concrete Force candidates" in str(exc)
+    else:
+        raise AssertionError("stacked same-provider Force candidates were accepted")
+
     mod.source_drift = lambda *_args, **_kwargs: ([], {"demo"})
     unchanged = json.loads((root / "provider-overrides.json").read_text())
     report = mod.apply_payload(
