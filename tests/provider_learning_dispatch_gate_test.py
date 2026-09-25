@@ -81,6 +81,79 @@ changed_method = module.select(
 assert changed_method["eligibleProviders"] == ["demo"], changed_method
 assert changed_method["eligible"][0]["fingerprint"] != fp
 
+# History, not only the last value, owns anti-replay. A -> B -> A must not
+# auto-dispatch A again.
+ledger_b = module.mark_dispatched(
+    ledger,
+    changed_method,
+    repair_run_id="repair-2",
+    learning_run_id="learn-2",
+)
+assert len(ledger_b["providers"]["demo"]["dispatchedFingerprints"]) == 2
+replayed_a = module.select(brain(harness=["harness"]), ledger_b, ["demo"])
+assert replayed_a["eligibleProviders"] == [], replayed_a
+assert replayed_a["suppressedRepeatProviders"] == ["demo"], replayed_a
+
+# Legacy last-only ledgers remain safe after schema migration.
+legacy = {
+    "providers": {
+        "demo": {
+            "lastDispatchedFingerprint": fp,
+            "dispatchCount": 1,
+        }
+    }
+}
+legacy_repeat = module.select(brain(harness=["harness"]), legacy, ["demo"])
+assert legacy_repeat["eligibleProviders"] == [], legacy_repeat
+
+execution_plan = {
+    "executions": [
+        {
+            "lane": "BRAIN_LEARNING",
+            "owner": "BRAIN_LEARNING",
+            "repairScope": "learning",
+            "capabilityStrategy": "unknown",
+            "transportSignature": "not-applicable",
+            "dispatchAllowed": True,
+            "providers": ["learn-only"],
+        },
+        {
+            "lane": "CORE_CLIENT_LEARNING",
+            "owner": "CORE_CLIENT_TRANSPORT",
+            "repairScope": "harness-compatibility",
+            "capabilityStrategy": "html_scraper",
+            "transportSignature": "browser-profile-only-both-networks",
+            "strategyBlueprint": "native_tls_browser_differential_v1",
+            "dispatchAllowed": True,
+            "providers": ["harness-only"],
+        },
+    ]
+}
+plan_first = module.select_execution_plan(
+    execution_plan,
+    {"providers": {}},
+    lane="BRAIN_LEARNING",
+    requested=["learn-only"],
+)
+assert plan_first["eligibleProviders"] == ["learn-only"], plan_first
+plan_ledger = module.mark_dispatched({"providers": {}}, plan_first, repair_run_id="auto-1")
+plan_repeat = module.select_execution_plan(
+    execution_plan,
+    plan_ledger,
+    lane="BRAIN_LEARNING",
+    requested=["learn-only"],
+)
+assert plan_repeat["eligibleProviders"] == [], plan_repeat
+assert plan_repeat["suppressedRepeatProviders"] == ["learn-only"], plan_repeat
+
+harness_plan = module.select_execution_plan(
+    execution_plan,
+    {"providers": {}},
+    lane="CORE_CLIENT_LEARNING",
+    requested=["harness-only"],
+)
+assert harness_plan["eligibleProviders"] == ["harness-only"], harness_plan
+
 missing = {
     "deferredLearningProviders": ["unknown"],
     "waves": [{"batches": [{"brain": {"plans": {
