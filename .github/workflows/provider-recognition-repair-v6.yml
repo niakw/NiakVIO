@@ -660,6 +660,9 @@ jobs:
           )
           for provider in "${FORCE_TARGETS[@]}"; do eval_args+=(--provider "$provider"); done
           "${eval_args[@]}"
+          python scripts/update_brain_llm_force_memory.py \
+            --memory automation/brain-llm-force-memory.json \
+            --evaluation automation/brain-llm-force-candidate-evaluation.json
 
           mapfile -t FORCE_WINNERS < <(python - <<'PY'
           import json
@@ -902,6 +905,7 @@ jobs:
             automation/provider-repair-v6-summary.json
             automation/provider-brain-repair-latest.json
             automation/brain-llm-force-candidate-evaluation.json
+            automation/brain-llm-force-memory.json
             automation/brain-llm-force-mutation-application.json
             automation/brain-llm-force-current-byte-retest.json
             automation/provider-authority-status.json
@@ -969,6 +973,9 @@ jobs:
           [ ! -s automation/provider-authority-status.json ] || cp automation/provider-authority-status.json "$tmp/provider-authority-status.json"
           [ ! -s automation/provider-waf-browser-session-latest.json ] || cp automation/provider-waf-browser-session-latest.json "$tmp/provider-waf-browser-session-latest.json"
           [ ! -s automation/provider-census-proof-history.json ] || cp automation/provider-census-proof-history.json "$tmp/provider-census-proof-history.json"
+          if [ -s automation/brain-llm-force-memory.json ] && ! git diff --quiet "$GITHUB_SHA" -- automation/brain-llm-force-memory.json; then
+            cp automation/brain-llm-force-memory.json "$tmp/brain-llm-force-memory.json"
+          fi
           canonical_repair_outcome="${{ steps.canonical-repair.outcome }}"
           canonical_ledger_publishable=0
           if [ "$canonical_repair_outcome" = "success" ]; then
@@ -1166,6 +1173,7 @@ jobs:
           if [ "$canonical_ledger_current" = "1" ]; then
             [ ! -f "$tmp/brain-repair-memory.json" ] || cp "$tmp/brain-repair-memory.json" automation/brain-repair-memory.json
             [ ! -f "$tmp/brain-positive-program-memory.json" ] || cp "$tmp/brain-positive-program-memory.json" automation/brain-positive-program-memory.json
+            [ ! -f "$tmp/brain-llm-force-memory.json" ] || cp "$tmp/brain-llm-force-memory.json" automation/brain-llm-force-memory.json
             if [ -f "$tmp/provider-brain-repair-latest.json" ]; then
               cp "$tmp/provider-brain-repair-latest.json" "automation/provider-brain-repair-${GITHUB_RUN_ID}.json"
             fi
@@ -1202,6 +1210,7 @@ jobs:
           if [ "$canonical_ledger_current" = "1" ]; then
             [ ! -f automation/brain-repair-memory.json ] || git add automation/brain-repair-memory.json
             [ ! -f automation/brain-positive-program-memory.json ] || git add automation/brain-positive-program-memory.json
+            [ ! -f automation/brain-llm-force-memory.json ] || git add automation/brain-llm-force-memory.json
             [ ! -f "automation/provider-brain-repair-${GITHUB_RUN_ID}.json" ] || git add "automation/provider-brain-repair-${GITHUB_RUN_ID}.json"
           fi
 
