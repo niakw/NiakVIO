@@ -35,7 +35,7 @@ def clean_v3_fixture(source: bytes) -> bytes:
 
 cfg = json.loads((ROOT / "provider-overrides.json").read_text(encoding="utf-8"))
 policy = cfg.get("playback_integrity_policy") or {}
-assert policy.get("version") == 5
+assert policy.get("version") == 6
 assert policy.get("enabled") is True
 assert policy.get("provider_disabling_is_not_a_repair") is True
 assert policy.get("global_discovery_hooks") == [
