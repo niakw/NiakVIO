@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Keep universal HLS validation/enrichment policy at its current contract.
+"""Keep universal HLS validation/enrichment and short-placeholder policy at its current contract.
 
 The HLS Block already fetches the master playlist for bounded integrity checks.
 Reuse that same response for technical facts instead of maintaining provider-only
