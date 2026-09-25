@@ -70,7 +70,7 @@ assert '"--waves", str(brain_waves)' in pipeline_current
 assert 'brain_time_budget_seconds = 600 if args.mode == "repair" else 900' in pipeline_current
 assert '"--time-budget-seconds", str(brain_time_budget_seconds)' in pipeline_current
 assert '"--min-start-batch-seconds", "150",' in pipeline_current
-assert 'targeted_only=args.mode == "repair"' in pipeline_current
+assert 'targeted_only=args.mode in {"repair", "force"}' in pipeline_current
 assert "def route_recovery_outer_timeout(" in pipeline_current
 assert "def portfolio_probe_timeout(" in pipeline_current
 assert "timeout=1080" in pipeline_current
