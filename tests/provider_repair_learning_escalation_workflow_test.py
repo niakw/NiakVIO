@@ -160,3 +160,8 @@ assert "Open or refresh Brain architecture PR" in learning_workflow
 assert "apply_brain_llm_force_mutations.py" not in learning_workflow
 
 assert '-f target_providers="$deferred_csv"' in workflow
+
+assert "niakvio-guidance-state.json" in workflow
+assert "external Brain guidance paging is incomplete" in workflow
+assert "incomplete-or-inconsistent-guidance-state" in workflow
+assert "Force guidance paging incomplete" in workflow
