@@ -97,7 +97,7 @@ def main() -> int:
     if engine_test.is_file() and "lang-fr-ca" in engine_test.read_text(encoding="utf-8"):
         global_text = GLOBAL_TEST.read_text(encoding="utf-8")
         fallback_text = FALLBACK_TEST.read_text(encoding="utf-8")
-        required = ('"lang-fr"', '"sub-fr"', '"lang-fr-ca"')
+        required = ('"lang-fr"', '"sub-fr"', '"lang-fr-ca"', '"code":"fr-ca"')
         for token in required:
             if token not in global_text:
                 raise AssertionError(f"universal v3 presentation test missing {token}")

@@ -291,6 +291,11 @@ export function normalizeLanguageCode(value) {
   const raw = useful(value);
   if (!raw) return null;
   const localeKey = raw.toLowerCase().replace(/_/g, "-").replace(/\s+/g, " ").trim();
+  if (/\bvfq\b/i.test(raw) || /\bfr[-_ ]?ca\b/i.test(raw)) return "fr-ca";
+  for (const code of ["fr-ch", "pt-br", "pt-pt", "es-419", "es-mx", "zh-hk", "zh-tw"]) {
+    const pattern = new RegExp(`(?:^|[^a-z0-9])${code.replace("-", "[-_ ]?")}(?:[^a-z0-9]|$)`, "i");
+    if (pattern.test(raw)) return code;
+  }
   if (LANGUAGE_LOCALE_ALIASES[localeKey]) return LANGUAGE_LOCALE_ALIASES[localeKey];
   const normalized = raw.toLowerCase().replace(/[_-]+/g, " ").replace(/\([^)]*\)/g, " ").replace(/\s+/g, " ").trim();
   if (LANGUAGE_LOCALE_ALIASES[normalized]) return LANGUAGE_LOCALE_ALIASES[normalized];
