@@ -766,7 +766,10 @@ def main() -> int:
     # lets later waves transfer trusted skills to compatible remaining providers.
     BRAIN_REPAIR.unlink(missing_ok=True)
     if args.mode in {"repair", "force"}:
-        brain_rounds_per_batch = 1 if args.mode == "repair" else 3
+        # One Deep round per wave. Advisor A/B/C rotation is owned by the
+        # portfolio wave scheduler; repeating 3 Deep rounds inside each wave
+        # multiplies the same work and obscures attribution.
+        brain_rounds_per_batch = 1
         brain_waves = 1 if args.mode == "repair" else 3
         brain_time_budget_seconds = 600 if args.mode == "repair" else 900
         brain_cmd = [
