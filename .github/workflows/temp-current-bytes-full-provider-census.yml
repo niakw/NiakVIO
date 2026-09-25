@@ -42,6 +42,10 @@ on:
       - 'tests/provider_census_identity_diagnostics_test.py'
       - 'tests/provider_census_scope_history_test.py'
       - 'tests/global_playback_integrity_policy_test.py'
+      - 'tests/global_stream_unknown_quality_projection_test.py'
+      - 'tests/hls_presentation_badge_integration_test.py'
+      - 'tests/native_hls_short_vod_regression_test.py'
+      - 'tests/streamzo_episodic_identity_contract_test.py'
   pull_request:
     branches: [main]
     paths:
@@ -192,6 +196,9 @@ jobs:
           python tests/provider_animesamaco_domain_data_contract_test.py
           python tests/provider_incomplete_player_url_rejection_test.py
           python tests/streamzo_episodic_identity_contract_test.py
+          python tests/native_hls_short_vod_regression_test.py
+          python tests/hls_presentation_badge_integration_test.py
+          python tests/global_stream_unknown_quality_projection_test.py
           python tests/provider_js_lego_ownership_test.py
           python tests/provider_domain_metadata_reconcile_test.py
           python tests/user_provider_manual_evidence_crosscheck_test.py
