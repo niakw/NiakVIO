@@ -18,16 +18,21 @@ OUTPUTS = {
 ACCENTS = {
     "source": "#49B46D",
     "resolution": "#F3C43F",
+    "container": "#7B8794",
     "video-tech": "#28B7E4",
     "video-codec": "#559EFF",
     "bit-depth": "#A87BE8",
+    "frame-rate": "#37A6D8",
+    "video-bitrate": "#2AA6A4",
     "audio-tech": "#E05DAC",
     "audio-codec": "#B873EA",
     "audio-channels": "#F09248",
+    "audio-sample-rate": "#D18F44",
     "language": "#4CBA70",
     "subtitles": "#32B7C5",
     "age-rating": "#E45F6D",
 }
+FUSION_V2 = ROOT / "assets/stream-badges-fusion-v2.json"
 
 
 def style(theme: str, group: str) -> dict[str, str]:
@@ -103,6 +108,12 @@ def normalize(*, apply: bool) -> list[str]:
             changed.append(theme)
             if apply:
                 path.write_text(wanted, encoding="utf-8")
+        if theme == "fusion":
+            current_v2 = FUSION_V2.read_text(encoding="utf-8") if FUSION_V2.is_file() else ""
+            if wanted != current_v2:
+                changed.append("fusion-v2")
+                if apply:
+                    FUSION_V2.write_text(wanted, encoding="utf-8")
     return changed
 
 

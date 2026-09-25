@@ -1,17 +1,21 @@
 {
-  "version": "2.0-complete",
+  "version": "2.1-technical-surface",
   "display": {
     "singleRowOrder": [
       "source",
       "resolution",
       "sourceType",
+      "container",
       "dynamicRange",
       "premiumVideo",
       "videoCodec",
       "bitDepth",
+      "frameRate",
+      "videoBitrate",
       "premiumAudio",
       "audioCodec",
       "channels",
+      "audioSampleRate",
       "language",
       "subtitles"
     ],
@@ -47,7 +51,9 @@
     "Always replace every provider-owned stream description with the shared Core presentation.",
     "When native StreamBadge rules are active, technical text provides matcher tokens for image badges.",
     "When native StreamBadge rules are inactive, emoji-grouped technical text remains the universal visual fallback.",
-    "TMDB may fill media context, runtime and age rating, but never invent stream resolution/source/codec/audio/language facts."
+    "TMDB may fill media context, runtime and age rating, but never invent stream resolution/source/codec/audio/language facts.",
+    "Continuous numeric measurements such as bitrate stay exact in the technical text; static badges identify the normalized measurement class rather than inventing a finite bitrate vocabulary.",
+    "Frame-rate and audio sample-rate badges use canonical common values; unknown or unusual numeric values remain visible in technical text without a false badge."
   ],
   "bestCaseExample": {
     "title": "ECLIPSE RISING",

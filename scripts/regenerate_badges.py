@@ -25,7 +25,7 @@ ROOT = Path(__file__).resolve().parents[1]
 CATALOG = ROOT / "assets" / "badge_catalog_v2_complete.json"
 REPORT = ROOT / "assets" / "docs" / "BADGE_QA.json"
 LEGACY_LIGHT_REPORT = ROOT / "assets" / "docs" / "LIGHT_BADGE_QA.json"
-REVISION = "full-surface-v4-native-chip"
+REVISION = "full-surface-v5-technical-metadata"
 PILLOW_VERSION = "11.3.0"
 SIZES = ("72x32", "96x40")
 THEMES = ("transparent", "dark", "light")
@@ -95,7 +95,7 @@ def _normalize_catalog(catalog: dict[str, Any]) -> tuple[dict[str, Any], bool]:
                     row[key] = value
                     changed = True
     catalog["badges"] = rows
-    catalog["version"] = "2.1-full-surface"
+    catalog["version"] = "2.2-technical-surface"
     return catalog, changed
 
 
@@ -246,8 +246,8 @@ def build(*, apply: bool) -> dict[str, Any]:
     catalog = json.loads(CATALOG.read_text(encoding="utf-8"))
     catalog, catalog_changed = _normalize_catalog(catalog)
     rows = catalog.get("badges") or []
-    if len(rows) != 74:
-        raise RuntimeError(f"expected 74 badges after VF normalization, got {len(rows)}")
+    if len(rows) < 74:
+        raise RuntimeError(f"badge catalog regressed below the v2 baseline: got {len(rows)}")
     if apply and catalog_changed:
         CATALOG.write_text(json.dumps(catalog, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     changed = 0

@@ -73,4 +73,8 @@ for theme in ("dark", "light", "fusion"):
         pattern = str(row.get("pattern") or "")
         assert "\\\\" not in pattern, (theme, row.get("id"), pattern, "double-escaped runtime regex")
 
-print(f"badge asset contract passed: badges={len(badges)} assets={checked} themes=3 sizes=2 native_chip_style=bordered vf_generic=true")
+fusion = (ROOT / "assets/stream-badges-fusion.json").read_text(encoding="utf-8")
+fusion_v2 = (ROOT / "assets/stream-badges-fusion-v2.json").read_text(encoding="utf-8")
+assert fusion_v2 == fusion, "recommended fusion-v2 feed drifted from canonical fusion feed"
+
+print(f"badge asset contract passed: badges={len(badges)} assets={checked} themes=3 sizes=2 native_chip_style=bordered vf_generic=true fusion_v2_synced=true")

@@ -1,5 +1,5 @@
 {
-  "version": "2.1-full-surface",
+  "version": "2.2-technical-surface",
   "groups": [
     {
       "id": "source",
@@ -8,6 +8,10 @@
     {
       "id": "resolution",
       "name": "Resolution"
+    },
+    {
+      "id": "container",
+      "name": "Container"
     },
     {
       "id": "video-tech",
@@ -22,6 +26,14 @@
       "name": "Bit Depth"
     },
     {
+      "id": "frame-rate",
+      "name": "Frame Rate"
+    },
+    {
+      "id": "video-bitrate",
+      "name": "Video Bitrate"
+    },
+    {
       "id": "audio-tech",
       "name": "Audio Tech"
     },
@@ -32,6 +44,10 @@
     {
       "id": "audio-channels",
       "name": "Audio Channels"
+    },
+    {
+      "id": "audio-sample-rate",
+      "name": "Audio Sample Rate"
     },
     {
       "id": "language",
@@ -323,6 +339,81 @@
       "fallbackText": "DVD"
     },
     {
+      "id": "cam",
+      "group": "source",
+      "name": "CAM",
+      "text": "CAM",
+      "brand": false,
+      "pattern": "(?i)\\b(?:hd[ ._-]?cam|cam[ ._-]?rip|camrip|cam)\\b",
+      "assetBasis": "niakvio_generated_generic",
+      "fallbackText": "CAM",
+      "order": 12,
+      "assets": {
+        "transparent": {
+          "72x32": "assets/transparent/72x32/cam.webp",
+          "96x40": "assets/transparent/96x40/cam.webp"
+        },
+        "dark": {
+          "72x32": "assets/dark/72x32/cam.webp",
+          "96x40": "assets/dark/96x40/cam.webp"
+        },
+        "light": {
+          "72x32": "assets/light/72x32/cam.webp",
+          "96x40": "assets/light/96x40/cam.webp"
+        }
+      }
+    },
+    {
+      "id": "telesync",
+      "group": "source",
+      "name": "Telesync",
+      "text": "TS",
+      "brand": false,
+      "pattern": "(?i)\\b(?:telesync|tele[ ._-]?sync|ts[ ._-]?rip|tsrip)\\b",
+      "assetBasis": "niakvio_generated_generic",
+      "fallbackText": "TS",
+      "order": 13,
+      "assets": {
+        "transparent": {
+          "72x32": "assets/transparent/72x32/telesync.webp",
+          "96x40": "assets/transparent/96x40/telesync.webp"
+        },
+        "dark": {
+          "72x32": "assets/dark/72x32/telesync.webp",
+          "96x40": "assets/dark/96x40/telesync.webp"
+        },
+        "light": {
+          "72x32": "assets/light/72x32/telesync.webp",
+          "96x40": "assets/light/96x40/telesync.webp"
+        }
+      }
+    },
+    {
+      "id": "telecine",
+      "group": "source",
+      "name": "Telecine",
+      "text": "TC",
+      "brand": false,
+      "pattern": "(?i)\\b(?:telecine|tc[ ._-]?rip|tcrip)\\b",
+      "assetBasis": "niakvio_generated_generic",
+      "fallbackText": "TC",
+      "order": 14,
+      "assets": {
+        "transparent": {
+          "72x32": "assets/transparent/72x32/telecine.webp",
+          "96x40": "assets/transparent/96x40/telecine.webp"
+        },
+        "dark": {
+          "72x32": "assets/dark/72x32/telecine.webp",
+          "96x40": "assets/dark/96x40/telecine.webp"
+        },
+        "light": {
+          "72x32": "assets/light/72x32/telecine.webp",
+          "96x40": "assets/light/96x40/telecine.webp"
+        }
+      }
+    },
+    {
       "id": "4k-ultra-hd",
       "group": "resolution",
       "name": "4K Ultra HD",
@@ -330,7 +421,7 @@
       "brand": false,
       "pattern": "(?i)\\b(4k|2160p|uhd|ultra[ ]?hd)\\b",
       "assetBasis": "user_supplied_brand_or_technical_asset",
-      "order": 12,
+      "order": 15,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/4k-ultra-hd.webp",
@@ -355,7 +446,7 @@
       "brand": false,
       "pattern": "(?i)\\b2160p\\b",
       "assetBasis": "niakvio_generated_generic",
-      "order": 13,
+      "order": 16,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/2160p.webp",
@@ -380,7 +471,7 @@
       "brand": false,
       "pattern": "(?i)\\b1440p\\b",
       "assetBasis": "niakvio_generated_generic",
-      "order": 14,
+      "order": 17,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/1440p.webp",
@@ -405,7 +496,7 @@
       "brand": false,
       "pattern": "(?i)\\b(1080p|fhd|full[ ]?hd)\\b",
       "assetBasis": "user_supplied_brand_or_technical_asset",
-      "order": 15,
+      "order": 18,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/1080p-full-hd.webp",
@@ -430,7 +521,7 @@
       "brand": false,
       "pattern": "(?i)\\b1080i\\b",
       "assetBasis": "niakvio_generated_generic",
-      "order": 16,
+      "order": 19,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/1080i.webp",
@@ -455,7 +546,7 @@
       "brand": false,
       "pattern": "(?i)\\b720p\\b",
       "assetBasis": "user_supplied_brand_or_technical_asset",
-      "order": 17,
+      "order": 20,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/720p-hd.webp",
@@ -480,7 +571,7 @@
       "brand": false,
       "pattern": "(?i)\\b576p\\b",
       "assetBasis": "niakvio_generated_generic",
-      "order": 18,
+      "order": 21,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/576p.webp",
@@ -505,7 +596,7 @@
       "brand": false,
       "pattern": "(?i)\\b480p\\b",
       "assetBasis": "user_supplied_brand_or_technical_asset",
-      "order": 19,
+      "order": 22,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/480p-sd.webp",
@@ -523,6 +614,231 @@
       "fallbackText": "480p"
     },
     {
+      "id": "8k-ultra-hd",
+      "group": "resolution",
+      "name": "8K Ultra HD",
+      "text": "8K",
+      "brand": false,
+      "pattern": "(?i)\\b(?:8k|4320p|8k[ ]?uhd|ultra[ ]?hd[ ]?8k)\\b",
+      "assetBasis": "niakvio_generated_generic",
+      "fallbackText": "8K",
+      "order": 23,
+      "assets": {
+        "transparent": {
+          "72x32": "assets/transparent/72x32/8k-ultra-hd.webp",
+          "96x40": "assets/transparent/96x40/8k-ultra-hd.webp"
+        },
+        "dark": {
+          "72x32": "assets/dark/72x32/8k-ultra-hd.webp",
+          "96x40": "assets/dark/96x40/8k-ultra-hd.webp"
+        },
+        "light": {
+          "72x32": "assets/light/72x32/8k-ultra-hd.webp",
+          "96x40": "assets/light/96x40/8k-ultra-hd.webp"
+        }
+      }
+    },
+    {
+      "id": "4320p",
+      "group": "resolution",
+      "name": "4320p",
+      "text": "4320p",
+      "brand": false,
+      "pattern": "(?i)\\b4320p\\b",
+      "assetBasis": "niakvio_generated_generic",
+      "fallbackText": "4320p",
+      "order": 24,
+      "assets": {
+        "transparent": {
+          "72x32": "assets/transparent/72x32/4320p.webp",
+          "96x40": "assets/transparent/96x40/4320p.webp"
+        },
+        "dark": {
+          "72x32": "assets/dark/72x32/4320p.webp",
+          "96x40": "assets/dark/96x40/4320p.webp"
+        },
+        "light": {
+          "72x32": "assets/light/72x32/4320p.webp",
+          "96x40": "assets/light/96x40/4320p.webp"
+        }
+      }
+    },
+    {
+      "id": "360p",
+      "group": "resolution",
+      "name": "360p",
+      "text": "360p",
+      "brand": false,
+      "pattern": "(?i)\\b360p\\b",
+      "assetBasis": "niakvio_generated_generic",
+      "fallbackText": "360p",
+      "order": 25,
+      "assets": {
+        "transparent": {
+          "72x32": "assets/transparent/72x32/360p.webp",
+          "96x40": "assets/transparent/96x40/360p.webp"
+        },
+        "dark": {
+          "72x32": "assets/dark/72x32/360p.webp",
+          "96x40": "assets/dark/96x40/360p.webp"
+        },
+        "light": {
+          "72x32": "assets/light/72x32/360p.webp",
+          "96x40": "assets/light/96x40/360p.webp"
+        }
+      }
+    },
+    {
+      "id": "240p",
+      "group": "resolution",
+      "name": "240p",
+      "text": "240p",
+      "brand": false,
+      "pattern": "(?i)\\b240p\\b",
+      "assetBasis": "niakvio_generated_generic",
+      "fallbackText": "240p",
+      "order": 26,
+      "assets": {
+        "transparent": {
+          "72x32": "assets/transparent/72x32/240p.webp",
+          "96x40": "assets/transparent/96x40/240p.webp"
+        },
+        "dark": {
+          "72x32": "assets/dark/72x32/240p.webp",
+          "96x40": "assets/dark/96x40/240p.webp"
+        },
+        "light": {
+          "72x32": "assets/light/72x32/240p.webp",
+          "96x40": "assets/light/96x40/240p.webp"
+        }
+      }
+    },
+    {
+      "id": "mkv",
+      "group": "container",
+      "name": "Matroska / MKV",
+      "text": "MKV",
+      "brand": false,
+      "pattern": "(?i)\\b(?:mkv|matroska)\\b",
+      "assetBasis": "niakvio_generated_generic",
+      "fallbackText": "MKV",
+      "order": 27,
+      "assets": {
+        "transparent": {
+          "72x32": "assets/transparent/72x32/mkv.webp",
+          "96x40": "assets/transparent/96x40/mkv.webp"
+        },
+        "dark": {
+          "72x32": "assets/dark/72x32/mkv.webp",
+          "96x40": "assets/dark/96x40/mkv.webp"
+        },
+        "light": {
+          "72x32": "assets/light/72x32/mkv.webp",
+          "96x40": "assets/light/96x40/mkv.webp"
+        }
+      }
+    },
+    {
+      "id": "mp4",
+      "group": "container",
+      "name": "MP4",
+      "text": "MP4",
+      "brand": false,
+      "pattern": "(?i)\\bmp4\\b",
+      "assetBasis": "niakvio_generated_generic",
+      "fallbackText": "MP4",
+      "order": 28,
+      "assets": {
+        "transparent": {
+          "72x32": "assets/transparent/72x32/mp4.webp",
+          "96x40": "assets/transparent/96x40/mp4.webp"
+        },
+        "dark": {
+          "72x32": "assets/dark/72x32/mp4.webp",
+          "96x40": "assets/dark/96x40/mp4.webp"
+        },
+        "light": {
+          "72x32": "assets/light/72x32/mp4.webp",
+          "96x40": "assets/light/96x40/mp4.webp"
+        }
+      }
+    },
+    {
+      "id": "webm",
+      "group": "container",
+      "name": "WebM",
+      "text": "WEBM",
+      "brand": false,
+      "pattern": "(?i)\\bwebm\\b",
+      "assetBasis": "niakvio_generated_generic",
+      "fallbackText": "WEBM",
+      "order": 29,
+      "assets": {
+        "transparent": {
+          "72x32": "assets/transparent/72x32/webm.webp",
+          "96x40": "assets/transparent/96x40/webm.webp"
+        },
+        "dark": {
+          "72x32": "assets/dark/72x32/webm.webp",
+          "96x40": "assets/dark/96x40/webm.webp"
+        },
+        "light": {
+          "72x32": "assets/light/72x32/webm.webp",
+          "96x40": "assets/light/96x40/webm.webp"
+        }
+      }
+    },
+    {
+      "id": "mpeg-ts",
+      "group": "container",
+      "name": "MPEG-TS",
+      "text": "MPEG-TS",
+      "brand": false,
+      "pattern": "(?i)\\b(?:mpeg[ ._-]?ts|mpegts)\\b",
+      "assetBasis": "niakvio_generated_generic",
+      "fallbackText": "MPEG-TS",
+      "order": 30,
+      "assets": {
+        "transparent": {
+          "72x32": "assets/transparent/72x32/mpeg-ts.webp",
+          "96x40": "assets/transparent/96x40/mpeg-ts.webp"
+        },
+        "dark": {
+          "72x32": "assets/dark/72x32/mpeg-ts.webp",
+          "96x40": "assets/dark/96x40/mpeg-ts.webp"
+        },
+        "light": {
+          "72x32": "assets/light/72x32/mpeg-ts.webp",
+          "96x40": "assets/light/96x40/mpeg-ts.webp"
+        }
+      }
+    },
+    {
+      "id": "m2ts",
+      "group": "container",
+      "name": "M2TS",
+      "text": "M2TS",
+      "brand": false,
+      "pattern": "(?i)\\bm2ts\\b",
+      "assetBasis": "niakvio_generated_generic",
+      "fallbackText": "M2TS",
+      "order": 31,
+      "assets": {
+        "transparent": {
+          "72x32": "assets/transparent/72x32/m2ts.webp",
+          "96x40": "assets/transparent/96x40/m2ts.webp"
+        },
+        "dark": {
+          "72x32": "assets/dark/72x32/m2ts.webp",
+          "96x40": "assets/dark/96x40/m2ts.webp"
+        },
+        "light": {
+          "72x32": "assets/light/72x32/m2ts.webp",
+          "96x40": "assets/light/96x40/m2ts.webp"
+        }
+      }
+    },
+    {
       "id": "dolby-vision",
       "group": "video-tech",
       "name": "Dolby Vision",
@@ -530,7 +846,7 @@
       "brand": true,
       "pattern": "(?i)\\b(dolby[ ]?vision|dovi|dv)\\b",
       "assetBasis": "user_supplied_brand_or_technical_asset",
-      "order": 20,
+      "order": 32,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/dolby-vision.webp",
@@ -555,7 +871,7 @@
       "brand": true,
       "pattern": "(?i)\\b(hdr10\\+|hdr10[ ]?plus|hdr[ ]?10[ ]?\\+)\\b",
       "assetBasis": "user_supplied_brand_or_technical_asset",
-      "order": 21,
+      "order": 33,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/hdr10-plus.webp",
@@ -580,7 +896,7 @@
       "brand": false,
       "pattern": "(?i)\\bhdr[ ]?10\\b(?![ ]?\\+|[ ]?plus)",
       "assetBasis": "user_supplied_brand_or_technical_asset",
-      "order": 22,
+      "order": 34,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/hdr10.webp",
@@ -605,7 +921,7 @@
       "brand": false,
       "pattern": "(?i)\\bhdr\\b",
       "assetBasis": "user_supplied_brand_or_technical_asset",
-      "order": 23,
+      "order": 35,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/hdr.webp",
@@ -630,7 +946,7 @@
       "brand": false,
       "pattern": "(?i)\\bhlg\\b",
       "assetBasis": "niakvio_generated_generic",
-      "order": 24,
+      "order": 36,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/hlg.webp",
@@ -655,7 +971,7 @@
       "brand": false,
       "pattern": "(?i)\\bsdr\\b",
       "assetBasis": "user_supplied_brand_or_technical_asset",
-      "order": 25,
+      "order": 37,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/sdr.webp",
@@ -680,7 +996,7 @@
       "brand": true,
       "pattern": "(?i)\\bimax[ ._-]?enhanced\\b",
       "assetBasis": "user_supplied_brand_or_technical_asset",
-      "order": 26,
+      "order": 38,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/imax-enhanced.webp",
@@ -705,7 +1021,7 @@
       "brand": true,
       "pattern": "(?i)\\bimax\\b(?![ ._-]?enhanced)",
       "assetBasis": "user_supplied_brand_or_technical_asset",
-      "order": 27,
+      "order": 39,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/imax.webp",
@@ -730,7 +1046,7 @@
       "brand": false,
       "pattern": "(?i)\\b(3d|sbs|hsbs|ou|hou)\\b",
       "assetBasis": "niakvio_generated_generic",
-      "order": 28,
+      "order": 40,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/3d.webp",
@@ -755,7 +1071,7 @@
       "brand": false,
       "pattern": "(?i)\\bav1\\b",
       "assetBasis": "niakvio_generated_generic",
-      "order": 29,
+      "order": 41,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/av1.webp",
@@ -780,7 +1096,7 @@
       "brand": false,
       "pattern": "(?i)\\b(hevc|h[ ._-]?265|x265)\\b",
       "assetBasis": "user_supplied_brand_or_technical_asset",
-      "order": 30,
+      "order": 42,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/hevc.webp",
@@ -805,7 +1121,7 @@
       "brand": false,
       "pattern": "(?i)\\b(avc|h[ ._-]?264|x264)\\b",
       "assetBasis": "user_supplied_brand_or_technical_asset",
-      "order": 31,
+      "order": 43,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/avc.webp",
@@ -830,7 +1146,7 @@
       "brand": false,
       "pattern": "(?i)\\bvp9\\b",
       "assetBasis": "niakvio_generated_generic",
-      "order": 32,
+      "order": 44,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/vp9.webp",
@@ -855,7 +1171,7 @@
       "brand": false,
       "pattern": "(?i)\\bmpeg[ ._-]?2\\b",
       "assetBasis": "niakvio_generated_generic",
-      "order": 33,
+      "order": 45,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/mpeg2.webp",
@@ -880,7 +1196,7 @@
       "brand": false,
       "pattern": "(?i)\\bvc[ ._-]?1\\b",
       "assetBasis": "niakvio_generated_generic",
-      "order": 34,
+      "order": 46,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/vc1.webp",
@@ -898,6 +1214,31 @@
       "fallbackText": "VC-1"
     },
     {
+      "id": "mpeg4-part2",
+      "group": "video-codec",
+      "name": "MPEG-4 Part 2 / ASP",
+      "text": "MPEG-4",
+      "brand": false,
+      "pattern": "(?i)\\b(?:mpeg[ ._-]?4[ ._-]?(?:part[ ._-]?2|asp)|xvid|divx)\\b",
+      "assetBasis": "niakvio_generated_generic",
+      "fallbackText": "MPEG-4",
+      "order": 47,
+      "assets": {
+        "transparent": {
+          "72x32": "assets/transparent/72x32/mpeg4-part2.webp",
+          "96x40": "assets/transparent/96x40/mpeg4-part2.webp"
+        },
+        "dark": {
+          "72x32": "assets/dark/72x32/mpeg4-part2.webp",
+          "96x40": "assets/dark/96x40/mpeg4-part2.webp"
+        },
+        "light": {
+          "72x32": "assets/light/72x32/mpeg4-part2.webp",
+          "96x40": "assets/light/96x40/mpeg4-part2.webp"
+        }
+      }
+    },
+    {
       "id": "12bit",
       "group": "bit-depth",
       "name": "12-bit",
@@ -905,7 +1246,7 @@
       "brand": false,
       "pattern": "(?i)\\b12[ ._-]?bit\\b",
       "assetBasis": "niakvio_generated_generic",
-      "order": 35,
+      "order": 48,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/12bit.webp",
@@ -930,7 +1271,7 @@
       "brand": false,
       "pattern": "(?i)\\b(10[ ._-]?bit|10b|hi10p)\\b",
       "assetBasis": "user_supplied_brand_or_technical_asset",
-      "order": 36,
+      "order": 49,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/10bit.webp",
@@ -955,7 +1296,7 @@
       "brand": false,
       "pattern": "(?i)\\b8[ ._-]?bit\\b",
       "assetBasis": "user_supplied_brand_or_technical_asset",
-      "order": 37,
+      "order": 50,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/8bit.webp",
@@ -973,6 +1314,231 @@
       "fallbackText": "8BIT"
     },
     {
+      "id": "23.976fps",
+      "group": "frame-rate",
+      "name": "23.976 fps",
+      "text": "23.976FPS",
+      "brand": false,
+      "pattern": "(?i)\\b23[.,]976\\s*fps\\b",
+      "assetBasis": "niakvio_generated_generic",
+      "fallbackText": "23.976FPS",
+      "order": 51,
+      "assets": {
+        "transparent": {
+          "72x32": "assets/transparent/72x32/23.976fps.webp",
+          "96x40": "assets/transparent/96x40/23.976fps.webp"
+        },
+        "dark": {
+          "72x32": "assets/dark/72x32/23.976fps.webp",
+          "96x40": "assets/dark/96x40/23.976fps.webp"
+        },
+        "light": {
+          "72x32": "assets/light/72x32/23.976fps.webp",
+          "96x40": "assets/light/96x40/23.976fps.webp"
+        }
+      }
+    },
+    {
+      "id": "24fps",
+      "group": "frame-rate",
+      "name": "24 fps",
+      "text": "24FPS",
+      "brand": false,
+      "pattern": "(?i)\\b24(?:[.,]0+)?\\s*fps\\b",
+      "assetBasis": "niakvio_generated_generic",
+      "fallbackText": "24FPS",
+      "order": 52,
+      "assets": {
+        "transparent": {
+          "72x32": "assets/transparent/72x32/24fps.webp",
+          "96x40": "assets/transparent/96x40/24fps.webp"
+        },
+        "dark": {
+          "72x32": "assets/dark/72x32/24fps.webp",
+          "96x40": "assets/dark/96x40/24fps.webp"
+        },
+        "light": {
+          "72x32": "assets/light/72x32/24fps.webp",
+          "96x40": "assets/light/96x40/24fps.webp"
+        }
+      }
+    },
+    {
+      "id": "25fps",
+      "group": "frame-rate",
+      "name": "25 fps",
+      "text": "25FPS",
+      "brand": false,
+      "pattern": "(?i)\\b25(?:[.,]0+)?\\s*fps\\b",
+      "assetBasis": "niakvio_generated_generic",
+      "fallbackText": "25FPS",
+      "order": 53,
+      "assets": {
+        "transparent": {
+          "72x32": "assets/transparent/72x32/25fps.webp",
+          "96x40": "assets/transparent/96x40/25fps.webp"
+        },
+        "dark": {
+          "72x32": "assets/dark/72x32/25fps.webp",
+          "96x40": "assets/dark/96x40/25fps.webp"
+        },
+        "light": {
+          "72x32": "assets/light/72x32/25fps.webp",
+          "96x40": "assets/light/96x40/25fps.webp"
+        }
+      }
+    },
+    {
+      "id": "29.97fps",
+      "group": "frame-rate",
+      "name": "29.97 fps",
+      "text": "29.97FPS",
+      "brand": false,
+      "pattern": "(?i)\\b29[.,]97\\s*fps\\b",
+      "assetBasis": "niakvio_generated_generic",
+      "fallbackText": "29.97FPS",
+      "order": 54,
+      "assets": {
+        "transparent": {
+          "72x32": "assets/transparent/72x32/29.97fps.webp",
+          "96x40": "assets/transparent/96x40/29.97fps.webp"
+        },
+        "dark": {
+          "72x32": "assets/dark/72x32/29.97fps.webp",
+          "96x40": "assets/dark/96x40/29.97fps.webp"
+        },
+        "light": {
+          "72x32": "assets/light/72x32/29.97fps.webp",
+          "96x40": "assets/light/96x40/29.97fps.webp"
+        }
+      }
+    },
+    {
+      "id": "30fps",
+      "group": "frame-rate",
+      "name": "30 fps",
+      "text": "30FPS",
+      "brand": false,
+      "pattern": "(?i)\\b30(?:[.,]0+)?\\s*fps\\b",
+      "assetBasis": "niakvio_generated_generic",
+      "fallbackText": "30FPS",
+      "order": 55,
+      "assets": {
+        "transparent": {
+          "72x32": "assets/transparent/72x32/30fps.webp",
+          "96x40": "assets/transparent/96x40/30fps.webp"
+        },
+        "dark": {
+          "72x32": "assets/dark/72x32/30fps.webp",
+          "96x40": "assets/dark/96x40/30fps.webp"
+        },
+        "light": {
+          "72x32": "assets/light/72x32/30fps.webp",
+          "96x40": "assets/light/96x40/30fps.webp"
+        }
+      }
+    },
+    {
+      "id": "50fps",
+      "group": "frame-rate",
+      "name": "50 fps",
+      "text": "50FPS",
+      "brand": false,
+      "pattern": "(?i)\\b50(?:[.,]0+)?\\s*fps\\b",
+      "assetBasis": "niakvio_generated_generic",
+      "fallbackText": "50FPS",
+      "order": 56,
+      "assets": {
+        "transparent": {
+          "72x32": "assets/transparent/72x32/50fps.webp",
+          "96x40": "assets/transparent/96x40/50fps.webp"
+        },
+        "dark": {
+          "72x32": "assets/dark/72x32/50fps.webp",
+          "96x40": "assets/dark/96x40/50fps.webp"
+        },
+        "light": {
+          "72x32": "assets/light/72x32/50fps.webp",
+          "96x40": "assets/light/96x40/50fps.webp"
+        }
+      }
+    },
+    {
+      "id": "59.94fps",
+      "group": "frame-rate",
+      "name": "59.94 fps",
+      "text": "59.94FPS",
+      "brand": false,
+      "pattern": "(?i)\\b59[.,]94\\s*fps\\b",
+      "assetBasis": "niakvio_generated_generic",
+      "fallbackText": "59.94FPS",
+      "order": 57,
+      "assets": {
+        "transparent": {
+          "72x32": "assets/transparent/72x32/59.94fps.webp",
+          "96x40": "assets/transparent/96x40/59.94fps.webp"
+        },
+        "dark": {
+          "72x32": "assets/dark/72x32/59.94fps.webp",
+          "96x40": "assets/dark/96x40/59.94fps.webp"
+        },
+        "light": {
+          "72x32": "assets/light/72x32/59.94fps.webp",
+          "96x40": "assets/light/96x40/59.94fps.webp"
+        }
+      }
+    },
+    {
+      "id": "60fps",
+      "group": "frame-rate",
+      "name": "60 fps",
+      "text": "60FPS",
+      "brand": false,
+      "pattern": "(?i)\\b60(?:[.,]0+)?\\s*fps\\b",
+      "assetBasis": "niakvio_generated_generic",
+      "fallbackText": "60FPS",
+      "order": 58,
+      "assets": {
+        "transparent": {
+          "72x32": "assets/transparent/72x32/60fps.webp",
+          "96x40": "assets/transparent/96x40/60fps.webp"
+        },
+        "dark": {
+          "72x32": "assets/dark/72x32/60fps.webp",
+          "96x40": "assets/dark/96x40/60fps.webp"
+        },
+        "light": {
+          "72x32": "assets/light/72x32/60fps.webp",
+          "96x40": "assets/light/96x40/60fps.webp"
+        }
+      }
+    },
+    {
+      "id": "video-bitrate",
+      "group": "video-bitrate",
+      "name": "Video bitrate",
+      "text": "BITRATE",
+      "brand": false,
+      "pattern": "(?i)(?:📶\\s*)?\\b\\d+(?:[.,]\\d+)?\\s*(?:mbps|mbit/s|mb/s)\\b",
+      "assetBasis": "niakvio_generated_generic",
+      "fallbackText": "BITRATE",
+      "order": 59,
+      "assets": {
+        "transparent": {
+          "72x32": "assets/transparent/72x32/video-bitrate.webp",
+          "96x40": "assets/transparent/96x40/video-bitrate.webp"
+        },
+        "dark": {
+          "72x32": "assets/dark/72x32/video-bitrate.webp",
+          "96x40": "assets/dark/96x40/video-bitrate.webp"
+        },
+        "light": {
+          "72x32": "assets/light/72x32/video-bitrate.webp",
+          "96x40": "assets/light/96x40/video-bitrate.webp"
+        }
+      }
+    },
+    {
       "id": "dolby-atmos",
       "group": "audio-tech",
       "name": "Dolby Atmos",
@@ -980,7 +1546,7 @@
       "brand": true,
       "pattern": "(?i)\\b(dolby[ ]?atmos|atmos)\\b",
       "assetBasis": "user_supplied_brand_or_technical_asset",
-      "order": 38,
+      "order": 60,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/dolby-atmos.webp",
@@ -1005,7 +1571,7 @@
       "brand": true,
       "pattern": "(?i)\\b(truehd|true[ ]?hd|dolby[ ]?truehd)\\b",
       "assetBasis": "user_supplied_brand_or_technical_asset",
-      "order": 39,
+      "order": 61,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/truehd.webp",
@@ -1030,7 +1596,7 @@
       "brand": true,
       "pattern": "(?i)\\b(ddp|dd\\+|dolby[ ._-]?digital[ ._-]?plus|e-?ac-?3)\\b",
       "assetBasis": "user_supplied_brand_or_technical_asset",
-      "order": 40,
+      "order": 62,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/dolby-digital-plus.webp",
@@ -1055,7 +1621,7 @@
       "brand": true,
       "pattern": "(?i)\\b(dolby[ ._-]?digital|ac-?3|dd)\\b",
       "assetBasis": "user_supplied_brand_or_technical_asset",
-      "order": 41,
+      "order": 63,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/dolby-digital.webp",
@@ -1080,7 +1646,7 @@
       "brand": true,
       "pattern": "(?i)\\bdts[: ._-]?x\\b",
       "assetBasis": "user_supplied_brand_or_technical_asset",
-      "order": 42,
+      "order": 64,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/dts-x.webp",
@@ -1105,7 +1671,7 @@
       "brand": true,
       "pattern": "(?i)\\b(dts[ ._-]?hd[ ._-]?ma|dts[ ._-]?hd[ ._-]?master)\\b",
       "assetBasis": "user_supplied_brand_or_technical_asset",
-      "order": 43,
+      "order": 65,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/dts-hd-master-audio.webp",
@@ -1130,7 +1696,7 @@
       "brand": true,
       "pattern": "(?i)\\b(dts[ ._-]?hd[ ._-]?(hra|high[ ._-]?resolution))\\b",
       "assetBasis": "niakvio_generated_generic",
-      "order": 44,
+      "order": 66,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/dts-hd-hra.webp",
@@ -1155,7 +1721,7 @@
       "brand": true,
       "pattern": "(?i)\\bdts[ ._-]?hd\\b",
       "assetBasis": "user_supplied_brand_or_technical_asset",
-      "order": 45,
+      "order": 67,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/dts-hd.webp",
@@ -1180,7 +1746,7 @@
       "brand": true,
       "pattern": "(?i)\\bdts\\b",
       "assetBasis": "user_supplied_brand_or_technical_asset",
-      "order": 46,
+      "order": 68,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/dts.webp",
@@ -1205,7 +1771,7 @@
       "brand": false,
       "pattern": "(?i)\\baac\\b",
       "assetBasis": "niakvio_generated_generic",
-      "order": 47,
+      "order": 69,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/aac.webp",
@@ -1230,7 +1796,7 @@
       "brand": false,
       "pattern": "(?i)\\bflac\\b",
       "assetBasis": "niakvio_generated_generic",
-      "order": 48,
+      "order": 70,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/flac.webp",
@@ -1255,7 +1821,7 @@
       "brand": false,
       "pattern": "(?i)\\blpcm\\b",
       "assetBasis": "niakvio_generated_generic",
-      "order": 49,
+      "order": 71,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/lpcm.webp",
@@ -1280,7 +1846,7 @@
       "brand": false,
       "pattern": "(?i)\\bpcm\\b",
       "assetBasis": "niakvio_generated_generic",
-      "order": 50,
+      "order": 72,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/pcm.webp",
@@ -1305,7 +1871,7 @@
       "brand": false,
       "pattern": "(?i)\\bopus\\b",
       "assetBasis": "niakvio_generated_generic",
-      "order": 51,
+      "order": 73,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/opus.webp",
@@ -1330,7 +1896,7 @@
       "brand": false,
       "pattern": "(?i)\\bmp3\\b",
       "assetBasis": "niakvio_generated_generic",
-      "order": 52,
+      "order": 74,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/mp3.webp",
@@ -1355,7 +1921,7 @@
       "brand": false,
       "pattern": "(?i)\\balac\\b",
       "assetBasis": "niakvio_generated_generic",
-      "order": 53,
+      "order": 75,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/alac.webp",
@@ -1380,7 +1946,7 @@
       "brand": false,
       "pattern": "(?i)\\b(7\\.1|8ch|8[ ]?channel)\\b",
       "assetBasis": "user_supplied_brand_or_technical_asset",
-      "order": 54,
+      "order": 76,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/7.1.webp",
@@ -1405,7 +1971,7 @@
       "brand": false,
       "pattern": "(?i)\\b(5\\.1|6ch|6[ ]?channel)\\b",
       "assetBasis": "user_supplied_brand_or_technical_asset",
-      "order": 55,
+      "order": 77,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/5.1.webp",
@@ -1430,7 +1996,7 @@
       "brand": false,
       "pattern": "(?i)\\b2\\.1\\b",
       "assetBasis": "niakvio_generated_generic",
-      "order": 56,
+      "order": 78,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/2.1.webp",
@@ -1455,7 +2021,7 @@
       "brand": false,
       "pattern": "(?i)\\b(2\\.0|stereo|2ch)\\b",
       "assetBasis": "niakvio_generated_generic",
-      "order": 57,
+      "order": 79,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/2.0.webp",
@@ -1480,7 +2046,7 @@
       "brand": false,
       "pattern": "(?i)\\b(1\\.0|mono|1ch)\\b",
       "assetBasis": "niakvio_generated_generic",
-      "order": 58,
+      "order": 80,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/1.0.webp",
@@ -1498,6 +2064,131 @@
       "fallbackText": "1.0"
     },
     {
+      "id": "44.1khz",
+      "group": "audio-sample-rate",
+      "name": "44.1 kHz",
+      "text": "44.1KHZ",
+      "brand": false,
+      "pattern": "(?i)\\b44[.,]1\\s*khz\\b",
+      "assetBasis": "niakvio_generated_generic",
+      "fallbackText": "44.1KHZ",
+      "order": 81,
+      "assets": {
+        "transparent": {
+          "72x32": "assets/transparent/72x32/44.1khz.webp",
+          "96x40": "assets/transparent/96x40/44.1khz.webp"
+        },
+        "dark": {
+          "72x32": "assets/dark/72x32/44.1khz.webp",
+          "96x40": "assets/dark/96x40/44.1khz.webp"
+        },
+        "light": {
+          "72x32": "assets/light/72x32/44.1khz.webp",
+          "96x40": "assets/light/96x40/44.1khz.webp"
+        }
+      }
+    },
+    {
+      "id": "48khz",
+      "group": "audio-sample-rate",
+      "name": "48 kHz",
+      "text": "48KHZ",
+      "brand": false,
+      "pattern": "(?i)\\b48(?:[.,]0+)?\\s*khz\\b",
+      "assetBasis": "niakvio_generated_generic",
+      "fallbackText": "48KHZ",
+      "order": 82,
+      "assets": {
+        "transparent": {
+          "72x32": "assets/transparent/72x32/48khz.webp",
+          "96x40": "assets/transparent/96x40/48khz.webp"
+        },
+        "dark": {
+          "72x32": "assets/dark/72x32/48khz.webp",
+          "96x40": "assets/dark/96x40/48khz.webp"
+        },
+        "light": {
+          "72x32": "assets/light/72x32/48khz.webp",
+          "96x40": "assets/light/96x40/48khz.webp"
+        }
+      }
+    },
+    {
+      "id": "88.2khz",
+      "group": "audio-sample-rate",
+      "name": "88.2 kHz",
+      "text": "88.2KHZ",
+      "brand": false,
+      "pattern": "(?i)\\b88[.,]2\\s*khz\\b",
+      "assetBasis": "niakvio_generated_generic",
+      "fallbackText": "88.2KHZ",
+      "order": 83,
+      "assets": {
+        "transparent": {
+          "72x32": "assets/transparent/72x32/88.2khz.webp",
+          "96x40": "assets/transparent/96x40/88.2khz.webp"
+        },
+        "dark": {
+          "72x32": "assets/dark/72x32/88.2khz.webp",
+          "96x40": "assets/dark/96x40/88.2khz.webp"
+        },
+        "light": {
+          "72x32": "assets/light/72x32/88.2khz.webp",
+          "96x40": "assets/light/96x40/88.2khz.webp"
+        }
+      }
+    },
+    {
+      "id": "96khz",
+      "group": "audio-sample-rate",
+      "name": "96 kHz",
+      "text": "96KHZ",
+      "brand": false,
+      "pattern": "(?i)\\b96(?:[.,]0+)?\\s*khz\\b",
+      "assetBasis": "niakvio_generated_generic",
+      "fallbackText": "96KHZ",
+      "order": 84,
+      "assets": {
+        "transparent": {
+          "72x32": "assets/transparent/72x32/96khz.webp",
+          "96x40": "assets/transparent/96x40/96khz.webp"
+        },
+        "dark": {
+          "72x32": "assets/dark/72x32/96khz.webp",
+          "96x40": "assets/dark/96x40/96khz.webp"
+        },
+        "light": {
+          "72x32": "assets/light/72x32/96khz.webp",
+          "96x40": "assets/light/96x40/96khz.webp"
+        }
+      }
+    },
+    {
+      "id": "192khz",
+      "group": "audio-sample-rate",
+      "name": "192 kHz",
+      "text": "192KHZ",
+      "brand": false,
+      "pattern": "(?i)\\b192(?:[.,]0+)?\\s*khz\\b",
+      "assetBasis": "niakvio_generated_generic",
+      "fallbackText": "192KHZ",
+      "order": 85,
+      "assets": {
+        "transparent": {
+          "72x32": "assets/transparent/72x32/192khz.webp",
+          "96x40": "assets/transparent/96x40/192khz.webp"
+        },
+        "dark": {
+          "72x32": "assets/dark/72x32/192khz.webp",
+          "96x40": "assets/dark/96x40/192khz.webp"
+        },
+        "light": {
+          "72x32": "assets/light/72x32/192khz.webp",
+          "96x40": "assets/light/96x40/192khz.webp"
+        }
+      }
+    },
+    {
       "id": "multi",
       "group": "language",
       "name": "Multi",
@@ -1505,7 +2196,7 @@
       "brand": false,
       "pattern": "(?i)\\bmulti\\b",
       "assetBasis": "niakvio_generated_generic",
-      "order": 59,
+      "order": 86,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/multi.webp",
@@ -1531,7 +2222,7 @@
       "pattern": "(?i)\\bvf\\b(?![fq])|\\bfr(?:a|e)?\\b|\\bfrench\\b|\\bfran[cç]ais\\b",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "VF",
-      "order": 60,
+      "order": 87,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/vf.webp",
@@ -1555,7 +2246,7 @@
       "brand": false,
       "pattern": "(?i)\\bvff\\b",
       "assetBasis": "niakvio_generated_generic",
-      "order": 61,
+      "order": 88,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/vff.webp",
@@ -1580,7 +2271,7 @@
       "brand": false,
       "pattern": "(?i)\\b(vfq|fr[-_ ]?ca|fran[cç]ais[ ._-]?(?:canadien|qu[eé]b[eé]cois)|qu[eé]b[eé]cois)\\b",
       "assetBasis": "niakvio_generated_generic",
-      "order": 62,
+      "order": 89,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/vfq.webp",
@@ -1605,7 +2296,7 @@
       "brand": false,
       "pattern": "(?i)\\bvo\\b",
       "assetBasis": "niakvio_generated_generic",
-      "order": 63,
+      "order": 90,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/vo.webp",
@@ -1623,6 +2314,531 @@
       "fallbackText": "VO"
     },
     {
+      "id": "lang-en",
+      "group": "language",
+      "name": "English",
+      "text": "EN",
+      "brand": false,
+      "pattern": "(?i)\\b(?:english|eng)\\b|\\bEN[ ._-]?(?:original|dub|audio)\\b",
+      "assetBasis": "niakvio_generated_generic",
+      "fallbackText": "EN",
+      "order": 91,
+      "assets": {
+        "transparent": {
+          "72x32": "assets/transparent/72x32/lang-en.webp",
+          "96x40": "assets/transparent/96x40/lang-en.webp"
+        },
+        "dark": {
+          "72x32": "assets/dark/72x32/lang-en.webp",
+          "96x40": "assets/dark/96x40/lang-en.webp"
+        },
+        "light": {
+          "72x32": "assets/light/72x32/lang-en.webp",
+          "96x40": "assets/light/96x40/lang-en.webp"
+        }
+      }
+    },
+    {
+      "id": "lang-hi",
+      "group": "language",
+      "name": "Hindi",
+      "text": "HI",
+      "brand": false,
+      "pattern": "(?i)\\b(?:hindi|hin)\\b|\\bHI[ ._-]?(?:original|dub|audio)\\b",
+      "assetBasis": "niakvio_generated_generic",
+      "fallbackText": "HI",
+      "order": 92,
+      "assets": {
+        "transparent": {
+          "72x32": "assets/transparent/72x32/lang-hi.webp",
+          "96x40": "assets/transparent/96x40/lang-hi.webp"
+        },
+        "dark": {
+          "72x32": "assets/dark/72x32/lang-hi.webp",
+          "96x40": "assets/dark/96x40/lang-hi.webp"
+        },
+        "light": {
+          "72x32": "assets/light/72x32/lang-hi.webp",
+          "96x40": "assets/light/96x40/lang-hi.webp"
+        }
+      }
+    },
+    {
+      "id": "lang-ja",
+      "group": "language",
+      "name": "Japanese",
+      "text": "JA",
+      "brand": false,
+      "pattern": "(?i)\\b(?:japanese|jpn)\\b|\\bJA[ ._-]?(?:original|dub|audio)\\b",
+      "assetBasis": "niakvio_generated_generic",
+      "fallbackText": "JA",
+      "order": 93,
+      "assets": {
+        "transparent": {
+          "72x32": "assets/transparent/72x32/lang-ja.webp",
+          "96x40": "assets/transparent/96x40/lang-ja.webp"
+        },
+        "dark": {
+          "72x32": "assets/dark/72x32/lang-ja.webp",
+          "96x40": "assets/dark/96x40/lang-ja.webp"
+        },
+        "light": {
+          "72x32": "assets/light/72x32/lang-ja.webp",
+          "96x40": "assets/light/96x40/lang-ja.webp"
+        }
+      }
+    },
+    {
+      "id": "lang-ta",
+      "group": "language",
+      "name": "Tamil",
+      "text": "TA",
+      "brand": false,
+      "pattern": "(?i)\\b(?:tamil|tam)\\b|\\bTA[ ._-]?(?:original|dub|audio)\\b",
+      "assetBasis": "niakvio_generated_generic",
+      "fallbackText": "TA",
+      "order": 94,
+      "assets": {
+        "transparent": {
+          "72x32": "assets/transparent/72x32/lang-ta.webp",
+          "96x40": "assets/transparent/96x40/lang-ta.webp"
+        },
+        "dark": {
+          "72x32": "assets/dark/72x32/lang-ta.webp",
+          "96x40": "assets/dark/96x40/lang-ta.webp"
+        },
+        "light": {
+          "72x32": "assets/light/72x32/lang-ta.webp",
+          "96x40": "assets/light/96x40/lang-ta.webp"
+        }
+      }
+    },
+    {
+      "id": "lang-te",
+      "group": "language",
+      "name": "Telugu",
+      "text": "TE",
+      "brand": false,
+      "pattern": "(?i)\\b(?:telugu|tel)\\b|\\bTE[ ._-]?(?:original|dub|audio)\\b",
+      "assetBasis": "niakvio_generated_generic",
+      "fallbackText": "TE",
+      "order": 95,
+      "assets": {
+        "transparent": {
+          "72x32": "assets/transparent/72x32/lang-te.webp",
+          "96x40": "assets/transparent/96x40/lang-te.webp"
+        },
+        "dark": {
+          "72x32": "assets/dark/72x32/lang-te.webp",
+          "96x40": "assets/dark/96x40/lang-te.webp"
+        },
+        "light": {
+          "72x32": "assets/light/72x32/lang-te.webp",
+          "96x40": "assets/light/96x40/lang-te.webp"
+        }
+      }
+    },
+    {
+      "id": "lang-bn",
+      "group": "language",
+      "name": "Bengali",
+      "text": "BN",
+      "brand": false,
+      "pattern": "(?i)\\b(?:bengali|ben)\\b|\\bBN[ ._-]?(?:original|dub|audio)\\b",
+      "assetBasis": "niakvio_generated_generic",
+      "fallbackText": "BN",
+      "order": 96,
+      "assets": {
+        "transparent": {
+          "72x32": "assets/transparent/72x32/lang-bn.webp",
+          "96x40": "assets/transparent/96x40/lang-bn.webp"
+        },
+        "dark": {
+          "72x32": "assets/dark/72x32/lang-bn.webp",
+          "96x40": "assets/dark/96x40/lang-bn.webp"
+        },
+        "light": {
+          "72x32": "assets/light/72x32/lang-bn.webp",
+          "96x40": "assets/light/96x40/lang-bn.webp"
+        }
+      }
+    },
+    {
+      "id": "lang-ml",
+      "group": "language",
+      "name": "Malayalam",
+      "text": "ML",
+      "brand": false,
+      "pattern": "(?i)\\b(?:malayalam|mal)\\b|\\bML[ ._-]?(?:original|dub|audio)\\b",
+      "assetBasis": "niakvio_generated_generic",
+      "fallbackText": "ML",
+      "order": 97,
+      "assets": {
+        "transparent": {
+          "72x32": "assets/transparent/72x32/lang-ml.webp",
+          "96x40": "assets/transparent/96x40/lang-ml.webp"
+        },
+        "dark": {
+          "72x32": "assets/dark/72x32/lang-ml.webp",
+          "96x40": "assets/dark/96x40/lang-ml.webp"
+        },
+        "light": {
+          "72x32": "assets/light/72x32/lang-ml.webp",
+          "96x40": "assets/light/96x40/lang-ml.webp"
+        }
+      }
+    },
+    {
+      "id": "lang-kn",
+      "group": "language",
+      "name": "Kannada",
+      "text": "KN",
+      "brand": false,
+      "pattern": "(?i)\\b(?:kannada|kan)\\b|\\bKN[ ._-]?(?:original|dub|audio)\\b",
+      "assetBasis": "niakvio_generated_generic",
+      "fallbackText": "KN",
+      "order": 98,
+      "assets": {
+        "transparent": {
+          "72x32": "assets/transparent/72x32/lang-kn.webp",
+          "96x40": "assets/transparent/96x40/lang-kn.webp"
+        },
+        "dark": {
+          "72x32": "assets/dark/72x32/lang-kn.webp",
+          "96x40": "assets/dark/96x40/lang-kn.webp"
+        },
+        "light": {
+          "72x32": "assets/light/72x32/lang-kn.webp",
+          "96x40": "assets/light/96x40/lang-kn.webp"
+        }
+      }
+    },
+    {
+      "id": "lang-pa",
+      "group": "language",
+      "name": "Punjabi",
+      "text": "PA",
+      "brand": false,
+      "pattern": "(?i)\\b(?:punjabi|pan)\\b|\\bPA[ ._-]?(?:original|dub|audio)\\b",
+      "assetBasis": "niakvio_generated_generic",
+      "fallbackText": "PA",
+      "order": 99,
+      "assets": {
+        "transparent": {
+          "72x32": "assets/transparent/72x32/lang-pa.webp",
+          "96x40": "assets/transparent/96x40/lang-pa.webp"
+        },
+        "dark": {
+          "72x32": "assets/dark/72x32/lang-pa.webp",
+          "96x40": "assets/dark/96x40/lang-pa.webp"
+        },
+        "light": {
+          "72x32": "assets/light/72x32/lang-pa.webp",
+          "96x40": "assets/light/96x40/lang-pa.webp"
+        }
+      }
+    },
+    {
+      "id": "lang-gu",
+      "group": "language",
+      "name": "Gujarati",
+      "text": "GU",
+      "brand": false,
+      "pattern": "(?i)\\b(?:gujarati|guj)\\b|\\bGU[ ._-]?(?:original|dub|audio)\\b",
+      "assetBasis": "niakvio_generated_generic",
+      "fallbackText": "GU",
+      "order": 100,
+      "assets": {
+        "transparent": {
+          "72x32": "assets/transparent/72x32/lang-gu.webp",
+          "96x40": "assets/transparent/96x40/lang-gu.webp"
+        },
+        "dark": {
+          "72x32": "assets/dark/72x32/lang-gu.webp",
+          "96x40": "assets/dark/96x40/lang-gu.webp"
+        },
+        "light": {
+          "72x32": "assets/light/72x32/lang-gu.webp",
+          "96x40": "assets/light/96x40/lang-gu.webp"
+        }
+      }
+    },
+    {
+      "id": "lang-mr",
+      "group": "language",
+      "name": "Marathi",
+      "text": "MR",
+      "brand": false,
+      "pattern": "(?i)\\b(?:marathi|mar)\\b|\\bMR[ ._-]?(?:original|dub|audio)\\b",
+      "assetBasis": "niakvio_generated_generic",
+      "fallbackText": "MR",
+      "order": 101,
+      "assets": {
+        "transparent": {
+          "72x32": "assets/transparent/72x32/lang-mr.webp",
+          "96x40": "assets/transparent/96x40/lang-mr.webp"
+        },
+        "dark": {
+          "72x32": "assets/dark/72x32/lang-mr.webp",
+          "96x40": "assets/dark/96x40/lang-mr.webp"
+        },
+        "light": {
+          "72x32": "assets/light/72x32/lang-mr.webp",
+          "96x40": "assets/light/96x40/lang-mr.webp"
+        }
+      }
+    },
+    {
+      "id": "lang-ur",
+      "group": "language",
+      "name": "Urdu",
+      "text": "UR",
+      "brand": false,
+      "pattern": "(?i)\\b(?:urdu|urd)\\b|\\bUR[ ._-]?(?:original|dub|audio)\\b",
+      "assetBasis": "niakvio_generated_generic",
+      "fallbackText": "UR",
+      "order": 102,
+      "assets": {
+        "transparent": {
+          "72x32": "assets/transparent/72x32/lang-ur.webp",
+          "96x40": "assets/transparent/96x40/lang-ur.webp"
+        },
+        "dark": {
+          "72x32": "assets/dark/72x32/lang-ur.webp",
+          "96x40": "assets/dark/96x40/lang-ur.webp"
+        },
+        "light": {
+          "72x32": "assets/light/72x32/lang-ur.webp",
+          "96x40": "assets/light/96x40/lang-ur.webp"
+        }
+      }
+    },
+    {
+      "id": "lang-ko",
+      "group": "language",
+      "name": "Korean",
+      "text": "KO",
+      "brand": false,
+      "pattern": "(?i)\\b(?:korean|kor)\\b|\\bKO[ ._-]?(?:original|dub|audio)\\b",
+      "assetBasis": "niakvio_generated_generic",
+      "fallbackText": "KO",
+      "order": 103,
+      "assets": {
+        "transparent": {
+          "72x32": "assets/transparent/72x32/lang-ko.webp",
+          "96x40": "assets/transparent/96x40/lang-ko.webp"
+        },
+        "dark": {
+          "72x32": "assets/dark/72x32/lang-ko.webp",
+          "96x40": "assets/dark/96x40/lang-ko.webp"
+        },
+        "light": {
+          "72x32": "assets/light/72x32/lang-ko.webp",
+          "96x40": "assets/light/96x40/lang-ko.webp"
+        }
+      }
+    },
+    {
+      "id": "lang-es",
+      "group": "language",
+      "name": "Spanish",
+      "text": "ES",
+      "brand": false,
+      "pattern": "(?i)\\b(?:spanish|spa)\\b|\\bES[ ._-]?(?:original|dub|audio)\\b",
+      "assetBasis": "niakvio_generated_generic",
+      "fallbackText": "ES",
+      "order": 104,
+      "assets": {
+        "transparent": {
+          "72x32": "assets/transparent/72x32/lang-es.webp",
+          "96x40": "assets/transparent/96x40/lang-es.webp"
+        },
+        "dark": {
+          "72x32": "assets/dark/72x32/lang-es.webp",
+          "96x40": "assets/dark/96x40/lang-es.webp"
+        },
+        "light": {
+          "72x32": "assets/light/72x32/lang-es.webp",
+          "96x40": "assets/light/96x40/lang-es.webp"
+        }
+      }
+    },
+    {
+      "id": "lang-de",
+      "group": "language",
+      "name": "German",
+      "text": "DE",
+      "brand": false,
+      "pattern": "(?i)\\b(?:german|deu|ger)\\b|\\bDE[ ._-]?(?:original|dub|audio)\\b",
+      "assetBasis": "niakvio_generated_generic",
+      "fallbackText": "DE",
+      "order": 105,
+      "assets": {
+        "transparent": {
+          "72x32": "assets/transparent/72x32/lang-de.webp",
+          "96x40": "assets/transparent/96x40/lang-de.webp"
+        },
+        "dark": {
+          "72x32": "assets/dark/72x32/lang-de.webp",
+          "96x40": "assets/dark/96x40/lang-de.webp"
+        },
+        "light": {
+          "72x32": "assets/light/72x32/lang-de.webp",
+          "96x40": "assets/light/96x40/lang-de.webp"
+        }
+      }
+    },
+    {
+      "id": "lang-it",
+      "group": "language",
+      "name": "Italian",
+      "text": "IT",
+      "brand": false,
+      "pattern": "(?i)\\b(?:italian|ita)\\b|\\bIT[ ._-]?(?:original|dub|audio)\\b",
+      "assetBasis": "niakvio_generated_generic",
+      "fallbackText": "IT",
+      "order": 106,
+      "assets": {
+        "transparent": {
+          "72x32": "assets/transparent/72x32/lang-it.webp",
+          "96x40": "assets/transparent/96x40/lang-it.webp"
+        },
+        "dark": {
+          "72x32": "assets/dark/72x32/lang-it.webp",
+          "96x40": "assets/dark/96x40/lang-it.webp"
+        },
+        "light": {
+          "72x32": "assets/light/72x32/lang-it.webp",
+          "96x40": "assets/light/96x40/lang-it.webp"
+        }
+      }
+    },
+    {
+      "id": "lang-pt",
+      "group": "language",
+      "name": "Portuguese",
+      "text": "PT",
+      "brand": false,
+      "pattern": "(?i)\\b(?:portuguese|por)\\b|\\bPT[ ._-]?(?:original|dub|audio)\\b",
+      "assetBasis": "niakvio_generated_generic",
+      "fallbackText": "PT",
+      "order": 107,
+      "assets": {
+        "transparent": {
+          "72x32": "assets/transparent/72x32/lang-pt.webp",
+          "96x40": "assets/transparent/96x40/lang-pt.webp"
+        },
+        "dark": {
+          "72x32": "assets/dark/72x32/lang-pt.webp",
+          "96x40": "assets/dark/96x40/lang-pt.webp"
+        },
+        "light": {
+          "72x32": "assets/light/72x32/lang-pt.webp",
+          "96x40": "assets/light/96x40/lang-pt.webp"
+        }
+      }
+    },
+    {
+      "id": "lang-ar",
+      "group": "language",
+      "name": "Arabic",
+      "text": "AR",
+      "brand": false,
+      "pattern": "(?i)\\b(?:arabic|ara)\\b|\\bAR[ ._-]?(?:original|dub|audio)\\b",
+      "assetBasis": "niakvio_generated_generic",
+      "fallbackText": "AR",
+      "order": 108,
+      "assets": {
+        "transparent": {
+          "72x32": "assets/transparent/72x32/lang-ar.webp",
+          "96x40": "assets/transparent/96x40/lang-ar.webp"
+        },
+        "dark": {
+          "72x32": "assets/dark/72x32/lang-ar.webp",
+          "96x40": "assets/dark/96x40/lang-ar.webp"
+        },
+        "light": {
+          "72x32": "assets/light/72x32/lang-ar.webp",
+          "96x40": "assets/light/96x40/lang-ar.webp"
+        }
+      }
+    },
+    {
+      "id": "lang-tr",
+      "group": "language",
+      "name": "Turkish",
+      "text": "TR",
+      "brand": false,
+      "pattern": "(?i)\\b(?:turkish|tur)\\b|\\bTR[ ._-]?(?:original|dub|audio)\\b",
+      "assetBasis": "niakvio_generated_generic",
+      "fallbackText": "TR",
+      "order": 109,
+      "assets": {
+        "transparent": {
+          "72x32": "assets/transparent/72x32/lang-tr.webp",
+          "96x40": "assets/transparent/96x40/lang-tr.webp"
+        },
+        "dark": {
+          "72x32": "assets/dark/72x32/lang-tr.webp",
+          "96x40": "assets/dark/96x40/lang-tr.webp"
+        },
+        "light": {
+          "72x32": "assets/light/72x32/lang-tr.webp",
+          "96x40": "assets/light/96x40/lang-tr.webp"
+        }
+      }
+    },
+    {
+      "id": "lang-ru",
+      "group": "language",
+      "name": "Russian",
+      "text": "RU",
+      "brand": false,
+      "pattern": "(?i)\\b(?:russian|rus)\\b|\\bRU[ ._-]?(?:original|dub|audio)\\b",
+      "assetBasis": "niakvio_generated_generic",
+      "fallbackText": "RU",
+      "order": 110,
+      "assets": {
+        "transparent": {
+          "72x32": "assets/transparent/72x32/lang-ru.webp",
+          "96x40": "assets/transparent/96x40/lang-ru.webp"
+        },
+        "dark": {
+          "72x32": "assets/dark/72x32/lang-ru.webp",
+          "96x40": "assets/dark/96x40/lang-ru.webp"
+        },
+        "light": {
+          "72x32": "assets/light/72x32/lang-ru.webp",
+          "96x40": "assets/light/96x40/lang-ru.webp"
+        }
+      }
+    },
+    {
+      "id": "lang-zh",
+      "group": "language",
+      "name": "Chinese",
+      "text": "ZH",
+      "brand": false,
+      "pattern": "(?i)\\b(?:chinese|zho|chi)\\b|\\bZH[ ._-]?(?:original|dub|audio)\\b",
+      "assetBasis": "niakvio_generated_generic",
+      "fallbackText": "ZH",
+      "order": 111,
+      "assets": {
+        "transparent": {
+          "72x32": "assets/transparent/72x32/lang-zh.webp",
+          "96x40": "assets/transparent/96x40/lang-zh.webp"
+        },
+        "dark": {
+          "72x32": "assets/dark/72x32/lang-zh.webp",
+          "96x40": "assets/dark/96x40/lang-zh.webp"
+        },
+        "light": {
+          "72x32": "assets/light/72x32/lang-zh.webp",
+          "96x40": "assets/light/96x40/lang-zh.webp"
+        }
+      }
+    },
+    {
       "id": "vostfr",
       "group": "subtitles",
       "name": "VOSTFR",
@@ -1630,7 +2846,7 @@
       "brand": false,
       "pattern": "(?i)\\bvostfr\\b",
       "assetBasis": "niakvio_generated_generic",
-      "order": 64,
+      "order": 112,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/vostfr.webp",
@@ -1655,7 +2871,7 @@
       "brand": false,
       "pattern": "(?i)\\b(sub[ ._-]?fr|fre[nch]*[ ._-]?sub)\\b",
       "assetBasis": "niakvio_generated_generic",
-      "order": 65,
+      "order": 113,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/sub-fr.webp",
@@ -1680,7 +2896,7 @@
       "brand": false,
       "pattern": "(?i)\\b(sub[ ._-]?en|eng[lish]*[ ._-]?sub)\\b",
       "assetBasis": "niakvio_generated_generic",
-      "order": 66,
+      "order": 114,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/sub-en.webp",
@@ -1705,7 +2921,7 @@
       "brand": false,
       "pattern": "(?i)\\bforced\\b",
       "assetBasis": "niakvio_generated_generic",
-      "order": 67,
+      "order": 115,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/forced.webp",
@@ -1730,7 +2946,7 @@
       "brand": false,
       "pattern": "(?i)\\b(sdh|closed[ ]?caption|cc)\\b",
       "assetBasis": "niakvio_generated_generic",
-      "order": 68,
+      "order": 116,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/sdh-cc.webp",
@@ -1755,7 +2971,7 @@
       "brand": false,
       "pattern": "(?i)\\b(tous[ ]?publics|all[ ]?ages|g)\\b",
       "assetBasis": "niakvio_generated_generic",
-      "order": 69,
+      "order": 117,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/age-all.webp",
@@ -1780,7 +2996,7 @@
       "brand": false,
       "pattern": "(?i)\\b(-?12|12\\+)\\b",
       "assetBasis": "niakvio_generated_generic",
-      "order": 70,
+      "order": 118,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/age-12.webp",
@@ -1805,7 +3021,7 @@
       "brand": false,
       "pattern": "(?i)\\b(-?16|16\\+)\\b",
       "assetBasis": "niakvio_generated_generic",
-      "order": 71,
+      "order": 119,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/age-16.webp",
@@ -1830,7 +3046,7 @@
       "brand": false,
       "pattern": "(?i)\\b(-?18|18\\+)\\b",
       "assetBasis": "niakvio_generated_generic",
-      "order": 72,
+      "order": 120,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/age-18.webp",
@@ -1855,7 +3071,7 @@
       "brand": false,
       "pattern": "(?i)\\bpg-?13\\b",
       "assetBasis": "niakvio_generated_generic",
-      "order": 73,
+      "order": 121,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/pg-13.webp",
@@ -1880,7 +3096,7 @@
       "brand": false,
       "pattern": "(?i)\\btv-?ma\\b",
       "assetBasis": "niakvio_generated_generic",
-      "order": 74,
+      "order": 122,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/tv-ma.webp",
