@@ -17,7 +17,11 @@ on:
       - 'assets/stream-badges-dark.json'
       - 'assets/stream-badges-light.json'
       - 'assets/stream-badges-fusion.json'
-      - 'assets/stream-badges-fusion-v2.json'
+      - 'assets/stream-badges-transparent.json'
+      - 'assets/stream-badges-dark-v3.json'
+      - 'assets/stream-badges-light-v3.json'
+      - 'assets/stream-badges-transparent-v3.json'
+      - 'assets/stream-badges-fusion-v3.json'
       - 'assets/docs/BADGE_QA.json'
       - 'assets/docs/LIGHT_BADGE_QA.json'
 
@@ -71,7 +75,8 @@ jobs:
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add assets/badge_catalog_v2_complete.json \
                   assets/source assets/transparent assets/dark assets/light \
-                  assets/stream-badges-dark.json assets/stream-badges-light.json assets/stream-badges-fusion.json assets/stream-badges-fusion-v2.json \
+                  assets/stream-badges-dark.json assets/stream-badges-light.json assets/stream-badges-transparent.json assets/stream-badges-fusion.json \
+                  assets/stream-badges-dark-v3.json assets/stream-badges-light-v3.json assets/stream-badges-transparent-v3.json assets/stream-badges-fusion-v3.json \
                   assets/docs/BADGE_QA.json assets/docs/LIGHT_BADGE_QA.json
           if git diff --cached --quiet; then
             echo 'Badge system already materialized.'

@@ -18,14 +18,11 @@ core = CORE.read_text(encoding="utf-8")
 light_qa = json.loads(LIGHT_QA.read_text(encoding="utf-8"))
 
 badges = [row for row in (catalog.get("badges") or []) if isinstance(row, dict)]
-assert len(badges) >= 74, f"expected complete 74-badge baseline or newer, got {len(badges)}"
+assert len(badges) >= 150, f"expected universal v3 badge surface, got {len(badges)}"
 by_id = {str(row.get("id") or ""): row for row in badges}
 assert len(by_id) == len(badges), "badge ids must be unique"
-# The asset/feed catalog deliberately keeps VFF as an input/compatibility badge.
-# Stream presentation V12 canonicalizes generic VFF evidence to the public VF
-# output, so VFF must exist in the catalog without being a Core-emitted badge ID.
-assert {"vf", "vff", "vfq", "vo", "multi", "vostfr"} <= set(by_id)
-assert by_id["vf"]["pattern"] != by_id["vff"]["pattern"]
+legacy_public_ids = {"vf", "vff", "vfq", "vo", "multi", "vostfr", "pg-13", "tv-ma"}
+assert not (legacy_public_ids & set(by_id)), sorted(legacy_public_ids & set(by_id))
 
 for badge_id, row in by_id.items():
     for theme in ("transparent", "dark", "light"):
@@ -36,7 +33,7 @@ for badge_id, row in by_id.items():
             assert payload[:4] == b"RIFF" and payload[8:12] == b"WEBP", rel
 
 assert light_qa.get("schemaVersion") == 2
-assert light_qa.get("revision") == "full-surface-v5-technical-metadata"
+assert light_qa.get("revision") == "full-surface-v6-universal-v3"
 assert light_qa.get("catalogBadges") == len(badges)
 assert light_qa.get("assetCount") == len(badges) * 2
 assert light_qa.get("idempotent") is True
@@ -68,20 +65,21 @@ assert "Use assets/dark when the Nuvio application background is gray/dark." in 
 assert "Use assets/light when the Nuvio application background is white/light." in readme
 assert "DUAL-MODE RUNTIME RULE" in readme
 
-core_badge_ids = {
-    "uhd-blu-ray", "4k-ultra-hd", "1080p-full-hd", "720p-hd", "480p-sd",
-    "blu-ray-disc", "webdl", "webrip", "hdtv", "dvd-rip", "remux",
-    "dolby-vision", "hdr10-plus", "hdr10", "imax-enhanced", "imax", "hevc", "avc", "10bit",
-    "dolby-atmos", "truehd", "dolby-digital-plus", "dolby-digital", "dts-x", "dts-hd-master-audio",
-    "7.1", "5.1", "multi", "vf", "vfq", "vo", "vostfr", "sub-fr", "sub-en", "forced", "sdh-cc",
+required_universal_ids = {
+    "lang-fr", "lang-fr-ca", "lang-en", "lang-ko", "lang-ja", "lang-de",
+    "sub-fr", "sub-en", "sub-ko", "age-19", "age-kr19", "age-us-pg13",
 }
-missing = sorted(core_badge_ids - set(by_id))
-assert not missing, f"Core emits badge IDs with no catalog image: {missing}"
-for badge_id in core_badge_ids:
-    assert f'"{badge_id}"' in core, f"expected shared Core to reference locked badge id {badge_id}"
-assert '"vff"' not in core, "V12 must canonicalize generic VFF evidence to the VF output badge"
-for stale_id in ("dts-hd-ma", "7-1-audio", "5-1-audio", "sdh"):
-    assert f'"{stale_id}"' not in core, f"stale non-catalog badge alias leaked from Core: {stale_id}"
+assert required_universal_ids <= set(by_id), sorted(required_universal_ids - set(by_id))
+for legacy_id in ("vf", "vff", "vfq", "vo", "multi", "vostfr"):
+    assert legacy_id not in by_id, f"legacy locale-specific badge leaked into v3 catalog: {legacy_id}"
+
+for theme in ("dark", "light", "transparent", "fusion"):
+    versioned = ROOT / f"assets/stream-badges-{theme}-v3.json"
+    latest = ROOT / f"assets/stream-badges-{theme}.json"
+    assert versioned.is_file(), versioned
+    assert versioned.read_bytes() == latest.read_bytes(), f"{theme} v3 must equal latest at v3 publication"
+
+assert (ROOT / "assets/stream-badges-fusion-v2.json").is_file(), "historical fusion-v2 must be preserved"
 
 rules = "\n".join(mapping.get("rules") or [])
 assert "Never infer Blu-ray or Ultra HD Blu-ray from 1080p/2160p alone." in rules
@@ -90,7 +88,7 @@ assert "Always replace every provider-owned stream description" in rules
 assert "TMDB may fill media context" in rules
 
 catalog_groups = {str(row.get("id") or "") for row in (catalog.get("groups") or []) if isinstance(row, dict)}
-for theme in ("dark", "light", "fusion"):
+for theme in ("dark", "light", "transparent", "fusion"):
     feed = json.loads((ROOT / f"assets/stream-badges-{theme}.json").read_text(encoding="utf-8"))
     filters = feed.get("filters") or []
     groups = feed.get("groups") or []

@@ -25,7 +25,7 @@ ROOT = Path(__file__).resolve().parents[1]
 CATALOG = ROOT / "assets" / "badge_catalog_v2_complete.json"
 REPORT = ROOT / "assets" / "docs" / "BADGE_QA.json"
 LEGACY_LIGHT_REPORT = ROOT / "assets" / "docs" / "LIGHT_BADGE_QA.json"
-REVISION = "full-surface-v5-technical-metadata"
+REVISION = "full-surface-v6-universal-v3"
 PILLOW_VERSION = "11.3.0"
 SIZES = ("72x32", "96x40")
 THEMES = ("transparent", "dark", "light")
@@ -33,18 +33,6 @@ FONT_CANDIDATES = (
     Path("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"),
     Path("/usr/share/fonts/truetype/liberation2/LiberationSans-Bold.ttf"),
 )
-
-VF_ROW = {
-    "id": "vf",
-    "group": "language",
-    "name": "VF",
-    "text": "VF",
-    "brand": False,
-    "pattern": r"(?i)\bvf\b(?![fq])|\bfr(?:a|e)?\b|\bfrench\b|\bfran[cç]ais\b",
-    "assetBasis": "niakvio_generated_generic",
-    "fallbackText": "VF",
-}
-
 
 def _load_font(size: int) -> ImageFont.ImageFont:
     path = next((p for p in FONT_CANDIDATES if p.is_file()), None)
@@ -54,19 +42,12 @@ def _load_font(size: int) -> ImageFont.ImageFont:
 def _normalize_catalog(catalog: dict[str, Any]) -> tuple[dict[str, Any], bool]:
     rows = [row for row in (catalog.get("badges") or []) if isinstance(row, dict)]
     changed = False
-    if not any(str(row.get("id") or "") == "vf" for row in rows):
-        insert_at = next((i for i, row in enumerate(rows) if str(row.get("id") or "") == "vff"), len(rows))
-        rows.insert(insert_at, dict(VF_ROW))
-        changed = True
     pattern_overrides = {
         "blu-ray-disc": r"(?i)(?!.*\b(?:uhd|ultra[ ._-]?hd)\b)(?!.*\bremux\b)\b(blu[ ._-]?ray|bluray|bd[ ._-]?rip|bdrip|brrip)\b",
         "uhd-remux": r"(?i)\b(?:uhd|2160p|4k)[ ._-]+remux\b|\bremux[ ._-]+(?:uhd|2160p|4k)\b",
         "blu-ray-remux": r"(?i)\b(?:blu[ ._-]?ray|bd)[ ._-]+remux\b|\bremux[ ._-]+(?:blu[ ._-]?ray|bd)\b",
         "hdr10": r"(?i)\bhdr[ ]?10\b(?![ ]?\+|[ ]?plus)",
         "imax": r"(?i)\bimax\b(?![ ._-]?enhanced)",
-        "vf": VF_ROW["pattern"],
-        "vff": r"(?i)\bvff\b",
-        "vfq": r"(?i)\b(vfq|fr[-_ ]?ca|fran[cç]ais[ ._-]?(?:canadien|qu[eé]b[eé]cois)|qu[eé]b[eé]cois)\b",
     }
     for row in rows:
         badge_id = str(row.get("id") or "")
@@ -87,17 +68,10 @@ def _normalize_catalog(catalog: dict[str, Any]) -> tuple[dict[str, Any], bool]:
                 if themed.get(size) != rel:
                     themed[size] = rel
                     changed = True
-        if badge_id == "vf":
-            for key, value in VF_ROW.items():
-                if key in {"order", "assets"}:
-                    continue
-                if row.get(key) != value:
-                    row[key] = value
-                    changed = True
     catalog["badges"] = rows
-    catalog["version"] = "2.2-technical-surface"
+    catalog["version"] = "3.0-universal-media-badges"
+    catalog["publicFeedVersion"] = 3
     return catalog, changed
-
 
 def _label(row: dict[str, Any]) -> str:
     return " ".join(str(row.get("fallbackText") or row.get("text") or row.get("id") or "?").upper().split())
@@ -246,8 +220,8 @@ def build(*, apply: bool) -> dict[str, Any]:
     catalog = json.loads(CATALOG.read_text(encoding="utf-8"))
     catalog, catalog_changed = _normalize_catalog(catalog)
     rows = catalog.get("badges") or []
-    if len(rows) < 74:
-        raise RuntimeError(f"badge catalog regressed below the v2 baseline: got {len(rows)}")
+    if len(rows) < 150:
+        raise RuntimeError(f"universal v3 badge catalog unexpectedly small: got {len(rows)}")
     if apply and catalog_changed:
         CATALOG.write_text(json.dumps(catalog, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     changed = 0

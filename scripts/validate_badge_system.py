@@ -11,11 +11,13 @@ REPORT = ROOT / "assets/docs/BADGE_QA.json"
 
 catalog = json.loads(CATALOG.read_text(encoding="utf-8"))
 badges = [row for row in (catalog.get("badges") or []) if isinstance(row, dict)]
-assert len(badges) >= 74, f"expected at least 74 redesigned badges including generic VF, got {len(badges)}"
+assert len(badges) >= 150, f"expected universal v3 catalog, got {len(badges)}"
 by_id = {str(row.get("id") or ""): row for row in badges}
 assert len(by_id) == len(badges)
-assert {"vf", "vff", "vfq", "vo", "multi", "vostfr"} <= set(by_id)
-assert by_id["vf"]["pattern"] != by_id["vff"]["pattern"]
+legacy_public_ids = {"vf", "vff", "vfq", "vo", "multi", "vostfr", "pg-13", "tv-ma"}
+assert not (legacy_public_ids & set(by_id)), sorted(legacy_public_ids & set(by_id))
+required_v3 = {"lang-fr", "lang-fr-ca", "lang-ko", "lang-ja", "lang-de", "lang-bg", "lang-bn", "lang-pt-br", "lang-fi", "lang-el", "lang-hu", "lang-id", "lang-fa", "lang-he", "lang-ku", "lang-uz", "lang-fil", "lang-pl", "lang-ro", "lang-sk", "lang-sv", "lang-cs", "lang-vi", "lang-zh-hk", "lang-zh-tw", "sub-fr", "sub-ko", "age-19", "age-kr19", "age-us-pg13"}
+assert required_v3 <= set(by_id), sorted(required_v3 - set(by_id))
 
 # Nuvio clients compile filter.pattern directly (Java Pattern on TV). After JSON
 # decoding every regex escape must therefore be one backslash, never a literal
@@ -39,7 +41,7 @@ for badge_id, row in by_id.items():
 assert checked == len(badges) * 3 * 2, checked
 
 report = json.loads(REPORT.read_text(encoding="utf-8"))
-assert report["revision"] == "full-surface-v5-technical-metadata"
+assert report["revision"] == "full-surface-v6-universal-v3"
 assert report["catalogBadges"] == len(badges)
 assert report["assetCount"] == len(badges) * 3 * 2
 assert report["nativeChipChrome"] is True
@@ -53,7 +55,7 @@ for row in rows:
         assert max(float(row.get("widthCoverage") or 0), float(row.get("heightCoverage") or 0)) >= 0.78, row
 
 catalog_groups = {str(row.get("id") or "") for row in (catalog.get("groups") or []) if isinstance(row, dict)}
-for theme in ("dark", "light", "fusion"):
+for theme in ("dark", "light", "transparent", "fusion"):
     feed = json.loads((ROOT / f"assets/stream-badges-{theme}.json").read_text(encoding="utf-8"))
     filters = feed.get("filters") or []
     groups = feed.get("groups") or []
@@ -73,8 +75,11 @@ for theme in ("dark", "light", "fusion"):
         pattern = str(row.get("pattern") or "")
         assert "\\\\" not in pattern, (theme, row.get("id"), pattern, "double-escaped runtime regex")
 
-fusion = (ROOT / "assets/stream-badges-fusion.json").read_text(encoding="utf-8")
-fusion_v2 = (ROOT / "assets/stream-badges-fusion-v2.json").read_text(encoding="utf-8")
-assert fusion_v2 == fusion, "recommended fusion-v2 feed drifted from canonical fusion feed"
+for theme in ("dark", "light", "transparent", "fusion"):
+    latest = (ROOT / f"assets/stream-badges-{theme}.json").read_text(encoding="utf-8")
+    versioned = (ROOT / f"assets/stream-badges-{theme}-v3.json").read_text(encoding="utf-8")
+    assert latest == versioned, f"{theme} latest feed drifted from immutable v3 snapshot"
 
-print(f"badge asset contract passed: badges={len(badges)} assets={checked} themes=3 sizes=2 native_chip_style=bordered vf_generic=true fusion_v2_synced=true")
+assert (ROOT / "assets/stream-badges-fusion-v2.json").is_file(), "historical fusion v2 must remain available"
+
+print(f"badge asset contract passed: badges={len(badges)} assets={checked} themes=3 sizes=2 feeds=4 public_v3=true legacy_v2_preserved=true")

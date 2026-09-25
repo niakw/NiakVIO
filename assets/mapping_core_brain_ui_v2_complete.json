@@ -1,5 +1,5 @@
 {
-  "version": "2.1-technical-surface",
+  "version": "3.0-universal-badges",
   "display": {
     "singleRowOrder": [
       "source",
@@ -32,14 +32,17 @@
     "hideUnknownBadges": true,
     "alwaysReplaceProviderDescription": true,
     "nativeBadgeFeeds": {
-      "dark_app_background": "assets/stream-badges-dark.json",
-      "light_app_background": "assets/stream-badges-light.json"
+      "dark_app_background": "assets/stream-badges-dark-v3.json",
+      "light_app_background": "assets/stream-badges-light-v3.json",
+      "transparent": "assets/stream-badges-transparent-v3.json",
+      "fusion": "assets/stream-badges-fusion-v3.json"
     },
     "fallbackWhenNativeBadgesDisabled": "emojiTechnicalLine",
     "presentationSources": {
       "technicalTruth": "provider/stream facts",
       "mediaContextFallback": "TMDB"
-    }
+    },
+    "publicFeedVersion": 3
   },
   "rules": [
     "Never infer Blu-ray or Ultra HD Blu-ray from 1080p/2160p alone.",
@@ -53,7 +56,11 @@
     "When native StreamBadge rules are inactive, emoji-grouped technical text remains the universal visual fallback.",
     "TMDB may fill media context, runtime and age rating, but never invent stream resolution/source/codec/audio/language facts.",
     "Continuous numeric measurements such as bitrate stay exact in the technical text; static badges identify the normalized measurement class rather than inventing a finite bitrate vocabulary.",
-    "Frame-rate and audio sample-rate badges use canonical common values; unknown or unusual numeric values remain visible in technical text without a false badge."
+    "Frame-rate and audio sample-rate badges use canonical common values; unknown or unusual numeric values remain visible in technical text without a false badge.",
+    "Public language badges use ISO/BCP-47 style language identifiers; legacy provider tokens such as VF, VFF, VFQ, VO and VOSTFR are input aliases only and must never be public v3 badge IDs.",
+    "Subtitle badges mirror the same universal language-code model as audio-language badges.",
+    "Age-rating badges preserve recognized regional rating systems when explicit and otherwise fall back to universal numeric age badges.",
+    "Every material public badge/feed change requires incrementing PUBLIC_FEED_VERSION and publishing new immutable dark/light/transparent/fusion versioned JSON files; previously published versioned feeds remain untouched."
   ],
   "bestCaseExample": {
     "title": "ECLIPSE RISING",
@@ -69,9 +76,11 @@
       "dolby-atmos",
       "truehd",
       "7.1",
-      "vff",
-      "vostfr"
+      "lang-fr",
+      "lang-en",
+      "sub-fr",
+      "age-us-pg13"
     ],
-    "technicalLine": "2160p • Ultra HD Blu-ray REMUX • HEVC 10-bit • Dolby Vision • IMAX Enhanced • Dolby Atmos TrueHD 7.1 • VFF • VOSTFR"
+    "technicalLine": "2160p • Ultra HD Blu-ray REMUX • HEVC 10-bit • Dolby Vision • IMAX Enhanced • Dolby Atmos TrueHD 7.1 • FR Dub • EN Original • SUB FR • US PG-13"
   }
 }

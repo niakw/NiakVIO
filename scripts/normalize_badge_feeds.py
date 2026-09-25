@@ -10,10 +10,16 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[1]
 CATALOG = ROOT / "assets/badge_catalog_v2_complete.json"
 RAW_BASE = "https://raw.githubusercontent.com/niakw/NiakVIO/main/"
+PUBLIC_FEED_VERSION = 3
 OUTPUTS = {
     "dark": ROOT / "assets/stream-badges-dark.json",
     "light": ROOT / "assets/stream-badges-light.json",
+    "transparent": ROOT / "assets/stream-badges-transparent.json",
     "fusion": ROOT / "assets/stream-badges-fusion.json",
+}
+VERSIONED_OUTPUTS = {
+    theme: ROOT / f"assets/stream-badges-{theme}-v{PUBLIC_FEED_VERSION}.json"
+    for theme in OUTPUTS
 }
 ACCENTS = {
     "source": "#49B46D",
@@ -32,7 +38,6 @@ ACCENTS = {
     "subtitles": "#32B7C5",
     "age-rating": "#E45F6D",
 }
-FUSION_V2 = ROOT / "assets/stream-badges-fusion-v2.json"
 
 
 def style(theme: str, group: str) -> dict[str, str]:
@@ -45,7 +50,7 @@ def style(theme: str, group: str) -> dict[str, str]:
             "textColor": "#111827",
             "borderColor": accent,
         }
-    if theme == "fusion":
+    if theme in {"fusion", "transparent"}:
         return {
             "tagColor": "#11151C",
             "tagStyle": "bordered",
@@ -62,7 +67,7 @@ def style(theme: str, group: str) -> dict[str, str]:
 
 def build(theme: str) -> dict[str, Any]:
     catalog = json.loads(CATALOG.read_text(encoding="utf-8"))
-    asset_theme = "transparent" if theme == "fusion" else theme
+    asset_theme = "transparent" if theme in {"fusion", "transparent"} else theme
     groups = []
     for group in catalog.get("groups") or []:
         if not isinstance(group, dict):
@@ -108,12 +113,18 @@ def normalize(*, apply: bool) -> list[str]:
             changed.append(theme)
             if apply:
                 path.write_text(wanted, encoding="utf-8")
-        if theme == "fusion":
-            current_v2 = FUSION_V2.read_text(encoding="utf-8") if FUSION_V2.is_file() else ""
-            if wanted != current_v2:
-                changed.append("fusion-v2")
-                if apply:
-                    FUSION_V2.write_text(wanted, encoding="utf-8")
+
+        versioned = VERSIONED_OUTPUTS[theme]
+        current_versioned = versioned.read_text(encoding="utf-8") if versioned.is_file() else ""
+        if current_versioned and current_versioned != wanted:
+            raise RuntimeError(
+                f"public StreamBadge feed v{PUBLIC_FEED_VERSION} is immutable and would change for {theme}; "
+                "bump PUBLIC_FEED_VERSION before modifying the public badge contract"
+            )
+        if not current_versioned:
+            changed.append(f"{theme}-v{PUBLIC_FEED_VERSION}")
+            if apply:
+                versioned.write_text(wanted, encoding="utf-8")
     return changed
 
 
@@ -127,7 +138,7 @@ def main() -> int:
     changed = normalize(apply=args.apply)
     if args.check and changed:
         raise SystemExit("badge feed normalization required: " + ",".join(changed))
-    print("FIELD_BADGE_FEEDS changed=" + str(len(changed)) + " themes=dark,light,fusion native_style=bordered")
+    print("FIELD_BADGE_FEEDS changed=" + str(len(changed)) + f" themes=dark,light,transparent,fusion public_v={PUBLIC_FEED_VERSION} native_style=bordered")
     return 0
 
 
