@@ -262,7 +262,7 @@ pinned_registry = {
         "kehflix": {
             "id": "kehflix",
             "direct": "https://kehflix.com/",
-            "direct_authority": "explicit_current",
+            "direct_authority": "operator_pin",
             "direct_candidates": ["https://kehflix.com/"],
             "allowed_terminal_hosts": ["kehflix.com"],
         }
@@ -271,9 +271,9 @@ pinned_registry = {
 try:
     module.sync_registry_terminal(pinned_registry, "kehflix", "https://kehflix.lol")
 except RuntimeError as exc:
-    assert "explicit_current" in str(exc), exc
+    assert "operator_pin" in str(exc), exc
 else:
-    raise AssertionError("explicit_current terminal must refuse a contradictory hub observation")
+    raise AssertionError("operator_pin terminal must refuse a contradictory hub observation")
 assert pinned_registry["providers"]["kehflix"]["direct"] == "https://kehflix.com/"
 
 # Regression 2a.1: a terminal observed by Domain must never resurrect a provider
