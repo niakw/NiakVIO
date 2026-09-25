@@ -97,6 +97,7 @@ jobs:
             scripts/sanitize_brain_learning_memory.py \
             scripts/brain_llm_experiment.py \
             scripts/import_external_brain_llm_guidance.py \
+            scripts/apply_brain_llm_force_mutations.py \
             scripts/build_brain_repair_experience.py \
             scripts/classify_provider_authority.py \
             scripts/adaptive_runtime/runtime_recovery_generator.py \
@@ -131,6 +132,7 @@ jobs:
           python tests/brain_llm_experiment_runtime_test.py
           python tests/provider_repair_transport_overlay_persistence_test.py
           python tests/brain_external_llm_guidance_import_test.py
+          python tests/brain_llm_force_mutation_bridge_test.py
           python tests/brain_exploration_chain_test.py
           python tests/brain_round_plan_attribution_test.py
           python tests/brain_accepted_program_capture_test.py
@@ -568,6 +570,64 @@ jobs:
             fi
           fi
 
+      - name: Apply bounded Brain LLM Force mutations to sandbox
+        id: force-mutations
+        shell: bash
+        env:
+          DISPATCH_MODE: ${{ inputs.mode || '' }}
+          TARGET_PROVIDER: ${{ inputs.target_provider || '' }}
+        run: |
+          set -euo pipefail
+          force_requested=false
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${DISPATCH_MODE:-}" = "force" ]; then
+            force_requested=true
+          elif [ "${{ github.event_name }}" = "push" ]; then
+            force_requested="$(python - <<'PY'
+          import json
+          from pathlib import Path
+          data=json.loads(Path(".github/triggers/provider-recognition-repair-v6.json").read_text(encoding="utf-8"))
+          enabled=(
+              str(data.get("mode") or "").strip().casefold()=="force"
+              and data.get("directApplyValidated") is True
+          )
+          print("true" if enabled else "false")
+          PY
+            )"
+          fi
+          if [ "$force_requested" != "true" ]; then
+            echo "FIELD_BRAIN_LLM_FORCE_MUTATIONS skipped=true reason=not-explicit-force"
+            exit 0
+          fi
+
+          external_ref="refs/remotes/niakvio-brain-llm/niakvio-guidance"
+          if ! git cat-file -e "$external_ref:guidance/niakvio-force-mutations.json" 2>/dev/null; then
+            echo "FIELD_BRAIN_LLM_FORCE_MUTATIONS skipped=true reason=no-public-force-mutation-artifact"
+            exit 0
+          fi
+          git show "$external_ref:guidance/niakvio-force-mutations.json" > "$RUNNER_TEMP/external-brain-llm-force-mutations.json"
+
+          args=(
+            python scripts/apply_brain_llm_force_mutations.py
+            --input "$RUNNER_TEMP/external-brain-llm-force-mutations.json"
+            --current-sha "$GITHUB_SHA"
+            --report automation/brain-llm-force-mutation-application.json
+          )
+          if [ -n "${TARGET_PROVIDER:-}" ]; then
+            args+=(--provider "$TARGET_PROVIDER")
+          elif [ "${{ github.event_name }}" = "push" ]; then
+            mapfile -t FORCE_TARGETS < <(python - <<'PY'
+          import json
+          from pathlib import Path
+          data=json.loads(Path(".github/triggers/provider-recognition-repair-v6.json").read_text(encoding="utf-8"))
+          for value in data.get("targetProviders") or []:
+              value=str(value or "").strip().casefold().replace("_","-")
+              if value: print(value)
+          PY
+            )
+            for provider in "${FORCE_TARGETS[@]}"; do args+=(--provider "$provider"); done
+          fi
+          "${args[@]}"
+
       - name: Run canonical recognition and correction only for unresolved providers
         id: canonical-repair
         timeout-minutes: 30
@@ -711,6 +771,7 @@ jobs:
             automation/provider-repair-yield-v6.json
             automation/provider-repair-v6-summary.json
             automation/provider-brain-repair-latest.json
+            automation/brain-llm-force-mutation-application.json
             automation/provider-authority-status.json
             automation/provider-waf-browser-session-latest.json
             automation/brain-repair-experience.json
