@@ -68,8 +68,11 @@ globalThis.fetch=async function(url){
 (async()=>{
   const rows=await provider.getStreams('1','anime',1,1);
   if(!Array.isArray(rows)||rows.length!==1)throw new Error('HLS row missing '+JSON.stringify(rows));
+  const raw=rows[0];
+  if(Array.isArray(raw.subtitles)&&raw.subtitles.some(x=>x&&!x.url))throw new Error('integrated HLS subtitle leaked into external subtitles '+JSON.stringify(raw));
+  if(!Array.isArray(raw.hlsMasterSubtitleTracks)||raw.hlsMasterSubtitleTracks[0]?.language!=='fr')throw new Error('integrated HLS subtitle metadata missing '+JSON.stringify(raw));
   const mod=await import(pathToFileURL(enginePath).href);
-  const presented=mod.presentStreamCandidate(rows[0],{title:'Example Anime',year:2026,mediaType:'anime',originalLanguage:'ko'},{id:'kehflix',name:'Kehflix'});
+  const presented=mod.presentStreamCandidate(raw,{title:'Example Anime',year:2026,mediaType:'anime',originalLanguage:'ko'},{id:'kehflix',name:'Kehflix'});
   console.log(JSON.stringify(presented));
 })().catch(e=>{console.error(e);process.exit(1)});
 '''
@@ -98,4 +101,4 @@ missing=required-set(row.get("badgeIds") or [])
 assert not missing,(missing,row)
 for needle in ("AVC","23.976 fps","HLS","AAC","2.0","5.8 Mbps max","Korean"):
     assert needle in row.get("description",""),(needle,row)
-print("HLS master facts reach Kehflix title + technical badges without unknown placeholder")
+print("HLS master facts reach title/badges while integrated subtitles stay outside external caption contract")
