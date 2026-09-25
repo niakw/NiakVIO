@@ -20,7 +20,7 @@ MANAGED_FIX_ID = "CORE.HLS_RUNTIME_INTEGRITY.V1"
 
 
 def _layer_position(text: str, managed_id: str, legacy_marker: str) -> int:
-    """Locate the whole owned Lego boundary, falling back only for legacy JS."""
+    """Locate the whole owned Bloc boundary, falling back only for legacy JS."""
     span = owned_span(text, managed_id)
     if span is not None:
         return span[0]
@@ -103,7 +103,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
         payload_config.update(
             {
                 "inspectMasterFacts": True,
-                "implementationRevision": "native-master-facts-v11",
+                "implementationRevision": "native-master-facts-v12",
             }
         )
     payload = json.dumps(payload_config, separators=(",", ":"))
@@ -250,7 +250,10 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
   function shortFiniteVod(body){var d=finiteVodDurationSeconds(body),floor=Number(config.minimumVodDurationSeconds||90)||90;return d>0&&d<floor?d:0}
   function shortStaticMedia(body){
     var text=clean(body);if(!text||/#EXT-X-ENDLIST(?:\s|$)/i.test(text)||/#EXT-X-PLAYLIST-TYPE\s*:\s*(?:VOD|EVENT)\b/i.test(text))return 0;
-    if(/#EXT-X-(?:MEDIA-SEQUENCE|PROGRAM-DATE-TIME|SERVER-CONTROL|PART|SKIP)\s*:/i.test(text))return 0;
+    // MEDIA-SEQUENCE alone is not sufficient live proof for NiakVIO's VOD catalogue:
+    // short offline/maintenance placeholders commonly expose it. Preserve only
+    // strong live/LL-HLS timing/control evidence.
+    if(/#EXT-X-(?:PROGRAM-DATE-TIME|SERVER-CONTROL|PART|SKIP)\s*:/i.test(text))return 0;
     var stats=segmentDuration(text),cap=Number(config.shortStaticMediaSeconds||30)||30;
     return stats.count>0&&stats.count<=3&&stats.total>0&&stats.total<cap?stats.total:0;
   }
@@ -325,7 +328,10 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
     if(facts.frameRate&&weakFact(row.frameRate))row.frameRate=facts.frameRate;
     if(facts.hdr&&weakFact(row.hdr))row.hdr=facts.hdr;
     if(tracks.length){row.audioTracks=tracks.map(function(t){return{language:t.language,name:t.name,channels:t.channels||""}});row.hlsMasterAudioTracks=row.audioTracks;if(tracks.length===1){var actual=tracks[0].language;if(!weakFact(row.language)&&clean(row.language).toLowerCase()!==actual&&!clean(row.sourceLanguage))row.sourceLanguage=clean(row.language);row.language=actual}}
-    if(subs.length){var existing=Array.isArray(row.subtitles)?row.subtitles.slice():[];subs.forEach(function(t){if(!existing.some(function(x){return hlsLang(x&&typeof x==="object"?(x.language||x.lang||x.code||x.name):x)===t.language}))existing.push({language:t.language,name:t.name})});row.subtitles=existing;row.hlsMasterSubtitleTracks=subs}
+    // Integrated HLS subtitle renditions belong to the master playlist. Keep
+    // them as technical metadata only; do not inject language-only objects into
+    // row.subtitles/extCaptions, whose Nuvio/SubSense contract requires a URL.
+    if(subs.length){row.subtitleTracks=subs.map(function(t){return{language:t.language,name:t.name}});row.hlsMasterSubtitleTracks=row.subtitleTracks}
     return row;
   }
   async function validateChild(url,stream,referer){
