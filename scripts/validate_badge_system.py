@@ -13,7 +13,7 @@ REPORT = ROOT / "assets/docs/BADGE_QA.json"
 
 catalog = json.loads(CATALOG.read_text(encoding="utf-8"))
 badges = [row for row in (catalog.get("badges") or []) if isinstance(row, dict)]
-assert len(badges) >= 150, f"expected universal v3 catalog, got {len(badges)}"
+assert len(badges) >= 309, f"expected current universal badge catalog, got {len(badges)}"
 by_id = {str(row.get("id") or ""): row for row in badges}
 assert len(by_id) == len(badges)
 legacy_public_ids = {"vf", "vff", "vfq", "vo", "multi", "vostfr", "pg-13", "tv-ma"}
@@ -44,7 +44,7 @@ for badge_id, row in by_id.items():
 assert checked == len(badges) * 3 * 2, checked
 
 report = json.loads(REPORT.read_text(encoding="utf-8"))
-assert report["revision"] == "full-surface-v7-delivery-v4"
+assert report["revision"] == f"full-surface-v8-stream-score-v{CATALOG_VERSION}"
 assert report["catalogBadges"] == len(badges)
 assert report["assetCount"] == len(badges) * 3 * 2
 assert report["nativeChipChrome"] is True
@@ -81,10 +81,10 @@ for theme in ("dark", "light", "transparent", "fusion"):
 for theme in ("dark", "light", "transparent", "fusion"):
     latest = (ROOT / f"assets/stream-badges-{theme}.json").read_text(encoding="utf-8")
     versioned = (ROOT / f"assets/stream-badges-{theme}-v{CATALOG_VERSION}.json").read_text(encoding="utf-8")
-    assert latest == versioned, f"{theme} latest feed drifted from immutable v4 snapshot"
+    assert latest == versioned, f"{theme} latest feed drifted from immutable v{CATALOG_VERSION} snapshot"
 
 for theme in ("dark", "light", "transparent", "fusion"):
     assert (ROOT / f"assets/stream-badges-{theme}-v3.json").is_file(), f"historical {theme} v3 must remain available"
 assert (ROOT / "assets/stream-badges-fusion-v2.json").is_file(), "historical fusion v2 must remain available"
 
-print(f"badge asset contract passed: badges={len(badges)} assets={checked} themes=3 sizes=2 feeds=4 public_v4=true legacy_v2_v3_preserved=true")
+print(f"badge asset contract passed: badges={len(badges)} assets={checked} themes=3 sizes=2 feeds=4 public_v{CATALOG_VERSION}=true legacy_v2_v3_v4_v5_preserved=true")
