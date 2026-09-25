@@ -44,7 +44,7 @@ assert.deepEqual(presented.description.split("\n"), [
   "🎬 Interstellar • 2014",
   "⏱ 2h49 • 🔞 12+",
   "🌐 French · Dub",
-  "🎞️ BLU-RAY • HEVC • HLS  |  🔊 E-AC3 5.1",
+  "🎞️ BLU-RAY • HEVC • HLS  |  🔊 E-AC3 • 5.1",
 ]);
 assert.doesNotMatch(presented.description, /2160p|\b4K\b/i);
 assert.ok(presented.badgeIds.includes("4k-ultra-hd"));
