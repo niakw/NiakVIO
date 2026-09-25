@@ -42,6 +42,8 @@ force_mutation_block=workflow[force_mutation:canonical]
 assert "scripts/evaluate_brain_llm_force_candidates.py" in force_mutation_block
 assert "scripts/apply_brain_llm_force_mutations.py" in force_mutation_block
 assert "brain-llm-force-candidate-evaluation.json" in force_mutation_block
+assert "update_brain_llm_force_memory.py" in force_mutation_block
+assert "automation/brain-llm-force-memory.json" in workflow
 assert "accepted-brain-llm-force-mutations.json" in force_mutation_block
 assert "materialize_provider_v3_one.py" in force_mutation_block
 assert "run_provider_retest.py" in force_mutation_block
@@ -90,6 +92,9 @@ persist_block=workflow[persist:dispatch]
 assert 'cp automation/brain-positive-program-memory.json "$tmp/brain-positive-program-memory.json"' in persist_block
 assert 'cp "$tmp/brain-positive-program-memory.json" automation/brain-positive-program-memory.json' in persist_block
 assert 'git add automation/brain-positive-program-memory.json' in persist_block
+assert 'cp automation/brain-llm-force-memory.json "$tmp/brain-llm-force-memory.json"' in persist_block
+assert 'cp "$tmp/brain-llm-force-memory.json" automation/brain-llm-force-memory.json' in persist_block
+assert 'git add automation/brain-llm-force-memory.json' in persist_block
 assert 'cp automation/provider-authority-status.json "$tmp/provider-authority-status.json"' in persist_block
 assert 'cp "$tmp/provider-authority-status.json" automation/provider-authority-status.json' in persist_block
 assert 'git add automation/provider-authority-status.json' in persist_block
