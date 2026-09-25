@@ -522,7 +522,16 @@ jobs:
           if [ "${{ github.event_name }}" = "schedule" ]; then
             MODE=learn
           elif [ "${{ github.event_name }}" = "push" ]; then
-            MODE=repair
+            MODE="$(python - <<'PY'
+          import json
+          from pathlib import Path
+          data=json.loads(Path(".github/triggers/provider-recognition-repair-v6.json").read_text(encoding="utf-8"))
+          mode=str(data.get("mode") or "repair").strip().casefold()
+          if mode not in {"repair","force"}:
+              raise SystemExit(f"push Repair trigger mode must be repair|force, got {mode!r}")
+          print(mode)
+          PY
+            )"
           else
             MODE="${DISPATCH_MODE:-force}"
           fi
@@ -757,7 +766,23 @@ jobs:
           # and automatic Repair keeps its evidence/current-hypothesis semantics.
           direct_force_apply=0
           force_candidate_applied=0
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]              && [ "${DISPATCH_MODE:-}" = "force" ]              && [ "$canonical_repair_outcome" = "success" ]              && [ "${CANDIDATE_GATE_OUTCOME:-}" = "success" ]; then
+          force_requested=0
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${DISPATCH_MODE:-}" = "force" ]; then
+            force_requested=1
+          elif [ "${{ github.event_name }}" = "push" ]; then
+            force_requested="$(python - <<'PY'
+          import json
+          from pathlib import Path
+          data=json.loads(Path(".github/triggers/provider-recognition-repair-v6.json").read_text(encoding="utf-8"))
+          enabled=(
+              str(data.get("mode") or "").strip().casefold()=="force"
+              and data.get("directApplyValidated") is True
+          )
+          print("1" if enabled else "0")
+          PY
+            )"
+          fi
+          if [ "$force_requested" = "1" ]              && [ "$canonical_repair_outcome" = "success" ]              && [ "${CANDIDATE_GATE_OUTCOME:-}" = "success" ]; then
             direct_force_apply=1
             mapfile -t force_paths < <(python - <<'PY'
           import os
@@ -824,7 +849,7 @@ jobs:
               echo "FIELD_FORCE_REPAIR_DIRECT_APPLY captured=false reason=no-provider-byte-diff"
             fi
           else
-            echo "FIELD_FORCE_REPAIR_DIRECT_APPLY enabled=false mode=${DISPATCH_MODE:-automatic}"
+            echo "FIELD_FORCE_REPAIR_DIRECT_APPLY enabled=false requested=$force_requested mode=${DISPATCH_MODE:-automatic}"
           fi
 
           # Reset the sandbox after preserving evidence and, for explicit Force,
