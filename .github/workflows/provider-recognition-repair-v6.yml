@@ -591,7 +591,7 @@ jobs:
             fi
           fi
 
-      - name: Apply bounded Brain LLM Force mutations to sandbox
+      - name: Evaluate isolated Brain LLM Force candidates
         id: force-mutations
         shell: bash
         env:
@@ -619,13 +619,15 @@ jobs:
             )
           fi
           if [ "$force_requested" != "true" ]; then
-            echo "FIELD_BRAIN_LLM_FORCE_MUTATIONS skipped=true reason=not-explicit-force"
+            echo "accepted_csv=" >> "$GITHUB_OUTPUT"
+            echo "FIELD_BRAIN_LLM_FORCE_SANDBOX skipped=true reason=not-explicit-force"
             exit 0
           fi
 
           external_ref="refs/remotes/niakvio-brain-llm/niakvio-guidance"
           if ! git cat-file -e "$external_ref:guidance/niakvio-force-mutations.json" 2>/dev/null; then
-            echo "FIELD_BRAIN_LLM_FORCE_MUTATIONS skipped=true reason=no-public-force-mutation-artifact required=$require_external"
+            echo "accepted_csv=" >> "$GITHUB_OUTPUT"
+            echo "FIELD_BRAIN_LLM_FORCE_SANDBOX skipped=true reason=no-public-force-mutation-artifact required=$require_external"
             if [ "$require_external" = "true" ]; then
               echo "Explicit Force requires a non-empty external Brain mutation artifact" >&2
               exit 1
@@ -634,14 +636,9 @@ jobs:
           fi
           git show "$external_ref:guidance/niakvio-force-mutations.json" > "$RUNNER_TEMP/external-brain-llm-force-mutations.json"
 
-          args=(
-            python scripts/apply_brain_llm_force_mutations.py
-            --input "$RUNNER_TEMP/external-brain-llm-force-mutations.json"
-            --current-sha "$GITHUB_SHA"
-            --report automation/brain-llm-force-mutation-application.json
-          )
+          FORCE_TARGETS=()
           if [ -n "${TARGET_PROVIDER:-}" ]; then
-            args+=(--provider "$TARGET_PROVIDER")
+            FORCE_TARGETS+=("$TARGET_PROVIDER")
           elif [ "${{ github.event_name }}" = "push" ]; then
             mapfile -t FORCE_TARGETS < <(python - <<'PY'
           import json
@@ -652,22 +649,71 @@ jobs:
               if value: print(value)
           PY
             )
-            for provider in "${FORCE_TARGETS[@]}"; do args+=(--provider "$provider"); done
           fi
-          "${args[@]}"
+
+          eval_args=(
+            python scripts/evaluate_brain_llm_force_candidates.py
+            --input "$RUNNER_TEMP/external-brain-llm-force-mutations.json"
+            --current-sha "$GITHUB_SHA"
+            --report automation/brain-llm-force-candidate-evaluation.json
+            --accepted-output "$RUNNER_TEMP/accepted-brain-llm-force-mutations.json"
+          )
+          for provider in "${FORCE_TARGETS[@]}"; do eval_args+=(--provider "$provider"); done
+          "${eval_args[@]}"
+
+          mapfile -t FORCE_WINNERS < <(python - <<'PY'
+          import json
+          from pathlib import Path
+          data=json.loads(Path("automation/brain-llm-force-candidate-evaluation.json").read_text(encoding="utf-8"))
+          for provider in data.get("acceptedProviders") or []:
+              provider=str(provider or "").strip().casefold().replace("_","-")
+              if provider: print(provider)
+          PY
+          )
+          accepted_count="${#FORCE_WINNERS[@]}"
+          accepted_csv="$(IFS=,; echo "${FORCE_WINNERS[*]}")"
+          echo "accepted_csv=$accepted_csv" >> "$GITHUB_OUTPUT"
+          echo "FIELD_BRAIN_LLM_FORCE_REQUIREMENT required=$require_external isolated_accepted=$accepted_count"
+          if [ "$require_external" = "true" ] && [ "$accepted_count" -le 0 ]; then
+            echo "Explicit Force required an independently validated external Brain mutation but none passed" >&2
+            exit 1
+          fi
+          if [ "$accepted_count" -le 0 ]; then
+            exit 0
+          fi
+
+          apply_args=(
+            python scripts/apply_brain_llm_force_mutations.py
+            --input "$RUNNER_TEMP/accepted-brain-llm-force-mutations.json"
+            --current-sha "$GITHUB_SHA"
+            --report automation/brain-llm-force-mutation-application.json
+          )
+          for provider in "${FORCE_WINNERS[@]}"; do apply_args+=(--provider "$provider"); done
+          "${apply_args[@]}"
+
           applied_count="$(python - <<'PY'
           import json
           from pathlib import Path
-          p=Path("automation/brain-llm-force-mutation-application.json")
-          data=json.loads(p.read_text(encoding="utf-8")) if p.is_file() else {}
+          data=json.loads(Path("automation/brain-llm-force-mutation-application.json").read_text(encoding="utf-8"))
           print(int(data.get("appliedProviderCount") or 0))
           PY
           )"
-          echo "FIELD_BRAIN_LLM_FORCE_REQUIREMENT required=$require_external applied=$applied_count"
-          if [ "$require_external" = "true" ] && [ "$applied_count" -le 0 ]; then
-            echo "Explicit Force required external Brain mutations but none were applied" >&2
+          test "$applied_count" -eq "$accepted_count" || {
+            echo "Isolated Force winners were not applied one-for-one: accepted=$accepted_count applied=$applied_count" >&2
             exit 1
-          fi
+          }
+
+          for provider in "${FORCE_WINNERS[@]}"; do
+            python scripts/materialize_provider_v3_one.py "$provider" --preserve-structured-data
+          done
+
+          retest_args=(
+            python scripts/run_provider_retest.py
+            --output automation/brain-llm-force-current-byte-retest.json
+          )
+          for provider in "${FORCE_WINNERS[@]}"; do retest_args+=(--provider "$provider"); done
+          "${retest_args[@]}"
+          echo "FIELD_BRAIN_LLM_FORCE_CURRENT_BYTES providers=$accepted_count ids=$accepted_csv"
 
       - name: Run canonical recognition and correction only for unresolved providers
         id: canonical-repair
@@ -677,6 +723,7 @@ jobs:
           DISPATCH_MODE: ${{ inputs.mode || '' }}
           TARGET_PROVIDER: ${{ inputs.target_provider || '' }}
           ALLOW_LOSS: ${{ inputs.allow_upstream_positive_loss || 'false' }}
+          FORCE_ACCEPTED: ${{ steps.force-mutations.outputs.accepted_csv || '' }}
         run: |
           set -euo pipefail
           # Current-run evidence only. Never let a skipped/failed Repair read
@@ -699,21 +746,63 @@ jobs:
             MODE="${DISPATCH_MODE:-force}"
           fi
           args=(python scripts/run_provider_repair_pipeline_v6.py --mode "$MODE")
+          declare -A FORCE_WINNER_SET=()
+          if [ -n "${FORCE_ACCEPTED:-}" ]; then
+            IFS=',' read -r -a _force_winners <<< "$FORCE_ACCEPTED"
+            for provider in "${_force_winners[@]}"; do
+              provider="$(printf '%s' "$provider" | tr '[:upper:]_' '[:lower:]-' | xargs)"
+              [ -z "$provider" ] || FORCE_WINNER_SET["$provider"]=1
+            done
+          fi
+
+          EXPLICIT_SCOPE=0
+          REMAINING_TARGETS=()
           if [ -n "$TARGET_PROVIDER" ]; then
-            args+=(--provider "$TARGET_PROVIDER")
+            EXPLICIT_SCOPE=1
+            normalized="$(printf '%s' "$TARGET_PROVIDER" | tr '[:upper:]_' '[:lower:]-' | xargs)"
+            if [ -z "${FORCE_WINNER_SET[$normalized]+x}" ]; then
+              REMAINING_TARGETS+=("$normalized")
+            fi
           elif [ "${{ github.event_name }}" = "push" ]; then
+            EXPLICIT_SCOPE=1
             mapfile -t PUSH_TARGETS < <(python - <<'PY'
           import json
           from pathlib import Path
           path=Path('.github/triggers/provider-recognition-repair-v6.json')
           data=json.loads(path.read_text(encoding='utf-8'))
           for value in data.get('targetProviders') or []:
-              value=str(value or '').strip().lower()
+              value=str(value or '').strip().casefold().replace('_','-')
               if value: print(value)
           PY
             )
-            for provider in "${PUSH_TARGETS[@]}"; do args+=(--provider "$provider"); done
+            for provider in "${PUSH_TARGETS[@]}"; do
+              if [ -z "${FORCE_WINNER_SET[$provider]+x}" ]; then
+                REMAINING_TARGETS+=("$provider")
+              fi
+            done
+          elif [ -n "${FORCE_ACCEPTED:-}" ]; then
+            EXPLICIT_SCOPE=1
+            mapfile -t CURRENT_REPAIR_TARGETS < <(python - <<'PY'
+          import json
+          from pathlib import Path
+          data=json.loads(Path("automation/provider-census-status.json").read_text(encoding="utf-8"))
+          for value in data.get("repairQueue") or []:
+              value=str(value or "").strip().casefold().replace("_","-")
+              if value: print(value)
+          PY
+            )
+            for provider in "${CURRENT_REPAIR_TARGETS[@]}"; do
+              if [ -z "${FORCE_WINNER_SET[$provider]+x}" ]; then
+                REMAINING_TARGETS+=("$provider")
+              fi
+            done
           fi
+
+          if [ "$EXPLICIT_SCOPE" = "1" ] && [ "${#REMAINING_TARGETS[@]}" -eq 0 ]; then
+            echo "FIELD_CANONICAL_REPAIR skipped=true reason=all-explicit-targets-resolved-by-isolated-force"
+            exit 0
+          fi
+          for provider in "${REMAINING_TARGETS[@]}"; do args+=(--provider "$provider"); done
           if [ "$ALLOW_LOSS" = "true" ]; then args+=(--allow-upstream-positive-loss); fi
           printf 'CANONICAL_REPAIR_ARGS %q ' "${args[@]}"; echo
           "${args[@]}"
@@ -812,7 +901,9 @@ jobs:
             automation/provider-repair-yield-v6.json
             automation/provider-repair-v6-summary.json
             automation/provider-brain-repair-latest.json
+            automation/brain-llm-force-candidate-evaluation.json
             automation/brain-llm-force-mutation-application.json
+            automation/brain-llm-force-current-byte-retest.json
             automation/provider-authority-status.json
             automation/provider-waf-browser-session-latest.json
             automation/brain-repair-experience.json
