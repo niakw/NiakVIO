@@ -8,6 +8,21 @@ Les StreamBadges NiakVIO ne sont pas une note de qualité. Ils constituent un vo
 
 Feed stable actuel : `assets/stream-badges-fusion-v4.json` — **301 badges / 16 groupes**.
 
+## Repère visuel rapide
+
+Les marqueurs ci-dessous sont une **aide de lecture, pas une note universelle de qualité**. Ils classent uniquement la dimension indiquée par le tableau ; il ne faut pas les additionner aveuglément.
+
+| Marqueur | Lecture |
+| --- | --- |
+| 🏆 | Top / potentiel maximal dans cette dimension |
+| 🟢 | Fort / moderne / potentiel élevé |
+| 🟡 | Solide, variable ou dépendant du contexte |
+| 🟠 | Limité, ancien ou potentiel plus faible |
+| 🔴 | Faible / fortement compromis |
+| ⚪ | Fait neutre — pas de classement pertinent |
+
+Pour estimer la qualité d'image réelle, il faut lire plusieurs faits ensemble : **source + codec + résolution + bitrate**.
+
 ## Lire un flux comme une fiche média
 
 Exemple :
@@ -33,22 +48,33 @@ Ces quatre familles décrivent des choses différentes.
 
 ### Source / provenance
 
-| Famille | Signification pratique |
-| --- | --- |
-| WEB-DL | Livraison directe issue d'un service web, généralement sans étape de recapture vidéo. |
-| WEBRip | Capture ou réencodage depuis une source web ; qualité très variable. |
-| Blu-ray / BDMV | Source ou structure issue d'un disque Blu-ray. |
-| BD REMUX / UHD REMUX | Pistes du disque repackagées sans réencoder l'essence vidéo/audio. Fichiers généralement volumineux. |
-| UHD Blu-ray | Source disque Ultra HD, fréquemment 2160p avec vidéo compatible HDR. |
-| HDTV | Source issue d'une diffusion TV. |
-| DVD / DVD Rip | Source optique SD. |
-| CAM / TS / TC | Provenance de capture cinéma. Information utile, pas label de qualité. |
+| Famille | Potentiel qualité | Signification pratique |
+| --- | --- | --- |
+| BD REMUX / UHD REMUX | 🏆 Top | Pistes du disque repackagées sans réencoder l'essence vidéo/audio. Fichiers généralement volumineux. |
+| UHD Blu-ray | 🏆 Top | Source disque Ultra HD, fréquemment 2160p avec vidéo compatible HDR. |
+| Blu-ray / BDMV | 🟢 Très élevé | Source ou structure issue d'un disque Blu-ray. |
+| WEB-DL | 🟢 Élevé | Livraison directe issue d'un service web, généralement sans étape de recapture vidéo. |
+| HDTV | 🟡 Variable | Source issue d'une diffusion TV ; la qualité dépend fortement de la chaîne, de la génération et du bitrate. |
+| WEBRip | 🟡 Variable | Capture ou réencodage depuis une source web ; qualité très variable. |
+| DVD / DVD Rip | 🟠 Limité | Source optique SD. |
+| CAM / TS / TC | 🔴 Faible | Provenance de capture cinéma ; généralement très compromise face aux sources numériques directes. |
 
 <img src="../../assets/transparent/96x40/webdl.webp" height="30" alt="WEB-DL"> <img src="../../assets/transparent/96x40/blu-ray-disc.webp" height="30" alt="Blu-ray"> <img src="../../assets/transparent/96x40/bdmv.webp" height="30" alt="BDMV"> <img src="../../assets/transparent/96x40/blu-ray-remux.webp" height="30" alt="BD REMUX"> <img src="../../assets/transparent/96x40/uhd-remux.webp" height="30" alt="UHD REMUX">
 
 ### Résolution et mode de balayage
 
 Les classes courantes vont de 240p à 8K/4320p et incluent **1080i**.
+
+| Classe de résolution | Potentiel de détail | Lecture pratique |
+| --- | --- | --- |
+| 4320p / 8K | 🏆 Top | Potentiel de détail raster maximal de cette liste ; utile seulement si la source et l'encodage conservent réellement ce détail. |
+| 2160p / 4K | 🟢 Très élevé | Excellent potentiel sur grand écran ; souvent associé à HEVC/AV1 et HDR. |
+| 1440p | 🟢 Élevé | Gain net face au 1080p, mais moins courant pour les films/séries. |
+| 1080p | 🟢 Fort | Référence Full HD du streaming moderne de bonne qualité. |
+| 1080i | 🟡 Contextuel | Raster Full HD mais entrelacé ; la qualité du désentrelacement compte. |
+| 720p | 🟡 Bon | Peut être excellent avec une bonne source et un bitrate généreux, notamment en animation. |
+| 576p / 480p | 🟠 Limité | Définition standard ; nettement plus douce sur les grands écrans modernes. |
+| 360p / 240p | 🔴 Faible | Faible niveau de détail, surtout utile quand la bande passante est contrainte. |
 
 - **1080p** = Full HD progressif.
 - **1080i** = Full HD entrelacé, encore rencontré dans des sources TV/broadcast.
@@ -61,13 +87,15 @@ Les classes courantes vont de 240p à 8K/4320p et incluent **1080i**.
 
 **HLS** et **MPEG-DASH** décrivent une livraison HTTP adaptative. **MKV, MP4, WebM, MPEG-TS et M2TS** sont des conteneurs/formats de fichier.
 
-| Badge | Signification |
-| --- | --- |
-| HLS / M3U8 | Streaming HTTP adaptatif. Un master peut annoncer plusieurs variantes, codecs et pistes de langue. |
-| MPEG-DASH / MPD | Livraison HTTP adaptative fondée sur un manifest MPD. |
-| MKV / Matroska | Conteneur souple très courant pour Blu-ray/anime et pistes multiples. |
-| MP4 | Conteneur extrêmement compatible. |
-| MPEG-TS / M2TS | Familles de transport streams courantes en broadcast, segments HLS et structures Blu-ray. |
+| Badge | Repère | Signification |
+| --- | --- | --- |
+| HLS / M3U8 | ⚪ Contexte | Streaming HTTP adaptatif. Un master peut annoncer plusieurs variantes, codecs et pistes de langue. |
+| MPEG-DASH / MPD | ⚪ Contexte | Livraison HTTP adaptative fondée sur un manifest MPD. |
+| MKV / Matroska | ⚪ Contexte | Conteneur souple très courant pour Blu-ray/anime et pistes multiples. |
+| MP4 | ⚪ Contexte | Conteneur extrêmement compatible. |
+| MPEG-TS / M2TS | ⚪ Contexte | Familles de transport streams courantes en broadcast, segments HLS et structures Blu-ray. |
+
+**Pas de gagnant ici :** le mode de livraison ou le conteneur ne détermine pas à lui seul la qualité d'image.
 
 <img src="../../assets/transparent/96x40/hls.webp" height="30" alt="HLS"> <img src="../../assets/transparent/96x40/dash.webp" height="30" alt="DASH"> <img src="../../assets/transparent/96x40/mkv.webp" height="30" alt="MKV"> <img src="../../assets/transparent/96x40/mp4.webp" height="30" alt="MP4">
 
@@ -75,13 +103,15 @@ Un provider peut légitimement n'afficher que **HLS** si l'URL `.m3u8` est prouv
 
 ## Codecs vidéo
 
-| Codec | Usage courant | À retenir |
-| --- | --- | --- |
-| AVC / H.264 | Blu-ray et streaming très répandu | Très compatible ; moins efficace que HEVC/AV1 à qualité comparable. |
-| HEVC / H.265 | UHD Blu-ray, 4K streaming, anime 10-bit | Efficace ; très courant avec HDR et 10-bit. |
-| AV1 | Streaming moderne | Très efficace ; support matériel plus récent. |
-| VP9 | Streaming web | Codec web important, historiquement très utilisé par Google. |
-| MPEG-2 / VC-1 / MPEG-4 Part 2 | Diffusions/disques/encodes plus anciens | Information utile de compatibilité et de provenance. |
+| Codec | Efficacité de compression | Usage courant | À retenir |
+| --- | --- | --- | --- |
+| AV1 | 🏆 Top | Streaming moderne | Très haute efficacité de compression ; support matériel plus récent. |
+| HEVC / H.265 | 🟢 Très élevée | UHD Blu-ray, 4K streaming, anime 10-bit | Efficace ; très courant avec HDR et 10-bit. |
+| VP9 | 🟢 Élevée | Streaming web | Codec web important, historiquement très utilisé par Google. |
+| AVC / H.264 | 🟡 Solide | Blu-ray et streaming très répandu | Très compatible ; demande généralement plus de bitrate que HEVC/AV1 à qualité visuelle comparable. |
+| MPEG-2 / VC-1 / MPEG-4 Part 2 | 🟠 Ancien | Diffusions/disques/encodes plus anciens | Information utile de compatibilité et de provenance ; généralement moins efficace que les codecs modernes. |
+
+Ces marqueurs comparent **l'efficacité de compression de manière générale**, pas la qualité de chaque encode. Un excellent AVC peut toujours battre un mauvais encode AV1/HEVC.
 
 <img src="../../assets/transparent/96x40/avc.webp" height="30" alt="AVC"> <img src="../../assets/transparent/96x40/hevc.webp" height="30" alt="HEVC"> <img src="../../assets/transparent/96x40/av1.webp" height="30" alt="AV1"> <img src="../../assets/transparent/96x40/vp9.webp" height="30" alt="VP9">
 
@@ -112,13 +142,15 @@ NiakVIO conserve **la valeur exacte** dans la description technique et utilise l
 
 Ordres de grandeur indicatifs :
 
-| Livraison | Valeurs souvent rencontrées |
-| --- | --- |
-| 1080p H.264 streaming | ~3–10 Mbps |
-| 1080p HEVC streaming | ~1,5–6 Mbps |
-| Blu-ray AVC | souvent ~15–35+ Mbps |
-| 4K HEVC streaming | souvent ~10–25 Mbps |
-| UHD Blu-ray | fréquemment plusieurs dizaines de Mbps, parfois davantage |
+| Livraison | Valeurs souvent rencontrées | Marge brute de bitrate |
+| --- | --- | --- |
+| UHD Blu-ray | fréquemment plusieurs dizaines de Mbps, parfois davantage | 🏆 Très élevée |
+| Blu-ray AVC | souvent ~15–35+ Mbps | 🟢 Élevée |
+| 4K HEVC streaming | souvent ~10–25 Mbps | 🟢 Élevée |
+| 1080p H.264 streaming | ~3–10 Mbps | 🟡 Contextuelle |
+| 1080p HEVC streaming | ~1,5–6 Mbps | 🟡 Contextuelle |
+
+**La marge de bitrate n'est pas une note de qualité.** Plus de Mbps signifie généralement davantage de données encodées, mais la résolution, l'efficacité du codec, la qualité de la source, les réglages de l'encodeur, le grain et le mouvement déterminent comment ces bits sont réellement utilisés.
 
 Ce ne sont pas des seuils de qualité. 6 Mbps en AVC et 6 Mbps en AV1 ne sont pas équivalents : source, codec, réglages encodeur, grain et mouvement comptent.
 
