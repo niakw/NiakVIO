@@ -45,9 +45,14 @@ assert "NIAKVIO_BRAIN_LEARNING_MEMORY=" in learning_block
 assert "engine_v2/learning/llm-guidance.json" in learning_block
 assert "NIAKVIO_BRAIN_LLM_GUIDANCE=" in learning_block
 assert 'data["persistentLearningPrior"]=True' in learning_block
+assert 'allowed_v2=allowed_v1|{"experiment","experimentFingerprint"}' in learning_block
+assert "validate_public" in learning_block
+assert 'schema not in {1,2}' in learning_block
 assert "import_external_brain_llm_guidance.py" in learning_block
 assert "external-brain-llm-guidance-repair.json" in learning_block
 assert "external_imported=true" in learning_block
+assert "--negative-memory automation/brain-repair-memory.json" in learning_block
+assert "empty-after-negative-memory-filter" in learning_block
 assert learning_block.index("NiakVIO-Brain-LLM.git") < learning_block.index("source=niakvio-learning")
 
 persist=workflow.index("- name: Persist Repair census state")
@@ -89,3 +94,30 @@ assert 'if [ "$canonical_repair_outcome" = "success" ]; then' in persist_block
 assert "FIELD_REPAIR_CANONICAL_LEDGER_FAIL_CLOSED" in persist_block
 assert persist_block.count('if [ "$canonical_ledger_current" = "1" ] && [ "$canonical_ledger_publishable" = "1" ]; then') >= 2
 assert 'FIELD_REPAIR_CANONICAL_LEDGER_SKIPPED reason=canonical-repair-$canonical_repair_outcome' in persist_block
+
+
+# Explicit Force may apply a validated provider-local candidate directly, but
+# Learning itself remains proposal-only. Direct application is guarded by the
+# canonical Repair success *and* the four-version/non-regression candidate gate.
+force_block=workflow[workflow.index("- name: Enforce four-version floor on repair candidate"):workflow.index("if [ \"$canonical_ledger_current\" != \"1\" ] && [ \"$provider_input_drift\" = \"1\" ]")]
+assert "id: candidate-gate" in force_block
+assert "DISPATCH_MODE: ${{ inputs.mode || '' }}" in force_block
+assert "CANDIDATE_GATE_OUTCOME: ${{ steps.candidate-gate.outcome }}" in force_block
+assert '[ "${{ github.event_name }}" = "workflow_dispatch" ]' in force_block
+assert '[ "${DISPATCH_MODE:-}" = "force" ]' in force_block
+assert '[ "${CANDIDATE_GATE_OUTCOME:-}" = "success" ]' in force_block
+assert "FIELD_FORCE_REPAIR_DIRECT_APPLY captured=true" in force_block
+assert "git cherry-pick --no-commit" in force_block
+assert "fix(force-repair): apply validated provider corrections + evidence" in force_block
+assert "scripts/provider_patches/" in force_block
+assert 'mode not in {"repair","force"}' in workflow
+assert 'data.get("directApplyValidated") is True' in force_block
+assert 'str(data.get("mode") or "").strip().casefold()=="force"' in force_block
+assert 'force_requested=1' in force_block
+
+learning_workflow=(ROOT/".github/workflows/brain-learning-lab.yml").read_text(encoding="utf-8")
+assert "productionWritesAllowed!==false" in learning_workflow
+assert "publicationAllowed!==false" in learning_workflow
+assert "pullRequestOnly!==true" in learning_workflow
+assert "requiresHumanMerge!==true" in learning_workflow
+assert "Open or refresh Brain architecture PR" in learning_workflow

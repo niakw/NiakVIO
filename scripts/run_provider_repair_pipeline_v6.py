@@ -394,7 +394,8 @@ def effective_repair_materialization_scope(
     Route-recovery migrations can legitimately touch global/provider-map inputs in
     the candidate worktree. Automatic Repair is non-publishing, so rebuilding the
     entire catalogue only tests unrelated bytes and scales linearly with catalogue
-    size. Explicit Force retains the full selector authority.
+    size. Explicit Force is also provider-local: Core/architecture evolution stays
+    in Learning proposals, while Force applies only validated provider corrections.
     """
     source_mode = str(scope.get("mode") or "").strip().casefold()
     if source_mode not in {"all", "providers", "none"}:
@@ -730,7 +731,7 @@ def main() -> int:
     run(sys.executable, "scripts/materialize_provider_base_v3_store.py")
     repair_materialization_scope = rematerialize_repair_scope(
         targets,
-        targeted_only=args.mode == "repair",
+        targeted_only=args.mode in {"repair", "force"},
     )
     run(sys.executable, "scripts/generate_language_manifests.py", "--manifest", "manifest.json", "--report", "health-report.json")
     run(sys.executable, "scripts/validate_published_provider_config.py")

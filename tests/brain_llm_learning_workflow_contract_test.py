@@ -18,6 +18,13 @@ for required in (
     'if [ "${LLM_NEEDED:-false}" != "true" ] || [ "${LLM_AVAILABLE:-false}" = "true" ]; then',
     '"${args[@]}"',
     "NIAKVIO_BRAIN_LLM_GUIDANCE=$GITHUB_WORKSPACE/brain-sandbox/brain-llm/guidance.json",
+    "Prepare Fast-Handoff cached Brain LLM guidance",
+    "--negative-memory brain-learning-input/previous.json",
+    "FAST_MISSING_PROVIDERS: ${{ steps.brain_llm_fast_cache.outputs.missing_providers }}",
+    "FIELD_BRAIN_LLM_FAST_CACHE",
+    "fallback=cached-or-deterministic",
+    "llama-cpp-b11140-ubuntu-x64",
+    "llama-b11140-bin-ubuntu-x64.tar.gz",
 ):
     assert required in llm, required
 
@@ -28,6 +35,10 @@ for required in (
     "--workers 2",
     "--max-tokens 768",
     "-c 8192 -np 2",
+    'effective_filter="${FAST_MISSING_PROVIDERS:-}"',
+    "guidance.cached.json",
+    "guidance.generated.json",
+    "FIELD_BRAIN_LLM_GUIDANCE_FINAL",
 ):
     assert required in workflow, required
 

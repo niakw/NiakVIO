@@ -26,6 +26,14 @@ assert sorted(actual)==sorted(order)
 
 waves=mod.causal_family_waves(order,plan,max_parallel=2)
 assert waves==[["a1","b1"],["local"],["a2","b2"],["b3"]],waves
+
+frontier,deferred=mod.causal_family_frontier(
+    ["a1","b1","local","a2","b2","b3"],
+    plan,
+)
+assert frontier==["a1","b1","local"],frontier
+assert deferred==["a2","b2","b3"],deferred
+assert sorted(frontier+deferred)==sorted(order),(frontier,deferred)
 group_by_provider={"a1":"route|html","a2":"route|html","b1":"terminal|embed","b2":"terminal|embed","b3":"terminal|embed","local":"provider-local:local"}
 for wave in waves:
     families=[group_by_provider[p] for p in wave]
@@ -39,7 +47,10 @@ for required in (
     "causal-batch-round-robin",
     "fastRepairHandoffCausalBatchCount",
     "causal_family_waves",
+    "causal_family_frontier",
     "fastRepairHandoffCausalWaveCount",
+    "fastRepairHandoffFamilyFrontierCount",
+    "fastRepairHandoffDeferredFamilySiblingCount",
     "fastRepairHandoffParallelExecutionEnabled",
 ):
     assert required in source,required

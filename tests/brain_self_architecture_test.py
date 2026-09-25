@@ -199,4 +199,10 @@ with tempfile.TemporaryDirectory(prefix="brain-self-arch-") as tmp:
     assert markdown.is_file()
     assert "NiakVIO Brain architecture evolution" in markdown.read_text(encoding="utf-8")
 
+workflow_source = WORKFLOW.read_text(encoding="utf-8")
+architecture_job = workflow_source.split("  publish-architecture-proposal:", 1)[1].split("  continue-learning-slot:", 1)[0]
+assert "git status --porcelain --untracked-files=all -- engine_v2/learning/architecture-proposal.json" in architecture_job
+assert architecture_job.count("cp brain-learning-output/brain-architecture-proposal.md engine_v2/learning/architecture-proposal.md") >= 2
+assert "git diff --quiet -- engine_v2/learning/architecture-proposal.json" not in architecture_job
+
 print("Brain self-architecture tests passed")
