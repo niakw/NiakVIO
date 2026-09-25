@@ -108,7 +108,7 @@ def dispatched_fingerprints(prior: dict[str, Any]) -> list[str]:
 def _execution_plan_payload(provider: str, row: dict[str, Any]) -> dict[str, Any]:
     lane = _stable_text(row.get("lane"), 64)
     strategy = _stable_text(row.get("strategyBlueprint"), 160)
-    if not strategy and lane == "BRAIN_LEARNING":
+    if not strategy and lane == "brain_learning":
         strategy = "brain_learning_strategy_discovery_v1"
     return {
         "source": "execution-plan",
@@ -125,7 +125,7 @@ def _execution_plan_payload(provider: str, row: dict[str, Any]) -> dict[str, Any
 
 def execution_plan_fingerprint(provider: str, row: dict[str, Any]) -> str:
     payload = _execution_plan_payload(provider, row)
-    if payload["lane"] not in {"BRAIN_LEARNING", "CORE_CLIENT_LEARNING"}:
+    if payload["lane"] not in {"brain_learning", "core_client_learning"}:
         return ""
     has_cause = bool(
         payload["repairScope"]
