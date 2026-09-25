@@ -53,6 +53,9 @@ assert "external-brain-llm-guidance-repair.json" in learning_block
 assert "external_imported=true" in learning_block
 assert "--negative-memory automation/brain-repair-memory.json" in learning_block
 assert "empty-after-negative-memory-filter" in learning_block
+assert "from import_external_brain_llm_guidance import canon,failed_llm_experiments" in learning_block
+assert 'memory_path=Path("automation/brain-repair-memory.json")' in learning_block
+assert 'data["droppedFailedExperimentRows"]=dropped_failed' in learning_block
 assert learning_block.index("NiakVIO-Brain-LLM.git") < learning_block.index("source=niakvio-learning")
 
 persist=workflow.index("- name: Persist Repair census state")
