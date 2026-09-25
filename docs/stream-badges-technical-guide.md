@@ -183,6 +183,15 @@ Buying a physical disc normally gives the buyer possession and practical control
 
 For a media library, physical copies therefore have a practical advantage: they are not normally removed because a streaming catalogue changes, an account closes or a licence between a platform and a rights holder expires. Exact legal rights such as resale, lending, private copying or circumvention vary by jurisdiction and are outside this technical guide.
 
+### A note in support of physical media
+
+NiakVIO is a digital tool, but this guide deliberately **supports physical media as the strongest practical way to keep a personal film/series/anime library durable and under the user's control**. A disc can remain available when a catalogue rotates, a platform disappears, a licence changes, an account becomes inaccessible or a title is replaced by another master.
+
+Buying a physical edition also directly supports the continued existence of that edition ecosystem: mastering, authoring, manufacturing, restoration work, bonus material, collector releases and the commercial signal that audiences still value permanent high-quality releases. That does not make every disc technically superior, and it does not change copyright law; it simply means physical media combines **durability, high technical potential and long-term practical control** better than most platform-bound access models.
+
+> [!TIP]
+> If a work matters to you and a good physical edition exists, **keeping a legitimate physical copy is the most robust way to preserve your own access to that specific edition over time**. Streaming remains excellent for convenience and discovery; physical media is the stronger preservation-oriented choice.
+
 > [!CAUTION]
 > **NiakVIO does not turn technical availability into permission to watch a work.** It does not host audiovisual content and does not grant rights to third-party media or services. NiakVIO should be used only with content the user **owns, controls, created, licensed or is otherwise authorized to access**. Nothing in NiakVIO authorizes bypassing authentication, paywalls, encryption, DRM or other access controls. Users remain responsible for applicable law, service terms and third-party rights. See [`DISCLAIMER.md`](../DISCLAIMER.md) and [`TESTING_NOTICE.md`](../TESTING_NOTICE.md).
 
@@ -239,6 +248,64 @@ Other facts belong in badges/description. If a sparse Kehflix stream only proves
 5. missing evidence remains missing.
 
 This distinction prevents “badge inflation” and makes the UI useful to users who actually care about media quality.
+
+## FAQ — reading stream quality quickly
+
+### Can a 720p stream look as good as, or better than, a 1080p stream?
+
+Yes. `1080p` only describes frame dimensions. A clean 720p encode with a good source, efficient codec and generous bitrate can look as good as — or cleaner than — a heavily compressed 1080p encode. This is especially common with animation and on displays with good upscaling.
+
+At the same bitrate, 1080p has about **2.25× as many pixels** as 720p, so those bits have to be spread across many more pixels. Resolution is therefore only one part of the picture.
+
+### Is Mbps the best single indicator of quality?
+
+It is one of the most useful **single technical clues**, but not a universal quality score. More bitrate usually gives an encoder more room to preserve detail, grain and motion, but `6 Mbps AVC`, `6 Mbps HEVC` and `6 Mbps AV1` are not equivalent.
+
+A fast practical reading is: **source → codec → resolution → bitrate**. If all other factors are similar, the higher bitrate is usually the safer choice.
+
+### Is 4K always better than 1080p?
+
+No. A high-quality 1080p Blu-ray or encode can beat a weak, heavily compressed or upscaled 4K release. `4K` describes raster size, not mastering quality, source detail or compression quality.
+
+### Does HEVC/H.265 automatically beat AVC/H.264?
+
+No. HEVC is generally more compression-efficient, meaning it can reach similar visual quality with fewer bits, but encoder settings and source quality still matter. A strong AVC encode can beat a poor HEVC encode.
+
+### Is AV1 automatically the best-looking codec?
+
+No. AV1 has excellent compression efficiency, but codec efficiency is not the same thing as guaranteed visual quality. Source, encoder implementation, settings and bitrate still decide the result.
+
+### Does 10-bit mean HDR?
+
+No. Bit depth and dynamic range are different facts. A video can be `10-bit SDR`, which is common in high-quality anime encodes. HDR requires separate HDR evidence such as HDR10, HDR10+, Dolby Vision or HLG.
+
+### Is Dolby Vision automatically better than HDR10?
+
+Not automatically. Dolby Vision can provide dynamic metadata and a richer delivery pipeline, but the actual result depends on the master, display, player and implementation. A good HDR10 master can look better than a poor Dolby Vision presentation.
+
+### Is 60 fps better than 24 fps?
+
+Not in general. Frame rate is a presentation choice. Film and much animation are intentionally authored around 23.976/24 fps. Higher frame rates can improve motion clarity for some content, but they are not a universal quality upgrade.
+
+### Is MKV better than MP4?
+
+No. They are containers. MKV is very flexible for multiple audio/subtitle tracks and advanced release packaging; MP4 is extremely compatible. The video/audio streams inside determine quality.
+
+### Does HLS mean low quality?
+
+No. HLS describes adaptive HTTP delivery, not picture quality. An HLS master may contain anything from low-resolution variants to excellent 4K HDR streams. If NiakVIO only proves `HLS`, it intentionally does not invent a resolution or codec.
+
+### Why can a 1080p Blu-ray look better than 4K streaming?
+
+Because the disc can use much more bitrate, preserve more fine detail and grain, avoid adaptive network quality drops and carry stronger audio tracks. The 4K stream still has more pixels, but those pixels may be more aggressively compressed.
+
+### Is physical media always the best choice?
+
+For **long-term control and preservation of a specific edition**, physical media is usually the strongest practical choice. For convenience, portability and instant access, streaming or authorized digital files can be better. Technical quality still depends on the individual master and encode.
+
+### If NiakVIO finds a playable source, does that mean I am allowed to watch it?
+
+No. Technical availability is not an authorization statement. NiakVIO does not determine ownership, licensing or legality of a third-party source. Use it only with content you own, control, created, licensed or are otherwise authorized to access, subject to applicable law and service terms.
 
 ## Feed versioning
 
