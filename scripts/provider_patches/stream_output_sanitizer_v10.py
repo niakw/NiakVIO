@@ -31,7 +31,7 @@ BYTES_NEW = (
     "try{if(stream&&typeof stream===\"object\")stream.__nuvioProbeBytesV1=Number(bytes&&bytes.length||0)||0}catch(_e){}"
 )
 VERDICT_OLD = "var verdict=await probe(item.stream,item.url);\n        return verdict===true?clearPrivateProofs(item.stream):null;"
-VERDICT_NEW = """var probeStarted=(typeof Date!==\"undefined\"&&Date.now)?Date.now():0;
+LEGACY_VERDICT_NEW = """var probeStarted=(typeof Date!==\"undefined\"&&Date.now)?Date.now():0;
         var verdict=await probe(item.stream,item.url);
         var probeEnded=(typeof Date!==\"undefined\"&&Date.now)?Date.now():probeStarted;
         if(verdict===true&&item.stream&&typeof item.stream===\"object\"){
@@ -51,6 +51,34 @@ VERDICT_NEW = """var probeStarted=(typeof Date!==\"undefined\"&&Date.now)?Date.n
               sampleKind:manifest?\"manifest\":\"direct-media-prefix\",
               source:\"terminal-media-probe-v10\"
             };
+          }catch(_e){}
+        }
+        try{if(item.stream&&typeof item.stream===\"object\")delete item.stream.__nuvioProbeBytesV1}catch(_e){}
+        return verdict===true?clearPrivateProofs(item.stream):null;"""
+VERDICT_NEW = """var probeStarted=(typeof Date!==\"undefined\"&&Date.now)?Date.now():0;
+        var verdict=await probe(item.stream,item.url);
+        var probeEnded=(typeof Date!==\"undefined\"&&Date.now)?Date.now():probeStarted;
+        if(verdict===true&&item.stream&&typeof item.stream===\"object\"){
+          try{
+            var elapsed=Math.max(1,Number(probeEnded-probeStarted)||1);
+            var sampleBytes=Math.max(0,Number(item.stream.__nuvioProbeBytesV1||0)||0);
+            var sampledUrl=String(item.stream.url||item.url||\"\");
+            var hint=String(item.stream.type||item.stream.format||item.stream.mimeType||item.stream.contentType||\"\").toLowerCase();
+            var manifest=/(?:\\.m3u8?|\\.mpd)(?:[?#]|$)/i.test(sampledUrl)||/(?:hls|mpegurl|dash)/i.test(hint);
+            var sampleMbps=!manifest&&sampleBytes>0?sampleBytes*8/elapsed/1000:null;
+            var prior=item.stream.__nuvioStreamNetworkEvidenceV1&&typeof item.stream.__nuvioStreamNetworkEvidenceV1===\"object\"?item.stream.__nuvioStreamNetworkEvidenceV1:null;
+            var evidence={
+              success:true,
+              latencyMs:elapsed,
+              sampleBytes:sampleBytes,
+              sampleMbps:sampleMbps,
+              sampleConfidence:sampleMbps!=null?0.55:0,
+              sampleKind:manifest?\"manifest\":\"direct-media-prefix\",
+              source:\"terminal-media-probe-v10\",
+              terminalProbeLatencyMs:elapsed
+            };
+            if(prior&&prior.success===true)evidence=Object.assign({},evidence,prior,{success:true,terminalProbeLatencyMs:elapsed});
+            item.stream.__nuvioStreamNetworkEvidenceV1=evidence;
           }catch(_e){}
         }
         try{if(item.stream&&typeof item.stream===\"object\")delete item.stream.__nuvioProbeBytesV1}catch(_e){}
@@ -76,10 +104,15 @@ def _restore_v8_source(text: str) -> str:
         if source.count(MARKER_COMMENT) != 1:
             raise ValueError(f"stream sanitizer v10 marker count={source.count(MARKER_COMMENT)}")
         source = source.replace(MARKER_COMMENT + "\n", "", 1)
-        if BYTES_NEW not in source or VERDICT_NEW not in source:
-            raise ValueError("stream sanitizer v10 existing evidence hooks missing")
+        if BYTES_NEW not in source:
+            raise ValueError("stream sanitizer v10 existing byte evidence hook missing")
         source = source.replace(BYTES_NEW, BYTES_OLD, 1)
-        source = source.replace(VERDICT_NEW, VERDICT_OLD, 1)
+        if VERDICT_NEW in source:
+            source = source.replace(VERDICT_NEW, VERDICT_OLD, 1)
+        elif LEGACY_VERDICT_NEW in source:
+            source = source.replace(LEGACY_VERDICT_NEW, VERDICT_OLD, 1)
+        else:
+            raise ValueError("stream sanitizer v10 existing verdict evidence hook missing")
     return source
 
 
