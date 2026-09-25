@@ -468,10 +468,15 @@ jobs:
              && git cat-file -e "$external_ref:guidance/niakvio-guidance.json" 2>/dev/null; then
             git show "$external_ref:guidance/niakvio-guidance.json" > "$RUNNER_TEMP/external-brain-llm-guidance.json"
             guidance_commit="$(git rev-parse "$external_ref")"
-            if python scripts/import_external_brain_llm_guidance.py --input "$RUNNER_TEMP/external-brain-llm-guidance.json" --output "$RUNNER_TEMP/external-brain-llm-guidance-repair.json" --current-sha "$GITHUB_SHA" --guidance-commit "$guidance_commit"; then
-              echo "NIAKVIO_BRAIN_LLM_GUIDANCE=$RUNNER_TEMP/external-brain-llm-guidance-repair.json" >> "$GITHUB_ENV"
-              external_imported=true
-              echo "FIELD_CANONICAL_REPAIR_EXTERNAL_LLM_GUIDANCE imported=true commit=$guidance_commit"
+            if python scripts/import_external_brain_llm_guidance.py --input "$RUNNER_TEMP/external-brain-llm-guidance.json" --output "$RUNNER_TEMP/external-brain-llm-guidance-repair.json" --current-sha "$GITHUB_SHA" --guidance-commit "$guidance_commit" --negative-memory automation/brain-repair-memory.json; then
+              external_count="$(python -c 'import json; d=json.load(open("'"$RUNNER_TEMP"'/external-brain-llm-guidance-repair.json")); print(int(d.get("providerCount") or 0))')"
+              if [ "$external_count" -gt 0 ]; then
+                echo "NIAKVIO_BRAIN_LLM_GUIDANCE=$RUNNER_TEMP/external-brain-llm-guidance-repair.json" >> "$GITHUB_ENV"
+                external_imported=true
+                echo "FIELD_CANONICAL_REPAIR_EXTERNAL_LLM_GUIDANCE imported=true providers=$external_count commit=$guidance_commit"
+              else
+                echo "FIELD_CANONICAL_REPAIR_EXTERNAL_LLM_GUIDANCE imported=false reason=empty-after-negative-memory-filter"
+              fi
             else
               echo "FIELD_CANONICAL_REPAIR_EXTERNAL_LLM_GUIDANCE imported=false reason=source-drift-or-safety-gate"
             fi
