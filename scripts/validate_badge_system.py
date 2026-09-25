@@ -5,8 +5,10 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from badge_versioning import latest_catalog
+
 ROOT = Path(__file__).resolve().parents[1]
-CATALOG = ROOT / "assets/badge_catalog_v2_complete.json"
+CATALOG_VERSION, CATALOG = latest_catalog(ROOT)
 REPORT = ROOT / "assets/docs/BADGE_QA.json"
 
 catalog = json.loads(CATALOG.read_text(encoding="utf-8"))
@@ -78,7 +80,7 @@ for theme in ("dark", "light", "transparent", "fusion"):
 
 for theme in ("dark", "light", "transparent", "fusion"):
     latest = (ROOT / f"assets/stream-badges-{theme}.json").read_text(encoding="utf-8")
-    versioned = (ROOT / f"assets/stream-badges-{theme}-v4.json").read_text(encoding="utf-8")
+    versioned = (ROOT / f"assets/stream-badges-{theme}-v{CATALOG_VERSION}.json").read_text(encoding="utf-8")
     assert latest == versioned, f"{theme} latest feed drifted from immutable v4 snapshot"
 
 for theme in ("dark", "light", "transparent", "fusion"):

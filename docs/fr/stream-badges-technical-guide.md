@@ -6,7 +6,7 @@ Les StreamBadges NiakVIO ne sont pas une note de qualité. Ils constituent un vo
 
 > **Règle :** afficher ce qui est connu, laisser inconnu ce qui ne l'est pas. Un badge `HLS` vrai vaut mieux qu'un faux `1080p`, `HEVC` ou `HDR`.
 
-Feed stable actuel : `assets/stream-badges-fusion-v4.json` — **301 badges / 16 groupes**.
+Feed stable actuel : `assets/stream-badges-fusion-v5.json` — **309 badges / 17 groupes**.
 
 ## Repère visuel rapide
 
@@ -249,6 +249,35 @@ Les autres informations vont dans les badges et la description. Si un flux Kehfl
 
 Cette séparation évite « l'inflation de badges » et rend réellement les données utiles aux utilisateurs qui s'intéressent à la qualité média.
 
+## Score global de flux
+
+La v5 ajoute un vocabulaire compact de score global : **`S+` · `S` · `A+` · `A` · `B` · `C` · `D` · `E`**. Le badge n'affiche volontairement que la lettre afin de ne pas multiplier les variantes ; la valeur numérique `0–100` reste dans le détail technique.
+
+| Bloc | Poids cible |
+| --- | ---: |
+| Qualité vidéo | 45 % |
+| Source / provenance | 10 % |
+| Audio | 10 % |
+| Lecture / réseau | 30 % |
+| Fiabilité provider | 5 % |
+
+Le score réseau n'utilise **pas** le Mbps brut comme verdict. Il mesure surtout la **marge de débit** (`throughput réseau / bitrate du média`), puis le temps de démarrage, les stalls/coupures et le taux de segments lus avec succès.
+
+| Score | Grade |
+| ---: | :---: |
+| 95–100 | **S+** |
+| 90–94 | **S** |
+| 85–89 | **A+** |
+| 80–84 | **A** |
+| 70–79 | **B** |
+| 60–69 | **C** |
+| 40–59 | **D** |
+| 0–39 | **E** |
+
+**Règle de vérité :** aucun badge global ne doit être inventé sans preuve de lecture/réseau suffisante. Un flux faux, placeholder, mauvais média ou invalide est rejeté avant scoring. Un excellent fichier qui bufferise réellement doit être fortement pénalisé.
+
+La logique v5 est isolée dans `scripts/stream_score.py` afin d'être testée sans modifier les providers ou un Repair en cours. L'intégration Core devra conserver cette frontière : **faits média + observation de lecture + confiance**.
+
 ## FAQ — comprendre rapidement la qualité d'un flux
 
 ### Un flux 720p peut-il paraître aussi bon, voire meilleur, qu'un 1080p ?
@@ -313,9 +342,9 @@ Toute modification matérielle crée une nouvelle version immuable des **quatre*
 
 Version actuelle :
 
-- `assets/stream-badges-fusion-v4.json`
-- `assets/stream-badges-dark-v4.json`
-- `assets/stream-badges-light-v4.json`
-- `assets/stream-badges-transparent-v4.json`
+- `assets/stream-badges-fusion-v5.json`
+- `assets/stream-badges-dark-v5.json`
+- `assets/stream-badges-light-v5.json`
+- `assets/stream-badges-transparent-v5.json`
 
 Les anciennes versions restent disponibles pour les installations épinglées.

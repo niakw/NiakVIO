@@ -1,5 +1,14 @@
 # NiakVIO — Recovery Memory
 
+## 2026-09-25 19:45 Europe/Paris — StreamBadge versioning invariant + isolated Stream Score v5
+
+- Badge versioning is a hard compatibility invariant: **never modify, rename or delete an already-published versioned badge catalogue, mapping or feed**. Any badge addition/change creates a new `vN+1` filename; current docs/aliases move forward while every older versioned reference remains available for pinned users.
+- Historical `assets/badge_catalog_v2_complete.json` and `assets/mapping_core_brain_ui_v2_complete.json` stay frozen in place. Explicit v4 snapshots mirror the de-facto v4 state, and v5 becomes the current catalogue/mapping. Current tooling resolves the highest versioned filename instead of hardcoding v2.
+- Public StreamBadge v5 adds only eight compact global score badges: `S+`, `S`, `A+`, `A`, `B`, `C`, `D`, `E`. Numeric 0–100 remains detail text, not a badge explosion.
+- Global score contract is isolated in `scripts/stream_score.py`: 45% video, 10% source, 10% audio, 30% playback/network, 5% provider reliability. Playback uses throughput headroom relative to media bitrate, startup, stalls and segment-success evidence; raw Mbps alone is not a grade.
+- Missing playback evidence yields no global grade. Wrong-media, invalid-media and placeholder evidence reject before scoring. Severe throughput/stall/segment failures hard-cap the score.
+- This work is deliberately badge/UI/tests/docs-only while canonical Brain/Repair run `36167782178` is active. Do not touch shared Core/provider Blocs or provider materialization inputs for Stream Score until that run has finished and its evidence is safely persisted.
+
 ## 2026-09-25 18:25 Europe/Paris — Force failure isolated; empty external mutations + stale Learning contract fixed
 
 - Explicit Force run `36158364309` executed on tested SHA `e5be47850abd` after the stale-SHA guard and full canonical preflight both passed. WAF/Tailscale qualification also completed successfully, including residential exit/replay.

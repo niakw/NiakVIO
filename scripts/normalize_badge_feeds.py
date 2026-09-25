@@ -7,10 +7,12 @@ import json
 from pathlib import Path
 from typing import Any
 
+from badge_versioning import latest_catalog
+
 ROOT = Path(__file__).resolve().parents[1]
-CATALOG = ROOT / "assets/badge_catalog_v2_complete.json"
+CATALOG_VERSION, CATALOG = latest_catalog(ROOT)
 RAW_BASE = "https://raw.githubusercontent.com/niakw/NiakVIO/main/"
-PUBLIC_FEED_VERSION = 4
+PUBLIC_FEED_VERSION = CATALOG_VERSION
 OUTPUTS = {
     "dark": ROOT / "assets/stream-badges-dark.json",
     "light": ROOT / "assets/stream-badges-light.json",
@@ -22,6 +24,7 @@ VERSIONED_OUTPUTS = {
     for theme in OUTPUTS
 }
 ACCENTS = {
+    "stream-score": "#22C55E",
     "source": "#49B46D",
     "resolution": "#F3C43F",
     "container": "#7B8794",
@@ -41,9 +44,9 @@ ACCENTS = {
 }
 
 
-def style(theme: str, group: str) -> dict[str, str]:
+def style(theme: str, group: str, accent_override: str = "") -> dict[str, str]:
     """Use Nuvio's native border instead of baking chrome into the artwork."""
-    accent = ACCENTS.get(group, "#94A3B8")
+    accent = accent_override or ACCENTS.get(group, "#94A3B8")
     if theme == "light":
         return {
             "tagColor": "#FFFFFF",
@@ -100,7 +103,7 @@ def build(theme: str) -> dict[str, Any]:
             "pattern": pattern,
             "imageURL": RAW_BASE + rel,
             "isEnabled": True,
-            **style(theme, group),
+            **style(theme, group, str(badge.get("accent") or "")),
         })
     return {"filters": filters, "groups": groups}
 

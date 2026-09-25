@@ -14,13 +14,15 @@ import math
 from pathlib import Path
 from typing import Any
 
+from badge_versioning import latest_catalog
+
 try:
     from PIL import Image, ImageDraw, ImageEnhance, ImageFont, ImageFilter
 except ImportError as exc:  # pragma: no cover - CI installs the pinned build dep.
     raise SystemExit("Pillow is required: python -m pip install 'Pillow==11.3.0'") from exc
 
 ROOT = Path(__file__).resolve().parents[1]
-CATALOG = ROOT / "assets" / "badge_catalog_v2_complete.json"
+CATALOG_VERSION, CATALOG = latest_catalog(ROOT)
 REPORT = ROOT / "assets" / "docs" / "LIGHT_BADGE_QA.json"
 REVISION = "light-contrast-v3-native-size"
 PILLOW_VERSION = "11.3.0"

@@ -6,7 +6,7 @@ NiakVIO StreamBadges are not a quality score. They are a compact vocabulary for 
 
 > **Rule:** show what is known, keep what is unknown unknown. A truthful `HLS` badge is better than inventing `1080p`, `HEVC` or `HDR`.
 
-Current stable feed: `assets/stream-badges-fusion-v4.json` — **301 badges / 16 groups**.
+Current stable feed: `assets/stream-badges-fusion-v5.json` — **309 badges / 17 groups**.
 
 ## Quick visual ranking
 
@@ -249,6 +249,35 @@ Other facts belong in badges/description. If a sparse Kehflix stream only proves
 
 This distinction prevents “badge inflation” and makes the UI useful to users who actually care about media quality.
 
+## Global Stream Score
+
+v5 adds a compact global grade vocabulary: **`S+` · `S` · `A+` · `A` · `B` · `C` · `D` · `E`**. The badge intentionally shows only the grade; the numeric `0–100` value remains in technical detail.
+
+| Component | Target weight |
+| --- | ---: |
+| Video quality | 45% |
+| Source / provenance | 10% |
+| Audio | 10% |
+| Playback / network | 30% |
+| Provider reliability | 5% |
+
+Network quality does **not** treat raw Mbps as a verdict. It primarily uses **throughput headroom** (`network throughput / media bitrate`), then startup time, stalls/rebuffering and successful segment ratio.
+
+| Score | Grade |
+| ---: | :---: |
+| 95–100 | **S+** |
+| 90–94 | **S** |
+| 85–89 | **A+** |
+| 80–84 | **A** |
+| 70–79 | **B** |
+| 60–69 | **C** |
+| 40–59 | **D** |
+| 0–39 | **E** |
+
+**Truth rule:** no global badge should be fabricated without sufficient playback/network evidence. Wrong-media, placeholder and invalid-media failures are rejected before scoring. A technically excellent stream that actually buffers must be penalized heavily.
+
+The v5 logic lives in `scripts/stream_score.py` so it can be tested without touching providers or an active Repair run. Later Core integration must preserve the same boundary: **media facts + playback observation + confidence**.
+
 ## FAQ — reading stream quality quickly
 
 ### Can a 720p stream look as good as, or better than, a 1080p stream?
@@ -313,9 +342,9 @@ Every material badge/rule change creates a new immutable version of **all four**
 
 Current version:
 
-- `assets/stream-badges-fusion-v4.json`
-- `assets/stream-badges-dark-v4.json`
-- `assets/stream-badges-light-v4.json`
-- `assets/stream-badges-transparent-v4.json`
+- `assets/stream-badges-fusion-v5.json`
+- `assets/stream-badges-dark-v5.json`
+- `assets/stream-badges-light-v5.json`
+- `assets/stream-badges-transparent-v5.json`
 
 Older versioned feeds remain available for pinned installations.

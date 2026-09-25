@@ -4,9 +4,12 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from scripts.badge_versioning import latest_catalog, latest_mapping
+
 ROOT = Path(__file__).resolve().parents[1]
-CATALOG = ROOT / "assets/badge_catalog_v2_complete.json"
-MAPPING = ROOT / "assets/mapping_core_brain_ui_v2_complete.json"
+CATALOG_VERSION, CATALOG = latest_catalog(ROOT)
+MAPPING_VERSION, MAPPING = latest_mapping(ROOT)
+assert MAPPING_VERSION == CATALOG_VERSION
 README = ROOT / "assets/README.txt"
 CORE = ROOT / "scripts/provider_patches/global_stream_presentation_v1.py"
 LIGHT_QA = ROOT / "assets/docs/LIGHT_BADGE_QA.json"
@@ -58,10 +61,10 @@ assert mapping["display"]["hideUnknownBadges"] is True
 assert mapping["display"]["alwaysReplaceProviderDescription"] is True
 assert mapping["display"]["fallbackWhenNativeBadgesDisabled"] == "emojiTechnicalLine"
 assert mapping["display"]["nativeBadgeFeeds"] == {
-    "dark_app_background": "assets/stream-badges-dark-v4.json",
-    "light_app_background": "assets/stream-badges-light-v4.json",
-    "transparent": "assets/stream-badges-transparent-v4.json",
-    "fusion": "assets/stream-badges-fusion-v4.json",
+    "dark_app_background": f"assets/stream-badges-dark-v{CATALOG_VERSION}.json",
+    "light_app_background": f"assets/stream-badges-light-v{CATALOG_VERSION}.json",
+    "transparent": f"assets/stream-badges-transparent-v{CATALOG_VERSION}.json",
+    "fusion": f"assets/stream-badges-fusion-v{CATALOG_VERSION}.json",
 }
 assert "Use assets/dark when the Nuvio application background is gray/dark." in readme
 assert "Use assets/light when the Nuvio application background is white/light." in readme
@@ -76,7 +79,7 @@ for legacy_id in ("vf", "vff", "vfq", "vo", "multi", "vostfr"):
     assert legacy_id not in by_id, f"legacy locale-specific badge leaked into v3 catalog: {legacy_id}"
 
 for theme in ("dark", "light", "transparent", "fusion"):
-    versioned = ROOT / f"assets/stream-badges-{theme}-v4.json"
+    versioned = ROOT / f"assets/stream-badges-{theme}-v{CATALOG_VERSION}.json"
     latest = ROOT / f"assets/stream-badges-{theme}.json"
     assert versioned.is_file(), versioned
     assert versioned.read_bytes() == latest.read_bytes(), f"{theme} v4 must equal latest at v4 publication"
@@ -123,3 +126,6 @@ print(
     f"catalog={len(badges)} themes=4 sizes=2 universal_language_ids=true "
     f"light_qa_rows={len(qa_rows)} native_streambadge_feeds=bordered emoji_fallback=true"
 )
+
+assert len(badges) >= 309
+assert any(group.get("id") == "stream-score" for group in catalog.get("groups") or [])

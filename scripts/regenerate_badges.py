@@ -16,16 +16,18 @@ import shutil
 from pathlib import Path
 from typing import Any
 
+from badge_versioning import latest_catalog
+
 try:
     from PIL import Image, ImageDraw, ImageEnhance, ImageFilter, ImageFont
 except ImportError as exc:
     raise SystemExit("Pillow is required: python -m pip install 'Pillow==11.3.0'") from exc
 
 ROOT = Path(__file__).resolve().parents[1]
-CATALOG = ROOT / "assets" / "badge_catalog_v2_complete.json"
+CATALOG_VERSION, CATALOG = latest_catalog(ROOT)
 REPORT = ROOT / "assets" / "docs" / "BADGE_QA.json"
 LEGACY_LIGHT_REPORT = ROOT / "assets" / "docs" / "LIGHT_BADGE_QA.json"
-REVISION = "full-surface-v7-delivery-v4"
+REVISION = "full-surface-v8-stream-score-v5"
 PILLOW_VERSION = "11.3.0"
 SIZES = ("72x32", "96x40")
 THEMES = ("transparent", "dark", "light")
@@ -69,8 +71,11 @@ def _normalize_catalog(catalog: dict[str, Any]) -> tuple[dict[str, Any], bool]:
                     themed[size] = rel
                     changed = True
     catalog["badges"] = rows
-    catalog["version"] = "4.0-technical-delivery"
-    catalog["publicFeedVersion"] = 4
+    declared = int(catalog.get("publicFeedVersion") or 0)
+    if declared != CATALOG_VERSION:
+        raise RuntimeError(f"catalog publicFeedVersion={declared} does not match filename v{CATALOG_VERSION}")
+    if not str(catalog.get("version") or "").startswith(f"{CATALOG_VERSION}."):
+        raise RuntimeError(f"catalog version metadata must start with {CATALOG_VERSION}.")
     return catalog, changed
 
 def _label(row: dict[str, Any]) -> str:
@@ -222,8 +227,8 @@ def build(*, apply: bool) -> dict[str, Any]:
     rows = catalog.get("badges") or []
     if len(rows) < 301:
         raise RuntimeError(f"universal v4 badge catalog unexpectedly small: got {len(rows)}")
-    if apply and catalog_changed:
-        CATALOG.write_text(json.dumps(catalog, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    if catalog_changed:
+        raise RuntimeError("versioned catalogue requires normalization; create the next vN+1 catalogue instead of rewriting the published snapshot")
     changed = 0
     qa_rows: list[dict[str, Any]] = []
     for row in rows:
@@ -275,6 +280,7 @@ def build(*, apply: bool) -> dict[str, Any]:
         "revision": REVISION,
         "pillowVersion": PILLOW_VERSION,
         "catalogBadges": len(rows),
+        "catalogVersion": CATALOG_VERSION,
         "themeCount": len(THEMES),
         "sizeCount": len(SIZES),
         "assetCount": len(rows) * len(THEMES) * len(SIZES),

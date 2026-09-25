@@ -14,10 +14,10 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 CORE = ROOT / "scripts/provider_patches/global_stream_presentation_v1.py"
-DARK_FEED = ROOT / "assets/stream-badges-dark-v4.json"
-LIGHT_FEED = ROOT / "assets/stream-badges-light-v4.json"
-TRANSPARENT_FEED = ROOT / "assets/stream-badges-transparent-v4.json"
-FUSION_FEED = ROOT / "assets/stream-badges-fusion-v4.json"
+DARK_FEED = ROOT / "assets/stream-badges-dark-v5.json"
+LIGHT_FEED = ROOT / "assets/stream-badges-light-v5.json"
+TRANSPARENT_FEED = ROOT / "assets/stream-badges-transparent-v5.json"
+FUSION_FEED = ROOT / "assets/stream-badges-fusion-v5.json"
 REVISION_V22 = "all-providers-client-projection-strongest-evidence-v22"
 REVISION_V23 = "all-providers-client-projection-language-roles-v23"
 REVISION_V24 = "all-providers-client-projection-evidence-language-v24"

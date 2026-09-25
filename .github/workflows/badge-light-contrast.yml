@@ -6,10 +6,13 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/badge-light-contrast.yml'
+      - 'scripts/badge_versioning.py'
+      - 'scripts/check_badge_version_immutability.py'
       - 'scripts/regenerate_badges.py'
       - 'scripts/normalize_badge_feeds.py'
       - 'scripts/validate_badge_system.py'
-      - 'assets/badge_catalog_v2_complete.json'
+      - 'assets/badge_catalog_v*_complete.json'
+      - 'assets/mapping_core_brain_ui_v*_complete.json'
       - 'assets/source/**'
       - 'assets/transparent/**'
       - 'assets/dark/**'
@@ -18,10 +21,7 @@ on:
       - 'assets/stream-badges-light.json'
       - 'assets/stream-badges-fusion.json'
       - 'assets/stream-badges-transparent.json'
-      - 'assets/stream-badges-dark-v4.json'
-      - 'assets/stream-badges-light-v4.json'
-      - 'assets/stream-badges-transparent-v4.json'
-      - 'assets/stream-badges-fusion-v4.json'
+      - 'assets/stream-badges-*-v*.json'
       - 'assets/docs/BADGE_QA.json'
       - 'assets/docs/LIGHT_BADGE_QA.json'
 
@@ -51,6 +51,10 @@ jobs:
       - name: Install pinned image dependency
         run: python -m pip install --disable-pip-version-check --no-cache-dir 'Pillow==11.3.0'
 
+      - name: Enforce immutable versioned badge history
+        if: ${{ github.event_name == 'push' }}
+        run: python scripts/check_badge_version_immutability.py --base "${{ github.event.before }}" --head "$GITHUB_SHA"
+
       - name: Materialize complete badge artwork and native feeds
         shell: bash
         run: |
@@ -73,10 +77,10 @@ jobs:
           set -euo pipefail
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add assets/badge_catalog_v2_complete.json \
+          git add assets/badge_catalog_v*_complete.json assets/mapping_core_brain_ui_v*_complete.json \
                   assets/source assets/transparent assets/dark assets/light \
                   assets/stream-badges-dark.json assets/stream-badges-light.json assets/stream-badges-transparent.json assets/stream-badges-fusion.json \
-                  assets/stream-badges-dark-v4.json assets/stream-badges-light-v4.json assets/stream-badges-transparent-v4.json assets/stream-badges-fusion-v4.json \
+                  assets/stream-badges-*-v*.json \
                   assets/docs/BADGE_QA.json assets/docs/LIGHT_BADGE_QA.json
           if git diff --cached --quiet; then
             echo 'Badge system already materialized.'
