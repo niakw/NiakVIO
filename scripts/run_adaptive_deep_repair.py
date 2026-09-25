@@ -22,6 +22,7 @@ from guard_nuvio_client_brain_compat import guard as guard_nuvio_client_brain_co
 from provider_byte_stability import verify_candidate, verify_registry  # noqa: E402
 from repair_identity_gate import automatic_repair_identity_gate  # noqa: E402
 from repair_profile_persistence import ensure_repair_profile  # noqa: E402
+from audit_brain_harness_differential import audit as audit_harness_differential, write as write_harness_differential  # noqa: E402
 
 loaded = Path(runtime_repair.__file__).resolve()
 expected = (ADAPTIVE / "runtime_repair.py").resolve()
@@ -33,6 +34,10 @@ _base_create = loop.create_repair_candidate
 _base_run_health = loop.run_health
 _base_matching = loop.matching_profiles
 _base_accepted_runtime_program = loop.accepted_runtime_program
+
+_HARNESS_DIFFERENTIAL_PROVIDERS: set[str] = set()
+_HARNESS_DIFFERENTIAL_ROWS: list[dict] = []
+_HARNESS_DIFFERENTIAL_AUDITED = False
 
 
 
@@ -70,15 +75,71 @@ def _profiled_create(stage, candidate, profile_name, round_number):
 
 
 def _brain_run_health(*, stage, registry_path, output_dir, mode, health_check=loop.HEALTH_CHECK):
+    global _HARNESS_DIFFERENTIAL_AUDITED
     report = _base_run_health(
         stage=stage, registry_path=registry_path, output_dir=output_dir,
         mode="deep", health_check=health_check,
     )
+
+    # The first Deep health result is the immutable baseline, before any Brain
+    # mutation. If provider_worker observes zero provider requests, replay only
+    # that exact fixture through the production-like Nuvio probe against the
+    # exact same staged bytes. A disagreement is harness debt, not provider debt.
+    if not _HARNESS_DIFFERENTIAL_AUDITED:
+        _HARNESS_DIFFERENTIAL_AUDITED = True
+        registry = json.loads(Path(registry_path).read_text(encoding="utf-8"))
+        differential = audit_harness_differential(
+            stage=Path(stage),
+            registry=registry,
+            health=report,
+            timeout=55,
+        )
+        _HARNESS_DIFFERENTIAL_PROVIDERS.update(
+            str(value or "").strip().casefold().replace("_", "-")
+            for value in differential.get("providers") or []
+            if str(value or "").strip()
+        )
+        _HARNESS_DIFFERENTIAL_ROWS.extend(
+            row for row in differential.get("rows") or [] if isinstance(row, dict)
+        )
+        write_harness_differential(
+            Path(output_dir).resolve().parent / "harness-differential.json",
+            differential,
+        )
+        if _HARNESS_DIFFERENTIAL_PROVIDERS:
+            print(
+                "FIELD_BRAIN_HARNESS_DIFFERENTIAL_BLOCK "
+                f"providers={len(_HARNESS_DIFFERENTIAL_PROVIDERS)} "
+                f"ids={','.join(sorted(_HARNESS_DIFFERENTIAL_PROVIDERS))}",
+                flush=True,
+            )
+
     brain.update_plans(registry_path, report, "deep")
+    if _HARNESS_DIFFERENTIAL_PROVIDERS:
+        for plan in brain.PLANS.values():
+            if not isinstance(plan, dict):
+                continue
+            provider = str(plan.get("providerId") or "").strip().casefold().replace("_", "-")
+            if provider not in _HARNESS_DIFFERENTIAL_PROVIDERS:
+                continue
+            plan["repairScope"] = "harness-compatibility"
+            plan["repairType"] = "harness_differential"
+            plan["action"] = "collect-more-evidence"
+            plan["learningDisposition"] = "harness-fix-required-before-provider-learning"
+            plan["allowedProfiles"] = []
+            plan["experimentExhausted"] = False
+            plan["exitReason"] = "same-byte-nuvio-worker-request-differential"
     return report
 
 
 def _brain_matching(candidate, result, source_text, config=None):
+    provider = str(
+        candidate.get("canonical_id")
+        or candidate.get("upstream_id")
+        or ""
+    ).strip().casefold().replace("_", "-")
+    if provider in _HARNESS_DIFFERENTIAL_PROVIDERS:
+        return []
     key = str(candidate.get("key") or "")
     parent_key = str((candidate.get("runtime_repair") or {}).get("parent_key") or "")
     plan_key = parent_key or key
@@ -116,6 +177,10 @@ def main() -> int:
     original_config = HEALTH_CONFIG.read_bytes()
     original_argv = list(sys.argv)
     try:
+        global _HARNESS_DIFFERENTIAL_AUDITED
+        _HARNESS_DIFFERENTIAL_PROVIDERS.clear()
+        _HARNESS_DIFFERENTIAL_ROWS.clear()
+        _HARNESS_DIFFERENTIAL_AUDITED = False
         brain.reset_runtime_state()
         health_config = json.loads(original_config.decode("utf-8"))
         deep_config = health_config.setdefault("modes", {}).setdefault("deep", {})
@@ -189,6 +254,14 @@ def main() -> int:
                 f"settings_profiles={deep_config['max_settings_profiles']}"
             )
         rc = loop.main()
+        report_path = output / "repair-report.json"
+        repair_report = json.loads(report_path.read_text(encoding="utf-8"))
+        repair_report["harnessDifferentialProviders"] = sorted(_HARNESS_DIFFERENTIAL_PROVIDERS)
+        repair_report["harnessDifferentialEvidence"] = list(_HARNESS_DIFFERENTIAL_ROWS)
+        report_path.write_text(
+            json.dumps(repair_report, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
+            encoding="utf-8",
+        )
         brain.annotate_and_learn(output, "deep")
         return int(rc)
     finally:
