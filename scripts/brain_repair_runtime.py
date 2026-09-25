@@ -994,6 +994,16 @@ def wrap_create_repair_candidate(base_create: Callable[..., tuple[dict[str, Any]
 def annotate_and_learn(output_dir: Path, mode: str) -> dict[str, Any]:
     report_path = output_dir / "repair-report.json"
     report = _load_json(report_path, {})
+    harness_differential_providers = {
+        str(value or "").strip().casefold().replace("_", "-")
+        for value in report.get("harnessDifferentialProviders") or []
+        if str(value or "").strip()
+    }
+
+    def harness_differential_plan(plan: dict[str, Any]) -> bool:
+        provider = str(plan.get("providerId") or "").strip().casefold().replace("_", "-")
+        return bool(provider and provider in harness_differential_providers)
+
     learning_mode = str(mode).casefold() == "learning"
     current_policy = policy()
     production = current_policy.get("production") if isinstance(current_policy.get("production"), dict) else {}
@@ -1173,6 +1183,8 @@ def annotate_and_learn(output_dir: Path, mode: str) -> dict[str, Any]:
             for parent_key, plan in PLANS.items():
                 if not isinstance(plan, dict):
                     continue
+                if harness_differential_plan(plan):
+                    continue
                 if str(plan.get("action") or "") != "probe-targeted-repair":
                     continue
                 attempted = attempted_profiles_by_parent.get(str(parent_key), set())
@@ -1200,6 +1212,8 @@ def annotate_and_learn(output_dir: Path, mode: str) -> dict[str, Any]:
                     continue
                 parent_key = str(attempt.get("parent_key") or "")
                 plan = event_plan(attempt, parent_key)
+                if harness_differential_plan(plan):
+                    continue
                 profile = str(attempt.get("profile") or "")
                 if memory_policy.get("enabled") is not True or not profile:
                     continue
@@ -1235,6 +1249,8 @@ def annotate_and_learn(output_dir: Path, mode: str) -> dict[str, Any]:
                     if not parent_key or parent_key in accepted_parent_keys:
                         continue
                     plan = event_plan(progress, parent_key)
+                    if harness_differential_plan(plan):
+                        continue
                     profile = str(progress.get("profile") or "")
                     if not profile:
                         continue
@@ -1253,6 +1269,8 @@ def annotate_and_learn(output_dir: Path, mode: str) -> dict[str, Any]:
                     continue
                 parent_key = str(rejected.get("parent_key") or "")
                 plan = event_plan(rejected, parent_key)
+                if harness_differential_plan(plan):
+                    continue
                 profile = str(rejected.get("profile") or "")
                 if not profile:
                     repair_key = str(rejected.get("repair_key") or "")
@@ -1380,10 +1398,16 @@ def annotate_and_learn(output_dir: Path, mode: str) -> dict[str, Any]:
         "learningExecuted": learning_mode,
         "validatedRepairLearningExecuted": bool(record_skill_memory and not learning_mode),
         "learningLane": "independent_daily_lab" if learning_mode else ("validated_repair_skill_memory" if record_skill_memory else "none"),
+        "harnessDifferentialProviders": sorted(harness_differential_providers),
         "queuedForLearning": sorted({
             str(row.get("providerId") or key)
             for key, row in PLANS.items()
-            if isinstance(row, dict) and str(row.get("repairScope") or "") in {"learning", "deferred"}
+            if (
+                isinstance(row, dict)
+                and str(row.get("repairScope") or "") in {"learning", "deferred"}
+                and str(row.get("providerId") or key).strip().casefold().replace("_", "-")
+                not in harness_differential_providers
+            )
         }),
         "privacy": "sanitized-no-raw-endpoints-tokens-header-values-private-notes",
     }
