@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 import importlib.util
+import json
+import tempfile
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[1];SCRIPT=ROOT/"scripts/import_external_brain_llm_guidance.py"
 spec=importlib.util.spec_from_file_location("external_guidance",SCRIPT);assert spec and spec.loader
@@ -31,6 +33,14 @@ not_failed,dropped=mod.filter_failed_guidance(mod.sanitize(base,current_sha="c"*
  {"providerId":"movie-box","profile":"player_media_extractor_v1","llmAdvisorExperimentFingerprint":"e"*64,"consecutiveFailures":1}
 ]}})
 assert dropped==0 and not_failed["providerCount"]==1,not_failed
+with tempfile.TemporaryDirectory() as tmp:
+ p1=Path(tmp)/"repair.json";p2=Path(tmp)/"learning.json"
+ p1.write_text(json.dumps({"entries":[{"providerId":"movie-box","profile":"player_media_extractor_v1","llmAdvisorExperimentFingerprint":fp,"consecutiveFailures":1}]}),encoding="utf-8")
+ p2.write_text(json.dumps({"experimentMemory":{"entries":[{"providerId":"yflix","profile":"proven_route_terminal_traversal_v1","llmAdvisorExperimentFingerprint":fp,"consecutiveFailures":1}]}}),encoding="utf-8")
+ merged,total=mod.filter_failed_guidance_files(mod.sanitize(base2,current_sha="c"*40),[p1,p2])
+ assert total==2,(merged,total)
+ assert merged["providerCount"]==0 and merged["rows"]==[],merged
+assert 'action="append"' in SCRIPT.read_text(encoding="utf-8")
 ok,blocked=mod.neutral_source_drift([".github/workflows/provider-recognition-repair-v6.yml",".github/triggers/provider-recognition-repair-v6.json","tests/x.py","scripts/import_external_brain_llm_guidance.py","scripts/brain_repair_runtime.py","scripts/run_provider_brain_repair.py","scripts/select_provider_materialization_scope.py","scripts/run_provider_repair_pipeline_v6.py","engine_v2/scripts/plan-repairs.mjs","automation/brain-repair-memory.json","automation/brain-positive-program-memory.json","automation/provider-brain-repair-123.json","automation/provider-targeted-regression-recovery-latest.json","automation/provider-repair-batch-refined-latest.json","MEMORY.md"]);assert ok and not blocked
 ok,blocked=mod.neutral_source_drift(["provider-overrides.json","providers/demo.js"]);assert not ok and blocked==["provider-overrides.json","providers/demo.js"]
 for bad in [

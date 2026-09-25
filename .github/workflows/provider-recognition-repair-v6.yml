@@ -493,7 +493,7 @@ jobs:
              && git cat-file -e "$external_ref:guidance/niakvio-guidance.json" 2>/dev/null; then
             git show "$external_ref:guidance/niakvio-guidance.json" > "$RUNNER_TEMP/external-brain-llm-guidance.json"
             guidance_commit="$(git rev-parse "$external_ref")"
-            if python scripts/import_external_brain_llm_guidance.py --input "$RUNNER_TEMP/external-brain-llm-guidance.json" --output "$RUNNER_TEMP/external-brain-llm-guidance-repair.json" --current-sha "$GITHUB_SHA" --guidance-commit "$guidance_commit" --negative-memory automation/brain-repair-memory.json; then
+            if python scripts/import_external_brain_llm_guidance.py --input "$RUNNER_TEMP/external-brain-llm-guidance.json" --output "$RUNNER_TEMP/external-brain-llm-guidance-repair.json" --current-sha "$GITHUB_SHA" --guidance-commit "$guidance_commit" --negative-memory automation/brain-repair-memory.json --negative-memory "$RUNNER_TEMP/brain-learning-latest.json"; then
               external_count="$(python -c 'import json; d=json.load(open("'"$RUNNER_TEMP"'/external-brain-llm-guidance-repair.json")); print(int(d.get("providerCount") or 0))')"
               if [ "$external_count" -gt 0 ]; then
                 echo "NIAKVIO_BRAIN_LLM_GUIDANCE=$RUNNER_TEMP/external-brain-llm-guidance-repair.json" >> "$GITHUB_ENV"
@@ -512,13 +512,19 @@ jobs:
           if [ "$external_imported" != "true" ]; then
             if git cat-file -e refs/remotes/origin/brain-learning/proposals:engine_v2/learning/llm-guidance.json 2>/dev/null; then
               git show refs/remotes/origin/brain-learning/proposals:engine_v2/learning/llm-guidance.json > "$RUNNER_TEMP/brain-learning-llm-guidance.json"
-              python - "$RUNNER_TEMP/brain-learning-llm-guidance.json" "$RUNNER_TEMP/brain-learning-llm-guidance-repair.json" "$GITHUB_SHA" <<'PY'
+              python - "$RUNNER_TEMP/brain-learning-llm-guidance.json" "$RUNNER_TEMP/brain-learning-llm-guidance-repair.json" "$GITHUB_SHA" automation/brain-repair-memory.json "$RUNNER_TEMP/brain-learning-latest.json" <<'PY'
           import json,re,sys
           from pathlib import Path
           sys.path.insert(0,str(Path.cwd()/"scripts"))
           from brain_llm_experiment import validate_public
           from import_external_brain_llm_guidance import canon,failed_llm_experiments
           source=Path(sys.argv[1]);destination=Path(sys.argv[2]);current_sha=sys.argv[3].strip().lower()
+          negative_paths=[Path(value) for value in sys.argv[4:]]
+          failed=set()
+          for path in negative_paths:
+              if not path.is_file(): continue
+              value=json.loads(path.read_text(encoding="utf-8"))
+              if isinstance(value,dict): failed.update(failed_llm_experiments(value))
           data=json.loads(source.read_text(encoding="utf-8"))
           for key in ("publicationAuthority","directMutationAuthority","proofAuthority","rawMutationContentRetained"):
               if data.get(key) is not False: raise SystemExit(f"unsafe persistent LLM guidance flag: {key}")
@@ -529,11 +535,6 @@ jobs:
           if schema not in {1,2}: raise SystemExit("unsupported persistent LLM guidance schema")
           allowed_v1={"providerId","failureClass","targetLayer","strategy","profile","confidence","priorOnly"}
           allowed_v2=allowed_v1|{"experiment","experimentFingerprint"}
-          failed=set()
-          memory_path=Path("automation/brain-repair-memory.json")
-          if memory_path.is_file():
-              memory=json.loads(memory_path.read_text(encoding="utf-8"))
-              if isinstance(memory,dict): failed=failed_llm_experiments(memory)
           safe=[];dropped_failed=0
           for row in rows:
               allowed=allowed_v2 if schema>=2 else allowed_v1

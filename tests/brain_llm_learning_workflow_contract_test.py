@@ -20,6 +20,7 @@ for required in (
     "NIAKVIO_BRAIN_LLM_GUIDANCE=$GITHUB_WORKSPACE/$final",
     "Prepare Fast-Handoff cached Brain LLM guidance",
     "--negative-memory brain-learning-input/previous.json",
+    "--negative-memory automation/brain-repair-memory.json",
     "FAST_MISSING_PROVIDERS: ${{ steps.brain_llm_fast_cache.outputs.missing_providers }}",
     "FIELD_BRAIN_LLM_FAST_CACHE",
     "fallback=cached-or-deterministic",

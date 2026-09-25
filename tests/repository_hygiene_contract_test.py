@@ -262,7 +262,7 @@ codeql = (ROOT / ".github/workflows/codeql.yml").read_text(encoding="utf-8")
 assert "javascript-typescript" in codeql
 assert "python" in codeql
 assert "security-extended" in codeql
-assert "group: niakvio-codeql" in codeql
+assert "group: niakvio-codeql-${{ github.ref }}" in codeql
 assert "cancel-in-progress: true" in codeql
 assert "\n  push:\n    branches: [main]" in codeql, (
     "CodeQL must analyze every main push for the exact-SHA Final Gate"
