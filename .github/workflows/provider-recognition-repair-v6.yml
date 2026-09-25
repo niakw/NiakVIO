@@ -104,6 +104,7 @@ jobs:
           python -m py_compile \
             scripts/run_provider_repair_pipeline_v6.py \
             scripts/run_provider_brain_repair.py \
+            scripts/recover_brain_positive_program_memory.py \
             scripts/sanitize_brain_learning_memory.py \
             scripts/brain_llm_experiment.py \
             scripts/import_external_brain_llm_guidance.py \
@@ -150,6 +151,7 @@ jobs:
           python tests/brain_accepted_program_v3_compiler_test.py
           python tests/brain_accepted_program_v3_persistence_test.py
           python tests/brain_positive_program_memory_test.py
+          python tests/brain_positive_program_recovery_test.py
           python tests/brain_positive_program_runtime_priority_test.py
           python tests/brain_positive_program_cross_failure_replay_test.py
           python tests/brain_historical_experience_scope_test.py
