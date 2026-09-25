@@ -303,10 +303,17 @@ def apply_payload(
     if not isinstance(rows, list):
         raise ValueError("Force mutation rows missing")
 
+    seen_force_providers: set[str] = set()
     for raw in rows[:128]:
         if not isinstance(raw, dict):
             raise ValueError("invalid Force mutation row")
         provider = canon(raw.get("providerId"))
+        if provider in seen_force_providers:
+            raise ValueError(
+                f"{provider}: multiple concrete Force candidates cannot share one mutable sandbox"
+            )
+        if provider:
+            seen_force_providers.add(provider)
         if provider not in selected:
             skipped.append({"provider": provider or "<missing>", "reason": "outside-current-repair-scope"})
             continue
