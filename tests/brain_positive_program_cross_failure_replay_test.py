@@ -78,11 +78,11 @@ generic = {
     "actions": ["generic chain repair"],
 }
 
-def plan_for(provider: str, negative_memory: list[dict] | None = None) -> dict:
+def plan_for(provider: str, negative_memory: list[dict] | None = None, *, mode: str = "learning") -> dict:
     item_candidate = copy.deepcopy(candidate)
     item_candidate["canonical_id"] = provider
     payload = {
-        "mode": "learning",
+        "mode": mode,
         "policy": policy,
         "learnedSkills": {
             positive["id"]: positive,
@@ -156,6 +156,26 @@ assert replay["postExhaustionStrategyProfile"] == "provider_positive_program_rep
 assert replay["allowedProfiles"][0] == "provider_positive_program_replay_v1", replay
 assert replay["positiveProgramFingerprint"] == "a" * 64, replay
 
+# Repair must be allowed to replay a strictly validated program from the same
+# provider after the ordinary deterministic family is exhausted. It remains a
+# candidate only: current-byte playback/identity/non-regression still decide.
+production_replay = plan_for("mallumv-like", exhausted_memory, mode="repair")
+assert production_replay["action"] == "probe-targeted-repair", production_replay
+assert production_replay["providerPositiveProgramReplay"] is True, production_replay
+assert production_replay["providerPositiveProgramProductionRescue"] is True, production_replay
+assert production_replay["postExhaustionStrategyProfile"] == "provider_positive_program_replay_v1", production_replay
+assert production_replay["allowedProfiles"][0] == "provider_positive_program_replay_v1", production_replay
+assert production_replay["positiveProgramFingerprint"] == "a" * 64, production_replay
+assert production_replay["repairScope"] not in {"learning", "deferred"}, production_replay
+assert production_replay["repairEngine"] != "brain_learning_lab", production_replay
+
+# Before exhaustion, the same-provider positive prior may participate in Repair
+# hypothesis ordering, but it still cannot grant acceptance by itself.
+production_initial = plan_for("mallumv-like", mode="repair")
+assert production_initial["action"] == "probe-targeted-repair", production_initial
+assert production_initial["hypotheses"], production_initial
+assert production_initial["hypotheses"][0]["id"] == positive["id"], production_initial
+
 # Legacy replay debt has no exact positive-program identity. Once current
 # positive memory is fingerprinted, that old debt cannot condemn the new
 # provider-local replay program.
@@ -198,8 +218,10 @@ assert after_failed_replay["postExhaustionStrategyProfile"] != "provider_positiv
 # current failure class is similar. Provider-local positive memory is not a
 # transferable skill.
 other = plan_for("other-provider")
+other_production = plan_for("other-provider", mode="repair")
 assert all(row["id"] != positive["id"] for row in other["hypotheses"]), other
 assert other["hypotheses"][0]["id"] == generic["id"], other
+assert all(row["id"] != positive["id"] for row in other_production["hypotheses"]), other_production
 
 planner_source = PLANNER.read_text(encoding="utf-8")
 assert "sameProviderPositiveProgram" in planner_source
