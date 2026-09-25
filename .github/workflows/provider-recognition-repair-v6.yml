@@ -267,6 +267,7 @@ jobs:
           python scripts/classify_provider_authority.py
           python - <<'PY'
           import json
+          import os
           from pathlib import Path
           state=json.loads(Path("automation/provider-census-status.json").read_text(encoding="utf-8"))
           authority=json.loads(Path("automation/provider-authority-status.json").read_text(encoding="utf-8"))
