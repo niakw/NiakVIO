@@ -24,8 +24,10 @@ for required in (
     "FAST_MISSING_PROVIDERS: ${{ steps.brain_llm_fast_cache.outputs.missing_providers }}",
     "FIELD_BRAIN_LLM_FAST_CACHE",
     "fallback=cached-or-deterministic",
-    "llama-cpp-b11140-ubuntu-x64",
+    "Download and verify official llama.cpp binary when needed",
     "llama-b11140-bin-ubuntu-x64.tar.gz",
+    "460c45fa8a9ebc36c9b08e3a15c06dbdbeb312c6308599521c84d9e7f92a268b",
+    "sha256sum -c -",
 ):
     assert required in llm, required
 
@@ -45,4 +47,4 @@ for required in (
 ):
     assert required in workflow, required
 
-print("Brain LLM Learning workflow interpolation contract passed")
+assert "key: llama-cpp-b11140-ubuntu-x64" not in llm, "executable llama.cpp binary must not be restored from actions/cache"\n\nprint("Brain LLM Learning workflow interpolation contract passed")
