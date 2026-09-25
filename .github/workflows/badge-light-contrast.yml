@@ -62,6 +62,8 @@ jobs:
           python scripts/regenerate_badges.py --apply
           python scripts/normalize_badge_feeds.py --apply
           python scripts/validate_badge_system.py
+          python tests/badge_versioning_contract_test.py
+          python tests/stream_score_contract_test.py
 
       - name: Prove deterministic fixed point
         shell: bash
@@ -70,6 +72,8 @@ jobs:
           python scripts/regenerate_badges.py --check
           python scripts/normalize_badge_feeds.py --check
           python scripts/validate_badge_system.py
+          python tests/badge_versioning_contract_test.py
+          python tests/stream_score_contract_test.py
 
       - name: Publish redesigned badge tree when materialization changed files
         shell: bash
