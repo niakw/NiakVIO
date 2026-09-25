@@ -1,6 +1,6 @@
 const UNKNOWN = /^(?:unknown|inconnue?|n\/a|na|none|null|undefined|-)$/i;
 const QUALITY_PLACEHOLDER = /^(?:0|auto|automatic|source|original|default|unknown|inconnue?|n\/a|na|none|null|undefined|-)$/i;
-const QUALITY_RANK = Object.freeze({ "240p": 240, "360p": 360, "480p": 480, "576p": 576, "720p": 720, "1080p": 1080, "1440p": 1440, "2160p": 2160, "4320p": 4320 });
+const QUALITY_RANK = Object.freeze({ "240p": 240, "360p": 360, "480p": 480, "576p": 576, "720p": 720, "1080i": 1080, "1080p": 1081, "1440p": 1440, "2160p": 2160, "4320p": 4320 });
 
 export function presentStreamCandidates(streams, metadata = {}, provider = {}) {
   return (Array.isArray(streams) ? streams : []).map((stream) => presentStreamCandidate(stream, metadata, provider));
@@ -96,8 +96,12 @@ export function collectFacts(stream = {}, metadata = {}, provider = {}) {
 export function buildBadges(facts = {}) {
   const out = [];
   if (facts.quality) out.push(qualityLabel(facts.quality));
-  if (facts.sourceType) out.push(facts.sourceType);
-  if (facts.releaseType) out.push(facts.releaseType);
+  if (facts.sourceType === "ULTRA HD BLU-RAY" && facts.releaseType === "REMUX") out.push("UHD REMUX");
+  else if (facts.sourceType === "BLU-RAY" && facts.releaseType === "REMUX") out.push("BD REMUX");
+  else {
+    if (facts.sourceType) out.push(facts.sourceType);
+    if (facts.releaseType) out.push(facts.releaseType);
+  }
   if (facts.format) out.push(facts.format);
   if (facts.edition) out.push(facts.edition);
   out.push(...(facts.videoTech ?? []));
@@ -121,11 +125,15 @@ export function buildBadges(facts = {}) {
 
 export function buildBadgeIds(facts = {}) {
   const ids = [];
-  const quality = { "4320p": "8k-ultra-hd", "2160p": "4k-ultra-hd", "1440p": "1440p", "1080p": "1080p-full-hd", "720p": "720p-hd", "576p": "576p", "480p": "480p-sd", "360p": "360p", "240p": "240p" }[facts.quality];
+  const quality = { "4320p": "8k-ultra-hd", "2160p": "4k-ultra-hd", "1440p": "1440p", "1080i": "1080i", "1080p": "1080p-full-hd", "720p": "720p-hd", "576p": "576p", "480p": "480p-sd", "360p": "360p", "240p": "240p" }[facts.quality];
   if (quality) ids.push(quality);
-  const source = { "ULTRA HD BLU-RAY": "uhd-blu-ray", "BLU-RAY": "blu-ray-disc", "WEB-DL": "webdl", WEBRIP: "webrip", HDTV: "hdtv", "DVD RIP": "dvd-rip", DVD: "dvd", CAM: "cam", TELESYNC: "telesync", TELECINE: "telecine" }[facts.sourceType];
-  if (source) ids.push(source);
-  if (facts.releaseType === "REMUX") ids.push("remux");
+  if (facts.sourceType === "ULTRA HD BLU-RAY" && facts.releaseType === "REMUX") ids.push("uhd-remux");
+  else if (facts.sourceType === "BLU-RAY" && facts.releaseType === "REMUX") ids.push("blu-ray-remux");
+  else {
+    const source = { "ULTRA HD BLU-RAY": "uhd-blu-ray", "BLU-RAY": "blu-ray-disc", BDMV: "bdmv", "WEB-DL": "webdl", WEBRIP: "webrip", HDTV: "hdtv", "DVD RIP": "dvd-rip", DVD: "dvd", CAM: "cam", TELESYNC: "telesync", TELECINE: "telecine" }[facts.sourceType];
+    if (source) ids.push(source);
+    if (facts.releaseType === "REMUX") ids.push("remux");
+  }
   const format = { HLS: "hls", DASH: "dash", MKV: "mkv", MP4: "mp4", WEBM: "webm", "MPEG-TS": "mpeg-ts", M2TS: "m2ts" }[facts.format];
   if (format) ids.push(format);
   const videoIds = { "Dolby Vision": "dolby-vision", "HDR10+": "hdr10-plus", HDR10: "hdr10", HDR: "hdr", HLG: "hlg", SDR: "sdr", "IMAX Enhanced": "imax-enhanced", IMAX: "imax", "3D": "3d" };
@@ -178,6 +186,7 @@ function preciseQuality(value, allowBare = true) {
   if (!text || QUALITY_PLACEHOLDER.test(text)) return null;
   if (/\b(?:4K|UHD)\b/i.test(text)) return "2160p";
   if (/\b(?:QHD|2K)\b/i.test(text)) return "1440p";
+  if (/\b1080\s*i\b/i.test(text)) return "1080i";
   if (/\b(?:FHD|FULL[ ._-]?HD)\b/i.test(text)) return "1080p";
   const dimensions = text.match(/(?:^|[^0-9])(\d{3,4})\s*[x×]\s*(4320|2160|1440|1080|720|576|480|360|240)(?:[^0-9]|$)/i);
   if (dimensions) return `${dimensions[2]}p`;
@@ -450,6 +459,7 @@ export function normalizeSourceType(value) {
   const text = useful(value);
   if (!text) return null;
   const compact = text.toUpperCase().replace(/[._\s]+/g, "-");
+  if (/\bBDMV\b/.test(text.toUpperCase())) return "BDMV";
   if (/ULTRA-?HD-?BLU-?RAY|UHD-?BLU-?RAY|UHD-?BD/.test(compact)) return "ULTRA HD BLU-RAY";
   if (/BLU-?RAY|BDRIP|BRRIP/.test(compact)) return "BLU-RAY";
   if (/WEB-?DL/.test(compact)) return "WEB-DL";
@@ -659,7 +669,7 @@ function languageLine(facts) {
 function technicalLine(facts) {
   const groups = [];
   const video = [];
-  const source = [facts.sourceType, facts.releaseType].filter(Boolean).join(" ");
+  const source = facts.sourceType === "ULTRA HD BLU-RAY" && facts.releaseType === "REMUX" ? "UHD REMUX" : facts.sourceType === "BLU-RAY" && facts.releaseType === "REMUX" ? "BD REMUX" : [facts.sourceType, facts.releaseType].filter(Boolean).join(" ");
   if (source) video.push(source);
   if (facts.edition) video.push(facts.edition);
   if (facts.codec) video.push(`${facts.codec}${facts.bitDepth ? ` ${facts.bitDepth}` : ""}`); else if (facts.bitDepth) video.push(facts.bitDepth);
@@ -704,7 +714,7 @@ function isSeries(metadata) {
   return ["tv", "series", "anime"].includes(String(metadata.mediaType ?? metadata.type ?? "movie").toLowerCase());
 }
 
-function qualityLabel(value) { return value === "2160p" ? "4K" : clean(value); }
+function qualityLabel(value) { return value === "4320p" ? "8K" : value === "2160p" ? "4K" : clean(value); }
 
 function formatDuration(minutes) {
   const total = Math.max(1, Math.round(Number(minutes)));

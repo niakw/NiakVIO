@@ -151,6 +151,16 @@ assert.ok(kehflix1080.badgeIds.includes("mp4"));
 const kehflix4k = presentStreamCandidate({ name: "Kehflix", url: "https://media.example/a.mp4", quality: "2160p" }, { mediaType: "movie" }, kehflixProvider);
 assert.equal(kehflix4k.title, "Kehflix - 4K");
 assert.equal(kehflix4k.name, "Kehflix - 4K");
+const kehflix1080i = presentStreamCandidate({ name: "Kehflix", url: "https://media.example/a.ts", quality: "1080i" }, { mediaType: "movie" }, kehflixProvider);
+assert.equal(kehflix1080i.title, "Kehflix - 1080i");
+assert.ok(kehflix1080i.badgeIds.includes("1080i"));
+const kehflix8k = presentStreamCandidate({ name: "Kehflix", url: "https://media.example/a.mkv", quality: "4320p" }, { mediaType: "movie" }, kehflixProvider);
+assert.equal(kehflix8k.title, "Kehflix - 8K");
+assert.ok(kehflix8k.badgeIds.includes("8k-ultra-hd"));
+assert.deepEqual(buildBadgeIds({ sourceType: "ULTRA HD BLU-RAY", releaseType: "REMUX", subtitles: [] }), ["uhd-remux"]);
+assert.deepEqual(buildBadgeIds({ sourceType: "BLU-RAY", releaseType: "REMUX", subtitles: [] }), ["blu-ray-remux"]);
+assert.deepEqual(buildBadgeIds({ sourceType: "BDMV", subtitles: [] }), ["bdmv"]);
+
 
 const richTechnical = presentStreamCandidate({
   name: "Anime CDN", url: "https://media.example/master.m3u8", resolution: "1920x1080", codec: "AVC",

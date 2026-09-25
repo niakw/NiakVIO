@@ -204,6 +204,23 @@ assert " - 1080p" in url_quality["title"], url_quality
 assert "1080p-full-hd" in url_quality["badgeIds"], url_quality
 assert "hls" in url_quality["badgeIds"], url_quality
 assert "HLS" in url_quality["description"], url_quality
+interlaced = run(
+    "module.exports={getStreams:async()=>[{name:'Kehflix - 1080i',url:'https://cdn.example/a.ts',quality:'1080i'}]};\n",
+    "kehflix",
+    "p.getStreams({mediaType:'movie',title:'Film'}).then(v=>console.log(JSON.stringify(v[0])))",
+)
+assert interlaced["quality"] == "1080i", interlaced
+assert interlaced["title"].endswith(" - 1080i"), interlaced
+assert "1080i" in interlaced["badgeIds"], interlaced
+
+uhd_remux = run(
+    "module.exports={getStreams:async()=>[{name:'Source',url:'https://cdn.example/a.mkv',sourceType:'UHD Blu-ray',releaseType:'REMUX'}]};\n",
+    "generic",
+    "p.getStreams({mediaType:'movie',title:'Film'}).then(v=>console.log(JSON.stringify(v[0])))",
+)
+assert "uhd-remux" in uhd_remux["badgeIds"], uhd_remux
+assert "UHD REMUX" in uhd_remux["description"], uhd_remux
+
 
 numeric_height = run(
     "module.exports={getStreams:async()=>[{name:'Source',url:'https://cdn.example/master.m3u8',height:2160}]};\n",

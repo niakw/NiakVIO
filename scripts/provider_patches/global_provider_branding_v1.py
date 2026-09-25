@@ -6,7 +6,7 @@ on local stream rows, one committed emoji per provider gives the textual stream
 name/title a stable identity. This layer runs *after* Core stream presentation so
 it never destroys provider-returned technical facts before they are normalized.
 
-V9 makes the final client-visible title deterministic after media safety: Core
+V10 keeps the final client-visible title deterministic after media safety: Core
 uses only the committed provider identity plus final verified/recovered quality in
 ``title``/``name``. Provider/player labels remain preserved as source facts. STREAM_FACTS keeps the original
 fields under ``source*`` before presentation mutates legacy UI fields; branding
@@ -81,7 +81,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **kwargs: Any) -> st
         "providerId": provider_id,
         "providerName": row["name"],
         "providerEmoji": row["emoji"],
-        "implementationRevision": "post-safety-uniform-final-label-v9",
+        "implementationRevision": "post-safety-uniform-final-label-v10",
     }
     serialized = json.dumps(payload, ensure_ascii=False, separators=(",", ":"))
     marker = f"{MARKER}:{hashlib.sha256(serialized.encode('utf-8')).hexdigest()[:12]}"
@@ -95,7 +95,7 @@ function label(){return(s(c.providerEmoji)+" "+s(c.providerName||c.providerId||"
 function placeholder(v){return/^(?:unknown|inconnu(?:e)?|n\/?a|none|null|undefined|unknown\s+(?:quality|language)|qualit(?:e|é)\s+inconnue|langue\s+inconnue|-+)$/i.test(s(v))}
 function cleanSource(v){var x=s(v);if(!x)return"";var m=x.match(/^(.*?)(?:\s*[-|•:]\s*)(unknown|inconnu(?:e)?|n\/?a|none|null|undefined|unknown\s+(?:quality|language)|qualit(?:e|é)\s+inconnue|langue\s+inconnue)$/i);if(m)x=s(m[1]);return placeholder(x)?"":x}
 function norm(v){return s(v).toLowerCase().replace(/[^a-z0-9à-ÿ]+/g,"")}
-function qualityToken(v){v=s(v);var u=v.toUpperCase();if(/(?:\b4K\b|\b2160P?\b|\bUHD\b)/.test(u))return"4K";var m=u.match(/\b(1440|1080|720|576|540|480|360)P?\b/);return m?m[1]+"p":""}
+function qualityToken(v){v=s(v);var u=v.toUpperCase();if(/(?:\b8K\b|\b4320P?\b)/.test(u))return"8K";if(/(?:\b4K\b|\b2160P?\b|\bUHD\b)/.test(u))return"4K";if(/\b1080I\b/.test(u))return"1080i";var m=u.match(/\b(1440|1080|720|576|540|480|360|240)P?\b/);return m?m[1]+"p":""}
 function oldQuality(old){old=s(old);var token=" - ",i=old.lastIndexOf(token);if(i<0)return"";var suffix=s(old.slice(i+token.length));return suffix&&!placeholder(suffix)?qualityToken(suffix)||suffix:""}
 function addUnique(out,value){value=cleanSource(value);if(!value)return;var n=norm(value);if(!n)return;for(var i=0;i<out.length;i++){var p=norm(out[i]);if(p===n||p.indexOf(n)>=0)return;if(n.indexOf(p)>=0){out[i]=value;return}}out.push(value)}
 function sourceParts(r){var out=[];addUnique(out,r&&r.sourceName);addUnique(out,r&&r.sourceTitle);addUnique(out,r&&r.sourceLabel);addUnique(out,r&&r.server);addUnique(out,r&&r.hoster);addUnique(out,r&&r.player);addUnique(out,r&&r.indexer);addUnique(out,r&&r.network);return out}

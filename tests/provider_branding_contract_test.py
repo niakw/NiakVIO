@@ -52,7 +52,7 @@ assert module.apply(
     context={"provider_id": "future-provider-never-seen-before"},
 ) == future_source
 
-# V9 safety-uniform visible-label contract: STREAM_FACTS preserves provider/player
+# V10 safety-uniform visible-label contract: STREAM_FACTS preserves provider/player
 # metadata under source* fields, while final branding keeps the user-facing label
 # deterministic as provider + strongest proven quality. Source metadata must not
 # be lost, but it is no longer re-injected into the visible title.
@@ -66,7 +66,7 @@ source = (
 )
 output = module.apply(source, context={"provider_id": "peachify"})
 assert "NUVIO_GLOBAL_PROVIDER_BRANDING_V1" in output
-assert "post-safety-uniform-final-label-v9" in output
+assert "post-safety-uniform-final-label-v10" in output
 assert "🍑" in output and "Peachify" in output
 assert module.apply(output, context={"provider_id": "peachify"}) == output
 expected = "🍑 Peachify - 1080p"
@@ -95,7 +95,33 @@ try:
 finally:
     artifact.unlink(missing_ok=True)
 
+for raw_quality, expected_suffix in [("1080i", "1080i"), ("4320p", "8K"), ("Inconnue", None), ("Unknown", None), ("N/A", None)]:
+    source = (
+        'globalThis.getStreams=async function(){return [{'
+        'url:"https://example.com/video.m3u8",'
+        'name:"Peachify - ' + raw_quality + '",title:"Peachify - ' + raw_quality + '",quality:' + json.dumps(raw_quality) +
+        '}]}\n'
+    )
+    branded = module.apply(source, context={"provider_id": "peachify"})
+    expected_title = "🍑 Peachify" + (f" - {expected_suffix}" if expected_suffix else "")
+    with tempfile.NamedTemporaryFile("w", suffix=".js", delete=False, encoding="utf-8") as handle:
+        handle.write(branded)
+        handle.write(
+            '\nPromise.resolve(globalThis.getStreams()).then(function(rows){'
+            'if(!Array.isArray(rows)||rows.length!==1||rows[0].title!==' + json.dumps(expected_title) + '||rows[0].name!==' + json.dumps(expected_title) + ')'
+            '{console.error(JSON.stringify(rows));process.exit(2)}'
+            'console.log(rows[0].title)'
+            '}).catch(function(error){console.error(error);process.exit(3)});\n'
+        )
+        artifact = Path(handle.name)
+    try:
+        result = subprocess.run(["node", str(artifact)], cwd=ROOT, text=True, capture_output=True, timeout=30, check=False)
+        assert result.returncode == 0, result.stdout + result.stderr
+        assert expected_title in result.stdout
+    finally:
+        artifact.unlink(missing_ok=True)
+
 print(
-    f"provider branding V8 contract passed: providers={len(rows)} "
+    f"provider branding V10 contract passed: providers={len(rows)} "
     "client_visible_name_title_quality=1 source_player_metadata_visible=1"
 )
