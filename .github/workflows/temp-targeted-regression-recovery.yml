@@ -73,7 +73,7 @@ jobs:
           fi
           python scripts/select_provider_materialization_scope.py --base "$base" --head HEAD --output /tmp/provider-materialization-scope.json
           python - <<'PY' >> "$GITHUB_OUTPUT"
-          import json,os,subprocess
+          import json,os,subprocess,sys
           d=json.load(open("manifest.json",encoding="utf-8"))
           scope=json.load(open("/tmp/provider-materialization-scope.json",encoding="utf-8"))
           count=len([x for x in d.get("scrapers") or [] if isinstance(x,dict)])
