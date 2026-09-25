@@ -144,8 +144,18 @@ def sanitize(value:dict[str,Any],*,current_sha:str,guidance_commit:str="")->dict
  if URLISH.search(json.dumps(payload,sort_keys=True)):raise ValueError("URL/credential-shaped text survived external guidance sanitizer")
  return payload
 
+def filter_failed_guidance_files(payload:dict[str,Any],paths:list[Path])->tuple[dict[str,Any],int]:
+ total=0
+ for path in paths:
+  if not path or not path.is_file():continue
+  memory=json.loads(path.read_text(encoding="utf-8"))
+  if not isinstance(memory,dict):continue
+  payload,dropped=filter_failed_guidance(payload,memory)
+  total+=dropped
+ return payload,total
+
 def main()->int:
- p=argparse.ArgumentParser();p.add_argument("--input",type=Path,required=True);p.add_argument("--output",type=Path,required=True);p.add_argument("--current-sha",required=True);p.add_argument("--guidance-commit",default="");p.add_argument("--negative-memory",type=Path);p.add_argument("--repo-root",type=Path,default=ROOT);a=p.parse_args()
+ p=argparse.ArgumentParser();p.add_argument("--input",type=Path,required=True);p.add_argument("--output",type=Path,required=True);p.add_argument("--current-sha",required=True);p.add_argument("--guidance-commit",default="");p.add_argument("--negative-memory",type=Path,action="append",default=[]);p.add_argument("--repo-root",type=Path,default=ROOT);a=p.parse_args()
  value=json.loads(a.input.read_text(encoding="utf-8"))
  payload=sanitize(value,current_sha=a.current_sha,guidance_commit=a.guidance_commit)
  changed,drifted_providers=source_drift(a.repo_root,payload["sourceExternalNiakvioSha"],payload["sourceSha"])
@@ -156,13 +166,10 @@ def main()->int:
   dropped=before-len(payload["rows"])
  else:
   dropped=0
- failed_dropped=0
- if a.negative_memory and a.negative_memory.is_file():
-  memory=json.loads(a.negative_memory.read_text(encoding="utf-8"))
-  if isinstance(memory,dict):payload,failed_dropped=filter_failed_guidance(payload,memory)
+ payload,failed_dropped=filter_failed_guidance_files(payload,list(a.negative_memory or []))
  payload["neutralDriftPaths"]=changed
  payload["droppedFailedExperimentRows"]=failed_dropped
  a.output.parent.mkdir(parents=True,exist_ok=True);a.output.write_text(json.dumps(payload,indent=2,sort_keys=True)+"\n",encoding="utf-8")
- print("FIELD_EXTERNAL_BRAIN_LLM_GUIDANCE "+f"providers={payload['providerCount']} source={payload['sourceExternalNiakvioSha'][:12]} current={payload['sourceSha'][:12]} neutral_drift={len(changed)} provider_drift={len(drifted_providers)} dropped_rows={dropped} failed_fingerprints={failed_dropped} private_content=false")
+ print("FIELD_EXTERNAL_BRAIN_LLM_GUIDANCE "+f"providers={payload['providerCount']} source={payload['sourceExternalNiakvioSha'][:12]} current={payload['sourceSha'][:12]} neutral_drift={len(changed)} provider_drift={len(drifted_providers)} dropped_rows={dropped} failed_fingerprints={failed_dropped} negative_memories={len(a.negative_memory or [])} private_content=false")
  return 0
 if __name__=="__main__":raise SystemExit(main())
