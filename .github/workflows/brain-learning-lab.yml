@@ -634,6 +634,54 @@ jobs:
           echo "llm_targets=$targets" >> "$GITHUB_OUTPUT"
           echo "FIELD_BRAIN_LLM_ROUTE llm_needed=$needed llm_targets=$targets"
 
+      - name: Prepare Fast-Handoff cached Brain LLM guidance
+        id: brain_llm_fast_cache
+        if: steps.brain_llm_route.outputs.llm_needed == 'true' && steps.learning-slot.outputs.fast_handoff == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p brain-sandbox/brain-llm
+          cached="brain-sandbox/brain-llm/guidance.cached.json"
+          raw="$RUNNER_TEMP/niakvio-guidance.fast-handoff.json"
+          : > "$RUNNER_TEMP/brain-llm-cache-import.log"
+          if git -C brain-llm fetch --quiet origin "+refs/heads/niakvio-guidance:refs/remotes/origin/niakvio-guidance" 2>/dev/null; then
+            guidance_commit="$(git -C brain-llm rev-parse refs/remotes/origin/niakvio-guidance 2>/dev/null || true)"
+            if git -C brain-llm show refs/remotes/origin/niakvio-guidance:guidance/niakvio-guidance.json > "$raw" 2>/dev/null; then
+              python scripts/import_external_brain_llm_guidance.py \
+                --input "$raw" \
+                --output "$cached" \
+                --current-sha "$GITHUB_SHA" \
+                --guidance-commit "$guidance_commit" \
+                --negative-memory brain-learning-input/previous.json \
+                > "$RUNNER_TEMP/brain-llm-cache-import.log" 2>&1 || true
+            fi
+          fi
+          python - "$cached" brain-sandbox/brain-llm/routing.jsonl "$GITHUB_OUTPUT" <<'PY'
+          import json,sys
+          from pathlib import Path
+          cached_path,routing_path,output_path=map(Path,sys.argv[1:])
+          cached={}
+          if cached_path.is_file():
+              try: cached=json.loads(cached_path.read_text(encoding='utf-8'))
+              except json.JSONDecodeError: cached={}
+          covered={str(r.get('providerId') or '').strip().casefold() for r in cached.get('rows') or [] if isinstance(r,dict)}
+          required=[]
+          for line in routing_path.read_text(encoding='utf-8').splitlines():
+              if not line.strip(): continue
+              row=json.loads(line)
+              mode=str((row.get('routing') or {}).get('mode') or '')
+              provider=str(row.get('provider') or '').strip().casefold()
+              if provider and mode in {'llm_diagnose','llm_repair'} and provider not in required:
+                  required.append(provider)
+          missing=[p for p in required if p not in covered]
+          complete=bool(required) and not missing
+          with output_path.open('a',encoding='utf-8') as out:
+              out.write('complete='+('true' if complete else 'false')+'\n')
+              out.write('missing_providers='+','.join(missing)+'\n')
+              out.write('cached_providers='+','.join(sorted(covered))+'\n')
+          print(f'FIELD_BRAIN_LLM_FAST_CACHE required={len(required)} covered={len(covered)} missing={len(missing)} complete={str(complete).lower()}')
+          PY
+          cat "$RUNNER_TEMP/brain-llm-cache-import.log" || true
       - uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25
         if: steps.brain_llm_route.outputs.llm_needed == 'true' && steps.learning-slot.outputs.fast_handoff != 'true'
         id: brain_llm_llama_cache
