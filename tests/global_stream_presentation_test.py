@@ -214,7 +214,7 @@ assert numeric_height["quality"] == "2160p", numeric_height
 assert " - 4K" in numeric_height["title"], numeric_height
 
 rich_technical = run(
-    "module.exports={getStreams:async()=>[{name:'Anime CDN',url:'https://cdn.example/master.m3u8',resolution:'1920x1080',codec:'AVC',bitrate:'6.0 Mbps',frameRate:'23.976 fps',audioCodec:'AAC',audioChannels:'Stereo',audioSampleRate:'48 kHz',language:'Korean'}]};\\n",
+    "module.exports={getStreams:async()=>[{name:'Anime CDN',url:'https://cdn.example/master.m3u8',resolution:'1920x1080',codec:'AVC',bitrate:'6.0 Mbps',frameRate:'23.976 fps',audioCodec:'AAC',audioChannels:'Stereo',audioSampleRate:'48 kHz',language:'Korean'}]};\n",
     "generic",
     "p.getStreams({mediaType:'anime',title:'Example Anime',year:2026,originalLanguage:'ko'}).then(v=>console.log(JSON.stringify(v[0])))",
 )
