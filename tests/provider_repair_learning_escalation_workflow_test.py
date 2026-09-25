@@ -105,6 +105,10 @@ assert "FIELD_FORCE_REPAIR_DIRECT_APPLY captured=true" in force_block
 assert "git cherry-pick --no-commit" in force_block
 assert "fix(force-repair): apply validated provider corrections + evidence" in force_block
 assert "scripts/provider_patches/" in force_block
+assert 'mode not in {"repair","force"}' in workflow
+assert 'data.get("directApplyValidated") is True' in force_block
+assert 'str(data.get("mode") or "").strip().casefold()=="force"' in force_block
+assert 'force_requested=1' in force_block
 
 learning_workflow=(ROOT/".github/workflows/brain-learning-lab.yml").read_text(encoding="utf-8")
 assert "productionWritesAllowed!==false" in learning_workflow
