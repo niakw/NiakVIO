@@ -129,6 +129,12 @@ assert 'mode not in {"repair","force"}' in workflow
 assert 'data.get("directApplyValidated") is True' in force_block
 assert 'str(data.get("mode") or "").strip().casefold()=="force"' in force_block
 assert 'force_requested=1' in force_block
+assert "require_external_force_mutations" in workflow
+assert "requireExternalForceMutations" in workflow
+assert "FIELD_BRAIN_LLM_FORCE_REQUIREMENT" in force_mutation_block
+assert "appliedProviderCount" in force_mutation_block
+assert "Explicit Force required external Brain mutations but none were applied" in force_mutation_block
+assert force_mutation < canonical
 
 learning_workflow=(ROOT/".github/workflows/brain-learning-lab.yml").read_text(encoding="utf-8")
 assert "productionWritesAllowed!==false" in learning_workflow
