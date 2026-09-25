@@ -1337,35 +1337,42 @@ jobs:
             )
             if [ "$deferred" -gt 0 ]; then
               test -n "$deferred_csv" || { echo "deferred Learning cohort unexpectedly empty" >&2; exit 1; }
-              dispatch_selection="$RUNNER_TEMP/provider-learning-dispatch-selection.json"
-              python scripts/provider_learning_dispatch_gate.py select \
-                --brain "$tmp/provider-brain-repair-latest.json" \
-                --ledger automation/provider-learning-dispatch-ledger.json \
-                --providers "$deferred_csv" \
-                --output "$dispatch_selection"
-              learning_csv="$(python -c 'import json,sys; d=json.load(open(sys.argv[1],encoding="utf-8")); print(d.get("providerFilter") or "")' "$dispatch_selection")"
-              learning_count="$(python -c 'import json,sys; d=json.load(open(sys.argv[1],encoding="utf-8")); print(int(d.get("eligibleProviderCount") or 0))' "$dispatch_selection")"
-              if [ "$learning_count" -gt 0 ]; then
-                echo "FIELD_PROVIDER_BRAIN_ESCALATE deferred=$deferred eligible=$learning_count providers=$learning_csv target=brain-learning-lab"
-                gh workflow run brain-learning-lab.yml \
-                  --repo "$GITHUB_REPOSITORY" \
-                  --ref main \
-                  -f publish_proposal=true \
-                  -f target_providers="$learning_csv" \
-                  -f slot_remaining_minutes=20 \
-                  -f slot_phase=1
-                python scripts/provider_learning_dispatch_gate.py mark \
-                  --ledger automation/provider-learning-dispatch-ledger.json \
-                  --selection "$dispatch_selection" \
-                  --repair-run-id "$GITHUB_RUN_ID"
-                git add automation/provider-learning-dispatch-ledger.json
-                if ! git diff --cached --quiet; then
-                  git commit -m "data(brain): record causal Learning dispatch from ${GITHUB_RUN_ID}"
-                  git pull --rebase origin main
-                  git push origin HEAD:main
-                fi
+              if [ "$force_requested" = "1" ]; then
+                # FORCE owns its unresolved cohort for this execution. Learning
+                # remains available only in its independent scheduled/manual slot
+                # and may later consume the persisted debt as proposal material.
+                echo "FIELD_PROVIDER_BRAIN_FORCE_DEBT deferred=$deferred providers=$deferred_csv learning_dispatch=false owner=force"
               else
-                echo "FIELD_PROVIDER_BRAIN_ESCALATE_SKIPPED deferred=$deferred reason=no-new-causal-fingerprint"
+                dispatch_selection="$RUNNER_TEMP/provider-learning-dispatch-selection.json"
+                python scripts/provider_learning_dispatch_gate.py select \
+                  --brain "$tmp/provider-brain-repair-latest.json" \
+                  --ledger automation/provider-learning-dispatch-ledger.json \
+                  --providers "$deferred_csv" \
+                  --output "$dispatch_selection"
+                learning_csv="$(python -c 'import json,sys; d=json.load(open(sys.argv[1],encoding="utf-8")); print(d.get("providerFilter") or "")' "$dispatch_selection")"
+                learning_count="$(python -c 'import json,sys; d=json.load(open(sys.argv[1],encoding="utf-8")); print(int(d.get("eligibleProviderCount") or 0))' "$dispatch_selection")"
+                if [ "$learning_count" -gt 0 ]; then
+                  echo "FIELD_PROVIDER_BRAIN_ESCALATE deferred=$deferred eligible=$learning_count providers=$learning_csv target=brain-learning-lab"
+                  gh workflow run brain-learning-lab.yml \
+                    --repo "$GITHUB_REPOSITORY" \
+                    --ref main \
+                    -f publish_proposal=true \
+                    -f target_providers="$learning_csv" \
+                    -f slot_remaining_minutes=20 \
+                    -f slot_phase=1
+                  python scripts/provider_learning_dispatch_gate.py mark \
+                    --ledger automation/provider-learning-dispatch-ledger.json \
+                    --selection "$dispatch_selection" \
+                    --repair-run-id "$GITHUB_RUN_ID"
+                  git add automation/provider-learning-dispatch-ledger.json
+                  if ! git diff --cached --quiet; then
+                    git commit -m "data(brain): record causal Learning dispatch from ${GITHUB_RUN_ID}"
+                    git pull --rebase origin main
+                    git push origin HEAD:main
+                  fi
+                else
+                  echo "FIELD_PROVIDER_BRAIN_ESCALATE_SKIPPED deferred=$deferred reason=no-new-causal-fingerprint"
+                fi
               fi
             fi
 
@@ -1383,10 +1390,13 @@ jobs:
               echo "FIELD_PROVIDER_BRAIN_RESUME remaining=$remaining processed=$processed unvisited=$unvisited target=provider-recognition-repair-v6"
               # Only unfinished work may resume Repair. Providers already visited
               # and deferred to Learning must not create a Repair -> Repair loop.
+              resume_mode=repair
+              if [ "$force_requested" = "1" ]; then resume_mode=force; fi
               gh workflow run provider-recognition-repair-v6.yml \
                 --repo "$GITHUB_REPOSITORY" \
                 --ref main \
-                -f mode=repair
+                -f mode="$resume_mode"
+              echo "FIELD_PROVIDER_BRAIN_RESUME_MODE mode=$resume_mode force_requested=$force_requested"
             elif [ "$resume" = "1" ] && [ "$remaining" -gt 0 ]; then
               echo "FIELD_PROVIDER_BRAIN_RESUME_SKIPPED reason=no-unvisited-provider remaining=$remaining processed=$processed unvisited=$unvisited"
             fi
