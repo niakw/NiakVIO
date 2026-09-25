@@ -63,6 +63,17 @@ for required_path in (
 if "path.startswith(('provider-disabled/','provider-old/'))" not in security_gate:
     errors.append('security-final-gate.yml: disabled/archive provider artifacts must remain visible to CodeQL but outside release-reachable alert blocking scope')
 
+
+brain_learning = (WORKFLOWS / 'brain-learning-lab.yml').read_text(encoding='utf-8')
+if 'path: .brain-llm-runtime/llama-prebuilt' in brain_learning:
+    errors.append('brain-learning-lab.yml: executable llama.cpp binaries must never be restored from actions/cache')
+if 'steps.brain_llm_llama_cache.outputs.cache-hit' in brain_learning:
+    errors.append('brain-learning-lab.yml: executable llama.cpp download must not depend on an actions/cache hit')
+if '460c45fa8a9ebc36c9b08e3a15c06dbdbeb312c6308599521c84d9e7f92a268b' not in brain_learning:
+    errors.append('brain-learning-lab.yml: pinned llama.cpp b11140 Ubuntu x64 archive digest is required')
+if 'sha256sum -c -' not in brain_learning:
+    errors.append('brain-learning-lab.yml: downloaded llama.cpp executable archive must be verified before extraction')
+
 if errors:
     raise SystemExit('workflow security policy failed:\n- ' + '\n- '.join(errors))
 print('workflow security policy tests passed')
