@@ -82,7 +82,7 @@ def _explicit_current_direct_candidate(cfg: dict[str, Any]) -> dict[str, Any] | 
     providers continue to follow live hub extraction unchanged.
     """
     authority = str(cfg.get("direct_authority") or "").strip().casefold()
-    if authority != "explicit_current":
+    if authority not in {"explicit_current", "operator_pin"}:
         return None
     direct = str(cfg.get("direct") or "").strip().rstrip("/")
     hostname = hubresolver.host(direct)
@@ -105,12 +105,49 @@ def _explicit_current_direct_candidate(cfg: dict[str, Any]) -> dict[str, Any] | 
                     break
     return {
         "url": direct,
-        "label": "registry explicit current terminal",
+        "label": ("registry operator pin terminal" if authority == "operator_pin" else "registry explicit current terminal"),
         "score": 1000,
         "source_type": "hub",
         "source": source,
-        "registry_explicit_current": True,
+        "registry_explicit_current": authority == "explicit_current",
+        "registry_operator_pin": authority == "operator_pin",
     }
+
+_FRESH_PRIMARY_MARKERS = (
+    "principal", "principale", "primary", "current", "actuel", "actuelle",
+    "actif", "active", "adresseactive", "domaineactif", "lienprincipal",
+    "utiliseztoujourscelien", "recommended", "recommande", "recommandé",
+)
+_STALE_PRIMARY_MARKERS = (
+    "ancien", "ancienne", "old", "backup", "secours", "miroir", "mirror",
+    "fallback", "bloque", "bloqué", "blocked", "ferme", "fermé", "closed",
+)
+
+
+def _fresh_authoritative_move_candidate(
+    provider_id: str,
+    cfg: dict[str, Any],
+    row: dict[str, Any],
+    current_url: str,
+) -> bool:
+    """Return whether live authority explicitly declares a newer terminal."""
+    if not _safe_authoritative_candidate(provider_id, cfg, row):
+        return False
+    url = _candidate_url(row)
+    if not url or hubresolver.host(url) == hubresolver.host(current_url):
+        return False
+    source_type = str(row.get("source_type") or "").strip().casefold()
+    if row.get("source_redirect") is True and source_type in ALLOWED_SOURCE_TYPES:
+        return True
+    label = hubresolver.compact(row.get("label") or "")
+    if not label:
+        return False
+    if any(hubresolver.compact(token) in label for token in _STALE_PRIMARY_MARKERS):
+        return False
+    return (
+        source_type in ALLOWED_SOURCE_TYPES
+        and any(hubresolver.compact(token) in label for token in _FRESH_PRIMARY_MARKERS)
+    )
 
 
 def _redirect_candidates_from_source_observations(
@@ -168,21 +205,35 @@ def resolve_authoritative_hub_domain(
     # even if a stale hub card is returned or a future helper mutates its config.
     authority_cfg = dict(cfg)
     explicit_current = _explicit_current_direct_candidate(authority_cfg)
-    candidates, observations = hubresolver.gather_candidates(
+    discovered, observations = hubresolver.gather_candidates(
         provider_id,
         cfg,
         history_row,
         mode,
         timeout,
     )
-    candidates = [
-        *([explicit_current] if explicit_current else []),
+    live_candidates = [
         *_redirect_candidates_from_source_observations(authority_cfg, observations),
         *[
             dict(row)
-            for row in candidates
+            for row in discovered
             if str(row.get("source_type") or "").strip().casefold() in ALLOWED_SOURCE_TYPES
         ],
+    ]
+    current_url = _candidate_url(explicit_current or {})
+    fresh_authoritative_move = any(
+        _fresh_authoritative_move_candidate(provider_id, authority_cfg, row, current_url)
+        for row in live_candidates
+    )
+    immutable_operator_pin = bool(
+        explicit_current and explicit_current.get("registry_operator_pin") is True
+    )
+    keep_registry_fallback = bool(
+        explicit_current and (immutable_operator_pin or not fresh_authoritative_move)
+    )
+    candidates = [
+        *([explicit_current] if keep_registry_fallback else []),
+        *live_candidates,
     ]
 
     deduped: dict[str, dict[str, Any]] = {}
@@ -210,15 +261,25 @@ def resolve_authoritative_hub_domain(
     item.update({
         "status": "site_authoritative",
         "reason": (
-            "registry_explicit_current_terminal_authority"
-            if selected.get("registry_explicit_current")
-            else "authoritative_hub_primary_domain_observed_no_terminal_probe"
+            "registry_operator_pin_terminal_authority"
+            if selected.get("registry_operator_pin")
+            else (
+                "registry_explicit_current_terminal_authority"
+                if selected.get("registry_explicit_current")
+                else "authoritative_hub_primary_domain_observed_no_terminal_probe"
+            )
         ),
         "official_site": terminal,
         "site_final_url": terminal,
         "selected_source_type": selected.get("source_type"),
         "selected_source": selected.get("source"),
         "candidate_score": selected.get("score"),
+        "registry_explicit_current_superseded": bool(
+            explicit_current
+            and explicit_current.get("registry_explicit_current") is True
+            and fresh_authoritative_move
+            and not selected.get("registry_explicit_current")
+        ),
         "terminal_probe_skipped": True,
         "api_candidates": [],
         "api_probes": [],
