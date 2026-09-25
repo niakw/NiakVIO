@@ -98,10 +98,12 @@ jobs:
                   for value in trigger.get("targetProviders") or []
                   if str(value or "").strip()
               ]
+          meaningful_scope=bool(targets) or str(scope.get("mode") or "") in {"providers","all"}
           print(f"source_sha={subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip()}")
           print(f"provider_count={count}")
           print("target_providers="+",".join(sorted(set(targets))))
-          print(f"should_run={'true' if count<=120 and not bulk_push else 'false'}")
+          print(f"should_run={'true' if count<=120 and not bulk_push and meaningful_scope else 'false'}")
+          print(f"FIELD_TARGETED_RECOVERY_ROUTE mode={scope.get('mode')} targets={len(targets)} meaningful={str(meaningful_scope).lower()}",file=sys.stderr)
           PY
 
   probe:
