@@ -230,6 +230,7 @@ jobs:
             echo "FIELD_REPAIR_WAF_REUSE reuse=false reason=missing-ledger"
             exit 0
           fi
+          cp "$waf" "$RUNNER_TEMP/provider-repair-waf-prior.json"
           source="$(git log -1 --format=%H -- "$waf" || true)"
           if ! [[ "$source" =~ ^[0-9a-f]{40}$ ]]; then
             echo "FIELD_REPAIR_WAF_REUSE reuse=false reason=missing-source-commit"
@@ -459,6 +460,21 @@ jobs:
         if: ${{ always() && steps.repair_waf_reuse.outputs.reuse != 'true' && env.NIAKVIO_REPAIR_RESIDENTIAL_EXIT_ACTIVE == '1' }}
         shell: bash
         run: sudo tailscale set --exit-node= || true
+
+      - name: Merge Repair transport refresh into durable latest
+        if: ${{ steps.repair_waf_reuse.outputs.reuse != 'true' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          prior="$RUNNER_TEMP/provider-repair-waf-prior.json"
+          current="automation/provider-waf-browser-session-latest.json"
+          if [ -s "$prior" ] && [ -s "$current" ]; then
+            python scripts/merge_waf_latest_evidence.py \
+              --previous "$prior" \
+              --current "$current" \
+              --output /tmp/provider-repair-waf-latest-merged.json
+            mv /tmp/provider-repair-waf-latest-merged.json "$current"
+          fi
 
       - name: Apply integrated WAF qualification to Repair census
         shell: bash
