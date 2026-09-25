@@ -205,13 +205,14 @@ def classify(
     return ("providers" if providers else "none"), sorted(providers), reasons
 
 
-def changed_paths(base: str, head: str) -> list[str]:
+def changed_paths(base: str, head: str, *, committed_only: bool = False) -> list[str]:
     paths: set[str] = set()
-    commands = [
-        ["git", "diff", "--name-only", base, head],
-        ["git", "diff", "--name-only"],
-        ["git", "diff", "--name-only", "--cached"],
-    ]
+    commands = [["git", "diff", "--name-only", base, head]]
+    if not committed_only:
+        commands.extend([
+            ["git", "diff", "--name-only"],
+            ["git", "diff", "--name-only", "--cached"],
+        ])
     for command in commands:
         completed = subprocess.run(
             command,
@@ -235,6 +236,11 @@ def main() -> int:
     parser.add_argument("--base", default="")
     parser.add_argument("--head", default="HEAD")
     parser.add_argument("--output", type=Path)
+    parser.add_argument(
+        "--committed-only",
+        action="store_true",
+        help="Compare only the exact base/head commits; ignore sandbox/index working-tree drift.",
+    )
     args = parser.parse_args()
 
     base = str(args.base or "").strip()
@@ -250,10 +256,17 @@ def main() -> int:
     if not base:
         raise SystemExit("provider materialization scope requires a base revision")
 
-    paths = changed_paths(base, args.head)
+    paths = changed_paths(base, args.head, committed_only=args.committed_only)
     tracked = set(PROVIDER_MAP_FILES) | set(PROVIDER_LIST_FILES)
     before_docs = {path: git_json(base, path) for path in tracked}
-    after_docs = {path: current_json(path) for path in tracked}
+    after_docs = {
+        path: (
+            git_json(args.head, path)
+            if args.committed_only
+            else current_json(path)
+        )
+        for path in tracked
+    }
     mode, providers, reasons = classify(paths, before_docs, after_docs)
 
     payload = {
@@ -264,6 +277,7 @@ def main() -> int:
         "providers": providers,
         "changedPaths": paths,
         "reasons": reasons,
+        "committedOnly": bool(args.committed_only),
     }
     if args.output:
         args.output.parent.mkdir(parents=True, exist_ok=True)
