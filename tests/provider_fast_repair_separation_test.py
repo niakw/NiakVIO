@@ -63,6 +63,8 @@ for required in (
     "NiakVIO-Brain-LLM.git",
     "NIAKVIO_BRAIN_LLM_GUIDANCE=",
     "FIELD_PROVIDER_FAST_REPAIR_EXTERNAL_LLM_GUIDANCE",
+    "--negative-memory automation/brain-repair-memory.json",
+    "empty-after-negative-memory-filter",
     "max_rounds_per_batch",
     "maxRoundsPerBatch",
 ):
