@@ -513,23 +513,45 @@ jobs:
           external_imported=false
           external_ref="refs/remotes/niakvio-brain-llm/niakvio-guidance"
           if git fetch --quiet https://github.com/niakw/NiakVIO-Brain-LLM.git "+refs/heads/niakvio-guidance:$external_ref" 2>/dev/null \
-             && git cat-file -e "$external_ref:guidance/niakvio-guidance.json" 2>/dev/null; then
+             && git cat-file -e "$external_ref:guidance/niakvio-guidance.json" 2>/dev/null \
+             && git cat-file -e "$external_ref:guidance/niakvio-guidance-state.json" 2>/dev/null; then
             git show "$external_ref:guidance/niakvio-guidance.json" > "$RUNNER_TEMP/external-brain-llm-guidance.json"
+            git show "$external_ref:guidance/niakvio-guidance-state.json" > "$RUNNER_TEMP/external-brain-llm-guidance-state.json"
             guidance_commit="$(git rev-parse "$external_ref")"
-            if python scripts/import_external_brain_llm_guidance.py --input "$RUNNER_TEMP/external-brain-llm-guidance.json" --output "$RUNNER_TEMP/external-brain-llm-guidance-repair.json" --current-sha "$GITHUB_SHA" --guidance-commit "$guidance_commit" --negative-memory automation/brain-repair-memory.json --negative-memory "$RUNNER_TEMP/brain-learning-latest.json"; then
-              external_count="$(python -c 'import json; d=json.load(open("'"$RUNNER_TEMP"'/external-brain-llm-guidance-repair.json")); print(int(d.get("providerCount") or 0))')"
-              if [ "$external_count" -gt 0 ]; then
-                echo "NIAKVIO_BRAIN_LLM_GUIDANCE=$RUNNER_TEMP/external-brain-llm-guidance-repair.json" >> "$GITHUB_ENV"
-                external_imported=true
-                echo "FIELD_CANONICAL_REPAIR_EXTERNAL_LLM_GUIDANCE imported=true providers=$external_count commit=$guidance_commit"
+            if python - "$RUNNER_TEMP/external-brain-llm-guidance.json" "$RUNNER_TEMP/external-brain-llm-guidance-state.json" <<'PY'
+          import json,sys
+          guidance=json.load(open(sys.argv[1],encoding="utf-8"))
+          state=json.load(open(sys.argv[2],encoding="utf-8"))
+          if state.get("complete") is not True:
+              raise SystemExit("external Brain guidance paging is incomplete")
+          if list(state.get("remainingProviders") or []):
+              raise SystemExit("complete Brain guidance still has remaining providers")
+          if list(state.get("completedProviders") or []) != list(state.get("requestedProviders") or []):
+              raise SystemExit("Brain guidance completed/requested cohort mismatch")
+          if str(state.get("sourceNiakvioSha") or "").casefold() != str(guidance.get("sourceNiakvioSha") or "").casefold():
+              raise SystemExit("Brain guidance state/source SHA mismatch")
+          if str(state.get("brainLlmSha") or "").casefold() != str(guidance.get("brainLlmSha") or "").casefold():
+              raise SystemExit("Brain guidance state/Brain SHA mismatch")
+          print("FIELD_EXTERNAL_BRAIN_LLM_GUIDANCE_STATE complete=true providers="+str(len(state.get("completedProviders") or [])))
+          PY
+            then
+              if python scripts/import_external_brain_llm_guidance.py --input "$RUNNER_TEMP/external-brain-llm-guidance.json" --output "$RUNNER_TEMP/external-brain-llm-guidance-repair.json" --current-sha "$GITHUB_SHA" --guidance-commit "$guidance_commit" --negative-memory automation/brain-repair-memory.json --negative-memory "$RUNNER_TEMP/brain-learning-latest.json"; then
+                external_count="$(python -c 'import json; d=json.load(open("'"$RUNNER_TEMP"'/external-brain-llm-guidance-repair.json")); print(int(d.get("providerCount") or 0))')"
+                if [ "$external_count" -gt 0 ]; then
+                  echo "NIAKVIO_BRAIN_LLM_GUIDANCE=$RUNNER_TEMP/external-brain-llm-guidance-repair.json" >> "$GITHUB_ENV"
+                  external_imported=true
+                  echo "FIELD_CANONICAL_REPAIR_EXTERNAL_LLM_GUIDANCE imported=true providers=$external_count commit=$guidance_commit"
+                else
+                  echo "FIELD_CANONICAL_REPAIR_EXTERNAL_LLM_GUIDANCE imported=false reason=empty-after-negative-memory-filter"
+                fi
               else
-                echo "FIELD_CANONICAL_REPAIR_EXTERNAL_LLM_GUIDANCE imported=false reason=empty-after-negative-memory-filter"
+                echo "FIELD_CANONICAL_REPAIR_EXTERNAL_LLM_GUIDANCE imported=false reason=source-drift-or-safety-gate"
               fi
             else
-              echo "FIELD_CANONICAL_REPAIR_EXTERNAL_LLM_GUIDANCE imported=false reason=source-drift-or-safety-gate"
+              echo "FIELD_CANONICAL_REPAIR_EXTERNAL_LLM_GUIDANCE imported=false reason=incomplete-or-inconsistent-guidance-state"
             fi
           else
-            echo "FIELD_CANONICAL_REPAIR_EXTERNAL_LLM_GUIDANCE imported=false reason=no-public-guidance-ref"
+            echo "FIELD_CANONICAL_REPAIR_EXTERNAL_LLM_GUIDANCE imported=false reason=no-complete-public-guidance-ref"
           fi
 
           if [ "$external_imported" != "true" ]; then
@@ -625,16 +647,37 @@ jobs:
           fi
 
           external_ref="refs/remotes/niakvio-brain-llm/niakvio-guidance"
-          if ! git cat-file -e "$external_ref:guidance/niakvio-force-mutations.json" 2>/dev/null; then
+          if ! git cat-file -e "$external_ref:guidance/niakvio-force-mutations.json" 2>/dev/null \
+             || ! git cat-file -e "$external_ref:guidance/niakvio-guidance-state.json" 2>/dev/null; then
             echo "accepted_csv=" >> "$GITHUB_OUTPUT"
-            echo "FIELD_BRAIN_LLM_FORCE_SANDBOX skipped=true reason=no-public-force-mutation-artifact required=$require_external"
+            echo "FIELD_BRAIN_LLM_FORCE_SANDBOX skipped=true reason=no-complete-public-force-artifact required=$require_external"
             if [ "$require_external" = "true" ]; then
-              echo "Explicit Force requires a non-empty external Brain mutation artifact" >&2
+              echo "Explicit Force requires a complete external Brain mutation artifact" >&2
               exit 1
             fi
             exit 0
           fi
           git show "$external_ref:guidance/niakvio-force-mutations.json" > "$RUNNER_TEMP/external-brain-llm-force-mutations.json"
+          git show "$external_ref:guidance/niakvio-guidance-state.json" > "$RUNNER_TEMP/external-brain-llm-force-state.json"
+          if ! python - "$RUNNER_TEMP/external-brain-llm-force-mutations.json" "$RUNNER_TEMP/external-brain-llm-force-state.json" <<'PY'
+          import json,sys
+          force=json.load(open(sys.argv[1],encoding="utf-8"))
+          state=json.load(open(sys.argv[2],encoding="utf-8"))
+          if state.get("complete") is not True or list(state.get("remainingProviders") or []):
+              raise SystemExit("Force guidance paging incomplete")
+          if list(state.get("completedProviders") or []) != list(state.get("requestedProviders") or []):
+              raise SystemExit("Force completed/requested cohort mismatch")
+          if str(state.get("sourceNiakvioSha") or "").casefold() != str(force.get("sourceNiakvioSha") or "").casefold():
+              raise SystemExit("Force state/source SHA mismatch")
+          if str(state.get("brainLlmSha") or "").casefold() != str(force.get("brainLlmSha") or "").casefold():
+              raise SystemExit("Force state/Brain SHA mismatch")
+          PY
+          then
+            echo "accepted_csv=" >> "$GITHUB_OUTPUT"
+            echo "FIELD_BRAIN_LLM_FORCE_SANDBOX skipped=true reason=incomplete-or-inconsistent-guidance-state required=$require_external"
+            if [ "$require_external" = "true" ]; then exit 1; fi
+            exit 0
+          fi
 
           FORCE_TARGETS=()
           if [ -n "${TARGET_PROVIDER:-}" ]; then
