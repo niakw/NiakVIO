@@ -33,6 +33,16 @@ for required in (
 ):
     assert required in autopilot,required
 
+# A current causal plan is mandatory. Autopilot never dispatches from a stale SHA.
+for required in (
+    'git fetch --quiet origin main',
+    'remote_main="$(git rev-parse origin/main)"',
+    'if [ "$remote_main" != "$GITHUB_SHA" ]; then',
+    'FIELD_PROVIDER_AUTOPILOT_STALE',
+    'gh workflow run provider-brain-autopilot.yml',
+):
+    assert required in autopilot, required
+
 # A domain/transport owner invalidates downstream assumptions and must run alone.
 assert 'if [ -n "$DOMAIN" ]; then' in autopilot
 assert "exit 0" in autopilot.split('if [ -n "$DOMAIN" ]; then',1)[1].split("fi",1)[0]
