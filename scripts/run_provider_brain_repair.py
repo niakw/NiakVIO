@@ -107,6 +107,65 @@ def advisor_wave_budget(
     )
 
 
+
+def untried_advisor_fingerprints(
+    provider_ids: list[str] | set[str],
+    guidance_path: Path | None = None,
+) -> dict[str, set[tuple[str, str]]]:
+    """Return untried (profile, experiment fingerprint) pairs per provider."""
+    path = guidance_path
+    if path is None:
+        raw = str(os.environ.get("NIAKVIO_BRAIN_LLM_GUIDANCE") or "").strip()
+        path = Path(raw).resolve() if raw else None
+    if path is None or not path.is_file():
+        return {}
+    payload = load(path, {})
+    selected = {cid(value) for value in provider_ids if cid(value)}
+    candidates: dict[str, set[tuple[str, str]]] = {}
+    for row in payload.get("rows") or []:
+        if not isinstance(row, dict):
+            continue
+        provider = cid(row.get("providerId"))
+        profile = str(row.get("profile") or "").strip().casefold()
+        fingerprint = str(row.get("experimentFingerprint") or "").strip().casefold()
+        if (
+            provider not in selected
+            or str(row.get("targetLayer") or "").strip().casefold() != "provider"
+            or row.get("priorOnly") is not True
+            or not profile
+            or len(fingerprint) != 64
+            or any(ch not in "0123456789abcdef" for ch in fingerprint)
+        ):
+            continue
+        candidates.setdefault(provider, set()).add((profile, fingerprint))
+
+    failed: dict[str, set[tuple[str, str]]] = {}
+    memory = load(REPAIR_MEMORY, {})
+    entries: list[dict[str, Any]] = []
+    if isinstance(memory.get("entries"), list):
+        entries.extend(row for row in memory.get("entries") or [] if isinstance(row, dict))
+    experiment_memory = memory.get("experimentMemory")
+    if isinstance(experiment_memory, dict) and isinstance(experiment_memory.get("entries"), list):
+        entries.extend(row for row in experiment_memory.get("entries") or [] if isinstance(row, dict))
+    for row in entries:
+        provider = cid(row.get("providerId"))
+        profile = str(row.get("profile") or "").strip().casefold()
+        fingerprint = str(row.get("llmAdvisorExperimentFingerprint") or "").strip().casefold()
+        if (
+            provider in selected
+            and profile
+            and len(fingerprint) == 64
+            and int(row.get("consecutiveFailures") or 0) >= 1
+        ):
+            failed.setdefault(provider, set()).add((profile, fingerprint))
+
+    return {
+        provider: values - failed.get(provider, set())
+        for provider, values in candidates.items()
+        if values - failed.get(provider, set())
+    }
+
+
 def run(*args: str, env: dict[str, str] | None = None, timeout: int | None = None) -> None:
     print("FIELD_PROVIDER_BRAIN_REPAIR_CMD " + " ".join(args), flush=True)
     subprocess.run(
@@ -836,6 +895,7 @@ def main() -> int:
             accepted_this_wave: list[dict[str, Any]] = []
             fixed_this_wave: set[str] = set()
             deferred_this_wave: set[str] = set()
+            advisor_rotation_this_wave: set[str] = set()
             batch_reports: list[dict[str, Any]] = []
             memory_before = repair_memory_fingerprint()
 
@@ -918,9 +978,21 @@ def main() -> int:
                 deferred.update(generic_learning_handoff)
                 deferred.update(unexecutable_llm_handoff)
                 deferred.difference_update(harness_differential)
+
+                # A provider with another sanitized, not-yet-failed advisor
+                # fingerprint is not Learning debt yet. Keep it in the same
+                # portfolio run so the next wave tries B after A, then C after B.
+                untried_advisor = untried_advisor_fingerprints(batch)
+                advisor_rotation_pending = {
+                    provider for provider in deferred
+                    if provider in untried_advisor
+                }
+                deferred.difference_update(advisor_rotation_pending)
+
                 accepted_this_wave.extend(accepted)
                 fixed_this_wave.update(fixed)
                 deferred_this_wave.update(deferred)
+                advisor_rotation_this_wave.update(advisor_rotation_pending)
                 batch_reports.append({
                     "batch": batch_index,
                     "groupId": batch_plan.get("groupId"),
@@ -937,6 +1009,11 @@ def main() -> int:
                     "deferredToLearning": sorted(deferred),
                     "genericLearningHandoff": sorted(generic_learning_handoff),
                     "unexecutableLlmHandoff": sorted(unexecutable_llm_handoff),
+                    "advisorRotationPending": sorted(advisor_rotation_pending),
+                    "advisorRemainingFingerprintCounts": {
+                        provider: len(untried_advisor.get(provider) or set())
+                        for provider in sorted(advisor_rotation_pending)
+                    },
                     "brain": brain_summary,
                 })
 
@@ -1003,6 +1080,7 @@ def main() -> int:
                 "durableMaterializeTargets": sorted(materialize_targets_this_wave),
                 "deferredToLearningCount": len(deferred_this_wave),
                 "deferredToLearning": sorted(deferred_this_wave),
+                "advisorRotationPending": sorted(advisor_rotation_this_wave),
                 "remainingProviderCount": len(remaining),
                 "experimentMemoryAdvanced": experiment_memory_advanced,
                 "batches": batch_reports,
@@ -1013,13 +1091,16 @@ def main() -> int:
                     materialize(materialize_targets_this_wave)
                 break
 
-            decision = experiment_rotation_decision(
-                accepted_count=len(durable_accepted_this_wave),
-                remaining_count=len(remaining),
-                wave=wave,
-                max_waves=waves,
-                memory_advanced=experiment_memory_advanced,
-            )
+            if advisor_rotation_this_wave and wave < waves:
+                decision = "rotate"
+            else:
+                decision = experiment_rotation_decision(
+                    accepted_count=len(durable_accepted_this_wave),
+                    remaining_count=len(remaining),
+                    wave=wave,
+                    max_waves=waves,
+                    memory_advanced=experiment_memory_advanced,
+                )
             if decision == "rotate":
                 # A rejected experiment is still useful evidence. Rotate to the
                 # next bounded hypothesis immediately instead of aborting Repair.
