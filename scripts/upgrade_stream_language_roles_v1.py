@@ -359,9 +359,15 @@ assert.deepEqual(hlsTracks, [
 
 
 def main() -> int:
-    changes = {"engine": patch_engine(), "global": patch_global(), "tests": patch_tests()}
-    print("STREAM_LANGUAGE_ROLES_V1_OK", changes)
-    return 0
+    engine = ENGINE.read_text(encoding="utf-8")
+    global_source = GLOBAL.read_text(encoding="utf-8")
+    if 'LANGUAGE_LOCALE_ALIASES' in engine and '"lang-"+' in global_source and '"sub-"+' in global_source:
+        print("STREAM_LANGUAGE_ROLES_V1_OK", {"universal_v3": True, "changed": False})
+        return 0
+    raise AssertionError(
+        "legacy V23 language-role migration is superseded by the universal v3 badge contract; "
+        "restore the canonical v3 presentation source instead of reapplying this migration"
+    )
 
 
 if __name__ == "__main__":

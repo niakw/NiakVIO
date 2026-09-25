@@ -14,9 +14,10 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 CORE = ROOT / "scripts/provider_patches/global_stream_presentation_v1.py"
-DARK_FEED = ROOT / "assets/stream-badges-dark.json"
-LIGHT_FEED = ROOT / "assets/stream-badges-light.json"
-FUSION_FEED = ROOT / "assets/stream-badges-fusion.json"
+DARK_FEED = ROOT / "assets/stream-badges-dark-v3.json"
+LIGHT_FEED = ROOT / "assets/stream-badges-light-v3.json"
+TRANSPARENT_FEED = ROOT / "assets/stream-badges-transparent-v3.json"
+FUSION_FEED = ROOT / "assets/stream-badges-fusion-v3.json"
 REVISION_V22 = "all-providers-client-projection-strongest-evidence-v22"
 REVISION_V23 = "all-providers-client-projection-language-roles-v23"
 REVISION_V24 = "all-providers-client-projection-evidence-language-v24"
@@ -57,11 +58,12 @@ def assert_contract() -> None:
     common = (
         '"providerLanguageMode"',
         '"languageFallback"',
-        '"MULTI (VF/VO)"',
-        '"🇫🇷 "',
-        '"🌐🇫🇷 "',
-        '"🌐 "',
-        '"VF":"vf"',
+        'function languageTracks(r,meta){',
+        'function languageCode(v){',
+        'function languageName(code){',
+        '"lang-"+',
+        '"sub-"+',
+        'function ageBadge(v){',
         'function urlFacts(r){',
         'r&&r.height',
         'FULL[ ._-]?HD|FHD',
@@ -103,7 +105,7 @@ def assert_contract() -> None:
     if "f.quality" in text[technical_start:technical_end]:
         raise ValueError("quality must remain title-only")
 
-    for path in (DARK_FEED, LIGHT_FEED, FUSION_FEED):
+    for path in (DARK_FEED, LIGHT_FEED, TRANSPARENT_FEED, FUSION_FEED):
         if not path.is_file():
             raise ValueError(f"native StreamBadge feed missing: {path.name}")
         payload = json.loads(path.read_text(encoding="utf-8"))
@@ -117,8 +119,12 @@ def assert_contract() -> None:
                 if not str(row.get(key) or "").startswith("#"):
                     raise ValueError(f"native StreamBadge {key} missing: {path.name} {row.get('id')}")
         ids = {str(row.get("id") or "") for row in rows}
-        if not {"vf", "vff", "vfq", "vo", "vostfr", "multi"}.issubset(ids):
-            raise ValueError(f"language badge set incomplete: {path.name}")
+        required = {"lang-fr", "lang-fr-ca", "lang-en", "lang-ko", "lang-ja", "sub-fr", "sub-en", "sub-ko", "age-19", "age-kr19", "age-us-pg13"}
+        if not required.issubset(ids):
+            raise ValueError(f"universal v3 badge set incomplete: {path.name} missing={sorted(required - ids)}")
+        stale = {"vf", "vff", "vfq", "vo", "vostfr", "multi"}
+        if stale & ids:
+            raise ValueError(f"legacy public language badge ids leaked into v3: {path.name} ids={sorted(stale & ids)}")
 
 
 def main() -> int:
@@ -135,7 +141,7 @@ def main() -> int:
         assert_contract()
     text = CORE.read_text(encoding="utf-8")
     revision = active_revision(text) or "missing"
-    print(f"FIELD_STREAM_PRESENTATION changed={len(changed)} revision={revision} badge_feeds=external_owner read_only=true")
+    print(f"FIELD_STREAM_PRESENTATION changed={len(changed)} revision={revision} badge_feeds=v3-versioned universal_languages=true read_only=true")
     return 0
 
 

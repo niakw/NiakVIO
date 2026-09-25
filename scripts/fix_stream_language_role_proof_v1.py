@@ -74,6 +74,11 @@ def patch(path: Path, *, required: bool) -> bool:
 
 
 def main() -> int:
+    engine = ENGINE.read_text(encoding="utf-8") if ENGINE.exists() else ""
+    global_source = GLOBAL.read_text(encoding="utf-8") if GLOBAL.exists() else ""
+    if 'LANGUAGE_LOCALE_ALIASES' in engine and '"lang-"+' in global_source and '"sub-"+' in global_source:
+        print("STREAM_LANGUAGE_ROLE_PROOF_V1_OK", {"universal_v3": True, "changed": False})
+        return 0
     changes = {
         "migration": patch(MIGRATION, required=True),
         "engine": patch(ENGINE, required=False),

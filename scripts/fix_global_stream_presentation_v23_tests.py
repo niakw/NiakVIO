@@ -93,6 +93,10 @@ def apply_replacements(path: Path, replacements: tuple[tuple[str, str], ...]) ->
 
 
 def main() -> int:
+    engine_test = ROOT / "engine_v2/tests/stream-presentation.test.mjs"
+    if engine_test.is_file() and "lang-fr-ca" in engine_test.read_text(encoding="utf-8"):
+        print("GLOBAL_STREAM_PRESENTATION_V23_TESTS_OK", "universal_v3=true", "changed=false")
+        return 0
     global_changed = apply_replacements(GLOBAL_TEST, GLOBAL_REPLACEMENTS)
     pipeline_changed = apply_replacements(PIPELINE_TEST, PIPELINE_REPLACEMENTS)
     fallback_changed = apply_replacements(FALLBACK_TEST, FALLBACK_REPLACEMENTS)
