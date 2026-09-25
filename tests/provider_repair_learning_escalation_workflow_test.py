@@ -88,6 +88,11 @@ assert "-f slot_phase=1" in workflow[dispatch:resume_dispatch]
 assert "exit 0\n          fi\n          git commit" not in workflow[persist:dispatch]
 assert 'if [ "$resume" = "1" ] && [ "$remaining" -gt 0 ] && [ "$unvisited" -gt 0 ]' in workflow[persist:resume_dispatch]
 assert "FIELD_PROVIDER_BRAIN_RESUME_SKIPPED reason=no-unvisited-provider" in workflow[persist:]
+assert "FIELD_PROVIDER_BRAIN_FORCE_DEBT" in workflow[persist:]
+assert "learning_dispatch=false owner=force" in workflow[persist:]
+assert "resume_mode=force" in workflow[persist:]
+assert '-f mode="$resume_mode"' in workflow[persist:]
+assert "FIELD_PROVIDER_BRAIN_RESUME_MODE" in workflow[persist:]
 persist_block=workflow[persist:dispatch]
 assert 'cp automation/brain-positive-program-memory.json "$tmp/brain-positive-program-memory.json"' in persist_block
 assert 'cp "$tmp/brain-positive-program-memory.json" automation/brain-positive-program-memory.json' in persist_block
@@ -167,6 +172,10 @@ assert '-f target_providers="$deferred_csv"' not in workflow
 assert "FIELD_PROVIDER_BRAIN_ESCALATE_SKIPPED" in workflow
 assert "reason=no-new-causal-fingerprint" in workflow
 assert "provider_learning_dispatch_gate.py mark" in workflow
+# Normal Repair may still escalate to Learning; explicit FORCE must not.
+force_debt_pos=workflow.index("FIELD_PROVIDER_BRAIN_FORCE_DEBT", persist)
+learning_dispatch_pos=workflow.index("gh workflow run brain-learning-lab.yml", persist)
+assert force_debt_pos < learning_dispatch_pos
 
 assert "niakvio-guidance-state.json" in workflow
 assert "external Brain guidance paging is incomplete" in workflow
