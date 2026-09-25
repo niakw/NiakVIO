@@ -69,7 +69,8 @@ assert persist < copy < push < dispatch < resume_dispatch
 assert "-f slot_remaining_minutes=20" in workflow[dispatch:resume_dispatch]
 assert "-f slot_phase=1" in workflow[dispatch:resume_dispatch]
 assert "exit 0\n          fi\n          git commit" not in workflow[persist:dispatch]
-assert 'if [ "$resume" = "1" ] && [ "$remaining" -gt 0 ]' in workflow[persist:resume_dispatch]
+assert 'if [ "$resume" = "1" ] && [ "$remaining" -gt 0 ] && [ "$unvisited" -gt 0 ]' in workflow[persist:resume_dispatch]
+assert "FIELD_PROVIDER_BRAIN_RESUME_SKIPPED reason=no-unvisited-provider" in workflow[persist:resume_dispatch]
 persist_block=workflow[persist:dispatch]
 assert 'cp automation/brain-positive-program-memory.json "$tmp/brain-positive-program-memory.json"' in persist_block
 assert 'cp "$tmp/brain-positive-program-memory.json" automation/brain-positive-program-memory.json' in persist_block
