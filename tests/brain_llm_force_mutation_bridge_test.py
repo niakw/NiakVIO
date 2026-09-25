@@ -105,8 +105,11 @@ with tempfile.TemporaryDirectory() as tmp:
         "operation": "unified_diff",
         "path": "scripts/provider_patches/demo_runtime_v1.py",
         "diff": (
-            "--- a/scripts/provider_patches/demo_runtime_v1.py\n"
-            "+++ b/scripts/provider_patches/demo_runtime_v1.py\n"
+            # Brain-LLM public mutations use exact repo paths rather than
+            # git's conventional a/ and b/ prefixes. The bridge must normalize
+            # these headers before git apply, without changing the signed row.
+            "--- scripts/provider_patches/demo_runtime_v1.py\n"
+            "+++ scripts/provider_patches/demo_runtime_v1.py\n"
             "@@ -1,2 +1,2 @@\n"
             " def apply(value):\n"
             "-    return value\n"
