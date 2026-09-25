@@ -55,7 +55,7 @@ def _registry_explicit_current_site(
     row = providers.get(provider_id)
     if not isinstance(row, dict):
         return ""
-    if str(row.get("direct_authority") or "").strip().casefold() != "explicit_current":
+    if str(row.get("direct_authority") or "").strip().casefold() not in {"explicit_current", "operator_pin"}:
         return ""
     direct = str(row.get("direct") or "").strip().rstrip("/")
     return direct if direct.startswith(("http://", "https://")) else ""
