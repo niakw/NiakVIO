@@ -59,12 +59,26 @@ state = {
     "repairQueue": [],
     "environmentQueue": ["waf"],
     "harnessQueue": ["waf"],
+    "lastRepairAttempt": {
+        "runId": "force-run",
+        "selectedProviders": ["waf"],
+        "candidateProviders": [],
+        "validatedProviders": [],
+        "deferredToLearningSlotProviders": ["waf"],
+        "acceptedRepairCount": 0,
+        "noProgressReason": "time_budget_exhausted_during_batch",
+        "timeBudgetExhausted": True,
+        "publicationAllowed": False,
+    },
 }
 text = mod.render(state)
 assert "🟢 1 FULL OK" in text, text
 assert "🟧 1 HARNESS MISMATCH" in text, text
 assert "Repair census run repair-run" in text, text
 assert "transport overlay waf-run" in text, text
+assert "Latest Repair/FORCE attempt: **run force-run**" in text, text
+assert "deferred to scheduled Learning **1**" in text, text
+assert "time_budget_exhausted_during_batch" in text, text
 assert "automated repair queue: **0**" in text, text
 assert "harness/environment queue: **1**" in text, text
 assert "| **waf** | 🟧 **HARNESS MISMATCH** | carried |" in text, text
