@@ -1,10 +1,10 @@
 {
   "schemaVersion": 6,
-  "requestedAt": "2026-09-25T04:13:00+02:00",
-  "retry": 149,
+  "requestedAt": "2026-09-25T04:44:00+02:00",
+  "retry": 150,
   "mode": "force",
   "directApplyValidated": true,
-  "scope": "current-repair-queue-after-final-targeted-learning",
+  "scope": "current-repair-queue-fresh-rotated-llm-guidance",
   "targetProviders": [
     "4khdhub",
     "allanime",
@@ -21,9 +21,10 @@
     "vidfast",
     "yflix"
   ],
-  "goal": "Consume the freshly published Brain Learning memory and external Brain-LLM guidance for the complete current 14-provider repair queue. Force may apply provider-local corrections directly only after canonical Repair succeeds and the candidate/non-regression gate is green. Persist a fresh census from current bytes.",
+  "goal": "Consume fresh Brain-LLM guidance generated from NiakVIO 5c7b38e with zero negative-memory fingerprint collisions. Apply provider-local corrections directly only after canonical Repair and candidate/non-regression gates succeed. Persist current census even if concurrent main drift is provider-neutral.",
   "branch": "main",
   "publication": true,
-  "sourceRef": "1e6c24a939b083281a434b0154f752abef295977",
-  "learningRun": 36081170479
+  "sourceRef": "5c7b38e3c2a0f2413c97d1864eee3839da8c7ff0",
+  "brainLlmGuidanceSha": "dcbb14abbc26095d18feb57cd1d535b418a5824d",
+  "priorFailedForceRun": 36085407669
 }
