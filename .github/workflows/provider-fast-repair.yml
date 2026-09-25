@@ -304,12 +304,12 @@ jobs:
           Explicit trigger for isolated Brain strategy learning after Fast Repair.
           last_repair_run: ${GITHUB_RUN_ID}
           source_sha: ${GITHUB_SHA}
-          budget_minutes: 20
+          budget_minutes: 12
           reason: fast-brain-strategy-exhaustion
           expected_scope: current-fast-repair-handoff-only
           publication_policy: proposal-only-until-current-byte-playback-identity-and-non-regression-proof
           EOF
-            echo "FIELD_PROVIDER_FAST_REPAIR_LEARN_ARM current=${learn_handoff_count} budget_minutes=20"
+            echo "FIELD_PROVIDER_FAST_REPAIR_LEARN_ARM current=${learn_handoff_count} budget_minutes=12"
           }
           dispatch_learning() {
             if [ "${learn_handoff_count:-0}" -le 0 ]; then
@@ -320,9 +320,9 @@ jobs:
               --repo "$GITHUB_REPOSITORY" \
               --ref main \
               -f publish_proposal=false \
-              -f slot_remaining_minutes=20 \
+              -f slot_remaining_minutes=12 \
               -f slot_phase=1
-            echo "FIELD_PROVIDER_FAST_REPAIR_LEARN_DISPATCH current=${learn_handoff_count} budget_minutes=20"
+            echo "FIELD_PROVIDER_FAST_REPAIR_LEARN_DISPATCH current=${learn_handoff_count} budget_minutes=12"
           }
           git fetch --quiet origin main
           remote_main="$(git rev-parse origin/main)"
