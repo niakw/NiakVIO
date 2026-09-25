@@ -310,6 +310,19 @@ jobs:
             --output /tmp/provider-waf-targeted-merged.json
           mv /tmp/provider-waf-targeted-merged.json automation/provider-waf-browser-session-latest.json
 
+      - name: Merge current transport refresh into durable latest
+        if: ${{ always() }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -s /tmp/provider-waf-prior.json ] && [ -s automation/provider-waf-browser-session-latest.json ]; then
+            python scripts/merge_waf_latest_evidence.py \
+              --previous /tmp/provider-waf-prior.json \
+              --current automation/provider-waf-browser-session-latest.json \
+              --output /tmp/provider-waf-browser-session-latest-merged.json
+            mv /tmp/provider-waf-browser-session-latest-merged.json automation/provider-waf-browser-session-latest.json
+          fi
+
       - name: Upload WAF browser-session evidence
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
