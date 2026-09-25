@@ -151,6 +151,7 @@ def main() -> int:
     payload = {
         "schemaVersion": 2,
         "sourceCensusRunId": status_before.get("runId"),
+        "repairRunId": str(os.environ.get("GITHUB_RUN_ID") or "local"),
         "selectedProviders": selected,
         "candidateProviders": candidates,
         "retestedProviders": candidates,
@@ -174,6 +175,32 @@ def main() -> int:
     SUMMARY.write_text(
         json.dumps(payload, ensure_ascii=False, indent=2) + "\n",
         encoding="utf-8",
+    )
+
+    # Keep census status authority unchanged when no candidate is validated, but
+    # always expose the latest Repair/FORCE attempt so the public dashboard never
+    # looks frozen while the Brain is actively working.
+    status_after["lastRepairAttempt"] = {
+        "runId": payload["repairRunId"],
+        "sourceCensusRunId": payload["sourceCensusRunId"],
+        "selectedProviders": selected,
+        "candidateProviders": candidates,
+        "validatedProviders": validated,
+        "acceptedRepairCount": payload["brainAcceptedRepairCount"],
+        "deferredToLearningSlotProviders": learn_handoff,
+        "noProgressReason": payload["brainNoProgressReason"],
+        "timeBudgetExhausted": payload["brainTimeBudgetExhausted"],
+        "publicationAllowed": payload["publicationAllowed"],
+    }
+    STATUS.write_text(
+        json.dumps(status_after, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    run(
+        sys.executable,
+        "scripts/render_provider_census_status_from_state.py",
+        "--status", str(STATUS.relative_to(ROOT)),
+        "--output", "PROVIDER_CENSUS_STATUS.md",
     )
     print(
         "FIELD_PROVIDER_FAST_REPAIR_DONE "
