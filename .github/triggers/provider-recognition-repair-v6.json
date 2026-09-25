@@ -1,10 +1,10 @@
 {
   "schemaVersion": 6,
-  "requestedAt": "2026-09-25T19:32:00+02:00",
-  "retry": 155,
+  "requestedAt": "2026-09-26",
+  "retry": 156,
   "mode": "force",
   "directApplyValidated": true,
-  "scope": "current-census-14-provider-cohort-after-harness-signature-fix",
+  "scope": "force-only-current-census-14-provider-cohort",
   "targetProviders": [
     "4khdhub",
     "allanime",
@@ -21,15 +21,17 @@
     "vidfast",
     "yflix"
   ],
-  "goal": "Canonical Force after the generic provider_worker alternate-signature fix. Requalify the exact current repairQueue, consume current sanitized Brain/LLM mutations when available, require current-byte playback/identity/non-regression proof before publication, and persist merged GitHub/Tailscale transport evidence without erasing prior residential proof.",
+  "goal": "Explicit canonical FORCE owns the full current 14-provider repairQueue: evaluate current provider-local Brain-LLM Force mutations in isolated sandboxes, automatically apply only candidates that pass current-byte playback/identity/non-regression gates, continue canonical FORCE on unresolved providers, persist census evidence, and never dispatch Learning from this FORCE execution.",
   "branch": "main",
   "publication": true,
-  "sourceRef": "f3d4231039c8ad34c632af0a4e836bd7e0428f77",
+  "sourceRef": "a8f4e6b6012e1ea518d74fa2c64a409fc70ca2d0",
   "sourceCensusRun": "36156497756",
-  "brainLlmGuidanceSha": "5ef800929080df1c097b769a1a48ac36f14a3d05",
-  "branchPolicy": "main-plus-brain-learning-proposals-only",
-  "rerunReason": "retry 155: validate generic no-provider-request harness fix and mutation-only Brain Force path on current 14-provider census cohort",
-  "attemptPolicy": "one-shot-no-auto-identical-retry",
-  "preflightValidatedSha": "33758ae5a1aebd46dd35ed7c8a14a2b7017a440a",
-  "requireExternalForceMutations": false
+  "brainLlmGuidanceSha": "c9fd585217cfc405256d4cda1342d4b3a0e0f4d6",
+  "branchPolicy": "main-force-execution-plus-independent-learning-proposals",
+  "rerunReason": "retry 156: break three-day 14-provider stall with explicit FORCE ownership, current Brain-LLM mutations, automatic validated direct apply, FORCE-preserving resume, and no FORCE-to-Learning handoff",
+  "attemptPolicy": "force-only; isolated mutation evaluation; auto-apply validated candidates; unresolved providers remain FORCE-owned during this execution",
+  "preflightValidatedSha": "a8f4e6b6012e1ea518d74fa2c64a409fc70ca2d0",
+  "requireExternalForceMutations": false,
+  "brainGuidanceSourceSha": "9f5a6c17913e6515f409ddc328c1b6786fa707b4",
+  "requireExternalBrainGuidance": false
 }
