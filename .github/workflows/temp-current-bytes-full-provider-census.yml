@@ -30,6 +30,7 @@ on:
       - 'scripts/audit_provider_quick_yield.py'
       - 'scripts/build_provider_repair_batch_plan.py'
       - 'scripts/probe_waf_browser_session.py'
+      - 'scripts/merge_waf_latest_evidence.py'
       - 'tests/provider_waf_browser_session_test.py'
       - 'scripts/rotating_corpus.py'
       - 'tests/allanime_site_runtime_contract_test.py'
@@ -489,11 +490,20 @@ jobs:
           cp "/tmp/provider-authority-status-${run_id}.json" automation/provider-authority-status.json
           cp "/tmp/provider-repair-batch-plan-${run_id}.json" "automation/provider-repair-batch-plan-${run_id}.json"
           cp "/tmp/provider-repair-batch-plan-${run_id}.json" automation/provider-repair-batch-plan-latest.json
-          # Full census owns only its run-specific browser evidence. The canonical
-          # WAF latest is owned by the dedicated WAF/Tailscale workflow and may
-          # contain stronger residential evidence that a GitHub-only census must
-          # never erase.
+          # Persist the raw run evidence and also refresh the durable latest
+          # ledger. Current GitHub/browser rows replace matching provider lanes;
+          # prior residential proof survives when this census had no Tailscale
+          # measurement of its own.
           cp "/tmp/provider-waf-browser-session-${run_id}.json" "automation/provider-waf-browser-session-${run_id}.json"
+          if [ -s automation/provider-waf-browser-session-latest.json ]; then
+            python scripts/merge_waf_latest_evidence.py \
+              --previous automation/provider-waf-browser-session-latest.json \
+              --current "/tmp/provider-waf-browser-session-${run_id}.json" \
+              --output /tmp/provider-waf-browser-session-latest-merged.json
+            mv /tmp/provider-waf-browser-session-latest-merged.json automation/provider-waf-browser-session-latest.json
+          else
+            cp "/tmp/provider-waf-browser-session-${run_id}.json" automation/provider-waf-browser-session-latest.json
+          fi
 
           if [ -s automation/provider-waf-browser-session-latest.json ]; then
             python scripts/merge_waf_census_transport.py \
@@ -517,7 +527,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add "automation/current-bytes-full-provider-census-${run_id}-summary.json" "automation/current-bytes-full-provider-census-${run_id}.json" automation/current-bytes-full-provider-census-latest-summary.json automation/provider-census-status.json automation/provider-census-proof-history.json automation/provider-authority-status.json PROVIDER_CENSUS_STATUS.md
-          git add "automation/provider-waf-browser-session-${run_id}.json"
+          git add "automation/provider-waf-browser-session-${run_id}.json" automation/provider-waf-browser-session-latest.json
           git add "automation/provider-repair-batch-plan-${run_id}.json" automation/provider-repair-batch-plan-latest.json
           git commit -m "ci(census): persist current bytes ${verified} from ${GITHUB_SHA::12}"
           git push origin HEAD:main
