@@ -950,11 +950,19 @@ async function invokeProvider(getStreams, fixture, settings, profileName) {
         error: null,
       });
       if (isArray) {
-        // An array, including an empty one, is a valid provider contract result.
-        // Trying a second incompatible signature after that result created
-        // duplicate side effects and /[object Object]/ requests in the deep log.
         arrayResultSeen = true;
-        return { value, diagnostics, arrayResultSeen };
+        lastEmpty = value;
+        // A non-empty result or any provider-owned request proves the invocation
+        // convention reached the provider. An empty array with ZERO provider
+        // observations does not: generated Core/Bloc wrappers intentionally use
+        // async function(){ native.apply(this, arguments) }, erasing the original
+        // function arity/source shape used by inferInvocationMode(). In that
+        // common case, try the alternate convention before concluding the
+        // provider made no request.
+        if (value.length > 0 || providerRows.length > 0) {
+          return { value, diagnostics, arrayResultSeen };
+        }
+        continue;
       }
       // A provider-owned request proves the invocation convention reached the
       // provider. Do not then try an incompatible signature and pollute the log
@@ -972,6 +980,13 @@ async function invokeProvider(getStreams, fixture, settings, profileName) {
         error: detail,
       });
       errors.push(detail);
+      // If a prior convention already returned a valid empty array without any
+      // provider request, an alternate malformed-argument probe is diagnostic
+      // noise only. Remove its synthetic invalid-request observation so the
+      // original empty result does not become a false runtime_error.
+      if (arrayResultSeen && detail.code === 'NUVIO_INVALID_REQUEST_ARGUMENT') {
+        networkObservations.splice(observationStart);
+      }
       // If the request reached a provider host, the signature was actionable;
       // trying another convention can only introduce unrelated failures.
       if (providerRows.length > 0 && detail.code !== 'NUVIO_INVALID_REQUEST_ARGUMENT') break;
