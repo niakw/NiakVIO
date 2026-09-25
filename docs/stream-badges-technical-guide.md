@@ -6,7 +6,7 @@ NiakVIO StreamBadges are not a quality score. They are a compact vocabulary for 
 
 > **Rule:** show what is known, keep what is unknown unknown. A truthful `HLS` badge is better than inventing `1080p`, `HEVC` or `HDR`.
 
-Current stable feed: `assets/stream-badges-fusion-v6.json` — **309 badges / 17 groups**.
+Current stable feed: `assets/stream-badges-fusion-v7.json` — **309 badges / 17 groups**.
 
 ## Quick visual ranking
 
@@ -342,9 +342,9 @@ Every material badge/rule change creates a new immutable version of **all four**
 
 Current version:
 
-- `assets/stream-badges-fusion-v6.json`
-- `assets/stream-badges-dark-v6.json`
-- `assets/stream-badges-light-v6.json`
-- `assets/stream-badges-transparent-v6.json`
+- `assets/stream-badges-fusion-v7.json`
+- `assets/stream-badges-dark-v7.json`
+- `assets/stream-badges-light-v7.json`
+- `assets/stream-badges-transparent-v7.json`
 
 Older versioned feeds remain available for pinned installations.

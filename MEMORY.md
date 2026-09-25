@@ -1,5 +1,11 @@
 # NiakVIO — Recovery Memory
 
+## 2026-09-25 — StreamBadge v7 score-first order + dynamic provider cardinality
+
+- StreamBadge v7 changes the public ordering contract: the eight compact Stream Score badges are first in the canonical catalogue/feed order so a proven grade is the first visible badge. v6 remains immutable and available.
+- Provider cardinality is data, never policy. Current census scope is 46 tracked providers; current published manifest/catalogue scope is 44 visible providers (42 active + 2 disabled). The two census-only disabled providers are desiflix and fullanime. Never encode the historical 96-provider count in new tests/docs; derive cardinality from current scope helpers/data.
+- Core Stream Score remains provider-agnostic and must apply to the current dynamic published scope, including future hundreds of providers.
+
 ## 2026-09-25 19:45 Europe/Paris — StreamBadge versioning invariant + isolated Stream Score v6
 
 - Badge versioning is a hard compatibility invariant: **never modify, rename or delete an already-published versioned badge catalogue, mapping or feed**. Any badge addition/change creates a new `vN+1` filename; current docs/aliases move forward while every older versioned reference remains available for pinned users.

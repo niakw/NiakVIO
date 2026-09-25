@@ -3,12 +3,12 @@
 [English](../how-to-add-stream-badges.md) · [Retour au README](../../README.fr.md)
 
 > [!TIP]
-> Pour la majorité des utilisateurs, **Fusion v6** est le bon feed.
+> Pour la majorité des utilisateurs, **Fusion v7** est le bon feed.
 
 ## ⚡ Feed recommandé
 
 ```text
-https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/stream-badges-fusion-v6.json
+https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/stream-badges-fusion-v7.json
 ```
 
 NiakVIO fournit des règles StreamBadge au format Fusion pour enrichir les cartes de streams. Pour comprendre en détail résolution, source, mode de livraison, codecs, HDR, bitrate, audio, langue et classifications, consultez le **[guide technique et cinéphile des StreamBadges](stream-badges-technical-guide.md)**.
@@ -20,11 +20,11 @@ NiakVIO fournit des règles StreamBadge au format Fusion pour enrichir les carte
 
 Des variantes spécifiques au thème existent également :
 
-- Dark v6 : `https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/stream-badges-dark-v6.json`
-- Light v6 : `https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/stream-badges-light-v6.json`
-- Transparent v6 : `https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/stream-badges-transparent-v6.json`
+- Dark v7 : `https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/stream-badges-dark-v7.json`
+- Light v7 : `https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/stream-badges-light-v7.json`
+- Transparent v7 : `https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/stream-badges-transparent-v7.json`
 
-Utilisez-les uniquement si vous recherchez explicitement une variante liée au thème ; **Fusion v6 reste la configuration normale**.
+Utilisez-les uniquement si vous recherchez explicitement une variante liée au thème ; **Fusion v7 reste la configuration normale**.
 
 </details>
 
@@ -36,7 +36,7 @@ Utilisez-les uniquement si vous recherchez explicitement une variante liée au t
 2. Ouvrez **Apparence**.
 3. Ouvrez **Streams** — ce libellé reste actuellement en anglais dans l'interface française Mobile/Desktop.
 4. Dans **STYLE FUSION**, ouvrez **URL de badges Fusion**.
-5. Collez l'URL JSON Fusion v6 de NiakVIO.
+5. Collez l'URL JSON Fusion v7 de NiakVIO.
 6. Sélectionnez **Importer**.
 7. Vérifiez que l'URL apparaît dans la liste et qu'elle est **Active**.
 8. Optionnel : utilisez **Aperçu** pour contrôler les badges importés.
@@ -55,13 +55,13 @@ Utilisez-les uniquement si vous recherchez explicitement une variante liée au t
 4. Dans **Style Fusion**, ouvrez **URL de badges Fusion**.
 5. NuvioTV démarre son interface locale de configuration et affiche un **QR code**.
 6. Scannez le QR code avec votre téléphone, connecté au même réseau local que la TV.
-7. Dans la page web ouverte sur votre téléphone, collez l'URL JSON Fusion v6 de NiakVIO.
+7. Dans la page web ouverte sur votre téléphone, collez l'URL JSON Fusion v7 de NiakVIO.
 8. Sélectionnez **Importer**.
 9. Vérifiez que le feed est indiqué **Activé** et utilisez éventuellement **Aperçu**.
 10. La position des badges peut également être réglée via **Position des badges** (**En haut** / **En bas**).
 
 > [!IMPORTANT]
-> La TV conserve localement les règles déjà importées. Si une ancienne version du feed Fusion NiakVIO ne se met pas correctement à jour, supprimez l'ancien import puis ajoutez à nouveau l'URL **Fusion v6** actuelle.
+> La TV conserve localement les règles déjà importées. Si une ancienne version du feed Fusion NiakVIO ne se met pas correctement à jour, supprimez l'ancien import puis ajoutez à nouveau l'URL **Fusion v7** actuelle.
 
 ---
 
@@ -76,7 +76,7 @@ Ouvrez un contenu disposant de streams. Les cartes compatibles doivent afficher 
 
 - vérifiez que l'URL importée est active ;
 - utilisez **Aperçu** pour confirmer que les badges ont été chargés ;
-- réimportez l'URL Fusion v6 actuelle ;
+- réimportez l'URL Fusion v7 actuelle ;
 - gardez en tête qu'un badge ne s'affiche que si les métadonnées du stream correspondent à sa règle.
 
 </details>
@@ -85,9 +85,9 @@ Ouvrez un contenu disposant de streams. Les cartes compatibles doivent afficher 
 
 Le contrat public v3 est maintenant aligné sur les quatre feeds :
 
-- `assets/stream-badges-fusion-v6.json` — feed recommandé multi-thème ;
-- `assets/stream-badges-dark-v6.json` — fonds d'application sombres ;
-- `assets/stream-badges-light-v6.json` — fonds d'application clairs ;
-- `assets/stream-badges-transparent-v6.json` — artwork transparent.
+- `assets/stream-badges-fusion-v7.json` — feed recommandé multi-thème ;
+- `assets/stream-badges-dark-v7.json` — fonds d'application sombres ;
+- `assets/stream-badges-light-v7.json` — fonds d'application clairs ;
+- `assets/stream-badges-transparent-v7.json` — artwork transparent.
 
 Les fichiers non versionnés sont des alias `latest` mobiles. Une intégration qui veut un contrat stable doit épingler un feed versionné.

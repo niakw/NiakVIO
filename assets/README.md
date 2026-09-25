@@ -8,12 +8,12 @@ Ce dossier contient les assets visuels et les feeds **StreamBadge** utilisés av
 
 | Feed | Usage | URL brute |
 | --- | --- | --- |
-| **Fusion v6** | **Recommandé** pour un réglage unique, lisible sur fonds sombres et clairs | `https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/stream-badges-fusion-v6.json` |
-| Dark v6 | Variante pour interfaces sombres | `https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/stream-badges-dark-v6.json` |
-| Light v6 | Variante pour interfaces claires | `https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/stream-badges-light-v6.json` |
-| Transparent v6 | Artwork transparent / intégrations dédiées | `https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/stream-badges-transparent-v6.json` |
+| **Fusion v7** | **Recommandé** pour un réglage unique, lisible sur fonds sombres et clairs | `https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/stream-badges-fusion-v7.json` |
+| Dark v7 | Variante pour interfaces sombres | `https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/stream-badges-dark-v7.json` |
+| Light v7 | Variante pour interfaces claires | `https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/stream-badges-light-v7.json` |
+| Transparent v7 | Artwork transparent / intégrations dédiées | `https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/stream-badges-transparent-v7.json` |
 
-Les fichiers sans numéro restent des alias mobiles `latest`. Pour tout nouvel import et toute documentation publique, utilisez une URL **v6** explicite.
+Les fichiers sans numéro restent des alias mobiles `latest`. Pour tout nouvel import et toute documentation publique, utilisez une URL **v7** explicite.
 
 ## Feed badges et manifest providers sont séparés
 
@@ -34,8 +34,8 @@ Symptôme typique :
 Dans ce cas :
 
 1. supprimez l'ancien import StreamBadge ;
-2. importez **Fusion v6** avec l'URL versionnée ci-dessus ;
-3. vérifiez que Fusion v6 est l'import actif ;
+2. importez **Fusion v7** avec l'URL versionnée ci-dessus ;
+3. vérifiez que Fusion v7 est l'import actif ;
 4. revenez à l'écran des streams.
 
 ## Comment le matching fonctionne
@@ -59,18 +59,18 @@ Les tests NiakVIO interdisent les patterns double-échappés qui rendraient les 
 
 ## Sources et mapping
 
-- `badge_catalog_v6_complete.json` : catalogue canonique courant ;
-- `mapping_core_brain_ui_v6_complete.json` : mapping Core / Brain / UI courant ;
-- `stream-badges-fusion-v6.json` : feed Fusion stable recommandé ;
-- `stream-badges-dark-v6.json` : feed Dark stable ;
-- `stream-badges-light-v6.json` : feed Light stable ;
-- `stream-badges-transparent-v6.json` : feed Transparent stable.
+- `badge_catalog_v7_complete.json` : catalogue canonique courant ;
+- `mapping_core_brain_ui_v7_complete.json` : mapping Core / Brain / UI courant ;
+- `stream-badges-fusion-v7.json` : feed Fusion stable recommandé ;
+- `stream-badges-dark-v7.json` : feed Dark stable ;
+- `stream-badges-light-v7.json` : feed Light stable ;
+- `stream-badges-transparent-v7.json` : feed Transparent stable.
 
 Les assets sont générés et validés de façon déterministe. Ne modifiez pas uniquement un feed généré à la main : la source canonique doit rester cohérente avec les quatre variantes.
 
 ## Couverture technique v4
 
-Le catalogue canonique v6 couvre **309 badges répartis dans 17 groupes**.
+Le catalogue canonique v7 couvre **309 badges répartis dans 17 groupes**.
 
 La surface comprend notamment :
 
@@ -82,6 +82,8 @@ La surface comprend notamment :
 - audio : AAC, AC-3, E-AC-3, TrueHD, Atmos, DTS/DTS-HD/DTS:X, FLAC, PCM/LPCM, Opus, MP3, ALAC, 1.0 à 7.1 et 44.1 à 192 kHz ;
 - score global de flux : **8 grades compacts** `S+`, `S`, `A+`, `A`, `B`, `C`, `D`, `E` ;
 - **47 langues**, **49 variantes de sous-titres** et **118 classifications d'âge**.
+
+Le groupe `stream-score` est volontairement placé en premier dans l'ordre public. Quand un score global est suffisamment prouvé, son badge `S+`/…/`E` doit donc être le premier repère visible avant les badges techniques détaillés.
 
 Les mesures continues restent exactes dans la description : par exemple `6.0 Mbps` reste la valeur affichée, tandis que le badge `BITRATE` signale que cette donnée est réellement connue.
 
@@ -104,20 +106,20 @@ Une version publiée est immuable. Cela vaut pour les **feeds, catalogues et map
 
 Le générateur refuse de réécrire un feed `vN` existant avec un contenu différent. Le workflow vérifie aussi qu'un catalogue/mapping/feed versionné déjà publié n'est pas modifié ou supprimé.
 
-### Version publique actuelle : v6
+### Version publique actuelle : v7
 
 | Variante | Fichier stable |
 | --- | --- |
-| Fusion | `stream-badges-fusion-v6.json` |
-| Dark | `stream-badges-dark-v6.json` |
-| Light | `stream-badges-light-v6.json` |
-| Transparent | `stream-badges-transparent-v6.json` |
+| Fusion | `stream-badges-fusion-v7.json` |
+| Dark | `stream-badges-dark-v7.json` |
+| Light | `stream-badges-light-v7.json` |
+| Transparent | `stream-badges-transparent-v7.json` |
 
 ### Compatibilité historique
 
-Les quatre snapshots **v5**, **v4** et **v3** restent publiés et immuables pour les installations épinglées. `stream-badges-fusion-v2.json` reste également disponible pour les anciens utilisateurs, avec les anciens WebP qu'il référence.
+Les quatre snapshots **v6**, **v5**, **v4** et **v3** restent publiés et immuables pour les installations épinglées. `stream-badges-fusion-v2.json` reste également disponible pour les anciens utilisateurs, avec les anciens WebP qu'il référence.
 
-Les anciens `badge_catalog_v2_complete.json` et `mapping_core_brain_ui_v2_complete.json` sont conservés **intacts** comme références historiques/compatibilité. Des snapshots v4 explicites existent désormais également ; le catalogue/mapping courant est v6. Aucun ancien chemin versionné ne doit être recyclé pour une nouvelle version.
+Les anciens `badge_catalog_v2_complete.json` et `mapping_core_brain_ui_v2_complete.json` sont conservés **intacts** comme références historiques/compatibilité. Des snapshots v4 explicites existent désormais également ; le catalogue/mapping courant est v7. Aucun ancien chemin versionné ne doit être recyclé pour une nouvelle version.
 
 ## Langues et classifications
 
