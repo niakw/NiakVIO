@@ -87,6 +87,7 @@ CORE_FILES = [
     "scripts/provider_patches/stream_output_sanitizer_v6.py",
     "scripts/provider_patches/stream_output_sanitizer_v7.py",
     "scripts/provider_patches/stream_output_sanitizer_v8.py",
+    "scripts/provider_patches/stream_output_sanitizer_v10.py",
     "scripts/provider_patches/global_media_enrichment_v1.py",
     "scripts/provider_patches/global_media_type_resolution_v1.py",
     "scripts/provider_patches/runtime_capability_media_safety_v4.py",
@@ -97,6 +98,7 @@ CORE_FILES = [
     "scripts/provider_patches/global_stream_facts_v1.py",
     "scripts/provider_patches/global_stream_identity_v1.py",
     "scripts/provider_patches/global_stream_presentation_v1.py",
+    "scripts/provider_patches/global_stream_score_v1.py",
     "scripts/provider_patches/global_catalogue_alias_recovery_v2.py"
 ]
 OPTIONAL_CORE_FILES = [

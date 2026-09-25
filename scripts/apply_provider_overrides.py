@@ -35,19 +35,22 @@ CONFIG = ROOT / "provider-overrides.json"
 GLOBAL_STREAM_FACTS = "scripts/provider_patches/global_stream_facts_v1.py"
 GLOBAL_STREAM_IDENTITY = "scripts/provider_patches/global_stream_identity_v1.py"
 GLOBAL_STREAM_PRESENTATION = "scripts/provider_patches/global_stream_presentation_v1.py"
+GLOBAL_STREAM_SCORE = "scripts/provider_patches/global_stream_score_v1.py"
 GLOBAL_RUNTIME_MEDIA_SAFETY = "scripts/provider_patches/runtime_capability_media_safety_v4.py"
 GLOBAL_RUNTIME_COMPAT = "scripts/provider_patches/global_runtime_compat_v1.py"
 GLOBAL_PROVIDER_RUNTIME_DISPATCH = "scripts/provider_patches/global_provider_runtime_dispatch_v1.py"
 GLOBAL_DESKTOP_RUNTIME_COMPAT = "scripts/provider_patches/desktop_runtime_compat_v1.py"
 GLOBAL_PROVIDER_BRANDING = "scripts/provider_patches/global_provider_branding_v1.py"
-# NUVIO_STREAM_SANITIZER_V8_SELECTION
-GLOBAL_STREAM_SANITIZER = "scripts/provider_patches/stream_output_sanitizer_v8.py"
+# NUVIO_STREAM_SANITIZER_V10_SELECTION
+GLOBAL_STREAM_SANITIZER = "scripts/provider_patches/stream_output_sanitizer_v10.py"
 CORE_MANAGED_SANITIZER_SCRIPTS = {
     "scripts/provider_patches/stream_output_sanitizer.py",
     "scripts/provider_patches/stream_output_sanitizer_v5.py",
     "scripts/provider_patches/stream_output_sanitizer_v6.py",
     "scripts/provider_patches/stream_output_sanitizer_v7.py",
     "scripts/provider_patches/stream_output_sanitizer_v8.py",
+    "scripts/provider_patches/stream_output_sanitizer_v9.py",
+    "scripts/provider_patches/stream_output_sanitizer_v10.py",
 }
 GLOBAL_MEDIA_TYPE_RESOLUTION = "scripts/provider_patches/global_media_type_resolution_v1.py"
 # Managed Core bricks are composed only at whole START/END boundaries; provider rows may supply data/options, never brick ownership.
@@ -69,6 +72,7 @@ CANONICAL_CORE_MANAGED_ORDER = (
     "CORE.STREAM_SANITIZER.V6",
     "CORE.RUNTIME_MEDIA_SAFETY.V4",
     "CORE.PROVIDER_BRANDING.V1",
+    "CORE.STREAM_SCORE.V1",
 )
 PROVIDER_BEGIN_MARKER = "/* BEGIN NIAKVIO_PROVIDER */"
 PROVIDER_END_MARKER = "/* END NIAKVIO_PROVIDER */"
@@ -84,6 +88,8 @@ GENERATED_CORE_TAIL_MARKERS = (
     "NUVIO_STREAM_OUTPUT_SANITIZER_ALL_URL_FAIL_CLOSED_V6",
     "NUVIO_STREAM_OUTPUT_CORRELATED_PLAYER_FALLBACK_V7",
     "NUVIO_STREAM_OUTPUT_STRICT_PROBE_V8",
+    "NUVIO_STREAM_OUTPUT_NETWORK_EVIDENCE_V10",
+    "NUVIO_GLOBAL_STREAM_SCORE_V1",
     "NUVIO_GLOBAL_MEDIA_TYPE_RESOLUTION_V1",
     "NUVIO_GLOBAL_PROVIDER_EXECUTION_BUDGET_V1",
     "NUVIO_NATIVE_HLS_INTEGRITY_BUDGET_V1",
@@ -1397,7 +1403,7 @@ def apply_overrides(
         script_options = specific.get("patch_script_options") or {}
         if not isinstance(script_options, dict):
             raise ValueError(f"provider_patches.{provider_id}.patch_script_options must be an object")
-        reserved_core_scripts = {GLOBAL_RUNTIME_MEDIA_SAFETY, GLOBAL_RUNTIME_COMPAT, GLOBAL_DESKTOP_RUNTIME_COMPAT, GLOBAL_STREAM_PRESENTATION, GLOBAL_PROVIDER_BRANDING, GLOBAL_STREAM_SANITIZER, GLOBAL_MEDIA_TYPE_RESOLUTION}
+        reserved_core_scripts = {GLOBAL_RUNTIME_MEDIA_SAFETY, GLOBAL_RUNTIME_COMPAT, GLOBAL_DESKTOP_RUNTIME_COMPAT, GLOBAL_STREAM_PRESENTATION, GLOBAL_STREAM_SCORE, GLOBAL_PROVIDER_BRANDING, GLOBAL_STREAM_SANITIZER, GLOBAL_MEDIA_TYPE_RESOLUTION}
         leaked_core_scripts = sorted(set(patch_scripts) & reserved_core_scripts)
         if leaked_core_scripts:
             raise ValueError(
@@ -1824,10 +1830,7 @@ def apply_overrides(
                 "scope": "global_runtime_media_safety",
             })
 
-        # Provider branding is the final client-visible projection. It must run
-        # after terminal media validation and runtime safety so title/name use the
-        # final verified/recovered quality exactly once. Source labels stay in
-        # preserved source* facts and never re-expand the UI title.
+        # Provider branding resolves the final provider/title identity after safety.
         before = text
         text = _apply_patch_script(text, provider_id, GLOBAL_PROVIDER_BRANDING, {}, None)
         if text != before:
@@ -1836,6 +1839,19 @@ def apply_overrides(
                 "path": GLOBAL_PROVIDER_BRANDING,
                 "phase": phase,
                 "scope": "global_provider_branding",
+            })
+
+        # Stream Score is the outermost client projection. It consumes only
+        # surviving media facts plus bounded terminal-probe evidence, removes
+        # the private probe payload, and prefixes one compact score badge.
+        before = text
+        text = _apply_patch_script(text, provider_id, GLOBAL_STREAM_SCORE, {}, None)
+        if text != before:
+            applied.append({
+                "type": "patch_script",
+                "path": GLOBAL_STREAM_SCORE,
+                "phase": phase,
+                "scope": "global_stream_score",
             })
 
         # END PROVIDER is the final byte boundary.

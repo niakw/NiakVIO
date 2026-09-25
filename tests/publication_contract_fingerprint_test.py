@@ -116,6 +116,7 @@ finally:
 assert captured_contract_files
 contract_files = captured_contract_files[-1]
 assert module.GLOBAL_STREAM_PRESENTATION in contract_files, contract_files
+assert module.GLOBAL_STREAM_SCORE in contract_files, contract_files
 assert module.GLOBAL_STREAM_FACTS in contract_files, contract_files
 assert module.GLOBAL_STREAM_SANITIZER in contract_files, contract_files
 assert "scripts/provider_patches/global_media_enrichment_v1.py" in contract_files, contract_files
