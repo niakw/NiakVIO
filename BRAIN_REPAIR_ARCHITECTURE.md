@@ -249,7 +249,7 @@ same provider
 
 A changed signature, method, generation or LLM experiment may create a new fingerprint and therefore a new bounded Learning attempt.
 
-The ledger retains a bounded per-provider history of dispatched fingerprints, not only the latest value. Therefore `A → B → A` remains suppressed: a previously dispatched causal method does not become eligible again merely because another method ran in between.
+The ledger retains the complete deduplicated per-provider history of dispatched fingerprints, not only the latest value. Therefore `A → B → A` remains suppressed: a previously dispatched causal method does not become eligible again merely because another method ran in between.
 
 Missing causal fingerprint is fail-closed: no automatic Learning run.
 
