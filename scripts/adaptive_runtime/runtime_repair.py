@@ -1202,8 +1202,14 @@ def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any])
         or not _is_causal_strategy_profile(llm_advisor_profile)
     ):
         llm_advisor_profile = ""
+    strict_positive_replay_requested = (
+        brain_plan.get("providerPositiveProgramReplay") is True
+        and post_exhaustion_strategy_profile == "provider_positive_program_replay_v1"
+    )
     new_strategy_id = (
-        llm_advisor_profile
+        post_exhaustion_strategy_profile
+        if strict_positive_replay_requested
+        else llm_advisor_profile
         or post_exhaustion_strategy_profile
         or historical_strategy_profile
         or _new_strategy_id(
@@ -1211,7 +1217,7 @@ def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any])
             experiment_variant,
             experiment_generation,
         )
-    )
+    ) if not strict_positive_replay_requested else post_exhaustion_strategy_profile
     strict_positive_replay = new_strategy_id == "provider_positive_program_replay_v1"
     if strict_positive_replay and (
         not expected_positive_program_fingerprint
