@@ -43,6 +43,7 @@ video-720.m3u8
 """
 media = """#EXTM3U
 #EXT-X-MEDIA-SEQUENCE:1
+#EXT-X-PROGRAM-DATE-TIME:2026-09-25T00:00:00Z
 #EXTINF:6,
 seg.ts
 """
