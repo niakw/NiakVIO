@@ -56,7 +56,8 @@ assert '--negative-memory "$RUNNER_TEMP/brain-learning-latest.json"' in learning
 assert "empty-after-negative-memory-filter" in learning_block
 assert "from import_external_brain_llm_guidance import canon,failed_llm_experiments" in learning_block
 assert "negative_paths=[Path(value) for value in sys.argv[4:]]" in learning_block
-assert 'memory_path=Path("automation/brain-repair-memory.json")' in learning_block
+assert 'negative_paths=[Path(value) for value in sys.argv[4:]]' in learning_block
+assert 'automation/brain-repair-memory.json "$RUNNER_TEMP/brain-learning-latest.json"' in learning_block
 assert 'data["droppedFailedExperimentRows"]=dropped_failed' in learning_block
 assert learning_block.index("NiakVIO-Brain-LLM.git") < learning_block.index("source=niakvio-learning")
 
