@@ -114,19 +114,20 @@ def reconcile_patch(
     history_row: dict[str, Any],
 ) -> list[str]:
     registry_direct = str(registry_row.get("direct") or "").strip()
-    explicit_current = (
-        str(registry_row.get("direct_authority") or "").strip().casefold() == "explicit_current"
+    direct_current_authority = (
+        str(registry_row.get("direct_authority") or "").strip().casefold()
+        in {"explicit_current", "operator_pin"}
     )
     current_site = (
         registry_direct
-        if explicit_current and registry_direct
+        if direct_current_authority and registry_direct
         else str(patch.get("official_site") or registry_direct or "").strip()
     )
     current_host = host(current_site)
     if not current_host:
         return []
     changed: list[str] = []
-    if explicit_current and registry_direct:
+    if direct_current_authority and registry_direct:
         previous_site = str(patch.get("official_site") or "").strip()
         if host(previous_site) != current_host or previous_site.rstrip("/") != registry_direct.rstrip("/"):
             patch["official_site"] = registry_direct.rstrip("/")
