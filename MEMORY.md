@@ -5465,3 +5465,8 @@ This ledger is not complete merely because provider yield improves. Final comple
 ### 2026-09-26 — Work-branch cleanup expanded
 - brain-branch-maintenance now removes the merged one-off feat/fix/learn/perf branches accumulated during the Brain repair hardening, but only when no open PR targets the branch.
 - Persistent Brain state/proposal refs brain-learning/proposals and brain-architecture/proposal are explicitly not part of the cleanup list.
+
+### 2026-09-26 — Proposal-only Learning must not fail FORCE executable-diff gate
+- Cloud Learning run 36266646867 completed sandbox repair, sanitized memory, repair proposal and recensus successfully, but the architecture PR job failed because the executable-structural-change guard ran even with architecture_force=false.
+- Fix passes the architecture_force flag into the staged-path guard. Provider/publication boundaries and allowlists are always enforced; executable structural change is required only for explicit architecture FORCE.
+- Proposal-only Learning may therefore refresh review-only architecture metadata without turning a valid no-code proposal into a workflow failure.
