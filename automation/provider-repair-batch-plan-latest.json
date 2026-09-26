@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
-  "sourceRunId": "36243145290-post-repair-candidate",
-  "sourceTriggerSha": "3c44283604543e8298bf79844e8bfc8d11897f06",
-  "unresolvedProviderCount": 14,
-  "groupCount": 8,
+  "sourceRunId": "36266732694",
+  "sourceTriggerSha": "426d95ac29760f5dee395d3aef48bbc244bf7b36",
+  "unresolvedProviderCount": 15,
+  "groupCount": 9,
   "executionModel": {
     "default": "family/signature batch",
     "liveProbeConcurrency": "audit_provider_quick_yield ThreadPool",
@@ -12,12 +12,40 @@
   },
   "groups": [
     {
+      "groupId": "harness-compatibility|html_scraper|github-all-transports-challenged",
+      "repairScope": "harness-compatibility",
+      "runtimeFamilies": [
+        "html_scraper",
+        "mixed_embed_resolver"
+      ],
+      "capabilityStrategy": "html_scraper",
+      "evidenceDepths": [
+        "lookup",
+        "none"
+      ],
+      "dominantIssues": [
+        "waf_challenge"
+      ],
+      "harnessTransportClasses": [
+        "github-all-transports-challenged"
+      ],
+      "transportSignature": "github-all-transports-challenged",
+      "providerCount": 3,
+      "providers": [
+        "allwish",
+        "animesalt",
+        "moviesmod"
+      ],
+      "action": "compare browser/native/residential transport and route client-owned gaps away from provider mutation",
+      "executionPolicy": "batch-first",
+      "providerLocalFallback": "only-after-shared-profile-failure"
+    },
+    {
       "groupId": "route-to-terminal|mixed_embed_resolver",
       "repairScope": "route-to-terminal",
       "runtimeFamilies": [
         "dle-full-story-sibnet",
         "menu-search-series-focus-player",
-        "mixed_embed_resolver",
         "yflix-db-encrypted-ajax-v1"
       ],
       "capabilityStrategy": "mixed_embed_resolver",
@@ -27,18 +55,14 @@
       ],
       "dominantIssues": [
         "network_exception",
-        "network_http_error",
-        "waf_challenge"
+        "network_http_error"
       ],
-      "harnessTransportClasses": [
-        "github-all-transports-challenged"
-      ],
+      "harnessTransportClasses": [],
       "transportSignature": "not-applicable",
-      "providerCount": 4,
+      "providerCount": 3,
       "providers": [
         "anime-ultime",
         "animesultra",
-        "flemmix",
         "yflix"
       ],
       "action": "replay proven routes in batch and apply shared detail/player traversal profile",
@@ -46,59 +70,54 @@
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
     {
-      "groupId": "route-to-terminal|html_scraper",
-      "repairScope": "route-to-terminal",
+      "groupId": "harness-compatibility|mixed_embed_resolver|github-all-transports-challenged",
+      "repairScope": "harness-compatibility",
       "runtimeFamilies": [
-        "html_scraper"
+        "mixed_embed_resolver"
       ],
-      "capabilityStrategy": "html_scraper",
+      "capabilityStrategy": "mixed_embed_resolver",
       "evidenceDepths": [
-        "lookup",
         "none"
       ],
       "dominantIssues": [
-        "network_zero_result",
         "waf_challenge"
       ],
       "harnessTransportClasses": [
         "github-all-transports-challenged"
       ],
-      "transportSignature": "not-applicable",
-      "providerCount": 3,
+      "transportSignature": "github-all-transports-challenged",
+      "providerCount": 2,
       "providers": [
-        "4khdhub",
-        "animesalt",
-        "moviesmod"
+        "flemmix",
+        "vostfree"
       ],
-      "action": "replay proven routes in batch and apply shared detail/player traversal profile",
+      "action": "compare browser/native/residential transport and route client-owned gaps away from provider mutation",
       "executionPolicy": "batch-first",
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
     {
-      "groupId": "learning|html_scraper",
-      "repairScope": "learning",
+      "groupId": "terminal-extraction|html_scraper",
+      "repairScope": "terminal-extraction",
       "runtimeFamilies": [
-        "mallumv-catalogue-confirm-internal-v1",
-        "mixed_embed_resolver"
+        "api_stream_resolver",
+        "mallumv-catalogue-confirm-internal-v1"
       ],
       "capabilityStrategy": "html_scraper",
       "evidenceDepths": [
-        "none"
+        "chain"
       ],
       "dominantIssues": [
-        "provider_zero_before_provider_network",
-        "waf_challenge"
+        "network_http_error",
+        "network_zero_result"
       ],
-      "harnessTransportClasses": [
-        "github-all-transports-challenged"
-      ],
+      "harnessTransportClasses": [],
       "transportSignature": "not-applicable",
       "providerCount": 2,
       "providers": [
-        "allwish",
-        "mallumv"
+        "mallumv",
+        "moviebox"
       ],
-      "action": "queue by signature for Brain learning; provider-local repair only after shared profiles fail",
+      "action": "apply/test shared terminal-player extraction profile to the whole capability family",
       "executionPolicy": "batch-first",
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
@@ -110,10 +129,10 @@
       ],
       "capabilityStrategy": "mixed_embed_resolver",
       "evidenceDepths": [
-        "none"
+        "lookup"
       ],
       "dominantIssues": [
-        "provider_zero_before_provider_network"
+        "network_zero_result"
       ],
       "harnessTransportClasses": [],
       "transportSignature": "not-applicable",
@@ -126,8 +145,8 @@
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
     {
-      "groupId": "route-to-terminal|api_stream_resolver",
-      "repairScope": "route-to-terminal",
+      "groupId": "harness-compatibility|api_stream_resolver|github-all-transports-challenged",
+      "repairScope": "harness-compatibility",
       "runtimeFamilies": [
         "api_stream_resolver"
       ],
@@ -141,10 +160,33 @@
       "harnessTransportClasses": [
         "github-all-transports-challenged"
       ],
-      "transportSignature": "not-applicable",
+      "transportSignature": "github-all-transports-challenged",
       "providerCount": 1,
       "providers": [
         "animevost-fr"
+      ],
+      "action": "compare browser/native/residential transport and route client-owned gaps away from provider mutation",
+      "executionPolicy": "batch-first",
+      "providerLocalFallback": "only-after-shared-profile-failure"
+    },
+    {
+      "groupId": "route-to-terminal|html_scraper",
+      "repairScope": "route-to-terminal",
+      "runtimeFamilies": [
+        "html_scraper"
+      ],
+      "capabilityStrategy": "html_scraper",
+      "evidenceDepths": [
+        "lookup"
+      ],
+      "dominantIssues": [
+        "network_zero_result"
+      ],
+      "harnessTransportClasses": [],
+      "transportSignature": "not-applicable",
+      "providerCount": 1,
+      "providers": [
+        "4khdhub"
       ],
       "action": "replay proven routes in batch and apply shared detail/player traversal profile",
       "executionPolicy": "batch-first",
@@ -191,29 +233,6 @@
       "providerCount": 1,
       "providers": [
         "allanime"
-      ],
-      "action": "apply/test shared terminal-player extraction profile to the whole capability family",
-      "executionPolicy": "batch-first",
-      "providerLocalFallback": "only-after-shared-profile-failure"
-    },
-    {
-      "groupId": "terminal-extraction|html_scraper",
-      "repairScope": "terminal-extraction",
-      "runtimeFamilies": [
-        "api_stream_resolver"
-      ],
-      "capabilityStrategy": "html_scraper",
-      "evidenceDepths": [
-        "chain"
-      ],
-      "dominantIssues": [
-        "network_http_error"
-      ],
-      "harnessTransportClasses": [],
-      "transportSignature": "not-applicable",
-      "providerCount": 1,
-      "providers": [
-        "moviebox"
       ],
       "action": "apply/test shared terminal-player extraction profile to the whole capability family",
       "executionPolicy": "batch-first",
