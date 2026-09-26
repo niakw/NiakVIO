@@ -5457,3 +5457,7 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Targeted Learning run 36265367915 completed sandbox experiment, sanitized memory publication and repair proposal successfully.
 - Architecture proposal publication failed because git add -A staged transient brain-learning-input/, brain-learning-output/ and brain-sandbox/ evidence; the allowlist guard correctly rejected those paths.
 - Fixed proposal publication to stage only persistent architecture proposal/policy surfaces, plus allowlisted implementation surfaces only during explicit architecture FORCE. Transient evidence/provider reconstruction outputs remain unstaged.
+
+### 2026-09-26 — Fast Repair test contract updated for immediate Learning
+- Workflow Gate on PR #209 correctly caught the historical separation test still requiring learning_dispatch=false / scheduled-learning-slot.
+- Updated the contract to require immediate targeted Learning dispatch with the exact Fast Repair handoff cohort. Fast Repair still never accepts Learning as provider publication authority; it only hands unresolved debt to the serialized Learning workflow.
