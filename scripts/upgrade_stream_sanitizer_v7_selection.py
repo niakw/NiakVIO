@@ -7,6 +7,7 @@ monotonic: a repository already on strict-probe V8 must never be downgraded to V
 from __future__ import annotations
 
 from pathlib import Path
+import re
 
 ROOT = Path(__file__).resolve().parents[1]
 OVERRIDES = ROOT / "scripts" / "apply_provider_overrides.py"
@@ -14,7 +15,10 @@ HASHES = ROOT / "scripts" / "generate_release_hashes.py"
 MARKER = "NUVIO_STREAM_SANITIZER_V7_SELECTION"
 V7 = "scripts/provider_patches/stream_output_sanitizer_v7.py"
 V8 = "scripts/provider_patches/stream_output_sanitizer_v8.py"
-V8_SELECTION = "NUVIO_STREAM_SANITIZER_V8_SELECTION"
+SELECTION_RE = re.compile(
+    r'GLOBAL_STREAM_SANITIZER = "'
+    r'(scripts/provider_patches/stream_output_sanitizer_v(?P<version>\\d+)\\.py)"'
+)
 
 
 def once(text: str, old: str, new: str, label: str) -> str:
@@ -26,14 +30,22 @@ def once(text: str, old: str, new: str, label: str) -> str:
     return text.replace(old, new, 1)
 
 
-def _v8_current(text: str) -> bool:
-    return f'GLOBAL_STREAM_SANITIZER = "{V8}"' in text or V8_SELECTION in text
+def _current_selection(text: str) -> tuple[int, str]:
+    match = SELECTION_RE.search(text)
+    if not match:
+        return 0, ""
+    return int(match.group("version")), match.group(1)
+
+
+def _newer_current(text: str) -> bool:
+    version, _path = _current_selection(text)
+    return version > 7
 
 
 def patch_overrides() -> bool:
     text = OVERRIDES.read_text(encoding="utf-8")
     original = text
-    if _v8_current(text):
+    if _newer_current(text):
         # V8 includes/calls the V7 correlated-player layer and is the newer Core
         # owner. Historical repair bootstrap must be a no-op, never a downgrade.
         validate_overrides(text)
@@ -71,7 +83,8 @@ def patch_hashes() -> bool:
     text = HASHES.read_text(encoding="utf-8")
     original = text
     overrides = OVERRIDES.read_text(encoding="utf-8")
-    desired = V8 if _v8_current(overrides) else V7
+    version, selected = _current_selection(overrides)
+    desired = selected if version > 7 and selected else V7
     if desired not in text:
         anchor = f'    "{V7}",\n' if V7 in text else '    "scripts/provider_patches/stream_output_sanitizer_v6.py",\n'
         if text.count(anchor) != 1:
@@ -84,11 +97,13 @@ def patch_hashes() -> bool:
 
 def validate_overrides(text: str | None = None) -> None:
     value = text if text is not None else OVERRIDES.read_text(encoding="utf-8")
-    if _v8_current(value):
-        assert f'GLOBAL_STREAM_SANITIZER = "{V8}"' in value
-        assert V8 in value
-        assert "NUVIO_STREAM_OUTPUT_STRICT_PROBE_V8" in value
-        assert V7 in value, "V8 composition must retain V7 managed sanitizer knowledge"
+    version, selected = _current_selection(value)
+    if version > 7:
+        assert selected
+        assert f'GLOBAL_STREAM_SANITIZER = "{selected}"' in value
+        assert f"NUVIO_STREAM_SANITIZER_V{version}_SELECTION" in value
+        assert selected in value
+        assert V7 in value, "newer sanitizer composition must retain V7 managed sanitizer knowledge"
         return
     assert value.count(MARKER) == 1, f"selection marker count={value.count(MARKER)}"
     assert f'GLOBAL_STREAM_SANITIZER = "{V7}"' in value
@@ -99,14 +114,16 @@ def validate_overrides(text: str | None = None) -> None:
 def validate_hashes(text: str | None = None) -> None:
     value = text if text is not None else HASHES.read_text(encoding="utf-8")
     overrides = OVERRIDES.read_text(encoding="utf-8")
-    desired = V8 if _v8_current(overrides) else V7
+    version, selected = _current_selection(overrides)
+    desired = selected if version > 7 and selected else V7
     assert desired in value, f"current sanitizer missing from release hash inventory: {desired}"
 
 
 def main() -> int:
     changed_overrides = patch_overrides()
     changed_hashes = patch_hashes()
-    current = "v8" if _v8_current(OVERRIDES.read_text(encoding="utf-8")) else "v7"
+    version, _selected = _current_selection(OVERRIDES.read_text(encoding="utf-8"))
+    current = f"v{version}" if version > 7 else "v7"
     print(
         "STREAM_SANITIZER_V7_SELECTION_OK "
         f"current={current} overrides_changed={str(changed_overrides).lower()} "
