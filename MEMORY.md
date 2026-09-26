@@ -5348,3 +5348,12 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Follow-up bounds normal materializer output to 800 tokens with a 180s request budget.
 - On TimeoutError only, the materializer performs exactly one compact retry: 500 tokens, <=5200 source characters, only gap/meta-learning/layer/verification context, with a minimal-edit prompt.
 - Synthetic retry contract test proves the fallback path, limits and parsed edit output.
+
+### 2026-09-26 — Declarative meta-gap strategy synthesis
+- Local parallel Repair cohorts confirmed that fixed profile catalogues can exhaust without acceptance: catalogue/search deferred 4khdhub, animesultra, yflix; terminal/runtime deferred allanime + animevostfr and kept mallumv as architecture_gap; session/transport deferred seven providers while anime-ultime reproduced one healthy stream locally.
+- Root architecture gap: Learning disabled advisor guidance exactly after experiment exhaustion, and the remaining architecture materializer depended on long Qwen code generation that timed out even after a compact retry.
+- New provider-agnostic layer scripts/brain_layers/declarative_gap_strategy.py composes bounded novel advisor experiments from current census + negative memory using existing sandboxed executors. It emits no provider URLs/tokens and has no publication/proof authority.
+- Supported debt classes: provider_transport_gap/transport_blocked, route_proven_gap, search_gap, chain_terminal_gap, media_extraction_gap, candidate_replay_gap.
+- Every synthesized experiment has a SHA-256 fingerprint; already-failed provider+profile+fingerprint tuples are skipped and the next bounded composition is generated.
+- Planner Learning may consume guidanceKind=meta-gap-synthesis after all ordinary/post-exhaustion strategies are exhausted, producing repairType=synthesized_strategy and probe-targeted-repair. Existing current-byte/identity/playback/non-regression gates remain authoritative.
+- Tests PASS: declarative generator rotation, Brain LLM advisor execution including true generation-5 exhaustion, second-order runtime strategy contract, Python compile, Node syntax, diff check.

@@ -171,6 +171,8 @@ llm_plan={
 llm_snapshot=brain._plan_snapshot(llm_plan)
 assert llm_snapshot["llmAdvisorApplied"] is True,llm_snapshot
 assert llm_snapshot["llmAdvisorProfile"]=="proven_route_terminal_traversal_v1",llm_snapshot
+assert llm_snapshot["llmAdvisorGuidanceKind"]=="",llm_snapshot
+assert llm_snapshot["metaGapEscalated"] is False,llm_snapshot
 llm_candidate=candidate("","route_proven_gap","ROUTE PROVEN")
 llm_candidate["brain_repair_plan"]=llm_snapshot
 llm_options=runtime._adaptive_runtime_options(llm_candidate,config)
