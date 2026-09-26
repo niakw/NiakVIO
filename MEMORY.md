@@ -5505,3 +5505,8 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Census classification now treats WAF/transport evidence as weaker than retained provider evidence: chain -> CHAIN REACHED, qualified route -> ROUTE PROVEN, durable historical positive -> NO PROOF unless an exact retained fixture replay establishes a regression.
 - update_provider_census_proof_history.py now synchronizes historicalVerifiedLanes from provider-history-matrix.json as lane-level historicalPositive flags without inventing exact fixtures.
 - Exact regression replay remains fixture-scoped; historicalPositive is only a monotonic proof floor preventing CI/WAF evidence from erasing established provider knowledge.
+
+### 2026-09-26 — Architecture FORCE output parser resilience
+- Learning run 36272561268 reached the architecture materializer but failed because Qwen returned a structurally bounded object with minor JSON syntax defects (JSONDecodeError).
+- The materializer extracts the first balanced object, retries after removing trailing commas, then safely falls back to ast.literal_eval for literal-only Python-style dictionaries.
+- No generated code is executed by this parser. Existing path/edit allowlists and executable-diff validation remain authoritative.
