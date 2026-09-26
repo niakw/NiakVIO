@@ -76,6 +76,10 @@ assert "def portfolio_probe_timeout(" in pipeline_current
 assert "timeout=1080" in pipeline_current
 assert "route_recovery_outer_timeout(" in pipeline_current
 assert "portfolio_probe_timeout(len(providers or []))" in pipeline_current
+assert 'if args.mode == "force":' in pipeline_current
+assert "FIELD_FORCE_HISTORICAL_MIGRATIONS" in pipeline_current
+assert "reason=current-bytes-only" in pipeline_current
+assert "else:\n        for migration in migrations:" in pipeline_current
 sanitizer_migration = (ROOT / "scripts" / "upgrade_stream_sanitizer_v7_selection.py").read_text(encoding="utf-8")
 assert "stream_output_sanitizer_v10.py" in sanitizer_migration
 assert "NEWER_SANITIZERS" in sanitizer_migration
