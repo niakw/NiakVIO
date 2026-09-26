@@ -5303,3 +5303,10 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Live reproduction after fix: nuvio-mobile, nuvio-desktop, nuvio-tv all resolve as compare_status=ahead + contract_review_required, which the Brain guard treats as adaptation_pending (non-blocking) while preserving native re-audit requirements.
 - Targeted test: tests/nuvio_client_upstream_drift_guard_test.py PASS. Live guard PASS.
 - Prior FORCE causal result remains non-authoritative for candidates: animevostfr and mallumv were accepted=false because Deep execution hit the client verification environment error; do not record those experiments as provider-negative evidence.
+
+### 2026-09-26 — FORCE preflight contract drift after architecture FORCE merge
+- FORCE run 36240271186 on SHA 80baedf89f7f failed before provider/network work in the preflight contract suite.
+- Cause: tests/brain_causal_intelligence_contract_test.py still asserted that no brain-learning-lab.yml dispatch may exist after Persist Repair census state. That invariant became obsolete when guarded architecture FORCE was merged.
+- Correct contract: normal Repair may not dispatch Learning; explicit force_requested architecture debt may dispatch brain-learning-lab.yml only with publish_proposal=true + architecture_force=true and FIELD_PROVIDER_BRAIN_FORCE_ARCH_DISPATCH.
+- PR #197 updates this remaining stale contract. Local tests brain_causal_intelligence_contract_test.py and provider_repair_learning_escalation_workflow_test.py pass.
+- Run 36240271186 contains no provider verdict: canonical Repair was skipped by preflight failure. Main evidence commit 9f564858 only records the skipped attempt and does not validate or invalidate animevostfr/mallumv.
