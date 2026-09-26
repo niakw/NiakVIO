@@ -8,6 +8,7 @@ Every edit is exact find/replace or a new isolated Brain layer/test file.
 from __future__ import annotations
 
 import argparse
+import ast
 import json
 import re
 from pathlib import Path
@@ -225,13 +226,66 @@ def _compact_payload(payload: dict[str, Any]) -> dict[str, Any]:
     return compact
 
 
+def _extract_balanced_object(raw: str) -> str:
+    start = raw.find("{")
+    if start < 0:
+        raise ValueError("architecture model output contains no object")
+    depth = 0
+    in_string = False
+    escaped = False
+    quote = ""
+    for index in range(start, len(raw)):
+        char = raw[index]
+        if in_string:
+            if escaped:
+                escaped = False
+            elif char == "\\":
+                escaped = True
+            elif char == quote:
+                in_string = False
+            continue
+        if char in {'"', "'"}:
+            in_string = True
+            quote = char
+            continue
+        if char == "{":
+            depth += 1
+        elif char == "}":
+            depth -= 1
+            if depth == 0:
+                return raw[start:index + 1]
+    raise ValueError("architecture model output contains an unbalanced object")
+
+
 def _parse_model_value(value: dict[str, Any]) -> dict[str, Any]:
     raw = str(value["choices"][0]["message"]["content"]).strip()
     if raw.startswith("~~~") or raw.startswith(chr(96) * 3):
         raw = "\n".join(raw.splitlines()[1:-1]).strip()
         if raw.casefold().startswith("json"):
             raw = raw[4:].lstrip()
-    parsed = json.loads(raw)
+
+    candidate = _extract_balanced_object(raw)
+    attempts = [candidate]
+    no_trailing_commas = re.sub(r",\s*([}\]])", r"\1", candidate)
+    if no_trailing_commas != candidate:
+        attempts.append(no_trailing_commas)
+
+    for attempt in attempts:
+        try:
+            parsed = json.loads(attempt)
+        except json.JSONDecodeError:
+            continue
+        if not isinstance(parsed, dict):
+            raise ValueError("architecture model output must be object")
+        return parsed
+
+    # Qwen occasionally emits a Python-style dict (single quotes) despite the
+    # JSON-only instruction. literal_eval parses literals only and never runs
+    # arbitrary code; all returned edits are still validated by the allowlist.
+    try:
+        parsed = ast.literal_eval(no_trailing_commas)
+    except (ValueError, SyntaxError) as exc:
+        raise ValueError("architecture model output is not valid bounded JSON/object") from exc
     if not isinstance(parsed, dict):
         raise ValueError("architecture model output must be object")
     return parsed
