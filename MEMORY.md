@@ -5113,3 +5113,19 @@ This ledger is not complete merely because provider yield improves. Final comple
 - FORCE resumes now preserve `mode=force` instead of silently resuming as ordinary Repair.
 - Next execution: update the canonical Force trigger to the current 14-provider cohort and current Brain-LLM revision, then inspect isolated Force candidate evaluation, current-byte Retest, automatic direct apply, remaining FORCE cohort, census persistence and non-regression.
 
+
+
+## 2026-09-26 Europe/Paris — Learning window ownership enforced during FORCE recovery
+
+- User requirement revalidated: the current recovery phase is **FORCE-only**; Learning is reserved to its independent scheduled/manual slot and must not be launched as a child of Repair/Fast Repair/Autopilot.
+- Confirmed FORCE run `36203749623` started on SHA `ac7369ffdf462e24b14dd3c04fb7bffed247ab7d` for the exact 14-provider census cohort. At the time of this checkpoint it had passed canonical preflight, WAF/Tailscale setup and was replaying providers through the residential exit; isolated Brain-LLM Force evaluation had not yet started.
+- Provider bytes were not changed by the ownership fix. Workflow/test/document-only commits after the FORCE SHA are provider-neutral and must be treated as such by the existing concurrent-drift gate.
+- Removed automatic `brain-learning-lab.yml` dispatch from:
+  - `.github/workflows/provider-fast-repair.yml`;
+  - `.github/workflows/provider-recognition-repair-v6.yml`;
+  - `.github/workflows/provider-brain-autopilot.yml`.
+- Fast/Repair/Autopilot now only persist/announce unresolved Learning debt with `learning_dispatch=false owner=scheduled-learning-slot`. Autopilot may still refresh WAF/native transport evidence but cannot launch architecture Learning.
+- Dedicated Learning execution remains owned by `brain-learning-lab.yml`, its own continuation mechanism, and the availability watchdog that restores a missing scheduled Learning window.
+- Updated CI contracts and `BRAIN_REPAIR_ARCHITECTURE.md` to lock this separation.
+- Census visibility fix is already present: `PROVIDER_CENSUS_STATUS.md` now shows the latest Repair/FORCE attempt independently from authoritative provider-status evidence. Current page shows attempt `36199786760`: 14 selected, 0 candidates, 0 validated, 14 unresolved debt, budget exhausted.
+- Do not launch or re-enable Learning from FORCE/Repair while finishing this 14-provider recovery. Continue current FORCE, inspect isolated mutation evaluation provider by provider, apply only current-byte validated candidates, continue FORCE on unresolved providers, then persist the resulting census.
