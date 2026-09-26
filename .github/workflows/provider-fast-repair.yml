@@ -113,6 +113,7 @@ jobs:
           python tests/brain_accepted_program_v3_persistence_test.py
           python tests/provider_census_status_markdown_test.py
           python tests/waf_census_transport_merge_test.py
+          python tests/provider_census_waf_proof_monotonicity_test.py
       - name: Import sanitized persistent Learning and Brain LLM priors
         shell: bash
         run: |
