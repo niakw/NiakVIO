@@ -5461,3 +5461,7 @@ This ledger is not complete merely because provider yield improves. Final comple
 ### 2026-09-26 — Fast Repair test contract updated for immediate Learning
 - Workflow Gate on PR #209 correctly caught the historical separation test still requiring learning_dispatch=false / scheduled-learning-slot.
 - Updated the contract to require immediate targeted Learning dispatch with the exact Fast Repair handoff cohort. Fast Repair still never accepts Learning as provider publication authority; it only hands unresolved debt to the serialized Learning workflow.
+
+### 2026-09-26 — Work-branch cleanup expanded
+- brain-branch-maintenance now removes the merged one-off feat/fix/learn/perf branches accumulated during the Brain repair hardening, but only when no open PR targets the branch.
+- Persistent Brain state/proposal refs brain-learning/proposals and brain-architecture/proposal are explicitly not part of the cleanup list.
