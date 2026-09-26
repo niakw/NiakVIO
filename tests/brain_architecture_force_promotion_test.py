@@ -13,12 +13,14 @@ POLICY = json.loads((ROOT / "engine_v2/config/brain-policy.json").read_text(enco
 assert "architecture_force:" in LEARN
 assert "brain_architecture_force_materializer.py" in LEARN
 assert "brain-architecture-force.patch" in LEARN
-assert "Architecture FORCE may not auto-promote proposal-only metadata" in LEARN
+assert "force_promotable=" in LEARN
+assert "no-force-promotable-blueprint" in LEARN
+assert "proposal_only=true" in LEARN
 assert 'gh pr merge "$PR_NUMBER"' in LEARN
 assert "gh pr checks" in LEARN and "--watch" in LEARN and "--fail-fast" in LEARN
 assert "mode=merge-after-green-pr-checks" in LEARN
 assert "architecture FORCE changed non-allowlisted paths" in LEARN
-assert 'engine_v2/config/brain-self-evolution.json "${{ inputs.architecture_force || false }}"' in LEARN
+assert 'engine_v2/config/brain-self-evolution.json "${{ steps.materialize-architecture.outputs.force_promotable }}"' in LEARN
 assert "if architecture_force and not has_executable:" in LEARN
 assert "architecture_force=" in LEARN and "executable=" in LEARN
 assert "architecture FORCE crossed provider/publication boundary" in LEARN
@@ -55,3 +57,8 @@ assert promotion.get("providerPublicationAuthority") is False
 assert promotion.get("productionProviderWritesAllowed") is False
 
 print("Brain architecture FORCE promotion workflow contract passed")
+
+# FORCE proposal-only is a valid non-promotable outcome; executable diff
+# requirements apply only when the materializer reports a real structural patch.
+assert 'if [ "${{ steps.materialize-architecture.outputs.force_promotable }}" = "true" ]; then' in LEARN
+assert 'FIELD_BRAIN_ARCH_FORCE_PROMOTION skipped=true reason=no-force-promotable-blueprint proposal_only=true' in LEARN
