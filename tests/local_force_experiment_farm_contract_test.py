@@ -79,6 +79,9 @@ assert 'env["NIAKVIO_SKIP_CLIENT_DRIFT_GUARD"] = "1"' in source
 assert '"clientDriftGuardSkippedForLocalExperiments": True' in source
 
 for required in (
+    "--breadth-batch-size",
+    "FIELD_LOCAL_FORCE_BREADTH_ROUND",
+    "FIELD_LOCAL_FORCE_PROVIDER_BATCH_YIELD",
     "run_adaptive_quick_repair.py",
     "run_adaptive_deep_repair.py",
     "WINNING_GUIDANCE.json",
