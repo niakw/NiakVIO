@@ -211,3 +211,153 @@ assert "llmAdvisorExperimentFingerprint" in brain
 assert "llmAdvisorExperiment" in brain
 
 print("Brain LLM advisor execution contract passed")
+
+# Meta-gap synthesis is the final bounded escape hatch in Learning after the
+# ordinary experiment generations are exhausted and no coded post-exhaustion
+# profile exists. It remains a prior: current-byte validation still decides.
+meta_candidate={
+    "canonical_id":"synthetic-meta-gap",
+    "metadata":{"supportedTypes":["movie"]},
+}
+meta_result={
+    "status":"runtime_error",
+    "evidence":{"streams_playable":0,"streams_returned":0},
+    "tests":[{
+        "fixture":{"mediaType":"movie","category":"movie","title":"Synthetic"},
+        "failure_class":"synthetic_novel_gap",
+        "status":"runtime_error",
+        "runtime_errors":["synthetic"],
+        "network_observations":[],
+        "streams_playable":0,
+        "stream_count":0,
+    }],
+}
+def meta_plan(memory):
+    payload={
+        "mode":"learning",
+        "policy":policy,
+        "learnedSkills":{},
+        "historicalSolutions":[],
+        "llmGuidance":[],
+        "negativeMemory":memory,
+        "items":[{
+            "key":"published:synthetic-meta-gap",
+            "candidate":meta_candidate,
+            "result":meta_result,
+            "state":{},
+        }],
+    }
+    completed=subprocess.run(
+        ["node",str(PLANNER)],
+        cwd=ROOT,input=json.dumps(payload),capture_output=True,text=True,check=True,timeout=20,
+    )
+    return next(iter((json.loads(completed.stdout).get("plans") or {}).values()))
+
+initial_meta=meta_plan([])
+meta_signature=initial_meta["signature"]
+meta_failure=initial_meta["failureClass"]
+meta_guidance=[{
+    "providerId":"synthetic-meta-gap",
+    "failureClass":meta_failure,
+    "targetLayer":"provider",
+    "strategy":"meta-gap-runtime-composition",
+    "profile":"search_contract_inference_v1",
+    "confidence":0.86,
+    "priorOnly":True,
+    "experiment":{
+        "routePolicy":"owned_plus_peer_generic",
+        "recipePolicy":"current_plus_provider_peer",
+        "roleOrder":["api","search","detail","player","source"],
+        "terminalOnly":False,
+        "aliasSearch":True,
+        "responseSalvage":True,
+        "documentRequestMining":True,
+        "sessionBootstrap":False,
+        "maxDepth":5,
+        "maxPages":28,
+        "maxEmbeds":20,
+        "maxRecipePasses":5,
+    },
+    "experimentFingerprint":"c"*64,
+    "guidanceKind":"meta-gap-synthesis",
+}]
+meta_memory=[
+    {
+        "providerId":"synthetic-meta-gap",
+        "failureClass":meta_failure,
+        "signature":meta_signature,
+        "experimentVariant":variant,
+        "experimentGeneration":1,
+        "profile":"adaptive_runtime_recovery",
+        "failures":1,
+        "consecutiveFailures":1,
+        "successes":0,
+        "executionObserved":True,
+        "lastOutcome":"rejected",
+        "lastReason":"synthetic_exhaustion",
+    }
+    for variant in range(4)
+]
+meta_memory.extend([
+    {
+        "providerId":"synthetic-meta-gap",
+        "failureClass":meta_failure,
+        "signature":meta_signature,
+        "experimentVariant":4,
+        "experimentGeneration":generation,
+        "profile":"adaptive_runtime_recovery",
+        "failures":1,
+        "consecutiveFailures":1,
+        "successes":0,
+        "executionObserved":True,
+        "lastOutcome":"rejected",
+        "lastReason":"synthetic_generation_exhaustion",
+    }
+    for generation in range(2,6)
+])
+meta_payload={
+    "mode":"learning",
+    "policy":policy,
+    "learnedSkills":{},
+    "historicalSolutions":[],
+    "llmGuidance":meta_guidance,
+    "negativeMemory":meta_memory,
+    "items":[{
+        "key":"published:synthetic-meta-gap",
+        "candidate":meta_candidate,
+        "result":meta_result,
+        "state":{},
+    }],
+}
+meta_completed=subprocess.run(
+    ["node",str(PLANNER)],
+    cwd=ROOT,input=json.dumps(meta_payload),capture_output=True,text=True,check=True,timeout=20,
+)
+meta_final=next(iter((json.loads(meta_completed.stdout).get("plans") or {}).values()))
+assert meta_final["baseExperimentExhausted"] is True,meta_final
+assert meta_final["metaGapEscalated"] is True,meta_final
+assert meta_final["repairType"]=="synthesized_strategy",meta_final
+assert meta_final["learningDisposition"]=="execute_meta_gap_synthesized_strategy",meta_final
+assert meta_final["action"]=="probe-targeted-repair",meta_final
+assert meta_final["llmAdvisorApplied"] is True,meta_final
+assert meta_final["llmAdvisorGuidanceKind"]=="meta-gap-synthesis",meta_final
+assert meta_final["allowedProfiles"][0]=="search_contract_inference_v1",meta_final
+
+# Meta-gap guidance is also available to Brain Repair exploration, but it must
+# never preempt ordinary variants. It becomes eligible only after exhaustion.
+meta_prod_guidance=[{
+    **guidance[0],
+    "strategy":"meta-gap-route-transition-composition",
+    "profile":"search_contract_inference_v1",
+    "confidence":0.99,
+    "guidanceKind":"meta-gap-synthesis",
+    "experimentFingerprint":"d"*64,
+}]
+meta_prod_early=plan("repair",[],meta_prod_guidance)
+assert meta_prod_early["llmAdvisorApplied"] is False,meta_prod_early
+meta_prod_rescue=plan("repair",exhausted_memory,meta_prod_guidance)
+assert meta_prod_rescue["baseExperimentExhausted"] is True,meta_prod_rescue
+assert meta_prod_rescue["llmAdvisorApplied"] is True,meta_prod_rescue
+assert meta_prod_rescue["llmAdvisorRescue"] is True,meta_prod_rescue
+assert meta_prod_rescue["llmAdvisorGuidanceKind"]=="meta-gap-synthesis",meta_prod_rescue
+assert meta_prod_rescue["allowedProfiles"][0]=="search_contract_inference_v1",meta_prod_rescue

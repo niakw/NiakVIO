@@ -5348,3 +5348,26 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Follow-up bounds normal materializer output to 800 tokens with a 180s request budget.
 - On TimeoutError only, the materializer performs exactly one compact retry: 500 tokens, <=5200 source characters, only gap/meta-learning/layer/verification context, with a minimal-edit prompt.
 - Synthetic retry contract test proves the fallback path, limits and parsed edit output.
+
+### 2026-09-26 — Declarative meta-gap strategy synthesis
+- Local parallel Repair cohorts confirmed that fixed profile catalogues can exhaust without acceptance: catalogue/search deferred 4khdhub, animesultra, yflix; terminal/runtime deferred allanime + animevostfr and kept mallumv as architecture_gap; session/transport deferred seven providers while anime-ultime reproduced one healthy stream locally.
+- Root architecture gap: Learning disabled advisor guidance exactly after experiment exhaustion, and the remaining architecture materializer depended on long Qwen code generation that timed out even after a compact retry.
+- New provider-agnostic layer scripts/brain_layers/declarative_gap_strategy.py composes bounded novel advisor experiments from current census + negative memory using existing sandboxed executors. It emits no provider URLs/tokens and has no publication/proof authority.
+- Supported debt classes: provider_transport_gap/transport_blocked, route_proven_gap, search_gap, chain_terminal_gap, media_extraction_gap, candidate_replay_gap.
+- Every synthesized experiment has a SHA-256 fingerprint; already-failed provider+profile+fingerprint tuples are skipped and the next bounded composition is generated.
+- Planner Learning may consume guidanceKind=meta-gap-synthesis after all ordinary/post-exhaustion strategies are exhausted, producing repairType=synthesized_strategy and probe-targeted-repair. Existing current-byte/identity/playback/non-regression gates remain authoritative.
+- Tests PASS: declarative generator rotation, Brain LLM advisor execution including true generation-5 exhaustion, second-order runtime strategy contract, Python compile, Node syntax, diff check.
+
+### 2026-09-26 — Meta-gap synthesis enabled inside Brain Repair exploration
+- Live test of the first declarative layer showed run_provider_brain_repair executes Deep as Repair + NUVIO_BRAIN_EXPLORATION_CHAIN=1, not planner_mode=learning, so meta-gap rows were not visible there.
+- Fixed planner/runtime contract: declarative meta-gap guidance is now exposed in Learning or Brain Repair exploration chains.
+- Safety rule: meta-gap guidance is filtered out before ordinary experiment exhaustion. In Repair it can become one bounded llmAdvisorRescue only after exhaustion; in Learning it can become repairType=synthesized_strategy only after coded post-exhaustion strategies are also exhausted.
+- Regression tests prove early meta-gap preemption is impossible and post-exhaustion rescue is enabled.
+
+### 2026-09-26 — Declarative meta-gap live Repair proof
+- Live isolated Repair on SHA 07b4fcdb for allanime + animevostfr + mallumv proved the meta-gap surface is actually executable in Brain Repair exploration, not only unit-tested.
+- First batch produced 3 sandbox exploration progressions (previous comparable run produced 1).
+- allanime: exhausted chain_terminal_gap reopened as probe-targeted-repair via synthesized chain_terminal_extractor_v1 experiment fingerprint 7afa337b..., llmAdvisorRescue=true; still no playable stream.
+- animevostfr: exhausted candidate_replay_gap reopened as probe-targeted-repair via synthesized retained_candidate_replay_v1 fingerprint 04ccbdba..., llmAdvisorRescue=true; still no playable stream.
+- mallumv remained on a non-exhausted search_gap/adaptive path during this two-wave sample; no repair accepted.
+- Result: declarative synthesis removes fixed-profile exhaustion as a hard stop for known families, but does not itself prove provider resolution. Further experiment generations remain required.

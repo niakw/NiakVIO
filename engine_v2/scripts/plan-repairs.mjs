@@ -255,7 +255,7 @@ function llmFailureCompatibility(guidanceFailure, currentFailure) {
   return sourceFamily && sourceFamily === currentFamily ? "family" : "";
 }
 
-function llmAdvisorStrategyHint(providerId, failureClass, memoryRows, rotateEvery) {
+function llmAdvisorStrategyHint(providerId, failureClass, memoryRows, rotateEvery, allowMetaGap = true) {
   const provider = stringValue(providerId).toLowerCase();
   const failure = canonicalFailureClass(failureClass);
   const rows = llmGuidance
@@ -269,6 +269,7 @@ function llmAdvisorStrategyHint(providerId, failureClass, memoryRows, rotateEver
         stringValue(row.providerId).toLowerCase() === provider
         && stringValue(row.targetLayer).toLowerCase() === "provider"
         && row.priorOnly === true
+        && (allowMetaGap || stringValue(row.guidanceKind).toLowerCase() !== "meta-gap-synthesis")
         && confidence >= 0.80
         && LLM_ADVISOR_PROFILES.has(stringValue(row.profile).toLowerCase())
         && Boolean(row.failureCompatibility)
@@ -607,6 +608,23 @@ function buildPlan(item) {
       ? postExhaustionStrategyHint(evidence.failureClass, allMemoryMatches, rotateEvery)
       : { profile: "", method: "", index: -1 };
   const strategyEscalated = Boolean(postExhaustionHint.profile);
+  const metaGapAdvisorHint = (
+    learningMode
+    && experimentExhausted
+    && !strategyEscalated
+  )
+    ? llmAdvisorStrategyHint(
+        providerId,
+        evidence.failureClass,
+        allMemoryMatches,
+        rotateEvery,
+        true,
+      )
+    : { profile: "", strategy: "", confidence: 0, experiment: {}, experimentFingerprint: "", guidanceKind: "" };
+  const metaGapEscalated = (
+    Boolean(metaGapAdvisorHint.profile)
+    && stringValue(metaGapAdvisorHint.guidanceKind).toLowerCase() === "meta-gap-synthesis"
+  );
   const providerPositiveProgramProductionRescue = (
     !learningMode
     && experimentExhausted
@@ -615,7 +633,7 @@ function buildPlan(item) {
   );
   const repairTarget = experimentExhausted
     ? (
-        strategyEscalated
+        (strategyEscalated || metaGapEscalated)
           ? (
               providerPositiveProgramProductionRescue
                 ? {
@@ -626,11 +644,13 @@ function buildPlan(item) {
                 : {
                     ...baseRepairTarget,
                     scope: "learning",
-                    repairType: "evolved_strategy",
+                    repairType: metaGapEscalated ? "synthesized_strategy" : "evolved_strategy",
                     engine: "brain_learning_lab",
                     pipelineStage: "learning",
-                    profiles: [postExhaustionHint.profile],
-                    learningDisposition: "execute_bounded_evolved_strategy",
+                    profiles: [metaGapEscalated ? metaGapAdvisorHint.profile : postExhaustionHint.profile],
+                    learningDisposition: metaGapEscalated
+                      ? "execute_meta_gap_synthesized_strategy"
+                      : "execute_bounded_evolved_strategy",
                   }
             )
           : learningMode
@@ -657,17 +677,20 @@ function buildPlan(item) {
   // A strict same-provider positive program is stronger evidence than an
   // advisory hypothesis. Once selected as the production rescue, it owns the
   // bounded attempt and the LLM advisor must not re-open a mixed execution set.
-  const llmAdvisorHint = (
-    !providerPositiveProgramProductionRescue
-    && (!experimentExhausted || !learningMode)
-  )
-    ? llmAdvisorStrategyHint(
-        providerId,
-        evidence.failureClass,
-        allMemoryMatches,
-        rotateEvery,
+  const llmAdvisorHint = metaGapEscalated
+    ? metaGapAdvisorHint
+    : (
+        !providerPositiveProgramProductionRescue
+        && (!experimentExhausted || !learningMode)
       )
-    : { profile: "", strategy: "", confidence: 0, experiment: {}, experimentFingerprint: "" };
+      ? llmAdvisorStrategyHint(
+          providerId,
+          evidence.failureClass,
+          allMemoryMatches,
+          rotateEvery,
+          experimentExhausted,
+        )
+      : { profile: "", strategy: "", confidence: 0, experiment: {}, experimentFingerprint: "", guidanceKind: "" };
   const llmAdvisorProductionRescue = (
     !learningMode
     && experimentExhausted
@@ -716,12 +739,12 @@ function buildPlan(item) {
         ],
       }
     : effectiveRepairTarget;
-  const effectiveAction = (strategyEscalated || llmAdvisorProductionRescue)
+  const effectiveAction = (strategyEscalated || metaGapEscalated || llmAdvisorProductionRescue)
     ? "probe-targeted-repair"
     : experimentExhausted
       ? (learningMode ? "collect-more-evidence" : "deferred_retry")
       : stringValue(plan.action, "deferred_retry");
-  const effectiveExitReason = (strategyEscalated || llmAdvisorProductionRescue)
+  const effectiveExitReason = (strategyEscalated || metaGapEscalated || llmAdvisorProductionRescue)
     ? null
     : experimentExhausted
       ? (learningMode ? "learning_generations_exhausted" : "experiment_variants_exhausted")
@@ -729,6 +752,7 @@ function buildPlan(item) {
   const effectiveHypotheses = (
     experimentExhausted
     && !strategyEscalated
+    && !metaGapEscalated
     && !llmAdvisorProductionRescue
   ) ? [] : hypotheses;
   return {
@@ -749,6 +773,7 @@ function buildPlan(item) {
     baseExperimentExhausted: experimentExhausted,
     experimentExhausted: experimentExhausted && !strategyEscalated && !llmAdvisorProductionRescue,
     strategyEscalated,
+    metaGapEscalated,
     providerPositiveProgramReplay: postExhaustionHint.profile === "provider_positive_program_replay_v1",
     positiveProgramFingerprint: stringValue(postExhaustionHint.positiveProgramFingerprint).toLowerCase(),
     strategyImplementationFingerprint: stringValue(postExhaustionHint.strategyImplementationFingerprint).toLowerCase(),
@@ -952,7 +977,9 @@ function profilesForRepairTarget(plan, repairTarget) {
   if (stringValue(plan.action) !== "probe-targeted-repair") return [];
   if (
     repairTarget.scope !== "capability"
-    && stringValue(repairTarget.repairType) !== "evolved_strategy"
+    && !new Set(["evolved_strategy", "synthesized_strategy"]).has(
+      stringValue(repairTarget.repairType),
+    )
   ) return [];
   const transferred = asArray(plan.hypotheses)
     .filter((row) => isRecord(row) && row.learned === true)
@@ -967,7 +994,9 @@ function profilesForRepairTarget(plan, repairTarget) {
   if (stringValue(repairTarget.learningDisposition) === "replay_strict_same_provider_positive_program") {
     return [...new Set(explicit)];
   }
-  return stringValue(repairTarget.repairType) === "evolved_strategy"
+  return new Set(["evolved_strategy", "synthesized_strategy"]).has(
+    stringValue(repairTarget.repairType),
+  )
     ? [...new Set([...explicit, ...transferred])]
     : [...new Set([...transferred, ...explicit])];
 }

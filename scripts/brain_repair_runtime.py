@@ -18,6 +18,7 @@ if str(SCRIPTS) not in sys.path:
     sys.path.insert(0, str(SCRIPTS))
 
 from brain_positive_program_memory import learned_skills as positive_program_learned_skills
+from brain_layers.declarative_gap_strategy import synthesize_rows as synthesize_meta_gap_rows
 PLAN_SCRIPT = ROOT / "engine_v2" / "scripts" / "plan-repairs.mjs"
 POLICY_PATH = ROOT / "engine_v2" / "config" / "brain-policy.json"
 OVERRIDES_PATH = ROOT / "provider-overrides.json"
@@ -627,7 +628,9 @@ def planner_llm_guidance() -> list[dict[str, Any]]:
                 guidance_kind="external-brain-llm",
             ))
 
-    if str(os.environ.get("NUVIO_BRAIN_PLANNER_MODE") or "").strip().casefold() == "learning":
+    planner_mode = str(os.environ.get("NUVIO_BRAIN_PLANNER_MODE") or "").strip().casefold()
+    exploration_chain = str(os.environ.get("NUVIO_BRAIN_EXPLORATION_CHAIN") or "").strip() == "1"
+    if planner_mode == "learning":
         value = _latest_local_force_winning_guidance()
         if value:
             out.extend(_validated_guidance_rows(
@@ -638,6 +641,8 @@ def planner_llm_guidance() -> list[dict[str, Any]]:
                 local_force_ambiguous=True,
                 confidence_cap=0.84,
             ))
+    if planner_mode == "learning" or exploration_chain:
+        out.extend(synthesize_meta_gap_rows(current_sha=current_sha, max_rows=64))
 
     deduped: list[dict[str, Any]] = []
     seen: set[tuple[str, str, str, str]] = set()
@@ -1000,6 +1005,7 @@ def _plan_snapshot(plan: dict[str, Any]) -> dict[str, Any]:
         "llmAdvisorSourceFailureClass": str(plan.get("llmAdvisorSourceFailureClass") or ""),
         "llmAdvisorFailureCompatibility": str(plan.get("llmAdvisorFailureCompatibility") or ""),
         "llmAdvisorExperimentFingerprint": str(plan.get("llmAdvisorExperimentFingerprint") or "").casefold(),
+        "llmAdvisorGuidanceKind": str(plan.get("llmAdvisorGuidanceKind") or ""),
         "llmAdvisorExperiment": copy.deepcopy(plan.get("llmAdvisorExperiment") if isinstance(plan.get("llmAdvisorExperiment"), dict) else {}),
         "observedPipelineStage": str(plan.get("observedPipelineStage") or ""),
         "censusStatus": str(plan.get("censusStatus") or ""),
@@ -1017,6 +1023,7 @@ def _plan_snapshot(plan: dict[str, Any]) -> dict[str, Any]:
         "learningDisposition": str(plan.get("learningDisposition") or ""),
         "experimentGenerationLimit": max(0, int(plan.get("experimentGenerationLimit") or 0)),
         "strategyEscalated": plan.get("strategyEscalated") is True,
+        "metaGapEscalated": plan.get("metaGapEscalated") is True,
         "baseExperimentExhausted": plan.get("baseExperimentExhausted") is True,
         "hypotheses": copy.deepcopy([row for row in plan.get("hypotheses") or [] if isinstance(row, dict)]),
     }
@@ -1452,6 +1459,8 @@ def annotate_and_learn(output_dir: Path, mode: str) -> dict[str, Any]:
             "llmAdvisorSourceFailureClass": row.get("llmAdvisorSourceFailureClass"),
             "llmAdvisorFailureCompatibility": row.get("llmAdvisorFailureCompatibility"),
             "llmAdvisorExperimentFingerprint": row.get("llmAdvisorExperimentFingerprint"),
+            "llmAdvisorGuidanceKind": row.get("llmAdvisorGuidanceKind"),
+            "metaGapEscalated": row.get("metaGapEscalated") is True,
             "llmAdvisorExperiment": copy.deepcopy(
                 row.get("llmAdvisorExperiment")
                 if isinstance(row.get("llmAdvisorExperiment"), dict)
