@@ -1491,11 +1491,12 @@ jobs:
             git add scripts/brain_layers tests engine_v2/scripts engine_v2/config .github/workflows 2>/dev/null || true
           fi
           git diff --cached --name-only > "$RUNNER_TEMP/brain-architecture-changed-paths.txt"
-          python - "$RUNNER_TEMP/brain-architecture-changed-paths.txt" engine_v2/config/brain-self-evolution.json <<'PY'
+          python - "$RUNNER_TEMP/brain-architecture-changed-paths.txt" engine_v2/config/brain-self-evolution.json "${{ inputs.architecture_force || false }}" <<'PY'
           import json,sys
           from pathlib import Path
           changed=[x.strip() for x in Path(sys.argv[1]).read_text(encoding="utf-8").splitlines() if x.strip()]
           cfg=json.loads(Path(sys.argv[2]).read_text(encoding="utf-8"))
+          architecture_force=str(sys.argv[3] or "").strip().casefold()=="true"
           patterns=[str(x) for x in cfg.get("structuralProposalSurfaces") or [] if str(x)]
           always={
               "engine_v2/learning/architecture-proposal.json",
@@ -1519,9 +1520,14 @@ jobs:
           outside=[p for p in changed if not allowed(p)]
           if outside:
               raise SystemExit("architecture FORCE changed non-allowlisted paths: "+",".join(outside))
-          if not any(p not in always and not p.startswith("tests/") for p in changed):
+          has_executable=any(p not in always and not p.startswith("tests/") for p in changed)
+          if architecture_force and not has_executable:
               raise SystemExit("architecture FORCE did not contain an executable structural change")
-          print("FIELD_BRAIN_ARCH_FORCE_PATH_GUARD files="+str(len(changed)))
+          print(
+              "FIELD_BRAIN_ARCH_FORCE_PATH_GUARD files="+str(len(changed))
+              +" architecture_force="+str(architecture_force).lower()
+              +" executable="+str(has_executable).lower()
+          )
           PY
           git commit -m "brain: propose Learning architecture evolution"
           git push --force-with-lease origin HEAD:"$BRANCH"
