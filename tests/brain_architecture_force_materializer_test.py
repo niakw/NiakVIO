@@ -92,4 +92,16 @@ proposal = {
 selected = mod.select_blueprint(proposal)
 assert selected["strategyId"] == "novel_architecture_layer_synthesis_v1"
 
+ctx = mod.source_context(
+    {"targetLayer": "provider"},
+    [
+        "scripts/brain_meta_learning.py",
+        "scripts/brain_repair_runtime.py",
+        "scripts/adaptive_runtime/runtime_repair.py",
+    ],
+)
+assert sum(len(v) for v in ctx.values()) <= mod.MAX_TOTAL_SOURCE_CONTEXT
+assert all(len(v) <= mod.MAX_SOURCE_SNIPPET for v in ctx.values())
+assert mod.MAX_MODEL_TOKENS <= 1200
+
 print("Brain architecture FORCE materializer tests passed")

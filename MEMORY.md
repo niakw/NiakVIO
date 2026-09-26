@@ -5333,3 +5333,11 @@ This ledger is not complete merely because provider yield improves. Final comple
 - The normal report-derived path remains preferred and marks source=brain-report; the fallback marks source=canonical-failure-fallback. A dispatch guard prevents double scheduling.
 - PR #199 also prints FIELD_REPAIR_NUVIO_CLIENT_SNAPSHOT per client before Deep and reuses the validated snapshot intra-run, exposing GitHub-runner transport/history errors instead of hiding them behind capture_output.
 - Validation PASS locally: provider_repair_learning_escalation_workflow_test.py, provider_repair_pipeline_v6_contract_test.py, nuvio_client_upstream_drift_guard_test.py, local_force_guidance_causal_evaluator_test.py, py_compile, Ruby YAML parse, git diff --check.
+
+### 2026-09-26 — Architecture FORCE materializer/handoff follow-up
+- FORCE Repair run 36243145290 completed SUCCESS but accepted no repair. animevostfr converged to deferred Learning; mallumv remained with repairType=architecture_gap.
+- Architecture FORCE Learning was dispatched. A later retry reached the structural materializer but failed with HTTP 400 from local Qwen.
+- Root cause: materializer source_context could send up to ~36k source characters plus proposal into an 8k llama.cpp context.
+- Fix branch bounds each source snippet to 4200 chars, total source context to 10500 chars, model completion to 1200 tokens, and exposes the HTTP response body on model errors.
+- FORCE handoff now unions deferredLearningProviders with every Brain plan explicitly marked repairType=architecture_gap, so MalluMV cannot be silently omitted from architecture evolution.
+- Provider/publication authority remains unchanged.
