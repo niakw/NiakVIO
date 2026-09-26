@@ -52,14 +52,10 @@ for required in (
     "Persist current unresolved Fast Brain debt into LEARN handoff",
     "scripts/provider_repair_learn_handoff_v1.py",
     "automation/provider-repair-learn-handoff-v1.json",
-    "automation/provider-learning-dispatch-ledger.json",
-    "scripts/provider_learning_dispatch_gate.py",
     "learnHandoffProviders",
-    "gh workflow run brain-learning-lab.yml",
-    '-f target_providers="$learning_provider_csv"',
-    "slot_remaining_minutes=12",
-    "FIELD_PROVIDER_FAST_REPAIR_LEARN_DISPATCH",
-    "reason=no-new-causal-fingerprint",
+    "FIELD_PROVIDER_FAST_REPAIR_LEARNING_DEBT",
+    "learning_dispatch=false",
+    "owner=scheduled-learning-slot",
     "Import sanitized persistent Learning and Brain LLM priors",
     "scripts/import_external_brain_llm_guidance.py",
     "NiakVIO-Brain-LLM.git",
@@ -74,6 +70,7 @@ for required in (
 assert "workflow_run" not in workflow
 assert "arm_learning_trigger" not in workflow
 assert "cat > .github/triggers/brain-learning-reconstruction" not in workflow
-assert "provider_learning_dispatch_gate.py mark" in workflow
+assert "gh workflow run brain-learning-lab.yml" not in workflow
+assert "provider_learning_dispatch_gate.py mark" not in workflow
 
 print("provider fast repair separation contract passed")
