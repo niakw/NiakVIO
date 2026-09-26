@@ -5452,3 +5452,8 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Root cause: downstream workflow_run chaining is not reliable for workflows dispatched by GITHUB_TOKEN.
 - Cloud convergence is now explicit and ordered: Fast Repair dispatches targeted Learning when debt exists (or persistent census when it does not); the final Learning phase dispatches a persistent census; a successfully persisted census dispatches Brain Autopilot.
 - workflow_dispatch census gained an explicit persist boolean, so machine-driven current-byte census can become canonical authority while ordinary manual diagnostics remain non-persisting by default.
+
+### 2026-09-26 — Architecture proposal staging bug
+- Targeted Learning run 36265367915 completed sandbox experiment, sanitized memory publication and repair proposal successfully.
+- Architecture proposal publication failed because git add -A staged transient brain-learning-input/, brain-learning-output/ and brain-sandbox/ evidence; the allowlist guard correctly rejected those paths.
+- Fixed proposal publication to stage only persistent architecture proposal/policy surfaces, plus allowlisted implementation surfaces only during explicit architecture FORCE. Transient evidence/provider reconstruction outputs remain unstaged.
