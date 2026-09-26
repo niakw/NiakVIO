@@ -1459,6 +1459,8 @@ def annotate_and_learn(output_dir: Path, mode: str) -> dict[str, Any]:
             "llmAdvisorSourceFailureClass": row.get("llmAdvisorSourceFailureClass"),
             "llmAdvisorFailureCompatibility": row.get("llmAdvisorFailureCompatibility"),
             "llmAdvisorExperimentFingerprint": row.get("llmAdvisorExperimentFingerprint"),
+            "llmAdvisorGuidanceKind": row.get("llmAdvisorGuidanceKind"),
+            "metaGapEscalated": row.get("metaGapEscalated") is True,
             "llmAdvisorExperiment": copy.deepcopy(
                 row.get("llmAdvisorExperiment")
                 if isinstance(row.get("llmAdvisorExperiment"), dict)
