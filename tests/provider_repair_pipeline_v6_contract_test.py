@@ -76,6 +76,10 @@ assert "def portfolio_probe_timeout(" in pipeline_current
 assert "timeout=1080" in pipeline_current
 assert "route_recovery_outer_timeout(" in pipeline_current
 assert "portfolio_probe_timeout(len(providers or []))" in pipeline_current
+sanitizer_migration = (ROOT / "scripts" / "upgrade_stream_sanitizer_v7_selection.py").read_text(encoding="utf-8")
+assert "stream_output_sanitizer_v10.py" in sanitizer_migration
+assert "NEWER_SANITIZERS" in sanitizer_migration
+assert "_newer_current" in sanitizer_migration
 
 workflow_current = (ROOT / ".github" / "workflows" / "provider-recognition-repair-v6.yml").read_text(encoding="utf-8")
 canonical_anchor = "- name: Run canonical recognition and correction only for unresolved providers"
