@@ -217,12 +217,14 @@ def main() -> int:
     report_rows: list[dict[str, Any]] = []
     accepted_rows: list[dict[str, Any]] = []
 
-    parent = (
-        args.work_root.resolve()
-        if args.work_root
-        else Path(tempfile.mkdtemp(prefix="force-candidates-", dir=ROOT / "local-output"))
-    )
-    owned_parent = args.work_root is None
+    if args.work_root:
+        parent = args.work_root.resolve()
+        owned_parent = False
+    else:
+        local_output_root = ROOT / "local-output"
+        local_output_root.mkdir(parents=True, exist_ok=True)
+        parent = Path(tempfile.mkdtemp(prefix="force-candidates-", dir=local_output_root))
+        owned_parent = True
     parent.mkdir(parents=True, exist_ok=True)
 
     try:
