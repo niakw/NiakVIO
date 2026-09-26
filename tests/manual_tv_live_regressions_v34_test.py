@@ -90,8 +90,13 @@ assert 'best=Math.max(best,Number(m[1]||0))' in presentation_source
 assert '["hindi","Hindi"]' in presentation_source
 assert "NIAKVIO_PROVIDER_ROUTE_MEDIA_COMPAT_V34" in provider_base
 assert "_spv34RouteMediaCompatible(route, mediaType)" in provider_base
-assert "stream_output_sanitizer_v8.py" in compositor
+selection = __import__("re").search(
+    r'GLOBAL_STREAM_SANITIZER = "scripts/provider_patches/stream_output_sanitizer_v(\d+)\.py"',
+    compositor,
+)
+assert selection and int(selection.group(1)) >= 8, selection.group(0) if selection else None
+assert f"NUVIO_STREAM_SANITIZER_V{selection.group(1)}_SELECTION" in compositor
 assert "NUVIO_STREAM_OUTPUT_STRICT_PROBE_V8" in compositor
 assert "NIAKVIO_MUGIWARA_EPISODE_FAIL_CLOSED_V2" in mugiwara
 assert 'if(q.type!=="movie")return[]' in mugiwara
-print("manual TV live regressions V34/V8 contract passed")
+print(f"manual TV live regressions V34 sanitizer-floor contract passed current=v{selection.group(1)}")
