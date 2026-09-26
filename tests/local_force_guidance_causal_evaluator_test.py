@@ -73,5 +73,9 @@ assert "baseline_already_healthy" in source
 assert "causalEvidenceOnly" in source
 assert "executionObserved" in source
 assert "providerPublicationAuthority" in source
+assert "ThreadPoolExecutor" in source
+assert "FIELD_LOCAL_FORCE_CAUSAL_WORKERS" in source
+assert 'p.add_argument("--workers"' in source
+assert "min(int(a.workers), len(by_provider) or 1, 4)" in source
 
 print("Local FORCE guidance causal evaluator tests passed")

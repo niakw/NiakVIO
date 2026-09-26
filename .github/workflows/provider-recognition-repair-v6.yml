@@ -752,6 +752,7 @@ jobs:
             --report automation/local-force-causal-evaluation.json
             --deep-rounds 3
             --deep-timeout 600
+            --workers 2
           )
           for provider in "${LOCAL_TARGETS[@]}"; do args+=(--provider "$provider"); done
           "${args[@]}"

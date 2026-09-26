@@ -18,6 +18,8 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import threading
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 from typing import Any
 
@@ -37,6 +39,7 @@ assert _spec and _spec.loader
 _spec.loader.exec_module(farm)
 
 SHA40 = __import__("re").compile(r"^[0-9a-f]{40}$")
+WORKTREE_LOCK = threading.Lock()
 
 
 def load(path: Path) -> dict[str, Any]:
@@ -137,6 +140,109 @@ def evaluate_pair(baseline: dict[str, Any], candidate: dict[str, Any], accepted_
     return True, reason
 
 
+
+
+def evaluate_provider_candidate(
+    *,
+    provider: str,
+    row: dict[str, Any],
+    sha: str,
+    work_root: Path,
+    deep_rounds: int,
+    deep_timeout: int,
+) -> dict[str, Any]:
+    worktree = work_root / f"{provider}-worktree"
+    with WORKTREE_LOCK:
+        subprocess.run(
+            ["git", "worktree", "add", "--detach", str(worktree), sha],
+            cwd=ROOT,
+            check=True,
+            stdout=subprocess.DEVNULL,
+        )
+    try:
+        farm.link_shared_local_tooling(worktree)
+        base_root = worktree / ".local-force-causal" / "baseline"
+        base = baseline_health(worktree, provider, base_root)
+
+        farm.reset_worktree(worktree, sha)
+        exp_root = worktree / ".local-force-causal" / "candidate"
+        guidance = farm.guidance_payload(sha, row)
+        stage, guidance_path, output = farm.prepare_stage(worktree, provider, exp_root, guidance)
+        env = os.environ.copy()
+        env["GITHUB_SHA"] = sha
+        env["NIAKVIO_BRAIN_LLM_GUIDANCE"] = str(guidance_path)
+        env["NUVIO_BRAIN_EXPLORATION_CHAIN"] = "1"
+        env["NUVIO_HEALTH_CONCURRENCY"] = "1"
+        env.pop("NUVIO_BRAIN_PLANNER_MODE", None)
+        deep_log = work_root / f"{provider}-deep.log"
+        rc, runtime = farm.run_logged(
+            [
+                sys.executable,
+                "scripts/run_adaptive_deep_repair.py",
+                "--stage", str(stage),
+                "--registry", str(stage / "candidates.json"),
+                "--output", str(output),
+                "--max-rounds", str(max(1, min(int(deep_rounds), 5))),
+            ],
+            cwd=worktree,
+            env=env,
+            log_path=deep_log,
+            timeout=max(120, min(int(deep_timeout), 1800)),
+        )
+        execution_error = classify_deep_execution_error(deep_log, rc)
+        repair = farm.load_json(output / "repair-report.json", {})
+        cand_health_payload = farm.load_json(output / "health-results.json", {})
+        result_rows = [
+            x for x in cand_health_payload.get("results") or []
+            if isinstance(x, dict) and (
+                canon(x.get("provider")) == provider
+                or canon(x.get("provider_id")) == provider
+                or canon(str(x.get("key") or "").split(":")[-1]) == provider
+            )
+        ]
+        candidate = copy.deepcopy(result_rows[0]) if result_rows else {}
+        accepted_repairs = int(repair.get("accepted_repairs") or 0)
+        if execution_error:
+            accepted, reason = False, execution_error
+            execution_observed = False
+        elif not candidate:
+            accepted, reason = False, "deep_execution_error:missing_candidate_health"
+            execution_observed = False
+        else:
+            accepted, reason = evaluate_pair(base, candidate, accepted_repairs)
+            execution_observed = True
+        result = {
+            "provider": provider,
+            "profile": row.get("profile"),
+            "experimentFingerprint": row.get("experimentFingerprint"),
+            "deepReturnCode": rc,
+            "deepRuntime": runtime,
+            "acceptedRepairs": accepted_repairs,
+            "executionObserved": execution_observed,
+            "accepted": accepted,
+            "reason": reason,
+            "baseline": summary(base),
+            "candidate": summary(candidate),
+            "acceptedEvents": farm.accepted_events(repair)[:8],
+        }
+        print(
+            "FIELD_LOCAL_FORCE_CAUSAL "
+            f"provider={provider} accepted={str(accepted).lower()} reason={reason} "
+            f"baseline_playable={summary(base)['streamsPlayable']} candidate_playable={summary(candidate)['streamsPlayable']}",
+            flush=True,
+        )
+        return result
+    finally:
+        with WORKTREE_LOCK:
+            subprocess.run(
+                ["git", "worktree", "remove", "--force", str(worktree)],
+                cwd=ROOT,
+                check=False,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+            )
+
+
 def main() -> int:
     p = argparse.ArgumentParser()
     p.add_argument("--input", type=Path, required=True)
@@ -146,6 +252,7 @@ def main() -> int:
     p.add_argument("--deep-rounds", type=int, default=3)
     p.add_argument("--deep-timeout", type=int, default=900)
     p.add_argument("--work-root", type=Path)
+    p.add_argument("--workers", type=int, default=int(os.environ.get("NIAKVIO_LOCAL_FORCE_CAUSAL_WORKERS", "1")))
     a = p.parse_args()
 
     sha = str(a.current_sha or "").strip().casefold()
@@ -187,83 +294,41 @@ def main() -> int:
 
     report_rows: list[dict[str, Any]] = []
     try:
-        for provider, row in by_provider.items():
-            worktree = work_root / f"{provider}-worktree"
-            subprocess.run(["git", "worktree", "add", "--detach", str(worktree), sha], cwd=ROOT, check=True, stdout=subprocess.DEVNULL)
-            try:
-                farm.link_shared_local_tooling(worktree)
-                base_root = worktree / ".local-force-causal" / "baseline"
-                base = baseline_health(worktree, provider, base_root)
-
-                farm.reset_worktree(worktree, sha)
-                exp_root = worktree / ".local-force-causal" / "candidate"
-                guidance = farm.guidance_payload(sha, row)
-                stage, guidance_path, output = farm.prepare_stage(worktree, provider, exp_root, guidance)
-                env = os.environ.copy()
-                env["GITHUB_SHA"] = sha
-                env["NIAKVIO_BRAIN_LLM_GUIDANCE"] = str(guidance_path)
-                env["NUVIO_BRAIN_EXPLORATION_CHAIN"] = "1"
-                env["NUVIO_HEALTH_CONCURRENCY"] = "1"
-                env.pop("NUVIO_BRAIN_PLANNER_MODE", None)
-                deep_log = work_root / f"{provider}-deep.log"
-                rc, runtime = farm.run_logged(
-                    [
-                        sys.executable,
-                        "scripts/run_adaptive_deep_repair.py",
-                        "--stage", str(stage),
-                        "--registry", str(stage / "candidates.json"),
-                        "--output", str(output),
-                        "--max-rounds", str(max(1, min(int(a.deep_rounds), 5))),
-                    ],
-                    cwd=worktree,
-                    env=env,
-                    log_path=deep_log,
-                    timeout=max(120, min(int(a.deep_timeout), 1800)),
-                )
-                execution_error = classify_deep_execution_error(deep_log, rc)
-                repair = farm.load_json(output / "repair-report.json", {})
-                cand_health_payload = farm.load_json(output / "health-results.json", {})
-                result_rows = [
-                    x for x in cand_health_payload.get("results") or []
-                    if isinstance(x, dict) and (
-                        canon(x.get("provider")) == provider
-                        or canon(x.get("provider_id")) == provider
-                        or canon(str(x.get("key") or "").split(":")[-1]) == provider
+        worker_count = max(1, min(int(a.workers), len(by_provider) or 1, 4))
+        print(
+            "FIELD_LOCAL_FORCE_CAUSAL_WORKERS "
+            f"providers={len(by_provider)} workers={worker_count}",
+            flush=True,
+        )
+        if worker_count == 1:
+            for provider, row in by_provider.items():
+                report_rows.append(
+                    evaluate_provider_candidate(
+                        provider=provider,
+                        row=row,
+                        sha=sha,
+                        work_root=work_root,
+                        deep_rounds=a.deep_rounds,
+                        deep_timeout=a.deep_timeout,
                     )
-                ]
-                candidate = copy.deepcopy(result_rows[0]) if result_rows else {}
-                accepted_repairs = int(repair.get("accepted_repairs") or 0)
-                if execution_error:
-                    accepted, reason = False, execution_error
-                    execution_observed = False
-                elif not candidate:
-                    accepted, reason = False, "deep_execution_error:missing_candidate_health"
-                    execution_observed = False
-                else:
-                    accepted, reason = evaluate_pair(base, candidate, accepted_repairs)
-                    execution_observed = True
-                report_rows.append({
-                    "provider": provider,
-                    "profile": row.get("profile"),
-                    "experimentFingerprint": row.get("experimentFingerprint"),
-                    "deepReturnCode": rc,
-                    "deepRuntime": runtime,
-                    "acceptedRepairs": accepted_repairs,
-                    "executionObserved": execution_observed,
-                    "accepted": accepted,
-                    "reason": reason,
-                    "baseline": summary(base),
-                    "candidate": summary(candidate),
-                    "acceptedEvents": farm.accepted_events(repair)[:8],
-                })
-                print(
-                    "FIELD_LOCAL_FORCE_CAUSAL "
-                    f"provider={provider} accepted={str(accepted).lower()} reason={reason} "
-                    f"baseline_playable={summary(base)['streamsPlayable']} candidate_playable={summary(candidate)['streamsPlayable']}",
-                    flush=True,
                 )
-            finally:
-                subprocess.run(["git", "worktree", "remove", "--force", str(worktree)], cwd=ROOT, check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        else:
+            with ThreadPoolExecutor(max_workers=worker_count, thread_name_prefix="local-force-causal") as pool:
+                futures = {
+                    pool.submit(
+                        evaluate_provider_candidate,
+                        provider=provider,
+                        row=row,
+                        sha=sha,
+                        work_root=work_root,
+                        deep_rounds=a.deep_rounds,
+                        deep_timeout=a.deep_timeout,
+                    ): provider
+                    for provider, row in by_provider.items()
+                }
+                for future in as_completed(futures):
+                    report_rows.append(future.result())
+            report_rows.sort(key=lambda row: str(row.get("provider") or ""))
 
         accepted = [row["provider"] for row in report_rows if row.get("accepted") is True]
         out = {
