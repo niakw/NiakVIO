@@ -6,8 +6,9 @@ contracts:
 1. presentation uses the strongest explicit quality and detailed language fact;
 2. learned API routes with a literal movie/tv discriminator must match the
    requested transport namespace;
-3. the terminal stream sanitizer selects V8, where only positive media proof is
-   publishable (unknown/network probe outcomes fail closed).
+3. the terminal stream sanitizer is at least V8, where only positive media proof
+   is publishable. Newer Core sanitizers retain that V8 floor and must never be
+   downgraded by this historical migration.
 """
 from __future__ import annotations
 
@@ -18,6 +19,17 @@ ROOT = Path(__file__).resolve().parents[1]
 PRESENTATION = ROOT / "scripts/provider_patches/global_stream_presentation_v1.py"
 PROVIDER_BASE = ROOT / "scripts/provider_base_store.py"
 COMPOSITOR = ROOT / "scripts/apply_provider_overrides.py"
+SANITIZER_SELECTION_RE = re.compile(
+    r'GLOBAL_STREAM_SANITIZER = "'
+    r'(scripts/provider_patches/stream_output_sanitizer_v(?P<version>\d+)\.py)"'
+)
+
+
+def _sanitizer_selection(text: str) -> tuple[int, str]:
+    match = SANITIZER_SELECTION_RE.search(text)
+    if not match:
+        return 0, ""
+    return int(match.group("version")), match.group(1)
 
 
 def function_span(text: str, name: str) -> tuple[int, int]:
@@ -171,6 +183,13 @@ function _learnedUrls(kind, meta, mediaType, season, episode) {
 def patch_compositor() -> bool:
     text = COMPOSITOR.read_text(encoding="utf-8")
     before = text
+    version, _selected = _sanitizer_selection(text)
+    if version >= 8:
+        # V9/V10+ compose the V8 strict-probe layer. This migration owns only
+        # the V7 -> V8 floor and must never downgrade a newer Core owner.
+        return False
+    if version != 7:
+        raise AssertionError(f"unsupported sanitizer predecessor revision: v{version or 0}")
     text = text.replace(
         '# NUVIO_STREAM_SANITIZER_V7_SELECTION\nGLOBAL_STREAM_SANITIZER = "scripts/provider_patches/stream_output_sanitizer_v7.py"',
         '# NUVIO_STREAM_SANITIZER_V8_SELECTION\nGLOBAL_STREAM_SANITIZER = "scripts/provider_patches/stream_output_sanitizer_v8.py"',
@@ -198,11 +217,14 @@ def validate() -> None:
     base = PROVIDER_BASE.read_text(encoding="utf-8")
     compositor = COMPOSITOR.read_text(encoding="utf-8")
     _validate_presentation_floor(presentation)
+    sanitizer_version, sanitizer_path = _sanitizer_selection(compositor)
+    if sanitizer_version < 8:
+        raise AssertionError(f"V34 sanitizer floor not satisfied: v{sanitizer_version or 0}")
     required = (
         (base, "NIAKVIO_PROVIDER_ROUTE_MEDIA_COMPAT_V34"),
         (base, '_spv34RouteMediaCompatible(route, mediaType)'),
-        (compositor, "NUVIO_STREAM_SANITIZER_V8_SELECTION"),
-        (compositor, "stream_output_sanitizer_v8.py"),
+        (compositor, f"NUVIO_STREAM_SANITIZER_V{sanitizer_version}_SELECTION"),
+        (compositor, sanitizer_path),
         (compositor, "NUVIO_STREAM_OUTPUT_STRICT_PROBE_V8"),
     )
     for source, needle in required:
