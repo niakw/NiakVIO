@@ -218,7 +218,10 @@ filtered = builder.build_strategy_blueprints(
 assert len(filtered) == 1, filtered
 assert filtered[0]["strategyId"] == "terminal_transition_graph_v1", filtered
 assert filtered[0]["providers"] == ["beta"], filtered
-assert filtered[0]["forcePromotionEligible"] is True, filtered
+# beta has no retained failed-profile memory in this fixture. Filtering out
+# alpha must not manufacture FORCE authority for an otherwise unproven provider.
+assert filtered[0]["forcePromotionEligible"] is False, filtered
+assert filtered[0]["forcePromotionReason"] == "diagnostic-only-or-no-exhaustion-proof", filtered
 assert filtered[0]["targetLayer"] == "core", filtered
 fully_exhausted = builder.build_strategy_blueprints(
     {

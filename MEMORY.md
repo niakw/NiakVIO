@@ -5528,3 +5528,8 @@ This ledger is not complete merely because provider yield improves. Final comple
 - The causal Autopilot previously always dispatched Learning with publish_proposal=true and then additionally set architecture_force=true in FORCE mode. That mixed review-PR and direct FORCE semantics and could recreate proposal PRs during a FORCE repair cycle.
 - FORCE dispatch now sets publish_proposal=false while keeping architecture_force=true. Non-FORCE Learning retains publish_proposal=true.
 - The one-time cleanup already removed brain-architecture/proposal; it is not retained in the permanent branch-maintenance deletion list because repository hygiene treats that ref as a non-FORCE review surface. The active FORCE path itself no longer requests it.
+
+### 2026-09-27 — Known-family FORCE fixture correction
+- Workflow Gate on 9bd5f160 rejected an assertion copied from the orphan fix/force-promote-exhausted-blueprints branch: after filtering a strategy already failed by alpha, the only remaining provider beta had no retained failed-profile memory, so FORCE eligibility correctly remained false.
+- The implementation was kept unchanged. The fixture now asserts the safe behavior: a retained provider without concrete negative-memory proof cannot gain FORCE promotion authority merely because another provider was filtered out.
+- Positive FORCE eligibility remains covered by the main deferred-cohort fixture where every retained provider has concrete failed-profile memory.
