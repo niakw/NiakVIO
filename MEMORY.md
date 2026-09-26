@@ -5389,3 +5389,7 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Repair exploration now uses explorationMode for second-order strategies and meta-gap, while provider-positive/LLM production rescue explicitly require !explorationMode.
 - This preserves the intended order: ordinary variants -> coded second-order strategy -> declarative meta-gap -> architecture debt, all sandboxed under Repair exploration; ordinary production Repair authority is unchanged.
 
+### 2026-09-26 — Adaptive overlay exploration-chain payload parity
+- Real 4khdhub Repair on the exploration branch still exited immediately with experiment_strategy_exhausted despite direct planner guidance being correct.
+- Root cause: adaptive_runtime/brain_repair_runtime.py included explorationChain in replan_observation(), but omitted it from update_plans(), which owns the initial Deep plan.
+- Both adaptive planner payloads now carry _BASE._exploration_chain_enabled(); contract requires exactly two occurrences so future refactors cannot silently reintroduce the split.
