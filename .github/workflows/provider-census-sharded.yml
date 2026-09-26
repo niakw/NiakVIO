@@ -72,10 +72,17 @@ jobs:
           )"
           echo "provider_count=$count" >> "$GITHUB_OUTPUT"
           head_message="$(git log -1 --pretty=%s)"
-          if [ "$GITHUB_EVENT_NAME" != "push" ] || [ "$count" -gt 120 ] || [[ "$head_message" == provider:\ bulk\ activate\ * ]]; then
+          changed_paths="$(git diff-tree --no-commit-id --name-only -r HEAD | tr '\n' ' ')"
+          explicit_trigger=false
+          if [[ " $changed_paths " == *" .github/triggers/provider-census-sharded.json "* ]]; then
+            explicit_trigger=true
+          fi
+          if [ "$GITHUB_EVENT_NAME" != "push" ] || [ "$count" -gt 120 ] || [[ "$head_message" == provider:\ bulk\ activate\ * ]] || [ "$explicit_trigger" = "true" ]; then
             echo "should_run=true" >> "$GITHUB_OUTPUT"
+            echo "FIELD_SHARDED_CENSUS_PREPARE should_run=true explicit_trigger=$explicit_trigger provider_count=$count"
           else
             echo "should_run=false" >> "$GITHUB_OUTPUT"
+            echo "FIELD_SHARDED_CENSUS_PREPARE should_run=false explicit_trigger=$explicit_trigger provider_count=$count"
           fi
 
   shard:
