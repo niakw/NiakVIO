@@ -15,6 +15,7 @@ on:
     workflows:
       - PROVIDER - Bulk Onboarding
       - PROVIDERS - Fast Brain Repair
+      - LEARN - Brain Repair Lab
     types:
       - completed
   push:
@@ -31,6 +32,7 @@ on:
       - 'scripts/classify_provider_authority.py'
       - 'scripts/probe_waf_browser_session.py'
       - 'provider_catalog.json'
+      - '.github/triggers/provider-census-sharded.json'
 
 permissions:
   contents: write

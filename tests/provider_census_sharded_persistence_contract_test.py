@@ -5,6 +5,8 @@ ROOT = Path(__file__).resolve().parents[1]
 workflow = (ROOT / ".github/workflows/provider-census-sharded.yml").read_text(encoding="utf-8")
 
 required = [
+    "LEARN - Brain Repair Lab",
+    ".github/triggers/provider-census-sharded.json",
     "FIELD_SHARDED_CENSUS_NOT_PERSISTED authority_schema_v3_required",
     'assert int(state.get("schemaVersion") or 0) >= 3',
     '"authorityRepairEligible" in row and "authorityAction" in row',

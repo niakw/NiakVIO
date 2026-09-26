@@ -14,12 +14,15 @@ for required in (
     "domain-refresh.yml",
     "CORE_CLIENT_LEARNING",
     "provider-waf-browser-session.yml",
-    "scheduled-learning-slot-only",
+    "brain-learning-lab.yml",
 ):
     assert required in autopilot, required
 
-# Autopilot never launches Learning outside the dedicated slot.
-assert "gh workflow run brain-learning-lab.yml" not in autopilot
+# Learning debt is dispatched immediately as a bounded targeted cohort.
+assert "gh workflow run brain-learning-lab.yml" in autopilot
+assert '-f publish_proposal=true' in autopilot
+assert '-f target_providers="$LEARNING"' in autopilot
+assert '-f slot_remaining_minutes=60' in autopilot
 assert "contents: read" in autopilot
 assert "contents: write" not in autopilot
 assert "git add " not in autopilot
@@ -30,12 +33,12 @@ harness_start = autopilot.index('if [ -n "$HARNESS" ]; then')
 harness_block = autopilot[harness_start:autopilot.index("      - uses: actions/upload-artifact@", harness_start)]
 assert "provider-waf-browser-session.yml" in harness_block
 assert "architecture_learning=false" in harness_block
-assert "scheduled-learning-slot-only" in harness_block
 
 learning_start = autopilot.index('if [ -n "$LEARNING" ]; then')
 learning_block = autopilot[learning_start:harness_start]
-assert "scheduled-learning-slot-only" in learning_block
-assert "brain-learning-lab.yml" not in learning_block
+assert "brain-learning-lab.yml" in learning_block
+assert "immediate=true" in learning_block
+assert "budget_minutes=60" in learning_block
 
 # A current causal plan is mandatory.
 for required in (
@@ -56,4 +59,4 @@ for source in (fast, remat):
     assert "DISPATCH_PROVIDERS" in source
 
 assert '-f waves=1 -f time_budget_seconds=600 -f max_rounds_per_batch=1' in autopilot
-print("provider Brain Autopilot scheduled-Learning ownership contract passed")
+print("provider Brain Autopilot cloud convergence contract passed")
