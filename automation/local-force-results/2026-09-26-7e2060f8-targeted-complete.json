@@ -1,0 +1,133 @@
+{
+  "schemaVersion": 1,
+  "capturedAt": "2026-09-26T09:30:00+02:00",
+  "role": "local-force-non-authoritative-evidence",
+  "sourceSha": "7e2060f859d7798a165f040c2ba43df660dda71d",
+  "completed": true,
+  "clientDriftGuardSkippedForLocalExperiments": true,
+  "publicationPerformed": false,
+  "githubWorkflowDispatched": false,
+  "learningPlannerModeExecuted": false,
+  "providerCount": 8,
+  "variantsPerProvider": 6,
+  "workers": 4,
+  "deepRounds": 3,
+  "experimentCount": 42,
+  "generatedCandidates": 45,
+  "quickAcceptedExperiments": 0,
+  "quickPromisingExperiments": 24,
+  "quickExplorationProgress": 24,
+  "deepWinnerProviders": [
+    "animevostfr",
+    "mallumv"
+  ],
+  "deepBaselineHealthyProviders": [
+    "animevostfr",
+    "mallumv"
+  ],
+  "perProvider": {
+    "animesalt": {
+      "experiments": 6,
+      "profiles": [
+        "player_media_extractor_v1",
+        "proven_route_terminal_traversal_v1",
+        "provider_origin_failover_v1",
+        "search_contract_inference_v1"
+      ],
+      "promising": 0,
+      "deepAccepted": 0,
+      "deepBaselineHealthy": 0
+    },
+    "animevostfr": {
+      "experiments": 3,
+      "profiles": [
+        "retained_candidate_replay_v1"
+      ],
+      "promising": 3,
+      "deepAccepted": 1,
+      "deepBaselineHealthy": 1
+    },
+    "flemmix": {
+      "experiments": 6,
+      "profiles": [
+        "player_media_extractor_v1",
+        "proven_route_terminal_traversal_v1",
+        "provider_origin_failover_v1",
+        "search_contract_inference_v1"
+      ],
+      "promising": 0,
+      "deepAccepted": 0,
+      "deepBaselineHealthy": 0
+    },
+    "mallumv": {
+      "experiments": 3,
+      "profiles": [
+        "chain_terminal_extractor_v1"
+      ],
+      "promising": 3,
+      "deepAccepted": 1,
+      "deepBaselineHealthy": 1
+    },
+    "moviebox": {
+      "experiments": 6,
+      "profiles": [
+        "chain_terminal_extractor_v1",
+        "player_media_extractor_v1",
+        "provider_origin_failover_v1",
+        "search_contract_inference_v1"
+      ],
+      "promising": 6,
+      "deepAccepted": 0,
+      "deepBaselineHealthy": 0
+    },
+    "moviesmod": {
+      "experiments": 6,
+      "profiles": [
+        "player_media_extractor_v1",
+        "proven_route_terminal_traversal_v1",
+        "provider_origin_failover_v1",
+        "search_contract_inference_v1"
+      ],
+      "promising": 0,
+      "deepAccepted": 0,
+      "deepBaselineHealthy": 0
+    },
+    "vidfast": {
+      "experiments": 6,
+      "profiles": [
+        "player_media_extractor_v1",
+        "proven_route_terminal_traversal_v1",
+        "provider_origin_failover_v1",
+        "search_contract_inference_v1"
+      ],
+      "promising": 6,
+      "deepAccepted": 0,
+      "deepBaselineHealthy": 0
+    },
+    "yflix": {
+      "experiments": 6,
+      "profiles": [
+        "player_media_extractor_v1",
+        "proven_route_terminal_traversal_v1",
+        "provider_origin_failover_v1",
+        "search_contract_inference_v1"
+      ],
+      "promising": 6,
+      "deepAccepted": 0,
+      "deepBaselineHealthy": 0
+    }
+  },
+  "strategyCounts": {
+    "discover-api-from-current-page-and-bundles": 6,
+    "proven-request-program-and-terminal-extraction": 6,
+    "provider-owned-origin-header-and-domain-replay": 6,
+    "same-provider-candidate-program-replay": 3,
+    "search-detail-player-terminal-traversal": 15,
+    "terminal-media-extractor-with-playback-validation": 6
+  },
+  "notes": [
+    "Aggregate-only snapshot. Raw logs, local paths, credentials, cookies, tokens, personal data and raw provider responses are intentionally excluded.",
+    "Deep winner rows are local non-authoritative candidates only; both winner providers were also Deep-baseline healthy and must be revalidated by targeted GitHub FORCE before any production persistence.",
+    "Flemmix, AnimeSalt and MoviesMod produced no Quick progression across the sampled profiles; MovieBox, VidFast and Yflix produced Quick progress but no Deep acceptance."
+  ]
+}
