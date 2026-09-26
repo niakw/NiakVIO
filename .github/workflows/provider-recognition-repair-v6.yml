@@ -718,6 +718,53 @@ jobs:
           echo "NIAKVIO_BRAIN_LLM_GUIDANCE=$RUNNER_TEMP/local-force-promoted-guidance.json" >> "$GITHUB_ENV"
           echo "FIELD_LOCAL_FORCE_PROMOTION enabled=true providers=${#providers[@]} ids=$(IFS=,; echo "${providers[*]}")"
 
+      - name: Causally evaluate promoted local FORCE guidance
+        id: local-force-causal
+        shell: bash
+        env:
+          DISPATCH_MODE: ${{ inputs.mode || '' }}
+          TARGET_PROVIDER: ${{ inputs.target_provider || '' }}
+        run: |
+          set -euo pipefail
+          if [ ! -s "$RUNNER_TEMP/local-force-promoted-guidance.json" ]; then
+            echo "accepted_csv=" >> "$GITHUB_OUTPUT"
+            echo "FIELD_LOCAL_FORCE_CAUSAL_SUMMARY skipped=true reason=no-promoted-local-guidance"
+            exit 0
+          fi
+          LOCAL_TARGETS=()
+          if [ -n "${TARGET_PROVIDER:-}" ]; then
+            LOCAL_TARGETS+=("$TARGET_PROVIDER")
+          elif [ "${{ github.event_name }}" = "push" ]; then
+            mapfile -t LOCAL_TARGETS < <(python - <<'PY'
+          import json
+          from pathlib import Path
+          data=json.loads(Path(".github/triggers/provider-recognition-repair-v6.json").read_text(encoding="utf-8"))
+          for value in data.get("targetProviders") or []:
+              value=str(value or "").strip().casefold().replace("_","-")
+              if value: print(value)
+          PY
+            )
+          fi
+          args=(
+            python scripts/evaluate_local_force_guidance.py
+            --input "$RUNNER_TEMP/local-force-promoted-guidance.json"
+            --current-sha "$GITHUB_SHA"
+            --report automation/local-force-causal-evaluation.json
+            --deep-rounds 3
+            --deep-timeout 600
+          )
+          for provider in "${LOCAL_TARGETS[@]}"; do args+=(--provider "$provider"); done
+          "${args[@]}"
+          accepted_csv="$(python - <<'PY'
+          import json
+          from pathlib import Path
+          data=json.loads(Path("automation/local-force-causal-evaluation.json").read_text(encoding="utf-8"))
+          print(",".join(str(x).strip() for x in data.get("acceptedProviders") or [] if str(x).strip()))
+          PY
+          )"
+          echo "accepted_csv=$accepted_csv" >> "$GITHUB_OUTPUT"
+          echo "FIELD_LOCAL_FORCE_CAUSAL_OUTPUT accepted=${accepted_csv:-none}"
+
       - name: Evaluate isolated Brain LLM Force candidates
         id: force-mutations
         shell: bash
