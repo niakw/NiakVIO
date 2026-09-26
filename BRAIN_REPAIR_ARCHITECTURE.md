@@ -555,3 +555,14 @@ python3 scripts/local/run_force_experiment_farm.py \
 ~~~
 
 The local winner is **evidence, not publication authority**. FORCE/GitHub must still replay the winning experiment against current bytes and pass playback, identity and non-regression gates before persistence.
+
+
+## Local FORCE evidence corpus
+
+The local FORCE experiment farm is an evidence-generation lane, not a publication lane. Its aggregate results live under `automation/local-force-results/` and deliberately exclude raw provider responses, credentials, cookies, tokens, local filesystem paths and private conversation content.
+
+The planner consumes persisted local FORCE candidate guidance only in Learning mode. Baseline-coincident local Deep candidates are marked ambiguous, confidence-capped and restricted to exact failure-class compatibility. They must be revalidated on current bytes before Repair can attribute causality.
+
+Experiment scheduling is breadth-first by default: each provider receives a bounded batch before deeper variant exploration continues. This prevents early providers from monopolizing the experiment budget and makes the corpus representative enough to scale to hundreds of providers.
+
+Authority remains: `local FORCE evidence -> Learning prior -> current-byte Repair/Deep/Retest -> production proof/persistence`.
