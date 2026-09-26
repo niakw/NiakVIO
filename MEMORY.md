@@ -5435,3 +5435,9 @@ This ledger is not complete merely because provider yield improves. Final comple
 - PROVIDER_CENSUS_STATUS.md was confirmed stale at Repair run 36243145290 while main had advanced to 5fdf1285 and later Brain architecture work; Provider Census - Sharded had not run since 2026-09-25.
 - Cloud loop fix: Brain planner/runtime/layer/execution-plan changes and provider-census-status.json now trigger PROVIDERS - Brain Autopilot. A successful PROVIDERS - Fast Brain Repair now triggers Provider Census - Sharded in unresolved scope. This creates the intended census -> causal plan -> repair/learning -> census convergence loop without local orchestration.
 - CodeQL #2511, #2512, #2513 were test-only incomplete URL substring findings in brain_llm_experiment_runtime_test.py. The test now converts blocked_hosts to a set and asserts an exact required-host subset rather than ambiguous membership expressions.
+
+### 2026-09-26 — Cloud convergence loop for large provider fleets
+- Local experimentation is no longer required for routine convergence. Provider Brain Autopilot now dispatches exact BRAIN_LEARNING debt immediately as a bounded 60-minute targeted Learning cohort instead of waiting for the nightly scheduled slot.
+- The sharded census now has a dedicated push trigger (.github/triggers/provider-census-sharded.json), so current authority can be recomputed and persisted on demand without touching provider/runtime code.
+- Intended closed loop: current census -> Autopilot causal plan -> Remat/Fast Repair -> targeted Learning debt -> sharded current-byte census -> updated canonical status -> next Autopilot plan.
+- Learning remains globally serialized; provider publication still requires current-byte validation and the existing proposal/CI gates.
