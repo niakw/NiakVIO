@@ -54,8 +54,10 @@ for required in (
     "automation/provider-repair-learn-handoff-v1.json",
     "learnHandoffProviders",
     "FIELD_PROVIDER_FAST_REPAIR_LEARNING_DEBT",
-    "learning_dispatch=false",
-    "owner=scheduled-learning-slot",
+    "learning_dispatch=true",
+    "owner=immediate-targeted-learning",
+    "gh workflow run brain-learning-lab.yml",
+    '-f target_providers="$learn_handoff_csv"',
     "Import sanitized persistent Learning and Brain LLM priors",
     "scripts/import_external_brain_llm_guidance.py",
     "NiakVIO-Brain-LLM.git",
@@ -70,7 +72,6 @@ for required in (
 assert "workflow_run" not in workflow
 assert "arm_learning_trigger" not in workflow
 assert "cat > .github/triggers/brain-learning-reconstruction" not in workflow
-assert "gh workflow run brain-learning-lab.yml" not in workflow
 assert "provider_learning_dispatch_gate.py mark" not in workflow
 
 print("provider fast repair separation contract passed")

@@ -316,10 +316,19 @@ jobs:
           )
           record_learning_debt() {
             if [ "${learn_handoff_count:-0}" -le 0 ]; then
-              echo "FIELD_PROVIDER_FAST_REPAIR_LEARNING_DEBT providers=0 learning_dispatch=false owner=scheduled-learning-slot"
+              gh workflow run provider-census-sharded.yml \
+                --repo "$GITHUB_REPOSITORY" --ref main \
+                -f scope=unresolved -f persist=true
+              echo "FIELD_PROVIDER_FAST_REPAIR_LEARNING_DEBT providers=0 next=census"
               return 0
             fi
-            echo "FIELD_PROVIDER_FAST_REPAIR_LEARNING_DEBT providers=${learn_handoff_count:-0} ids=${learn_handoff_csv:-none} learning_dispatch=false owner=scheduled-learning-slot"
+            gh workflow run brain-learning-lab.yml \
+              --repo "$GITHUB_REPOSITORY" --ref main \
+              -f publish_proposal=true \
+              -f target_providers="$learn_handoff_csv" \
+              -f slot_remaining_minutes=60 \
+              -f slot_phase=1
+            echo "FIELD_PROVIDER_FAST_REPAIR_LEARNING_DEBT providers=${learn_handoff_count:-0} ids=${learn_handoff_csv:-none} learning_dispatch=true owner=immediate-targeted-learning"
           }
           git fetch --quiet origin main
           remote_main="$(git rev-parse origin/main)"

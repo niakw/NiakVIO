@@ -6,6 +6,8 @@ autopilot = (ROOT / ".github/workflows/provider-brain-autopilot.yml").read_text(
 retest = (ROOT / ".github/workflows/provider-retest.yml").read_text(encoding="utf-8")
 fast = (ROOT / ".github/workflows/provider-fast-repair.yml").read_text(encoding="utf-8")
 remat = (ROOT / ".github/workflows/provider-remat-test.yml").read_text(encoding="utf-8")
+learn = (ROOT / ".github/workflows/brain-learning-lab.yml").read_text(encoding="utf-8")
+census = (ROOT / ".github/workflows/provider-census-sharded.yml").read_text(encoding="utf-8")
 
 for required in (
     "scripts/build_provider_execution_plan.py",
@@ -59,4 +61,12 @@ for source in (fast, remat):
     assert "DISPATCH_PROVIDERS" in source
 
 assert '-f waves=1 -f time_budget_seconds=600 -f max_rounds_per_batch=1' in autopilot
+assert 'learning_dispatch=true owner=immediate-targeted-learning' in fast
+assert 'gh workflow run brain-learning-lab.yml' in fast
+assert '-f target_providers="$learn_handoff_csv"' in fast
+assert 'complete-cloud-convergence:' in learn
+assert 'FIELD_BRAIN_CLOUD_CONVERGENCE next=census' in learn
+assert '-f scope=unresolved -f persist=true' in learn
+assert 'FIELD_SHARDED_CENSUS_AUTOPILOT dispatched=true' in census
+
 print("provider Brain Autopilot cloud convergence contract passed")

@@ -11,6 +11,11 @@ on:
         options:
           - unresolved
           - all
+      persist:
+        description: Persist validated census as canonical authority
+        required: false
+        default: false
+        type: boolean
   workflow_run:
     workflows:
       - PROVIDER - Bulk Onboarding
@@ -72,10 +77,17 @@ jobs:
           )"
           echo "provider_count=$count" >> "$GITHUB_OUTPUT"
           head_message="$(git log -1 --pretty=%s)"
-          if [ "$GITHUB_EVENT_NAME" != "push" ] || [ "$count" -gt 120 ] || [[ "$head_message" == provider:\ bulk\ activate\ * ]]; then
+          changed_paths="$(git diff-tree --no-commit-id --name-only -r HEAD | tr '\n' ' ')"
+          explicit_trigger=false
+          if [[ " $changed_paths " == *" .github/triggers/provider-census-sharded.json "* ]]; then
+            explicit_trigger=true
+          fi
+          if [ "$GITHUB_EVENT_NAME" != "push" ] || [ "$count" -gt 120 ] || [[ "$head_message" == provider:\ bulk\ activate\ * ]] || [ "$explicit_trigger" = "true" ]; then
             echo "should_run=true" >> "$GITHUB_OUTPUT"
+            echo "FIELD_SHARDED_CENSUS_PREPARE should_run=true explicit_trigger=$explicit_trigger provider_count=$count"
           else
             echo "should_run=false" >> "$GITHUB_OUTPUT"
+            echo "FIELD_SHARDED_CENSUS_PREPARE should_run=false explicit_trigger=$explicit_trigger provider_count=$count"
           fi
 
   shard:
@@ -282,7 +294,8 @@ jobs:
           if-no-files-found: error
 
       - name: Persist canonical evidence after bulk onboarding
-        if: ${{ github.event_name != 'workflow_dispatch' }}
+        id: persist
+        if: ${{ github.event_name != 'workflow_dispatch' || inputs.persist == true }}
         shell: bash
         env:
           SOURCE_SHA: ${{ needs.prepare.outputs.source_sha }}
@@ -302,6 +315,7 @@ jobs:
           PY
           then
             echo "FIELD_SHARDED_CENSUS_NOT_PERSISTED authority_schema_v3_required"
+            echo "ok=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
           cp automation/provider-census-sharded-summary.json /tmp/provider-census-sharded-summary.json
@@ -346,4 +360,16 @@ jobs:
             git commit -m "ci(census-sharded): persist ${verified} from ${SOURCE_SHA:0:12}"
             git push origin HEAD:main
           fi
+          echo "ok=true" >> "$GITHUB_OUTPUT"
+
+      - name: Continue Brain Autopilot from fresh census
+        if: ${{ steps.persist.outputs.ok == 'true' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh workflow run provider-brain-autopilot.yml \
+            --repo "$GITHUB_REPOSITORY" --ref main -f dry_run=false
+          echo "FIELD_SHARDED_CENSUS_AUTOPILOT dispatched=true source_run=${GITHUB_RUN_ID}"
 

@@ -83,7 +83,22 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          for branch in             "brain-repair/proposal"             "workbench/brain-guidance-finalize-20260923"
+          for branch in \
+            "brain-repair/proposal" \
+            "workbench/brain-guidance-finalize-20260923" \
+            "feat/declarative-meta-gap-strategy" \
+            "fix/adaptive-false-media-provenance" \
+            "fix/architecture-force-materializer" \
+            "fix/architecture-force-timeout" \
+            "fix/census-explicit-trigger-bypass" \
+            "fix/cloud-brain-convergence-loop" \
+            "fix/force-architecture-causal-contract" \
+            "fix/meta-gap-current-failure" \
+            "fix/meta-gap-exploration-chain" \
+            "fix/nuvio-client-history-fetch" \
+            "fix/unknown-gap-direct-escalation" \
+            "learn/persist-local-repair-evidence" \
+            "perf/parallel-force-causal"
           do
             OPEN_PR="$(gh pr list --repo "$GITHUB_REPOSITORY" --state open --head "$branch" --json number --jq '.[0].number // empty')"
             if [ -n "$OPEN_PR" ]; then

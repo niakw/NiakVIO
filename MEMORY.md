@@ -5441,3 +5441,27 @@ This ledger is not complete merely because provider yield improves. Final comple
 - The sharded census now has a dedicated push trigger (.github/triggers/provider-census-sharded.json), so current authority can be recomputed and persisted on demand without touching provider/runtime code.
 - Intended closed loop: current census -> Autopilot causal plan -> Remat/Fast Repair -> targeted Learning debt -> sharded current-byte census -> updated canonical status -> next Autopilot plan.
 - Learning remains globally serialized; provider publication still requires current-byte validation and the existing proposal/CI gates.
+
+### 2026-09-26 — Explicit census trigger must bypass small-fleet optimization
+- Cloud convergence trigger on main 3eabc4f3 proved the dedicated sharded census path was still skipped because prepare treated every push with <=120 providers as non-census work.
+- Fixed prepare so a commit touching .github/triggers/provider-census-sharded.json forces should_run=true regardless of fleet size.
+- This keeps the small-fleet optimization for ordinary pushes while allowing an explicit current-authority census after Repair/Learning.
+
+### 2026-09-26 — Explicit cloud loop replaces workflow_run chaining
+- Fast Repair run 36265366716 persisted 11 new Learning-debt providers, but no second-turn census/autopilot was created from workflow_run.
+- Root cause: downstream workflow_run chaining is not reliable for workflows dispatched by GITHUB_TOKEN.
+- Cloud convergence is now explicit and ordered: Fast Repair dispatches targeted Learning when debt exists (or persistent census when it does not); the final Learning phase dispatches a persistent census; a successfully persisted census dispatches Brain Autopilot.
+- workflow_dispatch census gained an explicit persist boolean, so machine-driven current-byte census can become canonical authority while ordinary manual diagnostics remain non-persisting by default.
+
+### 2026-09-26 — Architecture proposal staging bug
+- Targeted Learning run 36265367915 completed sandbox experiment, sanitized memory publication and repair proposal successfully.
+- Architecture proposal publication failed because git add -A staged transient brain-learning-input/, brain-learning-output/ and brain-sandbox/ evidence; the allowlist guard correctly rejected those paths.
+- Fixed proposal publication to stage only persistent architecture proposal/policy surfaces, plus allowlisted implementation surfaces only during explicit architecture FORCE. Transient evidence/provider reconstruction outputs remain unstaged.
+
+### 2026-09-26 — Fast Repair test contract updated for immediate Learning
+- Workflow Gate on PR #209 correctly caught the historical separation test still requiring learning_dispatch=false / scheduled-learning-slot.
+- Updated the contract to require immediate targeted Learning dispatch with the exact Fast Repair handoff cohort. Fast Repair still never accepts Learning as provider publication authority; it only hands unresolved debt to the serialized Learning workflow.
+
+### 2026-09-26 — Work-branch cleanup expanded
+- brain-branch-maintenance now removes the merged one-off feat/fix/learn/perf branches accumulated during the Brain repair hardening, but only when no open PR targets the branch.
+- Persistent Brain state/proposal refs brain-learning/proposals and brain-architecture/proposal are explicitly not part of the cleanup list.

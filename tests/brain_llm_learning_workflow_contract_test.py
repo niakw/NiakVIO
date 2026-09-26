@@ -49,4 +49,10 @@ for required in (
 
 assert "key: llama-cpp-b11140-ubuntu-x64" not in llm, "executable llama.cpp binary must not be restored from actions/cache"
 
+arch = workflow[workflow.index("- name: Open or refresh Brain architecture PR"):]
+assert "git add -A" not in arch, "architecture PR must not stage transient Learning outputs"
+assert "git add engine_v2/learning/architecture-proposal.json engine_v2/learning/architecture-proposal.md" in arch
+assert "git add engine_v2/config/brain-policy.json" in arch
+assert "git add scripts/brain_layers tests engine_v2/scripts engine_v2/config .github/workflows" in arch
+
 print("Brain LLM Learning workflow interpolation contract passed")
