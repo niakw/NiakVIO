@@ -93,6 +93,20 @@ def summary(result: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def classify_deep_execution_error(log_path: Path, return_code: int) -> str:
+    if int(return_code) == 0:
+        return ""
+    try:
+        text = log_path.read_text(encoding="utf-8", errors="replace").casefold()
+    except OSError:
+        text = ""
+    if "nuvio client state cannot be established safely" in text or "verification_error" in text:
+        return "environment_guard:nuvio_client_verification_error"
+    if "timed out" in text or "timeout" in text:
+        return "environment_guard:deep_timeout"
+    return f"deep_execution_error:rc={int(return_code)}"
+
+
 def evaluate_pair(baseline: dict[str, Any], candidate: dict[str, Any], accepted_repairs: int) -> tuple[bool, str]:
     base = summary(baseline)
     cand = summary(candidate)
@@ -177,6 +191,7 @@ def main() -> int:
                 env["NUVIO_BRAIN_EXPLORATION_CHAIN"] = "1"
                 env["NUVIO_HEALTH_CONCURRENCY"] = "1"
                 env.pop("NUVIO_BRAIN_PLANNER_MODE", None)
+                deep_log = work_root / f"{provider}-deep.log"
                 rc, runtime = farm.run_logged(
                     [
                         sys.executable,
@@ -188,9 +203,10 @@ def main() -> int:
                     ],
                     cwd=worktree,
                     env=env,
-                    log_path=work_root / f"{provider}-deep.log",
+                    log_path=deep_log,
                     timeout=max(120, min(int(a.deep_timeout), 1800)),
                 )
+                execution_error = classify_deep_execution_error(deep_log, rc)
                 repair = farm.load_json(output / "repair-report.json", {})
                 cand_health_payload = farm.load_json(output / "health-results.json", {})
                 result_rows = [
@@ -203,7 +219,15 @@ def main() -> int:
                 ]
                 candidate = copy.deepcopy(result_rows[0]) if result_rows else {}
                 accepted_repairs = int(repair.get("accepted_repairs") or 0)
-                accepted, reason = evaluate_pair(base, candidate, accepted_repairs)
+                if execution_error:
+                    accepted, reason = False, execution_error
+                    execution_observed = False
+                elif not candidate:
+                    accepted, reason = False, "deep_execution_error:missing_candidate_health"
+                    execution_observed = False
+                else:
+                    accepted, reason = evaluate_pair(base, candidate, accepted_repairs)
+                    execution_observed = True
                 report_rows.append({
                     "provider": provider,
                     "profile": row.get("profile"),
@@ -211,6 +235,7 @@ def main() -> int:
                     "deepReturnCode": rc,
                     "deepRuntime": runtime,
                     "acceptedRepairs": accepted_repairs,
+                    "executionObserved": execution_observed,
                     "accepted": accepted,
                     "reason": reason,
                     "baseline": summary(base),
