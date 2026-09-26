@@ -1063,7 +1063,7 @@
         "/filter?keyword={query}",
         "/watch/{slug}/ep-{episode}"
       ],
-      "status": "HARNESS/ENV BLOCKED",
+      "status": "NO PROOF",
       "strategy": "html_scraper"
     },
     "anikototv": {
@@ -1712,7 +1712,7 @@
         "/episode/[^\\x22]*",
         "/player/index.php?data="
       ],
-      "status": "HARNESS/ENV BLOCKED",
+      "status": "ROUTE PROVEN",
       "strategy": "html_scraper"
     },
     "animesama-co": {
@@ -2208,7 +2208,7 @@
         "/api/animes/search?q=HOTD",
         "/api/animes/search?q=The+House+That+Dragons+Built"
       ],
-      "status": "HARNESS/ENV BLOCKED",
+      "status": "ROUTE PROVEN",
       "strategy": "api_stream_resolver"
     },
     "animevostfr": {
@@ -3324,7 +3324,7 @@
         "/films/{slug}",
         "/api/v2/themoviedb?id={tmdbId}"
       ],
-      "status": "HARNESS/ENV BLOCKED",
+      "status": "ROUTE PROVEN",
       "strategy": "mixed_embed_resolver"
     },
     "french-manga": {
@@ -4569,7 +4569,7 @@
         "/download-batman-and-harley-quinn-2017-english-480p-720p-1080p/",
         "/movies/latest-released/"
       ],
-      "status": "HARNESS/ENV BLOCKED",
+      "status": "ROUTE PROVEN",
       "strategy": "html_scraper"
     },
     "mugiwarastream": {
@@ -8107,12 +8107,12 @@
         },
         {
           "providerSupport": 1,
-          "role": "search",
+          "role": "detail",
           "supportRatio": 0.5
         },
         {
           "providerSupport": 1,
-          "role": "detail",
+          "role": "search",
           "supportRatio": 0.5
         },
         {
@@ -8162,12 +8162,12 @@
         },
         {
           "providerSupport": 1,
-          "role": "player",
+          "role": "other",
           "supportRatio": 0.25
         },
         {
           "providerSupport": 1,
-          "role": "other",
+          "role": "player",
           "supportRatio": 0.25
         }
       ]
@@ -8415,17 +8415,17 @@
       "routeFamilies": [
         {
           "providerSupport": 1,
+          "role": "episode",
+          "supportRatio": 1.0
+        },
+        {
+          "providerSupport": 1,
           "role": "search",
           "supportRatio": 1.0
         },
         {
           "providerSupport": 1,
           "role": "api",
-          "supportRatio": 1.0
-        },
-        {
-          "providerSupport": 1,
-          "role": "episode",
           "supportRatio": 1.0
         }
       ]
