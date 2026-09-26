@@ -1,0 +1,171 @@
+{
+  "brainLlmSha": "dc44b7e1684173c5f5ea1f81feaaf8eca41f5e7f",
+  "directMutationAuthority": false,
+  "minConfidence": 0.8,
+  "privateContentRetained": false,
+  "proofAuthority": false,
+  "providerCount": 2,
+  "publicationAuthority": false,
+  "rawMutationContentRetained": false,
+  "rows": [
+    {
+      "confidence": 0.96,
+      "experiment": {
+        "aliasSearch": false,
+        "documentRequestMining": true,
+        "maxDepth": 6,
+        "maxEmbeds": 15,
+        "maxPages": 32,
+        "maxRecipePasses": 5,
+        "recipePolicy": "current_plus_provider_peer",
+        "responseSalvage": false,
+        "roleOrder": [
+          "episode",
+          "other",
+          "player",
+          "api",
+          "source",
+          "detail"
+        ],
+        "routePolicy": "owned_plus_peer",
+        "sessionBootstrap": false,
+        "terminalOnly": false
+      },
+      "experimentFingerprint": "087712df265552cd01c1cb80e3b3f67f2055a3ed3eaaa5f47714ede614fd823c",
+      "failureClass": "candidate_replay_gap",
+      "priorOnly": true,
+      "profile": "retained_candidate_replay_v1",
+      "providerId": "animevostfr",
+      "strategy": "same_provider_candidate_program_replay",
+      "targetLayer": "provider"
+    },
+    {
+      "confidence": 0.96,
+      "experiment": {
+        "aliasSearch": true,
+        "documentRequestMining": false,
+        "maxDepth": 5,
+        "maxEmbeds": 33,
+        "maxPages": 27,
+        "maxRecipePasses": 4,
+        "recipePolicy": "current_plus_provider",
+        "responseSalvage": true,
+        "roleOrder": [
+          "detail",
+          "episode",
+          "other",
+          "player",
+          "api",
+          "source"
+        ],
+        "routePolicy": "owned_only",
+        "sessionBootstrap": false,
+        "terminalOnly": false
+      },
+      "experimentFingerprint": "1b967fff28c092fe56f259e9094a2735074c40b8c1105776725a99871f8daf29",
+      "failureClass": "candidate_replay_gap",
+      "priorOnly": true,
+      "profile": "retained_candidate_replay_v1",
+      "providerId": "animevostfr",
+      "strategy": "same_provider_candidate_program_replay",
+      "targetLayer": "provider"
+    },
+    {
+      "confidence": 0.96,
+      "experiment": {
+        "aliasSearch": false,
+        "documentRequestMining": false,
+        "maxDepth": 4,
+        "maxEmbeds": 26,
+        "maxPages": 22,
+        "maxRecipePasses": 3,
+        "recipePolicy": "current_plus_provider",
+        "responseSalvage": true,
+        "roleOrder": [
+          "source",
+          "detail",
+          "episode",
+          "other",
+          "player",
+          "api"
+        ],
+        "routePolicy": "owned_plus_peer_generic",
+        "sessionBootstrap": false,
+        "terminalOnly": false
+      },
+      "experimentFingerprint": "7fa34569e331f71d6ac9bc9404c89f5cfd480ca349c6156164c24176b9c60f6d",
+      "failureClass": "candidate_replay_gap",
+      "priorOnly": true,
+      "profile": "retained_candidate_replay_v1",
+      "providerId": "animevostfr",
+      "strategy": "same_provider_candidate_program_replay",
+      "targetLayer": "provider"
+    },
+    {
+      "confidence": 0.96,
+      "experiment": {
+        "aliasSearch": false,
+        "documentRequestMining": true,
+        "maxDepth": 5,
+        "maxEmbeds": 30,
+        "maxPages": 24,
+        "maxRecipePasses": 5,
+        "recipePolicy": "current_plus_provider_peer",
+        "responseSalvage": true,
+        "roleOrder": [
+          "player",
+          "source",
+          "api",
+          "episode",
+          "detail",
+          "search",
+          "other"
+        ],
+        "routePolicy": "owned_plus_peer",
+        "sessionBootstrap": false,
+        "terminalOnly": true
+      },
+      "experimentFingerprint": "1970267cefbd427198afb833d39d4082f6a40b32b3d16d08c9033c90443e3bd4",
+      "failureClass": "route_proven_gap",
+      "priorOnly": true,
+      "profile": "proven_route_terminal_traversal_v1",
+      "providerId": "mallumv",
+      "strategy": "search_detail_player_terminal_traversal",
+      "targetLayer": "provider"
+    },
+    {
+      "confidence": 0.96,
+      "experiment": {
+        "aliasSearch": true,
+        "documentRequestMining": false,
+        "maxDepth": 3,
+        "maxEmbeds": 19,
+        "maxPages": 17,
+        "maxRecipePasses": 2,
+        "recipePolicy": "current_only",
+        "responseSalvage": false,
+        "roleOrder": [
+          "detail",
+          "episode",
+          "player",
+          "source",
+          "api",
+          "other",
+          "search"
+        ],
+        "routePolicy": "owned_plus_peer",
+        "sessionBootstrap": false,
+        "terminalOnly": false
+      },
+      "experimentFingerprint": "9906b9f9c33a49acdea92fa6bfdbadaabb47bed448cd6b4fcb5cfe0437cd4cca",
+      "failureClass": "route_proven_gap",
+      "priorOnly": true,
+      "profile": "proven_route_terminal_traversal_v1",
+      "providerId": "mallumv",
+      "strategy": "search_detail_player_terminal_traversal",
+      "targetLayer": "provider"
+    }
+  ],
+  "schemaVersion": 2,
+  "sourceSha": "3d32692adc4f68c091909b7c5ce5dfbf11a3b293"
+}
