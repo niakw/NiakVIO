@@ -152,7 +152,22 @@ brain_branch_maintenance = (ROOT / ".github/workflows/brain-branch-maintenance.y
 assert 'BRANCH="brain-learning/proposals"' in brain_branch_maintenance
 assert '"brain-repair/proposal"' in brain_branch_maintenance
 assert '"workbench/brain-guidance-finalize-20260923"' in brain_branch_maintenance
+assert '"feat/declarative-meta-gap-strategy"' in brain_branch_maintenance
+assert '"fix/adaptive-false-media-provenance"' in brain_branch_maintenance
+assert '"fix/architecture-force-materializer"' in brain_branch_maintenance
+assert '"fix/architecture-force-timeout"' in brain_branch_maintenance
+assert '"fix/census-explicit-trigger-bypass"' in brain_branch_maintenance
+assert '"fix/cloud-brain-convergence-loop"' in brain_branch_maintenance
+assert '"fix/force-architecture-causal-contract"' in brain_branch_maintenance
+assert '"fix/meta-gap-current-failure"' in brain_branch_maintenance
+assert '"fix/meta-gap-exploration-chain"' in brain_branch_maintenance
+assert '"fix/nuvio-client-history-fetch"' in brain_branch_maintenance
+assert '"fix/unknown-gap-direct-escalation"' in brain_branch_maintenance
+assert '"learn/persist-local-repair-evidence"' in brain_branch_maintenance
+assert '"perf/parallel-force-causal"' in brain_branch_maintenance
 assert "for branch in" in brain_branch_maintenance
+assert '"brain-learning/proposals"' not in brain_branch_maintenance[brain_branch_maintenance.index("for branch in"):]
+assert '"brain-architecture/proposal"' not in brain_branch_maintenance[brain_branch_maintenance.index("for branch in"):]
 assert 'git switch -C "$BRANCH" origin/main' not in brain_branch_maintenance
 assert 'git push --force-with-lease origin HEAD:"$BRANCH"' not in brain_branch_maintenance
 assert "memory-ref-read-only" in brain_branch_maintenance
