@@ -5202,3 +5202,10 @@ This ledger is not complete merely because provider yield improves. Final comple
 - The assertion incorrectly required the literal `NIAKVIO_REPAIR_RESIDENTIAL_EXIT_ACTIVE` to appear between the canonical-step header and clear-step header. The variable is correctly exported earlier through `$GITHUB_ENV` and inherited by canonical execution.
 - Fixed the contract to prove the export occurs before canonical Repair, the routing activation condition exists in the pre-canonical lane, and the single exit-node clear remains after canonical Repair.
 - No provider/runtime strategy changed in this fix. Residential canonical FORCE remains unvalidated until the next explicit bounded run.
+
+## 2026-09-26 Europe/Paris — Repair activity metadata decoupled from provider proof ledger
+
+- Added `scripts/persist_provider_repair_attempt_metadata.py` + contract test.
+- Repair persistence now updates only `lastRepairAttempt` and rerenders `PROVIDER_CENSUS_STATUS.md` whenever the tested SHA remains provider-current, even if the provider candidate is fail-closed.
+- Provider status rows, proof authority and candidate bytes remain unchanged unless the canonical/candidate gates succeed.
+- This fixes the dashboard remaining on run `36199786760` while newer bounded FORCE runs have actually executed.
