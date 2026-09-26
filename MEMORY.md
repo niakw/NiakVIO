@@ -5446,3 +5446,9 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Cloud convergence trigger on main 3eabc4f3 proved the dedicated sharded census path was still skipped because prepare treated every push with <=120 providers as non-census work.
 - Fixed prepare so a commit touching .github/triggers/provider-census-sharded.json forces should_run=true regardless of fleet size.
 - This keeps the small-fleet optimization for ordinary pushes while allowing an explicit current-authority census after Repair/Learning.
+
+### 2026-09-26 — Explicit cloud loop replaces workflow_run chaining
+- Fast Repair run 36265366716 persisted 11 new Learning-debt providers, but no second-turn census/autopilot was created from workflow_run.
+- Root cause: downstream workflow_run chaining is not reliable for workflows dispatched by GITHUB_TOKEN.
+- Cloud convergence is now explicit and ordered: Fast Repair dispatches targeted Learning when debt exists (or persistent census when it does not); the final Learning phase dispatches a persistent census; a successfully persisted census dispatches Brain Autopilot.
+- workflow_dispatch census gained an explicit persist boolean, so machine-driven current-byte census can become canonical authority while ordinary manual diagnostics remain non-persisting by default.
