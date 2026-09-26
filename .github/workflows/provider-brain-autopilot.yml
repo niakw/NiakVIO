@@ -12,6 +12,16 @@ on:
     branches: [main]
     paths:
       - '.github/triggers/provider-brain-autopilot.json'
+      - 'engine_v2/scripts/plan-repairs.mjs'
+      - 'engine_v2/config/core-repair-types.json'
+      - 'scripts/run_provider_brain_repair.py'
+      - 'scripts/brain_repair_runtime.py'
+      - 'scripts/adaptive_runtime/**'
+      - 'scripts/brain_layers/**'
+      - 'scripts/build_brain_repair_experience.py'
+      - 'scripts/build_provider_repair_batch_plan.py'
+      - 'scripts/build_provider_execution_plan.py'
+      - 'automation/provider-census-status.json'
 
 permissions:
   contents: read
