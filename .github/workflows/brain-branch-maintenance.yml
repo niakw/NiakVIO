@@ -98,7 +98,8 @@ jobs:
             "fix/nuvio-client-history-fetch" \
             "fix/unknown-gap-direct-escalation" \
             "learn/persist-local-repair-evidence" \
-            "perf/parallel-force-causal" \          do
+            "perf/parallel-force-causal"
+          do
             OPEN_PR="$(gh pr list --repo "$GITHUB_REPOSITORY" --state open --head "$branch" --json number --jq '.[0].number // empty')"
             if [ -n "$OPEN_PR" ]; then
               echo "FIELD_BRANCH_CLEANUP branch=$branch action=keep_open_pr pr=$OPEN_PR"
