@@ -5377,3 +5377,19 @@ This ledger is not complete merely because provider yield improves. Final comple
 - The durable compiler correctly rejected the accepted program because no provider-owned stream-proof recipe survived, proving the compiler guard was right and Deep acceptance was too permissive.
 - Fix: adaptive runtime now feeds the central INFRASTRUCTURE_HOSTS set into generated blockedHosts, and the central list includes gstatic.com/www.gstatic.com. This prevents infrastructure/search/analytics assets from becoming terminal media evidence while leaving real player/CDN hosts untouched.
 - This is a generic media-provenance/non-regression guard, not a MalluMV-specific rule.
+
+### 2026-09-26 — Meta-gap Repair exploration-chain handoff
+- Parallel local Repair cohorts on main 9aa8477b showed exhausted providers still ending as experiment_strategy_exhausted with metaGapEscalated=false.
+- Root cause: Python correctly loaded declarative meta-gap guidance when NUVIO_BRAIN_EXPLORATION_CHAIN=1, but the Node planner only allowed post-exhaustion meta-gap when mode=learning.
+- Fix: planner now uses explorationMode = learningMode || input.explorationChain===true only for the meta-gap escape hatch. Ordinary Repair authority and general Learning-only behaviors remain unchanged.
+- Regression contract reproduces mode=repair + explorationChain=true and requires synthesized_strategy/probe-targeted-repair with the exact meta-gap fingerprint.
+
+### 2026-09-26 — Exploration-chain second-order escalation completion
+- The first exploration-chain fix exposed another mode split: postExhaustionStrategyHint and production-rescue classification still keyed only on learningMode.
+- Repair exploration now uses explorationMode for second-order strategies and meta-gap, while provider-positive/LLM production rescue explicitly require !explorationMode.
+- This preserves the intended order: ordinary variants -> coded second-order strategy -> declarative meta-gap -> architecture debt, all sandboxed under Repair exploration; ordinary production Repair authority is unchanged.
+
+### 2026-09-26 — Adaptive overlay exploration-chain payload parity
+- Real 4khdhub Repair on the exploration branch still exited immediately with experiment_strategy_exhausted despite direct planner guidance being correct.
+- Root cause: adaptive_runtime/brain_repair_runtime.py included explorationChain in replan_observation(), but omitted it from update_plans(), which owns the initial Deep plan.
+- Both adaptive planner payloads now carry _BASE._exploration_chain_enabled(); contract requires exactly two occurrences so future refactors cannot silently reintroduce the split.

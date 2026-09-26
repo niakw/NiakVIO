@@ -343,6 +343,23 @@ assert meta_final["llmAdvisorApplied"] is True,meta_final
 assert meta_final["llmAdvisorGuidanceKind"]=="meta-gap-synthesis",meta_final
 assert meta_final["allowedProfiles"][0]=="search_contract_inference_v1",meta_final
 
+
+# Brain Repair exploration uses mode=repair plus explorationChain=true. It must
+# receive the same post-exhaustion meta-gap escape hatch without turning the
+# whole planner into Learning mode.
+repair_explore_payload={**meta_payload,"mode":"repair","explorationChain":True}
+repair_explore_completed=subprocess.run(
+    ["node",str(PLANNER)],
+    cwd=ROOT,input=json.dumps(repair_explore_payload),capture_output=True,text=True,check=True,timeout=20,
+)
+repair_explore=next(iter((json.loads(repair_explore_completed.stdout).get("plans") or {}).values()))
+assert repair_explore["baseExperimentExhausted"] is True,repair_explore
+assert repair_explore["metaGapEscalated"] is True,repair_explore
+assert repair_explore["repairType"]=="synthesized_strategy",repair_explore
+assert repair_explore["action"]=="probe-targeted-repair",repair_explore
+assert repair_explore["llmAdvisorGuidanceKind"]=="meta-gap-synthesis",repair_explore
+assert repair_explore["allowedProfiles"][0]=="search_contract_inference_v1",repair_explore
+
 # Meta-gap guidance is also available to Brain Repair exploration, but it must
 # never preempt ordinary variants. It becomes eligible only after exhaustion.
 meta_prod_guidance=[{
