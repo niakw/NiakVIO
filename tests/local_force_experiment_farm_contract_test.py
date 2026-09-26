@@ -128,3 +128,8 @@ assert brain_rows[0]["guidanceSourceSha"] == "b" * 40
 source = SCRIPT.read_text(encoding="utf-8")
 assert "BRAIN_LLM_GUIDANCE_URL" in source
 assert "NiakVIO-Brain-LLM" in source
+
+source = SCRIPT.read_text(encoding="utf-8")
+assert "start_new_session=True" in source
+assert "signal.signal(signal.SIGTERM, signal_cleanup)" in source
+assert "os.killpg(proc.pid, signal.SIGTERM)" in source
