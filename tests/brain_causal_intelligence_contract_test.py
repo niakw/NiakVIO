@@ -52,6 +52,7 @@ assert "FIELD_PROVIDER_BRAIN_LEARNING_DEBT" in workflow
 assert "learning_dispatch=false owner=scheduled-learning-slot" in workflow
 assert "gh workflow run brain-learning-lab.yml" not in workflow[workflow.index("- name: Persist Repair census state"):]
 assert "FIELD_PROVIDER_BRAIN_FORCE_DEBT" in workflow
-assert "resume_mode=force" in workflow
+assert "FIELD_PROVIDER_BRAIN_FORCE_UNVISITED" in workflow
+assert "auto_resume=false reason=bounded-force-run" in workflow
 
 print("causal Brain intelligence contract passed")
