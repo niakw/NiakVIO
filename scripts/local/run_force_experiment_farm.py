@@ -801,6 +801,7 @@ def provider_worker(
     deep_rounds: int,
     continue_after_win: bool,
     rerun: bool,
+    max_new_experiments: int = 0,
 ) -> dict[str, Any]:
     provider_dir = output / "providers" / provider
     provider_dir.mkdir(parents=True, exist_ok=True)
@@ -834,6 +835,7 @@ def provider_worker(
                 "skipped": "redundant-strategy-outcomes",
             }
 
+        new_experiments = 0
         for index, guidance_row in enumerate(experiments, start=1):
             fp = str(guidance_row.get("experimentFingerprint") or "").casefold()
             if not fp:
@@ -977,6 +979,7 @@ def provider_worker(
                 f"baseline_healthy={str(result['deepBaselineHealthy']).lower()}",
                 flush=True,
             )
+            new_experiments += 1
             if (result["deepAccepted"] or result["deepBaselineHealthy"]) and not continue_after_win:
                 break
             if not continue_after_win and redundant_strategy_exhaustion(existing):
@@ -984,6 +987,14 @@ def provider_worker(
                     "FIELD_LOCAL_FORCE_PROVIDER_EARLY_STOP "
                     f"provider={provider} reason=redundant-strategy-outcomes "
                     "minimum_per_profile=2",
+                    flush=True,
+                )
+                break
+            if max_new_experiments > 0 and new_experiments >= max_new_experiments:
+                print(
+                    "FIELD_LOCAL_FORCE_PROVIDER_BATCH_YIELD "
+                    f"provider={provider} new_experiments={new_experiments} "
+                    f"recorded={len(existing)}",
                     flush=True,
                 )
                 break
@@ -999,6 +1010,9 @@ def provider_worker(
             ),
             "strategyExhausted": redundant_strategy_exhaustion(existing),
             "experimentsRecorded": len(existing),
+            "experimentBudget": len(experiments),
+            "completedExperimentBudget": len(existing) >= len(experiments),
+            "batchLimitReached": max_new_experiments > 0 and new_experiments >= max_new_experiments,
         }
     finally:
         with _git_lock:
@@ -1027,6 +1041,12 @@ def main() -> int:
     parser.add_argument("--guidance", type=Path)
     parser.add_argument("--variants-per-provider", type=int, default=24)
     parser.add_argument("--workers", type=int, default=2)
+    parser.add_argument(
+        "--breadth-batch-size",
+        type=int,
+        default=2,
+        help="new experiments per provider before yielding to the next breadth-first round; 0 disables batching",
+    )
     parser.add_argument("--quick-timeout", type=int, default=240)
     parser.add_argument("--deep-timeout", type=int, default=900)
     parser.add_argument("--deep-rounds", type=int, default=3)
@@ -1053,6 +1073,7 @@ def main() -> int:
     quick_timeout = max(60, min(int(args.quick_timeout), 1800))
     deep_timeout = max(120, min(int(args.deep_timeout), 3600))
     deep_rounds = max(1, min(int(args.deep_rounds), 5))
+    breadth_batch_size = max(0, min(int(args.breadth_batch_size), variants))
     output = args.output.expanduser().resolve()
     output.mkdir(parents=True, exist_ok=True)
 
@@ -1091,30 +1112,105 @@ def main() -> int:
     print(
         "FIELD_LOCAL_FORCE_FARM "
         f"sha={sha} providers={len(providers)} variants={variants} workers={workers} "
-        f"quick_then_deep=true output={output}",
+        f"breadth_batch={breadth_batch_size} quick_then_deep=true output={output}",
         flush=True,
     )
     try:
-        with concurrent.futures.ThreadPoolExecutor(max_workers=workers) as pool:
-            futures = [
-                pool.submit(
-                    provider_worker,
-                    provider=provider,
-                    row=rows.get(provider) or {},
-                    experiments=experiments_by_provider[provider],
-                    sha=sha,
-                    output=output,
-                    work_root=work_root,
-                    state=state,
-                    quick_timeout=quick_timeout,
-                    deep_timeout=deep_timeout,
-                    deep_rounds=deep_rounds,
-                    continue_after_win=args.continue_after_win,
-                    rerun=args.rerun,
+        if breadth_batch_size <= 0:
+            with concurrent.futures.ThreadPoolExecutor(max_workers=workers) as pool:
+                futures = [
+                    pool.submit(
+                        provider_worker,
+                        provider=provider,
+                        row=rows.get(provider) or {},
+                        experiments=experiments_by_provider[provider],
+                        sha=sha,
+                        output=output,
+                        work_root=work_root,
+                        state=state,
+                        quick_timeout=quick_timeout,
+                        deep_timeout=deep_timeout,
+                        deep_rounds=deep_rounds,
+                        continue_after_win=args.continue_after_win,
+                        rerun=args.rerun,
+                        max_new_experiments=0,
+                    )
+                    for provider in providers
+                ]
+                results = [future.result() for future in concurrent.futures.as_completed(futures)]
+        else:
+            latest: dict[str, dict[str, Any]] = {}
+            active = list(providers)
+            round_number = 0
+            while active:
+                round_number += 1
+                before = {
+                    provider: len((state.get("results") or {}).get(provider) or {})
+                    for provider in active
+                }
+                ordered = sorted(active, key=lambda provider: (before[provider], provider))
+                print(
+                    "FIELD_LOCAL_FORCE_BREADTH_ROUND "
+                    f"round={round_number} active={len(ordered)} "
+                    f"batch={breadth_batch_size}",
+                    flush=True,
                 )
+                with concurrent.futures.ThreadPoolExecutor(max_workers=workers) as pool:
+                    futures = {
+                        pool.submit(
+                            provider_worker,
+                            provider=provider,
+                            row=rows.get(provider) or {},
+                            experiments=experiments_by_provider[provider],
+                            sha=sha,
+                            output=output,
+                            work_root=work_root,
+                            state=state,
+                            quick_timeout=quick_timeout,
+                            deep_timeout=deep_timeout,
+                            deep_rounds=deep_rounds,
+                            continue_after_win=args.continue_after_win,
+                            rerun=args.rerun,
+                            max_new_experiments=breadth_batch_size,
+                        ): provider
+                        for provider in ordered
+                    }
+                    round_rows = [
+                        future.result()
+                        for future in concurrent.futures.as_completed(futures)
+                    ]
+                for item in round_rows:
+                    latest[str(item["provider"])] = item
+                active = [
+                    provider
+                    for provider in ordered
+                    if not (
+                        latest.get(provider, {}).get("deepAccepted") is True
+                        or latest.get(provider, {}).get("deepBaselineHealthy") is True
+                        or latest.get(provider, {}).get("strategyExhausted") is True
+                        or latest.get(provider, {}).get("completedExperimentBudget") is True
+                    )
+                ]
+                after = {
+                    provider: len((state.get("results") or {}).get(provider) or {})
+                    for provider in active
+                }
+                if active and all(after[provider] <= before.get(provider, -1) for provider in active):
+                    print(
+                        "FIELD_LOCAL_FORCE_BREADTH_STOP reason=no-progress "
+                        f"active={len(active)}",
+                        flush=True,
+                    )
+                    break
+            results = [
+                latest.get(provider)
+                or {
+                    "provider": provider,
+                    "deepAccepted": False,
+                    "deepBaselineHealthy": False,
+                }
                 for provider in providers
             ]
-            results = [future.result() for future in concurrent.futures.as_completed(futures)]
         persist_state(output, state)
         winners = sorted(
             row["provider"]
