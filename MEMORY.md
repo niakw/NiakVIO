@@ -5256,3 +5256,12 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Concrete Brain-LLM FORCE output is distinct from advisor guidance and lives at `guidance/niakvio-force-mutations.json`. The previously published artifact covered only `allanime` and `anime-ultime` from NiakVIO source `accaa36c...`. The `allanime` mutation applied successfully in the official isolated evaluator on current context but produced no improvement (`no_streams -> no_streams`), so it was correctly rejected.
 - A fresh Brain-LLM workflow was explicitly dispatched for exact NiakVIO SHA `998fa355e5cc2769af18b5864246ab184738be63` and the 14-provider current Repair cohort, page size 8: run `36210705712`. This is FORCE/advisor generation, not Learning. At latest observation it was still generating private-informed advisor/Force batches; no new mutation result is claimed yet.
 - Local focused contracts are green on NiakVIO HEAD `6ef3b413cfab78d37a191468032e9a3d41fb7395`: local farm contract, isolated Brain-LLM FORCE evaluator test, Deep TMDB bootstrap contract, and Python compile. The FORCE evaluator synthetic test was updated to provide positive fixture-level content identity proof; the production identity gate was not weakened.
+
+
+## 2026-09-26 Europe/Paris — partial local FORCE result persisted online
+
+- A non-authoritative local FORCE run on source SHA `998fa355e5cc2769af18b5864246ab184738be63` stopped before completion at 82/336 maximum experiments across 14 queued providers.
+- Aggregate outcome at stop: 82 generated candidates, 65 Quick promising experiments / 65 exploration progressions, 0 Quick accepted repairs, 0 Deep winners. `anime-ultime` was observed as Deep-baseline healthy; `allwish` and `animesultra` exhausted their then-current strategy portfolio.
+- Per-provider coverage at capture: 4khdhub 14, allanime 7, allwish 24, anime-ultime 12, animesalt 5, animesultra 12, animevost-fr 8, remaining seven providers 0.
+- Sanitized aggregate snapshot persisted to `automation/local-force-results/2026-09-26-998fa355-partial.json`. It intentionally excludes raw logs, local paths, secrets, cookies/tokens, private content and raw provider responses.
+- This snapshot is evidence only and not proof of repair completion. The next run must start from the current HEAD and preserve this snapshot as historical evidence rather than merging its state into a different source SHA.
