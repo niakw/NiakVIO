@@ -1,7 +1,7 @@
 {
   "schemaVersion": 6,
   "requestedAt": "2026-09-26",
-  "retry": 168,
+  "retry": 169,
   "mode": "force",
   "directApplyValidated": true,
   "scope": "force-local-candidate-causal-validation",
@@ -9,15 +9,15 @@
     "animevostfr",
     "mallumv"
   ],
-  "goal": "Causally revalidate animevostfr and mallumv against current bytes after the isolated FORCE sandbox parent fix. Compare baseline versus promoted local guidance; no causal credit or publication unless current-byte validation proves strict improvement.",
+  "goal": "Causally validate promoted local FORCE guidance for animevostfr and mallumv on current bytes. Local guidance must produce explicit baseline-vs-candidate evidence; route recovery timeout for one provider must not abort the other.",
   "branch": "main",
   "publication": true,
-  "sourceRef": "2e93e9ac962722ab604a7e909d132c74867cfa99",
+  "sourceRef": "50464d64a46d56426e2f399cc1e52c7a051adb7b",
   "sourceCensusRun": "36156497756",
   "branchPolicy": "main-force-execution-plus-independent-learning-proposals",
-  "rerunReason": "retry 168: rerun causal local FORCE candidate validation after sandbox parent fix passed Workflow Gate",
+  "rerunReason": "retry 169: causal local guidance evaluator + per-provider route recovery timeout fixes are now on main",
   "attemptPolicy": "force-only; explicit two-provider cohort; current bytes; baseline-vs-promoted differential; no Learning; no automatic FORCE retry",
-  "preflightValidatedSha": "2e93e9ac962722ab604a7e909d132c74867cfa99",
+  "preflightValidatedSha": "50464d64a46d56426e2f399cc1e52c7a051adb7b",
   "requireExternalForceMutations": false,
   "requireExternalBrainGuidance": false,
   "promoteLocalForceCandidates": true
