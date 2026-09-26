@@ -5570,3 +5570,9 @@ This ledger is not complete merely because provider yield improves. Final comple
 - brain-learning-lab now cancels an in-progress Learning run when the incoming workflow_dispatch explicitly sets architecture_force=true, in addition to the existing push replacement behavior.
 - Normal manual/scheduled Learning remains serialized and is not cancelled by another ordinary workflow_dispatch.
 - This complements the single-run Autopilot guard: explicit FORCE can replace stale FORCE work, but census/code pushes cannot silently launch a new FORCE cycle.
+
+### 2026-09-27 — Architecture FORCE materializer latency bounded
+- FORCE Learning run 36277691697 processed the 13-provider Fast handoff far enough to produce 58 Learning proposals and 3 architecture proposals, but the executable architecture materializer timed out twice: 180s on the primary Qwen request and 120s on the compact retry.
+- The architecture materializer now starts with compact source context instead of the full architecture payload, caps the primary response at 220 tokens / 70s, and uses a minimal blueprint+allowlist+source retry capped at 120 tokens / 45s.
+- The retry no longer carries architectureLayers; source context is capped to 1.8k characters on retry. The exact edit allowlist, executable-diff requirement, provider/publication boundary and downstream CI validation remain unchanged.
+- This change addresses the current throughput bottleneck without weakening proof authority or treating a timeout as a successful repair.

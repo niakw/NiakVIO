@@ -165,10 +165,26 @@ try:
         },
     )
     assert result["edits"][0]["path"] == "scripts/brain_layers/demo.py"
-    assert calls[0][:3] == (mod.MAX_MODEL_TOKENS, mod.MODEL_TIMEOUT_SECONDS, False)
-    assert calls[1][:3] == (mod.RETRY_MODEL_TOKENS, 120, True)
-    assert calls[1][3] <= mod.RETRY_SOURCE_CONTEXT
+    assert calls[0][:3] == (mod.MAX_MODEL_TOKENS, mod.MODEL_TIMEOUT_SECONDS, True)
+    assert calls[0][3] <= mod.RETRY_SOURCE_CONTEXT
+    assert calls[1][:3] == (mod.RETRY_MODEL_TOKENS, mod.RETRY_MODEL_TIMEOUT_SECONDS, True)
+    assert calls[1][3] <= mod.MINIMAL_SOURCE_CONTEXT
+    assert mod.MAX_MODEL_TOKENS <= 220
+    assert mod.MODEL_TIMEOUT_SECONDS <= 70
+    assert mod.RETRY_MODEL_TOKENS <= 120
+    assert mod.RETRY_MODEL_TIMEOUT_SECONDS <= 45
 finally:
     mod._model_request = original_request
+
+minimal = mod._minimal_payload({
+    "blueprint": {"strategyId": "demo"},
+    "architectureLayers": [{"id": "unused"}],
+    "allowedPaths": ["scripts/brain_layers/*"],
+    "sources": {"a": "x" * 3000, "b": "y" * 3000},
+    "contract": {"requireExecutableDiff": True},
+})
+assert minimal["blueprint"]["strategyId"] == "demo"
+assert "architectureLayers" not in minimal
+assert sum(len(v) for v in minimal["sources"].values()) <= mod.MINIMAL_SOURCE_CONTEXT
 
 print("Brain architecture FORCE materializer tests passed")

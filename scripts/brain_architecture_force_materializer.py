@@ -28,10 +28,12 @@ MAX_REPLACE = 5000
 MAX_CREATE = 12000
 MAX_SOURCE_SNIPPET = 4200
 MAX_TOTAL_SOURCE_CONTEXT = 10500
-MAX_MODEL_TOKENS = 800
-MODEL_TIMEOUT_SECONDS = 180
-RETRY_MODEL_TOKENS = 500
-RETRY_SOURCE_CONTEXT = 5200
+MAX_MODEL_TOKENS = 220
+MODEL_TIMEOUT_SECONDS = 70
+RETRY_MODEL_TOKENS = 120
+RETRY_MODEL_TIMEOUT_SECONDS = 45
+RETRY_SOURCE_CONTEXT = 3600
+MINIMAL_SOURCE_CONTEXT = 1800
 
 
 def load(path: Path) -> dict[str, Any]:
@@ -165,8 +167,9 @@ def _model_request(
     )
     if compact:
         system += (
-            " Be extremely compact; avoid creating a new file unless a replacement cannot "
-            "implement the capability."
+            " Be extremely compact. Prefer exactly one small replace edit. "
+            "Avoid creating a new file unless replacement cannot implement the capability. "
+            "Keep the complete JSON response short enough for the supplied token budget."
         )
     body = {
         "model": model,
@@ -224,6 +227,25 @@ def _compact_payload(payload: dict[str, Any]) -> dict[str, Any]:
         if isinstance(row, dict) and str(row.get("id") or "") in keep
     ]
     return compact
+
+
+def _minimal_payload(payload: dict[str, Any]) -> dict[str, Any]:
+    minimal = {
+        "blueprint": payload.get("blueprint") or {},
+        "allowedPaths": payload.get("allowedPaths") or [],
+        "contract": payload.get("contract") or {},
+    }
+    remaining = MINIMAL_SOURCE_CONTEXT
+    sources: dict[str, str] = {}
+    for path, text in (payload.get("sources") or {}).items():
+        if remaining <= 0:
+            break
+        snippet = str(text)[: min(1800, remaining)]
+        if snippet:
+            sources[str(path)] = snippet
+            remaining -= len(snippet)
+    minimal["sources"] = sources
+    return minimal
 
 
 def _extract_balanced_object(raw: str) -> str:
@@ -292,25 +314,29 @@ def _parse_model_value(value: dict[str, Any]) -> dict[str, Any]:
 
 
 def call_model(endpoint: str, model: str, payload: dict[str, Any]) -> dict[str, Any]:
+    # Architecture FORCE runs on CPU-hosted Qwen in GitHub Actions. The prior
+    # 800-token/full-context request consumed the entire 180s socket timeout,
+    # then repeated another 120s compact request. Start compact and bounded.
     try:
         value = _model_request(
             endpoint,
             model,
-            payload,
+            _compact_payload(payload),
             max_tokens=MAX_MODEL_TOKENS,
             timeout=MODEL_TIMEOUT_SECONDS,
+            compact=True,
         )
     except TimeoutError:
         print(
-            "FIELD_BRAIN_ARCH_FORCE_MODEL_RETRY reason=timeout mode=compact",
+            "FIELD_BRAIN_ARCH_FORCE_MODEL_RETRY reason=timeout mode=minimal",
             flush=True,
         )
         value = _model_request(
             endpoint,
             model,
-            _compact_payload(payload),
+            _minimal_payload(payload),
             max_tokens=RETRY_MODEL_TOKENS,
-            timeout=120,
+            timeout=RETRY_MODEL_TIMEOUT_SECONDS,
             compact=True,
         )
     return _parse_model_value(value)
