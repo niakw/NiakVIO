@@ -74,7 +74,9 @@ source = SCRIPT.read_text(encoding="utf-8")
 assert "force_candidate_execution_error" in source
 assert "One malformed/stale Force hypothesis must never cancel" in source
 assert "except (subprocess.SubprocessError, ValueError, OSError) as exc:" in source
-assert 'dir=ROOT / "local-output"' in source
+assert 'local_output_root = ROOT / "local-output"' in source
+assert "local_output_root.mkdir(parents=True, exist_ok=True)" in source
+assert "tempfile.mkdtemp(prefix=\"force-candidates-\", dir=local_output_root)" in source
 
 summary = mod.invocation_summary({
     "tests": [{
