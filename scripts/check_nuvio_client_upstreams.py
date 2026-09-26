@@ -208,6 +208,7 @@ def current_head(repository: str, branch: str) -> str:
 
 def compare(
     repository: str,
+    branch: str,
     base: str,
     head: str,
     patch_rules: list[str] | None = None,
@@ -221,7 +222,39 @@ def compare(
         work = Path(tmp)
         run_git(["init", "--quiet"], cwd=work)
         run_git(["remote", "add", "origin", repo_url(repository)], cwd=work)
-        for ref, local in ((base, "base"), (head, "head")):
+        remote_branch = f"refs/heads/{branch}"
+        local_branch = "refs/remotes/origin/niakvio-client-check"
+        fetch_spec = f"{remote_branch}:{local_branch}"
+        run_git(
+            [
+                "-c",
+                "protocol.version=2",
+                "fetch",
+                "--quiet",
+                "--no-tags",
+                "--depth=128",
+                "origin",
+                fetch_spec,
+            ],
+            cwd=work,
+            timeout=90,
+        )
+
+        def has_commit(ref: str) -> bool:
+            completed = subprocess.run(
+                ["git", "cat-file", "-e", f"{ref}^{{commit}}"],
+                cwd=work,
+                capture_output=True,
+                text=True,
+                timeout=15,
+                check=False,
+            )
+            return completed.returncode == 0
+
+        missing = [ref for ref in (base, head) if not has_commit(ref)]
+        for deepen in (128, 256, 512, 1024):
+            if not missing:
+                break
             run_git(
                 [
                     "-c",
@@ -229,16 +262,23 @@ def compare(
                     "fetch",
                     "--quiet",
                     "--no-tags",
-                    "--filter=blob:none",
-                    "--depth=128",
+                    f"--deepen={deepen}",
                     "origin",
-                    ref,
+                    fetch_spec,
                 ],
                 cwd=work,
-                timeout=90,
+                timeout=120,
             )
-            fetched = run_git(["rev-parse", "FETCH_HEAD"], cwd=work).strip()
-            run_git(["update-ref", f"refs/niakvio/{local}", fetched], cwd=work)
+            missing = [ref for ref in (base, head) if not has_commit(ref)]
+
+        if missing:
+            raise RuntimeError(
+                f"required client revision(s) not reachable from {repository}:{branch}: "
+                + ",".join(ref[:12] for ref in missing)
+            )
+
+        for ref, local in ((base, "base"), (head, "head")):
+            run_git(["update-ref", f"refs/niakvio/{local}", ref], cwd=work)
 
         ancestry = subprocess.run(
             ["git", "merge-base", "--is-ancestor", "refs/niakvio/base", "refs/niakvio/head"],
@@ -330,7 +370,7 @@ def inspect_client(key: str, row: dict[str, Any], sources: dict[str, Any] | None
     if head == accepted_ref:
         return result
 
-    comparison = compare(repository, accepted_ref, head, semantic_rules)
+    comparison = compare(repository, branch, accepted_ref, head, semantic_rules)
     status = str(comparison.get("status") or "unknown")
     patches = comparison.get("patches") or {}
     files = [
