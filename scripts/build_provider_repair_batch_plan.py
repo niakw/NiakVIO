@@ -50,14 +50,15 @@ def action_for(status:str, depth:str, issue:str)->tuple[str,str]:
 def action_for_row(row:dict[str,Any], depth:str, issue:str)->tuple[str,str]:
     status=scalar(row.get("status"))
     replay=" ".join(str(value or "") for value in row.get("residentialProviderReplayEvidence") or []).casefold()
-    if (
-        status.upper()=="NO PROOF"
-        and row.get("repairEligible") is True
-        and "provider_zero_before_provider_network" in replay
-    ):
+    if status.upper()=="NO PROOF" and row.get("repairEligible") is True:
+        if "provider_zero_before_provider_network" in replay:
+            return (
+                "learning",
+                "residential full-provider replay disproved transport ownership; learn a provider-side request/route strategy before mutation",
+            )
         return (
             "learning",
-            "residential full-provider replay disproved transport ownership; learn a provider-side request/route strategy before mutation",
+            "final census NO PROOF remains repair/Learning-owned; issue-only WAF/network text cannot recreate harness or transport ownership",
         )
     return action_for(status,depth,issue)
 

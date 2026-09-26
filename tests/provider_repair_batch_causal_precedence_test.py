@@ -40,9 +40,20 @@ assert mod.action_for_row(not_reclassified,"none","waf_challenge")[0]=="learning
 missing_flag={k:v for k,v in reclassified.items() if k!="residentialProviderReplayReclassified"}
 assert mod.action_for_row(missing_flag,"none","waf_challenge")[0]=="learning"
 no_replay={**missing_flag,"residentialProviderReplayEvidence":[]}
-assert mod.action_for_row(no_replay,"none","waf_challenge")[0]=="harness-compatibility"
+assert mod.action_for_row(no_replay,"none","waf_challenge")[0]=="learning"
+allwish_like={
+    "status":"NO PROOF",
+    "repairEligible":True,
+    "dominantIssue":"provider_waf_challenge×2",
+    "harnessTransportClass":"not-applicable",
+    "residentialProviderReplayEvidence":[],
+}
+assert mod.action_for_row(allwish_like,"none","waf_challenge")[0]=="learning"
+network_only={**allwish_like,"dominantIssue":"provider_network_exception"}
+assert mod.action_for_row(network_only,"none","network_exception")[0]=="learning"
 
 source=SCRIPT.read_text(encoding="utf-8")
 assert "Final causal status is stronger than an older dominantIssue" in source
 assert "residential full-provider replay disproved transport ownership" in source
+assert "issue-only WAF/network text cannot recreate harness or transport ownership" in source
 print("provider repair batch causal precedence contract passed")

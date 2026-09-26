@@ -5546,3 +5546,9 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Audit found remaining FORCE paths that could still request publish_proposal=true: Fast Repair handoff, canonical Repair architecture escalation and chained Learning continuation. The Learning repair-proposal job also treated architecture_force=true as implicit PR authority, while architecture FORCE promotion still depended on PR + auto-merge.
 - FORCE semantics are now uniform: architecture_force=true suppresses proposal publication in Autopilot, Fast Repair, canonical Repair and chained phases. Normal scheduled/manual Learning retains review-only PR behavior.
 - Architecture FORCE validates/materializes an executable allowlisted structural diff, rejects provider/publication boundaries, checks exact current main, and promotes one lease-guarded commit directly to main with no FORCE PR/branch. Main-only policy allows only this guarded exception; post-push Workflow Gate/Verify/Non-Regression remain required evidence.
+
+### 2026-09-27 — NO PROOF can no longer regress back to HARNESS in batch routing
+- Current census authority classified allwish as NO PROOF, repairEligible=true, harnessTransportClass=not-applicable, while the stale batch plan re-created harness-compatibility solely from dominantIssue=provider_waf_challenge.
+- build_provider_repair_batch_plan.py now treats final NO PROOF + repairEligible as repair/Learning-owned. Issue-only WAF/network text cannot override the final census into harness or transport ownership.
+- Explicit final HARNESS/CLIENT TRANSPORT GAP/WAF-ANTIBOT and PROVIDER NETWORK BLOCKED statuses still retain their dedicated ownership lanes.
+- Contract coverage includes an allwish-like NO PROOF/WAF row and a NO PROOF/network row; both must remain Learning-owned.
