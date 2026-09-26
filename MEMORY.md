@@ -5402,3 +5402,8 @@ This ledger is not complete merely because provider yield improves. Final comple
 - The declarative gap synthesizer now explicitly covers playback_context_gap and unknown_failure.
 - Targeted contracts PASS: declarative meta-gap, LLM advisor with stale-route -> playback-context rebind, second-order runtime, engine v2 repair-brain, Python compile, Node syntax and diff check.
 - No provider/publication authority is added. Current-byte, playback, identity and non-regression validation remain authoritative.
+
+### 2026-09-26 — Direct architecture-gap meta-gap escalation
+- Follow-up local proof showed MalluMV can already be classified as unknown_failure / architecture_gap while experimentExhausted remains false because there are no meaningful ordinary variants to exhaust.
+- Repair exploration now permits meta-gap synthesis immediately when baseRepairTarget.repairType is architecture_gap, while preserving the ordinary exhaustion requirement for non-architecture-gap cases.
+- Synthetic direct architecture-gap contract proves stale chain-terminal guidance is rebound to unknown_failure, selects adaptive_runtime_recovery, produces synthesized_strategy, and remains sandbox/current-byte gated.

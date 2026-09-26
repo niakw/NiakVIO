@@ -696,9 +696,13 @@ function buildPlan(item) {
       ? postExhaustionStrategyHint(evidence.failureClass, allMemoryMatches, rotateEvery)
       : { profile: "", method: "", index: -1 };
   const strategyEscalated = Boolean(postExhaustionHint.profile);
+  const architectureGapEscalation = (
+    explorationMode
+    && stringValue(baseRepairTarget.repairType) === "architecture_gap"
+  );
   const metaGapAdvisorHint = (
     explorationMode
-    && experimentExhausted
+    && (experimentExhausted || architectureGapEscalation)
     && !strategyEscalated
   )
     ? llmAdvisorStrategyHint(
@@ -719,7 +723,7 @@ function buildPlan(item) {
     && postExhaustionHint.profile === "provider_positive_program_replay_v1"
     && /^[0-9a-f]{64}$/.test(stringValue(postExhaustionHint.positiveProgramFingerprint).toLowerCase())
   );
-  const repairTarget = experimentExhausted
+  const repairTarget = (experimentExhausted || metaGapEscalated)
     ? (
         (strategyEscalated || metaGapEscalated)
           ? (
@@ -862,6 +866,7 @@ function buildPlan(item) {
     experimentExhausted: experimentExhausted && !strategyEscalated && !llmAdvisorProductionRescue,
     strategyEscalated,
     metaGapEscalated,
+    architectureGapEscalation,
     providerPositiveProgramReplay: postExhaustionHint.profile === "provider_positive_program_replay_v1",
     positiveProgramFingerprint: stringValue(postExhaustionHint.positiveProgramFingerprint).toLowerCase(),
     strategyImplementationFingerprint: stringValue(postExhaustionHint.strategyImplementationFingerprint).toLowerCase(),

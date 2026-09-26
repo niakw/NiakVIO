@@ -480,3 +480,46 @@ assert playback_rebound["allowedProfiles"][0]=="player_media_extractor_v1",playb
 assert playback_rebound["llmAdvisorExperiment"]["terminalOnly"] is True,playback_rebound
 assert playback_rebound["llmAdvisorExperiment"]["roleOrder"][0]=="player",playback_rebound
 assert playback_rebound["action"]=="probe-targeted-repair",playback_rebound
+
+
+# If the current plan is already a confirmed architecture_gap, Repair
+# exploration must not wait for synthetic experiment exhaustion that cannot
+# exist. Rebind the provider's stale meta-gap guidance immediately.
+direct_arch_payload={
+    "mode":"repair",
+    "explorationChain":True,
+    "policy":policy,
+    "learnedSkills":{},
+    "historicalSolutions":[],
+    "llmGuidance":[{
+        **meta_guidance[0],
+        "providerId":"synthetic-direct-arch-gap",
+        "failureClass":"chain_terminal_gap",
+        "profile":"chain_terminal_extractor_v1",
+        "experimentFingerprint":"f"*64,
+    }],
+    "negativeMemory":[],
+    "items":[{
+        "key":"published:synthetic-direct-arch-gap",
+        "candidate":{
+            "canonical_id":"synthetic-direct-arch-gap",
+            "metadata":{"supportedTypes":["movie"]},
+        },
+        "result":meta_result,
+        "state":{},
+    }],
+}
+direct_arch_completed=subprocess.run(
+    ["node",str(PLANNER)],
+    cwd=ROOT,input=json.dumps(direct_arch_payload),capture_output=True,text=True,check=True,timeout=20,
+)
+direct_arch=next(iter((json.loads(direct_arch_completed.stdout).get("plans") or {}).values()))
+assert direct_arch["failureClass"]=="unknown_failure",direct_arch
+assert direct_arch["architectureGapEscalation"] is True,direct_arch
+assert direct_arch["metaGapEscalated"] is True,direct_arch
+assert direct_arch["repairType"]=="synthesized_strategy",direct_arch
+assert direct_arch["llmAdvisorFailureCompatibility"]=="exact-rebound",direct_arch
+assert direct_arch["llmAdvisorSourceFailureClass"]=="unknown_failure",direct_arch
+assert direct_arch["llmAdvisorProfile"]=="adaptive_runtime_recovery",direct_arch
+assert direct_arch["allowedProfiles"][0]=="adaptive_runtime_recovery",direct_arch
+assert direct_arch["action"]=="probe-targeted-repair",direct_arch
