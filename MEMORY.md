@@ -5488,3 +5488,9 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Trigger now explicitly carries mode=force.
 - Fast Repair reads the same trigger and propagates architecture_force=true to Learning debt when FORCE is active.
 - Chained Learning phases propagate architecture_force so a FORCE run cannot degrade into proposal-only mode after phase 1.
+
+### 2026-09-26 — FORCE eligibility for exhausted known-family blueprints
+- Learning FORCE run 36269645953 generated architecture blueprints but materialization skipped with reason=no-force-promotable-blueprint because build_strategy_blueprints never emitted forcePromotionEligible for known-family exhaustion.
+- Fixed known deferred/exhausted non-harness blueprints to become FORCE-promotable only when every retained provider has concrete failed-profile negative memory and the proposed strategy itself has not already failed for that provider.
+- Target layers are explicit: route/terminal/candidate -> core, transport -> network. Harness-only diagnosis remains non-FORCE and cannot generate executable architecture without stronger evidence.
+- Provider/publication authority remains disabled; executable FORCE changes are still restricted to the existing architecture allowlist and must pass targeted tests + required CI before promotion.
