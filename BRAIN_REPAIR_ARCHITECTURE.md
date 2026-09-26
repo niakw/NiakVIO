@@ -497,3 +497,42 @@ Until those runtime proofs exist, code-level architecture may be complete while 
 
 This separation prevents a FORCE request from silently degrading into proposal-only Learning while preserving Learning as the long-horizon hypothesis/evolution lane.
 
+
+
+## Local FORCE experiment farm
+
+For large unresolved cohorts, GitHub Actions is the **final proof/publication lane**, not the high-volume hypothesis generator.
+
+`scripts/local/run_force_experiment_farm.py` provides a resumable local sandbox:
+- default scope = current census `repairQueue`;
+- existing Brain-LLM guidance is tried first when available;
+- additional deterministic experiments are generated and deduplicated by fingerprint;
+- previously executed negative fingerprints are skipped;
+- Quick screens every hypothesis;
+- only Quick improvements receive a fresh-from-current-bytes Deep retest;
+- each provider runs in its own detached worktree;
+- default parallelism is 2 providers and can be raised explicitly;
+- a Deep winner stops further experiments for that provider by default;
+- `STATE.json` allows restart/resume without repeating completed fingerprints;
+- `WINNING_GUIDANCE.json` contains only non-authoritative winning advisor rows;
+- the farm never pushes, dispatches GitHub workflows, publishes provider bytes, or enters the Learning planner mode.
+
+Typical current-cohort run:
+
+~~~bash
+python3 scripts/local/run_force_experiment_farm.py \
+  --variants-per-provider 24 \
+  --workers 2 \
+  --deep-rounds 3
+~~~
+
+For a focused provider:
+
+~~~bash
+python3 scripts/local/run_force_experiment_farm.py \
+  --provider mallumv \
+  --variants-per-provider 64 \
+  --workers 1
+~~~
+
+The local winner is **evidence, not publication authority**. FORCE/GitHub must still replay the winning experiment against current bytes and pass playback, identity and non-regression gates before persistence.
