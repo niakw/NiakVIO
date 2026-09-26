@@ -221,7 +221,10 @@ def main() -> int:
     assert '"maxLearningGenerationsPerSignature": 5' in policy_source, "bounded multi-generation Learning evolution disappeared"
     assert '"maxRepairRounds"' not in policy_source, "obsolete one-round Learning limit returned"
     assert '"selfArchitectureAudit": true' in policy_source
-    assert '"selfArchitectureChanges": "review_only_pr_with_allowlisted_policy_changes_and_structural_change_plan"' in policy_source
+    assert '"selfArchitectureChanges": "review_only_pr_normally; explicit_force_may_auto_promote_allowlisted_executable_diff_after_targeted_tests_and_required_ci"' in policy_source
+    assert '"forceArchitecturePromotion"' in policy_source
+    assert '"requireExecutableDiff": true' in policy_source
+    assert '"providerPublicationAuthority": false' in policy_source
 
     # Learning memory and discovery capabilities remain shared and sanitized.
     assert 'state.get("learnedSkills")' in sandbox_source
