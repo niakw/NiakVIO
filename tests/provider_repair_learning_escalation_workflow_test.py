@@ -33,9 +33,10 @@ for required in (
 
 assert "FIELD_PROVIDER_BRAIN_FORCE_DEBT" in persist_block
 assert "learning_dispatch=false owner=force" in persist_block
-assert "resume_mode=force" in persist_block
-assert '-f mode="$resume_mode"' in persist_block
-assert "FIELD_PROVIDER_BRAIN_RESUME_MODE" in persist_block
+assert "FIELD_PROVIDER_BRAIN_FORCE_UNVISITED" in persist_block
+assert "auto_resume=false reason=bounded-force-run" in persist_block
+assert '-f mode=force' not in persist_block
+assert "FIELD_PROVIDER_BRAIN_RESUME_MODE mode=repair" in persist_block
 
 # Current evidence may be rebased only across provider-neutral drift.
 assert "FIELD_REPAIR_CONCURRENT_PROVIDER_DRIFT" in persist_block
