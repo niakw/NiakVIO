@@ -14,9 +14,7 @@ on:
       - '.github/triggers/provider-brain-autopilot.json'
 
 permissions:
-  # Write is restricted by contract below to the sanitized Learning-dispatch
-  # ledger after a child Learning workflow has been dispatched successfully.
-  contents: write
+  contents: read
   actions: write
 
 concurrency:
@@ -84,9 +82,6 @@ jobs:
         run: |
           set -euo pipefail
 
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-
           git fetch --quiet origin main
           remote_main="$(git rev-parse origin/main)"
           if [ "$remote_main" != "$GITHUB_SHA" ]; then
@@ -94,20 +89,6 @@ jobs:
             gh workflow run provider-brain-autopilot.yml               --repo "$GITHUB_REPOSITORY" --ref main -f dry_run=false
             exit 0
           fi
-
-          mark_learning_dispatch() {
-            selection="$1"
-            python scripts/provider_learning_dispatch_gate.py mark \
-              --ledger automation/provider-learning-dispatch-ledger.json \
-              --selection "$selection" \
-              --repair-run-id "$GITHUB_RUN_ID"
-            git add automation/provider-learning-dispatch-ledger.json
-            if ! git diff --cached --quiet; then
-              git commit -m "data(brain): record Autopilot causal Learning dispatch from ${GITHUB_RUN_ID}"
-              git pull --rebase origin main
-              git push origin HEAD:main
-            fi
-          }
 
           # A true transport/domain owner can invalidate every downstream
           # provider assumption. Run it alone; its publication/retest cycle
@@ -130,56 +111,18 @@ jobs:
             echo "FIELD_PROVIDER_AUTOPILOT dispatch=FAST_REPAIR providers=$FAST"
           fi
 
-          # Distinct Learning debt must not be starved by an unrelated FAST cohort,
-          # but an identical causal method must never be auto-dispatched twice.
+          # Learning is owned by its independent scheduled/manual slot.
           if [ -n "$LEARNING" ]; then
-            learning_selection="$RUNNER_TEMP/autopilot-learning-selection.json"
-            python scripts/provider_learning_dispatch_gate.py select-plan \
-              --plan "$RUNNER_TEMP/provider-execution-plan.json" \
-              --ledger automation/provider-learning-dispatch-ledger.json \
-              --lane BRAIN_LEARNING \
-              --providers "$LEARNING" \
-              --output "$learning_selection"
-            learning_csv="$(python -c 'import json,sys; d=json.load(open(sys.argv[1],encoding="utf-8")); print(d.get("providerFilter") or "")' "$learning_selection")"
-            if [ -n "$learning_csv" ]; then
-              gh workflow run brain-learning-lab.yml \
-                --repo "$GITHUB_REPOSITORY" --ref main \
-                -f publish_proposal=false \
-                -f target_providers="$learning_csv" \
-                -f slot_remaining_minutes=20 -f slot_phase=1
-              echo "FIELD_PROVIDER_AUTOPILOT dispatch=BRAIN_LEARNING providers=$learning_csv targeted=true fingerprint=new"
-              mark_learning_dispatch "$learning_selection"
-            else
-              echo "FIELD_PROVIDER_AUTOPILOT dispatch=BRAIN_LEARNING skipped=true reason=no-new-causal-fingerprint"
-            fi
+            echo "FIELD_PROVIDER_AUTOPILOT dispatch=BRAIN_LEARNING skipped=true providers=$LEARNING reason=scheduled-learning-slot-only"
           fi
 
-          # Harness/Core-client debt is never a terminal storage state. Transport
-          # evidence may refresh every run; architecture Learning is fingerprint-
-          # gated so the same transport hypothesis cannot loop forever.
+          # Harness/Core-client debt may refresh transport evidence now.
+          # Architecture Learning waits for the dedicated Learning slot.
           if [ -n "$HARNESS" ]; then
             gh workflow run provider-waf-browser-session.yml \
               --repo "$GITHUB_REPOSITORY" --ref main \
               -f target_providers="$HARNESS"
-            harness_selection="$RUNNER_TEMP/autopilot-harness-learning-selection.json"
-            python scripts/provider_learning_dispatch_gate.py select-plan \
-              --plan "$RUNNER_TEMP/provider-execution-plan.json" \
-              --ledger automation/provider-learning-dispatch-ledger.json \
-              --lane CORE_CLIENT_LEARNING \
-              --providers "$HARNESS" \
-              --output "$harness_selection"
-            harness_learning_csv="$(python -c 'import json,sys; d=json.load(open(sys.argv[1],encoding="utf-8")); print(d.get("providerFilter") or "")' "$harness_selection")"
-            if [ -n "$harness_learning_csv" ]; then
-              gh workflow run brain-learning-lab.yml \
-                --repo "$GITHUB_REPOSITORY" --ref main \
-                -f publish_proposal=true \
-                -f target_providers="$harness_learning_csv" \
-                -f slot_remaining_minutes=20 -f slot_phase=1
-              echo "FIELD_PROVIDER_AUTOPILOT dispatch=CORE_CLIENT_LEARNING providers=$harness_learning_csv waf=true architecture_learning=true mutation=proposal-only fingerprint=new"
-              mark_learning_dispatch "$harness_selection"
-            else
-              echo "FIELD_PROVIDER_AUTOPILOT dispatch=CORE_CLIENT_LEARNING providers=$HARNESS waf=true architecture_learning=false reason=no-new-causal-fingerprint"
-            fi
+            echo "FIELD_PROVIDER_AUTOPILOT dispatch=CORE_CLIENT_LEARNING providers=$HARNESS waf=true architecture_learning=false reason=scheduled-learning-slot-only"
           fi
 
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
