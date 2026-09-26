@@ -93,7 +93,7 @@ BUDGETS = [
     (6, 36, 36, 6),
 ]
 
-_state_lock = threading.Lock()
+_state_lock = threading.RLock()
 _git_lock = threading.Lock()
 
 
@@ -672,8 +672,9 @@ def provider_worker(
                 except (OSError, subprocess.SubprocessError, ValueError) as exc:
                     result["deepError"] = f"{type(exc).__name__}:{str(exc)[:500]}"
 
-            existing[fp] = result
-            persist_state(output, state)
+            with _state_lock:
+                existing[fp] = result
+                persist_state(output, state)
             print(
                 "FIELD_LOCAL_FORCE_EXPERIMENT "
                 f"provider={provider} index={index}/{len(experiments)} fp={fp[:12]} "
