@@ -5414,3 +5414,10 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Planner now deterministically rotates rebound meta-gap experiments through up to 16 bounded compositions and skips every fingerprint already present in negative memory.
 - New telemetry llmAdvisorMetaGapGeneration records the selected synthesized generation.
 - Synthetic contract proves v1 failure -> v2 fresh fingerprint -> synthesized_strategy remains active.
+
+### 2026-09-26 — Meta-gap rebinding to current failure class
+- Current-HEAD local cohorts showed a generic handoff flaw across the 14-provider repairQueue: providers may evolve failure class during Repair (for example search_gap -> playback_context_gap or chain_terminal_gap -> transport_blocked), while synthesized meta-gap guidance remained anchored to an older remembered class.
+- Fix rebinding meta-gap guidance at plan time to the current canonical failure class, selecting the compatible already-sandboxed executor and deriving a fresh experiment fingerprint from the rebound experiment.
+- Added current-class mappings for playback_context_gap, candidate_replay_gap and unknown_failure; unknown/runtime fallback uses adaptive_runtime_recovery rather than dropping to architecture debt.
+- Meta-gap still activates only after ordinary variants/post-exhaustion strategies are exhausted; current-byte playback/identity/non-regression gates remain authoritative.
+- Targeted contracts PASS: declarative meta-gap strategy, LLM advisor execution, second-order strategy runtime, engine v2 repair brain.
