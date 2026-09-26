@@ -71,6 +71,11 @@ jobs:
           import json, os
           from pathlib import Path
           p=json.loads((Path(os.environ["RUNNER_TEMP"])/"provider-execution-plan.json").read_text())
+          try:
+              trigger=json.loads(Path(".github/triggers/provider-brain-autopilot.json").read_text(encoding="utf-8"))
+          except Exception:
+              trigger={}
+          force_mode=str(trigger.get("mode") or "").strip().casefold()=="force"
           def cohort(lane):
               values=[]
               for row in p.get("executions") or []:
@@ -83,6 +88,7 @@ jobs:
           print("learning="+cohort("BRAIN_LEARNING"))
           print("harness="+cohort("CORE_CLIENT_LEARNING"))
           print("blocked="+str(int(p.get("blockedExecutionCount") or 0)))
+          print("force="+("true" if force_mode else "false"))
           PY
           cat "$RUNNER_TEMP/provider-execution-plan.json"
 
@@ -95,6 +101,7 @@ jobs:
           FAST: ${{ steps.plan.outputs.fast }}
           LEARNING: ${{ steps.plan.outputs.learning }}
           HARNESS: ${{ steps.plan.outputs.harness }}
+          FORCE_MODE: ${{ steps.plan.outputs.force }}
         run: |
           set -euo pipefail
 
@@ -131,13 +138,18 @@ jobs:
           # bounded cohort immediately; Learning remains globally serialized and
           # persists sanitized state/proposals before the next census.
           if [ -n "$LEARNING" ]; then
-            gh workflow run brain-learning-lab.yml \
-              --repo "$GITHUB_REPOSITORY" --ref main \
-              -f publish_proposal=true \
-              -f target_providers="$LEARNING" \
-              -f slot_remaining_minutes=60 \
+            args=(
+              --repo "$GITHUB_REPOSITORY" --ref main
+              -f publish_proposal=true
+              -f target_providers="$LEARNING"
+              -f slot_remaining_minutes=60
               -f slot_phase=1
-            echo "FIELD_PROVIDER_AUTOPILOT dispatch=BRAIN_LEARNING providers=$LEARNING immediate=true budget_minutes=60"
+            )
+            if [ "$FORCE_MODE" = "true" ]; then
+              args+=(-f architecture_force=true)
+            fi
+            gh workflow run brain-learning-lab.yml "${args[@]}"
+            echo "FIELD_PROVIDER_AUTOPILOT dispatch=BRAIN_LEARNING providers=$LEARNING immediate=true budget_minutes=60 force=$FORCE_MODE"
           fi
 
           # Harness/Core-client debt may refresh transport evidence now.
