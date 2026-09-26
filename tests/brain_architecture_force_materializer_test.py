@@ -106,6 +106,21 @@ assert mod.MAX_MODEL_TOKENS <= 800
 assert mod.MODEL_TIMEOUT_SECONDS == 180
 assert mod.RETRY_MODEL_TOKENS == 500
 
+# Model output parsing is resilient to the common bounded formatting defects
+# observed in FORCE: prose/fences, trailing commas and Python-style dicts.
+assert mod._parse_model_value({
+    "choices": [{"message": {"content": 'Here is the result:\n{"edits":[{"operation":"create","path":"scripts/brain_layers/x.py","content":"X=1\\n",}],}'}}]
+})["edits"][0]["path"] == "scripts/brain_layers/x.py"
+assert mod._parse_model_value({
+    "choices": [{"message": {"content": "{'edits':[{'operation':'create','path':'scripts/brain_layers/y.py','content':'Y=1\\n'}]}"}}]
+})["edits"][0]["path"] == "scripts/brain_layers/y.py"
+try:
+    mod._parse_model_value({"choices": [{"message": {"content": "not an object"}}]})
+except ValueError:
+    pass
+else:
+    raise AssertionError("invalid model output unexpectedly parsed")
+
 compact = mod._compact_payload({
     "sources": {"a": "x" * 4000, "b": "y" * 4000, "c": "z" * 4000},
     "architectureLayers": [
