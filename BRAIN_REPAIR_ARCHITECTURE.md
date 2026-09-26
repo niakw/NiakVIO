@@ -295,37 +295,40 @@ advances through its own A/B/C sequence inside the same bounded portfolio run,
 while validated reusable strategies may transfer across compatible provider
 families in later waves.
 
-## 7. Learning without loops
+## 7. Learning is slot-owned
 
-Learning is not the fallback for every failed Repair.
+Learning is **not** a fallback child workflow of Repair, FORCE or Autopilot.
 
-Automatic Repair → Learning is controlled by scripts/provider_learning_dispatch_gate.py and automation/provider-learning-dispatch-ledger.json.
+The only allowed Learning execution is the independent Learning window:
+- the scheduled/manual `.github/workflows/brain-learning-lab.yml` slot;
+- its own bounded continuation mechanism for that same slot;
+- the availability watchdog may only restore a missing scheduled Learning window.
 
-A provider receives an automatic Learning dispatch only when there is a causal fingerprint containing both:
+Repair/FORCE/Fast Repair/Autopilot may consume previously persisted sanitized
+Learning priors, but they only **record unresolved causal debt** for the next
+Learning window. They must never dispatch `brain-learning-lab.yml` themselves.
 
-- a cause: failure class and/or signature;
-- a method: profile, LLM strategy/profile or LLM experiment fingerprint.
-
-The fingerprint intentionally excludes run IDs and timestamps.
+The causal fingerprint/dispatch ledger remains useful to the Learning slot for
+deduplication:
 
 ~~~text
 same provider
 + same causal signature
 + same strategy/profile/generation
 + same LLM experiment fingerprint
-= same dispatch fingerprint
-= DO NOT start Learning again
+= same Learning debt fingerprint
+= do not spend the Learning slot on the same method again
 ~~~
 
-A changed signature, method, generation or LLM experiment may create a new fingerprint and therefore a new bounded Learning attempt.
+This separation is deliberate:
+- production time stays FORCE/Repair-owned;
+- a failed 14-provider cohort cannot silently consume the Learning budget;
+- Learning remains a distinct architecture/evidence phase;
+- FORCE can keep iterating through current executable mutations and deterministic
+  alternatives without changing execution mode.
 
-The ledger retains the complete deduplicated per-provider history of dispatched fingerprints, not only the latest value. Therefore `A → B → A` remains suppressed: a previously dispatched causal method does not become eligible again merely because another method ran in between.
-
-Missing causal fingerprint is fail-closed: no automatic Learning run.
-
-Every automatic Learning launch receives an explicit `target_providers` cohort. Historical handoff debt may never silently expand the current cohort.
-
-Canonical Repair, Fast Repair **and Brain Autopilot** must pass through the dispatch ledger. Autopilot may refresh transport/WAF evidence independently, but its provider/architecture Learning child run is launched only for a new execution-plan fingerprint. Fast Repair has one Learning path only: explicit targeted dispatch after the causal gate. It must not simultaneously arm a push trigger and launch an explicit run.
+A changed signature, method, generation or LLM experiment may create new Learning
+debt, but that debt waits for the next dedicated Learning slot.
 
 ## 8. Domain Refresh is not Repair
 
