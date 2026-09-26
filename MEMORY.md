@@ -5175,3 +5175,14 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Explicit FORCE no longer self-dispatches another FORCE when `resumeRecommended`/unvisited providers remain.
 - A bounded FORCE run now emits `FIELD_PROVIDER_BRAIN_FORCE_UNVISITED ... auto_resume=false reason=bounded-force-run` and persists the unresolved cohort.
 - New FORCE execution requires a materially changed executable method/mutation/provider bytes or an explicit operator trigger. This is the hard stop preventing endless FORCE retries.
+
+
+## 2026-09-26 Europe/Paris — local FORCE experiment farm added
+
+- Added `scripts/local/run_force_experiment_farm.py` to move high-volume hypothesis exploration off GitHub Actions.
+- The farm is FORCE-support only, not the scheduled Learning lane: it explicitly avoids `NUVIO_BRAIN_PLANNER_MODE=learning`, never dispatches workflows, never pushes, and all candidate work happens in disposable detached worktrees.
+- Default scope is the current census `repairQueue`. Existing Brain-LLM guidance is prioritized, then deterministic diverse advisor experiments are generated up to `--variants-per-provider`.
+- Executed negative experiment fingerprints are skipped. Results are resumable in gitignored `local-output/force-experiment-farm/STATE.json`.
+- Two-stage cost control: Quick screens all variants; only provisional Quick improvements are replayed from fresh current bytes under Deep + identity safety. Deep winners stop further experiments for that provider unless `--continue-after-win` is set.
+- Winning local guidance remains non-authoritative and is written to `WINNING_GUIDANCE.json`; GitHub FORCE must revalidate playback/identity/non-regression on current bytes before any persistence.
+- Recommended starting point for the current 14-provider cohort: `python3 scripts/local/run_force_experiment_farm.py --variants-per-provider 24 --workers 2 --deep-rounds 3`. Raise variants for stubborn individual providers instead of rerunning the whole cohort.
