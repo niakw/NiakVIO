@@ -8,6 +8,11 @@ on:
         required: false
         default: false
         type: boolean
+  workflow_run:
+    workflows:
+      - Provider Census - Sharded
+    types:
+      - completed
   push:
     branches: [main]
     paths:
@@ -33,6 +38,7 @@ concurrency:
 
 jobs:
   route:
+    if: ${{ github.event_name != 'workflow_run' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_repository.full_name == github.repository) }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
     env:
