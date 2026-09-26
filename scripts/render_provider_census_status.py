@@ -112,11 +112,16 @@ def historical_proofs(history: dict[str, Any], provider: str, lane: str) -> list
     return [value for value in values if isinstance(value, dict) and isinstance(value.get("fixture"), dict)]
 
 
+def historical_lane_positive(history: dict[str, Any], provider: str, lane: str) -> bool:
+    state = _lane_history(history, provider, lane)
+    return bool(state.get("historicalPositive")) or bool(historical_proofs(history, provider, lane))
+
+
 def historical_positive(history: dict[str, Any], provider: str) -> bool:
     providers = history.get("providers") if isinstance(history.get("providers"), dict) else {}
     row = providers.get(provider) if isinstance(providers.get(provider), dict) else {}
     lanes = row.get("lanes") if isinstance(row.get("lanes"), dict) else {}
-    return any(historical_proofs(history, provider, lane) for lane in lanes)
+    return any(historical_lane_positive(history, provider, lane) for lane in lanes)
 
 
 def candidate_proofs(candidate_evidence: dict[str, Any], provider: str) -> list[dict[str, str]]:
@@ -496,9 +501,18 @@ def provider_state(
         return "PROVIDER JS FULLY BROKEN" if repeated else "PROVIDER JS BROKEN"
 
     if stages & WAF_STAGES:
-        # GitHub/Node/browser challenge evidence is an environment signal, not a
-        # provider-code verdict. Historical positives strengthen that conclusion
-        # rather than turning it into a provider regression.
+        # Transport/WAF evidence is weaker than already-retained provider proof.
+        # A challenge may block today's CI path, but it cannot erase a qualified
+        # provider route, a content-specific chain, or durable historical positive
+        # knowledge. Keep such cases in the ordinary Brain queue.
+        if any(str(row.get("debug_progress_stage") or "") == "chain_reached" for row in rows):
+            return "CHAIN REACHED"
+        if retained_route:
+            return "ROUTE PROVEN"
+        if has_history:
+            if any(_historical_proof_replayed(history, provider, row) for row in rows):
+                return "REGRESSION PROVIDER"
+            return "NO PROOF"
         return browser_harness_status(waf_browser_evidence or {}, provider)
 
     if stages & NETWORK_BROKEN_STAGES:
@@ -649,6 +663,14 @@ def _carried_non_green_status(carried: dict[str, Any], provider: str, waf_browse
     historical = bool(carried.get("historicalProof"))
 
     if "provider_waf_challenge" in issue:
+        if candidate:
+            return "CANDIDATE OK"
+        if any("chain_reached" in value for value in depth):
+            return "CHAIN REACHED"
+        if route:
+            return "ROUTE PROVEN"
+        if historical:
+            return "NO PROOF"
         return browser_harness_status(waf_browser_evidence, provider)
     if any(value in issue for value in ("provider_network_http_error", "provider_network_exception", "timeout")):
         if historical:
