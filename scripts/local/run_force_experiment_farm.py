@@ -24,6 +24,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import urllib.request
 import threading
 import time
 from pathlib import Path
@@ -40,6 +41,10 @@ import brain_llm_guidance as guidance_contract  # noqa: E402
 STATUS = ROOT / "automation" / "provider-census-status.json"
 NEGATIVE_MEMORY = ROOT / "automation" / "brain-repair-memory.json"
 DEFAULT_OUTPUT = ROOT / "local-output" / "force-experiment-farm"
+BRAIN_LLM_GUIDANCE_URL = (
+    "https://raw.githubusercontent.com/niakw/NiakVIO-Brain-LLM/"
+    "niakvio-guidance/guidance/niakvio-guidance.json"
+)
 
 STATUS_TEMPLATES: dict[str, tuple[str, str, str]] = {
     "ROUTE PROVEN": (
@@ -330,6 +335,34 @@ def generated_experiments(
     return result[: max(1, limit)]
 
 
+def _remote_brain_llm_guidance() -> dict[str, Any]:
+    """Read only the sanitized public Brain-LLM guidance branch.
+
+    This is a non-authoritative prior. Any winner is still re-tested locally and
+    must later pass canonical GitHub FORCE/current-byte validation.
+    """
+    try:
+        request = urllib.request.Request(
+            BRAIN_LLM_GUIDANCE_URL,
+            headers={"User-Agent": "NiakVIO-local-force-farm/1"},
+        )
+        with urllib.request.urlopen(request, timeout=12) as response:
+            value = json.loads(response.read().decode("utf-8"))
+    except (OSError, ValueError, json.JSONDecodeError):
+        return {}
+    if not isinstance(value, dict):
+        return {}
+    if value.get("publicationAuthority") is not False:
+        return {}
+    if value.get("directMutationAuthority") is not False:
+        return {}
+    if value.get("proofAuthority") is not False:
+        return {}
+    if value.get("privateContentRetained") is not False:
+        return {}
+    return value
+
+
 def discover_guidance(path: Path | None) -> dict[str, Any]:
     candidates = []
     if path is not None:
@@ -343,6 +376,10 @@ def discover_guidance(path: Path | None) -> dict[str, Any]:
     for candidate in candidates:
         if candidate.is_file():
             return load_json(candidate, {})
+
+    remote = _remote_brain_llm_guidance()
+    if remote:
+        return remote
 
     # Offline-safe fallback: reuse an already-fetched proposal ref without
     # contacting GitHub. Failure simply means generated local variants only.
@@ -384,7 +421,8 @@ def external_rows(payload: dict[str, Any], provider: str) -> list[dict[str, Any]
         item["experiment"] = clean
         item["experimentFingerprint"] = fp
         item["confidence"] = max(0.80, min(1.0, float(item.get("confidence") or 0.8)))
-        item["localExperimentSource"] = "existing-guidance"
+        item["localExperimentSource"] = str(payload.get("brainLlmSha") or "").strip() and "brain-llm-guidance" or "existing-guidance"
+        item["guidanceSourceSha"] = str(payload.get("sourceSha") or payload.get("sourceNiakvioSha") or "").strip().casefold()
         out.append(item)
     return out
 
