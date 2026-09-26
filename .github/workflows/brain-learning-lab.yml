@@ -1436,16 +1436,16 @@ jobs:
           force_promotable=false
           if [ "${{ inputs.architecture_force || false }}" = "true" ]; then
             force_promotable="$(python - <<'PY'
-import json
-from pathlib import Path
-p=Path("brain-learning-output/brain-architecture-force-report.json")
-if not p.is_file():
-    print("false")
-else:
-    d=json.loads(p.read_text(encoding="utf-8"))
-    print("true" if (d.get("skipped") is not True and int(d.get("editCount") or 0) > 0) else "false")
-PY
-)"
+          import json
+          from pathlib import Path
+          p=Path("brain-learning-output/brain-architecture-force-report.json")
+          if not p.is_file():
+              print("false")
+          else:
+              d=json.loads(p.read_text(encoding="utf-8"))
+              print("true" if (d.get("skipped") is not True and int(d.get("editCount") or 0) > 0) else "false")
+          PY
+          )"
           fi
           echo "force_promotable=$force_promotable" >> "$GITHUB_OUTPUT"
           if [ "$force_promotable" = "true" ]; then
