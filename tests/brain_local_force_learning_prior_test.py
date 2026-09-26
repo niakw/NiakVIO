@@ -65,8 +65,13 @@ try:
 
         os.environ["NUVIO_BRAIN_PLANNER_MODE"] = "learning"
         rows = mod.planner_llm_guidance()
-        assert len(rows) == 1, rows
-        loaded = rows[0]
+        local_force_rows = [
+            row for row in rows
+            if row.get("guidanceKind") == "local-force-baseline-coincident"
+        ]
+        assert len(local_force_rows) == 1, rows
+        assert any(row.get("guidanceKind") == "meta-gap-synthesis" for row in rows), rows
+        loaded = local_force_rows[0]
         assert loaded["providerId"] == "mallumv"
         assert loaded["confidence"] == 0.84
         assert loaded["localForceAmbiguous"] is True
