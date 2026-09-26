@@ -41,6 +41,9 @@ assert options["max_depth"]==5 and options["max_pages"]==17 and options["max_emb
 assert options["alias_search"] is True and options["runtime_response_salvage"] is True,options
 assert options["document_request_mining"] is True and options["session_bootstrap"] is True,options
 assert "/search?q={query}" in options["search_paths"],options["search_paths"]
+assert "gstatic.com" in options["blocked_hosts"],options["blocked_hosts"]
+assert "www.gstatic.com" in options["blocked_hosts"],options["blocked_hosts"]
+assert "api.themoviedb.org" in options["blocked_hosts"],options["blocked_hosts"]
 
 owned={**experiment,"routePolicy":"owned_only","terminalOnly":True,"aliasSearch":False,"maxDepth":2}
 candidate2={**base,"brain_repair_plan":{"failureClass":"route_proven_gap","experimentVariant":0,"experimentGeneration":1,"llmAdvisorExperiment":owned,"llmAdvisorExperimentFingerprint":"b"*64}}

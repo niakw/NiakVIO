@@ -5371,3 +5371,9 @@ This ledger is not complete merely because provider yield improves. Final comple
 - animevostfr: exhausted candidate_replay_gap reopened as probe-targeted-repair via synthesized retained_candidate_replay_v1 fingerprint 04ccbdba..., llmAdvisorRescue=true; still no playable stream.
 - mallumv remained on a non-exhausted search_gap/adaptive path during this two-wave sample; no repair accepted.
 - Result: declarative synthesis removes fixed-profile exhaustion as a hard stop for known families, but does not itself prove provider resolution. Further experiment generations remain required.
+
+### 2026-09-26 — Adaptive runtime false-media provenance guard
+- Local meta-gap terminal cohort exposed a false positive: MalluMV sandbox was marked healthy from an unrelated www.gstatic.com marketing MP4 discovered during broad traversal.
+- The durable compiler correctly rejected the accepted program because no provider-owned stream-proof recipe survived, proving the compiler guard was right and Deep acceptance was too permissive.
+- Fix: adaptive runtime now feeds the central INFRASTRUCTURE_HOSTS set into generated blockedHosts, and the central list includes gstatic.com/www.gstatic.com. This prevents infrastructure/search/analytics assets from becoming terminal media evidence while leaving real player/CDN hosts untouched.
+- This is a generic media-provenance/non-regression guard, not a MalluMV-specific rule.
