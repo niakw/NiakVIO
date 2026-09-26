@@ -18,6 +18,14 @@ required = [
 for needle in required:
     assert needle in workflow, f"missing sharded census authority persistence contract: {needle}"
 
+for required_trigger_guard in (
+    "changed_paths=",
+    ".github/triggers/provider-census-sharded.json",
+    "explicit_trigger=true",
+    'FIELD_SHARDED_CENSUS_PREPARE should_run=true',
+):
+    assert required_trigger_guard in workflow, f"missing explicit census trigger bypass: {required_trigger_guard}"
+
 copy_status = workflow.index("cp automation/provider-census-sharded-status.json /tmp/provider-census-status.json")
 guard = workflow.index("FIELD_SHARDED_CENSUS_NOT_PERSISTED authority_schema_v3_required")
 reset = workflow.index("git reset --hard origin/main", guard)
