@@ -236,12 +236,24 @@ jobs:
             --network-report automation/provider-census-sharded-merged.json \
             --timeout 20 --virtual-time-ms 7000 --workers 3 --max-targets 16
 
+          # Merge persisted representative/private-exit WAF evidence BEFORE final
+          # classification. A fresh GitHub-hosted challenge must not erase
+          # stronger current transport proof already gathered by the harness lane.
+          if [ -s automation/provider-waf-browser-session-latest.json ]; then
+            python scripts/merge_waf_latest_evidence.py \
+              --previous automation/provider-waf-browser-session-latest.json \
+              --current automation/provider-waf-browser-session-sharded.json \
+              --output automation/provider-waf-browser-session-effective.json
+          else
+            cp automation/provider-waf-browser-session-sharded.json automation/provider-waf-browser-session-effective.json
+          fi
+
           python scripts/render_provider_census_status.py automation/provider-census-sharded-merged.json \
             --output automation/PROVIDER-CENSUS-SHARDED.md \
             --json-output automation/provider-census-sharded-status.json \
             --history automation/provider-census-proof-history.json \
             --baseline-status automation/provider-census-status.json \
-            --waf-browser-evidence automation/provider-waf-browser-session-sharded.json \
+            --waf-browser-evidence automation/provider-waf-browser-session-effective.json \
             --authority-status automation/provider-authority-status.json \
             --run-id "${GITHUB_RUN_ID}" \
             --sha "$SOURCE_SHA"
@@ -289,6 +301,7 @@ jobs:
             automation/provider-census-proof-history.json
             automation/provider-authority-status.json
             automation/provider-waf-browser-session-sharded.json
+            automation/provider-waf-browser-session-effective.json
             automation/PROVIDER-CENSUS-SHARDED.md
           retention-days: 8
           if-no-files-found: error
@@ -364,12 +377,8 @@ jobs:
 
       - name: Continue Brain Autopilot from fresh census
         if: ${{ steps.persist.outputs.ok == 'true' }}
-        env:
-          GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
           set -euo pipefail
-          gh workflow run provider-brain-autopilot.yml \
-            --repo "$GITHUB_REPOSITORY" --ref main -f dry_run=false
-          echo "FIELD_SHARDED_CENSUS_AUTOPILOT dispatched=true source_run=${GITHUB_RUN_ID}"
+          echo "FIELD_SHARDED_CENSUS_AUTOPILOT event_driven=true source_run=${GITHUB_RUN_ID} trigger=workflow_run"
 
