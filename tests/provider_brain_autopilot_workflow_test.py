@@ -17,6 +17,7 @@ for required in (
     "CORE_CLIENT_LEARNING",
     "provider-waf-browser-session.yml",
     "brain-learning-lab.yml",
+    "Provider Census - Sharded",
 ):
     assert required in autopilot, required
 
@@ -26,6 +27,8 @@ assert '-f publish_proposal=true' in autopilot
 assert '-f target_providers="$LEARNING"' in autopilot
 assert '-f slot_remaining_minutes=60' in autopilot
 assert "contents: read" in autopilot
+assert "workflow_run:" in autopilot
+assert "github.event.workflow_run.conclusion == 'success'" in autopilot
 assert "contents: write" not in autopilot
 assert "git add " not in autopilot
 assert "git push origin HEAD:main" not in autopilot
@@ -67,6 +70,7 @@ assert '-f target_providers="$learn_handoff_csv"' in fast
 assert 'complete-cloud-convergence:' in learn
 assert 'FIELD_BRAIN_CLOUD_CONVERGENCE next=census' in learn
 assert '-f scope=unresolved -f persist=true' in learn
-assert 'FIELD_SHARDED_CENSUS_AUTOPILOT dispatched=true' in census
+assert 'FIELD_SHARDED_CENSUS_AUTOPILOT event_driven=true' in census
+assert 'trigger=workflow_run' in census
 
 print("provider Brain Autopilot cloud convergence contract passed")
