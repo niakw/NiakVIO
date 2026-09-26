@@ -5421,3 +5421,10 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Added current-class mappings for playback_context_gap, candidate_replay_gap and unknown_failure; unknown/runtime fallback uses adaptive_runtime_recovery rather than dropping to architecture debt.
 - Meta-gap still activates only after ordinary variants/post-exhaustion strategies are exhausted; current-byte playback/identity/non-regression gates remain authoritative.
 - Targeted contracts PASS: declarative meta-gap strategy, LLM advisor execution, second-order strategy runtime, engine v2 repair brain.
+
+### 2026-09-26 — Unknown failure direct meta-gap escalation
+- Final bounded 14-case exploration left only animesalt stranded in remainingProviders: planner reclassified it to unknown_failure / architecture_gap but kept collect-more-evidence instead of consuming the available fresh meta-gap prior.
+- Root cause: architectureGapEscalation missed the unknown_failure semantic fallback after Repair scope normalization.
+- Generic fix: in exploration, unknown_failure is treated as a direct architecture-gap escalation candidate. Existing meta-gap rebinding selects adaptive_runtime_recovery and remains prior-only/current-byte gated.
+- New test brain_unknown_gap_escalation_test.py proves unknown_failure -> architectureGapEscalation=true -> metaGapEscalated=true -> synthesized_strategy -> adaptive_runtime_recovery -> probe-targeted-repair.
+- Existing LLM advisor, declarative meta-gap, second-order runtime and engine-v2 Repair Brain tests remain PASS.

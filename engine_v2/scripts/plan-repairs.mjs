@@ -772,7 +772,10 @@ function buildPlan(item) {
   const strategyEscalated = Boolean(postExhaustionHint.profile);
   const architectureGapEscalation = (
     explorationMode
-    && stringValue(baseRepairTarget.repairType) === "architecture_gap"
+    && (
+      stringValue(baseRepairTarget.repairType) === "architecture_gap"
+      || canonicalFailureClass(evidence.failureClass) === "unknown_failure"
+    )
   );
   const metaGapAdvisorHint = (
     explorationMode
