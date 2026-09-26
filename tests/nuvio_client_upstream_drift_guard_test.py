@@ -116,6 +116,8 @@ def main() -> int:
     assert "classify_provider_mutation_compat" in brain_source
     assert "adaptation_pending" in brain_source
     assert "contract_review_blocking=false" in brain_source
+    assert "NIAKVIO_NUVIO_CLIENT_STATUS_CACHE" in brain_source
+    assert "validate_cached_report" in brain_source
 
     # Native Labs are observational only. Desktop must validate the already
     # materialized provider/Core contracts, resolve the official client HEAD and
@@ -316,6 +318,47 @@ def main() -> int:
         }
     )
     assert blockers == ["client:verification_inconclusive"]
+
+    cache_config = {
+        "clients": {
+            "client": {
+                "repository": "NuvioMedia/NuvioMobile",
+                "branch": "cmp-rewrite",
+                "verified_ref": "a" * 40,
+                "contract_paths": ["runtime/"],
+                "brain_mutation_contract_paths": ["runtime/"],
+                "semantic_review_tokens": ["StreamItem"],
+                "brain_mutation_semantic_tokens": ["StreamItem"],
+            }
+        }
+    }
+    cache_report = {
+        "clients": {
+            "client": {
+                "repository": "NuvioMedia/NuvioMobile",
+                "branch": "cmp-rewrite",
+                "verified_ref": "a" * 40,
+                "status": "contract_review_required",
+                "compare_status": "ahead",
+                "review_required": True,
+                "contract_changed_files": ["runtime/PluginRuntime.kt"],
+                "semantic_token_hits": {},
+            }
+        },
+        "review_required": ["client"],
+        "inconclusive": [],
+    }
+    cache_blockers, cache_pending = brain_guard.validate_cached_report(cache_report, cache_config)
+    assert cache_blockers == []
+    assert cache_pending == ["client"]
+    bad_cache = json.loads(json.dumps(cache_report))
+    bad_cache["clients"]["client"]["verified_ref"] = "b" * 40
+    cache_blockers, _cache_pending = brain_guard.validate_cached_report(bad_cache, cache_config)
+    assert "client:cache_verified_ref_mismatch" in cache_blockers
+    bad_cache = json.loads(json.dumps(cache_report))
+    bad_cache["clients"]["client"]["status"] = "verification_error"
+    cache_blockers, _cache_pending = brain_guard.validate_cached_report(bad_cache, cache_config)
+    assert "client:verification_error" in cache_blockers
 
     # accepted_ref is the incremental comparison point; contract_ref remains pinned.
     state = sources("b" * 40)

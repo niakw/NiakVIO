@@ -127,12 +127,75 @@ def classify_provider_mutation_compat(
     return blockers, sorted(set(adaptation_pending))
 
 
+def validate_cached_report(
+    report: dict[str, Any], config: dict[str, Any]
+) -> tuple[list[str], list[str]]:
+    configured = config.get("clients") or {}
+    results = report.get("clients") or {}
+    structural: list[str] = []
+    for client_id, row in configured.items():
+        if not isinstance(row, dict):
+            structural.append(f"{client_id}:invalid_config")
+            continue
+        result = results.get(client_id)
+        if not isinstance(result, dict):
+            structural.append(f"{client_id}:missing_verification")
+            continue
+        for key in ("repository", "branch", "verified_ref"):
+            expected = str(row.get(key) or "").strip()
+            observed = str(result.get(key) or "").strip()
+            if expected and observed != expected:
+                structural.append(f"{client_id}:cache_{key}_mismatch")
+    blockers, adaptation_pending = classify_provider_mutation_compat(report, config)
+    blockers = sorted(set(structural + blockers))
+    inconclusive = [str(value) for value in report.get("inconclusive") or [] if str(value)]
+    blockers.extend(
+        f"{client_id}:verification_inconclusive"
+        for client_id in inconclusive
+        if f"{client_id}:verification_inconclusive" not in blockers
+    )
+    return sorted(set(blockers)), adaptation_pending
+
+
 def guard(output: Path) -> dict[str, Any]:
     if os.environ.get("NIAKVIO_SKIP_CLIENT_DRIFT_GUARD", "0").strip() == "1":
         return {"skipped": True, "reason": "explicit_test_override"}
 
     output = output.resolve()
     output.parent.mkdir(parents=True, exist_ok=True)
+    config = load_json(CONFIG)
+
+    cache_raw = str(os.environ.get("NIAKVIO_NUVIO_CLIENT_STATUS_CACHE") or "").strip()
+    if cache_raw:
+        cache_path = Path(cache_raw).expanduser().resolve()
+        if not cache_path.is_file():
+            raise RuntimeError(f"Nuvio client status cache missing: {cache_path}")
+        report = load_json(cache_path)
+        blockers, adaptation_pending = validate_cached_report(report, config)
+        if blockers:
+            raise RuntimeError(
+                "Nuvio client cached state cannot be established safely for adaptive provider repair: "
+                + " | ".join(blockers)
+            )
+        if output != cache_path:
+            output.write_text(
+                json.dumps(report, ensure_ascii=False, indent=2) + "\n",
+                encoding="utf-8",
+            )
+        print(
+            "FIELD_NUVIO_CLIENT_BRAIN_COMPAT_CACHE "
+            f"reused=true clients={len(report.get('clients') or {})} "
+            f"adaptation_pending={len(adaptation_pending)}"
+        )
+        if adaptation_pending:
+            print(
+                "FIELD_NUVIO_CLIENT_ADAPTATION_PENDING clients="
+                + ",".join(adaptation_pending)
+                + " contract_review_blocking=false provider_mutation_allowed=true "
+                  "native_reader_acceptance_required=true compatibility_proposal_on_adaptation_failure=true"
+            )
+        return report
+
     report: dict[str, Any] | None = None
     for attempt in range(1, 4):
         completed = subprocess.run(
@@ -174,7 +237,6 @@ def guard(output: Path) -> dict[str, Any]:
     if report is None:
         raise RuntimeError("Nuvio client verification produced no usable report")
 
-    config = load_json(CONFIG)
     blockers, adaptation_pending = classify_provider_mutation_compat(report, config)
     if blockers:
         raise RuntimeError(

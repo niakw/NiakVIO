@@ -236,6 +236,30 @@ jobs:
           python tests/core_repair_type_architecture_test.py
           python tests/provider_non_regression_contract_test.py
 
+      - name: Snapshot Nuvio client compatibility once for this Repair run
+        shell: bash
+        run: |
+          set -euo pipefail
+          cache="$RUNNER_TEMP/nuvio-client-upstream-status.json"
+          validated="$RUNNER_TEMP/nuvio-client-upstream-status-validated.json"
+          python3 scripts/check_nuvio_client_upstreams.py --no-fail --output "$cache"
+          python3 - "$cache" <<'PY2'
+          import json,sys
+          data=json.load(open(sys.argv[1],encoding="utf-8"))
+          for client_id,row in sorted((data.get("clients") or {}).items()):
+              if not isinstance(row,dict):
+                  continue
+              error=str(row.get("error") or "").replace("\n"," ")[:900]
+              print(
+                  "FIELD_REPAIR_NUVIO_CLIENT_SNAPSHOT "
+                  f"client={client_id} status={row.get('status')} "
+                  f"compare={row.get('compare_status') or '-'} error={error or '-'}"
+              )
+          PY2
+          NIAKVIO_NUVIO_CLIENT_STATUS_CACHE="$cache"             python3 scripts/guard_nuvio_client_brain_compat.py "$validated"
+          echo "NIAKVIO_NUVIO_CLIENT_STATUS_CACHE=$cache" >> "$GITHUB_ENV"
+          echo "FIELD_REPAIR_NUVIO_CLIENT_CACHE ready=true path=$cache"
+
       - name: Decide reusable Repair WAF evidence
         id: repair_waf_reuse
         shell: bash
@@ -1144,6 +1168,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           DISPATCH_MODE: ${{ inputs.mode || '' }}
+          TARGET_PROVIDER: ${{ inputs.target_provider || '' }}
           CANDIDATE_GATE_OUTCOME: ${{ steps.candidate-gate.outcome }}
         shell: bash
         run: |
@@ -1454,6 +1479,7 @@ jobs:
             echo "FIELD_REPAIR_FRESH_CENSUS_SKIPPED source_run=${GITHUB_RUN_ID} reason=provider-neutral-main-drift"
           fi
 
+          architecture_force_dispatched=0
           if [ "$canonical_ledger_current" != "1" ] && [ -s "$tmp/provider-brain-repair-latest.json" ]; then
             echo "FIELD_REPAIR_STALE_ESCALATION_SKIPPED source=$GITHUB_SHA remote=$remote_main"
           fi
@@ -1471,7 +1497,8 @@ jobs:
               if [ "$force_requested" = "1" ]; then
                 echo "FIELD_PROVIDER_BRAIN_FORCE_DEBT deferred=$deferred providers=$deferred_csv learning_dispatch=true owner=force"
                 gh workflow run brain-learning-lab.yml                   --repo "$GITHUB_REPOSITORY"                   --ref main                   -f publish_proposal=true                   -f architecture_force=true                   -f target_providers="$deferred_csv"
-                echo "FIELD_PROVIDER_BRAIN_FORCE_ARCH_DISPATCH providers=$deferred_csv mode=architecture-force"
+                architecture_force_dispatched=1
+                echo "FIELD_PROVIDER_BRAIN_FORCE_ARCH_DISPATCH providers=$deferred_csv mode=architecture-force source=brain-report"
               fi
             fi
 
@@ -1498,5 +1525,44 @@ jobs:
               fi
             elif [ "$resume" = "1" ] && [ "$remaining" -gt 0 ]; then
               echo "FIELD_PROVIDER_BRAIN_RESUME_SKIPPED reason=no-unvisited-provider remaining=$remaining processed=$processed unvisited=$unvisited"
+            fi
+          fi
+
+          if [ "$canonical_ledger_current" = "1" ]              && [ "$force_requested" = "1" ]              && [ "$canonical_repair_outcome" != "success" ]              && [ "$architecture_force_dispatched" = "0" ]; then
+            fallback_csv="$(python - <<'PY'
+          import json,os
+          from pathlib import Path
+
+          values=[]
+          manual=str(os.environ.get("TARGET_PROVIDER") or "").strip().lower().replace("_","-")
+          if manual:
+              values=[manual]
+          elif os.environ.get("GITHUB_EVENT_NAME") == "push":
+              path=Path(".github/triggers/provider-recognition-repair-v6.json")
+              if path.is_file():
+                  data=json.loads(path.read_text(encoding="utf-8"))
+                  values=[
+                      str(x or "").strip().lower().replace("_","-")
+                      for x in data.get("targetProviders") or []
+                      if str(x or "").strip()
+                  ]
+          if not values:
+              status=Path("automation/provider-census-status.json")
+              if status.is_file():
+                  data=json.loads(status.read_text(encoding="utf-8"))
+                  values=[
+                      str(x or "").strip().lower().replace("_","-")
+                      for x in data.get("repairQueue") or []
+                      if str(x or "").strip()
+                  ]
+          print(",".join(sorted(set(values))))
+          PY
+            )"
+            if [ -n "$fallback_csv" ]; then
+              gh workflow run brain-learning-lab.yml                 --repo "$GITHUB_REPOSITORY"                 --ref main                 -f publish_proposal=true                 -f architecture_force=true                 -f target_providers="$fallback_csv"
+              architecture_force_dispatched=1
+              echo "FIELD_PROVIDER_BRAIN_FORCE_ARCH_DISPATCH providers=$fallback_csv mode=architecture-force source=canonical-failure-fallback"
+            else
+              echo "FIELD_PROVIDER_BRAIN_FORCE_ARCH_DISPATCH skipped=true reason=empty-fallback-cohort"
             fi
           fi

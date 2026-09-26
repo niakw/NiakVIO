@@ -5310,3 +5310,26 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Correct contract: normal Repair may not dispatch Learning; explicit force_requested architecture debt may dispatch brain-learning-lab.yml only with publish_proposal=true + architecture_force=true and FIELD_PROVIDER_BRAIN_FORCE_ARCH_DISPATCH.
 - PR #197 updates this remaining stale contract. Local tests brain_causal_intelligence_contract_test.py and provider_repair_learning_escalation_workflow_test.py pass.
 - Run 36240271186 contains no provider verdict: canonical Repair was skipped by preflight failure. Main evidence commit 9f564858 only records the skipped attempt and does not validate or invalidate animevostfr/mallumv.
+
+### 2026-09-26 — FORCE causal scalability follow-up
+- While FORCE run 36240877093 validates animevostfr + mallumv on the corrected Nuvio guard, a separate branch perf/parallel-force-causal removes the evaluator's provider-by-provider serial wall-time multiplication.
+- evaluate_local_force_guidance.py now pre-creates isolated detached worktrees, evaluates providers through a bounded ThreadPoolExecutor, caps concurrency at 8 (default 4 / NUVIO_FORCE_CAUSAL_WORKERS), and sorts report rows deterministically before persistence.
+- Per-provider Deep subprocesses remain isolated (own worktree, stage, output, log, guidance env). No provider/publication authority changes.
+- Static/functional contract passes: local_force_guidance_causal_evaluator_test.py + py_compile + git diff --check.
+- This branch must not be merged until the current FORCE SHA finishes, to avoid contaminating or superseding the active proof.
+
+### 2026-09-26 — Intra-run Nuvio client guard cache
+- PR #199 now also snapshots Nuvio client compatibility once per Provider Repair run into RUNNER_TEMP, validates it through the existing Brain compatibility guard, and exports NIAKVIO_NUVIO_CLIENT_STATUS_CACHE for all later Deep subprocesses.
+- Cached reports remain fail-closed: configured repository/branch/verified_ref must match, all configured clients must exist, verification_error/inconclusive/history divergence remain blockers, and known linear contract drift remains adaptation_pending.
+- This removes repeated historical client fetches from every Deep candidate while preserving one exact client snapshot as run evidence.
+- Tests PASS: py_compile, nuvio_client_upstream_drift_guard_test.py, local_force_guidance_causal_evaluator_test.py, provider_repair_pipeline_v6_contract_test.py, git diff --check.
+- PR #199 remains intentionally unmerged while FORCE run 36240877093 is active on main SHA d0146e77.
+
+### 2026-09-26 — FORCE early-failure architecture fallback
+- FORCE run 36240877093 completed FAILURE on SHA d0146e77 after local candidate causal evaluation. Both animevostfr and mallumv remained non-authoritative because Deep reported environment_guard:nuvio_client_verification_error; these are not negative provider experiments.
+- Canonical evidence: mallumv route recovery is proven against Yoru /search.php?q={query} with HTTP 200 and provider requests observed, but zero streams; animevostfr route recovery timed out. Both remain in the repairQueue.
+- Confirmed orchestration gap: architecture FORCE escalation previously depended on provider-brain-repair-latest.json. When Deep crashed before that report was written, no runtime FIELD_PROVIDER_BRAIN_FORCE_ARCH_DISPATCH was emitted and no architecture Learning run started.
+- PR #199 adds a fail-safe FORCE fallback: if canonical Repair fails before the Brain report exists, derive the exact cohort from manual target_provider, push trigger targetProviders, or only then the current repairQueue, and dispatch brain-learning-lab.yml with architecture_force=true.
+- The normal report-derived path remains preferred and marks source=brain-report; the fallback marks source=canonical-failure-fallback. A dispatch guard prevents double scheduling.
+- PR #199 also prints FIELD_REPAIR_NUVIO_CLIENT_SNAPSHOT per client before Deep and reuses the validated snapshot intra-run, exposing GitHub-runner transport/history errors instead of hiding them behind capture_output.
+- Validation PASS locally: provider_repair_learning_escalation_workflow_test.py, provider_repair_pipeline_v6_contract_test.py, nuvio_client_upstream_drift_guard_test.py, local_force_guidance_causal_evaluator_test.py, py_compile, Ruby YAML parse, git diff --check.

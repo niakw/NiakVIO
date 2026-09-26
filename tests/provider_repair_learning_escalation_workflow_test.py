@@ -41,6 +41,10 @@ for required in (
 assert "FIELD_PROVIDER_BRAIN_FORCE_DEBT" in persist_block
 assert "learning_dispatch=true owner=force" in persist_block
 assert "FIELD_PROVIDER_BRAIN_FORCE_ARCH_DISPATCH" in persist_block
+assert "source=canonical-failure-fallback" in persist_block
+assert 'canonical_repair_outcome" != "success"' in persist_block
+assert "architecture_force_dispatched=0" in persist_block
+assert "TARGET_PROVIDER:" in workflow
 assert "FIELD_PROVIDER_BRAIN_FORCE_UNVISITED" in persist_block
 assert "auto_resume=false reason=bounded-force-run" in persist_block
 assert '-f mode=force' not in persist_block
