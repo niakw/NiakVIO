@@ -100,6 +100,9 @@ assert "FIELD_REPAIR_CANONICAL_LEDGER_SKIPPED" in persist_block
 assert "FIELD_REPAIR_FRESH_CENSUS_DISPATCH" in persist_block
 assert "FIELD_REPAIR_CONCURRENT_PROVIDER_DRIFT" in persist_block
 assert "FIELD_REPAIR_FRESH_CENSUS_SKIPPED" in persist_block
+assert "persist_provider_repair_attempt_metadata.py" in persist_block
+assert "FIELD_REPAIR_ATTEMPT_METADATA" not in persist_block  # emitted by helper, not hard-coded shell
+assert 'git add PROVIDER_CENSUS_STATUS.md automation/provider-census-status.json' in persist_block
 assert "select_provider_materialization_scope.py" in persist_block
 assert "provider_input_drift=0" in persist_block
 assert "FIELD_REPAIR_CANONICAL_LEDGER_REBASED_NEUTRAL" in persist_block
