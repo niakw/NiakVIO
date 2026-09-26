@@ -34,7 +34,10 @@ def load(path: Path) -> dict[str, Any]:
 
 
 def allowed_patterns(config: dict[str, Any]) -> list[str]:
-    return [str(x) for x in config.get("structuralProposalSurfaces") or [] if str(x)]
+    force = config.get("forceArchitecture") if isinstance(config.get("forceArchitecture"), dict) else {}
+    generated = force.get("generatedEditAllowlist") if isinstance(force.get("generatedEditAllowlist"), list) else []
+    values = generated or config.get("structuralProposalSurfaces") or []
+    return [str(x) for x in values if str(x)]
 
 
 def path_allowed(path: str, patterns: list[str]) -> bool:
