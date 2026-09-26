@@ -1192,6 +1192,7 @@ function runWorker(candidate, fixture) {
     const child = spawn(process.execPath, [
       `--max-old-space-size=${workerMemoryMb}`,
       '--permission',
+      '--allow-net',
       `--allow-fs-read=${path.join(ROOT, 'scripts')}`,
       `--allow-fs-read=${path.join(ROOT, 'node_modules')}`,
       `--allow-fs-read=${path.join(ROOT, 'package.json')}`,
