@@ -5533,3 +5533,9 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Workflow Gate on 9bd5f160 rejected an assertion copied from the orphan fix/force-promote-exhausted-blueprints branch: after filtering a strategy already failed by alpha, the only remaining provider beta had no retained failed-profile memory, so FORCE eligibility correctly remained false.
 - The implementation was kept unchanged. The fixture now asserts the safe behavior: a retained provider without concrete negative-memory proof cannot gain FORCE promotion authority merely because another provider was filtered out.
 - Positive FORCE eligibility remains covered by the main deferred-cohort fixture where every retained provider has concrete failed-profile memory.
+
+### 2026-09-27 — FORCE convergence retry 9 armed
+- Final pre-dispatch code SHA 5c85e3d4 passed Workflow Gate, Verify & Publish and Provider Non-Regression.
+- Current persisted census authority is run 36274532153: 25 FULL OK · 2 PARTIAL OK · 1 CANDIDATE OK · 10 ROUTE PROVEN · 3 CHAIN REACHED · 1 NO PROOF · 4 DISABLED, with harness mismatch=0 and environment blocked=0.
+- Active automated repair queue is 15 providers: 4khdhub, allanime, allwish, anime-ultime, animesalt, animesultra, animevost-fr, animevostfr, flemmix, mallumv, moviebox, moviesmod, vidfast, vostfree, yflix.
+- Autopilot trigger retry 9 is FORCE mode. FORCE Learning dispatch suppresses proposal publication and enables architecture_force.
