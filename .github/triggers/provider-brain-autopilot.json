@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "requestedAt": "2026-09-26T22:00:00+02:00",
-  "reason": "reroute from WAF-refreshed census: all 14 original providers are repair-eligible again; continue cloud-only convergence",
+  "requestedAt": "2026-09-26T22:12:00+02:00",
+  "reason": "FORCE cloud convergence for current provider debt; Learning must materialize architecture repairs instead of proposal-only handoff",
   "sourceCensusRunId": "36267103445-waf-transport",
   "sourceTargetedVerdictRunId": "36267558343",
   "expectedRepairQueue": [
@@ -24,5 +24,6 @@
     "vostfree"
   ],
   "brainLlmSha": "a90f21e2017d9f9c7b15d0a695defd6c207f5136",
-  "retry": 4
+  "retry": 5,
+  "mode": "force"
 }
