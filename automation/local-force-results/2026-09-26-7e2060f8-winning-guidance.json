@@ -1,0 +1,82 @@
+{
+  "schemaVersion": 2,
+  "sourceSha": "7e2060f859d7798a165f040c2ba43df660dda71d",
+  "publicationAuthority": false,
+  "directMutationAuthority": false,
+  "proofAuthority": false,
+  "rawMutationContentRetained": false,
+  "privateContentRetained": false,
+  "providerCount": 2,
+  "rows": [
+    {
+      "providerId": "animevostfr",
+      "failureClass": "candidate-replay-gap",
+      "targetLayer": "provider",
+      "strategy": "same-provider-candidate-program-replay",
+      "profile": "retained_candidate_replay_v1",
+      "confidence": 0.96,
+      "priorOnly": true,
+      "experiment": {
+        "routePolicy": "owned_plus_peer",
+        "recipePolicy": "current_only",
+        "roleOrder": [
+          "api",
+          "source",
+          "detail",
+          "episode",
+          "other",
+          "player"
+        ],
+        "terminalOnly": false,
+        "aliasSearch": true,
+        "responseSalvage": false,
+        "documentRequestMining": false,
+        "sessionBootstrap": false,
+        "maxDepth": 3,
+        "maxPages": 17,
+        "maxEmbeds": 19,
+        "maxRecipePasses": 2
+      },
+      "experimentFingerprint": "f762bcc08b422f89f84c249692982f489c9a8057f5c925db98b425755aea4882",
+      "localExperimentSource": "brain-llm-guidance",
+      "guidanceSourceSha": "998fa355e5cc2769af18b5864246ab184738be63"
+    },
+    {
+      "providerId": "mallumv",
+      "failureClass": "chain-terminal-gap",
+      "targetLayer": "provider",
+      "strategy": "terminal-media-extractor-with-playback-validation",
+      "profile": "chain_terminal_extractor_v1",
+      "confidence": 0.96,
+      "priorOnly": true,
+      "experiment": {
+        "routePolicy": "owned_only",
+        "recipePolicy": "current_plus_provider",
+        "roleOrder": [
+          "episode",
+          "detail",
+          "other",
+          "player",
+          "source",
+          "api"
+        ],
+        "terminalOnly": true,
+        "aliasSearch": true,
+        "responseSalvage": true,
+        "documentRequestMining": false,
+        "sessionBootstrap": false,
+        "maxDepth": 5,
+        "maxPages": 27,
+        "maxEmbeds": 33,
+        "maxRecipePasses": 4
+      },
+      "experimentFingerprint": "ae681e883f0764cc836cda47557f958bf2ce688db4ef03aa4b19fcffcc6cc84b",
+      "localExperimentSource": "brain-llm-guidance",
+      "guidanceSourceSha": "998fa355e5cc2769af18b5864246ab184738be63"
+    }
+  ],
+  "notes": [
+    "Local candidate guidance only. No publication or proof authority.",
+    "Both providers were also Deep-baseline healthy in the local farm; targeted GitHub FORCE must distinguish useful mutation from baseline-health coincidence before persistence."
+  ]
+}
