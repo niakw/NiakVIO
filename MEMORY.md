@@ -5209,3 +5209,13 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Repair persistence now updates only `lastRepairAttempt` and rerenders `PROVIDER_CENSUS_STATUS.md` whenever the tested SHA remains provider-current, even if the provider candidate is fail-closed.
 - Provider status rows, proof authority and candidate bytes remain unchanged unless the canonical/candidate gates succeed.
 - This fixes the dashboard remaining on run `36199786760` while newer bounded FORCE runs have actually executed.
+
+
+## 2026-09-26 Europe/Paris — local FORCE farm search-space defect fixed
+
+- Live local farm telemetry reached at least 127 experiments with 0 Deep winners. This is a strong signal, but the original count overstated true strategy diversity: each provider used one status-selected high-level advisor strategy and varied only experiment knobs.
+- Root cause in `scripts/local/run_force_experiment_farm.py`: `generated_experiments()` fixed `strategy/profile` per provider while varying route/recipe/roles/booleans/budgets. Many fingerprints therefore represented parameter variants inside one repair family, not independent repair approaches.
+- Fixed local farm generation to cover all six executable Brain-LLM advisor strategy/profile families under a bounded budget, with the census-derived strategy first and deterministic round-robin exploration across the remaining families.
+- Negative experiment suppression is now scoped by `profile + experimentFingerprint` instead of fingerprint alone, so the same bounded experiment parameters can still be evaluated under a materially different executable repair profile.
+- Local resumability now keys results by `strategy + profile + experimentFingerprint`; SUMMARY additionally reports Quick accept count, generated-candidate count and strategy counts.
+- Existing local run on SHA `35709f657605859eac86a911eea7be8ca9ee7885` remains valid evidence for the old narrow farm and should not be interrupted solely for this fix. A subsequent pull/rerun on the new SHA is required to exercise the diversified search space.
