@@ -66,7 +66,7 @@ def interest(candidate: dict[str, Any]) -> tuple[int, list[str]]:
 
 
 def configured_upstreams(sources: dict[str, Any]) -> dict[str, dict[str, Any]]:
-    upstreams = configured_upstreams(sources)
+    upstreams = sources.get("upstreams") if isinstance(sources.get("upstreams"), dict) else {}
     if upstreams:
         return upstreams
     registry_path = ROOT / "engine_v2" / "config" / "provider-upstreams.json"
@@ -90,7 +90,7 @@ def configured_upstreams(sources: dict[str, Any]) -> dict[str, dict[str, Any]]:
 
 
 def build_report(stage: dict[str, Any], catalog: dict[str, Any], sources: dict[str, Any]) -> dict[str, Any]:
-    upstreams = sources.get("upstreams") if isinstance(sources.get("upstreams"), dict) else {}
+    upstreams = configured_upstreams(sources)
     allowed_sources = set(upstreams)
     if len(allowed_sources) != 3:
         raise ValueError(f"expected exactly 3 configured upstream repositories, got {len(allowed_sources)}")
