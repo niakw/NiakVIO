@@ -263,6 +263,23 @@ For explicit Force:
 
 An empty Force artifact is not a successful Force repair.
 
+### 6.1 FORCE executes current bytes, not repository migrations
+
+Explicit FORCE is a provider-local current-byte recovery mode. It must **not**
+replay historical repository upgrade/migration scripts before testing a provider.
+
+Those migrations exist to evolve an older checkout toward the current
+architecture. Re-running them inside FORCE is both unnecessary and unsafe: an
+already-current Core/ProviderBase may legitimately no longer contain an old
+anchor, and a global migration failure must never block a provider-local Force
+candidate.
+
+Therefore, in `run_provider_repair_pipeline_v6.py`:
+- `mode=force` skips the historical migration list entirely;
+- current source syntax/contracts are validated directly;
+- provider-local Force candidates are isolated/rematerialized/retested;
+- Core/architecture evolution remains outside Force.
+
 ### 6.1 Multiple advisor hypotheses
 
 A provider may receive up to three distinct sanitized Brain-LLM advisor
