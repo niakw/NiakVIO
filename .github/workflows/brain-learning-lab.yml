@@ -1595,6 +1595,7 @@ jobs:
           NEXT_PHASE: ${{ needs.experiment.outputs.slot_next_phase }}
           TARGET_PROVIDER: ${{ needs.experiment.outputs.target_provider }}
           TARGET_PROVIDERS: ${{ needs.experiment.outputs.target_providers }}
+          ARCHITECTURE_FORCE: ${{ inputs.architecture_force || false }}
         shell: bash
         run: |
           set -euo pipefail
@@ -1604,6 +1605,7 @@ jobs:
             --repo "$GITHUB_REPOSITORY"
             --ref main
             -f publish_proposal=true
+            -f architecture_force="$ARCHITECTURE_FORCE"
             -f slot_remaining_minutes="$NEXT_REMAINING"
             -f slot_phase="$NEXT_PHASE")
           if [ -n "${TARGET_PROVIDERS:-}" ]; then
@@ -1612,7 +1614,7 @@ jobs:
             args+=(-f target_provider="$TARGET_PROVIDER")
           fi
           "${args[@]}"
-          echo "FIELD_BRAIN_LONG_SLOT_DISPATCH next_phase=$NEXT_PHASE remaining_minutes=$NEXT_REMAINING"
+          echo "FIELD_BRAIN_LONG_SLOT_DISPATCH next_phase=$NEXT_PHASE remaining_minutes=$NEXT_REMAINING architecture_force=$ARCHITECTURE_FORCE"
 
   complete-cloud-convergence:
     name: LEARNING - Recompute census after final phase
