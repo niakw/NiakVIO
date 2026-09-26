@@ -29,7 +29,6 @@
       "voiranime",
       "voiranime-homes",
       "voiranime-rip",
-      "vostfree",
       "wookafr"
     ],
     "version": 1
@@ -913,7 +912,7 @@
       ]
     }
   ],
-  "operationalProviderCount": 28,
+  "operationalProviderCount": 27,
   "providerCount": 46,
   "providers": {
     "4khdhub": {
@@ -1064,7 +1063,7 @@
         "/filter?keyword={query}",
         "/watch/{slug}/ep-{episode}"
       ],
-      "status": "NO PROOF",
+      "status": "HARNESS/ENV BLOCKED",
       "strategy": "html_scraper"
     },
     "anikototv": {
@@ -1713,7 +1712,7 @@
         "/episode/[^\\x22]*",
         "/player/index.php?data="
       ],
-      "status": "ROUTE PROVEN",
+      "status": "HARNESS/ENV BLOCKED",
       "strategy": "html_scraper"
     },
     "animesama-co": {
@@ -2209,13 +2208,13 @@
         "/api/animes/search?q=HOTD",
         "/api/animes/search?q=The+House+That+Dragons+Built"
       ],
-      "status": "ROUTE PROVEN",
+      "status": "HARNESS/ENV BLOCKED",
       "strategy": "api_stream_resolver"
     },
     "animevostfr": {
       "domainMemory": true,
       "evidenceDepth": [
-        "anime=none"
+        "anime=lookup_only"
       ],
       "hasApiRecipe": false,
       "hasProviderValuePlan": false,
@@ -3325,7 +3324,7 @@
         "/films/{slug}",
         "/api/v2/themoviedb?id={tmdbId}"
       ],
-      "status": "ROUTE PROVEN",
+      "status": "HARNESS/ENV BLOCKED",
       "strategy": "mixed_embed_resolver"
     },
     "french-manga": {
@@ -4226,7 +4225,7 @@
     "mallumv": {
       "domainMemory": true,
       "evidenceDepth": [
-        "movie=none"
+        "movie=chain_reached"
       ],
       "hasApiRecipe": false,
       "hasProviderValuePlan": false,
@@ -4307,7 +4306,7 @@
         "/confirm/{id}/{fileId}/{slug}.xhtml",
         "/internal/{id}/{fileId}/{slug}.xhtml"
       ],
-      "status": "PROVIDER JS BROKEN",
+      "status": "CHAIN REACHED",
       "strategy": "html_scraper"
     },
     "moviebox": {
@@ -4570,7 +4569,7 @@
         "/download-batman-and-harley-quinn-2017-english-480p-720p-1080p/",
         "/movies/latest-released/"
       ],
-      "status": "ROUTE PROVEN",
+      "status": "HARNESS/ENV BLOCKED",
       "strategy": "html_scraper"
     },
     "mugiwarastream": {
@@ -7344,7 +7343,7 @@
         "anime"
       ],
       "officialHost": "ipv4.vostfree.ws",
-      "operational": true,
+      "operational": false,
       "peerRequestRecipes": [],
       "peerRouteTemplates": [
         "/{query}searches,stoppingearly",
@@ -7402,7 +7401,7 @@
         "/api/v2/themoviedb?id={tmdbId}",
         "/meta/series/tt12343534.json"
       ],
-      "status": "FULL OK",
+      "status": "HARNESS/ENV BLOCKED",
       "strategy": "mixed_embed_resolver"
     },
     "wookafr": {
@@ -8089,8 +8088,8 @@
     "requiresDeepValidation": true
   },
   "schemaVersion": 2,
-  "sourceRunId": "36243145290-post-repair-candidate",
-  "sourceSha": "3c44283604543e8298bf79844e8bfc8d11897f06",
+  "sourceRunId": "36267103445",
+  "sourceSha": "8de86c20646cbc14254e9983d633838a1ef491d1",
   "strategyPatterns": {
     "api_stream_resolver": {
       "commonRequestRecipes": [],
@@ -8108,12 +8107,12 @@
         },
         {
           "providerSupport": 1,
-          "role": "detail",
+          "role": "search",
           "supportRatio": 0.5
         },
         {
           "providerSupport": 1,
-          "role": "search",
+          "role": "detail",
           "supportRatio": 0.5
         },
         {
@@ -8256,7 +8255,7 @@
           "route": "/embed/wa805bkcrb02",
           "semanticType": "anime",
           "streamProof": true,
-          "supportRatio": 0.1429
+          "supportRatio": 0.1538
         },
         {
           "body": {},
@@ -8274,7 +8273,7 @@
           "route": "/embed/ihd7l819etlv",
           "semanticType": "anime",
           "streamProof": true,
-          "supportRatio": 0.1429
+          "supportRatio": 0.1538
         },
         {
           "body": {},
@@ -8293,72 +8292,66 @@
           "route": "/engine/ajax/manga_episodes_api.php?id={id}",
           "semanticType": "anime",
           "streamProof": true,
-          "supportRatio": 0.1429
+          "supportRatio": 0.1538
         }
       ],
       "commonRouteTemplates": [
         {
-          "providerSupport": 9,
+          "providerSupport": 8,
           "role": "api",
           "route": "/api/v2/themoviedb?id={tmdbId}",
-          "supportRatio": 0.6429
+          "supportRatio": 0.6154
         },
         {
           "providerSupport": 6,
           "role": "search",
           "route": "/?s={query}",
-          "supportRatio": 0.4286
+          "supportRatio": 0.4615
         },
         {
           "providerSupport": 3,
           "role": "detail",
           "route": "/anime/{slug}/",
-          "supportRatio": 0.2143
+          "supportRatio": 0.2308
         },
         {
           "providerSupport": 3,
           "role": "episode",
           "route": "/engine/ajax/manga_episodes_api.php?id={id}",
-          "supportRatio": 0.2143
+          "supportRatio": 0.2308
         },
         {
           "providerSupport": 2,
           "role": "player",
           "route": "/watch/{slug}",
-          "supportRatio": 0.1429
+          "supportRatio": 0.1538
         },
         {
           "providerSupport": 2,
           "role": "search",
           "route": "/wp-json/v2/posts?search={query}",
-          "supportRatio": 0.1429
+          "supportRatio": 0.1538
         },
         {
           "providerSupport": 2,
           "role": "search",
           "route": "/wp-json/v2/posts?search={query}&per_page=10",
-          "supportRatio": 0.1429
+          "supportRatio": 0.1538
         },
         {
           "providerSupport": 2,
           "role": "detail",
           "route": "/{slug}",
-          "supportRatio": 0.1429
-        },
-        {
-          "providerSupport": 2,
-          "role": "player",
-          "route": "/embed/",
-          "supportRatio": 0.1429
+          "supportRatio": 0.1538
         },
         {
           "providerSupport": 2,
           "role": "player",
           "route": "/embed",
-          "supportRatio": 0.1429
+          "supportRatio": 0.1538
         }
       ],
-      "greenProviderCount": 14,
+      "greenProviderCount": 13,
       "greenProviders": [
         "anikototv",
         "anime-sama",
@@ -8372,44 +8365,43 @@
         "voiranime",
         "voiranime-homes",
         "voiranime-rip",
-        "vostfree",
         "wookafr"
       ],
       "routeFamilies": [
         {
           "providerSupport": 12,
           "role": "episode",
-          "supportRatio": 0.8571
-        },
-        {
-          "providerSupport": 12,
-          "role": "detail",
-          "supportRatio": 0.8571
+          "supportRatio": 0.9231
         },
         {
           "providerSupport": 11,
-          "role": "search",
-          "supportRatio": 0.7857
+          "role": "detail",
+          "supportRatio": 0.8462
         },
         {
           "providerSupport": 10,
+          "role": "search",
+          "supportRatio": 0.7692
+        },
+        {
+          "providerSupport": 9,
           "role": "api",
-          "supportRatio": 0.7143
+          "supportRatio": 0.6923
         },
         {
           "providerSupport": 7,
           "role": "other",
-          "supportRatio": 0.5
+          "supportRatio": 0.5385
         },
         {
-          "providerSupport": 7,
+          "providerSupport": 6,
           "role": "player",
-          "supportRatio": 0.5
+          "supportRatio": 0.4615
         },
         {
           "providerSupport": 2,
           "role": "source",
-          "supportRatio": 0.1429
+          "supportRatio": 0.1538
         }
       ]
     },
@@ -8423,7 +8415,7 @@
       "routeFamilies": [
         {
           "providerSupport": 1,
-          "role": "episode",
+          "role": "search",
           "supportRatio": 1.0
         },
         {
@@ -8433,7 +8425,7 @@
         },
         {
           "providerSupport": 1,
-          "role": "search",
+          "role": "episode",
           "supportRatio": 1.0
         }
       ]
