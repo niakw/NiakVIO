@@ -1487,7 +1487,23 @@ jobs:
             read -r deferred deferred_csv < <(python - "$tmp/provider-brain-repair-latest.json" <<'PY'
           import json,sys
           data=json.load(open(sys.argv[1],encoding='utf-8'))
-          rows=sorted({str(x or '').strip().lower().replace('_','-') for x in data.get('deferredLearningProviders') or [] if str(x or '').strip()})
+          rows={str(x or '').strip().lower().replace('_','-') for x in data.get('deferredLearningProviders') or [] if str(x or '').strip()}
+          for wave in data.get('waves') or []:
+              if not isinstance(wave,dict):
+                  continue
+              for batch in wave.get('batches') or []:
+                  if not isinstance(batch,dict):
+                      continue
+                  plans=((batch.get('brain') or {}).get('plans') or {})
+                  for plan in plans.values():
+                      if not isinstance(plan,dict):
+                          continue
+                      if str(plan.get('repairType') or '').strip() != 'architecture_gap':
+                          continue
+                      provider=str(plan.get('providerId') or '').strip().lower().replace('_','-')
+                      if provider:
+                          rows.add(provider)
+          rows=sorted(rows)
           print(len(rows), ','.join(rows))
           PY
             )

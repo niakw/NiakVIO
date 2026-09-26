@@ -12,6 +12,7 @@ import json
 import re
 from pathlib import Path
 from typing import Any
+from urllib.error import HTTPError
 from urllib.request import Request, urlopen
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -24,6 +25,9 @@ MAX_EDITS = 3
 MAX_FIND = 600
 MAX_REPLACE = 5000
 MAX_CREATE = 12000
+MAX_SOURCE_SNIPPET = 4200
+MAX_TOTAL_SOURCE_CONTEXT = 10500
+MAX_MODEL_TOKENS = 1200
 
 
 def load(path: Path) -> dict[str, Any]:
@@ -124,10 +128,16 @@ def source_context(blueprint: dict[str, Any], patterns: list[str]) -> dict[str, 
     else:
         candidates.append("scripts/run_brain_learning_sandbox.py")
     out: dict[str, str] = {}
+    remaining = MAX_TOTAL_SOURCE_CONTEXT
     for path in candidates:
+        if remaining <= 0:
+            break
         if path_allowed(path, patterns) and (ROOT / path).is_file():
             text = (ROOT / path).read_text(encoding="utf-8")
-            out[path] = text[:12000]
+            snippet = text[: min(MAX_SOURCE_SNIPPET, remaining)]
+            if snippet:
+                out[path] = snippet
+                remaining -= len(snippet)
     return out
 
 
@@ -143,7 +153,7 @@ def call_model(endpoint: str, model: str, payload: dict[str, Any]) -> dict[str, 
     body = {
         "model": model,
         "temperature": 0,
-        "max_tokens": 1800,
+        "max_tokens": MAX_MODEL_TOKENS,
         "messages": [
             {"role": "system", "content": system},
             {"role": "user", "content": json.dumps(payload, ensure_ascii=True)},
@@ -155,8 +165,18 @@ def call_model(endpoint: str, model: str, payload: dict[str, Any]) -> dict[str, 
         headers={"Content-Type": "application/json"},
         method="POST",
     )
-    with urlopen(req, timeout=120) as response:
-        value = json.loads(response.read().decode("utf-8"))
+    try:
+        with urlopen(req, timeout=120) as response:
+            value = json.loads(response.read().decode("utf-8"))
+    except HTTPError as exc:
+        body = ""
+        try:
+            body = exc.read().decode("utf-8", errors="replace")
+        except Exception:
+            body = ""
+        raise RuntimeError(
+            f"architecture model HTTP {exc.code}: {body[:1200] or exc.reason}"
+        ) from exc
     raw = str(value["choices"][0]["message"]["content"]).strip()
     if raw.startswith("~~~") or raw.startswith(chr(96) * 3):
         raw = "\n".join(raw.splitlines()[1:-1]).strip()

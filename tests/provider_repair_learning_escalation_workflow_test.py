@@ -19,6 +19,9 @@ assert force_dispatch in force_block
 assert "-f architecture_force=true" in force_block
 assert "-f publish_proposal=true" in force_block
 assert '-f target_providers="$deferred_csv"' in force_block
+assert "repairType" in persist_block
+assert "architecture_gap" in persist_block
+assert "providerId" in persist_block
 
 # Explicit FORCE remains provider-local, isolated and current-byte gated.
 for required in (
