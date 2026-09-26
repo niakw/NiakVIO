@@ -25,7 +25,7 @@ assert workflow.startswith('name: LEARN/FORCE - Provider Recognition Repair V6')
 assert workflow.count('scripts/run_provider_repair_pipeline_v6.py --mode "$MODE"') == 1
 for mode in ('learn', 'force', 'repair'):
     assert mode in workflow
-assert 'schedule:' in workflow
+assert 'schedule:' not in workflow
 assert 'allow_upstream_positive_loss' in workflow
 assert 'Verify only census symptoms were network re-probed' in workflow
 assert 'Persist Repair census state' in workflow
