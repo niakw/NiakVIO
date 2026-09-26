@@ -447,8 +447,8 @@ def run_logged(
 
 
 def link_shared_local_tooling(worktree: Path) -> None:
-    """Reuse heavy local caches without copying them into every worktree."""
-    for name in ("node_modules", ".nuvio-client-lab"):
+    """Reuse immutable local tooling without sharing mutable experiment state."""
+    for name in ("node_modules",):
         source = ROOT / name
         target = worktree / name
         if not source.exists() or target.exists() or target.is_symlink():
