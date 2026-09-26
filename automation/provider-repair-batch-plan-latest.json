@@ -2,8 +2,8 @@
   "schemaVersion": 1,
   "sourceRunId": "36270884911",
   "sourceTriggerSha": "92adc1998003d5941640dc8d6d56d26c0bd68f6f",
-  "unresolvedProviderCount": 15,
-  "groupCount": 9,
+  "unresolvedProviderCount": 14,
+  "groupCount": 8,
   "executionModel": {
     "default": "family/signature batch",
     "liveProbeConcurrency": "audit_provider_quick_yield ThreadPool",
@@ -121,31 +121,6 @@
         "animevostfr"
       ],
       "action": "replay/rematerialize retained candidate knowledge against current bytes before new mutation",
-      "executionPolicy": "batch-first",
-      "providerLocalFallback": "only-after-shared-profile-failure"
-    },
-    {
-      "groupId": "harness-compatibility|mixed_embed_resolver|residential-exit-inconclusive",
-      "repairScope": "harness-compatibility",
-      "runtimeFamilies": [
-        "mixed_embed_resolver"
-      ],
-      "capabilityStrategy": "mixed_embed_resolver",
-      "evidenceDepths": [
-        "none"
-      ],
-      "dominantIssues": [
-        "waf_challenge"
-      ],
-      "harnessTransportClasses": [
-        "residential-exit-inconclusive"
-      ],
-      "transportSignature": "residential-exit-inconclusive",
-      "providerCount": 1,
-      "providers": [
-        "vostfree"
-      ],
-      "action": "compare browser/native/residential transport and route client-owned gaps away from provider mutation",
       "executionPolicy": "batch-first",
       "providerLocalFallback": "only-after-shared-profile-failure"
     },

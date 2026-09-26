@@ -1857,32 +1857,32 @@
       },
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 8140,
+      "durationMs": 14769,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
-        "outcome": "browser_timeout",
+        "outcome": "browser_challenge_persisted",
         "attemptCount": 1,
         "clientProfileMatrix": [
           {
             "profile": "github-default-browser",
-            "outcome": "browser_timeout",
+            "outcome": "browser_challenge_persisted",
             "attemptCount": 1
           },
           {
             "profile": "nuvio-tv-ua-browser",
-            "outcome": "browser_timeout",
+            "outcome": "browser_challenge_persisted",
             "attemptCount": 1
           }
         ],
         "directHttpProfile": {
           "profile": "nuvio-tv-direct-http-approx",
-          "outcome": "direct_http_error",
+          "outcome": "direct_http_challenge_persisted",
           "attemptCount": 1
         },
         "okHttpJvmProfile": {
           "profile": "nuvio-tv-okhttp-jvm",
-          "outcome": "okhttp_jvm_timeout",
-          "attemptCount": 0
+          "outcome": "okhttp_jvm_challenge_persisted",
+          "attemptCount": 1
         },
         "contentProfiles": []
       }
@@ -2166,7 +2166,7 @@
     "enabled": true,
     "available": true,
     "profile": "tailscale-residential-exit",
-    "matchedProviderLanes": 9,
+    "matchedProviderLanes": 1,
     "privacy": {
       "exitNodeNamePersisted": false,
       "tailscaleAddressPersisted": false,
@@ -2192,9 +2192,15 @@
       "vostfree",
       "yflix"
     ],
-    "rawProviders": [],
-    "playableProviders": [],
-    "verifiedProviders": [],
+    "rawProviders": [
+      "vostfree"
+    ],
+    "playableProviders": [
+      "vostfree"
+    ],
+    "verifiedProviders": [
+      "vostfree"
+    ],
     "wrongContentProviders": [],
     "rows": [
       {
@@ -2354,11 +2360,11 @@
       {
         "provider": "vostfree",
         "lane": "anime",
-        "status": "no_streams",
-        "debugStage": "gate_runtime_plan_missing",
-        "raw": 0,
-        "playable": 0,
-        "verified": 0,
+        "status": "playable_verified",
+        "debugStage": "provider_returned_streams",
+        "raw": 1,
+        "playable": 1,
+        "verified": 1,
         "contradictions": 0,
         "identitySafe": true
       },
@@ -2425,7 +2431,7 @@
     "enabled": true,
     "available": true,
     "profile": "tailscale-residential-exit",
-    "matchedProviderLanes": 9,
+    "matchedProviderLanes": 1,
     "privacy": {
       "exitNodeNamePersisted": false,
       "tailscaleAddressPersisted": false,
