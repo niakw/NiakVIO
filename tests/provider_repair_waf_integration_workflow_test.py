@@ -86,7 +86,9 @@ assert "FIELD_REPAIR_RESIDENTIAL_PROBE bounded=true" in connect_block
 # activated it; clearing before canonical Repair recreates GitHub-IP WAF blocks.
 assert wf.count("sudo tailscale set --exit-node= || true") == 1
 assert connect < canonical < clear_after
-assert "NIAKVIO_REPAIR_RESIDENTIAL_EXIT_ACTIVE" in wf[canonical:clear_after]
+assert 'echo "NIAKVIO_REPAIR_RESIDENTIAL_EXIT_ACTIVE=1" >> "$GITHUB_ENV"' in wf[connect:canonical]
+assert "env.NIAKVIO_REPAIR_RESIDENTIAL_EXIT_ACTIVE == '1'" in wf[connect:canonical]
+assert "sudo tailscale set --exit-node= || true" in wf[canonical:clear_after+400]
 
 # WAF evidence must be part of the durable Repair evidence commit.
 persist_block=wf[persist:]
