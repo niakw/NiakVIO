@@ -13,18 +13,31 @@ spec.loader.exec_module(mod)
 
 
 def result(*, status="no_streams", playable=0, returned=0, score=0, contradictions=0):
+    verified = playable if contradictions <= 0 else 0
+    tests = []
+    if playable > 0:
+        tests.append({
+            "fixture": {"label": "Synthetic fixture", "tmdbId": "1"},
+            "streams_playable": playable,
+            "identity_verified_streams": verified,
+            "identity_unverified_streams": playable - verified,
+            "identity_contradiction_count": contradictions,
+            "duration_identity_mismatch_count": 0,
+        })
     return {
         "status": status,
         "score": score,
         "evidence": {
             "streams_playable": playable,
             "streams_returned": returned,
+            "identity_verified_streams": verified,
+            "identity_unverified_streams": playable - verified,
             "identity_contradiction_count": contradictions,
             "duration_identity_mismatch_count": 0,
             "required_fixture_categories": [],
             "healthy_fixture_categories": [],
         },
-        "tests": [],
+        "tests": tests,
     }
 
 
