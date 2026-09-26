@@ -5494,3 +5494,8 @@ This ledger is not complete merely because provider yield improves. Final comple
 - The architecture PR job incorrectly propagated the input architecture_force=true into the executable-diff guard and failed even though the materializer explicitly said there was no promotable structural patch.
 - Fixed the workflow to expose force_promotable from the materializer report. Executable-diff path guards and automatic PR merge now run only when force_promotable=true.
 - Explicit FORCE with no promotable blueprint remains proposal-only, emits a durable skip field, keeps provider/publication authority disabled, and allows Learning/census/autopilot convergence to continue.
+
+### 2026-09-26 — Learning workflow YAML indentation regression
+- Merge 7563b08 correctly changed FORCE proposal-only semantics but introduced an invalid workflow YAML block: the inline Python heredoc used to derive force_promotable was not indented inside the run: block.
+- Push run 36271569090 therefore failed before creating any job.
+- Fixed by indenting the heredoc body/delimiter inside the workflow block; FORCE semantics are unchanged.
