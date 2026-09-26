@@ -20,11 +20,17 @@ row = {
 variants = farm.generated_experiments("demo", row, 24)
 assert len(variants) == 24, len(variants)
 fingerprints = [item["experimentFingerprint"] for item in variants]
-assert len(set(fingerprints)) == len(fingerprints)
+keys = [(item["profile"], item["experimentFingerprint"]) for item in variants]
+assert len(set(keys)) == len(keys)
 assert all(len(value) == 64 for value in fingerprints)
 assert all(item["providerId"] == "demo" for item in variants)
-assert all(item["profile"] == "chain_terminal_extractor_v1" for item in variants)
-assert all(item["strategy"] == "terminal-media-extractor-with-playback-validation" for item in variants)
+strategies = {item["strategy"] for item in variants}
+profiles = {item["profile"] for item in variants}
+assert strategies == set(farm.guidance_contract.STRATEGY_TO_PROFILE), strategies
+assert profiles == set(farm.guidance_contract.STRATEGY_TO_PROFILE.values()), profiles
+assert variants[0]["strategy"] == "terminal-media-extractor-with-playback-validation"
+assert variants[0]["profile"] == "chain_terminal_extractor_v1"
+assert len({farm.experiment_state_key(item) for item in variants}) == len(variants)
 
 payload = farm.guidance_payload("a" * 40, variants[0])
 assert payload["sourceSha"] == "a" * 40
