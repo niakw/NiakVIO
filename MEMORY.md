@@ -5139,3 +5139,15 @@ This ledger is not complete merely because provider yield improves. Final comple
 - `tests/stream_sanitizer_v7_monotonic_test.py` now locks V8/V9/V10 owner mapping plus current-repository no-op/idempotence.
 - Previous FORCE retry `159` remains the last run that reached candidate execution: 9 external Brain-LLM mutations were isolated, 0 accepted, malformed candidates were rejected safely; canonical FORCE then failed only because the old V7 migrator did not recognize V10.
 - Next action is a fresh exact-HEAD FORCE retry over the same 14-provider census queue. Do not launch Learning and do not make further commits after the trigger until the exact-HEAD guard has passed.
+
+
+## 2026-09-26 Europe/Paris — FORCE retry 162 reached canonical provider recovery; V34 historical V8 pin was the next blocker
+
+- FORCE retry `162` / run `36204620468` passed exact-HEAD, complete preflight, GitHub WAF qualification, Tailscale residential exit, residential replay, transport merge and isolated Brain-LLM Force evaluation.
+- External Brain-LLM Force cohort: 9 concrete candidates evaluated, **0 accepted**. Invalid candidates remained sandboxed. Observed rejection classes included placeholder/synthetic content and materialized-JS syntax failures for Allwish, Anime-Ultime, Flemmix, MalluMV, MovieBox and MoviesMod. No malformed candidate was published.
+- Canonical FORCE then ran the full 14-provider unresolved cohort. Route recovery completed with 14 upstream providers, 8 providers with proven routes and 47 targeted routes before the next infrastructure failure.
+- The canonical failure was not provider-specific: `materialize_provider_base_v3_store.py` replays historical migration `upgrade_manual_tv_live_regressions_v34.py`, whose validation still demanded exact `NUVIO_STREAM_SANITIZER_V8_SELECTION`. Current Core owns sanitizer V10, which composes the V8 strict-probe contract.
+- `upgrade_manual_tv_live_regressions_v34.py` now treats V8 as a minimum/floor: V7 upgrades to V8, while V9/V10+ are accepted and never downgraded. Validation requires the current sanitizer selection marker/path plus retained `NUVIO_STREAM_OUTPUT_STRICT_PROBE_V8`.
+- `tests/manual_tv_live_regressions_v34_test.py` now asserts sanitizer >= V8 instead of exact V8.
+- `materialize_provider_base_v3_store.py` no longer persists stale `stream_sanitizer=v8` metadata; it derives the current Core sanitizer selection and records the actual version (currently V10), failing closed below the V8 floor.
+- Learning remains disabled from Repair/Fast/Autopilot. Next action: exact-HEAD FORCE retry over the same 14; no Learning dispatch and no unrelated commit after trigger until exact-head/preflight passes.
