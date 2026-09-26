@@ -2,11 +2,15 @@
 from __future__ import annotations
 
 import json
+import sys
 from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 
 from scripts.badge_versioning import latest_catalog, latest_mapping
 
-ROOT = Path(__file__).resolve().parents[1]
 CATALOG_VERSION, CATALOG = latest_catalog(ROOT)
 MAPPING_VERSION, MAPPING = latest_mapping(ROOT)
 assert MAPPING_VERSION == CATALOG_VERSION
