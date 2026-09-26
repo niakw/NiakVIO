@@ -6,6 +6,8 @@ health = (ROOT / "scripts" / "health_check.mjs").read_text(encoding="utf-8")
 worker = (ROOT / "scripts" / "provider_worker.cjs").read_text(encoding="utf-8")
 invocation = (ROOT / "tests" / "provider_worker_invocation.test.cjs").read_text(encoding="utf-8")
 
+assert "'--allow-net'" in health or '"--allow-net"' in health, "provider worker must retain network permission under Node --permission"
+
 for token in (
     "NIAKVIO_TMDB_BOOTSTRAP_KEY: process.env.TMDB_API_KEY || ''",
     "NIAKVIO_TMDB_BOOTSTRAP_TOKEN: process.env.TMDB_ACCESS_TOKEN || ''",
