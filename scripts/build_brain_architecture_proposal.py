@@ -226,9 +226,27 @@ def build_strategy_blueprints(
                     "requiredEvidence": ["browser success", "native/direct failure", "minimal session/JavaScript requirement"],
                     "acceptanceProof": ["same provider route succeeds through the bounded bridge", "cookies/session remain provider-scoped", "no provider-code mutation", "playback proof required before status promotion"],
                 })
+        force_target_layer = {
+            "route-to-terminal": "core",
+            "terminal-extraction": "core",
+            "candidate-replay": "core",
+            "transport": "network",
+        }.get(scope, "harness" if scope == "harness-compatibility" else "core")
+        force_promotable = (
+            scope != "harness-compatibility"
+            and bool(providers)
+            and all(bool(failed_profiles_by_provider.get(provider)) for provider in providers)
+        )
         row.update({
             "groupId": str(group.get("groupId") or ""),
             "repairScope": scope,
+            "targetLayer": force_target_layer,
+            "forcePromotionEligible": force_promotable,
+            "forcePromotionReason": (
+                "deferred-known-family-exhaustion"
+                if force_promotable
+                else "diagnostic-only-or-no-exhaustion-proof"
+            ),
             "transportSignature": transport_signature or "not-applicable",
             "capabilityStrategy": str(group.get("capabilityStrategy") or "unknown"),
             "providers": providers,
