@@ -5482,3 +5482,9 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Any BRAIN_LEARNING cohort dispatched while FORCE is active receives architecture_force=true in addition to publish_proposal=true and the exact provider cohort.
 - This prevents a FORCE repair cycle from stopping at a review-only architecture proposal: exhausted/gap cases must materialize an executable structural repair, run its tests, and continue to recensus under the existing validation gates.
 - Non-FORCE Autopilot runs keep proposal-only behavior unless explicitly switched to force.
+
+### 2026-09-26 — FORCE mode is mandatory for current cloud convergence
+- Root cause confirmed: provider-brain-autopilot trigger lacked mode=force, so Autopilot computed FORCE_MODE=false even though the repair campaign was intended to force executable repairs.
+- Trigger now explicitly carries mode=force.
+- Fast Repair reads the same trigger and propagates architecture_force=true to Learning debt when FORCE is active.
+- Chained Learning phases propagate architecture_force so a FORCE run cannot degrade into proposal-only mode after phase 1.
