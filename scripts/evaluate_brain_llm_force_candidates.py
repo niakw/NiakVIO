@@ -217,8 +217,10 @@ def main() -> int:
     report_rows: list[dict[str, Any]] = []
     accepted_rows: list[dict[str, Any]] = []
 
-    parent = args.work_root.resolve() if args.work_root else Path(
-        tempfile.mkdtemp(prefix="niakvio-force-candidates-")
+    parent = (
+        args.work_root.resolve()
+        if args.work_root
+        else Path(tempfile.mkdtemp(prefix="force-candidates-", dir=ROOT / "local-output"))
     )
     owned_parent = args.work_root is None
     parent.mkdir(parents=True, exist_ok=True)
