@@ -5151,3 +5151,19 @@ This ledger is not complete merely because provider yield improves. Final comple
 - `tests/manual_tv_live_regressions_v34_test.py` now asserts sanitizer >= V8 instead of exact V8.
 - `materialize_provider_base_v3_store.py` no longer persists stale `stream_sanitizer=v8` metadata; it derives the current Core sanitizer selection and records the actual version (currently V10), failing closed below the V8 floor.
 - Learning remains disabled from Repair/Fast/Autopilot. Next action: exact-HEAD FORCE retry over the same 14; no Learning dispatch and no unrelated commit after trigger until exact-head/preflight passes.
+
+
+## 2026-09-26 Europe/Paris — FORCE loop bounded: current bytes only, no historical migrations
+
+- Run `36203749623` proved two independent blockers, not provider progress:
+  1. external Brain-LLM Force candidates: 9 evaluated, 0 accepted; malformed/syntax-invalid candidates are isolated per provider and cannot publish;
+  2. canonical FORCE then failed before provider repair because `upgrade_stream_sanitizer_v7_selection.py` replayed a historical migration against already-current source and hit a missing anchor.
+- This exposed the real loop source behind retries 161-163: FORCE was replaying repository migrations and then repairing those migration anchors one revision at a time.
+- Architectural decision: explicit `mode=force` is now **current-bytes-only**. `scripts/run_provider_repair_pipeline_v6.py` skips the complete historical migration list in FORCE and validates the current revision directly.
+- The migration list is retained for non-Force reconstruction/upgrade paths; it is no longer an execution dependency for provider-local Force.
+- CI contract now requires `FIELD_FORCE_HISTORICAL_MIGRATIONS skipped=true ... reason=current-bytes-only`.
+- Finite Force decision tree:
+  - external mutation candidate -> accepted or stable reject reason;
+  - unresolved provider -> canonical current-byte Force;
+  - accepted candidate -> targeted Retest + identity/playback/non-regression;
+  - unresolved after the bounded Force run -> persist exact final cause, no automatic identical rerun, no Learning dispatch outside the dedicated Learning slot.
