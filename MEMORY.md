@@ -5499,3 +5499,9 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Merge 7563b08 correctly changed FORCE proposal-only semantics but introduced an invalid workflow YAML block: the inline Python heredoc used to derive force_promotable was not indented inside the run: block.
 - Push run 36271569090 therefore failed before creating any job.
 - Fixed by indenting the heredoc body/delimiter inside the workflow block; FORCE semantics are unchanged.
+
+### 2026-09-26 — Architecture FORCE output parser resilience
+- Learning run 36272561268 reached the architecture materializer but failed because Qwen returned a structurally bounded object with minor JSON syntax defects (JSONDecodeError).
+- The materializer now extracts the first balanced object, retries after removing trailing commas, then falls back to ast.literal_eval for literal-only Python-style dictionaries.
+- No generated code is executed by this parser. Existing path/edit allowlists and executable-diff validation remain authoritative.
+- Tests cover prose-prefixed JSON, trailing commas, single-quoted literal dictionaries and invalid non-object output.
