@@ -5441,3 +5441,8 @@ This ledger is not complete merely because provider yield improves. Final comple
 - The sharded census now has a dedicated push trigger (.github/triggers/provider-census-sharded.json), so current authority can be recomputed and persisted on demand without touching provider/runtime code.
 - Intended closed loop: current census -> Autopilot causal plan -> Remat/Fast Repair -> targeted Learning debt -> sharded current-byte census -> updated canonical status -> next Autopilot plan.
 - Learning remains globally serialized; provider publication still requires current-byte validation and the existing proposal/CI gates.
+
+### 2026-09-26 — Explicit census trigger must bypass small-fleet optimization
+- Cloud convergence trigger on main 3eabc4f3 proved the dedicated sharded census path was still skipped because prepare treated every push with <=120 providers as non-census work.
+- Fixed prepare so a commit touching .github/triggers/provider-census-sharded.json forces should_run=true regardless of fleet size.
+- This keeps the small-fleet optimization for ordinary pushes while allowing an explicit current-authority census after Repair/Learning.
