@@ -1063,7 +1063,7 @@
         "/filter?keyword={query}",
         "/watch/{slug}/ep-{episode}"
       ],
-      "status": "NO PROOF",
+      "status": "HARNESS/ENV BLOCKED",
       "strategy": "html_scraper"
     },
     "anikototv": {
@@ -1712,7 +1712,7 @@
         "/episode/[^\\x22]*",
         "/player/index.php?data="
       ],
-      "status": "ROUTE PROVEN",
+      "status": "HARNESS/ENV BLOCKED",
       "strategy": "html_scraper"
     },
     "animesama-co": {
@@ -2208,7 +2208,7 @@
         "/api/animes/search?q=HOTD",
         "/api/animes/search?q=The+House+That+Dragons+Built"
       ],
-      "status": "ROUTE PROVEN",
+      "status": "HARNESS/ENV BLOCKED",
       "strategy": "api_stream_resolver"
     },
     "animevostfr": {
@@ -3324,7 +3324,7 @@
         "/films/{slug}",
         "/api/v2/themoviedb?id={tmdbId}"
       ],
-      "status": "ROUTE PROVEN",
+      "status": "HARNESS/ENV BLOCKED",
       "strategy": "mixed_embed_resolver"
     },
     "french-manga": {
@@ -4569,7 +4569,7 @@
         "/download-batman-and-harley-quinn-2017-english-480p-720p-1080p/",
         "/movies/latest-released/"
       ],
-      "status": "ROUTE PROVEN",
+      "status": "HARNESS/ENV BLOCKED",
       "strategy": "html_scraper"
     },
     "mugiwarastream": {
@@ -8088,8 +8088,8 @@
     "requiresDeepValidation": true
   },
   "schemaVersion": 2,
-  "sourceRunId": "36267103445",
-  "sourceSha": "8de86c20646cbc14254e9983d633838a1ef491d1",
+  "sourceRunId": "36268473764",
+  "sourceSha": "6c89184b256c34ada3a003535e6c3dcd107c4398",
   "strategyPatterns": {
     "api_stream_resolver": {
       "commonRequestRecipes": [],
@@ -8107,12 +8107,12 @@
         },
         {
           "providerSupport": 1,
-          "role": "detail",
+          "role": "search",
           "supportRatio": 0.5
         },
         {
           "providerSupport": 1,
-          "role": "search",
+          "role": "detail",
           "supportRatio": 0.5
         },
         {
@@ -8162,12 +8162,12 @@
         },
         {
           "providerSupport": 1,
-          "role": "other",
+          "role": "player",
           "supportRatio": 0.25
         },
         {
           "providerSupport": 1,
-          "role": "player",
+          "role": "other",
           "supportRatio": 0.25
         }
       ]
@@ -8420,12 +8420,12 @@
         },
         {
           "providerSupport": 1,
-          "role": "search",
+          "role": "api",
           "supportRatio": 1.0
         },
         {
           "providerSupport": 1,
-          "role": "api",
+          "role": "search",
           "supportRatio": 1.0
         }
       ]
