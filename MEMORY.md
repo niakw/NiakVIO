@@ -5518,3 +5518,8 @@ This ledger is not complete merely because provider yield improves. Final comple
 - FORCE parser resilience is on main at 0e1a9cd9 after the prior Qwen quasi-JSON failure in run 36272561268; Verify & Publish, Non-Regression and Workflow Gate are green on that SHA.
 - Known-family exhausted blueprints now emit explicit FORCE eligibility and target layers only when each retained provider has concrete failed-profile negative memory. Harness-only blueprints remain non-promotable.
 - Brain branch maintenance now deletes the stale architecture proposal ref plus every current fix/* repair branch once no open PR protects it. brain-learning/proposals remains the isolated sanitized learning-memory ref.
+
+### 2026-09-27 — Fast Repair test bootstrap regression
+- Autopilot Fast Repair run 36275126901 failed before repair execution while running provider_census_waf_proof_monotonicity_test.py.
+- Root cause was test-only import bootstrap: update_provider_census_proof_history.py was loaded via importlib from repository root without scripts/ on sys.path, so its rotating_corpus import failed.
+- The contract test now adds the repository scripts directory to sys.path before loading renderer/history modules. No provider or census classification behavior is changed by this correction.
