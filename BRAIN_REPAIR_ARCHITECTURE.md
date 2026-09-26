@@ -312,6 +312,25 @@ advances through its own A/B/C sequence inside the same bounded portfolio run,
 while validated reusable strategies may transfer across compatible provider
 families in later waves.
 
+## 6.2 Residential transport belongs to execution, not only diagnosis
+
+When the integrated Repair WAF lane successfully activates a Tailscale residential
+exit, that routing remains active through the **canonical provider FORCE/Repair
+execution**. Qualifying a provider through the residential exit and then clearing
+the exit before the real provider requests is a split-brain transport bug: WAF
+evidence says the residential path is available while Deep Repair actually runs
+from the GitHub-hosted address.
+
+Required order:
+
+~~~text
+connect Tailscale -> select residential exit -> WAF/replay qualification
+-> merge transport evidence -> canonical FORCE/Repair
+-> clear residential exit -> final census merge
+~~~
+
+Cleanup is fail-safe (`always()`), but it must occur after canonical execution.
+
 ## 7. Learning is slot-owned
 
 Learning is **not** a fallback child workflow of Repair, FORCE or Autopilot.
