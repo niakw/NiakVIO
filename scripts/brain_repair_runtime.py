@@ -628,7 +628,9 @@ def planner_llm_guidance() -> list[dict[str, Any]]:
                 guidance_kind="external-brain-llm",
             ))
 
-    if str(os.environ.get("NUVIO_BRAIN_PLANNER_MODE") or "").strip().casefold() == "learning":
+    planner_mode = str(os.environ.get("NUVIO_BRAIN_PLANNER_MODE") or "").strip().casefold()
+    exploration_chain = str(os.environ.get("NUVIO_BRAIN_EXPLORATION_CHAIN") or "").strip() == "1"
+    if planner_mode == "learning":
         value = _latest_local_force_winning_guidance()
         if value:
             out.extend(_validated_guidance_rows(
@@ -639,6 +641,7 @@ def planner_llm_guidance() -> list[dict[str, Any]]:
                 local_force_ambiguous=True,
                 confidence_cap=0.84,
             ))
+    if planner_mode == "learning" or exploration_chain:
         out.extend(synthesize_meta_gap_rows(current_sha=current_sha, max_rows=64))
 
     deduped: list[dict[str, Any]] = []
