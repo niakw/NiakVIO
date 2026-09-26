@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "sourceRunId": "36156497756",
-  "sourceTriggerSha": "c6f157a28bc98457acba6a5eaf7d26a1854f57c5",
+  "sourceRunId": "36243145290-post-repair-candidate",
+  "sourceTriggerSha": "3c44283604543e8298bf79844e8bfc8d11897f06",
   "unresolvedProviderCount": 14,
   "groupCount": 8,
   "executionModel": {
@@ -75,28 +75,30 @@
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
     {
-      "groupId": "terminal-extraction|html_scraper",
-      "repairScope": "terminal-extraction",
+      "groupId": "learning|html_scraper",
+      "repairScope": "learning",
       "runtimeFamilies": [
-        "api_stream_resolver",
-        "mallumv-catalogue-confirm-internal-v1"
+        "mallumv-catalogue-confirm-internal-v1",
+        "mixed_embed_resolver"
       ],
       "capabilityStrategy": "html_scraper",
       "evidenceDepths": [
-        "chain"
+        "none"
       ],
       "dominantIssues": [
-        "network_http_error",
-        "network_zero_result"
+        "provider_zero_before_provider_network",
+        "waf_challenge"
       ],
-      "harnessTransportClasses": [],
+      "harnessTransportClasses": [
+        "github-all-transports-challenged"
+      ],
       "transportSignature": "not-applicable",
       "providerCount": 2,
       "providers": [
-        "mallumv",
-        "moviebox"
+        "allwish",
+        "mallumv"
       ],
-      "action": "apply/test shared terminal-player extraction profile to the whole capability family",
+      "action": "queue by signature for Brain learning; provider-local repair only after shared profiles fail",
       "executionPolicy": "batch-first",
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
@@ -108,10 +110,10 @@
       ],
       "capabilityStrategy": "mixed_embed_resolver",
       "evidenceDepths": [
-        "lookup"
+        "none"
       ],
       "dominantIssues": [
-        "network_zero_result"
+        "provider_zero_before_provider_network"
       ],
       "harnessTransportClasses": [],
       "transportSignature": "not-applicable",
@@ -120,31 +122,6 @@
         "animevostfr"
       ],
       "action": "replay/rematerialize retained candidate knowledge against current bytes before new mutation",
-      "executionPolicy": "batch-first",
-      "providerLocalFallback": "only-after-shared-profile-failure"
-    },
-    {
-      "groupId": "learning|html_scraper",
-      "repairScope": "learning",
-      "runtimeFamilies": [
-        "mixed_embed_resolver"
-      ],
-      "capabilityStrategy": "html_scraper",
-      "evidenceDepths": [
-        "none"
-      ],
-      "dominantIssues": [
-        "waf_challenge"
-      ],
-      "harnessTransportClasses": [
-        "github-all-transports-challenged"
-      ],
-      "transportSignature": "not-applicable",
-      "providerCount": 1,
-      "providers": [
-        "allwish"
-      ],
-      "action": "residential full-provider replay disproved transport ownership; learn a provider-side request/route strategy before mutation",
       "executionPolicy": "batch-first",
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
@@ -214,6 +191,29 @@
       "providerCount": 1,
       "providers": [
         "allanime"
+      ],
+      "action": "apply/test shared terminal-player extraction profile to the whole capability family",
+      "executionPolicy": "batch-first",
+      "providerLocalFallback": "only-after-shared-profile-failure"
+    },
+    {
+      "groupId": "terminal-extraction|html_scraper",
+      "repairScope": "terminal-extraction",
+      "runtimeFamilies": [
+        "api_stream_resolver"
+      ],
+      "capabilityStrategy": "html_scraper",
+      "evidenceDepths": [
+        "chain"
+      ],
+      "dominantIssues": [
+        "network_http_error"
+      ],
+      "harnessTransportClasses": [],
+      "transportSignature": "not-applicable",
+      "providerCount": 1,
+      "providers": [
+        "moviebox"
       ],
       "action": "apply/test shared terminal-player extraction profile to the whole capability family",
       "executionPolicy": "batch-first",

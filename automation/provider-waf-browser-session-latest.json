@@ -5,7 +5,7 @@
   "browserExecutable": "google-chrome",
   "targetCount": 16,
   "providerFilter": [],
-  "attemptsPerTarget": 1,
+  "attemptsPerTarget": 2,
   "clientProfileMatrixEnabled": true,
   "clientProfiles": [
     {
@@ -56,8 +56,8 @@
     "exact failed provider GET replay is transport differential evidence only; it cannot grant playback proof"
   ],
   "counts": {
-    "browser_challenge_persisted": 8,
-    "browser_content_reached": 8
+    "browser_challenge_persisted": 7,
+    "browser_content_reached": 9
   },
   "rows": [
     {
@@ -1887,52 +1887,67 @@
     {
       "provider": "vostfree",
       "lane": "anime",
-      "publicUrl": "https://ipv4.vostfree.ws/",
+      "publicUrl": "https://ipv4.vostfree.ws/niakviosearches,stoppingearly",
       "host": "ipv4.vostfree.ws",
-      "path": "/",
+      "path": "/niakviosearches,stoppingearly",
       "method": "GET",
-      "fetchStatus": 403,
-      "challenge": "cloudflare",
-      "seedKind": null,
-      "seedRoute": null,
-      "outcome": "browser_challenge_persisted",
-      "attemptCount": 1,
+      "fetchStatus": 0,
+      "challenge": "metadata-search-seed",
+      "seedKind": "metadata-search",
+      "seedRoute": "/{query}searches,stoppingearly",
+      "outcome": "browser_content_reached",
+      "attemptCount": 2,
       "attempts": [
         {
           "attempt": 1,
           "outcome": "browser_challenge_persisted",
           "exitCode": 0
+        },
+        {
+          "attempt": 2,
+          "outcome": "browser_challenge_persisted",
+          "exitCode": 0
         }
       ],
-      "ordinarySessionReused": false,
+      "ordinarySessionReused": true,
       "clientProfileMatrix": [
         {
           "profile": "github-default-browser",
           "userAgent": null,
           "outcome": "browser_challenge_persisted",
-          "attemptCount": 1,
+          "attemptCount": 2,
           "attempts": [
             {
               "attempt": 1,
               "outcome": "browser_challenge_persisted",
               "exitCode": 0
+            },
+            {
+              "attempt": 2,
+              "outcome": "browser_challenge_persisted",
+              "exitCode": 0
             }
           ],
-          "ordinarySessionReused": false
+          "ordinarySessionReused": true
         },
         {
           "profile": "nuvio-tv-ua-browser",
           "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-          "outcome": "browser_challenge_persisted",
-          "attemptCount": 1,
+          "outcome": "browser_content_reached",
+          "attemptCount": 2,
           "attempts": [
             {
               "attempt": 1,
               "outcome": "browser_challenge_persisted",
               "exitCode": 0
+            },
+            {
+              "attempt": 2,
+              "outcome": "browser_content_reached",
+              "exitCode": 0
             }
           ],
-          "ordinarySessionReused": false
+          "ordinarySessionReused": true
         }
       ],
       "directHttpProfile": {
@@ -1946,16 +1961,22 @@
           "httpStack": "libcurl-not-OkHttp"
         },
         "outcome": "direct_http_challenge_persisted",
-        "attemptCount": 1,
+        "attemptCount": 2,
         "attempts": [
           {
             "attempt": 1,
             "outcome": "direct_http_challenge_persisted",
             "status": 403,
             "exitCode": 0
+          },
+          {
+            "attempt": 2,
+            "outcome": "direct_http_challenge_persisted",
+            "status": 403,
+            "exitCode": 0
           }
         ],
-        "ordinarySessionReused": false
+        "ordinarySessionReused": true
       },
       "okHttpJvmProfile": {
         "profile": "nuvio-tv-okhttp-jvm",
@@ -1969,19 +1990,26 @@
           "tlsRuntime": "GitHub JVM, not Android Conscrypt/device TLS"
         },
         "outcome": "okhttp_jvm_challenge_persisted",
-        "attemptCount": 1,
+        "attemptCount": 2,
         "attempts": [
           {
             "attempt": 1,
             "outcome": "okhttp_jvm_challenge_persisted",
-            "status": 200
+            "status": 404
+          },
+          {
+            "attempt": 2,
+            "outcome": "okhttp_jvm_challenge_persisted",
+            "status": 404
           }
         ],
         "exitCode": 0
       },
-      "contentProfiles": [],
+      "contentProfiles": [
+        "nuvio-tv-ua-browser"
+      ],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 7053,
+      "durationMs": 17503,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_challenge_persisted",
@@ -2521,9 +2549,29 @@
       "residentialPublicIpPersisted": false,
       "responseBodiesPersisted": false,
       "cookiesPersisted": false
+    },
+    "lastAttempt": {
+      "available": false,
+      "providerCount": 0,
+      "refreshedProviders": [
+        "vostfree"
+      ]
     }
   },
   "lastRefreshProviderFilter": [
-    "animesultra"
-  ]
+    "vostfree"
+  ],
+  "residentialExitNodeLastAttempt": {
+    "enabled": true,
+    "available": true,
+    "profile": "tailscale-residential-exit",
+    "matchedProviderLanes": 1,
+    "privacy": {
+      "exitNodeNamePersisted": false,
+      "tailscaleAddressPersisted": false,
+      "residentialPublicIpPersisted": false,
+      "responseBodiesPersisted": false,
+      "cookiesPersisted": false
+    }
+  }
 }
