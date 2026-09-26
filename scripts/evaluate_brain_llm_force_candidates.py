@@ -155,6 +155,14 @@ def health_provider(stage: Path, output: Path) -> dict[str, Any]:
     )
 
 
+def candidate_execution_error(exc: BaseException) -> str:
+    if isinstance(exc, subprocess.CalledProcessError):
+        command = exc.cmd if isinstance(exc.cmd, (list, tuple)) else [exc.cmd]
+        executable = Path(str(command[1] if len(command) > 1 else command[0])).name
+        return f"command_failed:{executable}:rc={exc.returncode}"
+    return f"{type(exc).__name__}:{str(exc)[:500]}"
+
+
 def single_row_payload(payload: dict[str, Any], row: dict[str, Any]) -> dict[str, Any]:
     result = {
         key: copy.deepcopy(value)
@@ -256,51 +264,67 @@ def main() -> int:
                     "--report",
                     str(apply_report),
                 ]
-                run(*apply_args, cwd=worktree)
-                applied = load(apply_report)
-                if int(applied.get("appliedProviderCount") or 0) != 1:
+                try:
+                    run(*apply_args, cwd=worktree)
+                    applied = load(apply_report)
+                    if int(applied.get("appliedProviderCount") or 0) != 1:
+                        report_rows.append(
+                            {
+                                "provider": provider,
+                                "mutationFingerprint": fingerprint,
+                                "mutationContextFingerprint": str(row.get("mutationContextFingerprint") or "").strip().casefold(),
+                                "accepted": False,
+                                "reason": "force_candidate_not_applied",
+                                "baseline": result_summary(baseline),
+                                "application": applied,
+                            }
+                        )
+                        continue
+
+                    run(
+                        sys.executable,
+                        "scripts/materialize_provider_v3_one.py",
+                        provider,
+                        "--preserve-structured-data",
+                        cwd=worktree,
+                    )
+                    stage_provider(worktree, provider, candidate_stage, targets)
+                    candidate_health = health_provider(candidate_stage, candidate_out)
+                    candidate = provider_result(candidate_health, provider)
+                    accepted, reason = evaluate_pair(baseline, candidate)
+
+                    result = {
+                        "provider": provider,
+                        "mutationFingerprint": fingerprint,
+                        "mutationContextFingerprint": str(row.get("mutationContextFingerprint") or "").strip().casefold(),
+                        "accepted": bool(accepted),
+                        "reason": reason,
+                        "baseline": result_summary(baseline),
+                        "candidate": result_summary(candidate),
+                        "application": {
+                            "changedFiles": applied.get("changedFiles") or [],
+                            "sourceBrainLlmSha": applied.get("sourceBrainLlmSha"),
+                            "sourceNiakvioSha": applied.get("sourceNiakvioSha"),
+                        },
+                    }
+                    report_rows.append(result)
+                    if accepted:
+                        accepted_rows.append(copy.deepcopy(row))
+                except (subprocess.SubprocessError, ValueError, OSError) as exc:
+                    # One malformed/stale Force hypothesis must never cancel
+                    # the other provider sandboxes or suppress canonical FORCE.
                     report_rows.append(
                         {
                             "provider": provider,
                             "mutationFingerprint": fingerprint,
                             "mutationContextFingerprint": str(row.get("mutationContextFingerprint") or "").strip().casefold(),
                             "accepted": False,
-                            "reason": "force_candidate_not_applied",
+                            "reason": "force_candidate_execution_error",
                             "baseline": result_summary(baseline),
-                            "application": applied,
+                            "error": candidate_execution_error(exc),
                         }
                     )
                     continue
-
-                run(
-                    sys.executable,
-                    "scripts/materialize_provider_v3_one.py",
-                    provider,
-                    "--preserve-structured-data",
-                    cwd=worktree,
-                )
-                stage_provider(worktree, provider, candidate_stage, targets)
-                candidate_health = health_provider(candidate_stage, candidate_out)
-                candidate = provider_result(candidate_health, provider)
-                accepted, reason = evaluate_pair(baseline, candidate)
-
-                result = {
-                    "provider": provider,
-                    "mutationFingerprint": fingerprint,
-                    "mutationContextFingerprint": str(row.get("mutationContextFingerprint") or "").strip().casefold(),
-                    "accepted": bool(accepted),
-                    "reason": reason,
-                    "baseline": result_summary(baseline),
-                    "candidate": result_summary(candidate),
-                    "application": {
-                        "changedFiles": applied.get("changedFiles") or [],
-                        "sourceBrainLlmSha": applied.get("sourceBrainLlmSha"),
-                        "sourceNiakvioSha": applied.get("sourceNiakvioSha"),
-                    },
-                }
-                report_rows.append(result)
-                if accepted:
-                    accepted_rows.append(copy.deepcopy(row))
             finally:
                 subprocess.run(
                     ["git", "worktree", "remove", "--force", str(worktree)],
