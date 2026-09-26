@@ -29,6 +29,11 @@ on:
         required: false
         default: false
         type: boolean
+      promote_local_force_candidates:
+        description: Revalidate persisted local FORCE candidate guidance on current provider bytes; no proof/publication authority
+        required: false
+        default: false
+        type: boolean
   push:
     branches:
       - workbench/route-recognition-v6
@@ -105,6 +110,7 @@ jobs:
             scripts/sanitize_brain_learning_memory.py \
             scripts/brain_llm_experiment.py \
             scripts/import_external_brain_llm_guidance.py \
+            scripts/promote_local_force_guidance.py \
             scripts/apply_brain_llm_force_mutations.py \
             scripts/build_brain_repair_experience.py \
             scripts/classify_provider_authority.py \
@@ -139,6 +145,7 @@ jobs:
           python tests/brain_causal_intelligence_contract_test.py
           python tests/brain_llm_guidance_contract_test.py
           python tests/brain_local_force_learning_prior_test.py
+          python tests/brain_local_force_promotion_bridge_test.py
           python tests/brain_llm_advisor_execution_test.py
           python tests/brain_llm_experiment_runtime_test.py
           python tests/provider_repair_transport_overlay_persistence_test.py
@@ -655,6 +662,61 @@ jobs:
               echo "FIELD_CANONICAL_REPAIR_LLM_GUIDANCE imported=false reason=no-persistent-llm-guidance"
             fi
           fi
+
+      - name: Promote persisted local FORCE candidates for current-byte revalidation
+        shell: bash
+        env:
+          DISPATCH_MODE: ${{ inputs.mode || '' }}
+          TARGET_PROVIDER: ${{ inputs.target_provider || '' }}
+          PROMOTE_LOCAL_FORCE: ${{ inputs.promote_local_force_candidates || 'false' }}
+        run: |
+          set -euo pipefail
+          promote="${PROMOTE_LOCAL_FORCE:-false}"
+          mode="${DISPATCH_MODE:-force}"
+          providers=()
+          if [ "${{ github.event_name }}" = "push" ]; then
+            mapfile -t _promotion_state < <(python - <<'PY'
+          import json
+          from pathlib import Path
+          data=json.loads(Path(".github/triggers/provider-recognition-repair-v6.json").read_text(encoding="utf-8"))
+          print("true" if data.get("promoteLocalForceCandidates") is True else "false")
+          print(str(data.get("mode") or "force").strip().casefold())
+          for raw in data.get("targetProviders") or []:
+              provider=str(raw or "").strip().casefold().replace("_","-")
+              if provider: print(provider)
+          PY
+            )
+            promote="${_promotion_state[0]:-false}"
+            mode="${_promotion_state[1]:-force}"
+            if [ "${#_promotion_state[@]}" -gt 2 ]; then
+              providers=("${_promotion_state[@]:2}")
+            fi
+          elif [ -n "${TARGET_PROVIDER:-}" ]; then
+            providers=("$(printf '%s' "$TARGET_PROVIDER" | tr '[:upper:]_' '[:lower:]-' | xargs)")
+          fi
+
+          if [ "$promote" != "true" ]; then
+            echo "FIELD_LOCAL_FORCE_PROMOTION enabled=false"
+            exit 0
+          fi
+          [ "$mode" = "force" ] || {
+            echo "local FORCE candidate promotion is valid only in force mode" >&2
+            exit 1
+          }
+          [ "${#providers[@]}" -gt 0 ] || {
+            echo "local FORCE promotion requires an explicit provider cohort" >&2
+            exit 1
+          }
+
+          args=(
+            python scripts/promote_local_force_guidance.py
+            --current-sha "$GITHUB_SHA"
+            --output "$RUNNER_TEMP/local-force-promoted-guidance.json"
+          )
+          for provider in "${providers[@]}"; do args+=(--provider "$provider"); done
+          "${args[@]}"
+          echo "NIAKVIO_BRAIN_LLM_GUIDANCE=$RUNNER_TEMP/local-force-promoted-guidance.json" >> "$GITHUB_ENV"
+          echo "FIELD_LOCAL_FORCE_PROMOTION enabled=true providers=${#providers[@]} ids=$(IFS=,; echo "${providers[*]}")"
 
       - name: Evaluate isolated Brain LLM Force candidates
         id: force-mutations
