@@ -7,6 +7,8 @@ import json
 from pathlib import Path
 from typing import Any
 
+HISTORY_MATRIX = Path("automation/provider-history-matrix.json")
+
 from rotating_corpus import all_fixtures, canonical_lane
 
 GOOD = "playable_verified"
@@ -64,6 +66,49 @@ def fixture_lookup() -> dict[tuple[str, str], dict[str, Any]]:
     return out
 
 
+def seed_historical_lane_flags(history: dict[str, Any], matrix: dict[str, Any]) -> None:
+    """Persist lane-level historical positivity without inventing exact fixtures.
+
+    provider-history-matrix.json may know that a lane was verified even when the
+    exact retained fixture is unavailable. This flag is a proof floor for census
+    classification only; exact regression replay still requires proofs[].fixture.
+    """
+    providers = history.setdefault("providers", {})
+    if not isinstance(providers, dict):
+        providers = {}
+        history["providers"] = providers
+    rows = matrix.get("providers") if isinstance(matrix.get("providers"), list) else []
+    for row in rows:
+        if not isinstance(row, dict):
+            continue
+        provider = str(row.get("provider") or "").strip().casefold()
+        verified = [
+            str(value or "").strip().casefold()
+            for value in row.get("historicalVerifiedLanes") or []
+            if str(value or "").strip()
+        ]
+        if not provider or not verified:
+            continue
+        versions = [
+            str(value or "").strip()
+            for value in row.get("historicalPositiveVersions") or []
+            if str(value or "").strip()
+        ]
+        provider_state = providers.setdefault(provider, {"lanes": {}})
+        lanes = provider_state.setdefault("lanes", {})
+        for lane in verified:
+            lane_state = lanes.setdefault(lane, {
+                "proofs": [],
+                "chainHits": [],
+                "misses": [],
+                "consecutiveTechnicalRuns": 0,
+                "consecutiveNetworkRuns": 0,
+            })
+            lane_state["historicalPositive"] = True
+            lane_state["historicalPositiveSource"] = "provider-history-matrix"
+            lane_state["historicalPositiveVersions"] = versions
+
+
 def upsert_front(rows: list[dict[str, Any]], item: dict[str, Any], *, limit: int) -> list[dict[str, Any]]:
     key = fixture_key(item.get("fixture") or {})
     kept = [row for row in rows if fixture_key(row.get("fixture") or {}) != key]
@@ -82,6 +127,7 @@ def main() -> int:
     lookup = fixture_lookup()
     history = load(args.history, {"schemaVersion": 1, "providers": {}})
     history["schemaVersion"] = 1
+    seed_historical_lane_flags(history, load(HISTORY_MATRIX, {"providers": []}))
     providers = history.setdefault("providers", {})
     if not isinstance(providers, dict):
         providers = {}

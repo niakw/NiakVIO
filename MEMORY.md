@@ -5499,3 +5499,9 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Merge 7563b08 correctly changed FORCE proposal-only semantics but introduced an invalid workflow YAML block: the inline Python heredoc used to derive force_promotable was not indented inside the run: block.
 - Push run 36271569090 therefore failed before creating any job.
 - Fixed by indenting the heredoc body/delimiter inside the workflow block; FORCE semantics are unchanged.
+
+### 2026-09-26 — Census proof monotonicity over WAF/harness
+- Fresh sharded census incorrectly moved six providers into HARNESS/ENV BLOCKED even though five retained qualified live routes and AllWish had durable historical green lanes in provider-history-matrix.json.
+- Census classification now treats WAF/transport evidence as weaker than retained provider evidence: chain -> CHAIN REACHED, qualified route -> ROUTE PROVEN, durable historical positive -> NO PROOF unless an exact retained fixture replay establishes a regression.
+- update_provider_census_proof_history.py now synchronizes historicalVerifiedLanes from provider-history-matrix.json as lane-level historicalPositive flags without inventing exact fixtures.
+- Exact regression replay remains fixture-scoped; historicalPositive is only a monotonic proof floor preventing CI/WAF evidence from erasing established provider knowledge.
