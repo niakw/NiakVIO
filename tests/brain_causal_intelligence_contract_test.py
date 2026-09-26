@@ -50,7 +50,15 @@ assert "deferredLearningProviders" in runner
 workflow = (ROOT / ".github/workflows/provider-recognition-repair-v6.yml").read_text(encoding="utf-8")
 assert "FIELD_PROVIDER_BRAIN_LEARNING_DEBT" in workflow
 assert "learning_dispatch=false owner=scheduled-learning-slot" in workflow
-assert "gh workflow run brain-learning-lab.yml" not in workflow[workflow.index("- name: Persist Repair census state"):]
+persist = workflow[workflow.index("- name: Persist Repair census state"):]
+force_pos = persist.index('if [ "$force_requested" = "1" ]')
+normal_prefix = persist[:force_pos]
+force_block = persist[force_pos:]
+assert "gh workflow run brain-learning-lab.yml" not in normal_prefix
+assert "gh workflow run brain-learning-lab.yml" in force_block
+assert "-f architecture_force=true" in force_block
+assert "-f publish_proposal=true" in force_block
+assert "FIELD_PROVIDER_BRAIN_FORCE_ARCH_DISPATCH" in force_block
 assert "FIELD_PROVIDER_BRAIN_FORCE_DEBT" in workflow
 assert "FIELD_PROVIDER_BRAIN_FORCE_UNVISITED" in workflow
 assert "auto_resume=false reason=bounded-force-run" in workflow
