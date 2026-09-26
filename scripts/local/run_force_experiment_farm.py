@@ -445,6 +445,18 @@ def accepted_events(report: dict[str, Any]) -> list[dict[str, Any]]:
     return out
 
 
+def deep_baseline_healthy_result(value: Any) -> bool:
+    if not isinstance(value, dict):
+        return False
+    if value.get("deepBaselineHealthy") is True:
+        return True
+    health = value.get("deepHealth") if isinstance(value.get("deepHealth"), dict) else {}
+    return (
+        str(health.get("status") or "").casefold() == "healthy"
+        and int(health.get("streamsPlayable") or 0) > 0
+    )
+
+
 def report_summary(report: dict[str, Any]) -> dict[str, Any]:
     accepted = accepted_events(report)
     rounds = [row for row in (report.get("rounds") or []) if isinstance(row, dict)]
@@ -601,7 +613,7 @@ def persist_state(output: Path, state: dict[str, Any]) -> None:
             "deepBaselineHealthyProviders": sorted(
                 provider
                 for provider, rows in (state.get("results") or {}).items()
-                if any(isinstance(item, dict) and item.get("deepBaselineHealthy") is True for item in (rows or {}).values())
+                if any(deep_baseline_healthy_result(item) for item in (rows or {}).values())
             ),
             "quickAcceptedExperiments": sum(
                 1
@@ -681,7 +693,12 @@ def provider_worker(
             isinstance(value, dict) and value.get("deepAccepted") is True
             for value in existing.values()
         ):
-            return {"provider": provider, "skipped": "winner-already-recorded"}
+            return {"provider": provider, "deepAccepted": True, "deepBaselineHealthy": False, "skipped": "winner-already-recorded"}
+        if not continue_after_win and any(
+            deep_baseline_healthy_result(value)
+            for value in existing.values()
+        ):
+            return {"provider": provider, "deepAccepted": False, "deepBaselineHealthy": True, "skipped": "deep-baseline-healthy-already-recorded"}
 
         for index, guidance_row in enumerate(experiments, start=1):
             fp = str(guidance_row.get("experimentFingerprint") or "").casefold()
@@ -835,7 +852,7 @@ def provider_worker(
                 for value in existing.values()
             ),
             "deepBaselineHealthy": any(
-                isinstance(value, dict) and value.get("deepBaselineHealthy") is True
+                deep_baseline_healthy_result(value)
                 for value in existing.values()
             ),
             "experimentsRecorded": len(existing),
