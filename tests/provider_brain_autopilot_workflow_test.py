@@ -23,10 +23,12 @@ for required in (
 
 # Learning debt is dispatched immediately as a bounded targeted cohort.
 assert "gh workflow run brain-learning-lab.yml" in autopilot
-assert '-f publish_proposal=true' in autopilot
+assert '-f publish_proposal="$publish_proposal"' in autopilot
 assert '-f target_providers="$LEARNING"' in autopilot
 assert '-f slot_remaining_minutes=60' in autopilot
 assert 'FORCE_MODE: ${{ steps.plan.outputs.force }}' in autopilot
+assert 'publish_proposal="true"' in autopilot
+assert 'publish_proposal="false"' in autopilot
 assert 'args+=(-f architecture_force=true)' in autopilot
 assert 'force=$FORCE_MODE' in autopilot
 assert 'provider-brain-autopilot.json' in autopilot
@@ -47,6 +49,8 @@ assert "architecture_learning=false" in harness_block
 learning_start = autopilot.index('if [ -n "$LEARNING" ]; then')
 learning_block = autopilot[learning_start:harness_start]
 assert "brain-learning-lab.yml" in learning_block
+assert 'publish_proposal="false"' in learning_block
+assert '-f publish_proposal="$publish_proposal"' in learning_block
 assert "immediate=true" in learning_block
 assert "budget_minutes=60" in learning_block
 

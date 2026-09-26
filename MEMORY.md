@@ -5523,3 +5523,8 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Autopilot Fast Repair run 36275126901 failed before repair execution while running provider_census_waf_proof_monotonicity_test.py.
 - Root cause was test-only import bootstrap: update_provider_census_proof_history.py was loaded via importlib from repository root without scripts/ on sys.path, so its rotating_corpus import failed.
 - The contract test now adds the repository scripts directory to sys.path before loading renderer/history modules. No provider or census classification behavior is changed by this correction.
+
+### 2026-09-27 — FORCE proposal suppression
+- The causal Autopilot previously always dispatched Learning with publish_proposal=true and then additionally set architecture_force=true in FORCE mode. That mixed review-PR and direct FORCE semantics and could recreate proposal PRs during a FORCE repair cycle.
+- FORCE dispatch now sets publish_proposal=false while keeping architecture_force=true. Non-FORCE Learning retains publish_proposal=true.
+- The one-time cleanup already removed brain-architecture/proposal; it is not retained in the permanent branch-maintenance deletion list because repository hygiene treats that ref as a non-FORCE review surface. The active FORCE path itself no longer requests it.
