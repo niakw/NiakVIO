@@ -5393,3 +5393,31 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Real 4khdhub Repair on the exploration branch still exited immediately with experiment_strategy_exhausted despite direct planner guidance being correct.
 - Root cause: adaptive_runtime/brain_repair_runtime.py included explorationChain in replan_observation(), but omitted it from update_plans(), which owns the initial Deep plan.
 - Both adaptive planner payloads now carry _BASE._exploration_chain_enabled(); contract requires exactly two occurrences so future refactors cannot silently reintroduce the split.
+
+### 2026-09-26 — Meta-gap current-failure rebinding across the 14 unresolved providers
+- Current-head local cohort evidence proved a generic stale-guidance defect: provider diagnostics evolve during Repair while synthesized meta-gap guidance stayed bound to an older failure class, leaving metaGapEscalated=false at true exhaustion.
+- The planner now rebinds meta-gap guidance to the CURRENT failure class and selects the matching already-sandboxed executor.
+- Covered executors include provider transport, route, search, chain terminal, media/playback context, candidate replay, and unknown/runtime fallback via adaptive_runtime_recovery.
+- Rebound experiments are normalized to the current causal family and receive a fresh SHA-256 experiment fingerprint.
+- The declarative gap synthesizer now explicitly covers playback_context_gap and unknown_failure.
+- Targeted contracts PASS: declarative meta-gap, LLM advisor with stale-route -> playback-context rebind, second-order runtime, engine v2 repair-brain, Python compile, Node syntax and diff check.
+- No provider/publication authority is added. Current-byte, playback, identity and non-regression validation remain authoritative.
+
+### 2026-09-26 — Direct architecture-gap meta-gap escalation
+- Follow-up local proof showed MalluMV can already be classified as unknown_failure / architecture_gap while experimentExhausted remains false because there are no meaningful ordinary variants to exhaust.
+- Repair exploration now permits meta-gap synthesis immediately when baseRepairTarget.repairType is architecture_gap, while preserving the ordinary exhaustion requirement for non-architecture-gap cases.
+- Synthetic direct architecture-gap contract proves stale chain-terminal guidance is rebound to unknown_failure, selects adaptive_runtime_recovery, produces synthesized_strategy, and remains sandbox/current-byte gated.
+
+### 2026-09-26 — Meta-gap fingerprint rotation after synthesized failure
+- Live 14-provider rerun proved direct architecture-gap escalation works: MalluMV reached synthesized_strategy with metaGapEscalated=true and exact-rebound.
+- The next wave exposed one final loop defect: after synthesized v1 failed, planner rejected the repeated rebound fingerprint but did not derive v2.
+- Planner now deterministically rotates rebound meta-gap experiments through up to 16 bounded compositions and skips every fingerprint already present in negative memory.
+- New telemetry llmAdvisorMetaGapGeneration records the selected synthesized generation.
+- Synthetic contract proves v1 failure -> v2 fresh fingerprint -> synthesized_strategy remains active.
+
+### 2026-09-26 — Meta-gap rebinding to current failure class
+- Current-HEAD local cohorts showed a generic handoff flaw across the 14-provider repairQueue: providers may evolve failure class during Repair (for example search_gap -> playback_context_gap or chain_terminal_gap -> transport_blocked), while synthesized meta-gap guidance remained anchored to an older remembered class.
+- Fix rebinding meta-gap guidance at plan time to the current canonical failure class, selecting the compatible already-sandboxed executor and deriving a fresh experiment fingerprint from the rebound experiment.
+- Added current-class mappings for playback_context_gap, candidate_replay_gap and unknown_failure; unknown/runtime fallback uses adaptive_runtime_recovery rather than dropping to architecture debt.
+- Meta-gap still activates only after ordinary variants/post-exhaustion strategies are exhausted; current-byte playback/identity/non-regression gates remain authoritative.
+- Targeted contracts PASS: declarative meta-gap strategy, LLM advisor execution, second-order strategy runtime, engine v2 repair brain.
