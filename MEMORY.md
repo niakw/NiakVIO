@@ -5129,3 +5129,13 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Updated CI contracts and `BRAIN_REPAIR_ARCHITECTURE.md` to lock this separation.
 - Census visibility fix is already present: `PROVIDER_CENSUS_STATUS.md` now shows the latest Repair/FORCE attempt independently from authoritative provider-status evidence. Current page shows attempt `36199786760`: 14 selected, 0 candidates, 0 validated, 14 unresolved debt, budget exhausted.
 - Do not launch or re-enable Learning from FORCE/Repair while finishing this 14-provider recovery. Continue current FORCE, inspect isolated mutation evaluation provider by provider, apply only current-byte validated candidates, continue FORCE on unresolved providers, then persist the resulting census.
+
+
+## 2026-09-26 Europe/Paris — FORCE retry 161 fail-fast isolated historical sanitizer contract drift
+
+- FORCE retry `161` / run `36204412754` passed the exact-HEAD guard, then failed in the static preflight before any provider/network work.
+- Failure was not provider-related: `tests/provider_repair_pipeline_v6_contract_test.py` required the historical V7 sanitizer migration to explicitly know the current V10 owner via `NEWER_SANITIZERS`.
+- `scripts/upgrade_stream_sanitizer_v7_selection.py` now keeps generic monotonic future-version detection while explicitly mapping V8, V9 and V10. Known-version path drift fails closed; any future version >7 remains protected from downgrade.
+- `tests/stream_sanitizer_v7_monotonic_test.py` now locks V8/V9/V10 owner mapping plus current-repository no-op/idempotence.
+- Previous FORCE retry `159` remains the last run that reached candidate execution: 9 external Brain-LLM mutations were isolated, 0 accepted, malformed candidates were rejected safely; canonical FORCE then failed only because the old V7 migrator did not recognize V10.
+- Next action is a fresh exact-HEAD FORCE retry over the same 14-provider census queue. Do not launch Learning and do not make further commits after the trigger until the exact-HEAD guard has passed.
