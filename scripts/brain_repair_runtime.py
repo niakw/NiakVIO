@@ -24,6 +24,7 @@ OVERRIDES_PATH = ROOT / "provider-overrides.json"
 CENSUS_STATUS_PATH = ROOT / "automation" / "provider-census-status.json"
 REPAIR_MEMORY_PATH = ROOT / "automation" / "brain-repair-memory.json"
 EXPERIENCE_PATH = ROOT / "automation" / "brain-repair-experience.json"
+LOCAL_FORCE_RESULTS_DIR = ROOT / "automation" / "local-force-results"
 LEARNING_MEMORY_PATH = Path(os.environ.get("NIAKVIO_BRAIN_LEARNING_MEMORY", "")).resolve() if os.environ.get("NIAKVIO_BRAIN_LEARNING_MEMORY") else None
 LLM_GUIDANCE_PATH = Path(os.environ.get("NIAKVIO_BRAIN_LLM_GUIDANCE", "")).resolve() if os.environ.get("NIAKVIO_BRAIN_LLM_GUIDANCE") else None
 
@@ -519,13 +520,15 @@ def repair_memory() -> dict[str, Any]:
     }
 
 
-def planner_llm_guidance() -> list[dict[str, Any]]:
-    """Load only the sanitized, non-authoritative Brain-LLM advisor surface."""
-    if LLM_GUIDANCE_PATH is None:
-        return []
-    value = _load_json(LLM_GUIDANCE_PATH, {})
-    if not isinstance(value, dict):
-        return []
+def _validated_guidance_rows(
+    value: dict[str, Any],
+    *,
+    current_sha: str,
+    require_exact_sha: bool,
+    guidance_kind: str,
+    local_force_ambiguous: bool = False,
+    confidence_cap: float = 1.0,
+) -> list[dict[str, Any]]:
     if (
         value.get("publicationAuthority") is not False
         or value.get("directMutationAuthority") is not False
@@ -534,8 +537,7 @@ def planner_llm_guidance() -> list[dict[str, Any]]:
     ):
         return []
     source_sha = _clip_text(value.get("sourceSha"), 64).casefold()
-    current_sha = _clip_text(os.environ.get("GITHUB_SHA"), 64).casefold()
-    if current_sha and source_sha and source_sha != current_sha:
+    if require_exact_sha and current_sha and source_sha and source_sha != current_sha:
         return []
 
     out: list[dict[str, Any]] = []
@@ -548,7 +550,7 @@ def planner_llm_guidance() -> list[dict[str, Any]]:
         strategy = _clip_text(raw.get("strategy"), 160).casefold().replace("-", "_")
         target = _clip_text(raw.get("targetLayer"), 32).casefold()
         try:
-            confidence = max(0.0, min(1.0, float(raw.get("confidence") or 0.0)))
+            confidence = max(0.0, min(float(confidence_cap), float(raw.get("confidence") or 0.0)))
         except (TypeError, ValueError):
             confidence = 0.0
         if (
@@ -573,11 +575,84 @@ def planner_llm_guidance() -> list[dict[str, Any]]:
             "priorOnly": True,
             "experiment": copy.deepcopy(experiment),
             "experimentFingerprint": experiment_fingerprint,
+            "guidanceKind": guidance_kind,
+            "localForceAmbiguous": local_force_ambiguous,
+            "sourceSha": source_sha,
         })
         if len(out) >= 128:
             break
     return out
 
+
+def _latest_local_force_winning_guidance() -> dict[str, Any]:
+    try:
+        paths = sorted(LOCAL_FORCE_RESULTS_DIR.glob("*-winning-guidance.json"))
+    except OSError:
+        return {}
+    for path in reversed(paths):
+        value = _load_json(path, {})
+        if not isinstance(value, dict):
+            continue
+        if (
+            value.get("schemaVersion") == 2
+            and value.get("publicationAuthority") is False
+            and value.get("directMutationAuthority") is False
+            and value.get("proofAuthority") is False
+            and value.get("rawMutationContentRetained") is False
+            and value.get("privateContentRetained") is False
+        ):
+            return value
+    return {}
+
+
+def planner_llm_guidance() -> list[dict[str, Any]]:
+    """Load sanitized non-authoritative advisor priors.
+
+    Production Quick/Deep accepts only the exact-SHA external advisor surface.
+    Isolated Learning may additionally replay the latest persisted local FORCE
+    candidate guidance. Local FORCE candidates are deliberately marked
+    baseline-coincident/ambiguous and receive a confidence cap; they are
+    hypotheses for current-byte revalidation, never repair/proof authority.
+    """
+    current_sha = _clip_text(os.environ.get("GITHUB_SHA"), 64).casefold()
+    out: list[dict[str, Any]] = []
+
+    if LLM_GUIDANCE_PATH is not None:
+        value = _load_json(LLM_GUIDANCE_PATH, {})
+        if isinstance(value, dict):
+            out.extend(_validated_guidance_rows(
+                value,
+                current_sha=current_sha,
+                require_exact_sha=True,
+                guidance_kind="external-brain-llm",
+            ))
+
+    if str(os.environ.get("NUVIO_BRAIN_PLANNER_MODE") or "").strip().casefold() == "learning":
+        value = _latest_local_force_winning_guidance()
+        if value:
+            out.extend(_validated_guidance_rows(
+                value,
+                current_sha=current_sha,
+                require_exact_sha=False,
+                guidance_kind="local-force-baseline-coincident",
+                local_force_ambiguous=True,
+                confidence_cap=0.84,
+            ))
+
+    deduped: list[dict[str, Any]] = []
+    seen: set[tuple[str, str, str, str]] = set()
+    for row in out:
+        key = (
+            str(row.get("providerId") or ""),
+            str(row.get("profile") or ""),
+            str(row.get("experimentFingerprint") or ""),
+            str(row.get("guidanceKind") or ""),
+        )
+        if key in seen:
+            continue
+        seen.add(key)
+        deduped.append(row)
+    return deduped[:128]
 
 def planner_historical_solutions() -> list[dict[str, Any]]:
     """Expose only sanitized NiakVIO historical solution classes to the planner.
