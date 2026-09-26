@@ -5592,3 +5592,8 @@ This ledger is not complete merely because provider yield improves. Final comple
 - allwish Learning run 36279954917 failed before provider experimentation because brain_llm_guidance_contract_test.py still asserted the retired 768/512-token advisor budgets even though the workflow had already been reduced to advisor-only 160 tokens / 45s.
 - The stale guidance test now asserts advisor-only, max-hypotheses=1, 160 tokens and 45s, and explicitly rejects the retired 768/512 budgets.
 - Architecture FORCE Learning concurrency is now keyed by the exact target cohort. A fresh FORCE run cancels stale work only for the same cohort; allwish and the separate 13-provider Fast handoff can no longer cancel each other merely because both use architecture_force=true.
+
+### 2026-09-27 — FORCE convergence retry 11 armed
+- Retry 10 confirmed the 15-provider causal split (13 Fast + animevostfr REMAT + allwish Learning) with zero harness/environment debt, but both Learning cohorts were invalidated by the same stale brain_llm_guidance_contract assertion requiring retired 768/512-token budgets.
+- Main 59d94413 aligns that contract to advisor-only 160 tokens / 45s and keys architecture FORCE concurrency by exact cohort so independent allwish and 13-provider Learning work cannot cancel each other.
+- 59d94413 passed Workflow Gate 36280169127, Verify & Publish 36280169125 and Provider Non-Regression 36280169186 before retry 11.
