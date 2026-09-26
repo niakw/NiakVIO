@@ -66,6 +66,11 @@ with tempfile.TemporaryDirectory(prefix="local-force-log-") as tmp:
     log.write_text("unexpected failure\n", encoding="utf-8")
     assert mod.classify_deep_execution_error(log, 2) == "deep_execution_error:rc=2"
 
+assert mod.bounded_worker_count(0, 4) == 1
+assert mod.bounded_worker_count(2, 4) == 2
+assert mod.bounded_worker_count(20, 4) == 4
+assert mod.bounded_worker_count(20, 99) == 8
+
 source = SCRIPT.read_text(encoding="utf-8")
 assert "localForcePromotion" in source
 assert "run_adaptive_deep_repair.py" in source
@@ -73,5 +78,9 @@ assert "baseline_already_healthy" in source
 assert "causalEvidenceOnly" in source
 assert "executionObserved" in source
 assert "providerPublicationAuthority" in source
+assert "ThreadPoolExecutor" in source
+assert "FIELD_LOCAL_FORCE_CAUSAL_CONCURRENCY" in source
+assert '--workers' in source
+assert "report_rows.sort" in source
 
 print("Local FORCE guidance causal evaluator tests passed")
