@@ -68,7 +68,7 @@ def run_case(head: str, comparison: dict | None, state: dict | None = None) -> d
     old_compare = module.compare
     try:
         module.current_head = lambda repository, branch: head
-        module.compare = lambda repository, base, current, patch_rules=None: comparison or {}
+        module.compare = lambda repository, branch, base, current, patch_rules=None: comparison or {}
         return module.inspect_client("client", sample(), state or {})
     finally:
         module.current_head = old_head

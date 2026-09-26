@@ -5295,3 +5295,11 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Main sandbox-parent correction reached Workflow Gate SUCCESS on `c430b462...`.
 - Causal FORCE for `animevostfr` + `mallumv` was re-dispatched from current main via trigger commit `37fbcc87...`, run `36233331041`; result still pending at this checkpoint.
 - Not yet claimed complete: PR #195 required CI and the new causal FORCE provider outcome must still be inspected before any merge/provider status claim.
+
+### 2026-09-26 — Nuvio client history fetch blocker
+- Confirmed FORCE run 36236719470 failed after causal evaluation because adaptive Deep Repair could not establish Nuvio client state: mobile/desktop verification_error; local reproduction showed TV affected too.
+- Root cause: check_nuvio_client_upstreams.py attempted direct shallow git fetch of a historical SHA, which returned git exit 129 and falsely classified all client states as verification_error.
+- Fix on branch fix/nuvio-client-history-fetch: fetch the configured official branch first, deepen bounded history until accepted/current refs are locally reachable, then compare exact SHAs. No provider/publication authority is changed.
+- Live reproduction after fix: nuvio-mobile, nuvio-desktop, nuvio-tv all resolve as compare_status=ahead + contract_review_required, which the Brain guard treats as adaptation_pending (non-blocking) while preserving native re-audit requirements.
+- Targeted test: tests/nuvio_client_upstream_drift_guard_test.py PASS. Live guard PASS.
+- Prior FORCE causal result remains non-authoritative for candidates: animevostfr and mallumv were accepted=false because Deep execution hit the client verification environment error; do not record those experiments as provider-negative evidence.
