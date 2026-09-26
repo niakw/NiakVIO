@@ -17,7 +17,7 @@ V7 = "scripts/provider_patches/stream_output_sanitizer_v7.py"
 V8 = "scripts/provider_patches/stream_output_sanitizer_v8.py"
 SELECTION_RE = re.compile(
     r'GLOBAL_STREAM_SANITIZER = "'
-    r'(scripts/provider_patches/stream_output_sanitizer_v(?P<version>\\d+)\\.py)"'
+    r'(scripts/provider_patches/stream_output_sanitizer_v(?P<version>\d+)\.py)"'
 )
 
 
