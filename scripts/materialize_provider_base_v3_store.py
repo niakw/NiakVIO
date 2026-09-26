@@ -13,6 +13,7 @@ providers, but it is never materialized into the current release.
 from __future__ import annotations
 
 import json
+import re
 import subprocess
 import sys
 from datetime import datetime, timezone
@@ -23,6 +24,20 @@ sys.path.insert(0, str(ROOT / "scripts"))
 from current_provider_scope import active_provider_ids
 OVERRIDES = ROOT / "provider-overrides.json"
 CURRENT_RUNTIME_READER_VERSION = 10
+
+
+def current_stream_sanitizer_version() -> int:
+    source = (ROOT / "scripts" / "apply_provider_overrides.py").read_text(encoding="utf-8")
+    match = re.search(
+        r'GLOBAL_STREAM_SANITIZER = "scripts/provider_patches/stream_output_sanitizer_v(\d+)\.py"',
+        source,
+    )
+    if not match:
+        raise RuntimeError("current Core stream sanitizer selection is missing")
+    version = int(match.group(1))
+    if version < 8:
+        raise RuntimeError(f"current Core stream sanitizer fell below V8 floor: v{version}")
+    return version
 
 
 def prepare_runtime() -> None:
@@ -146,7 +161,8 @@ def main() -> int:
     store["episode_identity_guard"] = "v22.1"
     store["manual_tv_live_regressions"] = "v34"
     store["mugiwara_episode_fail_closed"] = "v2"
-    store["stream_sanitizer"] = "v8"
+    sanitizer_version = current_stream_sanitizer_version()
+    store["stream_sanitizer"] = f"v{sanitizer_version}"
     store["historical_static_knowledge_retained"] = max(0, len(static_rows) - len(current_ids))
 
     PROVENANCE.write_text(json.dumps(provenance, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
@@ -156,7 +172,7 @@ def main() -> int:
         f"historical_static_rows={max(0, len(static_rows) - len(current_ids))} "
         f"provider_js_seed=false upstream_js_seed=false runtime_reader=v{CURRENT_RUNTIME_READER_VERSION} "
         "route_sanitizer=v1 html_text_hardening=deterministic-scanner-v1 "
-        "movie_identity=v21.10 episode_identity=v22.1 manual_tv=v34 mugiwara_episode=v2 sanitizer=v8"
+        f"movie_identity=v21.10 episode_identity=v22.1 manual_tv=v34 mugiwara_episode=v2 sanitizer=v{sanitizer_version}"
     )
     return 0
 
