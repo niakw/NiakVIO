@@ -5167,3 +5167,11 @@ This ledger is not complete merely because provider yield improves. Final comple
   - unresolved provider -> canonical current-byte Force;
   - accepted candidate -> targeted Retest + identity/playback/non-regression;
   - unresolved after the bounded Force run -> persist exact final cause, no automatic identical rerun, no Learning dispatch outside the dedicated Learning slot.
+
+
+## 2026-09-26 Europe/Paris — FORCE auto-loop removed
+
+- Removed the schedule from `.github/workflows/provider-recognition-repair-v6.yml`; scheduled Learning remains owned by the dedicated Brain Learning workflow.
+- Explicit FORCE no longer self-dispatches another FORCE when `resumeRecommended`/unvisited providers remain.
+- A bounded FORCE run now emits `FIELD_PROVIDER_BRAIN_FORCE_UNVISITED ... auto_resume=false reason=bounded-force-run` and persists the unresolved cohort.
+- New FORCE execution requires a materially changed executable method/mutation/provider bytes or an explicit operator trigger. This is the hard stop preventing endless FORCE retries.
