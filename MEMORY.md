@@ -5511,3 +5511,10 @@ This ledger is not complete merely because provider yield improves. Final comple
 - The materializer now extracts the first balanced object, retries after removing trailing commas, then falls back to ast.literal_eval for literal-only Python-style dictionaries.
 - No generated code is executed by this parser. Existing path/edit allowlists and executable-diff validation remain authoritative.
 - Tests cover prose-prefixed JSON, trailing commas, single-quoted literal dictionaries and invalid non-object output.
+
+### 2026-09-27 — FORCE direct-main cleanup and known-family promotion
+- User-required execution mode is direct-main FORCE for the active repair cycle: PRs #215, #217 and #218 were closed; no repair result is accepted merely because a proposal branch exists.
+- Census WAF proof monotonicity was validated by run 36274465005 on 9aedab7d: 25 FULL OK · 2 PARTIAL OK · 1 CANDIDATE OK · 10 ROUTE PROVEN · 3 CHAIN REACHED · 1 NO PROOF · 4 DISABLED, with zero HARNESS/HARNESS-ENV states. Persistence was skipped because main advanced during the run.
+- FORCE parser resilience is on main at 0e1a9cd9 after the prior Qwen quasi-JSON failure in run 36272561268; Verify & Publish, Non-Regression and Workflow Gate are green on that SHA.
+- Known-family exhausted blueprints now emit explicit FORCE eligibility and target layers only when each retained provider has concrete failed-profile negative memory. Harness-only blueprints remain non-promotable.
+- Brain branch maintenance now deletes the stale architecture proposal ref plus every current fix/* repair branch once no open PR protects it. brain-learning/proposals remains the isolated sanitized learning-memory ref.
