@@ -825,10 +825,9 @@ jobs:
           fi
 
           effective_filter="${PROVIDER_FILTER:-}"
-          max_tokens=768
+          max_tokens=160
           if [ "${FAST_HANDOFF:-false}" = "true" ]; then
             effective_filter="${FAST_MISSING_PROVIDERS:-}"
-            max_tokens=512
           fi
           if [ "${LLM_NEEDED:-false}" != "true" ] || [ "${LLM_AVAILABLE:-false}" = "true" ]; then
             args=(python brain-llm/scripts/plan_batch_from_checkout.py
@@ -836,10 +835,13 @@ jobs:
               --experience brain-sandbox/brain-llm/public-experience.jsonl
               --documents brain-sandbox/brain-llm/public-documents.jsonl
               --mode brain
+              --advisor-only
+              --max-hypotheses 1
               --endpoint http://127.0.0.1:8080
               --model qwen2.5-coder-3b
               --workers 2
               --max-tokens "$max_tokens"
+              --timeout-seconds 45
               --output "$batch")
             if [ -s brain-sandbox/brain-llm/private-documents.jsonl ]; then
               args+=(--extra-documents brain-sandbox/brain-llm/private-documents.jsonl)

@@ -5558,3 +5558,9 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Push activation is now restricted to .github/triggers/provider-brain-autopilot.json only.
 - mode=force is honored only for that explicit trigger-file push. While FORCE remains armed, workflow_run/workflow_dispatch invocations are held with FIELD_PROVIDER_AUTOPILOT_BOUNDED_FORCE instead of dispatching another lane.
 - This enforces the single-run contract: another FORCE execution requires a new explicit trigger after materially changed executable evidence.
+
+### 2026-09-27 — Learning advisor latency bounded
+- The 13-provider targeted Learning run exposed a structural latency problem in “Produce sanitized Brain LLM advisor guidance”: it used mode=brain without advisor-only, 512 tokens in Fast-Handoff and the default 90s request timeout with two workers.
+- The downstream sanitizer retains only strategy/profile/experiment/confidence and never raw mutations, so full repair-style model output was unnecessary.
+- The Learning guidance call now matches the already validated private advisor pattern: --advisor-only, --max-hypotheses 1, --workers 2, 160 tokens and 45s timeout.
+- Worst-case model wall time for 13 uncached providers drops from roughly ceil(13/2)*90s (~10.5 min) to ceil(13/2)*45s (~5.25 min), before cache/deterministic shortcuts. Publication/proof authority is unchanged.
