@@ -3,11 +3,14 @@
 from __future__ import annotations
 
 import argparse
+import concurrent.futures
 import json
 import os
 import shutil
 import subprocess
 import sys
+import tempfile
+import time
 from pathlib import Path
 from typing import Any
 
@@ -158,6 +161,172 @@ def route_recovery_outer_timeout(
     per_attempt = max(15, min(int(request_timeout), 120))
     budget = batches * per_attempt * max(1, int(attempts)) + 120
     return max(300, min(900, budget))
+
+
+def route_recovery_provider_timeout(request_timeout: int, attempts: int) -> int:
+    """Bound one provider independently so a hung route probe cannot kill its peers."""
+    per_attempt = max(15, min(int(request_timeout), 120))
+    return max(120, min(300, per_attempt * max(1, int(attempts)) + 60))
+
+
+def combine_targeted_route_reports(
+    reports: list[dict[str, Any]],
+    targets: list[str],
+    *,
+    duration_ms: int,
+) -> dict[str, Any]:
+    by_provider: dict[str, dict[str, Any]] = {}
+    methods: list[str] = []
+    for report in reports:
+        if not isinstance(report, dict):
+            continue
+        method = str(report.get("method") or "").strip()
+        if method and method not in methods:
+            methods.append(method)
+        for row in report.get("providers") or []:
+            if not isinstance(row, dict):
+                continue
+            provider = cid(row.get("providerId"))
+            if provider:
+                by_provider[provider] = row
+    rows: list[dict[str, Any]] = []
+    for provider in targets:
+        row = by_provider.get(provider)
+        if row is None:
+            row = {
+                "providerId": provider,
+                "sourceId": None,
+                "status": "route-recovery-missing",
+                "error": "missing-provider-report",
+                "routes": [],
+                "tasks": [],
+            }
+        rows.append(row)
+    proven = [row for row in rows if row.get("routes")]
+    return {
+        "schemaVersion": 5,
+        "method": "+".join(methods) or "per-provider-fail-soft-route-recovery",
+        "providerCount": len(rows),
+        "scope": "active-targeted-fail-soft",
+        "providersWithProvenRoutes": len(proven),
+        "provenRouteCount": sum(len(row.get("routes") or []) for row in rows),
+        "simpleApiRecipeCount": sum(1 for row in rows if isinstance(row.get("apiRecipe"), dict)),
+        "durationMs": max(0, int(duration_ms)),
+        "staticCandidatesExecutable": False,
+        "providers": rows,
+    }
+
+
+def run_targeted_route_recovery_fail_soft(
+    targets: list[str],
+    *,
+    repair_workers: int,
+    request_timeout: int,
+    attempts: int,
+) -> dict[str, Any]:
+    """Run each provider in its own process and preserve successful peer evidence."""
+    started = time.monotonic()
+    request_timeout = max(15, min(int(request_timeout), 120))
+    provider_timeout = route_recovery_provider_timeout(request_timeout, attempts)
+    reports: list[dict[str, Any]] = []
+    temp_root = Path(tempfile.mkdtemp(prefix="niakvio-targeted-route-", dir=os.environ.get("RUNNER_TEMP") or None))
+
+    def one(provider: str) -> dict[str, Any]:
+        out = temp_root / f"{provider}.json"
+        cmd = [
+            sys.executable,
+            "scripts/recover_provider_routes_from_upstreams.py",
+            "--workers", "1",
+            "--timeout", str(request_timeout),
+            "--attempts", str(attempts),
+            "--out", str(out),
+            "--provider", provider,
+        ]
+        print(
+            "FIELD_PROVIDER_REPAIR_ROUTE_PROVIDER "
+            f"provider={provider} timeout_seconds={provider_timeout}",
+            flush=True,
+        )
+        try:
+            completed = subprocess.run(
+                cmd,
+                cwd=ROOT,
+                env=os.environ.copy(),
+                check=False,
+                timeout=provider_timeout,
+            )
+        except subprocess.TimeoutExpired:
+            return {
+                "schemaVersion": 5,
+                "method": "per-provider-fail-soft-route-recovery",
+                "providers": [{
+                    "providerId": provider,
+                    "sourceId": None,
+                    "status": "route-recovery-timeout",
+                    "error": "TimeoutExpired",
+                    "routes": [],
+                    "tasks": [],
+                }],
+            }
+        if completed.returncode == 0 and out.is_file():
+            try:
+                return load(out)
+            except (OSError, json.JSONDecodeError, ValueError):
+                pass
+        return {
+            "schemaVersion": 5,
+            "method": "per-provider-fail-soft-route-recovery",
+            "providers": [{
+                "providerId": provider,
+                "sourceId": None,
+                "status": "route-recovery-error",
+                "error": f"exit-{completed.returncode}",
+                "routes": [],
+                "tasks": [],
+            }],
+        }
+
+    try:
+        max_workers = max(1, min(len(targets), int(repair_workers), 8))
+        with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as pool:
+            future_map = {pool.submit(one, provider): provider for provider in targets}
+            for future in concurrent.futures.as_completed(future_map):
+                provider = future_map[future]
+                try:
+                    report = future.result()
+                except Exception as exc:
+                    report = {
+                        "schemaVersion": 5,
+                        "method": "per-provider-fail-soft-route-recovery",
+                        "providers": [{
+                            "providerId": provider,
+                            "sourceId": None,
+                            "status": "route-recovery-error",
+                            "error": type(exc).__name__,
+                            "routes": [],
+                            "tasks": [],
+                        }],
+                    }
+                reports.append(report)
+        combined = combine_targeted_route_reports(
+            reports,
+            targets,
+            duration_ms=round((time.monotonic() - started) * 1000),
+        )
+        TARGET_REPORT.parent.mkdir(parents=True, exist_ok=True)
+        TARGET_REPORT.write_text(json.dumps(combined, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        statuses = ",".join(
+            f"{cid(row.get('providerId'))}:{row.get('status')}"
+            for row in combined.get("providers") or []
+        )
+        print(
+            "FIELD_PROVIDER_REPAIR_ROUTE_FAIL_SOFT "
+            f"providers={len(targets)} proven={combined['providersWithProvenRoutes']} statuses={statuses}",
+            flush=True,
+        )
+        return combined
+    finally:
+        shutil.rmtree(temp_root, ignore_errors=True)
 
 
 def portfolio_probe_timeout(provider_count: int) -> int:
@@ -709,27 +878,42 @@ def main() -> int:
     ):
         run(sys.executable, test)
 
-    cmd = [
-        sys.executable, "scripts/recover_provider_routes_from_upstreams.py",
-        "--workers", str(repair_workers),
-        "--timeout", str(max(15, min(args.timeout, 120))),
-        "--attempts", str(attempts),
-        "--out", str(TARGET_REPORT.relative_to(ROOT)),
-    ]
-    for provider in targets:
-        cmd.extend(["--provider", provider])
-    route_timeout = route_recovery_outer_timeout(
-        len(targets),
-        repair_workers,
-        args.timeout,
-        attempts,
-    )
-    print(
-        "FIELD_PROVIDER_REPAIR_ROUTE_BUDGET "
-        f"providers={len(targets)} workers={repair_workers} timeout_seconds={route_timeout}",
-        flush=True,
-    )
-    run(*cmd, timeout=route_timeout)
+    if args.mode in {"repair", "force"}:
+        provider_timeout = route_recovery_provider_timeout(args.timeout, attempts)
+        print(
+            "FIELD_PROVIDER_REPAIR_ROUTE_BUDGET "
+            f"providers={len(targets)} workers={repair_workers} "
+            f"per_provider_timeout_seconds={provider_timeout} fail_soft=true",
+            flush=True,
+        )
+        run_targeted_route_recovery_fail_soft(
+            targets,
+            repair_workers=repair_workers,
+            request_timeout=args.timeout,
+            attempts=attempts,
+        )
+    else:
+        cmd = [
+            sys.executable, "scripts/recover_provider_routes_from_upstreams.py",
+            "--workers", str(repair_workers),
+            "--timeout", str(max(15, min(args.timeout, 120))),
+            "--attempts", str(attempts),
+            "--out", str(TARGET_REPORT.relative_to(ROOT)),
+        ]
+        for provider in targets:
+            cmd.extend(["--provider", provider])
+        route_timeout = route_recovery_outer_timeout(
+            len(targets),
+            repair_workers,
+            args.timeout,
+            attempts,
+        )
+        print(
+            "FIELD_PROVIDER_REPAIR_ROUTE_BUDGET "
+            f"providers={len(targets)} workers={repair_workers} timeout_seconds={route_timeout}",
+            flush=True,
+        )
+        run(*cmd, timeout=route_timeout)
 
     run(sys.executable, "scripts/merge_provider_repair_report_v6.py", "--baseline", "automation/provider-route-recovery-v5.json", "--targeted", str(TARGET_REPORT.relative_to(ROOT)), "--output", str(MERGED_REPORT.relative_to(ROOT)), "--manifest", "manifest.json")
     run(sys.executable, "scripts/apply_provider_route_recovery_report.py", str(MERGED_REPORT.relative_to(ROOT)))
