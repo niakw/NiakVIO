@@ -5195,3 +5195,10 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Fix: keep residential exit routing active through canonical Repair/FORCE; clear it immediately after canonical execution with `always()`.
 - This is a transport/execution ordering fix, not a provider mutation. It directly targets the five HTTP-blocked providers and may also change zero-result behavior where origin responses differ by network.
 - Next validation is one explicit bounded FORCE of the current 14-provider cohort on the exact post-fix HEAD. No Learning dispatch and no automatic Force retry.
+
+## 2026-09-26 Europe/Paris — residential FORCE validation 165 stopped by test-only assertion
+
+- Run `36207126184` did not execute WAF/Tailscale/canonical FORCE: preflight failed in `provider_repair_waf_integration_workflow_test.py`.
+- The assertion incorrectly required the literal `NIAKVIO_REPAIR_RESIDENTIAL_EXIT_ACTIVE` to appear between the canonical-step header and clear-step header. The variable is correctly exported earlier through `$GITHUB_ENV` and inherited by canonical execution.
+- Fixed the contract to prove the export occurs before canonical Repair, the routing activation condition exists in the pre-canonical lane, and the single exit-node clear remains after canonical Repair.
+- No provider/runtime strategy changed in this fix. Residential canonical FORCE remains unvalidated until the next explicit bounded run.
