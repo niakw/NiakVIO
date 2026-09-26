@@ -446,9 +446,25 @@ def run_logged(
         return 124, f"timeout;elapsed={time.monotonic()-started:.1f}"
 
 
+def link_shared_local_tooling(worktree: Path) -> None:
+    """Reuse heavy local caches without copying them into every worktree."""
+    for name in ("node_modules", ".nuvio-client-lab"):
+        source = ROOT / name
+        target = worktree / name
+        if not source.exists() or target.exists() or target.is_symlink():
+            continue
+        try:
+            target.symlink_to(source, target_is_directory=True)
+        except OSError:
+            # Cache sharing is an optimization only; the experiment remains
+            # valid when the sandbox has to rebuild/fetch its own tooling.
+            pass
+
+
 def reset_worktree(worktree: Path, sha: str) -> None:
     subprocess.run(["git", "reset", "--hard", sha], cwd=worktree, check=True, stdout=subprocess.DEVNULL)
     subprocess.run(["git", "clean", "-fdx"], cwd=worktree, check=True, stdout=subprocess.DEVNULL)
+    link_shared_local_tooling(worktree)
 
 
 def prepare_stage(
