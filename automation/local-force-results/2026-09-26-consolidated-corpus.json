@@ -1,0 +1,62 @@
+{
+  "schemaVersion": 1,
+  "capturedAt": "2026-09-26T09:30:00+02:00",
+  "role": "local-force-consolidated-corpus-index",
+  "providerByteEquivalence": {
+    "baseSha": "998fa355e5cc2769af18b5864246ab184738be63",
+    "headSha": "7e2060f859d7798a165f040c2ba43df660dda71d",
+    "providerFilesChanged": false,
+    "providerOverridesChanged": false,
+    "note": "Only census/provider-neutral files changed across the compared range; provider bytes remained unchanged."
+  },
+  "evidenceFiles": [
+    "automation/local-force-results/2026-09-26-998fa355-partial.json",
+    "automation/local-force-results/2026-09-26-7e2060f8-targeted-complete.json",
+    "automation/local-force-results/2026-09-26-7e2060f8-winning-guidance.json"
+  ],
+  "coveredProviders": [
+    "4khdhub",
+    "allanime",
+    "allwish",
+    "anime-ultime",
+    "animesalt",
+    "animesultra",
+    "animevost-fr",
+    "animevostfr",
+    "flemmix",
+    "mallumv",
+    "moviebox",
+    "moviesmod",
+    "vidfast",
+    "yflix"
+  ],
+  "totalObservedExperiments": 124,
+  "totalGeneratedCandidatesAtLeast": 127,
+  "knownLocalDeepCandidates": [
+    "animevostfr",
+    "mallumv"
+  ],
+  "knownDeepBaselineHealthy": [
+    "anime-ultime",
+    "animevostfr",
+    "mallumv"
+  ],
+  "noProgressSampled": [
+    "animesalt",
+    "flemmix",
+    "moviesmod"
+  ],
+  "progressWithoutDeepAcceptance": [
+    "4khdhub",
+    "allanime",
+    "allwish",
+    "animevost-fr",
+    "moviebox",
+    "vidfast",
+    "yflix"
+  ],
+  "notes": [
+    "Totals combine two local runs over provider-byte-equivalent SHAs and are intended as Brain prior evidence, not production proof.",
+    "Do not sum or infer production success from Quick progress counts; Deep/current-byte GitHub FORCE remains authoritative."
+  ]
+}
