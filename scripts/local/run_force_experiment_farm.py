@@ -445,6 +445,56 @@ def accepted_events(report: dict[str, Any]) -> list[dict[str, Any]]:
     return out
 
 
+def experiment_outcome_signature(value: dict[str, Any]) -> tuple[Any, ...]:
+    qh = value.get("quickHealth") if isinstance(value.get("quickHealth"), dict) else {}
+    dh = value.get("deepHealth") if isinstance(value.get("deepHealth"), dict) else {}
+    quick = value.get("quick") if isinstance(value.get("quick"), dict) else {}
+    deep = value.get("deep") if isinstance(value.get("deep"), dict) else {}
+    return (
+        value.get("quickPromising") is True,
+        value.get("quickAccepted") is True,
+        str(qh.get("status") or ""),
+        int(qh.get("score") or 0),
+        int(qh.get("streamsReturned") or 0),
+        int(qh.get("streamsPlayable") or 0),
+        str(dh.get("status") or ""),
+        int(dh.get("score") or 0),
+        int(dh.get("streamsReturned") or 0),
+        int(dh.get("streamsPlayable") or 0),
+        value.get("deepAccepted") is True,
+        deep_baseline_healthy_result(value),
+        int(quick.get("generatedCandidates") or 0),
+        int(quick.get("explorationProgressCount") or 0),
+        int(deep.get("generatedCandidates") or 0),
+        int(deep.get("explorationProgressCount") or 0),
+    )
+
+
+def redundant_strategy_exhaustion(
+    existing: dict[str, Any],
+    *,
+    minimum_per_profile: int = 2,
+) -> bool:
+    expected = set(guidance_contract.STRATEGY_TO_PROFILE.values())
+    grouped: dict[str, list[dict[str, Any]]] = {profile: [] for profile in expected}
+    for raw in existing.values():
+        if not isinstance(raw, dict):
+            continue
+        profile = str(raw.get("profile") or "")
+        if profile in grouped:
+            grouped[profile].append(raw)
+    for profile in expected:
+        rows = grouped[profile]
+        if len(rows) < minimum_per_profile:
+            return False
+        if any(row.get("deepAccepted") is True or deep_baseline_healthy_result(row) for row in rows):
+            return False
+        signatures = {experiment_outcome_signature(row) for row in rows}
+        if len(signatures) != 1:
+            return False
+    return True
+
+
 def deep_baseline_healthy_result(value: Any) -> bool:
     if not isinstance(value, dict):
         return False
@@ -615,6 +665,11 @@ def persist_state(output: Path, state: dict[str, Any]) -> None:
                 for provider, rows in (state.get("results") or {}).items()
                 if any(deep_baseline_healthy_result(item) for item in (rows or {}).values())
             ),
+            "strategyExhaustedProviders": sorted(
+                provider
+                for provider, rows in (state.get("results") or {}).items()
+                if redundant_strategy_exhaustion(rows or {})
+            ),
             "quickAcceptedExperiments": sum(
                 1
                 for rows in (state.get("results") or {}).values()
@@ -699,6 +754,14 @@ def provider_worker(
             for value in existing.values()
         ):
             return {"provider": provider, "deepAccepted": False, "deepBaselineHealthy": True, "skipped": "deep-baseline-healthy-already-recorded"}
+        if not continue_after_win and redundant_strategy_exhaustion(existing):
+            return {
+                "provider": provider,
+                "deepAccepted": False,
+                "deepBaselineHealthy": False,
+                "strategyExhausted": True,
+                "skipped": "redundant-strategy-outcomes",
+            }
 
         for index, guidance_row in enumerate(experiments, start=1):
             fp = str(guidance_row.get("experimentFingerprint") or "").casefold()
@@ -845,6 +908,14 @@ def provider_worker(
             )
             if (result["deepAccepted"] or result["deepBaselineHealthy"]) and not continue_after_win:
                 break
+            if not continue_after_win and redundant_strategy_exhaustion(existing):
+                print(
+                    "FIELD_LOCAL_FORCE_PROVIDER_EARLY_STOP "
+                    f"provider={provider} reason=redundant-strategy-outcomes "
+                    "minimum_per_profile=2",
+                    flush=True,
+                )
+                break
         return {
             "provider": provider,
             "deepAccepted": any(
@@ -855,6 +926,7 @@ def provider_worker(
                 deep_baseline_healthy_result(value)
                 for value in existing.values()
             ),
+            "strategyExhausted": redundant_strategy_exhaustion(existing),
             "experimentsRecorded": len(existing),
         }
     finally:
