@@ -5324,3 +5324,12 @@ This ledger is not complete merely because provider yield improves. Final comple
 - This removes repeated historical client fetches from every Deep candidate while preserving one exact client snapshot as run evidence.
 - Tests PASS: py_compile, nuvio_client_upstream_drift_guard_test.py, local_force_guidance_causal_evaluator_test.py, provider_repair_pipeline_v6_contract_test.py, git diff --check.
 - PR #199 remains intentionally unmerged while FORCE run 36240877093 is active on main SHA d0146e77.
+
+### 2026-09-26 — FORCE early-failure architecture fallback
+- FORCE run 36240877093 completed FAILURE on SHA d0146e77 after local candidate causal evaluation. Both animevostfr and mallumv remained non-authoritative because Deep reported environment_guard:nuvio_client_verification_error; these are not negative provider experiments.
+- Canonical evidence: mallumv route recovery is proven against Yoru /search.php?q={query} with HTTP 200 and provider requests observed, but zero streams; animevostfr route recovery timed out. Both remain in the repairQueue.
+- Confirmed orchestration gap: architecture FORCE escalation previously depended on provider-brain-repair-latest.json. When Deep crashed before that report was written, no runtime FIELD_PROVIDER_BRAIN_FORCE_ARCH_DISPATCH was emitted and no architecture Learning run started.
+- PR #199 adds a fail-safe FORCE fallback: if canonical Repair fails before the Brain report exists, derive the exact cohort from manual target_provider, push trigger targetProviders, or only then the current repairQueue, and dispatch brain-learning-lab.yml with architecture_force=true.
+- The normal report-derived path remains preferred and marks source=brain-report; the fallback marks source=canonical-failure-fallback. A dispatch guard prevents double scheduling.
+- PR #199 also prints FIELD_REPAIR_NUVIO_CLIENT_SNAPSHOT per client before Deep and reuses the validated snapshot intra-run, exposing GitHub-runner transport/history errors instead of hiding them behind capture_output.
+- Validation PASS locally: provider_repair_learning_escalation_workflow_test.py, provider_repair_pipeline_v6_contract_test.py, nuvio_client_upstream_drift_guard_test.py, local_force_guidance_causal_evaluator_test.py, py_compile, Ruby YAML parse, git diff --check.
