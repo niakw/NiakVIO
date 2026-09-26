@@ -27,7 +27,10 @@ MAX_REPLACE = 5000
 MAX_CREATE = 12000
 MAX_SOURCE_SNIPPET = 4200
 MAX_TOTAL_SOURCE_CONTEXT = 10500
-MAX_MODEL_TOKENS = 1200
+MAX_MODEL_TOKENS = 800
+MODEL_TIMEOUT_SECONDS = 180
+RETRY_MODEL_TOKENS = 500
+RETRY_SOURCE_CONTEXT = 5200
 
 
 def load(path: Path) -> dict[str, Any]:
@@ -141,42 +144,88 @@ def source_context(blueprint: dict[str, Any], patterns: list[str]) -> dict[str, 
     return out
 
 
-def call_model(endpoint: str, model: str, payload: dict[str, Any]) -> dict[str, Any]:
+def _model_request(
+    endpoint: str,
+    model: str,
+    payload: dict[str, Any],
+    *,
+    max_tokens: int,
+    timeout: int,
+    compact: bool = False,
+) -> dict[str, Any]:
     system = (
         "You are NiakVIO Brain architecture FORCE materializer. "
         "Return JSON only: {edits:[...]}. Create the smallest executable architecture change "
         "that implements the supplied blueprint. Never edit providers, manifests, ProviderBase, "
         "publication files or secrets. Use only exact source snippets supplied. Max 3 edits. "
         "Allowed operations: replace {operation,path,find,replace}; create {operation,path,content}. "
-        "New files only under scripts/brain_layers/ or tests/brain_."
+        "New files only under scripts/brain_layers/ or tests/brain_. "
+        "Prefer one minimal code edit plus one focused test. No prose."
     )
+    if compact:
+        system += (
+            " Be extremely compact; avoid creating a new file unless a replacement cannot "
+            "implement the capability."
+        )
     body = {
         "model": model,
         "temperature": 0,
-        "max_tokens": MAX_MODEL_TOKENS,
+        "max_tokens": max_tokens,
         "messages": [
             {"role": "system", "content": system},
-            {"role": "user", "content": json.dumps(payload, ensure_ascii=True)},
+            {
+                "role": "user",
+                "content": json.dumps(payload, ensure_ascii=True, separators=(",", ":")),
+            },
         ],
     }
     req = Request(
         endpoint.rstrip("/") + "/v1/chat/completions",
-        data=json.dumps(body).encode("utf-8"),
+        data=json.dumps(body, separators=(",", ":")).encode("utf-8"),
         headers={"Content-Type": "application/json"},
         method="POST",
     )
     try:
-        with urlopen(req, timeout=120) as response:
-            value = json.loads(response.read().decode("utf-8"))
+        with urlopen(req, timeout=timeout) as response:
+            return json.loads(response.read().decode("utf-8"))
     except HTTPError as exc:
-        body = ""
+        error_body = ""
         try:
-            body = exc.read().decode("utf-8", errors="replace")
+            error_body = exc.read().decode("utf-8", errors="replace")
         except Exception:
-            body = ""
+            error_body = ""
         raise RuntimeError(
-            f"architecture model HTTP {exc.code}: {body[:1200] or exc.reason}"
+            f"architecture model HTTP {exc.code}: {error_body[:1200] or exc.reason}"
         ) from exc
+
+
+def _compact_payload(payload: dict[str, Any]) -> dict[str, Any]:
+    compact = dict(payload)
+    remaining = RETRY_SOURCE_CONTEXT
+    sources: dict[str, str] = {}
+    for path, text in (payload.get("sources") or {}).items():
+        if remaining <= 0:
+            break
+        snippet = str(text)[: min(2600, remaining)]
+        if snippet:
+            sources[str(path)] = snippet
+            remaining -= len(snippet)
+    compact["sources"] = sources
+    keep = {
+        "capability_gap_detector",
+        "meta_learning_gap_synthesis",
+        "architecture_layer_synthesis",
+        "verification_contract_synthesis",
+    }
+    compact["architectureLayers"] = [
+        row
+        for row in (payload.get("architectureLayers") or [])
+        if isinstance(row, dict) and str(row.get("id") or "") in keep
+    ]
+    return compact
+
+
+def _parse_model_value(value: dict[str, Any]) -> dict[str, Any]:
     raw = str(value["choices"][0]["message"]["content"]).strip()
     if raw.startswith("~~~") or raw.startswith(chr(96) * 3):
         raw = "\n".join(raw.splitlines()[1:-1]).strip()
@@ -187,6 +236,30 @@ def call_model(endpoint: str, model: str, payload: dict[str, Any]) -> dict[str, 
         raise ValueError("architecture model output must be object")
     return parsed
 
+
+def call_model(endpoint: str, model: str, payload: dict[str, Any]) -> dict[str, Any]:
+    try:
+        value = _model_request(
+            endpoint,
+            model,
+            payload,
+            max_tokens=MAX_MODEL_TOKENS,
+            timeout=MODEL_TIMEOUT_SECONDS,
+        )
+    except TimeoutError:
+        print(
+            "FIELD_BRAIN_ARCH_FORCE_MODEL_RETRY reason=timeout mode=compact",
+            flush=True,
+        )
+        value = _model_request(
+            endpoint,
+            model,
+            _compact_payload(payload),
+            max_tokens=RETRY_MODEL_TOKENS,
+            timeout=120,
+            compact=True,
+        )
+    return _parse_model_value(value)
 
 def main() -> int:
     p = argparse.ArgumentParser()

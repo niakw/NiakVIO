@@ -102,6 +102,58 @@ ctx = mod.source_context(
 )
 assert sum(len(v) for v in ctx.values()) <= mod.MAX_TOTAL_SOURCE_CONTEXT
 assert all(len(v) <= mod.MAX_SOURCE_SNIPPET for v in ctx.values())
-assert mod.MAX_MODEL_TOKENS <= 1200
+assert mod.MAX_MODEL_TOKENS <= 800
+assert mod.MODEL_TIMEOUT_SECONDS == 180
+assert mod.RETRY_MODEL_TOKENS == 500
+
+compact = mod._compact_payload({
+    "sources": {"a": "x" * 4000, "b": "y" * 4000, "c": "z" * 4000},
+    "architectureLayers": [
+        {"id": "meta_learning_gap_synthesis"},
+        {"id": "force_architecture_promotion"},
+    ],
+})
+assert sum(len(v) for v in compact["sources"].values()) <= mod.RETRY_SOURCE_CONTEXT
+assert [row["id"] for row in compact["architectureLayers"]] == [
+    "meta_learning_gap_synthesis"
+]
+
+calls = []
+original_request = mod._model_request
+try:
+    def fake_request(endpoint, model, payload, *, max_tokens, timeout, compact=False):
+        calls.append((max_tokens, timeout, compact, sum(len(v) for v in (payload.get("sources") or {}).values())))
+        if len(calls) == 1:
+            raise TimeoutError("synthetic timeout")
+        import json
+        return {
+            "choices": [{
+                "message": {
+                    "content": json.dumps({
+                        "edits": [{
+                            "operation": "create",
+                            "path": "scripts/brain_layers/demo.py",
+                            "content": "VALUE = 1\n",
+                        }]
+                    })
+                }
+            }]
+        }
+
+    mod._model_request = fake_request
+    result = mod.call_model(
+        "http://127.0.0.1:8080",
+        "demo",
+        {
+            "sources": {"a": "x" * 4000, "b": "y" * 4000},
+            "architectureLayers": [{"id": "meta_learning_gap_synthesis"}],
+        },
+    )
+    assert result["edits"][0]["path"] == "scripts/brain_layers/demo.py"
+    assert calls[0][:3] == (mod.MAX_MODEL_TOKENS, mod.MODEL_TIMEOUT_SECONDS, False)
+    assert calls[1][:3] == (mod.RETRY_MODEL_TOKENS, 120, True)
+    assert calls[1][3] <= mod.RETRY_SOURCE_CONTEXT
+finally:
+    mod._model_request = original_request
 
 print("Brain architecture FORCE materializer tests passed")
