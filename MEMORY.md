@@ -5428,3 +5428,10 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Generic fix: in exploration, unknown_failure is treated as a direct architecture-gap escalation candidate. Existing meta-gap rebinding selects adaptive_runtime_recovery and remains prior-only/current-byte gated.
 - New test brain_unknown_gap_escalation_test.py proves unknown_failure -> architectureGapEscalation=true -> metaGapEscalated=true -> synthesized_strategy -> adaptive_runtime_recovery -> probe-targeted-repair.
 - Existing LLM advisor, declarative meta-gap, second-order runtime and engine-v2 Repair Brain tests remain PASS.
+
+### 2026-09-26 — Cloud-first convergence loop and census freshness
+- Local 14-case architecture validation is development evidence only; future scale must not depend on manual/local provider testing.
+- Final bounded local exploration: animesalt no longer remains stuck in Repair; selected=1, accepted=0, deferred_learning=1, remaining=0, time_budget_exhausted=false. This is routing/progression evidence only, not playback proof.
+- PROVIDER_CENSUS_STATUS.md was confirmed stale at Repair run 36243145290 while main had advanced to 5fdf1285 and later Brain architecture work; Provider Census - Sharded had not run since 2026-09-25.
+- Cloud loop fix: Brain planner/runtime/layer/execution-plan changes and provider-census-status.json now trigger PROVIDERS - Brain Autopilot. A successful PROVIDERS - Fast Brain Repair now triggers Provider Census - Sharded in unresolved scope. This creates the intended census -> causal plan -> repair/learning -> census convergence loop without local orchestration.
+- CodeQL #2511, #2512, #2513 were test-only incomplete URL substring findings in brain_llm_experiment_runtime_test.py. The test now converts blocked_hosts to a set and asserts an exact required-host subset rather than ambiguous membership expressions.
