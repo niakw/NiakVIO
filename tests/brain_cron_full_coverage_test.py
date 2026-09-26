@@ -149,9 +149,11 @@ def main() -> int:
     assert "- name: Assert exact Learning SHA" in workflow
     assert 'test "$(git rev-parse HEAD)" = "${GITHUB_SHA}"' in workflow
     assert "FIELD_BRAIN_LEARNING_SHA" in workflow
-    assert "group: niakvio-brain-learning-lab" in workflow
+    assert "niakvio-brain-learning-lab-v2" in workflow
+    assert "niakvio-brain-learning-force-" in workflow
+    assert "inputs.target_providers || inputs.target_provider || 'global-force'" in workflow
     assert "niakvio-brain-learning-lab-${{ github.run_id }}" not in workflow
-    assert "cancel-in-progress: ${{ github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.architecture_force == true) }}" in workflow, "new explicit architecture FORCE must cancel stale FORCE Learning while normal manual Learning stays serialized"
+    assert "cancel-in-progress: ${{ github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.architecture_force == true) }}" in workflow, "fresh FORCE may cancel stale work only inside the exact cohort concurrency group"
     assert "group: niakvio-brain-learning-memory-publish" in workflow
     assert "group: niakvio-brain-repair-proposal-publish" in workflow
     assert "group: niakvio-brain-architecture-proposal-publish" in workflow

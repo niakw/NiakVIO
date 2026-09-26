@@ -347,6 +347,9 @@ Repair/FORCE/Fast Repair/Autopilot may consume persisted sanitized Learning
 priors. When current executable provider methods are exhausted, FORCE may hand
 the exact unresolved cohort to the guarded architecture FORCE lane. That handoff
 must never request a proposal PR and never grants provider publication authority.
+Explicit FORCE Learning is concurrency-keyed by its exact target cohort: a newer
+run may replace stale work for the same cohort, while independent cohorts in the
+same 15-provider cycle must remain able to complete without cancelling each other.
 
 The causal fingerprint/dispatch ledger remains useful to the Learning slot for
 deduplication:

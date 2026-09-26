@@ -123,9 +123,13 @@ assert "brain_llm_experiment.py" in workflow
 assert "Qwen/Qwen2.5-Coder-3B-Instruct-GGUF:Q4_K_M" in workflow
 assert "-c 8192 -np 2" in workflow
 assert "--workers 2" in workflow
+assert "--advisor-only" in workflow
+assert "--max-hypotheses 1" in workflow
 assert '--max-tokens "$max_tokens"' in workflow
-assert "max_tokens=768" in workflow
-assert "max_tokens=512" in workflow
+assert "max_tokens=160" in workflow
+assert "--timeout-seconds 45" in workflow
+assert "max_tokens=768" not in workflow
+assert "max_tokens=512" not in workflow
 # Ephemeral private documents may feed the model but must never be uploaded.
 upload_tail=workflow[workflow.find("Upload sanitized learning and proposal state"):]
 assert "private-documents.jsonl" not in upload_tail

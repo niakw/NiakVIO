@@ -5586,3 +5586,9 @@ This ledger is not complete merely because provider yield improves. Final comple
 - The 15-provider queue is 4khdhub, allanime, allwish, anime-ultime, animesalt, animesultra, animevost-fr, animevostfr, flemmix, mallumv, moviebox, moviesmod, vidfast, vostfree, yflix. The previous 13 figure was only the Fast Repair sub-cohort, not census coverage.
 - Pre-trigger main b1643988 passed Workflow Gate 36279641872, Verify & Publish 36279641845 and Provider Non-Regression 36279641888.
 - Retry 10 uses current Brain LLM main b18524e7 and the bounded architecture materializer (220 tokens/70s primary; 120 tokens/45s minimal retry). FORCE remains PR-free and explicit-trigger-only.
+
+### 2026-09-27 — FORCE Learning contracts aligned and cohort-isolated
+- Retry 10 routed all 15 current providers with zero blocked/harness lanes: 13 Fast Repair, animevostfr REMAT, allwish targeted Learning.
+- allwish Learning run 36279954917 failed before provider experimentation because brain_llm_guidance_contract_test.py still asserted the retired 768/512-token advisor budgets even though the workflow had already been reduced to advisor-only 160 tokens / 45s.
+- The stale guidance test now asserts advisor-only, max-hypotheses=1, 160 tokens and 45s, and explicitly rejects the retired 768/512 budgets.
+- Architecture FORCE Learning concurrency is now keyed by the exact target cohort. A fresh FORCE run cancels stale work only for the same cohort; allwish and the separate 13-provider Fast handoff can no longer cancel each other merely because both use architecture_force=true.

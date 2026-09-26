@@ -41,12 +41,12 @@ on:
   schedule:
     - cron: "17 2 * * *"
 
-# Learning is globally serialized. Push-triggered reconstruction may replace
-# an older unpublished push run, but explicit targeted cohorts queue instead of
-# cancelling one another so FAST handoff and independent Learning debt cannot
-# starve each other.
+# Normal Learning stays globally serialized. Explicit architecture FORCE is
+# serialized per exact targeted cohort: a fresh run cancels stale work for the
+# same cohort, but independent FORCE cohorts (for example allwish vs FAST debt)
+# must not cancel one another.
 concurrency:
-  group: niakvio-brain-learning-lab-v2
+  group: ${{ github.event_name == 'workflow_dispatch' && inputs.architecture_force == true && format('niakvio-brain-learning-force-{0}', inputs.target_providers || inputs.target_provider || 'global-force') || 'niakvio-brain-learning-lab-v2' }}
   cancel-in-progress: ${{ github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.architecture_force == true) }}
 
 jobs:
