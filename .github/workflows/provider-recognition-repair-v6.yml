@@ -115,6 +115,7 @@ jobs:
             scripts/provider_patches/adaptive_runtime_recovery_v5.py \
             scripts/upgrade_provider_repair_v6.py \
             scripts/upgrade_provider_runtime_reconstruction_v21_12.py \
+            scripts/upgrade_stream_sanitizer_v7_selection.py \
             scripts/merge_provider_repair_report_v6.py \
             scripts/audit_provider_repair_yield_v6.py \
             scripts/audit_provider_quick_yield_targeted.py \
@@ -127,6 +128,7 @@ jobs:
             scripts/reconcile_targeted_provider_publication.py
           python scripts/upgrade_provider_runtime_reconstruction_v21_12.py
           python tests/provider_repair_pipeline_v6_contract_test.py
+          python tests/stream_sanitizer_v7_monotonic_test.py
           python tests/provider_authority_arbiter_test.py
           python tests/provider_authority_current_catalogue_test.py
           python tests/provider_domain_authority_memory_test.py
