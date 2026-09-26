@@ -5407,3 +5407,10 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Follow-up local proof showed MalluMV can already be classified as unknown_failure / architecture_gap while experimentExhausted remains false because there are no meaningful ordinary variants to exhaust.
 - Repair exploration now permits meta-gap synthesis immediately when baseRepairTarget.repairType is architecture_gap, while preserving the ordinary exhaustion requirement for non-architecture-gap cases.
 - Synthetic direct architecture-gap contract proves stale chain-terminal guidance is rebound to unknown_failure, selects adaptive_runtime_recovery, produces synthesized_strategy, and remains sandbox/current-byte gated.
+
+### 2026-09-26 — Meta-gap fingerprint rotation after synthesized failure
+- Live 14-provider rerun proved direct architecture-gap escalation works: MalluMV reached synthesized_strategy with metaGapEscalated=true and exact-rebound.
+- The next wave exposed one final loop defect: after synthesized v1 failed, planner rejected the repeated rebound fingerprint but did not derive v2.
+- Planner now deterministically rotates rebound meta-gap experiments through up to 16 bounded compositions and skips every fingerprint already present in negative memory.
+- New telemetry llmAdvisorMetaGapGeneration records the selected synthesized generation.
+- Synthetic contract proves v1 failure -> v2 fresh fingerprint -> synthesized_strategy remains active.

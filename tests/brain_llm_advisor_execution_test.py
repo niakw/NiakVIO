@@ -523,3 +523,32 @@ assert direct_arch["llmAdvisorSourceFailureClass"]=="unknown_failure",direct_arc
 assert direct_arch["llmAdvisorProfile"]=="adaptive_runtime_recovery",direct_arch
 assert direct_arch["allowedProfiles"][0]=="adaptive_runtime_recovery",direct_arch
 assert direct_arch["action"]=="probe-targeted-repair",direct_arch
+
+
+direct_first_fp=direct_arch["llmAdvisorExperimentFingerprint"]
+direct_retry_memory=[{
+    "providerId":"synthetic-direct-arch-gap",
+    "failureClass":"unknown_failure",
+    "signature":direct_arch["signature"],
+    "experimentVariant":0,
+    "experimentGeneration":1,
+    "profile":"adaptive_runtime_recovery",
+    "failures":1,
+    "consecutiveFailures":1,
+    "successes":0,
+    "executionObserved":True,
+    "lastOutcome":"rejected",
+    "lastReason":"synthetic_meta_gap_v1_failed",
+    "llmAdvisorExperimentFingerprint":direct_first_fp,
+}]
+direct_retry_payload={**direct_arch_payload,"negativeMemory":direct_retry_memory}
+direct_retry_completed=subprocess.run(
+    ["node",str(PLANNER)],
+    cwd=ROOT,input=json.dumps(direct_retry_payload),capture_output=True,text=True,check=True,timeout=20,
+)
+direct_retry=next(iter((json.loads(direct_retry_completed.stdout).get("plans") or {}).values()))
+assert direct_retry["metaGapEscalated"] is True,direct_retry
+assert direct_retry["llmAdvisorProfile"]=="adaptive_runtime_recovery",direct_retry
+assert direct_retry["llmAdvisorExperimentFingerprint"] != direct_first_fp,direct_retry
+assert direct_retry["llmAdvisorMetaGapGeneration"]==1,direct_retry
+assert direct_retry["repairType"]=="synthesized_strategy",direct_retry

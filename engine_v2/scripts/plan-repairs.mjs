@@ -208,6 +208,56 @@ function rebindMetaGapExperiment(experiment, failureClass) {
   return next;
 }
 
+function rotateMetaGapExperiment(experiment, failureClass, generation) {
+  const next = rebindMetaGapExperiment(experiment, failureClass);
+  const step = Math.max(0, Math.floor(finiteNumber(generation, 0)));
+  if (step === 0) return next;
+  const roles = stringArray(next.roleOrder);
+  if (roles.length > 1) {
+    const rotate = step % roles.length;
+    next.roleOrder = [...roles.slice(rotate), ...roles.slice(0, rotate)];
+  }
+  const current = canonicalFailureClass(failureClass);
+  if (current === "provider_transport_gap" || current === "transport_blocked") {
+    const routes = ["owned_plus_peer", "owned_only", "owned_plus_peer_generic"];
+    const recipes = ["current_plus_provider", "current_plus_provider_peer", "current_only"];
+    next.routePolicy = routes[step % routes.length];
+    next.recipePolicy = recipes[(step + 1) % recipes.length];
+    next.sessionBootstrap = step % 2 === 0 ? true : Boolean(next.sessionBootstrap);
+  } else if (current === "route_proven_gap" || current === "search_gap") {
+    const routes = ["owned_plus_peer_generic", "owned_plus_peer", "owned_only"];
+    const recipes = ["current_plus_provider_peer", "current_plus_provider", "current_only"];
+    next.routePolicy = routes[step % routes.length];
+    next.recipePolicy = recipes[step % recipes.length];
+    next.aliasSearch = true;
+  } else if (
+    current === "chain_terminal_gap"
+    || current === "media_extraction_gap"
+    || current === "playback_context_gap"
+  ) {
+    next.routePolicy = step % 2 === 0 ? "owned_only" : "owned_plus_peer";
+    next.recipePolicy = step % 3 === 0 ? "current_plus_provider_peer" : "current_plus_provider";
+    next.terminalOnly = true;
+  } else if (current === "candidate_replay_gap") {
+    next.routePolicy = step % 2 === 0 ? "owned_only" : "owned_plus_peer";
+    next.recipePolicy = step % 3 === 0 ? "current_plus_provider" : "current_plus_provider_peer";
+    next.aliasSearch = true;
+    next.sessionBootstrap = true;
+  } else {
+    const routes = ["owned_plus_peer", "owned_plus_peer_generic", "owned_only"];
+    const recipes = ["current_plus_provider", "current_plus_provider_peer", "current_only"];
+    next.routePolicy = routes[step % routes.length];
+    next.recipePolicy = recipes[step % recipes.length];
+    next.aliasSearch = step % 2 === 1 || Boolean(next.aliasSearch);
+    next.sessionBootstrap = step % 2 === 0 || Boolean(next.sessionBootstrap);
+  }
+  next.maxDepth = Math.min(6, Math.max(2, finiteNumber(next.maxDepth, 4) + Math.floor(step / 4)));
+  next.maxPages = Math.min(36, Math.max(6, finiteNumber(next.maxPages, 18) + (step % 4) * 2));
+  next.maxEmbeds = Math.min(36, Math.max(6, finiteNumber(next.maxEmbeds, 16) + (step % 5)));
+  next.maxRecipePasses = Math.min(6, Math.max(1, finiteNumber(next.maxRecipePasses, 4) + Math.floor(step / 5)));
+  return next;
+}
+
 const output = {
   schemaVersion: 2,
   brainVersion: BRAIN_CONTROL_PLANE_VERSION,
@@ -336,7 +386,6 @@ function llmAdvisorStrategyHint(providerId, failureClass, memoryRows, rotateEver
       return {
         ...row,
         profile: metaGapRebound ? metaGapProfile : row.profile,
-        experiment: metaGapRebound ? rebindMetaGapExperiment(row.experiment, failure) : row.experiment,
         failureCompatibility: metaGapRebound
           ? "exact-rebound"
           : llmFailureCompatibility(row.failureClass, failure),
@@ -362,35 +411,59 @@ function llmAdvisorStrategyHint(providerId, failureClass, memoryRows, rotateEver
       || Number(b.failureCompatibility === "exact-rebound") - Number(a.failureCompatibility === "exact-rebound")
       || finiteNumber(b.confidence, 0) - finiteNumber(a.confidence, 0)
     ));
+
+  const failedFingerprint = (profile, experimentFingerprint) => memoryRows.some((memory) => {
+    if (
+      stringValue(memory.profile).toLowerCase() !== profile
+      || Math.max(0, finiteNumber(memory.consecutiveFailures, 0)) < rotateEvery
+    ) return false;
+    const remembered = stringValue(memory.llmAdvisorExperimentFingerprint).toLowerCase();
+    return experimentFingerprint ? remembered === experimentFingerprint : !remembered;
+  });
+
   for (const row of rows) {
     const profile = stringValue(row.profile).toLowerCase();
+    if (row.metaGapRebound) {
+      for (let generation = 0; generation < 16; generation += 1) {
+        const experiment = rotateMetaGapExperiment(row.experiment, failure, generation);
+        const experimentFingerprint = crypto
+          .createHash("sha256")
+          .update(JSON.stringify(experiment))
+          .digest("hex");
+        if (failedFingerprint(profile, experimentFingerprint)) continue;
+        return {
+          profile,
+          strategy: stringValue(row.strategy).toLowerCase(),
+          confidence: finiteNumber(row.confidence, 0),
+          sourceFailureClass: failure,
+          failureCompatibility: row.failureCompatibility,
+          experiment,
+          experimentFingerprint,
+          guidanceKind: stringValue(row.guidanceKind),
+          localForceAmbiguous: row.localForceAmbiguous === true,
+          metaGapRebound: true,
+          metaGapGeneration: generation,
+        };
+      }
+      continue;
+    }
+
     const experiment = asRecord(row.experiment);
     const fingerprintRaw = stringValue(row.experimentFingerprint).toLowerCase();
-    const reboundFingerprint = row.metaGapRebound
-      ? crypto.createHash("sha256").update(JSON.stringify(experiment)).digest("hex")
-      : "";
-    const experimentFingerprint = reboundFingerprint
-      || (/^[0-9a-f]{64}$/.test(fingerprintRaw) ? fingerprintRaw : "");
-    const alreadyFailed = memoryRows.some((memory) => {
-      if (
-        stringValue(memory.profile).toLowerCase() !== profile
-        || Math.max(0, finiteNumber(memory.consecutiveFailures, 0)) < rotateEvery
-      ) return false;
-      const remembered = stringValue(memory.llmAdvisorExperimentFingerprint).toLowerCase();
-      return experimentFingerprint ? remembered === experimentFingerprint : !remembered;
-    });
-    if (alreadyFailed) continue;
+    const experimentFingerprint = /^[0-9a-f]{64}$/.test(fingerprintRaw) ? fingerprintRaw : "";
+    if (failedFingerprint(profile, experimentFingerprint)) continue;
     return {
       profile,
       strategy: stringValue(row.strategy).toLowerCase(),
       confidence: finiteNumber(row.confidence, 0),
-      sourceFailureClass: row.metaGapRebound ? failure : canonicalFailureClass(row.failureClass),
+      sourceFailureClass: canonicalFailureClass(row.failureClass),
       failureCompatibility: row.failureCompatibility,
       experiment,
       experimentFingerprint,
       guidanceKind: stringValue(row.guidanceKind),
       localForceAmbiguous: row.localForceAmbiguous === true,
-      metaGapRebound: row.metaGapRebound === true,
+      metaGapRebound: false,
+      metaGapGeneration: 0,
     };
   }
   return {
@@ -404,6 +477,7 @@ function llmAdvisorStrategyHint(providerId, failureClass, memoryRows, rotateEver
     guidanceKind: "",
     localForceAmbiguous: false,
     metaGapRebound: false,
+    metaGapGeneration: -1,
   };
 }
 
@@ -888,6 +962,7 @@ function buildPlan(item) {
     llmAdvisorExperimentFingerprint: llmAdvisorHint.experimentFingerprint,
     llmAdvisorGuidanceKind: llmAdvisorHint.guidanceKind,
     llmAdvisorLocalForceAmbiguous: llmAdvisorHint.localForceAmbiguous === true,
+    llmAdvisorMetaGapGeneration: finiteNumber(llmAdvisorHint.metaGapGeneration, -1),
     historicalStrategyProfile: historicalHint.profile,
     historicalStrategyCase: historicalHint.caseId,
     historicalSolutionClass: historicalHint.solutionClass,
