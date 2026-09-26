@@ -5363,3 +5363,11 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Fixed planner/runtime contract: declarative meta-gap guidance is now exposed in Learning or Brain Repair exploration chains.
 - Safety rule: meta-gap guidance is filtered out before ordinary experiment exhaustion. In Repair it can become one bounded llmAdvisorRescue only after exhaustion; in Learning it can become repairType=synthesized_strategy only after coded post-exhaustion strategies are also exhausted.
 - Regression tests prove early meta-gap preemption is impossible and post-exhaustion rescue is enabled.
+
+### 2026-09-26 — Declarative meta-gap live Repair proof
+- Live isolated Repair on SHA 07b4fcdb for allanime + animevostfr + mallumv proved the meta-gap surface is actually executable in Brain Repair exploration, not only unit-tested.
+- First batch produced 3 sandbox exploration progressions (previous comparable run produced 1).
+- allanime: exhausted chain_terminal_gap reopened as probe-targeted-repair via synthesized chain_terminal_extractor_v1 experiment fingerprint 7afa337b..., llmAdvisorRescue=true; still no playable stream.
+- animevostfr: exhausted candidate_replay_gap reopened as probe-targeted-repair via synthesized retained_candidate_replay_v1 fingerprint 04ccbdba..., llmAdvisorRescue=true; still no playable stream.
+- mallumv remained on a non-exhausted search_gap/adaptive path during this two-wave sample; no repair accepted.
+- Result: declarative synthesis removes fixed-profile exhaustion as a hard stop for known families, but does not itself prove provider resolution. Further experiment generations remain required.
