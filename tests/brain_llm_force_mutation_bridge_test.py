@@ -124,6 +124,13 @@ with tempfile.TemporaryDirectory() as tmp:
     assert changed == "scripts/provider_patches/demo_runtime_v1.py"
     assert "return str(value)" in patch.read_text(encoding="utf-8")
 
+    try:
+        mod._reject_placeholders("line\n/* clipped */")
+    except ValueError as exc:
+        assert "placeholder or synthetic" in str(exc)
+    else:
+        raise AssertionError("clipped Force mutation content was accepted")
+
     unsafe = {
         "scope": "provider_patch",
         "operation": "unified_diff",
