@@ -17,6 +17,9 @@ assert '"scripts/upgrade_provider_runtime_reconstruction_v21_12.py"' in pipe
 assert '"scripts/upgrade_provider_voiranime_homes_authority_v21_10.py"' not in pipe
 assert '"tests/provider_voiranime_homes_authority_v21_10_test.py"' not in pipe
 assert '"routePlanRevision": "v21.12"' in pipe
+assert 'if args.mode == "force":' in pipe
+assert 'FIELD_FORCE_HISTORICAL_MIGRATIONS' in pipe
+assert 'reason=current-bytes-only' in pipe
 
 assert 'NIAKVIO_PROVIDER_RUNTIME_RECONSTRUCTION_V21_12' in base
 assert 'ROUTE_RECOVERY_IDENTITY_SEARCH_V21_12' in recovery
