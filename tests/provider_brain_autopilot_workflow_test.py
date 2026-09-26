@@ -69,7 +69,7 @@ for source in (fast, remat):
     assert "DISPATCH_PROVIDERS" in source
 
 assert '-f waves=1 -f time_budget_seconds=600 -f max_rounds_per_batch=1' in autopilot
-assert 'learning_dispatch=true owner=immediate-targeted-learning' in fast
+assert 'learning_dispatch=true architecture_force=$force_mode owner=immediate-targeted-learning' in fast
 assert 'gh workflow run brain-learning-lab.yml' in fast
 assert 'architecture_force=$force_mode' in fast
 assert '-f target_providers="$learn_handoff_csv"' in fast
