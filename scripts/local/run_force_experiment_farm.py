@@ -639,6 +639,7 @@ def persist_state(output: Path, state: dict[str, Any]) -> None:
             "publicationPerformed": False,
             "githubWorkflowDispatched": False,
             "learningPlannerModeExecuted": False,
+            "clientDriftGuardSkippedForLocalExperiments": True,
         }
         atomic_write_json(output / "SUMMARY.json", summary)
 
@@ -695,6 +696,11 @@ def provider_worker(
             env["NIAKVIO_BRAIN_LLM_GUIDANCE"] = str(local_root / "quick" / "guidance.json")
             env["NUVIO_BRAIN_EXPLORATION_CHAIN"] = "1"
             env["NUVIO_HEALTH_CONCURRENCY"] = "1"
+            # Local experiment worktrees are non-authoritative and cannot
+            # reliably verify all upstream client repositories. Production
+            # publication remains fenced by GitHub FORCE, which re-runs the
+            # real client drift guard before accepting any winner.
+            env["NIAKVIO_SKIP_CLIENT_DRIFT_GUARD"] = "1"
             env.pop("NUVIO_BRAIN_PLANNER_MODE", None)
 
             result: dict[str, Any] = {
