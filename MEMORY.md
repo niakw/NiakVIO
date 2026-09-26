@@ -5580,3 +5580,9 @@ This ledger is not complete merely because provider yield improves. Final comple
 ### 2026-09-27 — Materializer budget contract aligned
 - Workflow Gate on 0d1835a5 correctly rejected stale test constants that still required the retired 180s/500-token materializer budget.
 - The implementation was not reverted. The contract now asserts the bounded 220-token/70s primary and 120-token/45s retry ceilings plus compact/minimal source-context caps.
+
+### 2026-09-27 — FORCE convergence retry 10 armed on 15/15
+- Authoritative census run 36277760820 remains 25 FULL OK · 2 PARTIAL OK · 1 CANDIDATE OK · 10 ROUTE PROVEN · 3 CHAIN REACHED · 1 NO PROOF across 46 providers, with symptomatic=15, repairQueue=15, harness mismatch=0 and environment blocked=0.
+- The 15-provider queue is 4khdhub, allanime, allwish, anime-ultime, animesalt, animesultra, animevost-fr, animevostfr, flemmix, mallumv, moviebox, moviesmod, vidfast, vostfree, yflix. The previous 13 figure was only the Fast Repair sub-cohort, not census coverage.
+- Pre-trigger main b1643988 passed Workflow Gate 36279641872, Verify & Publish 36279641845 and Provider Non-Regression 36279641888.
+- Retry 10 uses current Brain LLM main b18524e7 and the bounded architecture materializer (220 tokens/70s primary; 120 tokens/45s minimal retry). FORCE remains PR-free and explicit-trigger-only.
