@@ -5576,3 +5576,7 @@ This ledger is not complete merely because provider yield improves. Final comple
 - The architecture materializer now starts with compact source context instead of the full architecture payload, caps the primary response at 220 tokens / 70s, and uses a minimal blueprint+allowlist+source retry capped at 120 tokens / 45s.
 - The retry no longer carries architectureLayers; source context is capped to 1.8k characters on retry. The exact edit allowlist, executable-diff requirement, provider/publication boundary and downstream CI validation remain unchanged.
 - This change addresses the current throughput bottleneck without weakening proof authority or treating a timeout as a successful repair.
+
+### 2026-09-27 — Materializer budget contract aligned
+- Workflow Gate on 0d1835a5 correctly rejected stale test constants that still required the retired 180s/500-token materializer budget.
+- The implementation was not reverted. The contract now asserts the bounded 220-token/70s primary and 120-token/45s retry ceilings plus compact/minimal source-context caps.
