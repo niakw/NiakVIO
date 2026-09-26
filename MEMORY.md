@@ -5265,3 +5265,15 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Per-provider coverage at capture: 4khdhub 14, allanime 7, allwish 24, anime-ultime 12, animesalt 5, animesultra 12, animevost-fr 8, remaining seven providers 0.
 - Sanitized aggregate snapshot persisted to `automation/local-force-results/2026-09-26-998fa355-partial.json`. It intentionally excludes raw logs, local paths, secrets, cookies/tokens, private content and raw provider responses.
 - This snapshot is evidence only and not proof of repair completion. The next run must start from the current HEAD and preserve this snapshot as historical evidence rather than merging its state into a different source SHA.
+
+
+## 2026-09-26 Europe/Paris — local FORCE corpus is now active Brain input
+
+- Local FORCE evidence is now sufficient as a bounded provider-wide corpus: the consolidated public index covers all 14 repair providers with 124 observed experiments and at least 127 generated candidates across provider-byte-equivalent source SHAs.
+- The corpus remains non-authoritative. Local Deep candidates `animevostfr` and `mallumv` were baseline-coincident; they are hypotheses requiring targeted current-byte FORCE differential validation before causal credit or persistence.
+- `scripts/brain_repair_runtime.py` now loads persisted local FORCE winning guidance only when `NUVIO_BRAIN_PLANNER_MODE=learning`. Production Quick/Deep still accepts only exact-SHA external Brain-LLM guidance.
+- Persisted local FORCE guidance is confidence-capped, marked `localForceAmbiguous=true`, and the Node planner permits it only for exact failure-class compatibility. It cannot grant mutation, proof or publication authority.
+- `engine_v2/scripts/plan-repairs.mjs` exposes the guidance kind/ambiguity in the resulting plan for auditability.
+- CI coverage: `tests/brain_local_force_learning_prior_test.py` is required by Learning preflight, provider-recognition preflight and Workflow Gate.
+- The local farm scheduler now supports breadth-first provider batching so future datasets cover all providers before spending the full variant budget on early providers.
+- NiakVIO-Brain-LLM public experience import was extended separately to ingest the aggregate local FORCE corpus as `no_progress`, `progress_without_deep_acceptance`, `baseline_healthy` and `ambiguous_deep_candidate` priors without raw logs/private content.
