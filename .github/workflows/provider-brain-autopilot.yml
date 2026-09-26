@@ -121,9 +121,17 @@ jobs:
             echo "FIELD_PROVIDER_AUTOPILOT dispatch=FAST_REPAIR providers=$FAST"
           fi
 
-          # Learning is owned by its independent scheduled/manual slot.
+          # Learning debt must not wait for the nightly slot. Dispatch the exact
+          # bounded cohort immediately; Learning remains globally serialized and
+          # persists sanitized state/proposals before the next census.
           if [ -n "$LEARNING" ]; then
-            echo "FIELD_PROVIDER_AUTOPILOT dispatch=BRAIN_LEARNING skipped=true providers=$LEARNING reason=scheduled-learning-slot-only"
+            gh workflow run brain-learning-lab.yml \
+              --repo "$GITHUB_REPOSITORY" --ref main \
+              -f publish_proposal=true \
+              -f target_providers="$LEARNING" \
+              -f slot_remaining_minutes=60 \
+              -f slot_phase=1
+            echo "FIELD_PROVIDER_AUTOPILOT dispatch=BRAIN_LEARNING providers=$LEARNING immediate=true budget_minutes=60"
           fi
 
           # Harness/Core-client debt may refresh transport evidence now.
