@@ -255,7 +255,7 @@ function llmFailureCompatibility(guidanceFailure, currentFailure) {
   return sourceFamily && sourceFamily === currentFamily ? "family" : "";
 }
 
-function llmAdvisorStrategyHint(providerId, failureClass, memoryRows, rotateEvery) {
+function llmAdvisorStrategyHint(providerId, failureClass, memoryRows, rotateEvery, allowMetaGap = true) {
   const provider = stringValue(providerId).toLowerCase();
   const failure = canonicalFailureClass(failureClass);
   const rows = llmGuidance
@@ -269,6 +269,7 @@ function llmAdvisorStrategyHint(providerId, failureClass, memoryRows, rotateEver
         stringValue(row.providerId).toLowerCase() === provider
         && stringValue(row.targetLayer).toLowerCase() === "provider"
         && row.priorOnly === true
+        && (allowMetaGap || stringValue(row.guidanceKind).toLowerCase() !== "meta-gap-synthesis")
         && confidence >= 0.80
         && LLM_ADVISOR_PROFILES.has(stringValue(row.profile).toLowerCase())
         && Boolean(row.failureCompatibility)
@@ -617,6 +618,7 @@ function buildPlan(item) {
         evidence.failureClass,
         allMemoryMatches,
         rotateEvery,
+        true,
       )
     : { profile: "", strategy: "", confidence: 0, experiment: {}, experimentFingerprint: "", guidanceKind: "" };
   const metaGapEscalated = (
@@ -686,6 +688,7 @@ function buildPlan(item) {
           evidence.failureClass,
           allMemoryMatches,
           rotateEvery,
+          experimentExhausted,
         )
       : { profile: "", strategy: "", confidence: 0, experiment: {}, experimentFingerprint: "", guidanceKind: "" };
   const llmAdvisorProductionRescue = (

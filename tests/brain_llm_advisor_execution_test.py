@@ -342,3 +342,22 @@ assert meta_final["action"]=="probe-targeted-repair",meta_final
 assert meta_final["llmAdvisorApplied"] is True,meta_final
 assert meta_final["llmAdvisorGuidanceKind"]=="meta-gap-synthesis",meta_final
 assert meta_final["allowedProfiles"][0]=="search_contract_inference_v1",meta_final
+
+# Meta-gap guidance is also available to Brain Repair exploration, but it must
+# never preempt ordinary variants. It becomes eligible only after exhaustion.
+meta_prod_guidance=[{
+    **guidance[0],
+    "strategy":"meta-gap-route-transition-composition",
+    "profile":"search_contract_inference_v1",
+    "confidence":0.99,
+    "guidanceKind":"meta-gap-synthesis",
+    "experimentFingerprint":"d"*64,
+}]
+meta_prod_early=plan("repair",[],meta_prod_guidance)
+assert meta_prod_early["llmAdvisorApplied"] is False,meta_prod_early
+meta_prod_rescue=plan("repair",exhausted_memory,meta_prod_guidance)
+assert meta_prod_rescue["baseExperimentExhausted"] is True,meta_prod_rescue
+assert meta_prod_rescue["llmAdvisorApplied"] is True,meta_prod_rescue
+assert meta_prod_rescue["llmAdvisorRescue"] is True,meta_prod_rescue
+assert meta_prod_rescue["llmAdvisorGuidanceKind"]=="meta-gap-synthesis",meta_prod_rescue
+assert meta_prod_rescue["allowedProfiles"][0]=="search_contract_inference_v1",meta_prod_rescue

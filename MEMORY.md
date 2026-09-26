@@ -5357,3 +5357,9 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Every synthesized experiment has a SHA-256 fingerprint; already-failed provider+profile+fingerprint tuples are skipped and the next bounded composition is generated.
 - Planner Learning may consume guidanceKind=meta-gap-synthesis after all ordinary/post-exhaustion strategies are exhausted, producing repairType=synthesized_strategy and probe-targeted-repair. Existing current-byte/identity/playback/non-regression gates remain authoritative.
 - Tests PASS: declarative generator rotation, Brain LLM advisor execution including true generation-5 exhaustion, second-order runtime strategy contract, Python compile, Node syntax, diff check.
+
+### 2026-09-26 — Meta-gap synthesis enabled inside Brain Repair exploration
+- Live test of the first declarative layer showed run_provider_brain_repair executes Deep as Repair + NUVIO_BRAIN_EXPLORATION_CHAIN=1, not planner_mode=learning, so meta-gap rows were not visible there.
+- Fixed planner/runtime contract: declarative meta-gap guidance is now exposed in Learning or Brain Repair exploration chains.
+- Safety rule: meta-gap guidance is filtered out before ordinary experiment exhaustion. In Repair it can become one bounded llmAdvisorRescue only after exhaustion; in Learning it can become repairType=synthesized_strategy only after coded post-exhaustion strategies are also exhausted.
+- Regression tests prove early meta-gap preemption is impossible and post-exhaustion rescue is enabled.

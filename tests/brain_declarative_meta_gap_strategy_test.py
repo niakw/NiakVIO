@@ -28,3 +28,5 @@ second=synthesize_rows(census=census,memory=failed,current_sha="a"*40)
 alpha=next(r for r in second if r["providerId"]=="alpha")
 assert alpha["experimentFingerprint"] != first[0]["experimentFingerprint"]
 print("Brain declarative meta-gap strategy tests passed")
+
+# Runtime integration is covered separately; this generator remains pure.
