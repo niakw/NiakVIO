@@ -91,3 +91,20 @@ for required in (
     assert required in source, required
 
 print("local FORCE experiment farm contract passed")
+
+# Adaptive early-stop requires two identical outcomes in every executable profile.
+rows = {}
+for profile in farm.guidance_contract.STRATEGY_TO_PROFILE.values():
+    for idx in range(2):
+        rows[f"{profile}-{idx}"] = {
+            "profile": profile,
+            "quickPromising": False,
+            "quickAccepted": False,
+            "quickHealth": {"status": "unavailable", "score": 15, "streamsReturned": 0, "streamsPlayable": 0},
+            "quick": {"generatedCandidates": 1, "explorationProgressCount": 0},
+            "deepAccepted": False,
+            "deepBaselineHealthy": False,
+        }
+assert farm.redundant_strategy_exhaustion(rows) is True
+rows[next(iter(rows))]["quickHealth"]["score"] = 16
+assert farm.redundant_strategy_exhaustion(rows) is False
