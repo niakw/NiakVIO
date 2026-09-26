@@ -272,6 +272,7 @@ function llmAdvisorStrategyHint(providerId, failureClass, memoryRows, rotateEver
         && confidence >= 0.80
         && LLM_ADVISOR_PROFILES.has(stringValue(row.profile).toLowerCase())
         && Boolean(row.failureCompatibility)
+        && (!row.localForceAmbiguous || row.failureCompatibility === "exact")
         && (row.failureCompatibility !== "family" || confidence >= 0.90)
       );
     })
@@ -300,6 +301,8 @@ function llmAdvisorStrategyHint(providerId, failureClass, memoryRows, rotateEver
       failureCompatibility: row.failureCompatibility,
       experiment: asRecord(row.experiment),
       experimentFingerprint,
+      guidanceKind: stringValue(row.guidanceKind),
+      localForceAmbiguous: row.localForceAmbiguous === true,
     };
   }
   return {
@@ -310,6 +313,8 @@ function llmAdvisorStrategyHint(providerId, failureClass, memoryRows, rotateEver
     failureCompatibility: "",
     experiment: {},
     experimentFingerprint: "",
+    guidanceKind: "",
+    localForceAmbiguous: false,
   };
 }
 
@@ -763,6 +768,8 @@ function buildPlan(item) {
     llmAdvisorFailureCompatibility: llmAdvisorHint.failureCompatibility,
     llmAdvisorExperiment: llmAdvisorHint.experiment,
     llmAdvisorExperimentFingerprint: llmAdvisorHint.experimentFingerprint,
+    llmAdvisorGuidanceKind: llmAdvisorHint.guidanceKind,
+    llmAdvisorLocalForceAmbiguous: llmAdvisorHint.localForceAmbiguous === true,
     historicalStrategyProfile: historicalHint.profile,
     historicalStrategyCase: historicalHint.caseId,
     historicalSolutionClass: historicalHint.solutionClass,
