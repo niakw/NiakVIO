@@ -5470,3 +5470,9 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Cloud Learning run 36266646867 completed sandbox repair, sanitized memory, repair proposal and recensus successfully, but the architecture PR job failed because the executable-structural-change guard ran even with architecture_force=false.
 - Fix passes the architecture_force flag into the staged-path guard. Provider/publication boundaries and allowlists are always enforced; executable structural change is required only for explicit architecture FORCE.
 - Proposal-only Learning may therefore refresh review-only architecture metadata without turning a valid no-code proposal into a workflow failure.
+
+### 2026-09-26 — Fresh census drives Autopilot without token dispatch
+- Rebuilt the census -> Autopilot handoff on current main after automation advanced the branch while the earlier PR was open.
+- Provider Brain Autopilot now listens to successful Provider Census - Sharded workflow_run completion from this repository.
+- The census workflow no longer calls gh workflow run for Autopilot, avoiding GITHUB_TOKEN workflow-dispatch permission failures.
+- Persisted/private-exit WAF evidence is merged before final census classification so GitHub-hosted WAF challenges cannot overwrite stronger current transport evidence.
