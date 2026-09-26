@@ -5476,3 +5476,9 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Provider Brain Autopilot now listens to successful Provider Census - Sharded workflow_run completion from this repository.
 - The census workflow no longer calls gh workflow run for Autopilot, avoiding GITHUB_TOKEN workflow-dispatch permission failures.
 - Persisted/private-exit WAF evidence is merged before final census classification so GitHub-hosted WAF challenges cannot overwrite stronger current transport evidence.
+
+### 2026-09-26 — FORCE convergence propagates to architecture FORCE
+- Current convergence is explicitly FORCE. Autopilot now reads mode=force from .github/triggers/provider-brain-autopilot.json and exports that decision with the causal plan.
+- Any BRAIN_LEARNING cohort dispatched while FORCE is active receives architecture_force=true in addition to publish_proposal=true and the exact provider cohort.
+- This prevents a FORCE repair cycle from stopping at a review-only architecture proposal: exhausted/gap cases must materialize an executable structural repair, run its tests, and continue to recensus under the existing validation gates.
+- Non-FORCE Autopilot runs keep proposal-only behavior unless explicitly switched to force.
