@@ -41,6 +41,7 @@ INFRASTRUCTURE_HOSTS = {
     "google.com", "google.co.in", "support.google.com", "www.google.com", "www.google.co.in",
     "bing.com", "www.bing.com", "duckduckgo.com", "html.duckduckgo.com",
     "yandex.com", "www.yandex.com", "googletagmanager.com", "google-analytics.com",
+    "gstatic.com", "www.gstatic.com",
     "static.cloudflareinsights.com", "cloudflareinsights.com", "connect.facebook.net",
     "doubleclick.net", "googlesyndication.com",
 }
@@ -1615,11 +1616,8 @@ def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any])
                 route,
             ),
         )
-    blocked_hosts = {
-        "googletagmanager.com", "google-analytics.com", "static.cloudflareinsights.com",
-        "cloudflareinsights.com", "connect.facebook.net", "doubleclick.net",
-        "googlesyndication.com", "fstream.top",
-    }
+    blocked_hosts = set(INFRASTRUCTURE_HOSTS)
+    blocked_hosts.add("fstream.top")
     blocked_hosts.update(str(v).casefold().lstrip(".") for v in recovery_options.get("blocked_hosts") or [] if str(v).strip())
     blocked_hosts.update(network_hints["blocked_hosts"])
     blocked_paths = {"/gtag/js", "/cdn-cgi/rum", "/beacon.min.js", "/troll/"}
