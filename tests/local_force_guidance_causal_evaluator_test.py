@@ -55,11 +55,23 @@ contradictory = result(status="healthy", playable=1, returned=1, score=90, contr
 accepted, reason = mod.evaluate_pair(baseline, contradictory, 1)
 assert accepted is False
 
+import tempfile
+
+with tempfile.TemporaryDirectory(prefix="local-force-log-") as tmp:
+    log = Path(tmp) / "deep.log"
+    log.write_text("RuntimeError: Nuvio client state cannot be established safely: verification_error\n", encoding="utf-8")
+    assert mod.classify_deep_execution_error(log, 1) == "environment_guard:nuvio_client_verification_error"
+    log.write_text("subprocess timeout while probing\n", encoding="utf-8")
+    assert mod.classify_deep_execution_error(log, 124) == "environment_guard:deep_timeout"
+    log.write_text("unexpected failure\n", encoding="utf-8")
+    assert mod.classify_deep_execution_error(log, 2) == "deep_execution_error:rc=2"
+
 source = SCRIPT.read_text(encoding="utf-8")
 assert "localForcePromotion" in source
 assert "run_adaptive_deep_repair.py" in source
 assert "baseline_already_healthy" in source
 assert "causalEvidenceOnly" in source
+assert "executionObserved" in source
 assert "providerPublicationAuthority" in source
 
 print("Local FORCE guidance causal evaluator tests passed")
