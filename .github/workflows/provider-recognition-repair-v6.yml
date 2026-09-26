@@ -175,6 +175,7 @@ jobs:
           python tests/provider_repair_learning_escalation_workflow_test.py
           python tests/provider_learning_dispatch_gate_test.py
           python tests/provider_repair_waf_integration_workflow_test.py
+          python tests/provider_repair_attempt_metadata_test.py
           python tests/provider_waf_tailscale_exit_contract_test.py
           python tests/provider_waf_census_markdown_sync_test.py
           python tests/provider_repair_unresolved_scope_test.py
@@ -1285,8 +1286,28 @@ jobs:
             echo "FIELD_REPAIR_CANONICAL_LEDGER_SKIPPED reason=canonical-repair-$canonical_repair_outcome"
           fi
 
+          # Attempt activity is evidence-only. Advance it even when provider
+          # proof remains fail-closed, so the census dashboard never looks frozen.
+          if [ "$canonical_ledger_current" = "1" ]; then
+            attempt_mode=repair
+            if [ "$force_requested" = "1" ]; then attempt_mode=force; fi
+            python scripts/persist_provider_repair_attempt_metadata.py \
+              --status automation/provider-census-status.json \
+              --brain "$tmp/provider-brain-repair-latest.json" \
+              --run-id "$GITHUB_RUN_ID" \
+              --mode "$attempt_mode" \
+              --canonical-outcome "$canonical_repair_outcome" \
+              --candidate-gate-outcome "${CANDIDATE_GATE_OUTCOME:-skipped}"
+            python scripts/render_provider_census_status_from_state.py \
+              --status automation/provider-census-status.json \
+              --output PROVIDER_CENSUS_STATUS.md
+          fi
+
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if [ "$canonical_ledger_current" = "1" ]; then
+            git add PROVIDER_CENSUS_STATUS.md automation/provider-census-status.json
+          fi
           if [ "$canonical_ledger_current" = "1" ] && [ "$canonical_ledger_publishable" = "1" ]; then
             git add PROVIDER_CENSUS_STATUS.md automation/provider-census-status.json
             [ ! -f automation/provider-authority-status.json ] || git add automation/provider-authority-status.json
