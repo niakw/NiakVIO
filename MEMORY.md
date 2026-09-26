@@ -5219,3 +5219,12 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Negative experiment suppression is now scoped by `profile + experimentFingerprint` instead of fingerprint alone, so the same bounded experiment parameters can still be evaluated under a materially different executable repair profile.
 - Local resumability now keys results by `strategy + profile + experimentFingerprint`; SUMMARY additionally reports Quick accept count, generated-candidate count and strategy counts.
 - Existing local run on SHA `35709f657605859eac86a911eea7be8ca9ee7885` remains valid evidence for the old narrow farm and should not be interrupted solely for this fix. A subsequent pull/rerun on the new SHA is required to exercise the diversified search space.
+
+
+## 2026-09-26 Europe/Paris — local FORCE Quick→Deep handoff fixed
+
+- Diversified local farm telemetry on SHA `9869a1818f5c71d8a593b1ba61c1c28e6803732a` reached at least 50 experiments across all six executable advisor strategies, with 0 Deep winners and the summary reporting `generatedCandidates=0` / `quickAcceptedExperiments=0`.
+- Investigation found the summary's generated/exploration counters were read from nonexistent top-level fields. `repair-report.json` stores `generated_candidates` and `exploration_progress` per round, so the summary could falsely display zero even when candidates/progress existed.
+- More importantly, the local farm only escalated to Deep when Quick had `accepted_repairs > 0`. Quick's non-publishable `exploration_progress` is explicitly designed to represent safe partial runtime progress that may require subsequent rounds, so these promising experiments were incorrectly discarded before `--deep-rounds` could help.
+- Fixed `report_summary()` to aggregate per-round generated candidates and exploration progress; added `quickPromising` and Deep escalation when Quick is either accepted or has exploration progress; SUMMARY now exposes `quickPromisingExperiments` and `quickExplorationProgress`.
+- Added contract coverage with a synthetic multi-round report proving candidate/progress aggregation. Current fix HEAD: `d5588f175316d8402e657d484dd7f1f241ac704a`; CI gates were in progress at write time.
