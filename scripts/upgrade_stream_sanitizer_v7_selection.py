@@ -15,6 +15,13 @@ HASHES = ROOT / "scripts" / "generate_release_hashes.py"
 MARKER = "NUVIO_STREAM_SANITIZER_V7_SELECTION"
 V7 = "scripts/provider_patches/stream_output_sanitizer_v7.py"
 V8 = "scripts/provider_patches/stream_output_sanitizer_v8.py"
+V9 = "scripts/provider_patches/stream_output_sanitizer_v9.py"
+V10 = "scripts/provider_patches/stream_output_sanitizer_v10.py"
+NEWER_SANITIZERS = {
+    8: V8,
+    9: V9,
+    10: V10,
+}
 SELECTION_RE = re.compile(
     r'GLOBAL_STREAM_SANITIZER = "'
     r'(scripts/provider_patches/stream_output_sanitizer_v(?P<version>\d+)\.py)"'
@@ -38,8 +45,17 @@ def _current_selection(text: str) -> tuple[int, str]:
 
 
 def _newer_current(text: str) -> bool:
-    version, _path = _current_selection(text)
-    return version > 7
+    version, path = _current_selection(text)
+    if version <= 7:
+        return False
+    expected = NEWER_SANITIZERS.get(version)
+    if expected is not None and path != expected:
+        raise AssertionError(
+            f"sanitizer v{version} selection drifted: expected {expected}, got {path or '<missing>'}"
+        )
+    # Future versions remain monotonic even before this historical migration
+    # learns their explicit constant; it must never downgrade a newer owner.
+    return True
 
 
 def patch_overrides() -> bool:
@@ -100,6 +116,9 @@ def validate_overrides(text: str | None = None) -> None:
     version, selected = _current_selection(value)
     if version > 7:
         assert selected
+        expected = NEWER_SANITIZERS.get(version)
+        if expected is not None:
+            assert selected == expected, (version, selected, expected)
         assert f'GLOBAL_STREAM_SANITIZER = "{selected}"' in value
         assert f"NUVIO_STREAM_SANITIZER_V{version}_SELECTION" in value
         assert selected in value
