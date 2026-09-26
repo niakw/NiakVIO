@@ -61,6 +61,7 @@ PLACEHOLDER_MARKERS = (
     "<current",
     "<replace",
     "todo:",
+    "/* clipped */",
 )
 
 
