@@ -1480,7 +1480,16 @@ jobs:
             python tests/brain_architecture_force_materializer_test.py
             python tests/brain_self_architecture_test.py
           fi
-          git add -A
+          # Stage only persistent architecture surfaces. Transient Learning
+          # outputs and provider reconstruction candidates are evidence inputs,
+          # never architecture-PR payload.
+          git add engine_v2/learning/architecture-proposal.json engine_v2/learning/architecture-proposal.md
+          if [ "$(node -e "const x=require('./$SUMMARY');process.stdout.write(x.policyChanged===true?'true':'false')")" = "true" ]; then
+            git add engine_v2/config/brain-policy.json
+          fi
+          if [ "${{ inputs.architecture_force || false }}" = "true" ] && [ -s brain-learning-output/brain-architecture-force.patch ]; then
+            git add scripts/brain_layers tests engine_v2/scripts engine_v2/config .github/workflows 2>/dev/null || true
+          fi
           git diff --cached --name-only > "$RUNNER_TEMP/brain-architecture-changed-paths.txt"
           python - "$RUNNER_TEMP/brain-architecture-changed-paths.txt" engine_v2/config/brain-self-evolution.json <<'PY'
           import json,sys
