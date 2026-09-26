@@ -35,6 +35,7 @@ if str(SCRIPTS) not in sys.path:
     sys.path.insert(0, str(SCRIPTS))
 
 import brain_llm_experiment as experiment_contract  # noqa: E402
+import brain_llm_guidance as guidance_contract  # noqa: E402
 
 STATUS = ROOT / "automation" / "provider-census-status.json"
 NEGATIVE_MEMORY = ROOT / "automation" / "brain-repair-memory.json"
@@ -167,7 +168,8 @@ def template_for_status(row: dict[str, Any]) -> tuple[str, str, str]:
     return FALLBACK_TEMPLATE
 
 
-def negative_fingerprints(provider: str) -> set[str]:
+def negative_experiment_keys(provider: str) -> set[tuple[str, str]]:
+    """Executed negative evidence is scoped to profile + experiment fingerprint."""
     payload = load_json(NEGATIVE_MEMORY, {})
     rows: list[dict[str, Any]] = []
     for raw in payload.get("entries") or []:
@@ -178,15 +180,16 @@ def negative_fingerprints(provider: str) -> set[str]:
         for raw in memory.get("entries") or []:
             if isinstance(raw, dict):
                 rows.append(raw)
-    out: set[str] = set()
+    out: set[tuple[str, str]] = set()
     for row in rows:
         if canon(row.get("providerId")) != provider:
             continue
         fp = str(row.get("llmAdvisorExperimentFingerprint") or "").strip().casefold()
+        profile = str(row.get("profile") or "").strip().casefold()
         observed = row.get("executionObserved") is True
         failed = int(row.get("failures") or 0) > 0 or int(row.get("consecutiveFailures") or 0) > 0
-        if len(fp) == 64 and observed and failed:
-            out.add(fp)
+        if len(fp) == 64 and profile and observed and failed:
+            out.add((profile, fp))
     return out
 
 
@@ -220,12 +223,22 @@ def generated_experiments(
     row: dict[str, Any],
     limit: int,
 ) -> list[dict[str, Any]]:
-    failure, profile, strategy = template_for_status(row)
-    base = experiment_contract.from_proposal({}, strategy=strategy)
-    result: list[dict[str, Any]] = []
-    seen: set[str] = set()
+    """Generate a strategy-diverse, deterministic experiment portfolio.
 
-    def append(exp: dict[str, Any], source: str) -> None:
+    The previous farm varied every low-level experiment knob while keeping one
+    status-selected high-level strategy/profile fixed. That produced many
+    fingerprints without exploring materially different repair families. Keep
+    the status-selected family first, then round-robin all executable advisor
+    strategies so a 24-variant budget covers the full strategy vocabulary.
+    """
+    failure, preferred_profile, preferred_strategy = template_for_status(row)
+    strategy_pairs = list(guidance_contract.STRATEGY_TO_PROFILE.items())
+    strategy_pairs.sort(key=lambda pair: (pair[0] != preferred_strategy, pair[0]))
+
+    result: list[dict[str, Any]] = []
+    seen: set[tuple[str, str]] = set()
+
+    def append(strategy: str, profile: str, exp: dict[str, Any], source: str) -> None:
         item = _row(
             provider,
             failure=failure,
@@ -234,59 +247,86 @@ def generated_experiments(
             experiment=exp,
             source=source,
         )
-        fp = item["experimentFingerprint"]
-        if fp not in seen:
-            seen.add(fp)
+        key = (profile, item["experimentFingerprint"])
+        if key not in seen:
+            seen.add(key)
             result.append(item)
 
-    append(base, "generated-base")
-
-    candidates: list[dict[str, Any]] = []
-    for route, recipe, roles, bools, budget in itertools.product(
-        sorted(experiment_contract.ROUTE_POLICIES),
-        sorted(experiment_contract.RECIPE_POLICIES),
-        ROLE_ORDERS,
-        BOOLEAN_PROFILES,
-        BUDGETS,
-    ):
-        terminal, alias, salvage, mining, session = bools
-        depth, pages, embeds, recipe_passes = budget
-        exp = copy.deepcopy(base)
-        exp.update(
-            {
-                "routePolicy": route,
-                "recipePolicy": recipe,
-                "roleOrder": list(roles),
-                "terminalOnly": terminal,
-                "aliasSearch": alias,
-                "responseSalvage": salvage,
-                "documentRequestMining": mining,
-                "sessionBootstrap": session,
-                "maxDepth": depth,
-                "maxPages": pages,
-                "maxEmbeds": embeds,
-                "maxRecipePasses": recipe_passes,
-            }
+    # One canonical base per executable strategy gives every family at least
+    # one chance even under a small local experiment budget.
+    for strategy, profile in strategy_pairs:
+        append(
+            strategy,
+            profile,
+            experiment_contract.from_proposal({}, strategy=strategy),
+            "generated-strategy-base",
         )
-        try:
-            clean, fp = experiment_contract.validate_public(exp)
-        except ValueError:
-            continue
-        if fp in seen:
-            continue
-        candidates.append({"experiment": clean, "fingerprint": fp})
-
-    # Deterministic pseudo-shuffle: providers explore different parts of the
-    # matrix first while remaining fully reproducible.
-    candidates.sort(
-        key=lambda item: hashlib.sha256(
-            f"{provider}:{item['fingerprint']}".encode("utf-8")
-        ).hexdigest()
-    )
-    for item in candidates:
         if len(result) >= max(1, limit):
+            return result[: max(1, limit)]
+
+    per_strategy: dict[str, list[dict[str, Any]]] = {}
+    for strategy, profile in strategy_pairs:
+        base = experiment_contract.from_proposal({}, strategy=strategy)
+        candidates: list[dict[str, Any]] = []
+        local_seen: set[str] = set()
+        for route, recipe, roles, bools, budget in itertools.product(
+            sorted(experiment_contract.ROUTE_POLICIES),
+            sorted(experiment_contract.RECIPE_POLICIES),
+            ROLE_ORDERS,
+            BOOLEAN_PROFILES,
+            BUDGETS,
+        ):
+            terminal, alias, salvage, mining, session = bools
+            depth, pages, embeds, recipe_passes = budget
+            exp = copy.deepcopy(base)
+            exp.update(
+                {
+                    "routePolicy": route,
+                    "recipePolicy": recipe,
+                    "roleOrder": list(roles),
+                    "terminalOnly": terminal,
+                    "aliasSearch": alias,
+                    "responseSalvage": salvage,
+                    "documentRequestMining": mining,
+                    "sessionBootstrap": session,
+                    "maxDepth": depth,
+                    "maxPages": pages,
+                    "maxEmbeds": embeds,
+                    "maxRecipePasses": recipe_passes,
+                }
+            )
+            try:
+                clean, fp = experiment_contract.validate_public(exp)
+            except ValueError:
+                continue
+            if fp in local_seen:
+                continue
+            local_seen.add(fp)
+            candidates.append({"experiment": clean, "fingerprint": fp})
+        candidates.sort(
+            key=lambda item: hashlib.sha256(
+                f"{provider}:{strategy}:{item['fingerprint']}".encode("utf-8")
+            ).hexdigest()
+        )
+        per_strategy[strategy] = candidates
+
+    # Round-robin strategy families instead of spending the first 24 variants
+    # inside one family.
+    cursor = 0
+    while len(result) < max(1, limit):
+        progressed = False
+        for strategy, profile in strategy_pairs:
+            candidates = per_strategy.get(strategy) or []
+            if cursor >= len(candidates):
+                continue
+            item = candidates[cursor]
+            append(strategy, profile, item["experiment"], "generated-diverse-strategy-grid")
+            progressed = True
+            if len(result) >= max(1, limit):
+                break
+        if not progressed:
             break
-        append(item["experiment"], "generated-diverse-grid")
+        cursor += 1
     return result[: max(1, limit)]
 
 
@@ -355,15 +395,17 @@ def experiment_rows(
     guidance: dict[str, Any],
     limit: int,
 ) -> list[dict[str, Any]]:
-    failed = negative_fingerprints(provider)
+    failed = negative_experiment_keys(provider)
     ordered = external_rows(guidance, provider) + generated_experiments(provider, row, limit * 2)
     out: list[dict[str, Any]] = []
-    seen: set[str] = set()
+    seen: set[tuple[str, str]] = set()
     for item in ordered:
         fp = str(item.get("experimentFingerprint") or "").casefold()
-        if not fp or fp in failed or fp in seen:
+        profile = str(item.get("profile") or "").casefold()
+        key = (profile, fp)
+        if not fp or not profile or key in failed or key in seen:
             continue
-        seen.add(fp)
+        seen.add(key)
         out.append(item)
         if len(out) >= limit:
             break
@@ -383,6 +425,13 @@ def guidance_payload(sha: str, row: dict[str, Any]) -> dict[str, Any]:
         "providerCount": 1,
         "rows": [copy.deepcopy(row)],
     }
+
+
+def experiment_state_key(row: dict[str, Any]) -> str:
+    strategy = str(row.get("strategy") or "").strip().casefold()
+    profile = str(row.get("profile") or "").strip().casefold()
+    fp = str(row.get("experimentFingerprint") or "").strip().casefold()
+    return hashlib.sha256(f"{strategy}:{profile}:{fp}".encode("utf-8")).hexdigest()
 
 
 def accepted_events(report: dict[str, Any]) -> list[dict[str, Any]]:
@@ -546,6 +595,32 @@ def persist_state(output: Path, state: dict[str, Any]) -> None:
                 for provider, rows in (state.get("results") or {}).items()
                 if any(isinstance(item, dict) and item.get("deepAccepted") is True for item in (rows or {}).values())
             ),
+            "quickAcceptedExperiments": sum(
+                1
+                for rows in (state.get("results") or {}).values()
+                for item in (rows or {}).values()
+                if isinstance(item, dict) and item.get("quickAccepted") is True
+            ),
+            "generatedCandidates": sum(
+                int(((item.get("quick") or {}).get("generatedCandidates") or 0))
+                for rows in (state.get("results") or {}).values()
+                for item in (rows or {}).values()
+                if isinstance(item, dict)
+            ),
+            "strategyCounts": {
+                strategy: sum(
+                    1
+                    for rows in (state.get("results") or {}).values()
+                    for item in (rows or {}).values()
+                    if isinstance(item, dict) and item.get("strategy") == strategy
+                )
+                for strategy in sorted({
+                    str(item.get("strategy") or "")
+                    for rows in (state.get("results") or {}).values()
+                    for item in (rows or {}).values()
+                    if isinstance(item, dict) and str(item.get("strategy") or "")
+                })
+            },
             "publicationPerformed": False,
             "githubWorkflowDispatched": False,
             "learningPlannerModeExecuted": False,
@@ -591,8 +666,9 @@ def provider_worker(
             fp = str(guidance_row.get("experimentFingerprint") or "").casefold()
             if not fp:
                 continue
-            if not rerun and fp in existing:
-                if not continue_after_win and existing[fp].get("deepAccepted") is True:
+            state_key = experiment_state_key(guidance_row)
+            if not rerun and state_key in existing:
+                if not continue_after_win and existing[state_key].get("deepAccepted") is True:
                     break
                 continue
 
@@ -610,6 +686,8 @@ def provider_worker(
                 "provider": provider,
                 "experimentIndex": index,
                 "experimentFingerprint": fp,
+                "strategy": str(guidance_row.get("strategy") or ""),
+                "profile": str(guidance_row.get("profile") or ""),
                 "guidance": copy.deepcopy(guidance_row),
                 "quickAccepted": False,
                 "deepAccepted": False,
@@ -699,11 +777,12 @@ def provider_worker(
                     result["deepError"] = f"{type(exc).__name__}:{str(exc)[:500]}"
 
             with _state_lock:
-                existing[fp] = result
+                existing[state_key] = result
                 persist_state(output, state)
             print(
                 "FIELD_LOCAL_FORCE_EXPERIMENT "
                 f"provider={provider} index={index}/{len(experiments)} fp={fp[:12]} "
+                f"profile={result['profile']} "
                 f"quick={str(result['quickAccepted']).lower()} "
                 f"deep={str(result['deepAccepted']).lower()}",
                 flush=True,
