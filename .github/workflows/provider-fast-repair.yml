@@ -314,6 +314,16 @@ jobs:
           print(len(rows), ','.join(rows))
           PY
           )
+          force_mode="$(python - <<'PY'
+          import json
+          from pathlib import Path
+          try:
+              d=json.loads(Path(".github/triggers/provider-brain-autopilot.json").read_text(encoding="utf-8"))
+          except Exception:
+              d={}
+          print("true" if str(d.get("mode") or "").strip().casefold()=="force" else "false")
+          PY
+          )"
           record_learning_debt() {
             if [ "${learn_handoff_count:-0}" -le 0 ]; then
               gh workflow run provider-census-sharded.yml \
@@ -322,13 +332,18 @@ jobs:
               echo "FIELD_PROVIDER_FAST_REPAIR_LEARNING_DEBT providers=0 next=census"
               return 0
             fi
-            gh workflow run brain-learning-lab.yml \
-              --repo "$GITHUB_REPOSITORY" --ref main \
-              -f publish_proposal=true \
-              -f target_providers="$learn_handoff_csv" \
-              -f slot_remaining_minutes=60 \
+            args=(
+              --repo "$GITHUB_REPOSITORY" --ref main
+              -f publish_proposal=true
+              -f target_providers="$learn_handoff_csv"
+              -f slot_remaining_minutes=60
               -f slot_phase=1
-            echo "FIELD_PROVIDER_FAST_REPAIR_LEARNING_DEBT providers=${learn_handoff_count:-0} ids=${learn_handoff_csv:-none} learning_dispatch=true owner=immediate-targeted-learning"
+            )
+            if [ "$force_mode" = "true" ]; then
+              args+=(-f architecture_force=true)
+            fi
+            gh workflow run brain-learning-lab.yml "${args[@]}"
+            echo "FIELD_PROVIDER_FAST_REPAIR_LEARNING_DEBT providers=${learn_handoff_count:-0} ids=${learn_handoff_csv:-none} learning_dispatch=true architecture_force=$force_mode owner=immediate-targeted-learning"
           }
           git fetch --quiet origin main
           remote_main="$(git rev-parse origin/main)"

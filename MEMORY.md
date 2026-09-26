@@ -5470,3 +5470,21 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Cloud Learning run 36266646867 completed sandbox repair, sanitized memory, repair proposal and recensus successfully, but the architecture PR job failed because the executable-structural-change guard ran even with architecture_force=false.
 - Fix passes the architecture_force flag into the staged-path guard. Provider/publication boundaries and allowlists are always enforced; executable structural change is required only for explicit architecture FORCE.
 - Proposal-only Learning may therefore refresh review-only architecture metadata without turning a valid no-code proposal into a workflow failure.
+
+### 2026-09-26 — Fresh census drives Autopilot without token dispatch
+- Rebuilt the census -> Autopilot handoff on current main after automation advanced the branch while the earlier PR was open.
+- Provider Brain Autopilot now listens to successful Provider Census - Sharded workflow_run completion from this repository.
+- The census workflow no longer calls gh workflow run for Autopilot, avoiding GITHUB_TOKEN workflow-dispatch permission failures.
+- Persisted/private-exit WAF evidence is merged before final census classification so GitHub-hosted WAF challenges cannot overwrite stronger current transport evidence.
+
+### 2026-09-26 — FORCE convergence propagates to architecture FORCE
+- Current convergence is explicitly FORCE. Autopilot now reads mode=force from .github/triggers/provider-brain-autopilot.json and exports that decision with the causal plan.
+- Any BRAIN_LEARNING cohort dispatched while FORCE is active receives architecture_force=true in addition to publish_proposal=true and the exact provider cohort.
+- This prevents a FORCE repair cycle from stopping at a review-only architecture proposal: exhausted/gap cases must materialize an executable structural repair, run its tests, and continue to recensus under the existing validation gates.
+- Non-FORCE Autopilot runs keep proposal-only behavior unless explicitly switched to force.
+
+### 2026-09-26 — FORCE mode is mandatory for current cloud convergence
+- Root cause confirmed: provider-brain-autopilot trigger lacked mode=force, so Autopilot computed FORCE_MODE=false even though the repair campaign was intended to force executable repairs.
+- Trigger now explicitly carries mode=force.
+- Fast Repair reads the same trigger and propagates architecture_force=true to Learning debt when FORCE is active.
+- Chained Learning phases propagate architecture_force so a FORCE run cannot degrade into proposal-only mode after phase 1.
