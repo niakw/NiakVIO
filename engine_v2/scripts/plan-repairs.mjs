@@ -24,6 +24,7 @@ const globalSkillConfig = readJsonFile("engine_v2/config/global-repair-skills.js
 const coreRepairConfig = readJsonFile("engine_v2/config/core-repair-types.json", {});
 const providerOverrides = readJsonFile("provider-overrides.json", {});
 const learningMode = stringValue(input.mode, "quick") === "learning";
+const explorationMode = learningMode || input.explorationChain === true;
 const skillTransfer = asRecord(production.learnedSkillTransferPolicy);
 const learnedSkillInputAllowed = learningMode || production.learnedSkillInputAllowed === true;
 const negativeMemoryPolicy = asRecord(production.negativeExperimentMemory);
@@ -604,12 +605,12 @@ function buildPlan(item) {
     : { profile: "", method: "", index: -1, positiveProgramFingerprint: "" };
   const postExhaustionHint = positiveProgramReplayHint.profile
     ? positiveProgramReplayHint
-    : (learningMode && experimentExhausted)
+    : (explorationMode && experimentExhausted)
       ? postExhaustionStrategyHint(evidence.failureClass, allMemoryMatches, rotateEvery)
       : { profile: "", method: "", index: -1 };
   const strategyEscalated = Boolean(postExhaustionHint.profile);
   const metaGapAdvisorHint = (
-    learningMode
+    explorationMode
     && experimentExhausted
     && !strategyEscalated
   )
@@ -626,7 +627,7 @@ function buildPlan(item) {
     && stringValue(metaGapAdvisorHint.guidanceKind).toLowerCase() === "meta-gap-synthesis"
   );
   const providerPositiveProgramProductionRescue = (
-    !learningMode
+    !explorationMode
     && experimentExhausted
     && postExhaustionHint.profile === "provider_positive_program_replay_v1"
     && /^[0-9a-f]{64}$/.test(stringValue(postExhaustionHint.positiveProgramFingerprint).toLowerCase())
@@ -653,7 +654,7 @@ function buildPlan(item) {
                       : "execute_bounded_evolved_strategy",
                   }
             )
-          : learningMode
+          : explorationMode
             ? {
                 ...baseRepairTarget,
                 scope: "learning",
@@ -692,7 +693,7 @@ function buildPlan(item) {
         )
       : { profile: "", strategy: "", confidence: 0, experiment: {}, experimentFingerprint: "", guidanceKind: "" };
   const llmAdvisorProductionRescue = (
-    !learningMode
+    !explorationMode
     && experimentExhausted
     && Boolean(llmAdvisorHint.profile)
   );
@@ -742,12 +743,12 @@ function buildPlan(item) {
   const effectiveAction = (strategyEscalated || metaGapEscalated || llmAdvisorProductionRescue)
     ? "probe-targeted-repair"
     : experimentExhausted
-      ? (learningMode ? "collect-more-evidence" : "deferred_retry")
+      ? (explorationMode ? "collect-more-evidence" : "deferred_retry")
       : stringValue(plan.action, "deferred_retry");
   const effectiveExitReason = (strategyEscalated || metaGapEscalated || llmAdvisorProductionRescue)
     ? null
     : experimentExhausted
-      ? (learningMode ? "learning_generations_exhausted" : "experiment_variants_exhausted")
+      ? (explorationMode ? "learning_generations_exhausted" : "experiment_variants_exhausted")
       : plan.exitReason ?? null;
   const effectiveHypotheses = (
     experimentExhausted
