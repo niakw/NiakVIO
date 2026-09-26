@@ -5277,3 +5277,21 @@ This ledger is not complete merely because provider yield improves. Final comple
 - CI coverage: `tests/brain_local_force_learning_prior_test.py` is required by Learning preflight, provider-recognition preflight and Workflow Gate.
 - The local farm scheduler now supports breadth-first provider batching so future datasets cover all providers before spending the full variant budget on early providers.
 - NiakVIO-Brain-LLM public experience import was extended separately to ingest the aggregate local FORCE corpus as `no_progress`, `progress_without_deep_acceptance`, `baseline_healthy` and `ambiguous_deep_candidate` priors without raw logs/private content.
+
+## 2026-09-26 11:40 Europe/Paris — meta-learning + architecture FORCE implementation
+
+- PR #195 (`brain-architecture/proposal`) was rebased onto current main before structural FORCE work.
+- Added executable provider-agnostic layer `scripts/brain_meta_learning.py`.
+- Added explicit technical taxonomy covering route/domain, search/catalogue, session/WAF, transport, TLS/DNS, API/schema, dynamic JS, player/embed, terminal media, token/crypto, content identity, season/episode mapping, pagination, rate/cache, provider runtime, materialization/projection, stream metadata, media integrity and client/runtime divergence.
+- Unknown evidence is now first-class `unknown_new_failure`; it must synthesize a new capability rather than be mapped to a nearby known profile.
+- Added architecture layers: causal failure taxonomy, capability gap detector, meta-learning/gap synthesis, architecture-layer synthesis, verification-contract synthesis, negative-memory novelty guard and guarded FORCE architecture promotion.
+- Added `novel_failure_gap_synthesis_v1` and `novel_architecture_layer_synthesis_v1` blueprint paths.
+- Added `scripts/brain_architecture_force_materializer.py`: max 3 bounded edits, exact find/replace or isolated new Brain layer/test file, strict allowlist, no provider/manifest/ProviderBase/provenance write authority.
+- Explicit FORCE Repair architecture debt now dispatches targeted Learning with `architecture_force=true`.
+- Architecture FORCE reuses the existing local Qwen runtime, requires a non-empty executable patch, runs targeted tests, replays the patch on a clean checkout, opens/refreshes PR #195 and requests auto-merge only behind required GitHub CI.
+- Normal Learning architecture evolution remains PR-only; FORCE is the operator-authorized promotion lane. Provider publication authority remains false.
+- Local PR validation passed: `brain_meta_learning_gap_synthesis_test.py`, `brain_architecture_force_materializer_test.py`, `brain_self_architecture_test.py`, `brain_llm_learning_workflow_contract_test.py`, `brain_architecture_deferred_cohort_test.py`, `core_repair_type_architecture_test.py`, `waf_latest_workflow_contract_test.py`.
+- Two test-discovered defects were fixed before acceptance: substring taxonomy falsely matched `observer` as `server`; builder import failed under importlib test loading. Both now pass.
+- Main sandbox-parent correction reached Workflow Gate SUCCESS on `c430b462...`.
+- Causal FORCE for `animevostfr` + `mallumv` was re-dispatched from current main via trigger commit `37fbcc87...`, run `36233331041`; result still pending at this checkpoint.
+- Not yet claimed complete: PR #195 required CI and the new causal FORCE provider outcome must still be inspected before any merge/provider status claim.

@@ -1,0 +1,569 @@
+{
+  "schemaVersion": 2,
+  "proposalCount": 3,
+  "policyChanged": false,
+  "policyChanges": [],
+  "proposals": [
+    {
+      "type": "brain_architecture_evolution",
+      "evolutionKind": "repair_strategy_exhaustion_cohort",
+      "priority": "critical",
+      "reason": "10 provider(s) exhausted every bounded Core Repair experiment variant and were explicitly deferred for a new strategy.",
+      "targets": [
+        "scripts/brain_repair_runtime.py",
+        "scripts/run_brain_learning_queue.py",
+        "scripts/run_brain_learning_sandbox.py",
+        "tests/brain_*"
+      ],
+      "recommendation": "Synthesize one or more new bounded repair/evidence strategies from the common failure cohorts and independent Lab observations. Do not recycle the exhausted bounded g2..g5 family or increase retry counts. Each new strategy must have an explicit causal trigger, negative-memory signature, playback/identity acceptance proof and regression test before it may re-enter Core Repair.",
+      "evidence": {
+        "deferredProviderCount": 10,
+        "providers": [
+          "4khdhub",
+          "allanime",
+          "allwish",
+          "anime-ultime",
+          "animesultra",
+          "animevostfr",
+          "mallumv",
+          "moviebox",
+          "vidfast",
+          "yflix"
+        ],
+        "failureCohorts": {
+          "candidate_replay_gap": [
+            "animevostfr"
+          ],
+          "chain_terminal_gap": [
+            "allanime",
+            "mallumv"
+          ],
+          "media_extraction_gap": [
+            "mallumv",
+            "moviebox"
+          ],
+          "playback_context_gap": [
+            "4khdhub"
+          ],
+          "provider_transport_gap": [
+            "anime-ultime",
+            "animesultra",
+            "moviebox",
+            "vidfast"
+          ],
+          "route_proven_gap": [
+            "4khdhub",
+            "anime-ultime",
+            "animesultra",
+            "vidfast",
+            "yflix"
+          ],
+          "search_gap": [
+            "allanime",
+            "allwish",
+            "animesultra",
+            "animevostfr",
+            "mallumv",
+            "moviebox",
+            "vidfast",
+            "yflix"
+          ],
+          "transport_blocked": [
+            "4khdhub",
+            "anime-ultime",
+            "animesultra",
+            "animevostfr",
+            "moviebox",
+            "vidfast"
+          ],
+          "unknown_failure": [
+            "allwish"
+          ]
+        },
+        "failedProfileCohorts": {
+          "adaptive_runtime_recovery": [
+            "4khdhub",
+            "allanime",
+            "allwish",
+            "anime-ultime",
+            "animesultra",
+            "animevostfr",
+            "mallumv",
+            "moviebox",
+            "vidfast",
+            "yflix"
+          ],
+          "candidate_divergence_trace_v1": [
+            "animevostfr"
+          ],
+          "candidate_request_program_replay_v1": [
+            "animevostfr"
+          ],
+          "chain_terminal_extractor_v1": [
+            "allanime",
+            "mallumv"
+          ],
+          "chain_terminal_extractor_v1_g3": [
+            "allanime",
+            "mallumv"
+          ],
+          "chain_terminal_extractor_v1_g4": [
+            "allanime",
+            "mallumv"
+          ],
+          "chain_terminal_extractor_v1_g5": [
+            "allanime",
+            "mallumv"
+          ],
+          "document_request_contract_mining_v1": [
+            "4khdhub",
+            "allanime",
+            "anime-ultime",
+            "animesultra",
+            "animevostfr",
+            "mallumv",
+            "moviebox"
+          ],
+          "identity_alias_search_traversal_v1": [
+            "4khdhub",
+            "anime-ultime",
+            "animesultra",
+            "animevostfr"
+          ],
+          "media_response_shape_inference_v1": [
+            "moviebox"
+          ],
+          "player_media_extractor_v1": [
+            "moviebox"
+          ],
+          "player_media_extractor_v1_g3": [
+            "moviebox"
+          ],
+          "player_media_extractor_v1_g4": [
+            "moviebox"
+          ],
+          "player_media_extractor_v1_g5": [
+            "moviebox"
+          ],
+          "player_protocol_family_replay_v1": [
+            "moviebox"
+          ],
+          "proven_route_terminal_traversal_v1": [
+            "4khdhub",
+            "anime-ultime",
+            "vidfast"
+          ],
+          "proven_route_terminal_traversal_v1_g3": [
+            "4khdhub",
+            "anime-ultime",
+            "animesultra"
+          ],
+          "proven_route_terminal_traversal_v1_g4": [
+            "4khdhub",
+            "anime-ultime",
+            "animesultra"
+          ],
+          "proven_route_terminal_traversal_v1_g5": [
+            "4khdhub",
+            "anime-ultime",
+            "animesultra"
+          ],
+          "provider_origin_failover_v1": [
+            "anime-ultime"
+          ],
+          "provider_origin_failover_v1_g3": [
+            "anime-ultime",
+            "animesultra"
+          ],
+          "provider_origin_failover_v1_g4": [
+            "anime-ultime",
+            "animesultra"
+          ],
+          "provider_origin_failover_v1_g5": [
+            "anime-ultime",
+            "animesultra"
+          ],
+          "provider_positive_program_replay_v1": [
+            "mallumv"
+          ],
+          "provider_session_bootstrap_replay_v1": [
+            "vidfast"
+          ],
+          "retained_candidate_replay_v1": [
+            "animevostfr"
+          ],
+          "retained_candidate_replay_v1_g3": [
+            "animevostfr"
+          ],
+          "retained_candidate_replay_v1_g4": [
+            "animevostfr"
+          ],
+          "retained_candidate_replay_v1_g5": [
+            "animevostfr"
+          ],
+          "route_peer_transition_replay_v1": [
+            "4khdhub",
+            "anime-ultime",
+            "animesultra"
+          ],
+          "route_transition_graph_v1": [
+            "4khdhub",
+            "anime-ultime",
+            "animesultra"
+          ],
+          "runtime_response_salvage_v1": [
+            "4khdhub",
+            "allanime",
+            "anime-ultime",
+            "animesultra",
+            "animevostfr",
+            "mallumv",
+            "moviebox",
+            "vidfast"
+          ],
+          "search_contract_inference_v1": [
+            "animesultra"
+          ],
+          "search_response_route_binding_v1": [
+            "animesultra"
+          ],
+          "terminal_request_program_inference_v1": [
+            "allanime",
+            "mallumv"
+          ],
+          "terminal_transition_graph_v1": [
+            "allanime",
+            "mallumv"
+          ],
+          "transport_request_differential_v1": [
+            "vidfast"
+          ]
+        },
+        "repeatedSignatureCount": 29,
+        "strategyBlueprints": [
+          {
+            "strategyId": "route_transition_graph_v1",
+            "causalTrigger": "catalogue/detail route is live and identity-qualified but no terminal/player media is reached",
+            "method": "start from retained route proof; traverse only identity-correlated detail/player/server transitions; learn reusable route shapes without copying provider domains",
+            "requiredEvidence": [
+              "retained route proof",
+              "same-work identity correlation",
+              "terminal/player response trace"
+            ],
+            "acceptanceProof": [
+              "playback-verified media",
+              "content identity not contradicted",
+              "no green-lane regression"
+            ],
+            "groupId": "route-to-terminal|mixed_embed_resolver",
+            "repairScope": "route-to-terminal",
+            "transportSignature": "not-applicable",
+            "capabilityStrategy": "mixed_embed_resolver",
+            "providers": [
+              "yflix"
+            ],
+            "providerCount": 1,
+            "runtimeFamilies": [
+              "dle-full-story-sibnet",
+              "menu-search-series-focus-player",
+              "mixed_embed_resolver",
+              "yflix-db-encrypted-ajax-v1"
+            ],
+            "dominantIssues": [
+              "network_exception",
+              "network_http_error",
+              "waf_challenge"
+            ],
+            "harnessTransportClasses": [
+              "github-all-transports-challenged"
+            ],
+            "negativeMemorySignature": "strategy:route_transition_graph_v1|scope:route-to-terminal|capability:mixed_embed_resolver|transport:not-applicable",
+            "reentryPolicy": "proposal -> executable contract -> Learning/Lab proof -> Core Repair eligibility",
+            "productionWritesAllowed": false,
+            "requiresHumanMerge": true
+          },
+          {
+            "strategyId": "terminal_transition_graph_v1",
+            "causalTrigger": "retained chain hit reaches player/resolver territory but media extraction/validation is incomplete",
+            "method": "replay retained chain hit first; classify terminal host/player family; apply bounded extractor/resolver capability and follow only scored player/media transitions",
+            "requiredEvidence": [
+              "retained chain hit",
+              "terminal host/player family",
+              "response/body route proof"
+            ],
+            "acceptanceProof": [
+              "playback-verified media",
+              "terminal identity preserved",
+              "no green-lane regression"
+            ],
+            "groupId": "terminal-extraction|html_scraper",
+            "repairScope": "terminal-extraction",
+            "transportSignature": "not-applicable",
+            "capabilityStrategy": "html_scraper",
+            "providers": [
+              "moviebox"
+            ],
+            "providerCount": 1,
+            "runtimeFamilies": [
+              "api_stream_resolver",
+              "mallumv-catalogue-confirm-internal-v1"
+            ],
+            "dominantIssues": [
+              "network_http_error",
+              "network_zero_result"
+            ],
+            "harnessTransportClasses": [],
+            "negativeMemorySignature": "strategy:terminal_transition_graph_v1|scope:terminal-extraction|capability:html_scraper|transport:not-applicable",
+            "reentryPolicy": "proposal -> executable contract -> Learning/Lab proof -> Core Repair eligibility",
+            "productionWritesAllowed": false,
+            "requiresHumanMerge": true
+          },
+          {
+            "strategyId": "route_transition_graph_v1",
+            "causalTrigger": "catalogue/detail route is live and identity-qualified but no terminal/player media is reached",
+            "method": "start from retained route proof; traverse only identity-correlated detail/player/server transitions; learn reusable route shapes without copying provider domains",
+            "requiredEvidence": [
+              "retained route proof",
+              "same-work identity correlation",
+              "terminal/player response trace"
+            ],
+            "acceptanceProof": [
+              "playback-verified media",
+              "content identity not contradicted",
+              "no green-lane regression"
+            ],
+            "groupId": "route-to-terminal|iframe_player",
+            "repairScope": "route-to-terminal",
+            "transportSignature": "not-applicable",
+            "capabilityStrategy": "iframe_player",
+            "providers": [
+              "vidfast"
+            ],
+            "providerCount": 1,
+            "runtimeFamilies": [
+              "mixed_embed_resolver"
+            ],
+            "dominantIssues": [
+              "network_http_error"
+            ],
+            "harnessTransportClasses": [],
+            "negativeMemorySignature": "strategy:route_transition_graph_v1|scope:route-to-terminal|capability:iframe_player|transport:not-applicable",
+            "reentryPolicy": "proposal -> executable contract -> Learning/Lab proof -> Core Repair eligibility",
+            "productionWritesAllowed": false,
+            "requiresHumanMerge": true
+          }
+        ]
+      },
+      "requiresHumanMerge": true,
+      "productionWritesAllowed": false,
+      "publicationAllowed": false
+    },
+    {
+      "type": "brain_architecture_evolution",
+      "evolutionKind": "method_exhaustion",
+      "priority": "high",
+      "reason": "1 repeatedly failing repair profile(s) show that known methods are not solving the provider.",
+      "targets": [
+        "scripts/run_brain_learning_sandbox.py",
+        "tests/brain_*"
+      ],
+      "recommendation": "Propose a genuinely different repair/evidence capability or compose existing capabilities differently; do not widen an arbitrary retry counter.",
+      "evidence": {
+        "providerId": "vidfast",
+        "failedProfiles": [
+          "adaptive_runtime_recovery"
+        ]
+      },
+      "requiresHumanMerge": true,
+      "productionWritesAllowed": false,
+      "publicationAllowed": false
+    },
+    {
+      "type": "brain_architecture_evolution",
+      "evolutionKind": "route_discovery_blind_spot",
+      "priority": "high",
+      "reason": "1 access-failure provider(s) produced no usable route evidence with the current search chain.",
+      "targets": [
+        "scripts/resolve_provider_hubs.py",
+        "scripts/resolve_provider_hub_search_fallback.py",
+        "scripts/run_brain_learning_queue.py",
+        "tests/brain_*"
+      ],
+      "recommendation": "Evolve route discovery with a new evidence source or extraction method before mutating provider code.",
+      "evidence": {
+        "providers": [
+          "vidfast"
+        ]
+      },
+      "requiresHumanMerge": true,
+      "productionWritesAllowed": false,
+      "publicationAllowed": false
+    }
+  ],
+  "allowedTargets": [
+    ".github/workflows/brain-learning-lab.yml",
+    "engine_v2/config/brain-policy.json",
+    "engine_v2/scripts/learning-lab.mjs",
+    "scripts/build_brain_architecture_proposal.py",
+    "scripts/run_brain_learning_sandbox.py",
+    "scripts/deep_repair_loop.py",
+    "scripts/run_adaptive_quick_repair.py",
+    "scripts/brain_repair_runtime.py",
+    "scripts/nuvio_client_lab.cjs",
+    "scripts/generate_diagnostics.py",
+    "scripts/resolve_provider_hubs.py",
+    "scripts/resolve_provider_hub_search_fallback.py",
+    "tests/brain_*",
+    "scripts/run_brain_learning_queue.py"
+  ],
+  "architectureChecks": {
+    "coreEvidenceIsHypothesis": true,
+    "timeBudgetedProviderQueue": true,
+    "deadlineDrivenRepair": true,
+    "multiDeviceLab": true,
+    "allStreamsLab": true,
+    "persistentQueue": true,
+    "crossDayScheduler": true,
+    "conditionalRouteSearch": true,
+    "selfArchitecturePr": true
+  },
+  "targetProvider": "vidfast",
+  "deferredRepairProviders": [
+    "4khdhub",
+    "allanime",
+    "allwish",
+    "anime-ultime",
+    "animesultra",
+    "animevostfr",
+    "mallumv",
+    "moviebox",
+    "vidfast",
+    "yflix"
+  ],
+  "deferredRepairProviderCount": 10,
+  "strategyBlueprintCount": 3,
+  "strategyBlueprints": [
+    {
+      "strategyId": "route_transition_graph_v1",
+      "causalTrigger": "catalogue/detail route is live and identity-qualified but no terminal/player media is reached",
+      "method": "start from retained route proof; traverse only identity-correlated detail/player/server transitions; learn reusable route shapes without copying provider domains",
+      "requiredEvidence": [
+        "retained route proof",
+        "same-work identity correlation",
+        "terminal/player response trace"
+      ],
+      "acceptanceProof": [
+        "playback-verified media",
+        "content identity not contradicted",
+        "no green-lane regression"
+      ],
+      "groupId": "route-to-terminal|mixed_embed_resolver",
+      "repairScope": "route-to-terminal",
+      "transportSignature": "not-applicable",
+      "capabilityStrategy": "mixed_embed_resolver",
+      "providers": [
+        "yflix"
+      ],
+      "providerCount": 1,
+      "runtimeFamilies": [
+        "dle-full-story-sibnet",
+        "menu-search-series-focus-player",
+        "mixed_embed_resolver",
+        "yflix-db-encrypted-ajax-v1"
+      ],
+      "dominantIssues": [
+        "network_exception",
+        "network_http_error",
+        "waf_challenge"
+      ],
+      "harnessTransportClasses": [
+        "github-all-transports-challenged"
+      ],
+      "negativeMemorySignature": "strategy:route_transition_graph_v1|scope:route-to-terminal|capability:mixed_embed_resolver|transport:not-applicable",
+      "reentryPolicy": "proposal -> executable contract -> Learning/Lab proof -> Core Repair eligibility",
+      "productionWritesAllowed": false,
+      "requiresHumanMerge": true
+    },
+    {
+      "strategyId": "terminal_transition_graph_v1",
+      "causalTrigger": "retained chain hit reaches player/resolver territory but media extraction/validation is incomplete",
+      "method": "replay retained chain hit first; classify terminal host/player family; apply bounded extractor/resolver capability and follow only scored player/media transitions",
+      "requiredEvidence": [
+        "retained chain hit",
+        "terminal host/player family",
+        "response/body route proof"
+      ],
+      "acceptanceProof": [
+        "playback-verified media",
+        "terminal identity preserved",
+        "no green-lane regression"
+      ],
+      "groupId": "terminal-extraction|html_scraper",
+      "repairScope": "terminal-extraction",
+      "transportSignature": "not-applicable",
+      "capabilityStrategy": "html_scraper",
+      "providers": [
+        "moviebox"
+      ],
+      "providerCount": 1,
+      "runtimeFamilies": [
+        "api_stream_resolver",
+        "mallumv-catalogue-confirm-internal-v1"
+      ],
+      "dominantIssues": [
+        "network_http_error",
+        "network_zero_result"
+      ],
+      "harnessTransportClasses": [],
+      "negativeMemorySignature": "strategy:terminal_transition_graph_v1|scope:terminal-extraction|capability:html_scraper|transport:not-applicable",
+      "reentryPolicy": "proposal -> executable contract -> Learning/Lab proof -> Core Repair eligibility",
+      "productionWritesAllowed": false,
+      "requiresHumanMerge": true
+    },
+    {
+      "strategyId": "route_transition_graph_v1",
+      "causalTrigger": "catalogue/detail route is live and identity-qualified but no terminal/player media is reached",
+      "method": "start from retained route proof; traverse only identity-correlated detail/player/server transitions; learn reusable route shapes without copying provider domains",
+      "requiredEvidence": [
+        "retained route proof",
+        "same-work identity correlation",
+        "terminal/player response trace"
+      ],
+      "acceptanceProof": [
+        "playback-verified media",
+        "content identity not contradicted",
+        "no green-lane regression"
+      ],
+      "groupId": "route-to-terminal|iframe_player",
+      "repairScope": "route-to-terminal",
+      "transportSignature": "not-applicable",
+      "capabilityStrategy": "iframe_player",
+      "providers": [
+        "vidfast"
+      ],
+      "providerCount": 1,
+      "runtimeFamilies": [
+        "mixed_embed_resolver"
+      ],
+      "dominantIssues": [
+        "network_http_error"
+      ],
+      "harnessTransportClasses": [],
+      "negativeMemorySignature": "strategy:route_transition_graph_v1|scope:route-to-terminal|capability:iframe_player|transport:not-applicable",
+      "reentryPolicy": "proposal -> executable contract -> Learning/Lab proof -> Core Repair eligibility",
+      "productionWritesAllowed": false,
+      "requiresHumanMerge": true
+    }
+  ],
+  "llmArchitectureGuidanceCount": 0,
+  "llmArchitectureGuidance": [],
+  "providersObserved": 8,
+  "pendingProviders": 14,
+  "policy": {
+    "publicationAllowed": false,
+    "productionWritesAllowed": false,
+    "pullRequestOnly": true,
+    "requiresFreshCi": true,
+    "requiresHumanMerge": true
+  }
+}

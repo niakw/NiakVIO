@@ -1,12 +1,12 @@
 {
-  "schemaVersion": 3,
+  "schemaVersion": 4,
   "enabled": true,
   "branch": "brain-architecture/proposal",
   "reviewOnly": true,
   "requiresHumanMerge": true,
   "productionWritesAllowed": false,
   "publicationAllowed": false,
-  "principle": "The Brain may challenge Core evidence and its own architecture when experiments show a self-imposed limitation. Learning is deadline-driven rather than retry-count-driven; self-evolution is proposal-only, reviewable, reproducible and covered by CI.",
+  "principle": "The Brain may challenge Core evidence and its own architecture when experiments show a self-imposed limitation. Learning is deadline-driven rather than retry-count-driven. Normal self-evolution is reviewable PR-only; explicit FORCE may auto-promote only allowlisted executable architecture diffs after targeted tests and required CI, never provider publication.",
   "evidenceInputs": [
     "sanitized cross-day learning memory and persistent provider queue",
     "multi-device all-stream Learning Lab summaries",
@@ -46,7 +46,11 @@
     "engine_v2/src/repair-brain.mjs",
     "engine_v2/config/brain-policy.json",
     "scripts/build_brain_architecture_proposal.py",
-    "tests/brain_*"
+    "tests/brain_*",
+    ".github/workflows/provider-recognition-repair-v6.yml",
+    "scripts/brain_meta_learning.py",
+    "scripts/brain_architecture_force_materializer.py",
+    "scripts/brain_layers/*"
   ],
   "thresholds": {
     "repeatedUnknownFailures": 2,
@@ -60,5 +64,36 @@
     "providers/",
     "provider-bases/",
     "PROVENANCE.json"
-  ]
+  ],
+  "forceArchitecture": {
+    "enabled": true,
+    "trigger": "explicit-force-repair-with-architecture-debt",
+    "autoPromotion": "validated-pr-auto-merge-after-required-ci",
+    "structuralMaterializationRequired": true,
+    "requireExecutableDiff": true,
+    "requireTargetedTests": true,
+    "requireWorkflowGate": true,
+    "requireNonRegression": true,
+    "allowNewFailureFamilies": true,
+    "allowNewArchitectureLayers": true,
+    "providerPublicationAuthority": false,
+    "productionProviderWritesAllowed": false,
+    "fallback": "retain-explicit-architecture-debt",
+    "generatedEditAllowlist": [
+      "engine_v2/scripts/learning-lab.mjs",
+      "engine_v2/src/repair-brain.mjs",
+      "scripts/brain_meta_learning.py",
+      "scripts/brain_repair_runtime.py",
+      "scripts/run_brain_learning_sandbox.py",
+      "scripts/deep_repair_loop.py",
+      "scripts/run_adaptive_quick_repair.py",
+      "scripts/adaptive_runtime/runtime_repair.py",
+      "scripts/nuvio_client_lab.cjs",
+      "scripts/generate_diagnostics.py",
+      "scripts/resolve_provider_hubs.py",
+      "scripts/resolve_provider_hub_search_fallback.py",
+      "scripts/brain_layers/*",
+      "tests/brain_*"
+    ]
+  }
 }

@@ -5,13 +5,20 @@ ROOT = Path(__file__).resolve().parents[1]
 workflow = (ROOT / ".github/workflows/provider-recognition-repair-v6.yml").read_text(encoding="utf-8")
 learning = (ROOT / ".github/workflows/brain-learning-lab.yml").read_text(encoding="utf-8")
 
-# Canonical Repair/FORCE may consume prior Learning/LLM evidence, but it never
-# starts a Learning child. Learning is owned by its scheduled/manual slot.
+# Canonical Repair consumes prior Learning/LLM evidence and never starts a
+# normal Learning child. Explicit FORCE may start only the guarded architecture
+# FORCE lane when unresolved architecture debt remains.
 persist = workflow.index("- name: Persist Repair census state")
 persist_block = workflow[persist:]
 assert "FIELD_PROVIDER_BRAIN_LEARNING_DEBT" in persist_block
 assert "learning_dispatch=false owner=scheduled-learning-slot" in persist_block
-assert "gh workflow run brain-learning-lab.yml" not in persist_block
+force_dispatch = 'gh workflow run brain-learning-lab.yml'
+assert force_dispatch in persist_block
+force_block = persist_block[persist_block.index('if [ "$force_requested" = "1" ]'):]
+assert force_dispatch in force_block
+assert "-f architecture_force=true" in force_block
+assert "-f publish_proposal=true" in force_block
+assert '-f target_providers="$deferred_csv"' in force_block
 
 # Explicit FORCE remains provider-local, isolated and current-byte gated.
 for required in (
@@ -32,7 +39,8 @@ for required in (
     assert required in workflow, required
 
 assert "FIELD_PROVIDER_BRAIN_FORCE_DEBT" in persist_block
-assert "learning_dispatch=false owner=force" in persist_block
+assert "learning_dispatch=true owner=force" in persist_block
+assert "FIELD_PROVIDER_BRAIN_FORCE_ARCH_DISPATCH" in persist_block
 assert "FIELD_PROVIDER_BRAIN_FORCE_UNVISITED" in persist_block
 assert "auto_resume=false reason=bounded-force-run" in persist_block
 assert '-f mode=force' not in persist_block

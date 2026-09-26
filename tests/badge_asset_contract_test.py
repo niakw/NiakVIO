@@ -2,11 +2,15 @@
 from __future__ import annotations
 
 import json
+import sys
 from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 
 from scripts.badge_versioning import latest_catalog, latest_mapping
 
-ROOT = Path(__file__).resolve().parents[1]
 CATALOG_VERSION, CATALOG = latest_catalog(ROOT)
 MAPPING_VERSION, MAPPING = latest_mapping(ROOT)
 assert MAPPING_VERSION == CATALOG_VERSION
@@ -36,7 +40,7 @@ for badge_id, row in by_id.items():
             assert payload[:4] == b"RIFF" and payload[8:12] == b"WEBP", rel
 
 assert light_qa.get("schemaVersion") == 2
-assert light_qa.get("revision") == "full-surface-v7-delivery-v4"
+assert light_qa.get("revision") == f"full-surface-v{CATALOG_VERSION}-stream-score-v{CATALOG_VERSION}"
 assert light_qa.get("catalogBadges") == len(badges)
 assert light_qa.get("assetCount") == len(badges) * 2
 assert light_qa.get("idempotent") is True

@@ -21,6 +21,7 @@ with tempfile.TemporaryDirectory(prefix="brain-self-arch-") as tmp:
                 {"providerId": "demo", "profile": "p1", "successes": 0, "consecutiveFailures": 2},
                 {"providerId": "demo", "profile": "p2", "successes": 0, "consecutiveFailures": 2},
                 {"providerId": "demo", "profile": "p3", "successes": 0, "consecutiveFailures": 2},
+                {"providerId": "novel", "profile": "quantum_protocol_v9", "failureClass": "impossible_new_signal", "signature": "opaque_future_case", "successes": 0, "consecutiveFailures": 2},
             ]
         },
         "proposals": [],
@@ -55,7 +56,8 @@ with tempfile.TemporaryDirectory(prefix="brain-self-arch-") as tmp:
                 "routeSearch": {"routeEvidenceCount": 0, "fallbackApplied": 0},
                 "finalLab": {"status": "unresolved"},
             }
-        ]
+        ],
+        "deferredRepairProviders": ["novel"],
     }
 
     paths = {}
@@ -165,6 +167,7 @@ with tempfile.TemporaryDirectory(prefix="brain-self-arch-") as tmp:
     assert "route_discovery_blind_spot" in kinds
     assert "method_exhaustion" in kinds
     assert "llm_non_provider_diagnosis" in kinds
+    assert "novel_failure_class" in kinds
     assert data["llmArchitectureGuidanceCount"] == 1
     llm_guidance = data["llmArchitectureGuidance"][0]
     assert llm_guidance["providerId"] == "tls-gap", llm_guidance
@@ -181,6 +184,14 @@ with tempfile.TemporaryDirectory(prefix="brain-self-arch-") as tmp:
     assert "browser_session_transport_bridge_v1" in strategies, strategies
     assert "native_tls_browser_differential_v1" in strategies, strategies
     assert "persistent_challenge_session_boundary_v1" in strategies, strategies
+    assert "novel_architecture_layer_synthesis_v1" in strategies, strategies
+    assert strategies["novel_architecture_layer_synthesis_v1"]["providers"] == ["novel"]
+    assert strategies["novel_architecture_layer_synthesis_v1"]["forcePromotionEligible"] is True
+    assert data["failureTaxonomy"]["unknownFamily"] == "unknown_new_failure"
+    assert data["failureTaxonomy"]["unknownPolicy"] == "synthesize-new-strategy-never-retry-blindly"
+    layer_ids = {row["id"] for row in data["architectureLayers"]}
+    assert "meta_learning_gap_synthesis" in layer_ids, layer_ids
+    assert "force_architecture_promotion" in layer_ids, layer_ids
     assert strategies["browser_session_transport_bridge_v1"]["providers"] == ["browser-only"]
     assert strategies["native_tls_browser_differential_v1"]["providers"] == ["tls-gap"]
     assert strategies["persistent_challenge_session_boundary_v1"]["providers"] == ["challenged"]
@@ -201,8 +212,14 @@ with tempfile.TemporaryDirectory(prefix="brain-self-arch-") as tmp:
 
 workflow_source = WORKFLOW.read_text(encoding="utf-8")
 architecture_job = workflow_source.split("  publish-architecture-proposal:", 1)[1].split("  continue-learning-slot:", 1)[0]
-assert "git status --porcelain --untracked-files=all -- engine_v2/learning/architecture-proposal.json" in architecture_job
+assert 'git status --porcelain --untracked-files=all' in architecture_job
 assert architecture_job.count("cp brain-learning-output/brain-architecture-proposal.md engine_v2/learning/architecture-proposal.md") >= 2
-assert "git diff --quiet -- engine_v2/learning/architecture-proposal.json" not in architecture_job
+assert "brain-architecture-force.patch" in architecture_job
+assert "brain_architecture_force_materializer.py" in WORKFLOW.read_text(encoding="utf-8")
+assert "architecture_force" in WORKFLOW.read_text(encoding="utf-8")
+assert "architecture FORCE crossed provider/publication boundary" in architecture_job
+assert "gh pr checks" in architecture_job and "--watch" in architecture_job
+assert "gh pr merge" in architecture_job and "--squash" in architecture_job
+assert "architecture FORCE changed non-allowlisted paths" in architecture_job
 
 print("Brain self-architecture tests passed")

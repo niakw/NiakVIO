@@ -6,9 +6,21 @@ import argparse
 import copy
 import json
 import re
+import sys
 from pathlib import Path
 from typing import Any
 
+SCRIPTS = Path(__file__).resolve().parent
+if str(SCRIPTS) not in sys.path:
+    sys.path.insert(0, str(SCRIPTS))
+
+from brain_meta_learning import (
+    ARCHITECTURE_LAYERS,
+    FAILURE_FAMILY_TAXONOMY,
+    classify_failure_family,
+    diagnose_gap,
+    synthesize_gap_blueprint,
+)
 
 def load_json(path: Path) -> dict[str, Any]:
     value = json.loads(path.read_text(encoding="utf-8"))
@@ -479,13 +491,26 @@ def main() -> int:
         by_failure: dict[str, set[str]] = {}
         by_profile: dict[str, set[str]] = {}
         by_signature: dict[str, set[str]] = {}
+        by_family: dict[str, set[str]] = {}
+        unknown_family_providers: set[str] = set()
         for row in cohort_rows:
             provider_id = str(row.get("providerId") or "").strip().casefold()
             failure = str(row.get("failureClass") or "unknown_failure").strip() or "unknown_failure"
             profile = str(row.get("profile") or "unknown_profile").strip() or "unknown_profile"
             signature = str(row.get("signature") or "").strip()
+            diagnosis = diagnose_gap(
+                failure_class=failure,
+                profile=profile,
+                signature=signature,
+                observed_stage=row.get("observedPipelineStage") or "",
+                exhausted_profiles=sorted(failed_profiles_by_provider.get(provider_id, set())),
+            )
+            family = diagnosis.failure_family
             by_failure.setdefault(failure, set()).add(provider_id)
             by_profile.setdefault(profile, set()).add(provider_id)
+            by_family.setdefault(family, set()).add(provider_id)
+            if diagnosis.needs_new_strategy and family == "unknown_new_failure":
+                unknown_family_providers.add(provider_id)
             if signature:
                 by_signature.setdefault(signature, set()).add(provider_id)
         add(
@@ -520,10 +545,46 @@ def main() -> int:
                     key: sorted(value)[:48]
                     for key, value in sorted(by_profile.items())
                 },
+                "failureFamilyCohorts": {
+                    key: sorted(value)[:48]
+                    for key, value in sorted(by_family.items())
+                },
+                "knownFailureFamilies": sorted(FAILURE_FAMILY_TAXONOMY),
+                "unknownFailureProviders": sorted(unknown_family_providers)[:48],
+                "unknownFailurePolicy": "synthesize-new-strategy-never-retry-blindly",
                 "repeatedSignatureCount": len(by_signature),
                 "strategyBlueprints": strategy_blueprints,
             },
         )
+        if unknown_family_providers:
+            unknown_diag = diagnose_gap(
+                failure_class="opaque_unclassified_failure",
+                profile="unknown_profile",
+                exhausted_profiles=["bounded_known_profiles"],
+            )
+            novel_blueprint = synthesize_gap_blueprint(
+                sorted(unknown_family_providers),
+                unknown_diag,
+            )
+            novel_blueprint["requiresHumanMerge"] = True
+            novel_blueprint["reentryPolicy"] = (
+                "unknown -> architecture proposal -> executable Learning/Lab contract "
+                "-> causal proof -> Core eligibility"
+            )
+            strategy_blueprints.append(novel_blueprint)
+            add(
+                "novel_failure_class",
+                f"{len(unknown_family_providers)} deferred provider(s) expose evidence outside the known failure taxonomy.",
+                [
+                    "scripts/build_brain_architecture_proposal.py",
+                    "scripts/brain_repair_runtime.py",
+                    "scripts/run_brain_learning_sandbox.py",
+                    "tests/brain_*",
+                ],
+                "Do not map the evidence to the nearest existing profile. Create and test a new bounded failure family/capability in Learning, record its negative-memory signature, and allow Core re-entry only after causal improvement is proven.",
+                priority="critical",
+                evidence={"providers": sorted(unknown_family_providers)[:48], "blueprint": novel_blueprint},
+            )
 
     if repeated_profiles:
         add(
@@ -596,6 +657,12 @@ def main() -> int:
         "deferredRepairProviderCount": len(deferred_repair_providers),
         "strategyBlueprintCount": len(strategy_blueprints),
         "strategyBlueprints": strategy_blueprints,
+        "failureTaxonomy": {
+            "knownFamilies": sorted(FAILURE_FAMILY_TAXONOMY),
+            "unknownFamily": "unknown_new_failure",
+            "unknownPolicy": "synthesize-new-strategy-never-retry-blindly",
+        },
+        "architectureLayers": list(ARCHITECTURE_LAYERS),
         "llmArchitectureGuidanceCount": len(llm_architecture_guidance),
         "llmArchitectureGuidance": llm_architecture_guidance,
         "providersObserved": int(selection.get("processedProviderCount") or 0),
@@ -606,6 +673,9 @@ def main() -> int:
             "pullRequestOnly": True,
             "requiresFreshCi": True,
             "requiresHumanMerge": True,
+            "forcePromotionEligible": True,
+            "forcePromotionRequiresExecutableDiff": True,
+            "providerPublicationAuthority": False,
         },
     }
     write_json(a.summary, summary)

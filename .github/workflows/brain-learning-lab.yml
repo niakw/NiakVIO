@@ -8,6 +8,11 @@ on:
         required: false
         default: false
         type: boolean
+      architecture_force:
+        description: Explicit FORCE architecture lane; materialize and auto-promote an allowlisted executable architecture diff after CI
+        required: false
+        default: false
+        type: boolean
       target_provider:
         description: Optional exact provider id to run through the canonical Learning queue
         required: false
@@ -736,7 +741,7 @@ jobs:
           PY
           cat "$RUNNER_TEMP/brain-llm-cache-import.log" || true
       - name: Download and verify official llama.cpp binary when needed
-        if: steps.brain_llm_route.outputs.llm_needed == 'true' && (steps.learning-slot.outputs.fast_handoff != 'true' || steps.brain_llm_fast_cache.outputs.complete != 'true')
+        if: inputs.architecture_force == true || (steps.brain_llm_route.outputs.llm_needed == 'true' && (steps.learning-slot.outputs.fast_handoff != 'true' || steps.brain_llm_fast_cache.outputs.complete != 'true'))
         continue-on-error: true
         shell: bash
         run: |
@@ -753,7 +758,7 @@ jobs:
           test -n "$(find .brain-llm-runtime/llama-prebuilt -type f -name llama-server -print -quit)"
 
       - uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25
-        if: steps.brain_llm_route.outputs.llm_needed == 'true' && (steps.learning-slot.outputs.fast_handoff != 'true' || steps.brain_llm_fast_cache.outputs.complete != 'true')
+        if: inputs.architecture_force == true || (steps.brain_llm_route.outputs.llm_needed == 'true' && (steps.learning-slot.outputs.fast_handoff != 'true' || steps.brain_llm_fast_cache.outputs.complete != 'true'))
         with:
           path: |
             ~/.cache/llama.cpp
@@ -762,7 +767,7 @@ jobs:
 
       - name: Start bounded local Qwen advisor when needed
         id: brain_llm_server
-        if: steps.brain_llm_route.outputs.llm_needed == 'true' && (steps.learning-slot.outputs.fast_handoff != 'true' || steps.brain_llm_fast_cache.outputs.complete != 'true')
+        if: inputs.architecture_force == true || (steps.brain_llm_route.outputs.llm_needed == 'true' && (steps.learning-slot.outputs.fast_handoff != 'true' || steps.brain_llm_fast_cache.outputs.complete != 'true'))
         continue-on-error: true
         shell: bash
         run: |
@@ -1032,6 +1037,36 @@ jobs:
             --markdown brain-learning-output/brain-architecture-proposal.md
           node -e "const x=require('./brain-learning-output/brain-architecture-proposal.json'); if(x.policy?.publicationAllowed!==false||x.policy?.productionWritesAllowed!==false||x.policy?.pullRequestOnly!==true||x.policy?.requiresHumanMerge!==true) process.exit(1)"
 
+      - name: Materialize executable Brain architecture FORCE patch
+        if: inputs.architecture_force == true
+        shell: bash
+        env:
+          LLM_AVAILABLE: ${{ steps.brain_llm_server.outputs.available }}
+        run: |
+          set -euo pipefail
+          eligible="$(node -e "const x=require('./brain-learning-output/brain-architecture-proposal.json');process.stdout.write(String((x.strategyBlueprints||[]).filter(r=>r&&r.forcePromotionEligible===true).length))")"
+          if [ "$eligible" = "0" ]; then
+            : > brain-learning-output/brain-architecture-force.patch
+            printf '%s\n' '{"schemaVersion":1,"skipped":true,"reason":"no-force-promotable-blueprint","editCount":0,"changedFiles":[]}' > brain-learning-output/brain-architecture-force-report.json
+            echo "FIELD_BRAIN_ARCH_FORCE_MATERIALIZED skipped=true reason=no-force-promotable-blueprint"
+            exit 0
+          fi
+          [ "${LLM_AVAILABLE:-false}" = "true" ] || {
+            echo "Explicit architecture FORCE requires the bounded local Qwen runtime" >&2
+            exit 1
+          }
+          python scripts/brain_architecture_force_materializer.py             --proposal brain-learning-output/brain-architecture-proposal.json             --self-config engine_v2/config/brain-self-evolution.json             --endpoint http://127.0.0.1:8080             --model qwen2.5-coder-3b             --report brain-learning-output/brain-architecture-force-report.json             --apply
+          python tests/brain_meta_learning_gap_synthesis_test.py
+          python tests/brain_architecture_force_materializer_test.py
+          python tests/brain_self_architecture_test.py
+          git diff --binary --             .github/workflows/brain-learning-lab.yml             .github/workflows/provider-recognition-repair-v6.yml             engine_v2/config/brain-policy.json             engine_v2/scripts/learning-lab.mjs             engine_v2/src/repair-brain.mjs             scripts/brain_meta_learning.py             scripts/brain_architecture_force_materializer.py             scripts/brain_repair_runtime.py             scripts/run_brain_learning_sandbox.py             scripts/deep_repair_loop.py             scripts/run_adaptive_quick_repair.py             scripts/nuvio_client_lab.cjs             scripts/generate_diagnostics.py             scripts/resolve_provider_hubs.py             scripts/resolve_provider_hub_search_fallback.py             'scripts/brain_layers/*'             'tests/brain_*'             > brain-learning-output/brain-architecture-force.patch
+          test -s brain-learning-output/brain-architecture-force.patch || {
+            echo "Architecture FORCE produced no executable allowlisted diff" >&2
+            exit 1
+          }
+          git reset --hard "$GITHUB_SHA"
+          git clean -fd -- scripts/brain_layers tests >/dev/null 2>&1 || true
+
       - name: Upload sanitized learning and proposal state
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
@@ -1047,6 +1082,8 @@ jobs:
             brain-learning-output/brain-policy.proposed.json
             brain-learning-output/brain-architecture-proposal.json
             brain-learning-output/brain-architecture-proposal.md
+            brain-learning-output/brain-architecture-force.patch
+            brain-learning-output/brain-architecture-force-report.json
             brain-sandbox/brain-llm/guidance.json
             brain-learning-input/native-reader-summary.json
             brain-sandbox/daily-learning-coverage.json
@@ -1180,16 +1217,17 @@ jobs:
 
   publish-repair-proposal:
     name: LEARNING - Open validated repair proposal PR
-    if: github.event_name == 'schedule' || github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.event.inputs.publish_proposal == 'true')
+    if: github.event_name == 'schedule' || github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && (github.event.inputs.publish_proposal == 'true' || github.event.inputs.architecture_force == 'true'))
     needs: experiment
     concurrency:
       group: niakvio-brain-repair-proposal-publish
       cancel-in-progress: false
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 30
     permissions:
       contents: write
       pull-requests: write
+      checks: read
     steps:
       - name: Checkout exact Learning source tree
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
@@ -1372,7 +1410,9 @@ jobs:
           if (x.policy?.publicationAllowed !== false ||
               x.policy?.productionWritesAllowed !== false ||
               x.policy?.pullRequestOnly !== true ||
-              x.policy?.requiresHumanMerge !== true) {
+              x.policy?.requiresHumanMerge !== true ||
+              x.policy?.forcePromotionEligible !== true ||
+              x.policy?.providerPublicationAuthority !== false) {
             throw new Error('unsafe Brain architecture proposal policy');
           }
           fs.appendFileSync(process.env.GITHUB_OUTPUT, 'proposal_count='+count+'\n');
@@ -1393,10 +1433,17 @@ jobs:
           if [ "${{ steps.architecture.outputs.policy_changed }}" = "true" ]; then
             cp brain-learning-output/brain-policy.proposed.json engine_v2/config/brain-policy.json
           fi
+          if [ "${{ inputs.architecture_force || false }}" = "true" ] && [ -s brain-learning-output/brain-architecture-force.patch ]; then
+            git apply --check brain-learning-output/brain-architecture-force.patch
+            git apply brain-learning-output/brain-architecture-force.patch
+            python tests/brain_meta_learning_gap_synthesis_test.py
+            python tests/brain_architecture_force_materializer_test.py
+            python tests/brain_self_architecture_test.py
+          fi
           python -m json.tool engine_v2/learning/architecture-proposal.json >/dev/null
           python -m json.tool engine_v2/config/brain-policy.json >/dev/null
           python tests/brain_cron_full_coverage_test.py
-          if [ -n "$(git status --porcelain --untracked-files=all -- engine_v2/learning/architecture-proposal.json engine_v2/learning/architecture-proposal.md engine_v2/config/brain-policy.json)" ]; then
+          if [ -n "$(git status --porcelain --untracked-files=all)" ]; then
             echo "has_diff=true" >> "$GITHUB_OUTPUT"
           else
             echo "has_diff=false" >> "$GITHUB_OUTPUT"
@@ -1426,7 +1473,47 @@ jobs:
           if [ "$(node -e "const x=require('./$SUMMARY');process.stdout.write(x.policyChanged===true?'true':'false')")" = "true" ]; then
             cp brain-learning-output/brain-policy.proposed.json engine_v2/config/brain-policy.json
           fi
-          git add engine_v2/learning/architecture-proposal.json engine_v2/learning/architecture-proposal.md engine_v2/config/brain-policy.json
+          if [ "${{ inputs.architecture_force || false }}" = "true" ] && [ -s brain-learning-output/brain-architecture-force.patch ]; then
+            git apply --check brain-learning-output/brain-architecture-force.patch
+            git apply brain-learning-output/brain-architecture-force.patch
+            python tests/brain_meta_learning_gap_synthesis_test.py
+            python tests/brain_architecture_force_materializer_test.py
+            python tests/brain_self_architecture_test.py
+          fi
+          git add -A
+          git diff --cached --name-only > "$RUNNER_TEMP/brain-architecture-changed-paths.txt"
+          python - "$RUNNER_TEMP/brain-architecture-changed-paths.txt" engine_v2/config/brain-self-evolution.json <<'PY'
+          import json,sys
+          from pathlib import Path
+          changed=[x.strip() for x in Path(sys.argv[1]).read_text(encoding="utf-8").splitlines() if x.strip()]
+          cfg=json.loads(Path(sys.argv[2]).read_text(encoding="utf-8"))
+          patterns=[str(x) for x in cfg.get("structuralProposalSurfaces") or [] if str(x)]
+          always={
+              "engine_v2/learning/architecture-proposal.json",
+              "engine_v2/learning/architecture-proposal.md",
+              "engine_v2/config/brain-policy.json",
+          }
+          forbidden=("providers/","provider-disabled/","provider-bases/","vf/")
+          forbidden_exact={"manifest.json","PROVENANCE.json","provider-overrides.json"}
+          def allowed(path):
+              if path in always:
+                  return True
+              for pattern in patterns:
+                  if pattern.endswith("*") and path.startswith(pattern[:-1]):
+                      return True
+                  if path == pattern:
+                      return True
+              return False
+          bad_boundary=[p for p in changed if p in forbidden_exact or any(p.startswith(x) for x in forbidden)]
+          if bad_boundary:
+              raise SystemExit("architecture FORCE crossed provider/publication boundary: "+",".join(bad_boundary))
+          outside=[p for p in changed if not allowed(p)]
+          if outside:
+              raise SystemExit("architecture FORCE changed non-allowlisted paths: "+",".join(outside))
+          if not any(p not in always and not p.startswith("tests/") for p in changed):
+              raise SystemExit("architecture FORCE did not contain an executable structural change")
+          print("FIELD_BRAIN_ARCH_FORCE_PATH_GUARD files="+str(len(changed)))
+          PY
           git commit -m "brain: propose Learning architecture evolution"
           git push --force-with-lease origin HEAD:"$BRANCH"
 
@@ -1450,10 +1537,26 @@ jobs:
           EXISTING="$(gh pr list --repo "$GITHUB_REPOSITORY" --state open --head "$BRANCH" --json number --jq '.[0].number // empty')"
           if [ -n "$EXISTING" ]; then
             gh pr edit "$EXISTING" --repo "$GITHUB_REPOSITORY" --title "brain: Learning architecture evolution proposal" --body "$BODY"
+            PR_NUMBER="$EXISTING"
             echo "FIELD_BRAIN_ARCH_PR action=refreshed pr=$EXISTING branch=$BRANCH"
           else
             URL="$(gh pr create --repo "$GITHUB_REPOSITORY" --base main --head "$BRANCH" --title "brain: Learning architecture evolution proposal" --body "$BODY")"
+            PR_NUMBER="$(gh pr view "$URL" --repo "$GITHUB_REPOSITORY" --json number --jq .number)"
             echo "FIELD_BRAIN_ARCH_PR action=created url=$URL branch=$BRANCH"
+          fi
+          if [ "${{ inputs.architecture_force || false }}" = "true" ]; then
+            test -s brain-learning-output/brain-architecture-force.patch || {
+              echo "Architecture FORCE may not auto-promote proposal-only metadata" >&2
+              exit 1
+            }
+            for _ in $(seq 1 12); do
+              count="$(gh pr checks "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --json name --jq 'length' 2>/dev/null || echo 0)"
+              [ "$count" -gt 0 ] && break
+              sleep 5
+            done
+            gh pr checks "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --watch --interval 10 --fail-fast
+            gh pr merge "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --squash
+            echo "FIELD_BRAIN_ARCH_FORCE_PROMOTION pr=$PR_NUMBER mode=merge-after-green-pr-checks"
           fi
 
   continue-learning-slot:

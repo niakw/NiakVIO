@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 9,
+  "schemaVersion": 10,
   "controlPlaneVersion": 7,
   "identity": {
     "name": "NiakVIO Brain",
@@ -103,7 +103,7 @@
     "allStreamsSafetyCap": 40,
     "retryPolicy": "continue_with_new_hypotheses_until_global_deadline_or_no_new_method",
     "selfArchitectureAudit": true,
-    "selfArchitectureChanges": "review_only_pr_with_allowlisted_policy_changes_and_structural_change_plan",
+    "selfArchitectureChanges": "review_only_pr_normally; explicit_force_may_auto_promote_allowlisted_executable_diff_after_targeted_tests_and_required_ci",
     "selfArchitectureAllowedTargets": [
       ".github/workflows/brain-learning-lab.yml",
       "engine_v2/config/brain-policy.json",
@@ -118,8 +118,23 @@
       "scripts/resolve_provider_hubs.py",
       "scripts/resolve_provider_hub_search_fallback.py",
       "tests/brain_*",
-      "scripts/run_brain_learning_queue.py"
-    ]
+      "scripts/run_brain_learning_queue.py",
+      ".github/workflows/provider-recognition-repair-v6.yml",
+      "scripts/brain_meta_learning.py",
+      "scripts/brain_architecture_force_materializer.py",
+      "scripts/brain_layers/*"
+    ],
+    "forceArchitecturePromotion": {
+      "enabled": true,
+      "source": "explicit_force_repair_architecture_debt",
+      "requireExecutableDiff": true,
+      "allowNewFailureFamilies": true,
+      "allowNewArchitectureLayers": true,
+      "requireTargetedTests": true,
+      "requireRequiredCi": true,
+      "providerPublicationAuthority": false,
+      "productionProviderWritesAllowed": false
+    }
   },
   "privacy": {
     "persistRawUrls": false,
@@ -145,7 +160,7 @@
       "purpose": "adaptive independent investigation across the full provider catalogue: anomalies first, healthy deep-sampling after, multi-device Labs, route discovery, repeated repair experimentation until the global time budget expires",
       "productionWritesAllowed": false,
       "publicationAllowed": false,
-      "architectureEvolution": "PR-only"
+      "architectureEvolution": "PR-only normally; explicit FORCE may auto-promote validated allowlisted executable architecture diffs"
     }
   }
 }
