@@ -17,6 +17,8 @@ patterns = [
     "scripts/brain_layers/*",
     "tests/brain_*",
 ]
+assert mod.path_allowed(".github/workflows/brain-learning-lab.yml", patterns) is False
+assert mod.path_allowed("engine_v2/config/brain-policy.json", patterns) is False
 
 with tempfile.TemporaryDirectory(prefix="brain-arch-force-") as tmp:
     root = Path(tmp)
