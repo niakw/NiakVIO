@@ -26,6 +26,17 @@ for required_trigger_guard in (
 ):
     assert required_trigger_guard in workflow, f"missing explicit census trigger bypass: {required_trigger_guard}"
 
+for required_convergence in (
+    "persist:",
+    "inputs.persist == true",
+    'id: persist',
+    'echo "ok=true" >> "$GITHUB_OUTPUT"',
+    "Continue Brain Autopilot from fresh census",
+    "provider-brain-autopilot.yml",
+    "FIELD_SHARDED_CENSUS_AUTOPILOT",
+):
+    assert required_convergence in workflow, f"missing sharded census convergence contract: {required_convergence}"
+
 copy_status = workflow.index("cp automation/provider-census-sharded-status.json /tmp/provider-census-status.json")
 guard = workflow.index("FIELD_SHARDED_CENSUS_NOT_PERSISTED authority_schema_v3_required")
 reset = workflow.index("git reset --hard origin/main", guard)
