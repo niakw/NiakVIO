@@ -89,7 +89,9 @@ def main() -> int:
     assert 'if [ "$budget" -gt 300 ]; then budget=300; fi' in workflow, "long Learning phases must stay below the GitHub-hosted 6h job cap"
     assert "continue-learning-slot:" in workflow, "persisted long Learning continuation job disappeared"
     assert "gh workflow run brain-learning-lab.yml" in workflow, "long Learning slot no longer self-dispatches its next persisted phase"
-    assert "-f publish_proposal=true" in workflow, "long Learning phases must refresh review-only proposals"
+    assert "-f publish_proposal=true" in workflow, "normal long Learning phases must retain review-only proposal capability"
+    assert "-f publish_proposal=false" in workflow, "FORCE continuation must suppress proposal publication"
+    assert 'PUBLISH_PROPOSAL: ${{ inputs.publish_proposal || false }}' in workflow
     experiment_block = workflow[workflow.index("  experiment:"):workflow.index("\n  publish-learning:")]
     assert "timeout-minutes: 355" in experiment_block, (
         "Brain job timeout must cover a five-hour queue phase plus setup/finalization without crossing the hosted-runner limit"

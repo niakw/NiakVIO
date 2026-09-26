@@ -75,7 +75,10 @@ assert "cat > .github/triggers/brain-learning-reconstruction" not in workflow
 assert "provider_learning_dispatch_gate.py mark" not in workflow
 
 assert 'force_mode="$(python - <<\'PY\'' in workflow
+assert 'publish_proposal="false"' in workflow
+assert '-f publish_proposal="$publish_proposal"' in workflow
 assert 'args+=(-f architecture_force=true)' in workflow
 assert 'architecture_force=$force_mode' in workflow
+assert 'publish_proposal=$publish_proposal' in workflow
 
 print("provider fast repair separation contract passed")

@@ -17,7 +17,7 @@ assert force_dispatch in persist_block
 force_block = persist_block[persist_block.index('if [ "$force_requested" = "1" ]'):]
 assert force_dispatch in force_block
 assert "-f architecture_force=true" in force_block
-assert "-f publish_proposal=true" in force_block
+assert "-f publish_proposal=false" in force_block
 assert '-f target_providers="$deferred_csv"' in force_block
 assert "repairType" in persist_block
 assert "architecture_gap" in persist_block

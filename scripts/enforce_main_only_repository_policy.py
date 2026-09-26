@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
 """Enforce NiakVIO's main-only human code-change policy.
 
-Human/manual maintenance stays on main. The only code-review branch a workflow
-may create is brain-repair/proposal, and only the scheduled Brain Learning job
-may create it after materializing validated sandbox evidence. The persistent
-brain-learning/proposals ref remains sanitized memory, not a code branch.
+Human/manual maintenance stays on main. Normal Brain Learning may create only
+the review-only brain-repair/proposal branch. Explicit architecture FORCE is
+the single proposal-review exception: after bounded materialization and targeted
+validation it may publish one lease-guarded commit directly to main, never a
+FORCE PR/branch. The persistent brain-learning/proposals ref remains sanitized
+memory, not a code branch.
 """
 from __future__ import annotations
 
@@ -18,6 +20,8 @@ BRAIN_BRANCH_MAINTENANCE = ROOT / ".github/workflows/brain-branch-maintenance.ym
 BRAIN_PROPOSAL_BRANCH = "brain-repair/proposal"
 LEGACY_FORBIDDEN_BRANCH = "brain-repair/proposals"
 JOB_MARKER = "\n  publish-repair-proposal:\n"
+FORCE_JOB_MARKER = "- name: Promote FORCE architecture directly on main"
+FORCE_MAIN_PUSH = 'git push --force-with-lease=refs/heads/main:"$GITHUB_SHA" origin HEAD:main'
 
 
 def normalize(*, apply: bool) -> list[str]:
@@ -40,7 +44,23 @@ def assert_policy() -> None:
         if marker not in workflow:
             raise ValueError(f"Brain repair PR contract missing: {marker}")
     if "git push origin HEAD:main" in workflow:
-        raise ValueError("Brain workflow may not publish learned code directly to main")
+        raise ValueError("Brain workflow may not publish normal Learning code directly to main")
+    if workflow.count(FORCE_MAIN_PUSH) != 1:
+        raise ValueError("Brain architecture FORCE must expose exactly one lease-guarded direct-main publication point")
+    if FORCE_JOB_MARKER not in workflow:
+        raise ValueError("Brain architecture FORCE direct-main job is missing")
+    force_block = workflow.split(FORCE_JOB_MARKER, 1)[1].split("\n  continue-learning-slot:", 1)[0]
+    for marker in (
+        "inputs.architecture_force",
+        "FIELD_BRAIN_ARCH_FORCE_MAIN_PROMOTION",
+        "-f publish_proposal=false",
+        "architecture FORCE crossed provider/publication boundary",
+        "architecture FORCE changed non-allowlisted paths",
+        "architecture FORCE did not contain an executable structural change",
+        FORCE_MAIN_PUSH,
+    ):
+        if marker not in force_block:
+            raise ValueError(f"Brain architecture FORCE direct-main contract missing: {marker}")
     if LEGACY_FORBIDDEN_BRANCH in workflow:
         raise ValueError("legacy Brain repair branch name resurrected")
 
@@ -94,7 +114,7 @@ def main() -> int:
         "FIELD_MAIN_ONLY_POLICY "
         f"manual_code_branches=0 brain_repair_pr_branch={BRAIN_PROPOSAL_BRANCH} "
         f"scheduled_only=true changed={len(changed)} "
-        "persistent_learning_ref=brain-learning/proposals"
+        "force_architecture_main_only=true persistent_learning_ref=brain-learning/proposals"
     )
     return 0
 

@@ -57,7 +57,7 @@ force_block = persist[force_pos:]
 assert "gh workflow run brain-learning-lab.yml" not in normal_prefix
 assert "gh workflow run brain-learning-lab.yml" in force_block
 assert "-f architecture_force=true" in force_block
-assert "-f publish_proposal=true" in force_block
+assert "-f publish_proposal=false" in force_block
 assert "FIELD_PROVIDER_BRAIN_FORCE_ARCH_DISPATCH" in force_block
 assert "FIELD_PROVIDER_BRAIN_FORCE_DEBT" in workflow
 assert "FIELD_PROVIDER_BRAIN_FORCE_UNVISITED" in workflow

@@ -218,8 +218,10 @@ assert "brain-architecture-force.patch" in architecture_job
 assert "brain_architecture_force_materializer.py" in WORKFLOW.read_text(encoding="utf-8")
 assert "architecture_force" in WORKFLOW.read_text(encoding="utf-8")
 assert "architecture FORCE crossed provider/publication boundary" in architecture_job
-assert "gh pr checks" in architecture_job and "--watch" in architecture_job
-assert "gh pr merge" in architecture_job and "--squash" in architecture_job
+assert "Promote FORCE architecture directly on main" in architecture_job
+assert 'git push --force-with-lease=refs/heads/main:"$GITHUB_SHA" origin HEAD:main' in architecture_job
+assert "gh pr merge" not in architecture_job
+assert "FIELD_BRAIN_ARCH_FORCE_MAIN_PROMOTION" in architecture_job
 assert "architecture FORCE changed non-allowlisted paths" in architecture_job
 
 print("Brain self-architecture tests passed")

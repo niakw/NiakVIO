@@ -68,7 +68,7 @@
   "forceArchitecture": {
     "enabled": true,
     "trigger": "explicit-force-repair-with-architecture-debt",
-    "autoPromotion": "validated-pr-auto-merge-after-required-ci",
+    "autoPromotion": "direct-main-force-after-targeted-validation-with-required-post-push-ci",
     "structuralMaterializationRequired": true,
     "requireExecutableDiff": true,
     "requireTargetedTests": true,
@@ -94,6 +94,9 @@
       "scripts/resolve_provider_hub_search_fallback.py",
       "scripts/brain_layers/*",
       "tests/brain_*"
-    ]
+    ],
+    "forceUsesPullRequest": false,
+    "directMainOnly": true,
+    "requireStaleShaLeaseGuard": true
   }
 }

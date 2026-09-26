@@ -333,9 +333,13 @@ jobs:
               echo "FIELD_PROVIDER_FAST_REPAIR_LEARNING_DEBT providers=0 next=census"
               return 0
             fi
+            publish_proposal="true"
+            if [ "$force_mode" = "true" ]; then
+              publish_proposal="false"
+            fi
             args=(
               --repo "$GITHUB_REPOSITORY" --ref main
-              -f publish_proposal=true
+              -f publish_proposal="$publish_proposal"
               -f target_providers="$learn_handoff_csv"
               -f slot_remaining_minutes=60
               -f slot_phase=1
@@ -344,7 +348,7 @@ jobs:
               args+=(-f architecture_force=true)
             fi
             gh workflow run brain-learning-lab.yml "${args[@]}"
-            echo "FIELD_PROVIDER_FAST_REPAIR_LEARNING_DEBT providers=${learn_handoff_count:-0} ids=${learn_handoff_csv:-none} learning_dispatch=true architecture_force=$force_mode owner=immediate-targeted-learning"
+            echo "FIELD_PROVIDER_FAST_REPAIR_LEARNING_DEBT providers=${learn_handoff_count:-0} ids=${learn_handoff_csv:-none} learning_dispatch=true architecture_force=$force_mode publish_proposal=$publish_proposal owner=immediate-targeted-learning"
           }
           git fetch --quiet origin main
           remote_main="$(git rev-parse origin/main)"

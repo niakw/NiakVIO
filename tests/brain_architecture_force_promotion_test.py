@@ -16,9 +16,12 @@ assert "brain-architecture-force.patch" in LEARN
 assert "force_promotable=" in LEARN
 assert "no-force-promotable-blueprint" in LEARN
 assert "proposal_only=true" in LEARN
-assert 'gh pr merge "$PR_NUMBER"' in LEARN
-assert "gh pr checks" in LEARN and "--watch" in LEARN and "--fail-fast" in LEARN
-assert "mode=merge-after-green-pr-checks" in LEARN
+assert "Promote FORCE architecture directly on main" in LEARN
+assert 'git push --force-with-lease=refs/heads/main:"$GITHUB_SHA" origin HEAD:main' in LEARN
+assert "FIELD_BRAIN_ARCH_FORCE_MAIN_PROMOTION" in LEARN
+assert "mode=direct-main-no-pr" in LEARN
+assert 'gh pr merge "$PR_NUMBER"' not in LEARN
+assert "mode=merge-after-green-pr-checks" not in LEARN
 assert "architecture FORCE changed non-allowlisted paths" in LEARN
 assert 'engine_v2/config/brain-self-evolution.json "${{ steps.materialize-architecture.outputs.force_promotable }}"' in LEARN
 assert "if architecture_force and not has_executable:" in LEARN
@@ -26,7 +29,7 @@ assert "architecture_force=" in LEARN and "executable=" in LEARN
 assert "architecture FORCE crossed provider/publication boundary" in LEARN
 
 assert "-f architecture_force=true" in REPAIR
-assert "-f publish_proposal=true" in REPAIR
+assert "-f publish_proposal=false" in REPAIR
 assert '-f target_providers="$deferred_csv"' in REPAIR
 assert "FIELD_PROVIDER_BRAIN_FORCE_ARCH_DISPATCH" in REPAIR
 

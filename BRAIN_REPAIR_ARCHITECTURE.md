@@ -333,16 +333,20 @@ Cleanup is fail-safe (`always()`), but it must occur after canonical execution.
 
 ## 7. Learning is slot-owned
 
-Learning is **not** a fallback child workflow of Repair, FORCE or Autopilot.
+Normal Learning remains slot-owned and review-only. The explicit architecture
+FORCE lane reuses the same sandbox workflow implementation, but it is a distinct
+operator-owned execution mode: `architecture_force=true`,
+`publish_proposal=false`.
 
-The only allowed Learning execution is the independent Learning window:
+The ordinary Learning window remains:
 - the scheduled/manual `.github/workflows/brain-learning-lab.yml` slot;
 - its own bounded continuation mechanism for that same slot;
 - the availability watchdog may only restore a missing scheduled Learning window.
 
-Repair/FORCE/Fast Repair/Autopilot may consume previously persisted sanitized
-Learning priors, but they only **record unresolved causal debt** for the next
-Learning window. They must never dispatch `brain-learning-lab.yml` themselves.
+Repair/FORCE/Fast Repair/Autopilot may consume persisted sanitized Learning
+priors. When current executable provider methods are exhausted, FORCE may hand
+the exact unresolved cohort to the guarded architecture FORCE lane. That handoff
+must never request a proposal PR and never grants provider publication authority.
 
 The causal fingerprint/dispatch ledger remains useful to the Learning slot for
 deduplication:
@@ -424,7 +428,7 @@ Statuses such as ROUTE PROVEN and CHAIN REACHED are useful progress evidence. Th
 | Artifact | Repair | Force | Learning | Domain Refresh |
 | --- | ---: | ---: | ---: | ---: |
 | Provider DATA/Bloc candidate | Sandbox | Isolated candidate | Proposal/sandbox | Domain-owned fields only |
-| Common Core | No direct write | No direct write | Proposal/PR only | No |
+| Common Core | No direct write | Guarded allowlisted architecture FORCE only | Proposal/PR only | No |
 | Negative Repair memory | Valid executed provider experiment only | Valid isolated experiment only | Separate Learning memory | No |
 | Learning dispatch ledger | After successful dispatch | After successful dispatch | Read/consume | No |
 | Census | After canonical evidence | After canonical evidence | No direct healthy promotion | Domain metadata may be reprojected, not playback proof |
@@ -510,9 +514,9 @@ Until those runtime proofs exist, code-level architecture may be complete while 
 
 - FORCE first evaluates current sanitized Brain-LLM provider-local mutations in isolated sandboxes.
 - A mutation may be applied automatically only after current-byte improvement, identity/playback validation and the normal non-regression/publication gates.
-- A FORCE execution must not dispatch `brain-learning-lab.yml` for its unresolved cohort. The unresolved debt may be persisted for later analysis, but ownership of the current execution remains FORCE.
-- If a bounded FORCE run must resume because providers were not visited, the continuation remains `mode=force`.
-- Learning remains an independent scheduled/manual research slot. It may consume persisted debt, evolve hypotheses and open reviewable PRs, but it does not directly apply provider fixes to production.
+- A FORCE execution may dispatch only the explicit `architecture_force=true` lane for exact unresolved architecture debt, always with `publish_proposal=false`; this remains FORCE-owned, not normal proposal Learning.
+- If a bounded FORCE run must resume because providers were not visited, the continuation remains FORCE-owned and preserves proposal suppression.
+- Normal Learning remains an independent scheduled/manual research slot. It may consume persisted debt, evolve hypotheses and open reviewable PRs, but it does not directly apply provider fixes to production.
 
 This separation prevents a FORCE request from silently degrading into proposal-only Learning while preserving Learning as the long-horizon hypothesis/evolution lane.
 
@@ -591,6 +595,6 @@ A FORCE Repair run that still has deferred architecture debt dispatches targeted
 
 The Learning job reuses the already-pinned local Qwen runtime. `scripts/brain_architecture_force_materializer.py` accepts at most three bounded edits on allowlisted Brain/Core/Lab surfaces. It supports exact unique find/replace and isolated new Brain layer/test files. It rejects provider bundles, provider-disabled bytes, ProviderBase, manifests, provider overrides and provenance/publication surfaces.
 
-A FORCE architecture run must produce a real executable diff. Proposal-only JSON/Markdown is not eligible for auto-promotion. The structural patch is exported as an artifact, replayed on a clean checkout, re-tested, pushed to the dedicated architecture PR, then requested for GitHub auto-merge. Required PR CI remains authoritative; FORCE does not bypass branch protection or provider publication gates.
+A FORCE architecture run must produce a real executable diff. Proposal-only JSON/Markdown is not eligible for auto-promotion. The structural patch is exported as an artifact, replayed on the exact source checkout and re-tested. FORCE then stages only the generated-edit allowlist plus architecture metadata, rejects provider/publication boundaries, requires a stale-SHA lease guard, and pushes one commit directly to `main` without creating a PR or repair branch. The resulting main SHA must still pass Workflow Gate, Verify/Publish and non-regression; a failed gate is not a validated architecture repair.
 
-Provider publication authority remains false throughout the architecture lane.
+Provider publication authority remains false throughout the architecture lane. Normal scheduled/manual Learning keeps its review-only PR behavior.

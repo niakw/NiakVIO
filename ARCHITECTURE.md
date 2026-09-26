@@ -239,7 +239,8 @@ Le finalizer n’est ni une autorité de découverte, ni un moteur Learning, ni 
 - providers actifs et désactivés peuvent être observés ;
 - les essais restent sandboxés ;
 - les preuves doivent être sanitizées ;
-- les mutations deviennent des propositions reviewables ;
+- les mutations du Learning normal deviennent des propositions reviewables ;
+- l’exception `architecture_force=true` reste FORCE-owned : `publish_proposal=false`, aucun PR/branche FORCE, patch structurel allowlisté validé puis commit lease-guarded directement sur `main` ;
 - `brain-learning/proposals` n’est pas une autorité de publication ;
 - aucune mutation ne contourne les gates d’identité, sécurité, reconstruction et release.
 - Repair → Learning est borné par une empreinte causale durable : même provider + même signature + même méthode déjà dispatchés ne relancent pas automatiquement Learning ; toute cohorte automatique est explicite et ciblée.

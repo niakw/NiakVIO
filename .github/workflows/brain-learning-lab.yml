@@ -9,7 +9,7 @@ on:
         default: false
         type: boolean
       architecture_force:
-        description: Explicit FORCE architecture lane; materialize and auto-promote an allowlisted executable architecture diff after CI
+        description: Explicit FORCE architecture lane; materialize an allowlisted executable architecture diff and promote it directly to main after targeted validation
         required: false
         default: false
         type: boolean
@@ -1217,7 +1217,7 @@ jobs:
 
   publish-repair-proposal:
     name: LEARNING - Open validated repair proposal PR
-    if: github.event_name == 'schedule' || github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && (github.event.inputs.publish_proposal == 'true' || github.event.inputs.architecture_force == 'true'))
+    if: github.event_name == 'schedule' || github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.event.inputs.publish_proposal == 'true')
     needs: experiment
     concurrency:
       group: niakvio-brain-repair-proposal-publish
@@ -1361,8 +1361,8 @@ jobs:
           fi
 
   publish-architecture-proposal:
-    name: LEARNING - Open Brain architecture evolution PR
-    if: github.event_name == 'schedule' || github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.event.inputs.publish_proposal == 'true')
+    name: LEARNING - Validate Brain architecture evolution
+    if: github.event_name == 'schedule' || github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && (github.event.inputs.publish_proposal == 'true' || github.event.inputs.architecture_force == 'true'))
     needs: experiment
     concurrency:
       group: niakvio-brain-architecture-proposal-publish
@@ -1455,6 +1455,7 @@ jobs:
             python tests/brain_meta_learning_gap_synthesis_test.py
             python tests/brain_architecture_force_materializer_test.py
             python tests/brain_self_architecture_test.py
+            python tests/brain_architecture_force_promotion_test.py
           fi
           python -m json.tool engine_v2/learning/architecture-proposal.json >/dev/null
           python -m json.tool engine_v2/config/brain-policy.json >/dev/null
@@ -1466,7 +1467,7 @@ jobs:
           fi
 
       - name: Open or refresh Brain architecture PR
-        if: steps.architecture.outputs.has_changes == 'true' && steps.materialize-architecture.outputs.has_diff == 'true'
+        if: steps.architecture.outputs.has_changes == 'true' && steps.materialize-architecture.outputs.has_diff == 'true' && inputs.architecture_force != true
         env:
           GH_TOKEN: ${{ github.token }}
           BRANCH: brain-architecture/proposal
@@ -1576,19 +1577,129 @@ jobs:
             PR_NUMBER="$(gh pr view "$URL" --repo "$GITHUB_REPOSITORY" --json number --jq .number)"
             echo "FIELD_BRAIN_ARCH_PR action=created url=$URL branch=$BRANCH"
           fi
-          if [ "${{ steps.materialize-architecture.outputs.force_promotable }}" = "true" ]; then
-            test -s brain-learning-output/brain-architecture-force.patch
-            for _ in $(seq 1 12); do
-              count="$(gh pr checks "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --json name --jq 'length' 2>/dev/null || echo 0)"
-              [ "$count" -gt 0 ] && break
-              sleep 5
-            done
-            gh pr checks "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --watch --interval 10 --fail-fast
-            gh pr merge "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --squash
-            echo "FIELD_BRAIN_ARCH_FORCE_PROMOTION pr=$PR_NUMBER mode=merge-after-green-pr-checks"
-          elif [ "${{ inputs.architecture_force || false }}" = "true" ]; then
+          echo "FIELD_BRAIN_ARCH_PR published=true mode=review-only"
+
+      - name: Promote FORCE architecture directly on main
+        if: inputs.architecture_force == true && steps.architecture.outputs.has_changes == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TARGET_PROVIDER: ${{ needs.experiment.outputs.target_provider }}
+          TARGET_PROVIDERS: ${{ needs.experiment.outputs.target_providers }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ "${{ steps.materialize-architecture.outputs.force_promotable }}" != "true" ]; then
             echo "FIELD_BRAIN_ARCH_FORCE_PROMOTION skipped=true reason=no-force-promotable-blueprint proposal_only=true"
+            exit 0
           fi
+
+          git fetch --quiet origin main
+          remote_main="$(git rev-parse origin/main)"
+          if [ "$remote_main" != "$GITHUB_SHA" ]; then
+            args=(gh workflow run brain-learning-lab.yml
+              --repo "$GITHUB_REPOSITORY"
+              --ref main
+              -f publish_proposal=false
+              -f architecture_force=true
+              -f slot_remaining_minutes=60
+              -f slot_phase=1)
+            if [ -n "${TARGET_PROVIDERS:-}" ]; then
+              args+=(-f target_providers="$TARGET_PROVIDERS")
+            elif [ -n "${TARGET_PROVIDER:-}" ]; then
+              args+=(-f target_provider="$TARGET_PROVIDER")
+            fi
+            "${args[@]}"
+            echo "FIELD_BRAIN_ARCH_FORCE_MAIN_PROMOTION skipped=stale source=$GITHUB_SHA remote=$remote_main requeued=true"
+            exit 0
+          fi
+
+          python - "$RUNNER_TEMP/brain-force-stage-paths.txt" <<'PY'
+          import fnmatch
+          import json
+          import subprocess
+          import sys
+          from pathlib import Path
+
+          output = Path(sys.argv[1])
+          cfg = json.loads(Path("engine_v2/config/brain-self-evolution.json").read_text(encoding="utf-8"))
+          generated = [
+              str(x)
+              for x in ((cfg.get("forceArchitecture") or {}).get("generatedEditAllowlist") or [])
+              if str(x)
+          ]
+          metadata = {
+              "engine_v2/learning/architecture-proposal.json",
+              "engine_v2/learning/architecture-proposal.md",
+              "engine_v2/config/brain-policy.json",
+          }
+          forbidden_prefixes = (
+              "providers/", "provider-disabled/", "provider-bases/",
+              "vf/", "no-anime/", "vf-no-anime/",
+          )
+          forbidden_exact = {"manifest.json", "PROVENANCE.json", "provider-overrides.json"}
+
+          tracked = {
+              line.strip()
+              for line in subprocess.check_output(["git", "diff", "--name-only"], text=True).splitlines()
+              if line.strip()
+          }
+          untracked = {
+              line.strip()
+              for line in subprocess.check_output(
+                  ["git", "ls-files", "--others", "--exclude-standard"], text=True
+              ).splitlines()
+              if line.strip()
+          }
+
+          def generated_allowed(path: str) -> bool:
+              return any(fnmatch.fnmatch(path, pattern) for pattern in generated)
+
+          boundary = sorted(
+              path for path in tracked | untracked
+              if path in forbidden_exact or any(path.startswith(prefix) for prefix in forbidden_prefixes)
+          )
+          if boundary:
+              raise SystemExit("architecture FORCE crossed provider/publication boundary: " + ",".join(boundary))
+
+          tracked_outside = sorted(
+              path for path in tracked
+              if path not in metadata and not generated_allowed(path)
+          )
+          if tracked_outside:
+              raise SystemExit("architecture FORCE changed non-allowlisted paths: " + ",".join(tracked_outside))
+
+          stage = sorted(
+              path for path in tracked | untracked
+              if path in metadata or generated_allowed(path)
+          )
+          executable = [
+              path for path in stage
+              if path not in metadata and not path.startswith("tests/")
+          ]
+          if not executable:
+              raise SystemExit("architecture FORCE did not contain an executable structural change")
+
+          output.write_text("\n".join(stage) + "\n", encoding="utf-8")
+          print(
+              "FIELD_BRAIN_ARCH_FORCE_PATH_GUARD files="
+              + str(len(stage))
+              + " architecture_force=true executable=true"
+          )
+          PY
+
+          while IFS= read -r path; do
+            [ -n "$path" ] || continue
+            git add -- "$path"
+          done < "$RUNNER_TEMP/brain-force-stage-paths.txt"
+          git diff --cached --check
+          python scripts/enforce_main_only_repository_policy.py --check
+
+          git config user.name "niakvio-brain-force"
+          git config user.email "actions@users.noreply.github.com"
+          git commit -m "brain(force): promote validated architecture evolution"
+          promoted_sha="$(git rev-parse HEAD)"
+          git push --force-with-lease=refs/heads/main:"$GITHUB_SHA" origin HEAD:main
+          echo "FIELD_BRAIN_ARCH_FORCE_MAIN_PROMOTION promoted=true sha=$promoted_sha base=$GITHUB_SHA mode=direct-main-no-pr"
 
   continue-learning-slot:
     name: LEARNING - Continue chained long slot
@@ -1612,15 +1723,22 @@ jobs:
           TARGET_PROVIDER: ${{ needs.experiment.outputs.target_provider }}
           TARGET_PROVIDERS: ${{ needs.experiment.outputs.target_providers }}
           ARCHITECTURE_FORCE: ${{ inputs.architecture_force || false }}
+          PUBLISH_PROPOSAL: ${{ inputs.publish_proposal || false }}
         shell: bash
         run: |
           set -euo pipefail
           test -n "$NEXT_REMAINING"
           test -n "$NEXT_PHASE"
+          publish_arg=(-f publish_proposal=true)
+          if [ "$ARCHITECTURE_FORCE" = "true" ]; then
+            publish_arg=(-f publish_proposal=false)
+          elif [ "$PUBLISH_PROPOSAL" != "true" ]; then
+            publish_arg=(-f publish_proposal=false)
+          fi
           args=(gh workflow run brain-learning-lab.yml
             --repo "$GITHUB_REPOSITORY"
             --ref main
-            -f publish_proposal=true
+            "${publish_arg[@]}"
             -f architecture_force="$ARCHITECTURE_FORCE"
             -f slot_remaining_minutes="$NEXT_REMAINING"
             -f slot_phase="$NEXT_PHASE")
@@ -1630,7 +1748,7 @@ jobs:
             args+=(-f target_provider="$TARGET_PROVIDER")
           fi
           "${args[@]}"
-          echo "FIELD_BRAIN_LONG_SLOT_DISPATCH next_phase=$NEXT_PHASE remaining_minutes=$NEXT_REMAINING architecture_force=$ARCHITECTURE_FORCE"
+          echo "FIELD_BRAIN_LONG_SLOT_DISPATCH next_phase=$NEXT_PHASE remaining_minutes=$NEXT_REMAINING architecture_force=$ARCHITECTURE_FORCE publish_proposal=$PUBLISH_PROPOSAL"
 
   complete-cloud-convergence:
     name: LEARNING - Recompute census after final phase
