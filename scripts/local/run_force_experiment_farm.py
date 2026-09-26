@@ -447,10 +447,13 @@ def accepted_events(report: dict[str, Any]) -> list[dict[str, Any]]:
 
 def report_summary(report: dict[str, Any]) -> dict[str, Any]:
     accepted = accepted_events(report)
+    rounds = [row for row in (report.get("rounds") or []) if isinstance(row, dict)]
+    generated = sum(max(0, int(row.get("generated_candidates") or 0)) for row in rounds)
+    exploration = sum(len(row.get("exploration_progress") or []) for row in rounds)
     return {
         "acceptedRepairs": int(report.get("accepted_repairs") or 0),
-        "generatedCandidates": int(report.get("generated_candidates") or 0),
-        "explorationProgressCount": int(report.get("exploration_progress_count") or 0),
+        "generatedCandidates": generated,
+        "explorationProgressCount": exploration,
         "finalCounts": copy.deepcopy(report.get("final_counts") or {}),
         "accepted": accepted[:8],
     }
@@ -601,6 +604,18 @@ def persist_state(output: Path, state: dict[str, Any]) -> None:
                 for item in (rows or {}).values()
                 if isinstance(item, dict) and item.get("quickAccepted") is True
             ),
+            "quickPromisingExperiments": sum(
+                1
+                for rows in (state.get("results") or {}).values()
+                for item in (rows or {}).values()
+                if isinstance(item, dict) and item.get("quickPromising") is True
+            ),
+            "quickExplorationProgress": sum(
+                int(((item.get("quick") or {}).get("explorationProgressCount") or 0))
+                for rows in (state.get("results") or {}).values()
+                for item in (rows or {}).values()
+                if isinstance(item, dict)
+            ),
             "generatedCandidates": sum(
                 int(((item.get("quick") or {}).get("generatedCandidates") or 0))
                 for rows in (state.get("results") or {}).values()
@@ -690,6 +705,7 @@ def provider_worker(
                 "profile": str(guidance_row.get("profile") or ""),
                 "guidance": copy.deepcopy(guidance_row),
                 "quickAccepted": False,
+                "quickPromising": False,
                 "deepAccepted": False,
                 "publicationPerformed": False,
             }
@@ -724,11 +740,16 @@ def provider_worker(
                 result["quickHealth"] = provider_health_summary(
                     quick_out / "health-results.json", provider
                 )
-                result["quickAccepted"] = int(quick_report.get("accepted_repairs") or 0) > 0
+                quick_summary = result["quick"]
+                result["quickAccepted"] = int(quick_summary.get("acceptedRepairs") or 0) > 0
+                result["quickPromising"] = (
+                    result["quickAccepted"]
+                    or int(quick_summary.get("explorationProgressCount") or 0) > 0
+                )
             except (OSError, subprocess.SubprocessError, ValueError) as exc:
                 result["quickError"] = f"{type(exc).__name__}:{str(exc)[:500]}"
 
-            if result["quickAccepted"]:
+            if result["quickPromising"]:
                 # Deep starts again from exact current bytes, never from Quick's
                 # provisional candidate.
                 reset_worktree(worktree, sha)
@@ -784,6 +805,7 @@ def provider_worker(
                 f"provider={provider} index={index}/{len(experiments)} fp={fp[:12]} "
                 f"profile={result['profile']} "
                 f"quick={str(result['quickAccepted']).lower()} "
+                f"promising={str(result['quickPromising']).lower()} "
                 f"deep={str(result['deepAccepted']).lower()}",
                 flush=True,
             )
