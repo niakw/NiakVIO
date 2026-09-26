@@ -314,42 +314,12 @@ jobs:
           print(len(rows), ','.join(rows))
           PY
           )
-          learning_count=0
-          learning_provider_csv=""
-          dispatch_selection="$RUNNER_TEMP/provider-learning-dispatch-selection.json"
-          if [ "${learn_handoff_count:-0}" -gt 0 ]; then
-            python scripts/provider_learning_dispatch_gate.py select \
-              --brain automation/provider-brain-repair-latest.json \
-              --ledger automation/provider-learning-dispatch-ledger.json \
-              --providers "$learn_handoff_csv" \
-              --output "$dispatch_selection"
-            learning_count="$(python -c 'import json,sys; d=json.load(open(sys.argv[1],encoding="utf-8")); print(int(d.get("eligibleProviderCount") or 0))' "$dispatch_selection")"
-            learning_provider_csv="$(python -c 'import json,sys; d=json.load(open(sys.argv[1],encoding="utf-8")); print(d.get("providerFilter") or "")' "$dispatch_selection")"
-          fi
-          dispatch_learning() {
-            if [ "${learning_count:-0}" -le 0 ]; then
-              echo "FIELD_PROVIDER_FAST_REPAIR_LEARN_DISPATCH skipped=true handoff=${learn_handoff_count:-0} reason=no-new-causal-fingerprint"
+          record_learning_debt() {
+            if [ "${learn_handoff_count:-0}" -le 0 ]; then
+              echo "FIELD_PROVIDER_FAST_REPAIR_LEARNING_DEBT providers=0 learning_dispatch=false owner=scheduled-learning-slot"
               return 0
             fi
-            test -n "$learning_provider_csv" || { echo "Learning gate returned empty provider filter" >&2; exit 1; }
-            gh workflow run brain-learning-lab.yml \
-              --repo "$GITHUB_REPOSITORY" \
-              --ref main \
-              -f publish_proposal=false \
-              -f target_providers="$learning_provider_csv" \
-              -f slot_remaining_minutes=12 \
-              -f slot_phase=1
-            echo "FIELD_PROVIDER_FAST_REPAIR_LEARN_DISPATCH eligible=$learning_count providers=$learning_provider_csv budget_minutes=12"
-            python scripts/provider_learning_dispatch_gate.py mark \
-              --ledger automation/provider-learning-dispatch-ledger.json \
-              --selection "$dispatch_selection" \
-              --repair-run-id "$GITHUB_RUN_ID"
-            git add automation/provider-learning-dispatch-ledger.json
-            if ! git diff --cached --quiet; then
-              git commit -m "data(brain): record Fast causal Learning dispatch from ${GITHUB_RUN_ID}"
-              git pull --rebase origin main
-              git push origin HEAD:main
-            fi
+            echo "FIELD_PROVIDER_FAST_REPAIR_LEARNING_DEBT providers=${learn_handoff_count:-0} ids=${learn_handoff_csv:-none} learning_dispatch=false owner=scheduled-learning-slot"
           }
           git fetch --quiet origin main
           remote_main="$(git rev-parse origin/main)"
@@ -370,7 +340,7 @@ jobs:
               git commit -m "repair(brain): persist validated provider-local repair"
               git push origin HEAD:main
             fi
-            dispatch_learning
+            record_learning_debt
             echo "FIELD_PROVIDER_FAST_REPAIR_PUBLISHED validated=true"
           else
             tmp="$RUNNER_TEMP/provider-fast-repair-evidence"
@@ -392,6 +362,6 @@ jobs:
               git commit -m "ci(brain): persist fast repair evidence"
               git push origin HEAD:main
             fi
-            dispatch_learning
+            record_learning_debt
             echo "FIELD_PROVIDER_FAST_REPAIR_PUBLISHED validated=false"
           fi
