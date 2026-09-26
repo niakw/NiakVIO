@@ -18,6 +18,9 @@ assert 'gh pr merge "$PR_NUMBER"' in LEARN
 assert "gh pr checks" in LEARN and "--watch" in LEARN and "--fail-fast" in LEARN
 assert "mode=merge-after-green-pr-checks" in LEARN
 assert "architecture FORCE changed non-allowlisted paths" in LEARN
+assert 'engine_v2/config/brain-self-evolution.json "${{ inputs.architecture_force || false }}"' in LEARN
+assert "if architecture_force and not has_executable:" in LEARN
+assert "architecture_force=" in LEARN and "executable=" in LEARN
 assert "architecture FORCE crossed provider/publication boundary" in LEARN
 
 assert "-f architecture_force=true" in REPAIR
