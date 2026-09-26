@@ -236,6 +236,17 @@ jobs:
           python tests/core_repair_type_architecture_test.py
           python tests/provider_non_regression_contract_test.py
 
+      - name: Snapshot Nuvio client compatibility once for this Repair run
+        shell: bash
+        run: |
+          set -euo pipefail
+          cache="$RUNNER_TEMP/nuvio-client-upstream-status.json"
+          validated="$RUNNER_TEMP/nuvio-client-upstream-status-validated.json"
+          python3 scripts/check_nuvio_client_upstreams.py --no-fail --output "$cache"
+          NIAKVIO_NUVIO_CLIENT_STATUS_CACHE="$cache"             python3 scripts/guard_nuvio_client_brain_compat.py "$validated"
+          echo "NIAKVIO_NUVIO_CLIENT_STATUS_CACHE=$cache" >> "$GITHUB_ENV"
+          echo "FIELD_REPAIR_NUVIO_CLIENT_CACHE ready=true path=$cache"
+
       - name: Decide reusable Repair WAF evidence
         id: repair_waf_reuse
         shell: bash

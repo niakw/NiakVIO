@@ -5317,3 +5317,10 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Per-provider Deep subprocesses remain isolated (own worktree, stage, output, log, guidance env). No provider/publication authority changes.
 - Static/functional contract passes: local_force_guidance_causal_evaluator_test.py + py_compile + git diff --check.
 - This branch must not be merged until the current FORCE SHA finishes, to avoid contaminating or superseding the active proof.
+
+### 2026-09-26 — Intra-run Nuvio client guard cache
+- PR #199 now also snapshots Nuvio client compatibility once per Provider Repair run into RUNNER_TEMP, validates it through the existing Brain compatibility guard, and exports NIAKVIO_NUVIO_CLIENT_STATUS_CACHE for all later Deep subprocesses.
+- Cached reports remain fail-closed: configured repository/branch/verified_ref must match, all configured clients must exist, verification_error/inconclusive/history divergence remain blockers, and known linear contract drift remains adaptation_pending.
+- This removes repeated historical client fetches from every Deep candidate while preserving one exact client snapshot as run evidence.
+- Tests PASS: py_compile, nuvio_client_upstream_drift_guard_test.py, local_force_guidance_causal_evaluator_test.py, provider_repair_pipeline_v6_contract_test.py, git diff --check.
+- PR #199 remains intentionally unmerged while FORCE run 36240877093 is active on main SHA d0146e77.
