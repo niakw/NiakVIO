@@ -26,6 +26,10 @@ assert "gh workflow run brain-learning-lab.yml" in autopilot
 assert '-f publish_proposal=true' in autopilot
 assert '-f target_providers="$LEARNING"' in autopilot
 assert '-f slot_remaining_minutes=60' in autopilot
+assert 'FORCE_MODE: ${{ steps.plan.outputs.force }}' in autopilot
+assert 'args+=(-f architecture_force=true)' in autopilot
+assert 'force=$FORCE_MODE' in autopilot
+assert 'provider-brain-autopilot.json' in autopilot
 assert "contents: read" in autopilot
 assert "workflow_run:" in autopilot
 assert "github.event.workflow_run.conclusion == 'success'" in autopilot
