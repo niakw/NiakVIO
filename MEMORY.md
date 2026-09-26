@@ -5186,3 +5186,12 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Two-stage cost control: Quick screens all variants; only provisional Quick improvements are replayed from fresh current bytes under Deep + identity safety. Deep winners stop further experiments for that provider unless `--continue-after-win` is set.
 - Winning local guidance remains non-authoritative and is written to `WINNING_GUIDANCE.json`; GitHub FORCE must revalidate playback/identity/non-regression on current bytes before any persistence.
 - Recommended starting point for the current 14-provider cohort: `python3 scripts/local/run_force_experiment_farm.py --variants-per-provider 24 --workers 2 --deep-rounds 3`. Raise variants for stubborn individual providers instead of rerunning the whole cohort.
+
+## 2026-09-26 Europe/Paris — root cause found for persistent HTTP-blocked FORCE cohort
+
+- Bounded FORCE run `36205849641` on SHA `edef8f79218e` completed the real 14-provider path with no historical migration replay and no automatic Learning/Force retry.
+- Route recovery processed all 14; Deep Repair returned 0 accepted, 0 playable. Runtime classes included 5 `provider_http_blocked`, 1 `provider_http_error`, and 8 `content_lookup_completed_no_streams`.
+- Cross-checking workflow order found a common transport bug: the runner selected the Tailscale residential exit and performed WAF/provider replay through it, then executed `Clear optional Repair residential routing` **before** canonical FORCE. Deep Repair therefore ran from the GitHub-hosted route even though residential evidence was available.
+- Fix: keep residential exit routing active through canonical Repair/FORCE; clear it immediately after canonical execution with `always()`.
+- This is a transport/execution ordering fix, not a provider mutation. It directly targets the five HTTP-blocked providers and may also change zero-result behavior where origin responses differ by network.
+- Next validation is one explicit bounded FORCE of the current 14-provider cohort on the exact post-fix HEAD. No Learning dispatch and no automatic Force retry.
