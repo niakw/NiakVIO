@@ -180,6 +180,14 @@ with tempfile.TemporaryDirectory(prefix="niakvio-arch-cohort-") as tmp:
     assert "harnessTransportClass" in harness["method"], harness
     assert "not promoted to playback" in harness["acceptanceProof"][1], harness
     assert "native differential proof" in harness["reentryPolicy"], harness
+    assert terminal["forcePromotionEligible"] is True, terminal
+    assert terminal["targetLayer"] == "core", terminal
+    assert transport["forcePromotionEligible"] is True, transport
+    assert transport["targetLayer"] == "network", transport
+    assert harness["forcePromotionEligible"] is False, harness
+    assert harness["targetLayer"] == "harness", harness
+    assert terminal["forcePromotionReason"] == "deferred-known-family-exhaustion", terminal
+    assert harness["forcePromotionReason"] == "diagnostic-only-or-no-exhaustion-proof", harness
     assert all(item["productionWritesAllowed"] is False for item in blueprints)
     assert all(item["requiresHumanMerge"] is True for item in blueprints)
     assert row["evidence"]["strategyBlueprints"] == blueprints, row
@@ -210,6 +218,8 @@ filtered = builder.build_strategy_blueprints(
 assert len(filtered) == 1, filtered
 assert filtered[0]["strategyId"] == "terminal_transition_graph_v1", filtered
 assert filtered[0]["providers"] == ["beta"], filtered
+assert filtered[0]["forcePromotionEligible"] is True, filtered
+assert filtered[0]["targetLayer"] == "core", filtered
 fully_exhausted = builder.build_strategy_blueprints(
     {
         "groups": [{
