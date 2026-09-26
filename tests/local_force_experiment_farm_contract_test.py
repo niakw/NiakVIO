@@ -70,6 +70,9 @@ for forbidden in (
     "directMutationAuthority\": True",
 ):
     assert forbidden not in source, forbidden
+assert 'env["NIAKVIO_SKIP_CLIENT_DRIFT_GUARD"] = "1"' in source
+assert '"clientDriftGuardSkippedForLocalExperiments": True' in source
+
 for required in (
     "run_adaptive_quick_repair.py",
     "run_adaptive_deep_repair.py",
