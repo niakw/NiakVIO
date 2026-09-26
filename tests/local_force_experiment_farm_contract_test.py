@@ -54,6 +54,11 @@ assert synthetic_summary["generatedCandidates"] == 5
 assert synthetic_summary["explorationProgressCount"] == 1
 assert synthetic_summary["acceptedRepairs"] == 0
 
+# Deep can prove the current provider bytes healthy without accepting a mutation.
+# The local farm must surface this as a revalidation target and stop wasting variants.
+assert "deepBaselineHealthy" in SCRIPT.read_text(encoding="utf-8")
+assert "deepBaselineHealthyProviders" in SCRIPT.read_text(encoding="utf-8")
+
 payload = farm.guidance_payload("a" * 40, variants[0])
 assert payload["sourceSha"] == "a" * 40
 assert payload["publicationAuthority"] is False
