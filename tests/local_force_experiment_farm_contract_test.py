@@ -32,6 +32,28 @@ assert variants[0]["strategy"] == "terminal-media-extractor-with-playback-valida
 assert variants[0]["profile"] == "chain_terminal_extractor_v1"
 assert len({farm.experiment_state_key(item) for item in variants}) == len(variants)
 
+
+synthetic_report = {
+    "accepted_repairs": 0,
+    "rounds": [
+        {
+            "generated_candidates": 3,
+            "accepted": [],
+            "exploration_progress": [{"reason": "partial"}],
+        },
+        {
+            "generated_candidates": 2,
+            "accepted": [],
+            "exploration_progress": [],
+        },
+    ],
+    "final_counts": {"reachable": 1},
+}
+synthetic_summary = farm.report_summary(synthetic_report)
+assert synthetic_summary["generatedCandidates"] == 5
+assert synthetic_summary["explorationProgressCount"] == 1
+assert synthetic_summary["acceptedRepairs"] == 0
+
 payload = farm.guidance_payload("a" * 40, variants[0])
 assert payload["sourceSha"] == "a" * 40
 assert payload["publicationAuthority"] is False
@@ -55,6 +77,8 @@ for required in (
     "STATE.json",
     "git\", \"worktree\", \"add",
     "quick_then_deep=true",
+    "quickPromising",
+    "explorationProgressCount",
 ):
     assert required in source, required
 
