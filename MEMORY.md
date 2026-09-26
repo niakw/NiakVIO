@@ -5393,3 +5393,12 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Real 4khdhub Repair on the exploration branch still exited immediately with experiment_strategy_exhausted despite direct planner guidance being correct.
 - Root cause: adaptive_runtime/brain_repair_runtime.py included explorationChain in replan_observation(), but omitted it from update_plans(), which owns the initial Deep plan.
 - Both adaptive planner payloads now carry _BASE._exploration_chain_enabled(); contract requires exactly two occurrences so future refactors cannot silently reintroduce the split.
+
+### 2026-09-26 — Meta-gap current-failure rebinding across the 14 unresolved providers
+- Current-head local cohort evidence proved a generic stale-guidance defect: provider diagnostics evolve during Repair while synthesized meta-gap guidance stayed bound to an older failure class, leaving metaGapEscalated=false at true exhaustion.
+- The planner now rebinds meta-gap guidance to the CURRENT failure class and selects the matching already-sandboxed executor.
+- Covered executors include provider transport, route, search, chain terminal, media/playback context, candidate replay, and unknown/runtime fallback via adaptive_runtime_recovery.
+- Rebound experiments are normalized to the current causal family and receive a fresh SHA-256 experiment fingerprint.
+- The declarative gap synthesizer now explicitly covers playback_context_gap and unknown_failure.
+- Targeted contracts PASS: declarative meta-gap, LLM advisor with stale-route -> playback-context rebind, second-order runtime, engine v2 repair-brain, Python compile, Node syntax and diff check.
+- No provider/publication authority is added. Current-byte, playback, identity and non-regression validation remain authoritative.

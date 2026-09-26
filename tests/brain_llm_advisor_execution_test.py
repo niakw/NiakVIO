@@ -341,7 +341,9 @@ assert meta_final["learningDisposition"]=="execute_meta_gap_synthesized_strategy
 assert meta_final["action"]=="probe-targeted-repair",meta_final
 assert meta_final["llmAdvisorApplied"] is True,meta_final
 assert meta_final["llmAdvisorGuidanceKind"]=="meta-gap-synthesis",meta_final
-assert meta_final["allowedProfiles"][0]=="search_contract_inference_v1",meta_final
+assert meta_final["allowedProfiles"][0]=="adaptive_runtime_recovery",meta_final
+assert meta_final["llmAdvisorFailureCompatibility"]=="exact-rebound",meta_final
+assert meta_final["llmAdvisorSourceFailureClass"]=="unknown_failure",meta_final
 
 
 # Brain Repair exploration uses mode=repair plus explorationChain=true. It must
@@ -358,7 +360,8 @@ assert repair_explore["metaGapEscalated"] is True,repair_explore
 assert repair_explore["repairType"]=="synthesized_strategy",repair_explore
 assert repair_explore["action"]=="probe-targeted-repair",repair_explore
 assert repair_explore["llmAdvisorGuidanceKind"]=="meta-gap-synthesis",repair_explore
-assert repair_explore["allowedProfiles"][0]=="search_contract_inference_v1",repair_explore
+assert repair_explore["allowedProfiles"][0]=="adaptive_runtime_recovery",repair_explore
+assert repair_explore["llmAdvisorFailureCompatibility"]=="exact-rebound",repair_explore
 
 # Meta-gap guidance is also available to Brain Repair exploration, but it must
 # never preempt ordinary variants. It becomes eligible only after exhaustion.
@@ -377,4 +380,103 @@ assert meta_prod_rescue["baseExperimentExhausted"] is True,meta_prod_rescue
 assert meta_prod_rescue["llmAdvisorApplied"] is True,meta_prod_rescue
 assert meta_prod_rescue["llmAdvisorRescue"] is True,meta_prod_rescue
 assert meta_prod_rescue["llmAdvisorGuidanceKind"]=="meta-gap-synthesis",meta_prod_rescue
-assert meta_prod_rescue["allowedProfiles"][0]=="search_contract_inference_v1",meta_prod_rescue
+assert meta_prod_rescue["allowedProfiles"][0]=="proven_route_terminal_traversal_v1",meta_prod_rescue
+assert meta_prod_rescue["llmAdvisorFailureCompatibility"]=="exact-rebound",meta_prod_rescue
+
+
+# A real debt pattern seen on 4khdhub changes class during Repair from
+# route/search to playback_context_gap. Stale meta-gap guidance must be rebound
+# to the CURRENT class instead of being discarded.
+playback_candidate={
+    "canonical_id":"synthetic-playback-rebind",
+    "metadata":{"supportedTypes":["movie"]},
+}
+playback_result={
+    "status":"blocked",
+    "evidence":{"streams_returned":2,"streams_playable":0},
+    "tests":[{
+        "fixture":{"category":"movie"},
+        "stream_count":2,
+        "streams_playable":0,
+        "failure_class":"stream_http_forbidden",
+        "network_observations":[{"status":200},{"status":403}],
+    }],
+}
+def playback_plan(memory,guidance_rows):
+    payload={
+        "mode":"repair",
+        "explorationChain":True,
+        "policy":policy,
+        "learnedSkills":{},
+        "historicalSolutions":[],
+        "llmGuidance":guidance_rows,
+        "negativeMemory":memory,
+        "items":[{
+            "key":"published:synthetic-playback-rebind",
+            "candidate":playback_candidate,
+            "result":playback_result,
+            "state":{},
+        }],
+    }
+    completed=subprocess.run(
+        ["node",str(PLANNER)],
+        cwd=ROOT,input=json.dumps(payload),capture_output=True,text=True,check=True,timeout=20,
+    )
+    return next(iter((json.loads(completed.stdout).get("plans") or {}).values()))
+
+playback_initial=playback_plan([],[])
+assert playback_initial["failureClass"]=="playback_context_gap",playback_initial
+playback_signature=playback_initial["signature"]
+playback_memory=[
+    {
+        "providerId":"synthetic-playback-rebind",
+        "failureClass":"playback_context_gap",
+        "signature":playback_signature,
+        "experimentVariant":variant,
+        "experimentGeneration":2 if variant==4 else 1,
+        "profile":"adaptive_runtime_recovery",
+        "failures":1,
+        "consecutiveFailures":1,
+        "successes":0,
+        "executionObserved":True,
+        "lastOutcome":"rejected",
+        "lastReason":"synthetic_exhaustion",
+    }
+    for variant in range(5)
+]
+stale_route_guidance=[{
+    "providerId":"synthetic-playback-rebind",
+    "failureClass":"route_proven_gap",
+    "targetLayer":"provider",
+    "strategy":"meta-gap-route-transition-composition",
+    "profile":"proven_route_terminal_traversal_v1",
+    "confidence":0.86,
+    "priorOnly":True,
+    "experiment":{
+        "routePolicy":"owned_plus_peer_generic",
+        "recipePolicy":"current_plus_provider_peer",
+        "roleOrder":["search","detail","api","episode","player","source","other"],
+        "terminalOnly":False,
+        "aliasSearch":True,
+        "responseSalvage":True,
+        "documentRequestMining":True,
+        "sessionBootstrap":False,
+        "maxDepth":5,
+        "maxPages":30,
+        "maxEmbeds":24,
+        "maxRecipePasses":5,
+    },
+    "experimentFingerprint":"e"*64,
+    "guidanceKind":"meta-gap-synthesis",
+}]
+playback_rebound=playback_plan(playback_memory,stale_route_guidance)
+assert playback_rebound["baseExperimentExhausted"] is True,playback_rebound
+assert playback_rebound["metaGapEscalated"] is True,playback_rebound
+assert playback_rebound["repairType"]=="synthesized_strategy",playback_rebound
+assert playback_rebound["llmAdvisorFailureCompatibility"]=="exact-rebound",playback_rebound
+assert playback_rebound["llmAdvisorSourceFailureClass"]=="playback_context_gap",playback_rebound
+assert playback_rebound["llmAdvisorProfile"]=="player_media_extractor_v1",playback_rebound
+assert playback_rebound["allowedProfiles"][0]=="player_media_extractor_v1",playback_rebound
+assert playback_rebound["llmAdvisorExperiment"]["terminalOnly"] is True,playback_rebound
+assert playback_rebound["llmAdvisorExperiment"]["roleOrder"][0]=="player",playback_rebound
+assert playback_rebound["action"]=="probe-targeted-repair",playback_rebound

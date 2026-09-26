@@ -60,6 +60,7 @@ const LLM_ADVISOR_PROFILES = new Set([
   "retained_candidate_replay_v1",
   "player_media_extractor_v1",
   "search_contract_inference_v1",
+  "adaptive_runtime_recovery",
 ]);
 const POST_EXHAUSTION_STRATEGIES = {
   provider_transport_gap: [
@@ -138,6 +139,74 @@ const LLM_FAILURE_FAMILIES = Object.freeze({
   media_extraction_gap: "terminal-media",
   playback_context_gap: "terminal-media",
 });
+
+const META_GAP_PROFILE_BY_FAILURE = Object.freeze({
+  route_proven_gap: "proven_route_terminal_traversal_v1",
+  provider_transport_gap: "provider_origin_failover_v1",
+  transport_blocked: "provider_origin_failover_v1",
+  search_gap: "search_contract_inference_v1",
+  chain_terminal_gap: "chain_terminal_extractor_v1",
+  media_extraction_gap: "player_media_extractor_v1",
+  playback_context_gap: "player_media_extractor_v1",
+  candidate_replay_gap: "retained_candidate_replay_v1",
+  unknown_failure: "adaptive_runtime_recovery",
+  runtime_contract_drift: "adaptive_runtime_recovery",
+});
+
+function metaGapProfileForFailure(failureClass) {
+  return META_GAP_PROFILE_BY_FAILURE[canonicalFailureClass(failureClass)] ?? "";
+}
+
+function rebindMetaGapExperiment(experiment, failureClass) {
+  const current = canonicalFailureClass(failureClass);
+  const next = { ...asRecord(experiment) };
+  if (current === "provider_transport_gap" || current === "transport_blocked") {
+    next.routePolicy = "owned_plus_peer";
+    next.recipePolicy = "current_plus_provider";
+    next.roleOrder = ["api", "detail", "search", "player", "source", "episode", "other"];
+    next.terminalOnly = false;
+    next.sessionBootstrap = true;
+    next.responseSalvage = true;
+    next.documentRequestMining = true;
+  } else if (current === "route_proven_gap" || current === "search_gap") {
+    next.routePolicy = "owned_plus_peer_generic";
+    next.recipePolicy = "current_plus_provider_peer";
+    next.roleOrder = current === "search_gap"
+      ? ["search", "api", "detail", "player", "source", "episode", "other"]
+      : ["search", "detail", "api", "episode", "player", "source", "other"];
+    next.terminalOnly = false;
+    next.aliasSearch = true;
+    next.responseSalvage = true;
+    next.documentRequestMining = true;
+  } else if (
+    current === "chain_terminal_gap"
+    || current === "media_extraction_gap"
+    || current === "playback_context_gap"
+  ) {
+    next.routePolicy = current === "playback_context_gap" ? "owned_only" : "owned_plus_peer";
+    next.recipePolicy = "current_plus_provider_peer";
+    next.roleOrder = ["player", "source", "api", "episode", "detail", "search", "other"];
+    next.terminalOnly = true;
+    next.responseSalvage = true;
+    next.documentRequestMining = true;
+    next.maxDepth = Math.max(5, finiteNumber(next.maxDepth, 5));
+    next.maxEmbeds = Math.max(28, finiteNumber(next.maxEmbeds, 28));
+  } else if (current === "candidate_replay_gap") {
+    next.routePolicy = "owned_only";
+    next.recipePolicy = "current_plus_provider";
+    next.roleOrder = ["player", "api", "source", "detail", "episode", "search", "other"];
+    next.terminalOnly = false;
+    next.aliasSearch = true;
+    next.responseSalvage = true;
+    next.documentRequestMining = true;
+    next.sessionBootstrap = true;
+  } else {
+    next.responseSalvage = true;
+    next.documentRequestMining = true;
+    next.sessionBootstrap = true;
+  }
+  return next;
+}
 
 const output = {
   schemaVersion: 2,
@@ -259,11 +328,21 @@ function llmFailureCompatibility(guidanceFailure, currentFailure) {
 function llmAdvisorStrategyHint(providerId, failureClass, memoryRows, rotateEvery, allowMetaGap = true) {
   const provider = stringValue(providerId).toLowerCase();
   const failure = canonicalFailureClass(failureClass);
+  const metaGapProfile = allowMetaGap ? metaGapProfileForFailure(failure) : "";
   const rows = llmGuidance
-    .map((row) => ({
-      ...row,
-      failureCompatibility: llmFailureCompatibility(row.failureClass, failure),
-    }))
+    .map((row) => {
+      const guidanceKind = stringValue(row.guidanceKind).toLowerCase();
+      const metaGapRebound = guidanceKind === "meta-gap-synthesis" && Boolean(metaGapProfile);
+      return {
+        ...row,
+        profile: metaGapRebound ? metaGapProfile : row.profile,
+        experiment: metaGapRebound ? rebindMetaGapExperiment(row.experiment, failure) : row.experiment,
+        failureCompatibility: metaGapRebound
+          ? "exact-rebound"
+          : llmFailureCompatibility(row.failureClass, failure),
+        metaGapRebound,
+      };
+    })
     .filter((row) => {
       const confidence = finiteNumber(row.confidence, 0);
       return (
@@ -280,12 +359,18 @@ function llmAdvisorStrategyHint(providerId, failureClass, memoryRows, rotateEver
     })
     .sort((a, b) => (
       Number(b.failureCompatibility === "exact") - Number(a.failureCompatibility === "exact")
+      || Number(b.failureCompatibility === "exact-rebound") - Number(a.failureCompatibility === "exact-rebound")
       || finiteNumber(b.confidence, 0) - finiteNumber(a.confidence, 0)
     ));
   for (const row of rows) {
     const profile = stringValue(row.profile).toLowerCase();
+    const experiment = asRecord(row.experiment);
     const fingerprintRaw = stringValue(row.experimentFingerprint).toLowerCase();
-    const experimentFingerprint = /^[0-9a-f]{64}$/.test(fingerprintRaw) ? fingerprintRaw : "";
+    const reboundFingerprint = row.metaGapRebound
+      ? crypto.createHash("sha256").update(JSON.stringify(experiment)).digest("hex")
+      : "";
+    const experimentFingerprint = reboundFingerprint
+      || (/^[0-9a-f]{64}$/.test(fingerprintRaw) ? fingerprintRaw : "");
     const alreadyFailed = memoryRows.some((memory) => {
       if (
         stringValue(memory.profile).toLowerCase() !== profile
@@ -299,12 +384,13 @@ function llmAdvisorStrategyHint(providerId, failureClass, memoryRows, rotateEver
       profile,
       strategy: stringValue(row.strategy).toLowerCase(),
       confidence: finiteNumber(row.confidence, 0),
-      sourceFailureClass: canonicalFailureClass(row.failureClass),
+      sourceFailureClass: row.metaGapRebound ? failure : canonicalFailureClass(row.failureClass),
       failureCompatibility: row.failureCompatibility,
-      experiment: asRecord(row.experiment),
+      experiment,
       experimentFingerprint,
       guidanceKind: stringValue(row.guidanceKind),
       localForceAmbiguous: row.localForceAmbiguous === true,
+      metaGapRebound: row.metaGapRebound === true,
     };
   }
   return {
@@ -317,6 +403,7 @@ function llmAdvisorStrategyHint(providerId, failureClass, memoryRows, rotateEver
     experimentFingerprint: "",
     guidanceKind: "",
     localForceAmbiguous: false,
+    metaGapRebound: false,
   };
 }
 

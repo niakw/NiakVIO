@@ -57,6 +57,14 @@ FAILURE_EXECUTORS: dict[str, tuple[str, str]] = {
         "retained_candidate_replay_v1",
         "meta-gap-candidate-replay-composition",
     ),
+    "playback_context_gap": (
+        "player_media_extractor_v1",
+        "meta-gap-playback-context-composition",
+    ),
+    "unknown_failure": (
+        "adaptive_runtime_recovery",
+        "meta-gap-unknown-runtime-composition",
+    ),
 }
 
 BASE_EXPERIMENTS: dict[str, dict[str, Any]] = {
@@ -143,6 +151,34 @@ BASE_EXPERIMENTS: dict[str, dict[str, Any]] = {
         "maxPages": 22,
         "maxEmbeds": 30,
         "maxRecipePasses": 6,
+    },
+    "playback_context_gap": {
+        "routePolicy": "owned_only",
+        "recipePolicy": "current_plus_provider_peer",
+        "roleOrder": ["player", "source", "api", "episode", "detail", "search", "other"],
+        "terminalOnly": True,
+        "aliasSearch": False,
+        "responseSalvage": True,
+        "documentRequestMining": True,
+        "sessionBootstrap": False,
+        "maxDepth": 6,
+        "maxPages": 20,
+        "maxEmbeds": 36,
+        "maxRecipePasses": 6,
+    },
+    "unknown_failure": {
+        "routePolicy": "owned_plus_peer",
+        "recipePolicy": "current_plus_provider",
+        "roleOrder": ["api", "search", "detail", "player", "source", "episode", "other"],
+        "terminalOnly": False,
+        "aliasSearch": True,
+        "responseSalvage": True,
+        "documentRequestMining": True,
+        "sessionBootstrap": True,
+        "maxDepth": 5,
+        "maxPages": 24,
+        "maxEmbeds": 24,
+        "maxRecipePasses": 5,
     },
 }
 BASE_EXPERIMENTS["transport_blocked"] = BASE_EXPERIMENTS["provider_transport_gap"]
