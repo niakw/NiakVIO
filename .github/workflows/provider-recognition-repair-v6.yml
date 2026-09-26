@@ -465,11 +465,6 @@ jobs:
           fi
           echo "FIELD_REPAIR_RESIDENTIAL_REPLAY providers=$count"
 
-      - name: Clear optional Repair residential routing
-        if: ${{ always() && steps.repair_waf_reuse.outputs.reuse != 'true' && env.NIAKVIO_REPAIR_RESIDENTIAL_EXIT_ACTIVE == '1' }}
-        shell: bash
-        run: sudo tailscale set --exit-node= || true
-
       - name: Merge Repair transport refresh into durable latest
         if: ${{ steps.repair_waf_reuse.outputs.reuse != 'true' }}
         shell: bash
@@ -898,6 +893,11 @@ jobs:
           if [ "$ALLOW_LOSS" = "true" ]; then args+=(--allow-upstream-positive-loss); fi
           printf 'CANONICAL_REPAIR_ARGS %q ' "${args[@]}"; echo
           "${args[@]}"
+
+      - name: Clear optional Repair residential routing after canonical Repair
+        if: ${{ always() && steps.repair_waf_reuse.outputs.reuse != 'true' && env.NIAKVIO_REPAIR_RESIDENTIAL_EXIT_ACTIVE == '1' }}
+        shell: bash
+        run: sudo tailscale set --exit-node= || true
 
       - name: Reapply integrated WAF qualification after canonical Repair
         if: ${{ always() }}
