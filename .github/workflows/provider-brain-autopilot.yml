@@ -17,16 +17,6 @@ on:
     branches: [main]
     paths:
       - '.github/triggers/provider-brain-autopilot.json'
-      - 'engine_v2/scripts/plan-repairs.mjs'
-      - 'engine_v2/config/core-repair-types.json'
-      - 'scripts/run_provider_brain_repair.py'
-      - 'scripts/brain_repair_runtime.py'
-      - 'scripts/adaptive_runtime/**'
-      - 'scripts/brain_layers/**'
-      - 'scripts/build_brain_repair_experience.py'
-      - 'scripts/build_provider_repair_batch_plan.py'
-      - 'scripts/build_provider_execution_plan.py'
-      - 'automation/provider-census-status.json'
 
 permissions:
   contents: read
@@ -75,7 +65,11 @@ jobs:
               trigger=json.loads(Path(".github/triggers/provider-brain-autopilot.json").read_text(encoding="utf-8"))
           except Exception:
               trigger={}
-          force_mode=str(trigger.get("mode") or "").strip().casefold()=="force"
+          trigger_mode=str(trigger.get("mode") or "").strip().casefold()
+          event_name=str(os.environ.get("GITHUB_EVENT_NAME") or "").strip().casefold()
+          explicit_force=trigger_mode=="force" and event_name=="push"
+          bounded_force_suppressed=trigger_mode=="force" and not explicit_force
+          force_mode=explicit_force
           def cohort(lane):
               values=[]
               for row in p.get("executions") or []:
@@ -89,11 +83,20 @@ jobs:
           print("harness="+cohort("CORE_CLIENT_LEARNING"))
           print("blocked="+str(int(p.get("blockedExecutionCount") or 0)))
           print("force="+("true" if force_mode else "false"))
+          print("suppress="+("true" if bounded_force_suppressed else "false"))
+          print("trigger_mode="+trigger_mode)
+          print("event_name="+event_name)
           PY
           cat "$RUNNER_TEMP/provider-execution-plan.json"
 
+      - name: Record bounded FORCE hold
+        if: ${{ steps.plan.outputs.suppress == 'true' }}
+        shell: bash
+        run: |
+          echo "FIELD_PROVIDER_AUTOPILOT_BOUNDED_FORCE suppressed=true event=${{ steps.plan.outputs.event_name }} trigger_mode=${{ steps.plan.outputs.trigger_mode }} reason=force-requires-new-explicit-trigger"
+
       - name: Dispatch causal owner lanes
-        if: ${{ inputs.dry_run != true }}
+        if: ${{ inputs.dry_run != true && steps.plan.outputs.suppress != 'true' }}
         shell: bash
         env:
           DOMAIN: ${{ steps.plan.outputs.domain }}

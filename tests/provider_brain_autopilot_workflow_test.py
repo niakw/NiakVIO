@@ -35,7 +35,22 @@ assert 'provider-brain-autopilot.json' in autopilot
 assert "contents: read" in autopilot
 assert "workflow_run:" in autopilot
 assert "github.event.workflow_run.conclusion == 'success'" in autopilot
-assert 'force_mode=str(trigger.get("mode")' in autopilot
+push_block = autopilot[autopilot.index("  push:"):autopilot.index("\npermissions:")]
+assert "'.github/triggers/provider-brain-autopilot.json'" in push_block
+for forbidden_push in (
+    "scripts/run_provider_brain_repair.py",
+    "scripts/build_provider_repair_batch_plan.py",
+    "scripts/build_provider_execution_plan.py",
+    "automation/provider-census-status.json",
+    "scripts/brain_layers/**",
+):
+    assert forbidden_push not in push_block, forbidden_push
+assert "steps.plan.outputs.suppress != 'true'" in autopilot
+assert 'trigger_mode=str(trigger.get("mode")' in autopilot
+assert 'explicit_force=trigger_mode=="force" and event_name=="push"' in autopilot
+assert 'bounded_force_suppressed=trigger_mode=="force" and not explicit_force' in autopilot
+assert 'print("suppress="+("true" if bounded_force_suppressed else "false"))' in autopilot
+assert "FIELD_PROVIDER_AUTOPILOT_BOUNDED_FORCE" in autopilot
 assert "contents: write" not in autopilot
 assert "git add " not in autopilot
 assert "git push origin HEAD:main" not in autopilot

@@ -5552,3 +5552,9 @@ This ledger is not complete merely because provider yield improves. Final comple
 - build_provider_repair_batch_plan.py now treats final NO PROOF + repairEligible as repair/Learning-owned. Issue-only WAF/network text cannot override the final census into harness or transport ownership.
 - Explicit final HARNESS/CLIENT TRANSPORT GAP/WAF-ANTIBOT and PROVIDER NETWORK BLOCKED statuses still retain their dedicated ownership lanes.
 - Contract coverage includes an allwish-like NO PROOF/WAF row and a NO PROOF/network row; both must remain Learning-owned.
+
+### 2026-09-27 — FORCE Autopilot is explicit and single-run bounded
+- Root loop confirmed: provider-brain-autopilot.yml inherited persistent mode=force on every census workflow_run, while push activation also watched Brain/router code and automation/provider-census-status.json. A code/evidence change or Learning→census convergence could therefore start another FORCE cycle without a new operator trigger.
+- Push activation is now restricted to .github/triggers/provider-brain-autopilot.json only.
+- mode=force is honored only for that explicit trigger-file push. While FORCE remains armed, workflow_run/workflow_dispatch invocations are held with FIELD_PROVIDER_AUTOPILOT_BOUNDED_FORCE instead of dispatching another lane.
+- This enforces the single-run contract: another FORCE execution requires a new explicit trigger after materially changed executable evidence.
