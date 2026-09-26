@@ -33,6 +33,7 @@ assert 'provider-brain-autopilot.json' in autopilot
 assert "contents: read" in autopilot
 assert "workflow_run:" in autopilot
 assert "github.event.workflow_run.conclusion == 'success'" in autopilot
+assert 'force_mode=str(trigger.get("mode")' in autopilot
 assert "contents: write" not in autopilot
 assert "git add " not in autopilot
 assert "git push origin HEAD:main" not in autopilot
@@ -70,11 +71,16 @@ for source in (fast, remat):
 assert '-f waves=1 -f time_budget_seconds=600 -f max_rounds_per_batch=1' in autopilot
 assert 'learning_dispatch=true owner=immediate-targeted-learning' in fast
 assert 'gh workflow run brain-learning-lab.yml' in fast
+assert 'architecture_force=$force_mode' in fast
 assert '-f target_providers="$learn_handoff_csv"' in fast
 assert 'complete-cloud-convergence:' in learn
 assert 'FIELD_BRAIN_CLOUD_CONVERGENCE next=census' in learn
 assert '-f scope=unresolved -f persist=true' in learn
+assert '-f architecture_force="$ARCHITECTURE_FORCE"' in learn
 assert 'FIELD_SHARDED_CENSUS_AUTOPILOT event_driven=true' in census
 assert 'trigger=workflow_run' in census
 
 print("provider Brain Autopilot cloud convergence contract passed")
+
+trigger = (ROOT / ".github/triggers/provider-brain-autopilot.json").read_text(encoding="utf-8")
+assert '"mode": "force"' in trigger
