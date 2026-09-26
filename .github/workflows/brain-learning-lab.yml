@@ -1433,7 +1433,23 @@ jobs:
           if [ "${{ steps.architecture.outputs.policy_changed }}" = "true" ]; then
             cp brain-learning-output/brain-policy.proposed.json engine_v2/config/brain-policy.json
           fi
-          if [ "${{ inputs.architecture_force || false }}" = "true" ] && [ -s brain-learning-output/brain-architecture-force.patch ]; then
+          force_promotable=false
+          if [ "${{ inputs.architecture_force || false }}" = "true" ]; then
+            force_promotable="$(python - <<'PY'
+import json
+from pathlib import Path
+p=Path("brain-learning-output/brain-architecture-force-report.json")
+if not p.is_file():
+    print("false")
+else:
+    d=json.loads(p.read_text(encoding="utf-8"))
+    print("true" if (d.get("skipped") is not True and int(d.get("editCount") or 0) > 0) else "false")
+PY
+)"
+          fi
+          echo "force_promotable=$force_promotable" >> "$GITHUB_OUTPUT"
+          if [ "$force_promotable" = "true" ]; then
+            test -s brain-learning-output/brain-architecture-force.patch
             git apply --check brain-learning-output/brain-architecture-force.patch
             git apply brain-learning-output/brain-architecture-force.patch
             python tests/brain_meta_learning_gap_synthesis_test.py
@@ -1473,7 +1489,8 @@ jobs:
           if [ "$(node -e "const x=require('./$SUMMARY');process.stdout.write(x.policyChanged===true?'true':'false')")" = "true" ]; then
             cp brain-learning-output/brain-policy.proposed.json engine_v2/config/brain-policy.json
           fi
-          if [ "${{ inputs.architecture_force || false }}" = "true" ] && [ -s brain-learning-output/brain-architecture-force.patch ]; then
+          if [ "${{ steps.materialize-architecture.outputs.force_promotable }}" = "true" ]; then
+            test -s brain-learning-output/brain-architecture-force.patch
             git apply --check brain-learning-output/brain-architecture-force.patch
             git apply brain-learning-output/brain-architecture-force.patch
             python tests/brain_meta_learning_gap_synthesis_test.py
@@ -1487,11 +1504,11 @@ jobs:
           if [ "$(node -e "const x=require('./$SUMMARY');process.stdout.write(x.policyChanged===true?'true':'false')")" = "true" ]; then
             git add engine_v2/config/brain-policy.json
           fi
-          if [ "${{ inputs.architecture_force || false }}" = "true" ] && [ -s brain-learning-output/brain-architecture-force.patch ]; then
+          if [ "${{ steps.materialize-architecture.outputs.force_promotable }}" = "true" ]; then
             git add scripts/brain_layers tests engine_v2/scripts engine_v2/config .github/workflows 2>/dev/null || true
           fi
           git diff --cached --name-only > "$RUNNER_TEMP/brain-architecture-changed-paths.txt"
-          python - "$RUNNER_TEMP/brain-architecture-changed-paths.txt" engine_v2/config/brain-self-evolution.json "${{ inputs.architecture_force || false }}" <<'PY'
+          python - "$RUNNER_TEMP/brain-architecture-changed-paths.txt" engine_v2/config/brain-self-evolution.json "${{ steps.materialize-architecture.outputs.force_promotable }}" <<'PY'
           import json,sys
           from pathlib import Path
           changed=[x.strip() for x in Path(sys.argv[1]).read_text(encoding="utf-8").splitlines() if x.strip()]
@@ -1559,11 +1576,8 @@ jobs:
             PR_NUMBER="$(gh pr view "$URL" --repo "$GITHUB_REPOSITORY" --json number --jq .number)"
             echo "FIELD_BRAIN_ARCH_PR action=created url=$URL branch=$BRANCH"
           fi
-          if [ "${{ inputs.architecture_force || false }}" = "true" ]; then
-            test -s brain-learning-output/brain-architecture-force.patch || {
-              echo "Architecture FORCE may not auto-promote proposal-only metadata" >&2
-              exit 1
-            }
+          if [ "${{ steps.materialize-architecture.outputs.force_promotable }}" = "true" ]; then
+            test -s brain-learning-output/brain-architecture-force.patch
             for _ in $(seq 1 12); do
               count="$(gh pr checks "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --json name --jq 'length' 2>/dev/null || echo 0)"
               [ "$count" -gt 0 ] && break
@@ -1572,6 +1586,8 @@ jobs:
             gh pr checks "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --watch --interval 10 --fail-fast
             gh pr merge "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --squash
             echo "FIELD_BRAIN_ARCH_FORCE_PROMOTION pr=$PR_NUMBER mode=merge-after-green-pr-checks"
+          elif [ "${{ inputs.architecture_force || false }}" = "true" ]; then
+            echo "FIELD_BRAIN_ARCH_FORCE_PROMOTION skipped=true reason=no-force-promotable-blueprint proposal_only=true"
           fi
 
   continue-learning-slot:
