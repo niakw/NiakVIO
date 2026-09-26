@@ -566,3 +566,31 @@ The planner consumes persisted local FORCE candidate guidance only in Learning m
 Experiment scheduling is breadth-first by default: each provider receives a bounded batch before deeper variant exploration continues. This prevents early providers from monopolizing the experiment budget and makes the corpus representative enough to scale to hundreds of providers.
 
 Authority remains: `local FORCE evidence -> Learning prior -> current-byte Repair/Deep/Retest -> production proof/persistence`.
+
+## 2026-09-26 — Meta-learning and guarded architecture FORCE
+
+The Brain no longer assumes that every future provider failure fits a fixed strategy list.
+
+### Mandatory architecture layers
+
+1. `causal_failure_taxonomy` — classify sanitized evidence into broad technical failure families.
+2. `capability_gap_detector` — detect when the current provider/Core/Lab toolbox cannot discriminate or repair the observed case.
+3. `meta_learning_gap_synthesis` — synthesize a genuinely new bounded strategy instead of recycling an exhausted profile.
+4. `architecture_layer_synthesis` — decide whether the missing capability belongs to provider runtime, Core, harness/network, Learning, materialization/projection, client runtime, or a new layer.
+5. `verification_contract_synthesis` — every new capability must carry causal evidence, identity/content safety, targeted proof and non-regression requirements.
+6. `negative_memory_novelty_guard` — failed strategy/profile/fingerprint families cannot be silently relabelled as new work.
+7. `force_architecture_promotion` — explicit FORCE may promote an executable architecture change only after allowlist validation, targeted tests and required CI.
+
+`scripts/brain_meta_learning.py` is the provider-agnostic implementation. Known technical families include route/domain discovery, search/catalogue, session/WAF, network/TLS/DNS, API/schema, dynamic JS, player/embed, terminal media, token/crypto, identity, episodic mapping, pagination, rate/cache, runtime code, materialization/projection, stream metadata, media integrity and client/runtime divergence. Evidence outside this taxonomy is explicitly `unknown_new_failure`; it is not coerced into the closest known family.
+
+Unknown failures can produce `novel_failure_gap_synthesis_v1`. If even the architectural layer is unknown, the Brain produces `novel_architecture_layer_synthesis_v1`.
+
+### Explicit FORCE architecture lane
+
+A FORCE Repair run that still has deferred architecture debt dispatches targeted Learning with `architecture_force=true`.
+
+The Learning job reuses the already-pinned local Qwen runtime. `scripts/brain_architecture_force_materializer.py` accepts at most three bounded edits on allowlisted Brain/Core/Lab surfaces. It supports exact unique find/replace and isolated new Brain layer/test files. It rejects provider bundles, provider-disabled bytes, ProviderBase, manifests, provider overrides and provenance/publication surfaces.
+
+A FORCE architecture run must produce a real executable diff. Proposal-only JSON/Markdown is not eligible for auto-promotion. The structural patch is exported as an artifact, replayed on a clean checkout, re-tested, pushed to the dedicated architecture PR, then requested for GitHub auto-merge. Required PR CI remains authoritative; FORCE does not bypass branch protection or provider publication gates.
+
+Provider publication authority remains false throughout the architecture lane.

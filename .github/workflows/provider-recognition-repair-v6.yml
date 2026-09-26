@@ -1469,7 +1469,9 @@ jobs:
               test -n "$deferred_csv" || { echo "deferred Learning cohort unexpectedly empty" >&2; exit 1; }
               echo "FIELD_PROVIDER_BRAIN_LEARNING_DEBT deferred=$deferred providers=$deferred_csv learning_dispatch=false owner=scheduled-learning-slot force_requested=$force_requested"
               if [ "$force_requested" = "1" ]; then
-                echo "FIELD_PROVIDER_BRAIN_FORCE_DEBT deferred=$deferred providers=$deferred_csv learning_dispatch=false owner=force"
+                echo "FIELD_PROVIDER_BRAIN_FORCE_DEBT deferred=$deferred providers=$deferred_csv learning_dispatch=true owner=force"
+                gh workflow run brain-learning-lab.yml                   --repo "$GITHUB_REPOSITORY"                   --ref main                   -f publish_proposal=true                   -f architecture_force=true                   -f target_providers="$deferred_csv"
+                echo "FIELD_PROVIDER_BRAIN_FORCE_ARCH_DISPATCH providers=$deferred_csv mode=architecture-force"
               fi
             fi
 
