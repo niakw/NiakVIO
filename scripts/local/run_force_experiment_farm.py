@@ -21,6 +21,7 @@ import itertools
 import json
 import os
 import shutil
+import signal
 import subprocess
 import sys
 import tempfile
@@ -101,6 +102,28 @@ BUDGETS = [
 
 _state_lock = threading.RLock()
 _git_lock = threading.Lock()
+_process_lock = threading.RLock()
+_active_processes: set[subprocess.Popen[Any]] = set()
+
+
+def terminate_active_processes() -> None:
+    with _process_lock:
+        processes = list(_active_processes)
+    for proc in processes:
+        if proc.poll() is not None:
+            continue
+        try:
+            os.killpg(proc.pid, signal.SIGTERM)
+        except (ProcessLookupError, PermissionError):
+            try:
+                proc.terminate()
+            except OSError:
+                pass
+
+
+def signal_cleanup(signum: int, _frame: Any) -> None:
+    terminate_active_processes()
+    raise SystemExit(128 + int(signum))
 
 
 def canon(value: object) -> str:
@@ -591,21 +614,31 @@ def run_logged(
 ) -> tuple[int, str]:
     log_path.parent.mkdir(parents=True, exist_ok=True)
     started = time.monotonic()
-    try:
-        with log_path.open("w", encoding="utf-8") as handle:
-            proc = subprocess.run(
-                command,
-                cwd=cwd,
-                env=env,
-                stdout=handle,
-                stderr=subprocess.STDOUT,
-                timeout=timeout,
-                check=False,
-                text=True,
-            )
-        return int(proc.returncode), f"rc={proc.returncode};elapsed={time.monotonic()-started:.1f}"
-    except subprocess.TimeoutExpired:
-        return 124, f"timeout;elapsed={time.monotonic()-started:.1f}"
+    with log_path.open("w", encoding="utf-8") as handle:
+        proc = subprocess.Popen(
+            command,
+            cwd=cwd,
+            env=env,
+            stdout=handle,
+            stderr=subprocess.STDOUT,
+            text=True,
+            start_new_session=True,
+        )
+        with _process_lock:
+            _active_processes.add(proc)
+        try:
+            return_code = proc.wait(timeout=timeout)
+            return int(return_code), f"rc={return_code};elapsed={time.monotonic()-started:.1f}"
+        except subprocess.TimeoutExpired:
+            try:
+                os.killpg(proc.pid, signal.SIGKILL)
+            except (ProcessLookupError, PermissionError):
+                proc.kill()
+            proc.wait()
+            return 124, f"timeout;elapsed={time.monotonic()-started:.1f}"
+        finally:
+            with _process_lock:
+                _active_processes.discard(proc)
 
 
 def link_shared_local_tooling(worktree: Path) -> None:
@@ -986,6 +1019,8 @@ def provider_worker(
 
 
 def main() -> int:
+    signal.signal(signal.SIGTERM, signal_cleanup)
+    signal.signal(signal.SIGINT, signal_cleanup)
     parser = argparse.ArgumentParser()
     parser.add_argument("--provider", action="append", default=[])
     parser.add_argument("--provider-file", type=Path)
