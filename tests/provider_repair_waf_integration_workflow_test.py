@@ -46,9 +46,10 @@ connect=wf.index("- name: Connect optional Repair Tailscale transport")
 latest_merge=wf.index("- name: Merge Repair transport refresh into durable latest")
 merge=wf.index("- name: Apply integrated WAF qualification to Repair census")
 canonical=wf.index("- name: Run canonical recognition and correction only for unresolved providers")
+clear_after=wf.index("- name: Clear optional Repair residential routing after canonical Repair")
 final_merge=wf.index("- name: Reapply integrated WAF qualification after canonical Repair")
 persist=wf.index("- name: Persist Repair census state")
-assert reuse < prepare < authority < pre_render < connect < latest_merge < merge < canonical < final_merge < persist
+assert reuse < prepare < authority < pre_render < connect < latest_merge < merge < canonical < clear_after < final_merge < persist
 prepare_block=wf[prepare:connect]
 assert "steps.repair_waf_reuse.outputs.reuse != 'true'" in prepare_block
 assert 'providers=sorted(set(providers)&requested)' in prepare_block
@@ -81,6 +82,11 @@ assert "tailscale-offline-or-unavailable" in connect_block
 assert "timeout --signal=TERM --kill-after=10s 240s" in connect_block
 assert "--attempts 1" in connect_block
 assert "FIELD_REPAIR_RESIDENTIAL_PROBE bounded=true" in connect_block
+# The actual canonical FORCE must use the residential route when qualification
+# activated it; clearing before canonical Repair recreates GitHub-IP WAF blocks.
+assert wf.count("sudo tailscale set --exit-node= || true") == 1
+assert connect < canonical < clear_after
+assert "NIAKVIO_REPAIR_RESIDENTIAL_EXIT_ACTIVE" in wf[canonical:clear_after]
 
 # WAF evidence must be part of the durable Repair evidence commit.
 persist_block=wf[persist:]
