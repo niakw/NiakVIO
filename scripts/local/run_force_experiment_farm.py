@@ -598,6 +598,11 @@ def persist_state(output: Path, state: dict[str, Any]) -> None:
                 for provider, rows in (state.get("results") or {}).items()
                 if any(isinstance(item, dict) and item.get("deepAccepted") is True for item in (rows or {}).values())
             ),
+            "deepBaselineHealthyProviders": sorted(
+                provider
+                for provider, rows in (state.get("results") or {}).items()
+                if any(isinstance(item, dict) and item.get("deepBaselineHealthy") is True for item in (rows or {}).values())
+            ),
             "quickAcceptedExperiments": sum(
                 1
                 for rows in (state.get("results") or {}).values()
@@ -713,6 +718,7 @@ def provider_worker(
                 "quickAccepted": False,
                 "quickPromising": False,
                 "deepAccepted": False,
+                "deepBaselineHealthy": False,
                 "publicationPerformed": False,
             }
             quick_log = provider_dir / f"{index:03d}-{fp[:12]}-quick.log"
@@ -791,6 +797,10 @@ def provider_worker(
                     result["deepHealth"] = provider_health_summary(
                         deep_out / "health-results.json", provider
                     )
+                    result["deepBaselineHealthy"] = (
+                        str(result["deepHealth"].get("status") or "").casefold() == "healthy"
+                        and int(result["deepHealth"].get("streamsPlayable") or 0) > 0
+                    )
                     result["deepAccepted"] = int(deep_report.get("accepted_repairs") or 0) > 0
                     if result["deepAccepted"]:
                         programs = [
@@ -812,15 +822,20 @@ def provider_worker(
                 f"profile={result['profile']} "
                 f"quick={str(result['quickAccepted']).lower()} "
                 f"promising={str(result['quickPromising']).lower()} "
-                f"deep={str(result['deepAccepted']).lower()}",
+                f"deep={str(result['deepAccepted']).lower()} "
+                f"baseline_healthy={str(result['deepBaselineHealthy']).lower()}",
                 flush=True,
             )
-            if result["deepAccepted"] and not continue_after_win:
+            if (result["deepAccepted"] or result["deepBaselineHealthy"]) and not continue_after_win:
                 break
         return {
             "provider": provider,
             "deepAccepted": any(
                 isinstance(value, dict) and value.get("deepAccepted") is True
+                for value in existing.values()
+            ),
+            "deepBaselineHealthy": any(
+                isinstance(value, dict) and value.get("deepBaselineHealthy") is True
                 for value in existing.values()
             ),
             "experimentsRecorded": len(existing),
@@ -944,10 +959,16 @@ def main() -> int:
             for row in results
             if row.get("deepAccepted") is True
         )
+        baseline_healthy = sorted(
+            row["provider"]
+            for row in results
+            if row.get("deepBaselineHealthy") is True
+        )
         print(
             "FIELD_LOCAL_FORCE_FARM_DONE "
             f"providers={len(providers)} winners={len(winners)} "
-            f"ids={','.join(winners) or 'none'}",
+            f"ids={','.join(winners) or 'none'} "
+            f"baseline_healthy={','.join(baseline_healthy) or 'none'}",
             flush=True,
         )
         return 0
