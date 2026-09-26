@@ -27,7 +27,9 @@ def candidate(cid: str, source: str, *, language: list[str] | None = None, types
 def main() -> int:
     module = load_module()
     sources = json.loads(SOURCES.read_text(encoding="utf-8"))
-    assert set(sources.get("upstreams") or {}) == {"gowaru", "aio", "yoru"}
+    configured = module.configured_upstreams(sources)
+    assert set(configured) == {"gowaru", "aio", "yoru"}
+    assert configured["aio"]["repository"] == "NuvioPlugin/All-in-One-Nuvio"
     catalog = {"providers": [{"canonicalId": "known"}, {"canonicalId": "existing-provider"}]}
     stage = {"upstreams": {"gowaru": {"status": "loaded"}, "aio": {"status": "loaded"}, "yoru": {"status": "loaded_from_upstream_lkg"}}, "candidates": [candidate("known", "gowaru", language=["fr"], types=["movie"]), candidate("new-french", "aio", language=["fr"], types=["movie", "tv"], formats=["m3u8"]), candidate("new-french", "yoru", language=["fr"], types=["movie", "tv"], formats=["m3u8"]), candidate("new-anime", "gowaru", language=["en"], types=["anime"], formats=["mp4"]), candidate("stale-snapshot-new", "yoru", language=["fr"], types=["movie"], manifest_origin="upstream_lkg"), candidate("baseline-only", "published-baseline", language=["fr"], types=["movie"])]}
     report = module.build_report(stage, catalog, sources)
