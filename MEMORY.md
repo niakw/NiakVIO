@@ -5488,3 +5488,9 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Trigger now explicitly carries mode=force.
 - Fast Repair reads the same trigger and propagates architecture_force=true to Learning debt when FORCE is active.
 - Chained Learning phases propagate architecture_force so a FORCE run cannot degrade into proposal-only mode after phase 1.
+
+### 2026-09-26 — FORCE proposal-only outcome is non-fatal
+- Learning run 36270576942 produced a valid architecture proposal but brain-architecture-force-report.json reported skipped=true, reason=no-force-promotable-blueprint, editCount=0.
+- The architecture PR job incorrectly propagated the input architecture_force=true into the executable-diff guard and failed even though the materializer explicitly said there was no promotable structural patch.
+- Fixed the workflow to expose force_promotable from the materializer report. Executable-diff path guards and automatic PR merge now run only when force_promotable=true.
+- Explicit FORCE with no promotable blueprint remains proposal-only, emits a durable skip field, keeps provider/publication authority disabled, and allows Learning/census/autopilot convergence to continue.
