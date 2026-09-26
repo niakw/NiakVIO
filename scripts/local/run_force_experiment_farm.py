@@ -128,7 +128,17 @@ def git_output(*args: str, cwd: Path = ROOT) -> str:
 
 
 def current_sha() -> str:
-    return git_output("rev-parse", "HEAD").casefold()
+    try:
+        inside = git_output("rev-parse", "--is-inside-work-tree").strip().casefold()
+        if inside != "true":
+            raise RuntimeError("not a Git worktree")
+        return git_output("rev-parse", "HEAD").casefold()
+    except (subprocess.CalledProcessError, RuntimeError) as exc:
+        raise SystemExit(
+            "Local FORCE farm requires a real Git clone because it isolates providers "
+            "with git worktree. This directory has no usable .git metadata. "
+            "Clone NiakVIO with git clone, cd into that clone, then rerun the command."
+        ) from exc
 
 
 def status_rows() -> tuple[dict[str, Any], dict[str, dict[str, Any]]]:
