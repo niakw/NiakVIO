@@ -108,3 +108,23 @@ for profile in farm.guidance_contract.STRATEGY_TO_PROFILE.values():
 assert farm.redundant_strategy_exhaustion(rows) is True
 rows[next(iter(rows))]["quickHealth"]["score"] = 16
 assert farm.redundant_strategy_exhaustion(rows) is False
+
+# Sanitized Brain-LLM guidance must remain prior-only and observable.
+brain_payload = {
+    "schemaVersion": 2,
+    "sourceSha": "b" * 40,
+    "brainLlmSha": "c" * 40,
+    "publicationAuthority": False,
+    "directMutationAuthority": False,
+    "proofAuthority": False,
+    "privateContentRetained": False,
+    "rows": [dict(variants[0])],
+}
+brain_payload["rows"][0]["providerId"] = "demo"
+brain_rows = farm.external_rows(brain_payload, "demo")
+assert len(brain_rows) == 1
+assert brain_rows[0]["localExperimentSource"] == "brain-llm-guidance"
+assert brain_rows[0]["guidanceSourceSha"] == "b" * 40
+source = SCRIPT.read_text(encoding="utf-8")
+assert "BRAIN_LLM_GUIDANCE_URL" in source
+assert "NiakVIO-Brain-LLM" in source
