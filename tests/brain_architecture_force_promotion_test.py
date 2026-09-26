@@ -35,6 +35,12 @@ assert force.get("providerPublicationAuthority") is False
 assert force.get("productionProviderWritesAllowed") is False
 assert "scripts/brain_meta_learning.py" in (SELF.get("structuralProposalSurfaces") or [])
 assert "scripts/brain_architecture_force_materializer.py" in (SELF.get("structuralProposalSurfaces") or [])
+generated = set((SELF.get("forceArchitecture") or {}).get("generatedEditAllowlist") or [])
+assert "scripts/brain_meta_learning.py" in generated
+assert "scripts/brain_layers/*" in generated
+assert ".github/workflows/brain-learning-lab.yml" not in generated
+assert ".github/workflows/provider-recognition-repair-v6.yml" not in generated
+assert "engine_v2/config/brain-policy.json" not in generated
 
 lab = POLICY.get("learningLab") or {}
 promotion = lab.get("forceArchitecturePromotion") or {}
