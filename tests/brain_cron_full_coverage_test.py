@@ -151,7 +151,7 @@ def main() -> int:
     assert "FIELD_BRAIN_LEARNING_SHA" in workflow
     assert "group: niakvio-brain-learning-lab" in workflow
     assert "niakvio-brain-learning-lab-${{ github.run_id }}" not in workflow
-    assert "cancel-in-progress: ${{ github.event_name == 'push' }}" in workflow
+    assert "cancel-in-progress: ${{ github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.architecture_force == true) }}" in workflow, "new explicit architecture FORCE must cancel stale FORCE Learning while normal manual Learning stays serialized"
     assert "group: niakvio-brain-learning-memory-publish" in workflow
     assert "group: niakvio-brain-repair-proposal-publish" in workflow
     assert "group: niakvio-brain-architecture-proposal-publish" in workflow

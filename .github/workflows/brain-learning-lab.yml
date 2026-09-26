@@ -47,7 +47,7 @@ on:
 # starve each other.
 concurrency:
   group: niakvio-brain-learning-lab-v2
-  cancel-in-progress: ${{ github.event_name == 'push' }}
+  cancel-in-progress: ${{ github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.architecture_force == true) }}
 
 jobs:
   experiment:

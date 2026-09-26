@@ -5564,3 +5564,9 @@ This ledger is not complete merely because provider yield improves. Final comple
 - The downstream sanitizer retains only strategy/profile/experiment/confidence and never raw mutations, so full repair-style model output was unnecessary.
 - The Learning guidance call now matches the already validated private advisor pattern: --advisor-only, --max-hypotheses 1, --workers 2, 160 tokens and 45s timeout.
 - Worst-case model wall time for 13 uncached providers drops from roughly ceil(13/2)*90s (~10.5 min) to ceil(13/2)*45s (~5.25 min), before cache/deterministic shortcuts. Publication/proof authority is unchanged.
+
+### 2026-09-27 — Stale architecture FORCE Learning no longer monopolizes the slot
+- A previous architecture FORCE workflow_dispatch can remain in the globally serialized Learning concurrency group after main advances and block a fresh explicit FORCE run for many minutes.
+- brain-learning-lab now cancels an in-progress Learning run when the incoming workflow_dispatch explicitly sets architecture_force=true, in addition to the existing push replacement behavior.
+- Normal manual/scheduled Learning remains serialized and is not cancelled by another ordinary workflow_dispatch.
+- This complements the single-run Autopilot guard: explicit FORCE can replace stale FORCE work, but census/code pushes cannot silently launch a new FORCE cycle.
