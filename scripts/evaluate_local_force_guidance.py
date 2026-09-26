@@ -82,12 +82,26 @@ def baseline_health(worktree: Path, provider: str, root: Path) -> dict[str, Any]
 
 def summary(result: dict[str, Any]) -> dict[str, Any]:
     evidence = result.get("evidence") if isinstance(result.get("evidence"), dict) else {}
+    playable_contradictions = int(
+        evidence.get("playable_identity_contradiction_count")
+        if "playable_identity_contradiction_count" in evidence
+        else evidence.get("identity_contradiction_count") or 0
+    )
+    playable_duration_mismatches = int(
+        evidence.get("playable_duration_identity_mismatch_count")
+        if "playable_duration_identity_mismatch_count" in evidence
+        else evidence.get("duration_identity_mismatch_count") or 0
+    )
     return {
         "status": str(result.get("status") or ""),
         "score": int(result.get("score") or 0),
         "streamsPlayable": runtime_repair.playable_stream_count(result),
         "streamsReturned": runtime_repair.stream_count(result),
         "identityContradictions": runtime_repair.identity_contradiction_count(result),
+        "playableIdentityContradictions": playable_contradictions,
+        "playableDurationIdentityMismatches": playable_duration_mismatches,
+        "identityVerifiedStreams": int(evidence.get("identity_verified_streams") or 0),
+        "identityUnverifiedStreams": int(evidence.get("identity_unverified_streams") or 0),
         "providerRequests": int(evidence.get("provider_request_count") or 0),
         "failureClass": str(result.get("failure_class") or ""),
     }
