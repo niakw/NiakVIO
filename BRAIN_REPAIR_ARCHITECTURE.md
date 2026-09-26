@@ -425,6 +425,14 @@ Before any broad run:
 
 A long run that repeats the same fingerprint is a bug in orchestration, not “more confidence”.
 
+Explicit FORCE is also **single-run bounded**:
+- FORCE never self-dispatches another FORCE run;
+- unvisited providers are persisted as unresolved evidence;
+- a new FORCE run requires a materially changed executable method, mutation set,
+  provider bytes, or explicit operator trigger;
+- the Repair/FORCE workflow has no schedule. Scheduled Learning belongs only to
+  the dedicated Learning workflow.
+
 ## 13. Primary implementation files
 
 Control plane:
