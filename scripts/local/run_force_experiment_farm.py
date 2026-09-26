@@ -522,7 +522,7 @@ def persist_state(output: Path, state: dict[str, Any]) -> None:
             ),
             "publicationPerformed": False,
             "githubWorkflowDispatched": False,
-            "learningExecuted": False,
+            "learningPlannerModeExecuted": False,
         }
         atomic_write_json(output / "SUMMARY.json", summary)
 
@@ -763,7 +763,7 @@ def main() -> int:
             "results": {},
             "publicationPerformed": False,
             "githubWorkflowDispatched": False,
-            "learningExecuted": False,
+            "learningPlannerModeExecuted": False,
         }
     state["providers"] = providers
     state["experimentBudgetPerProvider"] = variants
