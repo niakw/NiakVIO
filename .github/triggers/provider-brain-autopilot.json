@@ -1,27 +1,28 @@
 {
   "schemaVersion": 1,
-  "requestedAt": "2026-09-26T21:55:00+02:00",
-  "reason": "resume cloud convergence from fresh authoritative census 36267103445: 9 provider repair debt + 5 original providers in harness/environment lane",
-  "sourceCensusRunId": "36267103445",
-  "sourceTargetedVerdictRunId": "36265366716",
+  "requestedAt": "2026-09-26T22:00:00+02:00",
+  "reason": "reroute from WAF-refreshed census: all 14 original providers are repair-eligible again; continue cloud-only convergence",
+  "sourceCensusRunId": "36267103445-waf-transport",
+  "sourceTargetedVerdictRunId": "36267558343",
   "expectedRepairQueue": [
     "4khdhub",
     "allanime",
+    "allwish",
     "anime-ultime",
+    "animesalt",
     "animesultra",
+    "animevost-fr",
     "animevostfr",
+    "flemmix",
     "mallumv",
     "moviebox",
+    "moviesmod",
     "vidfast",
     "yflix"
   ],
   "expectedEnvironmentQueue": [
-    "allwish",
-    "animesalt",
-    "animevost-fr",
-    "flemmix",
-    "moviesmod"
+    "vostfree"
   ],
-  "brainLlmSha": "83cc1700f61d17962ce0e86a6381c38c5e95cfd6",
-  "retry": 3
+  "brainLlmSha": "a90f21e2017d9f9c7b15d0a695defd6c207f5136",
+  "retry": 4
 }
