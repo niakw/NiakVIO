@@ -662,8 +662,20 @@ def main() -> int:
         "scripts/upgrade_provider_runtime_reconstruction_v21_12.py",
         "scripts/upgrade_stream_sanitizer_v7_selection.py",
     ]
-    for migration in migrations:
-        run(sys.executable, migration)
+    if args.mode == "force":
+        # Explicit FORCE is a current-byte provider-local execution mode.
+        # Historical upgrade scripts may be used to build/upgrade a repository,
+        # but replaying them here can mutate unrelated global/Core surfaces or
+        # fail on anchors that legitimately disappeared in the already-current
+        # source. FORCE therefore validates and repairs the current revision as-is.
+        print(
+            "FIELD_FORCE_HISTORICAL_MIGRATIONS skipped=true "
+            f"count={len(migrations)} reason=current-bytes-only",
+            flush=True,
+        )
+    else:
+        for migration in migrations:
+            run(sys.executable, migration)
 
     run("node", "--check", "scripts/provider_worker.cjs")
     for test in (
