@@ -1599,3 +1599,28 @@ jobs:
           "${args[@]}"
           echo "FIELD_BRAIN_LONG_SLOT_DISPATCH next_phase=$NEXT_PHASE remaining_minutes=$NEXT_REMAINING"
 
+  complete-cloud-convergence:
+    name: LEARNING - Recompute census after final phase
+    if: ${{ always() && needs.experiment.result == 'success' && needs.publish-learning.result == 'success' && needs.experiment.outputs.slot_continue != 'true' }}
+    needs:
+      - experiment
+      - publish-learning
+      - publish-repair-proposal
+      - publish-architecture-proposal
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      actions: write
+      contents: read
+    steps:
+      - name: Dispatch persistent unresolved census
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh workflow run provider-census-sharded.yml \
+            --repo "$GITHUB_REPOSITORY" --ref main \
+            -f scope=unresolved -f persist=true
+          echo "FIELD_BRAIN_CLOUD_CONVERGENCE next=census source_run=${GITHUB_RUN_ID}"
+
