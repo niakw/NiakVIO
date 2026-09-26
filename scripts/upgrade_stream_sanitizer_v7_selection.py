@@ -126,7 +126,7 @@ def main() -> int:
     current = f"v{version}" if version > 7 else "v7"
     print(
         "STREAM_SANITIZER_V7_SELECTION_OK "
-        f"current={current} overrides_changed={str(changed_overrides).lower()} "
+        f"current=v{current} overrides_changed={str(changed_overrides).lower()} "
         f"hashes_changed={str(changed_hashes).lower()} monotonic=true"
     )
     return 0
