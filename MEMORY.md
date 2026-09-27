@@ -5732,3 +5732,8 @@ This ledger is not complete merely because provider yield improves. Final comple
 - The runtime now tries the already-learned /animes/{slug}/ route directly from ranked aliases before WordPress search, validates the returned /animes/ page identity, reuses that response for episode selection, and only falls back to search when direct replay does not match.
 - This is generic route-shape replay; no Jujutsu-specific slug/id is embedded in provider code.
 - Exact Retest retry 13 is animevostfr-only with autoRepair=false and requires raw/playable/verified media before counting success.
+
+### 2026-09-27 — AnimeVOSTFR exact REMAT/Test
+- Plain Retest retry 13 still exercised previously published animevostfr bytes, by design: run_provider_retest.py is forbidden from rematerializing. Its 0-stream result therefore does not evaluate the new direct-route runtime patch.
+- provider-remat-test is now targeted only at animevostfr. It will materialize current DATA/patches in sandbox, then run current-byte Retest with publicationAllowed=false.
+- Promotion is allowed only if the REMAT artifact proves current raw/playable/verified media; then only the exact validated AnimeVOSTFR bytes will be reconciled/published before a final published-byte Retest.
