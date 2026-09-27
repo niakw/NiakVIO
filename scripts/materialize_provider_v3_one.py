@@ -16,6 +16,7 @@ import urllib.parse
 from pathlib import Path
 
 import materialize_provider_v3_all as allmat
+from provider_security_hardening import assert_hardened, harden_bytes
 
 ROOT = Path(__file__).resolve().parents[1]
 REGISTRY = ROOT / "provider-hubs.json"
@@ -543,6 +544,14 @@ def materialize_one(
         if text.count(boundary) != 1:
             raise ValueError(f"{provider_id}: minimizer changed Core boundary")
     bundle = text.encode("utf-8")
+
+    # Single-provider materialization is publication-capable and used by
+    # targeted Repair, projection reconciliation and sequential reconstruction.
+    # Mirror the mandatory publication security finalization before byte proof.
+    security_hardened, security_report = harden_bytes(bundle)
+    bundle = security_hardened
+    assert_hardened(bundle.decode("utf-8", errors="strict"))
+
     try:
         verified_bundle, byte_validation = allmat.verify_bytes(bundle)
     except Exception as exc:
@@ -554,6 +563,7 @@ def materialize_one(
             f"{provider_id}: materialized byte validator rewrote provider bytes"
         )
     bundle = verified_bundle
+    assert_hardened(bundle.decode("utf-8", errors="strict"))
 
     digest = hashlib.sha256(bundle).hexdigest()
     filename = f"{provider_id}-{digest[:16]}.js"
@@ -581,6 +591,16 @@ def materialize_one(
         "devices": ["tv", "mobile", "desktop"],
         "legacyProviderJsExecuted": False,
         "upstreamJsExecuted": False,
+        "securityHardening": {
+            "changed": bool(security_report.get("changed")),
+            "alreadyHardened": bool(security_report.get("alreadyHardened")),
+            "literalDecodeChanges": int(security_report.get("literalDecodeChanges") or 0),
+            "hostnameChanges": int(security_report.get("hostnameChanges") or 0),
+            "percentDecodeChanges": int(security_report.get("percentDecodeChanges") or 0),
+            "htmlEntityDecodeReorders": int(security_report.get("htmlEntityDecodeReorders") or 0),
+            "consoleSinkChanges": int(security_report.get("consoleSinkChanges") or 0),
+            "consoleShadow": bool(security_report.get("consoleShadow")),
+        },
         "byteValidation": {
             "tool": byte_validation.get("tool"),
             "toolVersion": byte_validation.get("toolVersion"),

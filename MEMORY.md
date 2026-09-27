@@ -5754,3 +5754,9 @@ This ledger is not complete merely because provider yield improves. Final comple
 - This is publication projection drift, not a MalluMV or Brain failure. The dedicated Projection Reconcile workflow is triggered to detect and rebuild only drifted published providers, then explicitly re-run census, CORE Quick and security on its final SHA.
 - No MalluMV provider code is hand-edited. After publication fixed point is restored, MalluMV alone will be sent back through Fast Brain Repair -> Learning/Qwen on the current signature-scoped architecture exhaustion logic.
 - Global 15-provider Repair remains paused until at least one broken provider is genuinely repaired and then one representative per remaining failure/provider family is validated.
+
+### 2026-09-27 — Targeted single-provider materialization now enforces publication security
+- Projection Reconcile run 36290343155 correctly detected only three stale projections: allanime, animevostfr and mallumv, rebuilt only those providers, and reached projection drift=0.
+- Final Security Gate 36290423291 then proved a generic targeted-materialization defect: every newly rebuilt provider retained provider console sinks/unsandboxed console usage, while the normal reapply_published_overrides path hardens those bytes before validation.
+- materialize_provider_v3_one.py now applies provider_security_hardening.harden_bytes + assert_hardened before byte-stability verification, and reasserts hardening after verification. The materialization report records the security transform.
+- This is infrastructure repair, not a hand-written MalluMV fix. It affects targeted Repair/REMAT/reconcile paths generically and keeps provider-specific mutation authority with Brain Repair/LLM.

@@ -30,3 +30,12 @@ for candidate in (src, one):
     assert "materialized provider artifact validation failed" in candidate
     assert "materialized byte validator rewrote provider bytes" in candidate
     assert '"byteValidation": {' in candidate
+
+# Single-provider publication-capable materialization must mirror the mandatory
+# security finalization from reapply_published_overrides before raw-byte proof.
+assert "from provider_security_hardening import assert_hardened, harden_bytes" in one
+assert "security_hardened, security_report = harden_bytes(bundle)" in one
+assert one.index("security_hardened, security_report = harden_bytes(bundle)") < one.index("verified_bundle, byte_validation = allmat.verify_bytes(bundle)")
+assert one.count('assert_hardened(bundle.decode("utf-8", errors="strict"))') >= 2
+assert '"securityHardening": {' in one
+
