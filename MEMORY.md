@@ -5835,3 +5835,8 @@ This ledger is not complete merely because provider yield improves. Final comple
 - validated_model_plan now retries a corrective response once when that correction times out or cannot be parsed as a balanced object. The second corrective request reuses the same exact validation error, rejected edits and allowedPaths, with a bounded 768-token / 120s ceiling and schema-constrained JSON.
 - The correction contract explicitly prefers one small replace edit. Provider paths/publication files remain forbidden and the corrected result must still pass validate_edits before any application.
 - Contract coverage now reproduces the exact failure sequence: invalid non-allowlisted path -> truncated corrective JSON -> valid allowlisted corrective edit.
+
+### 2026-09-27 — Seven-family Learning retry after corrective-format fix
+- d0778a07 passed Workflow Gate 36322559529, Verify & Publish 36322559523 and Provider Non-Regression 36322559439.
+- The same seven representative providers are resumed directly at Learning/Qwen; Fast run 36320302438 is not replayed.
+- This retry specifically validates the Brain's own sequence: detect non-allowlisted architecture path, request correction, recover once from truncated corrective JSON, then revalidate the corrected plan against the exact allowlist.
