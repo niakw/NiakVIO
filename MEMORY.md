@@ -5603,3 +5603,10 @@ This ledger is not complete merely because provider yield improves. Final comple
 - The separate 13-provider Learning run reached Qwen and generated 58 Learning proposals, but failed in brain_architecture_force_materializer.py because the bounded primary model answer was syntactically unbalanced/truncated. This was no longer a timeout.
 - call_model now treats bounded parser ValueError the same as a recoverable model-format failure: it retries once with the minimal blueprint/allowlist/source payload. The retry remains bounded at 220 tokens / 55s and still passes the normal edit allowlist and downstream CI before any FORCE promotion.
 - A contract test reproduces an incomplete primary JSON response and requires successful minimal-payload recovery on the second request.
+
+### 2026-09-27 — MalluMV single-provider terminal fix
+- Strategy switched from whole-queue experimentation to proving one broken provider end-to-end before any new portfolio run. Local FORCE experiment-farm replays remain stopped; existing experiment memory is reused.
+- MalluMV current evidence already reaches terminal-host chain pages and historical traces include HubCloud /drive and /video URLs. The NiakVIO runtime could call the generic direct-media crawler, but its own fallback only accepted a direct URL one page later; a non-direct /drive -> /video hop was discarded.
+- MalluMV runtime now performs a provider-local bounded recursive crawl of plausible terminal candidates (max existing crawlDepth, max 8 candidates per page, visited-set loop guard). It still returns only direct terminal media after the existing direct predicate.
+- Targeted runtime behavior test now reproduces internal -> HubCloud /drive -> /video -> MP4 with the generic crawler returning no result, proving the MalluMV fallback itself completes the chain.
+- Also aligned the stale architecture materializer test ceiling to the already-shipped 220-token/55s retry so Workflow Gate can validate the provider fix on a green base.

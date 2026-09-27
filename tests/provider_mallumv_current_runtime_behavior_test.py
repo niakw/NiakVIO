@@ -19,12 +19,13 @@ global.fetch=async function(url,opt){
   if(url==="https://mallumv.space/search.php?q=Interstellar") return R(200,'<a href="/movie/1755/Interstellar_2014_English.xhtml"><b>Interstellar 2014 English</b></a>',url);
   if(url==="https://mallumv.space/movie/1755/Interstellar_2014_English.xhtml") return R(200,'<a href="/confirm/1755/998/Interstellar_2014_English.xhtml">Download 1080p</a>',url);
   if(url==="https://mallumv.space/confirm/1755/998/Interstellar_2014_English.xhtml") return R(200,'<a class="touch" href="/internal/1755/998/Interstellar_2014_English.xhtml">Confirm Download</a>',url);
-  if(url==="https://mallumv.space/internal/1755/998/Interstellar_2014_English.xhtml") return R(200,'<a href="https://hubcloud.example/video/abc123">HubCloud</a>',url);
+  if(url==="https://mallumv.space/internal/1755/998/Interstellar_2014_English.xhtml") return R(200,'<a href="https://hubcloud.example/drive/abc123">HubCloud</a>',url);
+  if(url==="https://hubcloud.example/drive/abc123") return R(200,'<a href="/video/abc123">Continue</a>',url);
+  if(url==="https://hubcloud.example/video/abc123") return R(200,'<a href="https://cdn.example/interstellar/master.mp4">Download</a>',url);
   return R(404,"",url);
 };
 global._crawlDirectMedia=async function(urls,ref,depth){
   calls.push("crawl:"+urls[0]);
-  if(urls[0]==="https://hubcloud.example/video/abc123") return [{url:"https://cdn.example/interstellar/master.m3u8",quality:"1080p"}];
   return [];
 };
 module={exports:{getStreams:async()=>[]}};
@@ -34,14 +35,16 @@ module={exports:{getStreams:async()=>[]}};
   if(!hook||hook.provider!=="mallumv")throw new Error("MalluMV hook missing");
   const out=await hook.resolve([{tmdbId:"157336",canonicalMediaType:"movie"}]);
   if(!Array.isArray(out)||out.length!==1)throw new Error("expected one stream "+JSON.stringify(out));
-  if(out[0].url!=="https://cdn.example/interstellar/master.m3u8")throw new Error("wrong terminal "+JSON.stringify(out[0]));
+  if(out[0].url!=="https://cdn.example/interstellar/master.mp4")throw new Error("wrong terminal "+JSON.stringify(out[0]));
   const flat=calls.join("\n");
   for(const token of [
     "https://mallumv.space/search.php?q=Interstellar",
     "/movie/1755/Interstellar_2014_English.xhtml",
     "/confirm/1755/998/Interstellar_2014_English.xhtml",
     "/internal/1755/998/Interstellar_2014_English.xhtml",
-    "crawl:https://hubcloud.example/video/abc123"
+    "https://hubcloud.example/drive/abc123",
+    "https://hubcloud.example/video/abc123",
+    "crawl:https://hubcloud.example/drive/abc123"
   ]) if(!flat.includes(token)) throw new Error("missing "+token+"\n"+flat);
   console.log("MALLUMV_CURRENT_RUNTIME_OK");
 })().catch(e=>{console.error(e);process.exit(1)});
