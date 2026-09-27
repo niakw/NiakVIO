@@ -3,7 +3,7 @@
   "requested_scope": "all",
   "resolved_scope": "explicit",
   "selected_providers": [
-    "mallumv"
+    "animevostfr"
   ],
   "shard_count": 1,
   "shard_index": 0,
@@ -11,8 +11,8 @@
   "fixture_selection_policy": "retained-proof-first-then-provider-targeted-then-representative-then-three-corpus-rotated",
   "provider_count": 1,
   "task_count": 1,
-  "probe_count": 1,
-  "rotated_task_count": 0,
+  "probe_count": 4,
+  "rotated_task_count": 1,
   "max_samples_per_lane": 4,
   "raw_provider_count": 0,
   "playable_provider_count": 0,
@@ -26,7 +26,7 @@
   "wrong_content_providers": [],
   "type_summary": {
     "movie": {
-      "tasks": 1,
+      "tasks": 0,
       "raw": 0,
       "playable": 0,
       "accepted_playable": 0,
@@ -42,7 +42,7 @@
       "wrong_content": 0
     },
     "anime": {
-      "tasks": 0,
+      "tasks": 1,
       "raw": 0,
       "playable": 0,
       "accepted_playable": 0,
@@ -58,197 +58,195 @@
   },
   "debug_stage_providers": {
     "provider_network_zero_result": [
-      "mallumv"
+      "animevostfr"
     ]
   },
   "rows": [
     {
-      "provider_id": "mallumv",
-      "provider_name": "🌴 MalluMV",
-      "semantic_type": "movie",
-      "fixture_title": "Interstellar",
+      "provider_id": "animevostfr",
+      "provider_name": "🇫🇷 AnimeVOSTFR",
+      "semantic_type": "anime",
+      "fixture_title": "Hell Teacher: Jigoku Sensei Nube",
       "fixture": {
-        "tmdbId": "157336",
-        "mediaType": "movie",
-        "category": "movie",
-        "title": "Interstellar",
-        "year": 2014
+        "tmdbId": "259544",
+        "mediaType": "anime",
+        "category": "anime",
+        "title": "Hell Teacher: Jigoku Sensei Nube",
+        "year": 2025,
+        "season": 1,
+        "episode": 1
       },
       "status": "no_streams",
       "debug_stage": "provider_network_zero_result",
       "debug_model": {
-        "strategy": "html_scraper",
-        "source_runtime_family": "catalogue-html-embed",
+        "strategy": "mixed_embed_resolver",
+        "source_runtime_family": "wordpress-search-episode",
         "reconstruction_state": "learning-clean-seed",
         "identity_mode": "catalog_search",
         "requires_tmdb_before_run": true,
         "supported_types": [
-          "movie"
+          "anime"
         ],
-        "route_count": 1,
+        "route_count": 3,
         "route_kinds": [
-          "search"
+          "search",
+          "api",
+          "detail"
         ],
         "has_api_recipe": false,
-        "official_site": "https://mallumv.Space",
+        "official_site": "https://animevostfr.org",
         "official_hub": null,
         "official_api": null
       },
-      "debug_fetch_count": 13,
-      "debug_provider_fetch_count": 12,
-      "debug_progress_stage": "chain_reached",
+      "debug_fetch_count": 5,
+      "debug_provider_fetch_count": 4,
+      "debug_progress_stage": "lookup_only",
       "debug_fetches": [
         {
-          "url": "https://api.themoviedb.org/3/movie/157336?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Crelease_dates&language=fr-FR&api_key=%3Credacted%3E",
-          "response_url": "https://api.themoviedb.org/3/movie/157336?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Crelease_dates&language=fr-FR&api_key=%3Credacted%3E",
+          "url": "https://api.themoviedb.org/3/tv/259544?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Ccontent_ratings&language=fr-FR&api_key=%3Credacted%3E",
+          "response_url": "https://api.themoviedb.org/3/tv/259544?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Ccontent_ratings&language=fr-FR&api_key=%3Credacted%3E",
           "method": "GET",
           "status": 200,
           "content_type": "application/json",
           "challenge": "",
-          "duration_ms": 223
+          "duration_ms": 42
         },
         {
-          "url": "https://mallumv.space/search.php?q=Interstellar",
-          "response_url": "https://mallumv.space/search.php?q=Interstellar",
+          "url": "https://animevostfr.org/?s=%E5%9C%B0%E7%8D%84%E5%85%88%E7%94%9F%E3%81%AC%EF%BD%9E%E3%81%B9%EF%BD%9E",
+          "response_url": "https://animevostfr.org/?s=%E5%9C%B0%E7%8D%84%E5%85%88%E7%94%9F%E3%81%AC%EF%BD%9E%E3%81%B9%EF%BD%9E",
           "method": "GET",
           "status": 200,
           "content_type": "text/html",
           "challenge": "",
-          "duration_ms": 563
+          "duration_ms": 879
         },
         {
-          "url": "https://mallumv.space/movie/1755/Interstellar_2014_English.xhtml",
-          "response_url": "https://mallumv.space/movie/1755/Interstellar_2014_English.xhtml",
+          "url": "https://animevostfr.org/?s=Jigoku%20Sensei%20Nube%202025",
+          "response_url": "https://animevostfr.org/?s=Jigoku%20Sensei%20Nube%202025",
           "method": "GET",
           "status": 200,
           "content_type": "text/html",
           "challenge": "",
-          "duration_ms": 201
+          "duration_ms": 312
         },
         {
-          "url": "https://mallumv.space/internal/6705/1755/Interstellar%20(2014)%20BluRay%C3%82%C2%A0-%201080p%20-%20x264%20-%20[Tamil%20+%20Eng]%20-%20(DD+2.0%20-%20224Kbps)%20-%202.5GB%20-%20ESub.xhtml",
-          "response_url": "https://mallumv.space/internal/6705/1755/Interstellar%20(2014)%20BluRay%C3%82%C2%A0-%201080p%20-%20x264%20-%20[Tamil%20+%20Eng]%20-%20(DD+2.0%20-%20224Kbps)%20-%202.5GB%20-%20ESub.xhtml",
+          "url": "https://animevostfr.org/?s=%E3%81%AC%E3%83%BC%E3%81%B9%E3%83%BC%E3%82%A2%E3%83%8B%E3%83%A1",
+          "response_url": "https://animevostfr.org/?s=%E3%81%AC%E3%83%BC%E3%81%B9%E3%83%BC%E3%82%A2%E3%83%8B%E3%83%A1",
           "method": "GET",
           "status": 200,
           "content_type": "text/html",
           "challenge": "",
-          "duration_ms": 197
+          "duration_ms": 314
         },
         {
-          "url": "https://vik1ngfile.site/f/tMAohzba53",
-          "response_url": "https://vik1ngfile.site/f/tMAohzba53",
+          "url": "https://animevostfr.org/?s=%E3%81%98%E3%81%94%E3%81%8F%E3%81%9B%E3%82%93%E3%81%9B%E3%81%84%E3%81%AC%E3%83%BC%E3%81%B9%E3%83%BC",
+          "response_url": "https://animevostfr.org/?s=%E3%81%98%E3%81%94%E3%81%8F%E3%81%9B%E3%82%93%E3%81%9B%E3%81%84%E3%81%AC%E3%83%BC%E3%81%B9%E3%83%BC",
           "method": "GET",
           "status": 200,
           "content_type": "text/html",
           "challenge": "",
-          "duration_ms": 824
-        },
-        {
-          "url": "https://vik1ngfile.site/f/tMAohzba53#",
-          "response_url": "https://vik1ngfile.site/f/tMAohzba53",
-          "method": "GET",
-          "status": 200,
-          "content_type": "text/html",
-          "challenge": "",
-          "duration_ms": 301
-        },
-        {
-          "url": "https://vik1ngfile.site/fast-download/www.MalluMv.Space%20-Interstellar%20%282014%29%20BluRay%C2%A0-%201080p%20-%20x264%20-%20%5BTamil%20+%20Eng%5D%20-%20%28DD+2.0%20-%20224Kbps%29%20-%202.5GB%20-%20ESub.mkv%20%5B2.57%20GB%5D",
-          "response_url": "https://vikingfile.com/fast-download/www.MalluMv.Space%20-Interstellar%20%282014%29%20BluRay%C2%A0-%201080p%20-%20x264%20-%20%5BTamil%20+%20Eng%5D%20-%20%28DD+2.0%20-%20224Kbps%29%20-%202.5GB%20-%20ESub.mkv%20%5B2.57%20GB%5D",
-          "method": "GET",
-          "status": 200,
-          "content_type": "text/html",
-          "challenge": "",
-          "duration_ms": 985
-        },
-        {
-          "url": "https://vikingfile.com/f/tMAohzba53",
-          "response_url": "https://vik1ngfile.site/f/tMAohzba53",
-          "method": "GET",
-          "status": 200,
-          "content_type": "text/html",
-          "challenge": "",
-          "duration_ms": 510
-        },
-        {
-          "url": "https://mallumv.space/internal/6706/1755/Interstellar%20(2014)%20BluRay%C3%82%C2%A0-%20720p%20-%20x264%20-%20[Tamil%20+%20Eng]%20-%20(AAC%202.0)%20-%201.2GB%20-%20ESub.xhtml",
-          "response_url": "https://mallumv.space/internal/6706/1755/Interstellar%20(2014)%20BluRay%C3%82%C2%A0-%20720p%20-%20x264%20-%20[Tamil%20+%20Eng]%20-%20(AAC%202.0)%20-%201.2GB%20-%20ESub.xhtml",
-          "method": "GET",
-          "status": 200,
-          "content_type": "text/html",
-          "challenge": "",
-          "duration_ms": 198
-        },
-        {
-          "url": "https://vik1ngfile.site/f/u6lxab0wCH",
-          "response_url": "https://vik1ngfile.site/f/u6lxab0wCH",
-          "method": "GET",
-          "status": 200,
-          "content_type": "text/html",
-          "challenge": "",
-          "duration_ms": 260
-        },
-        {
-          "url": "https://vik1ngfile.site/f/u6lxab0wCH#",
-          "response_url": "https://vik1ngfile.site/f/u6lxab0wCH",
-          "method": "GET",
-          "status": 200,
-          "content_type": "text/html",
-          "challenge": "",
-          "duration_ms": 245
-        },
-        {
-          "url": "https://vik1ngfile.site/fast-download/www.MalluMv.Space%20-Interstellar%20%282014%29%20BluRay%C2%A0-%20720p%20-%20x264%20-%20%5BTamil%20+%20Eng%5D%20-%20%28AAC%202.0%29%20-%201.2GB%20-%20ESub.mkv%20%5B1.25%20GB%5D",
-          "response_url": "https://vikingfile.com/fast-download/www.MalluMv.Space%20-Interstellar%20%282014%29%20BluRay%C2%A0-%20720p%20-%20x264%20-%20%5BTamil%20+%20Eng%5D%20-%20%28AAC%202.0%29%20-%201.2GB%20-%20ESub.mkv%20%5B1.25%20GB%5D",
-          "method": "GET",
-          "status": 200,
-          "content_type": "text/html",
-          "challenge": "",
-          "duration_ms": 466
-        },
-        {
-          "url": "https://vikingfile.com/f/u6lxab0wCH",
-          "response_url": "https://vik1ngfile.site/f/u6lxab0wCH",
-          "method": "GET",
-          "status": 200,
-          "content_type": "text/html",
-          "challenge": "",
-          "duration_ms": 580
+          "duration_ms": 324
         }
       ],
       "debug_provider_value_trace_v18": null,
       "debug_provider_value_trace_history_v21": [],
       "debug_provider_runtime_dispatch_error_v1": null,
       "debug_identity_reasons": [],
+      "stderr_tail": "FIELD_TMDB_PROBE_CONTEXT state=core_ready credential_visible=false metadata_hydrated=false dynamic=true core_capability=true\n",
       "raw": 0,
       "playable": 0,
       "verified": 0,
       "contradictions": 0,
       "identity_safe": true,
-      "duration_ms": 6940,
-      "sample_count": 1,
+      "duration_ms": 7915,
+      "sample_count": 4,
       "sample_titles": [
-        "Interstellar"
+        "Jujutsu Kaisen",
+        "Mushoku Tensei: Jobless Reincarnation",
+        "Failure Frame: I Became the Strongest and Annihilated Everything with Low-Level Spells",
+        "Hell Teacher: Jigoku Sensei Nube"
       ],
-      "adaptive_rotated": false,
+      "adaptive_rotated": true,
       "samples": [
         {
-          "fixture_title": "Interstellar",
+          "fixture_title": "Jujutsu Kaisen",
           "fixture": {
-            "tmdbId": "157336",
-            "mediaType": "movie",
-            "category": "movie",
-            "title": "Interstellar",
-            "year": 2014
+            "tmdbId": "95479",
+            "mediaType": "anime",
+            "category": "anime",
+            "title": "Jujutsu Kaisen",
+            "year": 2020,
+            "season": 1,
+            "episode": 1
           },
           "status": "no_streams",
           "debug_stage": "provider_network_zero_result",
-          "debug_progress_stage": "chain_reached",
+          "debug_progress_stage": "lookup_only",
           "raw": 0,
           "playable": 0,
           "verified": 0,
           "contradictions": 0,
-          "duration_ms": 6826
+          "duration_ms": 2170
+        },
+        {
+          "fixture_title": "Mushoku Tensei: Jobless Reincarnation",
+          "fixture": {
+            "tmdbId": "94664",
+            "mediaType": "anime",
+            "category": "anime",
+            "title": "Mushoku Tensei: Jobless Reincarnation",
+            "year": 2021,
+            "season": 1,
+            "episode": 1
+          },
+          "status": "no_streams",
+          "debug_stage": "provider_network_zero_result",
+          "debug_progress_stage": "lookup_only",
+          "raw": 0,
+          "playable": 0,
+          "verified": 0,
+          "contradictions": 0,
+          "duration_ms": 1795
+        },
+        {
+          "fixture_title": "Failure Frame: I Became the Strongest and Annihilated Everything with Low-Level Spells",
+          "fixture": {
+            "tmdbId": "245285",
+            "mediaType": "anime",
+            "category": "anime",
+            "title": "Failure Frame: I Became the Strongest and Annihilated Everything with Low-Level Spells",
+            "year": 2024,
+            "season": 1,
+            "episode": 1
+          },
+          "status": "no_streams",
+          "debug_stage": "provider_network_zero_result",
+          "debug_progress_stage": "lookup_only",
+          "raw": 0,
+          "playable": 0,
+          "verified": 0,
+          "contradictions": 0,
+          "duration_ms": 1884
+        },
+        {
+          "fixture_title": "Hell Teacher: Jigoku Sensei Nube",
+          "fixture": {
+            "tmdbId": "259544",
+            "mediaType": "anime",
+            "category": "anime",
+            "title": "Hell Teacher: Jigoku Sensei Nube",
+            "year": 2025,
+            "season": 1,
+            "episode": 1
+          },
+          "status": "no_streams",
+          "debug_stage": "provider_network_zero_result",
+          "debug_progress_stage": "lookup_only",
+          "raw": 0,
+          "playable": 0,
+          "verified": 0,
+          "contradictions": 0,
+          "duration_ms": 1884
         }
       ]
     }
