@@ -62,7 +62,6 @@ def assert_contract() -> None:
         'function languageCode(v){',
         'function languageName(code){',
         '"lang-"+',
-        '"sub-"+',
         'function ageBadge(v){',
         'function urlFacts(r){',
         'r&&r.height',
@@ -125,6 +124,11 @@ def assert_contract() -> None:
         stale = {"vf", "vff", "vfq", "vo", "vostfr", "multi"}
         if stale & ids:
             raise ValueError(f"legacy public language badge ids leaked into v3: {path.name} ids={sorted(stale & ids)}")
+
+    # Subtitle artwork/catalog entries remain versioned for compatibility, but
+    # stream presentation must no longer emit subtitle chips into runtime badgeIds.
+    if '"sub-"+' in text:
+        raise ValueError("stream presentation runtime still emits subtitle badge ids")
 
 
 def main() -> int:
