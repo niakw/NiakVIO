@@ -1,17 +1,69 @@
 {
   "contradictionProviders": [],
   "executionModel": "batch-plan concurrent provider probes",
-  "groupResults": [],
-  "maxWorkers": 20,
-  "providers": {},
-  "requestedProviders": [
-    "papadustream",
-    "streamzo"
+  "groupResults": [
+    {
+      "contradictionProviders": [],
+      "groupId": "terminal-extraction|html_scraper",
+      "playableProviders": [],
+      "providerCount": 1,
+      "providers": [
+        "mallumv"
+      ],
+      "repairScope": "terminal-extraction",
+      "verifiedProviders": []
+    }
   ],
-  "runId": "36108817414",
+  "maxWorkers": 20,
+  "providers": {
+    "mallumv": {
+      "contradictions": 0,
+      "debugStages": {
+        "movie": "provider_network_zero_result"
+      },
+      "network": {
+        "movie": [
+          {
+            "host": "api.themoviedb.org",
+            "method": "GET",
+            "path": "/3/movie/157336",
+            "status": 200
+          },
+          {
+            "host": "mallumv.space",
+            "method": "GET",
+            "path": "/search.php",
+            "status": 200
+          },
+          {
+            "host": "mallumv.space",
+            "method": "GET",
+            "path": "/movie/1755/Interstellar_2014_English.xhtml",
+            "status": 200
+          }
+        ]
+      },
+      "playableLanes": [],
+      "sampleTitles": {
+        "movie": [
+          "Interstellar"
+        ]
+      },
+      "statuses": {
+        "movie": "no_streams"
+      },
+      "verifiedLanes": []
+    }
+  },
+  "requestedProviders": [
+    "mallumv"
+  ],
+  "runId": "36282961140",
   "schemaVersion": 3,
-  "selectedProviderCount": 0,
-  "selectedProviders": [],
+  "selectedProviderCount": 1,
+  "selectedProviders": [
+    "mallumv"
+  ],
   "shardCount": 1,
   "shardIndex": 0,
   "skippedEnvironmentProviders": [
@@ -27,15 +79,14 @@
     "desiflix",
     "flemmix",
     "fullanime",
-    "mallumv",
     "moviebox",
     "moviesmod",
     "showbox",
     "vidfast",
     "yflix"
   ],
-  "sourceCensusRunId": "36058132100-post-repair-candidate",
-  "triggerSha": "a8e9a2edfaa813bf66574cd1eea1ceff3219a27b",
+  "sourceCensusRunId": "36282347595-retest",
+  "triggerSha": "1d454ee886e8e7ef69a0e40cba2778caa6e95ab1",
   "verifiedProviderCount": 0,
   "verifiedProviders": []
 }
