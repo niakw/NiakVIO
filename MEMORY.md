@@ -5597,3 +5597,9 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Retry 10 confirmed the 15-provider causal split (13 Fast + animevostfr REMAT + allwish Learning) with zero harness/environment debt, but both Learning cohorts were invalidated by the same stale brain_llm_guidance_contract assertion requiring retired 768/512-token budgets.
 - Main 59d94413 aligns that contract to advisor-only 160 tokens / 45s and keys architecture FORCE concurrency by exact cohort so independent allwish and 13-provider Learning work cannot cancel each other.
 - 59d94413 passed Workflow Gate 36280169127, Verify & Publish 36280169125 and Provider Non-Regression 36280169186 before retry 11.
+
+### 2026-09-27 — Architecture FORCE retries truncated model JSON
+- Retry 11 covered all 15 providers with zero harness/environment lanes. allwish completed the full Learning/materializer chain successfully but had no force-promotable blueprint.
+- The separate 13-provider Learning run reached Qwen and generated 58 Learning proposals, but failed in brain_architecture_force_materializer.py because the bounded primary model answer was syntactically unbalanced/truncated. This was no longer a timeout.
+- call_model now treats bounded parser ValueError the same as a recoverable model-format failure: it retries once with the minimal blueprint/allowlist/source payload. The retry remains bounded at 220 tokens / 55s and still passes the normal edit allowlist and downstream CI before any FORCE promotion.
+- A contract test reproduces an incomplete primary JSON response and requires successful minimal-payload recovery on the second request.

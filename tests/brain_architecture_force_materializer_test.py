@@ -174,8 +174,51 @@ try:
     assert calls[1][3] <= mod.MINIMAL_SOURCE_CONTEXT
     assert mod.MAX_MODEL_TOKENS <= 220
     assert mod.MODEL_TIMEOUT_SECONDS <= 70
-    assert mod.RETRY_MODEL_TOKENS <= 120
-    assert mod.RETRY_MODEL_TIMEOUT_SECONDS <= 45
+    assert mod.RETRY_MODEL_TOKENS <= 220
+    assert mod.RETRY_MODEL_TIMEOUT_SECONDS <= 55
+finally:
+    mod._model_request = original_request
+
+# A syntactically incomplete primary answer is recoverable just like a timeout:
+# retry once with the minimal architecture payload instead of failing the whole
+# targeted Learning cohort.
+calls = []
+original_request = mod._model_request
+try:
+    def fake_invalid_then_valid(endpoint, model, payload, *, max_tokens, timeout, compact=False):
+        calls.append((max_tokens, timeout, compact, sum(len(v) for v in (payload.get("sources") or {}).values())))
+        if len(calls) == 1:
+            return {"choices": [{"message": {"content": '{"edits":[{"operation":"create","path":"scripts/brain_layers/truncated.py","content":"X='}}]}
+        import json
+        return {
+            "choices": [{
+                "message": {
+                    "content": json.dumps({
+                        "edits": [{
+                            "operation": "create",
+                            "path": "scripts/brain_layers/recovered.py",
+                            "content": "VALUE = 2\n",
+                        }]
+                    })
+                }
+            }]
+        }
+
+    mod._model_request = fake_invalid_then_valid
+    recovered = mod.call_model(
+        "http://127.0.0.1:8080",
+        "demo",
+        {
+            "blueprint": {"strategyId": "demo"},
+            "allowedPaths": ["scripts/brain_layers/*"],
+            "contract": {"requireExecutableDiff": True},
+            "sources": {"a": "x" * 4000, "b": "y" * 4000},
+            "architectureLayers": [{"id": "meta_learning_gap_synthesis"}],
+        },
+    )
+    assert recovered["edits"][0]["path"] == "scripts/brain_layers/recovered.py"
+    assert len(calls) == 2
+    assert calls[1][3] <= mod.MINIMAL_SOURCE_CONTEXT
 finally:
     mod._model_request = original_request
 

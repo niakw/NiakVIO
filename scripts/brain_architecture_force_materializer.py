@@ -30,8 +30,8 @@ MAX_SOURCE_SNIPPET = 4200
 MAX_TOTAL_SOURCE_CONTEXT = 10500
 MAX_MODEL_TOKENS = 220
 MODEL_TIMEOUT_SECONDS = 70
-RETRY_MODEL_TOKENS = 120
-RETRY_MODEL_TIMEOUT_SECONDS = 45
+RETRY_MODEL_TOKENS = 220
+RETRY_MODEL_TIMEOUT_SECONDS = 55
 RETRY_SOURCE_CONTEXT = 3600
 MINIMAL_SOURCE_CONTEXT = 1800
 
@@ -314,9 +314,9 @@ def _parse_model_value(value: dict[str, Any]) -> dict[str, Any]:
 
 
 def call_model(endpoint: str, model: str, payload: dict[str, Any]) -> dict[str, Any]:
-    # Architecture FORCE runs on CPU-hosted Qwen in GitHub Actions. The prior
-    # 800-token/full-context request consumed the entire 180s socket timeout,
-    # then repeated another 120s compact request. Start compact and bounded.
+    # Architecture FORCE runs on CPU-hosted Qwen in GitHub Actions. Keep both
+    # attempts wall-clock bounded, but retry not only transport timeouts: a
+    # max-token-truncated JSON object is also a recoverable model-format failure.
     try:
         value = _model_request(
             endpoint,
@@ -326,9 +326,11 @@ def call_model(endpoint: str, model: str, payload: dict[str, Any]) -> dict[str, 
             timeout=MODEL_TIMEOUT_SECONDS,
             compact=True,
         )
-    except TimeoutError:
+        return _parse_model_value(value)
+    except (TimeoutError, ValueError) as exc:
+        reason = "timeout" if isinstance(exc, TimeoutError) else "invalid-json"
         print(
-            "FIELD_BRAIN_ARCH_FORCE_MODEL_RETRY reason=timeout mode=minimal",
+            f"FIELD_BRAIN_ARCH_FORCE_MODEL_RETRY reason={reason} mode=minimal",
             flush=True,
         )
         value = _model_request(
@@ -339,7 +341,7 @@ def call_model(endpoint: str, model: str, payload: dict[str, Any]) -> dict[str, 
             timeout=RETRY_MODEL_TIMEOUT_SECONDS,
             compact=True,
         )
-    return _parse_model_value(value)
+        return _parse_model_value(value)
 
 def main() -> int:
     p = argparse.ArgumentParser()
