@@ -5693,3 +5693,8 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Targeted live run 36286238368 remained zero-stream even though the synthetic canonical-route contract is green. Its live network trace showed vik1ngfile.site/f/<id> -> vikingfile.com/fast-download/<name> but no canonical vikingfile.com/f/<id> request.
 - A one-run bounded diagnostic was reintroduced only to identify the real fast-download transition. It emits URLs/actions, form method/action and input field names; it does not emit response bodies, input values, cookies, request headers or credentials.
 - The diagnostic is temporary and must be removed as soon as the live transition is implemented.
+
+### 2026-09-27 — MalluMV Viking bundle route-only diagnostic
+- Existing persisted quick-yield stderr proved the live /f page loads /assets/custom-F_ZXKHX.js and exposes /api, while the fast-download landing has no static URL/form transition.
+- A one-run provider-local diagnostic now fetches only the referenced public custom bundle as text and records only bounded string literals that look like API/download/stream/captcha routes. It never executes upstream JavaScript and never logs arbitrary code, cookies, headers, form values or secrets.
+- The fixture includes a fake custom bundle to keep the diagnostic path deterministic. This instrumentation must be removed once the real endpoint contract is identified.
