@@ -5846,3 +5846,13 @@ This ledger is not complete merely because provider yield improves. Final comple
 - The corrective protocol no longer asks the model to freely spell a path. It derives exactAllowedPaths from the real source-context files already selected by the repository and places those exact paths into the JSON response schema enum.
 - Rejected edit intent is retained without the rejected path and is bounded before retry, preventing the invalid hallucinated path from being reinforced in the corrective prompt.
 - This is Brain infrastructure only: it does not remap a provider fix or choose a repair for Qwen. The model still chooses the operation/find/replace content, but only against repository targets that actually exist and were already allowlisted.
+
+### 2026-09-27 — Architecture FORCE now validates generated source transactionally
+- Seven-family Learning run `36330942316` on trigger SHA `5db116672210` proved the previous exact-path fix: Qwen first proposed the invalid `engine_v2/scripts/brain_meta_learning.py`, then self-corrected to the exact allowlisted `scripts/brain_meta_learning.py` and materialized one edit.
+- The run then failed in `tests/brain_meta_learning_gap_synthesis_test.py` because the generated edit made `scripts/brain_meta_learning.py` syntactically invalid (`IndentationError: unexpected indent`). This is Brain materialization infrastructure debt, not a provider repair result; no provider is counted repaired from this run.
+- `c418e55f1509` adds transactional generated-source validation before FORCE acceptance: Python via `ast.parse`, JSON via `json.loads`, and JS/MJS/CJS via `node --check`. Candidate edits are applied only for validation and the exact original bytes are restored before any retry.
+- On materialized syntax failure, the exact parser/compiler error is returned to Qwen through the existing bounded corrective protocol. Only already structurally allowlisted edit paths are admitted to the corrective path enum; a second invalid correction fails closed.
+- `76fb64de77b6` adds regressions for syntax-invalid edit -> rollback -> Qwen correction -> valid dry-run, plus a second-invalid-correction case proving the original file remains byte-identical.
+- `2f8905eaabb1` applies the same syntax gate to explicit `--response-file` FORCE plans so no alternate materialization path can bypass validation.
+- Validation is pending on the current HEAD. Do not relaunch global Repair or count any of the 14-provider queue as repaired until the exact seven-family Learning retry passes FORCE materialization, targeted architecture tests and required CI.
+
