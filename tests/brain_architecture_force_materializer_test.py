@@ -316,6 +316,137 @@ with tempfile.TemporaryDirectory(prefix="brain-arch-force-correct-") as tmp:
         mod.call_model = original_call_model
         mod._model_request = original_request
 
+
+# A structurally valid model edit can still produce invalid source. FORCE must
+# validate the materialized bytes transactionally, restore the baseline on
+# failure, and let Qwen correct its own edit using the exact parser error.
+with tempfile.TemporaryDirectory(prefix="brain-arch-force-syntax-") as tmp:
+    root = Path(tmp)
+    target = root / "scripts" / "brain_meta_learning.py"
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text("VALUE = 1\n", encoding="utf-8")
+    original_call_model = mod.call_model
+    original_request = mod._model_request
+    correction_calls = []
+    try:
+        def fake_syntax_bad_plan(endpoint, model, payload):
+            return {
+                "edits": [{
+                    "operation": "replace",
+                    "path": "scripts/brain_meta_learning.py",
+                    "find": "VALUE = 1",
+                    "replace": "    VALUE = 2",
+                }]
+            }
+
+        def fake_syntax_correction(endpoint, model, payload, *, max_tokens, timeout, compact=False):
+            correction_calls.append(payload)
+            assert "materialized syntax validation failed" in payload["validationError"]
+            assert payload["exactAllowedPaths"] == ["scripts/brain_meta_learning.py"]
+            assert "path" not in payload["rejectedEditIntent"][0]
+            import json
+            return {
+                "choices": [{
+                    "message": {
+                        "content": json.dumps({
+                            "edits": [{
+                                "operation": "replace",
+                                "path": "scripts/brain_meta_learning.py",
+                                "find": "VALUE = 1",
+                                "replace": "VALUE = 2",
+                            }]
+                        })
+                    }
+                }]
+            }
+
+        mod.call_model = fake_syntax_bad_plan
+        mod._model_request = fake_syntax_correction
+        _, corrected_edits = mod.validated_model_plan(
+            "http://127.0.0.1:8080",
+            "demo",
+            {
+                "blueprint": {"strategyId": "demo"},
+                "allowedPaths": patterns,
+                "contract": {"requireExecutableDiff": True},
+                "sources": {"scripts/brain_meta_learning.py": "VALUE = 1\n"},
+                "architectureLayers": [],
+            },
+            patterns,
+            root=root,
+        )
+        assert corrected_edits[0]["replace"] == "VALUE = 2"
+        assert len(correction_calls) == 1
+        # Validation is a dry-run: invalid and corrected candidate bytes never
+        # leak into the checkout before main() performs the final apply.
+        assert target.read_text(encoding="utf-8") == "VALUE = 1\n"
+        mod.apply_edits(corrected_edits, root=root)
+        mod.validate_changed_syntax(["scripts/brain_meta_learning.py"], root=root)
+        assert target.read_text(encoding="utf-8") == "VALUE = 2\n"
+    finally:
+        mod.call_model = original_call_model
+        mod._model_request = original_request
+
+# A second syntactically invalid response fails closed and still restores the
+# exact original bytes instead of leaving a broken architecture file behind.
+with tempfile.TemporaryDirectory(prefix="brain-arch-force-syntax-fail-") as tmp:
+    root = Path(tmp)
+    target = root / "scripts" / "brain_meta_learning.py"
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text("VALUE = 1\n", encoding="utf-8")
+    original_call_model = mod.call_model
+    original_request = mod._model_request
+    try:
+        mod.call_model = lambda endpoint, model, payload: {
+            "edits": [{
+                "operation": "replace",
+                "path": "scripts/brain_meta_learning.py",
+                "find": "VALUE = 1",
+                "replace": "    VALUE = 2",
+            }]
+        }
+
+        def still_invalid(endpoint, model, payload, *, max_tokens, timeout, compact=False):
+            import json
+            return {
+                "choices": [{
+                    "message": {
+                        "content": json.dumps({
+                            "edits": [{
+                                "operation": "replace",
+                                "path": "scripts/brain_meta_learning.py",
+                                "find": "VALUE = 1",
+                                "replace": "    VALUE = 3",
+                            }]
+                        })
+                    }
+                }]
+            }
+
+        mod._model_request = still_invalid
+        try:
+            mod.validated_model_plan(
+                "http://127.0.0.1:8080",
+                "demo",
+                {
+                    "blueprint": {"strategyId": "demo"},
+                    "allowedPaths": patterns,
+                    "contract": {"requireExecutableDiff": True},
+                    "sources": {"scripts/brain_meta_learning.py": "VALUE = 1\n"},
+                    "architectureLayers": [],
+                },
+                patterns,
+                root=root,
+            )
+        except ValueError as exc:
+            assert "materialized syntax validation failed" in str(exc)
+        else:
+            raise AssertionError("second syntax-invalid FORCE edit unexpectedly accepted")
+        assert target.read_text(encoding="utf-8") == "VALUE = 1\n"
+    finally:
+        mod.call_model = original_call_model
+        mod._model_request = original_request
+
 schema = mod._response_format([
     "scripts/brain_meta_learning.py",
     "scripts/brain_repair_runtime.py",
