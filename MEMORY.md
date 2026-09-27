@@ -5610,3 +5610,8 @@ This ledger is not complete merely because provider yield improves. Final comple
 - MalluMV runtime now performs a provider-local bounded recursive crawl of plausible terminal candidates (max existing crawlDepth, max 8 candidates per page, visited-set loop guard). It still returns only direct terminal media after the existing direct predicate.
 - Targeted runtime behavior test now reproduces internal -> HubCloud /drive -> /video -> MP4 with the generic crawler returning no result, proving the MalluMV fallback itself completes the chain.
 - Also aligned the stale architecture materializer test ceiling to the already-shipped 220-token/55s retry so Workflow Gate can validate the provider fix on a green base.
+
+### 2026-09-27 — MalluMV single-provider retest armed
+- MalluMV runtime contract on e07d82e1 passed the new internal -> HubCloud /drive -> /video -> MP4 behavior proof.
+- TEMP targeted recovery correctly selected only mallumv, but stopped before network probing because dynamic_provider_scope_contract_test.py still asserted the retired direct TARGET_PROVIDER argument shape. Repair V6 now builds REMAINING_TARGETS and appends each provider in a loop; the contract was updated to that real behavior.
+- provider-retest trigger is narrowed to exactly mallumv, scope=repair, autoRepair=false. This is a current-byte observational validation only; it does not restart the local FORCE experiment farm and does not run the 15-provider Repair queue.

@@ -20,7 +20,8 @@ wf=(ROOT/".github/workflows/provider-recognition-repair-v6.yml").read_text(encod
 assert "empty means census repairQueue only" in wf
 assert "Run canonical recognition and correction only for unresolved providers" in wf
 assert 'args=(python scripts/run_provider_repair_pipeline_v6.py --mode "$MODE")' in wf
-assert 'args+=(--provider "$TARGET_PROVIDER")' in wf
+assert 'REMAINING_TARGETS=()' in wf
+assert 'for provider in "${REMAINING_TARGETS[@]}"; do args+=(--provider "$provider"); done' in wf
 assert "automation/provider-route-recovery-v6-targeted.json" in wf
 assert "Verify only census symptoms were network re-probed" in wf
 assert "PROVIDER_REPAIR_CENSUS_SCOPE_PROOF" in wf

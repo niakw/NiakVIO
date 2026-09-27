@@ -1,28 +1,14 @@
 {
   "schemaVersion": 1,
-  "requestedAt": "2026-09-25T11:55:00+02:00",
+  "requestedAt": "2026-09-27T02:28:00+02:00",
   "scope": "repair",
   "targetProviders": [
-    "4khdhub",
-    "allanime",
-    "allwish",
-    "anime-ultime",
-    "animesalt",
-    "animesultra",
-    "animevost-fr",
-    "animevostfr",
-    "flemmix",
-    "mallumv",
-    "moviebox",
-    "moviesmod",
-    "vidfast",
-    "vostfree",
-    "yflix"
+    "mallumv"
   ],
   "autoRepair": false,
-  "goal": "Refresh and persist the exact current-byte census for the full symptomatic cohort measured by successful full census 36119603462 after PR/branch cleanup. No repair in this run; next Force must consume the resulting fresh repairQueue/environmentQueue.",
-  "retry": 8,
-  "reason": "post-clean-current-byte-15-provider-census-refresh",
-  "sourceExpectation": "bd65c5d1b7288ea91298bbf7e10e9fdff2cad9ab",
-  "executionExpectation": "RETEST exact 15 -> persist census -> no autopilot"
+  "goal": "Validate only MalluMV current bytes after bounded HubCloud /drive -> /video -> terminal-media fallback fix; no portfolio repair/autopilot.",
+  "retry": 9,
+  "reason": "mallumv-single-provider-terminal-validation",
+  "sourceExpectation": "e5bfca54e67eebe68e613d89e37a228fffc7089a",
+  "executionExpectation": "RETEST exact mallumv only -> persist observational census -> no autopilot"
 }
