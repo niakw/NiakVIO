@@ -5785,3 +5785,8 @@ This ledger is not complete merely because provider yield improves. Final comple
 - The architecture materializer then failed because both Qwen responses were truncated/unbalanced JSON. This is a Brain materialization failure, not a MalluMV provider verdict.
 - The exact deployed llama.cpp b11140 server supports response_format with schema-constrained JSON on /v1/chat/completions. The materializer now requests an explicit bounded edits[] schema, keeps provider/publication allowlists unchanged, and gives executable code a realistic bounded 512-token primary / 640-token minimal retry budget.
 - No MalluMV provider code is hand-written by this change. The next MalluMV-only cycle remains the proof of Brain-generated repair capability.
+
+### 2026-09-27 — MalluMV Brain proof retry after schema-constrained materializer
+- Brain infrastructure SHA c8915245 passed Workflow Gate 36311502490, Verify & Publish 36311502491 and Provider Non-Regression 36311502674.
+- MalluMV remains the only active Fast Brain target. The architecture materializer now uses llama.cpp b11140 response_format schema-constrained edits JSON.
+- This retry must still be credited only if Brain-generated changes lead to current-byte playable/verified media or a validated generic architecture change; no hand-authored provider repair is allowed.
