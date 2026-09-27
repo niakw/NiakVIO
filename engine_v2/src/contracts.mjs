@@ -107,6 +107,7 @@ export function normalizeStreamCandidate(raw = {}, context = {}) {
     badgeIds: normalizeDisplayList(raw.badgeIds),
     displayBadges: normalizeDisplayList(raw.displayBadges),
     presentationFacts: isPlainObject(raw.presentationFacts) ? structuredClone(raw.presentationFacts) : null,
+    streamScore: isPlainObject(raw.streamScore) ? structuredClone(raw.streamScore) : null,
     edition: textOrNull(raw.edition ?? raw.editions),
     releaseGroup: textOrNull(raw.releaseGroup ?? raw.release_group ?? raw.group),
     bitrate: scalarOrNull(raw.bitrate ?? raw.bitRate ?? raw.bit_rate),
