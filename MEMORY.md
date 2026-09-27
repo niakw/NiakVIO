@@ -5667,3 +5667,9 @@ This ledger is not complete merely because provider yield improves. Final comple
 
 ### 2026-09-27 — MalluMV current-byte retest retry 11
 - Retry 11 targets only MalluMV after the confirmed VikingFile &quot; URL cleanup. autoRepair remains false; no portfolio repair is authorized by this retest.
+
+### 2026-09-27 — MalluMV bounded VikingFile live diagnostic
+- MalluMV-only Retest reached clean vikingfile.com/f/<id> after the entity fix but still returned no streams. The remaining page is interactive HTML.
+- Temporary bounded runtime diagnostic now emits only VikingFile URL/action/onclick/fetch/location signals (max 24 values, 220 chars each); it never logs cookies, request headers, response bodies or credentials.
+- audit_provider_quick_yield now retains the final 4k of probe stderr for valid probes so provider-local diagnostic signals can be inspected without converting a valid probe into an error.
+- This diagnostic is for the isolated MalluMV retest and should be removed or reduced once the terminal transition is identified.

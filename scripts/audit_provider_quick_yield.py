@@ -506,6 +506,7 @@ def run_single(task: dict[str, Any]) -> dict[str, Any]:
             else None
         ),
         "debug_identity_reasons": _identity_diagnostics(probe),
+        "stderr_tail": proc.stderr[-4000:] if proc.stderr else "",
         "raw": raw,
         "playable": playable,
         "verified": verified,
