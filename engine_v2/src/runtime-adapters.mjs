@@ -47,6 +47,7 @@ export function toRuntimeStream(candidate, device, context = {}) {
     badgeIds: stream.badgeIds.length ? stream.badgeIds : undefined,
     displayBadges: stream.displayBadges.length ? stream.displayBadges : undefined,
     presentationFacts: stream.presentationFacts,
+    streamScore: stream.streamScore,
     edition: stream.edition,
     releaseGroup: stream.releaseGroup,
     bitrate: stream.bitrate,
