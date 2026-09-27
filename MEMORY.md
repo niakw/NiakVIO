@@ -5828,3 +5828,10 @@ This ledger is not complete merely because provider yield improves. Final comple
 - The seven representative providers already completed Fast Brain run 36320302438 with accepted=0 / validated=0 / learnHandoff=7 and harnessDifferential=0; their Fast waves are not replayed.
 - brain-learning-reconstruction now targets exactly moviebox, allanime, anime-ultime, 4khdhub, animevost-fr, vidfast and allwish with architecture_force=true and a 60-minute bounded slot.
 - No global 14-provider Repair is authorized. Provider-specific human repair remains disallowed during this proof; only Brain/orchestration infrastructure may be changed by hand.
+
+### 2026-09-27 — Brain corrective edit-plan retry is format-resilient
+- Seven-family Learning run 36321859517 reached Qwen/materialization after 36 prior representative-family proposals. The initial architecture plan still hallucinated engine_v2/scripts/brain_meta_learning.py; the new self-correction path correctly detected the allowlist violation and asked Qwen to correct it.
+- The corrective response itself was truncated/unbalanced JSON, so no architecture edit was applied and no provider was falsely credited.
+- validated_model_plan now retries a corrective response once when that correction times out or cannot be parsed as a balanced object. The second corrective request reuses the same exact validation error, rejected edits and allowedPaths, with a bounded 768-token / 120s ceiling and schema-constrained JSON.
+- The correction contract explicitly prefers one small replace edit. Provider paths/publication files remain forbidden and the corrected result must still pass validate_edits before any application.
+- Contract coverage now reproduces the exact failure sequence: invalid non-allowlisted path -> truncated corrective JSON -> valid allowlisted corrective edit.

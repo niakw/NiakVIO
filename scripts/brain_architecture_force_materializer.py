@@ -34,6 +34,8 @@ RETRY_MODEL_TOKENS = 640
 RETRY_MODEL_TIMEOUT_SECONDS = 120
 VALIDATION_RETRY_MODEL_TOKENS = 512
 VALIDATION_RETRY_TIMEOUT_SECONDS = 100
+VALIDATION_FORMAT_RETRY_MODEL_TOKENS = 768
+VALIDATION_FORMAT_RETRY_TIMEOUT_SECONDS = 120
 RETRY_SOURCE_CONTEXT = 3600
 MINIMAL_SOURCE_CONTEXT = 1800
 
@@ -297,6 +299,7 @@ def _validation_retry_payload(
         "reuseAllowedPathsExactly": True,
         "doNotInventPaths": True,
         "changeOnlyWhatValidationRejected": True,
+        "preferSingleSmallReplace": True,
         "maxEdits": MAX_EDITS,
     }
     return retry
@@ -417,15 +420,32 @@ def validated_model_plan(
             flush=True,
         )
         correction_payload = _validation_retry_payload(payload, exc, edits)
-        value = _model_request(
-            endpoint,
-            model,
-            correction_payload,
-            max_tokens=VALIDATION_RETRY_MODEL_TOKENS,
-            timeout=VALIDATION_RETRY_TIMEOUT_SECONDS,
-            compact=True,
-        )
-        corrected = _parse_model_value(value)
+        try:
+            value = _model_request(
+                endpoint,
+                model,
+                correction_payload,
+                max_tokens=VALIDATION_RETRY_MODEL_TOKENS,
+                timeout=VALIDATION_RETRY_TIMEOUT_SECONDS,
+                compact=True,
+            )
+            corrected = _parse_model_value(value)
+        except (TimeoutError, ValueError) as correction_exc:
+            reason = "timeout" if isinstance(correction_exc, TimeoutError) else "invalid-json"
+            print(
+                "FIELD_BRAIN_ARCH_FORCE_MODEL_RETRY "
+                f"reason=corrective-{reason} mode=corrective-format-retry",
+                flush=True,
+            )
+            value = _model_request(
+                endpoint,
+                model,
+                correction_payload,
+                max_tokens=VALIDATION_FORMAT_RETRY_MODEL_TOKENS,
+                timeout=VALIDATION_FORMAT_RETRY_TIMEOUT_SECONDS,
+                compact=True,
+            )
+            corrected = _parse_model_value(value)
         corrected_edits = [
             dict(x) for x in corrected.get("edits") or [] if isinstance(x, dict)
         ]

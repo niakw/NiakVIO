@@ -254,10 +254,19 @@ with tempfile.TemporaryDirectory(prefix="brain-arch-force-correct-") as tmp:
             }
 
         def fake_correction(endpoint, model, payload, *, max_tokens, timeout, compact=False):
-            correction_calls.append(payload)
+            correction_calls.append((payload, max_tokens, timeout))
             assert "outside allowlist" in payload["validationError"]
             assert "scripts/brain_meta_learning.py" in payload["allowedPaths"]
             assert payload["correctionContract"]["doNotInventPaths"] is True
+            assert payload["correctionContract"]["preferSingleSmallReplace"] is True
+            if len(correction_calls) == 1:
+                return {
+                    "choices": [{
+                        "message": {
+                            "content": '{"edits":[{"operation":"replace","path":"scripts/brain_meta_learning.py","find":"VALUE = 1","replace":"VALUE = 2"'
+                        }
+                    }]
+                }
             import json
             return {
                 "choices": [{
@@ -290,7 +299,15 @@ with tempfile.TemporaryDirectory(prefix="brain-arch-force-correct-") as tmp:
             root=root,
         )
         assert corrected_edits[0]["path"] == "scripts/brain_meta_learning.py"
-        assert len(correction_calls) == 1
+        assert len(correction_calls) == 2
+        assert correction_calls[0][1:] == (
+            mod.VALIDATION_RETRY_MODEL_TOKENS,
+            mod.VALIDATION_RETRY_TIMEOUT_SECONDS,
+        )
+        assert correction_calls[1][1:] == (
+            mod.VALIDATION_FORMAT_RETRY_MODEL_TOKENS,
+            mod.VALIDATION_FORMAT_RETRY_TIMEOUT_SECONDS,
+        )
     finally:
         mod.call_model = original_call_model
         mod._model_request = original_request
