@@ -5660,3 +5660,7 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Authoritative MalluMV-only Retest 36284658048 still returned no streams, but exposed the concrete failure: after the valid Vik1ngFile and fast-download requests the runtime attempted https://vikingfile.com/f/<id>&quot; and raised TypeError.
 - Root cause is raw URL extraction retaining HTML entities in URL-like strings. MalluMV now decodes common URL HTML entities (&amp;, &quot;, numeric quote entities, apostrophe entities), unescapes slash encodings, and strips surrounding quote characters before URL parsing.
 - Synthetic VikingFile coverage now includes the observed canonical URL carrying a trailing &quot; entity and requires the clean /f/<id> URL to be fetched with no entity leakage.
+
+### 2026-09-27 — MalluMV entity fixture follows live fallback order
+- The first entity-cleanup contract incorrectly made the synthetic fast-download page immediately expose a stream, so the bounded crawler correctly stopped before trying the encoded canonical /f URL.
+- The fixture now mirrors live evidence: fast-download is a non-terminal HTML landing page, then the decoded canonical /f/<id> path exposes the media source. This makes the contract specifically prove that &quot; cleanup enables the fallback path.
