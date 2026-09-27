@@ -25,7 +25,9 @@ global.fetch=async function(url,opt){
   if(url==="https://mallumv.space/confirm/1755/998/Interstellar_2014_English.xhtml") return R(200,'<a class="touch" href="/internal/1755/998/Interstellar_2014_English.xhtml">Confirm Download</a>',url);
   if(url==="https://mallumv.space/internal/1755/998/Interstellar_2014_English.xhtml") return R(200,'<a href="https://hubcloud.example/drive/abc123">HubCloud</a>',url);
   if(url==="https://mallumv.space/internal/6705/1755/Interstellar_2014_English.xhtml") return R(200,'<a href="https://vik1ngfile.site/f/tMAohzba53">Download 1080p</a>',url);
-  if(url==="https://vik1ngfile.site/f/tMAohzba53") return R(200,'<script>var canonical="https://vikingfile.com/f/tMAohzba53&quot;";</script><a href="https://vikingfile.com/fast-download/interstellar">Fast Download</a>',url);
+  if(url==="https://vik1ngfile.site/f/tMAohzba53") return mode==="viking-header"
+    ? R(200,'<a href="https://vikingfile.com/fast-download/interstellar">Fast Download</a>',url)
+    : R(200,'<script>var canonical="https://vikingfile.com/f/tMAohzba53&quot;";</script><a href="https://vikingfile.com/fast-download/interstellar">Fast Download</a>',url);
   if(url==="https://vikingfile.com/f/tMAohzba53") return R(200,'<video controls><source src="/stream/interstellar.mkv" type="video/x-matroska"></video>',url,{"content-type":"text/html; charset=UTF-8"});
   if(url==="https://vikingfile.com/fast-download/interstellar") return mode==="viking-header"
     ? R(200,"BINARY",url,{"content-type":"application/octet-stream","content-disposition":'attachment; filename="Interstellar.2014.1080p.mkv"'})

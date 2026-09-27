@@ -5683,3 +5683,8 @@ This ledger is not complete merely because provider yield improves. Final comple
 - The bounded Viking diagnostics later showed that the vik1ngfile page also exposes the canonical vikingfile.com/f/<id> route, and the canonical /f route exposes the terminal /stream/*.mkv while fast-download can be a dead HTML landing.
 - MalluMV now deterministically prioritizes VikingFile /f canonical candidates before fast-download candidates. The runtime contract requires the canonical route and rejects an unnecessary fast-download request once canonical terminal media is available.
 - This is a provider-local terminal-extraction change and intentionally triggers only targeted MalluMV recovery, not global FORCE.
+
+### 2026-09-27 — MalluMV Viking fixture separates canonical and header fallbacks
+- The first canonical-priority run stopped in the synthetic viking-header fixture because that fixture still exposed the canonical /f route; the runtime correctly preferred the canonical route and returned /stream/*.mkv, making the old expectation of fast-download obsolete.
+- The fixture now isolates the response-header fallback by exposing only fast-download in viking-header mode, while normal Viking mode keeps canonical /f plus fast-download and must prefer /f.
+- The temporary FIELD_MALLUMV_VIKING_HTML diagnostic was removed from the provider runtime after identifying the canonical transition. No cookies, headers or response bodies were retained.
