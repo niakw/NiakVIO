@@ -38,7 +38,7 @@ assert.match(presentStreamCandidate(captions, movie, provider).description, /SUB
     { providerId: "neko-sama", providerName: "Neko-Sama" },
   );
   const presented = presentStreamCandidate(integrated, { mediaType: "anime", title: "Fixture", originalLanguage: "ja" }, { id: "neko-sama", name: "Neko-Sama" });
-  assert.ok(presented.badgeIds.includes("sub-fr"), JSON.stringify(presented.badgeIds));
+  assert.ok(!presented.badgeIds.some((id) => String(id).startsWith("sub-")), JSON.stringify(presented.badgeIds));
   assert.ok(presented.languageTracks.some((row) => row.code === "fr" && row.role === "Sub"), JSON.stringify(presented.languageTracks));
   assert.equal(presented.subtitles, undefined, "integrated HLS metadata must not manufacture external subtitle rows");
 }
