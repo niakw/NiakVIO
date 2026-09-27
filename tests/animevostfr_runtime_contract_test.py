@@ -34,3 +34,8 @@ assert "fixtureTitle:ft" in p
 assert "titleRank" in p
 assert "FIELD_ANIMEVOSTFR_SEARCH_TITLES" in p
 assert "a.slice(0,10)" in p
+assert "function directAnime" in p
+assert "FIELD_ANIMEVOSTFR_DIRECT_ROUTE" in p
+assert 'c.base+"/animes/"+sl+"/"' in p
+assert "pageIdentity" in p
+assert "anime&&anime.page||await text" in p

@@ -1,14 +1,14 @@
 {
   "schemaVersion": 1,
-  "requestedAt": "2026-09-27T04:18:00+02:00",
+  "requestedAt": "2026-09-27T04:31:00+02:00",
   "scope": "repair",
   "targetProviders": [
     "animevostfr"
   ],
   "autoRepair": false,
-  "goal": "Validate only animevostfr current bytes as the first representative broken-provider recovery before any global Repair.",
-  "retry": 12,
-  "reason": "single-provider-first-candidate-replay-animevostfr",
-  "sourceExpectation": "edc3400d5b86e938d0e507e4ee39411e009572a9",
-  "executionExpectation": "RETEST exact animevostfr only -> require raw + playable + verified media -> no autopilot"
+  "goal": "Validate AnimeVOSTFR direct learned /animes/{slug}/ replay -> episode -> trembed -> external player on current bytes.",
+  "retry": 13,
+  "reason": "animevostfr-direct-route-replay-before-search",
+  "sourceExpectation": "1d328835bf157dce68dd00c569e2276a7240b599",
+  "executionExpectation": "RETEST exact animevostfr only; require raw/playable/verified > 0; no global Repair"
 }

@@ -5726,3 +5726,9 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Current MalluMV authority is CHAIN REACHED: detail -> internal -> Vik1ngFile/VikingFile is proven, but the current free terminal requires browser/button/Turnstile interaction and no HTTP-only fake success is accepted.
 - This run is intentionally a Brain Repair proof, not a hand-written provider patch: waves=5, timeBudgetSeconds=2400, maxRoundsPerBatch=3, publishValidated=true.
 - Success means current-byte playable/verified terminal media and publication only after the normal Retest/non-regression gates. Failure must preserve the exact terminal/browser cause for Brain learning.
+
+### 2026-09-27 — AnimeVOSTFR direct learned-route replay
+- Public current-site verification confirms the generic route chain: /animes/jujutsu-kaisen/ -> /episode/jujutsu-kaisen-1-episode-1/ -> ?trembed=0&trid=2690&trtype=2 -> external Sendvid iframe. This matches the repository's retained positive route proof family.
+- The runtime now tries the already-learned /animes/{slug}/ route directly from ranked aliases before WordPress search, validates the returned /animes/ page identity, reuses that response for episode selection, and only falls back to search when direct replay does not match.
+- This is generic route-shape replay; no Jujutsu-specific slug/id is embedded in provider code.
+- Exact Retest retry 13 is animevostfr-only with autoRepair=false and requires raw/playable/verified media before counting success.
