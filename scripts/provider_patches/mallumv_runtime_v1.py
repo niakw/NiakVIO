@@ -13,7 +13,7 @@ from typing import Any
 from provider_patch_blocks import replace_managed_fix
 
 MANAGED_FIX_ID = "PROVIDER.MALLUMV.RUNTIME.V1"
-MARKER = "NIAKVIO_MALLUMV_RUNTIME_V1"
+MARKER = "NIAKVIO_MALLUMV_RUNTIME_V1"  # targeted safe-diagnostic owner
 
 WRAPPER = r'''
 /* NIAKVIO_MALLUMV_RUNTIME_V1 */

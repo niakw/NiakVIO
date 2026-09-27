@@ -5698,3 +5698,8 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Existing persisted quick-yield stderr proved the live /f page loads /assets/custom-F_ZXKHX.js and exposes /api, while the fast-download landing has no static URL/form transition.
 - A one-run provider-local diagnostic now fetches only the referenced public custom bundle as text and records only bounded string literals that look like API/download/stream/captcha routes. It never executes upstream JavaScript and never logs arbitrary code, cookies, headers, form values or secrets.
 - The fixture includes a fake custom bundle to keep the diagnostic path deterministic. This instrumentation must be removed once the real endpoint contract is identified.
+
+### 2026-09-27 — Targeted MalluMV safe diagnostics persisted
+- run_provider_targeted_recovery.py now persists only MalluMV stderr lines beginning FIELD_MALLUMV_ into safeDiagnostics, capped to 24 lines / 1200 chars each.
+- Raw stderr remains excluded. This exposes the already-sanitized Viking route-only diagnostics needed to identify the live /api/download contract without broadening the targeted run or retaining response bodies/secrets.
+- The same commit touches the owned MalluMV patch only, so provider materialization scope remains MalluMV rather than all providers.
