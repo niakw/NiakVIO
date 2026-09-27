@@ -5868,3 +5868,11 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Canonical `patch_scripts` is written on acceptance; the legacy serialized `provider_lego_scripts/provider_lego_options` values are read only for migration compatibility.
 - Regression coverage extends `brain_llm_force_mutation_bridge_test.py` with generated Bloc creation, deterministic module compilation, v3 ownership, byte-idempotence, immutable same-family evolution and forbidden-capability rejection.
 - This is an offline architecture change only. No provider Repair/Learning/FORCE run was launched and no provider is newly claimed repaired.
+
+
+### 2026-09-27 — Generated Bloc bridge moved into ordinary offline Workflow Gate
+
+- `brain_llm_force_mutation_bridge_test.py` is now executed by `CORE - Workflow Gate` on ordinary code pushes, not only by the frozen provider Repair workflow.
+- This gives creation/evolution/idempotence/ownership regression proof without launching provider Repair, Learning or FORCE.
+- Provider Non-Regression run 36336311494 on `125d88bb96e8e92bc569d0644e64ef1071bb26b5` was green but classified the change as control-plane-only, so it was not counted as proof of generated-Bloc behavior.
+- Brain LLM CI run 36336404590 on `81aab020c1c9bec04c66b28f4f05ffcf9cf6f25f` is green after the schema expectation and provider-only source boundary correction.
