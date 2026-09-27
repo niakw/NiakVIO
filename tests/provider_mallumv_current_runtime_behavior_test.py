@@ -17,7 +17,7 @@ function R(status,body,url){return{ok:status>=200&&status<300,status,url:url||""
 global.fetch=async function(url,opt){
   url=String(url); calls.push(url);
   if(url==="https://mallumv.space/search.php?q=Interstellar") return R(200,'<a href="/movie/1755/Interstellar_2014_English.xhtml"><b>Interstellar 2014 English</b></a>',url);
-  if(url==="https://mallumv.space/movie/1755/Interstellar_2014_English.xhtml") return R(200,'<a href="/confirm/1755/998/Interstellar_2014_English.xhtml">Download 1080p</a>',url);
+  if(url==="https://mallumv.space/movie/1755/Interstellar_2014_English.xhtml") return R(200,'<script>window.__download="confirm\\/1755\\/998\\/Interstellar_2014_English.xhtml";</script>',url);
   if(url==="https://mallumv.space/confirm/1755/998/Interstellar_2014_English.xhtml") return R(200,'<a class="touch" href="/internal/1755/998/Interstellar_2014_English.xhtml">Confirm Download</a>',url);
   if(url==="https://mallumv.space/internal/1755/998/Interstellar_2014_English.xhtml") return R(200,'<a href="https://hubcloud.example/drive/abc123">HubCloud</a>',url);
   if(url==="https://hubcloud.example/drive/abc123") return R(200,'<a href="/video/abc123">Continue</a>',url);

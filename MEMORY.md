@@ -5615,3 +5615,9 @@ This ledger is not complete merely because provider yield improves. Final comple
 - MalluMV runtime contract on e07d82e1 passed the new internal -> HubCloud /drive -> /video -> MP4 behavior proof.
 - TEMP targeted recovery correctly selected only mallumv, but stopped before network probing because dynamic_provider_scope_contract_test.py still asserted the retired direct TARGET_PROVIDER argument shape. Repair V6 now builds REMAINING_TARGETS and appends each provider in a loop; the contract was updated to that real behavior.
 - provider-retest trigger is narrowed to exactly mallumv, scope=repair, autoRepair=false. This is a current-byte observational validation only; it does not restart the local FORCE experiment farm and does not run the 15-provider Repair queue.
+
+### 2026-09-27 — MalluMV live detail-to-confirm parser widened safely
+- Exact MalluMV-only Retest run 36282347595 executed current v1.0.106 bytes and still returned no_streams. Network trace reached TMDB -> search -> exact movie detail for Interstellar, but made no /confirm request at all.
+- This proves the live blocker precedes HubCloud: movie-detail -> confirm discovery. The existing confirm parser only covered quoted anchor hrefs and one old Markdown representation.
+- confirmLinks now scans the decoded MalluMV detail document for the same bounded /confirm/<id>/<fileId>/<slug>.xhtml route even when embedded as relative/escaped HTML or JavaScript text. Candidates are still restricted to the configured MalluMV hostname and maxConfirm.
+- Runtime contract fixture now uses an escaped JavaScript confirm route rather than a normal anchor, while retaining the full confirm -> internal -> HubCloud /drive -> /video -> MP4 proof.
