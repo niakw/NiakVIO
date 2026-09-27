@@ -59,7 +59,9 @@ assert "NUVIO_STREAM_OUTPUT_NETWORK_EVIDENCE_V10" in SANITIZER_V10
 assert "__nuvioStreamNetworkEvidenceV1" in SANITIZER_V10
 assert 'MANAGED_FIX_ID = "CORE.STREAM_SCORE.V1"' in STREAM_SCORE
 assert "NUVIO_GLOBAL_STREAM_SCORE_V1" in STREAM_SCORE
-assert '[id].concat(clean)' in STREAM_SCORE\nassert 'out.displayBadges=g?[g].concat(cleanDisplay):cleanDisplay' in STREAM_SCORE\nfor forbidden in ("streamflix", "movix", "vidrock", "cineby", "coflix"):
+assert '[id].concat(clean)' in STREAM_SCORE
+assert 'out.displayBadges=g?[g].concat(cleanDisplay):cleanDisplay' in STREAM_SCORE
+for forbidden in ("streamflix", "movix", "vidrock", "cineby", "coflix"):
     assert forbidden not in SANITIZER_V10.casefold(), forbidden
 
 rows = [row for row in (MANIFEST.get("scrapers") or []) if row.get("enabled") is not False]
