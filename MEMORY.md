@@ -5714,3 +5714,9 @@ This ledger is not complete merely because provider yield improves. Final comple
 - MalluMV current-byte Retest reaches MalluMV detail -> internal -> Vik1ngFile/VikingFile, but the current free terminal requires browser/button/Turnstile interaction; no HTTP-only fake success is accepted.
 - First short-path representative is animevostfr (current status CANDIDATE OK). Retest retry 12 targets animevostfr only, autoRepair=false, and requires current-byte playable/verified media before requalification.
 - After one provider is genuinely green, test one representative from each remaining causal family before any portfolio Repair rerun.
+
+### 2026-09-27 — AnimeVOSTFR single-provider identity repair
+- Exact Retest 36288195072 targeted animevostfr only (autoRepair=false) and proved the failure is lookup identity, not network or terminal playback: raw/playable/verified all remained 0 while WordPress searches returned HTTP 200.
+- The current probe fixture identity (for example Jujutsu Kaisen) was available to the runtime, but Core metadata could replace it with original/non-Latin aliases before the bounded search loop. The first four search attempts could therefore miss the exact user-visible title entirely.
+- animevostfr_runtime_v1 now preserves fixtureMetadata/fixtureTitle as a preferred alias and ranks searchable Latin titles ahead of non-Latin aliases. No fixture title is hardcoded.
+- Historical route proof records Jujutsu Kaisen S01E01 reaching AnimeVOSTFR trembed routes with two raw streams; the next exact Retest must prove current episode/player depth and playable/verified output before requalification.

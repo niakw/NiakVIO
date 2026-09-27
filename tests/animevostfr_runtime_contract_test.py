@@ -27,3 +27,10 @@ assert any(
     for row in hubs.get("sources") or []
 )
 print("AnimeVOSTFR runtime contract passed")
+
+assert "__niakvioPreferredTitle" in p
+assert "fixtureMetadata:fm" in p
+assert "fixtureTitle:ft" in p
+assert "titleRank" in p
+assert "FIELD_ANIMEVOSTFR_SEARCH_TITLES" in p
+assert "a.slice(0,10)" in p
