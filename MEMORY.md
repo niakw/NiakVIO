@@ -5647,3 +5647,7 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Header-only terminal proof on cc2b8660 was insufficient: live targeted probe still reached vikingfile.com/fast-download with HTTP 200 but emitted no stream, proving the endpoint is behaving as an HTML/intermediate response in the probe environment.
 - MalluMV now treats VikingFile/Vik1ngFile as bounded resolver hosts, not as playable output. On those hosts it additionally extracts href/src/data-src/data-url/data-file/action and quoted /download|/stream|/video|/file paths, then continues the existing bounded crawl until direct media or response-header media proof is reached.
 - Synthetic contract covers both observed landing-page style (<source src=...>) and direct response-header style. Neither path accepts a plain HTML 200 as a stream.
+
+### 2026-09-27 — MalluMV Viking fixture mode correction
+- Targeted run 36284460559 failed before live probing because the synthetic movie fixture routed mode=viking-header through the default HubCloud branch instead of the VikingFile branch. Runtime code was not implicated by this failure.
+- The fixture now routes both viking and viking-header modes through the observed direct-detail -> internal -> VikingFile path.

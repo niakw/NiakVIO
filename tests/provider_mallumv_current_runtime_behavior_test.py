@@ -19,7 +19,7 @@ global.fetch=async function(url,opt){
   if(url==="https://mallumv.space/search.php?q=Interstellar") return R(200,'<a href="/movie/1755/Interstellar_2014_English.xhtml"><b>Interstellar 2014 English</b></a>',url);
   if(url==="https://mallumv.space/movie/1755/Interstellar_2014_English.xhtml") {
     if(mode==="confirm") return R(200,'<script>window.__download="confirm\\/1755\\/998\\/Interstellar_2014_English.xhtml";</script>',url);
-    if(mode==="viking") return R(200,'<a href="/internal/6705/1755/Interstellar_2014_English.xhtml">1080p</a>',url);
+    if(mode==="viking"||mode==="viking-header") return R(200,'<a href="/internal/6705/1755/Interstellar_2014_English.xhtml">1080p</a>',url);
     return R(200,'<a href="https://hubcloud.example/drive/abc123">Download 1080p</a>',url);
   }
   if(url==="https://mallumv.space/confirm/1755/998/Interstellar_2014_English.xhtml") return R(200,'<a class="touch" href="/internal/1755/998/Interstellar_2014_English.xhtml">Confirm Download</a>',url);
