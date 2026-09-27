@@ -5930,3 +5930,8 @@ This ledger is not complete merely because provider yield improves. Final comple
 - The target Brain contract is structural: exact source regions receive stable ids; the model selects one region and expresses a small semantic change; deterministic Brain code resolves that occurrence against complete current bytes, minimizes unchanged context, expands unchanged context only when needed for global uniqueness, validates syntax/ownership/no-op constraints, and only then hands a concrete mutation to NiakVIO.
 - The latest three-family guidance run 36350734425 completed operationally but published **0/3** Force mutations. MalluMV ended on an incomplete function anchor; 4KHDHub and AllWish ended on non-unique generated-Bloc anchors. These are Brain synthesis/compiler defects and must be fixed there before another NiakVIO live FORCE proof.
 - ARCHITECTURE.md and BRAIN_REPAIR_ARCHITECTURE.md now encode this ownership boundary so future work does not move repair intelligence back into NiakVIO by accident.
+
+### 2026-09-27 — Brain Repair docs aligned with structural window compiler
+
+- BRAIN_REPAIR_ARCHITECTURE.md no longer assigns repository-global unique-anchor generation to the LLM. The model selects a stable exact source window and a local occurrence; Brain-LLM owns deterministic full-source anchor resolution/minimization before NiakVIO sees a candidate.
+- This removes the remaining documentation contradiction with the durable rule: Brain synthesizes/compiles repairs, NiakVIO executes and proves them.

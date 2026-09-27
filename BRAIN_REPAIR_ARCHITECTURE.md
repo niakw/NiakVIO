@@ -341,8 +341,14 @@ code generation**.
 The model may supply only:
 
 - a bounded snake_case family identifier;
-- one exact unique `find` snippet from current provider-owned runtime bytes;
+- one stable request-local `window_id` selected from exact current-byte source windows;
+- one exact local `find` snippet that occurs once inside that selected window;
 - one bounded `replace` snippet.
+
+The model is **not** responsible for repository-global text uniqueness. Brain-LLM
+deterministically resolves the selected occurrence against the complete current
+provider-owned source, minimizes unchanged copied context and expands exact
+unchanged surrounding bytes only when global uniqueness requires it.
 
 NiakVIO owns the implementation. `apply_brain_llm_force_mutations.py` validates
 the current runtime/override fingerprint, rejects Core ownership markers,
@@ -354,7 +360,9 @@ Generated Bloc persistence is immutable/content-addressed:
 
 ~~~text
 provider evidence
--> provider_bloc family + exact find/replace
+-> exact source windows with stable window_id
+-> provider_bloc family + window-local find/replace
+-> Brain structural anchor compilation
 -> deterministic trusted renderer
 -> scripts/provider_patches/brain_runtime_<family>_<fingerprint>_v1.py
 -> register in canonical patch_scripts
