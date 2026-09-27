@@ -70,7 +70,8 @@ module={exports:{getStreams:async()=>[]}};
   if(!Array.isArray(vikingOut)||vikingOut.length!==1)throw new Error("expected VikingFile terminal "+JSON.stringify(vikingOut));
   if(vikingOut[0].url!=="https://vikingfile.com/stream/interstellar.mkv"||vikingOut[0].isDirect!==true)throw new Error("wrong VikingFile terminal "+JSON.stringify(vikingOut[0]));
   const vikingFlat=calls.join("\n");
-  for(const token of ["/internal/6705/1755/Interstellar_2014_English.xhtml","https://vik1ngfile.site/f/tMAohzba53","https://vikingfile.com/f/tMAohzba53","https://vikingfile.com/fast-download/interstellar","https://vikingfile.com/stream/interstellar.mkv"]) if(!vikingFlat.includes(token)) throw new Error("missing viking "+token+"\n"+vikingFlat);
+  for(const token of ["/internal/6705/1755/Interstellar_2014_English.xhtml","https://vik1ngfile.site/f/tMAohzba53","https://vikingfile.com/f/tMAohzba53","https://vikingfile.com/fast-download/interstellar"]) if(!vikingFlat.includes(token)) throw new Error("missing viking "+token+"\n"+vikingFlat);
+  if(vikingFlat.includes("https://vikingfile.com/stream/interstellar.mkv"))throw new Error("direct discovered VikingFile media should not be refetched by provider runtime\n"+vikingFlat);
   if(vikingFlat.includes("&quot;"))throw new Error("HTML entity leaked into VikingFile request\n"+vikingFlat);
   if(vikingFlat.includes("/confirm/"))throw new Error("VikingFile live-shape unexpectedly required confirm\n"+vikingFlat);
 

@@ -5673,3 +5673,7 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Temporary bounded runtime diagnostic now emits only VikingFile URL/action/onclick/fetch/location signals (max 24 values, 220 chars each); it never logs cookies, request headers, response bodies or credentials.
 - audit_provider_quick_yield now retains the final 4k of probe stderr for valid probes so provider-local diagnostic signals can be inspected without converting a valid probe into an error.
 - This diagnostic is for the isolated MalluMV retest and should be removed or reduced once the terminal transition is identified.
+
+### 2026-09-27 — MalluMV direct-media fixture assertion corrected
+- The bounded Viking fixture correctly returned /stream/interstellar.mkv as soon as the landing HTML exposed that direct media URL. The test incorrectly required the provider runtime to fetch the already-direct URL before returning it.
+- The contract now requires the returned stream URL to be the discovered media URL and explicitly requires that the provider runtime does not refetch that direct media URL. The live probe remains responsible for playback validation.
