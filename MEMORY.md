@@ -5811,3 +5811,8 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Fast stale requeue now reconstructs and preserves exact provider/provider-cohort, waves, budget, rounds and publish flag from the trigger for push events or workflow inputs for dispatch events. Empty requeue can no longer silently expand to the whole repairQueue.
 - FORCE Learning now validates multi-provider requests against the current operator Fast trigger cohort in addition to the census queues. An accidental 14-provider handoff cannot run while the operator trigger names the seven representative providers.
 - PR 219 (brain-architecture/proposal) was closed. Repository Hygiene is retriggered to delete the now-unprotected branch and cancel the unintended stale global Learning generation.
+
+### 2026-09-27 — Representative-family Brain retry after scope fix
+- Scoped requeue fix d5e50d08 passed Workflow Gate 36319959116, Verify & Publish 36319958910 and Provider Non-Regression 36319959025.
+- Repository Hygiene closed the branch debt: only main and brain-learning/proposals remain after PR 219 was closed.
+- The representative cohort is rearmed unchanged at seven providers. No global Repair is authorized; stale requeues must preserve this exact cohort and FORCE Learning must reject any superset handoff.
