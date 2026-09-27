@@ -39,6 +39,14 @@ VALIDATION_FORMAT_RETRY_MODEL_TOKENS = 768
 VALIDATION_FORMAT_RETRY_TIMEOUT_SECONDS = 120
 RETRY_SOURCE_CONTEXT = 3600
 MINIMAL_SOURCE_CONTEXT = 1800
+MATERIALIZED_CORRECTION_ROUNDS = 2
+MAX_MATERIALIZED_FAILURE_CONTEXT = 3200
+
+
+class MaterializedValidationError(ValueError):
+    def __init__(self, message: str, candidate_sources: dict[str, str]):
+        super().__init__(message)
+        self.candidate_sources = candidate_sources
 
 
 def load(path: Path) -> dict[str, Any]:
@@ -176,6 +184,24 @@ def validate_materialized_edits(
         changed = apply_edits(edits, root=root)
         validate_changed_syntax(changed, root=root)
         return changed
+    except ValueError as exc:
+        remaining = MAX_MATERIALIZED_FAILURE_CONTEXT
+        candidate_sources: dict[str, str] = {}
+        for path in changed:
+            if remaining <= 0:
+                break
+            target = root / path
+            if not target.is_file():
+                continue
+            try:
+                text = target.read_text(encoding="utf-8")
+            except (UnicodeError, OSError):
+                continue
+            snippet = text[: min(remaining, 2200)]
+            if snippet:
+                candidate_sources[path] = snippet
+                remaining -= len(snippet)
+        raise MaterializedValidationError(str(exc), candidate_sources) from exc
     finally:
         for path, (existed, content) in snapshots.items():
             target = root / path
@@ -566,29 +592,53 @@ def validated_model_plan(
         validate_materialized_edits(edits, root=root)
         return planned, edits
     except ValueError as exc:
+        current_error: ValueError = exc
+        current_edits = edits
+
+    for correction_round in range(1, MATERIALIZED_CORRECTION_ROUNDS + 1):
         print(
             "FIELD_BRAIN_ARCH_FORCE_MODEL_RETRY "
-            f"reason=materialized-validation mode=corrective error={str(exc)[:240]}",
+            f"reason=materialized-validation mode=corrective round={correction_round} "
+            f"error={str(current_error)[:240]}",
             flush=True,
         )
         exact_paths = [
             str(edit.get("path") or "")
-            for edit in edits
-            if str(edit.get("path") or "") and path_allowed(str(edit.get("path") or ""), patterns)
+            for edit in current_edits
+            if str(edit.get("path") or "")
+            and path_allowed(str(edit.get("path") or ""), patterns)
         ]
         correction_payload = _validation_retry_payload(
             payload,
-            exc,
-            edits,
+            current_error,
+            current_edits,
             extra_exact_paths=exact_paths,
         )
+        candidate_sources = getattr(current_error, "candidate_sources", {})
+        if isinstance(candidate_sources, dict) and candidate_sources:
+            correction_payload["materializedFailureSources"] = candidate_sources
+        correction_payload["correctionReason"] = "materialized-source-validation"
+        correction_payload["correctionContract"].update({
+            "mustPassMaterializedSyntaxValidation": True,
+            "doNotRepeatRejectedReplacement": True,
+            "useMaterializedFailureSources": bool(candidate_sources),
+            "materializedCorrectionRound": correction_round,
+            "materializedCorrectionRounds": MATERIALIZED_CORRECTION_ROUNDS,
+        })
+
         corrected = _request_corrected_plan(endpoint, model, correction_payload)
         corrected_edits = [
             dict(x) for x in corrected.get("edits") or [] if isinstance(x, dict)
         ]
-        validate_edits(corrected_edits, patterns, root=root)
-        validate_materialized_edits(corrected_edits, root=root)
-        return corrected, corrected_edits
+        try:
+            validate_edits(corrected_edits, patterns, root=root)
+            validate_materialized_edits(corrected_edits, root=root)
+            return corrected, corrected_edits
+        except ValueError as correction_error:
+            current_error = correction_error
+            current_edits = corrected_edits
+
+    raise current_error
 
 
 def main() -> int:
