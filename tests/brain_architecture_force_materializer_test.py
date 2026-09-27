@@ -257,8 +257,12 @@ with tempfile.TemporaryDirectory(prefix="brain-arch-force-correct-") as tmp:
             correction_calls.append((payload, max_tokens, timeout))
             assert "outside allowlist" in payload["validationError"]
             assert "scripts/brain_meta_learning.py" in payload["allowedPaths"]
+            assert payload["exactAllowedPaths"] == ["scripts/brain_meta_learning.py"]
+            assert payload["correctionContract"]["pathMustBeOneOfExactAllowedPaths"] is True
             assert payload["correctionContract"]["doNotInventPaths"] is True
+            assert payload["correctionContract"]["doNotRelocatePaths"] is True
             assert payload["correctionContract"]["preferSingleSmallReplace"] is True
+            assert "path" not in payload["rejectedEditIntent"][0]
             if len(correction_calls) == 1:
                 return {
                     "choices": [{
@@ -311,6 +315,16 @@ with tempfile.TemporaryDirectory(prefix="brain-arch-force-correct-") as tmp:
     finally:
         mod.call_model = original_call_model
         mod._model_request = original_request
+
+schema = mod._response_format([
+    "scripts/brain_meta_learning.py",
+    "scripts/brain_repair_runtime.py",
+])
+path_schema = schema["schema"]["properties"]["edits"]["items"]["properties"]["path"]
+assert path_schema["enum"] == [
+    "scripts/brain_meta_learning.py",
+    "scripts/brain_repair_runtime.py",
+]
 
 minimal = mod._minimal_payload({
     "blueprint": {"strategyId": "demo"},

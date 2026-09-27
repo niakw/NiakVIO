@@ -151,7 +151,10 @@ def source_context(blueprint: dict[str, Any], patterns: list[str]) -> dict[str, 
     return out
 
 
-def _response_format() -> dict[str, Any]:
+def _response_format(exact_paths: list[str] | None = None) -> dict[str, Any]:
+    path_schema: dict[str, Any] = {"type": "string", "minLength": 1}
+    if exact_paths:
+        path_schema["enum"] = sorted({str(path) for path in exact_paths if str(path)})
     return {
         "type": "json_object",
         "schema": {
@@ -168,7 +171,7 @@ def _response_format() -> dict[str, Any]:
                                 "type": "string",
                                 "enum": ["replace", "create"],
                             },
-                            "path": {"type": "string", "minLength": 1},
+                            "path": path_schema,
                             "find": {"type": "string", "maxLength": MAX_FIND},
                             "replace": {"type": "string", "maxLength": MAX_REPLACE},
                             "content": {"type": "string", "maxLength": MAX_CREATE},
@@ -209,11 +212,21 @@ def _model_request(
             "Keep the complete JSON response short enough for the supplied token budget. "
             "The server enforces the edits JSON schema; never emit markdown or commentary."
         )
+    exact_paths = [
+        str(path)
+        for path in (payload.get("exactAllowedPaths") or [])
+        if str(path)
+    ]
+    if exact_paths:
+        system += (
+            " For this corrective request, edit only a path from exactAllowedPaths. "
+            "Do not rewrite, prefix, relocate, normalize or invent a path."
+        )
     body = {
         "model": model,
         "temperature": 0,
         "max_tokens": max_tokens,
-        "response_format": _response_format(),
+        "response_format": _response_format(exact_paths),
         "messages": [
             {"role": "system", "content": system},
             {
@@ -293,13 +306,29 @@ def _validation_retry_payload(
     edits: list[dict[str, Any]],
 ) -> dict[str, Any]:
     retry = _minimal_payload(payload)
+    exact_paths = sorted({
+        str(path)
+        for path in (retry.get("sources") or {}).keys()
+        if str(path)
+    })
+    retry["exactAllowedPaths"] = exact_paths
     retry["validationError"] = str(error)[:800]
-    retry["rejectedEdits"] = edits[:MAX_EDITS]
+    retry["rejectedEditIntent"] = [
+        {
+            "operation": str(edit.get("operation") or ""),
+            "find": str(edit.get("find") or "")[:400],
+            "replace": str(edit.get("replace") or "")[:900],
+            "content": str(edit.get("content") or "")[:900],
+        }
+        for edit in edits[:MAX_EDITS]
+    ]
     retry["correctionContract"] = {
-        "reuseAllowedPathsExactly": True,
+        "pathMustBeOneOfExactAllowedPaths": True,
         "doNotInventPaths": True,
+        "doNotRelocatePaths": True,
         "changeOnlyWhatValidationRejected": True,
         "preferSingleSmallReplace": True,
+        "reuseRejectedIntentWhenValid": True,
         "maxEdits": MAX_EDITS,
     }
     return retry

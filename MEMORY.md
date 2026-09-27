@@ -5840,3 +5840,9 @@ This ledger is not complete merely because provider yield improves. Final comple
 - d0778a07 passed Workflow Gate 36322559529, Verify & Publish 36322559523 and Provider Non-Regression 36322559439.
 - The same seven representative providers are resumed directly at Learning/Qwen; Fast run 36320302438 is not replayed.
 - This retry specifically validates the Brain's own sequence: detect non-allowlisted architecture path, request correction, recover once from truncated corrective JSON, then revalidate the corrected plan against the exact allowlist.
+
+### 2026-09-27 — Corrective architecture materialization uses exact repository targets
+- Seven-family Learning run 36322965851 generated 36 Learning proposals and 3 architecture proposals, then failed only in corrective materialization: Qwen again proposed engine_v2/scripts/brain_meta_learning.py outside the allowlist and its subsequent corrective response was truncated/unbalanced JSON.
+- The corrective protocol no longer asks the model to freely spell a path. It derives exactAllowedPaths from the real source-context files already selected by the repository and places those exact paths into the JSON response schema enum.
+- Rejected edit intent is retained without the rejected path and is bounded before retry, preventing the invalid hallucinated path from being reinforced in the corrective prompt.
+- This is Brain infrastructure only: it does not remap a provider fix or choose a repair for Qwen. The model still chooses the operation/find/replace content, but only against repository targets that actually exist and were already allowlisted.
