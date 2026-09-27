@@ -20,6 +20,24 @@ with tempfile.TemporaryDirectory() as tmp:
     root = Path(tmp)
     (root / "automation").mkdir(parents=True)
     (root / "scripts/provider_patches").mkdir(parents=True)
+    (root / "providers").mkdir(parents=True)
+
+    runtime_source = (
+        "/* BEGIN NIAKVIO_PROVIDER */\n"
+        "/* NIAKVIO_PROVIDER_BASE_OWNED_V3 */\n"
+        "function resolve(){return oldResolver();}\n"
+        "/* END NIAKVIO_PROVIDER */\n"
+    )
+    (root / "providers/demo.js").write_text(runtime_source, encoding="utf-8")
+    (root / "manifest.json").write_text(
+        json.dumps({
+            "scrapers": [
+                {"id": "demo", "filename": "providers/demo.js"},
+                {"id": "healthy", "filename": "providers/demo.js"},
+            ]
+        }, indent=2) + "\n",
+        encoding="utf-8",
+    )
 
     patch = root / "scripts/provider_patches/demo_runtime_v1.py"
     patch.write_text("def apply(value):\n    return value\n", encoding="utf-8")
@@ -123,6 +141,133 @@ with tempfile.TemporaryDirectory() as tmp:
     )
     assert changed == "scripts/provider_patches/demo_runtime_v1.py"
     assert "return str(value)" in patch.read_text(encoding="utf-8")
+
+    generated_mutations = [
+        {
+            "scope": "provider_bloc",
+            "operation": "upsert",
+            "family": "terminal_resolution",
+            "find": "return oldResolver();",
+            "replace": "return resolveTerminalMedia();",
+        }
+    ]
+    current_entry = updated["provider_patches"]["demo"]
+    generated_payload = {
+        "schemaVersion": 1,
+        "sourceNiakvioSha": "a" * 40,
+        "brainLlmSha": "b" * 40,
+        "sandboxMutationAuthority": True,
+        "publicationAuthority": False,
+        "proofAuthority": False,
+        "privateContentRetained": False,
+        "rows": [
+            {
+                "providerId": "demo",
+                "mutations": generated_mutations,
+                "mutationFingerprint": mod._fingerprint(generated_mutations),
+                "mutationContextFingerprint": mod._mutation_context_fingerprint(
+                    "demo", current_entry, generated_mutations
+                ),
+            }
+        ],
+    }
+    generated_report = mod.apply_payload(
+        generated_payload,
+        current_sha="c" * 40,
+        selected={"demo"},
+    )
+    assert generated_report["appliedProviders"] == ["demo"], generated_report
+    generated_overrides = json.loads(
+        (root / "provider-overrides.json").read_text(encoding="utf-8")
+    )
+    generated_entry = generated_overrides["provider_patches"]["demo"]
+    generated_paths = [
+        value
+        for value in generated_entry.get("patch_scripts") or []
+        if value.startswith("scripts/provider_patches/brain_runtime_terminal_resolution_")
+    ]
+    assert len(generated_paths) == 1, generated_entry
+    generated_path = generated_paths[0]
+    assert "scripts/provider_patches/demo_runtime_v1.py" in generated_entry["patch_scripts"]
+    assert generated_path in generated_report["changedFiles"]
+    generated_file = root / generated_path
+    assert generated_file.is_file()
+
+    namespace: dict[str, object] = {}
+    generated_source = generated_file.read_text(encoding="utf-8")
+    compile(generated_source, generated_path, "exec")
+    exec(compile(generated_source, generated_path, "exec"), namespace)
+    first = namespace["apply"](runtime_source)
+    assert "return oldResolver();" not in first
+    assert "return resolveTerminalMedia();" in first
+    assert "STARTFIX:PROVIDER.BRAIN.RUNTIME.TERMINAL_RESOLUTION" in first
+    assert namespace["apply"](first) == first
+
+    import apply_provider_overrides as provider_overrides
+    baseline = namespace["managed_fix_insertion_baseline"](runtime_source)
+    provider_overrides._assert_v3_patch_ownership(
+        runtime_source,
+        first,
+        generated_path,
+        namespace["MANAGED_FIX_ID"],
+        baseline,
+    )
+
+    # Simulate a later canonical current-byte state and evolve the same family.
+    # The old content-addressed file stays immutable, while provider registration
+    # moves to a new file and the stable ownership rectangle is edited in place.
+    (root / "providers/demo.js").write_text(first, encoding="utf-8")
+    evolution = {
+        "scope": "provider_bloc",
+        "operation": "upsert",
+        "family": "terminal_resolution",
+        "find": "resolveTerminalMedia()",
+        "replace": "resolveTerminalMediaStrict()",
+    }
+    evolved_path, evolved_created = mod._apply_generated_bloc(
+        "demo", generated_entry, evolution
+    )
+    assert evolved_created is True
+    assert evolved_path != generated_path
+    assert generated_file.is_file()
+    active_generated = [
+        value
+        for value in generated_entry.get("patch_scripts") or []
+        if value.startswith("scripts/provider_patches/brain_runtime_terminal_resolution_")
+    ]
+    assert active_generated == [evolved_path], generated_entry
+
+    evolved_namespace: dict[str, object] = {}
+    evolved_source = (root / evolved_path).read_text(encoding="utf-8")
+    compile(evolved_source, evolved_path, "exec")
+    exec(compile(evolved_source, evolved_path, "exec"), evolved_namespace)
+    evolved = evolved_namespace["apply"](first)
+    assert "resolveTerminalMediaStrict()" in evolved
+    assert "resolveTerminalMedia()" not in evolved
+    assert evolved_namespace["apply"](evolved) == evolved
+    provider_overrides._assert_v3_patch_ownership(
+        first,
+        evolved,
+        evolved_path,
+        evolved_namespace["MANAGED_FIX_ID"],
+    )
+
+    try:
+        mod._apply_generated_bloc(
+            "demo",
+            generated_entry,
+            {
+                "scope": "provider_bloc",
+                "operation": "upsert",
+                "family": "terminal_resolution",
+                "find": "resolveTerminalMediaStrict()",
+                "replace": "eval(payload)",
+            },
+        )
+    except ValueError as exc:
+        assert "forbidden runtime capability" in str(exc)
+    else:
+        raise AssertionError("generated Bloc introduced a forbidden runtime capability")
 
     try:
         mod._reject_placeholders("line\n/* clipped */")

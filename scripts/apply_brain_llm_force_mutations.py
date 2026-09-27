@@ -63,6 +63,12 @@ PLACEHOLDER_MARKERS = (
     "todo:",
     "/* clipped */",
 )
+BLOC_FAMILY = re.compile(r"^[a-z][a-z0-9_]{2,48}$")
+DANGEROUS_RUNTIME_TOKEN = re.compile(
+    r"(?i)(?:\beval\s*\(|\bFunction\s*\(|\bprocess\.|\brequire\s*\(|"
+    r"\bchild_process\b|\bDeno\.|\bBun\.|\bimport\s*\()"
+)
+MANAGED_MARKERS = ("/* STARTFIX:", "/* CLOSEFIX:", "/* FIXDATA:")
 
 
 def _load(path: Path) -> Any:
@@ -95,6 +101,41 @@ def _provider_entry(patches: dict[str, Any], provider: str) -> tuple[str, dict[s
     raise ValueError(f"provider override missing for {provider}")
 
 
+def _provider_owned_source(text: str) -> str:
+    begin_marker = "/* BEGIN NIAKVIO_PROVIDER */"
+    end_marker = "/* END NIAKVIO_PROVIDER */"
+    if text.count(begin_marker) != 1 or text.count(end_marker) != 1:
+        return text
+    begin = text.index(begin_marker)
+    end = text.index(end_marker, begin)
+    first_core = text.find("/* STARTFIX:CORE.", begin, end)
+    limit = first_core if first_core >= 0 else end
+    return text[begin:limit]
+
+
+def _provider_runtime_surface(provider: str) -> tuple[str, Path, str]:
+    manifest = _load(ROOT / "manifest.json")
+    rows = manifest.get("scrapers") if isinstance(manifest, dict) else None
+    if not isinstance(rows, list):
+        raise ValueError(f"{provider}: current manifest scrapers unavailable")
+    wanted = canon(provider)
+    row = next(
+        (
+            value
+            for value in rows
+            if isinstance(value, dict) and canon(value.get("id")) == wanted
+        ),
+        None,
+    )
+    filename = str((row or {}).get("filename") or "").strip()
+    if not filename.startswith(("providers/", "provider-disabled/")):
+        raise ValueError(f"{provider}: current runtime filename unavailable")
+    path = ROOT / filename
+    if not path.is_file():
+        raise ValueError(f"{provider}: current runtime bytes unavailable: {filename}")
+    return filename, path, path.read_text(encoding="utf-8", errors="replace")
+
+
 def _mutation_context_fingerprint(
     provider: str,
     entry: dict[str, Any],
@@ -107,6 +148,15 @@ def _mutation_context_fingerprint(
         path = str(mutation.get("path") or "")
         if scope == "provider_data":
             override_needed = True
+            continue
+        if scope == "provider_bloc":
+            override_needed = True
+            filename, target, _source = _provider_runtime_surface(provider)
+            surfaces.append({
+                "scope": "provider_bloc",
+                "path": filename,
+                "sha256": hashlib.sha256(target.read_bytes()).hexdigest(),
+            })
             continue
         if scope in {"provider_patch", "provider_js"}:
             target = ROOT / path
@@ -131,7 +181,10 @@ def _registered_patch_scripts(entry: dict[str, Any]) -> set[str]:
     # terminology is Bloc.
     return {
         str(value).strip()
-        for value in (entry.get("provider_lego_scripts") or [])
+        for value in [
+            *(entry.get("patch_scripts") or []),
+            *(entry.get("provider_lego_scripts") or []),
+        ]
         if str(value).strip().startswith("scripts/provider_patches/")
     }
 
@@ -304,6 +357,254 @@ def _apply_file_mutation(
     return path
 
 
+def _validate_generated_bloc_mutation(
+    provider: str,
+    mutation: dict[str, Any],
+) -> tuple[str, str, str, str]:
+    if str(mutation.get("operation") or "") != "upsert":
+        raise ValueError(f"{provider}: unsupported provider_bloc operation")
+    family = str(mutation.get("family") or "").strip().casefold()
+    find = str(mutation.get("find") or "")
+    replace = str(mutation.get("replace") or "")
+    if not BLOC_FAMILY.fullmatch(family):
+        raise ValueError(f"{provider}: invalid provider_bloc family")
+    if not find or len(find) > 320 or not replace or len(replace) > 1200:
+        raise ValueError(f"{provider}: provider_bloc find/replace is missing or oversized")
+    if find == replace:
+        raise ValueError(f"{provider}: provider_bloc mutation is a no-op")
+    _reject_placeholders(find)
+    _reject_placeholders(replace)
+    if any(marker in find or marker in replace for marker in MANAGED_MARKERS):
+        raise ValueError(f"{provider}: provider_bloc may not target managed ownership metadata")
+    before_caps = set(DANGEROUS_RUNTIME_TOKEN.findall(find))
+    after_caps = set(DANGEROUS_RUNTIME_TOKEN.findall(replace))
+    if after_caps - before_caps:
+        raise ValueError(f"{provider}: provider_bloc replacement introduces a forbidden runtime capability")
+
+    _filename, _path, runtime_source = _provider_runtime_surface(provider)
+    owned = _provider_owned_source(runtime_source)
+    if owned.count(find) != 1:
+        raise ValueError(
+            f"{provider}: provider_bloc find must occur exactly once in current provider-owned runtime bytes"
+        )
+    spec_fingerprint = _fingerprint({
+        "schemaVersion": 1,
+        "family": family,
+        "find": find,
+        "replace": replace,
+    })
+    return family, find, replace, spec_fingerprint
+
+
+def _render_generated_bloc_module(
+    family: str,
+    find: str,
+    replace: str,
+    spec_fingerprint: str,
+) -> str:
+    managed_fix_id = f"PROVIDER.BRAIN.RUNTIME.{family.upper()}"
+    return f'''#!/usr/bin/env python3
+"""Generated by NiakVIO from a bounded Brain runtime Bloc spec.
+
+The model does not author this Python. Only FAMILY/FIND/REPLACE below come from
+an already-validated provider-local mutation contract.
+"""
+from provider_patch_blocks import (
+    decode_managed_data,
+    has_managed_fix,
+    owned_span,
+    render_managed_fix,
+    replace_managed_fix_in_place,
+)
+
+MANAGED_FIX_ID = {json.dumps(managed_fix_id, ensure_ascii=True)}
+FAMILY = {json.dumps(family, ensure_ascii=True)}
+SPEC_FINGERPRINT = {json.dumps(spec_fingerprint, ensure_ascii=True)}
+FIND = {json.dumps(find, ensure_ascii=True)}
+REPLACE = {json.dumps(replace, ensure_ascii=True)}
+_PROVIDER_BEGIN = "/* BEGIN NIAKVIO_PROVIDER */"
+_PROVIDER_END = "/* END NIAKVIO_PROVIDER */"
+
+
+def _provider_range(text):
+    if text.count(_PROVIDER_BEGIN) == 1 and text.count(_PROVIDER_END) == 1:
+        begin = text.index(_PROVIDER_BEGIN)
+        end = text.index(_PROVIDER_END, begin)
+        first_core = text.find("/* STARTFIX:CORE.", begin, end)
+        return begin, first_core if first_core >= 0 else end
+    return 0, len(text)
+
+
+def _owned_body(text):
+    span = owned_span(text, MANAGED_FIX_ID)
+    if span is None:
+        raise ValueError("generated Bloc ownership block is missing")
+    block = text[span[0]:span[1]]
+    fixdata = block.find("/* FIXDATA:")
+    fixdata_end = block.find("*/", fixdata + 3) if fixdata >= 0 else -1
+    close = block.rfind("/* CLOSEFIX:")
+    if fixdata < 0 or fixdata_end < 0 or close <= fixdata_end:
+        raise ValueError("generated Bloc ownership block is malformed")
+    return block[fixdata_end + 2:close].strip()
+
+
+def managed_fix_insertion_baseline(text):
+    if has_managed_fix(text, MANAGED_FIX_ID):
+        return text
+    begin, end = _provider_range(text)
+    owned = text[begin:end]
+    if owned.count(FIND) != 1:
+        raise ValueError("generated Bloc anchor is not unique in provider-owned bytes")
+    local = owned.index(FIND)
+    start = begin + local
+    return text[:start] + text[start + len(FIND):]
+
+
+def apply(text, **_kwargs):
+    if has_managed_fix(text, MANAGED_FIX_ID):
+        data = decode_managed_data(text, MANAGED_FIX_ID) or {{}}
+        if str(data.get("spec_fingerprint") or "") == SPEC_FINGERPRINT:
+            return text
+        body = _owned_body(text)
+        if body.count(FIND) != 1:
+            raise ValueError("generated Bloc evolution anchor is not unique in current owned body")
+        updated_body = body.replace(FIND, REPLACE, 1)
+        updated_data = dict(data)
+        updated_data.update({{
+            "schema_version": 1,
+            "family": FAMILY,
+            "spec_fingerprint": SPEC_FINGERPRINT,
+        }})
+        output, changed = replace_managed_fix_in_place(
+            text,
+            MANAGED_FIX_ID,
+            updated_body,
+            data=updated_data,
+        )
+        if not changed:
+            raise ValueError("generated Bloc evolution lost ownership")
+        return output
+
+    begin, end = _provider_range(text)
+    owned = text[begin:end]
+    if owned.count(FIND) != 1:
+        raise ValueError("generated Bloc anchor is not unique in provider-owned bytes")
+    local = owned.index(FIND)
+    start = begin + local
+    data = {{
+        "schema_version": 1,
+        "family": FAMILY,
+        "spec_fingerprint": SPEC_FINGERPRINT,
+        "restore_source": FIND,
+    }}
+    block = render_managed_fix(MANAGED_FIX_ID, REPLACE, data=data)
+    clean_v3 = (
+        "NIAKVIO_PROVIDER_BASE_OWNED_V3" in text
+        and text.count(_PROVIDER_BEGIN) == 1
+        and text.count(_PROVIDER_END) == 1
+    )
+    if clean_v3:
+        block += "\n"
+    return text[:start] + block + text[start + len(FIND):]
+'''
+
+
+def _generated_bloc_path(family: str, spec_fingerprint: str) -> str:
+    return (
+        "scripts/provider_patches/"
+        f"brain_runtime_{family}_{spec_fingerprint[:12]}_v1.py"
+    )
+
+
+def _register_generated_bloc(
+    entry: dict[str, Any],
+    *,
+    family: str,
+    path: str,
+    spec_fingerprint: str,
+) -> None:
+    scripts = [
+        str(value).strip()
+        for value in [
+            *(entry.get("patch_scripts") or []),
+            *(entry.get("provider_lego_scripts") or []),
+        ]
+        if str(value).strip().startswith("scripts/provider_patches/")
+    ]
+    scripts = list(dict.fromkeys(scripts))
+
+    raw_options = entry.get("patch_script_options")
+    if raw_options is None:
+        options: dict[str, Any] = {}
+    elif isinstance(raw_options, dict):
+        options = dict(raw_options)
+    else:
+        raise ValueError("patch_script_options must be an object")
+
+    legacy_options = entry.get("provider_lego_options")
+    if isinstance(legacy_options, dict):
+        for script, value in legacy_options.items():
+            if str(script).startswith("scripts/provider_patches/") and script not in options:
+                options[str(script)] = value
+
+    prefix = f"scripts/provider_patches/brain_runtime_{family}_"
+    kept: list[str] = []
+    for script in scripts:
+        metadata = options.get(script)
+        same_family = (
+            script.startswith(prefix)
+            or (
+                isinstance(metadata, dict)
+                and metadata.get("brainGenerated") is True
+                and str(metadata.get("family") or "").strip().casefold() == family
+            )
+        )
+        if same_family:
+            options.pop(script, None)
+            continue
+        kept.append(script)
+    if path not in kept:
+        kept.append(path)
+    options[path] = {
+        "brainGenerated": True,
+        "family": family,
+        "specFingerprint": spec_fingerprint,
+        "schemaVersion": 1,
+    }
+    entry["patch_scripts"] = kept
+    entry["patch_script_options"] = options
+
+
+def _apply_generated_bloc(
+    provider: str,
+    entry: dict[str, Any],
+    mutation: dict[str, Any],
+) -> tuple[str, bool]:
+    family, find, replace, spec_fingerprint = _validate_generated_bloc_mutation(
+        provider, mutation
+    )
+    relative = _generated_bloc_path(family, spec_fingerprint)
+    content = _render_generated_bloc_module(
+        family, find, replace, spec_fingerprint
+    )
+    target = ROOT / relative
+    target.parent.mkdir(parents=True, exist_ok=True)
+    created = False
+    if target.exists():
+        if target.read_text(encoding="utf-8") != content:
+            raise ValueError(f"{provider}: generated Bloc path collision: {relative}")
+    else:
+        target.write_text(content, encoding="utf-8")
+        created = True
+    _register_generated_bloc(
+        entry,
+        family=family,
+        path=relative,
+        spec_fingerprint=spec_fingerprint,
+    )
+    return relative, created
+
+
 def _selected_queue(
     census: dict[str, Any],
     providers: list[str],
@@ -402,6 +703,10 @@ def apply_payload(
             scope = str(mutation.get("scope") or "")
             if scope == "provider_data":
                 _apply_data(entry, mutation)
+            elif scope == "provider_bloc":
+                generated_path, created = _apply_generated_bloc(provider, entry, mutation)
+                if created:
+                    row_changed_files.add(generated_path)
             elif scope in {"provider_patch", "provider_js"}:
                 row_changed_files.add(_apply_file_mutation(provider, entry, mutation))
             else:

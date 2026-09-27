@@ -331,6 +331,51 @@ connect Tailscale -> select residential exit -> WAF/replay qualification
 
 Cleanup is fail-safe (`always()`), but it must occur after canonical execution.
 
+
+### 6.3 Brain-generated runtime Blocs
+
+When the provider layer is causal and no existing runtime Bloc is sufficient, the
+Brain may request a new bounded `provider_bloc` mutation. This is **not arbitrary
+code generation**.
+
+The model may supply only:
+
+- a bounded snake_case family identifier;
+- one exact unique `find` snippet from current provider-owned runtime bytes;
+- one bounded `replace` snippet.
+
+NiakVIO owns the implementation. `apply_brain_llm_force_mutations.py` validates
+the current runtime/override fingerprint, rejects Core ownership markers,
+placeholders and newly introduced process/eval/import capabilities, then renders a
+trusted Python Bloc template. The model never chooses the repository path and
+never emits Python.
+
+Generated Bloc persistence is immutable/content-addressed:
+
+~~~text
+provider evidence
+-> provider_bloc family + exact find/replace
+-> deterministic trusted renderer
+-> scripts/provider_patches/brain_runtime_<family>_<fingerprint>_v1.py
+-> register in canonical patch_scripts
+-> isolated materialization
+-> current-byte Retest + identity/playback + non-regression
+-> publication only after the normal Force acceptance ladder
+~~~
+
+The managed ownership id is stable per family. If a later current-byte repair
+evolves the same family, NiakVIO creates a new content-addressed file and swaps
+provider registration to it; the prior file remains immutable in history. During
+materialization the new version may modify only the existing family-owned
+STARTFIX/CLOSEFIX body, preserving its original restore source. This makes
+creation and evolution transactional without allowing the LLM to rewrite the
+renderer or escape provider ownership.
+
+Current provider bytes and the provider override are part of the signed mutation
+context. Any drift invalidates the mutation before sandbox application. A
+generated Bloc is still only a **candidate**: its existence, syntax or successful
+materialization is never proof that a provider is repaired.
+
 ## 7. Learning is slot-owned
 
 Normal Learning remains slot-owned and review-only. The explicit architecture

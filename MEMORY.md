@@ -5856,3 +5856,15 @@ This ledger is not complete merely because provider yield improves. Final comple
 - `2f8905eaabb1` applies the same syntax gate to explicit `--response-file` FORCE plans so no alternate materialization path can bypass validation.
 - Validation is pending on the current HEAD. Do not relaunch global Repair or count any of the 14-provider queue as repaired until the exact seven-family Learning retry passes FORCE materialization, targeted architecture tests and required CI.
 
+
+
+## 2026-09-27 — Brain-generated runtime Bloc materializer (offline architecture)
+
+- Verified the Force bridge gap: existing `provider_patch` mutations could only edit an already-registered Bloc and rejected `/dev/null`, so Brain LLM had no safe path to create a genuinely new runtime mechanism.
+- Added the NiakVIO side of the bounded `provider_bloc` contract. The model contributes only `family + exact unique find + replace`; NiakVIO deterministically renders the Python wrapper and chooses a content-addressed path under `scripts/provider_patches/`.
+- Generated Blocs use a stable family-owned `PROVIDER.BRAIN.RUNTIME.*` STARTFIX/CLOSEFIX rectangle. A later version creates a new immutable file, swaps provider registration and edits only the already-owned body; the old file is not rewritten.
+- Current manifest runtime bytes plus the exact provider override participate in the mutation-context fingerprint. Core-owned bytes are excluded from the generated-Bloc target surface.
+- Creation/evolution rejects placeholders, ownership-marker forgery and newly introduced eval/Function/process/require/child_process/Deno/Bun/dynamic-import capability.
+- Canonical `patch_scripts` is written on acceptance; the legacy serialized `provider_lego_scripts/provider_lego_options` values are read only for migration compatibility.
+- Regression coverage extends `brain_llm_force_mutation_bridge_test.py` with generated Bloc creation, deterministic module compilation, v3 ownership, byte-idempotence, immutable same-family evolution and forbidden-capability rejection.
+- This is an offline architecture change only. No provider Repair/Learning/FORCE run was launched and no provider is newly claimed repaired.
