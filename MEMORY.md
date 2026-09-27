@@ -5703,3 +5703,8 @@ This ledger is not complete merely because provider yield improves. Final comple
 - run_provider_targeted_recovery.py now persists only MalluMV stderr lines beginning FIELD_MALLUMV_ into safeDiagnostics, capped to 24 lines / 1200 chars each.
 - Raw stderr remains excluded. This exposes the already-sanitized Viking route-only diagnostics needed to identify the live /api/download contract without broadening the targeted run or retaining response bodies/secrets.
 - The same commit touches the owned MalluMV patch only, so provider materialization scope remains MalluMV rather than all providers.
+
+### 2026-09-27 — AllAnime targeted GraphQL shape diagnostic
+- Current census evidence shows AllAnime reaches api.mkissa.net and api.allanime.day repeatedly with HTTP 200, then falls back to aniwatch HTML pages, but returns zero streams. This is not a transport/WAF failure.
+- AllAnime now emits bounded FIELD_ALLANIME_GRAPHQL diagnostics containing only JSON key names, edge count, first result id/name and GraphQL error messages. Response bodies, auth material and arbitrary payload values are not retained.
+- Targeted recovery safeDiagnostics is generalized to the current provider's FIELD_<PROVIDER>_ prefix, still capped at 24 lines / 1200 chars. This keeps representative-provider diagnosis reusable without persisting raw stderr.

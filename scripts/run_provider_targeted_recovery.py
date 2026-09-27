@@ -141,16 +141,16 @@ def main()->int:
         for row in lanes:
             network[str(row.get("semantic_type"))]=compact_network(row)
         safe_diagnostics=[]
-        if provider=="mallumv":
-            for row in lanes:
-                for line in str(row.get("stderr_tail") or "").splitlines():
-                    line=line.strip()
-                    if line.startswith("FIELD_MALLUMV_"):
-                        safe_diagnostics.append(line[:1200])
-                        if len(safe_diagnostics)>=24:
-                            break
-                if len(safe_diagnostics)>=24:
-                    break
+        safe_prefix="FIELD_"+provider.upper().replace("-","_")+"_"
+        for row in lanes:
+            for line in str(row.get("stderr_tail") or "").splitlines():
+                line=line.strip()
+                if line.startswith(safe_prefix):
+                    safe_diagnostics.append(line[:1200])
+                    if len(safe_diagnostics)>=24:
+                        break
+            if len(safe_diagnostics)>=24:
+                break
         summary[provider]={
             "verifiedLanes":verified,
             "playableLanes":playable,
