@@ -370,6 +370,22 @@ evidence actuelle
   -> publication seulement après preuve
 ~~~
 
+### 14.2 Références éprouvées sans plafond de créativité
+
+Les providers FULL OK et leurs Blocs/scripts validés constituent une bibliothèque
+de **patterns transférables**, pas une whitelist de solutions.
+
+- Brain-LLM peut s'en inspirer, combiner plusieurs patterns ou les ignorer ;
+- les URLs, domaines, routes, identifiants provider et données opaques ne sont
+  jamais des éléments transférables ;
+- un **nouveau Bloc/script provider-local** que personne n'a encore implémenté
+  est une sortie normale et first-class du Brain lorsque les preuves l'exigent ;
+- NiakVIO ne privilégie ni l'ancien ni le nouveau : il juge uniquement le
+  comportement réel via sandbox, Deep, identité, current-byte retest et
+  non-régression.
+
+Le système doit donc apprendre du code existant sans transformer l'historique
+des providers en plafond architectural.
 Cette frontière évite deux anti-patterns :
 
 1. déplacer progressivement l'intelligence de réparation dans les workflows
