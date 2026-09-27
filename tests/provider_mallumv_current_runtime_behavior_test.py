@@ -13,13 +13,20 @@ compiled=wrapper.replace("CONFIG_PLACEHOLDER",json.dumps(opts,separators=(",",":
 harness=r'''
 const calls=[]; let mode="confirm";
 global.__nuvioCoreGetTmdbDataV1=async()=>({state:"ok",metadata:{title:"Interstellar",release_date:"2014-11-05"}});
-function R(status,body,url){return{ok:status>=200&&status<300,status,url:url||"",async text(){return String(body||"")},async json(){return JSON.parse(String(body||"{}"))}}}
+function R(status,body,url,headers){const map=Object.fromEntries(Object.entries(headers||{}).map(([k,v])=>[String(k).toLowerCase(),String(v)]));return{ok:status>=200&&status<300,status,url:url||"",headers:{get(k){return map[String(k).toLowerCase()]||null}},async text(){return String(body||"")},async json(){return JSON.parse(String(body||"{}"))}}}
 global.fetch=async function(url,opt){
   url=String(url); calls.push(url);
   if(url==="https://mallumv.space/search.php?q=Interstellar") return R(200,'<a href="/movie/1755/Interstellar_2014_English.xhtml"><b>Interstellar 2014 English</b></a>',url);
-  if(url==="https://mallumv.space/movie/1755/Interstellar_2014_English.xhtml") return R(200,mode==="confirm" ? '<script>window.__download="confirm\\/1755\\/998\\/Interstellar_2014_English.xhtml";</script>' : '<a href="https://hubcloud.example/drive/abc123">Download 1080p</a>',url);
+  if(url==="https://mallumv.space/movie/1755/Interstellar_2014_English.xhtml") {
+    if(mode==="confirm") return R(200,'<script>window.__download="confirm\\/1755\\/998\\/Interstellar_2014_English.xhtml";</script>',url);
+    if(mode==="viking") return R(200,'<a href="/internal/6705/1755/Interstellar_2014_English.xhtml">1080p</a>',url);
+    return R(200,'<a href="https://hubcloud.example/drive/abc123">Download 1080p</a>',url);
+  }
   if(url==="https://mallumv.space/confirm/1755/998/Interstellar_2014_English.xhtml") return R(200,'<a class="touch" href="/internal/1755/998/Interstellar_2014_English.xhtml">Confirm Download</a>',url);
   if(url==="https://mallumv.space/internal/1755/998/Interstellar_2014_English.xhtml") return R(200,'<a href="https://hubcloud.example/drive/abc123">HubCloud</a>',url);
+  if(url==="https://mallumv.space/internal/6705/1755/Interstellar_2014_English.xhtml") return R(200,'<a href="https://vik1ngfile.site/f/tMAohzba53">Download 1080p</a>',url);
+  if(url==="https://vik1ngfile.site/f/tMAohzba53") return R(200,'<a href="https://vikingfile.com/fast-download/interstellar">Fast Download</a>',url);
+  if(url==="https://vikingfile.com/fast-download/interstellar") return R(200,"BINARY",url,{"content-type":"application/octet-stream","content-disposition":'attachment; filename="Interstellar.2014.1080p.mkv"'});
   if(url==="https://hubcloud.example/drive/abc123") return R(200,'<a href="/video/abc123">Continue</a>',url);
   if(url==="https://hubcloud.example/video/abc123") return R(200,'<a href="https://cdn.example/interstellar/master.mp4">Download</a>',url);
   return R(404,"",url);
@@ -53,6 +60,15 @@ module={exports:{getStreams:async()=>[]}};
   const directFlat=calls.join("\n");
   for(const token of ["https://mallumv.space/movie/1755/Interstellar_2014_English.xhtml","https://hubcloud.example/drive/abc123","https://hubcloud.example/video/abc123"]) if(!directFlat.includes(token)) throw new Error("missing direct-detail "+token+"\n"+directFlat);
   if(directFlat.includes("/confirm/")||directFlat.includes("/internal/"))throw new Error("direct detail fallback unexpectedly required confirm/internal\n"+directFlat);
+
+  calls.length=0; mode="viking";
+  const vikingOut=await hook.resolve([{tmdbId:"157336",canonicalMediaType:"movie"}]);
+  if(!Array.isArray(vikingOut)||vikingOut.length!==1)throw new Error("expected VikingFile terminal "+JSON.stringify(vikingOut));
+  if(vikingOut[0].url!=="https://vikingfile.com/fast-download/interstellar"||vikingOut[0].isDirect!==true)throw new Error("wrong VikingFile terminal "+JSON.stringify(vikingOut[0]));
+  const vikingFlat=calls.join("\n");
+  for(const token of ["/internal/6705/1755/Interstellar_2014_English.xhtml","https://vik1ngfile.site/f/tMAohzba53","https://vikingfile.com/fast-download/interstellar"]) if(!vikingFlat.includes(token)) throw new Error("missing viking "+token+"\n"+vikingFlat);
+  if(vikingFlat.includes("/confirm/"))throw new Error("VikingFile live-shape unexpectedly required confirm\n"+vikingFlat);
+
   console.log("MALLUMV_CURRENT_RUNTIME_OK");
 })().catch(e=>{console.error(e);process.exit(1)});
 '''

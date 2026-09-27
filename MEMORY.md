@@ -5636,3 +5636,9 @@ This ledger is not complete merely because provider yield improves. Final comple
 - MalluMV now first checks the detail page for bounded terminal candidates already trusted by its terminal policy (direct media, HubCloud/HubDrive, Pixeldrain, known download hosts) plus explicit Download/Server/Watch/Stream/Mirror anchors. Same-origin confirm/internal paths are also considered plausible.
 - resolveCandidate now accepts a redirect whose final response URL is direct media and recursively follows only candidates already selected by candidates(), bounded by the existing crawlDepth/visited/max-8 controls.
 - Existing runtime behavior test now proves both supported layouts independently: detail -> confirm -> internal -> HubCloud -> MP4, and detail -> HubCloud -> MP4 with no confirm/internal requests.
+
+### 2026-09-27 — MalluMV isolated VikingFile terminal proof
+- Isolated MalluMV live probe 36283311130 proved TMDB -> search -> movie detail -> /internal -> vik1ngfile.site/f -> vikingfile.com/fast-download with HTTP 200, but returned no streams. The remaining failure is terminal recognition only.
+- MalluMV runtime now preserves response Content-Type and Content-Disposition. A terminal response is accepted without a filename extension only when headers prove video/audio content, or octet-stream with a video filename in Content-Disposition. HTML landing pages remain rejected.
+- Current runtime contract now includes the observed direct-detail -> internal -> Vik1ngFile -> VikingFile fast-download shape and requires a direct MalluMV stream only when response media headers prove the terminal.
+- Next validation is MalluMV only; no global repair run should be triggered from this change.
