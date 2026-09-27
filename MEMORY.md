@@ -5677,3 +5677,9 @@ This ledger is not complete merely because provider yield improves. Final comple
 ### 2026-09-27 — MalluMV direct-media fixture assertion corrected
 - The bounded Viking fixture correctly returned /stream/interstellar.mkv as soon as the landing HTML exposed that direct media URL. The test incorrectly required the provider runtime to fetch the already-direct URL before returning it.
 - The contract now requires the returned stream URL to be the discovered media URL and explicitly requires that the provider runtime does not refetch that direct media URL. The live probe remains responsible for playback validation.
+
+### 2026-09-27 — MalluMV prefers canonical VikingFile identity route
+- Live targeted evidence run 36284321102 reached MalluMV search -> detail -> internal -> vik1ngfile -> vikingfile/fast-download with HTTP 200 but zero streams.
+- The bounded Viking diagnostics later showed that the vik1ngfile page also exposes the canonical vikingfile.com/f/<id> route, and the canonical /f route exposes the terminal /stream/*.mkv while fast-download can be a dead HTML landing.
+- MalluMV now deterministically prioritizes VikingFile /f canonical candidates before fast-download candidates. The runtime contract requires the canonical route and rejects an unnecessary fast-download request once canonical terminal media is available.
+- This is a provider-local terminal-extraction change and intentionally triggers only targeted MalluMV recovery, not global FORCE.
