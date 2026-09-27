@@ -5771,3 +5771,10 @@ This ledger is not complete merely because provider yield improves. Final comple
 - CORE Quick 36290916177 passed on 20b60bbc; Final Security published-provider unsafe-shape scan also passed before its CodeQL wait.
 - Global 15-provider Repair remains paused. MalluMV alone is restarted through Fast Brain Repair with 5 waves, 2400s budget and 3 rounds. Provider mutation authority remains Brain Repair/LLM; no hand-written MalluMV runtime change is authorized.
 - Success requires current-byte playable/verified terminal media. CHAIN REACHED, route proof, workflow success or an unverified candidate is not counted as repaired.
+
+### 2026-09-27 — Single-provider convergence phase: MalluMV
+- Global repair is paused while the Brain is proven on representative broken providers.
+- Current census 36305661773 has 26 FULL OK, 2 PARTIAL OK, 10 ROUTE PROVEN, 3 CHAIN REACHED, 1 NO PROOF and 14 providers in repairQueue; harness/environment debt remains zero.
+- MalluMV is the first targeted proof because it is already CHAIN REACHED and isolates terminal-extraction/html_scraper behavior.
+- The provider-fast-repair trigger is restricted to MalluMV only. The acceptance criterion is current-byte playable terminal media and current Retest/Census proof. No hand-written MalluMV provider repair is accepted as proof of Brain capability.
+- After MalluMV, targeted representatives will cover each remaining repair family before any global 14-provider retry.
