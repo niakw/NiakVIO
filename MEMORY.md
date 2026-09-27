@@ -5935,3 +5935,12 @@ This ledger is not complete merely because provider yield improves. Final comple
 
 - BRAIN_REPAIR_ARCHITECTURE.md no longer assigns repository-global unique-anchor generation to the LLM. The model selects a stable exact source window and a local occurrence; Brain-LLM owns deterministic full-source anchor resolution/minimization before NiakVIO sees a candidate.
 - This removes the remaining documentation contradiction with the durable rule: Brain synthesizes/compiles repairs, NiakVIO executes and proves them.
+
+
+### 2026-09-27 — FULL OK references do not limit Brain novelty
+
+- Current FULL OK providers and validated Blocs/scripts may be exposed to Brain-LLM as sanitized implementation references only.
+- Transferable patterns include technical structure such as session/fetch handling, player/iframe traversal, parsing/decoding and terminal media extraction; provider-specific URLs, hosts, routes, tokens and identity literals must not transfer.
+- These references are **not a whitelist**. Brain-LLM may adapt, combine, ignore them, or synthesize a completely new provider-local Bloc/script when current evidence requires a mechanism that does not yet exist.
+- A novel mechanism is first-class, but receives no special trust: it must pass the Brain structural/syntax/ownership/no-op guards and the full NiakVIO sandbox, playable-media/identity, current-byte and non-regression proof ladder.
+- This rule complements the synthesis/proof ownership boundary: Brain invents/compiles; NiakVIO executes/proves.
