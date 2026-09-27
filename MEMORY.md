@@ -5625,3 +5625,8 @@ This ledger is not complete merely because provider yield improves. Final comple
 ### 2026-09-27 — MalluMV relative confirm normalization
 - The widened confirm-route contract immediately caught a deterministic bug before another network probe: bare confirm/<id>/<fileId>/<slug>.xhtml was resolved relative to the movie page, producing /movie/.../confirm/... instead of root /confirm/....
 - confirmLinks now root-normalizes bare confirm/ paths before URL resolution. The existing escaped-JS fixture covers this exact form.
+
+### 2026-09-27 — MalluMV confirm regex escaping corrected
+- The escaped-confirm runtime test exposed a JavaScript regex escaping bug in the newly widened confirm parser: character classes contained \\s instead of \s, which excluded the literal letter "s". Interstellar therefore could never match despite the route being discovered.
+- The four accidental double-escaped whitespace tokens in the MalluMV confirm parser were corrected to real JavaScript whitespace classes.
+- Exact runtime execution in-memory now proves the full fixture chain: search -> movie -> confirm -> internal -> HubCloud /drive -> /video -> direct MP4, returning one direct MalluMV stream with the expected referer.
