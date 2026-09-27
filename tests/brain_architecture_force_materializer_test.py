@@ -102,12 +102,19 @@ ctx = mod.source_context(
 )
 assert sum(len(v) for v in ctx.values()) <= mod.MAX_TOTAL_SOURCE_CONTEXT
 assert all(len(v) <= mod.MAX_SOURCE_SNIPPET for v in ctx.values())
-assert mod.MAX_MODEL_TOKENS <= 220
-assert mod.MODEL_TIMEOUT_SECONDS <= 70
-assert mod.RETRY_MODEL_TOKENS <= 220
-assert mod.RETRY_MODEL_TIMEOUT_SECONDS <= 55
+assert mod.MAX_MODEL_TOKENS <= 512
+assert mod.MODEL_TIMEOUT_SECONDS <= 100
+assert mod.RETRY_MODEL_TOKENS <= 640
+assert mod.RETRY_MODEL_TIMEOUT_SECONDS <= 120
 assert mod.RETRY_SOURCE_CONTEXT <= 3600
 assert mod.MINIMAL_SOURCE_CONTEXT <= 1800
+
+fmt = mod._response_format()
+assert fmt["type"] == "json_object"
+assert fmt["schema"]["required"] == ["edits"]
+assert fmt["schema"]["properties"]["edits"]["minItems"] == 1
+assert fmt["schema"]["properties"]["edits"]["maxItems"] == mod.MAX_EDITS
+assert fmt["schema"]["properties"]["edits"]["items"]["additionalProperties"] is False
 
 # Model output parsing is resilient to the common bounded formatting defects
 # observed in FORCE: prose/fences, trailing commas and Python-style dicts.
@@ -172,10 +179,10 @@ try:
     assert calls[0][3] <= mod.RETRY_SOURCE_CONTEXT
     assert calls[1][:3] == (mod.RETRY_MODEL_TOKENS, mod.RETRY_MODEL_TIMEOUT_SECONDS, True)
     assert calls[1][3] <= mod.MINIMAL_SOURCE_CONTEXT
-    assert mod.MAX_MODEL_TOKENS <= 220
-    assert mod.MODEL_TIMEOUT_SECONDS <= 70
-    assert mod.RETRY_MODEL_TOKENS <= 220
-    assert mod.RETRY_MODEL_TIMEOUT_SECONDS <= 55
+    assert mod.MAX_MODEL_TOKENS <= 512
+    assert mod.MODEL_TIMEOUT_SECONDS <= 100
+    assert mod.RETRY_MODEL_TOKENS <= 640
+    assert mod.RETRY_MODEL_TIMEOUT_SECONDS <= 120
 finally:
     mod._model_request = original_request
 

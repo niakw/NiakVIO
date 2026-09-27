@@ -5778,3 +5778,10 @@ This ledger is not complete merely because provider yield improves. Final comple
 - MalluMV is the first targeted proof because it is already CHAIN REACHED and isolates terminal-extraction/html_scraper behavior.
 - The provider-fast-repair trigger is restricted to MalluMV only. The acceptance criterion is current-byte playable terminal media and current Retest/Census proof. No hand-written MalluMV provider repair is accepted as proof of Brain capability.
 - After MalluMV, targeted representatives will cover each remaining repair family before any global 14-provider retry.
+
+### 2026-09-27 — Architecture materializer uses llama.cpp schema-constrained JSON
+- MalluMV-only Fast Repair 36310965113 correctly exhausted provider-local methods and handed only MalluMV to Learning 36311063862.
+- Learning/Qwen advisor and adaptive provider queue completed. MalluMV still returned NUVIO_WORKER_NO_RESULT for the current terminal strategies, so Brain generated architecture evolution candidates.
+- The architecture materializer then failed because both Qwen responses were truncated/unbalanced JSON. This is a Brain materialization failure, not a MalluMV provider verdict.
+- The exact deployed llama.cpp b11140 server supports response_format with schema-constrained JSON on /v1/chat/completions. The materializer now requests an explicit bounded edits[] schema, keeps provider/publication allowlists unchanged, and gives executable code a realistic bounded 512-token primary / 640-token minimal retry budget.
+- No MalluMV provider code is hand-written by this change. The next MalluMV-only cycle remains the proof of Brain-generated repair capability.

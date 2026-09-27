@@ -28,10 +28,10 @@ MAX_REPLACE = 5000
 MAX_CREATE = 12000
 MAX_SOURCE_SNIPPET = 4200
 MAX_TOTAL_SOURCE_CONTEXT = 10500
-MAX_MODEL_TOKENS = 220
-MODEL_TIMEOUT_SECONDS = 70
-RETRY_MODEL_TOKENS = 220
-RETRY_MODEL_TIMEOUT_SECONDS = 55
+MAX_MODEL_TOKENS = 512
+MODEL_TIMEOUT_SECONDS = 100
+RETRY_MODEL_TOKENS = 640
+RETRY_MODEL_TIMEOUT_SECONDS = 120
 RETRY_SOURCE_CONTEXT = 3600
 MINIMAL_SOURCE_CONTEXT = 1800
 
@@ -147,6 +147,39 @@ def source_context(blueprint: dict[str, Any], patterns: list[str]) -> dict[str, 
     return out
 
 
+def _response_format() -> dict[str, Any]:
+    return {
+        "type": "json_object",
+        "schema": {
+            "type": "object",
+            "properties": {
+                "edits": {
+                    "type": "array",
+                    "minItems": 1,
+                    "maxItems": MAX_EDITS,
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "operation": {
+                                "type": "string",
+                                "enum": ["replace", "create"],
+                            },
+                            "path": {"type": "string", "minLength": 1},
+                            "find": {"type": "string", "maxLength": MAX_FIND},
+                            "replace": {"type": "string", "maxLength": MAX_REPLACE},
+                            "content": {"type": "string", "maxLength": MAX_CREATE},
+                        },
+                        "required": ["operation", "path"],
+                        "additionalProperties": False,
+                    },
+                }
+            },
+            "required": ["edits"],
+            "additionalProperties": False,
+        },
+    }
+
+
 def _model_request(
     endpoint: str,
     model: str,
@@ -169,12 +202,14 @@ def _model_request(
         system += (
             " Be extremely compact. Prefer exactly one small replace edit. "
             "Avoid creating a new file unless replacement cannot implement the capability. "
-            "Keep the complete JSON response short enough for the supplied token budget."
+            "Keep the complete JSON response short enough for the supplied token budget. "
+            "The server enforces the edits JSON schema; never emit markdown or commentary."
         )
     body = {
         "model": model,
         "temperature": 0,
         "max_tokens": max_tokens,
+        "response_format": _response_format(),
         "messages": [
             {"role": "system", "content": system},
             {
