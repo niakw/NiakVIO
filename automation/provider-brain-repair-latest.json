@@ -5,29 +5,16 @@
   "acceptedRepairs": [],
   "advisorHypothesisWaveBudget": 2,
   "batchSize": 48,
-  "deferredLearningProviders": [
-    "4khdhub",
-    "allanime",
-    "anime-ultime",
-    "animesalt",
-    "animesultra",
-    "animevost-fr",
-    "flemmix",
-    "moviebox",
-    "moviesmod",
-    "vidfast",
-    "vostfree",
-    "yflix"
-  ],
-  "effectiveWaves": 2,
-  "elapsedSeconds": 56.345,
+  "deferredLearningProviders": [],
+  "effectiveWaves": 5,
+  "elapsedSeconds": 91.21,
   "executionModel": "family-batched-multi-wave-brain-repair",
   "experienceMemory": {
-    "operationalProviderCount": 27,
+    "operationalProviderCount": 28,
     "providerCount": 46,
     "schemaVersion": 2,
-    "sourceRunId": "36277760820",
-    "sourceSha": "31111e7ee8deab02e7396877e66d7e743ac8ce45",
+    "sourceRunId": "36288195072-retest",
+    "sourceSha": "2875bbc215846e4d265c45ad166d0c1d44169f10",
     "strategyCount": 5
   },
   "fixedInLabProviders": [],
@@ -36,23 +23,11 @@
   "healthConcurrency": 0,
   "healthConcurrencyMode": "auto-per-batch",
   "initialStatuses": {
-    "4khdhub": "ROUTE PROVEN",
-    "allanime": "CHAIN REACHED",
-    "anime-ultime": "ROUTE PROVEN",
-    "animesalt": "ROUTE PROVEN",
-    "animesultra": "ROUTE PROVEN",
-    "animevost-fr": "ROUTE PROVEN",
-    "flemmix": "ROUTE PROVEN",
-    "mallumv": "CHAIN REACHED",
-    "moviebox": "CHAIN REACHED",
-    "moviesmod": "ROUTE PROVEN",
-    "vidfast": "ROUTE PROVEN",
-    "vostfree": "ROUTE PROVEN",
-    "yflix": "ROUTE PROVEN"
+    "mallumv": "CHAIN REACHED"
   },
-  "maxRoundsPerBatch": 1,
-  "maxWaves": 2,
-  "noProgressReason": "experiment_variants_exhausted",
+  "maxRoundsPerBatch": 3,
+  "maxWaves": 5,
+  "noProgressReason": "no_new_repair_experiment",
   "positiveProgramRecovery": {
     "durableProviders": [
       "mallumv"
@@ -61,21 +36,9 @@
     "recoveredRecordCount": 0,
     "reportCount": 32
   },
-  "processedProviderCount": 13,
+  "processedProviderCount": 1,
   "processedProviders": [
-    "4khdhub",
-    "allanime",
-    "anime-ultime",
-    "animesalt",
-    "animesultra",
-    "animevost-fr",
-    "flemmix",
-    "mallumv",
-    "moviebox",
-    "moviesmod",
-    "vidfast",
-    "vostfree",
-    "yflix"
+    "mallumv"
   ],
   "providerSpecificRules": false,
   "rawLabAcceptedCount": 0,
@@ -83,7 +46,7 @@
   "remainingProviders": [
     "mallumv"
   ],
-  "requestedWaves": 1,
+  "requestedWaves": 5,
   "resumeRecommended": false,
   "safety": {
     "acceptedMutationRequiresStrictImprovement": true,
@@ -97,29 +60,17 @@
     "wafEnvironmentExcludedByDefault": true
   },
   "schemaVersion": 1,
-  "selectedProviderCount": 13,
+  "selectedProviderCount": 1,
   "selectedProviders": [
-    "4khdhub",
-    "allanime",
-    "anime-ultime",
-    "animesalt",
-    "animesultra",
-    "animevost-fr",
-    "flemmix",
-    "mallumv",
-    "moviebox",
-    "moviesmod",
-    "vidfast",
-    "vostfree",
-    "yflix"
+    "mallumv"
   ],
   "selectionSource": "automation/provider-census-status.json:repairQueue",
   "shardCount": 1,
   "shardIndex": 0,
   "skippedEnvironmentProviders": [],
-  "sourceCensusRunId": "36277760820",
+  "sourceCensusRunId": "36288195072-retest",
   "timeBudgetExhausted": false,
-  "timeBudgetSeconds": 600,
+  "timeBudgetSeconds": 2400,
   "unvisitedProviders": [],
   "waves": [
     {
@@ -144,517 +95,6 @@
             "harnessDifferentialProviders": [],
             "learnedEvents": 0,
             "plans": {
-              "published:4khdhub": {
-                "action": "probe-targeted-repair",
-                "allowedProfiles": [
-                  "proven_route_terminal_traversal_v1"
-                ],
-                "exitReason": null,
-                "experimentExhausted": false,
-                "experimentGeneration": 2,
-                "experimentVariant": 4,
-                "experimentVariantCount": 5,
-                "failureClass": "route_proven_gap",
-                "hypotheses": [
-                  {
-                    "confidence": 0,
-                    "id": "complete-proven-route-chain",
-                    "learned": false,
-                    "maturity": null,
-                    "profile": null,
-                    "transferScore": 0
-                  },
-                  {
-                    "confidence": 0,
-                    "id": "expand-proven-route-neighborhood",
-                    "learned": false,
-                    "maturity": null,
-                    "profile": null,
-                    "transferScore": 0
-                  }
-                ],
-                "learningDisposition": "core_repair_only",
-                "llmAdvisorApplied": true,
-                "llmAdvisorConfidence": 0.86,
-                "llmAdvisorExperiment": {
-                  "aliasSearch": true,
-                  "documentRequestMining": true,
-                  "maxDepth": 6,
-                  "maxEmbeds": 26,
-                  "maxPages": 36,
-                  "maxRecipePasses": 6,
-                  "recipePolicy": "current_plus_provider",
-                  "responseSalvage": true,
-                  "roleOrder": [
-                    "search",
-                    "detail",
-                    "api",
-                    "episode",
-                    "player",
-                    "source",
-                    "other"
-                  ],
-                  "routePolicy": "owned_plus_peer",
-                  "sessionBootstrap": false,
-                  "terminalOnly": false
-                },
-                "llmAdvisorExperimentFingerprint": "b95df590cde2e945138f24c45e9859a6f815f3208beb13944cc139c330ba2495",
-                "llmAdvisorFailureCompatibility": "exact-rebound",
-                "llmAdvisorGuidanceKind": "meta-gap-synthesis",
-                "llmAdvisorProfile": "proven_route_terminal_traversal_v1",
-                "llmAdvisorRescue": true,
-                "llmAdvisorSourceFailureClass": "route_proven_gap",
-                "llmAdvisorStrategy": "meta-gap-route-transition-composition",
-                "metaGapEscalated": false,
-                "negativeMemoryMatches": 12,
-                "positiveProgramFingerprint": "",
-                "postExhaustionStrategyMethod": "",
-                "postExhaustionStrategyProfile": "",
-                "providerId": "4khdhub",
-                "providerPositiveProgramProductionRescue": false,
-                "providerPositiveProgramReplay": false,
-                "repairScope": "capability",
-                "repairType": "route_chain_completion",
-                "signature": "ab166763bfa1d2683dc56363"
-              },
-              "published:allanime": {
-                "action": "probe-targeted-repair",
-                "allowedProfiles": [
-                  "chain_terminal_extractor_v1"
-                ],
-                "exitReason": null,
-                "experimentExhausted": false,
-                "experimentGeneration": 2,
-                "experimentVariant": 4,
-                "experimentVariantCount": 5,
-                "failureClass": "chain_terminal_gap",
-                "hypotheses": [
-                  {
-                    "confidence": 0,
-                    "id": "finish-reached-terminal-chain",
-                    "learned": false,
-                    "maturity": null,
-                    "profile": null,
-                    "transferScore": 0
-                  },
-                  {
-                    "confidence": 0,
-                    "id": "resolve-terminal-wrapper",
-                    "learned": false,
-                    "maturity": null,
-                    "profile": null,
-                    "transferScore": 0
-                  }
-                ],
-                "learningDisposition": "core_repair_only",
-                "llmAdvisorApplied": true,
-                "llmAdvisorConfidence": 0.86,
-                "llmAdvisorExperiment": {
-                  "aliasSearch": true,
-                  "documentRequestMining": true,
-                  "maxDepth": 6,
-                  "maxEmbeds": 36,
-                  "maxPages": 32,
-                  "maxRecipePasses": 6,
-                  "recipePolicy": "current_plus_provider",
-                  "responseSalvage": true,
-                  "roleOrder": [
-                    "player",
-                    "source",
-                    "api",
-                    "episode",
-                    "detail",
-                    "search",
-                    "other"
-                  ],
-                  "routePolicy": "owned_plus_peer",
-                  "sessionBootstrap": true,
-                  "terminalOnly": true
-                },
-                "llmAdvisorExperimentFingerprint": "1226ced960124dd7937d40a36f31dfaffb6a2ef2730b8491e8a2a931a382bf86",
-                "llmAdvisorFailureCompatibility": "exact-rebound",
-                "llmAdvisorGuidanceKind": "meta-gap-synthesis",
-                "llmAdvisorProfile": "chain_terminal_extractor_v1",
-                "llmAdvisorRescue": true,
-                "llmAdvisorSourceFailureClass": "chain_terminal_gap",
-                "llmAdvisorStrategy": "meta-gap-terminal-media-composition",
-                "metaGapEscalated": false,
-                "negativeMemoryMatches": 12,
-                "positiveProgramFingerprint": "",
-                "postExhaustionStrategyMethod": "",
-                "postExhaustionStrategyProfile": "",
-                "providerId": "allanime",
-                "providerPositiveProgramProductionRescue": false,
-                "providerPositiveProgramReplay": false,
-                "repairScope": "capability",
-                "repairType": "terminal_media_resolution",
-                "signature": "6f7f453a73e9bae5cc5c3bd0"
-              },
-              "published:anime-ultime": {
-                "action": "probe-targeted-repair",
-                "allowedProfiles": [
-                  "proven_route_terminal_traversal_v1"
-                ],
-                "exitReason": null,
-                "experimentExhausted": false,
-                "experimentGeneration": 2,
-                "experimentVariant": 4,
-                "experimentVariantCount": 5,
-                "failureClass": "route_proven_gap",
-                "hypotheses": [
-                  {
-                    "confidence": 0,
-                    "id": "complete-proven-route-chain",
-                    "learned": false,
-                    "maturity": null,
-                    "profile": null,
-                    "transferScore": 0
-                  },
-                  {
-                    "confidence": 0,
-                    "id": "expand-proven-route-neighborhood",
-                    "learned": false,
-                    "maturity": null,
-                    "profile": null,
-                    "transferScore": 0
-                  }
-                ],
-                "learningDisposition": "core_repair_only",
-                "llmAdvisorApplied": true,
-                "llmAdvisorConfidence": 0.86,
-                "llmAdvisorExperiment": {
-                  "aliasSearch": true,
-                  "documentRequestMining": true,
-                  "maxDepth": 6,
-                  "maxEmbeds": 26,
-                  "maxPages": 36,
-                  "maxRecipePasses": 6,
-                  "recipePolicy": "current_plus_provider",
-                  "responseSalvage": true,
-                  "roleOrder": [
-                    "search",
-                    "detail",
-                    "api",
-                    "episode",
-                    "player",
-                    "source",
-                    "other"
-                  ],
-                  "routePolicy": "owned_plus_peer",
-                  "sessionBootstrap": false,
-                  "terminalOnly": false
-                },
-                "llmAdvisorExperimentFingerprint": "b95df590cde2e945138f24c45e9859a6f815f3208beb13944cc139c330ba2495",
-                "llmAdvisorFailureCompatibility": "exact-rebound",
-                "llmAdvisorGuidanceKind": "meta-gap-synthesis",
-                "llmAdvisorProfile": "proven_route_terminal_traversal_v1",
-                "llmAdvisorRescue": true,
-                "llmAdvisorSourceFailureClass": "route_proven_gap",
-                "llmAdvisorStrategy": "meta-gap-route-transition-composition",
-                "metaGapEscalated": false,
-                "negativeMemoryMatches": 12,
-                "positiveProgramFingerprint": "",
-                "postExhaustionStrategyMethod": "",
-                "postExhaustionStrategyProfile": "",
-                "providerId": "anime-ultime",
-                "providerPositiveProgramProductionRescue": false,
-                "providerPositiveProgramReplay": false,
-                "repairScope": "capability",
-                "repairType": "route_chain_completion",
-                "signature": "6e8bdefd68d0420faad781f5"
-              },
-              "published:animesalt": {
-                "action": "probe-targeted-repair",
-                "allowedProfiles": [
-                  "proven_route_terminal_traversal_v1"
-                ],
-                "exitReason": null,
-                "experimentExhausted": false,
-                "experimentGeneration": 2,
-                "experimentVariant": 4,
-                "experimentVariantCount": 5,
-                "failureClass": "route_proven_gap",
-                "hypotheses": [
-                  {
-                    "confidence": 0,
-                    "id": "complete-proven-route-chain",
-                    "learned": false,
-                    "maturity": null,
-                    "profile": null,
-                    "transferScore": 0
-                  },
-                  {
-                    "confidence": 0,
-                    "id": "expand-proven-route-neighborhood",
-                    "learned": false,
-                    "maturity": null,
-                    "profile": null,
-                    "transferScore": 0
-                  }
-                ],
-                "learningDisposition": "core_repair_only",
-                "llmAdvisorApplied": true,
-                "llmAdvisorConfidence": 0.86,
-                "llmAdvisorExperiment": {
-                  "aliasSearch": true,
-                  "documentRequestMining": true,
-                  "maxDepth": 4,
-                  "maxEmbeds": 19,
-                  "maxPages": 24,
-                  "maxRecipePasses": 5,
-                  "recipePolicy": "current_plus_provider_peer",
-                  "responseSalvage": true,
-                  "roleOrder": [
-                    "episode",
-                    "player",
-                    "source",
-                    "other",
-                    "search",
-                    "detail",
-                    "api"
-                  ],
-                  "routePolicy": "owned_plus_peer_generic",
-                  "sessionBootstrap": true,
-                  "terminalOnly": false
-                },
-                "llmAdvisorExperimentFingerprint": "712f0f354d4915aff5266e59385a07c44b8f956ba60b2b21966f80a8904b7750",
-                "llmAdvisorFailureCompatibility": "exact-rebound",
-                "llmAdvisorGuidanceKind": "meta-gap-synthesis",
-                "llmAdvisorProfile": "proven_route_terminal_traversal_v1",
-                "llmAdvisorRescue": true,
-                "llmAdvisorSourceFailureClass": "route_proven_gap",
-                "llmAdvisorStrategy": "meta-gap-provider-transport-composition",
-                "metaGapEscalated": false,
-                "negativeMemoryMatches": 8,
-                "positiveProgramFingerprint": "",
-                "postExhaustionStrategyMethod": "",
-                "postExhaustionStrategyProfile": "",
-                "providerId": "animesalt",
-                "providerPositiveProgramProductionRescue": false,
-                "providerPositiveProgramReplay": false,
-                "repairScope": "capability",
-                "repairType": "route_chain_completion",
-                "signature": "4f4ba579b9e3ad40055ea4b3"
-              },
-              "published:animesultra": {
-                "action": "probe-targeted-repair",
-                "allowedProfiles": [
-                  "proven_route_terminal_traversal_v1"
-                ],
-                "exitReason": null,
-                "experimentExhausted": false,
-                "experimentGeneration": 2,
-                "experimentVariant": 4,
-                "experimentVariantCount": 5,
-                "failureClass": "route_proven_gap",
-                "hypotheses": [
-                  {
-                    "confidence": 0,
-                    "id": "complete-proven-route-chain",
-                    "learned": false,
-                    "maturity": null,
-                    "profile": null,
-                    "transferScore": 0
-                  },
-                  {
-                    "confidence": 0,
-                    "id": "expand-proven-route-neighborhood",
-                    "learned": false,
-                    "maturity": null,
-                    "profile": null,
-                    "transferScore": 0
-                  }
-                ],
-                "learningDisposition": "core_repair_only",
-                "llmAdvisorApplied": true,
-                "llmAdvisorConfidence": 0.86,
-                "llmAdvisorExperiment": {
-                  "aliasSearch": true,
-                  "documentRequestMining": true,
-                  "maxDepth": 6,
-                  "maxEmbeds": 26,
-                  "maxPages": 36,
-                  "maxRecipePasses": 6,
-                  "recipePolicy": "current_plus_provider",
-                  "responseSalvage": true,
-                  "roleOrder": [
-                    "search",
-                    "detail",
-                    "api",
-                    "episode",
-                    "player",
-                    "source",
-                    "other"
-                  ],
-                  "routePolicy": "owned_plus_peer",
-                  "sessionBootstrap": false,
-                  "terminalOnly": false
-                },
-                "llmAdvisorExperimentFingerprint": "b95df590cde2e945138f24c45e9859a6f815f3208beb13944cc139c330ba2495",
-                "llmAdvisorFailureCompatibility": "exact-rebound",
-                "llmAdvisorGuidanceKind": "meta-gap-synthesis",
-                "llmAdvisorProfile": "proven_route_terminal_traversal_v1",
-                "llmAdvisorRescue": true,
-                "llmAdvisorSourceFailureClass": "route_proven_gap",
-                "llmAdvisorStrategy": "meta-gap-route-transition-composition",
-                "metaGapEscalated": false,
-                "negativeMemoryMatches": 12,
-                "positiveProgramFingerprint": "",
-                "postExhaustionStrategyMethod": "",
-                "postExhaustionStrategyProfile": "",
-                "providerId": "animesultra",
-                "providerPositiveProgramProductionRescue": false,
-                "providerPositiveProgramReplay": false,
-                "repairScope": "capability",
-                "repairType": "route_chain_completion",
-                "signature": "4f4ba579b9e3ad40055ea4b3"
-              },
-              "published:animevost-fr": {
-                "action": "probe-targeted-repair",
-                "allowedProfiles": [
-                  "proven_route_terminal_traversal_v1"
-                ],
-                "exitReason": null,
-                "experimentExhausted": false,
-                "experimentGeneration": 2,
-                "experimentVariant": 4,
-                "experimentVariantCount": 5,
-                "failureClass": "route_proven_gap",
-                "hypotheses": [
-                  {
-                    "confidence": 0,
-                    "id": "complete-proven-route-chain",
-                    "learned": false,
-                    "maturity": null,
-                    "profile": null,
-                    "transferScore": 0
-                  },
-                  {
-                    "confidence": 0,
-                    "id": "expand-proven-route-neighborhood",
-                    "learned": false,
-                    "maturity": null,
-                    "profile": null,
-                    "transferScore": 0
-                  }
-                ],
-                "learningDisposition": "core_repair_only",
-                "llmAdvisorApplied": true,
-                "llmAdvisorConfidence": 0.86,
-                "llmAdvisorExperiment": {
-                  "aliasSearch": true,
-                  "documentRequestMining": true,
-                  "maxDepth": 4,
-                  "maxEmbeds": 19,
-                  "maxPages": 24,
-                  "maxRecipePasses": 5,
-                  "recipePolicy": "current_plus_provider_peer",
-                  "responseSalvage": true,
-                  "roleOrder": [
-                    "episode",
-                    "player",
-                    "source",
-                    "other",
-                    "search",
-                    "detail",
-                    "api"
-                  ],
-                  "routePolicy": "owned_plus_peer_generic",
-                  "sessionBootstrap": true,
-                  "terminalOnly": false
-                },
-                "llmAdvisorExperimentFingerprint": "712f0f354d4915aff5266e59385a07c44b8f956ba60b2b21966f80a8904b7750",
-                "llmAdvisorFailureCompatibility": "exact-rebound",
-                "llmAdvisorGuidanceKind": "meta-gap-synthesis",
-                "llmAdvisorProfile": "proven_route_terminal_traversal_v1",
-                "llmAdvisorRescue": true,
-                "llmAdvisorSourceFailureClass": "route_proven_gap",
-                "llmAdvisorStrategy": "meta-gap-provider-transport-composition",
-                "metaGapEscalated": false,
-                "negativeMemoryMatches": 8,
-                "positiveProgramFingerprint": "",
-                "postExhaustionStrategyMethod": "",
-                "postExhaustionStrategyProfile": "",
-                "providerId": "animevost-fr",
-                "providerPositiveProgramProductionRescue": false,
-                "providerPositiveProgramReplay": false,
-                "repairScope": "capability",
-                "repairType": "route_chain_completion",
-                "signature": "4f4ba579b9e3ad40055ea4b3"
-              },
-              "published:flemmix": {
-                "action": "probe-targeted-repair",
-                "allowedProfiles": [
-                  "proven_route_terminal_traversal_v1"
-                ],
-                "exitReason": null,
-                "experimentExhausted": false,
-                "experimentGeneration": 2,
-                "experimentVariant": 4,
-                "experimentVariantCount": 5,
-                "failureClass": "route_proven_gap",
-                "hypotheses": [
-                  {
-                    "confidence": 0,
-                    "id": "complete-proven-route-chain",
-                    "learned": false,
-                    "maturity": null,
-                    "profile": null,
-                    "transferScore": 0
-                  },
-                  {
-                    "confidence": 0,
-                    "id": "expand-proven-route-neighborhood",
-                    "learned": false,
-                    "maturity": null,
-                    "profile": null,
-                    "transferScore": 0
-                  }
-                ],
-                "learningDisposition": "core_repair_only",
-                "llmAdvisorApplied": true,
-                "llmAdvisorConfidence": 0.86,
-                "llmAdvisorExperiment": {
-                  "aliasSearch": true,
-                  "documentRequestMining": true,
-                  "maxDepth": 4,
-                  "maxEmbeds": 19,
-                  "maxPages": 24,
-                  "maxRecipePasses": 5,
-                  "recipePolicy": "current_plus_provider_peer",
-                  "responseSalvage": true,
-                  "roleOrder": [
-                    "episode",
-                    "player",
-                    "source",
-                    "other",
-                    "search",
-                    "detail",
-                    "api"
-                  ],
-                  "routePolicy": "owned_plus_peer_generic",
-                  "sessionBootstrap": true,
-                  "terminalOnly": false
-                },
-                "llmAdvisorExperimentFingerprint": "712f0f354d4915aff5266e59385a07c44b8f956ba60b2b21966f80a8904b7750",
-                "llmAdvisorFailureCompatibility": "exact-rebound",
-                "llmAdvisorGuidanceKind": "meta-gap-synthesis",
-                "llmAdvisorProfile": "proven_route_terminal_traversal_v1",
-                "llmAdvisorRescue": true,
-                "llmAdvisorSourceFailureClass": "route_proven_gap",
-                "llmAdvisorStrategy": "meta-gap-provider-transport-composition",
-                "metaGapEscalated": false,
-                "negativeMemoryMatches": 8,
-                "positiveProgramFingerprint": "",
-                "postExhaustionStrategyMethod": "",
-                "postExhaustionStrategyProfile": "",
-                "providerId": "flemmix",
-                "providerPositiveProgramProductionRescue": false,
-                "providerPositiveProgramReplay": false,
-                "repairScope": "capability",
-                "repairType": "route_chain_completion",
-                "signature": "ab166763bfa1d2683dc56363"
-              },
               "published:mallumv": {
                 "action": "probe-targeted-repair",
                 "allowedProfiles": [
@@ -701,604 +141,25 @@
                   "aliasSearch": false,
                   "documentRequestMining": true,
                   "maxDepth": 6,
-                  "maxEmbeds": 36,
-                  "maxPages": 26,
-                  "maxRecipePasses": 6,
-                  "recipePolicy": "current_plus_provider",
-                  "responseSalvage": true,
-                  "roleOrder": [
-                    "other",
-                    "player",
-                    "source",
-                    "api",
-                    "episode",
-                    "detail",
-                    "search"
-                  ],
-                  "routePolicy": "owned_plus_peer",
-                  "sessionBootstrap": true,
-                  "terminalOnly": true
-                },
-                "llmAdvisorExperimentFingerprint": "22dfbe560883bf46e9cee37f396f59db2a537030ad82d86778c8056851867951",
-                "llmAdvisorFailureCompatibility": "exact-rebound",
-                "llmAdvisorGuidanceKind": "meta-gap-synthesis",
-                "llmAdvisorProfile": "chain_terminal_extractor_v1",
-                "llmAdvisorRescue": true,
-                "llmAdvisorSourceFailureClass": "chain_terminal_gap",
-                "llmAdvisorStrategy": "meta-gap-terminal-media-composition",
-                "metaGapEscalated": false,
-                "negativeMemoryMatches": 33,
-                "positiveProgramFingerprint": "",
-                "postExhaustionStrategyMethod": "",
-                "postExhaustionStrategyProfile": "",
-                "providerId": "mallumv",
-                "providerPositiveProgramProductionRescue": false,
-                "providerPositiveProgramReplay": false,
-                "repairScope": "capability",
-                "repairType": "terminal_media_resolution",
-                "signature": "7552d045488f7eee1fe978e5"
-              },
-              "published:moviebox": {
-                "action": "probe-targeted-repair",
-                "allowedProfiles": [
-                  "chain_terminal_extractor_v1"
-                ],
-                "exitReason": null,
-                "experimentExhausted": false,
-                "experimentGeneration": 2,
-                "experimentVariant": 4,
-                "experimentVariantCount": 5,
-                "failureClass": "chain_terminal_gap",
-                "hypotheses": [
-                  {
-                    "confidence": 0,
-                    "id": "finish-reached-terminal-chain",
-                    "learned": false,
-                    "maturity": null,
-                    "profile": null,
-                    "transferScore": 0
-                  },
-                  {
-                    "confidence": 0,
-                    "id": "resolve-terminal-wrapper",
-                    "learned": false,
-                    "maturity": null,
-                    "profile": null,
-                    "transferScore": 0
-                  }
-                ],
-                "learningDisposition": "core_repair_only",
-                "llmAdvisorApplied": true,
-                "llmAdvisorConfidence": 0.86,
-                "llmAdvisorExperiment": {
-                  "aliasSearch": false,
-                  "documentRequestMining": true,
-                  "maxDepth": 6,
-                  "maxEmbeds": 36,
+                  "maxEmbeds": 34,
                   "maxPages": 30,
                   "maxRecipePasses": 6,
-                  "recipePolicy": "current_plus_provider",
-                  "responseSalvage": true,
-                  "roleOrder": [
-                    "player",
-                    "source",
-                    "api",
-                    "episode",
-                    "detail",
-                    "search",
-                    "other"
-                  ],
-                  "routePolicy": "owned_plus_peer",
-                  "sessionBootstrap": true,
-                  "terminalOnly": true
-                },
-                "llmAdvisorExperimentFingerprint": "fad5dc605c59c2e89aaa071ce0d014c5cf0af200789675c48350b0c0253acbe6",
-                "llmAdvisorFailureCompatibility": "exact-rebound",
-                "llmAdvisorGuidanceKind": "meta-gap-synthesis",
-                "llmAdvisorProfile": "chain_terminal_extractor_v1",
-                "llmAdvisorRescue": true,
-                "llmAdvisorSourceFailureClass": "chain_terminal_gap",
-                "llmAdvisorStrategy": "meta-gap-terminal-media-composition",
-                "metaGapEscalated": false,
-                "negativeMemoryMatches": 12,
-                "positiveProgramFingerprint": "",
-                "postExhaustionStrategyMethod": "",
-                "postExhaustionStrategyProfile": "",
-                "providerId": "moviebox",
-                "providerPositiveProgramProductionRescue": false,
-                "providerPositiveProgramReplay": false,
-                "repairScope": "capability",
-                "repairType": "terminal_media_resolution",
-                "signature": "7552d045488f7eee1fe978e5"
-              },
-              "published:moviesmod": {
-                "action": "probe-targeted-repair",
-                "allowedProfiles": [
-                  "proven_route_terminal_traversal_v1"
-                ],
-                "exitReason": null,
-                "experimentExhausted": false,
-                "experimentGeneration": 2,
-                "experimentVariant": 4,
-                "experimentVariantCount": 5,
-                "failureClass": "route_proven_gap",
-                "hypotheses": [
-                  {
-                    "confidence": 0,
-                    "id": "complete-proven-route-chain",
-                    "learned": false,
-                    "maturity": null,
-                    "profile": null,
-                    "transferScore": 0
-                  },
-                  {
-                    "confidence": 0,
-                    "id": "expand-proven-route-neighborhood",
-                    "learned": false,
-                    "maturity": null,
-                    "profile": null,
-                    "transferScore": 0
-                  }
-                ],
-                "learningDisposition": "core_repair_only",
-                "llmAdvisorApplied": true,
-                "llmAdvisorConfidence": 0.86,
-                "llmAdvisorExperiment": {
-                  "aliasSearch": true,
-                  "documentRequestMining": true,
-                  "maxDepth": 4,
-                  "maxEmbeds": 19,
-                  "maxPages": 24,
-                  "maxRecipePasses": 5,
                   "recipePolicy": "current_plus_provider_peer",
                   "responseSalvage": true,
                   "roleOrder": [
-                    "episode",
-                    "player",
                     "source",
+                    "api",
+                    "episode",
+                    "detail",
+                    "search",
                     "other",
-                    "search",
-                    "detail",
-                    "api"
-                  ],
-                  "routePolicy": "owned_plus_peer_generic",
-                  "sessionBootstrap": true,
-                  "terminalOnly": false
-                },
-                "llmAdvisorExperimentFingerprint": "712f0f354d4915aff5266e59385a07c44b8f956ba60b2b21966f80a8904b7750",
-                "llmAdvisorFailureCompatibility": "exact-rebound",
-                "llmAdvisorGuidanceKind": "meta-gap-synthesis",
-                "llmAdvisorProfile": "proven_route_terminal_traversal_v1",
-                "llmAdvisorRescue": true,
-                "llmAdvisorSourceFailureClass": "route_proven_gap",
-                "llmAdvisorStrategy": "meta-gap-provider-transport-composition",
-                "metaGapEscalated": false,
-                "negativeMemoryMatches": 8,
-                "positiveProgramFingerprint": "",
-                "postExhaustionStrategyMethod": "",
-                "postExhaustionStrategyProfile": "",
-                "providerId": "moviesmod",
-                "providerPositiveProgramProductionRescue": false,
-                "providerPositiveProgramReplay": false,
-                "repairScope": "capability",
-                "repairType": "route_chain_completion",
-                "signature": "ab166763bfa1d2683dc56363"
-              },
-              "published:vidfast": {
-                "action": "probe-targeted-repair",
-                "allowedProfiles": [
-                  "proven_route_terminal_traversal_v1"
-                ],
-                "exitReason": null,
-                "experimentExhausted": false,
-                "experimentGeneration": 2,
-                "experimentVariant": 4,
-                "experimentVariantCount": 5,
-                "failureClass": "route_proven_gap",
-                "hypotheses": [
-                  {
-                    "confidence": 0,
-                    "id": "complete-proven-route-chain",
-                    "learned": false,
-                    "maturity": null,
-                    "profile": null,
-                    "transferScore": 0
-                  },
-                  {
-                    "confidence": 0,
-                    "id": "expand-proven-route-neighborhood",
-                    "learned": false,
-                    "maturity": null,
-                    "profile": null,
-                    "transferScore": 0
-                  }
-                ],
-                "learningDisposition": "core_repair_only",
-                "llmAdvisorApplied": true,
-                "llmAdvisorConfidence": 0.86,
-                "llmAdvisorExperiment": {
-                  "aliasSearch": true,
-                  "documentRequestMining": true,
-                  "maxDepth": 6,
-                  "maxEmbeds": 26,
-                  "maxPages": 36,
-                  "maxRecipePasses": 6,
-                  "recipePolicy": "current_plus_provider",
-                  "responseSalvage": true,
-                  "roleOrder": [
-                    "search",
-                    "detail",
-                    "api",
-                    "episode",
-                    "player",
-                    "source",
-                    "other"
+                    "player"
                   ],
                   "routePolicy": "owned_plus_peer",
-                  "sessionBootstrap": false,
-                  "terminalOnly": false
-                },
-                "llmAdvisorExperimentFingerprint": "b95df590cde2e945138f24c45e9859a6f815f3208beb13944cc139c330ba2495",
-                "llmAdvisorFailureCompatibility": "exact-rebound",
-                "llmAdvisorGuidanceKind": "meta-gap-synthesis",
-                "llmAdvisorProfile": "proven_route_terminal_traversal_v1",
-                "llmAdvisorRescue": true,
-                "llmAdvisorSourceFailureClass": "route_proven_gap",
-                "llmAdvisorStrategy": "meta-gap-route-transition-composition",
-                "metaGapEscalated": false,
-                "negativeMemoryMatches": 12,
-                "positiveProgramFingerprint": "",
-                "postExhaustionStrategyMethod": "",
-                "postExhaustionStrategyProfile": "",
-                "providerId": "vidfast",
-                "providerPositiveProgramProductionRescue": false,
-                "providerPositiveProgramReplay": false,
-                "repairScope": "capability",
-                "repairType": "route_chain_completion",
-                "signature": "ab166763bfa1d2683dc56363"
-              },
-              "published:vostfree": {
-                "action": "probe-targeted-repair",
-                "allowedProfiles": [
-                  "adaptive_runtime_recovery"
-                ],
-                "exitReason": null,
-                "experimentExhausted": false,
-                "experimentGeneration": 1,
-                "experimentVariant": 3,
-                "experimentVariantCount": 5,
-                "failureClass": "route_proven_gap",
-                "hypotheses": [
-                  {
-                    "confidence": 0,
-                    "id": "complete-proven-route-chain",
-                    "learned": false,
-                    "maturity": null,
-                    "profile": null,
-                    "transferScore": 0
-                  },
-                  {
-                    "confidence": 0,
-                    "id": "expand-proven-route-neighborhood",
-                    "learned": false,
-                    "maturity": null,
-                    "profile": null,
-                    "transferScore": 0
-                  }
-                ],
-                "learningDisposition": "core_repair_only",
-                "llmAdvisorApplied": false,
-                "llmAdvisorConfidence": 0,
-                "llmAdvisorExperiment": {},
-                "llmAdvisorExperimentFingerprint": "",
-                "llmAdvisorFailureCompatibility": "",
-                "llmAdvisorGuidanceKind": "",
-                "llmAdvisorProfile": "",
-                "llmAdvisorRescue": false,
-                "llmAdvisorSourceFailureClass": "",
-                "llmAdvisorStrategy": "",
-                "metaGapEscalated": false,
-                "negativeMemoryMatches": 3,
-                "positiveProgramFingerprint": "",
-                "postExhaustionStrategyMethod": "",
-                "postExhaustionStrategyProfile": "",
-                "providerId": "vostfree",
-                "providerPositiveProgramProductionRescue": false,
-                "providerPositiveProgramReplay": false,
-                "repairScope": "capability",
-                "repairType": "route_chain_completion",
-                "signature": "4f4ba579b9e3ad40055ea4b3"
-              },
-              "published:yflix": {
-                "action": "probe-targeted-repair",
-                "allowedProfiles": [
-                  "proven_route_terminal_traversal_v1"
-                ],
-                "exitReason": null,
-                "experimentExhausted": false,
-                "experimentGeneration": 2,
-                "experimentVariant": 4,
-                "experimentVariantCount": 5,
-                "failureClass": "route_proven_gap",
-                "hypotheses": [
-                  {
-                    "confidence": 0,
-                    "id": "complete-proven-route-chain",
-                    "learned": false,
-                    "maturity": null,
-                    "profile": null,
-                    "transferScore": 0
-                  },
-                  {
-                    "confidence": 0,
-                    "id": "expand-proven-route-neighborhood",
-                    "learned": false,
-                    "maturity": null,
-                    "profile": null,
-                    "transferScore": 0
-                  }
-                ],
-                "learningDisposition": "core_repair_only",
-                "llmAdvisorApplied": true,
-                "llmAdvisorConfidence": 0.86,
-                "llmAdvisorExperiment": {
-                  "aliasSearch": true,
-                  "documentRequestMining": true,
-                  "maxDepth": 6,
-                  "maxEmbeds": 26,
-                  "maxPages": 36,
-                  "maxRecipePasses": 6,
-                  "recipePolicy": "current_plus_provider",
-                  "responseSalvage": true,
-                  "roleOrder": [
-                    "search",
-                    "detail",
-                    "api",
-                    "episode",
-                    "player",
-                    "source",
-                    "other"
-                  ],
-                  "routePolicy": "owned_plus_peer",
-                  "sessionBootstrap": false,
-                  "terminalOnly": false
-                },
-                "llmAdvisorExperimentFingerprint": "b95df590cde2e945138f24c45e9859a6f815f3208beb13944cc139c330ba2495",
-                "llmAdvisorFailureCompatibility": "exact-rebound",
-                "llmAdvisorGuidanceKind": "meta-gap-synthesis",
-                "llmAdvisorProfile": "proven_route_terminal_traversal_v1",
-                "llmAdvisorRescue": true,
-                "llmAdvisorSourceFailureClass": "route_proven_gap",
-                "llmAdvisorStrategy": "meta-gap-route-transition-composition",
-                "metaGapEscalated": false,
-                "negativeMemoryMatches": 12,
-                "positiveProgramFingerprint": "",
-                "postExhaustionStrategyMethod": "",
-                "postExhaustionStrategyProfile": "",
-                "providerId": "yflix",
-                "providerPositiveProgramProductionRescue": false,
-                "providerPositiveProgramReplay": false,
-                "repairScope": "capability",
-                "repairType": "route_chain_completion",
-                "signature": "ab166763bfa1d2683dc56363"
-              }
-            },
-            "queuedForLearning": [],
-            "validatedRepairLearningExecuted": true
-          },
-          "capabilityStrategy": "mixed",
-          "deferredToLearning": [
-            "4khdhub",
-            "allanime",
-            "anime-ultime",
-            "animesalt",
-            "animesultra",
-            "animevost-fr",
-            "flemmix",
-            "moviebox",
-            "moviesmod",
-            "vidfast",
-            "vostfree",
-            "yflix"
-          ],
-          "familyGroups": [
-            {
-              "capabilityStrategy": "mixed_embed_resolver",
-              "groupId": "route-to-terminal|mixed_embed_resolver",
-              "providers": [
-                "vostfree",
-                "flemmix",
-                "animesultra",
-                "anime-ultime",
-                "yflix"
-              ],
-              "repairScope": "route-to-terminal"
-            },
-            {
-              "capabilityStrategy": "api_stream_resolver",
-              "groupId": "route-to-terminal|api_stream_resolver",
-              "providers": [
-                "animevost-fr"
-              ],
-              "repairScope": "route-to-terminal"
-            },
-            {
-              "capabilityStrategy": "html_scraper",
-              "groupId": "route-to-terminal|html_scraper",
-              "providers": [
-                "moviesmod",
-                "animesalt",
-                "4khdhub"
-              ],
-              "repairScope": "route-to-terminal"
-            },
-            {
-              "capabilityStrategy": "direct_media",
-              "groupId": "terminal-extraction|direct_media",
-              "providers": [
-                "allanime"
-              ],
-              "repairScope": "terminal-extraction"
-            },
-            {
-              "capabilityStrategy": "iframe_player",
-              "groupId": "route-to-terminal|iframe_player",
-              "providers": [
-                "vidfast"
-              ],
-              "repairScope": "route-to-terminal"
-            },
-            {
-              "capabilityStrategy": "html_scraper",
-              "groupId": "terminal-extraction|html_scraper",
-              "providers": [
-                "moviebox",
-                "mallumv"
-              ],
-              "repairScope": "terminal-extraction"
-            }
-          ],
-          "fixedInLab": [],
-          "genericLearningHandoff": [
-            "vostfree"
-          ],
-          "groupId": "packed",
-          "harnessDifferentialProviders": [],
-          "healthConcurrency": 8,
-          "providerCount": 13,
-          "providers": [
-            "vostfree",
-            "flemmix",
-            "animesultra",
-            "anime-ultime",
-            "yflix",
-            "animevost-fr",
-            "moviesmod",
-            "animesalt",
-            "4khdhub",
-            "allanime",
-            "vidfast",
-            "moviebox",
-            "mallumv"
-          ],
-          "repairScope": "mixed",
-          "unexecutableLlmHandoff": []
-        }
-      ],
-      "compileRejectedToLearning": [],
-      "deferredToLearning": [
-        "4khdhub",
-        "allanime",
-        "anime-ultime",
-        "animesalt",
-        "animesultra",
-        "animevost-fr",
-        "flemmix",
-        "moviebox",
-        "moviesmod",
-        "vidfast",
-        "vostfree",
-        "yflix"
-      ],
-      "deferredToLearningCount": 12,
-      "durableMaterializeTargets": [],
-      "experimentMemoryAdvanced": true,
-      "fixedInLab": [],
-      "fixedInLabCount": 0,
-      "inputProviderCount": 13,
-      "rawFixedInLab": [],
-      "rawLabAcceptedCount": 0,
-      "remainingProviderCount": 1,
-      "timeBudgetExhausted": false,
-      "wave": 1
-    },
-    {
-      "acceptedCount": 0,
-      "acceptedProgramCompileFailures": {},
-      "acceptedProgramCompiledProviders": [],
-      "advisorRotationPending": [
-        "mallumv"
-      ],
-      "batches": [
-        {
-          "accepted": [],
-          "acceptedCount": 0,
-          "advisorRemainingFingerprintCounts": {
-            "mallumv": 2
-          },
-          "advisorRotationPending": [
-            "mallumv"
-          ],
-          "batch": 1,
-          "brain": {
-            "harnessDifferentialProviders": [],
-            "learnedEvents": 0,
-            "plans": {
-              "published:mallumv": {
-                "action": "probe-targeted-repair",
-                "allowedProfiles": [
-                  "adaptive_runtime_recovery",
-                  "player_media_extractor_v1",
-                  "chain_terminal_extractor_v1"
-                ],
-                "exitReason": null,
-                "experimentExhausted": false,
-                "experimentGeneration": 2,
-                "experimentVariant": 4,
-                "experimentVariantCount": 5,
-                "failureClass": "chain_terminal_gap",
-                "hypotheses": [
-                  {
-                    "confidence": 1,
-                    "id": "media_extraction_gap:adaptive_runtime_recovery",
-                    "learned": true,
-                    "maturity": "experimental",
-                    "profile": "adaptive_runtime_recovery",
-                    "transferScore": 1047
-                  },
-                  {
-                    "confidence": 1,
-                    "id": "media_extraction_gap:player_media_extractor_v1",
-                    "learned": true,
-                    "maturity": "experimental",
-                    "profile": "player_media_extractor_v1",
-                    "transferScore": 1047
-                  },
-                  {
-                    "confidence": 0,
-                    "id": "finish-reached-terminal-chain",
-                    "learned": false,
-                    "maturity": null,
-                    "profile": null,
-                    "transferScore": 0
-                  }
-                ],
-                "learningDisposition": "core_repair_only",
-                "llmAdvisorApplied": true,
-                "llmAdvisorConfidence": 0.86,
-                "llmAdvisorExperiment": {
-                  "aliasSearch": false,
-                  "documentRequestMining": true,
-                  "maxDepth": 6,
-                  "maxEmbeds": 36,
-                  "maxPages": 28,
-                  "maxRecipePasses": 6,
-                  "recipePolicy": "current_plus_provider",
-                  "responseSalvage": true,
-                  "roleOrder": [
-                    "player",
-                    "source",
-                    "api",
-                    "episode",
-                    "detail",
-                    "search",
-                    "other"
-                  ],
-                  "routePolicy": "owned_only",
                   "sessionBootstrap": true,
                   "terminalOnly": true
                 },
-                "llmAdvisorExperimentFingerprint": "1570be0cb51b225b6a4a7103f6ff96a841c4d80bc49fe3ebe4c8b6932fed8836",
+                "llmAdvisorExperimentFingerprint": "44120951c1be1141d28ace8c53ff631558c9c1056e798f0822feaa3f15bd21e2",
                 "llmAdvisorFailureCompatibility": "exact-rebound",
                 "llmAdvisorGuidanceKind": "meta-gap-synthesis",
                 "llmAdvisorProfile": "chain_terminal_extractor_v1",
@@ -1306,7 +167,7 @@
                 "llmAdvisorSourceFailureClass": "chain_terminal_gap",
                 "llmAdvisorStrategy": "meta-gap-terminal-media-composition",
                 "metaGapEscalated": false,
-                "negativeMemoryMatches": 35,
+                "negativeMemoryMatches": 37,
                 "positiveProgramFingerprint": "",
                 "postExhaustionStrategyMethod": "",
                 "postExhaustionStrategyProfile": "",
@@ -1358,7 +219,407 @@
       "rawLabAcceptedCount": 0,
       "remainingProviderCount": 1,
       "timeBudgetExhausted": false,
+      "wave": 1
+    },
+    {
+      "acceptedCount": 0,
+      "acceptedProgramCompileFailures": {},
+      "acceptedProgramCompiledProviders": [],
+      "advisorRotationPending": [
+        "mallumv"
+      ],
+      "batches": [
+        {
+          "accepted": [],
+          "acceptedCount": 0,
+          "advisorRemainingFingerprintCounts": {
+            "mallumv": 2
+          },
+          "advisorRotationPending": [
+            "mallumv"
+          ],
+          "batch": 1,
+          "brain": {
+            "harnessDifferentialProviders": [],
+            "learnedEvents": 0,
+            "plans": {
+              "published:mallumv": {
+                "action": "deferred_retry",
+                "allowedProfiles": [],
+                "exitReason": "experiment_variants_exhausted",
+                "experimentExhausted": true,
+                "experimentGeneration": 2,
+                "experimentVariant": 4,
+                "experimentVariantCount": 5,
+                "failureClass": "chain_terminal_gap",
+                "hypotheses": [],
+                "learningDisposition": "queue_new_strategy_after_variant_exhaustion",
+                "llmAdvisorApplied": false,
+                "llmAdvisorConfidence": 0,
+                "llmAdvisorExperiment": {},
+                "llmAdvisorExperimentFingerprint": "",
+                "llmAdvisorFailureCompatibility": "",
+                "llmAdvisorGuidanceKind": "",
+                "llmAdvisorProfile": "",
+                "llmAdvisorRescue": false,
+                "llmAdvisorSourceFailureClass": "",
+                "llmAdvisorStrategy": "",
+                "metaGapEscalated": false,
+                "negativeMemoryMatches": 39,
+                "positiveProgramFingerprint": "",
+                "postExhaustionStrategyMethod": "",
+                "postExhaustionStrategyProfile": "",
+                "providerId": "mallumv",
+                "providerPositiveProgramProductionRescue": false,
+                "providerPositiveProgramReplay": false,
+                "repairScope": "deferred",
+                "repairType": "experiment_strategy_exhausted",
+                "signature": "7552d045488f7eee1fe978e5"
+              }
+            },
+            "queuedForLearning": [
+              "mallumv"
+            ],
+            "validatedRepairLearningExecuted": true
+          },
+          "capabilityStrategy": "html_scraper",
+          "deferredToLearning": [],
+          "familyGroups": [
+            {
+              "capabilityStrategy": "html_scraper",
+              "groupId": "terminal-extraction|html_scraper",
+              "providers": [
+                "mallumv"
+              ],
+              "repairScope": "terminal-extraction"
+            }
+          ],
+          "fixedInLab": [],
+          "genericLearningHandoff": [],
+          "groupId": "terminal-extraction|html_scraper",
+          "harnessDifferentialProviders": [],
+          "healthConcurrency": 1,
+          "providerCount": 1,
+          "providers": [
+            "mallumv"
+          ],
+          "repairScope": "terminal-extraction",
+          "unexecutableLlmHandoff": []
+        }
+      ],
+      "compileRejectedToLearning": [],
+      "deferredToLearning": [],
+      "deferredToLearningCount": 0,
+      "durableMaterializeTargets": [],
+      "experimentMemoryAdvanced": false,
+      "fixedInLab": [],
+      "fixedInLabCount": 0,
+      "inputProviderCount": 1,
+      "rawFixedInLab": [],
+      "rawLabAcceptedCount": 0,
+      "remainingProviderCount": 1,
+      "timeBudgetExhausted": false,
       "wave": 2
+    },
+    {
+      "acceptedCount": 0,
+      "acceptedProgramCompileFailures": {},
+      "acceptedProgramCompiledProviders": [],
+      "advisorRotationPending": [
+        "mallumv"
+      ],
+      "batches": [
+        {
+          "accepted": [],
+          "acceptedCount": 0,
+          "advisorRemainingFingerprintCounts": {
+            "mallumv": 2
+          },
+          "advisorRotationPending": [
+            "mallumv"
+          ],
+          "batch": 1,
+          "brain": {
+            "harnessDifferentialProviders": [],
+            "learnedEvents": 0,
+            "plans": {
+              "published:mallumv": {
+                "action": "deferred_retry",
+                "allowedProfiles": [],
+                "exitReason": "experiment_variants_exhausted",
+                "experimentExhausted": true,
+                "experimentGeneration": 2,
+                "experimentVariant": 4,
+                "experimentVariantCount": 5,
+                "failureClass": "chain_terminal_gap",
+                "hypotheses": [],
+                "learningDisposition": "queue_new_strategy_after_variant_exhaustion",
+                "llmAdvisorApplied": false,
+                "llmAdvisorConfidence": 0,
+                "llmAdvisorExperiment": {},
+                "llmAdvisorExperimentFingerprint": "",
+                "llmAdvisorFailureCompatibility": "",
+                "llmAdvisorGuidanceKind": "",
+                "llmAdvisorProfile": "",
+                "llmAdvisorRescue": false,
+                "llmAdvisorSourceFailureClass": "",
+                "llmAdvisorStrategy": "",
+                "metaGapEscalated": false,
+                "negativeMemoryMatches": 39,
+                "positiveProgramFingerprint": "",
+                "postExhaustionStrategyMethod": "",
+                "postExhaustionStrategyProfile": "",
+                "providerId": "mallumv",
+                "providerPositiveProgramProductionRescue": false,
+                "providerPositiveProgramReplay": false,
+                "repairScope": "deferred",
+                "repairType": "experiment_strategy_exhausted",
+                "signature": "7552d045488f7eee1fe978e5"
+              }
+            },
+            "queuedForLearning": [
+              "mallumv"
+            ],
+            "validatedRepairLearningExecuted": true
+          },
+          "capabilityStrategy": "html_scraper",
+          "deferredToLearning": [],
+          "familyGroups": [
+            {
+              "capabilityStrategy": "html_scraper",
+              "groupId": "terminal-extraction|html_scraper",
+              "providers": [
+                "mallumv"
+              ],
+              "repairScope": "terminal-extraction"
+            }
+          ],
+          "fixedInLab": [],
+          "genericLearningHandoff": [],
+          "groupId": "terminal-extraction|html_scraper",
+          "harnessDifferentialProviders": [],
+          "healthConcurrency": 1,
+          "providerCount": 1,
+          "providers": [
+            "mallumv"
+          ],
+          "repairScope": "terminal-extraction",
+          "unexecutableLlmHandoff": []
+        }
+      ],
+      "compileRejectedToLearning": [],
+      "deferredToLearning": [],
+      "deferredToLearningCount": 0,
+      "durableMaterializeTargets": [],
+      "experimentMemoryAdvanced": false,
+      "fixedInLab": [],
+      "fixedInLabCount": 0,
+      "inputProviderCount": 1,
+      "rawFixedInLab": [],
+      "rawLabAcceptedCount": 0,
+      "remainingProviderCount": 1,
+      "timeBudgetExhausted": false,
+      "wave": 3
+    },
+    {
+      "acceptedCount": 0,
+      "acceptedProgramCompileFailures": {},
+      "acceptedProgramCompiledProviders": [],
+      "advisorRotationPending": [
+        "mallumv"
+      ],
+      "batches": [
+        {
+          "accepted": [],
+          "acceptedCount": 0,
+          "advisorRemainingFingerprintCounts": {
+            "mallumv": 2
+          },
+          "advisorRotationPending": [
+            "mallumv"
+          ],
+          "batch": 1,
+          "brain": {
+            "harnessDifferentialProviders": [],
+            "learnedEvents": 0,
+            "plans": {
+              "published:mallumv": {
+                "action": "deferred_retry",
+                "allowedProfiles": [],
+                "exitReason": "experiment_variants_exhausted",
+                "experimentExhausted": true,
+                "experimentGeneration": 2,
+                "experimentVariant": 4,
+                "experimentVariantCount": 5,
+                "failureClass": "chain_terminal_gap",
+                "hypotheses": [],
+                "learningDisposition": "queue_new_strategy_after_variant_exhaustion",
+                "llmAdvisorApplied": false,
+                "llmAdvisorConfidence": 0,
+                "llmAdvisorExperiment": {},
+                "llmAdvisorExperimentFingerprint": "",
+                "llmAdvisorFailureCompatibility": "",
+                "llmAdvisorGuidanceKind": "",
+                "llmAdvisorProfile": "",
+                "llmAdvisorRescue": false,
+                "llmAdvisorSourceFailureClass": "",
+                "llmAdvisorStrategy": "",
+                "metaGapEscalated": false,
+                "negativeMemoryMatches": 39,
+                "positiveProgramFingerprint": "",
+                "postExhaustionStrategyMethod": "",
+                "postExhaustionStrategyProfile": "",
+                "providerId": "mallumv",
+                "providerPositiveProgramProductionRescue": false,
+                "providerPositiveProgramReplay": false,
+                "repairScope": "deferred",
+                "repairType": "experiment_strategy_exhausted",
+                "signature": "7552d045488f7eee1fe978e5"
+              }
+            },
+            "queuedForLearning": [
+              "mallumv"
+            ],
+            "validatedRepairLearningExecuted": true
+          },
+          "capabilityStrategy": "html_scraper",
+          "deferredToLearning": [],
+          "familyGroups": [
+            {
+              "capabilityStrategy": "html_scraper",
+              "groupId": "terminal-extraction|html_scraper",
+              "providers": [
+                "mallumv"
+              ],
+              "repairScope": "terminal-extraction"
+            }
+          ],
+          "fixedInLab": [],
+          "genericLearningHandoff": [],
+          "groupId": "terminal-extraction|html_scraper",
+          "harnessDifferentialProviders": [],
+          "healthConcurrency": 1,
+          "providerCount": 1,
+          "providers": [
+            "mallumv"
+          ],
+          "repairScope": "terminal-extraction",
+          "unexecutableLlmHandoff": []
+        }
+      ],
+      "compileRejectedToLearning": [],
+      "deferredToLearning": [],
+      "deferredToLearningCount": 0,
+      "durableMaterializeTargets": [],
+      "experimentMemoryAdvanced": false,
+      "fixedInLab": [],
+      "fixedInLabCount": 0,
+      "inputProviderCount": 1,
+      "rawFixedInLab": [],
+      "rawLabAcceptedCount": 0,
+      "remainingProviderCount": 1,
+      "timeBudgetExhausted": false,
+      "wave": 4
+    },
+    {
+      "acceptedCount": 0,
+      "acceptedProgramCompileFailures": {},
+      "acceptedProgramCompiledProviders": [],
+      "advisorRotationPending": [
+        "mallumv"
+      ],
+      "batches": [
+        {
+          "accepted": [],
+          "acceptedCount": 0,
+          "advisorRemainingFingerprintCounts": {
+            "mallumv": 2
+          },
+          "advisorRotationPending": [
+            "mallumv"
+          ],
+          "batch": 1,
+          "brain": {
+            "harnessDifferentialProviders": [],
+            "learnedEvents": 0,
+            "plans": {
+              "published:mallumv": {
+                "action": "deferred_retry",
+                "allowedProfiles": [],
+                "exitReason": "experiment_variants_exhausted",
+                "experimentExhausted": true,
+                "experimentGeneration": 2,
+                "experimentVariant": 4,
+                "experimentVariantCount": 5,
+                "failureClass": "chain_terminal_gap",
+                "hypotheses": [],
+                "learningDisposition": "queue_new_strategy_after_variant_exhaustion",
+                "llmAdvisorApplied": false,
+                "llmAdvisorConfidence": 0,
+                "llmAdvisorExperiment": {},
+                "llmAdvisorExperimentFingerprint": "",
+                "llmAdvisorFailureCompatibility": "",
+                "llmAdvisorGuidanceKind": "",
+                "llmAdvisorProfile": "",
+                "llmAdvisorRescue": false,
+                "llmAdvisorSourceFailureClass": "",
+                "llmAdvisorStrategy": "",
+                "metaGapEscalated": false,
+                "negativeMemoryMatches": 39,
+                "positiveProgramFingerprint": "",
+                "postExhaustionStrategyMethod": "",
+                "postExhaustionStrategyProfile": "",
+                "providerId": "mallumv",
+                "providerPositiveProgramProductionRescue": false,
+                "providerPositiveProgramReplay": false,
+                "repairScope": "deferred",
+                "repairType": "experiment_strategy_exhausted",
+                "signature": "7552d045488f7eee1fe978e5"
+              }
+            },
+            "queuedForLearning": [
+              "mallumv"
+            ],
+            "validatedRepairLearningExecuted": true
+          },
+          "capabilityStrategy": "html_scraper",
+          "deferredToLearning": [],
+          "familyGroups": [
+            {
+              "capabilityStrategy": "html_scraper",
+              "groupId": "terminal-extraction|html_scraper",
+              "providers": [
+                "mallumv"
+              ],
+              "repairScope": "terminal-extraction"
+            }
+          ],
+          "fixedInLab": [],
+          "genericLearningHandoff": [],
+          "groupId": "terminal-extraction|html_scraper",
+          "harnessDifferentialProviders": [],
+          "healthConcurrency": 1,
+          "providerCount": 1,
+          "providers": [
+            "mallumv"
+          ],
+          "repairScope": "terminal-extraction",
+          "unexecutableLlmHandoff": []
+        }
+      ],
+      "compileRejectedToLearning": [],
+      "deferredToLearning": [],
+      "deferredToLearningCount": 0,
+      "durableMaterializeTargets": [],
+      "experimentMemoryAdvanced": false,
+      "fixedInLab": [],
+      "fixedInLabCount": 0,
+      "inputProviderCount": 1,
+      "rawFixedInLab": [],
+      "rawLabAcceptedCount": 0,
+      "remainingProviderCount": 1,
+      "timeBudgetExhausted": false,
+      "wave": 5
     }
   ]
 }
