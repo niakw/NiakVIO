@@ -5655,3 +5655,8 @@ This ledger is not complete merely because provider yield improves. Final comple
 ### 2026-09-27 — MalluMV current-byte retest retry 10
 - The targeted-regression workflow attached to test-only commit 56b9ff0b correctly skipped provider probing because provider bytes did not change.
 - The dedicated provider-retest trigger is now used instead, targeting only mallumv with autoRepair=false. This validates current published MalluMV bytes without mutating providers or launching the portfolio repair.
+
+### 2026-09-27 — MalluMV VikingFile HTML-entity URL bug confirmed
+- Authoritative MalluMV-only Retest 36284658048 still returned no streams, but exposed the concrete failure: after the valid Vik1ngFile and fast-download requests the runtime attempted https://vikingfile.com/f/<id>&quot; and raised TypeError.
+- Root cause is raw URL extraction retaining HTML entities in URL-like strings. MalluMV now decodes common URL HTML entities (&amp;, &quot;, numeric quote entities, apostrophe entities), unescapes slash encodings, and strips surrounding quote characters before URL parsing.
+- Synthetic VikingFile coverage now includes the observed canonical URL carrying a trailing &quot; entity and requires the clean /f/<id> URL to be fetched with no entity leakage.

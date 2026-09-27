@@ -25,7 +25,8 @@ global.fetch=async function(url,opt){
   if(url==="https://mallumv.space/confirm/1755/998/Interstellar_2014_English.xhtml") return R(200,'<a class="touch" href="/internal/1755/998/Interstellar_2014_English.xhtml">Confirm Download</a>',url);
   if(url==="https://mallumv.space/internal/1755/998/Interstellar_2014_English.xhtml") return R(200,'<a href="https://hubcloud.example/drive/abc123">HubCloud</a>',url);
   if(url==="https://mallumv.space/internal/6705/1755/Interstellar_2014_English.xhtml") return R(200,'<a href="https://vik1ngfile.site/f/tMAohzba53">Download 1080p</a>',url);
-  if(url==="https://vik1ngfile.site/f/tMAohzba53") return R(200,'<a href="https://vikingfile.com/fast-download/interstellar">Fast Download</a>',url);
+  if(url==="https://vik1ngfile.site/f/tMAohzba53") return R(200,'<script>var canonical="https://vikingfile.com/f/tMAohzba53&quot;";</script><a href="https://vikingfile.com/fast-download/interstellar">Fast Download</a>',url);
+  if(url==="https://vikingfile.com/f/tMAohzba53") return R(200,'<a href="https://vikingfile.com/fast-download/interstellar">Fast Download</a>',url);
   if(url==="https://vikingfile.com/fast-download/interstellar") return mode==="viking-header"
     ? R(200,"BINARY",url,{"content-type":"application/octet-stream","content-disposition":'attachment; filename="Interstellar.2014.1080p.mkv"'})
     : R(200,'<video controls><source src="/stream/interstellar.mkv" type="video/x-matroska"></video>',url,{"content-type":"text/html; charset=UTF-8"});
@@ -69,7 +70,8 @@ module={exports:{getStreams:async()=>[]}};
   if(!Array.isArray(vikingOut)||vikingOut.length!==1)throw new Error("expected VikingFile terminal "+JSON.stringify(vikingOut));
   if(vikingOut[0].url!=="https://vikingfile.com/stream/interstellar.mkv"||vikingOut[0].isDirect!==true)throw new Error("wrong VikingFile terminal "+JSON.stringify(vikingOut[0]));
   const vikingFlat=calls.join("\n");
-  for(const token of ["/internal/6705/1755/Interstellar_2014_English.xhtml","https://vik1ngfile.site/f/tMAohzba53","https://vikingfile.com/fast-download/interstellar","https://vikingfile.com/stream/interstellar.mkv"]) if(!vikingFlat.includes(token)) throw new Error("missing viking "+token+"\n"+vikingFlat);
+  for(const token of ["/internal/6705/1755/Interstellar_2014_English.xhtml","https://vik1ngfile.site/f/tMAohzba53","https://vikingfile.com/f/tMAohzba53","https://vikingfile.com/fast-download/interstellar","https://vikingfile.com/stream/interstellar.mkv"]) if(!vikingFlat.includes(token)) throw new Error("missing viking "+token+"\n"+vikingFlat);
+  if(vikingFlat.includes("&quot;"))throw new Error("HTML entity leaked into VikingFile request\n"+vikingFlat);
   if(vikingFlat.includes("/confirm/"))throw new Error("VikingFile live-shape unexpectedly required confirm\n"+vikingFlat);
 
   calls.length=0; mode="viking-header";
