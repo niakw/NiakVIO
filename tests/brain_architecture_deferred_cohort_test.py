@@ -169,7 +169,7 @@ with tempfile.TemporaryDirectory(prefix="niakvio-arch-cohort-") as tmp:
     assert row["evidence"]["providers"] == ["alpha", "beta"], row
     assert row["evidence"]["failureCohorts"]["chain_terminal_gap"] == ["alpha", "beta"], row
     assert row["evidence"]["failedProfileCohorts"]["adaptive_runtime_recovery"] == ["alpha", "beta"], row
-    assert row["evidence"]["repeatedSignatureCount"] == 1, row
+    assert row["evidence"]["repeatedSignatureCount"] == 2, row
     assert "engine_v2/src/repair-brain.mjs" in row["targets"], row
     assert result["deferredRepairProviderCount"] == 2, result
     assert result["deferredRepairProviders"] == ["alpha", "beta"], result

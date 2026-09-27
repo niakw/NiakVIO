@@ -5744,3 +5744,7 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Root cause: build_brain_architecture_proposal.py treated a failed strategy profile as globally exhausted for a provider across all historical signatures. MalluMV had terminal_transition_graph_v1 failures on old signature 4e8d92b8a8961450d87b63b2, so that old debt suppressed the strategy on the new signature.
 - The builder now derives active signatures from the current Learning queue attemptedMethods and limits negative-memory strategy suppression to those signatures when current evidence exists. Historical memory remains fallback authority when no current signature is observable.
 - The strategy-level filter remains fail-closed: once terminal_transition_graph_v1 fails on the current signature it is still suppressed. The deferred-cohort contract now includes an old-signature failure that must not suppress the current signature.
+
+### 2026-09-27 — Signature-aware architecture gate evidence
+- Workflow Gate 36289283512 proved the new behavior before failing on a stale fixture count: terminal_transition_graph_v1 was emitted for alpha/current signature with forcePromotionEligible=true even though the same strategy had failed on old-terminal-signature.
+- The only failure was repeatedSignatureCount, which correctly increased from 1 to 2 because the fixture now contains both current and historical signatures. The contract expectation is aligned to 2; Brain logic is unchanged.
