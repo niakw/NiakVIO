@@ -3,7 +3,7 @@
   "sourceRunId": "36282347595-retest",
   "sourceTriggerSha": "7df5677e981e3b7f71e165e504ae284cf67f38d0",
   "sourcePlanRunId": "36282347595-retest",
-  "sourceVerdictRunId": "36282961140",
+  "sourceVerdictRunId": "36283311130",
   "providerCount": 14,
   "groupCount": 9,
   "groups": [
@@ -211,14 +211,18 @@
       "providers": [
         "mallumv"
       ],
-      "networkSignature": "provider_network_zero_result||movie:GET:api.themoviedb.org:200:/{id}/movie/{id};movie:GET:mallumv.space:200:/movie/{id}/{id};movie:GET:mallumv.space:200:/search.php",
+      "networkSignature": "provider_network_zero_result||movie:GET:api.themoviedb.org:200:/{id}/movie/{id};movie:GET:mallumv.space:200:/internal/{id}/{id}/{id};movie:GET:mallumv.space:200:/movie/{id}/{id};movie:GET:mallumv.space:200:/search.php;movie:GET:vik1ngfile.site:200:/f/tMAohzba53;movie:GET:vik1ngfile.site:200:/f/u6lxab0wCH;movie:GET:vikingfile.com:200:/fast-download/{id}",
       "debugStages": [
         "provider_network_zero_result"
       ],
       "networkShape": [
         "movie:GET:api.themoviedb.org:200:/{id}/movie/{id}",
+        "movie:GET:mallumv.space:200:/internal/{id}/{id}/{id}",
         "movie:GET:mallumv.space:200:/movie/{id}/{id}",
-        "movie:GET:mallumv.space:200:/search.php"
+        "movie:GET:mallumv.space:200:/search.php",
+        "movie:GET:vik1ngfile.site:200:/f/tMAohzba53",
+        "movie:GET:vik1ngfile.site:200:/f/u6lxab0wCH",
+        "movie:GET:vikingfile.com:200:/fast-download/{id}"
       ],
       "splitReason": "observed-signature-divergence",
       "executionPolicy": "batch-first"
