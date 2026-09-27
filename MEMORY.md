@@ -5748,3 +5748,9 @@ This ledger is not complete merely because provider yield improves. Final comple
 ### 2026-09-27 — Signature-aware architecture gate evidence
 - Workflow Gate 36289283512 proved the new behavior before failing on a stale fixture count: terminal_transition_graph_v1 was emitted for alpha/current signature with forcePromotionEligible=true even though the same strategy had failed on old-terminal-signature.
 - The only failure was repeatedSignatureCount, which correctly increased from 1 to 2 because the fixture now contains both current and historical signatures. The contract expectation is aligned to 2; Brain logic is unchanged.
+
+### 2026-09-27 — Projection fixed-point reconciliation before single-provider Brain retry
+- Main 83f9f8200fe9 has Workflow Gate, Non-Regression and CodeQL green, but Verify & Publish failed because reapply_published_overrides --check detected provider-policy-changed:animevostfr.
+- This is publication projection drift, not a MalluMV or Brain failure. The dedicated Projection Reconcile workflow is triggered to detect and rebuild only drifted published providers, then explicitly re-run census, CORE Quick and security on its final SHA.
+- No MalluMV provider code is hand-edited. After publication fixed point is restored, MalluMV alone will be sent back through Fast Brain Repair -> Learning/Qwen on the current signature-scoped architecture exhaustion logic.
+- Global 15-provider Repair remains paused until at least one broken provider is genuinely repaired and then one representative per remaining failure/provider family is validated.
