@@ -113,12 +113,11 @@ export function buildBadges(facts = {}) {
   if (facts.audioCodec) out.push(facts.audioCodec);
   if (facts.audioChannels) out.push(facts.audioChannels);
   if (facts.audioSampleRate) out.push(facts.audioSampleRate);
-  const trackBadges = (facts.languageTracks ?? []).map(compactTrackLabel).filter(Boolean);
+  const trackBadges = (facts.languageTracks ?? []).filter((track) => String(track?.role ?? "").toLowerCase() !== "sub").map(compactTrackLabel).filter(Boolean);
   if (trackBadges.length) out.push(...trackBadges); else {
     const fallbackCode = normalizeLanguageCode(facts.language);
     if (fallbackCode) out.push(fallbackCode.toUpperCase());
   }
-  out.push(...(facts.subtitles ?? []));
   if (facts.ageRating) out.push(facts.ageRating);
   return uniq(out);
 }
@@ -155,19 +154,10 @@ export function buildBadgeIds(facts = {}) {
   const tracks = Array.isArray(facts.languageTracks) ? facts.languageTracks : [];
   for (const track of tracks) {
     const code = normalizeLanguageCode(track?.code ?? track?.tag ?? track?.label);
-    if (!code) continue;
-    ids.push(String(track?.role ?? "").toLowerCase() === "sub" ? "sub-" + code : "lang-" + code);
+    if (!code || String(track?.role ?? "").toLowerCase() === "sub") continue;
+    ids.push("lang-" + code);
   }
   if (!tracks.length) { const code = normalizeLanguageCode(facts.language); if (code) ids.push("lang-" + code); }
-  for (const value of facts.subtitles ?? []) {
-    const text = String(value ?? "").trim();
-    if (/^VOSTFR$/i.test(text)) { ids.push("sub-fr"); continue; }
-    if (/^FORCED$/i.test(text)) { ids.push("forced"); continue; }
-    if (/^(?:SDH|CC|SDH\/CC)$/i.test(text)) { ids.push("sdh-cc"); continue; }
-    const match = text.match(/^SUB\s+([A-Z]{2,3}(?:-[A-Z0-9]{2,3})?)$/i);
-    const code = match ? normalizeLanguageCode(match[1]) : null;
-    if (code) ids.push("sub-" + code);
-  }
   const age = ageBadgeId(facts.ageRating);
   if (age) ids.push(age);
   return uniq(ids);
@@ -454,6 +444,11 @@ export function normalizeLanguage(stream = {}, provider = {}) {
   if (isVfq(hints)) return "VFQ";
   if (hasVf) return "VF";
   if (isVo(hints)) return "VO";
+  const providerLanguages = [...(provider.contentLanguage ?? []), ...(provider.languages ?? []), ...(provider.scraper?.contentLanguage ?? [])]
+    .map((value) => normalizeLanguageCode(value))
+    .filter(Boolean);
+  const uniqueProviderLanguages = uniq(providerLanguages);
+  if (uniqueProviderLanguages.length === 1) return uniqueProviderLanguages[0];
   return null;
 }
 
