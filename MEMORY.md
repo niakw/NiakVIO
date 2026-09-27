@@ -5642,3 +5642,8 @@ This ledger is not complete merely because provider yield improves. Final comple
 - MalluMV runtime now preserves response Content-Type and Content-Disposition. A terminal response is accepted without a filename extension only when headers prove video/audio content, or octet-stream with a video filename in Content-Disposition. HTML landing pages remain rejected.
 - Current runtime contract now includes the observed direct-detail -> internal -> Vik1ngFile -> VikingFile fast-download shape and requires a direct MalluMV stream only when response media headers prove the terminal.
 - Next validation is MalluMV only; no global repair run should be triggered from this change.
+
+### 2026-09-27 — MalluMV VikingFile landing-page crawl
+- Header-only terminal proof on cc2b8660 was insufficient: live targeted probe still reached vikingfile.com/fast-download with HTTP 200 but emitted no stream, proving the endpoint is behaving as an HTML/intermediate response in the probe environment.
+- MalluMV now treats VikingFile/Vik1ngFile as bounded resolver hosts, not as playable output. On those hosts it additionally extracts href/src/data-src/data-url/data-file/action and quoted /download|/stream|/video|/file paths, then continues the existing bounded crawl until direct media or response-header media proof is reached.
+- Synthetic contract covers both observed landing-page style (<source src=...>) and direct response-header style. Neither path accepts a plain HTML 200 as a stream.
