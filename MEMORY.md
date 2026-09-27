@@ -5765,3 +5765,9 @@ This ledger is not complete merely because provider yield improves. Final comple
 - After targeted reconcile reached structural drift=0, Final Security Gate 36290423291 found the three rebuilt providers (allanime, animevostfr, mallumv) still unsafe because their published bytes contained console sinks.
 - The single-provider materializer has already been corrected to harden bytes before validation. To make reconciliation self-healing, detect_provider_projection_drift.py now also reports publication-security-drift for exact published bundles where provider_security_hardening.known_unsafe_findings returns findings.
 - The detector records unsafeFindings per affected provider, so targeted reconciliation can rebuild only genuinely unsafe/stale providers instead of forcing a global rematerialization.
+
+### 2026-09-27 — MalluMV single-provider Brain proof restarted after hardened projection fixed point
+- Projection Reconcile 36290853948 detected exactly allanime, animevostfr and mallumv as publication-security drift, rebuilt only those three with the corrected single-provider materializer, then proved projection drift=0 and published main 20b60bbc.
+- CORE Quick 36290916177 passed on 20b60bbc; Final Security published-provider unsafe-shape scan also passed before its CodeQL wait.
+- Global 15-provider Repair remains paused. MalluMV alone is restarted through Fast Brain Repair with 5 waves, 2400s budget and 3 rounds. Provider mutation authority remains Brain Repair/LLM; no hand-written MalluMV runtime change is authorized.
+- Success requires current-byte playable/verified terminal media. CHAIN REACHED, route proof, workflow success or an unverified candidate is not counted as repaired.
