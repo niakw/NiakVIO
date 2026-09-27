@@ -78,7 +78,7 @@ const vostfr = presentStreamCandidate({
 }, { title: "Film", year: 2026, mediaType: "movie" }, vfProvider);
 assert.equal(vostfr.language, "VOSTFR");
 assert.match(vostfr.description, /🌐 French · Sub/);
-assert.ok(vostfr.badgeIds.includes("sub-fr"));
+assert.ok(!vostfr.badgeIds.some((id) => String(id).startsWith("sub-")));
 
 const vfq = presentStreamCandidate({
   name: "Purstream",
