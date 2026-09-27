@@ -5796,3 +5796,11 @@ This ledger is not complete merely because provider yield improves. Final comple
 - brain-learning-lab now resolves one architecture_force authority in the learning-slot step. workflow_dispatch inputs and the existing .github/triggers/brain-learning-reconstruction push trigger can both set it.
 - Trigger-file FORCE uses the same MalluMV target validation/handoff checks, starts the bounded Qwen/materializer path, suppresses repair/architecture PR creation for that FORCE run, and permits the existing lease-guarded direct-main architecture promotion only after its targeted tests.
 - This allows resuming MalluMV at Learning/LLM without replaying the already-completed Fast waves and without hand-writing a provider repair.
+
+### 2026-09-27 — Representative-family Brain proof phase
+- Global Repair remains paused.
+- AnimeVOSTFR is currently FULL OK and out of repairQueue, but its provider runtime received manual diagnostic/fix work earlier; it is not counted as a pure Brain Repair/LLM success.
+- Provider-specific hand-written fixes are now forbidden for this proof phase. Human changes may repair only Brain/orchestration infrastructure that prevents the Brain from executing, learning or validating.
+- Representative cohort is exactly seven providers, one per remaining causal/provider family: moviebox (terminal-extraction/html_scraper), allanime (terminal-extraction/direct_media), anime-ultime (route-to-terminal/mixed_embed_resolver), 4khdhub (route-to-terminal/html_scraper), animevost-fr (route-to-terminal/api_stream_resolver), vidfast (route-to-terminal/iframe_player), allwish (learning/html_scraper NO PROOF).
+- Fast Brain parameters: waves=4, timeBudgetSeconds=1800, maxRoundsPerBatch=2, publishValidated=true. Success requires current-byte playable/verified media; route/chain/candidate-only evidence is not enough.
+- Repository hygiene is re-triggered to remove brain-architecture/proposal residue and keep only main plus brain-learning/proposals.
