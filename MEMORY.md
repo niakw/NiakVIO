@@ -5910,3 +5910,12 @@ This ledger is not complete merely because provider yield improves. Final comple
   2. **sandbox acceptance coverage** after isolated evaluation; every requested provider must actually pass.
 - This prevents a partial Brain artifact (for example 1 mutation for a 3-family proof) from consuming expensive Deep probes only to fail the already-known 3/3 requirement afterwards.
 - The preflight emits `FIELD_BRAIN_LLM_FORCE_ARTIFACT_COVERAGE` with expected/present/missing counts and fails closed before candidate evaluation when coverage is incomplete.
+
+
+### 2026-09-27 — Vostfree residential replay requalification
+
+- Repair run `36345982243` on tested SHA `88bb6e25ca6f5ede0296c04400f37e9834a70dc6` produced a fresh WAF/residential overlay in which `vostfree` reached **FULL OK** with one raw stream, one playable stream, one verified stream and `identitySafe=true`.
+- That run's overlay temporarily reported **27 FULL OK / repairQueue 13**. The run later failed on the unrelated MalluMV external Brain candidate (baseline and candidate both `runtime_error`, accepted=0), so canonical census persistence did not retain the Vostfree requalification; current tracked census still lists the older 26 FULL OK / 14 repair state.
+- Treat Vostfree as fresh positive evidence, not as a manually edited census entry. The next successful canonical Repair/census pass must re-observe and persist it before the tracked repairQueue is declared 13.
+- Brain family proof integrity was hardened afterwards: explicit external Force cohorts now require complete target coverage before Deep and again after isolated sandbox evaluation.
+- NiakVIO SHA `8ae83fbd89687c1ab1e927f1fce5c3fee0aaf45e` passed Provider Non-Regression, Verify & Publish, Workflow Gate, CodeQL and Brain Branch Maintenance after the coverage/preflight changes.
