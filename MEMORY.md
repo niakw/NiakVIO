@@ -5664,3 +5664,6 @@ This ledger is not complete merely because provider yield improves. Final comple
 ### 2026-09-27 — MalluMV entity fixture follows live fallback order
 - The first entity-cleanup contract incorrectly made the synthetic fast-download page immediately expose a stream, so the bounded crawler correctly stopped before trying the encoded canonical /f URL.
 - The fixture now mirrors live evidence: fast-download is a non-terminal HTML landing page, then the decoded canonical /f/<id> path exposes the media source. This makes the contract specifically prove that &quot; cleanup enables the fallback path.
+
+### 2026-09-27 — MalluMV current-byte retest retry 11
+- Retry 11 targets only MalluMV after the confirmed VikingFile &quot; URL cleanup. autoRepair remains false; no portfolio repair is authorized by this retest.
