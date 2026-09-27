@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
-  "sourceRunId": "36288846829",
-  "sourceTriggerSha": "d07102cb7feb1a9c7e71ab2058b84d1916cc234b",
-  "unresolvedProviderCount": 15,
-  "groupCount": 8,
+  "sourceRunId": "36291165679",
+  "sourceTriggerSha": "9a269033f48e9bf7ffbecc34df6caf8db9f1a52e",
+  "unresolvedProviderCount": 14,
+  "groupCount": 7,
   "executionModel": {
     "default": "family/signature batch",
     "liveProbeConcurrency": "audit_provider_quick_yield ThreadPool",
@@ -94,29 +94,6 @@
         "moviebox"
       ],
       "action": "apply/test shared terminal-player extraction profile to the whole capability family",
-      "executionPolicy": "batch-first",
-      "providerLocalFallback": "only-after-shared-profile-failure"
-    },
-    {
-      "groupId": "candidate-replay|mixed_embed_resolver",
-      "repairScope": "candidate-replay",
-      "runtimeFamilies": [
-        "mixed_embed_resolver"
-      ],
-      "capabilityStrategy": "mixed_embed_resolver",
-      "evidenceDepths": [
-        "chain"
-      ],
-      "dominantIssues": [
-        "network_zero_result"
-      ],
-      "harnessTransportClasses": [],
-      "transportSignature": "not-applicable",
-      "providerCount": 1,
-      "providers": [
-        "animevostfr"
-      ],
-      "action": "replay/rematerialize retained candidate knowledge against current bytes before new mutation",
       "executionPolicy": "batch-first",
       "providerLocalFallback": "only-after-shared-profile-failure"
     },

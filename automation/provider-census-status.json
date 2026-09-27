@@ -1,7 +1,7 @@
 {
   "schemaVersion": 3,
-  "runId": "36288846829",
-  "triggerSha": "d07102cb7feb1a9c7e71ab2058b84d1916cc234b",
+  "runId": "36291165679",
+  "triggerSha": "9a269033f48e9bf7ffbecc34df6caf8db9f1a52e",
   "providers": [
     {
       "provider": "4khdhub",
@@ -332,14 +332,18 @@
     },
     {
       "provider": "animevostfr",
-      "status": "CANDIDATE OK",
+      "status": "FULL OK",
       "underlyingStatus": "",
-      "color": "🟦",
+      "color": "🟢",
       "declaredLanes": [
         "anime"
       ],
-      "currentVerifiedLanes": [],
-      "historicalProof": [],
+      "currentVerifiedLanes": [
+        "anime"
+      ],
+      "historicalProof": [
+        "anime: Jujutsu Kaisen"
+      ],
       "candidateProof": [
         "run 34309729426"
       ],
@@ -347,11 +351,11 @@
         "32 live routes / anime"
       ],
       "latestLaneVerdicts": [
-        "anime=no_streams/provider_network_zero_result"
+        "anime=OK"
       ],
-      "dominantIssue": "provider_network_zero_result",
+      "dominantIssue": "none",
       "searchProgress": [
-        "anime: 4 works tested / 46 retained misses / 2 retained chain hits"
+        "anime: 2 works tested / 46 retained misses / 1 retained chain hit"
       ],
       "evidenceDepth": [
         "anime=chain_reached"
@@ -366,10 +370,10 @@
         "authoritative_route_source"
       ],
       "authorityKnown": true,
-      "action": "replay candidate proof against current bytes; publish only after current verified media",
-      "brainCheckRequired": true,
-      "statusRepairEligible": true,
-      "repairEligible": true,
+      "action": "protect + replay retained proof",
+      "brainCheckRequired": false,
+      "statusRepairEligible": false,
+      "repairEligible": false,
       "testedThisRun": true
     },
     {
@@ -634,6 +638,46 @@
       "testedThisRun": true
     },
     {
+      "provider": "vostfree",
+      "status": "ROUTE PROVEN",
+      "underlyingStatus": "",
+      "color": "🟪",
+      "declaredLanes": [
+        "anime"
+      ],
+      "currentVerifiedLanes": [],
+      "historicalProof": [],
+      "candidateProof": [],
+      "routeProof": [
+        "1 live routes / anime"
+      ],
+      "latestLaneVerdicts": [
+        "anime=no_streams/provider_waf_challenge"
+      ],
+      "dominantIssue": "provider_waf_challenge",
+      "searchProgress": [
+        "anime: 8 works tested / 0 retained misses"
+      ],
+      "evidenceDepth": [
+        "anime=none"
+      ],
+      "harnessTransportClass": "not-applicable",
+      "harnessTransportEvidence": [],
+      "authorityRepairEligible": true,
+      "authorityAction": "KEEP_ROUTE_AUTHORITY",
+      "authorityClass": "hub-or-redirect",
+      "authorityConfidence": "high",
+      "authorityReasons": [
+        "authoritative_route_source"
+      ],
+      "authorityKnown": true,
+      "action": "replay qualified route fixtures and finish terminal extraction/validation",
+      "brainCheckRequired": true,
+      "statusRepairEligible": true,
+      "repairEligible": true,
+      "testedThisRun": true
+    },
+    {
       "provider": "yflix",
       "status": "ROUTE PROVEN",
       "underlyingStatus": "",
@@ -676,48 +720,6 @@
       "statusRepairEligible": true,
       "repairEligible": true,
       "testedThisRun": true
-    },
-    {
-      "provider": "vostfree",
-      "status": "ROUTE PROVEN",
-      "underlyingStatus": "",
-      "color": "🟪",
-      "declaredLanes": [
-        "anime"
-      ],
-      "currentVerifiedLanes": [],
-      "historicalProof": [],
-      "candidateProof": [],
-      "routeProof": [
-        "1 live routes / anime"
-      ],
-      "latestLaneVerdicts": [
-        "anime=no_streams/provider_waf_challenge"
-      ],
-      "dominantIssue": "provider_waf_challenge",
-      "searchProgress": [
-        "anime: 8 works tested / 0 retained misses"
-      ],
-      "evidenceDepth": [
-        "anime=none"
-      ],
-      "harnessTransportClass": "not-applicable",
-      "harnessTransportEvidence": [],
-      "authorityRepairEligible": true,
-      "authorityAction": "KEEP_ROUTE_AUTHORITY",
-      "authorityClass": "hub-or-redirect",
-      "authorityConfidence": "high",
-      "authorityReasons": [
-        "authoritative_route_source"
-      ],
-      "authorityKnown": true,
-      "action": "replay qualified route fixtures and finish terminal extraction/validation",
-      "brainCheckRequired": true,
-      "statusRepairEligible": true,
-      "repairEligible": true,
-      "testedThisRun": false,
-      "reconciledFromCarriedGreen": true,
-      "consistencyNote": "carried green contradicted by its latest lane verdict"
     },
     {
       "provider": "desiflix",
@@ -1954,10 +1956,9 @@
     }
   ],
   "counts": {
-    "CANDIDATE OK": 1,
     "CHAIN REACHED": 3,
     "DISABLED": 4,
-    "FULL OK": 25,
+    "FULL OK": 26,
     "NO PROOF": 1,
     "PARTIAL OK": 2,
     "ROUTE PROVEN": 10
@@ -1970,7 +1971,6 @@
     "animesalt",
     "animesultra",
     "animevost-fr",
-    "animevostfr",
     "flemmix",
     "mallumv",
     "moviebox",
@@ -1987,7 +1987,6 @@
     "animesalt",
     "animesultra",
     "animevost-fr",
-    "animevostfr",
     "flemmix",
     "mallumv",
     "moviebox",
@@ -2004,7 +2003,6 @@
     "animesalt",
     "animesultra",
     "animevost-fr",
-    "animevostfr",
     "flemmix",
     "mallumv",
     "moviebox",
@@ -2022,21 +2020,5 @@
   "environmentQueue": [],
   "harnessMismatchQueue": [],
   "environmentBlockedQueue": [],
-  "harnessQueue": [],
-  "lastRepairAttempt": {
-    "runId": "36291057638",
-    "sourceCensusRunId": "36288846829",
-    "selectedProviders": [
-      "mallumv"
-    ],
-    "candidateProviders": [],
-    "validatedProviders": [],
-    "acceptedRepairCount": 0,
-    "deferredToLearningSlotProviders": [
-      "mallumv"
-    ],
-    "noProgressReason": "no_new_repair_experiment",
-    "timeBudgetExhausted": false,
-    "publicationAllowed": false
-  }
+  "harnessQueue": []
 }
