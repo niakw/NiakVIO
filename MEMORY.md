@@ -5720,3 +5720,9 @@ This ledger is not complete merely because provider yield improves. Final comple
 - The current probe fixture identity (for example Jujutsu Kaisen) was available to the runtime, but Core metadata could replace it with original/non-Latin aliases before the bounded search loop. The first four search attempts could therefore miss the exact user-visible title entirely.
 - animevostfr_runtime_v1 now preserves fixtureMetadata/fixtureTitle as a preferred alias and ranks searchable Latin titles ahead of non-Latin aliases. No fixture title is hardcoded.
 - Historical route proof records Jujutsu Kaisen S01E01 reaching AnimeVOSTFR trembed routes with two raw streams; the next exact Retest must prove current episode/player depth and playable/verified output before requalification.
+
+### 2026-09-27 — Single-provider Brain proof: MalluMV
+- Portfolio Repair is paused. The active Fast Brain trigger targets MalluMV only.
+- Current MalluMV authority is CHAIN REACHED: detail -> internal -> Vik1ngFile/VikingFile is proven, but the current free terminal requires browser/button/Turnstile interaction and no HTTP-only fake success is accepted.
+- This run is intentionally a Brain Repair proof, not a hand-written provider patch: waves=5, timeBudgetSeconds=2400, maxRoundsPerBatch=3, publishValidated=true.
+- Success means current-byte playable/verified terminal media and publication only after the normal Retest/non-regression gates. Failure must preserve the exact terminal/browser cause for Brain learning.
