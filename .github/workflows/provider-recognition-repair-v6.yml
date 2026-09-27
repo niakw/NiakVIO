@@ -895,10 +895,37 @@ jobs:
           accepted_count="${#FORCE_WINNERS[@]}"
           accepted_csv="$(IFS=,; echo "${FORCE_WINNERS[*]}")"
           echo "accepted_csv=$accepted_csv" >> "$GITHUB_OUTPUT"
-          echo "FIELD_BRAIN_LLM_FORCE_REQUIREMENT required=$require_external isolated_accepted=$accepted_count"
-          if [ "$require_external" = "true" ] && [ "$accepted_count" -le 0 ]; then
-            echo "Explicit Force required an independently validated external Brain mutation but none passed" >&2
-            exit 1
+
+          coverage="$(python - "$accepted_csv" "${FORCE_TARGETS[@]}" <<'PY'
+          import sys
+          canon=lambda value: str(value or "").strip().casefold().replace("_","-")
+          accepted={canon(v) for v in (sys.argv[1].split(",") if len(sys.argv)>1 else []) if canon(v)}
+          expected=[]
+          for value in sys.argv[2:]:
+              value=canon(value)
+              if value and value not in expected: expected.append(value)
+          missing=[value for value in expected if value not in accepted]
+          unexpected=sorted(value for value in accepted if expected and value not in set(expected))
+          complete=(not expected and bool(accepted)) or (bool(expected) and not missing and not unexpected)
+          print(
+              str(len(expected))+"|"+
+              ("true" if complete else "false")+"|"+
+              ",".join(missing)+"|"+
+              ",".join(unexpected)
+          )
+          PY
+          )"
+          IFS='|' read -r explicit_target_count coverage_complete missing_csv unexpected_csv <<< "$coverage"
+          echo "FIELD_BRAIN_LLM_FORCE_REQUIREMENT required=$require_external explicit_targets=$explicit_target_count isolated_accepted=$accepted_count coverage_complete=$coverage_complete missing=${missing_csv:-none} unexpected=${unexpected_csv:-none}"
+          if [ "$require_external" = "true" ]; then
+            if [ "$explicit_target_count" -gt 0 ] && [ "$coverage_complete" != "true" ]; then
+              echo "Explicit Force required one independently validated external Brain mutation per target; missing_external_force_providers=${missing_csv:-none} unexpected=${unexpected_csv:-none}" >&2
+              exit 1
+            fi
+            if [ "$explicit_target_count" -le 0 ] && [ "$accepted_count" -le 0 ]; then
+              echo "Explicit Force required an independently validated external Brain mutation but none passed" >&2
+              exit 1
+            fi
           fi
           if [ "$accepted_count" -le 0 ]; then
             exit 0

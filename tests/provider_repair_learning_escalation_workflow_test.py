@@ -33,6 +33,8 @@ for required in (
     "materialize_provider_v3_one.py",
     "run_provider_retest.py",
     "FIELD_BRAIN_LLM_FORCE_REQUIREMENT",
+    "coverage_complete=",
+    "missing_external_force_providers=",
     "FIELD_BRAIN_LLM_FORCE_CURRENT_BYTES",
     "requireExternalForceMutations",
     "requireExternalBrainGuidance",

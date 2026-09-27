@@ -5892,3 +5892,12 @@ This ledger is not complete merely because provider yield improves. Final comple
 
 - Workflow Gate run 36336829522 reached the new generated-Bloc bridge and failed deterministically while compiling the trusted generated Python module: the renderer template embedded a literal newline inside `block += "..." `, producing `SyntaxError: unterminated string literal`.
 - Fixed the renderer template to emit the escaped `\\n` sequence into generated Python source. This is an offline renderer correction; no provider Repair/Learning/FORCE run is involved.
+
+
+### 2026-09-27 — External Brain family proof requires complete target coverage
+
+- The explicit Brain Force gate previously treated `requireExternalForceMutations=true` as satisfied when **at least one** external candidate passed, even if a push trigger explicitly requested several representative providers.
+- That was insufficient for the three-family proof: one MalluMV/AllWish winner could have allowed the workflow to continue while the other causal families were still unproven.
+- For explicit target cohorts, the isolated Force gate now requires set-complete coverage: every requested provider must appear in `acceptedProviders`, with no unexpected winner. The workflow emits `coverage_complete`, missing and unexpected provider IDs and fails closed when coverage is incomplete.
+- Manual Force without an explicit target cohort preserves the former minimum-one-candidate behavior.
+- This is proof-integrity only; it does not weaken or skip materialization, Deep baseline/candidate comparison, identity validation, current-byte retest or non-regression.
