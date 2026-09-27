@@ -5804,3 +5804,10 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Representative cohort is exactly seven providers, one per remaining causal/provider family: moviebox (terminal-extraction/html_scraper), allanime (terminal-extraction/direct_media), anime-ultime (route-to-terminal/mixed_embed_resolver), 4khdhub (route-to-terminal/html_scraper), animevost-fr (route-to-terminal/api_stream_resolver), vidfast (route-to-terminal/iframe_player), allwish (learning/html_scraper NO PROOF).
 - Fast Brain parameters: waves=4, timeBudgetSeconds=1800, maxRoundsPerBatch=2, publishValidated=true. Success requires current-byte playable/verified media; route/chain/candidate-only evidence is not enough.
 - Repository hygiene is re-triggered to remove brain-architecture/proposal residue and keep only main plus brain-learning/proposals.
+
+### 2026-09-27 — Scoped Fast requeue and FORCE cohort authority
+- Representative Fast run 36319609182 correctly selected exactly seven family representatives and executed all seven: accepted=0, validated=0, learnHandoff=7, harnessDifferential=0.
+- Repository Hygiene advanced main while that run was persisting evidence, so the Fast stale guard requeued provider-fast-repair.yml without inputs. This accidentally ran the full 14-provider repairQueue once (run 36319718718, waves=1), producing accepted=0 / validated=0 and dispatching an unintended 14-provider Learning run.
+- Fast stale requeue now reconstructs and preserves exact provider/provider-cohort, waves, budget, rounds and publish flag from the trigger for push events or workflow inputs for dispatch events. Empty requeue can no longer silently expand to the whole repairQueue.
+- FORCE Learning now validates multi-provider requests against the current operator Fast trigger cohort in addition to the census queues. An accidental 14-provider handoff cannot run while the operator trigger names the seven representative providers.
+- PR 219 (brain-architecture/proposal) was closed. Repository Hygiene is retriggered to delete the now-unprotected branch and cancel the unintended stale global Learning generation.

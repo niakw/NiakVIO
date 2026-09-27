@@ -67,6 +67,12 @@ for required in (
     "empty-after-negative-memory-filter",
     "max_rounds_per_batch",
     "maxRoundsPerBatch",
+    "FIELD_PROVIDER_FAST_REPAIR_REQUEUE",
+    "requeue_target_providers",
+    "-f target_providers=\"$requeue_target_providers\"",
+    "-f waves=\"$requeue_waves\"",
+    "-f time_budget_seconds=\"$requeue_budget\"",
+    "-f max_rounds_per_batch=\"$requeue_rounds\"",
 ):
     assert required in workflow, required
 assert "workflow_run" not in workflow

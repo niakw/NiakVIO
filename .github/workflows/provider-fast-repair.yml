@@ -354,8 +354,44 @@ jobs:
           remote_main="$(git rev-parse origin/main)"
           if [ "$remote_main" != "$GITHUB_SHA" ]; then
             echo "FIELD_PROVIDER_FAST_REPAIR_STALE source=$GITHUB_SHA remote=$remote_main"
-            echo "FIELD_PROVIDER_FAST_REPAIR_REQUEUE current_main=$remote_main"
-            gh workflow run provider-fast-repair.yml --repo "$GITHUB_REPOSITORY" --ref main
+            requeue_target_provider="${{ inputs.target_provider || '' }}"
+            requeue_target_providers="${{ inputs.target_providers || '' }}"
+            requeue_waves="${{ inputs.waves || '1' }}"
+            requeue_budget="${{ inputs.time_budget_seconds || '600' }}"
+            requeue_rounds="${{ inputs.max_rounds_per_batch || '1' }}"
+            requeue_publish="${{ inputs.publish_validated || true }}"
+            if [ "${GITHUB_EVENT_NAME}" = "push" ]; then
+              readarray -t requeue_vals < <(python - <<'PY'
+          import json
+          from pathlib import Path
+          d=json.loads(Path('.github/triggers/provider-fast-repair.json').read_text(encoding='utf-8'))
+          print(str(int(d.get('waves') or 1)))
+          print(str(int(d.get('timeBudgetSeconds') or 600)))
+          print(str(int(d.get('maxRoundsPerBatch') or 1)))
+          print('true' if d.get('publishValidated', True) is True else 'false')
+          print(','.join(str(x or '').strip().lower().replace('_','-') for x in d.get('targetProviders') or [] if str(x or '').strip()))
+          PY
+              )
+              requeue_waves="${requeue_vals[0]:-1}"
+              requeue_budget="${requeue_vals[1]:-600}"
+              requeue_rounds="${requeue_vals[2]:-1}"
+              requeue_publish="${requeue_vals[3]:-true}"
+              requeue_target_providers="${requeue_vals[4]:-}"
+              requeue_target_provider=""
+            fi
+            args=(gh workflow run provider-fast-repair.yml
+              --repo "$GITHUB_REPOSITORY" --ref main
+              -f waves="$requeue_waves"
+              -f time_budget_seconds="$requeue_budget"
+              -f max_rounds_per_batch="$requeue_rounds"
+              -f publish_validated="$requeue_publish")
+            if [ -n "$requeue_target_providers" ]; then
+              args+=(-f target_providers="$requeue_target_providers")
+            elif [ -n "$requeue_target_provider" ]; then
+              args+=(-f target_provider="$requeue_target_provider")
+            fi
+            "${args[@]}"
+            echo "FIELD_PROVIDER_FAST_REPAIR_REQUEUE current_main=$remote_main providers=${requeue_target_providers:-${requeue_target_provider:-none}} waves=$requeue_waves budget=$requeue_budget rounds=$requeue_rounds"
             exit 0
           fi
           git config user.name "github-actions[bot]"
