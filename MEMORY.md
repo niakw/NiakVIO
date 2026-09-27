@@ -5688,3 +5688,8 @@ This ledger is not complete merely because provider yield improves. Final comple
 - The first canonical-priority run stopped in the synthetic viking-header fixture because that fixture still exposed the canonical /f route; the runtime correctly preferred the canonical route and returned /stream/*.mkv, making the old expectation of fast-download obsolete.
 - The fixture now isolates the response-header fallback by exposing only fast-download in viking-header mode, while normal Viking mode keeps canonical /f plus fast-download and must prefer /f.
 - The temporary FIELD_MALLUMV_VIKING_HTML diagnostic was removed from the provider runtime after identifying the canonical transition. No cookies, headers or response bodies were retained.
+
+### 2026-09-27 — MalluMV live Viking transition diagnostic
+- Targeted live run 36286238368 remained zero-stream even though the synthetic canonical-route contract is green. Its live network trace showed vik1ngfile.site/f/<id> -> vikingfile.com/fast-download/<name> but no canonical vikingfile.com/f/<id> request.
+- A one-run bounded diagnostic was reintroduced only to identify the real fast-download transition. It emits URLs/actions, form method/action and input field names; it does not emit response bodies, input values, cookies, request headers or credentials.
+- The diagnostic is temporary and must be removed as soon as the live transition is implemented.
