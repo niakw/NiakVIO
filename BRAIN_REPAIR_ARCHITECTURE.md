@@ -437,6 +437,25 @@ Required invariants:
 6. NiakVIO receives only the compiled concrete mutation and remains free to
    reject it through the normal proof ladder.
 
+#### FULL OK reference library and novel mechanism rule
+
+Brain-LLM may consult sanitized implementation patterns extracted from current
+FULL OK providers and their validated Blocs/scripts. These references are
+**optional prior art only**:
+
+- retain transferable structure (session/fetch, player/iframe traversal, parsing,
+  decoding, terminal media extraction, etc.);
+- strip provider-specific addressing and identity (URLs, hosts, routes, tokens,
+  provider literals);
+- never grant proof authority to a reference merely because its source provider
+  is FULL OK;
+- allow the model to adapt one pattern, combine several, ignore every reference,
+  or synthesize a **new independent provider-local Bloc/script**.
+
+A new mechanism is not an exceptional fallback. It is a normal Brain output when
+the current provider's evidence does not fit existing patterns. The constraint is
+not 'use what already exists'; the constraint is 'stay provider-local, bounded,
+structurally valid and prove the result in NiakVIO'.
 #### Failure ownership rule
 
 ~~~text
