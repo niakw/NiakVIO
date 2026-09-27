@@ -51,7 +51,7 @@ def assert_policy() -> None:
         raise ValueError("Brain architecture FORCE direct-main job is missing")
     force_block = workflow.split(FORCE_JOB_MARKER, 1)[1].split("\n  continue-learning-slot:", 1)[0]
     for marker in (
-        "inputs.architecture_force",
+        "needs.experiment.outputs.architecture_force",
         "FIELD_BRAIN_ARCH_FORCE_MAIN_PROMOTION",
         "-f publish_proposal=false",
         "architecture FORCE crossed provider/publication boundary",

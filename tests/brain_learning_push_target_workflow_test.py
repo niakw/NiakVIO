@@ -6,7 +6,9 @@ workflow = (ROOT / ".github/workflows/brain-learning-lab.yml").read_text(encodin
 
 required = [
     "REQUESTED_TARGET_PROVIDER",
+    "REQUESTED_ARCHITECTURE_FORCE",
     "target_provider:",
+    "architecture_force:",
     "automation/provider-census-status.json",
     "automation/provider-repair-learn-handoff-v1.json",
     "target provider is not in current census repairQueue",
@@ -18,7 +20,9 @@ required = [
     '"policy": "target-scoped-handoff"',
     'json.dump(data,open(sys.argv[4],"w",encoding="utf-8"),ensure_ascii=False,indent=2)',
     'echo "target_provider=$target_provider"',
+    'echo "architecture_force=$architecture_force"',
     "steps.learning-slot.outputs.target_provider",
+    "steps.learning-slot.outputs.architecture_force",
     'if [ -n "$TARGET_PROVIDER" ]; then args+=(--provider "$TARGET_PROVIDER"); fi',
 ]
 for needle in required:
@@ -57,3 +61,9 @@ end = next(i for i in range(start + 1, len(lines)) if lines[i].strip() == "PY")
 assert all(lines[i].startswith("          ") for i in range(start + 1, end + 1)), lines[start:end + 1]
 
 print("Brain push-targeted Learning workflow contract passed")
+
+trigger_block = workflow[workflow.index("trigger_target="):workflow.index('target_provider="$(printf', workflow.index("trigger_target="))]
+assert "trigger_force=" in trigger_block
+assert "architecture_force=true" in trigger_block
+assert "needs.experiment.outputs.architecture_force == 'true'" in workflow
+assert "needs.experiment.outputs.architecture_force != 'true'" in workflow

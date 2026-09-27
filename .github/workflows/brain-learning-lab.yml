@@ -60,6 +60,7 @@ jobs:
       slot_phase: ${{ steps.learning-slot.outputs.phase }}
       target_provider: ${{ steps.learning-slot.outputs.target_provider }}
       target_providers: ${{ steps.learning-slot.outputs.target_providers }}
+      architecture_force: ${{ steps.learning-slot.outputs.architecture_force }}
     runs-on: ubuntu-latest
     env:
       TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
@@ -180,6 +181,7 @@ jobs:
           REQUESTED_PHASE: ${{ inputs.slot_phase || '1' }}
           REQUESTED_TARGET_PROVIDER: ${{ inputs.target_provider || '' }}
           REQUESTED_TARGET_PROVIDERS: ${{ inputs.target_providers || '' }}
+          REQUESTED_ARCHITECTURE_FORCE: ${{ inputs.architecture_force || false }}
         run: |
           set -euo pipefail
           remaining="${REQUESTED_REMAINING:-0}"
@@ -189,6 +191,8 @@ jobs:
           if [ "$phase" -lt 1 ]; then phase=1; fi
           target_provider="${REQUESTED_TARGET_PROVIDER:-}"
           target_providers="${REQUESTED_TARGET_PROVIDERS:-}"
+          architecture_force="${REQUESTED_ARCHITECTURE_FORCE:-false}"
+          if [ "$architecture_force" != "true" ]; then architecture_force=false; fi
           target_providers="$(python - "$target_providers" <<'PY'
           import sys
           values=[]; seen=set()
@@ -202,7 +206,9 @@ jobs:
           if [ -n "$target_providers" ]; then target_provider=""; fi
           if [ "${GITHUB_EVENT_NAME}" = "push" ] && [ -f .github/triggers/brain-learning-reconstruction ]; then
             trigger_target="$(awk -F: '/^target_provider:[[:space:]]*/ {sub(/^[^:]*:[[:space:]]*/, ""); gsub(/[[:space:]]/, ""); print; exit}' .github/triggers/brain-learning-reconstruction)"
+            trigger_force="$(awk -F: '/^architecture_force:[[:space:]]*/ {sub(/^[^:]*:[[:space:]]*/, ""); gsub(/[[:space:]]/, ""); print tolower($0); exit}' .github/triggers/brain-learning-reconstruction)"
             if [ -n "${trigger_target:-}" ]; then target_provider="$trigger_target"; fi
+            if [ "${trigger_force:-false}" = "true" ]; then architecture_force=true; fi
           fi
           target_provider="$(printf '%s' "$target_provider" | tr '[:upper:]_' '[:lower:]-' | xargs)"
 
@@ -295,8 +301,9 @@ jobs:
             echo "provider_filter=$provider_filter"
             echo "target_provider=$target_provider"
             echo "target_providers=$target_providers"
+            echo "architecture_force=$architecture_force"
           } >> "$GITHUB_OUTPUT"
-          echo "FIELD_BRAIN_LONG_SLOT phase=$phase budget_minutes=$budget next_remaining_minutes=$next_remaining continue=$continue_slot fast_handoff=$fast_handoff provider_filter=${provider_filter:-none} target_provider=${target_provider:-none} target_providers=${target_providers:-none}"
+          echo "FIELD_BRAIN_LONG_SLOT phase=$phase budget_minutes=$budget next_remaining_minutes=$next_remaining continue=$continue_slot fast_handoff=$fast_handoff provider_filter=${provider_filter:-none} target_provider=${target_provider:-none} target_providers=${target_providers:-none} architecture_force=$architecture_force"
 
       - name: Install pinned runtime dependencies
         shell: bash
@@ -741,7 +748,7 @@ jobs:
           PY
           cat "$RUNNER_TEMP/brain-llm-cache-import.log" || true
       - name: Download and verify official llama.cpp binary when needed
-        if: inputs.architecture_force == true || (steps.brain_llm_route.outputs.llm_needed == 'true' && (steps.learning-slot.outputs.fast_handoff != 'true' || steps.brain_llm_fast_cache.outputs.complete != 'true'))
+        if: steps.learning-slot.outputs.architecture_force == 'true' || (steps.brain_llm_route.outputs.llm_needed == 'true' && (steps.learning-slot.outputs.fast_handoff != 'true' || steps.brain_llm_fast_cache.outputs.complete != 'true'))
         continue-on-error: true
         shell: bash
         run: |
@@ -758,7 +765,7 @@ jobs:
           test -n "$(find .brain-llm-runtime/llama-prebuilt -type f -name llama-server -print -quit)"
 
       - uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25
-        if: inputs.architecture_force == true || (steps.brain_llm_route.outputs.llm_needed == 'true' && (steps.learning-slot.outputs.fast_handoff != 'true' || steps.brain_llm_fast_cache.outputs.complete != 'true'))
+        if: steps.learning-slot.outputs.architecture_force == 'true' || (steps.brain_llm_route.outputs.llm_needed == 'true' && (steps.learning-slot.outputs.fast_handoff != 'true' || steps.brain_llm_fast_cache.outputs.complete != 'true'))
         with:
           path: |
             ~/.cache/llama.cpp
@@ -767,7 +774,7 @@ jobs:
 
       - name: Start bounded local Qwen advisor when needed
         id: brain_llm_server
-        if: inputs.architecture_force == true || (steps.brain_llm_route.outputs.llm_needed == 'true' && (steps.learning-slot.outputs.fast_handoff != 'true' || steps.brain_llm_fast_cache.outputs.complete != 'true'))
+        if: steps.learning-slot.outputs.architecture_force == 'true' || (steps.brain_llm_route.outputs.llm_needed == 'true' && (steps.learning-slot.outputs.fast_handoff != 'true' || steps.brain_llm_fast_cache.outputs.complete != 'true'))
         continue-on-error: true
         shell: bash
         run: |
@@ -1040,7 +1047,7 @@ jobs:
           node -e "const x=require('./brain-learning-output/brain-architecture-proposal.json'); if(x.policy?.publicationAllowed!==false||x.policy?.productionWritesAllowed!==false||x.policy?.pullRequestOnly!==true||x.policy?.requiresHumanMerge!==true) process.exit(1)"
 
       - name: Materialize executable Brain architecture FORCE patch
-        if: inputs.architecture_force == true
+        if: steps.learning-slot.outputs.architecture_force == 'true'
         shell: bash
         env:
           LLM_AVAILABLE: ${{ steps.brain_llm_server.outputs.available }}
@@ -1219,7 +1226,7 @@ jobs:
 
   publish-repair-proposal:
     name: LEARNING - Open validated repair proposal PR
-    if: github.event_name == 'schedule' || github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.event.inputs.publish_proposal == 'true')
+    if: (github.event_name == 'schedule' || github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.event.inputs.publish_proposal == 'true')) && needs.experiment.outputs.architecture_force != 'true'
     needs: experiment
     concurrency:
       group: niakvio-brain-repair-proposal-publish
@@ -1364,7 +1371,7 @@ jobs:
 
   publish-architecture-proposal:
     name: LEARNING - Validate Brain architecture evolution
-    if: github.event_name == 'schedule' || github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && (github.event.inputs.publish_proposal == 'true' || github.event.inputs.architecture_force == 'true'))
+    if: github.event_name == 'schedule' || github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.event.inputs.publish_proposal == 'true') || needs.experiment.outputs.architecture_force == 'true'
     needs: experiment
     concurrency:
       group: niakvio-brain-architecture-proposal-publish
@@ -1436,7 +1443,7 @@ jobs:
             cp brain-learning-output/brain-policy.proposed.json engine_v2/config/brain-policy.json
           fi
           force_promotable=false
-          if [ "${{ inputs.architecture_force || false }}" = "true" ]; then
+          if [ "${{ needs.experiment.outputs.architecture_force }}" = "true" ]; then
             force_promotable="$(python - <<'PY'
           import json
           from pathlib import Path
@@ -1469,7 +1476,7 @@ jobs:
           fi
 
       - name: Open or refresh Brain architecture PR
-        if: steps.architecture.outputs.has_changes == 'true' && steps.materialize-architecture.outputs.has_diff == 'true' && inputs.architecture_force != true
+        if: steps.architecture.outputs.has_changes == 'true' && steps.materialize-architecture.outputs.has_diff == 'true' && needs.experiment.outputs.architecture_force != 'true'
         env:
           GH_TOKEN: ${{ github.token }}
           BRANCH: brain-architecture/proposal
@@ -1582,7 +1589,7 @@ jobs:
           echo "FIELD_BRAIN_ARCH_PR published=true mode=review-only"
 
       - name: Promote FORCE architecture directly on main
-        if: inputs.architecture_force == true && steps.architecture.outputs.has_changes == 'true'
+        if: needs.experiment.outputs.architecture_force == 'true' && steps.architecture.outputs.has_changes == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
           TARGET_PROVIDER: ${{ needs.experiment.outputs.target_provider }}
@@ -1724,7 +1731,7 @@ jobs:
           NEXT_PHASE: ${{ needs.experiment.outputs.slot_next_phase }}
           TARGET_PROVIDER: ${{ needs.experiment.outputs.target_provider }}
           TARGET_PROVIDERS: ${{ needs.experiment.outputs.target_providers }}
-          ARCHITECTURE_FORCE: ${{ inputs.architecture_force || false }}
+          ARCHITECTURE_FORCE: ${{ needs.experiment.outputs.architecture_force || 'false' }}
           PUBLISH_PROPOSAL: ${{ inputs.publish_proposal || false }}
         shell: bash
         run: |

@@ -5790,3 +5790,9 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Brain infrastructure SHA c8915245 passed Workflow Gate 36311502490, Verify & Publish 36311502491 and Provider Non-Regression 36311502674.
 - MalluMV remains the only active Fast Brain target. The architecture materializer now uses llama.cpp b11140 response_format schema-constrained edits JSON.
 - This retry must still be credited only if Brain-generated changes lead to current-byte playable/verified media or a validated generic architecture change; no hand-authored provider repair is allowed.
+
+### 2026-09-27 — Learning trigger resumes FORCE without replaying Fast Repair
+- MalluMV-only Fast run 36311803799 completed its five provider-local waves and persisted evidence to main a5e2febf. The only failed step was the subsequent GitHub API dispatch to brain-learning-lab.yml, rejected with installation rate-limit HTTP 403.
+- brain-learning-lab now resolves one architecture_force authority in the learning-slot step. workflow_dispatch inputs and the existing .github/triggers/brain-learning-reconstruction push trigger can both set it.
+- Trigger-file FORCE uses the same MalluMV target validation/handoff checks, starts the bounded Qwen/materializer path, suppresses repair/architecture PR creation for that FORCE run, and permits the existing lease-guarded direct-main architecture promotion only after its targeted tests.
+- This allows resuming MalluMV at Learning/LLM without replaying the already-completed Fast waves and without hand-writing a provider repair.

@@ -11,6 +11,8 @@ SELF = json.loads((ROOT / "engine_v2/config/brain-self-evolution.json").read_tex
 POLICY = json.loads((ROOT / "engine_v2/config/brain-policy.json").read_text(encoding="utf-8"))
 
 assert "architecture_force:" in LEARN
+assert "steps.learning-slot.outputs.architecture_force == 'true'" in LEARN
+assert "needs.experiment.outputs.architecture_force == 'true'" in LEARN
 assert "brain_architecture_force_materializer.py" in LEARN
 assert "brain-architecture-force.patch" in LEARN
 assert "force_promotable=" in LEARN
