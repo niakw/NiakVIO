@@ -5901,3 +5901,12 @@ This ledger is not complete merely because provider yield improves. Final comple
 - For explicit target cohorts, the isolated Force gate now requires set-complete coverage: every requested provider must appear in `acceptedProviders`, with no unexpected winner. The workflow emits `coverage_complete`, missing and unexpected provider IDs and fails closed when coverage is incomplete.
 - Manual Force without an explicit target cohort preserves the former minimum-one-candidate behavior.
 - This is proof-integrity only; it does not weaken or skip materialization, Deep baseline/candidate comparison, identity validation, current-byte retest or non-regression.
+
+
+### 2026-09-27 — Fail before Deep when external Force artifact lacks target coverage
+
+- Complete target coverage is now checked twice for explicit external Brain FORCE cohorts:
+  1. **artifact preflight** before any Deep baseline/candidate network work; every requested provider must already have a concrete sanitized Force row,
+  2. **sandbox acceptance coverage** after isolated evaluation; every requested provider must actually pass.
+- This prevents a partial Brain artifact (for example 1 mutation for a 3-family proof) from consuming expensive Deep probes only to fail the already-known 3/3 requirement afterwards.
+- The preflight emits `FIELD_BRAIN_LLM_FORCE_ARTIFACT_COVERAGE` with expected/present/missing counts and fails closed before candidate evaluation when coverage is incomplete.

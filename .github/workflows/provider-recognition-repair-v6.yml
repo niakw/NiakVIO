@@ -870,6 +870,34 @@ jobs:
             )
           fi
 
+          if [ "$require_external" = "true" ] && [ "${#FORCE_TARGETS[@]}" -gt 0 ]; then
+            python - "$RUNNER_TEMP/external-brain-llm-force-mutations.json" "${FORCE_TARGETS[@]}" <<'PY'
+          import json,sys
+          canon=lambda value: str(value or "").strip().casefold().replace("_","-")
+          data=json.load(open(sys.argv[1],encoding="utf-8"))
+          expected=[]
+          for value in sys.argv[2:]:
+              value=canon(value)
+              if value and value not in expected: expected.append(value)
+          present={
+              canon(row.get("providerId"))
+              for row in data.get("rows") or []
+              if isinstance(row,dict) and canon(row.get("providerId"))
+          }
+          missing=[value for value in expected if value not in present]
+          print(
+              "FIELD_BRAIN_LLM_FORCE_ARTIFACT_COVERAGE "
+              f"expected={len(expected)} present={len(present & set(expected))} "
+              f"missing={','.join(missing) or 'none'}"
+          )
+          if missing:
+              raise SystemExit(
+                  "External Brain Force artifact is incomplete for explicit target cohort: "
+                  + ",".join(missing)
+              )
+          PY
+          fi
+
           eval_args=(
             python scripts/evaluate_brain_llm_force_candidates.py
             --input "$RUNNER_TEMP/external-brain-llm-force-mutations.json"
