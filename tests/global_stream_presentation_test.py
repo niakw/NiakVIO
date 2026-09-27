@@ -96,7 +96,7 @@ assert row["sourceType"] == "WEB-DL"
 assert row["format"] == "HLS"
 assert row["size"] == row["description"], row
 assert row["headers"] == {"Referer": "https://purstream.example/"}
-assert {"4k-ultra-hd", "webdl", "hevc", "lang-fr", "sub-fr", "age-12"}.issubset(set(row["badgeIds"])), row
+assert {"4k-ultra-hd", "webdl", "hevc", "lang-fr", "age-12"}.issubset(set(row["badgeIds"])), row\nassert not any(str(x).startswith("sub-") for x in row["badgeIds"]), row
 assert "multi" not in set(row["badgeIds"]), row
 lines = row["description"].splitlines()
 assert lines[0] == "🎬 Interstellar • 2014", lines
@@ -158,7 +158,7 @@ assert "lang-fr-ca" in vfq["badgeIds"] and "vfq" not in vfq["badgeIds"]
 # VOSTFR is an input alias only; public output is a French subtitle track/badge.
 vost = run("module.exports={getStreams:async()=>[{name:'Test',url:'https://x.example/a.m3u8',language:'VOSTFR'}]};\n", "purstream", "p.getStreams({mediaType:'movie',title:'Film'}).then(v=>console.log(JSON.stringify(v[0])))")
 assert vost["language"] == "VOSTFR" and "French · Sub" in vost["description"]
-assert "sub-fr" in vost["badgeIds"] and "vostfr" not in vost["badgeIds"]
+assert "sub-fr" not in vost["badgeIds"] and "vostfr" not in vost["badgeIds"]
 
 # VO/MULTI without factual language metadata remain compatibility scalars only and emit no public language badge.
 vo = run("module.exports={getStreams:async()=>[{name:'Test',url:'https://x.example/a.m3u8',language:'VO'}]};\n", "cineby", "p.getStreams({mediaType:'movie',title:'Film'}).then(v=>console.log(JSON.stringify(v[0])))")
@@ -182,6 +182,26 @@ assert source_language_evidence["presentationFacts"]["language"] == "Hindi", sou
 assert "HI" in source_language_evidence["displayBadges"], source_language_evidence
 assert "lang-hi" in source_language_evidence["badgeIds"], source_language_evidence
 assert "vo" not in source_language_evidence["badgeIds"], source_language_evidence
+
+# A provider with one manifest content language may use it as a factual fallback
+# only when the stream itself exposes no language. Kehflix declares exactly FR.
+manifest_fallback = run(
+    "module.exports={getStreams:async()=>[{name:'Kehflix',url:'https://x.example/a.m3u8',quality:'720p'}]};\n",
+    "kehflix",
+    "p.getStreams({mediaType:'movie',title:'Film'}).then(v=>console.log(JSON.stringify(v[0])))",
+)
+assert manifest_fallback["language"].lower() == "fr", manifest_fallback
+assert "French" in manifest_fallback["description"], manifest_fallback
+assert "lang-fr" in manifest_fallback["badgeIds"], manifest_fallback
+
+# ISO-639 legacy alias FRE remains normalized to French.
+fre_alias = run(
+    "module.exports={getStreams:async()=>[{name:'Source',url:'https://x.example/a.mp4',language:'fre'}]};\n",
+    "generic",
+    "p.getStreams({mediaType:'movie',title:'Film'}).then(v=>console.log(JSON.stringify(v[0])))",
+)
+assert "French" in fre_alias["description"], fre_alias
+assert "lang-fr" in fre_alias["badgeIds"], fre_alias
 
 # Series/anime identity is title/year/SxxExx; provider-owned layout never survives.
 tv = run("module.exports={getStreams:async()=>[{name:'Purstream',url:'https://x.example/a.m3u8',description:'PRIVATE PROVIDER LAYOUT',language:'VF'}]};\n", "purstream", "p.getStreams({mediaType:'tv',title:'Breaking Bad',year:2008,season:1,episode:1}).then(v=>console.log(JSON.stringify(v[0])))")
