@@ -110,6 +110,8 @@ assert mod.VALIDATION_RETRY_MODEL_TOKENS <= 512
 assert mod.VALIDATION_RETRY_TIMEOUT_SECONDS <= 100
 assert mod.RETRY_SOURCE_CONTEXT <= 3600
 assert mod.MINIMAL_SOURCE_CONTEXT <= 1800
+assert mod.MATERIALIZED_CORRECTION_ROUNDS == 2
+assert mod.MAX_MATERIALIZED_FAILURE_CONTEXT <= 3200
 
 fmt = mod._response_format()
 assert fmt["type"] == "json_object"
@@ -344,6 +346,10 @@ with tempfile.TemporaryDirectory(prefix="brain-arch-force-syntax-") as tmp:
             assert "materialized syntax validation failed" in payload["validationError"]
             assert payload["exactAllowedPaths"] == ["scripts/brain_meta_learning.py"]
             assert "path" not in payload["rejectedEditIntent"][0]
+            assert payload["correctionReason"] == "materialized-source-validation"
+            assert payload["correctionContract"]["mustPassMaterializedSyntaxValidation"] is True
+            assert payload["correctionContract"]["materializedCorrectionRound"] == 1
+            assert payload["materializedFailureSources"]["scripts/brain_meta_learning.py"].startswith("    VALUE = 2")
             import json
             return {
                 "choices": [{
@@ -396,6 +402,7 @@ with tempfile.TemporaryDirectory(prefix="brain-arch-force-syntax-fail-") as tmp:
     target.write_text("VALUE = 1\n", encoding="utf-8")
     original_call_model = mod.call_model
     original_request = mod._model_request
+    invalid_correction_calls = []
     try:
         mod.call_model = lambda endpoint, model, payload: {
             "edits": [{
@@ -407,6 +414,7 @@ with tempfile.TemporaryDirectory(prefix="brain-arch-force-syntax-fail-") as tmp:
         }
 
         def still_invalid(endpoint, model, payload, *, max_tokens, timeout, compact=False):
+            invalid_correction_calls.append(payload)
             import json
             return {
                 "choices": [{
@@ -443,6 +451,9 @@ with tempfile.TemporaryDirectory(prefix="brain-arch-force-syntax-fail-") as tmp:
         else:
             raise AssertionError("second syntax-invalid FORCE edit unexpectedly accepted")
         assert target.read_text(encoding="utf-8") == "VALUE = 1\n"
+        assert len(invalid_correction_calls) == mod.MATERIALIZED_CORRECTION_ROUNDS
+        assert [p["correctionContract"]["materializedCorrectionRound"] for p in invalid_correction_calls] == [1, 2]
+        assert invalid_correction_calls[1]["materializedFailureSources"]["scripts/brain_meta_learning.py"].startswith("    VALUE = 3")
     finally:
         mod.call_model = original_call_model
         mod._model_request = original_request
