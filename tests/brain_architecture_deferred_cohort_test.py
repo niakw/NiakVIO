@@ -38,6 +38,18 @@ with tempfile.TemporaryDirectory(prefix="niakvio-arch-cohort-") as tmp:
                 "failures": 1,
                 "consecutiveFailures": 1,
             })
+    entries.append({
+        "providerId": "alpha",
+        "failureClass": "chain_terminal_gap",
+        "signature": "old-terminal-signature",
+        "profile": "terminal_transition_graph_v1",
+        "experimentVariant": 4,
+        "experimentGeneration": 5,
+        "successes": 0,
+        "failures": 1,
+        "consecutiveFailures": 1,
+        "executionObserved": True,
+    })
     state.write_text(json.dumps({
         "unresolvedFailureCounts": {},
         "proposals": [],
@@ -84,7 +96,10 @@ with tempfile.TemporaryDirectory(prefix="niakvio-arch-cohort-") as tmp:
     queue_summary.write_text(json.dumps({
         "processedProviderCount": 2,
         "deferredRepairProviders": ["alpha", "beta"],
-        "results": [],
+        "results": [
+            {"provider": "alpha", "attempts": [{"attemptedMethods": ["alpha|shared-terminal-signature|g3|v4|adaptive_runtime_recovery,chain_terminal_extractor_v1"]}]},
+            {"provider": "beta", "attempts": [{"attemptedMethods": ["beta|shared-terminal-signature|g3|v4|adaptive_runtime_recovery"]}]},
+        ],
     }), encoding="utf-8")
     queue_state.write_text(json.dumps({
         "remainingProviderCount": 2,

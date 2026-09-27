@@ -5737,3 +5737,10 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Plain Retest retry 13 still exercised previously published animevostfr bytes, by design: run_provider_retest.py is forbidden from rematerializing. Its 0-stream result therefore does not evaluate the new direct-route runtime patch.
 - provider-remat-test is now targeted only at animevostfr. It will materialize current DATA/patches in sandbox, then run current-byte Retest with publicationAllowed=false.
 - Promotion is allowed only if the REMAT artifact proves current raw/playable/verified media; then only the exact validated AnimeVOSTFR bytes will be reconciled/published before a final published-byte Retest.
+
+### 2026-09-27 — Brain architecture negative memory is signature-aware
+- MalluMV single-provider Fast Brain run 36288608329 completed without a provider candidate and handed only MalluMV to Learning run 36288713938.
+- Learning produced 5 proposals, one learned skill and two architecture proposals, but strategyBlueprints was empty even though MalluMV was deferred and current signature 7552d045488f7eee1fe978e5 had fresh executed failures.
+- Root cause: build_brain_architecture_proposal.py treated a failed strategy profile as globally exhausted for a provider across all historical signatures. MalluMV had terminal_transition_graph_v1 failures on old signature 4e8d92b8a8961450d87b63b2, so that old debt suppressed the strategy on the new signature.
+- The builder now derives active signatures from the current Learning queue attemptedMethods and limits negative-memory strategy suppression to those signatures when current evidence exists. Historical memory remains fallback authority when no current signature is observable.
+- The strategy-level filter remains fail-closed: once terminal_transition_graph_v1 fails on the current signature it is still suppressed. The deferred-cohort contract now includes an old-signature failure that must not suppress the current signature.

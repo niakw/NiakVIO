@@ -115,6 +115,29 @@ def route_evidence_count(value: Any) -> int:
     return count
 
 
+def active_method_signatures(selection: dict[str, Any]) -> dict[str, set[str]]:
+    """Return current Learning execution signatures by provider."""
+    out: dict[str, set[str]] = {}
+    for result in selection.get("results") or []:
+        if not isinstance(result, dict):
+            continue
+        provider = str(result.get("provider") or "").strip().casefold()
+        if not provider:
+            continue
+        for attempt in result.get("attempts") or []:
+            if not isinstance(attempt, dict):
+                continue
+            for method in attempt.get("attemptedMethods") or []:
+                parts = str(method or "").split("|", 4)
+                if len(parts) < 5:
+                    continue
+                method_provider = parts[0].strip().casefold()
+                signature = parts[1].strip().casefold()
+                if method_provider == provider and signature:
+                    out.setdefault(provider, set()).add(signature)
+    return out
+
+
 def build_strategy_blueprints(
     batch_plan: dict[str, Any],
     deferred_providers: set[str],
@@ -483,10 +506,15 @@ def main() -> int:
         if str(value or "").strip()
     })
     deferred_set = set(deferred_repair_providers)
+    active_signatures_by_provider = active_method_signatures(selection)
     failed_profiles_by_provider: dict[str, set[str]] = {}
     for row in entries:
         provider_id = str(row.get("providerId") or "").strip().casefold()
         profile = str(row.get("profile") or "").strip()
+        signature = str(row.get("signature") or "").strip().casefold()
+        active_signatures = active_signatures_by_provider.get(provider_id, set())
+        if active_signatures and signature not in active_signatures:
+            continue
         if (
             provider_id in deferred_set
             and profile
