@@ -5708,3 +5708,9 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Current census evidence shows AllAnime reaches api.mkissa.net and api.allanime.day repeatedly with HTTP 200, then falls back to aniwatch HTML pages, but returns zero streams. This is not a transport/WAF failure.
 - AllAnime now emits bounded FIELD_ALLANIME_GRAPHQL diagnostics containing only JSON key names, edge count, first result id/name and GraphQL error messages. Response bodies, auth material and arbitrary payload values are not retained.
 - Targeted recovery safeDiagnostics is generalized to the current provider's FIELD_<PROVIDER>_ prefix, still capped at 24 lines / 1200 chars. This keeps representative-provider diagnosis reusable without persisting raw stderr.
+
+### 2026-09-27 — Single-provider-first strategy
+- Global 15-provider Repair is paused until representative failures work individually.
+- MalluMV current-byte Retest reaches MalluMV detail -> internal -> Vik1ngFile/VikingFile, but the current free terminal requires browser/button/Turnstile interaction; no HTTP-only fake success is accepted.
+- First short-path representative is animevostfr (current status CANDIDATE OK). Retest retry 12 targets animevostfr only, autoRepair=false, and requires current-byte playable/verified media before requalification.
+- After one provider is genuinely green, test one representative from each remaining causal family before any portfolio Repair rerun.

@@ -1,14 +1,14 @@
 {
   "schemaVersion": 1,
-  "requestedAt": "2026-09-27T03:14:15+02:00",
+  "requestedAt": "2026-09-27T04:18:00+02:00",
   "scope": "repair",
   "targetProviders": [
-    "mallumv"
+    "animevostfr"
   ],
   "autoRepair": false,
-  "goal": "Validate only MalluMV current bytes after VikingFile HTML-entity URL cleanup; no portfolio repair/autopilot.",
-  "retry": 11,
-  "reason": "mallumv-vikingfile-entity-current-bytes-validation",
-  "sourceExpectation": "dcf24c1aad30df276e933910c9d788ddbdc844ee",
-  "executionExpectation": "RETEST exact mallumv only -> require playable/verified evidence -> no autopilot"
+  "goal": "Validate only animevostfr current bytes as the first representative broken-provider recovery before any global Repair.",
+  "retry": 12,
+  "reason": "single-provider-first-candidate-replay-animevostfr",
+  "sourceExpectation": "edc3400d5b86e938d0e507e4ee39411e009572a9",
+  "executionExpectation": "RETEST exact animevostfr only -> require raw + playable + verified media -> no autopilot"
 }
