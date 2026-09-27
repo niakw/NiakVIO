@@ -5822,3 +5822,9 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Qwen returned a schema-valid executable edit plan but hallucinated engine_v2/scripts/brain_meta_learning.py; the real allowlisted source is scripts/brain_meta_learning.py. The FORCE path guard correctly rejected the plan and no edit was applied.
 - The architecture materializer now grants exactly one corrective LLM request after edit validation rejects a plan. The correction receives the bounded validation error, the rejected edits and the exact allowedPaths; it must still pass the same allowlist, exact replace/create bounds and executable non-test requirement. There is no human path remapping or unsafe fallback.
 - Push-triggered Learning reconstruction now supports target_providers in addition to target_provider, allowing the seven-provider representative cohort to resume at Learning/Qwen without replaying the already-completed four Fast waves.
+
+### 2026-09-27 — Seven-family Learning/Qwen resumed without replaying Fast
+- Main ff3178a0 passed Workflow Gate, Verify & Publish, Provider Non-Regression and CodeQL after adding one bounded self-correction attempt for schema-valid architecture edits whose paths fail the exact allowlist.
+- The seven representative providers already completed Fast Brain run 36320302438 with accepted=0 / validated=0 / learnHandoff=7 and harnessDifferential=0; their Fast waves are not replayed.
+- brain-learning-reconstruction now targets exactly moviebox, allanime, anime-ultime, 4khdhub, animevost-fr, vidfast and allwish with architecture_force=true and a 60-minute bounded slot.
+- No global 14-provider Repair is authorized. Provider-specific human repair remains disallowed during this proof; only Brain/orchestration infrastructure may be changed by hand.
