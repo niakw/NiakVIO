@@ -3,9 +3,9 @@
   "sourceRunId": "36285309061",
   "sourceTriggerSha": "f6906d56e3be21974564ee5bf862093eb1a79a46",
   "sourcePlanRunId": "36285309061",
-  "sourceVerdictRunId": "36286918066",
+  "sourceVerdictRunId": "36287127271",
   "providerCount": 14,
-  "groupCount": 9,
+  "groupCount": 8,
   "groups": [
     {
       "groupId": "route-to-terminal|mixed_embed_resolver#r1",
@@ -54,6 +54,30 @@
         "4khdhub",
         "animesalt",
         "moviesmod"
+      ],
+      "networkSignature": "not-probed",
+      "debugStages": [],
+      "networkShape": [],
+      "splitReason": "shared-signature",
+      "executionPolicy": "batch-first"
+    },
+    {
+      "groupId": "terminal-extraction|html_scraper#r1",
+      "parentGroupId": "terminal-extraction|html_scraper",
+      "repairScope": "terminal-extraction",
+      "capabilityStrategy": "html_scraper",
+      "transportSignature": "not-applicable",
+      "evidenceDepths": [
+        "chain"
+      ],
+      "dominantIssues": [
+        "network_http_error",
+        "network_zero_result"
+      ],
+      "providerCount": 2,
+      "providers": [
+        "mallumv",
+        "moviebox"
       ],
       "networkSignature": "not-probed",
       "debugStages": [],
@@ -165,67 +189,18 @@
       "providers": [
         "allanime"
       ],
-      "networkSignature": "not-probed",
-      "debugStages": [],
-      "networkShape": [],
-      "splitReason": "shared-signature",
-      "executionPolicy": "batch-first"
-    },
-    {
-      "groupId": "terminal-extraction|html_scraper#r1",
-      "parentGroupId": "terminal-extraction|html_scraper",
-      "repairScope": "terminal-extraction",
-      "capabilityStrategy": "html_scraper",
-      "transportSignature": "not-applicable",
-      "evidenceDepths": [
-        "chain"
-      ],
-      "dominantIssues": [
-        "network_http_error",
-        "network_zero_result"
-      ],
-      "providerCount": 1,
-      "providers": [
-        "moviebox"
-      ],
-      "networkSignature": "not-probed",
-      "debugStages": [],
-      "networkShape": [],
-      "splitReason": "observed-signature-divergence",
-      "executionPolicy": "batch-first"
-    },
-    {
-      "groupId": "terminal-extraction|html_scraper#r2",
-      "parentGroupId": "terminal-extraction|html_scraper",
-      "repairScope": "terminal-extraction",
-      "capabilityStrategy": "html_scraper",
-      "transportSignature": "not-applicable",
-      "evidenceDepths": [
-        "chain"
-      ],
-      "dominantIssues": [
-        "network_http_error",
-        "network_zero_result"
-      ],
-      "providerCount": 1,
-      "providers": [
-        "mallumv"
-      ],
-      "networkSignature": "provider_network_zero_result||movie:GET:api.themoviedb.org:200:/{id}/movie/{id};movie:GET:mallumv.space:200:/internal/{id}/{id}/{id};movie:GET:mallumv.space:200:/movie/{id}/{id};movie:GET:mallumv.space:200:/search.php;movie:GET:vik1ngfile.site:200:/assets/custom-F_ZXKHX.js;movie:GET:vik1ngfile.site:200:/f/tMAohzba53;movie:GET:vik1ngfile.site:200:/f/u6lxab0wCH;movie:GET:vikingfile.com:200:/fast-download/{id}",
+      "networkSignature": "provider_network_zero_result||anime:GET:api.allanime.day:200:/api;anime:GET:api.themoviedb.org:200:/{id}/tv/{id};anime:GET:mkissa.to:200:/;anime:GET:ww2.aniwatch.fit:200:/{id};anime:POST:api.mkissa.net:200:/api",
       "debugStages": [
         "provider_network_zero_result"
       ],
       "networkShape": [
-        "movie:GET:api.themoviedb.org:200:/{id}/movie/{id}",
-        "movie:GET:mallumv.space:200:/internal/{id}/{id}/{id}",
-        "movie:GET:mallumv.space:200:/movie/{id}/{id}",
-        "movie:GET:mallumv.space:200:/search.php",
-        "movie:GET:vik1ngfile.site:200:/assets/custom-F_ZXKHX.js",
-        "movie:GET:vik1ngfile.site:200:/f/tMAohzba53",
-        "movie:GET:vik1ngfile.site:200:/f/u6lxab0wCH",
-        "movie:GET:vikingfile.com:200:/fast-download/{id}"
+        "anime:GET:api.allanime.day:200:/api",
+        "anime:GET:api.themoviedb.org:200:/{id}/tv/{id}",
+        "anime:GET:mkissa.to:200:/",
+        "anime:GET:ww2.aniwatch.fit:200:/{id}",
+        "anime:POST:api.mkissa.net:200:/api"
       ],
-      "splitReason": "observed-signature-divergence",
+      "splitReason": "shared-signature",
       "executionPolicy": "batch-first"
     }
   ]
