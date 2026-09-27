@@ -5630,3 +5630,9 @@ This ledger is not complete merely because provider yield improves. Final comple
 - The escaped-confirm runtime test exposed a JavaScript regex escaping bug in the newly widened confirm parser: character classes contained \\s instead of \s, which excluded the literal letter "s". Interstellar therefore could never match despite the route being discovered.
 - The four accidental double-escaped whitespace tokens in the MalluMV confirm parser were corrected to real JavaScript whitespace classes.
 - Exact runtime execution in-memory now proves the full fixture chain: search -> movie -> confirm -> internal -> HubCloud /drive -> /video -> direct MP4, returning one direct MalluMV stream with the expected referer.
+
+### 2026-09-27 — MalluMV detail-page terminal fallback
+- Current MalluMV live traces still stop after the exact movie detail page and expose no /confirm fetch. The runtime previously inspected that page only for confirm routes.
+- MalluMV now first checks the detail page for bounded terminal candidates already trusted by its terminal policy (direct media, HubCloud/HubDrive, Pixeldrain, known download hosts) plus explicit Download/Server/Watch/Stream/Mirror anchors. Same-origin confirm/internal paths are also considered plausible.
+- resolveCandidate now accepts a redirect whose final response URL is direct media and recursively follows only candidates already selected by candidates(), bounded by the existing crawlDepth/visited/max-8 controls.
+- Existing runtime behavior test now proves both supported layouts independently: detail -> confirm -> internal -> HubCloud -> MP4, and detail -> HubCloud -> MP4 with no confirm/internal requests.

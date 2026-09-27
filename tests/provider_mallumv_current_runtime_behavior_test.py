@@ -11,13 +11,13 @@ wrapper=src.split("WRAPPER = r'''",1)[1].split("'''",1)[0]
 compiled=wrapper.replace("CONFIG_PLACEHOLDER",json.dumps(opts,separators=(",",":")))
 
 harness=r'''
-const calls=[];
+const calls=[]; let mode="confirm";
 global.__nuvioCoreGetTmdbDataV1=async()=>({state:"ok",metadata:{title:"Interstellar",release_date:"2014-11-05"}});
 function R(status,body,url){return{ok:status>=200&&status<300,status,url:url||"",async text(){return String(body||"")},async json(){return JSON.parse(String(body||"{}"))}}}
 global.fetch=async function(url,opt){
   url=String(url); calls.push(url);
   if(url==="https://mallumv.space/search.php?q=Interstellar") return R(200,'<a href="/movie/1755/Interstellar_2014_English.xhtml"><b>Interstellar 2014 English</b></a>',url);
-  if(url==="https://mallumv.space/movie/1755/Interstellar_2014_English.xhtml") return R(200,'<script>window.__download="confirm\\/1755\\/998\\/Interstellar_2014_English.xhtml";</script>',url);
+  if(url==="https://mallumv.space/movie/1755/Interstellar_2014_English.xhtml") return R(200,mode==="confirm" ? '<script>window.__download="confirm\\/1755\\/998\\/Interstellar_2014_English.xhtml";</script>' : '<a href="https://hubcloud.example/drive/abc123">Download 1080p</a>',url);
   if(url==="https://mallumv.space/confirm/1755/998/Interstellar_2014_English.xhtml") return R(200,'<a class="touch" href="/internal/1755/998/Interstellar_2014_English.xhtml">Confirm Download</a>',url);
   if(url==="https://mallumv.space/internal/1755/998/Interstellar_2014_English.xhtml") return R(200,'<a href="https://hubcloud.example/drive/abc123">HubCloud</a>',url);
   if(url==="https://hubcloud.example/drive/abc123") return R(200,'<a href="/video/abc123">Continue</a>',url);
@@ -46,6 +46,13 @@ module={exports:{getStreams:async()=>[]}};
     "https://hubcloud.example/video/abc123",
     "crawl:https://hubcloud.example/drive/abc123"
   ]) if(!flat.includes(token)) throw new Error("missing "+token+"\n"+flat);
+
+  calls.length=0; mode="direct";
+  const directOut=await hook.resolve([{tmdbId:"157336",canonicalMediaType:"movie"}]);
+  if(!Array.isArray(directOut)||directOut.length!==1||directOut[0].url!=="https://cdn.example/interstellar/master.mp4")throw new Error("detail-terminal fallback failed "+JSON.stringify(directOut));
+  const directFlat=calls.join("\n");
+  for(const token of ["https://mallumv.space/movie/1755/Interstellar_2014_English.xhtml","https://hubcloud.example/drive/abc123","https://hubcloud.example/video/abc123"]) if(!directFlat.includes(token)) throw new Error("missing direct-detail "+token+"\n"+directFlat);
+  if(directFlat.includes("/confirm/")||directFlat.includes("/internal/"))throw new Error("direct detail fallback unexpectedly required confirm/internal\n"+directFlat);
   console.log("MALLUMV_CURRENT_RUNTIME_OK");
 })().catch(e=>{console.error(e);process.exit(1)});
 '''
