@@ -5621,3 +5621,7 @@ This ledger is not complete merely because provider yield improves. Final comple
 - This proves the live blocker precedes HubCloud: movie-detail -> confirm discovery. The existing confirm parser only covered quoted anchor hrefs and one old Markdown representation.
 - confirmLinks now scans the decoded MalluMV detail document for the same bounded /confirm/<id>/<fileId>/<slug>.xhtml route even when embedded as relative/escaped HTML or JavaScript text. Candidates are still restricted to the configured MalluMV hostname and maxConfirm.
 - Runtime contract fixture now uses an escaped JavaScript confirm route rather than a normal anchor, while retaining the full confirm -> internal -> HubCloud /drive -> /video -> MP4 proof.
+
+### 2026-09-27 — MalluMV relative confirm normalization
+- The widened confirm-route contract immediately caught a deterministic bug before another network probe: bare confirm/<id>/<fileId>/<slug>.xhtml was resolved relative to the movie page, producing /movie/.../confirm/... instead of root /confirm/....
+- confirmLinks now root-normalizes bare confirm/ paths before URL resolution. The existing escaped-JS fixture covers this exact form.
