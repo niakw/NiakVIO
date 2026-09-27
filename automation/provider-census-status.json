@@ -1,7 +1,7 @@
 {
   "schemaVersion": 3,
-  "runId": "36282347595-retest",
-  "triggerSha": "7df5677e981e3b7f71e165e504ae284cf67f38d0",
+  "runId": "36284658048-retest",
+  "triggerSha": "7caf25233404b1181f2e255f9ae6c1fd0468611d",
   "providers": [
     {
       "provider": "mallumv",
@@ -18,9 +18,9 @@
         "4 live routes / movie"
       ],
       "latestLaneVerdicts": [
-        "movie=no_streams/provider_network_zero_result"
+        "movie=no_streams/provider_network_exception"
       ],
-      "dominantIssue": "provider_network_zero_result",
+      "dominantIssue": "provider_network_exception",
       "searchProgress": [
         "movie: 1 works tested / 42 retained misses / 1 retained chain hit"
       ],
@@ -715,6 +715,8 @@
       "statusRepairEligible": true,
       "repairEligible": false,
       "testedThisRun": true,
+      "reconciledFromCarriedGreen": true,
+      "consistencyNote": "carried green contradicted by its latest lane verdict",
       "residentialProviderReplayClass": "verified",
       "residentialProviderReplayEvidence": [
         "anime: status=playable_verified, stage=provider_returned_streams, raw=1, playable=1, verified=1, identitySafe=true"
@@ -2075,8 +2077,8 @@
   "environmentBlockedQueue": [],
   "harnessQueue": [],
   "clientTransportGapQueue": [],
-  "harnessEvidenceRunId": "36282347595-retest-transport",
-  "harnessEvidenceSha": "7df5677e981e3b7f71e165e504ae284cf67f38d0",
+  "harnessEvidenceRunId": "36284658048-retest-transport",
+  "harnessEvidenceSha": "7caf25233404b1181f2e255f9ae6c1fd0468611d",
   "authorityRefreshedProviders": [],
   "harnessTransportUpdatedProviders": [],
   "networkDifferentialUpdatedProviders": [],
