@@ -625,6 +625,7 @@ def main() -> int:
         planned = load(a.response_file)
         edits = [dict(x) for x in planned.get("edits") or [] if isinstance(x, dict)]
         validate_edits(edits, patterns)
+        validate_materialized_edits(edits)
     else:
         planned, edits = validated_model_plan(
             a.endpoint,
