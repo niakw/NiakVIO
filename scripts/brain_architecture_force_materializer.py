@@ -11,6 +11,7 @@ import argparse
 import ast
 import json
 import re
+import subprocess
 from pathlib import Path
 from typing import Any
 from urllib.error import HTTPError
@@ -120,6 +121,71 @@ def apply_edits(edits: list[dict[str, Any]], root: Path = ROOT) -> list[str]:
     return changed
 
 
+def validate_changed_syntax(changed: list[str], root: Path = ROOT) -> None:
+    """Fail closed when a generated architecture edit cannot even parse/compile."""
+    for path in changed:
+        target = root / path
+        suffix = target.suffix.casefold()
+        if suffix == ".py":
+            try:
+                ast.parse(target.read_text(encoding="utf-8"), filename=path)
+            except (SyntaxError, UnicodeError) as exc:
+                detail = getattr(exc, "msg", None) or str(exc)
+                line = getattr(exc, "lineno", None)
+                where = f" line {line}" if line else ""
+                raise ValueError(
+                    f"materialized syntax validation failed: {path}{where}: {detail}"
+                ) from exc
+        elif suffix == ".json":
+            try:
+                json.loads(target.read_text(encoding="utf-8"))
+            except (json.JSONDecodeError, UnicodeError) as exc:
+                raise ValueError(
+                    f"materialized JSON validation failed: {path}: {exc}"
+                ) from exc
+        elif suffix in {".js", ".mjs", ".cjs"}:
+            result = subprocess.run(
+                ["node", "--check", str(target)],
+                cwd=root,
+                capture_output=True,
+                text=True,
+                timeout=30,
+                check=False,
+            )
+            if result.returncode != 0:
+                detail = (result.stderr or result.stdout or "node --check failed").strip()
+                raise ValueError(
+                    f"materialized JavaScript validation failed: {path}: {detail[:800]}"
+                )
+
+
+def validate_materialized_edits(
+    edits: list[dict[str, Any]],
+    *,
+    root: Path = ROOT,
+) -> list[str]:
+    """Apply edits transactionally, syntax-check them, then restore the exact baseline."""
+    snapshots: dict[str, tuple[bool, bytes]] = {}
+    for edit in edits:
+        path = str(edit.get("path") or "")
+        target = root / path
+        snapshots[path] = (target.exists(), target.read_bytes() if target.exists() else b"")
+
+    changed: list[str] = []
+    try:
+        changed = apply_edits(edits, root=root)
+        validate_changed_syntax(changed, root=root)
+        return changed
+    finally:
+        for path, (existed, content) in snapshots.items():
+            target = root / path
+            if existed:
+                target.parent.mkdir(parents=True, exist_ok=True)
+                target.write_bytes(content)
+            elif target.exists():
+                target.unlink()
+
+
 def select_blueprint(proposal: dict[str, Any]) -> dict[str, Any]:
     rows = [x for x in proposal.get("strategyBlueprints") or [] if isinstance(x, dict)]
     eligible = [x for x in rows if x.get("forcePromotionEligible") is True]
@@ -203,7 +269,7 @@ def _model_request(
         "publication files or secrets. Use only exact source snippets supplied. Max 3 edits. "
         "Allowed operations: replace {operation,path,find,replace}; create {operation,path,content}. "
         "New files only under scripts/brain_layers/ or tests/brain_. "
-        "Prefer one minimal code edit plus one focused test. No prose."
+        "Prefer one minimal code edit plus one focused test. The resulting source must parse/compile. No prose."
     )
     if compact:
         system += (
@@ -304,12 +370,21 @@ def _validation_retry_payload(
     payload: dict[str, Any],
     error: Exception,
     edits: list[dict[str, Any]],
+    *,
+    extra_exact_paths: list[str] | None = None,
 ) -> dict[str, Any]:
     retry = _minimal_payload(payload)
     exact_paths = sorted({
-        str(path)
-        for path in (retry.get("sources") or {}).keys()
-        if str(path)
+        *(
+            str(path)
+            for path in (retry.get("sources") or {}).keys()
+            if str(path)
+        ),
+        *(
+            str(path)
+            for path in (extra_exact_paths or [])
+            if str(path)
+        ),
     })
     retry["exactAllowedPaths"] = exact_paths
     retry["validationError"] = str(error)[:800]
@@ -429,6 +504,39 @@ def call_model(endpoint: str, model: str, payload: dict[str, Any]) -> dict[str, 
         )
         return _parse_model_value(value)
 
+def _request_corrected_plan(
+    endpoint: str,
+    model: str,
+    correction_payload: dict[str, Any],
+) -> dict[str, Any]:
+    try:
+        value = _model_request(
+            endpoint,
+            model,
+            correction_payload,
+            max_tokens=VALIDATION_RETRY_MODEL_TOKENS,
+            timeout=VALIDATION_RETRY_TIMEOUT_SECONDS,
+            compact=True,
+        )
+        return _parse_model_value(value)
+    except (TimeoutError, ValueError) as correction_exc:
+        reason = "timeout" if isinstance(correction_exc, TimeoutError) else "invalid-json"
+        print(
+            "FIELD_BRAIN_ARCH_FORCE_MODEL_RETRY "
+            f"reason=corrective-{reason} mode=corrective-format-retry",
+            flush=True,
+        )
+        value = _model_request(
+            endpoint,
+            model,
+            correction_payload,
+            max_tokens=VALIDATION_FORMAT_RETRY_MODEL_TOKENS,
+            timeout=VALIDATION_FORMAT_RETRY_TIMEOUT_SECONDS,
+            compact=True,
+        )
+        return _parse_model_value(value)
+
+
 def validated_model_plan(
     endpoint: str,
     model: str,
@@ -441,7 +549,6 @@ def validated_model_plan(
     edits = [dict(x) for x in planned.get("edits") or [] if isinstance(x, dict)]
     try:
         validate_edits(edits, patterns, root=root)
-        return planned, edits
     except ValueError as exc:
         print(
             "FIELD_BRAIN_ARCH_FORCE_MODEL_RETRY "
@@ -449,36 +556,38 @@ def validated_model_plan(
             flush=True,
         )
         correction_payload = _validation_retry_payload(payload, exc, edits)
-        try:
-            value = _model_request(
-                endpoint,
-                model,
-                correction_payload,
-                max_tokens=VALIDATION_RETRY_MODEL_TOKENS,
-                timeout=VALIDATION_RETRY_TIMEOUT_SECONDS,
-                compact=True,
-            )
-            corrected = _parse_model_value(value)
-        except (TimeoutError, ValueError) as correction_exc:
-            reason = "timeout" if isinstance(correction_exc, TimeoutError) else "invalid-json"
-            print(
-                "FIELD_BRAIN_ARCH_FORCE_MODEL_RETRY "
-                f"reason=corrective-{reason} mode=corrective-format-retry",
-                flush=True,
-            )
-            value = _model_request(
-                endpoint,
-                model,
-                correction_payload,
-                max_tokens=VALIDATION_FORMAT_RETRY_MODEL_TOKENS,
-                timeout=VALIDATION_FORMAT_RETRY_TIMEOUT_SECONDS,
-                compact=True,
-            )
-            corrected = _parse_model_value(value)
+        planned = _request_corrected_plan(endpoint, model, correction_payload)
+        edits = [
+            dict(x) for x in planned.get("edits") or [] if isinstance(x, dict)
+        ]
+        validate_edits(edits, patterns, root=root)
+
+    try:
+        validate_materialized_edits(edits, root=root)
+        return planned, edits
+    except ValueError as exc:
+        print(
+            "FIELD_BRAIN_ARCH_FORCE_MODEL_RETRY "
+            f"reason=materialized-validation mode=corrective error={str(exc)[:240]}",
+            flush=True,
+        )
+        exact_paths = [
+            str(edit.get("path") or "")
+            for edit in edits
+            if str(edit.get("path") or "") and path_allowed(str(edit.get("path") or ""), patterns)
+        ]
+        correction_payload = _validation_retry_payload(
+            payload,
+            exc,
+            edits,
+            extra_exact_paths=exact_paths,
+        )
+        corrected = _request_corrected_plan(endpoint, model, correction_payload)
         corrected_edits = [
             dict(x) for x in corrected.get("edits") or [] if isinstance(x, dict)
         ]
         validate_edits(corrected_edits, patterns, root=root)
+        validate_materialized_edits(corrected_edits, root=root)
         return corrected, corrected_edits
 
 
