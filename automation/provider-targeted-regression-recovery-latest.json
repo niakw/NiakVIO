@@ -4,19 +4,19 @@
   "groupResults": [
     {
       "contradictionProviders": [],
-      "groupId": "terminal-extraction|direct_media",
+      "groupId": "candidate-replay|mixed_embed_resolver",
       "playableProviders": [],
       "providerCount": 1,
       "providers": [
-        "allanime"
+        "animevostfr"
       ],
-      "repairScope": "terminal-extraction",
+      "repairScope": "candidate-replay",
       "verifiedProviders": []
     }
   ],
   "maxWorkers": 20,
   "providers": {
-    "allanime": {
+    "animevostfr": {
       "contradictions": 0,
       "debugStages": {
         "anime": "provider_network_zero_result"
@@ -26,88 +26,27 @@
           {
             "host": "api.themoviedb.org",
             "method": "GET",
-            "path": "/3/tv/95479",
+            "path": "/3/tv/259544",
             "status": 200
           },
           {
-            "host": "api.mkissa.net",
-            "method": "POST",
-            "path": "/api",
-            "status": 200
-          },
-          {
-            "host": "mkissa.to",
+            "host": "animevostfr.org",
             "method": "GET",
             "path": "/",
-            "status": 200
-          },
-          {
-            "host": "api.allanime.day",
-            "method": "GET",
-            "path": "/api",
-            "status": 200
-          },
-          {
-            "host": "ww2.aniwatch.fit",
-            "method": "GET",
-            "path": "/jujutsu-kaisen-episode-1-english-subbed",
-            "status": 200
-          },
-          {
-            "host": "ww2.aniwatch.fit",
-            "method": "GET",
-            "path": "/jujutsu-kaisen-episode-1-english-dubbed",
-            "status": 200
-          },
-          {
-            "host": "ww2.aniwatch.fit",
-            "method": "GET",
-            "path": "/jujutsu-kaisen-guerra-de-hechiceros-episode-1-english-subbed",
-            "status": 200
-          },
-          {
-            "host": "ww2.aniwatch.fit",
-            "method": "GET",
-            "path": "/jujutsu-kaisen-guerra-de-hechiceros-episode-1-english-dubbed",
-            "status": 200
-          },
-          {
-            "host": "ww2.aniwatch.fit",
-            "method": "GET",
-            "path": "/jujutsu-kaisen-shimetsu-kaiyuu-zenpen-episode-1-english-subbed",
-            "status": 200
-          },
-          {
-            "host": "ww2.aniwatch.fit",
-            "method": "GET",
-            "path": "/jujutsu-kaisen-shimetsu-kaiyuu-zenpen-episode-1-english-dubbed",
-            "status": 200
-          },
-          {
-            "host": "ww2.aniwatch.fit",
-            "method": "GET",
-            "path": "/2-episode-1-english-subbed",
-            "status": 200
-          },
-          {
-            "host": "ww2.aniwatch.fit",
-            "method": "GET",
-            "path": "/2-episode-1-english-dubbed",
             "status": 200
           }
         ]
       },
       "playableLanes": [],
       "safeDiagnostics": [
-        "FIELD_ALLANIME_GRAPHQL {\"label\":\"mkissa-search\",\"topKeys\":[\"data\"],\"dataKeys\":[\"shows\"],\"showKeys\":[\"edges\"],\"edgeCount\":6,\"firstKeys\":[\"_id\",\"name\",\"englishName\",\"availableEpisodes\",\"__typename\"],\"firstId\":\"nHEPcYjjCyXtj9zY8\",\"firstName\":\"Jujutsu Kaisen: Kaigyoku/Gyokusetsu\",\"errors\":[]}",
-        "FIELD_ALLANIME_GRAPHQL {\"label\":\"mkissa-search\",\"topKeys\":[\"data\"],\"dataKeys\":[\"shows\"],\"showKeys\":[\"edges\"],\"edgeCount\":5,\"firstKeys\":[\"_id\",\"name\",\"englishName\",\"availableEpisodes\",\"__typename\"],\"firstId\":\"nHEPcYjjCyXtj9zY8\",\"firstName\":\"Jujutsu Kaisen: Kaigyoku/Gyokusetsu\",\"errors\":[]}"
+        "FIELD_ANIMEVOSTFR_SEARCH_TITLES {\"preferred\":\"地獄先生ぬ～べ～\",\"titles\":[\"Jigoku Sensei Nube 2025\",\"Jigoku Sensei Nube\",\"Hell Teacher Nube\",\"HellTeacher\",\"地獄先生ぬ～べ～\",\"ぬーべーアニメ\"]}"
       ],
       "sampleTitles": {
         "anime": [
+          "Jujutsu Kaisen",
+          "Mushoku Tensei: Jobless Reincarnation",
           "Failure Frame: I Became the Strongest and Annihilated Everything with Low-Level Spells",
-          "Hell Teacher: Jigoku Sensei Nube",
-          "One Piece",
-          "Jujutsu Kaisen"
+          "Hell Teacher: Jigoku Sensei Nube"
         ]
       },
       "statuses": {
@@ -117,25 +56,25 @@
     }
   },
   "requestedProviders": [
-    "allanime"
+    "animevostfr"
   ],
-  "runId": "36287127271",
+  "runId": "36288552131",
   "schemaVersion": 3,
   "selectedProviderCount": 1,
   "selectedProviders": [
-    "allanime"
+    "animevostfr"
   ],
   "shardCount": 1,
   "shardIndex": 0,
   "skippedEnvironmentProviders": [
     "4khdhub",
+    "allanime",
     "allwish",
     "anime-ultime",
     "animesalt",
     "animesultra",
     "animetsu",
     "animevost-fr",
-    "animevostfr",
     "desiflix",
     "flemmix",
     "fullanime",
@@ -146,8 +85,8 @@
     "vidfast",
     "yflix"
   ],
-  "sourceCensusRunId": "36285309061",
-  "triggerSha": "a10f3f927d56c94ddfc6524b89324b57b9b199b7",
+  "sourceCensusRunId": "36288195072-retest",
+  "triggerSha": "7b1c20a51ea74117fee48bb6ec421cb040f6d9a0",
   "verifiedProviderCount": 0,
   "verifiedProviders": []
 }
