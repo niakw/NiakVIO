@@ -5944,3 +5944,11 @@ This ledger is not complete merely because provider yield improves. Final comple
 - These references are **not a whitelist**. Brain-LLM may adapt, combine, ignore them, or synthesize a completely new provider-local Bloc/script when current evidence requires a mechanism that does not yet exist.
 - A novel mechanism is first-class, but receives no special trust: it must pass the Brain structural/syntax/ownership/no-op guards and the full NiakVIO sandbox, playable-media/identity, current-byte and non-regression proof ladder.
 - This rule complements the synthesis/proof ownership boundary: Brain invents/compiles; NiakVIO executes/proves.
+
+
+### 2026-09-27 — Canonical census precedence over Vostfree overlay
+
+- Correction de comptage : **la repairQueue officielle reste à 14**, conformément à `automation/provider-census-status.json` et `PROVIDER_CENSUS_STATUS.md` (26 FULL OK, 2 PARTIAL OK, 10 ROUTE PROVEN, 3 CHAIN REACHED, 1 NO PROOF, 4 DISABLED).
+- L'overlay du run `36345982243` où `vostfree` atteint FULL OK (1 raw / 1 playable / 1 verified, `identitySafe=true`) est une preuve fraîche utile, mais **non canonique/non persistée** parce que le run n'a pas obtenu une publication canonique acceptée.
+- Règle durable : un overlay WAF/résidentiel/replay ou un artefact intermédiaire peut enrichir le Brain et justifier une requalification ciblée, mais **ne réduit jamais le compteur officiel ni la repairQueue** tant qu'un census canonique accepté ne l'a pas persisté.
+- En conséquence, le prochain portefeuille complet reste piloté dynamiquement par les **14 providers canoniques**, Vostfree inclus. Si Vostfree revalide FULL OK lors de ce passage, le census canonique pourra alors descendre à 13.
