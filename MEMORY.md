@@ -5651,3 +5651,7 @@ This ledger is not complete merely because provider yield improves. Final comple
 ### 2026-09-27 — MalluMV Viking fixture mode correction
 - Targeted run 36284460559 failed before live probing because the synthetic movie fixture routed mode=viking-header through the default HubCloud branch instead of the VikingFile branch. Runtime code was not implicated by this failure.
 - The fixture now routes both viking and viking-header modes through the observed direct-detail -> internal -> VikingFile path.
+
+### 2026-09-27 — MalluMV current-byte retest retry 10
+- The targeted-regression workflow attached to test-only commit 56b9ff0b correctly skipped provider probing because provider bytes did not change.
+- The dedicated provider-retest trigger is now used instead, targeting only mallumv with autoRepair=false. This validates current published MalluMV bytes without mutating providers or launching the portfolio repair.
