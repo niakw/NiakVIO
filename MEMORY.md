@@ -5816,3 +5816,9 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Scoped requeue fix d5e50d08 passed Workflow Gate 36319959116, Verify & Publish 36319958910 and Provider Non-Regression 36319959025.
 - Repository Hygiene closed the branch debt: only main and brain-learning/proposals remain after PR 219 was closed.
 - The representative cohort is rearmed unchanged at seven providers. No global Repair is authorized; stale requeues must preserve this exact cohort and FORCE Learning must reject any superset handoff.
+
+### 2026-09-27 — Brain corrects its own invalid architecture edit path
+- Representative Learning run 36320451050 completed the adaptive queue for all seven target families and generated 36 Learning proposals, one learned skill and three architecture proposals.
+- Qwen returned a schema-valid executable edit plan but hallucinated engine_v2/scripts/brain_meta_learning.py; the real allowlisted source is scripts/brain_meta_learning.py. The FORCE path guard correctly rejected the plan and no edit was applied.
+- The architecture materializer now grants exactly one corrective LLM request after edit validation rejects a plan. The correction receives the bounded validation error, the rejected edits and the exact allowedPaths; it must still pass the same allowlist, exact replace/create bounds and executable non-test requirement. There is no human path remapping or unsafe fallback.
+- Push-triggered Learning reconstruction now supports target_providers in addition to target_provider, allowing the seven-provider representative cohort to resume at Learning/Qwen without replaying the already-completed four Fast waves.

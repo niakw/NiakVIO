@@ -106,6 +106,8 @@ assert mod.MAX_MODEL_TOKENS <= 512
 assert mod.MODEL_TIMEOUT_SECONDS <= 100
 assert mod.RETRY_MODEL_TOKENS <= 640
 assert mod.RETRY_MODEL_TIMEOUT_SECONDS <= 120
+assert mod.VALIDATION_RETRY_MODEL_TOKENS <= 512
+assert mod.VALIDATION_RETRY_TIMEOUT_SECONDS <= 100
 assert mod.RETRY_SOURCE_CONTEXT <= 3600
 assert mod.MINIMAL_SOURCE_CONTEXT <= 1800
 
@@ -228,6 +230,70 @@ try:
     assert calls[1][3] <= mod.MINIMAL_SOURCE_CONTEXT
 finally:
     mod._model_request = original_request
+
+# A schema-valid plan can still hallucinate a non-allowlisted repository path.
+# FORCE must ask the model once to correct its own plan with the exact validation
+# error and allowedPaths, then fail closed if the correction is still invalid.
+with tempfile.TemporaryDirectory(prefix="brain-arch-force-correct-") as tmp:
+    root = Path(tmp)
+    target = root / "scripts" / "brain_meta_learning.py"
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text("VALUE = 1\n", encoding="utf-8")
+    original_call_model = mod.call_model
+    original_request = mod._model_request
+    correction_calls = []
+    try:
+        def fake_plan(endpoint, model, payload):
+            return {
+                "edits": [{
+                    "operation": "replace",
+                    "path": "engine_v2/scripts/brain_meta_learning.py",
+                    "find": "VALUE = 1",
+                    "replace": "VALUE = 2",
+                }]
+            }
+
+        def fake_correction(endpoint, model, payload, *, max_tokens, timeout, compact=False):
+            correction_calls.append(payload)
+            assert "outside allowlist" in payload["validationError"]
+            assert "scripts/brain_meta_learning.py" in payload["allowedPaths"]
+            assert payload["correctionContract"]["doNotInventPaths"] is True
+            import json
+            return {
+                "choices": [{
+                    "message": {
+                        "content": json.dumps({
+                            "edits": [{
+                                "operation": "replace",
+                                "path": "scripts/brain_meta_learning.py",
+                                "find": "VALUE = 1",
+                                "replace": "VALUE = 2",
+                            }]
+                        })
+                    }
+                }]
+            }
+
+        mod.call_model = fake_plan
+        mod._model_request = fake_correction
+        _, corrected_edits = mod.validated_model_plan(
+            "http://127.0.0.1:8080",
+            "demo",
+            {
+                "blueprint": {"strategyId": "demo"},
+                "allowedPaths": patterns,
+                "contract": {"requireExecutableDiff": True},
+                "sources": {"scripts/brain_meta_learning.py": "VALUE = 1\n"},
+                "architectureLayers": [],
+            },
+            patterns,
+            root=root,
+        )
+        assert corrected_edits[0]["path"] == "scripts/brain_meta_learning.py"
+        assert len(correction_calls) == 1
+    finally:
+        mod.call_model = original_call_model
+        mod._model_request = original_request
 
 minimal = mod._minimal_payload({
     "blueprint": {"strategyId": "demo"},

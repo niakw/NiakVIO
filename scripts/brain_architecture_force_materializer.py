@@ -32,6 +32,8 @@ MAX_MODEL_TOKENS = 512
 MODEL_TIMEOUT_SECONDS = 100
 RETRY_MODEL_TOKENS = 640
 RETRY_MODEL_TIMEOUT_SECONDS = 120
+VALIDATION_RETRY_MODEL_TOKENS = 512
+VALIDATION_RETRY_TIMEOUT_SECONDS = 100
 RETRY_SOURCE_CONTEXT = 3600
 MINIMAL_SOURCE_CONTEXT = 1800
 
@@ -283,6 +285,23 @@ def _minimal_payload(payload: dict[str, Any]) -> dict[str, Any]:
     return minimal
 
 
+def _validation_retry_payload(
+    payload: dict[str, Any],
+    error: Exception,
+    edits: list[dict[str, Any]],
+) -> dict[str, Any]:
+    retry = _minimal_payload(payload)
+    retry["validationError"] = str(error)[:800]
+    retry["rejectedEdits"] = edits[:MAX_EDITS]
+    retry["correctionContract"] = {
+        "reuseAllowedPathsExactly": True,
+        "doNotInventPaths": True,
+        "changeOnlyWhatValidationRejected": True,
+        "maxEdits": MAX_EDITS,
+    }
+    return retry
+
+
 def _extract_balanced_object(raw: str) -> str:
     start = raw.find("{")
     if start < 0:
@@ -378,6 +397,42 @@ def call_model(endpoint: str, model: str, payload: dict[str, Any]) -> dict[str, 
         )
         return _parse_model_value(value)
 
+def validated_model_plan(
+    endpoint: str,
+    model: str,
+    payload: dict[str, Any],
+    patterns: list[str],
+    *,
+    root: Path = ROOT,
+) -> tuple[dict[str, Any], list[dict[str, Any]]]:
+    planned = call_model(endpoint, model, payload)
+    edits = [dict(x) for x in planned.get("edits") or [] if isinstance(x, dict)]
+    try:
+        validate_edits(edits, patterns, root=root)
+        return planned, edits
+    except ValueError as exc:
+        print(
+            "FIELD_BRAIN_ARCH_FORCE_MODEL_RETRY "
+            f"reason=edit-validation mode=corrective error={str(exc)[:240]}",
+            flush=True,
+        )
+        correction_payload = _validation_retry_payload(payload, exc, edits)
+        value = _model_request(
+            endpoint,
+            model,
+            correction_payload,
+            max_tokens=VALIDATION_RETRY_MODEL_TOKENS,
+            timeout=VALIDATION_RETRY_TIMEOUT_SECONDS,
+            compact=True,
+        )
+        corrected = _parse_model_value(value)
+        corrected_edits = [
+            dict(x) for x in corrected.get("edits") or [] if isinstance(x, dict)
+        ]
+        validate_edits(corrected_edits, patterns, root=root)
+        return corrected, corrected_edits
+
+
 def main() -> int:
     p = argparse.ArgumentParser()
     p.add_argument("--proposal", type=Path, required=True)
@@ -410,10 +465,15 @@ def main() -> int:
     }
     if a.response_file:
         planned = load(a.response_file)
+        edits = [dict(x) for x in planned.get("edits") or [] if isinstance(x, dict)]
+        validate_edits(edits, patterns)
     else:
-        planned = call_model(a.endpoint, a.model, payload)
-    edits = [dict(x) for x in planned.get("edits") or [] if isinstance(x, dict)]
-    validate_edits(edits, patterns)
+        planned, edits = validated_model_plan(
+            a.endpoint,
+            a.model,
+            payload,
+            patterns,
+        )
     changed = apply_edits(edits) if a.apply else [str(x.get("path") or "") for x in edits]
     report = {
         "schemaVersion": 1,

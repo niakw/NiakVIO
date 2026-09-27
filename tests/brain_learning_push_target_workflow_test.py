@@ -68,6 +68,8 @@ print("Brain push-targeted Learning workflow contract passed")
 
 trigger_block = workflow[workflow.index("trigger_target="):workflow.index('target_provider="$(printf', workflow.index("trigger_target="))]
 assert "trigger_force=" in trigger_block
+assert "trigger_targets=" in trigger_block
+assert 'target_providers="$trigger_targets"' in trigger_block
 assert "architecture_force=true" in trigger_block
 assert "needs.experiment.outputs.architecture_force == 'true'" in workflow
 assert "needs.experiment.outputs.architecture_force != 'true'" in workflow

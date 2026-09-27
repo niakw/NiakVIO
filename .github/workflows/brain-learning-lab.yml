@@ -206,8 +206,14 @@ jobs:
           if [ -n "$target_providers" ]; then target_provider=""; fi
           if [ "${GITHUB_EVENT_NAME}" = "push" ] && [ -f .github/triggers/brain-learning-reconstruction ]; then
             trigger_target="$(awk -F: '/^target_provider:[[:space:]]*/ {sub(/^[^:]*:[[:space:]]*/, ""); gsub(/[[:space:]]/, ""); print; exit}' .github/triggers/brain-learning-reconstruction)"
+            trigger_targets="$(awk -F: '/^target_providers:[[:space:]]*/ {sub(/^[^:]*:[[:space:]]*/, ""); gsub(/[[:space:]]/, ""); print; exit}' .github/triggers/brain-learning-reconstruction | tr '[:upper:]_' '[:lower:]-')"
             trigger_force="$(awk -F: '/^architecture_force:[[:space:]]*/ {sub(/^[^:]*:[[:space:]]*/, ""); gsub(/[[:space:]]/, ""); print tolower($0); exit}' .github/triggers/brain-learning-reconstruction)"
-            if [ -n "${trigger_target:-}" ]; then target_provider="$trigger_target"; fi
+            if [ -n "${trigger_targets:-}" ]; then
+              target_providers="$trigger_targets"
+              target_provider=""
+            elif [ -n "${trigger_target:-}" ]; then
+              target_provider="$trigger_target"
+            fi
             if [ "${trigger_force:-false}" = "true" ]; then architecture_force=true; fi
           fi
           target_provider="$(printf '%s' "$target_provider" | tr '[:upper:]_' '[:lower:]-' | xargs)"
