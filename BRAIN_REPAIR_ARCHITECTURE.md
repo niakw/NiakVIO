@@ -375,6 +375,79 @@ Current provider bytes and the provider override are part of the signed mutation
 context. Any drift invalidates the mutation before sandbox application. A
 generated Bloc is still only a **candidate**: its existence, syntax or successful
 materialization is never proof that a provider is repaired.
+### 6.4 Brain synthesis owns structural targeting
+
+The provider repair **intelligence boundary is asymmetric by design**:
+
+- **NiakVIO-Brain-LLM owns synthesis**: causal interpretation, mutation-surface
+  selection, structural target selection and conversion of the intended local
+  code change into a concrete provider-local mutation;
+- **NiakVIO owns execution and proof**: current bytes, immutable/generated Bloc
+  materialization, sandbox execution, Deep comparison, playable-media proof,
+  identity validation, current-byte retest, non-regression, census and
+  publication.
+
+A rejected LLM candidate is **not** a reason to teach NiakVIO a provider-specific
+repair. If a candidate is ambiguous, partial, malformed, syntax-invalid,
+non-causal or behaviorally neutral, the default ownership is Brain-LLM. NiakVIO
+may gain only generic executor/validator capabilities needed to prove arbitrary
+future candidates.
+
+#### Structured-anchor contract
+
+The LLM must not be responsible for inventing a repository-global unique text
+anchor from raw source. That is a compiler concern.
+
+The target architecture is:
+
+~~~text
+exact current provider-owned source
+  -> Brain deterministic source windows / structural regions with stable ids
+  -> LLM selects one region and expresses the smallest semantic local change
+  -> Brain deterministically resolves that occurrence on full current bytes
+  -> Brain minimizes unchanged prefix/suffix
+  -> Brain expands exact surrounding context only as needed for uniqueness
+  -> syntax / ownership / no-op / capability validation
+  -> concrete bounded mutation
+  -> NiakVIO isolated execution and proof
+~~~
+
+Required invariants:
+
+1. source regions are exact current-byte slices and have stable ids inside one
+   request;
+2. the model identifies the region it used; it does not guess a global
+   occurrence;
+3. a snippet unique inside the selected region may be deterministically expanded
+   with unchanged surrounding bytes until it is unique in the full source;
+4. unchanged prefix/suffix emitted by the model is minimized before structural
+   validation, so a local expression repair is not rejected merely because the
+   model copied the beginning of an enclosing function;
+5. if the selected snippet is still ambiguous inside its own region, cannot be
+   made globally unique inside the bounded anchor budget, or would cross
+   ownership boundaries, the Brain must abstain/retry — never let NiakVIO guess;
+6. NiakVIO receives only the compiled concrete mutation and remains free to
+   reject it through the normal proof ladder.
+
+#### Failure ownership rule
+
+~~~text
+bad reasoning / wrong target / bad anchor / malformed edit / no-op
+    => Brain-LLM
+
+missing generic mutation primitive / sandbox validator / proof capability
+    => NiakVIO infrastructure
+
+provider candidate runs but does not improve real behavior
+    => negative execution evidence returned to Brain
+
+candidate improves and passes all gates
+    => NiakVIO may persist/publish
+~~~
+
+This rule is mandatory for future Repair work. It prevents repeated patches to
+the execution repository from masking a weak generator and keeps the system
+scalable when the provider population grows.
 
 ## 7. Learning is slot-owned
 

@@ -335,6 +335,48 @@ Voir [`SECURITY.md`](SECURITY.md).
 - la finalisation release s’effectue uniquement après acceptation de la pile de validation, via `release-finalize.yml` sur le SHA exact accepté ;
 - documentation/workflow/harness seuls n’imposent pas de bump provider/cache tant que les bytes providers publiés restent identiques.
 
+## 14.1 Frontière Brain-LLM / NiakVIO
+
+> [!IMPORTANT]
+> **NiakVIO n'est pas le générateur de réparation du Brain.** Il est l'exécuteur,
+> le sandbox et l'autorité de preuve. Une proposition LLM mal structurée ne doit
+> pas être compensée par une rustine provider-spécifique ajoutée à NiakVIO.
+
+Répartition obligatoire :
+
+- **NiakVIO-Brain-LLM** possède la compréhension causale, la sélection de la
+  surface à modifier, la synthèse de la correction et la compilation de cette
+  intention en mutation provider-locale structurellement valide ;
+- **NiakVIO** possède les octets courants, la matérialisation Provider v3,
+  l'exécution isolée, Deep/Retest, identité/média, non-régression, census et
+  publication ;
+- NiakVIO peut ajouter un **mécanisme générique de validation ou d'exécution**
+  lorsqu'une capacité de sandbox manque réellement, mais il ne doit pas apprendre
+  à deviner à la place du Brain quelle fonction, ancre ou transformation un
+  provider particulier voulait modifier.
+
+Conséquence : si une génération Brain échoue parce que son ancre est ambiguë,
+partielle, syntaxiquement invalide, non causale ou sans effet, le correctif
+primaire appartient au contrat de génération **Brain-LLM**. Le rôle de NiakVIO
+est de rejeter proprement cette mutation et de retourner un feedback borné.
+
+Le contrat de réparation attendu est donc :
+
+~~~text
+evidence actuelle
+  -> Brain-LLM: famille causale + cible structurée + intention locale
+  -> Brain-LLM déterministe: résolution/compilation en mutation exacte
+  -> NiakVIO: sandbox + matérialisation + Deep + identité + current-byte retest
+  -> publication seulement après preuve
+~~~
+
+Cette frontière évite deux anti-patterns :
+
+1. déplacer progressivement l'intelligence de réparation dans les workflows
+   NiakVIO jusqu'à rendre le LLM décoratif ;
+2. rendre NiakVIO dépendant de heuristiques spécifiques aux providers au lieu de
+   faire évoluer le générateur générique qui devra fonctionner sur des centaines
+   de providers.
 ## 15. Invariants non négociables
 
 1. Le scope provider courant est dérivé des sources d'autorité (`current_provider_scope.py`, manifest/catalogue) et tous les providers visibles restent auditables dans le census ; aucun nombre historique n'est un invariant courant.

@@ -5919,3 +5919,14 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Treat Vostfree as fresh positive evidence, not as a manually edited census entry. The next successful canonical Repair/census pass must re-observe and persist it before the tracked repairQueue is declared 13.
 - Brain family proof integrity was hardened afterwards: explicit external Force cohorts now require complete target coverage before Deep and again after isolated sandbox evaluation.
 - NiakVIO SHA `8ae83fbd89687c1ab1e927f1fce5c3fee0aaf45e` passed Provider Non-Regression, Verify & Publish, Workflow Gate, CodeQL and Brain Branch Maintenance after the coverage/preflight changes.
+
+
+### 2026-09-27 — Durable ownership correction: Brain synthesizes, NiakVIO proves
+
+- The repeated three-family failures established a durable architecture lesson: NiakVIO's execution/validation bridge was necessary, but the remaining failure mode is primarily **NiakVIO-Brain-LLM synthesis quality**, not missing provider-specific Repair logic in NiakVIO.
+- NiakVIO remains authoritative for current bytes, generated-Bloc materialization, isolated sandboxing, Deep/playable-media comparison, identity, current-byte retest, non-regression, census and publication.
+- Brain-LLM is authoritative for causal reasoning, mutation-surface selection, structural target selection and production of a concrete provider-local repair candidate.
+- **Do not respond to malformed/ambiguous/no-op Brain output by adding provider-specific heuristics to NiakVIO.** Add NiakVIO code only when a generic execution/validation/proof primitive is genuinely missing.
+- The target Brain contract is structural: exact source regions receive stable ids; the model selects one region and expresses a small semantic change; deterministic Brain code resolves that occurrence against complete current bytes, minimizes unchanged context, expands unchanged context only when needed for global uniqueness, validates syntax/ownership/no-op constraints, and only then hands a concrete mutation to NiakVIO.
+- The latest three-family guidance run 36350734425 completed operationally but published **0/3** Force mutations. MalluMV ended on an incomplete function anchor; 4KHDHub and AllWish ended on non-unique generated-Bloc anchors. These are Brain synthesis/compiler defects and must be fixed there before another NiakVIO live FORCE proof.
+- ARCHITECTURE.md and BRAIN_REPAIR_ARCHITECTURE.md now encode this ownership boundary so future work does not move repair intelligence back into NiakVIO by accident.
