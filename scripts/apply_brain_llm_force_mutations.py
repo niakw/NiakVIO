@@ -504,7 +504,7 @@ def apply(text, **_kwargs):
         and text.count(_PROVIDER_END) == 1
     )
     if clean_v3:
-        block += "\n"
+        block += "\\n"
     return text[:start] + block + text[start + len(FIND):]
 '''
 

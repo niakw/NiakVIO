@@ -5886,3 +5886,9 @@ This ledger is not complete merely because provider yield improves. Final comple
 - The readiness gate is dynamic: it does not hard-code 14 providers, so future successful repairs can shrink the queue without making CI stale; any new unsupported failure family will fail the gate.
 - Fixed the generated-Bloc bridge test import environment so the generated trusted module can import `provider_patch_blocks` when run directly by Workflow Gate.
 - No provider Repair/Learning/FORCE run was launched. This remains pre-run architecture validation only.
+
+
+### 2026-09-27 — Generated Bloc renderer newline fix
+
+- Workflow Gate run 36336829522 reached the new generated-Bloc bridge and failed deterministically while compiling the trusted generated Python module: the renderer template embedded a literal newline inside `block += "..." `, producing `SyntaxError: unterminated string literal`.
+- Fixed the renderer template to emit the escaped `\\n` sequence into generated Python source. This is an offline renderer correction; no provider Repair/Learning/FORCE run is involved.
