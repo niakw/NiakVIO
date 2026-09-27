@@ -19,6 +19,7 @@ from materialize_provider_v3_all import (  # noqa: E402
 )
 from provider_base_store import build_provider_data_model  # noqa: E402
 from provider_patch_blocks import decode_managed_data, validate_managed_fixes  # noqa: E402
+from provider_security_hardening import known_unsafe_findings  # noqa: E402
 from reapply_published_overrides import (  # noqa: E402
     PUBLICATION_CONTRACT_SCHEMA,
     provider_build_input_sha,
@@ -158,6 +159,9 @@ def detect() -> dict[str, Any]:
             reasons.append("published-bundle-missing")
         else:
             text = path.read_text(encoding="utf-8")
+            unsafe_findings = sorted(set(known_unsafe_findings(text)))
+            if unsafe_findings:
+                reasons.append("publication-security-drift")
             ids = set(validate_managed_fixes(text))
             fix_id = config_fix_id(provider_id)
             if fix_id not in ids:
@@ -192,6 +196,7 @@ def detect() -> dict[str, Any]:
                 "changedKeys": changed_keys,
                 "missingFixIds": missing_fix_ids,
                 "changedBuildInputs": sorted(set(changed_build_inputs)),
+                "unsafeFindings": unsafe_findings if rel.startswith("providers/") and path.is_file() else [],
                 "publishedFile": rel,
             })
 

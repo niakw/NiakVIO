@@ -5760,3 +5760,8 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Final Security Gate 36290423291 then proved a generic targeted-materialization defect: every newly rebuilt provider retained provider console sinks/unsandboxed console usage, while the normal reapply_published_overrides path hardens those bytes before validation.
 - materialize_provider_v3_one.py now applies provider_security_hardening.harden_bytes + assert_hardened before byte-stability verification, and reasserts hardening after verification. The materialization report records the security transform.
 - This is infrastructure repair, not a hand-written MalluMV fix. It affects targeted Repair/REMAT/reconcile paths generically and keeps provider-specific mutation authority with Brain Repair/LLM.
+
+### 2026-09-27 — Projection drift detector now includes publication security
+- After targeted reconcile reached structural drift=0, Final Security Gate 36290423291 found the three rebuilt providers (allanime, animevostfr, mallumv) still unsafe because their published bytes contained console sinks.
+- The single-provider materializer has already been corrected to harden bytes before validation. To make reconciliation self-healing, detect_provider_projection_drift.py now also reports publication-security-drift for exact published bundles where provider_security_hardening.known_unsafe_findings returns findings.
+- The detector records unsafeFindings per affected provider, so targeted reconciliation can rebuild only genuinely unsafe/stale providers instead of forcing a global rematerialization.

@@ -105,6 +105,17 @@ with tempfile.TemporaryDirectory() as td:
         (root/"providers/alpha.js").write_text(current,encoding="utf-8")
         assert mod.detect()["providerCount"]==0,mod.detect()
 
+        unsafe=current+"\nconsole.error(secretToken);\n"
+        (root/"providers/alpha.js").write_text(unsafe,encoding="utf-8")
+        security_drift=mod.detect()
+        assert security_drift["providers"]==["alpha"],security_drift
+        security_row=security_drift["rows"][0]
+        assert "publication-security-drift" in security_row["reasons"],security_row
+        assert "provider_console_sensitive_sink" in security_row["unsafeFindings"],security_row
+        assert "provider_console_unsandboxed" in security_row["unsafeFindings"],security_row
+        (root/"providers/alpha.js").write_text(current,encoding="utf-8")
+        assert mod.detect()["providerCount"]==0,mod.detect()
+
         # A shared publication-contract change must invalidate the published
         # provider even when CONFIG DATA and provider-local Lego are unchanged.
         mod.publication_contract_sha=lambda *_args,**_kwargs:"d"*64
