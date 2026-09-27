@@ -101,6 +101,8 @@ def _census_runtime_focus(provider_id: str) -> dict[str, Any]:
         if not isinstance(row, dict) or str(row.get("provider") or "").strip().casefold() != wanted:
             continue
         state = str(row.get("status") or "")
+        dominant_issue = str(row.get("dominantIssue") or "")[:240]
+        issue = dominant_issue.casefold()
         profiles = {
             "CHAIN REACHED": {
                 "focus": "terminal-chain",
@@ -123,9 +125,32 @@ def _census_runtime_focus(provider_id: str) -> dict[str, Any]:
                 "max_pages": 8, "max_embeds": 8, "max_depth": 2,
             },
         }
-        result = dict(profiles.get(state) or {})
+        if any(token in issue for token in ("waf", "challenge", "blocked")):
+            # A strong current transport/WAF signal outranks the structural
+            # census floor. Otherwise ROUTE PROVEN + WAF would tell the Brain
+            # to repair transport while the runtime explorer still prioritised
+            # route traversal.
+            result = {
+                "focus": "transport-first",
+                "direct_role_order": ["api", "detail", "search", "player", "episode", "other"],
+                "max_pages": 10,
+                "max_embeds": 10,
+                "max_depth": 3,
+            }
+        elif state == "NO PROOF":
+            # NO PROOF without a current transport signal remains discovery
+            # debt. Do not silently coerce it into a route/terminal family.
+            result = {
+                "focus": "authority-discovery",
+                "direct_role_order": ["search", "api", "detail", "player", "episode", "other"],
+                "max_pages": 12,
+                "max_embeds": 10,
+                "max_depth": 3,
+            }
+        else:
+            result = dict(profiles.get(state) or {})
         result["status"] = state
-        result["dominant_issue"] = str(row.get("dominantIssue") or "")[:240]
+        result["dominant_issue"] = dominant_issue
         return result
     return {}
 

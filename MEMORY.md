@@ -5876,3 +5876,13 @@ This ledger is not complete merely because provider yield improves. Final comple
 - This gives creation/evolution/idempotence/ownership regression proof without launching provider Repair, Learning or FORCE.
 - Provider Non-Regression run 36336311494 on `125d88bb96e8e92bc569d0644e64ef1071bb26b5` was green but classified the change as control-plane-only, so it was not counted as proof of generated-Bloc behavior.
 - Brain LLM CI run 36336404590 on `81aab020c1c9bec04c66b28f4f05ffcf9cf6f25f` is green after the schema expectation and provider-only source boundary correction.
+
+
+### 2026-09-27 — Current 14-provider FORCE cohort gets an offline readiness gate
+
+- Audited the current `repairQueue` directly from `automation/provider-census-status.json`: all current providers map to three causal families: provider transport, route-to-terminal, and chain-to-terminal/media.
+- Found and fixed an internal contradiction for WAF rows: declarative causal synthesis correctly classified current WAF/challenge evidence as `provider_transport_gap`, while `_census_runtime_focus()` still used status-only `ROUTE PROVEN` traversal. Strong WAF/challenge/blocked evidence now selects `transport-first`; `NO PROOF` without transport evidence stays explicit `authority-discovery`.
+- Added `brain_force_full_cohort_readiness_test.py`. It reads the live committed census and fails if any repair-queue provider lacks a causal executor, bounded experiment, matching runtime strategy/focus, generated-Bloc mutation path, isolated rematerialization, or strict playable+identity sandbox acceptance path.
+- The readiness gate is dynamic: it does not hard-code 14 providers, so future successful repairs can shrink the queue without making CI stale; any new unsupported failure family will fail the gate.
+- Fixed the generated-Bloc bridge test import environment so the generated trusted module can import `provider_patch_blocks` when run directly by Workflow Gate.
+- No provider Repair/Learning/FORCE run was launched. This remains pre-run architecture validation only.
