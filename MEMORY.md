@@ -5983,3 +5983,13 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Evidence separates code-path gaps from environment/WAF symptoms. Examples: MalluMV and AllAnime traverse substantial provider-owned HTTP 200 chains before returning no streams; several others hit 403/429 or network exceptions on provider/player origins.
 - Brain Force must consume this fresh targeted evidence before provider mutation. A checkout with census-only evidence is intentionally insufficient for these failure classes.
 - Fleet-scale routing remains split by catalogue size: current <=120-provider catalogue uses the single targeted-recovery job with up to 20 workers; >120 providers use the existing 8-shard targeted recovery workflow.
+
+
+## 2026-09-28 — WAF automation + residential replay evidence precedence
+
+- WAF Browser Session Diagnostics run `36414352121` completed successfully on the repair cohort through GitHub-hosted and Tailscale residential paths. Tailscale connected successfully and the residential exit was active.
+- Full residential provider replay was available for 11 providers. Vostfree produced 1 raw / 1 playable / 1 verified, identity-safe stream and is now canonically FULL OK; the current repair queue is 13 providers.
+- Several providers still produced zero streams after full residential replay. For these providers, a narrow 401/403/429 WAF seed must not by itself suppress provider repair: full provider replay is stronger causal evidence.
+- Durable causal order shared with Brain: full residential provider replay > WAF/client-profile differential > targeted HTTP/network status.
+- Persistent challenge across browser + residential evidence with no stronger replay remains transport/environment debt. Nuvio-like reachability without a stronger full-provider replay remains client/Core transport debt. Identity-safe full provider replay that still ends in provider zero/error returns to normal provider repair.
+- Brain routing was corrected in `niakw/NiakVIO-Brain-LLM` so this precedence is enforced before Force mutation authority is decided.
