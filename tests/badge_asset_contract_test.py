@@ -91,7 +91,8 @@ for theme in ("dark", "light", "transparent", "fusion"):
 for theme in ("dark", "light", "transparent", "fusion"):
     assert (ROOT / f"assets/stream-badges-{theme}-v3.json").is_file(), f"historical {theme} v3 must be preserved"
 assert (ROOT / "assets/stream-badges-fusion-v2.json").is_file(), "historical fusion-v2 must be preserved"
-assert '"lang-"+' in core and '"sub-"+' in core, "provider presentation generator must emit universal language/subtitle badge IDs"
+assert '"lang-"+' in core, "provider presentation generator must emit universal language badge IDs"
+assert '"sub-"+' not in core, "subtitle chips must stay hidden from runtime badgeIds; subtitle data remains in tracks/description"
 for stale_mapping in ('"VF":"vf"', '"VFQ":"vfq"', '"VO":"vo"', '"VOSTFR":"vostfr"'):
     assert stale_mapping not in core, f"legacy public badge mapping leaked from provider presentation generator: {stale_mapping}"
 
