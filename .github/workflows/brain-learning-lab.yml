@@ -107,41 +107,10 @@ jobs:
           tmp="$(mktemp -d)"
           git -C "$tmp" init -q
           git -C "$tmp" remote add origin https://github.com/niakw/NiakVIO-Brain-LLM.git
-          git -C "$tmp" fetch --quiet --depth=1 origin \
-            refs/heads/niakvio-guidance:refs/remotes/origin/niakvio-guidance \
-            refs/heads/main:refs/remotes/origin/main
-          git -C "$tmp" show refs/remotes/origin/niakvio-guidance:guidance/niakvio-guidance.json > "$RUNNER_TEMP/niakvio-guidance-pin.json" || {
-            echo "Brain LLM guidance branch does not expose a revision pin" >&2
-            exit 1
-          }
-          git -C "$tmp" show refs/remotes/origin/niakvio-guidance:guidance/niakvio-guidance-state.json > "$RUNNER_TEMP/niakvio-guidance-state-pin.json" || {
-            echo "Brain LLM guidance branch is incomplete: missing paging state" >&2
-            exit 1
-          }
-          guidance_sha="$(python - "$RUNNER_TEMP/niakvio-guidance-pin.json" "$RUNNER_TEMP/niakvio-guidance-state-pin.json" <<'PY'
-          import json,re,sys
-          guidance=json.load(open(sys.argv[1],encoding='utf-8'))
-          state=json.load(open(sys.argv[2],encoding='utf-8'))
-          sha=str(guidance.get('brainLlmSha') or '').strip().lower()
-          state_sha=str(state.get('brainLlmSha') or '').strip().lower()
-          if not re.fullmatch(r'[0-9a-f]{40}',sha) or state_sha != sha:
-              raise SystemExit('invalid/inconsistent Brain LLM guidance revision')
-          if state.get('complete') is not True or list(state.get('remainingProviders') or []):
-              raise SystemExit('Brain LLM guidance pagination is incomplete')
-          if list(state.get('completedProviders') or []) != list(state.get('requestedProviders') or []):
-              raise SystemExit('Brain LLM guidance cohort is incomplete')
-          if str(state.get('sourceNiakvioSha') or '').strip().lower() != str(guidance.get('sourceNiakvioSha') or '').strip().lower():
-              raise SystemExit('Brain LLM guidance source/state mismatch')
-          print(sha)
-          PY
-          )"
+          git -C "$tmp" fetch --quiet --depth=1 origin refs/heads/main:refs/remotes/origin/main
           main_sha="$(git -C "$tmp" rev-parse refs/remotes/origin/main)"
-          test "$guidance_sha" = "$main_sha" || {
-            echo "Brain LLM split-brain: guidance=$guidance_sha main=$main_sha" >&2
-            exit 1
-          }
-          echo "sha=$guidance_sha" >> "$GITHUB_OUTPUT"
-          echo "FIELD_BRAIN_LLM_PIN sha=$guidance_sha source=niakvio-guidance freshness=current-main"
+          echo "sha=$main_sha" >> "$GITHUB_OUTPUT"
+          echo "FIELD_BRAIN_LLM_PIN sha=$main_sha source=main freshness=current-main cache_policy=stale-guidance-ignored"
 
       - name: Checkout pinned NiakVIO Brain LLM advisor
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
@@ -833,6 +802,7 @@ jobs:
           FAST_MISSING_PROVIDERS: ${{ steps.brain_llm_fast_cache.outputs.missing_providers }}
           LLM_NEEDED: ${{ steps.brain_llm_route.outputs.llm_needed }}
           LLM_AVAILABLE: ${{ steps.brain_llm_server.outputs.available }}
+          ARCHITECTURE_FORCE: ${{ steps.learning-slot.outputs.architecture_force }}
         run: |
           set -euo pipefail
           batch="brain-sandbox/brain-llm/batch.jsonl"
@@ -852,6 +822,13 @@ jobs:
 
           effective_filter="${PROVIDER_FILTER:-}"
           max_tokens=160
+          model_timeout=45
+          model_workers=2
+          if [ "${ARCHITECTURE_FORCE:-false}" = "true" ]; then
+            max_tokens=768
+            model_timeout=180
+            model_workers=1
+          fi
           if [ "${FAST_HANDOFF:-false}" = "true" ]; then
             effective_filter="${FAST_MISSING_PROVIDERS:-}"
           fi
@@ -865,9 +842,9 @@ jobs:
               --max-hypotheses 1
               --endpoint http://127.0.0.1:8080
               --model qwen2.5-coder-3b
-              --workers 2
+              --workers "$model_workers"
               --max-tokens "$max_tokens"
-              --timeout-seconds 45
+              --timeout-seconds "$model_timeout"
               --output "$batch")
             if [ -s brain-sandbox/brain-llm/private-documents.jsonl ]; then
               args+=(--extra-documents brain-sandbox/brain-llm/private-documents.jsonl)
