@@ -108,7 +108,8 @@ print("Brain LLM guidance contract passed")
 workflow=(ROOT/".github/workflows/brain-learning-lab.yml").read_text(encoding="utf-8")
 assert "repository: niakw/NiakVIO-Brain-LLM" in workflow
 assert "id: brain_llm_pin" in workflow
-assert "Brain LLM split-brain" in workflow
+assert "cache_policy=stale-guidance-ignored" in workflow
+assert "source=main freshness=current-main" in workflow
 assert "ref: ${{ steps.brain_llm_pin.outputs.sha }}" in workflow
 assert '--brain-llm-sha "${{ steps.brain_llm_pin.outputs.sha }}"' in workflow
 assert "repository: niakw/niakvio-private" in workflow
