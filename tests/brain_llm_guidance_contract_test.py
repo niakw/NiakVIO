@@ -123,7 +123,8 @@ assert "brain_llm_guidance.py" in workflow
 assert "brain_llm_experiment.py" in workflow
 assert "Qwen/Qwen2.5-Coder-3B-Instruct-GGUF:Q4_K_M" in workflow
 assert "-c 8192 -np 2" in workflow
-assert "--workers 2" in workflow
+assert '--workers "$model_workers"' in workflow
+assert "model_workers=2" in workflow
 assert "--advisor-only" in workflow
 assert "--max-hypotheses 1" in workflow
 assert '--max-tokens "$max_tokens"' in workflow
@@ -139,7 +140,6 @@ upload_tail=workflow[workflow.find("Upload sanitized learning and proposal state
 assert "private-documents.jsonl" not in upload_tail
 assert "brain-llm-private" not in upload_tail
 
-assert "niakvio-guidance-state.json" in workflow
-assert "guidance pagination is incomplete" in workflow
-assert "guidance cohort is incomplete" in workflow
-assert "guidance source/state mismatch" in workflow
+assert '--brain-llm-sha "${{ steps.brain_llm_pin.outputs.sha }}"' in workflow
+assert workflow.count('--brain-llm-sha "${{ steps.brain_llm_pin.outputs.sha }}"') >= 2
+assert "stale-guidance-ignored" in workflow
