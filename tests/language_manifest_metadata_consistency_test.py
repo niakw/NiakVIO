@@ -23,7 +23,7 @@ fields = (
 errors: list[str] = []
 
 assert sources.get("repository", {}).get("name") == "NiakVIO", sources.get("repository", {}).get("name")
-assert main.get("name") == "NiakVIO", main.get("name")
+assert main.get("name") == f"NiakVIO v{main.get('version')}", main.get("name")
 assert vf.get("name") == "NiakVIO — VF uniquement", vf.get("name")
 missing_logos = [
     str(row.get("id") or "")
