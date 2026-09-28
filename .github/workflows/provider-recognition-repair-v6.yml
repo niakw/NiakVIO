@@ -1585,18 +1585,7 @@ jobs:
             )
             if [ "$resume" = "1" ] && [ "$remaining" -gt 0 ] && [ "$unvisited" -gt 0 ]; then
               if [ "$force_requested" = "1" ]; then
-                unvisited_csv="$(python - "$tmp/provider-brain-repair-latest.json" <<'PY'
-          import json,sys
-          data=json.load(open(sys.argv[1],encoding='utf-8'))
-          values=[]
-          seen=set()
-          for raw in data.get('unvisitedProviders') or []:
-              value=str(raw or '').strip().lower().replace('_','-')
-              if value and value not in seen:
-                  seen.add(value); values.append(value)
-          print(','.join(values))
-          PY
-                )"
+                unvisited_csv="$(python -c 'import json,sys; d=json.load(open(sys.argv[1],encoding="utf-8")); values=[]; seen=set(); [values.append(v) for raw in (d.get("unvisitedProviders") or []) if (v:=str(raw or "").strip().lower().replace("_","-")) and v not in seen and not seen.add(v)]; print(",".join(values))' "$tmp/provider-brain-repair-latest.json")"
                 if [ -n "$unvisited_csv" ]; then
                   gh workflow run provider-fast-repair.yml \
                     --repo "$GITHUB_REPOSITORY" \
