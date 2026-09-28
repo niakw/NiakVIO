@@ -127,6 +127,10 @@ function debugStage(model, fixture, fetchTrace, result) {
   if (terminal?.challenge) return 'provider_waf_challenge';
   if (terminal?.error) return 'provider_network_exception';
   if (Number(terminal?.status || 0) >= 400) return 'provider_network_http_error';
+  // A successful-looking terminal request must not erase a challenge reached one
+  // step earlier (for example a 200 HTML Turnstile page followed by a harmless
+  // asset/fallback fetch). Terminal hard failures still keep causal precedence.
+  if (meaningful.some((row) => row?.challenge)) return 'provider_waf_challenge';
   return 'provider_network_zero_result';
 }
 
@@ -155,19 +159,27 @@ if (typeof originalFetch === 'function') {
       let challenge = '';
       const status = Number(response?.status || 0);
       try { contentType = String(response?.headers?.get?.('content-type') || '').split(';')[0].slice(0, 96); } catch {}
-      if ([403, 429, 503].includes(status)) {
+      // Interactive anti-bot pages can legitimately answer HTTP 200. Inspect only
+      // bounded HTML/JS clones; response bodies remain ephemeral and are never stored.
+      if ((status >= 200 && status < 300) || [403, 429, 503].includes(status)) {
         let server = '', cfRay = '', cfMitigated = '', body = '';
         try {
           server = String(response?.headers?.get?.('server') || '').toLowerCase();
           cfRay = String(response?.headers?.get?.('cf-ray') || '');
           cfMitigated = String(response?.headers?.get?.('cf-mitigated') || '').toLowerCase();
         } catch {}
-        if (/text\/html/i.test(contentType)) {
+        const htmlBody = /text\/html/i.test(contentType);
+        const scriptBody = /(?:application|text)\/(?:javascript|x-javascript|ecmascript)/i.test(contentType);
+        if (htmlBody || scriptBody) {
           try { body = String(await response.clone().text()).slice(0, 65536).toLowerCase(); } catch {}
         }
-        const marker = /just a moment|checking your browser|verify you are human|attention required|captcha|challenge-platform|cf-browser-verification|security check/.test(body);
+        // Explicit Turnstile wiring in a provider-loaded JS asset is strong
+        // evidence of the same interactive gate even when the HTML itself is 200
+        // and marker-free. Generic challenge prose remains HTML-only.
+        const turnstileMarker = /cf-turnstile-response|challenges\.cloudflare\.com\/turnstile|\bturnstile\b/.test(body);
+        const marker = turnstileMarker || (htmlBody && /just a moment|checking your browser|verify you are human|attention required|captcha|challenge-platform|cf-browser-verification|security check/.test(body));
         if (cfMitigated === 'challenge' || marker) {
-          challenge = (cfRay || server.includes('cloudflare') || cfMitigated === 'challenge') ? 'cloudflare' : 'generic';
+          challenge = (turnstileMarker || cfRay || server.includes('cloudflare') || cfMitigated === 'challenge') ? 'cloudflare' : 'generic';
         }
       }
       trace.push({

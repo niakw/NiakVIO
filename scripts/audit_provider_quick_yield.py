@@ -437,6 +437,10 @@ def classify_debug_stage(task: dict[str, Any], probe: dict[str, Any], debug: dic
         return "provider_network_exception"
     if int(terminal.get("status") or 0) >= 400:
         return "provider_network_http_error"
+    # Keep terminal hard-failure precedence, but do not let a later successful
+    # asset/fallback request erase an interactive challenge already reached.
+    if any(str(row.get("challenge") or "").strip() for row in meaningful_fetches):
+        return "provider_waf_challenge"
     return "provider_network_zero_result"
 
 

@@ -79,6 +79,17 @@ debug_terminal_waf={
     "fetches":[{"url":"https://provider.example/search","status":200},{"url":"https://provider.example/player","status":403,"challenge":"cloudflare"}],
 }
 assert classify_debug_stage(task,probe_zero,debug_terminal_waf)=="provider_waf_challenge"
+
+# A 200 interactive challenge can be followed by a harmless successful asset or
+# fallback fetch. The later 200 must not erase the already-reached challenge.
+debug_prior_waf_then_terminal_200={
+    "model":{"supported_types":["movie"],"has_api_recipe":False,"route_count":1,"source_runtime_family":"catalogue-html"},
+    "fetches":[
+        {"url":"https://provider.example/player","status":200,"challenge":"cloudflare"},
+        {"url":"https://provider.example/assets/app.js","status":200},
+    ],
+}
+assert classify_debug_stage(task,probe_zero,debug_prior_waf_then_terminal_200)=="provider_waf_challenge"
 assert _provider_progress_stage({"fetches":[{"url":"https://provider.example/?s=Interstellar","status":200}]})=="lookup_only"
 assert _provider_progress_stage({"fetches":[{"url":"https://provider.example/search?q=Interstellar","status":200},{"url":"https://provider.example/movie/1755/interstellar","status":200}]})=="chain_reached"
 assert _provider_progress_stage({"fetches":[{"url":"https://api.allanime.day/api?variables=%7B%22showId%22%3A%22x%22%2C%22episodeString%22%3A%221%22%7D","status":200}]})=="chain_reached"
@@ -88,6 +99,9 @@ assert "const terminal = meaningful[meaningful.length - 1]" in probe_source
 assert "providerFetches.some((row) => Number(row.status) >= 400)" not in probe_source
 assert "providerFetches.some((row) => row.error)" not in probe_source
 assert "cf-mitigated" in probe_source
+assert "cf-turnstile-response" in probe_source
+assert "turnstileMarker" in probe_source
+assert "meaningful.some((row) => row?.challenge)" in probe_source
 assert "provider_waf_challenge" in probe_source
 
 print("provider census identity diagnostics passed")

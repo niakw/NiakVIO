@@ -166,6 +166,24 @@ Consequences are mandatory:
 
 Transport/Tailscale/WAF analysis starts only after an actual provider-owned request exists. no_provider_request_observed is never a transport diagnosis by itself.
 
+### 4.3 Interactive challenge evidence is not limited to HTTP errors
+
+A provider/client transport gate may answer HTTP 200. The probe must therefore treat
+high-confidence interactive challenge evidence as transport/WAF evidence even when
+the response status is successful. This includes explicit Cloudflare Turnstile
+wiring observed in bounded HTML or provider-loaded JavaScript (`cf-turnstile-response`
+or the Cloudflare Turnstile client path). Bodies remain ephemeral and are never
+persisted.
+
+Causal precedence remains strict: a terminal hard network failure (exception or
+HTTP >= 400) outranks an incidental earlier challenge, but a later harmless 200
+asset/fallback request must not erase an already-observed interactive challenge.
+
+Repair consequence: do not ask Provider Repair/Brain to fabricate challenge tokens
+or mutate provider extraction code merely because the final media URL is absent.
+Route the case through the existing WAF/browser/session qualification first; only a
+reproducible provider-layer defect after that boundary is eligible for mutation.
+
 ## 5. Provider Repair experiments
 
 A provider enters mutation only after causal provider-layer evidence survives the harness boundary.
