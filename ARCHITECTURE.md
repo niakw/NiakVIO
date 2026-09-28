@@ -454,3 +454,29 @@ Subtitle chips remain absent from runtime `badgeIds`; subtitle information stays
 Legacy labels such as `VF`, `VFF`, `VFQ`, `VO`, `VOSTFR` and `MULTI` are accepted only as input aliases/roles. Public language identity is a canonical international code (`fr`, `fr-ca`, `ja`, `ko`, `hi`, etc.) or null when a single audio language cannot be proven. Provider-manifest language fallback is allowed only when no stronger stream/player evidence exists.
 
 Stream Score numeric 0-100 remains an internal scoring primitive. Runtime/client projection exposes the score state and grade letter/badge only; it must not expose `x/100` as user-facing metadata.
+
+
+### WAF / client transport : ordre causal de preuve
+
+La qualification WAF est automatique via la lane dédiée, avec profils browser/Nuvio-like,
+Tailscale résidentiel puis full provider replay lorsqu'il est sélectionné.
+
+L'ordre de preuve est impératif :
+
+1. **full provider replay résidentiel** ;
+2. **différentiel WAF / profils client** ;
+3. **seed réseau ciblé / code HTTP isolé**.
+
+Un `401/403/429` isolé ne suffit donc jamais à retirer un provider de la voie Repair.
+
+- Si le full provider replay résidentiel termine identity-safe, sans WAF/timeout, mais
+  reste en zero/error provider, le défaut revient à la voie Repair provider.
+- Si le challenge persiste à la fois sur GitHub et résidentiel et qu'aucun replay plus
+  fort ne contredit ce résultat, le défaut appartient à la voie transport/environnement.
+- Si une cible devient joignable via un profil Nuvio-like mais qu'aucun full replay
+  n'a encore isolé un défaut provider, le cas appartient à la voie client/Core transport.
+- Seule une preuve playable + verified + identity-safe peut promouvoir le provider.
+
+Cette hiérarchie évite qu'un simple WAF seed écrase une preuve runtime plus forte et
+permet au système de rester causalement correct quand le catalogue contient plusieurs
+centaines de providers.
