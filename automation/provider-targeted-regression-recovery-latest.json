@@ -4,33 +4,70 @@
   "groupResults": [
     {
       "contradictionProviders": [],
-      "groupId": "candidate-replay|mixed_embed_resolver",
+      "groupId": "route-to-terminal|html_scraper",
       "playableProviders": [],
       "providerCount": 1,
       "providers": [
-        "animevostfr"
+        "4khdhub"
       ],
-      "repairScope": "candidate-replay",
+      "repairScope": "route-to-terminal",
+      "verifiedProviders": []
+    },
+    {
+      "contradictionProviders": [],
+      "groupId": "terminal-extraction|html_scraper",
+      "playableProviders": [],
+      "providerCount": 1,
+      "providers": [
+        "mallumv"
+      ],
+      "repairScope": "terminal-extraction",
+      "verifiedProviders": []
+    },
+    {
+      "contradictionProviders": [],
+      "groupId": "learning|html_scraper",
+      "playableProviders": [],
+      "providerCount": 1,
+      "providers": [
+        "allwish"
+      ],
+      "repairScope": "learning",
       "verifiedProviders": []
     }
   ],
   "maxWorkers": 20,
   "providers": {
-    "animevostfr": {
+    "4khdhub": {
       "contradictions": 0,
       "debugStages": {
-        "anime": "provider_network_zero_result"
+        "movie": "provider_network_zero_result",
+        "tv": "provider_network_zero_result"
       },
       "network": {
-        "anime": [
+        "movie": [
           {
             "host": "api.themoviedb.org",
             "method": "GET",
-            "path": "/3/tv/259544",
+            "path": "/3/movie/760873",
             "status": 200
           },
           {
-            "host": "animevostfr.org",
+            "host": "4khdhub.one",
+            "method": "GET",
+            "path": "/",
+            "status": 200
+          }
+        ],
+        "tv": [
+          {
+            "host": "api.themoviedb.org",
+            "method": "GET",
+            "path": "/3/tv/210702",
+            "status": 200
+          },
+          {
+            "host": "4khdhub.one",
             "method": "GET",
             "path": "/",
             "status": 200
@@ -38,38 +75,190 @@
         ]
       },
       "playableLanes": [],
-      "safeDiagnostics": [
-        "FIELD_ANIMEVOSTFR_SEARCH_TITLES {\"preferred\":\"地獄先生ぬ～べ～\",\"titles\":[\"Jigoku Sensei Nube 2025\",\"Jigoku Sensei Nube\",\"Hell Teacher Nube\",\"HellTeacher\",\"地獄先生ぬ～べ～\",\"ぬーべーアニメ\"]}"
-      ],
+      "safeDiagnostics": [],
       "sampleTitles": {
-        "anime": [
-          "Jujutsu Kaisen",
-          "Mushoku Tensei: Jobless Reincarnation",
-          "Failure Frame: I Became the Strongest and Annihilated Everything with Low-Level Spells",
-          "Hell Teacher: Jigoku Sensei Nube"
+        "movie": [
+          "Sinners",
+          "Interstellar",
+          "Mon ninja et moi 3",
+          "The Colony"
+        ],
+        "tv": [
+          "Breaking Bad",
+          "Revenant"
         ]
       },
       "statuses": {
-        "anime": "no_streams"
+        "movie": "no_streams",
+        "tv": "no_streams"
+      },
+      "verifiedLanes": []
+    },
+    "allwish": {
+      "contradictions": 0,
+      "debugStages": {
+        "movie": "provider_waf_challenge",
+        "tv": "provider_waf_challenge"
+      },
+      "network": {
+        "movie": [
+          {
+            "host": "api.themoviedb.org",
+            "method": "GET",
+            "path": "/3/movie/1771",
+            "status": 200
+          },
+          {
+            "host": "all-wish.me",
+            "method": "GET",
+            "path": "/filter",
+            "status": 403
+          }
+        ],
+        "tv": [
+          {
+            "host": "api.themoviedb.org",
+            "method": "GET",
+            "path": "/3/tv/100088",
+            "status": 200
+          },
+          {
+            "host": "all-wish.me",
+            "method": "GET",
+            "path": "/filter",
+            "status": 403
+          }
+        ]
+      },
+      "playableLanes": [],
+      "safeDiagnostics": [],
+      "sampleTitles": {
+        "movie": [
+          "Interstellar",
+          "Oppenheimer",
+          "Barbie",
+          "Superman",
+          "Inception",
+          "Tenet",
+          "Django Unchained",
+          "Captain America: The First Avenger"
+        ],
+        "tv": [
+          "Breaking Bad",
+          "Silo",
+          "Money Heist",
+          "Revenant",
+          "Fallout",
+          "Game of Thrones",
+          "Sherlock",
+          "The Last of Us"
+        ]
+      },
+      "statuses": {
+        "movie": "no_streams",
+        "tv": "no_streams"
+      },
+      "verifiedLanes": []
+    },
+    "mallumv": {
+      "contradictions": 0,
+      "debugStages": {
+        "movie": "provider_network_zero_result"
+      },
+      "network": {
+        "movie": [
+          {
+            "host": "api.themoviedb.org",
+            "method": "GET",
+            "path": "/3/movie/157336",
+            "status": 200
+          },
+          {
+            "host": "mallumv.space",
+            "method": "GET",
+            "path": "/search.php",
+            "status": 200
+          },
+          {
+            "host": "mallumv.space",
+            "method": "GET",
+            "path": "/movie/1755/Interstellar_2014_English.xhtml",
+            "status": 200
+          },
+          {
+            "host": "mallumv.space",
+            "method": "GET",
+            "path": "/internal/6705/1755/Interstellar%20(2014)%20BluRay%C3%82%C2%A0-%201080p%20-%20x264%20-%20[Tamil%20+%20Eng]%20-%20(DD+2.0%20-%20224Kbps)%20-%202.5GB%20-%20ESub.xhtml",
+            "status": 200
+          },
+          {
+            "host": "vik1ngfile.site",
+            "method": "GET",
+            "path": "/f/tMAohzba53",
+            "status": 200
+          },
+          {
+            "host": "vik1ngfile.site",
+            "method": "GET",
+            "path": "/assets/custom-F_ZXKHX.js",
+            "status": 200
+          },
+          {
+            "host": "vikingfile.com",
+            "method": "GET",
+            "path": "/fast-download/www.MalluMv.Space%20-Interstellar%20%282014%29%20BluRay%C2%A0-%201080p%20-%20x264%20-%20%5BTamil%20+%20Eng%5D%20-%20%28DD+2.0%20-%20224Kbps%29%20-%202.5GB%20-%20ESub",
+            "status": 200
+          },
+          {
+            "host": "mallumv.space",
+            "method": "GET",
+            "path": "/internal/6706/1755/Interstellar%20(2014)%20BluRay%C3%82%C2%A0-%20720p%20-%20x264%20-%20[Tamil%20+%20Eng]%20-%20(AAC%202.0)%20-%201.2GB%20-%20ESub.xhtml",
+            "status": 200
+          },
+          {
+            "host": "vik1ngfile.site",
+            "method": "GET",
+            "path": "/f/u6lxab0wCH",
+            "status": 200
+          },
+          {
+            "host": "vikingfile.com",
+            "method": "GET",
+            "path": "/fast-download/www.MalluMv.Space%20-Interstellar%20%282014%29%20BluRay%C2%A0-%20720p%20-%20x264%20-%20%5BTamil%20+%20Eng%5D%20-%20%28AAC%202.0%29%20-%201.2GB%20-%20ESub.mkv%20%5B1.",
+            "status": 200
+          }
+        ]
+      },
+      "playableLanes": [],
+      "safeDiagnostics": [],
+      "sampleTitles": {
+        "movie": [
+          "Interstellar"
+        ]
+      },
+      "statuses": {
+        "movie": "no_streams"
       },
       "verifiedLanes": []
     }
   },
   "requestedProviders": [
-    "animevostfr"
+    "4khdhub",
+    "allwish",
+    "mallumv"
   ],
-  "runId": "36288552131",
+  "runId": "36383608344",
   "schemaVersion": 3,
-  "selectedProviderCount": 1,
+  "selectedProviderCount": 3,
   "selectedProviders": [
-    "animevostfr"
+    "4khdhub",
+    "allwish",
+    "mallumv"
   ],
   "shardCount": 1,
   "shardIndex": 0,
   "skippedEnvironmentProviders": [
-    "4khdhub",
     "allanime",
-    "allwish",
     "anime-ultime",
     "animesalt",
     "animesultra",
@@ -78,15 +267,15 @@
     "desiflix",
     "flemmix",
     "fullanime",
-    "mallumv",
     "moviebox",
     "moviesmod",
     "showbox",
     "vidfast",
+    "vostfree",
     "yflix"
   ],
-  "sourceCensusRunId": "36288195072-retest",
-  "triggerSha": "7b1c20a51ea74117fee48bb6ec421cb040f6d9a0",
+  "sourceCensusRunId": "36320455627",
+  "triggerSha": "cb5146437fbe801ccdb53a3ff40ab25f04a93cb1",
   "verifiedProviderCount": 0,
   "verifiedProviders": []
 }
