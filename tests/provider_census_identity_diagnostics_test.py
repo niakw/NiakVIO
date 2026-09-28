@@ -101,6 +101,10 @@ assert "providerFetches.some((row) => row.error)" not in probe_source
 assert "cf-mitigated" in probe_source
 assert "cf-turnstile-response" in probe_source
 assert "turnstileMarker" in probe_source
+assert "response_shape: responseShape" in probe_source
+assert "function jsonShape(value)" in probe_source
+assert "function textShape(contentType, body)" in probe_source
+assert "sampleBytes" in probe_source
 assert "meaningful.some((row) => row?.challenge)" in probe_source
 assert "provider_waf_challenge" in probe_source
 

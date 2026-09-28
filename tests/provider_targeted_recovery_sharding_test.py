@@ -14,6 +14,26 @@ mod=importlib.util.module_from_spec(spec)
 assert spec and spec.loader
 spec.loader.exec_module(mod)
 source=(ROOT/"scripts/run_provider_targeted_recovery.py").read_text(encoding="utf-8")
+shape=mod.compact_response_shape({
+    "kind":"json",
+    "top":"object",
+    "keys":["data","episode","unsafe value"],
+    "episodeKeys":["sourceUrls","tobeparsed"],
+    "secret":"must-not-persist",
+})
+assert shape=={
+    "kind":"json",
+    "top":"object",
+    "keys":["data","episode"],
+    "episodeKeys":["sourceUrls","tobeparsed"],
+},shape
+html_shape=mod.compact_response_shape({
+    "kind":"html","sampleBytes":999999,"forms":2,"iframes":1,
+    "markers":["player","download","must-not-persist"],
+})
+assert html_shape["sampleBytes"]==65536,html_shape
+assert html_shape["markers"]==["player","download"],html_shape
+assert "must-not-persist" not in repr((shape,html_shape))
 assert 'ap.add_argument("--provider",action="append",default=[])' in source
 assert "targets &= requested" in source
 assert '"requestedProviders":sorted(requested)' in source

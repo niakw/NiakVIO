@@ -283,6 +283,20 @@ This invariant prevents a one-provider diagnostic run from turning the other
 unresolved providers into synthetic `not-probed` rows and forcing Brain to
 rediscover evidence that already exists.
 
+### Response-shape evidence
+
+Targeted recovery may persist a bounded structural summary for provider responses.
+It never persists response bodies, cookies, headers, query secrets or response
+values. JSON evidence is limited to validated schema-key names, top-level type
+and coarse array-size buckets. HTML/JavaScript evidence is limited to bounded
+element/function counts and a closed marker vocabulary such as `player`,
+`download`, `episode`, `hls-literal` or `turnstile`.
+
+The purpose is causal diagnosis: distinguish “request reached a JSON API but the
+expected `episode/sourceUrls` shape changed” from “HTML page contains no player”
+without giving the Brain raw private content. NiakVIO sanitizes this summary before
+persistence and Brain re-sanitizes it on ingestion.
+
 ## 6. Brain LLM boundary
 
 The LLM is useful for inventing a bounded method or mutation that deterministic Repair does not already know. It does not decide whether the repair is accepted.

@@ -60,3 +60,12 @@
 - Restored current snapshot contains 13 provider evidence rows: 1 newly observed MalluMV row plus 12 retained same-census rows. Refined repair groups return to 13 evidence-specific groups instead of collapsing unselected providers to `not-probed`.
 - Current MalluMV evidence is an HTTP-200 interactive Turnstile challenge; this is transport/WAF evidence, not provider-code mutation authority. Playback remains unverified.
 - Targeted continuity/refinement/history/workflow tests pass locally, and the restored snapshot was regenerated from committed same-census evidence rather than invented data.
+
+## 2026-09-28 — Bounded response-shape evidence for Brain Repair
+
+- Local post-routing FORCE validation on the restored 13-provider snapshot showed AllAnime cleanly abstaining on both provider patch and provider Bloc, while 4KHDHub abstained on the authored patch and exhausted its Bloc budget. No provider repair was accepted.
+- Root evidence gap: current targeted recovery persisted request routes/statuses but discarded response structure; the seven provider-repair candidates therefore reached live HTTP without giving Brain enough safe causal evidence to distinguish schema/parser drift from a missing traversal.
+- The TMDB/provider probe now derives a bounded `response_shape` from cloned responses. Bodies remain ephemeral and are never persisted.
+- JSON shape contains only validated key names, coarse top type/array bucket and bounded nested schema keys. HTML/JavaScript shape contains only bounded element/function counts and a closed fixed marker vocabulary; no response values, cookies, request headers or query secrets are retained.
+- `run_provider_targeted_recovery.py` re-sanitizes the shape before adding it to same-census targeted evidence. Unsafe key names, unknown fields and unknown markers are dropped.
+- This evidence is diagnostic only. It does not make a stream playable or grant publication authority; candidates still require isolated current-byte NiakVIO playback/identity/non-regression validation.

@@ -148,6 +148,61 @@ try { fixture = JSON.parse(process.argv[3] || '{}'); } catch { fixture = {}; }
 // remain visible. Bodies, cookies and request headers are never persisted.
 const originalFetch = globalThis.fetch;
 const trace = [];
+
+function safeShapeKey(value) {
+  const key = String(value || '').slice(0, 48);
+  return /^[A-Za-z_][A-Za-z0-9_.:-]{0,47}$/.test(key) ? key : '';
+}
+function jsonShape(value) {
+  const top = Array.isArray(value) ? 'array' : (value === null ? 'null' : typeof value);
+  const out = { kind: 'json', top };
+  const keys = obj => Object.keys(obj || {}).map(safeShapeKey).filter(Boolean).slice(0, 16);
+  if (Array.isArray(value)) {
+    out.lengthBucket = value.length === 0 ? '0' : value.length === 1 ? '1' : value.length <= 10 ? '2-10' : '11+';
+    const first = value.find(item => item && typeof item === 'object' && !Array.isArray(item));
+    if (first) out.itemKeys = keys(first);
+    return out;
+  }
+  if (!value || typeof value !== 'object') return out;
+  out.keys = keys(value);
+  for (const name of ['data','results','result','episode','shows','sources','links']) {
+    const child = value[name];
+    if (Array.isArray(child)) {
+      out[name + 'Type'] = 'array';
+      const first = child.find(item => item && typeof item === 'object' && !Array.isArray(item));
+      if (first) out[name + 'ItemKeys'] = keys(first);
+    } else if (child && typeof child === 'object') {
+      out[name + 'Type'] = 'object';
+      out[name + 'Keys'] = keys(child);
+    }
+  }
+  return out;
+}
+function textShape(contentType, body) {
+  const raw = String(body || '').slice(0, 65536);
+  const low = raw.toLowerCase();
+  const count = re => Math.min(99, (raw.match(re) || []).length);
+  if (/text\/html/i.test(contentType)) {
+    return {kind:'html',sampleBytes:raw.length,forms:count(/<form\b/gi),iframes:count(/<iframe\b/gi),videos:count(/<video\b/gi),sources:count(/<source\b/gi),scripts:count(/<script\b/gi),anchors:count(/<a\b/gi),markers:[
+      /__next_data__/i.test(raw)?'next-data':'',
+      /application\/ld\+json/i.test(raw)?'json-ld':'',
+      /(?:player|embed)/i.test(low)?'player':'',
+      /download/i.test(low)?'download':'',
+      /episode/i.test(low)?'episode':'',
+      /\.m3u8(?:[?"'<>\s]|$)/i.test(raw)?'hls-literal':'',
+      /\.mp4(?:[?"'<>\s]|$)/i.test(raw)?'mp4-literal':''
+    ].filter(Boolean)};
+  }
+  if (/(?:application|text)\/(?:javascript|x-javascript|ecmascript)/i.test(contentType)) {
+    return {kind:'javascript',sampleBytes:raw.length,functions:count(/\bfunction\b/g),fetchCalls:count(/\bfetch\s*\(/g),markers:[
+      /\bturnstile\b/i.test(low)?'turnstile':'',
+      /(?:iframe|embed)/i.test(low)?'embed':'',
+      /\.m3u8(?:[?"'<>\s]|$)/i.test(raw)?'hls-literal':'',
+      /\.mp4(?:[?"'<>\s]|$)/i.test(raw)?'mp4-literal':''
+    ].filter(Boolean)};
+  }
+  return null;
+}
 if (typeof originalFetch === 'function') {
   globalThis.fetch = async function tracedFetch(input, init) {
     const started = Date.now();
@@ -157,6 +212,7 @@ if (typeof originalFetch === 'function') {
       const response = await originalFetch.call(this, input, init);
       let contentType = '';
       let challenge = '';
+      let responseShape = null;
       const status = Number(response?.status || 0);
       try { contentType = String(response?.headers?.get?.('content-type') || '').split(';')[0].slice(0, 96); } catch {}
       // Interactive anti-bot pages can legitimately answer HTTP 200. Inspect only
@@ -171,13 +227,22 @@ if (typeof originalFetch === 'function') {
         const htmlBody = /text\/html/i.test(contentType);
         const scriptBody = /(?:application|text)\/(?:javascript|x-javascript|ecmascript)/i.test(contentType);
         if (htmlBody || scriptBody) {
-          try { body = String(await response.clone().text()).slice(0, 65536).toLowerCase(); } catch {}
+          try { body = String(await response.clone().text()).slice(0, 65536); } catch {}
+          responseShape = textShape(contentType, body);
+        } else if (/application\/json/i.test(contentType)) {
+          try {
+            const rawJson = String(await response.clone().text()).slice(0, 131072);
+            responseShape = jsonShape(JSON.parse(rawJson));
+          } catch {
+            responseShape = { kind: 'json', top: 'unparsed' };
+          }
         }
+        const bodyLower = body.toLowerCase();
         // Explicit Turnstile wiring in a provider-loaded JS asset is strong
         // evidence of the same interactive gate even when the HTML itself is 200
         // and marker-free. Generic challenge prose remains HTML-only.
-        const turnstileMarker = /cf-turnstile-response|challenges\.cloudflare\.com\/turnstile|\bturnstile\b/.test(body);
-        const marker = turnstileMarker || (htmlBody && /just a moment|checking your browser|verify you are human|attention required|captcha|challenge-platform|cf-browser-verification|security check/.test(body));
+        const turnstileMarker = /cf-turnstile-response|challenges\.cloudflare\.com\/turnstile|\bturnstile\b/.test(bodyLower);
+        const marker = turnstileMarker || (htmlBody && /just a moment|checking your browser|verify you are human|attention required|captcha|challenge-platform|cf-browser-verification|security check/.test(bodyLower));
         if (cfMitigated === 'challenge' || marker) {
           challenge = (turnstileMarker || cfRay || server.includes('cloudflare') || cfMitigated === 'challenge') ? 'cloudflare' : 'generic';
         }
@@ -189,6 +254,7 @@ if (typeof originalFetch === 'function') {
         status,
         content_type: contentType,
         challenge,
+        response_shape: responseShape,
         duration_ms: Date.now() - started,
       });
       return response;

@@ -86,6 +86,38 @@ def shard_for(provider:str, count:int)->int:
     return int.from_bytes(digest[:8],"big")%count
 
 
+def compact_response_shape(value:Any)->dict[str,Any]:
+    if not isinstance(value,dict):
+        return {}
+    kind=str(value.get("kind") or "")[:24]
+    if kind not in {"json","html","javascript"}:
+        return {}
+    out:dict[str,Any]={"kind":kind}
+    if kind=="json":
+        top=str(value.get("top") or "")[:24]
+        if top: out["top"]=top
+        for key in ("keys","itemKeys","dataKeys","dataItemKeys","resultsKeys","resultsItemKeys","resultKeys","resultItemKeys","episodeKeys","episodeItemKeys","showsKeys","showsItemKeys","sourcesKeys","sourcesItemKeys","linksKeys","linksItemKeys"):
+            rows=value.get(key)
+            if isinstance(rows,list):
+                out[key]=[
+                    str(item)[:48] for item in rows[:16]
+                    if str(item) and all(ch.isalnum() or ch in "_.:-" for ch in str(item))
+                ]
+        for key in ("lengthBucket","dataType","resultsType","resultType","episodeType","showsType","sourcesType","linksType"):
+            if value.get(key) is not None:
+                out[key]=str(value.get(key))[:24]
+        return out
+    for key in ("sampleBytes","forms","iframes","videos","sources","scripts","anchors","functions","fetchCalls"):
+        raw=value.get(key)
+        if isinstance(raw,int):
+            out[key]=max(0,min(raw,65536 if key=="sampleBytes" else 99))
+    markers=value.get("markers")
+    allowed={"next-data","json-ld","player","download","episode","hls-literal","mp4-literal","turnstile","embed"}
+    if isinstance(markers,list):
+        out["markers"]=[str(item) for item in markers[:12] if str(item) in allowed]
+    return out
+
+
 def compact_network(row:dict[str,Any])->list[dict[str,Any]]:
     out=[]; seen=set()
     for fetch in row.get("debug_fetches") or []:
@@ -100,11 +132,13 @@ def compact_network(row:dict[str,Any])->list[dict[str,Any]]:
         key=(host,path,str(fetch.get("method") or "GET"),fetch.get("status"))
         if not host or key in seen: continue
         seen.add(key)
+        compact_shape=compact_response_shape(fetch.get("response_shape"))
         out.append({
             "host":host,
             "path":path[:180],
             "method":str(fetch.get("method") or "GET")[:12],
             "status":fetch.get("status"),
+            **({"shape":compact_shape} if compact_shape else {}),
         })
         if len(out)>=16: break
     return out
