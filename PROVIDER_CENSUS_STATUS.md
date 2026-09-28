@@ -4,7 +4,7 @@
 
 Latest provider census state: **🟢 27 FULL OK · 🟡 2 PARTIAL OK · 🟪 9 ROUTE PROVEN · 🟣 3 CHAIN REACHED · 🔵 1 NO PROOF · ⚫ 4 DISABLED** across **46 providers**.
 Evidence authority: Repair census run 36320455627 · SHA ee42e999e00e · transport overlay 36414352121-waf-transport.
-Latest Repair/FORCE attempt: **run 36345982243** · selected **0** · candidates **0** · validated **0** · Learning debt recorded **0** · result **canonical-skipped**.
+Latest Repair/FORCE attempt: **run 36481857972** · selected **13** · candidates **0** · validated **0** · Learning debt recorded **13** · result **experiment_variants_exhausted**.
 Symptomatic providers: **13** · automated repair queue: **13** · lifecycle disabled: **2** · authority rediscovery: **0** · harness mismatch: **0** · client transport gap: **0** · environment blocked: **0**.
 Residential harness: **available** · private exit compared where matched.
 
