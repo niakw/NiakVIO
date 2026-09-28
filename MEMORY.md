@@ -96,3 +96,11 @@
 - Full-cohort convergence is currently owned by `provider-fast-repair.yml`: the current repairQueue is dispatched as an explicit 13-provider cohort with 5 waves, 2400 s total Brain budget and 3 rounds, and stale runs requeue themselves on current `main`. The separate Recognition FORCE lane remains intentionally bounded and does not auto-resume unvisited providers; a first inline resume attempt was reverted after making the workflow invalid YAML.
 - These changes close two fleet-scale failure modes directly: stale guidance blocking current Brain code and structural generations being cut off by the old Learning ceiling. Full repairQueue coverage is currently enforced by the explicit Fast Repair cohort/requeue path; Recognition auto-resume remains unresolved architecture debt rather than being falsely marked fixed.
 - No provider is marked repaired by these architecture changes alone; provider status changes only after the existing NiakVIO proof and publication gates pass.
+
+## 2026-09-28 — Brain FORCE abstention root cause and receiver alignment
+
+- Fast Repair run `36481857972` visited all 13 current repairQueue providers with 5 waves / 2400 s / 3 rounds: **0 candidates, 0 validated, 13 deferred**, `experiment_variants_exhausted`, not time-budget exhaustion.
+- Authoritative Brain executable-guidance cycle on `cf4e6c8e…` completed all 13 requested providers but published `niakvio-force-mutations.json` with **providerCount=0**. Concrete LLM targets repeatedly abstained because no supplied editable unit was considered suitable.
+- Brain root cause was fixed upstream: generated `provider_bloc` is now a true invention fallback over generic complete provider functions, not restricted to taxonomy-keyword-matched helpers.
+- NiakVIO receiver bound is aligned from 1200 to **1800 chars** for generated Bloc replacement so a complete bounded function rewrite is not rejected after Brain synthesis.
+- No provider is marked repaired by this receiver change. Only isolated current-byte candidate evaluation + playable/identity-safe improvement may publish a provider mutation.
