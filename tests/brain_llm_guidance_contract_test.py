@@ -127,8 +127,11 @@ assert "--advisor-only" in workflow
 assert "--max-hypotheses 1" in workflow
 assert '--max-tokens "$max_tokens"' in workflow
 assert "max_tokens=160" in workflow
-assert "--timeout-seconds 45" in workflow
-assert "max_tokens=768" not in workflow
+assert "cache_policy=stale-guidance-ignored" in workflow
+assert '--timeout-seconds "$model_timeout"' in workflow
+assert "max_tokens=768" in workflow
+assert "model_timeout=180" in workflow
+assert "model_workers=1" in workflow
 assert "max_tokens=512" not in workflow
 # Ephemeral private documents may feed the model but must never be uploaded.
 upload_tail=workflow[workflow.find("Upload sanitized learning and proposal state"):]
