@@ -127,7 +127,12 @@
       "brainCheckRequired": true,
       "statusRepairEligible": true,
       "repairEligible": true,
-      "testedThisRun": true
+      "testedThisRun": true,
+      "residentialProviderReplayClass": "no-verified-media",
+      "residentialProviderReplayEvidence": [
+        "movie: status=no_streams, stage=provider_zero_before_provider_network, raw=0, playable=0, verified=0, identitySafe=true",
+        "tv: status=no_streams, stage=provider_zero_before_provider_network, raw=0, playable=0, verified=0, identitySafe=true"
+      ]
     },
     {
       "provider": "anime-ultime",
@@ -168,7 +173,11 @@
       "brainCheckRequired": true,
       "statusRepairEligible": true,
       "repairEligible": true,
-      "testedThisRun": true
+      "testedThisRun": true,
+      "residentialProviderReplayClass": "no-verified-media",
+      "residentialProviderReplayEvidence": [
+        "anime: status=no_streams, stage=provider_network_zero_result, raw=0, playable=0, verified=0, identitySafe=true"
+      ]
     },
     {
       "provider": "animesalt",
@@ -208,7 +217,11 @@
       "brainCheckRequired": true,
       "statusRepairEligible": true,
       "repairEligible": true,
-      "testedThisRun": true
+      "testedThisRun": true,
+      "residentialProviderReplayClass": "no-verified-media",
+      "residentialProviderReplayEvidence": [
+        "anime: status=no_streams, stage=provider_zero_before_provider_network, raw=0, playable=0, verified=0, identitySafe=true"
+      ]
     },
     {
       "provider": "animesultra",
@@ -248,12 +261,16 @@
       "brainCheckRequired": true,
       "statusRepairEligible": true,
       "repairEligible": true,
-      "testedThisRun": true
+      "testedThisRun": true,
+      "residentialProviderReplayClass": "no-verified-media",
+      "residentialProviderReplayEvidence": [
+        "anime: status=no_streams, stage=provider_zero_before_provider_network, raw=0, playable=0, verified=0, identitySafe=true"
+      ]
     },
     {
       "provider": "animetsu",
       "status": "DISABLED",
-      "underlyingStatus": "ROUTE PROVEN",
+      "underlyingStatus": "DISABLED",
       "color": "⚫",
       "declaredLanes": [
         "anime"
@@ -328,7 +345,11 @@
       "brainCheckRequired": true,
       "statusRepairEligible": true,
       "repairEligible": true,
-      "testedThisRun": true
+      "testedThisRun": true,
+      "residentialProviderReplayClass": "no-verified-media",
+      "residentialProviderReplayEvidence": [
+        "anime: status=no_streams, stage=provider_zero_before_provider_network, raw=0, playable=0, verified=0, identitySafe=true"
+      ]
     },
     {
       "provider": "flemmix",
@@ -372,7 +393,12 @@
       "brainCheckRequired": true,
       "statusRepairEligible": true,
       "repairEligible": true,
-      "testedThisRun": true
+      "testedThisRun": true,
+      "residentialProviderReplayClass": "no-verified-media",
+      "residentialProviderReplayEvidence": [
+        "movie: status=no_streams, stage=provider_zero_before_provider_network, raw=0, playable=0, verified=0, identitySafe=true",
+        "tv: status=no_streams, stage=provider_zero_before_provider_network, raw=0, playable=0, verified=0, identitySafe=true"
+      ]
     },
     {
       "provider": "mallumv",
@@ -457,7 +483,12 @@
       "brainCheckRequired": true,
       "statusRepairEligible": true,
       "repairEligible": true,
-      "testedThisRun": true
+      "testedThisRun": true,
+      "residentialProviderReplayClass": "no-verified-media",
+      "residentialProviderReplayEvidence": [
+        "movie: status=no_streams, stage=provider_network_http_error, raw=0, playable=0, verified=0, identitySafe=true",
+        "tv: status=no_streams, stage=provider_network_http_error, raw=0, playable=0, verified=0, identitySafe=true"
+      ]
     },
     {
       "provider": "moviesmod",
@@ -501,12 +532,17 @@
       "brainCheckRequired": true,
       "statusRepairEligible": true,
       "repairEligible": true,
-      "testedThisRun": true
+      "testedThisRun": true,
+      "residentialProviderReplayClass": "no-verified-media",
+      "residentialProviderReplayEvidence": [
+        "movie: status=no_streams, stage=provider_zero_before_provider_network, raw=0, playable=0, verified=0, identitySafe=true",
+        "tv: status=no_streams, stage=provider_zero_before_provider_network, raw=0, playable=0, verified=0, identitySafe=true"
+      ]
     },
     {
       "provider": "showbox",
       "status": "DISABLED",
-      "underlyingStatus": "ROUTE PROVEN",
+      "underlyingStatus": "DISABLED",
       "color": "⚫",
       "declaredLanes": [
         "movie",
@@ -589,17 +625,24 @@
       "brainCheckRequired": true,
       "statusRepairEligible": true,
       "repairEligible": true,
-      "testedThisRun": true
+      "testedThisRun": true,
+      "residentialProviderReplayClass": "no-verified-media",
+      "residentialProviderReplayEvidence": [
+        "movie: status=no_streams, stage=provider_network_http_error, raw=0, playable=0, verified=0, identitySafe=true",
+        "tv: status=no_streams, stage=provider_network_http_error, raw=0, playable=0, verified=0, identitySafe=true"
+      ]
     },
     {
       "provider": "vostfree",
-      "status": "ROUTE PROVEN",
+      "status": "FULL OK",
       "underlyingStatus": "",
-      "color": "🟪",
+      "color": "🟢",
       "declaredLanes": [
         "anime"
       ],
-      "currentVerifiedLanes": [],
+      "currentVerifiedLanes": [
+        "anime"
+      ],
       "historicalProof": [],
       "candidateProof": [],
       "routeProof": [
@@ -625,11 +668,16 @@
         "authoritative_route_source"
       ],
       "authorityKnown": true,
-      "action": "replay qualified route fixtures and finish terminal extraction/validation",
-      "brainCheckRequired": true,
+      "action": "protect + replay retained proof",
+      "brainCheckRequired": false,
       "statusRepairEligible": true,
-      "repairEligible": true,
-      "testedThisRun": true
+      "repairEligible": false,
+      "testedThisRun": true,
+      "residentialProviderReplayClass": "verified",
+      "residentialProviderReplayEvidence": [
+        "anime: status=playable_verified, stage=provider_returned_streams, raw=1, playable=1, verified=1, identitySafe=true"
+      ],
+      "residentialProviderReplayPromoted": true
     },
     {
       "provider": "yflix",
@@ -673,7 +721,12 @@
       "brainCheckRequired": true,
       "statusRepairEligible": true,
       "repairEligible": true,
-      "testedThisRun": true
+      "testedThisRun": true,
+      "residentialProviderReplayClass": "no-verified-media",
+      "residentialProviderReplayEvidence": [
+        "movie: status=no_streams, stage=provider_network_exception, raw=0, playable=0, verified=0, identitySafe=true",
+        "tv: status=no_streams, stage=provider_network_exception, raw=0, playable=0, verified=0, identitySafe=true"
+      ]
     },
     {
       "provider": "animevostfr",
@@ -1958,10 +2011,10 @@
   "counts": {
     "CHAIN REACHED": 3,
     "DISABLED": 4,
-    "FULL OK": 26,
+    "FULL OK": 27,
     "NO PROOF": 1,
     "PARTIAL OK": 2,
-    "ROUTE PROVEN": 10
+    "ROUTE PROVEN": 9
   },
   "symptomaticProviders": [
     "4khdhub",
@@ -1976,7 +2029,6 @@
     "moviebox",
     "moviesmod",
     "vidfast",
-    "vostfree",
     "yflix"
   ],
   "brainQueue": [
@@ -1992,7 +2044,6 @@
     "moviebox",
     "moviesmod",
     "vidfast",
-    "vostfree",
     "yflix"
   ],
   "repairQueue": [
@@ -2008,10 +2059,12 @@
     "moviebox",
     "moviesmod",
     "vidfast",
-    "vostfree",
     "yflix"
   ],
-  "authorityBlockedQueue": [],
+  "authorityBlockedQueue": [
+    "animetsu",
+    "showbox"
+  ],
   "lifecycleDisabledQueue": [
     "animetsu",
     "showbox"
@@ -2035,5 +2088,269 @@
     "canonicalOutcome": "skipped",
     "candidateGateOutcome": "skipped",
     "publicationAllowed": false
+  },
+  "clientTransportGapQueue": [],
+  "harnessEvidenceRunId": "36414352121-waf-transport",
+  "harnessEvidenceSha": "98db9ac83dae2319594af92962e94e396a20433a",
+  "authorityRefreshedProviders": [],
+  "harnessTransportUpdatedProviders": [],
+  "networkDifferentialUpdatedProviders": [],
+  "residentialProviderReplayPromotedProviders": [
+    "vostfree"
+  ],
+  "residentialProviderReplayReclassifiedProviders": [],
+  "residentialProviderReplayRepairableProviders": [],
+  "residentialExitNodeEvidence": {
+    "enabled": true,
+    "available": true,
+    "profile": "tailscale-residential-exit",
+    "matchedProviderLanes": 16,
+    "privacy": {
+      "exitNodeNamePersisted": false,
+      "tailscaleAddressPersisted": false,
+      "residentialPublicIpPersisted": false,
+      "responseBodiesPersisted": false,
+      "cookiesPersisted": false
+    }
+  },
+  "residentialProviderReplay": {
+    "available": true,
+    "profile": "tailscale-residential-exit",
+    "providerCount": 11,
+    "providers": [
+      "allwish",
+      "anime-ultime",
+      "animesalt",
+      "animesultra",
+      "animevost-fr",
+      "flemmix",
+      "moviebox",
+      "moviesmod",
+      "vidfast",
+      "vostfree",
+      "yflix"
+    ],
+    "rawProviders": [
+      "vostfree"
+    ],
+    "playableProviders": [
+      "vostfree"
+    ],
+    "verifiedProviders": [
+      "vostfree"
+    ],
+    "wrongContentProviders": [],
+    "rows": [
+      {
+        "provider": "allwish",
+        "lane": "movie",
+        "status": "no_streams",
+        "debugStage": "provider_zero_before_provider_network",
+        "raw": 0,
+        "playable": 0,
+        "verified": 0,
+        "contradictions": 0,
+        "identitySafe": true
+      },
+      {
+        "provider": "allwish",
+        "lane": "tv",
+        "status": "no_streams",
+        "debugStage": "provider_zero_before_provider_network",
+        "raw": 0,
+        "playable": 0,
+        "verified": 0,
+        "contradictions": 0,
+        "identitySafe": true
+      },
+      {
+        "provider": "anime-ultime",
+        "lane": "anime",
+        "status": "no_streams",
+        "debugStage": "provider_network_zero_result",
+        "raw": 0,
+        "playable": 0,
+        "verified": 0,
+        "contradictions": 0,
+        "identitySafe": true
+      },
+      {
+        "provider": "animesalt",
+        "lane": "anime",
+        "status": "no_streams",
+        "debugStage": "provider_zero_before_provider_network",
+        "raw": 0,
+        "playable": 0,
+        "verified": 0,
+        "contradictions": 0,
+        "identitySafe": true
+      },
+      {
+        "provider": "animesultra",
+        "lane": "anime",
+        "status": "no_streams",
+        "debugStage": "provider_zero_before_provider_network",
+        "raw": 0,
+        "playable": 0,
+        "verified": 0,
+        "contradictions": 0,
+        "identitySafe": true
+      },
+      {
+        "provider": "animevost-fr",
+        "lane": "anime",
+        "status": "no_streams",
+        "debugStage": "provider_zero_before_provider_network",
+        "raw": 0,
+        "playable": 0,
+        "verified": 0,
+        "contradictions": 0,
+        "identitySafe": true
+      },
+      {
+        "provider": "flemmix",
+        "lane": "movie",
+        "status": "no_streams",
+        "debugStage": "provider_zero_before_provider_network",
+        "raw": 0,
+        "playable": 0,
+        "verified": 0,
+        "contradictions": 0,
+        "identitySafe": true
+      },
+      {
+        "provider": "flemmix",
+        "lane": "tv",
+        "status": "no_streams",
+        "debugStage": "provider_zero_before_provider_network",
+        "raw": 0,
+        "playable": 0,
+        "verified": 0,
+        "contradictions": 0,
+        "identitySafe": true
+      },
+      {
+        "provider": "moviebox",
+        "lane": "movie",
+        "status": "no_streams",
+        "debugStage": "provider_network_http_error",
+        "raw": 0,
+        "playable": 0,
+        "verified": 0,
+        "contradictions": 0,
+        "identitySafe": true
+      },
+      {
+        "provider": "moviebox",
+        "lane": "tv",
+        "status": "no_streams",
+        "debugStage": "provider_network_http_error",
+        "raw": 0,
+        "playable": 0,
+        "verified": 0,
+        "contradictions": 0,
+        "identitySafe": true
+      },
+      {
+        "provider": "moviesmod",
+        "lane": "movie",
+        "status": "no_streams",
+        "debugStage": "provider_zero_before_provider_network",
+        "raw": 0,
+        "playable": 0,
+        "verified": 0,
+        "contradictions": 0,
+        "identitySafe": true
+      },
+      {
+        "provider": "moviesmod",
+        "lane": "tv",
+        "status": "no_streams",
+        "debugStage": "provider_zero_before_provider_network",
+        "raw": 0,
+        "playable": 0,
+        "verified": 0,
+        "contradictions": 0,
+        "identitySafe": true
+      },
+      {
+        "provider": "vidfast",
+        "lane": "movie",
+        "status": "no_streams",
+        "debugStage": "provider_network_http_error",
+        "raw": 0,
+        "playable": 0,
+        "verified": 0,
+        "contradictions": 0,
+        "identitySafe": true
+      },
+      {
+        "provider": "vidfast",
+        "lane": "tv",
+        "status": "no_streams",
+        "debugStage": "provider_network_http_error",
+        "raw": 0,
+        "playable": 0,
+        "verified": 0,
+        "contradictions": 0,
+        "identitySafe": true
+      },
+      {
+        "provider": "vostfree",
+        "lane": "anime",
+        "status": "playable_verified",
+        "debugStage": "provider_returned_streams",
+        "raw": 1,
+        "playable": 1,
+        "verified": 1,
+        "contradictions": 0,
+        "identitySafe": true
+      },
+      {
+        "provider": "yflix",
+        "lane": "movie",
+        "status": "no_streams",
+        "debugStage": "provider_network_exception",
+        "raw": 0,
+        "playable": 0,
+        "verified": 0,
+        "contradictions": 0,
+        "identitySafe": true
+      },
+      {
+        "provider": "yflix",
+        "lane": "tv",
+        "status": "no_streams",
+        "debugStage": "provider_network_exception",
+        "raw": 0,
+        "playable": 0,
+        "verified": 0,
+        "contradictions": 0,
+        "identitySafe": true
+      }
+    ],
+    "privacy": {
+      "exitNodeNamePersisted": false,
+      "tailscaleAddressPersisted": false,
+      "residentialPublicIpPersisted": false,
+      "responseBodiesPersisted": false,
+      "cookiesPersisted": false
+    },
+    "lastAttempt": {
+      "available": true,
+      "providerCount": 0,
+      "refreshedProviders": [
+        "allwish",
+        "animesalt",
+        "animesultra",
+        "animevost-fr",
+        "flemmix",
+        "moviebox",
+        "moviesmod",
+        "vidfast",
+        "vostfree",
+        "yflix"
+      ]
+    }
   }
 }
