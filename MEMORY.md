@@ -21,8 +21,10 @@
 
 - The current display surface is a standalone static dashboard in `niakw/eitty-web`: `https://www.eittyweb.fr/niakvio-telemetry.html`.
 - No iframe is required yet. `CORE.TELEMETRY.V1` remains observational/provider-agnostic and owns no UI.
-- The dashboard reads a same-origin JSON contract (`niakvio-telemetry-data.json`). Until the VPS collector is connected, usage counters stay explicitly at zero rather than being inferred or fabricated.
-- Future iframe integration may reuse this page unchanged; collector wiring is a separate backend/VPS task.
+- The dashboard now reads live same-origin aggregates from `https://www.eittyweb.fr/niakvio-telemetry-data.php`; collection is accepted only through POST `https://www.eittyweb.fr/niakvio-telemetry-collect.php`.
+- The Eitty/VPS collector persists only server-HMAC-hashed install/session/account identities plus aggregates; the dashboard exposes no raw identity. Counters remain zero until a NiakVIO host supplies a stable install identity and the collector endpoint through the existing host bridge.
+- Public deployment was verified on 2026-09-28: dashboard HTTP 200, aggregate endpoint HTTP 200 with `collector.status=live`, collector GET rejected by Nginx, and Eitty telemetry CI green.
+- Future iframe integration may reuse this page unchanged; host bridge injection remains separate from provider code.
 
 
 ## 2026-09-28 — Secondary contracts fully revalidated on remote main
