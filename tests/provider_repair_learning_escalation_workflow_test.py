@@ -53,9 +53,7 @@ assert 'canonical_repair_outcome" != "success"' in persist_block
 assert "architecture_force_dispatched=0" in persist_block
 assert "TARGET_PROVIDER:" in workflow
 assert "FIELD_PROVIDER_BRAIN_FORCE_UNVISITED" in persist_block
-assert "auto_resume=true target=provider-fast-repair" in persist_block
-assert "target_providers=\"$unvisited_csv\"" in persist_block
-assert "-f time_budget_seconds=2400" in persist_block
+assert "auto_resume=false reason=bounded-force-run" in persist_block
 assert '-f mode=force' not in persist_block
 assert "FIELD_PROVIDER_BRAIN_RESUME_MODE mode=repair" in persist_block
 
