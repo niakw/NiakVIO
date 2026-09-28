@@ -190,6 +190,31 @@ with tempfile.TemporaryDirectory() as tmp:
     assert replace == long_replace
     assert len(replace) > 1200 and len(replace) <= 1800
 
+    long_find = 'function resolve(page){const marker="' + ("a" * 900) + '";return page.url;}'
+    long_find_replace = 'function resolve(page){const marker="' + ("b" * 900) + '";return page.finalUrl||page.url;}'
+    long_find_mutation = {
+        "scope": "provider_bloc",
+        "operation": "upsert",
+        "family": "long_exact_function_anchor",
+        "find": long_find,
+        "replace": long_find_replace,
+    }
+    # Receiver bounds match Brain's complete function-unit contract. Exact-byte
+    # uniqueness is still checked against the real provider runtime at apply time.
+    original_surface = mod._provider_runtime_surface
+    original_owned = mod._provider_owned_source
+    try:
+        mod._provider_runtime_surface = lambda provider: ("demo.js", "providers/demo.js", long_find)
+        mod._provider_owned_source = lambda source: source
+        family2, find2, replace2, _fp2 = mod._validate_generated_bloc_mutation("demo", long_find_mutation)
+    finally:
+        mod._provider_runtime_surface = original_surface
+        mod._provider_owned_source = original_owned
+    assert family2 == "long_exact_function_anchor"
+    assert find2 == long_find
+    assert replace2 == long_find_replace
+    assert len(find2) > 320 and len(find2) <= 1800
+
     generated_report = mod.apply_payload(
         generated_payload,
         current_sha="c" * 40,
