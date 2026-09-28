@@ -24,7 +24,7 @@ errors: list[str] = []
 
 assert sources.get("repository", {}).get("name") == "NiakVIO", sources.get("repository", {}).get("name")
 assert main.get("name") == f"NiakVIO v{main.get('version')}", main.get("name")
-assert vf.get("name") == "NiakVIO — VF uniquement", vf.get("name")
+assert vf.get("name") == f"NiakVIO v{vf.get('version')} — VF uniquement", vf.get("name")
 missing_logos = [
     str(row.get("id") or "")
     for row in main.get("scrapers", [])
