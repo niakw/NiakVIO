@@ -104,3 +104,10 @@
 - Brain root cause was fixed upstream: generated `provider_bloc` is now a true invention fallback over generic complete provider functions, not restricted to taxonomy-keyword-matched helpers.
 - NiakVIO receiver bound is aligned from 1200 to **1800 chars** for generated Bloc replacement so a complete bounded function rewrite is not rejected after Brain synthesis.
 - No provider is marked repaired by this receiver change. Only isolated current-byte candidate evaluation + playable/identity-safe improvement may publish a provider mutation.
+
+## 2026-09-28 — Brain causal-prior WAF override fixed upstream
+
+- Confirmed that several current ROUTE PROVEN providers had identity-safe residential replay with `provider_zero_before_provider_network`, while older targeted seed observations still carried `provider_waf_challenge`.
+- Brain adapter already preserved the provider failure in that case, but its causal-prior layer independently re-overrode it to harness, suppressing executable LLM repair.
+- Upstream Brain now makes clean current full-provider replay authoritative over the narrower WAF seed; tests for route and chain provider classes are green (Brain CI #885).
+- Persistent challenge evidence with no clean provider replay remains transport/harness and must not be “fixed” by fake provider mutations.
