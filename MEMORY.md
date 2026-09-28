@@ -23,3 +23,10 @@
 - No iframe is required yet. `CORE.TELEMETRY.V1` remains observational/provider-agnostic and owns no UI.
 - The dashboard reads a same-origin JSON contract (`niakvio-telemetry-data.json`). Until the VPS collector is connected, usage counters stay explicitly at zero rather than being inferred or fabricated.
 - Future iframe integration may reuse this page unchanged; collector wiring is a separate backend/VPS task.
+
+
+## 2026-09-28 — Secondary contracts fully revalidated on remote main
+
+- Clean worktree from remote `main` passed the targeted secondary chain with exit 0: telemetry privacy contract, Core media/language policy, VF/general manifest metadata consistency, badge assets/versioning, global presentation/player facts, HLS master facts and presentation badges, short-HLS guard, and StreamScore contract.
+- Historical tests were aligned with current contracts: versioned manifest names are accepted, subtitle chips remain hidden from runtime `badgeIds` while subtitle tracks/description stay preserved, and telemetry test imports the shared patch helper path correctly.
+- These secondary items are closed and must not be reopened as provider-repair debt unless a new regression is observed.
