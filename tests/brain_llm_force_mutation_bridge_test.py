@@ -174,6 +174,22 @@ with tempfile.TemporaryDirectory() as tmp:
             }
         ],
     }
+    # A generated provider Bloc may replace a complete bounded function and
+    # therefore needs the same 1800-char ceiling as compact Force function units.
+    long_replace = "return oldResolver();/*" + ("x" * 1250) + "*/"
+    long_mutation = {
+        "scope": "provider_bloc",
+        "operation": "upsert",
+        "family": "bounded_function_rewrite",
+        "find": "return oldResolver();",
+        "replace": long_replace,
+    }
+    family, find, replace, _fp = mod._validate_generated_bloc_mutation("demo", long_mutation)
+    assert family == "bounded_function_rewrite"
+    assert find == "return oldResolver();"
+    assert replace == long_replace
+    assert len(replace) > 1200 and len(replace) <= 1800
+
     generated_report = mod.apply_payload(
         generated_payload,
         current_sha="c" * 40,
