@@ -111,3 +111,10 @@
 - Brain adapter already preserved the provider failure in that case, but its causal-prior layer independently re-overrode it to harness, suppressing executable LLM repair.
 - Upstream Brain now makes clean current full-provider replay authoritative over the narrower WAF seed; tests for route and chain provider classes are green (Brain CI #885).
 - Persistent challenge evidence with no clean provider replay remains transport/harness and must not be “fixed” by fake provider mutations.
+
+## 2026-09-28 — Current authoritative Repair cohort expanded to 14
+
+- Re-read current census run `36484610716` from repository HEAD: repairQueue/symptomaticProviders now contain **14 providers**: 4khdhub, allanime, allwish, anime-ultime, animesalt, animesultra, animevost-fr, flemmix, mallumv, moviebox, moviesmod, vidfast, vostfree, yflix.
+- `vostfree` is ROUTE PROVEN with one anime route, latest verdict `provider_waf_challenge`, `testedThisRun=false`, `reconciledFromCarriedGreen=true`, and a consistency note that carried green contradicts the latest lane verdict. It is not valid to claim 13/13 completion or mutate Vostfree from carried evidence alone.
+- Brain main now includes semantic stale-publication protection and detailed routing observability; Brain CI #902 is green at `9cb448519e2a8089219e96cb2620e815b79e1a53`.
+- Final convergence target is **14/14 resolved with current evidence**, allowing genuine transport/environment cases to remain non-provider mutations rather than manufacturing provider fixes.
