@@ -125,11 +125,15 @@ def _census_runtime_focus(provider_id: str) -> dict[str, Any]:
                 "max_pages": 8, "max_embeds": 8, "max_depth": 2,
             },
         }
-        if any(token in issue for token in ("waf", "challenge", "blocked")):
-            # A strong current transport/WAF signal outranks the structural
-            # census floor. Otherwise ROUTE PROVEN + WAF would tell the Brain
-            # to repair transport while the runtime explorer still prioritised
-            # route traversal.
+        structural_state = state in {"CHAIN REACHED", "ROUTE PROVEN", "CANDIDATE OK"}
+        if not structural_state and any(token in issue for token in ("waf", "challenge", "blocked")):
+            # A bare/current transport signal owns NO PROOF / blocked states.
+            # Once the census has stronger structural proof (route, chain or
+            # retained candidate), do not erase that causal depth merely
+            # because one downstream observation also contains a WAF label.
+            # The richer Brain adapter can still route a proven persistent
+            # transport differential outside provider mutation when its full
+            # evidence says so.
             result = {
                 "focus": "transport-first",
                 "direct_role_order": ["api", "detail", "search", "player", "episode", "other"],
