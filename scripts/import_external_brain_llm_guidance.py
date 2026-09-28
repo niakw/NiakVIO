@@ -127,7 +127,7 @@ def source_drift(root:Path,source_sha:str,current_sha:str)->tuple[list[str],set[
  providers=",".join(str(x) for x in scope.get("providers") or [])
  raise ValueError(f"global/provider-wide drift since guidance source: mode={mode} providers={providers or '-'} reasons={';'.join(reasons) or '-'}")
 
-def sanitize(value:dict[str,Any],*,current_sha:str,guidance_commit:str="")->dict[str,Any]:
+def sanitize(value:dict[str,Any],*,current_sha:str,guidance_commit:str="",expected_brain_sha:str="")->dict[str,Any]:
  if not isinstance(value,dict):raise ValueError("external Brain-LLM guidance must be an object")
  extra=set(value)-TOP_LEVEL_FIELDS
  if extra:raise ValueError("unexpected external guidance fields: "+",".join(sorted(extra)))
@@ -137,9 +137,13 @@ def sanitize(value:dict[str,Any],*,current_sha:str,guidance_commit:str="")->dict
  brain_sha=str(value.get("brainLlmSha") or "").strip().casefold()
  current_sha=str(current_sha or "").strip().casefold()
  guidance_commit=str(guidance_commit or "").strip().casefold()
+ expected_brain_sha=str(expected_brain_sha or "").strip().casefold()
  for label,sha in (("source",source_sha),("brain",brain_sha),("current",current_sha)):
   if not SHA40.fullmatch(sha):raise ValueError(f"invalid {label} SHA")
  if guidance_commit and not SHA40.fullmatch(guidance_commit):raise ValueError("invalid guidance branch commit SHA")
+ if expected_brain_sha:
+  if not SHA40.fullmatch(expected_brain_sha):raise ValueError("invalid expected Brain SHA")
+  if brain_sha!=expected_brain_sha:raise ValueError(f"stale external Brain guidance: guidance={brain_sha} current={expected_brain_sha}")
  try:minimum=max(.80,min(1.0,float(value.get("minConfidence") or .80)))
  except (TypeError,ValueError):minimum=.80
  rows=value.get("rows")
@@ -181,9 +185,9 @@ def filter_failed_guidance_files(payload:dict[str,Any],paths:list[Path])->tuple[
  return payload,total
 
 def main()->int:
- p=argparse.ArgumentParser();p.add_argument("--input",type=Path,required=True);p.add_argument("--output",type=Path,required=True);p.add_argument("--current-sha",required=True);p.add_argument("--guidance-commit",default="");p.add_argument("--negative-memory",type=Path,action="append",default=[]);p.add_argument("--repo-root",type=Path,default=ROOT);a=p.parse_args()
+ p=argparse.ArgumentParser();p.add_argument("--input",type=Path,required=True);p.add_argument("--output",type=Path,required=True);p.add_argument("--current-sha",required=True);p.add_argument("--brain-llm-sha",default="");p.add_argument("--guidance-commit",default="");p.add_argument("--negative-memory",type=Path,action="append",default=[]);p.add_argument("--repo-root",type=Path,default=ROOT);a=p.parse_args()
  value=json.loads(a.input.read_text(encoding="utf-8"))
- payload=sanitize(value,current_sha=a.current_sha,guidance_commit=a.guidance_commit)
+ payload=sanitize(value,current_sha=a.current_sha,guidance_commit=a.guidance_commit,expected_brain_sha=a.brain_llm_sha)
  changed,drifted_providers=source_drift(a.repo_root,payload["sourceExternalNiakvioSha"],payload["sourceSha"])
  if drifted_providers:
   before=len(payload["rows"])
