@@ -18,11 +18,13 @@ DESKTOP = (ROOT / "scripts/provider_patches/desktop_runtime_compat_v1.py").read_
 SANITIZER_BASE = (ROOT / "scripts/provider_patches/stream_output_sanitizer.py").read_text(encoding="utf-8")
 SANITIZER_V10 = (ROOT / "scripts/provider_patches/stream_output_sanitizer_v10.py").read_text(encoding="utf-8")
 STREAM_SCORE = (ROOT / "scripts/provider_patches/global_stream_score_v1.py").read_text(encoding="utf-8")
+TELEMETRY = (ROOT / "scripts/provider_patches/global_telemetry_v1.py").read_text(encoding="utf-8")
 
 CORE_RUNTIME = "scripts/provider_patches/global_runtime_compat_v1.py"
 CORE_DESKTOP = "scripts/provider_patches/desktop_runtime_compat_v1.py"
 CORE_SANITIZER = "scripts/provider_patches/stream_output_sanitizer_v10.py"
 CORE_STREAM_SCORE = "scripts/provider_patches/global_stream_score_v1.py"
+CORE_TELEMETRY = "scripts/provider_patches/global_telemetry_v1.py"
 CORE_MEDIA_SAFETY = "scripts/provider_patches/runtime_capability_media_safety_v4.py"
 
 # Architecture ownership: these are Core-managed bricks. Provider rows may pass
@@ -31,6 +33,7 @@ assert 'GLOBAL_RUNTIME_COMPAT = "scripts/provider_patches/global_runtime_compat_
 assert 'GLOBAL_DESKTOP_RUNTIME_COMPAT = "scripts/provider_patches/desktop_runtime_compat_v1.py"' in APPLY
 assert 'GLOBAL_STREAM_SANITIZER = "scripts/provider_patches/stream_output_sanitizer_v10.py"' in APPLY
 assert 'GLOBAL_STREAM_SCORE = "scripts/provider_patches/global_stream_score_v1.py"' in APPLY
+assert 'GLOBAL_TELEMETRY = "scripts/provider_patches/global_telemetry_v1.py"' in APPLY
 assert 'GLOBAL_RUNTIME_MEDIA_SAFETY = "scripts/provider_patches/runtime_capability_media_safety_v4.py"' in APPLY
 assert "provider_patches.{provider_id}.patch_scripts contains Core-global modules" in APPLY
 
@@ -39,7 +42,7 @@ for provider_id, row in patches.items():
     if not isinstance(row, dict):
         continue
     scripts = [str(value) for value in row.get("patch_scripts") or []]
-    leaked = sorted(set(scripts) & {CORE_RUNTIME, CORE_DESKTOP, CORE_SANITIZER, CORE_MEDIA_SAFETY, CORE_STREAM_SCORE})
+    leaked = sorted(set(scripts) & {CORE_RUNTIME, CORE_DESKTOP, CORE_SANITIZER, CORE_MEDIA_SAFETY, CORE_STREAM_SCORE, CORE_TELEMETRY})
     assert not leaked, (provider_id, leaked)
 
 # Timers/URL/fetch portability are global Core behavior, never a named provider fix.
@@ -59,6 +62,11 @@ assert "NUVIO_STREAM_OUTPUT_NETWORK_EVIDENCE_V10" in SANITIZER_V10
 assert "__nuvioStreamNetworkEvidenceV1" in SANITIZER_V10
 assert 'MANAGED_FIX_ID = "CORE.STREAM_SCORE.V1"' in STREAM_SCORE
 assert "NUVIO_GLOBAL_STREAM_SCORE_V1" in STREAM_SCORE
+assert 'MANAGED_FIX_ID = "CORE.TELEMETRY.V1"' in TELEMETRY
+assert "NUVIO_GLOBAL_TELEMETRY_V1" in TELEMETRY
+assert "accountPseudonym" in TELEMETRY
+assert "localStorage" in TELEMETRY
+assert "rawMediaIdentifiers" in TELEMETRY
 assert '[id].concat(clean)' in STREAM_SCORE
 assert 'out.displayBadges=g?[g].concat(cleanDisplay):cleanDisplay' in STREAM_SCORE
 for forbidden in ("streamflix", "movix", "vidrock", "cineby", "coflix"):
@@ -76,14 +84,18 @@ for row in rows:
     runtime_at = text.find("/* STARTFIX:CORE.RUNTIME_COMPAT.V1 */")
     sanitizer_at = text.find("/* STARTFIX:CORE.STREAM_SANITIZER.V6 */")
     score_at = text.find("/* STARTFIX:CORE.STREAM_SCORE.V1 */")
+    telemetry_at = text.find("/* STARTFIX:CORE.TELEMETRY.V1 */")
     assert runtime_at > boundary, provider_id
     assert sanitizer_at > boundary, provider_id
     assert score_at > sanitizer_at, provider_id
+    assert telemetry_at > score_at, provider_id
     assert text.count("/* STARTFIX:CORE.RUNTIME_COMPAT.V1 */") == 1, provider_id
     assert text.count("/* CLOSEFIX:CORE.RUNTIME_COMPAT.V1 */") == 1, provider_id
     assert text.count("/* STARTFIX:CORE.STREAM_SANITIZER.V6 */") == 1, provider_id
     assert text.count("/* CLOSEFIX:CORE.STREAM_SANITIZER.V6 */") == 1, provider_id
     assert text.count("/* STARTFIX:CORE.STREAM_SCORE.V1 */") == 1, provider_id
     assert text.count("/* CLOSEFIX:CORE.STREAM_SCORE.V1 */") == 1, provider_id
+    assert text.count("/* STARTFIX:CORE.TELEMETRY.V1 */") == 1, provider_id
+    assert text.count("/* CLOSEFIX:CORE.TELEMETRY.V1 */") == 1, provider_id
 
 print(f"GLOBAL_CORE_RUNTIME_OWNERSHIP_OK providers={len(rows)} timers=core 403=core sanitizer_v10=network-evidence stream_score=core provider_specific_runtime_hacks=forbidden")
