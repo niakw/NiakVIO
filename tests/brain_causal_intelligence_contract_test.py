@@ -61,10 +61,6 @@ assert "-f publish_proposal=false" in force_block
 assert "FIELD_PROVIDER_BRAIN_FORCE_ARCH_DISPATCH" in force_block
 assert "FIELD_PROVIDER_BRAIN_FORCE_DEBT" in workflow
 assert "FIELD_PROVIDER_BRAIN_FORCE_UNVISITED" in workflow
-assert "auto_resume=true target=provider-fast-repair" in workflow
-assert "target_providers=\"$unvisited_csv\"" in workflow
-assert "-f waves=5" in workflow
-assert "-f time_budget_seconds=2400" in workflow
-assert "-f max_rounds_per_batch=3" in workflow
+assert "auto_resume=false reason=bounded-force-run" in workflow
 
 print("causal Brain intelligence contract passed")
