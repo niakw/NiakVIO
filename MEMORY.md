@@ -87,3 +87,12 @@
 - AllAnime final rerun was interrupted before verdict. Anime-Ultime, AnimeSultra and VidFast were not executed in that final sequence.
 - MalluMV remains excluded from provider-code mutation authority by current HTTP-200 Turnstile/WAF evidence.
 - No census/provider status is promoted by these local Brain attempts; current-byte NiakVIO playback/identity proof remains the only publication authority.
+
+## 2026-09-28 — GitHub FORCE convergence repaired
+
+- GitHub Brain execution is authoritative on current `NiakVIO-Brain-LLM/main`; stale `niakvio-guidance` cache state may no longer block checkout of newer Brain code.
+- Cached external guidance is still allowed only after sanitization and now must also match the exact current Brain SHA. A stale Brain revision is discarded instead of reused.
+- Explicit architecture/FORCE Learning no longer inherits the ordinary advisor ceiling: its compact advisor generation uses 768 max tokens, 180 s model timeout and one model worker; ordinary Learning keeps 160 tokens / 45 s / two workers.
+- Canonical provider FORCE no longer abandons `unvisitedProviders` when its bounded run ends. The exact unvisited cohort is delegated to `provider-fast-repair.yml` with 5 waves, 2400 s total Brain budget and 3 rounds, with publication still gated by current-byte Retest/playback/identity proof.
+- These changes close three fleet-scale failure modes observed on 2026-09-28: stale guidance blocking current Brain code, structural generations being cut off by the old Learning ceiling, and bounded FORCE runs leaving providers unvisited.
+- No provider is marked repaired by these architecture changes alone; provider status changes only after the existing NiakVIO proof and publication gates pass.
