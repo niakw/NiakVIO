@@ -480,3 +480,12 @@ Un `401/403/429` isolé ne suffit donc jamais à retirer un provider de la voie 
 Cette hiérarchie évite qu'un simple WAF seed écrase une preuve runtime plus forte et
 permet au système de rester causalement correct quand le catalogue contient plusieurs
 centaines de providers.
+
+
+## CORE.TELEMETRY.V1 — global telemetry boundary
+
+`CORE.TELEMETRY.V1` is composed after `CORE.STREAM_SCORE.V1`, making it the outermost observer of the final `getStreams()` result. It is observational only: return values and thrown errors are preserved byte-for-byte/semantically, and telemetry failure is always ignored.
+
+The runtime reads an optional host bridge at `globalThis.__NIAKVIO_TELEMETRY_V1__` with `endpoint`, stable `installId`, optional ephemeral `sessionId`, optional already-pseudonymized `accountPseudonym`, and optional `appVersion`. If no stable install identity or no endpoint is present, telemetry is a strict no-op. IP addresses are never used as identity. `localStorage` (`niakvio.installId.v1`) is only a fallback when the host does not provide the stable install identity.
+
+The provider runtime sends only coarse operational facts to the VPS collector: provider id, canonical media type, success/failure, final stream count and latency. It must never emit stream URLs, request headers, auth/cookies/tokens, raw titles/search terms, raw account ids, or raw media/TMDB identifiers. Cross-reinstall dedupe requires host/account continuity; the provider runtime must not fake it from network identity.
