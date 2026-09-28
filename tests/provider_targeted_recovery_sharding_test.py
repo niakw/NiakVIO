@@ -38,6 +38,13 @@ assert 'ap.add_argument("--provider",action="append",default=[])' in source
 assert "targets &= requested" in source
 assert '"requestedProviders":sorted(requested)' in source
 
+assert mod.compact_network_path("/plain/123/item")=="/plain/{id}/item"
+opaque_path=mod.compact_network_path("/payload/%7B%22token%22%3A%22example-secret-value%22%7D/stream")
+assert opaque_path=="/payload/{opaque}/stream",opaque_path
+assert "example-secret-value" not in opaque_path
+long_token="A"*48
+assert mod.compact_network_path(f"/download/{long_token}/file")=="/download/{opaque}/file"
+
 previous={
     "sourceCensusRunId":"55",
     "providers":{

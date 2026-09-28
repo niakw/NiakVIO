@@ -69,3 +69,11 @@
 - JSON shape contains only validated key names, coarse top type/array bucket and bounded nested schema keys. HTML/JavaScript shape contains only bounded element/function counts and a closed fixed marker vocabulary; no response values, cookies, request headers or query secrets are retained.
 - `run_provider_targeted_recovery.py` re-sanitizes the shape before adding it to same-census targeted evidence. Unsafe key names, unknown fields and unknown markers are dropped.
 - This evidence is diagnostic only. It does not make a stream playable or grant publication authority; candidates still require isolated current-byte NiakVIO playback/identity/non-regression validation.
+
+## 2026-09-28 — Targeted network evidence redaction
+
+- Durable targeted-recovery evidence now normalizes network paths before persistence. Numeric path segments become `{id}`; long/high-entropy, encoded-JSON and token-like segments become `{opaque}`.
+- The retained evidence keeps route family, host, method, status and bounded response shape while dropping opaque values that are unnecessary for causal repair.
+- The current same-census targeted snapshot was re-sanitized in place and the refined repair groups were regenerated from that sanitized evidence.
+- Verification on the regenerated snapshot reports zero `auth_token` occurrences and zero encoded-JSON `%7B%22` path occurrences.
+- This is an evidence-hygiene change only: it does not alter provider status, playback proof, repair eligibility or publication authority.

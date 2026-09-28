@@ -11,6 +11,7 @@ import argparse
 import concurrent.futures
 import hashlib
 import json
+import re
 from collections import defaultdict
 from pathlib import Path
 from typing import Any
@@ -118,6 +119,31 @@ def compact_response_shape(value:Any)->dict[str,Any]:
     return out
 
 
+def compact_network_path(path:str)->str:
+    parts=[]
+    for segment in str(path or "/").split("/"):
+        if not segment:
+            continue
+        lowered=segment.casefold()
+        opaque=(
+            len(segment)>64
+            or segment.count("%")>=4
+            or "%7b" in lowered
+            or "%22" in lowered
+            or bool(re.fullmatch(r"[A-Fa-f0-9]{24,}",segment))
+            or bool(re.fullmatch(r"[A-Za-z0-9_-]{40,}",segment))
+        )
+        if opaque:
+            parts.append("{opaque}")
+        elif segment.isdigit():
+            parts.append("{id}")
+        else:
+            parts.append(segment[:48])
+        if len(parts)>=6:
+            break
+    return "/" + "/".join(parts) if parts else "/"
+
+
 def compact_network(row:dict[str,Any])->list[dict[str,Any]]:
     out=[]; seen=set()
     for fetch in row.get("debug_fetches") or []:
@@ -128,7 +154,7 @@ def compact_network(row:dict[str,Any])->list[dict[str,Any]]:
         except Exception:
             continue
         host=(parsed.hostname or "").casefold()
-        path=parsed.path or "/"
+        path=compact_network_path(parsed.path or "/")
         key=(host,path,str(fetch.get("method") or "GET"),fetch.get("status"))
         if not host or key in seen: continue
         seen.add(key)

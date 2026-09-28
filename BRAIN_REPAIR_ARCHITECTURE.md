@@ -795,3 +795,11 @@ The Learning job reuses the already-pinned local Qwen runtime. `scripts/brain_ar
 A FORCE architecture run must produce a real executable diff. Proposal-only JSON/Markdown is not eligible for auto-promotion. The structural patch is exported as an artifact, replayed on the exact source checkout and re-tested. FORCE then stages only the generated-edit allowlist plus architecture metadata, rejects provider/publication boundaries, requires a stale-SHA lease guard, and pushes one commit directly to `main` without creating a PR or repair branch. The resulting main SHA must still pass Workflow Gate, Verify/Publish and non-regression; a failed gate is not a validated architecture repair.
 
 Provider publication authority remains false throughout the architecture lane. Normal scheduled/manual Learning keeps its review-only PR behavior.
+
+## Durable route evidence hygiene
+
+Targeted recovery persists only the minimum route shape required by Brain Repair. Hosts, HTTP method/status and bounded response-shape metadata are retained, but path values are normalized before they enter repository evidence.
+
+Numeric segments are represented as `{id}`. Long/high-entropy, encoded-object or token-like segments are represented as `{opaque}`. Query strings and response bodies are never part of this durable evidence surface.
+
+This preserves the causal route family needed for clustering and repair planning without turning `automation/` into a store for transient credentials or opaque provider payloads. The redaction layer is evidence-only and cannot promote or repair a provider.

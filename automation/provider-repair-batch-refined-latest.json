@@ -52,13 +52,13 @@
       "providers": [
         "animevost-fr"
       ],
-      "networkSignature": "provider_waf_challenge||anime:GET:animevost.fr:200:/api/anime/search;anime:GET:animevost.fr:200:/api/animes/{id};anime:GET:api.themoviedb.org:200:/{id}/tv/{id};anime:GET:gupload.xyz:403:/data/e/5e036a93756f",
+      "networkSignature": "provider_waf_challenge||anime:GET:animevost.fr:200:/api/anime/search;anime:GET:animevost.fr:200:/api/animes/{opaque};anime:GET:api.themoviedb.org:200:/{id}/tv/{id};anime:GET:gupload.xyz:403:/data/e/5e036a93756f",
       "debugStages": [
         "provider_waf_challenge"
       ],
       "networkShape": [
         "anime:GET:animevost.fr:200:/api/anime/search",
-        "anime:GET:animevost.fr:200:/api/animes/{id}",
+        "anime:GET:animevost.fr:200:/api/animes/{opaque}",
         "anime:GET:api.themoviedb.org:200:/{id}/tv/{id}",
         "anime:GET:gupload.xyz:403:/data/e/5e036a93756f"
       ],
@@ -144,7 +144,7 @@
       "providers": [
         "moviesmod"
       ],
-      "networkSignature": "provider_waf_challenge||movie:GET:api.themoviedb.org:200:/{id}/movie/{id};movie:GET:links.modpro.blog:403:/archives/{id};movie:GET:moviesmod.ai.in:200:/search/{id};movie:GET:moviesmod.ai.in:200:/{id};tv:GET:api.themoviedb.org:200:/{id}/tv/{id};tv:GET:episodes.modpro.blog:403:/archives/{id};tv:GET:moviesmod.ai.in:200:/search/{id};tv:GET:moviesmod.ai.in:200:/{id}",
+      "networkSignature": "provider_waf_challenge||movie:GET:api.themoviedb.org:200:/{id}/movie/{id};movie:GET:links.modpro.blog:403:/archives/{id};movie:GET:moviesmod.ai.in:200:/search/{id};movie:GET:moviesmod.ai.in:200:/{opaque};tv:GET:api.themoviedb.org:200:/{id}/tv/{id};tv:GET:episodes.modpro.blog:403:/archives/{id};tv:GET:moviesmod.ai.in:200:/search/{opaque};tv:GET:moviesmod.ai.in:200:/{opaque}",
       "debugStages": [
         "provider_waf_challenge"
       ],
@@ -152,11 +152,11 @@
         "movie:GET:api.themoviedb.org:200:/{id}/movie/{id}",
         "movie:GET:links.modpro.blog:403:/archives/{id}",
         "movie:GET:moviesmod.ai.in:200:/search/{id}",
-        "movie:GET:moviesmod.ai.in:200:/{id}",
+        "movie:GET:moviesmod.ai.in:200:/{opaque}",
         "tv:GET:api.themoviedb.org:200:/{id}/tv/{id}",
         "tv:GET:episodes.modpro.blog:403:/archives/{id}",
-        "tv:GET:moviesmod.ai.in:200:/search/{id}",
-        "tv:GET:moviesmod.ai.in:200:/{id}"
+        "tv:GET:moviesmod.ai.in:200:/search/{opaque}",
+        "tv:GET:moviesmod.ai.in:200:/{opaque}"
       ],
       "splitReason": "observed-signature-divergence",
       "executionPolicy": "batch-first"
@@ -338,7 +338,7 @@
       "providers": [
         "allanime"
       ],
-      "networkSignature": "provider_network_zero_result||anime:GET:api.allanime.day:200:/api;anime:GET:api.themoviedb.org:200:/{id}/tv/{id};anime:GET:mkissa.to:200:/;anime:GET:ww2.aniwatch.fit:200:/{id};anime:POST:api.allanime.day:200:/api;anime:POST:api.mkissa.net:200:/api",
+      "networkSignature": "provider_network_zero_result||anime:GET:api.allanime.day:200:/api;anime:GET:api.themoviedb.org:200:/{id}/tv/{id};anime:GET:mkissa.to:200:/;anime:GET:ww2.aniwatch.fit:200:/{id};anime:GET:ww2.aniwatch.fit:200:/{opaque};anime:POST:api.allanime.day:200:/api;anime:POST:api.mkissa.net:200:/api",
       "debugStages": [
         "provider_network_zero_result"
       ],
@@ -347,6 +347,7 @@
         "anime:GET:api.themoviedb.org:200:/{id}/tv/{id}",
         "anime:GET:mkissa.to:200:/",
         "anime:GET:ww2.aniwatch.fit:200:/{id}",
+        "anime:GET:ww2.aniwatch.fit:200:/{opaque}",
         "anime:POST:api.allanime.day:200:/api",
         "anime:POST:api.mkissa.net:200:/api"
       ],
@@ -370,7 +371,7 @@
       "providers": [
         "moviebox"
       ],
-      "networkSignature": "provider_network_http_error||movie:GET:api.themoviedb.org:200:/{id}/movie/{id};movie:GET:cloudorchestranova.com:200:/embed/movie/{id};movie:GET:cloudorchestranova.com:200:/embed/player/movie/{id};movie:GET:cloudorchestranova.com:400:/embed/iframe_player/cache.php;movie:GET:moviebox-cfa7.onrender.com:404:/{id};movie:GET:pengu.uk:429:/{id}/stream;movie:GET:vidsrcme.ru:200:/vs_src.php;tv:GET:api.themoviedb.org:200:/{id}/tv/{id};tv:GET:cloudorchestranova.com:200:/embed/player/tv/{id};tv:GET:cloudorchestranova.com:200:/embed/tv/{id}/{id};tv:GET:cloudorchestranova.com:400:/embed/iframe_player/cache.php;tv:GET:moviebox-cfa7.onrender.com:404:/{id};tv:GET:pengu.uk:429:/{id}/stream;tv:GET:vidsrcme.ru:200:/vs_src.php",
+      "networkSignature": "provider_network_http_error||movie:GET:api.themoviedb.org:200:/{id}/movie/{id};movie:GET:cloudorchestranova.com:200:/embed/movie/{id};movie:GET:cloudorchestranova.com:200:/embed/player/movie/{id};movie:GET:cloudorchestranova.com:400:/embed/iframe_player/cache.php;movie:GET:moviebox-cfa7.onrender.com:404:/{opaque};movie:GET:pengu.uk:429:/{opaque}/stream;movie:GET:vidsrcme.ru:200:/vs_src.php;tv:GET:api.themoviedb.org:200:/{id}/tv/{id};tv:GET:cloudorchestranova.com:200:/embed/player/tv/{id};tv:GET:cloudorchestranova.com:200:/embed/tv/{id}/{id};tv:GET:cloudorchestranova.com:400:/embed/iframe_player/cache.php;tv:GET:moviebox-cfa7.onrender.com:404:/{opaque};tv:GET:pengu.uk:429:/{opaque}/stream;tv:GET:vidsrcme.ru:200:/vs_src.php",
       "debugStages": [
         "provider_network_http_error"
       ],
@@ -379,15 +380,15 @@
         "movie:GET:cloudorchestranova.com:200:/embed/movie/{id}",
         "movie:GET:cloudorchestranova.com:200:/embed/player/movie/{id}",
         "movie:GET:cloudorchestranova.com:400:/embed/iframe_player/cache.php",
-        "movie:GET:moviebox-cfa7.onrender.com:404:/{id}",
-        "movie:GET:pengu.uk:429:/{id}/stream",
+        "movie:GET:moviebox-cfa7.onrender.com:404:/{opaque}",
+        "movie:GET:pengu.uk:429:/{opaque}/stream",
         "movie:GET:vidsrcme.ru:200:/vs_src.php",
         "tv:GET:api.themoviedb.org:200:/{id}/tv/{id}",
         "tv:GET:cloudorchestranova.com:200:/embed/player/tv/{id}",
         "tv:GET:cloudorchestranova.com:200:/embed/tv/{id}/{id}",
         "tv:GET:cloudorchestranova.com:400:/embed/iframe_player/cache.php",
-        "tv:GET:moviebox-cfa7.onrender.com:404:/{id}",
-        "tv:GET:pengu.uk:429:/{id}/stream",
+        "tv:GET:moviebox-cfa7.onrender.com:404:/{opaque}",
+        "tv:GET:pengu.uk:429:/{opaque}/stream",
         "tv:GET:vidsrcme.ru:200:/vs_src.php"
       ],
       "splitReason": "observed-signature-divergence",
@@ -410,19 +411,19 @@
       "providers": [
         "mallumv"
       ],
-      "networkSignature": "provider_waf_challenge||movie:GET:api.themoviedb.org:200:/{id}/movie/{id};movie:GET:mallumv.space:200:/internal/{id}/{id}/{id};movie:GET:mallumv.space:200:/movie/{id}/{id};movie:GET:mallumv.space:200:/search.php;movie:GET:vik1ngfile.site:200:/assets/custom-F_ZXKHX.js;movie:GET:vik1ngfile.site:200:/f/tMAohzba53;movie:GET:vik1ngfile.site:200:/f/u6lxab0wCH;movie:GET:vikingfile.com:200:/fast-download/{id}",
+      "networkSignature": "provider_waf_challenge||movie:GET:api.themoviedb.org:200:/{id}/movie/{id};movie:GET:mallumv.space:200:/internal/{id}/{id}/{opaque};movie:GET:mallumv.space:200:/movie/{id}/{id};movie:GET:mallumv.space:200:/search.php;movie:GET:vik1ngfile.site:200:/assets/custom-F_ZXKHX.js;movie:GET:vik1ngfile.site:200:/f/tMAohzba53;movie:GET:vik1ngfile.site:200:/f/u6lxab0wCH;movie:GET:vikingfile.com:200:/fast-download/{opaque}",
       "debugStages": [
         "provider_waf_challenge"
       ],
       "networkShape": [
         "movie:GET:api.themoviedb.org:200:/{id}/movie/{id}",
-        "movie:GET:mallumv.space:200:/internal/{id}/{id}/{id}",
+        "movie:GET:mallumv.space:200:/internal/{id}/{id}/{opaque}",
         "movie:GET:mallumv.space:200:/movie/{id}/{id}",
         "movie:GET:mallumv.space:200:/search.php",
         "movie:GET:vik1ngfile.site:200:/assets/custom-F_ZXKHX.js",
         "movie:GET:vik1ngfile.site:200:/f/tMAohzba53",
         "movie:GET:vik1ngfile.site:200:/f/u6lxab0wCH",
-        "movie:GET:vikingfile.com:200:/fast-download/{id}"
+        "movie:GET:vikingfile.com:200:/fast-download/{opaque}"
       ],
       "splitReason": "observed-signature-divergence",
       "executionPolicy": "batch-first"
