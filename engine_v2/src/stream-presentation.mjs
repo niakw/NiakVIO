@@ -37,6 +37,7 @@ export function presentStreamCandidate(stream = {}, metadata = {}, provider = {}
     audioSampleRate: facts.audioSampleRate,
     frameRate: facts.frameRate,
     bitrate: facts.bitrate,
+    resolution: facts.resolution,
     duration: facts.duration,
     sourceType: facts.sourceType,
     releaseType: facts.releaseType,
@@ -51,11 +52,106 @@ export function presentStreamCandidate(stream = {}, metadata = {}, provider = {}
   };
 }
 
+function objectValue(value) {
+  return value && typeof value === "object" && !Array.isArray(value) ? value : null;
+}
+
+function firstObject(values) {
+  for (const value of values) {
+    const row = objectValue(value);
+    if (row) return row;
+  }
+  return {};
+}
+
+function firstArray(values) {
+  for (const value of values) if (Array.isArray(value) && value.length) return value;
+  return [];
+}
+
+function firstUseful(objects, keys) {
+  for (const row of objects) {
+    if (!row) continue;
+    for (const key of keys) {
+      const value = row[key];
+      if (value !== undefined && value !== null && String(value).trim() !== "") return value;
+    }
+  }
+  return null;
+}
+
+function technicalSources(stream = {}) {
+  const containers = [
+    stream.mediaInfo, stream.media_info, stream.playerInfo, stream.player_info,
+    stream.playbackInfo, stream.playback_info, stream.probeInfo, stream.probe_info,
+    stream.technicalInfo, stream.technical_info, stream.mediaMetadata, stream.media_metadata,
+  ].map(objectValue).filter(Boolean);
+  const video = firstObject([
+    stream.videoInfo, stream.video_info, stream.video,
+    ...containers.flatMap((row) => [row.videoInfo, row.video_info, row.video]),
+    firstArray([stream.videoTracks, stream.video_tracks, ...containers.map((row) => row.videoTracks), ...containers.map((row) => row.video_tracks)])[0],
+  ]);
+  const audioRows = firstArray([
+    stream.audioTracks, stream.audio_tracks, stream.availableAudioTracks, stream.available_audio_tracks,
+    ...containers.map((row) => row.audioTracks), ...containers.map((row) => row.audio_tracks),
+  ]);
+  const audio = firstObject([
+    stream.audioInfo, stream.audio_info, stream.audio,
+    ...containers.flatMap((row) => [row.audioInfo, row.audio_info, row.audio]),
+    audioRows[0],
+  ]);
+  const subtitleRows = firstArray([
+    stream.subtitleTracks, stream.subtitle_tracks, stream.subtitles, stream.extCaptions, stream.captions,
+    ...containers.map((row) => row.subtitleTracks), ...containers.map((row) => row.subtitle_tracks), ...containers.map((row) => row.subtitles),
+  ]);
+  return { containers, video, audio, audioRows, subtitleRows };
+}
+
+function normalizeResolution(stream = {}, video = {}) {
+  const direct = firstUseful([stream, video], ["resolution", "displayResolution", "videoResolution"]);
+  const match = String(direct ?? "").match(/(\d{2,5})\s*[xX×]\s*(\d{2,5})/);
+  if (match) return match[1] + "x" + match[2];
+  const width = Number(firstUseful([stream, video], ["width", "videoWidth", "video_width", "displayWidth"]));
+  const height = Number(firstUseful([stream, video], ["height", "videoHeight", "video_height", "displayHeight"]));
+  return Number.isFinite(width) && width > 0 && Number.isFinite(height) && height > 0 ? Math.round(width) + "x" + Math.round(height) : null;
+}
+
+function normalizeBitrate(value) {
+  if (value == null || value === "") return null;
+  const format = (mbps) => (Math.round(mbps * 10) / 10).toFixed(1) + " Mbps";
+  if (typeof value === "number" && Number.isFinite(value) && value > 0) {
+    const mbps = value >= 100000 ? value / 1000000 : value >= 1000 ? value / 1000 : value;
+    return format(mbps);
+  }
+  const raw = String(value).trim().replace(",", ".");
+  const n = Number(raw.match(/\d+(?:\.\d+)?/)?.[0]);
+  if (!Number.isFinite(n) || n <= 0) return useful(value);
+  if (/\b(?:mbps|mb\/s|mbit)/i.test(raw)) return format(n);
+  if (/\b(?:kbps|kb\/s|kbit)/i.test(raw)) return format(n / 1000);
+  if (/\b(?:bps|bit\/s)/i.test(raw) || n >= 100000) return format(n / 1000000);
+  return useful(value);
+}
+
+function subtitleSource(row) {
+  if (!row || typeof row !== "object") return null;
+  const raw = useful(row.source ?? row.origin ?? row.sourceType ?? row.source_type ?? row.kind);
+  if (row.integrated === true || row.embedded === true || /\b(?:integrated|int[eé]gr[eé]|embedded|internal)\b/i.test(raw ?? "")) return "Integrated";
+  if (/\bexternal\b/i.test(raw ?? "")) return "External";
+  return raw;
+}
+
 export function collectFacts(stream = {}, metadata = {}, provider = {}) {
-  const audio = normalizeAudio([stream.audio, stream.audioCodec, stream.audio_codec, stream.audioChannels, stream.audio_channels, stream.channels, stream.channelLayout, stream.audioSampleRate, stream.audio_sample_rate, stream.sampleRate, stream.sample_rate].filter(Boolean).join(" "));
-  const language = normalizeLanguage(stream, provider);
+  const nested = technicalSources(stream);
+  const audio = normalizeAudio([
+    stream.audio, stream.audioCodec, stream.audio_codec, stream.audioChannels, stream.audio_channels,
+    stream.channels, stream.channelLayout, stream.audioSampleRate, stream.audio_sample_rate, stream.sampleRate, stream.sample_rate,
+    firstUseful([nested.audio], ["codec", "codecName", "audioCodec", "audio_codec"]),
+    firstUseful([nested.audio], ["channels", "channelCount", "channel_count", "channelLayout"]),
+    firstUseful([nested.audio], ["sampleRate", "sample_rate", "samplingRate", "sampling_rate"]),
+  ].filter(Boolean).join(" "));
   const originalLanguage = normalizeLanguageCode(metadata.originalLanguage ?? metadata.original_language);
   const languageTracks = normalizeLanguageTracks(stream, metadata, provider);
+  const language = normalizeLanguage(stream, provider, metadata, languageTracks);
   const videoTech = normalizeVideoTech(stream.videoTech ?? stream.video_tech ?? stream.visualTags ?? stream.hdr ?? stream.description);
   const sourceType = normalizeSourceType(stream.sourceType ?? stream.source_type ?? stream.description ?? stream.filename);
   const releaseType = normalizeReleaseType(stream.releaseType ?? stream.release_type ?? stream.description ?? stream.filename);
@@ -64,12 +160,12 @@ export function collectFacts(stream = {}, metadata = {}, provider = {}) {
     language,
     originalLanguage,
     languageTracks,
-    codec: normalizeCodec(stream.codec ?? stream.codecName ?? stream.videoCodec ?? stream.video_codec),
+    codec: normalizeCodec(firstUseful([stream, nested.video], ["codec", "codecName", "videoCodec", "video_codec"])),
     audio,
     audioTech: normalizeAudioTech(stream.audioTech ?? stream.audio_tech ?? audio),
-    audioCodec: normalizeAudioCodec(stream.audioCodec ?? stream.audio_codec ?? audio),
-    audioChannels: normalizeAudioChannels(stream.audioChannels ?? stream.audio_channels ?? stream.channels ?? stream.channelLayout ?? audio),
-    audioSampleRate: normalizeAudioSampleRate(stream.audioSampleRate ?? stream.audio_sample_rate ?? stream.sampleRate ?? stream.sample_rate ?? audio),
+    audioCodec: normalizeAudioCodec(firstUseful([stream], ["audioCodec", "audio_codec"]) ?? firstUseful([nested.audio], ["audioCodec", "audio_codec", "codec", "codecName"]) ?? audio),
+    audioChannels: normalizeAudioChannels(firstUseful([stream, nested.audio], ["audioChannels", "audio_channels", "channels", "channelCount", "channel_count", "channelLayout"]) ?? audio),
+    audioSampleRate: normalizeAudioSampleRate(firstUseful([stream, nested.audio], ["audioSampleRate", "audio_sample_rate", "sampleRate", "sample_rate", "samplingRate", "sampling_rate"]) ?? audio),
     frameRate: normalizeFrameRate(stream.frameRate ?? stream.frame_rate ?? stream.fps ?? stream.videoFrameRate ?? stream.video_frame_rate ?? stream.description),
     duration: normalizeDuration(
       stream.duration ?? stream.durationMinutes ?? stream.duration_minutes ?? stream.runtime ??
@@ -88,7 +184,8 @@ export function collectFacts(stream = {}, metadata = {}, provider = {}) {
     subtitles: normalizeSubtitles(stream),
     edition: useful(stream.edition ?? stream.editions),
     releaseGroup: useful(stream.releaseGroup ?? stream.release_group),
-    bitrate: useful(stream.videoBitrate ?? stream.video_bitrate ?? stream.bitrate ?? stream.bitRate ?? stream.bit_rate),
+    bitrate: normalizeBitrate(firstUseful([stream, nested.video], ["videoBitrate", "video_bitrate", "bitrate", "bitRate", "bit_rate", "bandwidth"])),
+    resolution: normalizeResolution(stream, nested.video),
     size: useful(stream.size),
   };
 }
@@ -190,7 +287,11 @@ function preciseQuality(value, allowBare = true) {
 }
 
 export function inferQuality(stream = {}) {
-  for (const value of [stream.height, stream.videoHeight, stream.video_height, stream.resolution, stream.resolutions]) {
+  const nested = technicalSources(stream);
+  for (const value of [
+    stream.height, stream.videoHeight, stream.video_height, stream.resolution, stream.resolutions,
+    nested.video.height, nested.video.videoHeight, nested.video.video_height, nested.video.resolution,
+  ]) {
     const exact = preciseQuality(value, true);
     if (exact) return exact;
   }
@@ -326,13 +427,16 @@ function roleFrom(value) {
   return null;
 }
 
-function trackObject(code, role) {
+function trackObject(code, role, source = null) {
   if (!code) return null;
-  return { code, tag: code.toUpperCase(), label: LANGUAGE_NAMES[code] ?? code.toUpperCase(), role: role ?? null };
+  const row = { code, tag: code.toUpperCase(), label: LANGUAGE_NAMES[code] ?? code.toUpperCase(), role: role ?? null };
+  if (source) row.source = source;
+  return row;
 }
 
 function rawTrackRows(stream) {
-  for (const value of [stream.audioTracks, stream.audio_tracks, stream.audioLanguages, stream.audio_languages, stream.availableAudioTracks, stream.available_audio_tracks, stream.languages]) {
+  const nested = technicalSources(stream);
+  for (const value of [stream.audioTracks, stream.audio_tracks, stream.audioLanguages, stream.audio_languages, stream.availableAudioTracks, stream.available_audio_tracks, stream.languages, nested.audioRows]) {
     if (Array.isArray(value) && value.length) return value;
   }
   return [];
@@ -340,7 +444,8 @@ function rawTrackRows(stream) {
 
 function subtitleTrackRows(stream) {
   const out = [];
-  for (const value of [stream.subtitles, stream.extCaptions, stream.captions, stream.hlsMasterSubtitleTracks, stream.subtitleTracks]) {
+  const nested = technicalSources(stream);
+  for (const value of [stream.subtitles, stream.extCaptions, stream.captions, stream.hlsMasterSubtitleTracks, stream.subtitleTracks, nested.subtitleRows]) {
     if (!Array.isArray(value)) continue;
     for (const row of value) if (!out.includes(row)) out.push(row);
   }
@@ -350,10 +455,10 @@ function subtitleTrackRows(stream) {
 export function normalizeLanguageTracks(stream = {}, metadata = {}, provider = {}) {
   const original = normalizeLanguageCode(metadata.originalLanguage ?? metadata.original_language);
   const out = [];
-  const add = (code, role) => {
-    const row = trackObject(code, role);
+  const add = (code, role, source = null) => {
+    const row = trackObject(code, role, source);
     if (!row) return;
-    if (!out.some((item) => item.code === row.code && item.role === row.role)) out.push(row);
+    if (!out.some((item) => item.code === row.code && item.role === row.role && item.source === row.source)) out.push(row);
   };
 
   const rows = rawTrackRows(stream);
@@ -382,7 +487,6 @@ export function normalizeLanguageTracks(stream = {}, metadata = {}, provider = {
       add("fr", original === "fr" ? "Original" : "Dub");
     } else if (/\bMULTI\b|\bDUAL(?:[- ]?AUDIO)?\b/i.test(explicit)) {
       if (original) add(original, "Original");
-      if (isVfProvider(provider) && original !== "fr") add("fr", "Dub");
     } else {
       const parts = explicit.split(/\s*(?:\/|,|\+|\||;)\s*/).map((value) => value.trim()).filter(Boolean);
       for (const part of parts) {
@@ -395,7 +499,7 @@ export function normalizeLanguageTracks(stream = {}, metadata = {}, provider = {
   for (const row of subtitleTrackRows(stream)) {
     const value = typeof row === "string" ? row : row?.language ?? row?.lanName ?? row?.langName ?? row?.lan ?? row?.lang ?? row?.name ?? row?.label;
     const code = normalizeLanguageCode(value);
-    if (code) add(code, "Sub");
+    if (code) add(code, "Sub", subtitleSource(row));
   }
   if (/\bVOSTFR\b/i.test([stream.language, stream.description, stream.title].map(clean).filter(Boolean).join(" "))) add("fr", "Sub");
   return out;
@@ -406,50 +510,56 @@ function compactTrackLabel(track) {
 }
 
 function fullTrackLabel(track) {
-  return track?.label ? `${track.label}${track.role ? ` · ${track.role}` : ""}` : null;
+  return track?.label ? `${track.label}${track.role ? ` · ${track.role}` : ""}${track.source ? ` · ${track.source}` : ""}` : null;
 }
 
-export function normalizeLanguage(stream = {}, provider = {}) {
+export function normalizeLanguage(stream = {}, provider = {}, metadata = {}, precomputedTracks = null) {
+  const original = normalizeLanguageCode(metadata.originalLanguage ?? metadata.original_language);
   const explicit = useful(
     stream.language ?? stream.lang ?? stream.audioLanguage ?? stream.audio_language ??
     stream.audioTrack ?? stream.audio_track ?? stream.playerLanguage ?? stream.player_language ?? stream.dub,
   );
-  const hints = [stream.language, stream.languages, stream.languageTracks, stream.audioLanguage, stream.audio_languages, stream.audioTracks].map(clean).filter(Boolean).join(" ").toUpperCase();
-  const vfProvider = isVfProvider(provider);
   const upper = explicit?.toUpperCase() ?? "";
-  const isMulti = (text) => /\bMULTI(?:[- ]?AUDIO|LANG(?:UE)?S?)?\b|\bDUAL(?:[- ]?AUDIO)?\b/.test(text);
-  const isVost = (text) => /\bVOSTFR\b|\bVOST[ ._-]?FR\b|\bVO[ ._-]?ST[ ._-]?FR\b/.test(text);
-  const isVfq = (text) => /\bVFQ\b|\bFR[ ._-]?CA\b|\bFRENCH[ ._-]?(?:CANADA|CANADIAN|QUEBEC)\b|\bQU[ÉE]B[ÉE]COIS\b/.test(text);
-  const isVf = (text) => /\b(?:VF|VFF|FR|FRA|FRE|FRENCH|FRANCAIS|FRANÇAIS|FR[ ._-]?FR)\b/.test(text);
-  const isVo = (text) => /\bVO\b|\bORIGINAL(?:[ ._-]?(?:AUDIO|LANG(?:UAGE)?))?\b/.test(text);
-  const combined = `${upper} ${hints}`.trim();
+  const isMulti = (text) => /(?:^|[^A-Z0-9])MULTI(?:[- ]?AUDIO|LANG(?:UE)?S?)?(?:[^A-Z0-9]|$)|(?:^|[^A-Z0-9])DUAL(?:[- ]?AUDIO)?(?:[^A-Z0-9]|$)/.test(text);
+  const isVost = (text) => /(?:^|[^A-Z0-9])VOSTFR(?:[^A-Z0-9]|$)|(?:^|[^A-Z0-9])VOST[ ._-]?FR(?:[^A-Z0-9]|$)|(?:^|[^A-Z0-9])VO[ ._-]?ST[ ._-]?FR(?:[^A-Z0-9]|$)/.test(text);
+  const isVo = (text) => /(?:^|[^A-Z0-9])VO(?:[^A-Z0-9]|$)|(?:^|[^A-Z0-9])ORIGINAL(?:[ ._-]?(?:AUDIO|LANG(?:UAGE)?))?(?:[^A-Z0-9]|$)/.test(text);
 
-  // Do not let a precise explicit label hide a complementary track advertised
-  // by the provider metadata. VF + VOSTFR is multi-audio evidence, not plain VF.
-  if (isVost(combined) && (isVf(combined) || isVfq(combined) || isMulti(combined))) {
-    return vfProvider ? "MULTI (VF/VO)" : "MULTI";
+  // Legacy role labels are input hints only, never public language identities.
+  if (isVost(upper)) return original ?? null;
+  if (isMulti(upper)) return null;
+  if (isVo(upper)) return original ?? null;
+
+  const tracks = Array.isArray(precomputedTracks)
+    ? precomputedTracks
+    : normalizeLanguageTracks(stream, metadata, provider);
+  const audioCodes = uniq(
+    tracks
+      .filter((track) => String(track?.role ?? "").toLowerCase() !== "sub")
+      .map((track) => normalizeLanguageCode(track?.code ?? track?.tag ?? track?.label))
+      .filter(Boolean),
+  );
+  if (audioCodes.length === 1) return audioCodes[0];
+  if (audioCodes.length > 1) return null;
+
+  const explicitCode = normalizeLanguageCode(explicit);
+  if (explicitCode) return explicitCode;
+
+  for (const value of [
+    stream.sourceLanguage,
+    stream.source_language,
+    ...(Array.isArray(stream.sourceLanguages) ? stream.sourceLanguages : []),
+    ...(Array.isArray(stream.source_languages) ? stream.source_languages : []),
+  ]) {
+    const code = normalizeLanguageCode(value);
+    if (code) return code;
   }
-  if (isVost(upper)) return "VOSTFR";
-  if (isMulti(upper)) return vfProvider ? "MULTI (VF/VO)" : "MULTI";
-  if (/^(?:VFQ|FR[ ._-]?CA)$/i.test(explicit || "")) return "VFQ";
-  if (/^(?:VF|VFF|FR|FRA|FRE|FRENCH|FRANCAIS|FRANÇAIS)$/i.test(explicit || "")) return "VF";
-  if (/^(?:VO|ORIGINAL(?:[ ._-]?(?:AUDIO|LANG(?:UAGE)?))?)$/i.test(explicit || "")) return "VO";
-  const natural = naturalLanguageLabel(explicit);
-  if (natural) return natural;
 
-  const hasVost = isVost(hints);
-  const hasVf = isVf(hints) || isVfq(hints);
-  if (isMulti(hints) || (hasVost && hasVf)) return vfProvider ? "MULTI (VF/VO)" : "MULTI";
-  if (hasVost) return "VOSTFR";
-  if (isVfq(hints)) return "VFQ";
-  if (hasVf) return "VF";
-  if (isVo(hints)) return "VO";
-  const providerLanguages = [...(provider.contentLanguage ?? []), ...(provider.languages ?? []), ...(provider.scraper?.contentLanguage ?? [])]
-    .map((value) => normalizeLanguageCode(value))
-    .filter(Boolean);
-  const uniqueProviderLanguages = uniq(providerLanguages);
-  if (uniqueProviderLanguages.length === 1) return uniqueProviderLanguages[0];
-  return null;
+  const providerCodes = uniq(
+    [...(provider.contentLanguage ?? []), ...(provider.languages ?? []), ...(provider.scraper?.contentLanguage ?? [])]
+      .map((value) => normalizeLanguageCode(value))
+      .filter(Boolean),
+  );
+  return providerCodes.length === 1 ? providerCodes[0] : null;
 }
 
 export function normalizeSourceType(value) {
@@ -491,7 +601,14 @@ export function normalizeCodec(value) {
 export function normalizeAudio(value) {
   const text = useful(value);
   if (!text) return null;
-  return text.replace(/\bDDP\b/ig, "E-AC3").replace(/\bDD\b/ig, "AC3").replace(/\s+/g, " ").trim();
+  const normalized = text.replace(/\bDDP\b/ig, "E-AC3").replace(/\bDD\b/ig, "AC3").replace(/\s+/g, " ").trim();
+  const seen = new Set();
+  return normalized.split(" ").filter((token) => {
+    const key = token.toLowerCase();
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  }).join(" ");
 }
 
 export function normalizeDuration(value) {
@@ -645,23 +762,29 @@ function durationAgeLine(facts) {
 
 function languageLine(facts) {
   const rawTracks = facts.languageTracks ?? [];
-  const tracks = rawTracks.map(fullTrackLabel).filter(Boolean);
-  const representedSubCodes = new Set(
-    rawTracks
-      .filter((track) => String(track?.role ?? "").toLowerCase() === "sub")
-      .map((track) => normalizeLanguageCode(track?.code ?? track?.tag ?? track?.label))
-      .filter(Boolean),
-  );
-  const subtitles = (facts.subtitles ?? []).filter((value) => {
+  const audioTracks = rawTracks.filter((track) => String(track?.role ?? "").toLowerCase() !== "sub");
+  const audioLabels = audioTracks.map((track) => track?.label ? `${track.label}${track.role ? ` · ${track.role}` : ""}` : null).filter(Boolean);
+  const subTracks = rawTracks.filter((track) => String(track?.role ?? "").toLowerCase() === "sub");
+  const representedSubCodes = new Set(subTracks.map((track) => normalizeLanguageCode(track?.code ?? track?.tag ?? track?.label)).filter(Boolean));
+  const groups = new Map();
+  for (const track of subTracks) {
+    const source = String(track?.source ?? "").toLowerCase();
+    const key = /integrated|embedded|internal/.test(source) ? "Int. Sub" : /external/.test(source) ? "Ext. Sub" : "Sub";
+    if (!groups.has(key)) groups.set(key, []);
+    const label = track?.label ?? (track?.code ? (LANGUAGE_NAMES[track.code] ?? String(track.code).toUpperCase()) : null);
+    if (label && !groups.get(key).includes(label)) groups.get(key).push(label);
+  }
+  const looseSubs = (facts.subtitles ?? []).filter((value) => {
     const match = String(value ?? "").match(/^SUB\s+([A-Z]{2,3}(?:-[A-Z0-9]{2,3})?)$/i);
     const code = match ? normalizeLanguageCode(match[1]) : null;
     return !code || !representedSubCodes.has(code);
   });
-  if (tracks.length) return `🌐 ${tracks.join(" • ")}${subtitles.length ? ` • 💬 ${subtitles.join(" • ")}` : ""}`;
+  if (looseSubs.length) groups.set("Sub", uniq([...(groups.get("Sub") ?? []), ...looseSubs]));
+  const subLabels = [...groups.entries()].filter(([, labels]) => labels.length).map(([kind, labels]) => `💬 ${kind} · ${labels.join(" · ")}`);
+  if (audioLabels.length || subLabels.length) return `🌐 ${[...audioLabels, ...subLabels].join(" • ")}`;
   const code = normalizeLanguageCode(facts.language);
   const language = code ? (LANGUAGE_NAMES[code] ?? code.toUpperCase()) : null;
-  if (!language && !subtitles.length) return "";
-  return `🌐 ${[language, subtitles.length ? `💬 ${subtitles.join(" • ")}` : null].filter(Boolean).join(" • ")}`;
+  return language ? `🌐 ${language}` : "";
 }
 function technicalLine(facts) {
   const groups = [];
@@ -670,6 +793,7 @@ function technicalLine(facts) {
   if (source) video.push(source);
   if (facts.edition) video.push(facts.edition);
   if (facts.codec) video.push(`${facts.codec}${facts.bitDepth ? ` ${facts.bitDepth}` : ""}`); else if (facts.bitDepth) video.push(facts.bitDepth);
+  if (facts.resolution) video.push(`${facts.resolution}${facts.quality ? ` (${facts.quality})` : ""}`);
   video.push(...(facts.videoTech ?? []));
   if (facts.frameRate) video.push(facts.frameRate);
   if (facts.format) video.push(facts.format);

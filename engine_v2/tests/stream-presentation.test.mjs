@@ -1,9 +1,11 @@
+import fs from "node:fs";
 import assert from "node:assert/strict";
 import { normalizeStreamCandidate } from "../src/contracts.mjs";
 import {
   buildBadgeIds,
   buildBadges,
   normalizeLanguage,
+  normalizeLanguageCode,
   normalizeLanguageTracks,
   normalizeSourceType,
   presentStreamCandidate,
@@ -35,7 +37,7 @@ const presented = presentStreamCandidate(facts, {
 
 assert.equal(presented.title, "Purstream - 4K");
 assert.equal(presented.quality, "2160p");
-assert.equal(presented.language, "VF");
+assert.equal(presented.language, "fr");
 assert.equal(presented.codec, "HEVC");
 assert.equal(presented.audio, "E-AC3 5.1");
 assert.equal(presented.duration, 169);
@@ -58,9 +60,9 @@ const multiVf = presentStreamCandidate({
   url: "https://media.example/multi.m3u8",
   language: "Dual Audio",
 }, { title: "Film", year: 2026, mediaType: "movie" }, vfProvider);
-assert.match(multiVf.description, /^🎬 Film • 2026\n🌐 French · Dub/m);
-assert.equal(multiVf.language, "MULTI (VF/VO)");
-assert.ok(multiVf.badgeIds.includes("lang-fr"));
+assert.doesNotMatch(multiVf.description, /🌐/);
+assert.equal(multiVf.language, null);
+assert.ok(!multiVf.badgeIds.some((id) => id.startsWith("lang-")));
 assert.ok(!multiVf.badgeIds.includes("multi"));
 
 const multiVo = presentStreamCandidate({
@@ -69,15 +71,15 @@ const multiVo = presentStreamCandidate({
   language: "MULTI",
 }, { title: "Film", year: 2026, mediaType: "movie" }, voProvider);
 assert.doesNotMatch(multiVo.description, /🌐 MULTI/);
-assert.equal(multiVo.language, "MULTI");
+assert.equal(multiVo.language, null);
 
 const vostfr = presentStreamCandidate({
   name: "Purstream",
   url: "https://media.example/vost.m3u8",
   language: "VOSTFR",
 }, { title: "Film", year: 2026, mediaType: "movie" }, vfProvider);
-assert.equal(vostfr.language, "VOSTFR");
-assert.match(vostfr.description, /🌐 French · Sub/);
+assert.equal(vostfr.language, null);
+assert.match(vostfr.description, /🌐 💬 Sub · French/);
 assert.ok(!vostfr.badgeIds.some((id) => String(id).startsWith("sub-")));
 
 const vfq = presentStreamCandidate({
@@ -85,7 +87,7 @@ const vfq = presentStreamCandidate({
   url: "https://media.example/vfq.m3u8",
   language: "fr-CA",
 }, { title: "Film", year: 2026, mediaType: "movie" }, vfProvider);
-assert.equal(vfq.language, "VFQ");
+assert.equal(vfq.language, "fr-ca");
 assert.match(vfq.description, /🌐 French \(Canada\) · Dub/);
 assert.ok(vfq.badgeIds.includes("lang-fr-ca"));
 
@@ -95,9 +97,9 @@ const vfPlusVost = presentStreamCandidate({
   language: "VF",
   description: "VOSTFR available",
 }, { title: "Film", year: 2026, mediaType: "movie" }, vfProvider);
-assert.equal(vfPlusVost.language, "VF");
+assert.equal(vfPlusVost.language, "fr");
 assert.match(vfPlusVost.description, /French · Dub/);
-assert.match(vfPlusVost.description, /French · Sub/);
+assert.match(vfPlusVost.description, /💬 Sub · French/);
 assert.doesNotMatch(vfPlusVost.description, /VOSTFR available|MULTI/);
 
 const series = presentStreamCandidate({
@@ -170,12 +172,61 @@ for (const id of ["1080p-full-hd","hls","avc","23.976fps","video-bitrate","aac",
 assert.match(richTechnical.description, /Korean · Original/);
 assert.match(richTechnical.description, /AVC/); assert.match(richTechnical.description, /23\.976 fps/); assert.match(richTechnical.description, /HLS/);
 assert.match(richTechnical.description, /AAC • 2\.0 • 48 kHz/); assert.match(richTechnical.description, /6\.0 Mbps/);
-assert.equal(normalizeLanguage({ language: "fr" }, vfProvider), "VF");
-assert.equal(normalizeLanguage({ language: "VFQ" }, vfProvider), "VFQ");
-assert.equal(normalizeLanguage({ language: "MULTI" }, voProvider), "MULTI");
+assert.equal(normalizeLanguage({ language: "fr" }, vfProvider), "fr");
+assert.equal(normalizeLanguage({ language: "VFQ" }, vfProvider), "fr-ca");
+assert.equal(normalizeLanguage({ language: "MULTI" }, voProvider), null);
 assert.deepEqual(buildBadges({ quality: "2160p", language: "VFQ", codec: "AVC" }), ["4K", "AVC", "FR-CA"]);
 assert.deepEqual(buildBadgeIds({ quality: "2160p", language: "VFQ", codec: "AVC", subtitles: [] }), ["4k-ultra-hd", "avc", "lang-fr-ca"]);
 
+
+const badgeCatalog = JSON.parse(fs.readFileSync(new URL("../../assets/badge_catalog_v8_complete.json", import.meta.url), "utf8"));
+const catalogLanguageCodes = new Set();
+const collectCatalogLanguageCodes = (value) => {
+  if (Array.isArray(value)) { for (const row of value) collectCatalogLanguageCodes(row); return; }
+  if (!value || typeof value !== "object") return;
+  if (typeof value.id === "string" && value.id.startsWith("lang-")) catalogLanguageCodes.add(value.id.slice(5));
+  for (const row of Object.values(value)) collectCatalogLanguageCodes(row);
+};
+collectCatalogLanguageCodes(badgeCatalog);
+assert.equal(catalogLanguageCodes.size, 47);
+for (const code of catalogLanguageCodes) assert.equal(normalizeLanguageCode(code), code, code);
+for (const [alias, expected] of [["fre","fr"],["fra","fr"],["jpn","ja"],["kor","ko"],["hin","hi"],["por","pt"],["zho","zh"],["spa","es"]]) {
+  assert.equal(normalizeLanguageCode(alias), expected, alias);
+}
+
+const nuvioPlayerFacts = presentStreamCandidate({
+  name: "Player Source",
+  url: "https://media.example/master.m3u8",
+  mediaInfo: {
+    video: { codec: "AVC", width: 1920, height: 1080, bitrate: 6000000 },
+    audioTracks: [{ codec: "AAC", channels: "Stereo", sampleRate: 48000, language: "kor" }],
+    subtitleTracks: [{ name: "fr", language: "French", source: "Integrated", integrated: true }],
+  },
+}, { title: "Player Fixture", year: 2026, mediaType: "movie" }, { id: "fixture", name: "Fixture" });
+assert.equal(nuvioPlayerFacts.codec, "AVC");
+assert.equal(nuvioPlayerFacts.resolution, "1920x1080");
+assert.equal(nuvioPlayerFacts.quality, "1080p");
+assert.equal(nuvioPlayerFacts.bitrate, "6.0 Mbps");
+assert.equal(nuvioPlayerFacts.audioCodec, "AAC");
+assert.equal(nuvioPlayerFacts.audioChannels, "2.0");
+assert.equal(nuvioPlayerFacts.audioSampleRate, "48 kHz");
+assert.equal(nuvioPlayerFacts.language, "ko");
+assert.ok(nuvioPlayerFacts.badgeIds.includes("1080p-full-hd"));
+assert.ok(nuvioPlayerFacts.badgeIds.includes("avc"));
+assert.ok(nuvioPlayerFacts.badgeIds.includes("video-bitrate"));
+assert.ok(nuvioPlayerFacts.badgeIds.includes("aac"));
+assert.ok(nuvioPlayerFacts.badgeIds.includes("2.0"));
+assert.ok(nuvioPlayerFacts.badgeIds.includes("48khz"));
+assert.ok(nuvioPlayerFacts.badgeIds.includes("lang-ko"));
+assert.ok(!nuvioPlayerFacts.badgeIds.some((id) => id.startsWith("sub-")));
+assert.match(nuvioPlayerFacts.description, /Korean/);
+assert.match(nuvioPlayerFacts.description, /💬 Int\. Sub · French/);
+assert.match(nuvioPlayerFacts.description, /AVC/);
+assert.match(nuvioPlayerFacts.description, /1920x1080 \(1080p\)/);
+assert.match(nuvioPlayerFacts.description, /6\.0 Mbps/);
+assert.match(nuvioPlayerFacts.description, /AAC/);
+assert.match(nuvioPlayerFacts.description, /2\.0/);
+assert.match(nuvioPlayerFacts.description, /48 kHz/);
 
 const indianTracks = presentStreamCandidate({
   name: "HindMoviez",
@@ -207,7 +258,7 @@ assert.deepEqual(animeSub.languageTracks, [
   { code: "ja", tag: "JA", label: "Japanese", role: "Original" },
   { code: "fr", tag: "FR", label: "French", role: "Sub" },
 ]);
-assert.match(animeSub.description, /Japanese · Original • French · Sub/);
+assert.match(animeSub.description, /Japanese · Original • 💬 Sub · French/);
 
 const hlsTracks = normalizeLanguageTracks({
   audioTracks: [{ language: "en", name: "English" }, { language: "fr", name: "French" }],

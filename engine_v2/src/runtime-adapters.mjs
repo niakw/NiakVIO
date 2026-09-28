@@ -47,7 +47,7 @@ export function toRuntimeStream(candidate, device, context = {}) {
     badgeIds: stream.badgeIds.length ? stream.badgeIds : undefined,
     displayBadges: stream.displayBadges.length ? stream.displayBadges : undefined,
     presentationFacts: stream.presentationFacts,
-    streamScore: stream.streamScore,
+    streamScore: publicStreamScore(stream.streamScore),
     edition: stream.edition,
     releaseGroup: stream.releaseGroup,
     bitrate: stream.bitrate,
@@ -70,6 +70,16 @@ export function compareDeviceInvocations(request) {
   const invocations = Object.fromEntries(devices.map((device) => [device, toRuntimeInvocation(request, device)]));
   const signatures = new Set(devices.map((device) => JSON.stringify(invocations[device].positionalArgs)));
   return { consistent: signatures.size === 1, invocations };
+}
+
+function publicStreamScore(value) {
+  if (!value || typeof value !== "object") return null;
+  const grade = typeof value.grade === "string" ? value.grade.trim() : "";
+  return compactObject({
+    schemaVersion: Number(value.schemaVersion || 1),
+    status: value.status,
+    grade: grade || undefined,
+  });
 }
 
 function compactObject(value) {

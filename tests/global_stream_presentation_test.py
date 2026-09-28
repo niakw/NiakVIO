@@ -89,7 +89,7 @@ row = run(source, "purstream", "p.getStreams({tmdbId:'157336',mediaType:'movie',
 assert row["title"] == "Purstream - 4K", row
 assert row["name"] == row["title"], row
 assert row["quality"] == "2160p"
-assert row["language"] == "VF", row
+assert row["language"] == "fr", row
 assert row["codec"] == "HEVC"
 assert row["duration"] == 169
 assert row["sourceType"] == "WEB-DL"
@@ -102,11 +102,32 @@ assert "multi" not in set(row["badgeIds"]), row
 lines = row["description"].splitlines()
 assert lines[0] == "🎬 Interstellar • 2014", lines
 assert lines[1] == "⏱ 2h49 • 🔞 12+", lines
-assert lines[2] == "🌐 French · Dub • 💬 SUB FR", lines
+assert lines[2] == "🌐 French · Dub • 💬 Sub · French", lines
 assert lines[3].startswith("🎞️ WEB-DL"), lines
 assert "HEVC 10bit" in lines[3] and "HLS" in lines[3] and "💾 8.4 GB" in lines[3]
 assert "2160p" not in row["description"] and "4K" not in row["description"]
 assert "Unknown" not in row["description"]
+
+# Player/Nuvio nested technical facts must survive provider injection too.
+player_source = """module.exports={getStreams:async()=>[{name:'Player Source',url:'https://media.example/master.m3u8',mediaInfo:{video:{codec:'AVC',width:1920,height:1080,bitrate:6000000},audioTracks:[{codec:'AAC',channels:'Stereo',sampleRate:48000,language:'kor'}],subtitleTracks:[{name:'fr',language:'French',source:'Integrated',integrated:true}]}}]};\n"""
+player_row = run(
+    player_source,
+    "fixture",
+    "p.getStreams({mediaType:'movie',title:'Player Fixture',year:2026}).then(v=>console.log(JSON.stringify(v[0])))",
+)
+assert player_row["codec"] == "AVC", player_row
+assert player_row["resolution"] == "1920x1080", player_row
+assert player_row["quality"] == "1080p", player_row
+assert player_row["presentationFacts"]["bitrate"] == "6.0 Mbps", player_row
+assert player_row["presentationFacts"]["audioCodec"] == "AAC", player_row
+assert player_row["presentationFacts"]["audioChannels"] == "2.0", player_row
+assert player_row["presentationFacts"]["audioSampleRate"] == "48 kHz", player_row
+assert player_row["language"] == "ko", player_row
+for badge in {"1080p-full-hd", "hls", "avc", "video-bitrate", "aac", "2.0", "48khz", "lang-ko"}:
+    assert badge in set(player_row["badgeIds"]), (badge, player_row)
+assert not any(str(x).startswith("sub-") for x in player_row["badgeIds"]), player_row
+for token in ("Korean", "💬 Int. Sub · French", "AVC", "1920x1080 (1080p)", "AAC", "2.0", "48 kHz", "6.0 Mbps"):
+    assert token in player_row["description"], (token, player_row["description"])
 
 # JVM QuickJS bridge safety: final stream-array JSON must cross JNI as ASCII-only
 # (supplementary emoji are represented as JSON \uXXXX surrogate escapes), while
@@ -122,7 +143,7 @@ assert raw_stream_json.isascii(), raw_stream_json
 assert "\\ud83c\\udfac" in raw_stream_json.lower(), raw_stream_json
 roundtrip = json.loads(raw_stream_json)[0]
 assert roundtrip["description"].splitlines()[0] == "🎬 Interstellar • 2014", roundtrip
-assert "French · Dub" in roundtrip["description"] and "SUB FR" in roundtrip["description"], roundtrip
+assert "French · Dub" in roundtrip["description"] and "💬 Sub · French" in roundtrip["description"], roundtrip
 
 # Cross-client projection contract: Mobile/Desktop rebuild plugin StreamItem.description
 # from quality + size + language; TV maps LocalScraperResult.size -> Stream.description.
@@ -137,20 +158,20 @@ tv_row = run(
 assert tv_row["size"] == tv_row["description"], tv_row
 assert tv_row["description"].splitlines()[0] == "🎬 Interstellar • 2014"
 assert "⏱ 2h49" in tv_row["description"] and "🔞 12+" in tv_row["description"]
-assert "French · Dub" in tv_row["description"] and "SUB FR" in tv_row["description"]
+assert "French · Dub" in tv_row["description"] and "💬 Sub · French" in tv_row["description"]
 assert "🎞️ WEB-DL" in tv_row["description"] and "HEVC 10bit" in tv_row["description"]
 assert "💾 8.4 GB" in tv_row["description"]
 
 # Legacy French tokens are accepted as input aliases; public badge IDs are FR / FR-CA.
 vf = run("module.exports={getStreams:async()=>[{name:'Coflix',url:'https://x.example/a.mp4',language:'fr',quality:'1080p'}]};\n", "coflix", "p.getStreams({mediaType:'movie',title:'Film',year:2026}).then(v=>console.log(JSON.stringify(v[0])))")
-assert vf["language"] == "VF" and "French · Dub" in vf["description"]
+assert vf["language"] == "fr" and "French · Dub" in vf["description"]
 assert vf["title"] == "Coflix - 1080p"
 assert "1080p" not in vf["description"]
 assert "BLU-RAY" not in vf["description"]
 assert "lang-fr" in vf["badgeIds"] and "vf" not in vf["badgeIds"]
 
 vfq = run("module.exports={getStreams:async()=>[{name:'Test',url:'https://x.example/a.mp4',language:'fr-CA VFQ'}]};\n", "purstream", "p.getStreams({mediaType:'movie',title:'Film'}).then(v=>console.log(JSON.stringify(v[0])))")
-assert vfq["language"] == "VFQ", vfq
+assert vfq["language"] == "fr-ca", vfq
 assert vfq["languageTracks"] == [{"code":"fr-ca","tag":"FR-CA","label":"French (Canada)","role":"Dub"}], vfq
 assert "French (Canada) · Dub" in vfq["description"], vfq
 assert "FR-CA Dub" in vfq["displayBadges"], vfq
@@ -158,15 +179,15 @@ assert "lang-fr-ca" in vfq["badgeIds"] and "vfq" not in vfq["badgeIds"]
 
 # VOSTFR is an input alias only; public output is a French subtitle track/badge.
 vost = run("module.exports={getStreams:async()=>[{name:'Test',url:'https://x.example/a.m3u8',language:'VOSTFR'}]};\n", "purstream", "p.getStreams({mediaType:'movie',title:'Film'}).then(v=>console.log(JSON.stringify(v[0])))")
-assert vost["language"] == "VOSTFR" and "French · Sub" in vost["description"]
+assert vost["language"] is None and "💬 Sub · French" in vost["description"]
 assert "sub-fr" not in vost["badgeIds"] and "vostfr" not in vost["badgeIds"]
 
 # VO/MULTI without factual language metadata remain compatibility scalars only and emit no public language badge.
 vo = run("module.exports={getStreams:async()=>[{name:'Test',url:'https://x.example/a.m3u8',language:'VO'}]};\n", "cineby", "p.getStreams({mediaType:'movie',title:'Film'}).then(v=>console.log(JSON.stringify(v[0])))")
-assert vo["language"] == "VO" and "🌐 VO" not in vo["description"]
+assert vo["language"] is None and "🌐 VO" not in vo["description"]
 assert not any(str(x).startswith("lang-") for x in vo["badgeIds"])
 vo_multi = run("module.exports={getStreams:async()=>[{name:'Test',url:'https://x.example/a.m3u8',language:'MULTI'}]};\n", "cineby", "p.getStreams({mediaType:'movie',title:'Film'}).then(v=>console.log(JSON.stringify(v[0])))")
-assert vo_multi["language"] == "MULTI" and "🌐 MULTI" not in vo_multi["description"]
+assert vo_multi["language"] is None and "🌐 MULTI" not in vo_multi["description"]
 assert "multi" not in vo_multi["badgeIds"]
 
 # Detailed language evidence may live in provider/source labels even when the
@@ -177,9 +198,9 @@ source_language_evidence = run(
     "moviebox",
     "p.getStreams({mediaType:'movie',title:'Film'}).then(v=>console.log(JSON.stringify(v[0])))",
 )
-assert source_language_evidence["language"] == "Hindi", source_language_evidence
+assert source_language_evidence["language"] == "hi", source_language_evidence
 assert "Hindi" in source_language_evidence["description"], source_language_evidence
-assert source_language_evidence["presentationFacts"]["language"] == "Hindi", source_language_evidence
+assert source_language_evidence["presentationFacts"]["language"] == "hi", source_language_evidence
 assert "HI" in source_language_evidence["displayBadges"], source_language_evidence
 assert "lang-hi" in source_language_evidence["badgeIds"], source_language_evidence
 assert "vo" not in source_language_evidence["badgeIds"], source_language_evidence

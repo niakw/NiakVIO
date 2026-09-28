@@ -101,8 +101,11 @@ def assert_contract() -> None:
     technical_end = text.find("function durationAgeLine(f){", technical_start)
     if technical_start < 0 or technical_end < 0:
         raise ValueError("stream presentation technical line missing")
-    if "f.quality" in text[technical_start:technical_end]:
-        raise ValueError("quality must remain title-only")
+    technical_block = text[technical_start:technical_end]
+    allowed_resolution_quality = 'f.resolution+(f.quality?" ("+f.quality+")":"")'
+    technical_without_resolution = technical_block.replace(allowed_resolution_quality, "")
+    if "f.quality" in technical_without_resolution:
+        raise ValueError("quality must remain title-only except factual resolution annotation")
 
     for path in (DARK_FEED, LIGHT_FEED, TRANSPARENT_FEED, FUSION_FEED):
         if not path.is_file():

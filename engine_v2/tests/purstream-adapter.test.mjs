@@ -71,7 +71,7 @@ const movie = await core.resolve({
 assert.equal(movie.repair.failureClass, "healthy");
 assert.equal(movie.streams.length, 1);
 assert.equal(movie.streams[0].url, "https://cdn.example/interstellar.m3u8");
-assert.equal(movie.streams[0].language, "VF");
+assert.equal(movie.streams[0].language, "fr");
 assert.equal(movie.evidence.stages.identity.selectedId, undefined);
 assert.equal(movie.evidence.stages.identity.matched, true);
 assert.equal(movie.evidence.stages.validation.playable, true);

@@ -101,6 +101,6 @@ required={"720p-hd","hls","avc","23.976fps","video-bitrate","aac","2.0","lang-ko
 missing=required-set(row.get("badgeIds") or [])
 assert not missing,(missing,row)
 assert not any(str(x).startswith("sub-") for x in row.get("badgeIds") or []),row
-for needle in ("AVC","23.976 fps","HLS","AAC","2.0","5.8 Mbps max","Korean"):
+for needle in ("AVC","23.976 fps","HLS","AAC","2.0","5.8 Mbps","Korean"):
     assert needle in row.get("description",""),(needle,row)
 print("HLS master facts reach title/badges while integrated subtitles stay outside external caption contract")

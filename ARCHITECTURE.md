@@ -434,3 +434,23 @@ Cette frontière évite deux anti-patterns :
 - `tests/provider_v3_documentation_contract_test.py`
 - `tests/native_five_lab_coverage_test.py`
 - `tests/native_lab_observational_purity_test.py`
+
+
+### Player facts → Stream Presentation: lossless technical boundary
+
+`STREAM_FACTS` / the canonical stream contract must preserve any portable technical fact already known by the provider, player, HLS parser or Nuvio runtime. `STREAM_PRESENTATION` must not depend on every provider flattening those values manually.
+
+The Core presentation input therefore accepts both flat fields and nested technical containers such as `mediaInfo`, `playerInfo`, `playbackInfo`, `probeInfo`, `technicalInfo`, `videoInfo`, `audioInfo`, `videoTracks`, `audioTracks`, `subtitleTracks` and HLS master subtitle tracks. Flat explicit facts win; nested data enriches only missing information.
+
+The presentation layer normalizes these facts into one shared model before projection:
+
+- exact video resolution plus quality (`1920x1080 (1080p)`), codec, frame rate, HDR/bit depth and bitrate;
+- audio codec, channel layout, sample rate and one or more canonical international language tracks;
+- subtitles with canonical language plus provenance (`Integrated`, `External`, or unknown) retained structurally;
+- description and public badge ids derived from the same facts, so no provider-specific display path is needed.
+
+Subtitle chips remain absent from runtime `badgeIds`; subtitle information stays in the description/track data. To avoid repetition, description groups subtitle languages by provenance, e.g. `💬 Int. Sub · French · English`.
+
+Legacy labels such as `VF`, `VFF`, `VFQ`, `VO`, `VOSTFR` and `MULTI` are accepted only as input aliases/roles. Public language identity is a canonical international code (`fr`, `fr-ca`, `ja`, `ko`, `hi`, etc.) or null when a single audio language cannot be proven. Provider-manifest language fallback is allowed only when no stronger stream/player evidence exists.
+
+Stream Score numeric 0-100 remains an internal scoring primitive. Runtime/client projection exposes the score state and grade letter/badge only; it must not expose `x/100` as user-facing metadata.

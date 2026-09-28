@@ -124,7 +124,7 @@ assert row["name"] == row["title"], row
 assert "Interstellar • 2014" in row["description"], row
 assert "⏱ 2h49" in row["description"], row
 assert "🔞 12+" in row["description"], row
-assert row["language"] == "VF", row
+assert row["language"] == "fr", row
 assert row["languageTracks"] == [{"code":"fr","tag":"FR","label":"French","role":"Dub"}], row
 assert "French · Dub" in row["description"], row
 assert "FR Dub" in row["displayBadges"], row
@@ -202,7 +202,7 @@ assert tv_row["name"] == tv_row["title"], tv_row
 assert "Breaking Bad • 2008 • S01E01" in tv_row["description"], tv_row
 assert "⏱ 58min" in tv_row["description"], tv_row
 assert "🔞 16+" in tv_row["description"], tv_row
-assert tv_row["language"] == "VF", tv_row
+assert tv_row["language"] == "fr", tv_row
 assert tv_row["languageTracks"] == [{"code":"fr","tag":"FR","label":"French","role":"Dub"}], tv_row
 assert "French · Dub" in tv_row["description"], tv_row
 assert "FR Dub" in tv_row["displayBadges"], tv_row

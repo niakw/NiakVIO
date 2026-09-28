@@ -93,6 +93,25 @@ export function normalizeStreamCandidate(raw = {}, context = {}) {
     language: extractLanguageLabel(raw),
     codec: textOrNull(raw.codec ?? raw.codecName ?? raw.videoCodec ?? raw.video_codec),
     audio: textOrNull(raw.audio ?? raw.audioCodec ?? raw.audio_codec),
+    resolution: scalarOrNull(raw.resolution ?? raw.displayResolution ?? raw.videoResolution),
+    width: numberOrNull(raw.width ?? raw.videoWidth ?? raw.video_width),
+    height: numberOrNull(raw.height ?? raw.videoHeight ?? raw.video_height),
+    videoBitrate: scalarOrNull(raw.videoBitrate ?? raw.video_bitrate ?? raw.bitrate ?? raw.bitRate ?? raw.bit_rate),
+    audioCodec: textOrNull(raw.audioCodec ?? raw.audio_codec),
+    audioChannels: scalarOrNull(raw.audioChannels ?? raw.audio_channels ?? raw.channels ?? raw.channelCount ?? raw.channel_count ?? raw.channelLayout),
+    audioSampleRate: scalarOrNull(raw.audioSampleRate ?? raw.audio_sample_rate ?? raw.sampleRate ?? raw.sample_rate ?? raw.samplingRate ?? raw.sampling_rate),
+    frameRate: scalarOrNull(raw.frameRate ?? raw.frame_rate ?? raw.fps ?? raw.videoFrameRate ?? raw.video_frame_rate),
+    mediaInfo: clonePortable(raw.mediaInfo ?? raw.media_info),
+    playerInfo: clonePortable(raw.playerInfo ?? raw.player_info),
+    playbackInfo: clonePortable(raw.playbackInfo ?? raw.playback_info),
+    probeInfo: clonePortable(raw.probeInfo ?? raw.probe_info),
+    technicalInfo: clonePortable(raw.technicalInfo ?? raw.technical_info),
+    videoInfo: clonePortable(raw.videoInfo ?? raw.video_info),
+    audioInfo: clonePortable(raw.audioInfo ?? raw.audio_info),
+    videoTracks: clonePortable(raw.videoTracks ?? raw.video_tracks),
+    audioTracks: clonePortable(raw.audioTracks ?? raw.audio_tracks ?? raw.availableAudioTracks ?? raw.available_audio_tracks),
+    subtitleTracks: clonePortable(raw.subtitleTracks ?? raw.subtitle_tracks),
+    hlsMasterSubtitleTracks: clonePortable(raw.hlsMasterSubtitleTracks),
     duration: normalizeDurationMinutes(raw.duration ?? raw.durationMinutes ?? raw.duration_minutes ?? raw.runtime ?? raw.runtimeMinutes ?? raw.runtime_minutes),
     sourceType: textOrNull(raw.sourceType ?? raw.source_type),
     releaseType: textOrNull(raw.releaseType ?? raw.release_type),
@@ -218,6 +237,15 @@ function mergePlainObjects(...sources) {
 function cloneStringOrArray(value) {
   if (Array.isArray(value)) return value.map(textOrNull).filter(Boolean);
   return textOrNull(value);
+}
+
+function clonePortable(value) {
+  if (!Array.isArray(value) && !isPlainObject(value)) return null;
+  try {
+    return structuredClone(value);
+  } catch {
+    return null;
+  }
 }
 
 function normalizeDisplayList(value) {

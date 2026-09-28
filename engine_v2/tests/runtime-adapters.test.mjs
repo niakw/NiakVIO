@@ -71,7 +71,8 @@ for (const device of ["mobile", "desktop", "tv"]) {
   assert.deepEqual(row.badgeIds, ["4k-ultra-hd", "webdl", "hevc"]);
   assert.deepEqual(row.presentationFacts, { quality: "2160p", language: "VF" });
   assert.equal(row.streamScore.grade, "S");
-  assert.equal(row.streamScore.score, 91.2);
+  assert.equal("score" in row.streamScore, false);
+  assert.deepEqual(row.streamScore, { schemaVersion: 1, status: "scored", grade: "S" });
   assert.equal(row.edition, "Director's Cut");
   assert.equal(row.releaseGroup, "NTb");
   assert.equal(row.bitrate, 18300000);

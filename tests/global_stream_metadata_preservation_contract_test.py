@@ -136,7 +136,7 @@ assert row["sourceFormat"] == "HLS", row
 assert row.get("quality") == "2160p", row
 assert row.get("resolution") == "3840x2160", row
 assert row.get("height") == 2160 and row.get("width") == 3840, row
-assert row.get("language") in {"VF", "VFF"}, row
+assert row.get("language") == "fr", row
 assert row.get("codec") == "HEVC", row
 assert "E-AC3" in str(row.get("audio") or ""), row
 assert row.get("sourceType") == "WEB-DL", row
