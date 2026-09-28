@@ -4,128 +4,142 @@
   "groupResults": [
     {
       "contradictionProviders": [],
-      "groupId": "route-to-terminal|html_scraper",
+      "groupId": "route-to-terminal|mixed_embed_resolver",
       "playableProviders": [],
-      "providerCount": 1,
+      "providerCount": 2,
       "providers": [
-        "4khdhub"
+        "anime-ultime",
+        "animesultra"
       ],
       "repairScope": "route-to-terminal",
       "verifiedProviders": []
     },
     {
       "contradictionProviders": [],
-      "groupId": "terminal-extraction|html_scraper",
+      "groupId": "route-to-terminal|iframe_player",
       "playableProviders": [],
       "providerCount": 1,
       "providers": [
-        "mallumv"
+        "vidfast"
       ],
-      "repairScope": "terminal-extraction",
-      "verifiedProviders": []
-    },
-    {
-      "contradictionProviders": [],
-      "groupId": "learning|html_scraper",
-      "playableProviders": [],
-      "providerCount": 1,
-      "providers": [
-        "allwish"
-      ],
-      "repairScope": "learning",
+      "repairScope": "route-to-terminal",
       "verifiedProviders": []
     }
   ],
   "maxWorkers": 20,
   "providers": {
-    "4khdhub": {
+    "anime-ultime": {
       "contradictions": 0,
       "debugStages": {
-        "movie": "provider_network_zero_result",
-        "tv": "provider_network_zero_result"
+        "anime": "provider_network_http_error"
       },
       "network": {
-        "movie": [
+        "anime": [
           {
             "host": "api.themoviedb.org",
             "method": "GET",
-            "path": "/3/movie/760873",
+            "path": "/3/tv/70881",
             "status": 200
           },
           {
-            "host": "4khdhub.one",
-            "method": "GET",
-            "path": "/",
-            "status": 200
-          }
-        ],
-        "tv": [
-          {
-            "host": "api.themoviedb.org",
-            "method": "GET",
-            "path": "/3/tv/210702",
-            "status": 200
-          },
-          {
-            "host": "4khdhub.one",
-            "method": "GET",
-            "path": "/",
-            "status": 200
+            "host": "v5.anime-ultime.net",
+            "method": "POST",
+            "path": "/MenuSearch.html",
+            "status": 403
           }
         ]
       },
       "playableLanes": [],
       "safeDiagnostics": [],
       "sampleTitles": {
-        "movie": [
-          "Sinners",
-          "Interstellar",
-          "Mon ninja et moi 3",
-          "The Colony"
-        ],
-        "tv": [
-          "Breaking Bad",
-          "Revenant"
+        "anime": [
+          "Jujutsu Kaisen",
+          "Attack on Titan",
+          "Naruto",
+          "SAKAMOTO DAYS",
+          "One Piece",
+          "Chainsaw Man",
+          "Frieren: Beyond Journey's End",
+          "Boruto: Naruto Next Generations"
         ]
       },
       "statuses": {
-        "movie": "no_streams",
-        "tv": "no_streams"
+        "anime": "no_streams"
       },
       "verifiedLanes": []
     },
-    "allwish": {
+    "animesultra": {
       "contradictions": 0,
       "debugStages": {
-        "movie": "provider_waf_challenge",
-        "tv": "provider_waf_challenge"
+        "anime": "provider_network_exception"
+      },
+      "network": {
+        "anime": [
+          {
+            "host": "api.themoviedb.org",
+            "method": "GET",
+            "path": "/3/tv/204832",
+            "status": 200
+          },
+          {
+            "host": "v2.animesultra.org",
+            "method": "GET",
+            "path": "/index.php",
+            "status": 0
+          }
+        ]
+      },
+      "playableLanes": [],
+      "safeDiagnostics": [],
+      "sampleTitles": {
+        "anime": [
+          "Jujutsu Kaisen",
+          "Mushoku Tensei: Jobless Reincarnation",
+          "Failure Frame: I Became the Strongest and Annihilated Everything with Low-Level Spells",
+          "Hell Teacher: Jigoku Sensei Nube",
+          "Hell Mode: The Hardcore Gamer Dominates in Another World with Garbage Balancing",
+          "Sword Art Online",
+          "Solo Leveling",
+          "MASHLE: MAGIC AND MUSCLES"
+        ]
+      },
+      "statuses": {
+        "anime": "no_streams"
+      },
+      "verifiedLanes": []
+    },
+    "vidfast": {
+      "contradictions": 0,
+      "debugStages": {
+        "movie": "provider_network_http_error",
+        "tv": "provider_network_http_error"
       },
       "network": {
         "movie": [
           {
-            "host": "api.themoviedb.org",
+            "host": "vidfast.to",
             "method": "GET",
-            "path": "/3/movie/1771",
-            "status": 200
+            "path": "/embed/movie/414906",
+            "status": 403
           },
           {
-            "host": "all-wish.me",
+            "host": "vidfast.vc",
             "method": "GET",
-            "path": "/filter",
+            "path": "/movie/414906/",
             "status": 403
           }
         ],
         "tv": [
           {
-            "host": "api.themoviedb.org",
+            "host": "vidfast.to",
             "method": "GET",
-            "path": "/3/tv/100088",
-            "status": 200
+            "path": "/embed/tv/126308/1/1",
+            "status": 403
           },
           {
-            "host": "all-wish.me",
+            "host": "vidfast.vc",
             "method": "GET",
-            "path": "/filter",
+            "path": "/tv/126308/1/1/",
             "status": 403
           }
         ]
@@ -135,147 +149,66 @@
       "sampleTitles": {
         "movie": [
           "Interstellar",
+          "Soul",
+          "Joker",
+          "Guardians of the Galaxy Vol. 2",
           "Oppenheimer",
-          "Barbie",
-          "Superman",
           "Inception",
-          "Tenet",
-          "Django Unchained",
-          "Captain America: The First Avenger"
+          "Avatar",
+          "The Batman"
         ],
         "tv": [
           "Breaking Bad",
-          "Silo",
-          "Money Heist",
-          "Revenant",
-          "Fallout",
-          "Game of Thrones",
-          "Sherlock",
-          "The Last of Us"
+          "The Queen's Gambit",
+          "The Walking Dead",
+          "Cobra Kai",
+          "The Boys",
+          "Black Mirror",
+          "Stranger Things",
+          "Shōgun"
         ]
       },
       "statuses": {
         "movie": "no_streams",
         "tv": "no_streams"
-      },
-      "verifiedLanes": []
-    },
-    "mallumv": {
-      "contradictions": 0,
-      "debugStages": {
-        "movie": "provider_network_zero_result"
-      },
-      "network": {
-        "movie": [
-          {
-            "host": "api.themoviedb.org",
-            "method": "GET",
-            "path": "/3/movie/157336",
-            "status": 200
-          },
-          {
-            "host": "mallumv.space",
-            "method": "GET",
-            "path": "/search.php",
-            "status": 200
-          },
-          {
-            "host": "mallumv.space",
-            "method": "GET",
-            "path": "/movie/1755/Interstellar_2014_English.xhtml",
-            "status": 200
-          },
-          {
-            "host": "mallumv.space",
-            "method": "GET",
-            "path": "/internal/6705/1755/Interstellar%20(2014)%20BluRay%C3%82%C2%A0-%201080p%20-%20x264%20-%20[Tamil%20+%20Eng]%20-%20(DD+2.0%20-%20224Kbps)%20-%202.5GB%20-%20ESub.xhtml",
-            "status": 200
-          },
-          {
-            "host": "vik1ngfile.site",
-            "method": "GET",
-            "path": "/f/tMAohzba53",
-            "status": 200
-          },
-          {
-            "host": "vik1ngfile.site",
-            "method": "GET",
-            "path": "/assets/custom-F_ZXKHX.js",
-            "status": 200
-          },
-          {
-            "host": "vikingfile.com",
-            "method": "GET",
-            "path": "/fast-download/www.MalluMv.Space%20-Interstellar%20%282014%29%20BluRay%C2%A0-%201080p%20-%20x264%20-%20%5BTamil%20+%20Eng%5D%20-%20%28DD+2.0%20-%20224Kbps%29%20-%202.5GB%20-%20ESub",
-            "status": 200
-          },
-          {
-            "host": "mallumv.space",
-            "method": "GET",
-            "path": "/internal/6706/1755/Interstellar%20(2014)%20BluRay%C3%82%C2%A0-%20720p%20-%20x264%20-%20[Tamil%20+%20Eng]%20-%20(AAC%202.0)%20-%201.2GB%20-%20ESub.xhtml",
-            "status": 200
-          },
-          {
-            "host": "vik1ngfile.site",
-            "method": "GET",
-            "path": "/f/u6lxab0wCH",
-            "status": 200
-          },
-          {
-            "host": "vikingfile.com",
-            "method": "GET",
-            "path": "/fast-download/www.MalluMv.Space%20-Interstellar%20%282014%29%20BluRay%C2%A0-%20720p%20-%20x264%20-%20%5BTamil%20+%20Eng%5D%20-%20%28AAC%202.0%29%20-%201.2GB%20-%20ESub.mkv%20%5B1.",
-            "status": 200
-          }
-        ]
-      },
-      "playableLanes": [],
-      "safeDiagnostics": [],
-      "sampleTitles": {
-        "movie": [
-          "Interstellar"
-        ]
-      },
-      "statuses": {
-        "movie": "no_streams"
       },
       "verifiedLanes": []
     }
   },
   "requestedProviders": [
-    "4khdhub",
-    "allwish",
-    "mallumv"
+    "anime-ultime",
+    "animesultra",
+    "vidfast"
   ],
-  "runId": "36383608344",
+  "runId": "36383955052",
   "schemaVersion": 3,
   "selectedProviderCount": 3,
   "selectedProviders": [
-    "4khdhub",
-    "allwish",
-    "mallumv"
+    "anime-ultime",
+    "animesultra",
+    "vidfast"
   ],
   "shardCount": 1,
   "shardIndex": 0,
   "skippedEnvironmentProviders": [
+    "4khdhub",
     "allanime",
-    "anime-ultime",
+    "allwish",
     "animesalt",
-    "animesultra",
     "animetsu",
     "animevost-fr",
     "desiflix",
     "flemmix",
     "fullanime",
+    "mallumv",
     "moviebox",
     "moviesmod",
     "showbox",
-    "vidfast",
     "vostfree",
     "yflix"
   ],
   "sourceCensusRunId": "36320455627",
-  "triggerSha": "cb5146437fbe801ccdb53a3ff40ab25f04a93cb1",
+  "triggerSha": "efc46c93fdcc2272b2c51af5fc2437caae69002a",
   "verifiedProviderCount": 0,
   "verifiedProviders": []
 }
