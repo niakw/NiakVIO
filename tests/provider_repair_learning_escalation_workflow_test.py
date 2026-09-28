@@ -67,6 +67,8 @@ for required in (
     "niakvio-guidance-state.json",
     "external Brain guidance paging is incomplete",
     "FIELD_EXTERNAL_BRAIN_LLM_GUIDANCE_PIN verified=true",
+    '--brain-llm-sha "$current_brain_sha"',
+    "NiakVIO-Brain-LLM.git refs/heads/main",
     "external Brain guidance source SHA does not match canonical Repair trigger",
     "external Brain guidance Brain SHA does not match canonical Repair trigger",
     "Force guidance paging incomplete",
