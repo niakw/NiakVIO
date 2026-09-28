@@ -813,3 +813,9 @@ GitHub execution must converge the requested provider cohort rather than merely 
 3. Explicit architecture/FORCE guidance receives the structural generation budget supported by current Brain (768 tokens, 180 s model timeout, single worker). Routine Learning retains its smaller budget.
 4. The canonical Recognition FORCE lane remains bounded and may stop with `unvisitedProviders`. Fleet convergence is currently provided by an explicit Fast Repair cohort covering the complete current repairQueue; stale Fast runs requeue on current `main`, and unresolved providers enter targeted Learning/architecture FORCE. Do not claim Recognition auto-resume until a YAML-safe, tested implementation exists.
 5. Delegation never grants publication authority. Each accepted mutation still requires current-byte materialization, Deep/Retest, playable media, identity safety and relevant non-regression before persistence.
+
+## Generated provider Bloc receiver contract
+
+NiakVIO accepts Brain-generated `provider_bloc` replacements up to 1800 characters, matching the Brain's bounded complete-function invention surface. This does not grant publication authority.
+
+Every generated Bloc still requires: exact provider-owned find bytes, unique current-byte occurrence, capability/placeholder checks, immutable generated patch materialization, baseline/candidate provider health comparison, current-byte Retest, playable stream improvement and identity safety before persistence.
