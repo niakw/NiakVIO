@@ -77,3 +77,13 @@
 - The current same-census targeted snapshot was re-sanitized in place and the refined repair groups were regenerated from that sanitized evidence.
 - Verification on the regenerated snapshot reports zero `auth_token` occurrences and zero encoded-JSON `%7B%22` path occurrences.
 - This is an evidence-hygiene change only: it does not alter provider status, playback proof, repair eligibility or publication authority.
+
+## 2026-09-28 — Final local Brain repair stop state
+
+- Local Brain/Qwen repair execution was intentionally stopped to avoid further host resource/network impact. No local Brain planner or llama-server process remains running.
+- 4KHDHub: final local Brain result abstained with **0 mutations** after provider-patch and provider-Bloc validation attempts. Not repaired.
+- YFlix: final local Brain result abstained with **0 mutations** after provider-patch and provider-Bloc validation attempts. Not repaired.
+- MovieBox: provider patch was rejected as a no-op; provider-Bloc correction timed out. No publication candidate exists. Not repaired.
+- AllAnime final rerun was interrupted before verdict. Anime-Ultime, AnimeSultra and VidFast were not executed in that final sequence.
+- MalluMV remains excluded from provider-code mutation authority by current HTTP-200 Turnstile/WAF evidence.
+- No census/provider status is promoted by these local Brain attempts; current-byte NiakVIO playback/identity proof remains the only publication authority.
