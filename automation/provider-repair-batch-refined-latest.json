@@ -3,9 +3,9 @@
   "sourceRunId": "36320455627",
   "sourceTriggerSha": "ee42e999e00e1c6abd659a944b112ed3a4eaf62e",
   "sourcePlanRunId": "36320455627",
-  "sourceVerdictRunId": "36412614349",
-  "providerCount": 14,
-  "groupCount": 14,
+  "sourceVerdictRunId": "36415009826",
+  "providerCount": 13,
+  "groupCount": 13,
   "groups": [
     {
       "groupId": "learning|html_scraper#r1",
@@ -114,13 +114,13 @@
       "providers": [
         "animesalt"
       ],
-      "networkSignature": "provider_waf_challenge||anime:GET:animesalt.cx:403:/;anime:GET:animesalt.cx:403:/series/maid-sama;anime:GET:api.themoviedb.org:200:/{id}/tv/{id}",
+      "networkSignature": "provider_waf_challenge||anime:GET:animesalt.cx:403:/;anime:GET:animesalt.cx:403:/series/konosuba-sois-beni-monde-merveilleux;anime:GET:api.themoviedb.org:200:/{id}/tv/{id}",
       "debugStages": [
         "provider_waf_challenge"
       ],
       "networkShape": [
         "anime:GET:animesalt.cx:403:/",
-        "anime:GET:animesalt.cx:403:/series/maid-sama",
+        "anime:GET:animesalt.cx:403:/series/konosuba-sois-beni-monde-merveilleux",
         "anime:GET:api.themoviedb.org:200:/{id}/tv/{id}"
       ],
       "splitReason": "observed-signature-divergence",
@@ -292,37 +292,6 @@
     },
     {
       "groupId": "route-to-terminal|mixed_embed_resolver#r4",
-      "parentGroupId": "route-to-terminal|mixed_embed_resolver",
-      "repairScope": "route-to-terminal",
-      "capabilityStrategy": "mixed_embed_resolver",
-      "transportSignature": "not-applicable",
-      "evidenceDepths": [
-        "lookup",
-        "none"
-      ],
-      "dominantIssues": [
-        "network_exception",
-        "network_http_error",
-        "waf_challenge"
-      ],
-      "providerCount": 1,
-      "providers": [
-        "vostfree"
-      ],
-      "networkSignature": "provider_waf_challenge||anime:GET:api.themoviedb.org:200:/{id}/tv/{id};anime:GET:ipv4.vostfree.ws:403:/;anime:POST:ipv4.vostfree.ws:403:/index.php",
-      "debugStages": [
-        "provider_waf_challenge"
-      ],
-      "networkShape": [
-        "anime:GET:api.themoviedb.org:200:/{id}/tv/{id}",
-        "anime:GET:ipv4.vostfree.ws:403:/",
-        "anime:POST:ipv4.vostfree.ws:403:/index.php"
-      ],
-      "splitReason": "observed-signature-divergence",
-      "executionPolicy": "batch-first"
-    },
-    {
-      "groupId": "route-to-terminal|mixed_embed_resolver#r5",
       "parentGroupId": "route-to-terminal|mixed_embed_resolver",
       "repairScope": "route-to-terminal",
       "capabilityStrategy": "mixed_embed_resolver",
