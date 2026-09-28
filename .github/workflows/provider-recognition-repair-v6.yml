@@ -1585,20 +1585,7 @@ jobs:
             )
             if [ "$resume" = "1" ] && [ "$remaining" -gt 0 ] && [ "$unvisited" -gt 0 ]; then
               if [ "$force_requested" = "1" ]; then
-                unvisited_csv="$(python -c 'import json,sys; d=json.load(open(sys.argv[1],encoding="utf-8")); values=[]; seen=set(); [values.append(v) for raw in (d.get("unvisitedProviders") or []) if (v:=str(raw or "").strip().lower().replace("_","-")) and v not in seen and not seen.add(v)]; print(",".join(values))' "$tmp/provider-brain-repair-latest.json")"
-                if [ -n "$unvisited_csv" ]; then
-                  gh workflow run provider-fast-repair.yml \
-                    --repo "$GITHUB_REPOSITORY" \
-                    --ref main \
-                    -f target_providers="$unvisited_csv" \
-                    -f waves=5 \
-                    -f time_budget_seconds=2400 \
-                    -f max_rounds_per_batch=3 \
-                    -f publish_validated=true
-                  echo "FIELD_PROVIDER_BRAIN_FORCE_UNVISITED remaining=$remaining processed=$processed unvisited=$unvisited auto_resume=true target=provider-fast-repair providers=$unvisited_csv"
-                else
-                  echo "FIELD_PROVIDER_BRAIN_FORCE_UNVISITED remaining=$remaining processed=$processed unvisited=$unvisited auto_resume=false reason=empty-unvisited-list"
-                fi
+                echo "FIELD_PROVIDER_BRAIN_FORCE_UNVISITED remaining=$remaining processed=$processed unvisited=$unvisited auto_resume=false reason=bounded-force-run"
               else
                 echo "FIELD_PROVIDER_BRAIN_RESUME remaining=$remaining processed=$processed unvisited=$unvisited target=provider-recognition-repair-v6"
                 gh workflow run provider-recognition-repair-v6.yml \
