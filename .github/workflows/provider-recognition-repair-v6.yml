@@ -604,7 +604,8 @@ jobs:
           print("FIELD_EXTERNAL_BRAIN_LLM_GUIDANCE_PIN verified=true providers="+str(len(requested)))
           PY
               fi
-              if python scripts/import_external_brain_llm_guidance.py --input "$RUNNER_TEMP/external-brain-llm-guidance.json" --output "$RUNNER_TEMP/external-brain-llm-guidance-repair.json" --current-sha "$GITHUB_SHA" --guidance-commit "$guidance_commit" --negative-memory automation/brain-repair-memory.json --negative-memory "$RUNNER_TEMP/brain-learning-latest.json"; then
+              current_brain_sha="$(git ls-remote https://github.com/niakw/NiakVIO-Brain-LLM.git refs/heads/main | awk 'NR==1{print $1}')"
+              if python scripts/import_external_brain_llm_guidance.py --input "$RUNNER_TEMP/external-brain-llm-guidance.json" --output "$RUNNER_TEMP/external-brain-llm-guidance-repair.json" --current-sha "$GITHUB_SHA" --brain-llm-sha "$current_brain_sha" --guidance-commit "$guidance_commit" --negative-memory automation/brain-repair-memory.json --negative-memory "$RUNNER_TEMP/brain-learning-latest.json"; then
                 external_count="$(python -c 'import json; d=json.load(open("'"$RUNNER_TEMP"'/external-brain-llm-guidance-repair.json")); print(int(d.get("providerCount") or 0))')"
                 if [ "$external_count" -gt 0 ]; then
                   echo "NIAKVIO_BRAIN_LLM_GUIDANCE=$RUNNER_TEMP/external-brain-llm-guidance-repair.json" >> "$GITHUB_ENV"
