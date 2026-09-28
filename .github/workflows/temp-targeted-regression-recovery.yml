@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/temp-targeted-regression-recovery.yml'
+      - '.github/triggers/provider-targeted-recovery.json'
       - 'scripts/provider_patches/**'
       - 'tests/provider_*runtime*_test.py'
       - 'tests/provider_*transport*_test.py'
@@ -87,8 +88,14 @@ jobs:
           )
           targets=list(scope.get("providers") or []) if scope.get("mode")=="providers" else []
           changed=set(scope.get("changedPaths") or [])
-          trigger_path=".github/triggers/provider-recognition-repair-v6.json"
-          if not targets and scope.get("mode")=="none" and trigger_path in changed:
+          probe_trigger_path=".github/triggers/provider-targeted-recovery.json"
+          repair_trigger_path=".github/triggers/provider-recognition-repair-v6.json"
+          trigger_path=""
+          if probe_trigger_path in changed:
+              trigger_path=probe_trigger_path
+          elif not targets and scope.get("mode")=="none" and repair_trigger_path in changed:
+              trigger_path=repair_trigger_path
+          if trigger_path:
               try:
                   trigger=json.load(open(trigger_path,encoding="utf-8"))
               except Exception:
