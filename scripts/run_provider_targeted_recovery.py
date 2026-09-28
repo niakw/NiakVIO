@@ -31,6 +31,56 @@ def load(path:Path, default:Any)->Any:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
+def merge_previous_provider_snapshot(
+    previous:dict[str,Any],
+    payload:dict[str,Any],
+    *,
+    selected_targets:set[str],
+    source_census_run_id:object,
+)->dict[str,Any]:
+    """Retain unselected provider evidence only within the same census authority.
+
+    Explicit targeted runs update a subset of providers. Replacing the complete
+    latest snapshot with that subset silently turns every other provider into
+    "not-probed" on the next refinement pass. Retain those rows only when they
+    were produced for the same census run; a new census intentionally starts a
+    fresh evidence epoch.
+    """
+    if not isinstance(previous,dict):
+        return payload
+    if str(previous.get("sourceCensusRunId") or "") != str(source_census_run_id or ""):
+        return payload
+    previous_rows=previous.get("providers")
+    current_rows=payload.get("providers")
+    if not isinstance(previous_rows,dict) or not isinstance(current_rows,dict):
+        return payload
+
+    retained={
+        str(provider).casefold():row
+        for provider,row in previous_rows.items()
+        if str(provider).casefold() not in selected_targets and isinstance(row,dict)
+    }
+    if not retained:
+        return payload
+
+    merged=dict(retained)
+    merged.update(current_rows)
+    payload["providers"]={key:merged[key] for key in sorted(merged)}
+    payload["retainedProviders"]=sorted(retained)
+    payload["retainedProviderCount"]=len(retained)
+    payload["providerEvidenceCount"]=len(merged)
+    payload["verifiedProviders"]=[
+        key for key,row in sorted(merged.items())
+        if row.get("verifiedLanes")
+    ]
+    payload["verifiedProviderCount"]=len(payload["verifiedProviders"])
+    payload["contradictionProviders"]=[
+        key for key,row in sorted(merged.items())
+        if int(row.get("contradictions") or 0)>0
+    ]
+    return payload
+
+
 def shard_for(provider:str, count:int)->int:
     digest=hashlib.sha256(provider.encode("utf-8")).digest()
     return int.from_bytes(digest[:8],"big")%count
@@ -79,6 +129,7 @@ def main()->int:
 
     status=load(args.status,{})
     plan=load(args.plan,{})
+    previous_output=load(args.output,{})
     unresolved={
         str(row.get("provider") or "").strip().casefold()
         for row in status.get("providers") or []
@@ -194,10 +245,20 @@ def main()->int:
         "skippedEnvironmentProviders":skipped_environment,
         "groupResults":group_results,
         "providers":summary,
+        "providerEvidenceCount":len(summary),
+        "retainedProviderCount":0,
+        "retainedProviders":[],
         "verifiedProviderCount":sum(1 for v in summary.values() if v["verifiedLanes"]),
         "verifiedProviders":[k for k,v in sorted(summary.items()) if v["verifiedLanes"]],
         "contradictionProviders":[k for k,v in sorted(summary.items()) if int(v["contradictions"] or 0)>0],
     }
+    if requested:
+        payload=merge_previous_provider_snapshot(
+            previous_output,
+            payload,
+            selected_targets=selected_targets,
+            source_census_run_id=status.get("runId"),
+        )
     args.output.parent.mkdir(parents=True,exist_ok=True)
     args.output.write_text(json.dumps(payload,ensure_ascii=False,indent=2,sort_keys=True)+"\n",encoding="utf-8")
     print(

@@ -51,3 +51,12 @@
 - Python `audit_provider_quick_yield.classify_debug_stage` was aligned with the same causal precedence so Node/Python diagnostics cannot diverge.
 - Targeted local contracts are green: Node syntax, provider census identity diagnostics, runtime-dispatch diagnostics, WAF census transport merge, WAF browser-session contract, and `git diff --check`.
 - Live Viking asset check on 2026-09-28: HTTP 200 `application/javascript`, explicit Turnstile marker detected. Full MalluMV targeted recovery on this Mac is still unvalidated because the local environment has no `TMDB_API_KEY`/`TMDB_ACCESS_TOKEN`; the authorized CI secret path must provide the end-to-end proof before census promotion/reclassification is considered validated.
+
+## 2026-09-28 — Targeted recovery evidence continuity restored
+
+- Confirmed a state-loss bug in targeted Repair persistence: run 36461136076 probed only MalluMV and replaced the same-census targeted snapshot that previously contained 13 providers, causing the other 12 providers to become synthetic `not-probed` inputs during batch refinement.
+- The affected snapshot and its predecessor share `sourceCensusRunId=36320455627`; therefore the 12 untouched provider rows were restored from the immediately preceding same-census snapshot, while MalluMV keeps the newer `provider_waf_challenge` evidence.
+- `run_provider_targeted_recovery.py` now merges explicit targeted runs into the existing snapshot only when `sourceCensusRunId` matches. A new census deliberately starts a fresh evidence epoch, and sharded runs do not inherit repository snapshots into individual shards.
+- Restored current snapshot contains 13 provider evidence rows: 1 newly observed MalluMV row plus 12 retained same-census rows. Refined repair groups return to 13 evidence-specific groups instead of collapsing unselected providers to `not-probed`.
+- Current MalluMV evidence is an HTTP-200 interactive Turnstile challenge; this is transport/WAF evidence, not provider-code mutation authority. Playback remains unverified.
+- Targeted continuity/refinement/history/workflow tests pass locally, and the restored snapshot was regenerated from committed same-census evidence rather than invented data.

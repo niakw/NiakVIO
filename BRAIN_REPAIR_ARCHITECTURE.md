@@ -266,6 +266,23 @@ committed memory to already be a superset of every currently recoverable strict
 historical positive. A silent `entries: []` regression is therefore a CI
 failure.
 
+### Targeted recovery evidence is an epoch snapshot, not a one-run scratch file
+
+`automation/provider-targeted-regression-recovery-latest.json` is a cumulative
+provider-evidence snapshot for one `sourceCensusRunId`. An explicit targeted
+run updates only the providers it actually probes and retains untouched provider
+rows from the same census epoch. The retained rows are evidence, not fresh proof;
+their original observations are preserved byte-for-byte.
+
+Evidence is never carried across a census boundary. When `sourceCensusRunId`
+changes, targeted recovery starts a new snapshot instead of merging the previous
+epoch. Sharded full-cohort runs remain independently merged from their shard
+artifacts and do not inherit the repository snapshot into each shard.
+
+This invariant prevents a one-provider diagnostic run from turning the other
+unresolved providers into synthetic `not-probed` rows and forcing Brain to
+rediscover evidence that already exists.
+
 ## 6. Brain LLM boundary
 
 The LLM is useful for inventing a bounded method or mutation that deterministic Repair does not already know. It does not decide whether the repair is accepted.

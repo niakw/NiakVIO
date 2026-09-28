@@ -18,6 +18,39 @@ assert 'ap.add_argument("--provider",action="append",default=[])' in source
 assert "targets &= requested" in source
 assert '"requestedProviders":sorted(requested)' in source
 
+previous={
+    "sourceCensusRunId":"55",
+    "providers":{
+        "a":{"verifiedLanes":["movie"],"contradictions":0},
+        "b":{"verifiedLanes":[],"contradictions":1},
+    },
+}
+current={
+    "sourceCensusRunId":"55",
+    "providers":{"b":{"verifiedLanes":["tv"],"contradictions":0}},
+    "providerEvidenceCount":1,
+    "retainedProviderCount":0,
+    "retainedProviders":[],
+    "verifiedProviders":["b"],
+    "verifiedProviderCount":1,
+    "contradictionProviders":[],
+}
+merged=mod.merge_previous_provider_snapshot(
+    previous,current,selected_targets={"b"},source_census_run_id="55"
+)
+assert sorted(merged["providers"])==["a","b"],merged
+assert merged["providers"]["b"]["verifiedLanes"]==["tv"],merged
+assert merged["retainedProviders"]==["a"],merged
+assert merged["providerEvidenceCount"]==2,merged
+assert merged["verifiedProviders"]==["a","b"],merged
+assert merged["contradictionProviders"]==[],merged
+
+fresh=mod.merge_previous_provider_snapshot(
+    previous,dict(current,providers={"b":current["providers"]["b"]}),
+    selected_targets={"b"},source_census_run_id="56"
+)
+assert sorted(fresh["providers"])==["b"],fresh
+
 providers=[f"provider-{i}" for i in range(200)]
 for count in (2,4,8,16):
     buckets=[0]*count
@@ -51,7 +84,7 @@ with tempfile.TemporaryDirectory() as td:
         shards.append(p)
     out=td/"merged.json"
     subprocess.run([
-        "python",str(ROOT/"scripts/merge_provider_targeted_recovery_shards.py"),
+        sys.executable,str(ROOT/"scripts/merge_provider_targeted_recovery_shards.py"),
         *(str(p) for p in shards),"--output",str(out),"--run-id","99","--sha","deadbeef"
     ],check=True)
     merged=json.loads(out.read_text(encoding="utf-8"))

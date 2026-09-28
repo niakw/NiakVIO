@@ -2,6 +2,7 @@
 from pathlib import Path
 import json
 import subprocess
+import sys
 import tempfile
 
 ROOT=Path(__file__).resolve().parents[1]
@@ -26,7 +27,7 @@ with tempfile.TemporaryDirectory() as td:
     pp=td/"plan.json"; vp=td/"verdict.json"; out=td/"out.json"
     pp.write_text(json.dumps(plan),encoding="utf-8")
     vp.write_text(json.dumps(verdict),encoding="utf-8")
-    subprocess.run(["python",str(script),"--plan",str(pp),"--verdict",str(vp),"--output",str(out)],check=True)
+    subprocess.run([sys.executable,str(script),"--plan",str(pp),"--verdict",str(vp),"--output",str(out)],check=True)
     value=json.loads(out.read_text(encoding="utf-8"))
 assert value["sourceRunId"]=="10"
 assert value["groupCount"]==2
