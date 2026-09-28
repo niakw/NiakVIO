@@ -368,7 +368,7 @@ def _validate_generated_bloc_mutation(
     replace = str(mutation.get("replace") or "")
     if not BLOC_FAMILY.fullmatch(family):
         raise ValueError(f"{provider}: invalid provider_bloc family")
-    if not find or len(find) > 320 or not replace or len(replace) > 1800:
+    if not find or len(find) > 1800 or not replace or len(replace) > 1800:
         raise ValueError(f"{provider}: provider_bloc find/replace is missing or oversized")
     if find == replace:
         raise ValueError(f"{provider}: provider_bloc mutation is a no-op")
