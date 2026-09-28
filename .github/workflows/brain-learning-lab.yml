@@ -703,6 +703,7 @@ jobs:
                 --input "$raw" \
                 --output "$cached" \
                 --current-sha "$GITHUB_SHA" \
+                --brain-llm-sha "${{ steps.brain_llm_pin.outputs.sha }}" \
                 --guidance-commit "$guidance_commit" \
                 --negative-memory brain-learning-input/previous.json \
                 --negative-memory automation/brain-repair-memory.json \
