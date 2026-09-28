@@ -113,8 +113,8 @@ finally:
 # A real published provider proves the ordering contract end-to-end: quality and
 # language are extracted from the original upstream stream name first, then the
 # local row name/title are replaced by committed provider branding. V17 keeps
-# quality in the title and canonicalizes generic French/VFF evidence to VF.
-# Use a branded provider without a provider-specific runtime Lego so this remains
+# quality in the title and canonicalizes generic French/VFF evidence to canonical fr.
+# Use a branded provider without a provider-specific runtime Bloc so this remains
 # a deterministic test of the shared presentation -> branding -> sanitizer chain.
 raw = b'''/* NIAKVIO_PROVIDER_BASE_OWNED_V3 */\n/* BEGIN NIAKVIO_PROVIDER */\nglobalThis.getStreams=async function(){return [{url:"https://example.invalid/video.m3u8",name:"1080p VFF",title:"raw upstream title"}]};\n/* END NIAKVIO_PROVIDER */\n'''
 branded, records = apply_overrides("movieblast", raw, phase="discovery")
@@ -131,7 +131,7 @@ with tempfile.NamedTemporaryFile("wb", suffix=".js", delete=False) as handle:
         b'globalThis.fetch=async function(url){return{ok:true,status:200,url:String(url),headers:{get:function(name){return String(name).toLowerCase()==="content-type"?"application/vnd.apple.mpegurl":null}},text:async function(){return __nuvioTestPlaylist}}};'
         b'Promise.resolve(globalThis.getStreams("603","movie")).then(function(rows){var r=rows[0];'
         b'var expected="\xf0\x9f\x92\xa5 MovieBlast - 1080p";'
-        b'if(!r||r.name!==expected||r.title!==expected||r.sourceName!=="1080p VFF"||r.sourceTitle!=="raw upstream title"||r.quality!=="1080p"||r.language!=="VF"||r.format!=="HLS")'
+        b'if(!r||r.name!==expected||r.title!==expected||r.sourceName!=="1080p VFF"||r.sourceTitle!=="raw upstream title"||r.quality!=="1080p"||r.language!=="fr"||r.format!=="HLS")'
         b'{console.error(JSON.stringify(r));process.exit(4)}console.log(JSON.stringify(r))'
         b'}).catch(function(e){console.error(e);process.exit(5)});\n'
     )

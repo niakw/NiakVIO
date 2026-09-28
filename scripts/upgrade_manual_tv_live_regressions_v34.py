@@ -96,7 +96,7 @@ def _validate_presentation_floor(text: str) -> None:
         raise AssertionError(f"presentation revision below V22 floor: v{revision}")
     for needle in (
         'best=Math.max(best,Number(m[1]||0))',
-        '["hindi","Hindi"]',
+        '["hindi","hi"]',
         "function quality(r)",
         "function detailedLanguage(r,fallback)",
     ):
