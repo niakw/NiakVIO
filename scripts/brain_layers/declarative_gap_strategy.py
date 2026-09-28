@@ -208,10 +208,10 @@ def _status_failure(row: dict[str, Any]) -> str:
         return "candidate_replay_gap"
     if status == "CHAIN REACHED" or "chain_reached" in depth:
         return "chain_terminal_gap"
-    if "waf" in issue or "challenge" in issue or "blocked" in issue:
-        return "provider_transport_gap"
     if status == "ROUTE PROVEN":
         return "route_proven_gap"
+    if "waf" in issue or "challenge" in issue or "blocked" in issue:
+        return "provider_transport_gap"
     if "lookup_only" in depth:
         return "search_gap"
     return ""
