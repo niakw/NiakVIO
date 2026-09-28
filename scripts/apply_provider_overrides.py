@@ -36,6 +36,7 @@ GLOBAL_STREAM_FACTS = "scripts/provider_patches/global_stream_facts_v1.py"
 GLOBAL_STREAM_IDENTITY = "scripts/provider_patches/global_stream_identity_v1.py"
 GLOBAL_STREAM_PRESENTATION = "scripts/provider_patches/global_stream_presentation_v1.py"
 GLOBAL_STREAM_SCORE = "scripts/provider_patches/global_stream_score_v1.py"
+GLOBAL_TELEMETRY = "scripts/provider_patches/global_telemetry_v1.py"
 GLOBAL_RUNTIME_MEDIA_SAFETY = "scripts/provider_patches/runtime_capability_media_safety_v4.py"
 GLOBAL_RUNTIME_COMPAT = "scripts/provider_patches/global_runtime_compat_v1.py"
 GLOBAL_PROVIDER_RUNTIME_DISPATCH = "scripts/provider_patches/global_provider_runtime_dispatch_v1.py"
@@ -73,6 +74,7 @@ CANONICAL_CORE_MANAGED_ORDER = (
     "CORE.RUNTIME_MEDIA_SAFETY.V4",
     "CORE.PROVIDER_BRANDING.V1",
     "CORE.STREAM_SCORE.V1",
+    "CORE.TELEMETRY.V1",
 )
 PROVIDER_BEGIN_MARKER = "/* BEGIN NIAKVIO_PROVIDER */"
 PROVIDER_END_MARKER = "/* END NIAKVIO_PROVIDER */"
@@ -90,6 +92,7 @@ GENERATED_CORE_TAIL_MARKERS = (
     "NUVIO_STREAM_OUTPUT_STRICT_PROBE_V8",
     "NUVIO_STREAM_OUTPUT_NETWORK_EVIDENCE_V10",
     "NUVIO_GLOBAL_STREAM_SCORE_V1",
+    "NUVIO_GLOBAL_TELEMETRY_V1",
     "NUVIO_GLOBAL_MEDIA_TYPE_RESOLUTION_V1",
     "NUVIO_GLOBAL_PROVIDER_EXECUTION_BUDGET_V1",
     "NUVIO_NATIVE_HLS_INTEGRITY_BUDGET_V1",
@@ -1852,6 +1855,19 @@ def apply_overrides(
                 "path": GLOBAL_STREAM_SCORE,
                 "phase": phase,
                 "scope": "global_stream_score",
+            })
+
+        # Privacy-minimal telemetry is the final outermost observer. It must
+        # never mutate stream rows or block getStreams; without a configured
+        # host/VPS endpoint and stable install identity it is a silent no-op.
+        before = text
+        text = _apply_patch_script(text, provider_id, GLOBAL_TELEMETRY, {}, None)
+        if text != before:
+            applied.append({
+                "type": "patch_script",
+                "path": GLOBAL_TELEMETRY,
+                "phase": phase,
+                "scope": "global_telemetry",
             })
 
         # END PROVIDER is the final byte boundary.
