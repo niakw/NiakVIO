@@ -28,6 +28,28 @@ def load(path: Path, default: Any) -> Any:
         return default
 
 
+def safe_mutation_summary(value: Any) -> list[dict[str, str]]:
+    if not isinstance(value, list):
+        return []
+    out: list[dict[str, str]] = []
+    for raw in value[:8]:
+        if not isinstance(raw, dict):
+            continue
+        row = {
+            "scope": str(raw.get("scope") or "")[:40],
+            "operation": str(raw.get("operation") or "")[:40],
+        }
+        family = str(raw.get("family") or "")[:80]
+        if family:
+            row["family"] = family
+        path = str(raw.get("path") or "")[:160]
+        if path:
+            row["path"] = path
+        if row["scope"]:
+            out.append(row)
+    return out
+
+
 def merge(memory: dict[str, Any], evaluation: dict[str, Any]) -> dict[str, Any]:
     rows = [
         dict(row)
@@ -79,6 +101,9 @@ def merge(memory: dict[str, Any], evaluation: dict[str, Any]) -> dict[str, Any]:
             row["consecutiveFailures"] = int(row.get("consecutiveFailures") or 0) + 1
             row["lastOutcome"] = "rejected"
         row["lastReason"] = str(result.get("reason") or "")[:240]
+        summary = safe_mutation_summary(result.get("mutationSummary"))
+        if summary:
+            row["lastMutationSummary"] = summary
         row["lastCurrentSha"] = current_sha
         row["sourceNiakvioSha"] = source_sha
         row["sourceBrainLlmSha"] = brain_sha
