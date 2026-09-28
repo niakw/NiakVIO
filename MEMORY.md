@@ -5973,3 +5973,13 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Public stream language is now canonical international language code (for example `fr`, `fr-ca`, `ko`, `hi`) or null when no single audio language is proven. Legacy VF/VO/VOSTFR/MULTI remain accepted input hints only; they are not public language identities. A 47-entry v8 language-badge coverage test prevents catalogue drift.
 - Stream Score still computes its numeric 0-100 value internally, but runtime adapters project only status + grade letter to clients; visible UI is badge/letter only, never `x/100`.
 - Local targeted regression chain passed: Engine presentation/runtime/Purstream/metadata truth, injected presentation, metadata fallback, 44-provider metadata preservation, Core ownership, HLS badge integration and Stream Score contract. Full Engine sweep also passed all tests reached until the pre-existing unrelated `provider-catalog.test.mjs` failure on disabled Animetsu lifecycle fields; the same failure reproduces on clean `origin/main` SHA `e74fdc16fc4a2f9c36aebb357944e7c310cf407a`.
+
+
+## 2026-09-28 — Full repair-queue targeted evidence refresh
+
+- Triggered targeted recovery for the exact current 14-provider repair queue: `4khdhub, allanime, allwish, anime-ultime, animesalt, animesultra, animevost-fr, flemmix, mallumv, moviebox, moviesmod, vidfast, vostfree, yflix`.
+- Targeted recovery run `36412614349` completed successfully and persisted `automation/provider-targeted-regression-recovery-latest.json` plus refined repair grouping to main at commit `4b5e5ff99e69ec1a29e06820bf070460a5234349`.
+- Result was 0 verified providers, 0 contradictions, but it produced fresh provider-local network/debug evidence for all 14. This is evidence, not a repair result.
+- Evidence separates code-path gaps from environment/WAF symptoms. Examples: MalluMV and AllAnime traverse substantial provider-owned HTTP 200 chains before returning no streams; several others hit 403/429 or network exceptions on provider/player origins.
+- Brain Force must consume this fresh targeted evidence before provider mutation. A checkout with census-only evidence is intentionally insufficient for these failure classes.
+- Fleet-scale routing remains split by catalogue size: current <=120-provider catalogue uses the single targeted-recovery job with up to 20 workers; >120 providers use the existing 8-shard targeted recovery workflow.
