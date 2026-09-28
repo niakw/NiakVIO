@@ -803,3 +803,13 @@ Targeted recovery persists only the minimum route shape required by Brain Repair
 Numeric segments are represented as `{id}`. Long/high-entropy, encoded-object or token-like segments are represented as `{opaque}`. Query strings and response bodies are never part of this durable evidence surface.
 
 This preserves the causal route family needed for clustering and repair planning without turning `automation/` into a store for transient credentials or opaque provider payloads. The redaction layer is evidence-only and cannot promote or repair a provider.
+
+## GitHub FORCE convergence contract
+
+GitHub execution must converge the requested provider cohort rather than merely execute one bounded slice.
+
+1. `NiakVIO-Brain-LLM/main` is the code authority. The `niakvio-guidance` branch is a cache/evidence surface, never a prerequisite for checking out current Brain code.
+2. Cached guidance is usable only when its embedded `brainLlmSha` equals the exact current Brain pin and its NiakVIO source passes the existing drift classifier.
+3. Explicit architecture/FORCE guidance receives the structural generation budget supported by current Brain (768 tokens, 180 s model timeout, single worker). Routine Learning retains its smaller budget.
+4. If canonical FORCE reaches its provider budget with `unvisitedProviders`, those exact ids are delegated once to the GitHub Fast Repair lane. Fast Repair owns further provider-local waves/rounds; unresolved debt may then enter targeted Learning/architecture FORCE.
+5. Delegation never grants publication authority. Each accepted mutation still requires current-byte materialization, Deep/Retest, playable media, identity safety and relevant non-regression before persistence.
