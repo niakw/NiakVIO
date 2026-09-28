@@ -4,11 +4,11 @@
   "groupResults": [
     {
       "contradictionProviders": [],
-      "groupId": "route-to-terminal|mixed_embed_resolver",
+      "groupId": "route-to-terminal|html_scraper",
       "playableProviders": [],
       "providerCount": 1,
       "providers": [
-        "yflix"
+        "4khdhub"
       ],
       "repairScope": "route-to-terminal",
       "verifiedProviders": []
@@ -19,7 +19,7 @@
       "playableProviders": [],
       "providerCount": 1,
       "providers": [
-        "moviebox"
+        "mallumv"
       ],
       "repairScope": "terminal-extraction",
       "verifiedProviders": []
@@ -38,6 +38,62 @@
   ],
   "maxWorkers": 20,
   "providers": {
+    "4khdhub": {
+      "contradictions": 0,
+      "debugStages": {
+        "movie": "provider_network_zero_result",
+        "tv": "provider_network_zero_result"
+      },
+      "network": {
+        "movie": [
+          {
+            "host": "api.themoviedb.org",
+            "method": "GET",
+            "path": "/3/movie/760873",
+            "status": 200
+          },
+          {
+            "host": "4khdhub.one",
+            "method": "GET",
+            "path": "/",
+            "status": 200
+          }
+        ],
+        "tv": [
+          {
+            "host": "api.themoviedb.org",
+            "method": "GET",
+            "path": "/3/tv/210702",
+            "status": 200
+          },
+          {
+            "host": "4khdhub.one",
+            "method": "GET",
+            "path": "/",
+            "status": 200
+          }
+        ]
+      },
+      "playableLanes": [],
+      "safeDiagnostics": [],
+      "sampleTitles": {
+        "movie": [
+          "Sinners",
+          "Interstellar",
+          "Mon ninja et moi 3",
+          "The Colony"
+        ],
+        "tv": [
+          "Breaking Bad",
+          "Revenant"
+        ]
+      },
+      "statuses": {
+        "movie": "no_streams",
+        "tv": "no_streams"
+      },
+      "verifiedLanes": []
+    },
     "allanime": {
       "contradictions": 0,
       "debugStages": {
@@ -140,213 +196,72 @@
       },
       "verifiedLanes": []
     },
-    "moviebox": {
+    "mallumv": {
       "contradictions": 0,
       "debugStages": {
-        "movie": "provider_network_http_error",
-        "tv": "provider_network_http_error"
+        "movie": "provider_network_zero_result"
       },
       "network": {
         "movie": [
           {
             "host": "api.themoviedb.org",
             "method": "GET",
-            "path": "/3/movie/24428",
+            "path": "/3/movie/157336",
             "status": 200
           },
           {
-            "host": "pengu.uk",
+            "host": "mallumv.space",
             "method": "GET",
-            "path": "/%7B%22source_moviebox%22%3A%22on%22%2C%22res_1080%22%3A%22on%22%2C%22disable_direct%22%3A%22on%22%2C%22auth_token%22%3A%22XwZg2rLkLlbjXBeDVCyxgfHXjxN1ijLMkUuToW8KaKc%22%7D/stream/",
-            "status": 429
-          },
-          {
-            "host": "moviebox-cfa7.onrender.com",
-            "method": "GET",
-            "path": "/eyJyZXNvbHV0aW9uIjpbIjEwODBwIl0sImxhbmd1YWdlIjpbImVuIiwiaGkiLCJvcmlnIl0sInByb3h5X3VybCI6IiIsInByb3ZpZGVycyI6WyJtb2JpbGUiLCJ3ZWIiLCJsZWdhY3kiXSwibmFtZV90ZW1wbGF0ZSI6IvCfjqUgKip7cmV",
-            "status": 404
-          },
-          {
-            "host": "vidsrcme.ru",
-            "method": "GET",
-            "path": "/vs_src.php",
+            "path": "/search.php",
             "status": 200
           },
           {
-            "host": "cloudorchestranova.com",
+            "host": "mallumv.space",
             "method": "GET",
-            "path": "/embed/movie/24428",
+            "path": "/movie/1755/Interstellar_2014_English.xhtml",
             "status": 200
           },
           {
-            "host": "cloudorchestranova.com",
+            "host": "mallumv.space",
             "method": "GET",
-            "path": "/embed/player/movie/24428",
+            "path": "/internal/6705/1755/Interstellar%20(2014)%20BluRay%C3%82%C2%A0-%201080p%20-%20x264%20-%20[Tamil%20+%20Eng]%20-%20(DD+2.0%20-%20224Kbps)%20-%202.5GB%20-%20ESub.xhtml",
             "status": 200
           },
           {
-            "host": "cloudorchestranova.com",
+            "host": "vik1ngfile.site",
             "method": "GET",
-            "path": "/embed/iframe_player/cache.php",
-            "status": 400
-          }
-        ],
-        "tv": [
-          {
-            "host": "api.themoviedb.org",
-            "method": "GET",
-            "path": "/3/tv/119051",
+            "path": "/f/tMAohzba53",
             "status": 200
           },
           {
-            "host": "pengu.uk",
+            "host": "vik1ngfile.site",
             "method": "GET",
-            "path": "/%7B%22source_moviebox%22%3A%22on%22%2C%22res_1080%22%3A%22on%22%2C%22disable_direct%22%3A%22on%22%2C%22auth_token%22%3A%22XwZg2rLkLlbjXBeDVCyxgfHXjxN1ijLMkUuToW8KaKc%22%7D/stream/",
-            "status": 429
-          },
-          {
-            "host": "moviebox-cfa7.onrender.com",
-            "method": "GET",
-            "path": "/eyJyZXNvbHV0aW9uIjpbIjEwODBwIl0sImxhbmd1YWdlIjpbImVuIiwiaGkiLCJvcmlnIl0sInByb3h5X3VybCI6IiIsInByb3ZpZGVycyI6WyJtb2JpbGUiLCJ3ZWIiLCJsZWdhY3kiXSwibmFtZV90ZW1wbGF0ZSI6IvCfjqUgKip7cmV",
-            "status": 404
-          },
-          {
-            "host": "vidsrcme.ru",
-            "method": "GET",
-            "path": "/vs_src.php",
+            "path": "/assets/custom-F_ZXKHX.js",
             "status": 200
           },
           {
-            "host": "cloudorchestranova.com",
+            "host": "vikingfile.com",
             "method": "GET",
-            "path": "/embed/tv/119051/1/1",
+            "path": "/fast-download/www.MalluMv.Space%20-Interstellar%20%282014%29%20BluRay%C2%A0-%201080p%20-%20x264%20-%20%5BTamil%20+%20Eng%5D%20-%20%28DD+2.0%20-%20224Kbps%29%20-%202.5GB%20-%20ESub",
             "status": 200
           },
           {
-            "host": "cloudorchestranova.com",
+            "host": "mallumv.space",
             "method": "GET",
-            "path": "/embed/player/tv/119051/1/1",
+            "path": "/internal/6706/1755/Interstellar%20(2014)%20BluRay%C3%82%C2%A0-%20720p%20-%20x264%20-%20[Tamil%20+%20Eng]%20-%20(AAC%202.0)%20-%201.2GB%20-%20ESub.xhtml",
             "status": 200
           },
           {
-            "host": "cloudorchestranova.com",
+            "host": "vik1ngfile.site",
             "method": "GET",
-            "path": "/embed/iframe_player/cache.php",
-            "status": 400
-          }
-        ]
-      },
-      "playableLanes": [],
-      "safeDiagnostics": [],
-      "sampleTitles": {
-        "movie": [
-          "Interstellar",
-          "Mon ninja et moi 3",
-          "The Colony",
-          "Spider-Man: Homecoming",
-          "Mad Max: Fury Road",
-          "Jujutsu Kaisen 0",
-          "Dune: Part Two",
-          "The Avengers"
-        ],
-        "tv": [
-          "Revenant",
-          "Breaking Bad",
-          "The Boys",
-          "Better Call Saul",
-          "Game of Thrones",
-          "IT: Welcome to Derry",
-          "Vikings",
-          "Wednesday"
-        ]
-      },
-      "statuses": {
-        "movie": "no_streams",
-        "tv": "no_streams"
-      },
-      "verifiedLanes": []
-    },
-    "yflix": {
-      "contradictions": 0,
-      "debugStages": {
-        "movie": "provider_network_exception",
-        "tv": "provider_network_exception"
-      },
-      "network": {
-        "movie": [
-          {
-            "host": "enc-dec.app",
-            "method": "GET",
-            "path": "/db/flix/find",
+            "path": "/f/u6lxab0wCH",
             "status": 200
           },
           {
-            "host": "enc-dec.app",
+            "host": "vikingfile.com",
             "method": "GET",
-            "path": "/api/enc-movies-flix",
+            "path": "/fast-download/www.MalluMv.Space%20-Interstellar%20%282014%29%20BluRay%C2%A0-%20720p%20-%20x264%20-%20%5BTamil%20+%20Eng%5D%20-%20%28AAC%202.0%29%20-%201.2GB%20-%20ESub.mkv%20%5B1.",
             "status": 200
-          },
-          {
-            "host": "yflix.to",
-            "method": "GET",
-            "path": "/ajax/links/list",
-            "status": 0
-          },
-          {
-            "host": "1moviesz.to",
-            "method": "GET",
-            "path": "/ajax/links/list",
-            "status": 0
-          },
-          {
-            "host": "1movies.bz",
-            "method": "GET",
-            "path": "/ajax/links/list",
-            "status": 0
-          },
-          {
-            "host": "solarmovie.fi",
-            "method": "GET",
-            "path": "/ajax/links/list",
-            "status": 0
-          }
-        ],
-        "tv": [
-          {
-            "host": "enc-dec.app",
-            "method": "GET",
-            "path": "/db/flix/find",
-            "status": 200
-          },
-          {
-            "host": "enc-dec.app",
-            "method": "GET",
-            "path": "/api/enc-movies-flix",
-            "status": 200
-          },
-          {
-            "host": "yflix.to",
-            "method": "GET",
-            "path": "/ajax/links/list",
-            "status": 0
-          },
-          {
-            "host": "1moviesz.to",
-            "method": "GET",
-            "path": "/ajax/links/list",
-            "status": 0
-          },
-          {
-            "host": "1movies.bz",
-            "method": "GET",
-            "path": "/ajax/links/list",
-            "status": 0
-          },
-          {
-            "host": "solarmovie.fi",
-            "method": "GET",
-            "path": "/ajax/links/list",
-            "status": 0
           }
         ]
       },
@@ -355,35 +270,30 @@
       "sampleTitles": {
         "movie": [
           "Interstellar"
-        ],
-        "tv": [
-          "Breaking Bad"
         ]
       },
       "statuses": {
-        "movie": "no_streams",
-        "tv": "no_streams"
+        "movie": "no_streams"
       },
       "verifiedLanes": []
     }
   },
   "requestedProviders": [
+    "4khdhub",
     "allanime",
-    "moviebox",
-    "yflix"
+    "mallumv"
   ],
-  "runId": "36384182969",
+  "runId": "36384424718",
   "schemaVersion": 3,
   "selectedProviderCount": 3,
   "selectedProviders": [
+    "4khdhub",
     "allanime",
-    "moviebox",
-    "yflix"
+    "mallumv"
   ],
   "shardCount": 1,
   "shardIndex": 0,
   "skippedEnvironmentProviders": [
-    "4khdhub",
     "allwish",
     "anime-ultime",
     "animesalt",
@@ -393,14 +303,15 @@
     "desiflix",
     "flemmix",
     "fullanime",
-    "mallumv",
+    "moviebox",
     "moviesmod",
     "showbox",
     "vidfast",
-    "vostfree"
+    "vostfree",
+    "yflix"
   ],
   "sourceCensusRunId": "36320455627",
-  "triggerSha": "c98d3e39d7361fb1e7fe8cf27045b81f92c68099",
+  "triggerSha": "99f6767bea96b0d8f6a4ec406e45c2eb9c4671a8",
   "verifiedProviderCount": 0,
   "verifiedProviders": []
 }
