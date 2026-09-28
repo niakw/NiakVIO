@@ -12,6 +12,13 @@ fp=fingerprint(experiment)
 row={"providerId":"Movie_Box","failureClass":"media-extraction-gap","targetLayer":"provider","strategy":"proven-request-program-and-terminal-extraction","profile":"player_media_extractor_v1","confidence":.96,"priorOnly":True,"experiment":experiment,"experimentFingerprint":fp}
 base={"schemaVersion":2,"sourceNiakvioSha":"a"*40,"brainLlmSha":"b"*40,"publicationAuthority":False,"directMutationAuthority":False,"proofAuthority":False,"rawMutationContentRetained":False,"privateContentRetained":False,"minConfidence":.8,"providerCount":1,"rows":[row]}
 safe=mod.sanitize(base,current_sha="c"*40,guidance_commit="d"*40)
+assert safe["sourceBrainLlmSha"]=="b"*40
+try:
+ mod.sanitize(base,current_sha="c"*40,guidance_commit="d"*40,expected_brain_sha="f"*40)
+except ValueError as exc:
+ assert "stale external Brain guidance" in str(exc)
+else:
+ raise AssertionError("stale Brain guidance must be rejected")
 assert safe["schemaVersion"]==2,safe
 assert safe["sourceSha"]=="c"*40 and safe["sourceExternalNiakvioSha"]=="a"*40
 assert safe["rows"][0]["providerId"]=="movie-box" and safe["rows"][0]["failureClass"]=="media_extraction_gap"
