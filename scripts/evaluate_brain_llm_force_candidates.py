@@ -163,6 +163,25 @@ def candidate_execution_error(exc: BaseException) -> str:
     return f"{type(exc).__name__}:{str(exc)[:500]}"
 
 
+def mutation_summary(row: dict[str, Any]) -> list[dict[str, str]]:
+    out: list[dict[str, str]] = []
+    for mutation in row.get("mutations") or []:
+        if not isinstance(mutation, dict):
+            continue
+        item = {
+            "scope": str(mutation.get("scope") or "")[:40],
+            "operation": str(mutation.get("operation") or "")[:40],
+        }
+        family = str(mutation.get("family") or "")[:80]
+        if family:
+            item["family"] = family
+        path = str(mutation.get("path") or "")[:160]
+        if path:
+            item["path"] = path
+        out.append(item)
+    return out[:8]
+
+
 def single_row_payload(payload: dict[str, Any], row: dict[str, Any]) -> dict[str, Any]:
     result = {
         key: copy.deepcopy(value)
@@ -277,6 +296,7 @@ def main() -> int:
                                 "provider": provider,
                                 "mutationFingerprint": fingerprint,
                                 "mutationContextFingerprint": str(row.get("mutationContextFingerprint") or "").strip().casefold(),
+                                "mutationSummary": mutation_summary(row),
                                 "accepted": False,
                                 "reason": "force_candidate_not_applied",
                                 "baseline": result_summary(baseline),
@@ -301,6 +321,7 @@ def main() -> int:
                         "provider": provider,
                         "mutationFingerprint": fingerprint,
                         "mutationContextFingerprint": str(row.get("mutationContextFingerprint") or "").strip().casefold(),
+                                "mutationSummary": mutation_summary(row),
                         "accepted": bool(accepted),
                         "reason": reason,
                         "baseline": result_summary(baseline),
@@ -322,6 +343,7 @@ def main() -> int:
                             "provider": provider,
                             "mutationFingerprint": fingerprint,
                             "mutationContextFingerprint": str(row.get("mutationContextFingerprint") or "").strip().casefold(),
+                                "mutationSummary": mutation_summary(row),
                             "accepted": False,
                             "reason": "force_candidate_execution_error",
                             "baseline": result_summary(baseline),
