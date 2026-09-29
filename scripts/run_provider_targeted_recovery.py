@@ -122,6 +122,31 @@ def compact_response_shape(value:Any)->dict[str,Any]:
                     safe.append(token)
             if safe:
                 out[key]=safe
+    facts=value.get("classFacts")
+    if isinstance(facts,list):
+        safe_facts=[]
+        allowed_signals={"movie","series","season","episode","download","4k","1080p","720p","year"}
+        for row in facts[:8]:
+            if not isinstance(row,dict):
+                continue
+            token=str(row.get("token") or "")[:48]
+            if not re.fullmatch(r"[A-Za-z][A-Za-z0-9_-]{1,47}",token):
+                continue
+            tags=[
+                str(tag)[:16].lower() for tag in (row.get("tags") or [])[:4]
+                if re.fullmatch(r"[A-Za-z][A-Za-z0-9_-]{0,15}",str(tag))
+            ]
+            signals=[str(sig) for sig in (row.get("signals") or [])[:9] if str(sig) in allowed_signals]
+            safe_facts.append({
+                "token":token,
+                "count":max(0,min(int(row.get("count") or 0),12)),
+                "tags":tags,
+                "selfHref":max(0,min(int(row.get("selfHref") or 0),12)),
+                "nestedAnchors":max(0,min(int(row.get("nestedAnchors") or 0),24)),
+                "signals":signals,
+            })
+        if safe_facts:
+            out["classFacts"]=safe_facts
     markers=value.get("markers")
     allowed={"next-data","json-ld","player","download","episode","hls-literal","mp4-literal","turnstile","embed"}
     if isinstance(markers,list):
