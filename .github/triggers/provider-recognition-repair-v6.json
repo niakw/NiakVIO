@@ -1,23 +1,25 @@
 {
   "schemaVersion": 6,
-  "requestedAt": "2026-09-29T13:33:00+02:00",
-  "retry": 175,
-  "mode": "repair",
+  "requestedAt": "2026-09-29T20:50:00+02:00",
+  "retry": 176,
+  "mode": "force",
   "directApplyValidated": true,
-  "scope": "vidfast-proven-tv-fingerprint",
+  "scope": "4khdhub-brain-class-boundary-witness",
   "targetProviders": [
-    "vidfast"
+    "4khdhub"
   ],
-  "goal": "Rematerialize VidFast with the audited TV page fingerprint (browser-like initial GET, XHR only for API stages) and require current-byte playable/identity-safe improvement plus non-regression before publication.",
+  "goal": "Apply only the current external Brain-authored 4KHDHub classBlocks exact-class boundary mutation in isolated sandbox, compare current-byte baseline vs candidate playback, require playable + identity-safe improvement and non-regression, persist only if accepted, then dispatch fresh full census.",
   "branch": "main",
   "publication": true,
-  "sourceRef": "d725070558e1a5beee00dfb5e5e3ae02d2035b88",
+  "sourceRef": "33e125e72c61a10ff051930500b2308788f3c46e",
   "sourceCensusRun": "36547529107",
-  "branchPolicy": "main-targeted-current-byte-repair",
-  "rerunReason": "GitHub WAF differential proves Nuvio-TV UA/direct/OkHttp content=200 while current provider page GET receives 403",
-  "attemptPolicy": "provider bytes only; strict current-byte Deep/Retest; no external Brain candidate required",
-  "preflightValidatedSha": "d725070558e1a5beee00dfb5e5e3ae02d2035b88",
-  "requireExternalForceMutations": false,
-  "requireExternalBrainGuidance": false,
+  "branchPolicy": "external-brain-force-current-byte-only",
+  "rerunReason": "Live classFacts prove movie-card prefix collision with movie-card-* sibling classes; current Brain 2f4b6028 generated exact classBlocks boundary fix.",
+  "attemptPolicy": "external Brain mutation only; no canonical fallback; strict isolated current-byte baseline/candidate playable+identity+nonregression proof",
+  "preflightValidatedSha": "33e125e72c61a10ff051930500b2308788f3c46e",
+  "requireExternalForceMutations": true,
+  "requireExternalBrainGuidance": true,
+  "brainGuidanceSourceSha": "33e125e72c61a10ff051930500b2308788f3c46e",
+  "brainLlmGuidanceSha": "2f4b6028c6c16333c9b0e41a9ec3e79cd6b45426",
   "promoteLocalForceCandidates": false
 }
