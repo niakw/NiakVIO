@@ -180,7 +180,9 @@ function jsonShape(value) {
 }
 function structuralTokens(raw, attribute, limit) {
   const counts = new Map();
-  const re = new RegExp('\\\\b' + attribute + '\\s*=\\s*["\\']([^"\\']{1,512})["\\']', 'gi');
+  const re = attribute === 'class'
+    ? /\bclass\s*=\s*["']([^"']{1,512})["']/gi
+    : /\bid\s*=\s*["']([^"']{1,512})["']/gi;
   let match;
   while ((match = re.exec(raw)) !== null && counts.size < 256) {
     const values = attribute === 'class' ? String(match[1] || '').split(/\\s+/) : [String(match[1] || '')];
