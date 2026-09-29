@@ -832,3 +832,17 @@ An external Brain FORCE batch is a set of independent provider hypotheses, not a
 - Only accepted winners are applied/materialized/retested, and any persisted winner explicitly triggers a fresh current-byte census.
 
 Upstream Brain mutation-surface precedence is also causal: when a provider already owns a registered runtime resolver, that provider-specific runtime is attempted before a generic generated Bloc. NiakVIO still owns all proof and publication authority regardless of which surface generated the candidate.
+
+
+## Orchestrator ownership boundary — mandatory
+
+The repair orchestrator must **not hand-author provider runtime fixes** while validating Brain Repair.
+
+- Brain/LLM owns provider-local mutation synthesis, including new provider functions, helpers, parsers, request logic and terminal extractors.
+- NiakVIO owns evidence collection, mutation reception, exact-byte application in an isolated sandbox, current-byte Deep/Retest, playable-media and identity validation, non-regression, census and publication.
+- Direct human/assistant edits to `scripts/provider_patches/*`, provider JS, provider-specific override recipes or provider-local runtime tests are not valid substitutes for a Brain-produced repair candidate.
+- Infrastructure fixes are allowed only when they repair the repair system itself: harness, evidence freshness, routing, mutation receiver, sandbox, validation, pagination, timeouts, causal classification, publication guards or Core-wide behavior proven to be generic.
+- If investigation reveals a plausible provider-local code change, it becomes **evidence/context for Brain**, not an orchestrator-applied provider patch.
+- A provider may be called repaired only after a Brain-authored candidate survives the normal isolated current-byte proof chain.
+
+This boundary exists specifically so NiakVIO validates an intelligent repair system rather than silently replacing it with manual provider maintenance.
