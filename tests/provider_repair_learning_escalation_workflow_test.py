@@ -34,6 +34,9 @@ for required in (
     "run_provider_retest.py",
     "FIELD_BRAIN_LLM_FORCE_REQUIREMENT",
     "FIELD_BRAIN_LLM_FORCE_ARTIFACT_COVERAGE",
+    "FIELD_BRAIN_LLM_FORCE_PARTIAL_ACCEPTANCE",
+    "action=apply-winners-only",
+    "reason=external-force-only",
     "External Brain Force artifact is incomplete for explicit target cohort",
     "coverage_complete=",
     "missing_external_force_providers=",
@@ -44,6 +47,9 @@ for required in (
     "fix(force-repair): apply validated provider corrections + evidence",
 ):
     assert required in workflow, required
+
+assert "one independently validated external Brain mutation per target" not in workflow
+assert "REQUIRE_EXTERNAL_FORCE_MUTATIONS:" in workflow
 
 assert "FIELD_PROVIDER_BRAIN_FORCE_DEBT" in persist_block
 assert "learning_dispatch=true owner=force" in persist_block
