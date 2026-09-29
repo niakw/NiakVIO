@@ -58,6 +58,11 @@ def main() -> int:
         assert "PROVIDER_V3_FINAL_STAGE_MINIMIZER_GATE_V1" in all_text
         assert '"skippedReason": "final-stage-only"' in one
         assert '"skippedReason": "final-stage-only"' in all_text
+        one_harden = one.index("security_hardened, security_report = harden_bytes(bundle)")
+        one_minimize = one.index("minimized = allmat.minimize_text(hardened_text)")
+        one_verify = one.index("verified_bundle, byte_validation = allmat.verify_bytes(bundle)")
+        assert one_harden < one_minimize < one_verify
+        assert "Security hardening can rewrite provider bytes" in one
         print("PROVIDER_V3_FINAL_STAGE_MINIMIZER_GATE_TEST_OK workspace=false release=opt-in main=opt-in")
         return 0
     finally:
