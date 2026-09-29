@@ -112,6 +112,16 @@ def compact_response_shape(value:Any)->dict[str,Any]:
         raw=value.get(key)
         if isinstance(raw,int):
             out[key]=max(0,min(raw,65536 if key=="sampleBytes" else 99))
+    for key,limit in (("classTokens",16),("idTokens",12)):
+        rows=value.get(key)
+        if isinstance(rows,list):
+            safe=[]
+            for item in rows[:limit]:
+                token=str(item)[:48]
+                if re.fullmatch(r"[A-Za-z][A-Za-z0-9_-]{1,47}",token):
+                    safe.append(token)
+            if safe:
+                out[key]=safe
     markers=value.get("markers")
     allowed={"next-data","json-ld","player","download","episode","hls-literal","mp4-literal","turnstile","embed"}
     if isinstance(markers,list):
