@@ -212,6 +212,8 @@ with tempfile.TemporaryDirectory(prefix="brain-self-arch-") as tmp:
 
 workflow_source = WORKFLOW.read_text(encoding="utf-8")
 architecture_job = workflow_source.split("  publish-architecture-proposal:", 1)[1].split("  continue-learning-slot:", 1)[0]
+assert "actions: write" in architecture_job
+assert "gh workflow run brain-learning-lab.yml" in architecture_job
 assert 'git status --porcelain --untracked-files=all' in architecture_job
 assert architecture_job.count("cp brain-learning-output/brain-architecture-proposal.md engine_v2/learning/architecture-proposal.md") >= 2
 assert "brain-architecture-force.patch" in architecture_job
