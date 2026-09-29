@@ -146,6 +146,52 @@ assert merged["harnessEvidenceSha"] == "waf-sha"
 assert merged["harnessTransportUpdatedProviders"] == ["all-blocked", "browser-only"]
 
 
+# Same-census targeted WAF gating is a first-class transport queue even when
+# the semantic provider status is still ROUTE/CHAIN proven.
+targeted_baseline = {
+    "runId": "repair-authority",
+    "triggerSha": "repair-sha",
+    "repairQueue": [],
+    "targetedTransportBlockedQueue": ["targeted-waf"],
+    "environmentQueue": [],
+    "harnessQueue": [],
+    "symptomaticProviders": ["targeted-waf"],
+    "brainQueue": ["targeted-waf"],
+    "providers": [{
+        "provider": "targeted-waf",
+        "status": "ROUTE PROVEN",
+        "color": "🟪",
+        "declaredLanes": ["movie"],
+        "currentVerifiedLanes": [],
+        "repairEligible": False,
+        "statusRepairEligible": True,
+        "authorityRepairEligible": True,
+        "brainCheckRequired": True,
+        "targetedTransportClass": "provider-waf-challenge-current",
+    }],
+}
+targeted_waf = {
+    "rows": [{
+        "provider": "targeted-waf",
+        "lane": "movie",
+        "outcome": "browser_challenge_persisted",
+        "clientProfileMatrix": [{
+            "profile": "nuvio-tv-ua-browser",
+            "outcome": "browser_challenge_persisted",
+        }],
+        "directHttpProfile": {"outcome": "direct_http_challenge_persisted"},
+        "okHttpJvmProfile": {"outcome": "okhttp_jvm_challenge_persisted"},
+    }],
+}
+targeted_merged = mod.merge_transport(targeted_baseline, targeted_waf)
+targeted_row = targeted_merged["providers"][0]
+assert targeted_row["status"] == "HARNESS/ENV BLOCKED", targeted_row
+assert targeted_row["repairEligible"] is False, targeted_row
+assert targeted_row["harnessTransportClass"] == "github-all-transports-challenged", targeted_row
+assert targeted_merged["repairQueue"] == [], targeted_merged
+assert targeted_merged["environmentQueue"] == ["targeted-waf"], targeted_merged
+assert targeted_merged["harnessQueue"] == ["targeted-waf"], targeted_merged
+
 
 network_baseline = {
     "runId": "repair-authority",
