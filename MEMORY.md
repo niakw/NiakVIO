@@ -205,3 +205,13 @@
 - The WAF workflow now passes `TARGET_PROVIDERS` into residential full-provider selection. This allows a causal requalification request to replay the exact requested symptomatic cohort even if a previous provisional overlay changed their status class.
 - The selector remains provider-neutral and has been added to the external Brain drift whitelist. No provider bytes or proof status were changed by this fix.
 - A new five-provider replay is required before treating the current all-13 Repair queue as authoritative.
+
+
+## 2026-09-29 — Sample-aware residential replay makes all 5 seed-WAF cases provider-owned
+
+- Authoritative follow-up WAF/residential persistence commit `cd593db1e625bb87f48d029cc3f0569ba7d7ec0c` replayed the explicit five-provider cohort with the corrected selector and sample-aware aggregation.
+- AllWish movie/tv, AnimeSalt anime, Flemmix movie/tv and MoviesMod movie/tv each ran 4 adaptive fixtures; every persisted `sampleDebugStages` set contains only `provider_zero_before_provider_network`, with no WAF/timeout sample.
+- MalluMV has one available adaptive fixture and likewise reports `provider_zero_before_provider_network`, identity-safe, with no WAF/timeout sample.
+- Therefore the earlier browser/direct/OkHttp challenge seeds are real observations but **not the current causal blocker** for these provider runtimes. They must not be used to suppress provider Repair.
+- Current authoritative census queue is **13 provider Repair, 0 environment/harness/targeted-transport**: `4khdhub, allanime, allwish, anime-ultime, animesalt, animesultra, animevost-fr, flemmix, mallumv, moviebox, moviesmod, vidfast, yflix`.
+- None of these 13 is repaired by this reclassification; it only establishes causal ownership. Provider bytes still require actual mutation + isolated current-byte playable/identity-safe proof.
