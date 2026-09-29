@@ -12,7 +12,7 @@ harness=r'''
 const calls=[];
 function R(status,body,url){return{ok:status>=200&&status<300,status,url:url||"",async text(){return typeof body==="string"?body:JSON.stringify(body)},async json(){return typeof body==="string"?JSON.parse(body):body}}}
 global.fetch=async function(url,opt){
- url=String(url);opt=opt||{};calls.push([url,String(opt.method||"GET").toUpperCase(),String(opt.body||"")]);
+ url=String(url);opt=opt||{};calls.push([url,String(opt.method||"GET").toUpperCase(),String(opt.body||""),Object.assign({},opt.headers||{})]);
  if(url==="https://vidfast.to/embed/movie/157336")return R(200,"<html><body>embed shell without legacy token</body></html>",url);
  if(url==="https://vidfast.vc/movie/157336/")return R(200,'<script>window.__x={"en":"tok-vc"}</script>',url);
  if(url.includes("/enc-vidfast?text=tok-vc"))return R(200,{result:{servers:"https://vidfast.vc/api/server",stream:"https://vidfast.vc/api/stream",csrf:"csrf1"}},url);
@@ -22,7 +22,12 @@ global.fetch=async function(url,opt){
  return R(404,"",url);
 };
 '''+compiled+r'''
-(async()=>{const hook=globalThis.__niakvioProviderRuntimeResolverV1;if(!hook||hook.provider!=="vidfast")throw new Error("hook missing");const out=await hook.resolve(["157336","movie",null,null]);if(!Array.isArray(out)||out.length!==1)throw new Error("expected one stream "+JSON.stringify(out));if(out[0].url!=="https://cdn.example/master.m3u8")throw new Error("wrong terminal");const urls=calls.map(x=>x[0]);if(urls[0]!=="https://vidfast.to/embed/movie/157336")throw new Error("current docs base not first");if(!urls.includes("https://vidfast.vc/movie/157336/"))throw new Error("vc fallback missing");if(!urls.some(u=>u.includes("/enc-vidfast?text=tok-vc")))throw new Error("enc-dec stage missing");console.log("VIDFAST_MULTIBASE_RUNTIME_OK")})().catch(e=>{console.error(e);process.exit(1)});
+(async()=>{const hook=globalThis.__niakvioProviderRuntimeResolverV1;if(!hook||hook.provider!=="vidfast")throw new Error("hook missing");const out=await hook.resolve(["157336","movie",null,null]);if(!Array.isArray(out)||out.length!==1)throw new Error("expected one stream "+JSON.stringify(out));if(out[0].url!=="https://cdn.example/master.m3u8")throw new Error("wrong terminal");const urls=calls.map(x=>x[0]);if(urls[0]!=="https://vidfast.to/embed/movie/157336")throw new Error("current docs base not first");
+const firstHeaders=calls[0][3]||{};
+if(firstHeaders["X-Requested-With"])throw new Error("initial page request must not look like XHR");
+if(firstHeaders["User-Agent"]!=="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")throw new Error("initial page request must match audited TV UA");
+const apiCall=calls.find(x=>x[0].includes("/enc-vidfast?text=tok-vc"));
+if(!apiCall||apiCall[3]["X-Requested-With"]!=="XMLHttpRequest")throw new Error("enc/dec API must keep XHR fingerprint");if(!urls.includes("https://vidfast.vc/movie/157336/"))throw new Error("vc fallback missing");if(!urls.some(u=>u.includes("/enc-vidfast?text=tok-vc")))throw new Error("enc-dec stage missing");console.log("VIDFAST_MULTIBASE_RUNTIME_OK")})().catch(e=>{console.error(e);process.exit(1)});
 '''
 subprocess.run(["node","-e",harness],check=True)
 print("VidFast current-docs + upstream fallback runtime contract passed")
