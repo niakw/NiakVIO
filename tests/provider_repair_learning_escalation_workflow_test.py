@@ -41,7 +41,7 @@ for required in (
     "action=apply-winners-only",
     "reason=external-force-only",
     "coverage_complete=",
-    "missing_external_force_providers=",
+    "missing=${missing_csv:-none}",
     "FIELD_BRAIN_LLM_FORCE_CURRENT_BYTES",
     "reason=force-winner-persisted",
     "requireExternalForceMutations",
