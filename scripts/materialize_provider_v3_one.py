@@ -521,6 +521,11 @@ def materialize_one(
         raise ValueError(f"{provider_id}: Core Lego found before Core boundary")
 
     # PROVIDER_V3_FINAL_STAGE_MINIMIZER_GATE_V1
+    # Single-provider materialization is publication-capable and used by
+    # targeted Repair, projection reconciliation and sequential reconstruction.
+    # Security hardening can rewrite provider bytes, so it must happen before
+    # the optional final-stage minimizer. Otherwise the written publication is
+    # no longer guaranteed to be a minimizer fixed-point.
     context = allmat.materialization_context()
     minimize_enabled = allmat.final_minimizer_enabled(context)
     minimizer_report = {
@@ -529,28 +534,38 @@ def materialize_one(
         "transformedLines": 0,
         "skippedReason": "final-stage-only",
     }
+
+    bundle = text.encode("utf-8")
+    security_hardened, security_report = harden_bytes(bundle)
+    hardened_text = security_hardened.decode("utf-8", errors="strict")
+    assert_hardened(hardened_text)
+
+    final_fix_ids = allmat.validate_managed_fixes(hardened_text)
+    if set(final_fix_ids) != set(fix_ids):
+        raise ValueError(
+            f"{provider_id}: security hardening changed managed Lego ownership "
+            f"before final minimization"
+        )
+    if hardened_text.count(boundary) != 1:
+        raise ValueError(f"{provider_id}: security hardening changed Core boundary")
+
     if minimize_enabled:
-        minimized = allmat.minimize_text(text)
-        allmat.validate_transform(text, minimized.text)
-        text = minimized.text
+        minimized = allmat.minimize_text(hardened_text)
+        allmat.validate_transform(hardened_text, minimized.text)
+        hardened_text = minimized.text
         minimizer_report = {
             "enabled": True,
             "savedBytes": minimized.saved_bytes,
             "transformedLines": minimized.transformed_lines,
             "skippedReason": minimized.skipped_reason,
         }
-        if allmat.validate_managed_fixes(text) != fix_ids:
+        if set(allmat.validate_managed_fixes(hardened_text)) != set(final_fix_ids):
             raise ValueError(f"{provider_id}: minimizer changed managed Lego ownership")
-        if text.count(boundary) != 1:
+        if hardened_text.count(boundary) != 1:
             raise ValueError(f"{provider_id}: minimizer changed Core boundary")
-    bundle = text.encode("utf-8")
+        assert_hardened(hardened_text)
 
-    # Single-provider materialization is publication-capable and used by
-    # targeted Repair, projection reconciliation and sequential reconstruction.
-    # Mirror the mandatory publication security finalization before byte proof.
-    security_hardened, security_report = harden_bytes(bundle)
-    bundle = security_hardened
-    assert_hardened(bundle.decode("utf-8", errors="strict"))
+    bundle = hardened_text.encode("utf-8")
 
     try:
         verified_bundle, byte_validation = allmat.verify_bytes(bundle)
