@@ -297,3 +297,12 @@
 - The current provider runtime parses `classBlocks(html, "movie-card")` / `classText(...)` with regex word boundaries around the requested class. Because hyphen is a non-word character, a boundary after `movie-card` also matches `movie-card-format` / `movie-card-content` etc. The parser can therefore promote nested sub-elements as complete cards before title/type/year scoring.
 - This is the current deterministic causal hypothesis for the 4KHDHub witness. It is **not yet a validated repair**. Provider bytes remain Brain-owned; the next step is a Brain-generated class-token-boundary mutation followed by current-byte sandbox playback, identity and non-regression proof.
 - The targeted probe was extended with privacy-safe `classFacts` (counts/tags/selfHref/nestedAnchors/allowlisted semantic signals only) and a bounded sanitized probe-error field. Two instrumentation regressions were detected and fixed before accepting the final evidence; invalid intermediate probe runs are obsolete.
+
+### 2026-09-29 — Manual provider patch rejected; Brain capability generalized
+- PR #224 was closed without merge because its initial 4KHDHub CSS-class fix was hand-written provider code, not a Brain-generated repair. Its generated/materialized provider bytes are not authority.
+- The reusable cause is now encoded in Brain profile `html_class_token_exact_v1`: detect class-attribute RegExp builders whose dynamic class is followed by `\\b`, replace the unsafe CSS-token boundary with an exact token terminator, then require ordinary sandbox/playback/identity/non-regression proof.
+- The profile is provider-agnostic: no provider IDs, domains, routes or fixture selectors are embedded.
+- FORCE Learning now derives scope from current canonical census repair/environment queues; stale Fast operator snapshots no longer veto newer Learning debt.
+- Targeted publication now hardens bytes before final minimization and byte proof, keeping published output a minimizer fixed point.
+- Rule reinforced: reusable provider bugs must become Brain capabilities; do not retain hand-written provider patches as the system-level solution.
+
