@@ -164,3 +164,14 @@
 - A later same-census targeted run that no longer shows the blocker automatically restores transport repair eligibility. Stale targeted evidence fails closed.
 - The targeted recovery workflow now applies this overlay, re-renders the census markdown, and persists the targeted evidence + refined batch + census state atomically.
 - Current targeted evidence suggests five members of the 13-provider queue are immediate transport-gate candidates: allwish, animesalt, flemmix, mallumv, moviesmod. This is not a claim that they are repaired; the workflow must persist the overlay before the queue reduction is considered validated.
+
+
+## 2026-09-29 — Repair queue materially reduced 13 -> 8 by causal transport gating
+
+- Same-census targeted recovery run `36540208957` was projected into census authority for census `36531469863-retest`.
+- The automated provider repair queue is now **8**, down from 13: `4khdhub, allanime, anime-ultime, animesultra, animevost-fr, moviebox, vidfast, yflix`.
+- Five providers are no longer sent to provider mutation because their current targeted probe explicitly classified provider-origin `provider_waf_challenge` with no playable/verified lane: `allwish, animesalt, flemmix, mallumv, moviesmod`.
+- Their semantic proof is preserved: they remain NO PROOF / ROUTE PROVEN / CHAIN REACHED as applicable. They are **not repaired** and are not promoted; `transportRepairEligible=false` only moves causal ownership away from provider code until stronger residential/native replay disproves the transport blocker.
+- Plain HTTP 403 is deliberately insufficient for this gate. Anime-Ultime and VidFast remain provider-repair-eligible because their current targeted stage is `provider_network_http_error`, not explicit WAF.
+- Refined batch routing now maps explicit targeted WAF groups to `harness-compatibility`; the execution router treats `targetedTransportBlockedQueue` as transport-owned so those providers remain observable instead of disappearing from automation.
+- This closes the split-brain where census repeatedly scheduled providers that Brain correctly refused to mutate.
