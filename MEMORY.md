@@ -287,3 +287,13 @@
 - Current 4KHDHub causal proof: TMDB resolves; provider search returns HTTP 200 and current `movie-card*` structural tokens/anchors; no provider detail request follows and no stream is produced. The witness therefore targets provider-side search/detail selection before terminal extraction.
 - Qwen2.5-Coder-3B is negative evidence for this witness: after compiler/call-graph/prompt fixes it completed multiple calls but returned only no-op edits. More 3B retries are not useful.
 - Brain main is CI-green with a targeted 7B FORCE configuration and compact two-function `route_proven_gap` context. The next provider action must be a Brain-authored 4KHDHub mutation followed by NiakVIO isolated baseline/candidate playback + identity + non-regression sandbox. No provider is considered repaired until that passes and a fresh census reflects it.
+
+
+## 2026-09-29 — 4KHDHub witness: live class-token prefix collision isolated
+
+- Fresh targeted evidence run `36605262984`, persisted at `af2801c80224d78f953fd942ca3cee27052658f7`, proves current TMDB and provider-origin requests both return HTTP 200 while movie/TV still return zero streams.
+- The live 4KHDHub HTML exposes an exact `movie-card` class together with a dense sibling prefix family: `movie-card-format`, `movie-card-content`, `movie-card-formats`, `movie-card-image`, `movie-card-meta`, `movie-card-overlay`, `movie-card-title`.
+- Privacy-safe class facts show these are real structural elements, not stale token guesses. In the movie response, `movie-card` appears on mixed `a/div/span` elements while multiple `movie-card-*` children are independently frequent.
+- The current provider runtime parses `classBlocks(html, "movie-card")` / `classText(...)` with regex word boundaries around the requested class. Because hyphen is a non-word character, a boundary after `movie-card` also matches `movie-card-format` / `movie-card-content` etc. The parser can therefore promote nested sub-elements as complete cards before title/type/year scoring.
+- This is the current deterministic causal hypothesis for the 4KHDHub witness. It is **not yet a validated repair**. Provider bytes remain Brain-owned; the next step is a Brain-generated class-token-boundary mutation followed by current-byte sandbox playback, identity and non-regression proof.
+- The targeted probe was extended with privacy-safe `classFacts` (counts/tags/selfHref/nestedAnchors/allowlisted semantic signals only) and a bounded sanitized probe-error field. Two instrumentation regressions were detected and fixed before accepting the final evidence; invalid intermediate probe runs are obsolete.
