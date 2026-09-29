@@ -1189,14 +1189,22 @@ function runWorker(candidate, fixture) {
     const providerPath = path.join(STAGE, candidate.local_path);
     const timeoutMs = Number(modeConfig.provider_timeout_ms || 45000);
     const context = { ...executionContextForCandidate(candidate), fixtureMetadata: fixture };
-    const child = spawn(process.execPath, [
-      `--max-old-space-size=${workerMemoryMb}`,
+    const nodeMajor = Number(String(process.versions.node || '').split('.')[0]) || 0;
+    const permissionArgs = [
       '--permission',
-      '--allow-net',
+      // Node <25 does not expose a network permission flag; networking remains
+      // unrestricted by the permission model there. --allow-net was added in
+      // Node 25, so passing it to the Node 24 CI runtime aborts before the worker
+      // can emit NUVIO_HEALTH_RESULT.
+      ...(nodeMajor >= 25 ? ['--allow-net'] : []),
       `--allow-fs-read=${path.join(ROOT, 'scripts')}`,
       `--allow-fs-read=${path.join(ROOT, 'node_modules')}`,
       `--allow-fs-read=${path.join(ROOT, 'package.json')}`,
       `--allow-fs-read=${STAGE}`,
+    ];
+    const child = spawn(process.execPath, [
+      `--max-old-space-size=${workerMemoryMb}`,
+      ...permissionArgs,
       WORKER_PATH,
       providerPath,
       JSON.stringify(fixture),
