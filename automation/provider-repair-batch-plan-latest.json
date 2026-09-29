@@ -3,7 +3,7 @@
   "sourceRunId": "36531469863-retest",
   "sourceTriggerSha": "182d08374c45ce7aec8bc7aa67e3486f6aa47e64",
   "unresolvedProviderCount": 13,
-  "groupCount": 8,
+  "groupCount": 7,
   "executionModel": {
     "default": "family/signature batch",
     "liveProbeConcurrency": "audit_provider_quick_yield ThreadPool",
@@ -71,9 +71,10 @@
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
     {
-      "groupId": "harness-compatibility|html_scraper|residential-exit-all-challenged",
-      "repairScope": "harness-compatibility",
+      "groupId": "terminal-extraction|html_scraper",
+      "repairScope": "terminal-extraction",
       "runtimeFamilies": [
+        "api_stream_resolver",
         "mallumv-catalogue-confirm-internal-v1"
       ],
       "capabilityStrategy": "html_scraper",
@@ -81,17 +82,19 @@
         "chain"
       ],
       "dominantIssues": [
+        "network_http_error",
         "waf_challenge"
       ],
       "harnessTransportClasses": [
         "residential-exit-all-challenged"
       ],
-      "transportSignature": "residential-exit-all-challenged",
-      "providerCount": 1,
+      "transportSignature": "not-applicable",
+      "providerCount": 2,
       "providers": [
-        "mallumv"
+        "mallumv",
+        "moviebox"
       ],
-      "action": "compare browser/native/residential transport and route client-owned gaps away from provider mutation",
+      "action": "apply/test shared terminal-player extraction profile to the whole capability family",
       "executionPolicy": "batch-first",
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
@@ -182,29 +185,6 @@
       "providerCount": 1,
       "providers": [
         "allanime"
-      ],
-      "action": "apply/test shared terminal-player extraction profile to the whole capability family",
-      "executionPolicy": "batch-first",
-      "providerLocalFallback": "only-after-shared-profile-failure"
-    },
-    {
-      "groupId": "terminal-extraction|html_scraper",
-      "repairScope": "terminal-extraction",
-      "runtimeFamilies": [
-        "api_stream_resolver"
-      ],
-      "capabilityStrategy": "html_scraper",
-      "evidenceDepths": [
-        "chain"
-      ],
-      "dominantIssues": [
-        "network_http_error"
-      ],
-      "harnessTransportClasses": [],
-      "transportSignature": "not-applicable",
-      "providerCount": 1,
-      "providers": [
-        "moviebox"
       ],
       "action": "apply/test shared terminal-player extraction profile to the whole capability family",
       "executionPolicy": "batch-first",

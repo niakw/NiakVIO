@@ -157,7 +157,7 @@
       },
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 20367,
+      "durationMs": 18400,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_challenge_persisted",
@@ -284,7 +284,7 @@
       },
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 19840,
+      "durationMs": 18321,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_challenge_persisted",
@@ -411,7 +411,7 @@
       },
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 19407,
+      "durationMs": 19191,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_challenge_persisted",
@@ -424,7 +424,7 @@
           },
           {
             "profile": "nuvio-tv-ua-browser",
-            "outcome": "browser_timeout",
+            "outcome": "browser_challenge_persisted",
             "attemptCount": 1
           }
         ],
@@ -799,7 +799,7 @@
       },
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 17646,
+      "durationMs": 16555,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_challenge_persisted",
@@ -926,20 +926,20 @@
       },
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 5175,
+      "durationMs": 6736,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
-        "outcome": "browser_challenge_persisted",
+        "outcome": "browser_inconclusive",
         "attemptCount": 1,
         "clientProfileMatrix": [
           {
             "profile": "github-default-browser",
-            "outcome": "browser_challenge_persisted",
+            "outcome": "browser_inconclusive",
             "attemptCount": 1
           },
           {
             "profile": "nuvio-tv-ua-browser",
-            "outcome": "browser_timeout",
+            "outcome": "browser_inconclusive",
             "attemptCount": 1
           }
         ],
@@ -1053,7 +1053,7 @@
       },
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 5142,
+      "durationMs": 7200,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_challenge_persisted",
@@ -1452,7 +1452,7 @@
       },
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 6013,
+      "durationMs": 8493,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_challenge_persisted",
@@ -1579,7 +1579,7 @@
       },
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 5471,
+      "durationMs": 7794,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_challenge_persisted",
@@ -2295,7 +2295,7 @@
   "residentialProviderReplay": {
     "available": true,
     "profile": "tailscale-residential-exit",
-    "providerCount": 11,
+    "providerCount": 12,
     "providers": [
       "allwish",
       "anime-ultime",
@@ -2303,6 +2303,7 @@
       "animesultra",
       "animevost-fr",
       "flemmix",
+      "mallumv",
       "moviebox",
       "moviesmod",
       "vidfast",
@@ -2402,6 +2403,27 @@
         "lane": "tv",
         "status": "no_streams",
         "debugStage": "provider_zero_before_provider_network",
+        "raw": 0,
+        "playable": 0,
+        "verified": 0,
+        "contradictions": 0,
+        "identitySafe": true
+      },
+      {
+        "provider": "mallumv",
+        "lane": "movie",
+        "status": "no_streams",
+        "debugStage": "provider_zero_before_provider_network",
+        "sampleCount": 1,
+        "sampleDebugStages": [
+          "provider_zero_before_provider_network"
+        ],
+        "sampleStatuses": [
+          "no_streams"
+        ],
+        "sampleProgressStages": [
+          "none"
+        ],
         "raw": 0,
         "playable": 0,
         "verified": 0,
@@ -2517,7 +2539,7 @@
     },
     "lastAttempt": {
       "available": true,
-      "providerCount": 7,
+      "providerCount": 8,
       "refreshedProviders": [
         "allwish",
         "animesalt",
