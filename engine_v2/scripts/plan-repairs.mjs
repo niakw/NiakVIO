@@ -74,6 +74,7 @@ const POST_EXHAUSTION_STRATEGIES = {
     { profile: "runtime_response_salvage_v1", method: "successful-runtime-response-salvage" },
   ],
   route_proven_gap: [
+    { profile: "html_class_token_exact_v1", method: "exact-html-class-token-contract" },
     { profile: "route_transition_graph_v1", method: "provider-owned-route-transition-graph" },
     { profile: "route_peer_transition_replay_v1", method: "structural-peer-route-transition-replay" },
     { profile: "identity_alias_search_traversal_v1", method: "tmdb-identity-alias-search-traversal" },
@@ -100,6 +101,7 @@ const POST_EXHAUSTION_STRATEGIES = {
     { profile: "document_request_contract_mining_v1", method: "provider-document-request-contract-mining" },
   ],
   search_gap: [
+    { profile: "html_class_token_exact_v1", method: "exact-html-class-token-contract" },
     { profile: "search_contract_inference_v1", method: "search-contract-inference" },
     { profile: "search_response_route_binding_v1", method: "search-response-route-binding" },
     { profile: "identity_alias_search_traversal_v1", method: "tmdb-identity-alias-search-traversal" },
@@ -112,6 +114,7 @@ const EVOLVED_STRATEGY_IMPLEMENTATION_FILES = [
   "scripts/adaptive_runtime/runtime_repair.py",
   "scripts/adaptive_runtime/runtime_recovery_generator.py",
   "scripts/provider_patches/adaptive_runtime_recovery_v5.py",
+  "scripts/adaptive_runtime/html_class_token_exact_v1.py",
 ];
 
 function strategyImplementationFingerprint(profile) {
