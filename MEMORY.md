@@ -153,3 +153,14 @@
 - Audit showed dedicated runtime resolvers already exist for 12/13 current repairQueue providers; Brain scope precedence now prefers those provider-specific runtimes before generic Bloc invention.
 - NiakVIO receiver was hardened so partial external batches and partial sandbox winners can make independent progress while unresolved targets remain Brain-only and do not silently fall through to canonical Repair.
 - A persisted external winner explicitly dispatches a fresh current-byte full census.
+
+
+## 2026-09-29 — Targeted transport evidence now gates provider repair eligibility
+
+- A queue split-brain was confirmed: same-census targeted recovery could classify a provider request as current `provider_waf_challenge`, while the census still kept that provider in `repairQueue` because retained ROUTE/CHAIN proof made the status provider-repair-eligible.
+- This caused repeated no-progress Brain cycles: the census scheduled the provider for mutation while Brain correctly routed the same fresh targeted WAF evidence away from provider mutation and abstained.
+- Added `scripts/merge_targeted_census_transport.py`. It never changes playback/route status; it projects only same-census targeted transport causality into a new `transportRepairEligible` gate.
+- A provider with current targeted WAF/challenge, no playable/verified targeted lane, and provider-origin evidence is excluded from `repairQueue` while retaining `ROUTE PROVEN` / `CHAIN REACHED` status and proof.
+- A later same-census targeted run that no longer shows the blocker automatically restores transport repair eligibility. Stale targeted evidence fails closed.
+- The targeted recovery workflow now applies this overlay, re-renders the census markdown, and persists the targeted evidence + refined batch + census state atomically.
+- Current targeted evidence suggests five members of the 13-provider queue are immediate transport-gate candidates: allwish, animesalt, flemmix, mallumv, moviesmod. This is not a claim that they are repaired; the workflow must persist the overlay before the queue reduction is considered validated.
