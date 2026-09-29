@@ -846,3 +846,8 @@ The repair orchestrator must **not hand-author provider runtime fixes** while va
 - A provider may be called repaired only after a Brain-authored candidate survives the normal isolated current-byte proof chain.
 
 This boundary exists specifically so NiakVIO validates an intelligent repair system rather than silently replacing it with manual provider maintenance.
+## Compiler invariant: exact unit identity beats model wrapper identity
+
+When compact FORCE selects a complete provider `function_unit`, the exact current-byte unit id owns the target identity. For a generated `provider_bloc`, a small model may return a single complete function wrapper with a nearby/wrong helper name; Brain may recover only its syntax-valid body and re-envelope it under the exact selected declaration. This normalization does not weaken authored `provider_patch` / `provider_js` signature guards: explicit async/name/parameter drift on authored surfaces remains invalid.
+
+Structural prompt selection must respect its hard unit budget. On route/chain/media-extraction gaps it reserves causal graph capacity and follows direct calls plus named callback references (for example `.then(parser)` / `.map(normalize)`) to expose second-hop player/parser/terminal helpers. These are mutation-context rules only; NiakVIO isolated sandbox, playable proof, identity safety and non-regression remain the acceptance authority.
