@@ -277,3 +277,13 @@
 - Provider-neutral evidence collection now retains bounded/sanitized HTML `classTokens` and `idTokens`, with Node execution coverage and workflow path invalidation so changing the probe invalidates targeted evidence.
 - Exact targeted recovery run `36591361698` completed successfully for 4KHDHub and persisted the structural evidence for census `36547529107`.
 - No provider status is promoted by these evidence changes. 4KHDHub remains ROUTE PROVEN / repair-eligible until a Brain-authored candidate survives isolated current-byte playable + identity-safe validation.
+
+
+## 2026-09-29 — Brain architecture PR #220 superseded; 4KHDHub witness is the only repair gate
+
+- PR #220 (`brain: Learning architecture evolution proposal`) was audited and closed without merge. It changed only generated architecture proposal JSON/Markdown, was far behind current `main`, and its important concepts are already implemented as executable architecture/tests on current main (`brain_meta_learning.py`, architecture FORCE materializer, causal taxonomy/capability-gap/meta-learning/verification/novelty/promotion layers).
+- Do not reopen or merge #220 as a repair dependency; current executable architecture supersedes it.
+- Batch repair is paused as a success criterion. The next expansion gate is one provider witness only: `4khdhub`.
+- Current 4KHDHub causal proof: TMDB resolves; provider search returns HTTP 200 and current `movie-card*` structural tokens/anchors; no provider detail request follows and no stream is produced. The witness therefore targets provider-side search/detail selection before terminal extraction.
+- Qwen2.5-Coder-3B is negative evidence for this witness: after compiler/call-graph/prompt fixes it completed multiple calls but returned only no-op edits. More 3B retries are not useful.
+- Brain main is CI-green with a targeted 7B FORCE configuration and compact two-function `route_proven_gap` context. The next provider action must be a Brain-authored 4KHDHub mutation followed by NiakVIO isolated baseline/candidate playback + identity + non-regression sandbox. No provider is considered repaired until that passes and a fresh census reflects it.
