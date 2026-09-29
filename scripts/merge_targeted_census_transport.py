@@ -62,13 +62,12 @@ def targeted_blocked(row: dict[str, Any]) -> tuple[bool, list[str]]:
             status = int(item.get("status") or 0)
             evidence.append(f"{str(lane)[:24]}:{host[:96]}:{status}")
 
+    # Status codes alone are not enough to transfer causal ownership away
+    # from provider code. A plain provider_network_http_error on 403 remains in
+    # Repair until the probe itself classifies an interactive WAF/challenge (or
+    # a stronger browser/residential differential does so elsewhere).
     explicit_waf = WAF_STAGE in stages
-    status_waf = (
-        bool(provider_rows)
-        and all(int(item.get("status") or 0) in {401, 403, 429} for item in provider_rows)
-        and stages <= {"provider_waf_challenge", "provider_network_http_error"}
-    )
-    return bool(explicit_waf or status_waf), evidence[:12]
+    return bool(explicit_waf and provider_rows), evidence[:12]
 
 
 def merge(status: dict[str, Any], targeted: dict[str, Any]) -> dict[str, Any]:
