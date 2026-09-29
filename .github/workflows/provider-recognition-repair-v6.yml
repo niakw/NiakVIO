@@ -256,9 +256,50 @@ jobs:
                   f"compare={row.get('compare_status') or '-'} error={error or '-'}"
               )
           PY2
-          NIAKVIO_NUVIO_CLIENT_STATUS_CACHE="$cache"             python3 scripts/guard_nuvio_client_brain_compat.py "$validated"
-          echo "NIAKVIO_NUVIO_CLIENT_STATUS_CACHE=$cache" >> "$GITHUB_ENV"
-          echo "FIELD_REPAIR_NUVIO_CLIENT_CACHE ready=true path=$cache"
+          provider_force_only="$(python3 - <<'PY3'
+          import json
+          from pathlib import Path
+          data=json.loads(Path(".github/triggers/provider-recognition-repair-v6.json").read_text(encoding="utf-8"))
+          enabled=(
+              str(data.get("mode") or "").strip().casefold()=="force"
+              and data.get("directApplyValidated") is True
+              and data.get("requireExternalForceMutations") is True
+              and bool(data.get("targetProviders"))
+          )
+          print("true" if enabled else "false")
+          PY3
+          )"
+          if NIAKVIO_NUVIO_CLIENT_STATUS_CACHE="$cache" python3 scripts/guard_nuvio_client_brain_compat.py "$validated"; then
+            echo "NIAKVIO_NUVIO_CLIENT_STATUS_CACHE=$cache" >> "$GITHUB_ENV"
+            echo "FIELD_REPAIR_NUVIO_CLIENT_CACHE ready=true path=$cache"
+          else
+            transient_transport="$(python3 - "$cache" <<'PY3'
+          import json,re,sys
+          data=json.load(open(sys.argv[1],encoding="utf-8"))
+          bad=[]
+          for client_id,row in sorted((data.get("clients") or {}).items()):
+              if not isinstance(row,dict):
+                  bad.append((client_id,"invalid",""))
+                  continue
+              status=str(row.get("status") or "")
+              if status not in {"verification_error","verification_inconclusive"}:
+                  continue
+              error=str(row.get("error") or "")
+              bad.append((client_id,status,error))
+          if not bad:
+              print("false")
+          else:
+              pattern=re.compile(r"TimeoutExpired|timed out|Could not resolve|certificate|TLS|SSL|connection (?:reset|timed out|refused)|network is unreachable",re.I)
+              print("true" if all(status in {"verification_error","verification_inconclusive"} and pattern.search(error or "") for _,status,error in bad) else "false")
+          PY3
+            )"
+            if [ "$provider_force_only" = "true" ] && [ "$transient_transport" = "true" ]; then
+              echo "FIELD_REPAIR_NUVIO_CLIENT_CACHE ready=false provider_force_only=true transient_transport=true action=continue-isolated-sandbox"
+            else
+              echo "FIELD_REPAIR_NUVIO_CLIENT_CACHE ready=false provider_force_only=$provider_force_only transient_transport=$transient_transport action=fail-closed" >&2
+              exit 1
+            fi
+          fi
 
       - name: Decide reusable Repair WAF evidence
         id: repair_waf_reuse
