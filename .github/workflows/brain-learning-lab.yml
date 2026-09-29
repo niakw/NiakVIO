@@ -215,18 +215,11 @@ jobs:
           missing=[v for v in requested if v not in eligible]
           if not requested: raise SystemExit("targeted Learning cohort is empty")
           if missing: raise SystemExit("targeted Learning cohort escaped current repair/environment queues: "+",".join(missing))
+          # Current census repair/environment queues are the canonical scope.
+          # Do not re-restrict architecture FORCE with provider-fast-repair.json:
+          # that trigger may describe an older operator cohort after Repair
+          # persists newer evidence and dispatches Learning.
           force=str(sys.argv[4] or "").strip().casefold()=="true"
-          trigger=Path(sys.argv[5])
-          if force and trigger.exists():
-              operator=json.loads(trigger.read_text(encoding="utf-8"))
-              allowed={
-                  str(v or "").strip().lower().replace("_","-")
-                  for v in operator.get("targetProviders") or []
-                  if str(v or "").strip()
-              }
-              escaped=[v for v in requested if allowed and v not in allowed]
-              if escaped:
-                  raise SystemExit("targeted FORCE Learning cohort escaped current operator Fast cohort: "+",".join(escaped))
           environment_targets=[v for v in requested if v in environment]
           data={"schemaVersion":1,"fastHandoff":True,"providerCount":len(requested),"providers":requested,"providerFilter":",".join(requested),"policy":"autopilot-targeted-core-learning" if environment_targets else "autopilot-targeted-learning","environmentProviders":environment_targets}
           json.dump(data,open(sys.argv[3],"w",encoding="utf-8"),ensure_ascii=False,indent=2)
