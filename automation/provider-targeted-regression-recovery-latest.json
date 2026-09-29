@@ -6,10 +6,11 @@
       "contradictionProviders": [],
       "groupId": "route-to-terminal|mixed_embed_resolver",
       "playableProviders": [],
-      "providerCount": 3,
+      "providerCount": 4,
       "providers": [
         "anime-ultime",
         "animesultra",
+        "flemmix",
         "yflix"
       ],
       "repairScope": "route-to-terminal",
@@ -19,9 +20,11 @@
       "contradictionProviders": [],
       "groupId": "route-to-terminal|html_scraper",
       "playableProviders": [],
-      "providerCount": 1,
+      "providerCount": 3,
       "providers": [
-        "4khdhub"
+        "4khdhub",
+        "animesalt",
+        "moviesmod"
       ],
       "repairScope": "route-to-terminal",
       "verifiedProviders": []
@@ -30,11 +33,34 @@
       "contradictionProviders": [],
       "groupId": "terminal-extraction|html_scraper",
       "playableProviders": [],
-      "providerCount": 1,
+      "providerCount": 2,
       "providers": [
+        "mallumv",
         "moviebox"
       ],
       "repairScope": "terminal-extraction",
+      "verifiedProviders": []
+    },
+    {
+      "contradictionProviders": [],
+      "groupId": "learning|html_scraper",
+      "playableProviders": [],
+      "providerCount": 1,
+      "providers": [
+        "allwish"
+      ],
+      "repairScope": "learning",
+      "verifiedProviders": []
+    },
+    {
+      "contradictionProviders": [],
+      "groupId": "route-to-terminal|api_stream_resolver",
+      "playableProviders": [],
+      "providerCount": 1,
+      "providers": [
+        "animevost-fr"
+      ],
+      "repairScope": "route-to-terminal",
       "verifiedProviders": []
     },
     {
@@ -281,26 +307,72 @@
             "status": 200
           },
           {
-            "host": "api.allanime.day",
-            "method": "POST",
-            "path": "/api",
+            "host": "ww2.aniwatch.fit",
+            "method": "GET",
+            "path": "/one-piece-episode-1-english-subbed",
             "shape": {
-              "dataKeys": [
-                "shows"
+              "anchors": 37,
+              "forms": 1,
+              "iframes": 0,
+              "kind": "html",
+              "markers": [
+                "json-ld",
+                "player",
+                "episode"
               ],
-              "dataType": "object",
-              "keys": [
-                "data"
-              ],
-              "kind": "json",
-              "top": "object"
+              "sampleBytes": 65536,
+              "scripts": 31,
+              "sources": 0,
+              "videos": 0
             },
             "status": 200
           },
           {
             "host": "ww2.aniwatch.fit",
             "method": "GET",
-            "path": "/{opaque}",
+            "path": "/one-piece-episode-1-english-dubbed",
+            "shape": {
+              "anchors": 37,
+              "forms": 1,
+              "iframes": 0,
+              "kind": "html",
+              "markers": [
+                "json-ld",
+                "player",
+                "episode"
+              ],
+              "sampleBytes": 65536,
+              "scripts": 31,
+              "sources": 0,
+              "videos": 0
+            },
+            "status": 200
+          },
+          {
+            "host": "ww2.aniwatch.fit",
+            "method": "GET",
+            "path": "/ek-tukda-episode-1-english-subbed",
+            "shape": {
+              "anchors": 37,
+              "forms": 1,
+              "iframes": 0,
+              "kind": "html",
+              "markers": [
+                "json-ld",
+                "player",
+                "episode"
+              ],
+              "sampleBytes": 65536,
+              "scripts": 31,
+              "sources": 0,
+              "videos": 0
+            },
+            "status": 200
+          },
+          {
+            "host": "ww2.aniwatch.fit",
+            "method": "GET",
+            "path": "/ek-tukda-episode-1-english-dubbed",
             "shape": {
               "anchors": 37,
               "forms": 1,
@@ -342,7 +414,7 @@
           {
             "host": "ww2.aniwatch.fit",
             "method": "GET",
-            "path": "/{opaque}",
+            "path": "/allarrembaggio-episode-1-english-subbed",
             "shape": {
               "anchors": 37,
               "forms": 1,
@@ -363,91 +435,7 @@
           {
             "host": "ww2.aniwatch.fit",
             "method": "GET",
-            "path": "/{opaque}",
-            "shape": {
-              "anchors": 37,
-              "forms": 1,
-              "iframes": 0,
-              "kind": "html",
-              "markers": [
-                "json-ld",
-                "player",
-                "episode"
-              ],
-              "sampleBytes": 65536,
-              "scripts": 31,
-              "sources": 0,
-              "videos": 0
-            },
-            "status": 200
-          },
-          {
-            "host": "ww2.aniwatch.fit",
-            "method": "GET",
-            "path": "/{opaque}",
-            "shape": {
-              "anchors": 37,
-              "forms": 1,
-              "iframes": 0,
-              "kind": "html",
-              "markers": [
-                "json-ld",
-                "player",
-                "episode"
-              ],
-              "sampleBytes": 65536,
-              "scripts": 31,
-              "sources": 0,
-              "videos": 0
-            },
-            "status": 200
-          },
-          {
-            "host": "ww2.aniwatch.fit",
-            "method": "GET",
-            "path": "/{opaque}",
-            "shape": {
-              "anchors": 37,
-              "forms": 1,
-              "iframes": 0,
-              "kind": "html",
-              "markers": [
-                "json-ld",
-                "player",
-                "episode"
-              ],
-              "sampleBytes": 65536,
-              "scripts": 31,
-              "sources": 0,
-              "videos": 0
-            },
-            "status": 200
-          },
-          {
-            "host": "ww2.aniwatch.fit",
-            "method": "GET",
-            "path": "/hellteacher-episode-1-english-subbed",
-            "shape": {
-              "anchors": 37,
-              "forms": 1,
-              "iframes": 0,
-              "kind": "html",
-              "markers": [
-                "json-ld",
-                "player",
-                "episode"
-              ],
-              "sampleBytes": 65536,
-              "scripts": 31,
-              "sources": 0,
-              "videos": 0
-            },
-            "status": 200
-          },
-          {
-            "host": "ww2.aniwatch.fit",
-            "method": "GET",
-            "path": "/hellteacher-episode-1-english-dubbed",
+            "path": "/allarrembaggio-episode-1-english-dubbed",
             "shape": {
               "anchors": 37,
               "forms": 1,
@@ -471,10 +459,10 @@
       "safeDiagnostics": [],
       "sampleTitles": {
         "anime": [
-          "One Piece",
-          "Failure Frame: I Became the Strongest and Annihilated Everything with Low-Level Spells",
+          "Hell Teacher: Jigoku Sensei Nube",
           "Jujutsu Kaisen",
-          "Hell Teacher: Jigoku Sensei Nube"
+          "Failure Frame: I Became the Strongest and Annihilated Everything with Low-Level Spells",
+          "One Piece"
         ]
       },
       "statuses": {
@@ -494,12 +482,45 @@
             "host": "api.themoviedb.org",
             "method": "GET",
             "path": "/{id}/movie/{id}",
+            "shape": {
+              "keys": [
+                "adult",
+                "backdrop_path",
+                "belongs_to_collection",
+                "budget",
+                "genres",
+                "homepage",
+                "id",
+                "imdb_id",
+                "origin_country",
+                "original_language",
+                "original_title",
+                "overview",
+                "popularity",
+                "poster_path",
+                "production_companies",
+                "production_countries"
+              ],
+              "kind": "json",
+              "top": "object"
+            },
             "status": 200
           },
           {
             "host": "all-wish.me",
             "method": "GET",
             "path": "/filter",
+            "shape": {
+              "anchors": 0,
+              "forms": 0,
+              "iframes": 0,
+              "kind": "html",
+              "markers": [],
+              "sampleBytes": 5747,
+              "scripts": 1,
+              "sources": 0,
+              "videos": 0
+            },
             "status": 403
           }
         ],
@@ -508,12 +529,45 @@
             "host": "api.themoviedb.org",
             "method": "GET",
             "path": "/{id}/tv/{id}",
+            "shape": {
+              "keys": [
+                "adult",
+                "backdrop_path",
+                "created_by",
+                "episode_run_time",
+                "first_air_date",
+                "genres",
+                "homepage",
+                "id",
+                "in_production",
+                "languages",
+                "last_air_date",
+                "last_episode_to_air",
+                "name",
+                "next_episode_to_air",
+                "networks",
+                "number_of_episodes"
+              ],
+              "kind": "json",
+              "top": "object"
+            },
             "status": 200
           },
           {
             "host": "all-wish.me",
             "method": "GET",
             "path": "/filter",
+            "shape": {
+              "anchors": 0,
+              "forms": 0,
+              "iframes": 0,
+              "kind": "html",
+              "markers": [],
+              "sampleBytes": 5750,
+              "scripts": 1,
+              "sources": 0,
+              "videos": 0
+            },
             "status": 403
           }
         ]
@@ -523,23 +577,23 @@
       "sampleTitles": {
         "movie": [
           "Interstellar",
-          "The Matrix",
-          "Les Gardiens de la Galaxie : Volume 3",
-          "Dune",
-          "Avengers: Infinity War",
-          "Django Unchained",
+          "Dune: Part Two",
+          "Mad Max: Fury Road",
+          "Avatar",
+          "Avengers: Age of Ultron",
+          "Iron Man 3",
           "Tenet",
-          "Jujutsu Kaisen 0"
+          "Avengers: Endgame"
         ],
         "tv": [
           "Breaking Bad",
-          "Game of Thrones",
-          "Black Mirror",
-          "Peaky Blinders",
-          "The Last of Us",
-          "Shōgun",
-          "Cobra Kai",
-          "Sherlock"
+          "The 100",
+          "WandaVision",
+          "Elite",
+          "Arrow",
+          "The Queen's Gambit",
+          "The Boys",
+          "House of the Dragon"
         ]
       },
       "statuses": {
@@ -607,13 +661,13 @@
       "sampleTitles": {
         "anime": [
           "Jujutsu Kaisen",
+          "Hunter x Hunter",
+          "SPY x FAMILY",
           "Demon Slayer: Kimetsu no Yaiba",
-          "Fullmetal Alchemist: Brotherhood",
-          "Solo Leveling",
-          "The Seven Deadly Sins",
-          "My Hero Academia",
-          "Hell Mode: The Hardcore Gamer Dominates in Another World with Garbage Balancing",
-          "High School DxD"
+          "Death Note",
+          "One-Punch Man",
+          "One Piece",
+          "Boruto: Naruto Next Generations"
         ]
       },
       "statuses": {
@@ -632,18 +686,62 @@
             "host": "api.themoviedb.org",
             "method": "GET",
             "path": "/{id}/tv/{id}",
+            "shape": {
+              "keys": [
+                "adult",
+                "backdrop_path",
+                "created_by",
+                "episode_run_time",
+                "first_air_date",
+                "genres",
+                "homepage",
+                "id",
+                "in_production",
+                "languages",
+                "last_air_date",
+                "last_episode_to_air",
+                "name",
+                "next_episode_to_air",
+                "networks",
+                "number_of_episodes"
+              ],
+              "kind": "json",
+              "top": "object"
+            },
             "status": 200
           },
           {
             "host": "animesalt.cx",
             "method": "GET",
-            "path": "/series/konosuba-sois-beni-monde-merveilleux",
+            "path": "/series/my-hero-academia",
+            "shape": {
+              "anchors": 0,
+              "forms": 0,
+              "iframes": 0,
+              "kind": "html",
+              "markers": [],
+              "sampleBytes": 5666,
+              "scripts": 1,
+              "sources": 0,
+              "videos": 0
+            },
             "status": 403
           },
           {
             "host": "animesalt.cx",
             "method": "GET",
             "path": "/",
+            "shape": {
+              "anchors": 0,
+              "forms": 0,
+              "iframes": 0,
+              "kind": "html",
+              "markers": [],
+              "sampleBytes": 5573,
+              "scripts": 1,
+              "sources": 0,
+              "videos": 0
+            },
             "status": 403
           }
         ]
@@ -657,9 +755,9 @@
           "Failure Frame: I Became the Strongest and Annihilated Everything with Low-Level Spells",
           "Hell Teacher: Jigoku Sensei Nube",
           "Jujutsu Kaisen",
-          "Steins;Gate",
-          "Chainsaw Man",
-          "KONOSUBA - God's blessing on this wonderful world!"
+          "Hunter x Hunter",
+          "Tokyo Ghoul",
+          "My Hero Academia"
         ]
       },
       "statuses": {
@@ -718,10 +816,10 @@
           "Mushoku Tensei: Jobless Reincarnation",
           "Failure Frame: I Became the Strongest and Annihilated Everything with Low-Level Spells",
           "Hell Teacher: Jigoku Sensei Nube",
-          "MASHLE: MAGIC AND MUSCLES",
-          "Steins;Gate",
-          "Hell Mode: The Hardcore Gamer Dominates in Another World with Garbage Balancing",
-          "Hunter x Hunter"
+          "Black Clover",
+          "Boruto: Naruto Next Generations",
+          "My Hero Academia",
+          "One-Punch Man"
         ]
       },
       "statuses": {
@@ -732,7 +830,7 @@
     "animevost-fr": {
       "contradictions": 0,
       "debugStages": {
-        "anime": "provider_waf_challenge"
+        "anime": "provider_network_exception"
       },
       "network": {
         "anime": [
@@ -740,25 +838,75 @@
             "host": "api.themoviedb.org",
             "method": "GET",
             "path": "/{id}/tv/{id}",
+            "shape": {
+              "keys": [
+                "adult",
+                "backdrop_path",
+                "created_by",
+                "episode_run_time",
+                "first_air_date",
+                "genres",
+                "homepage",
+                "id",
+                "in_production",
+                "languages",
+                "last_air_date",
+                "last_episode_to_air",
+                "name",
+                "next_episode_to_air",
+                "networks",
+                "number_of_episodes"
+              ],
+              "kind": "json",
+              "top": "object"
+            },
             "status": 200
           },
           {
             "host": "animevost.fr",
             "method": "GET",
             "path": "/api/anime/search",
+            "shape": {
+              "keys": [
+                "results"
+              ],
+              "kind": "json",
+              "resultsItemKeys": [
+                "id",
+                "title_romaji",
+                "title_english",
+                "slug",
+                "poster_url",
+                "banner_url",
+                "genres",
+                "studio",
+                "season_year",
+                "season_period"
+              ],
+              "resultsType": "array",
+              "top": "object"
+            },
             "status": 200
           },
           {
             "host": "animevost.fr",
             "method": "GET",
-            "path": "/api/animes/{opaque}",
+            "path": "/api/animes/death-note",
+            "shape": {
+              "keys": [
+                "anime",
+                "seasons"
+              ],
+              "kind": "json",
+              "top": "object"
+            },
             "status": 200
           },
           {
             "host": "gupload.xyz",
             "method": "GET",
-            "path": "/data/e/5e036a93756f",
-            "status": 403
+            "path": "/data/e/7f107c136b85",
+            "status": 0
           }
         ]
       },
@@ -767,10 +915,10 @@
       "sampleTitles": {
         "anime": [
           "Jujutsu Kaisen",
-          "Hell Mode: The Hardcore Gamer Dominates in Another World with Garbage Balancing",
-          "Death Note",
           "One Piece",
-          "Mushoku Tensei: Jobless Reincarnation"
+          "Hell Mode: The Hardcore Gamer Dominates in Another World with Garbage Balancing",
+          "Mushoku Tensei: Jobless Reincarnation",
+          "Death Note"
         ]
       },
       "statuses": {
@@ -790,12 +938,45 @@
             "host": "api.themoviedb.org",
             "method": "GET",
             "path": "/{id}/movie/{id}",
+            "shape": {
+              "keys": [
+                "adult",
+                "backdrop_path",
+                "belongs_to_collection",
+                "budget",
+                "genres",
+                "homepage",
+                "id",
+                "imdb_id",
+                "origin_country",
+                "original_language",
+                "original_title",
+                "overview",
+                "popularity",
+                "poster_path",
+                "production_companies",
+                "production_countries"
+              ],
+              "kind": "json",
+              "top": "object"
+            },
             "status": 200
           },
           {
             "host": "flemmix.party",
             "method": "GET",
             "path": "/search",
+            "shape": {
+              "anchors": 0,
+              "forms": 0,
+              "iframes": 0,
+              "kind": "html",
+              "markers": [],
+              "sampleBytes": 5829,
+              "scripts": 1,
+              "sources": 0,
+              "videos": 0
+            },
             "status": 403
           }
         ],
@@ -804,12 +985,45 @@
             "host": "api.themoviedb.org",
             "method": "GET",
             "path": "/{id}/tv/{id}",
+            "shape": {
+              "keys": [
+                "adult",
+                "backdrop_path",
+                "created_by",
+                "episode_run_time",
+                "first_air_date",
+                "genres",
+                "homepage",
+                "id",
+                "in_production",
+                "languages",
+                "last_air_date",
+                "last_episode_to_air",
+                "name",
+                "next_episode_to_air",
+                "networks",
+                "number_of_episodes"
+              ],
+              "kind": "json",
+              "top": "object"
+            },
             "status": 200
           },
           {
             "host": "flemmix.party",
             "method": "GET",
             "path": "/search",
+            "shape": {
+              "anchors": 0,
+              "forms": 0,
+              "iframes": 0,
+              "kind": "html",
+              "markers": [],
+              "sampleBytes": 5847,
+              "scripts": 1,
+              "sources": 0,
+              "videos": 0
+            },
             "status": 403
           }
         ]
@@ -821,21 +1035,21 @@
           "Interstellar",
           "Mon ninja et moi 3",
           "The Colony",
-          "The Wolf of Wall Street",
-          "Sinners",
-          "Superman",
-          "Guardians of the Galaxy",
-          "Guardians of the Galaxy Vol. 2"
+          "Black Panther",
+          "Captain America: The First Avenger",
+          "Avengers: Infinity War",
+          "Avatar: The Way of Water",
+          "Sinners"
         ],
         "tv": [
           "House of the Dragon",
           "Breaking Bad",
           "Revenant",
-          "Vikings",
-          "Shōgun",
-          "Pablo Escobar: The Drug Lord",
+          "Wednesday",
+          "Peaky Blinders",
           "Black Mirror",
-          "Fallout"
+          "The Walking Dead",
+          "Better Call Saul"
         ]
       },
       "statuses": {
@@ -855,60 +1069,151 @@
             "host": "api.themoviedb.org",
             "method": "GET",
             "path": "/{id}/movie/{id}",
+            "shape": {
+              "keys": [
+                "adult",
+                "backdrop_path",
+                "belongs_to_collection",
+                "budget",
+                "genres",
+                "homepage",
+                "id",
+                "imdb_id",
+                "origin_country",
+                "original_language",
+                "original_title",
+                "overview",
+                "popularity",
+                "poster_path",
+                "production_companies",
+                "production_countries"
+              ],
+              "kind": "json",
+              "top": "object"
+            },
             "status": 200
           },
           {
             "host": "mallumv.space",
             "method": "GET",
             "path": "/search.php",
+            "shape": {
+              "anchors": 2,
+              "forms": 0,
+              "iframes": 0,
+              "kind": "html",
+              "markers": [],
+              "sampleBytes": 2185,
+              "scripts": 4,
+              "sources": 0,
+              "videos": 0
+            },
             "status": 200
           },
           {
             "host": "mallumv.space",
             "method": "GET",
             "path": "/movie/{id}/Interstellar_2014_English.xhtml",
+            "shape": {
+              "anchors": 8,
+              "forms": 0,
+              "iframes": 0,
+              "kind": "html",
+              "markers": [
+                "download"
+              ],
+              "sampleBytes": 7952,
+              "scripts": 5,
+              "sources": 0,
+              "videos": 0
+            },
             "status": 200
           },
           {
             "host": "mallumv.space",
             "method": "GET",
             "path": "/internal/{id}/{id}/{opaque}",
+            "shape": {
+              "anchors": 2,
+              "forms": 0,
+              "iframes": 0,
+              "kind": "html",
+              "markers": [
+                "download"
+              ],
+              "sampleBytes": 2359,
+              "scripts": 4,
+              "sources": 0,
+              "videos": 0
+            },
             "status": 200
           },
           {
             "host": "vik1ngfile.site",
             "method": "GET",
             "path": "/f/tMAohzba53",
+            "shape": {
+              "anchors": 0,
+              "forms": 0,
+              "iframes": 0,
+              "kind": "html",
+              "markers": [],
+              "sampleBytes": 65536,
+              "scripts": 2,
+              "sources": 0,
+              "videos": 0
+            },
             "status": 200
           },
           {
             "host": "vik1ngfile.site",
             "method": "GET",
             "path": "/assets/custom-F_ZXKHX.js",
+            "shape": {
+              "fetchCalls": 6,
+              "functions": 45,
+              "kind": "javascript",
+              "markers": [
+                "turnstile",
+                "embed",
+                "mp4-literal"
+              ],
+              "sampleBytes": 34018
+            },
             "status": 200
           },
           {
             "host": "vikingfile.com",
             "method": "GET",
             "path": "/fast-download/{opaque}",
-            "status": 200
-          },
-          {
-            "host": "mallumv.space",
-            "method": "GET",
-            "path": "/internal/{id}/{id}/{opaque}",
+            "shape": {
+              "anchors": 0,
+              "forms": 0,
+              "iframes": 0,
+              "kind": "html",
+              "markers": [],
+              "sampleBytes": 1323,
+              "scripts": 0,
+              "sources": 0,
+              "videos": 0
+            },
             "status": 200
           },
           {
             "host": "vik1ngfile.site",
             "method": "GET",
             "path": "/f/u6lxab0wCH",
-            "status": 200
-          },
-          {
-            "host": "vikingfile.com",
-            "method": "GET",
-            "path": "/fast-download/{opaque}",
+            "shape": {
+              "anchors": 0,
+              "forms": 0,
+              "iframes": 0,
+              "kind": "html",
+              "markers": [],
+              "sampleBytes": 65536,
+              "scripts": 2,
+              "sources": 0,
+              "videos": 0
+            },
             "status": 200
           }
         ]
@@ -964,7 +1269,7 @@
           {
             "host": "pengu.uk",
             "method": "GET",
-            "path": "/{opaque}/stream",
+            "path": "/{opaque}/stream/movie/tt1375666.json",
             "shape": {
               "keys": [
                 "error"
@@ -977,7 +1282,7 @@
           {
             "host": "moviebox-cfa7.onrender.com",
             "method": "GET",
-            "path": "/{opaque}",
+            "path": "/{opaque}/stream/movie/tt1375666.json",
             "status": 404
           },
           {
@@ -1006,7 +1311,7 @@
                 "player",
                 "episode"
               ],
-              "sampleBytes": 5515,
+              "sampleBytes": 5513,
               "scripts": 6,
               "sources": 0,
               "videos": 0
@@ -1026,7 +1331,7 @@
                 "player",
                 "episode"
               ],
-              "sampleBytes": 9215,
+              "sampleBytes": 9211,
               "scripts": 10,
               "sources": 0,
               "videos": 1
@@ -1072,7 +1377,7 @@
           {
             "host": "pengu.uk",
             "method": "GET",
-            "path": "/{opaque}/stream",
+            "path": "/{opaque}/stream/series/tt10048342:1:1.json",
             "shape": {
               "keys": [
                 "error"
@@ -1085,7 +1390,7 @@
           {
             "host": "moviebox-cfa7.onrender.com",
             "method": "GET",
-            "path": "/{opaque}",
+            "path": "/{opaque}/stream/series/tt10048342:1:1.json",
             "status": 404
           },
           {
@@ -1156,21 +1461,21 @@
           "Interstellar",
           "Mon ninja et moi 3",
           "The Colony",
-          "Dune",
-          "Oppenheimer",
-          "Dune: Part Two",
+          "Spider-Man: Homecoming",
+          "Avengers: Age of Ultron",
+          "The Avengers",
           "Avengers: Infinity War",
-          "The Wolf of Wall Street"
+          "Inception"
         ],
         "tv": [
           "Revenant",
           "Breaking Bad",
-          "The Boys",
-          "Money Heist",
           "IT: Welcome to Derry",
-          "Dark Desire",
-          "Game of Thrones",
-          "Vikings"
+          "Better Call Saul",
+          "Wednesday",
+          "Vikings",
+          "The Boys",
+          "The Queen's Gambit"
         ]
       },
       "statuses": {
@@ -1191,36 +1496,87 @@
             "host": "api.themoviedb.org",
             "method": "GET",
             "path": "/{id}/movie/{id}",
+            "shape": {
+              "keys": [
+                "adult",
+                "backdrop_path",
+                "belongs_to_collection",
+                "budget",
+                "genres",
+                "homepage",
+                "id",
+                "imdb_id",
+                "origin_country",
+                "original_language",
+                "original_title",
+                "overview",
+                "popularity",
+                "poster_path",
+                "production_companies",
+                "production_countries"
+              ],
+              "kind": "json",
+              "top": "object"
+            },
             "status": 200
           },
           {
             "host": "moviesmod.ai.in",
             "method": "GET",
-            "path": "/search/Jujutsu%20Kaisen%200",
+            "path": "/search/Thor",
+            "shape": {
+              "anchors": 94,
+              "forms": 1,
+              "iframes": 0,
+              "kind": "html",
+              "markers": [
+                "json-ld",
+                "player",
+                "download"
+              ],
+              "sampleBytes": 65536,
+              "scripts": 7,
+              "sources": 0,
+              "videos": 0
+            },
             "status": 200
           },
           {
             "host": "moviesmod.ai.in",
             "method": "GET",
             "path": "/{opaque}",
+            "shape": {
+              "anchors": 68,
+              "forms": 1,
+              "iframes": 0,
+              "kind": "html",
+              "markers": [
+                "json-ld",
+                "player",
+                "download"
+              ],
+              "sampleBytes": 65536,
+              "scripts": 7,
+              "sources": 0,
+              "videos": 0
+            },
             "status": 200
           },
           {
             "host": "links.modpro.blog",
             "method": "GET",
             "path": "/archives/{id}",
-            "status": 403
-          },
-          {
-            "host": "links.modpro.blog",
-            "method": "GET",
-            "path": "/archives/{id}",
-            "status": 403
-          },
-          {
-            "host": "links.modpro.blog",
-            "method": "GET",
-            "path": "/archives/{id}",
+            "shape": {
+              "anchors": 0,
+              "forms": 0,
+              "iframes": 0,
+              "kind": "html",
+              "markers": [],
+              "sampleBytes": 5730,
+              "scripts": 1,
+              "sources": 0,
+              "videos": 0
+            },
             "status": 403
           }
         ],
@@ -1229,36 +1585,89 @@
             "host": "api.themoviedb.org",
             "method": "GET",
             "path": "/{id}/tv/{id}",
+            "shape": {
+              "keys": [
+                "adult",
+                "backdrop_path",
+                "created_by",
+                "episode_run_time",
+                "first_air_date",
+                "genres",
+                "homepage",
+                "id",
+                "in_production",
+                "languages",
+                "last_air_date",
+                "last_episode_to_air",
+                "name",
+                "next_episode_to_air",
+                "networks",
+                "number_of_episodes"
+              ],
+              "kind": "json",
+              "top": "object"
+            },
             "status": 200
           },
           {
             "host": "moviesmod.ai.in",
             "method": "GET",
-            "path": "/search/{opaque}",
+            "path": "/search/Sh%C5%8Dgun%201",
+            "shape": {
+              "anchors": 94,
+              "forms": 1,
+              "iframes": 0,
+              "kind": "html",
+              "markers": [
+                "json-ld",
+                "player"
+              ],
+              "sampleBytes": 65536,
+              "scripts": 7,
+              "sources": 0,
+              "videos": 0
+            },
             "status": 200
           },
           {
             "host": "moviesmod.ai.in",
             "method": "GET",
             "path": "/{opaque}",
+            "shape": {
+              "anchors": 72,
+              "forms": 1,
+              "iframes": 0,
+              "kind": "html",
+              "markers": [
+                "json-ld",
+                "player",
+                "download",
+                "episode"
+              ],
+              "sampleBytes": 65536,
+              "scripts": 7,
+              "sources": 0,
+              "videos": 0
+            },
             "status": 200
           },
           {
             "host": "episodes.modpro.blog",
             "method": "GET",
             "path": "/archives/{id}",
-            "status": 403
-          },
-          {
-            "host": "episodes.modpro.blog",
-            "method": "GET",
-            "path": "/archives/{id}",
-            "status": 403
-          },
-          {
-            "host": "episodes.modpro.blog",
-            "method": "GET",
-            "path": "/archives/{id}",
+            "shape": {
+              "anchors": 0,
+              "forms": 0,
+              "iframes": 0,
+              "kind": "html",
+              "markers": [
+                "episode"
+              ],
+              "sampleBytes": 5730,
+              "scripts": 1,
+              "sources": 0,
+              "videos": 0
+            },
             "status": 403
           }
         ]
@@ -1269,22 +1678,22 @@
         "movie": [
           "Interstellar",
           "Sinners",
-          "Tenet",
-          "The Matrix",
           "Spider-Man: Homecoming",
-          "Mad Max: Fury Road",
-          "Soul",
-          "Jujutsu Kaisen 0"
+          "Shutter Island",
+          "Black Panther",
+          "Captain America: Civil War",
+          "Avengers: Infinity War",
+          "Thor"
         ],
         "tv": [
           "Breaking Bad",
-          "Better Call Saul",
-          "Stranger Things",
-          "Cobra Kai",
+          "Sherlock",
+          "The Walking Dead",
           "Game of Thrones",
-          "Fallout",
-          "The Boys",
-          "House of the Dragon"
+          "Squid Game",
+          "Stranger Things",
+          "Black Mirror",
+          "Shōgun"
         ]
       },
       "statuses": {
@@ -1379,21 +1788,21 @@
         "movie": [
           "Interstellar",
           "The Wolf of Wall Street",
-          "Soul",
-          "Avengers: Age of Ultron",
-          "Deadpool & Wolverine",
           "Avatar",
-          "The Batman",
+          "The Matrix",
+          "Joker",
+          "Deadpool & Wolverine",
+          "Soul",
           "Dune"
         ],
         "tv": [
           "Breaking Bad",
-          "Adolescence",
-          "Shōgun",
+          "Black Mirror",
+          "The Boys",
+          "Cobra Kai",
           "Revenant",
-          "Stranger Things",
-          "The Queen's Gambit",
           "The Walking Dead",
+          "Fallout",
           "Squid Game"
         ]
       },
@@ -1541,49 +1950,48 @@
   "requestedProviders": [
     "4khdhub",
     "allanime",
-    "anime-ultime",
-    "animesultra",
-    "moviebox",
-    "vidfast",
-    "yflix"
-  ],
-  "retainedProviderCount": 6,
-  "retainedProviders": [
     "allwish",
+    "anime-ultime",
     "animesalt",
+    "animesultra",
     "animevost-fr",
     "flemmix",
     "mallumv",
-    "moviesmod"
+    "moviebox",
+    "moviesmod",
+    "vidfast",
+    "yflix"
   ],
-  "runId": "36465957283",
+  "retainedProviderCount": 0,
+  "retainedProviders": [],
+  "runId": "36536829688",
   "schemaVersion": 3,
-  "selectedProviderCount": 7,
+  "selectedProviderCount": 13,
   "selectedProviders": [
     "4khdhub",
     "allanime",
+    "allwish",
     "anime-ultime",
+    "animesalt",
     "animesultra",
+    "animevost-fr",
+    "flemmix",
+    "mallumv",
     "moviebox",
+    "moviesmod",
     "vidfast",
     "yflix"
   ],
   "shardCount": 1,
   "shardIndex": 0,
   "skippedEnvironmentProviders": [
-    "allwish",
-    "animesalt",
     "animetsu",
-    "animevost-fr",
     "desiflix",
-    "flemmix",
     "fullanime",
-    "mallumv",
-    "moviesmod",
     "showbox"
   ],
-  "sourceCensusRunId": "36320455627",
-  "triggerSha": "b3d5b51319c6f29ebc89c2d4660312f3450262db",
+  "sourceCensusRunId": "36531469863-retest",
+  "triggerSha": "c7d0e7e452cc746d3fceb1dfd5270d53b3a0b017",
   "verifiedProviderCount": 0,
   "verifiedProviders": []
 }
