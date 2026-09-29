@@ -25,11 +25,34 @@ def summarize(replay: dict[str, Any]) -> dict[str, Any]:
         provider=str(row.get("provider_id") or row.get("provider") or "").strip().casefold()
         if not provider:
             continue
+        samples=[
+            sample for sample in row.get("samples") or []
+            if isinstance(sample,dict)
+        ]
+        sample_stages=sorted({
+            str(sample.get("debug_stage") or "").strip().casefold()
+            for sample in samples
+            if str(sample.get("debug_stage") or "").strip()
+        })
+        sample_statuses=sorted({
+            str(sample.get("status") or "").strip().casefold()
+            for sample in samples
+            if str(sample.get("status") or "").strip()
+        })
+        sample_progress=sorted({
+            str(sample.get("debug_progress_stage") or "").strip().casefold()
+            for sample in samples
+            if str(sample.get("debug_progress_stage") or "").strip()
+        })
         rows.append({
             "provider":provider,
             "lane":str(row.get("semantic_type") or row.get("lane") or "").strip().casefold(),
             "status":str(row.get("status") or ""),
             "debugStage":str(row.get("debug_stage") or ""),
+            "sampleCount":len(samples),
+            "sampleDebugStages":sample_stages,
+            "sampleStatuses":sample_statuses,
+            "sampleProgressStages":sample_progress,
             "raw":int(row.get("raw") or 0),
             "playable":int(row.get("playable") or 0),
             "verified":int(row.get("verified") or 0),
