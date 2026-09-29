@@ -141,11 +141,11 @@ assert 'new_strategy_id == "route_transition_graph_v1"' in focused_ctx[
     "scripts/adaptive_runtime/runtime_repair.py"
 ]
 assert mod.MAX_MODEL_TOKENS <= 512
-assert mod.MODEL_TIMEOUT_SECONDS <= 100
+assert mod.MODEL_TIMEOUT_SECONDS == 180
 assert mod.RETRY_MODEL_TOKENS <= 640
-assert mod.RETRY_MODEL_TIMEOUT_SECONDS <= 120
+assert mod.RETRY_MODEL_TIMEOUT_SECONDS == 240
 assert mod.VALIDATION_RETRY_MODEL_TOKENS <= 512
-assert mod.VALIDATION_RETRY_TIMEOUT_SECONDS <= 100
+assert mod.VALIDATION_RETRY_TIMEOUT_SECONDS == 180
 assert mod.RETRY_SOURCE_CONTEXT <= 3600
 assert mod.MINIMAL_SOURCE_CONTEXT <= 1800
 assert mod.MATERIALIZED_CORRECTION_ROUNDS == 2
@@ -222,9 +222,9 @@ try:
     assert calls[1][:3] == (mod.RETRY_MODEL_TOKENS, mod.RETRY_MODEL_TIMEOUT_SECONDS, True)
     assert calls[1][3] <= mod.MINIMAL_SOURCE_CONTEXT
     assert mod.MAX_MODEL_TOKENS <= 512
-    assert mod.MODEL_TIMEOUT_SECONDS <= 100
+    assert mod.MODEL_TIMEOUT_SECONDS == 180
     assert mod.RETRY_MODEL_TOKENS <= 640
-    assert mod.RETRY_MODEL_TIMEOUT_SECONDS <= 120
+    assert mod.RETRY_MODEL_TIMEOUT_SECONDS == 240
 finally:
     mod._model_request = original_request
 
