@@ -215,8 +215,8 @@ jobs:
           if not requested: raise SystemExit("targeted Learning cohort is empty")
           if missing: raise SystemExit("targeted Learning cohort escaped current repair/environment queues: "+",".join(missing))
           # Current census repair/environment queues are the canonical scope.
-          # Do not re-restrict architecture FORCE with provider-fast-repair.json:
-          # that trigger may describe an older operator cohort after Repair
+          # Do not re-restrict architecture FORCE with a stale Fast operator snapshot:
+          # that snapshot may describe an older cohort after Repair
           # persists newer evidence and dispatches Learning.
           force=str(sys.argv[4] or "").strip().casefold()=="true"
           environment_targets=[v for v in requested if v in environment]
