@@ -185,3 +185,13 @@
 - `mallumv`: remains `HARNESS/ENV BLOCKED` with `residential-exit-all-challenged`; it is the only one of the five still transport/WAF-owned by current evidence.
 - Current authoritative queues after the WAF merge: **12 provider Repair** (`4khdhub, allanime, allwish, anime-ultime, animesalt, animesultra, animevost-fr, flemmix, moviebox, moviesmod, vidfast, yflix`) and **1 environment/WAF** (`mallumv`).
 - A follow-up consistency fix clears stale targeted WAF fields when full residential provider replay transfers causal ownership back to provider Repair. This is metadata/queue correctness only; it does not promote provider playback.
+
+
+## 2026-09-29 — Residential replay aggregation bug found; 12/1 split is provisional pending re-run
+
+- The residential full-provider replay summary previously persisted only the lane row's final `debug_stage`. In `audit_provider_quick_yield.run()`, that lane-level stage is the **last adaptive fixture**, while earlier fixtures remain in `samples[]`.
+- Therefore a lane could probe provider network/WAF on earlier fixtures and finish on a later `provider_zero_before_provider_network`, then be incorrectly summarized as a clean pre-network provider failure.
+- This directly affects the recent causal transfer of `allwish, animesalt, flemmix, moviesmod` from targeted WAF to provider Repair. The current 12-Repair / MalluMV-only-WAF split must be treated as provisional until those providers are replayed with sample-stage-aware evidence.
+- `merge_residential_provider_replay.py` now persists only privacy-safe adaptive aggregates: `sampleCount`, `sampleDebugStages`, `sampleStatuses`, and `sampleProgressStages`. Fixture titles, URLs, response bodies, cookies and IP/device data remain excluded.
+- `merge_waf_census_transport.py` now evaluates all persisted adaptive sample stages/statuses. Any earlier WAF/network-timeout evidence prevents a later clean fixture from erasing the blocker.
+- Regression tests prove both privacy and causal monotonicity. A fresh WAF/residential replay is required before the queue split is authoritative again.
