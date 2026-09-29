@@ -145,3 +145,11 @@
 - Missing pre-sandbox candidates emit `FIELD_BRAIN_LLM_FORCE_ARTIFACT_PARTIAL ... action=evaluate-present-only` instead of aborting valid candidates.
 - After isolated evaluation, accepted winners are applied independently and rejected/absent targets remain unresolved with `FIELD_BRAIN_LLM_FORCE_PARTIAL_ACCEPTANCE ... action=apply-winners-only`.
 - With `requireExternalForceMutations=true`, unresolved targets do not fall through to canonical Repair. This preserves causal attribution to the external Brain while allowing useful partial progress.
+
+## 2026-09-29 — FORCE #147 receiver/architecture follow-up
+
+- Brain FORCE #147 completed 14/14 but its three raw candidates (Anime-Ultime, Flemmix, MoviesMod) were invalidated upstream by a helper-identity/minimization defect before NiakVIO sandbox publication.
+- Brain now guards helper identity before minimization and requires body-only generation for complete function units.
+- Audit showed dedicated runtime resolvers already exist for 12/13 current repairQueue providers; Brain scope precedence now prefers those provider-specific runtimes before generic Bloc invention.
+- NiakVIO receiver was hardened so partial external batches and partial sandbox winners can make independent progress while unresolved targets remain Brain-only and do not silently fall through to canonical Repair.
+- A persisted external winner explicitly dispatches a fresh current-byte full census.
