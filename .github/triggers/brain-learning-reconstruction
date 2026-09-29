@@ -1,11 +1,12 @@
-Explicit architecture FORCE for AllWish after targeted Learning and Fast replay exhausted known strategy space. This run requires both cache scoping fixes: cached rows filtered to required cohort, and empty FAST_MISSING_PROVIDERS must never erase provider_filter.
-last_repair_run: 36546272263
-source_sha: 601582e17842d7da5bbaffac7a306cc9cb7f4297
-budget_minutes: 60
-reason: allwish-known-strategy-space-exhausted-require-new-architecture-capability
-validation_reason: allwish-only-synthesize-a-genuinely-new-provider-side-reader-or-request-capability-not-provider_origin_failover_v1
-expected_scope: current-provider-repair-handoff-only
-execution_mode: targeted-fast-handoff-v1
-target_providers: allwish
+Explicit architecture FORCE replay after fixing stale-main workflow requeue permissions.
+source_learning_run: 36637242526
+source_failure: stale-main-requeue-http-403-actions-permission
+source_sha: 714bc58bfcb98c22be1e22d00f5709c5e9dcd7e7
+budget_minutes: 360
+reason: retry-exact-fast-debt-after-orchestration-permission-fix
+validation_reason: brain-authored-architecture-only-no-hand-provider-patches
+expected_scope: canonical-fast-learning-debt-only
+execution_mode: targeted-force-multiphase-main-only
+target_providers: 4khdhub,allanime,anime-ultime,animesalt,animesultra,animevost-fr,flemmix,mallumv,moviebox,moviesmod,vidfast,yflix
 architecture_force: true
-publication_policy: direct-main-force-only-after-allowlist-targeted-tests-and-required-ci
+publication_policy: direct-main-force-only-after-allowlist-targeted-tests-required-ci-playback-identity-nonregression
