@@ -302,3 +302,8 @@
 - Brain Learning run 36618288471 failed before execution because architecture_force for 4khdhub was rechecked against .github/triggers/provider-fast-repair.json and incorrectly rejected, even though 4khdhub remained in the current census repairQueue.
 - The Fast trigger is an operator snapshot and can be stale after Repair persists newer evidence; it must not be a second authority.
 - Fix: targeted Learning/architecture FORCE is scoped by the current repairQueue + environmentQueue only. Existing current-byte validation and mutation gates remain unchanged.
+
+### 2026-09-29 — 4KHDHub exact CSS class-token regression
+- Provider non-regression on PR #222 reproduced movie=[] in tests/provider_4khdhub_runtime_behavior_test.py.
+- Root cause: classBlocks/classText ended class matching with \\b, so movie-card also matched nested movie-card-content and truncated the outer card before title/format/year.
+- Fix uses an exact class-token suffix guard (?![-_A-Za-z0-9]) in both helpers; the nested movie-card-content fixture is the regression witness.
