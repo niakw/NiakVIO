@@ -302,3 +302,8 @@
 - Main runtime behavior test showed 4KHDHub returning no movie fixture streams because CSS class matching treated class substrings as full-token matches.
 - Provider-scoped source fix uses exact class-token matching and is isolated from Brain orchestration.
 - Publication must be produced by the official branch reconstruction/materialization workflow before merge; source-only publication is not accepted.
+
+### 2026-09-29 — Targeted materializer final-byte minimizer ordering
+- 4KHDHub branch proof exposed a generic targeted-publication defect: materialize_provider_v3_one minimized first, then provider_security_hardening rewrote the bundle, so the final published bytes were not a minimizer fixed-point.
+- Correct order is now enforced: compose/override -> security hardening -> final-stage minimizer -> byte validation -> write.
+- Added a source-order contract test so targeted provider publication cannot regress this ordering.
