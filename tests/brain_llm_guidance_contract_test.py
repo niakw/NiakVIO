@@ -122,7 +122,11 @@ assert "NIAKVIO_BRAIN_LLM_GUIDANCE=" in workflow
 assert "brain_llm_guidance.py" in workflow
 assert "brain_llm_experiment.py" in workflow
 assert "Qwen/Qwen2.5-Coder-3B-Instruct-GGUF:Q4_K_M" in workflow
-assert "-c 8192 -np 2" in workflow
+assert "Qwen/Qwen2.5-Coder-7B-Instruct-GGUF:Q4_K_M" in workflow
+assert "model_ctx=8192" in workflow
+assert "model_ctx=16384" in workflow
+assert "model_parallel=2" in workflow
+assert "model_parallel=1" in workflow
 assert '--workers "$model_workers"' in workflow
 assert "model_workers=2" in workflow
 assert "--advisor-only" in workflow
@@ -131,10 +135,13 @@ assert '--max-tokens "$max_tokens"' in workflow
 assert "max_tokens=160" in workflow
 assert "cache_policy=stale-guidance-ignored" in workflow
 assert '--timeout-seconds "$model_timeout"' in workflow
-assert "max_tokens=768" in workflow
-assert "model_timeout=180" in workflow
+assert 'model_name="qwen2.5-coder-7b"' in workflow
+assert 'model_name="qwen2.5-coder-3b"' in workflow
+assert "max_tokens=512" in workflow
+assert "model_timeout=240" in workflow
 assert "model_workers=1" in workflow
-assert "max_tokens=512" not in workflow
+assert "--model qwen2.5-coder-7b" in workflow
+assert "qwen25-coder-7b-q4-km-v1" in workflow
 # Ephemeral private documents may feed the model but must never be uploaded.
 upload_tail=workflow[workflow.find("Upload sanitized learning and proposal state"):]
 assert "private-documents.jsonl" not in upload_tail
