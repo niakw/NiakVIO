@@ -224,6 +224,21 @@ assert targeted_replay["repairQueue"] == ["targeted-waf"], targeted_replay
 assert targeted_replay["targetedTransportBlockedQueue"] == [], targeted_replay
 assert targeted_replay["environmentQueue"] == [], targeted_replay
 
+# The lane-level debugStage is the final adaptive fixture only. A WAF/network
+# stage in any earlier sample prevents causal transfer back to provider Repair.
+mixed_sample_waf = copy.deepcopy(targeted_replay_waf)
+mixed_sample_waf["residentialProviderReplay"]["rows"][0]["sampleDebugStages"] = [
+    "provider_waf_challenge",
+    "provider_zero_before_provider_network",
+]
+mixed_sample_waf["residentialProviderReplay"]["rows"][0]["sampleStatuses"] = ["no_streams"]
+mixed_sample = mod.merge_transport(targeted_baseline, mixed_sample_waf)
+mixed_row = mixed_sample["providers"][0]
+assert mixed_row["repairEligible"] is False, mixed_row
+assert mixed_row["status"] == "HARNESS/ENV BLOCKED", mixed_row
+assert mixed_sample["targetedTransportBlockedQueue"] == ["targeted-waf"], mixed_sample
+assert mixed_sample["environmentQueue"] == ["targeted-waf"], mixed_sample
+
 
 network_baseline = {
     "runId": "repair-authority",
