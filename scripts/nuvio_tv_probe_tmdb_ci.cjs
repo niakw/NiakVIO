@@ -178,12 +178,29 @@ function jsonShape(value) {
   }
   return out;
 }
+function structuralTokens(raw, attribute, limit) {
+  const counts = new Map();
+  const re = new RegExp('\\\\b' + attribute + '\\s*=\\s*["\\']([^"\\']{1,512})["\\']', 'gi');
+  let match;
+  while ((match = re.exec(raw)) !== null && counts.size < 256) {
+    const values = attribute === 'class' ? String(match[1] || '').split(/\\s+/) : [String(match[1] || '')];
+    for (const value of values) {
+      const token = String(value || '').trim();
+      if (!/^[A-Za-z][A-Za-z0-9_-]{1,47}$/.test(token)) continue;
+      counts.set(token, (counts.get(token) || 0) + 1);
+    }
+  }
+  return [...counts.entries()]
+    .sort((a, b) => (b[1] - a[1]) || a[0].localeCompare(b[0]))
+    .slice(0, limit)
+    .map(([token]) => token);
+}
 function textShape(contentType, body) {
   const raw = String(body || '').slice(0, 65536);
   const low = raw.toLowerCase();
   const count = re => Math.min(99, (raw.match(re) || []).length);
   if (/text\/html/i.test(contentType)) {
-    return {kind:'html',sampleBytes:raw.length,forms:count(/<form\b/gi),iframes:count(/<iframe\b/gi),videos:count(/<video\b/gi),sources:count(/<source\b/gi),scripts:count(/<script\b/gi),anchors:count(/<a\b/gi),markers:[
+    return {kind:'html',sampleBytes:raw.length,forms:count(/<form\b/gi),iframes:count(/<iframe\b/gi),videos:count(/<video\b/gi),sources:count(/<source\b/gi),scripts:count(/<script\b/gi),anchors:count(/<a\b/gi),classTokens:structuralTokens(raw,'class',16),idTokens:structuralTokens(raw,'id',12),markers:[
       /__next_data__/i.test(raw)?'next-data':'',
       /application\/ld\+json/i.test(raw)?'json-ld':'',
       /(?:player|embed)/i.test(low)?'player':'',
