@@ -47,7 +47,8 @@ target_block = workflow[census_index:filter_index]
 assert "/tmp/fast-learning-handoff.json" not in target_block, target_block
 assert "repairQueue" in target_block, target_block
 
-multi_start = workflow.index('if [ -n "$target_providers" ]; then')
+handoff_selector = workflow.index("python scripts/select_fast_learning_handoff.py")
+multi_start = workflow.index('if [ -n "$target_providers" ]; then', handoff_selector)
 multi_end = workflow.index('elif [ -n "$target_provider" ]; then', multi_start)
 multi_block = workflow[multi_start:multi_end]
 assert 'environmentQueue' in multi_block, multi_block
