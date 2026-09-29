@@ -128,3 +128,12 @@
 - Safety remains fail-closed when no external candidate passes, when the artifact is stale/incomplete for the explicitly requested candidate cohort, or if a sandbox unexpectedly accepts a provider outside that cohort.
 - When at least one validated Brain winner is actually persisted to `main`, Repair now explicitly dispatches `temp-current-bytes-full-provider-census.yml` with `reason=force-winner-persisted`; final census no longer depends only on path filters catching the direct-apply commit.
 - This change is provider-neutral: no provider source bytes were modified. It is intended for the current 14-provider Brain FORCE cycle generated from NiakVIO `a7c1ad0013394fb010bcc176447554bc53a8f454`.
+
+
+## 2026-09-29 — Brain FORCE #147 page-1 structural rejection discovered
+
+- Authoritative Brain cycle on `fdda761b006305d3d89ad448ce34a0f385802522` published page 1/2 for the current 14-provider cohort: 8 providers processed, 6 remaining.
+- The page produced two executable-looking `provider_bloc` rows, for `anime-ultime` and `flemmix`, but both minimized edits replace the selected `_routeKind` function identity with an `_extractUrls` function.
+- Root cause is in Brain's selected-function envelope guard: its own contract says an explicit wrong function declaration must fail closed, but the implementation returned any explicit `function ...` replacement unchanged when the name differed.
+- These two page-1 rows are therefore not accepted repair proof and must not be promoted. NiakVIO sandbox execution is deferred until the complete 14/14 artifact is published and the Brain compiler guard is corrected.
+- A Brain fix is staged separately from `fdda761b` so the in-flight #147 continuation cannot be invalidated by a newer Brain main.
