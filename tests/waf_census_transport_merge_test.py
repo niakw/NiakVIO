@@ -166,8 +166,10 @@ targeted_baseline = {
         "repairEligible": False,
         "statusRepairEligible": True,
         "authorityRepairEligible": True,
+        "transportRepairEligible": False,
         "brainCheckRequired": True,
         "targetedTransportClass": "provider-waf-challenge-current",
+        "targetedTransportEvidence": ["movie:blocked.example:403"],
     }],
 }
 targeted_waf = {
@@ -191,6 +193,36 @@ assert targeted_row["harnessTransportClass"] == "github-all-transports-challenge
 assert targeted_merged["repairQueue"] == [], targeted_merged
 assert targeted_merged["environmentQueue"] == ["targeted-waf"], targeted_merged
 assert targeted_merged["harnessQueue"] == ["targeted-waf"], targeted_merged
+assert targeted_merged["targetedTransportBlockedQueue"] == ["targeted-waf"], targeted_merged
+
+# Full provider replay outranks the narrow WAF seed. If execution completes
+# identity-safe and returns zero before provider network, provider code owns the
+# remaining failure and the targeted WAF gate must be cleared.
+targeted_replay_waf = copy.deepcopy(targeted_waf)
+targeted_replay_waf["residentialProviderReplay"] = {
+    "available": True,
+    "rows": [{
+        "provider": "targeted-waf",
+        "lane": "movie",
+        "status": "no_streams",
+        "debugStage": "provider_zero_before_provider_network",
+        "raw": 0,
+        "playable": 0,
+        "verified": 0,
+        "contradictions": 0,
+        "identitySafe": True,
+    }],
+}
+targeted_replay = mod.merge_transport(targeted_baseline, targeted_replay_waf)
+targeted_replay_row = targeted_replay["providers"][0]
+assert targeted_replay_row["status"] == "NO PROOF", targeted_replay_row
+assert targeted_replay_row["repairEligible"] is True, targeted_replay_row
+assert targeted_replay_row["transportRepairEligible"] is True, targeted_replay_row
+assert targeted_replay_row["targetedTransportClass"] == "not-applicable", targeted_replay_row
+assert targeted_replay_row["targetedTransportEvidence"] == [], targeted_replay_row
+assert targeted_replay["repairQueue"] == ["targeted-waf"], targeted_replay
+assert targeted_replay["targetedTransportBlockedQueue"] == [], targeted_replay
+assert targeted_replay["environmentQueue"] == [], targeted_replay
 
 
 network_baseline = {
