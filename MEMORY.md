@@ -245,3 +245,12 @@
 - NiakVIO receiver now rejects authored provider mutations that change an existing named function's asyncness/name/parameter signature while still allowing uniquely named helper additions.
 - Receiver also rejects provider_bloc rewrites that remove a network helper's request/return semantics. This blocks the invalid AllWish FORCE candidate before sandbox/publication.
 - These receiver/test changes are provider-byte-neutral and must not invalidate external FORCE guidance by source drift.
+
+
+## 2026-09-29 — Manual provider-edit detour reverted; Brain ownership restored
+
+- During the current 13-provider repair effort, the orchestrator incorrectly hand-edited provider runtime Lego files for AllWish, AnimeSalt, Flemmix, MalluMV, MoviesMod and VidFast while investigating provider failures.
+- This violated the intended repair architecture: Brain/LLM must author provider-local mutations; NiakVIO must only orchestrate evidence, sandbox application, playable/identity proof, non-regression, census and publication.
+- All six provider runtime files were restored byte-for-byte to commit `164159ae8386691a30f9d1b705ba83caba2d495e`. `provider-overrides.json` and `tests/provider_vidfast_multibase_runtime_test.py` were also restored, and the temporary `provider_canonical_title_fallback_contract_test.py` was deleted.
+- The exploratory runs generated during the detour are retained only as historical evidence; none of the hand-authored provider changes is a valid repair result.
+- From this point, provider-local fixes must originate from Brain guidance/mutation output and pass the existing isolated current-byte validation chain before publication.
