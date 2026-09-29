@@ -254,3 +254,10 @@
 - All six provider runtime files were restored byte-for-byte to commit `164159ae8386691a30f9d1b705ba83caba2d495e`. `provider-overrides.json` and `tests/provider_vidfast_multibase_runtime_test.py` were also restored, and the temporary `provider_canonical_title_fallback_contract_test.py` was deleted.
 - The exploratory runs generated during the detour are retained only as historical evidence; none of the hand-authored provider changes is a valid repair result.
 - From this point, provider-local fixes must originate from Brain guidance/mutation output and pass the existing isolated current-byte validation chain before publication.
+
+## 2026-09-29 — Brain FORCE compiler recovered before next 13-provider cycle
+
+- Provider-local mutation ownership remains Brain-only; the earlier manual provider edit detour stays reverted.
+- Brain compact FORCE is CI-green after fixing four repair-mechanism defects exposed by the previous 13-provider zero-mutation cycle: complete-function wrapper normalization is limited to generated `provider_bloc`; authored patch signature drift remains fail-closed; editable-unit budgets cannot overflow; structural call-graph selection follows named callbacks such as `.then(parser)` so second-hop terminal helpers can be exposed.
+- Brain CI proof: run `36582057653`, job `109452493685`, green at `e5bbe01b5725acc70dc9602c02cd97074f805ec1` with 189 tests.
+- Current NiakVIO census authority remains `36547529107` with 13 provider Repair targets. No provider status changes from the compiler fix alone; the next step is a fresh Brain-authored 13-provider FORCE followed by NiakVIO isolated current-byte playable/identity/non-regression validation.
