@@ -76,19 +76,31 @@ def assert_policy() -> None:
             if path.resolve() == HYGIENE_WORKFLOW.resolve():
                 continue
             if path.resolve() == BRAIN_BRANCH_MAINTENANCE.resolve():
-                cleanup_markers = (
-                    f'REPAIR_BRANCH="{BRAIN_PROPOSAL_BRANCH}"',
-                    'gh pr list',
-                    '--head "$REPAIR_BRANCH"',
-                    'git push origin --delete "$REPAIR_BRANCH"',
+                cleanup_contracts = (
+                    (
+                        f'REPAIR_BRANCH="{BRAIN_PROPOSAL_BRANCH}"',
+                        'gh pr list',
+                        '--head "$REPAIR_BRANCH"',
+                        'git push origin --delete "$REPAIR_BRANCH"',
+                    ),
+                    (
+                        f'"{BRAIN_PROPOSAL_BRANCH}"',
+                        'for branch in',
+                        'gh pr list',
+                        '--head "$branch"',
+                        'git push origin --delete "$branch"',
+                    ),
                 )
-                for marker in cleanup_markers:
-                    if marker not in text:
-                        raise ValueError(f"Brain branch maintenance cleanup contract missing: {marker}")
+                if not any(all(marker in text for marker in contract) for contract in cleanup_contracts):
+                    raise ValueError(
+                        "Brain branch maintenance cleanup contract missing for repair proposal branch"
+                    )
                 forbidden_cleanup_markers = (
                     'gh pr create',
                     'HEAD:"$REPAIR_BRANCH"',
                     'git switch -C "$REPAIR_BRANCH"',
+                    'HEAD:"$branch"',
+                    'git switch -C "$branch"',
                 )
                 for marker in forbidden_cleanup_markers:
                     if marker in text:
