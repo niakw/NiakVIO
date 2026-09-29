@@ -1,9 +1,9 @@
-Explicit architecture FORCE replay after repairing the stale main-only cleanup policy guard.
+Explicit architecture FORCE replay after repairing the stale main-only cleanup policy guard and focusing Qwen context on executable strategy code.
 source_learning_run: 36643038761
-source_failure: stale-main-only-cleanup-policy-contract
-source_sha: c17a89a69681ee8115ad0fe8843be100f91e0f3f
+source_failure: stale-main-only-cleanup-policy-contract+prefix-only-force-context
+source_sha: 0aec2c72d4367cd083f3ad944942f356e739eb3d
 budget_minutes: 360
-reason: replay-exact-12-provider-force-after-policy-gate-fix
+reason: replay-exact-12-provider-force-on-focused-7b-context
 validation_reason: brain-authored-architecture-only-no-hand-provider-patches
 expected_scope: exact-failed-force-cohort
 execution_mode: targeted-force-multiphase-main-only
