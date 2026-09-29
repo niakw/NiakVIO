@@ -73,6 +73,18 @@ def parse_probe(stdout: str) -> dict[str, Any] | None:
     return None
 
 
+def safe_probe_error(stderr: str) -> str:
+    lines = [line.strip() for line in str(stderr or "").splitlines() if line.strip()]
+    for line in reversed(lines[-20:]):
+        match = re.search(r"\b(SyntaxError|ReferenceError|TypeError|RangeError|Error):\s*([^\r\n]{0,180})", line)
+        if not match:
+            continue
+        message = re.sub(r"https?://\S+", "<url>", match.group(2))
+        message = re.sub(r"(?i)(token|authorization|cookie|api[_-]?key)\s*[=:]\s*\S+", r"\1=<redacted>", message)
+        return f"{match.group(1)}:{message[:180]}"
+    return "node_probe_failed" if lines else ""
+
+
 def _fixture_identity(fixture: dict[str, Any]) -> tuple[str, int, int, str]:
     def integer(value: object) -> int:
         try:
@@ -472,7 +484,7 @@ def run_single(task: dict[str, Any]) -> dict[str, Any]:
     probe = parse_probe(proc.stdout)
     if probe is None:
         marker = "missing_tmdb_credential" if "missing_tmdb_credential" in proc.stderr else "invalid_probe_output"
-        return {**base, "status": marker, "debug_stage": marker, "raw": 0, "playable": 0, "verified": 0, "contradictions": 0, "duration_ms": round((time.monotonic() - started) * 1000), "stderr_tail": proc.stderr[-1000:]}
+        return {**base, "status": marker, "debug_stage": marker, "raw": 0, "playable": 0, "verified": 0, "contradictions": 0, "duration_ms": round((time.monotonic() - started) * 1000), "stderr_tail": proc.stderr[-1000:], "probe_error": safe_probe_error(proc.stderr)}
 
     raw = int(probe.get("raw_stream_count") or 0)
     playable = int(probe.get("playable_stream_count") or 0)
