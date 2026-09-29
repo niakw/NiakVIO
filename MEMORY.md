@@ -195,3 +195,13 @@
 - `merge_residential_provider_replay.py` now persists only privacy-safe adaptive aggregates: `sampleCount`, `sampleDebugStages`, `sampleStatuses`, and `sampleProgressStages`. Fixture titles, URLs, response bodies, cookies and IP/device data remain excluded.
 - `merge_waf_census_transport.py` now evaluates all persisted adaptive sample stages/statuses. Any earlier WAF/network-timeout evidence prevents a later clean fixture from erasing the blocker.
 - Regression tests prove both privacy and causal monotonicity. A fresh WAF/residential replay is required before the queue split is authoritative again.
+
+
+## 2026-09-29 — Explicit WAF target replay selection fixed
+
+- The sample-aware five-provider WAF rerun exposed a second selection bug: `select_residential_provider_replay.py` only selected providers whose current census status was HARNESS/ENV/CLIENT TRANSPORT/NETWORK BLOCKED.
+- After the previous provisional WAF merge, four of the requested five had already been moved back to NO PROOF / ROUTE PROVEN, so an explicit five-provider rerun full-replayed only MalluMV. This is why only MalluMV received fresh `sampleDebugStages` / `sampleStatuses`.
+- The selector now accepts an explicit provider list from the WAF workflow. Explicit providers are added only when they are still present in current symptomatic/repair/environment/harness/brain queues and authority repair is not disabled.
+- The WAF workflow now passes `TARGET_PROVIDERS` into residential full-provider selection. This allows a causal requalification request to replay the exact requested symptomatic cohort even if a previous provisional overlay changed their status class.
+- The selector remains provider-neutral and has been added to the external Brain drift whitelist. No provider bytes or proof status were changed by this fix.
+- A new five-provider replay is required before treating the current all-13 Repair queue as authoritative.
