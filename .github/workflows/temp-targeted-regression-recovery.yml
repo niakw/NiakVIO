@@ -23,6 +23,7 @@ on:
       - '.github/workflows/provider-targeted-recovery-sharded.yml'
       - 'scripts/merge_provider_targeted_recovery_shards.py'
       - 'scripts/run_provider_targeted_recovery.py'
+      - 'scripts/nuvio_tv_probe_tmdb_ci.cjs'
       - 'scripts/merge_targeted_census_transport.py'
       - 'tests/provider_targeted_census_transport_merge_test.py'
       - 'automation/provider-repair-batch-plan-latest.json'
@@ -31,6 +32,7 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/temp-targeted-regression-recovery.yml'
+      - 'scripts/nuvio_tv_probe_tmdb_ci.cjs'
       - 'scripts/provider_patches/**'
       - 'tests/provider_*runtime*_test.py'
       - 'tests/provider_*transport*_test.py'
