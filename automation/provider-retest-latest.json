@@ -3,16 +3,17 @@
   "requested_scope": "all",
   "resolved_scope": "explicit",
   "selected_providers": [
-    "animevostfr"
+    "allwish",
+    "vostfree"
   ],
   "shard_count": 1,
   "shard_index": 0,
   "environment": "node-adaptive-provider-targeted-first-real-stream-census-with-tmdb-runtime-context",
   "fixture_selection_policy": "retained-proof-first-then-provider-targeted-then-representative-then-three-corpus-rotated",
-  "provider_count": 1,
-  "task_count": 1,
-  "probe_count": 4,
-  "rotated_task_count": 1,
+  "provider_count": 2,
+  "task_count": 3,
+  "probe_count": 12,
+  "rotated_task_count": 3,
   "max_samples_per_lane": 4,
   "raw_provider_count": 0,
   "playable_provider_count": 0,
@@ -26,7 +27,7 @@
   "wrong_content_providers": [],
   "type_summary": {
     "movie": {
-      "tasks": 0,
+      "tasks": 1,
       "raw": 0,
       "playable": 0,
       "accepted_playable": 0,
@@ -34,7 +35,7 @@
       "wrong_content": 0
     },
     "tv": {
-      "tasks": 0,
+      "tasks": 1,
       "raw": 0,
       "playable": 0,
       "accepted_playable": 0,
@@ -51,101 +52,147 @@
     }
   },
   "status_counts": {
-    "no_streams": 1
+    "no_streams": 3
   },
   "debug_stage_counts": {
-    "provider_network_zero_result": 1
+    "provider_waf_challenge": 3
   },
   "debug_stage_providers": {
-    "provider_network_zero_result": [
-      "animevostfr"
+    "provider_waf_challenge": [
+      "allwish",
+      "vostfree"
     ]
   },
   "rows": [
     {
-      "provider_id": "animevostfr",
-      "provider_name": "🇫🇷 AnimeVOSTFR",
-      "semantic_type": "anime",
-      "fixture_title": "Hell Teacher: Jigoku Sensei Nube",
+      "provider_id": "allwish",
+      "provider_name": "🌟 All-Wish",
+      "semantic_type": "movie",
+      "fixture_title": "Barbie",
       "fixture": {
-        "tmdbId": "259544",
-        "mediaType": "anime",
-        "category": "anime",
-        "title": "Hell Teacher: Jigoku Sensei Nube",
-        "year": 2025,
-        "season": 1,
-        "episode": 1
+        "slug": "barbie-2023",
+        "tmdbId": "346698",
+        "mediaType": "movie",
+        "category": "movie",
+        "title": "Barbie",
+        "year": 2023
       },
       "status": "no_streams",
-      "debug_stage": "provider_network_zero_result",
+      "debug_stage": "provider_waf_challenge",
       "debug_model": {
         "strategy": "mixed_embed_resolver",
-        "source_runtime_family": "wordpress-search-episode",
+        "source_runtime_family": "tmdb-direct-api",
         "reconstruction_state": "learning-clean-seed",
         "identity_mode": "catalog_search",
         "requires_tmdb_before_run": true,
         "supported_types": [
-          "anime"
+          "movie",
+          "tv"
         ],
-        "route_count": 3,
+        "route_count": 2,
         "route_kinds": [
           "search",
-          "api",
-          "detail"
+          "player"
         ],
         "has_api_recipe": false,
-        "official_site": "https://animevostfr.org",
-        "official_hub": null,
+        "official_site": "https://all-wish.me",
+        "official_hub": "https://t.me/s/allwishme",
         "official_api": null
       },
-      "debug_fetch_count": 5,
-      "debug_provider_fetch_count": 4,
-      "debug_progress_stage": "lookup_only",
+      "debug_fetch_count": 4,
+      "debug_provider_fetch_count": 3,
+      "debug_progress_stage": "none",
       "debug_fetches": [
         {
-          "url": "https://api.themoviedb.org/3/tv/259544?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Ccontent_ratings&language=fr-FR&api_key=%3Credacted%3E",
-          "response_url": "https://api.themoviedb.org/3/tv/259544?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Ccontent_ratings&language=fr-FR&api_key=%3Credacted%3E",
+          "url": "https://api.themoviedb.org/3/movie/346698?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Crelease_dates&language=fr-FR&api_key=%3Credacted%3E",
+          "response_url": "https://api.themoviedb.org/3/movie/346698?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Crelease_dates&language=fr-FR&api_key=%3Credacted%3E",
           "method": "GET",
           "status": 200,
           "content_type": "application/json",
           "challenge": "",
-          "duration_ms": 51
+          "response_shape": {
+            "kind": "json",
+            "top": "object",
+            "keys": [
+              "adult",
+              "backdrop_path",
+              "belongs_to_collection",
+              "budget",
+              "genres",
+              "homepage",
+              "id",
+              "imdb_id",
+              "origin_country",
+              "original_language",
+              "original_title",
+              "overview",
+              "popularity",
+              "poster_path",
+              "production_companies",
+              "production_countries"
+            ]
+          },
+          "duration_ms": 186
         },
         {
-          "url": "https://animevostfr.org/?s=%E5%9C%B0%E7%8D%84%E5%85%88%E7%94%9F%E3%81%AC%EF%BD%9E%E3%81%B9%EF%BD%9E",
-          "response_url": "https://animevostfr.org/?s=%E5%9C%B0%E7%8D%84%E5%85%88%E7%94%9F%E3%81%AC%EF%BD%9E%E3%81%B9%EF%BD%9E",
+          "url": "https://all-wish.me/filter?keyword=Barbie",
+          "response_url": "https://all-wish.me/filter?keyword=Barbie",
           "method": "GET",
-          "status": 200,
+          "status": 403,
           "content_type": "text/html",
-          "challenge": "",
-          "duration_ms": 571
+          "challenge": "cloudflare",
+          "response_shape": {
+            "kind": "html",
+            "sampleBytes": 5671,
+            "forms": 0,
+            "iframes": 0,
+            "videos": 0,
+            "sources": 0,
+            "scripts": 1,
+            "anchors": 0,
+            "markers": []
+          },
+          "duration_ms": 207
         },
         {
-          "url": "https://animevostfr.org/?s=Jigoku%20Sensei%20Nube%202025",
-          "response_url": "https://animevostfr.org/?s=Jigoku%20Sensei%20Nube%202025",
+          "url": "https://all-wish.me/filter?keyword=Barbie%3A%20The%20Movie",
+          "response_url": "https://all-wish.me/filter?keyword=Barbie%3A%20The%20Movie",
           "method": "GET",
-          "status": 200,
+          "status": 403,
           "content_type": "text/html",
-          "challenge": "",
-          "duration_ms": 230
+          "challenge": "cloudflare",
+          "response_shape": {
+            "kind": "html",
+            "sampleBytes": 5744,
+            "forms": 0,
+            "iframes": 0,
+            "videos": 0,
+            "sources": 0,
+            "scripts": 1,
+            "anchors": 0,
+            "markers": []
+          },
+          "duration_ms": 203
         },
         {
-          "url": "https://animevostfr.org/?s=%E3%81%AC%E3%83%BC%E3%81%B9%E3%83%BC%E3%82%A2%E3%83%8B%E3%83%A1",
-          "response_url": "https://animevostfr.org/?s=%E3%81%AC%E3%83%BC%E3%81%B9%E3%83%BC%E3%82%A2%E3%83%8B%E3%83%A1",
+          "url": "https://all-wish.me/filter?keyword=Barbie%3A%20La%20Pelicula",
+          "response_url": "https://all-wish.me/filter?keyword=Barbie%3A%20La%20Pelicula",
           "method": "GET",
-          "status": 200,
+          "status": 403,
           "content_type": "text/html",
-          "challenge": "",
-          "duration_ms": 260
-        },
-        {
-          "url": "https://animevostfr.org/?s=%E3%81%98%E3%81%94%E3%81%8F%E3%81%9B%E3%82%93%E3%81%9B%E3%81%84%E3%81%AC%E3%83%BC%E3%81%B9%E3%83%BC",
-          "response_url": "https://animevostfr.org/?s=%E3%81%98%E3%81%94%E3%81%8F%E3%81%9B%E3%82%93%E3%81%9B%E3%81%84%E3%81%AC%E3%83%BC%E3%81%B9%E3%83%BC",
-          "method": "GET",
-          "status": 200,
-          "content_type": "text/html",
-          "challenge": "",
-          "duration_ms": 224
+          "challenge": "cloudflare",
+          "response_shape": {
+            "kind": "html",
+            "sampleBytes": 5750,
+            "forms": 0,
+            "iframes": 0,
+            "videos": 0,
+            "sources": 0,
+            "scripts": 1,
+            "anchors": 0,
+            "markers": []
+          },
+          "duration_ms": 155
         }
       ],
       "debug_provider_value_trace_v18": null,
@@ -158,16 +205,479 @@
       "verified": 0,
       "contradictions": 0,
       "identity_safe": true,
-      "duration_ms": 6148,
+      "duration_ms": 4508,
       "sample_count": 4,
       "sample_titles": [
-        "Jujutsu Kaisen",
-        "Mushoku Tensei: Jobless Reincarnation",
-        "Failure Frame: I Became the Strongest and Annihilated Everything with Low-Level Spells",
-        "Hell Teacher: Jigoku Sensei Nube"
+        "Interstellar",
+        "Black Panther",
+        "Oppenheimer",
+        "Barbie"
       ],
       "adaptive_rotated": true,
       "samples": [
+        {
+          "fixture_title": "Interstellar",
+          "fixture": {
+            "tmdbId": "157336",
+            "mediaType": "movie",
+            "category": "movie",
+            "title": "Interstellar",
+            "year": 2014
+          },
+          "status": "no_streams",
+          "debug_stage": "provider_waf_challenge",
+          "debug_progress_stage": "none",
+          "raw": 0,
+          "playable": 0,
+          "verified": 0,
+          "contradictions": 0,
+          "duration_ms": 1177
+        },
+        {
+          "fixture_title": "Black Panther",
+          "fixture": {
+            "slug": "black-panther-2018",
+            "tmdbId": "284054",
+            "mediaType": "movie",
+            "category": "movie",
+            "title": "Black Panther",
+            "year": 2018
+          },
+          "status": "no_streams",
+          "debug_stage": "provider_waf_challenge",
+          "debug_progress_stage": "none",
+          "raw": 0,
+          "playable": 0,
+          "verified": 0,
+          "contradictions": 0,
+          "duration_ms": 1457
+        },
+        {
+          "fixture_title": "Oppenheimer",
+          "fixture": {
+            "slug": "oppenheimer-2023",
+            "tmdbId": "872585",
+            "mediaType": "movie",
+            "category": "movie",
+            "title": "Oppenheimer",
+            "year": 2023
+          },
+          "status": "no_streams",
+          "debug_stage": "provider_waf_challenge",
+          "debug_progress_stage": "none",
+          "raw": 0,
+          "playable": 0,
+          "verified": 0,
+          "contradictions": 0,
+          "duration_ms": 881
+        },
+        {
+          "fixture_title": "Barbie",
+          "fixture": {
+            "slug": "barbie-2023",
+            "tmdbId": "346698",
+            "mediaType": "movie",
+            "category": "movie",
+            "title": "Barbie",
+            "year": 2023
+          },
+          "status": "no_streams",
+          "debug_stage": "provider_waf_challenge",
+          "debug_progress_stage": "none",
+          "raw": 0,
+          "playable": 0,
+          "verified": 0,
+          "contradictions": 0,
+          "duration_ms": 758
+        }
+      ]
+    },
+    {
+      "provider_id": "allwish",
+      "provider_name": "🌟 All-Wish",
+      "semantic_type": "tv",
+      "fixture_title": "Wednesday",
+      "fixture": {
+        "slug": "wednesday-2022-s01e01",
+        "tmdbId": "119051",
+        "mediaType": "tv",
+        "category": "tv",
+        "title": "Wednesday",
+        "year": 2022,
+        "season": 1,
+        "episode": 1
+      },
+      "status": "no_streams",
+      "debug_stage": "provider_waf_challenge",
+      "debug_model": {
+        "strategy": "mixed_embed_resolver",
+        "source_runtime_family": "tmdb-direct-api",
+        "reconstruction_state": "learning-clean-seed",
+        "identity_mode": "catalog_search",
+        "requires_tmdb_before_run": true,
+        "supported_types": [
+          "movie",
+          "tv"
+        ],
+        "route_count": 2,
+        "route_kinds": [
+          "search",
+          "player"
+        ],
+        "has_api_recipe": false,
+        "official_site": "https://all-wish.me",
+        "official_hub": "https://t.me/s/allwishme",
+        "official_api": null
+      },
+      "debug_fetch_count": 4,
+      "debug_provider_fetch_count": 3,
+      "debug_progress_stage": "none",
+      "debug_fetches": [
+        {
+          "url": "https://api.themoviedb.org/3/tv/119051?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Ccontent_ratings&language=fr-FR&api_key=%3Credacted%3E",
+          "response_url": "https://api.themoviedb.org/3/tv/119051?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Ccontent_ratings&language=fr-FR&api_key=%3Credacted%3E",
+          "method": "GET",
+          "status": 200,
+          "content_type": "application/json",
+          "challenge": "",
+          "response_shape": {
+            "kind": "json",
+            "top": "object",
+            "keys": [
+              "adult",
+              "backdrop_path",
+              "created_by",
+              "episode_run_time",
+              "first_air_date",
+              "genres",
+              "homepage",
+              "id",
+              "in_production",
+              "languages",
+              "last_air_date",
+              "last_episode_to_air",
+              "name",
+              "next_episode_to_air",
+              "networks",
+              "number_of_episodes"
+            ]
+          },
+          "duration_ms": 165
+        },
+        {
+          "url": "https://all-wish.me/filter?keyword=Mercredi",
+          "response_url": "https://all-wish.me/filter?keyword=Mercredi",
+          "method": "GET",
+          "status": 403,
+          "content_type": "text/html",
+          "challenge": "cloudflare",
+          "response_shape": {
+            "kind": "html",
+            "sampleBytes": 5677,
+            "forms": 0,
+            "iframes": 0,
+            "videos": 0,
+            "sources": 0,
+            "scripts": 1,
+            "anchors": 0,
+            "markers": []
+          },
+          "duration_ms": 210
+        },
+        {
+          "url": "https://all-wish.me/filter?keyword=Wednesday",
+          "response_url": "https://all-wish.me/filter?keyword=Wednesday",
+          "method": "GET",
+          "status": 403,
+          "content_type": "text/html",
+          "challenge": "cloudflare",
+          "response_shape": {
+            "kind": "html",
+            "sampleBytes": 5680,
+            "forms": 0,
+            "iframes": 0,
+            "videos": 0,
+            "sources": 0,
+            "scripts": 1,
+            "anchors": 0,
+            "markers": []
+          },
+          "duration_ms": 117
+        },
+        {
+          "url": "https://all-wish.me/filter?keyword=Merlina",
+          "response_url": "https://all-wish.me/filter?keyword=Merlina",
+          "method": "GET",
+          "status": 403,
+          "content_type": "text/html",
+          "challenge": "cloudflare",
+          "response_shape": {
+            "kind": "html",
+            "sampleBytes": 5674,
+            "forms": 0,
+            "iframes": 0,
+            "videos": 0,
+            "sources": 0,
+            "scripts": 1,
+            "anchors": 0,
+            "markers": []
+          },
+          "duration_ms": 119
+        }
+      ],
+      "debug_provider_value_trace_v18": null,
+      "debug_provider_value_trace_history_v21": [],
+      "debug_provider_runtime_dispatch_error_v1": null,
+      "debug_identity_reasons": [],
+      "stderr_tail": "FIELD_TMDB_PROBE_CONTEXT state=core_ready credential_visible=false metadata_hydrated=false dynamic=true core_capability=true\n",
+      "raw": 0,
+      "playable": 0,
+      "verified": 0,
+      "contradictions": 0,
+      "identity_safe": true,
+      "duration_ms": 3566,
+      "sample_count": 4,
+      "sample_titles": [
+        "Breaking Bad",
+        "Vikings",
+        "Money Heist",
+        "Wednesday"
+      ],
+      "adaptive_rotated": true,
+      "samples": [
+        {
+          "fixture_title": "Breaking Bad",
+          "fixture": {
+            "tmdbId": "1396",
+            "mediaType": "tv",
+            "category": "tv",
+            "title": "Breaking Bad",
+            "year": 2008,
+            "season": 1,
+            "episode": 1
+          },
+          "status": "no_streams",
+          "debug_stage": "provider_waf_challenge",
+          "debug_progress_stage": "none",
+          "raw": 0,
+          "playable": 0,
+          "verified": 0,
+          "contradictions": 0,
+          "duration_ms": 1245
+        },
+        {
+          "fixture_title": "Vikings",
+          "fixture": {
+            "slug": "vikings-2013-s01e01",
+            "tmdbId": "44217",
+            "mediaType": "tv",
+            "category": "tv",
+            "title": "Vikings",
+            "year": 2013,
+            "season": 1,
+            "episode": 1
+          },
+          "status": "no_streams",
+          "debug_stage": "provider_waf_challenge",
+          "debug_progress_stage": "none",
+          "raw": 0,
+          "playable": 0,
+          "verified": 0,
+          "contradictions": 0,
+          "duration_ms": 767
+        },
+        {
+          "fixture_title": "Money Heist",
+          "fixture": {
+            "slug": "money-heist-2017-s01e01",
+            "tmdbId": "71446",
+            "mediaType": "tv",
+            "category": "tv",
+            "title": "Money Heist",
+            "year": 2017,
+            "season": 1,
+            "episode": 1
+          },
+          "status": "no_streams",
+          "debug_stage": "provider_waf_challenge",
+          "debug_progress_stage": "none",
+          "raw": 0,
+          "playable": 0,
+          "verified": 0,
+          "contradictions": 0,
+          "duration_ms": 681
+        },
+        {
+          "fixture_title": "Wednesday",
+          "fixture": {
+            "slug": "wednesday-2022-s01e01",
+            "tmdbId": "119051",
+            "mediaType": "tv",
+            "category": "tv",
+            "title": "Wednesday",
+            "year": 2022,
+            "season": 1,
+            "episode": 1
+          },
+          "status": "no_streams",
+          "debug_stage": "provider_waf_challenge",
+          "debug_progress_stage": "none",
+          "raw": 0,
+          "playable": 0,
+          "verified": 0,
+          "contradictions": 0,
+          "duration_ms": 619
+        }
+      ]
+    },
+    {
+      "provider_id": "vostfree",
+      "provider_name": "🆓 Vostfree",
+      "semantic_type": "anime",
+      "fixture_title": "Failure Frame: I Became the Strongest and Annihilated Everything with Low-Level Spells",
+      "fixture": {
+        "tmdbId": "245285",
+        "mediaType": "anime",
+        "category": "anime",
+        "title": "Failure Frame: I Became the Strongest and Annihilated Everything with Low-Level Spells",
+        "year": 2024,
+        "season": 1,
+        "episode": 1
+      },
+      "status": "no_streams",
+      "debug_stage": "provider_waf_challenge",
+      "debug_model": {
+        "strategy": "mixed_embed_resolver",
+        "source_runtime_family": "catalogue-html",
+        "reconstruction_state": "learning-clean-seed",
+        "identity_mode": "tmdb_direct",
+        "requires_tmdb_before_run": false,
+        "supported_types": [
+          "anime"
+        ],
+        "route_count": 0,
+        "route_kinds": [],
+        "has_api_recipe": false,
+        "official_site": "https://ipv4.vostfree.ws",
+        "official_hub": null,
+        "official_api": null
+      },
+      "debug_fetch_count": 3,
+      "debug_provider_fetch_count": 2,
+      "debug_progress_stage": "none",
+      "debug_fetches": [
+        {
+          "url": "https://api.themoviedb.org/3/tv/245285?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Ccontent_ratings&language=fr-FR&api_key=%3Credacted%3E",
+          "response_url": "https://api.themoviedb.org/3/tv/245285?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Ccontent_ratings&language=fr-FR&api_key=%3Credacted%3E",
+          "method": "GET",
+          "status": 200,
+          "content_type": "application/json",
+          "challenge": "",
+          "response_shape": {
+            "kind": "json",
+            "top": "object",
+            "keys": [
+              "adult",
+              "backdrop_path",
+              "created_by",
+              "episode_run_time",
+              "first_air_date",
+              "genres",
+              "homepage",
+              "id",
+              "in_production",
+              "languages",
+              "last_air_date",
+              "last_episode_to_air",
+              "name",
+              "next_episode_to_air",
+              "networks",
+              "number_of_episodes"
+            ]
+          },
+          "duration_ms": 159
+        },
+        {
+          "url": "https://ipv4.vostfree.ws/",
+          "response_url": "https://ipv4.vostfree.ws/",
+          "method": "GET",
+          "status": 403,
+          "content_type": "text/html",
+          "challenge": "cloudflare",
+          "response_shape": {
+            "kind": "html",
+            "sampleBytes": 5599,
+            "forms": 0,
+            "iframes": 0,
+            "videos": 0,
+            "sources": 0,
+            "scripts": 1,
+            "anchors": 0,
+            "markers": []
+          },
+          "duration_ms": 212
+        },
+        {
+          "url": "https://ipv4.vostfree.ws/index.php?do=search",
+          "response_url": "https://ipv4.vostfree.ws/index.php?do=search",
+          "method": "POST",
+          "status": 403,
+          "content_type": "text/html",
+          "challenge": "cloudflare",
+          "response_shape": {
+            "kind": "html",
+            "sampleBytes": 5948,
+            "forms": 0,
+            "iframes": 0,
+            "videos": 0,
+            "sources": 0,
+            "scripts": 1,
+            "anchors": 0,
+            "markers": []
+          },
+          "duration_ms": 422
+        }
+      ],
+      "debug_provider_value_trace_v18": null,
+      "debug_provider_value_trace_history_v21": [],
+      "debug_provider_runtime_dispatch_error_v1": null,
+      "debug_identity_reasons": [],
+      "stderr_tail": "FIELD_TMDB_PROBE_CONTEXT state=core_ready credential_visible=false metadata_hydrated=false dynamic=true core_capability=true\n",
+      "raw": 0,
+      "playable": 0,
+      "verified": 0,
+      "contradictions": 0,
+      "identity_safe": true,
+      "duration_ms": 3362,
+      "sample_count": 4,
+      "sample_titles": [
+        "Death Note",
+        "Jujutsu Kaisen",
+        "Mushoku Tensei: Jobless Reincarnation",
+        "Failure Frame: I Became the Strongest and Annihilated Everything with Low-Level Spells"
+      ],
+      "adaptive_rotated": true,
+      "samples": [
+        {
+          "fixture_title": "Death Note",
+          "fixture": {
+            "tmdbId": "13916",
+            "mediaType": "anime",
+            "category": "anime",
+            "title": "Death Note",
+            "year": 2006,
+            "season": 1,
+            "episode": 1
+          },
+          "status": "no_streams",
+          "debug_stage": "provider_waf_challenge",
+          "debug_progress_stage": "none",
+          "raw": 0,
+          "playable": 0,
+          "verified": 0,
+          "contradictions": 0,
+          "duration_ms": 711
+        },
         {
           "fixture_title": "Jujutsu Kaisen",
           "fixture": {
@@ -180,13 +690,13 @@
             "episode": 1
           },
           "status": "no_streams",
-          "debug_stage": "provider_network_zero_result",
-          "debug_progress_stage": "lookup_only",
+          "debug_stage": "provider_waf_challenge",
+          "debug_progress_stage": "none",
           "raw": 0,
           "playable": 0,
           "verified": 0,
           "contradictions": 0,
-          "duration_ms": 1922
+          "duration_ms": 834
         },
         {
           "fixture_title": "Mushoku Tensei: Jobless Reincarnation",
@@ -200,13 +710,13 @@
             "episode": 1
           },
           "status": "no_streams",
-          "debug_stage": "provider_network_zero_result",
-          "debug_progress_stage": "lookup_only",
+          "debug_stage": "provider_waf_challenge",
+          "debug_progress_stage": "none",
           "raw": 0,
           "playable": 0,
           "verified": 0,
           "contradictions": 0,
-          "duration_ms": 1337
+          "duration_ms": 776
         },
         {
           "fixture_title": "Failure Frame: I Became the Strongest and Annihilated Everything with Low-Level Spells",
@@ -220,33 +730,13 @@
             "episode": 1
           },
           "status": "no_streams",
-          "debug_stage": "provider_network_zero_result",
-          "debug_progress_stage": "lookup_only",
+          "debug_stage": "provider_waf_challenge",
+          "debug_progress_stage": "none",
           "raw": 0,
           "playable": 0,
           "verified": 0,
           "contradictions": 0,
-          "duration_ms": 1334
-        },
-        {
-          "fixture_title": "Hell Teacher: Jigoku Sensei Nube",
-          "fixture": {
-            "tmdbId": "259544",
-            "mediaType": "anime",
-            "category": "anime",
-            "title": "Hell Teacher: Jigoku Sensei Nube",
-            "year": 2025,
-            "season": 1,
-            "episode": 1
-          },
-          "status": "no_streams",
-          "debug_stage": "provider_network_zero_result",
-          "debug_progress_stage": "lookup_only",
-          "raw": 0,
-          "playable": 0,
-          "verified": 0,
-          "contradictions": 0,
-          "duration_ms": 1351
+          "duration_ms": 800
         }
       ]
     }
