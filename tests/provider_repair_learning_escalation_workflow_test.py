@@ -34,10 +34,12 @@ for required in (
     "run_provider_retest.py",
     "FIELD_BRAIN_LLM_FORCE_REQUIREMENT",
     "FIELD_BRAIN_LLM_FORCE_ARTIFACT_COVERAGE",
+    "FIELD_BRAIN_LLM_FORCE_ARTIFACT_PARTIAL",
+    "action=evaluate-present-only",
+    "External Brain Force artifact contains no executable mutation for explicit target cohort",
     "FIELD_BRAIN_LLM_FORCE_PARTIAL_ACCEPTANCE",
     "action=apply-winners-only",
     "reason=external-force-only",
-    "External Brain Force artifact is incomplete for explicit target cohort",
     "coverage_complete=",
     "missing_external_force_providers=",
     "FIELD_BRAIN_LLM_FORCE_CURRENT_BYTES",
@@ -50,6 +52,7 @@ for required in (
     assert required in workflow, required
 
 assert "one independently validated external Brain mutation per target" not in workflow
+assert "External Brain Force artifact is incomplete for explicit target cohort" not in workflow
 assert "REQUIRE_EXTERNAL_FORCE_MUTATIONS:" in workflow
 
 assert "FIELD_PROVIDER_BRAIN_FORCE_DEBT" in persist_block
