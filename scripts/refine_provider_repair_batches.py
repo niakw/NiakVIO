@@ -11,6 +11,7 @@ from typing import Any
 ROOT=Path(__file__).resolve().parents[1]
 PLAN=ROOT/"automation/provider-repair-batch-plan-latest.json"
 VERDICT=ROOT/"automation/provider-targeted-regression-recovery-latest.json"
+STATUS=ROOT/"automation/provider-census-status.json"
 OUTPUT=ROOT/"automation/provider-repair-batch-refined-latest.json"
 
 def load(path:Path)->dict[str,Any]:
@@ -18,10 +19,11 @@ def load(path:Path)->dict[str,Any]:
     if not isinstance(value,dict): raise ValueError(f"{path} must contain an object")
     return value
 
-def signature(provider:str, verdict:dict[str,Any])->dict[str,Any]:
+def signature(provider:str, verdict:dict[str,Any], targeted_blocked:set[str])->dict[str,Any]:
     row=(verdict.get("providers") or {}).get(provider)
+    transport_owned=provider in targeted_blocked
     if not isinstance(row,dict):
-        return {"key":"not-probed","debugStages":[],"network":[]}
+        return {"key":("targeted-waf|" if transport_owned else "provider|")+"not-probed","debugStages":[],"network":[],"transportOwned":transport_owned}
     stages=sorted({str(v or "unknown") for v in (row.get("debugStages") or {}).values()})
     observations=[]
     for lane,items in sorted((row.get("network") or {}).items()):
@@ -39,16 +41,22 @@ def signature(provider:str, verdict:dict[str,Any])->dict[str,Any]:
             )
             observations.append(f"{lane}:{method}:{host}:{status}:{shape}")
     observations=sorted(set(observations))[:24]
-    key=";".join(stages)+"||"+";".join(observations)
-    return {"key":key or "empty","debugStages":stages,"network":observations}
+    key=("targeted-waf|" if transport_owned else "provider|")+";".join(stages)+"||"+";".join(observations)
+    return {"key":key or "empty","debugStages":stages,"network":observations,"transportOwned":transport_owned}
 
 def main()->int:
     ap=argparse.ArgumentParser()
     ap.add_argument("--plan",type=Path,default=PLAN)
     ap.add_argument("--verdict",type=Path,default=VERDICT)
+    ap.add_argument("--status",type=Path,default=STATUS)
     ap.add_argument("--output",type=Path,default=OUTPUT)
     args=ap.parse_args()
-    plan=load(args.plan); verdict=load(args.verdict)
+    plan=load(args.plan); verdict=load(args.verdict); status=load(args.status)
+    targeted_blocked={
+        str(value or "").strip().casefold()
+        for value in status.get("targetedTransportBlockedQueue") or []
+        if str(value or "").strip()
+    }
     refined=[]
     for group in plan.get("groups") or []:
         if not isinstance(group,dict): continue
@@ -56,22 +64,18 @@ def main()->int:
         buckets:dict[str,list[str]]=defaultdict(list)
         details={}
         for provider in members:
-            sig=signature(provider,verdict)
+            sig=signature(provider,verdict,targeted_blocked)
             buckets[sig["key"]].append(provider)
             details[sig["key"]]=sig
         for index,(key,providers) in enumerate(sorted(buckets.items(),key=lambda kv:(-len(kv[1]),kv[0]))):
             sig=details[key]
-            explicit_waf = "provider_waf_challenge" in {
-                str(value or "").strip().casefold()
-                for value in sig["debugStages"]
-                if str(value or "").strip()
-            }
+            transport_owned = sig.get("transportOwned") is True
             refined.append({
                 "groupId":f"{group.get('groupId')}#r{index+1}",
                 "parentGroupId":group.get("groupId"),
-                "repairScope":"harness-compatibility" if explicit_waf else group.get("repairScope"),
+                "repairScope":"harness-compatibility" if transport_owned else group.get("repairScope"),
                 "capabilityStrategy":group.get("capabilityStrategy"),
-                "transportSignature":"targeted-provider-waf-challenge" if explicit_waf else (group.get("transportSignature") or "not-applicable"),
+                "transportSignature":"targeted-provider-waf-challenge" if transport_owned else (group.get("transportSignature") or "not-applicable"),
                 "evidenceDepths":list(group.get("evidenceDepths") or []),
                 "dominantIssues":list(group.get("dominantIssues") or []),
                 "providerCount":len(providers),
