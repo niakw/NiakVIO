@@ -1,14 +1,15 @@
 {
   "schemaVersion": 1,
-  "requestedAt": "2026-09-27T04:31:00+02:00",
+  "requestedAt": "2026-09-29T08:31:00+02:00",
   "scope": "repair",
   "targetProviders": [
-    "animevostfr"
+    "allwish",
+    "vostfree"
   ],
   "autoRepair": false,
-  "goal": "Validate AnimeVOSTFR direct learned /animes/{slug}/ replay -> episode -> trembed -> external player on current bytes.",
-  "retry": 13,
-  "reason": "animevostfr-direct-route-replay-before-search",
-  "sourceExpectation": "1d328835bf157dce68dd00c569e2276a7240b599",
-  "executionExpectation": "RETEST exact animevostfr only; require raw/playable/verified > 0; no global Repair"
+  "goal": "Refresh current-byte provider evidence for the two FORCE-cohort cases that Brain must not mutate from stale or transport-only proof.",
+  "retry": 14,
+  "reason": "brain-force-fresh-evidence-allwish-vostfree",
+  "sourceExpectation": "current main provider bytes only",
+  "executionExpectation": "RETEST exact allwish,vostfree only; persist observational census; no automatic Repair"
 }
