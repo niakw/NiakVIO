@@ -45,4 +45,10 @@ assert flemmix_tv["fixtures"][0]["title"] == "House of the Dragon", flemmix_tv["
 allwish = by[("allwish", "movie")]
 assert allwish["fixtures"][0]["title"] == "Interstellar", allwish["fixtures"]
 
+err = audit.safe_probe_error(
+    "node:internal\nTypeError: fetch failed https://secret.example/path token=abc123\n"
+)
+assert err.startswith("TypeError:fetch failed <url>"), err
+assert "secret.example" not in err and "abc123" not in err, err
+
 print("provider quick-yield fixture priority contract passed")
