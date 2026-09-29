@@ -439,6 +439,9 @@ def merge_transport(
                 row["action"] = census._action(new_status)
                 row["brainCheckRequired"] = False
                 row["repairEligible"] = False
+                row["transportRepairEligible"] = True
+                row["targetedTransportClass"] = "not-applicable"
+                row["targetedTransportEvidence"] = []
                 row["testedThisRun"] = True
                 row["residentialProviderReplayPromoted"] = True
                 replay_promoted.add(provider)
@@ -459,6 +462,9 @@ def merge_transport(
                 authority_allowed = row.get("authorityRepairEligible") is not False
                 row["statusRepairEligible"] = census.is_repair_eligible_status(replay_zero_state)
                 row["repairEligible"] = bool(row["statusRepairEligible"] and authority_allowed)
+                row["transportRepairEligible"] = True
+                row["targetedTransportClass"] = "not-applicable"
+                row["targetedTransportEvidence"] = []
                 row["action"] = (
                     census._action(replay_zero_state)
                     if authority_allowed
@@ -507,6 +513,9 @@ def merge_transport(
                     authority_allowed = row.get("authorityRepairEligible") is not False
                     row["statusRepairEligible"] = census.is_repair_eligible_status(repair_state)
                     row["repairEligible"] = bool(row["statusRepairEligible"] and authority_allowed)
+                    row["transportRepairEligible"] = True
+                    row["targetedTransportClass"] = "not-applicable"
+                    row["targetedTransportEvidence"] = []
                     row["action"] = (
                         census._action(repair_state)
                         if authority_allowed
@@ -537,6 +546,9 @@ def merge_transport(
                 authority_allowed = row.get("authorityRepairEligible") is not False
                 row["statusRepairEligible"] = census.is_repair_eligible_status(repair_state)
                 row["repairEligible"] = bool(row["statusRepairEligible"] and authority_allowed)
+                row["transportRepairEligible"] = True
+                row["targetedTransportClass"] = "not-applicable"
+                row["targetedTransportEvidence"] = []
                 row["action"] = (
                     census._action(repair_state)
                     if authority_allowed
@@ -600,6 +612,14 @@ def merge_transport(
         and str(row.get("provider") or "").strip()
     )
     out["harnessQueue"] = list(out["environmentQueue"])
+    out["targetedTransportBlockedQueue"] = sorted(
+        str(row.get("provider") or "").strip().casefold()
+        for row in providers
+        if isinstance(row, dict)
+        and row.get("transportRepairEligible") is False
+        and str(row.get("targetedTransportClass") or "") == "provider-waf-challenge-current"
+        and str(row.get("provider") or "").strip()
+    )
     # Exact transport queues are recomputed from final row status after the
     # overlay. Keep environmentQueue/harnessQueue above for compatibility only.
     out["harnessMismatchQueue"] = sorted(
