@@ -25,6 +25,9 @@ required = [
     'echo "architecture_force=$architecture_force"',
     "steps.learning-slot.outputs.target_provider",
     "steps.learning-slot.outputs.architecture_force",
+    "required_set=set(required)",
+    "cached['rows']=filtered_rows",
+    "cached['providerCount']=len({",
     'if [ -n "$TARGET_PROVIDER" ]; then args+=(--provider "$TARGET_PROVIDER"); fi',
 ]
 for needle in required:
@@ -73,3 +76,11 @@ assert 'target_providers="$trigger_targets"' in trigger_block
 assert "architecture_force=true" in trigger_block
 assert "needs.experiment.outputs.architecture_force == 'true'" in workflow
 assert "needs.experiment.outputs.architecture_force != 'true'" in workflow
+
+cache_start = workflow.index("required_set=set(required)")
+cache_end = workflow.index("missing=[p for p in required if p not in covered]", cache_start)
+cache_block = workflow[cache_start:cache_end]
+assert "filtered_rows" in cache_block
+assert "providerId" in cache_block
+assert "required_set" in cache_block
+assert "cached_path.write_text" in cache_block
