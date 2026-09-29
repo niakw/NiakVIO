@@ -28,7 +28,7 @@ function response(url,text){return {ok:true,status:200,url,async text(){return t
 globalThis.fetch=async function(url){
   url=String(url);
   if(url.includes("/?s=The%20Colony%202021")) return response(url,
-    '<a class="movie-card" href="/the-colony-movie-7978/"><span class="movie-card-title">The Colony</span><span class="movie-card-format">Movies</span><span class="movie-card-meta">2021</span></a>');
+    '<a class="movie-card" href="/the-colony-movie-7978/"><div class="movie-card-content"><span class="movie-card-title">The Colony</span><span class="movie-card-format">Movies</span><span class="movie-card-meta">2021</span></div></a>');
   if(url.endsWith("/the-colony-movie-7978/")) return response(url,
     '<div class="download-item"><span class="file-title">The Colony 2021 2160p [12 GB]</span><a href="https://hubcloud.test/f/abc">HubCloud</a></div>');
   if(url==="https://hubcloud.test/f/abc") return response(url,
@@ -37,7 +37,7 @@ globalThis.fetch=async function(url){
     '<div class="card-header">The Colony 2021 2160p 12 GB</div><a href="https://media.workers.dev/colony.mkv">Direct</a>');
 
   if(url.includes("/?s=Breaking%20Bad%20Season%201")) return response(url,
-    '<a class="movie-card" href="/breaking-bad-series-1385/"><span class="movie-card-title">Breaking Bad Season 1</span><span class="movie-card-format">Series</span><span class="movie-card-meta">2008</span></a>');
+    '<a class="movie-card" href="/breaking-bad-series-1385/"><div class="movie-card-content"><span class="movie-card-title">Breaking Bad Season 1</span><span class="movie-card-format">Series</span><span class="movie-card-meta">2008</span></div></a>');
   if(url.endsWith("/breaking-bad-series-1385/")) return response(url,
     '<div id="episodes"><div class="episode-download-item"><span class="episode-file-title">Breaking Bad S01E01 1080p 2 GB</span><a href="https://hubcloud.test/f/bb">HubCloud</a></div></div>');
   if(url==="https://hubcloud.test/f/bb") return response(url,
