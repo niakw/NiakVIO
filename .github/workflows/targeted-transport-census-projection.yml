@@ -1,0 +1,55 @@
+name: Targeted Transport Census Projection
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/targeted-transport-census-projection.yml'
+      - '.github/triggers/targeted-transport-census-projection.json'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: targeted-transport-census-projection
+  cancel-in-progress: true
+
+jobs:
+  project:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+
+      - name: Validate targeted transport projection
+        run: |
+          set -euo pipefail
+          python tests/provider_targeted_census_transport_merge_test.py
+          python scripts/merge_targeted_census_transport.py             --status automation/provider-census-status.json             --targeted automation/provider-targeted-regression-recovery-latest.json             --output automation/provider-census-status.json
+          python scripts/render_provider_census_status_from_state.py             --status automation/provider-census-status.json             --output PROVIDER_CENSUS_STATUS.md
+
+      - name: Persist projected census
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin main
+          if [ "$(git rev-parse origin/main)" != "$GITHUB_SHA" ]; then
+            echo "FIELD_TARGETED_TRANSPORT_PROJECTION_STALE source=$GITHUB_SHA remote=$(git rev-parse origin/main)"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add automation/provider-census-status.json PROVIDER_CENSUS_STATUS.md
+          if git diff --cached --quiet; then
+            echo "FIELD_TARGETED_TRANSPORT_PROJECTION already-current"
+            exit 0
+          fi
+          git commit -m "ci(repair): project targeted transport blockers into census"
+          git push origin HEAD:main
