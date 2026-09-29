@@ -8,6 +8,39 @@
   "groupCount": 13,
   "groups": [
     {
+      "groupId": "harness-compatibility|html_scraper|residential-exit-all-challenged#r1",
+      "parentGroupId": "harness-compatibility|html_scraper|residential-exit-all-challenged",
+      "repairScope": "harness-compatibility",
+      "capabilityStrategy": "html_scraper",
+      "transportSignature": "targeted-provider-waf-challenge",
+      "evidenceDepths": [
+        "chain"
+      ],
+      "dominantIssues": [
+        "waf_challenge"
+      ],
+      "providerCount": 1,
+      "providers": [
+        "mallumv"
+      ],
+      "networkSignature": "provider_waf_challenge||movie:GET:api.themoviedb.org:200:/{id}/movie/{id};movie:GET:mallumv.space:200:/internal/{id}/{id}/{opaque};movie:GET:mallumv.space:200:/movie/{id}/{id};movie:GET:mallumv.space:200:/search.php;movie:GET:vik1ngfile.site:200:/assets/custom-F_ZXKHX.js;movie:GET:vik1ngfile.site:200:/f/tMAohzba53;movie:GET:vik1ngfile.site:200:/f/u6lxab0wCH;movie:GET:vikingfile.com:200:/fast-download/{opaque}",
+      "debugStages": [
+        "provider_waf_challenge"
+      ],
+      "networkShape": [
+        "movie:GET:api.themoviedb.org:200:/{id}/movie/{id}",
+        "movie:GET:mallumv.space:200:/internal/{id}/{id}/{opaque}",
+        "movie:GET:mallumv.space:200:/movie/{id}/{id}",
+        "movie:GET:mallumv.space:200:/search.php",
+        "movie:GET:vik1ngfile.site:200:/assets/custom-F_ZXKHX.js",
+        "movie:GET:vik1ngfile.site:200:/f/tMAohzba53",
+        "movie:GET:vik1ngfile.site:200:/f/u6lxab0wCH",
+        "movie:GET:vikingfile.com:200:/fast-download/{opaque}"
+      ],
+      "splitReason": "shared-signature",
+      "executionPolicy": "batch-first"
+    },
+    {
       "groupId": "learning|html_scraper#r1",
       "parentGroupId": "learning|html_scraper",
       "repairScope": "harness-compatibility",
@@ -363,8 +396,7 @@
         "chain"
       ],
       "dominantIssues": [
-        "network_http_error",
-        "waf_challenge"
+        "network_http_error"
       ],
       "providerCount": 1,
       "providers": [
@@ -390,41 +422,7 @@
         "tv:GET:pengu.uk:429:/{opaque}/stream/series/{id}",
         "tv:GET:vidsrcme.ru:200:/vs_src.php"
       ],
-      "splitReason": "observed-signature-divergence",
-      "executionPolicy": "batch-first"
-    },
-    {
-      "groupId": "terminal-extraction|html_scraper#r2",
-      "parentGroupId": "terminal-extraction|html_scraper",
-      "repairScope": "harness-compatibility",
-      "capabilityStrategy": "html_scraper",
-      "transportSignature": "targeted-provider-waf-challenge",
-      "evidenceDepths": [
-        "chain"
-      ],
-      "dominantIssues": [
-        "network_http_error",
-        "waf_challenge"
-      ],
-      "providerCount": 1,
-      "providers": [
-        "mallumv"
-      ],
-      "networkSignature": "provider_waf_challenge||movie:GET:api.themoviedb.org:200:/{id}/movie/{id};movie:GET:mallumv.space:200:/internal/{id}/{id}/{opaque};movie:GET:mallumv.space:200:/movie/{id}/{id};movie:GET:mallumv.space:200:/search.php;movie:GET:vik1ngfile.site:200:/assets/custom-F_ZXKHX.js;movie:GET:vik1ngfile.site:200:/f/tMAohzba53;movie:GET:vik1ngfile.site:200:/f/u6lxab0wCH;movie:GET:vikingfile.com:200:/fast-download/{opaque}",
-      "debugStages": [
-        "provider_waf_challenge"
-      ],
-      "networkShape": [
-        "movie:GET:api.themoviedb.org:200:/{id}/movie/{id}",
-        "movie:GET:mallumv.space:200:/internal/{id}/{id}/{opaque}",
-        "movie:GET:mallumv.space:200:/movie/{id}/{id}",
-        "movie:GET:mallumv.space:200:/search.php",
-        "movie:GET:vik1ngfile.site:200:/assets/custom-F_ZXKHX.js",
-        "movie:GET:vik1ngfile.site:200:/f/tMAohzba53",
-        "movie:GET:vik1ngfile.site:200:/f/u6lxab0wCH",
-        "movie:GET:vikingfile.com:200:/fast-download/{opaque}"
-      ],
-      "splitReason": "observed-signature-divergence",
+      "splitReason": "shared-signature",
       "executionPolicy": "batch-first"
     }
   ]
