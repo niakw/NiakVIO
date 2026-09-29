@@ -30,7 +30,6 @@
       "voiranime",
       "voiranime-homes",
       "voiranime-rip",
-      "vostfree",
       "wookafr"
     ],
     "version": 1
@@ -914,7 +913,7 @@
       ]
     }
   ],
-  "operationalProviderCount": 29,
+  "operationalProviderCount": 28,
   "providerCount": 46,
   "providers": {
     "4khdhub": {
@@ -7345,7 +7344,7 @@
         "anime"
       ],
       "officialHost": "ipv4.vostfree.ws",
-      "operational": true,
+      "operational": false,
       "peerRequestRecipes": [],
       "peerRouteTemplates": [
         "/{query}searches,stoppingearly",
@@ -7403,7 +7402,7 @@
         "/api/v2/themoviedb?id={tmdbId}",
         "/meta/series/tt12343534.json"
       ],
-      "status": "FULL OK",
+      "status": "ROUTE PROVEN",
       "strategy": "mixed_embed_resolver"
     },
     "wookafr": {
@@ -8090,8 +8089,8 @@
     "requiresDeepValidation": true
   },
   "schemaVersion": 2,
-  "sourceRunId": "36531469863-retest",
-  "sourceSha": "182d08374c45ce7aec8bc7aa67e3486f6aa47e64",
+  "sourceRunId": "36545448018",
+  "sourceSha": "e910b004b9666b923670b22e2747280598833592",
   "strategyPatterns": {
     "api_stream_resolver": {
       "commonRequestRecipes": [],
@@ -8109,12 +8108,12 @@
         },
         {
           "providerSupport": 1,
-          "role": "detail",
+          "role": "search",
           "supportRatio": 0.5
         },
         {
           "providerSupport": 1,
-          "role": "search",
+          "role": "detail",
           "supportRatio": 0.5
         },
         {
@@ -8164,12 +8163,12 @@
         },
         {
           "providerSupport": 1,
-          "role": "player",
+          "role": "other",
           "supportRatio": 0.25
         },
         {
           "providerSupport": 1,
-          "role": "other",
+          "role": "player",
           "supportRatio": 0.25
         }
       ]
@@ -8257,7 +8256,7 @@
           "route": "/embed/wa805bkcrb02",
           "semanticType": "anime",
           "streamProof": true,
-          "supportRatio": 0.1333
+          "supportRatio": 0.1429
         },
         {
           "body": {},
@@ -8275,7 +8274,7 @@
           "route": "/embed/ihd7l819etlv",
           "semanticType": "anime",
           "streamProof": true,
-          "supportRatio": 0.1333
+          "supportRatio": 0.1429
         },
         {
           "body": {},
@@ -8293,7 +8292,7 @@
           "route": "/?s={query}",
           "semanticType": "movie",
           "streamProof": false,
-          "supportRatio": 0.1333
+          "supportRatio": 0.1429
         },
         {
           "body": {},
@@ -8312,78 +8311,72 @@
           "route": "/engine/ajax/manga_episodes_api.php?id={id}",
           "semanticType": "anime",
           "streamProof": true,
-          "supportRatio": 0.1333
+          "supportRatio": 0.1429
         }
       ],
       "commonRouteTemplates": [
         {
-          "providerSupport": 10,
+          "providerSupport": 9,
           "role": "api",
           "route": "/api/v2/themoviedb?id={tmdbId}",
-          "supportRatio": 0.6667
+          "supportRatio": 0.6429
         },
         {
           "providerSupport": 7,
           "role": "search",
           "route": "/?s={query}",
-          "supportRatio": 0.4667
+          "supportRatio": 0.5
         },
         {
           "providerSupport": 3,
           "role": "detail",
           "route": "/anime/{slug}/",
-          "supportRatio": 0.2
+          "supportRatio": 0.2143
         },
         {
           "providerSupport": 3,
           "role": "episode",
           "route": "/engine/ajax/manga_episodes_api.php?id={id}",
-          "supportRatio": 0.2
+          "supportRatio": 0.2143
         },
         {
           "providerSupport": 2,
           "role": "player",
           "route": "/watch/{slug}",
-          "supportRatio": 0.1333
+          "supportRatio": 0.1429
         },
         {
           "providerSupport": 2,
           "role": "search",
           "route": "/search/Jujutsu+Kaisen/",
-          "supportRatio": 0.1333
+          "supportRatio": 0.1429
         },
         {
           "providerSupport": 2,
           "role": "search",
           "route": "/wp-json/v2/posts?search={query}",
-          "supportRatio": 0.1333
+          "supportRatio": 0.1429
         },
         {
           "providerSupport": 2,
           "role": "search",
           "route": "/wp-json/v2/posts?search={query}&per_page=10",
-          "supportRatio": 0.1333
+          "supportRatio": 0.1429
         },
         {
           "providerSupport": 2,
           "role": "detail",
           "route": "/{slug}",
-          "supportRatio": 0.1333
-        },
-        {
-          "providerSupport": 2,
-          "role": "player",
-          "route": "/embed/",
-          "supportRatio": 0.1333
+          "supportRatio": 0.1429
         },
         {
           "providerSupport": 2,
           "role": "player",
           "route": "/embed",
-          "supportRatio": 0.1333
+          "supportRatio": 0.1429
         }
       ],
-      "greenProviderCount": 15,
+      "greenProviderCount": 14,
       "greenProviders": [
         "anikototv",
         "anime-sama",
@@ -8398,44 +8391,43 @@
         "voiranime",
         "voiranime-homes",
         "voiranime-rip",
-        "vostfree",
         "wookafr"
       ],
       "routeFamilies": [
         {
           "providerSupport": 13,
-          "role": "detail",
-          "supportRatio": 0.8667
-        },
-        {
-          "providerSupport": 13,
           "role": "episode",
-          "supportRatio": 0.8667
+          "supportRatio": 0.9286
         },
         {
           "providerSupport": 12,
-          "role": "search",
-          "supportRatio": 0.8
+          "role": "detail",
+          "supportRatio": 0.8571
         },
         {
           "providerSupport": 11,
-          "role": "api",
-          "supportRatio": 0.7333
+          "role": "search",
+          "supportRatio": 0.7857
         },
         {
-          "providerSupport": 8,
-          "role": "player",
-          "supportRatio": 0.5333
+          "providerSupport": 10,
+          "role": "api",
+          "supportRatio": 0.7143
         },
         {
           "providerSupport": 7,
           "role": "other",
-          "supportRatio": 0.4667
+          "supportRatio": 0.5
+        },
+        {
+          "providerSupport": 7,
+          "role": "player",
+          "supportRatio": 0.5
         },
         {
           "providerSupport": 2,
           "role": "source",
-          "supportRatio": 0.1333
+          "supportRatio": 0.1429
         }
       ]
     },
@@ -8449,12 +8441,12 @@
       "routeFamilies": [
         {
           "providerSupport": 1,
-          "role": "episode",
+          "role": "search",
           "supportRatio": 1.0
         },
         {
           "providerSupport": 1,
-          "role": "search",
+          "role": "episode",
           "supportRatio": 1.0
         },
         {
