@@ -46,6 +46,8 @@ assert "bad token" not in serialized
 assert "123bad" not in serialized
 assert "not-allowed" not in serialized
 
+subprocess.run(["node", "--check", str(PROBE)], capture_output=True, text=True, check=True)
+
 src = PROBE.read_text(encoding="utf-8")
 assert "function structuralTokens(" in src
 assert "const classTokens = structuralTokens(raw,'class',16);" in src
