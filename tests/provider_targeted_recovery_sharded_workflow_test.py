@@ -48,5 +48,7 @@ for needle in [
 ]:
     assert needle in sharded, needle
 
+assert "scripts/nuvio_tv_probe_tmdb_ci.cjs" in mono
+assert "scripts/nuvio_tv_probe_tmdb_ci.cjs" in sharded
 assert "ThreadPoolExecutor" not in mono
 print("Provider targeted recovery workflow size routing passed")
