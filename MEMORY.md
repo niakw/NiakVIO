@@ -237,3 +237,11 @@
 - NiakVIO `apply_brain_llm_force_mutations.py` now compares named JS function signatures before/after authored provider_patch/provider_js application and fails closed on async/name/parameter drift, restoring original bytes on rejection.
 - The receiver-safety script and tests are classified as provider-neutral source drift so an otherwise valid external Force candidate is not rejected merely because this safety guard was added after its source SHA.
 - Current census `36547529107` remains **27 FULL OK · 2 PARTIAL OK · 9 ROUTE PROVEN · 3 CHAIN REACHED · 1 NO PROOF · 4 DISABLED**, repairQueue 13. No new provider is claimed repaired by these guard changes.
+
+
+## 2026-09-29 — Receiver guards invalid FORCE candidates while 9-provider FORCE runs
+
+- Fast Repair run `36545761845` produced 0 candidates / 0 validated providers across its 12-target cohort and handed all 12 to Learning; census remains 27 FULL OK · 2 PARTIAL OK · 9 ROUTE PROVEN · 3 CHAIN REACHED · 1 NO PROOF · 4 DISABLED, repairQueue 13.
+- NiakVIO receiver now rejects authored provider mutations that change an existing named function's asyncness/name/parameter signature while still allowing uniquely named helper additions.
+- Receiver also rejects provider_bloc rewrites that remove a network helper's request/return semantics. This blocks the invalid AllWish FORCE candidate before sandbox/publication.
+- These receiver/test changes are provider-byte-neutral and must not invalidate external FORCE guidance by source drift.
