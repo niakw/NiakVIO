@@ -20,194 +20,26 @@
     "4khdhub": {
       "contradictions": 0,
       "debugStages": {
-        "movie": "provider_network_zero_result",
-        "tv": "provider_network_zero_result"
+        "movie": "invalid_probe_output",
+        "tv": "invalid_probe_output"
       },
       "network": {
-        "movie": [
-          {
-            "host": "api.themoviedb.org",
-            "method": "GET",
-            "path": "/{id}/movie/{id}",
-            "shape": {
-              "keys": [
-                "adult",
-                "backdrop_path",
-                "belongs_to_collection",
-                "budget",
-                "genres",
-                "homepage",
-                "id",
-                "imdb_id",
-                "origin_country",
-                "original_language",
-                "original_title",
-                "overview",
-                "popularity",
-                "poster_path",
-                "production_companies",
-                "production_countries"
-              ],
-              "kind": "json",
-              "top": "object"
-            },
-            "status": 200
-          },
-          {
-            "host": "4khdhub.one",
-            "method": "GET",
-            "path": "/",
-            "shape": {
-              "anchors": 42,
-              "classTokens": [
-                "movie-card-format",
-                "dropdown-item",
-                "movie-card",
-                "movie-card-content",
-                "movie-card-formats",
-                "movie-card-image",
-                "movie-card-meta",
-                "movie-card-overlay",
-                "movie-card-title",
-                "quality-badges",
-                "nav-item",
-                "nav-link",
-                "sr-only",
-                "dropdown-menu",
-                "space-y-4",
-                "pagination-container"
-              ],
-              "forms": 1,
-              "idTokens": [
-                "back-to-top",
-                "close-mobile-menu",
-                "close-search",
-                "current-year",
-                "logo",
-                "main-nav",
-                "menu-toggle",
-                "mobile-menu-backdrop",
-                "search",
-                "search-backdrop",
-                "search-overlay",
-                "search-toggle"
-              ],
-              "iframes": 0,
-              "kind": "html",
-              "markers": [
-                "json-ld",
-                "download",
-                "episode"
-              ],
-              "sampleBytes": 40708,
-              "scripts": 16,
-              "sources": 0,
-              "videos": 0
-            },
-            "status": 200
-          }
-        ],
-        "tv": [
-          {
-            "host": "api.themoviedb.org",
-            "method": "GET",
-            "path": "/{id}/tv/{id}",
-            "shape": {
-              "keys": [
-                "adult",
-                "backdrop_path",
-                "created_by",
-                "episode_run_time",
-                "first_air_date",
-                "genres",
-                "homepage",
-                "id",
-                "in_production",
-                "languages",
-                "last_air_date",
-                "last_episode_to_air",
-                "name",
-                "next_episode_to_air",
-                "networks",
-                "number_of_episodes"
-              ],
-              "kind": "json",
-              "top": "object"
-            },
-            "status": 200
-          },
-          {
-            "host": "4khdhub.one",
-            "method": "GET",
-            "path": "/",
-            "shape": {
-              "anchors": 31,
-              "classTokens": [
-                "dropdown-item",
-                "movie-card-format",
-                "nav-item",
-                "nav-link",
-                "sr-only",
-                "dropdown-menu",
-                "space-y-4",
-                "pagination-container",
-                "card-grid",
-                "container",
-                "dark",
-                "fixed",
-                "flex-1",
-                "header",
-                "latest-releases",
-                "latest-releases-header"
-              ],
-              "forms": 1,
-              "idTokens": [
-                "back-to-top",
-                "close-mobile-menu",
-                "close-search",
-                "current-year",
-                "logo",
-                "main-nav",
-                "menu-toggle",
-                "mobile-menu-backdrop",
-                "search",
-                "search-backdrop",
-                "search-overlay",
-                "search-toggle"
-              ],
-              "iframes": 0,
-              "kind": "html",
-              "markers": [
-                "json-ld",
-                "download",
-                "episode"
-              ],
-              "sampleBytes": 21957,
-              "scripts": 16,
-              "sources": 0,
-              "videos": 0
-            },
-            "status": 200
-          }
-        ]
+        "movie": [],
+        "tv": []
       },
       "playableLanes": [],
       "safeDiagnostics": [],
       "sampleTitles": {
         "movie": [
-          "Sinners",
-          "Interstellar",
-          "Mon ninja et moi 3",
-          "The Colony"
+          "Sinners"
         ],
         "tv": [
-          "Breaking Bad",
-          "Revenant"
+          "Breaking Bad"
         ]
       },
       "statuses": {
-        "movie": "no_streams",
-        "tv": "no_streams"
+        "movie": "invalid_probe_output",
+        "tv": "invalid_probe_output"
       },
       "verifiedLanes": []
     }
@@ -217,7 +49,7 @@
   ],
   "retainedProviderCount": 0,
   "retainedProviders": [],
-  "runId": "36591361698",
+  "runId": "36603842078",
   "schemaVersion": 3,
   "selectedProviderCount": 1,
   "selectedProviders": [
@@ -244,7 +76,7 @@
     "yflix"
   ],
   "sourceCensusRunId": "36547529107",
-  "triggerSha": "44504ed77463e86db6c5a8101e9d433ef1d1200e",
+  "triggerSha": "3d4583bd0f1efc806e82a5c13a628b367a483667",
   "verifiedProviderCount": 0,
   "verifiedProviders": []
 }
