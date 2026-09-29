@@ -177,6 +177,36 @@ def network_differential(waf: dict[str, Any], provider: str) -> dict[str, Any]:
     return {"classification": classification, "evidence": evidence}
 
 
+def _replay_stages(replay_rows: list[dict[str, Any]]) -> set[str]:
+    stages: set[str] = set()
+    for item in replay_rows:
+        if not isinstance(item, dict):
+            continue
+        stage=str(item.get("debugStage") or item.get("debug_stage") or "").strip().casefold()
+        if stage:
+            stages.add(stage)
+        for value in item.get("sampleDebugStages") or []:
+            value=str(value or "").strip().casefold()
+            if value:
+                stages.add(value)
+    return stages
+
+
+def _replay_statuses(replay_rows: list[dict[str, Any]]) -> set[str]:
+    statuses: set[str] = set()
+    for item in replay_rows:
+        if not isinstance(item, dict):
+            continue
+        status=str(item.get("status") or "").strip().casefold()
+        if status:
+            statuses.add(status)
+        for value in item.get("sampleStatuses") or []:
+            value=str(value or "").strip().casefold()
+            if value:
+                statuses.add(value)
+    return statuses
+
+
 def _residential_zero_replay_state(
     row: dict[str, Any],
     replay_rows: list[dict[str, Any]],
@@ -194,16 +224,8 @@ def _residential_zero_replay_state(
         return None
     if any(int(item.get("playable") or 0) > 0 for item in replay_rows if isinstance(item, dict)):
         return None
-    stages = {
-        str(item.get("debugStage") or item.get("debug_stage") or "").strip().casefold()
-        for item in replay_rows
-        if isinstance(item, dict)
-    }
-    statuses = {
-        str(item.get("status") or "").strip().casefold()
-        for item in replay_rows
-        if isinstance(item, dict)
-    }
+    stages = _replay_stages(replay_rows)
+    statuses = _replay_statuses(replay_rows)
     blocked = {
         "provider_network_exception",
         "provider_network_http_error",
@@ -255,16 +277,8 @@ def _post_harness_repair_state(
     if not replay_rows:
         return None
 
-    stages = {
-        str(item.get("debugStage") or item.get("debug_stage") or "").strip().casefold()
-        for item in replay_rows
-        if isinstance(item, dict)
-    }
-    statuses = {
-        str(item.get("status") or "").strip().casefold()
-        for item in replay_rows
-        if isinstance(item, dict)
-    }
+    stages = _replay_stages(replay_rows)
+    statuses = _replay_statuses(replay_rows)
     if any(int(item.get("playable") or 0) > 0 for item in replay_rows if isinstance(item, dict)):
         return None
     if any(item.get("identitySafe") is False for item in replay_rows if isinstance(item, dict)):
