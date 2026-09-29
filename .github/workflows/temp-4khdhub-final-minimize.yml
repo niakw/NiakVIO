@@ -1,0 +1,63 @@
+name: TEMP - 4KHDHub final minimize
+
+on:
+  push:
+    branches:
+      - fix/4khdhub-published-runtime
+    paths:
+      - '.github/workflows/temp-4khdhub-final-minimize.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: temp-4khdhub-final-minimize
+  cancel-in-progress: true
+
+jobs:
+  minimize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      NUVIO_PROVIDER_V3_CONTEXT: release
+      NUVIO_PROVIDER_V3_FINAL_MINIMIZE: '1'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: true
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Final-minimize 4KHDHub
+        run: |
+          set -euo pipefail
+          timeout 180s python scripts/materialize_provider_v3_one.py 4khdhub
+          python tests/provider_4khdhub_runtime_behavior_test.py
+          python tests/provider_v3_minimizer_published_test.py
+          python tests/provider_html_filter_security_test.py --published
+          python scripts/validate_published_provider_config.py
+          git diff --check
+          git status --short
+      - name: Commit final publication deltas
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add -A
+          git diff --cached --quiet && { echo FIELD_4KHDHUB_FINAL_MINIMIZE changed=false; exit 0; }
+          git commit -m 'fix(4khdhub): final-minimize published runtime'
+          git fetch origin fix/4khdhub-published-runtime
+          test "$(git rev-parse origin/fix/4khdhub-published-runtime)" = "${GITHUB_SHA}" || {
+            echo "branch moved during 4KHDHub final minimization" >&2
+            exit 1
+          }
+          git push origin HEAD:fix/4khdhub-published-runtime
+          echo "FIELD_4KHDHUB_FINAL_MINIMIZE changed=true sha=$(git rev-parse HEAD)"
