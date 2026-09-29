@@ -3,7 +3,7 @@
   "sourceRunId": "36531469863-retest",
   "sourceTriggerSha": "182d08374c45ce7aec8bc7aa67e3486f6aa47e64",
   "sourcePlanRunId": "36531469863-retest",
-  "sourceVerdictRunId": "36536829688",
+  "sourceVerdictRunId": "36540208957",
   "providerCount": 13,
   "groupCount": 13,
   "groups": [
@@ -114,13 +114,13 @@
       "providers": [
         "animesalt"
       ],
-      "networkSignature": "provider_waf_challenge||anime:GET:animesalt.cx:403:/;anime:GET:animesalt.cx:403:/series/my-hero-academia;anime:GET:api.themoviedb.org:200:/{id}/tv/{id}",
+      "networkSignature": "provider_waf_challenge||anime:GET:animesalt.cx:403:/;anime:GET:animesalt.cx:403:/series/hunter-x-hunter;anime:GET:api.themoviedb.org:200:/{id}/tv/{id}",
       "debugStages": [
         "provider_waf_challenge"
       ],
       "networkShape": [
         "anime:GET:animesalt.cx:403:/",
-        "anime:GET:animesalt.cx:403:/series/my-hero-academia",
+        "anime:GET:animesalt.cx:403:/series/hunter-x-hunter",
         "anime:GET:api.themoviedb.org:200:/{id}/tv/{id}"
       ],
       "splitReason": "observed-signature-divergence",
@@ -144,14 +144,14 @@
       "providers": [
         "moviesmod"
       ],
-      "networkSignature": "provider_waf_challenge||movie:GET:api.themoviedb.org:200:/{id}/movie/{id};movie:GET:links.modpro.blog:403:/archives/{id};movie:GET:moviesmod.ai.in:200:/search/Thor;movie:GET:moviesmod.ai.in:200:/{opaque};tv:GET:api.themoviedb.org:200:/{id}/tv/{id};tv:GET:episodes.modpro.blog:403:/archives/{id};tv:GET:moviesmod.ai.in:200:/search/{id};tv:GET:moviesmod.ai.in:200:/{opaque}",
+      "networkSignature": "provider_waf_challenge||movie:GET:api.themoviedb.org:200:/{id}/movie/{id};movie:GET:links.modpro.blog:403:/archives/{id};movie:GET:moviesmod.ai.in:200:/search/{opaque};movie:GET:moviesmod.ai.in:200:/{opaque};tv:GET:api.themoviedb.org:200:/{id}/tv/{id};tv:GET:episodes.modpro.blog:403:/archives/{id};tv:GET:moviesmod.ai.in:200:/search/{id};tv:GET:moviesmod.ai.in:200:/{opaque}",
       "debugStages": [
         "provider_waf_challenge"
       ],
       "networkShape": [
         "movie:GET:api.themoviedb.org:200:/{id}/movie/{id}",
         "movie:GET:links.modpro.blog:403:/archives/{id}",
-        "movie:GET:moviesmod.ai.in:200:/search/Thor",
+        "movie:GET:moviesmod.ai.in:200:/search/{opaque}",
         "movie:GET:moviesmod.ai.in:200:/{opaque}",
         "tv:GET:api.themoviedb.org:200:/{id}/tv/{id}",
         "tv:GET:episodes.modpro.blog:403:/archives/{id}",
