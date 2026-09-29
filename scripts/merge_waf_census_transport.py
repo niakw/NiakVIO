@@ -331,7 +331,10 @@ def merge_transport(
 
     baseline_environment = {
         str(value or "").strip().casefold()
-        for value in (baseline.get("environmentQueue") or baseline.get("harnessQueue") or [])
+        for value in [
+            *((baseline.get("environmentQueue") or baseline.get("harnessQueue") or [])),
+            *((baseline.get("targetedTransportBlockedQueue") or [])),
+        ]
         if str(value or "").strip()
     }
     waf_providers = {
