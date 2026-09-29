@@ -137,3 +137,11 @@
 - Root cause is in Brain's selected-function envelope guard: its own contract says an explicit wrong function declaration must fail closed, but the implementation returned any explicit `function ...` replacement unchanged when the name differed.
 - These two page-1 rows are therefore not accepted repair proof and must not be promoted. NiakVIO sandbox execution is deferred until the complete 14/14 artifact is published and the Brain compiler guard is corrected.
 - A Brain fix is staged separately from `fdda761b` so the in-flight #147 continuation cannot be invalidated by a newer Brain main.
+
+
+## 2026-09-29 — Partial external Brain cohorts no longer block valid winners
+
+- External FORCE coverage is now evaluated in two stages. Before sandbox, an explicit cohort may contain Brain abstentions as long as at least one requested provider has an executable mutation; only unexpected providers or zero executable mutations fail closed.
+- Missing pre-sandbox candidates emit `FIELD_BRAIN_LLM_FORCE_ARTIFACT_PARTIAL ... action=evaluate-present-only` instead of aborting valid candidates.
+- After isolated evaluation, accepted winners are applied independently and rejected/absent targets remain unresolved with `FIELD_BRAIN_LLM_FORCE_PARTIAL_ACCEPTANCE ... action=apply-winners-only`.
+- With `requireExternalForceMutations=true`, unresolved targets do not fall through to canonical Repair. This preserves causal attribution to the external Brain while allowing useful partial progress.
