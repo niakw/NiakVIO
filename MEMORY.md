@@ -316,3 +316,10 @@
 - Provider non-regression run on the Learning multi-phase orchestration change exposed a stale test assertion, not a provider/materializer regression.
 - Single-provider materialization intentionally hardens source bytes before final minimization, validates the minimized hardened text, then performs byte proof and a final hardening assertion.
 - The contract test now pins that actual ordering instead of counting the legacy bundle-level assertion twice.
+
+### 2026-09-30 — FORCE Learning requeue permission fixed
+- Learning run 36637242526 completed sandbox repair/evidence and sanitized memory, then failed only when stale-main FORCE promotion attempted to re-dispatch brain-learning-lab.yml.
+- Exact failure: GitHub Actions returned HTTP 403 Resource not accessible by integration because publish-architecture-proposal had contents/pull-requests write but no actions: write.
+- The architecture promotion job now has actions: write, matching the existing continue-learning-slot and complete-cloud-convergence jobs that are allowed to dispatch workflows.
+- Contract test pins this permission whenever the architecture job contains gh workflow run brain-learning-lab.yml.
+- This is orchestration-only. No provider bytes are hand-edited; provider-local mutations remain Brain-authored only.
