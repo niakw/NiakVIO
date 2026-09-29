@@ -51,6 +51,7 @@ ADAPTIVE_MARKERS = (
 )
 ADAPTIVE_CALL = '})(typeof globalThis!=="undefined"?globalThis:this,'
 SAFE_STRUCTURED_PARSE_PROFILE = "safe_structured_parse"
+HTML_CLASS_TOKEN_PROFILE = "html_class_token_exact_v1"
 CAUSAL_STRATEGY_BASES = {
     "provider_transport_gap": "provider_origin_failover_v1",
     "route_proven_gap": "proven_route_terminal_traversal_v1",
@@ -75,6 +76,7 @@ POST_EXHAUSTION_STRATEGY_PROFILES = {
     "runtime_response_salvage_v1",
     "document_request_contract_mining_v1",
     "provider_session_bootstrap_replay_v1",
+    HTML_CLASS_TOKEN_PROFILE,
 }
 # `excluded` is not an availability/runtime failure. It represents a deliberate
 # policy/safety exclusion and therefore must not be turned into an unattended
@@ -1915,6 +1917,24 @@ def _safe_structured_parse_applicable(source_text: str) -> bool:
     return isinstance(patched, str) and patched != source_text
 
 
+def _load_html_class_token_module():
+    script = ROOT / "scripts" / "adaptive_runtime" / "html_class_token_exact_v1.py"
+    spec = importlib.util.spec_from_file_location("nuvio_html_class_token_exact", script)
+    if spec is None or spec.loader is None:
+        raise RuntimeError(f"cannot load {script}")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def _html_class_token_applicable(source_text: str) -> bool:
+    try:
+        patched = _load_html_class_token_module().apply(source_text)
+    except Exception:
+        return False
+    return isinstance(patched, str) and patched != source_text
+
+
 def matching_profiles(candidate: dict[str, Any], result: dict[str, Any], source_text: str, config: dict[str, Any] | None = None) -> list[str]:
     config = config or load_overrides()
     matches = list(_base.matching_profiles(candidate, result, source_text, config))
@@ -1924,6 +1944,12 @@ def matching_profiles(candidate: dict[str, Any], result: dict[str, Any], source_
         and SAFE_STRUCTURED_PARSE_PROFILE not in matches
     ):
         matches.append(SAFE_STRUCTURED_PARSE_PROFILE)
+    if (
+        _adaptive_failure(result)
+        and _html_class_token_applicable(source_text)
+        and HTML_CLASS_TOKEN_PROFILE not in matches
+    ):
+        matches.append(HTML_CLASS_TOKEN_PROFILE)
     if _adaptive_failure(result):
         options = _adaptive_runtime_options(candidate, config)
         if options is not None:
@@ -2034,6 +2060,23 @@ def _apply_safe_structured_parse(parent_data: bytes) -> tuple[bytes, list[dict[s
     }]
 
 
+def _apply_html_class_token_exact(parent_data: bytes) -> tuple[bytes, list[dict[str, Any]]]:
+    source_text = parent_data.decode("utf-8", errors="strict")
+    patched_text = _load_html_class_token_module().apply(source_text)
+    if not isinstance(patched_text, str):
+        raise TypeError("html_class_token_exact_v1.apply() must return str")
+    patched = patched_text.encode("utf-8")
+    if patched == parent_data:
+        return parent_data, []
+    return patched, [{
+        "type": "patch_profile",
+        "profile": HTML_CLASS_TOKEN_PROFILE,
+        "phase": "runtime",
+        "revision": 1,
+        "scope": "generic_html_class_token_contract",
+    }]
+
+
 def _materialize_repair(
     stage: Path,
     candidate: dict[str, Any],
@@ -2086,7 +2129,8 @@ def create_repair_candidate(stage: Path, candidate: dict[str, Any], profile_name
         profile_name == "adaptive_runtime_recovery"
         or _is_causal_strategy_profile(profile_name)
     )
-    if not adaptive_profile and profile_name != SAFE_STRUCTURED_PARSE_PROFILE:
+    structural_profile = profile_name in {SAFE_STRUCTURED_PARSE_PROFILE, HTML_CLASS_TOKEN_PROFILE}
+    if not adaptive_profile and not structural_profile:
         return _base.create_repair_candidate(stage, candidate, profile_name, round_number)
     source_path = (stage / str(candidate.get("local_path") or "")).resolve()
     providers_root = (stage / "providers").resolve()
@@ -2100,6 +2144,9 @@ def create_repair_candidate(stage: Path, candidate: dict[str, Any], profile_name
     try:
         if profile_name == SAFE_STRUCTURED_PARSE_PROFILE:
             patched, records = _apply_safe_structured_parse(parent_data)
+            revision = 1
+        elif profile_name == HTML_CLASS_TOKEN_PROFILE:
+            patched, records = _apply_html_class_token_exact(parent_data)
             revision = 1
         else:
             patched, records = _apply_adaptive(
