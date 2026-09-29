@@ -819,3 +819,16 @@ GitHub execution must converge the requested provider cohort rather than merely 
 NiakVIO accepts Brain-generated `provider_bloc` replacements up to 1800 characters, matching the Brain's bounded complete-function invention surface. This does not grant publication authority.
 
 Every generated Bloc still requires: exact provider-owned find bytes, unique current-byte occurrence, capability/placeholder checks, immutable generated patch materialization, baseline/candidate provider health comparison, current-byte Retest, playable stream improvement and identity safety before persistence.
+
+## External FORCE partial-winner contract
+
+An external Brain FORCE batch is a set of independent provider hypotheses, not an all-or-nothing transaction.
+
+- The published Brain artifact may contain mutations for only a subset of the requested repair cohort; Brain abstention is a valid bounded outcome.
+- NiakVIO fails closed if the artifact contains no requested executable candidate, is stale/inconsistent, or includes an unexpected provider.
+- Present candidates are evaluated independently in isolated current-byte sandboxes.
+- A rejected or absent candidate never blocks another provider's validated winner.
+- With `requireExternalForceMutations=true`, unresolved providers do not fall through to canonical Repair in the same run. This preserves attribution to the Brain hypothesis.
+- Only accepted winners are applied/materialized/retested, and any persisted winner explicitly triggers a fresh current-byte census.
+
+Upstream Brain mutation-surface precedence is also causal: when a provider already owns a registered runtime resolver, that provider-specific runtime is attempted before a generic generated Bloc. NiakVIO still owns all proof and publication authority regardless of which surface generated the candidate.
