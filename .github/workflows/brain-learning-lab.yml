@@ -844,7 +844,7 @@ jobs:
             model_timeout=180
             model_workers=1
           fi
-          if [ "${FAST_HANDOFF:-false}" = "true" ] && [ -n "${FAST_MISSING_PROVIDERS:-}" ]; then
+          if [ "${ARCHITECTURE_FORCE:-false}" != "true" ] && [ "${FAST_HANDOFF:-false}" = "true" ] && [ -n "${FAST_MISSING_PROVIDERS:-}" ]; then
             effective_filter="${FAST_MISSING_PROVIDERS}"
           fi
           if [ "${LLM_NEEDED:-false}" != "true" ] || [ "${LLM_AVAILABLE:-false}" = "true" ]; then
