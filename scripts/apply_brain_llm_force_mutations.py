@@ -107,6 +107,20 @@ def _reject_function_signature_drift(before: str, after: str, provider: str, pat
         )
 
 
+def _reject_provider_bloc_semantic_collapse(provider: str, find: str, replace: str) -> None:
+    compact_find = re.sub(r"\s+", "", str(find or ""))
+    compact_replace = re.sub(r"\s+", "", str(replace or ""))
+    if (
+        ("fetch(" in compact_find or "await_fetch(" in compact_find)
+        and "return" in compact_find
+        and "return" not in compact_replace
+        and "throw" not in compact_replace
+    ):
+        raise ValueError(
+            f"{provider}: provider_bloc replacement discards network helper return semantics"
+        )
+
+
 def _load(path: Path) -> Any:
     return json.loads(path.read_text(encoding="utf-8"))
 
@@ -418,6 +432,7 @@ def _validate_generated_bloc_mutation(
         raise ValueError(f"{provider}: provider_bloc mutation is a no-op")
     _reject_placeholders(find)
     _reject_placeholders(replace)
+    _reject_provider_bloc_semantic_collapse(provider, find, replace)
     if any(marker in find or marker in replace for marker in MANAGED_MARKERS):
         raise ValueError(f"{provider}: provider_bloc may not target managed ownership metadata")
     before_caps = set(DANGEROUS_RUNTIME_TOKEN.findall(find))
