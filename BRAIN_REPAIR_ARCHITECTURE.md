@@ -851,3 +851,13 @@ This boundary exists specifically so NiakVIO validates an intelligent repair sys
 When compact FORCE selects a complete provider `function_unit`, the exact current-byte unit id owns the target identity. For a generated `provider_bloc`, a small model may return a single complete function wrapper with a nearby/wrong helper name; Brain may recover only its syntax-valid body and re-envelope it under the exact selected declaration. This normalization does not weaken authored `provider_patch` / `provider_js` signature guards: explicit async/name/parameter drift on authored surfaces remains invalid.
 
 Structural prompt selection must respect its hard unit budget. On route/chain/media-extraction gaps it reserves causal graph capacity and follows direct calls plus named callback references (for example `.then(parser)` / `.map(normalize)`) to expose second-hop player/parser/terminal helpers. These are mutation-context rules only; NiakVIO isolated sandbox, playable proof, identity safety and non-regression remain the acceptance authority.
+
+## Generic repair learning over provider hand patches
+
+Provider-specific debugging may reveal a causal mechanism, but a hand-written provider patch is not the terminal architecture. Reusable mechanisms must be promoted into Brain-owned repair capabilities and re-tested through current-byte gates.
+
+- `html_class_token_exact_v1` handles permissive JavaScript CSS-class RegExp builders where a dynamic class is followed by `\\b`. Hyphen/underscore are non-word characters, so that boundary can confuse a requested class with a longer class token.
+- The Learning-only profile rewrites only that unsafe class-token terminator. It contains no provider identifiers, domains, routes or fixture-specific selectors.
+- It is eligible as a post-exhaustion strategy for route/search gaps and still requires sandbox health, identity, media/playback and non-regression proof before any publication.
+- Provider-specific source edits are evidence for capability synthesis, not a substitute for Brain Repair.
+
