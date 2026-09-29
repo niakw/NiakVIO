@@ -258,6 +258,18 @@ jobs:
             --run-id "${GITHUB_RUN_ID}" \
             --sha "$SOURCE_SHA"
 
+          python scripts/merge_waf_census_transport.py \
+            --status automation/provider-census-sharded-status.json \
+            --waf automation/provider-waf-browser-session-effective.json \
+            --authority-status automation/provider-authority-status.json \
+            --output /tmp/provider-census-sharded-status-waf.json \
+            --run-id "${GITHUB_RUN_ID}-sharded-waf" \
+            --sha "$SOURCE_SHA"
+          mv /tmp/provider-census-sharded-status-waf.json automation/provider-census-sharded-status.json
+          python scripts/render_provider_census_status_from_state.py \
+            --status automation/provider-census-sharded-status.json \
+            --output automation/PROVIDER-CENSUS-SHARDED.md
+
           python scripts/build_provider_repair_batch_plan.py \
             --status automation/provider-census-sharded-status.json \
             --overrides provider-overrides.json \
