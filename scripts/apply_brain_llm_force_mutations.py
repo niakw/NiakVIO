@@ -71,6 +71,31 @@ DANGEROUS_RUNTIME_TOKEN = re.compile(
 MANAGED_MARKERS = ("/* STARTFIX:", "/* CLOSEFIX:", "/* FIXDATA:")
 
 
+_FUNCTION_DECL = re.compile(
+    r"(?m)^\s*(?P<async>async\s+)?function\s+"
+    r"(?P<name>[A-Za-z_$][A-Za-z0-9_$]*)\s*\((?P<params>[^)]*)\)\s*\{"
+)
+
+
+def _function_signature_map(source: str) -> dict[str, list[tuple[bool, str]]]:
+    out: dict[str, list[tuple[bool, str]]] = {}
+    for match in _FUNCTION_DECL.finditer(str(source or "")):
+        out.setdefault(match.group("name"), []).append(
+            (
+                bool(match.group("async")),
+                re.sub(r"\s+", "", match.group("params")),
+            )
+        )
+    return out
+
+
+def _reject_function_signature_drift(before: str, after: str, provider: str, path: str) -> None:
+    if _function_signature_map(before) != _function_signature_map(after):
+        raise ValueError(
+            f"{provider}: provider file mutation changes an existing function declaration/signature: {path}"
+        )
+
+
 def _load(path: Path) -> Any:
     return json.loads(path.read_text(encoding="utf-8"))
 
@@ -350,10 +375,18 @@ def _apply_file_mutation(
     else:
         raise ValueError(f"unsupported file mutation scope: {scope}")
 
-    if not (ROOT / path).is_file():
+    target = ROOT / path
+    if not target.is_file():
         raise ValueError(f"provider mutation path does not exist: {path}")
+    before = target.read_text(encoding="utf-8")
     _validate_diff_path(diff, path)
     _git_apply(diff, path)
+    after = target.read_text(encoding="utf-8")
+    try:
+        _reject_function_signature_drift(before, after, provider, path)
+    except Exception:
+        target.write_text(before, encoding="utf-8")
+        raise
     return path
 
 
