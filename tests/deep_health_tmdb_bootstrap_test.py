@@ -6,7 +6,9 @@ health = (ROOT / "scripts" / "health_check.mjs").read_text(encoding="utf-8")
 worker = (ROOT / "scripts" / "provider_worker.cjs").read_text(encoding="utf-8")
 invocation = (ROOT / "tests" / "provider_worker_invocation.test.cjs").read_text(encoding="utf-8")
 
-assert "'--allow-net'" in health or '"--allow-net"' in health, "provider worker must retain network permission under Node --permission"
+assert "const nodeMajor = Number(String(process.versions.node || '').split('.')[0]) || 0;" in health
+assert "...(nodeMajor >= 25 ? ['--allow-net'] : [])" in health
+assert "Node 24 CI runtime aborts before the worker" in health
 
 for token in (
     "NIAKVIO_TMDB_BOOTSTRAP_KEY: process.env.TMDB_API_KEY || ''",
