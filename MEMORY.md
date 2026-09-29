@@ -118,3 +118,12 @@
 - `vostfree` is ROUTE PROVEN with one anime route, latest verdict `provider_waf_challenge`, `testedThisRun=false`, `reconciledFromCarriedGreen=true`, and a consistency note that carried green contradicts the latest lane verdict. It is not valid to claim 13/13 completion or mutate Vostfree from carried evidence alone.
 - Brain main now includes semantic stale-publication protection and detailed routing observability; Brain CI #902 is green at `9cb448519e2a8089219e96cb2620e815b79e1a53`.
 - Final convergence target is **14/14 resolved with current evidence**, allowing genuine transport/environment cases to remain non-provider mutations rather than manufacturing provider fixes.
+
+
+## 2026-09-29 — External Brain FORCE winners are persisted independently
+
+- The NiakVIO FORCE receiver no longer requires every targeted external Brain candidate to survive isolated sandbox validation before any winner can be applied.
+- Artifact coverage is still checked before sandbox evaluation, but once candidates are evaluated, valid winners are applied independently; rejected candidates are reported through `FIELD_BRAIN_LLM_FORCE_PARTIAL_ACCEPTANCE` instead of aborting the whole batch.
+- When `requireExternalForceMutations=true`, unresolved explicit targets now skip canonical Repair with `reason=external-force-only`. This keeps an authoritative Brain-only proof clean: Brain mutation → isolated current-byte sandbox → accepted winners only, with no hidden canonical fallback.
+- Safety remains fail-closed when no external candidate passes, when the artifact is stale/incomplete for the explicitly requested candidate cohort, or if a sandbox unexpectedly accepts a provider outside that cohort.
+- This change is provider-neutral: no provider source bytes were modified. It is intended for the current 14-provider Brain FORCE cycle generated from NiakVIO `a7c1ad0013394fb010bcc176447554bc53a8f454`.
