@@ -71,6 +71,7 @@ assert tv[0]["url"]=="https://media.workers.dev/bb-s01e01.mkv",tv
 assert "S01E01" in tv[0]["title"],tv
 src=PATCH.read_text(encoding="utf-8")
 assert 'classBlocks(html,"episode-download-item")' in src
+assert '(?![-_A-Za-z0-9])' in src
 assert 'green(?:mount)?motors' in src
 assert '_crawlDirectMedia([url],url,3)' in src
 assert "hdhub4u" not in mod.WRAPPER.lower()
