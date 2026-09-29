@@ -61,12 +61,17 @@ def main()->int:
             details[sig["key"]]=sig
         for index,(key,providers) in enumerate(sorted(buckets.items(),key=lambda kv:(-len(kv[1]),kv[0]))):
             sig=details[key]
+            explicit_waf = "provider_waf_challenge" in {
+                str(value or "").strip().casefold()
+                for value in sig["debugStages"]
+                if str(value or "").strip()
+            }
             refined.append({
                 "groupId":f"{group.get('groupId')}#r{index+1}",
                 "parentGroupId":group.get("groupId"),
-                "repairScope":group.get("repairScope"),
+                "repairScope":"harness-compatibility" if explicit_waf else group.get("repairScope"),
                 "capabilityStrategy":group.get("capabilityStrategy"),
-                "transportSignature":group.get("transportSignature") or "not-applicable",
+                "transportSignature":"targeted-provider-waf-challenge" if explicit_waf else (group.get("transportSignature") or "not-applicable"),
                 "evidenceDepths":list(group.get("evidenceDepths") or []),
                 "dominantIssues":list(group.get("dominantIssues") or []),
                 "providerCount":len(providers),
