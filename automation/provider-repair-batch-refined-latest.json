@@ -1,42 +1,86 @@
 {
   "schemaVersion": 1,
-  "sourceRunId": "36531469863-retest",
-  "sourceTriggerSha": "182d08374c45ce7aec8bc7aa67e3486f6aa47e64",
-  "sourcePlanRunId": "36531469863-retest",
-  "sourceVerdictRunId": "36540208957",
+  "sourceRunId": "36547529107",
+  "sourceTriggerSha": "6abe791230ea2b5ed289066017bdb3da41f22cad",
+  "sourcePlanRunId": "36547529107",
+  "sourceVerdictRunId": "36591361698",
   "providerCount": 13,
-  "groupCount": 13,
+  "groupCount": 8,
   "groups": [
     {
-      "groupId": "harness-compatibility|html_scraper|residential-exit-all-challenged#r1",
-      "parentGroupId": "harness-compatibility|html_scraper|residential-exit-all-challenged",
-      "repairScope": "harness-compatibility",
+      "groupId": "route-to-terminal|mixed_embed_resolver#r1",
+      "parentGroupId": "route-to-terminal|mixed_embed_resolver",
+      "repairScope": "route-to-terminal",
+      "capabilityStrategy": "mixed_embed_resolver",
+      "transportSignature": "not-applicable",
+      "evidenceDepths": [
+        "lookup",
+        "none"
+      ],
+      "dominantIssues": [
+        "network_exception",
+        "network_http_error",
+        "waf_challenge"
+      ],
+      "providerCount": 4,
+      "providers": [
+        "anime-ultime",
+        "animesultra",
+        "flemmix",
+        "yflix"
+      ],
+      "networkSignature": "provider|not-probed",
+      "debugStages": [],
+      "networkShape": [],
+      "splitReason": "shared-signature",
+      "executionPolicy": "batch-first"
+    },
+    {
+      "groupId": "route-to-terminal|html_scraper#r1",
+      "parentGroupId": "route-to-terminal|html_scraper",
+      "repairScope": "route-to-terminal",
       "capabilityStrategy": "html_scraper",
-      "transportSignature": "targeted-provider-waf-challenge",
+      "transportSignature": "not-applicable",
+      "evidenceDepths": [
+        "lookup",
+        "none"
+      ],
+      "dominantIssues": [
+        "network_zero_result",
+        "waf_challenge"
+      ],
+      "providerCount": 2,
+      "providers": [
+        "animesalt",
+        "moviesmod"
+      ],
+      "networkSignature": "provider|not-probed",
+      "debugStages": [],
+      "networkShape": [],
+      "splitReason": "observed-signature-divergence",
+      "executionPolicy": "batch-first"
+    },
+    {
+      "groupId": "terminal-extraction|html_scraper#r1",
+      "parentGroupId": "terminal-extraction|html_scraper",
+      "repairScope": "terminal-extraction",
+      "capabilityStrategy": "html_scraper",
+      "transportSignature": "not-applicable",
       "evidenceDepths": [
         "chain"
       ],
       "dominantIssues": [
+        "network_http_error",
         "waf_challenge"
       ],
-      "providerCount": 1,
+      "providerCount": 2,
       "providers": [
-        "mallumv"
+        "mallumv",
+        "moviebox"
       ],
-      "networkSignature": "targeted-waf|provider_waf_challenge||movie:GET:api.themoviedb.org:200:/{id}/movie/{id};movie:GET:mallumv.space:200:/internal/{id}/{id}/{opaque};movie:GET:mallumv.space:200:/movie/{id}/{id};movie:GET:mallumv.space:200:/search.php;movie:GET:vik1ngfile.site:200:/assets/custom-F_ZXKHX.js;movie:GET:vik1ngfile.site:200:/f/tMAohzba53;movie:GET:vik1ngfile.site:200:/f/u6lxab0wCH;movie:GET:vikingfile.com:200:/fast-download/{opaque}",
-      "debugStages": [
-        "provider_waf_challenge"
-      ],
-      "networkShape": [
-        "movie:GET:api.themoviedb.org:200:/{id}/movie/{id}",
-        "movie:GET:mallumv.space:200:/internal/{id}/{id}/{opaque}",
-        "movie:GET:mallumv.space:200:/movie/{id}/{id}",
-        "movie:GET:mallumv.space:200:/search.php",
-        "movie:GET:vik1ngfile.site:200:/assets/custom-F_ZXKHX.js",
-        "movie:GET:vik1ngfile.site:200:/f/tMAohzba53",
-        "movie:GET:vik1ngfile.site:200:/f/u6lxab0wCH",
-        "movie:GET:vikingfile.com:200:/fast-download/{opaque}"
-      ],
+      "networkSignature": "provider|not-probed",
+      "debugStages": [],
+      "networkShape": [],
       "splitReason": "shared-signature",
       "executionPolicy": "batch-first"
     },
@@ -56,16 +100,9 @@
       "providers": [
         "allwish"
       ],
-      "networkSignature": "provider|provider_waf_challenge||movie:GET:all-wish.me:403:/filter;movie:GET:api.themoviedb.org:200:/{id}/movie/{id};tv:GET:all-wish.me:403:/filter;tv:GET:api.themoviedb.org:200:/{id}/tv/{id}",
-      "debugStages": [
-        "provider_waf_challenge"
-      ],
-      "networkShape": [
-        "movie:GET:all-wish.me:403:/filter",
-        "movie:GET:api.themoviedb.org:200:/{id}/movie/{id}",
-        "tv:GET:all-wish.me:403:/filter",
-        "tv:GET:api.themoviedb.org:200:/{id}/tv/{id}"
-      ],
+      "networkSignature": "provider|not-probed",
+      "debugStages": [],
+      "networkShape": [],
       "splitReason": "shared-signature",
       "executionPolicy": "batch-first"
     },
@@ -85,21 +122,14 @@
       "providers": [
         "animevost-fr"
       ],
-      "networkSignature": "provider|provider_network_exception||anime:GET:animevost.fr:200:/api/anime/search;anime:GET:animevost.fr:200:/api/animes/death-note;anime:GET:api.themoviedb.org:200:/{id}/tv/{id};anime:GET:gupload.xyz:0:/data/e/7f107c136b85",
-      "debugStages": [
-        "provider_network_exception"
-      ],
-      "networkShape": [
-        "anime:GET:animevost.fr:200:/api/anime/search",
-        "anime:GET:animevost.fr:200:/api/animes/death-note",
-        "anime:GET:api.themoviedb.org:200:/{id}/tv/{id}",
-        "anime:GET:gupload.xyz:0:/data/e/7f107c136b85"
-      ],
+      "networkSignature": "provider|not-probed",
+      "debugStages": [],
+      "networkShape": [],
       "splitReason": "shared-signature",
       "executionPolicy": "batch-first"
     },
     {
-      "groupId": "route-to-terminal|html_scraper#r1",
+      "groupId": "route-to-terminal|html_scraper#r2",
       "parentGroupId": "route-to-terminal|html_scraper",
       "repairScope": "route-to-terminal",
       "capabilityStrategy": "html_scraper",
@@ -130,71 +160,6 @@
       "executionPolicy": "batch-first"
     },
     {
-      "groupId": "route-to-terminal|html_scraper#r2",
-      "parentGroupId": "route-to-terminal|html_scraper",
-      "repairScope": "route-to-terminal",
-      "capabilityStrategy": "html_scraper",
-      "transportSignature": "not-applicable",
-      "evidenceDepths": [
-        "lookup",
-        "none"
-      ],
-      "dominantIssues": [
-        "network_zero_result",
-        "waf_challenge"
-      ],
-      "providerCount": 1,
-      "providers": [
-        "animesalt"
-      ],
-      "networkSignature": "provider|provider_waf_challenge||anime:GET:animesalt.cx:403:/;anime:GET:animesalt.cx:403:/series/hunter-x-hunter;anime:GET:api.themoviedb.org:200:/{id}/tv/{id}",
-      "debugStages": [
-        "provider_waf_challenge"
-      ],
-      "networkShape": [
-        "anime:GET:animesalt.cx:403:/",
-        "anime:GET:animesalt.cx:403:/series/hunter-x-hunter",
-        "anime:GET:api.themoviedb.org:200:/{id}/tv/{id}"
-      ],
-      "splitReason": "observed-signature-divergence",
-      "executionPolicy": "batch-first"
-    },
-    {
-      "groupId": "route-to-terminal|html_scraper#r3",
-      "parentGroupId": "route-to-terminal|html_scraper",
-      "repairScope": "route-to-terminal",
-      "capabilityStrategy": "html_scraper",
-      "transportSignature": "not-applicable",
-      "evidenceDepths": [
-        "lookup",
-        "none"
-      ],
-      "dominantIssues": [
-        "network_zero_result",
-        "waf_challenge"
-      ],
-      "providerCount": 1,
-      "providers": [
-        "moviesmod"
-      ],
-      "networkSignature": "provider|provider_waf_challenge||movie:GET:api.themoviedb.org:200:/{id}/movie/{id};movie:GET:links.modpro.blog:403:/archives/{id};movie:GET:moviesmod.ai.in:200:/search/{opaque};movie:GET:moviesmod.ai.in:200:/{opaque};tv:GET:api.themoviedb.org:200:/{id}/tv/{id};tv:GET:episodes.modpro.blog:403:/archives/{id};tv:GET:moviesmod.ai.in:200:/search/{id};tv:GET:moviesmod.ai.in:200:/{opaque}",
-      "debugStages": [
-        "provider_waf_challenge"
-      ],
-      "networkShape": [
-        "movie:GET:api.themoviedb.org:200:/{id}/movie/{id}",
-        "movie:GET:links.modpro.blog:403:/archives/{id}",
-        "movie:GET:moviesmod.ai.in:200:/search/{opaque}",
-        "movie:GET:moviesmod.ai.in:200:/{opaque}",
-        "tv:GET:api.themoviedb.org:200:/{id}/tv/{id}",
-        "tv:GET:episodes.modpro.blog:403:/archives/{id}",
-        "tv:GET:moviesmod.ai.in:200:/search/{id}",
-        "tv:GET:moviesmod.ai.in:200:/{opaque}"
-      ],
-      "splitReason": "observed-signature-divergence",
-      "executionPolicy": "batch-first"
-    },
-    {
       "groupId": "route-to-terminal|iframe_player#r1",
       "parentGroupId": "route-to-terminal|iframe_player",
       "repairScope": "route-to-terminal",
@@ -210,149 +175,10 @@
       "providers": [
         "vidfast"
       ],
-      "networkSignature": "provider|provider_network_http_error||movie:GET:vidfast.to:403:/embed/movie/{id};movie:GET:vidfast.vc:403:/movie/{id};tv:GET:vidfast.to:403:/embed/tv/{id}/{id};tv:GET:vidfast.vc:403:/tv/{id}/{id}/{id}",
-      "debugStages": [
-        "provider_network_http_error"
-      ],
-      "networkShape": [
-        "movie:GET:vidfast.to:403:/embed/movie/{id}",
-        "movie:GET:vidfast.vc:403:/movie/{id}",
-        "tv:GET:vidfast.to:403:/embed/tv/{id}/{id}",
-        "tv:GET:vidfast.vc:403:/tv/{id}/{id}/{id}"
-      ],
+      "networkSignature": "provider|not-probed",
+      "debugStages": [],
+      "networkShape": [],
       "splitReason": "shared-signature",
-      "executionPolicy": "batch-first"
-    },
-    {
-      "groupId": "route-to-terminal|mixed_embed_resolver#r1",
-      "parentGroupId": "route-to-terminal|mixed_embed_resolver",
-      "repairScope": "route-to-terminal",
-      "capabilityStrategy": "mixed_embed_resolver",
-      "transportSignature": "not-applicable",
-      "evidenceDepths": [
-        "lookup",
-        "none"
-      ],
-      "dominantIssues": [
-        "network_exception",
-        "network_http_error",
-        "waf_challenge"
-      ],
-      "providerCount": 1,
-      "providers": [
-        "animesultra"
-      ],
-      "networkSignature": "provider|provider_network_exception||anime:GET:api.themoviedb.org:200:/{id}/tv/{id};anime:GET:v2.animesultra.org:0:/index.php",
-      "debugStages": [
-        "provider_network_exception"
-      ],
-      "networkShape": [
-        "anime:GET:api.themoviedb.org:200:/{id}/tv/{id}",
-        "anime:GET:v2.animesultra.org:0:/index.php"
-      ],
-      "splitReason": "observed-signature-divergence",
-      "executionPolicy": "batch-first"
-    },
-    {
-      "groupId": "route-to-terminal|mixed_embed_resolver#r2",
-      "parentGroupId": "route-to-terminal|mixed_embed_resolver",
-      "repairScope": "route-to-terminal",
-      "capabilityStrategy": "mixed_embed_resolver",
-      "transportSignature": "not-applicable",
-      "evidenceDepths": [
-        "lookup",
-        "none"
-      ],
-      "dominantIssues": [
-        "network_exception",
-        "network_http_error",
-        "waf_challenge"
-      ],
-      "providerCount": 1,
-      "providers": [
-        "yflix"
-      ],
-      "networkSignature": "provider|provider_network_exception||movie:GET:1movies.bz:0:/ajax/links/list;movie:GET:1moviesz.to:0:/ajax/links/list;movie:GET:enc-dec.app:200:/api/enc-movies-flix;movie:GET:enc-dec.app:200:/db/flix/find;movie:GET:solarmovie.fi:0:/ajax/links/list;movie:GET:yflix.to:0:/ajax/links/list;tv:GET:1movies.bz:0:/ajax/links/list;tv:GET:1moviesz.to:0:/ajax/links/list;tv:GET:enc-dec.app:200:/api/enc-movies-flix;tv:GET:enc-dec.app:200:/db/flix/find;tv:GET:solarmovie.fi:0:/ajax/links/list;tv:GET:yflix.to:0:/ajax/links/list",
-      "debugStages": [
-        "provider_network_exception"
-      ],
-      "networkShape": [
-        "movie:GET:1movies.bz:0:/ajax/links/list",
-        "movie:GET:1moviesz.to:0:/ajax/links/list",
-        "movie:GET:enc-dec.app:200:/api/enc-movies-flix",
-        "movie:GET:enc-dec.app:200:/db/flix/find",
-        "movie:GET:solarmovie.fi:0:/ajax/links/list",
-        "movie:GET:yflix.to:0:/ajax/links/list",
-        "tv:GET:1movies.bz:0:/ajax/links/list",
-        "tv:GET:1moviesz.to:0:/ajax/links/list",
-        "tv:GET:enc-dec.app:200:/api/enc-movies-flix",
-        "tv:GET:enc-dec.app:200:/db/flix/find",
-        "tv:GET:solarmovie.fi:0:/ajax/links/list",
-        "tv:GET:yflix.to:0:/ajax/links/list"
-      ],
-      "splitReason": "observed-signature-divergence",
-      "executionPolicy": "batch-first"
-    },
-    {
-      "groupId": "route-to-terminal|mixed_embed_resolver#r3",
-      "parentGroupId": "route-to-terminal|mixed_embed_resolver",
-      "repairScope": "route-to-terminal",
-      "capabilityStrategy": "mixed_embed_resolver",
-      "transportSignature": "not-applicable",
-      "evidenceDepths": [
-        "lookup",
-        "none"
-      ],
-      "dominantIssues": [
-        "network_exception",
-        "network_http_error",
-        "waf_challenge"
-      ],
-      "providerCount": 1,
-      "providers": [
-        "anime-ultime"
-      ],
-      "networkSignature": "provider|provider_network_http_error||anime:GET:api.themoviedb.org:200:/{id}/tv/{id};anime:POST:v5.anime-ultime.net:403:/MenuSearch.html",
-      "debugStages": [
-        "provider_network_http_error"
-      ],
-      "networkShape": [
-        "anime:GET:api.themoviedb.org:200:/{id}/tv/{id}",
-        "anime:POST:v5.anime-ultime.net:403:/MenuSearch.html"
-      ],
-      "splitReason": "observed-signature-divergence",
-      "executionPolicy": "batch-first"
-    },
-    {
-      "groupId": "route-to-terminal|mixed_embed_resolver#r4",
-      "parentGroupId": "route-to-terminal|mixed_embed_resolver",
-      "repairScope": "route-to-terminal",
-      "capabilityStrategy": "mixed_embed_resolver",
-      "transportSignature": "not-applicable",
-      "evidenceDepths": [
-        "lookup",
-        "none"
-      ],
-      "dominantIssues": [
-        "network_exception",
-        "network_http_error",
-        "waf_challenge"
-      ],
-      "providerCount": 1,
-      "providers": [
-        "flemmix"
-      ],
-      "networkSignature": "provider|provider_waf_challenge||movie:GET:api.themoviedb.org:200:/{id}/movie/{id};movie:GET:flemmix.party:403:/search;tv:GET:api.themoviedb.org:200:/{id}/tv/{id};tv:GET:flemmix.party:403:/search",
-      "debugStages": [
-        "provider_waf_challenge"
-      ],
-      "networkShape": [
-        "movie:GET:api.themoviedb.org:200:/{id}/movie/{id}",
-        "movie:GET:flemmix.party:403:/search",
-        "tv:GET:api.themoviedb.org:200:/{id}/tv/{id}",
-        "tv:GET:flemmix.party:403:/search"
-      ],
-      "splitReason": "observed-signature-divergence",
       "executionPolicy": "batch-first"
     },
     {
@@ -371,57 +197,9 @@
       "providers": [
         "allanime"
       ],
-      "networkSignature": "provider|provider_network_zero_result||anime:GET:api.allanime.day:200:/api;anime:GET:api.themoviedb.org:200:/{id}/tv/{id};anime:GET:mkissa.to:200:/;anime:GET:ww2.aniwatch.fit:200:/{id};anime:GET:ww2.aniwatch.fit:200:/{opaque};anime:POST:api.mkissa.net:200:/api",
-      "debugStages": [
-        "provider_network_zero_result"
-      ],
-      "networkShape": [
-        "anime:GET:api.allanime.day:200:/api",
-        "anime:GET:api.themoviedb.org:200:/{id}/tv/{id}",
-        "anime:GET:mkissa.to:200:/",
-        "anime:GET:ww2.aniwatch.fit:200:/{id}",
-        "anime:GET:ww2.aniwatch.fit:200:/{opaque}",
-        "anime:POST:api.mkissa.net:200:/api"
-      ],
-      "splitReason": "shared-signature",
-      "executionPolicy": "batch-first"
-    },
-    {
-      "groupId": "terminal-extraction|html_scraper#r1",
-      "parentGroupId": "terminal-extraction|html_scraper",
-      "repairScope": "terminal-extraction",
-      "capabilityStrategy": "html_scraper",
-      "transportSignature": "not-applicable",
-      "evidenceDepths": [
-        "chain"
-      ],
-      "dominantIssues": [
-        "network_http_error"
-      ],
-      "providerCount": 1,
-      "providers": [
-        "moviebox"
-      ],
-      "networkSignature": "provider|provider_network_http_error||movie:GET:api.themoviedb.org:200:/{id}/movie/{id};movie:GET:cloudorchestranova.com:200:/embed/movie/{id};movie:GET:cloudorchestranova.com:200:/embed/player/movie/{id};movie:GET:cloudorchestranova.com:400:/embed/iframe_player/cache.php;movie:GET:moviebox-cfa7.onrender.com:404:/{opaque}/stream/movie/{id};movie:GET:pengu.uk:429:/{opaque}/stream/movie/{id};movie:GET:vidsrcme.ru:200:/vs_src.php;tv:GET:api.themoviedb.org:200:/{id}/tv/{id};tv:GET:cloudorchestranova.com:200:/embed/player/tv/{id};tv:GET:cloudorchestranova.com:200:/embed/tv/{id}/{id};tv:GET:cloudorchestranova.com:400:/embed/iframe_player/cache.php;tv:GET:moviebox-cfa7.onrender.com:404:/{opaque}/stream/series/{id};tv:GET:pengu.uk:429:/{opaque}/stream/series/{id};tv:GET:vidsrcme.ru:200:/vs_src.php",
-      "debugStages": [
-        "provider_network_http_error"
-      ],
-      "networkShape": [
-        "movie:GET:api.themoviedb.org:200:/{id}/movie/{id}",
-        "movie:GET:cloudorchestranova.com:200:/embed/movie/{id}",
-        "movie:GET:cloudorchestranova.com:200:/embed/player/movie/{id}",
-        "movie:GET:cloudorchestranova.com:400:/embed/iframe_player/cache.php",
-        "movie:GET:moviebox-cfa7.onrender.com:404:/{opaque}/stream/movie/{id}",
-        "movie:GET:pengu.uk:429:/{opaque}/stream/movie/{id}",
-        "movie:GET:vidsrcme.ru:200:/vs_src.php",
-        "tv:GET:api.themoviedb.org:200:/{id}/tv/{id}",
-        "tv:GET:cloudorchestranova.com:200:/embed/player/tv/{id}",
-        "tv:GET:cloudorchestranova.com:200:/embed/tv/{id}/{id}",
-        "tv:GET:cloudorchestranova.com:400:/embed/iframe_player/cache.php",
-        "tv:GET:moviebox-cfa7.onrender.com:404:/{opaque}/stream/series/{id}",
-        "tv:GET:pengu.uk:429:/{opaque}/stream/series/{id}",
-        "tv:GET:vidsrcme.ru:200:/vs_src.php"
-      ],
+      "networkSignature": "provider|not-probed",
+      "debugStages": [],
+      "networkShape": [],
       "splitReason": "shared-signature",
       "executionPolicy": "batch-first"
     }
