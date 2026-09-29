@@ -78,6 +78,10 @@ try:
  mod.provider_materialization_scope=lambda root,source,current:{"mode":"all","providers":[],"changedPaths":["manifest.json","scripts/provider_patches/animesalt_runtime_v1.py","scripts/provider_patches/global_stream_presentation_v1.py","assets/README.md"],"reasons":["providers:manifest.json:animesalt","patch:scripts/provider_patches/animesalt_runtime_v1.py:animesalt","unowned-patch:scripts/provider_patches/global_stream_presentation_v1.py"]}
  neutral,drifted=mod.source_drift(ROOT,"a"*40,"c"*40)
  assert neutral==[] and drifted=={"animesalt"},(neutral,drifted)
+ mod.provider_materialization_scope=lambda root,source,current:{"mode":"all","providers":[],"changedPaths":["automation/provider-census-status.json","automation/provider-waf-browser-session-latest.json","automation/provider-fast-repair-summary.json","automation/provider-repair-batch-plan-latest.json","PROVIDER_CENSUS_STATUS.md"],"reasons":["global:automation/provider-census-status.json","global:automation/provider-waf-browser-session-latest.json","global:automation/provider-fast-repair-summary.json","global:automation/provider-repair-batch-plan-latest.json","global:PROVIDER_CENSUS_STATUS.md"]}
+ neutral,drifted=mod.source_drift(ROOT,"a"*40,"c"*40)
+ assert set(neutral)=={"automation/provider-census-status.json","automation/provider-waf-browser-session-latest.json","automation/provider-fast-repair-summary.json","automation/provider-repair-batch-plan-latest.json","PROVIDER_CENSUS_STATUS.md"},neutral
+ assert drifted==set(),drifted
  mod.provider_materialization_scope=lambda root,source,current:{"mode":"all","providers":[],"changedPaths":["scripts/provider_base_store.py"],"reasons":["global:scripts/provider_base_store.py"]}
  try:mod.source_drift(ROOT,"a"*40,"c"*40)
  except ValueError:pass
