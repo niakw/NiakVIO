@@ -23,6 +23,8 @@ on:
       - '.github/workflows/provider-targeted-recovery-sharded.yml'
       - 'scripts/merge_provider_targeted_recovery_shards.py'
       - 'scripts/run_provider_targeted_recovery.py'
+      - 'scripts/merge_targeted_census_transport.py'
+      - 'tests/provider_targeted_census_transport_merge_test.py'
       - 'automation/provider-repair-batch-plan-latest.json'
       - 'provider-overrides.json'
   pull_request:
@@ -190,6 +192,7 @@ jobs:
           python tests/provider_repair_batch_refinement_test.py
           python tests/provider_targeted_recovery_sharding_test.py
           python tests/provider_targeted_recovery_sharded_workflow_test.py
+          python tests/provider_targeted_census_transport_merge_test.py
 
       - name: Persist structured Provider CONFIG drifts on repair branch
         if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.head.ref == 'tmp/provider-max-repair-proof-20260919' }}
@@ -368,6 +371,13 @@ jobs:
             --plan automation/provider-repair-batch-plan-latest.json \
             --verdict automation/provider-targeted-regression-recovery-latest.json \
             --output automation/provider-repair-batch-refined-latest.json
+          python scripts/merge_targeted_census_transport.py \
+            --status automation/provider-census-status.json \
+            --targeted automation/provider-targeted-regression-recovery-latest.json \
+            --output automation/provider-census-status.json
+          python scripts/render_provider_census_status_from_state.py \
+            --status automation/provider-census-status.json \
+            --output PROVIDER_CENSUS_STATUS.md
 
       - name: Persist targeted verdict
         if: ${{ always() && github.event_name == 'push' && github.ref == 'refs/heads/main' }}
@@ -379,6 +389,10 @@ jobs:
           refined_tmp="/tmp/provider-repair-batch-refined-${GITHUB_RUN_ID}.json"
           cp automation/provider-targeted-regression-recovery-latest.json "$verdict_tmp"
           cp automation/provider-repair-batch-refined-latest.json "$refined_tmp"
+          census_tmp="/tmp/provider-census-status-${GITHUB_RUN_ID}.json"
+          census_md_tmp="/tmp/PROVIDER_CENSUS_STATUS-${GITHUB_RUN_ID}.md"
+          cp automation/provider-census-status.json "$census_tmp"
+          cp PROVIDER_CENSUS_STATUS.md "$census_md_tmp"
           git fetch origin main
           remote_main="$(git rev-parse origin/main)"
           source_sha="$(python -c 'import json; d=json.load(open("'"$verdict_tmp"'")); print(str(d.get("triggerSha") or ""))')"
@@ -390,9 +404,11 @@ jobs:
           mkdir -p automation
           cp "$verdict_tmp" automation/provider-targeted-regression-recovery-latest.json
           cp "$refined_tmp" automation/provider-repair-batch-refined-latest.json
+          cp "$census_tmp" automation/provider-census-status.json
+          cp "$census_md_tmp" PROVIDER_CENSUS_STATUS.md
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add automation/provider-targeted-regression-recovery-latest.json automation/provider-repair-batch-refined-latest.json
+          git add automation/provider-targeted-regression-recovery-latest.json automation/provider-repair-batch-refined-latest.json automation/provider-census-status.json PROVIDER_CENSUS_STATUS.md
           git diff --cached --quiet && exit 0
           git commit -m "ci(repair): persist targeted regression verdict"
           git push origin HEAD:main
