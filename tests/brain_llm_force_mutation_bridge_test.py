@@ -320,6 +320,17 @@ with tempfile.TemporaryDirectory() as tmp:
     else:
         raise AssertionError("clipped Force mutation content was accepted")
 
+    try:
+        mod._reject_provider_bloc_semantic_collapse(
+            "demo",
+            'const response=await fetch(url,options);if(!response.ok)throw new Error("http");return response;',
+            'if(row.referer&&!headers.Referer)headers.Referer=recipe.referer;',
+        )
+    except ValueError as exc:
+        assert "return semantics" in str(exc)
+    else:
+        raise AssertionError("network helper return collapse was accepted")
+
     # Existing provider helper declarations are immutable under authored
     # Force edits: making a synchronous request parser async changes every
     # un-awaited caller from an object to a Promise and is not a body repair.
