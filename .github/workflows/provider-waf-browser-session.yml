@@ -268,6 +268,7 @@ jobs:
           python scripts/select_residential_provider_replay.py \
             --waf automation/provider-waf-browser-session-latest.json \
             --status automation/provider-census-status.json \
+            --providers "${TARGET_PROVIDERS:-}" \
             --output /tmp/residential-provider-replay-targets.json
           count="$(python - <<'PY'
           import json
