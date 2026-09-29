@@ -39,22 +39,23 @@
         "authoritative_route_source"
       ],
       "authorityKnown": true,
-      "action": "current same-census targeted probe proves provider-origin WAF/challenge; exclude provider mutation until stronger residential/native replay disproves transport ownership",
+      "action": "continue corpus proof search; BRAIN checks",
       "brainCheckRequired": true,
       "statusRepairEligible": true,
-      "repairEligible": false,
+      "repairEligible": true,
       "testedThisRun": true,
-      "residentialProviderReplayClass": "no-verified-media",
-      "residentialProviderReplayEvidence": [
-        "movie: status=no_streams, stage=provider_zero_before_provider_network, raw=0, playable=0, verified=0, identitySafe=true",
-        "tv: status=no_streams, stage=provider_zero_before_provider_network, raw=0, playable=0, verified=0, identitySafe=true"
-      ],
       "transportRepairEligible": false,
       "targetedTransportClass": "provider-waf-challenge-current",
       "targetedTransportEvidence": [
         "movie:all-wish.me:403",
         "tv:all-wish.me:403"
-      ]
+      ],
+      "residentialProviderReplayClass": "no-verified-media",
+      "residentialProviderReplayEvidence": [
+        "movie: status=no_streams, stage=provider_zero_before_provider_network, raw=0, playable=0, verified=0, identitySafe=true",
+        "tv: status=no_streams, stage=provider_zero_before_provider_network, raw=0, playable=0, verified=0, identitySafe=true"
+      ],
+      "residentialProviderReplayReclassified": true
     },
     {
       "provider": "vostfree",
@@ -233,13 +234,13 @@
       "statusRepairEligible": true,
       "repairEligible": true,
       "testedThisRun": false,
+      "transportRepairEligible": true,
+      "targetedTransportClass": "not-applicable",
+      "targetedTransportEvidence": [],
       "residentialProviderReplayClass": "no-verified-media",
       "residentialProviderReplayEvidence": [
         "anime: status=no_streams, stage=provider_network_zero_result, raw=0, playable=0, verified=0, identitySafe=true"
-      ],
-      "transportRepairEligible": true,
-      "targetedTransportClass": "not-applicable",
-      "targetedTransportEvidence": []
+      ]
     },
     {
       "provider": "animesalt",
@@ -275,21 +276,22 @@
         "authoritative_route_source"
       ],
       "authorityKnown": true,
-      "action": "current same-census targeted probe proves provider-origin WAF/challenge; exclude provider mutation until stronger residential/native replay disproves transport ownership",
+      "action": "replay qualified route fixtures and finish terminal extraction/validation",
       "brainCheckRequired": true,
       "statusRepairEligible": true,
-      "repairEligible": false,
-      "testedThisRun": false,
-      "residentialProviderReplayClass": "no-verified-media",
-      "residentialProviderReplayEvidence": [
-        "anime: status=no_streams, stage=provider_zero_before_provider_network, raw=0, playable=0, verified=0, identitySafe=true"
-      ],
+      "repairEligible": true,
+      "testedThisRun": true,
       "transportRepairEligible": false,
       "targetedTransportClass": "provider-waf-challenge-current",
       "targetedTransportEvidence": [
         "anime:animesalt.cx:403",
         "anime:animesalt.cx:403"
-      ]
+      ],
+      "residentialProviderReplayClass": "no-verified-media",
+      "residentialProviderReplayEvidence": [
+        "anime: status=no_streams, stage=provider_zero_before_provider_network, raw=0, playable=0, verified=0, identitySafe=true"
+      ],
+      "residentialProviderReplayReclassified": true
     },
     {
       "provider": "animesultra",
@@ -330,13 +332,13 @@
       "statusRepairEligible": true,
       "repairEligible": true,
       "testedThisRun": false,
+      "transportRepairEligible": true,
+      "targetedTransportClass": "not-applicable",
+      "targetedTransportEvidence": [],
       "residentialProviderReplayClass": "no-verified-media",
       "residentialProviderReplayEvidence": [
         "anime: status=no_streams, stage=provider_zero_before_provider_network, raw=0, playable=0, verified=0, identitySafe=true"
-      ],
-      "transportRepairEligible": true,
-      "targetedTransportClass": "not-applicable",
-      "targetedTransportEvidence": []
+      ]
     },
     {
       "provider": "animetsu",
@@ -417,13 +419,13 @@
       "statusRepairEligible": true,
       "repairEligible": true,
       "testedThisRun": false,
+      "transportRepairEligible": true,
+      "targetedTransportClass": "not-applicable",
+      "targetedTransportEvidence": [],
       "residentialProviderReplayClass": "no-verified-media",
       "residentialProviderReplayEvidence": [
         "anime: status=no_streams, stage=provider_zero_before_provider_network, raw=0, playable=0, verified=0, identitySafe=true"
-      ],
-      "transportRepairEligible": true,
-      "targetedTransportClass": "not-applicable",
-      "targetedTransportEvidence": []
+      ]
     },
     {
       "provider": "flemmix",
@@ -463,28 +465,29 @@
         "authoritative_route_source"
       ],
       "authorityKnown": true,
-      "action": "current same-census targeted probe proves provider-origin WAF/challenge; exclude provider mutation until stronger residential/native replay disproves transport ownership",
+      "action": "replay qualified route fixtures and finish terminal extraction/validation",
       "brainCheckRequired": true,
       "statusRepairEligible": true,
-      "repairEligible": false,
-      "testedThisRun": false,
-      "residentialProviderReplayClass": "no-verified-media",
-      "residentialProviderReplayEvidence": [
-        "movie: status=no_streams, stage=provider_zero_before_provider_network, raw=0, playable=0, verified=0, identitySafe=true",
-        "tv: status=no_streams, stage=provider_zero_before_provider_network, raw=0, playable=0, verified=0, identitySafe=true"
-      ],
+      "repairEligible": true,
+      "testedThisRun": true,
       "transportRepairEligible": false,
       "targetedTransportClass": "provider-waf-challenge-current",
       "targetedTransportEvidence": [
         "movie:flemmix.party:403",
         "tv:flemmix.party:403"
-      ]
+      ],
+      "residentialProviderReplayClass": "no-verified-media",
+      "residentialProviderReplayEvidence": [
+        "movie: status=no_streams, stage=provider_zero_before_provider_network, raw=0, playable=0, verified=0, identitySafe=true",
+        "tv: status=no_streams, stage=provider_zero_before_provider_network, raw=0, playable=0, verified=0, identitySafe=true"
+      ],
+      "residentialProviderReplayReclassified": true
     },
     {
       "provider": "mallumv",
-      "status": "CHAIN REACHED",
+      "status": "HARNESS/ENV BLOCKED",
       "underlyingStatus": "",
-      "color": "🟣",
+      "color": "🟫",
       "declaredLanes": [
         "movie"
       ],
@@ -504,8 +507,10 @@
       "evidenceDepth": [
         "movie=chain_reached"
       ],
-      "harnessTransportClass": "not-applicable",
-      "harnessTransportEvidence": [],
+      "harnessTransportClass": "residential-exit-all-challenged",
+      "harnessTransportEvidence": [
+        "movie: browser=browser_challenge_persisted, tv-browser=browser_challenge_persisted, okhttp=okhttp_jvm_challenge_persisted, direct=direct_http_challenge_persisted, residential-browser=browser_challenge_persisted, residential-tv-browser=browser_challenge_persisted, residential-okhttp=okhttp_jvm_challenge_persisted, residential-direct=direct_http_challenge_persisted"
+      ],
       "authorityRepairEligible": true,
       "authorityAction": "KEEP_PROVEN_SITE",
       "authorityClass": "structured-site-plus-route-proof",
@@ -515,7 +520,7 @@
         "existing_positive_route_prior"
       ],
       "authorityKnown": true,
-      "action": "current same-census targeted probe proves provider-origin WAF/challenge; exclude provider mutation until stronger residential/native replay disproves transport ownership",
+      "action": "private residential exit is also challenged; GitHub IP reputation alone does not explain the block",
       "brainCheckRequired": true,
       "statusRepairEligible": true,
       "repairEligible": false,
@@ -575,14 +580,14 @@
       "statusRepairEligible": true,
       "repairEligible": true,
       "testedThisRun": false,
+      "transportRepairEligible": true,
+      "targetedTransportClass": "not-applicable",
+      "targetedTransportEvidence": [],
       "residentialProviderReplayClass": "no-verified-media",
       "residentialProviderReplayEvidence": [
         "movie: status=no_streams, stage=provider_network_http_error, raw=0, playable=0, verified=0, identitySafe=true",
         "tv: status=no_streams, stage=provider_network_http_error, raw=0, playable=0, verified=0, identitySafe=true"
-      ],
-      "transportRepairEligible": true,
-      "targetedTransportClass": "not-applicable",
-      "targetedTransportEvidence": []
+      ]
     },
     {
       "provider": "moviesmod",
@@ -622,16 +627,11 @@
         "authoritative_route_source"
       ],
       "authorityKnown": true,
-      "action": "current same-census targeted probe proves provider-origin WAF/challenge; exclude provider mutation until stronger residential/native replay disproves transport ownership",
+      "action": "replay qualified route fixtures and finish terminal extraction/validation",
       "brainCheckRequired": true,
       "statusRepairEligible": true,
-      "repairEligible": false,
-      "testedThisRun": false,
-      "residentialProviderReplayClass": "no-verified-media",
-      "residentialProviderReplayEvidence": [
-        "movie: status=no_streams, stage=provider_zero_before_provider_network, raw=0, playable=0, verified=0, identitySafe=true",
-        "tv: status=no_streams, stage=provider_zero_before_provider_network, raw=0, playable=0, verified=0, identitySafe=true"
-      ],
+      "repairEligible": true,
+      "testedThisRun": true,
       "transportRepairEligible": false,
       "targetedTransportClass": "provider-waf-challenge-current",
       "targetedTransportEvidence": [
@@ -641,7 +641,13 @@
         "tv:moviesmod.ai.in:200",
         "tv:moviesmod.ai.in:200",
         "tv:episodes.modpro.blog:403"
-      ]
+      ],
+      "residentialProviderReplayClass": "no-verified-media",
+      "residentialProviderReplayEvidence": [
+        "movie: status=no_streams, stage=provider_zero_before_provider_network, raw=0, playable=0, verified=0, identitySafe=true",
+        "tv: status=no_streams, stage=provider_zero_before_provider_network, raw=0, playable=0, verified=0, identitySafe=true"
+      ],
+      "residentialProviderReplayReclassified": true
     },
     {
       "provider": "showbox",
@@ -730,14 +736,14 @@
       "statusRepairEligible": true,
       "repairEligible": true,
       "testedThisRun": false,
+      "transportRepairEligible": true,
+      "targetedTransportClass": "not-applicable",
+      "targetedTransportEvidence": [],
       "residentialProviderReplayClass": "no-verified-media",
       "residentialProviderReplayEvidence": [
         "movie: status=no_streams, stage=provider_network_http_error, raw=0, playable=0, verified=0, identitySafe=true",
         "tv: status=no_streams, stage=provider_network_http_error, raw=0, playable=0, verified=0, identitySafe=true"
-      ],
-      "transportRepairEligible": true,
-      "targetedTransportClass": "not-applicable",
-      "targetedTransportEvidence": []
+      ]
     },
     {
       "provider": "yflix",
@@ -782,14 +788,14 @@
       "statusRepairEligible": true,
       "repairEligible": true,
       "testedThisRun": false,
+      "transportRepairEligible": true,
+      "targetedTransportClass": "not-applicable",
+      "targetedTransportEvidence": [],
       "residentialProviderReplayClass": "no-verified-media",
       "residentialProviderReplayEvidence": [
         "movie: status=no_streams, stage=provider_network_exception, raw=0, playable=0, verified=0, identitySafe=true",
         "tv: status=no_streams, stage=provider_network_exception, raw=0, playable=0, verified=0, identitySafe=true"
-      ],
-      "transportRepairEligible": true,
-      "targetedTransportClass": "not-applicable",
-      "targetedTransportEvidence": []
+      ]
     },
     {
       "provider": "animevostfr",
@@ -2072,9 +2078,10 @@
     }
   ],
   "counts": {
-    "CHAIN REACHED": 3,
+    "CHAIN REACHED": 2,
     "DISABLED": 4,
     "FULL OK": 27,
+    "HARNESS/ENV BLOCKED": 1,
     "NO PROOF": 1,
     "PARTIAL OK": 2,
     "ROUTE PROVEN": 9
@@ -2112,10 +2119,14 @@
   "repairQueue": [
     "4khdhub",
     "allanime",
+    "allwish",
     "anime-ultime",
+    "animesalt",
     "animesultra",
     "animevost-fr",
+    "flemmix",
     "moviebox",
+    "moviesmod",
     "vidfast",
     "yflix"
   ],
@@ -2128,28 +2139,54 @@
     "showbox"
   ],
   "authorityRediscoveryQueue": [],
-  "environmentQueue": [],
-  "harnessMismatchQueue": [],
-  "environmentBlockedQueue": [],
-  "harnessQueue": [],
-  "clientTransportGapQueue": [],
-  "harnessEvidenceRunId": "36531589336-waf-transport",
-  "harnessEvidenceSha": "15a3b926738dc1a4d027fef60ef427cf358b3ddb",
-  "authorityRefreshedProviders": [
-    "vostfree"
+  "environmentQueue": [
+    "mallumv"
   ],
-  "harnessTransportUpdatedProviders": [],
+  "harnessMismatchQueue": [],
+  "environmentBlockedQueue": [
+    "mallumv"
+  ],
+  "harnessQueue": [
+    "mallumv"
+  ],
+  "clientTransportGapQueue": [],
+  "harnessEvidenceRunId": "36541459500-waf-transport",
+  "harnessEvidenceSha": "e6350f7ab1ecd0acbbe1460c41f6418d11514dd1",
+  "authorityRefreshedProviders": [
+    "allwish",
+    "animesalt",
+    "flemmix",
+    "mallumv",
+    "moviesmod"
+  ],
+  "harnessTransportUpdatedProviders": [
+    "allwish",
+    "animesalt",
+    "flemmix",
+    "mallumv",
+    "moviesmod"
+  ],
   "networkDifferentialUpdatedProviders": [],
   "residentialProviderReplayPromotedProviders": [
     "vostfree"
   ],
-  "residentialProviderReplayReclassifiedProviders": [],
-  "residentialProviderReplayRepairableProviders": [],
+  "residentialProviderReplayReclassifiedProviders": [
+    "allwish",
+    "animesalt",
+    "flemmix",
+    "moviesmod"
+  ],
+  "residentialProviderReplayRepairableProviders": [
+    "allwish",
+    "animesalt",
+    "flemmix",
+    "moviesmod"
+  ],
   "residentialExitNodeEvidence": {
     "enabled": true,
     "available": true,
     "profile": "tailscale-residential-exit",
-    "matchedProviderLanes": 2,
+    "matchedProviderLanes": 8,
     "privacy": {
       "exitNodeNamePersisted": false,
       "tailscaleAddressPersisted": false,
@@ -2383,7 +2420,7 @@
     },
     "lastAttempt": {
       "available": true,
-      "providerCount": 10,
+      "providerCount": 7,
       "refreshedProviders": [
         "allwish",
         "animesalt",
