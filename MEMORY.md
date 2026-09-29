@@ -228,3 +228,12 @@
 - External Brain Force source-drift logic now treats only evidence/queue artifacts (census, WAF ledger, Fast summary, Repair batch/handoff/retest artifacts, census markdown, authority/experience evidence) as neutral (`2705dee7...`, test `f0763438...`). Provider bytes/config remain non-neutral and every Force candidate still requires exact `mutationContextFingerprint` plus isolated sandbox validation.
 - Current authoritative provider repair cohort remains 13: `4khdhub, allanime, allwish, anime-ultime, animesalt, animesultra, animevost-fr, flemmix, mallumv, moviebox, moviesmod, vidfast, yflix`.
 - Current external Brain FORCE was re-triggered on current Brain with reserved structural second-hop context at Brain commit `e2aef03e...`, source NiakVIO `969d1147...`. No current mutation is considered produced until `niakvio-guidance` publishes a matching page/state.
+
+## 2026-09-29 — Fast 12 exhausted; Force receiver now rejects function signature drift
+
+- Fast Repair run `36545761845` selected 12 providers (`4khdhub, allanime, anime-ultime, animesalt, animesultra, animevost-fr, flemmix, mallumv, moviebox, moviesmod, vidfast, yflix`) and finished with **0 candidate providers, 0 retested, 0 validated**, `experiment_variants_exhausted`, `brainTimeBudgetExhausted=false`.
+- All 12 were persisted to the LEARN handoff as pending strategy debt. AllWish remains the 13th Repair row and has separate provider-side Learning/Force coverage.
+- External FORCE page 1 from Brain `e2aef03e...` produced one AnimeSalt mutation that changed synchronous `req(a)` to async. This is invalid because `resolve()` consumes `req(a)` synchronously.
+- NiakVIO `apply_brain_llm_force_mutations.py` now compares named JS function signatures before/after authored provider_patch/provider_js application and fails closed on async/name/parameter drift, restoring original bytes on rejection.
+- The receiver-safety script and tests are classified as provider-neutral source drift so an otherwise valid external Force candidate is not rejected merely because this safety guard was added after its source SHA.
+- Current census `36547529107` remains **27 FULL OK · 2 PARTIAL OK · 9 ROUTE PROVEN · 3 CHAIN REACHED · 1 NO PROOF · 4 DISABLED**, repairQueue 13. No new provider is claimed repaired by these guard changes.
