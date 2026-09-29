@@ -75,8 +75,9 @@ assert 'target_providers="$trigger_targets"' in trigger_block
 assert "architecture_force=true" in trigger_block
 assert "needs.experiment.outputs.architecture_force == 'true'" in workflow
 assert "needs.experiment.outputs.architecture_force != 'true'" in workflow
-assert 'if [ "${FAST_HANDOFF:-false}" = "true" ] && [ -n "${FAST_MISSING_PROVIDERS:-}" ]; then' in workflow
+assert 'if [ "${ARCHITECTURE_FORCE:-false}" != "true" ] && [ "${FAST_HANDOFF:-false}" = "true" ] && [ -n "${FAST_MISSING_PROVIDERS:-}" ]; then' in workflow
 assert 'effective_filter="${FAST_MISSING_PROVIDERS}"' in workflow
+assert 'effective_filter="${PROVIDER_FILTER:-}"' in workflow
 assert 'if [ "${FAST_HANDOFF:-false}" = "true" ]; then\n            effective_filter="${FAST_MISSING_PROVIDERS:-}"' not in workflow
 
 cache_start = workflow.index("required_set=set(required)")
