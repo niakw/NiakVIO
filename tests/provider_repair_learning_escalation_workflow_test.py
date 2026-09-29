@@ -41,6 +41,7 @@ for required in (
     "coverage_complete=",
     "missing_external_force_providers=",
     "FIELD_BRAIN_LLM_FORCE_CURRENT_BYTES",
+    "reason=force-winner-persisted",
     "requireExternalForceMutations",
     "requireExternalBrainGuidance",
     "FIELD_FORCE_REPAIR_DIRECT_APPLY captured=true",
