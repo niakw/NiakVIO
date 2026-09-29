@@ -102,6 +102,44 @@ ctx = mod.source_context(
 )
 assert sum(len(v) for v in ctx.values()) <= mod.MAX_TOTAL_SOURCE_CONTEXT
 assert all(len(v) <= mod.MAX_SOURCE_SNIPPET for v in ctx.values())
+
+# Architecture FORCE must expose the executable implementation neighborhood,
+# not just the beginning of a large runtime file. Otherwise Qwen sees generic
+# taxonomies and can materialize a syntactically valid but causally empty edit.
+synthetic = (
+    "HEADER_ONLY = True\n"
+    + ("prefix_value = 1\n" * 500)
+    + 'elif new_strategy_id == "route_transition_graph_v1":\n'
+    + '    IMPLEMENTATION_SENTINEL = "route graph execution"\n'
+    + ("tail_value = 2\n" * 500)
+)
+focused = mod._focused_source_snippet(
+    synthetic,
+    {
+        "strategyId": "route_transition_graph_v1",
+        "repairScope": "route-to-terminal",
+        "targetLayer": "core",
+    },
+    900,
+)
+assert "IMPLEMENTATION_SENTINEL" in focused
+assert not focused.startswith("HEADER_ONLY")
+
+focused_ctx = mod.source_context(
+    {
+        "strategyId": "route_transition_graph_v1",
+        "repairScope": "route-to-terminal",
+        "targetLayer": "core",
+    },
+    [
+        "scripts/brain_meta_learning.py",
+        "scripts/brain_repair_runtime.py",
+        "scripts/adaptive_runtime/runtime_repair.py",
+    ],
+)
+assert 'new_strategy_id == "route_transition_graph_v1"' in focused_ctx[
+    "scripts/adaptive_runtime/runtime_repair.py"
+]
 assert mod.MAX_MODEL_TOKENS <= 512
 assert mod.MODEL_TIMEOUT_SECONDS <= 100
 assert mod.RETRY_MODEL_TOKENS <= 640

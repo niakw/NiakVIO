@@ -220,6 +220,94 @@ def select_blueprint(proposal: dict[str, Any]) -> dict[str, Any]:
     return eligible[0]
 
 
+def _blueprint_focus_terms(blueprint: dict[str, Any]) -> list[str]:
+    """Return bounded source-search terms that describe the executable strategy."""
+    raw = [
+        str(blueprint.get(key) or "").strip().casefold()
+        for key in (
+            "strategyId",
+            "repairScope",
+            "capabilityStrategy",
+            "groupId",
+            "causalTrigger",
+            "method",
+        )
+    ]
+    ignored = {
+        "provider", "core", "repair", "strategy", "runtime", "current",
+        "bounded", "evidence", "provider-owned", "not-applicable",
+    }
+    terms: list[str] = []
+    for value in raw:
+        if not value:
+            continue
+        candidates = [value]
+        candidates.extend(re.findall(r"[a-z0-9_][a-z0-9_-]{3,}", value))
+        for term in candidates:
+            term = term.strip(" -_")
+            if len(term) < 4 or term in ignored or term in terms:
+                continue
+            terms.append(term)
+            if len(terms) >= 24:
+                return terms
+    return terms
+
+
+def _focused_source_snippet(text: str, blueprint: dict[str, Any], limit: int) -> str:
+    """Prefer executable strategy neighborhoods over unrelated file prefixes."""
+    if limit <= 0 or not text:
+        return ""
+    if len(text) <= limit:
+        return text
+
+    strategy_id = str(blueprint.get("strategyId") or "").strip()
+    anchors: list[str] = []
+    if strategy_id:
+        anchors.extend([
+            f'new_strategy_id == "{strategy_id}"',
+            f"new_strategy_id == '{strategy_id}'",
+            f'"{strategy_id}"',
+            f"'{strategy_id}'",
+            strategy_id,
+        ])
+    anchors.extend(_blueprint_focus_terms(blueprint))
+
+    lowered = text.casefold()
+    terms = _blueprint_focus_terms(blueprint)
+    candidates: list[tuple[int, int, str]] = []
+    seen_positions: set[int] = set()
+    for anchor_rank, anchor in enumerate(anchors):
+        needle = anchor.casefold()
+        if not needle:
+            continue
+        start_at = 0
+        while True:
+            pos = lowered.find(needle, start_at)
+            if pos < 0:
+                break
+            start_at = pos + max(1, len(needle))
+            if pos in seen_positions:
+                continue
+            seen_positions.add(pos)
+            start = max(0, pos - limit // 3)
+            end = min(len(text), start + limit)
+            start = max(0, end - limit)
+            window = text[start:end]
+            window_lower = window.casefold()
+            score = max(0, 20 - anchor_rank)
+            if "new_strategy_id ==" in window:
+                score += 30
+            if strategy_id:
+                score += min(30, 10 * window_lower.count(strategy_id.casefold()))
+            score += sum(min(3, window_lower.count(term)) for term in terms[:12])
+            candidates.append((score, pos, window))
+
+    if not candidates:
+        return text[:limit]
+    candidates.sort(key=lambda row: (-row[0], row[1]))
+    return candidates[0][2]
+
+
 def source_context(blueprint: dict[str, Any], patterns: list[str]) -> dict[str, str]:
     layer = str(blueprint.get("targetLayer") or "")
     candidates = ["scripts/brain_meta_learning.py", "scripts/brain_repair_runtime.py"]
@@ -236,7 +324,11 @@ def source_context(blueprint: dict[str, Any], patterns: list[str]) -> dict[str, 
             break
         if path_allowed(path, patterns) and (ROOT / path).is_file():
             text = (ROOT / path).read_text(encoding="utf-8")
-            snippet = text[: min(MAX_SOURCE_SNIPPET, remaining)]
+            snippet = _focused_source_snippet(
+                text,
+                blueprint,
+                min(MAX_SOURCE_SNIPPET, remaining),
+            )
             if snippet:
                 out[path] = snippet
                 remaining -= len(snippet)
