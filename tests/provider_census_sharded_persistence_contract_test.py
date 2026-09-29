@@ -50,7 +50,11 @@ probe_pos = workflow.index("python scripts/probe_waf_browser_session.py")
 effective_merge_pos = workflow.index("python scripts/merge_waf_latest_evidence.py", probe_pos)
 final_render_pos = workflow.index("--waf-browser-evidence automation/provider-waf-browser-session-effective.json", effective_merge_pos)
 batch_plan_pos = workflow.index("python scripts/build_provider_repair_batch_plan.py", final_render_pos)
-assert probe_pos < effective_merge_pos < final_render_pos < batch_plan_pos
+transport_merge_pos = workflow.index("python scripts/merge_waf_census_transport.py", final_render_pos)
+state_render_pos = workflow.index("python scripts/render_provider_census_status_from_state.py", transport_merge_pos)
+assert probe_pos < effective_merge_pos < final_render_pos < transport_merge_pos < state_render_pos < batch_plan_pos
+assert "--waf automation/provider-waf-browser-session-effective.json" in workflow
+assert "--status automation/provider-census-sharded-status.json" in workflow
 
 print("provider sharded census authority persistence contract passed")
 
