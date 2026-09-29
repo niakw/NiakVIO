@@ -8,6 +8,7 @@ on:
       - 'automation/provider-repair-batch-plan-latest.json'
       - '.github/workflows/provider-targeted-recovery-sharded.yml'
       - 'scripts/run_provider_targeted_recovery.py'
+      - 'scripts/nuvio_tv_probe_tmdb_ci.cjs'
       - 'scripts/merge_provider_targeted_recovery_shards.py'
       - 'scripts/refine_provider_repair_batches.py'
   pull_request:
@@ -17,6 +18,7 @@ on:
       - 'scripts/provider_patches/**'
       - 'provider-overrides.json'
       - 'scripts/provider_base_store.py'
+      - 'scripts/nuvio_tv_probe_tmdb_ci.cjs'
       - 'scripts/run_provider_targeted_recovery.py'
       - 'scripts/merge_provider_targeted_recovery_shards.py'
       - 'scripts/refine_provider_repair_batches.py'
