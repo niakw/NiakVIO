@@ -297,3 +297,8 @@
 - The current provider runtime parses `classBlocks(html, "movie-card")` / `classText(...)` with regex word boundaries around the requested class. Because hyphen is a non-word character, a boundary after `movie-card` also matches `movie-card-format` / `movie-card-content` etc. The parser can therefore promote nested sub-elements as complete cards before title/type/year scoring.
 - This is the current deterministic causal hypothesis for the 4KHDHub witness. It is **not yet a validated repair**. Provider bytes remain Brain-owned; the next step is a Brain-generated class-token-boundary mutation followed by current-byte sandbox playback, identity and non-regression proof.
 - The targeted probe was extended with privacy-safe `classFacts` (counts/tags/selfHref/nestedAnchors/allowlisted semantic signals only) and a bounded sanitized probe-error field. Two instrumentation regressions were detected and fixed before accepting the final evidence; invalid intermediate probe runs are obsolete.
+
+### 2026-09-29 — 4KHDHub published runtime repair
+- Main runtime behavior test showed 4KHDHub returning no movie fixture streams because CSS class matching treated class substrings as full-token matches.
+- Provider-scoped source fix uses exact class-token matching and is isolated from Brain orchestration.
+- Publication must be produced by the official branch reconstruction/materialization workflow before merge; source-only publication is not accepted.
