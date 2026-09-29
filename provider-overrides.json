@@ -7569,7 +7569,8 @@
         "Use VidFast documented movie/tv embed routes. Do not force direct-media validation on the iframe URL.",
         "2026-09-19 runtime reconstruction: current VidFast is API-first, not a root iframe query. TMDB identity selects /movie/{id}/ or /tv/{id}/{season}/{episode}/, then enc-dec.app/api enc-vidfast/dec-vidfast resolves CSRF-protected server endpoints.",
         "Upstream JavaScript is not executed; NiakVIO reproduces only the observed page/token/enc-dec protocol in a provider-local Lego.",
-        "2026-09-20 multi-authority refresh: official vidfast.to docs expose /embed/movie and /embed/tv routes, while current All-in-One upstream still uses vidfast.vc + enc-dec. Probe .to first and preserve .vc as evidence-backed fallback."
+        "2026-09-20 multi-authority refresh: official vidfast.to docs expose /embed/movie and /embed/tv routes, while current All-in-One upstream still uses vidfast.vc + enc-dec. Probe .to first and preserve .vc as evidence-backed fallback.",
+        "2026-09-29 WAF differential: initial VidFast page fetch now matches the audited Nuvio-TV UA/browser profile (no X-Requested-With); XHR headers are reserved for enc/dec and server API calls."
       ],
       "capability": "mixed_embed_resolver",
       "preserve_embed_urls": true,
@@ -7798,7 +7799,7 @@
           ],
           "decrypt": "https://enc-dec.app/api",
           "maxStreams": 8,
-          "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/145.0.0.0 Safari/537.36"
+          "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
         }
       },
       "official_site": "https://vidfast.to",
