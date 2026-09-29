@@ -326,6 +326,8 @@ with tempfile.TemporaryDirectory() as tmp:
     original_js = "function req(a){return {tmdbId:a};}\nasync function resolve(a){var q=req(a);return q.tmdbId;}\n"
     safe_js = "function req(a){return {tmdbId:String(a)};}\nasync function resolve(a){var q=req(a);return q.tmdbId;}\n"
     mod._reject_function_signature_drift(original_js, safe_js, "demo", "demo.js")
+    helper_addition = safe_js + "function newTerminalHelper(v){return v;}\n"
+    mod._reject_function_signature_drift(original_js, helper_addition, "demo", "demo.js")
     async_drift = "async function req(a){return {tmdbId:a};}\nasync function resolve(a){var q=req(a);return q.tmdbId;}\n"
     try:
         mod._reject_function_signature_drift(original_js, async_drift, "demo", "demo.js")
