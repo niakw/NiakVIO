@@ -197,12 +197,58 @@ function structuralTokens(raw, attribute, limit) {
     .slice(0, limit)
     .map(([token]) => token);
 }
+function structuralClassFacts(raw, tokens, limit) {
+  const out = [];
+  const source = String(raw || '');
+  const allowSignals = [
+    ['movie', /\bmovies?\b/i],
+    ['series', /\bseries\b/i],
+    ['season', /\bseason\b/i],
+    ['episode', /\bepisode\b/i],
+    ['download', /\bdownload\b/i],
+    ['4k', /\b(?:4k|2160p|uhd)\b/i],
+    ['1080p', /\b1080p\b/i],
+    ['720p', /\b720p\b/i],
+    ['year', /\b(?:19|20)\d{2}\b/],
+  ];
+  for (const token of (tokens || []).slice(0, Math.max(0, limit || 0))) {
+    if (!/^[A-Za-z][A-Za-z0-9_-]{1,47}$/.test(String(token || ''))) continue;
+    const esc = String(token).replace(/[-/\\^$*+?.()|[\]{}]/g, '\\function textShape(contentType, body) {
+');
+    const openRe = new RegExp('<([a-z0-9]+)\\b([^>]*\\bclass\\s*=\\s*["\'][^"\']*\\b' + esc + '\\b[^"\']*["\'][^>]*)>', 'gi');
+    let match, count = 0, selfHref = 0, nestedAnchors = 0;
+    const tags = new Set(), signals = new Set();
+    while ((match = openRe.exec(source)) !== null && count < 12) {
+      count += 1;
+      tags.add(String(match[1] || '').toLowerCase());
+      if (/\bhref\s*=/i.test(String(match[2] || ''))) selfHref += 1;
+      const start = match.index;
+      const stop = Math.min(source.length, start + 4096);
+      const sample = source.slice(start, stop);
+      nestedAnchors += Math.min(12, (sample.match(/<a\b/gi) || []).length);
+      const text = sample.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').slice(0, 2048);
+      for (const [name, re] of allowSignals) if (re.test(text)) signals.add(name);
+    }
+    if (!count) continue;
+    out.push({
+      token: String(token),
+      count,
+      tags: [...tags].slice(0, 4),
+      selfHref,
+      nestedAnchors: Math.min(24, nestedAnchors),
+      signals: [...signals],
+    });
+  }
+  return out;
+}
+
 function textShape(contentType, body) {
   const raw = String(body || '').slice(0, 65536);
   const low = raw.toLowerCase();
   const count = re => Math.min(99, (raw.match(re) || []).length);
   if (/text\/html/i.test(contentType)) {
-    return {kind:'html',sampleBytes:raw.length,forms:count(/<form\b/gi),iframes:count(/<iframe\b/gi),videos:count(/<video\b/gi),sources:count(/<source\b/gi),scripts:count(/<script\b/gi),anchors:count(/<a\b/gi),classTokens:structuralTokens(raw,'class',16),idTokens:structuralTokens(raw,'id',12),markers:[
+    const classTokens = structuralTokens(raw,'class',16);
+    return {kind:'html',sampleBytes:raw.length,forms:count(/<form\b/gi),iframes:count(/<iframe\b/gi),videos:count(/<video\b/gi),sources:count(/<source\b/gi),scripts:count(/<script\b/gi),anchors:count(/<a\b/gi),classTokens,idTokens:structuralTokens(raw,'id',12),classFacts:structuralClassFacts(raw,classTokens,8),markers:[
       /__next_data__/i.test(raw)?'next-data':'',
       /application\/ld\+json/i.test(raw)?'json-ld':'',
       /(?:player|embed)/i.test(low)?'player':'',
