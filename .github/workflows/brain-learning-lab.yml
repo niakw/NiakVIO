@@ -200,9 +200,8 @@ jobs:
           fast_handoff="$(python -c "import json; d=json.load(open('/tmp/fast-learning-handoff.json')); print('true' if d.get('fastHandoff') else 'false')")"
           provider_filter="$(python -c "import json; d=json.load(open('/tmp/fast-learning-handoff.json')); print(d.get('providerFilter') or '')")"
           if [ -n "$target_providers" ]; then
-            python - "$target_providers" automation/provider-census-status.json /tmp/fast-learning-handoff.json "$architecture_force" .github/triggers/provider-fast-repair.json <<'PY'
+            python - "$target_providers" automation/provider-census-status.json /tmp/fast-learning-handoff.json "$architecture_force" <<'PY'
           import json,sys
-          from pathlib import Path
           requested=[]; seen=set()
           for raw in str(sys.argv[1] or "").split(","):
               value=raw.strip().lower().replace("_","-")
@@ -215,18 +214,11 @@ jobs:
           missing=[v for v in requested if v not in eligible]
           if not requested: raise SystemExit("targeted Learning cohort is empty")
           if missing: raise SystemExit("targeted Learning cohort escaped current repair/environment queues: "+",".join(missing))
+          # Current census repair/environment queues are the canonical scope.
+          # Do not re-restrict architecture FORCE with a stale Fast operator snapshot:
+          # that snapshot may describe an older cohort after Repair
+          # persists newer evidence and dispatches Learning.
           force=str(sys.argv[4] or "").strip().casefold()=="true"
-          trigger=Path(sys.argv[5])
-          if force and trigger.exists():
-              operator=json.loads(trigger.read_text(encoding="utf-8"))
-              allowed={
-                  str(v or "").strip().lower().replace("_","-")
-                  for v in operator.get("targetProviders") or []
-                  if str(v or "").strip()
-              }
-              escaped=[v for v in requested if allowed and v not in allowed]
-              if escaped:
-                  raise SystemExit("targeted FORCE Learning cohort escaped current operator Fast cohort: "+",".join(escaped))
           environment_targets=[v for v in requested if v in environment]
           data={"schemaVersion":1,"fastHandoff":True,"providerCount":len(requested),"providers":requested,"providerFilter":",".join(requested),"policy":"autopilot-targeted-core-learning" if environment_targets else "autopilot-targeted-learning","environmentProviders":environment_targets}
           json.dump(data,open(sys.argv[3],"w",encoding="utf-8"),ensure_ascii=False,indent=2)
