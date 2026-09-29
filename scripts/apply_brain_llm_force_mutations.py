@@ -90,7 +90,18 @@ def _function_signature_map(source: str) -> dict[str, list[tuple[bool, str]]]:
 
 
 def _reject_function_signature_drift(before: str, after: str, provider: str, path: str) -> None:
-    if _function_signature_map(before) != _function_signature_map(after):
+    before_map = _function_signature_map(before)
+    after_map = _function_signature_map(after)
+    # Existing named helper contracts are immutable for an authored Force edit.
+    # A candidate may still add a uniquely named bounded helper when the normal
+    # mutation guards allow it; rejecting every new helper would turn this
+    # safety check into an unnecessary invention ban.
+    changed = [
+        name
+        for name, signatures in before_map.items()
+        if after_map.get(name) != signatures
+    ]
+    if changed:
         raise ValueError(
             f"{provider}: provider file mutation changes an existing function declaration/signature: {path}"
         )
