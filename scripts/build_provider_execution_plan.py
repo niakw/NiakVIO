@@ -57,6 +57,7 @@ def select_batch_plan(
         for value in [
             *(status.get("repairQueue") or []),
             *(status.get("environmentQueue") or []),
+            *(status.get("targetedTransportBlockedQueue") or []),
         ]
         if str(value).strip()
     }
@@ -130,7 +131,14 @@ def lane_for(group:dict[str,Any])->dict[str,Any]:
 
 def build(batch:dict[str,Any],status:dict[str,Any])->dict[str,Any]:
     current_repair={str(x).strip().casefold() for x in status.get("repairQueue") or [] if str(x).strip()}
-    current_environment={str(x).strip().casefold() for x in status.get("environmentQueue") or [] if str(x).strip()}
+    current_environment={
+        str(x).strip().casefold()
+        for x in [
+            *(status.get("environmentQueue") or []),
+            *(status.get("targetedTransportBlockedQueue") or []),
+        ]
+        if str(x).strip()
+    }
     executions=[]
     provider_owner:dict[str,str]={}
     for group in batch.get("groups") or []:
