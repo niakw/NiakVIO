@@ -32,7 +32,11 @@ def load(path: Path) -> dict[str, Any]:
     return value
 
 
-def select(report: dict[str, Any], status: dict[str, Any]) -> list[str]:
+def select(
+    report: dict[str, Any],
+    status: dict[str, Any],
+    explicit_providers: list[str] | None = None,
+) -> list[str]:
     residential = (
         report.get("residentialExitNodeEvidence")
         if isinstance(report.get("residentialExitNodeEvidence"), dict)
@@ -41,14 +45,43 @@ def select(report: dict[str, Any], status: dict[str, Any]) -> list[str]:
     if residential.get("available") is not True:
         return []
 
+    rows = [
+        row for row in status.get("providers") or []
+        if isinstance(row, dict) and str(row.get("provider") or "").strip()
+    ]
     providers = {
         str(row.get("provider") or "").strip().casefold()
-        for row in status.get("providers") or []
-        if isinstance(row, dict)
-        and str(row.get("status") or "") in ELIGIBLE_STATUSES
+        for row in rows
+        if str(row.get("status") or "") in ELIGIBLE_STATUSES
         and row.get("authorityRepairEligible") is not False
-        and str(row.get("provider") or "").strip()
     }
+
+    explicit = {
+        str(value or "").strip().casefold()
+        for value in (explicit_providers or [])
+        if str(value or "").strip()
+    }
+    if explicit:
+        symptomatic = {
+            str(value or "").strip().casefold()
+            for key in (
+                "repairQueue",
+                "environmentQueue",
+                "harnessQueue",
+                "targetedTransportBlockedQueue",
+                "symptomaticProviders",
+                "brainQueue",
+            )
+            for value in (status.get(key) or [])
+            if str(value or "").strip()
+        }
+        authority_allowed = {
+            str(row.get("provider") or "").strip().casefold()
+            for row in rows
+            if row.get("authorityRepairEligible") is not False
+        }
+        providers.update(explicit & symptomatic & authority_allowed)
+
     return sorted(providers)
 
 
@@ -57,15 +90,18 @@ def main() -> int:
     ap.add_argument("--waf", type=Path, required=True)
     ap.add_argument("--status", type=Path, required=True)
     ap.add_argument("--output", type=Path, required=True)
+    ap.add_argument("--providers", default="", help="Optional comma-separated explicit symptomatic providers to full-replay")
     args = ap.parse_args()
 
-    providers = select(load(args.waf), load(args.status))
+    explicit = [value.strip() for value in str(args.providers or "").split(",") if value.strip()]
+    providers = select(load(args.waf), load(args.status), explicit)
     payload = {
         "schemaVersion": 2,
         "selection": "current-census-harness-network-residential-full-replay",
         "eligibleStatuses": sorted(ELIGIBLE_STATUSES),
         "providers": providers,
         "providerCount": len(providers),
+        "explicitProviders": explicit,
     }
     args.output.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
     print(f"FIELD_RESIDENTIAL_PROVIDER_REPLAY_SELECTION providers={len(providers)}")
