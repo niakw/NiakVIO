@@ -297,3 +297,8 @@
 - The current provider runtime parses `classBlocks(html, "movie-card")` / `classText(...)` with regex word boundaries around the requested class. Because hyphen is a non-word character, a boundary after `movie-card` also matches `movie-card-format` / `movie-card-content` etc. The parser can therefore promote nested sub-elements as complete cards before title/type/year scoring.
 - This is the current deterministic causal hypothesis for the 4KHDHub witness. It is **not yet a validated repair**. Provider bytes remain Brain-owned; the next step is a Brain-generated class-token-boundary mutation followed by current-byte sandbox playback, identity and non-regression proof.
 - The targeted probe was extended with privacy-safe `classFacts` (counts/tags/selfHref/nestedAnchors/allowlisted semantic signals only) and a bounded sanitized probe-error field. Two instrumentation regressions were detected and fixed before accepting the final evidence; invalid intermediate probe runs are obsolete.
+
+### 2026-09-29 — FORCE Learning canonical queue isolation
+- Learning run 36618288471 failed before execution because the FORCE handoff retained stale target authority instead of re-scoping to the current canonical census queue.
+- Clean fix isolates this orchestration change from provider byte changes: FORCE Learning derives targets from the current census/repair queue and rejects stale Fast-trigger authority.
+- No provider runtime or published provider bytes are changed by this branch.
