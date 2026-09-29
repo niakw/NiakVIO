@@ -330,3 +330,9 @@
 - NiakVIO now keeps 3B for ordinary low-cost advisor work, but architecture_force uses Qwen/Qwen2.5-Coder-7B-Instruct-GGUF:Q4_K_M with context 16384, one parallel slot, max_tokens 512 and timeout 240s, matching the validated Brain-LLM witness contract.
 - The FORCE architecture materializer also receives model qwen2.5-coder-7b. Contract tests pin both 3B normal routing and 7B FORCE routing.
 - This is a Brain/runtime capability correction only. No provider bytes are hand-edited; provider-local mutations remain Brain-authored and must still pass isolated current-byte playback, identity and non-regression validation before publication.
+
+### 2026-09-30 — Qwen 7B FORCE feasibility proven on GitHub-hosted Actions
+- NiakVIO-Brain-LLM guidance run 36614527989 completed successfully on GitHub-hosted Actions with Qwen/Qwen2.5-Coder-7B-Instruct-GGUF:Q4_K_M, context 16384 and one parallel slot.
+- The live log shows the 7B cache restored, llama-server started, one LLM FORCE call completed, and a sanitized executable provider mutation produced for 4khdhub. No OOM/killed condition occurred.
+- NiakVIO run 36641082807 failed before model startup only because brain_llm_learning_workflow_contract_test.py still pinned the superseded 3B FORCE values max_tokens=768 / timeout=180.
+- The contract is now aligned to the validated 7B FORCE runtime: max_tokens=512, timeout=240, 16k context, single slot, while ordinary non-FORCE work remains on 3B.
