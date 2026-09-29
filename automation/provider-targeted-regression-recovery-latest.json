@@ -20,30 +20,442 @@
     "4khdhub": {
       "contradictions": 0,
       "debugStages": {
-        "movie": "invalid_probe_output",
-        "tv": "invalid_probe_output"
+        "movie": "provider_network_zero_result",
+        "tv": "provider_network_zero_result"
       },
       "network": {
-        "movie": [],
-        "tv": []
+        "movie": [
+          {
+            "host": "api.themoviedb.org",
+            "method": "GET",
+            "path": "/{id}/movie/{id}",
+            "shape": {
+              "keys": [
+                "adult",
+                "backdrop_path",
+                "belongs_to_collection",
+                "budget",
+                "genres",
+                "homepage",
+                "id",
+                "imdb_id",
+                "origin_country",
+                "original_language",
+                "original_title",
+                "overview",
+                "popularity",
+                "poster_path",
+                "production_companies",
+                "production_countries"
+              ],
+              "kind": "json",
+              "top": "object"
+            },
+            "status": 200
+          },
+          {
+            "host": "4khdhub.one",
+            "method": "GET",
+            "path": "/",
+            "shape": {
+              "anchors": 42,
+              "classFacts": [
+                {
+                  "count": 12,
+                  "nestedAnchors": 24,
+                  "selfHref": 0,
+                  "signals": [
+                    "movie",
+                    "series",
+                    "1080p",
+                    "year"
+                  ],
+                  "tags": [
+                    "span"
+                  ],
+                  "token": "movie-card-format"
+                },
+                {
+                  "count": 12,
+                  "nestedAnchors": 24,
+                  "selfHref": 12,
+                  "signals": [
+                    "movie",
+                    "series",
+                    "4k",
+                    "year"
+                  ],
+                  "tags": [
+                    "a"
+                  ],
+                  "token": "dropdown-item"
+                },
+                {
+                  "count": 12,
+                  "nestedAnchors": 24,
+                  "selfHref": 1,
+                  "signals": [
+                    "movie",
+                    "series",
+                    "1080p",
+                    "year"
+                  ],
+                  "tags": [
+                    "a",
+                    "div",
+                    "span"
+                  ],
+                  "token": "movie-card"
+                },
+                {
+                  "count": 12,
+                  "nestedAnchors": 24,
+                  "selfHref": 0,
+                  "signals": [
+                    "movie",
+                    "series",
+                    "1080p",
+                    "year",
+                    "4k"
+                  ],
+                  "tags": [
+                    "div"
+                  ],
+                  "token": "movie-card-content"
+                },
+                {
+                  "count": 12,
+                  "nestedAnchors": 24,
+                  "selfHref": 0,
+                  "signals": [
+                    "movie",
+                    "series",
+                    "1080p",
+                    "year",
+                    "4k"
+                  ],
+                  "tags": [
+                    "div"
+                  ],
+                  "token": "movie-card-formats"
+                },
+                {
+                  "count": 12,
+                  "nestedAnchors": 24,
+                  "selfHref": 0,
+                  "signals": [
+                    "movie",
+                    "series",
+                    "1080p",
+                    "year",
+                    "4k"
+                  ],
+                  "tags": [
+                    "div"
+                  ],
+                  "token": "movie-card-image"
+                },
+                {
+                  "count": 12,
+                  "nestedAnchors": 24,
+                  "selfHref": 0,
+                  "signals": [
+                    "movie",
+                    "series",
+                    "1080p",
+                    "year",
+                    "4k"
+                  ],
+                  "tags": [
+                    "p"
+                  ],
+                  "token": "movie-card-meta"
+                },
+                {
+                  "count": 12,
+                  "nestedAnchors": 24,
+                  "selfHref": 0,
+                  "signals": [
+                    "movie",
+                    "series",
+                    "1080p",
+                    "year",
+                    "4k"
+                  ],
+                  "tags": [
+                    "div"
+                  ],
+                  "token": "movie-card-overlay"
+                }
+              ],
+              "classTokens": [
+                "movie-card-format",
+                "dropdown-item",
+                "movie-card",
+                "movie-card-content",
+                "movie-card-formats",
+                "movie-card-image",
+                "movie-card-meta",
+                "movie-card-overlay",
+                "movie-card-title",
+                "quality-badges",
+                "nav-item",
+                "nav-link",
+                "sr-only",
+                "dropdown-menu",
+                "space-y-4",
+                "pagination-container"
+              ],
+              "forms": 1,
+              "idTokens": [
+                "back-to-top",
+                "close-mobile-menu",
+                "close-search",
+                "current-year",
+                "logo",
+                "main-nav",
+                "menu-toggle",
+                "mobile-menu-backdrop",
+                "search",
+                "search-backdrop",
+                "search-overlay",
+                "search-toggle"
+              ],
+              "iframes": 0,
+              "kind": "html",
+              "markers": [
+                "json-ld",
+                "download",
+                "episode"
+              ],
+              "sampleBytes": 40708,
+              "scripts": 16,
+              "sources": 0,
+              "videos": 0
+            },
+            "status": 200
+          }
+        ],
+        "tv": [
+          {
+            "host": "api.themoviedb.org",
+            "method": "GET",
+            "path": "/{id}/tv/{id}",
+            "shape": {
+              "keys": [
+                "adult",
+                "backdrop_path",
+                "created_by",
+                "episode_run_time",
+                "first_air_date",
+                "genres",
+                "homepage",
+                "id",
+                "in_production",
+                "languages",
+                "last_air_date",
+                "last_episode_to_air",
+                "name",
+                "next_episode_to_air",
+                "networks",
+                "number_of_episodes"
+              ],
+              "kind": "json",
+              "top": "object"
+            },
+            "status": 200
+          },
+          {
+            "host": "4khdhub.one",
+            "method": "GET",
+            "path": "/",
+            "shape": {
+              "anchors": 31,
+              "classFacts": [
+                {
+                  "count": 12,
+                  "nestedAnchors": 24,
+                  "selfHref": 12,
+                  "signals": [
+                    "movie",
+                    "series",
+                    "4k",
+                    "year"
+                  ],
+                  "tags": [
+                    "a"
+                  ],
+                  "token": "dropdown-item"
+                },
+                {
+                  "count": 10,
+                  "nestedAnchors": 24,
+                  "selfHref": 0,
+                  "signals": [
+                    "movie",
+                    "4k",
+                    "1080p",
+                    "year"
+                  ],
+                  "tags": [
+                    "span"
+                  ],
+                  "token": "movie-card-format"
+                },
+                {
+                  "count": 7,
+                  "nestedAnchors": 24,
+                  "selfHref": 0,
+                  "signals": [
+                    "movie",
+                    "series",
+                    "4k"
+                  ],
+                  "tags": [
+                    "li"
+                  ],
+                  "token": "nav-item"
+                },
+                {
+                  "count": 7,
+                  "nestedAnchors": 24,
+                  "selfHref": 7,
+                  "signals": [
+                    "movie",
+                    "series",
+                    "4k",
+                    "year"
+                  ],
+                  "tags": [
+                    "a"
+                  ],
+                  "token": "nav-link"
+                },
+                {
+                  "count": 4,
+                  "nestedAnchors": 15,
+                  "selfHref": 0,
+                  "signals": [
+                    "movie",
+                    "series",
+                    "4k",
+                    "season",
+                    "1080p",
+                    "year"
+                  ],
+                  "tags": [
+                    "span"
+                  ],
+                  "token": "sr-only"
+                },
+                {
+                  "count": 3,
+                  "nestedAnchors": 24,
+                  "selfHref": 0,
+                  "signals": [
+                    "movie",
+                    "series",
+                    "4k"
+                  ],
+                  "tags": [
+                    "ul"
+                  ],
+                  "token": "dropdown-menu"
+                },
+                {
+                  "count": 3,
+                  "nestedAnchors": 11,
+                  "selfHref": 0,
+                  "signals": [
+                    "movie",
+                    "year"
+                  ],
+                  "tags": [
+                    "div"
+                  ],
+                  "token": "space-y-4"
+                },
+                {
+                  "count": 2,
+                  "nestedAnchors": 12,
+                  "selfHref": 0,
+                  "signals": [
+                    "movie",
+                    "year"
+                  ],
+                  "tags": [
+                    "div"
+                  ],
+                  "token": "pagination-container"
+                }
+              ],
+              "classTokens": [
+                "dropdown-item",
+                "movie-card-format",
+                "nav-item",
+                "nav-link",
+                "sr-only",
+                "dropdown-menu",
+                "space-y-4",
+                "pagination-container",
+                "card-grid",
+                "container",
+                "dark",
+                "fixed",
+                "flex-1",
+                "header",
+                "latest-releases",
+                "latest-releases-header"
+              ],
+              "forms": 1,
+              "idTokens": [
+                "back-to-top",
+                "close-mobile-menu",
+                "close-search",
+                "current-year",
+                "logo",
+                "main-nav",
+                "menu-toggle",
+                "mobile-menu-backdrop",
+                "search",
+                "search-backdrop",
+                "search-overlay",
+                "search-toggle"
+              ],
+              "iframes": 0,
+              "kind": "html",
+              "markers": [
+                "json-ld",
+                "download",
+                "episode"
+              ],
+              "sampleBytes": 21957,
+              "scripts": 16,
+              "sources": 0,
+              "videos": 0
+            },
+            "status": 200
+          }
+        ]
       },
       "playableLanes": [],
-      "probeErrors": {
-        "movie": "SyntaxError:missing ) after argument list",
-        "tv": "SyntaxError:missing ) after argument list"
-      },
+      "probeErrors": {},
       "safeDiagnostics": [],
       "sampleTitles": {
         "movie": [
-          "Sinners"
+          "Sinners",
+          "Interstellar",
+          "Mon ninja et moi 3",
+          "The Colony"
         ],
         "tv": [
-          "Breaking Bad"
+          "Breaking Bad",
+          "Revenant"
         ]
       },
       "statuses": {
-        "movie": "invalid_probe_output",
-        "tv": "invalid_probe_output"
+        "movie": "no_streams",
+        "tv": "no_streams"
       },
       "verifiedLanes": []
     }
@@ -53,7 +465,7 @@
   ],
   "retainedProviderCount": 0,
   "retainedProviders": [],
-  "runId": "36604726070",
+  "runId": "36605262984",
   "schemaVersion": 3,
   "selectedProviderCount": 1,
   "selectedProviders": [
@@ -80,7 +492,7 @@
     "yflix"
   ],
   "sourceCensusRunId": "36547529107",
-  "triggerSha": "53cb5f4fdb49c61d766251e0363eec1b58b8a7c5",
+  "triggerSha": "172d48acc15aff23968928269476bd653b652476",
   "verifiedProviderCount": 0,
   "verifiedProviders": []
 }

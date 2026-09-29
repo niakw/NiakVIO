@@ -3,7 +3,7 @@
   "sourceRunId": "36547529107",
   "sourceTriggerSha": "6abe791230ea2b5ed289066017bdb3da41f22cad",
   "sourcePlanRunId": "36547529107",
-  "sourceVerdictRunId": "36604726070",
+  "sourceVerdictRunId": "36605262984",
   "providerCount": 13,
   "groupCount": 8,
   "groups": [
@@ -146,11 +146,16 @@
       "providers": [
         "4khdhub"
       ],
-      "networkSignature": "provider|invalid_probe_output||",
+      "networkSignature": "provider|provider_network_zero_result||movie:GET:4khdhub.one:200:/;movie:GET:api.themoviedb.org:200:/{id}/movie/{id};tv:GET:4khdhub.one:200:/;tv:GET:api.themoviedb.org:200:/{id}/tv/{id}",
       "debugStages": [
-        "invalid_probe_output"
+        "provider_network_zero_result"
       ],
-      "networkShape": [],
+      "networkShape": [
+        "movie:GET:4khdhub.one:200:/",
+        "movie:GET:api.themoviedb.org:200:/{id}/movie/{id}",
+        "tv:GET:4khdhub.one:200:/",
+        "tv:GET:api.themoviedb.org:200:/{id}/tv/{id}"
+      ],
       "splitReason": "observed-signature-divergence",
       "executionPolicy": "batch-first"
     },
