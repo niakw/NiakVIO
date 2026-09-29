@@ -14,8 +14,6 @@ required = [
     "target provider is not in current census repairQueue",
     "environmentQueue",
     "targeted Learning cohort escaped current repair/environment queues",
-    "targeted FORCE Learning cohort escaped current operator Fast cohort",
-    ".github/triggers/provider-fast-repair.json",
     "autopilot-targeted-core-learning",
     "target provider is not LEARN/pending in current handoff",
     'provider_filter="$target_provider"',
@@ -54,8 +52,8 @@ multi_end = workflow.index('elif [ -n "$target_provider" ]; then', multi_start)
 multi_block = workflow[multi_start:multi_end]
 assert 'environmentQueue' in multi_block, multi_block
 assert 'eligible=repair|environment' in multi_block, multi_block
-assert 'operator.get("targetProviders")' in multi_block, multi_block
-assert 'targeted FORCE Learning cohort escaped current operator Fast cohort' in multi_block, multi_block
+assert 'provider-fast-repair.json' not in multi_block, multi_block
+assert 'current census repair/environment queues are the canonical scope' in multi_block, multi_block
 assert 'autopilot-targeted-core-learning' in multi_block, multi_block
 assert '"policy": "target-scoped-handoff"' in workflow, workflow
 assert 'row.get("owner")' in target_block or "row.get('owner')" in target_block, target_block
