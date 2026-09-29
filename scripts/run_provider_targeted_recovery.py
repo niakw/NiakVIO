@@ -303,6 +303,10 @@ def main()->int:
             "statuses":{str(row.get("semantic_type")):row.get("status") for row in lanes},
             "debugStages":{str(row.get("semantic_type")):row.get("debug_stage") for row in lanes},
             "sampleTitles":{str(row.get("semantic_type")):row.get("sample_titles") for row in lanes},
+            "probeErrors":{
+                str(row.get("semantic_type")):str(row.get("probe_error") or "")[:240]
+                for row in lanes if str(row.get("probe_error") or "").strip()
+            },
             "network":network,
             "safeDiagnostics":safe_diagnostics,
             "contradictions":sum(int(row.get("contradictions") or 0) for row in lanes),
