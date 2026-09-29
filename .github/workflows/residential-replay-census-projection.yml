@@ -1,0 +1,54 @@
+name: Residential Replay Census Projection
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/residential-replay-census-projection.yml'
+      - '.github/triggers/residential-replay-census-projection.json'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: residential-replay-census-projection
+  cancel-in-progress: true
+
+jobs:
+  project:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+
+      - name: Project durable residential provider replay
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin main
+          git reset --hard origin/main
+          python tests/waf_census_transport_merge_test.py
+          python scripts/merge_waf_census_transport.py             --status automation/provider-census-status.json             --waf automation/provider-waf-browser-session-latest.json             --authority-status automation/provider-authority-status.json             --output /tmp/provider-census-status-residential.json             --run-id "${GITHUB_RUN_ID}-residential-projection"             --sha "$(git rev-parse HEAD)"
+          mv /tmp/provider-census-status-residential.json automation/provider-census-status.json
+          python scripts/build_provider_repair_batch_plan.py             --status automation/provider-census-status.json             --overrides provider-overrides.json             --output automation/provider-repair-batch-plan-latest.json
+          python scripts/render_provider_census_status_from_state.py             --status automation/provider-census-status.json             --output PROVIDER_CENSUS_STATUS.md
+
+      - name: Persist projected authority
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add automation/provider-census-status.json automation/provider-repair-batch-plan-latest.json PROVIDER_CENSUS_STATUS.md
+          if git diff --cached --quiet; then
+            echo "FIELD_RESIDENTIAL_REPLAY_PROJECTION already-current"
+            exit 0
+          fi
+          git commit -m "ci(census): project durable residential replay"
+          git push origin HEAD:main
