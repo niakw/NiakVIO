@@ -25,7 +25,7 @@ for required in (
 assert "gh workflow run brain-learning-lab.yml" in autopilot
 assert '-f publish_proposal="$publish_proposal"' in autopilot
 assert '-f target_providers="$LEARNING"' in autopilot
-assert '-f slot_remaining_minutes=60' in autopilot
+assert '-f slot_remaining_minutes=360' in autopilot
 assert 'FORCE_MODE: ${{ steps.plan.outputs.force }}' in autopilot
 assert 'publish_proposal="true"' in autopilot
 assert 'publish_proposal="false"' in autopilot
@@ -67,7 +67,7 @@ assert "brain-learning-lab.yml" in learning_block
 assert 'publish_proposal="false"' in learning_block
 assert '-f publish_proposal="$publish_proposal"' in learning_block
 assert "immediate=true" in learning_block
-assert "budget_minutes=60" in learning_block
+assert "budget_minutes=360" in learning_block
 
 # A current causal plan is mandatory.
 for required in (

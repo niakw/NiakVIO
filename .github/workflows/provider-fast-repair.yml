@@ -341,7 +341,7 @@ jobs:
               --repo "$GITHUB_REPOSITORY" --ref main
               -f publish_proposal="$publish_proposal"
               -f target_providers="$learn_handoff_csv"
-              -f slot_remaining_minutes=60
+              -f slot_remaining_minutes=360
               -f slot_phase=1
             )
             if [ "$force_mode" = "true" ]; then

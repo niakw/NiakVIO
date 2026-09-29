@@ -149,14 +149,14 @@ jobs:
               --repo "$GITHUB_REPOSITORY" --ref main
               -f publish_proposal="$publish_proposal"
               -f target_providers="$LEARNING"
-              -f slot_remaining_minutes=60
+              -f slot_remaining_minutes=360
               -f slot_phase=1
             )
             if [ "$FORCE_MODE" = "true" ]; then
               args+=(-f architecture_force=true)
             fi
             gh workflow run brain-learning-lab.yml "${args[@]}"
-            echo "FIELD_PROVIDER_AUTOPILOT dispatch=BRAIN_LEARNING providers=$LEARNING immediate=true budget_minutes=60 force=$FORCE_MODE publish_proposal=$publish_proposal"
+            echo "FIELD_PROVIDER_AUTOPILOT dispatch=BRAIN_LEARNING providers=$LEARNING immediate=true budget_minutes=360 force=$FORCE_MODE publish_proposal=$publish_proposal"
           fi
 
           # Harness/Core-client debt may refresh transport evidence now.

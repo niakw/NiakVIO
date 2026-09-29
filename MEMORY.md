@@ -306,3 +306,8 @@
 - Targeted publication now hardens bytes before final minimization and byte proof, keeping published output a minimizer fixed point.
 - Rule reinforced: reusable provider bugs must become Brain capabilities; do not retain hand-written provider patches as the system-level solution.
 
+### 2026-09-29 — Learning debt must self-converge across persisted phases
+- Fast/Autopilot Learning handoff previously dispatched slot_remaining_minutes=60, which always consumed the entire remaining budget in phase 1 and made next_remaining=0. The long-slot continuation machinery therefore existed but could never continue targeted repair debt automatically.
+- Brain-owned Learning handoffs now start with 360 persisted minutes. Each phase remains capped at 300 minutes by brain-learning-lab.yml, leaving a bounded 60-minute continuation phase when debt remains.
+- The same budget is used for stale-main FORCE requeue so a valid unfinished generation is not silently reduced to another one-phase run.
+- This changes orchestration only; it does not relax current-byte validation, playback, identity, non-regression or publication authority and does not hand-patch provider bytes.

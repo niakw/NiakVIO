@@ -1621,7 +1621,7 @@ jobs:
               --ref main
               -f publish_proposal=false
               -f architecture_force=true
-              -f slot_remaining_minutes=60
+              -f slot_remaining_minutes=360
               -f slot_phase=1)
             if [ -n "${TARGET_PROVIDERS:-}" ]; then
               args+=(-f target_providers="$TARGET_PROVIDERS")
