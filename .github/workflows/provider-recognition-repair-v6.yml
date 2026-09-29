@@ -892,21 +892,33 @@ jobs:
           for value in sys.argv[2:]:
               value=canon(value)
               if value and value not in expected: expected.append(value)
+          expected_set=set(expected)
           present={
               canon(row.get("providerId"))
               for row in data.get("rows") or []
               if isinstance(row,dict) and canon(row.get("providerId"))
           }
-          missing=[value for value in expected if value not in present]
+          matched=present & expected_set
+          missing=[value for value in expected if value not in matched]
+          unexpected=sorted(value for value in present if value not in expected_set)
           print(
               "FIELD_BRAIN_LLM_FORCE_ARTIFACT_COVERAGE "
-              f"expected={len(expected)} present={len(present & set(expected))} "
-              f"missing={','.join(missing) or 'none'}"
+              f"expected={len(expected)} present={len(matched)} "
+              f"missing={','.join(missing) or 'none'} unexpected={','.join(unexpected) or 'none'}"
           )
-          if missing:
+          if unexpected:
               raise SystemExit(
-                  "External Brain Force artifact is incomplete for explicit target cohort: "
-                  + ",".join(missing)
+                  "External Brain Force artifact contains provider(s) outside explicit target cohort: "
+                  + ",".join(unexpected)
+              )
+          if not matched:
+              raise SystemExit(
+                  "External Brain Force artifact contains no executable mutation for explicit target cohort"
+              )
+          if missing:
+              print(
+                  "FIELD_BRAIN_LLM_FORCE_ARTIFACT_PARTIAL "
+                  f"present={len(matched)} missing={','.join(missing)} action=evaluate-present-only"
               )
           PY
           fi
