@@ -297,3 +297,8 @@
 - The current provider runtime parses `classBlocks(html, "movie-card")` / `classText(...)` with regex word boundaries around the requested class. Because hyphen is a non-word character, a boundary after `movie-card` also matches `movie-card-format` / `movie-card-content` etc. The parser can therefore promote nested sub-elements as complete cards before title/type/year scoring.
 - This is the current deterministic causal hypothesis for the 4KHDHub witness. It is **not yet a validated repair**. Provider bytes remain Brain-owned; the next step is a Brain-generated class-token-boundary mutation followed by current-byte sandbox playback, identity and non-regression proof.
 - The targeted probe was extended with privacy-safe `classFacts` (counts/tags/selfHref/nestedAnchors/allowlisted semantic signals only) and a bounded sanitized probe-error field. Two instrumentation regressions were detected and fixed before accepting the final evidence; invalid intermediate probe runs are obsolete.
+
+### 2026-09-29 — FORCE Learning scope must follow current census
+- Brain Learning run 36618288471 failed before execution because architecture_force for 4khdhub was rechecked against .github/triggers/provider-fast-repair.json and incorrectly rejected, even though 4khdhub remained in the current census repairQueue.
+- The Fast trigger is an operator snapshot and can be stale after Repair persists newer evidence; it must not be a second authority.
+- Fix: targeted Learning/architecture FORCE is scoped by the current repairQueue + environmentQueue only. Existing current-byte validation and mutation gates remain unchanged.
