@@ -959,13 +959,16 @@ jobs:
           IFS='|' read -r explicit_target_count coverage_complete missing_csv unexpected_csv <<< "$coverage"
           echo "FIELD_BRAIN_LLM_FORCE_REQUIREMENT required=$require_external explicit_targets=$explicit_target_count isolated_accepted=$accepted_count coverage_complete=$coverage_complete missing=${missing_csv:-none} unexpected=${unexpected_csv:-none}"
           if [ "$require_external" = "true" ]; then
-            if [ "$explicit_target_count" -gt 0 ] && [ "$coverage_complete" != "true" ]; then
-              echo "Explicit Force required one independently validated external Brain mutation per target; missing_external_force_providers=${missing_csv:-none} unexpected=${unexpected_csv:-none}" >&2
+            if [ -n "${unexpected_csv:-}" ]; then
+              echo "Explicit Force sandbox accepted provider(s) outside the requested cohort: ${unexpected_csv}" >&2
               exit 1
             fi
-            if [ "$explicit_target_count" -le 0 ] && [ "$accepted_count" -le 0 ]; then
-              echo "Explicit Force required an independently validated external Brain mutation but none passed" >&2
+            if [ "$accepted_count" -le 0 ]; then
+              echo "Explicit Force required at least one independently validated external Brain mutation but none passed" >&2
               exit 1
+            fi
+            if [ "$explicit_target_count" -gt 0 ] && [ "$coverage_complete" != "true" ]; then
+              echo "FIELD_BRAIN_LLM_FORCE_PARTIAL_ACCEPTANCE accepted=$accepted_count missing=${missing_csv:-none} action=apply-winners-only"
             fi
           fi
           if [ "$accepted_count" -le 0 ]; then
@@ -1014,6 +1017,7 @@ jobs:
           TARGET_PROVIDER: ${{ inputs.target_provider || '' }}
           ALLOW_LOSS: ${{ inputs.allow_upstream_positive_loss || 'false' }}
           FORCE_ACCEPTED: ${{ steps.force-mutations.outputs.accepted_csv || '' }}
+          REQUIRE_EXTERNAL_FORCE_MUTATIONS: ${{ inputs.require_external_force_mutations || 'false' }}
         run: |
           set -euo pipefail
           # Current-run evidence only. Never let a skipped/failed Repair read
@@ -1088,8 +1092,24 @@ jobs:
             done
           fi
 
+          external_force_only="${REQUIRE_EXTERNAL_FORCE_MUTATIONS:-false}"
+          if [ "${{ github.event_name }}" = "push" ]; then
+            external_force_only="$(python - <<'PY'
+          import json
+          from pathlib import Path
+          data=json.loads(Path(".github/triggers/provider-recognition-repair-v6.json").read_text(encoding="utf-8"))
+          print("true" if data.get("requireExternalForceMutations") is True else "false")
+          PY
+            )"
+          fi
+
           if [ "$EXPLICIT_SCOPE" = "1" ] && [ "${#REMAINING_TARGETS[@]}" -eq 0 ]; then
             echo "FIELD_CANONICAL_REPAIR skipped=true reason=all-explicit-targets-resolved-by-isolated-force"
+            exit 0
+          fi
+          if [ "$external_force_only" = "true" ] && [ "$EXPLICIT_SCOPE" = "1" ]; then
+            unresolved_csv="$(IFS=,; echo "${REMAINING_TARGETS[*]}")"
+            echo "FIELD_CANONICAL_REPAIR skipped=true reason=external-force-only unresolved=${unresolved_csv:-none}"
             exit 0
           fi
           for provider in "${REMAINING_TARGETS[@]}"; do args+=(--provider "$provider"); done
