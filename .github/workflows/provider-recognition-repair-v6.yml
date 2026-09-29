@@ -1558,6 +1558,13 @@ jobs:
             git push origin HEAD:main
           fi
 
+          if [ "$force_candidate_applied" = "1" ]; then
+            echo "FIELD_REPAIR_FRESH_CENSUS_DISPATCH source_run=${GITHUB_RUN_ID} reason=force-winner-persisted"
+            gh workflow run temp-current-bytes-full-provider-census.yml \
+              --repo "$GITHUB_REPOSITORY" \
+              --ref main
+          fi
+
           if [ "$canonical_ledger_current" != "1" ] && [ "$provider_input_drift" = "1" ]; then
             echo "FIELD_REPAIR_FRESH_CENSUS_DISPATCH source_run=${GITHUB_RUN_ID} reason=provider-input-drift"
             gh workflow run temp-current-bytes-full-provider-census.yml \
