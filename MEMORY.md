@@ -267,3 +267,13 @@
 - Brain compact FORCE is CI-green after fixing four repair-mechanism defects exposed by the previous 13-provider zero-mutation cycle: complete-function wrapper normalization is limited to generated `provider_bloc`; authored patch signature drift remains fail-closed; editable-unit budgets cannot overflow; structural call-graph selection follows named callbacks such as `.then(parser)` so second-hop terminal helpers can be exposed.
 - Brain CI proof: run `36582057653`, job `109452493685`, green at `e5bbe01b5725acc70dc9602c02cd97074f805ec1` with 189 tests.
 - Current NiakVIO census authority remains `36547529107` with 13 provider Repair targets. No provider status changes from the compiler fix alone; the next step is a fresh Brain-authored 13-provider FORCE followed by NiakVIO isolated current-byte playable/identity/non-regression validation.
+
+## 2026-09-29 — Single-provider proof milestone: 4KHDHub evidence is now structurally useful
+
+- Fleet-wide FORCE loops are paused as a success metric until one provider is repaired end-to-end. The witness provider is `4khdhub`.
+- The first isolated 4KHDHub Brain run produced the first executable FORCE mutation after the compiler recovery, proving the pipeline is no longer stuck at `0 mutation`.
+- That candidate was **not accepted as a repair**: it targeted generic ProviderBase `_routeKind` bytes and replaced them with URL-extraction logic, rather than editing the dedicated `PROVIDER.4KHDHUB.RUNTIME.V1` surface.
+- Current live 4KHDHub evidence is more precise: TMDB returns HTTP 200; 4khdhub.one search returns HTTP 200; no detail request follows; movie search HTML contains current structural classes including `movie-card`, `movie-card-title`, `movie-card-format`, `movie-card-meta`, and `pagination-container`.
+- Provider-neutral evidence collection now retains bounded/sanitized HTML `classTokens` and `idTokens`, with Node execution coverage and workflow path invalidation so changing the probe invalidates targeted evidence.
+- Exact targeted recovery run `36591361698` completed successfully for 4KHDHub and persisted the structural evidence for census `36547529107`.
+- No provider status is promoted by these evidence changes. 4KHDHub remains ROUTE PROVEN / repair-eligible until a Brain-authored candidate survives isolated current-byte playable + identity-safe validation.
