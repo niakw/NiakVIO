@@ -15,7 +15,7 @@ SPEC.loader.exec_module(mod)
 
 status = {
     "runId": "census-1",
-    "repairQueue": ["blocked", "healthy-repair", "verified"],
+    "repairQueue": ["blocked", "healthy-repair", "plain-403", "verified"],
     "providers": [
         {
             "provider": "blocked",
@@ -33,6 +33,13 @@ status = {
         },
         {
             "provider": "verified",
+            "status": "ROUTE PROVEN",
+            "statusRepairEligible": True,
+            "authorityRepairEligible": True,
+            "repairEligible": True,
+        },
+        {
+            "provider": "plain-403",
             "status": "ROUTE PROVEN",
             "statusRepairEligible": True,
             "authorityRepairEligible": True,
@@ -75,11 +82,21 @@ targeted = {
             "playableLanes": ["movie"],
             "verifiedLanes": ["movie"],
         },
+        "plain-403": {
+            "debugStages": {"movie": "provider_network_http_error"},
+            "network": {
+                "movie": [
+                    {"host": "provider.example", "status": 403},
+                ]
+            },
+            "playableLanes": [],
+            "verifiedLanes": [],
+        },
     },
 }
 
 merged = mod.merge(status, targeted)
-assert merged["repairQueue"] == ["healthy-repair", "verified"], merged["repairQueue"]
+assert merged["repairQueue"] == ["healthy-repair", "plain-403", "verified"], merged["repairQueue"]
 assert merged["targetedTransportBlockedQueue"] == ["blocked"]
 blocked = next(row for row in merged["providers"] if row["provider"] == "blocked")
 assert blocked["repairEligible"] is False
@@ -89,6 +106,9 @@ healthy = next(row for row in merged["providers"] if row["provider"] == "healthy
 assert healthy["repairEligible"] is True
 verified = next(row for row in merged["providers"] if row["provider"] == "verified")
 assert verified["repairEligible"] is True
+plain = next(row for row in merged["providers"] if row["provider"] == "plain-403")
+assert plain["repairEligible"] is True
+assert plain["targetedTransportClass"] == "not-applicable"
 
 try:
     mod.merge(
