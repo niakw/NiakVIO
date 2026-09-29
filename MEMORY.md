@@ -175,3 +175,13 @@
 - Plain HTTP 403 is deliberately insufficient for this gate. Anime-Ultime and VidFast remain provider-repair-eligible because their current targeted stage is `provider_network_http_error`, not explicit WAF.
 - Refined batch routing now maps explicit targeted WAF groups to `harness-compatibility`; the execution router treats `targetedTransportBlockedQueue` as transport-owned so those providers remain observable instead of disappearing from automation.
 - This closes the split-brain where census repeatedly scheduled providers that Brain correctly refused to mutate.
+
+
+## 2026-09-29 — Fresh residential replay narrows causal WAF ownership to MalluMV
+
+- Targeted WAF/browser run `36541459500` completed with a private residential exit and persisted its transport evidence.
+- The narrow seed probes still show browser/direct/OkHttp/residential challenge on `allwish, animesalt, flemmix, mallumv, moviesmod`, but full provider replay changes causal ownership for four of them.
+- `allwish, animesalt, flemmix, moviesmod`: full residential provider runtime completed identity-safe with zero media and `provider_zero_before_provider_network`. Therefore the challenged seed URL is **not the current causal blocker**; these providers return to ordinary Repair/Brain.
+- `mallumv`: remains `HARNESS/ENV BLOCKED` with `residential-exit-all-challenged`; it is the only one of the five still transport/WAF-owned by current evidence.
+- Current authoritative queues after the WAF merge: **12 provider Repair** (`4khdhub, allanime, allwish, anime-ultime, animesalt, animesultra, animevost-fr, flemmix, moviebox, moviesmod, vidfast, yflix`) and **1 environment/WAF** (`mallumv`).
+- A follow-up consistency fix clears stale targeted WAF fields when full residential provider replay transfers causal ownership back to provider Repair. This is metadata/queue correctness only; it does not promote provider playback.
