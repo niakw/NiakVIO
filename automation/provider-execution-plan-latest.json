@@ -1,0 +1,302 @@
+{
+  "schemaVersion": 1,
+  "sourceCensusRunId": "36531469863-retest",
+  "sourceCensusSha": "182d08374c45ce7aec8bc7aa67e3486f6aa47e64",
+  "sourceBatchRunId": "36531469863-retest",
+  "executionModel": {
+    "controlPlane": "causal-owner-router",
+    "rule": "deepest-current-proof-owns-lane",
+    "providerMutation": "only-provider-repair-lane-after-current-proof",
+    "memory": "prior-only; current census remains authority",
+    "automaticCoreMutation": false
+  },
+  "providerCount": 13,
+  "executionCount": 13,
+  "dispatchableExecutionCount": 13,
+  "blockedExecutionCount": 0,
+  "providersByLane": {
+    "CORE_CLIENT_LEARNING": [
+      "allwish",
+      "animesalt",
+      "flemmix",
+      "mallumv",
+      "moviesmod"
+    ],
+    "FAST_REPAIR": [
+      "4khdhub",
+      "allanime",
+      "anime-ultime",
+      "animesultra",
+      "animevost-fr",
+      "moviebox",
+      "vidfast",
+      "yflix"
+    ]
+  },
+  "executions": [
+    {
+      "groupId": "route-to-terminal|api_stream_resolver#r1",
+      "repairScope": "route-to-terminal",
+      "providers": [
+        "animevost-fr"
+      ],
+      "providerCount": 1,
+      "capabilityStrategy": "api_stream_resolver",
+      "transportSignature": "not-applicable",
+      "owner": "PROVIDER_REPAIR",
+      "lane": "FAST_REPAIR",
+      "workflow": "provider-fast-repair.yml",
+      "dispatchAllowed": true,
+      "mutatesProduction": "validated-candidate-only",
+      "fallbackLane": "BRAIN_LEARNING",
+      "decision": "repair only at/after the deepest current semantic proof",
+      "queueConsistent": true,
+      "queueMismatchProviders": []
+    },
+    {
+      "groupId": "route-to-terminal|html_scraper#r1",
+      "repairScope": "route-to-terminal",
+      "providers": [
+        "4khdhub"
+      ],
+      "providerCount": 1,
+      "capabilityStrategy": "html_scraper",
+      "transportSignature": "not-applicable",
+      "owner": "PROVIDER_REPAIR",
+      "lane": "FAST_REPAIR",
+      "workflow": "provider-fast-repair.yml",
+      "dispatchAllowed": true,
+      "mutatesProduction": "validated-candidate-only",
+      "fallbackLane": "BRAIN_LEARNING",
+      "decision": "repair only at/after the deepest current semantic proof",
+      "queueConsistent": true,
+      "queueMismatchProviders": []
+    },
+    {
+      "groupId": "route-to-terminal|iframe_player#r1",
+      "repairScope": "route-to-terminal",
+      "providers": [
+        "vidfast"
+      ],
+      "providerCount": 1,
+      "capabilityStrategy": "iframe_player",
+      "transportSignature": "not-applicable",
+      "owner": "PROVIDER_REPAIR",
+      "lane": "FAST_REPAIR",
+      "workflow": "provider-fast-repair.yml",
+      "dispatchAllowed": true,
+      "mutatesProduction": "validated-candidate-only",
+      "fallbackLane": "BRAIN_LEARNING",
+      "decision": "repair only at/after the deepest current semantic proof",
+      "queueConsistent": true,
+      "queueMismatchProviders": []
+    },
+    {
+      "groupId": "route-to-terminal|mixed_embed_resolver#r1",
+      "repairScope": "route-to-terminal",
+      "providers": [
+        "animesultra"
+      ],
+      "providerCount": 1,
+      "capabilityStrategy": "mixed_embed_resolver",
+      "transportSignature": "not-applicable",
+      "owner": "PROVIDER_REPAIR",
+      "lane": "FAST_REPAIR",
+      "workflow": "provider-fast-repair.yml",
+      "dispatchAllowed": true,
+      "mutatesProduction": "validated-candidate-only",
+      "fallbackLane": "BRAIN_LEARNING",
+      "decision": "repair only at/after the deepest current semantic proof",
+      "queueConsistent": true,
+      "queueMismatchProviders": []
+    },
+    {
+      "groupId": "route-to-terminal|mixed_embed_resolver#r2",
+      "repairScope": "route-to-terminal",
+      "providers": [
+        "yflix"
+      ],
+      "providerCount": 1,
+      "capabilityStrategy": "mixed_embed_resolver",
+      "transportSignature": "not-applicable",
+      "owner": "PROVIDER_REPAIR",
+      "lane": "FAST_REPAIR",
+      "workflow": "provider-fast-repair.yml",
+      "dispatchAllowed": true,
+      "mutatesProduction": "validated-candidate-only",
+      "fallbackLane": "BRAIN_LEARNING",
+      "decision": "repair only at/after the deepest current semantic proof",
+      "queueConsistent": true,
+      "queueMismatchProviders": []
+    },
+    {
+      "groupId": "route-to-terminal|mixed_embed_resolver#r3",
+      "repairScope": "route-to-terminal",
+      "providers": [
+        "anime-ultime"
+      ],
+      "providerCount": 1,
+      "capabilityStrategy": "mixed_embed_resolver",
+      "transportSignature": "not-applicable",
+      "owner": "PROVIDER_REPAIR",
+      "lane": "FAST_REPAIR",
+      "workflow": "provider-fast-repair.yml",
+      "dispatchAllowed": true,
+      "mutatesProduction": "validated-candidate-only",
+      "fallbackLane": "BRAIN_LEARNING",
+      "decision": "repair only at/after the deepest current semantic proof",
+      "queueConsistent": true,
+      "queueMismatchProviders": []
+    },
+    {
+      "groupId": "terminal-extraction|direct_media#r1",
+      "repairScope": "terminal-extraction",
+      "providers": [
+        "allanime"
+      ],
+      "providerCount": 1,
+      "capabilityStrategy": "direct_media",
+      "transportSignature": "not-applicable",
+      "owner": "PROVIDER_REPAIR",
+      "lane": "FAST_REPAIR",
+      "workflow": "provider-fast-repair.yml",
+      "dispatchAllowed": true,
+      "mutatesProduction": "validated-candidate-only",
+      "fallbackLane": "BRAIN_LEARNING",
+      "decision": "repair only at/after the deepest current semantic proof",
+      "queueConsistent": true,
+      "queueMismatchProviders": []
+    },
+    {
+      "groupId": "terminal-extraction|html_scraper#r1",
+      "repairScope": "terminal-extraction",
+      "providers": [
+        "moviebox"
+      ],
+      "providerCount": 1,
+      "capabilityStrategy": "html_scraper",
+      "transportSignature": "not-applicable",
+      "owner": "PROVIDER_REPAIR",
+      "lane": "FAST_REPAIR",
+      "workflow": "provider-fast-repair.yml",
+      "dispatchAllowed": true,
+      "mutatesProduction": "validated-candidate-only",
+      "fallbackLane": "BRAIN_LEARNING",
+      "decision": "repair only at/after the deepest current semantic proof",
+      "queueConsistent": true,
+      "queueMismatchProviders": []
+    },
+    {
+      "groupId": "learning|html_scraper#r1",
+      "repairScope": "harness-compatibility",
+      "providers": [
+        "allwish"
+      ],
+      "providerCount": 1,
+      "capabilityStrategy": "html_scraper",
+      "transportSignature": "targeted-provider-waf-challenge",
+      "owner": "CORE_CLIENT_TRANSPORT",
+      "lane": "CORE_CLIENT_LEARNING",
+      "workflow": "provider-waf-browser-session.yml",
+      "dispatchAllowed": true,
+      "mutatesProduction": false,
+      "fallbackLane": "BRAIN_ARCHITECTURE_LEARNING",
+      "strategyBlueprint": "harness_transport_differential_v1",
+      "decision": "run targeted browser/direct/OkHttp/residential transport differential first; keep provider mutation forbidden and escalate persistent client/harness gaps to architecture Learning",
+      "applicationValidated": false,
+      "applicationBlocker": "evidence collection is autonomous; Core/client production mutation still requires a validated native-Lab application contract",
+      "queueConsistent": true,
+      "queueMismatchProviders": []
+    },
+    {
+      "groupId": "route-to-terminal|html_scraper#r2",
+      "repairScope": "harness-compatibility",
+      "providers": [
+        "animesalt"
+      ],
+      "providerCount": 1,
+      "capabilityStrategy": "html_scraper",
+      "transportSignature": "targeted-provider-waf-challenge",
+      "owner": "CORE_CLIENT_TRANSPORT",
+      "lane": "CORE_CLIENT_LEARNING",
+      "workflow": "provider-waf-browser-session.yml",
+      "dispatchAllowed": true,
+      "mutatesProduction": false,
+      "fallbackLane": "BRAIN_ARCHITECTURE_LEARNING",
+      "strategyBlueprint": "harness_transport_differential_v1",
+      "decision": "run targeted browser/direct/OkHttp/residential transport differential first; keep provider mutation forbidden and escalate persistent client/harness gaps to architecture Learning",
+      "applicationValidated": false,
+      "applicationBlocker": "evidence collection is autonomous; Core/client production mutation still requires a validated native-Lab application contract",
+      "queueConsistent": true,
+      "queueMismatchProviders": []
+    },
+    {
+      "groupId": "route-to-terminal|html_scraper#r3",
+      "repairScope": "harness-compatibility",
+      "providers": [
+        "moviesmod"
+      ],
+      "providerCount": 1,
+      "capabilityStrategy": "html_scraper",
+      "transportSignature": "targeted-provider-waf-challenge",
+      "owner": "CORE_CLIENT_TRANSPORT",
+      "lane": "CORE_CLIENT_LEARNING",
+      "workflow": "provider-waf-browser-session.yml",
+      "dispatchAllowed": true,
+      "mutatesProduction": false,
+      "fallbackLane": "BRAIN_ARCHITECTURE_LEARNING",
+      "strategyBlueprint": "harness_transport_differential_v1",
+      "decision": "run targeted browser/direct/OkHttp/residential transport differential first; keep provider mutation forbidden and escalate persistent client/harness gaps to architecture Learning",
+      "applicationValidated": false,
+      "applicationBlocker": "evidence collection is autonomous; Core/client production mutation still requires a validated native-Lab application contract",
+      "queueConsistent": true,
+      "queueMismatchProviders": []
+    },
+    {
+      "groupId": "route-to-terminal|mixed_embed_resolver#r4",
+      "repairScope": "harness-compatibility",
+      "providers": [
+        "flemmix"
+      ],
+      "providerCount": 1,
+      "capabilityStrategy": "mixed_embed_resolver",
+      "transportSignature": "targeted-provider-waf-challenge",
+      "owner": "CORE_CLIENT_TRANSPORT",
+      "lane": "CORE_CLIENT_LEARNING",
+      "workflow": "provider-waf-browser-session.yml",
+      "dispatchAllowed": true,
+      "mutatesProduction": false,
+      "fallbackLane": "BRAIN_ARCHITECTURE_LEARNING",
+      "strategyBlueprint": "harness_transport_differential_v1",
+      "decision": "run targeted browser/direct/OkHttp/residential transport differential first; keep provider mutation forbidden and escalate persistent client/harness gaps to architecture Learning",
+      "applicationValidated": false,
+      "applicationBlocker": "evidence collection is autonomous; Core/client production mutation still requires a validated native-Lab application contract",
+      "queueConsistent": true,
+      "queueMismatchProviders": []
+    },
+    {
+      "groupId": "terminal-extraction|html_scraper#r2",
+      "repairScope": "harness-compatibility",
+      "providers": [
+        "mallumv"
+      ],
+      "providerCount": 1,
+      "capabilityStrategy": "html_scraper",
+      "transportSignature": "targeted-provider-waf-challenge",
+      "owner": "CORE_CLIENT_TRANSPORT",
+      "lane": "CORE_CLIENT_LEARNING",
+      "workflow": "provider-waf-browser-session.yml",
+      "dispatchAllowed": true,
+      "mutatesProduction": false,
+      "fallbackLane": "BRAIN_ARCHITECTURE_LEARNING",
+      "strategyBlueprint": "harness_transport_differential_v1",
+      "decision": "run targeted browser/direct/OkHttp/residential transport differential first; keep provider mutation forbidden and escalate persistent client/harness gaps to architecture Learning",
+      "applicationValidated": false,
+      "applicationBlocker": "evidence collection is autonomous; Core/client production mutation still requires a validated native-Lab application contract",
+      "queueConsistent": true,
+      "queueMismatchProviders": []
+    }
+  ],
+  "blockedExecutions": [],
+  "batchPlanSource": "sharded-refined"
+}
