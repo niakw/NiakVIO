@@ -1,7 +1,7 @@
 {
   "schemaVersion": 3,
-  "runId": "36547529107",
-  "triggerSha": "6abe791230ea2b5ed289066017bdb3da41f22cad",
+  "runId": "36635626620",
+  "triggerSha": "75a3642d146a6b70b9a59ea579395965fbb0a0a1",
   "providers": [
     {
       "provider": "4khdhub",
@@ -45,10 +45,7 @@
       "brainCheckRequired": true,
       "statusRepairEligible": true,
       "repairEligible": true,
-      "testedThisRun": true,
-      "transportRepairEligible": true,
-      "targetedTransportClass": "not-applicable",
-      "targetedTransportEvidence": []
+      "testedThisRun": true
     },
     {
       "provider": "allanime",
@@ -325,9 +322,9 @@
         "2 live routes / anime"
       ],
       "latestLaneVerdicts": [
-        "anime=no_streams/provider_network_exception"
+        "anime=no_streams/provider_network_http_error"
       ],
-      "dominantIssue": "provider_network_exception",
+      "dominantIssue": "provider_network_http_error",
       "searchProgress": [
         "anime: 5 works tested / 38 retained misses"
       ],
@@ -2088,8 +2085,8 @@
   "harnessQueue": [],
   "targetedTransportBlockedQueue": [],
   "clientTransportGapQueue": [],
-  "harnessEvidenceRunId": "36547529107-sharded-waf",
-  "harnessEvidenceSha": "6abe791230ea2b5ed289066017bdb3da41f22cad",
+  "harnessEvidenceRunId": "36635626620-sharded-waf",
+  "harnessEvidenceSha": "75a3642d146a6b70b9a59ea579395965fbb0a0a1",
   "authorityRefreshedProviders": [],
   "harnessTransportUpdatedProviders": [],
   "networkDifferentialUpdatedProviders": [],
@@ -2437,23 +2434,5 @@
         "moviesmod"
       ]
     }
-  },
-  "lastRepairAttempt": {
-    "runId": "36617943863",
-    "sourceCensusRunId": "36547529107",
-    "mode": "force",
-    "selectedProviders": [],
-    "candidateProviders": [],
-    "validatedProviders": [],
-    "acceptedRepairCount": 0,
-    "deferredToLearningSlotProviders": [],
-    "noProgressReason": "canonical-skipped",
-    "timeBudgetExhausted": false,
-    "canonicalOutcome": "skipped",
-    "candidateGateOutcome": "skipped",
-    "publicationAllowed": false
-  },
-  "targetedTransportEvidenceRunId": "36605262984",
-  "targetedTransportSourceCensusRunId": "36547529107",
-  "targetedTransportUpdatedProviders": []
+  }
 }
