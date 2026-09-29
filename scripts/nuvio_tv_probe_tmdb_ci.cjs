@@ -213,7 +213,8 @@ function structuralClassFacts(raw, tokens, limit) {
   ];
   for (const token of (tokens || []).slice(0, Math.max(0, limit || 0))) {
     if (!/^[A-Za-z][A-Za-z0-9_-]{1,47}$/.test(String(token || ''))) continue;
-    const esc = String(token).replace(/[-/\\^$*+?.()|[\]{}]/g, '\\function textShape(contentType, body) {
+    const esc = String(token).replace(/[-/\\^$*+?.()|[\]{}]/g, '\\    const esc = String(token).replace(/[-/\\^$*+?.()|[\]{}]/g, '\\function textShape(contentType, body) {
+');
 ');
     const openRe = new RegExp('<([a-z0-9]+)\\b([^>]*\\bclass\\s*=\\s*["\'][^"\']*\\b' + esc + '\\b[^"\']*["\'][^>]*)>', 'gi');
     let match, count = 0, selfHref = 0, nestedAnchors = 0;
