@@ -320,6 +320,20 @@ with tempfile.TemporaryDirectory() as tmp:
     else:
         raise AssertionError("clipped Force mutation content was accepted")
 
+    # Existing provider helper declarations are immutable under authored
+    # Force edits: making a synchronous request parser async changes every
+    # un-awaited caller from an object to a Promise and is not a body repair.
+    original_js = "function req(a){return {tmdbId:a};}\nasync function resolve(a){var q=req(a);return q.tmdbId;}\n"
+    safe_js = "function req(a){return {tmdbId:String(a)};}\nasync function resolve(a){var q=req(a);return q.tmdbId;}\n"
+    mod._reject_function_signature_drift(original_js, safe_js, "demo", "demo.js")
+    async_drift = "async function req(a){return {tmdbId:a};}\nasync function resolve(a){var q=req(a);return q.tmdbId;}\n"
+    try:
+        mod._reject_function_signature_drift(original_js, async_drift, "demo", "demo.js")
+    except ValueError as exc:
+        assert "declaration/signature" in str(exc)
+    else:
+        raise AssertionError("sync-to-async helper drift was accepted")
+
     unsafe = {
         "scope": "provider_patch",
         "operation": "unified_diff",
