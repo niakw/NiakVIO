@@ -27,7 +27,8 @@ status={
     "runId":"run",
     "triggerSha":"sha",
     "repairQueue":["candidate","route","chain","network","unknown"],
-    "environmentQueue":["tls","challenge"],
+    "environmentQueue":["tls"],
+    "targetedTransportBlockedQueue":["challenge"],
 }
 out=mod.build(batch,status)
 by={row["groupId"]:row for row in out["executions"]}
@@ -82,6 +83,7 @@ for required in (
     "DOMAIN_REFRESH",
     "BRAIN_LEARNING",
     "sharded-refined",
+    "targetedTransportBlockedQueue",
 ):
     assert required in source,required
 
