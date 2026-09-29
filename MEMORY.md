@@ -323,3 +323,10 @@
 - The architecture promotion job now has actions: write, matching the existing continue-learning-slot and complete-cloud-convergence jobs that are allowed to dispatch workflows.
 - Contract test pins this permission whenever the architecture job contains gh workflow run brain-learning-lab.yml.
 - This is orchestration-only. No provider bytes are hand-edited; provider-local mutations remain Brain-authored only.
+
+### 2026-09-30 — NiakVIO FORCE model routing synchronized with Brain-LLM 7B witness contract
+- Current census remained at 9 ROUTE PROVEN / 3 CHAIN REACHED / 1 NO PROOF because no Brain-authored mutation had yet passed current-byte playable + identity-safe validation.
+- A cross-repo drift was found: NiakVIO-Brain-LLM commit fb387771780302b3d537e2d0fdcc0f420cca8a38 had already escalated FORCE repair to Qwen2.5-Coder-7B after Qwen2.5-Coder-3B repeatedly produced no-op edits on the 4KHDHub witness, but NiakVIO brain-learning-lab.yml still launched 3B for architecture_force.
+- NiakVIO now keeps 3B for ordinary low-cost advisor work, but architecture_force uses Qwen/Qwen2.5-Coder-7B-Instruct-GGUF:Q4_K_M with context 16384, one parallel slot, max_tokens 512 and timeout 240s, matching the validated Brain-LLM witness contract.
+- The FORCE architecture materializer also receives model qwen2.5-coder-7b. Contract tests pin both 3B normal routing and 7B FORCE routing.
+- This is a Brain/runtime capability correction only. No provider bytes are hand-edited; provider-local mutations remain Brain-authored and must still pass isolated current-byte playback, identity and non-regression validation before publication.
