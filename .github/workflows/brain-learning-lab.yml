@@ -200,9 +200,8 @@ jobs:
           fast_handoff="$(python -c "import json; d=json.load(open('/tmp/fast-learning-handoff.json')); print('true' if d.get('fastHandoff') else 'false')")"
           provider_filter="$(python -c "import json; d=json.load(open('/tmp/fast-learning-handoff.json')); print(d.get('providerFilter') or '')")"
           if [ -n "$target_providers" ]; then
-            python - "$target_providers" automation/provider-census-status.json /tmp/fast-learning-handoff.json "$architecture_force" .github/triggers/provider-fast-repair.json <<'PY'
+            python - "$target_providers" automation/provider-census-status.json /tmp/fast-learning-handoff.json "$architecture_force" <<'PY'
           import json,sys
-          from pathlib import Path
           requested=[]; seen=set()
           for raw in str(sys.argv[1] or "").split(","):
               value=raw.strip().lower().replace("_","-")
