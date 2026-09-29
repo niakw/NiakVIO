@@ -54,7 +54,7 @@ multi_block = workflow[multi_start:multi_end]
 assert 'environmentQueue' in multi_block, multi_block
 assert 'eligible=repair|environment' in multi_block, multi_block
 assert 'provider-fast-repair.json' not in multi_block, multi_block
-assert 'current census repair/environment queues are the canonical scope' in multi_block, multi_block
+assert 'Current census repair/environment queues are the canonical scope' in multi_block, multi_block
 assert 'autopilot-targeted-core-learning' in multi_block, multi_block
 assert '"policy": "target-scoped-handoff"' in workflow, workflow
 assert 'row.get("owner")' in target_block or "row.get('owner')" in target_block, target_block
