@@ -36,6 +36,12 @@ for candidate in (src, one):
 assert "from provider_security_hardening import assert_hardened, harden_bytes" in one
 assert "security_hardened, security_report = harden_bytes(bundle)" in one
 assert one.index("security_hardened, security_report = harden_bytes(bundle)") < one.index("verified_bundle, byte_validation = allmat.verify_bytes(bundle)")
-assert one.count('assert_hardened(bundle.decode("utf-8", errors="strict"))') >= 2
+hardening_at = one.index("security_hardened, security_report = harden_bytes(bundle)")
+minimize_at = one.index("minimized = allmat.minimize_text(hardened_text)")
+final_bundle_at = one.index('bundle = hardened_text.encode("utf-8")', minimize_at)
+verify_at = one.index("verified_bundle, byte_validation = allmat.verify_bytes(bundle)", final_bundle_at)
+assert hardening_at < minimize_at < final_bundle_at < verify_at
+assert one.count("assert_hardened(hardened_text)") >= 2
+assert 'assert_hardened(bundle.decode("utf-8", errors="strict"))' in one
 assert '"securityHardening": {' in one
 

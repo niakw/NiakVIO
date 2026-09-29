@@ -311,3 +311,8 @@
 - Brain-owned Learning handoffs now start with 360 persisted minutes. Each phase remains capped at 300 minutes by brain-learning-lab.yml, leaving a bounded 60-minute continuation phase when debt remains.
 - The same budget is used for stale-main FORCE requeue so a valid unfinished generation is not silently reduced to another one-phase run.
 - This changes orchestration only; it does not relax current-byte validation, playback, identity, non-regression or publication authority and does not hand-patch provider bytes.
+
+### 2026-09-29 — Materialization proof contract aligned with hardened final-byte order
+- Provider non-regression run on the Learning multi-phase orchestration change exposed a stale test assertion, not a provider/materializer regression.
+- Single-provider materialization intentionally hardens source bytes before final minimization, validates the minimized hardened text, then performs byte proof and a final hardening assertion.
+- The contract test now pins that actual ordering instead of counting the legacy bundle-level assertion twice.
