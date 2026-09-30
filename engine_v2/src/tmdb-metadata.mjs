@@ -97,8 +97,10 @@ export function normalizeTmdbPayload(payload = {}, context = {}) {
     releaseDate,
     runtime,
     durationMinutes: runtime,
-    certification,
-    ageRating: certification,
+    certification: certification.value,
+    certificationCountry: certification.country,
+    ageRating: certification.value,
+    ageRatingCountry: certification.country,
     genres: Array.isArray(payload.genres)
       ? payload.genres.map((row) => ({ id: Number(row?.id) || null, name: clean(row?.name) })).filter((row) => row.id || row.name)
       : [],
@@ -162,7 +164,9 @@ function requestFallback(request = {}) {
     runtime: null,
     durationMinutes: null,
     certification: null,
+    certificationCountry: null,
     ageRating: null,
+    ageRatingCountry: null,
     genres: [],
     originalLanguage: null,
     originCountry: [],
@@ -176,8 +180,12 @@ function movieCertification(results) {
   const preferred = rows.find((row) => String(row?.iso_3166_1 ?? "").toUpperCase() === "FR")
     ?? rows.find((row) => String(row?.iso_3166_1 ?? "").toUpperCase() === "US")
     ?? rows[0];
+  const country = clean(preferred?.iso_3166_1)?.toUpperCase() ?? null;
   const dates = Array.isArray(preferred?.release_dates) ? preferred.release_dates : [];
-  return clean(dates.map((row) => row?.certification).find((value) => clean(value)));
+  return {
+    value: clean(dates.map((row) => row?.certification).find((value) => clean(value))),
+    country,
+  };
 }
 
 function tvCertification(results) {
@@ -185,7 +193,10 @@ function tvCertification(results) {
   const preferred = rows.find((row) => String(row?.iso_3166_1 ?? "").toUpperCase() === "FR")
     ?? rows.find((row) => String(row?.iso_3166_1 ?? "").toUpperCase() === "US")
     ?? rows[0];
-  return clean(preferred?.rating);
+  return {
+    value: clean(preferred?.rating),
+    country: clean(preferred?.iso_3166_1)?.toUpperCase() ?? null,
+  };
 }
 
 function collectAlternativeTitles(rows, key) {
