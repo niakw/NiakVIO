@@ -379,3 +379,13 @@
 - The redesigned StreamBadge public feed was materialized and pinned as immutable v10 before the accepted release.
 - Evidence boundary: Core/release/published-byte proof is green. This does **not** by itself prove client rendering for every stream that arrives after an initial provider result, nor live collector/dashboard reachability from every Nuvio runtime. No dedicated named late-arriving-row UI regression was found in the checked release log/history, and the telemetry web endpoint could not be independently exercised by the current web inspection path. Keep those two items as live/client revalidation, not as unproven Core publication claims.
 
+## 2026-09-30 — Provider family architecture documented and Brain-indexed
+
+- Added `PROVIDER_FAMILY_ARCHITECTURE.md` as the canonical composition map for scaling Provider v3 toward hundreds of providers.
+- The document separates **GLOBAL** Core Blocs, **FAMILY** reusable provider-level mechanisms, and **PERSONAL** provider DATA/runtime. It lists the canonical Core sequence and shows how a provider-personal `PROVIDER.<ID>.RUNTIME.*` resolver stays behind common security, identity, HLS, presentation, sanitizer, StreamScore and telemetry contracts.
+- Runtime/protocol families are explicitly distinct from causal Brain repair families. A validated repair-family mechanism may be deterministically recompiled on a sibling's exact bytes, but never copied as raw provider runtime and never gains proof authority without the sibling's own sandbox/playback/identity/non-regression pass.
+- `ARCHITECTURE.md` and `BRAIN_REPAIR_ARCHITECTURE.md` link to the new map. NiakVIO-Brain-LLM public RAG now indexes all three architecture documents at high authority.
+- Architecture-only root Markdown drift is now explicitly neutral for external Brain guidance import. This prevents a valid current-byte candidate from being rejected solely because architecture documentation advanced after its source SHA.
+- The documentation gate exposed an unrelated stale assertion that still required StreamBadge v8 while the accepted release had already published immutable v10. `ARCHITECTURE.md` and `provider_v3_documentation_contract_test.py` now both pin StreamBadge v10.
+- Evidence note: causal family count is dynamic. Live Advisor run `36738108323` recorded `input=13 selected=4 families=4`; older 5-family counts are historical snapshots, not a fixed architecture constant.
+
