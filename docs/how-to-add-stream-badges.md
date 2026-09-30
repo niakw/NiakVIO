@@ -3,12 +3,12 @@
 [Français](fr/how-to-add-stream-badges.md) · [Back to README](../README.md)
 
 > [!TIP]
-> For most users, **Fusion v10** is the correct feed.
+> For most users, **Fusion v11** is the correct feed.
 
 ## ⚡ Recommended feed
 
 ```text
-https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/stream-badges-fusion-v10.json
+https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/stream-badges-fusion-v11.json
 ```
 
 NiakVIO provides Fusion-style StreamBadge rules for stream cards. For a cinephile-oriented explanation of resolution, source, delivery format, codecs, HDR, bitrate, audio, language and age-rating badges, read **[StreamBadges — technical media guide](stream-badges-technical-guide.md)**.
@@ -20,11 +20,11 @@ NiakVIO provides Fusion-style StreamBadge rules for stream cards. For a cinephil
 
 Optional theme-specific feeds also exist:
 
-- Dark v10: `https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/stream-badges-dark-v10.json`
-- Light v10: `https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/stream-badges-light-v10.json`
-- Transparent v10: `https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/stream-badges-transparent-v10.json`
+- Dark v11: `https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/stream-badges-dark-v11.json`
+- Light v11: `https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/stream-badges-light-v11.json`
+- Transparent v11: `https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/stream-badges-transparent-v11.json`
 
-Use these only when you specifically want the theme-bound variants; **Fusion v10 remains the normal setup**.
+Use these only when you specifically want the theme-bound variants; **Fusion v11 remains the normal setup**.
 
 </details>
 
@@ -36,7 +36,7 @@ Use these only when you specifically want the theme-bound variants; **Fusion v10
 2. Open **Appearance**.
 3. Open **Streams**.
 4. Under **FUSION STYLE**, open **Fusion badge URLs**.
-5. Paste the NiakVIO Fusion v10 JSON URL.
+5. Paste the NiakVIO Fusion v11 JSON URL.
 6. Select **Import**.
 7. Confirm that the URL appears in the imported list and is **Active**.
 8. Optional: use **Preview** to verify the imported badges.
@@ -55,13 +55,13 @@ Use these only when you specifically want the theme-bound variants; **Fusion v10
 4. Under **Fusion Style**, open **Fusion badge URLs**.
 5. NuvioTV starts its local badge configuration screen and shows a **QR code**.
 6. Scan the QR code with your phone while the phone and TV are on the same local network.
-7. In the web page opened on your phone, paste the NiakVIO Fusion v10 JSON URL.
+7. In the web page opened on your phone, paste the NiakVIO Fusion v11 JSON URL.
 8. Select **Import**.
 9. Verify that the feed is shown as **Active** and optionally use **Preview**.
 10. You can also change **Badge position** from the same configuration flow / TV settings.
 
 > [!IMPORTANT]
-> The TV stores imported badge rules locally. If an older NiakVIO Fusion feed does not refresh as expected, delete the old import and add the current **Fusion v10** URL again.
+> The TV stores imported badge rules locally. If an older NiakVIO Fusion feed does not refresh as expected, delete the old import and add the current **Fusion v11** URL again.
 
 ---
 
@@ -76,7 +76,7 @@ Open a title with available streams. Compatible stream cards should display the 
 
 - verify that the imported URL is active;
 - use **Preview** to confirm that badges were loaded;
-- refresh/re-import the current Fusion v10 URL;
+- refresh/re-import the current Fusion v11 URL;
 - remember that a badge only appears when the stream metadata matches its rule.
 
 </details>
@@ -85,9 +85,9 @@ Open a title with available streams. Compatible stream cards should display the 
 
 The public v3 contract is version-aligned across all four feeds:
 
-- `assets/stream-badges-fusion-v10.json` — recommended cross-theme feed;
-- `assets/stream-badges-dark-v10.json` — dark app backgrounds;
-- `assets/stream-badges-light-v10.json` — light app backgrounds;
-- `assets/stream-badges-transparent-v10.json` — transparent artwork feed.
+- `assets/stream-badges-fusion-v11.json` — recommended cross-theme feed;
+- `assets/stream-badges-dark-v11.json` — dark app backgrounds;
+- `assets/stream-badges-light-v11.json` — light app backgrounds;
+- `assets/stream-badges-transparent-v11.json` — transparent artwork feed.
 
 Unversioned files are moving `latest` aliases. Integrations that need a stable contract should pin a versioned feed.
