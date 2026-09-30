@@ -111,7 +111,7 @@ assert row["sourceType"] == "WEB-DL"
 assert row["format"] == "HLS"
 assert row["size"] == row["description"], row
 assert row["headers"] == {"Referer": "https://purstream.example/"}
-assert {"4k-ultra-hd", "webdl", "hevc", "lang-fr", "age-12"}.issubset(set(row["badgeIds"])), row
+assert {"4k-ultra-hd", "webdl", "hevc", "lang-fr", "age-fr-12"}.issubset(set(row["badgeIds"])), row
 assert not any(str(x).startswith("sub-") for x in row["badgeIds"]), row
 assert "multi" not in set(row["badgeIds"]), row
 lines = row["description"].splitlines()
