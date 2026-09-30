@@ -356,3 +356,16 @@
 - Brain-LLM now computes provider-independent repair families, ranks validated same-family experience across providers, imports NiakVIO `validatedFamilies`, and has a deterministic `family_replay` path before any LLM call for supported mechanisms. Failed recompilation escalates only the current provider.
 - Current Force memory has **0 accepted mutations**, therefore no validated family replay is active yet. Existing 4KHDHub failures remain negative memory and must not be promoted as reusable skills.
 - Scaling target: expensive reasoning should trend with **novel repair-family count + exceptional providers**, not raw provider count.
+
+
+### 2026-09-30 — 13 Repair providers now map to 5 causal repair families
+
+- Brain fleet-scale classification over the authoritative 13-provider Repair queue now groups current failures into **5 causal families**, rather than treating all 13 as independent novel repairs:
+  - 7 `route-proven-gap:route-parser`
+  - 2 `route-proven-gap:dom-selector-container`
+  - 2 `chain-terminal-gap:dom-selector-container`
+  - 1 `chain-terminal-gap:terminal-extraction`
+  - 1 `provider-transport-gap:provider-transport`
+- Family identity deliberately ignores response format (HTML vs JSON), catalogue/media/status metadata and provider identity when those do not change the reusable repair mechanism.
+- Until a family has a NiakVIO sandbox-accepted mechanism, only one rotating representative spends novel Force/LLM budget. Siblings remain deferred. Once validated, deterministic family replay may recompile the mechanism on each sibling's exact bytes, still behind all normal proof gates.
+- This is **not** a provider repair claim: census is still **27 FULL OK · 2 PARTIAL OK · 13 Repair**. Live validation run: Brain Advisor `36738108323` against NiakVIO `a2be5abfb32cc3a5bdc3f82031f9611a0e851ce5`.
