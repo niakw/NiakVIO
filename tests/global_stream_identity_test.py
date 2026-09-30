@@ -31,7 +31,7 @@ base = r'''module.exports={getStreams:async function(){return [
 
 patched = identity.apply(base, context={"provider_id": "example"})
 assert "NUVIO_GLOBAL_STREAM_IDENTITY_V1" in patched
-assert "cross-client-provenance-identity-v13" in patched
+assert "cross-client-player-page-identity-v14" in patched
 assert "NUVIO_IDENTITY_SHARED_TMDB_CAPABILITY_V1" in patched
 assert identity.apply(patched, context={"provider_id": "example"}) == patched
 
@@ -196,6 +196,51 @@ try:
 finally:
     provenance_path.unlink(missing_ok=True)
 
+# A correct catalogue page can still be wired to the wrong external player.
+# The player title is bounded negative evidence only: an explicit different work
+# is rejected, while a generic player title remains fail-open.
+player_page_source = r'''module.exports={getStreams:async()=>[
+ {name:'Coflix',title:'[VF] Coflix - Lee',url:'https://cdn.example/wrong-player.m3u8',headers:{Referer:'https://player.example/embed/wrong'}},
+ {name:'Coflix',title:'[VF] Coflix - Lee',url:'https://cdn.example/generic-player.m3u8',headers:{Referer:'https://player.example/embed/generic'}},
+ {name:'Coflix',title:'[VF] Coflix - Lee',url:'https://cdn.example/right-player.m3u8',headers:{Referer:'https://player.example/embed/right'}}
+]};'''
+player_page_patched = identity.apply(player_page_source, context={"provider_id": "coflix"})
+player_page_runner = r'''
+const assert=require('assert');
+global.TMDB_API_KEY=String(1);
+function json(data){return {ok:true,status:200,headers:{get:()=> 'application/json'},json:async()=>data,text:async()=>JSON.stringify(data)}}
+function html(body){return {ok:true,status:200,headers:{get:n=>String(n).toLowerCase()==='content-type'?'text/html; charset=utf-8':''},text:async()=>body,json:async()=>({})}}
+global.fetch=async raw=>{
+ const u=String(raw);
+ if(u.includes('/movie/126442?'))return json({id:126442,title:'Lee',original_title:'Lee',release_date:'2024-09-13',external_ids:{imdb_id:'tt5112584'}});
+ if(u==='https://player.example/embed/wrong')return html('<html><head><title>The Substance (2024)</title></head></html>');
+ if(u==='https://player.example/embed/generic')return html('<html><head><title>Vidzy Player</title></head></html>');
+ if(u==='https://player.example/embed/right')return html('<html><head><meta property="og:title" content="Lee (2024)"></head></html>');
+ if(u.includes('/search/movie?')){
+   const q=(new URL(u)).searchParams.get('query')||'';
+   if(q.toLowerCase().includes('substance'))return json({results:[{id:933260,title:'The Substance',original_title:'The Substance'}]});
+   if(q.toLowerCase()==='lee')return json({results:[{id:126442,title:'Lee',original_title:'Lee'}]});
+   return json({results:[]});
+ }
+ throw new Error('unexpected fetch '+u);
+};
+PATCHED
+module.exports.getStreams({tmdbId:'126442',imdbId:'tt5112584',mediaType:'movie',title:'Lee',year:2024}).then(rows=>{
+ const urls=rows.map(x=>x.url);
+ assert(!urls.includes('https://cdn.example/wrong-player.m3u8'),JSON.stringify(rows));
+ assert(urls.includes('https://cdn.example/generic-player.m3u8'),JSON.stringify(rows));
+ assert(urls.includes('https://cdn.example/right-player.m3u8'),JSON.stringify(rows));
+}).catch(e=>{console.error(e);process.exit(3)});
+'''.replace('PATCHED', player_page_patched)
+with tempfile.NamedTemporaryFile('w', suffix='.cjs', encoding='utf-8', delete=False) as handle:
+    handle.write(player_page_runner)
+    player_page_path = Path(handle.name)
+try:
+    proc = subprocess.run(['node', str(player_page_path)], cwd=ROOT, text=True, capture_output=True, timeout=20)
+    assert proc.returncode == 0, proc.stdout + proc.stderr
+finally:
+    player_page_path.unlink(missing_ok=True)
+
 # Desktop regression: a TMDB transport failure is absence of evidence, not
 # evidence that every year-bearing row is the wrong movie.
 fail_open_source = r'''module.exports={getStreams:async()=>[
@@ -203,7 +248,7 @@ fail_open_source = r'''module.exports={getStreams:async()=>[
  {name:'Server 2',filename:'Interstellar.Nolan.Cut.2014.1080p.BluRay.mkv',url:'https://cdn.example/interstellar-cut.m3u8'}
 ]};'''
 fail_open_patched = identity.apply(fail_open_source, context={"provider_id": "example"})
-assert "cross-client-provenance-identity-v13" in fail_open_patched
+assert "cross-client-player-page-identity-v14" in fail_open_patched
 fail_open_runner = r'''
 const assert=require('assert');
 global.TMDB_API_KEY=String(1);
