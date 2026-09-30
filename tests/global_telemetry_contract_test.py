@@ -34,6 +34,8 @@ global.localStorage={
 const sent=[];
 global.__NIAKVIO_TELEMETRY_V1__={
   endpoint:"https://telemetry.example/collect",
+  installId:"host-install-123",
+  runtimeClass:"production",
   accountPseudonym:"acct-hash-123",
   appVersion:"1.2.3"
 };
@@ -85,16 +87,17 @@ for forbidden in (
     "Do not send me",
 ):
     assert forbidden not in serialized, forbidden
-assert data["stored"][0][0] == "niakvio.installId.v1"
+assert data["stored"] == []
+assert bodies[0]["identityScope"] == "host-install"
+assert bodies[0]["runtimeClass"] == "production"
 
-# Without a host bridge, the production default endpoint still emits aggregate
-# events but must not invent an installId.
-anonymous_patched = apply_telemetry(fixture, context={"provider_id": "demo"})
-with tempfile.TemporaryDirectory(prefix="niakvio-telemetry-anonymous-") as raw:
+# Without a host bridge there is no trustworthy user identity, so telemetry is a strict no-op.
+no_bridge_patched = apply_telemetry(fixture, context={"provider_id": "demo"})
+with tempfile.TemporaryDirectory(prefix="niakvio-telemetry-no-bridge-") as raw:
     root = Path(raw)
     provider = root / "provider.cjs"
     runner = root / "runner.cjs"
-    provider.write_text(anonymous_patched, encoding="utf-8")
+    provider.write_text(no_bridge_patched, encoding="utf-8")
     runner.write_text(
         """
 const sent=[];
@@ -107,13 +110,8 @@ p.getStreams({mediaType:"tv"}).then(rows=>setTimeout(()=>console.log(JSON.string
     )
     done = subprocess.run(["node", str(runner)], text=True, capture_output=True, timeout=10, check=False)
     assert done.returncode == 0, done.stdout + done.stderr
-    anonymous = json.loads(done.stdout.strip())
-    assert len(anonymous["sent"]) == 1, anonymous
-    assert anonymous["sent"][0]["url"] == "https://www.eittyweb.fr/niakvio-telemetry-collect.php", anonymous
-    anon_body = json.loads(anonymous["sent"][0]["body"])
-    assert "installId" not in anon_body, anon_body
-    assert anon_body["identityScope"] == "anonymous-runtime", anon_body
-    assert anon_body["providerId"] == "demo", anon_body
+    no_bridge = json.loads(done.stdout.strip())
+    assert no_bridge["sent"] == [], no_bridge
 
 # Explicitly disabling both bridge and default endpoint remains a strict no-op.
 no_endpoint_patched = apply_telemetry(
@@ -150,4 +148,4 @@ p.getStreams({mediaType:"tv"}).then(rows=>console.log(JSON.stringify({calls,rows
     assert data["calls"] == 0
     assert data["rows"][0]["url"] == "https://secret.example/video.m3u8"
 
-print("GLOBAL_TELEMETRY_V1_OK privacy=minimal identity=stable-ip-independent fire_and_forget=true")
+print("GLOBAL_TELEMETRY_V1_OK privacy=minimal identity=host-stable-only synthetic_traffic=no-op fire_and_forget=true")
