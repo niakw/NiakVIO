@@ -339,6 +339,7 @@ us_pg = run(
 assert us_pg["ageRating"] == "PG", us_pg
 assert us_pg["ageRatingCountry"] == "US", us_pg
 assert "age-us-pg" in us_pg["badgeIds"], us_pg
+assert "US PG" in us_pg["description"] and "US PG" in us_pg["size"], us_pg
 
 fr_16 = run(
     "module.exports={getStreams:async()=>[{name:'Source',url:'https://x.example/a.mp4',ageRating:'-16',ageRatingCountry:'FR'}]};\n",
@@ -347,6 +348,7 @@ fr_16 = run(
 )
 assert fr_16["ageRating"] == "16+", fr_16
 assert "age-fr-16" in fr_16["badgeIds"], fr_16
+assert "FR 16+" in fr_16["description"], fr_16
 
 de_fsk = run(
     "module.exports={getStreams:async()=>[{name:'Source',url:'https://x.example/a.mp4',ageRating:'FSK 16',ageRatingCountry:'DE'}]};\n",
@@ -354,6 +356,7 @@ de_fsk = run(
     "p.getStreams({mediaType:'movie',title:'Film'}).then(v=>console.log(JSON.stringify(v[0])))",
 )
 assert "age-de-fsk16" in de_fsk["badgeIds"], de_fsk
+assert "FSK 16" in de_fsk["description"], de_fsk
 
 jp_r15 = run(
     "module.exports={getStreams:async()=>[{name:'Source',url:'https://x.example/a.mp4',ageRating:'R15+',ageRatingCountry:'JP'}]};\n",
