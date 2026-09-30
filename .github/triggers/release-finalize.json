@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "requested_at": "2026-09-30T19:15:00+02:00",
-  "accepted_main_sha": "4c1ffb836fdf2b5e2c072058522a93f7559e225a",
+  "requested_at": "2026-09-30T23:51:00+02:00",
+  "accepted_main_sha": "4ac472be4409f31b9a5f5756a7e23296f0505de4",
   "target_release": "auto",
-  "reason": "Finalize secondary Core fixes: catalog-driven international age badges, regex-visible StreamScore tokens, enriched HLS/player facts projection, telemetry v2 anonymous aggregate endpoint, short-title wrong-content identity guard (L'Arene vs Spartacus), StreamBadge public feed v10, and late-result text-token compatibility. Reapply all durable Core patches, bump provider/cache/manifest versions, rebuild content-addressed bundles and publish atomically."
+  "reason": "Finalize Core regression repairs after accepted workflow-gate SHA 4ac472be4409: provenance-aware stream identity for opaque terminal URLs, short MP4 duration rejection on active sanitizer v10, HLS late-batch master metadata enrichment, technical StreamScore estimates when network evidence is absent, StreamBadge v11 age-country disambiguation, and production-only host-identified telemetry. Reapply all durable Core patches to all 42 active providers, bump provider versions and release from 5.21.87, rebuild manifests/hashes atomically, and publish."
 }
