@@ -813,7 +813,7 @@ function ageBadgeId(value) {
   const numeric = upper.match(/^(0|6|7|10|12|13|14|15|16|17|18|19|21)\+?$/);
   if (numeric) return `age-${numeric[1]}`;
   const named = {
-    "PG-13": "age-us-pg13", "PG13": "age-us-pg13", "TV-Y": "age-us-tv-y", "TV-Y7": "age-us-tv-y7",
+    "PG": "age-us-pg", "PG-13": "age-us-pg13", "PG13": "age-us-pg13", "R": "age-us-r", "TV-Y": "age-us-tv-y", "TV-Y7": "age-us-tv-y7",
     "TV-G": "age-us-tv-g", "TV-PG": "age-us-tv-pg", "TV-14": "age-us-tv14", "TV-MA": "age-us-tv-ma",
     "NC-17": "age-us-nc17", "R15+": "age-jp-r15", "R18+": "age-jp-r18", "PG12": "age-jp-pg12",
   }[upper];
