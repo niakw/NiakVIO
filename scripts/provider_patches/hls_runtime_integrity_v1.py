@@ -9,7 +9,8 @@ invalid row with no bounded recovery path is removed.
 
 Rows beyond the heavy native probe budget remain eligible for lightweight
 master inspection so late-arriving HLS streams can still retain technical facts
-without fabricating network evidence.
+without fabricating network evidence. Master bitrate is exposed both as display
+text and numeric `bitrateMbps` for downstream scoring.
 """
 from __future__ import annotations
 
