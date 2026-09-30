@@ -11,7 +11,7 @@ import refresh_authoritative_hub_domains as refresh
 import resolve_provider_hubs as resolver
 
 identity = (ROOT / "scripts/provider_patches/global_stream_identity_v1.py").read_text(encoding="utf-8")
-assert "cross-client-shared-tmdb-owner-zero-episodic-year-v11" in identity
+assert "cross-client-shared-tmdb-owner-zero-episodic-year-v12" in identity
 assert '"catalogueYearPolicy": "movie-only"' in identity
 assert "q.seriesYear=" not in identity
 assert "q.seasonYear=" not in identity
