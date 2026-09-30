@@ -346,3 +346,13 @@
 - Fresh sharded census run `36652937378` on that architecture still reports **27 FULL OK · 2 PARTIAL OK · 9 ROUTE PROVEN · 3 CHAIN REACHED · 1 NO PROOF · 4 DISABLED**, with **13 providers in Repair**. No provider may be claimed repaired from the architecture promotion alone.
 - The external Brain guidance cache was then found stale at NiakVIO `33e125e...` with `providerCount=0` / `rows=[]`. Brain trigger commit `00980f128972486f97d5749c306f827bf6702bd5` now replays the single 4KHDHub witness against current NiakVIO `299526d5c53f487302fdbf15f6d66521a6240a72` using the 7B advisor.
 - Expansion back to the 13-provider cohort remains blocked until one Brain-authored provider-local mutation survives NiakVIO current-byte playback, identity-safe and non-regression validation.
+
+
+### 2026-09-30 — Repair-family memory added for 700–800 provider scale
+
+- Repeated 7B cycles left the authoritative census at **27 FULL OK · 2 PARTIAL OK · 13 Repair**, proving that provider-by-provider reasoning is not a viable scaling model for a future 700–800-provider fleet.
+- NiakVIO Force sandbox results now carry sanitized `repairFamily` and `mechanismFamily` metadata end-to-end. This metadata contains no provider bytes, domains, routes, credentials or publication authority.
+- `scripts/update_brain_llm_force_memory.py` now persists accepted family/mechanism pairs into `validatedFamilies` (schema v2). Entries remain `autoApply=false`, `proofAuthority=false`; every new provider still requires exact-current-byte application, materialization, playable proof, identity and non-regression.
+- Brain-LLM now computes provider-independent repair families, ranks validated same-family experience across providers, imports NiakVIO `validatedFamilies`, and has a deterministic `family_replay` path before any LLM call for supported mechanisms. Failed recompilation escalates only the current provider.
+- Current Force memory has **0 accepted mutations**, therefore no validated family replay is active yet. Existing 4KHDHub failures remain negative memory and must not be promoted as reusable skills.
+- Scaling target: expensive reasoning should trend with **novel repair-family count + exceptional providers**, not raw provider count.
