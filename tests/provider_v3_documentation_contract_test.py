@@ -49,9 +49,9 @@ for required in (
     assert required in architecture, required
 
 for required in (
-    "GLOBAL Core",
-    "FAMILY reusable provider mechanisms",
-    "PERSONAL provider DATA/runtime",
+    "**B. Famille Provider**",
+    "**C. Provider personnel**",
+    "**D. CORE**",
     "PROVIDER.<ID>.RUNTIME.*",
     "CORE.PROVIDER_SECURITY_BOUNDARY.V1",
     "CORE.STREAM_SANITIZER",
