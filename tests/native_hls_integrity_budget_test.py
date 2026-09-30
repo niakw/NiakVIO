@@ -205,6 +205,7 @@ PATCHED
 )
 
 # HLS rows beyond the heavy native validation budget still receive a bounded master-facts pass.
+# This guarantees delayed provider rows keep technical facts/badge inputs without extra segment probes.
 budget_base = r'''globalThis.getStreams=async function(){
   return [
     {url:"https://media.example/a.m3u8",type:"hls"},
