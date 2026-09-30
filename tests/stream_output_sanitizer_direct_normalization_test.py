@@ -39,7 +39,7 @@ module.exports={getStreams:async function(){return [
         "min_vod_duration_seconds": 0,
     }
     patched = module.apply(source, options=options)
-    assert '"implementationVersion":9' in patched
+    assert '"implementationVersion":10' in patched
     current_start = "/* STARTFIX:CORE.STREAM_SANITIZER.V6 */"
     current_close = "/* CLOSEFIX:CORE.STREAM_SANITIZER.V6 */"
     assert patched.count(current_start) == 1
