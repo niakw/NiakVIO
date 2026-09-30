@@ -21,7 +21,8 @@ MANAGED_FIX_ID = "CORE.STREAM_PRESENTATION.V1"
 FACTS_PATH = Path(__file__).with_name("global_stream_facts_v1.py")
 IDENTITY_PATH = Path(__file__).with_name("global_stream_identity_v1.py")
 PROVIDER_CATALOG_PATH = Path(__file__).resolve().parents[2] / "provider_catalog.json"
-REVISION = "all-providers-client-projection-player-facts-v30"
+BADGE_CATALOG_PATH = Path(__file__).resolve().parents[2] / "assets" / "badge_catalog_v8_complete.json"
+REVISION = "all-providers-client-projection-player-facts-v31-age-catalog"
 
 
 def _apply_module(path: Path, module_name: str, text: str, context: dict[str, Any]) -> str:
@@ -78,6 +79,99 @@ def _provider_language_profile(provider_id: str) -> dict[str, str]:
     return {"mode": "vo", "fallback": "VO", "fallback_code": ""}
 
 
+def _age_key(value: object) -> str:
+    return "".join(ch for ch in str(value or "").strip().upper() if ch.isalnum())
+
+
+def _age_badge_catalog() -> dict[str, Any]:
+    """Compile the canonical v8 age badge catalogue into a tiny runtime lookup.
+
+    The asset catalogue is the authority. Runtime keeps only sanitized ids and
+    country/rating aliases; image paths remain UI-owned.
+    """
+    try:
+        payload = json.loads(BADGE_CATALOG_PATH.read_text(encoding="utf-8"))
+    except (OSError, ValueError, TypeError):
+        return {"generic": {}, "byCountry": {}, "unique": {}, "count": 0}
+
+    generic: dict[str, str] = {}
+    by_country: dict[str, dict[str, str]] = {}
+    rating_ids: dict[str, set[str]] = {}
+    count = 0
+
+    for row in payload.get("badges") or []:
+        if not isinstance(row, dict):
+            continue
+        badge_id = str(row.get("id") or "").strip().casefold()
+        if str(row.get("group") or "").strip().casefold() != "age-rating":
+            continue
+        if not badge_id.startswith("age-"):
+            continue
+        count += 1
+        fallback = str(row.get("fallbackText") or row.get("text") or "").strip()
+        name = str(row.get("name") or "").strip()
+
+        # Generic age-N / age-all badges.
+        suffix = badge_id[4:]
+        if suffix == "all" or suffix.isdigit():
+            for raw in (fallback, row.get("text"), suffix):
+                key = _age_key(raw)
+                if key:
+                    generic[key] = badge_id
+            continue
+
+        region_label = name.split("·", 1)[0].strip().upper() if "·" in name else ""
+        region_tokens = {
+            token for token in (
+                region_label,
+                region_label.split()[0] if region_label else "",
+                region_label.split("-", 1)[0] if region_label else "",
+            )
+            if token
+        }
+        # Catalogue-specific region aliases that TMDB expresses as ISO country.
+        if region_label == "CA-QC":
+            region_tokens.update({"CA", "QC"})
+        if region_label == "US TV":
+            region_tokens.add("US")
+
+        raw_values = {
+            str(row.get("fallbackText") or "").strip(),
+            str(row.get("text") or "").strip(),
+        }
+        stripped_values: set[str] = set()
+        for raw in list(raw_values):
+            upper = raw.upper()
+            stripped_values.add(raw)
+            for prefix in sorted(region_tokens, key=len, reverse=True):
+                if upper.startswith(prefix + " "):
+                    stripped_values.add(raw[len(prefix):].strip())
+        raw_values.update(stripped_values)
+
+        # Some systems include the country prefix in the classification string
+        # while TMDB provides it separately. Index both forms.
+        for region in region_tokens:
+            bucket = by_country.setdefault(region, {})
+            for raw in raw_values:
+                key = _age_key(raw)
+                if not key:
+                    continue
+                bucket[key] = badge_id
+                rating_ids.setdefault(key, set()).add(badge_id)
+
+    unique = {
+        key: next(iter(ids))
+        for key, ids in rating_ids.items()
+        if len(ids) == 1
+    }
+    return {
+        "generic": dict(sorted(generic.items())),
+        "byCountry": {key: dict(sorted(value.items())) for key, value in sorted(by_country.items())},
+        "unique": dict(sorted(unique.items())),
+        "count": count,
+    }
+
+
 def _strip_existing(text: str) -> str:
     start = text.find(f"/* {MARKER}:")
     if start < 0:
@@ -111,6 +205,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **kwargs: Any) -> st
         "languageFallbackCode": language_profile.get("fallback_code", ""),
         "tmdbCoreCapabilityRequired": True,
         "tmdbTimeoutMs": max(350, min(int(cfg.get("tmdb_timeout_ms", 1200)), 2500)),
+        "ageBadgeCatalog": _age_badge_catalog(),
         "implementationRevision": REVISION,
     }
     serialized = json.dumps(payload, separators=(",", ":"))
@@ -175,20 +270,21 @@ function cleanProviderLabel(v){var x=s(v).replace(/\s*(?:[-|•:])\s*(?:unknown|
 function providerName(r){var raw=cleanProviderLabel(r&&r.name),n=raw.split(/[|\n]/)[0].trim(),u=n.toUpperCase(),looksTechnical=/(?:\b(?:8K|4K)\b|\b(?:4320|2160|1440|1080|720|576|480|360|240)(?:P|I)?\b|\b(?:VF|VFF|VFQ|VOSTFR|VO|MULTI|DUAL[ -]?AUDIO)\b|\b(?:HEVC|AVC|H[ ._-]?26[45]|X26[45]|AV1|VP9)\b|\b(?:WEB[ ._-]?DL|WEB[ ._-]?RIP|BLU[ ._-]?RAY|REMUX|HDR|DOLBY|DTS)\b)/.test(u);if(n&&n.length<=40&&!looksTechnical)return n;var id=s(c.providerId).replace(/[-_]+/g," ");return id?id.replace(/\b\w/g,function(x){return x.toUpperCase()}):"Source"}
 function fileSize(r){var v=s(r&&r.size);if(!meaningful(v))return"";var m=v.match(/\b\d+(?:[.,]\d+)?\s*(?:KB|MB|GB|TB)\b/i);return m?m[0]:""}
 function qualityLabel(v){return v==="4320p"?"8K":v==="2160p"?"4K":s(v)}
-function ageBadge(v){var u=normalizeAgeValue(v).toUpperCase().replace(/\s+/g," ").trim(),m=u.match(/^(0|6|7|10|12|13|14|15|16|17|18|19|21)\+?$/);if(/^(?:ALL|ALL AGES|UNRESTRICTED|U|G)$/.test(u))return"age-all";if(m)return"age-"+m[1];var n={"PG":"age-us-pg","PG-13":"age-us-pg13","PG13":"age-us-pg13","R":"age-us-r","TV-Y":"age-us-tv-y","TV-Y7":"age-us-tv-y7","TV-G":"age-us-tv-g","TV-PG":"age-us-tv-pg","TV-14":"age-us-tv14","TV-MA":"age-us-tv-ma","NC-17":"age-us-nc17","R15+":"age-jp-r15","R18+":"age-jp-r18","PG12":"age-jp-pg12"}[u];if(n)return n;m=u.match(/^FSK[ .:_-]?(0|6|12|16|18)$/);if(m)return"age-de-fsk"+m[1];m=u.match(/^KR[ .:_-]?(12|15|19)$/);if(m)return"age-kr"+m[1];if(/^KR[ .:_-]?(?:ALL|0)$/.test(u))return"age-kr-all";m=u.match(/^UA[ ._-]?(7|13|16)\+?$/);if(m)return"age-in-ua"+m[1];return""}
-function badgeIds(f){var ids=[],q={"4320p":"8k-ultra-hd","2160p":"4k-ultra-hd","1440p":"1440p","1080i":"1080i","1080p":"1080p-full-hd","720p":"720p-hd","576p":"576p","480p":"480p-sd","360p":"360p","240p":"240p"}[f.quality];if(q)ids.push(q);if(f.sourceType==="ULTRA HD BLU-RAY"&&f.releaseType==="REMUX")ids.push("uhd-remux");else if(f.sourceType==="BLU-RAY"&&f.releaseType==="REMUX")ids.push("blu-ray-remux");else{var src={"ULTRA HD BLU-RAY":"uhd-blu-ray","BLU-RAY":"blu-ray-disc","BDMV":"bdmv","WEB-DL":"webdl","WEBRIP":"webrip","HDTV":"hdtv","DVD RIP":"dvd-rip","DVD":"dvd","CAM":"cam","TELESYNC":"telesync","TELECINE":"telecine"}[f.sourceType];if(src)ids.push(src);if(f.releaseType==="REMUX")ids.push("remux")}var fm={"HLS":"hls","DASH":"dash","MKV":"mkv","MP4":"mp4","WEBM":"webm","MPEG-TS":"mpeg-ts","M2TS":"m2ts"}[f.format];if(fm)ids.push(fm);f.videoTech.forEach(function(v){var id={"Dolby Vision":"dolby-vision","HDR10+":"hdr10-plus","HDR10":"hdr10","HDR":"hdr","HLG":"hlg","SDR":"sdr","IMAX Enhanced":"imax-enhanced","IMAX":"imax","3D":"3d"}[v];if(id)ids.push(id)});var co={"HEVC":"hevc","AVC":"avc","AV1":"av1","VP9":"vp9","MPEG-2":"mpeg2","VC-1":"vc1","MPEG-4 Part 2":"mpeg4-part2"}[f.codec];if(co)ids.push(co);if(/^(?:8|10|12)bit$/.test(f.bitDepth||""))ids.push(f.bitDepth);var fr={"23.976 fps":"23.976fps","24 fps":"24fps","25 fps":"25fps","29.97 fps":"29.97fps","30 fps":"30fps","50 fps":"50fps","59.94 fps":"59.94fps","60 fps":"60fps"}[f.frameRate];if(fr)ids.push(fr);if(f.bitrate)ids.push("video-bitrate");(f.audioTech||[]).forEach(function(v){var id={"Dolby Atmos":"dolby-atmos","DTS:X":"dts-x"}[v];if(id)ids.push(id)});var ac={"TrueHD":"truehd","E-AC3":"dolby-digital-plus","AC3":"dolby-digital","DTS-HD MA":"dts-hd-master-audio","DTS-HD HRA":"dts-hd-hra","DTS-HD":"dts-hd","DTS":"dts","AAC":"aac","FLAC":"flac","LPCM":"lpcm","PCM":"pcm","Opus":"opus","MP3":"mp3","ALAC":"alac"}[f.audioCodec];if(ac)ids.push(ac);var ch={"7.1":"7.1","5.1":"5.1","2.1":"2.1","2.0":"2.0","1.0":"1.0"}[f.audioChannels];if(ch)ids.push(ch);var sr={"44.1 kHz":"44.1khz","48 kHz":"48khz","88.2 kHz":"88.2khz","96 kHz":"96khz","192 kHz":"192khz"}[f.audioSampleRate];if(sr)ids.push(sr);var tracks=Array.isArray(f.languageTracks)?f.languageTracks:[];for(var i=0;i<tracks.length;i++){var code=languageCode(tracks[i]&&(tracks[i].code||tracks[i].tag||tracks[i].label));if(code&&String(tracks[i].role||"").toLowerCase()!=="sub")ids.push("lang-"+code)}if(!tracks.length){var fallback=languageCode(f.language);if(fallback)ids.push("lang-"+fallback)}var ag=ageBadge(f.ageRating);if(ag)ids.push(ag);return uniq(ids)}
+function ageKey(v){return s(v).toUpperCase().replace(/[^A-Z0-9]+/g,"")}
+function ageBadge(v,country){var cat=c.ageBadgeCatalog&&typeof c.ageBadgeCatalog==="object"?c.ageBadgeCatalog:{},key=ageKey(normalizeAgeValue(v)),ct=ageKey(country),by=cat.byCountry&&typeof cat.byCountry==="object"?cat.byCountry:{},generic=cat.generic&&typeof cat.generic==="object"?cat.generic:{},unique=cat.unique&&typeof cat.unique==="object"?cat.unique:{};if(ct&&by[ct]&&by[ct][key])return by[ct][key];if(unique[key])return unique[key];if(generic[key])return generic[key];return""}
+function badgeIds(f){var ids=[],q={"4320p":"8k-ultra-hd","2160p":"4k-ultra-hd","1440p":"1440p","1080i":"1080i","1080p":"1080p-full-hd","720p":"720p-hd","576p":"576p","480p":"480p-sd","360p":"360p","240p":"240p"}[f.quality];if(q)ids.push(q);if(f.sourceType==="ULTRA HD BLU-RAY"&&f.releaseType==="REMUX")ids.push("uhd-remux");else if(f.sourceType==="BLU-RAY"&&f.releaseType==="REMUX")ids.push("blu-ray-remux");else{var src={"ULTRA HD BLU-RAY":"uhd-blu-ray","BLU-RAY":"blu-ray-disc","BDMV":"bdmv","WEB-DL":"webdl","WEBRIP":"webrip","HDTV":"hdtv","DVD RIP":"dvd-rip","DVD":"dvd","CAM":"cam","TELESYNC":"telesync","TELECINE":"telecine"}[f.sourceType];if(src)ids.push(src);if(f.releaseType==="REMUX")ids.push("remux")}var fm={"HLS":"hls","DASH":"dash","MKV":"mkv","MP4":"mp4","WEBM":"webm","MPEG-TS":"mpeg-ts","M2TS":"m2ts"}[f.format];if(fm)ids.push(fm);f.videoTech.forEach(function(v){var id={"Dolby Vision":"dolby-vision","HDR10+":"hdr10-plus","HDR10":"hdr10","HDR":"hdr","HLG":"hlg","SDR":"sdr","IMAX Enhanced":"imax-enhanced","IMAX":"imax","3D":"3d"}[v];if(id)ids.push(id)});var co={"HEVC":"hevc","AVC":"avc","AV1":"av1","VP9":"vp9","MPEG-2":"mpeg2","VC-1":"vc1","MPEG-4 Part 2":"mpeg4-part2"}[f.codec];if(co)ids.push(co);if(/^(?:8|10|12)bit$/.test(f.bitDepth||""))ids.push(f.bitDepth);var fr={"23.976 fps":"23.976fps","24 fps":"24fps","25 fps":"25fps","29.97 fps":"29.97fps","30 fps":"30fps","50 fps":"50fps","59.94 fps":"59.94fps","60 fps":"60fps"}[f.frameRate];if(fr)ids.push(fr);if(f.bitrate)ids.push("video-bitrate");(f.audioTech||[]).forEach(function(v){var id={"Dolby Atmos":"dolby-atmos","DTS:X":"dts-x"}[v];if(id)ids.push(id)});var ac={"TrueHD":"truehd","E-AC3":"dolby-digital-plus","AC3":"dolby-digital","DTS-HD MA":"dts-hd-master-audio","DTS-HD HRA":"dts-hd-hra","DTS-HD":"dts-hd","DTS":"dts","AAC":"aac","FLAC":"flac","LPCM":"lpcm","PCM":"pcm","Opus":"opus","MP3":"mp3","ALAC":"alac"}[f.audioCodec];if(ac)ids.push(ac);var ch={"7.1":"7.1","5.1":"5.1","2.1":"2.1","2.0":"2.0","1.0":"1.0"}[f.audioChannels];if(ch)ids.push(ch);var sr={"44.1 kHz":"44.1khz","48 kHz":"48khz","88.2 kHz":"88.2khz","96 kHz":"96khz","192 kHz":"192khz"}[f.audioSampleRate];if(sr)ids.push(sr);var tracks=Array.isArray(f.languageTracks)?f.languageTracks:[];for(var i=0;i<tracks.length;i++){var code=languageCode(tracks[i]&&(tracks[i].code||tracks[i].tag||tracks[i].label));if(code&&String(tracks[i].role||"").toLowerCase()!=="sub")ids.push("lang-"+code)}if(!tracks.length){var fallback=languageCode(f.language);if(fallback)ids.push("lang-"+fallback)}var ag=ageBadge(f.ageRating,f.ageRatingCountry);if(ag)ids.push(ag);return uniq(ids)}
 function badgeLabels(f){var out=[];if(f.quality)out.push(qualityLabel(f.quality));if(f.sourceType==="ULTRA HD BLU-RAY"&&f.releaseType==="REMUX")out.push("UHD REMUX");else if(f.sourceType==="BLU-RAY"&&f.releaseType==="REMUX")out.push("BD REMUX");else{if(f.sourceType)out.push(f.sourceType);if(f.releaseType)out.push(f.releaseType)};if(f.format)out.push(f.format);out=out.concat(f.videoTech);if(f.codec)out.push(f.codec);if(f.bitDepth)out.push(f.bitDepth);if(f.frameRate)out.push(f.frameRate);if(f.bitrate)out.push(f.bitrate);out=out.concat(f.audioTech||[]);if(f.audioCodec)out.push(f.audioCodec);if(f.audioChannels)out.push(f.audioChannels);if(f.audioSampleRate)out.push(f.audioSampleRate);var tb=(f.languageTracks||[]).filter(function(t){return String(t&&t.role||"").toLowerCase()!=="sub"}).map(compactTrack).filter(Boolean);if(tb.length)out=out.concat(tb);else{var c=languageCode(f.language);if(c)out.push(c.toUpperCase())}if(f.duration)out.push(humanDuration(f.duration));if(f.ageRating)out.push(f.ageRating);return uniq(out)}
 function humanDuration(v){v=Number(v)||0;if(v<=0)return"";var h=Math.floor(v/60),m=v%60;return h?h+"h"+String(m).padStart(2,"0"):v+"min"}
 function technicalLine(f,fs){var groups=[],video=[],audio=[],misc=[],src=f.sourceType==="ULTRA HD BLU-RAY"&&f.releaseType==="REMUX"?"UHD REMUX":f.sourceType==="BLU-RAY"&&f.releaseType==="REMUX"?"BD REMUX":f.sourceType+(f.releaseType?" "+f.releaseType:"");if(src)video.push(src);if(f.edition)video.push(f.edition);if(f.codec)video.push(f.codec+(f.bitDepth?" "+f.bitDepth:""));else if(f.bitDepth)video.push(f.bitDepth);if(f.resolution)video.push(f.resolution+(f.quality?" ("+f.quality+")":""));video=video.concat(f.videoTech||[]);if(f.frameRate)video.push(f.frameRate);if(f.format)video.push(f.format);if(video.length)groups.push("🎞️ "+uniq(video).join(" • "));audio=audio.concat(f.audioTech||[]);if(f.audioCodec)audio.push(f.audioCodec);if(f.audioChannels)audio.push(f.audioChannels);if(f.audioSampleRate)audio.push(f.audioSampleRate);if(audio.length)groups.push("🔊 "+uniq(audio).join(" • "));if(fs)misc.push("💾 "+fs);if(f.bitrate)misc.push("📶 "+f.bitrate);if(f.releaseGroup)misc.push("🏷️ "+f.releaseGroup);if(misc.length)groups.push(misc.join(" • "));return groups.join("  |  ")}
 function durationAgeLine(f){var out=[];if(f.duration)out.push("⏱ "+humanDuration(f.duration));if(f.ageRating)out.push("🔞 "+f.ageRating);return out.join(" • ")}
 function languageLine(f){var rows=f.languageTracks||[],audio=[],subs=[],subCodes={};for(var i=0;i<rows.length;i++){var row=rows[i]||{},role=String(row.role||"").toLowerCase();if(role==="sub"){var code=languageCode(row.code||row.tag||row.label);if(code)subCodes[code]=1;subs.push(row)}else if(row.label){audio.push(row.label+(row.role?" · "+row.role:""))}}var groups={};function addGroup(kind,label){if(!label)return;if(!groups[kind])groups[kind]=[];if(groups[kind].indexOf(label)<0)groups[kind].push(label)}for(var j=0;j<subs.length;j++){var sr=subs[j],src=s(sr.source).toLowerCase(),kind=/integrated|embedded|internal/.test(src)?"Int. Sub":/external/.test(src)?"Ext. Sub":"Sub";addGroup(kind,sr.label||languageName(languageCode(sr.code||sr.tag)))}(f.subtitles||[]).forEach(function(v){var m=s(v).match(/^SUB\s+([A-Z]{2,3}(?:-[A-Z0-9]{2,3})?)$/i),c=m?languageCode(m[1]):"";if(!c||!subCodes[c])addGroup("Sub",c?languageName(c):s(v))});var blocks=[];Object.keys(groups).forEach(function(k){if(groups[k].length)blocks.push("💬 "+k+" · "+groups[k].join(" · "))});if(audio.length||blocks.length)return"🌐 "+audio.concat(blocks).join(" • ");var code=languageCode(f.language),lang=code?languageName(code):"";return lang?"🌐 "+lang:""}
 async function cacheValue(key){try{var cache=g&&g.__nuvioTmdbMetadataCacheV1;if(cache&&Object.prototype.hasOwnProperty.call(cache,key))return await cache[key]}catch(_e){}return null}
-function certification(d,kind){var rows=kind==="movie"?(d&&d.release_dates&&d.release_dates.results):(d&&d.content_ratings&&d.content_ratings.results);if(!Array.isArray(rows))return"";var row=rows.find(function(x){return s(x&&x.iso_3166_1).toUpperCase()==="FR"})||rows.find(function(x){return s(x&&x.iso_3166_1).toUpperCase()==="US"})||rows[0];if(!row)return"";if(kind==="movie"){var releases=Array.isArray(row.release_dates)?row.release_dates:[];for(var i=0;i<releases.length;i++){var v=s(releases[i]&&releases[i].certification);if(v)return v}return""}return s(row.rating)}
+function certification(d,kind){var rows=kind==="movie"?(d&&d.release_dates&&d.release_dates.results):(d&&d.content_ratings&&d.content_ratings.results);if(!Array.isArray(rows))return{value:"",country:""};var row=rows.find(function(x){return s(x&&x.iso_3166_1).toUpperCase()==="FR"})||rows.find(function(x){return s(x&&x.iso_3166_1).toUpperCase()==="US"})||rows[0];if(!row)return{value:"",country:""};var country=s(row.iso_3166_1).toUpperCase();if(kind==="movie"){var releases=Array.isArray(row.release_dates)?row.release_dates:[];for(var i=0;i<releases.length;i++){var v=s(releases[i]&&releases[i].certification);if(v)return{value:v,country:country}}return{value:"",country:country}}return{value:s(row.rating),country:country}}
 /* NUVIO_PRESENTATION_REUSE_MEDIA_CONTEXT_TMDB_V1 */
 function contextTmdb(q,kind){try{var ctx=g&&g.__nuvioMediaContext;if(!ctx||typeof ctx!=="object"||!ctx.tmdbMetadata)return null;if(s(ctx.tmdbId)!==s(q.tmdbId))return null;var ns=s(ctx.tmdbNamespace).toLowerCase();if(ns&&ns!==kind)return null;return ctx.tmdbMetadata}catch(_e){return null}}
-async function coreTmdb(q){if(!/^\d+$/.test(q.tmdbId||""))return null;var kind=(q.mediaType==="tv"||q.mediaType==="series"||q.mediaType==="anime")?"tv":"movie",result=null,d=contextTmdb(q,kind),ep=null,needsEpisode=kind==="tv"&&q.season>0&&q.episode>0;if(!d){var cached=await cacheValue(kind+":"+s(q.tmdbId));d=cached&&cached.metadata?cached.metadata:cached&&cached.value?cached.value:cached||null}if(needsEpisode){var cachedEpisode=await cacheValue("episode:tv:"+s(q.tmdbId)+":"+q.season+":"+q.episode+":fr-FR");ep=cachedEpisode&&cachedEpisode.metadata?cachedEpisode.metadata:cachedEpisode&&cachedEpisode.value?cachedEpisode.value:cachedEpisode||null}if(!d||(needsEpisode&&!ep)){try{var getter=g&&g.__nuvioCoreGetTmdbDataV1;if(typeof getter==="function")result=await getter({tmdbId:q.tmdbId,mediaType:kind,tmdbNamespace:kind,season:q.season,episode:q.episode})}catch(_e){}if(result&&result.state==="ok"){if(!d)d=result.metadata||null;if(!ep)ep=result.episodeMetadata||null}}if(!d)return null;var date=s(d.release_date||d.first_air_date),runtime=Number(d.runtime||0);if(ep&&Number(ep.runtime||0)>0)runtime=Number(ep.runtime||0);else if(!runtime&&Array.isArray(d.episode_run_time)&&d.episode_run_time.length)runtime=Number(d.episode_run_time[0]||0);return{title:s(d.title||d.name||q.title),year:Number((date.match(/(?:19|20)\d{2}/)||[])[0]||q.year||0)||0,runtime:runtime>0?Math.round(runtime):0,age:certification(d,kind),originalLanguage:s(d.original_language||d.originalLanguage)}}
+async function coreTmdb(q){if(!/^\d+$/.test(q.tmdbId||""))return null;var kind=(q.mediaType==="tv"||q.mediaType==="series"||q.mediaType==="anime")?"tv":"movie",result=null,d=contextTmdb(q,kind),ep=null,needsEpisode=kind==="tv"&&q.season>0&&q.episode>0;if(!d){var cached=await cacheValue(kind+":"+s(q.tmdbId));d=cached&&cached.metadata?cached.metadata:cached&&cached.value?cached.value:cached||null}if(needsEpisode){var cachedEpisode=await cacheValue("episode:tv:"+s(q.tmdbId)+":"+q.season+":"+q.episode+":fr-FR");ep=cachedEpisode&&cachedEpisode.metadata?cachedEpisode.metadata:cachedEpisode&&cachedEpisode.value?cachedEpisode.value:cachedEpisode||null}if(!d||(needsEpisode&&!ep)){try{var getter=g&&g.__nuvioCoreGetTmdbDataV1;if(typeof getter==="function")result=await getter({tmdbId:q.tmdbId,mediaType:kind,tmdbNamespace:kind,season:q.season,episode:q.episode})}catch(_e){}if(result&&result.state==="ok"){if(!d)d=result.metadata||null;if(!ep)ep=result.episodeMetadata||null}}if(!d)return null;var date=s(d.release_date||d.first_air_date),runtime=Number(d.runtime||0);if(ep&&Number(ep.runtime||0)>0)runtime=Number(ep.runtime||0);else if(!runtime&&Array.isArray(d.episode_run_time)&&d.episode_run_time.length)runtime=Number(d.episode_run_time[0]||0);var cert=certification(d,kind);return{title:s(d.title||d.name||q.title),year:Number((date.match(/(?:19|20)\d{2}/)||[])[0]||q.year||0)||0,runtime:runtime>0?Math.round(runtime):0,age:s(cert&&cert.value),ageCountry:s(cert&&cert.country).toUpperCase(),originalLanguage:s(d.original_language||d.originalLanguage)}}
 function mediaLine(meta,q){var mt=meta&&meaningful(meta.title)?s(meta.title):"",qt=meaningful(q&&q.title)?s(q.title):"",title=mt||qt,year=Number((meta&&meta.year)||q.year||0)||0,parts=[];if(title)parts.push(title);if(year)parts.push(String(year));if((q.mediaType==="tv"||q.mediaType==="series"||q.mediaType==="anime")&&(q.season>0||q.episode>0))parts.push("S"+String(q.season||0).padStart(2,"0")+"E"+String(q.episode||0).padStart(2,"0"));return parts.join(" • ")}
-function present(r,meta,q){if(!r||typeof r!=="object")return r;r=enrichPlayerFacts(r);var out=Object.assign({},r),au=audioFacts(r),so=source(r),vf=videoFacts(r),tracks=languageTracks(r,meta),f={quality:quality(r),language:language(r,meta,tracks),originalLanguage:languageCode(meta&&meta.originalLanguage),languageTracks:tracks,codec:codec(r),audioTech:au.tech,audioCodec:au.codec,audioChannels:au.channels,audioSampleRate:au.sampleRate,frameRate:frameRate(r),duration:duration(r)||(meta&&meta.runtime)||0,sourceType:so.sourceType,releaseType:so.releaseType,format:formatType(r),videoTech:vf.tech,bitDepth:vf.bitDepth,subtitles:subtitleFacts(r),ageRating:normalizeAgeValue(age(r)||(meta&&meta.age)||""),edition:meaningful(r&&r.edition)?s(r.edition):"",releaseGroup:meaningful(r&&(r.releaseGroup||r.release_group))?s(r.releaseGroup||r.release_group):"",bitrate:bitrateValue(r),resolution:meaningful(r&&r.resolution)?s(r.resolution):""};if(f.quality)out.quality=f.quality;else if("quality" in out)delete out.quality;if(!f.quality&&("resolution" in out)&&!meaningful(out.resolution))delete out.resolution;var languageDetailValue=detailedLanguage(r,f.language);if(languageDetailValue)f.language=languageDetailValue;out.language=f.language||null;out.originalLanguage=f.originalLanguage||null;out.languageTracks=f.languageTracks||[];if(f.codec)out.codec=f.codec;if(f.resolution)out.resolution=f.resolution;var audioCombined=uniq((f.audioTech||[]).concat([f.audioCodec,f.audioChannels,f.audioSampleRate].filter(Boolean))).join(" ");if(audioCombined)out.audio=audioCombined;if(f.duration)out.duration=f.duration;if(f.sourceType)out.sourceType=f.sourceType;if(f.releaseType)out.releaseType=f.releaseType;if(f.format)out.format=f.format;if(f.ageRating)out.ageRating=f.ageRating;out.badgeIds=badgeIds(f);out.displayBadges=badgeLabels(f);out.presentationFacts=f;var provider=providerName(r),media=mediaLine(meta,q),fs=fileSize(r),technical=technicalLine(f,fs),timing=durationAgeLine(f),lang=languageLine(f),lines=[];if(media)lines.push(((q.mediaType==="tv"||q.mediaType==="series"||q.mediaType==="anime")?"📺 ":"🎬 ")+media);if(timing)lines.push(timing);if(lang)lines.push(lang);if(technical)lines.push(technical);out.title=provider+(f.quality?" - "+qualityLabel(f.quality):"");out.name=out.title;out.description=lines.join("\n");if(out.description)out.size=out.description;else if(fs)out.size=fs;else if("size" in out)delete out.size;return out}
+function present(r,meta,q){if(!r||typeof r!=="object")return r;r=enrichPlayerFacts(r);var out=Object.assign({},r),au=audioFacts(r),so=source(r),vf=videoFacts(r),tracks=languageTracks(r,meta),f={quality:quality(r),language:language(r,meta,tracks),originalLanguage:languageCode(meta&&meta.originalLanguage),languageTracks:tracks,codec:codec(r),audioTech:au.tech,audioCodec:au.codec,audioChannels:au.channels,audioSampleRate:au.sampleRate,frameRate:frameRate(r),duration:duration(r)||(meta&&meta.runtime)||0,sourceType:so.sourceType,releaseType:so.releaseType,format:formatType(r),videoTech:vf.tech,bitDepth:vf.bitDepth,subtitles:subtitleFacts(r),ageRating:normalizeAgeValue(age(r)||(meta&&meta.age)||""),ageRatingCountry:s(r&&(r.ageRatingCountry||r.certificationCountry||r.contentRatingCountry)||(meta&&meta.ageCountry)||"").toUpperCase(),edition:meaningful(r&&r.edition)?s(r.edition):"",releaseGroup:meaningful(r&&(r.releaseGroup||r.release_group))?s(r.releaseGroup||r.release_group):"",bitrate:bitrateValue(r),resolution:meaningful(r&&r.resolution)?s(r.resolution):""};if(f.quality)out.quality=f.quality;else if("quality" in out)delete out.quality;if(!f.quality&&("resolution" in out)&&!meaningful(out.resolution))delete out.resolution;var languageDetailValue=detailedLanguage(r,f.language);if(languageDetailValue)f.language=languageDetailValue;out.language=f.language||null;out.originalLanguage=f.originalLanguage||null;out.languageTracks=f.languageTracks||[];if(f.codec)out.codec=f.codec;if(f.resolution)out.resolution=f.resolution;var audioCombined=uniq((f.audioTech||[]).concat([f.audioCodec,f.audioChannels,f.audioSampleRate].filter(Boolean))).join(" ");if(audioCombined)out.audio=audioCombined;if(f.duration)out.duration=f.duration;if(f.sourceType)out.sourceType=f.sourceType;if(f.releaseType)out.releaseType=f.releaseType;if(f.format)out.format=f.format;if(f.ageRating)out.ageRating=f.ageRating;if(f.ageRatingCountry)out.ageRatingCountry=f.ageRatingCountry;out.badgeIds=badgeIds(f);out.displayBadges=badgeLabels(f);out.presentationFacts=f;var provider=providerName(r),media=mediaLine(meta,q),fs=fileSize(r),technical=technicalLine(f,fs),timing=durationAgeLine(f),lang=languageLine(f),lines=[];if(media)lines.push(((q.mediaType==="tv"||q.mediaType==="series"||q.mediaType==="anime")?"📺 ":"🎬 ")+media);if(timing)lines.push(timing);if(lang)lines.push(lang);if(technical)lines.push(technical);out.title=provider+(f.quality?" - "+qualityLabel(f.quality):"");out.name=out.title;out.description=lines.join("\n");if(out.description)out.size=out.description;else if(fs)out.size=fs;else if("size" in out)delete out.size;return out}
 function install(o,k){if(!o||typeof o[k]!=="function"||o[k].__nuvioGlobalStreamPresentationV1)return false;var native=o[k];var wrap=async function(){var q=req(arguments),v=await native.apply(this,arguments),x=slot(v);if(!x||!x.list.length)return v;var meta=null;try{meta=await coreTmdb(q)}catch(_e){}return rebuild(v,x,x.list.map(function(r){return present(r,meta,q)}))};wrap.__nuvioGlobalStreamPresentationV1=true;o[k]=wrap;return true}
 installJvmSafeStreamStringify();
 var ok=false;try{if(typeof module!=="undefined"&&module.exports){ok=install(module.exports,"getStreams")||install(module.exports,"streams")}}catch(_e){}try{if(g&&typeof g.getStreams==="function"){if(ok&&typeof module!=="undefined"&&module.exports)g.getStreams=module.exports.getStreams;else install(g,"getStreams")}}catch(_e){}
