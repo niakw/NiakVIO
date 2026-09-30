@@ -99,3 +99,28 @@ assert f"stream-score-{grade.lower().replace('+','-plus')}" in scored_row["badge
 assert f"Stream Score: {grade}" in scored_row["description"], scored_row
 assert scored_row["size"] == scored_row["description"], scored_row
 assert "__nuvioStreamNetworkEvidenceV1" not in scored_row, scored_row
+
+estimated_source = source.replace(
+    ',\n  __nuvioStreamNetworkEvidenceV1:{success:true,sampleMbps:30,sampleConfidence:.75,latencyMs:120,segmentSuccessRatio:1,terminalProbeLatencyMs:140}',
+    ''
+)
+estimated_patched = runtime.apply(estimated_source)
+with tempfile.TemporaryDirectory() as tmp:
+    provider = Path(tmp) / "provider.cjs"
+    provider.write_text(estimated_patched, encoding="utf-8")
+    runner = Path(tmp) / "runner.cjs"
+    runner.write_text(
+        "const p=require(process.argv[2]);p.getStreams('1','movie').then(v=>console.log(JSON.stringify(v[0]))).catch(e=>{console.error(e);process.exit(1)});",
+        encoding="utf-8",
+    )
+    proc = subprocess.run(["node", str(runner), str(provider)], text=True, capture_output=True, timeout=10)
+assert proc.returncode == 0, proc.stdout + proc.stderr
+estimated_row = json.loads(proc.stdout.strip().splitlines()[-1])
+assert estimated_row["streamScore"]["status"] == "estimated", estimated_row
+assert estimated_row["streamScore"]["mode"] == "technical-estimate", estimated_row
+assert estimated_row["streamScore"]["grade"], estimated_row
+estimated_grade = estimated_row["streamScore"]["grade"]
+assert f"stream-score-{estimated_grade.lower().replace('+','-plus')}" in estimated_row["badgeIds"], estimated_row
+assert f"Stream Score: {estimated_grade}" in estimated_row["description"], estimated_row
+assert estimated_row["streamScore"]["networkEvidence"] is None, estimated_row
+
