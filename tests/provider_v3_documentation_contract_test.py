@@ -15,6 +15,7 @@ VISIBLE_EXPECTED = visible_provider_count()
 HISTORICAL_PROVIDER_COUNT = 50
 
 architecture = (ROOT / "ARCHITECTURE.md").read_text(encoding="utf-8")
+family_architecture = (ROOT / "PROVIDER_FAMILY_ARCHITECTURE.md").read_text(encoding="utf-8")
 readme = (ROOT / "README.md").read_text(encoding="utf-8")
 readme_fr = (ROOT / "README.fr.md").read_text(encoding="utf-8")
 health = (ROOT / "HEALTH-CHECK.md").read_text(encoding="utf-8")
@@ -46,6 +47,20 @@ for required in (
     "StreamBadge public actuel est **v10**",
 ):
     assert required in architecture, required
+
+for required in (
+    "GLOBAL Core",
+    "FAMILY reusable provider mechanisms",
+    "PERSONAL provider DATA/runtime",
+    "PROVIDER.<ID>.RUNTIME.*",
+    "CORE.PROVIDER_SECURITY_BOUNDARY.V1",
+    "CORE.STREAM_SANITIZER",
+    "CORE.STREAM_SCORE.V1",
+    "famille de runtime/protocole",
+    "famille de panne/réparation",
+    "recompiler sur les bytes exacts",
+):
+    assert required in family_architecture, f"PROVIDER_FAMILY_ARCHITECTURE: {required}"
 
 for text, label in (
     (architecture, "ARCHITECTURE"),
