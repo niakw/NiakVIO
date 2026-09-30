@@ -195,7 +195,7 @@ assert.deepEqual(buildBadges({ quality: "2160p", language: "VFQ", codec: "AVC" }
 assert.deepEqual(buildBadgeIds({ quality: "2160p", language: "VFQ", codec: "AVC", subtitles: [] }), ["4k-ultra-hd", "avc", "lang-fr-ca"]);
 
 
-const badgeCatalog = JSON.parse(fs.readFileSync(new URL("../../assets/badge_catalog_v8_complete.json", import.meta.url), "utf8"));
+const badgeCatalog = JSON.parse(fs.readFileSync(new URL("../../assets/badge_catalog_v9_complete.json", import.meta.url), "utf8"));
 const catalogLanguageCodes = new Set();
 const collectCatalogLanguageCodes = (value) => {
   if (Array.isArray(value)) { for (const row of value) collectCatalogLanguageCodes(row); return; }
