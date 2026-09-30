@@ -87,12 +87,45 @@ for forbidden in (
     assert forbidden not in serialized, forbidden
 assert data["stored"][0][0] == "niakvio.installId.v1"
 
-# No endpoint means a strict no-op, even when local storage is available.
+# Without a host bridge, the production default endpoint still emits aggregate
+# events but must not invent an installId.
+anonymous_patched = apply_telemetry(fixture, context={"provider_id": "demo"})
+with tempfile.TemporaryDirectory(prefix="niakvio-telemetry-anonymous-") as raw:
+    root = Path(raw)
+    provider = root / "provider.cjs"
+    runner = root / "runner.cjs"
+    provider.write_text(anonymous_patched, encoding="utf-8")
+    runner.write_text(
+        """
+const sent=[];
+global.fetch=function(url,opts){sent.push({url:String(url),body:String(opts&&opts.body||"")});return Promise.resolve({ok:true});};
+const p=require(%s);
+p.getStreams({mediaType:"tv"}).then(rows=>setTimeout(()=>console.log(JSON.stringify({rows,sent})),0)).catch(e=>{console.error(e);process.exit(1)});
+"""
+        % json.dumps(str(provider)),
+        encoding="utf-8",
+    )
+    done = subprocess.run(["node", str(runner)], text=True, capture_output=True, timeout=10, check=False)
+    assert done.returncode == 0, done.stdout + done.stderr
+    anonymous = json.loads(done.stdout.strip())
+    assert len(anonymous["sent"]) == 1, anonymous
+    assert anonymous["sent"][0]["url"] == "https://www.eittyweb.fr/niakvio-telemetry-collect.php", anonymous
+    anon_body = json.loads(anonymous["sent"][0]["body"])
+    assert "installId" not in anon_body, anon_body
+    assert anon_body["identityScope"] == "anonymous-runtime", anon_body
+    assert anon_body["providerId"] == "demo", anon_body
+
+# Explicitly disabling both bridge and default endpoint remains a strict no-op.
+no_endpoint_patched = apply_telemetry(
+    fixture,
+    options={"default_endpoint": ""},
+    context={"provider_id": "demo"},
+)
 with tempfile.TemporaryDirectory(prefix="niakvio-telemetry-no-endpoint-") as raw:
     root = Path(raw)
     provider = root / "provider.cjs"
     runner = root / "runner.cjs"
-    provider.write_text(patched, encoding="utf-8")
+    provider.write_text(no_endpoint_patched, encoding="utf-8")
     runner.write_text(
         """
 const store=new Map();let calls=0;
