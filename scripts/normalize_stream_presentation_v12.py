@@ -62,7 +62,7 @@ def assert_contract() -> None:
         'function languageCode(v){',
         'function languageName(code){',
         '"lang-"+',
-        'function ageBadge(v){',
+        'function ageBadge(v,country){',
         'function urlFacts(r){',
         'r&&r.height',
         'FULL[ ._-]?HD|FHD',
