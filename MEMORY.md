@@ -336,3 +336,13 @@
 - The live log shows the 7B cache restored, llama-server started, one LLM FORCE call completed, and a sanitized executable provider mutation produced for 4khdhub. No OOM/killed condition occurred.
 - NiakVIO run 36641082807 failed before model startup only because brain_llm_learning_workflow_contract_test.py still pinned the superseded 3B FORCE values max_tokens=768 / timeout=180.
 - The contract is now aligned to the validated 7B FORCE runtime: max_tokens=512, timeout=240, 16k context, single slot, while ordinary non-FORCE work remains on 3B.
+
+
+### 2026-09-30 — Main-only FORCE guard fixed; 7B still needs a provider mutation witness
+- Learning/FORCE run `36643038761` generated architecture output but failed during FORCE promotion because `scripts/enforce_main_only_repository_policy.py` still expected the obsolete dedicated `REPAIR_BRANCH="brain-repair/proposal"` cleanup shape while branch maintenance had already moved to a generic main-only cleanup loop.
+- NiakVIO commit `c17a89a69681ee8115ad0fe8843be100f91e0f3f` updated the policy checker to accept the current loop-based delete-only cleanup contract without restoring proposal-branch development. Brain branch maintenance passed on the fix.
+- The provider non-regression failure observed on that infrastructure commit remained the known 4KHDHub witness failure (`provider_4khdhub_runtime_behavior_test.py` returned no movie stream); it was not caused by the policy-checker change.
+- The replayed 7B architecture FORCE later completed successfully and promoted `bcc9c9bc6b3e3b2f82efee64ac3a57ac551bec35`, adding explicit `terminal_media` recognition to `scripts/brain_meta_learning.py`. This is a generic Brain capability change only.
+- Fresh sharded census run `36652937378` on that architecture still reports **27 FULL OK · 2 PARTIAL OK · 9 ROUTE PROVEN · 3 CHAIN REACHED · 1 NO PROOF · 4 DISABLED**, with **13 providers in Repair**. No provider may be claimed repaired from the architecture promotion alone.
+- The external Brain guidance cache was then found stale at NiakVIO `33e125e...` with `providerCount=0` / `rows=[]`. Brain trigger commit `00980f128972486f97d5749c306f827bf6702bd5` now replays the single 4KHDHub witness against current NiakVIO `299526d5c53f487302fdbf15f6d66521a6240a72` using the 7B advisor.
+- Expansion back to the 13-provider cohort remains blocked until one Brain-authored provider-local mutation survives NiakVIO current-byte playback, identity-safe and non-regression validation.
