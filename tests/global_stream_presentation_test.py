@@ -116,7 +116,7 @@ assert not any(str(x).startswith("sub-") for x in row["badgeIds"]), row
 assert "multi" not in set(row["badgeIds"]), row
 lines = row["description"].splitlines()
 assert lines[0] == "🎬 Interstellar • 2014", lines
-assert lines[1] == "⏱ 2h49 • 🔞 12+", lines
+assert lines[1] == "⏱ 2h49 • 🔞 FR 12+", lines
 assert lines[2] == "🌐 French · Dub • 💬 Sub · French", lines
 assert lines[3].startswith("🎞️ WEB-DL"), lines
 assert "HEVC 10bit" in lines[3] and "HLS" in lines[3] and "💾 8.4 GB" in lines[3]
