@@ -105,7 +105,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
         payload_config.update(
             {
                 "inspectMasterFacts": True,
-                "implementationRevision": "native-master-facts-network-v13",
+                "implementationRevision": "native-master-facts-late-batch-v14",
             }
         )
     payload = json.dumps(payload_config, separators=(",", ":"))
@@ -259,6 +259,21 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
     }
     var tiny=shortMediaDuration(body);if(tiny)return {state:"invalid",reason:"vod_duration_too_short",durationSeconds:tiny};
     var proof=await proveMediaPlaylist(body,base,stream,referer);if(facts)proof.facts=facts;return proof;
+  }
+  async function nativeFactsOnly(stream){
+    var referer=headerValue(stream,"referer"),root=await fetchBounded(String(stream.url||""),stream,referer,false,config.nativeProbeTimeoutMs||config.timeoutMs);
+    if(root.state==="invalid")return null;
+    if(root.state!=="ok")return config.failClosedUnknown?null:stream;
+    var body=await responseText(root),kind=playlistKind(body);
+    if(kind==="invalid"||kind==="header_only")return null;
+    if(kind==="media"){
+      var tiny=shortMediaDuration(body);return tiny?null:stream;
+    }
+    if(kind==="master"){
+      var facts=config.inspectMasterFacts?masterFacts(body):null;
+      return facts?enrichMasterFacts(stream,facts):stream;
+    }
+    return stream;
   }
   function segmentDuration(body){
     var text=clean(body),re=/#EXTINF\s*:\s*([0-9]+(?:\.[0-9]+)?)/gi,m,total=0,count=0;
@@ -477,7 +492,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
       if(!config.probeFirstSegmentNative||!rows||!rows.length)return value;
       var remaining=Math.max(1,Number(config.nativeProbeMaxRows||1)||1);
       var checks=await Promise.all(rows.map(async function(stream){
-        if(remaining<=0)return hlsHint(stream)&&config.dropUnprobedHlsAfterBudget?null:stream;
+        if(remaining<=0){if(!hlsHint(stream))return stream;return await nativeFactsOnly(stream);}
         if(!hlsHint(stream)){
           if(!config.probeAllUrls)return stream;
           remaining-=1;
