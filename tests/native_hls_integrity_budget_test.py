@@ -204,7 +204,7 @@ PATCHED
 '''.replace("PATCHED", native_patched)
 )
 
-# HLS rows beyond the native validation budget must not bypass the guard.
+# HLS rows beyond the heavy native validation budget still receive a bounded master-facts pass.
 budget_base = r'''globalThis.getStreams=async function(){
   return [
     {url:"https://media.example/a.m3u8",type:"hls"},
@@ -226,12 +226,23 @@ function response(url,text,bytes){return {ok:true,status:200,url,headers:{get:()
 const ts=new Uint8Array(376);ts[0]=0x47;ts[188]=0x47;
 globalThis.fetch=async function(url){
  if(/\/[ab]\.m3u8$/.test(url))return response(url,'#EXTM3U\n#EXT-X-MEDIA-SEQUENCE:1\n#EXT-X-PROGRAM-DATE-TIME:2026-09-25T00:00:00Z\n#EXTINF:6,\nseg.ts\n');
+ if(/\/c\.m3u8$/.test(url))return response(url,'#EXTM3U\n#EXT-X-MEDIA:TYPE=AUDIO,GROUP-ID="aac",NAME="French",LANGUAGE="fr"\n#EXT-X-STREAM-INF:BANDWIDTH=6000000,AVERAGE-BANDWIDTH=5500000,RESOLUTION=1920x1080,FRAME-RATE=24,CODECS="avc1.640028,mp4a.40.2",AUDIO="aac"\nvariant.m3u8\n');
  if(url.endsWith('/seg.ts'))return response(url,'',ts);
- throw new Error('third unprobed HLS row must be dropped before fetch: '+url);
+ throw new Error('unexpected fetch: '+url);
 };
 PATCHED
-(async()=>{const rows=await globalThis.getStreams('1','movie');assert.equal(rows.length,2,JSON.stringify(rows));assert.ok(rows.every(x=>!/c\.m3u8$/.test(x.url)))})().catch(e=>{console.error(e);process.exit(1)});
+(async()=>{
+ const rows=await globalThis.getStreams('1','movie');
+ assert.equal(rows.length,3,JSON.stringify(rows));
+ const late=rows.find(x=>/c\.m3u8$/.test(x.url));assert.ok(late,JSON.stringify(rows));
+ assert.equal(late.resolution,'1920x1080',JSON.stringify(late));
+ assert.equal(late.quality,'1080p',JSON.stringify(late));
+ assert.equal(late.codec,'AVC',JSON.stringify(late));
+ assert.equal(late.audioCodec,'AAC',JSON.stringify(late));
+ assert.equal(late.bitrateMbps,5.5,JSON.stringify(late));
+ assert.ok(!late.__nuvioStreamNetworkEvidenceV1,JSON.stringify(late));
+})().catch(e=>{console.error(e);process.exit(1)});
 '''.replace('PATCHED', budget_patched))
 
-print("native HLS first-segment proof is bounded, enrichable and never passes unprobed HLS rows after budget")
+print("native HLS heavy proof is bounded and late master rows still receive technical facts")
 
