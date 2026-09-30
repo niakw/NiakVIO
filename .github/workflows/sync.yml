@@ -175,9 +175,14 @@ jobs:
           python tests/global_stream_presentation_test.py
           python tests/global_stream_presentation_pipeline_test.py
           python tests/global_stream_identity_test.py
+          python tests/stream_score_contract_test.py
+          python tests/hls_master_facts_short_test.py
+          python tests/stream_badge_v11_age_disambiguation_test.py
           python tests/runtime_capability_media_safety_v4_test.py
           python tests/global_playback_integrity_policy_test.py
           python tests/stream_output_sanitizer_fail_closed_test.py
+          python tests/stream_output_sanitizer_short_mp4_test.py
+          python tests/global_telemetry_contract_test.py
           git diff --exit-code
 
       - name: Deep gate - full structural contracts
