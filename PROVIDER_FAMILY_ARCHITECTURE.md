@@ -501,7 +501,99 @@ coût ≈ nombre brut de providers
 
 ---
 
-## 13. Invariants
+## 13. Route authority before runtime synthesis
+
+Runtime synthesis is **downstream** of current route authority.
+
+```mermaid
+flowchart TD
+    S["Current provider state"] --> NP{"NO PROOF / no current route authority?"}
+    NP -->|yes| REC["Recognition traversal only<br/>authority/hub → search/lookup → detail → season/episode → player/embed → terminal"]
+    REC --> E{"current evidence found?"}
+    E -->|candidate only| DATA["persist candidate route DATA + runtime family<br/>no runtime mutation"]
+    E -->|qualified route| PROOF["persist proven route DATA"]
+    DATA --> CENSUS["fresh current-byte census"]
+    PROOF --> CENSUS
+    CENSUS --> RESTART["rebuild Brain request on new SHA"]
+
+    NP -->|no| RP{"ROUTE PROVEN?"}
+    RP -->|yes| REUSE["reuse proven route<br/>forbid blind search rediscovery"]
+    REUSE --> ADV["advance detail/player/terminal chain"]
+    RP -->|no| CR{"CHAIN REACHED?"}
+    CR -->|yes| TERM["keep proven chain<br/>repair terminal extraction only"]
+    CR -->|no| CUR["use current route authority according to evidence"]
+
+    ADV --> RT["runtime synthesis"]
+    TERM --> RT
+    CUR --> RT
+    RESTART --> S
+```
+
+### Hard rule
+
+```text
+NO PROOF
+!=
+permission to invent a route
+```
+
+Instead:
+
+```text
+NO PROOF
+→ current provider traversal
+→ persist route candidates/proof
+→ reclassify runtime family
+→ fresh census / new SHA
+→ only then runtime synthesis
+```
+
+The canonical FORCE workflow enforces this transactionally. When an explicit FORCE target is `NO PROOF`, the pre-FORCE Recognition prerequisite runs first. If route DATA changes, it persists the evidence, dispatches a fresh census and skips both external FORCE and canonical Repair on the old SHA.
+
+For `ROUTE PROVEN`, the opposite rule applies: the known current route is an authority input. Brain must not waste budget rediscovering search from scratch; it advances the already-proven chain.
+
+---
+
+## 14. Runtime construction priority
+
+The runtime is not generated from a blank page unless every reusable layer is insufficient.
+
+```mermaid
+flowchart TD
+    RC["current route_contract + runtime family"] --> T1{"existing shared renderer compatible?"}
+    T1 -->|yes| A1["reuse shared renderer<br/>DATA + small hooks only"]
+    T1 -->|no| T2{"current provider runtime skeleton exists?"}
+    T2 -->|yes| A2["edit smallest causal unit"]
+    T2 -->|no| T3{"protocol repeats across providers?"}
+    T3 -->|yes| A3["create/reuse family renderer"]
+    T3 -->|no| A4["bounded provider_bloc invention<br/>last resort"]
+    A1 --> SB["exact-current-byte sandbox"]
+    A2 --> SB
+    A3 --> SB
+    A4 --> SB
+```
+
+Priority:
+
+1. **Existing shared renderer** — for example `stremio_json_runtime_common.py`, `anime_catalogue_runtime_common.py` or another validated family renderer.
+2. **Recognized runtime-family renderer** — infer from current route shape and structured DATA.
+3. **Current provider runtime skeleton** — preserve the existing envelope and edit the smallest causal function/hook.
+4. **New family renderer** — when the same protocol recurs and no existing renderer expresses it.
+5. **New provider-specific Bloc** — last-resort exception, not the default path.
+
+The Brain receives this as `runtime_template_prior`. FORCE prompting preserves it even under the compact prompt budget and treats `provider_bloc` as the last-resort invention path.
+
+This keeps provider-personal code focused on:
+
+```text
+routes / parameters / selectors / protocol-specific hooks
+```
+
+while common traversal, media proof, safety, identity, presentation and telemetry remain reusable infrastructure.
+
+---
+
+## 15. Invariants
 
 1. Un fix familial ne devient jamais Core juste parce qu'il aide plusieurs providers.
 2. Un runtime personnel ne doit jamais réimplémenter une politique Core.
