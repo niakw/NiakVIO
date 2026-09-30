@@ -99,6 +99,43 @@ def invocation_summary(result: dict[str, Any]) -> list[dict[str, Any]]:
     return output[:48]
 
 
+def network_summary(result: dict[str, Any]) -> list[dict[str, Any]]:
+    output: list[dict[str, Any]] = []
+    seen: set[tuple[str, str, str, str, int | None]] = set()
+    for test in result.get("tests") or []:
+        if not isinstance(test, dict):
+            continue
+        fixture = test.get("fixture") if isinstance(test.get("fixture"), dict) else {}
+        label = str(fixture.get("label") or fixture.get("tmdbId") or "")[:120]
+        for row in test.get("network_observations") or []:
+            if not isinstance(row, dict):
+                continue
+            item = {
+                "fixture": label,
+                "stage": str(row.get("stage") or "")[:80],
+                "host": str(row.get("host") or "")[:160],
+                "method": str(row.get("method") or "GET")[:12],
+                "path": str(row.get("path_pattern") or "")[:240],
+                "status": row.get("status") if isinstance(row.get("status"), int) else None,
+                "ok": bool(row.get("ok")),
+                "errorCode": str(row.get("error_code") or "")[:100],
+            }
+            key = (
+                item["fixture"],
+                item["stage"],
+                item["host"],
+                item["path"],
+                item["status"],
+            )
+            if key in seen:
+                continue
+            seen.add(key)
+            output.append(item)
+            if len(output) >= 64:
+                return output
+    return output
+
+
 def result_summary(result: dict[str, Any]) -> dict[str, Any]:
     evidence = result.get("evidence") if isinstance(result.get("evidence"), dict) else {}
     return {
@@ -108,7 +145,13 @@ def result_summary(result: dict[str, Any]) -> dict[str, Any]:
         "streamsReturned": runtime_repair.stream_count(result),
         "identityContradictions": runtime_repair.identity_contradiction_count(result),
         "providerRequests": int(evidence.get("provider_request_count") or 0),
+        "providerHosts": [str(value)[:160] for value in (evidence.get("provider_server_hosts") or [])[:24]],
+        "providerHttpStatuses": [
+            int(value) for value in (evidence.get("provider_server_http_statuses") or [])[:24]
+            if isinstance(value, int)
+        ],
         "failureClass": str(result.get("failure_class") or ""),
+        "networkTrace": network_summary(result),
         "invocationDiagnostics": invocation_summary(result),
     }
 
