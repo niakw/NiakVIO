@@ -22,8 +22,9 @@
     "exact failed provider GET replay is transport differential evidence only; it cannot grant playback proof"
   ],
   "counts": {
-    "browser_challenge_persisted": 10,
-    "browser_content_reached": 7
+    "browser_challenge_persisted": 9,
+    "browser_content_reached": 7,
+    "browser_timeout": 1
   },
   "rows": [
     {
@@ -77,7 +78,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 5740,
+      "durationMs": 12725,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_challenge_persisted",
@@ -158,7 +159,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 5761,
+      "durationMs": 13312,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_challenge_persisted",
@@ -199,13 +200,12 @@
       "challenge": "cloudflare",
       "seedKind": null,
       "seedRoute": null,
-      "outcome": "browser_challenge_persisted",
+      "outcome": "browser_timeout",
       "attemptCount": 2,
       "attempts": [
         {
           "attempt": 1,
-          "outcome": "browser_challenge_persisted",
-          "exitCode": 0
+          "outcome": "browser_timeout"
         },
         {
           "attempt": 2,
@@ -217,13 +217,12 @@
         {
           "profile": "github-default-browser",
           "userAgent": null,
-          "outcome": "browser_challenge_persisted",
+          "outcome": "browser_timeout",
           "attemptCount": 2,
           "attempts": [
             {
               "attempt": 1,
-              "outcome": "browser_challenge_persisted",
-              "exitCode": 0
+              "outcome": "browser_timeout"
             },
             {
               "attempt": 2,
@@ -237,7 +236,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 24699,
+      "durationMs": 40101,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_challenge_persisted",
@@ -579,7 +578,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 3668,
+      "durationMs": 3433,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_inconclusive",
@@ -660,7 +659,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 3580,
+      "durationMs": 2881,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_challenge_persisted",
@@ -1046,9 +1045,9 @@
     {
       "provider": "moviesmod",
       "lane": "movie",
-      "publicUrl": "https://links.modpro.blog/archives/141508",
+      "publicUrl": "https://links.modpro.blog/archives/5787",
       "host": "links.modpro.blog",
-      "path": "/archives/141508",
+      "path": "/archives/5787",
       "method": "GET",
       "fetchStatus": 403,
       "challenge": "cloudflare",
@@ -1094,14 +1093,14 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 3015
+      "durationMs": 3013
     },
     {
       "provider": "moviesmod",
       "lane": "tv",
-      "publicUrl": "https://episodes.modpro.blog/archives/22985",
+      "publicUrl": "https://episodes.modpro.blog/archives/128885",
       "host": "episodes.modpro.blog",
-      "path": "/archives/22985",
+      "path": "/archives/128885",
       "method": "GET",
       "fetchStatus": 403,
       "challenge": "cloudflare",
@@ -1147,7 +1146,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 2403
+      "durationMs": 3026
     },
     {
       "provider": "vidfast",
@@ -2108,7 +2107,6 @@
         "allwish",
         "animesalt",
         "flemmix",
-        "mallumv",
         "moviesmod"
       ]
     }
@@ -2117,7 +2115,6 @@
     "allwish",
     "animesalt",
     "flemmix",
-    "mallumv",
     "moviesmod"
   ],
   "residentialExitNodeLastAttempt": {
