@@ -1,7 +1,7 @@
 {
   "schemaVersion": 3,
-  "runId": "36648586244-post-repair-candidate",
-  "triggerSha": "a370d9c65e679989f7334e57f01888bb49d95e90",
+  "runId": "36650050211",
+  "triggerSha": "4ca059041fc2994b170232e7101686e1cb51e921",
   "providers": [
     {
       "provider": "4khdhub",
@@ -66,7 +66,7 @@
       ],
       "dominantIssue": "provider_network_zero_result",
       "searchProgress": [
-        "anime: 4 works tested / 46 retained misses / 2 retained chain hits"
+        "anime: 4 works tested / 44 retained misses / 4 retained chain hits"
       ],
       "evidenceDepth": [
         "anime=chain_reached"
@@ -106,8 +106,8 @@
       ],
       "dominantIssue": "provider_waf_challenge×2",
       "searchProgress": [
-        "movie: 4 works tested / 0 retained misses",
-        "tv: 4 works tested / 0 retained misses"
+        "movie: 8 works tested / 0 retained misses",
+        "tv: 8 works tested / 0 retained misses"
       ],
       "evidenceDepth": [
         "movie=none",
@@ -153,7 +153,7 @@
       ],
       "dominantIssue": "provider_network_http_error",
       "searchProgress": [
-        "anime: 4 works tested / 0 retained misses"
+        "anime: 8 works tested / 0 retained misses"
       ],
       "evidenceDepth": [
         "anime=none"
@@ -198,7 +198,7 @@
       ],
       "dominantIssue": "provider_waf_challenge",
       "searchProgress": [
-        "anime: 4 works tested / 0 retained misses"
+        "anime: 8 works tested / 0 retained misses"
       ],
       "evidenceDepth": [
         "anime=none"
@@ -242,7 +242,7 @@
       ],
       "dominantIssue": "provider_network_exception",
       "searchProgress": [
-        "anime: 4 works tested / 0 retained misses"
+        "anime: 8 works tested / 0 retained misses"
       ],
       "evidenceDepth": [
         "anime=none"
@@ -268,6 +268,46 @@
       ]
     },
     {
+      "provider": "animetsu",
+      "status": "DISABLED",
+      "underlyingStatus": "DISABLED",
+      "color": "⚫",
+      "declaredLanes": [
+        "anime"
+      ],
+      "currentVerifiedLanes": [],
+      "historicalProof": [],
+      "candidateProof": [],
+      "routeProof": [
+        "6 live routes / anime"
+      ],
+      "latestLaneVerdicts": [
+        "anime=no_streams/provider_network_zero_result"
+      ],
+      "dominantIssue": "provider_network_zero_result",
+      "searchProgress": [
+        "anime: 1 works tested / 46 retained misses"
+      ],
+      "evidenceDepth": [
+        "anime=lookup_only"
+      ],
+      "harnessTransportClass": "not-applicable",
+      "harnessTransportEvidence": [],
+      "authorityRepairEligible": false,
+      "authorityAction": "KEEP_DISABLED",
+      "authorityClass": "disabled",
+      "authorityConfidence": "terminal",
+      "authorityReasons": [
+        "auto_off_authoritative_source_removed"
+      ],
+      "authorityKnown": true,
+      "action": "provider lifecycle/authority blocks Repair; keep disabled until a new authoritative provider address/backend is qualified",
+      "brainCheckRequired": false,
+      "statusRepairEligible": false,
+      "repairEligible": false,
+      "testedThisRun": true
+    },
+    {
       "provider": "animevost-fr",
       "status": "ROUTE PROVEN",
       "underlyingStatus": "",
@@ -286,7 +326,7 @@
       ],
       "dominantIssue": "provider_network_http_error",
       "searchProgress": [
-        "anime: 4 works tested / 38 retained misses"
+        "anime: 5 works tested / 38 retained misses"
       ],
       "evidenceDepth": [
         "anime=lookup_only"
@@ -332,8 +372,8 @@
       ],
       "dominantIssue": "provider_waf_challenge×2",
       "searchProgress": [
-        "movie: 4 works tested / 0 retained misses",
-        "tv: 4 works tested / 0 retained misses"
+        "movie: 8 works tested / 0 retained misses",
+        "tv: 8 works tested / 0 retained misses"
       ],
       "evidenceDepth": [
         "movie=none",
@@ -426,8 +466,8 @@
       ],
       "dominantIssue": "provider_network_http_error×2",
       "searchProgress": [
-        "movie: 4 works tested / 28 retained misses",
-        "tv: 4 works tested / 32 retained misses"
+        "movie: 8 works tested / 28 retained misses",
+        "tv: 8 works tested / 32 retained misses"
       ],
       "evidenceDepth": [
         "movie=chain_reached",
@@ -475,8 +515,8 @@
       ],
       "dominantIssue": "provider_waf_challenge×2",
       "searchProgress": [
-        "movie: 4 works tested / 20 retained misses",
-        "tv: 4 works tested / 18 retained misses"
+        "movie: 8 works tested / 20 retained misses",
+        "tv: 8 works tested / 18 retained misses"
       ],
       "evidenceDepth": [
         "movie=lookup_only",
@@ -504,6 +544,50 @@
       ]
     },
     {
+      "provider": "showbox",
+      "status": "DISABLED",
+      "underlyingStatus": "DISABLED",
+      "color": "⚫",
+      "declaredLanes": [
+        "movie",
+        "tv"
+      ],
+      "currentVerifiedLanes": [],
+      "historicalProof": [],
+      "candidateProof": [],
+      "routeProof": [
+        "3 live routes / movie, tv"
+      ],
+      "latestLaneVerdicts": [
+        "movie=no_streams/provider_network_zero_result",
+        "tv=no_streams/provider_network_zero_result"
+      ],
+      "dominantIssue": "provider_network_zero_result×2",
+      "searchProgress": [
+        "movie: 1 works tested / 43 retained misses",
+        "tv: 1 works tested / 42 retained misses"
+      ],
+      "evidenceDepth": [
+        "movie=lookup_only",
+        "tv=lookup_only"
+      ],
+      "harnessTransportClass": "not-applicable",
+      "harnessTransportEvidence": [],
+      "authorityRepairEligible": false,
+      "authorityAction": "KEEP_DISABLED",
+      "authorityClass": "disabled",
+      "authorityConfidence": "terminal",
+      "authorityReasons": [
+        "manual_off_no_current_authority_search_only"
+      ],
+      "authorityKnown": true,
+      "action": "provider lifecycle/authority blocks Repair; keep disabled until a new authoritative provider address/backend is qualified",
+      "brainCheckRequired": false,
+      "statusRepairEligible": false,
+      "repairEligible": false,
+      "testedThisRun": true
+    },
+    {
       "provider": "vidfast",
       "status": "ROUTE PROVEN",
       "underlyingStatus": "",
@@ -524,8 +608,8 @@
       ],
       "dominantIssue": "provider_network_http_error×2",
       "searchProgress": [
-        "movie: 4 works tested / 27 retained misses",
-        "tv: 4 works tested / 26 retained misses"
+        "movie: 8 works tested / 27 retained misses",
+        "tv: 8 works tested / 26 retained misses"
       ],
       "evidenceDepth": [
         "movie=none",
@@ -602,90 +686,6 @@
       ]
     },
     {
-      "provider": "animetsu",
-      "status": "DISABLED",
-      "underlyingStatus": "DISABLED",
-      "color": "⚫",
-      "declaredLanes": [
-        "anime"
-      ],
-      "currentVerifiedLanes": [],
-      "historicalProof": [],
-      "candidateProof": [],
-      "routeProof": [
-        "6 live routes / anime"
-      ],
-      "latestLaneVerdicts": [
-        "anime=no_streams/provider_network_zero_result"
-      ],
-      "dominantIssue": "provider_network_zero_result",
-      "searchProgress": [
-        "anime: 1 works tested / 46 retained misses"
-      ],
-      "evidenceDepth": [
-        "anime=lookup_only"
-      ],
-      "harnessTransportClass": "not-applicable",
-      "harnessTransportEvidence": [],
-      "authorityRepairEligible": false,
-      "authorityAction": "KEEP_DISABLED",
-      "authorityClass": "disabled",
-      "authorityConfidence": "terminal",
-      "authorityReasons": [
-        "auto_off_authoritative_source_removed"
-      ],
-      "authorityKnown": true,
-      "action": "provider lifecycle/authority blocks Repair; keep disabled until a new authoritative provider address/backend is qualified",
-      "brainCheckRequired": false,
-      "statusRepairEligible": false,
-      "repairEligible": false,
-      "testedThisRun": false
-    },
-    {
-      "provider": "showbox",
-      "status": "DISABLED",
-      "underlyingStatus": "DISABLED",
-      "color": "⚫",
-      "declaredLanes": [
-        "movie",
-        "tv"
-      ],
-      "currentVerifiedLanes": [],
-      "historicalProof": [],
-      "candidateProof": [],
-      "routeProof": [
-        "3 live routes / movie, tv"
-      ],
-      "latestLaneVerdicts": [
-        "movie=no_streams/provider_network_zero_result",
-        "tv=no_streams/provider_network_zero_result"
-      ],
-      "dominantIssue": "provider_network_zero_result×2",
-      "searchProgress": [
-        "movie: 1 works tested / 43 retained misses",
-        "tv: 1 works tested / 42 retained misses"
-      ],
-      "evidenceDepth": [
-        "movie=lookup_only",
-        "tv=lookup_only"
-      ],
-      "harnessTransportClass": "not-applicable",
-      "harnessTransportEvidence": [],
-      "authorityRepairEligible": false,
-      "authorityAction": "KEEP_DISABLED",
-      "authorityClass": "disabled",
-      "authorityConfidence": "terminal",
-      "authorityReasons": [
-        "manual_off_no_current_authority_search_only"
-      ],
-      "authorityKnown": true,
-      "action": "provider lifecycle/authority blocks Repair; keep disabled until a new authoritative provider address/backend is qualified",
-      "brainCheckRequired": false,
-      "statusRepairEligible": false,
-      "repairEligible": false,
-      "testedThisRun": false
-    },
-    {
       "provider": "vostfree",
       "status": "FULL OK",
       "underlyingStatus": "",
@@ -723,7 +723,7 @@
       "authorityKnown": true,
       "action": "protect + replay retained proof",
       "brainCheckRequired": false,
-      "statusRepairEligible": false,
+      "statusRepairEligible": true,
       "repairEligible": false,
       "testedThisRun": true,
       "transportRepairEligible": true,
@@ -2085,11 +2085,9 @@
   "harnessQueue": [],
   "targetedTransportBlockedQueue": [],
   "clientTransportGapQueue": [],
-  "harnessEvidenceRunId": "36648586244-repair-waf-final",
-  "harnessEvidenceSha": "a370d9c65e679989f7334e57f01888bb49d95e90",
-  "authorityRefreshedProviders": [
-    "vostfree"
-  ],
+  "harnessEvidenceRunId": "36650050211-sharded-waf",
+  "harnessEvidenceSha": "4ca059041fc2994b170232e7101686e1cb51e921",
+  "authorityRefreshedProviders": [],
   "harnessTransportUpdatedProviders": [],
   "networkDifferentialUpdatedProviders": [],
   "residentialProviderReplayPromotedProviders": [
@@ -2436,43 +2434,5 @@
         "moviesmod"
       ]
     }
-  },
-  "lastRepairAttempt": {
-    "runId": "36648586244",
-    "sourceCensusRunId": "36648586244-post-repair-candidate",
-    "mode": "repair",
-    "selectedProviders": [
-      "4khdhub",
-      "allanime",
-      "allwish",
-      "anime-ultime",
-      "animesalt",
-      "animesultra",
-      "animevost-fr",
-      "flemmix",
-      "mallumv",
-      "moviebox",
-      "moviesmod",
-      "vidfast",
-      "yflix"
-    ],
-    "candidateProviders": [],
-    "validatedProviders": [],
-    "acceptedRepairCount": 0,
-    "deferredToLearningSlotProviders": [
-      "4khdhub",
-      "allanime",
-      "allwish",
-      "anime-ultime",
-      "animesultra",
-      "mallumv",
-      "moviebox",
-      "moviesmod"
-    ],
-    "noProgressReason": "experiment_variants_exhausted",
-    "timeBudgetExhausted": false,
-    "canonicalOutcome": "success",
-    "candidateGateOutcome": "success",
-    "publicationAllowed": true
   }
 }
