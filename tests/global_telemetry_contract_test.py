@@ -91,7 +91,7 @@ assert data["stored"] == []
 assert bodies[0]["identityScope"] == "host-install"
 assert bodies[0]["runtimeClass"] == "production"
 
-# Without a host bridge there is no trustworthy user identity, so telemetry is a strict no-op.
+# Node/CI without a host bridge is synthetic traffic even if a harness exposes localStorage.
 no_bridge_patched = apply_telemetry(fixture, context={"provider_id": "demo"})
 with tempfile.TemporaryDirectory(prefix="niakvio-telemetry-no-bridge-") as raw:
     root = Path(raw)
@@ -100,10 +100,11 @@ with tempfile.TemporaryDirectory(prefix="niakvio-telemetry-no-bridge-") as raw:
     provider.write_text(no_bridge_patched, encoding="utf-8")
     runner.write_text(
         """
-const sent=[];
+const store=new Map(),sent=[];
+global.localStorage={getItem:k=>store.get(k)||null,setItem:(k,v)=>store.set(k,String(v))};
 global.fetch=function(url,opts){sent.push({url:String(url),body:String(opts&&opts.body||"")});return Promise.resolve({ok:true});};
 const p=require(%s);
-p.getStreams({mediaType:"tv"}).then(rows=>setTimeout(()=>console.log(JSON.stringify({rows,sent})),0)).catch(e=>{console.error(e);process.exit(1)});
+p.getStreams({mediaType:"tv"}).then(rows=>setTimeout(()=>console.log(JSON.stringify({rows,sent,stored:[...store.entries()]})),0)).catch(e=>{console.error(e);process.exit(1)});
 """
         % json.dumps(str(provider)),
         encoding="utf-8",
@@ -112,6 +113,45 @@ p.getStreams({mediaType:"tv"}).then(rows=>setTimeout(()=>console.log(JSON.string
     assert done.returncode == 0, done.stdout + done.stderr
     no_bridge = json.loads(done.stdout.strip())
     assert no_bridge["sent"] == [], no_bridge
+    assert no_bridge["stored"] == [], no_bridge
+
+# A real non-Node client may derive a stable local install identity when the
+# host has not yet exposed an explicit bridge. The identifier persists locally
+# and is never available to Node/CI because that runtime is classified synthetic.
+client_patched = apply_telemetry(fixture, context={"provider_id": "demo"})
+with tempfile.TemporaryDirectory(prefix="niakvio-telemetry-client-install-") as raw:
+    root = Path(raw)
+    provider = root / "provider.cjs"
+    runner = root / "runner.cjs"
+    provider.write_text(client_patched, encoding="utf-8")
+    runner.write_text(
+        """
+const store=new Map(),sent=[];
+global.localStorage={getItem:k=>store.get(k)||null,setItem:(k,v)=>store.set(k,String(v))};
+global.fetch=function(url,opts){sent.push({url:String(url),body:String(opts&&opts.body||"")});return Promise.resolve({ok:true});};
+const p=require(%s);
+global.process=undefined;
+Promise.resolve()
+.then(()=>p.getStreams({mediaType:"movie"}))
+.then(()=>p.getStreams({mediaType:"movie"}))
+.then(()=>setTimeout(()=>{
+  const bodies=sent.map(x=>JSON.parse(x.body));
+  console.log(JSON.stringify({sent,bodies,stored:[...store.entries()]}));
+},0))
+.catch(e=>{console.error(e&&e.stack||e);process.exitCode=1});
+"""
+        % json.dumps(str(provider)),
+        encoding="utf-8",
+    )
+    done = subprocess.run(["node", str(runner)], text=True, capture_output=True, timeout=10, check=False)
+    assert done.returncode == 0, done.stdout + done.stderr
+    client = json.loads(done.stdout.strip())
+    assert len(client["sent"]) == 2, client
+    assert client["bodies"][0]["installId"] == client["bodies"][1]["installId"], client
+    assert client["bodies"][0]["sessionId"] == client["bodies"][1]["sessionId"], client
+    assert client["bodies"][0]["identityScope"] == "client-install", client
+    assert client["bodies"][0]["runtimeClass"] == "production", client
+    assert client["stored"] == [["niakvio.installId.v1", client["bodies"][0]["installId"]]], client
 
 # Explicitly disabling both bridge and default endpoint remains a strict no-op.
 no_endpoint_patched = apply_telemetry(
@@ -148,4 +188,4 @@ p.getStreams({mediaType:"tv"}).then(rows=>console.log(JSON.stringify({calls,rows
     assert data["calls"] == 0
     assert data["rows"][0]["url"] == "https://secret.example/video.m3u8"
 
-print("GLOBAL_TELEMETRY_V1_OK privacy=minimal identity=host-stable-only synthetic_traffic=no-op fire_and_forget=true")
+print("GLOBAL_TELEMETRY_V1_OK privacy=minimal identity=host-or-client-stable synthetic_traffic=no-op fire_and_forget=true")
