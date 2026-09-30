@@ -389,3 +389,11 @@
 - The documentation gate exposed an unrelated stale assertion that still required StreamBadge v8 while the accepted release had already published immutable v10. `ARCHITECTURE.md` and `provider_v3_documentation_contract_test.py` now both pin StreamBadge v10.
 - Evidence note: causal family count is dynamic. Live Advisor run `36738108323` recorded `input=13 selected=4 families=4`; older 5-family counts are historical snapshots, not a fixed architecture constant.
 
+## 2026-09-30 — Brain route-proof → runtime-synthesis bridge
+
+- Current unresolved census remains 27 FULL OK · 2 PARTIAL OK · 9 ROUTE PROVEN · 3 CHAIN REACHED · 1 NO PROOF · 4 DISABLED. The dominant provider-repair problem is no longer generic route discovery alone: many unresolved providers already own qualified route/chain evidence but still lack a playable terminal runtime.
+- Brain audit confirmed a scaling gap between NiakVIO route authority and Qwen runtime synthesis. Rich provider route knowledge already exists in `provider-overrides.json` (learned/candidate routes, structured request plans, canonical execution preferences, live route evidence), but the Brain advisor previously received that primarily as clipped serialized override text.
+- NiakVIO-Brain-LLM now projects that knowledge into a compact sanitized `route_contract` and preserves it through normal and Force prompt budgets. The contract contains route paths, method, role, lanes, non-sensitive header names, canonical route preference and compact live/proven route counts; sensitive query/header values are excluded/redacted.
+- Brain CI run `36764118314` proved the initial implementation green on `14d424162e44b2cfcf0a07200fcec6a694e87c9f`; subsequent trigger head `eff926db7a2e1cfc55784ffae288c0c5acf936a5` runs the route-contract-aware family-first FORCE cycle against NiakVIO source `43a31dbcce92da502443b677702f68ed011d0864`.
+- This is infrastructure only until a candidate survives NiakVIO sandbox/playback/identity/non-regression proof. Do not count it as a provider repair by itself.
+
