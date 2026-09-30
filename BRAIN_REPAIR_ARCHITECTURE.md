@@ -1,3 +1,5 @@
+> Schéma de composition Provider v3 et ownership GLOBAL/FAMILLE/PERSONNEL : [PROVIDER_FAMILY_ARCHITECTURE.md](PROVIDER_FAMILY_ARCHITECTURE.md).
+
 # NiakVIO — Brain Repair Architecture
 
 > **Status:** architecture contract for the production Repair/Learning control plane.  
