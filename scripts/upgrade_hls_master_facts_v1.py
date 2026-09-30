@@ -77,7 +77,7 @@ def verify_source() -> None:
     source = HLS.read_text(encoding="utf-8")
     for needle in (
         'cfg.get("inspect_master_facts", True)',
-        '"implementationRevision": "native-master-facts-late-batch-v14"',
+        '"implementationRevision": "native-master-facts-late-batch-v15"',
         "function masterFacts(body)",
         "AVERAGE-BANDWIDTH",
         "FRAME-RATE",
