@@ -21,6 +21,7 @@ FAILURE_FAMILY_TAXONOMY: dict[str, tuple[str, ...]] = {
     "player_embed": ("player", "embed", "iframe", "server"),
     "terminal_media": ("terminal", "media", "stream", "m3u8", "mpd", "hls", "dash", "terminal_media"),
 "route_transition_graph_v1": ("route", "transition", "graph", "v1", "strategy", "architecture", "gap", "synthesis"),
+"route_transition_graph_v1": ("route", "transition", "graph", "v1", "strategy", "architecture", "gap", "synthesis"),
     "token_crypto": ("token", "encrypt", "decrypt", "signature", "nonce", "hash", "key"),
     "content_identity": ("identity", "wrong_content", "tmdb", "title", "alias"),
     "episodic_mapping": ("season", "episode", "episod", "series", "anime"),
