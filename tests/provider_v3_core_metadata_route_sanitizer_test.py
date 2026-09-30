@@ -70,6 +70,14 @@ def unit_contract() -> None:
         "sourceRuntimeFamily": "unknown",
         "routes": [],
     }) == "unknown"
+    stale = {
+        "strategy": "mixed_embed_resolver",
+        "sourceRuntimeFamily": "tmdb-direct-api",
+        "routes": ["/filter?keyword={query}", "/watch/{slug}/ep-{episode}"],
+    }
+    assert derive_runtime_family(stale) == "tmdb-direct-api"
+    assert derive_runtime_family(stale, respect_current=False) == "catalogue-html-embed"
+
 
 
 def main() -> int:
