@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "requested_at": "2026-09-30T23:51:00+02:00",
-  "accepted_main_sha": "4ac472be4409f31b9a5f5756a7e23296f0505de4",
+  "requested_at": "2026-10-01T00:22:00+02:00",
+  "accepted_main_sha": "e91a5e3538e489a7b47e8437e141579a2c9fa7fe",
   "target_release": "auto",
-  "reason": "Finalize Core regression repairs after accepted workflow-gate SHA 4ac472be4409: provenance-aware stream identity for opaque terminal URLs, short MP4 duration rejection on active sanitizer v10, HLS late-batch master metadata enrichment, technical StreamScore estimates when network evidence is absent, StreamBadge v11 age-country disambiguation, and production-only host-identified telemetry. Reapply all durable Core patches to all 42 active providers, bump provider versions and release from 5.21.87, rebuild manifests/hashes atomically, and publish."
+  "reason": "Finalize cross-client stream identity v14 after metadata contract and workflow gate success: preserve existing provenance rejection, additionally inspect at most two explicit external player pages and reject terminal rows only when the player exposes a title that TMDB confirms belongs to another work. This closes correct-catalogue/wrong-player cases such as Lee/Coflix without provider-specific code. Reapply durable Core patches to all 42 active providers, bump provider/cache/manifest release from 5.21.88, rebuild projections/hashes, and publish atomically."
 }
