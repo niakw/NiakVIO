@@ -43,7 +43,7 @@ assert '"probeFirstSegmentNative":true' in native_patched
 assert '"nativeProbeMaxRows":3' in native_patched
 assert '"nativeProbeTimeoutMs":1500' in native_patched
 assert '"networkSampleBytes":65536' in native_patched
-assert '"implementationRevision":"native-master-facts-late-batch-v14"' in native_patched
+assert '"implementationRevision":"native-master-facts-late-batch-v15"' in native_patched
 assert module.apply(native_patched, native_options) == native_patched
 
 cfg = json.loads(OVERRIDES.read_text(encoding="utf-8"))
@@ -242,6 +242,7 @@ PATCHED
  assert.equal(late.audioCodec,'AAC',JSON.stringify(late));
  assert.equal(late.bitrate,'5.5 Mbps max',JSON.stringify(late));
  assert.equal(late.hlsMasterBandwidth,5500000,JSON.stringify(late));
+ assert.equal(late.bitrateMbps,5.5,JSON.stringify(late));
  assert.ok(!late.__nuvioStreamNetworkEvidenceV1,JSON.stringify(late));
 })().catch(e=>{console.error(e);process.exit(1)});
 '''.replace('PATCHED', budget_patched))
