@@ -13,6 +13,8 @@
 | **Publication** | bytes Provider v3 acceptés + projections + versions/hashes synchronisés |
 | **Preuve native** | 5 Labs indépendants : TV Android, Mobile Android, Mobile iOS, macOS, Windows |
 
+**Architecture des familles :** [briques communes / runtime personnel / replay familial](PROVIDER_FAMILY_ARCHITECTURE.md)
+
 **Navigation :** [modèle](#1-modèle) · [source de vérité](#2-source-de-vérité-provider-v3) · [routes](#4-routes-et-protocoles) · [types média](#5-type-canonique--transport-nuvio) · [runtime](#6-contrat-runtime) · [CORE](#8-core--verify--publish) · [Learning](#9-learning) · [Domain Refresh](#10-domain-refresh) · [Native Labs](#11-cinq-native-labs) · [sécurité](#13-sécurité) · [invariants](#15-invariants-non-négociables) · [Brain Repair](BRAIN_REPAIR_ARCHITECTURE.md)
 
 ---
