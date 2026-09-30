@@ -55,6 +55,22 @@ assert.ok(presented.badgeIds.includes("hevc"));
 assert.ok(presented.badgeIds.includes("lang-fr"));
 assert.ok(presented.badgeIds.includes("age-12"));
 
+const internationalAges = [
+  [{ ageRating: "R", ageRatingCountry: "US" }, "age-us-r", "US R"],
+  [{ ageRating: "-16", ageRatingCountry: "FR" }, "age-fr-16", "FR 16+"],
+  [{ ageRating: "FSK 16", ageRatingCountry: "DE" }, "age-de-fsk16", "FSK 16"],
+  [{ ageRating: "R15+", ageRatingCountry: "JP" }, "age-jp-r15", "JP R15+"],
+];
+for (const [stream, badgeId, label] of internationalAges) {
+  const row = presentStreamCandidate(
+    { name: "Age", url: "https://example.invalid/a.mp4", ...stream },
+    { title: "Age Test", mediaType: "movie" },
+    { id: "age", name: "Age" },
+  );
+  assert.ok(row.badgeIds.includes(badgeId), JSON.stringify(row));
+  assert.ok(row.description.includes(label), JSON.stringify(row));
+}
+
 const multiVf = presentStreamCandidate({
   name: "Purstream",
   url: "https://media.example/multi.m3u8",
