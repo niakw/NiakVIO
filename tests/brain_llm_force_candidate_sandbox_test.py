@@ -78,6 +78,39 @@ assert 'local_output_root = ROOT / "local-output"' in source
 assert "local_output_root.mkdir(parents=True, exist_ok=True)" in source
 assert "tempfile.mkdtemp(prefix=\"force-candidates-\", dir=local_output_root)" in source
 
+network = mod.network_summary({
+    "tests": [{
+        "fixture": {"label": "Fixture"},
+        "network_observations": [
+            {"stage": "provider_fetch", "host": "example.test", "method": "GET", "path_pattern": "/search", "status": 200, "ok": True},
+            {"stage": "provider_fetch", "host": "example.test", "method": "GET", "path_pattern": "/search", "status": 200, "ok": True},
+            {"stage": "detail_fetch", "host": "example.test", "method": "GET", "path_pattern": "/movie/1", "status": 200, "ok": True},
+        ],
+    }],
+})
+assert network == [
+    {"fixture": "Fixture", "stage": "provider_fetch", "host": "example.test", "method": "GET", "path": "/search", "status": 200, "ok": True, "errorCode": ""},
+    {"fixture": "Fixture", "stage": "detail_fetch", "host": "example.test", "method": "GET", "path": "/movie/1", "status": 200, "ok": True, "errorCode": ""},
+], network
+
+summary = mod.result_summary({
+    "status": "no_streams",
+    "score": 100,
+    "evidence": {
+        "provider_server_hosts": ["example.test"],
+        "provider_server_http_statuses": [200],
+    },
+    "tests": [{
+        "fixture": {"label": "Fixture"},
+        "network_observations": [
+            {"stage": "provider_fetch", "host": "example.test", "method": "GET", "path_pattern": "/search", "status": 200, "ok": True},
+        ],
+    }],
+})
+assert summary["providerHosts"] == ["example.test"], summary
+assert summary["providerHttpStatuses"] == [200], summary
+assert summary["networkTrace"][0]["path"] == "/search", summary
+
 summary = mod.invocation_summary({
     "tests": [{
         "fixture": {"label": "Fixture"},
