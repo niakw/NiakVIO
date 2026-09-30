@@ -109,7 +109,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
         payload_config.update(
             {
                 "inspectMasterFacts": True,
-                "implementationRevision": "native-master-facts-late-batch-v14",
+                "implementationRevision": "native-master-facts-late-batch-v15",
             }
         )
     payload = json.dumps(payload_config, separators=(",", ":"))
@@ -362,7 +362,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
     var row=Object.assign({},stream),tracks=Array.isArray(facts.audioTracks)?facts.audioTracks:[],subs=Array.isArray(facts.subtitleTracks)?facts.subtitleTracks:[];
     if(facts.quality){if(!weakFact(row.quality)&&!clean(row.sourceQuality))row.sourceQuality=clean(row.quality);if(!weakFact(row.resolution)&&!clean(row.sourceResolution))row.sourceResolution=clean(row.resolution);row.quality=facts.quality;row.hlsMasterQuality=facts.quality}
     if(facts.width)row.width=Number(facts.width)||row.width;if(facts.height)row.height=Number(facts.height)||row.height;if(facts.resolution)row.resolution=facts.resolution;
-    if(facts.bitrate&&weakFact(row.bitrate)){row.bitrate=facts.bitrate;row.hlsMasterBandwidth=Number(facts.bandwidth)||0}
+    if(facts.bitrate&&weakFact(row.bitrate)){row.bitrate=facts.bitrate;row.hlsMasterBandwidth=Number(facts.bandwidth)||0}if(Number(facts.bandwidth)>0)row.bitrateMbps=Math.round((Number(facts.bandwidth)/1000000)*1000)/1000;
     if(facts.codec&&weakFact(row.codec)){row.codec=facts.codec;row.hlsMasterCodecs=facts.rawCodecs||""}
     if(facts.audioCodec&&weakFact(row.audioCodec))row.audioCodec=facts.audioCodec;
     if(facts.audioChannels&&weakFact(row.audioChannels))row.audioChannels=facts.audioChannels;
