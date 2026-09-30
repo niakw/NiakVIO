@@ -172,7 +172,7 @@ tv_row = run(
 )
 assert tv_row["size"] == tv_row["description"], tv_row
 assert tv_row["description"].splitlines()[0] == "🎬 Interstellar • 2014"
-assert "⏱ 2h49" in tv_row["description"] and "🔞 12+" in tv_row["description"]
+assert "⏱ 2h49" in tv_row["description"] and "🔞 FR 12+" in tv_row["description"]
 assert "French · Dub" in tv_row["description"] and "💬 Sub · French" in tv_row["description"]
 assert "🎞️ WEB-DL" in tv_row["description"] and "HEVC 10bit" in tv_row["description"]
 assert "💾 8.4 GB" in tv_row["description"]
