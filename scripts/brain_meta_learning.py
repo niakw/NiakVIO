@@ -19,7 +19,7 @@ FAILURE_FAMILY_TAXONOMY: dict[str, tuple[str, ...]] = {
     "api_schema": ("api", "schema", "json", "graphql", "response_shape"),
     "dynamic_javascript": ("javascript", "bundle", "hydration", "dynamic", "script"),
     "player_embed": ("player", "embed", "iframe", "server"),
-    "terminal_media": ("terminal", "media", "stream", "m3u8", "mpd", "hls", "dash"),
+    "terminal_media": ("terminal", "media", "stream", "m3u8", "mpd", "hls", "dash", "terminal_media"),
     "token_crypto": ("token", "encrypt", "decrypt", "signature", "nonce", "hash", "key"),
     "content_identity": ("identity", "wrong_content", "tmdb", "title", "alias"),
     "episodic_mapping": ("season", "episode", "episod", "series", "anime"),

@@ -2,7 +2,7 @@
 
 Review-only self-evolution proposal generated from sanitized Learning evidence.
 
-- Proposals: 3
+- Proposals: 2
 - Policy changed: false
 - Human merge required: true
 
@@ -10,7 +10,7 @@ Review-only self-evolution proposal generated from sanitized Learning evidence.
 
 Priority: critical
 
-10 provider(s) exhausted every bounded Core Repair experiment variant and were explicitly deferred for a new strategy.
+8 provider(s) exhausted every bounded Core Repair experiment variant and were explicitly deferred for a new strategy.
 
 Recommendation:
 Synthesize one or more new bounded repair/evidence strategies from the common failure cohorts and independent Lab observations. Do not recycle the exhausted bounded g2..g5 family or increase retry counts. Each new strategy must have an explicit causal trigger, negative-memory signature, playback/identity acceptance proof and regression test before it may re-enter Core Repair.
@@ -28,22 +28,21 @@ Propose a genuinely different repair/evidence capability or compose existing cap
 
 Targets: scripts/run_brain_learning_sandbox.py, tests/brain_*
 
-## route_discovery_blind_spot
-
-Priority: high
-
-1 access-failure provider(s) produced no usable route evidence with the current search chain.
-
-Recommendation:
-Evolve route discovery with a new evidence source or extraction method before mutating provider code.
-
-Targets: scripts/resolve_provider_hubs.py, scripts/resolve_provider_hub_search_fallback.py, scripts/run_brain_learning_queue.py, tests/brain_*
-
 ## New strategy blueprints
 
 ### route_transition_graph_v1 — route-to-terminal|mixed_embed_resolver
 
-Providers: yflix
+Providers: anime-ultime, yflix
+
+Trigger: catalogue/detail route is live and identity-qualified but no terminal/player media is reached
+
+Method: start from retained route proof; traverse only identity-correlated detail/player/server transitions; learn reusable route shapes without copying provider domains
+
+Acceptance: playback-verified media; content identity not contradicted; no green-lane regression
+
+### route_transition_graph_v1 — route-to-terminal|html_scraper
+
+Providers: 4khdhub
 
 Trigger: catalogue/detail route is live and identity-qualified but no terminal/player media is reached
 
