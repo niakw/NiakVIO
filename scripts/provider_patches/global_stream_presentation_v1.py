@@ -22,7 +22,7 @@ FACTS_PATH = Path(__file__).with_name("global_stream_facts_v1.py")
 IDENTITY_PATH = Path(__file__).with_name("global_stream_identity_v1.py")
 PROVIDER_CATALOG_PATH = Path(__file__).resolve().parents[2] / "provider_catalog.json"
 BADGE_CATALOG_PATH = Path(__file__).resolve().parents[2] / "assets" / "badge_catalog_v8_complete.json"
-REVISION = "all-providers-client-projection-player-facts-v31-age-catalog"
+REVISION = "all-providers-client-projection-player-facts-age-catalog-v31"
 
 
 def _apply_module(path: Path, module_name: str, text: str, context: dict[str, Any]) -> str:
