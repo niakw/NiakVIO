@@ -31,7 +31,7 @@ base = r'''module.exports={getStreams:async function(){return [
 
 patched = identity.apply(base, context={"provider_id": "example"})
 assert "NUVIO_GLOBAL_STREAM_IDENTITY_V1" in patched
-assert "cross-client-shared-tmdb-owner-zero-episodic-year-v11" in patched
+assert "cross-client-shared-tmdb-owner-zero-episodic-year-v12" in patched
 assert "NUVIO_IDENTITY_SHARED_TMDB_CAPABILITY_V1" in patched
 assert identity.apply(patched, context={"provider_id": "example"}) == patched
 
@@ -177,7 +177,7 @@ fail_open_source = r'''module.exports={getStreams:async()=>[
  {name:'Server 2',filename:'Interstellar.Nolan.Cut.2014.1080p.BluRay.mkv',url:'https://cdn.example/interstellar-cut.m3u8'}
 ]};'''
 fail_open_patched = identity.apply(fail_open_source, context={"provider_id": "example"})
-assert "cross-client-shared-tmdb-owner-zero-episodic-year-v11" in fail_open_patched
+assert "cross-client-shared-tmdb-owner-zero-episodic-year-v12" in fail_open_patched
 fail_open_runner = r'''
 const assert=require('assert');
 global.TMDB_API_KEY=String(1);
@@ -254,5 +254,60 @@ try:
     assert proc.returncode == 0, proc.stdout + proc.stderr
 finally:
     shared_cache_path.unlink(missing_ok=True)
+
+
+# Regression: a newly published one-word wrong title must not bypass identity
+# merely because the token count is < 2. This mirrors the field report where
+# TMDB 331669 "L'Arène" returned explicit "Spartacus" rows.
+short_wrong_source = r'''module.exports={getStreams:async()=>[
+ {name:'PersianStremio',title:'Spartacus',url:'https://cdn.example/spartacus-a.m3u8'},
+ {name:'VidLove',title:'Spartacus',url:'https://cdn.example/spartacus-b.m3u8'}
+]};'''
+short_wrong_patched = identity.apply(short_wrong_source, context={"provider_id": "persianstremio"})
+short_wrong_runner = r'''
+const assert=require('assert');
+global.__nuvioTmdbMetadataCacheV1={
+ 'tv:331669':{state:'ok',metadata:{id:331669,name:"L'Arène",original_name:"L'Arène",first_air_date:'2026-09-01'}},
+ 'episode:tv:331669:1:1:fr-FR':{id:1,name:"Ouverture"}
+};
+PATCHED
+module.exports.getStreams('331669','tv',1,1).then(rows=>{
+ assert.equal(rows.length,0,'Spartacus must be rejected for L’Arène: '+JSON.stringify(rows));
+}).catch(e=>{console.error(e);process.exit(3)});
+'''.replace('PATCHED', short_wrong_patched)
+with tempfile.NamedTemporaryFile('w', suffix='.cjs', encoding='utf-8', delete=False) as handle:
+    handle.write(short_wrong_runner)
+    short_wrong_path = Path(handle.name)
+try:
+    proc = subprocess.run(['node', str(short_wrong_path)], cwd=ROOT, text=True, capture_output=True, timeout=20)
+    assert proc.returncode == 0, proc.stdout + proc.stderr
+finally:
+    short_wrong_path.unlink(missing_ok=True)
+
+# One-word legitimate series and episode titles must remain accepted.
+short_good_source = r'''module.exports={getStreams:async()=>[
+ {name:'Server 1',title:'Silo',url:'https://cdn.example/silo.m3u8'},
+ {name:'Server 2',title:'Horizons',url:'https://cdn.example/horizons.m3u8'}
+]};'''
+short_good_patched = identity.apply(short_good_source, context={"provider_id": "example"})
+short_good_runner = r'''
+const assert=require('assert');
+global.__nuvioTmdbMetadataCacheV1={
+ 'tv:125988':{state:'ok',metadata:{id:125988,name:'Silo',original_name:'Silo',first_air_date:'2023-05-04'}},
+ 'episode:tv:125988:1:1:fr-FR':{id:1,name:'Horizons'}
+};
+PATCHED
+module.exports.getStreams('125988','tv',1,1).then(rows=>{
+ assert.deepEqual(rows.map(x=>x.url),['https://cdn.example/silo.m3u8','https://cdn.example/horizons.m3u8'],JSON.stringify(rows));
+}).catch(e=>{console.error(e);process.exit(3)});
+'''.replace('PATCHED', short_good_patched)
+with tempfile.NamedTemporaryFile('w', suffix='.cjs', encoding='utf-8', delete=False) as handle:
+    handle.write(short_good_runner)
+    short_good_path = Path(handle.name)
+try:
+    proc = subprocess.run(['node', str(short_good_path)], cwd=ROOT, text=True, capture_output=True, timeout=20)
+    assert proc.returncode == 0, proc.stdout + proc.stderr
+finally:
+    short_good_path.unlink(missing_ok=True)
 
 print('global stream identity TV/anime/homonymous-movie + native Desktop fail-open regression tests passed')
