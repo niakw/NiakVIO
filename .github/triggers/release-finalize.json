@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "requested_at": "2026-09-30T22:51:00Z",
+  "requested_at": "2026-09-30T23:55:00+02:00",
   "accepted_main_sha": "8254035bed663813b7fe5971e993da684526fa36",
   "target_release": "auto",
-  "reason": "Finalize stable Core secondary fixes after green Workflow Gate and green HLS gate on 8254035b: Identity v15 safe HTML title decoding and external player/provenance guard; HLS late-batch v15 with lightweight tail master facts plus numeric bitrateMbps; StreamScore v2 technical estimates; sanitizer v10 short-MP4 rejection; StreamBadge v11 country-age disambiguation; telemetry v3 production host identity only. Reapply all Core patches to all 42 active providers, bump all provider/cache versions from 5.21.89, rebuild manifests/hashes and publish atomically."
+  "reason": "Finalize validated Core regressions on 8254035b: safe deterministic external-player identity v15, HLS late-batch facts v15 with numeric bitrateMbps for StreamScore, short HLS/MP4 rejection, technical StreamScore v2, StreamBadge v11 age disambiguation, production-only telemetry v3. SHORT HLS and Workflow Gate are green; rematerialize all 42 active providers, bump provider/cache/release versions, rebuild manifests and hashes atomically. Known 4KHDHub runtime [] remains Brain/provider repair debt and must not be hidden in Core."
 }
