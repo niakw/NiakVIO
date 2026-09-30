@@ -575,6 +575,145 @@ jobs:
           )
           PY
 
+      - name: Refresh missing route proof before external Force
+        id: route-prerequisite
+        shell: bash
+        env:
+          DISPATCH_MODE: ${{ inputs.mode || '' }}
+          TARGET_PROVIDER: ${{ inputs.target_provider || '' }}
+        run: |
+          set -euo pipefail
+          echo "attempted=false" >> "$GITHUB_OUTPUT"
+          echo "refreshed=false" >> "$GITHUB_OUTPUT"
+          echo "providers=" >> "$GITHUB_OUTPUT"
+
+          force_requested=false
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${DISPATCH_MODE:-}" = "force" ]; then
+            force_requested=true
+          elif [ "${{ github.event_name }}" = "push" ]; then
+            force_requested="$(python - <<'PY'
+          import json
+          from pathlib import Path
+          data=json.loads(Path(".github/triggers/provider-recognition-repair-v6.json").read_text(encoding="utf-8"))
+          print("true" if str(data.get("mode") or "").strip().casefold()=="force" else "false")
+          PY
+            )"
+          fi
+          [ "$force_requested" = "true" ] || {
+            echo "FIELD_FORCE_ROUTE_PREREQUISITE skipped=true reason=not-force"
+            exit 0
+          }
+
+          explicit=()
+          if [ -n "${TARGET_PROVIDER:-}" ]; then
+            explicit+=("$(printf '%s' "$TARGET_PROVIDER" | tr '[:upper:]_' '[:lower:]-' | xargs)")
+          elif [ "${{ github.event_name }}" = "push" ]; then
+            mapfile -t explicit < <(python - <<'PY'
+          import json
+          from pathlib import Path
+          data=json.loads(Path(".github/triggers/provider-recognition-repair-v6.json").read_text(encoding="utf-8"))
+          for value in data.get("targetProviders") or []:
+              value=str(value or "").strip().casefold().replace("_","-")
+              if value: print(value)
+          PY
+            )
+          fi
+          [ "${#explicit[@]}" -gt 0 ] || {
+            echo "FIELD_FORCE_ROUTE_PREREQUISITE skipped=true reason=no-explicit-target"
+            exit 0
+          }
+
+          mapfile -t missing < <(python - "${explicit[@]}" <<'PY'
+          import json,sys
+          from pathlib import Path
+          wanted={str(x).strip().casefold().replace("_","-") for x in sys.argv[1:] if str(x).strip()}
+          state=json.loads(Path("automation/provider-census-status.json").read_text(encoding="utf-8"))
+          for row in state.get("providers") or []:
+              if not isinstance(row,dict): continue
+              provider=str(row.get("provider") or "").strip().casefold().replace("_","-")
+              if provider not in wanted: continue
+              status=str(row.get("status") or "").strip().upper().replace("_"," ")
+              if status=="NO PROOF":
+                  print(provider)
+          PY
+          )
+          [ "${#missing[@]}" -gt 0 ] || {
+            echo "FIELD_FORCE_ROUTE_PREREQUISITE skipped=true reason=current-route-authority-sufficient"
+            exit 0
+          }
+
+          csv="$(IFS=,; echo "${missing[*]}")"
+          echo "attempted=true" >> "$GITHUB_OUTPUT"
+          echo "providers=$csv" >> "$GITHUB_OUTPUT"
+          report="automation/provider-route-recognition-prerequisite-latest.json"
+          args=(
+            python scripts/recover_provider_routes_from_upstreams.py
+            --workers 1
+            --timeout 55
+            --attempts 3
+            --apply
+            --out "$report"
+          )
+          for provider in "${missing[@]}"; do args+=(--provider "$provider"); done
+          set +e
+          "${args[@]}"
+          recovery_rc=$?
+          set -e
+          test -s "$report" || {
+            echo "FIELD_FORCE_ROUTE_PREREQUISITE failed=true reason=no-report rc=$recovery_rc" >&2
+            exit 1
+          }
+
+          python - "$report" "${missing[@]}" <<'PY'
+          import json,sys
+          data=json.load(open(sys.argv[1],encoding="utf-8"))
+          wanted={str(x).strip().casefold().replace("_","-") for x in sys.argv[2:]}
+          rows={
+              str(row.get("providerId") or "").strip().casefold().replace("_","-"): row
+              for row in data.get("providers") or []
+              if isinstance(row,dict)
+          }
+          missing=sorted(wanted-set(rows))
+          if missing:
+              raise SystemExit("route prerequisite report missing providers: "+",".join(missing))
+          print(
+              "FIELD_FORCE_ROUTE_PREREQUISITE_REPORT "
+              f"providers={len(wanted)} proven={int(data.get('providersWithProvenRoutes') or 0)} "
+              f"routes={int(data.get('provenRouteCount') or 0)}"
+          )
+          PY
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add "$report"
+          for path in provider-overrides.json automation/provider-v3-static-knowledge.json; do
+            [ ! -f "$path" ] || git add "$path"
+          done
+          route_data_changed=false
+          if ! git diff --cached --quiet -- provider-overrides.json automation/provider-v3-static-knowledge.json; then
+            route_data_changed=true
+          fi
+          git fetch --quiet origin main
+          remote_sha="$(git rev-parse origin/main)"
+          if [ "$remote_sha" != "$GITHUB_SHA" ]; then
+            echo "FIELD_FORCE_ROUTE_PREREQUISITE_PERSIST skipped=true reason=stale-main source=$GITHUB_SHA remote=$remote_sha"
+            git reset
+            exit 0
+          fi
+          if git diff --cached --quiet; then
+            echo "FIELD_FORCE_ROUTE_PREREQUISITE_PERSIST changed=false providers=$csv"
+            exit 0
+          fi
+          if [ "$route_data_changed" = "true" ]; then
+            git commit -m "data(recognition): persist pre-FORCE route proof for $csv"
+          else
+            git commit -m "ci(recognition): persist pre-FORCE route attempt for $csv"
+          fi
+          git push origin HEAD:main
+          echo "refreshed=$route_data_changed" >> "$GITHUB_OUTPUT"
+          echo "FIELD_FORCE_ROUTE_PREREQUISITE_PERSIST changed=$route_data_changed providers=$csv sha=$(git rev-parse HEAD)"
+          echo "FIELD_FORCE_ROUTE_PREREQUISITE_RESTART required=true reason=route-state-refreshed-before-runtime-synthesis"
+
       - name: Import sanitized Brain Learning priors for canonical Repair
         shell: bash
         env:
@@ -833,6 +972,7 @@ jobs:
           echo "FIELD_LOCAL_FORCE_CAUSAL_OUTPUT accepted=${accepted_csv:-none}"
 
       - name: Evaluate isolated Brain LLM Force candidates
+        if: ${{ steps.route-prerequisite.outputs.attempted != 'true' }}
         id: force-mutations
         shell: bash
         env:
@@ -1063,6 +1203,7 @@ jobs:
           echo "FIELD_BRAIN_LLM_FORCE_CURRENT_BYTES providers=$accepted_count ids=$accepted_csv"
 
       - name: Run canonical recognition and correction only for unresolved providers
+        if: ${{ steps.route-prerequisite.outputs.attempted != 'true' }}
         id: canonical-repair
         timeout-minutes: 30
         shell: bash
