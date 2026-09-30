@@ -8,10 +8,10 @@ Ce dossier contient les assets visuels et les feeds **StreamBadge** utilisés av
 
 | Feed | Usage | URL brute |
 | --- | --- | --- |
-| **Fusion v9** | **Recommandé** pour un réglage unique, lisible sur fonds sombres et clairs | `https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/stream-badges-fusion-v9.json` |
-| Dark v9 | Variante pour interfaces sombres | `https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/stream-badges-dark-v9.json` |
-| Light v9 | Variante pour interfaces claires | `https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/stream-badges-light-v9.json` |
-| Transparent v9 | Artwork transparent / intégrations dédiées | `https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/stream-badges-transparent-v9.json` |
+| **Fusion v10** | **Recommandé** pour un réglage unique, lisible sur fonds sombres et clairs | `https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/stream-badges-fusion-v10.json` |
+| Dark v10 | Variante pour interfaces sombres | `https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/stream-badges-dark-v10.json` |
+| Light v10 | Variante pour interfaces claires | `https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/stream-badges-light-v10.json` |
+| Transparent v10 | Artwork transparent / intégrations dédiées | `https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/stream-badges-transparent-v10.json` |
 
 Les fichiers sans numéro restent des alias mobiles `latest`. Pour tout nouvel import et toute documentation publique, utilisez une URL **v9** explicite.
 
@@ -34,8 +34,8 @@ Symptôme typique :
 Dans ce cas :
 
 1. supprimez l'ancien import StreamBadge ;
-2. importez **Fusion v9** avec l'URL versionnée ci-dessus ;
-3. vérifiez que Fusion v9 est l'import actif ;
+2. importez **Fusion v10** avec l'URL versionnée ci-dessus ;
+3. vérifiez que Fusion v10 est l'import actif ;
 4. revenez à l'écran des streams.
 
 ## Comment le matching fonctionne
@@ -60,11 +60,11 @@ Les tests NiakVIO interdisent les patterns double-échappés qui rendraient les 
 ## Sources et mapping
 
 - `badge_catalog_v9_complete.json` : catalogue canonique courant ;
-- `mapping_core_brain_ui_v9_complete.json` : mapping Core / Brain / UI courant ;
-- `stream-badges-fusion-v9.json` : feed Fusion stable recommandé ;
-- `stream-badges-dark-v9.json` : feed Dark stable ;
-- `stream-badges-light-v9.json` : feed Light stable ;
-- `stream-badges-transparent-v9.json` : feed Transparent stable.
+- `mapping_core_brain_ui_v10_complete.json` : mapping Core / Brain / UI courant ;
+- `stream-badges-fusion-v10.json` : feed Fusion stable recommandé ;
+- `stream-badges-dark-v10.json` : feed Dark stable ;
+- `stream-badges-light-v10.json` : feed Light stable ;
+- `stream-badges-transparent-v10.json` : feed Transparent stable.
 
 Les assets sont générés et validés de façon déterministe. Ne modifiez pas uniquement un feed généré à la main : la source canonique doit rester cohérente avec les quatre variantes.
 
@@ -110,10 +110,10 @@ Le générateur refuse de réécrire un feed `vN` existant avec un contenu diff�
 
 | Variante | Fichier stable |
 | --- | --- |
-| Fusion | `stream-badges-fusion-v9.json` |
-| Dark | `stream-badges-dark-v9.json` |
-| Light | `stream-badges-light-v9.json` |
-| Transparent | `stream-badges-transparent-v9.json` |
+| Fusion | `stream-badges-fusion-v10.json` |
+| Dark | `stream-badges-dark-v10.json` |
+| Light | `stream-badges-light-v10.json` |
+| Transparent | `stream-badges-transparent-v10.json` |
 
 ### Compatibilité historique
 
