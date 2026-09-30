@@ -22,7 +22,7 @@ base = r'''globalThis.getStreams=async function(){
 patched = module.apply(base, {"timeout_ms": 2000})
 assert '"probeFirstSegmentNative":true' in patched
 assert '"minimumVodDurationSeconds":90' in patched
-assert '"implementationRevision":"native-master-facts-network-v13"' in patched
+assert '"implementationRevision":"native-master-facts-late-batch-v14"' in patched
 
 
 def run_node(source: str) -> None:
