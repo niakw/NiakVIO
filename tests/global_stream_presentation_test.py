@@ -32,6 +32,21 @@ assert revision_match and int(revision_match.group(1)) >= 25, presentation.REVIS
 presentation_source = (PATCHES / "global_stream_presentation_v1.py").read_text(encoding="utf-8")
 assert "\\nfunction" not in presentation_source, "raw presentation wrapper contains a literal \\n before function declaration"
 
+age_catalog = presentation._age_badge_catalog()
+assert age_catalog["count"] == 118, age_catalog["count"]
+for country, rating, badge_id in (
+    ("US", "R", "age-us-r"),
+    ("FR", "16+", "age-fr-16"),
+    ("DE", "FSK 16", "age-de-fsk16"),
+    ("JP", "R15+", "age-jp-r15"),
+    ("KR", "19", "age-kr19"),
+    ("IN", "U/A 13+", "age-in-ua13"),
+    ("PT", "M/12", "age-pt-m12"),
+    ("CA", "13+", "age-ca-qc-13"),
+):
+    key = presentation._age_key(rating)
+    assert age_catalog["byCountry"][country][key] == badge_id, (country, rating, age_catalog["byCountry"].get(country))
+
 
 def run(source: str, provider_id: str, call: str, fetch_impl: str | None = None, *, return_raw: bool = False):
     patched = presentation.apply(source, context={"provider_id": provider_id})
@@ -317,11 +332,34 @@ assert us_r["ageRating"] == "R", us_r
 assert "age-us-r" in us_r["badgeIds"], us_r
 
 us_pg = run(
-    "module.exports={getStreams:async()=>[{name:'Source',url:'https://x.example/a.mp4',ageRating:'PG'}]};\n",
+    "module.exports={getStreams:async()=>[{name:'Source',url:'https://x.example/a.mp4',ageRating:'PG',ageRatingCountry:'US'}]};\n",
     "generic",
     "p.getStreams({mediaType:'movie',title:'Film'}).then(v=>console.log(JSON.stringify(v[0])))",
 )
 assert us_pg["ageRating"] == "PG", us_pg
+assert us_pg["ageRatingCountry"] == "US", us_pg
 assert "age-us-pg" in us_pg["badgeIds"], us_pg
+
+fr_16 = run(
+    "module.exports={getStreams:async()=>[{name:'Source',url:'https://x.example/a.mp4',ageRating:'-16',ageRatingCountry:'FR'}]};\n",
+    "generic",
+    "p.getStreams({mediaType:'movie',title:'Film'}).then(v=>console.log(JSON.stringify(v[0])))",
+)
+assert fr_16["ageRating"] == "16+", fr_16
+assert "age-fr-16" in fr_16["badgeIds"], fr_16
+
+de_fsk = run(
+    "module.exports={getStreams:async()=>[{name:'Source',url:'https://x.example/a.mp4',ageRating:'FSK 16',ageRatingCountry:'DE'}]};\n",
+    "generic",
+    "p.getStreams({mediaType:'movie',title:'Film'}).then(v=>console.log(JSON.stringify(v[0])))",
+)
+assert "age-de-fsk16" in de_fsk["badgeIds"], de_fsk
+
+jp_r15 = run(
+    "module.exports={getStreams:async()=>[{name:'Source',url:'https://x.example/a.mp4',ageRating:'R15+',ageRatingCountry:'JP'}]};\n",
+    "generic",
+    "p.getStreams({mediaType:'movie',title:'Film'}).then(v=>console.log(JSON.stringify(v[0])))",
+)
+assert "age-jp-r15" in jp_r15["badgeIds"], jp_r15
 
 print("global stream presentation V25+ language-role tests passed")
