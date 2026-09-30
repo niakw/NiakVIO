@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# Versioned snapshots are immutable after publication; newest filename is current authority.
 import json
 import sys
 from pathlib import Path
