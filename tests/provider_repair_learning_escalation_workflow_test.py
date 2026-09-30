@@ -38,6 +38,10 @@ for required in (
     "provider-overrides.json",
     "automation/provider-v3-static-knowledge.json",
     "data(recognition): persist pre-FORCE route proof",
+    "data(recognition): persist pre-FORCE route candidates",
+    "scripts/reconcile_provider_runtime_family_from_routes.py",
+    "FIELD_FORCE_ROUTE_PREREQUISITE_CENSUS_DISPATCH",
+    "gh workflow run temp-current-bytes-full-provider-census.yml",
     "FIELD_FORCE_ROUTE_PREREQUISITE_RESTART",
 ):
     assert required in route_block, required
