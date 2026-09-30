@@ -65,7 +65,7 @@ for needle in (
     '"🎬 "',
     '"📺 "',
     '"⏱ "+humanDuration',
-    '"🔞 "+f.ageRating',
+    '"🔞 "+ageBadgeText(f)',
     'out.title=provider+(f.quality?" - "+qualityLabel(f.quality):"")',
     'out.description=lines.join("\\n")',
     'out.badgeIds=badgeIds(f)',
@@ -201,7 +201,7 @@ assert tv_row["title"].endswith(" - 720p"), tv_row
 assert tv_row["name"] == tv_row["title"], tv_row
 assert "Breaking Bad • 2008 • S01E01" in tv_row["description"], tv_row
 assert "⏱ 58min" in tv_row["description"], tv_row
-assert "🔞 16+" in tv_row["description"], tv_row
+assert "🔞 FR 16+" in tv_row["description"], tv_row
 assert tv_row["language"] == "fr", tv_row
 assert tv_row["languageTracks"] == [{"code":"fr","tag":"FR","label":"French","role":"Dub"}], tv_row
 assert "French · Dub" in tv_row["description"], tv_row
