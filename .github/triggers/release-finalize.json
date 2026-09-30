@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "requested_at": "2026-09-30T23:55:00+02:00",
-  "accepted_main_sha": "8254035bed663813b7fe5971e993da684526fa36",
+  "requested_at": "2026-10-01T01:20:00+02:00",
+  "accepted_main_sha": "9a1810492e5eb985c46ecf35316051711e0d1755",
   "target_release": "auto",
-  "reason": "Finalize validated Core regressions on 8254035b: safe deterministic external-player identity v15, HLS late-batch facts v15 with numeric bitrateMbps for StreamScore, short HLS/MP4 rejection, technical StreamScore v2, StreamBadge v11 age disambiguation, production-only telemetry v3. SHORT HLS and Workflow Gate are green; rematerialize all 42 active providers, bump provider/cache/release versions, rebuild manifests and hashes atomically. Known 4KHDHub runtime [] remains Brain/provider repair debt and must not be hidden in Core."
+  "reason": "Finalize the validated post-5.21.89 Core state. Workflow Gate is green on 9a181049. Rematerialize all 42 active Provider v3 bundles with current Core: player/page provenance Stream Identity v15, late HLS metadata enrichment current revision, Stream Presentation v33 with StreamBadge v11, evidence-weighted StreamScore v2, active sanitizer v10 short-MP4 protection, and telemetry v4 client-install gating that excludes Node/CI synthetic traffic while counting real client installs. Bump synchronized release to the next version, bump all 42 active provider versions, rebuild manifests/hashes and publish atomically."
 }
