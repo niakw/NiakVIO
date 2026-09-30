@@ -8,12 +8,12 @@ Ce dossier contient les assets visuels et les feeds **StreamBadge** utilisés av
 
 | Feed | Usage | URL brute |
 | --- | --- | --- |
-| **Fusion v8** | **Recommandé** pour un réglage unique, lisible sur fonds sombres et clairs | `https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/stream-badges-fusion-v8.json` |
-| Dark v8 | Variante pour interfaces sombres | `https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/stream-badges-dark-v8.json` |
-| Light v8 | Variante pour interfaces claires | `https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/stream-badges-light-v8.json` |
-| Transparent v8 | Artwork transparent / intégrations dédiées | `https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/stream-badges-transparent-v8.json` |
+| **Fusion v9** | **Recommandé** pour un réglage unique, lisible sur fonds sombres et clairs | `https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/stream-badges-fusion-v9.json` |
+| Dark v9 | Variante pour interfaces sombres | `https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/stream-badges-dark-v9.json` |
+| Light v9 | Variante pour interfaces claires | `https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/stream-badges-light-v9.json` |
+| Transparent v9 | Artwork transparent / intégrations dédiées | `https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/stream-badges-transparent-v9.json` |
 
-Les fichiers sans numéro restent des alias mobiles `latest`. Pour tout nouvel import et toute documentation publique, utilisez une URL **v8** explicite.
+Les fichiers sans numéro restent des alias mobiles `latest`. Pour tout nouvel import et toute documentation publique, utilisez une URL **v9** explicite.
 
 ## Feed badges et manifest providers sont séparés
 
@@ -34,8 +34,8 @@ Symptôme typique :
 Dans ce cas :
 
 1. supprimez l'ancien import StreamBadge ;
-2. importez **Fusion v8** avec l'URL versionnée ci-dessus ;
-3. vérifiez que Fusion v8 est l'import actif ;
+2. importez **Fusion v9** avec l'URL versionnée ci-dessus ;
+3. vérifiez que Fusion v9 est l'import actif ;
 4. revenez à l'écran des streams.
 
 ## Comment le matching fonctionne
@@ -59,18 +59,18 @@ Les tests NiakVIO interdisent les patterns double-échappés qui rendraient les 
 
 ## Sources et mapping
 
-- `badge_catalog_v8_complete.json` : catalogue canonique courant ;
-- `mapping_core_brain_ui_v8_complete.json` : mapping Core / Brain / UI courant ;
-- `stream-badges-fusion-v8.json` : feed Fusion stable recommandé ;
-- `stream-badges-dark-v8.json` : feed Dark stable ;
-- `stream-badges-light-v8.json` : feed Light stable ;
-- `stream-badges-transparent-v8.json` : feed Transparent stable.
+- `badge_catalog_v9_complete.json` : catalogue canonique courant ;
+- `mapping_core_brain_ui_v9_complete.json` : mapping Core / Brain / UI courant ;
+- `stream-badges-fusion-v9.json` : feed Fusion stable recommandé ;
+- `stream-badges-dark-v9.json` : feed Dark stable ;
+- `stream-badges-light-v9.json` : feed Light stable ;
+- `stream-badges-transparent-v9.json` : feed Transparent stable.
 
 Les assets sont générés et validés de façon déterministe. Ne modifiez pas uniquement un feed généré à la main : la source canonique doit rester cohérente avec les quatre variantes.
 
 ## Couverture technique v4
 
-Le catalogue canonique v8 couvre **309 badges répartis dans 17 groupes**.
+Le catalogue canonique v9 couvre **309 badges répartis dans 17 groupes**.
 
 La surface comprend notamment :
 
@@ -106,20 +106,20 @@ Une version publiée est immuable. Cela vaut pour les **feeds, catalogues et map
 
 Le générateur refuse de réécrire un feed `vN` existant avec un contenu différent. Le workflow vérifie aussi qu'un catalogue/mapping/feed versionné déjà publié n'est pas modifié ou supprimé.
 
-### Version publique actuelle : v8
+### Version publique actuelle : v9
 
 | Variante | Fichier stable |
 | --- | --- |
-| Fusion | `stream-badges-fusion-v8.json` |
-| Dark | `stream-badges-dark-v8.json` |
-| Light | `stream-badges-light-v8.json` |
-| Transparent | `stream-badges-transparent-v8.json` |
+| Fusion | `stream-badges-fusion-v9.json` |
+| Dark | `stream-badges-dark-v9.json` |
+| Light | `stream-badges-light-v9.json` |
+| Transparent | `stream-badges-transparent-v9.json` |
 
 ### Compatibilité historique
 
-Les quatre snapshots **v6**, **v5**, **v4** et **v3** restent publiés et immuables pour les installations épinglées. `stream-badges-fusion-v2.json` reste également disponible pour les anciens utilisateurs, avec les anciens WebP qu'il référence.
+Les snapshots **v8**, **v7**, **v6**, **v5**, **v4** et **v3** restent publiés et immuables pour les installations épinglées. `stream-badges-fusion-v2.json` reste également disponible pour les anciens utilisateurs, avec les anciens WebP qu'il référence.
 
-Les anciens `badge_catalog_v2_complete.json` et `mapping_core_brain_ui_v2_complete.json` sont conservés **intacts** comme références historiques/compatibilité. Des snapshots v4 explicites existent désormais également ; le catalogue/mapping courant est v8. Aucun ancien chemin versionné ne doit être recyclé pour une nouvelle version.
+Les anciens `badge_catalog_v2_complete.json` et `mapping_core_brain_ui_v2_complete.json` sont conservés **intacts** comme références historiques/compatibilité. Des snapshots v4 explicites existent désormais également ; le catalogue/mapping courant est v9. Aucun ancien chemin versionné ne doit être recyclé pour une nouvelle version.
 
 ## Langues et classifications
 
