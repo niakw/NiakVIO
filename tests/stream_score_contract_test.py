@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
+import importlib.util
+import json
+import subprocess
 import sys
+import tempfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -49,3 +53,47 @@ assert missing["badgeId"] is None
 rejected=score_stream({"wrongMedia":True},{"throughputMbps":100})
 assert rejected["status"]=="rejected"
 assert rejected["badgeId"] is None
+
+
+PATCH = ROOT / "scripts" / "provider_patches" / "global_stream_score_v1.py"
+spec = importlib.util.spec_from_file_location("global_stream_score_v1", PATCH)
+assert spec and spec.loader
+runtime = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(runtime)
+
+source = r'''module.exports={getStreams:async()=>[{
+  name:"Demo - 1080p",
+  title:"Demo - 1080p",
+  description:"🎬 Demo • 2026\n🎞️ WEB-DL • AVC • 1080p\n🔊 AAC • 2.0",
+  size:"🎬 Demo • 2026\n🎞️ WEB-DL • AVC • 1080p\n🔊 AAC • 2.0",
+  quality:"1080p",
+  sourceType:"WEB-DL",
+  codec:"AVC",
+  audioCodec:"AAC",
+  audioChannels:"2.0",
+  bitrate:"6.0 Mbps",
+  presentationFacts:{quality:"1080p",sourceType:"WEB-DL",codec:"AVC",audioCodec:"AAC",audioChannels:"2.0",bitrate:"6.0 Mbps"},
+  badgeIds:["1080p-full-hd","webdl","avc","aac","2.0"],
+  displayBadges:["1080p","WEB-DL","AVC","AAC","2.0"],
+  __nuvioStreamNetworkEvidenceV1:{success:true,sampleMbps:30,sampleConfidence:.75,latencyMs:120,segmentSuccessRatio:1,terminalProbeLatencyMs:140},
+  url:"https://cdn.example/demo.mp4"
+}]};'''
+patched = runtime.apply(source)
+with tempfile.TemporaryDirectory() as tmp:
+    provider = Path(tmp) / "provider.cjs"
+    provider.write_text(patched, encoding="utf-8")
+    runner = Path(tmp) / "runner.cjs"
+    runner.write_text(
+        "const p=require(process.argv[2]);p.getStreams('1','movie').then(v=>console.log(JSON.stringify(v[0]))).catch(e=>{console.error(e);process.exit(1)});",
+        encoding="utf-8",
+    )
+    proc = subprocess.run(["node", str(runner), str(provider)], text=True, capture_output=True, timeout=10)
+assert proc.returncode == 0, proc.stdout + proc.stderr
+scored_row = json.loads(proc.stdout.strip().splitlines()[-1])
+assert scored_row["streamScore"]["status"] == "scored", scored_row
+assert scored_row["streamScore"]["grade"], scored_row
+grade = scored_row["streamScore"]["grade"]
+assert f"stream-score-{grade.lower().replace('+','-plus')}" in scored_row["badgeIds"], scored_row
+assert f"Stream Score: {grade}" in scored_row["description"], scored_row
+assert scored_row["size"] == scored_row["description"], scored_row
+assert "__nuvioStreamNetworkEvidenceV1" not in scored_row, scored_row
