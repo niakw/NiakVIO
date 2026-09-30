@@ -45,6 +45,18 @@ accepted={
         **failed["rows"][0],
         "accepted":True,
         "reason":"strict_playable_stream_improvement",
+        "repairFamily":{
+            "version":1,
+            "key":"1"*64,
+            "failure":"route-proven-gap",
+            "status":"route-proven",
+            "archetype":"route-proven-gap:mixed-tag-nested-container",
+            "mediaTypes":["movie","tv"],
+            "signals":["mixed-tag-nested-container"],
+            "stages":["provider-network-zero-result"],
+            "mutationSurfaces":["provider-patch"],
+        },
+        "mechanismFamily":"balanced-class-container",
     }],
 }
 three=mod.merge(two,accepted)
@@ -53,6 +65,14 @@ assert row["failures"]==2
 assert row["successes"]==1
 assert row["consecutiveFailures"]==0
 assert row["lastOutcome"]=="accepted"
+assert three["schemaVersion"]==2
+assert three["validatedFamilyCount"]==1
+family=three["validatedFamilies"][0]
+assert family["repairFamily"]["key"]=="1"*64
+assert family["mechanismFamily"]=="balanced-class-container"
+assert family["successCount"]==1
+assert family["providers"]==["demo"]
+assert family["autoApply"] is False
 
 changed_context={
     **failed,
