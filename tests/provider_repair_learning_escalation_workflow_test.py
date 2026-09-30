@@ -23,6 +23,27 @@ assert "repairType" in persist_block
 assert "architecture_gap" in persist_block
 assert "providerId" in persist_block
 
+# Explicit FORCE must recover missing route authority before runtime synthesis.
+route_prereq = workflow.index("- name: Refresh missing route proof before external Force")
+force_eval = workflow.index("- name: Evaluate isolated Brain LLM Force candidates")
+canonical = workflow.index("- name: Run canonical recognition and correction only for unresolved providers")
+assert route_prereq < force_eval < canonical
+route_block = workflow[route_prereq:force_eval]
+for required in (
+    'status=="NO PROOF"',
+    "scripts/recover_provider_routes_from_upstreams.py",
+    "--provider",
+    "--apply",
+    "provider-route-recognition-prerequisite-latest.json",
+    "provider-overrides.json",
+    "automation/provider-v3-static-knowledge.json",
+    "data(recognition): persist pre-FORCE route proof",
+    "FIELD_FORCE_ROUTE_PREREQUISITE_RESTART",
+):
+    assert required in route_block, required
+assert "steps.route-prerequisite.outputs.attempted != 'true'" in workflow
+assert "scripts/apply_brain_llm_force_mutations.py" not in route_block
+
 # Explicit FORCE remains provider-local, isolated and current-byte gated.
 for required in (
     "- name: Evaluate isolated Brain LLM Force candidates",
