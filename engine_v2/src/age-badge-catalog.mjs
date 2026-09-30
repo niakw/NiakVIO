@@ -1,7 +1,7 @@
-// Auto-derived from assets/badge_catalog_v8_complete.json.
+// Auto-derived from assets/badge_catalog_v9_complete.json.
 // Keep this table generated from the canonical badge catalogue; do not hand-edit entries.
 export const AGE_BADGE_CATALOG = Object.freeze({
-  "version": 8,
+  "version": 9,
   "count": 118,
   "generic": {
     "0": "age-0",
