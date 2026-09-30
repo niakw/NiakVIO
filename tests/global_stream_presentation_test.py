@@ -306,4 +306,22 @@ assert native_cached["calls"] == 0, native_cached
 assert native_cached["row"]["duration"] == 169, native_cached
 assert "Interstellar • 2014" in native_cached["row"]["description"], native_cached
 
+
+# Bare US MPA certifications must map to their existing badge assets.
+us_r = run(
+    "module.exports={getStreams:async()=>[{name:'Source',url:'https://x.example/a.mp4',ageRating:'R'}]};\n",
+    "generic",
+    "p.getStreams({mediaType:'movie',title:'Film'}).then(v=>console.log(JSON.stringify(v[0])))",
+)
+assert us_r["ageRating"] == "R", us_r
+assert "age-us-r" in us_r["badgeIds"], us_r
+
+us_pg = run(
+    "module.exports={getStreams:async()=>[{name:'Source',url:'https://x.example/a.mp4',ageRating:'PG'}]};\n",
+    "generic",
+    "p.getStreams({mediaType:'movie',title:'Film'}).then(v=>console.log(JSON.stringify(v[0])))",
+)
+assert us_pg["ageRating"] == "PG", us_pg
+assert "age-us-pg" in us_pg["badgeIds"], us_pg
+
 print("global stream presentation V25+ language-role tests passed")
