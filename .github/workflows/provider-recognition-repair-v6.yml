@@ -683,6 +683,17 @@ jobs:
           )
           PY
 
+          family_args=(python scripts/reconcile_provider_runtime_family_from_routes.py)
+          for provider in "${missing[@]}"; do family_args+=(--provider "$provider"); done
+          "${family_args[@]}"
+
+          proven_routes="$(python - "$report" <<'PY'
+          import json,sys
+          data=json.load(open(sys.argv[1],encoding="utf-8"))
+          print(int(data.get("provenRouteCount") or 0))
+          PY
+          )"
+
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add "$report"
@@ -704,14 +715,23 @@ jobs:
             echo "FIELD_FORCE_ROUTE_PREREQUISITE_PERSIST changed=false providers=$csv"
             exit 0
           fi
-          if [ "$route_data_changed" = "true" ]; then
+          if [ "$route_data_changed" = "true" ] && [ "$proven_routes" -gt 0 ]; then
             git commit -m "data(recognition): persist pre-FORCE route proof for $csv"
+          elif [ "$route_data_changed" = "true" ]; then
+            git commit -m "data(recognition): persist pre-FORCE route candidates for $csv"
           else
             git commit -m "ci(recognition): persist pre-FORCE route attempt for $csv"
           fi
           git push origin HEAD:main
+          recognition_sha="$(git rev-parse HEAD)"
           echo "refreshed=$route_data_changed" >> "$GITHUB_OUTPUT"
-          echo "FIELD_FORCE_ROUTE_PREREQUISITE_PERSIST changed=$route_data_changed providers=$csv sha=$(git rev-parse HEAD)"
+          echo "FIELD_FORCE_ROUTE_PREREQUISITE_PERSIST changed=$route_data_changed proven_routes=$proven_routes providers=$csv sha=$recognition_sha"
+          if [ "$route_data_changed" = "true" ]; then
+            gh workflow run temp-current-bytes-full-provider-census.yml \
+              --repo "$GITHUB_REPOSITORY" \
+              --ref main
+            echo "FIELD_FORCE_ROUTE_PREREQUISITE_CENSUS_DISPATCH sha=$recognition_sha providers=$csv"
+          fi
           echo "FIELD_FORCE_ROUTE_PREREQUISITE_RESTART required=true reason=route-state-refreshed-before-runtime-synthesis"
 
       - name: Import sanitized Brain Learning priors for canonical Repair
