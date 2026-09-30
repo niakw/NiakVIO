@@ -59,6 +59,11 @@ for required in (
     "famille de runtime/protocole",
     "famille de panne/réparation",
     "recompiler sur les bytes exacts",
+    "NO PROOF",
+    "Recognition traversal only",
+    "runtime_template_prior",
+    "Existing shared renderer",
+    "provider_bloc",
 ):
     assert required in family_architecture, f"PROVIDER_FAMILY_ARCHITECTURE: {required}"
 
