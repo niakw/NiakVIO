@@ -40,7 +40,7 @@ assert "function contentLike(candidate,q)" in source
 assert "if(!episodic(q)&&years.length&&w.length>=1)return true;" in source
 assert "function contentLike(candidate){" not in source
 assert "if(years.length&&w.length>=1)return true;" not in source
-assert 'cross-client-shared-tmdb-owner-zero-episodic-year-v12' in compiled
+assert 'cross-client-provenance-identity-v13' in compiled
 
 script = compiled + r'''
 ;(async function(){
