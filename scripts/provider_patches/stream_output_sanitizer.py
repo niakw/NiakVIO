@@ -68,7 +68,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
             "timeoutMs": timeout_ms,
             "minVodDurationSeconds": min_vod_duration,
             "blockedPathPatterns": blocked_paths,
-            "implementationVersion": 9,
+            "implementationVersion": 10,
         },
         separators=(",", ":"),
     )
@@ -190,6 +190,9 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
     return /filename\*?=(?:UTF-8''|["']?)[^;\r\n]*\.(?:m3u8?|mpd|mp4|m4v|mov|mkv|webm|mpeg|mpg|ogv)(?:["';\r\n]|$)/i.test(String(value||""));
   }
   function isEbml(bytes){return bytes.length>=4&&bytes[0]===0x1a&&bytes[1]===0x45&&bytes[2]===0xdf&&bytes[3]===0xa3}
+  function u32(bytes,o){if(!bytes||o<0||o+4>bytes.length)return null;return bytes[o]*16777216+bytes[o+1]*65536+bytes[o+2]*256+bytes[o+3]}
+  function u64(bytes,o){var hi=u32(bytes,o),lo=u32(bytes,o+4);if(hi==null||lo==null)return null;var v=hi*4294967296+lo;return Number.isSafeInteger(v)?v:null}
+  function mp4DurationSeconds(bytes){if(!bytes||bytes.length<40)return null;for(var i=4;i+36<=bytes.length;i++){if(bytes[i]!==0x6d||bytes[i+1]!==0x76||bytes[i+2]!==0x68||bytes[i+3]!==0x64)continue;var start=i-4,size=u32(bytes,start);if(!size||size<32)continue;var version=bytes[start+8],timescale=null,duration=null;if(version===0&&start+28<=bytes.length){timescale=u32(bytes,start+20);duration=u32(bytes,start+24)}else if(version===1&&start+40<=bytes.length){timescale=u32(bytes,start+28);duration=u64(bytes,start+32)}if(timescale&&duration){var sec=duration/timescale;if(Number.isFinite(sec)&&sec>=1&&sec<=1209600)return sec}}return null}
   async function probe(stream,url){
     if(providerDeadlineExpired())return null;
     if(typeof g.fetch!=="function")return true;
@@ -222,6 +225,8 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
       var hasFtyp=bytes.length>=8&&ascii(bytes.slice(4,8))==="ftyp";
       if(/(?:\.mp4|\.m4v|\.mov)(?:[?#]|$)/i.test(url)||/(?:\.mp4|\.m4v|\.mov)(?:[?#]|$)/i.test(finalUrl)||/video\/mp4/.test(contentType)||hasFtyp){
         if(!(/video\/mp4/.test(contentType)||hasFtyp||bytes.length>0))return false;
+        var mp4Duration=mp4DurationSeconds(bytes);
+        if(mp4Duration!=null&&config.minVodDurationSeconds>0&&mp4Duration<config.minVodDurationSeconds)return false;
         markDirect(stream,finalUrl);
         return true;
       }
