@@ -216,7 +216,7 @@ Le chemin HLS commun est volontairement séparé en Blocs :
 
 Exemple contractuel : `RESOLUTION=1440x720` doit produire **720p**, et un placeholder `Inconnue/Unknown/N/A/Auto` ne doit jamais devenir un suffixe visible. Un flux HLS sans résolution prouvée garde le nom du provider et peut afficher seulement les faits certains, par exemple `HLS`.
 
-Le catalogue StreamBadge public actuel est **v9** : les quatre snapshots Fusion/Dark/Light/Transparent sont versionnés ensemble et restent immuables après publication. Les huit badges Stream Score sont placés en premier dans l’ordre public. Les versions antérieures restent disponibles pour compatibilité.
+Le catalogue StreamBadge public actuel est **v10** : les quatre snapshots Fusion/Dark/Light/Transparent sont versionnés ensemble et restent immuables après publication. Les huit badges Stream Score sont placés en premier dans l’ordre public. Les versions antérieures restent disponibles pour compatibilité.
 
 ### Finalisation d’une release acceptée
 
