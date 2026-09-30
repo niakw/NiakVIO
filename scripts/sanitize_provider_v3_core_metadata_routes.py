@@ -133,9 +133,13 @@ def assert_recipe_is_provider_owned(provider_id: str, recipe: object, *, strip_b
             )
 
 
-def derive_runtime_family(model: dict[str, Any]) -> str:
+def derive_runtime_family(
+    model: dict[str, Any],
+    *,
+    respect_current: bool = True,
+) -> str:
     current = str(model.get("sourceRuntimeFamily") or "unknown").strip().casefold() or "unknown"
-    if current != "unknown":
+    if respect_current and current != "unknown":
         return current
     strategy = str(model.get("strategy") or "unknown").strip().casefold()
     if strategy == "quarantined":
