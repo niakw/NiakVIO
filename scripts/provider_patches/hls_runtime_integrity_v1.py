@@ -6,6 +6,10 @@ HLS row is not treated as a dead provider: Niakvio first tries to normalize the
 response, follow public player/embed context and recover a real HLS/DASH/direct
 media source while preserving ordinary request headers. Only a conclusively
 invalid row with no bounded recovery path is removed.
+
+Rows beyond the heavy native probe budget remain eligible for lightweight
+master inspection so late-arriving HLS streams can still retain technical facts
+without fabricating network evidence.
 """
 from __future__ import annotations
 
