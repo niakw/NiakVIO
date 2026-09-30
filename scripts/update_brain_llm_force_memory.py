@@ -28,6 +28,26 @@ def load(path: Path, default: Any) -> Any:
         return default
 
 
+def safe_repair_family(value: Any) -> dict[str, Any]:
+    if not isinstance(value, dict):
+        return {}
+    key = str(value.get("key") or "").strip().casefold()
+    if not FP64.fullmatch(key):
+        return {}
+    allowed = {
+        "version": max(1, int(value.get("version") or 1)),
+        "key": key,
+        "failure": canon(value.get("failure"))[:96],
+        "status": canon(value.get("status"))[:64],
+        "archetype": str(value.get("archetype") or "")[:240],
+        "mediaTypes": [canon(x)[:48] for x in (value.get("mediaTypes") or [])[:8] if canon(x)],
+        "signals": [canon(x)[:96] for x in (value.get("signals") or [])[:24] if canon(x)],
+        "stages": [canon(x)[:96] for x in (value.get("stages") or [])[:16] if canon(x)],
+        "mutationSurfaces": [canon(x)[:64] for x in (value.get("mutationSurfaces") or [])[:8] if canon(x)],
+    }
+    return allowed
+
+
 def safe_mutation_summary(value: Any) -> list[dict[str, str]]:
     if not isinstance(value, list):
         return []
@@ -104,6 +124,12 @@ def merge(memory: dict[str, Any], evaluation: dict[str, Any]) -> dict[str, Any]:
         summary = safe_mutation_summary(result.get("mutationSummary"))
         if summary:
             row["lastMutationSummary"] = summary
+        repair_family = safe_repair_family(result.get("repairFamily"))
+        if repair_family:
+            row["repairFamily"] = repair_family
+        mechanism_family = canon(result.get("mechanismFamily"))[:160]
+        if mechanism_family:
+            row["mechanismFamily"] = mechanism_family
         row["lastCurrentSha"] = current_sha
         row["sourceNiakvioSha"] = source_sha
         row["sourceBrainLlmSha"] = brain_sha
@@ -120,9 +146,49 @@ def merge(memory: dict[str, Any], evaluation: dict[str, Any]) -> dict[str, Any]:
         ),
     )[:2000]
 
+    validated: dict[tuple[str, str], dict[str, Any]] = {}
+    for row in entries:
+        if int(row.get("successes") or 0) <= 0:
+            continue
+        family = safe_repair_family(row.get("repairFamily"))
+        mechanism = canon(row.get("mechanismFamily"))[:160]
+        if not family or not mechanism:
+            continue
+        key = (family["key"], mechanism)
+        aggregate = validated.get(key)
+        if aggregate is None:
+            aggregate = {
+                "repairFamily": family,
+                "mechanismFamily": mechanism,
+                "successCount": 0,
+                "failureCount": 0,
+                "providers": [],
+                "source": "sandbox-validated-force-memory",
+                "proofAuthority": False,
+                "autoApply": False,
+            }
+            validated[key] = aggregate
+        aggregate["successCount"] += int(row.get("successes") or 0)
+        aggregate["failureCount"] += int(row.get("failures") or 0)
+        provider = canon(row.get("providerId"))
+        if provider and provider not in aggregate["providers"]:
+            aggregate["providers"].append(provider)
+
+    validated_families = sorted(
+        validated.values(),
+        key=lambda row: (
+            -int(row.get("successCount") or 0),
+            int(row.get("failureCount") or 0),
+            str((row.get("repairFamily") or {}).get("archetype") or ""),
+            str(row.get("mechanismFamily") or ""),
+        ),
+    )[:1000]
+
     return {
-        "schemaVersion": 1,
+        "schemaVersion": 2,
         "entries": entries,
+        "validatedFamilies": validated_families,
+        "validatedFamilyCount": len(validated_families),
         "publicationAuthority": False,
         "proofAuthority": False,
     }
