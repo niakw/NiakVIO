@@ -1,3 +1,5 @@
+import { ageBadgeIdFromCatalog, ageBadgeLabelFromCatalog } from "./age-badge-catalog.mjs";
+
 const UNKNOWN = /^(?:unknown|inconnue?|n\/a|na|none|null|undefined|-)$/i;
 const QUALITY_PLACEHOLDER = /^(?:0|auto|automatic|source|original|default|unknown|inconnue?|n\/a|na|none|null|undefined|-)$/i;
 const QUALITY_RANK = Object.freeze({ "240p": 240, "360p": 360, "480p": 480, "576p": 576, "720p": 720, "1080i": 1080, "1080p": 1081, "1440p": 1440, "2160p": 2160, "4320p": 4320 });
@@ -178,6 +180,10 @@ export function collectFacts(stream = {}, metadata = {}, provider = {}) {
       stream.ageRating ?? stream.age_rating ?? stream.certification ??
       metadata.ageRating ?? metadata.age_rating ?? metadata.certification ?? metadata.contentRating ?? metadata.content_rating,
     ),
+    ageRatingCountry: clean(
+      stream.ageRatingCountry ?? stream.certificationCountry ?? stream.contentRatingCountry ??
+      metadata.ageRatingCountry ?? metadata.certificationCountry ?? metadata.contentRatingCountry,
+    )?.toUpperCase() ?? null,
     videoTech,
     hdr: normalizeHdr(stream.hdr ?? stream.hdrFormat ?? stream.hdr_format ?? videoTech),
     bitDepth: normalizeBitDepth(stream.bitDepth ?? stream.bit_depth ?? stream.description ?? stream.filename),
@@ -215,7 +221,7 @@ export function buildBadges(facts = {}) {
     const fallbackCode = normalizeLanguageCode(facts.language);
     if (fallbackCode) out.push(fallbackCode.toUpperCase());
   }
-  if (facts.ageRating) out.push(facts.ageRating);
+  if (facts.ageRating) out.push(ageBadgeLabelFromCatalog(facts.ageRating, facts.ageRatingCountry));
   return uniq(out);
 }
 
@@ -255,7 +261,7 @@ export function buildBadgeIds(facts = {}) {
     ids.push("lang-" + code);
   }
   if (!tracks.length) { const code = normalizeLanguageCode(facts.language); if (code) ids.push("lang-" + code); }
-  const age = ageBadgeId(facts.ageRating);
+  const age = ageBadgeId(facts.ageRating, facts.ageRatingCountry);
   if (age) ids.push(age);
   return uniq(ids);
 }
@@ -757,7 +763,7 @@ function mediaLine(metadata) {
 }
 
 function durationAgeLine(facts) {
-  return [facts.duration ? `⏱ ${formatDuration(facts.duration)}` : null, facts.ageRating ? `🔞 ${facts.ageRating}` : null].filter(Boolean).join(" • ");
+  return [facts.duration ? `⏱ ${formatDuration(facts.duration)}` : null, facts.ageRating ? `🔞 ${ageBadgeLabelFromCatalog(facts.ageRating, facts.ageRatingCountry)}` : null].filter(Boolean).join(" • ");
 }
 
 function languageLine(facts) {
@@ -807,22 +813,8 @@ function technicalLine(facts) {
   return groups.join("  |  ");
 }
 
-function ageBadgeId(value) {
-  const upper = useful(value)?.toUpperCase().replace(/\s+/g, " ").trim() ?? "";
-  if (/^(?:ALL|ALL AGES|UNRESTRICTED|U|G)$/.test(upper)) return "age-all";
-  const numeric = upper.match(/^(0|6|7|10|12|13|14|15|16|17|18|19|21)\+?$/);
-  if (numeric) return `age-${numeric[1]}`;
-  const named = {
-    "PG": "age-us-pg", "PG-13": "age-us-pg13", "PG13": "age-us-pg13", "R": "age-us-r", "TV-Y": "age-us-tv-y", "TV-Y7": "age-us-tv-y7",
-    "TV-G": "age-us-tv-g", "TV-PG": "age-us-tv-pg", "TV-14": "age-us-tv14", "TV-MA": "age-us-tv-ma",
-    "NC-17": "age-us-nc17", "R15+": "age-jp-r15", "R18+": "age-jp-r18", "PG12": "age-jp-pg12",
-  }[upper];
-  if (named) return named;
-  let match = upper.match(/^FSK[ .:_-]?(0|6|12|16|18)$/); if (match) return `age-de-fsk${match[1]}`;
-  match = upper.match(/^KR[ .:_-]?(12|15|19)$/); if (match) return `age-kr${match[1]}`;
-  if (/^KR[ .:_-]?(?:ALL|0)$/.test(upper)) return "age-kr-all";
-  match = upper.match(/^UA[ ._-]?(7|13|16)\+?$/); if (match) return `age-in-ua${match[1]}`;
-  return null;
+function ageBadgeId(value, country = "") {
+  return ageBadgeIdFromCatalog(value, country);
 }
 function isVfProvider(provider) {
   if (String(provider.languageMode ?? "").toLowerCase() === "vf") return true;
