@@ -1,0 +1,98 @@
+{
+  "schemaVersion": 5,
+  "method": "upstream-provider-runtime-exact-http-proof",
+  "providerCount": 1,
+  "catalogueProviderCount": 42,
+  "scope": "active",
+  "historicalUpstreamMappedCount": 1,
+  "niakvioNativeCount": 0,
+  "providersWithProvenRoutes": 0,
+  "provenRouteCount": 0,
+  "simpleApiRecipeCount": 0,
+  "statusCounts": {
+    "no-proven-route": 1
+  },
+  "durationMs": 14069,
+  "maxAttemptsPerTask": 3,
+  "maxFixturesPerLane": 4,
+  "staticCandidatesExecutable": false,
+  "requestSpecModel": "ROUTE_RECOVERY_REQUEST_SPEC_V1",
+  "proofRequirements": [
+    "provider-js-executed",
+    "exact-sanitized-request-observed",
+    "successful-provider-http-response",
+    "fixture-or-prior-response-dataflow-for-dynamic-placeholders"
+  ],
+  "providers": [
+    {
+      "providerId": "allwish",
+      "sourceId": "aio",
+      "status": "no-proven-route",
+      "source": {
+        "kind": "upstream",
+        "sourceId": "aio",
+        "sha256": "647edc750491af2165d0d8ab9d49e799c87e5d6e7571728e63582936589562a8",
+        "providerUrl": "https://raw.githubusercontent.com/NuvioPlugin/All-in-One-Nuvio/refs/heads/main/providers/allwish.js",
+        "wantedSha256": "647edc750491af2165d0d8ab9d49e799c87e5d6e7571728e63582936589562a8",
+        "capturedAt": "2026-09-01T19:53:09+00:00",
+        "currentSha256": "647edc750491af2165d0d8ab9d49e799c87e5d6e7571728e63582936589562a8",
+        "mode": "lkg-current-byte-exact"
+      },
+      "routeCount": 0,
+      "routes": [],
+      "executionRouteCount": 0,
+      "executionRoutes": [],
+      "routeData": [],
+      "apiRecipe": null,
+      "tasks": [
+        {
+          "fixture": "interstellar",
+          "semanticType": "movie",
+          "rotatedFixture": false,
+          "workerStatus": "ok",
+          "streamCount": 0,
+          "rawStreamCount": 0,
+          "serverAccessible": false,
+          "serverSuccess": false,
+          "providerRequestCount": 0,
+          "provenRouteCount": 0,
+          "repairAttempts": 1,
+          "error": null
+        },
+        {
+          "fixture": "breaking-bad-s01e01",
+          "semanticType": "tv",
+          "rotatedFixture": false,
+          "workerStatus": "ok",
+          "streamCount": 0,
+          "rawStreamCount": 0,
+          "serverAccessible": false,
+          "serverSuccess": false,
+          "providerRequestCount": 0,
+          "provenRouteCount": 0,
+          "repairAttempts": 1,
+          "error": null
+        },
+        {
+          "fixture": "house-of-the-dragon-s03e01",
+          "semanticType": "tv",
+          "rotatedFixture": false,
+          "workerStatus": "ok",
+          "streamCount": 0,
+          "rawStreamCount": 0,
+          "serverAccessible": false,
+          "serverSuccess": false,
+          "providerRequestCount": 0,
+          "provenRouteCount": 0,
+          "repairAttempts": 1,
+          "error": null
+        }
+      ]
+    }
+  ],
+  "applied": {
+    "patchedProviders": 1,
+    "provenRoutes": 0,
+    "apiRecipes": 0
+  }
+}

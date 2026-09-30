@@ -9845,7 +9845,9 @@
         "/player",
         "/ajax/episode/list/",
         "/?tmdbId={tmdbId}&type=movie",
-        "/?tmdbId={tmdbId}&type=tv&season={season}&episode={episode}"
+        "/?tmdbId={tmdbId}&type=tv&season={season}&episode={episode}",
+        "/filter?keyword={query}",
+        "/watch/{slug}/ep-{episode}"
       ],
       "route_proof_version": 5,
       "route_proof": {
@@ -9865,91 +9867,11 @@
         "provenRouteCount": 0,
         "genericExecutionRouteCount": 0,
         "runtimePlanPreserved": true,
-        "runtimePlanRouteCount": 3,
+        "runtimePlanRouteCount": 2,
         "lastRepairProbe": {
           "status": "no-proven-route",
           "positiveExecutionEvidence": false
-        },
-        "normalRuntimeEntryPlanTarget": 3,
-        "runtimeEntryPlanOptimization": "compact-simple-alternatives-preserve-complex-graphs",
-        "runtimePlanRouteCountBeforeOptimization": 3,
-        "runtimePlanSemanticLanes": [],
-        "runtimePlanTargetExceeded": false,
-        "runtimePlanExceptionReason": "",
-        "runtimeFanoutPreserved": false,
-        "evidenceRouteCount": 0,
-        "evidenceRoutesAreNotPlanCount": true,
-        "normalStructuredRuntimePlanTarget": 3,
-        "structuredRuntimePlanPolicy": "merge-equivalent-preserve-distinct-evidence-backed-plans",
-        "structuredRuntimePlanAudit": {
-          "searchRequestPlan": {
-            "before": 0,
-            "afterMerge": 0,
-            "after": 0,
-            "coveredLanes": [],
-            "merged": false,
-            "capped": false,
-            "normalTarget": 3,
-            "targetExceeded": false,
-            "exceptionReason": ""
-          },
-          "providerValuePlan": {
-            "before": 0,
-            "afterMerge": 0,
-            "after": 0,
-            "coveredLanes": [],
-            "merged": false,
-            "capped": false,
-            "normalTarget": 3,
-            "targetExceeded": false,
-            "exceptionReason": ""
-          },
-          "externalIdentityPlan": {
-            "before": 0,
-            "afterMerge": 0,
-            "after": 0,
-            "coveredLanes": [],
-            "merged": false,
-            "capped": false,
-            "normalTarget": 3,
-            "targetExceeded": false,
-            "exceptionReason": ""
-          }
-        },
-        "canonicalExecutionAuthorityPolicy": "preferred-order-only-preserve-all-proven-authorities",
-        "canonicalExecutionAuthority": {
-          "candidateCount": 3,
-          "preferredCount": 1,
-          "selectedCount": 1,
-          "supportedLanes": [
-            "movie",
-            "tv"
-          ],
-          "coveredLanes": [
-            "movie",
-            "tv"
-          ],
-          "missingLanes": [],
-          "preferredOwners": [
-            "route"
-          ],
-          "owners": [
-            "route"
-          ],
-          "destructiveFiltering": false,
-          "allEvidenceBackedAuthoritiesPreserved": true
-        },
-        "canonicalExecutionPreference": [
-          {
-            "owner": "route",
-            "index": 0,
-            "lanes": [
-              "movie",
-              "tv"
-            ],
-            "route": "/player"
-          }
-        ]
+        }
       },
       "manifest_overrides": {
         "enabled": true
