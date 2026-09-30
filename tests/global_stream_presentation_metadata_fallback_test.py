@@ -123,7 +123,7 @@ assert row["title"].endswith(" - 1080p"), row
 assert row["name"] == row["title"], row
 assert "Interstellar • 2014" in row["description"], row
 assert "⏱ 2h49" in row["description"], row
-assert "🔞 12+" in row["description"], row
+assert "🔞 FR 12+" in row["description"], row
 assert row["language"] == "fr", row
 assert row["languageTracks"] == [{"code":"fr","tag":"FR","label":"French","role":"Dub"}], row
 assert "French · Dub" in row["description"], row
