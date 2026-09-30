@@ -5,8 +5,8 @@ from pathlib import Path
 
 ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT/"scripts"))
-PATCH=ROOT/"scripts/provider_patches/stream_output_sanitizer.py"
-spec=importlib.util.spec_from_file_location("stream_output_sanitizer_short_mp4",PATCH)
+PATCH=ROOT/"scripts/provider_patches/stream_output_sanitizer_v10.py"
+spec=importlib.util.spec_from_file_location("stream_output_sanitizer_v10_short_mp4",PATCH)
 assert spec and spec.loader
 mod=importlib.util.module_from_spec(spec);spec.loader.exec_module(mod)
 
