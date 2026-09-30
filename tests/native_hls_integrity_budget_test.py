@@ -240,7 +240,8 @@ PATCHED
  assert.equal(late.quality,'1080p',JSON.stringify(late));
  assert.equal(late.codec,'AVC',JSON.stringify(late));
  assert.equal(late.audioCodec,'AAC',JSON.stringify(late));
- assert.equal(late.bitrateMbps,5.5,JSON.stringify(late));
+ assert.equal(late.bitrate,'5.5 Mbps max',JSON.stringify(late));
+ assert.equal(late.hlsMasterBandwidth,5500000,JSON.stringify(late));
  assert.ok(!late.__nuvioStreamNetworkEvidenceV1,JSON.stringify(late));
 })().catch(e=>{console.error(e);process.exit(1)});
 '''.replace('PATCHED', budget_patched))
