@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "entries": [
     {
       "providerId": "4khdhub",
@@ -80,6 +80,56 @@
           "family": "resolve_urls"
         }
       ]
+    },
+    {
+      "providerId": "4khdhub",
+      "mutationFingerprint": "c58fcb7a9610234bd647002fc01de4f73657de2028c166b270814f638c9a3989",
+      "mutationContextFingerprint": "2b96220485919325337a48325cffda111429d51ebd75071102612cbea5393574",
+      "failures": 1,
+      "consecutiveFailures": 1,
+      "successes": 0,
+      "lastOutcome": "rejected",
+      "lastReason": "required_category_playable_proof:movie,tv",
+      "lastMutationSummary": [
+        {
+          "scope": "provider_bloc",
+          "operation": "upsert",
+          "family": "balanced_class_container"
+        }
+      ],
+      "repairFamily": {
+        "version": 2,
+        "key": "e4180b32dccd240450ca7a3a158f60a12377b611f265d65ce647652426c87c11",
+        "failure": "route-proven-gap",
+        "status": "route-proven",
+        "archetype": "route-proven-gap:dom-selector-container",
+        "mediaTypes": [
+          "movie",
+          "tv"
+        ],
+        "signals": [
+          "class-prefix-family",
+          "mixed-tag-nested-container",
+          "nested-anchor-html",
+          "provider-http-2xx",
+          "response-html",
+          "response-json"
+        ],
+        "stages": [
+          "provider-network-zero-result",
+          "provider-network-zero-result×2"
+        ],
+        "mutationSurfaces": [
+          "provider-bloc",
+          "provider-data",
+          "provider-js",
+          "provider-patch"
+        ]
+      },
+      "mechanismFamily": "balanced-class-container",
+      "lastCurrentSha": "eeac01096d7b0cccddebd92790fd09d5aeac7c7d",
+      "sourceNiakvioSha": "43a31dbcce92da502443b677702f68ed011d0864",
+      "sourceBrainLlmSha": "eff926db7a2e1cfc55784ffae288c0c5acf936a5"
     },
     {
       "providerId": "4khdhub",
@@ -222,6 +272,8 @@
       ]
     }
   ],
+  "validatedFamilies": [],
+  "validatedFamilyCount": 0,
   "publicationAuthority": false,
   "proofAuthority": false
 }
