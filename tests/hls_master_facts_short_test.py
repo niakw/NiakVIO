@@ -53,9 +53,10 @@ function tsResponse(url){
   const b=Buffer.alloc(376);b[0]=0x47;b[188]=0x47;
   return {ok:true,status:200,url,headers:headers('video/mp2t'),arrayBuffer:async()=>b.buffer.slice(b.byteOffset,b.byteOffset+b.byteLength)};
 }
-if(mode==='browser'||mode==='native'){
-  globalThis.__rows=[{url:'https://media.example/master.m3u8',name:'Purstream',quality:'720p',resolution:'1280x720',language:'VF'}];
-  if(mode==='native')globalThis.__native_fetch=function(){};
+if(mode==='browser'||mode==='native'||mode==='native-many'){
+  const row={url:'https://media.example/master.m3u8',name:'Purstream',quality:'720p',resolution:'1280x720',language:'VF'};
+  globalThis.__rows=mode==='native-many'?Array.from({length:10},(_,i)=>({...row,name:'Purstream '+String(i+1)})):[row];
+  if(mode==='native'||mode==='native-many')globalThis.__native_fetch=function(){};
   globalThis.fetch=async(url)=>{
     url=String(url);
     if(url.endsWith('/master.m3u8'))return textResponse(url,master);
@@ -76,7 +77,13 @@ require(process.argv[2]);
     console.log('PLAYIMDB_403_FAIL_CLOSED_OK');
     return;
   }
-  if(!Array.isArray(out)||out.length!==1)throw new Error('unexpected rows '+JSON.stringify(out));
+  const expectedCount=mode==='native-many'?10:1;
+  if(!Array.isArray(out)||out.length!==expectedCount)throw new Error('unexpected rows '+JSON.stringify(out));
+  if(mode==='native-many'){
+    for(const late of out){
+      if(late.quality!=='720p'||late.resolution!=='1440x720'||late.codec!=='AVC'||late.audioCodec!=='AAC')throw new Error('late-batch HLS facts missing '+JSON.stringify(late));
+    }
+  }
   const row=out[0];
   if(row.quality!=='720p')throw new Error('quality not upgraded '+JSON.stringify(row));
   if(Number(row.width)!==1440||Number(row.height)!==720)throw new Error('dimensions missing '+JSON.stringify(row));
@@ -115,7 +122,7 @@ with tempfile.TemporaryDirectory() as tmp:
         "timeout_ms": 1200,
         "max_children": 2,
     }), encoding="utf-8")
-    for mode in ("browser", "native"):
+    for mode in ("browser", "native", "native-many"):
         result = subprocess.run(
             ["node", str(runner), str(facts_provider), mode, str(master), str(media)],
             cwd=ROOT, capture_output=True, text=True, timeout=6, check=False,
@@ -145,6 +152,7 @@ global_hls = cfg["playback_integrity_policy"]["hls_runtime_options"]
 assert global_hls["inspect_master_facts"] is True, global_hls
 assert global_hls["drop_unprobed_hls_after_budget"] is True, global_hls
 assert int(global_hls["native_probe_max_rows"]) == 8, global_hls
+assert "native-master-facts-late-batch-v14" in generated({"inspect_master_facts": True}), "late-batch HLS revision missing"
 play = providers["playimdb"]["core_options"]["hls_runtime_integrity"]
 assert play["probe_all_urls"] is True and play["fail_closed_unknown"] is True, play
 
