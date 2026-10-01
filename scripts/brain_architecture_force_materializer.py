@@ -76,6 +76,126 @@ def path_allowed(path: str, patterns: list[str]) -> bool:
     return any(path.startswith(prefix) for prefix in CREATE_PREFIXES)
 
 
+
+def _resolve_non_unique_replace_edits(
+    edits: list[dict[str, Any]],
+    payload: dict[str, Any],
+    patterns: list[str],
+    *,
+    root: Path = ROOT,
+) -> list[dict[str, Any]]:
+    """Bind a repeated model find to the exact focused source occurrence.
+
+    Architecture FORCE already chooses and sends a bounded exact source snippet
+    to the model. If the model returns a replace whose find is repeated in the
+    full file but occurs exactly once inside that exact snippet, Brain can
+    deterministically widen the anchor with unchanged neighboring bytes until
+    it is unique. The replacement receives the same unchanged prefix/suffix, so
+    only the model's intended inner edit changes behavior. Any uncertainty
+    remains fail-closed and is left for normal validation/correction.
+    """
+    focused_sources = payload.get("sources")
+    if not isinstance(focused_sources, dict):
+        return [dict(edit) for edit in edits]
+
+    resolved: list[dict[str, Any]] = []
+    for raw_edit in edits:
+        edit = dict(raw_edit)
+        if str(edit.get("operation") or "") != "replace":
+            resolved.append(edit)
+            continue
+        path = str(edit.get("path") or "")
+        find = str(edit.get("find") or "")
+        replace = str(edit.get("replace") or "")
+        target = root / path
+        if (
+            not path_allowed(path, patterns)
+            or not target.is_file()
+            or not find
+            or len(find) > MAX_FIND
+            or len(replace) > MAX_REPLACE
+        ):
+            resolved.append(edit)
+            continue
+
+        source = target.read_text(encoding="utf-8")
+        occurrence_count = source.count(find)
+        if occurrence_count <= 1:
+            resolved.append(edit)
+            continue
+
+        snippet = str(focused_sources.get(path) or "")
+        if not snippet or source.count(snippet) != 1 or snippet.count(find) != 1:
+            resolved.append(edit)
+            continue
+
+        snippet_start = source.index(snippet)
+        local_offset = snippet.index(find)
+        absolute_start = snippet_start + local_offset
+        if source[absolute_start:absolute_start + len(find)] != find:
+            resolved.append(edit)
+            continue
+
+        available_extra = min(
+            MAX_FIND - len(find),
+            MAX_REPLACE - len(replace),
+        )
+        if available_extra <= 0:
+            resolved.append(edit)
+            continue
+
+        unique_find = ""
+        unique_replace = ""
+        widths = list(range(16, available_extra + 1, 16))
+        if not widths or widths[-1] != available_extra:
+            widths.append(available_extra)
+        for width in widths:
+            left_budget = width // 2
+            right_budget = width - left_budget
+            left = min(left_budget, absolute_start)
+            right = min(
+                right_budget,
+                len(source) - (absolute_start + len(find)),
+            )
+            missing = width - left - right
+            if missing > 0:
+                add_left = min(missing, absolute_start - left)
+                left += add_left
+                missing -= add_left
+            if missing > 0:
+                right += min(
+                    missing,
+                    len(source) - (absolute_start + len(find)) - right,
+                )
+
+            prefix = source[absolute_start - left:absolute_start]
+            suffix = source[
+                absolute_start + len(find):
+                absolute_start + len(find) + right
+            ]
+            candidate_find = prefix + find + suffix
+            candidate_replace = prefix + replace + suffix
+            if (
+                len(candidate_find) <= MAX_FIND
+                and len(candidate_replace) <= MAX_REPLACE
+                and source.count(candidate_find) == 1
+            ):
+                unique_find = candidate_find
+                unique_replace = candidate_replace
+                break
+
+        if unique_find:
+            edit["find"] = unique_find
+            edit["replace"] = unique_replace
+            print(
+                "FIELD_BRAIN_ARCH_FORCE_ANCHOR_RESOLVED "
+                f"path={path} repeated={occurrence_count} "
+                f"find_chars={len(find)} anchored_chars={len(unique_find)}",
+                flush=True,
+            )
+        resolved.append(edit)
+    return resolved
+
 def validate_edits(edits: list[dict[str, Any]], patterns: list[str], root: Path = ROOT) -> None:
     if not edits or len(edits) > MAX_EDITS:
         raise ValueError("architecture FORCE requires 1..3 bounded edits")
@@ -665,6 +785,12 @@ def validated_model_plan(
 ) -> tuple[dict[str, Any], list[dict[str, Any]]]:
     planned = call_model(endpoint, model, payload)
     edits = [dict(x) for x in planned.get("edits") or [] if isinstance(x, dict)]
+    edits = _resolve_non_unique_replace_edits(
+        edits,
+        payload,
+        patterns,
+        root=root,
+    )
     try:
         validate_edits(edits, patterns, root=root)
     except ValueError as exc:
@@ -678,6 +804,12 @@ def validated_model_plan(
         edits = [
             dict(x) for x in planned.get("edits") or [] if isinstance(x, dict)
         ]
+        edits = _resolve_non_unique_replace_edits(
+            edits,
+            payload,
+            patterns,
+            root=root,
+        )
         validate_edits(edits, patterns, root=root)
 
     try:
@@ -722,6 +854,12 @@ def validated_model_plan(
         corrected_edits = [
             dict(x) for x in corrected.get("edits") or [] if isinstance(x, dict)
         ]
+        corrected_edits = _resolve_non_unique_replace_edits(
+            corrected_edits,
+            payload,
+            patterns,
+            root=root,
+        )
         try:
             validate_edits(corrected_edits, patterns, root=root)
             validate_materialized_edits(corrected_edits, root=root)

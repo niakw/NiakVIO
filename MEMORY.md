@@ -423,3 +423,11 @@
 - Brain main `2931fb97ddf4560246a7161e91159703341cd142` is green in CI #1295 and guidance #223 produced a new executable current-byte candidate for 4KHDHub: fingerprint `a6afd0ce15ea36b47e326e8548593e85c3826063630e30de41ba770707d6f7c6`, mechanism `catalog_identity_query_variants`.
 - The new hypothesis is causally distinct from the exhausted DOM-selector family: it broadens bounded catalogue search queries using current TMDB title/original-title/year/season evidence while preserving existing type, title-score, year/season identity gates and terminal extraction. It is Brain-generated, not a manual provider patch.
 - Repair trigger retry 191 targets NiakVIO `f90341b9d75c411c497b91706dc8291fb596005d` and requires isolated movie + TV playable/identity proof before any publication. Rejection must be persisted and must not fall through to manual/canonical provider repair.
+
+
+## 2026-10-01 — Architecture FORCE exact-anchor ownership moved into the materializer
+
+- Learning architecture-FORCE runs #433 (36861325923) and #434 (36864572453) independently failed at the same point after successful provider Learning: Qwen selected the correct allowlisted architecture surface but returned a replace find that occurs more than once in scripts/brain_meta_learning.py. Asking the model to restate an exact anchor did not resolve the ambiguity.
+- brain_architecture_force_materializer.py now owns this textual anchoring step. For a repeated replace only, it requires the exact focused source snippet already supplied to the model to occur once in the full file and the model find to occur once inside that snippet. It then widens the intended find with unchanged current bytes until the full-file anchor is unique, applying the same prefix/suffix to the replacement.
+- The resolver never guesses between multiple focused occurrences, never changes provider files, never exceeds the existing find/replace bounds, and leaves unresolved ambiguity to the existing fail-closed validator. Telemetry FIELD_BRAIN_ARCH_FORCE_ANCHOR_RESOLVED records only path and bounded counts/lengths, not source content.
+- Regression tests cover both exact focused disambiguation and ambiguous fail-closed behavior. This is a Brain/Learning pipeline correction; 4KHDHub remains ROUTE PROVEN until a Brain-produced provider mutation passes isolated movie + TV playable/identity proof.

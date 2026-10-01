@@ -271,6 +271,80 @@ try:
 finally:
     mod._model_request = original_request
 
+
+# A repeated textual find is not automatically a model failure when Brain can
+# bind it to the exact focused snippet that was supplied to the model. The
+# resolver must widen unchanged real source context until the anchor is unique.
+with tempfile.TemporaryDirectory(prefix="brain-arch-force-anchor-") as tmp:
+    root = Path(tmp)
+    target = root / "scripts" / "brain_meta_learning.py"
+    target.parent.mkdir(parents=True, exist_ok=True)
+    source = (
+        "def unrelated():\n"
+        "    VALUE = 1\n"
+        "    return VALUE\n\n"
+        "def target_strategy():\n"
+        "    MARKER = 'route graph execution'\n"
+        "    VALUE = 1\n"
+        "    return VALUE\n"
+    )
+    target.write_text(source, encoding="utf-8")
+    focused = (
+        "def target_strategy():\n"
+        "    MARKER = 'route graph execution'\n"
+        "    VALUE = 1\n"
+        "    return VALUE\n"
+    )
+    raw = [{
+        "operation": "replace",
+        "path": "scripts/brain_meta_learning.py",
+        "find": "VALUE = 1",
+        "replace": "VALUE = 2",
+    }]
+    resolved = mod._resolve_non_unique_replace_edits(
+        raw,
+        {"sources": {"scripts/brain_meta_learning.py": focused}},
+        patterns,
+        root=root,
+    )
+    assert resolved[0]["find"] != "VALUE = 1"
+    assert source.count(resolved[0]["find"]) == 1
+    mod.validate_edits(resolved, patterns, root=root)
+    mod.apply_edits(resolved, root=root)
+    changed = target.read_text(encoding="utf-8")
+    assert changed.count("VALUE = 1") == 1
+    assert changed.count("VALUE = 2") == 1
+    assert "def unrelated():\n    VALUE = 1" in changed
+    assert "def target_strategy():" in changed
+
+# If the focused snippet itself does not uniquely identify one repeated find,
+# the resolver must leave the edit untouched so normal validation fails closed.
+with tempfile.TemporaryDirectory(prefix="brain-arch-force-anchor-ambiguous-") as tmp:
+    root = Path(tmp)
+    target = root / "scripts" / "brain_meta_learning.py"
+    target.parent.mkdir(parents=True, exist_ok=True)
+    source = "VALUE = 1\nVALUE = 1\n"
+    target.write_text(source, encoding="utf-8")
+    raw = [{
+        "operation": "replace",
+        "path": "scripts/brain_meta_learning.py",
+        "find": "VALUE = 1",
+        "replace": "VALUE = 2",
+    }]
+    unresolved = mod._resolve_non_unique_replace_edits(
+        raw,
+        {"sources": {"scripts/brain_meta_learning.py": source}},
+        patterns,
+        root=root,
+    )
+    assert unresolved[0]["find"] == "VALUE = 1"
+    try:
+        mod.validate_edits(unresolved, patterns, root=root)
+    except ValueError as exc:
+        assert "exactly once" in str(exc)
+    else:
+        raise AssertionError("ambiguous architecture FORCE anchor unexpectedly accepted")
+
 # A schema-valid plan can still hallucinate a non-allowlisted repository path.
 # FORCE must ask the model once to correct its own plan with the exact validation
 # error and allowedPaths, then fail closed if the correction is still invalid.
