@@ -24,6 +24,7 @@ def result(
     audio_languages=None,
     reachable_hosts=None,
     announced_player_candidates=0,
+    announced_variant_candidates=0,
     explored_player_requests=0,
     announced_quality_heights=None,
     fanout_state="",
@@ -44,6 +45,7 @@ def result(
             "audio_languages": list(audio_languages or []),
             "reachable_hosts": list(reachable_hosts or []),
             "announced_player_candidates": int(announced_player_candidates or 0),
+            "announced_variant_candidates": int(announced_variant_candidates or 0),
             "explored_player_requests": int(explored_player_requests or 0),
             "announced_quality_heights": list(announced_quality_heights or []),
             "variant_fanout_state": fanout_state,
@@ -131,6 +133,27 @@ accepted, reason = mod.evaluate_pair(
 assert accepted is False
 assert reason == "variant_coverage_no_verified_dimension_gain", reason
 
+dense_fanout_candidate = result(
+    status="healthy",
+    playable=1,
+    returned=19,
+    score=95,
+    quality_heights=[480],
+    effective_height=480,
+    reachable_hosts=["stream.example"],
+    announced_player_candidates=2,
+    announced_variant_candidates=19,
+    explored_player_requests=2,
+    fanout_state="fanout-observed",
+)
+accepted, reason = mod.evaluate_pair(
+    coverage_baseline,
+    dense_fanout_candidate,
+    "bounded-variant-enumeration-before-cap",
+)
+assert accepted is True, reason
+assert "returned-stream-count" in reason, reason
+
 fanout_baseline = result(
     status="healthy",
     playable=1,
@@ -138,14 +161,16 @@ fanout_baseline = result(
     quality_heights=[480],
     effective_height=480,
     reachable_hosts=["stream.example"],
-    announced_player_candidates=9,
-    explored_player_requests=1,
+    announced_player_candidates=2,
+    announced_variant_candidates=19,
+    explored_player_requests=2,
     announced_quality_heights=[480,720,1080],
     fanout_state="announced-not-explored",
 )
 fanout_summary = mod.variant_coverage_summary(fanout_baseline)
-assert fanout_summary["announcedPlayerCandidates"] == 9, fanout_summary
-assert fanout_summary["exploredPlayerRequests"] == 1, fanout_summary
+assert fanout_summary["announcedPlayerCandidates"] == 2, fanout_summary
+assert fanout_summary["announcedVariantCandidates"] == 19, fanout_summary
+assert fanout_summary["exploredPlayerRequests"] == 2, fanout_summary
 assert fanout_summary["announcedQualityHeights"] == [480,720,1080], fanout_summary
 assert fanout_summary["fanoutStates"] == ["announced-not-explored"], fanout_summary
 
