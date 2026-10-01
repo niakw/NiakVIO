@@ -767,7 +767,7 @@ jobs:
           tar -xzf "$RUNNER_TEMP/llama-b11140.tar.gz" -C .brain-llm-runtime/llama-prebuilt
           test -n "$(find .brain-llm-runtime/llama-prebuilt -type f -name llama-server -print -quit)"
 
-      - uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9
         if: steps.learning-slot.outputs.architecture_force == 'true' || (steps.brain_llm_route.outputs.llm_needed == 'true' && (steps.learning-slot.outputs.fast_handoff != 'true' || steps.brain_llm_fast_cache.outputs.complete != 'true'))
         with:
           path: |

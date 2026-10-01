@@ -90,7 +90,7 @@ jobs:
         with:
           node-version: '24'
           package-manager-cache: false
-      - uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165
+      - uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6
         with:
           distribution: temurin
           java-version: "17"
@@ -419,7 +419,7 @@ jobs:
         continue-on-error: true
         timeout-minutes: 4
         if: ${{ steps.repair_waf_reuse.outputs.reuse != 'true' && env.TS_OAUTH_CLIENT_ID != '' && env.TS_AUDIENCE != '' && env.TS_EXIT_NODE != '' }}
-        uses: tailscale/github-action@306e68a486fd2350f2bfc3b19fcd143891a4a2d8
+        uses: tailscale/github-action@d1b6cd204f8dceda5b3eaad7f1f767be390056cd
         with:
           oauth-client-id: ${{ env.TS_OAUTH_CLIENT_ID }}
           audience: ${{ env.TS_AUDIENCE }}
