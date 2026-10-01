@@ -454,3 +454,12 @@
 - NiakVIO Brain infrastructure commit `c41de9e8372b93d3b274dcefa13224b744c53899` removes the only duplicated literal line found in `scripts/brain_meta_learning.py` and adds a source-AST regression guard that rejects duplicate literal keys in `FAILURE_FAMILY_TAXONOMY`.
 - The prior focused-anchor resolver remains fail-closed; it is no longer asked to choose between two byte-identical `route_transition_graph_v1` anchors inside the same focused source snippet.
 - The reconstruction trigger is narrowed to 4KHDHub with `architecture_force=true`. This replay is only an architecture witness: success requires an allowlisted executable Brain patch plus Brain architecture tests. Provider repair still separately requires Brain-generated provider bytes to pass isolated movie + TV playable/identity proof.
+
+
+## 2026-10-01 — Architecture FORCE contract validation moved inside the transaction
+
+- Learning #436 (`36882904336`) proved the focused-anchor problem is now crossed: after one bounded 7B timeout/retry the materializer emitted `FIELD_BRAIN_ARCH_FORCE_MATERIALIZED edits=1 files=scripts/brain_meta_learning.py`.
+- The generated edit was syntactically valid but reintroduced a second literal `route_transition_graph_v1` taxonomy key. The new source-AST contract caught it immediately in `tests/brain_meta_learning_gap_synthesis_test.py`, so the architecture patch was not promoted.
+- Root pipeline gap: `validate_materialized_edits()` only ran parser/compiler validation transactionally. The three focused Brain architecture contracts ran only after `--apply`, too late for the materializer's same-run correction loop.
+- The materializer now runs the same bounded Brain contracts transactionally after syntax validation and before accepting a generated edit: meta-learning gap synthesis, architecture-force materializer, and self-architecture. A contract failure is wrapped as `MaterializedValidationError`, candidate bytes are restored, and the exact failure is fed into the existing bounded corrective model loop with `mustPassMaterializedContractValidation=true`.
+- Regression coverage proves a syntax-valid but contract-invalid edit is corrected in the same `validated_model_plan()` call and never leaks into baseline bytes. This remains Brain infrastructure only; 4KHDHub is still ROUTE PROVEN.

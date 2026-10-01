@@ -505,6 +505,80 @@ with tempfile.TemporaryDirectory(prefix="brain-arch-force-syntax-") as tmp:
         mod.call_model = original_call_model
         mod._model_request = original_request
 
+
+
+# A syntax-valid architecture edit can still violate the Brain contracts. The
+# materializer must catch that inside its transactional dry-run so the same run
+# can feed the exact contract failure back to Qwen instead of applying first and
+# failing only in the workflow afterwards.
+with tempfile.TemporaryDirectory(prefix="brain-arch-force-contract-") as tmp:
+    root = Path(tmp)
+    target = root / "scripts" / "brain_meta_learning.py"
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text("VALUE = 1\n", encoding="utf-8")
+    contract = root / "tests" / "brain_meta_learning_gap_synthesis_test.py"
+    contract.parent.mkdir(parents=True, exist_ok=True)
+    contract.write_text(
+        "from pathlib import Path\n"
+        "source=Path('scripts/brain_meta_learning.py').read_text()\n"
+        "assert 'DUPLICATE' not in source, source\n",
+        encoding="utf-8",
+    )
+    original_call_model = mod.call_model
+    original_request = mod._model_request
+    correction_calls = []
+    try:
+        mod.call_model = lambda endpoint, model, payload: {
+            "edits": [{
+                "operation": "replace",
+                "path": "scripts/brain_meta_learning.py",
+                "find": "VALUE = 1",
+                "replace": "VALUE = 1\nDUPLICATE = True",
+            }]
+        }
+
+        def fix_contract(endpoint, model, payload, *, max_tokens, timeout, compact=False):
+            correction_calls.append(payload)
+            assert "materialized contract validation failed" in payload["validationError"]
+            assert payload["correctionReason"] == "materialized-source-validation"
+            assert payload["correctionContract"]["mustPassMaterializedContractValidation"] is True
+            import json
+            return {
+                "choices": [{
+                    "message": {
+                        "content": json.dumps({
+                            "edits": [{
+                                "operation": "replace",
+                                "path": "scripts/brain_meta_learning.py",
+                                "find": "VALUE = 1",
+                                "replace": "VALUE = 2",
+                            }]
+                        })
+                    }
+                }]
+            }
+
+        mod._model_request = fix_contract
+        _, corrected_edits = mod.validated_model_plan(
+            "http://127.0.0.1:8080",
+            "demo",
+            {
+                "blueprint": {"strategyId": "demo"},
+                "allowedPaths": patterns,
+                "contract": {"requireExecutableDiff": True},
+                "sources": {"scripts/brain_meta_learning.py": "VALUE = 1\n"},
+                "architectureLayers": [],
+            },
+            patterns,
+            root=root,
+        )
+        assert corrected_edits[0]["replace"] == "VALUE = 2"
+        assert len(correction_calls) == 1
+        assert target.read_text(encoding="utf-8") == "VALUE = 1\n"
+    finally:
+        mod.call_model = original_call_model
+        mod._model_request = original_request
+
 # A second syntactically invalid response fails closed and still restores the
 # exact original bytes instead of leaving a broken architecture file behind.
 with tempfile.TemporaryDirectory(prefix="brain-arch-force-syntax-fail-") as tmp:

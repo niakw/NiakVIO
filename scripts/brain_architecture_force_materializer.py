@@ -12,6 +12,7 @@ import ast
 import json
 import re
 import subprocess
+import sys
 from pathlib import Path
 from typing import Any
 from urllib.error import HTTPError
@@ -287,12 +288,53 @@ def validate_changed_syntax(changed: list[str], root: Path = ROOT) -> None:
                 )
 
 
+MATERIALIZED_CONTRACT_TESTS = (
+    "tests/brain_meta_learning_gap_synthesis_test.py",
+    "tests/brain_architecture_force_materializer_test.py",
+    "tests/brain_self_architecture_test.py",
+)
+
+
+def validate_materialized_contracts(
+    changed: list[str],
+    *,
+    root: Path = ROOT,
+) -> None:
+    """Run the same focused Brain contracts before a generated edit is accepted.
+
+    Architecture FORCE previously syntax-checked transactionally, then applied
+    the edit permanently and only afterwards ran these tests in the workflow.
+    That prevented same-run model correction for semantically invalid but
+    parseable changes. Keep the tests bounded and fail closed inside the
+    transaction so their exact failure becomes corrective feedback.
+    """
+    if not any(not str(path).startswith("tests/") for path in changed):
+        return
+    for relative in MATERIALIZED_CONTRACT_TESTS:
+        test = root / relative
+        if not test.is_file():
+            continue
+        result = subprocess.run(
+            [sys.executable, str(test)],
+            cwd=root,
+            capture_output=True,
+            text=True,
+            timeout=60,
+            check=False,
+        )
+        if result.returncode != 0:
+            detail = (result.stderr or result.stdout or "contract test failed").strip()
+            raise ValueError(
+                f"materialized contract validation failed: {relative}: {detail[:1200]}"
+            )
+
+
 def validate_materialized_edits(
     edits: list[dict[str, Any]],
     *,
     root: Path = ROOT,
 ) -> list[str]:
-    """Apply edits transactionally, syntax-check them, then restore the exact baseline."""
+    """Apply edits transactionally, validate syntax/contracts, then restore baseline."""
     snapshots: dict[str, tuple[bool, bytes]] = {}
     for edit in edits:
         path = str(edit.get("path") or "")
@@ -303,6 +345,7 @@ def validate_materialized_edits(
     try:
         changed = apply_edits(edits, root=root)
         validate_changed_syntax(changed, root=root)
+        validate_materialized_contracts(changed, root=root)
         return changed
     except ValueError as exc:
         remaining = MAX_MATERIALIZED_FAILURE_CONTEXT
@@ -844,6 +887,7 @@ def validated_model_plan(
         correction_payload["correctionReason"] = "materialized-source-validation"
         correction_payload["correctionContract"].update({
             "mustPassMaterializedSyntaxValidation": True,
+            "mustPassMaterializedContractValidation": True,
             "doNotRepeatRejectedReplacement": True,
             "useMaterializedFailureSources": bool(candidate_sources),
             "materializedCorrectionRound": correction_round,
