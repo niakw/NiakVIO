@@ -65,7 +65,8 @@ assert 'eligible=(repair|environment|current) if force else (repair|environment)
 assert 'completeness_targets=' in multi_block, multi_block
 assert 'explicit-force-completeness-learning' in multi_block, multi_block
 assert 'provider-fast-repair.json' not in multi_block, multi_block
-assert 'Current census repair/environment queues are the canonical scope' in multi_block, multi_block
+assert 'Routine Learning remains census-debt scoped' in multi_block, multi_block
+assert 'scope="current non-disabled providers under explicit architecture FORCE" if force else "current repair/environment queues"' in multi_block, multi_block
 assert 'autopilot-targeted-core-learning' in multi_block, multi_block
 assert "target-scoped-handoff" in workflow, workflow
 assert "explicit-force-completeness-learning" in workflow, workflow
