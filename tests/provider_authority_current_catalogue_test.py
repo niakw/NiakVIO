@@ -48,7 +48,11 @@ expected = {
     "neko-sama": "KEEP_PROVEN_SITE",
     "anime-ultime": "KEEP_PROVEN_SITE",
     "mallumv": "KEEP_PROVEN_SITE",
-    "showbox": "DISABLE_MANUAL_POLICY" if rows["showbox"].get("enabled") is not False else "KEEP_DISABLED",
+    "showbox": (
+        "DISABLE_MANUAL_POLICY"
+        if "showbox" in rows and rows["showbox"].get("enabled") is not False
+        else "KEEP_DISABLED"
+    ),
     "animetsu": "KEEP_DISABLED",
     "fullanime": "KEEP_DISABLED",
     "desiflix": "KEEP_DISABLED",
@@ -79,13 +83,18 @@ assert animesultra["failureCount"] == 0, animesultra
 # manual source review found no public authority beyond search/private Telegram.
 # Before lifecycle apply it must request DISABLE_MANUAL_POLICY; after apply it is
 # terminal KEEP_DISABLED. New registry autofill rows still opt out by default.
-showbox_registry = registries["showbox"]
-showbox = classify("showbox")
-assert showbox["reasons"] == ["manual_off_no_current_authority_search_only"], showbox
-assert showbox_registry.get("legacy_search_refresh") is True, showbox_registry
-assert showbox_registry.get("activation_eligible") is False, showbox_registry
-assert showbox_registry.get("direct") is None, showbox_registry
-assert showbox["confidence"] == "terminal", showbox
+if "showbox" in rows:
+    showbox_registry = registries["showbox"]
+    showbox = classify("showbox")
+    assert showbox["reasons"] == ["manual_off_no_current_authority_search_only"], showbox
+    assert showbox_registry.get("legacy_search_refresh") is True, showbox_registry
+    assert showbox_registry.get("activation_eligible") is False, showbox_registry
+    assert showbox_registry.get("direct") is None, showbox_registry
+    assert showbox["confidence"] == "terminal", showbox
+else:
+    showbox_record = archived.get("showbox")
+    assert isinstance(showbox_record, dict), showbox_record
+    assert showbox_record.get("state") == "archived-provider-old", showbox_record
 for provider, row in registries.items():
     if isinstance(row, dict) and row.get("registry_state") == "unresolved":
         assert row.get("legacy_search_refresh") is not True, (provider, row)

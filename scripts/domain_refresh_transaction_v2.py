@@ -477,6 +477,30 @@ def _normalized_domain_projection(data: dict[str, Any]) -> dict[str, Any]:
 
 
 DOMAIN_CONFIG_DATA_FIELDS = ("officialSite", "knownSite", "officialHub", "domainSubstitutions")
+DOMAIN_CONFIG_DOMAIN_DERIVED_URL_FIELDS = ("observedUrls", "origins")
+
+
+def project_domain_owned_config_runtime_urls(
+    published: dict[str, Any],
+    patch: dict[str, Any],
+) -> dict[str, Any]:
+    """Rewrite only explicit old-site hosts inside domain-derived CONFIG URL lists."""
+    output = copy.deepcopy(published)
+    rewrites = _domain_runtime_rewrites(patch)
+    if not rewrites:
+        return output
+    for key in DOMAIN_CONFIG_DOMAIN_DERIVED_URL_FIELDS:
+        values = output.get(key)
+        if not isinstance(values, list):
+            continue
+        projected = [
+            _replace_domain_host_tokens(str(value), rewrites)
+            if isinstance(value, str)
+            else value
+            for value in values
+        ]
+        output[key] = projected
+    return output
 
 
 def project_domain_owned_config_data(
@@ -542,6 +566,13 @@ def provider_domain_projection_drift_ids(provider_ids: list[str]) -> list[str]:
             "domainSubstitutions": model.get("domainSubstitutions") or {},
         }
         if _normalized_domain_projection(published) != _normalized_domain_projection(expected):
+            drift.append(provider_id)
+            continue
+        projected_urls = project_domain_owned_config_runtime_urls(published, patch)
+        if any(
+            projected_urls.get(key) != published.get(key)
+            for key in DOMAIN_CONFIG_DOMAIN_DERIVED_URL_FIELDS
+        ):
             drift.append(provider_id)
     return drift
 
@@ -643,6 +674,7 @@ def rebuild_provider_configs(provider_ids: list[str]) -> list[dict[str, str]]:
         if canonical(previous_data.get("providerId")) != provider_id:
             raise RuntimeError(f"{provider_id}: CONFIG providerId mismatch")
         data = project_domain_owned_config_data(previous_data, expected_data)
+        data = project_domain_owned_config_runtime_urls(data, patch)
         if canonical(data.get("providerId")) != provider_id:
             raise RuntimeError(f"{provider_id}: domain CONFIG projection changed providerId")
 

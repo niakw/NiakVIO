@@ -498,3 +498,11 @@
 - PR #227 (Brain architecture proposal) and PR #226 (Dependabot grouped Actions update) were closed unmerged. Neither proposal was treated as production state.
 - Branch maintenance now uses an allowlist instead of a growing hard-coded tombstone list: only main and the read-only persistent Brain memory ref brain-learning/proposals are retained automatically. Any other remote branch with no open PR is deleted; an explicitly requested open PR protects its branch until that PR closes.
 - This prevents closed Dependabot/proposal/workbench branches from accumulating and prevents automatic Learning schedule/push runs from recreating review PRs behind the user's main-only workflow.
+
+
+## 2026-10-01 — Domain Refresh CONFIG-derived URL rematerialization
+
+- Post-publication Verify on domain transaction b7097f7018b2b291dabbea0163f93a1ab6605b02 found a real split-brain: Purstream structured CONFIG and registry were current at purstream.cat, but the exact published Provider CONFIG still retained purstream.club inside observedUrls/origins. Full static audit failed with provider-data-drift even though the narrower domain-only gate had passed.
+- Root cause: Domain Refresh projected officialSite/knownSite/officialHub/domainSubstitutions, but treated observedUrls/origins as unrelated DATA even when those entries were mechanically derived from the previous site origin.
+- The transaction now rewrites only explicit old-site -> current-site host mappings inside CONFIG observedUrls/origins, preserving unrelated API/CDN/player URLs. Projection-drift detection also recognizes this stale-byte state so an idempotent later refresh rematerializes it even when officialSite is already current.
+- Provider lifecycle regression was also corrected to handle ShowBox after it has moved from the current manifest into archived-provider-old state; the prior test dereferenced rows["showbox"] before its archive branch.
