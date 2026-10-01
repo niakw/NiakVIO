@@ -24,11 +24,21 @@ assert "- name: Report control-plane-only non-regression no-op" in wf
 assert "if: steps.impact.outputs.mode == 'none'" in wf
 assert "FIELD_PROVIDER_NON_REGRESSION_NOOP provider_impact=none live_census_skipped=true" in wf
 
-# Static contracts remain unconditional: control-plane changes still validate
-# architecture/syntax without paying a live 42-provider network census.
+# Global static contracts remain unconditional. Provider-specific behavior
+# contracts follow the same materialization impact scope: none skips them,
+# explicit runs only touched providers, all runs the full provider set.
 static=wf.index("- name: Static anti-regression contracts")
 impact=wf.index("- name: Classify current provider-impact scope")
 materialize=wf.index("- name: Materialize exact current provider candidate bytes")
 assert impact < static < materialize
+static_block=wf[static:materialize]
+assert "impact_mode='${{ steps.impact.outputs.mode }}'" in static_block
+assert "impact_providers=',${{ steps.impact.outputs.providers }},'" in static_block
+assert 'affected() {' in static_block
+assert '[ "$impact_mode" = "all" ]' in static_block
+assert 'if affected "4khdhub"; then python tests/provider_4khdhub_runtime_behavior_test.py; fi' in static_block
+assert 'if affected "hindmoviez"; then node tests/provider_hindmoviez_identity_contract_test.cjs; fi' in static_block
+assert "python tests/provider_shared_player_fanout_contract_test.py" in static_block
+assert "python tests/provider_multiflux_preservation_test.py" in static_block
 
 print("Provider non-regression incremental scope contract passed")
