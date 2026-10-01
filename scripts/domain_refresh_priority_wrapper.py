@@ -99,6 +99,20 @@ def telegram_freshness_priority(row: dict[str, Any]) -> int:
         return -1
 
 
+def chronological_provider_candidate(provider_id: object, row: dict[str, Any]) -> bool:
+    """Require provider-branded evidence for chronological Telegram authority."""
+    if telegram_freshness_priority(row) < 0 or int(row.get("score") or 0) < 90:
+        return False
+    if semantic_priority(row) < 0:
+        return False
+    provider = _compact(provider_id)
+    if not provider:
+        return False
+    url_host = _compact(str(row.get("url") or "").split("://")[-1].split("/")[0])
+    label = _compact(row.get("label"))
+    return provider in url_host or provider in label
+
+
 def current_registry_hub_configs(config: dict[str, Any]) -> dict[str, dict[str, Any]]:
     """Return only provider-hubs.json current rows, enriched from provider patches.
 
@@ -125,7 +139,10 @@ def _candidate_key(provider_id: object, row: dict[str, Any]) -> tuple[int, int, 
     )
 
 
-def prioritize_authoritative_item(item: dict[str, Any]) -> dict[str, Any]:
+def prioritize_authoritative_item(
+    item: dict[str, Any],
+    cfg: dict[str, Any] | None = None,
+) -> dict[str, Any]:
     if item.get("status") != "site_authoritative":
         return item
     candidates = [dict(row) for row in (item.get("site_candidates") or []) if isinstance(row, dict)]
@@ -133,7 +150,33 @@ def prioritize_authoritative_item(item: dict[str, Any]) -> dict[str, Any]:
         return item
 
     provider_id = item.get("provider_id")
-    ordered = sorted(candidates, key=lambda row: _candidate_key(provider_id, row))
+    cfg = cfg if isinstance(cfg, dict) else {}
+    resolver = _fold(cfg.get("resolver"))
+    operator_pin = next(
+        (row for row in candidates if row.get("registry_operator_pin") is True),
+        None,
+    )
+    chronological = [
+        row for row in candidates
+        if chronological_provider_candidate(provider_id, row)
+    ]
+    if resolver == "latest_telegram_domain" and chronological and operator_pin is None:
+        # The registry explicitly delegates current-address authority to a
+        # chronological public channel. explicit_current is therefore an LKG,
+        # not a stronger source than the newest safe official message.
+        latest = max(
+            chronological,
+            key=lambda row: (
+                telegram_freshness_priority(row),
+                int(row.get("score") or 0),
+                int(row.get("document_index") or -1),
+                _fold(row.get("url")),
+            ),
+        )
+        remainder = [row for row in candidates if row is not latest]
+        ordered = [latest, *sorted(remainder, key=lambda row: _candidate_key(provider_id, row))]
+    else:
+        ordered = sorted(candidates, key=lambda row: _candidate_key(provider_id, row))
     selected = ordered[0]
     terminal = str(selected.get("url") or "").strip().rstrip("/")
     if not terminal:
@@ -149,7 +192,13 @@ def prioritize_authoritative_item(item: dict[str, Any]) -> dict[str, Any]:
     if terminal != previous:
         item["candidate_priority_adjusted"] = True
         item["candidate_priority_previous"] = previous
-        item["candidate_priority_reason"] = "equal-score semantic/freshness/brand preference"
+        item["candidate_priority_reason"] = (
+            "latest-telegram-domain chronological authority"
+            if resolver == "latest_telegram_domain"
+            and selected.get("source_type") == "telegram_public"
+            and telegram_freshness_priority(selected) >= 0
+            else "equal-score semantic/freshness/brand preference"
+        )
     return item
 
 
@@ -157,7 +206,11 @@ def install_priority_wrapper() -> Callable[..., dict[str, Any]]:
     original = refresh.resolve_authoritative_hub_domain
 
     def wrapped(*args: Any, **kwargs: Any) -> dict[str, Any]:
-        return prioritize_authoritative_item(original(*args, **kwargs))
+        cfg = args[1] if len(args) > 1 and isinstance(args[1], dict) else kwargs.get("cfg")
+        return prioritize_authoritative_item(
+            original(*args, **kwargs),
+            cfg if isinstance(cfg, dict) else {},
+        )
 
     refresh.resolve_authoritative_hub_domain = wrapped
     return original

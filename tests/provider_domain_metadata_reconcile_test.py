@@ -73,15 +73,12 @@ import json
 hubs = json.loads((ROOT / "provider-hubs.json").read_text(encoding="utf-8"))["providers"]
 assert hubs["4khdhub"]["direct"] == "https://4khdhub.one/"
 assert hubs["4khdhub"]["direct_authority"] == "explicit_current"
-assert hubs["wookafr"]["direct"] == "https://wookafr.boston/"
-assert hubs["wookafr"]["direct_authority"] == "explicit_current"
-assert hubs["wookafr"]["direct_candidates"][:3] == [
-    "https://wookafr.boston/",
-    "https://wookafr.center/",
-    "https://wookafr.blog/",
-]
-assert hubs["hindmoviez"]["direct"] == "https://hindmovie.icu/"
-assert hubs["hindmoviez"]["direct_authority"] == "explicit_current"
+for rotating_provider in ("wookafr", "hindmoviez"):
+    rotating = hubs[rotating_provider]
+    assert rotating["direct_authority"] == "explicit_current", rotating
+    assert str(rotating.get("direct") or "").startswith("https://"), rotating
+    assert (rotating.get("direct_candidates") or [None])[0] == rotating["direct"], rotating
+    assert str(rotating.get("direct_authority_source") or ""), rotating
 assert hubs["movieshunt"]["direct"] == "https://movieshunt.run/"
 assert hubs["movieshunt"]["direct_authority"] == "explicit_current"
 assert hubs["animesalt"]["direct"] == "https://animesalt.cx/"
@@ -106,11 +103,16 @@ assert "movieshunt.monster" not in hubs["movieshunt"]["blocked_hosts"]
 overrides = json.loads((ROOT / "provider-overrides.json").read_text(encoding="utf-8"))["provider_patches"]
 
 wooka = overrides["wookafr"]
-assert wooka["official_site"] == "https://wookafr.boston", wooka
-assert wooka["proof_search_bases"][:2] == ["https://wookafr.boston", "https://wookafr.center"], wooka
-for current_host in ("wookafr.boston", "wookafr.center", "wookafr.blog", "wookafr.plus", "wookafr.app", "wookafr.mov"):
-    assert current_host not in wooka.get("domain_substitutions", {}), (current_host, wooka.get("domain_substitutions"))
-assert wooka["domain_substitutions"]["wookafr.fyi"] == "wookafr.boston"
+wooka_site = str(wooka.get("official_site") or "").rstrip("/")
+assert wooka_site.startswith("https://wookafr."), wooka
+assert hubs["wookafr"]["direct"].rstrip("/") == wooka_site, (hubs["wookafr"], wooka)
+assert wooka_site in [str(v).rstrip("/") for v in (wooka.get("proof_search_bases") or [])], wooka
+current_wooka_host = wooka_site.split("://", 1)[-1]
+assert current_wooka_host not in wooka.get("domain_substitutions", {}), wooka
+# Historical same-brand hosts may point to the current terminal, but never the
+# other way around; Domain Refresh owns the exact rotating target.
+for source, target in (wooka.get("domain_substitutions") or {}).items():
+    assert source != current_wooka_host, (source, target, wooka)
 
 vidfast = overrides["vidfast"]
 assert vidfast["official_site"] == "https://vidfast.to", vidfast

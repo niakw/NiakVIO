@@ -124,6 +124,63 @@ result = prioritize_authoritative_item(item)
 assert result["official_site"] == "https://demo.new", result
 assert result["site_candidates"][0]["message_id"] == 114, result
 
+# When the registry explicitly delegates address authority to the latest official
+# Telegram message, a refresh-generated explicit_current LKG must not outrank
+# the newer safe provider-branded announcement.
+item = {
+    "provider_id": "wookafr",
+    "status": "site_authoritative",
+    "official_site": "https://wookafr.boston",
+    "site_candidates": [
+        {
+            "url": "https://wookafr.boston",
+            "label": "registry explicit current terminal",
+            "score": 1000,
+            "source_type": "hub",
+            "registry_explicit_current": True,
+            "registry_operator_pin": False,
+        },
+        {
+            "url": "https://wookafr.center",
+            "label": "https://wookafr.center",
+            "score": 100,
+            "document_index": 74,
+            "message_id": 130,
+            "source_type": "telegram_public",
+        },
+        {
+            "url": "https://wookafr.blog",
+            "label": "Wookafr.blog",
+            "score": 100,
+            "document_index": 92,
+            "message_id": 133,
+            "source_type": "telegram_public",
+        },
+    ],
+}
+result = prioritize_authoritative_item(item, {"resolver": "latest_telegram_domain"})
+assert result["official_site"] == "https://wookafr.blog", result
+assert result["site_candidates"][0]["message_id"] == 133, result
+assert result["candidate_priority_reason"] == "latest-telegram-domain chronological authority", result
+
+locked = {
+    **item,
+    "official_site": "https://wookafr.boston",
+    "site_candidates": [
+        {
+            "url": "https://wookafr.boston",
+            "label": "registry operator pin terminal",
+            "score": 1000,
+            "source_type": "hub",
+            "registry_explicit_current": False,
+            "registry_operator_pin": True,
+        },
+        *item["site_candidates"][1:],
+    ],
+}
+locked_result = prioritize_authoritative_item(locked, {"resolver": "latest_telegram_domain"})
+assert locked_result["official_site"] == "https://wookafr.boston", locked_result
+
 # Real registry-chain regression: Kehflix explicit current terminal must survive
 # provider-hubs.json -> merge_hub_registry -> authoritative resolver.
 real_config = wrapper.transaction.resolver.load_json(ROOT / "provider-overrides.json", {})

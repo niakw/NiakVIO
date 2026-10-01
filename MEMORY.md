@@ -482,3 +482,11 @@
 - Domain Refresh now treats monotonic Telegram message_id as freshness evidence after trust/semantic safety. A safe high-confidence same-brand newest Telegram announcement may supersede refresh-generated explicit_current; immutable operator_pin remains locked, stale/backup-labelled announcements remain rejected.
 - The durable manual-evidence regression no longer pins Flemmix domain values. It protects the DLE/search route family only; current terminal/substitution ownership remains with Domain Refresh.
 - No provider domain is manually patched by this fix. The authoritative workflow must rediscover, reconcile, rematerialize, validate and publish current domains itself.
+
+
+## 2026-10-01 — Domain Refresh #1079 crossed discovery; remaining stale-domain test removed
+
+- Domain Refresh #1079 (36890189793) on f68ecf4d resolved 21 providers and proposed 3 authoritative rotations with no Core mutation: Flemmix -> flemmix.eu, HindMoviez -> hindmovie.dev, Purstream -> purstream.cat. The artifact ordered Purstream Telegram message 114 (purstream.cat) ahead of messages 113/112/109, proving chronological selection now works.
+- Publication was still blocked at provider_domain_metadata_reconcile_test.py because that test hard-pinned HindMoviez to hindmovie.icu and WookaFR to wookafr.boston. Those exact current-domain assertions are invalid for refreshable explicit_current providers and are replaced by structural authority/registry consistency checks.
+- WookaFR remained on boston in #1079 despite official Telegram message 133 advertising wookafr.blog. The priority wrapper now enforces the declared latest_telegram_domain contract directly: the newest safe high-confidence provider-branded Telegram message outranks refresh-generated explicit_current LKG state. operator_pin remains immutable.
+- This remains a generic Domain Refresh pipeline correction. No provider domain is manually edited.
