@@ -210,7 +210,21 @@ def _status_failure(row: dict[str, Any]) -> str:
         return "chain_terminal_gap"
     if status == "ROUTE PROVEN":
         return "route_proven_gap"
-    if "waf" in issue or "challenge" in issue or "blocked" in issue:
+    if (
+        "waf" in issue
+        or "challenge" in issue
+        or "blocked" in issue
+        or (
+            status in {"REGRESSION PROVIDER", "PROVIDER NETWORK BLOCKED"}
+            and any(token in issue for token in (
+                "provider_network_exception",
+                "provider_network_http_error",
+                "provider_network_timeout",
+                "provider_network_dns_error",
+                "provider_network_tls_error",
+            ))
+        )
+    ):
         return "provider_transport_gap"
     if "lookup_only" in depth:
         return "search_gap"
