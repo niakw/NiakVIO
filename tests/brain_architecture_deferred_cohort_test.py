@@ -257,6 +257,11 @@ assert fully_exhausted == [], fully_exhausted
 
 workflow_source = (ROOT / ".github" / "workflows" / "brain-learning-lab.yml").read_text(encoding="utf-8")
 architecture_job = workflow_source.split("  publish-architecture-proposal:", 1)[1].split("  continue-learning-slot:", 1)[0]
-assert "github.event_name == 'push'" in architecture_job, architecture_job
+architecture_if = architecture_job.split("    needs:", 1)[0]
+assert "github.event_name == 'workflow_dispatch'" in architecture_if, architecture_if
+assert "github.event.inputs.publish_proposal == 'true'" in architecture_if, architecture_if
+assert "needs.experiment.outputs.architecture_force == 'true'" in architecture_if, architecture_if
+assert "github.event_name == 'push'" not in architecture_if, architecture_if
+assert "github.event_name == 'schedule'" not in architecture_if, architecture_if
 
 print("Brain architecture deferred repair cohort contract passed")

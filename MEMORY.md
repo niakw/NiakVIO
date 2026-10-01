@@ -506,3 +506,12 @@
 - Root cause: Domain Refresh projected officialSite/knownSite/officialHub/domainSubstitutions, but treated observedUrls/origins as unrelated DATA even when those entries were mechanically derived from the previous site origin.
 - The transaction now rewrites only explicit old-site -> current-site host mappings inside CONFIG observedUrls/origins, preserving unrelated API/CDN/player URLs. Projection-drift detection also recognizes this stale-byte state so an idempotent later refresh rematerializes it even when officialSite is already current.
 - Provider lifecycle regression was also corrected to handle ShowBox after it has moved from the current manifest into archived-provider-old state; the prior test dereferenced rows["showbox"] before its archive branch.
+
+
+## 2026-10-01 — Domain Refresh #1081 closes CONFIG/materialization split-brain
+
+- Domain Refresh #1081 (`36895452117`) completed SUCCESS from base `4066f09b4cbdb10c67de10f16196542765cb5bdb` and atomically published provider stage `8a8ba4540606f820c1492ebfbc37928dd0bb198b` then final release `110db85eff30b1271ce86d02808c535d5fca3664`.
+- The run reported `projection_drift=17`, rebuilt 17 affected bundles, passed rollback/stale guards, DNS observation, domain-only Provider v3 static audit, Hub46 projection, release hashes and release integrity, then pushed main successfully.
+- Exact post-push Purstream bundle `providers/purstream--nuvio--18f7e1fe73730189.js` now has CONFIG `officialSite=https://purstream.cat`, `knownSite=https://purstream.cat`, observedUrls using `https://purstream.cat`, and origins using `https://purstream.cat`. Historical `purstream.club` remains only as an explicit substitution key to the current host, which is intentional migration memory rather than executable current authority.
+- Current authoritative address state after the same live refresh: Purstream `purstream.cat`, HindMoviez `hindmovie.dev`, WookaFR `wookafr.boston`, Flemmix `flemmix.eu`. These are workflow-derived current values, not hand-patched provider domains.
+- The remaining Workflow Gate red on the pre-publication control-plane SHA was a stale test assertion in `brain_architecture_deferred_cohort_test.py` expecting automatic push-triggered architecture PRs. The contract is aligned with main-only policy: proposal PR publication is explicit workflow_dispatch + publish_proposal=true; architecture FORCE direct-main validation remains allowed.
