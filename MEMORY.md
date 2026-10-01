@@ -463,3 +463,13 @@
 - Root pipeline gap: `validate_materialized_edits()` only ran parser/compiler validation transactionally. The three focused Brain architecture contracts ran only after `--apply`, too late for the materializer's same-run correction loop.
 - The materializer now runs the same bounded Brain contracts transactionally after syntax validation and before accepting a generated edit: meta-learning gap synthesis, architecture-force materializer, and self-architecture. A contract failure is wrapped as `MaterializedValidationError`, candidate bytes are restored, and the exact failure is fed into the existing bounded corrective model loop with `mustPassMaterializedContractValidation=true`.
 - Regression coverage proves a syntax-valid but contract-invalid edit is corrected in the same `validated_model_plan()` call and never leaks into baseline bytes. This remains Brain infrastructure only; 4KHDHub is still ROUTE PROVEN.
+
+
+## 2026-10-01 — Architecture FORCE transactional semantic replay
+
+- Brain infrastructure `39c51c3809e1a72798fc88746aa68256df81a88b` passed Workflow Gate #7013 (`36884349311`) including workflow architecture contracts, native provider-loading compatibility and side-effect checks.
+- Learning #436 (`36882904336`) crossed the former non-unique-anchor failure and materialized one `scripts/brain_meta_learning.py` edit. The edit was syntactically valid but reintroduced the duplicate `route_transition_graph_v1` taxonomy key; the meta-learning source-AST contract rejected it and no architecture patch was promoted.
+- The materializer now executes the focused Brain architecture contracts transactionally before accepting candidate bytes, allowing the existing same-run corrective loop to consume the exact semantic failure and retry before `--apply`.
+- Main subsequently advanced only through availability-diagnostics commit `5cf10e3b15851a37d2470219db3f6b27f58f6988`; Brain/materializer/provider inputs are unchanged relative to the green pipeline proof.
+- The next 4KHDHub-only architecture-FORCE replay is armed on current main. It remains Brain infrastructure work only; 4KHDHub stays ROUTE PROVEN until a later Brain-generated provider candidate passes movie + TV playable/identity proof.
+- Git hygiene: obsolete branch `fix/learning-force-canonical-queue` is now included in branch maintenance deletion when no open PR exists; Brain memory/proposal refs remain retained.
