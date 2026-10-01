@@ -23,6 +23,8 @@ for required_trigger_guard in (
     ".github/triggers/provider-census-sharded.json",
     "explicit_trigger=true",
     'FIELD_SHARDED_CENSUS_PREPARE should_run=true',
+    'census_scope="$trigger_scope"',
+    'CENSUS_SCOPE: ${{ needs.prepare.outputs.census_scope }}',
 ):
     assert required_trigger_guard in workflow, f"missing explicit census trigger bypass: {required_trigger_guard}"
 
