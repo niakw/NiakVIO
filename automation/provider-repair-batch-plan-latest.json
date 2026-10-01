@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
-  "sourceRunId": "36935475661",
-  "sourceTriggerSha": "5d78c2cb6de1e96e61657cf3dbad933e28e22940",
+  "sourceRunId": "36939639436",
+  "sourceTriggerSha": "2029449709c56625d5cf266b2cb417633f9849b0",
   "unresolvedProviderCount": 19,
-  "groupCount": 10,
+  "groupCount": 11,
   "executionModel": {
     "default": "family/signature batch",
     "liveProbeConcurrency": "audit_provider_quick_yield ThreadPool",
@@ -71,34 +71,6 @@
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
     {
-      "groupId": "terminal-extraction|html_scraper",
-      "repairScope": "terminal-extraction",
-      "runtimeFamilies": [
-        "api_stream_resolver",
-        "html_scraper",
-        "mallumv-catalogue-confirm-internal-v1"
-      ],
-      "capabilityStrategy": "html_scraper",
-      "evidenceDepths": [
-        "chain"
-      ],
-      "dominantIssues": [
-        "network_http_error",
-        "waf_challenge"
-      ],
-      "harnessTransportClasses": [],
-      "transportSignature": "not-applicable",
-      "providerCount": 3,
-      "providers": [
-        "mallumv",
-        "moviebox",
-        "vidrock"
-      ],
-      "action": "apply/test shared terminal-player extraction profile to the whole capability family",
-      "executionPolicy": "batch-first",
-      "providerLocalFallback": "only-after-shared-profile-failure"
-    },
-    {
       "groupId": "candidate-replay|mixed_embed_resolver",
       "repairScope": "candidate-replay",
       "runtimeFamilies": [
@@ -149,6 +121,55 @@
         "uhdmovies"
       ],
       "action": "residential full-provider replay disproved transport ownership; learn a provider-side request/route strategy before mutation",
+      "executionPolicy": "batch-first",
+      "providerLocalFallback": "only-after-shared-profile-failure"
+    },
+    {
+      "groupId": "terminal-extraction|html_scraper",
+      "repairScope": "terminal-extraction",
+      "runtimeFamilies": [
+        "api_stream_resolver",
+        "mallumv-catalogue-confirm-internal-v1"
+      ],
+      "capabilityStrategy": "html_scraper",
+      "evidenceDepths": [
+        "chain"
+      ],
+      "dominantIssues": [
+        "network_http_error",
+        "waf_challenge"
+      ],
+      "harnessTransportClasses": [],
+      "transportSignature": "not-applicable",
+      "providerCount": 2,
+      "providers": [
+        "mallumv",
+        "moviebox"
+      ],
+      "action": "apply/test shared terminal-player extraction profile to the whole capability family",
+      "executionPolicy": "batch-first",
+      "providerLocalFallback": "only-after-shared-profile-failure"
+    },
+    {
+      "groupId": "candidate-replay|direct_media",
+      "repairScope": "candidate-replay",
+      "runtimeFamilies": [
+        "api_stream_resolver"
+      ],
+      "capabilityStrategy": "direct_media",
+      "evidenceDepths": [
+        "chain"
+      ],
+      "dominantIssues": [
+        "network_zero_result"
+      ],
+      "harnessTransportClasses": [],
+      "transportSignature": "not-applicable",
+      "providerCount": 1,
+      "providers": [
+        "persianstremio"
+      ],
+      "action": "replay/rematerialize retained candidate knowledge against current bytes before new mutation",
       "executionPolicy": "batch-first",
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
