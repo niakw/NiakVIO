@@ -107,6 +107,23 @@ item = {
 result = prioritize_authoritative_item(item)
 assert result["official_site"] == "https://z.example", result
 
+# Telegram channels are chronological authority. With equal trust/semantics, a
+# newer message id must beat an older post even when its document position is
+# later. This is the rotating-domain regression.
+older = row("https://demo.old", "https://demo.old", 100, 10)
+older.update({"source_type": "telegram_public", "message_id": 109})
+newer = row("https://demo.new", "https://demo.new", 100, 99)
+newer.update({"source_type": "telegram_public", "message_id": 114})
+item = {
+    "provider_id": "demo",
+    "status": "site_authoritative",
+    "official_site": "https://demo.old",
+    "site_candidates": [older, newer],
+}
+result = prioritize_authoritative_item(item)
+assert result["official_site"] == "https://demo.new", result
+assert result["site_candidates"][0]["message_id"] == 114, result
+
 # Real registry-chain regression: Kehflix explicit current terminal must survive
 # provider-hubs.json -> merge_hub_registry -> authoritative resolver.
 real_config = wrapper.transaction.resolver.load_json(ROOT / "provider-overrides.json", {})

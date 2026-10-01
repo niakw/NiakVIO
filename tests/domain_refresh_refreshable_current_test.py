@@ -54,6 +54,50 @@ assert fresh["official_site"] == "https://demo.style", fresh
 assert fresh["reason"] == "authoritative_hub_primary_domain_observed_no_terminal_probe", fresh
 assert fresh["registry_explicit_current_superseded"] is True, fresh
 
+telegram_base = dict(base)
+telegram_base["hub"] = "https://t.me/s/demo"
+telegram_base["sources"] = [{
+    "type": "telegram_public",
+    "url": "https://t.me/s/demo",
+    "priority": 105,
+}]
+telegram_move = run_with_candidates(telegram_base, [
+    {
+        "url": "https://demo.old",
+        "label": "https://demo.old",
+        "score": 100,
+        "message_id": 10,
+        "document_index": 3,
+        "source_type": "telegram_public",
+        "source": "https://t.me/s/demo",
+    },
+    {
+        "url": "https://demo.next",
+        "label": "https://demo.next",
+        "score": 100,
+        "message_id": 12,
+        "document_index": 30,
+        "source_type": "telegram_public",
+        "source": "https://t.me/s/demo",
+    },
+])
+assert telegram_move["official_site"] == "https://demo.next", telegram_move
+assert telegram_move["registry_explicit_current_superseded"] is True, telegram_move
+assert telegram_move["telegram_recency_superseded_registry"] is True, telegram_move
+assert telegram_move["latest_telegram_message_id"] == 12, telegram_move
+
+telegram_stale = run_with_candidates(telegram_base, [{
+    "url": "https://demo.next",
+    "label": "ancien domaine backup",
+    "score": 100,
+    "message_id": 13,
+    "document_index": 40,
+    "source_type": "telegram_public",
+    "source": "https://t.me/s/demo",
+}])
+assert telegram_stale["official_site"] == "https://demo.old", telegram_stale
+assert telegram_stale["registry_explicit_current_superseded"] is False, telegram_stale
+
 cta_redirect = run_with_candidates(base, [{
     "url": "https://demo.style",
     "label": "Acceder maintenant",

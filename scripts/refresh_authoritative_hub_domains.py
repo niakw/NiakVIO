@@ -160,6 +160,84 @@ def _fresh_authoritative_move_candidate(
     )
 
 
+def _latest_telegram_move_candidate(
+    provider_id: str,
+    cfg: dict[str, Any],
+    rows: list[dict[str, Any]],
+    current_url: str,
+) -> dict[str, Any] | None:
+    """Return a newer same-brand Telegram announcement than the current terminal.
+
+    explicit_current is a refreshable LKG, not an operator lock. Public
+    Telegram message ids are monotonic within a channel, so the newest safe,
+    high-confidence same-brand post is stronger freshness evidence than an older
+    refresh-generated current value. operator_pin remains immutable.
+    """
+    current_host = hubresolver.host(current_url)
+    eligible: list[dict[str, Any]] = []
+    for row in rows:
+        if str(row.get("source_type") or "").strip().casefold() != "telegram_public":
+            continue
+        if not _safe_authoritative_candidate(provider_id, cfg, row):
+            continue
+        url = _candidate_url(row)
+        if not url or not hubresolver.same_brand(provider_id, url, cfg):
+            continue
+        try:
+            message_id = int(row.get("message_id") or -1)
+        except (TypeError, ValueError):
+            continue
+        if message_id < 0 or int(row.get("score") or 0) < 90:
+            continue
+        label = hubresolver.compact(row.get("label") or "")
+        if label and any(hubresolver.compact(token) in label for token in _STALE_PRIMARY_MARKERS):
+            continue
+        candidate = dict(row)
+        candidate["_message_id"] = message_id
+        eligible.append(candidate)
+
+    if not eligible:
+        return None
+
+    latest = max(
+        eligible,
+        key=lambda row: (
+            int(row.get("_message_id") or -1),
+            int(row.get("score") or 0),
+            int(row.get("document_index") or -1),
+            _candidate_url(row),
+        ),
+    )
+    latest_url = _candidate_url(latest)
+    if not latest_url or hubresolver.host(latest_url) == current_host:
+        return None
+
+    current_message_ids = [
+        int(row.get("_message_id") or -1)
+        for row in eligible
+        if hubresolver.host(_candidate_url(row)) == current_host
+    ]
+    if current_message_ids and int(latest.get("_message_id") or -1) <= max(current_message_ids):
+        return None
+
+    latest.pop("_message_id", None)
+    return latest
+
+
+def _authoritative_candidate_key(row: dict[str, Any]) -> tuple[int, int, str]:
+    """Preserve trust score while preferring newer chronological Telegram posts."""
+    source_type = str(row.get("source_type") or "").strip().casefold()
+    try:
+        message_id = int(row.get("message_id") or -1) if source_type == "telegram_public" else -1
+    except (TypeError, ValueError):
+        message_id = -1
+    return (
+        -int(row.get("score") or 0),
+        -message_id,
+        _candidate_url(row),
+    )
+
+
 def _redirect_candidates_from_source_observations(
     cfg: dict[str, Any],
     observations: list[dict[str, Any]],
@@ -231,7 +309,13 @@ def resolve_authoritative_hub_domain(
         ],
     ]
     current_url = _candidate_url(explicit_current or {})
-    fresh_authoritative_move = any(
+    latest_telegram_move = _latest_telegram_move_candidate(
+        provider_id,
+        authority_cfg,
+        live_candidates,
+        current_url,
+    )
+    fresh_authoritative_move = bool(latest_telegram_move) or any(
         _fresh_authoritative_move_candidate(provider_id, authority_cfg, row, current_url)
         for row in live_candidates
     )
@@ -256,12 +340,19 @@ def resolve_authoritative_hub_domain(
             deduped[url] = row
     ordered = sorted(
         deduped.values(),
-        key=lambda row: (-int(row.get("score") or 0), _candidate_url(row)),
+        key=_authoritative_candidate_key,
     )
 
     item["sources"] = observations
     item["site_candidates"] = ordered
     item["site_validations"] = []
+    item["telegram_recency_superseded_registry"] = bool(
+        explicit_current
+        and latest_telegram_move
+        and not immutable_operator_pin
+    )
+    if latest_telegram_move:
+        item["latest_telegram_message_id"] = latest_telegram_move.get("message_id")
     if not ordered:
         item["reason"] = "authoritative_hub_no_safe_terminal_candidate"
         return item

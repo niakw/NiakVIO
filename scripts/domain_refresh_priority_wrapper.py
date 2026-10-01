@@ -5,7 +5,7 @@ provider-hubs.json is the current executable address registry. Legacy
 provider-overrides.official_domain_hubs entries remain historical knowledge but
 must never recreate work for archived providers. Inside the current registry,
 the authoritative hub resolver still owns trust scoring; this wrapper only
-breaks equal-score ties using explicit semantic and provider-brand labels.
+breaks equal-score ties using explicit semantic labels, chronological Telegram\nevidence, and provider-brand labels.
 
 When an applied transaction records fresh domain history, the same current-46
 sanitizer used by the workflow is run once more before control returns. Resolvers
@@ -89,6 +89,16 @@ def brand_priority(provider_id: object, row: dict[str, Any]) -> int:
     return int(compact_label == provider or compact_label.startswith(provider))
 
 
+def telegram_freshness_priority(row: dict[str, Any]) -> int:
+    """Return monotonic public-channel freshness without inventing wall-clock time."""
+    if _fold(row.get("source_type")) != "telegram_public":
+        return -1
+    try:
+        return int(row.get("message_id") or -1)
+    except (TypeError, ValueError):
+        return -1
+
+
 def current_registry_hub_configs(config: dict[str, Any]) -> dict[str, dict[str, Any]]:
     """Return only provider-hubs.json current rows, enriched from provider patches.
 
@@ -100,13 +110,15 @@ def current_registry_hub_configs(config: dict[str, Any]) -> dict[str, dict[str, 
     return transaction.resolver.merge_hub_registry(clean_config)
 
 
-def _candidate_key(provider_id: object, row: dict[str, Any]) -> tuple[int, int, int, int, str]:
-    # Trust score remains the first and strongest authority. Semantic labels only
-    # break ties. A concise provider-branded label then beats an anonymous link;
-    # document order remains the final conservative signal before lexical order.
+def _candidate_key(provider_id: object, row: dict[str, Any]) -> tuple[int, int, int, int, int, str]:
+    # Trust score remains the first and strongest authority. Explicit semantic
+    # labels break ties first. For a chronological public Telegram channel, a
+    # larger message id is direct freshness evidence and must beat an older
+    # equal-score post. Brand and document order remain conservative fallbacks.
     return (
         -int(row.get("score") or 0),
         -semantic_priority(row),
+        -telegram_freshness_priority(row),
         -brand_priority(provider_id, row),
         int(row.get("document_index") if row.get("document_index") is not None else 10**9),
         _fold(row.get("url")),
@@ -137,7 +149,7 @@ def prioritize_authoritative_item(item: dict[str, Any]) -> dict[str, Any]:
     if terminal != previous:
         item["candidate_priority_adjusted"] = True
         item["candidate_priority_previous"] = previous
-        item["candidate_priority_reason"] = "equal-score semantic/brand primary preference"
+        item["candidate_priority_reason"] = "equal-score semantic/freshness/brand preference"
     return item
 
 

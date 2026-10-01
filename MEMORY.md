@@ -473,3 +473,12 @@
 - Main subsequently advanced only through availability-diagnostics commit `5cf10e3b15851a37d2470219db3f6b27f58f6988`; Brain/materializer/provider inputs are unchanged relative to the green pipeline proof.
 - The next 4KHDHub-only architecture-FORCE replay is armed on current main. It remains Brain infrastructure work only; 4KHDHub stays ROUTE PROVEN until a later Brain-generated provider candidate passes movie + TV playable/identity proof.
 - Git hygiene: obsolete branch `fix/learning-force-canonical-queue` is now included in branch maintenance deletion when no open PR exists; Brain memory/proposal refs remain retained.
+
+
+## 2026-10-01 — Daily Domain Refresh outage and chronological-authority fix
+
+- Scheduled Domain Refresh run #1078 (36848172715) failed after successful authoritative resolution because tests/user_provider_manual_evidence_crosscheck_test.py still hard-pinned Flemmix domain substitutions to flemmix.party. Scheduled runs #1069, #1070, #1071, #1072, #1073 and #1078 were red from 2026-09-26 through 2026-10-01; the last scheduled successes were #1058/#1059 on 2026-09-24/25.
+- The #1078 artifact proved a second generic defect: Purstream discovery already saw purstream.cat from official Telegram message 114, but equal-score tie-breaking selected older message 109 (purstream.club) because ascending document order beat chronology. The same report showed refresh-generated explicit_current values masking newer official Telegram announcements for HindMoviez (hindmovie.dev) and WookaFR.
+- Domain Refresh now treats monotonic Telegram message_id as freshness evidence after trust/semantic safety. A safe high-confidence same-brand newest Telegram announcement may supersede refresh-generated explicit_current; immutable operator_pin remains locked, stale/backup-labelled announcements remain rejected.
+- The durable manual-evidence regression no longer pins Flemmix domain values. It protects the DLE/search route family only; current terminal/substitution ownership remains with Domain Refresh.
+- No provider domain is manually patched by this fix. The authoritative workflow must rediscover, reconcile, rematerialize, validate and publish current domains itself.
