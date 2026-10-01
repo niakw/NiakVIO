@@ -3,7 +3,7 @@
 const NON_MEDIA_HOST = /(?:^|\.)(?:youtube\.com|youtu\.be|facebook\.com|instagram\.com|twitter\.com|x\.com|telegram\.me|t\.me)$/i;
 const STATIC_PATH = /\.(?:css|js|jpe?g|png|gif|webp|svg|avif|ico|woff2?|ttf)(?:[?#]|$)/i;
 const PLAYER_KEY = /(?:server(?:_link)?|player|embed|stream|source|video|file|link|download|mirror)/i;
-const PLAYER_CONTEXT = /(?:lecteur|server|player|embed|stream|watch|download|mirror|source|video|2160|1080|720|480|4k|uhd|m3u8|mp4)/i;
+const PLAYER_CONTEXT = /(?:lecteur|server|player|embed|stream|watch|download|mirror|source|video|direct|vf|vostfr|2160|1080|720|480|4k|uhd|m3u8|mp4)/i;
 const PLAYER_PATH = /\/(?:e|embed|player|watch|play|video|stream|server|source|download|file|v)(?:[/?#.-]|$)/i;
 
 function normalizeQuality(value) {
@@ -16,6 +16,7 @@ function normalizeQuality(value) {
 function candidate(raw, base, trustedContext) {
   const value = String(raw || '').replace(/&amp;/gi, '&').replace(/\\\//g, '/').trim();
   if (!value || value.length > 1800) return null;
+  if (!/^(?:https?:)?\\/\\//i.test(value) && !/[\\/?#]/.test(value)) return null;
   let parsed;
   try { parsed = new URL(value, base || undefined); } catch { return null; }
   if (!/^https?:$/i.test(parsed.protocol)) return null;
@@ -26,6 +27,23 @@ function candidate(raw, base, trustedContext) {
   if (!trustedContext && !direct && !PLAYER_PATH.test(path)) return null;
   parsed.hash = '';
   return { key: parsed.toString(), host };
+}
+
+function indexedPlayerCandidateCount(text) {
+  const indices = new Set();
+  const tag = /<(?:button|a|li|div)\\b[^>]{0,1800}>/gi;
+  let match;
+  while ((match = tag.exec(text)) !== null && indices.size < 128) {
+    const rawTag = String(match[0] || '');
+    const indexMatch = rawTag.match(/\\bdata-(?:i|index|player-index|server-index)\\s*=\\s*(?:["']\\s*)?(\\d{1,4})/i);
+    if (!indexMatch) continue;
+    const roleMenuItem = /\\brole\\s*=\\s*["']menuitem["']/i.test(rawTag);
+    const around = text.slice(Math.max(0, match.index - 180), Math.min(text.length, tag.lastIndex + 360));
+    if (!roleMenuItem && !PLAYER_CONTEXT.test(around)) continue;
+    if (!PLAYER_CONTEXT.test(around)) continue;
+    indices.add(Number(indexMatch[1]));
+  }
+  return indices.size;
 }
 
 function extractResponseVariantHints(value, options = {}) {
@@ -72,7 +90,7 @@ function extractResponseVariantHints(value, options = {}) {
   }
 
   return {
-    declared_player_candidate_count: urls.size,
+    declared_player_candidate_count: Math.max(urls.size, indexedPlayerCandidateCount(text)),
     declared_player_hosts: [...new Set(urls.values())].sort().slice(0, 32),
     declared_quality_heights: [...qualities].sort((a, b) => a - b).slice(0, 12),
   };
