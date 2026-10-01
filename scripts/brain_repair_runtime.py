@@ -244,6 +244,7 @@ def _planner_result(result: dict[str, Any]) -> dict[str, Any]:
             "stream_count": raw_test.get("stream_count"),
             "streams_returned": raw_test.get("streams_returned"),
             "announced_player_candidates": raw_test.get("announced_player_candidates"),
+            "announced_variant_candidates": raw_test.get("announced_variant_candidates"),
             "announced_player_hosts": [_clip_text(value, 160) for value in (raw_test.get("announced_player_hosts") or [])[:24]],
             "announced_quality_heights": [
                 int(value) for value in (raw_test.get("announced_quality_heights") or [])[:12]
