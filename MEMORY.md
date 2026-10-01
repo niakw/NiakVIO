@@ -515,3 +515,11 @@
 - Exact post-push Purstream bundle `providers/purstream--nuvio--18f7e1fe73730189.js` now has CONFIG `officialSite=https://purstream.cat`, `knownSite=https://purstream.cat`, observedUrls using `https://purstream.cat`, and origins using `https://purstream.cat`. Historical `purstream.club` remains only as an explicit substitution key to the current host, which is intentional migration memory rather than executable current authority.
 - Current authoritative address state after the same live refresh: Purstream `purstream.cat`, HindMoviez `hindmovie.dev`, WookaFR `wookafr.boston`, Flemmix `flemmix.eu`. These are workflow-derived current values, not hand-patched provider domains.
 - The remaining Workflow Gate red on the pre-publication control-plane SHA was a stale test assertion in `brain_architecture_deferred_cohort_test.py` expecting automatic push-triggered architecture PRs. The contract is aligned with main-only policy: proposal PR publication is explicit workflow_dispatch + publish_proposal=true; architecture FORCE direct-main validation remains allowed.
+
+
+## 2026-10-01 — Domain-derived CONFIG projection made comparative/fail-closed
+
+- Post-#1081 lifecycle audit crossed the Purstream drift but exposed Anime-Sama over-projection: published observedUrls/origins had collapsed an intentional historical `anime-sama.to` entry into a second `animes-sama.fr`, while the canonical structured model still retained both hosts.
+- Cause: the first derived-URL fix blindly applied every runtime domain substitution to observedUrls/origins. Those lists are mixed knowledge: some values are current-site derived, others are intentional historical/route evidence.
+- Domain Refresh now changes observedUrls/origins only when the complete list delta is explained by the explicit domain map. It accepts two exact cases: rewriting published values produces canonical expected values (stale-domain repair), or rewriting canonical expected values reproduces the published list (recovery from the prior over-projection). Any unrelated mismatch remains untouched and fail-closed for its owning pipeline.
+- This keeps Purstream club->cat repair valid while restoring Anime-Sama's intentional anime-sama.to + animes-sama.fr knowledge instead of inventing duplicate current origins.

@@ -360,9 +360,9 @@ assert domain_projected["apiRecipe"] == published_data["apiRecipe"]
 assert domain_projected["routes"] == published_data["routes"]
 assert domain_projected["providerId"] == "yflix"
 
-# Regression 2e: CONFIG URL-list fields derived from domain authority must rotate
-# only explicit old-site hosts. Unrelated API/player observations remain byte-stable.
-runtime_url_data = {
+# Regression 2e: CONFIG URL-list fields derived from domain authority may move
+# only when the exact list delta is explained by the explicit host map.
+published_runtime_urls = {
     "providerId": "demo",
     "officialSite": "https://new.example",
     "observedUrls": [
@@ -374,23 +374,65 @@ runtime_url_data = {
         "https://cdn.external.example",
     ],
 }
+expected_runtime_urls = {
+    **published_runtime_urls,
+    "observedUrls": [
+        "https://new.example/",
+        "https://api.external.example/v1",
+    ],
+    "origins": [
+        "https://new.example",
+        "https://cdn.external.example",
+    ],
+}
+domain_patch = {
+    "official_site": "https://new.example",
+    "runtime_domain_replacements": {"old.example": "new.example"},
+    "domain_substitutions": {"old.example": "new.example"},
+}
 runtime_projected = module.project_domain_owned_config_runtime_urls(
-    runtime_url_data,
-    {
-        "official_site": "https://new.example",
-        "runtime_domain_replacements": {"old.example": "new.example"},
-        "domain_substitutions": {"old.example": "new.example"},
-    },
+    published_runtime_urls,
+    expected_runtime_urls,
+    domain_patch,
 )
-assert runtime_projected["observedUrls"] == [
-    "https://new.example/",
-    "https://api.external.example/v1",
-], runtime_projected
-assert runtime_projected["origins"] == [
-    "https://new.example",
-    "https://cdn.external.example",
-], runtime_projected
+assert runtime_projected["observedUrls"] == expected_runtime_urls["observedUrls"], runtime_projected
+assert runtime_projected["origins"] == expected_runtime_urls["origins"], runtime_projected
 assert runtime_projected["providerId"] == "demo"
+
+# Recovery regression: the former broad projection could collapse intentional
+# historical route knowledge into a duplicate current host (Anime-Sama shape).
+overprojected = {
+    "providerId": "demo",
+    "observedUrls": ["https://new.example/", "https://new.example"],
+    "origins": ["https://new.example", "https://new.example"],
+}
+expected_with_history = {
+    "providerId": "demo",
+    "observedUrls": ["https://old.example/", "https://new.example"],
+    "origins": ["https://old.example", "https://new.example"],
+}
+recovered = module.project_domain_owned_config_runtime_urls(
+    overprojected,
+    expected_with_history,
+    domain_patch,
+)
+assert recovered["observedUrls"] == expected_with_history["observedUrls"], recovered
+assert recovered["origins"] == expected_with_history["origins"], recovered
+
+# An unrelated structured-data mismatch is not Domain-owned and must be left
+# untouched so the full audit can route it to the correct owner.
+unrelated_expected = {
+    **published_runtime_urls,
+    "observedUrls": ["https://different.external.example/"],
+    "origins": ["https://cdn.other.example"],
+}
+unrelated = module.project_domain_owned_config_runtime_urls(
+    published_runtime_urls,
+    unrelated_expected,
+    domain_patch,
+)
+assert unrelated["observedUrls"] == published_runtime_urls["observedUrls"], unrelated
+assert unrelated["origins"] == published_runtime_urls["origins"], unrelated
 
 # Regression 3: only domain-connected runtime maps follow a terminal rotation;
 # unrelated API replacement DATA must remain untouched.

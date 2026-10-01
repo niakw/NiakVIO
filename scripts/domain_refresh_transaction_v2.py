@@ -480,26 +480,47 @@ DOMAIN_CONFIG_DATA_FIELDS = ("officialSite", "knownSite", "officialHub", "domain
 DOMAIN_CONFIG_DOMAIN_DERIVED_URL_FIELDS = ("observedUrls", "origins")
 
 
+def _project_domain_url_values(values: list[Any], rewrites: dict[str, str]) -> list[Any]:
+    return [
+        _replace_domain_host_tokens(str(value), rewrites)
+        if isinstance(value, str)
+        else value
+        for value in values
+    ]
+
+
 def project_domain_owned_config_runtime_urls(
     published: dict[str, Any],
+    expected: dict[str, Any],
     patch: dict[str, Any],
 ) -> dict[str, Any]:
-    """Rewrite only explicit old-site hosts inside domain-derived CONFIG URL lists."""
+    """Reconcile domain-derived CONFIG URL lists without rewriting route knowledge.
+
+    observedUrls/origins also carry historical and third-party route evidence, so
+    Domain Refresh may not blindly apply every runtime substitution to them.
+    Change a field only when the exact structured-model delta is fully explained
+    by the explicit old->current host map:
+      - forward repair: rewriting published values yields expected values;
+      - recovery: rewriting expected values yields the published values produced
+        by the former over-broad projection.
+    Every other mismatch remains outside Domain ownership and is left fail-closed
+    for the full static audit / owning pipeline.
+    """
     output = copy.deepcopy(published)
     rewrites = _domain_runtime_rewrites(patch)
     if not rewrites:
         return output
     for key in DOMAIN_CONFIG_DOMAIN_DERIVED_URL_FIELDS:
-        values = output.get(key)
-        if not isinstance(values, list):
+        published_values = published.get(key)
+        expected_values = expected.get(key)
+        if not isinstance(published_values, list) or not isinstance(expected_values, list):
             continue
-        projected = [
-            _replace_domain_host_tokens(str(value), rewrites)
-            if isinstance(value, str)
-            else value
-            for value in values
-        ]
-        output[key] = projected
+        if published_values == expected_values:
+            continue
+        forward = _project_domain_url_values(published_values, rewrites)
+        prior_overprojection = _project_domain_url_values(expected_values, rewrites)
+        if forward == expected_values or prior_overprojection == published_values:
+            output[key] = copy.deepcopy(expected_values)
     return output
 
 
@@ -559,16 +580,16 @@ def provider_domain_projection_drift_ids(provider_ids: list[str]) -> list[str]:
         published = decode_managed_data(text, fix_id)
 
         model = allmat.provider_model(provider_id, patch, capability, static_row)
-        expected = {
-            "officialSite": model.get("officialSite"),
-            "knownSite": model.get("knownSite"),
-            "officialHub": model.get("officialHub"),
-            "domainSubstitutions": model.get("domainSubstitutions") or {},
-        }
+        expected = allmat.build_provider_data_model(
+            provider_id,
+            entry,
+            known_site=model.get("knownSite"),
+            provider_model=model,
+        )
         if _normalized_domain_projection(published) != _normalized_domain_projection(expected):
             drift.append(provider_id)
             continue
-        projected_urls = project_domain_owned_config_runtime_urls(published, patch)
+        projected_urls = project_domain_owned_config_runtime_urls(published, expected, patch)
         if any(
             projected_urls.get(key) != published.get(key)
             for key in DOMAIN_CONFIG_DOMAIN_DERIVED_URL_FIELDS
@@ -674,7 +695,7 @@ def rebuild_provider_configs(provider_ids: list[str]) -> list[dict[str, str]]:
         if canonical(previous_data.get("providerId")) != provider_id:
             raise RuntimeError(f"{provider_id}: CONFIG providerId mismatch")
         data = project_domain_owned_config_data(previous_data, expected_data)
-        data = project_domain_owned_config_runtime_urls(data, patch)
+        data = project_domain_owned_config_runtime_urls(data, expected_data, patch)
         if canonical(data.get("providerId")) != provider_id:
             raise RuntimeError(f"{provider_id}: domain CONFIG projection changed providerId")
 
