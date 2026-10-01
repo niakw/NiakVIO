@@ -209,8 +209,8 @@ network = mod.network_summary({
     }],
 })
 assert network == [
-    {"fixture": "Fixture", "stage": "provider_fetch", "host": "example.test", "method": "GET", "path": "/search", "status": 200, "ok": True, "errorCode": ""},
-    {"fixture": "Fixture", "stage": "detail_fetch", "host": "example.test", "method": "GET", "path": "/movie/1", "status": 200, "ok": True, "errorCode": ""},
+    {"fixture": "Fixture", "stage": "provider_fetch", "host": "example.test", "method": "GET", "path": "/search", "status": 200, "ok": True, "errorCode": "", "announcedPlayerCandidates": 0, "announcedPlayerHosts": [], "announcedQualityHeights": []},
+    {"fixture": "Fixture", "stage": "detail_fetch", "host": "example.test", "method": "GET", "path": "/movie/1", "status": 200, "ok": True, "errorCode": "", "announcedPlayerCandidates": 0, "announcedPlayerHosts": [], "announcedQualityHeights": []},
 ], network
 
 summary = mod.result_summary({
