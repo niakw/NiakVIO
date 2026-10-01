@@ -447,3 +447,10 @@
 - This explains why the resolver could not legally disambiguate: the model was focused on `route_transition_graph_v1`, but the repeated find was duplicated inside the same exact focused snippet, so choosing one occurrence would have been guessing.
 - The duplicate taxonomy literal is removed at the Brain infrastructure layer. A source-AST regression guard now rejects any duplicate literal key in `FAILURE_FAMILY_TAXONOMY`; runtime dict equality alone cannot catch this because Python silently retains only the last duplicate key.
 - No provider bytes are changed by this correction. 4KHDHub remains ROUTE PROVEN and the latest executed provider candidates `optional_metadata_format_gate` and `catalog_identity_query_variants` remain rejected until a new Brain-produced candidate passes isolated movie + TV playable/identity proof.
+
+
+## 2026-10-01 — Replay armed after taxonomy-anchor de-duplication
+
+- NiakVIO Brain infrastructure commit `c41de9e8372b93d3b274dcefa13224b744c53899` removes the only duplicated literal line found in `scripts/brain_meta_learning.py` and adds a source-AST regression guard that rejects duplicate literal keys in `FAILURE_FAMILY_TAXONOMY`.
+- The prior focused-anchor resolver remains fail-closed; it is no longer asked to choose between two byte-identical `route_transition_graph_v1` anchors inside the same focused source snippet.
+- The reconstruction trigger is narrowed to 4KHDHub with `architecture_force=true`. This replay is only an architecture witness: success requires an allowlisted executable Brain patch plus Brain architecture tests. Provider repair still separately requires Brain-generated provider bytes to pass isolated movie + TV playable/identity proof.
