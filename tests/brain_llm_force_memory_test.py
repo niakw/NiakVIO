@@ -39,6 +39,22 @@ row=two["entries"][0]
 assert row["failures"]==2
 assert row["consecutiveFailures"]==2
 
+not_executed={
+    **failed,
+    "rows":[{
+        **failed["rows"][0],
+        "mutationFingerprint":"9"*64,
+        "mutationContextFingerprint":"8"*64,
+        "accepted":False,
+        "executionObserved":False,
+        "reason":"skipped_after_provider_winner",
+    }],
+}
+unchanged=mod.merge(two,not_executed)
+assert len(unchanged["entries"])==1
+assert unchanged["entries"][0]["mutationFingerprint"]==fp_a
+assert unchanged["entries"][0]["failures"]==2
+
 accepted={
     **failed,
     "rows":[{
