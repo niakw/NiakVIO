@@ -1,3 +1,11 @@
+## 2026-10-02 — CoFlix index-only menu fan-out is now observable
+
+- User supplied current CoFlix Interstellar player markup proving two top-level server menus with 10 + 9 indexed choices (19 total). The terminal choice URLs are not present directly on those menu buttons, so the prior URL-only response hint extractor could undercount the real fan-out even after hierarchical host counting.
+- Generic harness fix `4eca5a96217ad107c7ed0f48dc919a4e1af64b92` adds bounded index-only player-menu counting without depending on CoFlix `cfp-*` classes. It accepts numeric `data-i` / `data-index` / player/server index attributes only in explicit media/player context and records only the count.
+- Contract commit `d4bf6c2343e2dc75301ba05c95cdb4ce0d56d4c7` models two server groups with indices 0..18 and requires `declared_player_candidate_count == 19`; an indexed navigation menu without media context remains 0. Bare scalar `data-src="1"`/2 values are rejected as URL candidates, preventing fake player hosts.
+- Local contract execution passed before publication. No Coflix/PapaDuStream production runtime bytes were changed; this is observation/Brain infrastructure only.
+- Required next authority: rerun current-byte `scope=all` census on/after this HEAD, verify CoFlix/PapaDuStream announced/explored/returned fan-out fields, then let Brain repair CoFlix first if current evidence proves truncation. Any accepted repair still requires isolated rematerialization, identity/playback and completeness gain before persistence.
+
 
 
 ## 2026-09-28 — Secondary stream-language regressions closed
