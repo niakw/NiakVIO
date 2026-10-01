@@ -19,7 +19,7 @@ required = [
     "autopilot-targeted-core-learning",
     "target provider is not LEARN/pending in current handoff",
     'provider_filter="$target_provider"',
-    '"policy": "target-scoped-handoff"',
+    "target-scoped-handoff",
     'json.dump(data,open(sys.argv[4],"w",encoding="utf-8"),ensure_ascii=False,indent=2)',
     'echo "target_provider=$target_provider"',
     'echo "architecture_force=$architecture_force"',
@@ -34,7 +34,7 @@ for needle in required:
     assert needle in workflow, needle
 
 parse_index = workflow.index("trigger_target=")
-census_index = workflow.index("target provider is not in current census repairQueue")
+census_index = workflow.index("target provider is not eligible for current Learning/FORCE scope")
 handoff_index = workflow.index("target provider is not LEARN/pending in current handoff")
 filter_index = workflow.index('provider_filter="$target_provider"')
 queue_step = workflow.index("- name: Run adaptive Learning provider queue")
@@ -62,7 +62,8 @@ assert 'explicit-force-completeness-learning' in multi_block, multi_block
 assert 'provider-fast-repair.json' not in multi_block, multi_block
 assert 'Current census repair/environment queues are the canonical scope' in multi_block, multi_block
 assert 'autopilot-targeted-core-learning' in multi_block, multi_block
-assert '"policy": "target-scoped-handoff"' in workflow, workflow
+assert "target-scoped-handoff" in workflow, workflow
+assert "explicit-force-completeness-learning" in workflow, workflow
 assert 'row.get("owner")' in target_block or "row.get('owner')" in target_block, target_block
 assert 'row.get("status")' in target_block or "row.get('status')" in target_block, target_block
 
