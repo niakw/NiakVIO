@@ -407,3 +407,11 @@
 - StreamBadge v11 post-push inspection passed on fusion/dark/light/transparent feeds: each has 309 filters / 17 groups; generic `age-12` matches `12+` but rejects `FR 12+`, while `age-fr-12` accepts `FR 12+`. This prevents duplicate generic/French 12+ classification.
 - Evidence boundary: publication/materialization/static/integrity/post-push-byte checks are green. The Mac Desktop Commander endpoint was offline during finalization, and the workflow-originated final push did not create a second post-push workflow suite; therefore no claim is made here about a fresh native-device playback session after `daefc387...`. The published bytes themselves were fetched and inspected after the atomic push.
 
+
+
+## 2026-10-01 — Brain #222 published novel 4KHDHub format-gate candidate
+
+- Brain Private-Guided Advisor run `36859533598` (#222) completed SUCCESS on Brain `b63821990e1eeb02f3edb327b8f84a6a1459e595`, pinned to unchanged NiakVIO `d6a3d6396b00ee1ea629e723eb83044cd249a261`.
+- Slots 1–4 retained all executed-negative class-selector memory. Slot 1 generated a new deterministic `optional_metadata_format_gate` mutation on exact current provider_bloc bytes; slots 2–4 did not recycle it and produced no additional executable winner.
+- Public Force artifact now contains exactly one novel 4KHDHub candidate: mutation fingerprint `24c7624590ce10b4fb93bada35bd3b9f3b819dd944fbe334f08d9fd503156e41`, context fingerprint `7a515c2e3d4a6e82d24c5f4776b7f0c8319a95a53e7b0e6a1511de2f09ebb8d7`, mechanism `optional-metadata-format-gate`.
+- This is candidate evidence only, not a repair. The next authoritative step is isolated Repair V6 current-byte application/rematerialization and required movie + TV playable/identity proof with external-Force-only semantics.
