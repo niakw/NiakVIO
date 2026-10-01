@@ -431,3 +431,11 @@
 - brain_architecture_force_materializer.py now owns this textual anchoring step. For a repeated replace only, it requires the exact focused source snippet already supplied to the model to occur once in the full file and the model find to occur once inside that snippet. It then widens the intended find with unchanged current bytes until the full-file anchor is unique, applying the same prefix/suffix to the replacement.
 - The resolver never guesses between multiple focused occurrences, never changes provider files, never exceeds the existing find/replace bounds, and leaves unresolved ambiguity to the existing fail-closed validator. Telemetry FIELD_BRAIN_ARCH_FORCE_ANCHOR_RESOLVED records only path and bounded counts/lengths, not source content.
 - Regression tests cover both exact focused disambiguation and ambiguous fail-closed behavior. This is a Brain/Learning pipeline correction; 4KHDHub remains ROUTE PROVEN until a Brain-produced provider mutation passes isolated movie + TV playable/identity proof.
+
+
+## 2026-10-01 — 4KHDHub architecture-FORCE replay after anchor resolver
+
+- Brain LLM main `4f57d58c7babc45daf0c891e5c575bce6e286850` is green in CI #1297 (`36865419990`): unit suite and privacy audit both passed. Its speculative one-shot slots retain four-slot deterministic progression while capping post-reservation LLM diversification and suppressing redundant recovery retries.
+- NiakVIO `723e5726b0a0c0099e42646bfc25e61713666f44` contains the focused exact-anchor materializer correction after architecture-FORCE runs #433 and #434 independently failed on the same repeated `scripts/brain_meta_learning.py` find.
+- The permanent Learning reconstruction trigger is narrowed to `4khdhub`, `architecture_force=true`, budget 60 minutes. This replay must prove the materializer can turn the Brain's architecture intent into a unique allowlisted executable patch, pass Brain architecture tests, and only then promote via the existing direct-main FORCE guard.
+- Provider-specific static non-regression remains independently red on the already-known 4KHDHub class-prefix behavior fixture; the current materializer/trigger commits do not modify provider bytes. That existing provider defect is the Brain witness to repair, not evidence that the control-plane patch changed provider behavior.
