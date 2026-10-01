@@ -415,3 +415,11 @@
 - Slots 1–4 retained all executed-negative class-selector memory. Slot 1 generated a new deterministic `optional_metadata_format_gate` mutation on exact current provider_bloc bytes; slots 2–4 did not recycle it and produced no additional executable winner.
 - Public Force artifact now contains exactly one novel 4KHDHub candidate: mutation fingerprint `24c7624590ce10b4fb93bada35bd3b9f3b819dd944fbe334f08d9fd503156e41`, context fingerprint `7a515c2e3d4a6e82d24c5f4776b7f0c8319a95a53e7b0e6a1511de2f09ebb8d7`, mechanism `optional-metadata-format-gate`.
 - This is candidate evidence only, not a repair. The next authoritative step is isolated Repair V6 current-byte application/rematerialization and required movie + TV playable/identity proof with external-Force-only semantics.
+
+
+## 2026-10-01 13:55 Europe/Paris — 4KHDHub catalogue-query candidate queued from Brain #223
+
+- Repair V6 #254 (`36861067528`) executed Brain candidate `24c7624590ce10b4fb93bada35bd3b9f3b819dd944fbe334f08d9fd503156e41` (`optional_metadata_format_gate`) on isolated current bytes, applied it, rematerialized 4KHDHub, then replayed 8 fixtures. Result remained `no_streams`: 0 streams, 0 runtime errors before and after. The candidate was rejected and persisted in `automation/brain-llm-force-memory.json`; no provider candidate bytes were published.
+- Brain main `2931fb97ddf4560246a7161e91159703341cd142` is green in CI #1295 and guidance #223 produced a new executable current-byte candidate for 4KHDHub: fingerprint `a6afd0ce15ea36b47e326e8548593e85c3826063630e30de41ba770707d6f7c6`, mechanism `catalog_identity_query_variants`.
+- The new hypothesis is causally distinct from the exhausted DOM-selector family: it broadens bounded catalogue search queries using current TMDB title/original-title/year/season evidence while preserving existing type, title-score, year/season identity gates and terminal extraction. It is Brain-generated, not a manual provider patch.
+- Repair trigger retry 191 targets NiakVIO `f90341b9d75c411c497b91706dc8291fb596005d` and requires isolated movie + TV playable/identity proof before any publication. Rejection must be persisted and must not fall through to manual/canonical provider repair.
