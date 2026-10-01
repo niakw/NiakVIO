@@ -569,3 +569,9 @@
 - Deep health evidence now records bounded safe `returned_quality_heights` from provider-returned stream metadata, independently of probe count.
 - The isolated Brain Force evaluator applies a mechanism-specific gate for `bounded-variant-enumeration-before-cap`: no runtime/malformed/identity/playable/stream regression, automatic identity gate, and a verified coverage gain. Reported quality labels alone are insufficient; at least one playable-height, audio-language or reachable-host dimension must improve.
 - The Hub46 strategy-plan contract now permits historical matrix rows to be absent from current catalogue only when provider-disabled-lifecycle proves `archived-provider-old`. Animetsu/ShowBox history is preserved without resurrection.
+
+
+## 2026-10-01 — FORCE readiness contract follows mechanism-aware sandbox
+
+- Workflow Gate on `63a0ba62906a72651576ed93b3a3131174784f56` proved the new isolated Force evaluator tests pass, including verified variant-coverage acceptance/rejection. The only gate failure was a source-string contract still requiring the former two-argument `evaluate_pair(baseline, candidate)` call.
+- Readiness now asserts the mechanism-aware evaluator call and `mechanism_family` wiring instead of the obsolete literal signature.

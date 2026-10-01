@@ -116,7 +116,8 @@ for marker in (
     assert marker in bridge, marker
 for marker in (
     "materialize_provider_v3_one.py",
-    "evaluate_pair(baseline, candidate)",
+    "accepted, reason = evaluate_pair(",
+    "mechanism_family",
     "automatic_repair_identity_gate(candidate)",
     "strict runtime improvement",
 ):
