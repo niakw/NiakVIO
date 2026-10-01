@@ -54,7 +54,7 @@ assert "current" in target_block, target_block
 assert "force and target in current" in target_block, target_block
 assert "explicit-force-completeness-learning" in target_block, target_block
 assert "completenessProviders" in target_block, target_block
-assert "architecture_force" in target_block, target_block
+assert "force=str(sys.argv[5]" in target_block, target_block
 
 handoff_selector = workflow.index("python scripts/select_fast_learning_handoff.py")
 multi_start = workflow.index('if [ -n "$target_providers" ]; then', handoff_selector)
