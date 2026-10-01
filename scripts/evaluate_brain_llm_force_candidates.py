@@ -136,6 +136,93 @@ def network_summary(result: dict[str, Any]) -> list[dict[str, Any]]:
     return output
 
 
+def variant_coverage_summary(result: dict[str, Any]) -> dict[str, Any]:
+    quality_heights: set[int] = set()
+    audio_languages: set[str] = set()
+    reachable_hosts: set[str] = set()
+    max_playable_height = 0
+    for test in result.get("tests") or []:
+        if not isinstance(test, dict):
+            continue
+        for raw in test.get("returned_quality_heights") or []:
+            try:
+                height = int(raw or 0)
+            except (TypeError, ValueError):
+                continue
+            if height > 0:
+                quality_heights.add(height)
+        for key in ("effective_max_height", "verified_max_height"):
+            try:
+                height = int(test.get(key) or 0)
+            except (TypeError, ValueError):
+                height = 0
+            max_playable_height = max(max_playable_height, height)
+        for value in test.get("audio_languages") or []:
+            value = str(value or "").strip().casefold()
+            if value:
+                audio_languages.add(value)
+        for value in test.get("reachable_hosts") or []:
+            value = str(value or "").strip().casefold()
+            if value:
+                reachable_hosts.add(value)
+    return {
+        "qualityHeights": sorted(quality_heights),
+        "maxPlayableHeight": max_playable_height,
+        "audioLanguages": sorted(audio_languages),
+        "reachableHosts": sorted(reachable_hosts),
+    }
+
+
+def evaluate_variant_coverage_pair(
+    baseline: dict[str, Any],
+    candidate: dict[str, Any],
+) -> tuple[bool, str]:
+    status = str(candidate.get("status") or "runtime_error")
+    if status in runtime_repair.HARD_FAILURES:
+        return False, f"variant_coverage_hard_failure:{status}"
+    if runtime_repair.runtime_error_count(candidate) > runtime_repair.runtime_error_count(baseline):
+        return False, "variant_coverage_introduced_runtime_error"
+    if runtime_repair.malformed_request_count(candidate) > runtime_repair.malformed_request_count(baseline):
+        return False, "variant_coverage_introduced_malformed_request"
+    if runtime_repair.identity_contradiction_count(candidate) > runtime_repair.identity_contradiction_count(baseline):
+        return False, "variant_coverage_introduced_identity_contradiction"
+    if runtime_repair.playable_stream_count(candidate) < runtime_repair.playable_stream_count(baseline):
+        return False, "variant_coverage_playable_regression"
+    if runtime_repair.stream_count(candidate) < runtime_repair.stream_count(baseline):
+        return False, "variant_coverage_stream_regression"
+
+    before = variant_coverage_summary(baseline)
+    after = variant_coverage_summary(candidate)
+    gains: list[str] = []
+    if int(after["maxPlayableHeight"]) > int(before["maxPlayableHeight"]):
+        gains.append("playable-height")
+    before_quality = set(before["qualityHeights"])
+    after_quality = set(after["qualityHeights"])
+    if after_quality - before_quality and max(after_quality or {0}) >= max(before_quality or {0}):
+        gains.append("reported-quality-set")
+    before_audio = set(before["audioLanguages"])
+    after_audio = set(after["audioLanguages"])
+    if after_audio - before_audio:
+        gains.append("audio-language-set")
+    before_hosts = set(before["reachableHosts"])
+    after_hosts = set(after["reachableHosts"])
+    if after_hosts - before_hosts:
+        gains.append("reachable-host-set")
+
+    verified_gain = (
+        "playable-height" in gains
+        or "audio-language-set" in gains
+        or "reachable-host-set" in gains
+    )
+    if not gains or not verified_gain:
+        return False, "variant_coverage_no_verified_dimension_gain"
+
+    identity_ok, identity_reason = automatic_repair_identity_gate(candidate)
+    if not identity_ok:
+        return False, identity_reason
+    return True, "variant_coverage_improvement:" + ",".join(gains)
+
+
 def result_summary(result: dict[str, Any]) -> dict[str, Any]:
     evidence = result.get("evidence") if isinstance(result.get("evidence"), dict) else {}
     return {
@@ -151,6 +238,7 @@ def result_summary(result: dict[str, Any]) -> dict[str, Any]:
             if isinstance(value, int)
         ],
         "failureClass": str(result.get("failure_class") or ""),
+        "variantCoverage": variant_coverage_summary(result),
         "networkTrace": network_summary(result),
         "invocationDiagnostics": invocation_summary(result),
     }
@@ -159,7 +247,11 @@ def result_summary(result: dict[str, Any]) -> dict[str, Any]:
 def evaluate_pair(
     baseline: dict[str, Any],
     candidate: dict[str, Any],
+    mechanism_family: str = "",
 ) -> tuple[bool, str]:
+    family = str(mechanism_family or "").strip().casefold().replace("_", "-")
+    if family == "bounded-variant-enumeration-before-cap":
+        return evaluate_variant_coverage_pair(baseline, candidate)
     accepted, reason = runtime_repair.compare_results(baseline, candidate)
     if not accepted:
         return False, reason
@@ -381,7 +473,21 @@ def main() -> int:
                     stage_provider(worktree, provider, candidate_stage, targets)
                     candidate_health = health_provider(candidate_stage, candidate_out)
                     candidate = provider_result(candidate_health, provider)
-                    accepted, reason = evaluate_pair(baseline, candidate)
+                    mechanism_family = str(row.get("mechanismFamily") or "")
+                    if not mechanism_family:
+                        mechanism_family = next(
+                            (
+                                str(mutation.get("family") or "")
+                                for mutation in row.get("mutations") or []
+                                if isinstance(mutation, dict) and str(mutation.get("family") or "")
+                            ),
+                            "",
+                        )
+                    accepted, reason = evaluate_pair(
+                        baseline,
+                        candidate,
+                        mechanism_family,
+                    )
 
                     result = {
                         "provider": provider,

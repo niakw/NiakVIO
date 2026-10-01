@@ -29,6 +29,7 @@ sys.path.insert(0, str(ROOT / "scripts" / "provider_patches"))
 
 from current_provider_scope import active_provider_ids, disabled_provider_ids, visible_provider_ids
 HUB46 = ROOT / "automation" / "evidence" / "hub-lab-matrix-46.json"
+LIFECYCLE = ROOT / "automation" / "provider-disabled-lifecycle.json"
 ALLOWED = {
     "mixed_embed_resolver",
     "official_domain_hub",
@@ -171,12 +172,22 @@ def main() -> int:
     visible_ids = visible_provider_ids()
     active_ids = active_provider_ids()
     disabled_ids = disabled_provider_ids()
+    lifecycle = json.loads(LIFECYCLE.read_text(encoding="utf-8"))
+    archived_ids = {
+        cid(provider)
+        for provider, record in (lifecycle.get("archived") or {}).items()
+        if isinstance(record, dict)
+        and str(record.get("state") or "").strip().casefold() == "archived-provider-old"
+    }
     # Hub46 is historical campaign evidence, not catalogue cardinality authority.
     # New providers and lifecycle-visible disabled providers need not belong to it.
     # The only invariant is that a historical matrix member still resolves to a
     # visible provider record; activation remains provider-folder authority.
     matrix_only = sorted(targets - visible_ids)
-    assert not matrix_only, f"hub46 matrix references non-visible providers: {matrix_only}"
+    assert set(matrix_only).issubset(archived_ids), (
+        f"hub46 matrix references non-visible non-archived providers: {matrix_only} "
+        f"archived={sorted(archived_ids)}"
+    )
     assert visible_ids == active_ids | disabled_ids, (
         f"visible catalogue must equal active+disabled active_missing={sorted(active_ids-visible_ids)} "
         f"disabled_missing={sorted(disabled_ids-visible_ids)} "
@@ -188,8 +199,8 @@ def main() -> int:
     assert len({cid(row.get("id")) for row in rows}) == len(rows), "provider ids must be unique"
     ids = [cid(row.get("id")) for row in rows]
     assert len(set(ids)) == len(ids), "provider ids must be unique after canonical case-fold"
-    missing_targets = sorted(targets - set(ids))
-    assert not missing_targets, f"hub46 targets missing from catalogue: {missing_targets}"
+    missing_targets = sorted((targets - archived_ids) - set(ids))
+    assert not missing_targets, f"current hub targets missing from catalogue: {missing_targets}"
 
     patches = overrides.get("provider_patches") or {}
     capabilities = overrides.get("provider_capabilities") or {}

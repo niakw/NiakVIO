@@ -12,7 +12,18 @@ assert spec and spec.loader
 spec.loader.exec_module(mod)
 
 
-def result(*, status="no_streams", playable=0, returned=0, score=0, contradictions=0):
+def result(
+    *,
+    status="no_streams",
+    playable=0,
+    returned=0,
+    score=0,
+    contradictions=0,
+    quality_heights=None,
+    effective_height=0,
+    audio_languages=None,
+    reachable_hosts=None,
+):
     verified = playable if contradictions <= 0 else 0
     tests = []
     if playable > 0:
@@ -23,6 +34,11 @@ def result(*, status="no_streams", playable=0, returned=0, score=0, contradictio
             "identity_unverified_streams": playable - verified,
             "identity_contradiction_count": contradictions,
             "duration_identity_mismatch_count": 0,
+            "returned_quality_heights": list(quality_heights or []),
+            "effective_max_height": int(effective_height or 0) or None,
+            "verified_max_height": int(effective_height or 0) or None,
+            "audio_languages": list(audio_languages or []),
+            "reachable_hosts": list(reachable_hosts or []),
         })
     return {
         "status": status,
@@ -62,6 +78,53 @@ contradictory = result(
 accepted, reason = mod.evaluate_pair(baseline, contradictory)
 assert accepted is False
 assert "identity" in reason.casefold() or "contradiction" in reason.casefold(), reason
+
+coverage_baseline = result(
+    status="healthy",
+    playable=1,
+    returned=4,
+    score=90,
+    quality_heights=[480],
+    effective_height=480,
+    reachable_hosts=["stream.example"],
+)
+coverage_candidate = result(
+    status="healthy",
+    playable=1,
+    returned=8,
+    score=90,
+    quality_heights=[480, 720, 1080, 2160],
+    effective_height=2160,
+    reachable_hosts=["stream.example"],
+)
+accepted, reason = mod.evaluate_pair(
+    coverage_baseline,
+    coverage_candidate,
+    "bounded-variant-enumeration-before-cap",
+)
+assert accepted is True, reason
+assert reason.startswith("variant_coverage_improvement:"), reason
+assert "playable-height" in reason, reason
+
+count_only_candidate = result(
+    status="healthy",
+    playable=2,
+    returned=8,
+    score=95,
+    quality_heights=[480],
+    effective_height=480,
+    reachable_hosts=["stream.example"],
+)
+accepted, reason = mod.evaluate_pair(
+    coverage_baseline,
+    count_only_candidate,
+    "bounded-variant-enumeration-before-cap",
+)
+assert accepted is False
+assert reason == "variant_coverage_no_verified_dimension_gain", reason
+
+health_source = (ROOT / "scripts" / "health_check.mjs").read_text(encoding="utf-8")
+assert "returned_quality_heights: returnedQualityHeights" in health_source
 
 failure = mod.candidate_execution_error(
     __import__("subprocess").CalledProcessError(

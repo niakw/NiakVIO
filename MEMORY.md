@@ -561,3 +561,11 @@
 - CORE Verify on 4d2d9b524c39675e75d6298a3607633a27350dd2 failed only because gate_native_declared_provider_matrix.py loaded the durable Hub-46 scope literally and rejected historical Animetsu/ShowBox rows that are no longer present in the 42-provider executable manifest.
 - The regression test already computed Hub scope intersected with active providers, but the gate subprocess reloaded the raw historical file and reintroduced the archived rows. The gate now intersects durable scope evidence with the exact manifest identities before building expected routes.
 - Historical evidence remains preserved; no provider is re-enabled or removed from history. This closes validation split-brain so current shared Core StreamScore/player-language bytes can be verified independently of archived scope rows.
+
+
+## 2026-10-01 — FORCE variant coverage requires verified quality gain
+
+- HindMoviez Brain guidance #227 produced the intended deterministic `bounded_variant_enumeration_before_cap` current-byte mutation, but the generic Force sandbox previously accepted only by stream-count improvement + identity. More 480p mirrors must not count as repaired 720p/1080p/2160p coverage.
+- Deep health evidence now records bounded safe `returned_quality_heights` from provider-returned stream metadata, independently of probe count.
+- The isolated Brain Force evaluator applies a mechanism-specific gate for `bounded-variant-enumeration-before-cap`: no runtime/malformed/identity/playable/stream regression, automatic identity gate, and a verified coverage gain. Reported quality labels alone are insufficient; at least one playable-height, audio-language or reachable-host dimension must improve.
+- The Hub46 strategy-plan contract now permits historical matrix rows to be absent from current catalogue only when provider-disabled-lifecycle proves `archived-provider-old`. Animetsu/ShowBox history is preserved without resurrection.

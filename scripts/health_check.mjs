@@ -1530,6 +1530,11 @@ async function testCandidate(candidate) {
     };
     const worker = await runWorker(candidate, normalizedFixture);
     const streams = Array.isArray(worker.streams) ? worker.streams : [];
+    const returnedQualityHeights = [...new Set(
+      streams
+        .map((stream) => qualityToHeight(`${stream?.quality || ''} ${stream?.title || ''} ${stream?.name || ''} ${stream?.url || ''}`) || 0)
+        .filter((height) => Number(height) > 0),
+    )].sort((a, b) => a - b);
     const probes = [];
     const maxStreamsToProbe = Math.max(1, Number(modeConfig.max_streams_to_probe || 1));
     const adaptiveDeepSampling = requestedMode === 'deep' && modeConfig.probe_streams_adaptively === true;
@@ -1627,6 +1632,7 @@ async function testCandidate(candidate) {
       raw_stream_count: Number(worker.raw_stream_count ?? streams.length),
       stream_count: streams.length,
       streams_returned: streams.length,
+      returned_quality_heights: returnedQualityHeights,
       zero_stream_preflight_terminal: Boolean(
         modeConfig.zero_stream_preflight === true
         && worker.ok
