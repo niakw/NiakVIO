@@ -439,3 +439,11 @@
 - NiakVIO `723e5726b0a0c0099e42646bfc25e61713666f44` contains the focused exact-anchor materializer correction after architecture-FORCE runs #433 and #434 independently failed on the same repeated `scripts/brain_meta_learning.py` find.
 - The permanent Learning reconstruction trigger is narrowed to `4khdhub`, `architecture_force=true`, budget 60 minutes. This replay must prove the materializer can turn the Brain's architecture intent into a unique allowlisted executable patch, pass Brain architecture tests, and only then promote via the existing direct-main FORCE guard.
 - Provider-specific static non-regression remains independently red on the already-known 4KHDHub class-prefix behavior fixture; the current materializer/trigger commits do not modify provider bytes. That existing provider defect is the Brain witness to repair, not evidence that the control-plane patch changed provider behavior.
+
+
+## 2026-10-01 — Architecture FORCE ambiguity traced to duplicated Brain taxonomy source
+
+- Architecture-FORCE replay #435 (`36866475649`) still failed with `replace find must occur exactly once: scripts/brain_meta_learning.py` even after the focused-anchor resolver. Inspection of the exact `bf027a2c...` source found one and only one duplicated literal line in that file: the `route_transition_graph_v1` entry appeared twice consecutively inside `FAILURE_FAMILY_TAXONOMY`.
+- This explains why the resolver could not legally disambiguate: the model was focused on `route_transition_graph_v1`, but the repeated find was duplicated inside the same exact focused snippet, so choosing one occurrence would have been guessing.
+- The duplicate taxonomy literal is removed at the Brain infrastructure layer. A source-AST regression guard now rejects any duplicate literal key in `FAILURE_FAMILY_TAXONOMY`; runtime dict equality alone cannot catch this because Python silently retains only the last duplicate key.
+- No provider bytes are changed by this correction. 4KHDHub remains ROUTE PROVEN and the latest executed provider candidates `optional_metadata_format_gate` and `catalog_identity_query_variants` remain rejected until a new Brain-produced candidate passes isolated movie + TV playable/identity proof.

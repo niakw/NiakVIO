@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import ast
 import sys
 from pathlib import Path
 
@@ -10,6 +11,29 @@ if str(SCRIPTS) not in sys.path:
     sys.path.insert(0, str(SCRIPTS))
 
 import brain_meta_learning as meta
+
+# Source-level guard: Python dict construction silently keeps the last duplicate
+# key, so runtime equality cannot detect a duplicated failure-family literal.
+# Architecture FORCE relies on exact focused source anchors; duplicate taxonomy
+# literals make a valid Brain edit intrinsically ambiguous.
+_source_tree = ast.parse((SCRIPTS / "brain_meta_learning.py").read_text(encoding="utf-8"))
+_taxonomy_keys = []
+for _node in _source_tree.body:
+    _target = None
+    _value = None
+    if isinstance(_node, ast.AnnAssign) and isinstance(_node.target, ast.Name):
+        _target, _value = _node.target.id, _node.value
+    elif isinstance(_node, ast.Assign) and len(_node.targets) == 1 and isinstance(_node.targets[0], ast.Name):
+        _target, _value = _node.targets[0].id, _node.value
+    if _target == "FAILURE_FAMILY_TAXONOMY" and isinstance(_value, ast.Dict):
+        _taxonomy_keys = [
+            str(_key.value)
+            for _key in _value.keys
+            if isinstance(_key, ast.Constant) and isinstance(_key.value, str)
+        ]
+        break
+assert _taxonomy_keys, "FAILURE_FAMILY_TAXONOMY literal not found"
+assert len(_taxonomy_keys) == len(set(_taxonomy_keys)), _taxonomy_keys
 
 layer_ids = {row["id"] for row in meta.ARCHITECTURE_LAYERS}
 assert {
