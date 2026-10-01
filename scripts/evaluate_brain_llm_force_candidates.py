@@ -308,6 +308,7 @@ def main() -> int:
                     "repairFamily": row.get("repairFamily") if isinstance(row.get("repairFamily"), dict) else {},
                     "mechanismFamily": str(row.get("mechanismFamily") or "")[:160],
                     "accepted": False,
+                    "executionObserved": False,
                     "reason": "skipped_after_provider_winner",
                 })
                 continue
@@ -362,6 +363,7 @@ def main() -> int:
                                 "repairFamily": row.get("repairFamily") if isinstance(row.get("repairFamily"), dict) else {},
                                 "mechanismFamily": str(row.get("mechanismFamily") or "")[:160],
                                 "accepted": False,
+                                "executionObserved": False,
                                 "reason": "force_candidate_not_applied",
                                 "baseline": result_summary(baseline),
                                 "application": applied,
@@ -390,6 +392,7 @@ def main() -> int:
                                 "repairFamily": row.get("repairFamily") if isinstance(row.get("repairFamily"), dict) else {},
                                 "mechanismFamily": str(row.get("mechanismFamily") or "")[:160],
                         "accepted": bool(accepted),
+                        "executionObserved": True,
                         "reason": reason,
                         "baseline": result_summary(baseline),
                         "candidate": result_summary(candidate),
@@ -421,6 +424,7 @@ def main() -> int:
                                 "repairFamily": row.get("repairFamily") if isinstance(row.get("repairFamily"), dict) else {},
                                 "mechanismFamily": str(row.get("mechanismFamily") or "")[:160],
                             "accepted": False,
+                            "executionObserved": False,
                             "reason": "force_candidate_execution_error",
                             "baseline": result_summary(baseline),
                             "error": candidate_execution_error(exc),
