@@ -1582,6 +1582,25 @@ async function testCandidate(candidate) {
         .map(Number).filter((value) => Number.isFinite(value) && value > 0),
     )].sort((a, b) => a - b);
     const announcedHostSet = new Set(announcedPlayerHosts);
+    // Hierarchical fan-out: a provider response may announce only a few player
+    // hosts, while each player response announces many terminal variants.
+    // Count the strongest observation for each explored player host+route so
+    // retries do not inflate the result. Fall back to the historical per-response
+    // maximum when no nested player response has been consumed.
+    const nestedVariantByRequest = new Map();
+    for (const item of networkRows) {
+      const itemHost = String(item?.host || '').toLowerCase();
+      const count = Math.max(0, Number(item?.declared_player_candidate_count || 0));
+      if (!itemHost || count <= 0 || !announcedHostSet.has(itemHost)) continue;
+      const key = itemHost + '|' + String(item?.path_pattern || '');
+      nestedVariantByRequest.set(key, Math.max(count, Number(nestedVariantByRequest.get(key) || 0)));
+    }
+    const nestedVariantTotal = [...nestedVariantByRequest.values()]
+      .reduce((sum, value) => sum + Math.max(0, Number(value || 0)), 0);
+    const announcedVariantCandidates = Math.max(
+      announcedPlayerCandidates,
+      nestedVariantTotal || 0,
+    );
     const exploredPlayerRequests = networkRows.filter(
       (item) => item && item.infrastructure !== true && announcedHostSet.has(String(item.host || '').toLowerCase()),
     ).length;
@@ -1599,7 +1618,7 @@ async function testCandidate(candidate) {
     const maxAnnouncedQuality = Math.max(0, ...announcedQualityHeights);
     const maxReturnedQuality = Math.max(0, ...returnedQualityHeights);
     let variantFanoutState = 'not-observed';
-    if (announcedPlayerCandidates >= 2) {
+    if (announcedVariantCandidates >= 2) {
       if (exploredPlayerRequests <= 1 && streams.length <= 1) variantFanoutState = 'announced-not-explored';
       else if (exploredPlayerRequests >= 2 && streams.length <= 1) variantFanoutState = 'explored-not-resolved';
       else variantFanoutState = 'fanout-observed';
