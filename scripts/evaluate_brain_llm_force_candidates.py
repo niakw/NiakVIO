@@ -270,6 +270,15 @@ def main() -> int:
             continue
         eligible.append(copy.deepcopy(raw))
 
+    # Page-merge order is not proof order. Honor Brain's explicit candidate
+    # ordinal so each provider's causal portfolio is sandboxed deterministically.
+    eligible.sort(
+        key=lambda row: (
+            canon(row.get("providerId")),
+            max(1, int(row.get("candidateOrdinal") or 999999)),
+        )
+    )
+
     report_rows: list[dict[str, Any]] = []
     accepted_rows: list[dict[str, Any]] = []
     accepted_providers: set[str] = set()
