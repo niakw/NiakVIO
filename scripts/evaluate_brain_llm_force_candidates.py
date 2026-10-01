@@ -148,6 +148,7 @@ def variant_coverage_summary(result: dict[str, Any]) -> dict[str, Any]:
     reachable_hosts: set[str] = set()
     max_playable_height = 0
     announced_player_candidates = 0
+    announced_variant_candidates = 0
     explored_player_requests = 0
     fanout_states: set[str] = set()
     announced_quality_heights: set[int] = set()
@@ -179,6 +180,10 @@ def variant_coverage_summary(result: dict[str, Any]) -> dict[str, Any]:
             announced_player_candidates,
             int(test.get("announced_player_candidates") or 0),
         )
+        announced_variant_candidates = max(
+            announced_variant_candidates,
+            int(test.get("announced_variant_candidates") or 0),
+        )
         explored_player_requests = max(
             explored_player_requests,
             int(test.get("explored_player_requests") or 0),
@@ -199,6 +204,7 @@ def variant_coverage_summary(result: dict[str, Any]) -> dict[str, Any]:
         "audioLanguages": sorted(audio_languages),
         "reachableHosts": sorted(reachable_hosts),
         "announcedPlayerCandidates": announced_player_candidates,
+        "announcedVariantCandidates": announced_variant_candidates,
         "exploredPlayerRequests": explored_player_requests,
         "fanoutStates": sorted(fanout_states),
         "announcedQualityHeights": sorted(announced_quality_heights),
@@ -225,7 +231,13 @@ def evaluate_variant_coverage_pair(
 
     before = variant_coverage_summary(baseline)
     after = variant_coverage_summary(candidate)
+    before_streams = runtime_repair.stream_count(baseline)
+    after_streams = runtime_repair.stream_count(candidate)
+    before_playable = runtime_repair.playable_stream_count(baseline)
+    after_playable = runtime_repair.playable_stream_count(candidate)
     gains: list[str] = []
+    if after_streams > before_streams:
+        gains.append("returned-stream-count")
     if int(after["maxPlayableHeight"]) > int(before["maxPlayableHeight"]):
         gains.append("playable-height")
     before_quality = set(before["qualityHeights"])
@@ -245,6 +257,12 @@ def evaluate_variant_coverage_pair(
         "playable-height" in gains
         or "audio-language-set" in gains
         or "reachable-host-set" in gains
+        or (
+            "returned-stream-count" in gains
+            and after_playable > 0
+            and after_playable >= before_playable
+            and int(after.get("announcedVariantCandidates") or after.get("announcedPlayerCandidates") or 0) >= 2
+        )
     )
     if not gains or not verified_gain:
         return False, "variant_coverage_no_verified_dimension_gain"
