@@ -74,7 +74,7 @@ assert 'row.get("owner")' in target_block or "row.get('owner')" in target_block,
 assert 'row.get("status")' in target_block or "row.get('status')" in target_block, target_block
 
 lines = workflow.splitlines()
-marker = "automation/provider-census-status.json automation/provider-repair-learn-handoff-v1.json /tmp/fast-learning-handoff.json <<'PY'"
+marker = "automation/provider-census-status.json automation/provider-repair-learn-handoff-v1.json /tmp/fast-learning-handoff.json \"$architecture_force\" <<'PY'"
 start = next(i for i,line in enumerate(lines) if marker in line)
 end = next(i for i in range(start + 1, len(lines)) if lines[i].strip() == "PY")
 assert all(lines[i].startswith("          ") for i in range(start + 1, end + 1)), lines[start:end + 1]
