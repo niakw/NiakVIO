@@ -598,3 +598,13 @@
 - Workflow Gate on `f58a1ab605dbd297a2304ee0528d7b70b635ca2d` reached the Brain Learning workflow tests and failed only because `brain_learning_push_target_workflow_test.py` still required the obsolete literal error text `target provider is not in current census repairQueue`.
 - The runtime workflow already implements the intended rule: routine Learning remains repair/environment scoped; explicit architecture FORCE may target a current non-disabled provider carrying completeness debt. The regression assertion is aligned to the new fail-closed message.
 - Provider Non-Regression on the same SHA passed HindMoviez and UHDMovies contracts before stopping on the pre-existing 4KHDHub movie=[] witness; no new provider regression was introduced by the scope change.
+
+
+## 2026-10-01 — Dynamic fan-out evidence after PapaDuStream/Coflix reports
+
+- User evidence exposed the same blind spot on two current FULL providers: PapaDuStream Interstellar exposes about six HD players but the client surfaces one 480p stream; Coflix exposes about nine servers but the client surfaces one 480p stream.
+- Static runtime inspection was not sufficient. Coflix's current published provider contains its multiflux runtime, which requests the provider player list and loops over up to eight rows; the obsolete Coflix REST runtime is not present in published bytes. Therefore missing fan-out can occur during player exploration/resolution/validation even when provider source nominally loops over several candidates.
+- Added provider-agnostic redacted response fan-out diagnostics. When provider code consumes HTML/JSON/text, the harness records only candidate-player count, candidate hostnames and advertised quality heights; raw candidate URLs and response bodies are not persisted.
+- Deep health now distinguishes announced candidates, explored candidate requests/hosts, returned stream hosts/qualities, and playable output, with diagnostic states `announced-not-explored`, `explored-not-resolved`, `quality-gap`, or `fanout-observed`.
+- Brain planner and FORCE evaluation now receive these fields. FULL OK remains playback/identity status; fan-out evidence is separate completeness debt and never grants publication authority by itself.
+- No provider-specific bytes were changed. PapaDuStream and Coflix are representative cases for Brain-driven completeness repair after current-byte evidence is collected.

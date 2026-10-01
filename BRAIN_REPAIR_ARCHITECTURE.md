@@ -863,3 +863,12 @@ Provider-specific debugging may reveal a causal mechanism, but a hand-written pr
 - It is eligible as a post-exhaustion strategy for route/search gaps and still requires sandbox health, identity, media/playback and non-regression proof before any publication.
 - Provider-specific source edits are evidence for capability synthesis, not a substitute for Brain Repair.
 
+
+
+## Dynamic provider fan-out / completeness evidence
+
+A provider is not considered complete merely because one playable stream exists. The read-only worker derives bounded, redacted fan-out hints from response bodies actually consumed by provider code: candidate player/server count, candidate hostnames and advertised quality heights. Raw URLs, tokens and response bodies are never persisted by this diagnostic.
+
+Deep health preserves four separate stages: **announced candidates**, **candidate requests explored**, **streams returned**, and **streams actually playable/identity-safe**. It emits a diagnostic `variant_fanout_state` such as `announced-not-explored`, `explored-not-resolved`, `quality-gap`, or `fanout-observed`. These states do not demote a provider by themselves; they are evidence for Brain completeness repair and FORCE validation.
+
+This closes the previous blind spot where census FULL OK meant “at least one terminal stream works” while a provider could silently lose later servers, languages or HD/4K variants.

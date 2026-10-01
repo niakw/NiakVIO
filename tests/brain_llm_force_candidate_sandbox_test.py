@@ -23,6 +23,10 @@ def result(
     effective_height=0,
     audio_languages=None,
     reachable_hosts=None,
+    announced_player_candidates=0,
+    explored_player_requests=0,
+    announced_quality_heights=None,
+    fanout_state="",
 ):
     verified = playable if contradictions <= 0 else 0
     tests = []
@@ -39,6 +43,10 @@ def result(
             "verified_max_height": int(effective_height or 0) or None,
             "audio_languages": list(audio_languages or []),
             "reachable_hosts": list(reachable_hosts or []),
+            "announced_player_candidates": int(announced_player_candidates or 0),
+            "explored_player_requests": int(explored_player_requests or 0),
+            "announced_quality_heights": list(announced_quality_heights or []),
+            "variant_fanout_state": fanout_state,
         })
     return {
         "status": status,
@@ -122,6 +130,24 @@ accepted, reason = mod.evaluate_pair(
 )
 assert accepted is False
 assert reason == "variant_coverage_no_verified_dimension_gain", reason
+
+fanout_baseline = result(
+    status="healthy",
+    playable=1,
+    returned=1,
+    quality_heights=[480],
+    effective_height=480,
+    reachable_hosts=["stream.example"],
+    announced_player_candidates=9,
+    explored_player_requests=1,
+    announced_quality_heights=[480,720,1080],
+    fanout_state="announced-not-explored",
+)
+fanout_summary = mod.variant_coverage_summary(fanout_baseline)
+assert fanout_summary["announcedPlayerCandidates"] == 9, fanout_summary
+assert fanout_summary["exploredPlayerRequests"] == 1, fanout_summary
+assert fanout_summary["announcedQualityHeights"] == [480,720,1080], fanout_summary
+assert fanout_summary["fanoutStates"] == ["announced-not-explored"], fanout_summary
 
 health_source = (ROOT / "scripts" / "health_check.mjs").read_text(encoding="utf-8")
 assert "returned_quality_heights: returnedQualityHeights" in health_source
