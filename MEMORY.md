@@ -608,3 +608,13 @@
 - Deep health now distinguishes announced candidates, explored candidate requests/hosts, returned stream hosts/qualities, and playable output, with diagnostic states `announced-not-explored`, `explored-not-resolved`, `quality-gap`, or `fanout-observed`.
 - Brain planner and FORCE evaluation now receive these fields. FULL OK remains playback/identity status; fan-out evidence is separate completeness debt and never grants publication authority by itself.
 - No provider-specific bytes were changed. PapaDuStream and Coflix are representative cases for Brain-driven completeness repair after current-byte evidence is collected.
+
+
+## 2026-10-02 — FULL-provider completeness census unlocked for hierarchical fan-out
+
+- User evidence clarified Coflix as a hierarchical fan-out case: about 2 provider servers, each exposing many terminal choices (roughly 10 + 9 in the observed title). PapaDuStream is another representative multi-player case. Counting server rows is not equivalent to stream completeness.
+- Current Coflix and PapaDuStream runtimes both still contain local aggregate caps of 8 around shared crawler output, so a provider can remain FULL OK while later valid variants are silently dropped.
+- Brain-LLM main now owns the corrective mechanism: deterministic `bounded_variant_enumeration_before_cap` can widen exact current-byte shared-crawler functions from small header caps to a bounded 16 server / 32 aggregate stream envelope. No provider-specific production bytes were manually edited.
+- NiakVIO fan-out diagnostics already distinguish announced candidates, explored player requests, returned hosts/qualities and playable output, but sharded trigger pushes previously forced `scope=unresolved`, excluding FULL providers from fresh evidence.
+- Sharded census orchestration now exports an explicit `census_scope` from the trigger file and honors `scope=all` on push. Contract coverage was extended.
+- Next: run current-byte all-provider census, inspect Coflix/PapaDuStream fan-out states, send Coflix first to Brain as the representative repair, require isolated rematerialization + identity/playback + verified completeness gain, then cross-check PapaDuStream before cohort expansion.
