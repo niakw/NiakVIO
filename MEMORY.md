@@ -554,3 +554,10 @@
 - Verify on a8fd67b2 exposed a stale native-scope assertion: current manifest has 42 executable providers while the durable Hub evidence matrix still contains historical Animetsu/ShowBox rows. Activation authority is providers/ lifecycle, not historical matrix cardinality. Native declared-route validation now uses Hub evidence intersected with active_provider_ids(), matching validate_activation_preservation and preserving the historical matrix without resurrecting archived providers.
 - Projection Reconcile now uses cancel-in-progress=true. Because publication already rejects when origin/main != event SHA, an older queued/running reconcile is guaranteed non-publishable after main advances. Cancelling it is correctness-preserving and removes hours of needless stale rematerialization.
 - A fresh exact-head projection trigger is armed for the shared StreamScore/player-language v34 + badge v12 rematerialization.
+
+
+## 2026-10-01 — Native declared-matrix gate now honors current lifecycle authority
+
+- CORE Verify on 4d2d9b524c39675e75d6298a3607633a27350dd2 failed only because gate_native_declared_provider_matrix.py loaded the durable Hub-46 scope literally and rejected historical Animetsu/ShowBox rows that are no longer present in the 42-provider executable manifest.
+- The regression test already computed Hub scope intersected with active providers, but the gate subprocess reloaded the raw historical file and reintroduced the archived rows. The gate now intersects durable scope evidence with the exact manifest identities before building expected routes.
+- Historical evidence remains preserved; no provider is re-enabled or removed from history. This closes validation split-brain so current shared Core StreamScore/player-language bytes can be verified independently of archived scope rows.

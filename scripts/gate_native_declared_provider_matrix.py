@@ -147,6 +147,19 @@ def main() -> int:
     corpus = json.loads(args.corpus.read_text(encoding="utf-8"))
     fixture_by_type = ((corpus.get("native_reader_acceptance") or {}).get("fixture_by_type") or {})
     scope_ids = load_scope_ids(args.scope_matrix)
+    if scope_ids is not None:
+        manifest_ids = {
+            str(row.get("id") or "").strip().casefold()
+            for row in (manifest.get("scrapers") or [])
+            if isinstance(row, dict) and str(row.get("id") or "").strip()
+        }
+        # Scope matrices are durable evidence and intentionally retain providers
+        # that later enter disabled/archive lifecycle. Current manifest identity
+        # is execution authority; historical rows must not be resurrected merely
+        # to satisfy an old Hub cardinality.
+        scope_ids = scope_ids & manifest_ids
+        if not scope_ids:
+            raise SystemExit("native provider scope has no current manifest intersection")
 
     expected: set[tuple[str, str]] = set()
     provider_ids: set[str] = set()
