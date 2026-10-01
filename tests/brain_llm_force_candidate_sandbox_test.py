@@ -81,6 +81,8 @@ assert "multiple concrete Force candidates require isolated hypothesis schedulin
 assert "skipped_after_provider_winner" in source
 assert "FIELD_BRAIN_LLM_FORCE_PORTFOLIO_WINNER" in source
 assert "candidateOrdinal" in source
+assert "eligible.sort(" in source
+assert "skipped_after_provider_winner" in source
 
 network = mod.network_summary({
     "tests": [{
