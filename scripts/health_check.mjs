@@ -1700,6 +1700,7 @@ async function testCandidate(candidate) {
       streams_returned: streams.length,
       returned_quality_heights: returnedQualityHeights,
       announced_player_candidates: announcedPlayerCandidates,
+      announced_variant_candidates: announcedVariantCandidates,
       announced_player_hosts: announcedPlayerHosts,
       announced_quality_heights: announcedQualityHeights,
       explored_player_requests: exploredPlayerRequests,
