@@ -1,3 +1,10 @@
+## 2026-10-02 — Multi-provider fan-out completeness cohort
+
+- CoFlix is the representative first witness, not a one-off fix. Current runtime audit also found bounded player/stream enumeration patterns in at least: PapaDuStream, StreamZo, MoviesMod, Cineby and UHDMovies. These are candidate completeness-debt providers, not automatically broken providers.
+- Representative validation order stays Brain-first: prove one CoFlix repair end-to-end from current fan-out evidence, then validate at least one additional runtime family before expanding to the wider cohort.
+- No provider runtime is to be hand-edited merely to remove caps. Brain must classify the current bytes, produce the bounded provider-owned mutation, and pass isolated rematerialization + playback + identity + non-regression + measurable completeness gain.
+- The all-provider sharded census remains the authority source because some completeness-debt providers are currently FULL OK and would be skipped by unresolved-only scope.
+
 ## 2026-10-02 — Corrected CoFlix fan-out authority rerun
 
 - Sharded census run `36939639436` persisted successfully from trigger SHA `2029449709c56625d5cf266b2cb417633f9849b0` with 23/46 operational providers and CoFlix still FULL OK. This run remains valid for general provider status.
