@@ -523,3 +523,11 @@
 - Cause: the first derived-URL fix blindly applied every runtime domain substitution to observedUrls/origins. Those lists are mixed knowledge: some values are current-site derived, others are intentional historical/route evidence.
 - Domain Refresh now changes observedUrls/origins only when the complete list delta is explained by the explicit domain map. It accepts two exact cases: rewriting published values produces canonical expected values (stale-domain repair), or rewriting canonical expected values reproduces the published list (recovery from the prior over-projection). Any unrelated mismatch remains untouched and fail-closed for its owning pipeline.
 - This keeps Purstream club->cat repair valid while restoring Anime-Sama's intentional anime-sama.to + animes-sama.fr knowledge instead of inventing duplicate current origins.
+
+
+## 2026-10-01 — Domain rollback guard accepts versioned latest-Telegram reuse
+
+- Domain Refresh #1082 (`36897509018`) correctly recovered the over-projected CONFIG knowledge in staging, but the transaction guard stopped publication because WookaFR's latest official Telegram post (message 133) points to historical `wookafr.blog`, while main still held `wookafr.boston`.
+- The guard previously recognized fresh historical-domain reuse only from hub/source_redirect labels, even though the authority layer already supports registry-scoped official `telegram_public` address feeds. This made the authority resolver and rollback guard disagree.
+- Fresh rollback/reuse evidence now accepts `telegram_public` only when the selected candidate has a positive public message id and the resolver explicitly marks it `latest-telegram-domain chronological authority`. The existing source-authority gate still requires that exact Telegram URL to be configured as an official/authoritative current-address source. Missing message ids remain rejected.
+- No failed #1082 bytes were published; main stayed at `de4090a988011a2928573c95c9904334507f42f2`.

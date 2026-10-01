@@ -265,6 +265,21 @@ def has_fresh_rollback_evidence(item: dict[str, Any], terminal: str) -> bool:
     candidate = selected_candidate(item, terminal)
     label = str(candidate.get("label") or "").casefold()
     source_type = str(candidate.get("source_type") or item.get("selected_source_type") or "").casefold()
+    if source_type == "telegram_public":
+        # Rotating domains may legitimately reuse an older hostname. Accept that
+        # only when the resolver explicitly selected a chronological official
+        # channel observation with a concrete message id. The normal authority
+        # gate has already verified that this exact Telegram source is configured
+        # as current-address authority for the provider.
+        try:
+            message_id = int(candidate.get("message_id") or 0)
+        except (TypeError, ValueError):
+            message_id = 0
+        reason = str(item.get("candidate_priority_reason") or "").strip().casefold()
+        return (
+            message_id > 0
+            and reason == "latest-telegram-domain chronological authority"
+        )
     if source_type not in {"hub", "source_redirect"}:
         return False
     positive = (

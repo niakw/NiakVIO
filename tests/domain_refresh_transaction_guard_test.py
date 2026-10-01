@@ -438,6 +438,63 @@ result = validate(
 )
 assert result["changed"] == ["demo"]
 
+# A latest-telegram-domain provider may reuse a historical hostname when the
+# newest configured official channel message explicitly selects it. A positive
+# message id plus the wrapper's chronological-authority reason is the freshness
+# proof; an unversioned Telegram URL remains insufficient.
+telegram_registry = copy.deepcopy(before_hubs)
+telegram_registry["providers"]["demo"]["sources"] = [{
+    "type": "telegram_public",
+    "url": "https://t.me/s/demo",
+    "purpose": "Official authoritative current domain address feed",
+}]
+telegram_report = {
+    "providers": {
+        "demo": {
+            "status": "site_authoritative",
+            "official_site": "https://demo-old.example",
+            "selected_source_type": "telegram_public",
+            "selected_source": "https://t.me/s/demo",
+            "candidate_priority_reason": "latest-telegram-domain chronological authority",
+            "site_candidates": [{
+                "url": "https://demo-old.example",
+                "label": "demo-old.example",
+                "source_type": "telegram_public",
+                "source": "https://t.me/s/demo",
+                "message_id": 133,
+            }],
+        }
+    }
+}
+telegram_after_hubs = copy.deepcopy(telegram_registry)
+telegram_after_hubs["providers"]["demo"]["direct"] = "https://demo-old.example/"
+telegram_result = validate(
+    before_overrides,
+    after_overrides,
+    telegram_registry,
+    telegram_after_hubs,
+    before_history,
+    telegram_report,
+    {"changed": ["demo"], "registry_changed": ["demo"]},
+)
+assert telegram_result["changed"] == ["demo"], telegram_result
+
+telegram_report["providers"]["demo"]["site_candidates"][0]["message_id"] = None
+try:
+    validate(
+        before_overrides,
+        after_overrides,
+        telegram_registry,
+        telegram_after_hubs,
+        before_history,
+        telegram_report,
+        {"changed": ["demo"], "registry_changed": ["demo"]},
+    )
+except AssertionError as exc:
+    assert "attempted rollback" in str(exc), exc
+else:
+    raise AssertionError("unversioned Telegram rollback evidence must fail closed")
+
 
 
 # Already-current domain authority must remain byte-stable when an optional
