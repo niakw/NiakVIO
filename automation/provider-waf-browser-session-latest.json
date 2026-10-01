@@ -3,7 +3,7 @@
   "mode": "ordinary-headless-browser-session-no-challenge-solver",
   "browserAvailable": true,
   "browserExecutable": "google-chrome",
-  "targetCount": 17,
+  "targetCount": 19,
   "providerFilter": [],
   "attemptsPerTarget": 2,
   "clientProfileMatrixEnabled": false,
@@ -22,7 +22,7 @@
     "exact failed provider GET replay is transport differential evidence only; it cannot grant playback proof"
   ],
   "counts": {
-    "browser_challenge_persisted": 10,
+    "browser_challenge_persisted": 12,
     "browser_content_reached": 7
   },
   "rows": [
@@ -42,8 +42,7 @@
       "attempts": [
         {
           "attempt": 1,
-          "outcome": "browser_challenge_persisted",
-          "exitCode": 0
+          "outcome": "browser_timeout"
         },
         {
           "attempt": 2,
@@ -61,8 +60,7 @@
           "attempts": [
             {
               "attempt": 1,
-              "outcome": "browser_challenge_persisted",
-              "exitCode": 0
+              "outcome": "browser_timeout"
             },
             {
               "attempt": 2,
@@ -77,7 +75,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 14294,
+      "durationMs": 29369,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_challenge_persisted",
@@ -123,8 +121,7 @@
       "attempts": [
         {
           "attempt": 1,
-          "outcome": "browser_challenge_persisted",
-          "exitCode": 0
+          "outcome": "browser_timeout"
         },
         {
           "attempt": 2,
@@ -142,8 +139,7 @@
           "attempts": [
             {
               "attempt": 1,
-              "outcome": "browser_challenge_persisted",
-              "exitCode": 0
+              "outcome": "browser_timeout"
             },
             {
               "attempt": 2,
@@ -158,7 +154,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 14316,
+      "durationMs": 29372,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_challenge_persisted",
@@ -204,8 +200,7 @@
       "attempts": [
         {
           "attempt": 1,
-          "outcome": "browser_challenge_persisted",
-          "exitCode": 0
+          "outcome": "browser_timeout"
         },
         {
           "attempt": 2,
@@ -223,8 +218,7 @@
           "attempts": [
             {
               "attempt": 1,
-              "outcome": "browser_challenge_persisted",
-              "exitCode": 0
+              "outcome": "browser_timeout"
             },
             {
               "attempt": 2,
@@ -239,7 +233,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 15710,
+      "durationMs": 29546,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_challenge_persisted",
@@ -533,8 +527,8 @@
     {
       "provider": "flemmix",
       "lane": "movie",
-      "publicUrl": "https://flemmix.party/search",
-      "host": "flemmix.party",
+      "publicUrl": "https://flemmix.eu/search",
+      "host": "flemmix.eu",
       "path": "/search",
       "method": "GET",
       "fetchStatus": 403,
@@ -581,41 +575,13 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 2459,
-      "residentialExitNodeProfile": {
-        "profile": "tailscale-residential-exit",
-        "outcome": "browser_inconclusive",
-        "attemptCount": 1,
-        "clientProfileMatrix": [
-          {
-            "profile": "github-default-browser",
-            "outcome": "browser_inconclusive",
-            "attemptCount": 1
-          },
-          {
-            "profile": "nuvio-tv-ua-browser",
-            "outcome": "browser_timeout",
-            "attemptCount": 1
-          }
-        ],
-        "directHttpProfile": {
-          "profile": "nuvio-tv-direct-http-approx",
-          "outcome": "direct_http_challenge_persisted",
-          "attemptCount": 1
-        },
-        "okHttpJvmProfile": {
-          "profile": "nuvio-tv-okhttp-jvm",
-          "outcome": "okhttp_jvm_challenge_persisted",
-          "attemptCount": 1
-        },
-        "contentProfiles": []
-      }
+      "durationMs": 3629
     },
     {
       "provider": "flemmix",
       "lane": "tv",
-      "publicUrl": "https://flemmix.party/search",
-      "host": "flemmix.party",
+      "publicUrl": "https://flemmix.eu/search",
+      "host": "flemmix.eu",
       "path": "/search",
       "method": "GET",
       "fetchStatus": 403,
@@ -662,35 +628,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 2954,
-      "residentialExitNodeProfile": {
-        "profile": "tailscale-residential-exit",
-        "outcome": "browser_challenge_persisted",
-        "attemptCount": 1,
-        "clientProfileMatrix": [
-          {
-            "profile": "github-default-browser",
-            "outcome": "browser_challenge_persisted",
-            "attemptCount": 1
-          },
-          {
-            "profile": "nuvio-tv-ua-browser",
-            "outcome": "browser_timeout",
-            "attemptCount": 1
-          }
-        ],
-        "directHttpProfile": {
-          "profile": "nuvio-tv-direct-http-approx",
-          "outcome": "direct_http_challenge_persisted",
-          "attemptCount": 1
-        },
-        "okHttpJvmProfile": {
-          "profile": "nuvio-tv-okhttp-jvm",
-          "outcome": "okhttp_jvm_challenge_persisted",
-          "attemptCount": 1
-        },
-        "contentProfiles": []
-      }
+      "durationMs": 3825
     },
     {
       "provider": "mallumv",
@@ -743,7 +681,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 2906,
+      "durationMs": 3109,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_challenge_persisted",
@@ -1048,9 +986,9 @@
     {
       "provider": "moviesmod",
       "lane": "movie",
-      "publicUrl": "https://links.modpro.blog/archives/65890",
+      "publicUrl": "https://links.modpro.blog/archives/5787",
       "host": "links.modpro.blog",
-      "path": "/archives/65890",
+      "path": "/archives/5787",
       "method": "GET",
       "fetchStatus": 403,
       "challenge": "cloudflare",
@@ -1096,7 +1034,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 2845
+      "durationMs": 3814
     },
     {
       "provider": "moviesmod",
@@ -1149,7 +1087,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 2380
+      "durationMs": 3624
     },
     {
       "provider": "vidfast",
@@ -1420,6 +1358,112 @@
       }
     },
     {
+      "provider": "vidrock",
+      "lane": "movie",
+      "publicUrl": "https://plasticprophecy.live/file1/YmJhMWI2YWJhZTViOGE3MjhlYjBlOTc2YTlmZTVkZGMxNzg5NjQzNDExNTY4NTky/720p/playlist.m3u8",
+      "host": "plasticprophecy.live",
+      "path": "/file1/YmJhMWI2YWJhZTViOGE3MjhlYjBlOTc2YTlmZTVkZGMxNzg5NjQzNDExNTY4NTky/720p/playlist.m3u8",
+      "method": "GET",
+      "fetchStatus": 403,
+      "challenge": "cloudflare",
+      "seedKind": null,
+      "seedRoute": null,
+      "outcome": "browser_challenge_persisted",
+      "attemptCount": 2,
+      "attempts": [
+        {
+          "attempt": 1,
+          "outcome": "browser_challenge_persisted",
+          "exitCode": 0
+        },
+        {
+          "attempt": 2,
+          "outcome": "browser_challenge_persisted",
+          "exitCode": 0
+        }
+      ],
+      "ordinarySessionReused": true,
+      "clientProfileMatrix": [
+        {
+          "profile": "github-default-browser",
+          "userAgent": null,
+          "outcome": "browser_challenge_persisted",
+          "attemptCount": 2,
+          "attempts": [
+            {
+              "attempt": 1,
+              "outcome": "browser_challenge_persisted",
+              "exitCode": 0
+            },
+            {
+              "attempt": 2,
+              "outcome": "browser_challenge_persisted",
+              "exitCode": 0
+            }
+          ],
+          "ordinarySessionReused": true
+        }
+      ],
+      "directHttpProfile": null,
+      "okHttpJvmProfile": null,
+      "contentProfiles": [],
+      "nativeTvTransportStillUnproven": true,
+      "durationMs": 2745
+    },
+    {
+      "provider": "vidrock",
+      "lane": "tv",
+      "publicUrl": "https://moonfirekeeper.lol/file2/NTdlZGRjZjZmNGRkNjZhOTkyOTgwNDg1ZTVmNzVhNzIxNzg5NjQyMjQ1OTUyNDM5/720p/playlist.m3u8",
+      "host": "moonfirekeeper.lol",
+      "path": "/file2/NTdlZGRjZjZmNGRkNjZhOTkyOTgwNDg1ZTVmNzVhNzIxNzg5NjQyMjQ1OTUyNDM5/720p/playlist.m3u8",
+      "method": "GET",
+      "fetchStatus": 403,
+      "challenge": "cloudflare",
+      "seedKind": null,
+      "seedRoute": null,
+      "outcome": "browser_challenge_persisted",
+      "attemptCount": 2,
+      "attempts": [
+        {
+          "attempt": 1,
+          "outcome": "browser_challenge_persisted",
+          "exitCode": 0
+        },
+        {
+          "attempt": 2,
+          "outcome": "browser_challenge_persisted",
+          "exitCode": 0
+        }
+      ],
+      "ordinarySessionReused": true,
+      "clientProfileMatrix": [
+        {
+          "profile": "github-default-browser",
+          "userAgent": null,
+          "outcome": "browser_challenge_persisted",
+          "attemptCount": 2,
+          "attempts": [
+            {
+              "attempt": 1,
+              "outcome": "browser_challenge_persisted",
+              "exitCode": 0
+            },
+            {
+              "attempt": 2,
+              "outcome": "browser_challenge_persisted",
+              "exitCode": 0
+            }
+          ],
+          "ordinarySessionReused": true
+        }
+      ],
+      "directHttpProfile": null,
+      "okHttpJvmProfile": null,
+      "contentProfiles": [],
+      "nativeTvTransportStillUnproven": true,
+      "durationMs": 1927
+    },
+    {
       "provider": "vostfree",
       "lane": "anime",
       "publicUrl": "https://ipv4.vostfree.ws/",
@@ -1470,7 +1514,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 4088,
+      "durationMs": 2557,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_challenge_persisted",
@@ -2111,7 +2155,9 @@
         "animesalt",
         "flemmix",
         "mallumv",
-        "moviesmod"
+        "moviesmod",
+        "vidrock",
+        "vostfree"
       ]
     }
   },
@@ -2120,7 +2166,9 @@
     "animesalt",
     "flemmix",
     "mallumv",
-    "moviesmod"
+    "moviesmod",
+    "vidrock",
+    "vostfree"
   ],
   "residentialExitNodeLastAttempt": {
     "enabled": true,
