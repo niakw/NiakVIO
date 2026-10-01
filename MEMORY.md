@@ -575,3 +575,10 @@
 
 - Workflow Gate on `63a0ba62906a72651576ed93b3a3131174784f56` proved the new isolated Force evaluator tests pass, including verified variant-coverage acceptance/rejection. The only gate failure was a source-string contract still requiring the former two-argument `evaluate_pair(baseline, candidate)` call.
 - Readiness now asserts the mechanism-aware evaluator call and `mechanism_family` wiring instead of the obsolete literal signature.
+
+
+## 2026-10-01 — HindMoviez verified-coverage Force sandbox armed
+
+- Brain guidance #227 produced deterministic fingerprint `58d187d1e146a38bc0c5226fcd665674679b07c32ea5ba37b2cfa4eb2a7e1e82`, family `bounded_variant_enumeration_before_cap`, from NiakVIO `8cc61b4af6f2003f5e2712d84102b004385b5eed`. It removes the outer `out.length>=4` break from the bounded `k<8` aggregation loop and leaves inner per-source limits intact.
+- Since guidance generation, only tests/harness/MEMORY and availability diagnostics changed; provider bytes did not. `availability-history.json` and `availability-report.json` are now explicitly classified as neutral guidance drift, consistent with release-hash policy that already excludes them from executable authority.
+- Repair trigger retry 192 requires external Brain mutation and mechanism-specific verified variant coverage. Stream-count-only gain cannot win.
