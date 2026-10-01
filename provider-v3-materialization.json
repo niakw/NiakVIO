@@ -2,9 +2,9 @@
   "schemaVersion": 3,
   "sourceSha": "e936461a168ba840640fb196bd27b6cf43b791ea",
   "context": "workspace",
-  "generation": "f88751e2361bf280bab6829b7b8b6320e99a49e275fa715c30b61f5392a90ab4",
-  "providerCount": 44,
-  "expectedProviderCount": 44,
+  "generation": "5b8a00490def99bf00a72d3ca2b947106e57270ff82763813dea782b53a537e3",
+  "providerCount": 42,
+  "expectedProviderCount": 42,
   "providers": [
     {
       "provider": "anime-sama",
@@ -1587,103 +1587,6 @@
         "animesultra"
       ],
       "domainSubstitutionReconciledProviders": []
-    },
-    {
-      "provider": "animetsu",
-      "file": "providers/animetsu-f93755d136067ac0.js",
-      "sha256": "f93755d136067ac046813170bb3c4d1960107f4ff479a916bddecc553fee5ed5",
-      "providerDataSha256": "7ed0c95d12616e181fc91722255646eb7032922fd1650b6eaaaab98137895d69",
-      "baseStrippedGeneratedCore": false,
-      "fixIds": [
-        "CORE.HLS_RUNTIME_INTEGRITY.V1",
-        "CORE.MEDIA_TYPE_RESOLUTION.V1",
-        "CORE.PROVIDER_BRANDING.V1",
-        "CORE.PROVIDER_SECURITY_BOUNDARY.V1",
-        "CORE.RUNTIME_COMPAT.V1",
-        "CORE.RUNTIME_MEDIA_SAFETY.V4",
-        "CORE.STREAM_FACTS.V1",
-        "CORE.STREAM_IDENTITY.V1",
-        "CORE.STREAM_PRESENTATION.V1",
-        "CORE.STREAM_SANITIZER.V6",
-        "PROVIDER.ANIMETSU.CONFIG.V1"
-      ],
-      "coreCount": 10,
-      "applied": [
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
-          "phase": "discovery",
-          "scope": "global_runtime_media_safety"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
-          "phase": "discovery",
-          "scope": "global_playback_integrity"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_provider_security_hardening_v1.py",
-          "phase": "discovery",
-          "scope": "global_playback_integrity"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_runtime_compat_v1.py",
-          "phase": "discovery",
-          "scope": "global_runtime_compat"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_stream_facts_v1.py",
-          "phase": "discovery",
-          "scope": "global_stream_facts"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_stream_identity_v1.py",
-          "phase": "discovery",
-          "scope": "global_stream_identity"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
-          "phase": "discovery",
-          "scope": "global_media_type_resolution"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_stream_presentation_v1.py",
-          "phase": "discovery",
-          "scope": "global_stream_presentation"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_provider_branding_v1.py",
-          "phase": "discovery",
-          "scope": "global_provider_branding"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/stream_output_sanitizer_v8.py",
-          "phase": "discovery",
-          "scope": "global_terminal_stream_sanitizer"
-        }
-      ],
-      "deviceSpecificJs": false,
-      "devices": [
-        "tv",
-        "mobile",
-        "desktop"
-      ],
-      "legacyProviderJsExecuted": false,
-      "upstreamJsExecuted": false,
-      "minimizer": {
-        "enabled": false,
-        "savedBytes": 0,
-        "transformedLines": 0,
-        "skippedReason": "final-stage-only"
-      }
     },
     {
       "provider": "animevostfr",
@@ -4768,110 +4671,6 @@
       }
     },
     {
-      "provider": "showbox",
-      "file": "providers/showbox-2269f45264780f55.js",
-      "sha256": "2269f45264780f55990e7d379a12663e7d8033cd0aed747c2d9fadd149aa7238",
-      "providerDataSha256": "3c5993ef08925a3a5d312d7cb80202309843100bece8b91b51b2f58dd30781da",
-      "baseStrippedGeneratedCore": false,
-      "fixIds": [
-        "CORE.HLS_RUNTIME_INTEGRITY.V1",
-        "CORE.MEDIA_ENRICHMENT.V1",
-        "CORE.MEDIA_TYPE_RESOLUTION.V1",
-        "CORE.PROVIDER_BRANDING.V1",
-        "CORE.PROVIDER_SECURITY_BOUNDARY.V1",
-        "CORE.RUNTIME_COMPAT.V1",
-        "CORE.RUNTIME_MEDIA_SAFETY.V4",
-        "CORE.STREAM_FACTS.V1",
-        "CORE.STREAM_IDENTITY.V1",
-        "CORE.STREAM_PRESENTATION.V1",
-        "CORE.STREAM_SANITIZER.V6",
-        "PROVIDER.SHOWBOX.CONFIG.V1"
-      ],
-      "coreCount": 11,
-      "applied": [
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_media_enrichment_v1.py",
-          "phase": "discovery",
-          "scope": "global_media_enrichment"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
-          "phase": "discovery",
-          "scope": "global_runtime_media_safety"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
-          "phase": "discovery",
-          "scope": "global_playback_integrity"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_provider_security_hardening_v1.py",
-          "phase": "discovery",
-          "scope": "global_playback_integrity"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_runtime_compat_v1.py",
-          "phase": "discovery",
-          "scope": "global_runtime_compat"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_stream_facts_v1.py",
-          "phase": "discovery",
-          "scope": "global_stream_facts"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_stream_identity_v1.py",
-          "phase": "discovery",
-          "scope": "global_stream_identity"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
-          "phase": "discovery",
-          "scope": "global_media_type_resolution"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_stream_presentation_v1.py",
-          "phase": "discovery",
-          "scope": "global_stream_presentation"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_provider_branding_v1.py",
-          "phase": "discovery",
-          "scope": "global_provider_branding"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/stream_output_sanitizer_v8.py",
-          "phase": "discovery",
-          "scope": "global_terminal_stream_sanitizer"
-        }
-      ],
-      "deviceSpecificJs": false,
-      "devices": [
-        "tv",
-        "mobile",
-        "desktop"
-      ],
-      "legacyProviderJsExecuted": false,
-      "upstreamJsExecuted": false,
-      "minimizer": {
-        "enabled": false,
-        "savedBytes": 0,
-        "transformedLines": 0,
-        "skippedReason": "final-stage-only"
-      }
-    },
-    {
       "provider": "vidlove",
       "file": "providers/vidlove--nuvio--78e3a3e70d60be49.js",
       "sha256": "78e3a3e70d60be4909396d4d91106bc14051cbc91debd5132fa3bbb5da7ca670",
@@ -5009,7 +4808,7 @@
   "legacyProviderJsExecuted": false,
   "upstreamJsExecuted": false,
   "staticKnowledgeFile": "automation/provider-v3-static-knowledge.json",
-  "staticKnowledgeProviderCount": 44,
+  "staticKnowledgeProviderCount": 42,
   "domainAuthorityOnlyUpdate": true,
   "domainAuthorityUpdatedProviders": [
     "hindmoviez",
@@ -5065,5 +4864,8 @@
   ],
   "activeProviderIdentityCount": 42,
   "lifecycleScopeReconciled": true,
-  "lifecycleReconciledArchivedProviders": []
+  "lifecycleReconciledArchivedProviders": [
+    "animetsu",
+    "showbox"
+  ]
 }
