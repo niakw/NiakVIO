@@ -1,12 +1,12 @@
 {
   "schema_version": 63,
-  "generated_at": "2026-10-01T15:33:20.744278+00:00",
+  "generated_at": "2026-10-01T21:09:39.029856+00:00",
   "test_environment": "github-actions-node",
   "checked_providers": 42,
   "status_counts": {
-    "healthy": 3,
+    "healthy": 5,
     "reachable": 0,
-    "blocked": 5,
+    "blocked": 3,
     "degraded": 2,
     "no_streams": 14,
     "provider_unreachable": 14,
@@ -1591,18 +1591,6 @@
       "activation_mode": "preserved_current_ci_uncertain"
     },
     {
-      "id": "animetsu",
-      "status": "not-checked",
-      "action": "unchanged",
-      "enabled": false,
-      "consecutive_hard_failures": 0,
-      "hard_failure_started_at": null,
-      "consecutive_successes": 0,
-      "hosts": [],
-      "response_categories": [],
-      "host_health": {}
-    },
-    {
       "id": "animevostfr",
       "status": "no_streams",
       "action": "unchanged",
@@ -1770,18 +1758,14 @@
     },
     {
       "id": "coflix",
-      "status": "healthy",
+      "status": "no_streams",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
-      "consecutive_successes": 1,
-      "hosts": [
-        "strm6.uqload.vc"
-      ],
-      "response_categories": [
-        "playable"
-      ],
+      "consecutive_successes": 0,
+      "hosts": [],
+      "response_categories": [],
       "host_health": {
         "lecteurvideo.com": {
           "last_checked_at": "2026-10-01T15:33:20.744278+00:00",
@@ -2395,17 +2379,21 @@
     },
     {
       "id": "sekai",
-      "status": "no_streams",
+      "status": "healthy",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
-      "consecutive_successes": 0,
-      "hosts": [],
-      "response_categories": [],
+      "consecutive_successes": 1,
+      "hosts": [
+        "23.mugiwara.one"
+      ],
+      "response_categories": [
+        "playable"
+      ],
       "host_health": {
         "4.mugiwara.one": {
-          "last_checked_at": "2026-09-30T20:54:18.140359+00:00",
+          "last_checked_at": "2026-10-01T21:09:39.029856+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -2416,7 +2404,7 @@
           "consecutive_blocked": 0
         },
         "cdndirector.dailymotion.com": {
-          "last_checked_at": "2026-09-30T20:54:18.140359+00:00",
+          "last_checked_at": "2026-10-01T21:09:39.029856+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -2427,7 +2415,7 @@
           "consecutive_blocked": 0
         },
         "1.mugiwara.one": {
-          "last_checked_at": "2026-09-30T20:54:18.140359+00:00",
+          "last_checked_at": "2026-10-01T21:09:39.029856+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -2438,7 +2426,18 @@
           "consecutive_blocked": 0
         },
         "23.mugiwara.one": {
-          "last_checked_at": "2026-09-30T20:54:18.140359+00:00",
+          "last_checked_at": "2026-10-01T21:09:39.029856+00:00",
+          "last_category": "playable",
+          "reachable": true,
+          "http_status": 206,
+          "latency_ms": 734,
+          "kind": "mp4",
+          "consecutive_hard_failures": 0,
+          "consecutive_successes": 1,
+          "consecutive_blocked": 0
+        },
+        "5.mugiwara.one": {
+          "last_checked_at": "2026-10-01T21:09:39.029856+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -2446,17 +2445,6 @@
           "kind": "mp4",
           "consecutive_hard_failures": 0,
           "consecutive_successes": 0,
-          "consecutive_blocked": 0
-        },
-        "5.mugiwara.one": {
-          "last_checked_at": "2026-09-30T20:54:18.140359+00:00",
-          "last_category": "playable",
-          "reachable": true,
-          "http_status": 206,
-          "latency_ms": 547,
-          "kind": "mp4",
-          "consecutive_hard_failures": 0,
-          "consecutive_successes": 1,
           "consecutive_blocked": 0
         }
       },
@@ -2872,17 +2860,32 @@
     },
     {
       "id": "voiranime-homes",
-      "status": "blocked",
+      "status": "healthy",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
-      "consecutive_successes": 0,
-      "hosts": [],
-      "response_categories": [],
+      "consecutive_successes": 1,
+      "hosts": [
+        "u14.vidzy.cc"
+      ],
+      "response_categories": [
+        "playable"
+      ],
       "host_health": {
         "u14.vidzy.cc": {
-          "last_checked_at": "2026-10-01T06:13:13.691884+00:00",
+          "last_checked_at": "2026-10-01T21:09:39.029856+00:00",
+          "last_category": "playable",
+          "reachable": true,
+          "http_status": 200,
+          "latency_ms": 1257,
+          "kind": "hls",
+          "consecutive_hard_failures": 0,
+          "consecutive_successes": 1,
+          "consecutive_blocked": 0
+        },
+        "v6.vidzy.cc": {
+          "last_checked_at": "2026-10-01T21:09:39.029856+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -2890,17 +2893,6 @@
           "kind": "hls",
           "consecutive_hard_failures": 0,
           "consecutive_successes": 0,
-          "consecutive_blocked": 0
-        },
-        "v6.vidzy.cc": {
-          "last_checked_at": "2026-10-01T06:13:13.691884+00:00",
-          "last_category": "playable",
-          "reachable": true,
-          "http_status": 200,
-          "latency_ms": 608,
-          "kind": "hls",
-          "consecutive_hard_failures": 0,
-          "consecutive_successes": 1,
           "consecutive_blocked": 0
         }
       },
@@ -2946,7 +2938,7 @@
     },
     {
       "id": "vostfree",
-      "status": "blocked",
+      "status": "no_streams",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
@@ -3129,30 +3121,22 @@
       "activation_mode": "configured_safety_quarantine"
     },
     {
-      "id": "showbox",
-      "status": "not-checked",
-      "action": "unchanged",
-      "enabled": false,
-      "consecutive_hard_failures": 0,
-      "hard_failure_started_at": null,
-      "consecutive_successes": 0,
-      "hosts": [],
-      "response_categories": [],
-      "host_health": {}
-    },
-    {
       "id": "vidlove",
-      "status": "no_streams",
+      "status": "healthy",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
-      "consecutive_successes": 0,
-      "hosts": [],
-      "response_categories": [],
+      "consecutive_successes": 1,
+      "hosts": [
+        "d.phantomflix.net"
+      ],
+      "response_categories": [
+        "playable"
+      ],
       "host_health": {
         "ballerinacappuccinalovestungtungtungsahur.com": {
-          "last_checked_at": "2026-10-01T06:13:13.691884+00:00",
+          "last_checked_at": "2026-10-01T21:09:39.029856+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -3163,7 +3147,7 @@
           "consecutive_blocked": 0
         },
         "a2.whysosigmabro.fun": {
-          "last_checked_at": "2026-10-01T06:13:13.691884+00:00",
+          "last_checked_at": "2026-10-01T21:09:39.029856+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -3174,7 +3158,7 @@
           "consecutive_blocked": 0
         },
         "d.whysosigmabro.fun": {
-          "last_checked_at": "2026-10-01T06:13:13.691884+00:00",
+          "last_checked_at": "2026-10-01T21:09:39.029856+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -3185,7 +3169,7 @@
           "consecutive_blocked": 0
         },
         "a2.whysosigmabro.cfd": {
-          "last_checked_at": "2026-10-01T06:13:13.691884+00:00",
+          "last_checked_at": "2026-10-01T21:09:39.029856+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -3196,7 +3180,7 @@
           "consecutive_blocked": 0
         },
         "d.whysosigmabro.cfd": {
-          "last_checked_at": "2026-10-01T06:13:13.691884+00:00",
+          "last_checked_at": "2026-10-01T21:09:39.029856+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -3207,14 +3191,14 @@
           "consecutive_blocked": 0
         },
         "d.phantomflix.net": {
-          "last_checked_at": "2026-10-01T06:13:13.691884+00:00",
+          "last_checked_at": "2026-10-01T21:09:39.029856+00:00",
           "last_category": "playable",
           "reachable": true,
-          "http_status": 200,
-          "latency_ms": 174,
-          "kind": "hls",
+          "http_status": 206,
+          "latency_ms": 222,
+          "kind": "mp4",
           "consecutive_hard_failures": 0,
-          "consecutive_successes": 1,
+          "consecutive_successes": 2,
           "consecutive_blocked": 0
         }
       },
