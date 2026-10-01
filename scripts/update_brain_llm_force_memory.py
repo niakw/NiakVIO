@@ -98,6 +98,11 @@ def merge(memory: dict[str, Any], evaluation: dict[str, Any]) -> dict[str, Any]:
         context_fp = str(result.get("mutationContextFingerprint") or "").strip().casefold()
         if not provider or not FP64.fullmatch(mutation_fp) or not FP64.fullmatch(context_fp):
             continue
+        if result.get("executionObserved") is False:
+            # Portfolio reservations that were skipped after an earlier winner,
+            # or candidates that never reached executable provider bytes, are
+            # not sandbox outcomes and must not become negative memory.
+            continue
         key = (provider, mutation_fp, context_fp)
         row = by_key.get(key)
         if row is None:
