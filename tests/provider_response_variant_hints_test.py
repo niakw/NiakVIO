@@ -45,5 +45,5 @@ assert "extractResponseVariantHints" in worker
 assert "declared_player_candidate_count" in worker
 health=(ROOT/"scripts"/"health_check.mjs").read_text(encoding="utf-8")
 assert "nestedVariantByRequest" in health
-assert "announced_variant_candidate_count: announcedVariantCandidates" in health
+assert "announced_variant_candidates: announcedVariantCandidates" in health
 print("provider response variant fan-out diagnostics passed")
