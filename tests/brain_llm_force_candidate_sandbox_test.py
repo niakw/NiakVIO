@@ -77,6 +77,10 @@ assert "except (subprocess.SubprocessError, ValueError, OSError) as exc:" in sou
 assert 'local_output_root = ROOT / "local-output"' in source
 assert "local_output_root.mkdir(parents=True, exist_ok=True)" in source
 assert "tempfile.mkdtemp(prefix=\"force-candidates-\", dir=local_output_root)" in source
+assert "multiple concrete Force candidates require isolated hypothesis scheduling" not in source
+assert "skipped_after_provider_winner" in source
+assert "FIELD_BRAIN_LLM_FORCE_PORTFOLIO_WINNER" in source
+assert "candidateOrdinal" in source
 
 network = mod.network_summary({
     "tests": [{
