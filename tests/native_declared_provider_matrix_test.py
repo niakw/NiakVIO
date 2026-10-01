@@ -13,6 +13,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 
 from rotating_corpus import select_fixtures  # noqa: E402
+from current_provider_scope import active_provider_ids  # noqa: E402
 
 GATE = ROOT / "scripts/gate_native_declared_provider_matrix.py"
 MANIFEST = ROOT / "manifest.json"
@@ -45,7 +46,11 @@ def scope_ids() -> set[str]:
     }
     declared = int(data.get("hubCount") or 0)
     assert declared > 0 and len(ids) == declared, (declared, len(ids))
-    return ids
+    # The Hub matrix is durable campaign evidence and may retain rows that have
+    # since entered disabled/archive lifecycle. Physical providers/ is current
+    # activation authority; native declared-route proof covers only the active
+    # intersection and never resurrects archived rows merely to satisfy history.
+    return ids & active_provider_ids()
 
 
 def manifest_rows() -> list[dict]:

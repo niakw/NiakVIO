@@ -547,3 +547,10 @@
 - Badge mapping v11 was internally inconsistent: catalogue/feed authority is v11 but `mapping_core_brain_ui_v11_complete.json` still pointed native feeds/publicFeedVersion to v10. Because published snapshots are immutable, v11 is not rewritten. New immutable v12 catalogue/mapping/feed snapshots are added; artwork/filter rows are unchanged, while the mapping now points to v12 feeds and records the technical-estimate StreamScore threshold.
 - Global stream presentation revision advances to `all-providers-client-projection-player-language-streamscore-v34` and reads the v12 catalogue. The projection trigger explicitly requires every published provider to rematerialize shared Core bytes; later acceptance checks exact provider JS, not source scripts alone.
 - Flemmix runtime source no longer hard-pins a mutable fallback domain. It requires the current Domain Refresh base through provider_lego_options and fails closed if absent. Its regression test derives the current terminal dynamically rather than pinning `.party`.
+
+
+## 2026-10-01 — Native Lab scope + exact-head reconcile concurrency
+
+- Verify on a8fd67b2 exposed a stale native-scope assertion: current manifest has 42 executable providers while the durable Hub evidence matrix still contains historical Animetsu/ShowBox rows. Activation authority is providers/ lifecycle, not historical matrix cardinality. Native declared-route validation now uses Hub evidence intersected with active_provider_ids(), matching validate_activation_preservation and preserving the historical matrix without resurrecting archived providers.
+- Projection Reconcile now uses cancel-in-progress=true. Because publication already rejects when origin/main != event SHA, an older queued/running reconcile is guaranteed non-publishable after main advances. Cancelling it is correctness-preserving and removes hours of needless stale rematerialization.
+- A fresh exact-head projection trigger is armed for the shared StreamScore/player-language v34 + badge v12 rematerialization.
