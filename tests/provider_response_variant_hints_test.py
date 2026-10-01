@@ -35,7 +35,8 @@ console.log(JSON.stringify({
  indexedNav:extractResponseVariantHints(indexedNav,{baseUrl:"https://example.test/"})
 }));
 """
-proc=subprocess.run(["node","-e",runner,str(MODULE)],cwd=ROOT,text=True,capture_output=True,check=True)
+proc=subprocess.run(["node","-e",runner,str(MODULE)],cwd=ROOT,text=True,capture_output=True,check=False)
+assert proc.returncode == 0, proc.stdout + proc.stderr
 data=json.loads(proc.stdout)
 assert data["coflixRoot"]["declared_player_candidate_count"]==2,data
 assert len(data["coflixRoot"]["declared_player_hosts"])==2,data
