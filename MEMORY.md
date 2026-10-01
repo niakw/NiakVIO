@@ -1,3 +1,10 @@
+## 2026-10-02 — Corrected CoFlix fan-out authority rerun
+
+- Sharded census run `36939639436` persisted successfully from trigger SHA `2029449709c56625d5cf266b2cb417633f9849b0` with 23/46 operational providers and CoFlix still FULL OK. This run remains valid for general provider status.
+- It is **not** accepted as final CoFlix hierarchical fan-out authority: the index-only detector was corrected immediately afterwards by `e683528b1fbda70bd2e27c0f8509c265752ebb50` and contract coverage by `f8f5a92e21522eddcec8263dccee9a78f0784abe`.
+- Corrected all-provider fan-out authority was re-triggered on `b022bee0e8570935c63a7ff299ff560613e0f047` with `scope=all`. Required evidence before Brain mutation: CoFlix announced indexed choices (expected 19 from the user-supplied 2-server/10+9 menu), explored player requests and returned distinct streams.
+- No CoFlix production provider bytes were manually changed. Brain remains responsible for any accepted `variant_coverage_gap` repair after current-byte evidence, isolated rematerialization, identity/playback validation and measurable completeness gain.
+
 ## 2026-10-02 — CoFlix index-only menu fan-out is now observable
 
 - User supplied current CoFlix Interstellar player markup proving two top-level server menus with 10 + 9 indexed choices (19 total). The terminal choice URLs are not present directly on those menu buttons, so the prior URL-only response hint extractor could undercount the real fan-out even after hierarchical host counting.
