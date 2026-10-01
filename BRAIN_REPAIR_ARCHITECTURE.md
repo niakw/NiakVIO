@@ -872,3 +872,10 @@ A provider is not considered complete merely because one playable stream exists.
 Deep health preserves four separate stages: **announced candidates**, **candidate requests explored**, **streams returned**, and **streams actually playable/identity-safe**. It emits a diagnostic `variant_fanout_state` such as `announced-not-explored`, `explored-not-resolved`, `quality-gap`, or `fanout-observed`. These states do not demote a provider by themselves; they are evidence for Brain completeness repair and FORCE validation.
 
 This closes the previous blind spot where census FULL OK meant “at least one terminal stream works” while a provider could silently lose later servers, languages or HD/4K variants.
+
+
+### Hierarchical player → variant completeness
+
+Completeness is measured across stages rather than by a single stream or server count. A provider response may announce a small set of player/server hosts; responses actually consumed from those hosts may in turn announce many terminal variants. The harness records bounded/redacted counts only and derives `announced_variant_candidates` by taking the strongest candidate count per explored player host+route, then summing those distinct nested observations. Raw player URLs, tokens and response bodies are not persisted.
+
+Provider-local runtimes remain responsible for their own server/HTML/JSON structure. Brain receives the generic evidence and may remove a proven bounded fan-out truncation from exact current provider-owned bytes. FORCE acceptance requires no runtime, malformed-request, identity or playable regression; a larger distinct returned-stream set is a verified completeness gain only when current hierarchical fan-out evidence exists and sampled playability remains positive.
