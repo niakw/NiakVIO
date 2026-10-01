@@ -128,7 +128,20 @@ def _census_runtime_focus(provider_id: str) -> dict[str, Any]:
             },
         }
         structural_state = state in {"CHAIN REACHED", "ROUTE PROVEN", "CANDIDATE OK"}
-        if not structural_state and any(token in issue for token in ("waf", "challenge", "blocked")):
+        network_regression = (
+            state in {"REGRESSION PROVIDER", "PROVIDER NETWORK BLOCKED"}
+            and any(token in issue for token in (
+                "provider_network_exception",
+                "provider_network_http_error",
+                "provider_network_timeout",
+                "provider_network_dns_error",
+                "provider_network_tls_error",
+            ))
+        )
+        if not structural_state and (
+            any(token in issue for token in ("waf", "challenge", "blocked"))
+            or network_regression
+        ):
             # A bare/current transport signal owns NO PROOF / blocked states.
             # Once the census has stronger structural proof (route, chain or
             # retained candidate), do not erase that causal depth merely
