@@ -11,7 +11,7 @@ required = [
     "architecture_force:",
     "automation/provider-census-status.json",
     "automation/provider-repair-learn-handoff-v1.json",
-    "target provider is not in current census repairQueue",
+    "target provider is not eligible for current Learning/FORCE scope",
     "environmentQueue",
     "targeted Learning cohort escaped",
     "current non-disabled providers under explicit architecture FORCE",

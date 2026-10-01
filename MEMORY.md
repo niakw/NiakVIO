@@ -591,3 +591,10 @@
 - `apply_brain_llm_force_mutations.py` now keeps routine calls bound to `repairQueue`, but an explicit `--provider` may target any current non-disabled census provider. The bridge still has no publication authority and exact context fingerprint + isolated rematerialization/playback/identity/coverage proof remain mandatory.
 - Targeted Learning follows the same rule only under explicit `architecture_force=true`: routine Learning remains repair/environment scoped, while explicit FORCE may carry current FULL providers as `completenessProviders`. Disabled/unknown providers remain rejected.
 - This is pipeline capability only; HindMoviez is not yet claimed repaired. The existing Brain candidate must now be re-executed and prove a real playable quality/language/host coverage gain before publication.
+
+
+## 2026-10-01 — Completeness FORCE workflow contract alignment
+
+- Workflow Gate on `f58a1ab605dbd297a2304ee0528d7b70b635ca2d` reached the Brain Learning workflow tests and failed only because `brain_learning_push_target_workflow_test.py` still required the obsolete literal error text `target provider is not in current census repairQueue`.
+- The runtime workflow already implements the intended rule: routine Learning remains repair/environment scoped; explicit architecture FORCE may target a current non-disabled provider carrying completeness debt. The regression assertion is aligned to the new fail-closed message.
+- Provider Non-Regression on the same SHA passed HindMoviez and UHDMovies contracts before stopping on the pre-existing 4KHDHub movie=[] witness; no new provider regression was introduced by the scope change.
