@@ -45,10 +45,15 @@ assert parse_index < census_index < handoff_index < filter_index < queue_index
 # marker. The selector may legitimately return fastHandoff=false after Repair
 # has consumed its transient marker, while the provider remains current
 # repairQueue + LEARN/pending debt.
-target_block = workflow[census_index:filter_index]
+target_scope_start = workflow.rfind("repair={", parse_index, census_index)
+assert target_scope_start >= 0, workflow[parse_index:census_index]
+target_block = workflow[target_scope_start:filter_index]
 assert "/tmp/fast-learning-handoff.json" not in target_block, target_block
 assert "repairQueue" in target_block, target_block
 assert "current" in target_block, target_block
+assert "force and target in current" in target_block, target_block
+assert "explicit-force-completeness-learning" in target_block, target_block
+assert "completenessProviders" in target_block, target_block
 assert "architecture_force" in target_block, target_block
 
 handoff_selector = workflow.index("python scripts/select_fast_learning_handoff.py")
