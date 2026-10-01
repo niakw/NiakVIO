@@ -2,10 +2,15 @@
 from pathlib import Path
 import json
 import subprocess
+from urllib.parse import urlsplit
 
 ROOT=Path(__file__).resolve().parents[1]
 ov=json.loads((ROOT/"provider-overrides.json").read_text(encoding="utf-8"))["provider_patches"]
 hubs=json.loads((ROOT/"provider-hubs.json").read_text(encoding="utf-8"))["providers"]
+
+current=ov["flemmix"]["official_site"].rstrip("/")
+current_host=urlsplit(current).netloc
+assert current.startswith("https://") and current_host
 
 flemmix=(ROOT/"scripts/provider_patches/flemmix_runtime_v1.py").read_text(encoding="utf-8")
 anime=(ROOT/"scripts/provider_patches/anime_ultime_runtime_v1.py").read_text(encoding="utf-8")
@@ -28,19 +33,18 @@ assert ov["flemmix"]["provider_lego_scripts"] == ["scripts/provider_patches/flem
 assert "api_recipe" not in ov["flemmix"]
 assert ov["flemmix"]["learned_routes"]==["/search?q={query}"]
 assert ov["flemmix"]["search_request_plan"][0]["route"]=="/search?q={query}"
-assert ov["flemmix"]["provider_lego_options"]["scripts/provider_patches/flemmix_runtime_v1.py"]["base"] == "https://flemmix.party"
-assert '"base": "https://flemmix.party"' in flemmix
-assert ov["flemmix"]["official_site"] == "https://flemmix.party"
-assert hubs["flemmix"]["direct"] == "https://flemmix.party/"
+assert ov["flemmix"]["provider_lego_options"]["scripts/provider_patches/flemmix_runtime_v1.py"]["base"].rstrip("/") == current
+assert '"base": "https://flemmix.party"' not in flemmix
+assert hubs["flemmix"]["direct"].rstrip("/") == current
 assert hubs["flemmix"]["direct_authority"] == "explicit_current"
 flemmix_js=flemmix.split("WRAPPER = r'''",1)[1].split("'''",1)[0]
 assert flemmix_js.count("c.base")==2, "only runtimeBase fallback may reference the configured Flemmix base"
-assert ov["flemmix"]["domain_substitutions"]["flemmix.cloud"] == "flemmix.party"
-# flemmix.me is now a historical/redirect entry point and must normalize to the
-# explicit-current terminal instead of surviving as a competing runtime host.
-assert ov["flemmix"]["domain_substitutions"]["flemmix.me"] == "flemmix.party"
-assert ov["flemmix"]["runtime_domain_replacements"]["flemmix.me"] == "flemmix.party"
-compiled=flemmix_js.replace("CONFIG_PLACEHOLDER",json.dumps({"base":"https://flemmix.party","userAgent":"Mozilla/5.0"}))
+for old_host in ("flemmix.cloud","flemmix.me","flemmix.party"):
+    if old_host in ov["flemmix"].get("domain_substitutions",{}):
+        assert ov["flemmix"]["domain_substitutions"][old_host] == current_host
+    if old_host in ov["flemmix"].get("runtime_domain_replacements",{}):
+        assert ov["flemmix"]["runtime_domain_replacements"][old_host] == current_host
+compiled=flemmix_js.replace("CONFIG_PLACEHOLDER",json.dumps({"base":current,"userAgent":"Mozilla/5.0"}))
 subprocess.run(["node","-e","new Function(process.argv[1]);",compiled],check=True)
 behavior=r'''
 global.fetch=async function(url){

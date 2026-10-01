@@ -539,3 +539,11 @@
 - Python and materialized JS scoring contracts are aligned. Python no longer fabricates an 8-bit dynamic-range contribution when bit depth/HDR was absent.
 - Player language precedence is now factual player evidence > provider row > manifest fallback. Scalar audioInfo language/lang is lifted into audioLanguage and, when no track array exists, one factual audioTracks row. This prevents provider language=fr from leaving a lang-fr badge when the player proves English.
 - Domain Refresh comparison now recognizes prior over-projection even when several historical origins collapsed to one current host. Canonical historical origin rows are restored exactly; this addresses HindMoviez .fit/.icu history lost under .dev without hand-editing provider DATA.
+
+
+## 2026-10-01 — Badge v12 + global provider projection for StreamScore/player-language
+
+- Current Core source is correct for the reported UI regressions, but exact published provider bytes on main still carried StreamScore v2 and lacked `playerAudioLanguage`; multiple non-Kehflix providers were inspected directly. This is a Core-source -> published-provider projection drift, not a per-provider bug.
+- Badge mapping v11 was internally inconsistent: catalogue/feed authority is v11 but `mapping_core_brain_ui_v11_complete.json` still pointed native feeds/publicFeedVersion to v10. Because published snapshots are immutable, v11 is not rewritten. New immutable v12 catalogue/mapping/feed snapshots are added; artwork/filter rows are unchanged, while the mapping now points to v12 feeds and records the technical-estimate StreamScore threshold.
+- Global stream presentation revision advances to `all-providers-client-projection-player-language-streamscore-v34` and reads the v12 catalogue. The projection trigger explicitly requires every published provider to rematerialize shared Core bytes; later acceptance checks exact provider JS, not source scripts alone.
+- Flemmix runtime source no longer hard-pins a mutable fallback domain. It requires the current Domain Refresh base through provider_lego_options and fails closed if absent. Its regression test derives the current terminal dynamically rather than pinning `.party`.

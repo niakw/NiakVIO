@@ -47,11 +47,13 @@ try{if(g)g.__niakvioProviderRuntimeResolverV1={provider:"flemmix",resolve:resolv
 
 def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> str:
     cfg = {
-        "base": "https://flemmix.party",
+        "base": "",
         "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/145 Safari/537.36",
     }
     cfg.update(dict(options or {}))
     cfg["base"] = str(cfg.get("base") or "").rstrip("/")
+    if not cfg["base"].startswith(("http://", "https://")):
+        raise ValueError("Flemmix runtime requires the current Domain Refresh base in provider_lego_options")
     js = WRAPPER.replace("CONFIG_PLACEHOLDER", json.dumps(cfg, ensure_ascii=False, separators=(",", ":")))
     return replace_managed_fix(
         text, MANAGED_FIX_ID, js.lstrip(),
