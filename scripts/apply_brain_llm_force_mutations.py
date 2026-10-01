@@ -668,11 +668,34 @@ def _selected_queue(
     census: dict[str, Any],
     providers: list[str],
 ) -> set[str]:
-    queue = {canon(value) for value in census.get("repairQueue") or [] if canon(value)}
-    if providers:
-        requested = {canon(value) for value in providers if canon(value)}
-        queue &= requested
-    return queue
+    """Return sandbox scope.
+
+    Routine FORCE stays bound to repairQueue. An explicit --provider is a
+    stronger operator/Brain sandbox request and may target a current non-disabled
+    provider even when census status is FULL OK (for example verified variant
+    coverage debt). Publication authority is still absent here and every
+    candidate must pass isolated materialization/playback/identity validation.
+    """
+    repair = {canon(value) for value in census.get("repairQueue") or [] if canon(value)}
+    if not providers:
+        return repair
+
+    requested = {canon(value) for value in providers if canon(value)}
+    current: set[str] = set()
+    for row in census.get("providers") or []:
+        if not isinstance(row, dict):
+            continue
+        provider = canon(row.get("provider"))
+        status = canon(row.get("status")).replace("_", " ")
+        if provider and "disabled" not in status:
+            current.add(provider)
+    missing = sorted(requested - current)
+    if missing:
+        raise ValueError(
+            "explicit Force target is not a current non-disabled provider: "
+            + ",".join(missing)
+        )
+    return requested
 
 
 def apply_payload(

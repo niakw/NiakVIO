@@ -582,3 +582,12 @@
 - Brain guidance #227 produced deterministic fingerprint `58d187d1e146a38bc0c5226fcd665674679b07c32ea5ba37b2cfa4eb2a7e1e82`, family `bounded_variant_enumeration_before_cap`, from NiakVIO `8cc61b4af6f2003f5e2712d84102b004385b5eed`. It removes the outer `out.length>=4` break from the bounded `k<8` aggregation loop and leaves inner per-source limits intact.
 - Since guidance generation, only tests/harness/MEMORY and availability diagnostics changed; provider bytes did not. `availability-history.json` and `availability-report.json` are now explicitly classified as neutral guidance drift, consistent with release-hash policy that already excludes them from executable authority.
 - Repair trigger retry 192 requires external Brain mutation and mechanism-specific verified variant coverage. Stream-count-only gain cannot win.
+
+
+## 2026-10-01 — Explicit FORCE can validate completeness debt on FULL providers
+
+- HindMoviez Repair/FORCE #257 (`36928384531`) did not execute the Brain candidate. Baseline proof was healthy but only 480p (`qualityHeights=[480]`, max playable 480), then the sandbox bridge skipped the candidate as `outside-current-repair-scope` because HindMoviez is census FULL OK. The evaluation row correctly had `executionObserved=false`, so no negative Force memory entry was created.
+- This exposed a scope-model mismatch: census FULL proves playable identity, not exhaustive variant coverage. Brain can now diagnose `variant-coverage-gap` on FULL providers, so explicit FORCE must be able to sandbox such a current provider without changing routine Repair scope.
+- `apply_brain_llm_force_mutations.py` now keeps routine calls bound to `repairQueue`, but an explicit `--provider` may target any current non-disabled census provider. The bridge still has no publication authority and exact context fingerprint + isolated rematerialization/playback/identity/coverage proof remain mandatory.
+- Targeted Learning follows the same rule only under explicit `architecture_force=true`: routine Learning remains repair/environment scoped, while explicit FORCE may carry current FULL providers as `completenessProviders`. Disabled/unknown providers remain rejected.
+- This is pipeline capability only; HindMoviez is not yet claimed repaired. The existing Brain candidate must now be re-executed and prove a real playable quality/language/host coverage gain before publication.

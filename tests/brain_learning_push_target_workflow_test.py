@@ -13,7 +13,9 @@ required = [
     "automation/provider-repair-learn-handoff-v1.json",
     "target provider is not in current census repairQueue",
     "environmentQueue",
-    "targeted Learning cohort escaped current repair/environment queues",
+    "targeted Learning cohort escaped",
+    "current non-disabled providers under explicit architecture FORCE",
+    "explicit-force-completeness-learning",
     "autopilot-targeted-core-learning",
     "target provider is not LEARN/pending in current handoff",
     'provider_filter="$target_provider"',
@@ -46,13 +48,17 @@ assert parse_index < census_index < handoff_index < filter_index < queue_index
 target_block = workflow[census_index:filter_index]
 assert "/tmp/fast-learning-handoff.json" not in target_block, target_block
 assert "repairQueue" in target_block, target_block
+assert "current" in target_block, target_block
+assert "architecture_force" in target_block, target_block
 
 handoff_selector = workflow.index("python scripts/select_fast_learning_handoff.py")
 multi_start = workflow.index('if [ -n "$target_providers" ]; then', handoff_selector)
 multi_end = workflow.index('elif [ -n "$target_provider" ]; then', multi_start)
 multi_block = workflow[multi_start:multi_end]
 assert 'environmentQueue' in multi_block, multi_block
-assert 'eligible=repair|environment' in multi_block, multi_block
+assert 'eligible=(repair|environment|current) if force else (repair|environment)' in multi_block, multi_block
+assert 'completeness_targets=' in multi_block, multi_block
+assert 'explicit-force-completeness-learning' in multi_block, multi_block
 assert 'provider-fast-repair.json' not in multi_block, multi_block
 assert 'Current census repair/environment queues are the canonical scope' in multi_block, multi_block
 assert 'autopilot-targeted-core-learning' in multi_block, multi_block

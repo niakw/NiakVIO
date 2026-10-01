@@ -106,6 +106,23 @@ with tempfile.TemporaryDirectory() as tmp:
         ],
     }
 
+    census_scope = {
+        "repairQueue": ["demo"],
+        "providers": [
+            {"provider": "demo", "status": "ROUTE PROVEN"},
+            {"provider": "healthy", "status": "FULL OK"},
+            {"provider": "disabled", "status": "DISABLED"},
+        ],
+    }
+    assert mod._selected_queue(census_scope, []) == {"demo"}
+    assert mod._selected_queue(census_scope, ["healthy"]) == {"healthy"}
+    try:
+        mod._selected_queue(census_scope, ["disabled"])
+    except ValueError as exc:
+        assert "non-disabled provider" in str(exc), exc
+    else:
+        raise AssertionError("explicit Force must not target a disabled provider")
+
     report = mod.apply_payload(
         payload,
         current_sha="c" * 40,
