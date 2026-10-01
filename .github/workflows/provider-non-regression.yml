@@ -123,25 +123,36 @@ jobs:
           python tests/global_media_type_resolution_test.py
           python tests/episodic_year_identity_regression_test.py
           python tests/global_playback_integrity_policy_test.py
-          python tests/provider_movieshunt_runtime_contract_test.py
           python tests/provider_quick_yield_fixture_priority_test.py
           python tests/provider_helper_recipe_execution_boundary_test.py
           python tests/provider_published_capability_projection_test.py
-          node tests/provider_hindmoviez_identity_contract_test.cjs
-          python tests/uhdmovies_runtime_contract_test.py
-          python tests/uhdmovies_terminal_multiserver_behavior_test.py
-          python tests/provider_4khdhub_runtime_behavior_test.py
-          python tests/animesalt_runtime_contract_test.py
-          python tests/allanime_site_runtime_contract_test.py
-          python tests/allanime_current_runtime_behavior_test.py
-          python tests/provider_yflix_runtime_contract_test.py
-          python tests/provider_moviebox_vidsrcme_runtime_contract_test.py
-          python tests/provider_moviebox_current_runtime_behavior_test.py
-          python tests/provider_mallumv_current_runtime_behavior_test.py
-          python tests/provider_wookafr_current_runtime_behavior_test.py
-          python tests/provider_vidfast_multibase_runtime_test.py
-          python tests/vostfree_transport_contract_test.py
-          python tests/provider_animesamaco_domain_data_contract_test.py
+          impact_mode='${{ steps.impact.outputs.mode }}'
+          impact_providers=',${{ steps.impact.outputs.providers }},'
+          affected() {
+            [ "$impact_mode" = "all" ] || [[ "$impact_providers" == *",$1,"* ]]
+          }
+          if affected "movieshunt"; then python tests/provider_movieshunt_runtime_contract_test.py; fi
+          if affected "hindmoviez"; then node tests/provider_hindmoviez_identity_contract_test.cjs; fi
+          if affected "uhdmovies"; then
+            python tests/uhdmovies_runtime_contract_test.py
+            python tests/uhdmovies_terminal_multiserver_behavior_test.py
+          fi
+          if affected "4khdhub"; then python tests/provider_4khdhub_runtime_behavior_test.py; fi
+          if affected "animesalt"; then python tests/animesalt_runtime_contract_test.py; fi
+          if affected "allanime"; then
+            python tests/allanime_site_runtime_contract_test.py
+            python tests/allanime_current_runtime_behavior_test.py
+          fi
+          if affected "yflix"; then python tests/provider_yflix_runtime_contract_test.py; fi
+          if affected "moviebox"; then
+            python tests/provider_moviebox_vidsrcme_runtime_contract_test.py
+            python tests/provider_moviebox_current_runtime_behavior_test.py
+          fi
+          if affected "mallumv"; then python tests/provider_mallumv_current_runtime_behavior_test.py; fi
+          if affected "wookafr"; then python tests/provider_wookafr_current_runtime_behavior_test.py; fi
+          if affected "vidfast"; then python tests/provider_vidfast_multibase_runtime_test.py; fi
+          if affected "vostfree"; then python tests/vostfree_transport_contract_test.py; fi
+          if affected "animesama-co"; then python tests/provider_animesamaco_domain_data_contract_test.py; fi
           python tests/provider_incomplete_player_url_rejection_test.py
           python tests/provider_runtime_dispatch_diagnostics_test.py
           python tests/provider_census_identity_diagnostics_test.py
