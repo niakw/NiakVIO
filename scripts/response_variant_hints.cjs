@@ -16,7 +16,7 @@ function normalizeQuality(value) {
 function candidate(raw, base, trustedContext) {
   const value = String(raw || '').replace(/&amp;/gi, '&').replace(/\\\//g, '/').trim();
   if (!value || value.length > 1800) return null;
-  if (!/^(?:https?:)?\\/\\//i.test(value) && !/[\\/?#]/.test(value)) return null;
+  if (!/^(?:https?:)?\/\//i.test(value) && !/[\/?#]/.test(value)) return null;
   let parsed;
   try { parsed = new URL(value, base || undefined); } catch { return null; }
   if (!/^https?:$/i.test(parsed.protocol)) return null;
@@ -31,13 +31,13 @@ function candidate(raw, base, trustedContext) {
 
 function indexedPlayerCandidateCount(text) {
   const indices = new Set();
-  const tag = /<(?:button|a|li|div)\\b[^>]{0,1800}>/gi;
+  const tag = /<(?:button|a|li|div)\b[^>]{0,1800}>/gi;
   let match;
   while ((match = tag.exec(text)) !== null && indices.size < 128) {
     const rawTag = String(match[0] || '');
-    const indexMatch = rawTag.match(/\\bdata-(?:i|index|player-index|server-index)\\s*=\\s*(?:["']\\s*)?(\\d{1,4})/i);
+    const indexMatch = rawTag.match(/\bdata-(?:i|index|player-index|server-index)\s*=\s*(?:["']\s*)?(\d{1,4})/i);
     if (!indexMatch) continue;
-    const roleMenuItem = /\\brole\\s*=\\s*["']menuitem["']/i.test(rawTag);
+    const roleMenuItem = /\brole\s*=\s*["']menuitem["']/i.test(rawTag);
     const around = text.slice(Math.max(0, match.index - 180), Math.min(text.length, tag.lastIndex + 360));
     if (!roleMenuItem && !PLAYER_CONTEXT.test(around)) continue;
     if (!PLAYER_CONTEXT.test(around)) continue;
