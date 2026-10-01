@@ -215,6 +215,16 @@ def _planner_result(result: dict[str, Any]) -> dict[str, Any]:
                 "proof_body_fields": body_fields,
                 "response_hint_keys": hint_keys,
                 "route_proof_trace": raw_observation.get("route_proof_trace") is True,
+                "declared_player_candidate_count": int(raw_observation.get("declared_player_candidate_count") or 0),
+                "declared_player_hosts": [
+                    _clip_text(value, 160)
+                    for value in (raw_observation.get("declared_player_hosts") or [])[:24]
+                ],
+                "declared_quality_heights": [
+                    int(value)
+                    for value in (raw_observation.get("declared_quality_heights") or [])[:12]
+                    if str(value or "").isdigit()
+                ],
             })
             if len(observations) >= 96:
                 break
@@ -233,6 +243,16 @@ def _planner_result(result: dict[str, Any]) -> dict[str, Any]:
             "streams_playable": raw_test.get("streams_playable"),
             "stream_count": raw_test.get("stream_count"),
             "streams_returned": raw_test.get("streams_returned"),
+            "announced_player_candidates": raw_test.get("announced_player_candidates"),
+            "announced_player_hosts": [_clip_text(value, 160) for value in (raw_test.get("announced_player_hosts") or [])[:24]],
+            "announced_quality_heights": [
+                int(value) for value in (raw_test.get("announced_quality_heights") or [])[:12]
+                if str(value or "").isdigit()
+            ],
+            "explored_player_requests": raw_test.get("explored_player_requests"),
+            "explored_player_hosts": [_clip_text(value, 160) for value in (raw_test.get("explored_player_hosts") or [])[:24]],
+            "returned_stream_hosts": [_clip_text(value, 160) for value in (raw_test.get("returned_stream_hosts") or [])[:24]],
+            "variant_fanout_state": _clip_text(raw_test.get("variant_fanout_state"), 80),
         })
         if len(safe_tests) >= 12:
             break

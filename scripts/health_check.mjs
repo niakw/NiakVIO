@@ -1569,6 +1569,48 @@ async function testCandidate(candidate) {
     const reportedMax = Math.max(0, ...playable.flatMap((probe) => probe.reportedHeights || [])) || null;
     const effectiveMax = Math.max(0, ...playable.map((probe) => probe.effective_height || 0)) || null;
     const maxBandwidth = Math.max(0, ...playable.map((probe) => probe.maxBandwidth || 0)) || null;
+    const networkRows = Array.isArray(worker.network_observations) ? worker.network_observations : [];
+    const announcedPlayerCandidates = Math.max(
+      0,
+      ...networkRows.map((item) => Number(item?.declared_player_candidate_count || 0)),
+    );
+    const announcedPlayerHosts = [...new Set(
+      networkRows.flatMap((item) => Array.isArray(item?.declared_player_hosts) ? item.declared_player_hosts : []),
+    )].map((value) => String(value || '').toLowerCase()).filter(Boolean).sort(compareText);
+    const announcedQualityHeights = [...new Set(
+      networkRows.flatMap((item) => Array.isArray(item?.declared_quality_heights) ? item.declared_quality_heights : [])
+        .map(Number).filter((value) => Number.isFinite(value) && value > 0),
+    )].sort((a, b) => a - b);
+    const announcedHostSet = new Set(announcedPlayerHosts);
+    const exploredPlayerRequests = networkRows.filter(
+      (item) => item && item.infrastructure !== true && announcedHostSet.has(String(item.host || '').toLowerCase()),
+    ).length;
+    const exploredPlayerHosts = [...new Set(
+      networkRows
+        .filter((item) => item && item.infrastructure !== true && announcedHostSet.has(String(item.host || '').toLowerCase()))
+        .map((item) => String(item.host || '').toLowerCase())
+        .filter(Boolean),
+    )].sort(compareText);
+    const returnedStreamHosts = [...new Set(
+      streams.map((stream) => {
+        try { return new URL(String(stream?.url || '')).hostname.toLowerCase(); } catch { return ''; }
+      }).filter(Boolean),
+    )].sort(compareText);
+    const maxAnnouncedQuality = Math.max(0, ...announcedQualityHeights);
+    const maxReturnedQuality = Math.max(0, ...returnedQualityHeights);
+    let variantFanoutState = 'not-observed';
+    if (announcedPlayerCandidates >= 2) {
+      if (exploredPlayerRequests <= 1 && streams.length <= 1) variantFanoutState = 'announced-not-explored';
+      else if (exploredPlayerRequests >= 2 && streams.length <= 1) variantFanoutState = 'explored-not-resolved';
+      else variantFanoutState = 'fanout-observed';
+    }
+    if (
+      maxAnnouncedQuality > 0
+      && (maxReturnedQuality === 0 || maxAnnouncedQuality > maxReturnedQuality)
+      && variantFanoutState === 'fanout-observed'
+    ) {
+      variantFanoutState = 'quality-gap';
+    }
 
     fixtureResults.push({
       fixture: normalizedFixture,
@@ -1620,6 +1662,11 @@ async function testCandidate(candidate) {
           ? item.response_value_hints.slice(0, 48)
           : [],
         content_type: item.route_proof_trace ? (item.content_type || null) : null,
+        declared_player_candidate_count: Number(item.declared_player_candidate_count || 0),
+        declared_player_hosts: Array.isArray(item.declared_player_hosts) ? item.declared_player_hosts.slice(0, 32) : [],
+        declared_quality_heights: Array.isArray(item.declared_quality_heights)
+          ? item.declared_quality_heights.map(Number).filter((value) => Number.isFinite(value) && value > 0).slice(0, 12)
+          : [],
       })) : [],
       settings_diagnostics: Array.isArray(worker.settings_diagnostics)
         ? worker.settings_diagnostics.map((item) => ({
@@ -1633,6 +1680,13 @@ async function testCandidate(candidate) {
       stream_count: streams.length,
       streams_returned: streams.length,
       returned_quality_heights: returnedQualityHeights,
+      announced_player_candidates: announcedPlayerCandidates,
+      announced_player_hosts: announcedPlayerHosts,
+      announced_quality_heights: announcedQualityHeights,
+      explored_player_requests: exploredPlayerRequests,
+      explored_player_hosts: exploredPlayerHosts,
+      returned_stream_hosts: returnedStreamHosts,
+      variant_fanout_state: variantFanoutState,
       zero_stream_preflight_terminal: Boolean(
         modeConfig.zero_stream_preflight === true
         && worker.ok

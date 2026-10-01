@@ -119,6 +119,12 @@ def network_summary(result: dict[str, Any]) -> list[dict[str, Any]]:
                 "status": row.get("status") if isinstance(row.get("status"), int) else None,
                 "ok": bool(row.get("ok")),
                 "errorCode": str(row.get("error_code") or "")[:100],
+                "announcedPlayerCandidates": int(row.get("declared_player_candidate_count") or 0),
+                "announcedPlayerHosts": [str(value)[:160] for value in (row.get("declared_player_hosts") or [])[:24]],
+                "announcedQualityHeights": [
+                    int(value) for value in (row.get("declared_quality_heights") or [])[:12]
+                    if str(value or "").isdigit()
+                ],
             }
             key = (
                 item["fixture"],
@@ -141,6 +147,10 @@ def variant_coverage_summary(result: dict[str, Any]) -> dict[str, Any]:
     audio_languages: set[str] = set()
     reachable_hosts: set[str] = set()
     max_playable_height = 0
+    announced_player_candidates = 0
+    explored_player_requests = 0
+    fanout_states: set[str] = set()
+    announced_quality_heights: set[int] = set()
     for test in result.get("tests") or []:
         if not isinstance(test, dict):
             continue
@@ -165,11 +175,33 @@ def variant_coverage_summary(result: dict[str, Any]) -> dict[str, Any]:
             value = str(value or "").strip().casefold()
             if value:
                 reachable_hosts.add(value)
+        announced_player_candidates = max(
+            announced_player_candidates,
+            int(test.get("announced_player_candidates") or 0),
+        )
+        explored_player_requests = max(
+            explored_player_requests,
+            int(test.get("explored_player_requests") or 0),
+        )
+        state = str(test.get("variant_fanout_state") or "").strip().casefold()
+        if state:
+            fanout_states.add(state)
+        for raw in test.get("announced_quality_heights") or []:
+            try:
+                height = int(raw or 0)
+            except (TypeError, ValueError):
+                continue
+            if height > 0:
+                announced_quality_heights.add(height)
     return {
         "qualityHeights": sorted(quality_heights),
         "maxPlayableHeight": max_playable_height,
         "audioLanguages": sorted(audio_languages),
         "reachableHosts": sorted(reachable_hosts),
+        "announcedPlayerCandidates": announced_player_candidates,
+        "exploredPlayerRequests": explored_player_requests,
+        "fanoutStates": sorted(fanout_states),
+        "announcedQualityHeights": sorted(announced_quality_heights),
     }
 
 
