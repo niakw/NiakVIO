@@ -144,30 +144,28 @@ brain = (ROOT / ".github/workflows/brain-learning-lab.yml").read_text(encoding="
 assert "publish-repair-proposal:" in brain
 assert "brain-repair/proposal" in brain
 assert "brain-repair/proposals" not in brain
-assert "if: github.event_name == 'schedule'" in brain
+repair_proposal_block = brain[brain.index("  publish-repair-proposal:"):brain.index("\n  publish-architecture-proposal:")]
+assert "github.event_name == 'workflow_dispatch'" in repair_proposal_block
+assert "github.event.inputs.publish_proposal == 'true'" in repair_proposal_block
+assert "github.event_name == 'schedule'" not in repair_proposal_block
+assert "github.event_name == 'push'" not in repair_proposal_block
+architecture_proposal_block = brain[brain.index("  publish-architecture-proposal:"):brain.index("\n  continue-learning-slot:")]
+architecture_if = architecture_proposal_block.split("    needs:", 1)[0]
+assert "github.event_name == 'workflow_dispatch'" in architecture_if
+assert "github.event.inputs.publish_proposal == 'true'" in architecture_if
+assert "needs.experiment.outputs.architecture_force == 'true'" in architecture_if
+assert "github.event_name == 'schedule'" not in architecture_if
+assert "github.event_name == 'push'" not in architecture_if
 assert "pull-requests: write" in brain
 assert "gh pr create" in brain
 assert 'BRANCH="brain-learning/proposals"' in brain
 brain_branch_maintenance = (ROOT / ".github/workflows/brain-branch-maintenance.yml").read_text(encoding="utf-8")
 assert 'BRANCH="brain-learning/proposals"' in brain_branch_maintenance
-assert '"brain-repair/proposal"' in brain_branch_maintenance
-assert '"workbench/brain-guidance-finalize-20260923"' in brain_branch_maintenance
-assert '"feat/declarative-meta-gap-strategy"' in brain_branch_maintenance
-assert '"fix/adaptive-false-media-provenance"' in brain_branch_maintenance
-assert '"fix/architecture-force-materializer"' in brain_branch_maintenance
-assert '"fix/architecture-force-timeout"' in brain_branch_maintenance
-assert '"fix/census-explicit-trigger-bypass"' in brain_branch_maintenance
-assert '"fix/cloud-brain-convergence-loop"' in brain_branch_maintenance
-assert '"fix/force-architecture-causal-contract"' in brain_branch_maintenance
-assert '"fix/meta-gap-current-failure"' in brain_branch_maintenance
-assert '"fix/meta-gap-exploration-chain"' in brain_branch_maintenance
-assert '"fix/nuvio-client-history-fetch"' in brain_branch_maintenance
-assert '"fix/unknown-gap-direct-escalation"' in brain_branch_maintenance
-assert '"learn/persist-local-repair-evidence"' in brain_branch_maintenance
-assert '"perf/parallel-force-causal"' in brain_branch_maintenance
+assert "mapfile -t branches" in brain_branch_maintenance
+assert "git ls-remote --heads origin" in brain_branch_maintenance
+assert 'main|brain-learning/proposals)' in brain_branch_maintenance
 assert "for branch in" in brain_branch_maintenance
-assert '"brain-learning/proposals"' not in brain_branch_maintenance[brain_branch_maintenance.index("for branch in"):]
-assert '"brain-architecture/proposal"' not in brain_branch_maintenance[brain_branch_maintenance.index("for branch in"):]
+assert "keep_allowlisted" in brain_branch_maintenance
 assert 'git switch -C "$BRANCH" origin/main' not in brain_branch_maintenance
 assert 'git push --force-with-lease origin HEAD:"$BRANCH"' not in brain_branch_maintenance
 assert "memory-ref-read-only" in brain_branch_maintenance

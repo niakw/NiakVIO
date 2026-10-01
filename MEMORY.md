@@ -490,3 +490,11 @@
 - Publication was still blocked at provider_domain_metadata_reconcile_test.py because that test hard-pinned HindMoviez to hindmovie.icu and WookaFR to wookafr.boston. Those exact current-domain assertions are invalid for refreshable explicit_current providers and are replaced by structural authority/registry consistency checks.
 - WookaFR remained on boston in #1079 despite official Telegram message 133 advertising wookafr.blog. The priority wrapper now enforces the declared latest_telegram_domain contract directly: the newest safe high-confidence provider-branded Telegram message outranks refresh-generated explicit_current LKG state. operator_pin remains immutable.
 - This remains a generic Domain Refresh pipeline correction. No provider domain is manually edited.
+
+
+## 2026-10-01 — Main-only PR/branch enforcement restored
+
+- User-required repository hygiene is now enforced structurally rather than by manual cleanup. Scheduled/push Learning may still generate and persist sanitized evidence, but provider-repair and architecture proposal PR jobs are gated to an explicit workflow_dispatch with publish_proposal=true. Architecture FORCE remains the only automatic structural promotion lane and continues to publish validated allowlisted changes directly to main.
+- PR #227 (Brain architecture proposal) and PR #226 (Dependabot grouped Actions update) were closed unmerged. Neither proposal was treated as production state.
+- Branch maintenance now uses an allowlist instead of a growing hard-coded tombstone list: only main and the read-only persistent Brain memory ref brain-learning/proposals are retained automatically. Any other remote branch with no open PR is deleted; an explicitly requested open PR protects its branch until that PR closes.
+- This prevents closed Dependabot/proposal/workbench branches from accumulating and prevents automatic Learning schedule/push runs from recreating review PRs behind the user's main-only workflow.

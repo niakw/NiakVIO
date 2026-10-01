@@ -77,50 +77,29 @@ jobs:
           # main pushes must never rebase/mirror production code into memory.
           echo "FIELD_BRAIN_MEMORY_BRANCH action=validated mode=memory-ref-read-only sha=$(git rev-parse --short refs/remotes/origin/$BRANCH)"
 
-      - name: Remove obsolete non-main work branches
+      - name: Enforce main-only branch allowlist
         env:
           GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
           set -euo pipefail
-          for branch in \
-            "brain-repair/proposal" \
-            "fix/brain-force-json-resilience" \
-            "fix/brain-force-json-resilience-v2" \
-            "fix/census-autopilot-event-current" \
-            "fix/census-autopilot-workflow-run" \
-            "fix/census-proof-monotonicity" \
-            "fix/force-promote-exhausted-blueprints" \
-            "fix/force-proposal-only-outcome" \
-            "fix/learning-force-yaml-indent" \
-            "fix/learning-proposal-force-guard" \
-            "workbench/brain-guidance-finalize-20260923" \
-            "feat/declarative-meta-gap-strategy" \
-            "fix/adaptive-false-media-provenance" \
-            "fix/architecture-force-materializer" \
-            "fix/architecture-force-timeout" \
-            "fix/census-explicit-trigger-bypass" \
-            "fix/cloud-brain-convergence-loop" \
-            "fix/force-architecture-causal-contract" \
-            "fix/learning-force-canonical-queue" \
-            "fix/learning-force-canonical-queue-clean" \
-            "fix/4khdhub-published-runtime" \
-            "fix/meta-gap-current-failure" \
-            "fix/meta-gap-exploration-chain" \
-            "fix/nuvio-client-history-fetch" \
-            "fix/unknown-gap-direct-escalation" \
-            "learn/persist-local-repair-evidence" \
-            "perf/parallel-force-causal"
-          do
+          mapfile -t branches < <(
+            git ls-remote --heads origin |
+              awk '{sub("refs/heads/","",$2); print $2}' |
+              sort
+          )
+          for branch in "${branches[@]}"; do
+            case "$branch" in
+              main|brain-learning/proposals)
+                echo "FIELD_BRANCH_CLEANUP branch=$branch action=keep_allowlisted"
+                continue
+                ;;
+            esac
             OPEN_PR="$(gh pr list --repo "$GITHUB_REPOSITORY" --state open --head "$branch" --json number --jq '.[0].number // empty')"
             if [ -n "$OPEN_PR" ]; then
               echo "FIELD_BRANCH_CLEANUP branch=$branch action=keep_open_pr pr=$OPEN_PR"
               continue
             fi
-            if git ls-remote --exit-code --heads origin "$branch" >/dev/null 2>&1; then
-              git push origin --delete "$branch"
-              echo "FIELD_BRANCH_CLEANUP branch=$branch action=deleted"
-            else
-              echo "FIELD_BRANCH_CLEANUP branch=$branch action=already_absent"
-            fi
+            git push origin --delete "$branch"
+            echo "FIELD_BRANCH_CLEANUP branch=$branch action=deleted"
           done

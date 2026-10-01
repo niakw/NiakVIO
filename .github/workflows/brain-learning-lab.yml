@@ -1250,7 +1250,7 @@ jobs:
 
   publish-repair-proposal:
     name: LEARNING - Open validated repair proposal PR
-    if: (github.event_name == 'schedule' || github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.event.inputs.publish_proposal == 'true')) && needs.experiment.outputs.architecture_force != 'true'
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.publish_proposal == 'true' && needs.experiment.outputs.architecture_force != 'true'
     needs: experiment
     concurrency:
       group: niakvio-brain-repair-proposal-publish
@@ -1395,7 +1395,7 @@ jobs:
 
   publish-architecture-proposal:
     name: LEARNING - Validate Brain architecture evolution
-    if: github.event_name == 'schedule' || github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.event.inputs.publish_proposal == 'true') || needs.experiment.outputs.architecture_force == 'true'
+    if: (github.event_name == 'workflow_dispatch' && github.event.inputs.publish_proposal == 'true') || needs.experiment.outputs.architecture_force == 'true'
     needs: experiment
     concurrency:
       group: niakvio-brain-architecture-proposal-publish

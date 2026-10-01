@@ -119,7 +119,7 @@ def main() -> int:
     assert "publish_proposal:" in workflow, "watchdog/manual proposal input disappeared"
     assert "publish-repair-proposal:" in workflow, "validated Brain PR job disappeared"
     assert ".github/triggers/brain-learning-reconstruction" in workflow, "explicit Brain reconstruction trigger disappeared"
-    assert "github.event_name == 'push'" in workflow, "trigger-file Brain run no longer opens a validated reconstruction PR"
+    assert "github.event_name == 'push'" in workflow, "trigger-file Brain run disappeared"
     assert "brain-repair/proposal" in workflow, "single Brain repair PR branch disappeared"
     assert "publish-architecture-proposal:" in workflow, "Brain self-evolution PR job disappeared"
     assert "brain-architecture/proposal" in workflow, "dedicated Brain architecture PR branch disappeared"
@@ -131,6 +131,17 @@ def main() -> int:
     assert "--learning-queue-state brain-sandbox/health-output/learning-queue-state.json" in workflow
     assert "github.event_name == 'schedule'" in workflow
     assert "github.event.inputs.publish_proposal == 'true'" in workflow
+    repair_proposal_block = workflow[workflow.index("  publish-repair-proposal:"):workflow.index("\n  publish-architecture-proposal:")]
+    assert "github.event_name == 'workflow_dispatch'" in repair_proposal_block
+    assert "github.event.inputs.publish_proposal == 'true'" in repair_proposal_block
+    assert "github.event_name == 'schedule'" not in repair_proposal_block
+    assert "github.event_name == 'push'" not in repair_proposal_block
+    architecture_proposal_block = workflow[workflow.index("  publish-architecture-proposal:"):workflow.index("\n  continue-learning-slot:")]
+    assert "github.event_name == 'workflow_dispatch'" in architecture_proposal_block
+    assert "github.event.inputs.publish_proposal == 'true'" in architecture_proposal_block
+    assert "needs.experiment.outputs.architecture_force == 'true'" in architecture_proposal_block
+    assert "github.event_name == 'schedule'" not in architecture_proposal_block.split("    needs:", 1)[0]
+    assert "github.event_name == 'push'" not in architecture_proposal_block.split("    needs:", 1)[0]
     assert "Import latest weekly FULL native Lab diagnostics into Learning memory" in workflow
     assert 'gh run list --workflow "$workflow" --event schedule --status completed' in workflow
     assert "merge_native_reader_backlog.py" in workflow
