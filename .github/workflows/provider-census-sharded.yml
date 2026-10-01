@@ -56,6 +56,7 @@ jobs:
       source_sha: ${{ steps.pin.outputs.sha }}
       provider_count: ${{ steps.pin.outputs.provider_count }}
       should_run: ${{ steps.pin.outputs.should_run }}
+      census_scope: ${{ steps.pin.outputs.census_scope }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
@@ -79,9 +80,25 @@ jobs:
           head_message="$(git log -1 --pretty=%s)"
           changed_paths="$(git diff-tree --no-commit-id --name-only -r HEAD | tr '\n' ' ')"
           explicit_trigger=false
+          census_scope="unresolved"
           if [[ " $changed_paths " == *" .github/triggers/provider-census-sharded.json "* ]]; then
             explicit_trigger=true
+            trigger_scope="$(python - <<'PY'
+          import json
+          from pathlib import Path
+          p=Path(".github/triggers/provider-census-sharded.json")
+          try:
+              value=str(json.loads(p.read_text(encoding="utf-8")).get("scope") or "unresolved").strip().lower()
+          except Exception:
+              value="unresolved"
+          print(value if value in {"all","unresolved"} else "unresolved")
+          PY
+            )"
+            census_scope="$trigger_scope"
+          elif [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ]; then
+            census_scope="${{ inputs.scope }}"
           fi
+          echo "census_scope=$census_scope" >> "$GITHUB_OUTPUT"
           if [ "$GITHUB_EVENT_NAME" != "push" ] || [ "$count" -gt 120 ] || [[ "$head_message" == provider:\ bulk\ activate\ * ]] || [ "$explicit_trigger" = "true" ]; then
             echo "should_run=true" >> "$GITHUB_OUTPUT"
             echo "FIELD_SHARDED_CENSUS_PREPARE should_run=true explicit_trigger=$explicit_trigger provider_count=$count"
@@ -106,7 +123,7 @@ jobs:
       NIAKVIO_QUICK_YIELD_WORKERS: '20'
       NIAKVIO_QUICK_YIELD_TIMEOUT: '60'
       NIAKVIO_QUICK_YIELD_MAX_SAMPLES: '8'
-      CENSUS_SCOPE: ${{ github.event_name == 'workflow_dispatch' && inputs.scope || 'unresolved' }}
+      CENSUS_SCOPE: ${{ needs.prepare.outputs.census_scope }}
       HEAD_MESSAGE: ${{ github.event.head_commit.message || '' }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
