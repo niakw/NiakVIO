@@ -133,6 +133,56 @@
     },
     {
       "providerId": "4khdhub",
+      "mutationFingerprint": "a21eaa643f0c0df30a14cffe8bbb7d3bef3258ea9217de595565902b189eb974",
+      "mutationContextFingerprint": "7a515c2e3d4a6e82d24c5f4776b7f0c8319a95a53e7b0e6a1511de2f09ebb8d7",
+      "failures": 1,
+      "consecutiveFailures": 1,
+      "successes": 0,
+      "lastOutcome": "rejected",
+      "lastReason": "required_category_playable_proof:movie,tv",
+      "lastMutationSummary": [
+        {
+          "scope": "provider_bloc",
+          "operation": "upsert",
+          "family": "exact_class_attribute_tokens"
+        }
+      ],
+      "repairFamily": {
+        "version": 2,
+        "key": "e4180b32dccd240450ca7a3a158f60a12377b611f265d65ce647652426c87c11",
+        "failure": "route-proven-gap",
+        "status": "route-proven",
+        "archetype": "route-proven-gap:dom-selector-container",
+        "mediaTypes": [
+          "movie",
+          "tv"
+        ],
+        "signals": [
+          "class-prefix-family",
+          "mixed-tag-nested-container",
+          "nested-anchor-html",
+          "provider-http-2xx",
+          "response-html",
+          "response-json"
+        ],
+        "stages": [
+          "provider-network-zero-result",
+          "provider-network-zero-result×2"
+        ],
+        "mutationSurfaces": [
+          "provider-bloc",
+          "provider-data",
+          "provider-js",
+          "provider-patch"
+        ]
+      },
+      "mechanismFamily": "exact-class-attribute-tokens",
+      "lastCurrentSha": "ce75644913cb3532c4b5e9fedce9fa6f5ff5a106",
+      "sourceNiakvioSha": "c182f13536d98c882f21ec2517d4253cacc0662e",
+      "sourceBrainLlmSha": "f15037022350affcd56964cae6e1e32e604da400"
+    },
+    {
+      "providerId": "4khdhub",
       "mutationFingerprint": "a33d728438d12e95d5dfdf85aaea5796b89f763b727f6c044f5ef73e49b9255c",
       "mutationContextFingerprint": "7a515c2e3d4a6e82d24c5f4776b7f0c8319a95a53e7b0e6a1511de2f09ebb8d7",
       "failures": 1,
