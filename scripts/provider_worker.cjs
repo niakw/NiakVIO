@@ -13,6 +13,7 @@ const fs = require('node:fs');
 const { pathToFileURL } = require('node:url');
 const { webcrypto } = require('node:crypto');
 const { guardedFetch } = require('./network_guard.cjs');
+const { extractResponseVariantHints } = require('./response_variant_hints.cjs');
 const Module = require('node:module');
 
 const networkObservations = [];
@@ -141,7 +142,7 @@ function assertProviderSourcePolicy(sourceText) {
   }
 }
 
-function wrapLimitedResponse(response, perResponseLimit, consumeBytes) {
+function wrapLimitedResponse(response, perResponseLimit, consumeBytes, inspectValue) {
   const checked = async (reader) => {
     const value = await reader();
     const bytes = Buffer.isBuffer(value) ? value.length
@@ -150,6 +151,7 @@ function wrapLimitedResponse(response, perResponseLimit, consumeBytes) {
       : Buffer.byteLength(typeof value === 'string' ? value : JSON.stringify(value));
     if (bytes > perResponseLimit) throw new Error(`response body exceeds limit (${bytes} bytes)`);
     consumeBytes(bytes);
+    try { if (typeof inspectValue === 'function') inspectValue(value); } catch {}
     return value;
   };
   return new Proxy(response, {
@@ -679,7 +681,7 @@ function installPolyfills(context = {}) {
         const declaredLength = Number(response.headers.get('content-length') || 0);
         if (declaredLength > maxResponseBytes) throw new Error(`response body exceeds limit (${declaredLength} bytes)`);
         const routeProofHints = routeProofEnabled ? await routeProofResponseHints(response) : [];
-        networkObservations.push({
+        const observation = {
           stage: requestStage, host, method: requestMeta.method, path_pattern: requestMeta.path_pattern,
           status: response.status, ok: response.ok, duration_ms: Date.now() - started,
           infrastructure: isInfrastructureHost(host), synthetic_fixture_fallback: synthetic,
@@ -688,10 +690,28 @@ function installPolyfills(context = {}) {
           response_value_hints: routeProofHints,
           content_type: String(response.headers.get('content-type') || '').slice(0, 160) || null,
           route_proof_trace: routeProofEnabled,
-        });
+          declared_player_candidate_count: 0,
+          declared_player_hosts: [],
+          declared_quality_heights: [],
+        };
+        networkObservations.push(observation);
         return wrapLimitedResponse(response, maxResponseBytes, (bytes) => {
           totalResponseBytes += bytes;
           if (totalResponseBytes > maxTotalResponseBytes) throw new Error(`provider cumulative response limit exceeded (${maxTotalResponseBytes} bytes)`);
+        }, (value) => {
+          const hints = extractResponseVariantHints(value, { baseUrl: response.url || rawRequestUrl });
+          observation.declared_player_candidate_count = Math.max(
+            Number(observation.declared_player_candidate_count || 0),
+            Number(hints.declared_player_candidate_count || 0),
+          );
+          observation.declared_player_hosts = [...new Set([
+            ...(observation.declared_player_hosts || []),
+            ...(hints.declared_player_hosts || []),
+          ])].sort().slice(0, 32);
+          observation.declared_quality_heights = [...new Set([
+            ...(observation.declared_quality_heights || []),
+            ...(hints.declared_quality_heights || []),
+          ])].sort((a, b) => a - b).slice(0, 12);
         });
       } catch (error) {
         networkObservations.push({
