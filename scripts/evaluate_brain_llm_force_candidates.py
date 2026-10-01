@@ -262,22 +262,17 @@ def main() -> int:
     selected = {canon(value) for value in args.provider if canon(value)}
 
     eligible: list[dict[str, Any]] = []
-    seen: set[str] = set()
     for raw in rows:
         if not isinstance(raw, dict):
             continue
         provider = canon(raw.get("providerId"))
         if not provider or (selected and provider not in selected):
             continue
-        if provider in seen:
-            raise SystemExit(
-                f"{provider}: multiple concrete Force candidates require isolated hypothesis scheduling"
-            )
-        seen.add(provider)
         eligible.append(copy.deepcopy(raw))
 
     report_rows: list[dict[str, Any]] = []
     accepted_rows: list[dict[str, Any]] = []
+    accepted_providers: set[str] = set()
 
     if args.work_root:
         parent = args.work_root.resolve()
@@ -293,7 +288,21 @@ def main() -> int:
         for index, row in enumerate(eligible, start=1):
             provider = canon(row.get("providerId"))
             fingerprint = str(row.get("mutationFingerprint") or "").strip().casefold()
-            root = parent / f"{index:03d}-{provider}"
+            ordinal = max(1, int(row.get("candidateOrdinal") or index))
+            if provider in accepted_providers:
+                report_rows.append({
+                    "provider": provider,
+                    "candidateOrdinal": ordinal,
+                    "mutationFingerprint": fingerprint,
+                    "mutationContextFingerprint": str(row.get("mutationContextFingerprint") or "").strip().casefold(),
+                    "mutationSummary": mutation_summary(row),
+                    "repairFamily": row.get("repairFamily") if isinstance(row.get("repairFamily"), dict) else {},
+                    "mechanismFamily": str(row.get("mechanismFamily") or "")[:160],
+                    "accepted": False,
+                    "reason": "skipped_after_provider_winner",
+                })
+                continue
+            root = parent / f"{index:03d}-{provider}-h{ordinal}"
             baseline_stage = root / "baseline-stage"
             candidate_stage = root / "candidate-stage"
             baseline_out = root / "baseline-health"
@@ -337,6 +346,7 @@ def main() -> int:
                         report_rows.append(
                             {
                                 "provider": provider,
+                                "candidateOrdinal": ordinal,
                                 "mutationFingerprint": fingerprint,
                                 "mutationContextFingerprint": str(row.get("mutationContextFingerprint") or "").strip().casefold(),
                                 "mutationSummary": mutation_summary(row),
@@ -364,6 +374,7 @@ def main() -> int:
 
                     result = {
                         "provider": provider,
+                        "candidateOrdinal": ordinal,
                         "mutationFingerprint": fingerprint,
                         "mutationContextFingerprint": str(row.get("mutationContextFingerprint") or "").strip().casefold(),
                                 "mutationSummary": mutation_summary(row),
@@ -382,12 +393,19 @@ def main() -> int:
                     report_rows.append(result)
                     if accepted:
                         accepted_rows.append(copy.deepcopy(row))
+                        accepted_providers.add(provider)
+                        print(
+                            "FIELD_BRAIN_LLM_FORCE_PORTFOLIO_WINNER "
+                            f"provider={provider} ordinal={ordinal} fingerprint={fingerprint}",
+                            flush=True,
+                        )
                 except (subprocess.SubprocessError, ValueError, OSError) as exc:
                     # One malformed/stale Force hypothesis must never cancel
                     # the other provider sandboxes or suppress canonical FORCE.
                     report_rows.append(
                         {
                             "provider": provider,
+                            "candidateOrdinal": ordinal,
                             "mutationFingerprint": fingerprint,
                             "mutationContextFingerprint": str(row.get("mutationContextFingerprint") or "").strip().casefold(),
                                 "mutationSummary": mutation_summary(row),
