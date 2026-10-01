@@ -531,3 +531,11 @@
 - The guard previously recognized fresh historical-domain reuse only from hub/source_redirect labels, even though the authority layer already supports registry-scoped official `telegram_public` address feeds. This made the authority resolver and rollback guard disagree.
 - Fresh rollback/reuse evidence now accepts `telegram_public` only when the selected candidate has a positive public message id and the resolver explicitly marks it `latest-telegram-domain chronological authority`. The existing source-authority gate still requires that exact Telegram URL to be configured as an official/authoritative current-address source. Missing message ids remain rejected.
 - No failed #1082 bytes were published; main stayed at `de4090a988011a2928573c95c9904334507f42f2`.
+
+
+## 2026-10-01 — StreamScore estimate visibility, player-language precedence and domain-history recovery
+
+- StreamScore root cause: the global scorer used the 0.60 measured-confidence threshold for unmeasured rows too. A stream proving only real resolution contributes 0.30 video confidence, so many providers never received a grade while richer Kehflix rows did. Measured scoring keeps 0.60; no-network technical estimates use 0.30 and remain explicitly mode=technical-estimate. No video evidence still produces no grade/badge and no missing codec/bitrate/network facts are invented.
+- Python and materialized JS scoring contracts are aligned. Python no longer fabricates an 8-bit dynamic-range contribution when bit depth/HDR was absent.
+- Player language precedence is now factual player evidence > provider row > manifest fallback. Scalar audioInfo language/lang is lifted into audioLanguage and, when no track array exists, one factual audioTracks row. This prevents provider language=fr from leaving a lang-fr badge when the player proves English.
+- Domain Refresh comparison now recognizes prior over-projection even when several historical origins collapsed to one current host. Canonical historical origin rows are restored exactly; this addresses HindMoviez .fit/.icu history lost under .dev without hand-editing provider DATA.

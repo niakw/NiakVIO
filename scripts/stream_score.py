@@ -60,14 +60,18 @@ def _video(f:dict[str,Any])->tuple[float|None,float]:
     if br and h:
         target=TARGET_1080P24_MBPS.get(codec,6.0)*(h/1080.0)**2*max(.75,fps/24.0)
         parts.append((.35,_curve(br/max(target,.1),((0,0),(.4,25),(.6,50),(.8,72),(1,86),(1.3,94),(1.7,98),(2.2,100)))))
-    bit=int(_num(f.get("bitDepth")) or 8)
+    bit_raw=_num(f.get("bitDepth"))
+    bit=int(bit_raw) if bit_raw is not None else 0
     hdr=_norm(f.get("hdr") or f.get("dynamicRange"))
-    dyn=82.0 if bit>=10 else 65.0
+    dyn=None
     if "dolby-vision" in hdr or "dolbyvision" in hdr: dyn=98
     elif "hdr10+" in hdr or "hdr10plus" in hdr: dyn=96
     elif "hdr10" in hdr or hdr=="hdr": dyn=92
     elif "hlg" in hdr: dyn=90
-    parts.append((.15,dyn))
+    elif hdr=="sdr": dyn=65
+    elif bit>=10: dyn=82
+    elif bit in {8,9}: dyn=65
+    if dyn is not None: parts.append((.15,dyn))
     s,w=_weighted(parts)
     return s,min(1.0,w)
 
@@ -140,7 +144,7 @@ def score_stream(facts:dict[str,Any],playback:dict[str,Any]|None=None)->dict[str
         return {"schemaVersion":1,"status":"insufficient-evidence","score":None,"grade":None,"badgeId":None,"token":None,"confidence":0.0,"breakdown":{}}
     active=sum(w for _,w,_,_ in components)
     raw=sum(w*s for _,w,s,_ in components)/active
-    confidence=sum(w*c for _,w,_,c in components)/100.0
+    confidence=sum(w*c for _,w,_,c in components)/max(1.0,active)
     cap=None
     hr=detail.get("headroomRatio")
     if isinstance(hr,(int,float)) and hr<.9: cap=39.0
@@ -149,9 +153,12 @@ def score_stream(facts:dict[str,Any],playback:dict[str,Any]|None=None)->dict[str
     if isinstance(sr,(int,float)) and sr<.80: cap=min(cap or 100.0,39.0)
     if cap is not None: raw=min(raw,cap)
     score=round(max(0.0,min(100.0,raw)),1)
-    status="scored" if play is not None and confidence>=.60 else "insufficient-evidence"
-    grade=_grade(score) if status=="scored" else None
-    return {"schemaVersion":1,"status":status,"score":score,"grade":grade,"badgeId":GRADE_BADGES.get(grade) if grade else None,"token":f"STREAM_SCORE={grade}" if grade else None,"confidence":round(confidence,3),"breakdown":{n:{"weight":w,"score":round(s,1),"confidence":round(c,3)} for n,w,s,c in components},"playback":detail,"hardCap":cap}
+    has_video=any(name=="videoQuality" for name,_,_,_ in components)
+    threshold=.60 if play is not None else .30
+    eligible=has_video and confidence>=threshold
+    status=("scored" if play is not None else "estimated") if eligible else "insufficient-evidence"
+    grade=_grade(score) if eligible else None
+    return {"schemaVersion":1,"status":status,"score":score if eligible else None,"grade":grade,"badgeId":GRADE_BADGES.get(grade) if grade else None,"token":f"STREAM_SCORE={grade}" if grade else None,"confidence":round(confidence,3),"breakdown":{n:{"weight":w,"score":round(s,1),"confidence":round(c,3)} for n,w,s,c in components},"playback":detail,"hardCap":cap,"mode":"measured" if play is not None else "technical-estimate"}
 
 def main()->int:
     ap=argparse.ArgumentParser(); ap.add_argument("input",type=Path); args=ap.parse_args()

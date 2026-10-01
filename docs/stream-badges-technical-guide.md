@@ -274,7 +274,7 @@ Network quality does **not** treat raw Mbps as a verdict. It primarily uses **th
 | 40–59 | **D** |
 | 0–39 | **E** |
 
-**Truth rule:** no global badge should be fabricated without sufficient playback/network evidence. HLS network evidence comes from bounded media-segment samples (up to two segments), not from timing the `.m3u8` manifest. Player stall metrics are used only when the host actually supplies them; they are never fabricated. Wrong-media, placeholder and invalid-media failures are rejected before scoring. A technically excellent stream that actually buffers must be penalized heavily.
+**Truth rule:** a measured global grade still requires sufficient playback/network evidence. Without network observation, NiakVIO may show a clearly classified **technical estimate** once real video evidence reaches the estimate threshold (a proven resolution alone reaches 0.30 confidence). Missing video evidence still emits no StreamScore badge, and the estimate never invents bitrate, codec or network quality. HLS network evidence comes from bounded media-segment samples (up to two segments), not from timing the `.m3u8` manifest. Player stall metrics are used only when the host actually supplies them; they are never fabricated. Wrong-media, placeholder and invalid-media failures are rejected before scoring. A technically excellent stream that actually buffers must be penalized heavily.
 
 The v6 scoring contract lives in `scripts/stream_score.py` so it can be tested without touching providers or an active Repair run. Later Core integration must preserve the same boundary: **media facts + playback observation + confidence**.
 

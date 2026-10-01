@@ -47,7 +47,18 @@ slow=score_stream(
 assert slow["score"]<=39
 assert slow["grade"]=="E"
 
-missing=score_stream({"resolution":"1080p","videoCodec":"HEVC","videoBitrateMbps":6.0,"source":"WEB-DL"},{})
+estimated=score_stream({"resolution":"1080p","videoCodec":"HEVC","videoBitrateMbps":6.0,"source":"WEB-DL"},{})
+assert estimated["status"]=="estimated"
+assert estimated["mode"]=="technical-estimate"
+assert estimated["grade"] is not None
+assert estimated["badgeId"] is not None
+
+quality_only=score_stream({"resolution":"720p"},{})
+assert quality_only["status"]=="estimated", quality_only
+assert quality_only["confidence"]>=.30, quality_only
+assert quality_only["grade"] is not None and quality_only["badgeId"], quality_only
+
+missing=score_stream({}, {})
 assert missing["status"]=="insufficient-evidence"
 assert missing["grade"] is None
 assert missing["badgeId"] is None
@@ -123,4 +134,26 @@ estimated_grade = estimated_row["streamScore"]["grade"]
 assert f"stream-score-{estimated_grade.lower().replace('+','-plus')}" in estimated_row["badgeIds"], estimated_row
 assert f"Stream Score: {estimated_grade}" in estimated_row["description"], estimated_row
 assert estimated_row["streamScore"]["networkEvidence"] is None, estimated_row
+
+quality_only_source = r'''module.exports={getStreams:async()=>[{
+  name:"Sparse 720p",title:"Sparse 720p",description:"Sparse 720p",size:"Sparse 720p",
+  quality:"720p",presentationFacts:{quality:"720p"},badgeIds:["720p-hd"],
+  displayBadges:["720p"],url:"https://cdn.example/sparse.mp4"
+}]};'''
+quality_only_patched = runtime.apply(quality_only_source)
+with tempfile.TemporaryDirectory() as tmp:
+    provider = Path(tmp) / "provider.cjs"
+    provider.write_text(quality_only_patched, encoding="utf-8")
+    runner = Path(tmp) / "runner.cjs"
+    runner.write_text(
+        "const p=require(process.argv[2]);p.getStreams('1','movie').then(v=>console.log(JSON.stringify(v[0]))).catch(e=>{console.error(e);process.exit(1)});",
+        encoding="utf-8",
+    )
+    proc = subprocess.run(["node", str(runner), str(provider)], text=True, capture_output=True, timeout=10)
+assert proc.returncode == 0, proc.stdout + proc.stderr
+quality_only_row = json.loads(proc.stdout.strip().splitlines()[-1])
+assert quality_only_row["streamScore"]["status"] == "estimated", quality_only_row
+assert quality_only_row["streamScore"]["mode"] == "technical-estimate", quality_only_row
+assert quality_only_row["streamScore"]["grade"], quality_only_row
+assert any(str(x).startswith("stream-score-") for x in quality_only_row["badgeIds"]), quality_only_row
 

@@ -138,6 +138,20 @@ assert player_row["presentationFacts"]["audioCodec"] == "AAC", player_row
 assert player_row["presentationFacts"]["audioChannels"] == "2.0", player_row
 assert player_row["presentationFacts"]["audioSampleRate"] == "48 kHz", player_row
 assert player_row["language"] == "ko", player_row
+
+player_language_source = """module.exports={getStreams:async()=>[{name:'French Provider',url:'https://media.example/video.mp4',language:'fr',mediaInfo:{audioInfo:{language:'English',codec:'AAC',channels:'Stereo',sampleRate:48000}}}]};\n"""
+player_language_row = run(
+    player_language_source,
+    "fixture",
+    "p.getStreams({mediaType:'movie',title:'Player Language Fixture',year:2026}).then(v=>console.log(JSON.stringify(v[0])))",
+)
+assert player_language_row["language"] == "en", player_language_row
+assert "lang-en" in set(player_language_row["badgeIds"]), player_language_row
+assert "lang-fr" not in set(player_language_row["badgeIds"]), player_language_row
+assert any(track.get("code") == "en" for track in player_language_row["languageTracks"]), player_language_row
+assert not any(track.get("code") == "fr" for track in player_language_row["languageTracks"]), player_language_row
+assert "English" in player_language_row["description"], player_language_row
+assert "French" not in player_language_row["description"], player_language_row
 for badge in {"1080p-full-hd", "hls", "avc", "video-bitrate", "aac", "2.0", "48khz", "lang-ko"}:
     assert badge in set(player_row["badgeIds"]), (badge, player_row)
 assert not any(str(x).startswith("sub-") for x in player_row["badgeIds"]), player_row

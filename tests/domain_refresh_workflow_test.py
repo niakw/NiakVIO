@@ -434,6 +434,40 @@ unrelated = module.project_domain_owned_config_runtime_urls(
 assert unrelated["observedUrls"] == published_runtime_urls["observedUrls"], unrelated
 assert unrelated["origins"] == published_runtime_urls["origins"], unrelated
 
+# Regression 2f: multiple historical origins may have collapsed onto one
+# current host under the former broad projection. Comparison may deduplicate
+# only for recovery detection; the canonical history itself must be restored.
+collapsed_history_published = {
+    "providerId": "demo",
+    "origins": ["https://new.example", "https://new.example", "https://external.example"],
+}
+collapsed_history_expected = {
+    "providerId": "demo",
+    "origins": [
+        "https://new.example",
+        "https://old-a.example",
+        "https://external.example",
+        "https://old-b.example",
+    ],
+}
+collapsed_history_patch = {
+    "official_site": "https://new.example",
+    "runtime_domain_replacements": {
+        "old-a.example": "new.example",
+        "old-b.example": "new.example",
+    },
+    "domain_substitutions": {
+        "old-a.example": "new.example",
+        "old-b.example": "new.example",
+    },
+}
+collapsed_history_recovered = module.project_domain_owned_config_runtime_urls(
+    collapsed_history_published,
+    collapsed_history_expected,
+    collapsed_history_patch,
+)
+assert collapsed_history_recovered["origins"] == collapsed_history_expected["origins"], collapsed_history_recovered
+
 # Regression 3: only domain-connected runtime maps follow a terminal rotation;
 # unrelated API replacement DATA must remain untouched.
 patch = {

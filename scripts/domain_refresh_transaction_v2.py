@@ -489,6 +489,18 @@ def _project_domain_url_values(values: list[Any], rewrites: dict[str, str]) -> l
     ]
 
 
+def _stable_unique_domain_values(values: list[Any]) -> list[Any]:
+    output: list[Any] = []
+    seen: set[str] = set()
+    for value in values:
+        key = json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+        if key in seen:
+            continue
+        seen.add(key)
+        output.append(value)
+    return output
+
+
 def project_domain_owned_config_runtime_urls(
     published: dict[str, Any],
     expected: dict[str, Any],
@@ -519,7 +531,11 @@ def project_domain_owned_config_runtime_urls(
             continue
         forward = _project_domain_url_values(published_values, rewrites)
         prior_overprojection = _project_domain_url_values(expected_values, rewrites)
-        if forward == expected_values or prior_overprojection == published_values:
+        recovered_prior_overprojection = (
+            _stable_unique_domain_values(prior_overprojection)
+            == _stable_unique_domain_values(published_values)
+        )
+        if forward == expected_values or prior_overprojection == published_values or recovered_prior_overprojection:
             output[key] = copy.deepcopy(expected_values)
     return output
 
