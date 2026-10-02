@@ -1,7 +1,7 @@
 {
   "schemaVersion": 3,
-  "runId": "36965544809",
-  "triggerSha": "982845557240223b01fdd33fb58634452512bce6",
+  "runId": "36965550805",
+  "triggerSha": "4d69e9b24c5ce03a32273dbde49d6ce0dfdc4a7f",
   "providers": [
     {
       "provider": "4khdhub",
@@ -66,7 +66,7 @@
       ],
       "dominantIssue": "provider_network_zero_result",
       "searchProgress": [
-        "anime: 4 works tested / 44 retained misses / 4 retained chain hits"
+        "anime: 4 works tested / 45 retained misses / 3 retained chain hits"
       ],
       "evidenceDepth": [
         "anime=chain_reached"
@@ -289,7 +289,7 @@
       ],
       "dominantIssue": "provider_network_http_error",
       "searchProgress": [
-        "anime: 8 works tested / 7 retained misses"
+        "anime: 8 works tested / 8 retained misses"
       ],
       "evidenceDepth": [
         "anime=lookup_only"
@@ -792,9 +792,9 @@
       ],
       "latestLaneVerdicts": [
         "movie=no_streams/provider_waf_challenge",
-        "tv=no_streams/provider_waf_challenge"
+        "tv=no_streams/provider_network_http_error"
       ],
-      "dominantIssue": "provider_waf_challenge×2",
+      "dominantIssue": "provider_waf_challenge, provider_network_http_error",
       "searchProgress": [
         "movie: 8 works tested / 0 retained misses / 1 retained chain hit",
         "tv: 8 works tested / 0 retained misses / 2 retained chain hits"
@@ -2242,8 +2242,8 @@
   "harnessQueue": [],
   "targetedTransportBlockedQueue": [],
   "clientTransportGapQueue": [],
-  "harnessEvidenceRunId": "36965544809-sharded-waf",
-  "harnessEvidenceSha": "982845557240223b01fdd33fb58634452512bce6",
+  "harnessEvidenceRunId": "36965550805-sharded-waf",
+  "harnessEvidenceSha": "4d69e9b24c5ce03a32273dbde49d6ce0dfdc4a7f",
   "authorityRefreshedProviders": [],
   "harnessTransportUpdatedProviders": [],
   "networkDifferentialUpdatedProviders": [],
