@@ -1,3 +1,11 @@
+## 2026-10-02 — Architecture FORCE unblocked for current-contract probe
+
+- CoFlix contract-discovery Repair run `36982888748` selected no canonical provider mutation and correctly escalated `coflix` to architecture FORCE run `36983001855`.
+- Architecture FORCE failed before any experiment because `adaptive_runtime_recovery_v5.py` only accepted generator revisions `generic-core-v3-census-focus` and `generic-core-v2`. The generic recovery generator is now `generic-core-v4-current-contract-probe`, so the V5 hardening layer rejected a newer valid generator before sandbox execution.
+- V5 now accepts `generic-core-v4-current-contract-probe` as migration input while preserving its existing hardened output revision `generic-core-v3`. This is compatibility plumbing only; media-proof semantics and provider production bytes are unchanged.
+- `brain_third_order_strategy_runtime_test.py` now locks the v4-input -> hardened-v3-output transition.
+- CoFlix architecture FORCE is retriggered with the cap-only fingerprint retained as a negative experiment. The next accepted result must come from the current-contract probe path and still prove playback/identity/completeness gain before publication.
+
 ## 2026-10-02 — Brain current-contract discovery after cap-only rejection
 
 - CoFlix external Brain mutation `919ddb5013d666b33218b3aca7b7785f9064254a` was applied in V6 sandbox run `36978793130` and correctly rejected: baseline and candidate both produced 6 playable streams, qualities 360/480/1080, language fr and the same four reachable terminal hosts. Rejection is persisted as `variant_coverage_no_verified_dimension_gain`; the cap-only fingerprint must not be retried as if it were progress.

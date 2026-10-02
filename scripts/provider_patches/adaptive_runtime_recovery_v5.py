@@ -100,6 +100,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **kwargs: Any) -> st
     patched = _replace_one_of(
         patched,
         (
+            '"runtimeRevision":"generic-core-v4-current-contract-probe"',
             '"runtimeRevision":"generic-core-v3-census-focus"',
             '"runtimeRevision":"generic-core-v2"',
         ),

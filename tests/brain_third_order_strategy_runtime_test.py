@@ -303,6 +303,8 @@ base_transition = (
     'return []}};'
 )
 transition_js = v5.apply(base_transition, options=terminal_options)
+assert '"runtimeRevision":"generic-core-v3"' in transition_js, transition_js
+assert "generic-core-v4-current-contract-probe" not in transition_js, transition_js
 
 def run_transition(module_source: str) -> list[dict]:
     with tempfile.TemporaryDirectory() as td:
