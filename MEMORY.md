@@ -1,3 +1,11 @@
+## 2026-10-02 — Brain official completeness audit + exact witness cohort
+
+- Completed stale diagnostic Advisor run `36970348376` (Brain `6d984d5d873c54ab68e663226e061777edaa46cc`) reported the Brain auditor's authoritative bounded counts for NiakVIO source `728bdd813e49e64276fed11082136eead0672c3e`: `providers=40 high=20 review=10 dynamic_high=5`.
+- That run also exposed a cohort-selection bug: a push trigger explicitly requesting `coflix` was still auto-unioned with current repairQueue + static high-risk + dynamic debt, producing a 33-provider cohort and 5 Force LLM targets. It generated one sanitized mutation candidate, but publication was correctly skipped because Brain main had advanced; it has zero mutation/publication authority.
+- Brain-LLM `43c384043dad70e4c8a137fefd843fe1e8f87731` fixes the selector: explicit workflow input or non-empty trigger `requested_repair_queue` is exact; the broad auto-union runs only when no explicit cohort exists.
+- Brain-LLM `12b71b2af748ed1dd2c646c36a53e3ce81cf1e77` / `43c38404...` CI is green after the FORCE-prompt current-structure preservation contract.
+- Current authoritative CoFlix witness generation is run `36973276806`, Brain trigger SHA `caca30e508a820a2a62a7c256718ecc99f4cab6a`, source NiakVIO `bdb9112fd26ec1a445769ac64e6492e784a0ea4a`. It must resolve the exact one-provider cohort before any mutation is accepted.
+
 ## 2026-10-02 — FORCE prompt now preserves current structure + dynamic fan-out
 
 - Audit of the CoFlix 7B path found a final Brain-only information-loss bug: `request_from_checkout()` correctly attached current provider structure and sharded fan-out, but `build_force_prompt_payload()` selected only the first two generic observations. The FORCE model could therefore see static cap risk while losing `originHost=coflix.ac` and the current 7->2 fan-out proof.
