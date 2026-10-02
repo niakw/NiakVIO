@@ -116,6 +116,22 @@ assert accepted is True, reason
 assert reason.startswith("variant_coverage_improvement:"), reason
 assert "playable-height" in reason, reason
 
+accepted, reason = mod.evaluate_pair(
+    coverage_baseline,
+    coverage_candidate,
+    "quality-stratified-variant-enumeration",
+)
+assert accepted is True, reason
+assert "playable-height" in reason, reason
+
+accepted, reason = mod.evaluate_pair(
+    coverage_baseline,
+    coverage_candidate,
+    "quality-aware-global-stop",
+)
+assert accepted is True, reason
+assert "playable-height" in reason, reason
+
 count_only_candidate = result(
     status="healthy",
     playable=2,
@@ -132,6 +148,18 @@ accepted, reason = mod.evaluate_pair(
 )
 assert accepted is False
 assert reason == "variant_coverage_no_verified_dimension_gain", reason
+
+for family in (
+    "quality-stratified-variant-enumeration",
+    "quality-aware-global-stop",
+):
+    accepted, reason = mod.evaluate_pair(
+        coverage_baseline,
+        count_only_candidate,
+        family,
+    )
+    assert accepted is False, (family, reason)
+    assert reason == "variant_coverage_no_verified_dimension_gain", (family, reason)
 
 dense_fanout_candidate = result(
     status="healthy",

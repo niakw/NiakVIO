@@ -300,7 +300,11 @@ def evaluate_pair(
     mechanism_family: str = "",
 ) -> tuple[bool, str]:
     family = str(mechanism_family or "").strip().casefold().replace("_", "-")
-    if family == "bounded-variant-enumeration-before-cap":
+    if family in {
+        "bounded-variant-enumeration-before-cap",
+        "quality-stratified-variant-enumeration",
+        "quality-aware-global-stop",
+    }:
         return evaluate_variant_coverage_pair(baseline, candidate)
     accepted, reason = runtime_repair.compare_results(baseline, candidate)
     if not accepted:

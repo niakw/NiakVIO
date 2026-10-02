@@ -1,3 +1,12 @@
+## 2026-10-03 — HindMoviez quality-stratified hypothesis rejected
+
+- Brain deterministic guidance `f78521815d981a929b7def4a9bb64c1525254028` produced `quality_stratified_variant_enumeration` after negative memory blocked the earlier global-quota and slice-3-to-4 hypotheses. V6 sandbox run `37078342189` applied and rematerialized the mutation but rejected it; no provider bytes were published.
+- Baseline coverage for this run had 4 returned/playable streams with qualities 480p + 1080p and max playable height 1080. The candidate returned 5 playable streams but only 480p, max playable height fell by 600px, announced variants fell 40 -> 27, explored player requests fell 16 -> 8, and automatic identity failed on Tenet. This is a real regression, not a harness-only rejection.
+- The executed fingerprint `3bfe7769283b306e37319faf7578c2ca163dc7ad8f9a77666fe966dd5a303317` is persisted as negative Force memory. Brain must not repeat global quota removal, plain slice widening, or quality-stratified first-N selection for this context.
+- The evidence points to an interaction between per-page selection and the existing global `out.length>=4` stop: filling early slots faster can stop bounded link traversal before later links that previously yielded 1080p. The next Brain strategy must address termination semantics while preserving the bounded link/deadline envelope; this is a Brain capability progression, not a hand-written HindMoviez patch.
+- Force sandbox validation now routes `quality-stratified-variant-enumeration` (and the next `quality-aware-global-stop` family) through the strict variant-coverage gate, requiring verified playable quality/language/host/fan-out gain plus identity/playback non-regression.
+- Architecture-force fallback run `37078625123` produced no force-promotable blueprint, so nothing was auto-promoted from it.
+
 ## 2026-10-03 — CoFlix current-origin transport blockage is now real evidence
 
 - The first targeted transport run `36987803310` was not valid CoFlix transport evidence because explicit FULL OK targets were filtered before residential replay (`FIELD_RESIDENTIAL_PROVIDER_REPLAY_SELECTION providers=0`).
