@@ -1,3 +1,13 @@
+## 2026-10-02 — Sharded fan-out evidence wired into Brain Repair
+
+- The quick/sharded census probe now runs the generic response variant detector and persists bounded player/server/quality fan-out hints instead of dropping them before Brain Repair.
+- Quick census rows now derive the hierarchical announced → explored → returned state, including nested player responses (representative contract: two player hosts exposing 10 + 9 choices => 19 announced variants).
+- NiakVIO-Brain-LLM main is already CI-green with automatic static + dynamic completeness cohort selection: current sharded fan-out debt can classify FULL/PARTIAL/CANDIDATE providers as `variant_coverage_gap`; player/server/mirror/quality/language vocabulary is part of the repair reference model.
+- NiakVIO commits in this sequence: `72343d5e` (probe hints), `5d33c901` (persist quick fan-out), `63a21936` (hierarchical contract test), `f6f8aab2` (gate), `e27620ca` (all-provider census trigger).
+- Current all-provider sharded census run: 36947484182, source `e27620ca344b0de1f3b9aa7ca4633f20a770c635`. It is not authority until the merged ledger is persisted and inspected.
+- An unrelated current-bytes census run failed on the pre-existing 4KHDHub behavior assertion (expected one movie result, got none); do not attribute that failure to the fan-out changes.
+- No provider runtime bytes were manually changed for this fan-out work.
+
 ## 2026-10-02 — Completeness Repair is manifest-current
 
 - Brain guidance automatic completeness selection is now bounded to providers present in the current NiakVIO manifest. Historical/retired runtime registrations in `provider-overrides.json` cannot consume Repair/FORCE cycles merely because static cap patterns remain in archived provider infrastructure.
