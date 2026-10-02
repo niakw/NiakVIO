@@ -19,6 +19,7 @@ assert.equal(classifyFailure({ forcedFailureClass: "route_proven_gap", invoked: 
 assert.equal(classifyFailure({ forcedFailureClass: "chain_terminal_gap", invoked: true }), "chain_terminal_gap");
 assert.equal(classifyFailure({ forcedFailureClass: "candidate_replay_gap", invoked: true }), "candidate_replay_gap");
 assert.equal(classifyFailure({ forcedFailureClass: "provider_transport_gap", invoked: true }), "provider_transport_gap");
+assert.equal(classifyFailure({ forcedFailureClass: "variant_coverage_gap", invoked: true }), "variant_coverage_gap");
 
 const blockedEvidence = { invoked: true, stages: { player: { attempted: true, found: true }, media: { attempted: true, found: true }, validation: { attempted: true, playable: false, playableCount: 0, statuses: [403] } } };
 const plan = planRepair(blockedEvidence, { maxHypotheses: 3 });
@@ -170,6 +171,77 @@ assert.equal(censusPlans["published:chain-prior"].observedPipelineStage, "player
 assert.ok(censusPlans["published:chain-prior"].allowedProfiles.includes("adaptive_runtime_recovery"));
 assert.equal(censusPlans["published:network-prior"].failureClass, "provider_transport_gap");
 assert.ok(censusPlans["published:network-prior"].allowedProfiles.includes("adaptive_runtime_recovery"));
+
+const variantPriorPayload = {
+  mode: "learning",
+  policy: dirtyPayload.policy,
+  learnedSkills: {},
+  items: [{
+    key: "published:variant-prior",
+    candidate: {
+      canonical_id: "variant-prior",
+      metadata: { supportedTypes: ["movie"] },
+      censusPrior: {
+        status: "FULL OK",
+        knowledgeRole: "monotonic-diagnostic-prior-only",
+        dynamicVariantCoverage: {
+          failureClass: "variant_coverage_gap",
+          repairTargetAuthority: true,
+          proofAuthority: false,
+          sourceRunId: "12345",
+          maxAnnouncedVariantCandidates: 19,
+          maxReturnedStreams: 2,
+        },
+      },
+    },
+    result: {
+      status: "no_streams",
+      evidence: { streams_returned: 0, streams_playable: 0 },
+      tests: [{
+        fixture: { category: "movie" },
+        failure_class: "runtime_empty",
+        stream_count: 0,
+        streams_playable: 0,
+        network_observations: [{ stage: "origin_probe", status: 403, infrastructure: false }],
+      }],
+    },
+    state: {},
+  }],
+};
+const variantPriorRun = spawnSync(process.execPath, [planner], { input: JSON.stringify(variantPriorPayload), encoding: "utf8" });
+assert.equal(variantPriorRun.status, 0, variantPriorRun.stderr);
+const variantPriorPlan = JSON.parse(variantPriorRun.stdout).plans["published:variant-prior"];
+assert.equal(variantPriorPlan.failureClass, "variant_coverage_gap", variantPriorPlan);
+assert.equal(variantPriorPlan.censusPriorApplied, true, variantPriorPlan);
+assert.equal(
+  variantPriorPlan.censusPriorReason,
+  "current_sharded_fanout_gap_outranks_sandbox_runtime_empty_or_transport_relabel",
+  variantPriorPlan,
+);
+assert.equal(variantPriorPlan.repairScope, "capability", variantPriorPlan);
+assert.equal(variantPriorPlan.repairType, "variant_enumeration", variantPriorPlan);
+assert.equal(variantPriorPlan.action, "probe-targeted-repair", variantPriorPlan);
+assert.ok(variantPriorPlan.allowedProfiles.includes("adaptive_runtime_recovery"), variantPriorPlan);
+
+const variantSafetyPayload = structuredClone(variantPriorPayload);
+variantSafetyPayload.items[0].key = "published:variant-safety";
+variantSafetyPayload.items[0].candidate.canonical_id = "variant-safety";
+variantSafetyPayload.items[0].result.status = "healthy";
+variantSafetyPayload.items[0].result.evidence = {
+  streams_returned: 1,
+  streams_playable: 1,
+  identity_contradiction_count: 1,
+};
+variantSafetyPayload.items[0].result.tests = [{
+  fixture: { category: "movie" },
+  streams_playable: 1,
+  network_observations: [],
+}];
+const variantSafetyRun = spawnSync(process.execPath, [planner], { input: JSON.stringify(variantSafetyPayload), encoding: "utf8" });
+assert.equal(variantSafetyRun.status, 0, variantSafetyRun.stderr);
+const variantSafetyPlan = JSON.parse(variantSafetyRun.stdout).plans["published:variant-safety"];
+assert.equal(variantSafetyPlan.failureClass, "identity_mismatch", variantSafetyPlan);
+assert.notEqual(variantSafetyPlan.censusPriorApplied, true, variantSafetyPlan);
 
 // Fresh current-run depth must supersede the census floor. Historical positive
 // depth prevents regression; it must never freeze the provider below a newly
