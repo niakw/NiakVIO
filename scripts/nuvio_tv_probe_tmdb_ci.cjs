@@ -285,13 +285,6 @@ if (typeof originalFetch === 'function') {
         declared_player_hosts: [],
         declared_quality_heights: [],
       };
-      let responseVariantHints = {
-        declared_player_candidate_count: 0,
-        declared_url_player_candidate_count: 0,
-        declared_indexed_player_candidate_count: 0,
-        declared_player_hosts: [],
-        declared_quality_heights: [],
-      };
       const status = Number(response?.status || 0);
       try { contentType = String(response?.headers?.get?.('content-type') || '').split(';')[0].slice(0, 96); } catch {}
       // Interactive anti-bot pages can legitimately answer HTTP 200. Inspect only
@@ -311,9 +304,6 @@ if (typeof originalFetch === 'function') {
           try {
             responseVariantHints = extractResponseVariantHints(body, { baseUrl: response?.url || url });
           } catch {}
-          try {
-            responseVariantHints = extractResponseVariantHints(body, { baseUrl: response?.url || url });
-          } catch {}
         } else if (/application\/json/i.test(contentType)) {
           try {
             const rawJson = String(await response.clone().text()).slice(0, 131072);
@@ -321,9 +311,6 @@ if (typeof originalFetch === 'function') {
             responseShape = jsonShape(parsedJson);
             try {
               responseVariantHints = extractResponseVariantHints(parsedJson, { baseUrl: response?.url || url });
-            } catch {}
-            try {
-              responseVariantHints = extractResponseVariantHints(rawJson, { baseUrl: response?.url || url });
             } catch {}
           } catch {
             responseShape = { kind: 'json', top: 'unparsed' };
