@@ -129,7 +129,16 @@ def main() -> int:
     assert "--queue-summary brain-sandbox/health-output/learning-queue-summary.json" in workflow
     assert "--queue-state brain-sandbox/health-output/learning-queue-state.json" in workflow
     assert "--learning-queue-state brain-sandbox/health-output/learning-queue-state.json" in workflow
-    assert "github.event_name == 'schedule'" in workflow
+    # Scheduled Learning publishes sanitized memory through the ordinary
+    # publish-learning dependency chain. The job is intentionally not gated by
+    # an event-name expression; requiring a literal schedule condition would
+    # reject the valid always-after-experiment architecture.
+    publish_learning_header = workflow[
+        workflow.index("  publish-learning:"):workflow.index("    steps:", workflow.index("  publish-learning:"))
+    ]
+    assert "if:" not in publish_learning_header, (
+        "scheduled Learning must remain eligible to publish sanitized memory"
+    )
     assert "github.event.inputs.publish_proposal == 'true'" in workflow
     repair_proposal_block = workflow[workflow.index("  publish-repair-proposal:"):workflow.index("\n  publish-architecture-proposal:")]
     assert "github.event_name == 'workflow_dispatch'" in repair_proposal_block

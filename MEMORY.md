@@ -1,3 +1,11 @@
+## 2026-10-02 — CoFlix FORCE preflight gate corrected
+
+- Explicit CoFlix FORCE run `36964643052` correctly resolved target `coflix`, `architecture_force=true` and a 60-minute bounded slot, but no Brain/provider mutation ran because `tests/brain_cron_full_coverage_test.py` failed before Learning execution.
+- The failing assertion required the literal text `github.event_name == 'schedule'` anywhere in the workflow. That was stale: `publish-learning` now has no event filter and therefore naturally runs after `experiment` for scheduled executions.
+- The contract now checks the actual invariant instead: cron trigger remains present and the sanitized-memory publication job has no event-name gate. Repair/architecture proposal jobs remain separately restricted to explicit manual/FORCE conditions.
+- This was a Brain pipeline gate failure, not a CoFlix/provider failure. No provider runtime bytes were changed by run `36964643052`.
+- The same commit retriggers the CoFlix representative FORCE from census `36958527070` and current structure evidence (coflix.ac REST + 10/9 fan-out).
+
 ## 2026-10-02 — Probe failures removed from provider Repair debt
 
 - Root cause of the stale 1/46 census flooding Repair was architectural: `invalid_probe_output`, `missing_tmdb_credential` and harness `audit_error` were grouped with provider-owned JS failures. A broken probe could therefore manufacture `PROVIDER JS BROKEN` rows and expand the Brain repairQueue across unrelated providers.
