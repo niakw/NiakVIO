@@ -691,6 +691,8 @@ function installPolyfills(context = {}) {
           content_type: String(response.headers.get('content-type') || '').slice(0, 160) || null,
           route_proof_trace: routeProofEnabled,
           declared_player_candidate_count: 0,
+          declared_url_player_candidate_count: 0,
+          declared_indexed_player_candidate_count: 0,
           declared_player_hosts: [],
           declared_quality_heights: [],
         };
@@ -703,6 +705,14 @@ function installPolyfills(context = {}) {
           observation.declared_player_candidate_count = Math.max(
             Number(observation.declared_player_candidate_count || 0),
             Number(hints.declared_player_candidate_count || 0),
+          );
+          observation.declared_url_player_candidate_count = Math.max(
+            Number(observation.declared_url_player_candidate_count || 0),
+            Number(hints.declared_url_player_candidate_count || 0),
+          );
+          observation.declared_indexed_player_candidate_count = Math.max(
+            Number(observation.declared_indexed_player_candidate_count || 0),
+            Number(hints.declared_indexed_player_candidate_count || 0),
           );
           observation.declared_player_hosts = [...new Set([
             ...(observation.declared_player_hosts || []),
