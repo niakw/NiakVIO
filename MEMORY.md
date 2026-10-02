@@ -1,3 +1,10 @@
+## 2026-10-02 — Registered runtime completeness audit candidate cohort
+
+- A same-pattern scan of all 42 registered runtime Lego on NiakVIO SHA `728bdd813e49e64276fed11082136eead0672c3e` found 20 active provider registrations with high-risk static cap/first-success signatures in a nearby quality/language/server/player/source context: `allanime`, `anikototv`, `anime-sama`, `animesultra`, `animevostfr`, `coflix`, `flemmix`, `hindmoviez`, `movieshunt`, `moviesmod`, `neko-sama`, `papadustream`, `sekai`, `streamzo`, `uhdmovies`, `vidfast`, `vidrock`, `voiranime`, `voiranime-rip`, `yflix`.
+- This is candidate static debt, not proof that every provider currently loses a real stream. Canonical FORCE selection uses the Brain auditor's `static-runtime-variant-coverage-debt` output (`proofAuthority=false`) plus current dynamic census evidence, and publication still requires current-byte measured gain.
+- Current all-provider dynamic census run `36968430407` shows fan-out completeness debt for `animevostfr`, `coflix`, `kehflix`, `persianstremio`, and `vidlove`. Dynamic and static cohorts intentionally do not need to match: early truncation can hide later variants before the network census ever observes them.
+- Representative order remains: CoFlix for current-contract/player-server traversal drift, then HindMoviez for quality/release truncation, then at least one representative per remaining failure family before any wider cohort application.
+
 ## 2026-10-02 — Canonical Repair consumes current provider structure
 
 - Global sharded authority is restored by run `36968430407` / persistence commit `b3071d51368b1acb43f1f142adae17a6786da478`: 24/46 operational, with CoFlix still FULL OK but current-byte fan-out gaps on anime/movie/tv.
