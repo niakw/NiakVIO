@@ -344,6 +344,7 @@ jobs:
         shell: bash
         env:
           SOURCE_SHA: ${{ needs.prepare.outputs.source_sha }}
+          CENSUS_SCOPE: ${{ needs.prepare.outputs.census_scope }}
         run: |
           set -euo pipefail
           run_id="$GITHUB_RUN_ID"
@@ -373,8 +374,13 @@ jobs:
           git reset --hard origin/main
           mkdir -p automation
           cp /tmp/provider-census-sharded.json "automation/provider-census-sharded-${run_id}.json"
-          cp /tmp/provider-census-sharded.json automation/provider-census-sharded-latest.json
-          cp /tmp/provider-census-sharded-summary.json automation/provider-census-sharded-latest-summary.json
+          if [ "$CENSUS_SCOPE" = "all" ]; then
+            cp /tmp/provider-census-sharded.json automation/provider-census-sharded-latest.json
+            cp /tmp/provider-census-sharded-summary.json automation/provider-census-sharded-latest-summary.json
+            echo "FIELD_SHARDED_GLOBAL_FANOUT retained=false replaced=true scope=all run=$run_id"
+          else
+            echo "FIELD_SHARDED_GLOBAL_FANOUT retained=true replaced=false scope=$CENSUS_SCOPE run=$run_id"
+          fi
           cp /tmp/provider-census-status.json automation/provider-census-status.json
           cp /tmp/provider-repair-batch-plan.json automation/provider-repair-batch-plan-latest.json
           cp /tmp/provider-census-proof-history.json automation/provider-census-proof-history.json
@@ -392,13 +398,26 @@ jobs:
           cp /tmp/PROVIDER_CENSUS_STATUS.md PROVIDER_CENSUS_STATUS.md
           verified="$(python - <<'PY'
           import json
-          d=json.load(open("automation/provider-census-sharded-latest-summary.json"))
+          d=json.load(open("/tmp/provider-census-sharded-summary.json"))
           print(f"{d.get('operationalOkCount',0)}/{d.get('providerCount',0)}")
           PY
           )"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add             "automation/provider-census-sharded-${run_id}.json"             automation/provider-census-sharded-latest.json             automation/provider-census-sharded-latest-summary.json             automation/provider-census-status.json             automation/provider-repair-batch-plan-latest.json             automation/provider-census-proof-history.json             automation/provider-authority-status.json             "automation/provider-waf-browser-session-${run_id}.json"             automation/provider-waf-browser-session-latest.json             PROVIDER_CENSUS_STATUS.md
+          git add \
+            "automation/provider-census-sharded-${run_id}.json" \
+            automation/provider-census-status.json \
+            automation/provider-repair-batch-plan-latest.json \
+            automation/provider-census-proof-history.json \
+            automation/provider-authority-status.json \
+            "automation/provider-waf-browser-session-${run_id}.json" \
+            automation/provider-waf-browser-session-latest.json \
+            PROVIDER_CENSUS_STATUS.md
+          if [ "$CENSUS_SCOPE" = "all" ]; then
+            git add \
+              automation/provider-census-sharded-latest.json \
+              automation/provider-census-sharded-latest-summary.json
+          fi
           if git diff --cached --quiet; then
             echo "FIELD_SHARDED_CENSUS_NO_CHANGES"
           else

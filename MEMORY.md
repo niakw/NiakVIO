@@ -1,3 +1,12 @@
+## 2026-10-02 — All-provider fan-out authority can no longer be erased by targeted census
+
+- Root cause of the missing CoFlix/Papa/PersianStremio dynamic debt after Repair was persistence semantics, not provider recovery: workflow-run/unresolved sharded census replaced `automation/provider-census-sharded-latest.json` with a 19-provider symptomatic subset.
+- Brain Repair reads that file for announced/explored/returned completeness evidence, so a targeted census could erase nominally green providers from the dynamic completeness cohort even though no provider bytes changed.
+- Sharded persistence now always stores the run-specific artifact and refreshes current status/history, but only `scope=all` may replace `provider-census-sharded-latest.json` and its summary. Unresolved/targeted runs explicitly retain the last global fan-out authority.
+- The persisted run summary used in commit messages now comes from the current run's temporary summary, not whichever global snapshot remains on disk.
+- A fresh `scope=all` census is triggered to restore global authority on current bytes. After it lands, CoFlix remains the first representative Brain FORCE; subsequent targeted Repair census cannot make the wider completeness cohort disappear.
+- No provider runtime bytes were manually edited for this correction.
+
 ## 2026-10-02 — Repair V6 now selects dynamic completeness debt
 
 - Brain already classified sharded fan-out loss as `variant_coverage_gap`, but canonical Repair V6 still intersected every target with `provider-census-status.json:repairQueue`. A nominally `FULL OK` provider such as CoFlix could therefore be diagnosed by Brain yet silently excluded before provider mutation.

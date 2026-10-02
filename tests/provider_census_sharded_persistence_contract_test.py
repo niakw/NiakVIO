@@ -30,6 +30,21 @@ for required_trigger_guard in (
 ):
     assert required_trigger_guard in workflow, f"missing explicit census trigger bypass: {required_trigger_guard}"
 
+# Unresolved/targeted census is allowed to refresh current repair status, but it
+# must never erase the last all-provider fan-out authority used by Brain.
+assert workflow.count('CENSUS_SCOPE: ${{ needs.prepare.outputs.census_scope }}') >= 2
+for marker in (
+    'if [ "$CENSUS_SCOPE" = "all" ]; then',
+    'FIELD_SHARDED_GLOBAL_FANOUT retained=true replaced=false',
+    'FIELD_SHARDED_GLOBAL_FANOUT retained=false replaced=true scope=all',
+    'd=json.load(open("/tmp/provider-census-sharded-summary.json"))',
+):
+    assert marker in workflow, f"missing global fan-out persistence guard: {marker}"
+
+latest_copy = workflow.index("cp /tmp/provider-census-sharded.json automation/provider-census-sharded-latest.json")
+scope_guard = workflow.rfind('if [ "$CENSUS_SCOPE" = "all" ]; then', 0, latest_copy)
+assert scope_guard >= 0 and scope_guard < latest_copy
+
 for required_convergence in (
     "persist:",
     "inputs.persist == true",
