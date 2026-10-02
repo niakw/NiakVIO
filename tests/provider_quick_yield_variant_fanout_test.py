@@ -66,6 +66,66 @@ assert summary["announced_variant_candidates"] == 19, summary
 assert summary["explored_player_requests"] == 0, summary
 assert summary["variant_fanout_state"] == "returned-subset", summary
 
+domain_drift = {
+    "model": {
+        "official_site": "https://coflix.ac",
+        "official_hub": "https://coflix.domains/",
+    },
+    "fetches": [
+        {
+            "url": "https://coflix.wiki/ajax/search/suggest?keyword=fixture",
+            "response_url": "https://coflix.wiki/ajax/search/suggest?keyword=fixture",
+            "declared_player_candidate_count": 0,
+            "declared_url_player_candidate_count": 0,
+            "declared_indexed_player_candidate_count": 0,
+            "declared_player_hosts": [],
+            "declared_quality_heights": [],
+        },
+        {
+            "url": "https://coflix.wiki/film/fixture/",
+            "response_url": "https://coflix.wiki/film/fixture/",
+            "declared_player_candidate_count": 19,
+            "declared_url_player_candidate_count": 19,
+            "declared_indexed_player_candidate_count": 0,
+            "declared_player_hosts": ["coflix.wiki"],
+            "declared_quality_heights": [1080],
+        },
+        {
+            "url": "https://coflix.wiki/ajax/episode/player?episode_id=1",
+            "response_url": "https://coflix.wiki/ajax/episode/player?episode_id=1",
+            "declared_player_candidate_count": 2,
+            "declared_url_player_candidate_count": 2,
+            "declared_indexed_player_candidate_count": 0,
+            "declared_player_hosts": ["coflix.wiki", "one.test", "two.test"],
+            "declared_quality_heights": [],
+        },
+        {
+            "url": "https://one.test/player/1",
+            "response_url": "https://one.test/player/1",
+            "declared_player_candidate_count": 10,
+            "declared_url_player_candidate_count": 0,
+            "declared_indexed_player_candidate_count": 10,
+            "declared_player_hosts": [],
+            "declared_quality_heights": [720, 1080],
+        },
+        {
+            "url": "https://two.test/player/2",
+            "response_url": "https://two.test/player/2",
+            "declared_player_candidate_count": 9,
+            "declared_url_player_candidate_count": 0,
+            "declared_indexed_player_candidate_count": 9,
+            "declared_player_hosts": [],
+            "declared_quality_heights": [1080],
+        },
+    ],
+}
+summary = mod._variant_fanout_summary(domain_drift, 2)
+assert summary["announced_player_candidates"] == 2, summary
+assert summary["announced_variant_candidates"] == 19, summary
+assert summary["announced_player_hosts"] == ["one.test", "two.test"], summary
+assert summary["explored_player_requests"] == 2, summary
+assert summary["variant_fanout_state"] == "returned-subset", summary
+
 # Execute the real run_single integration path with a synthetic probe result.
 # This catches stale/undefined fan-out locals that helper-only tests cannot see.
 original_run = mod.subprocess.run
