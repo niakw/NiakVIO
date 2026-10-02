@@ -380,6 +380,16 @@ def _variant_fanout_summary(debug: dict[str, Any], streams_returned: int) -> dic
             response_host, response_route = "", request_route
         return request_host, request_route, response_host, response_route
 
+    # Static provider metadata may lag the exact runtime origin (domain moves are
+    # common). The first actual provider request is current execution evidence,
+    # so preserve its request/response host as an observed provider origin too.
+    # This is diagnostic ownership only; it does not rewrite provider DATA.
+    if rows:
+        request_host, _request_route, response_host, _response_route = request_parts(rows[0])
+        for host in (request_host, response_host):
+            if host:
+                origin_hosts.add(host)
+
     if not origin_hosts:
         for row in rows:
             request_host, _request_route, response_host, _response_route = request_parts(row)
@@ -393,7 +403,23 @@ def _variant_fanout_summary(debug: dict[str, Any], streams_returned: int) -> dic
         request_host, request_route, response_host, response_route = request_parts(row)
         owned = request_host in origin_hosts or response_host in origin_hosts
         indexed = max(0, int(row.get("declared_indexed_player_candidate_count") or 0))
-        if owned and (CHAIN_ROUTE_RE.search(request_route) or CHAIN_ROUTE_RE.search(response_route) or indexed >= 2):
+        declared_hosts = {
+            str(value or "").strip().casefold()
+            for value in (row.get("declared_player_hosts") or [])
+            if str(value or "").strip()
+        }
+        external_hosts = declared_hosts - origin_hosts
+        # Detail/search pages often contain many provider-internal links near
+        # words such as player/watch. They are not reader choices. Count a
+        # provider-owned response as a parent fan-out only when it exposes at
+        # least one off-origin reader/server host, or an explicit indexed menu.
+        if owned and (
+            indexed >= 2
+            or (
+                bool(external_hosts)
+                and (CHAIN_ROUTE_RE.search(request_route) or CHAIN_ROUTE_RE.search(response_route))
+            )
+        ):
             parent_rows.append(row)
 
     if not parent_rows:
