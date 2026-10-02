@@ -1621,6 +1621,7 @@ async function testCandidate(candidate) {
     if (announcedVariantCandidates >= 2) {
       if (exploredPlayerRequests <= 1 && streams.length <= 1) variantFanoutState = 'announced-not-explored';
       else if (exploredPlayerRequests >= 2 && streams.length <= 1) variantFanoutState = 'explored-not-resolved';
+      else if (streams.length < announcedVariantCandidates) variantFanoutState = 'returned-subset';
       else variantFanoutState = 'fanout-observed';
     }
     if (
