@@ -383,6 +383,20 @@ the provider-owned traversal rather than merely increasing a cap on obsolete
 code.
 
 
+The observation must also survive prompt construction. For provider FORCE,
+current provider-structure evidence and current sharded fan-out evidence outrank
+generic census prose in the bounded prompt. At minimum the model-visible
+context must preserve the sanitized current origin, observed route path,
+authority flags, bounded group/variant counts, and the current
+announced/explored/returned gap. Prompt compaction must never silently drop
+those fields while retaining only stale runtime source. If context pressure
+requires further reduction, historical/retrieval prose is discarded first.
+
+This is a Brain pipeline invariant, not a CoFlix exception. The same rule applies
+whenever the runtime cannot observe the provider's current contract because the
+old traversal never reaches it.
+
+
 Canonical Repair V6 consumes the same observation channel, not only Learning.
 The observation may influence sandbox hypothesis generation only:
 

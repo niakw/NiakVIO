@@ -1,3 +1,11 @@
+## 2026-10-02 — FORCE prompt now preserves current structure + dynamic fan-out
+
+- Audit of the CoFlix 7B path found a final Brain-only information-loss bug: `request_from_checkout()` correctly attached current provider structure and sharded fan-out, but `build_force_prompt_payload()` selected only the first two generic observations. The FORCE model could therefore see static cap risk while losing `originHost=coflix.ac` and the current 7->2 fan-out proof.
+- Brain-LLM main `e908b2a7597376f51e5985d2b7461b486f51753c` fixes the generic prompt boundary. FORCE now prioritizes current provider structure, current sharded fan-out, runtime variant coverage and targeted regression evidence; `current_structure_evidence` is also retained explicitly in advisor context and as `current_provider_structure` in the compact FORCE payload, including under severe prompt compaction.
+- Added a prompt contract proving current origin + REST route + 10/9 (19 total) structure and dynamic 7 announced / 2 returned evidence survive into the model-visible FORCE payload.
+- The earlier CoFlix guidance run `36970348376`, pinned to Brain `6d984d5d873c54ab68e663226e061777edaa46cc`, is superseded for publication even if it finishes. Only a rerun on Brain `e908b2a7...` or newer may feed the external-force sandbox.
+- No provider runtime bytes were changed.
+
 ## 2026-10-02 — Registered runtime completeness audit candidate cohort
 
 - A same-pattern scan of all 42 registered runtime Lego on NiakVIO SHA `728bdd813e49e64276fed11082136eead0672c3e` found 20 active provider registrations with high-risk static cap/first-success signatures in a nearby quality/language/server/player/source context: `allanime`, `anikototv`, `anime-sama`, `animesultra`, `animevostfr`, `coflix`, `flemmix`, `hindmoviez`, `movieshunt`, `moviesmod`, `neko-sama`, `papadustream`, `sekai`, `streamzo`, `uhdmovies`, `vidfast`, `vidrock`, `voiranime`, `voiranime-rip`, `yflix`.
