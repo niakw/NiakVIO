@@ -1,3 +1,10 @@
+## 2026-10-02 — Dynamic fan-out reaches Brain Repair
+
+- Quick census now retains bounded multi-player/server fan-out evidence (`57e4804d`, `85643acb`), and Deep health exposes `returned-subset` (`3d4e2115`).
+- Brain-LLM now projects this current sharded evidence into Repair and can classify nominally healthy providers as `variant_coverage_gap` from execution evidence (`32750e4a`). Contract `b71ba927` proves 2 players / 19 announced / 8 returned; Brain LLM CI #1330 is green.
+- NiakVIO functional contract `542c8e44` proves hierarchical 10+9 aggregation and `607f5d66` adds it to the actions gate. Architecture contract `d1bb39fd` records the FULL/PARTIAL completeness exception.
+- No provider runtime bytes were manually changed. A fresh all-provider census is required before any representative Brain FORCE mutation.
+
 ## 2026-10-02 — Multi-provider fan-out completeness cohort
 
 - CoFlix is the representative first witness, not a one-off fix. Current runtime audit also found bounded player/stream enumeration patterns in at least: PapaDuStream, StreamZo, MoviesMod, Cineby and UHDMovies. These are candidate completeness-debt providers, not automatically broken providers.
