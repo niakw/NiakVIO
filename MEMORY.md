@@ -1,3 +1,11 @@
+## 2026-10-02 — V5 fully aligned with current-contract probe path
+
+- CoFlix architecture FORCE rerun `36985798775` passed the generator revision migration but failed next in the same third-order runtime contract: V5's resolved-page hardening expected the pre-v4 `resolve()` shape where `form=playerForm(...)` immediately followed page proof.
+- Generic Core v4 inserts `probeCurrentContracts(...)` before form mining. V5 now accepts both shapes and preserves its extension-is-not-proof invariant on the new contract path.
+- V5 additionally hardens `contractRequest()` and returned `contractDoc` media proof: an extension-only URL is downgraded unless MIME/disposition/body independently proves media.
+- Third-order contract now asserts v4 input migration plus contract-probe extension hardening. No provider runtime was manually edited.
+- CoFlix architecture FORCE is retriggered; the next useful milestone is actual contract-probe execution rather than another preflight-only success.
+
 ## 2026-10-02 — Architecture FORCE unblocked for current-contract probe
 
 - CoFlix contract-discovery Repair run `36982888748` selected no canonical provider mutation and correctly escalated `coflix` to architecture FORCE run `36983001855`.

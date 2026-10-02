@@ -148,9 +148,30 @@ def apply(text: str, options: dict[str, Any] | None = None, **kwargs: Any) -> st
                 'var proof=s(doc.proof)||mediaProof(page,doc.type,doc.body,doc.disposition);if(proof)return[{url:page,referer:ref||requested,direct:true,proof:proof}];var body=s(doc.body),out=[],form=playerForm(body,page);',
                 'var proof=s(doc.proof)||mediaProof(page,doc.type,doc.body,doc.disposition);if(proof==="extension"){if(mediaType(doc.type))proof="mime";else if(mediaDisposition(doc.disposition))proof="disposition";else if(mediaBody(doc.body))proof="body";else proof=""}if(proof)return[{url:page,referer:ref||requested,direct:true,proof:proof}];var body=s(doc.body),out=[],form=playerForm(body,page);',
             ),
+            (
+                'var proof=s(doc.proof)||mediaProof(page,doc.type,doc.body,doc.disposition);if(proof)return[{url:page,referer:ref||requested,direct:true,proof:proof}];var body=s(doc.body),out=[],contractDocs=await probeCurrentContracts(body,page,q);',
+                'var proof=s(doc.proof)||mediaProof(page,doc.type,doc.body,doc.disposition);if(proof==="extension"){if(mediaType(doc.type))proof="mime";else if(mediaDisposition(doc.disposition))proof="disposition";else if(mediaBody(doc.body))proof="body";else proof=""}if(proof)return[{url:page,referer:ref||requested,direct:true,proof:proof}];var body=s(doc.body),out=[],contractDocs=await probeCurrentContracts(body,page,q);',
+            ),
         ),
         "resolved_page_positive_proof",
     )
+
+    # Generic Core v4 adds observation-only current-contract probing. Preserve
+    # V5's verified-media invariant on these new response surfaces as well:
+    # file extensions remain hints, never terminal proof by themselves.
+    if "function contractRequest(" in patched:
+        patched = _replace_once(
+            patched,
+            'proof=mediaProof(finalUrl,type,"",disposition),body=null;if(proof)body="";else if(/application\\/(?:[^;]+\\+)?json/i.test(type))',
+            'proof=mediaProof(finalUrl,type,"",disposition),body=null;if(proof==="extension"){if(mediaType(type))proof="mime";else if(mediaDisposition(disposition))proof="disposition";else proof=""}if(proof)body="";else if(/application\\/(?:[^;]+\\+)?json/i.test(type))',
+            "contract_request_extension_hint",
+        )
+        patched = _replace_once(
+            patched,
+            'contractProof=s(contractDoc.proof)||mediaProof(contractPage,contractDoc.type,contractDoc.body,contractDoc.disposition);if(contractProof){',
+            'contractProof=s(contractDoc.proof)||mediaProof(contractPage,contractDoc.type,contractDoc.body,contractDoc.disposition);if(contractProof==="extension"){if(mediaType(contractDoc.type))contractProof="mime";else if(mediaDisposition(contractDoc.disposition))contractProof="disposition";else if(mediaBody(contractDoc.body))contractProof="body";else contractProof=""}if(contractProof){',
+            "contract_document_extension_hint",
+        )
 
     patched = _replace_one_of(
         patched,

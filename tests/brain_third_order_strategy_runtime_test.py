@@ -305,6 +305,8 @@ base_transition = (
 transition_js = v5.apply(base_transition, options=terminal_options)
 assert '"runtimeRevision":"generic-core-v3"' in transition_js, transition_js
 assert "generic-core-v4-current-contract-probe" not in transition_js, transition_js
+assert 'if(proof==="extension"){if(mediaType(type))proof="mime";else if(mediaDisposition(disposition))proof="disposition";else proof=""}' in transition_js, transition_js
+assert 'if(contractProof==="extension")' in transition_js, transition_js
 
 def run_transition(module_source: str) -> list[dict]:
     with tempfile.TemporaryDirectory() as td:
