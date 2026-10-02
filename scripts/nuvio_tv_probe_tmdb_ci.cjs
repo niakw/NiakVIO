@@ -9,6 +9,7 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const Module = require('node:module');
+const { extractResponseVariantHints } = require('./response_variant_hints.cjs');
 
 const key = String(process.env.TMDB_API_KEY || '').trim();
 const token = String(process.env.TMDB_ACCESS_TOKEN || '').trim();
@@ -277,6 +278,11 @@ if (typeof originalFetch === 'function') {
       let contentType = '';
       let challenge = '';
       let responseShape = null;
+      let responseVariantHints = {
+        declared_player_candidate_count: 0,
+        declared_player_hosts: [],
+        declared_quality_heights: [],
+      };
       const status = Number(response?.status || 0);
       try { contentType = String(response?.headers?.get?.('content-type') || '').split(';')[0].slice(0, 96); } catch {}
       // Interactive anti-bot pages can legitimately answer HTTP 200. Inspect only
@@ -293,10 +299,16 @@ if (typeof originalFetch === 'function') {
         if (htmlBody || scriptBody) {
           try { body = String(await response.clone().text()).slice(0, 65536); } catch {}
           responseShape = textShape(contentType, body);
+          try {
+            responseVariantHints = extractResponseVariantHints(body, { baseUrl: response?.url || url });
+          } catch {}
         } else if (/application\/json/i.test(contentType)) {
           try {
             const rawJson = String(await response.clone().text()).slice(0, 131072);
             responseShape = jsonShape(JSON.parse(rawJson));
+            try {
+              responseVariantHints = extractResponseVariantHints(rawJson, { baseUrl: response?.url || url });
+            } catch {}
           } catch {
             responseShape = { kind: 'json', top: 'unparsed' };
           }
@@ -319,6 +331,11 @@ if (typeof originalFetch === 'function') {
         content_type: contentType,
         challenge,
         response_shape: responseShape,
+        declared_player_candidate_count: Math.max(0, Number(responseVariantHints?.declared_player_candidate_count || 0)),
+        declared_player_hosts: Array.isArray(responseVariantHints?.declared_player_hosts)
+          ? responseVariantHints.declared_player_hosts.slice(0, 32) : [],
+        declared_quality_heights: Array.isArray(responseVariantHints?.declared_quality_heights)
+          ? responseVariantHints.declared_quality_heights.slice(0, 12) : [],
         duration_ms: Date.now() - started,
       });
       return response;
