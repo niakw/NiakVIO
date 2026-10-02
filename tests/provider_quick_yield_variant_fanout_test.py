@@ -2,6 +2,7 @@
 import importlib.util
 import subprocess
 from pathlib import Path
+from types import SimpleNamespace
 
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = ROOT / "scripts" / "audit_provider_quick_yield.py"
@@ -64,6 +65,27 @@ summary = mod._variant_fanout_summary(index_only, 8)
 assert summary["announced_variant_candidates"] == 19, summary
 assert summary["explored_player_requests"] == 0, summary
 assert summary["variant_fanout_state"] == "returned-subset", summary
+
+# Execute the real run_single integration path with a synthetic probe result.
+# This catches stale/undefined fan-out locals that helper-only tests cannot see.
+original_run = mod.subprocess.run
+try:
+    mod.subprocess.run = lambda *args, **kwargs: SimpleNamespace(
+        stdout='{"playable_stream_count":1,"raw_stream_count":1,"content_verified_count":1,"identity_verified_count":1,"identity_contradiction_count":0,"runtime_error":null,"duration_ms":1,"streams":[],"debug":{"fetches":[]}}\n',
+        stderr="",
+        returncode=0,
+    )
+    run_single_result = mod.run_single({
+        "provider_id": "demo",
+        "provider_name": "Demo",
+        "semantic_type": "movie",
+        "filename": "providers/demo.js",
+        "fixture": {"title": "Fixture", "mediaType": "movie", "tmdbId": "1"},
+    })
+finally:
+    mod.subprocess.run = original_run
+assert run_single_result["streams_returned"] == 1, run_single_result
+assert run_single_result["variant_fanout_state"] == "not-observed", run_single_result
 
 probe_path = ROOT / "scripts" / "nuvio_tv_probe_tmdb_ci.cjs"
 syntax = subprocess.run(["node", "--check", str(probe_path)], cwd=ROOT, text=True, capture_output=True, check=False)
