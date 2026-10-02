@@ -1,3 +1,11 @@
+## 2026-10-02 — Explicit transport targets now bypass status-only filtering
+
+- Targeted CoFlix WAF/Tailscale run `36987803310` connected the residential exit successfully, but produced `matchedProviderLanes=0` and `FIELD_RESIDENTIAL_PROVIDER_REPLAY_SELECTION providers=0`. The durable WAF ledger contained no CoFlix row at all.
+- Root cause was transport-lane selection, not a negative CoFlix transport result: `probe_waf_browser_session.py` only seeded metadata probes for WAF/ENV statuses, and `select_residential_provider_replay.py` intersected explicit targets with symptomatic queues. A nominally FULL provider explicitly targeted for hidden completeness/contract debt was therefore filtered twice.
+- Explicit transport qualification now seeds the named current provider from its current official metadata regardless of canonical FULL/PARTIAL/ROUTE status and full-replays it through residential transport. Current provider/address authority remains mandatory; an authority-blocked explicit target is still excluded.
+- Automatic/non-explicit transport selection is unchanged and remains restricted to current WAF/ENV/NETWORK symptoms.
+- Contracts cover a FULL OK explicit seed and FULL OK explicit residential replay while preserving default exclusion. CoFlix transport qualification is retriggered; no provider runtime bytes were changed.
+
 ## 2026-10-02 — V5 fully aligned with current-contract probe path
 
 - CoFlix architecture FORCE rerun `36985798775` passed the generator revision migration but failed next in the same third-order runtime contract: V5's resolved-page hardening expected the pre-v4 `resolve()` shape where `form=playerForm(...)` immediately followed page proof.

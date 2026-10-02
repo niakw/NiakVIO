@@ -62,25 +62,16 @@ def select(
         if str(value or "").strip()
     }
     if explicit:
-        symptomatic = {
-            str(value or "").strip().casefold()
-            for key in (
-                "repairQueue",
-                "environmentQueue",
-                "harnessQueue",
-                "targetedTransportBlockedQueue",
-                "symptomaticProviders",
-                "brainQueue",
-            )
-            for value in (status.get(key) or [])
-            if str(value or "").strip()
-        }
         authority_allowed = {
             str(row.get("provider") or "").strip().casefold()
             for row in rows
             if row.get("authorityRepairEligible") is not False
         }
-        providers.update(explicit & symptomatic & authority_allowed)
+        # An explicit transport qualification is itself the symptom request.
+        # Allow the named current provider to full-replay through residential
+        # transport even when canonical status is FULL/PARTIAL/ROUTE, while
+        # still respecting current provider/address authority.
+        providers.update(explicit & authority_allowed)
 
     return sorted(providers)
 
@@ -90,7 +81,7 @@ def main() -> int:
     ap.add_argument("--waf", type=Path, required=True)
     ap.add_argument("--status", type=Path, required=True)
     ap.add_argument("--output", type=Path, required=True)
-    ap.add_argument("--providers", default="", help="Optional comma-separated explicit symptomatic providers to full-replay")
+    ap.add_argument("--providers", default="", help="Optional comma-separated explicit current providers to full-replay regardless of canonical status")
     args = ap.parse_args()
 
     explicit = [value.strip() for value in str(args.providers or "").split(",") if value.strip()]

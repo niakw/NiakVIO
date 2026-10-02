@@ -45,8 +45,8 @@ assert "green" not in selected and "route" not in selected
 assert "authority-blocked" not in selected
 
 explicit=mod.select(report,status,["route","green","authority-blocked","missing"])
-assert explicit==["all-blocked","client-gap","route","waf-only","yflix"],explicit
-assert "green" not in explicit
+assert explicit==["all-blocked","client-gap","green","route","waf-only","yflix"],explicit
+assert "green" in explicit and "route" in explicit
 assert "authority-blocked" not in explicit
 
 unavailable={"residentialExitNodeEvidence":{"available":False}}

@@ -91,6 +91,42 @@ assert status_targets[0]["lane"] == "tv"
 assert status_targets[0]["publicUrl"] == "https://new-waf.example/"
 assert status_targets[0]["seedKind"] == "metadata-homepage"
 
+explicit_green_targets = mod.extract_status_targets(
+    {
+        "providers": [
+            {
+                "provider": "healthy",
+                "status": "FULL OK",
+                "declaredLanes": ["movie", "tv"],
+                "authorityRepairEligible": True,
+            },
+            {
+                "provider": "authority-blocked",
+                "status": "FULL OK",
+                "declaredLanes": ["movie"],
+                "authorityRepairEligible": False,
+            },
+        ]
+    },
+    {
+        "provider_patches": {
+            "healthy": {
+                "official_site": "https://healthy.example/",
+                "learned_routes": ["/?s={query}"],
+            },
+            "authority-blocked": {
+                "official_site": "https://blocked.example/",
+            },
+        }
+    },
+    [],
+    explicit_providers={"healthy", "authority-blocked"},
+)
+assert len(explicit_green_targets) == 2, explicit_green_targets
+assert {row["provider"] for row in explicit_green_targets} == {"healthy"}, explicit_green_targets
+assert {row["lane"] for row in explicit_green_targets} == {"movie", "tv"}, explicit_green_targets
+assert all(row["seedKind"] == "metadata-search" for row in explicit_green_targets), explicit_green_targets
+
 search_targets = mod.extract_status_targets(
     {
         "providers": [{

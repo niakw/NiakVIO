@@ -242,6 +242,7 @@ def extract_status_targets(
     status: dict[str, Any],
     overrides: dict[str, Any],
     existing: list[dict[str, Any]],
+    explicit_providers: set[str] | None = None,
 ) -> list[dict[str, Any]]:
     """Seed newly-classified WAF providers from current provider metadata.
 
@@ -255,12 +256,32 @@ def extract_status_targets(
         if isinstance(row, dict)
     }
     patches = overrides.get("provider_patches") if isinstance(overrides.get("provider_patches"), dict) else {}
+    explicit = {
+        str(value or "").strip().casefold()
+        for value in (explicit_providers or set())
+        if str(value or "").strip()
+    }
+    transport_statuses = {
+        "HARNESS MISMATCH",
+        "CLIENT TRANSPORT GAP",
+        "HARNESS/ENV BLOCKED",
+        "PROVIDER WAF/ANTIBOT",
+    }
     out: list[dict[str, Any]] = []
     for row in status.get("providers") or []:
-        if not isinstance(row, dict) or str(row.get("status") or "") not in {"HARNESS MISMATCH", "CLIENT TRANSPORT GAP", "HARNESS/ENV BLOCKED", "PROVIDER WAF/ANTIBOT"}:
+        if not isinstance(row, dict):
             continue
         provider = str(row.get("provider") or "").strip().casefold()
         if not provider:
+            continue
+        status_name = str(row.get("status") or "")
+        explicit_target = provider in explicit
+        if status_name not in transport_statuses and not explicit_target:
+            continue
+        # Explicit transport qualification may inspect a nominally green
+        # provider, but never resurrect a provider whose current address/backend
+        # authority is explicitly blocked.
+        if explicit_target and row.get("authorityRepairEligible") is False:
             continue
         patch = patches.get(provider) if isinstance(patches.get(provider), dict) else {}
         base_url = str(
@@ -752,10 +773,23 @@ def main() -> int:
     ap.add_argument("--providers", default="")
     args = ap.parse_args()
 
+    requested = {
+        str(value or "").strip().casefold()
+        for value in [
+            *args.provider,
+            *str(args.providers or "").split(","),
+        ]
+        if str(value or "").strip()
+    }
     report = load(args.report)
     targets = extract_targets(report)
     if args.status and args.overrides and args.status.is_file() and args.overrides.is_file():
-        supplemental = extract_status_targets(load(args.status), load(args.overrides), targets)
+        supplemental = extract_status_targets(
+            load(args.status),
+            load(args.overrides),
+            targets,
+            explicit_providers=requested,
+        )
         upgraded_pairs = {
             (str(row.get("provider") or ""), str(row.get("lane") or ""))
             for row in supplemental
@@ -783,14 +817,6 @@ def main() -> int:
             )
         ]
         targets.extend(network_targets)
-    requested = {
-        str(value or "").strip().casefold()
-        for value in [
-            *args.provider,
-            *str(args.providers or "").split(","),
-        ]
-        if str(value or "").strip()
-    }
     targets = filter_targets_by_provider(targets, requested)
     targets = targets[: max(1, args.max_targets)]
     browser = browser_binary()
