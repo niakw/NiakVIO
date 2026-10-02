@@ -12,9 +12,11 @@ spec.loader.exec_module(mod)
 hierarchical = {
     "fetches": [
         {
-            "url": "https://coflix.example/title",
-            "response_url": "https://coflix.example/title",
+            "url": "https://coflix.example/ajax/episode/player",
+            "response_url": "https://coflix.example/ajax/episode/player",
             "declared_player_candidate_count": 2,
+            "declared_url_player_candidate_count": 2,
+            "declared_indexed_player_candidate_count": 0,
             "declared_player_hosts": ["one.test", "two.test"],
             "declared_quality_heights": [480],
         },
@@ -22,6 +24,8 @@ hierarchical = {
             "url": "https://one.test/player/1",
             "response_url": "https://one.test/player/1",
             "declared_player_candidate_count": 10,
+            "declared_url_player_candidate_count": 0,
+            "declared_indexed_player_candidate_count": 10,
             "declared_player_hosts": [],
             "declared_quality_heights": [720, 1080],
         },
@@ -29,13 +33,15 @@ hierarchical = {
             "url": "https://two.test/player/2",
             "response_url": "https://two.test/player/2",
             "declared_player_candidate_count": 9,
+            "declared_url_player_candidate_count": 0,
+            "declared_indexed_player_candidate_count": 9,
             "declared_player_hosts": [],
             "declared_quality_heights": [1080],
         },
     ]
 }
 summary = mod._variant_fanout_summary(hierarchical, 8)
-assert summary["announced_player_candidates"] == 10, summary
+assert summary["announced_player_candidates"] == 2, summary
 assert summary["announced_variant_candidates"] == 19, summary
 assert summary["explored_player_requests"] == 2, summary
 assert summary["explored_player_hosts"] == ["one.test", "two.test"], summary
@@ -47,6 +53,8 @@ index_only = {
         "url": "https://coflix.example/title",
         "response_url": "https://coflix.example/title",
         "declared_player_candidate_count": 19,
+        "declared_url_player_candidate_count": 0,
+        "declared_indexed_player_candidate_count": 19,
         "declared_player_hosts": [],
         "declared_quality_heights": [480, 720, 1080],
     }]
