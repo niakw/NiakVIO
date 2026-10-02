@@ -23,6 +23,7 @@ PLAN_SCRIPT = ROOT / "engine_v2" / "scripts" / "plan-repairs.mjs"
 POLICY_PATH = ROOT / "engine_v2" / "config" / "brain-policy.json"
 OVERRIDES_PATH = ROOT / "provider-overrides.json"
 CENSUS_STATUS_PATH = ROOT / "automation" / "provider-census-status.json"
+CENSUS_SHARDED_PATH = ROOT / "automation" / "provider-census-sharded-latest.json"
 REPAIR_MEMORY_PATH = ROOT / "automation" / "brain-repair-memory.json"
 EXPERIENCE_PATH = ROOT / "automation" / "brain-repair-experience.json"
 LOCAL_FORCE_RESULTS_DIR = ROOT / "automation" / "local-force-results"
@@ -105,6 +106,61 @@ def _clip_text(value: Any, limit: int = 600) -> str:
     return text[:limit]
 
 
+def _dynamic_variant_coverage_prior(provider_id: str) -> dict[str, Any]:
+    payload = _load_json(CENSUS_SHARDED_PATH, {})
+    wanted = str(provider_id or "").strip().casefold().replace("_", "-")
+    if not wanted or not isinstance(payload, dict):
+        return {}
+    gap_states = {
+        "announced-not-explored",
+        "explored-not-resolved",
+        "returned-subset",
+        "quality-gap",
+    }
+    lanes: list[dict[str, Any]] = []
+    for raw in payload.get("rows") or []:
+        if not isinstance(raw, dict):
+            continue
+        provider = str(raw.get("provider_id") or "").strip().casefold().replace("_", "-")
+        if provider != wanted:
+            continue
+        announced = max(0, int(raw.get("announced_variant_candidates") or 0))
+        returned = max(0, int(raw.get("streams_returned") or raw.get("raw") or 0))
+        explored = max(0, int(raw.get("explored_player_requests") or 0))
+        state = str(raw.get("variant_fanout_state") or "").strip().casefold()
+        if announced < 2 or not (state in gap_states or returned < announced):
+            continue
+        lanes.append({
+            "lane": _clip_text(raw.get("semantic_type"), 40).casefold(),
+            "state": _clip_text(state or "observed-gap", 80),
+            "announcedVariantCandidates": announced,
+            "announcedPlayerCandidates": max(0, int(raw.get("announced_player_candidates") or 0)),
+            "exploredPlayerRequests": explored,
+            "streamsReturned": returned,
+            "announcedQualityHeights": [
+                int(value)
+                for value in (raw.get("announced_quality_heights") or [])[:12]
+                if str(value or "").isdigit() and int(value) > 0
+            ],
+        })
+        if len(lanes) >= 8:
+            break
+    if not lanes:
+        return {}
+    return {
+        "failureClass": "variant_coverage_gap",
+        "repairTargetAuthority": True,
+        "proofAuthority": False,
+        "source": "provider-census-sharded-latest",
+        "sourceRunId": _clip_text(payload.get("run_id") or payload.get("runId"), 80),
+        "maxAnnouncedVariantCandidates": max(
+            int(row.get("announcedVariantCandidates") or 0) for row in lanes
+        ),
+        "maxReturnedStreams": max(int(row.get("streamsReturned") or 0) for row in lanes),
+        "lanes": lanes,
+    }
+
+
 def _census_prior(provider_id: str) -> dict[str, Any]:
     status = _load_json(CENSUS_STATUS_PATH, {})
     wanted = str(provider_id or "").strip().casefold()
@@ -115,6 +171,7 @@ def _census_prior(provider_id: str) -> dict[str, Any]:
             continue
         if str(row.get("provider") or "").strip().casefold() != wanted:
             continue
+        dynamic_variant = _dynamic_variant_coverage_prior(provider_id)
         return {
             "status": _clip_text(row.get("status"), 80),
             "dominantIssue": _clip_text(row.get("dominantIssue"), 240),
@@ -125,6 +182,7 @@ def _census_prior(provider_id: str) -> dict[str, Any]:
             "currentVerifiedLanes": [_clip_text(value, 48) for value in (row.get("currentVerifiedLanes") or [])[:8]],
             "repairEligible": row.get("repairEligible") is True,
             "knowledgeRole": "monotonic-diagnostic-prior-only",
+            **({"dynamicVariantCoverage": dynamic_variant} if dynamic_variant else {}),
         }
     return {}
 
