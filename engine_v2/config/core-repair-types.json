@@ -40,7 +40,8 @@
       "ROUTE PROVEN cannot regress to search_gap while route proof remains current",
       "CHAIN REACHED cannot regress below terminal media extraction",
       "CANDIDATE OK prioritizes current-byte reproduction of the verified candidate path",
-      "PROVIDER NETWORK BLOCKED prioritizes transport/origin resolution before parser mutation"
+      "PROVIDER NETWORK BLOCKED prioritizes transport/origin resolution before parser mutation",
+      "Current sharded fan-out debt (announced/explored/returned) may force variant_coverage_gap even when status is FULL/PARTIAL/CANDIDATE; sandbox runtime-empty or transport relabels cannot erase that current playable completeness target"
     ]
   },
   "learning": {
@@ -336,6 +337,15 @@
       "scope": "capability",
       "repairType": "provider_transport_resolution",
       "engine": "provider_transport_context",
+      "pipelineStage": "capability_engine",
+      "profiles": [
+        "adaptive_runtime_recovery"
+      ]
+    },
+    "variant_coverage_gap": {
+      "scope": "capability",
+      "repairType": "variant_enumeration",
+      "engine": "media_enrichment_policy",
       "pipelineStage": "capability_engine",
       "profiles": [
         "adaptive_runtime_recovery"
