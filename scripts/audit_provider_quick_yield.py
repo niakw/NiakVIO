@@ -337,6 +337,74 @@ def _provider_progress_stage(debug: dict[str, Any]) -> str:
     return "lookup_only"
 
 
+def _variant_fanout_summary(debug: dict[str, Any], streams_returned: int) -> dict[str, Any]:
+    """Preserve bounded multi-player/server completeness evidence in quick census."""
+    rows = [
+        row for row in _provider_fetches(debug)
+        if isinstance(row, dict)
+    ]
+    announced_players = max(
+        [0, *[max(0, int(row.get("declared_player_candidate_count") or 0)) for row in rows]]
+    )
+    announced_hosts = sorted({
+        str(host or "").strip().casefold()
+        for row in rows
+        for host in (row.get("declared_player_hosts") or [])
+        if str(host or "").strip()
+    })
+    announced_host_set = set(announced_hosts)
+    announced_qualities = sorted({
+        int(value)
+        for row in rows
+        for value in (row.get("declared_quality_heights") or [])
+        if str(value or "").isdigit() and int(value) > 0
+    })[:12]
+
+    nested: dict[str, int] = {}
+    explored = 0
+    explored_hosts: set[str] = set()
+    for row in rows:
+        raw_url = str(row.get("response_url") or row.get("url") or "")
+        try:
+            parsed = urlsplit(raw_url)
+            host = str(parsed.hostname or "").casefold()
+            route = parsed.path or "/"
+        except ValueError:
+            host, route = "", ""
+        if host and host in announced_host_set:
+            explored += 1
+            explored_hosts.add(host)
+            count = max(0, int(row.get("declared_player_candidate_count") or 0))
+            if count > 0:
+                key = host + "|" + route
+                nested[key] = max(count, nested.get(key, 0))
+
+    nested_total = sum(nested.values())
+    announced_variants = max(announced_players, nested_total)
+    returned = max(0, int(streams_returned or 0))
+    state = "not-observed"
+    if announced_variants >= 2:
+        if explored <= 1 and returned <= 1:
+            state = "announced-not-explored"
+        elif explored >= 2 and returned <= 1:
+            state = "explored-not-resolved"
+        elif returned < announced_variants:
+            state = "returned-subset"
+        else:
+            state = "fanout-observed"
+
+    return {
+        "streams_returned": returned,
+        "announced_player_candidates": announced_players,
+        "announced_variant_candidates": announced_variants,
+        "announced_player_hosts": announced_hosts[:24],
+        "announced_quality_heights": announced_qualities,
+        "explored_player_requests": explored,
+        "explored_player_hosts": sorted(explored_hosts)[:24],
+        "variant_fanout_state": state,
+    }
+
+
 def _provider_value_trace_history(debug: dict[str, Any]) -> list[dict[str, Any]]:
     rows = debug.get("provider_value_trace_history_v21")
     if not isinstance(rows, list):
@@ -505,8 +573,10 @@ def run_single(task: dict[str, Any]) -> dict[str, Any]:
         status = "no_streams"
     debug = probe.get("debug") if isinstance(probe.get("debug"), dict) else {}
     stage = classify_debug_stage(task, probe, debug)
+    fanout = _variant_fanout_summary(debug, raw)
     return {
         **base,
+        **fanout,
         "status": status,
         "debug_stage": stage,
         "debug_model": debug.get("model"),
@@ -538,6 +608,9 @@ def _compact_sample(row: dict[str, Any]) -> dict[str, Any]:
         for key in (
             "fixture_title", "fixture", "status", "debug_stage", "debug_progress_stage",
             "raw", "playable", "verified", "contradictions", "duration_ms",
+            "streams_returned", "announced_player_candidates", "announced_variant_candidates",
+            "announced_player_hosts", "announced_quality_heights", "explored_player_requests",
+            "explored_player_hosts", "variant_fanout_state",
         )
     }
 
@@ -570,6 +643,29 @@ def run(task: dict[str, Any]) -> dict[str, Any]:
         raise RuntimeError(f"{task.get('provider_id')}: empty adaptive fixture set")
     result = dict(final)
     result["sample_count"] = len(samples)
+    fanout_sample = max(
+        samples,
+        key=lambda row: (
+            int(row.get("announced_variant_candidates") or 0),
+            int(row.get("announced_player_candidates") or 0),
+            int(row.get("streams_returned") or 0),
+        ),
+        default={},
+    )
+    for key in (
+        "streams_returned",
+        "announced_player_candidates",
+        "announced_variant_candidates",
+        "announced_player_hosts",
+        "announced_quality_heights",
+        "explored_player_requests",
+        "explored_player_hosts",
+        "variant_fanout_state",
+    ):
+        if key in fanout_sample:
+            result[key] = fanout_sample.get(key)
+    if fanout_sample:
+        result["fanout_fixture_title"] = str(fanout_sample.get("fixture_title") or "")[:160]
     progress_rank = {"none": 0, "lookup_only": 1, "chain_reached": 2}
     result["debug_progress_stage"] = max(
         (str(row.get("debug_progress_stage") or "none") for row in samples),
