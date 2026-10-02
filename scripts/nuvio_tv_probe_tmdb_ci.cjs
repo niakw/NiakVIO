@@ -280,6 +280,8 @@ if (typeof originalFetch === 'function') {
       let responseShape = null;
       let responseVariantHints = {
         declared_player_candidate_count: 0,
+        declared_url_player_candidate_count: 0,
+        declared_indexed_player_candidate_count: 0,
         declared_player_hosts: [],
         declared_quality_heights: [],
       };
