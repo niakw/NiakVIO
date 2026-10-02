@@ -60,7 +60,10 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
-          ref: main
+          # Push-triggered census must pin the exact trigger commit. Checking
+          # out moving main here can silently lose an explicit trigger when
+          # another persistence commit lands before prepare starts.
+          ref: ${{ github.event_name == 'push' && github.sha || 'main' }}
           fetch-depth: 0
       - name: Validate sharded census persistence contract
         run: python tests/provider_census_sharded_persistence_contract_test.py
