@@ -38,6 +38,22 @@ def remove_block(text: str, start_marker: str, end_marker: str, label: str) -> s
     return text[:start] + text[end:]
 
 
+def identity_semantics_current(text: str) -> bool:
+    """Return True when the zero-episodic-year ownership contract is already present.
+
+    Revision labels may advance independently (for example player-page identity
+    v15). Repair migrations must key off behavior, not a historical revision
+    string, otherwise a newer correct Core becomes a false migration target.
+    """
+    return (
+        "function contentLike(candidate,q){" in text
+        and "if(!episodic(q)&&years.length&&w.length>=1)return true;" in text
+        and "function contentLike(candidate){" not in text
+        and "if(years.length&&w.length>=1)return true;" not in text
+        and '"catalogueYearPolicy": "movie-only"' in text
+    )
+
+
 def patch_core_identity_zero_year_episodic() -> None:
     """Make year completely inert for tv/series/anime, including heuristics."""
     path = "scripts/provider_patches/global_stream_identity_v1.py"
@@ -317,7 +333,7 @@ def validate_source_state() -> None:
     assert '["title", "year", "mediaType"]' not in materializer
     assert '["title", "mediaType"]' in base
     assert '["title", "mediaType"]' in materializer
-    assert "cross-client-shared-tmdb-owner-zero-episodic-year-v11" in identity
+    assert identity_semantics_current(identity)
     assert "function contentLike(candidate,q)" in identity
     assert "if(!episodic(q)&&years.length&&w.length>=1)return true;" in identity
     assert "function contentLike(candidate){" not in identity
@@ -326,7 +342,7 @@ def validate_source_state() -> None:
 
 def main() -> int:
     identity = read("scripts/provider_patches/global_stream_identity_v1.py")
-    if "cross-client-shared-tmdb-owner-zero-episodic-year-v11" in identity:
+    if identity_semantics_current(identity):
         validate_source_state()
         print("CORE_IDENTITY_OWNERSHIP_CLEANUP_OK episodic_year_influence=0 already_current=true")
         return 0

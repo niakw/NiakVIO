@@ -1,3 +1,11 @@
+## 2026-10-02 — Repair V6 Core migration blocker fixed semantically
+
+- Canonical Repair run `36965535816` failed before any provider mutation in `scripts/apply_core_identity_ownership_cleanup.py`: it required the historical Stream Identity revision v10 anchor, while current Core is already `cross-client-player-page-identity-v15`.
+- Current v15 bytes already satisfy the intended ownership behavior: `contentLike(candidate,q)`, episodic year excluded from the heuristic, movie-only catalogue year policy, and the old context-free/year-active forms absent.
+- The migration now detects those behavioral invariants instead of one historical revision label. A newer correct Core is therefore a no-op success rather than a fleet-wide Repair blocker.
+- Added `tests/core_identity_cleanup_idempotence_test.py` and wired it into Workflow Gate; it validates the current Core and executes the migration entrypoint as an idempotent no-op.
+- CoFlix is explicitly retriggered in FORCE after this fix. The target remains Brain-owned: current census returned-subset + coflix.ac REST 10+9 structure -> Brain mutation -> apply -> rematerialize -> playback/identity/completeness validation. No CoFlix provider runtime was manually edited.
+
 ## 2026-10-02 — Dynamic completeness causal class preserved through Learning
 
 - CoFlix FORCE run `36964956962` proved the upstream Brain router was correct (`variant_coverage_gap`) but exposed a downstream NiakVIO planner regression: the Learning sandbox returned `runtime_empty`, causing the runtime planner to relabel the same provider `transport_blocked` and select generic `adaptive_runtime_recovery`. The 7B guidance file consequently contained zero provider rows and no FORCE candidate was materialized.
