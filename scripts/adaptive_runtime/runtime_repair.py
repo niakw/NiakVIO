@@ -1264,10 +1264,27 @@ def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any])
         broad_peer_recipes,
         limit=24,
     )
+    # Current provider structure is observation-only, but it outranks peer
+    # request contracts. If the current page exposes one or more provider-owned
+    # routes while no executable current/provider request recipe proves how to
+    # call them yet (for example method=UNKNOWN), keep peer routes as discovery
+    # hints but do not silently promote a peer's executable request recipe.
+    # Otherwise Brain can mutate toward an unrelated GET/POST contract merely
+    # because a structurally similar provider used it.
+    unresolved_current_request_contract = bool(
+        structure_routes
+        and not current_request_recipes
+        and not provider_request_recipes
+    )
     request_recipes = _unique_request_recipes(
         current_request_recipes,
         provider_request_recipes,
-        peer_request_recipes if experiment_variant >= peer_recipe_min_variant else [],
+        (
+            peer_request_recipes
+            if experiment_variant >= peer_recipe_min_variant
+            and not unresolved_current_request_contract
+            else []
+        ),
         limit=32,
     )
     historical_strategy_profile = str(brain_plan.get("historicalStrategyProfile") or "").strip()
