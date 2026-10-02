@@ -1,13 +1,13 @@
 {
   "schemaVersion": 3,
-  "runId": "36939639436",
-  "triggerSha": "2029449709c56625d5cf266b2cb417633f9849b0",
+  "runId": "36947484182",
+  "triggerSha": "e27620ca344b0de1f3b9aa7ca4633f20a770c635",
   "providers": [
     {
       "provider": "4khdhub",
-      "status": "ROUTE PROVEN",
+      "status": "PROVIDER JS BROKEN",
       "underlyingStatus": "",
-      "color": "🟪",
+      "color": "🟠",
       "declaredLanes": [
         "movie",
         "tv"
@@ -19,95 +19,13 @@
         "20 live routes / movie, tv"
       ],
       "latestLaneVerdicts": [
-        "movie=no_streams/provider_network_zero_result",
-        "tv=no_streams/provider_network_zero_result"
+        "movie=invalid_probe_output",
+        "tv=invalid_probe_output"
       ],
-      "dominantIssue": "provider_network_zero_result×2",
+      "dominantIssue": "invalid_probe_output×2",
       "searchProgress": [
-        "movie: 4 works tested / 46 retained misses",
-        "tv: 2 works tested / 43 retained misses"
-      ],
-      "evidenceDepth": [
-        "movie=lookup_only",
-        "tv=lookup_only"
-      ],
-      "harnessTransportClass": "not-applicable",
-      "harnessTransportEvidence": [],
-      "authorityRepairEligible": true,
-      "authorityAction": "KEEP_ROUTE_AUTHORITY",
-      "authorityClass": "hub-or-redirect",
-      "authorityConfidence": "high",
-      "authorityReasons": [
-        "authoritative_route_source"
-      ],
-      "authorityKnown": true,
-      "action": "replay qualified route fixtures and finish terminal extraction/validation",
-      "brainCheckRequired": true,
-      "statusRepairEligible": true,
-      "repairEligible": true,
-      "testedThisRun": true
-    },
-    {
-      "provider": "allanime",
-      "status": "CHAIN REACHED",
-      "underlyingStatus": "",
-      "color": "🟣",
-      "declaredLanes": [
-        "anime"
-      ],
-      "currentVerifiedLanes": [],
-      "historicalProof": [],
-      "candidateProof": [],
-      "routeProof": [
-        "4 live routes / anime"
-      ],
-      "latestLaneVerdicts": [
-        "anime=no_streams/provider_network_zero_result"
-      ],
-      "dominantIssue": "provider_network_zero_result",
-      "searchProgress": [
-        "anime: 4 works tested / 44 retained misses / 4 retained chain hits"
-      ],
-      "evidenceDepth": [
-        "anime=chain_reached"
-      ],
-      "harnessTransportClass": "not-applicable",
-      "harnessTransportEvidence": [],
-      "authorityRepairEligible": true,
-      "authorityAction": "KEEP_BACKEND",
-      "authorityClass": "api-or-backend",
-      "authorityConfidence": "high",
-      "authorityReasons": [
-        "structured_backend_authority"
-      ],
-      "authorityKnown": true,
-      "action": "finish terminal extractor/validation; do not promote before verified media",
-      "brainCheckRequired": true,
-      "statusRepairEligible": true,
-      "repairEligible": true,
-      "testedThisRun": true
-    },
-    {
-      "provider": "allwish",
-      "status": "NO PROOF",
-      "underlyingStatus": "",
-      "color": "🔵",
-      "declaredLanes": [
-        "movie",
-        "tv"
-      ],
-      "currentVerifiedLanes": [],
-      "historicalProof": [],
-      "candidateProof": [],
-      "routeProof": [],
-      "latestLaneVerdicts": [
-        "movie=no_streams/provider_waf_challenge",
-        "tv=no_streams/provider_waf_challenge"
-      ],
-      "dominantIssue": "provider_waf_challenge×2",
-      "searchProgress": [
-        "movie: 8 works tested / 0 retained misses",
-        "tv: 8 works tested / 0 retained misses"
+        "movie: 1 works tested / 46 retained misses",
+        "tv: 1 works tested / 43 retained misses"
       ],
       "evidenceDepth": [
         "movie=none",
@@ -123,7 +41,89 @@
         "authoritative_route_source"
       ],
       "authorityKnown": true,
-      "action": "continue corpus proof search; BRAIN checks",
+      "action": "repair + retest; BRAIN checks",
+      "brainCheckRequired": true,
+      "statusRepairEligible": true,
+      "repairEligible": true,
+      "testedThisRun": true
+    },
+    {
+      "provider": "allanime",
+      "status": "PROVIDER JS BROKEN",
+      "underlyingStatus": "",
+      "color": "🟠",
+      "declaredLanes": [
+        "anime"
+      ],
+      "currentVerifiedLanes": [],
+      "historicalProof": [],
+      "candidateProof": [],
+      "routeProof": [
+        "4 live routes / anime"
+      ],
+      "latestLaneVerdicts": [
+        "anime=invalid_probe_output"
+      ],
+      "dominantIssue": "invalid_probe_output",
+      "searchProgress": [
+        "anime: 1 works tested / 44 retained misses / 4 retained chain hits"
+      ],
+      "evidenceDepth": [
+        "anime=none"
+      ],
+      "harnessTransportClass": "not-applicable",
+      "harnessTransportEvidence": [],
+      "authorityRepairEligible": true,
+      "authorityAction": "KEEP_BACKEND",
+      "authorityClass": "api-or-backend",
+      "authorityConfidence": "high",
+      "authorityReasons": [
+        "structured_backend_authority"
+      ],
+      "authorityKnown": true,
+      "action": "repair + retest; BRAIN checks",
+      "brainCheckRequired": true,
+      "statusRepairEligible": true,
+      "repairEligible": true,
+      "testedThisRun": true
+    },
+    {
+      "provider": "allwish",
+      "status": "REGRESSION PROVIDER JS",
+      "underlyingStatus": "",
+      "color": "🟣",
+      "declaredLanes": [
+        "movie",
+        "tv"
+      ],
+      "currentVerifiedLanes": [],
+      "historicalProof": [],
+      "candidateProof": [],
+      "routeProof": [],
+      "latestLaneVerdicts": [
+        "movie=invalid_probe_output",
+        "tv=invalid_probe_output"
+      ],
+      "dominantIssue": "invalid_probe_output×2",
+      "searchProgress": [
+        "movie: 1 works tested / 0 retained misses",
+        "tv: 1 works tested / 0 retained misses"
+      ],
+      "evidenceDepth": [
+        "movie=none",
+        "tv=none"
+      ],
+      "harnessTransportClass": "not-applicable",
+      "harnessTransportEvidence": [],
+      "authorityRepairEligible": true,
+      "authorityAction": "KEEP_ROUTE_AUTHORITY",
+      "authorityClass": "hub-or-redirect",
+      "authorityConfidence": "high",
+      "authorityReasons": [
+        "authoritative_route_source"
+      ],
+      "authorityKnown": true,
+      "action": "A/B against retained proof; restore JS/runtime",
       "brainCheckRequired": true,
       "statusRepairEligible": true,
       "repairEligible": true,
@@ -136,15 +136,13 @@
     },
     {
       "provider": "anikototv",
-      "status": "FULL OK",
+      "status": "REGRESSION PROVIDER JS",
       "underlyingStatus": "",
-      "color": "🟢",
+      "color": "🟣",
       "declaredLanes": [
         "anime"
       ],
-      "currentVerifiedLanes": [
-        "anime"
-      ],
+      "currentVerifiedLanes": [],
       "historicalProof": [
         "anime: Jujutsu Kaisen"
       ],
@@ -153,14 +151,14 @@
         "7 live routes / anime"
       ],
       "latestLaneVerdicts": [
-        "anime=OK"
+        "anime=invalid_probe_output"
       ],
-      "dominantIssue": "none",
+      "dominantIssue": "invalid_probe_output",
       "searchProgress": [
         "anime: 1 works tested / 10 retained misses"
       ],
       "evidenceDepth": [
-        "anime=chain_reached"
+        "anime=none"
       ],
       "harnessTransportClass": "not-applicable",
       "harnessTransportEvidence": [],
@@ -172,23 +170,21 @@
         "authoritative_route_source"
       ],
       "authorityKnown": true,
-      "action": "protect + replay retained proof",
-      "brainCheckRequired": false,
-      "statusRepairEligible": false,
-      "repairEligible": false,
+      "action": "A/B against retained proof; restore JS/runtime",
+      "brainCheckRequired": true,
+      "statusRepairEligible": true,
+      "repairEligible": true,
       "testedThisRun": true
     },
     {
       "provider": "anime-sama",
-      "status": "FULL OK",
+      "status": "REGRESSION PROVIDER JS",
       "underlyingStatus": "",
-      "color": "🟢",
+      "color": "🟣",
       "declaredLanes": [
         "anime"
       ],
-      "currentVerifiedLanes": [
-        "anime"
-      ],
+      "currentVerifiedLanes": [],
       "historicalProof": [
         "anime: Jujutsu Kaisen"
       ],
@@ -197,14 +193,14 @@
         "6 live routes / anime"
       ],
       "latestLaneVerdicts": [
-        "anime=OK"
+        "anime=invalid_probe_output"
       ],
-      "dominantIssue": "none",
+      "dominantIssue": "invalid_probe_output",
       "searchProgress": [
         "anime: 1 works tested / 0 retained misses"
       ],
       "evidenceDepth": [
-        "anime=chain_reached"
+        "anime=none"
       ],
       "harnessTransportClass": "not-applicable",
       "harnessTransportEvidence": [],
@@ -216,17 +212,17 @@
         "authoritative_route_source"
       ],
       "authorityKnown": true,
-      "action": "protect + replay retained proof",
-      "brainCheckRequired": false,
-      "statusRepairEligible": false,
-      "repairEligible": false,
+      "action": "A/B against retained proof; restore JS/runtime",
+      "brainCheckRequired": true,
+      "statusRepairEligible": true,
+      "repairEligible": true,
       "testedThisRun": true
     },
     {
       "provider": "anime-ultime",
-      "status": "ROUTE PROVEN",
+      "status": "PROVIDER JS BROKEN",
       "underlyingStatus": "",
-      "color": "🟪",
+      "color": "🟠",
       "declaredLanes": [
         "anime"
       ],
@@ -237,11 +233,11 @@
         "1 live routes / anime"
       ],
       "latestLaneVerdicts": [
-        "anime=no_streams/provider_network_http_error"
+        "anime=invalid_probe_output"
       ],
-      "dominantIssue": "provider_network_http_error",
+      "dominantIssue": "invalid_probe_output",
       "searchProgress": [
-        "anime: 8 works tested / 0 retained misses"
+        "anime: 1 works tested / 0 retained misses"
       ],
       "evidenceDepth": [
         "anime=none"
@@ -257,7 +253,7 @@
         "existing_positive_route_prior"
       ],
       "authorityKnown": true,
-      "action": "replay qualified route fixtures and finish terminal extraction/validation",
+      "action": "repair + retest; BRAIN checks",
       "brainCheckRequired": true,
       "statusRepairEligible": true,
       "repairEligible": true,
@@ -269,9 +265,9 @@
     },
     {
       "provider": "animekai",
-      "status": "REGRESSION PROVIDER",
+      "status": "REGRESSION PROVIDER JS",
       "underlyingStatus": "",
-      "color": "🔴",
+      "color": "🟣",
       "declaredLanes": [
         "anime"
       ],
@@ -284,11 +280,11 @@
         "16 live routes / anime"
       ],
       "latestLaneVerdicts": [
-        "anime=no_streams/provider_network_exception"
+        "anime=invalid_probe_output"
       ],
-      "dominantIssue": "provider_network_exception",
+      "dominantIssue": "invalid_probe_output",
       "searchProgress": [
-        "anime: 8 works tested / 0 retained misses"
+        "anime: 1 works tested / 0 retained misses"
       ],
       "evidenceDepth": [
         "anime=none"
@@ -304,7 +300,7 @@
         "existing_positive_route_prior"
       ],
       "authorityKnown": true,
-      "action": "re-run retained proof + verify upstream/provider state",
+      "action": "A/B against retained proof; restore JS/runtime",
       "brainCheckRequired": true,
       "statusRepairEligible": true,
       "repairEligible": true,
@@ -312,9 +308,9 @@
     },
     {
       "provider": "animesalt",
-      "status": "ROUTE PROVEN",
+      "status": "PROVIDER JS BROKEN",
       "underlyingStatus": "",
-      "color": "🟪",
+      "color": "🟠",
       "declaredLanes": [
         "anime"
       ],
@@ -325,11 +321,11 @@
         "2 live routes / anime"
       ],
       "latestLaneVerdicts": [
-        "anime=no_streams/provider_waf_challenge"
+        "anime=invalid_probe_output"
       ],
-      "dominantIssue": "provider_waf_challenge",
+      "dominantIssue": "invalid_probe_output",
       "searchProgress": [
-        "anime: 8 works tested / 0 retained misses"
+        "anime: 1 works tested / 0 retained misses"
       ],
       "evidenceDepth": [
         "anime=none"
@@ -344,7 +340,7 @@
         "authoritative_route_source"
       ],
       "authorityKnown": true,
-      "action": "replay qualified route fixtures and finish terminal extraction/validation",
+      "action": "repair + retest; BRAIN checks",
       "brainCheckRequired": true,
       "statusRepairEligible": true,
       "repairEligible": true,
@@ -373,14 +369,14 @@
         "1 live routes / anime"
       ],
       "latestLaneVerdicts": [
-        "anime=no_streams/provider_network_http_error"
+        "anime=invalid_probe_output"
       ],
-      "dominantIssue": "provider_network_http_error",
+      "dominantIssue": "invalid_probe_output",
       "searchProgress": [
-        "anime: 8 works tested / 4 retained misses"
+        "anime: 1 works tested / 4 retained misses"
       ],
       "evidenceDepth": [
-        "anime=lookup_only"
+        "anime=none"
       ],
       "harnessTransportClass": "not-applicable",
       "harnessTransportEvidence": [],
@@ -400,9 +396,9 @@
     },
     {
       "provider": "animesultra",
-      "status": "ROUTE PROVEN",
+      "status": "PROVIDER JS BROKEN",
       "underlyingStatus": "",
-      "color": "🟪",
+      "color": "🟠",
       "declaredLanes": [
         "anime"
       ],
@@ -413,11 +409,11 @@
         "1 live routes / anime"
       ],
       "latestLaneVerdicts": [
-        "anime=no_streams/provider_network_exception"
+        "anime=invalid_probe_output"
       ],
-      "dominantIssue": "provider_network_exception",
+      "dominantIssue": "invalid_probe_output",
       "searchProgress": [
-        "anime: 8 works tested / 0 retained misses"
+        "anime: 1 works tested / 0 retained misses"
       ],
       "evidenceDepth": [
         "anime=none"
@@ -432,7 +428,7 @@
         "current_authority_direct"
       ],
       "authorityKnown": true,
-      "action": "replay qualified route fixtures and finish terminal extraction/validation",
+      "action": "repair + retest; BRAIN checks",
       "brainCheckRequired": true,
       "statusRepairEligible": true,
       "repairEligible": true,
@@ -444,9 +440,9 @@
     },
     {
       "provider": "animevost-fr",
-      "status": "ROUTE PROVEN",
+      "status": "PROVIDER JS BROKEN",
       "underlyingStatus": "",
-      "color": "🟪",
+      "color": "🟠",
       "declaredLanes": [
         "anime"
       ],
@@ -457,14 +453,14 @@
         "2 live routes / anime"
       ],
       "latestLaneVerdicts": [
-        "anime=no_streams/provider_network_http_error"
+        "anime=invalid_probe_output"
       ],
-      "dominantIssue": "provider_network_http_error",
+      "dominantIssue": "invalid_probe_output",
       "searchProgress": [
-        "anime: 5 works tested / 38 retained misses"
+        "anime: 1 works tested / 38 retained misses"
       ],
       "evidenceDepth": [
-        "anime=lookup_only"
+        "anime=none"
       ],
       "harnessTransportClass": "not-applicable",
       "harnessTransportEvidence": [],
@@ -476,7 +472,7 @@
         "structured_backend_authority"
       ],
       "authorityKnown": true,
-      "action": "replay qualified route fixtures and finish terminal extraction/validation",
+      "action": "repair + retest; BRAIN checks",
       "brainCheckRequired": true,
       "statusRepairEligible": true,
       "repairEligible": true,
@@ -505,14 +501,14 @@
         "32 live routes / anime"
       ],
       "latestLaneVerdicts": [
-        "anime=no_streams/provider_network_zero_result"
+        "anime=invalid_probe_output"
       ],
-      "dominantIssue": "provider_network_zero_result",
+      "dominantIssue": "invalid_probe_output",
       "searchProgress": [
-        "anime: 4 works tested / 46 retained misses / 2 retained chain hits"
+        "anime: 1 works tested / 46 retained misses / 2 retained chain hits"
       ],
       "evidenceDepth": [
-        "anime=chain_reached"
+        "anime=none"
       ],
       "harnessTransportClass": "not-applicable",
       "harnessTransportEvidence": [],
@@ -532,17 +528,14 @@
     },
     {
       "provider": "castle",
-      "status": "FULL OK",
+      "status": "REGRESSION PROVIDER JS",
       "underlyingStatus": "",
-      "color": "🟢",
+      "color": "🟣",
       "declaredLanes": [
         "movie",
         "tv"
       ],
-      "currentVerifiedLanes": [
-        "movie",
-        "tv"
-      ],
+      "currentVerifiedLanes": [],
       "historicalProof": [
         "movie: Interstellar",
         "tv: Breaking Bad"
@@ -552,17 +545,17 @@
         "4 live routes / movie, tv"
       ],
       "latestLaneVerdicts": [
-        "movie=OK",
-        "tv=OK"
+        "movie=invalid_probe_output",
+        "tv=invalid_probe_output"
       ],
-      "dominantIssue": "none",
+      "dominantIssue": "invalid_probe_output×2",
       "searchProgress": [
         "movie: 1 works tested / 0 retained misses",
         "tv: 1 works tested / 0 retained misses"
       ],
       "evidenceDepth": [
-        "movie=chain_reached",
-        "tv=chain_reached"
+        "movie=none",
+        "tv=none"
       ],
       "harnessTransportClass": "not-applicable",
       "harnessTransportEvidence": [],
@@ -574,27 +567,23 @@
         "structured_backend_authority"
       ],
       "authorityKnown": true,
-      "action": "protect + replay retained proof",
-      "brainCheckRequired": false,
-      "statusRepairEligible": false,
-      "repairEligible": false,
+      "action": "A/B against retained proof; restore JS/runtime",
+      "brainCheckRequired": true,
+      "statusRepairEligible": true,
+      "repairEligible": true,
       "testedThisRun": true
     },
     {
       "provider": "coflix",
-      "status": "FULL OK",
+      "status": "REGRESSION PROVIDER JS",
       "underlyingStatus": "",
-      "color": "🟢",
+      "color": "🟣",
       "declaredLanes": [
         "anime",
         "movie",
         "tv"
       ],
-      "currentVerifiedLanes": [
-        "anime",
-        "movie",
-        "tv"
-      ],
+      "currentVerifiedLanes": [],
       "historicalProof": [
         "anime: Mushoku Tensei: Jobless Reincarnation",
         "movie: Interstellar",
@@ -605,20 +594,20 @@
         "1 live routes / anime, movie, tv"
       ],
       "latestLaneVerdicts": [
-        "anime=OK",
-        "movie=OK",
-        "tv=OK"
+        "anime=invalid_probe_output",
+        "movie=invalid_probe_output",
+        "tv=invalid_probe_output"
       ],
-      "dominantIssue": "none",
+      "dominantIssue": "invalid_probe_output×3",
       "searchProgress": [
         "anime: 1 works tested / 0 retained misses",
         "movie: 1 works tested / 0 retained misses",
         "tv: 1 works tested / 0 retained misses"
       ],
       "evidenceDepth": [
-        "anime=chain_reached",
-        "movie=chain_reached",
-        "tv=chain_reached"
+        "anime=none",
+        "movie=none",
+        "tv=none"
       ],
       "harnessTransportClass": "not-applicable",
       "harnessTransportEvidence": [],
@@ -630,17 +619,17 @@
         "authoritative_route_source"
       ],
       "authorityKnown": true,
-      "action": "protect + replay retained proof",
-      "brainCheckRequired": false,
-      "statusRepairEligible": false,
-      "repairEligible": false,
+      "action": "A/B against retained proof; restore JS/runtime",
+      "brainCheckRequired": true,
+      "statusRepairEligible": true,
+      "repairEligible": true,
       "testedThisRun": true
     },
     {
       "provider": "flemmix",
-      "status": "ROUTE PROVEN",
+      "status": "PROVIDER JS BROKEN",
       "underlyingStatus": "",
-      "color": "🟪",
+      "color": "🟠",
       "declaredLanes": [
         "movie",
         "tv"
@@ -652,13 +641,13 @@
         "1 live routes / movie, tv"
       ],
       "latestLaneVerdicts": [
-        "movie=no_streams/provider_waf_challenge",
-        "tv=no_streams/provider_waf_challenge"
+        "movie=invalid_probe_output",
+        "tv=invalid_probe_output"
       ],
-      "dominantIssue": "provider_waf_challenge×2",
+      "dominantIssue": "invalid_probe_output×2",
       "searchProgress": [
-        "movie: 8 works tested / 0 retained misses",
-        "tv: 8 works tested / 0 retained misses"
+        "movie: 1 works tested / 0 retained misses",
+        "tv: 1 works tested / 0 retained misses"
       ],
       "evidenceDepth": [
         "movie=none",
@@ -674,7 +663,7 @@
         "authoritative_route_source"
       ],
       "authorityKnown": true,
-      "action": "replay qualified route fixtures and finish terminal extraction/validation",
+      "action": "repair + retest; BRAIN checks",
       "brainCheckRequired": true,
       "statusRepairEligible": true,
       "repairEligible": true,
@@ -687,15 +676,13 @@
     },
     {
       "provider": "french-manga",
-      "status": "FULL OK",
+      "status": "CANDIDATE OK",
       "underlyingStatus": "",
-      "color": "🟢",
+      "color": "🟦",
       "declaredLanes": [
         "anime"
       ],
-      "currentVerifiedLanes": [
-        "anime"
-      ],
+      "currentVerifiedLanes": [],
       "historicalProof": [
         "anime: Jujutsu Kaisen"
       ],
@@ -706,14 +693,14 @@
         "1 live routes / anime"
       ],
       "latestLaneVerdicts": [
-        "anime=OK"
+        "anime=invalid_probe_output"
       ],
-      "dominantIssue": "none",
+      "dominantIssue": "invalid_probe_output",
       "searchProgress": [
         "anime: 1 works tested / 0 retained misses"
       ],
       "evidenceDepth": [
-        "anime=lookup_only"
+        "anime=none"
       ],
       "harnessTransportClass": "not-applicable",
       "harnessTransportEvidence": [],
@@ -726,25 +713,22 @@
         "existing_positive_route_prior"
       ],
       "authorityKnown": true,
-      "action": "protect + replay retained proof",
-      "brainCheckRequired": false,
-      "statusRepairEligible": false,
-      "repairEligible": false,
+      "action": "replay candidate proof against current bytes; publish only after current verified media",
+      "brainCheckRequired": true,
+      "statusRepairEligible": true,
+      "repairEligible": true,
       "testedThisRun": true
     },
     {
       "provider": "hindmoviez",
-      "status": "FULL OK",
+      "status": "REGRESSION PROVIDER JS",
       "underlyingStatus": "",
-      "color": "🟢",
+      "color": "🟣",
       "declaredLanes": [
         "movie",
         "tv"
       ],
-      "currentVerifiedLanes": [
-        "movie",
-        "tv"
-      ],
+      "currentVerifiedLanes": [],
       "historicalProof": [
         "movie: The Colony",
         "tv: Breaking Bad"
@@ -754,17 +738,17 @@
         "9 live routes / movie, tv"
       ],
       "latestLaneVerdicts": [
-        "movie=OK",
-        "tv=OK"
+        "movie=invalid_probe_output",
+        "tv=invalid_probe_output"
       ],
-      "dominantIssue": "none",
+      "dominantIssue": "invalid_probe_output×2",
       "searchProgress": [
         "movie: 1 works tested / 1 retained misses",
         "tv: 1 works tested / 0 retained misses"
       ],
       "evidenceDepth": [
-        "movie=lookup_only",
-        "tv=lookup_only"
+        "movie=none",
+        "tv=none"
       ],
       "harnessTransportClass": "not-applicable",
       "harnessTransportEvidence": [],
@@ -776,27 +760,23 @@
         "structured_backend_authority"
       ],
       "authorityKnown": true,
-      "action": "protect + replay retained proof",
-      "brainCheckRequired": false,
-      "statusRepairEligible": false,
-      "repairEligible": false,
+      "action": "A/B against retained proof; restore JS/runtime",
+      "brainCheckRequired": true,
+      "statusRepairEligible": true,
+      "repairEligible": true,
       "testedThisRun": true
     },
     {
       "provider": "kehflix",
-      "status": "FULL OK",
+      "status": "REGRESSION PROVIDER JS",
       "underlyingStatus": "",
-      "color": "🟢",
+      "color": "🟣",
       "declaredLanes": [
         "anime",
         "movie",
         "tv"
       ],
-      "currentVerifiedLanes": [
-        "anime",
-        "movie",
-        "tv"
-      ],
+      "currentVerifiedLanes": [],
       "historicalProof": [
         "anime: Jujutsu Kaisen / My Hero Academia",
         "movie: Mad Max: Fury Road / Interstellar",
@@ -807,20 +787,20 @@
         "6 live routes / anime, movie, tv"
       ],
       "latestLaneVerdicts": [
-        "anime=OK",
-        "movie=OK",
-        "tv=OK"
+        "anime=invalid_probe_output",
+        "movie=invalid_probe_output",
+        "tv=invalid_probe_output"
       ],
-      "dominantIssue": "none",
+      "dominantIssue": "invalid_probe_output×3",
       "searchProgress": [
         "anime: 1 works tested / 0 retained misses / 1 retained chain hit",
-        "movie: 2 works tested / 0 retained misses",
-        "tv: 2 works tested / 0 retained misses"
+        "movie: 1 works tested / 0 retained misses",
+        "tv: 1 works tested / 0 retained misses"
       ],
       "evidenceDepth": [
-        "anime=chain_reached",
-        "movie=chain_reached",
-        "tv=chain_reached"
+        "anime=none",
+        "movie=none",
+        "tv=none"
       ],
       "harnessTransportClass": "not-applicable",
       "harnessTransportEvidence": [],
@@ -832,23 +812,21 @@
         "authoritative_route_source"
       ],
       "authorityKnown": true,
-      "action": "protect + replay retained proof",
-      "brainCheckRequired": false,
-      "statusRepairEligible": false,
-      "repairEligible": false,
+      "action": "A/B against retained proof; restore JS/runtime",
+      "brainCheckRequired": true,
+      "statusRepairEligible": true,
+      "repairEligible": true,
       "testedThisRun": true
     },
     {
       "provider": "kurage",
-      "status": "FULL OK",
+      "status": "REGRESSION PROVIDER JS",
       "underlyingStatus": "",
-      "color": "🟢",
+      "color": "🟣",
       "declaredLanes": [
         "anime"
       ],
-      "currentVerifiedLanes": [
-        "anime"
-      ],
+      "currentVerifiedLanes": [],
       "historicalProof": [
         "anime: Black Clover / Jujutsu Kaisen"
       ],
@@ -857,14 +835,14 @@
         "12 live routes / anime"
       ],
       "latestLaneVerdicts": [
-        "anime=OK"
+        "anime=invalid_probe_output"
       ],
-      "dominantIssue": "none",
+      "dominantIssue": "invalid_probe_output",
       "searchProgress": [
         "anime: 1 works tested / 0 retained misses"
       ],
       "evidenceDepth": [
-        "anime=lookup_only"
+        "anime=none"
       ],
       "harnessTransportClass": "not-applicable",
       "harnessTransportEvidence": [],
@@ -877,17 +855,17 @@
         "existing_positive_route_prior"
       ],
       "authorityKnown": true,
-      "action": "protect + replay retained proof",
-      "brainCheckRequired": false,
-      "statusRepairEligible": false,
-      "repairEligible": false,
+      "action": "A/B against retained proof; restore JS/runtime",
+      "brainCheckRequired": true,
+      "statusRepairEligible": true,
+      "repairEligible": true,
       "testedThisRun": true
     },
     {
       "provider": "mallumv",
-      "status": "CHAIN REACHED",
+      "status": "PROVIDER JS BROKEN",
       "underlyingStatus": "",
-      "color": "🟣",
+      "color": "🟠",
       "declaredLanes": [
         "movie"
       ],
@@ -898,14 +876,14 @@
         "4 live routes / movie"
       ],
       "latestLaneVerdicts": [
-        "movie=no_streams/provider_waf_challenge"
+        "movie=invalid_probe_output"
       ],
-      "dominantIssue": "provider_waf_challenge",
+      "dominantIssue": "invalid_probe_output",
       "searchProgress": [
         "movie: 1 works tested / 42 retained misses / 1 retained chain hit"
       ],
       "evidenceDepth": [
-        "movie=chain_reached"
+        "movie=none"
       ],
       "harnessTransportClass": "not-applicable",
       "harnessTransportEvidence": [],
@@ -918,7 +896,7 @@
         "existing_positive_route_prior"
       ],
       "authorityKnown": true,
-      "action": "finish terminal extractor/validation; do not promote before verified media",
+      "action": "repair + retest; BRAIN checks",
       "brainCheckRequired": true,
       "statusRepairEligible": true,
       "repairEligible": true,
@@ -930,9 +908,9 @@
     },
     {
       "provider": "moviebox",
-      "status": "CHAIN REACHED",
+      "status": "PROVIDER JS BROKEN",
       "underlyingStatus": "",
-      "color": "🟣",
+      "color": "🟠",
       "declaredLanes": [
         "movie",
         "tv"
@@ -944,17 +922,17 @@
         "3 live routes / movie, tv"
       ],
       "latestLaneVerdicts": [
-        "movie=no_streams/provider_network_http_error",
-        "tv=no_streams/provider_network_http_error"
+        "movie=invalid_probe_output",
+        "tv=invalid_probe_output"
       ],
-      "dominantIssue": "provider_network_http_error×2",
+      "dominantIssue": "invalid_probe_output×2",
       "searchProgress": [
-        "movie: 8 works tested / 28 retained misses",
-        "tv: 8 works tested / 32 retained misses"
+        "movie: 1 works tested / 28 retained misses",
+        "tv: 1 works tested / 32 retained misses"
       ],
       "evidenceDepth": [
-        "movie=chain_reached",
-        "tv=chain_reached"
+        "movie=none",
+        "tv=none"
       ],
       "harnessTransportClass": "not-applicable",
       "harnessTransportEvidence": [],
@@ -966,7 +944,7 @@
         "authoritative_route_source"
       ],
       "authorityKnown": true,
-      "action": "finish terminal extractor/validation; do not promote before verified media",
+      "action": "repair + retest; BRAIN checks",
       "brainCheckRequired": true,
       "statusRepairEligible": true,
       "repairEligible": true,
@@ -979,15 +957,13 @@
     },
     {
       "provider": "movieshunt",
-      "status": "FULL OK",
+      "status": "CANDIDATE OK",
       "underlyingStatus": "",
-      "color": "🟢",
+      "color": "🟦",
       "declaredLanes": [
         "movie"
       ],
-      "currentVerifiedLanes": [
-        "movie"
-      ],
+      "currentVerifiedLanes": [],
       "historicalProof": [
         "movie: Sinners"
       ],
@@ -998,14 +974,14 @@
         "3 live routes / movie"
       ],
       "latestLaneVerdicts": [
-        "movie=OK"
+        "movie=invalid_probe_output"
       ],
-      "dominantIssue": "none",
+      "dominantIssue": "invalid_probe_output",
       "searchProgress": [
         "movie: 1 works tested / 14 retained misses"
       ],
       "evidenceDepth": [
-        "movie=lookup_only"
+        "movie=none"
       ],
       "harnessTransportClass": "not-applicable",
       "harnessTransportEvidence": [],
@@ -1017,17 +993,17 @@
         "authoritative_route_source"
       ],
       "authorityKnown": true,
-      "action": "protect + replay retained proof",
-      "brainCheckRequired": false,
-      "statusRepairEligible": false,
-      "repairEligible": false,
+      "action": "replay candidate proof against current bytes; publish only after current verified media",
+      "brainCheckRequired": true,
+      "statusRepairEligible": true,
+      "repairEligible": true,
       "testedThisRun": true
     },
     {
       "provider": "moviesmod",
-      "status": "ROUTE PROVEN",
+      "status": "PROVIDER JS BROKEN",
       "underlyingStatus": "",
-      "color": "🟪",
+      "color": "🟠",
       "declaredLanes": [
         "movie",
         "tv"
@@ -1039,17 +1015,17 @@
         "76 live routes / movie, tv"
       ],
       "latestLaneVerdicts": [
-        "movie=no_streams/provider_waf_challenge",
-        "tv=no_streams/provider_waf_challenge"
+        "movie=invalid_probe_output",
+        "tv=invalid_probe_output"
       ],
-      "dominantIssue": "provider_waf_challenge×2",
+      "dominantIssue": "invalid_probe_output×2",
       "searchProgress": [
-        "movie: 8 works tested / 20 retained misses",
-        "tv: 8 works tested / 18 retained misses"
+        "movie: 1 works tested / 20 retained misses",
+        "tv: 1 works tested / 18 retained misses"
       ],
       "evidenceDepth": [
-        "movie=lookup_only",
-        "tv=lookup_only"
+        "movie=none",
+        "tv=none"
       ],
       "harnessTransportClass": "not-applicable",
       "harnessTransportEvidence": [],
@@ -1061,7 +1037,7 @@
         "authoritative_route_source"
       ],
       "authorityKnown": true,
-      "action": "replay qualified route fixtures and finish terminal extraction/validation",
+      "action": "repair + retest; BRAIN checks",
       "brainCheckRequired": true,
       "statusRepairEligible": true,
       "repairEligible": true,
@@ -1074,15 +1050,13 @@
     },
     {
       "provider": "mugiwarastream",
-      "status": "FULL OK",
+      "status": "REGRESSION PROVIDER JS",
       "underlyingStatus": "",
-      "color": "🟢",
+      "color": "🟣",
       "declaredLanes": [
         "anime"
       ],
-      "currentVerifiedLanes": [
-        "anime"
-      ],
+      "currentVerifiedLanes": [],
       "historicalProof": [
         "anime: Jujutsu Kaisen"
       ],
@@ -1091,14 +1065,14 @@
         "13 live routes / anime"
       ],
       "latestLaneVerdicts": [
-        "anime=OK"
+        "anime=invalid_probe_output"
       ],
-      "dominantIssue": "none",
+      "dominantIssue": "invalid_probe_output",
       "searchProgress": [
         "anime: 1 works tested / 0 retained misses"
       ],
       "evidenceDepth": [
-        "anime=chain_reached"
+        "anime=none"
       ],
       "harnessTransportClass": "not-applicable",
       "harnessTransportEvidence": [],
@@ -1110,23 +1084,21 @@
         "authoritative_route_source"
       ],
       "authorityKnown": true,
-      "action": "protect + replay retained proof",
-      "brainCheckRequired": false,
-      "statusRepairEligible": false,
-      "repairEligible": false,
+      "action": "A/B against retained proof; restore JS/runtime",
+      "brainCheckRequired": true,
+      "statusRepairEligible": true,
+      "repairEligible": true,
       "testedThisRun": true
     },
     {
       "provider": "neko-sama",
-      "status": "FULL OK",
+      "status": "REGRESSION PROVIDER JS",
       "underlyingStatus": "",
-      "color": "🟢",
+      "color": "🟣",
       "declaredLanes": [
         "anime"
       ],
-      "currentVerifiedLanes": [
-        "anime"
-      ],
+      "currentVerifiedLanes": [],
       "historicalProof": [
         "anime: Jujutsu Kaisen"
       ],
@@ -1135,14 +1107,14 @@
         "4 live routes / anime"
       ],
       "latestLaneVerdicts": [
-        "anime=OK"
+        "anime=invalid_probe_output"
       ],
-      "dominantIssue": "none",
+      "dominantIssue": "invalid_probe_output",
       "searchProgress": [
         "anime: 1 works tested / 0 retained misses"
       ],
       "evidenceDepth": [
-        "anime=chain_reached"
+        "anime=none"
       ],
       "harnessTransportClass": "not-applicable",
       "harnessTransportEvidence": [],
@@ -1155,27 +1127,23 @@
         "existing_positive_route_prior"
       ],
       "authorityKnown": true,
-      "action": "protect + replay retained proof",
-      "brainCheckRequired": false,
-      "statusRepairEligible": false,
-      "repairEligible": false,
+      "action": "A/B against retained proof; restore JS/runtime",
+      "brainCheckRequired": true,
+      "statusRepairEligible": true,
+      "repairEligible": true,
       "testedThisRun": true
     },
     {
       "provider": "papadustream",
-      "status": "FULL OK",
+      "status": "REGRESSION PROVIDER JS",
       "underlyingStatus": "",
-      "color": "🟢",
+      "color": "🟣",
       "declaredLanes": [
         "anime",
         "movie",
         "tv"
       ],
-      "currentVerifiedLanes": [
-        "anime",
-        "movie",
-        "tv"
-      ],
+      "currentVerifiedLanes": [],
       "historicalProof": [
         "anime: Jujutsu Kaisen",
         "movie: Mon ninja et moi 3 / Interstellar",
@@ -1186,20 +1154,20 @@
         "9 live routes / anime, movie, tv"
       ],
       "latestLaneVerdicts": [
-        "anime=OK",
-        "movie=OK",
-        "tv=OK"
+        "anime=invalid_probe_output",
+        "movie=invalid_probe_output",
+        "tv=invalid_probe_output"
       ],
-      "dominantIssue": "none",
+      "dominantIssue": "invalid_probe_output×3",
       "searchProgress": [
         "anime: 1 works tested / 0 retained misses",
         "movie: 1 works tested / 0 retained misses",
         "tv: 1 works tested / 0 retained misses"
       ],
       "evidenceDepth": [
-        "anime=lookup_only",
-        "movie=chain_reached",
-        "tv=lookup_only"
+        "anime=none",
+        "movie=none",
+        "tv=none"
       ],
       "harnessTransportClass": "not-applicable",
       "harnessTransportEvidence": [],
@@ -1211,10 +1179,10 @@
         "authoritative_route_source"
       ],
       "authorityKnown": true,
-      "action": "protect + replay retained proof",
-      "brainCheckRequired": false,
-      "statusRepairEligible": false,
-      "repairEligible": false,
+      "action": "A/B against retained proof; restore JS/runtime",
+      "brainCheckRequired": true,
+      "statusRepairEligible": true,
+      "repairEligible": true,
       "testedThisRun": true
     },
     {
@@ -1237,17 +1205,17 @@
         "2 live routes / movie, tv"
       ],
       "latestLaneVerdicts": [
-        "movie=no_streams/provider_network_zero_result",
-        "tv=no_streams/provider_network_zero_result"
+        "movie=invalid_probe_output",
+        "tv=invalid_probe_output"
       ],
-      "dominantIssue": "provider_network_zero_result×2",
+      "dominantIssue": "invalid_probe_output×2",
       "searchProgress": [
-        "movie: 8 works tested / 0 retained misses / 8 retained chain hits",
-        "tv: 8 works tested / 1 retained misses / 8 retained chain hits"
+        "movie: 1 works tested / 0 retained misses / 8 retained chain hits",
+        "tv: 1 works tested / 1 retained misses / 8 retained chain hits"
       ],
       "evidenceDepth": [
-        "movie=chain_reached",
-        "tv=chain_reached"
+        "movie=none",
+        "tv=none"
       ],
       "harnessTransportClass": "not-applicable",
       "harnessTransportEvidence": [],
@@ -1267,17 +1235,14 @@
     },
     {
       "provider": "playimdb",
-      "status": "FULL OK",
+      "status": "REGRESSION PROVIDER JS",
       "underlyingStatus": "",
-      "color": "🟢",
+      "color": "🟣",
       "declaredLanes": [
         "movie",
         "tv"
       ],
-      "currentVerifiedLanes": [
-        "movie",
-        "tv"
-      ],
+      "currentVerifiedLanes": [],
       "historicalProof": [
         "movie: Interstellar",
         "tv: Breaking Bad"
@@ -1287,17 +1252,17 @@
         "12 live routes / movie, tv"
       ],
       "latestLaneVerdicts": [
-        "movie=OK",
-        "tv=OK"
+        "movie=invalid_probe_output",
+        "tv=invalid_probe_output"
       ],
-      "dominantIssue": "none",
+      "dominantIssue": "invalid_probe_output×2",
       "searchProgress": [
         "movie: 1 works tested / 0 retained misses",
         "tv: 1 works tested / 0 retained misses"
       ],
       "evidenceDepth": [
-        "movie=lookup_only",
-        "tv=lookup_only"
+        "movie=none",
+        "tv=none"
       ],
       "harnessTransportClass": "not-applicable",
       "harnessTransportEvidence": [],
@@ -1309,25 +1274,22 @@
         "structured_backend_authority"
       ],
       "authorityKnown": true,
-      "action": "protect + replay retained proof",
-      "brainCheckRequired": false,
-      "statusRepairEligible": false,
-      "repairEligible": false,
+      "action": "A/B against retained proof; restore JS/runtime",
+      "brainCheckRequired": true,
+      "statusRepairEligible": true,
+      "repairEligible": true,
       "testedThisRun": true
     },
     {
       "provider": "purstream",
-      "status": "FULL OK",
+      "status": "REGRESSION PROVIDER JS",
       "underlyingStatus": "",
-      "color": "🟢",
+      "color": "🟣",
       "declaredLanes": [
         "movie",
         "tv"
       ],
-      "currentVerifiedLanes": [
-        "movie",
-        "tv"
-      ],
+      "currentVerifiedLanes": [],
       "historicalProof": [
         "movie: Interstellar",
         "tv: Breaking Bad"
@@ -1337,17 +1299,17 @@
         "3 live routes / movie, tv"
       ],
       "latestLaneVerdicts": [
-        "movie=OK",
-        "tv=OK"
+        "movie=invalid_probe_output",
+        "tv=invalid_probe_output"
       ],
-      "dominantIssue": "none",
+      "dominantIssue": "invalid_probe_output×2",
       "searchProgress": [
         "movie: 1 works tested / 0 retained misses",
         "tv: 1 works tested / 0 retained misses"
       ],
       "evidenceDepth": [
-        "movie=chain_reached",
-        "tv=chain_reached"
+        "movie=none",
+        "tv=none"
       ],
       "harnessTransportClass": "not-applicable",
       "harnessTransportEvidence": [],
@@ -1359,23 +1321,21 @@
         "structured_backend_authority"
       ],
       "authorityKnown": true,
-      "action": "protect + replay retained proof",
-      "brainCheckRequired": false,
-      "statusRepairEligible": false,
-      "repairEligible": false,
+      "action": "A/B against retained proof; restore JS/runtime",
+      "brainCheckRequired": true,
+      "statusRepairEligible": true,
+      "repairEligible": true,
       "testedThisRun": true
     },
     {
       "provider": "sekai",
-      "status": "FULL OK",
+      "status": "REGRESSION PROVIDER JS",
       "underlyingStatus": "",
-      "color": "🟢",
+      "color": "🟣",
       "declaredLanes": [
         "anime"
       ],
-      "currentVerifiedLanes": [
-        "anime"
-      ],
+      "currentVerifiedLanes": [],
       "historicalProof": [
         "anime: Jujutsu Kaisen"
       ],
@@ -1384,14 +1344,14 @@
         "1 live routes / anime"
       ],
       "latestLaneVerdicts": [
-        "anime=OK"
+        "anime=invalid_probe_output"
       ],
-      "dominantIssue": "none",
+      "dominantIssue": "invalid_probe_output",
       "searchProgress": [
         "anime: 1 works tested / 4 retained misses"
       ],
       "evidenceDepth": [
-        "anime=lookup_only"
+        "anime=none"
       ],
       "harnessTransportClass": "not-applicable",
       "harnessTransportEvidence": [],
@@ -1404,27 +1364,23 @@
         "existing_positive_route_prior"
       ],
       "authorityKnown": true,
-      "action": "protect + replay retained proof",
-      "brainCheckRequired": false,
-      "statusRepairEligible": false,
-      "repairEligible": false,
+      "action": "A/B against retained proof; restore JS/runtime",
+      "brainCheckRequired": true,
+      "statusRepairEligible": true,
+      "repairEligible": true,
       "testedThisRun": true
     },
     {
       "provider": "streamzo",
-      "status": "FULL OK",
+      "status": "REGRESSION PROVIDER JS",
       "underlyingStatus": "",
-      "color": "🟢",
+      "color": "🟣",
       "declaredLanes": [
         "anime",
         "movie",
         "tv"
       ],
-      "currentVerifiedLanes": [
-        "anime",
-        "movie",
-        "tv"
-      ],
+      "currentVerifiedLanes": [],
       "historicalProof": [
         "anime: Mushoku Tensei: Jobless Reincarnation",
         "movie: Mon ninja et moi 3 / Interstellar",
@@ -1435,20 +1391,20 @@
         "10 live routes / anime, movie, tv"
       ],
       "latestLaneVerdicts": [
-        "anime=OK",
-        "movie=OK",
-        "tv=OK"
+        "anime=invalid_probe_output",
+        "movie=invalid_probe_output",
+        "tv=invalid_probe_output"
       ],
-      "dominantIssue": "none",
+      "dominantIssue": "invalid_probe_output×3",
       "searchProgress": [
         "anime: 1 works tested / 1 retained misses",
         "movie: 1 works tested / 0 retained misses / 1 retained chain hit",
         "tv: 1 works tested / 1 retained misses"
       ],
       "evidenceDepth": [
-        "anime=chain_reached",
-        "movie=chain_reached",
-        "tv=chain_reached"
+        "anime=none",
+        "movie=none",
+        "tv=none"
       ],
       "harnessTransportClass": "not-applicable",
       "harnessTransportEvidence": [],
@@ -1461,17 +1417,17 @@
         "existing_positive_route_prior"
       ],
       "authorityKnown": true,
-      "action": "protect + replay retained proof",
-      "brainCheckRequired": false,
-      "statusRepairEligible": false,
-      "repairEligible": false,
+      "action": "A/B against retained proof; restore JS/runtime",
+      "brainCheckRequired": true,
+      "statusRepairEligible": true,
+      "repairEligible": true,
       "testedThisRun": true
     },
     {
       "provider": "uhdmovies",
-      "status": "REGRESSION PROVIDER",
+      "status": "REGRESSION PROVIDER JS",
       "underlyingStatus": "",
-      "color": "🔴",
+      "color": "🟣",
       "declaredLanes": [
         "movie"
       ],
@@ -1484,14 +1440,14 @@
         "69 live routes / movie, tv"
       ],
       "latestLaneVerdicts": [
-        "movie=no_streams/provider_network_zero_result"
+        "movie=invalid_probe_output"
       ],
-      "dominantIssue": "provider_network_zero_result",
+      "dominantIssue": "invalid_probe_output",
       "searchProgress": [
-        "movie: 8 works tested / 40 retained misses"
+        "movie: 1 works tested / 40 retained misses"
       ],
       "evidenceDepth": [
-        "movie=lookup_only"
+        "movie=none"
       ],
       "harnessTransportClass": "not-applicable",
       "harnessTransportEvidence": [],
@@ -1503,7 +1459,7 @@
         "authoritative_route_source"
       ],
       "authorityKnown": true,
-      "action": "re-run retained proof + verify upstream/provider state",
+      "action": "A/B against retained proof; restore JS/runtime",
       "brainCheckRequired": true,
       "statusRepairEligible": true,
       "repairEligible": true,
@@ -1511,9 +1467,9 @@
     },
     {
       "provider": "videasy",
-      "status": "REGRESSION PROVIDER",
+      "status": "REGRESSION PROVIDER JS",
       "underlyingStatus": "",
-      "color": "🔴",
+      "color": "🟣",
       "declaredLanes": [
         "movie",
         "tv"
@@ -1528,13 +1484,13 @@
         "11 live routes / movie, tv"
       ],
       "latestLaneVerdicts": [
-        "movie=no_streams/provider_network_http_error",
-        "tv=no_streams/provider_network_http_error"
+        "movie=invalid_probe_output",
+        "tv=invalid_probe_output"
       ],
-      "dominantIssue": "provider_network_http_error×2",
+      "dominantIssue": "invalid_probe_output×2",
       "searchProgress": [
-        "movie: 8 works tested / 0 retained misses",
-        "tv: 8 works tested / 0 retained misses"
+        "movie: 1 works tested / 0 retained misses",
+        "tv: 1 works tested / 0 retained misses"
       ],
       "evidenceDepth": [
         "movie=none",
@@ -1550,7 +1506,7 @@
         "structured_backend_authority"
       ],
       "authorityKnown": true,
-      "action": "re-run retained proof + verify upstream/provider state",
+      "action": "A/B against retained proof; restore JS/runtime",
       "brainCheckRequired": true,
       "statusRepairEligible": true,
       "repairEligible": true,
@@ -1558,9 +1514,9 @@
     },
     {
       "provider": "vidfast",
-      "status": "ROUTE PROVEN",
+      "status": "PROVIDER JS BROKEN",
       "underlyingStatus": "",
-      "color": "🟪",
+      "color": "🟠",
       "declaredLanes": [
         "movie",
         "tv"
@@ -1572,13 +1528,13 @@
         "3 live routes / movie, tv"
       ],
       "latestLaneVerdicts": [
-        "movie=no_streams/provider_network_http_error",
-        "tv=no_streams/provider_network_http_error"
+        "movie=invalid_probe_output",
+        "tv=invalid_probe_output"
       ],
-      "dominantIssue": "provider_network_http_error×2",
+      "dominantIssue": "invalid_probe_output×2",
       "searchProgress": [
-        "movie: 8 works tested / 27 retained misses",
-        "tv: 8 works tested / 26 retained misses"
+        "movie: 1 works tested / 27 retained misses",
+        "tv: 1 works tested / 26 retained misses"
       ],
       "evidenceDepth": [
         "movie=none",
@@ -1594,7 +1550,7 @@
         "authoritative_route_source"
       ],
       "authorityKnown": true,
-      "action": "replay qualified route fixtures and finish terminal extraction/validation",
+      "action": "repair + retest; BRAIN checks",
       "brainCheckRequired": true,
       "statusRepairEligible": true,
       "repairEligible": true,
@@ -1607,16 +1563,14 @@
     },
     {
       "provider": "vidlove",
-      "status": "PARTIAL OK",
+      "status": "REGRESSION PROVIDER JS",
       "underlyingStatus": "",
-      "color": "🟡",
+      "color": "🟣",
       "declaredLanes": [
         "movie",
         "tv"
       ],
-      "currentVerifiedLanes": [
-        "tv"
-      ],
+      "currentVerifiedLanes": [],
       "historicalProof": [
         "movie: Mon ninja et moi 3",
         "tv: The Boys / Breaking Bad"
@@ -1626,17 +1580,17 @@
         "3 live routes / movie, tv"
       ],
       "latestLaneVerdicts": [
-        "movie=no_streams/provider_network_exception",
-        "tv=OK"
+        "movie=invalid_probe_output",
+        "tv=invalid_probe_output"
       ],
-      "dominantIssue": "provider_network_exception",
+      "dominantIssue": "invalid_probe_output×2",
       "searchProgress": [
-        "movie: 8 works tested / 2 retained misses",
+        "movie: 1 works tested / 2 retained misses",
         "tv: 1 works tested / 2 retained misses"
       ],
       "evidenceDepth": [
-        "movie=lookup_only",
-        "tv=lookup_only"
+        "movie=none",
+        "tv=none"
       ],
       "harnessTransportClass": "not-applicable",
       "harnessTransportEvidence": [],
@@ -1648,24 +1602,22 @@
         "structured_backend_authority"
       ],
       "authorityKnown": true,
-      "action": "protect green lanes; BRAIN checks missing lanes",
-      "brainCheckRequired": false,
-      "statusRepairEligible": false,
-      "repairEligible": false,
+      "action": "A/B against retained proof; restore JS/runtime",
+      "brainCheckRequired": true,
+      "statusRepairEligible": true,
+      "repairEligible": true,
       "testedThisRun": true
     },
     {
       "provider": "vidrock",
-      "status": "PARTIAL OK",
+      "status": "REGRESSION PROVIDER JS",
       "underlyingStatus": "",
-      "color": "🟡",
+      "color": "🟣",
       "declaredLanes": [
         "movie",
         "tv"
       ],
-      "currentVerifiedLanes": [
-        "tv"
-      ],
+      "currentVerifiedLanes": [],
       "historicalProof": [
         "movie: Interstellar",
         "tv: Vikings / Breaking Bad"
@@ -1675,17 +1627,17 @@
         "11 live routes / movie, tv"
       ],
       "latestLaneVerdicts": [
-        "movie=no_streams/provider_waf_challenge",
-        "tv=OK"
+        "movie=invalid_probe_output",
+        "tv=invalid_probe_output"
       ],
-      "dominantIssue": "provider_waf_challenge",
+      "dominantIssue": "invalid_probe_output×2",
       "searchProgress": [
-        "movie: 8 works tested / 0 retained misses / 1 retained chain hit",
-        "tv: 5 works tested / 0 retained misses / 1 retained chain hit"
+        "movie: 1 works tested / 0 retained misses / 1 retained chain hit",
+        "tv: 1 works tested / 0 retained misses / 1 retained chain hit"
       ],
       "evidenceDepth": [
-        "movie=chain_reached",
-        "tv=chain_reached"
+        "movie=none",
+        "tv=none"
       ],
       "harnessTransportClass": "not-applicable",
       "harnessTransportEvidence": [],
@@ -1697,23 +1649,21 @@
         "authoritative_route_source"
       ],
       "authorityKnown": true,
-      "action": "protect green lanes; BRAIN checks missing lanes",
-      "brainCheckRequired": false,
-      "statusRepairEligible": false,
-      "repairEligible": false,
+      "action": "A/B against retained proof; restore JS/runtime",
+      "brainCheckRequired": true,
+      "statusRepairEligible": true,
+      "repairEligible": true,
       "testedThisRun": true
     },
     {
       "provider": "voiranime",
-      "status": "FULL OK",
+      "status": "REGRESSION PROVIDER JS",
       "underlyingStatus": "",
-      "color": "🟢",
+      "color": "🟣",
       "declaredLanes": [
         "anime"
       ],
-      "currentVerifiedLanes": [
-        "anime"
-      ],
+      "currentVerifiedLanes": [],
       "historicalProof": [
         "anime: Jujutsu Kaisen"
       ],
@@ -1722,14 +1672,14 @@
         "12 live routes / anime"
       ],
       "latestLaneVerdicts": [
-        "anime=OK"
+        "anime=invalid_probe_output"
       ],
-      "dominantIssue": "none",
+      "dominantIssue": "invalid_probe_output",
       "searchProgress": [
         "anime: 1 works tested / 0 retained misses"
       ],
       "evidenceDepth": [
-        "anime=chain_reached"
+        "anime=none"
       ],
       "harnessTransportClass": "not-applicable",
       "harnessTransportEvidence": [],
@@ -1741,23 +1691,21 @@
         "authoritative_route_source"
       ],
       "authorityKnown": true,
-      "action": "protect + replay retained proof",
-      "brainCheckRequired": false,
-      "statusRepairEligible": false,
-      "repairEligible": false,
+      "action": "A/B against retained proof; restore JS/runtime",
+      "brainCheckRequired": true,
+      "statusRepairEligible": true,
+      "repairEligible": true,
       "testedThisRun": true
     },
     {
       "provider": "voiranime-homes",
-      "status": "FULL OK",
+      "status": "REGRESSION PROVIDER JS",
       "underlyingStatus": "",
-      "color": "🟢",
+      "color": "🟣",
       "declaredLanes": [
         "anime"
       ],
-      "currentVerifiedLanes": [
-        "anime"
-      ],
+      "currentVerifiedLanes": [],
       "historicalProof": [
         "anime: Hell Mode: The Hardcore Gamer Dominates in Another World with Garbage Balancing / Jujutsu Kaisen"
       ],
@@ -1766,14 +1714,14 @@
         "1 live routes / anime"
       ],
       "latestLaneVerdicts": [
-        "anime=OK"
+        "anime=invalid_probe_output"
       ],
-      "dominantIssue": "none",
+      "dominantIssue": "invalid_probe_output",
       "searchProgress": [
         "anime: 1 works tested / 0 retained misses"
       ],
       "evidenceDepth": [
-        "anime=lookup_only"
+        "anime=none"
       ],
       "harnessTransportClass": "not-applicable",
       "harnessTransportEvidence": [],
@@ -1786,23 +1734,21 @@
         "existing_positive_route_prior"
       ],
       "authorityKnown": true,
-      "action": "protect + replay retained proof",
-      "brainCheckRequired": false,
-      "statusRepairEligible": false,
-      "repairEligible": false,
+      "action": "A/B against retained proof; restore JS/runtime",
+      "brainCheckRequired": true,
+      "statusRepairEligible": true,
+      "repairEligible": true,
       "testedThisRun": true
     },
     {
       "provider": "voiranime-rip",
-      "status": "FULL OK",
+      "status": "REGRESSION PROVIDER JS",
       "underlyingStatus": "",
-      "color": "🟢",
+      "color": "🟣",
       "declaredLanes": [
         "anime"
       ],
-      "currentVerifiedLanes": [
-        "anime"
-      ],
+      "currentVerifiedLanes": [],
       "historicalProof": [
         "anime: Naruto"
       ],
@@ -1811,14 +1757,14 @@
         "1 live routes / anime"
       ],
       "latestLaneVerdicts": [
-        "anime=OK"
+        "anime=invalid_probe_output"
       ],
-      "dominantIssue": "none",
+      "dominantIssue": "invalid_probe_output",
       "searchProgress": [
         "anime: 1 works tested / 21 retained misses"
       ],
       "evidenceDepth": [
-        "anime=lookup_only"
+        "anime=none"
       ],
       "harnessTransportClass": "not-applicable",
       "harnessTransportEvidence": [],
@@ -1831,10 +1777,10 @@
         "existing_positive_route_prior"
       ],
       "authorityKnown": true,
-      "action": "protect + replay retained proof",
-      "brainCheckRequired": false,
-      "statusRepairEligible": false,
-      "repairEligible": false,
+      "action": "A/B against retained proof; restore JS/runtime",
+      "brainCheckRequired": true,
+      "statusRepairEligible": true,
+      "repairEligible": true,
       "testedThisRun": true
     },
     {
@@ -1854,11 +1800,11 @@
         "1 live routes / anime"
       ],
       "latestLaneVerdicts": [
-        "anime=no_streams/provider_waf_challenge"
+        "anime=invalid_probe_output"
       ],
-      "dominantIssue": "provider_waf_challenge",
+      "dominantIssue": "invalid_probe_output",
       "searchProgress": [
-        "anime: 8 works tested / 0 retained misses"
+        "anime: 1 works tested / 0 retained misses"
       ],
       "evidenceDepth": [
         "anime=none"
@@ -1889,17 +1835,14 @@
     },
     {
       "provider": "wookafr",
-      "status": "FULL OK",
+      "status": "CANDIDATE OK",
       "underlyingStatus": "",
-      "color": "🟢",
+      "color": "🟦",
       "declaredLanes": [
         "movie",
         "tv"
       ],
-      "currentVerifiedLanes": [
-        "movie",
-        "tv"
-      ],
+      "currentVerifiedLanes": [],
       "historicalProof": [
         "movie: Avengers: Endgame",
         "tv: Breaking Bad"
@@ -1913,17 +1856,17 @@
         "22 live routes / movie, tv"
       ],
       "latestLaneVerdicts": [
-        "movie=OK",
-        "tv=OK"
+        "movie=invalid_probe_output",
+        "tv=invalid_probe_output"
       ],
-      "dominantIssue": "none",
+      "dominantIssue": "invalid_probe_output×2",
       "searchProgress": [
         "movie: 1 works tested / 1 retained misses / 1 retained chain hit",
         "tv: 1 works tested / 0 retained misses"
       ],
       "evidenceDepth": [
-        "movie=chain_reached",
-        "tv=chain_reached"
+        "movie=none",
+        "tv=none"
       ],
       "harnessTransportClass": "not-applicable",
       "harnessTransportEvidence": [],
@@ -1935,17 +1878,17 @@
         "authoritative_route_source"
       ],
       "authorityKnown": true,
-      "action": "protect + replay retained proof",
-      "brainCheckRequired": false,
-      "statusRepairEligible": false,
-      "repairEligible": false,
+      "action": "replay candidate proof against current bytes; publish only after current verified media",
+      "brainCheckRequired": true,
+      "statusRepairEligible": true,
+      "repairEligible": true,
       "testedThisRun": true
     },
     {
       "provider": "yflix",
-      "status": "ROUTE PROVEN",
+      "status": "PROVIDER JS BROKEN",
       "underlyingStatus": "",
-      "color": "🟪",
+      "color": "🟠",
       "declaredLanes": [
         "movie",
         "tv"
@@ -1957,17 +1900,17 @@
         "1 live routes / movie, tv"
       ],
       "latestLaneVerdicts": [
-        "movie=no_streams/provider_network_exception",
-        "tv=no_streams/provider_network_exception"
+        "movie=invalid_probe_output",
+        "tv=invalid_probe_output"
       ],
-      "dominantIssue": "provider_network_exception×2",
+      "dominantIssue": "invalid_probe_output×2",
       "searchProgress": [
         "movie: 1 works tested / 43 retained misses",
         "tv: 1 works tested / 42 retained misses"
       ],
       "evidenceDepth": [
-        "movie=lookup_only",
-        "tv=lookup_only"
+        "movie=none",
+        "tv=none"
       ],
       "harnessTransportClass": "not-applicable",
       "harnessTransportEvidence": [],
@@ -1979,7 +1922,7 @@
         "structured_backend_authority"
       ],
       "authorityKnown": true,
-      "action": "replay qualified route fixtures and finish terminal extraction/validation",
+      "action": "repair + retest; BRAIN checks",
       "brainCheckRequired": true,
       "statusRepairEligible": true,
       "repairEligible": true,
@@ -2159,19 +2102,18 @@
     }
   ],
   "counts": {
-    "CANDIDATE OK": 3,
-    "CHAIN REACHED": 3,
+    "CANDIDATE OK": 6,
     "DISABLED": 4,
-    "FULL OK": 21,
-    "NO PROOF": 1,
-    "PARTIAL OK": 2,
-    "REGRESSION PROVIDER": 3,
-    "ROUTE PROVEN": 9
+    "FULL OK": 1,
+    "PROVIDER JS BROKEN": 12,
+    "REGRESSION PROVIDER JS": 23
   },
   "symptomaticProviders": [
     "4khdhub",
     "allanime",
     "allwish",
+    "anikototv",
+    "anime-sama",
     "anime-ultime",
     "animekai",
     "animesalt",
@@ -2179,20 +2121,42 @@
     "animesultra",
     "animevost-fr",
     "animevostfr",
+    "castle",
+    "coflix",
     "flemmix",
+    "french-manga",
+    "hindmoviez",
+    "kehflix",
+    "kurage",
     "mallumv",
     "moviebox",
+    "movieshunt",
     "moviesmod",
+    "mugiwarastream",
+    "neko-sama",
+    "papadustream",
     "persianstremio",
+    "playimdb",
+    "purstream",
+    "sekai",
+    "streamzo",
     "uhdmovies",
     "videasy",
     "vidfast",
+    "vidlove",
+    "vidrock",
+    "voiranime",
+    "voiranime-homes",
+    "voiranime-rip",
+    "wookafr",
     "yflix"
   ],
   "brainQueue": [
     "4khdhub",
     "allanime",
     "allwish",
+    "anikototv",
+    "anime-sama",
     "anime-ultime",
     "animekai",
     "animesalt",
@@ -2200,20 +2164,42 @@
     "animesultra",
     "animevost-fr",
     "animevostfr",
+    "castle",
+    "coflix",
     "flemmix",
+    "french-manga",
+    "hindmoviez",
+    "kehflix",
+    "kurage",
     "mallumv",
     "moviebox",
+    "movieshunt",
     "moviesmod",
+    "mugiwarastream",
+    "neko-sama",
+    "papadustream",
     "persianstremio",
+    "playimdb",
+    "purstream",
+    "sekai",
+    "streamzo",
     "uhdmovies",
     "videasy",
     "vidfast",
+    "vidlove",
+    "vidrock",
+    "voiranime",
+    "voiranime-homes",
+    "voiranime-rip",
+    "wookafr",
     "yflix"
   ],
   "repairQueue": [
     "4khdhub",
     "allanime",
     "allwish",
+    "anikototv",
+    "anime-sama",
     "anime-ultime",
     "animekai",
     "animesalt",
@@ -2221,14 +2207,34 @@
     "animesultra",
     "animevost-fr",
     "animevostfr",
+    "castle",
+    "coflix",
     "flemmix",
+    "french-manga",
+    "hindmoviez",
+    "kehflix",
+    "kurage",
     "mallumv",
     "moviebox",
+    "movieshunt",
     "moviesmod",
+    "mugiwarastream",
+    "neko-sama",
+    "papadustream",
     "persianstremio",
+    "playimdb",
+    "purstream",
+    "sekai",
+    "streamzo",
     "uhdmovies",
     "videasy",
     "vidfast",
+    "vidlove",
+    "vidrock",
+    "voiranime",
+    "voiranime-homes",
+    "voiranime-rip",
+    "wookafr",
     "yflix"
   ],
   "authorityBlockedQueue": [],
@@ -2240,8 +2246,8 @@
   "harnessQueue": [],
   "targetedTransportBlockedQueue": [],
   "clientTransportGapQueue": [],
-  "harnessEvidenceRunId": "36939639436-sharded-waf",
-  "harnessEvidenceSha": "2029449709c56625d5cf266b2cb417633f9849b0",
+  "harnessEvidenceRunId": "36947484182-sharded-waf",
+  "harnessEvidenceSha": "e27620ca344b0de1f3b9aa7ca4633f20a770c635",
   "authorityRefreshedProviders": [],
   "harnessTransportUpdatedProviders": [],
   "networkDifferentialUpdatedProviders": [],
@@ -2581,15 +2587,7 @@
     "lastAttempt": {
       "available": false,
       "providerCount": 0,
-      "refreshedProviders": [
-        "allwish",
-        "animesalt",
-        "flemmix",
-        "mallumv",
-        "moviesmod",
-        "vidrock",
-        "vostfree"
-      ]
+      "refreshedProviders": []
     }
   }
 }
