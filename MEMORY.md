@@ -1,3 +1,11 @@
+## 2026-10-02 — FORCE selection now includes Brain static variant debt
+
+- Dynamic fan-out cannot detect every completeness failure. A runtime may truncate before later qualities/servers are ever requested or announced; HindMoviez's historical 480p-only symptom is the representative example.
+- Canonical Repair V6 now pins current NiakVIO-Brain-LLM main at run time and executes its existing generic `audit_registered_runtime_variant_coverage()` against current registered provider runtime Lego. The resulting artifact is bounded, public-code-derived and `proofAuthority=false`.
+- Only Brain rows classified `risk=high` / `highRiskProviders` may reopen a provider from this static source, and only in explicit `force` mode. Routine Repair does not mutate a nominally green provider from static suspicion alone.
+- V6 FORCE selection is therefore generic: durable census repairQueue + current dynamic fan-out debt + current Brain high-risk static runtime debt. Static selection still grants no publication authority; candidates must produce current-byte playback/identity/completeness gain and pass non-regression.
+- This covers caps and first-success patterns in current runtimes without hard-coding HindMoviez, CoFlix, StreamZo, PapaDuStream, MoviesMod or UHDMovies into Repair selection.
+
 ## 2026-10-02 — All-provider fan-out authority can no longer be erased by targeted census
 
 - Root cause of the missing CoFlix/Papa/PersianStremio dynamic debt after Repair was persistence semantics, not provider recovery: workflow-run/unresolved sharded census replaced `automation/provider-census-sharded-latest.json` with a 19-provider symptomatic subset.

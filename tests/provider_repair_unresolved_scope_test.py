@@ -7,7 +7,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 
-from run_provider_repair_pipeline_v6 import dynamic_variant_gap_providers, unresolved_target_scope
+from run_provider_repair_pipeline_v6 import dynamic_variant_gap_providers, static_variant_gap_providers, unresolved_target_scope
 
 active = ["green-a", "repair-b", "waf-c", "route-d", "partial-e"]
 census = {
@@ -55,6 +55,19 @@ dynamic = dynamic_variant_gap_providers({
 })
 assert dynamic == {"green-a"}, dynamic
 
+static = static_variant_gap_providers({
+    "schemaVersion": 1,
+    "role": "static-runtime-variant-coverage-debt",
+    "proofAuthority": False,
+    "highRiskProviders": ["partial-e", "green-a"],
+})
+assert static == {"partial-e", "green-a"}, static
+assert static_variant_gap_providers({
+    "role": "static-runtime-variant-coverage-debt",
+    "proofAuthority": True,
+    "highRiskProviders": ["green-a"],
+}) == set()
+
 targets, excluded = unresolved_target_scope(
     active,
     set(),
@@ -72,6 +85,15 @@ targets, excluded = unresolved_target_scope(
     additional_symptoms=dynamic,
 )
 assert targets == ["green-a", "repair-b", "route-d"], (targets, excluded)
+
+targets, excluded = unresolved_target_scope(
+    active,
+    set(),
+    {"partial-e"},
+    census=census,
+    additional_symptoms=dynamic | static,
+)
+assert targets == ["partial-e"], (targets, excluded)
 
 # Historical provider-wide skip is only an optimization. A current repairQueue
 # entry reopens the provider and must outrank stale/exact-byte skip memory.

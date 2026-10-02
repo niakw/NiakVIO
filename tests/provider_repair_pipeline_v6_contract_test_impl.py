@@ -32,6 +32,9 @@ assert 'Persist Repair census state' in workflow
 assert 'PROVIDER_CENSUS_STATUS.md' in workflow
 assert 'automation/provider-census-status.json' in workflow
 assert 'targetProviders' in workflow
+assert 'NIAKVIO_BRAIN_STATIC_VARIANT_DEBT' in workflow
+assert 'audit_registered_runtime_variant_coverage' in workflow
+assert 'Resolve exact current Brain LLM static coverage auditor' in workflow
 assert 'CANONICAL_REPAIR_ARGS' in workflow
 assert 'provider-repair-portfolio-baseline.json' in workflow
 assert 'provider-repair-portfolio-candidate.json' in workflow
@@ -51,6 +54,8 @@ for marker in (
     'def unresolved_target_scope(',
     'provider-census-status.json:repairQueue',
     'provider-census-sharded-latest.json:dynamic-variant-debt',
+    'Brain-main:static-runtime-variant-coverage-debt(FORCE-only)',
+    'static_variant_gap_providers',
     'dynamic_variant_gap_providers',
     'additional_symptoms=dynamic_variant_targets',
     'census=census',
@@ -65,6 +70,7 @@ for marker in (
 ):
     assert marker in pipeline, marker
 assert 'for provider in targets:' in pipeline
+assert 'static_variant_targets = static_variant_gap_providers() if args.mode == "force" else set()' in pipeline
 assert 'cmd.extend(["--provider", provider])' in pipeline
 
 for required in (

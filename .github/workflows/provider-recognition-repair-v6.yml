@@ -90,6 +90,50 @@ jobs:
         with:
           node-version: '24'
           package-manager-cache: false
+
+      - name: Resolve exact current Brain LLM static coverage auditor
+        id: brain_static_pin
+        shell: bash
+        run: |
+          set -euo pipefail
+          sha="$(git ls-remote https://github.com/niakw/NiakVIO-Brain-LLM.git refs/heads/main | awk 'NR==1{print $1}')"
+          test -n "$sha"
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+          echo "FIELD_BRAIN_STATIC_COVERAGE_PIN sha=$sha"
+
+      - name: Checkout pinned Brain LLM static coverage auditor
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          repository: niakw/NiakVIO-Brain-LLM
+          ref: ${{ steps.brain_static_pin.outputs.sha }}
+          path: .brain-llm-static
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Materialize Brain static runtime variant debt
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install -e .brain-llm-static
+          static_debt="$RUNNER_TEMP/brain-static-runtime-variant-debt.json"
+          python - "$static_debt" <<'PY'
+          import json,sys
+          from pathlib import Path
+          from niakvio_brain_llm.provider_context import audit_registered_runtime_variant_coverage
+          out=Path(sys.argv[1])
+          data=audit_registered_runtime_variant_coverage(Path.cwd())
+          if data.get("role")!="static-runtime-variant-coverage-debt" or data.get("proofAuthority") is not False:
+              raise SystemExit("unsafe Brain static variant debt artifact")
+          out.write_text(json.dumps(data,ensure_ascii=False,indent=2)+"\n",encoding="utf-8")
+          print(
+              "FIELD_BRAIN_STATIC_VARIANT_DEBT "
+              f"providers={data.get('providerCount',0)} "
+              f"high={len(data.get('highRiskProviders') or [])} "
+              f"review={len(data.get('reviewProviders') or [])}"
+          )
+          PY
+          echo "NIAKVIO_BRAIN_STATIC_VARIANT_DEBT=$static_debt" >> "$GITHUB_ENV"
+
       - uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165
         with:
           distribution: temurin

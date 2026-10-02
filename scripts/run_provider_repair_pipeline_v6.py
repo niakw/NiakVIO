@@ -34,6 +34,11 @@ HUB_MATRIX = ROOT / "automation" / "evidence" / "hub-lab-matrix-46.json"
 RUNTIME_PLAN_LKG = Path(os.environ.get("RUNNER_TEMP") or (ROOT / "automation")) / "provider-runtime-plan-lkg-v1.json"
 CENSUS_STATUS = ROOT / "automation" / "provider-census-status.json"
 CENSUS_SHARDED_PATH = ROOT / "automation" / "provider-census-sharded-latest.json"
+STATIC_VARIANT_DEBT_PATH = (
+    Path(os.environ.get("NIAKVIO_BRAIN_STATIC_VARIANT_DEBT", "")).resolve()
+    if os.environ.get("NIAKVIO_BRAIN_STATIC_VARIANT_DEBT")
+    else None
+)
 CENSUS_HISTORY = ROOT / "automation" / "provider-census-proof-history.json"
 DYNAMIC_VARIANT_GAP_STATES = {
     "announced-not-explored",
@@ -44,6 +49,7 @@ DYNAMIC_VARIANT_GAP_STATES = {
 SELECTION_AUTHORITY = (
     "provider-census-status.json:repairQueue + "
     "provider-census-sharded-latest.json:dynamic-variant-debt + "
+    "Brain-main:static-runtime-variant-coverage-debt(FORCE-only) + "
     "provider-authority-status.json"
 )
 CENSUS_MD = ROOT / "PROVIDER_CENSUS_STATUS.md"
@@ -65,6 +71,33 @@ def load(path: Path) -> dict[str, Any]:
 
 def cid(value: object) -> str:
     return str(value or "").strip().casefold().replace("_", "-")
+
+
+def static_variant_gap_providers(payload: dict[str, Any] | None = None) -> set[str]:
+    """Return high-risk static completeness debt produced by current Brain main.
+
+    Static debt is prior-only and may reopen a provider only in explicit FORCE.
+    It does not prove that a stream exists or permit publication by itself.
+    """
+    if payload is None:
+        if STATIC_VARIANT_DEBT_PATH is None or not STATIC_VARIANT_DEBT_PATH.is_file():
+            return set()
+        try:
+            payload = load(STATIC_VARIANT_DEBT_PATH)
+        except (OSError, json.JSONDecodeError, ValueError):
+            return set()
+    if not isinstance(payload, dict):
+        return set()
+    if (
+        payload.get("role") != "static-runtime-variant-coverage-debt"
+        or payload.get("proofAuthority") is not False
+    ):
+        return set()
+    return {
+        cid(value)
+        for value in payload.get("highRiskProviders") or []
+        if cid(value)
+    }
 
 
 def dynamic_variant_gap_providers(payload: dict[str, Any] | None = None) -> set[str]:
@@ -729,6 +762,8 @@ def main() -> int:
         raise SystemExit("provider census status missing; run census before Repair")
     census = load(CENSUS_STATUS)
     dynamic_variant_targets = dynamic_variant_gap_providers()
+    static_variant_targets = static_variant_gap_providers() if args.mode == "force" else set()
+    completeness_targets = dynamic_variant_targets | static_variant_targets
 
     # Address/identity authority is a prerequisite for site-dependent Repair.
     # Search-only or stale-domain providers are rediscovered by Domain first;
@@ -763,7 +798,7 @@ def main() -> int:
         disposition,
         census=census,
         authority_blocked=authority_blocked,
-        additional_symptoms=dynamic_variant_targets,
+        additional_symptoms=completeness_targets,
     )
     if not initial_targets:
         summary = {
@@ -792,7 +827,7 @@ def main() -> int:
         disposition,
         census=census,
         authority_blocked=authority_blocked,
-        additional_symptoms=dynamic_variant_targets,
+        additional_symptoms=completeness_targets,
     )
     regression_reactivated: list[str] = []
     if not targets:
@@ -832,6 +867,7 @@ def main() -> int:
         f"skip_file={len(skipped)} authority_blocked={len(authority_blocked)} disposition_green_excluded={len(auto_excluded_green)} "
         f"regression_reactivated={len(regression_reactivated)} "
         f"dynamic_variant_reopened={len(set(targets) & dynamic_variant_targets)} "
+        f"static_variant_reopened={len(set(targets) & static_variant_targets)} "
         f"attempts={attempts} workers={repair_workers} providers={','.join(targets)}",
         flush=True,
     )
