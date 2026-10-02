@@ -367,6 +367,7 @@ This channel is deliberately non-executable. It may contain only:
 - normalized route paths and method/role labels;
 - request key names, never request values;
 - bounded player/server group counts and nested variant counts;
+- bounded observed quality heights;
 - bounded language labels.
 
 It must never persist raw HTML, response bodies, cookies, headers, tokens, stream
