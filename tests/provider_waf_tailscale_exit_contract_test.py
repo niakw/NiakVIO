@@ -100,3 +100,11 @@ assert "workflow_dispatch:" in wf
 header=wf.split("permissions:",1)[0]
 assert "\n  push:" in header
 assert "'.github/triggers/provider-waf-browser-session'" in header
+
+# A Repair run may survive concurrent evidence/docs state commits only when the
+# committed-only materialization classifier proves zero provider input drift.
+# Provider/Core drift remains fail-closed.
+assert "repair-early-concurrent-scope.json" in repair
+assert '--committed-only' in repair
+assert 'FIELD_REPAIR_SUPERSEDED_EARLY neutral=true mode=none' in repair
+assert 'FIELD_REPAIR_SUPERSEDED_EARLY neutral=false mode=$provider_drift_mode' in repair
