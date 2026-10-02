@@ -54,10 +54,14 @@ SAFE_STRUCTURED_PARSE_PROFILE = "safe_structured_parse"
 HTML_CLASS_TOKEN_PROFILE = "html_class_token_exact_v1"
 CAUSAL_STRATEGY_BASES = {
     "provider_transport_gap": "provider_origin_failover_v1",
+    "transport_blocked": "provider_origin_failover_v1",
     "route_proven_gap": "proven_route_terminal_traversal_v1",
+    "search_gap": "search_contract_inference_v1",
     "chain_terminal_gap": "chain_terminal_extractor_v1",
     "candidate_replay_gap": "retained_candidate_replay_v1",
     "media_extraction_gap": "player_media_extractor_v1",
+    "playback_context_gap": "player_media_extractor_v1",
+    "unknown_failure": "adaptive_runtime_recovery",
 }
 POST_EXHAUSTION_STRATEGY_PROFILES = {
     "provider_positive_program_replay_v1",
