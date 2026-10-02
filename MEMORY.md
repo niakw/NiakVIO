@@ -1,3 +1,9 @@
+## 2026-10-02 — Current data-cfp contract shape locked in Brain test
+
+- The user-supplied current player markup uses a `data-cfp` JSON attribute containing a resolver URL plus `params={tmdb,type,year,pid}`, together with two indexed player menus exposing 10 + 9 choices.
+- The generic current-contract execution test now uses that real structural form (sanitized demo host/ids) rather than the older `data-player` fixture. It still proves bounded UNKNOWN-method probing can discover a POST-form resolver, reach terminal HLS, and persist only placeholder/binding recipes; the literal pid is not persisted.
+- This is a Brain/parser contract only. Current live transport to the real origin remains blocked by browser/direct/OkHttp/residential challenge evidence, so CoFlix is not declared repaired and no provider runtime byte was manually changed.
+
 ## 2026-10-02 — Explicit transport targets now bypass status-only filtering
 
 - Targeted CoFlix WAF/Tailscale run `36987803310` connected the residential exit successfully, but produced `matchedProviderLanes=0` and `FIELD_RESIDENTIAL_PROVIDER_REPLAY_SELECTION providers=0`. The durable WAF ledger contained no CoFlix row at all.
