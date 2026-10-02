@@ -47,7 +47,9 @@ CURRENT PUBLISHED BYTES
         v
 CURRENT-BYTE CENSUS / QUICK YIELD
         |
-        +---- green FULL/PARTIAL ----------------------------> protect / no Repair
+        +---- FULL/PARTIAL + no current completeness debt --> protect / no Repair
+        |
+        +---- multi-player/server/quality fan-out debt ------> Brain completeness Repair
         |
         v
 symptom + current evidence
@@ -298,6 +300,47 @@ The purpose is causal diagnosis: distinguish “request reached a JSON API but t
 expected `episode/sourceUrls` shape changed” from “HTML page contains no player”
 without giving the Brain raw private content. NiakVIO sanitizes this summary before
 persistence and Brain re-sanitizes it on ingestion.
+
+### 5.4 Dynamic multi-player/server completeness is Repair evidence
+
+A provider is not complete merely because one returned stream is playable. Current
+census must preserve bounded fan-out evidence from provider responses consumed by
+the runtime:
+
+- announced player/server candidates;
+- hierarchical variants announced behind each consumed player/server response;
+- player/server requests actually explored;
+- distinct streams returned;
+- declared quality heights and returned quality coverage.
+
+The production-like quick census and Deep health use the same generic response
+variant extractor. Provider-specific HTML/JSON remains provider-owned; the
+observation layer records only bounded counts, hostnames and quality heights, not
+raw response bodies or terminal URLs.
+
+A current row may expose `variant_fanout_state` values including
+`announced-not-explored`, `explored-not-resolved`, `returned-subset`,
+`quality-gap`, and `fanout-observed`. A current dynamic gap is allowed to classify
+a nominally `FULL OK`, `PARTIAL OK` or `CANDIDATE OK` provider as
+`variant_coverage_gap` for Brain Repair. This classification does not require a
+hard-coded numeric cap to be found statically: static cap detection is a useful
+prior, while current response fan-out is execution evidence.
+
+The required Brain Repair loop is:
+
+~~~text
+current response announces N players/servers/variants
+-> census measures explored requests + returned streams
+-> Brain receives the same bounded fan-out row
+-> if a subset is returned, classify variant_coverage_gap
+-> Brain proposes the smallest provider-owned enumeration mutation
+-> isolated materialization + playback + identity + completeness comparison
+-> accept only on measurable fan-out gain with no regression
+~~~
+
+CoFlix is a representative validation case, not a provider-specific rule. The
+same mechanism must cover any provider whose runtime truncates player, server,
+quality, language, mirror or source enumeration.
 
 ## 6. Brain LLM boundary
 
