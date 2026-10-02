@@ -1,3 +1,10 @@
+## 2026-10-02 — Current quality evidence reaches Brain Repair
+
+- The current-structure observation channel now supports bounded `qualityHeights` in addition to player/server counts and language labels. Brain-LLM main `51c7adb3f42d0e695d7d1bfb434ba33938fa379f` sanitizes/sorts values into the model-visible current structure while keeping `proofAuthority=false` and `executionAuthority=false`.
+- HindMoviez current observation is persisted generically as origin `hindmovie.dev` with observed qualities `480/720/1080/2160`; no route, request recipe or stream URL is invented or persisted from that observation.
+- This gives Brain a causal target for the 480p-only symptom even when later qualities are truncated before dynamic network fan-out can observe them. Publication still requires a Brain-owned current-byte mutation plus real quality/playback/identity gain.
+- CoFlix remains blocked on live current-origin transport; work proceeds independently on HindMoviez as the representative quality/release-truncation family.
+
 ## 2026-10-02 — Current data-cfp contract shape locked in Brain test
 
 - The user-supplied current player markup uses a `data-cfp` JSON attribute containing a resolver URL plus `params={tmdb,type,year,pid}`, together with two indexed player menus exposing 10 + 9 choices.
