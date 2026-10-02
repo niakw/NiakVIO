@@ -1,3 +1,11 @@
+## 2026-10-02 — Dynamic completeness causal class preserved through Learning
+
+- CoFlix FORCE run `36964956962` proved the upstream Brain router was correct (`variant_coverage_gap`) but exposed a downstream NiakVIO planner regression: the Learning sandbox returned `runtime_empty`, causing the runtime planner to relabel the same provider `transport_blocked` and select generic `adaptive_runtime_recovery`. The 7B guidance file consequently contained zero provider rows and no FORCE candidate was materialized.
+- NiakVIO Brain now treats `variant_coverage_gap` as a first-class failure class and reads current sharded census fan-out directly into the runtime planner census prior. Current `announced/explored/returned` debt with repair-target authority survives weaker sandbox runtime-empty/transport relabels.
+- The precedence remains fail-safe: identity mismatch, short-media/audio and reader parser/decoder safety evidence may still override completeness debt.
+- Synthetic contracts prove FULL OK + 19 announced / 2 returned + sandbox runtime-empty/403 stays `variant_coverage_gap` and targets capability `variant_enumeration`; a simultaneous identity contradiction still becomes `identity_mismatch`.
+- No CoFlix runtime byte was manually edited. The same representative FORCE must be rerun and produce/apply/rematerialize a Brain-owned candidate before this repair can be called functional.
+
 ## 2026-10-02 — Causal strategy preflight drift closed
 
 - CoFlix FORCE rerun `36964786372` passed the cron/full-coverage contract but stopped next in `brain_causal_strategy_profile_test.py` before any Brain mutation.
