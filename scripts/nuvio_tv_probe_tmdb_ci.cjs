@@ -280,6 +280,8 @@ if (typeof originalFetch === 'function') {
       let responseShape = null;
       let responseVariantHints = {
         declared_player_candidate_count: 0,
+        declared_url_player_candidate_count: 0,
+        declared_indexed_player_candidate_count: 0,
         declared_player_hosts: [],
         declared_quality_heights: [],
       };
@@ -332,6 +334,8 @@ if (typeof originalFetch === 'function') {
         challenge,
         response_shape: responseShape,
         declared_player_candidate_count: Math.max(0, Number(responseVariantHints?.declared_player_candidate_count || 0)),
+        declared_url_player_candidate_count: Math.max(0, Number(responseVariantHints?.declared_url_player_candidate_count || 0)),
+        declared_indexed_player_candidate_count: Math.max(0, Number(responseVariantHints?.declared_indexed_player_candidate_count || 0)),
         declared_player_hosts: Array.isArray(responseVariantHints?.declared_player_hosts)
           ? responseVariantHints.declared_player_hosts.slice(0, 32) : [],
         declared_quality_heights: Array.isArray(responseVariantHints?.declared_quality_heights)
