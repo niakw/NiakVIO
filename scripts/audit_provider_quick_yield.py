@@ -338,50 +338,117 @@ def _provider_progress_stage(debug: dict[str, Any]) -> str:
 
 
 def _variant_fanout_summary(debug: dict[str, Any], streams_returned: int) -> dict[str, Any]:
-    """Preserve bounded multi-player/server completeness evidence in quick census."""
+    """Preserve bounded multi-player/server completeness evidence in quick census.
+
+    Parent player/server choices come only from provider-owned chain responses (or
+    explicit indexed player menus). Downstream player pages may contribute nested
+    variants only through explicit indexed menus; arbitrary technical URLs inside a
+    player page are not counted as additional stream choices.
+    """
     rows = [
         row for row in _provider_fetches(debug)
         if isinstance(row, dict)
     ]
+
+    model = debug.get("model") if isinstance(debug.get("model"), dict) else {}
+    origin_hosts: set[str] = set()
+    for key in ("official_site", "official_hub", "official_api"):
+        raw = str(model.get(key) or "").strip()
+        if not raw:
+            continue
+        try:
+            host = str(urlsplit(raw).hostname or "").casefold()
+        except ValueError:
+            host = ""
+        if host:
+            origin_hosts.add(host)
+
+    def request_parts(row: dict[str, Any]) -> tuple[str, str, str, str]:
+        request_url = str(row.get("url") or "")
+        response_url = str(row.get("response_url") or request_url)
+        try:
+            request_parsed = urlsplit(request_url)
+            request_host = str(request_parsed.hostname or "").casefold()
+            request_route = request_parsed.path or "/"
+        except ValueError:
+            request_host, request_route = "", ""
+        try:
+            response_parsed = urlsplit(response_url)
+            response_host = str(response_parsed.hostname or "").casefold()
+            response_route = response_parsed.path or request_route
+        except ValueError:
+            response_host, response_route = "", request_route
+        return request_host, request_route, response_host, response_route
+
+    if not origin_hosts:
+        for row in rows:
+            request_host, _request_route, response_host, _response_route = request_parts(row)
+            host = request_host or response_host
+            if host:
+                origin_hosts.add(host)
+                break
+
+    parent_rows: list[dict[str, Any]] = []
+    for row in rows:
+        request_host, request_route, response_host, response_route = request_parts(row)
+        owned = request_host in origin_hosts or response_host in origin_hosts
+        indexed = max(0, int(row.get("declared_indexed_player_candidate_count") or 0))
+        if owned and (CHAIN_ROUTE_RE.search(request_route) or CHAIN_ROUTE_RE.search(response_route) or indexed >= 2):
+            parent_rows.append(row)
+
+    if not parent_rows:
+        parent_rows = [
+            row for row in rows
+            if max(0, int(row.get("declared_indexed_player_candidate_count") or 0)) >= 2
+        ]
+
     announced_players = max(
-        [0, *[max(0, int(row.get("declared_player_candidate_count") or 0)) for row in rows]]
+        [0, *[
+            max(
+                0,
+                int(row.get("declared_url_player_candidate_count") or 0),
+                int(row.get("declared_indexed_player_candidate_count") or 0),
+                int(row.get("declared_player_candidate_count") or 0),
+            )
+            for row in parent_rows
+        ]]
     )
     announced_hosts = sorted({
         str(host or "").strip().casefold()
-        for row in rows
+        for row in parent_rows
         for host in (row.get("declared_player_hosts") or [])
-        if str(host or "").strip()
+        if str(host or "").strip().casefold() not in origin_hosts
     })
     announced_host_set = set(announced_hosts)
+
+    nested: dict[str, int] = {}
+    explored_requests: set[str] = set()
+    explored_hosts: set[str] = set()
+    evidence_rows = list(parent_rows)
+    for row in rows:
+        request_host, request_route, response_host, response_route = request_parts(row)
+        matched_host = request_host if request_host in announced_host_set else response_host if response_host in announced_host_set else ""
+        if not matched_host:
+            continue
+        explored_hosts.add(matched_host)
+        explored_requests.add(matched_host + "|" + (request_route or response_route))
+        evidence_rows.append(row)
+        indexed = max(0, int(row.get("declared_indexed_player_candidate_count") or 0))
+        if indexed > 0:
+            key = matched_host + "|" + (request_route or response_route)
+            nested[key] = max(indexed, nested.get(key, 0))
+
+    nested_total = sum(nested.values())
+    announced_variants = max(announced_players, nested_total)
     announced_qualities = sorted({
         int(value)
-        for row in rows
+        for row in evidence_rows
         for value in (row.get("declared_quality_heights") or [])
         if str(value or "").isdigit() and int(value) > 0
     })[:12]
 
-    nested: dict[str, int] = {}
-    explored = 0
-    explored_hosts: set[str] = set()
-    for row in rows:
-        raw_url = str(row.get("response_url") or row.get("url") or "")
-        try:
-            parsed = urlsplit(raw_url)
-            host = str(parsed.hostname or "").casefold()
-            route = parsed.path or "/"
-        except ValueError:
-            host, route = "", ""
-        if host and host in announced_host_set:
-            explored += 1
-            explored_hosts.add(host)
-            count = max(0, int(row.get("declared_player_candidate_count") or 0))
-            if count > 0:
-                key = host + "|" + route
-                nested[key] = max(count, nested.get(key, 0))
-
-    nested_total = sum(nested.values())
-    announced_variants = max(announced_players, nested_total)
     returned = max(0, int(streams_returned or 0))
+    explored = len(explored_requests)
     state = "not-observed"
     if announced_variants >= 2:
         if explored <= 1 and returned <= 1:
