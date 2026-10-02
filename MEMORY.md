@@ -1,3 +1,12 @@
+## 2026-10-02 — Brain Repair auto-selects current multi-player/server debt
+
+- Brain-LLM now audits `automation/provider-census-sharded-latest.json` as bounded current execution evidence and automatically promotes providers with observed hierarchical fan-out debt into the Repair guidance cohort, even when census status is FULL/PARTIAL/CANDIDATE and no static numeric cap is detectable.
+- Dynamic target selection is prior-only for publication (`proofAuthority=false`): it can make Repair inspect a provider, but FORCE acceptance still requires isolated current-byte materialization, playback, identity and measurable completeness improvement.
+- Brain-LLM commits `c4db3132`, `4f50a9b2`, `a864bb15`, `ef1a8fd8`, `62b18e3e`, `7f6cf33f` implement and test current dynamic fan-out audit + automatic cohort union `repairQueue ∪ static coverage debt ∪ dynamic fan-out debt`. Brain LLM CI #1338 (`36945152626`) is green.
+- The representative hierarchy semantics are explicit: `announced_player_candidates` is the strongest direct candidate count seen on one response (10 in the 10+9 oracle), top-level server multiplicity is carried by `announced_player_hosts` (2), and `announced_variant_candidates` is the hierarchical total (19). NiakVIO test correction `ca1890d07` locks this distinction.
+- NiakVIO Brain Repair runtime family coverage was also repaired generically: `a1794eb2` adds missing generic causal strategy mappings including `search_gap`; `4b6fe792` requires parity with declarative `FAILURE_EXECUTORS`. CORE Workflow Gate #7069 (`36944685487`) and Provider Non-Regression Gate #2776 (`36944685536`) are green.
+- No provider runtime was manually edited. Next authority is a fresh `scope=all` sharded census on the new fan-out persistence bytes, then representative Brain-generated CoFlix FORCE only if current execution proves a subset.
+
 ## 2026-10-02 — Dynamic fan-out reaches Brain Repair
 
 - Quick census now retains bounded multi-player/server fan-out evidence (`57e4804d`, `85643acb`), and Deep health exposes `returned-subset` (`3d4e2115`).
