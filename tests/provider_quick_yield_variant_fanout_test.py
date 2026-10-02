@@ -62,7 +62,7 @@ index_only = {
 summary = mod._variant_fanout_summary(index_only, 8)
 assert summary["announced_variant_candidates"] == 19, summary
 assert summary["explored_player_requests"] == 0, summary
-assert summary["variant_fanout_state"] == "announced-not-explored", summary
+assert summary["variant_fanout_state"] == "returned-subset", summary
 
 probe = (ROOT / "scripts" / "nuvio_tv_probe_tmdb_ci.cjs").read_text(encoding="utf-8")
 assert "extractResponseVariantHints" in probe
