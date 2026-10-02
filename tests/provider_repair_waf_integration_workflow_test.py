@@ -115,3 +115,11 @@ pipeline=(ROOT/"scripts/run_provider_repair_pipeline_v6.py").read_text(encoding=
 assert 'WAF_STATUS = ROOT / "automation" / "provider-waf-browser-session-latest.json"' in pipeline
 assert pipeline.count('"--waf-browser-evidence", str(WAF_STATUS.relative_to(ROOT))') >= 2
 assert pipeline.count('"--authority-status", str(AUTHORITY_STATUS.relative_to(ROOT))') >= 2
+
+# A Repair run may survive concurrent evidence/docs state commits only when the
+# committed-only materialization classifier proves zero provider input drift.
+# Provider/Core drift remains fail-closed.
+assert "repair-early-concurrent-scope.json" in wf
+assert '--committed-only' in wf
+assert 'FIELD_REPAIR_SUPERSEDED_EARLY neutral=true mode=none' in wf
+assert 'FIELD_REPAIR_SUPERSEDED_EARLY neutral=false mode=$provider_drift_mode' in wf
