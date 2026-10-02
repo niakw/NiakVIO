@@ -448,7 +448,7 @@ _SENSITIVE_REQUEST_KEY = re.compile(r"(?:api[_-]?key|token|auth|authorization|si
 _QUERY_KEYS = {"q", "query", "search", "keyword", "term", "story", "title", "name"}
 _SAFE_CONSTANT_KEYS = {"page", "limit", "offset", "action", "do", "subaction", "sort", "order", "lang", "language", "locale", "quality"}
 _BINDABLE_RESPONSE_KEYS = {
-    "id", "_id", "media_id", "mediaid", "post_id", "postid", "content_id", "contentid",
+    "id", "_id", "pid", "media_id", "mediaid", "post_id", "postid", "content_id", "contentid",
     "movie_id", "movieid", "series_id", "seriesid", "show_id", "showid", "slug",
 }
 _BINDING_PLACEHOLDER = re.compile(r"\{binding:([A-Za-z0-9_.-]+)\}", re.I)
@@ -576,7 +576,7 @@ def _abstract_observed_value(
         return "{mediaType}"
     # Generic provider IDs are NEVER mapped to TMDB. They become executable only
     # after an earlier response exposed the exact same unique value.
-    if lowered in {"id", "_id", "media_id", "post_id", "content_id", "movie_id", "series_id", "show_id"}:
+    if lowered in {"id", "_id", "pid", "media_id", "post_id", "content_id", "movie_id", "series_id", "show_id"}:
         return None
     if allow_constant and lowered in _SAFE_CONSTANT_KEYS and re.fullmatch(r"[A-Za-z0-9_.:+/-]{1,48}", value):
         return value
@@ -1105,6 +1105,35 @@ def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any])
         for row in (current_structure.get("routes") or [])[:12]
         if isinstance(row, dict) and str(row.get("path") or "").startswith("/")
     ]
+    structure_request_keys = [
+        str(value).strip()
+        for value in (current_structure.get("requestKeys") or [])[:24]
+        if re.fullmatch(r"[A-Za-z][A-Za-z0-9_-]{0,47}", str(value).strip())
+        and not _SENSITIVE_REQUEST_KEY.search(str(value))
+    ]
+    structure_contract_probes: list[dict[str, Any]] = []
+    if structure_origin and structure_request_keys:
+        for row in (current_structure.get("routes") or [])[:12]:
+            if not isinstance(row, dict):
+                continue
+            route = _safe_route(row.get("path"))
+            method = str(row.get("method") or "UNKNOWN").strip().upper()
+            if not route or method not in {"", "UNKNOWN"}:
+                continue
+            structure_contract_probes.append({
+                "origin": structure_origin,
+                "route": route,
+                "role": str(row.get("role") or _route_role(route)).strip().casefold()[:80],
+                "requestKeys": list(structure_request_keys),
+                "methodCandidates": ["POST", "GET"],
+                "bodyKindCandidates": ["form", "json"],
+                "proofAuthority": False,
+                "executionAuthority": False,
+                "executable": False,
+                "source": "current-structure-observation",
+            })
+            if len(structure_contract_probes) >= 6:
+                break
     structure_fanout = (
         current_structure.get("fanout")
         if isinstance(current_structure.get("fanout"), dict)
@@ -1276,6 +1305,7 @@ def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any])
         and not current_request_recipes
         and not provider_request_recipes
     )
+    contract_probes = structure_contract_probes if unresolved_current_request_contract else []
     request_recipes = _unique_request_recipes(
         current_request_recipes,
         provider_request_recipes,
@@ -1824,6 +1854,7 @@ def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any])
         "direct_paths": direct_paths,
         "transition_prefixes": transition_prefixes,
         "request_recipes": request_recipes,
+        "contract_probes": contract_probes,
         "historical_prior_ids": [row["id"] for row in historical_priors],
         "historical_solution_classes": [row["solutionClass"] for row in historical_priors],
         "nearest_archetype_peers": [
@@ -1840,6 +1871,7 @@ def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any])
             "search": len(search_paths),
             "direct": len(direct_paths),
             "requestRecipes": len(request_recipes),
+            "currentContractProbes": len(contract_probes),
             "currentObservationRequestRecipes": len(current_request_recipes),
             "providerRequestRecipes": len(provider_request_recipes),
             "positiveProgramRequestRecipes": len(positive_program_request_recipes(provider_id)),

@@ -406,6 +406,22 @@ The observation may influence sandbox hypothesis generation only:
 - an unknown HTTP method remains unknown. Repair must not fabricate a POST body
   or promote an observed route directly into Provider DATA.
 
+When current structure exposes a route but leaves its request method unknown,
+Repair may create a separate **contract probe**. A contract probe remains
+experiment-only DATA: `proofAuthority=false`, `executionAuthority=false`,
+`executable=false`. It carries only current origin, route, role and request-key
+names. The adaptive sandbox may match it against bounded embedded JSON observed
+on a current provider page and try only bounded GET, POST-form and POST-json
+shapes after fixture identity fields agree.
+
+Embedded provider-local values stay ephemeral. They may become durable only as a
+causal binding when a replayable current response exposed the exact value and a
+later successful request consumed it. Durable DATA stores
+`{binding:<key>}`, never the literal provider-local value. This preserves the
+UNKNOWN-method guard while allowing Repair to discover a changed request
+contract without borrowing a peer method or hard-coding a provider-specific
+guess.
+
 A winning route/request program becomes persistent only from the request trace
 that actually executed in an accepted current-byte candidate. Observation,
 hypothesis, execution and proof remain distinct.

@@ -95,5 +95,19 @@ assert options["repair_focus"] == "variant-coverage", options
 # no executable request recipe is synthesized from request-key names.
 assert observed["routes"][0]["method"] == "UNKNOWN"
 assert not options["request_recipes"], options
+assert options["route_prior_counts"]["currentContractProbes"] == 1, options
+assert options["contract_probes"] == [{
+    "origin": "https://demo.example",
+    "route": "/wp-json/demo/v1/resolve",
+    "role": "player-resolver",
+    "requestKeys": ["tmdb", "type", "year", "pid"],
+    "methodCandidates": ["POST", "GET"],
+    "bodyKindCandidates": ["form", "json"],
+    "proofAuthority": False,
+    "executionAuthority": False,
+    "executable": False,
+    "source": "current-structure-observation",
+}], options["contract_probes"]
+assert "987" not in repr(options["contract_probes"])
 
 print("canonical Brain current-structure Repair context contract passed")

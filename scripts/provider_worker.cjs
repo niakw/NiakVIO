@@ -351,9 +351,12 @@ async function routeProofResponseHints(response) {
     }
     if (/(html|text)/.test(type)) {
       /* NUVIO_PROVIDER_RESPONSE_VALUE_CORRELATION_V20 */
-      const re = /(?:data[-_])?(id|media[-_]id|post[-_]id|content[-_]id|movie[-_]id|series[-_]id|show[-_]id|slug)[\s"'=:\-]+([A-Za-z0-9._~-]{2,160})/gi;
+      const hintText = text
+        .replace(/&quot;|&#34;/gi, '"')
+        .replace(/&#39;|&apos;|&#x27;/gi, "'");
+      const re = /(?:data[-_])?(id|pid|media[-_]id|post[-_]id|content[-_]id|movie[-_]id|series[-_]id|show[-_]id|slug)[\s"'=:\-]+([A-Za-z0-9._~-]{2,160})/gi;
       let match;
-      while ((match = re.exec(text)) !== null && out.length < 100) {
+      while ((match = re.exec(hintText)) !== null && out.length < 100) {
         out.push({ key: String(match[1]).toLowerCase().replace(/-/g, '_'), value: String(match[2]) });
       }
 
@@ -400,7 +403,7 @@ function inferRequestStage(pathPattern) {
   const value = String(pathPattern || '').toLowerCase();
   if (!value || value === '/') return 'origin_probe';
   if (/search|recherche|query|ajax|api\/.*search/.test(value)) return 'search';
-  if (/embed|player|watch|video|stream|iframe/.test(value)) return 'player';
+  if (/embed|player|watch|video|stream|iframe|resolve|sources?|servers?|links?|\/load(?:[/?]|$)/.test(value)) return 'player';
   if (/season|saison|episode|{episode}/.test(value)) return 'episode';
   return 'content_lookup';
 }

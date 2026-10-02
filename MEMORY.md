@@ -1,3 +1,12 @@
+## 2026-10-02 — Brain current-contract discovery after cap-only rejection
+
+- CoFlix external Brain mutation `919ddb5013d666b33218b3aca7b7785f9064254a` was applied in V6 sandbox run `36978793130` and correctly rejected: baseline and candidate both produced 6 playable streams, qualities 360/480/1080, language fr and the same four reachable terminal hosts. Rejection is persisted as `variant_coverage_no_verified_dimension_gain`; the cap-only fingerprint must not be retried as if it were progress.
+- This proves the primary debt is upstream of the terminal cap: current structure says `coflix.ac /wp-json/coflix/v1/resolve`, while executed bytes still traverse the stale `coflix.wiki` Ajax contract.
+- Repair now has a generic observation-only contract-probe layer for current routes whose method remains UNKNOWN. It never promotes UNKNOWN directly and never borrows peer GET/POST authority. The sandbox can only match a current-page embedded JSON endpoint + declared request-key set, require fixture identity agreement, and try bounded GET / POST-form / POST-json shapes.
+- Embedded provider-local values are ephemeral. `pid` is a causal binding key: a successful later request may persist `{binding:pid}` only when a replayable earlier current response exposed the exact same value. The literal pid never enters durable request DATA.
+- Added executable contract proving: current page embedded resolver + pid -> successful POST-form probe -> terminal HLS -> sanitized observed recipe with tmdb/type/year placeholders and `pid={binding:pid}`.
+- No CoFlix production runtime bytes were manually edited.
+
 ## 2026-10-02 — Brain official completeness audit + exact witness cohort
 
 - Completed stale diagnostic Advisor run `36970348376` (Brain `6d984d5d873c54ab68e663226e061777edaa46cc`) reported the Brain auditor's authoritative bounded counts for NiakVIO source `728bdd813e49e64276fed11082136eead0672c3e`: `providers=40 high=20 review=10 dynamic_high=5`.

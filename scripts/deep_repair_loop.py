@@ -76,7 +76,7 @@ def accepted_runtime_program(candidate: dict[str, Any], result: dict[str, Any] |
     """
     allowed_option_keys = {
         "base_url", "endpoint_origins", "types", "search_paths", "direct_paths",
-        "request_recipes", "repair_focus", "census_status", "experiment_variant",
+        "request_recipes", "contract_probes", "repair_focus", "census_status", "experiment_variant",
         "experiment_generation", "experiment_failure_class", "experiment_strategy", "new_strategy_id",
         "alias_search", "runtime_response_salvage", "document_request_mining", "session_bootstrap",
         "peer_route_min_variant", "peer_recipe_min_variant", "negative_memory_matches",
