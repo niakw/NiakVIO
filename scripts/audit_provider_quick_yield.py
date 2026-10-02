@@ -650,6 +650,7 @@ def run_single(task: dict[str, Any]) -> dict[str, Any]:
         "debug_fetch_count": int(debug.get("fetch_count") or 0),
         "debug_provider_fetch_count": len(_provider_fetches(debug)),
         "debug_progress_stage": _provider_progress_stage(debug),
+        **variant_fanout,
         "debug_fetches": debug.get("fetches") or [],
         "debug_provider_value_trace_v18": debug.get("provider_value_trace_v18"),
         "debug_provider_value_trace_history_v21": _provider_value_trace_history(debug),
