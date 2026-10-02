@@ -18,6 +18,8 @@ required = [
 for needle in required:
     assert needle in workflow, f"missing sharded census authority persistence contract: {needle}"
 
+assert "github.event_name == 'push' && github.sha || 'main'" in workflow, "push census prepare must pin the exact event SHA"
+
 for required_trigger_guard in (
     "changed_paths=",
     ".github/triggers/provider-census-sharded.json",
