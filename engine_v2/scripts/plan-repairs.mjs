@@ -94,6 +94,12 @@ const POST_EXHAUSTION_STRATEGIES = {
     { profile: "identity_alias_search_traversal_v1", method: "tmdb-identity-alias-search-traversal" },
     { profile: "document_request_contract_mining_v1", method: "provider-document-request-contract-mining" },
   ],
+  variant_coverage_gap: [
+    { profile: "player_protocol_family_replay_v1", method: "multi-player-variant-enumeration" },
+    { profile: "media_response_shape_inference_v1", method: "nested-variant-response-inference" },
+    { profile: "runtime_response_salvage_v1", method: "successful-runtime-response-salvage" },
+    { profile: "document_request_contract_mining_v1", method: "provider-document-request-contract-mining" },
+  ],
   media_extraction_gap: [
     { profile: "player_protocol_family_replay_v1", method: "player-protocol-family-replay" },
     { profile: "media_response_shape_inference_v1", method: "media-response-shape-inference" },
@@ -140,6 +146,7 @@ const LLM_FAILURE_FAMILIES = Object.freeze({
   search_gap: "route-terminal",
   chain_terminal_gap: "terminal-media",
   media_extraction_gap: "terminal-media",
+  variant_coverage_gap: "terminal-media",
   playback_context_gap: "terminal-media",
 });
 
@@ -150,6 +157,7 @@ const META_GAP_PROFILE_BY_FAILURE = Object.freeze({
   search_gap: "search_contract_inference_v1",
   chain_terminal_gap: "chain_terminal_extractor_v1",
   media_extraction_gap: "player_media_extractor_v1",
+  variant_coverage_gap: "player_media_extractor_v1",
   playback_context_gap: "player_media_extractor_v1",
   candidate_replay_gap: "retained_candidate_replay_v1",
   unknown_failure: "adaptive_runtime_recovery",
@@ -184,6 +192,7 @@ function rebindMetaGapExperiment(experiment, failureClass) {
   } else if (
     current === "chain_terminal_gap"
     || current === "media_extraction_gap"
+    || current === "variant_coverage_gap"
     || current === "playback_context_gap"
   ) {
     next.routePolicy = current === "playback_context_gap" ? "owned_only" : "owned_plus_peer";
@@ -236,6 +245,7 @@ function rotateMetaGapExperiment(experiment, failureClass, generation) {
   } else if (
     current === "chain_terminal_gap"
     || current === "media_extraction_gap"
+    || current === "variant_coverage_gap"
     || current === "playback_context_gap"
   ) {
     next.routePolicy = step % 2 === 0 ? "owned_only" : "owned_plus_peer";
@@ -297,6 +307,7 @@ function causalStrategyProfile(failureClass, variant, generation, finalVariant) 
     chain_terminal_gap: "chain_terminal_extractor_v1",
     candidate_replay_gap: "retained_candidate_replay_v1",
     media_extraction_gap: "player_media_extractor_v1",
+    variant_coverage_gap: "player_media_extractor_v1",
   }[stringValue(failureClass).toLowerCase()];
   if (!base) return "";
   const currentGeneration = Math.max(1, finiteNumber(generation, 1));
@@ -1183,8 +1194,14 @@ function applyCensusPrior(rawEvidence, candidate) {
 
   const currentFailure = classifyFailure(evidence);
   const currentStage = stringValue(evidence.observedPipelineStage, "unknown").toLowerCase();
+  const dynamicVariant = asRecord(prior.dynamicVariantCoverage);
+  const dynamicVariantFailure = canonicalFailureClass(dynamicVariant.failureClass);
+  const safetyFirst = new Set([
+    "identity_mismatch", "short_media", "audio_track_gap",
+    "playback_decoder", "playback_parser", "playback_duration_unknown",
+  ]);
   const safetyOrSuccess = new Set([
-    "healthy", "identity_mismatch", "structured_parse_gap", "runtime_contract_drift",
+    "identity_mismatch", "structured_parse_gap", "runtime_contract_drift",
     "media_validation_gap", "playback_context_gap", "playback_http_access",
     "playback_http_gone", "playback_rate_limited", "playback_http_upstream",
     "playback_http_response", "playback_timeout", "playback_dns", "playback_tls",
@@ -1201,6 +1218,18 @@ function applyCensusPrior(rawEvidence, candidate) {
     censusPriorApplied: true,
     censusPriorReason: reason,
   });
+
+  if (
+    dynamicVariantFailure === "variant_coverage_gap"
+    && dynamicVariant.repairTargetAuthority === true
+    && !safetyFirst.has(currentFailure)
+  ) {
+    return withPrior(
+      "variant_coverage_gap",
+      "player",
+      "current_sharded_fanout_gap_outranks_sandbox_runtime_empty_or_transport_relabel",
+    );
+  }
 
   if (status === "CHAIN REACHED") {
     // Census is a floor, never a ceiling. Once the current bytes reproduce the
