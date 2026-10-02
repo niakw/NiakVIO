@@ -1924,7 +1924,7 @@
       "authorityKnown": true,
       "action": "protect + replay retained proof",
       "brainCheckRequired": false,
-      "statusRepairEligible": true,
+      "statusRepairEligible": false,
       "repairEligible": false,
       "testedThisRun": true,
       "transportRepairEligible": true,
@@ -2242,8 +2242,8 @@
   "harnessQueue": [],
   "targetedTransportBlockedQueue": [],
   "clientTransportGapQueue": [],
-  "harnessEvidenceRunId": "36965550805-sharded-waf",
-  "harnessEvidenceSha": "4d69e9b24c5ce03a32273dbde49d6ce0dfdc4a7f",
+  "harnessEvidenceRunId": "36967917400-repair-waf-final",
+  "harnessEvidenceSha": "e29b900d56dcb75a6eca4dccff9883c831c8b1d7",
   "authorityRefreshedProviders": [],
   "harnessTransportUpdatedProviders": [],
   "networkDifferentialUpdatedProviders": [],
@@ -2593,5 +2593,20 @@
         "vidrock"
       ]
     }
+  },
+  "lastRepairAttempt": {
+    "runId": "36967917400",
+    "sourceCensusRunId": "36965550805",
+    "mode": "force",
+    "selectedProviders": [],
+    "candidateProviders": [],
+    "validatedProviders": [],
+    "acceptedRepairCount": 0,
+    "deferredToLearningSlotProviders": [],
+    "noProgressReason": "canonical-success",
+    "timeBudgetExhausted": false,
+    "canonicalOutcome": "success",
+    "candidateGateOutcome": "success",
+    "publicationAllowed": true
   }
 }
