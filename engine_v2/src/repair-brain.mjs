@@ -12,7 +12,7 @@ export const FAILURE_CLASSES = Object.freeze([
   "playback_io", "playback_live_window", "playback_runtime_setup",
   "playback_player_error", "playback_duration_unknown", "short_media", "audio_track_gap",
   "route_proven_gap", "chain_terminal_gap", "candidate_replay_gap", "provider_transport_gap",
-  "structured_parse_gap", "runtime_contract_drift", "unknown_failure",
+  "variant_coverage_gap", "structured_parse_gap", "runtime_contract_drift", "unknown_failure",
 ]);
 
 export const REPAIR_RECIPES = Object.freeze({
@@ -84,6 +84,10 @@ export const REPAIR_RECIPES = Object.freeze({
   provider_transport_gap: [
     recipe("repair-provider-transport-path", ["dns", "routes", "headers", "redirects"], ["retry current official/provider origins", "probe validated same-provider fallback origins", "preserve redirects and minimal required request context", "do not mutate parsers until transport succeeds"]),
     recipe("refresh-provider-origin-authority", ["dns", "hub", "routes"], ["consult current domain authority and same-provider observations", "validate reachable origin before changing runtime routing", "keep provider identity separate from domain state"]),
+  ],
+  variant_coverage_gap: [
+    recipe("enumerate-announced-player-variants", ["player", "media", "variants"], ["preserve current identity path", "enumerate every bounded announced player/server/source variant before aggregate output capping", "deduplicate only after traversal", "retain language and quality provenance", "require measurable completeness gain"]),
+    recipe("remove-premature-variant-short-circuit", ["player", "media", "variants"], ["remove first-success or low fixed-count truncation only where current response fan-out proves more variants", "preserve terminal validation and stream safety", "keep final aggregate bounds after enumeration"]),
   ],
   structured_parse_gap: [recipe("repair-structured-parser", ["parser", "json", "javascript"], ["locate destructive pre-parse decoding", "preserve JSON escapes", "retry strict structured parsing", "retain raw fallback when parsing remains ambiguous"])],
   runtime_contract_drift: [recipe("reaudit-device-adapter", ["runtime-version", "contract"], ["diff changed Nuvio contract paths", "identify affected capabilities", "revalidate only impacted skills/providers"])],
