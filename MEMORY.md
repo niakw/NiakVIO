@@ -1,3 +1,11 @@
+## 2026-10-02 — Repair V6 now selects dynamic completeness debt
+
+- Brain already classified sharded fan-out loss as `variant_coverage_gap`, but canonical Repair V6 still intersected every target with `provider-census-status.json:repairQueue`. A nominally `FULL OK` provider such as CoFlix could therefore be diagnosed by Brain yet silently excluded before provider mutation.
+- Repair selection now unions the durable repairQueue with bounded current dynamic variant debt from `automation/provider-census-sharded-latest.json`. Gap states are `announced-not-explored`, `explored-not-resolved`, `returned-subset` and `quality-gap`; an announced>=2 / returned<announced row is also treated as debt.
+- This new authority is selection-only. It does not grant proof/publication authority and still respects provider authority blockers. Every mutation must pass current-byte application, rematerialization, playback, identity, measurable completeness gain and portfolio non-regression.
+- Contracts prove a FULL OK provider with 19 announced / 2 returned re-enters Repair, while a 2/2 `fanout-observed` provider remains excluded. This is generic and applies to the wider provider cohort, not only CoFlix.
+- CoFlix FORCE is retriggered after this wiring. No CoFlix provider runtime was manually edited.
+
 ## 2026-10-02 — Repair V6 Core migration blocker fixed semantically
 
 - Canonical Repair run `36965535816` failed before any provider mutation in `scripts/apply_core_identity_ownership_cleanup.py`: it required the historical Stream Identity revision v10 anchor, while current Core is already `cross-client-player-page-identity-v15`.

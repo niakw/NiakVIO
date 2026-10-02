@@ -38,8 +38,9 @@ assert 'provider-repair-portfolio-candidate.json' in workflow
 assert 'provider-repair-portfolio-retry.json' in workflow
 
 # Provider-wide skip remains an exact-proof optimization. Automatic Repair
-# scope is owned by the durable census repairQueue; disposition is compatibility
-# evidence only and may never drag a stable FULL/PARTIAL provider back into Repair.
+# scope is owned by the durable census repairQueue plus bounded current sharded
+# variant debt; disposition is compatibility evidence only and may never drag a
+# stable FULL/PARTIAL provider back into Repair without current completeness proof.
 assert skip.get('schemaVersion') == 2
 assert set((skip.get('providers') or {}).keys()) == set()
 assert 'entire declared capability surface' in str(skip.get('policy') or '')
@@ -49,6 +50,9 @@ assert 'provider in selected and provider not in hard_blocked' in pipeline
 for marker in (
     'def unresolved_target_scope(',
     'provider-census-status.json:repairQueue',
+    'provider-census-sharded-latest.json:dynamic-variant-debt',
+    'dynamic_variant_gap_providers',
+    'additional_symptoms=dynamic_variant_targets',
     'census=census',
     'CENSUS_STATUS',
     'refresh_census(PORTFOLIO_BASELINE, phase="pre-repair")',
@@ -56,7 +60,7 @@ for marker in (
     'render_persisted_byte_census(',
     'CURRENT_OVERRIDES_SNAPSHOT',
     'REPAIR_CANDIDATE_EVIDENCE',
-    '"selectionAuthority": "provider-census-status.json:repairQueue"',
+    'SELECTION_AUTHORITY',
     '"censusStatusUpdated": True',
 ):
     assert marker in pipeline, marker

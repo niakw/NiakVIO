@@ -33,7 +33,19 @@ DISPOSITION = ROOT / "automation" / "provider-repair-disposition.json"
 HUB_MATRIX = ROOT / "automation" / "evidence" / "hub-lab-matrix-46.json"
 RUNTIME_PLAN_LKG = Path(os.environ.get("RUNNER_TEMP") or (ROOT / "automation")) / "provider-runtime-plan-lkg-v1.json"
 CENSUS_STATUS = ROOT / "automation" / "provider-census-status.json"
+CENSUS_SHARDED_PATH = ROOT / "automation" / "provider-census-sharded-latest.json"
 CENSUS_HISTORY = ROOT / "automation" / "provider-census-proof-history.json"
+DYNAMIC_VARIANT_GAP_STATES = {
+    "announced-not-explored",
+    "explored-not-resolved",
+    "returned-subset",
+    "quality-gap",
+}
+SELECTION_AUTHORITY = (
+    "provider-census-status.json:repairQueue + "
+    "provider-census-sharded-latest.json:dynamic-variant-debt + "
+    "provider-authority-status.json"
+)
 CENSUS_MD = ROOT / "PROVIDER_CENSUS_STATUS.md"
 CENSUS_POST_REPAIR = ROOT / "automation" / "provider-census-post-repair.json"
 REPAIR_CANDIDATE_EVIDENCE = ROOT / "automation" / "provider-repair-candidate-evidence.json"
@@ -55,6 +67,41 @@ def cid(value: object) -> str:
     return str(value or "").strip().casefold().replace("_", "-")
 
 
+def dynamic_variant_gap_providers(payload: dict[str, Any] | None = None) -> set[str]:
+    """Return current providers whose sharded execution proves variant loss.
+
+    This is selection authority only. It never grants publication/proof authority;
+    accepted mutations still pass the ordinary current-byte playback, identity,
+    completeness and non-regression gates.
+    """
+    if payload is None:
+        if not CENSUS_SHARDED_PATH.is_file():
+            return set()
+        try:
+            payload = load(CENSUS_SHARDED_PATH)
+        except (OSError, json.JSONDecodeError, ValueError):
+            return set()
+    if not isinstance(payload, dict):
+        return set()
+
+    providers: set[str] = set()
+    for raw in payload.get("rows") or []:
+        if not isinstance(raw, dict):
+            continue
+        provider = cid(raw.get("provider_id"))
+        if not provider:
+            continue
+        try:
+            announced = max(0, int(raw.get("announced_variant_candidates") or 0))
+            returned = max(0, int(raw.get("streams_returned") or raw.get("raw") or 0))
+        except (TypeError, ValueError):
+            continue
+        state = str(raw.get("variant_fanout_state") or "").strip().casefold()
+        if announced >= 2 and (state in DYNAMIC_VARIANT_GAP_STATES or returned < announced):
+            providers.add(provider)
+    return providers
+
+
 def unresolved_target_scope(
     active_catalogue: list[str],
     skipped: set[str],
@@ -63,6 +110,7 @@ def unresolved_target_scope(
     current_verified: set[str] | None = None,
     census: dict[str, Any] | None = None,
     authority_blocked: set[str] | None = None,
+    additional_symptoms: set[str] | None = None,
 ) -> tuple[list[str], list[str]]:
     """Return only providers currently marked symptomatic by the census.
 
@@ -83,6 +131,7 @@ def unresolved_target_scope(
                 if str((rows.get(cid(value)) or {}).get("status") or "") not in CENSUS_ENVIRONMENT_ONLY
             ]
         queue = {cid(value) for value in queue_values or [] if cid(value)}
+        queue.update(cid(value) for value in (additional_symptoms or set()) if cid(value))
         selected = (set(requested) & queue) if requested else queue
         hard_blocked = {
             cid(value) for value in (authority_blocked or set()) if cid(value)
@@ -679,6 +728,7 @@ def main() -> int:
     if not CENSUS_STATUS.exists():
         raise SystemExit("provider census status missing; run census before Repair")
     census = load(CENSUS_STATUS)
+    dynamic_variant_targets = dynamic_variant_gap_providers()
 
     # Address/identity authority is a prerequisite for site-dependent Repair.
     # Search-only or stale-domain providers are rediscovered by Domain first;
@@ -713,6 +763,7 @@ def main() -> int:
         disposition,
         census=census,
         authority_blocked=authority_blocked,
+        additional_symptoms=dynamic_variant_targets,
     )
     if not initial_targets:
         summary = {
@@ -720,7 +771,7 @@ def main() -> int:
             "mode": args.mode,
             "publicationAllowed": False,
             "mainWritesAllowed": False,
-            "selectionAuthority": "provider-census-status.json:repairQueue + provider-authority-status.json",
+            "selectionAuthority": SELECTION_AUTHORITY,
             "authorityBlockedProviders": sorted(authority_blocked),
             "targetedProviderCount": 0,
             "targetedProviders": [],
@@ -741,6 +792,7 @@ def main() -> int:
         disposition,
         census=census,
         authority_blocked=authority_blocked,
+        additional_symptoms=dynamic_variant_targets,
     )
     regression_reactivated: list[str] = []
     if not targets:
@@ -749,7 +801,7 @@ def main() -> int:
             "mode": args.mode,
             "publicationAllowed": False,
             "mainWritesAllowed": False,
-            "selectionAuthority": "provider-census-status.json:repairQueue + provider-authority-status.json",
+            "selectionAuthority": SELECTION_AUTHORITY,
             "authorityBlockedProviders": sorted(authority_blocked),
             "targetedProviderCount": 0,
             "targetedProviders": [],
@@ -779,6 +831,7 @@ def main() -> int:
         f"mode={args.mode} catalogue={len(catalogue)} active={len(active_catalogue)} targeted={len(targets)} "
         f"skip_file={len(skipped)} authority_blocked={len(authority_blocked)} disposition_green_excluded={len(auto_excluded_green)} "
         f"regression_reactivated={len(regression_reactivated)} "
+        f"dynamic_variant_reopened={len(set(targets) & dynamic_variant_targets)} "
         f"attempts={attempts} workers={repair_workers} providers={','.join(targets)}",
         flush=True,
     )

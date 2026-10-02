@@ -7,7 +7,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 
-from run_provider_repair_pipeline_v6 import unresolved_target_scope
+from run_provider_repair_pipeline_v6 import dynamic_variant_gap_providers, unresolved_target_scope
 
 active = ["green-a", "repair-b", "waf-c", "route-d", "partial-e"]
 census = {
@@ -31,6 +31,47 @@ assert set(excluded) == {"green-a", "waf-c", "partial-e"}, (targets, excluded)
 # dragged back into Repair by stale operator/disposition state.
 targets, excluded = unresolved_target_scope(active, set(), {"green-a", "repair-b"}, census=census)
 assert targets == ["repair-b"], (targets, excluded)
+
+# Dynamic sharded variant debt is an additional current symptom authority.
+# A stable provider may re-enter Repair only when bounded current execution
+# proves announced/explored/returned completeness loss.
+dynamic = dynamic_variant_gap_providers({
+    "rows": [
+        {
+            "provider_id": "green-a",
+            "semantic_type": "movie",
+            "announced_variant_candidates": 19,
+            "streams_returned": 2,
+            "variant_fanout_state": "returned-subset",
+        },
+        {
+            "provider_id": "partial-e",
+            "semantic_type": "movie",
+            "announced_variant_candidates": 2,
+            "streams_returned": 2,
+            "variant_fanout_state": "fanout-observed",
+        },
+    ]
+})
+assert dynamic == {"green-a"}, dynamic
+
+targets, excluded = unresolved_target_scope(
+    active,
+    set(),
+    {"green-a", "repair-b"},
+    census=census,
+    additional_symptoms=dynamic,
+)
+assert targets == ["green-a", "repair-b"], (targets, excluded)
+
+targets, excluded = unresolved_target_scope(
+    active,
+    set(),
+    set(),
+    census=census,
+    additional_symptoms=dynamic,
+)
+assert targets == ["green-a", "repair-b", "route-d"], (targets, excluded)
 
 # Historical provider-wide skip is only an optimization. A current repairQueue
 # entry reopens the provider and must outrank stale/exact-byte skip memory.
