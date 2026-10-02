@@ -126,6 +126,96 @@ assert summary["announced_player_hosts"] == ["one.test", "two.test"], summary
 assert summary["explored_player_requests"] == 2, summary
 assert summary["variant_fanout_state"] == "returned-subset", summary
 
+# HTML pages can contain many unrelated absolute URLs near player markup.
+# Only explicit controls/iframes and actually traversed off-origin hosts are
+# reader/server evidence; generic page URLs must not inflate completeness debt.
+html_noise = {
+    "model": {"official_site": "https://papa.test"},
+    "fetches": [
+        {
+            "url": "https://papa.test/movie/fixture",
+            "response_url": "https://papa.test/movie/fixture",
+            "declared_player_candidate_count": 23,
+            "declared_url_player_candidate_count": 23,
+            "declared_indexed_player_candidate_count": 0,
+            "declared_player_hosts": [
+                "image.tmdb.org", "www.w3.org", "papa.info",
+                "one.test", "two.test",
+            ],
+            "declared_quality_heights": [720, 1080],
+            "response_shape": {"kind": "html", "iframes": 2, "videos": 2, "sources": 2},
+        },
+        {
+            "url": "https://one.test/embed/1",
+            "response_url": "https://one.test/embed/1",
+            "declared_player_candidate_count": 7,
+            "declared_url_player_candidate_count": 7,
+            "declared_indexed_player_candidate_count": 0,
+            "declared_player_hosts": ["cdn-one.test"],
+            "declared_quality_heights": [720, 1080],
+            "response_shape": {"kind": "html", "iframes": 0},
+        },
+        {
+            "url": "https://two.test/embed/2",
+            "response_url": "https://two.test/embed/2",
+            "declared_player_candidate_count": 5,
+            "declared_url_player_candidate_count": 5,
+            "declared_indexed_player_candidate_count": 0,
+            "declared_player_hosts": ["cdn-two.test"],
+            "declared_quality_heights": [1080],
+            "response_shape": {"kind": "html", "iframes": 0},
+        },
+    ],
+}
+summary = mod._variant_fanout_summary(html_noise, 2)
+assert summary["announced_player_candidates"] == 2, summary
+assert summary["announced_variant_candidates"] == 2, summary
+assert summary["announced_player_hosts"] == ["one.test", "two.test"], summary
+assert summary["explored_player_requests"] == 2, summary
+assert summary["variant_fanout_state"] == "fanout-observed", summary
+
+# Structured JSON streams remain authoritative even when many variants share
+# only a small number of CDN hosts.
+json_variants = {
+    "model": {"official_site": "https://api.example.test"},
+    "fetches": [
+        {
+            "url": "https://api.example.test/stream/series/id.json",
+            "response_url": "https://api.example.test/stream/series/id.json",
+            "declared_player_candidate_count": 17,
+            "declared_url_player_candidate_count": 17,
+            "declared_indexed_player_candidate_count": 0,
+            "declared_player_hosts": ["cdn-a.test", "cdn-b.test"],
+            "declared_quality_heights": [480, 720, 1080],
+            "response_shape": {"kind": "json", "top": "object", "keys": ["streams"]},
+        },
+        {
+            "url": "https://cdn-a.test/file/1.mkv",
+            "response_url": "https://cdn-a.test/file/1.mkv",
+            "declared_player_candidate_count": 0,
+            "declared_url_player_candidate_count": 0,
+            "declared_indexed_player_candidate_count": 0,
+            "declared_player_hosts": [],
+            "declared_quality_heights": [],
+        },
+        {
+            "url": "https://cdn-b.test/file/2.mkv",
+            "response_url": "https://cdn-b.test/file/2.mkv",
+            "declared_player_candidate_count": 0,
+            "declared_url_player_candidate_count": 0,
+            "declared_indexed_player_candidate_count": 0,
+            "declared_player_hosts": [],
+            "declared_quality_heights": [],
+        },
+    ],
+}
+summary = mod._variant_fanout_summary(json_variants, 1)
+assert summary["announced_player_candidates"] == 17, summary
+assert summary["announced_variant_candidates"] == 17, summary
+assert summary["announced_player_hosts"] == ["cdn-a.test", "cdn-b.test"], summary
+assert summary["explored_player_requests"] == 2, summary
+assert summary["variant_fanout_state"] == "explored-not-resolved", summary
+
 # Execute the real run_single integration path with a synthetic probe result.
 # This catches stale/undefined fan-out locals that helper-only tests cannot see.
 original_run = mod.subprocess.run

@@ -428,23 +428,53 @@ def _variant_fanout_summary(debug: dict[str, Any], streams_returned: int) -> dic
             if max(0, int(row.get("declared_indexed_player_candidate_count") or 0)) >= 2
         ]
 
-    announced_players = max(
-        [0, *[
-            max(
-                0,
-                int(row.get("declared_url_player_candidate_count") or 0),
-                int(row.get("declared_indexed_player_candidate_count") or 0),
-                int(row.get("declared_player_candidate_count") or 0),
-            )
-            for row in parent_rows
-        ]]
-    )
-    announced_hosts = sorted({
-        str(host or "").strip().casefold()
-        for row in parent_rows
-        for host in (row.get("declared_player_hosts") or [])
-        if str(host or "").strip().casefold() not in origin_hosts
-    })
+    observed_hosts: set[str] = set()
+    for row in rows:
+        request_host, _request_route, response_host, _response_route = request_parts(row)
+        for host in (request_host, response_host):
+            if host:
+                observed_hosts.add(host)
+
+    parent_counts: list[int] = []
+    trusted_announced_hosts: set[str] = set()
+    for row in parent_rows:
+        shape = row.get("response_shape") if isinstance(row.get("response_shape"), dict) else {}
+        kind = str(shape.get("kind") or "").strip().casefold()
+        indexed = max(0, int(row.get("declared_indexed_player_candidate_count") or 0))
+        url_count = max(
+            0,
+            int(row.get("declared_url_player_candidate_count") or 0),
+            int(row.get("declared_player_candidate_count") or 0),
+        )
+        declared_hosts = {
+            str(value or "").strip().casefold()
+            for value in (row.get("declared_player_hosts") or [])
+            if str(value or "").strip()
+        }
+        external_hosts = declared_hosts - origin_hosts
+        observed_external = external_hosts & observed_hosts
+
+        # Structured JSON stream/source arrays are explicit variant declarations:
+        # preserve their full bounded count even when many variants share a CDN.
+        if kind == "json":
+            parent_count = max(indexed, url_count, len(external_hosts))
+            trusted_announced_hosts.update(external_hosts)
+        else:
+            # HTML contains many unrelated absolute URLs (images, namespaces,
+            # navigation, analytics). Do not turn those into reader/server
+            # multiplicity. Prefer explicit indexed controls, actual iframe
+            # multiplicity and off-origin hosts that provider execution really
+            # traversed. This stays conservative when a page only hints at an
+            # unvisited href, while preserving announced-not-explored via iframe
+            # or indexed-menu counts.
+            iframe_count = max(0, int(shape.get("iframes") or 0))
+            parent_count = max(indexed, iframe_count, len(observed_external))
+            trusted_announced_hosts.update(observed_external)
+        if parent_count > 0:
+            parent_counts.append(parent_count)
+
+    announced_players = max([0, *parent_counts])
+    announced_hosts = sorted(trusted_announced_hosts)
     announced_host_set = set(announced_hosts)
 
     nested: dict[str, int] = {}
@@ -460,9 +490,18 @@ def _variant_fanout_summary(debug: dict[str, Any], streams_returned: int) -> dic
         explored_requests.add(matched_host + "|" + (request_route or response_route))
         evidence_rows.append(row)
         indexed = max(0, int(row.get("declared_indexed_player_candidate_count") or 0))
-        if indexed > 0:
+        shape = row.get("response_shape") if isinstance(row.get("response_shape"), dict) else {}
+        kind = str(shape.get("kind") or "").strip().casefold()
+        nested_count = indexed
+        if kind == "json":
+            nested_count = max(
+                nested_count,
+                int(row.get("declared_url_player_candidate_count") or 0),
+                int(row.get("declared_player_candidate_count") or 0),
+            )
+        if nested_count > 0:
             key = matched_host + "|" + (request_route or response_route)
-            nested[key] = max(indexed, nested.get(key, 0))
+            nested[key] = max(nested_count, nested.get(key, 0))
 
     nested_total = sum(nested.values())
     announced_variants = max(announced_players, nested_total)

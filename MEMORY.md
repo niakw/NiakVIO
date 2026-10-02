@@ -1,3 +1,11 @@
+## 2026-10-02 — HTML fan-out false-positive filter
+
+- Partial authority run `36957631178` exposed a generic observation bug before Brain mutation: PapaDuStream movie returned 2 playable/verified streams but broad HTML URL extraction advertised 23 candidates and included unrelated hosts such as `image.tmdb.org` / `www.w3.org`. This run is therefore diagnostic only and must not become completeness-repair authority.
+- Quick census fan-out now distinguishes structured JSON from HTML. JSON stream/source arrays keep their bounded full variant count even when variants share CDN hosts; HTML reader/server multiplicity is conservative and uses explicit indexed menus, iframe multiplicity and off-origin hosts actually traversed by the provider runtime.
+- Nested player JSON may contribute its structured variant count; nested HTML remains index-driven to avoid counting player-page assets/ads/navigation as terminal choices.
+- Added contracts for noisy 23-URL HTML collapsing to the 2 actually evidenced readers, while a structured JSON response with 17 stream variants remains 17.
+- No provider runtime bytes were changed. A fresh `scope=all` census is required before CoFlix or any cohort provider can enter Brain FORCE from dynamic completeness evidence.
+
 ## 2026-10-02 — Sharded fan-out evidence wired into Brain Repair
 
 - The quick/sharded census probe now runs the generic response variant detector and persists bounded player/server/quality fan-out hints instead of dropping them before Brain Repair.
