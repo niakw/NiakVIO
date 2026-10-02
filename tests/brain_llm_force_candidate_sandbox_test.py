@@ -132,6 +132,14 @@ accepted, reason = mod.evaluate_pair(
 assert accepted is True, reason
 assert "playable-height" in reason, reason
 
+accepted, reason = mod.evaluate_pair(
+    coverage_baseline,
+    coverage_candidate,
+    "cross-source-round-robin-before-global-cap",
+)
+assert accepted is True, reason
+assert "playable-height" in reason, reason
+
 count_only_candidate = result(
     status="healthy",
     playable=2,
@@ -152,6 +160,7 @@ assert reason == "variant_coverage_no_verified_dimension_gain", reason
 for family in (
     "quality-stratified-variant-enumeration",
     "quality-aware-global-stop",
+    "cross-source-round-robin-before-global-cap",
 ):
     accepted, reason = mod.evaluate_pair(
         coverage_baseline,
