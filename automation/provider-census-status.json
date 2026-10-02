@@ -1,7 +1,7 @@
 {
   "schemaVersion": 3,
-  "runId": "36980022948",
-  "triggerSha": "a1cbeef96022a51ce244f427c5f64a4992180a47",
+  "runId": "36993600162",
+  "triggerSha": "4fe4f71f9c80f68e83d825e73f44e83b088097af",
   "providers": [
     {
       "provider": "4khdhub",
@@ -1932,7 +1932,7 @@
       "authorityKnown": true,
       "action": "protect + replay retained proof",
       "brainCheckRequired": false,
-      "statusRepairEligible": false,
+      "statusRepairEligible": true,
       "repairEligible": false,
       "testedThisRun": true,
       "transportRepairEligible": true,
@@ -2247,8 +2247,8 @@
   "harnessQueue": [],
   "targetedTransportBlockedQueue": [],
   "clientTransportGapQueue": [],
-  "harnessEvidenceRunId": "36988306455-waf-transport",
-  "harnessEvidenceSha": "c836860d2e4e42b29abe5781f5294cd9fc4fe008",
+  "harnessEvidenceRunId": "36993600162-sharded-waf",
+  "harnessEvidenceSha": "4fe4f71f9c80f68e83d825e73f44e83b088097af",
   "authorityRefreshedProviders": [],
   "harnessTransportUpdatedProviders": [],
   "networkDifferentialUpdatedProviders": [],
@@ -2650,38 +2650,16 @@
       "cookiesPersisted": false
     },
     "lastAttempt": {
-      "available": true,
-      "providerCount": 13,
+      "available": false,
+      "providerCount": 0,
       "refreshedProviders": [
         "allwish",
         "animesalt",
-        "animesultra",
-        "animevost-fr",
-        "coflix",
         "flemmix",
         "mallumv",
         "moviebox",
-        "moviesmod",
-        "vidfast",
-        "vidrock",
-        "vostfree",
-        "yflix"
+        "moviesmod"
       ]
     }
-  },
-  "lastRepairAttempt": {
-    "runId": "36991362008",
-    "sourceCensusRunId": "36980022948",
-    "mode": "force",
-    "selectedProviders": [],
-    "candidateProviders": [],
-    "validatedProviders": [],
-    "acceptedRepairCount": 0,
-    "deferredToLearningSlotProviders": [],
-    "noProgressReason": "canonical-skipped",
-    "timeBudgetExhausted": false,
-    "canonicalOutcome": "skipped",
-    "candidateGateOutcome": "skipped",
-    "publicationAllowed": false
   }
 }
