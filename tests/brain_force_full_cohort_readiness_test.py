@@ -71,6 +71,9 @@ expected_focus = {
     "candidate_replay_gap": "candidate-replay",
 }
 
+missing_runtime_families = set(meta.FAILURE_EXECUTORS) - set(runtime.CAUSAL_STRATEGY_BASES)
+assert not missing_runtime_families, sorted(missing_runtime_families)
+
 coverage = {}
 for provider in sorted(queue):
     source = provider_rows[provider]
