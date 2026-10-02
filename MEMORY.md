@@ -1,3 +1,10 @@
+## 2026-10-02 — Current provider structure now reaches Brain Repair
+
+- The user-supplied current CoFlix player page proves a provider-contract drift that stale runtime execution cannot discover by itself: current origin `coflix.ac`, resolver `/wp-json/coflix/v1/resolve`, request-key names `tmdb/type/year/pid`, and 2 server groups exposing 10 + 9 indexed choices (19 total) with VF/VFF/VOSTFR labels.
+- Persisted only a sanitized observation in `automation/provider-current-structure-evidence.json`; raw HTML, parameter values, tokens and stream URLs are not stored. Both proof and execution authority are explicitly false.
+- Brain-LLM main `5ee8123f657277bb2fc21f6dc4146a307ba58926` adds generic ingestion of this channel into Repair observations and route context as `observation-only`. It does not promote the observed route directly to executable Provider DATA.
+- This lets Repair distinguish “stale runtime follows an old provider contract” from “current contract has a simple output cap”. CoFlix remains the representative first repair; no provider production runtime byte was manually changed.
+
 ## 2026-10-02 — Variant URL tokenization exact-host guard
 
 - The generic keyed URL extractor used a character class that excluded the literal letter `s` instead of whitespace. Candidate counts could therefore stay numerically correct while hostnames were silently truncated (for example a `.test` reader).

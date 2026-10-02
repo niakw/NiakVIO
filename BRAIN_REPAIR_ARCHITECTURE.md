@@ -342,6 +342,35 @@ CoFlix is a representative validation case, not a provider-specific rule. The
 same mechanism must cover any provider whose runtime truncates player, server,
 quality, language, mirror or source enumeration.
 
+### 5.5 Current provider-structure evidence is observation-only
+
+A current provider page or API contract may be observed outside the provider's
+existing runtime, for example when the provider has migrated to a new resolver and
+the stale runtime can no longer reach the new structure. In that case Repair may
+consume a bounded structured observation from
+`automation/provider-current-structure-evidence.json`.
+
+This channel is deliberately non-executable. It may contain only:
+
+- the current origin hostname;
+- normalized route paths and method/role labels;
+- request key names, never request values;
+- bounded player/server group counts and nested variant counts;
+- bounded language labels.
+
+It must never persist raw HTML, response bodies, cookies, headers, tokens, stream
+URLs or query values. Both `proofAuthority` and `executionAuthority` remain
+false. A route observed here may guide Brain diagnosis and mutation synthesis, but
+it cannot become Provider DATA or publication authority without the ordinary
+provider-owned execution, rematerialization, playback, identity and non-regression
+gates.
+
+This closes a specific Brain blind spot: if the current provider site exposes a
+new player/server contract that the stale runtime never requests, current census
+alone can only describe the stale path. Brain receives both facts and can repair
+the provider-owned traversal rather than merely increasing a cap on obsolete
+code.
+
 ## 6. Brain LLM boundary
 
 The LLM is useful for inventing a bounded method or mutation that deterministic Repair does not already know. It does not decide whether the repair is accepted.

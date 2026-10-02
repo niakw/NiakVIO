@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "role": "provider-current-structure-evidence",
+  "proofAuthority": false,
+  "executionAuthority": false,
+  "providers": {
+    "coflix": {
+      "sourceKind": "user-current-page",
+      "observedAt": "2026-10-01",
+      "originHost": "coflix.ac",
+      "routes": [
+        {
+          "path": "/wp-json/coflix/v1/resolve",
+          "method": "UNKNOWN",
+          "role": "player-resolver"
+        }
+      ],
+      "requestKeys": [
+        "tmdb",
+        "type",
+        "year",
+        "pid"
+      ],
+      "fanout": {
+        "groupCount": 2,
+        "groupVariantCounts": [
+          10,
+          9
+        ],
+        "indexedVariantCount": 19,
+        "languageLabels": [
+          "VF",
+          "VFF",
+          "VOSTFR"
+        ]
+      }
+    }
+  }
+}

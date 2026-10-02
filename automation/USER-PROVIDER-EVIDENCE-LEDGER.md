@@ -84,3 +84,15 @@ Exact provider route captures relevant to unresolved providers:
 - **Movix/Purstream manual chain**: hub/terminal -> TMDB-backed title route -> watch route; observed terminal HLS through `neocine.embedseek.com`. Useful for client-quality/identity regression checks, not as generic routing for other providers.
 
 The raw source files also preserve older desktop logs in which MoviesHunt found an Interstellar catalogue match and older global audits classified MoviesHunt/AniKotoTV as strict healthy while several other providers were partial or non-media. Those historical classifications are not current status, but they are valid regression clues when the same provider now stops earlier in the chain.
+
+
+## Evidence block E — current provider structure supplied 1 October 2026
+
+This block is current structural observation, not executable route authority.
+
+- **CoFlix current player page**: the observed page is on `coflix.ac` and declares the resolver path `/wp-json/coflix/v1/resolve`. The page-level resolver parameters expose the key names `tmdb`, `type`, `year` and `pid`; their values are not persisted here.
+- The same current player exposes **2 server groups**. Server 1 advertises **10** choices and Server 2 **9** choices, with indexed menu items spanning **0..18** for **19 total player/source choices**.
+- Observed language labels include **VF**, **VFF** and **VOSTFR**.
+- This evidence contradicts treating the legacy `coflix.wiki` Ajax path or a small fixed stream cap as a complete model of the current CoFlix player. It is input to Brain diagnosis only: the Brain must still generate the provider-owned correction and prove it on current bytes.
+
+The sanitized machine-readable projection is `automation/provider-current-structure-evidence.json`. It stores only the current host, route path, request key names, group counts and language labels; no raw page body, terminal URL, token or request value is retained.
