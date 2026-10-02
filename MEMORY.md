@@ -1,3 +1,9 @@
+## 2026-10-02 — Variant URL tokenization exact-host guard
+
+- The generic keyed URL extractor used a character class that excluded the literal letter `s` instead of whitespace. Candidate counts could therefore stay numerically correct while hostnames were silently truncated (for example a `.test` reader).
+- Corrected the keyed URL token boundary and strengthened the response-variant contract to assert the exact six Papa-style reader hosts, not only the candidate count.
+- This is harness/Brain evidence plumbing only; no provider runtime or provider-owned production byte was edited. The in-flight census pinned to `c1024586ae28` predates this correction and is diagnostic; final authority requires a rerun on the corrected HEAD.
+
 ## 2026-10-02 — HTML fan-out false-positive filter
 
 - Partial authority run `36957631178` exposed a generic observation bug before Brain mutation: PapaDuStream movie returned 2 playable/verified streams but broad HTML URL extraction advertised 23 candidates and included unrelated hosts such as `image.tmdb.org` / `www.w3.org`. This run is therefore diagnostic only and must not become completeness-repair authority.

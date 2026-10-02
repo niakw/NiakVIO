@@ -124,7 +124,7 @@ function extractResponseVariantHints(value, options = {}) {
     if (height) qualities.add(height);
   }
 
-  const keyed = /["']?([A-Za-z0-9_.-]{1,64})["']?\s*[:=]\s*["'](https?:\\?\/\\?\/[^"'<>s]{3,1600})["']/gi;
+  const keyed = /["']?([A-Za-z0-9_.-]{1,64})["']?\s*[:=]\s*["'](https?:\\?\/\\?\/[^"'<>\s]{3,1600})["']/gi;
   let match;
   while ((match = keyed.exec(text)) !== null && urls.size < 64) {
     const row = candidate(match[2], base, PLAYER_KEY.test(match[1]));

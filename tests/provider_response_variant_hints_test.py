@@ -47,6 +47,7 @@ assert data["coflixIndexed"]["declared_player_hosts"]==[],data
 assert data["coflixA"]["declared_quality_heights"]==[480,720,1080,2160],data
 assert data["coflixB"]["declared_quality_heights"]==[480,720,1080,2160],data
 assert data["papa"]["declared_player_candidate_count"]==6,data
+assert data["papa"]["declared_player_hosts"]==["doply.test","filemoon.test","multiup.test","sandratableother.test","uqload.test","vidzy.test"],data
 assert data["papa"]["declared_quality_heights"]==[480,720,1080,2160],data
 assert data["nav"]["declared_player_candidate_count"]==0,data
 assert data["indexedNav"]["declared_player_candidate_count"]==0,data
