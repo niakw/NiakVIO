@@ -1,3 +1,11 @@
+## 2026-10-03 — CoFlix current-origin transport blockage is now real evidence
+
+- The first targeted transport run `36987803310` was not valid CoFlix transport evidence because explicit FULL OK targets were filtered before residential replay (`FIELD_RESIDENTIAL_PROVIDER_REPLAY_SELECTION providers=0`).
+- Commit `c836860d2e4e42b29abe5781f5294cd9fc4fe008` fixed both transport selectors: explicit current providers may be browser-probed and residentially full-replayed regardless of canonical FULL/PARTIAL/ROUTE status, while current provider/address authority remains mandatory.
+- Corrected transport run `36988306455` then targeted `coflix` successfully. Browser evidence reported `browser_challenge_persisted` on all 3 targeted lanes; residential replay selected exactly 1 provider and returned `raw=0 playable=0 verified=0 wrong=0`.
+- Therefore the live `coflix.ac` contract is currently transport/challenge-blocked even through the configured residential exit in this harness. This is distinct from the already-rejected stale-runtime cap hypothesis and distinct from the old explicit-target selection bug.
+- CoFlix remains unrepaired. Current structure evidence (REST route + 10/9 fan-out) stays observation-only until a transport lane can execute/qualify the live contract; no provider runtime byte is promoted from the supplied HTML alone.
+
 ## 2026-10-03 — HindMoviez third hypothesis is quality-stratified, not another cap increase
 
 - HindMoviez has two executed negative Force experiments on exact current bytes: global output-quota removal regressed the useful result set, then `files/source slice 3 -> 4` returned one extra playable row but stayed 480p-only, reduced announced variants/explored requests and failed the Oppenheimer playable-identity gate. Both fingerprints remain in `automation/brain-llm-force-memory.json` with causal coverage deltas.
