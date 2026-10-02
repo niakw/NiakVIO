@@ -24,6 +24,36 @@ failed={
         "mutationContextFingerprint":ctx_a,
         "accepted":False,
         "reason":"insufficient_playable_stream_proof",
+        "baseline":{
+            "streamsReturned":7,
+            "streamsPlayable":5,
+            "identityContradictions":0,
+            "variantCoverage":{
+                "qualityHeights":[480,720],
+                "announcedQualityHeights":[480,720,1080,2160],
+                "maxPlayableHeight":720,
+                "announcedPlayerCandidates":20,
+                "announcedVariantCandidates":40,
+                "exploredPlayerRequests":16,
+                "reachableHosts":["a.example","b.example"],
+                "fanoutStates":["returned-subset","explored-not-resolved"],
+            },
+        },
+        "candidate":{
+            "streamsReturned":5,
+            "streamsPlayable":5,
+            "identityContradictions":0,
+            "variantCoverage":{
+                "qualityHeights":[480],
+                "announcedQualityHeights":[480,720,1080,2160],
+                "maxPlayableHeight":480,
+                "announcedPlayerCandidates":20,
+                "announcedVariantCandidates":27,
+                "exploredPlayerRequests":8,
+                "reachableHosts":["a.example"],
+                "fanoutStates":["returned-subset"],
+            },
+        },
     }],
 }
 one=mod.merge(base,failed)
@@ -33,6 +63,29 @@ assert row["failures"]==1
 assert row["consecutiveFailures"]==1
 assert row["successes"]==0
 assert row["lastOutcome"]=="rejected"
+assert row["lastBaselineCoverage"]=={
+    "streamsReturned":7,
+    "streamsPlayable":5,
+    "identityContradictions":0,
+    "qualityHeights":[480,720],
+    "announcedQualityHeights":[480,720,1080,2160],
+    "maxPlayableHeight":720,
+    "announcedPlayerCandidates":20,
+    "announcedVariantCandidates":40,
+    "exploredPlayerRequests":16,
+    "reachableHostCount":2,
+    "fanoutStates":["explored-not-resolved","returned-subset"],
+}
+assert row["lastCandidateCoverage"]["qualityHeights"]==[480]
+assert row["lastCandidateCoverage"]["maxPlayableHeight"]==480
+assert row["lastCoverageDelta"]["streamsReturned"]==-2
+assert row["lastCoverageDelta"]["streamsPlayable"]==0
+assert row["lastCoverageDelta"]["maxPlayableHeight"]==-240
+assert row["lastCoverageDelta"]["announcedVariantCandidates"]==-13
+assert row["lastCoverageDelta"]["exploredPlayerRequests"]==-8
+assert row["lastCoverageDelta"]["qualityHeightCount"]==-1
+assert "a.example" not in str(row)
+assert "b.example" not in str(row)
 
 two=mod.merge(one,failed)
 row=two["entries"][0]

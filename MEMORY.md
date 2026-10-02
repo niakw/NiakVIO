@@ -1,3 +1,10 @@
+## 2026-10-02 — Force negative memory now retains causal completeness deltas
+
+- HindMoviez exposed that Force memory was too lossy: the sandbox knew the rejected candidate regressed returned streams and quality/exploration depth, but durable Brain memory retained only `variant_coverage_stream_regression` plus a broad mutation family. The next Brain cycle could therefore vary the same cap strategy without seeing why it failed.
+- `scripts/update_brain_llm_force_memory.py` now persists a bounded, URL-free coverage snapshot for the last executed baseline and candidate: returned/playable counts, identity contradictions, observed and announced quality heights, maximum playable height, announced player/variant counts, explored player requests, reachable-host count and fan-out states. It also persists numeric deltas.
+- Hostnames, stream URLs, headers, response bodies and credentials are not retained. The HindMoviez-shaped contract proves a baseline 7 returned / 720p / 16 explored versus candidate 5 returned / 480p / 8 explored becomes explicit negative causal memory.
+- The memory test is now part of Workflow Gate. This is generic Force learning infrastructure; no provider runtime bytes were changed.
+
 ## 2026-10-02 — Current quality evidence reaches Brain Repair
 
 - The current-structure observation channel now supports bounded `qualityHeights` in addition to player/server counts and language labels. Brain-LLM main `51c7adb3f42d0e695d7d1bfb434ba33938fa379f` sanitizes/sorts values into the model-visible current structure while keeping `proofAuthority=false` and `executionAuthority=false`.

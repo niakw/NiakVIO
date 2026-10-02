@@ -48,6 +48,81 @@ def safe_repair_family(value: Any) -> dict[str, Any]:
     return allowed
 
 
+def safe_coverage_summary(value: Any) -> dict[str, Any]:
+    """Retain only bounded causal completeness metrics from a sandbox result."""
+    if not isinstance(value, dict):
+        return {}
+    coverage = value.get("variantCoverage")
+    if not isinstance(coverage, dict):
+        coverage = {}
+
+    def non_negative_int(raw: Any, limit: int = 100000) -> int:
+        try:
+            return max(0, min(int(raw or 0), limit))
+        except (TypeError, ValueError):
+            return 0
+
+    def heights(raw: Any) -> list[int]:
+        out: set[int] = set()
+        if isinstance(raw, list):
+            for value in raw[:24]:
+                try:
+                    height = int(value or 0)
+                except (TypeError, ValueError):
+                    continue
+                if 144 <= height <= 4320:
+                    out.add(height)
+        return sorted(out)
+
+    states = sorted({
+        canon(item)[:80]
+        for item in (coverage.get("fanoutStates") or [])[:16]
+        if canon(item)
+    })
+    result = {
+        "streamsReturned": non_negative_int(value.get("streamsReturned")),
+        "streamsPlayable": non_negative_int(value.get("streamsPlayable")),
+        "identityContradictions": non_negative_int(value.get("identityContradictions"), 1000),
+        "qualityHeights": heights(coverage.get("qualityHeights")),
+        "announcedQualityHeights": heights(coverage.get("announcedQualityHeights")),
+        "maxPlayableHeight": non_negative_int(coverage.get("maxPlayableHeight"), 4320),
+        "announcedPlayerCandidates": non_negative_int(coverage.get("announcedPlayerCandidates"), 10000),
+        "announcedVariantCandidates": non_negative_int(coverage.get("announcedVariantCandidates"), 10000),
+        "exploredPlayerRequests": non_negative_int(coverage.get("exploredPlayerRequests"), 10000),
+        "reachableHostCount": min(256, len([
+            item for item in (coverage.get("reachableHosts") or [])[:256]
+            if str(item or "").strip()
+        ])),
+        "fanoutStates": states,
+    }
+    return result
+
+
+def safe_coverage_delta(
+    baseline: dict[str, Any],
+    candidate: dict[str, Any],
+) -> dict[str, int]:
+    keys = (
+        "streamsReturned",
+        "streamsPlayable",
+        "identityContradictions",
+        "maxPlayableHeight",
+        "announcedPlayerCandidates",
+        "announcedVariantCandidates",
+        "exploredPlayerRequests",
+        "reachableHostCount",
+    )
+    out = {
+        key: int(candidate.get(key) or 0) - int(baseline.get(key) or 0)
+        for key in keys
+    }
+    out["qualityHeightCount"] = (
+        len(candidate.get("qualityHeights") or [])
+        - len(baseline.get("qualityHeights") or [])
+    )
+    return out
+
+
 def safe_mutation_summary(value: Any) -> list[dict[str, str]]:
     if not isinstance(value, list):
         return []
@@ -135,6 +210,19 @@ def merge(memory: dict[str, Any], evaluation: dict[str, Any]) -> dict[str, Any]:
         mechanism_family = canon(result.get("mechanismFamily"))[:160]
         if mechanism_family:
             row["mechanismFamily"] = mechanism_family
+
+        baseline_coverage = safe_coverage_summary(result.get("baseline"))
+        candidate_coverage = safe_coverage_summary(result.get("candidate"))
+        if baseline_coverage:
+            row["lastBaselineCoverage"] = baseline_coverage
+        if candidate_coverage:
+            row["lastCandidateCoverage"] = candidate_coverage
+        if baseline_coverage and candidate_coverage:
+            row["lastCoverageDelta"] = safe_coverage_delta(
+                baseline_coverage,
+                candidate_coverage,
+            )
+
         row["lastCurrentSha"] = current_sha
         row["sourceNiakvioSha"] = source_sha
         row["sourceBrainLlmSha"] = brain_sha
