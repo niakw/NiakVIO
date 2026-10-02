@@ -1,3 +1,10 @@
+## 2026-10-02 — Probe failures removed from provider Repair debt
+
+- Root cause of the stale 1/46 census flooding Repair was architectural: `invalid_probe_output`, `missing_tmdb_credential` and harness `audit_error` were grouped with provider-owned JS failures. A broken probe could therefore manufacture `PROVIDER JS BROKEN` rows and expand the Brain repairQueue across unrelated providers.
+- These stages now form a separate harness-infrastructure class. When they are the current lane evidence, census reports `HARNESS/ENV BLOCKED` and automated provider Repair is ineligible.
+- Proof history treats these stages as neutral: they neither increment provider technical failures nor reset prior provider/network streaks.
+- Workflow Gate now executes both the current-provider-structure evidence contract and the census harness-infrastructure classification contract. No provider runtime bytes were changed.
+
 ## 2026-10-02 — Current provider structure now reaches Brain Repair
 
 - The user-supplied current CoFlix player page proves a provider-contract drift that stale runtime execution cannot discover by itself: current origin `coflix.ac`, resolver `/wp-json/coflix/v1/resolve`, request-key names `tmdb/type/year/pid`, and 2 server groups exposing 10 + 9 indexed choices (19 total) with VF/VFF/VOSTFR labels.

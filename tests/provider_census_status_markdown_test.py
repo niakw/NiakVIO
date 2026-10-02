@@ -9,7 +9,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 
 from render_provider_census_status import build_status_rows, harness_transport_diagnostic, render
-from update_provider_census_proof_history import NETWORK_STAGES, TECHNICAL_STAGES
+from update_provider_census_proof_history import INFRA_STAGES, NETWORK_STAGES, TECHNICAL_STAGES
 
 report = {
     "provider_count": 9,
@@ -138,6 +138,29 @@ assert "provider_network_http_error" in NETWORK_STAGES
 assert "provider_network_exception" in NETWORK_STAGES
 assert "timeout" in NETWORK_STAGES
 assert not (NETWORK_STAGES & TECHNICAL_STAGES)
+assert {"audit_error", "invalid_probe_output", "missing_tmdb_credential"} <= INFRA_STAGES
+assert not (INFRA_STAGES & TECHNICAL_STAGES)
+assert not (INFRA_STAGES & NETWORK_STAGES)
+
+infra_report = {
+    "provider_count": 1,
+    "rows": [{
+        "provider_id": "probe-infra",
+        "semantic_type": "movie",
+        "status": "invalid_probe_output",
+        "verified": 0,
+        "contradictions": 0,
+        "debug_stage": "invalid_probe_output",
+        "debug_progress_stage": "none",
+        "sample_count": 1,
+        "samples": [],
+    }],
+}
+infra_row = build_status_rows(infra_report, {})[0]
+assert infra_row["status"] == "HARNESS/ENV BLOCKED", infra_row
+assert infra_row["repairEligible"] is False, infra_row
+assert infra_row["brainCheckRequired"] is True, infra_row
+
 assert rows["carried-green"]["status"] == "FULL OK"
 assert rows["carried-green"]["testedThisRun"] is False
 

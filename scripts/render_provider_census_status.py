@@ -43,6 +43,8 @@ JS_BROKEN_STAGES = {
     "provider_runtime_hook_exception",
     "source_plan_core_metadata_leak",
     "runtime_error",
+}
+HARNESS_INFRA_STAGES = {
     "audit_error",
     "invalid_probe_output",
     "missing_tmdb_credential",
@@ -495,6 +497,11 @@ def provider_state(
             return "ROUTE PROVEN"
         return "NO PROOF"
 
+    # Probe/audit infrastructure failures are not provider-code evidence. A
+    # globally broken bridge must never manufacture provider Repair debt.
+    if stages and stages.issubset(HARNESS_INFRA_STAGES):
+        return "HARNESS/ENV BLOCKED"
+
     if stages & JS_BROKEN_STAGES:
         if has_history:
             return "REGRESSION PROVIDER JS"
@@ -690,6 +697,8 @@ def _carried_non_green_status(carried: dict[str, Any], provider: str, waf_browse
         if route:
             return "ROUTE PROVEN"
         return "NO PROOF"
+    if any(value in issue for value in HARNESS_INFRA_STAGES):
+        return "HARNESS/ENV BLOCKED"
     if any(value in issue for value in JS_BROKEN_STAGES):
         return "REGRESSION PROVIDER JS" if historical else "PROVIDER JS BROKEN"
     return "REGRESSION PROVIDER JS" if historical else "PROVIDER JS BROKEN"

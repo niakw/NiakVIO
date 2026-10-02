@@ -228,7 +228,13 @@ It must not be written for:
 - a plan merely selected but never executable;
 - provider-neutral staging drift;
 - stale external LLM guidance;
-- environment-only failures treated as provider defects.
+- environment-only failures treated as provider defects;
+- probe/audit infrastructure failures such as `invalid_probe_output`,
+  `missing_tmdb_credential` or a harness `audit_error`.
+
+Probe/audit infrastructure stages are classified outside provider Repair and are
+neutral to provider technical/network failure streaks. One broken census bridge
+must never turn an entire provider fleet into synthetic provider-code debt.
 
 Variant/generation memory exists to stop identical retries, not to make every future method impossible.
 

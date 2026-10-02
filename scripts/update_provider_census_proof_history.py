@@ -19,6 +19,8 @@ TECHNICAL_STAGES = {
     "provider_runtime_hook_exception",
     "source_plan_core_metadata_leak",
     "runtime_error",
+}
+INFRA_STAGES = {
     "audit_error",
     "invalid_probe_output",
     "missing_tmdb_credential",
@@ -205,6 +207,11 @@ def main() -> int:
             # can never manufacture JS FULLY BROKEN from repeated 403/DNS/timeouts.
             lane_state["consecutiveTechnicalRuns"] = 0
             lane_state["consecutiveNetworkRuns"] = int(lane_state.get("consecutiveNetworkRuns") or 0) + 1
+        elif current_stage in INFRA_STAGES:
+            # Harness/probe failures are neutral to provider history. Preserve
+            # prior provider evidence without incrementing or resetting either
+            # provider-owned technical or network streaks.
+            pass
         elif current_stage == "provider_network_zero_result":
             lane_state["consecutiveTechnicalRuns"] = 0
             lane_state["consecutiveNetworkRuns"] = 0
