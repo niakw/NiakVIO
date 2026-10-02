@@ -924,3 +924,16 @@ Completeness is measured across stages rather than by a single stream or server 
 Provider-local runtimes remain responsible for their own server/HTML/JSON structure. Brain receives the generic evidence and may remove a proven bounded fan-out truncation from exact current provider-owned bytes. FORCE acceptance requires no runtime, malformed-request, identity or playable regression; a larger distinct returned-stream set is a verified completeness gain only when current hierarchical fan-out evidence exists and sampled playability remains positive.
 
 Index-only player menus are also observable without provider-specific class names. When a consumed response contains bounded numeric player controls (for example a `role="menuitem"` carrying `data-i`, `data-index`, `data-player-index` or `data-server-index`) inside clear player/server/media context, the harness records only the distinct candidate count. Bare scalar attributes such as `data-src="1"` are never promoted to URLs/hosts. This lets provider-specific DOMs such as a two-server menu expose completeness debt to Brain while keeping the evidence surface generic and redacted.
+
+
+### Sharded census → Brain fan-out repair authority
+
+The fast/sharded census must preserve the same bounded multi-reader/server evidence used by Deep Health. The CI probe extracts only sanitized counts, hostnames and advertised quality heights from response clones; response bodies, credentials and terminal URLs are not persisted. Each provider/lane census row carries:
+
+- `announced_player_candidates` and `announced_variant_candidates`;
+- `announced_player_hosts` and `announced_quality_heights`;
+- `explored_player_requests` and `explored_player_hosts`;
+- `streams_returned` and `variant_fanout_state`.
+
+Brain Repair consumes the current sharded ledger as dynamic completeness evidence. A provider that is otherwise FULL/PARTIAL/CANDIDATE OK may therefore become a `variant_coverage_gap` target when several players/servers/variants are announced but traversal or returned streams are a strict subset. Static runtime cap detection and dynamic fan-out evidence are complementary: either can put the provider into the explicit completeness cohort, while publication still requires current-byte playback, identity and non-regression proof.
+
