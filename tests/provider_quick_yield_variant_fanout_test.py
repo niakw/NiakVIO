@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import importlib.util
+import subprocess
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -64,7 +65,10 @@ assert summary["announced_variant_candidates"] == 19, summary
 assert summary["explored_player_requests"] == 0, summary
 assert summary["variant_fanout_state"] == "returned-subset", summary
 
-probe = (ROOT / "scripts" / "nuvio_tv_probe_tmdb_ci.cjs").read_text(encoding="utf-8")
+probe_path = ROOT / "scripts" / "nuvio_tv_probe_tmdb_ci.cjs"
+syntax = subprocess.run(["node", "--check", str(probe_path)], cwd=ROOT, text=True, capture_output=True, check=False)
+assert syntax.returncode == 0, syntax.stdout + syntax.stderr
+probe = probe_path.read_text(encoding="utf-8")
 assert "extractResponseVariantHints" in probe
 assert "declared_player_candidate_count" in probe
 assert "declared_player_hosts" in probe
