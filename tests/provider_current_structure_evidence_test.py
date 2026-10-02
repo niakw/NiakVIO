@@ -26,6 +26,15 @@ assert row["fanout"]["groupVariantCounts"] == [10, 9]
 assert row["fanout"]["indexedVariantCount"] == 19
 assert row["fanout"]["languageLabels"] == ["VF", "VFF", "VOSTFR"]
 
+hind = data["providers"]["hindmoviez"]
+assert hind["sourceKind"] == "user-current-page"
+assert hind["originHost"] == "hindmovie.dev"
+assert hind["routes"] == []
+assert hind["requestKeys"] == []
+assert hind["fanout"]["qualityHeights"] == [480, 720, 1080, 2160]
+assert hind["fanout"]["groupCount"] == 0
+assert hind["fanout"]["indexedVariantCount"] == 0
+
 blob = json.dumps(data, ensure_ascii=False)
 for forbidden in ("<div", "data-cfp", "157336", "20467", "1fichier.com", "megaup.net", "veev.to"):
     assert forbidden not in blob, forbidden
