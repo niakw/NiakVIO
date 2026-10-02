@@ -53,6 +53,10 @@ FAILURE_EXECUTORS: dict[str, tuple[str, str]] = {
         "player_media_extractor_v1",
         "meta-gap-terminal-media-composition",
     ),
+    "variant_coverage_gap": (
+        "player_media_extractor_v1",
+        "meta-gap-variant-enumeration-composition",
+    ),
     "candidate_replay_gap": (
         "retained_candidate_replay_v1",
         "meta-gap-candidate-replay-composition",
@@ -122,6 +126,20 @@ BASE_EXPERIMENTS: dict[str, dict[str, Any]] = {
         "maxDepth": 6,
         "maxPages": 24,
         "maxEmbeds": 34,
+        "maxRecipePasses": 6,
+    },
+    "variant_coverage_gap": {
+        "routePolicy": "owned_only",
+        "recipePolicy": "current_plus_provider",
+        "roleOrder": ["player", "source", "api", "episode", "detail", "search", "other"],
+        "terminalOnly": True,
+        "aliasSearch": False,
+        "responseSalvage": True,
+        "documentRequestMining": True,
+        "sessionBootstrap": False,
+        "maxDepth": 6,
+        "maxPages": 24,
+        "maxEmbeds": 36,
         "maxRecipePasses": 6,
     },
     "media_extraction_gap": {
