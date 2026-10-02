@@ -53,7 +53,8 @@ assert "chain_terminal_extractor_v1" in profiles,profiles
 assert "adaptive_runtime_recovery" in profiles,profiles
 assert runtime._is_causal_strategy_profile("chain_terminal_extractor_v1")
 assert runtime._is_causal_strategy_profile("chain_terminal_extractor_v1_g3")
-assert not runtime._is_causal_strategy_profile("adaptive_runtime_recovery")
+assert runtime.CAUSAL_STRATEGY_BASES["unknown_failure"] == "adaptive_runtime_recovery"
+assert runtime._is_causal_strategy_profile("adaptive_runtime_recovery")
 assert not runtime._is_causal_strategy_profile("expanded_family_strategy_v1")
 
 with tempfile.TemporaryDirectory() as directory:

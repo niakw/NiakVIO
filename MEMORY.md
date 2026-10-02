@@ -1,3 +1,11 @@
+## 2026-10-02 — Causal strategy preflight drift closed
+
+- CoFlix FORCE rerun `36964786372` passed the cron/full-coverage contract but stopped next in `brain_causal_strategy_profile_test.py` before any Brain mutation.
+- The stale assertion dated from before commit `a1794eb2dcc7aad6603d2da4fac34ca1246193d1`, which deliberately made all generic causal failure families executable and mapped `unknown_failure` to `adaptive_runtime_recovery`.
+- Runtime, JS planner and LLM contracts already agree on that mapping. The test now locks the current behavior instead of rejecting it.
+- Run `36964786372` produced no provider mutation; this remains Brain preflight debt, not a CoFlix repair result.
+- The same CoFlix architecture FORCE is retriggered from the current main after this contract alignment.
+
 ## 2026-10-02 — CoFlix FORCE preflight gate corrected
 
 - Explicit CoFlix FORCE run `36964643052` correctly resolved target `coflix`, `architecture_force=true` and a 60-minute bounded slot, but no Brain/provider mutation ran because `tests/brain_cron_full_coverage_test.py` failed before Learning execution.
