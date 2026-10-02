@@ -1,3 +1,9 @@
+## 2026-10-02 — Completeness Repair is manifest-current
+
+- Brain guidance automatic completeness selection is now bounded to providers present in the current NiakVIO manifest. Historical/retired runtime registrations in `provider-overrides.json` cannot consume Repair/FORCE cycles merely because static cap patterns remain in archived provider infrastructure.
+- Brain-LLM `edf7ad0a` intersects repair/static/dynamic cohorts with the current manifest; `ee8f704d` locks the workflow contract. Brain LLM CI #1340 (`36945585325`) is green.
+- Current static source search confirms completeness-cap patterns are broader than CoFlix/HindMoviez and include multiple active runtime families; the authoritative dynamic cohort will come from the fresh all-provider census rather than treating every static cap as a defect.
+
 ## 2026-10-02 — Brain Repair auto-selects current multi-player/server debt
 
 - Brain-LLM now audits `automation/provider-census-sharded-latest.json` as bounded current execution evidence and automatically promotes providers with observed hierarchical fan-out debt into the Repair guidance cohort, even when census status is FULL/PARTIAL/CANDIDATE and no static numeric cap is detectable.
