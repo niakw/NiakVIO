@@ -1,3 +1,12 @@
+## 2026-10-03 — HindMoviez third hypothesis is quality-stratified, not another cap increase
+
+- HindMoviez has two executed negative Force experiments on exact current bytes: global output-quota removal regressed the useful result set, then `files/source slice 3 -> 4` returned one extra playable row but stayed 480p-only, reduced announced variants/explored requests and failed the Oppenheimer playable-identity gate. Both fingerprints remain in `automation/brain-llm-force-memory.json` with causal coverage deltas.
+- Brain-LLM main `1dee412b0faf2b0e146c2de6261dd81ce513e783` adds the generic third deterministic progression for quality/source completeness debt: after quota and simple slice hypotheses are both blocked by executed negative memory, choose a bounded set of upstream source/file variants by distinct currently observed quality heights before filling any remaining slots.
+- The mechanism does not change routes, origins, HTTP methods, deadlines, terminal URLs or global playback guards. Current observed quality heights drive the bounded target; it is not HindMoviez-specific.
+- Initial CI exposed that current runtimes encode quality classifiers as regex alternations such as `(2160|1080|720|480|360)p`, not necessarily literal `2160p` tokens. Brain `aa7b2e79d9799dc856ef4e251335c2e6080c5cf4` fixes the generic classifier detection and CI run `37075069578` is green.
+- Authoritative HindMoviez cycle-3 Advisor run `37075113561`, trigger Brain SHA `99aaac8ffb178d46ae68434189b9ae898441a619`, is pinned to NiakVIO `34eb7f37c41b847b2d2317e3fa15bd877c56e6d6` and exact target `hindmoviez`. It is not a repair until an external mutation is published, sandboxed, rematerialized and proves playable quality gain with identity/non-regression gates.
+- CoFlix remains unrepaired: its cap-only candidate was correctly rejected with zero verified dimension gain; live current-origin `coflix.ac` contract qualification remains transport-blocked. No CoFlix or HindMoviez provider runtime was manually edited in this sequence.
+
 ## 2026-10-02 — HindMoviez second Force hypothesis rejected with causal metrics
 
 - External Brain source-slice hypothesis `d2c651fe...` from Brain `ef26e7dd1ed49cb3d1beaeaa7d6aaf25fdb97302` was executed in isolated current-byte sandbox run `37001140250`; it was not the earlier global-quota mutation.
