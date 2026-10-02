@@ -12,12 +12,15 @@ assert spec and spec.loader
 spec.loader.exec_module(mod)
 
 debug = {
+    "model": {"official_site": "https://provider.test"},
     "fetches": [
         {
             "url": "https://provider.test/ajax/player",
             "response_url": "https://provider.test/ajax/player",
             "status": 200,
             "declared_player_candidate_count": 2,
+            "declared_url_player_candidate_count": 2,
+            "declared_indexed_player_candidate_count": 0,
             "declared_player_hosts": ["player-a.test", "player-b.test"],
             "declared_quality_heights": [480, 720, 1080],
         },
@@ -26,6 +29,8 @@ debug = {
             "response_url": "https://player-a.test/e/root",
             "status": 200,
             "declared_player_candidate_count": 10,
+            "declared_url_player_candidate_count": 0,
+            "declared_indexed_player_candidate_count": 10,
             "declared_player_hosts": [],
             "declared_quality_heights": [480, 720, 1080, 2160],
         },
@@ -34,13 +39,15 @@ debug = {
             "response_url": "https://player-b.test/e/root",
             "status": 200,
             "declared_player_candidate_count": 9,
+            "declared_url_player_candidate_count": 0,
+            "declared_indexed_player_candidate_count": 9,
             "declared_player_hosts": [],
             "declared_quality_heights": [480, 720, 1080, 2160],
         },
     ]
 }
 summary = mod._variant_fanout_summary(debug, 8)
-assert summary["announced_player_candidates"] == 10, summary
+assert summary["announced_player_candidates"] == 2, summary
 assert summary["announced_player_hosts"] == ["player-a.test", "player-b.test"], summary
 assert summary["announced_variant_candidates"] == 19, summary
 assert summary["explored_player_requests"] == 2, summary
