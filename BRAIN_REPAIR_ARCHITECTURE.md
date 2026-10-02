@@ -328,7 +328,12 @@ A current row may expose `variant_fanout_state` values including
 `announced-not-explored`, `explored-not-resolved`, `returned-subset`,
 `quality-gap`, and `fanout-observed`. A current dynamic gap is allowed to classify
 a nominally `FULL OK`, `PARTIAL OK` or `CANDIDATE OK` provider as
-`variant_coverage_gap` for Brain Repair. This classification does not require a
+`variant_coverage_gap` for Brain Repair. The same classification is projected
+into the NiakVIO runtime planner's census prior. A targeted Learning sandbox that
+temporarily returns `runtime_empty` or a transport failure cannot erase a current
+sharded proof that the published provider is playable but incomplete; the
+contradiction remains visible while completeness stays the causal Repair target.
+Identity and media-safety contradictions still outrank completeness debt. This classification does not require a
 hard-coded numeric cap to be found statically: static cap detection is a useful
 prior, while current response fan-out is execution evidence.
 
