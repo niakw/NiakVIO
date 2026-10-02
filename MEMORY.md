@@ -1,3 +1,10 @@
+## 2026-10-02 — HindMoviez second Force hypothesis rejected with causal metrics
+
+- External Brain source-slice hypothesis `d2c651fe...` from Brain `ef26e7dd1ed49cb3d1beaeaa7d6aaf25fdb97302` was executed in isolated current-byte sandbox run `37001140250`; it was not the earlier global-quota mutation.
+- Baseline on that run: 5 returned / 5 playable, playable quality 480p, 40 announced variants, 9 explored player requests. Candidate `slice(0,3) -> slice(0,4)`: 6 returned / 6 playable but still only 480p, 27 announced variants and 8 explored requests.
+- Candidate therefore produced no intended quality gain, reduced announced/explored completeness, and additionally failed `identity_gate:Oppenheimer:playable_identity_not_fully_verified`. Sandbox accepted 0 providers; no provider bytes were published.
+- The exact URL-free coverage summary is persisted into `automation/brain-llm-force-memory.json` so Brain can distinguish this source-slice failure from the earlier quota-removal failure and avoid blind cap escalation.
+
 ## 2026-10-02 — Force negative memory now retains causal completeness deltas
 
 - HindMoviez exposed that Force memory was too lossy: the sandbox knew the rejected candidate regressed returned streams and quality/exploration depth, but durable Brain memory retained only `variant_coverage_stream_regression` plus a broad mutation family. The next Brain cycle could therefore vary the same cap strategy without seeing why it failed.
