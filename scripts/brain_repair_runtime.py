@@ -24,6 +24,7 @@ POLICY_PATH = ROOT / "engine_v2" / "config" / "brain-policy.json"
 OVERRIDES_PATH = ROOT / "provider-overrides.json"
 CENSUS_STATUS_PATH = ROOT / "automation" / "provider-census-status.json"
 CENSUS_SHARDED_PATH = ROOT / "automation" / "provider-census-sharded-latest.json"
+CURRENT_STRUCTURE_PATH = ROOT / "automation" / "provider-current-structure-evidence.json"
 REPAIR_MEMORY_PATH = ROOT / "automation" / "brain-repair-memory.json"
 EXPERIENCE_PATH = ROOT / "automation" / "brain-repair-experience.json"
 LOCAL_FORCE_RESULTS_DIR = ROOT / "automation" / "local-force-results"
@@ -106,6 +107,100 @@ def _clip_text(value: Any, limit: int = 600) -> str:
     return text[:limit]
 
 
+def _current_structure_evidence(
+    provider_id: str,
+    payload: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Return bounded observation-only current structure for canonical Repair."""
+    if payload is None:
+        payload = _load_json(CURRENT_STRUCTURE_PATH, {})
+    if not isinstance(payload, dict):
+        return {}
+    if (
+        payload.get("role") != "provider-current-structure-evidence"
+        or payload.get("proofAuthority") is not False
+        or payload.get("executionAuthority") is not False
+    ):
+        return {}
+
+    providers = payload.get("providers") if isinstance(payload.get("providers"), dict) else {}
+    wanted = str(provider_id or "").strip().casefold().replace("_", "-")
+    raw = next(
+        (
+            value
+            for key, value in providers.items()
+            if str(key or "").strip().casefold().replace("_", "-") == wanted
+            and isinstance(value, dict)
+        ),
+        {},
+    )
+    if not raw:
+        return {}
+
+    host = str(raw.get("originHost") or "").strip().casefold()[:160]
+    if host and not re.fullmatch(r"[a-z0-9.-]+", host):
+        host = ""
+
+    routes: list[dict[str, str]] = []
+    for row in (raw.get("routes") or [])[:12]:
+        if not isinstance(row, dict):
+            continue
+        path = str(row.get("path") or "").strip()
+        if not path.startswith("/") or len(path) > 260:
+            continue
+        method = str(row.get("method") or "").strip().upper()
+        if method not in {"GET", "POST", "UNKNOWN", ""}:
+            method = "UNKNOWN"
+        role = _clip_text(row.get("role"), 80)
+        item: dict[str, str] = {"path": path, "method": method or "UNKNOWN"}
+        if role:
+            item["role"] = role
+        routes.append(item)
+
+    request_keys = [
+        str(value)[:48]
+        for value in (raw.get("requestKeys") or [])[:24]
+        if re.fullmatch(r"[A-Za-z][A-Za-z0-9_-]{0,47}", str(value or ""))
+    ]
+
+    fanout_raw = raw.get("fanout") if isinstance(raw.get("fanout"), dict) else {}
+    try:
+        group_count = max(0, min(int(fanout_raw.get("groupCount") or 0), 32))
+        indexed_count = max(0, min(int(fanout_raw.get("indexedVariantCount") or 0), 512))
+    except (TypeError, ValueError):
+        group_count = indexed_count = 0
+    group_counts: list[int] = []
+    for value in (fanout_raw.get("groupVariantCounts") or [])[:16]:
+        try:
+            count = max(0, min(int(value or 0), 128))
+        except (TypeError, ValueError):
+            continue
+        if count:
+            group_counts.append(count)
+    labels = [
+        str(value)[:24].upper()
+        for value in (fanout_raw.get("languageLabels") or [])[:16]
+        if re.fullmatch(r"[A-Za-z0-9_-]{1,24}", str(value or ""))
+    ]
+
+    return {
+        "role": "current-provider-structure-observation",
+        "proofAuthority": False,
+        "executionAuthority": False,
+        "sourceKind": _clip_text(raw.get("sourceKind"), 80),
+        "observedAt": _clip_text(raw.get("observedAt"), 32),
+        **({"originHost": host} if host else {}),
+        "routes": routes,
+        "requestKeys": request_keys,
+        "fanout": {
+            "groupCount": group_count,
+            "groupVariantCounts": group_counts,
+            "indexedVariantCount": indexed_count,
+            "languageLabels": labels,
+        },
+    }
+
+
 def _dynamic_variant_coverage_prior(provider_id: str) -> dict[str, Any]:
     payload = _load_json(CENSUS_SHARDED_PATH, {})
     wanted = str(provider_id or "").strip().casefold().replace("_", "-")
@@ -172,6 +267,7 @@ def _census_prior(provider_id: str) -> dict[str, Any]:
         if str(row.get("provider") or "").strip().casefold() != wanted:
             continue
         dynamic_variant = _dynamic_variant_coverage_prior(provider_id)
+        current_structure = _current_structure_evidence(provider_id)
         return {
             "status": _clip_text(row.get("status"), 80),
             "dominantIssue": _clip_text(row.get("dominantIssue"), 240),
@@ -183,6 +279,7 @@ def _census_prior(provider_id: str) -> dict[str, Any]:
             "repairEligible": row.get("repairEligible") is True,
             "knowledgeRole": "monotonic-diagnostic-prior-only",
             **({"dynamicVariantCoverage": dynamic_variant} if dynamic_variant else {}),
+            **({"currentStructureEvidence": current_structure} if current_structure else {}),
         }
     return {}
 
@@ -995,6 +1092,10 @@ def wrap_matching_profiles(base_matching: Callable[..., list[str]]) -> Callable[
         # applicability filtering and become profile_unavailable before they can
         # execute.
         candidate["brain_repair_plan"] = copy.deepcopy(_plan_snapshot(plan))
+        provider_id = str(candidate.get("canonical_id") or candidate.get("upstream_id") or "")
+        current_structure = _current_structure_evidence(provider_id)
+        if current_structure:
+            candidate["brain_current_structure_evidence"] = current_structure
         profiles = list(base_matching(candidate, result, source_text, config))
         allowed_order = [str(value) for value in plan.get("allowedProfiles") or [] if str(value)]
         allowed = set(allowed_order)

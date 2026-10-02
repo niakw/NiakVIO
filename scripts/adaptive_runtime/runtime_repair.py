@@ -1091,6 +1091,32 @@ def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any])
     provider_id = str(candidate.get("canonical_id") or candidate.get("upstream_id") or "").casefold()
     if not provider_id:
         return None
+    current_structure = (
+        candidate.get("brain_current_structure_evidence")
+        if isinstance(candidate.get("brain_current_structure_evidence"), dict)
+        and candidate["brain_current_structure_evidence"].get("proofAuthority") is False
+        and candidate["brain_current_structure_evidence"].get("executionAuthority") is False
+        else {}
+    )
+    structure_host = str(current_structure.get("originHost") or "").strip().casefold()
+    structure_origin = _origin(structure_host) if structure_host else None
+    structure_routes = [
+        str(row.get("path") or "")
+        for row in (current_structure.get("routes") or [])[:12]
+        if isinstance(row, dict) and str(row.get("path") or "").startswith("/")
+    ]
+    structure_fanout = (
+        current_structure.get("fanout")
+        if isinstance(current_structure.get("fanout"), dict)
+        else {}
+    )
+    try:
+        structure_variant_count = max(
+            0,
+            min(int(structure_fanout.get("indexedVariantCount") or 0), 512),
+        )
+    except (TypeError, ValueError):
+        structure_variant_count = 0
     patch = _mapping_entry(config.get("provider_patches"), provider_id)
     capability = _mapping_entry(config.get("provider_capabilities"), provider_id)
     metadata = _provider_metadata(candidate)
@@ -1128,6 +1154,7 @@ def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any])
         if str(recipe.get("origin") or "").strip()
     ]
     explicit = [
+        structure_origin,
         recovery_options.get("base_url"), patch.get("official_site"),
         *network_hints["bases"],
         metadata.get("baseUrl"), metadata.get("base_url"), metadata.get("url"),
@@ -1176,6 +1203,7 @@ def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any])
         types = ["movie", "tv", "anime"]
 
     learned_routes = _unique_routes(
+        structure_routes,
         positive_program_routes(provider_id),
         _patch_routes(patch),
         limit=64,
@@ -1689,6 +1717,7 @@ def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any])
         if strict_positive_replay
         else [
             base_url,
+            structure_origin,
             patch.get("official_site"),
             patch.get("official_api"),
             fixed_endpoint.get("api"),
@@ -1736,6 +1765,7 @@ def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any])
         else 10,
     )
     default_max_embeds = max(
+        min(40, structure_variant_count) if structure_variant_count else 0,
         int(census_focus.get("max_embeds") or 10),
         (
             24 if experiment_generation <= 2
@@ -1787,6 +1817,8 @@ def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any])
             "historicalCases": len(historical_priors),
             "nearestArchetypePeers": len(nearest_peers),
             "provider": len(learned_routes),
+            "currentStructureRoutes": len(structure_routes),
+            "currentStructureVariantCount": structure_variant_count,
             "peer": len(peer_routes),
             "search": len(search_paths),
             "direct": len(direct_paths),
@@ -1799,7 +1831,9 @@ def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any])
             "peerRequestRecipes": len(peer_request_recipes),
         },
         "repair_focus": (
-            "media-extraction"
+            "variant-coverage"
+            if experiment_failure == "variant_coverage_gap"
+            else "media-extraction"
             if experiment_failure == "media_extraction_gap"
             else census_focus.get("focus") or "generic"
         ),

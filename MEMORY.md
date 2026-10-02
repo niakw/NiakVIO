@@ -1,3 +1,12 @@
+## 2026-10-02 — Canonical Repair consumes current provider structure
+
+- Global sharded authority is restored by run `36968430407` / persistence commit `b3071d51368b1acb43f1f142adae17a6786da478`: 24/46 operational, with CoFlix still FULL OK but current-byte fan-out gaps on anime/movie/tv.
+- Audit found the final handoff gap: Brain-LLM/Learning consumed `automation/provider-current-structure-evidence.json`, while canonical `scripts/brain_repair_runtime.py` did not attach that observation to V6 runtime candidates.
+- Canonical Repair now sanitizes the same observation and attaches it to the in-memory candidate. Adaptive Repair may use the current origin and route path as bounded sandbox hypotheses and may raise player/embed exploration to the observed indexed fan-out.
+- Unknown methods remain UNKNOWN; request-key names never become an executable request recipe. Only a request trace that actually executes in a validated winner may be persisted as replay DATA.
+- Generic contract proves a synthetic current origin + `/wp-json/.../resolve` + 2 groups / 10+9 variants yields current-origin selection, bounded 19-player exploration and `variant-coverage` focus without granting proof/publication authority.
+- For CoFlix this lets Brain test the current `coflix.ac` resolver structure instead of only widening the stale `coflix.wiki/ajax` traversal. No CoFlix production provider runtime was manually edited.
+
 ## 2026-10-02 — FORCE selection now includes Brain static variant debt
 
 - Dynamic fan-out cannot detect every completeness failure. A runtime may truncate before later qualities/servers are ever requested or announced; HindMoviez's historical 480p-only symptom is the representative example.

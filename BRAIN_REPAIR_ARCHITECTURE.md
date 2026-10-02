@@ -382,6 +382,20 @@ alone can only describe the stale path. Brain receives both facts and can repair
 the provider-owned traversal rather than merely increasing a cap on obsolete
 code.
 
+
+Canonical Repair V6 consumes the same observation channel, not only Learning.
+The observation may influence sandbox hypothesis generation only:
+
+- the current observed origin can outrank a stale provider runtime origin;
+- observed route paths can enter the bounded direct-route hypothesis set;
+- the indexed fan-out can raise the bounded player/embed exploration budget;
+- an unknown HTTP method remains unknown. Repair must not fabricate a POST body
+  or promote an observed route directly into Provider DATA.
+
+A winning route/request program becomes persistent only from the request trace
+that actually executed in an accepted current-byte candidate. Observation,
+hypothesis, execution and proof remain distinct.
+
 ## 6. Brain LLM boundary
 
 The LLM is useful for inventing a bounded method or mutation that deterministic Repair does not already know. It does not decide whether the repair is accepted.
