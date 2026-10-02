@@ -78,10 +78,26 @@ jobs:
           git fetch --quiet origin main
           remote_sha="$(git rev-parse origin/main)"
           if [ "$remote_sha" != "$GITHUB_SHA" ]; then
-            echo "FIELD_REPAIR_SUPERSEDED_EARLY run_sha=$GITHUB_SHA main_sha=$remote_sha" >&2
-            exit 1
+            scope="$RUNNER_TEMP/repair-early-concurrent-scope.json"
+            python3 scripts/select_provider_materialization_scope.py \
+              --base "$GITHUB_SHA" \
+              --head "$remote_sha" \
+              --committed-only \
+              --output "$scope"
+            provider_drift_mode="$(python3 - "$scope" <<'PY'
+          import json,sys
+          data=json.load(open(sys.argv[1],encoding="utf-8"))
+          print(str(data.get("mode") or "all"))
+          PY
+            )"
+            if [ "$provider_drift_mode" != "none" ]; then
+              echo "FIELD_REPAIR_SUPERSEDED_EARLY neutral=false mode=$provider_drift_mode run_sha=$GITHUB_SHA main_sha=$remote_sha" >&2
+              exit 1
+            fi
+            echo "FIELD_REPAIR_SUPERSEDED_EARLY neutral=true mode=none run_sha=$GITHUB_SHA main_sha=$remote_sha action=continue-tested-provider-bytes"
+          else
+            echo "FIELD_REPAIR_HEAD_FRESH sha=$GITHUB_SHA"
           fi
-          echo "FIELD_REPAIR_HEAD_FRESH sha=$GITHUB_SHA"
 
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
         with:
