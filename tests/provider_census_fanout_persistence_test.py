@@ -40,7 +40,8 @@ debug = {
     ]
 }
 summary = mod._variant_fanout_summary(debug, 8)
-assert summary["announced_player_candidates"] == 2, summary
+assert summary["announced_player_candidates"] == 10, summary
+assert summary["announced_player_hosts"] == ["player-a.test", "player-b.test"], summary
 assert summary["announced_variant_candidates"] == 19, summary
 assert summary["explored_player_requests"] == 2, summary
 assert summary["explored_player_hosts"] == ["player-a.test", "player-b.test"], summary
