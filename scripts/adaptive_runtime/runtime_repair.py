@@ -60,6 +60,7 @@ CAUSAL_STRATEGY_BASES = {
     "chain_terminal_gap": "chain_terminal_extractor_v1",
     "candidate_replay_gap": "retained_candidate_replay_v1",
     "media_extraction_gap": "player_media_extractor_v1",
+    "variant_coverage_gap": "player_media_extractor_v1",
     "playback_context_gap": "player_media_extractor_v1",
     "unknown_failure": "adaptive_runtime_recovery",
 }
