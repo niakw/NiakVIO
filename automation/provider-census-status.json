@@ -1926,7 +1926,7 @@
       "authorityKnown": true,
       "action": "protect + replay retained proof",
       "brainCheckRequired": false,
-      "statusRepairEligible": true,
+      "statusRepairEligible": false,
       "repairEligible": false,
       "testedThisRun": true,
       "transportRepairEligible": true,
@@ -2241,9 +2241,11 @@
   "harnessQueue": [],
   "targetedTransportBlockedQueue": [],
   "clientTransportGapQueue": [],
-  "harnessEvidenceRunId": "36980022948-sharded-waf",
-  "harnessEvidenceSha": "a1cbeef96022a51ce244f427c5f64a4992180a47",
-  "authorityRefreshedProviders": [],
+  "harnessEvidenceRunId": "36987803310-waf-transport",
+  "harnessEvidenceSha": "7e6d8f3ec712d5e71cb20678928be1594ba92bb1",
+  "authorityRefreshedProviders": [
+    "vostfree"
+  ],
   "harnessTransportUpdatedProviders": [],
   "networkDifferentialUpdatedProviders": [],
   "residentialProviderReplayPromotedProviders": [
@@ -2255,7 +2257,7 @@
     "enabled": true,
     "available": true,
     "profile": "tailscale-residential-exit",
-    "matchedProviderLanes": 8,
+    "matchedProviderLanes": 0,
     "privacy": {
       "exitNodeNamePersisted": false,
       "tailscaleAddressPersisted": false,
@@ -2580,15 +2582,21 @@
       "cookiesPersisted": false
     },
     "lastAttempt": {
-      "available": false,
-      "providerCount": 0,
+      "available": true,
+      "providerCount": 12,
       "refreshedProviders": [
         "allwish",
         "animesalt",
+        "animesultra",
+        "animevost-fr",
         "flemmix",
         "mallumv",
         "moviebox",
-        "moviesmod"
+        "moviesmod",
+        "vidfast",
+        "vidrock",
+        "vostfree",
+        "yflix"
       ]
     }
   },
