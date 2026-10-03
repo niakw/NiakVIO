@@ -1,6 +1,7 @@
 {
   "schemaVersion": 1,
-  "requestedAt": "2026-10-03T03:12:00+02:00",
-  "reason": "Verify/Publish exposed accepted projection drift: current authority/model is wookafr.blog but published provider bytes still retain wookafr.boston. Run generic projection detector and rematerialize only drifted providers from accepted DATA/Lego; provider-overrides must remain byte-identical.",
-  "sourceSha": "4d4c55edb012f8f6d9272dd3ba559aa6824887b0"
+  "requestedAt": "2026-10-03T16:10:00+02:00",
+  "reason": "Domain Refresh for AnimeKai was globally scoped and exposed WookaFR accepted-DATA/publication drift: expected origins include wookafr.boston while published CONFIG omits it. Rebuild only detected drift from accepted DATA/Lego after provider-scoped Domain control-plane fix; no manual provider patch.",
+  "sourceSha": "02f6577258567b16a4af33e43e6d50954097e821",
+  "retry": 1
 }
