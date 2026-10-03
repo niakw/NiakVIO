@@ -498,8 +498,12 @@ jobs:
 
       - name: Continue Brain Autopilot from fresh census
         if: ${{ steps.persist.outputs.ok == 'true' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
           set -euo pipefail
-          echo "FIELD_SHARDED_CENSUS_AUTOPILOT event_driven=true source_run=${GITHUB_RUN_ID} trigger=workflow_run"
+          gh workflow run provider-brain-autopilot.yml \
+            --repo "$GITHUB_REPOSITORY" --ref main -f dry_run=false
+          echo "FIELD_SHARDED_CENSUS_AUTOPILOT event_driven=false source_run=${GITHUB_RUN_ID} trigger=workflow_dispatch"
 
