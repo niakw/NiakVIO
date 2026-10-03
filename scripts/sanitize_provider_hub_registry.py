@@ -232,15 +232,20 @@ def main() -> int:
     parser.add_argument("--registry", default="provider-hubs.json")
     parser.add_argument("--history", default="provider-domain-history.json")
     parser.add_argument("--manifest", default="manifest.json")
+    parser.add_argument("--provider", action="append", default=[])
     parser.add_argument("--check", action="store_true")
     args = parser.parse_args()
 
     manifest_rows = current_provider_rows(Path(args.manifest))
-    provider_ids = set(manifest_rows)
+    selected = {canonical(value) for value in args.provider if canonical(value)}
+    provider_ids = selected or set(manifest_rows)
+    if not provider_ids.issubset(manifest_rows):
+        raise SystemExit("provider hub sanitizer selection is outside current manifest")
+    scoped_manifest_rows = {provider_id: manifest_rows[provider_id] for provider_id in provider_ids}
 
     registry_path = Path(args.registry)
     registry = json.loads(registry_path.read_text(encoding="utf-8"))
-    registry_created = ensure_registry_coverage(registry, manifest_rows)
+    registry_created = ensure_registry_coverage(registry, scoped_manifest_rows)
     registry, registry_changed = sanitize(registry, provider_ids)
     registry_changed = sorted(set(registry_created) | set(registry_changed))
 
