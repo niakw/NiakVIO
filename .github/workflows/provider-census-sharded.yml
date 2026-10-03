@@ -503,7 +503,11 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          gh workflow run provider-brain-autopilot.yml \
-            --repo "$GITHUB_REPOSITORY" --ref main -f dry_run=false
-          echo "FIELD_SHARDED_CENSUS_AUTOPILOT event_driven=false source_run=${GITHUB_RUN_ID} trigger=workflow_dispatch"
+          if gh workflow run provider-brain-autopilot.yml \
+            --repo "$GITHUB_REPOSITORY" --ref main -f dry_run=false; then
+            echo "FIELD_SHARDED_CENSUS_AUTOPILOT event_driven=false source_run=${GITHUB_RUN_ID} trigger=workflow_dispatch dispatched=true"
+          else
+            echo "FIELD_SHARDED_CENSUS_AUTOPILOT event_driven=false source_run=${GITHUB_RUN_ID} trigger=workflow_dispatch dispatched=false reason=token-dispatch-denied"
+            echo "Autopilot dispatch is best-effort after successful census persistence; workflow_run/manual convergence remains authoritative."
+          fi
 
