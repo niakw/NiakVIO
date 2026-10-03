@@ -39,7 +39,7 @@ for required in (
     "model_workers=2",
     "--advisor-only",
     "--max-hypotheses 1",
-    "max_tokens=160",
+    "max_tokens=160",\n    "max_tokens=256",
     "max_tokens=512",
     "model_timeout=240",
     "model_workers=1",
@@ -71,5 +71,5 @@ assert "git add scripts/brain_layers tests engine_v2/scripts engine_v2/config .g
 print("Brain LLM Learning workflow interpolation contract passed")
 
 assert 'FIELD_BRAIN_LLM_TARGETED_BUDGET' in workflow
-assert 'model_timeout=120' in workflow
+assert 'model_timeout=180' in workflow
 assert 'model_workers=1' in workflow
