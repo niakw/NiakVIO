@@ -150,3 +150,7 @@ assert "brain-llm-private" not in upload_tail
 assert '--brain-llm-sha "${{ steps.brain_llm_pin.outputs.sha }}"' in workflow
 assert workflow.count('--brain-llm-sha "${{ steps.brain_llm_pin.outputs.sha }}"') >= 2
 assert "stale-guidance-ignored" in workflow
+
+assert 'FIELD_BRAIN_LLM_TARGETED_BUDGET' in workflow
+assert 'model_timeout=120' in workflow
+assert 'model_workers=1' in workflow
