@@ -69,7 +69,9 @@ jobs:
           ref: ${{ github.event_name == 'push' && github.sha || 'main' }}
           fetch-depth: 0
       - name: Validate sharded census persistence contract
-        run: python tests/provider_census_sharded_persistence_contract_test.py
+        run: |
+          python tests/provider_census_sharded_persistence_contract_test.py
+          python tests/provider_quick_yield_provider_budget_test.py
 
       - id: pin
         shell: bash
@@ -159,6 +161,7 @@ jobs:
       TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
       NIAKVIO_QUICK_YIELD_WORKERS: '20'
       NIAKVIO_QUICK_YIELD_TIMEOUT: '60'
+      NIAKVIO_QUICK_YIELD_PROVIDER_BUDGET: '90'
       NIAKVIO_QUICK_YIELD_MAX_SAMPLES: '8'
       CENSUS_SCOPE: ${{ needs.prepare.outputs.census_scope }}
       HEAD_MESSAGE: ${{ github.event.head_commit.message || '' }}

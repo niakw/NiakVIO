@@ -31,6 +31,7 @@ STATUS_FILE = ROOT / "automation" / "provider-census-status.json"
 PROOF_HISTORY = ROOT / "automation" / "provider-census-proof-history.json"
 WORKERS = max(1, min(int(os.environ.get("NIAKVIO_QUICK_YIELD_WORKERS", "12")), 20))
 TIMEOUT = max(20, min(int(os.environ.get("NIAKVIO_QUICK_YIELD_TIMEOUT", "45")), 90))
+PROVIDER_BUDGET = max(TIMEOUT, min(int(os.environ.get("NIAKVIO_QUICK_YIELD_PROVIDER_BUDGET", "90")), 240))
 MAX_SAMPLES = max(1, min(int(os.environ.get("NIAKVIO_QUICK_YIELD_MAX_SAMPLES", "4")), 8))
 REPRESENTATIVE = {
     "movie": "interstellar",
@@ -678,7 +679,7 @@ def classify_debug_stage(task: dict[str, Any], probe: dict[str, Any], debug: dic
     return "provider_network_zero_result"
 
 
-def run_single(task: dict[str, Any]) -> dict[str, Any]:
+def run_single(task: dict[str, Any], *, timeout_seconds: int | None = None) -> dict[str, Any]:
     started = time.monotonic()
     command = [
         "node", str(PROBE), str(ROOT / task["filename"]),
@@ -697,7 +698,8 @@ def run_single(task: dict[str, Any]) -> dict[str, Any]:
         "fixture": fixture,
     }
     try:
-        proc = subprocess.run(command, cwd=ROOT, capture_output=True, text=True, timeout=TIMEOUT, check=False, env=os.environ.copy())
+        effective_timeout = TIMEOUT if timeout_seconds is None else max(1, min(TIMEOUT, int(timeout_seconds)))
+        proc = subprocess.run(command, cwd=ROOT, capture_output=True, text=True, timeout=effective_timeout, check=False, env=os.environ.copy())
     except subprocess.TimeoutExpired:
         return {**base, "status": "timeout", "debug_stage": "timeout", "raw": 0, "playable": 0, "verified": 0, "contradictions": 0, "duration_ms": round((time.monotonic() - started) * 1000)}
     except Exception as exc:
@@ -779,10 +781,16 @@ def run(task: dict[str, Any]) -> dict[str, Any]:
         fixtures = [task["fixture"]]
     samples: list[dict[str, Any]] = []
     final: dict[str, Any] | None = None
+    provider_budget_exhausted = False
+    deadline = started + PROVIDER_BUDGET
     for fixture in fixtures:
+        remaining = deadline - time.monotonic()
+        if remaining <= 1:
+            provider_budget_exhausted = True
+            break
         current = dict(task)
         current["fixture"] = fixture
-        row = run_single(current)
+        row = run_single(current, timeout_seconds=max(1, int(remaining)))
         samples.append(_compact_sample(row))
         final = row
         # A single title-level no-stream, HTTP error or provider exception is
@@ -791,6 +799,9 @@ def run(task: dict[str, Any]) -> dict[str, Any]:
         # behaviour here. Stop only once output (good or bad) is observed, or
         # once the bounded fixture queue is exhausted.
         keep_sampling = row.get("status") in {"no_streams", "timeout"}
+        if keep_sampling and time.monotonic() >= deadline:
+            provider_budget_exhausted = True
+            break
         if not keep_sampling:
             break
     if final is None:
@@ -829,6 +840,8 @@ def run(task: dict[str, Any]) -> dict[str, Any]:
     result["sample_titles"] = [str(row.get("fixture_title") or "") for row in samples]
     result["adaptive_rotated"] = len(samples) > 1
     result["samples"] = samples
+    result["provider_budget_seconds"] = PROVIDER_BUDGET
+    result["provider_budget_exhausted"] = provider_budget_exhausted
     result["duration_ms"] = round((time.monotonic() - started) * 1000)
     return result
 
