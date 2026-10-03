@@ -187,9 +187,21 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          python scripts/reconcile_provider_domain_metadata.py --rebuild
           python scripts/materialize_provider_base_v3_store.py
-          python scripts/materialize_provider_v3_all.py
+          if [ -n "$TARGET_PROVIDERS" ]; then
+            IFS=',' read -r -a target_rows <<< "$TARGET_PROVIDERS"
+            for provider in "${target_rows[@]}"; do
+              provider="$(printf '%s' "$provider" | xargs)"
+              [ -z "$provider" ] && continue
+              python scripts/reconcile_provider_domain_metadata.py --rebuild --provider "$provider"
+              python scripts/materialize_provider_v3_one.py "$provider"
+            done
+            echo "FIELD_SHARDED_TARGET_MATERIALIZATION providers=$TARGET_PROVIDERS mode=targeted"
+          else
+            python scripts/reconcile_provider_domain_metadata.py --rebuild
+            python scripts/materialize_provider_v3_all.py
+            echo "FIELD_SHARDED_TARGET_MATERIALIZATION providers=all mode=global"
+          fi
           python scripts/generate_language_manifests.py --manifest manifest.json --report health-report.json
           python scripts/validate_published_provider_config.py
 

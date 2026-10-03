@@ -50,3 +50,7 @@ assert 'elif [ "$census_scope" = "all" ]; then' in text
 assert "shard_count=8" in text
 assert "shard_count=4" in text
 assert 'args+=(--provider "$TARGET_PROVIDERS")' in text
+
+assert 'python scripts/materialize_provider_v3_one.py "$provider"' in text
+assert 'FIELD_SHARDED_TARGET_MATERIALIZATION providers=$TARGET_PROVIDERS mode=targeted' in text
+assert 'FIELD_SHARDED_TARGET_MATERIALIZATION providers=all mode=global' in text
