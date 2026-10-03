@@ -979,3 +979,11 @@
 - Autopilot is now main-only: it always dispatches Learning with `publish_proposal=false`. It will not create/refresh provider repair proposal PRs or repair branches. Learning persists evidence/memory; canonical Repair/census consumes that state.
 - A census launched through another workflow did not reliably produce the expected `workflow_run` Autopilot continuation. Sharded census persistence now explicitly dispatches `provider-brain-autopilot.yml` with `workflow_dispatch` after a successful canonical push. This removes reliance on recursive GitHub event propagation.
 - No open PRs at this checkpoint. Current execution remains on `main`.
+
+
+## 2026-10-04 — PR 228 closed; Brain PR creation moved behind explicit opt-in
+
+- PR #228 (`brain: Learning architecture evolution proposal`) was still open even though its branch was 64 commits behind current `main` and contained only review-only architecture proposal JSON/Markdown. It was closed unmerged as superseded; no stale proposal bytes were copied to production.
+- Root cause: `.github/workflows/brain-learning-lab.yml` still allowed proposal PR creation from Learning. Both repair-proposal and architecture-proposal PR publication now require explicit `workflow_dispatch publish_proposal=true` plus repository variable `NIAKVIO_ALLOW_BRAIN_PROPOSAL_PR=true`. Architecture FORCE direct-main promotion remains available and unchanged.
+- Repository Hygiene is re-triggered to delete `brain-architecture/proposal`; persistent sanitized Learning memory remains allowed only on `brain-learning/proposals`.
+- Security verification at this checkpoint: issue #69 (global provider bundle security hardening) is closed/completed; no open GitHub issues were found; no Dependabot PRs were found; scheduled CodeQL run 37156098135 completed successfully across Actions, Python, JS Core and JS ProviderBase. The available GitHub connector does not expose the Advanced Security alert-list API, so this is not claimed as a direct proof of zero private Security-tab alerts.

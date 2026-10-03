@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 """Enforce NiakVIO's main-only human code-change policy.
 
-Human/manual maintenance stays on main. Normal Brain Learning may create only
-the review-only brain-repair/proposal branch. Explicit architecture FORCE is
-the single proposal-review exception: after bounded materialization and targeted
-validation it may publish one lease-guarded commit directly to main, never a
-FORCE PR/branch. The persistent brain-learning/proposals ref remains sanitized
-memory, not a code branch.
+Human/manual maintenance stays on main. Brain Learning also stays main-only by
+default. Review-only Brain proposal PRs are permitted only after an explicit
+workflow dispatch with publish_proposal=true AND repository opt-in
+NIAKVIO_ALLOW_BRAIN_PROPOSAL_PR=true. Explicit architecture FORCE publishes its
+bounded validated structural change directly to main, never through a FORCE
+PR/branch. The persistent brain-learning/proposals ref remains sanitized memory,
+not a code branch.
 """
 from __future__ import annotations
 
@@ -33,7 +34,8 @@ def assert_policy() -> None:
     if JOB_MARKER not in workflow:
         raise ValueError("scheduled Brain repair proposal job is missing")
     required = (
-        "if: github.event_name == 'schedule'",
+        "github.event_name == 'workflow_dispatch'",
+        "vars.NIAKVIO_ALLOW_BRAIN_PROPOSAL_PR == 'true'",
         "pull-requests: write",
         "contents: write",
         f"BRANCH: {BRAIN_PROPOSAL_BRANCH}",
@@ -107,7 +109,7 @@ def assert_policy() -> None:
                         raise ValueError(f"Brain branch maintenance may only delete repair branch: {marker}")
                 continue
             raise ValueError(
-                f"only scheduled Brain Learning may create the repair PR branch: {path.relative_to(ROOT)}"
+                f"only explicitly opted-in Brain Learning may create the repair PR branch: {path.relative_to(ROOT)}"
             )
 
 
@@ -125,7 +127,7 @@ def main() -> int:
     print(
         "FIELD_MAIN_ONLY_POLICY "
         f"manual_code_branches=0 brain_repair_pr_branch={BRAIN_PROPOSAL_BRANCH} "
-        f"scheduled_only=true changed={len(changed)} "
+        f"proposal_pr_opt_in=true changed={len(changed)} "
         "force_architecture_main_only=true persistent_learning_ref=brain-learning/proposals"
     )
     return 0

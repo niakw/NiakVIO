@@ -145,11 +145,13 @@ assert "publish-repair-proposal:" in brain
 assert "brain-repair/proposal" in brain
 assert "brain-repair/proposals" not in brain
 repair_proposal_block = brain[brain.index("  publish-repair-proposal:"):brain.index("\n  publish-architecture-proposal:")]
+assert "vars.NIAKVIO_ALLOW_BRAIN_PROPOSAL_PR == 'true'" in repair_proposal_block
 assert "github.event_name == 'workflow_dispatch'" in repair_proposal_block
 assert "github.event.inputs.publish_proposal == 'true'" in repair_proposal_block
 assert "github.event_name == 'schedule'" not in repair_proposal_block
 assert "github.event_name == 'push'" not in repair_proposal_block
 architecture_proposal_block = brain[brain.index("  publish-architecture-proposal:"):brain.index("\n  continue-learning-slot:")]
+assert "vars.NIAKVIO_ALLOW_BRAIN_PROPOSAL_PR == 'true'" in architecture_proposal_block
 architecture_if = architecture_proposal_block.split("    needs:", 1)[0]
 assert "github.event_name == 'workflow_dispatch'" in architecture_if
 assert "github.event.inputs.publish_proposal == 'true'" in architecture_if
@@ -178,7 +180,8 @@ assert "tests/native_reader_ownership_policy_test.py" in brain
 
 main_only = (ROOT / "scripts/enforce_main_only_repository_policy.py").read_text(encoding="utf-8")
 assert 'BRAIN_PROPOSAL_BRANCH = "brain-repair/proposal"' in main_only
-assert "scheduled_only=true" in main_only
+assert "proposal_pr_opt_in=true" in main_only
+assert "NIAKVIO_ALLOW_BRAIN_PROPOSAL_PR" in main_only
 
 hygiene = (ROOT / ".github/workflows/repository-hygiene.yml").read_text(encoding="utf-8")
 assert "brain-learning/proposals" in hygiene

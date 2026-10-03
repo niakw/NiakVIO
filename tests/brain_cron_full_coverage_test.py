@@ -143,11 +143,13 @@ def main() -> int:
     )
     assert "github.event.inputs.publish_proposal == 'true'" in workflow
     repair_proposal_block = workflow[workflow.index("  publish-repair-proposal:"):workflow.index("\n  publish-architecture-proposal:")]
+    assert "vars.NIAKVIO_ALLOW_BRAIN_PROPOSAL_PR == 'true'" in repair_proposal_block, "Brain repair PR lost explicit repo opt-in gate"
     assert "github.event_name == 'workflow_dispatch'" in repair_proposal_block
     assert "github.event.inputs.publish_proposal == 'true'" in repair_proposal_block
     assert "github.event_name == 'schedule'" not in repair_proposal_block
     assert "github.event_name == 'push'" not in repair_proposal_block
     architecture_proposal_block = workflow[workflow.index("  publish-architecture-proposal:"):workflow.index("\n  continue-learning-slot:")]
+    assert "vars.NIAKVIO_ALLOW_BRAIN_PROPOSAL_PR == 'true'" in architecture_proposal_block, "Brain architecture PR lost explicit repo opt-in gate"
     assert "github.event_name == 'workflow_dispatch'" in architecture_proposal_block
     assert "github.event.inputs.publish_proposal == 'true'" in architecture_proposal_block
     assert "needs.experiment.outputs.architecture_force == 'true'" in architecture_proposal_block

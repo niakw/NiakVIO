@@ -1336,7 +1336,7 @@ jobs:
 
   publish-repair-proposal:
     name: LEARNING - Open validated repair proposal PR
-    if: github.event_name == 'workflow_dispatch' && github.event.inputs.publish_proposal == 'true' && needs.experiment.outputs.architecture_force != 'true'
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.publish_proposal == 'true' && vars.NIAKVIO_ALLOW_BRAIN_PROPOSAL_PR == 'true' && needs.experiment.outputs.architecture_force != 'true'
     needs: experiment
     concurrency:
       group: niakvio-brain-repair-proposal-publish
@@ -1430,7 +1430,7 @@ jobs:
           fi
 
       - name: Open or refresh the single Brain repair PR
-        if: steps.proposal.outputs.has_changes == 'true' && steps.materialize.outputs.has_diff == 'true'
+        if: steps.proposal.outputs.has_changes == 'true' && steps.materialize.outputs.has_diff == 'true' && vars.NIAKVIO_ALLOW_BRAIN_PROPOSAL_PR == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
           BRANCH: brain-repair/proposal
@@ -1481,7 +1481,7 @@ jobs:
 
   publish-architecture-proposal:
     name: LEARNING - Validate Brain architecture evolution
-    if: (github.event_name == 'workflow_dispatch' && github.event.inputs.publish_proposal == 'true') || needs.experiment.outputs.architecture_force == 'true'
+    if: needs.experiment.outputs.architecture_force == 'true' || (github.event_name == 'workflow_dispatch' && github.event.inputs.publish_proposal == 'true' && vars.NIAKVIO_ALLOW_BRAIN_PROPOSAL_PR == 'true')
     needs: experiment
     concurrency:
       group: niakvio-brain-architecture-proposal-publish
@@ -1587,7 +1587,7 @@ jobs:
           fi
 
       - name: Open or refresh Brain architecture PR
-        if: steps.architecture.outputs.has_changes == 'true' && steps.materialize-architecture.outputs.has_diff == 'true' && needs.experiment.outputs.architecture_force != 'true'
+        if: steps.architecture.outputs.has_changes == 'true' && steps.materialize-architecture.outputs.has_diff == 'true' && needs.experiment.outputs.architecture_force != 'true' && vars.NIAKVIO_ALLOW_BRAIN_PROPOSAL_PR == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
           BRANCH: brain-architecture/proposal
