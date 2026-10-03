@@ -151,7 +151,9 @@ def main() -> int:
         manifest_ids = {
             str(row.get("id") or "").strip().casefold()
             for row in (manifest.get("scrapers") or [])
-            if isinstance(row, dict) and str(row.get("id") or "").strip()
+            if isinstance(row, dict)
+            and str(row.get("id") or "").strip()
+            and row.get("enabled") is True
         }
         # Scope matrices are durable evidence and intentionally retain providers
         # that later enter disabled/archive lifecycle. Current manifest identity
@@ -170,10 +172,10 @@ def main() -> int:
         if not provider:
             continue
         key = provider.casefold()
-        if scope_ids is not None and key not in scope_ids:
+        if row.get("enabled") is not True:
             disabled_ids.add(key)
             continue
-        if scope_ids is None and row.get("enabled") is not True:
+        if scope_ids is not None and key not in scope_ids:
             disabled_ids.add(key)
             continue
         provider_ids.add(key)
