@@ -55,7 +55,7 @@ assert anime.get("mediaType") == "anime"
 original = mod.run_single
 try:
     calls = []
-    def fake(current):
+    def fake(current, *, timeout_seconds=None):
         slug = str(current["fixture"].get("slug") or "")
         calls.append(slug)
         positive = slug == "b"
@@ -77,7 +77,7 @@ try:
     assert result["verified"] == 1 and result["sample_count"] == 2, result
 
     calls.clear()
-    def technical(current):
+    def technical(current, *, timeout_seconds=None):
         slug = str(current["fixture"].get("slug") or "")
         calls.append(slug)
         return {
