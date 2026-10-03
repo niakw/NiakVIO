@@ -105,7 +105,7 @@ assert "NUVIO_PROVIDER_V3_CONTEXT: workspace" in manual
 # pre-Core PROVIDER.* Lego. It must never execute Repair or rematerialize/mutate
 # the global Core.
 for required in (
-    "domain_refresh_transaction_v2.py",
+    "domain_refresh_priority_wrapper.py",
     "provider_dns_preflight.mjs",
     "continue-on-error: true",
     "generate_language_manifests.py",
@@ -150,8 +150,8 @@ sanitizer=(ROOT/"scripts/sanitize_provider_hub_registry.py").read_text(encoding=
 for required in (
     'parser.add_argument("--manifest", default="manifest.json")',
     "manifest_rows = current_provider_rows(Path(args.manifest))",
-    "provider_ids = set(manifest_rows)",
-    "ensure_registry_coverage(registry, manifest_rows)",
+    "provider_ids = selected or set(manifest_rows)",
+    "ensure_registry_coverage(registry, scoped_manifest_rows)",
     "PROVIDER_HUB_REGISTRY_TOTAL_COVERAGE_V1",
     "sanitize(registry, provider_ids)",
     "sanitize_history(history, provider_ids)",
