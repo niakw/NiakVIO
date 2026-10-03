@@ -117,13 +117,12 @@ jobs:
             exit 0
           fi
 
-          # A true transport/domain owner can invalidate every downstream
-          # provider assumption. Run it alone; its publication/retest cycle
-          # will rebuild a new execution plan.
+          # Exact unresolved-domain owners are provider-scoped. They may run beside
+          # observational Learning/REMAT for disjoint providers; production Repair
+          # waits for fresh post-domain authority.
           if [ -n "$DOMAIN" ]; then
-            gh workflow run domain-refresh.yml --repo "$GITHUB_REPOSITORY" --ref main -f mode=quick
-            echo "FIELD_PROVIDER_AUTOPILOT dispatch=DOMAIN_REFRESH providers=$DOMAIN"
-            exit 0
+            gh workflow run domain-refresh.yml --repo "$GITHUB_REPOSITORY" --ref main -f mode=quick -f target_providers="$DOMAIN"
+            echo "FIELD_PROVIDER_AUTOPILOT dispatch=DOMAIN_REFRESH providers=$DOMAIN targeted=true"
           fi
 
           # REMAT diagnostics and provider-local repair are disjoint cohorts and
@@ -133,9 +132,11 @@ jobs:
             echo "FIELD_PROVIDER_AUTOPILOT dispatch=REMAT_TEST providers=$REMAT"
           fi
 
-          if [ -n "$FAST" ]; then
+          if [ -n "$FAST" ] && [ -z "$DOMAIN" ]; then
             gh workflow run provider-fast-repair.yml               --repo "$GITHUB_REPOSITORY" --ref main               -f target_providers="$FAST"               -f waves=1 -f time_budget_seconds=600 -f max_rounds_per_batch=1 -f publish_validated=true
             echo "FIELD_PROVIDER_AUTOPILOT dispatch=FAST_REPAIR providers=$FAST"
+          elif [ -n "$FAST" ]; then
+            echo "FIELD_PROVIDER_AUTOPILOT deferred=FAST_REPAIR providers=$FAST reason=targeted-domain-publication-in-flight"
           fi
 
           # Learning debt must not wait for the nightly slot. Dispatch the exact

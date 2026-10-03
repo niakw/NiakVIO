@@ -17,7 +17,7 @@ batch={
         {"groupId":"candidate","repairScope":"candidate-replay","providers":["candidate"],"capabilityStrategy":"direct_media"},
         {"groupId":"route","repairScope":"route-to-terminal","providers":["route"],"capabilityStrategy":"html_scraper"},
         {"groupId":"chain","repairScope":"terminal-extraction","providers":["chain"],"capabilityStrategy":"direct_media"},
-        {"groupId":"transport","repairScope":"transport","providers":["network"],"capabilityStrategy":"html_scraper"},
+        {"groupId":"transport","repairScope":"transport","providers":["network","domain"],"capabilityStrategy":"html_scraper"},
         {"groupId":"tls","repairScope":"harness-compatibility","providers":["tls"],"capabilityStrategy":"mixed_embed_resolver","transportSignature":"browser-profile-only-both-networks"},
         {"groupId":"challenge","repairScope":"harness-compatibility","providers":["challenge"],"capabilityStrategy":"html_scraper","transportSignature":"residential-exit-all-challenged"},
         {"groupId":"variant","repairScope":"variant-coverage","providers":["green"],"capabilityStrategy":"html_scraper","selectionAuthorities":["provider-census-sharded-latest.json:dynamic-variant-debt"],"dynamicVariantProviders":["green"]},
@@ -27,7 +27,11 @@ batch={
 status={
     "runId":"run",
     "triggerSha":"sha",
-    "repairQueue":["candidate","route","chain","network","unknown"],
+    "repairQueue":["candidate","route","chain","network","domain","unknown"],
+    "providers":[
+        {"provider":"network","authorityAction":"KEEP_PROVEN_SITE"},
+        {"provider":"domain","authorityAction":"KEEP_DIAGNOSTIC"},
+    ],
     "environmentQueue":["tls"],
     "targetedTransportBlockedQueue":["challenge"],
 }
@@ -36,7 +40,11 @@ by={row["groupId"]:row for row in out["executions"]}
 assert by["candidate"]["lane"]=="REMAT_TEST" and by["candidate"]["fallbackLane"]=="FAST_REPAIR"
 assert by["route"]["lane"]=="FAST_REPAIR"
 assert by["chain"]["lane"]=="FAST_REPAIR"
-assert by["transport"]["lane"]=="DOMAIN_REFRESH"
+transport_rows=[row for row in out["executions"] if row["repairScope"]=="transport"]
+network_row=next(row for row in transport_rows if row["providers"]==["network"])
+domain_row=next(row for row in transport_rows if row["providers"]==["domain"])
+assert network_row["lane"]=="BRAIN_LEARNING" and network_row["strategyBlueprint"]=="qualified_authority_transport_learning_v1"
+assert domain_row["lane"]=="DOMAIN_REFRESH" and domain_row["authorityQualified"] is False
 assert by["tls"]["lane"]=="CORE_CLIENT_LEARNING"
 assert by["tls"]["strategyBlueprint"]=="native_tls_browser_differential_v1"
 assert by["tls"]["dispatchAllowed"] is True
@@ -48,11 +56,11 @@ assert by["variant"]["lane"]=="BRAIN_LEARNING"
 assert by["variant"]["dispatchAllowed"] is True
 assert by["variant"]["mutatesProduction"] is False
 assert by["learn"]["lane"]=="BRAIN_LEARNING"
-assert out["providerCount"]==8
+assert out["providerCount"]==9
 assert out["blockedExecutionCount"]==0
 
 # A stale/mismatched batch may never auto-dispatch.
-bad_status={**status,"repairQueue":["route","chain","network","unknown"]}
+bad_status={**status,"repairQueue":["route","chain","network","domain","unknown"]}
 bad=mod.build(batch,bad_status,{"green"})
 candidate=next(row for row in bad["executions"] if row["groupId"]=="candidate")
 assert candidate["dispatchAllowed"] is False

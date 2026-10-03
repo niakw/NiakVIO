@@ -19,6 +19,10 @@ STATUS=ROOT/"automation/provider-census-status.json"
 SHARDED=ROOT/"automation/provider-census-sharded-latest.json"
 OUTPUT=ROOT/"automation/provider-execution-plan-latest.json"
 DYNAMIC_VARIANT_GAP_STATES={"announced-not-explored","explored-not-resolved","returned-subset","quality-gap"}
+QUALIFIED_TRANSPORT_AUTHORITY_ACTIONS={
+    "KEEP_BACKEND","KEEP_ROUTE_AUTHORITY","KEEP_DIRECT",
+    "KEEP_LIVE_CANDIDATE","KEEP_PROVEN_SITE","KEEP_LKG_COMBO",
+}
 
 
 def load(path:Path)->dict[str,Any]:
@@ -93,7 +97,7 @@ def select_batch_plan(
     return refined,"sharded-refined"
 
 
-def lane_for(group:dict[str,Any])->dict[str,Any]:
+def lane_for(group:dict[str,Any], *, authority_qualified:bool=False)->dict[str,Any]:
     scope=str(group.get("repairScope") or "learning")
     transport=str(group.get("transportSignature") or "not-applicable")
 
@@ -128,6 +132,17 @@ def lane_for(group:dict[str,Any])->dict[str,Any]:
             "decision":"repair only at/after the deepest current semantic proof",
         }
     if scope=="transport":
+        if authority_qualified:
+            return {
+                "owner":"BRAIN_TRANSPORT",
+                "lane":"BRAIN_LEARNING",
+                "workflow":"brain-learning-lab.yml",
+                "dispatchAllowed":True,
+                "mutatesProduction":False,
+                "fallbackLane":"WAF_TRANSPORT",
+                "strategyBlueprint":"qualified_authority_transport_learning_v1",
+                "decision":"address/backend authority is already qualified; learn request/runtime transport recovery before any Domain mutation",
+            }
         return {
             "owner":"DOMAIN_TRANSPORT",
             "lane":"DOMAIN_REFRESH",
@@ -135,7 +150,7 @@ def lane_for(group:dict[str,Any])->dict[str,Any]:
             "dispatchAllowed":True,
             "mutatesProduction":"validated-domain-transaction-only",
             "fallbackLane":"WAF_TRANSPORT",
-            "decision":"refresh provider-owned domain/transport authority before provider mutation",
+            "decision":"address authority is unresolved; refresh only the exact provider-owned domain before provider mutation",
         }
     if scope=="harness-compatibility":
         strategy={
@@ -179,48 +194,55 @@ def build(batch:dict[str,Any],status:dict[str,Any],dynamic_repair:set[str] | Non
     }
     executions=[]
     provider_owner:dict[str,str]={}
+    status_rows={cid(row.get("provider")):row for row in status.get("providers") or [] if isinstance(row,dict) and cid(row.get("provider"))}
     for group in batch.get("groups") or []:
         if not isinstance(group,dict):
             continue
-        providers=sorted({
-            str(x).strip().casefold()
-            for x in group.get("providers") or []
-            if str(x).strip()
-        })
+        providers=sorted({str(x).strip().casefold() for x in group.get("providers") or [] if str(x).strip()})
         if not providers:
             continue
-        route=lane_for(group)
-        row={
-            "groupId":str(group.get("groupId") or ""),
-            "repairScope":str(group.get("repairScope") or ""),
-            "providers":providers,
-            "providerCount":len(providers),
-            "capabilityStrategy":str(group.get("capabilityStrategy") or ""),
-            "transportSignature":str(group.get("transportSignature") or "not-applicable"),
-            "selectionAuthorities":group.get("selectionAuthorities") or [],
-            "dynamicVariantProviders":group.get("dynamicVariantProviders") or [],
-            **route,
-        }
-        # Fail closed if a provider appears in a lane inconsistent with the
-        # canonical queues. Harness is environment-owned; provider mutation
-        # lanes require current repair eligibility.
-        if row["lane"]=="CORE_CLIENT_LEARNING":
-            unexpected=[p for p in providers if p not in current_environment]
-        elif row["repairScope"]=="variant-coverage":
-            unexpected=[p for p in providers if p not in current_dynamic]
-        else:
-            unexpected=[p for p in providers if p not in current_repair]
-        row["queueConsistent"]=not unexpected
-        row["queueMismatchProviders"]=unexpected
-        if unexpected:
-            row["dispatchAllowed"]=False
-            row["blocker"]="batch/census queue mismatch; rebuild Retest before dispatch"
-        for provider in providers:
-            existing=provider_owner.get(provider)
-            if existing and existing!=row["lane"]:
-                raise ValueError(f"{provider}: multiple causal owners {existing} / {row['lane']}")
-            provider_owner[provider]=row["lane"]
-        executions.append(row)
+        partitions:list[tuple[list[str],bool]]=[(providers,False)]
+        if str(group.get("repairScope") or "")=="transport":
+            qualified=[p for p in providers if str((status_rows.get(p) or {}).get("authorityAction") or "") in QUALIFIED_TRANSPORT_AUTHORITY_ACTIONS]
+            qualified_set=set(qualified)
+            unresolved=[p for p in providers if p not in qualified_set]
+            partitions=[]
+            if unresolved: partitions.append((unresolved,False))
+            if qualified: partitions.append((qualified,True))
+        for partition_providers,authority_qualified in partitions:
+            route=lane_for(group,authority_qualified=authority_qualified)
+            group_id=str(group.get("groupId") or "")
+            if len(partitions)>1:
+                group_id += "#authority-qualified" if authority_qualified else "#domain-unresolved"
+            row={
+                "groupId":group_id,
+                "repairScope":str(group.get("repairScope") or ""),
+                "providers":partition_providers,
+                "providerCount":len(partition_providers),
+                "capabilityStrategy":str(group.get("capabilityStrategy") or ""),
+                "transportSignature":str(group.get("transportSignature") or "not-applicable"),
+                "selectionAuthorities":group.get("selectionAuthorities") or [],
+                "dynamicVariantProviders":group.get("dynamicVariantProviders") or [],
+                "authorityQualified":authority_qualified,
+                **route,
+            }
+            if row["lane"]=="CORE_CLIENT_LEARNING":
+                unexpected=[p for p in partition_providers if p not in current_environment]
+            elif row["repairScope"]=="variant-coverage":
+                unexpected=[p for p in partition_providers if p not in current_dynamic]
+            else:
+                unexpected=[p for p in partition_providers if p not in current_repair]
+            row["queueConsistent"]=not unexpected
+            row["queueMismatchProviders"]=unexpected
+            if unexpected:
+                row["dispatchAllowed"]=False
+                row["blocker"]="batch/census queue mismatch; rebuild Retest before dispatch"
+            for provider in partition_providers:
+                existing=provider_owner.get(provider)
+                if existing and existing!=row["lane"]:
+                    raise ValueError(f"{provider}: multiple causal owners {existing} / {row['lane']}")
+                provider_owner[provider]=row["lane"]
+            executions.append(row)
 
     priority={
         "DOMAIN_REFRESH":0,

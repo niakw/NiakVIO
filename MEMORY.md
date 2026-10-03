@@ -948,3 +948,12 @@
 - Provider Disabled Lifecycle run `37116977950` passed and published `3b37df0a`: VidEasy is now `enabled=false`, bytes moved to `provider-disabled/`, reason `auto_off_upstream_shutdown`, retention until 2026-10-10. This is a lifecycle result, not a provider repair.
 - Brain FORCE readiness then exposed a second split: planner classified compact census `dominantIssue=timeout` as `provider_transport_gap`, but adaptive runtime focus recognized only `provider_network_timeout`, so AnimeKai had no `transport-first` focus. Current fix aligns the runtime focus with the planner for compact `timeout`.
 - The durable census/plan is still stale at run `37111537577` and therefore still lists VidEasy repair debt even though current main has disabled it. A fresh unresolved sharded census is explicitly armed now; success criteria are: current active authority excludes VidEasy from repairQueue/groups, global completeness fallback still retains Coflix/Kehflix/VidLove/HindMoviez debt, and Autopilot dispatch resumes from that fresh sourceRunId.
+
+
+## 2026-10-03 — Domain transport ownership narrowed; AnimeKai no longer preempts independent Brain debt
+
+- Fresh unresolved census `37124297614` completed 4/4 on `51f6c87b`; canonical persistence `70853e7d` removed retired VidEasy from repair authority while retaining global completeness debt for animevost-fr, animevostfr, Coflix, HindMoviez, Kehflix and VidLove.
+- Autopilot `37124721950` misrouted AnimeKai to Domain even though census authority was already `KEEP_PROVEN_SITE`. Domain run `37124745647` changed no AnimeKai authority, scanned 41 active providers, hit 19 DNS API-limit observations, mutated WookaFR, and published `899c84e7` / `74fd0457`.
+- Brain execution routing now sends transport debt with already-qualified address/backend authority to `BRAIN_LEARNING` via `qualified_authority_transport_learning_v1`. Only unresolved address authority remains `DOMAIN_REFRESH`.
+- Autopilot passes exact provider ids to Domain and no longer lets a qualified AnimeKai transport issue preempt independent Coflix/completeness Learning. FAST publication remains deferred while a true targeted Domain transaction is in flight.
+- WookaFR remains a projection-drift repair owned by the generic projection pipeline; no provider-local manual patch is authorized.
