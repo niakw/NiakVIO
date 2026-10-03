@@ -18,6 +18,12 @@ required = [
     "--ref main",
     "-f mode=repair",
     "FIELD_BRAIN_REPAIR_RETURN",
+    "TARGET_PROVIDER:",
+    "TARGET_PROVIDERS:",
+    'targets_csv="${TARGET_PROVIDERS:-}"',
+    'mapfile -t repair_targets',
+    '-f target_provider="$provider"',
+    "scoped=true",
 ]
 for needle in required:
     assert needle in publish, needle
@@ -28,3 +34,13 @@ for needle in required:
 assert "github.event_name == 'workflow_dispatch'" not in publish[publish.index("Resume canonical Repair after push-triggered Learning"):]
 
 print("brain_learning_repair_return_workflow_test: ok")
+
+# A targeted Learning handoff must never silently broaden back to the full
+# census Repair queue. The exact provider cohort is propagated into canonical
+# Repair one provider at a time; the unscoped fallback is only for genuinely
+# unscoped push-triggered Learning.
+resume = publish[publish.index("Resume canonical Repair after push-triggered Learning"):]
+assert 'TARGET_PROVIDER: ${{ needs.experiment.outputs.target_provider' in resume
+assert 'TARGET_PROVIDERS: ${{ needs.experiment.outputs.target_providers' in resume
+assert '-f target_provider="$provider"' in resume
+assert 'provider=$provider scoped=true' in resume
