@@ -13,6 +13,8 @@ required = [
     "automation/provider-repair-learn-handoff-v1.json",
     "target provider is not eligible for current Learning/FORCE scope",
     "environmentQueue",
+    "dynamicVariantProviders",
+    "automation/provider-repair-batch-plan-latest.json",
     "targeted Learning cohort escaped",
     "current non-disabled providers under explicit architecture FORCE",
     "explicit-force-completeness-learning",
@@ -61,13 +63,15 @@ multi_start = workflow.index('if [ -n "$target_providers" ]; then', handoff_sele
 multi_end = workflow.index('elif [ -n "$target_provider" ]; then', multi_start)
 multi_block = workflow[multi_start:multi_end]
 assert 'environmentQueue' in multi_block, multi_block
-assert 'eligible=(repair|environment|current) if force else (repair|environment)' in multi_block, multi_block
+assert 'eligible=(repair|environment|dynamic|current) if force else (repair|environment|dynamic)' in multi_block, multi_block
 assert 'completeness_targets=' in multi_block, multi_block
 assert 'explicit-force-completeness-learning' in multi_block, multi_block
 assert 'provider-fast-repair.json' not in multi_block, multi_block
 assert 'Routine Learning remains census-debt scoped' in multi_block, multi_block
-assert 'scope="current non-disabled providers under explicit architecture FORCE" if force else "current repair/environment queues"' in multi_block, multi_block
+assert 'scope="current non-disabled providers under explicit architecture FORCE" if force else "current repair/environment/dynamic-completeness queues"' in multi_block, multi_block
 assert 'autopilot-targeted-core-learning' in multi_block, multi_block
+assert 'autopilot-targeted-completeness-learning' in multi_block, multi_block
+assert 'same_run=str(plan.get("sourceRunId") or "")==str(census.get("runId") or "")' in multi_block, multi_block
 assert "target-scoped-handoff" in workflow, workflow
 assert "explicit-force-completeness-learning" in workflow, workflow
 assert 'row.get("owner")' in target_block or "row.get('owner')" in target_block, target_block
