@@ -67,13 +67,16 @@ for old, new in compat_replacements.items():
 pipeline_current = (ROOT / "scripts" / "run_provider_repair_pipeline_v6.py").read_text(encoding="utf-8")
 assert 'brain_waves = 1 if args.mode == "repair" else 3' in pipeline_current, "automatic Repair must execute the learned/current hypothesis once"
 assert '"--waves", str(brain_waves)' in pipeline_current
-assert 'brain_time_budget_seconds = 600 if args.mode == "repair" else 900' in pipeline_current
+assert 'targeted_force = args.mode == "force" and len(targets) <= 2' in pipeline_current
+assert 'else 360 if targeted_force' in pipeline_current
+assert 'else 900' in pipeline_current
 assert '"--time-budget-seconds", str(brain_time_budget_seconds)' in pipeline_current
-assert '"--min-start-batch-seconds", "150",' in pipeline_current
+assert 'brain_min_start_batch_seconds = 60 if targeted_force else 150' in pipeline_current
+assert '"--min-start-batch-seconds", str(brain_min_start_batch_seconds)' in pipeline_current
 assert 'targeted_only=args.mode in {"repair", "force"}' in pipeline_current
 assert "def route_recovery_outer_timeout(" in pipeline_current
 assert "def portfolio_probe_timeout(" in pipeline_current
-assert "timeout=1080" in pipeline_current
+assert "timeout=max(480, brain_time_budget_seconds + 120)" in pipeline_current
 assert "route_recovery_outer_timeout(" in pipeline_current
 assert "portfolio_probe_timeout(len(providers or []))" in pipeline_current
 assert 'if args.mode == "force":' in pipeline_current
