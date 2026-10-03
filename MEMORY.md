@@ -1,3 +1,12 @@
+## 2026-10-03 — HindMoviez round-robin rejected; fifth quality-aware strategy ready
+
+- Brain guidance `17fbc280bbe97eb67b0e664dd356c5ffe38f7df9` generated the fourth distinct HindMoviez completeness hypothesis, `cross_source_round_robin_before_global_cap`, fingerprint `7b98b0b512e73a208ccb1ccee52a0d694a56dffb578838473f747346e84f7603`.
+- V6 sandbox run `37079643871` executed it on exact current bytes and rejected it. Baseline and candidate both returned/playable 4 streams with qualities 480p + 1080p, max playable height 1080 and 4 reachable hosts. Candidate regressed announced variants 40 -> 27 and explored player requests 11 -> 10, with no quality/host/count gain, and failed playable identity on Inception. No provider bytes were published.
+- The rejection is persisted in `automation/brain-llm-force-memory.json` as executed negative memory. Together with the earlier quota-removal, source-slice and quality-stratified failures, Brain now has four distinct causal negatives for the same mutation context.
+- Architecture FORCE fallback run `37079911596` completed successfully but produced no force-promotable blueprint (`no-force-promotable-blueprint`); it changed no production provider bytes.
+- Brain-LLM main `1ca9ff748582959a74359dfcfdda2d3eb7af6dfd` adds the generic fifth progression `quality_aware_global_stop`. It activates only after the prior four mutations are blocked by executed negative memory, preserves the bounded source loop/deadline/routes/identity, keeps the original quota as the preferred stop, and permits bounded continuation to a secondary aggregate hard cap only while observed quality diversity is still missing.
+- Brain CI run `37080517978` is green. The next authoritative step is an exact HindMoviez-only guidance run on current NiakVIO main, followed by V6 current-byte sandbox/rematerialization. This is not a repair until that candidate proves playable quality/completeness gain with identity and playback non-regression.
+
 ## 2026-10-03 — HindMoviez quality-stratified hypothesis rejected
 
 - Brain deterministic guidance `f78521815d981a929b7def4a9bb64c1525254028` produced `quality_stratified_variant_enumeration` after negative memory blocked the earlier global-quota and slice-3-to-4 hypotheses. V6 sandbox run `37078342189` applied and rematerialized the mutation but rejected it; no provider bytes were published.
