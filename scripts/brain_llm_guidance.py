@@ -13,6 +13,7 @@ STRATEGY_TO_PROFILE={
  "terminal-media-extractor-with-playback-validation":"chain_terminal_extractor_v1",
  "same-provider-candidate-program-replay":"retained_candidate_replay_v1",
  "proven-request-program-and-terminal-extraction":"player_media_extractor_v1",
+ "enumerate-stream-variants-before-global-cap":"player_media_extractor_v1",
  "discover-api-from-current-page-and-bundles":"search_contract_inference_v1",
 }
 ALLOWED_PROFILES=frozenset(STRATEGY_TO_PROFILE.values());PROVIDER_ID=re.compile(r"^[a-z0-9][a-z0-9._-]{0,159}$")
