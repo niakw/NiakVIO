@@ -1,6 +1,6 @@
 CoFlix representative completeness Learning with bounded current-evidence advisor prompt.
 source_census_run: 37131173373
-source_main_sha: be542cea72a0b23dda24d65dee45f379877daca0
+source_main_sha: ce82d518593ef35591fba1601249c3fc813fd476
 brain_llm_sha: bd05e7a4836e7715926b3ab06b3a99ec64918119
 budget_minutes: 120
 reason: representative-first-current-census-dynamic-completeness-learning-after-advisor-budget-fix
@@ -11,4 +11,4 @@ target_providers: coflix
 architecture_force: false
 publication_policy: no-pr-memory-first-then-canonical-repair
 required_current_evidence: sourceRunId=37131173373;dynamicVariantProviders=coflix;current-playable-output-with-returned-subset-debt
-retry_reason: Brain-LLM bd05e7a4 prompt bound is green; NiakVIO targeted advisor budget now allows 120s/1 worker for exact missing Coflix guidance instead of timing out at 45s
+retry_reason: targeted 120s advisor budget implementation is on main; historical workflow assertions aligned; execute Coflix representative now
