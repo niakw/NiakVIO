@@ -20,13 +20,17 @@ validator = VALIDATOR.read_text(encoding="utf-8")
 assert text.startswith("name: CORE - Domain Refresh")
 assert "23 3 * * *" in text
 assert "contents: write" in text
+assert "target_providers:" in text
+assert "TARGET_PROVIDERS:" in text
+assert '--providers "$TARGET_PROVIDERS"' in text
+assert 'args+=(--provider "$provider")' in text
 assert "bulk-guard:" in text
 assert "Defer domain mutation during bulk onboarding" in text
 assert '"provider: bulk stage "*|"provider: bulk activate "*' in text
 assert "needs: bulk-guard" in text
 assert "if: needs.bulk-guard.outputs.run == 'true'" in text
 assert "github.event.head_commit.message" not in text, "bulk guard must not depend on fragile job-level event expression parsing"
-assert "scripts/domain_refresh_transaction_v2.py" in text
+assert "scripts/domain_refresh_priority_wrapper.py" in text
 assert "--apply" in text
 assert "provider-hubs.json" in text
 assert "published-manifest-baseline.json" in text
@@ -330,7 +334,8 @@ assert module._normalized_domain_projection(current_projection) == module._norma
 # Regression 2c: published domain projection drift is independent from this
 # run's network-resolution verdict. A current provider whose accepted structured
 # DATA is already authoritative must still be eligible for CONFIG-only repair.
-assert "provider_domain_projection_drift_ids(sorted(current_provider_ids))" in source
+assert "projection_scope_ids = sorted(selected or current_provider_ids)" in source
+assert "provider_domain_projection_drift_ids(projection_scope_ids)" in source
 assert "provider_domain_projection_drift_ids(resolved_provider_ids)" not in source
 
 # Regression 2d: Domain Refresh may not publish unrelated current structured
