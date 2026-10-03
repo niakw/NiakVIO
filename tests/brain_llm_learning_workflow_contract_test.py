@@ -52,7 +52,7 @@ for required in (
     'model_name="qwen2.5-coder-3b"',
     'model_name="qwen2.5-coder-7b"',
     'effective_filter="${PROVIDER_FILTER:-}"',
-    'if [ "${ARCHITECTURE_FORCE:-false}" != "true" ] && [ "${FAST_HANDOFF:-false}" = "true" ] && [ -n "${FAST_MISSING_PROVIDERS:-}" ]; then',
+    'elif [ "${FAST_HANDOFF:-false}" = "true" ] && [ -n "${FAST_MISSING_PROVIDERS:-}" ]; then',
     'effective_filter="${FAST_MISSING_PROVIDERS}"',
     "guidance.cached.json",
     "guidance.generated.json",
