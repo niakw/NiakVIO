@@ -20,6 +20,7 @@ batch={
         {"groupId":"transport","repairScope":"transport","providers":["network"],"capabilityStrategy":"html_scraper"},
         {"groupId":"tls","repairScope":"harness-compatibility","providers":["tls"],"capabilityStrategy":"mixed_embed_resolver","transportSignature":"browser-profile-only-both-networks"},
         {"groupId":"challenge","repairScope":"harness-compatibility","providers":["challenge"],"capabilityStrategy":"html_scraper","transportSignature":"residential-exit-all-challenged"},
+        {"groupId":"variant","repairScope":"variant-coverage","providers":["green"],"capabilityStrategy":"html_scraper","selectionAuthorities":["provider-census-sharded-latest.json:dynamic-variant-debt"],"dynamicVariantProviders":["green"]},
         {"groupId":"learn","repairScope":"learning","providers":["unknown"],"capabilityStrategy":"unknown"},
     ],
 }
@@ -30,7 +31,7 @@ status={
     "environmentQueue":["tls"],
     "targetedTransportBlockedQueue":["challenge"],
 }
-out=mod.build(batch,status)
+out=mod.build(batch,status,{"green"})
 by={row["groupId"]:row for row in out["executions"]}
 assert by["candidate"]["lane"]=="REMAT_TEST" and by["candidate"]["fallbackLane"]=="FAST_REPAIR"
 assert by["route"]["lane"]=="FAST_REPAIR"
@@ -43,16 +44,23 @@ assert by["tls"]["workflow"]=="provider-waf-browser-session.yml"
 assert by["tls"]["mutatesProduction"] is False
 assert by["tls"]["applicationValidated"] is False
 assert by["challenge"]["strategyBlueprint"]=="persistent_challenge_session_boundary_v1"
+assert by["variant"]["lane"]=="BRAIN_LEARNING"
+assert by["variant"]["dispatchAllowed"] is True
+assert by["variant"]["mutatesProduction"] is False
 assert by["learn"]["lane"]=="BRAIN_LEARNING"
-assert out["providerCount"]==7
+assert out["providerCount"]==8
 assert out["blockedExecutionCount"]==0
 
 # A stale/mismatched batch may never auto-dispatch.
 bad_status={**status,"repairQueue":["route","chain","network","unknown"]}
-bad=mod.build(batch,bad_status)
+bad=mod.build(batch,bad_status,{"green"})
 candidate=next(row for row in bad["executions"] if row["groupId"]=="candidate")
 assert candidate["dispatchAllowed"] is False
 assert candidate["queueMismatchProviders"]==["candidate"]
+no_dynamic=mod.build(batch,status,set())
+variant=next(row for row in no_dynamic["executions"] if row["groupId"]=="variant")
+assert variant["dispatchAllowed"] is False
+assert variant["queueMismatchProviders"]==["green"]
 
 refined={
     "sourceRunId":"run",
@@ -61,16 +69,16 @@ refined={
         for row in batch["groups"]
     ],
 }
-selected,source_name=mod.select_batch_plan(batch,refined,status)
+selected,source_name=mod.select_batch_plan(batch,refined,status,{"green"})
 assert source_name=="sharded-refined"
 assert mod.plan_providers(selected)==mod.plan_providers(batch)
 
 stale={**refined,"sourceRunId":"old"}
-selected,source_name=mod.select_batch_plan(batch,stale,status)
+selected,source_name=mod.select_batch_plan(batch,stale,status,{"green"})
 assert selected is batch and source_name=="canonical-stale-refined"
 
 missing={**refined,"groups":refined["groups"][:-1]}
-selected,source_name=mod.select_batch_plan(batch,missing,status)
+selected,source_name=mod.select_batch_plan(batch,missing,status,{"green"})
 assert selected is batch and source_name=="canonical-refined-provider-mismatch"
 
 source=SCRIPT.read_text(encoding="utf-8")
@@ -82,6 +90,8 @@ for required in (
     "FAST_REPAIR",
     "DOMAIN_REFRESH",
     "BRAIN_LEARNING",
+    "variant-coverage",
+    "provider-census-sharded-latest.json",
     "sharded-refined",
     "targetedTransportBlockedQueue",
 ):

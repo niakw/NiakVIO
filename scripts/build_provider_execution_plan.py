@@ -16,7 +16,9 @@ ROOT=Path(__file__).resolve().parents[1]
 BATCH=ROOT/"automation/provider-repair-batch-plan-latest.json"
 REFINED=ROOT/"automation/provider-repair-batch-refined-latest.json"
 STATUS=ROOT/"automation/provider-census-status.json"
+SHARDED=ROOT/"automation/provider-census-sharded-latest.json"
 OUTPUT=ROOT/"automation/provider-execution-plan-latest.json"
+DYNAMIC_VARIANT_GAP_STATES={"announced-not-explored","explored-not-resolved","returned-subset","quality-gap"}
 
 
 def load(path:Path)->dict[str,Any]:
@@ -25,6 +27,29 @@ def load(path:Path)->dict[str,Any]:
         raise ValueError(f"{path} must contain an object")
     return value
 
+
+def cid(value:Any)->str:
+    return str(value or "").strip().casefold().replace("_","-")
+
+def dynamic_variant_providers(payload:dict[str,Any] | None)->set[str]:
+    providers:set[str]=set()
+    if not isinstance(payload,dict):
+        return providers
+    for row in payload.get("rows") or []:
+        if not isinstance(row,dict):
+            continue
+        provider=cid(row.get("provider_id"))
+        if not provider:
+            continue
+        try:
+            announced=max(0,int(row.get("announced_variant_candidates") or 0))
+            returned=max(0,int(row.get("streams_returned") or row.get("raw") or 0))
+        except (TypeError,ValueError):
+            continue
+        state=str(row.get("variant_fanout_state") or "").strip().casefold()
+        if announced>=2 and (state in DYNAMIC_VARIANT_GAP_STATES or returned<announced):
+            providers.add(provider)
+    return providers
 
 def plan_providers(plan:dict[str,Any])->set[str]:
     return {
@@ -40,6 +65,7 @@ def select_batch_plan(
     base:dict[str,Any],
     refined:dict[str,Any] | None,
     status:dict[str,Any],
+    dynamic_repair:set[str] | None=None,
 )->tuple[dict[str,Any],str]:
     """Use sharded refinement only when it is an exact current-census partition."""
     if not isinstance(refined,dict) or not refined.get("groups"):
@@ -61,6 +87,7 @@ def select_batch_plan(
         ]
         if str(value).strip()
     }
+    current.update(cid(value) for value in (dynamic_repair or set()) if cid(value))
     if not refined_providers.issubset(current):
         return base,"canonical-refined-queue-mismatch"
     return refined,"sharded-refined"
@@ -70,6 +97,16 @@ def lane_for(group:dict[str,Any])->dict[str,Any]:
     scope=str(group.get("repairScope") or "learning")
     transport=str(group.get("transportSignature") or "not-applicable")
 
+    if scope=="variant-coverage":
+        return {
+            "owner":"BRAIN_LEARNING",
+            "lane":"BRAIN_LEARNING",
+            "workflow":"brain-learning-lab.yml",
+            "dispatchAllowed":True,
+            "mutatesProduction":False,
+            "fallbackLane":None,
+            "decision":"current playable health does not cancel execution-proven variant debt; learn a bounded completeness strategy and require ordinary materialization/playback/non-regression gates before publication",
+        }
     if scope=="candidate-replay":
         return {
             "owner":"PROVIDER_BYTES",
@@ -129,8 +166,9 @@ def lane_for(group:dict[str,Any])->dict[str,Any]:
     }
 
 
-def build(batch:dict[str,Any],status:dict[str,Any])->dict[str,Any]:
+def build(batch:dict[str,Any],status:dict[str,Any],dynamic_repair:set[str] | None=None)->dict[str,Any]:
     current_repair={str(x).strip().casefold() for x in status.get("repairQueue") or [] if str(x).strip()}
+    current_dynamic={cid(x) for x in (dynamic_repair or set()) if cid(x)}
     current_environment={
         str(x).strip().casefold()
         for x in [
@@ -159,6 +197,8 @@ def build(batch:dict[str,Any],status:dict[str,Any])->dict[str,Any]:
             "providerCount":len(providers),
             "capabilityStrategy":str(group.get("capabilityStrategy") or ""),
             "transportSignature":str(group.get("transportSignature") or "not-applicable"),
+            "selectionAuthorities":group.get("selectionAuthorities") or [],
+            "dynamicVariantProviders":group.get("dynamicVariantProviders") or [],
             **route,
         }
         # Fail closed if a provider appears in a lane inconsistent with the
@@ -166,6 +206,8 @@ def build(batch:dict[str,Any],status:dict[str,Any])->dict[str,Any]:
         # lanes require current repair eligibility.
         if row["lane"]=="CORE_CLIENT_LEARNING":
             unexpected=[p for p in providers if p not in current_environment]
+        elif row["repairScope"]=="variant-coverage":
+            unexpected=[p for p in providers if p not in current_dynamic]
         else:
             unexpected=[p for p in providers if p not in current_repair]
         row["queueConsistent"]=not unexpected
@@ -220,13 +262,16 @@ def main()->int:
     ap.add_argument("--batch-plan",type=Path,default=BATCH)
     ap.add_argument("--refined-plan",type=Path,default=REFINED)
     ap.add_argument("--status",type=Path,default=STATUS)
+    ap.add_argument("--sharded-census",type=Path,default=SHARDED)
     ap.add_argument("--output",type=Path,default=OUTPUT)
     args=ap.parse_args()
     status=load(args.status)
     base=load(args.batch_plan)
     refined=load(args.refined_plan) if args.refined_plan.is_file() else None
-    selected,plan_source=select_batch_plan(base,refined,status)
-    payload=build(selected,status)
+    sharded=load(args.sharded_census) if args.sharded_census.is_file() else {}
+    dynamic_repair=dynamic_variant_providers(sharded)
+    selected,plan_source=select_batch_plan(base,refined,status,dynamic_repair)
+    payload=build(selected,status,dynamic_repair)
     payload["batchPlanSource"]=plan_source
     output=args.output if args.output.is_absolute() else ROOT/args.output
     output.parent.mkdir(parents=True,exist_ok=True)
