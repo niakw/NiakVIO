@@ -1294,14 +1294,41 @@ jobs:
         if: github.event_name == 'push' && steps.publish-memory.outputs.published == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
+          TARGET_PROVIDER: ${{ needs.experiment.outputs.target_provider || '' }}
+          TARGET_PROVIDERS: ${{ needs.experiment.outputs.target_providers || '' }}
         shell: bash
         run: |
           set -euo pipefail
-          echo "FIELD_BRAIN_REPAIR_RETURN source_run=${GITHUB_RUN_ID} target=provider-recognition-repair-v6"
-          gh workflow run provider-recognition-repair-v6.yml \
-            --repo "$GITHUB_REPOSITORY" \
-            --ref main \
-            -f mode=repair
+          targets_csv="${TARGET_PROVIDERS:-}"
+          if [ -z "$targets_csv" ] && [ -n "${TARGET_PROVIDER:-}" ]; then
+            targets_csv="$TARGET_PROVIDER"
+          fi
+          if [ -n "$targets_csv" ]; then
+            mapfile -t repair_targets < <(python - "$targets_csv" <<'PY'
+          import sys
+          seen=set()
+          for raw in str(sys.argv[1] or "").split(","):
+              provider=raw.strip().casefold().replace("_","-")
+              if provider and provider not in seen:
+                  seen.add(provider)
+                  print(provider)
+          PY
+            )
+            for provider in "${repair_targets[@]}"; do
+              echo "FIELD_BRAIN_REPAIR_RETURN source_run=${GITHUB_RUN_ID} target=provider-recognition-repair-v6 provider=$provider scoped=true"
+              gh workflow run provider-recognition-repair-v6.yml \
+                --repo "$GITHUB_REPOSITORY" \
+                --ref main \
+                -f mode=repair \
+                -f target_provider="$provider"
+            done
+          else
+            echo "FIELD_BRAIN_REPAIR_RETURN source_run=${GITHUB_RUN_ID} target=provider-recognition-repair-v6 provider=none scoped=false"
+            gh workflow run provider-recognition-repair-v6.yml \
+              --repo "$GITHUB_REPOSITORY" \
+              --ref main \
+              -f mode=repair
+          fi
 
   publish-repair-proposal:
     name: LEARNING - Open validated repair proposal PR
