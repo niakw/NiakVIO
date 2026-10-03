@@ -914,9 +914,10 @@ jobs:
             model_workers=1
           elif [ "${FAST_HANDOFF:-false}" = "true" ] && [ -n "${FAST_MISSING_PROVIDERS:-}" ]; then
             effective_filter="${FAST_MISSING_PROVIDERS}"
-            model_timeout=120
+            max_tokens=256
+            model_timeout=180
             model_workers=1
-            echo "FIELD_BRAIN_LLM_TARGETED_BUDGET providers=${FAST_MISSING_PROVIDERS} timeout=${model_timeout} workers=${model_workers}"
+            echo "FIELD_BRAIN_LLM_TARGETED_BUDGET providers=${FAST_MISSING_PROVIDERS} timeout=${model_timeout} max_tokens=${max_tokens} workers=${model_workers}"
           fi
           if [ "${LLM_NEEDED:-false}" != "true" ] || [ "${LLM_AVAILABLE:-false}" = "true" ]; then
             args=(python brain-llm/scripts/plan_batch_from_checkout.py
