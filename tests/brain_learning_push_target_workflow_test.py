@@ -67,7 +67,7 @@ assert 'eligible=(repair|environment|dynamic|current) if force else (repair|envi
 assert 'completeness_targets=' in multi_block, multi_block
 assert 'explicit-force-completeness-learning' in multi_block, multi_block
 assert 'provider-fast-repair.json' not in multi_block, multi_block
-assert 'Routine Learning remains census-debt scoped' in multi_block, multi_block
+assert 'Routine Learning remains exact current census debt scoped' in multi_block, multi_block
 assert 'scope="current non-disabled providers under explicit architecture FORCE" if force else "current repair/environment/dynamic-completeness queues"' in multi_block, multi_block
 assert 'autopilot-targeted-core-learning' in multi_block, multi_block
 assert 'autopilot-targeted-completeness-learning' in multi_block, multi_block
