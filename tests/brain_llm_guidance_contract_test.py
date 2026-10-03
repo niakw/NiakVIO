@@ -102,6 +102,32 @@ assert set(mod.STRATEGY_TO_PROFILE.values())=={
     "search_contract_inference_v1",
 }
 
+# variant-coverage advisor mapping contract
+variant_report=mod.sanitize(
+    [{
+        "ok":True,
+        "provider":"coflix",
+        "failure_class":"variant_coverage_gap",
+        "proposal":{
+            "provider_id":"coflix",
+            "strategy":"enumerate_stream_variants_before_global_cap",
+            "confidence":0.99,
+            "target_layer":"provider",
+            "experiment":{"max_embeds":32,"max_pages":24,"response_salvage":True},
+            "abstain":False,
+        },
+    }],
+    source_sha="a"*40,
+    brain_llm_sha="b"*40,
+    min_confidence=0.80,
+)
+assert variant_report["providerCount"]==1,variant_report
+variant_row=variant_report["rows"][0]
+assert variant_row["providerId"]=="coflix",variant_row
+assert variant_row["failureClass"]=="variant-coverage-gap",variant_row
+assert variant_row["strategy"]=="enumerate-stream-variants-before-global-cap",variant_row
+assert variant_row["profile"]=="player_media_extractor_v1",variant_row
+
 print("Brain LLM guidance contract passed")
 
 
