@@ -1095,7 +1095,21 @@ async function runCli() {
 
   const providers = [];
   const concurrency = Math.max(1, Math.min(8, Number(preflightConfig.concurrency || 3)));
-  const candidates = Array.isArray(registry.candidates) ? registry.candidates : [];
+  const requestedProviders = new Set(
+    String(args.providers || '')
+      .split(',')
+      .map((value) => value.trim().toLowerCase())
+      .filter(Boolean),
+  );
+  const allCandidates = Array.isArray(registry.candidates) ? registry.candidates : [];
+  const candidates = requestedProviders.size
+    ? allCandidates.filter((candidate) => requestedProviders.has(String(candidate?.canonical_id || '').trim().toLowerCase()))
+    : allCandidates;
+  if (requestedProviders.size) {
+    const found = new Set(candidates.map((candidate) => String(candidate?.canonical_id || '').trim().toLowerCase()));
+    const missing = [...requestedProviders].filter((provider) => !found.has(provider));
+    if (missing.length) throw new Error(`unknown provider selection for DNS preflight: ${missing.join(',')}`);
+  }
   const frenchResolverNames = [preflightConfig.primary_french_isp, ...(preflightConfig.fallback_french_isps || [])].filter(Boolean);
   const remoteDependencies = createGlobalpingDependencies(preflightConfig);
   let apiLimitReached = false;
