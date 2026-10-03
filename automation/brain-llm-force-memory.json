@@ -848,6 +848,105 @@
     },
     {
       "providerId": "hindmoviez",
+      "mutationFingerprint": "8473741e9fad25d84fc2d8d3ca5d59a6b1f73e6ef068a15a9d59b91734c92d01",
+      "mutationContextFingerprint": "acc1b393c6599ef4aecb774ceb0750fa8a26e8840d931582d20da7a3645f00ef",
+      "failures": 1,
+      "consecutiveFailures": 1,
+      "successes": 0,
+      "lastOutcome": "rejected",
+      "lastReason": "variant_coverage_playable_regression",
+      "lastMutationSummary": [
+        {
+          "scope": "provider_bloc",
+          "operation": "upsert",
+          "family": "bidirectional_source_frontier_before_global_cap"
+        }
+      ],
+      "repairFamily": {
+        "version": 2,
+        "key": "9f86b1719fc5e5e920fd0d0cfbeb0080ca63ea3c90261fd65cb4300e14e76515",
+        "failure": "variant-coverage-gap",
+        "status": "full-ok",
+        "archetype": "variant-coverage-gap:variant-coverage",
+        "mediaTypes": [
+          "movie",
+          "tv"
+        ],
+        "signals": [],
+        "stages": [
+          "none"
+        ],
+        "mutationSurfaces": [
+          "provider-bloc",
+          "provider-data",
+          "provider-js",
+          "provider-patch"
+        ]
+      },
+      "mechanismFamily": "bidirectional-source-frontier-before-global-cap",
+      "lastBaselineCoverage": {
+        "streamsReturned": 5,
+        "streamsPlayable": 5,
+        "identityContradictions": 0,
+        "qualityHeights": [
+          480
+        ],
+        "announcedQualityHeights": [
+          480,
+          720,
+          1080,
+          2160
+        ],
+        "maxPlayableHeight": 480,
+        "announcedPlayerCandidates": 20,
+        "announcedVariantCandidates": 39,
+        "exploredPlayerRequests": 9,
+        "reachableHostCount": 5,
+        "fanoutStates": [
+          "explored-not-resolved",
+          "returned-subset"
+        ]
+      },
+      "lastCandidateCoverage": {
+        "streamsReturned": 4,
+        "streamsPlayable": 4,
+        "identityContradictions": 0,
+        "qualityHeights": [
+          480
+        ],
+        "announcedQualityHeights": [
+          480,
+          720,
+          1080,
+          2160
+        ],
+        "maxPlayableHeight": 480,
+        "announcedPlayerCandidates": 20,
+        "announcedVariantCandidates": 26,
+        "exploredPlayerRequests": 8,
+        "reachableHostCount": 4,
+        "fanoutStates": [
+          "explored-not-resolved",
+          "returned-subset"
+        ]
+      },
+      "lastCoverageDelta": {
+        "streamsReturned": -1,
+        "streamsPlayable": -1,
+        "identityContradictions": 0,
+        "maxPlayableHeight": 0,
+        "announcedPlayerCandidates": 0,
+        "announcedVariantCandidates": -13,
+        "exploredPlayerRequests": -1,
+        "reachableHostCount": -1,
+        "qualityHeightCount": 0
+      },
+      "lastCurrentSha": "2974b15475ee05a38ce62089242141534e329c3f",
+      "sourceNiakvioSha": "64ecc3b9946cc44b2cad1e214e5ce69bfbab3920",
+      "sourceBrainLlmSha": "f0a05851bac29ef93b0ca58b96020ec950e8a167"
+    },
+    {
+      "providerId": "hindmoviez",
       "mutationFingerprint": "d2c651fe2e246ce7e3b1bca0caea8f80c79339ea66ace828f3ec0f551095661c",
       "mutationContextFingerprint": "acc1b393c6599ef4aecb774ceb0750fa8a26e8840d931582d20da7a3645f00ef",
       "failures": 1,
