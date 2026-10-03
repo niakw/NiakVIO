@@ -292,6 +292,7 @@ jobs:
 
           python scripts/build_provider_repair_batch_plan.py \
             --status automation/provider-census-sharded-status.json \
+            --sharded-census automation/provider-census-sharded-merged.json \
             --overrides provider-overrides.json \
             --output automation/provider-repair-batch-plan-sharded.json
           python - <<'PY'
@@ -382,7 +383,15 @@ jobs:
             echo "FIELD_SHARDED_GLOBAL_FANOUT retained=true replaced=false scope=$CENSUS_SCOPE run=$run_id"
           fi
           cp /tmp/provider-census-status.json automation/provider-census-status.json
-          cp /tmp/provider-repair-batch-plan.json automation/provider-repair-batch-plan-latest.json
+          # Rebuild the durable batch plan after syncing to current main so the
+          # latest Brain control-plane consumes the exact sharded evidence just
+          # measured, including dynamic completeness debt from otherwise-green
+          # providers. The pre-reset plan remains an artifact only.
+          python scripts/build_provider_repair_batch_plan.py \
+            --status /tmp/provider-census-status.json \
+            --sharded-census /tmp/provider-census-sharded.json \
+            --overrides provider-overrides.json \
+            --output automation/provider-repair-batch-plan-latest.json
           cp /tmp/provider-census-proof-history.json automation/provider-census-proof-history.json
           cp /tmp/provider-authority-status.json automation/provider-authority-status.json
           cp /tmp/provider-waf-browser-session-sharded.json "automation/provider-waf-browser-session-${run_id}.json"
