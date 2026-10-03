@@ -1,6 +1,6 @@
 CoFlix representative completeness Learning with bounded current-evidence advisor prompt.
 source_census_run: 37131173373
-source_main_sha: ce82d518593ef35591fba1601249c3fc813fd476
+source_main_sha: d4e822e2891ce855a9863a5767c23d0d1cc5305c
 brain_llm_sha: bd05e7a4836e7715926b3ab06b3a99ec64918119
 budget_minutes: 120
 reason: representative-first-current-census-dynamic-completeness-learning-after-advisor-budget-fix
@@ -11,4 +11,4 @@ target_providers: coflix
 architecture_force: false
 publication_policy: no-pr-memory-first-then-canonical-repair
 required_current_evidence: sourceRunId=37131173373;dynamicVariantProviders=coflix;current-playable-output-with-returned-subset-debt
-retry_reason: targeted 120s advisor budget implementation is on main; historical workflow assertions aligned; execute Coflix representative now
+retry_reason: Learning now validates accepted repair_history per-attempt delta; preserve first accepted Coflix candidate across later zero-acceptance rounds and continue proposal/materialization
