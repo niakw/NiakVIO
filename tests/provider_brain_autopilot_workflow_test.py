@@ -28,7 +28,7 @@ assert '-f publish_proposal="$publish_proposal"' in autopilot
 assert '-f target_providers="$LEARNING"' in autopilot
 assert '-f slot_remaining_minutes=360' in autopilot
 assert 'FORCE_MODE: ${{ steps.plan.outputs.force }}' in autopilot
-assert 'publish_proposal="true"' in autopilot
+assert 'publish_proposal="true"' not in autopilot
 assert 'publish_proposal="false"' in autopilot
 assert 'args+=(-f architecture_force=true)' in autopilot
 assert 'force=$FORCE_MODE' in autopilot
@@ -101,8 +101,9 @@ assert 'complete-cloud-convergence:' in learn
 assert 'FIELD_BRAIN_CLOUD_CONVERGENCE next=census' in learn
 assert '-f scope=unresolved -f persist=true' in learn
 assert '-f architecture_force="$ARCHITECTURE_FORCE"' in learn
-assert 'FIELD_SHARDED_CENSUS_AUTOPILOT event_driven=true' in census
-assert 'trigger=workflow_run' in census
+assert 'FIELD_SHARDED_CENSUS_AUTOPILOT event_driven=false' in census
+assert 'trigger=workflow_dispatch' in census
+assert 'gh workflow run provider-brain-autopilot.yml' in census
 
 print("provider Brain Autopilot cloud convergence contract passed")
 
