@@ -17,6 +17,13 @@ required = [
     "--sharded-census automation/provider-census-sharded-merged.json",
     "--sharded-census /tmp/provider-census-sharded.json",
     "--fallback-sharded-census automation/provider-census-sharded-latest.json",
+    "shard_count: ${{ steps.pin.outputs.shard_count }}",
+    "shards_json: ${{ steps.pin.outputs.shards_json }}",
+    "target_providers: ${{ steps.pin.outputs.target_providers }}",
+    "fromJSON(needs.prepare.outputs.shards_json)",
+    '--shard-count "${{ needs.prepare.outputs.shard_count }}"',
+    "TARGET_PROVIDERS: ${{ needs.prepare.outputs.target_providers }}",
+    "FIELD_SHARDED_CENSUS_PARTITION",
 ]
 for needle in required:
     assert needle in workflow, f"missing sharded census authority persistence contract: {needle}"
@@ -84,3 +91,17 @@ assert "--status automation/provider-census-sharded-status.json" in workflow
 print("provider sharded census authority persistence contract passed")
 
 assert "gh workflow run provider-brain-autopilot.yml" not in workflow
+
+
+# Targeted/partial validation must not pay the eight-shard full-census cost.
+for marker in (
+    'if [ -n "$target_providers" ]; then',
+    'if [ "$target_count" -le 4 ]; then shard_count=1; else shard_count=2; fi',
+    'elif [ "$census_scope" = "all" ]; then',
+    'shard_count=8',
+    'shard_count=4',
+    'if [ -n "$TARGET_PROVIDERS" ]; then',
+    'args+=(--provider "$TARGET_PROVIDERS")',
+    'expected="${{ needs.prepare.outputs.shard_count }}"',
+):
+    assert marker in workflow, f"missing bounded sharded census latency contract: {marker}"

@@ -57,6 +57,9 @@ jobs:
       provider_count: ${{ steps.pin.outputs.provider_count }}
       should_run: ${{ steps.pin.outputs.should_run }}
       census_scope: ${{ steps.pin.outputs.census_scope }}
+      shard_count: ${{ steps.pin.outputs.shard_count }}
+      shards_json: ${{ steps.pin.outputs.shards_json }}
+      target_providers: ${{ steps.pin.outputs.target_providers }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
@@ -84,6 +87,7 @@ jobs:
           changed_paths="$(git diff-tree --no-commit-id --name-only -r HEAD | tr '\n' ' ')"
           explicit_trigger=false
           census_scope="unresolved"
+          target_providers=""
           if [[ " $changed_paths " == *" .github/triggers/provider-census-sharded.json "* ]]; then
             explicit_trigger=true
             trigger_scope="$(python - <<'PY'
@@ -98,10 +102,40 @@ jobs:
           PY
             )"
             census_scope="$trigger_scope"
+            target_providers="$(python - <<'PY'
+          import json
+          from pathlib import Path
+          p=Path(".github/triggers/provider-census-sharded.json")
+          try:
+              d=json.loads(p.read_text(encoding="utf-8"))
+          except Exception:
+              d={}
+          rows=[]
+          seen=set()
+          for value in d.get("targetProviders") or []:
+              provider=str(value or "").strip().lower().replace("_","-")
+              if provider and provider not in seen:
+                  seen.add(provider); rows.append(provider)
+          print(",".join(rows))
+          PY
+            )"
           elif [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ]; then
             census_scope="${{ inputs.scope }}"
           fi
           echo "census_scope=$census_scope" >> "$GITHUB_OUTPUT"
+          echo "target_providers=$target_providers" >> "$GITHUB_OUTPUT"
+          if [ -n "$target_providers" ]; then
+            target_count="$(python -c 'import sys; print(len([x for x in sys.argv[1].split(",") if x]))' "$target_providers")"
+            if [ "$target_count" -le 4 ]; then shard_count=1; else shard_count=2; fi
+          elif [ "$census_scope" = "all" ]; then
+            shard_count=8
+          else
+            shard_count=4
+          fi
+          shards_json="$(python -c 'import json,sys; print(json.dumps(list(range(int(sys.argv[1]))),separators=(",",":")))' "$shard_count")"
+          echo "shard_count=$shard_count" >> "$GITHUB_OUTPUT"
+          echo "shards_json=$shards_json" >> "$GITHUB_OUTPUT"
+          echo "FIELD_SHARDED_CENSUS_PARTITION scope=$census_scope targets=${target_providers:-none} shard_count=$shard_count"
           if [ "$GITHUB_EVENT_NAME" != "push" ] || [ "$count" -gt 120 ] || [[ "$head_message" == provider:\ bulk\ activate\ * ]] || [ "$explicit_trigger" = "true" ]; then
             echo "should_run=true" >> "$GITHUB_OUTPUT"
             echo "FIELD_SHARDED_CENSUS_PREPARE should_run=true explicit_trigger=$explicit_trigger provider_count=$count"
@@ -113,13 +147,13 @@ jobs:
   shard:
     needs: prepare
     if: ${{ needs.prepare.outputs.should_run == 'true' }}
-    name: Census shard ${{ matrix.shard }} of 8
+    name: Census shard ${{ matrix.shard }} of ${{ needs.prepare.outputs.shard_count }}
     runs-on: ubuntu-latest
     timeout-minutes: 35
     strategy:
       fail-fast: false
       matrix:
-        shard: [0, 1, 2, 3, 4, 5, 6, 7]
+        shard: ${{ fromJSON(needs.prepare.outputs.shards_json) }}
     env:
       TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
       TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
@@ -128,6 +162,7 @@ jobs:
       NIAKVIO_QUICK_YIELD_MAX_SAMPLES: '8'
       CENSUS_SCOPE: ${{ needs.prepare.outputs.census_scope }}
       HEAD_MESSAGE: ${{ github.event.head_commit.message || '' }}
+      TARGET_PROVIDERS: ${{ needs.prepare.outputs.target_providers }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
@@ -164,11 +199,13 @@ jobs:
             --scope "$CENSUS_SCOPE"
             --status-file automation/provider-census-status.json
             --history automation/provider-census-proof-history.json
-            --shard-count 8
+            --shard-count "${{ needs.prepare.outputs.shard_count }}"
             --shard-index "${{ matrix.shard }}"
             --output "automation/provider-census-shard-${{ matrix.shard }}.json"
           )
-          if [ "$GITHUB_EVENT_NAME" = "push" ] && [[ "$HEAD_MESSAGE" == provider:\ bulk\ activate\ * ]]; then
+          if [ -n "$TARGET_PROVIDERS" ]; then
+            args+=(--provider "$TARGET_PROVIDERS")
+          elif [ "$GITHUB_EVENT_NAME" = "push" ] && [[ "$HEAD_MESSAGE" == provider:\ bulk\ activate\ * ]]; then
             providers="$(python - <<'PY'
           import json
           from pathlib import Path
@@ -225,8 +262,9 @@ jobs:
         run: |
           set -euo pipefail
           mapfile -t files < <(find shards -maxdepth 1 -type f -name 'provider-census-shard-*.json' | sort -V)
-          if [ "${#files[@]}" -ne 8 ]; then
-            echo "Expected 8 shard reports, found ${#files[@]}" >&2
+          expected="${{ needs.prepare.outputs.shard_count }}"
+          if [ "${#files[@]}" -ne "$expected" ]; then
+            echo "Expected $expected shard reports, found ${#files[@]}" >&2
             exit 1
           fi
           python scripts/merge_provider_census_shards.py "${files[@]}" \
