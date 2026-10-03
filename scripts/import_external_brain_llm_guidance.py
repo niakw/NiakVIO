@@ -18,6 +18,7 @@ STRATEGY_TO_PROFILE={
  "terminal-media-extractor-with-playback-validation":"chain_terminal_extractor_v1",
  "same-provider-candidate-program-replay":"retained_candidate_replay_v1",
  "proven-request-program-and-terminal-extraction":"player_media_extractor_v1",
+ "enumerate-stream-variants-before-global-cap":"player_media_extractor_v1",
  "discover-api-from-current-page-and-bundles":"search_contract_inference_v1",
 }
 TOP_LEVEL_FIELDS={"schemaVersion","sourceNiakvioSha","brainLlmSha","publicationAuthority","directMutationAuthority","proofAuthority","rawMutationContentRetained","privateContentRetained","minConfidence","providerCount","rows"}
