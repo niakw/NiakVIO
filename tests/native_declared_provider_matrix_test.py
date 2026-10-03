@@ -146,6 +146,7 @@ route_count = len(all_routes)
 assert provider_count == len(scope_ids())
 assert "animetsu" not in scope_ids()
 assert "showbox" not in scope_ids()
+assert "videasy" not in scope_ids()
 assert catalogue_count >= provider_count and disabled_count >= 0
 assert route_count == sum(counts.values())
 assert all(counts[kind] > 0 for kind in TYPES), counts
