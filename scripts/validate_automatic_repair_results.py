@@ -25,7 +25,12 @@ def _load(path: Path) -> dict[str, Any]:
     return value
 
 
-def validate(registry: dict[str, Any], health: dict[str, Any], repair: dict[str, Any]) -> list[str]:
+def validate(
+    registry: dict[str, Any],
+    health: dict[str, Any],
+    repair: dict[str, Any],
+    history_baseline: dict[str, Any] | None = None,
+) -> list[str]:
     results = {
         str(row.get("key")): row
         for row in health.get("results") or []
@@ -37,6 +42,7 @@ def validate(registry: dict[str, Any], health: dict[str, Any], repair: dict[str,
     ]
     failures: list[str] = []
     accepted_events = 0
+    baseline = history_baseline or {}
     mode = str(health.get("mode") or repair.get("mode") or "deep").casefold()
     gate = automatic_repair_safety_gate if mode == "quick" else automatic_repair_identity_gate
 
@@ -46,10 +52,25 @@ def validate(registry: dict[str, Any], health: dict[str, Any], repair: dict[str,
             event for event in candidate.get("repair_history") or []
             if isinstance(event, dict) and event.get("accepted")
         ]
-        accepted_events += len(history)
+        after_count = len(history)
+        try:
+            before_count = max(0, int(baseline.get(key) or 0))
+        except (TypeError, ValueError):
+            before_count = 0
+        if before_count > after_count:
+            failures.append(
+                f"{key}: repair history regressed below baseline "
+                f"(before={before_count} after={after_count})"
+            )
+            continue
+        new_events = after_count - before_count
+        accepted_events += new_events
+        if new_events <= 0:
+            continue
+
         result = results.get(key)
         if result is None:
-            failures.append(f"{key}: accepted repair has no final health result")
+            failures.append(f"{key}: newly accepted repair has no final health result")
             continue
 
         ok, reason = gate(result)
@@ -69,12 +90,14 @@ def main() -> int:
     parser.add_argument("--stage", type=Path, default=Path("staging"))
     parser.add_argument("--health", type=Path, default=Path("health-output/health-results.json"))
     parser.add_argument("--repairs", type=Path, default=Path("health-output/repair-report.json"))
+    parser.add_argument("--history-baseline", type=Path)
     args = parser.parse_args()
 
     registry = _load(args.stage / "candidates.json")
     health = _load(args.health)
     repair = _load(args.repairs)
-    failures = validate(registry, health, repair)
+    baseline = _load(args.history_baseline) if args.history_baseline and args.history_baseline.is_file() else {}
+    failures = validate(registry, health, repair, baseline)
     if failures:
         raise SystemExit("automatic repair gate failed:\n- " + "\n- ".join(failures))
     print(

@@ -1179,6 +1179,24 @@ def repair_attempt(
     env["NIAKVIO_BRAIN_LEARNING_MEMORY"] = str(previous_state_path)
     env["NUVIO_BRAIN_DEADLINE_EPOCH_MS"] = str(int(deadline * 1000))
     env["NUVIO_WORKER_MEMORY_MB"] = "1024"
+    baseline_registry = load_json(registry_path, {})
+    baseline_counts: dict[str, int] = {}
+    for candidate in baseline_registry.get("candidates") or []:
+        if not isinstance(candidate, dict):
+            continue
+        key = str(candidate.get("key") or "")
+        if not key:
+            continue
+        count = sum(
+            1
+            for event in candidate.get("repair_history") or []
+            if isinstance(event, dict) and event.get("accepted")
+        )
+        if count:
+            baseline_counts[key] = count
+    history_baseline_path = output / "repair-history-baseline.json"
+    write_json(history_baseline_path, baseline_counts)
+
     completed = run([
         sys.executable, str(SCRIPTS / "run_brain_learning_sandbox.py"),
         "--stage", str(stage), "--registry", str(registry_path),
@@ -1192,6 +1210,7 @@ def repair_attempt(
         "--stage", str(registry_path.parent),
         "--health", str(output / "health-results.json"),
         "--repairs", str(output / "repair-report.json"),
+        "--history-baseline", str(history_baseline_path),
     ], env=env, deadline=deadline)
     accepted = sum(len(x.get("accepted") or []) for x in report.get("rounds") or [] if isinstance(x, dict))
     attempted = sorted({
