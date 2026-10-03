@@ -969,3 +969,13 @@
 - On HEAD `4db91579`: Workflow Gate passed, Provider Non-Regression passed, and Core Verify Quick passed. No PR is open; all changes remain on main.
 - Canonical provider authority remains census `37124297614`: 21 FULL OK, 3 PARTIAL OK, 2 CANDIDATE OK, 10 ROUTE PROVEN, 2 CHAIN REACHED, 1 NO PROOF, 2 REGRESSION PROVIDER, 5 DISABLED. VidEasy is absent from repairQueue; dynamic completeness debt remains animevost-fr, animevostfr, Coflix, HindMoviez, Kehflix and VidLove.
 - Autopilot is re-armed in ordinary `auto` mode from census `37124297614`. Expected proof: Domain cohort empty for AnimeKai; AnimeKai appears in Brain Learning; Coflix and other current completeness debt are not preempted by transport.
+
+
+## 2026-10-03 — Learning/census convergence made main-only
+
+- Current canonical census `37131173373` completed successfully and persisted as `fee9f004`. Counts remain 21 FULL OK / 3 PARTIAL OK / 2 CANDIDATE OK / 10 ROUTE PROVEN / 2 CHAIN REACHED / 1 NO PROOF / 2 REGRESSION PROVIDER / 5 DISABLED across 46 census identities. Dynamic completeness debt remains for animevost-fr, animevostfr, Coflix, HindMoviez, Kehflix and VidLove.
+- AnimeKai is no longer Domain-owned in the current plan: it is `learning|mixed_embed_resolver` with dominant issue `timeout`, proving the qualified-authority transport routing fix survived the fresh census.
+- Brain Repair Lab `37130439392` failed only in the optional proposal-publication job. The sandbox/learning state produced concrete provider/skill proposals, but the PR materialization gate re-ran the clean ProviderBase contract against source-state PROVENANCE. The durable ProviderBase history remains 96/96 while the sandbox active materializer intentionally projects current active coverage before tests; the failure was in the proposal/PR path, not the Brain experiment itself.
+- Autopilot is now main-only: it always dispatches Learning with `publish_proposal=false`. It will not create/refresh provider repair proposal PRs or repair branches. Learning persists evidence/memory; canonical Repair/census consumes that state.
+- A census launched through another workflow did not reliably produce the expected `workflow_run` Autopilot continuation. Sharded census persistence now explicitly dispatches `provider-brain-autopilot.yml` with `workflow_dispatch` after a successful canonical push. This removes reliance on recursive GitHub event propagation.
+- No open PRs at this checkpoint. Current execution remains on `main`.
