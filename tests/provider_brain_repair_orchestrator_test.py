@@ -211,18 +211,27 @@ with tempfile.TemporaryDirectory() as tmp:
         assert bounded[0]["groupId"]=="route-to-terminal|html_scraper"
         assert bounded[1]["groupId"]=="packed"
 
-        mod.BATCH_PLAN.write_text(json.dumps({"sourceRunId":"old","groups":[]}),encoding="utf-8")
-        stale=mod.repair_batches(["d","b","a","c"],2)
-        assert [row["providers"] for row in stale]==[["b","c"],["d","a"]],stale
-        assert all(row["groupId"]=="fallback" for row in stale)
-        pressure=mod.provider_attempt_pressure_map()
-        assert pressure["a"]==5 and pressure["c"]==2 and pressure["d"]==3,pressure
         regular,_,_=mod.select_targets(["e"],include_environment=False,shard_count=1,shard_index=0)
         forced,_,_=mod.select_targets(
             ["e"],include_environment=False,shard_count=1,shard_index=0,architecture_force=True
         )
         assert regular==[],regular
         assert forced==["e"],forced
+
+        mod.BATCH_PLAN.write_text(json.dumps({
+            "sourceRunId":"old",
+            "dynamicVariantProviders":["e"],
+            "groups":[],
+        }),encoding="utf-8")
+        stale=mod.repair_batches(["d","b","a","c"],2)
+        assert [row["providers"] for row in stale]==[["b","c"],["d","a"]],stale
+        assert all(row["groupId"]=="fallback" for row in stale)
+        stale_forced,_,_=mod.select_targets(
+            ["e"],include_environment=False,shard_count=1,shard_index=0,architecture_force=True
+        )
+        assert stale_forced==[],stale_forced
+        pressure=mod.provider_attempt_pressure_map()
+        assert pressure["a"]==5 and pressure["c"]==2 and pressure["d"]==3,pressure
     finally:
         mod.STATUS,mod.BATCH_PLAN,mod.REPAIR_MEMORY=old_status,old_plan,old_memory
 

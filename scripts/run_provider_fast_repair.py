@@ -48,6 +48,10 @@ def run(*args: str, timeout: int | None = None) -> None:
 
 def dynamic_completeness_targets(status: dict[str, Any], plan: dict[str, Any]) -> set[str]:
     """Current FULL/PARTIAL completeness debt may be selected only by explicit FORCE."""
+    status_run = str(status.get("runId") or "").strip()
+    plan_run = str(plan.get("sourceRunId") or "").strip()
+    if status_run and plan_run != status_run:
+        return set()
     current = {
         cid(row.get("provider"))
         for row in status.get("providers") or []

@@ -219,6 +219,10 @@ def current_dynamic_completeness_queue(
     rows = status_rows(payload)
     if plan is None:
         plan = load(BATCH_PLAN, {})
+    status_run = str(payload.get("runId") or "").strip()
+    plan_run = str(plan.get("sourceRunId") or "").strip()
+    if status_run and plan_run != status_run:
+        return set()
     dynamic = {cid(value) for value in plan.get("dynamicVariantProviders") or [] if cid(value)}
     return {
         provider
