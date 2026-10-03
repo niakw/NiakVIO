@@ -7,9 +7,10 @@
   "timeBudgetSeconds": 2400,
   "maxRoundsPerBatch": 3,
   "publishValidated": true,
-  "reason": "Brain-first representative completeness repair: Coflix is current FULL OK on anime/movie/tv but sharded census proves fewer returned variants than announced. Run FORCE through Brain only; require isolated rematerialization plus current-byte playback, identity, and completeness gain before any publication.",
+  "reason": "Retry Coflix Brain-first completeness FORCE after fixing repairQueue/dynamicVariant selection split-brain in both Fast Repair and canonical Brain Repair.",
   "sourceCensusRunId": "37088495401",
-  "sourceArchitectureSha": "2caa9fd01712f13a94b8d99d00ac43f525b51d34",
-  "proofGoal": "Validate one FULL-but-incomplete provider end-to-end by Brain before cohort expansion; no provider-specific manual fix.",
-  "requestedAt": "2026-10-03T04:24:00+02:00"
+  "sourceArchitectureSha": "4577900aff48f11082641db1d2092a659df92ac2",
+  "proofGoal": "Prove explicit FORCE can enter canonical Brain Repair for current dynamic completeness debt, then require generated candidate -> materialization -> playback/identity/completeness gain before publication.",
+  "requestedAt": "2026-10-03T04:32:00+02:00",
+  "retry": 1
 }
