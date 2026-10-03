@@ -158,7 +158,7 @@ assert "model_workers=2" in workflow
 assert "--advisor-only" in workflow
 assert "--max-hypotheses 1" in workflow
 assert '--max-tokens "$max_tokens"' in workflow
-assert "max_tokens=160" in workflow
+assert "max_tokens=160" in workflow\nassert "max_tokens=256" in workflow
 assert "cache_policy=stale-guidance-ignored" in workflow
 assert '--timeout-seconds "$model_timeout"' in workflow
 assert 'model_name="qwen2.5-coder-7b"' in workflow
@@ -178,5 +178,5 @@ assert workflow.count('--brain-llm-sha "${{ steps.brain_llm_pin.outputs.sha }}"'
 assert "stale-guidance-ignored" in workflow
 
 assert 'FIELD_BRAIN_LLM_TARGETED_BUDGET' in workflow
-assert 'model_timeout=120' in workflow
+assert 'model_timeout=180' in workflow
 assert 'model_workers=1' in workflow
