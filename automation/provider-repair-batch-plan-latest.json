@@ -1,16 +1,40 @@
 {
   "schemaVersion": 1,
-  "sourceRunId": "37090369813",
-  "sourceTriggerSha": "9a5a94b11fd3e7c091f79fa772d3f03b48800154",
-  "unresolvedProviderCount": 21,
-  "dynamicVariantProviderCount": 4,
+  "sourceRunId": "37091625544",
+  "sourceTriggerSha": "6d499e03fa454ce922e03717edd66f43dd2527f5",
+  "unresolvedProviderCount": 23,
+  "dynamicVariantProviderCount": 6,
   "dynamicVariantProviders": [
     "animevost-fr",
     "animevostfr",
+    "coflix",
     "hindmoviez",
-    "persianstremio"
+    "kehflix",
+    "vidlove"
   ],
-  "groupCount": 11,
+  "dynamicVariantCurrentObservedProviders": [
+    "4khdhub",
+    "allanime",
+    "allwish",
+    "anime-ultime",
+    "animekai",
+    "animesalt",
+    "animesama-co",
+    "animesultra",
+    "animevost-fr",
+    "animevostfr",
+    "flemmix",
+    "mallumv",
+    "moviebox",
+    "moviesmod",
+    "uhdmovies",
+    "videasy",
+    "vidfast",
+    "vidrock",
+    "yflix"
+  ],
+  "dynamicVariantFallbackUsed": true,
+  "groupCount": 13,
   "executionModel": {
     "default": "family/signature batch",
     "liveProbeConcurrency": "audit_provider_quick_yield ThreadPool",
@@ -100,6 +124,7 @@
         "lookup"
       ],
       "dominantIssues": [
+        "network_http_error",
         "network_zero_result"
       ],
       "harnessTransportClasses": [],
@@ -180,35 +205,34 @@
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
     {
-      "groupId": "variant-coverage|direct_media",
+      "groupId": "variant-coverage|html_scraper",
       "repairScope": "variant-coverage",
       "runtimeFamilies": [
-        "api_stream_resolver",
-        "direct_media"
+        "html_scraper"
       ],
-      "capabilityStrategy": "direct_media",
+      "capabilityStrategy": "html_scraper",
       "evidenceDepths": [
         "chain",
         "lookup"
       ],
       "dominantIssues": [
-        "network_zero_result",
-        "none"
+        "none",
+        "provider_returned_wrong_content"
       ],
       "harnessTransportClasses": [],
       "transportSignature": "not-applicable",
       "providerCount": 2,
       "providers": [
-        "hindmoviez",
-        "persianstremio"
+        "kehflix",
+        "vidlove"
       ],
       "action": "current execution proves playable output but fewer variants than the provider announced; keep publication authority unchanged and send completeness repair to Brain Learning",
       "selectionAuthorities": [
         "provider-census-sharded-latest.json:dynamic-variant-debt"
       ],
       "dynamicVariantProviders": [
-        "hindmoviez",
-        "persianstremio"
+        "kehflix",
+        "vidlove"
       ],
       "executionPolicy": "batch-first",
       "providerLocalFallback": "only-after-shared-profile-failure"
@@ -347,6 +371,64 @@
         "provider-census-status.json:brainCheckRequired"
       ],
       "dynamicVariantProviders": [],
+      "executionPolicy": "batch-first",
+      "providerLocalFallback": "only-after-shared-profile-failure"
+    },
+    {
+      "groupId": "variant-coverage|direct_media",
+      "repairScope": "variant-coverage",
+      "runtimeFamilies": [
+        "direct_media"
+      ],
+      "capabilityStrategy": "direct_media",
+      "evidenceDepths": [
+        "lookup"
+      ],
+      "dominantIssues": [
+        "none"
+      ],
+      "harnessTransportClasses": [],
+      "transportSignature": "not-applicable",
+      "providerCount": 1,
+      "providers": [
+        "hindmoviez"
+      ],
+      "action": "current execution proves playable output but fewer variants than the provider announced; keep publication authority unchanged and send completeness repair to Brain Learning",
+      "selectionAuthorities": [
+        "provider-census-sharded-latest.json:dynamic-variant-debt"
+      ],
+      "dynamicVariantProviders": [
+        "hindmoviez"
+      ],
+      "executionPolicy": "batch-first",
+      "providerLocalFallback": "only-after-shared-profile-failure"
+    },
+    {
+      "groupId": "variant-coverage|mixed_embed_resolver",
+      "repairScope": "variant-coverage",
+      "runtimeFamilies": [
+        "mixed_embed_resolver"
+      ],
+      "capabilityStrategy": "mixed_embed_resolver",
+      "evidenceDepths": [
+        "chain"
+      ],
+      "dominantIssues": [
+        "none"
+      ],
+      "harnessTransportClasses": [],
+      "transportSignature": "not-applicable",
+      "providerCount": 1,
+      "providers": [
+        "coflix"
+      ],
+      "action": "current execution proves playable output but fewer variants than the provider announced; keep publication authority unchanged and send completeness repair to Brain Learning",
+      "selectionAuthorities": [
+        "provider-census-sharded-latest.json:dynamic-variant-debt"
+      ],
+      "dynamicVariantProviders": [
+        "coflix"
+      ],
       "executionPolicy": "batch-first",
       "providerLocalFallback": "only-after-shared-profile-failure"
     }
