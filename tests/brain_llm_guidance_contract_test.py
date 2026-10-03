@@ -158,7 +158,8 @@ assert "model_workers=2" in workflow
 assert "--advisor-only" in workflow
 assert "--max-hypotheses 1" in workflow
 assert '--max-tokens "$max_tokens"' in workflow
-assert "max_tokens=160" in workflow\nassert "max_tokens=256" in workflow
+assert "max_tokens=160" in workflow
+assert "max_tokens=256" in workflow
 assert "cache_policy=stale-guidance-ignored" in workflow
 assert '--timeout-seconds "$model_timeout"' in workflow
 assert 'model_name="qwen2.5-coder-7b"' in workflow
