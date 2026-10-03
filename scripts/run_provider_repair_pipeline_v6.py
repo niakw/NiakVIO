@@ -1055,8 +1055,14 @@ def main() -> int:
         # portfolio wave scheduler; repeating 3 Deep rounds inside each wave
         # multiplies the same work and obscures attribution.
         brain_rounds_per_batch = 1
+        targeted_force = args.mode == "force" and len(targets) <= 2
         brain_waves = 1 if args.mode == "repair" else 3
-        brain_time_budget_seconds = 600 if args.mode == "repair" else 900
+        brain_time_budget_seconds = (
+            600 if args.mode == "repair"
+            else 360 if targeted_force
+            else 900
+        )
+        brain_min_start_batch_seconds = 60 if targeted_force else 150
         brain_cmd = [
             sys.executable,
             "scripts/run_provider_brain_repair.py",
@@ -1064,20 +1070,21 @@ def main() -> int:
             "--batch-size", "48",
             "--max-rounds-per-batch", str(brain_rounds_per_batch),
             "--time-budget-seconds", str(brain_time_budget_seconds),
-            "--min-start-batch-seconds", "150",
+            "--min-start-batch-seconds", str(brain_min_start_batch_seconds),
             "--output", str(BRAIN_REPAIR.relative_to(ROOT)),
         ]
         print(
             "FIELD_PROVIDER_REPAIR_BRAIN_ROUNDS "
             f"mode={args.mode} rounds_per_batch={brain_rounds_per_batch} "
-            f"waves={brain_waves} time_budget_seconds={brain_time_budget_seconds}",
+            f"waves={brain_waves} time_budget_seconds={brain_time_budget_seconds} "
+            f"min_start_batch_seconds={brain_min_start_batch_seconds} targeted_force={str(targeted_force).lower()}",
             flush=True,
         )
         for provider in targets:
             brain_cmd.extend(["--provider", provider])
         run(
             *brain_cmd,
-            timeout=1080,
+            timeout=max(480, brain_time_budget_seconds + 120),
         )
         if not BRAIN_REPAIR.exists():
             raise RuntimeError("Brain Repair did not produce its portfolio report")
