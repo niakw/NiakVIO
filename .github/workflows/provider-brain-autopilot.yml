@@ -143,10 +143,10 @@ jobs:
           # bounded cohort immediately; Learning remains globally serialized and
           # persists sanitized state/proposals before the next census.
           if [ -n "$LEARNING" ]; then
-            publish_proposal="true"
-            if [ "$FORCE_MODE" = "true" ]; then
-              publish_proposal="false"
-            fi
+            # Main-only execution policy: Learning persists knowledge/evidence,
+            # then canonical Repair/census consumes it. Never create repair PRs
+            # or proposal branches from Autopilot.
+            publish_proposal="false"
             args=(
               --repo "$GITHUB_REPOSITORY" --ref main
               -f publish_proposal="$publish_proposal"
