@@ -1,0 +1,194 @@
+{
+  "acceptedProgramCompileFailures": {},
+  "acceptedProgramCompiledProviders": [],
+  "acceptedRepairCount": 0,
+  "acceptedRepairs": [],
+  "advisorHypothesisWaveBudget": 1,
+  "batchSize": 48,
+  "deferredLearningProviders": [
+    "coflix"
+  ],
+  "effectiveWaves": 3,
+  "elapsedSeconds": 45.123,
+  "executionModel": "family-batched-multi-wave-brain-repair",
+  "experienceMemory": {
+    "operationalProviderCount": 23,
+    "providerCount": 46,
+    "schemaVersion": 2,
+    "sourceRunId": "37147134552-pre-repair",
+    "sourceSha": "2b6e4f45d33d227c9217c348384b262980be5ec5",
+    "strategyCount": 5
+  },
+  "fixedInLabProviders": [],
+  "harnessDifferentialProviderCount": 0,
+  "harnessDifferentialProviders": [],
+  "healthConcurrency": 0,
+  "healthConcurrencyMode": "auto-per-batch",
+  "initialStatuses": {
+    "coflix": "ROUTE PROVEN"
+  },
+  "maxRoundsPerBatch": 1,
+  "maxWaves": 3,
+  "noProgressReason": "experiment_variants_exhausted",
+  "positiveProgramRecovery": {
+    "durableProviders": [
+      "mallumv"
+    ],
+    "durableRecordCount": 2,
+    "recoveredRecordCount": 0,
+    "reportCount": 37
+  },
+  "processedProviderCount": 1,
+  "processedProviders": [
+    "coflix"
+  ],
+  "providerSpecificRules": false,
+  "rawLabAcceptedCount": 0,
+  "rawLabAcceptedRepairs": [],
+  "remainingProviders": [],
+  "requestedWaves": 3,
+  "resumeRecommended": false,
+  "safety": {
+    "acceptedMutationRequiresStrictImprovement": true,
+    "currentByteRetestRequired": true,
+    "directSkillApplication": false,
+    "experienceMemoryRole": "prior-only-no-acceptance-authority",
+    "harnessDifferentialExcludedFromLearningDebt": true,
+    "identityGateRequired": true,
+    "learnedSkillRole": "hypothesis-ordering-only",
+    "sameByteHarnessDifferentialBlocksProviderMutation": true,
+    "wafEnvironmentExcludedByDefault": true
+  },
+  "schemaVersion": 1,
+  "selectedProviderCount": 1,
+  "selectedProviders": [
+    "coflix"
+  ],
+  "selectionSource": "automation/provider-census-status.json:repairQueue",
+  "shardCount": 1,
+  "shardIndex": 0,
+  "skippedEnvironmentProviders": [],
+  "sourceCensusRunId": "37147134552-pre-repair",
+  "timeBudgetExhausted": false,
+  "timeBudgetSeconds": 360,
+  "unvisitedProviders": [],
+  "waves": [
+    {
+      "acceptedCount": 0,
+      "acceptedProgramCompileFailures": {},
+      "acceptedProgramCompiledProviders": [],
+      "advisorRotationPending": [],
+      "batches": [
+        {
+          "accepted": [],
+          "acceptedCount": 0,
+          "advisorRemainingFingerprintCounts": {},
+          "advisorRotationPending": [],
+          "batch": 1,
+          "brain": {
+            "harnessDifferentialProviders": [],
+            "learnedEvents": 0,
+            "plans": {
+              "published:coflix": {
+                "action": "probe-targeted-repair",
+                "allowedProfiles": [
+                  "adaptive_runtime_recovery"
+                ],
+                "exitReason": null,
+                "experimentExhausted": false,
+                "experimentGeneration": 1,
+                "experimentVariant": 0,
+                "experimentVariantCount": 5,
+                "failureClass": "playback_context_gap",
+                "hypotheses": [
+                  {
+                    "confidence": 0,
+                    "id": "preserve-playback-context",
+                    "learned": false,
+                    "maturity": null,
+                    "profile": null,
+                    "transferScore": 0
+                  },
+                  {
+                    "confidence": 0,
+                    "id": "refresh-media-token",
+                    "learned": false,
+                    "maturity": null,
+                    "profile": null,
+                    "transferScore": 0
+                  }
+                ],
+                "learningDisposition": "core_repair_only",
+                "llmAdvisorApplied": false,
+                "llmAdvisorConfidence": 0,
+                "llmAdvisorExperiment": {},
+                "llmAdvisorExperimentFingerprint": "",
+                "llmAdvisorFailureCompatibility": "",
+                "llmAdvisorGuidanceKind": "",
+                "llmAdvisorProfile": "",
+                "llmAdvisorRescue": false,
+                "llmAdvisorSourceFailureClass": "",
+                "llmAdvisorStrategy": "",
+                "metaGapEscalated": false,
+                "negativeMemoryMatches": 0,
+                "positiveProgramFingerprint": "",
+                "postExhaustionStrategyMethod": "",
+                "postExhaustionStrategyProfile": "",
+                "providerId": "coflix",
+                "providerPositiveProgramProductionRescue": false,
+                "providerPositiveProgramReplay": false,
+                "repairScope": "capability",
+                "repairType": "playback_context",
+                "signature": "c626ad91a7570fbf5b4e2921"
+              }
+            },
+            "queuedForLearning": [],
+            "validatedRepairLearningExecuted": true
+          },
+          "capabilityStrategy": "mixed_embed_resolver",
+          "deferredToLearning": [
+            "coflix"
+          ],
+          "familyGroups": [
+            {
+              "capabilityStrategy": "mixed_embed_resolver",
+              "groupId": "route-to-terminal|mixed_embed_resolver",
+              "providers": [
+                "coflix"
+              ],
+              "repairScope": "route-to-terminal"
+            }
+          ],
+          "fixedInLab": [],
+          "genericLearningHandoff": [
+            "coflix"
+          ],
+          "groupId": "route-to-terminal|mixed_embed_resolver",
+          "harnessDifferentialProviders": [],
+          "healthConcurrency": 1,
+          "providerCount": 1,
+          "providers": [
+            "coflix"
+          ],
+          "repairScope": "route-to-terminal",
+          "unexecutableLlmHandoff": []
+        }
+      ],
+      "compileRejectedToLearning": [],
+      "deferredToLearning": [
+        "coflix"
+      ],
+      "deferredToLearningCount": 1,
+      "durableMaterializeTargets": [],
+      "experimentMemoryAdvanced": true,
+      "fixedInLab": [],
+      "fixedInLabCount": 0,
+      "inputProviderCount": 1,
+      "rawFixedInLab": [],
+      "rawLabAcceptedCount": 0,
+      "remainingProviderCount": 0,
+      "timeBudgetExhausted": false,
+      "wave": 1
+    }
+  ]
+}

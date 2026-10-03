@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "sourceRunId": "37145195759",
-  "sourceTriggerSha": "4ebafbeba68cc25c1e1b12484cfdbf3997a1327d",
+  "sourceRunId": "37147134552-post-repair-candidate",
+  "sourceTriggerSha": "2b6e4f45d33d227c9217c348384b262980be5ec5",
   "unresolvedProviderCount": 21,
   "dynamicVariantProviderCount": 6,
   "dynamicVariantProviders": [
@@ -16,6 +16,8 @@
     "4khdhub",
     "allanime",
     "allwish",
+    "anikototv",
+    "anime-sama",
     "anime-ultime",
     "animekai",
     "animesalt",
@@ -23,17 +25,39 @@
     "animesultra",
     "animevost-fr",
     "animevostfr",
+    "castle",
+    "coflix",
     "flemmix",
+    "french-manga",
+    "hindmoviez",
+    "kehflix",
+    "kurage",
     "mallumv",
     "moviebox",
+    "movieshunt",
     "moviesmod",
+    "mugiwarastream",
+    "neko-sama",
+    "papadustream",
+    "persianstremio",
+    "playimdb",
+    "purstream",
+    "sekai",
+    "streamzo",
     "uhdmovies",
     "videasy",
     "vidfast",
+    "vidlove",
+    "vidrock",
+    "voiranime",
+    "voiranime-homes",
+    "voiranime-rip",
+    "vostfree",
+    "wookafr",
     "yflix"
   ],
-  "dynamicVariantFallbackUsed": true,
-  "groupCount": 12,
+  "dynamicVariantFallbackUsed": false,
+  "groupCount": 11,
   "executionModel": {
     "default": "family/signature batch",
     "liveProbeConcurrency": "audit_provider_quick_yield ThreadPool",
@@ -120,25 +144,29 @@
       "capabilityStrategy": "mixed_embed_resolver",
       "evidenceDepths": [
         "chain",
-        "lookup"
+        "lookup",
+        "none"
       ],
       "dominantIssues": [
         "network_http_error",
-        "network_zero_result"
+        "network_zero_result",
+        "waf_challenge"
       ],
       "harnessTransportClasses": [],
       "transportSignature": "not-applicable",
-      "providerCount": 2,
+      "providerCount": 3,
       "providers": [
         "animesama-co",
-        "animevostfr"
+        "animevostfr",
+        "coflix"
       ],
       "action": "replay/rematerialize retained candidate knowledge against current bytes before new mutation",
       "selectionAuthorities": [
         "provider-census-status.json:brainCheckRequired"
       ],
       "dynamicVariantProviders": [
-        "animevostfr"
+        "animevostfr",
+        "coflix"
       ],
       "executionPolicy": "batch-first",
       "providerLocalFallback": "only-after-shared-profile-failure"
@@ -369,35 +397,6 @@
       ],
       "dynamicVariantProviders": [
         "hindmoviez"
-      ],
-      "executionPolicy": "batch-first",
-      "providerLocalFallback": "only-after-shared-profile-failure"
-    },
-    {
-      "groupId": "variant-coverage|mixed_embed_resolver",
-      "repairScope": "variant-coverage",
-      "runtimeFamilies": [
-        "mixed_embed_resolver"
-      ],
-      "capabilityStrategy": "mixed_embed_resolver",
-      "evidenceDepths": [
-        "chain"
-      ],
-      "dominantIssues": [
-        "none"
-      ],
-      "harnessTransportClasses": [],
-      "transportSignature": "not-applicable",
-      "providerCount": 1,
-      "providers": [
-        "coflix"
-      ],
-      "action": "current execution proves playable output but fewer variants than the provider announced; keep publication authority unchanged and send completeness repair to Brain Learning",
-      "selectionAuthorities": [
-        "provider-census-sharded-latest.json:dynamic-variant-debt"
-      ],
-      "dynamicVariantProviders": [
-        "coflix"
       ],
       "executionPolicy": "batch-first",
       "providerLocalFallback": "only-after-shared-profile-failure"
