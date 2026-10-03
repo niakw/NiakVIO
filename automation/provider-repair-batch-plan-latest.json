@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "sourceRunId": "37111534400",
-  "sourceTriggerSha": "a121e8baf3fe743d5e035b7b8ef3d96ec5190a8f",
-  "unresolvedProviderCount": 23,
+  "sourceRunId": "37111537577",
+  "sourceTriggerSha": "383991db99420f0c2f6524d72960910763f804b2",
+  "unresolvedProviderCount": 22,
   "dynamicVariantProviderCount": 6,
   "dynamicVariantProviders": [
     "animevost-fr",
@@ -124,7 +124,6 @@
         "lookup"
       ],
       "dominantIssues": [
-        "network_http_error",
         "network_zero_result"
       ],
       "harnessTransportClasses": [],
@@ -168,35 +167,6 @@
         "uhdmovies"
       ],
       "action": "residential full-provider replay disproved transport ownership; learn a provider-side request/route strategy before mutation",
-      "selectionAuthorities": [
-        "provider-census-status.json:brainCheckRequired"
-      ],
-      "dynamicVariantProviders": [],
-      "executionPolicy": "batch-first",
-      "providerLocalFallback": "only-after-shared-profile-failure"
-    },
-    {
-      "groupId": "terminal-extraction|html_scraper",
-      "repairScope": "terminal-extraction",
-      "runtimeFamilies": [
-        "html_scraper",
-        "mallumv-catalogue-confirm-internal-v1"
-      ],
-      "capabilityStrategy": "html_scraper",
-      "evidenceDepths": [
-        "chain"
-      ],
-      "dominantIssues": [
-        "waf_challenge"
-      ],
-      "harnessTransportClasses": [],
-      "transportSignature": "not-applicable",
-      "providerCount": 2,
-      "providers": [
-        "mallumv",
-        "vidrock"
-      ],
-      "action": "apply/test shared terminal-player extraction profile to the whole capability family",
       "selectionAuthorities": [
         "provider-census-status.json:brainCheckRequired"
       ],
@@ -338,6 +308,33 @@
       "providerCount": 1,
       "providers": [
         "allanime"
+      ],
+      "action": "apply/test shared terminal-player extraction profile to the whole capability family",
+      "selectionAuthorities": [
+        "provider-census-status.json:brainCheckRequired"
+      ],
+      "dynamicVariantProviders": [],
+      "executionPolicy": "batch-first",
+      "providerLocalFallback": "only-after-shared-profile-failure"
+    },
+    {
+      "groupId": "terminal-extraction|html_scraper",
+      "repairScope": "terminal-extraction",
+      "runtimeFamilies": [
+        "mallumv-catalogue-confirm-internal-v1"
+      ],
+      "capabilityStrategy": "html_scraper",
+      "evidenceDepths": [
+        "chain"
+      ],
+      "dominantIssues": [
+        "waf_challenge"
+      ],
+      "harnessTransportClasses": [],
+      "transportSignature": "not-applicable",
+      "providerCount": 1,
+      "providers": [
+        "mallumv"
       ],
       "action": "apply/test shared terminal-player extraction profile to the whole capability family",
       "selectionAuthorities": [
