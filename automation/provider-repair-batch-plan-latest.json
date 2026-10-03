@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "sourceRunId": "37111537577",
-  "sourceTriggerSha": "383991db99420f0c2f6524d72960910763f804b2",
-  "unresolvedProviderCount": 22,
+  "sourceRunId": "37124297614",
+  "sourceTriggerSha": "51f6c87b111c80d93d39813a6a264267234448f9",
+  "unresolvedProviderCount": 21,
   "dynamicVariantProviderCount": 6,
   "dynamicVariantProviders": [
     "animevost-fr",
@@ -30,11 +30,10 @@
     "uhdmovies",
     "videasy",
     "vidfast",
-    "vidrock",
     "yflix"
   ],
   "dynamicVariantFallbackUsed": true,
-  "groupCount": 13,
+  "groupCount": 12,
   "executionModel": {
     "default": "family/signature batch",
     "liveProbeConcurrency": "audit_provider_quick_yield ThreadPool",
@@ -124,6 +123,7 @@
         "lookup"
       ],
       "dominantIssues": [
+        "network_http_error",
         "network_zero_result"
       ],
       "harnessTransportClasses": [],
@@ -204,33 +204,6 @@
         "kehflix",
         "vidlove"
       ],
-      "executionPolicy": "batch-first",
-      "providerLocalFallback": "only-after-shared-profile-failure"
-    },
-    {
-      "groupId": "learning|mixed_embed_resolver",
-      "repairScope": "learning",
-      "runtimeFamilies": [
-        "mixed_embed_resolver"
-      ],
-      "capabilityStrategy": "mixed_embed_resolver",
-      "evidenceDepths": [
-        "none"
-      ],
-      "dominantIssues": [
-        "timeout"
-      ],
-      "harnessTransportClasses": [],
-      "transportSignature": "not-applicable",
-      "providerCount": 1,
-      "providers": [
-        "animekai"
-      ],
-      "action": "queue by signature for Brain learning; provider-local repair only after shared profiles fail",
-      "selectionAuthorities": [
-        "provider-census-status.json:brainCheckRequired"
-      ],
-      "dynamicVariantProviders": [],
       "executionPolicy": "batch-first",
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
@@ -345,23 +318,23 @@
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
     {
-      "groupId": "transport|api_stream_resolver",
+      "groupId": "transport|mixed_embed_resolver",
       "repairScope": "transport",
       "runtimeFamilies": [
-        "api_stream_resolver"
+        "mixed_embed_resolver"
       ],
-      "capabilityStrategy": "api_stream_resolver",
+      "capabilityStrategy": "mixed_embed_resolver",
       "evidenceDepths": [
         "none"
       ],
       "dominantIssues": [
-        "network_http_error"
+        "network_exception"
       ],
       "harnessTransportClasses": [],
       "transportSignature": "not-applicable",
       "providerCount": 1,
       "providers": [
-        "videasy"
+        "animekai"
       ],
       "action": "refresh transport authority before provider-local code changes",
       "selectionAuthorities": [

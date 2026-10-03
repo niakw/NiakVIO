@@ -1,7 +1,7 @@
 {
   "schemaVersion": 3,
-  "runId": "37111537577",
-  "triggerSha": "383991db99420f0c2f6524d72960910763f804b2",
+  "runId": "37124297614",
+  "triggerSha": "51f6c87b111c80d93d39813a6a264267234448f9",
   "providers": [
     {
       "provider": "4khdhub",
@@ -196,11 +196,11 @@
         "16 live routes / anime"
       ],
       "latestLaneVerdicts": [
-        "anime=timeout"
+        "anime=no_streams/provider_network_exception"
       ],
-      "dominantIssue": "timeout",
+      "dominantIssue": "provider_network_exception",
       "searchProgress": [
-        "anime: 3 works tested / 0 retained misses"
+        "anime: 2 works tested / 0 retained misses"
       ],
       "evidenceDepth": [
         "anime=none"
@@ -285,11 +285,11 @@
         "1 live routes / anime"
       ],
       "latestLaneVerdicts": [
-        "anime=no_streams/provider_network_zero_result"
+        "anime=no_streams/provider_network_http_error"
       ],
-      "dominantIssue": "provider_network_zero_result",
+      "dominantIssue": "provider_network_http_error",
       "searchProgress": [
-        "anime: 8 works tested / 41 retained misses"
+        "anime: 7 works tested / 41 retained misses"
       ],
       "evidenceDepth": [
         "anime=lookup_only"
@@ -678,9 +678,9 @@
     },
     {
       "provider": "videasy",
-      "status": "REGRESSION PROVIDER",
-      "underlyingStatus": "",
-      "color": "🔴",
+      "status": "DISABLED",
+      "underlyingStatus": "DISABLED",
+      "color": "⚫",
       "declaredLanes": [
         "movie",
         "tv"
@@ -709,18 +709,18 @@
       ],
       "harnessTransportClass": "not-applicable",
       "harnessTransportEvidence": [],
-      "authorityRepairEligible": true,
-      "authorityAction": "KEEP_BACKEND",
-      "authorityClass": "api-or-backend",
-      "authorityConfidence": "high",
+      "authorityRepairEligible": false,
+      "authorityAction": "KEEP_DISABLED",
+      "authorityClass": "disabled",
+      "authorityConfidence": "terminal",
       "authorityReasons": [
-        "structured_backend_authority"
+        "auto_off_upstream_shutdown"
       ],
       "authorityKnown": true,
-      "action": "re-run retained proof + verify upstream/provider state",
-      "brainCheckRequired": true,
-      "statusRepairEligible": true,
-      "repairEligible": true,
+      "action": "provider lifecycle/authority blocks Repair; keep disabled until a new authoritative provider address/backend is qualified",
+      "brainCheckRequired": false,
+      "statusRepairEligible": false,
+      "repairEligible": false,
       "testedThisRun": true
     },
     {
@@ -773,55 +773,6 @@
       ]
     },
     {
-      "provider": "vidrock",
-      "status": "PARTIAL OK",
-      "underlyingStatus": "",
-      "color": "🟡",
-      "declaredLanes": [
-        "movie",
-        "tv"
-      ],
-      "currentVerifiedLanes": [
-        "movie"
-      ],
-      "historicalProof": [
-        "movie: Inception / Spider-Man: No Way Home",
-        "tv: The Boys / Vikings"
-      ],
-      "candidateProof": [],
-      "routeProof": [
-        "11 live routes / movie, tv"
-      ],
-      "latestLaneVerdicts": [
-        "movie=OK",
-        "tv=no_streams/provider_network_zero_result"
-      ],
-      "dominantIssue": "provider_network_zero_result",
-      "searchProgress": [
-        "movie: 4 works tested / 0 retained misses / 1 retained chain hit",
-        "tv: 8 works tested / 0 retained misses / 4 retained chain hits"
-      ],
-      "evidenceDepth": [
-        "movie=chain_reached",
-        "tv=chain_reached"
-      ],
-      "harnessTransportClass": "not-applicable",
-      "harnessTransportEvidence": [],
-      "authorityRepairEligible": true,
-      "authorityAction": "KEEP_ROUTE_AUTHORITY",
-      "authorityClass": "hub-or-redirect",
-      "authorityConfidence": "high",
-      "authorityReasons": [
-        "authoritative_route_source"
-      ],
-      "authorityKnown": true,
-      "action": "protect green lanes; BRAIN checks missing lanes",
-      "brainCheckRequired": false,
-      "statusRepairEligible": false,
-      "repairEligible": false,
-      "testedThisRun": true
-    },
-    {
       "provider": "yflix",
       "status": "ROUTE PROVEN",
       "underlyingStatus": "",
@@ -869,6 +820,55 @@
         "movie: status=no_streams, stage=provider_network_exception, raw=0, playable=0, verified=0, identitySafe=true",
         "tv: status=no_streams, stage=provider_network_exception, raw=0, playable=0, verified=0, identitySafe=true"
       ]
+    },
+    {
+      "provider": "vidrock",
+      "status": "PARTIAL OK",
+      "underlyingStatus": "",
+      "color": "🟡",
+      "declaredLanes": [
+        "movie",
+        "tv"
+      ],
+      "currentVerifiedLanes": [
+        "movie"
+      ],
+      "historicalProof": [
+        "movie: Inception / Spider-Man: No Way Home",
+        "tv: The Boys / Vikings"
+      ],
+      "candidateProof": [],
+      "routeProof": [
+        "11 live routes / movie, tv"
+      ],
+      "latestLaneVerdicts": [
+        "movie=OK",
+        "tv=no_streams/provider_network_zero_result"
+      ],
+      "dominantIssue": "provider_network_zero_result",
+      "searchProgress": [
+        "movie: 4 works tested / 0 retained misses / 1 retained chain hit",
+        "tv: 8 works tested / 0 retained misses / 4 retained chain hits"
+      ],
+      "evidenceDepth": [
+        "movie=chain_reached",
+        "tv=chain_reached"
+      ],
+      "harnessTransportClass": "not-applicable",
+      "harnessTransportEvidence": [],
+      "authorityRepairEligible": true,
+      "authorityAction": "KEEP_ROUTE_AUTHORITY",
+      "authorityClass": "hub-or-redirect",
+      "authorityConfidence": "high",
+      "authorityReasons": [
+        "authoritative_route_source"
+      ],
+      "authorityKnown": true,
+      "action": "protect green lanes; BRAIN checks missing lanes",
+      "brainCheckRequired": false,
+      "statusRepairEligible": false,
+      "repairEligible": false,
+      "testedThisRun": false
     },
     {
       "provider": "coflix",
@@ -2171,11 +2171,11 @@
   "counts": {
     "CANDIDATE OK": 2,
     "CHAIN REACHED": 2,
-    "DISABLED": 4,
+    "DISABLED": 5,
     "FULL OK": 21,
     "NO PROOF": 1,
     "PARTIAL OK": 3,
-    "REGRESSION PROVIDER": 3,
+    "REGRESSION PROVIDER": 2,
     "ROUTE PROVEN": 10
   },
   "symptomaticProviders": [
@@ -2194,7 +2194,6 @@
     "moviebox",
     "moviesmod",
     "uhdmovies",
-    "videasy",
     "vidfast",
     "yflix"
   ],
@@ -2214,7 +2213,6 @@
     "moviebox",
     "moviesmod",
     "uhdmovies",
-    "videasy",
     "vidfast",
     "yflix"
   ],
@@ -2234,12 +2232,15 @@
     "moviebox",
     "moviesmod",
     "uhdmovies",
-    "videasy",
     "vidfast",
     "yflix"
   ],
-  "authorityBlockedQueue": [],
-  "lifecycleDisabledQueue": [],
+  "authorityBlockedQueue": [
+    "videasy"
+  ],
+  "lifecycleDisabledQueue": [
+    "videasy"
+  ],
   "authorityRediscoveryQueue": [],
   "environmentQueue": [],
   "harnessMismatchQueue": [],
@@ -2247,8 +2248,8 @@
   "harnessQueue": [],
   "targetedTransportBlockedQueue": [],
   "clientTransportGapQueue": [],
-  "harnessEvidenceRunId": "37111537577-sharded-waf",
-  "harnessEvidenceSha": "383991db99420f0c2f6524d72960910763f804b2",
+  "harnessEvidenceRunId": "37124297614-sharded-waf",
+  "harnessEvidenceSha": "51f6c87b111c80d93d39813a6a264267234448f9",
   "authorityRefreshedProviders": [],
   "harnessTransportUpdatedProviders": [],
   "networkDifferentialUpdatedProviders": [],
