@@ -69,3 +69,7 @@ assert "git add engine_v2/config/brain-policy.json" in arch
 assert "git add scripts/brain_layers tests engine_v2/scripts engine_v2/config .github/workflows" in arch
 
 print("Brain LLM Learning workflow interpolation contract passed")
+
+assert 'FIELD_BRAIN_LLM_TARGETED_BUDGET' in workflow
+assert 'model_timeout=120' in workflow
+assert 'model_workers=1' in workflow
