@@ -138,7 +138,7 @@ for required in (
     "domain refresh refuses historical/non-current provider selection",
     'materialization["providerCount"] = CURRENT_PROVIDER_COUNT',
     'materialization["expectedProviderCount"] = CURRENT_PROVIDER_COUNT',
-    '"scope_provider_count": len(current_provider_ids)',
+    '"scope_provider_count": len(selected or current_provider_ids)',
 ):
     assert required in transaction, f"Domain Refresh current-provider scope missing: {required}"
 assert "requires 96/96 state" not in transaction
