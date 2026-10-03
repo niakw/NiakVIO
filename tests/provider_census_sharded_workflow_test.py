@@ -13,9 +13,13 @@ required=[
     '"$count" -gt 120',
     'head_message="$(git log -1 --pretty=%s)"',
     '[[ "$head_message" == provider:\\ bulk\\ activate\\ * ]]',
-    "matrix:\n        shard: [0, 1, 2, 3, 4, 5, 6, 7]",
+    "shards_json: ${{ steps.pin.outputs.shards_json }}",
+    "shard_count: ${{ steps.pin.outputs.shard_count }}",
+    "target_providers: ${{ steps.pin.outputs.target_providers }}",
+    "shard: ${{ fromJSON(needs.prepare.outputs.shards_json) }}",
     "NIAKVIO_QUICK_YIELD_WORKERS: '20'",
-    "--shard-count 8",
+    "NIAKVIO_QUICK_YIELD_PROVIDER_BUDGET: '90'",
+    '--shard-count "${{ needs.prepare.outputs.shard_count }}"',
     '--shard-index "${{ matrix.shard }}"',
     "scripts/merge_provider_census_shards.py",
     "scripts/update_provider_census_proof_history.py",
@@ -40,3 +44,9 @@ assert "permissions:\n  contents: write\n  actions: write" in text
 assert "permissions:\n      contents: write" in text
 assert text.count("provider-census-shard-${{ matrix.shard }}") >= 2
 print("Provider sharded census workflow contract passed")
+
+assert 'if [ "$target_count" -le 4 ]; then shard_count=1; else shard_count=2; fi' in text
+assert 'elif [ "$census_scope" = "all" ]; then' in text
+assert "shard_count=8" in text
+assert "shard_count=4" in text
+assert 'args+=(--provider "$TARGET_PROVIDERS")' in text
