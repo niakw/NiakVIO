@@ -874,7 +874,7 @@ def main() -> int:
         "mode": args.mode,
         "authority": "provider-hubs-authoritative-terminal",
         "terminal_validation_required": False,
-        "scope_provider_count": len(current_provider_ids),
+        "scope_provider_count": len(selected or current_provider_ids),
         "providers": {},
         "applied": 0,
     }
@@ -943,8 +943,9 @@ def main() -> int:
         # provider, even when this run's network resolver is inconclusive. This
         # catches stale bundles such as an accepted explicit-current domain that
         # was persisted in DATA but never rematerialized into published bytes.
-        config_projection_drift_ids = provider_domain_projection_drift_ids(sorted(current_provider_ids))
-        runtime_projection_drift_ids = provider_domain_runtime_projection_drift_ids(sorted(current_provider_ids))
+        projection_scope_ids = sorted(selected or current_provider_ids)
+        config_projection_drift_ids = provider_domain_projection_drift_ids(projection_scope_ids)
+        runtime_projection_drift_ids = provider_domain_runtime_projection_drift_ids(projection_scope_ids)
         projection_drift_ids = sorted(
             set(config_projection_drift_ids) | set(runtime_projection_drift_ids)
         )
