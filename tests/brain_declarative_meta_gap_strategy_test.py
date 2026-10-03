@@ -6,20 +6,22 @@ sys.path.insert(0,str(ROOT/"scripts"))
 from brain_layers.declarative_gap_strategy import synthesize_rows
 
 census={
-    "repairQueue":["alpha","beta","gamma","delta","epsilon"],
+    "repairQueue":["alpha","beta","gamma","delta","epsilon","zeta"],
     "providers":[
         {"provider":"alpha","status":"CHAIN REACHED","dominantIssue":"provider_network_zero_result","evidenceDepth":["movie=chain_reached"]},
         {"provider":"beta","status":"NO PROOF","dominantIssue":"provider_waf_challenge","evidenceDepth":["movie=none"]},
         {"provider":"gamma","status":"CANDIDATE OK","dominantIssue":"provider_network_zero_result","evidenceDepth":["anime=lookup_only"]},
         {"provider":"delta","status":"REGRESSION PROVIDER","dominantIssue":"provider_network_exception","evidenceDepth":["anime=none"]},
         {"provider":"epsilon","status":"REGRESSION PROVIDER","dominantIssue":"provider_network_http_error×2","evidenceDepth":["movie=none","tv=none"]},
+        {"provider":"zeta","status":"REGRESSION PROVIDER","dominantIssue":"timeout","evidenceDepth":["anime=none"]},
     ],
 }
 first=synthesize_rows(census=census,memory={"entries":[]},current_sha="a"*40)
-assert [r["providerId"] for r in first]==["alpha","beta","delta","epsilon","gamma"]
+assert [r["providerId"] for r in first]==["alpha","beta","delta","epsilon","gamma","zeta"]
 assert {r["failureClass"] for r in first}=={"chain_terminal_gap","provider_transport_gap","candidate_replay_gap"}
 assert next(r for r in first if r["providerId"]=="delta")["failureClass"]=="provider_transport_gap"
 assert next(r for r in first if r["providerId"]=="epsilon")["failureClass"]=="provider_transport_gap"
+assert next(r for r in first if r["providerId"]=="zeta")["failureClass"]=="provider_transport_gap"
 assert all(r["guidanceKind"]=="meta-gap-synthesis" for r in first)
 assert all(len(r["experimentFingerprint"])==64 for r in first)
 failed={"entries":[{

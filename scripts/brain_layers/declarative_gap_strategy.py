@@ -240,6 +240,7 @@ def _status_failure(row: dict[str, Any]) -> str:
                 "provider_network_timeout",
                 "provider_network_dns_error",
                 "provider_network_tls_error",
+                "timeout",
             ))
         )
     ):
