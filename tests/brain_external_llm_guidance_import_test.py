@@ -24,6 +24,14 @@ assert safe["sourceSha"]=="c"*40 and safe["sourceExternalNiakvioSha"]=="a"*40
 assert safe["rows"][0]["providerId"]=="movie-box" and safe["rows"][0]["failureClass"]=="media_extraction_gap"
 assert safe["rows"][0]["experiment"]==experiment
 assert safe["rows"][0]["experimentFingerprint"]==fp
+# variant coverage external guidance contract
+variant_experiment={"routePolicy":"owned_plus_peer","recipePolicy":"current_plus_provider_peer","roleOrder":["player","source","api","detail"],"terminalOnly":False,"aliasSearch":False,"responseSalvage":True,"documentRequestMining":True,"sessionBootstrap":True,"maxDepth":5,"maxPages":24,"maxEmbeds":32,"maxRecipePasses":4}
+variant_fp=fingerprint(variant_experiment)
+variant_row={"providerId":"coflix","failureClass":"variant-coverage-gap","targetLayer":"provider","strategy":"enumerate-stream-variants-before-global-cap","profile":"player_media_extractor_v1","confidence":.99,"priorOnly":True,"experiment":variant_experiment,"experimentFingerprint":variant_fp}
+variant_safe=mod.sanitize({**base,"rows":[variant_row]},current_sha="c"*40,guidance_commit="d"*40)
+assert variant_safe["providerCount"]==1,variant_safe
+assert variant_safe["rows"][0]["profile"]=="player_media_extractor_v1",variant_safe
+
 # v1 remains readable during migration but has no executable spec.
 legacy={**base,"schemaVersion":1,"rows":[{k:v for k,v in row.items() if k not in {"experiment","experimentFingerprint"}}]}
 legacy_safe=mod.sanitize(legacy,current_sha="c"*40)
