@@ -924,3 +924,15 @@
 - The post-Learning unresolved census persisted `96fd2bb` and exposed another control-plane split-brain: the all-provider fan-out ledger stayed on global run `37088495401`, but the durable Repair plan rebuilt only from the unresolved-run rows and silently dropped Coflix/Kehflix/VidLove completeness debt.
 - Batch planning now merges current sharded evidence with the last global fan-out ledger. Providers actually observed in the current census supersede fallback debt (including clearing stale gaps); providers absent from a partial census retain the last global completeness debt. The plan's `sourceRunId` remains the current census run for FORCE freshness checks.
 - Next proof: run a fresh unresolved census and verify Coflix/Kehflix/VidLove remain in `dynamicVariantProviders` despite not being retested, then rerun Coflix FORCE with Brain-LLM `7e8b4d2` and require a real LLM guidance row before evaluating any candidate.
+
+
+## 2026-10-03 — Census iteration latency reduced
+
+- User feedback confirmed the Brain/provider loop was too slow because representative validation repeatedly paid full-catalogue costs.
+- Root causes measured: sharded census always launched 8 shards even for one representative; each shard rematerialized the whole catalogue; adaptive quick-yield timeout was per fixture, so one provider could consume several minutes across the fixture queue. Historical shard-7 evidence showed AnimeKai consuming ~357s for one lane while normal rows were ~4-10s.
+- `3cee710c`: bounded census partitioning — all=8 shards, unresolved=4, explicit targetProviders <=4 => 1 shard, larger targeted cohort => 2. Merge now expects the dynamic shard count.
+- `cff96dc6`: added a total per-provider quick-yield budget (90s in sharded census) on top of the per-fixture timeout; budget exhaustion is explicit evidence and prevents one slow provider from holding a shard for several fixture timeouts.
+- `5a30aedc`: updated the historical workflow contract to the bounded-shard architecture.
+- Targeted Coflix validation run `37092636124` proved prepare selects exactly `Census shard 0 of 1`. Its source SHA predates the targeted-materialization optimization, so that run still pays full materialization and is not evidence for the next optimization.
+- `8fdee542`: targeted census now rebuilds only the explicitly requested provider(s) with `materialize_provider_v3_one.py`; unresolved/full scopes retain global materialization. This optimization is implemented but still requires a subsequent targeted run to prove runtime behavior.
+- Current Coflix authority remains FULL OK with dynamic variant debt retained by census `37091625544`; completeness is not yet claimed repaired.
