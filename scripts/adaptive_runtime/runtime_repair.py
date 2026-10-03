@@ -133,12 +133,16 @@ def _census_runtime_focus(provider_id: str) -> dict[str, Any]:
             },
         }
         structural_state = state in {"CHAIN REACHED", "ROUTE PROVEN", "CANDIDATE OK"}
+        # BRAIN_TRANSPORT_BARE_TIMEOUT_V1: census may emit the compact
+        # dominantIssue "timeout"; it has the same causal owner as
+        # provider_network_timeout and must receive transport-first runtime focus.
         network_regression = (
             state in {"REGRESSION PROVIDER", "PROVIDER NETWORK BLOCKED"}
             and any(token in issue for token in (
                 "provider_network_exception",
                 "provider_network_http_error",
                 "provider_network_timeout",
+                "timeout",
                 "provider_network_dns_error",
                 "provider_network_tls_error",
             ))
