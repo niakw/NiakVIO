@@ -1022,3 +1022,6 @@ The fast/sharded census must preserve the same bounded multi-reader/server evide
 
 Brain Repair consumes the current sharded ledger as dynamic completeness evidence. A provider that is otherwise FULL/PARTIAL/CANDIDATE OK may therefore become a `variant_coverage_gap` target when several players/servers/variants are announced but traversal or returned streams are a strict subset. Static runtime cap detection and dynamic fan-out evidence are complementary: either can put the provider into the explicit completeness cohort, while publication still requires current-byte playback, identity and non-regression proof.
 
+
+When repeated current-byte completeness experiments fail, Brain must progress by **causal mechanism**, not by repeatedly raising the same cap. Executed negative memory is therefore part of the selection contract. For bounded source lists, a later progression may change only traversal order (for example a bidirectional source frontier: first, last, second, penultimate) while preserving source-count bounds, deadlines, routes, identity rules and the global stream cap. Such a reorder is still only a hypothesis: it must pass the same strict playable quality/language/host gain and identity/non-regression gate before publication.
+

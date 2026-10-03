@@ -305,6 +305,7 @@ def evaluate_pair(
         "quality-stratified-variant-enumeration",
         "quality-aware-global-stop",
         "cross-source-round-robin-before-global-cap",
+        "bidirectional-source-frontier-before-global-cap",
     }:
         return evaluate_variant_coverage_pair(baseline, candidate)
     accepted, reason = runtime_repair.compare_results(baseline, candidate)

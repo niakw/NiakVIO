@@ -1,3 +1,11 @@
+## 2026-10-03 — HindMoviez fifth negative; sixth source-frontier hypothesis
+
+- V6 sandbox run `37081288030` executed Brain's fifth HindMoviez hypothesis, `quality_aware_global_stop`, on exact current bytes. The mutation applied and rematerialized successfully, but acceptance was correctly rejected.
+- Baseline: 6 returned / 6 playable, quality 480p only, 40 announced variants, 9 explored player requests, 5 reachable hosts. Candidate: 6 returned / 6 playable, still 480p only, 27 announced variants, 8 explored requests, 6 reachable hosts. There was no verified quality/count gain, and the candidate also failed playable identity on Tenet.
+- Fingerprint `3d6e7609fbafdaca45d606c2e55a7032dee839fe4b8944f92853d7a77444e27e` is now an executed negative in `automation/brain-llm-force-memory.json`. The first five mechanism families for this mutation context must not be retried.
+- Brain-LLM main `e1bfde84364c4cf7ecf13cefa282c1ec2b3137cf` adds the sixth generic progression `bidirectional_source_frontier_before_global_cap`: traverse a bounded source list in order 0,last,1,last-1,... while preserving the exact source-count bound, deadline guard, routes, per-source extraction, identity logic and global stream cap.
+- NiakVIO Force validation treats this family as strict variant-coverage work: publication requires measurable playable quality/language/host/fan-out gain plus identity/playback non-regression. No HindMoviez provider runtime byte is manually edited by this change.
+
 ## 2026-10-03 — HindMoviez round-robin rejected; fifth quality-aware strategy ready
 
 - Brain guidance `17fbc280bbe97eb67b0e664dd356c5ffe38f7df9` generated the fourth distinct HindMoviez completeness hypothesis, `cross_source_round_robin_before_global_cap`, fingerprint `7b98b0b512e73a208ccb1ccee52a0d694a56dffb578838473f747346e84f7603`.
