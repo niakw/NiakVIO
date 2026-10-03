@@ -27,6 +27,15 @@ def scalar(value:Any, default:str="unknown")->str:
 def cid(value:Any)->str:
     return str(value or "").strip().casefold().replace("_","-")
 
+def observed_provider_ids(payload:dict[str,Any] | None)->set[str]:
+    if not isinstance(payload,dict):
+        return set()
+    return {
+        cid(row.get("provider_id"))
+        for row in payload.get("rows") or []
+        if isinstance(row,dict) and cid(row.get("provider_id"))
+    }
+
 def dynamic_variant_debt(payload:dict[str,Any] | None)->dict[str,dict[str,Any]]:
     """Return current execution-proven completeness debt without granting proof authority."""
     debt:dict[str,dict[str,Any]]={}
@@ -129,12 +138,35 @@ def main()->int:
     ap=argparse.ArgumentParser()
     ap.add_argument("--status",type=Path,default=STATUS)
     ap.add_argument("--sharded-census",type=Path,default=SHARDED)
+    ap.add_argument(
+        "--fallback-sharded-census",
+        type=Path,
+        default=None,
+        help="Optional last all-provider fan-out ledger. Current observed providers always override fallback debt.",
+    )
     ap.add_argument("--overrides",type=Path,default=OVERRIDES)
     ap.add_argument("--output",type=Path,default=OUTPUT)
     args=ap.parse_args()
     status=load(args.status); overrides=load(args.overrides)
     sharded=load(args.sharded_census) if args.sharded_census.is_file() else {}
-    completeness_debt=dynamic_variant_debt(sharded)
+    fallback=(
+        load(args.fallback_sharded_census)
+        if args.fallback_sharded_census is not None and args.fallback_sharded_census.is_file()
+        else {}
+    )
+    current_observed=observed_provider_ids(sharded)
+    fallback_debt=dynamic_variant_debt(fallback)
+    current_debt=dynamic_variant_debt(sharded)
+    # Partial/unresolved census runs must not erase completeness debt for green
+    # providers they did not observe. Conversely a provider actually retested
+    # in the current run supersedes the global fallback even when the fresh
+    # result proves no remaining fan-out gap.
+    completeness_debt={
+        provider:value
+        for provider,value in fallback_debt.items()
+        if provider not in current_observed
+    }
+    completeness_debt.update(current_debt)
     patches=overrides.get("provider_patches") if isinstance(overrides.get("provider_patches"),dict) else {}
     caps=overrides.get("provider_capabilities") if isinstance(overrides.get("provider_capabilities"),dict) else {}
     groups:dict[tuple[str,...],list[dict[str,Any]]]=defaultdict(list)
@@ -227,6 +259,8 @@ def main()->int:
         "unresolvedProviderCount":sum(x["providerCount"] for x in out_groups),
         "dynamicVariantProviderCount":len(completeness_debt),
         "dynamicVariantProviders":sorted(completeness_debt),
+        "dynamicVariantCurrentObservedProviders":sorted(current_observed),
+        "dynamicVariantFallbackUsed":bool(fallback_debt),
         "groupCount":len(out_groups),
         "executionModel":{
             "default":"family/signature batch",

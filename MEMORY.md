@@ -914,3 +914,13 @@
 - HindMoviez is no longer a valid FULL completeness representative: current census reclassifies it `REGRESSION PROVIDER` with movie/tv no-stream transport/lookup failures. Its 480/720/1080/2160 announced variant evidence remains attached, but transport/lookup outranks completeness until playable output is restored.
 - Coflix remains `FULL OK` on anime/movie/tv and is isolated in `variant-coverage|mixed_embed_resolver` from current sharded evidence. It is the first representative for Brain-driven completeness validation.
 - Fast Brain Repair is armed for Coflix only in FORCE mode. Success requires Brain-generated change -> application -> rematerialization -> current-byte playback + identity + verified completeness gain -> non-regression -> persistence. No provider-specific manual production fix is authorized.
+
+
+## 2026-10-03 — Partial census no longer erases global completeness debt
+
+- Coflix FORCE reached canonical Brain Repair on run `37090295905`; GitHub-hosted runtime evidence was `provider_http_blocked`, so Brain correctly accepted/published zero provider mutations and handed Coflix to Learning FORCE instead of masking transport uncertainty.
+- Learning FORCE runs `37090364428` and `37090899336` correctly routed Coflix as `variant_coverage_gap`, but the pinned Brain-LLM `f0a05851` made zero LLM calls because advisor prompt construction rejected its own payload as over budget. Deterministic recovery exhausted through generation 5 and produced no FORCE-promotable architecture blueprint. These runs do not prove Coflix repaired.
+- Brain-LLM `7e8b4d2` fixes advisor-only prompt compaction and is CI green: advisor guidance carries no mutation-sized source authority while preserving current variant-coverage evidence.
+- The post-Learning unresolved census persisted `96fd2bb` and exposed another control-plane split-brain: the all-provider fan-out ledger stayed on global run `37088495401`, but the durable Repair plan rebuilt only from the unresolved-run rows and silently dropped Coflix/Kehflix/VidLove completeness debt.
+- Batch planning now merges current sharded evidence with the last global fan-out ledger. Providers actually observed in the current census supersede fallback debt (including clearing stale gaps); providers absent from a partial census retain the last global completeness debt. The plan's `sourceRunId` remains the current census run for FORCE freshness checks.
+- Next proof: run a fresh unresolved census and verify Coflix/Kehflix/VidLove remain in `dynamicVariantProviders` despite not being retested, then rerun Coflix FORCE with Brain-LLM `7e8b4d2` and require a real LLM guidance row before evaluating any candidate.

@@ -16,6 +16,7 @@ required = [
     "automation/provider-authority-status.json",
     "--sharded-census automation/provider-census-sharded-merged.json",
     "--sharded-census /tmp/provider-census-sharded.json",
+    "--fallback-sharded-census automation/provider-census-sharded-latest.json",
 ]
 for needle in required:
     assert needle in workflow, f"missing sharded census authority persistence contract: {needle}"
@@ -63,9 +64,10 @@ copy_status = workflow.index("cp automation/provider-census-sharded-status.json 
 guard = workflow.index("FIELD_SHARDED_CENSUS_NOT_PERSISTED authority_schema_v3_required")
 reset = workflow.index("git reset --hard origin/main", guard)
 rebuild_batch = workflow.index("--sharded-census /tmp/provider-census-sharded.json", reset)
-restore_authority = workflow.index("cp /tmp/provider-authority-status.json automation/provider-authority-status.json", rebuild_batch)
+fallback_batch = workflow.index("--fallback-sharded-census automation/provider-census-sharded-latest.json", rebuild_batch)
+restore_authority = workflow.index("cp /tmp/provider-authority-status.json automation/provider-authority-status.json", fallback_batch)
 push = workflow.index("git push origin HEAD:main", restore_authority)
-assert copy_status < guard < reset < rebuild_batch < restore_authority < push
+assert copy_status < guard < reset < rebuild_batch < fallback_batch < restore_authority < push
 assert "cp /tmp/provider-repair-batch-plan.json automation/provider-repair-batch-plan-latest.json" not in workflow
 
 assert "automation/provider-waf-browser-session-effective.json" in workflow

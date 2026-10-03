@@ -290,11 +290,15 @@ jobs:
             --status automation/provider-census-sharded-status.json \
             --output automation/PROVIDER-CENSUS-SHARDED.md
 
-          python scripts/build_provider_repair_batch_plan.py \
-            --status automation/provider-census-sharded-status.json \
-            --sharded-census automation/provider-census-sharded-merged.json \
-            --overrides provider-overrides.json \
-            --output automation/provider-repair-batch-plan-sharded.json
+          batch_args=(python scripts/build_provider_repair_batch_plan.py
+            --status automation/provider-census-sharded-status.json
+            --sharded-census automation/provider-census-sharded-merged.json
+            --overrides provider-overrides.json
+            --output automation/provider-repair-batch-plan-sharded.json)
+          if [ -s automation/provider-census-sharded-latest.json ]; then
+            batch_args+=(--fallback-sharded-census automation/provider-census-sharded-latest.json)
+          fi
+          "${batch_args[@]}"
           python - <<'PY'
           import json
           from pathlib import Path
@@ -387,11 +391,15 @@ jobs:
           # latest Brain control-plane consumes the exact sharded evidence just
           # measured, including dynamic completeness debt from otherwise-green
           # providers. The pre-reset plan remains an artifact only.
-          python scripts/build_provider_repair_batch_plan.py \
-            --status /tmp/provider-census-status.json \
-            --sharded-census /tmp/provider-census-sharded.json \
-            --overrides provider-overrides.json \
-            --output automation/provider-repair-batch-plan-latest.json
+          batch_args=(python scripts/build_provider_repair_batch_plan.py
+            --status /tmp/provider-census-status.json
+            --sharded-census /tmp/provider-census-sharded.json
+            --overrides provider-overrides.json
+            --output automation/provider-repair-batch-plan-latest.json)
+          if [ -s automation/provider-census-sharded-latest.json ]; then
+            batch_args+=(--fallback-sharded-census automation/provider-census-sharded-latest.json)
+          fi
+          "${batch_args[@]}"
           cp /tmp/provider-census-proof-history.json automation/provider-census-proof-history.json
           cp /tmp/provider-authority-status.json automation/provider-authority-status.json
           cp /tmp/provider-waf-browser-session-sharded.json "automation/provider-waf-browser-session-${run_id}.json"
