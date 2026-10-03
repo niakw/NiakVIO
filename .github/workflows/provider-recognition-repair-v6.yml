@@ -1003,8 +1003,12 @@ jobs:
           )
           for provider in "${providers[@]}"; do args+=(--provider "$provider"); done
           "${args[@]}"
-          echo "NIAKVIO_BRAIN_LLM_GUIDANCE=$RUNNER_TEMP/local-force-promoted-guidance.json" >> "$GITHUB_ENV"
-          echo "FIELD_LOCAL_FORCE_PROMOTION enabled=true providers=${#providers[@]} ids=$(IFS=,; echo "${providers[*]}")"
+          if [ -s "$RUNNER_TEMP/local-force-promoted-guidance.json" ]; then
+            echo "NIAKVIO_BRAIN_LLM_GUIDANCE=$RUNNER_TEMP/local-force-promoted-guidance.json" >> "$GITHUB_ENV"
+            echo "FIELD_LOCAL_FORCE_PROMOTION enabled=true providers=${#providers[@]} ids=$(IFS=,; echo "${providers[*]}")"
+          else
+            echo "FIELD_LOCAL_FORCE_PROMOTION enabled=true promoted=false reason=no-current-local-candidate"
+          fi
 
       - name: Causally evaluate promoted local FORCE guidance
         id: local-force-causal
