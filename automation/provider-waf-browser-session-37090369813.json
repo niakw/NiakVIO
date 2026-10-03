@@ -1,0 +1,612 @@
+{
+  "schemaVersion": 1,
+  "mode": "ordinary-headless-browser-session-no-challenge-solver",
+  "browserAvailable": true,
+  "browserExecutable": "google-chrome",
+  "targetCount": 11,
+  "providerFilter": [],
+  "attemptsPerTarget": 2,
+  "clientProfileMatrixEnabled": false,
+  "clientProfiles": [
+    {
+      "id": "github-default-browser",
+      "transportApproximation": "GitHub-hosted Chromium",
+      "userAgent": "browser-default"
+    }
+  ],
+  "limitations": [
+    "GitHub JVM OkHttp reproduces NuvioTV HTTP policy but not Android device TLS/IP reputation",
+    "GitHub Chromium/libcurl remain secondary harness comparisons",
+    "GitHub runner IP reputation differs from a real TV/mobile client",
+    "browser challenge persistence is harness/environment evidence, not provider-code failure",
+    "exact failed provider GET replay is transport differential evidence only; it cannot grant playback proof"
+  ],
+  "counts": {
+    "browser_challenge_persisted": 11
+  },
+  "rows": [
+    {
+      "provider": "allwish",
+      "lane": "movie",
+      "publicUrl": "https://all-wish.me/filter",
+      "host": "all-wish.me",
+      "path": "/filter",
+      "method": "GET",
+      "fetchStatus": 403,
+      "challenge": "cloudflare",
+      "seedKind": null,
+      "seedRoute": null,
+      "outcome": "browser_challenge_persisted",
+      "attemptCount": 2,
+      "attempts": [
+        {
+          "attempt": 1,
+          "outcome": "browser_challenge_persisted",
+          "exitCode": 0
+        },
+        {
+          "attempt": 2,
+          "outcome": "browser_challenge_persisted",
+          "exitCode": 0
+        }
+      ],
+      "ordinarySessionReused": true,
+      "clientProfileMatrix": [
+        {
+          "profile": "github-default-browser",
+          "userAgent": null,
+          "outcome": "browser_challenge_persisted",
+          "attemptCount": 2,
+          "attempts": [
+            {
+              "attempt": 1,
+              "outcome": "browser_challenge_persisted",
+              "exitCode": 0
+            },
+            {
+              "attempt": 2,
+              "outcome": "browser_challenge_persisted",
+              "exitCode": 0
+            }
+          ],
+          "ordinarySessionReused": true
+        }
+      ],
+      "directHttpProfile": null,
+      "okHttpJvmProfile": null,
+      "contentProfiles": [],
+      "nativeTvTransportStillUnproven": true,
+      "durationMs": 14355
+    },
+    {
+      "provider": "allwish",
+      "lane": "tv",
+      "publicUrl": "https://all-wish.me/filter",
+      "host": "all-wish.me",
+      "path": "/filter",
+      "method": "GET",
+      "fetchStatus": 403,
+      "challenge": "cloudflare",
+      "seedKind": null,
+      "seedRoute": null,
+      "outcome": "browser_challenge_persisted",
+      "attemptCount": 2,
+      "attempts": [
+        {
+          "attempt": 1,
+          "outcome": "browser_challenge_persisted",
+          "exitCode": 0
+        },
+        {
+          "attempt": 2,
+          "outcome": "browser_challenge_persisted",
+          "exitCode": 0
+        }
+      ],
+      "ordinarySessionReused": true,
+      "clientProfileMatrix": [
+        {
+          "profile": "github-default-browser",
+          "userAgent": null,
+          "outcome": "browser_challenge_persisted",
+          "attemptCount": 2,
+          "attempts": [
+            {
+              "attempt": 1,
+              "outcome": "browser_challenge_persisted",
+              "exitCode": 0
+            },
+            {
+              "attempt": 2,
+              "outcome": "browser_challenge_persisted",
+              "exitCode": 0
+            }
+          ],
+          "ordinarySessionReused": true
+        }
+      ],
+      "directHttpProfile": null,
+      "okHttpJvmProfile": null,
+      "contentProfiles": [],
+      "nativeTvTransportStillUnproven": true,
+      "durationMs": 14313
+    },
+    {
+      "provider": "animesalt",
+      "lane": "anime",
+      "publicUrl": "https://animesalt.cx/",
+      "host": "animesalt.cx",
+      "path": "/",
+      "method": "GET",
+      "fetchStatus": 403,
+      "challenge": "cloudflare",
+      "seedKind": null,
+      "seedRoute": null,
+      "outcome": "browser_challenge_persisted",
+      "attemptCount": 2,
+      "attempts": [
+        {
+          "attempt": 1,
+          "outcome": "browser_challenge_persisted",
+          "exitCode": 0
+        },
+        {
+          "attempt": 2,
+          "outcome": "browser_challenge_persisted",
+          "exitCode": 0
+        }
+      ],
+      "ordinarySessionReused": true,
+      "clientProfileMatrix": [
+        {
+          "profile": "github-default-browser",
+          "userAgent": null,
+          "outcome": "browser_challenge_persisted",
+          "attemptCount": 2,
+          "attempts": [
+            {
+              "attempt": 1,
+              "outcome": "browser_challenge_persisted",
+              "exitCode": 0
+            },
+            {
+              "attempt": 2,
+              "outcome": "browser_challenge_persisted",
+              "exitCode": 0
+            }
+          ],
+          "ordinarySessionReused": true
+        }
+      ],
+      "directHttpProfile": null,
+      "okHttpJvmProfile": null,
+      "contentProfiles": [],
+      "nativeTvTransportStillUnproven": true,
+      "durationMs": 14520
+    },
+    {
+      "provider": "flemmix",
+      "lane": "movie",
+      "publicUrl": "https://flemmix.eu/search",
+      "host": "flemmix.eu",
+      "path": "/search",
+      "method": "GET",
+      "fetchStatus": 403,
+      "challenge": "cloudflare",
+      "seedKind": null,
+      "seedRoute": null,
+      "outcome": "browser_challenge_persisted",
+      "attemptCount": 2,
+      "attempts": [
+        {
+          "attempt": 1,
+          "outcome": "browser_challenge_persisted",
+          "exitCode": 0
+        },
+        {
+          "attempt": 2,
+          "outcome": "browser_challenge_persisted",
+          "exitCode": 0
+        }
+      ],
+      "ordinarySessionReused": true,
+      "clientProfileMatrix": [
+        {
+          "profile": "github-default-browser",
+          "userAgent": null,
+          "outcome": "browser_challenge_persisted",
+          "attemptCount": 2,
+          "attempts": [
+            {
+              "attempt": 1,
+              "outcome": "browser_challenge_persisted",
+              "exitCode": 0
+            },
+            {
+              "attempt": 2,
+              "outcome": "browser_challenge_persisted",
+              "exitCode": 0
+            }
+          ],
+          "ordinarySessionReused": true
+        }
+      ],
+      "directHttpProfile": null,
+      "okHttpJvmProfile": null,
+      "contentProfiles": [],
+      "nativeTvTransportStillUnproven": true,
+      "durationMs": 3608
+    },
+    {
+      "provider": "flemmix",
+      "lane": "tv",
+      "publicUrl": "https://flemmix.eu/search",
+      "host": "flemmix.eu",
+      "path": "/search",
+      "method": "GET",
+      "fetchStatus": 403,
+      "challenge": "cloudflare",
+      "seedKind": null,
+      "seedRoute": null,
+      "outcome": "browser_challenge_persisted",
+      "attemptCount": 2,
+      "attempts": [
+        {
+          "attempt": 1,
+          "outcome": "browser_challenge_persisted",
+          "exitCode": 0
+        },
+        {
+          "attempt": 2,
+          "outcome": "browser_challenge_persisted",
+          "exitCode": 0
+        }
+      ],
+      "ordinarySessionReused": true,
+      "clientProfileMatrix": [
+        {
+          "profile": "github-default-browser",
+          "userAgent": null,
+          "outcome": "browser_challenge_persisted",
+          "attemptCount": 2,
+          "attempts": [
+            {
+              "attempt": 1,
+              "outcome": "browser_challenge_persisted",
+              "exitCode": 0
+            },
+            {
+              "attempt": 2,
+              "outcome": "browser_challenge_persisted",
+              "exitCode": 0
+            }
+          ],
+          "ordinarySessionReused": true
+        }
+      ],
+      "directHttpProfile": null,
+      "okHttpJvmProfile": null,
+      "contentProfiles": [],
+      "nativeTvTransportStillUnproven": true,
+      "durationMs": 3785
+    },
+    {
+      "provider": "mallumv",
+      "lane": "movie",
+      "publicUrl": "https://vik1ngfile.site/assets/custom-9XDwrIR.js",
+      "host": "vik1ngfile.site",
+      "path": "/assets/custom-9XDwrIR.js",
+      "method": "GET",
+      "fetchStatus": 200,
+      "challenge": "cloudflare",
+      "seedKind": null,
+      "seedRoute": null,
+      "outcome": "browser_challenge_persisted",
+      "attemptCount": 2,
+      "attempts": [
+        {
+          "attempt": 1,
+          "outcome": "browser_challenge_persisted",
+          "exitCode": 0
+        },
+        {
+          "attempt": 2,
+          "outcome": "browser_challenge_persisted",
+          "exitCode": 0
+        }
+      ],
+      "ordinarySessionReused": true,
+      "clientProfileMatrix": [
+        {
+          "profile": "github-default-browser",
+          "userAgent": null,
+          "outcome": "browser_challenge_persisted",
+          "attemptCount": 2,
+          "attempts": [
+            {
+              "attempt": 1,
+              "outcome": "browser_challenge_persisted",
+              "exitCode": 0
+            },
+            {
+              "attempt": 2,
+              "outcome": "browser_challenge_persisted",
+              "exitCode": 0
+            }
+          ],
+          "ordinarySessionReused": true
+        }
+      ],
+      "directHttpProfile": null,
+      "okHttpJvmProfile": null,
+      "contentProfiles": [],
+      "nativeTvTransportStillUnproven": true,
+      "durationMs": 3353
+    },
+    {
+      "provider": "moviebox",
+      "lane": "movie",
+      "publicUrl": "https://cloudorchestranova.com/embed/movie/10195",
+      "host": "cloudorchestranova.com",
+      "path": "/embed/movie/10195",
+      "method": "GET",
+      "fetchStatus": 403,
+      "challenge": "cloudflare",
+      "seedKind": null,
+      "seedRoute": null,
+      "outcome": "browser_challenge_persisted",
+      "attemptCount": 2,
+      "attempts": [
+        {
+          "attempt": 1,
+          "outcome": "browser_challenge_persisted",
+          "exitCode": 0
+        },
+        {
+          "attempt": 2,
+          "outcome": "browser_challenge_persisted",
+          "exitCode": 0
+        }
+      ],
+      "ordinarySessionReused": true,
+      "clientProfileMatrix": [
+        {
+          "profile": "github-default-browser",
+          "userAgent": null,
+          "outcome": "browser_challenge_persisted",
+          "attemptCount": 2,
+          "attempts": [
+            {
+              "attempt": 1,
+              "outcome": "browser_challenge_persisted",
+              "exitCode": 0
+            },
+            {
+              "attempt": 2,
+              "outcome": "browser_challenge_persisted",
+              "exitCode": 0
+            }
+          ],
+          "ordinarySessionReused": true
+        }
+      ],
+      "directHttpProfile": null,
+      "okHttpJvmProfile": null,
+      "contentProfiles": [],
+      "nativeTvTransportStillUnproven": true,
+      "durationMs": 4092
+    },
+    {
+      "provider": "moviebox",
+      "lane": "tv",
+      "publicUrl": "https://cloudorchestranova.com/embed/tv/87739/1/1",
+      "host": "cloudorchestranova.com",
+      "path": "/embed/tv/87739/1/1",
+      "method": "GET",
+      "fetchStatus": 403,
+      "challenge": "cloudflare",
+      "seedKind": null,
+      "seedRoute": null,
+      "outcome": "browser_challenge_persisted",
+      "attemptCount": 2,
+      "attempts": [
+        {
+          "attempt": 1,
+          "outcome": "browser_challenge_persisted",
+          "exitCode": 0
+        },
+        {
+          "attempt": 2,
+          "outcome": "browser_challenge_persisted",
+          "exitCode": 0
+        }
+      ],
+      "ordinarySessionReused": true,
+      "clientProfileMatrix": [
+        {
+          "profile": "github-default-browser",
+          "userAgent": null,
+          "outcome": "browser_challenge_persisted",
+          "attemptCount": 2,
+          "attempts": [
+            {
+              "attempt": 1,
+              "outcome": "browser_challenge_persisted",
+              "exitCode": 0
+            },
+            {
+              "attempt": 2,
+              "outcome": "browser_challenge_persisted",
+              "exitCode": 0
+            }
+          ],
+          "ordinarySessionReused": true
+        }
+      ],
+      "directHttpProfile": null,
+      "okHttpJvmProfile": null,
+      "contentProfiles": [],
+      "nativeTvTransportStillUnproven": true,
+      "durationMs": 4160
+    },
+    {
+      "provider": "moviesmod",
+      "lane": "movie",
+      "publicUrl": "https://links.modpro.blog/archives/133479",
+      "host": "links.modpro.blog",
+      "path": "/archives/133479",
+      "method": "GET",
+      "fetchStatus": 403,
+      "challenge": "cloudflare",
+      "seedKind": null,
+      "seedRoute": null,
+      "outcome": "browser_challenge_persisted",
+      "attemptCount": 2,
+      "attempts": [
+        {
+          "attempt": 1,
+          "outcome": "browser_challenge_persisted",
+          "exitCode": 0
+        },
+        {
+          "attempt": 2,
+          "outcome": "browser_challenge_persisted",
+          "exitCode": 0
+        }
+      ],
+      "ordinarySessionReused": true,
+      "clientProfileMatrix": [
+        {
+          "profile": "github-default-browser",
+          "userAgent": null,
+          "outcome": "browser_challenge_persisted",
+          "attemptCount": 2,
+          "attempts": [
+            {
+              "attempt": 1,
+              "outcome": "browser_challenge_persisted",
+              "exitCode": 0
+            },
+            {
+              "attempt": 2,
+              "outcome": "browser_challenge_persisted",
+              "exitCode": 0
+            }
+          ],
+          "ordinarySessionReused": true
+        }
+      ],
+      "directHttpProfile": null,
+      "okHttpJvmProfile": null,
+      "contentProfiles": [],
+      "nativeTvTransportStillUnproven": true,
+      "durationMs": 4034
+    },
+    {
+      "provider": "moviesmod",
+      "lane": "tv",
+      "publicUrl": "https://episodes.modpro.blog/archives/67625",
+      "host": "episodes.modpro.blog",
+      "path": "/archives/67625",
+      "method": "GET",
+      "fetchStatus": 403,
+      "challenge": "cloudflare",
+      "seedKind": null,
+      "seedRoute": null,
+      "outcome": "browser_challenge_persisted",
+      "attemptCount": 2,
+      "attempts": [
+        {
+          "attempt": 1,
+          "outcome": "browser_challenge_persisted",
+          "exitCode": 0
+        },
+        {
+          "attempt": 2,
+          "outcome": "browser_challenge_persisted",
+          "exitCode": 0
+        }
+      ],
+      "ordinarySessionReused": true,
+      "clientProfileMatrix": [
+        {
+          "profile": "github-default-browser",
+          "userAgent": null,
+          "outcome": "browser_challenge_persisted",
+          "attemptCount": 2,
+          "attempts": [
+            {
+              "attempt": 1,
+              "outcome": "browser_challenge_persisted",
+              "exitCode": 0
+            },
+            {
+              "attempt": 2,
+              "outcome": "browser_challenge_persisted",
+              "exitCode": 0
+            }
+          ],
+          "ordinarySessionReused": true
+        }
+      ],
+      "directHttpProfile": null,
+      "okHttpJvmProfile": null,
+      "contentProfiles": [],
+      "nativeTvTransportStillUnproven": true,
+      "durationMs": 2655
+    },
+    {
+      "provider": "vidrock",
+      "lane": "movie",
+      "publicUrl": "https://crmseraph.site/file3/ZmQxMDdlMGZhYjBjZTU3ZTZiYTFkZTI4MTIwOGRiMTgxNzkwODQ5Mjk3NDk2MTA/720p/playlist.m3u8",
+      "host": "crmseraph.site",
+      "path": "/file3/ZmQxMDdlMGZhYjBjZTU3ZTZiYTFkZTI4MTIwOGRiMTgxNzkwODQ5Mjk3NDk2MTA/720p/playlist.m3u8",
+      "method": "GET",
+      "fetchStatus": 403,
+      "challenge": "cloudflare",
+      "seedKind": null,
+      "seedRoute": null,
+      "outcome": "browser_challenge_persisted",
+      "attemptCount": 2,
+      "attempts": [
+        {
+          "attempt": 1,
+          "outcome": "browser_challenge_persisted",
+          "exitCode": 0
+        },
+        {
+          "attempt": 2,
+          "outcome": "browser_challenge_persisted",
+          "exitCode": 0
+        }
+      ],
+      "ordinarySessionReused": true,
+      "clientProfileMatrix": [
+        {
+          "profile": "github-default-browser",
+          "userAgent": null,
+          "outcome": "browser_challenge_persisted",
+          "attemptCount": 2,
+          "attempts": [
+            {
+              "attempt": 1,
+              "outcome": "browser_challenge_persisted",
+              "exitCode": 0
+            },
+            {
+              "attempt": 2,
+              "outcome": "browser_challenge_persisted",
+              "exitCode": 0
+            }
+          ],
+          "ordinarySessionReused": true
+        }
+      ],
+      "directHttpProfile": null,
+      "okHttpJvmProfile": null,
+      "contentProfiles": [],
+      "nativeTvTransportStillUnproven": true,
+      "durationMs": 1954
+    }
+  ]
+}
