@@ -5,28 +5,20 @@
     "providerIds": [
       "anikototv",
       "anime-sama",
-      "animekai",
-      "animesama-co",
-      "animevostfr",
       "castle",
       "coflix",
       "french-manga",
-      "hindmoviez",
       "kehflix",
       "kurage",
       "movieshunt",
       "mugiwarastream",
       "neko-sama",
       "papadustream",
-      "persianstremio",
       "playimdb",
       "purstream",
       "sekai",
       "streamzo",
-      "uhdmovies",
-      "videasy",
       "vidlove",
-      "vidrock",
       "voiranime",
       "voiranime-homes",
       "voiranime-rip",
@@ -914,7 +906,7 @@
       ]
     }
   ],
-  "operationalProviderCount": 29,
+  "operationalProviderCount": 21,
   "providerCount": 46,
   "providers": {
     "4khdhub": {
@@ -1070,7 +1062,9 @@
     },
     "anikototv": {
       "domainMemory": true,
-      "evidenceDepth": [],
+      "evidenceDepth": [
+        "anime=chain_reached"
+      ],
       "hasApiRecipe": false,
       "hasProviderValuePlan": false,
       "hasSearchRequestPlan": false,
@@ -1128,7 +1122,9 @@
     },
     "anime-sama": {
       "domainMemory": true,
-      "evidenceDepth": [],
+      "evidenceDepth": [
+        "anime=chain_reached"
+      ],
       "hasApiRecipe": false,
       "hasProviderValuePlan": false,
       "hasSearchRequestPlan": false,
@@ -1415,7 +1411,9 @@
     },
     "animekai": {
       "domainMemory": true,
-      "evidenceDepth": [],
+      "evidenceDepth": [
+        "anime=none"
+      ],
       "hasApiRecipe": false,
       "hasProviderValuePlan": false,
       "hasSearchRequestPlan": false,
@@ -1423,7 +1421,7 @@
         "anime"
       ],
       "officialHost": "www3.anikai.cc",
-      "operational": true,
+      "operational": false,
       "peerRequestRecipes": [
         {
           "body": {},
@@ -1674,7 +1672,7 @@
         "/download/{slug}-tv/ep-1",
         "/download/{slug}-tv/ep-2"
       ],
-      "status": "FULL OK",
+      "status": "REGRESSION PROVIDER",
       "strategy": "mixed_embed_resolver"
     },
     "animesalt": {
@@ -1719,7 +1717,9 @@
     },
     "animesama-co": {
       "domainMemory": true,
-      "evidenceDepth": [],
+      "evidenceDepth": [
+        "anime=lookup_only"
+      ],
       "hasApiRecipe": false,
       "hasProviderValuePlan": false,
       "hasSearchRequestPlan": false,
@@ -1727,7 +1727,7 @@
         "anime"
       ],
       "officialHost": "animesama.co",
-      "operational": true,
+      "operational": false,
       "peerRequestRecipes": [
         {
           "body": {},
@@ -1855,7 +1855,7 @@
         "/api/v2/themoviedb?id={tmdbId}",
         "/meta/series/tt12343534.json"
       ],
-      "status": "FULL OK",
+      "status": "CANDIDATE OK",
       "strategy": "mixed_embed_resolver"
     },
     "animesultra": {
@@ -2225,7 +2225,7 @@
         "anime"
       ],
       "officialHost": "animevostfr.org",
-      "operational": true,
+      "operational": false,
       "peerRequestRecipes": [
         {
           "body": {},
@@ -2477,12 +2477,15 @@
         "/episode/{slug}-1-episode-1/",
         "/episode/{slug}-2-saison-1-episode-1/"
       ],
-      "status": "FULL OK",
+      "status": "CANDIDATE OK",
       "strategy": "mixed_embed_resolver"
     },
     "castle": {
       "domainMemory": false,
-      "evidenceDepth": [],
+      "evidenceDepth": [
+        "movie=chain_reached",
+        "tv=chain_reached"
+      ],
       "hasApiRecipe": false,
       "hasProviderValuePlan": false,
       "hasSearchRequestPlan": false,
@@ -2561,7 +2564,11 @@
     },
     "coflix": {
       "domainMemory": true,
-      "evidenceDepth": [],
+      "evidenceDepth": [
+        "anime=chain_reached",
+        "movie=chain_reached",
+        "tv=chain_reached"
+      ],
       "hasApiRecipe": true,
       "hasProviderValuePlan": false,
       "hasSearchRequestPlan": false,
@@ -3221,7 +3228,7 @@
         "movie",
         "tv"
       ],
-      "officialHost": "flemmix.party",
+      "officialHost": "flemmix.eu",
       "operational": false,
       "peerRequestRecipes": [
         {
@@ -3331,7 +3338,9 @@
     },
     "french-manga": {
       "domainMemory": true,
-      "evidenceDepth": [],
+      "evidenceDepth": [
+        "anime=lookup_only"
+      ],
       "hasApiRecipe": true,
       "hasProviderValuePlan": false,
       "hasSearchRequestPlan": false,
@@ -3588,13 +3597,16 @@
     },
     "hindmoviez": {
       "domainMemory": true,
-      "evidenceDepth": [],
+      "evidenceDepth": [
+        "movie=lookup_only",
+        "tv=lookup_only"
+      ],
       "hasApiRecipe": false,
       "hasProviderValuePlan": false,
       "hasSearchRequestPlan": false,
       "mediaTypes": [],
-      "officialHost": "hindmovie.icu",
-      "operational": true,
+      "officialHost": "hindmovie.dev",
+      "operational": false,
       "peerRequestRecipes": [
         {
           "body": {},
@@ -3822,12 +3834,16 @@
         "/wp-json/wp/v2/posts?search={query}",
         "/wp-json/wp/v2/posts?search={imdbId}&per_page=100"
       ],
-      "status": "FULL OK",
+      "status": "REGRESSION PROVIDER",
       "strategy": "direct_media"
     },
     "kehflix": {
       "domainMemory": true,
-      "evidenceDepth": [],
+      "evidenceDepth": [
+        "anime=chain_reached",
+        "movie=chain_reached",
+        "tv=chain_reached"
+      ],
       "hasApiRecipe": false,
       "hasProviderValuePlan": false,
       "hasSearchRequestPlan": false,
@@ -4188,7 +4204,9 @@
     },
     "kurage": {
       "domainMemory": true,
-      "evidenceDepth": [],
+      "evidenceDepth": [
+        "anime=lookup_only"
+      ],
       "hasApiRecipe": false,
       "hasProviderValuePlan": false,
       "hasSearchRequestPlan": false,
@@ -4314,8 +4332,8 @@
     "moviebox": {
       "domainMemory": true,
       "evidenceDepth": [
-        "movie=chain_reached",
-        "tv=chain_reached"
+        "movie=lookup_only",
+        "tv=lookup_only"
       ],
       "hasApiRecipe": false,
       "hasProviderValuePlan": false,
@@ -4356,12 +4374,14 @@
         "/vs_src.php?type={mediaType}&id={tmdbId}",
         "/vs_src.php?type=tv&id={tmdbId}&season={season}&episode={episode}"
       ],
-      "status": "CHAIN REACHED",
+      "status": "ROUTE PROVEN",
       "strategy": "html_scraper"
     },
     "movieshunt": {
       "domainMemory": true,
-      "evidenceDepth": [],
+      "evidenceDepth": [
+        "movie=lookup_only"
+      ],
       "hasApiRecipe": false,
       "hasProviderValuePlan": false,
       "hasSearchRequestPlan": true,
@@ -4576,7 +4596,9 @@
     },
     "mugiwarastream": {
       "domainMemory": true,
-      "evidenceDepth": [],
+      "evidenceDepth": [
+        "anime=chain_reached"
+      ],
       "hasApiRecipe": false,
       "hasProviderValuePlan": true,
       "hasSearchRequestPlan": true,
@@ -5349,7 +5371,9 @@
     },
     "neko-sama": {
       "domainMemory": true,
-      "evidenceDepth": [],
+      "evidenceDepth": [
+        "anime=chain_reached"
+      ],
       "hasApiRecipe": false,
       "hasProviderValuePlan": false,
       "hasSearchRequestPlan": false,
@@ -5414,7 +5438,11 @@
     },
     "papadustream": {
       "domainMemory": true,
-      "evidenceDepth": [],
+      "evidenceDepth": [
+        "anime=lookup_only",
+        "movie=chain_reached",
+        "tv=lookup_only"
+      ],
       "hasApiRecipe": true,
       "hasProviderValuePlan": false,
       "hasSearchRequestPlan": false,
@@ -5659,7 +5687,7 @@
         "tv"
       ],
       "officialHost": "persianstremio.vercel.app",
-      "operational": true,
+      "operational": false,
       "peerRequestRecipes": [
         {
           "body": {},
@@ -5727,12 +5755,15 @@
         "/stream/series/",
         "/stream/movie/tt0816692.json"
       ],
-      "status": "PARTIAL OK",
+      "status": "CANDIDATE OK",
       "strategy": "direct_media"
     },
     "playimdb": {
       "domainMemory": true,
-      "evidenceDepth": [],
+      "evidenceDepth": [
+        "movie=lookup_only",
+        "tv=lookup_only"
+      ],
       "hasApiRecipe": true,
       "hasProviderValuePlan": false,
       "hasSearchRequestPlan": false,
@@ -5918,7 +5949,10 @@
     },
     "purstream": {
       "domainMemory": true,
-      "evidenceDepth": [],
+      "evidenceDepth": [
+        "movie=chain_reached",
+        "tv=chain_reached"
+      ],
       "hasApiRecipe": true,
       "hasProviderValuePlan": false,
       "hasSearchRequestPlan": false,
@@ -5926,7 +5960,7 @@
         "movie",
         "tv"
       ],
-      "officialHost": "purstream.club",
+      "officialHost": "purstream.cat",
       "operational": true,
       "peerRequestRecipes": [
         {
@@ -6068,7 +6102,9 @@
     },
     "sekai": {
       "domainMemory": true,
-      "evidenceDepth": [],
+      "evidenceDepth": [
+        "anime=lookup_only"
+      ],
       "hasApiRecipe": false,
       "hasProviderValuePlan": false,
       "hasSearchRequestPlan": false,
@@ -6213,7 +6249,11 @@
     },
     "streamzo": {
       "domainMemory": true,
-      "evidenceDepth": [],
+      "evidenceDepth": [
+        "anime=chain_reached",
+        "movie=chain_reached",
+        "tv=chain_reached"
+      ],
       "hasApiRecipe": true,
       "hasProviderValuePlan": false,
       "hasSearchRequestPlan": false,
@@ -6524,7 +6564,7 @@
     "uhdmovies": {
       "domainMemory": true,
       "evidenceDepth": [
-        "movie=chain_reached"
+        "movie=lookup_only"
       ],
       "hasApiRecipe": false,
       "hasProviderValuePlan": false,
@@ -6533,7 +6573,7 @@
         "movie"
       ],
       "officialHost": "uhdmovies.my",
-      "operational": true,
+      "operational": false,
       "peerRequestRecipes": [
         {
           "body": {},
@@ -6608,18 +6648,21 @@
         "/download-{slug}-hindi-1080p-2160p/",
         "/download-el-caminoa-{slug}-movie-2019-english-audio-1080p-10bit-2160p-4k-hevc-bluray-web-dl-esubs/"
       ],
-      "status": "FULL OK",
+      "status": "REGRESSION PROVIDER",
       "strategy": "html_scraper"
     },
     "videasy": {
       "domainMemory": true,
-      "evidenceDepth": [],
+      "evidenceDepth": [
+        "movie=none",
+        "tv=none"
+      ],
       "hasApiRecipe": false,
       "hasProviderValuePlan": false,
       "hasSearchRequestPlan": false,
       "mediaTypes": [],
       "officialHost": "www.vidking.net",
-      "operational": true,
+      "operational": false,
       "peerRequestRecipes": [
         {
           "body": {},
@@ -6727,7 +6770,7 @@
         "/episode/",
         "/sources-with-title"
       ],
-      "status": "FULL OK",
+      "status": "REGRESSION PROVIDER",
       "strategy": "api_stream_resolver"
     },
     "vidfast": {
@@ -6788,7 +6831,10 @@
     },
     "vidlove": {
       "domainMemory": true,
-      "evidenceDepth": [],
+      "evidenceDepth": [
+        "movie=lookup_only",
+        "tv=lookup_only"
+      ],
       "hasApiRecipe": true,
       "hasProviderValuePlan": false,
       "hasSearchRequestPlan": false,
@@ -6860,18 +6906,21 @@
         "/?tmdbId={tmdbId}&type=movie",
         "/?tmdbId={tmdbId}&type=tv&season={season}&episode={episode}"
       ],
-      "status": "FULL OK",
+      "status": "PARTIAL OK",
       "strategy": "html_scraper"
     },
     "vidrock": {
       "domainMemory": true,
-      "evidenceDepth": [],
+      "evidenceDepth": [
+        "movie=chain_reached",
+        "tv=chain_reached"
+      ],
       "hasApiRecipe": false,
       "hasProviderValuePlan": false,
       "hasSearchRequestPlan": false,
       "mediaTypes": [],
       "officialHost": "vidrock.to",
-      "operational": true,
+      "operational": false,
       "peerRequestRecipes": [],
       "peerRouteTemplates": [
         "/api/",
@@ -6897,12 +6946,14 @@
         "/api/movie/{tmdbId}",
         "/api/tv/{tmdbId}/1/1"
       ],
-      "status": "FULL OK",
+      "status": "CHAIN REACHED",
       "strategy": "html_scraper"
     },
     "voiranime": {
       "domainMemory": true,
-      "evidenceDepth": [],
+      "evidenceDepth": [
+        "anime=chain_reached"
+      ],
       "hasApiRecipe": false,
       "hasProviderValuePlan": false,
       "hasSearchRequestPlan": false,
@@ -7014,7 +7065,9 @@
     },
     "voiranime-homes": {
       "domainMemory": true,
-      "evidenceDepth": [],
+      "evidenceDepth": [
+        "anime=lookup_only"
+      ],
       "hasApiRecipe": true,
       "hasProviderValuePlan": false,
       "hasSearchRequestPlan": false,
@@ -7218,7 +7271,9 @@
     },
     "voiranime-rip": {
       "domainMemory": true,
-      "evidenceDepth": [],
+      "evidenceDepth": [
+        "anime=lookup_only"
+      ],
       "hasApiRecipe": false,
       "hasProviderValuePlan": false,
       "hasSearchRequestPlan": false,
@@ -7419,7 +7474,7 @@
         "movie",
         "tv"
       ],
-      "officialHost": "wookafr.boston",
+      "officialHost": "wookafr.blog",
       "operational": true,
       "peerRequestRecipes": [
         {
@@ -7840,7 +7895,7 @@
         "/streaming/aventure/{slug}/",
         "/streaming/episodes/{slug}-saison-1-episode-1/"
       ],
-      "status": "PARTIAL OK",
+      "status": "FULL OK",
       "strategy": "mixed_embed_resolver"
     },
     "yflix": {
@@ -8090,87 +8145,62 @@
     "requiresDeepValidation": true
   },
   "schemaVersion": 2,
-  "sourceRunId": "36635626620",
-  "sourceSha": "75a3642d146a6b70b9a59ea579395965fbb0a0a1",
+  "sourceRunId": "37088495401",
+  "sourceSha": "4e3111934fa094b61cbe2e19e53ebad9f9336dfa",
   "strategyPatterns": {
     "api_stream_resolver": {
       "commonRequestRecipes": [],
       "commonRouteTemplates": [],
-      "greenProviderCount": 2,
+      "greenProviderCount": 1,
       "greenProviders": [
-        "castle",
-        "videasy"
+        "castle"
       ],
       "routeFamilies": [
         {
-          "providerSupport": 2,
+          "providerSupport": 1,
           "role": "other",
           "supportRatio": 1.0
         },
         {
           "providerSupport": 1,
-          "role": "detail",
-          "supportRatio": 0.5
-        },
-        {
-          "providerSupport": 1,
           "role": "search",
-          "supportRatio": 0.5
+          "supportRatio": 1.0
         },
         {
           "providerSupport": 1,
-          "role": "episode",
-          "supportRatio": 0.5
+          "role": "detail",
+          "supportRatio": 1.0
         }
       ]
     },
     "direct_media": {
       "commonRequestRecipes": [],
-      "commonRouteTemplates": [
-        {
-          "providerSupport": 2,
-          "role": "search",
-          "route": "/?s={query}",
-          "supportRatio": 0.5
-        }
-      ],
-      "greenProviderCount": 4,
+      "commonRouteTemplates": [],
+      "greenProviderCount": 2,
       "greenProviders": [
-        "hindmoviez",
         "movieshunt",
-        "persianstremio",
         "playimdb"
       ],
       "routeFamilies": [
         {
-          "providerSupport": 2,
+          "providerSupport": 1,
           "role": "search",
           "supportRatio": 0.5
         },
         {
-          "providerSupport": 2,
+          "providerSupport": 1,
+          "role": "other",
+          "supportRatio": 0.5
+        },
+        {
+          "providerSupport": 1,
           "role": "episode",
           "supportRatio": 0.5
         },
         {
           "providerSupport": 1,
-          "role": "detail",
-          "supportRatio": 0.25
-        },
-        {
-          "providerSupport": 1,
-          "role": "api",
-          "supportRatio": 0.25
-        },
-        {
-          "providerSupport": 1,
           "role": "player",
-          "supportRatio": 0.25
-        },
-        {
-          "providerSupport": 1,
-          "role": "other",
-          "supportRatio": 0.25
+          "supportRatio": 0.5
         }
       ]
     },
@@ -8179,63 +8209,55 @@
       "commonRouteTemplates": [
         {
           "providerSupport": 2,
-          "role": "search",
-          "route": "/search/{slug}/",
-          "supportRatio": 0.2857
-        },
-        {
-          "providerSupport": 2,
           "role": "episode",
           "route": "/?tmdbId={tmdbId}&type=tv&season={season}&episode={episode}",
-          "supportRatio": 0.2857
+          "supportRatio": 0.4
         },
         {
           "providerSupport": 2,
           "role": "api",
           "route": "/api/v2/themoviedb?id={tmdbId}",
-          "supportRatio": 0.2857
+          "supportRatio": 0.4
         }
       ],
-      "greenProviderCount": 7,
+      "greenProviderCount": 5,
       "greenProviders": [
         "kehflix",
         "kurage",
         "papadustream",
         "sekai",
-        "uhdmovies",
-        "vidlove",
-        "vidrock"
+        "vidlove"
       ],
       "routeFamilies": [
         {
-          "providerSupport": 6,
+          "providerSupport": 4,
           "role": "episode",
-          "supportRatio": 0.8571
+          "supportRatio": 0.8
         },
         {
-          "providerSupport": 5,
+          "providerSupport": 4,
           "role": "api",
-          "supportRatio": 0.7143
+          "supportRatio": 0.8
         },
         {
-          "providerSupport": 4,
+          "providerSupport": 3,
           "role": "detail",
-          "supportRatio": 0.5714
-        },
-        {
-          "providerSupport": 4,
-          "role": "other",
-          "supportRatio": 0.5714
+          "supportRatio": 0.6
         },
         {
           "providerSupport": 3,
           "role": "player",
-          "supportRatio": 0.4286
+          "supportRatio": 0.6
         },
         {
-          "providerSupport": 2,
+          "providerSupport": 3,
+          "role": "other",
+          "supportRatio": 0.6
+        },
+        {
+          "providerSupport": 1,
           "role": "search",
-          "supportRatio": 0.2857
+          "supportRatio": 0.2
         }
       ]
     },
@@ -8257,7 +8279,7 @@
           "route": "/embed/wa805bkcrb02",
           "semanticType": "anime",
           "streamProof": true,
-          "supportRatio": 0.1333
+          "supportRatio": 0.1667
         },
         {
           "body": {},
@@ -8275,25 +8297,7 @@
           "route": "/embed/ihd7l819etlv",
           "semanticType": "anime",
           "streamProof": true,
-          "supportRatio": 0.1333
-        },
-        {
-          "body": {},
-          "bodyKind": "none",
-          "executable": true,
-          "headerNames": [
-            "accept",
-            "accept-language",
-            "user-agent"
-          ],
-          "method": "GET",
-          "providerSupport": 2,
-          "response": "html-or-text",
-          "role": "search",
-          "route": "/?s={query}",
-          "semanticType": "movie",
-          "streamProof": false,
-          "supportRatio": 0.1333
+          "supportRatio": 0.1667
         },
         {
           "body": {},
@@ -8312,84 +8316,69 @@
           "route": "/engine/ajax/manga_episodes_api.php?id={id}",
           "semanticType": "anime",
           "streamProof": true,
-          "supportRatio": 0.1333
+          "supportRatio": 0.1667
         }
       ],
       "commonRouteTemplates": [
         {
-          "providerSupport": 10,
+          "providerSupport": 8,
           "role": "api",
           "route": "/api/v2/themoviedb?id={tmdbId}",
           "supportRatio": 0.6667
         },
         {
-          "providerSupport": 7,
+          "providerSupport": 6,
           "role": "search",
           "route": "/?s={query}",
-          "supportRatio": 0.4667
+          "supportRatio": 0.5
         },
         {
           "providerSupport": 3,
           "role": "detail",
           "route": "/anime/{slug}/",
-          "supportRatio": 0.2
+          "supportRatio": 0.25
         },
         {
           "providerSupport": 3,
           "role": "episode",
           "route": "/engine/ajax/manga_episodes_api.php?id={id}",
-          "supportRatio": 0.2
-        },
-        {
-          "providerSupport": 2,
-          "role": "player",
-          "route": "/watch/{slug}",
-          "supportRatio": 0.1333
-        },
-        {
-          "providerSupport": 2,
-          "role": "search",
-          "route": "/search/Jujutsu+Kaisen/",
-          "supportRatio": 0.1333
+          "supportRatio": 0.25
         },
         {
           "providerSupport": 2,
           "role": "search",
           "route": "/wp-json/v2/posts?search={query}",
-          "supportRatio": 0.1333
+          "supportRatio": 0.1667
         },
         {
           "providerSupport": 2,
           "role": "search",
           "route": "/wp-json/v2/posts?search={query}&per_page=10",
-          "supportRatio": 0.1333
+          "supportRatio": 0.1667
         },
         {
           "providerSupport": 2,
           "role": "detail",
           "route": "/{slug}",
-          "supportRatio": 0.1333
+          "supportRatio": 0.1667
         },
         {
           "providerSupport": 2,
           "role": "player",
           "route": "/embed/",
-          "supportRatio": 0.1333
+          "supportRatio": 0.1667
         },
         {
           "providerSupport": 2,
           "role": "player",
           "route": "/embed",
-          "supportRatio": 0.1333
+          "supportRatio": 0.1667
         }
       ],
-      "greenProviderCount": 15,
+      "greenProviderCount": 12,
       "greenProviders": [
         "anikototv",
         "anime-sama",
-        "animekai",
-        "animesama-co",
-        "animevostfr",
         "coflix",
         "french-manga",
         "mugiwarastream",
@@ -8403,39 +8392,39 @@
       ],
       "routeFamilies": [
         {
-          "providerSupport": 13,
-          "role": "detail",
-          "supportRatio": 0.8667
-        },
-        {
-          "providerSupport": 13,
-          "role": "episode",
-          "supportRatio": 0.8667
-        },
-        {
-          "providerSupport": 12,
-          "role": "search",
-          "supportRatio": 0.8
-        },
-        {
           "providerSupport": 11,
+          "role": "detail",
+          "supportRatio": 0.9167
+        },
+        {
+          "providerSupport": 10,
+          "role": "episode",
+          "supportRatio": 0.8333
+        },
+        {
+          "providerSupport": 9,
           "role": "api",
-          "supportRatio": 0.7333
+          "supportRatio": 0.75
         },
         {
-          "providerSupport": 8,
-          "role": "player",
-          "supportRatio": 0.5333
+          "providerSupport": 9,
+          "role": "search",
+          "supportRatio": 0.75
         },
         {
-          "providerSupport": 7,
+          "providerSupport": 6,
           "role": "other",
-          "supportRatio": 0.4667
+          "supportRatio": 0.5
         },
         {
-          "providerSupport": 2,
+          "providerSupport": 6,
+          "role": "player",
+          "supportRatio": 0.5
+        },
+        {
+          "providerSupport": 1,
           "role": "source",
-          "supportRatio": 0.1333
+          "supportRatio": 0.0833
         }
       ]
     },
@@ -8454,12 +8443,12 @@
         },
         {
           "providerSupport": 1,
-          "role": "api",
+          "role": "episode",
           "supportRatio": 1.0
         },
         {
           "providerSupport": 1,
-          "role": "episode",
+          "role": "api",
           "supportRatio": 1.0
         }
       ]
