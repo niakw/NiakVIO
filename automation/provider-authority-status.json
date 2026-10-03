@@ -8,7 +8,8 @@
     "disableAfterConsecutiveDomainFailures": 2,
     "staleDirectDisableAfterConsecutiveDomainFailures": 3,
     "apiBackendMayOperateWithoutHomepage": true,
-    "manualOffEntersDisabledRetentionImmediately": true
+    "manualOffEntersDisabledRetentionImmediately": true,
+    "effectiveOperatorShutdownEntersDisabledRetentionImmediately": true
   },
   "providerCount": 42,
   "repairEligible": [
@@ -44,7 +45,6 @@
     "sekai",
     "streamzo",
     "uhdmovies",
-    "videasy",
     "vidfast",
     "vidlove",
     "vidrock",
@@ -55,8 +55,12 @@
     "wookafr",
     "yflix"
   ],
-  "repairBlocked": [],
-  "disabledNow": [],
+  "repairBlocked": [
+    "videasy"
+  ],
+  "disabledNow": [
+    "videasy"
+  ],
   "providers": [
     {
       "provider": "anime-sama",
@@ -367,17 +371,21 @@
     },
     {
       "provider": "videasy",
-      "action": "KEEP_BACKEND",
-      "repairEligible": true,
-      "confidence": "high",
-      "authorityClass": "api-or-backend",
+      "action": "DISABLE_UPSTREAM_SHUTDOWN",
+      "repairEligible": false,
+      "confidence": "terminal",
+      "authorityClass": "upstream-shutdown",
       "failureCount": 0,
-      "backendUrls": [
-        "https://api.speedracelight.com"
-      ],
+      "shutdownEvidence": {
+        "state": "upstream_shutdown",
+        "effectiveDate": "2026-09-15",
+        "sourceType": "operator_notice",
+        "sourceUrl": "https://www.videasy.to/"
+      },
       "reasons": [
-        "structured_backend_authority"
-      ]
+        "upstream_shutdown_effective:2026-09-15"
+      ],
+      "appliedDisableReason": "auto_off_upstream_shutdown"
     },
     {
       "provider": "vidfast",
