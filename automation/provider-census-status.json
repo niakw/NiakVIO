@@ -1,7 +1,7 @@
 {
   "schemaVersion": 3,
-  "runId": "37131173373",
-  "triggerSha": "4d1a1344b161c60f36420a84085e846415bb649b",
+  "runId": "37140548350",
+  "triggerSha": "d3478c9ba6a73759817bd98529a5bf4851363092",
   "providers": [
     {
       "provider": "4khdhub",
@@ -196,11 +196,11 @@
         "16 live routes / anime"
       ],
       "latestLaneVerdicts": [
-        "anime=timeout"
+        "anime=no_streams/provider_network_exception"
       ],
-      "dominantIssue": "timeout",
+      "dominantIssue": "provider_network_exception",
       "searchProgress": [
-        "anime: 3 works tested / 0 retained misses"
+        "anime: 2 works tested / 0 retained misses"
       ],
       "evidenceDepth": [
         "anime=none"
@@ -2248,8 +2248,8 @@
   "harnessQueue": [],
   "targetedTransportBlockedQueue": [],
   "clientTransportGapQueue": [],
-  "harnessEvidenceRunId": "37131173373-sharded-waf",
-  "harnessEvidenceSha": "4d1a1344b161c60f36420a84085e846415bb649b",
+  "harnessEvidenceRunId": "37140548350-sharded-waf",
+  "harnessEvidenceSha": "d3478c9ba6a73759817bd98529a5bf4851363092",
   "authorityRefreshedProviders": [],
   "harnessTransportUpdatedProviders": [],
   "networkDifferentialUpdatedProviders": [],
@@ -2662,20 +2662,5 @@
         "moviesmod"
       ]
     }
-  },
-  "lastRepairAttempt": {
-    "runId": "37140538697",
-    "sourceCensusRunId": "37131173373",
-    "mode": "repair",
-    "selectedProviders": [],
-    "candidateProviders": [],
-    "validatedProviders": [],
-    "acceptedRepairCount": 0,
-    "deferredToLearningSlotProviders": [],
-    "noProgressReason": "canonical-failure",
-    "timeBudgetExhausted": false,
-    "canonicalOutcome": "failure",
-    "candidateGateOutcome": "skipped",
-    "publicationAllowed": false
   }
 }
