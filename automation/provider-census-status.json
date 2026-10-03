@@ -1,7 +1,7 @@
 {
   "schemaVersion": 3,
-  "runId": "37087602034",
-  "triggerSha": "792b6fd9a11fe70af84c8501dcb52301e12717ac",
+  "runId": "37088495401",
+  "triggerSha": "4e3111934fa094b61cbe2e19e53ebad9f9336dfa",
   "providers": [
     {
       "provider": "4khdhub",
@@ -377,7 +377,7 @@
       ],
       "dominantIssue": "provider_network_zero_result",
       "searchProgress": [
-        "anime: 8 works tested / 34 retained misses"
+        "anime: 8 works tested / 32 retained misses"
       ],
       "evidenceDepth": [
         "anime=lookup_only"
@@ -740,16 +740,14 @@
     },
     {
       "provider": "hindmoviez",
-      "status": "PARTIAL OK",
+      "status": "REGRESSION PROVIDER",
       "underlyingStatus": "",
-      "color": "🟡",
+      "color": "🔴",
       "declaredLanes": [
         "movie",
         "tv"
       ],
-      "currentVerifiedLanes": [
-        "tv"
-      ],
+      "currentVerifiedLanes": [],
       "historicalProof": [
         "movie: Interstellar / The Colony",
         "tv: Breaking Bad"
@@ -759,13 +757,13 @@
         "9 live routes / movie, tv"
       ],
       "latestLaneVerdicts": [
-        "movie=returned_unplayable/provider_returned_streams",
-        "tv=OK"
+        "movie=no_streams/provider_network_http_error",
+        "tv=no_streams/provider_network_zero_result"
       ],
-      "dominantIssue": "provider_returned_streams",
+      "dominantIssue": "provider_network_http_error, provider_network_zero_result",
       "searchProgress": [
-        "movie: 1 works tested / 1 retained misses",
-        "tv: 1 works tested / 0 retained misses"
+        "movie: 8 works tested / 3 retained misses",
+        "tv: 8 works tested / 6 retained misses"
       ],
       "evidenceDepth": [
         "movie=lookup_only",
@@ -781,10 +779,10 @@
         "structured_backend_authority"
       ],
       "authorityKnown": true,
-      "action": "protect green lanes; BRAIN checks missing lanes",
-      "brainCheckRequired": false,
-      "statusRepairEligible": false,
-      "repairEligible": false,
+      "action": "re-run retained proof + verify upstream/provider state",
+      "brainCheckRequired": true,
+      "statusRepairEligible": true,
+      "repairEligible": true,
       "testedThisRun": true
     },
     {
@@ -1631,12 +1629,12 @@
         "3 live routes / movie, tv"
       ],
       "latestLaneVerdicts": [
-        "movie=returned_unplayable/provider_returned_streams",
+        "movie=wrong_content/provider_returned_wrong_content",
         "tv=OK"
       ],
-      "dominantIssue": "provider_returned_streams",
+      "dominantIssue": "provider_returned_wrong_content",
       "searchProgress": [
-        "movie: 6 works tested / 2 retained misses",
+        "movie: 3 works tested / 2 retained misses",
         "tv: 1 works tested / 2 retained misses"
       ],
       "evidenceDepth": [
@@ -1905,7 +1903,7 @@
       ],
       "historicalProof": [
         "movie: Avengers: Endgame",
-        "tv: Wednesday / Breaking Bad"
+        "tv: Breaking Bad / Wednesday"
       ],
       "candidateProof": [
         "run 35591042153-post-repair",
@@ -1922,7 +1920,7 @@
       "dominantIssue": "none",
       "searchProgress": [
         "movie: 1 works tested / 1 retained misses / 1 retained chain hit",
-        "tv: 1 works tested / 0 retained misses"
+        "tv: 2 works tested / 0 retained misses"
       ],
       "evidenceDepth": [
         "movie=chain_reached",
@@ -2167,8 +2165,8 @@
     "DISABLED": 4,
     "FULL OK": 20,
     "NO PROOF": 1,
-    "PARTIAL OK": 2,
-    "REGRESSION PROVIDER": 3,
+    "PARTIAL OK": 1,
+    "REGRESSION PROVIDER": 4,
     "ROUTE PROVEN": 10
   },
   "symptomaticProviders": [
@@ -2183,6 +2181,7 @@
     "animevost-fr",
     "animevostfr",
     "flemmix",
+    "hindmoviez",
     "mallumv",
     "moviebox",
     "moviesmod",
@@ -2205,6 +2204,7 @@
     "animevost-fr",
     "animevostfr",
     "flemmix",
+    "hindmoviez",
     "mallumv",
     "moviebox",
     "moviesmod",
@@ -2227,6 +2227,7 @@
     "animevost-fr",
     "animevostfr",
     "flemmix",
+    "hindmoviez",
     "mallumv",
     "moviebox",
     "moviesmod",
@@ -2246,8 +2247,8 @@
   "harnessQueue": [],
   "targetedTransportBlockedQueue": [],
   "clientTransportGapQueue": [],
-  "harnessEvidenceRunId": "37087602034-sharded-waf",
-  "harnessEvidenceSha": "792b6fd9a11fe70af84c8501dcb52301e12717ac",
+  "harnessEvidenceRunId": "37088495401-sharded-waf",
+  "harnessEvidenceSha": "4e3111934fa094b61cbe2e19e53ebad9f9336dfa",
   "authorityRefreshedProviders": [],
   "harnessTransportUpdatedProviders": [],
   "networkDifferentialUpdatedProviders": [],
