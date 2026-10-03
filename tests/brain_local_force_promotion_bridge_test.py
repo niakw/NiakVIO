@@ -60,3 +60,12 @@ for needle in (
     assert needle in workflow, needle
 
 print("Brain local FORCE promotion bridge contract passed")
+
+# Persisted local FORCE guidance is optional evidence, never execution authority.
+# If its source bytes are stale or the requested provider has no candidate, the
+# promotion bridge must reject it without blocking fresh Brain/LLM evaluation.
+source = SCRIPT.read_text(encoding="utf-8")
+assert "skipped=true reason=stale-provider-materialization-inputs" in source
+assert "skipped=true reason=requested-candidate-missing" in source
+assert "return 0" in source
+assert "unsafe local FORCE authority flag" in source
