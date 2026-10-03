@@ -822,6 +822,11 @@ def materialize(provider_ids: set[str] | list[str]) -> None:
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--provider", action="append", default=[], help="Optional provider id; repeatable. Empty = current census repairQueue only.")
+    parser.add_argument(
+        "--architecture-force",
+        action="store_true",
+        help="Allow explicit current dynamic completeness targets outside repairQueue; implicit portfolio selection remains repairQueue-only.",
+    )
     parser.add_argument("--waves", type=int, default=5)
     parser.add_argument("--batch-size", type=int, default=48)
     parser.add_argument("--health-concurrency", type=int, default=0, help="0 = auto per packed batch (1..8)")
