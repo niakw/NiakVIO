@@ -182,10 +182,17 @@ def main() -> int:
     current_sha = assert_commit(args.current_sha, "currentSha")
     drift = provider_materialization_drift(source_sha, current_sha)
     if drift:
-        raise SystemExit(
-            "local FORCE candidate is stale because provider materialization inputs changed: "
-            + ",".join(drift)
+        print(
+            "FIELD_LOCAL_FORCE_PROMOTION "
+            f"providers=0 ids=none source={source_sha} current={current_sha} "
+            "drift=true skipped=true reason=stale-provider-materialization-inputs "
+            f"changed={','.join(drift)}"
         )
+        try:
+            args.output.unlink()
+        except FileNotFoundError:
+            pass
+        return 0
 
     rows_by_provider: dict[str, dict[str, Any]] = {}
     for raw in value.get("rows") or []:
@@ -196,7 +203,17 @@ def main() -> int:
 
     missing = [provider for provider in targets if provider not in rows_by_provider]
     if missing:
-        raise SystemExit("requested local FORCE candidate missing: " + ",".join(missing))
+        print(
+            "FIELD_LOCAL_FORCE_PROMOTION "
+            f"providers=0 ids=none source={source_sha} current={current_sha} "
+            "drift=false skipped=true reason=requested-candidate-missing "
+            f"missing={','.join(missing)}"
+        )
+        try:
+            args.output.unlink()
+        except FileNotFoundError:
+            pass
+        return 0
 
     rows = [rows_by_provider[provider] for provider in targets]
     output = {
