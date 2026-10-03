@@ -48,6 +48,49 @@ r=module.classify(
 assert r["action"]=="KEEP_BACKEND",r
 assert r["repairEligible"] is True
 
+# An effective, official operator shutdown outranks stale backend authority.
+# This prevents the Brain from "repairing" a retired service into a different
+# upstream just because old API/backend metadata remains structured.
+shutdown_registry = reg(
+    lifecycle={
+        "state": "upstream_shutdown",
+        "effective_date": "2000-01-01",
+        "source_type": "operator_notice",
+        "source_url": "https://operator.example/shutdown",
+    }
+)
+r=module.classify(
+    "demo", row(), shutdown_registry,
+    patch(
+        capability="api_stream_resolver",
+        official_api="https://api.example.test",
+        learned_routes=["/stream/movie/{id}.json"],
+    ),
+    {},
+)
+assert r["action"]=="DISABLE_UPSTREAM_SHUTDOWN",r
+assert r["repairEligible"] is False,r
+assert r["authorityClass"]=="upstream-shutdown",r
+
+future_shutdown = reg(
+    lifecycle={
+        "state": "upstream_shutdown",
+        "effective_date": "2999-01-01",
+        "source_type": "operator_notice",
+        "source_url": "https://operator.example/shutdown",
+    }
+)
+r=module.classify(
+    "demo", row(), future_shutdown,
+    patch(
+        capability="api_stream_resolver",
+        official_api="https://api.example.test",
+        learned_routes=["/stream/movie/{id}.json"],
+    ),
+    {},
+)
+assert r["action"]=="KEEP_BACKEND",r
+
 # A removed authoritative directory source is stronger negative evidence than
 # search noise for a site-dependent provider.
 r=module.classify(

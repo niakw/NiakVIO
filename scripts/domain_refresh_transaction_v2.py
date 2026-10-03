@@ -501,6 +501,34 @@ def _stable_unique_domain_values(values: list[Any]) -> list[Any]:
     return output
 
 
+def _selective_domain_url_projection(
+    published_values: list[Any],
+    expected_values: list[Any],
+    rewrites: dict[str, str],
+) -> list[Any] | None:
+    """Project only mismatched URL positions explained by explicit host authority.
+
+    Historical origins can legitimately remain in the structured model even when
+    their host also appears in old->current substitution memory.  Rewriting the
+    whole list would collapse that history.  Equal positions therefore stay
+    byte-stable; only a mismatched position may move when its exact value reaches
+    the expected value through the explicit Domain map.
+    """
+    if len(published_values) != len(expected_values):
+        return None
+    projected: list[Any] = []
+    for published_value, expected_value in zip(published_values, expected_values):
+        if published_value == expected_value:
+            projected.append(published_value)
+            continue
+        if not isinstance(published_value, str) or not isinstance(expected_value, str):
+            return None
+        if _replace_domain_host_tokens(published_value, rewrites) != expected_value:
+            return None
+        projected.append(expected_value)
+    return projected
+
+
 def project_domain_owned_config_runtime_urls(
     published: dict[str, Any],
     expected: dict[str, Any],
@@ -529,13 +557,23 @@ def project_domain_owned_config_runtime_urls(
             continue
         if published_values == expected_values:
             continue
+        selective_forward = _selective_domain_url_projection(
+            published_values,
+            expected_values,
+            rewrites,
+        )
         forward = _project_domain_url_values(published_values, rewrites)
         prior_overprojection = _project_domain_url_values(expected_values, rewrites)
         recovered_prior_overprojection = (
             _stable_unique_domain_values(prior_overprojection)
             == _stable_unique_domain_values(published_values)
         )
-        if forward == expected_values or prior_overprojection == published_values or recovered_prior_overprojection:
+        if (
+            selective_forward == expected_values
+            or forward == expected_values
+            or prior_overprojection == published_values
+            or recovered_prior_overprojection
+        ):
             output[key] = copy.deepcopy(expected_values)
     return output
 

@@ -162,6 +162,43 @@ def has_search(registry: dict[str, Any]) -> bool:
     )
 
 
+def effective_upstream_shutdown(
+    registry: dict[str, Any],
+    *,
+    now: datetime | None = None,
+) -> dict[str, Any] | None:
+    """Return authoritative operator shutdown evidence once its date is effective."""
+    lifecycle = registry.get("lifecycle")
+    if not isinstance(lifecycle, dict):
+        return None
+    state = str(lifecycle.get("state") or "").strip().casefold()
+    source_type = str(lifecycle.get("source_type") or "").strip().casefold()
+    source_url = str(lifecycle.get("source_url") or "").strip()
+    effective_raw = str(lifecycle.get("effective_date") or "").strip()
+    if state not in {"upstream_shutdown", "operator_shutdown"}:
+        return None
+    if source_type not in {"operator_notice", "official_operator_notice"}:
+        return None
+    if not http_url(source_url) or not effective_raw:
+        return None
+    try:
+        effective_day = datetime.fromisoformat(effective_raw.replace("Z", "+00:00")).date()
+    except ValueError:
+        try:
+            effective_day = datetime.strptime(effective_raw, "%Y-%m-%d").date()
+        except ValueError:
+            return None
+    current_day = (now or datetime.now(timezone.utc)).date()
+    if effective_day > current_day:
+        return None
+    return {
+        "state": state,
+        "effectiveDate": effective_day.isoformat(),
+        "sourceType": source_type,
+        "sourceUrl": source_url,
+    }
+
+
 def classify(
     provider: str,
     manifest_row: dict[str, Any],
@@ -181,6 +218,7 @@ def classify(
     search = has_search(registry)
     legacy_search = registry.get("legacy_search_refresh") is True
     official_site = str(patch.get("official_site") or "").strip()
+    upstream_shutdown = effective_upstream_shutdown(registry)
 
     reasons: list[str] = []
     # A curated/manual non-activation decision must be executable policy, not a
@@ -206,6 +244,25 @@ def classify(
             "confidence": "terminal",
             "authorityClass": "disabled",
             "failureCount": failures,
+            "reasons": reasons,
+        }
+
+    # An explicit operator shutdown is stronger than stale backend/site memory.
+    # Once its effective date has passed, Repair must not burn cycles trying to
+    # resurrect or silently substitute a different upstream service.
+    if upstream_shutdown is not None:
+        reasons.append(
+            "upstream_shutdown_effective:"
+            + str(upstream_shutdown.get("effectiveDate") or "")
+        )
+        return {
+            "provider": provider,
+            "action": "DISABLE_UPSTREAM_SHUTDOWN",
+            "repairEligible": False,
+            "confidence": "terminal",
+            "authorityClass": "upstream-shutdown",
+            "failureCount": failures,
+            "shutdownEvidence": upstream_shutdown,
             "reasons": reasons,
         }
 
@@ -409,6 +466,8 @@ def apply_disable(
 ) -> str:
     if action == "DISABLE_SOURCE_REMOVED":
         reason = "auto_off_authoritative_source_removed"
+    elif action == "DISABLE_UPSTREAM_SHUTDOWN":
+        reason = "auto_off_upstream_shutdown"
     elif action == "DISABLE_AUTHORITY_EXHAUSTED":
         reason = "auto_off_domain_authority_exhausted"
     elif action == "DISABLE_MANUAL_POLICY":
@@ -459,7 +518,7 @@ def main() -> int:
         hist = histories.get(provider) if isinstance(histories.get(provider), dict) else {}
         result = classify(provider, manifest_row, registry, patch, hist)
         if args.apply_safe_disables and result["action"] in {
-            "DISABLE_SOURCE_REMOVED", "DISABLE_AUTHORITY_EXHAUSTED", "DISABLE_MANUAL_POLICY"
+            "DISABLE_SOURCE_REMOVED", "DISABLE_UPSTREAM_SHUTDOWN", "DISABLE_AUTHORITY_EXHAUSTED", "DISABLE_MANUAL_POLICY"
         } and manifest_row.get("enabled") is not False:
             reason = apply_disable(manifest_row, registry, patch, result["action"])
             registries[provider] = registry
@@ -479,6 +538,7 @@ def main() -> int:
             "staleDirectDisableAfterConsecutiveDomainFailures": 3,
             "apiBackendMayOperateWithoutHomepage": True,
             "manualOffEntersDisabledRetentionImmediately": True,
+            "effectiveOperatorShutdownEntersDisabledRetentionImmediately": True,
         },
         "providerCount": len(results),
         "repairEligible": sorted(row["provider"] for row in results if row.get("repairEligible") is True),

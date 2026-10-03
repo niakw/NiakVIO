@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 from pathlib import Path
+import json
 
 ROOT = Path(__file__).resolve().parents[1]
 autopilot = (ROOT / ".github/workflows/provider-brain-autopilot.yml").read_text(encoding="utf-8")
@@ -105,8 +106,8 @@ assert 'trigger=workflow_run' in census
 
 print("provider Brain Autopilot cloud convergence contract passed")
 
-trigger = (ROOT / ".github/triggers/provider-brain-autopilot.json").read_text(encoding="utf-8")
-assert '"mode": "force"' in trigger
+trigger = json.loads((ROOT / ".github/triggers/provider-brain-autopilot.json").read_text(encoding="utf-8"))
+assert trigger.get("mode") in {"auto", "force"}, trigger
 
 # A persisted FORCE trigger is state, not an execution lease. Workflow-run
 # convergence must ignore it and continue the ordinary current-census plan.

@@ -434,6 +434,48 @@ unrelated = module.project_domain_owned_config_runtime_urls(
 assert unrelated["observedUrls"] == published_runtime_urls["observedUrls"], unrelated
 assert unrelated["origins"] == published_runtime_urls["origins"], unrelated
 
+
+# Regression 2e.1: when only one historical origin is stale, do not reject the
+# safe repair merely because other historical hosts are also substitution keys.
+# PurStream exposed this exact shape: cat -> tech is stale, while ad/id remain
+# deliberate historical/runtime evidence and must not collapse onto tech.
+purstream_published = {
+    "providerId": "purstream",
+    "origins": [
+        "https://purstream.cat",
+        "https://api.purstream.ad",
+        "https://purstream.ad",
+        "https://purstream.id",
+        "https://api.purstream.id",
+        "https://api.purstream",
+    ],
+}
+purstream_expected = {
+    "providerId": "purstream",
+    "origins": [
+        "https://purstream.tech",
+        "https://api.purstream.ad",
+        "https://purstream.ad",
+        "https://purstream.id",
+        "https://api.purstream.id",
+        "https://api.purstream",
+    ],
+}
+purstream_patch = {
+    "official_site": "https://purstream.tech",
+    "runtime_domain_replacements": {
+        "purstream.cat": "purstream.tech",
+        "purstream.ad": "purstream.tech",
+        "purstream.id": "purstream.tech",
+    },
+}
+purstream_projected = module.project_domain_owned_config_runtime_urls(
+    purstream_published,
+    purstream_expected,
+    purstream_patch,
+)
+assert purstream_projected["origins"] == purstream_expected["origins"], purstream_projected
+
 # Regression 2f: multiple historical origins may have collapsed onto one
 # current host under the former broad projection. Comparison may deduplicate
 # only for recovery detection; the canonical history itself must be restored.
