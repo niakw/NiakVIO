@@ -314,6 +314,9 @@ jobs:
             next_remaining=$((remaining - budget))
           else
             budget=60
+            if [ "$fast_handoff" = "true" ] && { [ -n "$target_provider" ] || [ -n "$target_providers" ]; }; then
+              budget=15
+            fi
             next_remaining=0
           fi
           next_phase=$((phase + 1))
