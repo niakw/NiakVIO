@@ -403,6 +403,18 @@ def _variant_fanout_summary(debug: dict[str, Any], streams_returned: int) -> dic
         request_host, request_route, response_host, response_route = request_parts(row)
         owned = request_host in origin_hosts or response_host in origin_hosts
         indexed = max(0, int(row.get("declared_indexed_player_candidate_count") or 0))
+        url_count = max(
+            0,
+            int(row.get("declared_url_player_candidate_count") or 0),
+            int(row.get("declared_player_candidate_count") or 0),
+        )
+        shape = row.get("response_shape") if isinstance(row.get("response_shape"), dict) else {}
+        kind = str(shape.get("kind") or "").strip().casefold()
+        quality_heights = {
+            int(value)
+            for value in (row.get("declared_quality_heights") or [])
+            if str(value or "").isdigit() and int(value) > 0
+        }
         declared_hosts = {
             str(value or "").strip().casefold()
             for value in (row.get("declared_player_hosts") or [])
@@ -411,10 +423,20 @@ def _variant_fanout_summary(debug: dict[str, Any], streams_returned: int) -> dic
         external_hosts = declared_hosts - origin_hosts
         # Detail/search pages often contain many provider-internal links near
         # words such as player/watch. They are not reader choices. Count a
-        # provider-owned response as a parent fan-out only when it exposes at
-        # least one off-origin reader/server host, or an explicit indexed menu.
+        # provider-owned response as a parent fan-out only when it exposes an
+        # explicit indexed menu, an off-origin reader/server transition, or a
+        # structured JSON response that binds multiple detected player URLs to
+        # multiple concrete video qualities. The quality requirement prevents
+        # generic WordPress/API metadata URLs from inflating completeness debt
+        # while preserving real 480p/720p/1080p/2160p variant menus.
+        structured_quality_fanout = (
+            kind == "json"
+            and url_count >= 2
+            and len(quality_heights) >= 2
+        )
         if owned and (
             indexed >= 2
+            or structured_quality_fanout
             or (
                 bool(external_hosts)
                 and (CHAIN_ROUTE_RE.search(request_route) or CHAIN_ROUTE_RE.search(response_route))

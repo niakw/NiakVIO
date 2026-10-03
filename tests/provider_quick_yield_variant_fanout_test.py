@@ -174,6 +174,32 @@ assert summary["announced_player_hosts"] == ["one.test", "two.test"], summary
 assert summary["explored_player_requests"] == 2, summary
 assert summary["variant_fanout_state"] == "fanout-observed", summary
 
+# Provider-owned structured catalogue JSON can advertise multiple concrete
+# quality variants before the runtime follows its redirect chain. Preserve that
+# bounded completeness debt even when the JSON's absolute URLs are mostly
+# provider/internal metadata and no off-origin player host was traversed yet.
+wordpress_quality_variants = {
+    "model": {"official_site": "https://hindmovie.dev"},
+    "fetches": [
+        {
+            "url": "https://hindmovie.dev/wp-json/wp/v2/posts?search=fixture&per_page=100",
+            "response_url": "https://hindmovie.dev/wp-json/wp/v2/posts?search=fixture&per_page=100",
+            "declared_player_candidate_count": 20,
+            "declared_url_player_candidate_count": 20,
+            "declared_indexed_player_candidate_count": 0,
+            "declared_player_hosts": ["api.w.org", "hindmovie.dev"],
+            "declared_quality_heights": [480, 720, 1080, 2160],
+            "response_shape": {"kind": "json", "top": "array", "lengthBucket": "2-10"},
+        },
+    ],
+}
+summary = mod._variant_fanout_summary(wordpress_quality_variants, 3)
+assert summary["announced_player_candidates"] == 20, summary
+assert summary["announced_variant_candidates"] == 20, summary
+assert summary["announced_quality_heights"] == [480, 720, 1080, 2160], summary
+assert summary["explored_player_requests"] == 0, summary
+assert summary["variant_fanout_state"] == "returned-subset", summary
+
 # Structured JSON streams remain authoritative even when many variants share
 # only a small number of CDN hosts.
 json_variants = {
