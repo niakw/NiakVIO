@@ -230,10 +230,11 @@ def preserve_publication_filename_stage(provider_id: str, old_path: Path, digest
 
 def sanitize_applied_state() -> None:
     sanitizer = Path(__file__).with_name("sanitize_provider_hub_registry.py")
-    subprocess.run(
-        [sys.executable, str(sanitizer), "--registry", "provider-hubs.json"],
-        check=True,
-    )
+    command = [sys.executable, str(sanitizer), "--registry", "provider-hubs.json"]
+    for index, value in enumerate(sys.argv):
+        if value == "--provider" and index + 1 < len(sys.argv):
+            command.extend(["--provider", sys.argv[index + 1]])
+    subprocess.run(command, check=True)
 
 
 def main() -> int:
