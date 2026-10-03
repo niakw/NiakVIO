@@ -62,8 +62,9 @@ for required_convergence in (
     'echo "ok=true" >> "$GITHUB_OUTPUT"',
     "Continue Brain Autopilot from fresh census",
     "FIELD_SHARDED_CENSUS_AUTOPILOT",
-    "event_driven=true",
-    "trigger=workflow_run",
+    "event_driven=false",
+    "trigger=workflow_dispatch",
+    "gh workflow run provider-brain-autopilot.yml",
 ):
     assert required_convergence in workflow, f"missing sharded census convergence contract: {required_convergence}"
 
@@ -90,7 +91,7 @@ assert "--status automation/provider-census-sharded-status.json" in workflow
 
 print("provider sharded census authority persistence contract passed")
 
-assert "gh workflow run provider-brain-autopilot.yml" not in workflow
+assert "gh workflow run provider-brain-autopilot.yml" in workflow
 
 
 # Targeted/partial validation must not pay the eight-shard full-census cost.
