@@ -175,11 +175,13 @@ with tempfile.TemporaryDirectory() as tmp:
                 {"provider":"b","status":"ROUTE PROVEN"},
                 {"provider":"c","status":"CHAIN REACHED"},
                 {"provider":"d","status":"PROVIDER NETWORK BLOCKED"},
+                {"provider":"e","status":"FULL OK"},
             ],
             "repairQueue":["a","b","c","d"],
         }),encoding="utf-8")
         mod.BATCH_PLAN.write_text(json.dumps({
             "sourceRunId":"r1",
+            "dynamicVariantProviders":["e"],
             "groups":[
                 {
                     "groupId":"route-to-terminal|html_scraper",
@@ -215,6 +217,12 @@ with tempfile.TemporaryDirectory() as tmp:
         assert all(row["groupId"]=="fallback" for row in stale)
         pressure=mod.provider_attempt_pressure_map()
         assert pressure["a"]==5 and pressure["c"]==2 and pressure["d"]==3,pressure
+        regular,_,_=mod.select_targets(["e"],include_environment=False,shard_count=1,shard_index=0)
+        forced,_,_=mod.select_targets(
+            ["e"],include_environment=False,shard_count=1,shard_index=0,architecture_force=True
+        )
+        assert regular==[],regular
+        assert forced==["e"],forced
     finally:
         mod.STATUS,mod.BATCH_PLAN,mod.REPAIR_MEMORY=old_status,old_plan,old_memory
 
@@ -413,6 +421,8 @@ for required in (
     "PROVIDER_BRAIN_DURABLE_ACCEPTANCE_V1",
     "rawLabAcceptedCount",
     "compileRejectedToLearning",
+    "current_dynamic_completeness_queue",
+    "--architecture-force",
 ):
     assert required in source, required
 

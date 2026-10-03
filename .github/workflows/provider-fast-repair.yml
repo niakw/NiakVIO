@@ -4,12 +4,12 @@ on:
   workflow_dispatch:
     inputs:
       target_provider:
-        description: Optional exact provider in current repairQueue; empty = whole repairQueue
+        description: Optional exact provider in current repairQueue; FORCE may also target current dynamic completeness debt
         required: false
         default: ""
         type: string
       target_providers:
-        description: Optional comma-separated current repairQueue cohort; takes precedence over target_provider
+        description: Optional comma-separated current repairQueue cohort; FORCE may also target dynamic completeness debt; takes precedence over target_provider
         required: false
         default: ""
         type: string
@@ -214,8 +214,20 @@ jobs:
               [ -z "$provider" ] || providers+=("$provider")
             fi
           fi
+          force_mode="$(python - <<'PY'
+          import json
+          from pathlib import Path
+          try:
+              d=json.loads(Path(".github/triggers/provider-brain-autopilot.json").read_text(encoding="utf-8"))
+          except Exception:
+              d={}
+          print("true" if str(d.get("mode") or "").strip().casefold()=="force" else "false")
+          PY
+          )"
           args=(python scripts/run_provider_fast_repair.py --waves "$waves" --time-budget-seconds "$budget" --max-rounds-per-batch "$max_rounds")
+          if [ "$force_mode" = "true" ]; then args+=(--architecture-force); fi
           for p in "${providers[@]}"; do args+=(--provider "$p"); done
+          echo "PROVIDER_FAST_REPAIR_FORCE architecture_force=$force_mode"
           printf 'PROVIDER_FAST_REPAIR_ARGS %q ' "${args[@]}"; echo
           "${args[@]}"
           echo "publish=$publish" >> "$GITHUB_OUTPUT"

@@ -211,17 +211,37 @@ def census_queue(payload: dict[str, Any], *, include_environment: bool) -> set[s
     return {cid(value) for value in values if cid(value)}
 
 
+def current_dynamic_completeness_queue(
+    payload: dict[str, Any],
+    plan: dict[str, Any] | None = None,
+) -> set[str]:
+    """Selection-only debt: current non-disabled providers with sharded variant gaps."""
+    rows = status_rows(payload)
+    if plan is None:
+        plan = load(BATCH_PLAN, {})
+    dynamic = {cid(value) for value in plan.get("dynamicVariantProviders") or [] if cid(value)}
+    return {
+        provider
+        for provider in dynamic
+        if provider in rows
+        and "DISABLED" not in str((rows.get(provider) or {}).get("status") or "").upper()
+    }
+
+
 def select_targets(
     explicit: list[str],
     *,
     include_environment: bool,
     shard_count: int,
     shard_index: int,
+    architecture_force: bool = False,
 ) -> tuple[list[str], list[str], dict[str, dict[str, Any]]]:
     payload = status_payload()
     rows = status_rows(payload)
     allowed = census_queue(payload, include_environment=include_environment)
     requested = {cid(value) for value in explicit if cid(value)}
+    if requested and architecture_force:
+        allowed |= current_dynamic_completeness_queue(payload)
     if requested:
         candidates = sorted(requested & allowed)
     else:
@@ -858,6 +878,7 @@ def main() -> int:
         include_environment=args.include_environment,
         shard_count=shard_count,
         shard_index=shard_index,
+        architecture_force=args.architecture_force,
     )
     advisor_hypotheses = advisor_wave_budget(selected)
     waves = max(requested_waves, advisor_hypotheses)
@@ -879,7 +900,11 @@ def main() -> int:
             "waves": [],
             "remainingProviders": [],
             "message": "no repairable providers selected from current census queue",
-            "selectionSource": "automation/provider-census-status.json:repairQueue",
+            "selectionSource": (
+                "automation/provider-repair-batch-plan-latest.json:dynamicVariantProviders"
+                if args.architecture_force and args.provider
+                else "automation/provider-census-status.json:repairQueue"
+            ),
             "positiveProgramRecovery": {
                 "reportCount": int(positive_recovery.get("reportCount") or 0),
                 "recoveredRecordCount": int(positive_recovery.get("recoveredRecordCount") or 0),

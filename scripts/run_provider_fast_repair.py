@@ -20,6 +20,7 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[1]
 STATUS = ROOT / "automation" / "provider-census-status.json"
 BRAIN = ROOT / "automation" / "provider-brain-repair-latest.json"
+BATCH_PLAN = ROOT / "automation" / "provider-repair-batch-plan-latest.json"
 SUMMARY = ROOT / "automation" / "provider-fast-repair-summary.json"
 
 
@@ -45,13 +46,39 @@ def run(*args: str, timeout: int | None = None) -> None:
     )
 
 
-def selected_targets(status: dict[str, Any], requested: set[str]) -> list[str]:
+def dynamic_completeness_targets(status: dict[str, Any], plan: dict[str, Any]) -> set[str]:
+    """Current FULL/PARTIAL completeness debt may be selected only by explicit FORCE."""
+    current = {
+        cid(row.get("provider"))
+        for row in status.get("providers") or []
+        if isinstance(row, dict)
+        and cid(row.get("provider"))
+        and "DISABLED" not in str(row.get("status") or "").upper()
+    }
+    return {
+        cid(value)
+        for value in plan.get("dynamicVariantProviders") or []
+        if cid(value) in current
+    }
+
+
+def selected_targets(
+    status: dict[str, Any],
+    requested: set[str],
+    *,
+    architecture_force: bool = False,
+    completeness: set[str] | None = None,
+) -> list[str]:
     queue = {cid(value) for value in status.get("repairQueue") or [] if cid(value)}
     if requested:
-        missing = sorted(requested - queue)
+        allowed = set(queue)
+        if architecture_force:
+            allowed.update(completeness or set())
+        missing = sorted(requested - allowed)
         if missing:
+            scope = "current repairQueue or FORCE completeness debt" if architecture_force else "current repairQueue"
             raise ValueError(
-                "explicit provider is not in current repairQueue: " + ",".join(missing)
+                f"explicit provider is not in {scope}: " + ",".join(missing)
             )
         return sorted(requested)
     return sorted(queue)
@@ -60,6 +87,11 @@ def selected_targets(status: dict[str, Any], requested: set[str]) -> list[str]:
 def main() -> int:
     parser = argparse.ArgumentParser(description="Fast provider-local Brain Repair")
     parser.add_argument("--provider", action="append", default=[])
+    parser.add_argument(
+        "--architecture-force",
+        action="store_true",
+        help="Allow explicit current dynamic completeness targets outside repairQueue; never broadens implicit selection.",
+    )
     parser.add_argument("--waves", type=int, default=3)
     parser.add_argument("--batch-size", type=int, default=48)
     parser.add_argument("--time-budget-seconds", type=int, default=1200)
@@ -71,8 +103,15 @@ def main() -> int:
     if not STATUS.is_file():
         raise SystemExit("provider census status missing")
     status_before = load(STATUS)
+    batch_plan = load(BATCH_PLAN) if BATCH_PLAN.is_file() else {}
+    completeness = dynamic_completeness_targets(status_before, batch_plan)
     requested = {cid(value) for value in args.provider if cid(value)}
-    targets = selected_targets(status_before, requested)
+    targets = selected_targets(
+        status_before,
+        requested,
+        architecture_force=args.architecture_force,
+        completeness=completeness,
+    )
     if not targets:
         payload = {
             "schemaVersion": 1,
@@ -98,6 +137,8 @@ def main() -> int:
     ]
     if args.health_concurrency > 0:
         brain_cmd.extend(["--health-concurrency", str(max(1, min(args.health_concurrency, 8)))])
+    if args.architecture_force:
+        brain_cmd.append("--architecture-force")
     for provider in targets:
         brain_cmd.extend(["--provider", provider])
     run(
@@ -152,6 +193,8 @@ def main() -> int:
         "schemaVersion": 2,
         "sourceCensusRunId": status_before.get("runId"),
         "repairRunId": str(os.environ.get("GITHUB_RUN_ID") or "local"),
+        "architectureForce": args.architecture_force,
+        "forceCompletenessProviders": sorted(set(targets) & completeness),
         "selectedProviders": selected,
         "candidateProviders": candidates,
         "retestedProviders": candidates,

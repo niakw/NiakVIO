@@ -21,12 +21,22 @@ status = {
 }
 assert mod.selected_targets(status, set()) == ["a", "b"]
 assert mod.selected_targets(status, {"b"}) == ["b"]
+assert mod.dynamic_completeness_targets(status, {"dynamicVariantProviders":["c"]}) == {"c"}
+assert mod.selected_targets(
+    status, {"c"}, architecture_force=True, completeness={"c"}
+) == ["c"]
 try:
     mod.selected_targets(status, {"c"})
 except ValueError:
     pass
 else:
     raise AssertionError("explicit non-repair provider must fail closed")
+try:
+    mod.selected_targets(status, {"d"}, architecture_force=True, completeness={"c"})
+except ValueError:
+    pass
+else:
+    raise AssertionError("FORCE must fail closed outside current dynamic completeness debt")
 
 source = SCRIPT.read_text(encoding="utf-8")
 for required in (
@@ -36,6 +46,8 @@ for required in (
     "fixedInLabProviders",
     "--max-rounds-per-batch",
     "default=1",
+    "--architecture-force",
+    "dynamicVariantProviders",
 ):
     assert required in source, required
 for forbidden in (
