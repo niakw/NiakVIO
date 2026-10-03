@@ -957,3 +957,15 @@
 - Brain execution routing now sends transport debt with already-qualified address/backend authority to `BRAIN_LEARNING` via `qualified_authority_transport_learning_v1`. Only unresolved address authority remains `DOMAIN_REFRESH`.
 - Autopilot passes exact provider ids to Domain and no longer lets a qualified AnimeKai transport issue preempt independent Coflix/completeness Learning. FAST publication remains deferred while a true targeted Domain transaction is in flight.
 - WookaFR remains a projection-drift repair owned by the generic projection pipeline; no provider-local manual patch is authorized.
+
+
+## 2026-10-03 — Domain/Native convergence validated; current Autopilot resumed
+
+- Provider-scoped Domain ownership is now on main. Qualified transport authority no longer routes through Domain: AnimeKai (`KEEP_PROVEN_SITE`) is owned by Brain Learning via `qualified_authority_transport_learning_v1`; unresolved address authority alone may enter Domain Refresh.
+- Domain Refresh accepts an exact provider cohort and scopes transaction projection drift, registry/history sanitation, provider metadata reconciliation and DNS observation to that cohort. Domain implementation/code changes no longer auto-run a catalogue-wide mutation.
+- Projection Reconcile run `37128406179` detected exactly one drifted provider (`wookafr`), rematerialized it from accepted DATA/Lego, proved `FIELD_PROVIDER_PROJECTION_FIXED_POINT providers=0`, and published `6645607a` / `4faaa85a`. Current WookaFR bytes `providers/wookafr--nuvio--23ba5112dfdbfc0a.js` include `https://wookafr.boston` at the head of `origins`.
+- Post-projection TEMP full census still fails on the pre-existing 4KHDHub runtime behavior witness (`movie=[]`); this is unrelated to the Domain/WookaFR repair and remains unresolved Brain/provider work.
+- Core Verify exposed a separate native lifecycle split: durable Hub46 scope still listed VidEasy after lifecycle disable. `adad3b70` / `4db91579` make current `enabled=false` manifest state authoritative before durable scope evidence, so disabled providers cannot re-enter the native quality denominator.
+- On HEAD `4db91579`: Workflow Gate passed, Provider Non-Regression passed, and Core Verify Quick passed. No PR is open; all changes remain on main.
+- Canonical provider authority remains census `37124297614`: 21 FULL OK, 3 PARTIAL OK, 2 CANDIDATE OK, 10 ROUTE PROVEN, 2 CHAIN REACHED, 1 NO PROOF, 2 REGRESSION PROVIDER, 5 DISABLED. VidEasy is absent from repairQueue; dynamic completeness debt remains animevost-fr, animevostfr, Coflix, HindMoviez, Kehflix and VidLove.
+- Autopilot is re-armed in ordinary `auto` mode from census `37124297614`. Expected proof: Domain cohort empty for AnimeKai; AnimeKai appears in Brain Learning; Coflix and other current completeness debt are not preempted by transport.
