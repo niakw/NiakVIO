@@ -65,6 +65,8 @@ for required_convergence in (
     "event_driven=false",
     "trigger=workflow_dispatch",
     "gh workflow run provider-brain-autopilot.yml",
+    "dispatched=false reason=token-dispatch-denied",
+    "Autopilot dispatch is best-effort after successful census persistence",
 ):
     assert required_convergence in workflow, f"missing sharded census convergence contract: {required_convergence}"
 
