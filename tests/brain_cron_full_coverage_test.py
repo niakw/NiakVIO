@@ -87,6 +87,8 @@ def main() -> int:
     assert '--budget-minutes "${{ steps.learning-slot.outputs.budget_minutes }}"' in workflow, "Learning queue no longer consumes the bounded slot budget"
     assert 'default: "0"' in workflow and "slot_remaining_minutes:" in workflow, "normal one-hour/manual long-slot split disappeared"
     assert 'if [ "$budget" -gt 300 ]; then budget=300; fi' in workflow, "long Learning phases must stay below the GitHub-hosted 6h job cap"
+    assert 'if [ "$fast_handoff" = "true" ] && { [ -n "$target_provider" ] || [ -n "$target_providers" ]; }; then' in workflow
+    assert "budget=15" in workflow, "targeted Learning handoffs must use the bounded short slot"
     assert "continue-learning-slot:" in workflow, "persisted long Learning continuation job disappeared"
     assert "gh workflow run brain-learning-lab.yml" in workflow, "long Learning slot no longer self-dispatches its next persisted phase"
     assert "-f publish_proposal=true" in workflow, "normal long Learning phases must retain review-only proposal capability"
