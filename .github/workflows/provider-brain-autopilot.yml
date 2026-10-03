@@ -68,7 +68,7 @@ jobs:
           trigger_mode=str(trigger.get("mode") or "").strip().casefold()
           event_name=str(os.environ.get("GITHUB_EVENT_NAME") or "").strip().casefold()
           explicit_force=trigger_mode=="force" and event_name=="push"
-          bounded_force_suppressed=trigger_mode=="force" and not explicit_force
+          stale_force_ignored=trigger_mode=="force" and event_name!="push"
           force_mode=explicit_force
           def cohort(lane):
               values=[]
@@ -83,20 +83,21 @@ jobs:
           print("harness="+cohort("CORE_CLIENT_LEARNING"))
           print("blocked="+str(int(p.get("blockedExecutionCount") or 0)))
           print("force="+("true" if force_mode else "false"))
-          print("suppress="+("true" if bounded_force_suppressed else "false"))
+          print("suppress=false")
+          print("stale_force_ignored="+("true" if stale_force_ignored else "false"))
           print("trigger_mode="+trigger_mode)
           print("event_name="+event_name)
           PY
           cat "$RUNNER_TEMP/provider-execution-plan.json"
 
-      - name: Record bounded FORCE hold
-        if: ${{ steps.plan.outputs.suppress == 'true' }}
+      - name: Record stale FORCE ignored
+        if: ${{ steps.plan.outputs.stale_force_ignored == 'true' }}
         shell: bash
         run: |
-          echo "FIELD_PROVIDER_AUTOPILOT_BOUNDED_FORCE suppressed=true event=${{ steps.plan.outputs.event_name }} trigger_mode=${{ steps.plan.outputs.trigger_mode }} reason=force-requires-new-explicit-trigger"
+          echo "FIELD_PROVIDER_AUTOPILOT_STALE_FORCE ignored=true event=${{ steps.plan.outputs.event_name }} trigger_mode=${{ steps.plan.outputs.trigger_mode }} reason=force-is-explicit-event-scoped"
 
       - name: Dispatch causal owner lanes
-        if: ${{ inputs.dry_run != true && steps.plan.outputs.suppress != 'true' }}
+        if: ${{ inputs.dry_run != true }}
         shell: bash
         env:
           DOMAIN: ${{ steps.plan.outputs.domain }}

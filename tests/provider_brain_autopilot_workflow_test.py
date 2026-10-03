@@ -45,12 +45,14 @@ for forbidden_push in (
     "scripts/brain_layers/**",
 ):
     assert forbidden_push not in push_block, forbidden_push
-assert "steps.plan.outputs.suppress != 'true'" in autopilot
+assert "steps.plan.outputs.suppress != 'true'" not in autopilot
 assert 'trigger_mode=str(trigger.get("mode")' in autopilot
 assert 'explicit_force=trigger_mode=="force" and event_name=="push"' in autopilot
-assert 'bounded_force_suppressed=trigger_mode=="force" and not explicit_force' in autopilot
-assert 'print("suppress="+("true" if bounded_force_suppressed else "false"))' in autopilot
-assert "FIELD_PROVIDER_AUTOPILOT_BOUNDED_FORCE" in autopilot
+assert 'stale_force_ignored=trigger_mode=="force" and event_name!="push"' in autopilot
+assert 'print("suppress=false")' in autopilot
+assert 'print("stale_force_ignored="+("true" if stale_force_ignored else "false"))' in autopilot
+assert "FIELD_PROVIDER_AUTOPILOT_STALE_FORCE" in autopilot
+assert "force-is-explicit-event-scoped" in autopilot
 assert "contents: write" not in autopilot
 assert "git add " not in autopilot
 assert "git push origin HEAD:main" not in autopilot
@@ -105,3 +107,9 @@ print("provider Brain Autopilot cloud convergence contract passed")
 
 trigger = (ROOT / ".github/triggers/provider-brain-autopilot.json").read_text(encoding="utf-8")
 assert '"mode": "force"' in trigger
+
+# A persisted FORCE trigger is state, not an execution lease. Workflow-run
+# convergence must ignore it and continue the ordinary current-census plan.
+assert "force-requires-new-explicit-trigger" not in autopilot
+assert "bounded_force_suppressed" not in autopilot
+assert "if: ${{ inputs.dry_run != true }}" in autopilot
