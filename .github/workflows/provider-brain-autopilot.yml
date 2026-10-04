@@ -133,7 +133,7 @@ jobs:
           fi
 
           if [ -n "$FAST" ] && [ -z "$DOMAIN" ]; then
-            gh workflow run provider-fast-repair.yml               --repo "$GITHUB_REPOSITORY" --ref main               -f target_providers="$FAST"               -f waves=1 -f time_budget_seconds=600 -f max_rounds_per_batch=1 -f publish_validated=true
+            gh workflow run provider-fast-repair.yml               --repo "$GITHUB_REPOSITORY" --ref main               -f target_providers="$FAST"               -f waves=1 -f time_budget_seconds=1200 -f max_rounds_per_batch=3 -f publish_validated=true
             echo "FIELD_PROVIDER_AUTOPILOT dispatch=FAST_REPAIR providers=$FAST"
           elif [ -n "$FAST" ]; then
             echo "FIELD_PROVIDER_AUTOPILOT deferred=FAST_REPAIR providers=$FAST reason=targeted-domain-publication-in-flight"
