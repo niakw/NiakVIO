@@ -55,6 +55,19 @@ latest_copy = workflow.index("cp /tmp/provider-census-sharded.json automation/pr
 scope_guard = workflow.rfind('if [ "$CENSUS_SCOPE" = "all" ]; then', 0, latest_copy)
 assert scope_guard >= 0 and scope_guard < latest_copy
 
+for required_stale_requeue in (
+    'persist_base="$(git rev-parse HEAD)"',
+    "FIELD_SHARDED_CENSUS_PERSIST_BASE",
+    "FIELD_SHARDED_CENSUS_STALE",
+    'echo "stale=true" >> "$GITHUB_OUTPUT"',
+    "Requeue census on current main after concurrent advance",
+    "steps.persist.outputs.stale == 'true'",
+    "gh workflow run provider-census-sharded.yml",
+    "-f persist=true",
+    "FIELD_SHARDED_CENSUS_REQUEUE",
+):
+    assert required_stale_requeue in workflow, f"missing stale census requeue contract: {required_stale_requeue}"
+
 for required_convergence in (
     "persist:",
     "inputs.persist == true",
@@ -76,8 +89,11 @@ reset = workflow.index("git reset --hard origin/main", guard)
 rebuild_batch = workflow.index("--sharded-census /tmp/provider-census-sharded.json", reset)
 fallback_batch = workflow.index("--fallback-sharded-census automation/provider-census-sharded-latest.json", rebuild_batch)
 restore_authority = workflow.index("cp /tmp/provider-authority-status.json automation/provider-authority-status.json", fallback_batch)
-push = workflow.index("git push origin HEAD:main", restore_authority)
-assert copy_status < guard < reset < rebuild_batch < fallback_batch < restore_authority < push
+persist_base = workflow.index('persist_base="$(git rev-parse HEAD)"', reset)
+stale_guard = workflow.index("FIELD_SHARDED_CENSUS_STALE", persist_base)
+push = workflow.index("git push origin HEAD:main", stale_guard)
+requeue = workflow.index("Requeue census on current main after concurrent advance", push)
+assert copy_status < guard < reset < persist_base < rebuild_batch < fallback_batch < restore_authority < stale_guard < push < requeue
 assert "cp /tmp/provider-repair-batch-plan.json automation/provider-repair-batch-plan-latest.json" not in workflow
 
 merge_start = workflow.index("  merge:")
