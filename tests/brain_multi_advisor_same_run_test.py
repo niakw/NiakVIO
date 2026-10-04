@@ -81,10 +81,17 @@ with tempfile.TemporaryDirectory() as tmp:
 
 source = SCRIPT.read_text(encoding="utf-8")
 assert "FIELD_PROVIDER_BRAIN_ADVISOR_ROTATION" in source
+assert "FIELD_PROVIDER_BRAIN_ADVISOR_DYNAMIC_EXTENSION" in source
 assert "waves = max(requested_waves, advisor_hypotheses)" in source
+assert "advisor_dynamic_wave_ceiling = max(requested_waves, 3)" in source
+assert "for wave in range(1, advisor_dynamic_wave_ceiling + 1)" in source
+assert "if wave > waves or not remaining:" in source
+assert "advisor_rotation_this_wave" in source
+assert "waves += 1" in source
 assert "advisor_rotation_pending" in source
 assert "deferred.difference_update(advisor_rotation_pending)" in source
 assert 'decision = "rotate"' in source
 assert '"advisorHypothesisWaveBudget": advisor_hypotheses' in source
+assert '"advisorDynamicWaveCeiling": advisor_dynamic_wave_ceiling' in source
 
 print("Brain same-run multi-advisor rotation contract passed")
