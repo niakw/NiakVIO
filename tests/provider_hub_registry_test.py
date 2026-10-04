@@ -87,6 +87,58 @@ assert lego_options['base'] == 'https://animevostfr.example', lego_options
 assert lego_options['bases'][0]['base'] == 'https://v2.animevostfr.example', lego_options
 assert lego_options['bases'][1]['base'] == 'https://mirror.example', lego_options
 
+
+# Flat executable base pools and proof bases are safe to reconcile when an
+# explicit old->current mapping exists. Unmapped mirror hosts remain intact.
+flat_config = {
+    'provider_patches': {
+        'demo': {
+            'official_site': 'https://demo-new.example',
+            'replacements': {'demo-old.example': 'demo-new.example'},
+            'runtime_domain_replacements': {'demo-old.example': 'demo-new.example'},
+            'proof_search_bases': [
+                'https://demo-old.example/search',
+                'https://demo-new.example/search',
+                'https://mirror.example/search',
+            ],
+            'proof_detail_bases': [
+                'https://demo-old.example/detail',
+                'https://mirror.example/detail',
+            ],
+            'provider_lego_options': {
+                'scripts/provider_patches/demo.py': {
+                    'bases': ['https://demo-old.example', 'https://mirror.example'],
+                    'maxStreams': 6,
+                }
+            },
+        }
+    }
+}
+flat_hub = {
+    'hub': None,
+    'sources': [],
+    'direct_candidates': ['https://demo-new.example/', 'https://demo-old.example/'],
+    'historical_terminal_candidates': ['https://demo-old.example/'],
+    'allowed_terminal_hosts': ['demo-new.example', 'demo-old.example'],
+}
+resolver.update_provider_patch(
+    flat_config, 'demo', flat_hub, 'https://demo-new.example/', None, {}
+)
+flat = flat_config['provider_patches']['demo']
+assert flat['proof_search_bases'] == [
+    'https://demo-new.example/search',
+    'https://mirror.example/search',
+], flat
+assert flat['proof_detail_bases'] == [
+    'https://demo-new.example/detail',
+    'https://mirror.example/detail',
+], flat
+assert flat['provider_lego_options']['scripts/provider_patches/demo.py']['bases'] == [
+    'https://demo-new.example',
+    'https://mirror.example',
+], flat
+assert flat['provider_lego_options']['scripts/provider_patches/demo.py']['maxStreams'] == 6
+
 # Provider-specific endpoint bootstraps follow the same resolved domain.
 toflix_config = {
     'provider_patches': {
