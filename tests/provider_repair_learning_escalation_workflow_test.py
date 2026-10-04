@@ -97,6 +97,24 @@ assert "FIELD_REPAIR_CONCURRENT_PROVIDER_DRIFT" in persist_block
 assert "FIELD_REPAIR_CANONICAL_LEDGER_REBASED_NEUTRAL" in persist_block
 assert "FIELD_REPAIR_FRESH_CENSUS_DISPATCH" in persist_block
 
+# Canonical guidance is always scoped to the requested Repair cohort before
+# it can claim import priority. Unrelated external guidance must fall through to
+# persistent Learning guidance instead of shadowing the target provider.
+guidance_import = workflow[
+    workflow.index("- name: Import sanitized Brain Learning priors for canonical Repair"):
+    workflow.index("- name: Promote persisted local FORCE candidates for current-byte revalidation")
+]
+for required_scope in (
+    "FIELD_CANONICAL_REPAIR_GUIDANCE_POLICY",
+    "scripts/scope_brain_guidance_to_repair_cohort.py",
+    '--providers "$canonical_guidance_targets"',
+    "targetProviders",
+    "FIELD_CANONICAL_REPAIR_EXTERNAL_LLM_GUIDANCE imported=false reason=empty-after-negative-memory-filter",
+    "FIELD_CANONICAL_REPAIR_LLM_GUIDANCE imported=true source=niakvio-learning",
+):
+    assert required_scope in guidance_import, required_scope
+assert guidance_import.count("scripts/scope_brain_guidance_to_repair_cohort.py") == 2, guidance_import
+
 # External guidance is pinned/sanitized before Force can use it.
 for required in (
     "niakvio-guidance-state.json",
