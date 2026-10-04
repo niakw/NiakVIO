@@ -127,6 +127,84 @@ assert "provider_lego_options" in lego_fields, lego_fields
 assert lego_patch["provider_lego_options"]["scripts/provider_patches/animevostfr_runtime_v1.py"]["base"] == "https://animevostfr.example/catalog?q=1", lego_patch
 assert lego_patch["provider_lego_options"]["scripts/provider_patches/animevostfr_runtime_v1.py"]["maxStreams"] == 6, lego_patch
 
+
+# A prior partial transaction can leave executable URL collections stale even
+# when official_site is already current. Explicit old->current substitution
+# memory authorizes a bounded cleanup of those derivatives only.
+stale_patch = {
+    "official_site": "https://demo-new.example",
+    "domain_substitutions": {"demo-old.example": "demo-new.example"},
+    "runtime_domain_replacements": {"demo-old.example": "demo-new.example"},
+    "proof_search_bases": [
+        "https://demo-old.example/search",
+        "https://demo-new.example/search",
+        "https://mirror.example/search",
+    ],
+    "proof_detail_bases": [
+        "https://demo-old.example/detail",
+        "https://mirror.example/detail",
+    ],
+    "provider_lego_options": {
+        "scripts/provider_patches/demo_runtime.py": {
+            "bases": [
+                "https://demo-old.example",
+                "https://mirror.example",
+            ],
+            "maxStreams": 6,
+        }
+    },
+}
+stale_before_patch = copy.deepcopy(stale_patch)
+stale_fields = module.sync_patch_domain_authority(
+    stale_patch,
+    {"hub": "https://hub.example/"},
+    "https://demo-new.example",
+)
+assert "official_site" not in stale_fields, stale_fields
+assert "proof_search_bases" in stale_fields, stale_fields
+assert "proof_detail_bases" in stale_fields, stale_fields
+assert "provider_lego_options" in stale_fields, stale_fields
+assert stale_patch["proof_search_bases"] == [
+    "https://demo-new.example/search",
+    "https://mirror.example/search",
+], stale_patch
+assert stale_patch["proof_detail_bases"] == [
+    "https://demo-new.example/detail",
+    "https://mirror.example/detail",
+], stale_patch
+assert stale_patch["provider_lego_options"]["scripts/provider_patches/demo_runtime.py"]["bases"] == [
+    "https://demo-new.example",
+    "https://mirror.example",
+], stale_patch
+assert stale_patch["provider_lego_options"]["scripts/provider_patches/demo_runtime.py"]["maxStreams"] == 6
+
+stale_before_doc = {"provider_patches": {"demo": stale_before_patch}}
+stale_after_doc = {"provider_patches": {"demo": copy.deepcopy(stale_patch)}}
+stale_report = {
+    "providers": {
+        "demo": {
+            "status": "site_authoritative",
+            "official_site": "https://demo-new.example",
+            "selected_source_type": "hub",
+            "site_candidates": [{
+                "url": "https://demo-new.example",
+                "label": "Demo homepage",
+                "source_type": "hub",
+            }],
+        }
+    }
+}
+stale_result = validate(
+    stale_before_doc,
+    stale_after_doc,
+    before_hubs,
+    copy.deepcopy(before_hubs),
+    before_history,
+    stale_report,
+    {"changed": ["demo"], "registry_changed": []},
+)
+assert stale_result["changed"] == ["demo"], stale_result
+
 lego_before = {
     "provider_patches": {
         "demo": {
@@ -513,5 +591,24 @@ noop_fields = module.sync_patch_domain_authority(
 assert noop_fields == [], noop_fields
 assert json.dumps(noop_patch, sort_keys=True) == noop_before, noop_patch
 assert "runtime_domain_replacements" not in noop_patch
+
+# Published CONFIG may contain both old and current origins. Rewriting the old
+# host can create a duplicate current origin; Domain projection must deduplicate
+# that exact mapped duplicate and converge to structured current DATA.
+published_cfg = {
+    "origins": ["https://demo-old.example", "https://demo-new.example", "https://cdn.example"],
+}
+expected_cfg = {
+    "origins": ["https://demo-new.example", "https://cdn.example"],
+}
+projected_cfg = module.project_domain_owned_config_runtime_urls(
+    published_cfg,
+    expected_cfg,
+    {
+        "official_site": "https://demo-new.example",
+        "runtime_domain_replacements": {"demo-old.example": "demo-new.example"},
+    },
+)
+assert projected_cfg["origins"] == expected_cfg["origins"], projected_cfg
 
 print("domain refresh transaction guard tests passed")
