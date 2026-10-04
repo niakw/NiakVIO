@@ -388,6 +388,7 @@ jobs:
           python tests/brain_llm_guidance_contract_test.py
           python tests/brain_learning_guidance_merge_test.py
           python tests/brain_learning_guidance_negative_filter_test.py
+          python tests/brain_learning_guidance_gap_fill_test.py
           python tests/brain_local_force_learning_prior_test.py
           python tests/brain_llm_advisor_execution_test.py
           python tests/brain_llm_experiment_runtime_test.py
@@ -427,6 +428,7 @@ jobs:
             scripts/brain_llm_experiment.py \
             scripts/brain_llm_guidance.py \
             scripts/filter_brain_learning_guidance.py \
+            scripts/fill_brain_learning_guidance_gaps.py \
             scripts/adaptive_runtime/runtime_repair.py \
             scripts/build_brain_repair_proposal.py \
             scripts/materialize_clean_provider_reconstruction.py \
@@ -993,6 +995,20 @@ jobs:
             --output "$final" \
             --negative-memory brain-learning-input/previous.json \
             --negative-memory automation/brain-repair-memory.json
+          if [ -n "${PROVIDER_FILTER:-}" ]; then
+            python scripts/fill_brain_learning_guidance_gaps.py \
+              --input "$final" \
+              --output "$final" \
+              --providers "$PROVIDER_FILTER" \
+              --current-sha "$GITHUB_SHA" \
+              --census automation/provider-census-status.json \
+              --memory automation/brain-repair-memory.json
+            python scripts/filter_brain_learning_guidance.py \
+              --input "$final" \
+              --output "$final" \
+              --negative-memory brain-learning-input/previous.json \
+              --negative-memory automation/brain-repair-memory.json
+          fi
           providers="$(python -c 'import json; d=json.load(open("brain-sandbox/brain-llm/guidance.json")); print(int(d.get("providerCount") or 0))')"
           echo "FIELD_BRAIN_LLM_GUIDANCE_FINAL providers=$providers fast_handoff=${FAST_HANDOFF:-false} local_qwen=${LLM_AVAILABLE:-false} missing=${FAST_MISSING_PROVIDERS:-none}"
           echo "NIAKVIO_BRAIN_LLM_GUIDANCE=$GITHUB_WORKSPACE/$final" >> "$GITHUB_ENV"
