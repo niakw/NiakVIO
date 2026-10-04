@@ -1020,7 +1020,12 @@ function buildPlan(item) {
     experimentVariant,
     experimentGeneration,
     baseExperimentExhausted: experimentExhausted,
-    experimentExhausted: experimentExhausted && !strategyEscalated && !llmAdvisorProductionRescue,
+    experimentExhausted: (
+      experimentExhausted
+      && !strategyEscalated
+      && !llmAdvisorProductionRescue
+      && !llmAdvisorExplorationRescue
+    ),
     strategyEscalated,
     metaGapEscalated,
     architectureGapEscalation,
