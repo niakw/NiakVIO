@@ -122,6 +122,69 @@ with tempfile.TemporaryDirectory() as tmp:
     finally:
         mod.REPAIR_MEMORY=original_memory
 
+# Scheduler must count the exact meta-gap fingerprints the Node planner will
+# execute, not the persisted source fingerprint. This locks the Moviebox case
+# that previously produced six empty waves: raw bfe304... remained "untried"
+# after all three transport-bound derived experiments had already failed.
+with tempfile.TemporaryDirectory() as tmp:
+    tmp=Path(tmp)
+    guidance=tmp/"meta-guidance.json"
+    memory=tmp/"meta-memory.json"
+    source_fp="bfe304a6bd72e51555e6f5a67619c4ddd20e857ae745edd6e294a6b46b9d2d76"
+    experiment={
+        "aliasSearch":True,
+        "documentRequestMining":True,
+        "maxDepth":5,
+        "maxEmbeds":24,
+        "maxPages":30,
+        "maxRecipePasses":5,
+        "recipePolicy":"current_only",
+        "responseSalvage":True,
+        "roleOrder":["search","detail","api","episode","player","source","other"],
+        "routePolicy":"owned_plus_peer",
+        "sessionBootstrap":False,
+        "terminalOnly":False,
+    }
+    guidance.write_text(json.dumps({"rows":[{
+        "providerId":"moviebox",
+        "failureClass":"route_proven_gap",
+        "targetLayer":"provider",
+        "strategy":"meta_gap_search_contract_fallback",
+        "profile":"search_contract_inference_v1",
+        "confidence":0.86,
+        "priorOnly":True,
+        "experiment":experiment,
+        "experimentFingerprint":source_fp,
+        "guidanceKind":"meta-gap-synthesis",
+    }]}),encoding="utf-8")
+    original_memory=mod.REPAIR_MEMORY
+    mod.REPAIR_MEMORY=memory
+    try:
+        memory.write_text(json.dumps({"entries":[]}),encoding="utf-8")
+        executable=mod.untried_advisor_fingerprints(
+            ["moviebox"],guidance,{"moviebox":"transport_blocked"}
+        )
+        expected={
+            ("search_contract_inference_v1","8b609f0c3db58ed1ede14fd6786f5e5e320211270c303c9220f924be6ff826ae"),
+            ("search_contract_inference_v1","322d30d3b0b57e86a239e40f1642319033c2a5efd728fd0ae0a3a60a83ba8f39"),
+            ("search_contract_inference_v1","1b2df01e169620770748a39980923cde2cca1eaff6b0e6ac0238cea627560cae"),
+        }
+        assert executable["moviebox"]==expected,executable
+        assert all(fp!=source_fp for _profile,fp in executable["moviebox"]),executable
+
+        memory.write_text(json.dumps({"entries":[{
+            "providerId":"moviebox",
+            "profile":"search_contract_inference_v1",
+            "llmAdvisorExperimentFingerprint":fp,
+            "consecutiveFailures":1,
+            "executionObserved":True,
+        } for _profile,fp in sorted(expected)]}),encoding="utf-8")
+        assert mod.untried_advisor_fingerprints(
+            ["moviebox"],guidance,{"moviebox":"transport_blocked"}
+        )=={}
+    finally:
+        mod.REPAIR_MEMORY=original_memory
+
 source = SCRIPT.read_text(encoding="utf-8")
 assert "FIELD_PROVIDER_BRAIN_ADVISOR_ROTATION" in source
 assert "FIELD_PROVIDER_BRAIN_ADVISOR_DYNAMIC_EXTENSION" in source
@@ -133,6 +196,8 @@ assert "advisor_rotation_this_wave" in source
 assert "waves += 1" in source
 assert "no_new_repair_experiment" in source
 assert "advisor_rotation_pending" in source
+assert "_meta_gap_scheduler_fingerprints" in source
+assert "advisor_failure_classes" in source
 assert "executed_advisor_rotation_pending" in source
 assert "dynamic_advisor_rotation" in source
 assert "or provider in dynamic_advisor_rotation" in source
