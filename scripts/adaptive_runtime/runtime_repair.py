@@ -1674,14 +1674,22 @@ def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any])
         )
         second_order_role_preferences = ["detail", "search", "api", "player", "source", "episode", "other"]
 
+    # A planner-selected post-exhaustion strategy is a distinct causal
+    # program, not a relabelled advisor experiment. Keep advisor metadata on
+    # the plan for provenance, but do not let its route/recipe knobs overwrite
+    # the evolved strategy's own bounded program.
+    post_exhaustion_owns_program = bool(post_exhaustion_strategy_profile)
     llm_experiment = (
         brain_plan.get("llmAdvisorExperiment")
-        if isinstance(brain_plan.get("llmAdvisorExperiment"), dict)
+        if not post_exhaustion_owns_program
+        and isinstance(brain_plan.get("llmAdvisorExperiment"), dict)
         else {}
     )
-    llm_experiment_fingerprint = str(
-        brain_plan.get("llmAdvisorExperimentFingerprint") or ""
-    ).strip().casefold()
+    llm_experiment_fingerprint = (
+        str(brain_plan.get("llmAdvisorExperimentFingerprint") or "").strip().casefold()
+        if not post_exhaustion_owns_program
+        else ""
+    )
     llm_roles: list[str] | None = None
     if llm_experiment and llm_experiment_fingerprint:
         route_policy = str(llm_experiment.get("routePolicy") or "owned_only")
