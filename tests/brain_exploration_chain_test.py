@@ -161,7 +161,7 @@ category_progress = {
             "streams_returned": 0,
             "streams_playable": 0,
             "network_observations": [
-                {"status": 200, "ok": True, "infrastructure": False, "stage": "media"}
+                {"status": 200, "ok": True, "infrastructure": False, "stage": "search"}
             ],
         },
         {
