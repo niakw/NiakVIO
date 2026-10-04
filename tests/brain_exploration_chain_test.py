@@ -71,9 +71,10 @@ assert not ok and "malformed" in reason,(ok,reason)
 captured={}
 original=brain._execute_planner
 try:
-    def fake(items,mode):
+    def fake(items,mode,transient_negative_memory=None):
         captured["items"]=items
         captured["mode"]=mode
+        captured["transient_negative_memory"]=transient_negative_memory or []
         brain.PLANS["aio:demo"]={"action":"probe-targeted-repair","failureClass":"route_proven_gap"}
         return brain.PLANS
     brain._execute_planner=fake
@@ -86,6 +87,48 @@ try:
     assert plan["action"]=="probe-targeted-repair",plan
     assert captured["mode"]=="deep",captured
     assert captured["items"][0]["key"]=="aio:demo",captured
+finally:
+    brain._execute_planner=original
+    brain.PLANS.clear()
+
+# A rejected child of a proven exploration parent is in-run negative memory,
+# not a reason to discard the good parent. The next bounded replan must see the
+# exact executed profile as failed so it can rotate strategy without waiting for
+# a later workflow to persist global memory.
+transient_candidate={
+    "key":"aio:demo",
+    "canonical_id":"demo",
+    "metadata":{"supportedTypes":["movie","tv"]},
+    "brain_exploration_parent":{"round":1,"productionAccepted":False},
+    "brain_exploration_rejections":[{
+        "providerId":"demo",
+        "failureClass":"search_gap",
+        "signature":"sig-demo",
+        "profile":"provider_session_bootstrap_replay_v1",
+        "experimentVariant":4,
+        "experimentGeneration":2,
+        "failures":1,
+        "consecutiveFailures":1,
+        "successes":0,
+        "executionObserved":True,
+    }],
+}
+transient_rows=brain.planner_transient_negative_memory(transient_candidate)
+assert len(transient_rows)==1,transient_rows
+assert transient_rows[0]["profile"]=="provider_session_bootstrap_replay_v1",transient_rows
+assert transient_rows[0]["executionObserved"] is True,transient_rows
+
+captured={}
+original=brain._execute_planner
+try:
+    def fake_transient(items,mode,transient_negative_memory=None):
+        captured["transient"]=transient_negative_memory or []
+        brain.PLANS["aio:demo"]={"action":"probe-targeted-repair","failureClass":"search_gap"}
+        return brain.PLANS
+    brain._execute_planner=fake_transient
+    brain.replan_observation(transient_candidate,progress,plan_key="aio:demo",mode="deep")
+    assert captured["transient"],captured
+    assert captured["transient"][0]["profile"]=="provider_session_bootstrap_replay_v1",captured
 finally:
     brain._execute_planner=original
     brain.PLANS.clear()
@@ -188,6 +231,9 @@ assert '"exploration_progress": []' in deep
 assert '"explorationOnly": True' in deep
 assert 'exploration_is_non_publishable' in deep
 assert 'brain.replan_observation(candidate, result' in adaptive
+assert 'candidate.pop("brain_exploration_parent", None)' not in adaptive
+assert 'retryable_exploration_rejections' in deep
+assert 'brain_exploration_rejections' in deep
 assert 'bounded_rounds = "3" if exploration_chain else "1"' in adaptive
 assert 'if "--max-rounds" not in sys.argv:' in adaptive
 assert 'sys.argv[index + 1] = bounded_rounds' not in adaptive
