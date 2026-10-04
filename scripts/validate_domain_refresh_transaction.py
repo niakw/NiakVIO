@@ -111,11 +111,18 @@ def validate_manifest_domain_overrides(
     return bool(changed)
 
 
-def _authorized_domain_rewrites(after_patch: dict[str, Any], after_site: str) -> dict[str, str]:
+def _authorized_domain_rewrites(
+    after_patch: dict[str, Any],
+    after_site: str,
+    before_site: str = "",
+) -> dict[str, str]:
     after_host = (urlparse(after_site).hostname or "").casefold() if concrete_http(after_site) else ""
     if not after_host:
         return {}
     rewrites: dict[str, str] = {}
+    before_host = (urlparse(before_site).hostname or "").casefold() if concrete_http(before_site) else ""
+    if before_host and before_host != after_host:
+        rewrites[before_host] = after_host
     for name in ("runtime_domain_replacements", "domain_substitutions"):
         mapping = after_patch.get(name)
         if not isinstance(mapping, dict):
@@ -163,9 +170,10 @@ def validate_domain_execution_url_lists(
     provider_id: str,
     before_patch: dict[str, Any],
     after_patch: dict[str, Any],
+    before_site: str,
     after_site: str,
 ) -> set[str]:
-    rewrites = _authorized_domain_rewrites(after_patch, after_site)
+    rewrites = _authorized_domain_rewrites(after_patch, after_site, before_site)
     changed: set[str] = set()
     for field in DOMAIN_EXECUTION_URL_LIST_FIELDS:
         before = before_patch.get(field)
@@ -200,7 +208,7 @@ def validate_provider_lego_domain_options(
     if set(before) != set(after):
         raise AssertionError(f"{provider_id}: provider_lego_options script set changed during domain refresh")
 
-    rewrites = _authorized_domain_rewrites(after_patch, after_site)
+    rewrites = _authorized_domain_rewrites(after_patch, after_site, before_site)
     if not rewrites:
         raise AssertionError(
             f"{provider_id}: provider Lego domain rotation has no explicit old->current authority"
@@ -418,6 +426,7 @@ def validate(
             provider_id,
             before_patch,
             after_patch,
+            before_site,
             after_site_for_manifest,
         ) if execution_url_fields else set()
         domain_fields = (changed_fields & DOMAIN_PATCH_FIELDS) - DOMAIN_EXECUTION_URL_LIST_FIELDS
