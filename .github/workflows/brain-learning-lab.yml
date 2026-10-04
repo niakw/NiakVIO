@@ -425,6 +425,7 @@ jobs:
             scripts/brain_repair_runtime.py \
             scripts/brain_llm_experiment.py \
             scripts/brain_llm_guidance.py \
+            scripts/filter_brain_learning_guidance.py \
             scripts/adaptive_runtime/runtime_repair.py \
             scripts/build_brain_repair_proposal.py \
             scripts/materialize_clean_provider_reconstruction.py \
@@ -954,6 +955,11 @@ jobs:
             --output "$generated" \
             --source-sha "$GITHUB_SHA" \
             --brain-llm-sha "${{ steps.brain_llm_pin.outputs.sha }}"
+          python scripts/filter_brain_learning_guidance.py \
+            --input "$generated" \
+            --output "$generated" \
+            --negative-memory brain-learning-input/previous.json \
+            --negative-memory automation/brain-repair-memory.json
 
           if [ "${FAST_HANDOFF:-false}" = "true" ] && [ -s "$cached" ]; then
             python - "$cached" "$generated" "$final" <<'PY'
@@ -981,6 +987,11 @@ jobs:
           else
             cp "$generated" "$final"
           fi
+          python scripts/filter_brain_learning_guidance.py \
+            --input "$final" \
+            --output "$final" \
+            --negative-memory brain-learning-input/previous.json \
+            --negative-memory automation/brain-repair-memory.json
           providers="$(python -c 'import json; d=json.load(open("brain-sandbox/brain-llm/guidance.json")); print(int(d.get("providerCount") or 0))')"
           echo "FIELD_BRAIN_LLM_GUIDANCE_FINAL providers=$providers fast_handoff=${FAST_HANDOFF:-false} local_qwen=${LLM_AVAILABLE:-false} missing=${FAST_MISSING_PROVIDERS:-none}"
           echo "NIAKVIO_BRAIN_LLM_GUIDANCE=$GITHUB_WORKSPACE/$final" >> "$GITHUB_ENV"
@@ -1283,6 +1294,13 @@ jobs:
               --output brain-sandbox/brain-llm/guidance.json \
               --repo-root "$GITHUB_WORKSPACE"
           fi
+          # The persistent ref is memory, not authority. A prior row that has
+          # since failed in canonical Repair must never be resurrected by the
+          # cross-run merge.
+          python scripts/filter_brain_learning_guidance.py \
+            --input brain-sandbox/brain-llm/guidance.json \
+            --output brain-sandbox/brain-llm/guidance.json \
+            --negative-memory automation/brain-repair-memory.json
 
           # Always publish from a fresh orphan tree. The previous ref is
           # consulted only for stale-write comparison and lease protection;
