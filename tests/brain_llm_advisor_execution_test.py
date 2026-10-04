@@ -394,8 +394,9 @@ assert meta_final["learningDisposition"]=="execute_meta_gap_synthesized_strategy
 assert meta_final["action"]=="probe-targeted-repair",meta_final
 assert meta_final["llmAdvisorApplied"] is True,meta_final
 assert meta_final["llmAdvisorGuidanceKind"]=="meta-gap-synthesis",meta_final
-assert meta_final["allowedProfiles"][0]=="adaptive_runtime_recovery",meta_final
-assert meta_final["llmAdvisorFailureCompatibility"]=="exact-rebound",meta_final
+assert meta_final["allowedProfiles"][0]=="search_contract_inference_v1",meta_final
+assert meta_final["llmAdvisorProfile"]=="search_contract_inference_v1",meta_final
+assert meta_final["llmAdvisorFailureCompatibility"]=="exact",meta_final
 assert meta_final["llmAdvisorSourceFailureClass"]=="unknown_failure",meta_final
 
 
@@ -413,8 +414,9 @@ assert repair_explore["metaGapEscalated"] is True,repair_explore
 assert repair_explore["repairType"]=="synthesized_strategy",repair_explore
 assert repair_explore["action"]=="probe-targeted-repair",repair_explore
 assert repair_explore["llmAdvisorGuidanceKind"]=="meta-gap-synthesis",repair_explore
-assert repair_explore["allowedProfiles"][0]=="adaptive_runtime_recovery",repair_explore
-assert repair_explore["llmAdvisorFailureCompatibility"]=="exact-rebound",repair_explore
+assert repair_explore["allowedProfiles"][0]=="search_contract_inference_v1",repair_explore
+assert repair_explore["llmAdvisorProfile"]=="search_contract_inference_v1",repair_explore
+assert repair_explore["llmAdvisorFailureCompatibility"]=="exact",repair_explore
 
 # Meta-gap guidance is also available to Brain Repair exploration, but it must
 # never preempt ordinary variants. It becomes eligible only after exhaustion.
