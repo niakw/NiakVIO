@@ -59,11 +59,13 @@ for required in (
     "guidance.generated.json",
     "FIELD_BRAIN_LLM_GUIDANCE_FINAL",
     "scripts/merge_brain_llm_guidance_memory.py",
-    "FIELD_BRAIN_GUIDANCE_MEMORY_MERGE",
     "skipped=stale-source",
     "git merge-base --is-ancestor",
 ):
     assert required in workflow, required
+
+merge_script=(ROOT/"scripts/merge_brain_llm_guidance_memory.py").read_text(encoding="utf-8")
+assert "FIELD_BRAIN_GUIDANCE_MEMORY_MERGE" in merge_script
 
 assert "key: llama-cpp-b11140-ubuntu-x64" not in llm, "executable llama.cpp binary must not be restored from actions/cache"
 
