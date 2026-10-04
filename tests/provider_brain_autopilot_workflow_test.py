@@ -103,6 +103,10 @@ assert '-f publish_proposal="$publish_proposal"' in fast
 assert 'architecture_force=$force_mode' in fast
 assert 'default: "1200"' in fast
 assert 'DISPATCH_MAX_ROUNDS: ${{ inputs.max_rounds_per_batch || \'3\' }}' in fast
+assert 'max_rounds="${DISPATCH_MAX_ROUNDS:-3}"' in fast
+assert fast.count("d.get('maxRoundsPerBatch') or 3") == 2
+assert 'max_rounds="${vals[2]:-3}"' in fast
+assert "python tests/brain_exploration_chain_test.py" in fast
 fast_py = (ROOT / "scripts/run_provider_fast_repair.py").read_text(encoding="utf-8")
 assert 'parser.add_argument("--max-rounds-per-batch", type=int, default=3)' in fast_py
 assert '-f target_providers="$learn_handoff_csv"' in fast
