@@ -9,25 +9,19 @@
     "4khdhub",
     "allanime",
     "anime-ultime",
-    "animesalt",
     "animesultra",
-    "animevost-fr",
     "flemmix",
-    "mallumv",
-    "moviebox",
-    "moviesmod",
-    "vidfast",
-    "yflix"
+    "moviesmod"
   ],
   "effectiveWaves": 1,
-  "elapsedSeconds": 139.548,
+  "elapsedSeconds": 133.873,
   "executionModel": "family-batched-multi-wave-brain-repair",
   "experienceMemory": {
     "operationalProviderCount": 24,
     "providerCount": 46,
     "schemaVersion": 2,
-    "sourceRunId": "37189028388",
-    "sourceSha": "e73ac7ce379ab59a9bbe58a2495ef5204c7316aa",
+    "sourceRunId": "37191339710",
+    "sourceSha": "4567fc7aae8b0845698575d40c2c140af8fa0b22",
     "strategyCount": 5
   },
   "fixedInLabProviders": [],
@@ -78,7 +72,14 @@
   "providerSpecificRules": false,
   "rawLabAcceptedCount": 0,
   "rawLabAcceptedRepairs": [],
-  "remainingProviders": [],
+  "remainingProviders": [
+    "animesalt",
+    "animevost-fr",
+    "mallumv",
+    "moviebox",
+    "vidfast",
+    "yflix"
+  ],
   "requestedWaves": 1,
   "resumeRecommended": false,
   "safety": {
@@ -112,7 +113,7 @@
   "shardCount": 1,
   "shardIndex": 0,
   "skippedEnvironmentProviders": [],
-  "sourceCensusRunId": "37189028388",
+  "sourceCensusRunId": "37191339710",
   "timeBudgetExhausted": false,
   "timeBudgetSeconds": 1200,
   "unvisitedProviders": [],
@@ -121,13 +122,34 @@
       "acceptedCount": 0,
       "acceptedProgramCompileFailures": {},
       "acceptedProgramCompiledProviders": [],
-      "advisorRotationPending": [],
+      "advisorRotationPending": [
+        "animesalt",
+        "animevost-fr",
+        "mallumv",
+        "moviebox",
+        "vidfast",
+        "yflix"
+      ],
       "batches": [
         {
           "accepted": [],
           "acceptedCount": 0,
-          "advisorRemainingFingerprintCounts": {},
-          "advisorRotationPending": [],
+          "advisorRemainingFingerprintCounts": {
+            "animesalt": 1,
+            "animevost-fr": 1,
+            "mallumv": 1,
+            "moviebox": 1,
+            "vidfast": 1,
+            "yflix": 1
+          },
+          "advisorRotationPending": [
+            "animesalt",
+            "animevost-fr",
+            "mallumv",
+            "moviebox",
+            "vidfast",
+            "yflix"
+          ],
           "batch": 1,
           "brain": {
             "harnessDifferentialProviders": [],
@@ -591,15 +613,9 @@
             "4khdhub",
             "allanime",
             "anime-ultime",
-            "animesalt",
             "animesultra",
-            "animevost-fr",
             "flemmix",
-            "mallumv",
-            "moviebox",
-            "moviesmod",
-            "vidfast",
-            "yflix"
+            "moviesmod"
           ],
           "familyGroups": [
             {
@@ -610,14 +626,6 @@
                 "yflix",
                 "anime-ultime",
                 "animesultra"
-              ],
-              "repairScope": "route-to-terminal"
-            },
-            {
-              "capabilityStrategy": "api_stream_resolver",
-              "groupId": "route-to-terminal|api_stream_resolver",
-              "providers": [
-                "animevost-fr"
               ],
               "repairScope": "route-to-terminal"
             },
@@ -639,6 +647,14 @@
                 "allanime"
               ],
               "repairScope": "terminal-extraction"
+            },
+            {
+              "capabilityStrategy": "api_stream_resolver",
+              "groupId": "route-to-terminal|api_stream_resolver",
+              "providers": [
+                "animevost-fr"
+              ],
+              "repairScope": "route-to-terminal"
             },
             {
               "capabilityStrategy": "iframe_player",
@@ -668,12 +684,12 @@
             "yflix",
             "anime-ultime",
             "animesultra",
-            "animevost-fr",
             "animesalt",
             "moviesmod",
             "moviebox",
             "4khdhub",
             "allanime",
+            "animevost-fr",
             "vidfast",
             "mallumv"
           ],
@@ -686,17 +702,11 @@
         "4khdhub",
         "allanime",
         "anime-ultime",
-        "animesalt",
         "animesultra",
-        "animevost-fr",
         "flemmix",
-        "mallumv",
-        "moviebox",
-        "moviesmod",
-        "vidfast",
-        "yflix"
+        "moviesmod"
       ],
-      "deferredToLearningCount": 12,
+      "deferredToLearningCount": 6,
       "durableMaterializeTargets": [],
       "experimentMemoryAdvanced": true,
       "fixedInLab": [],
@@ -704,7 +714,7 @@
       "inputProviderCount": 12,
       "rawFixedInLab": [],
       "rawLabAcceptedCount": 0,
-      "remainingProviderCount": 0,
+      "remainingProviderCount": 6,
       "timeBudgetExhausted": false,
       "wave": 1
     }
