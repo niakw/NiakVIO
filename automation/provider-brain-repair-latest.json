@@ -6,16 +6,18 @@
   "advisorDynamicWaveCeiling": 6,
   "advisorHypothesisWaveBudget": 1,
   "batchSize": 48,
-  "deferredLearningProviders": [],
+  "deferredLearningProviders": [
+    "moviebox"
+  ],
   "effectiveWaves": 6,
-  "elapsedSeconds": 137.559,
+  "elapsedSeconds": 551.643,
   "executionModel": "family-batched-multi-wave-brain-repair",
   "experienceMemory": {
     "operationalProviderCount": 24,
     "providerCount": 46,
     "schemaVersion": 2,
-    "sourceRunId": "37221615550",
-    "sourceSha": "52f3a49f74c0daf9e8413bb4cd338ad249f7a216",
+    "sourceRunId": "37223854365",
+    "sourceSha": "72a8e5be6b3155abec15032f7a4e03c0e29d0124",
     "strategyCount": 5
   },
   "fixedInLabProviders": [],
@@ -28,7 +30,7 @@
   },
   "maxRoundsPerBatch": 3,
   "maxWaves": 6,
-  "noProgressReason": "no_new_repair_experiment",
+  "noProgressReason": "experiment_variants_exhausted",
   "positiveProgramRecovery": {
     "durableProviders": [
       "mallumv"
@@ -44,9 +46,7 @@
   "providerSpecificRules": false,
   "rawLabAcceptedCount": 0,
   "rawLabAcceptedRepairs": [],
-  "remainingProviders": [
-    "moviebox"
-  ],
+  "remainingProviders": [],
   "requestedWaves": 6,
   "resumeRecommended": false,
   "safety": {
@@ -70,7 +70,7 @@
   "shardCount": 1,
   "shardIndex": 0,
   "skippedEnvironmentProviders": [],
-  "sourceCensusRunId": "37221615550",
+  "sourceCensusRunId": "37223854365",
   "timeBudgetExhausted": false,
   "timeBudgetSeconds": 1200,
   "unvisitedProviders": [],
@@ -79,45 +79,81 @@
       "acceptedCount": 0,
       "acceptedProgramCompileFailures": {},
       "acceptedProgramCompiledProviders": [],
-      "advisorRotationPending": [
-        "moviebox"
-      ],
+      "advisorRotationPending": [],
       "batches": [
         {
           "accepted": [],
           "acceptedCount": 0,
-          "advisorRemainingFingerprintCounts": {
-            "moviebox": 1
-          },
-          "advisorRotationPending": [
-            "moviebox"
-          ],
+          "advisorRemainingFingerprintCounts": {},
+          "advisorRotationPending": [],
           "batch": 1,
           "brain": {
             "harnessDifferentialProviders": [],
             "learnedEvents": 0,
             "plans": {
               "published:moviebox": {
-                "action": "deferred_retry",
-                "allowedProfiles": [],
-                "exitReason": "experiment_variants_exhausted",
-                "experimentExhausted": true,
+                "action": "probe-targeted-repair",
+                "allowedProfiles": [
+                  "proven_route_terminal_traversal_v1"
+                ],
+                "baseExperimentExhausted": false,
+                "exitReason": null,
+                "experimentExhausted": false,
                 "experimentGeneration": 2,
                 "experimentVariant": 4,
                 "experimentVariantCount": 5,
                 "failureClass": "transport_blocked",
-                "hypotheses": [],
-                "learningDisposition": "queue_new_strategy_after_variant_exhaustion",
-                "llmAdvisorApplied": false,
-                "llmAdvisorConfidence": 0,
-                "llmAdvisorExperiment": {},
-                "llmAdvisorExperimentFingerprint": "",
-                "llmAdvisorFailureCompatibility": "",
-                "llmAdvisorGuidanceKind": "",
-                "llmAdvisorProfile": "",
-                "llmAdvisorRescue": false,
-                "llmAdvisorSourceFailureClass": "",
-                "llmAdvisorStrategy": "",
+                "hypotheses": [
+                  {
+                    "confidence": 0,
+                    "id": "bootstrap-session",
+                    "learned": false,
+                    "maturity": null,
+                    "profile": null,
+                    "transferScore": 0
+                  },
+                  {
+                    "confidence": 0,
+                    "id": "alternate-official-route",
+                    "learned": false,
+                    "maturity": null,
+                    "profile": null,
+                    "transferScore": 0
+                  }
+                ],
+                "learningDisposition": "core_repair_only",
+                "llmAdvisorApplied": true,
+                "llmAdvisorConfidence": 0.96,
+                "llmAdvisorExperiment": {
+                  "aliasSearch": false,
+                  "documentRequestMining": false,
+                  "maxDepth": 5,
+                  "maxEmbeds": 24,
+                  "maxPages": 24,
+                  "maxRecipePasses": 4,
+                  "recipePolicy": "current_plus_provider_peer",
+                  "responseSalvage": false,
+                  "roleOrder": [
+                    "search",
+                    "detail",
+                    "episode",
+                    "player",
+                    "source",
+                    "api",
+                    "other"
+                  ],
+                  "routePolicy": "owned_plus_peer",
+                  "sessionBootstrap": false,
+                  "terminalOnly": false
+                },
+                "llmAdvisorExperimentFingerprint": "16ad894fc3c03be89539c14fb749def9501831b455f58f6f6f475b20acd36ad6",
+                "llmAdvisorExplorationRescue": false,
+                "llmAdvisorFailureCompatibility": "family",
+                "llmAdvisorGuidanceKind": "persistent-learning",
+                "llmAdvisorProfile": "proven_route_terminal_traversal_v1",
+                "llmAdvisorRescue": true,
+                "llmAdvisorSourceFailureClass": "route_proven_gap",
+                "llmAdvisorStrategy": "search_detail_player_terminal_traversal",
                 "metaGapEscalated": false,
                 "negativeMemoryMatches": 69,
                 "positiveProgramFingerprint": "",
@@ -126,20 +162,21 @@
                 "providerId": "moviebox",
                 "providerPositiveProgramProductionRescue": false,
                 "providerPositiveProgramReplay": false,
-                "repairScope": "deferred",
-                "repairType": "experiment_strategy_exhausted",
-                "signature": "9408dea970ee2148302affa4"
+                "repairScope": "capability",
+                "repairType": "session_transport",
+                "signature": "9408dea970ee2148302affa4",
+                "targetCategories": []
               }
             },
-            "queuedForLearning": [
-              "moviebox"
-            ],
+            "queuedForLearning": [],
             "validatedRepairLearningExecuted": true
           },
           "capabilityStrategy": "html_scraper",
           "crossWaveExplorationCarryoverApplied": [],
           "crossWaveExplorationCarryoverCaptured": [],
-          "deferredToLearning": [],
+          "deferredToLearning": [
+            "moviebox"
+          ],
           "familyGroups": [
             {
               "capabilityStrategy": "html_scraper",
@@ -164,528 +201,20 @@
         }
       ],
       "compileRejectedToLearning": [],
-      "deferredToLearning": [],
-      "deferredToLearningCount": 0,
+      "deferredToLearning": [
+        "moviebox"
+      ],
+      "deferredToLearningCount": 1,
       "durableMaterializeTargets": [],
-      "experimentMemoryAdvanced": false,
+      "experimentMemoryAdvanced": true,
       "fixedInLab": [],
       "fixedInLabCount": 0,
       "inputProviderCount": 1,
       "rawFixedInLab": [],
       "rawLabAcceptedCount": 0,
-      "remainingProviderCount": 1,
+      "remainingProviderCount": 0,
       "timeBudgetExhausted": false,
       "wave": 1
-    },
-    {
-      "acceptedCount": 0,
-      "acceptedProgramCompileFailures": {},
-      "acceptedProgramCompiledProviders": [],
-      "advisorRotationPending": [
-        "moviebox"
-      ],
-      "batches": [
-        {
-          "accepted": [],
-          "acceptedCount": 0,
-          "advisorRemainingFingerprintCounts": {
-            "moviebox": 1
-          },
-          "advisorRotationPending": [
-            "moviebox"
-          ],
-          "batch": 1,
-          "brain": {
-            "harnessDifferentialProviders": [],
-            "learnedEvents": 0,
-            "plans": {
-              "published:moviebox": {
-                "action": "deferred_retry",
-                "allowedProfiles": [],
-                "exitReason": "experiment_variants_exhausted",
-                "experimentExhausted": true,
-                "experimentGeneration": 2,
-                "experimentVariant": 4,
-                "experimentVariantCount": 5,
-                "failureClass": "transport_blocked",
-                "hypotheses": [],
-                "learningDisposition": "queue_new_strategy_after_variant_exhaustion",
-                "llmAdvisorApplied": false,
-                "llmAdvisorConfidence": 0,
-                "llmAdvisorExperiment": {},
-                "llmAdvisorExperimentFingerprint": "",
-                "llmAdvisorFailureCompatibility": "",
-                "llmAdvisorGuidanceKind": "",
-                "llmAdvisorProfile": "",
-                "llmAdvisorRescue": false,
-                "llmAdvisorSourceFailureClass": "",
-                "llmAdvisorStrategy": "",
-                "metaGapEscalated": false,
-                "negativeMemoryMatches": 69,
-                "positiveProgramFingerprint": "",
-                "postExhaustionStrategyMethod": "",
-                "postExhaustionStrategyProfile": "",
-                "providerId": "moviebox",
-                "providerPositiveProgramProductionRescue": false,
-                "providerPositiveProgramReplay": false,
-                "repairScope": "deferred",
-                "repairType": "experiment_strategy_exhausted",
-                "signature": "9408dea970ee2148302affa4"
-              }
-            },
-            "queuedForLearning": [
-              "moviebox"
-            ],
-            "validatedRepairLearningExecuted": true
-          },
-          "capabilityStrategy": "html_scraper",
-          "crossWaveExplorationCarryoverApplied": [],
-          "crossWaveExplorationCarryoverCaptured": [],
-          "deferredToLearning": [],
-          "familyGroups": [
-            {
-              "capabilityStrategy": "html_scraper",
-              "groupId": "route-to-terminal|html_scraper",
-              "providers": [
-                "moviebox"
-              ],
-              "repairScope": "route-to-terminal"
-            }
-          ],
-          "fixedInLab": [],
-          "genericLearningHandoff": [],
-          "groupId": "route-to-terminal|html_scraper",
-          "harnessDifferentialProviders": [],
-          "healthConcurrency": 1,
-          "providerCount": 1,
-          "providers": [
-            "moviebox"
-          ],
-          "repairScope": "route-to-terminal",
-          "unexecutableLlmHandoff": []
-        }
-      ],
-      "compileRejectedToLearning": [],
-      "deferredToLearning": [],
-      "deferredToLearningCount": 0,
-      "durableMaterializeTargets": [],
-      "experimentMemoryAdvanced": false,
-      "fixedInLab": [],
-      "fixedInLabCount": 0,
-      "inputProviderCount": 1,
-      "rawFixedInLab": [],
-      "rawLabAcceptedCount": 0,
-      "remainingProviderCount": 1,
-      "timeBudgetExhausted": false,
-      "wave": 2
-    },
-    {
-      "acceptedCount": 0,
-      "acceptedProgramCompileFailures": {},
-      "acceptedProgramCompiledProviders": [],
-      "advisorRotationPending": [
-        "moviebox"
-      ],
-      "batches": [
-        {
-          "accepted": [],
-          "acceptedCount": 0,
-          "advisorRemainingFingerprintCounts": {
-            "moviebox": 1
-          },
-          "advisorRotationPending": [
-            "moviebox"
-          ],
-          "batch": 1,
-          "brain": {
-            "harnessDifferentialProviders": [],
-            "learnedEvents": 0,
-            "plans": {
-              "published:moviebox": {
-                "action": "deferred_retry",
-                "allowedProfiles": [],
-                "exitReason": "experiment_variants_exhausted",
-                "experimentExhausted": true,
-                "experimentGeneration": 2,
-                "experimentVariant": 4,
-                "experimentVariantCount": 5,
-                "failureClass": "transport_blocked",
-                "hypotheses": [],
-                "learningDisposition": "queue_new_strategy_after_variant_exhaustion",
-                "llmAdvisorApplied": false,
-                "llmAdvisorConfidence": 0,
-                "llmAdvisorExperiment": {},
-                "llmAdvisorExperimentFingerprint": "",
-                "llmAdvisorFailureCompatibility": "",
-                "llmAdvisorGuidanceKind": "",
-                "llmAdvisorProfile": "",
-                "llmAdvisorRescue": false,
-                "llmAdvisorSourceFailureClass": "",
-                "llmAdvisorStrategy": "",
-                "metaGapEscalated": false,
-                "negativeMemoryMatches": 69,
-                "positiveProgramFingerprint": "",
-                "postExhaustionStrategyMethod": "",
-                "postExhaustionStrategyProfile": "",
-                "providerId": "moviebox",
-                "providerPositiveProgramProductionRescue": false,
-                "providerPositiveProgramReplay": false,
-                "repairScope": "deferred",
-                "repairType": "experiment_strategy_exhausted",
-                "signature": "9408dea970ee2148302affa4"
-              }
-            },
-            "queuedForLearning": [
-              "moviebox"
-            ],
-            "validatedRepairLearningExecuted": true
-          },
-          "capabilityStrategy": "html_scraper",
-          "crossWaveExplorationCarryoverApplied": [],
-          "crossWaveExplorationCarryoverCaptured": [],
-          "deferredToLearning": [],
-          "familyGroups": [
-            {
-              "capabilityStrategy": "html_scraper",
-              "groupId": "route-to-terminal|html_scraper",
-              "providers": [
-                "moviebox"
-              ],
-              "repairScope": "route-to-terminal"
-            }
-          ],
-          "fixedInLab": [],
-          "genericLearningHandoff": [],
-          "groupId": "route-to-terminal|html_scraper",
-          "harnessDifferentialProviders": [],
-          "healthConcurrency": 1,
-          "providerCount": 1,
-          "providers": [
-            "moviebox"
-          ],
-          "repairScope": "route-to-terminal",
-          "unexecutableLlmHandoff": []
-        }
-      ],
-      "compileRejectedToLearning": [],
-      "deferredToLearning": [],
-      "deferredToLearningCount": 0,
-      "durableMaterializeTargets": [],
-      "experimentMemoryAdvanced": false,
-      "fixedInLab": [],
-      "fixedInLabCount": 0,
-      "inputProviderCount": 1,
-      "rawFixedInLab": [],
-      "rawLabAcceptedCount": 0,
-      "remainingProviderCount": 1,
-      "timeBudgetExhausted": false,
-      "wave": 3
-    },
-    {
-      "acceptedCount": 0,
-      "acceptedProgramCompileFailures": {},
-      "acceptedProgramCompiledProviders": [],
-      "advisorRotationPending": [
-        "moviebox"
-      ],
-      "batches": [
-        {
-          "accepted": [],
-          "acceptedCount": 0,
-          "advisorRemainingFingerprintCounts": {
-            "moviebox": 1
-          },
-          "advisorRotationPending": [
-            "moviebox"
-          ],
-          "batch": 1,
-          "brain": {
-            "harnessDifferentialProviders": [],
-            "learnedEvents": 0,
-            "plans": {
-              "published:moviebox": {
-                "action": "deferred_retry",
-                "allowedProfiles": [],
-                "exitReason": "experiment_variants_exhausted",
-                "experimentExhausted": true,
-                "experimentGeneration": 2,
-                "experimentVariant": 4,
-                "experimentVariantCount": 5,
-                "failureClass": "transport_blocked",
-                "hypotheses": [],
-                "learningDisposition": "queue_new_strategy_after_variant_exhaustion",
-                "llmAdvisorApplied": false,
-                "llmAdvisorConfidence": 0,
-                "llmAdvisorExperiment": {},
-                "llmAdvisorExperimentFingerprint": "",
-                "llmAdvisorFailureCompatibility": "",
-                "llmAdvisorGuidanceKind": "",
-                "llmAdvisorProfile": "",
-                "llmAdvisorRescue": false,
-                "llmAdvisorSourceFailureClass": "",
-                "llmAdvisorStrategy": "",
-                "metaGapEscalated": false,
-                "negativeMemoryMatches": 69,
-                "positiveProgramFingerprint": "",
-                "postExhaustionStrategyMethod": "",
-                "postExhaustionStrategyProfile": "",
-                "providerId": "moviebox",
-                "providerPositiveProgramProductionRescue": false,
-                "providerPositiveProgramReplay": false,
-                "repairScope": "deferred",
-                "repairType": "experiment_strategy_exhausted",
-                "signature": "9408dea970ee2148302affa4"
-              }
-            },
-            "queuedForLearning": [
-              "moviebox"
-            ],
-            "validatedRepairLearningExecuted": true
-          },
-          "capabilityStrategy": "html_scraper",
-          "crossWaveExplorationCarryoverApplied": [],
-          "crossWaveExplorationCarryoverCaptured": [],
-          "deferredToLearning": [],
-          "familyGroups": [
-            {
-              "capabilityStrategy": "html_scraper",
-              "groupId": "route-to-terminal|html_scraper",
-              "providers": [
-                "moviebox"
-              ],
-              "repairScope": "route-to-terminal"
-            }
-          ],
-          "fixedInLab": [],
-          "genericLearningHandoff": [],
-          "groupId": "route-to-terminal|html_scraper",
-          "harnessDifferentialProviders": [],
-          "healthConcurrency": 1,
-          "providerCount": 1,
-          "providers": [
-            "moviebox"
-          ],
-          "repairScope": "route-to-terminal",
-          "unexecutableLlmHandoff": []
-        }
-      ],
-      "compileRejectedToLearning": [],
-      "deferredToLearning": [],
-      "deferredToLearningCount": 0,
-      "durableMaterializeTargets": [],
-      "experimentMemoryAdvanced": false,
-      "fixedInLab": [],
-      "fixedInLabCount": 0,
-      "inputProviderCount": 1,
-      "rawFixedInLab": [],
-      "rawLabAcceptedCount": 0,
-      "remainingProviderCount": 1,
-      "timeBudgetExhausted": false,
-      "wave": 4
-    },
-    {
-      "acceptedCount": 0,
-      "acceptedProgramCompileFailures": {},
-      "acceptedProgramCompiledProviders": [],
-      "advisorRotationPending": [
-        "moviebox"
-      ],
-      "batches": [
-        {
-          "accepted": [],
-          "acceptedCount": 0,
-          "advisorRemainingFingerprintCounts": {
-            "moviebox": 1
-          },
-          "advisorRotationPending": [
-            "moviebox"
-          ],
-          "batch": 1,
-          "brain": {
-            "harnessDifferentialProviders": [],
-            "learnedEvents": 0,
-            "plans": {
-              "published:moviebox": {
-                "action": "deferred_retry",
-                "allowedProfiles": [],
-                "exitReason": "experiment_variants_exhausted",
-                "experimentExhausted": true,
-                "experimentGeneration": 2,
-                "experimentVariant": 4,
-                "experimentVariantCount": 5,
-                "failureClass": "transport_blocked",
-                "hypotheses": [],
-                "learningDisposition": "queue_new_strategy_after_variant_exhaustion",
-                "llmAdvisorApplied": false,
-                "llmAdvisorConfidence": 0,
-                "llmAdvisorExperiment": {},
-                "llmAdvisorExperimentFingerprint": "",
-                "llmAdvisorFailureCompatibility": "",
-                "llmAdvisorGuidanceKind": "",
-                "llmAdvisorProfile": "",
-                "llmAdvisorRescue": false,
-                "llmAdvisorSourceFailureClass": "",
-                "llmAdvisorStrategy": "",
-                "metaGapEscalated": false,
-                "negativeMemoryMatches": 69,
-                "positiveProgramFingerprint": "",
-                "postExhaustionStrategyMethod": "",
-                "postExhaustionStrategyProfile": "",
-                "providerId": "moviebox",
-                "providerPositiveProgramProductionRescue": false,
-                "providerPositiveProgramReplay": false,
-                "repairScope": "deferred",
-                "repairType": "experiment_strategy_exhausted",
-                "signature": "9408dea970ee2148302affa4"
-              }
-            },
-            "queuedForLearning": [
-              "moviebox"
-            ],
-            "validatedRepairLearningExecuted": true
-          },
-          "capabilityStrategy": "html_scraper",
-          "crossWaveExplorationCarryoverApplied": [],
-          "crossWaveExplorationCarryoverCaptured": [],
-          "deferredToLearning": [],
-          "familyGroups": [
-            {
-              "capabilityStrategy": "html_scraper",
-              "groupId": "route-to-terminal|html_scraper",
-              "providers": [
-                "moviebox"
-              ],
-              "repairScope": "route-to-terminal"
-            }
-          ],
-          "fixedInLab": [],
-          "genericLearningHandoff": [],
-          "groupId": "route-to-terminal|html_scraper",
-          "harnessDifferentialProviders": [],
-          "healthConcurrency": 1,
-          "providerCount": 1,
-          "providers": [
-            "moviebox"
-          ],
-          "repairScope": "route-to-terminal",
-          "unexecutableLlmHandoff": []
-        }
-      ],
-      "compileRejectedToLearning": [],
-      "deferredToLearning": [],
-      "deferredToLearningCount": 0,
-      "durableMaterializeTargets": [],
-      "experimentMemoryAdvanced": false,
-      "fixedInLab": [],
-      "fixedInLabCount": 0,
-      "inputProviderCount": 1,
-      "rawFixedInLab": [],
-      "rawLabAcceptedCount": 0,
-      "remainingProviderCount": 1,
-      "timeBudgetExhausted": false,
-      "wave": 5
-    },
-    {
-      "acceptedCount": 0,
-      "acceptedProgramCompileFailures": {},
-      "acceptedProgramCompiledProviders": [],
-      "advisorRotationPending": [
-        "moviebox"
-      ],
-      "batches": [
-        {
-          "accepted": [],
-          "acceptedCount": 0,
-          "advisorRemainingFingerprintCounts": {
-            "moviebox": 1
-          },
-          "advisorRotationPending": [
-            "moviebox"
-          ],
-          "batch": 1,
-          "brain": {
-            "harnessDifferentialProviders": [],
-            "learnedEvents": 0,
-            "plans": {
-              "published:moviebox": {
-                "action": "deferred_retry",
-                "allowedProfiles": [],
-                "exitReason": "experiment_variants_exhausted",
-                "experimentExhausted": true,
-                "experimentGeneration": 2,
-                "experimentVariant": 4,
-                "experimentVariantCount": 5,
-                "failureClass": "transport_blocked",
-                "hypotheses": [],
-                "learningDisposition": "queue_new_strategy_after_variant_exhaustion",
-                "llmAdvisorApplied": false,
-                "llmAdvisorConfidence": 0,
-                "llmAdvisorExperiment": {},
-                "llmAdvisorExperimentFingerprint": "",
-                "llmAdvisorFailureCompatibility": "",
-                "llmAdvisorGuidanceKind": "",
-                "llmAdvisorProfile": "",
-                "llmAdvisorRescue": false,
-                "llmAdvisorSourceFailureClass": "",
-                "llmAdvisorStrategy": "",
-                "metaGapEscalated": false,
-                "negativeMemoryMatches": 69,
-                "positiveProgramFingerprint": "",
-                "postExhaustionStrategyMethod": "",
-                "postExhaustionStrategyProfile": "",
-                "providerId": "moviebox",
-                "providerPositiveProgramProductionRescue": false,
-                "providerPositiveProgramReplay": false,
-                "repairScope": "deferred",
-                "repairType": "experiment_strategy_exhausted",
-                "signature": "9408dea970ee2148302affa4"
-              }
-            },
-            "queuedForLearning": [
-              "moviebox"
-            ],
-            "validatedRepairLearningExecuted": true
-          },
-          "capabilityStrategy": "html_scraper",
-          "crossWaveExplorationCarryoverApplied": [],
-          "crossWaveExplorationCarryoverCaptured": [],
-          "deferredToLearning": [],
-          "familyGroups": [
-            {
-              "capabilityStrategy": "html_scraper",
-              "groupId": "route-to-terminal|html_scraper",
-              "providers": [
-                "moviebox"
-              ],
-              "repairScope": "route-to-terminal"
-            }
-          ],
-          "fixedInLab": [],
-          "genericLearningHandoff": [],
-          "groupId": "route-to-terminal|html_scraper",
-          "harnessDifferentialProviders": [],
-          "healthConcurrency": 1,
-          "providerCount": 1,
-          "providers": [
-            "moviebox"
-          ],
-          "repairScope": "route-to-terminal",
-          "unexecutableLlmHandoff": []
-        }
-      ],
-      "compileRejectedToLearning": [],
-      "deferredToLearning": [],
-      "deferredToLearningCount": 0,
-      "durableMaterializeTargets": [],
-      "experimentMemoryAdvanced": false,
-      "fixedInLab": [],
-      "fixedInLabCount": 0,
-      "inputProviderCount": 1,
-      "rawFixedInLab": [],
-      "rawLabAcceptedCount": 0,
-      "remainingProviderCount": 1,
-      "timeBudgetExhausted": false,
-      "wave": 6
     }
   ]
 }
