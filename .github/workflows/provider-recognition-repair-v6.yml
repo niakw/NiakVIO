@@ -1770,6 +1770,7 @@ jobs:
             [ ! -f "$tmp/brain-llm-force-memory.json" ] || cp "$tmp/brain-llm-force-memory.json" automation/brain-llm-force-memory.json
             if [ -f "$tmp/provider-brain-repair-latest.json" ]; then
               cp "$tmp/provider-brain-repair-latest.json" "automation/provider-brain-repair-${GITHUB_RUN_ID}.json"
+              cp "$tmp/provider-brain-repair-latest.json" automation/provider-brain-repair-latest.json
             fi
           else
             echo "FIELD_REPAIR_STALE_BRAIN_NOT_PERSISTED source=$GITHUB_SHA remote=$remote_main"
@@ -1826,6 +1827,7 @@ jobs:
             [ ! -f automation/brain-positive-program-memory.json ] || git add automation/brain-positive-program-memory.json
             [ ! -f automation/brain-llm-force-memory.json ] || git add automation/brain-llm-force-memory.json
             [ ! -f "automation/provider-brain-repair-${GITHUB_RUN_ID}.json" ] || git add "automation/provider-brain-repair-${GITHUB_RUN_ID}.json"
+            [ ! -f automation/provider-brain-repair-latest.json ] || git add automation/provider-brain-repair-latest.json
           fi
 
           if git diff --cached --quiet; then
