@@ -1235,6 +1235,18 @@ def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any])
     if not types:
         types = ["movie", "tv", "anime"]
 
+    brain_plan = candidate.get("brain_repair_plan") if isinstance(candidate.get("brain_repair_plan"), dict) else {}
+    target_categories = [
+        str(value).strip().casefold()
+        for value in (brain_plan.get("targetCategories") or [])
+        if str(value).strip().casefold() in {"movie", "tv", "anime"}
+    ]
+    if target_categories:
+        # Preserve already-healthy lanes in the parent bytes and scope only the
+        # newly generated adaptive fallback to unresolved declared lanes.
+        scoped = [value for value in target_categories if value in types]
+        types = scoped or target_categories[:3]
+
     learned_routes = _unique_routes(
         structure_routes,
         positive_program_routes(provider_id),
@@ -1245,7 +1257,6 @@ def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any])
     learned_direct = [route for route in learned_routes if _route_role(route) != "search"]
     strategy = str(capability.get("strategy") or patch.get("capability") or "unknown").strip().casefold()
     census_focus = _census_runtime_focus(provider_id)
-    brain_plan = candidate.get("brain_repair_plan") if isinstance(candidate.get("brain_repair_plan"), dict) else {}
     expected_positive_program_fingerprint = str(
         brain_plan.get("positiveProgramFingerprint") or ""
     ).strip().casefold()
@@ -1893,7 +1904,9 @@ def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any])
             "peerRequestRecipes": len(peer_request_recipes),
         },
         "repair_focus": (
-            "variant-coverage"
+            f"lane:{','.join(target_categories)}"
+            if target_categories
+            else "variant-coverage"
             if experiment_failure == "variant_coverage_gap"
             else "media-extraction"
             if experiment_failure == "media_extraction_gap"
