@@ -16,12 +16,17 @@ from urllib.parse import urlparse
 
 AUTHORITY_TYPES = {"hub", "curated_direct", "source_redirect", "provider_config", "live_current"}
 REGISTRY_SCOPED_AUTHORITY_TYPES = {"telegram_public", "redirect"}
-DOMAIN_PATCH_FIELDS = {"official_site", "official_hub", "domain_substitutions", "replacements", "runtime_domain_replacements"}
+DOMAIN_PATCH_FIELDS = {
+    "official_site", "official_hub", "domain_substitutions", "replacements",
+    "runtime_domain_replacements", "proof_search_bases", "proof_detail_bases",
+}
 DOMAIN_MANIFEST_OVERRIDE_FIELDS = {"logo", "icon", "favicon"}
 DOMAIN_PROVIDER_LEGO_SITE_KEYS = {
     "base", "site", "referer", "referrer", "origin",
     "base_url", "baseUrl", "site_url", "siteUrl",
 }
+DOMAIN_PROVIDER_LEGO_SITE_LIST_KEYS = {"bases"}
+DOMAIN_EXECUTION_URL_LIST_FIELDS = {"proof_search_bases", "proof_detail_bases"}
 PLACEHOLDER_TOKENS = ("${", "{{", "}}", "function(", "=>", "`", "<%", "%>")
 
 
@@ -106,6 +111,78 @@ def validate_manifest_domain_overrides(
     return bool(changed)
 
 
+def _authorized_domain_rewrites(after_patch: dict[str, Any], after_site: str) -> dict[str, str]:
+    after_host = (urlparse(after_site).hostname or "").casefold() if concrete_http(after_site) else ""
+    if not after_host:
+        return {}
+    rewrites: dict[str, str] = {}
+    for name in ("runtime_domain_replacements", "domain_substitutions"):
+        mapping = after_patch.get(name)
+        if not isinstance(mapping, dict):
+            continue
+        for source, target in mapping.items():
+            source_host = (urlparse(
+                str(source) if "://" in str(source) else "https://" + str(source)
+            ).hostname or "").casefold()
+            target_host = (urlparse(
+                str(target) if "://" in str(target) else "https://" + str(target)
+            ).hostname or "").casefold()
+            if source_host and source_host != after_host and target_host == after_host:
+                rewrites[source_host] = after_host
+    return rewrites
+
+
+def _rewrite_authorized_url(value: object, rewrites: dict[str, str]) -> object:
+    if not concrete_http(value):
+        return value
+    parsed = urlparse(str(value))
+    source_host = (parsed.hostname or "").casefold()
+    target_host = rewrites.get(source_host)
+    if not target_host:
+        return value
+    port = f":{parsed.port}" if parsed.port else ""
+    return parsed._replace(netloc=target_host + port).geturl().rstrip("/")
+
+
+def _rewrite_authorized_list(values: object, rewrites: dict[str, str]) -> object:
+    if not isinstance(values, list):
+        return values
+    output: list[object] = []
+    seen: set[str] = set()
+    for value in values:
+        rewritten = _rewrite_authorized_url(value, rewrites)
+        key = json.dumps(rewritten, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+        if key in seen:
+            continue
+        seen.add(key)
+        output.append(rewritten)
+    return output
+
+
+def validate_domain_execution_url_lists(
+    provider_id: str,
+    before_patch: dict[str, Any],
+    after_patch: dict[str, Any],
+    after_site: str,
+) -> set[str]:
+    rewrites = _authorized_domain_rewrites(after_patch, after_site)
+    changed: set[str] = set()
+    for field in DOMAIN_EXECUTION_URL_LIST_FIELDS:
+        before = before_patch.get(field)
+        after = after_patch.get(field)
+        if before == after:
+            continue
+        if not isinstance(before, list) or not isinstance(after, list):
+            raise AssertionError(f"{provider_id}: {field} shape changed during domain refresh")
+        expected = _rewrite_authorized_list(before, rewrites)
+        if expected != after:
+            raise AssertionError(
+                f"{provider_id}: {field} changed beyond explicit old->current domain authority"
+            )
+        changed.add(field)
+    return changed
+
+
 def validate_provider_lego_domain_options(
     provider_id: str,
     before_patch: dict[str, Any],
@@ -123,11 +200,10 @@ def validate_provider_lego_domain_options(
     if set(before) != set(after):
         raise AssertionError(f"{provider_id}: provider_lego_options script set changed during domain refresh")
 
-    before_host = (urlparse(before_site).hostname or "").casefold() if concrete_http(before_site) else ""
-    after_host = (urlparse(after_site).hostname or "").casefold() if concrete_http(after_site) else ""
-    if not before_host or not after_host or before_host == after_host:
+    rewrites = _authorized_domain_rewrites(after_patch, after_site)
+    if not rewrites:
         raise AssertionError(
-            f"{provider_id}: provider Lego domain rotation requires distinct concrete site terminals"
+            f"{provider_id}: provider Lego domain rotation has no explicit old->current authority"
         )
 
     changed = False
@@ -150,35 +226,26 @@ def validate_provider_lego_domain_options(
             if before_value == after_value:
                 continue
             changed = True
-            if key not in DOMAIN_PROVIDER_LEGO_SITE_KEYS:
-                raise AssertionError(
-                    f"{provider_id}: provider_lego_options[{script!r}].{key} "
-                    "is not Domain-owned site-root DATA"
-                )
-            if not concrete_http(before_value) or not concrete_http(after_value):
-                raise AssertionError(
-                    f"{provider_id}: provider_lego_options[{script!r}].{key} "
-                    "rotation requires concrete HTTP URLs"
-                )
-            before_url = urlparse(str(before_value))
-            after_url = urlparse(str(after_value))
-            if (before_url.hostname or "").casefold() != before_host:
-                raise AssertionError(
-                    f"{provider_id}: provider_lego_options[{script!r}].{key} "
-                    f"source host is not previous terminal {before_host!r}"
-                )
-            if (after_url.hostname or "").casefold() != after_host:
-                raise AssertionError(
-                    f"{provider_id}: provider_lego_options[{script!r}].{key} "
-                    f"target host is not current terminal {after_host!r}"
-                )
-            before_rest = (before_url.path, before_url.params, before_url.query, before_url.fragment)
-            after_rest = (after_url.path, after_url.params, after_url.query, after_url.fragment)
-            if before_rest != after_rest:
-                raise AssertionError(
-                    f"{provider_id}: provider_lego_options[{script!r}].{key} "
-                    "changed more than the domain host"
-                )
+            if key in DOMAIN_PROVIDER_LEGO_SITE_KEYS:
+                expected = _rewrite_authorized_url(before_value, rewrites)
+                if expected != after_value:
+                    raise AssertionError(
+                        f"{provider_id}: provider_lego_options[{script!r}].{key} "
+                        "changed beyond explicit old->current domain authority"
+                    )
+                continue
+            if key in DOMAIN_PROVIDER_LEGO_SITE_LIST_KEYS:
+                expected = _rewrite_authorized_list(before_value, rewrites)
+                if expected != after_value:
+                    raise AssertionError(
+                        f"{provider_id}: provider_lego_options[{script!r}].{key} "
+                        "changed beyond explicit old->current domain authority"
+                    )
+                continue
+            raise AssertionError(
+                f"{provider_id}: provider_lego_options[{script!r}].{key} "
+                "is not Domain-owned site-root DATA"
+            )
     return changed
 
 
@@ -322,6 +389,7 @@ def validate(
         }
         manifest_changed = "manifest_overrides" in changed_fields
         lego_changed = "provider_lego_options" in changed_fields
+        execution_url_fields = changed_fields & DOMAIN_EXECUTION_URL_LIST_FIELDS
         forbidden_fields = (
             changed_fields
             - DOMAIN_PATCH_FIELDS
@@ -346,7 +414,14 @@ def validate(
             before_site,
             after_site_for_manifest,
         ) if lego_changed else False
-        domain_fields = changed_fields & DOMAIN_PATCH_FIELDS
+        validated_execution_fields = validate_domain_execution_url_lists(
+            provider_id,
+            before_patch,
+            after_patch,
+            after_site_for_manifest,
+        ) if execution_url_fields else set()
+        domain_fields = (changed_fields & DOMAIN_PATCH_FIELDS) - DOMAIN_EXECUTION_URL_LIST_FIELDS
+        domain_fields.update(validated_execution_fields)
         if manifest_domain_changed:
             domain_fields.add("manifest_overrides")
         if lego_domain_changed:
