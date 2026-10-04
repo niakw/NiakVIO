@@ -47,7 +47,10 @@ permissions:
 
 concurrency:
   group: provider-fast-repair-main
-  cancel-in-progress: true
+  # Fast Repair mutates/persists shared Brain evidence. Serialize runs, but never
+  # let a later automatic census/Autopilot cohort cancel a representative run
+  # that is already proving current bytes. Pending work may wait behind it.
+  cancel-in-progress: false
 
 jobs:
   fast-repair:
