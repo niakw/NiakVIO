@@ -822,7 +822,12 @@ def planner_llm_guidance() -> list[dict[str, Any]]:
                         value,
                         current_sha=current_sha,
                         require_exact_sha=False,
-                        guidance_kind="meta-gap-synthesis",
+                        # Neutral control/evidence drift does not transform a
+                        # persisted Learning hypothesis into a newly synthesized
+                        # meta-gap experiment. Preserve its exact public
+                        # fingerprint so Repair and the outer advisor-rotation
+                        # scheduler reason about the same executable hypothesis.
+                        guidance_kind="persistent-learning",
                     )
                     out.extend(
                         row for row in rows
