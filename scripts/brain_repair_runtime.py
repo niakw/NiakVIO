@@ -19,6 +19,7 @@ if str(SCRIPTS) not in sys.path:
 
 from brain_positive_program_memory import learned_skills as positive_program_learned_skills
 from brain_layers.declarative_gap_strategy import synthesize_rows as synthesize_meta_gap_rows
+from import_external_brain_llm_guidance import source_drift as _guidance_source_drift
 PLAN_SCRIPT = ROOT / "engine_v2" / "scripts" / "plan-repairs.mjs"
 POLICY_PATH = ROOT / "engine_v2" / "config" / "brain-policy.json"
 OVERRIDES_PATH = ROOT / "provider-overrides.json"
@@ -807,12 +808,32 @@ def planner_llm_guidance() -> list[dict[str, Any]]:
     if LLM_GUIDANCE_PATH is not None:
         value = _load_json(LLM_GUIDANCE_PATH, {})
         if isinstance(value, dict):
-            out.extend(_validated_guidance_rows(
-                value,
-                current_sha=current_sha,
-                require_exact_sha=True,
-                guidance_kind="external-brain-llm",
-            ))
+            source_sha = _clip_text(value.get("sourceSha"), 64).casefold()
+            if source_sha and current_sha and source_sha != current_sha:
+                try:
+                    _neutral_paths, drifted_providers = _guidance_source_drift(
+                        ROOT, source_sha, current_sha
+                    )
+                except (OSError, ValueError):
+                    drifted_providers = None
+                if drifted_providers is not None:
+                    rows = _validated_guidance_rows(
+                        value,
+                        current_sha=current_sha,
+                        require_exact_sha=False,
+                        guidance_kind="meta-gap-synthesis",
+                    )
+                    out.extend(
+                        row for row in rows
+                        if str(row.get("providerId") or "").casefold() not in drifted_providers
+                    )
+            else:
+                out.extend(_validated_guidance_rows(
+                    value,
+                    current_sha=current_sha,
+                    require_exact_sha=True,
+                    guidance_kind="external-brain-llm",
+                ))
 
     planner_mode = str(os.environ.get("NUVIO_BRAIN_PLANNER_MODE") or "").strip().casefold()
     exploration_chain = str(os.environ.get("NUVIO_BRAIN_EXPLORATION_CHAIN") or "").strip() == "1"
