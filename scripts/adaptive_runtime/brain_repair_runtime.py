@@ -142,7 +142,10 @@ def replan_observation(
         "learnedSkills": _BASE.planner_learned_skills(mode),
         "historicalSolutions": _BASE.planner_historical_solutions(),
         "llmGuidance": _BASE.planner_llm_guidance(),
-        "negativeMemory": _BASE.planner_negative_memory(mode),
+        "negativeMemory": [
+            *_BASE.planner_negative_memory(mode),
+            *_BASE.planner_transient_negative_memory(candidate),
+        ],
     }
     plans = _run_planner_batch(base_payload, [item])
     _BASE.PLANS.update(plans)
