@@ -93,6 +93,9 @@ assert "workflow_run" not in workflow
 assert "arm_learning_trigger" not in workflow
 assert "cat > .github/triggers/brain-learning-reconstruction" not in workflow
 assert "provider_learning_dispatch_gate.py mark" not in workflow
+assert "group: provider-fast-repair-main" in workflow
+assert "cancel-in-progress: false" in workflow
+assert "cancel-in-progress: true" not in workflow
 
 assert 'force_mode="$(python - <<\'PY\'' in workflow
 assert 'publish_proposal="false"' in workflow
