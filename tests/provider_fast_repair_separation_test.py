@@ -82,6 +82,8 @@ for required in (
     "max_rounds_per_batch",
     "maxRoundsPerBatch",
     "FIELD_PROVIDER_FAST_REPAIR_REQUEUE",
+    "brain_llm_advisor_execution_test.py",
+    'options: ["1", "2", "3", "4", "5", "6"]',
     "remote-main-trigger",
     "source_trigger_blob",
     "remote_trigger_blob",
