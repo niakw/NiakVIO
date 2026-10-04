@@ -1,13 +1,13 @@
-Moviebox representative Learning negative-fingerprint eviction proof.
+Moviebox representative Learning negative-fingerprint eviction and replacement proof.
 source_census_run: 37226667278
-source_main_sha: 0bba1d8930ace13885c489d1f8864596d5d2fac8
+source_main_sha: 5d85ca35da27e4ad60040ca79bc80a92e44a4814
 budget_minutes: 20
-reason: regenerate-moviebox-guidance-after-evicting-executed-rejected-fingerprint
-validation_reason: persistent-guidance-must-not-republish-16ad894fc3c03be89539c14fb749def9501831b455f58f6f6f475b20acd36ad6
+reason: evict-dead-moviebox-advisor-and-synthesize-next-safe-hypothesis
+validation_reason: failed-fingerprint-must-not-republish-and-targeted-gap-must-not-return-empty-guidance
 expected_scope: representative-moviebox-learning-guidance-refresh
 execution_mode: targeted-main-only
 target_providers: moviebox
 architecture_force: false
 publication_policy: no-pr-monotonic-memory-merge-then-canonical-repair
-required_current_evidence: moviebox-guidance-old-fingerprint-16ad894f-is-negative;final-guidance-moviebox-fingerprint-must-differ-or-row-must-be-absent;failed-fingerprint-filter-must-report-drop;targeted-native-reader-memory-preserved-without-out-of-scope-proposal;canonical-repair-resume-required
-retry: 6
+required_current_evidence: old-fingerprint-16ad894f-dropped;targeted-native-reader-memory-preserved;gap-fill-added-moviebox;replacement-fingerprint-ne-16ad894f;expected-rotation-profile-search_contract_inference_v1-when-route-family-exhausted;canonical-repair-resume-required
+retry: 7
