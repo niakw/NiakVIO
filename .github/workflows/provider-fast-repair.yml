@@ -18,7 +18,7 @@ on:
         required: true
         default: "1"
         type: choice
-        options: ["1", "2", "3", "4", "5"]
+        options: ["1", "2", "3", "4", "5", "6"]
       time_budget_seconds:
         description: Provider-local Brain budget
         required: true
@@ -102,6 +102,7 @@ jobs:
           python tests/brain_learning_deferred_repair_priority_test.py
           python tests/brain_learning_memory_import_test.py
           python tests/brain_external_llm_guidance_import_test.py
+          python tests/brain_llm_advisor_execution_test.py
           python tests/brain_multi_advisor_same_run_test.py
           python tests/brain_declarative_meta_gap_strategy_test.py
           python tests/brain_negative_experiment_exhaustion_test.py
