@@ -68,9 +68,10 @@ guidance=[{
     "experimentFingerprint":"a"*64,
 }]
 
-def plan(mode:str,memory:list[dict]|None=None,guidance_rows:list[dict]|None=None):
+def plan(mode:str,memory:list[dict]|None=None,guidance_rows:list[dict]|None=None,exploration_chain:bool=False):
     payload={
         "mode":mode,
+        "explorationChain":exploration_chain,
         "policy":policy,
         "learnedSkills":{},
         "historicalSolutions":[],
@@ -202,6 +203,72 @@ rescue_failed=plan("repair",[
 ],rescue_guidance)
 assert rescue_failed["llmAdvisorApplied"] is False,rescue_failed
 assert rescue_failed["experimentExhausted"] is True,rescue_failed
+
+# Fast Repair exploration must execute a sanitized Learning advisor after the
+# ordinary g2 variants and every coded post-exhaustion strategy are exhausted.
+# It remains sandbox-only: base exhaustion stays visible, while the learned
+# hypothesis itself is non-exhausted until current-byte validation actually runs.
+exploration_memory=list(exhausted_memory)
+exploration_plan=None
+for _attempt in range(12):
+    exploration_plan=plan("repair",exploration_memory,rescue_guidance,True)
+    assert exploration_plan["baseExperimentExhausted"] is True,exploration_plan
+    if not exploration_plan.get("strategyEscalated"):
+        break
+    profile=exploration_plan["postExhaustionStrategyProfile"]
+    implementation_fp=exploration_plan["strategyImplementationFingerprint"]
+    assert profile and implementation_fp,exploration_plan
+    exploration_memory.append({
+        "providerId":"synthetic-llm-advisor",
+        "failureClass":"route_proven_gap",
+        "experimentVariant":4,
+        "experimentGeneration":2,
+        "profile":profile,
+        "strategyImplementationFingerprint":implementation_fp,
+        "failures":1,
+        "consecutiveFailures":1,
+        "successes":0,
+        "executionObserved":True,
+        "lastOutcome":"rejected",
+        "lastReason":"synthetic_post_exhaustion_strategy_failed",
+    })
+else:
+    raise AssertionError(("post-exhaustion strategies did not converge",exploration_plan))
+
+assert exploration_plan is not None
+assert exploration_plan["strategyEscalated"] is False,exploration_plan
+assert exploration_plan["baseExperimentExhausted"] is True,exploration_plan
+assert exploration_plan["experimentExhausted"] is False,exploration_plan
+assert exploration_plan["llmAdvisorApplied"] is True,exploration_plan
+assert exploration_plan["llmAdvisorRescue"] is False,exploration_plan
+assert exploration_plan["llmAdvisorExplorationRescue"] is True,exploration_plan
+assert exploration_plan["llmAdvisorProfile"]=="search_contract_inference_v1",exploration_plan
+assert exploration_plan["allowedProfiles"][0]=="search_contract_inference_v1",exploration_plan
+assert exploration_plan["action"]=="probe-targeted-repair",exploration_plan
+assert exploration_plan["exitReason"] is None,exploration_plan
+assert exploration_plan["repairType"]=="synthesized_strategy",exploration_plan
+assert exploration_plan["learningDisposition"]=="execute_learning_advisor_strategy",exploration_plan
+
+exploration_failed=plan("repair",[
+    *exploration_memory,
+    {
+        "providerId":"synthetic-llm-advisor",
+        "failureClass":"route_proven_gap",
+        "experimentVariant":4,
+        "experimentGeneration":2,
+        "profile":"search_contract_inference_v1",
+        "llmAdvisorExperimentFingerprint":"a"*64,
+        "failures":1,
+        "consecutiveFailures":1,
+        "successes":0,
+        "executionObserved":True,
+        "lastOutcome":"rejected",
+        "lastReason":"executed_candidate_failed_validation",
+    },
+],rescue_guidance,True)
+assert exploration_failed["llmAdvisorExplorationRescue"] is False,exploration_failed
+assert exploration_failed["llmAdvisorApplied"] is False,exploration_failed
+assert exploration_failed["experimentExhausted"] is True,exploration_failed
 
 brain=(ROOT/"scripts/brain_repair_runtime.py").read_text(encoding="utf-8")
 overlay=(ROOT/"scripts/adaptive_runtime/brain_repair_runtime.py").read_text(encoding="utf-8")
