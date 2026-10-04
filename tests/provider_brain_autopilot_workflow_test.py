@@ -92,6 +92,11 @@ for source in (fast, remat):
 
 assert '-f waves=1 -f time_budget_seconds=600 -f max_rounds_per_batch=1' in autopilot
 assert 'learning_dispatch=true architecture_force=$force_mode publish_proposal=$publish_proposal owner=immediate-targeted-learning' in fast
+fast_learning_start = fast.index("record_learning_debt()")
+fast_learning_end = fast.index("git fetch --quiet origin main", fast_learning_start)
+fast_learning_block = fast[fast_learning_start:fast_learning_end]
+assert 'publish_proposal="true"' not in fast_learning_block
+assert fast_learning_block.count('publish_proposal="false"') == 1
 assert 'gh workflow run brain-learning-lab.yml' in fast
 assert 'publish_proposal="false"' in fast
 assert '-f publish_proposal="$publish_proposal"' in fast
