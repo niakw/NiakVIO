@@ -431,6 +431,8 @@ jobs:
           cp automation/PROVIDER-CENSUS-SHARDED.md /tmp/PROVIDER_CENSUS_STATUS.md
           git fetch origin main
           git reset --hard origin/main
+          persist_base="$(git rev-parse HEAD)"
+          echo "FIELD_SHARDED_CENSUS_PERSIST_BASE source=${SOURCE_SHA:0:12} base=${persist_base:0:12}"
           mkdir -p automation
           cp /tmp/provider-census-sharded.json "automation/provider-census-sharded-${run_id}.json"
           if [ "$CENSUS_SCOPE" = "all" ]; then
@@ -493,9 +495,44 @@ jobs:
             echo "FIELD_SHARDED_CENSUS_NO_CHANGES"
           else
             git commit -m "ci(census-sharded): persist ${verified} from ${SOURCE_SHA:0:12}"
-            git push origin HEAD:main
+            git fetch origin main
+            remote_head="$(git rev-parse origin/main)"
+            if [ "$remote_head" != "$persist_base" ]; then
+              echo "FIELD_SHARDED_CENSUS_STALE source=${SOURCE_SHA:0:12} persist_base=${persist_base:0:12} remote=${remote_head:0:12} action=requeue-current-main"
+              echo "stale=true" >> "$GITHUB_OUTPUT"
+              echo "ok=false" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+            if ! git push origin HEAD:main; then
+              git fetch origin main
+              remote_head="$(git rev-parse origin/main)"
+              if [ "$remote_head" != "$persist_base" ]; then
+                echo "FIELD_SHARDED_CENSUS_STALE source=${SOURCE_SHA:0:12} persist_base=${persist_base:0:12} remote=${remote_head:0:12} action=requeue-current-main push_race=true"
+                echo "stale=true" >> "$GITHUB_OUTPUT"
+                echo "ok=false" >> "$GITHUB_OUTPUT"
+                exit 0
+              fi
+              echo "Census persistence push failed without a concurrent main advance." >&2
+              exit 1
+            fi
           fi
+          echo "stale=false" >> "$GITHUB_OUTPUT"
           echo "ok=true" >> "$GITHUB_OUTPUT"
+
+      - name: Requeue census on current main after concurrent advance
+        if: ${{ steps.persist.outputs.stale == 'true' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          CENSUS_SCOPE: ${{ needs.prepare.outputs.census_scope }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh workflow run provider-census-sharded.yml \
+            --repo "$GITHUB_REPOSITORY" \
+            --ref main \
+            -f scope="${CENSUS_SCOPE:-unresolved}" \
+            -f persist=true
+          echo "FIELD_SHARDED_CENSUS_REQUEUE source_run=${GITHUB_RUN_ID} scope=${CENSUS_SCOPE:-unresolved} reason=concurrent-main-advance"
 
       - name: Continue Brain Autopilot from fresh census
         if: ${{ steps.persist.outputs.ok == 'true' }}
