@@ -33,6 +33,28 @@ failed={"entries":[{
 second=synthesize_rows(census=census,memory=failed,current_sha="a"*40)
 alpha=next(r for r in second if r["providerId"]=="alpha")
 assert alpha["experimentFingerprint"] != first[0]["experimentFingerprint"]
+
+# Three distinct executed attempts of one executor are enough. Learning must
+# rotate executor family instead of inventing a fourth parameter permutation
+# of the same profile.
+alpha_first=next(r for r in first if r["providerId"]=="alpha")
+bounded_memory={"entries":[
+    {
+        "providerId":"alpha",
+        "failureClass":alpha_first["failureClass"],
+        "profile":alpha_first["profile"],
+        "llmAdvisorExperimentFingerprint":str(i)*64,
+        "consecutiveFailures":1,
+        "failures":1,
+        "successes":0,
+        "executionObserved":True,
+    }
+    for i in (1,2,3)
+]}
+rotated=synthesize_rows(census=census,memory=bounded_memory,current_sha="a"*40)
+alpha_rotated=next(r for r in rotated if r["providerId"]=="alpha")
+assert alpha_rotated["profile"] != alpha_first["profile"], (alpha_first,alpha_rotated)
+assert alpha_rotated["profile"]=="player_media_extractor_v1",alpha_rotated
 print("Brain declarative meta-gap strategy tests passed")
 
 # Runtime integration is covered separately; this generator remains pure.
