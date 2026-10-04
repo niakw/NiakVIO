@@ -669,6 +669,38 @@ assert transport_plan["llmAdvisorProfile"]=="search_contract_inference_v1",trans
 assert transport_plan["llmAdvisorFailureCompatibility"]=="exact",transport_plan
 assert transport_plan["allowedProfiles"][0]=="search_contract_inference_v1",transport_plan
 
+# A Learning meta-gap executor selected from a sibling failure class in the
+# same causal family must survive current-class drift. This is the Moviebox
+# shape: persisted/census evidence can say route_proven_gap while the current
+# sandbox classifies transport_blocked. Rebinding the executor back to origin
+# failover would erase Learning's bounded strategy rotation.
+transport_family_guidance=[{
+    **transport_guidance[0],
+    "failureClass":"route_proven_gap",
+    "profile":"search_contract_inference_v1",
+    "strategy":"meta-gap-search-contract-fallback",
+    "confidence":0.86,
+    "experimentFingerprint":"8"*64,
+}]
+transport_family_payload={
+    **transport_base_payload,
+    "llmGuidance":transport_family_guidance,
+    "negativeMemory":transport_memory,
+}
+transport_family_completed=subprocess.run(
+    ["node",str(PLANNER)],
+    cwd=ROOT,input=json.dumps(transport_family_payload),capture_output=True,text=True,check=True,timeout=20,
+)
+transport_family_plan=next(iter((json.loads(transport_family_completed.stdout).get("plans") or {}).values()))
+assert transport_family_plan["baseExperimentExhausted"] is True,transport_family_plan
+assert transport_family_plan["strategyEscalated"] is False,transport_family_plan
+assert transport_family_plan["metaGapEscalated"] is True,transport_family_plan
+assert transport_family_plan["llmAdvisorApplied"] is True,transport_family_plan
+assert transport_family_plan["llmAdvisorProfile"]=="search_contract_inference_v1",transport_family_plan
+assert transport_family_plan["allowedProfiles"][0]=="search_contract_inference_v1",transport_family_plan
+assert transport_family_plan["llmAdvisorFailureCompatibility"]=="exact-rebound",transport_family_plan
+assert transport_family_plan["llmAdvisorSourceFailureClass"]=="transport_blocked",transport_family_plan
+
 
 # If the current plan is already a confirmed architecture_gap, Repair
 # exploration must not wait for synthetic experiment exhaustion that cannot
