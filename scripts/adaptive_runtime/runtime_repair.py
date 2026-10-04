@@ -1335,18 +1335,19 @@ def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any])
         brain_plan.get("providerPositiveProgramReplay") is True
         and post_exhaustion_strategy_profile == "provider_positive_program_replay_v1"
     )
+    # Once the planner has selected a post-exhaustion/evolved strategy,
+    # that strategy owns the executable attempt. The advisor profile remains
+    # hypothesis provenance only and must not shadow the planner's allowed
+    # profile, otherwise matching sees one profile while generation builds
+    # another and records a false profile_unavailable.
     new_strategy_id = (
         post_exhaustion_strategy_profile
-        if strict_positive_replay_requested
-        else (
-            llm_advisor_profile
-            or post_exhaustion_strategy_profile
-            or historical_strategy_profile
-            or _new_strategy_id(
-                experiment_failure,
-                experiment_variant,
-                experiment_generation,
-            )
+        or llm_advisor_profile
+        or historical_strategy_profile
+        or _new_strategy_id(
+            experiment_failure,
+            experiment_variant,
+            experiment_generation,
         )
     )
     strict_positive_replay = new_strategy_id == "provider_positive_program_replay_v1"
