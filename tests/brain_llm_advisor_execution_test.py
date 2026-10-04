@@ -619,17 +619,51 @@ transport_exhausted_memory=[
     }
     for variant in range(5)
 ]
-transport_payload={
-    **transport_base_payload,
-    "llmGuidance":transport_guidance,
-    "negativeMemory":transport_exhausted_memory,
-}
-transport_completed=subprocess.run(
-    ["node",str(PLANNER)],
-    cwd=ROOT,input=json.dumps(transport_payload),capture_output=True,text=True,check=True,timeout=20,
-)
-transport_plan=next(iter((json.loads(transport_completed.stdout).get("plans") or {}).values()))
-assert transport_plan["baseExperimentExhausted"] is True,transport_plan
+transport_memory=list(transport_exhausted_memory)
+transport_plan=None
+# Exploration Chain deliberately tries each coded post-exhaustion strategy
+# before Learning meta-gap guidance. Exhaust those bounded implementations by
+# their exact implementation fingerprint; never let a meta-gap prior bypass
+# an untried deterministic strategy.
+for _attempt in range(8):
+    transport_payload={
+        **transport_base_payload,
+        "llmGuidance":transport_guidance,
+        "negativeMemory":transport_memory,
+    }
+    transport_completed=subprocess.run(
+        ["node",str(PLANNER)],
+        cwd=ROOT,input=json.dumps(transport_payload),capture_output=True,text=True,check=True,timeout=20,
+    )
+    transport_plan=next(iter((json.loads(transport_completed.stdout).get("plans") or {}).values()))
+    assert transport_plan["baseExperimentExhausted"] is True,transport_plan
+    if not transport_plan.get("strategyEscalated"):
+        break
+    profile=transport_plan["postExhaustionStrategyProfile"]
+    implementation_fp=transport_plan["strategyImplementationFingerprint"]
+    assert profile,transport_plan
+    assert implementation_fp,transport_plan
+    transport_memory.append({
+        "providerId":"synthetic-transport-executor-choice",
+        "failureClass":"transport_blocked",
+        "signature":transport_signature,
+        "experimentVariant":4,
+        "experimentGeneration":2,
+        "profile":profile,
+        "strategyImplementationFingerprint":implementation_fp,
+        "failures":1,
+        "consecutiveFailures":1,
+        "successes":0,
+        "executionObserved":True,
+        "lastOutcome":"rejected",
+        "lastReason":"synthetic_post_exhaustion_strategy_failed",
+    })
+else:
+    raise AssertionError(("transport post-exhaustion strategies did not converge",transport_plan))
+
+assert transport_plan is not None
+assert transport_plan["strategyEscalated"] is False,transport_plan
+assert transport_plan["metaGapEscalated"] is True,transport_plan
 assert transport_plan["llmAdvisorApplied"] is True,transport_plan
 assert transport_plan["llmAdvisorProfile"]=="search_contract_inference_v1",transport_plan
 assert transport_plan["llmAdvisorFailureCompatibility"]=="exact",transport_plan
