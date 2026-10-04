@@ -246,11 +246,181 @@ def advisor_wave_budget(
 
 
 
+META_GAP_FAILURE_FAMILIES = {
+    "route_proven_gap": "route-terminal",
+    "provider_transport_gap": "route-terminal",
+    "transport_blocked": "route-terminal",
+    "search_gap": "route-terminal",
+    "chain_terminal_gap": "terminal-media",
+    "media_extraction_gap": "terminal-media",
+    "variant_coverage_gap": "terminal-media",
+    "playback_context_gap": "terminal-media",
+}
+META_GAP_PROFILE_BY_FAILURE = {
+    "route_proven_gap": "proven_route_terminal_traversal_v1",
+    "provider_transport_gap": "provider_origin_failover_v1",
+    "transport_blocked": "provider_origin_failover_v1",
+    "search_gap": "search_contract_inference_v1",
+    "chain_terminal_gap": "chain_terminal_extractor_v1",
+    "media_extraction_gap": "player_media_extractor_v1",
+    "variant_coverage_gap": "player_media_extractor_v1",
+    "playback_context_gap": "player_media_extractor_v1",
+    "candidate_replay_gap": "retained_candidate_replay_v1",
+    "unknown_failure": "adaptive_runtime_recovery",
+    "runtime_contract_drift": "adaptive_runtime_recovery",
+}
+
+
+def _canon_failure(value: object) -> str:
+    return str(value or "").strip().casefold().replace("-", "_")
+
+
+def _meta_gap_scheduler_profile(row: dict[str, Any], current_failure: str) -> str:
+    source = _canon_failure(row.get("failureClass"))
+    current = _canon_failure(current_failure)
+    declared = str(row.get("profile") or "").strip().casefold()
+    source_family = META_GAP_FAILURE_FAMILIES.get(source, "")
+    current_family = META_GAP_FAILURE_FAMILIES.get(current, "")
+    if declared and (source == current or (source_family and source_family == current_family)):
+        return declared
+    return META_GAP_PROFILE_BY_FAILURE.get(current, "")
+
+
+def _rebind_meta_gap_experiment(experiment: dict[str, Any], failure_class: str) -> dict[str, Any]:
+    current = _canon_failure(failure_class)
+    next_value = copy.deepcopy(experiment)
+    if current in {"provider_transport_gap", "transport_blocked"}:
+        next_value["routePolicy"] = "owned_plus_peer"
+        next_value["recipePolicy"] = "current_plus_provider"
+        next_value["roleOrder"] = ["api", "detail", "search", "player", "source", "episode", "other"]
+        next_value["terminalOnly"] = False
+        next_value["sessionBootstrap"] = True
+        next_value["responseSalvage"] = True
+        next_value["documentRequestMining"] = True
+    elif current in {"route_proven_gap", "search_gap"}:
+        next_value["routePolicy"] = "owned_plus_peer_generic"
+        next_value["recipePolicy"] = "current_plus_provider_peer"
+        next_value["roleOrder"] = (
+            ["search", "api", "detail", "player", "source", "episode", "other"]
+            if current == "search_gap"
+            else ["search", "detail", "api", "episode", "player", "source", "other"]
+        )
+        next_value["terminalOnly"] = False
+        next_value["aliasSearch"] = True
+        next_value["responseSalvage"] = True
+        next_value["documentRequestMining"] = True
+    elif current in {
+        "chain_terminal_gap",
+        "media_extraction_gap",
+        "variant_coverage_gap",
+        "playback_context_gap",
+    }:
+        next_value["routePolicy"] = "owned_only" if current == "playback_context_gap" else "owned_plus_peer"
+        next_value["recipePolicy"] = "current_plus_provider_peer"
+        next_value["roleOrder"] = ["player", "source", "api", "episode", "detail", "search", "other"]
+        next_value["terminalOnly"] = True
+        next_value["responseSalvage"] = True
+        next_value["documentRequestMining"] = True
+        next_value["maxDepth"] = max(5, int(next_value.get("maxDepth") or 5))
+        next_value["maxEmbeds"] = max(28, int(next_value.get("maxEmbeds") or 28))
+    elif current == "candidate_replay_gap":
+        next_value["routePolicy"] = "owned_only"
+        next_value["recipePolicy"] = "current_plus_provider"
+        next_value["roleOrder"] = ["player", "api", "source", "detail", "episode", "search", "other"]
+        next_value["terminalOnly"] = False
+        next_value["aliasSearch"] = True
+        next_value["responseSalvage"] = True
+        next_value["documentRequestMining"] = True
+        next_value["sessionBootstrap"] = True
+    else:
+        next_value["responseSalvage"] = True
+        next_value["documentRequestMining"] = True
+        next_value["sessionBootstrap"] = True
+    return next_value
+
+
+def _rotate_meta_gap_experiment(
+    experiment: dict[str, Any],
+    failure_class: str,
+    generation: int,
+) -> dict[str, Any]:
+    next_value = _rebind_meta_gap_experiment(experiment, failure_class)
+    step = max(0, int(generation))
+    if step:
+        roles = [str(value) for value in next_value.get("roleOrder") or []]
+        if len(roles) > 1:
+            rotate = step % len(roles)
+            next_value["roleOrder"] = [*roles[rotate:], *roles[:rotate]]
+        current = _canon_failure(failure_class)
+        if current in {"provider_transport_gap", "transport_blocked"}:
+            routes = ["owned_plus_peer", "owned_only", "owned_plus_peer_generic"]
+            recipes = ["current_plus_provider", "current_plus_provider_peer", "current_only"]
+            next_value["routePolicy"] = routes[step % len(routes)]
+            next_value["recipePolicy"] = recipes[(step + 1) % len(recipes)]
+            next_value["sessionBootstrap"] = True if step % 2 == 0 else bool(next_value.get("sessionBootstrap"))
+        elif current in {"route_proven_gap", "search_gap"}:
+            routes = ["owned_plus_peer_generic", "owned_plus_peer", "owned_only"]
+            recipes = ["current_plus_provider_peer", "current_plus_provider", "current_only"]
+            next_value["routePolicy"] = routes[step % len(routes)]
+            next_value["recipePolicy"] = recipes[step % len(recipes)]
+            next_value["aliasSearch"] = True
+        elif current in {
+            "chain_terminal_gap",
+            "media_extraction_gap",
+            "variant_coverage_gap",
+            "playback_context_gap",
+        }:
+            next_value["routePolicy"] = "owned_only" if step % 2 == 0 else "owned_plus_peer"
+            next_value["recipePolicy"] = "current_plus_provider_peer" if step % 3 == 0 else "current_plus_provider"
+            next_value["terminalOnly"] = True
+        elif current == "candidate_replay_gap":
+            next_value["routePolicy"] = "owned_only" if step % 2 == 0 else "owned_plus_peer"
+            next_value["recipePolicy"] = "current_plus_provider" if step % 3 == 0 else "current_plus_provider_peer"
+            next_value["aliasSearch"] = True
+            next_value["sessionBootstrap"] = True
+        else:
+            routes = ["owned_plus_peer", "owned_plus_peer_generic", "owned_only"]
+            recipes = ["current_plus_provider", "current_plus_provider_peer", "current_only"]
+            next_value["routePolicy"] = routes[step % len(routes)]
+            next_value["recipePolicy"] = recipes[step % len(recipes)]
+            next_value["aliasSearch"] = step % 2 == 1 or bool(next_value.get("aliasSearch"))
+            next_value["sessionBootstrap"] = step % 2 == 0 or bool(next_value.get("sessionBootstrap"))
+    next_value["maxDepth"] = min(6, max(2, int(next_value.get("maxDepth") or 4) + step // 4))
+    next_value["maxPages"] = min(36, max(6, int(next_value.get("maxPages") or 18) + (step % 4) * 2))
+    next_value["maxEmbeds"] = min(36, max(6, int(next_value.get("maxEmbeds") or 16) + (step % 5)))
+    next_value["maxRecipePasses"] = min(6, max(1, int(next_value.get("maxRecipePasses") or 4) + step // 5))
+    return next_value
+
+
+def _meta_gap_scheduler_fingerprints(
+    row: dict[str, Any],
+    current_failure: str,
+) -> set[tuple[str, str]]:
+    profile = _meta_gap_scheduler_profile(row, current_failure)
+    experiment = row.get("experiment") if isinstance(row.get("experiment"), dict) else {}
+    if not profile or not experiment:
+        return set()
+    output: set[tuple[str, str]] = set()
+    for generation in range(3):
+        rotated = _rotate_meta_gap_experiment(experiment, current_failure, generation)
+        fingerprint = hashlib.sha256(
+            json.dumps(rotated, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
+        ).hexdigest()
+        output.add((profile, fingerprint))
+    return output
+
+
 def untried_advisor_fingerprints(
     provider_ids: list[str] | set[str],
     guidance_path: Path | None = None,
+    failure_classes: dict[str, str] | None = None,
 ) -> dict[str, set[tuple[str, str]]]:
-    """Return untried (profile, experiment fingerprint) pairs per provider."""
+    """Return planner-executable untried (profile, fingerprint) pairs.
+
+    Meta-gap source fingerprints are not executable identities. Mirror the Node
+    planner's bounded three derived experiments so scheduler wave accounting and
+    planner eligibility cannot disagree.
+    """
     path = guidance_path
     if path is None:
         raw = str(os.environ.get("NIAKVIO_BRAIN_LLM_GUIDANCE") or "").strip()
@@ -275,6 +445,14 @@ def untried_advisor_fingerprints(
             or any(ch not in "0123456789abcdef" for ch in fingerprint)
         ):
             continue
+        guidance_kind = str(row.get("guidanceKind") or "").strip().casefold()
+        strategy = str(row.get("strategy") or "").strip().casefold().replace("-", "_")
+        current_failure = _canon_failure((failure_classes or {}).get(provider) or row.get("failureClass"))
+        if guidance_kind == "meta-gap-synthesis" or strategy.startswith("meta_gap_"):
+            derived = _meta_gap_scheduler_fingerprints(row, current_failure)
+            if derived:
+                candidates.setdefault(provider, set()).update(derived)
+                continue
         candidates.setdefault(provider, set()).add((profile, fingerprint))
 
     failed: dict[str, set[tuple[str, str]]] = {}
@@ -1271,7 +1449,15 @@ def main() -> int:
                 # If that synthesized child actually executed and failed (or made
                 # non-publishable progress), the next bounded wave must see the
                 # new memory immediately instead of requiring another workflow.
-                untried_advisor = untried_advisor_fingerprints(batch)
+                advisor_failure_classes = {
+                    cid(plan.get("providerId")): str(plan.get("failureClass") or "")
+                    for plan in (brain_summary.get("plans") or {}).values()
+                    if isinstance(plan, dict) and cid(plan.get("providerId"))
+                }
+                untried_advisor = untried_advisor_fingerprints(
+                    batch,
+                    failure_classes=advisor_failure_classes,
+                )
                 dynamic_advisor_rotation = executed_advisor_rotation_pending(brain_summary)
                 advisor_rotation_pending = {
                     provider for provider in deferred
