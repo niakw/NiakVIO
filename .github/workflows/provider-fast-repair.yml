@@ -345,10 +345,9 @@ jobs:
               echo "FIELD_PROVIDER_FAST_REPAIR_LEARNING_DEBT providers=0 next=census"
               return 0
             fi
-            publish_proposal="true"
-            if [ "$force_mode" = "true" ]; then
-              publish_proposal="false"
-            fi
+            # Automatic Fast Repair handoff is main-only. Proposal PR creation
+            # remains an explicit human opt-in handled inside Brain Learning.
+            publish_proposal="false"
             args=(
               --repo "$GITHUB_REPOSITORY" --ref main
               -f publish_proposal="$publish_proposal"
