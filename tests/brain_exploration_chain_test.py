@@ -240,8 +240,13 @@ assert 'candidate.pop("brain_exploration_parent", None)' not in adaptive
 assert 'retryable_exploration_rejections' in deep
 assert 'brain_exploration_rejections' in deep
 assert 'FIELD_PROVIDER_BRAIN_DEEP_DECISION' in deep
+assert 'production_ok={str(bool(accepted)).lower()}' in deep
+assert 'bool(ok)' not in deep
 assert 'identity_before=' in deep and 'identity_after=' in deep
 assert 'malformed_before=' in deep and 'malformed_after=' in deep
+decision_idx=deep.index('FIELD_PROVIDER_BRAIN_DEEP_DECISION')
+rejection_idx=deep.index('rejection_reason = reason if is_selected else "inferior_to_selected_variant"')
+assert rejection_idx < decision_idx,(rejection_idx,decision_idx)
 assert 'bounded_rounds = "3" if exploration_chain else "1"' in adaptive
 assert 'if "--max-rounds" not in sys.argv:' in adaptive
 assert 'sys.argv[index + 1] = bounded_rounds' not in adaptive
