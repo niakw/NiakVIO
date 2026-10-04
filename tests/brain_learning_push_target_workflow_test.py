@@ -94,7 +94,7 @@ assert "needs.experiment.outputs.architecture_force == 'true'" in workflow
 assert "needs.experiment.outputs.architecture_force != 'true'" in workflow
 assert 'elif [ "${FAST_HANDOFF:-false}" = "true" ] && [ -n "${FAST_MISSING_PROVIDERS:-}" ]; then' in workflow
 assert 'FIELD_BRAIN_LLM_TARGETED_BUDGET' in workflow
-assert 'model_timeout=120' in workflow
+assert 'model_timeout=180' in workflow
 assert 'effective_filter="${FAST_MISSING_PROVIDERS}"' in workflow
 assert 'effective_filter="${PROVIDER_FILTER:-}"' in workflow
 assert 'if [ "${FAST_HANDOFF:-false}" = "true" ]; then\n            effective_filter="${FAST_MISSING_PROVIDERS:-}"' not in workflow
