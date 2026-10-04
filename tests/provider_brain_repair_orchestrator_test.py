@@ -28,6 +28,83 @@ for count in (1,2,4,8,16):
 
 assert mod.chunks(["a","b","c","d","e"],2)==[["a","b"],["c","d"],["e"]]
 
+# A non-publishable Deep exploration parent may cross wave boundaries only
+# inside the same Brain sandbox. Exact bytes + SHA are preserved, publication
+# authority stays false, and the fresh wave will retest it as baseline.
+with tempfile.TemporaryDirectory() as tmp:
+    root=Path(tmp)
+    stage1=root/"wave-1"/"stage"
+    stage2=root/"wave-2"/"stage"
+    rel=Path("providers/runtime-repairs/demo.js")
+    payload=b"// safe exploration parent\n"
+    digest=mod.hashlib.sha256(payload).hexdigest()
+    (stage1/rel).parent.mkdir(parents=True,exist_ok=True)
+    (stage1/rel).write_bytes(payload)
+    reg1=stage1/"candidates.json"
+    reg1.write_text(json.dumps({
+        "candidates":[{
+            "key":"published:demo",
+            "canonical_id":"demo",
+            "local_path":str(rel),
+            "sha256":digest,
+            "brain_exploration_parent":{
+                "round":2,
+                "reason":"sandbox_diagnostic_progress:returned",
+                "productionAccepted":False,
+            },
+        }]
+    }),encoding="utf-8")
+    carry=mod.capture_cross_wave_exploration_parents(
+        stage1,reg1,{"demo"},source_wave=1
+    )
+    assert set(carry)=={"demo"},carry
+    assert carry["demo"]["candidate"]["brain_cross_wave_exploration_parent"]=={
+        "sourceWave":1,
+        "sandboxOnly":True,
+        "publicationAuthority":False,
+        "requiresBaselineRetest":True,
+    },carry
+
+    fresh=b"// published baseline\n"
+    fresh_rel=Path("providers/demo.js")
+    (stage2/fresh_rel).parent.mkdir(parents=True,exist_ok=True)
+    (stage2/fresh_rel).write_bytes(fresh)
+    reg2=stage2/"candidates.json"
+    reg2.write_text(json.dumps({
+        "candidates":[{
+            "key":"published:demo",
+            "canonical_id":"demo",
+            "local_path":str(fresh_rel),
+            "sha256":mod.hashlib.sha256(fresh).hexdigest(),
+        }]
+    }),encoding="utf-8")
+    applied=mod.apply_cross_wave_exploration_parents(
+        stage2,reg2,carry,["demo"],target_wave=2
+    )
+    assert applied==["demo"],applied
+    merged=json.loads(reg2.read_text(encoding="utf-8"))["candidates"][0]
+    assert merged["key"]=="published:demo",merged
+    assert merged["local_path"]==str(rel),merged
+    assert (stage2/rel).read_bytes()==payload
+    cross=merged["brain_cross_wave_exploration_parent"]
+    assert cross["sourceWave"]==1 and cross["targetWave"]==2,cross
+    assert cross["sandboxOnly"] is True and cross["publicationAuthority"] is False,cross
+    assert cross["requiresBaselineRetest"] is True,cross
+    assert "provider_base_change_authorized" not in merged
+
+    # Path escape can never become a cross-wave sandbox parent.
+    escaped=stage1/"escaped.json"
+    escaped.write_text(json.dumps({"candidates":[{
+        "key":"published:bad",
+        "canonical_id":"bad",
+        "local_path":"../outside.js",
+        "sha256":"0"*64,
+        "brain_exploration_parent":{"productionAccepted":False},
+    }]}),encoding="utf-8")
+    assert mod.capture_cross_wave_exploration_parents(
+        stage1,escaped,{"bad"},source_wave=1
+    )=={}
+
 assert mod.health_concurrency_for_batch(0,1)==1
 assert mod.health_concurrency_for_batch(0,3)==3
 assert mod.health_concurrency_for_batch(0,4)==4
@@ -154,6 +231,17 @@ durable=mod.durable_accepted_rows(raw_accept,{"good"})
 assert [row["provider"] for row in durable]==["good"],durable
 assert durable[0]["acceptedProgram"]["profile"]=="y2",durable
 assert mod.durable_accepted_rows(raw_accept,set())==[]
+
+source_text=SCRIPT.read_text(encoding="utf-8")
+for required in (
+    "capture_cross_wave_exploration_parents",
+    "apply_cross_wave_exploration_parents",
+    "FIELD_PROVIDER_BRAIN_CROSS_WAVE_EXPLORATION_APPLIED",
+    "crossWaveExplorationCarryoverApplied",
+    "crossWaveExplorationCarryoverCaptured",
+    "same-run-sandbox-only-retested-no-publication-authority",
+):
+    assert required in source_text,required
 
 with tempfile.TemporaryDirectory() as tmp:
     old_status,old_plan,old_memory=mod.STATUS,mod.BATCH_PLAN,mod.REPAIR_MEMORY
