@@ -80,6 +80,12 @@ push = workflow.index("git push origin HEAD:main", restore_authority)
 assert copy_status < guard < reset < rebuild_batch < fallback_batch < restore_authority < push
 assert "cp /tmp/provider-repair-batch-plan.json automation/provider-repair-batch-plan-latest.json" not in workflow
 
+merge_start = workflow.index("  merge:")
+merge_steps = workflow.index("    steps:", merge_start)
+merge_header = workflow[merge_start:merge_steps]
+assert "contents: write" in merge_header
+assert "actions: write" in merge_header, "census merge must be allowed to dispatch Brain Autopilot after persisted evidence"
+
 assert "automation/provider-waf-browser-session-effective.json" in workflow
 probe_pos = workflow.index("python scripts/probe_waf_browser_session.py")
 effective_merge_pos = workflow.index("python scripts/merge_waf_latest_evidence.py", probe_pos)
