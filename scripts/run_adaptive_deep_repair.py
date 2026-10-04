@@ -147,8 +147,13 @@ def _brain_matching(candidate, result, source_text, config=None):
         # Deep already proved that these bytes made safe causal progress without
         # becoming publishable. Replan from the new observation before choosing
         # the next profile; never replay the stale parent hypothesis blindly.
+        #
+        # IMPORTANT: keep the exploration-parent marker on the current candidate
+        # until a child is itself accepted as production or as new exploration
+        # progress. matching_profiles() is speculative: if the generated child
+        # regresses and is rejected, the same good parent must remain eligible
+        # for a different causal replan on the next bounded round.
         plan = brain.replan_observation(candidate, result, plan_key=plan_key, mode="deep")
-        candidate.pop("brain_exploration_parent", None)
     else:
         plan = brain.PLANS.get(plan_key) or {}
     # The current run is the highest-authority provider-local evidence. Convert
