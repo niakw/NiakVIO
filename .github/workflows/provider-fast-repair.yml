@@ -340,14 +340,21 @@ jobs:
           )"
           record_learning_debt() {
             if [ "${learn_handoff_count:-0}" -le 0 ]; then
-              gh workflow run provider-census-sharded.yml \
+              if gh workflow run provider-census-sharded.yml \
                 --repo "$GITHUB_REPOSITORY" --ref main \
-                -f scope=unresolved -f persist=true
-              echo "FIELD_PROVIDER_FAST_REPAIR_LEARNING_DEBT providers=0 next=census"
+                -f scope=unresolved -f persist=true; then
+                echo "FIELD_PROVIDER_FAST_REPAIR_LEARNING_DEBT providers=0 next=census dispatch=true"
+              else
+                echo "FIELD_PROVIDER_FAST_REPAIR_LEARNING_DEBT providers=0 next=census dispatch=false reason=github_api_unavailable persisted=true"
+              fi
               return 0
             fi
             # Automatic Fast Repair handoff is main-only. Proposal PR creation
             # remains an explicit human opt-in handled inside Brain Learning.
+            # The handoff JSON is committed before this function runs; therefore
+            # a transient Actions API quota/outage must not turn durable Repair
+            # evidence into a failed workflow. A later Autopilot/Learning cycle
+            # can consume the persisted debt.
             publish_proposal="false"
             args=(
               --repo "$GITHUB_REPOSITORY" --ref main
@@ -359,8 +366,12 @@ jobs:
             if [ "$force_mode" = "true" ]; then
               args+=(-f architecture_force=true)
             fi
-            gh workflow run brain-learning-lab.yml "${args[@]}"
-            echo "FIELD_PROVIDER_FAST_REPAIR_LEARNING_DEBT providers=${learn_handoff_count:-0} ids=${learn_handoff_csv:-none} learning_dispatch=true architecture_force=$force_mode publish_proposal=$publish_proposal owner=immediate-targeted-learning"
+            if gh workflow run brain-learning-lab.yml "${args[@]}"; then
+              echo "FIELD_PROVIDER_FAST_REPAIR_LEARNING_DEBT providers=${learn_handoff_count:-0} ids=${learn_handoff_csv:-none} learning_dispatch=true architecture_force=$force_mode publish_proposal=$publish_proposal owner=immediate-targeted-learning"
+            else
+              echo "FIELD_PROVIDER_FAST_REPAIR_LEARNING_DEBT providers=${learn_handoff_count:-0} ids=${learn_handoff_csv:-none} learning_dispatch=false reason=github_api_unavailable persisted=true architecture_force=$force_mode publish_proposal=$publish_proposal owner=persisted-fast-handoff"
+            fi
+            return 0
           }
           git fetch --quiet origin main
           remote_main="$(git rev-parse origin/main)"
