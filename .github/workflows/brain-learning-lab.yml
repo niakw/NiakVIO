@@ -386,6 +386,7 @@ jobs:
           python tests/brain_historical_experience_scope_test.py
           python tests/brain_historical_solution_execution_test.py
           python tests/brain_llm_guidance_contract_test.py
+          python tests/brain_learning_guidance_merge_test.py
           python tests/brain_local_force_learning_prior_test.py
           python tests/brain_llm_advisor_execution_test.py
           python tests/brain_llm_experiment_runtime_test.py
@@ -1249,14 +1250,38 @@ jobs:
 
           candidate_ms="$(node -e "const x=require('./brain-learning-output/latest.json');const t=Date.parse(x.generatedAt||'');if(!Number.isFinite(t))process.exit(2);process.stdout.write(String(t))")"
           existing_ms=""
+          existing_guidance_source=""
           if git cat-file -e "refs/remotes/origin/$BRANCH:engine_v2/learning/latest.json" 2>/dev/null; then
             git show "refs/remotes/origin/$BRANCH:engine_v2/learning/latest.json" > "$RUNNER_TEMP/brain-learning-existing.json"
             existing_ms="$(node -e "const fs=require('fs');const x=JSON.parse(fs.readFileSync(process.env.RUNNER_TEMP+'/brain-learning-existing.json','utf8'));const t=Date.parse(x.generatedAt||'');if(Number.isFinite(t))process.stdout.write(String(t))")"
+          fi
+          if git cat-file -e "refs/remotes/origin/$BRANCH:engine_v2/learning/llm-guidance.json" 2>/dev/null; then
+            git show "refs/remotes/origin/$BRANCH:engine_v2/learning/llm-guidance.json" > "$RUNNER_TEMP/brain-learning-existing-guidance.json"
+            existing_guidance_source="$(node -e "const fs=require('fs');const x=JSON.parse(fs.readFileSync(process.env.RUNNER_TEMP+'/brain-learning-existing-guidance.json','utf8'));process.stdout.write(String(x.sourceSha||''))")"
+          fi
+          candidate_guidance_source="$(node -e "const x=require('./brain-sandbox/brain-llm/guidance.json');process.stdout.write(String(x.sourceSha||''))")"
+          if [ -n "$existing_guidance_source" ] && [ "$candidate_guidance_source" != "$existing_guidance_source" ]; then
+            if git merge-base --is-ancestor "$candidate_guidance_source" "$existing_guidance_source"; then
+              echo "FIELD_BRAIN_MEMORY_PUBLISH skipped=stale-source candidate=$candidate_guidance_source existing=$existing_guidance_source"
+              echo "published=false" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+            git merge-base --is-ancestor "$existing_guidance_source" "$candidate_guidance_source" || {
+              echo "refusing divergent Learning guidance sources candidate=$candidate_guidance_source existing=$existing_guidance_source" >&2
+              exit 1
+            }
           fi
           if [ -n "$existing_ms" ] && [ "$candidate_ms" -le "$existing_ms" ]; then
             echo "FIELD_BRAIN_MEMORY_PUBLISH skipped=stale candidate_ms=$candidate_ms existing_ms=$existing_ms"
             echo "published=false" >> "$GITHUB_OUTPUT"
             exit 0
+          fi
+          if [ -s "$RUNNER_TEMP/brain-learning-existing-guidance.json" ]; then
+            python scripts/merge_brain_llm_guidance_memory.py \
+              --previous "$RUNNER_TEMP/brain-learning-existing-guidance.json" \
+              --current brain-sandbox/brain-llm/guidance.json \
+              --output brain-sandbox/brain-llm/guidance.json \
+              --repo-root "$GITHUB_WORKSPACE"
           fi
 
           # Always publish from a fresh orphan tree. The previous ref is
