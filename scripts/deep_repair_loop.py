@@ -475,6 +475,26 @@ def main() -> int:
                             "runtime_errors_after": runtime_error_count(selected_result),
                         }
                     )
+                if is_selected:
+                    print(
+                        "FIELD_PROVIDER_BRAIN_DEEP_DECISION "
+                        f"parent={parent_key} "
+                        f"profile={str((candidate_variant.get('runtime_repair') or {}).get('profile') or 'none')} "
+                        f"production_ok={str(bool(ok)).lower()} "
+                        f"production_reason={reason} "
+                        f"exploration_ok={str(bool(exploration_ok)).lower()} "
+                        f"exploration_reason={exploration_reason} "
+                        f"streams_before={stream_count(parent_result)} "
+                        f"streams_after={stream_count(selected_result)} "
+                        f"playable_before={playable_stream_count(parent_result)} "
+                        f"playable_after={playable_stream_count(selected_result)} "
+                        f"malformed_before={malformed_request_count(parent_result)} "
+                        f"malformed_after={malformed_request_count(selected_result)} "
+                        f"identity_before={identity_contradiction_count(parent_result)} "
+                        f"identity_after={identity_contradiction_count(selected_result)}",
+                        flush=True,
+                    )
+
                 else:
                     rejection_reason = reason if is_selected else "inferior_to_selected_variant"
                     round_audit["rejected"].append(
