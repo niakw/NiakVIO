@@ -55,6 +55,68 @@ rotated=synthesize_rows(census=census,memory=bounded_memory,current_sha="a"*40)
 alpha_rotated=next(r for r in rotated if r["providerId"]=="alpha")
 assert alpha_rotated["profile"] != alpha_first["profile"], (alpha_first,alpha_rotated)
 assert alpha_rotated["profile"]=="player_media_extractor_v1",alpha_rotated
+
+# Causal-class drift must not reset an already-executed executor family. This is
+# the representative Moviebox shape: census says route_proven_gap while current
+# sandbox evidence says transport_blocked. Three executed proven-route attempts
+# under the sibling class must make route_proven synthesis rotate to search
+# contract inference instead of replaying proven-route again.
+route_census={
+    "repairQueue":["moviebox-like"],
+    "providers":[{
+        "provider":"moviebox-like",
+        "status":"ROUTE PROVEN",
+        "dominantIssue":"provider_network_zero_result",
+        "evidenceDepth":["movie=route_proven","tv=route_proven"],
+    }],
+}
+route_memory={"entries":[
+    {
+        "providerId":"moviebox-like",
+        "failureClass":"transport_blocked",
+        "profile":"proven_route_terminal_traversal_v1",
+        "llmAdvisorExperimentFingerprint":str(i)*64,
+        "executionObserved":True,
+        "consecutiveFailures":1,
+        "failures":1,
+        "progresses":1,
+        "successes":0,
+    }
+    for i in (1,2,3)
+]}
+route_rotated=synthesize_rows(census=route_census,memory=route_memory,current_sha="a"*40)
+route_row=next(r for r in route_rotated if r["providerId"]=="moviebox-like")
+assert route_row["failureClass"]=="route_proven_gap",route_row
+assert route_row["profile"]=="search_contract_inference_v1",route_row
+
+# The same family semantics apply to terminal/media class drift.
+terminal_census={
+    "repairQueue":["terminal-like"],
+    "providers":[{
+        "provider":"terminal-like",
+        "status":"CHAIN REACHED",
+        "dominantIssue":"provider_network_zero_result",
+        "evidenceDepth":["movie=chain_reached"],
+    }],
+}
+terminal_memory={"entries":[
+    {
+        "providerId":"terminal-like",
+        "failureClass":"media_extraction_gap",
+        "profile":"chain_terminal_extractor_v1",
+        "llmAdvisorExperimentFingerprint":str(i)*64,
+        "executionObserved":True,
+        "consecutiveFailures":1,
+        "failures":1,
+        "successes":0,
+    }
+    for i in (4,5,6)
+]}
+terminal_rotated=synthesize_rows(census=terminal_census,memory=terminal_memory,current_sha="a"*40)
+terminal_row=next(r for r in terminal_rotated if r["providerId"]=="terminal-like")
+assert terminal_row["failureClass"]=="chain_terminal_gap",terminal_row
+assert terminal_row["profile"]=="player_media_extractor_v1",terminal_row
+
 print("Brain declarative meta-gap strategy tests passed")
 
 # Runtime integration is covered separately; this generator remains pure.
