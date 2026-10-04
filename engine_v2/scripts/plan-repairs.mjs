@@ -1279,13 +1279,59 @@ function deriveEvidence(candidate, result) {
   const status = stringValue(result.status, "runtime_error");
   const tests = asArray(result.tests).filter(isRecord);
   const evidence = asRecord(result.evidence);
-  const playable = finiteNumber(evidence.streams_playable, maxNumber(tests.map((row) => row.streams_playable)));
-  const returned = finiteNumber(evidence.streams_returned, maxNumber(tests.map((row) => row.stream_count ?? row.streams_returned)));
-  const failureText = tests.map((row) => {
+  const requiredCategories = [...new Set(
+    stringArray(evidence.required_fixture_categories)
+      .map((value) => value.toLowerCase())
+      .filter(Boolean),
+  )];
+  const healthyCategories = new Set(
+    stringArray(evidence.healthy_fixture_categories)
+      .map((value) => value.toLowerCase())
+      .filter(Boolean),
+  );
+  const missingCategories = requiredCategories.filter((value) => !healthyCategories.has(value));
+  const missingSet = new Set(missingCategories);
+  const testCategory = (row) => {
+    const fixture = asRecord(row.fixture);
+    return stringValue(fixture.category ?? fixture.mediaType).toLowerCase();
+  };
+  const missingCategoryTests = missingCategories.length
+    ? tests.filter((row) => missingSet.has(testCategory(row)))
+    : [];
+  const zeroYieldMissingTests = missingCategoryTests.filter((row) => (
+    finiteNumber(row.streams_playable, 0) <= 0
+    && finiteNumber(row.stream_count ?? row.streams_returned, 0) <= 0
+  ));
+  const nonHealthyMissingTests = missingCategoryTests.filter((row) => (
+    finiteNumber(row.streams_playable, 0) <= 0
+    || stringValue(row.status).toLowerCase() !== "healthy"
+  ));
+  const diagnosticTests = missingCategories.length
+    ? (
+        zeroYieldMissingTests.length
+          ? zeroYieldMissingTests
+          : nonHealthyMissingTests.length
+            ? nonHealthyMissingTests
+            : missingCategoryTests.length
+              ? missingCategoryTests
+              : tests
+      )
+    : tests;
+  const aggregatePlayable = finiteNumber(
+    evidence.streams_playable,
+    maxNumber(tests.map((row) => row.streams_playable)),
+  );
+  const playable = missingCategories.length
+    ? 0
+    : aggregatePlayable;
+  const returned = missingCategories.length
+    ? maxNumber(diagnosticTests.map((row) => row.stream_count ?? row.streams_returned))
+    : finiteNumber(evidence.streams_returned, maxNumber(tests.map((row) => row.stream_count ?? row.streams_returned)));
+  const failureText = diagnosticTests.map((row) => {
     const details = asRecord(row.error_details);
     return `${stringValue(row.failure_class)} ${stringValue(row.status)} ${stringValue(details.code)} ${stringValue(details.message)}`;
   }).join(" ").toLowerCase();
-  const observations = tests.flatMap((row) => asArray(row.network_observations).filter(isRecord));
+  const observations = diagnosticTests.flatMap((row) => asArray(row.network_observations).filter(isRecord));
   const statuses = observations.map((row) => Number(row.status)).filter(Number.isFinite);
   const providerObservations = observations.filter((row) => row.infrastructure !== true);
   const providerStatuses = providerObservations.map((row) => Number(row.status)).filter(Number.isFinite);
@@ -1300,7 +1346,7 @@ function deriveEvidence(candidate, result) {
     const code = Number(row.status);
     return code >= 200 && code < 300 && !isTerminalMediaObservation(row);
   });
-  const fixture = asRecord(tests[0]?.fixture);
+  const fixture = asRecord(diagnosticTests[0]?.fixture ?? tests[0]?.fixture);
   const observedPipelineStage = highestObservedPipelineStage(observations, tests, returned, playable);
   const metadata = asRecord(candidate.metadata);
   const supportedTypes = stringArray(metadata.supportedTypes);
@@ -1312,7 +1358,7 @@ function deriveEvidence(candidate, result) {
   const audioTrackGap = /(?:missing|no|without)[_ -]?(?:usable[_ -]?)?audio|audio[_ -]?(?:track|stream)[_ -]?(?:missing|absent|gap)|silent[_ -]?media/.test(failureText);
 
   if (audioTrackGap) return { invoked, audioTrackGap: true, request: { mediaType }, observedPipelineStage };
-  if (playable > 0 && !identityContradiction) {
+  if (playable > 0 && !identityContradiction && missingCategories.length === 0) {
     return { invoked, contractDrift, playableStreams: playable, request: { mediaType }, observedPipelineStage, stages: { validation: { attempted: true, playable: true, playableCount: playable, statuses } } };
   }
   if (identityContradiction) return { invoked, suspicious: true, request: { mediaType }, observedPipelineStage };
