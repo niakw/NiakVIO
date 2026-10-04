@@ -3,7 +3,7 @@
   "requested_scope": "all",
   "resolved_scope": "explicit",
   "selected_providers": [
-    "moviebox"
+    "4khdhub"
   ],
   "shard_count": 1,
   "shard_index": 0,
@@ -11,7 +11,7 @@
   "fixture_selection_policy": "retained-proof-first-then-provider-targeted-then-representative-then-three-corpus-rotated",
   "provider_count": 1,
   "task_count": 2,
-  "probe_count": 8,
+  "probe_count": 6,
   "rotated_task_count": 2,
   "max_samples_per_lane": 4,
   "raw_provider_count": 0,
@@ -54,26 +54,25 @@
     "no_streams": 2
   },
   "debug_stage_counts": {
-    "provider_waf_challenge": 2
+    "provider_network_zero_result": 2
   },
   "debug_stage_providers": {
-    "provider_waf_challenge": [
-      "moviebox"
+    "provider_network_zero_result": [
+      "4khdhub"
     ]
   },
   "rows": [
     {
-      "provider_id": "moviebox",
-      "provider_name": "📦 MovieBox",
+      "provider_id": "4khdhub",
+      "provider_name": "📺 4KHDHub",
       "semantic_type": "movie",
-      "fixture_title": "Captain America: Civil War",
+      "fixture_title": "The Colony",
       "fixture": {
-        "slug": "captain-america-civil-war-2016",
-        "tmdbId": "271110",
+        "tmdbId": "760873",
         "mediaType": "movie",
         "category": "movie",
-        "title": "Captain America: Civil War",
-        "year": 2016
+        "title": "The Colony",
+        "year": 2021
       },
       "streams_returned": 0,
       "announced_player_candidates": 0,
@@ -84,34 +83,33 @@
       "explored_player_hosts": [],
       "variant_fanout_state": "not-observed",
       "status": "no_streams",
-      "debug_stage": "provider_waf_challenge",
+      "debug_stage": "provider_network_zero_result",
       "debug_model": {
-        "strategy": "api_stream_resolver",
-        "source_runtime_family": "stremio-json",
+        "strategy": "html_scraper",
+        "source_runtime_family": "catalogue-html",
         "reconstruction_state": "learning-clean-seed",
-        "identity_mode": "tmdb_direct",
-        "requires_tmdb_before_run": false,
+        "identity_mode": "catalog_search",
+        "requires_tmdb_before_run": true,
         "supported_types": [
           "movie",
           "tv"
         ],
-        "route_count": 2,
+        "route_count": 1,
         "route_kinds": [
-          "unknown",
-          "detail"
+          "search"
         ],
         "has_api_recipe": false,
-        "official_site": "https://moviebox.yachts",
-        "official_hub": "https://moviiebox.lol/",
+        "official_site": "https://4khdhub.one",
+        "official_hub": "https://4khdhub.one/",
         "official_api": null
       },
-      "debug_fetch_count": 5,
-      "debug_provider_fetch_count": 4,
+      "debug_fetch_count": 2,
+      "debug_provider_fetch_count": 1,
       "debug_progress_stage": "lookup_only",
       "debug_fetches": [
         {
-          "url": "https://api.themoviedb.org/3/movie/271110?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Crelease_dates&language=fr-FR&api_key=%3Credacted%3E",
-          "response_url": "https://api.themoviedb.org/3/movie/271110?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Crelease_dates&language=fr-FR&api_key=%3Credacted%3E",
+          "url": "https://api.themoviedb.org/3/movie/760873?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Crelease_dates&language=fr-FR&api_key=%3Credacted%3E",
+          "response_url": "https://api.themoviedb.org/3/movie/760873?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Crelease_dates&language=fr-FR&api_key=%3Credacted%3E",
           "method": "GET",
           "status": 200,
           "content_type": "application/json",
@@ -143,139 +141,206 @@
           "declared_indexed_player_candidate_count": 0,
           "declared_player_hosts": [],
           "declared_quality_heights": [],
-          "duration_ms": 116
+          "duration_ms": 78
         },
         {
-          "url": "https://pengu.uk/%7B%22source_moviebox%22%3A%22on%22%2C%22res_1080%22%3A%22on%22%2C%22disable_direct%22%3A%22on%22%2C%22auth_token%22%3A%22XwZg2rLkLlbjXBeDVCyxgfHXjxN1ijLMkUuToW8KaKc%22%7D/stream/movie/tt3498820.json",
-          "response_url": "https://pengu.uk/%7B%22source_moviebox%22%3A%22on%22%2C%22res_1080%22%3A%22on%22%2C%22disable_direct%22%3A%22on%22%2C%22auth_token%22%3A%22XwZg2rLkLlbjXBeDVCyxgfHXjxN1ijLMkUuToW8KaKc%22%7D/stream/movie/tt3498820.json",
-          "method": "GET",
-          "status": 429,
-          "content_type": "application/json",
-          "challenge": "",
-          "response_shape": {
-            "kind": "json",
-            "top": "object",
-            "keys": [
-              "error"
-            ]
-          },
-          "declared_player_candidate_count": 0,
-          "declared_url_player_candidate_count": 0,
-          "declared_indexed_player_candidate_count": 0,
-          "declared_player_hosts": [],
-          "declared_quality_heights": [],
-          "duration_ms": 129
-        },
-        {
-          "url": "https://moviebox-cfa7.onrender.com/eyJyZXNvbHV0aW9uIjpbIjEwODBwIl0sImxhbmd1YWdlIjpbImVuIiwiaGkiLCJvcmlnIl0sInByb3h5X3VybCI6IiIsInByb3ZpZGVycyI6WyJtb2JpbGUiLCJ3ZWIiLCJsZWdhY3kiXSwibmFtZV90ZW1wbGF0ZSI6IvCfjqUgKip7cmVzb2x1dGlvbn0qKiIsInRpdGxlX3RlbXBsYXRlIjoi8J-UiiB7YXVkaW99IHwg8J-SviAqe3NpemV9KlxcbvCfkqwgU3Viczoge3N1YnRpdGxlc30ifQ/stream/movie/tt3498820.json",
-          "response_url": "https://moviebox-cfa7.onrender.com/eyJyZXNvbHV0aW9uIjpbIjEwODBwIl0sImxhbmd1YWdlIjpbImVuIiwiaGkiLCJvcmlnIl0sInByb3h5X3VybCI6IiIsInByb3ZpZGVycyI6WyJtb2JpbGUiLCJ3ZWIiLCJsZWdhY3kiXSwibmFtZV90ZW1wbGF0ZSI6IvCfjqUgKip7cmVzb2x1dGlvbn0qKiIsInRpdGxlX3RlbXBsYXRlIjoi8J-UiiB7YXVkaW99IHwg8J-SviAqe3NpemV9KlxcbvCfkqwgU3Viczoge3N1YnRpdGxlc30ifQ/stream/movie/tt3498820.json",
-          "method": "GET",
-          "status": 404,
-          "content_type": "text/plain",
-          "challenge": "",
-          "response_shape": null,
-          "declared_player_candidate_count": 0,
-          "declared_url_player_candidate_count": 0,
-          "declared_indexed_player_candidate_count": 0,
-          "declared_player_hosts": [],
-          "declared_quality_heights": [],
-          "duration_ms": 227
-        },
-        {
-          "url": "https://vidsrcme.ru/vs_src.php?type=movie&id=271110",
-          "response_url": "https://vidsrcme.ru/vs_src.php?type=movie&id=271110",
+          "url": "https://4khdhub.one/?s=La%20Colonie%202021",
+          "response_url": "https://4khdhub.one/?s=La%20Colonie%202021",
           "method": "GET",
           "status": 200,
-          "content_type": "application/json",
+          "content_type": "text/html",
           "challenge": "",
           "response_shape": {
-            "kind": "json",
-            "top": "object",
-            "keys": [
-              "src"
-            ]
-          },
-          "declared_player_candidate_count": 1,
-          "declared_url_player_candidate_count": 1,
-          "declared_indexed_player_candidate_count": 0,
-          "declared_player_hosts": [
-            "cloudorchestranova.com"
-          ],
-          "declared_quality_heights": [],
-          "duration_ms": 291
-        },
-        {
-          "url": "https://cloudorchestranova.com/embed/movie/271110?vs=lXUAmX3RSlZg8dmvk--QDhe1L83CROxNo9-_RO7zOv_VL2OQqoma2iUTP1JpLD7QxcRRsVQ59Z_Ld4XIoQHufEE9ivnUAhL-KKs",
-          "response_url": "https://cloudorchestranova.com/embed/movie/271110?vs=lXUAmX3RSlZg8dmvk--QDhe1L83CROxNo9-_RO7zOv_VL2OQqoma2iUTP1JpLD7QxcRRsVQ59Z_Ld4XIoQHufEE9ivnUAhL-KKs",
-          "method": "GET",
-          "status": 403,
-          "content_type": "text/html",
-          "challenge": "cloudflare",
-          "response_shape": {
             "kind": "html",
-            "sampleBytes": 6004,
-            "forms": 0,
+            "sampleBytes": 40708,
+            "forms": 1,
             "iframes": 0,
             "videos": 0,
             "sources": 0,
-            "scripts": 1,
-            "anchors": 0,
+            "scripts": 16,
+            "anchors": 42,
             "classTokens": [
-              "h2",
-              "main-content",
-              "main-wrapper"
+              "movie-card-format",
+              "dropdown-item",
+              "movie-card",
+              "movie-card-content",
+              "movie-card-formats",
+              "movie-card-image",
+              "movie-card-meta",
+              "movie-card-overlay",
+              "movie-card-title",
+              "quality-badges",
+              "nav-item",
+              "nav-link",
+              "sr-only",
+              "dropdown-menu",
+              "space-y-4",
+              "pagination-container"
             ],
             "idTokens": [
-              "challenge-error-text"
+              "back-to-top",
+              "close-mobile-menu",
+              "close-search",
+              "current-year",
+              "logo",
+              "main-nav",
+              "menu-toggle",
+              "mobile-menu-backdrop",
+              "search",
+              "search-backdrop",
+              "search-overlay",
+              "search-toggle"
             ],
             "classFacts": [
               {
-                "token": "h2",
-                "count": 1,
+                "token": "movie-card-format",
+                "count": 12,
                 "tags": [
-                  "div"
+                  "span"
                 ],
                 "selfHref": 0,
-                "nestedAnchors": 0,
+                "nestedAnchors": 24,
                 "signals": [
-                  "movie"
+                  "movie",
+                  "series",
+                  "1080p",
+                  "year"
                 ]
               },
               {
-                "token": "main-content",
-                "count": 1,
+                "token": "dropdown-item",
+                "count": 12,
                 "tags": [
-                  "div"
+                  "a"
                 ],
-                "selfHref": 0,
-                "nestedAnchors": 0,
+                "selfHref": 12,
+                "nestedAnchors": 24,
                 "signals": [
-                  "movie"
+                  "movie",
+                  "series",
+                  "4k",
+                  "year"
                 ]
               },
               {
-                "token": "main-wrapper",
-                "count": 1,
+                "token": "movie-card",
+                "count": 12,
+                "tags": [
+                  "a",
+                  "div",
+                  "span"
+                ],
+                "selfHref": 1,
+                "nestedAnchors": 24,
+                "signals": [
+                  "movie",
+                  "series",
+                  "1080p",
+                  "year"
+                ]
+              },
+              {
+                "token": "movie-card-content",
+                "count": 12,
                 "tags": [
                   "div"
                 ],
                 "selfHref": 0,
-                "nestedAnchors": 0,
+                "nestedAnchors": 24,
                 "signals": [
-                  "movie"
+                  "movie",
+                  "series",
+                  "1080p",
+                  "year",
+                  "4k"
+                ]
+              },
+              {
+                "token": "movie-card-formats",
+                "count": 12,
+                "tags": [
+                  "div"
+                ],
+                "selfHref": 0,
+                "nestedAnchors": 24,
+                "signals": [
+                  "movie",
+                  "series",
+                  "1080p",
+                  "year",
+                  "4k"
+                ]
+              },
+              {
+                "token": "movie-card-image",
+                "count": 12,
+                "tags": [
+                  "div"
+                ],
+                "selfHref": 0,
+                "nestedAnchors": 24,
+                "signals": [
+                  "movie",
+                  "series",
+                  "1080p",
+                  "year",
+                  "4k"
+                ]
+              },
+              {
+                "token": "movie-card-meta",
+                "count": 12,
+                "tags": [
+                  "p"
+                ],
+                "selfHref": 0,
+                "nestedAnchors": 24,
+                "signals": [
+                  "movie",
+                  "series",
+                  "1080p",
+                  "year",
+                  "4k"
+                ]
+              },
+              {
+                "token": "movie-card-overlay",
+                "count": 12,
+                "tags": [
+                  "div"
+                ],
+                "selfHref": 0,
+                "nestedAnchors": 24,
+                "signals": [
+                  "movie",
+                  "series",
+                  "1080p",
+                  "year",
+                  "4k"
                 ]
               }
             ],
             "markers": [
-              "player"
+              "json-ld",
+              "download",
+              "episode"
             ]
           },
-          "declared_player_candidate_count": 0,
-          "declared_url_player_candidate_count": 0,
+          "declared_player_candidate_count": 18,
+          "declared_url_player_candidate_count": 18,
           "declared_indexed_player_candidate_count": 0,
-          "declared_player_hosts": [],
-          "declared_quality_heights": [],
-          "duration_ms": 82
+          "declared_player_hosts": [
+            "4khdhub.one",
+            "fonts.googleapis.com",
+            "fonts.gstatic.com",
+            "hdhub4u.download",
+            "schema.org"
+          ],
+          "declared_quality_heights": [
+            1080,
+            2160
+          ],
+          "duration_ms": 334
         }
       ],
       "debug_provider_value_trace_v18": null,
@@ -288,17 +353,43 @@
       "verified": 0,
       "contradictions": 0,
       "identity_safe": true,
-      "duration_ms": 3360,
+      "duration_ms": 2340,
       "sample_count": 4,
-      "fanout_fixture_title": "Interstellar",
+      "fanout_fixture_title": "Sinners",
       "sample_titles": [
+        "Sinners",
         "Interstellar",
         "Mon ninja et moi 3",
-        "The Colony",
-        "Captain America: Civil War"
+        "The Colony"
       ],
       "adaptive_rotated": true,
       "samples": [
+        {
+          "fixture_title": "Sinners",
+          "fixture": {
+            "tmdbId": "1233413",
+            "mediaType": "movie",
+            "category": "movie",
+            "title": "Sinners",
+            "year": 2025
+          },
+          "status": "no_streams",
+          "debug_stage": "provider_network_zero_result",
+          "debug_progress_stage": "lookup_only",
+          "raw": 0,
+          "playable": 0,
+          "verified": 0,
+          "contradictions": 0,
+          "duration_ms": 640,
+          "streams_returned": 0,
+          "announced_player_candidates": 0,
+          "announced_variant_candidates": 0,
+          "announced_player_hosts": [],
+          "announced_quality_heights": [],
+          "explored_player_requests": 0,
+          "explored_player_hosts": [],
+          "variant_fanout_state": "not-observed"
+        },
         {
           "fixture_title": "Interstellar",
           "fixture": {
@@ -309,13 +400,13 @@
             "year": 2014
           },
           "status": "no_streams",
-          "debug_stage": "provider_waf_challenge",
+          "debug_stage": "provider_network_zero_result",
           "debug_progress_stage": "lookup_only",
           "raw": 0,
           "playable": 0,
           "verified": 0,
           "contradictions": 0,
-          "duration_ms": 834,
+          "duration_ms": 443,
           "streams_returned": 0,
           "announced_player_candidates": 0,
           "announced_variant_candidates": 0,
@@ -335,13 +426,13 @@
             "year": 2025
           },
           "status": "no_streams",
-          "debug_stage": "provider_waf_challenge",
+          "debug_stage": "provider_network_zero_result",
           "debug_progress_stage": "lookup_only",
           "raw": 0,
           "playable": 0,
           "verified": 0,
           "contradictions": 0,
-          "duration_ms": 719,
+          "duration_ms": 611,
           "streams_returned": 0,
           "announced_player_candidates": 0,
           "announced_variant_candidates": 0,
@@ -361,40 +452,13 @@
             "year": 2021
           },
           "status": "no_streams",
-          "debug_stage": "provider_waf_challenge",
+          "debug_stage": "provider_network_zero_result",
           "debug_progress_stage": "lookup_only",
           "raw": 0,
           "playable": 0,
           "verified": 0,
           "contradictions": 0,
-          "duration_ms": 739,
-          "streams_returned": 0,
-          "announced_player_candidates": 0,
-          "announced_variant_candidates": 0,
-          "announced_player_hosts": [],
-          "announced_quality_heights": [],
-          "explored_player_requests": 0,
-          "explored_player_hosts": [],
-          "variant_fanout_state": "not-observed"
-        },
-        {
-          "fixture_title": "Captain America: Civil War",
-          "fixture": {
-            "slug": "captain-america-civil-war-2016",
-            "tmdbId": "271110",
-            "mediaType": "movie",
-            "category": "movie",
-            "title": "Captain America: Civil War",
-            "year": 2016
-          },
-          "status": "no_streams",
-          "debug_stage": "provider_waf_challenge",
-          "debug_progress_stage": "lookup_only",
-          "raw": 0,
-          "playable": 0,
-          "verified": 0,
-          "contradictions": 0,
-          "duration_ms": 853,
+          "duration_ms": 422,
           "streams_returned": 0,
           "announced_player_candidates": 0,
           "announced_variant_candidates": 0,
@@ -409,17 +473,16 @@
       "provider_budget_exhausted": false
     },
     {
-      "provider_id": "moviebox",
-      "provider_name": "📦 MovieBox",
+      "provider_id": "4khdhub",
+      "provider_name": "📺 4KHDHub",
       "semantic_type": "tv",
-      "fixture_title": "Dark Desire",
+      "fixture_title": "Revenant",
       "fixture": {
-        "slug": "dark-desire-2020-s01e01",
-        "tmdbId": "105214",
+        "tmdbId": "210702",
         "mediaType": "tv",
         "category": "tv",
-        "title": "Dark Desire",
-        "year": 2020,
+        "title": "Revenant",
+        "year": 2023,
         "season": 1,
         "episode": 1
       },
@@ -432,34 +495,33 @@
       "explored_player_hosts": [],
       "variant_fanout_state": "not-observed",
       "status": "no_streams",
-      "debug_stage": "provider_waf_challenge",
+      "debug_stage": "provider_network_zero_result",
       "debug_model": {
-        "strategy": "api_stream_resolver",
-        "source_runtime_family": "stremio-json",
+        "strategy": "html_scraper",
+        "source_runtime_family": "catalogue-html",
         "reconstruction_state": "learning-clean-seed",
-        "identity_mode": "tmdb_direct",
-        "requires_tmdb_before_run": false,
+        "identity_mode": "catalog_search",
+        "requires_tmdb_before_run": true,
         "supported_types": [
           "movie",
           "tv"
         ],
-        "route_count": 2,
+        "route_count": 1,
         "route_kinds": [
-          "unknown",
-          "detail"
+          "search"
         ],
         "has_api_recipe": false,
-        "official_site": "https://moviebox.yachts",
-        "official_hub": "https://moviiebox.lol/",
+        "official_site": "https://4khdhub.one",
+        "official_hub": "https://4khdhub.one/",
         "official_api": null
       },
-      "debug_fetch_count": 5,
-      "debug_provider_fetch_count": 4,
+      "debug_fetch_count": 2,
+      "debug_provider_fetch_count": 1,
       "debug_progress_stage": "lookup_only",
       "debug_fetches": [
         {
-          "url": "https://api.themoviedb.org/3/tv/105214?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Ccontent_ratings&language=fr-FR&api_key=%3Credacted%3E",
-          "response_url": "https://api.themoviedb.org/3/tv/105214?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Ccontent_ratings&language=fr-FR&api_key=%3Credacted%3E",
+          "url": "https://api.themoviedb.org/3/tv/210702?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Ccontent_ratings&language=fr-FR&api_key=%3Credacted%3E",
+          "response_url": "https://api.themoviedb.org/3/tv/210702?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Ccontent_ratings&language=fr-FR&api_key=%3Credacted%3E",
           "method": "GET",
           "status": 200,
           "content_type": "application/json",
@@ -491,135 +553,195 @@
           "declared_indexed_player_candidate_count": 0,
           "declared_player_hosts": [],
           "declared_quality_heights": [],
-          "duration_ms": 112
+          "duration_ms": 78
         },
         {
-          "url": "https://pengu.uk/%7B%22source_moviebox%22%3A%22on%22%2C%22res_1080%22%3A%22on%22%2C%22disable_direct%22%3A%22on%22%2C%22auth_token%22%3A%22XwZg2rLkLlbjXBeDVCyxgfHXjxN1ijLMkUuToW8KaKc%22%7D/stream/series/tt12540080:1:1.json",
-          "response_url": "https://pengu.uk/%7B%22source_moviebox%22%3A%22on%22%2C%22res_1080%22%3A%22on%22%2C%22disable_direct%22%3A%22on%22%2C%22auth_token%22%3A%22XwZg2rLkLlbjXBeDVCyxgfHXjxN1ijLMkUuToW8KaKc%22%7D/stream/series/tt12540080:1:1.json",
-          "method": "GET",
-          "status": 429,
-          "content_type": "application/json",
-          "challenge": "",
-          "response_shape": {
-            "kind": "json",
-            "top": "object",
-            "keys": [
-              "error"
-            ]
-          },
-          "declared_player_candidate_count": 0,
-          "declared_url_player_candidate_count": 0,
-          "declared_indexed_player_candidate_count": 0,
-          "declared_player_hosts": [],
-          "declared_quality_heights": [],
-          "duration_ms": 112
-        },
-        {
-          "url": "https://moviebox-cfa7.onrender.com/eyJyZXNvbHV0aW9uIjpbIjEwODBwIl0sImxhbmd1YWdlIjpbImVuIiwiaGkiLCJvcmlnIl0sInByb3h5X3VybCI6IiIsInByb3ZpZGVycyI6WyJtb2JpbGUiLCJ3ZWIiLCJsZWdhY3kiXSwibmFtZV90ZW1wbGF0ZSI6IvCfjqUgKip7cmVzb2x1dGlvbn0qKiIsInRpdGxlX3RlbXBsYXRlIjoi8J-UiiB7YXVkaW99IHwg8J-SviAqe3NpemV9KlxcbvCfkqwgU3Viczoge3N1YnRpdGxlc30ifQ/stream/series/tt12540080:1:1.json",
-          "response_url": "https://moviebox-cfa7.onrender.com/eyJyZXNvbHV0aW9uIjpbIjEwODBwIl0sImxhbmd1YWdlIjpbImVuIiwiaGkiLCJvcmlnIl0sInByb3h5X3VybCI6IiIsInByb3ZpZGVycyI6WyJtb2JpbGUiLCJ3ZWIiLCJsZWdhY3kiXSwibmFtZV90ZW1wbGF0ZSI6IvCfjqUgKip7cmVzb2x1dGlvbn0qKiIsInRpdGxlX3RlbXBsYXRlIjoi8J-UiiB7YXVkaW99IHwg8J-SviAqe3NpemV9KlxcbvCfkqwgU3Viczoge3N1YnRpdGxlc30ifQ/stream/series/tt12540080:1:1.json",
-          "method": "GET",
-          "status": 404,
-          "content_type": "text/plain",
-          "challenge": "",
-          "response_shape": null,
-          "declared_player_candidate_count": 0,
-          "declared_url_player_candidate_count": 0,
-          "declared_indexed_player_candidate_count": 0,
-          "declared_player_hosts": [],
-          "declared_quality_heights": [],
-          "duration_ms": 216
-        },
-        {
-          "url": "https://vidsrcme.ru/vs_src.php?type=tv&id=105214&season=1&episode=1",
-          "response_url": "https://vidsrcme.ru/vs_src.php?type=tv&id=105214&season=1&episode=1",
+          "url": "https://4khdhub.one/?s=Revenant%20Season%201",
+          "response_url": "https://4khdhub.one/?s=Revenant%20Season%201",
           "method": "GET",
           "status": 200,
-          "content_type": "application/json",
+          "content_type": "text/html",
           "challenge": "",
           "response_shape": {
-            "kind": "json",
-            "top": "object",
-            "keys": [
-              "src"
-            ]
-          },
-          "declared_player_candidate_count": 1,
-          "declared_url_player_candidate_count": 1,
-          "declared_indexed_player_candidate_count": 0,
-          "declared_player_hosts": [
-            "cloudorchestranova.com"
-          ],
-          "declared_quality_heights": [],
-          "duration_ms": 461
-        },
-        {
-          "url": "https://cloudorchestranova.com/embed/tv/105214/1/1?vs=NhUAQ2jgrv0SS5AXBI6LqbqgD1ukwkO_HGlHaWZBox0Kuf7RRGV1KEylqbFytpsN9MZDfpBNmUM-Nq7qvGrHKQp5rley1rcBvk4",
-          "response_url": "https://cloudorchestranova.com/embed/tv/105214/1/1?vs=NhUAQ2jgrv0SS5AXBI6LqbqgD1ukwkO_HGlHaWZBox0Kuf7RRGV1KEylqbFytpsN9MZDfpBNmUM-Nq7qvGrHKQp5rley1rcBvk4",
-          "method": "GET",
-          "status": 403,
-          "content_type": "text/html",
-          "challenge": "cloudflare",
-          "response_shape": {
             "kind": "html",
-            "sampleBytes": 6007,
-            "forms": 0,
+            "sampleBytes": 21957,
+            "forms": 1,
             "iframes": 0,
             "videos": 0,
             "sources": 0,
-            "scripts": 1,
-            "anchors": 0,
+            "scripts": 16,
+            "anchors": 31,
             "classTokens": [
-              "h2",
-              "main-content",
-              "main-wrapper"
+              "dropdown-item",
+              "movie-card-format",
+              "nav-item",
+              "nav-link",
+              "sr-only",
+              "dropdown-menu",
+              "space-y-4",
+              "pagination-container",
+              "card-grid",
+              "container",
+              "dark",
+              "fixed",
+              "flex-1",
+              "header",
+              "latest-releases",
+              "latest-releases-header"
             ],
             "idTokens": [
-              "challenge-error-text"
+              "back-to-top",
+              "close-mobile-menu",
+              "close-search",
+              "current-year",
+              "logo",
+              "main-nav",
+              "menu-toggle",
+              "mobile-menu-backdrop",
+              "search",
+              "search-backdrop",
+              "search-overlay",
+              "search-toggle"
             ],
             "classFacts": [
               {
-                "token": "h2",
-                "count": 1,
+                "token": "dropdown-item",
+                "count": 12,
                 "tags": [
-                  "div"
+                  "a"
                 ],
-                "selfHref": 0,
-                "nestedAnchors": 0,
-                "signals": []
+                "selfHref": 12,
+                "nestedAnchors": 24,
+                "signals": [
+                  "movie",
+                  "series",
+                  "4k",
+                  "year"
+                ]
               },
               {
-                "token": "main-content",
-                "count": 1,
+                "token": "movie-card-format",
+                "count": 10,
                 "tags": [
-                  "div"
+                  "span"
                 ],
                 "selfHref": 0,
-                "nestedAnchors": 0,
-                "signals": []
+                "nestedAnchors": 24,
+                "signals": [
+                  "movie",
+                  "4k",
+                  "1080p",
+                  "year"
+                ]
               },
               {
-                "token": "main-wrapper",
-                "count": 1,
+                "token": "nav-item",
+                "count": 7,
+                "tags": [
+                  "li"
+                ],
+                "selfHref": 0,
+                "nestedAnchors": 24,
+                "signals": [
+                  "movie",
+                  "series",
+                  "4k"
+                ]
+              },
+              {
+                "token": "nav-link",
+                "count": 7,
+                "tags": [
+                  "a"
+                ],
+                "selfHref": 7,
+                "nestedAnchors": 24,
+                "signals": [
+                  "movie",
+                  "series",
+                  "4k",
+                  "year"
+                ]
+              },
+              {
+                "token": "sr-only",
+                "count": 4,
+                "tags": [
+                  "span"
+                ],
+                "selfHref": 0,
+                "nestedAnchors": 15,
+                "signals": [
+                  "movie",
+                  "series",
+                  "4k",
+                  "season",
+                  "1080p",
+                  "year"
+                ]
+              },
+              {
+                "token": "dropdown-menu",
+                "count": 3,
+                "tags": [
+                  "ul"
+                ],
+                "selfHref": 0,
+                "nestedAnchors": 24,
+                "signals": [
+                  "movie",
+                  "series",
+                  "4k"
+                ]
+              },
+              {
+                "token": "space-y-4",
+                "count": 3,
                 "tags": [
                   "div"
                 ],
                 "selfHref": 0,
-                "nestedAnchors": 0,
-                "signals": []
+                "nestedAnchors": 11,
+                "signals": [
+                  "movie",
+                  "year"
+                ]
+              },
+              {
+                "token": "pagination-container",
+                "count": 2,
+                "tags": [
+                  "div"
+                ],
+                "selfHref": 0,
+                "nestedAnchors": 12,
+                "signals": [
+                  "movie",
+                  "year"
+                ]
               }
             ],
             "markers": [
-              "player"
+              "json-ld",
+              "download",
+              "episode"
             ]
           },
-          "declared_player_candidate_count": 1,
-          "declared_url_player_candidate_count": 1,
+          "declared_player_candidate_count": 16,
+          "declared_url_player_candidate_count": 16,
           "declared_indexed_player_candidate_count": 0,
           "declared_player_hosts": [
-            "cloudorchestranova.com"
+            "4khdhub.one",
+            "fonts.googleapis.com",
+            "fonts.gstatic.com",
+            "hdhub4u.download",
+            "schema.org"
           ],
-          "declared_quality_heights": [],
-          "duration_ms": 86
+          "declared_quality_heights": [
+            1080,
+            2160
+          ],
+          "duration_ms": 381
         }
       ],
       "debug_provider_value_trace_v18": null,
@@ -632,45 +754,15 @@
       "verified": 0,
       "contradictions": 0,
       "identity_safe": true,
-      "duration_ms": 3438,
-      "sample_count": 4,
-      "fanout_fixture_title": "Revenant",
+      "duration_ms": 1018,
+      "sample_count": 2,
+      "fanout_fixture_title": "Breaking Bad",
       "sample_titles": [
-        "Revenant",
         "Breaking Bad",
-        "The Flash",
-        "Dark Desire"
+        "Revenant"
       ],
       "adaptive_rotated": true,
       "samples": [
-        {
-          "fixture_title": "Revenant",
-          "fixture": {
-            "tmdbId": "210702",
-            "mediaType": "tv",
-            "category": "tv",
-            "title": "Revenant",
-            "year": 2023,
-            "season": 1,
-            "episode": 1
-          },
-          "status": "no_streams",
-          "debug_stage": "provider_waf_challenge",
-          "debug_progress_stage": "lookup_only",
-          "raw": 0,
-          "playable": 0,
-          "verified": 0,
-          "contradictions": 0,
-          "duration_ms": 750,
-          "streams_returned": 0,
-          "announced_player_candidates": 0,
-          "announced_variant_candidates": 0,
-          "announced_player_hosts": [],
-          "announced_quality_heights": [],
-          "explored_player_requests": 0,
-          "explored_player_hosts": [],
-          "variant_fanout_state": "not-observed"
-        },
         {
           "fixture_title": "Breaking Bad",
           "fixture": {
@@ -683,13 +775,13 @@
             "episode": 1
           },
           "status": "no_streams",
-          "debug_stage": "provider_waf_challenge",
+          "debug_stage": "provider_network_zero_result",
           "debug_progress_stage": "lookup_only",
           "raw": 0,
           "playable": 0,
           "verified": 0,
           "contradictions": 0,
-          "duration_ms": 751,
+          "duration_ms": 439,
           "streams_returned": 0,
           "announced_player_candidates": 0,
           "announced_variant_candidates": 0,
@@ -700,54 +792,24 @@
           "variant_fanout_state": "not-observed"
         },
         {
-          "fixture_title": "The Flash",
+          "fixture_title": "Revenant",
           "fixture": {
-            "slug": "the-flash-2014-s01e01",
-            "tmdbId": "60735",
+            "tmdbId": "210702",
             "mediaType": "tv",
             "category": "tv",
-            "title": "The Flash",
-            "year": 2014,
+            "title": "Revenant",
+            "year": 2023,
             "season": 1,
             "episode": 1
           },
           "status": "no_streams",
-          "debug_stage": "provider_waf_challenge",
+          "debug_stage": "provider_network_zero_result",
           "debug_progress_stage": "lookup_only",
           "raw": 0,
           "playable": 0,
           "verified": 0,
           "contradictions": 0,
-          "duration_ms": 726,
-          "streams_returned": 0,
-          "announced_player_candidates": 0,
-          "announced_variant_candidates": 0,
-          "announced_player_hosts": [],
-          "announced_quality_heights": [],
-          "explored_player_requests": 0,
-          "explored_player_hosts": [],
-          "variant_fanout_state": "not-observed"
-        },
-        {
-          "fixture_title": "Dark Desire",
-          "fixture": {
-            "slug": "dark-desire-2020-s01e01",
-            "tmdbId": "105214",
-            "mediaType": "tv",
-            "category": "tv",
-            "title": "Dark Desire",
-            "year": 2020,
-            "season": 1,
-            "episode": 1
-          },
-          "status": "no_streams",
-          "debug_stage": "provider_waf_challenge",
-          "debug_progress_stage": "lookup_only",
-          "raw": 0,
-          "playable": 0,
-          "verified": 0,
-          "contradictions": 0,
-          "duration_ms": 995,
+          "duration_ms": 468,
           "streams_returned": 0,
           "announced_player_candidates": 0,
           "announced_variant_candidates": 0,
