@@ -122,11 +122,12 @@ source = SCRIPT.read_text(encoding="utf-8")
 assert "FIELD_PROVIDER_BRAIN_ADVISOR_ROTATION" in source
 assert "FIELD_PROVIDER_BRAIN_ADVISOR_DYNAMIC_EXTENSION" in source
 assert "waves = max(requested_waves, advisor_hypotheses)" in source
-assert "advisor_dynamic_wave_ceiling = max(requested_waves, 3)" in source
+assert "advisor_dynamic_wave_ceiling = max(requested_waves, 6)" in source
 assert "for wave in range(1, advisor_dynamic_wave_ceiling + 1)" in source
 assert "if wave > waves or not remaining:" in source
 assert "advisor_rotation_this_wave" in source
 assert "waves += 1" in source
+assert "no_new_repair_experiment" in source
 assert "advisor_rotation_pending" in source
 assert "executed_meta_gap_rotation_pending" in source
 assert "dynamic_meta_gap_rotation" in source
