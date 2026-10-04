@@ -2,6 +2,9 @@
 from __future__ import annotations
 
 import importlib
+import importlib.util
+import json
+import subprocess
 import sys
 from pathlib import Path
 
@@ -86,6 +89,96 @@ try:
 finally:
     brain._execute_planner=original
     brain.PLANS.clear()
+
+# Aggregate health is not completion when one declared semantic category is
+# still unproved. Preserve that debt across the planner boundary and replan from
+# the unresolved fixture instead of stopping the exploration chain.
+category_progress = {
+    "key": "aio:demo",
+    "status": "healthy",
+    "score": 100,
+    "evidence": {
+        "streams_returned": 5,
+        "streams_playable": 5,
+        "identity_contradiction_count": 0,
+        "duration_identity_mismatch_count": 0,
+        "required_fixture_categories": ["movie", "tv"],
+        "healthy_fixture_categories": ["movie"],
+    },
+    "tests": [
+        {
+            "status": "healthy",
+            "failure_class": "",
+            "fixture": {"category": "movie", "mediaType": "movie"},
+            "stream_count": 5,
+            "streams_returned": 5,
+            "streams_playable": 5,
+            "network_observations": [
+                {"status": 200, "ok": True, "infrastructure": False, "stage": "media"}
+            ],
+        },
+        {
+            "status": "no_streams",
+            "failure_class": "content_lookup_completed_no_streams",
+            "fixture": {"category": "tv", "mediaType": "tv"},
+            "stream_count": 0,
+            "streams_returned": 0,
+            "streams_playable": 0,
+            "network_observations": [
+                {"status": 200, "ok": True, "infrastructure": False, "stage": "search"}
+            ],
+        },
+    ],
+}
+planner_result = brain._planner_result(category_progress)
+assert planner_result["evidence"]["required_fixture_categories"] == ["movie", "tv"]
+assert planner_result["evidence"]["healthy_fixture_categories"] == ["movie"]
+
+adaptive_spec = importlib.util.spec_from_file_location(
+    "category_coverage_adaptive_runtime",
+    SCRIPTS / "adaptive_runtime" / "runtime_repair.py",
+)
+assert adaptive_spec and adaptive_spec.loader
+adaptive_runtime = importlib.util.module_from_spec(adaptive_spec)
+adaptive_spec.loader.exec_module(adaptive_runtime)
+assert adaptive_runtime._adaptive_failure(category_progress) is True
+
+planner_payload = {
+    "mode": "deep",
+    "explorationChain": True,
+    "policy": json.loads((ROOT / "engine_v2/config/brain-policy.json").read_text(encoding="utf-8")),
+    "learnedSkills": {},
+    "historicalSolutions": [],
+    "llmGuidance": [],
+    "negativeMemory": [],
+    "items": [{
+        "key": "aio:demo",
+        "candidate": brain._planner_candidate({
+            "key": "aio:demo",
+            "canonical_id": "demo",
+            "metadata": {"supportedTypes": ["movie", "tv"]},
+        }),
+        "result": planner_result,
+        "state": {
+            "mutationCount": 1,
+            "generatedBytes": 100,
+            "elapsedMs": 1000,
+            "signatureCounts": {},
+        },
+    }],
+}
+planner_proc = subprocess.run(
+    ["node", str(ROOT / "engine_v2/scripts/plan-repairs.mjs")],
+    cwd=ROOT,
+    input=json.dumps(planner_payload, ensure_ascii=True).encode("ascii"),
+    capture_output=True,
+    check=False,
+)
+assert planner_proc.returncode == 0, planner_proc.stderr.decode("utf-8", errors="replace")
+category_plan = json.loads(planner_proc.stdout.decode("utf-8"))["plans"]["aio:demo"]
+assert category_plan["failureClass"] == "search_gap", category_plan
+assert category_plan["action"] == "probe-targeted-repair", category_plan
+assert "adaptive_runtime_recovery" in category_plan["allowedProfiles"], category_plan
 
 deep=(SCRIPTS/"deep_repair_loop.py").read_text(encoding="utf-8")
 adaptive=(SCRIPTS/"run_adaptive_deep_repair.py").read_text(encoding="utf-8")
