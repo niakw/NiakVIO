@@ -318,7 +318,7 @@ try:
         safe_rows=runtime_mod.planner_llm_guidance()
         safe=[row for row in safe_rows if row.get("providerId")=="synthetic-llm-advisor"]
         assert len(safe)==1,safe_rows
-        assert safe[0]["guidanceKind"]=="meta-gap-synthesis",safe[0]
+        assert safe[0]["guidanceKind"]=="persistent-learning",safe[0]
         runtime_mod._guidance_source_drift=lambda _root,_source,_current:([],{"synthetic-llm-advisor"})
         drifted_rows=runtime_mod.planner_llm_guidance()
         assert not any(row.get("providerId")=="synthetic-llm-advisor" for row in drifted_rows),drifted_rows
