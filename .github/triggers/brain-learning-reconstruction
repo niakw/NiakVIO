@@ -1,12 +1,12 @@
-Moviebox representative Learning memory merge proof.
+CoFlix representative Learning memory union proof.
 source_census_run: 37195858541
-source_main_sha: aceff08f18484cdc0aa087ee6732b26da4c3b72f
+source_main_sha: 86f190402244f5049b9bf5521de5396124ca7965
 budget_minutes: 15
-reason: prove-concurrent-learning-guidance-publisher-merges-instead-of-last-writer-replacement
-validation_reason: preserve-existing-non-drifted-guidance-and-add-current-moviebox-prior
-expected_scope: representative-moviebox-memory-merge
+reason: prove-learning-guidance-union-preserves-fast-cohort-memory
+validation_reason: add-current-coflix-prior-without-erasing-existing-12-fast-priors
+expected_scope: representative-coflix-memory-union
 execution_mode: targeted-main-only
-target_providers: moviebox
+target_providers: coflix
 architecture_force: false
-publication_policy: no-pr-memory-merge-then-canonical-repair
-required_current_evidence: existing-guidance-providerCount=4;merge-must-not-delete-unrelated-non-drifted-priors
+publication_policy: no-pr-monotonic-memory-merge-then-canonical-repair
+required_current_evidence: existing-guidance-providerCount=12;final-providerCount-gte-12-and-coflix-present;unrelated-non-drifted-fast-priors-preserved
