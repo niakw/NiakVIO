@@ -8,14 +8,14 @@
   "batchSize": 48,
   "deferredLearningProviders": [],
   "effectiveWaves": 3,
-  "elapsedSeconds": 336.627,
+  "elapsedSeconds": 446.601,
   "executionModel": "family-batched-multi-wave-brain-repair",
   "experienceMemory": {
     "operationalProviderCount": 24,
     "providerCount": 46,
     "schemaVersion": 2,
-    "sourceRunId": "37204831746",
-    "sourceSha": "5bf2d9ca4b67cf6b6fc6bc6c4b06904d545a786e",
+    "sourceRunId": "37213033465",
+    "sourceSha": "9df982e4ce6f84ab6722539575dac62aac1874a7",
     "strategyCount": 5
   },
   "fixedInLabProviders": [],
@@ -51,6 +51,7 @@
   "resumeRecommended": false,
   "safety": {
     "acceptedMutationRequiresStrictImprovement": true,
+    "crossWaveExplorationCarryoverRole": "same-run-sandbox-only-retested-no-publication-authority",
     "currentByteRetestRequired": true,
     "directSkillApplication": false,
     "experienceMemoryRole": "prior-only-no-acceptance-authority",
@@ -69,7 +70,7 @@
   "shardCount": 1,
   "shardIndex": 0,
   "skippedEnvironmentProviders": [],
-  "sourceCensusRunId": "37204831746",
+  "sourceCensusRunId": "37213033465",
   "timeBudgetExhausted": false,
   "timeBudgetSeconds": 1200,
   "unvisitedProviders": [],
@@ -99,7 +100,7 @@
               "published:moviebox": {
                 "action": "probe-targeted-repair",
                 "allowedProfiles": [
-                  "proven_route_terminal_traversal_v1"
+                  "search_contract_inference_v1"
                 ],
                 "exitReason": null,
                 "experimentExhausted": true,
@@ -110,38 +111,38 @@
                 "hypotheses": [],
                 "learningDisposition": "execute_meta_gap_synthesized_strategy",
                 "llmAdvisorApplied": true,
-                "llmAdvisorConfidence": 0.96,
+                "llmAdvisorConfidence": 0.86,
                 "llmAdvisorExperiment": {
-                  "aliasSearch": false,
+                  "aliasSearch": true,
                   "documentRequestMining": true,
                   "maxDepth": 5,
-                  "maxEmbeds": 25,
-                  "maxPages": 26,
-                  "maxRecipePasses": 4,
-                  "recipePolicy": "current_only",
+                  "maxEmbeds": 24,
+                  "maxPages": 30,
+                  "maxRecipePasses": 5,
+                  "recipePolicy": "current_plus_provider",
                   "responseSalvage": true,
                   "roleOrder": [
+                    "api",
                     "detail",
                     "search",
                     "player",
                     "source",
                     "episode",
-                    "other",
-                    "api"
+                    "other"
                   ],
-                  "routePolicy": "owned_only",
+                  "routePolicy": "owned_plus_peer",
                   "sessionBootstrap": true,
                   "terminalOnly": false
                 },
-                "llmAdvisorExperimentFingerprint": "c6fbdf03527523baf25abbdbcbc0cb3cbf9938f706bbbf76ebe1875a44bca3d5",
+                "llmAdvisorExperimentFingerprint": "99c89608404315d2042c57e024fd520e56af243d7043b6c32de21f61ca1ec315",
                 "llmAdvisorFailureCompatibility": "exact-rebound",
                 "llmAdvisorGuidanceKind": "meta-gap-synthesis",
-                "llmAdvisorProfile": "proven_route_terminal_traversal_v1",
+                "llmAdvisorProfile": "search_contract_inference_v1",
                 "llmAdvisorRescue": false,
                 "llmAdvisorSourceFailureClass": "transport_blocked",
-                "llmAdvisorStrategy": "search_detail_player_terminal_traversal",
+                "llmAdvisorStrategy": "meta-gap-search-contract-fallback",
                 "metaGapEscalated": true,
-                "negativeMemoryMatches": 50,
+                "negativeMemoryMatches": 58,
                 "positiveProgramFingerprint": "",
                 "postExhaustionStrategyMethod": "",
                 "postExhaustionStrategyProfile": "",
@@ -159,6 +160,10 @@
             "validatedRepairLearningExecuted": true
           },
           "capabilityStrategy": "html_scraper",
+          "crossWaveExplorationCarryoverApplied": [],
+          "crossWaveExplorationCarryoverCaptured": [
+            "moviebox"
+          ],
           "deferredToLearning": [],
           "familyGroups": [
             {
@@ -222,7 +227,7 @@
               "published:moviebox": {
                 "action": "probe-targeted-repair",
                 "allowedProfiles": [
-                  "proven_route_terminal_traversal_v1"
+                  "search_contract_inference_v1"
                 ],
                 "exitReason": null,
                 "experimentExhausted": true,
@@ -233,14 +238,14 @@
                 "hypotheses": [],
                 "learningDisposition": "execute_meta_gap_synthesized_strategy",
                 "llmAdvisorApplied": true,
-                "llmAdvisorConfidence": 0.96,
+                "llmAdvisorConfidence": 0.86,
                 "llmAdvisorExperiment": {
-                  "aliasSearch": false,
+                  "aliasSearch": true,
                   "documentRequestMining": true,
                   "maxDepth": 5,
                   "maxEmbeds": 26,
-                  "maxPages": 28,
-                  "maxRecipePasses": 4,
+                  "maxPages": 34,
+                  "maxRecipePasses": 5,
                   "recipePolicy": "current_plus_provider",
                   "responseSalvage": true,
                   "roleOrder": [
@@ -256,15 +261,15 @@
                   "sessionBootstrap": true,
                   "terminalOnly": false
                 },
-                "llmAdvisorExperimentFingerprint": "2bbdd972aaf80cb9507cb725bb8a64deef7fa4c902b484f2ab92a9dd5b183915",
+                "llmAdvisorExperimentFingerprint": "14249f25fa8d805549d9a7a8f57cc0e286667351fc2f43f56e266c9eb7340b21",
                 "llmAdvisorFailureCompatibility": "exact-rebound",
                 "llmAdvisorGuidanceKind": "meta-gap-synthesis",
-                "llmAdvisorProfile": "proven_route_terminal_traversal_v1",
+                "llmAdvisorProfile": "search_contract_inference_v1",
                 "llmAdvisorRescue": false,
                 "llmAdvisorSourceFailureClass": "transport_blocked",
-                "llmAdvisorStrategy": "search_detail_player_terminal_traversal",
+                "llmAdvisorStrategy": "meta-gap-search-contract-fallback",
                 "metaGapEscalated": true,
-                "negativeMemoryMatches": 52,
+                "negativeMemoryMatches": 62,
                 "positiveProgramFingerprint": "",
                 "postExhaustionStrategyMethod": "",
                 "postExhaustionStrategyProfile": "",
@@ -282,6 +287,12 @@
             "validatedRepairLearningExecuted": true
           },
           "capabilityStrategy": "html_scraper",
+          "crossWaveExplorationCarryoverApplied": [
+            "moviebox"
+          ],
+          "crossWaveExplorationCarryoverCaptured": [
+            "moviebox"
+          ],
           "deferredToLearning": [],
           "familyGroups": [
             {
@@ -345,7 +356,7 @@
               "published:moviebox": {
                 "action": "probe-targeted-repair",
                 "allowedProfiles": [
-                  "proven_route_terminal_traversal_v1"
+                  "adaptive_runtime_recovery"
                 ],
                 "exitReason": null,
                 "experimentExhausted": true,
@@ -382,12 +393,12 @@
                 "llmAdvisorExperimentFingerprint": "92e51bee5a69bc7e461cb670d6ca968d035f1831647db8a4d311ea780093e4cb",
                 "llmAdvisorFailureCompatibility": "exact-rebound",
                 "llmAdvisorGuidanceKind": "meta-gap-synthesis",
-                "llmAdvisorProfile": "proven_route_terminal_traversal_v1",
+                "llmAdvisorProfile": "adaptive_runtime_recovery",
                 "llmAdvisorRescue": false,
                 "llmAdvisorSourceFailureClass": "transport_blocked",
-                "llmAdvisorStrategy": "meta-gap-route-transition-composition",
+                "llmAdvisorStrategy": "meta-gap-adaptive-runtime-fallback",
                 "metaGapEscalated": true,
-                "negativeMemoryMatches": 56,
+                "negativeMemoryMatches": 66,
                 "positiveProgramFingerprint": "",
                 "postExhaustionStrategyMethod": "",
                 "postExhaustionStrategyProfile": "",
@@ -405,6 +416,12 @@
             "validatedRepairLearningExecuted": true
           },
           "capabilityStrategy": "html_scraper",
+          "crossWaveExplorationCarryoverApplied": [
+            "moviebox"
+          ],
+          "crossWaveExplorationCarryoverCaptured": [
+            "moviebox"
+          ],
           "deferredToLearning": [],
           "familyGroups": [
             {
