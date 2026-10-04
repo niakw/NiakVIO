@@ -754,6 +754,11 @@ def _validated_guidance_rows(
         experiment_fingerprint = _clip_text(raw.get("experimentFingerprint"), 64).casefold()
         if experiment_fingerprint and not re.fullmatch(r"[0-9a-f]{64}", experiment_fingerprint):
             continue
+        effective_guidance_kind = (
+            "meta-gap-synthesis"
+            if strategy.startswith("meta_gap_")
+            else guidance_kind
+        )
         out.append({
             "providerId": provider,
             "failureClass": failure,
@@ -764,7 +769,7 @@ def _validated_guidance_rows(
             "priorOnly": True,
             "experiment": copy.deepcopy(experiment),
             "experimentFingerprint": experiment_fingerprint,
-            "guidanceKind": guidance_kind,
+            "guidanceKind": effective_guidance_kind,
             "localForceAmbiguous": local_force_ambiguous,
             "sourceSha": source_sha,
         })
