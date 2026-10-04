@@ -285,5 +285,8 @@ precedence_options=runtime._adaptive_runtime_options(precedence_candidate,config
 assert precedence_options is not None,precedence_candidate
 assert precedence_options["new_strategy_id"]=="transport_request_differential_v1",precedence_options
 assert precedence_options["post_exhaustion_strategy_profile"]=="transport_request_differential_v1",precedence_options
+assert precedence_options["llm_experiment_applied"] is False,precedence_options
+assert precedence_options["llm_experiment_fingerprint"]=="",precedence_options
+assert precedence_options["new_strategy_id"]!="provider_origin_failover_v1",precedence_options
 
 print("Brain second-order runtime strategy contract passed")
