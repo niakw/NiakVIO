@@ -94,5 +94,8 @@ canonical_start = workflow_current.index(canonical_anchor)
 canonical_end = workflow_current.index("- name: Reapply integrated WAF qualification after canonical Repair", canonical_start)
 canonical_block = workflow_current[canonical_start:canonical_end]
 assert "timeout-minutes: 30" in canonical_block
+assert workflow_current.count('cp "$tmp/provider-brain-repair-latest.json" "automation/provider-brain-repair-${GITHUB_RUN_ID}.json"') == 1
+assert workflow_current.count('cp "$tmp/provider-brain-repair-latest.json" automation/provider-brain-repair-latest.json') == 1
+assert workflow_current.count('[ ! -f automation/provider-brain-repair-latest.json ] || git add automation/provider-brain-repair-latest.json') == 1
 
 exec(compile(source, str(impl_path), "exec"), globals(), globals())
