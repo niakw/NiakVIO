@@ -1,7 +1,7 @@
 {
   "schemaVersion": 3,
-  "runId": "37167966463",
-  "triggerSha": "83f024b80b983ef1a1e469ba71a928bc14b80f52",
+  "runId": "37169448026",
+  "triggerSha": "50abd56ecfadbfd000c79ea959e9ed3be7cd4dc7",
   "providers": [
     {
       "provider": "4khdhub",
@@ -695,10 +695,10 @@
         "11 live routes / movie, tv"
       ],
       "latestLaneVerdicts": [
-        "movie=no_streams/provider_network_http_error",
+        "movie=no_streams/provider_zero_before_provider_network",
         "tv=no_streams/provider_network_http_error"
       ],
-      "dominantIssue": "provider_network_http_error×2",
+      "dominantIssue": "provider_zero_before_provider_network, provider_network_http_error",
       "searchProgress": [
         "movie: 8 works tested / 0 retained misses",
         "tv: 8 works tested / 0 retained misses"
@@ -2250,8 +2250,8 @@
   "harnessQueue": [],
   "targetedTransportBlockedQueue": [],
   "clientTransportGapQueue": [],
-  "harnessEvidenceRunId": "37167966463-sharded-waf",
-  "harnessEvidenceSha": "83f024b80b983ef1a1e469ba71a928bc14b80f52",
+  "harnessEvidenceRunId": "37169448026-sharded-waf",
+  "harnessEvidenceSha": "50abd56ecfadbfd000c79ea959e9ed3be7cd4dc7",
   "authorityRefreshedProviders": [],
   "harnessTransportUpdatedProviders": [],
   "networkDifferentialUpdatedProviders": [],
@@ -2664,21 +2664,5 @@
         "moviesmod"
       ]
     }
-  },
-  "lastRepairAttempt": {
-    "runId": "37169345726",
-    "sourceCensusRunId": "37167966463",
-    "selectedProviders": [
-      "moviebox"
-    ],
-    "candidateProviders": [],
-    "validatedProviders": [],
-    "acceptedRepairCount": 0,
-    "deferredToLearningSlotProviders": [
-      "moviebox"
-    ],
-    "noProgressReason": "experiment_variants_exhausted",
-    "timeBudgetExhausted": false,
-    "publicationAllowed": false
   }
 }
