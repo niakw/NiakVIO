@@ -77,6 +77,31 @@ FAILURE_EXECUTORS: dict[str, tuple[str, str]] = {
 # the same broad causal family. Publication authority remains unchanged.
 MAX_EXECUTED_EXPERIMENTS_PER_EXECUTOR = 3
 
+# Failure labels may legitimately drift between census and current sandbox
+# observation while still describing the same causal layer. Executor rotation
+# memory follows that causal family so three real failures under transport do
+# not look "untried" again when the same provider is labelled route-proven.
+# This affects hypothesis ordering only; strict acceptance still uses the exact
+# current failure/category/playback evidence.
+FAILURE_CAUSAL_FAMILIES: dict[str, str] = {
+    "provider_transport_gap": "route-terminal",
+    "transport_blocked": "route-terminal",
+    "route_proven_gap": "route-terminal",
+    "search_gap": "route-terminal",
+    "chain_terminal_gap": "terminal-media",
+    "media_extraction_gap": "terminal-media",
+    "variant_coverage_gap": "terminal-media",
+    "playback_context_gap": "terminal-media",
+    "candidate_replay_gap": "candidate-replay",
+    "unknown_failure": "unknown",
+}
+
+
+def _failure_family(value: object) -> str:
+    failure = _canon(value)
+    return FAILURE_CAUSAL_FAMILIES.get(failure, failure)
+
+
 FAILURE_EXECUTOR_ROTATIONS: dict[str, tuple[tuple[str, str], ...]] = {
     "provider_transport_gap": (
         FAILURE_EXECUTORS["provider_transport_gap"],
@@ -364,6 +389,7 @@ def _failed_fingerprints(memory: dict[str, Any]) -> set[tuple[str, str, str]]:
 
 
 def _executed_profile_fingerprints(memory: dict[str, Any]) -> dict[tuple[str, str, str], set[str]]:
+    """Executed advisor fingerprints keyed by provider + causal family + profile."""
     observed: dict[tuple[str, str, str], set[str]] = {}
     rows: list[dict[str, Any]] = []
     if isinstance(memory.get("entries"), list):
@@ -384,7 +410,7 @@ def _executed_profile_fingerprints(memory: dict[str, Any]) -> dict[tuple[str, st
             or int(row.get("progresses") or 0) > 0
         )
         if provider and failure and profile and len(fp) == 64 and causal_signal:
-            observed.setdefault((provider, failure, profile), set()).add(fp)
+            observed.setdefault((provider, _failure_family(failure), profile), set()).add(fp)
     return observed
 
 def _variant(base: dict[str, Any], provider: str, generation: int) -> dict[str, Any]:
@@ -440,7 +466,7 @@ def synthesize_rows(
         for profile, strategy in FAILURE_EXECUTOR_ROTATIONS.get(
             failure, (FAILURE_EXECUTORS[failure],)
         ):
-            attempts = len(executed.get((provider, failure, profile), set()))
+            attempts = len(executed.get((provider, _failure_family(failure), profile), set()))
             if attempts >= MAX_EXECUTED_EXPERIMENTS_PER_EXECUTOR:
                 continue
             for generation in range(16):
