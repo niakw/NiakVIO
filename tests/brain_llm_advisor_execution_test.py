@@ -330,6 +330,29 @@ finally:
     if old_mode is None: os.environ.pop("NUVIO_BRAIN_PLANNER_MODE",None)
     else: os.environ["NUVIO_BRAIN_PLANNER_MODE"]=old_mode
 
+# Persistent guidance intentionally stores a compact standard schema without
+# guidanceKind. Deterministic Learning gap-fill strategies retain their
+# semantics through their allowlisted meta-gap-* strategy name.
+serialized_meta_payload={
+    **persistent_payload,
+    "sourceSha":"3"*40,
+    "rows":[{
+        **guidance[0],
+        "strategy":"meta-gap-search-contract-fallback",
+        "profile":"search_contract_inference_v1",
+        "experimentFingerprint":"f"*64,
+    }],
+}
+serialized_meta_rows=runtime_mod._validated_guidance_rows(
+    serialized_meta_payload,
+    current_sha="3"*40,
+    require_exact_sha=True,
+    guidance_kind="external-brain-llm",
+)
+assert len(serialized_meta_rows)==1,serialized_meta_rows
+assert serialized_meta_rows[0]["guidanceKind"]=="meta-gap-synthesis",serialized_meta_rows
+assert serialized_meta_rows[0]["profile"]=="search_contract_inference_v1",serialized_meta_rows
+
 print("Brain LLM advisor execution contract passed")
 
 # Meta-gap synthesis is the final bounded escape hatch in Learning after the
