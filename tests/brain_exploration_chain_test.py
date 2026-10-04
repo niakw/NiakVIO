@@ -105,6 +105,8 @@ transient_candidate={
         "failureClass":"search_gap",
         "signature":"sig-demo",
         "profile":"provider_session_bootstrap_replay_v1",
+        "strategyImplementationFingerprint":"a"*64,
+        "llmAdvisorExperimentFingerprint":"b"*64,
         "experimentVariant":4,
         "experimentGeneration":2,
         "failures":1,
@@ -116,6 +118,8 @@ transient_candidate={
 transient_rows=brain.planner_transient_negative_memory(transient_candidate)
 assert len(transient_rows)==1,transient_rows
 assert transient_rows[0]["profile"]=="provider_session_bootstrap_replay_v1",transient_rows
+assert transient_rows[0]["strategyImplementationFingerprint"]=="a"*64,transient_rows
+assert transient_rows[0]["llmAdvisorExperimentFingerprint"]=="b"*64,transient_rows
 assert transient_rows[0]["executionObserved"] is True,transient_rows
 
 captured={}
