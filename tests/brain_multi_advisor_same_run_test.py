@@ -103,7 +103,11 @@ with tempfile.TemporaryDirectory() as tmp:
             "llmAdvisorProfile":"search_contract_inference_v1",
             "llmAdvisorExperimentFingerprint":"d"*64,
         }}}
-        assert mod.executed_meta_gap_rotation_pending(summary)=={"moviebox"}
+        assert mod.executed_advisor_rotation_pending(summary)=={"moviebox"}
+        for guidance_kind in ("persistent-learning","external-brain-llm"):
+            summary["plans"]["published:moviebox"]["llmAdvisorGuidanceKind"]=guidance_kind
+            assert mod.executed_advisor_rotation_pending(summary)=={"moviebox"},guidance_kind
+        summary["plans"]["published:moviebox"]["llmAdvisorGuidanceKind"]="meta-gap-synthesis"
         memory.write_text(json.dumps({"entries":[{
             "providerId":"moviebox",
             "profile":"search_contract_inference_v1",
@@ -114,7 +118,7 @@ with tempfile.TemporaryDirectory() as tmp:
             "lastOutcome":"profile_unavailable",
             "lastReason":"planned_profile_not_applicable_to_current_bytes",
         }]}),encoding="utf-8")
-        assert mod.executed_meta_gap_rotation_pending(summary)==set()
+        assert mod.executed_advisor_rotation_pending(summary)==set()
     finally:
         mod.REPAIR_MEMORY=original_memory
 
@@ -129,9 +133,9 @@ assert "advisor_rotation_this_wave" in source
 assert "waves += 1" in source
 assert "no_new_repair_experiment" in source
 assert "advisor_rotation_pending" in source
-assert "executed_meta_gap_rotation_pending" in source
-assert "dynamic_meta_gap_rotation" in source
-assert "or provider in dynamic_meta_gap_rotation" in source
+assert "executed_advisor_rotation_pending" in source
+assert "dynamic_advisor_rotation" in source
+assert "or provider in dynamic_advisor_rotation" in source
 assert "deferred.difference_update(advisor_rotation_pending)" in source
 assert 'decision = "rotate"' in source
 assert '"advisorHypothesisWaveBudget": advisor_hypotheses' in source
