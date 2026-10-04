@@ -58,6 +58,10 @@ for required in (
     "guidance.cached.json",
     "guidance.generated.json",
     "FIELD_BRAIN_LLM_GUIDANCE_FINAL",
+    "scripts/merge_brain_llm_guidance_memory.py",
+    "FIELD_BRAIN_GUIDANCE_MEMORY_MERGE",
+    "skipped=stale-source",
+    "git merge-base --is-ancestor",
 ):
     assert required in workflow, required
 
