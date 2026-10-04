@@ -68,6 +68,8 @@ for required in (
     "FIELD_PROVIDER_FAST_REPAIR_LEARNING_DEBT",
     "learning_dispatch=true",
     "owner=immediate-targeted-learning",
+    "learning_dispatch=false reason=github_api_unavailable persisted=true",
+    "owner=persisted-fast-handoff",
     "gh workflow run brain-learning-lab.yml",
     '-f target_providers="$learn_handoff_csv"',
     "Import sanitized persistent Learning and Brain LLM priors",
