@@ -71,8 +71,9 @@ reconcile_step=text.index("- name: Reconcile provider-owned domain metadata")
 validate_step=text.index("- name: Validate domain-only Provider v3 mutation")
 reconcile_block=text[reconcile_step:validate_step]
 assert reconcile_block.index("reconcile_provider_domain_metadata.py") < reconcile_block.index("materialize_provider_v3_one.py"), reconcile_block
-assert reconcile_block.index("materialize_provider_v3_one.py") < reconcile_block.index("reconcile_targeted_provider_publication.py"), reconcile_block
-assert reconcile_block.index("reconcile_targeted_provider_publication.py") < reconcile_block.index("python scripts/audit_provider_v3_static.py"), reconcile_block
+assert reconcile_block.index("reconcile=(python scripts/reconcile_targeted_provider_publication.py)") < reconcile_block.index("materialize_provider_v3_one.py"), reconcile_block
+assert reconcile_block.index("materialize_provider_v3_one.py") < reconcile_block.index('"${reconcile[@]}"'), reconcile_block
+assert reconcile_block.index('"${reconcile[@]}"') < reconcile_block.index("python scripts/audit_provider_v3_static.py"), reconcile_block
 assert reconcile_block.count("python scripts/audit_provider_v3_static.py\n") == 1, reconcile_block
 assert "provider_domain_runtime_projection_drift_ids" in source
 assert '"runtime_projection_drift"' in source
