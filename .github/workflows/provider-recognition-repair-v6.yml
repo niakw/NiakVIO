@@ -212,6 +212,7 @@ jobs:
           python tests/brain_llm_experiment_runtime_test.py
           python tests/provider_repair_transport_overlay_persistence_test.py
           python tests/brain_external_llm_guidance_import_test.py
+          python tests/brain_canonical_guidance_scope_test.py
           python tests/brain_llm_force_mutation_bridge_test.py
           python tests/brain_exploration_chain_test.py
           python tests/brain_round_plan_attribution_test.py
@@ -803,15 +804,23 @@ jobs:
         run: |
           set -euo pipefail
           require_external_guidance="${REQUIRE_EXTERNAL_BRAIN_GUIDANCE:-false}"
+          canonical_guidance_targets=""
           if [ "${{ github.event_name }}" = "push" ]; then
-            require_external_guidance="$(python - <<'PY'
+            mapfile -t _guidance_policy < <(python - <<'PY'
           import json
           from pathlib import Path
           data=json.loads(Path(".github/triggers/provider-recognition-repair-v6.json").read_text(encoding="utf-8"))
+          canon=lambda value: str(value or "").strip().casefold().replace("_","-")
           print("true" if data.get("requireExternalBrainGuidance") is True else "false")
+          print(",".join(canon(v) for v in data.get("targetProviders") or [] if canon(v)))
           PY
-            )"
+            )
+            require_external_guidance="${_guidance_policy[0]:-false}"
+            canonical_guidance_targets="${_guidance_policy[1]:-}"
+          elif [ -n "${{ inputs.target_provider || '' }}" ]; then
+            canonical_guidance_targets="$(printf '%s' "${{ inputs.target_provider || '' }}" | tr '[:upper:]_' '[:lower:]-' | xargs)"
           fi
+          echo "FIELD_CANONICAL_REPAIR_GUIDANCE_POLICY required_external=$require_external_guidance targets=${canonical_guidance_targets:-global}"
           git fetch --quiet origin brain-learning/proposals:refs/remotes/origin/brain-learning/proposals || true
           if git cat-file -e refs/remotes/origin/brain-learning/proposals:engine_v2/learning/latest.json 2>/dev/null; then
             git show refs/remotes/origin/brain-learning/proposals:engine_v2/learning/latest.json > "$RUNNER_TEMP/brain-learning-latest.json"
@@ -869,6 +878,10 @@ jobs:
               fi
               current_brain_sha="$(git ls-remote https://github.com/niakw/NiakVIO-Brain-LLM.git refs/heads/main | awk 'NR==1{print $1}')"
               if python scripts/import_external_brain_llm_guidance.py --input "$RUNNER_TEMP/external-brain-llm-guidance.json" --output "$RUNNER_TEMP/external-brain-llm-guidance-repair.json" --current-sha "$GITHUB_SHA" --brain-llm-sha "$current_brain_sha" --guidance-commit "$guidance_commit" --negative-memory automation/brain-repair-memory.json --negative-memory "$RUNNER_TEMP/brain-learning-latest.json"; then
+                python scripts/scope_brain_guidance_to_repair_cohort.py \
+                  --input "$RUNNER_TEMP/external-brain-llm-guidance-repair.json" \
+                  --output "$RUNNER_TEMP/external-brain-llm-guidance-repair.json" \
+                  --providers "$canonical_guidance_targets"
                 external_count="$(python -c 'import json; d=json.load(open("'"$RUNNER_TEMP"'/external-brain-llm-guidance-repair.json")); print(int(d.get("providerCount") or 0))')"
                 if [ "$external_count" -gt 0 ]; then
                   echo "NIAKVIO_BRAIN_LLM_GUIDANCE=$RUNNER_TEMP/external-brain-llm-guidance-repair.json" >> "$GITHUB_ENV"
@@ -939,6 +952,10 @@ jobs:
           data["sourceLearningSha"]=str(data.get("sourceSha") or "");data["sourceSha"]=current_sha;data["persistentLearningPrior"]=True
           destination.write_text(json.dumps(data,indent=2,sort_keys=True)+"\n",encoding="utf-8")
           PY
+              python scripts/scope_brain_guidance_to_repair_cohort.py \
+                --input "$RUNNER_TEMP/brain-learning-llm-guidance-repair.json" \
+                --output "$RUNNER_TEMP/brain-learning-llm-guidance-repair.json" \
+                --providers "$canonical_guidance_targets"
               fallback_count="$(python -c 'import json; d=json.load(open("'"$RUNNER_TEMP"'/brain-learning-llm-guidance-repair.json")); print(int(d.get("providerCount") or 0))')"
               if [ "$fallback_count" -gt 0 ]; then
                 echo "NIAKVIO_BRAIN_LLM_GUIDANCE=$RUNNER_TEMP/brain-learning-llm-guidance-repair.json" >> "$GITHUB_ENV"
