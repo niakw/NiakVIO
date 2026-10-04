@@ -150,13 +150,24 @@ category_progress = {
         "identity_contradiction_count": 0,
         "duration_identity_mismatch_count": 0,
         "required_fixture_categories": ["movie", "tv"],
-        "healthy_fixture_categories": ["movie"],
+        "healthy_fixture_categories": ["tv"],
     },
     "tests": [
         {
+            "status": "no_streams",
+            "failure_class": "content_lookup_completed_no_streams",
+            "fixture": {"category": "movie", "mediaType": "movie"},
+            "stream_count": 0,
+            "streams_returned": 0,
+            "streams_playable": 0,
+            "network_observations": [
+                {"status": 200, "ok": True, "infrastructure": False, "stage": "media"}
+            ],
+        },
+        {
             "status": "healthy",
             "failure_class": "",
-            "fixture": {"category": "movie", "mediaType": "movie"},
+            "fixture": {"category": "tv", "mediaType": "tv"},
             "stream_count": 5,
             "streams_returned": 5,
             "streams_playable": 5,
@@ -164,22 +175,11 @@ category_progress = {
                 {"status": 200, "ok": True, "infrastructure": False, "stage": "media"}
             ],
         },
-        {
-            "status": "no_streams",
-            "failure_class": "content_lookup_completed_no_streams",
-            "fixture": {"category": "tv", "mediaType": "tv"},
-            "stream_count": 0,
-            "streams_returned": 0,
-            "streams_playable": 0,
-            "network_observations": [
-                {"status": 200, "ok": True, "infrastructure": False, "stage": "search"}
-            ],
-        },
     ],
 }
 planner_result = brain._planner_result(category_progress)
 assert planner_result["evidence"]["required_fixture_categories"] == ["movie", "tv"]
-assert planner_result["evidence"]["healthy_fixture_categories"] == ["movie"]
+assert planner_result["evidence"]["healthy_fixture_categories"] == ["tv"]
 
 adaptive_spec = importlib.util.spec_from_file_location(
     "category_coverage_adaptive_runtime",
@@ -225,6 +225,7 @@ assert planner_proc.returncode == 0, planner_proc.stderr.decode("utf-8", errors=
 category_plan = json.loads(planner_proc.stdout.decode("utf-8"))["plans"]["aio:demo"]
 assert category_plan["failureClass"] == "search_gap", category_plan
 assert category_plan["action"] == "probe-targeted-repair", category_plan
+assert category_plan["targetCategories"] == ["movie"], category_plan
 assert "adaptive_runtime_recovery" in category_plan["allowedProfiles"], category_plan
 
 deep=(SCRIPTS/"deep_repair_loop.py").read_text(encoding="utf-8")
