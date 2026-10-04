@@ -55,7 +55,7 @@ assert "python scripts/audit_provider_v3_static.py --domain-only" in text
 assert "gh workflow run sync.yml --ref main -f mode=quick || echo \"FIELD_DOMAIN_POST_PUBLISH_DISPATCH_WARN workflow=sync\"" in text
 assert "gh workflow run provider-disabled-lifecycle.yml --ref main || echo \"FIELD_DOMAIN_POST_PUBLISH_DISPATCH_WARN workflow=provider-disabled-lifecycle\"" in text
 assert text.count("python scripts/audit_provider_v3_static.py --domain-only") == 2
-assert "python scripts/audit_provider_v3_static.py\n" not in text
+assert text.count("python scripts/audit_provider_v3_static.py\n") == 1, "full static audit must run exactly once after targeted reconciliation"
 assert "continue-on-error: true" in text, "DNS/HTTP observation must not gate hub address authority"
 assert "authoritative_hub_domain_refresh_test.py" in text
 assert "provider_v3_workflow_ownership_test.py" in text
@@ -73,6 +73,7 @@ reconcile_block=text[reconcile_step:validate_step]
 assert reconcile_block.index("reconcile_provider_domain_metadata.py") < reconcile_block.index("materialize_provider_v3_one.py"), reconcile_block
 assert reconcile_block.index("materialize_provider_v3_one.py") < reconcile_block.index("reconcile_targeted_provider_publication.py"), reconcile_block
 assert reconcile_block.index("reconcile_targeted_provider_publication.py") < reconcile_block.index("python scripts/audit_provider_v3_static.py"), reconcile_block
+assert reconcile_block.count("python scripts/audit_provider_v3_static.py\n") == 1, reconcile_block
 assert "provider_domain_runtime_projection_drift_ids" in source
 assert '"runtime_projection_drift"' in source
 for forbidden in (
