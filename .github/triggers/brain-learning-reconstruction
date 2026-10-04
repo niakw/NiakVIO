@@ -1,6 +1,6 @@
 Moviebox representative executor-family rotation proof.
 source_census_run: 37204831746
-source_main_sha: 0087f60a4a92bdde0746958e57bb08af9a5ff887
+source_main_sha: e765321ba980b67d23ae4af4f00755c341f6c37b
 budget_minutes: 20
 reason: prove-meta-gap-executor-family-rotation-after-bounded-executed-failures
 validation_reason: moviebox-has-31-executed-transport-blocked-provider-origin-fingerprints-and-must-not-repeat-that-family
@@ -9,4 +9,4 @@ execution_mode: targeted-main-only
 target_providers: moviebox
 architecture_force: false
 publication_policy: no-pr-monotonic-memory-merge-then-canonical-repair
-required_current_evidence: provider_origin_failover_v1-attempts-gte3;next-meta-gap-profile-ne-provider_origin_failover_v1;expected-next-profile=search_contract_inference_v1;publication-authority=false;retry=2
+required_current_evidence: provider_origin_failover_v1-attempts-gte3;ordinary-transport-variants-exhaust-before-meta-gap;next-meta-gap-profile-ne-provider_origin_failover_v1;expected-next-profile=search_contract_inference_v1;publication-authority=false;retry=3
