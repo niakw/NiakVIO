@@ -135,6 +135,47 @@ def host(url: str) -> str:
     return (urllib.parse.urlparse(str(url)).hostname or "").lower().strip(".")
 
 
+def _rewrite_mapped_domain_url(value: object, rewrites: dict[str, str]) -> object:
+    if not isinstance(value, str) or not is_http_url(value):
+        return value
+    try:
+        parsed = urllib.parse.urlparse(value)
+    except ValueError:
+        return value
+    source_host = str(parsed.hostname or "").casefold()
+    target_host = rewrites.get(source_host)
+    if not target_host or target_host == source_host:
+        return value
+    port = f":{parsed.port}" if parsed.port else ""
+    return urllib.parse.urlunparse((
+        parsed.scheme or "https",
+        target_host + port,
+        parsed.path,
+        parsed.params,
+        parsed.query,
+        parsed.fragment,
+    )).rstrip("/")
+
+
+def _rewrite_mapped_domain_list(values: object, rewrites: dict[str, str]) -> tuple[object, bool]:
+    if not isinstance(values, list):
+        return values, False
+    output: list[Any] = []
+    seen: set[str] = set()
+    changed = False
+    for raw in values:
+        rewritten = _rewrite_mapped_domain_url(raw, rewrites)
+        if rewritten != raw:
+            changed = True
+        identity = json.dumps(rewritten, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+        if identity in seen:
+            changed = True
+            continue
+        seen.add(identity)
+        output.append(rewritten)
+    return output, changed
+
+
 def compact(value: str) -> str:
     folded = unicodedata.normalize("NFKD", str(value).casefold())
     folded = "".join(char for char in folded if not unicodedata.combining(char))
@@ -1293,12 +1334,25 @@ def update_provider_patch(config: dict[str, Any], provider_id: str, hub_cfg: dic
                 runtime[old] = new_site_host
                 changes.append({"from": old, "to": new_site_host, "kind": "site"})
 
-    # Provider-owned Lego options can carry a site root independently from
-    # official_site/domain_substitutions. When Domain Refresh rotates a terminal,
-    # migrate only top-level site-root option keys that point at a host we have
-    # just classified as an old provider terminal. Do not recursively rewrite
-    # arrays/mirror pools (for example VidFast's multi-base list): those may be
-    # deliberate alternate authorities.
+    # Explicit old->current maps are executable authority. Reconcile bounded
+    # Provider DATA derivatives from that map even when official_site is already
+    # current (catch-up after a previous partial transaction). Unmapped mirrors
+    # remain untouched.
+    rewrites = {
+        str(source).casefold().strip("."): new_site_host
+        for source in set(replacements) | set(runtime)
+        if str(source).strip()
+        and (
+            str(replacements.get(source) or "").casefold().strip(".") == new_site_host
+            or str(runtime.get(source) or "").casefold().strip(".") == new_site_host
+        )
+    }
+    for field in ("proof_search_bases", "proof_detail_bases"):
+        rewritten, field_changed = _rewrite_mapped_domain_list(patch.get(field), rewrites)
+        if field_changed:
+            patch[field] = rewritten
+            changes.append({"from": "structured", "to": new_site_host, "kind": field})
+
     lego_site_keys = {
         "base", "site", "referer", "referrer", "origin",
         "base_url", "baseUrl", "site_url", "siteUrl",
@@ -1310,29 +1364,22 @@ def update_provider_patch(config: dict[str, Any], provider_id: str, hub_cfg: dic
                 continue
             for key in lego_site_keys:
                 raw = options.get(key)
-                if not isinstance(raw, str) or not is_http_url(raw):
-                    continue
-                old_host = host(raw)
-                if not old_host or old_host == new_site_host:
-                    continue
-                if replacements.get(old_host) != new_site_host and runtime.get(old_host) != new_site_host:
-                    continue
-                parsed = urllib.parse.urlparse(raw)
-                rewritten = urllib.parse.urlunparse((
-                    parsed.scheme or "https",
-                    new_site_host,
-                    parsed.path,
-                    parsed.params,
-                    parsed.query,
-                    parsed.fragment,
-                )).rstrip("/")
-                if rewritten != raw.rstrip("/"):
+                rewritten = _rewrite_mapped_domain_url(raw, rewrites)
+                if rewritten != raw:
                     options[key] = rewritten
                     changes.append({
-                        "from": old_host,
+                        "from": host(str(raw)),
                         "to": new_site_host,
                         "kind": f"provider_lego_option:{script_name}:{key}",
                     })
+            rewritten, list_changed = _rewrite_mapped_domain_list(options.get("bases"), rewrites)
+            if list_changed:
+                options["bases"] = rewritten
+                changes.append({
+                    "from": "mapped-list",
+                    "to": new_site_host,
+                    "kind": f"provider_lego_option:{script_name}:bases",
+                })
 
     if api_url:
         new_api_host = host(api_url)
