@@ -82,6 +82,7 @@ jobs:
           python tests/provider_repair_learn_handoff_v1_test.py
           python tests/provider_learning_dispatch_gate_test.py
           python tests/deep_health_tmdb_bootstrap_test.py
+          python tests/brain_exploration_chain_test.py
           python tests/brain_harness_differential_test.py
           python tests/brain_harness_differential_routing_test.py
           python tests/brain_historical_solution_execution_test.py
@@ -180,7 +181,7 @@ jobs:
           providers_csv="${DISPATCH_PROVIDERS:-}"
           waves="${DISPATCH_WAVES:-3}"
           budget="${DISPATCH_BUDGET:-1200}"
-          max_rounds="${DISPATCH_MAX_ROUNDS:-1}"
+          max_rounds="${DISPATCH_MAX_ROUNDS:-3}"
           publish="${DISPATCH_PUBLISH:-true}"
           providers=()
           if [ "${{ github.event_name }}" = "push" ]; then
@@ -190,7 +191,7 @@ jobs:
           d=json.loads(Path('.github/triggers/provider-fast-repair.json').read_text())
           print(str(int(d.get('waves') or 3)))
           print(str(int(d.get('timeBudgetSeconds') or 1200)))
-          print(str(int(d.get('maxRoundsPerBatch') or 1)))
+          print(str(int(d.get('maxRoundsPerBatch') or 3)))
           print('true' if d.get('publishValidated', True) is True else 'false')
           for p in d.get('targetProviders') or []:
               p=str(p or '').strip().lower()
@@ -200,7 +201,7 @@ jobs:
             )
             waves="${vals[0]:-3}"
             budget="${vals[1]:-1200}"
-            max_rounds="${vals[2]:-1}"
+            max_rounds="${vals[2]:-3}"
             publish="${vals[3]:-true}"
             providers=("${vals[@]:4}")
           else
@@ -378,7 +379,7 @@ jobs:
           d=json.loads(Path('.github/triggers/provider-fast-repair.json').read_text(encoding='utf-8'))
           print(str(int(d.get('waves') or 1)))
           print(str(int(d.get('timeBudgetSeconds') or 600)))
-          print(str(int(d.get('maxRoundsPerBatch') or 1)))
+          print(str(int(d.get('maxRoundsPerBatch') or 3)))
           print('true' if d.get('publishValidated', True) is True else 'false')
           print(','.join(str(x or '').strip().lower().replace('_','-') for x in d.get('targetProviders') or [] if str(x or '').strip()))
           PY
