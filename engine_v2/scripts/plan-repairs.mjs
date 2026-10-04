@@ -396,14 +396,24 @@ function llmAdvisorStrategyHint(providerId, failureClass, memoryRows, rotateEver
   const rows = llmGuidance
     .map((row) => {
       const guidanceKind = stringValue(row.guidanceKind).toLowerCase();
+      const declaredProfile = stringValue(row.profile).toLowerCase();
+      const declaredCompatibility = llmFailureCompatibility(row.failureClass, failure);
+      const preserveDeclaredMetaProfile = (
+        guidanceKind === "meta-gap-synthesis"
+        && declaredCompatibility === "exact"
+        && LLM_ADVISOR_PROFILES.has(declaredProfile)
+      );
       const metaGapRebound = guidanceKind === "meta-gap-synthesis" && Boolean(metaGapProfile);
       return {
         ...row,
-        profile: metaGapRebound ? metaGapProfile : row.profile,
+        profile: metaGapRebound
+          ? (preserveDeclaredMetaProfile ? declaredProfile : metaGapProfile)
+          : row.profile,
         failureCompatibility: metaGapRebound
-          ? "exact-rebound"
-          : llmFailureCompatibility(row.failureClass, failure),
+          ? (preserveDeclaredMetaProfile ? "exact" : "exact-rebound")
+          : declaredCompatibility,
         metaGapRebound,
+        preserveDeclaredMetaProfile,
       };
     })
     .filter((row) => {
@@ -438,7 +448,12 @@ function llmAdvisorStrategyHint(providerId, failureClass, memoryRows, rotateEver
   for (const row of rows) {
     const profile = stringValue(row.profile).toLowerCase();
     if (row.metaGapRebound) {
-      for (let generation = 0; generation < 16; generation += 1) {
+      // One meta-gap guidance row is a bounded executor hypothesis, not a
+      // license to generate an unbounded parameter search. After a full causal
+      // batch worth of distinct executed fingerprints, return control to
+      // Learning so it can rotate executor family.
+      const maxMetaGapRotations = 3;
+      for (let generation = 0; generation < maxMetaGapRotations; generation += 1) {
         const experiment = rotateMetaGapExperiment(row.experiment, failure, generation);
         const experimentFingerprint = crypto
           .createHash("sha256")
