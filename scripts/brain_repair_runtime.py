@@ -1266,6 +1266,11 @@ def _plan_snapshot(plan: dict[str, Any]) -> dict[str, Any]:
         "llmAdvisorGuidanceKind": str(plan.get("llmAdvisorGuidanceKind") or ""),
         "llmAdvisorExperiment": copy.deepcopy(plan.get("llmAdvisorExperiment") if isinstance(plan.get("llmAdvisorExperiment"), dict) else {}),
         "observedPipelineStage": str(plan.get("observedPipelineStage") or ""),
+        "targetCategories": [
+            str(value).strip().casefold()
+            for value in (plan.get("targetCategories") or [])
+            if str(value).strip().casefold() in {"movie", "tv", "anime"}
+        ][:3],
         "censusStatus": str(plan.get("censusStatus") or ""),
         "capabilityStrategy": str(plan.get("capabilityStrategy") or ""),
         "action": str(plan.get("action") or ""),
