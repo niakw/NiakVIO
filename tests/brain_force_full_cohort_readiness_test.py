@@ -28,6 +28,10 @@ runtime = load_module(
     "force_readiness_runtime",
     ROOT / "scripts/adaptive_runtime/runtime_repair.py",
 )
+brain_runtime = load_module(
+    "force_readiness_brain_runtime",
+    ROOT / "scripts/brain_repair_runtime.py",
+)
 
 census = json.loads(
     (ROOT / "automation/provider-census-status.json").read_text(encoding="utf-8")
@@ -73,6 +77,14 @@ expected_focus = {
 
 missing_runtime_families = set(meta.FAILURE_EXECUTORS) - set(runtime.CAUSAL_STRATEGY_BASES)
 assert not missing_runtime_families, sorted(missing_runtime_families)
+
+rotated_profiles = {
+    profile
+    for rows in meta.FAILURE_EXECUTOR_ROTATIONS.values()
+    for profile, _strategy in rows
+}
+missing_advisor_profiles = rotated_profiles - set(brain_runtime.LLM_ADVISOR_PROFILES)
+assert not missing_advisor_profiles, sorted(missing_advisor_profiles)
 
 coverage = {}
 for provider in sorted(queue):
