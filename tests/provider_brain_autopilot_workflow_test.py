@@ -90,7 +90,7 @@ for source in (fast, remat):
     assert "target_providers:" in source
     assert "DISPATCH_PROVIDERS" in source
 
-assert '-f waves=1 -f time_budget_seconds=600 -f max_rounds_per_batch=1' in autopilot
+assert '-f waves=1 -f time_budget_seconds=1200 -f max_rounds_per_batch=3' in autopilot
 assert 'learning_dispatch=true architecture_force=$force_mode publish_proposal=$publish_proposal owner=immediate-targeted-learning' in fast
 fast_learning_start = fast.index("record_learning_debt()")
 fast_learning_end = fast.index("git fetch --quiet origin main", fast_learning_start)
@@ -101,6 +101,10 @@ assert 'gh workflow run brain-learning-lab.yml' in fast
 assert 'publish_proposal="false"' in fast
 assert '-f publish_proposal="$publish_proposal"' in fast
 assert 'architecture_force=$force_mode' in fast
+assert 'default: "1200"' in fast
+assert 'DISPATCH_MAX_ROUNDS: ${{ inputs.max_rounds_per_batch || \'3\' }}' in fast
+fast_py = (ROOT / "scripts/run_provider_fast_repair.py").read_text(encoding="utf-8")
+assert 'parser.add_argument("--max-rounds-per-batch", type=int, default=3)' in fast_py
 assert '-f target_providers="$learn_handoff_csv"' in fast
 assert 'complete-cloud-convergence:' in learn
 assert 'FIELD_BRAIN_CLOUD_CONVERGENCE next=census' in learn
