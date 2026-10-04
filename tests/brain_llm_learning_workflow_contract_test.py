@@ -59,6 +59,11 @@ for required in (
     "guidance.generated.json",
     "FIELD_BRAIN_LLM_GUIDANCE_FINAL",
     "scripts/merge_brain_llm_guidance_memory.py",
+    "scripts/filter_brain_learning_guidance.py",
+    "scripts/fill_brain_learning_guidance_gaps.py",
+    "FIELD_BRAIN_LEARNING_GUIDANCE_NEGATIVE_FILTER",
+    "FIELD_BRAIN_LEARNING_GUIDANCE_GAP_FILL",
+    '--providers "$PROVIDER_FILTER"',
     "skipped=stale-source",
     "git merge-base --is-ancestor",
 ):
