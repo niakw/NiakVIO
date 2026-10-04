@@ -304,18 +304,19 @@ def untried_advisor_fingerprints(
     }
 
 
-def executed_meta_gap_rotation_pending(
+def executed_advisor_rotation_pending(
     brain_summary: dict[str, Any],
     *,
     memory_payload: dict[str, Any] | None = None,
 ) -> set[str]:
-    """Return providers whose synthesized advisor was actually executed and failed.
+    """Return providers whose current advisor hypothesis actually ran and failed.
 
-    Dynamic meta-gap rows are created from current census + negative memory, so
-    they are not necessarily present in the imported external guidance file.
-    A real executed failure/progress row is enough to justify one more bounded
-    wave: the next planner call can synthesize the next fingerprint/executor.
-    profile_unavailable rows are deliberately excluded because no child ran.
+    Persistent Learning, exact external Brain-LLM and dynamic meta-gap rows are
+    all sandbox priors. Once one of those hypotheses really executes and fails
+    (or makes non-publishable progress), the same bounded Fast run must be able
+    to replan from the new memory instead of immediately handing the provider
+    back to Learning. profile_unavailable rows stay excluded because no child
+    ran and therefore no causal evidence was produced.
     """
     memory = memory_payload if isinstance(memory_payload, dict) else load(REPAIR_MEMORY, {})
     entries: list[dict[str, Any]] = []
@@ -345,7 +346,12 @@ def executed_meta_gap_rotation_pending(
             continue
         if plan.get("llmAdvisorApplied") is not True:
             continue
-        if str(plan.get("llmAdvisorGuidanceKind") or "").strip().casefold() != "meta-gap-synthesis":
+        guidance_kind = str(plan.get("llmAdvisorGuidanceKind") or "").strip().casefold()
+        if guidance_kind not in {
+            "meta-gap-synthesis",
+            "persistent-learning",
+            "external-brain-llm",
+        }:
             continue
         if str(plan.get("action") or "") != "probe-targeted-repair":
             continue
@@ -1266,11 +1272,11 @@ def main() -> int:
                 # non-publishable progress), the next bounded wave must see the
                 # new memory immediately instead of requiring another workflow.
                 untried_advisor = untried_advisor_fingerprints(batch)
-                dynamic_meta_gap_rotation = executed_meta_gap_rotation_pending(brain_summary)
+                dynamic_advisor_rotation = executed_advisor_rotation_pending(brain_summary)
                 advisor_rotation_pending = {
                     provider for provider in deferred
                     if provider in untried_advisor
-                    or provider in dynamic_meta_gap_rotation
+                    or provider in dynamic_advisor_rotation
                 }
                 deferred.difference_update(advisor_rotation_pending)
 
