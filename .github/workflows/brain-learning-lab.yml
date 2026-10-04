@@ -1089,9 +1089,16 @@ jobs:
             throw new Error('native reader repair memory was not preserved across Brain sandbox learning');
           }
           const nativeSummary=JSON.parse(fs.readFileSync('brain-learning-input/native-reader-summary.json','utf8'));
-          if ((nativeSummary.providerLearningFailures||0)>0 && !(next.proposals||[]).some(p => String(p.type||'').startsWith('native_reader_'))) {
+          const providerFilter=String(process.env.FAST_HANDOFF_PROVIDER_FILTER||'').trim();
+          const hasNativeProposal=(next.proposals||[]).some(p => String(p.type||'').startsWith('native_reader_'));
+          // Targeted Fast-Handoff intentionally scopes proposals to the requested
+          // provider cohort. Global native-reader failure memory must still be
+          // preserved, but it cannot require an unrelated native_reader proposal
+          // to appear inside a Moviebox-only (or other provider-only) proposal set.
+          if (!providerFilter && (nativeSummary.providerLearningFailures||0)>0 && !hasNativeProposal) {
             throw new Error('provider-owned reader failure memory did not produce a Brain learning/skill proposal');
           }
+          console.log('FIELD_BRAIN_NATIVE_READER_PROPOSAL_SCOPE targeted='+(providerFilter?'true':'false')+' provider_filter='+(providerFilter||'none')+' provider_learning_failures='+(nativeSummary.providerLearningFailures||0)+' native_proposal='+(hasNativeProposal?'true':'false'));
           if ((nativeSummary.nuvioVendorWaitFailures||0)>0 && (nativeSummary.nuvioVendorWait||[]).some(r => r.providerMutationAllowed!==false || r.deepRetryRequested!==false)) {
             throw new Error('Nuvio vendor-wait evidence escaped into provider mutation/deep retry');
           }
