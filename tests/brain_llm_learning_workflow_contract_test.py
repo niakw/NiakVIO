@@ -67,6 +67,20 @@ for required in (
 merge_script=(ROOT/"scripts/merge_brain_llm_guidance_memory.py").read_text(encoding="utf-8")
 assert "FIELD_BRAIN_GUIDANCE_MEMORY_MERGE" in merge_script
 
+cross_day=workflow[
+    workflow.index("- name: Build sanitized cross-day Brain state"):
+    workflow.index("- name: Materialize validated repair proposal as artifact only")
+]
+for required in (
+    "FAST_HANDOFF_PROVIDER_FILTER: ${{ steps.learning-slot.outputs.provider_filter }}",
+    "const providerFilter=String(process.env.FAST_HANDOFF_PROVIDER_FILTER||'').trim();",
+    "if (!providerFilter && (nativeSummary.providerLearningFailures||0)>0 && !hasNativeProposal)",
+    "FIELD_BRAIN_NATIVE_READER_PROPOSAL_SCOPE",
+    "native reader repair memory was not preserved across Brain sandbox learning",
+    "Nuvio vendor-wait evidence escaped into provider mutation/deep retry",
+):
+    assert required in cross_day, required
+
 assert "key: llama-cpp-b11140-ubuntu-x64" not in llm, "executable llama.cpp binary must not be restored from actions/cache"
 
 arch = workflow[workflow.index("- name: Open or refresh Brain architecture PR"):]
