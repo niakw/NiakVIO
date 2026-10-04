@@ -65,6 +65,143 @@ def cid(value: object) -> str:
     return str(value or "").strip().casefold().replace("_", "-")
 
 
+def capture_cross_wave_exploration_parents(
+    stage: Path,
+    registry_path: Path,
+    eligible_providers: set[str] | None = None,
+    *,
+    source_wave: int = 0,
+) -> dict[str, dict[str, Any]]:
+    """Capture exact safe-progress bytes for sandbox-only reuse in a later wave.
+
+    This does not create publication authority. Only Deep candidates explicitly
+    marked as non-publishable exploration parents are eligible, and the exact
+    bytes must still match the candidate SHA. The next wave will retest these
+    bytes as its baseline before any further mutation.
+    """
+    registry = load(registry_path, {})
+    selected = {cid(value) for value in (eligible_providers or set()) if cid(value)}
+    out: dict[str, dict[str, Any]] = {}
+    providers_root = (stage / "providers").resolve()
+    for candidate in registry.get("candidates") or []:
+        if not isinstance(candidate, dict):
+            continue
+        marker = candidate.get("brain_exploration_parent")
+        if not isinstance(marker, dict) or marker.get("productionAccepted") is not False:
+            continue
+        if candidate.get("provider_base_change_authorized"):
+            continue
+        provider = cid(candidate.get("canonical_id") or candidate.get("upstream_id"))
+        if not provider or (selected and provider not in selected):
+            continue
+        local_path = str(candidate.get("local_path") or "").strip()
+        if not local_path:
+            continue
+        source = (stage / local_path).resolve()
+        try:
+            source.relative_to(providers_root)
+        except ValueError:
+            continue
+        if not source.is_file():
+            continue
+        payload = source.read_bytes()
+        digest = hashlib.sha256(payload).hexdigest()
+        expected = str(candidate.get("sha256") or "").strip().casefold()
+        if expected and expected != digest:
+            continue
+        carried = copy.deepcopy(candidate)
+        carried["sha256"] = digest
+        carried["brain_cross_wave_exploration_parent"] = {
+            "sourceWave": max(0, int(source_wave)),
+            "sandboxOnly": True,
+            "publicationAuthority": False,
+            "requiresBaselineRetest": True,
+        }
+        out[provider] = {
+            "candidate": carried,
+            "bytes": payload,
+        }
+    return out
+
+
+def apply_cross_wave_exploration_parents(
+    stage: Path,
+    registry_path: Path,
+    carryover: dict[str, dict[str, Any]],
+    providers: list[str] | set[str],
+    *,
+    target_wave: int = 0,
+) -> list[str]:
+    """Overlay same-run sandbox parents onto a freshly staged published batch."""
+    wanted = {cid(value) for value in providers if cid(value)}
+    if not wanted or not carryover:
+        return []
+    registry = load(registry_path, {})
+    candidates = [
+        copy.deepcopy(row)
+        for row in registry.get("candidates") or []
+        if isinstance(row, dict)
+    ]
+    providers_root = (stage / "providers").resolve()
+    applied: list[str] = []
+    for index, fresh in enumerate(candidates):
+        provider = cid(fresh.get("canonical_id") or fresh.get("upstream_id"))
+        record = carryover.get(provider)
+        if provider not in wanted or not isinstance(record, dict):
+            continue
+        carried = copy.deepcopy(record.get("candidate"))
+        payload = record.get("bytes")
+        if not isinstance(carried, dict) or not isinstance(payload, (bytes, bytearray)):
+            continue
+        marker = carried.get("brain_exploration_parent")
+        cross = carried.get("brain_cross_wave_exploration_parent")
+        if (
+            not isinstance(marker, dict)
+            or marker.get("productionAccepted") is not False
+            or not isinstance(cross, dict)
+            or cross.get("sandboxOnly") is not True
+            or cross.get("publicationAuthority") is not False
+            or carried.get("provider_base_change_authorized")
+        ):
+            continue
+        local_path = str(carried.get("local_path") or "").strip()
+        target = (stage / local_path).resolve()
+        try:
+            target.relative_to(providers_root)
+        except ValueError:
+            continue
+        digest = hashlib.sha256(bytes(payload)).hexdigest()
+        if str(carried.get("sha256") or "").casefold() != digest:
+            continue
+        carried["key"] = str(fresh.get("key") or carried.get("key") or "")
+        carried["brain_cross_wave_exploration_parent"] = {
+            **cross,
+            "targetWave": max(0, int(target_wave)),
+            "sandboxOnly": True,
+            "publicationAuthority": False,
+            "requiresBaselineRetest": True,
+        }
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes(bytes(payload))
+        candidates[index] = carried
+        applied.append(provider)
+    if applied:
+        registry["candidates"] = candidates
+        registry["candidate_count"] = len(candidates)
+        registry["canonical_provider_count"] = len({
+            cid(row.get("canonical_id") or row.get("upstream_id"))
+            for row in candidates
+            if cid(row.get("canonical_id") or row.get("upstream_id"))
+        })
+        write(registry_path, registry)
+        print(
+            "FIELD_PROVIDER_BRAIN_CROSS_WAVE_EXPLORATION_APPLIED "
+            f"wave={max(0, int(target_wave))} providers={','.join(sorted(applied))}",
+            flush=True,
+        )
+    return sorted(applied)
+
+
 def advisor_wave_budget(
     provider_ids: list[str] | set[str],
     guidance_path: Path | None = None,
@@ -1004,6 +1141,7 @@ def main() -> int:
     no_progress_reason: str | None = None
     time_budget_exhausted = False
     processed_providers: set[str] = set()
+    sandbox_exploration_carryover: dict[str, dict[str, Any]] = {}
     started_monotonic = time.monotonic()
     deadline_monotonic = started_monotonic + time_budget_seconds
 
@@ -1040,6 +1178,13 @@ def main() -> int:
                 write(targets_file, {"targets": [{"id": provider} for provider in batch]})
 
                 run(sys.executable, "scripts/stage_published.py", "--stage", str(stage), "--include-file", str(targets_file))
+                carryover_applied = apply_cross_wave_exploration_parents(
+                    stage,
+                    stage / "candidates.json",
+                    sandbox_exploration_carryover,
+                    batch,
+                    target_wave=wave,
+                )
                 env = os.environ.copy()
                 batch_concurrency = health_concurrency_for_batch(requested_health_concurrency, len(batch))
                 env["NUVIO_HEALTH_CONCURRENCY"] = str(batch_concurrency)
@@ -1123,6 +1268,25 @@ def main() -> int:
                 }
                 deferred.difference_update(advisor_rotation_pending)
 
+                accepted_providers = {
+                    cid(row.get("provider"))
+                    for row in accepted
+                    if isinstance(row, dict) and cid(row.get("provider"))
+                }
+                carryover_eligible = (
+                    set(batch)
+                    - accepted_providers
+                    - fixed
+                    - harness_differential
+                )
+                captured_carryover = capture_cross_wave_exploration_parents(
+                    stage,
+                    stage / "candidates.json",
+                    carryover_eligible,
+                    source_wave=wave,
+                )
+                sandbox_exploration_carryover.update(captured_carryover)
+
                 accepted_this_wave.extend(accepted)
                 fixed_this_wave.update(fixed)
                 deferred_this_wave.update(deferred)
@@ -1144,6 +1308,8 @@ def main() -> int:
                     "genericLearningHandoff": sorted(generic_learning_handoff),
                     "unexecutableLlmHandoff": sorted(unexecutable_llm_handoff),
                     "advisorRotationPending": sorted(advisor_rotation_pending),
+                    "crossWaveExplorationCarryoverApplied": sorted(carryover_applied),
+                    "crossWaveExplorationCarryoverCaptured": sorted(captured_carryover),
                     "advisorRemainingFingerprintCounts": {
                         provider: len(untried_advisor.get(provider) or set())
                         for provider in sorted(advisor_rotation_pending)
@@ -1344,6 +1510,7 @@ def main() -> int:
                 "sameByteHarnessDifferentialBlocksProviderMutation": True,
                 "harnessDifferentialExcludedFromLearningDebt": True,
                 "experienceMemoryRole": "prior-only-no-acceptance-authority",
+                "crossWaveExplorationCarryoverRole": "same-run-sandbox-only-retested-no-publication-authority",
             },
         }
         output_path = args.output if args.output.is_absolute() else ROOT / args.output
