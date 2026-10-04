@@ -210,6 +210,44 @@ assert "rawMutationContentRetained" in brain
 assert "llmAdvisorExperimentFingerprint" in brain
 assert "llmAdvisorExperiment" in brain
 
+# Persistent Learning guidance is intentionally cross-run. When only neutral
+# control/evidence files changed, Repair must re-scope it to the current SHA and
+# treat it as meta-gap synthesis; provider-byte drift still suppresses that
+# provider completely.
+import importlib.util
+runtime_spec=importlib.util.spec_from_file_location(
+    "brain_runtime_persistent_guidance",
+    ROOT/"scripts/brain_repair_runtime.py",
+)
+assert runtime_spec and runtime_spec.loader
+runtime_mod=importlib.util.module_from_spec(runtime_spec)
+runtime_spec.loader.exec_module(runtime_mod)
+persistent_payload={
+    "schemaVersion":2,
+    "sourceSha":"1"*40,
+    "brainLlmSha":"2"*40,
+    "publicationAuthority":False,
+    "directMutationAuthority":False,
+    "proofAuthority":False,
+    "rawMutationContentRetained":False,
+    "minConfidence":0.8,
+    "providerCount":1,
+    "rows":guidance,
+}
+runtime_mod._guidance_source_drift=lambda _root,_source,_current:(["MEMORY.md"],set())
+runtime_mod.LLM_GUIDANCE_PATH=None
+safe_rows=runtime_mod._validated_guidance_rows(
+    persistent_payload,
+    current_sha="3"*40,
+    require_exact_sha=False,
+    guidance_kind="meta-gap-synthesis",
+)
+assert safe_rows and safe_rows[0]["guidanceKind"]=="meta-gap-synthesis",safe_rows
+runtime_mod._guidance_source_drift=lambda _root,_source,_current:([],{"synthetic-llm-advisor"})
+drifted={row["providerId"] for row in safe_rows if row["providerId"] in {"synthetic-llm-advisor"}}
+assert drifted=={"synthetic-llm-advisor"},drifted
+
+
 print("Brain LLM advisor execution contract passed")
 
 # Meta-gap synthesis is the final bounded escape hatch in Learning after the
