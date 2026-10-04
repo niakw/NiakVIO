@@ -137,8 +137,39 @@ jobs:
           else
             python scripts/reconcile_provider_domain_metadata.py --rebuild --changes-output health-output/domain-site-changes.json
           fi
+
+          # Domain metadata reconciliation runs after the resolver transaction.
+          # Rebuild exactly the providers whose accepted structured DATA changed,
+          # otherwise the published CONFIG Lego can retain the pre-reconcile
+          # proof/base lists while provider-overrides already contains the new
+          # authority. Keep this incremental: Domain Refresh must never rebuild
+          # the whole catalogue/Core.
+          mapfile -t reconciled_providers < <(python - <<'PY'
+          import json
+          from pathlib import Path
+          d=json.loads(Path('health-output/domain-site-changes.json').read_text(encoding='utf-8'))
+          ids=sorted({
+              str(x or '').strip().casefold().replace('_','-')
+              for key in ('changed','runtime_projection_drift','projection_drift')
+              for x in (d.get(key) or [])
+              if str(x or '').strip()
+          })
+          print('\n'.join(ids))
+          PY
+          )
+          if [ "${#reconciled_providers[@]}" -gt 0 ]; then
+            reconcile=(python scripts/reconcile_targeted_provider_publication.py)
+            for provider in "${reconciled_providers[@]}"; do
+              echo "FIELD_DOMAIN_TARGETED_REMATERIALIZE provider=$provider"
+              python scripts/materialize_provider_v3_one.py "$provider" --preserve-structured-data
+              reconcile+=(--provider "$provider")
+            done
+            "${reconcile[@]}"
+          fi
+
           python scripts/finalize_provider_v3_minimizer.py
           python scripts/finalize_provider_v3_minimizer.py --check
+          python scripts/audit_provider_v3_static.py
           python tests/provider_v3_minimizer_publication_pipeline_test.py
           python tests/provider_v3_minimizer_published_test.py
 
