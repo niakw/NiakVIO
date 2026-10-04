@@ -565,6 +565,20 @@ function buildPlan(item) {
   const state = asRecord(item.state);
   const evidence = applyCensusPrior(deriveEvidence(candidate, result), candidate);
   evidence.failureClass = classifyFailure(evidence);
+  const rawResultEvidence = asRecord(result.evidence);
+  const requiredTargetCategories = [...new Set(
+    stringArray(rawResultEvidence.required_fixture_categories)
+      .map((value) => value.toLowerCase())
+      .filter((value) => ["movie", "tv", "anime"].includes(value)),
+  )];
+  const healthyTargetCategories = new Set(
+    stringArray(rawResultEvidence.healthy_fixture_categories)
+      .map((value) => value.toLowerCase())
+      .filter((value) => ["movie", "tv", "anime"].includes(value)),
+  );
+  const targetCategories = requiredTargetCategories.filter(
+    (value) => !healthyTargetCategories.has(value),
+  );
   const signature = evidenceSignature(evidence);
   const providerId = stringValue(candidate.canonical_id ?? candidate.upstream_id).toLowerCase();
   const capabilityStrategy = stringValue(asRecord(asRecord(providerOverrides.provider_capabilities)[providerId]).strategy, "unknown").toLowerCase();
@@ -970,6 +984,7 @@ function buildPlan(item) {
     repairEngine: effectiveRepairTarget.engine,
     pipelineStage: effectiveRepairTarget.pipelineStage,
     observedPipelineStage: stringValue(evidence.observedPipelineStage, "unknown"),
+    targetCategories,
     censusStatus: stringValue(asRecord(candidate.censusPrior).status),
     censusPriorApplied: evidence.censusPriorApplied === true,
     censusPriorReason: stringValue(evidence.censusPriorReason),
