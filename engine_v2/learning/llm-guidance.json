@@ -1,0 +1,65 @@
+{
+  "brainLlmSha": "75a570fc54f32cfcd54dc759bf1851a530802596",
+  "directMutationAuthority": false,
+  "minConfidence": 0.8,
+  "proofAuthority": false,
+  "providerCount": 2,
+  "publicationAuthority": false,
+  "rawMutationContentRetained": false,
+  "rows": [
+    {
+      "confidence": 0.99,
+      "experiment": {
+        "aliasSearch": false,
+        "documentRequestMining": false,
+        "maxDepth": 3,
+        "maxEmbeds": 10,
+        "maxPages": 10,
+        "maxRecipePasses": 3,
+        "recipePolicy": "current_only",
+        "responseSalvage": false,
+        "roleOrder": [
+          "player"
+        ],
+        "routePolicy": "owned_only",
+        "sessionBootstrap": false,
+        "terminalOnly": false
+      },
+      "experimentFingerprint": "b9021d413414de3e0bde3f3705cff2ad7480f5ae5f3ac0b3b08ebf18182122f4",
+      "failureClass": "variant-coverage-gap",
+      "priorOnly": true,
+      "profile": "player_media_extractor_v1",
+      "providerId": "coflix",
+      "strategy": "enumerate-stream-variants-before-global-cap",
+      "targetLayer": "provider"
+    },
+    {
+      "confidence": 0.99,
+      "experiment": {
+        "aliasSearch": false,
+        "documentRequestMining": false,
+        "maxDepth": 5,
+        "maxEmbeds": 10,
+        "maxPages": 10,
+        "maxRecipePasses": 1,
+        "recipePolicy": "current_only",
+        "responseSalvage": false,
+        "roleOrder": [
+          "source"
+        ],
+        "routePolicy": "owned_only",
+        "sessionBootstrap": false,
+        "terminalOnly": false
+      },
+      "experimentFingerprint": "4f5899f3d05a4ba2a81708830e2ef65de482c59005958eb9aa895a91408ea14b",
+      "failureClass": "variant-coverage-gap",
+      "priorOnly": true,
+      "profile": "player_media_extractor_v1",
+      "providerId": "hindmoviez",
+      "strategy": "enumerate-stream-variants-before-global-cap",
+      "targetLayer": "provider"
+    }
+  ],
+  "schemaVersion": 2,
+  "sourceSha": "d5d6dbc33757627330cebc383d217e4ae8b7937c"
+}
