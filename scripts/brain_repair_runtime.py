@@ -334,6 +334,16 @@ def _planner_result(result: dict[str, Any]) -> dict[str, Any]:
         )
         if key in evidence
     }
+    for category_key in ("required_fixture_categories", "healthy_fixture_categories"):
+        raw_categories = evidence.get(category_key)
+        if not isinstance(raw_categories, list):
+            continue
+        categories = sorted({
+            clipped.casefold()
+            for value in raw_categories[:24]
+            if (clipped := _clip_text(value, 64))
+        })
+        safe_evidence[category_key] = categories[:12]
     safe_tests: list[dict[str, Any]] = []
     for raw_test in result.get("tests") or []:
         if not isinstance(raw_test, dict):
