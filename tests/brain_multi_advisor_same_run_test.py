@@ -79,6 +79,45 @@ with tempfile.TemporaryDirectory() as tmp:
     finally:
         mod.REPAIR_MEMORY = original_memory
 
+with tempfile.TemporaryDirectory() as tmp:
+    tmp=Path(tmp)
+    memory=tmp/"memory.json"
+    original_memory=mod.REPAIR_MEMORY
+    mod.REPAIR_MEMORY=memory
+    try:
+        memory.write_text(json.dumps({"entries":[{
+            "providerId":"moviebox",
+            "profile":"search_contract_inference_v1",
+            "llmAdvisorExperimentFingerprint":"d"*64,
+            "consecutiveFailures":1,
+            "failures":1,
+            "executionObserved":True,
+            "lastOutcome":"exploration_progress_nonpublishable",
+            "lastReason":"sandbox_diagnostic_progress:provider-requests",
+        }]}),encoding="utf-8")
+        summary={"plans":{"published:moviebox":{
+            "providerId":"moviebox",
+            "action":"probe-targeted-repair",
+            "llmAdvisorApplied":True,
+            "llmAdvisorGuidanceKind":"meta-gap-synthesis",
+            "llmAdvisorProfile":"search_contract_inference_v1",
+            "llmAdvisorExperimentFingerprint":"d"*64,
+        }}}
+        assert mod.executed_meta_gap_rotation_pending(summary)=={"moviebox"}
+        memory.write_text(json.dumps({"entries":[{
+            "providerId":"moviebox",
+            "profile":"search_contract_inference_v1",
+            "llmAdvisorExperimentFingerprint":"d"*64,
+            "consecutiveFailures":1,
+            "failures":1,
+            "executionObserved":False,
+            "lastOutcome":"profile_unavailable",
+            "lastReason":"planned_profile_not_applicable_to_current_bytes",
+        }]}),encoding="utf-8")
+        assert mod.executed_meta_gap_rotation_pending(summary)==set()
+    finally:
+        mod.REPAIR_MEMORY=original_memory
+
 source = SCRIPT.read_text(encoding="utf-8")
 assert "FIELD_PROVIDER_BRAIN_ADVISOR_ROTATION" in source
 assert "FIELD_PROVIDER_BRAIN_ADVISOR_DYNAMIC_EXTENSION" in source
@@ -89,6 +128,9 @@ assert "if wave > waves or not remaining:" in source
 assert "advisor_rotation_this_wave" in source
 assert "waves += 1" in source
 assert "advisor_rotation_pending" in source
+assert "executed_meta_gap_rotation_pending" in source
+assert "dynamic_meta_gap_rotation" in source
+assert "or provider in dynamic_meta_gap_rotation" in source
 assert "deferred.difference_update(advisor_rotation_pending)" in source
 assert 'decision = "rotate"' in source
 assert '"advisorHypothesisWaveBudget": advisor_hypotheses' in source
