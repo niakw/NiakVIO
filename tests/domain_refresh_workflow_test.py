@@ -63,7 +63,16 @@ assert "git diff --exit-code -- scripts/provider_patches provider-bases provider
 assert "update_provider_v3_domain_config.py" not in text, "partial officialSite-only updater must not own Domain Refresh"
 assert "validate_domain_refresh_scope.py" not in text, "old official_site-only scope validator is obsolete"
 assert "materialize_provider_v3_all.py" not in text, "domain changes must not rematerialize/rewrite the global Core"
+assert "materialize_provider_v3_one.py" in text, "reconciled provider DATA must be rematerialized incrementally before publication"
+assert "reconcile_targeted_provider_publication.py" in text, "incremental rematerialization must update manifest/materialization/provenance fixed point"
+assert "FIELD_DOMAIN_TARGETED_REMATERIALIZE" in text
 assert "project_domain_owned_provider_legos" in source
+reconcile_step=text.index("- name: Reconcile provider-owned domain metadata")
+validate_step=text.index("- name: Validate domain-only Provider v3 mutation")
+reconcile_block=text[reconcile_step:validate_step]
+assert reconcile_block.index("reconcile_provider_domain_metadata.py") < reconcile_block.index("materialize_provider_v3_one.py"), reconcile_block
+assert reconcile_block.index("materialize_provider_v3_one.py") < reconcile_block.index("reconcile_targeted_provider_publication.py"), reconcile_block
+assert reconcile_block.index("reconcile_targeted_provider_publication.py") < reconcile_block.index("python scripts/audit_provider_v3_static.py"), reconcile_block
 assert "provider_domain_runtime_projection_drift_ids" in source
 assert '"runtime_projection_drift"' in source
 for forbidden in (
