@@ -1202,29 +1202,84 @@ def repair_attempt(
         "--stage", str(stage), "--registry", str(registry_path),
         "--output", str(output), "--max-rounds", "0",
     ], env=env, deadline=deadline, allow_fail=True)
-    report = load_json(output / "repair-report.json", {})
-    # Validate accepted repairs against the exact targeted registry before the
-    # candidate is merged back into the full Learning staging tree.
-    run([
-        sys.executable, str(SCRIPTS / "validate_automatic_repair_results.py"),
-        "--stage", str(registry_path.parent),
-        "--health", str(output / "health-results.json"),
-        "--repairs", str(output / "repair-report.json"),
-        "--history-baseline", str(history_baseline_path),
-    ], env=env, deadline=deadline)
-    accepted = sum(len(x.get("accepted") or []) for x in report.get("rounds") or [] if isinstance(x, dict))
+    health_path = output / "health-results.json"
+    repair_path = output / "repair-report.json"
+    report = load_json(repair_path, {})
     attempted = sorted({
         str(a.get("profile") or "")
         for x in report.get("rounds") or [] if isinstance(x, dict)
         for a in x.get("attempts") or [] if isinstance(a, dict) and str(a.get("profile") or "")
     })
     methods = repair_method_fingerprints(report, attempted)
+
+    # A Learning child is exploratory evidence, never an authority boundary.
+    # If it crashes or fails to materialize its final validation artifacts,
+    # restore the exact targeted registry baseline and record a rejected attempt
+    # instead of aborting the whole causal-family cohort. This prevents partial
+    # candidate bytes/history from leaking into the full Learning staging tree.
+    incomplete_reasons: list[str] = []
+    if completed.returncode != 0:
+        incomplete_reasons.append(f"child_return_code_{completed.returncode}")
+    if not health_path.is_file():
+        incomplete_reasons.append("missing_health_results")
+    if not repair_path.is_file():
+        incomplete_reasons.append("missing_repair_report")
+    if incomplete_reasons:
+        write_json(registry_path, baseline_registry)
+        reason = ",".join(incomplete_reasons)
+        print(
+            "FIELD_BRAIN_LEARNING_REPAIR_CHILD_REJECTED "
+            f"provider={provider_id} reason={reason} rollback=true",
+            flush=True,
+        )
+        return {
+            "returnCode": completed.returncode,
+            "accepted": 0,
+            "attemptedProfiles": attempted,
+            "attemptedMethods": methods,
+            "report": report,
+            "validationStatus": "rejected_incomplete_child",
+            "validationReason": reason,
+        }
+
+    # Validate accepted repairs against the exact targeted registry before the
+    # candidate is merged back into the full Learning staging tree. A validator
+    # rejection is evidence about this experiment, not permission to abort all
+    # unrelated Learning providers; roll the targeted registry back fail-closed.
+    try:
+        run([
+            sys.executable, str(SCRIPTS / "validate_automatic_repair_results.py"),
+            "--stage", str(registry_path.parent),
+            "--health", str(health_path),
+            "--repairs", str(repair_path),
+            "--history-baseline", str(history_baseline_path),
+        ], env=env, deadline=deadline)
+    except RuntimeError as error:
+        write_json(registry_path, baseline_registry)
+        print(
+            "FIELD_BRAIN_LEARNING_REPAIR_CHILD_REJECTED "
+            f"provider={provider_id} reason=validator_rejected rollback=true",
+            flush=True,
+        )
+        return {
+            "returnCode": completed.returncode,
+            "accepted": 0,
+            "attemptedProfiles": attempted,
+            "attemptedMethods": methods,
+            "report": report,
+            "validationStatus": "rejected_validator",
+            "validationReason": str(error)[:320],
+        }
+
+    accepted = sum(len(x.get("accepted") or []) for x in report.get("rounds") or [] if isinstance(x, dict))
     return {
         "returnCode": completed.returncode,
         "accepted": accepted,
         "attemptedProfiles": attempted,
         "attemptedMethods": methods,
         "report": report,
+        "validationStatus": "validated",
+        "validationReason": "",
     }
 
 def main() -> int:
