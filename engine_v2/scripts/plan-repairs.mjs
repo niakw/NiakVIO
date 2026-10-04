@@ -400,17 +400,25 @@ function llmAdvisorStrategyHint(providerId, failureClass, memoryRows, rotateEver
       const declaredCompatibility = llmFailureCompatibility(row.failureClass, failure);
       const preserveDeclaredMetaProfile = (
         guidanceKind === "meta-gap-synthesis"
-        && declaredCompatibility === "exact"
+        && (declaredCompatibility === "exact" || declaredCompatibility === "family")
         && LLM_ADVISOR_PROFILES.has(declaredProfile)
       );
       const metaGapRebound = guidanceKind === "meta-gap-synthesis" && Boolean(metaGapProfile);
       return {
         ...row,
+        // Learning may deliberately rotate to another sandboxed executor after
+        // bounded failures. Preserve that executor across a failure-class drift
+        // inside the same causal family; only cross-family stale guidance is
+        // rebound to the current class's canonical executor.
         profile: metaGapRebound
           ? (preserveDeclaredMetaProfile ? declaredProfile : metaGapProfile)
           : row.profile,
         failureCompatibility: metaGapRebound
-          ? (preserveDeclaredMetaProfile ? "exact" : "exact-rebound")
+          ? (
+              preserveDeclaredMetaProfile && declaredCompatibility === "exact"
+                ? "exact"
+                : "exact-rebound"
+            )
           : declaredCompatibility,
         metaGapRebound,
         preserveDeclaredMetaProfile,
