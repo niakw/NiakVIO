@@ -22,13 +22,13 @@ on:
       time_budget_seconds:
         description: Provider-local Brain budget
         required: true
-        default: "600"
+        default: "1200"
         type: choice
         options: ["600", "900", "1200", "1800", "2400"]
       max_rounds_per_batch:
-        description: Fast lane Deep rounds per batch; Learning owns further rotations
+        description: Bounded causal Deep rounds per batch before unresolved debt returns to Learning
         required: true
-        default: "1"
+        default: "3"
         type: choice
         options: ["1", "2", "3"]
       publish_validated:
@@ -172,7 +172,7 @@ jobs:
           DISPATCH_PROVIDERS: ${{ inputs.target_providers || '' }}
           DISPATCH_WAVES: ${{ inputs.waves || '3' }}
           DISPATCH_BUDGET: ${{ inputs.time_budget_seconds || '1200' }}
-          DISPATCH_MAX_ROUNDS: ${{ inputs.max_rounds_per_batch || '1' }}
+          DISPATCH_MAX_ROUNDS: ${{ inputs.max_rounds_per_batch || '3' }}
           DISPATCH_PUBLISH: ${{ inputs.publish_validated || 'true' }}
         run: |
           set -euo pipefail
