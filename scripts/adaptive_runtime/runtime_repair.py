@@ -1988,18 +1988,35 @@ def augment_accepted_runtime_program(
     return program
 
 
+def _fixture_category_gap(result: dict[str, Any]) -> bool:
+    evidence = result.get("evidence") if isinstance(result.get("evidence"), dict) else {}
+    required = {
+        str(value).strip().casefold()
+        for value in evidence.get("required_fixture_categories") or []
+        if str(value).strip()
+    }
+    healthy = {
+        str(value).strip().casefold()
+        for value in evidence.get("healthy_fixture_categories") or []
+        if str(value).strip()
+    }
+    return bool(required and not required.issubset(healthy))
+
+
 def _adaptive_failure(result: dict[str, Any]) -> bool:
     """Return whether a runtime observation must enter bounded repair.
 
-    Availability labels are observations, not terminal decisions. Anything that
-    is not both healthy and backed by at least one playable stream is repairable
-    unless it was deliberately excluded by a separate safety/policy decision.
-    This covers legacy labels such as no_streams, blocked, unavailable and
-    provider_unreachable as well as runtime_error and future diagnostic labels.
+    Availability labels are observations, not terminal decisions. A provider can
+    be aggregate-healthy while still missing a declared movie/TV/anime lane; that
+    category debt must remain repairable until the strict promotion gate proves
+    every required category. Otherwise anything that is both healthy and backed
+    by at least one playable stream may stop bounded repair.
     """
     status = str(result.get("status") or "runtime_error")
     if status in NON_REPAIRABLE_POLICY_STATUSES:
         return False
+    if _fixture_category_gap(result):
+        return True
     playable = _base.playable_stream_count(result)
     return not (status == "healthy" and playable > 0)
 
