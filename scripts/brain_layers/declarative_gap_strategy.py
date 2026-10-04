@@ -71,6 +71,74 @@ FAILURE_EXECUTORS: dict[str, tuple[str, str]] = {
     ),
 }
 
+# A meta-gap is not solved by trying unbounded parameter permutations of one
+# executor. After a bounded number of executed fingerprints fail (or make only
+# non-publishable progress), rotate to another already-sandboxed executor in
+# the same broad causal family. Publication authority remains unchanged.
+MAX_EXECUTED_EXPERIMENTS_PER_EXECUTOR = 3
+
+FAILURE_EXECUTOR_ROTATIONS: dict[str, tuple[tuple[str, str], ...]] = {
+    "provider_transport_gap": (
+        FAILURE_EXECUTORS["provider_transport_gap"],
+        ("search_contract_inference_v1", "meta-gap-search-contract-fallback"),
+        ("proven_route_terminal_traversal_v1", "meta-gap-route-terminal-fallback"),
+        ("adaptive_runtime_recovery", "meta-gap-adaptive-runtime-fallback"),
+    ),
+    "transport_blocked": (
+        FAILURE_EXECUTORS["transport_blocked"],
+        ("search_contract_inference_v1", "meta-gap-search-contract-fallback"),
+        ("proven_route_terminal_traversal_v1", "meta-gap-route-terminal-fallback"),
+        ("adaptive_runtime_recovery", "meta-gap-adaptive-runtime-fallback"),
+    ),
+    "route_proven_gap": (
+        FAILURE_EXECUTORS["route_proven_gap"],
+        ("search_contract_inference_v1", "meta-gap-search-contract-fallback"),
+        ("provider_origin_failover_v1", "meta-gap-origin-fallback"),
+        ("adaptive_runtime_recovery", "meta-gap-adaptive-runtime-fallback"),
+    ),
+    "search_gap": (
+        FAILURE_EXECUTORS["search_gap"],
+        ("proven_route_terminal_traversal_v1", "meta-gap-route-terminal-fallback"),
+        ("provider_origin_failover_v1", "meta-gap-origin-fallback"),
+        ("adaptive_runtime_recovery", "meta-gap-adaptive-runtime-fallback"),
+    ),
+    "chain_terminal_gap": (
+        FAILURE_EXECUTORS["chain_terminal_gap"],
+        ("player_media_extractor_v1", "meta-gap-player-media-fallback"),
+        ("proven_route_terminal_traversal_v1", "meta-gap-route-terminal-fallback"),
+        ("adaptive_runtime_recovery", "meta-gap-adaptive-runtime-fallback"),
+    ),
+    "media_extraction_gap": (
+        FAILURE_EXECUTORS["media_extraction_gap"],
+        ("chain_terminal_extractor_v1", "meta-gap-chain-terminal-fallback"),
+        ("proven_route_terminal_traversal_v1", "meta-gap-route-terminal-fallback"),
+        ("adaptive_runtime_recovery", "meta-gap-adaptive-runtime-fallback"),
+    ),
+    "variant_coverage_gap": (
+        FAILURE_EXECUTORS["variant_coverage_gap"],
+        ("chain_terminal_extractor_v1", "meta-gap-chain-terminal-fallback"),
+        ("proven_route_terminal_traversal_v1", "meta-gap-route-terminal-fallback"),
+        ("adaptive_runtime_recovery", "meta-gap-adaptive-runtime-fallback"),
+    ),
+    "playback_context_gap": (
+        FAILURE_EXECUTORS["playback_context_gap"],
+        ("chain_terminal_extractor_v1", "meta-gap-chain-terminal-fallback"),
+        ("proven_route_terminal_traversal_v1", "meta-gap-route-terminal-fallback"),
+        ("adaptive_runtime_recovery", "meta-gap-adaptive-runtime-fallback"),
+    ),
+    "candidate_replay_gap": (
+        FAILURE_EXECUTORS["candidate_replay_gap"],
+        ("player_media_extractor_v1", "meta-gap-player-media-fallback"),
+        ("proven_route_terminal_traversal_v1", "meta-gap-route-terminal-fallback"),
+        ("adaptive_runtime_recovery", "meta-gap-adaptive-runtime-fallback"),
+    ),
+    "unknown_failure": (
+        FAILURE_EXECUTORS["unknown_failure"],
+        ("search_contract_inference_v1", "meta-gap-search-contract-fallback"),
+        ("proven_route_terminal_traversal_v1", "meta-gap-route-terminal-fallback"),
+    ),
+}
+
 BASE_EXPERIMENTS: dict[str, dict[str, Any]] = {
     "provider_transport_gap": {
         "routePolicy": "owned_plus_peer",
@@ -295,6 +363,30 @@ def _failed_fingerprints(memory: dict[str, Any]) -> set[tuple[str, str, str]]:
     return failed
 
 
+def _executed_profile_fingerprints(memory: dict[str, Any]) -> dict[tuple[str, str, str], set[str]]:
+    observed: dict[tuple[str, str, str], set[str]] = {}
+    rows: list[dict[str, Any]] = []
+    if isinstance(memory.get("entries"), list):
+        rows.extend(row for row in memory.get("entries") or [] if isinstance(row, dict))
+    exp = memory.get("experimentMemory") if isinstance(memory.get("experimentMemory"), dict) else {}
+    if isinstance(exp.get("entries"), list):
+        rows.extend(row for row in exp.get("entries") or [] if isinstance(row, dict))
+    for row in rows:
+        if row.get("executionObserved") is not True:
+            continue
+        provider = _provider(row.get("providerId"))
+        failure = _canon(row.get("failureClass"))
+        profile = str(row.get("profile") or "").strip().casefold()
+        fp = str(row.get("llmAdvisorExperimentFingerprint") or "").strip().casefold()
+        causal_signal = (
+            int(row.get("consecutiveFailures") or 0) > 0
+            or int(row.get("failures") or 0) > 0
+            or int(row.get("progresses") or 0) > 0
+        )
+        if provider and failure and profile and len(fp) == 64 and causal_signal:
+            observed.setdefault((provider, failure, profile), set()).add(fp)
+    return observed
+
 def _variant(base: dict[str, Any], provider: str, generation: int) -> dict[str, Any]:
     value = copy.deepcopy(base)
     seed = int(hashlib.sha256(f"{provider}:{generation}".encode("utf-8")).hexdigest()[:8], 16)
@@ -334,6 +426,7 @@ def synthesize_rows(
     }
     memory_failure = _latest_failure_by_provider(memory)
     failed = _failed_fingerprints(memory)
+    executed = _executed_profile_fingerprints(memory)
     rows: list[dict[str, Any]] = []
     for provider in sorted(repair_queue):
         status_failure = _status_failure(provider_rows.get(provider) or {})
@@ -342,18 +435,25 @@ def synthesize_rows(
         failure = status_failure or memory_failure.get(provider) or ""
         if failure not in FAILURE_EXECUTORS:
             continue
-        profile, strategy = FAILURE_EXECUTORS[failure]
         base = BASE_EXPERIMENTS[failure]
-        chosen: tuple[dict[str, Any], str] | None = None
-        for generation in range(16):
-            experiment = _variant(base, provider, generation)
-            fp = experiment_fingerprint(experiment)
-            if (provider, profile, fp) not in failed:
-                chosen = experiment, fp
+        chosen: tuple[str, str, dict[str, Any], str] | None = None
+        for profile, strategy in FAILURE_EXECUTOR_ROTATIONS.get(
+            failure, (FAILURE_EXECUTORS[failure],)
+        ):
+            attempts = len(executed.get((provider, failure, profile), set()))
+            if attempts >= MAX_EXECUTED_EXPERIMENTS_PER_EXECUTOR:
+                continue
+            for generation in range(16):
+                experiment = _variant(base, provider, generation)
+                fp = experiment_fingerprint(experiment)
+                if (provider, profile, fp) not in failed:
+                    chosen = profile, strategy, experiment, fp
+                    break
+            if chosen is not None:
                 break
         if chosen is None:
             continue
-        experiment, fp = chosen
+        profile, strategy, experiment, fp = chosen
         rows.append({
             "providerId": provider,
             "failureClass": failure,
