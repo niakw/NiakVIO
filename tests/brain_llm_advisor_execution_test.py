@@ -433,8 +433,9 @@ assert meta_prod_rescue["baseExperimentExhausted"] is True,meta_prod_rescue
 assert meta_prod_rescue["llmAdvisorApplied"] is True,meta_prod_rescue
 assert meta_prod_rescue["llmAdvisorRescue"] is True,meta_prod_rescue
 assert meta_prod_rescue["llmAdvisorGuidanceKind"]=="meta-gap-synthesis",meta_prod_rescue
-assert meta_prod_rescue["allowedProfiles"][0]=="proven_route_terminal_traversal_v1",meta_prod_rescue
-assert meta_prod_rescue["llmAdvisorFailureCompatibility"]=="exact-rebound",meta_prod_rescue
+assert meta_prod_rescue["allowedProfiles"][0]=="search_contract_inference_v1",meta_prod_rescue
+assert meta_prod_rescue["llmAdvisorProfile"]=="search_contract_inference_v1",meta_prod_rescue
+assert meta_prod_rescue["llmAdvisorFailureCompatibility"]=="exact",meta_prod_rescue
 
 
 # A real debt pattern seen on 4khdhub changes class during Repair from
@@ -533,6 +534,73 @@ assert playback_rebound["allowedProfiles"][0]=="player_media_extractor_v1",playb
 assert playback_rebound["llmAdvisorExperiment"]["terminalOnly"] is True,playback_rebound
 assert playback_rebound["llmAdvisorExperiment"]["roleOrder"][0]=="player",playback_rebound
 assert playback_rebound["action"]=="probe-targeted-repair",playback_rebound
+
+# Exact-class meta-gap guidance keeps Learning's safe executor choice, while
+# stale/mismatched guidance above still rebinds to the current failure class.
+transport_candidate={
+    "canonical_id":"synthetic-transport-executor-choice",
+    "metadata":{"supportedTypes":["movie","tv"]},
+}
+transport_result={
+    "status":"blocked",
+    "evidence":{"streams_returned":0,"streams_playable":0},
+    "tests":[{
+        "fixture":{"category":"movie"},
+        "failure_class":"provider_http_blocked",
+        "status":"blocked",
+        "stream_count":0,
+        "streams_playable":0,
+        "network_observations":[{"status":403,"infrastructure":False,"stage":"search"}],
+    }],
+}
+transport_guidance=[{
+    "providerId":"synthetic-transport-executor-choice",
+    "failureClass":"transport_blocked",
+    "targetLayer":"provider",
+    "strategy":"meta-gap-search-contract-fallback",
+    "profile":"search_contract_inference_v1",
+    "confidence":0.86,
+    "priorOnly":True,
+    "experiment":{
+        "routePolicy":"owned_plus_peer",
+        "recipePolicy":"current_plus_provider",
+        "roleOrder":["search","api","detail","player","source","episode","other"],
+        "terminalOnly":False,
+        "aliasSearch":True,
+        "responseSalvage":True,
+        "documentRequestMining":True,
+        "sessionBootstrap":True,
+        "maxDepth":5,
+        "maxPages":24,
+        "maxEmbeds":20,
+        "maxRecipePasses":5,
+    },
+    "experimentFingerprint":"9"*64,
+    "guidanceKind":"meta-gap-synthesis",
+}]
+transport_payload={
+    "mode":"repair",
+    "explorationChain":True,
+    "policy":policy,
+    "learnedSkills":{},
+    "historicalSolutions":[],
+    "llmGuidance":transport_guidance,
+    "negativeMemory":[],
+    "items":[{
+        "key":"published:synthetic-transport-executor-choice",
+        "candidate":transport_candidate,
+        "result":transport_result,
+        "state":{},
+    }],
+}
+transport_completed=subprocess.run(
+    ["node",str(PLANNER)],
+    cwd=ROOT,input=json.dumps(transport_payload),capture_output=True,text=True,check=True,timeout=20,
+)
+transport_plan=next(iter((json.loads(transport_completed.stdout).get("plans") or {}).values()))
+assert transport_plan["llmAdvisorApplied"] is True,transport_plan
+assert transport_plan["llmAdvisorProfile"]=="search_contract_inference_v1",transport_plan
+assert transport_plan["llmAdvisorFailureCompatibility"]=="exact",transport_plan
 
 
 # If the current plan is already a confirmed architecture_gap, Repair
