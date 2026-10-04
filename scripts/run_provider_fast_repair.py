@@ -101,7 +101,7 @@ def main() -> int:
     parser.add_argument("--time-budget-seconds", type=int, default=1200)
     parser.add_argument("--min-start-batch-seconds", type=int, default=120)
     parser.add_argument("--health-concurrency", type=int, default=0)
-    parser.add_argument("--max-rounds-per-batch", type=int, default=1)
+    parser.add_argument("--max-rounds-per-batch", type=int, default=3)
     args = parser.parse_args()
 
     if not STATUS.is_file():
