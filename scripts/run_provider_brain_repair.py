@@ -891,6 +891,11 @@ def main() -> int:
     )
     advisor_hypotheses = advisor_wave_budget(selected)
     waves = max(requested_waves, advisor_hypotheses)
+    # Advisor guidance can synthesize a new, distinct executable fingerprint
+    # only after a prior hypothesis has been observed under current bytes.
+    # Keep normal caller waves unchanged, but permit that causal discovery to
+    # extend a short Fast run up to the same bounded three-hypothesis ceiling.
+    advisor_dynamic_wave_ceiling = max(requested_waves, 3)
     if advisor_hypotheses > requested_waves:
         print(
             "FIELD_PROVIDER_BRAIN_ADVISOR_ROTATION "
@@ -957,8 +962,8 @@ def main() -> int:
     )
 
     try:
-        for wave in range(1, waves + 1):
-            if not remaining:
+        for wave in range(1, advisor_dynamic_wave_ceiling + 1):
+            if wave > waves or not remaining:
                 break
             accepted_this_wave: list[dict[str, Any]] = []
             fixed_this_wave: set[str] = set()
@@ -1159,6 +1164,21 @@ def main() -> int:
                     materialize(materialize_targets_this_wave)
                 break
 
+            if (
+                advisor_rotation_this_wave
+                and wave >= waves
+                and waves < advisor_dynamic_wave_ceiling
+            ):
+                previous_waves = waves
+                waves += 1
+                print(
+                    "FIELD_PROVIDER_BRAIN_ADVISOR_DYNAMIC_EXTENSION "
+                    f"wave={wave} previous_waves={previous_waves} effective_waves={waves} "
+                    f"ceiling={advisor_dynamic_wave_ceiling} "
+                    f"providers={','.join(sorted(advisor_rotation_this_wave))}",
+                    flush=True,
+                )
+
             if advisor_rotation_this_wave and wave < waves:
                 decision = "rotate"
             else:
@@ -1233,6 +1253,7 @@ def main() -> int:
             "selectedProviders": selected,
             "requestedWaves": requested_waves,
             "advisorHypothesisWaveBudget": advisor_hypotheses,
+            "advisorDynamicWaveCeiling": advisor_dynamic_wave_ceiling,
             "effectiveWaves": waves,
             "initialStatuses": {
                 provider: str((rows.get(provider) or {}).get("status") or "unknown")
