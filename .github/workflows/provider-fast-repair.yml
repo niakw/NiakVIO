@@ -387,11 +387,33 @@ jobs:
             requeue_budget="${{ inputs.time_budget_seconds || '600' }}"
             requeue_rounds="${{ inputs.max_rounds_per_batch || '1' }}"
             requeue_publish="${{ inputs.publish_validated || true }}"
-            if [ "${GITHUB_EVENT_NAME}" = "push" ]; then
+            requeue_source="dispatch-inputs"
+
+            # A stale automatic workflow_dispatch must never resurrect its old
+            # cohort over a newer representative Fast trigger already committed
+            # on current main. Prefer the remote-main trigger whenever its exact
+            # blob differs from the source run; otherwise preserve the original
+            # dispatch inputs. This keeps ordinary stale retries intact while
+            # making an explicit newer proof authoritative.
+            source_trigger_blob="$(git rev-parse "$GITHUB_SHA:.github/triggers/provider-fast-repair.json" 2>/dev/null || true)"
+            remote_trigger_blob="$(git rev-parse "origin/main:.github/triggers/provider-fast-repair.json" 2>/dev/null || true)"
+            use_remote_trigger=false
+            if [ -n "$remote_trigger_blob" ] && [ "$remote_trigger_blob" != "$source_trigger_blob" ]; then
+              git show "origin/main:.github/triggers/provider-fast-repair.json" > "$RUNNER_TEMP/provider-fast-repair-current-trigger.json"
+              use_remote_trigger=true
+              requeue_source="remote-main-trigger"
+            elif [ "${GITHUB_EVENT_NAME}" = "push" ]; then
+              cp .github/triggers/provider-fast-repair.json "$RUNNER_TEMP/provider-fast-repair-current-trigger.json"
+              use_remote_trigger=true
+              requeue_source="source-push-trigger"
+            fi
+
+            if [ "$use_remote_trigger" = "true" ]; then
               readarray -t requeue_vals < <(python - <<'PY'
-          import json
+          import json, os
           from pathlib import Path
-          d=json.loads(Path('.github/triggers/provider-fast-repair.json').read_text(encoding='utf-8'))
+          path=Path(os.environ["RUNNER_TEMP"])/"provider-fast-repair-current-trigger.json"
+          d=json.loads(path.read_text(encoding='utf-8'))
           print(str(int(d.get('waves') or 1)))
           print(str(int(d.get('timeBudgetSeconds') or 600)))
           print(str(int(d.get('maxRoundsPerBatch') or 3)))
@@ -418,7 +440,7 @@ jobs:
               args+=(-f target_provider="$requeue_target_provider")
             fi
             "${args[@]}"
-            echo "FIELD_PROVIDER_FAST_REPAIR_REQUEUE current_main=$remote_main providers=${requeue_target_providers:-${requeue_target_provider:-none}} waves=$requeue_waves budget=$requeue_budget rounds=$requeue_rounds"
+            echo "FIELD_PROVIDER_FAST_REPAIR_REQUEUE current_main=$remote_main source=$requeue_source providers=${requeue_target_providers:-${requeue_target_provider:-none}} waves=$requeue_waves budget=$requeue_budget rounds=$requeue_rounds"
             exit 0
           fi
           git config user.name "github-actions[bot]"
