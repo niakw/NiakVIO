@@ -235,6 +235,19 @@ with tempfile.TemporaryDirectory() as tmp:
         "provider-experience", "peer-experience"
     }
 
+    lane_target = dict(candidate)
+    lane_target["brain_repair_plan"] = {
+        "failureClass": "transport_blocked",
+        "experimentVariant": 4,
+        "experimentGeneration": 2,
+        "targetCategories": ["movie"],
+        "negativeMemoryMatches": 8,
+    }
+    lane_options = runtime._adaptive_runtime_options(lane_target, config)
+    assert lane_options is not None
+    assert lane_options["types"] == ["movie"], lane_options
+    assert lane_options["repair_focus"] == "lane:movie", lane_options
+
     transport1 = dict(candidate)
     transport1["brain_repair_plan"] = {
         "failureClass": "provider_transport_gap",
@@ -373,6 +386,17 @@ assert '"repairFocus":"terminal-chain"' in patched
 assert '"censusStatus":"CHAIN REACHED"' in patched
 assert '"experimentVariant":4' in patched
 assert '"newStrategyId":"chain_terminal_extractor_v1"' in patched
+lane_patched = v5.apply(
+    "var module={exports:{getStreams:async function(){return []}}};",
+    options={
+        "provider_name": "Synthetic",
+        "base_url": "https://synthetic.example",
+        "types": ["movie"],
+        "repair_focus": "lane:movie",
+    },
+)
+assert '"types":["movie"]' in lane_patched
+assert '"repairFocus":"lane:movie"' in lane_patched
 assert '"requestRecipes":[{"route":"/engine/ajax/search.php"' in patched
 assert "function requestRecipe(" in patched
 assert "function recipeBody(" in patched
