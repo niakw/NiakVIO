@@ -3,6 +3,8 @@ from __future__ import annotations
 
 import json
 import subprocess
+import os
+import tempfile
 from pathlib import Path
 
 ROOT=Path(__file__).resolve().parents[1]
@@ -234,19 +236,32 @@ persistent_payload={
     "providerCount":1,
     "rows":guidance,
 }
-runtime_mod._guidance_source_drift=lambda _root,_source,_current:(["MEMORY.md"],set())
-runtime_mod.LLM_GUIDANCE_PATH=None
-safe_rows=runtime_mod._validated_guidance_rows(
-    persistent_payload,
-    current_sha="3"*40,
-    require_exact_sha=False,
-    guidance_kind="meta-gap-synthesis",
-)
-assert safe_rows and safe_rows[0]["guidanceKind"]=="meta-gap-synthesis",safe_rows
-runtime_mod._guidance_source_drift=lambda _root,_source,_current:([],{"synthetic-llm-advisor"})
-drifted={row["providerId"] for row in safe_rows if row["providerId"] in {"synthetic-llm-advisor"}}
-assert drifted=={"synthetic-llm-advisor"},drifted
-
+old_sha=os.environ.get("GITHUB_SHA")
+old_chain=os.environ.get("NUVIO_BRAIN_EXPLORATION_CHAIN")
+old_mode=os.environ.get("NUVIO_BRAIN_PLANNER_MODE")
+try:
+    os.environ["GITHUB_SHA"]="3"*40
+    os.environ.pop("NUVIO_BRAIN_EXPLORATION_CHAIN",None)
+    os.environ.pop("NUVIO_BRAIN_PLANNER_MODE",None)
+    with tempfile.TemporaryDirectory(prefix="persistent-guidance-") as tmp:
+        guidance_path=Path(tmp)/"guidance.json"
+        guidance_path.write_text(json.dumps(persistent_payload),encoding="utf-8")
+        runtime_mod.LLM_GUIDANCE_PATH=guidance_path
+        runtime_mod._guidance_source_drift=lambda _root,_source,_current:(["MEMORY.md"],set())
+        safe_rows=runtime_mod.planner_llm_guidance()
+        safe=[row for row in safe_rows if row.get("providerId")=="synthetic-llm-advisor"]
+        assert len(safe)==1,safe_rows
+        assert safe[0]["guidanceKind"]=="meta-gap-synthesis",safe[0]
+        runtime_mod._guidance_source_drift=lambda _root,_source,_current:([],{"synthetic-llm-advisor"})
+        drifted_rows=runtime_mod.planner_llm_guidance()
+        assert not any(row.get("providerId")=="synthetic-llm-advisor" for row in drifted_rows),drifted_rows
+finally:
+    if old_sha is None: os.environ.pop("GITHUB_SHA",None)
+    else: os.environ["GITHUB_SHA"]=old_sha
+    if old_chain is None: os.environ.pop("NUVIO_BRAIN_EXPLORATION_CHAIN",None)
+    else: os.environ["NUVIO_BRAIN_EXPLORATION_CHAIN"]=old_chain
+    if old_mode is None: os.environ.pop("NUVIO_BRAIN_PLANNER_MODE",None)
+    else: os.environ["NUVIO_BRAIN_PLANNER_MODE"]=old_mode
 
 print("Brain LLM advisor execution contract passed")
 
