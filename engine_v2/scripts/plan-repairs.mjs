@@ -916,6 +916,13 @@ function buildPlan(item) {
     && experimentExhausted
     && Boolean(llmAdvisorHint.profile)
   );
+  const llmAdvisorExplorationRescue = (
+    explorationMode
+    && !learningMode
+    && experimentExhausted
+    && Boolean(llmAdvisorHint.profile)
+    && !metaGapEscalated
+  );
   const historicalHint = (
     !experimentExhausted
     && learningMode
@@ -931,7 +938,17 @@ function buildPlan(item) {
     : { profile: "", caseId: "", solutionClass: "" };
   const effectiveRepairTarget = llmAdvisorProductionRescue
     ? baseRepairTarget
-    : repairTarget;
+    : llmAdvisorExplorationRescue
+      ? {
+          ...baseRepairTarget,
+          scope: "learning",
+          repairType: "synthesized_strategy",
+          engine: "brain_learning_lab",
+          pipelineStage: "learning",
+          profiles: [llmAdvisorHint.profile],
+          learningDisposition: "execute_learning_advisor_strategy",
+        }
+      : repairTarget;
   const causalProfile = strategyEscalated
     ? postExhaustionHint.profile
     : (
@@ -959,12 +976,22 @@ function buildPlan(item) {
         ],
       }
     : effectiveRepairTarget;
-  const effectiveAction = (strategyEscalated || metaGapEscalated || llmAdvisorProductionRescue)
+  const effectiveAction = (
+    strategyEscalated
+    || metaGapEscalated
+    || llmAdvisorProductionRescue
+    || llmAdvisorExplorationRescue
+  )
     ? "probe-targeted-repair"
     : experimentExhausted
       ? (explorationMode ? "collect-more-evidence" : "deferred_retry")
       : stringValue(plan.action, "deferred_retry");
-  const effectiveExitReason = (strategyEscalated || metaGapEscalated || llmAdvisorProductionRescue)
+  const effectiveExitReason = (
+    strategyEscalated
+    || metaGapEscalated
+    || llmAdvisorProductionRescue
+    || llmAdvisorExplorationRescue
+  )
     ? null
     : experimentExhausted
       ? (explorationMode ? "learning_generations_exhausted" : "experiment_variants_exhausted")
@@ -974,6 +1001,7 @@ function buildPlan(item) {
     && !strategyEscalated
     && !metaGapEscalated
     && !llmAdvisorProductionRescue
+    && !llmAdvisorExplorationRescue
   ) ? [] : hypotheses;
   return {
     brainVersion: finiteNumber(plan.brainVersion, BRAIN_CONTROL_PLANE_VERSION),
@@ -1007,6 +1035,7 @@ function buildPlan(item) {
     experimentGenerationLimit: learningMode ? maxLearningGenerations : finalVariantGeneration,
     llmAdvisorApplied: Boolean(llmAdvisorHint.profile),
     llmAdvisorRescue: llmAdvisorProductionRescue,
+    llmAdvisorExplorationRescue,
     providerPositiveProgramProductionRescue,
     llmAdvisorStrategy: llmAdvisorHint.strategy,
     llmAdvisorProfile: llmAdvisorHint.profile,
