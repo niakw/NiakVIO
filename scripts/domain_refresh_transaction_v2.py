@@ -54,8 +54,12 @@ DOMAIN_PATCH_FIELDS = {
     "domain_substitutions",
     "replacements",
     "runtime_domain_replacements",
+    # These are executable same-provider address authorities. Domain Refresh may
+    # rotate only hosts explicitly mapped old -> current; route paths stay intact.
+    "proof_search_bases",
+    "proof_detail_bases",
     # Domain-owned subset only: validator permits host-only changes for known
-    # top-level site-root keys inside each provider Lego options object.
+    # site-root keys / base pools inside each provider Lego options object.
     "provider_lego_options",
 }
 
@@ -229,6 +233,47 @@ def _rewrite_connected_domain_map(
     return original != json.dumps(mapping, ensure_ascii=False, sort_keys=True)
 
 
+def _rewrite_domain_url(value: object, rewrites: dict[str, str]) -> object:
+    if not isinstance(value, str) or not resolver.is_http_url(value):
+        return value
+    try:
+        parsed = urllib.parse.urlparse(value)
+    except ValueError:
+        return value
+    source_host = str(parsed.hostname or "").casefold()
+    target_host = rewrites.get(source_host)
+    if not target_host or target_host == source_host:
+        return value
+    port = f":{parsed.port}" if parsed.port else ""
+    return urllib.parse.urlunparse((
+        parsed.scheme or "https",
+        target_host + port,
+        parsed.path,
+        parsed.params,
+        parsed.query,
+        parsed.fragment,
+    )).rstrip("/")
+
+
+def _rewrite_domain_url_list(values: object, rewrites: dict[str, str]) -> tuple[object, bool]:
+    if not isinstance(values, list):
+        return values, False
+    output: list[Any] = []
+    seen: set[str] = set()
+    changed = False
+    for raw in values:
+        rewritten = _rewrite_domain_url(raw, rewrites)
+        if rewritten != raw:
+            changed = True
+        key = json.dumps(rewritten, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+        if key in seen:
+            changed = True
+            continue
+        seen.add(key)
+        output.append(rewritten)
+    return output, changed
+
+
 def sync_patch_domain_authority(
     patch: dict[str, Any],
     cfg: dict[str, Any],
@@ -275,37 +320,37 @@ def sync_patch_domain_authority(
     ):
         changed.append("replacements")
 
-    if before_host and before_host != next_host:
+    # Reconcile every executable same-provider address that is explicitly mapped
+    # to the current terminal. This also repairs stale derivatives left by an
+    # earlier partial Domain transaction even when official_site is already current.
+    rewrites = _domain_runtime_rewrites(patch)
+    if rewrites:
+        for field in ("proof_search_bases", "proof_detail_bases"):
+            rewritten, field_changed = _rewrite_domain_url_list(patch.get(field), rewrites)
+            if field_changed:
+                patch[field] = rewritten
+                changed.append(field)
+
         provider_lego_options = patch.get("provider_lego_options")
         if isinstance(provider_lego_options, dict):
             site_keys = {
                 "base", "site", "referer", "referrer", "origin",
                 "base_url", "baseUrl", "site_url", "siteUrl",
             }
+            site_list_keys = {"bases"}
             lego_changed = False
             for options in provider_lego_options.values():
                 if not isinstance(options, dict):
                     continue
                 for key in site_keys:
                     raw = options.get(key)
-                    if not isinstance(raw, str) or not raw.startswith(("http://", "https://")):
-                        continue
-                    try:
-                        parsed = urllib.parse.urlparse(raw)
-                    except ValueError:
-                        continue
-                    if str(parsed.hostname or "").casefold() != before_host:
-                        continue
-                    port = f":{parsed.port}" if parsed.port else ""
-                    rewritten = urllib.parse.urlunparse((
-                        parsed.scheme or "https",
-                        next_host + port,
-                        parsed.path,
-                        parsed.params,
-                        parsed.query,
-                        parsed.fragment,
-                    ))
+                    rewritten = _rewrite_domain_url(raw, rewrites)
                     if rewritten != raw:
+                        options[key] = rewritten
+                        lego_changed = True
+                for key in site_list_keys:
+                    rewritten, list_changed = _rewrite_domain_url_list(options.get(key), rewrites)
+                    if list_changed:
                         options[key] = rewritten
                         lego_changed = True
             if lego_changed:
@@ -563,6 +608,7 @@ def project_domain_owned_config_runtime_urls(
             rewrites,
         )
         forward = _project_domain_url_values(published_values, rewrites)
+        deduped_forward = _stable_unique_domain_values(forward)
         prior_overprojection = _project_domain_url_values(expected_values, rewrites)
         recovered_prior_overprojection = (
             _stable_unique_domain_values(prior_overprojection)
@@ -571,6 +617,7 @@ def project_domain_owned_config_runtime_urls(
         if (
             selective_forward == expected_values
             or forward == expected_values
+            or deduped_forward == expected_values
             or prior_overprojection == published_values
             or recovered_prior_overprojection
         ):
