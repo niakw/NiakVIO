@@ -250,4 +250,40 @@ finally:
     runtime.positive_program_user_agent=old_positive_user_agent
     runtime.positive_program_fingerprint=old_positive_fingerprint
 
+# Regression: a stale/high-confidence LLM advisor can coexist with a planner
+# post-exhaustion strategy. The evolved planner strategy must own generation,
+# matching and attribution; otherwise the attempt becomes profile_unavailable.
+precedence_candidate=candidate("","transport_blocked","ROUTE PROVEN")
+precedence_candidate["brain_repair_plan"]={
+    "action":"probe-targeted-repair",
+    "allowedProfiles":["transport_request_differential_v1"],
+    "failureClass":"transport_blocked",
+    "experimentVariant":4,
+    "experimentGeneration":2,
+    "experimentExhausted":False,
+    "postExhaustionStrategyProfile":"transport_request_differential_v1",
+    "postExhaustionStrategyMethod":"provider-owned-request-differential",
+    "llmAdvisorApplied":True,
+    "llmAdvisorProfile":"provider_origin_failover_v1",
+    "llmAdvisorExperiment":{
+        "routePolicy":"owned_plus_peer",
+        "recipePolicy":"current_plus_provider",
+        "roleOrder":["api","detail","search","player","source","episode","other"],
+        "terminalOnly":False,
+        "aliasSearch":False,
+        "responseSalvage":True,
+        "documentRequestMining":True,
+        "sessionBootstrap":True,
+        "maxDepth":5,
+        "maxPages":24,
+        "maxEmbeds":24,
+        "maxRecipePasses":4,
+    },
+    "llmAdvisorExperimentFingerprint":"d"*64,
+}
+precedence_options=runtime._adaptive_runtime_options(precedence_candidate,config)
+assert precedence_options is not None,precedence_candidate
+assert precedence_options["new_strategy_id"]=="transport_request_differential_v1",precedence_options
+assert precedence_options["post_exhaustion_strategy_profile"]=="transport_request_differential_v1",precedence_options
+
 print("Brain second-order runtime strategy contract passed")
