@@ -39,6 +39,7 @@ LLM_ADVISOR_PROFILES = {
     "retained_candidate_replay_v1",
     "player_media_extractor_v1",
     "search_contract_inference_v1",
+    "adaptive_runtime_recovery",
 }
 
 PLANS: dict[str, dict[str, Any]] = {}
