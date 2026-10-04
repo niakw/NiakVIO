@@ -345,6 +345,7 @@ def main() -> int:
 
         accepted_this_round = 0
         exploration_this_round = 0
+        retryable_exploration_rejections = 0
         for parent_key, variants in variants_by_parent.items():
             parent_result = current_results[parent_key]
             ranked = sorted(variants, key=lambda pair: quality_vector(pair[1]), reverse=True)
@@ -493,9 +494,60 @@ def main() -> int:
                             "fixture_status_counts": (result_variant.get("evidence") or {}).get("fixture_status_counts") or {},
                         }
                     )
+                    if (
+                        is_selected
+                        and exploration_chain_enabled
+                        and isinstance(current_candidates[parent_key].get("brain_exploration_parent"), dict)
+                    ):
+                        plan_snapshot = candidate_variant.get("brain_repair_plan")
+                        plan_snapshot = plan_snapshot if isinstance(plan_snapshot, dict) else {}
+                        profile_name = str((candidate_variant.get("runtime_repair") or {}).get("profile") or "")
+                        transient = {
+                            "providerId": str(
+                                current_candidates[parent_key].get("canonical_id")
+                                or current_candidates[parent_key].get("upstream_id")
+                                or ""
+                            ).casefold(),
+                            "failureClass": str(plan_snapshot.get("failureClass") or ""),
+                            "signature": str(plan_snapshot.get("signature") or ""),
+                            "profile": profile_name,
+                            "experimentVariant": max(0, int(plan_snapshot.get("experimentVariant") or 0)),
+                            "experimentGeneration": max(1, int(plan_snapshot.get("experimentGeneration") or 1)),
+                            "failures": 1,
+                            "consecutiveFailures": 1,
+                            "successes": 0,
+                            "executionObserved": True,
+                            "reason": rejection_reason,
+                        }
+                        existing = list(current_candidates[parent_key].get("brain_exploration_rejections") or [])
+                        identity = (
+                            transient["failureClass"],
+                            transient["signature"],
+                            transient["profile"],
+                            transient["experimentVariant"],
+                            transient["experimentGeneration"],
+                        )
+                        if profile_name and not any(
+                            (
+                                str(row.get("failureClass") or ""),
+                                str(row.get("signature") or ""),
+                                str(row.get("profile") or ""),
+                                max(0, int(row.get("experimentVariant") or 0)),
+                                max(1, int(row.get("experimentGeneration") or 1)),
+                            ) == identity
+                            for row in existing
+                            if isinstance(row, dict)
+                        ):
+                            existing.append(transient)
+                            current_candidates[parent_key]["brain_exploration_rejections"] = existing[-12:]
+                        retryable_exploration_rejections += 1
                     (stage / candidate_variant["local_path"]).unlink(missing_ok=True)
 
-        if accepted_this_round == 0 and exploration_this_round == 0:
+        if (
+            accepted_this_round == 0
+            and exploration_this_round == 0
+            and retryable_exploration_rejections == 0
+        ):
             break
 
     final_candidates = [current_candidates[key] for key in candidate_order]
