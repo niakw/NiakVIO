@@ -950,6 +950,44 @@ def planner_negative_memory(_mode: str) -> list[dict[str, Any]]:
     return rows
 
 
+def planner_transient_negative_memory(candidate: dict[str, Any]) -> list[dict[str, Any]]:
+    """Expose only bounded in-run rejected child executions to the next replan.
+
+    These rows never persist by themselves and never grant mutation authority.
+    They exist solely so a good exploration parent does not immediately replay
+    the same child strategy after that exact child regressed under real retest.
+    """
+    out: list[dict[str, Any]] = []
+    for raw in candidate.get("brain_exploration_rejections") or []:
+        if not isinstance(raw, dict) or raw.get("executionObserved") is not True:
+            continue
+        provider_id = _clip_text(raw.get("providerId"), 160).casefold()
+        profile = _clip_text(raw.get("profile"), 96)
+        if not provider_id or not profile:
+            continue
+        out.append({
+            "providerId": provider_id,
+            "providerVersion": "*",
+            "failureClass": _clip_text(raw.get("failureClass"), 96),
+            "signature": _clip_text(raw.get("signature"), 96),
+            "profile": profile,
+            "positiveProgramFingerprint": "",
+            "strategyImplementationFingerprint": "",
+            "llmAdvisorExperimentFingerprint": "",
+            "experimentVariant": max(0, int(raw.get("experimentVariant") or 0)),
+            "experimentGeneration": max(1, int(raw.get("experimentGeneration") or 1)),
+            "capabilityStrategy": "",
+            "observedPipelineStage": "",
+            "failures": 1,
+            "consecutiveFailures": 1,
+            "successes": 0,
+            "executionObserved": True,
+        })
+        if len(out) >= 12:
+            break
+    return out
+
+
 def reset_runtime_state() -> None:
     PLANS.clear()
     RUNTIME_STATE.clear()
@@ -1014,7 +1052,11 @@ def _safe_planner_stderr(value: Any) -> str:
     return " ".join(text.split())[:600]
 
 
-def _execute_planner(items: list[dict[str, Any]], mode: str) -> dict[str, dict[str, Any]]:
+def _execute_planner(
+    items: list[dict[str, Any]],
+    mode: str,
+    transient_negative_memory: list[dict[str, Any]] | None = None,
+) -> dict[str, dict[str, Any]]:
     if not items:
         return PLANS
     payload = {
@@ -1024,7 +1066,10 @@ def _execute_planner(items: list[dict[str, Any]], mode: str) -> dict[str, dict[s
         "learnedSkills": planner_learned_skills(mode),
         "historicalSolutions": planner_historical_solutions(),
         "llmGuidance": planner_llm_guidance(),
-        "negativeMemory": planner_negative_memory(mode),
+        "negativeMemory": [
+            *planner_negative_memory(mode),
+            *(transient_negative_memory or []),
+        ],
         "items": items,
     }
     planner_input = _strict_json_dumps(payload).encode("ascii")
@@ -1068,6 +1113,7 @@ def replan_observation(
             "state": _public_state(candidate, key),
         }],
         mode,
+        planner_transient_negative_memory(candidate),
     )
     return PLANS.get(key) or {}
 
