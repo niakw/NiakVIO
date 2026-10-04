@@ -167,6 +167,59 @@ def untried_advisor_fingerprints(
     }
 
 
+def executed_meta_gap_rotation_pending(
+    brain_summary: dict[str, Any],
+    *,
+    memory_payload: dict[str, Any] | None = None,
+) -> set[str]:
+    """Return providers whose synthesized advisor was actually executed and failed.
+
+    Dynamic meta-gap rows are created from current census + negative memory, so
+    they are not necessarily present in the imported external guidance file.
+    A real executed failure/progress row is enough to justify one more bounded
+    wave: the next planner call can synthesize the next fingerprint/executor.
+    profile_unavailable rows are deliberately excluded because no child ran.
+    """
+    memory = memory_payload if isinstance(memory_payload, dict) else load(REPAIR_MEMORY, {})
+    entries: list[dict[str, Any]] = []
+    if isinstance(memory.get("entries"), list):
+        entries.extend(row for row in memory.get("entries") or [] if isinstance(row, dict))
+    experiment_memory = memory.get("experimentMemory")
+    if isinstance(experiment_memory, dict) and isinstance(experiment_memory.get("entries"), list):
+        entries.extend(row for row in experiment_memory.get("entries") or [] if isinstance(row, dict))
+
+    executed_failed: set[tuple[str, str, str]] = set()
+    for row in entries:
+        provider = cid(row.get("providerId"))
+        profile = str(row.get("profile") or "").strip().casefold()
+        fingerprint = str(row.get("llmAdvisorExperimentFingerprint") or "").strip().casefold()
+        if (
+            provider
+            and profile
+            and len(fingerprint) == 64
+            and row.get("executionObserved") is True
+            and int(row.get("consecutiveFailures") or 0) >= 1
+        ):
+            executed_failed.add((provider, profile, fingerprint))
+
+    out: set[str] = set()
+    for plan in (brain_summary.get("plans") or {}).values():
+        if not isinstance(plan, dict):
+            continue
+        if plan.get("llmAdvisorApplied") is not True:
+            continue
+        if str(plan.get("llmAdvisorGuidanceKind") or "").strip().casefold() != "meta-gap-synthesis":
+            continue
+        if str(plan.get("action") or "") != "probe-targeted-repair":
+            continue
+        provider = cid(plan.get("providerId"))
+        profile = str(plan.get("llmAdvisorProfile") or "").strip().casefold()
+        fingerprint = str(plan.get("llmAdvisorExperimentFingerprint") or "").strip().casefold()
+        if (provider, profile, fingerprint) in executed_failed:
+            out.add(provider)
+    return out
+
+
 def run(*args: str, env: dict[str, str] | None = None, timeout: int | None = None) -> None:
     print("FIELD_PROVIDER_BRAIN_REPAIR_CMD " + " ".join(args), flush=True)
     subprocess.run(
@@ -1055,10 +1108,18 @@ def main() -> int:
                 # A provider with another sanitized, not-yet-failed advisor
                 # fingerprint is not Learning debt yet. Keep it in the same
                 # portfolio run so the next wave tries B after A, then C after B.
+                #
+                # Dynamic meta-gap guidance is synthesized from current memory
+                # and therefore may not exist in the imported guidance file.
+                # If that synthesized child actually executed and failed (or made
+                # non-publishable progress), the next bounded wave must see the
+                # new memory immediately instead of requiring another workflow.
                 untried_advisor = untried_advisor_fingerprints(batch)
+                dynamic_meta_gap_rotation = executed_meta_gap_rotation_pending(brain_summary)
                 advisor_rotation_pending = {
                     provider for provider in deferred
                     if provider in untried_advisor
+                    or provider in dynamic_meta_gap_rotation
                 }
                 deferred.difference_update(advisor_rotation_pending)
 
