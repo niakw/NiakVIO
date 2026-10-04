@@ -1083,9 +1083,12 @@ def main() -> int:
     waves = max(requested_waves, advisor_hypotheses)
     # Advisor guidance can synthesize a new, distinct executable fingerprint
     # only after a prior hypothesis has been observed under current bytes.
-    # Keep normal caller waves unchanged, but permit that causal discovery to
-    # extend a short Fast run up to the same bounded three-hypothesis ceiling.
-    advisor_dynamic_wave_ceiling = max(requested_waves, 3)
+    # Keep normal caller waves unchanged, but when current memory proves that
+    # another advisor/meta-gap hypothesis is pending, allow the same Fast run to
+    # continue up to the engine's existing hard wave cap (6). The portfolio time
+    # budget remains the real execution cutoff; do not mislabel a wave-3 cutoff
+    # as "no_new_repair_experiment" while advisorRotationPending is non-empty.
+    advisor_dynamic_wave_ceiling = max(requested_waves, 6)
     if advisor_hypotheses > requested_waves:
         print(
             "FIELD_PROVIDER_BRAIN_ADVISOR_ROTATION "
