@@ -1,6 +1,6 @@
 Moviebox representative Learning negative-fingerprint eviction proof.
 source_census_run: 37226667278
-source_main_sha: e60d507b6f15a12c37c0792e8ebbdb0ed58f63a0
+source_main_sha: 0bba1d8930ace13885c489d1f8864596d5d2fac8
 budget_minutes: 20
 reason: regenerate-moviebox-guidance-after-evicting-executed-rejected-fingerprint
 validation_reason: persistent-guidance-must-not-republish-16ad894fc3c03be89539c14fb749def9501831b455f58f6f6f475b20acd36ad6
@@ -9,5 +9,5 @@ execution_mode: targeted-main-only
 target_providers: moviebox
 architecture_force: false
 publication_policy: no-pr-monotonic-memory-merge-then-canonical-repair
-required_current_evidence: moviebox-guidance-old-fingerprint-16ad894f-is-negative;final-guidance-moviebox-fingerprint-must-differ-or-row-must-be-absent;failed-fingerprint-filter-must-report-drop;canonical-repair-resume-required
-retry: 5
+required_current_evidence: moviebox-guidance-old-fingerprint-16ad894f-is-negative;final-guidance-moviebox-fingerprint-must-differ-or-row-must-be-absent;failed-fingerprint-filter-must-report-drop;targeted-native-reader-memory-preserved-without-out-of-scope-proposal;canonical-repair-resume-required
+retry: 6
