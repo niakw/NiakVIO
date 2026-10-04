@@ -3,1158 +3,115 @@
   "requested_scope": "all",
   "resolved_scope": "explicit",
   "selected_providers": [
-    "coflix"
+    "moviebox"
   ],
   "shard_count": 1,
   "shard_index": 0,
   "environment": "node-adaptive-provider-targeted-first-real-stream-census-with-tmdb-runtime-context",
   "fixture_selection_policy": "retained-proof-first-then-provider-targeted-then-representative-then-three-corpus-rotated",
   "provider_count": 1,
-  "task_count": 3,
-  "probe_count": 4,
-  "rotated_task_count": 1,
+  "task_count": 2,
+  "probe_count": 8,
+  "rotated_task_count": 2,
   "max_samples_per_lane": 4,
-  "raw_provider_count": 1,
-  "playable_provider_count": 1,
-  "accepted_playable_provider_count": 1,
-  "verified_provider_count": 1,
+  "raw_provider_count": 0,
+  "playable_provider_count": 0,
+  "accepted_playable_provider_count": 0,
+  "verified_provider_count": 0,
   "wrong_content_provider_count": 0,
-  "raw_providers": [
-    "coflix"
-  ],
-  "playable_providers": [
-    "coflix"
-  ],
-  "accepted_playable_providers": [
-    "coflix"
-  ],
-  "verified_providers": [
-    "coflix"
-  ],
+  "raw_providers": [],
+  "playable_providers": [],
+  "accepted_playable_providers": [],
+  "verified_providers": [],
   "wrong_content_providers": [],
   "type_summary": {
     "movie": {
       "tasks": 1,
-      "raw": 1,
-      "playable": 1,
-      "accepted_playable": 1,
-      "verified": 1,
+      "raw": 0,
+      "playable": 0,
+      "accepted_playable": 0,
+      "verified": 0,
       "wrong_content": 0
     },
     "tv": {
       "tasks": 1,
-      "raw": 1,
-      "playable": 1,
-      "accepted_playable": 1,
-      "verified": 1,
+      "raw": 0,
+      "playable": 0,
+      "accepted_playable": 0,
+      "verified": 0,
       "wrong_content": 0
     },
     "anime": {
-      "tasks": 1,
-      "raw": 1,
-      "playable": 1,
-      "accepted_playable": 1,
-      "verified": 1,
+      "tasks": 0,
+      "raw": 0,
+      "playable": 0,
+      "accepted_playable": 0,
+      "verified": 0,
       "wrong_content": 0
     }
   },
   "status_counts": {
-    "playable_verified": 3
+    "no_streams": 2
   },
   "debug_stage_counts": {
-    "provider_returned_streams": 3
+    "provider_waf_challenge": 2
   },
   "debug_stage_providers": {
-    "provider_returned_streams": [
-      "coflix"
+    "provider_waf_challenge": [
+      "moviebox"
     ]
   },
   "rows": [
     {
-      "provider_id": "coflix",
-      "provider_name": "🎥 Coflix",
-      "semantic_type": "anime",
-      "fixture_title": "Mushoku Tensei: Jobless Reincarnation",
-      "fixture": {
-        "slug": "mushoku-tensei-s01e01",
-        "tmdbId": "94664",
-        "mediaType": "anime",
-        "category": "anime",
-        "title": "Mushoku Tensei: Jobless Reincarnation",
-        "year": 2021,
-        "season": 1,
-        "episode": 1
-      },
-      "streams_returned": 2,
-      "announced_player_candidates": 5,
-      "announced_variant_candidates": 5,
-      "announced_player_hosts": [
-        "trakx.lol",
-        "uqload.vc",
-        "vidzy.cc"
-      ],
-      "announced_quality_heights": [
-        360,
-        480,
-        720,
-        1080
-      ],
-      "explored_player_requests": 2,
-      "explored_player_hosts": [
-        "uqload.vc",
-        "vidzy.cc"
-      ],
-      "variant_fanout_state": "returned-subset",
-      "status": "playable_verified",
-      "debug_stage": "provider_returned_streams",
-      "debug_model": {
-        "strategy": "mixed_embed_resolver",
-        "source_runtime_family": "catalogue-html",
-        "reconstruction_state": "learning-clean-seed",
-        "identity_mode": "catalog_search",
-        "requires_tmdb_before_run": true,
-        "supported_types": [
-          "movie",
-          "tv",
-          "anime"
-        ],
-        "route_count": 3,
-        "route_kinds": [
-          "detail",
-          "api"
-        ],
-        "has_api_recipe": false,
-        "official_site": "https://coflix.group",
-        "official_hub": "https://coflix.domains/",
-        "official_api": null
-      },
-      "debug_fetch_count": 24,
-      "debug_provider_fetch_count": 22,
-      "debug_progress_stage": "chain_reached",
-      "debug_fetches": [
-        {
-          "url": "https://api.themoviedb.org/3/tv/94664?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Ccontent_ratings&language=fr-FR&api_key=%3Credacted%3E",
-          "response_url": "https://api.themoviedb.org/3/tv/94664?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Ccontent_ratings&language=fr-FR&api_key=%3Credacted%3E",
-          "method": "GET",
-          "status": 200,
-          "content_type": "application/json",
-          "challenge": "",
-          "response_shape": {
-            "kind": "json",
-            "top": "object",
-            "keys": [
-              "adult",
-              "backdrop_path",
-              "created_by",
-              "episode_run_time",
-              "first_air_date",
-              "genres",
-              "homepage",
-              "id",
-              "in_production",
-              "languages",
-              "last_air_date",
-              "last_episode_to_air",
-              "name",
-              "next_episode_to_air",
-              "networks",
-              "number_of_episodes"
-            ]
-          },
-          "declared_player_candidate_count": 0,
-          "declared_url_player_candidate_count": 0,
-          "declared_indexed_player_candidate_count": 0,
-          "declared_player_hosts": [],
-          "declared_quality_heights": [],
-          "duration_ms": 127
-        },
-        {
-          "url": "https://coflix.wiki/ajax/search/suggest?keyword=Mushoku%20Tensei%3A%20Jobless%20Reincarnation",
-          "response_url": "https://coflix.wiki/ajax/search/suggest?keyword=Mushoku%20Tensei%3A%20Jobless%20Reincarnation",
-          "method": "GET",
-          "status": 200,
-          "content_type": "application/json",
-          "challenge": "",
-          "response_shape": {
-            "kind": "json",
-            "top": "object",
-            "keys": [
-              "html",
-              "status"
-            ]
-          },
-          "declared_player_candidate_count": 0,
-          "declared_url_player_candidate_count": 0,
-          "declared_indexed_player_candidate_count": 0,
-          "declared_player_hosts": [],
-          "declared_quality_heights": [],
-          "duration_ms": 230
-        },
-        {
-          "url": "https://coflix.wiki/ajax/search/suggest?keyword=%E7%84%A1%E8%81%B7%E8%BB%A2%E7%94%9F%20%EF%BD%9E%E7%95%B0%E4%B8%96%E7%95%8C%E8%A1%8C%E3%81%A3%E3%81%9F%E3%82%89%E6%9C%AC%E6%B0%97%E3%81%A0%E3%81%99%EF%BD%9E",
-          "response_url": "https://coflix.wiki/ajax/search/suggest?keyword=%E7%84%A1%E8%81%B7%E8%BB%A2%E7%94%9F%20%EF%BD%9E%E7%95%B0%E4%B8%96%E7%95%8C%E8%A1%8C%E3%81%A3%E3%81%9F%E3%82%89%E6%9C%AC%E6%B0%97%E3%81%A0%E3%81%99%EF%BD%9E",
-          "method": "GET",
-          "status": 200,
-          "content_type": "application/json",
-          "challenge": "",
-          "response_shape": {
-            "kind": "json",
-            "top": "object",
-            "keys": [
-              "html",
-              "status"
-            ]
-          },
-          "declared_player_candidate_count": 9,
-          "declared_url_player_candidate_count": 9,
-          "declared_indexed_player_candidate_count": 0,
-          "declared_player_hosts": [
-            "coflix.wiki"
-          ],
-          "declared_quality_heights": [],
-          "duration_ms": 150
-        },
-        {
-          "url": "https://coflix.wiki/ajax/search/suggest?keyword=%E6%97%A0%E8%81%8C%E8%BD%AC%E7%94%9F%EF%BD%9E%E5%9C%A8%E5%BC%82%E4%B8%96%E7%95%8C%E8%AE%A4%E7%9C%9F%E5%9C%B0%E6%B4%BB%E4%B8%8B%E5%8E%BB%EF%BD%9E",
-          "response_url": "https://coflix.wiki/ajax/search/suggest?keyword=%E6%97%A0%E8%81%8C%E8%BD%AC%E7%94%9F%EF%BD%9E%E5%9C%A8%E5%BC%82%E4%B8%96%E7%95%8C%E8%AE%A4%E7%9C%9F%E5%9C%B0%E6%B4%BB%E4%B8%8B%E5%8E%BB%EF%BD%9E",
-          "method": "GET",
-          "status": 200,
-          "content_type": "application/json",
-          "challenge": "",
-          "response_shape": {
-            "kind": "json",
-            "top": "object",
-            "keys": [
-              "html",
-              "status"
-            ]
-          },
-          "declared_player_candidate_count": 9,
-          "declared_url_player_candidate_count": 9,
-          "declared_indexed_player_candidate_count": 0,
-          "declared_player_hosts": [
-            "coflix.wiki"
-          ],
-          "declared_quality_heights": [],
-          "duration_ms": 149
-        },
-        {
-          "url": "https://coflix.wiki/ajax/search/suggest?keyword=%E6%97%A0%E8%81%8C%E8%BD%AC%E7%94%9F",
-          "response_url": "https://coflix.wiki/ajax/search/suggest?keyword=%E6%97%A0%E8%81%8C%E8%BD%AC%E7%94%9F",
-          "method": "GET",
-          "status": 200,
-          "content_type": "application/json",
-          "challenge": "",
-          "response_shape": {
-            "kind": "json",
-            "top": "object",
-            "keys": [
-              "html",
-              "status"
-            ]
-          },
-          "declared_player_candidate_count": 9,
-          "declared_url_player_candidate_count": 9,
-          "declared_indexed_player_candidate_count": 0,
-          "declared_player_hosts": [
-            "coflix.wiki"
-          ],
-          "declared_quality_heights": [],
-          "duration_ms": 149
-        },
-        {
-          "url": "https://coflix.wiki/ajax/search/suggest?keyword=%E6%97%A0%E8%81%8C%E8%BD%AC%E7%94%9F2",
-          "response_url": "https://coflix.wiki/ajax/search/suggest?keyword=%E6%97%A0%E8%81%8C%E8%BD%AC%E7%94%9F2",
-          "method": "GET",
-          "status": 200,
-          "content_type": "application/json",
-          "challenge": "",
-          "response_shape": {
-            "kind": "json",
-            "top": "object",
-            "keys": [
-              "html",
-              "status"
-            ]
-          },
-          "declared_player_candidate_count": 10,
-          "declared_url_player_candidate_count": 10,
-          "declared_indexed_player_candidate_count": 0,
-          "declared_player_hosts": [
-            "coflix.wiki"
-          ],
-          "declared_quality_heights": [],
-          "duration_ms": 148
-        },
-        {
-          "url": "https://coflix.wiki/film/les-surs-grimm-saison-2-vostfr/",
-          "response_url": "https://coflix.wiki/film/les-surs-grimm-saison-2-vostfr/",
-          "method": "GET",
-          "status": 200,
-          "content_type": "text/html",
-          "challenge": "",
-          "response_shape": {
-            "kind": "html",
-            "sampleBytes": 21253,
-            "forms": 1,
-            "iframes": 0,
-            "videos": 0,
-            "sources": 0,
-            "scripts": 14,
-            "anchors": 28,
-            "classTokens": [
-              "hover-wrap",
-              "inner",
-              "item",
-              "version",
-              "body",
-              "title",
-              "start",
-              "tab",
-              "active-type",
-              "addthis_inline_share_toolbox",
-              "alert-player",
-              "aside-wrapper",
-              "backdrop",
-              "bl-meta",
-              "closeButton",
-              "container"
-            ],
-            "idTokens": [
-              "banner-left",
-              "banner-right",
-              "body",
-              "episodes",
-              "mask-overlay",
-              "menu",
-              "menu-toggler",
-              "ngang-pc",
-              "player",
-              "player-wrapper",
-              "related",
-              "search"
-            ],
-            "classFacts": [
-              {
-                "token": "hover-wrap",
-                "count": 7,
-                "tags": [
-                  "div"
-                ],
-                "selfHref": 0,
-                "nestedAnchors": 24,
-                "signals": [
-                  "year"
-                ]
-              },
-              {
-                "token": "inner",
-                "count": 7,
-                "tags": [
-                  "div"
-                ],
-                "selfHref": 0,
-                "nestedAnchors": 24,
-                "signals": [
-                  "year"
-                ]
-              },
-              {
-                "token": "item",
-                "count": 7,
-                "tags": [
-                  "div"
-                ],
-                "selfHref": 0,
-                "nestedAnchors": 24,
-                "signals": [
-                  "year"
-                ]
-              },
-              {
-                "token": "version",
-                "count": 7,
-                "tags": [
-                  "div"
-                ],
-                "selfHref": 0,
-                "nestedAnchors": 24,
-                "signals": [
-                  "year"
-                ]
-              },
-              {
-                "token": "body",
-                "count": 3,
-                "tags": [
-                  "div"
-                ],
-                "selfHref": 0,
-                "nestedAnchors": 18,
-                "signals": [
-                  "series",
-                  "year"
-                ]
-              },
-              {
-                "token": "title",
-                "count": 11,
-                "tags": [
-                  "span",
-                  "h1",
-                  "h2",
-                  "a"
-                ],
-                "selfHref": 7,
-                "nestedAnchors": 24,
-                "signals": [
-                  "series",
-                  "year"
-                ]
-              },
-              {
-                "token": "start",
-                "count": 2,
-                "tags": [
-                  "div"
-                ],
-                "selfHref": 0,
-                "nestedAnchors": 19,
-                "signals": [
-                  "movie",
-                  "series"
-                ]
-              },
-              {
-                "token": "tab",
-                "count": 4,
-                "tags": [
-                  "span",
-                  "div"
-                ],
-                "selfHref": 0,
-                "nestedAnchors": 0,
-                "signals": [
-                  "year"
-                ]
-              }
-            ],
-            "markers": [
-              "player",
-              "episode"
-            ]
-          },
-          "declared_player_candidate_count": 19,
-          "declared_url_player_candidate_count": 19,
-          "declared_indexed_player_candidate_count": 0,
-          "declared_player_hosts": [
-            "coflix.wiki"
-          ],
-          "declared_quality_heights": [
-            1080
-          ],
-          "duration_ms": 217
-        },
-        {
-          "url": "https://coflix.wiki/ajax/episode/list-episode?movieId=35412",
-          "response_url": "https://coflix.wiki/ajax/episode/list-episode?movieId=35412",
-          "method": "GET",
-          "status": 200,
-          "content_type": "application/json",
-          "challenge": "",
-          "response_shape": {
-            "kind": "json",
-            "top": "object",
-            "keys": [
-              "html",
-              "status",
-              "totalItems"
-            ]
-          },
-          "declared_player_candidate_count": 6,
-          "declared_url_player_candidate_count": 6,
-          "declared_indexed_player_candidate_count": 0,
-          "declared_player_hosts": [
-            "coflix.wiki"
-          ],
-          "declared_quality_heights": [],
-          "duration_ms": 149
-        },
-        {
-          "url": "https://coflix.wiki/ajax/episode/player?episode_id=224095",
-          "response_url": "https://coflix.wiki/ajax/episode/player?episode_id=224095",
-          "method": "POST",
-          "status": 200,
-          "content_type": "application/json",
-          "challenge": "",
-          "response_shape": {
-            "kind": "json",
-            "top": "object",
-            "keys": [
-              "status",
-              "message"
-            ]
-          },
-          "declared_player_candidate_count": 5,
-          "declared_url_player_candidate_count": 5,
-          "declared_indexed_player_candidate_count": 0,
-          "declared_player_hosts": [
-            "coflix.wiki",
-            "trakx.lol",
-            "uqload.vc",
-            "vidzy.cc"
-          ],
-          "declared_quality_heights": [],
-          "duration_ms": 148
-        },
-        {
-          "url": "https://vidzy.cc/embed-nx1qk00kzvme.html",
-          "response_url": "https://vidzy.cc/embed-nx1qk00kzvme.html",
-          "method": "GET",
-          "status": 200,
-          "content_type": "text/html",
-          "challenge": "",
-          "response_shape": {
-            "kind": "html",
-            "sampleBytes": 65536,
-            "forms": 0,
-            "iframes": 3,
-            "videos": 1,
-            "sources": 0,
-            "scripts": 25,
-            "anchors": 3,
-            "classTokens": [
-              "hidh",
-              "overdiv",
-              "vjs-icon-cast",
-              "vjs-icon-placeholder"
-            ],
-            "idTokens": [
-              "aclib",
-              "adbd",
-              "play_limit_box",
-              "statut-premium",
-              "vjsplayer"
-            ],
-            "classFacts": [
-              {
-                "token": "hidh",
-                "count": 1,
-                "tags": [
-                  "div"
-                ],
-                "selfHref": 0,
-                "nestedAnchors": 1,
-                "signals": []
-              },
-              {
-                "token": "overdiv",
-                "count": 1,
-                "tags": [
-                  "div"
-                ],
-                "selfHref": 0,
-                "nestedAnchors": 1,
-                "signals": []
-              },
-              {
-                "token": "vjs-icon-cast",
-                "count": 1,
-                "tags": [
-                  "0"
-                ],
-                "selfHref": 0,
-                "nestedAnchors": 0,
-                "signals": []
-              },
-              {
-                "token": "vjs-icon-placeholder",
-                "count": 1,
-                "tags": [
-                  "span"
-                ],
-                "selfHref": 0,
-                "nestedAnchors": 0,
-                "signals": []
-              }
-            ],
-            "markers": [
-              "player",
-              "download",
-              "hls-literal",
-              "mp4-literal"
-            ]
-          },
-          "declared_player_candidate_count": 10,
-          "declared_url_player_candidate_count": 10,
-          "declared_indexed_player_candidate_count": 0,
-          "declared_player_hosts": [
-            "ms.corantohughes.cyou",
-            "s1.fsvid.lol",
-            "vidzy.cc",
-            "vidzy.org"
-          ],
-          "declared_quality_heights": [
-            360,
-            480,
-            1080
-          ],
-          "duration_ms": 509
-        },
-        {
-          "url": "https://uqload.vc/embed-7dg2chfh7dqf.html",
-          "response_url": "https://uqload.vc/embed-7dg2chfh7dqf.html",
-          "method": "GET",
-          "status": 200,
-          "content_type": "text/html",
-          "challenge": "",
-          "response_shape": {
-            "kind": "html",
-            "sampleBytes": 14740,
-            "forms": 0,
-            "iframes": 0,
-            "videos": 1,
-            "sources": 0,
-            "scripts": 24,
-            "anchors": 1,
-            "classTokens": [
-              "overdiv"
-            ],
-            "idTokens": [
-              "adbd",
-              "play_limit_box",
-              "vplayer"
-            ],
-            "classFacts": [
-              {
-                "token": "overdiv",
-                "count": 1,
-                "tags": [
-                  "div"
-                ],
-                "selfHref": 0,
-                "nestedAnchors": 1,
-                "signals": [
-                  "4k"
-                ]
-              }
-            ],
-            "markers": [
-              "player",
-              "download"
-            ]
-          },
-          "declared_player_candidate_count": 2,
-          "declared_url_player_candidate_count": 2,
-          "declared_indexed_player_candidate_count": 0,
-          "declared_player_hosts": [
-            "4xfreedom.com",
-            "uqload.vc"
-          ],
-          "declared_quality_heights": [
-            360,
-            720,
-            1080
-          ],
-          "duration_ms": 281
-        },
-        {
-          "url": "https://vidzy.cc/embed-nx1qk00kzvme.html",
-          "response_url": "https://vidzy.cc/embed-nx1qk00kzvme.html",
-          "method": "GET",
-          "status": 200,
-          "content_type": "text/html",
-          "challenge": "",
-          "response_shape": {
-            "kind": "html",
-            "sampleBytes": 65536,
-            "forms": 0,
-            "iframes": 3,
-            "videos": 1,
-            "sources": 0,
-            "scripts": 25,
-            "anchors": 3,
-            "classTokens": [
-              "hidh",
-              "overdiv",
-              "vjs-icon-cast",
-              "vjs-icon-placeholder"
-            ],
-            "idTokens": [
-              "aclib",
-              "adbd",
-              "play_limit_box",
-              "statut-premium",
-              "vjsplayer"
-            ],
-            "classFacts": [
-              {
-                "token": "hidh",
-                "count": 1,
-                "tags": [
-                  "div"
-                ],
-                "selfHref": 0,
-                "nestedAnchors": 1,
-                "signals": []
-              },
-              {
-                "token": "overdiv",
-                "count": 1,
-                "tags": [
-                  "div"
-                ],
-                "selfHref": 0,
-                "nestedAnchors": 1,
-                "signals": []
-              },
-              {
-                "token": "vjs-icon-cast",
-                "count": 1,
-                "tags": [
-                  "0"
-                ],
-                "selfHref": 0,
-                "nestedAnchors": 0,
-                "signals": []
-              },
-              {
-                "token": "vjs-icon-placeholder",
-                "count": 1,
-                "tags": [
-                  "span"
-                ],
-                "selfHref": 0,
-                "nestedAnchors": 0,
-                "signals": []
-              }
-            ],
-            "markers": [
-              "player",
-              "download",
-              "hls-literal",
-              "mp4-literal"
-            ]
-          },
-          "declared_player_candidate_count": 10,
-          "declared_url_player_candidate_count": 10,
-          "declared_indexed_player_candidate_count": 0,
-          "declared_player_hosts": [
-            "ms.corantohughes.cyou",
-            "s1.fsvid.lol",
-            "vidzy.cc",
-            "vidzy.org"
-          ],
-          "declared_quality_heights": [
-            360,
-            480,
-            1080
-          ],
-          "duration_ms": 319
-        },
-        {
-          "url": "https://uqload.vc/embed-7dg2chfh7dqf.html",
-          "response_url": "https://uqload.vc/embed-7dg2chfh7dqf.html",
-          "method": "GET",
-          "status": 200,
-          "content_type": "text/html",
-          "challenge": "",
-          "response_shape": {
-            "kind": "html",
-            "sampleBytes": 14682,
-            "forms": 0,
-            "iframes": 0,
-            "videos": 1,
-            "sources": 0,
-            "scripts": 24,
-            "anchors": 1,
-            "classTokens": [
-              "overdiv"
-            ],
-            "idTokens": [
-              "adbd",
-              "play_limit_box",
-              "vplayer"
-            ],
-            "classFacts": [
-              {
-                "token": "overdiv",
-                "count": 1,
-                "tags": [
-                  "div"
-                ],
-                "selfHref": 0,
-                "nestedAnchors": 1,
-                "signals": [
-                  "4k"
-                ]
-              }
-            ],
-            "markers": [
-              "player",
-              "download"
-            ]
-          },
-          "declared_player_candidate_count": 2,
-          "declared_url_player_candidate_count": 2,
-          "declared_indexed_player_candidate_count": 0,
-          "declared_player_hosts": [
-            "4xfreedom.com",
-            "uqload.vc"
-          ],
-          "declared_quality_heights": [
-            360,
-            720,
-            1080
-          ],
-          "duration_ms": 232
-        },
-        {
-          "url": "https://api.themoviedb.org/3/tv/94664/season/1/episode/1?language=fr-FR&api_key=%3Credacted%3E",
-          "response_url": "https://api.themoviedb.org/3/tv/94664/season/1/episode/1?language=fr-FR&api_key=%3Credacted%3E",
-          "method": "GET",
-          "status": 200,
-          "content_type": "application/json",
-          "challenge": "",
-          "response_shape": {
-            "kind": "json",
-            "top": "object",
-            "keys": [
-              "air_date",
-              "crew",
-              "episode_number",
-              "episode_type",
-              "guest_stars",
-              "name",
-              "overview",
-              "id",
-              "production_code",
-              "runtime",
-              "season_number",
-              "still_path",
-              "vote_average",
-              "vote_count"
-            ]
-          },
-          "declared_player_candidate_count": 0,
-          "declared_url_player_candidate_count": 0,
-          "declared_indexed_player_candidate_count": 0,
-          "declared_player_hosts": [],
-          "declared_quality_heights": [],
-          "duration_ms": 61
-        },
-        {
-          "url": "https://strm9.uqload.vc/hls2/02/05811/7dg2chfh7dqf_,l,n,h,.urlset/master.m3u8?t=pky-FK89dhvN4aSrqIv5T6ZVgIekqIyJcwg1QdHZQjg&s=1791055907&e=14400&v=3714170&i=57.151&sp=0",
-          "response_url": "https://strm9.uqload.vc/hls2/02/05811/7dg2chfh7dqf_,l,n,h,.urlset/master.m3u8?t=pky-FK89dhvN4aSrqIv5T6ZVgIekqIyJcwg1QdHZQjg&s=1791055907&e=14400&v=3714170&i=57.151&sp=0",
-          "method": "GET",
-          "status": 200,
-          "content_type": "application/vnd.apple.mpegurl",
-          "challenge": "",
-          "response_shape": null,
-          "declared_player_candidate_count": 0,
-          "declared_url_player_candidate_count": 0,
-          "declared_indexed_player_candidate_count": 0,
-          "declared_player_hosts": [],
-          "declared_quality_heights": [],
-          "duration_ms": 564
-        },
-        {
-          "url": "https://v6.vidzy.cc/hls2/02/00063/nx1qk00kzvme_n/master.m3u8?t=zW94FepCVtOIxBbvehRebV6-BGMNsBkKsl_kglci-jU&s=1791055907&e=172800&f=318525&i=0.0&sp=0",
-          "response_url": "https://v6.vidzy.cc/hls2/02/00063/nx1qk00kzvme_n/master.m3u8?t=zW94FepCVtOIxBbvehRebV6-BGMNsBkKsl_kglci-jU&s=1791055907&e=172800&f=318525&i=0.0&sp=0",
-          "method": "GET",
-          "status": 200,
-          "content_type": "application/vnd.apple.mpegurl",
-          "challenge": "",
-          "response_shape": null,
-          "declared_player_candidate_count": 0,
-          "declared_url_player_candidate_count": 0,
-          "declared_indexed_player_candidate_count": 0,
-          "declared_player_hosts": [],
-          "declared_quality_heights": [],
-          "duration_ms": 588
-        },
-        {
-          "url": "https://strm9.uqload.vc/hls2/02/05811/7dg2chfh7dqf_,l,n,h,.urlset/master.m3u8?t=pky-FK89dhvN4aSrqIv5T6ZVgIekqIyJcwg1QdHZQjg&s=1791055907&e=14400&v=3714170&i=57.151&sp=0",
-          "response_url": "https://strm9.uqload.vc/hls2/02/05811/7dg2chfh7dqf_,l,n,h,.urlset/master.m3u8?t=pky-FK89dhvN4aSrqIv5T6ZVgIekqIyJcwg1QdHZQjg&s=1791055907&e=14400&v=3714170&i=57.151&sp=0",
-          "method": "GET",
-          "status": 200,
-          "content_type": "application/vnd.apple.mpegurl",
-          "challenge": "",
-          "response_shape": null,
-          "declared_player_candidate_count": 0,
-          "declared_url_player_candidate_count": 0,
-          "declared_indexed_player_candidate_count": 0,
-          "declared_player_hosts": [],
-          "declared_quality_heights": [],
-          "duration_ms": 129
-        },
-        {
-          "url": "https://strm9.uqload.vc/hls2/02/05811/7dg2chfh7dqf_l/index-v1-a1.m3u8?t=pky-FK89dhvN4aSrqIv5T6ZVgIekqIyJcwg1QdHZQjg&s=1791055907&e=14400&v=3714170&i=57.151&sp=0",
-          "response_url": "https://strm9.uqload.vc/hls2/02/05811/7dg2chfh7dqf_l/index-v1-a1.m3u8?t=pky-FK89dhvN4aSrqIv5T6ZVgIekqIyJcwg1QdHZQjg&s=1791055907&e=14400&v=3714170&i=57.151&sp=0",
-          "method": "GET",
-          "status": 200,
-          "content_type": "application/vnd.apple.mpegurl",
-          "challenge": "",
-          "response_shape": null,
-          "declared_player_candidate_count": 0,
-          "declared_url_player_candidate_count": 0,
-          "declared_indexed_player_candidate_count": 0,
-          "declared_player_hosts": [],
-          "declared_quality_heights": [],
-          "duration_ms": 129
-        },
-        {
-          "url": "https://v6.vidzy.cc/hls2/02/00063/nx1qk00kzvme_n/master.m3u8?t=zW94FepCVtOIxBbvehRebV6-BGMNsBkKsl_kglci-jU&s=1791055907&e=172800&f=318525&i=0.0&sp=0",
-          "response_url": "https://v6.vidzy.cc/hls2/02/00063/nx1qk00kzvme_n/master.m3u8?t=zW94FepCVtOIxBbvehRebV6-BGMNsBkKsl_kglci-jU&s=1791055907&e=172800&f=318525&i=0.0&sp=0",
-          "method": "GET",
-          "status": 200,
-          "content_type": "application/vnd.apple.mpegurl",
-          "challenge": "",
-          "response_shape": null,
-          "declared_player_candidate_count": 0,
-          "declared_url_player_candidate_count": 0,
-          "declared_indexed_player_candidate_count": 0,
-          "declared_player_hosts": [],
-          "declared_quality_heights": [],
-          "duration_ms": 416
-        },
-        {
-          "url": "https://v6.vidzy.cc/hls2/02/00063/nx1qk00kzvme_n/index-v1-a1.m3u8?t=zW94FepCVtOIxBbvehRebV6-BGMNsBkKsl_kglci-jU&s=1791055907&e=172800&f=318525&i=0.0&sp=0",
-          "response_url": "https://v6.vidzy.cc/hls2/02/00063/nx1qk00kzvme_n/index-v1-a1.m3u8?t=zW94FepCVtOIxBbvehRebV6-BGMNsBkKsl_kglci-jU&s=1791055907&e=172800&f=318525&i=0.0&sp=0",
-          "method": "GET",
-          "status": 200,
-          "content_type": "application/vnd.apple.mpegurl",
-          "challenge": "",
-          "response_shape": null,
-          "declared_player_candidate_count": 0,
-          "declared_url_player_candidate_count": 0,
-          "declared_indexed_player_candidate_count": 0,
-          "declared_player_hosts": [],
-          "declared_quality_heights": [],
-          "duration_ms": 138
-        },
-        {
-          "url": "https://strm9.uqload.vc/hls2/02/05811/7dg2chfh7dqf_,l,n,h,.urlset/master.m3u8?t=pky-FK89dhvN4aSrqIv5T6ZVgIekqIyJcwg1QdHZQjg&s=1791055907&e=14400&v=3714170&i=57.151&sp=0",
-          "response_url": "https://strm9.uqload.vc/hls2/02/05811/7dg2chfh7dqf_,l,n,h,.urlset/master.m3u8?t=pky-FK89dhvN4aSrqIv5T6ZVgIekqIyJcwg1QdHZQjg&s=1791055907&e=14400&v=3714170&i=57.151&sp=0",
-          "method": "GET",
-          "status": 200,
-          "content_type": "application/vnd.apple.mpegurl",
-          "challenge": "",
-          "response_shape": null,
-          "declared_player_candidate_count": 0,
-          "declared_url_player_candidate_count": 0,
-          "declared_indexed_player_candidate_count": 0,
-          "declared_player_hosts": [],
-          "declared_quality_heights": [],
-          "duration_ms": 129
-        },
-        {
-          "url": "https://v6.vidzy.cc/hls2/02/00063/nx1qk00kzvme_n/master.m3u8?t=zW94FepCVtOIxBbvehRebV6-BGMNsBkKsl_kglci-jU&s=1791055907&e=172800&f=318525&i=0.0&sp=0",
-          "response_url": "https://v6.vidzy.cc/hls2/02/00063/nx1qk00kzvme_n/master.m3u8?t=zW94FepCVtOIxBbvehRebV6-BGMNsBkKsl_kglci-jU&s=1791055907&e=172800&f=318525&i=0.0&sp=0",
-          "method": "GET",
-          "status": 200,
-          "content_type": "application/vnd.apple.mpegurl",
-          "challenge": "",
-          "response_shape": null,
-          "declared_player_candidate_count": 0,
-          "declared_url_player_candidate_count": 0,
-          "declared_indexed_player_candidate_count": 0,
-          "declared_player_hosts": [],
-          "declared_quality_heights": [],
-          "duration_ms": 137
-        },
-        {
-          "url": "https://strm9.uqload.vc/hls2/02/05811/7dg2chfh7dqf_l/index-v1-a1.m3u8?t=pky-FK89dhvN4aSrqIv5T6ZVgIekqIyJcwg1QdHZQjg&s=1791055907&e=14400&v=3714170&i=57.151&sp=0",
-          "response_url": "https://strm9.uqload.vc/hls2/02/05811/7dg2chfh7dqf_l/index-v1-a1.m3u8?t=pky-FK89dhvN4aSrqIv5T6ZVgIekqIyJcwg1QdHZQjg&s=1791055907&e=14400&v=3714170&i=57.151&sp=0",
-          "method": "GET",
-          "status": 200,
-          "content_type": "application/vnd.apple.mpegurl",
-          "challenge": "",
-          "response_shape": null,
-          "declared_player_candidate_count": 0,
-          "declared_url_player_candidate_count": 0,
-          "declared_indexed_player_candidate_count": 0,
-          "declared_player_hosts": [],
-          "declared_quality_heights": [],
-          "duration_ms": 129
-        },
-        {
-          "url": "https://v6.vidzy.cc/hls2/02/00063/nx1qk00kzvme_n/index-v1-a1.m3u8?t=zW94FepCVtOIxBbvehRebV6-BGMNsBkKsl_kglci-jU&s=1791055907&e=172800&f=318525&i=0.0&sp=0",
-          "response_url": "https://v6.vidzy.cc/hls2/02/00063/nx1qk00kzvme_n/index-v1-a1.m3u8?t=zW94FepCVtOIxBbvehRebV6-BGMNsBkKsl_kglci-jU&s=1791055907&e=172800&f=318525&i=0.0&sp=0",
-          "method": "GET",
-          "status": 200,
-          "content_type": "application/vnd.apple.mpegurl",
-          "challenge": "",
-          "response_shape": null,
-          "declared_player_candidate_count": 0,
-          "declared_url_player_candidate_count": 0,
-          "declared_indexed_player_candidate_count": 0,
-          "declared_player_hosts": [],
-          "declared_quality_heights": [],
-          "duration_ms": 135
-        }
-      ],
-      "debug_provider_value_trace_v18": null,
-      "debug_provider_value_trace_history_v21": [],
-      "debug_provider_runtime_dispatch_error_v1": null,
-      "debug_identity_reasons": [
-        {
-          "host": "v6.vidzy.cc",
-          "title": "🎥 Coflix - 480p",
-          "filename": "",
-          "identity_status": "match",
-          "identity_reason": "season_episode_match",
-          "metadata_status": "match",
-          "metadata_reason": "season_episode_match",
-          "duration_status": "unknown",
-          "duration_reason": "duration_unavailable",
-          "duration_ratio": null,
-          "media_kind": "hls",
-          "media_status": 200,
-          "media_error": ""
-        },
-        {
-          "host": "strm9.uqload.vc",
-          "title": "🎥 Coflix - 1080p",
-          "filename": "",
-          "identity_status": "match",
-          "identity_reason": "season_episode_match",
-          "metadata_status": "match",
-          "metadata_reason": "season_episode_match",
-          "duration_status": "unknown",
-          "duration_reason": "duration_unavailable",
-          "duration_ratio": null,
-          "media_kind": "hls",
-          "media_status": 200,
-          "media_error": ""
-        }
-      ],
-      "stderr_tail": "FIELD_TMDB_PROBE_CONTEXT state=core_ready credential_visible=false metadata_hydrated=false dynamic=true core_capability=true\n",
-      "raw": 2,
-      "playable": 2,
-      "verified": 2,
-      "contradictions": 0,
-      "identity_safe": true,
-      "duration_ms": 4392,
-      "sample_count": 1,
-      "fanout_fixture_title": "Mushoku Tensei: Jobless Reincarnation",
-      "sample_titles": [
-        "Mushoku Tensei: Jobless Reincarnation"
-      ],
-      "adaptive_rotated": false,
-      "samples": [
-        {
-          "fixture_title": "Mushoku Tensei: Jobless Reincarnation",
-          "fixture": {
-            "slug": "mushoku-tensei-s01e01",
-            "tmdbId": "94664",
-            "mediaType": "anime",
-            "category": "anime",
-            "title": "Mushoku Tensei: Jobless Reincarnation",
-            "year": 2021,
-            "season": 1,
-            "episode": 1
-          },
-          "status": "playable_verified",
-          "debug_stage": "provider_returned_streams",
-          "debug_progress_stage": "chain_reached",
-          "raw": 2,
-          "playable": 2,
-          "verified": 2,
-          "contradictions": 0,
-          "duration_ms": 4325,
-          "streams_returned": 2,
-          "announced_player_candidates": 5,
-          "announced_variant_candidates": 5,
-          "announced_player_hosts": [
-            "trakx.lol",
-            "uqload.vc",
-            "vidzy.cc"
-          ],
-          "announced_quality_heights": [
-            360,
-            480,
-            720,
-            1080
-          ],
-          "explored_player_requests": 2,
-          "explored_player_hosts": [
-            "uqload.vc",
-            "vidzy.cc"
-          ],
-          "variant_fanout_state": "returned-subset"
-        }
-      ],
-      "provider_budget_seconds": 90,
-      "provider_budget_exhausted": false
-    },
-    {
-      "provider_id": "coflix",
-      "provider_name": "🎥 Coflix",
+      "provider_id": "moviebox",
+      "provider_name": "📦 MovieBox",
       "semantic_type": "movie",
-      "fixture_title": "Mon ninja et moi 3",
+      "fixture_title": "Inception",
       "fixture": {
-        "tmdbId": "1215638",
+        "slug": "inception-2010",
+        "tmdbId": "27205",
         "mediaType": "movie",
         "category": "movie",
-        "title": "Mon ninja et moi 3",
-        "year": 2025
+        "title": "Inception",
+        "year": 2010
       },
       "streams_returned": 0,
-      "announced_player_candidates": 7,
-      "announced_variant_candidates": 7,
-      "announced_player_hosts": [
-        "1.multiup.us",
-        "doply.net",
-        "filemoon.sx",
-        "sandratableother.com",
-        "uqload.cx",
-        "vidzy.org"
-      ],
-      "announced_quality_heights": [
-        360,
-        480
-      ],
-      "explored_player_requests": 7,
-      "explored_player_hosts": [
-        "1.multiup.us",
-        "doply.net",
-        "filemoon.sx",
-        "sandratableother.com",
-        "uqload.cx",
-        "vidzy.org"
-      ],
-      "variant_fanout_state": "explored-not-resolved",
-      "status": "playable_verified",
-      "debug_stage": "provider_returned_streams",
+      "announced_player_candidates": 0,
+      "announced_variant_candidates": 0,
+      "announced_player_hosts": [],
+      "announced_quality_heights": [],
+      "explored_player_requests": 0,
+      "explored_player_hosts": [],
+      "variant_fanout_state": "not-observed",
+      "status": "no_streams",
+      "debug_stage": "provider_waf_challenge",
       "debug_model": {
-        "strategy": "mixed_embed_resolver",
-        "source_runtime_family": "catalogue-html",
+        "strategy": "api_stream_resolver",
+        "source_runtime_family": "stremio-json",
         "reconstruction_state": "learning-clean-seed",
-        "identity_mode": "catalog_search",
-        "requires_tmdb_before_run": true,
+        "identity_mode": "tmdb_direct",
+        "requires_tmdb_before_run": false,
         "supported_types": [
           "movie",
-          "tv",
-          "anime"
+          "tv"
         ],
-        "route_count": 3,
+        "route_count": 2,
         "route_kinds": [
-          "detail",
-          "api"
+          "unknown",
+          "detail"
         ],
         "has_api_recipe": false,
-        "official_site": "https://coflix.group",
-        "official_hub": "https://coflix.domains/",
+        "official_site": "https://moviebox.yachts",
+        "official_hub": "https://moviiebox.lol/",
         "official_api": null
       },
-      "debug_fetch_count": 21,
-      "debug_provider_fetch_count": 20,
-      "debug_progress_stage": "chain_reached",
+      "debug_fetch_count": 5,
+      "debug_provider_fetch_count": 4,
+      "debug_progress_stage": "lookup_only",
       "debug_fetches": [
         {
-          "url": "https://api.themoviedb.org/3/movie/1215638?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Crelease_dates&language=fr-FR&api_key=%3Credacted%3E",
-          "response_url": "https://api.themoviedb.org/3/movie/1215638?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Crelease_dates&language=fr-FR&api_key=%3Credacted%3E",
+          "url": "https://api.themoviedb.org/3/movie/27205?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Crelease_dates&language=fr-FR&api_key=%3Credacted%3E",
+          "response_url": "https://api.themoviedb.org/3/movie/27205?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Crelease_dates&language=fr-FR&api_key=%3Credacted%3E",
           "method": "GET",
           "status": 200,
           "content_type": "application/json",
@@ -1181,689 +138,194 @@
               "production_countries"
             ]
           },
-          "declared_player_candidate_count": 0,
-          "declared_url_player_candidate_count": 0,
-          "declared_indexed_player_candidate_count": 0,
-          "declared_player_hosts": [],
-          "declared_quality_heights": [],
-          "duration_ms": 106
-        },
-        {
-          "url": "https://coflix.wiki/ajax/search/suggest?keyword=Mon%20ninja%20et%20moi%203",
-          "response_url": "https://coflix.wiki/ajax/search/suggest?keyword=Mon%20ninja%20et%20moi%203",
-          "method": "GET",
-          "status": 200,
-          "content_type": "application/json",
-          "challenge": "",
-          "response_shape": {
-            "kind": "json",
-            "top": "object",
-            "keys": [
-              "html",
-              "status"
-            ]
-          },
-          "declared_player_candidate_count": 0,
-          "declared_url_player_candidate_count": 0,
-          "declared_indexed_player_candidate_count": 0,
-          "declared_player_hosts": [],
-          "declared_quality_heights": [],
-          "duration_ms": 220
-        },
-        {
-          "url": "https://coflix.wiki/ajax/search/suggest?keyword=Ternet%20Ninja%203",
-          "response_url": "https://coflix.wiki/ajax/search/suggest?keyword=Ternet%20Ninja%203",
-          "method": "GET",
-          "status": 200,
-          "content_type": "application/json",
-          "challenge": "",
-          "response_shape": {
-            "kind": "json",
-            "top": "object",
-            "keys": [
-              "html",
-              "status"
-            ]
-          },
-          "declared_player_candidate_count": 0,
-          "declared_url_player_candidate_count": 0,
-          "declared_indexed_player_candidate_count": 0,
-          "declared_player_hosts": [],
-          "declared_quality_heights": [],
-          "duration_ms": 166
-        },
-        {
-          "url": "https://coflix.wiki/ajax/search/suggest?keyword=Rutete%20Ninja%203",
-          "response_url": "https://coflix.wiki/ajax/search/suggest?keyword=Rutete%20Ninja%203",
-          "method": "GET",
-          "status": 200,
-          "content_type": "application/json",
-          "challenge": "",
-          "response_shape": {
-            "kind": "json",
-            "top": "object",
-            "keys": [
-              "html",
-              "status"
-            ]
-          },
-          "declared_player_candidate_count": 0,
-          "declared_url_player_candidate_count": 0,
-          "declared_indexed_player_candidate_count": 0,
-          "declared_player_hosts": [],
-          "declared_quality_heights": [],
-          "duration_ms": 168
-        },
-        {
-          "url": "https://coflix.wiki/ajax/search/suggest?keyword=De%20Wraak%20van%20de%20Ninja%203",
-          "response_url": "https://coflix.wiki/ajax/search/suggest?keyword=De%20Wraak%20van%20de%20Ninja%203",
-          "method": "GET",
-          "status": 200,
-          "content_type": "application/json",
-          "challenge": "",
-          "response_shape": {
-            "kind": "json",
-            "top": "object",
-            "keys": [
-              "html",
-              "status"
-            ]
-          },
-          "declared_player_candidate_count": 0,
-          "declared_url_player_candidate_count": 0,
-          "declared_indexed_player_candidate_count": 0,
-          "declared_player_hosts": [],
-          "declared_quality_heights": [],
-          "duration_ms": 166
-        },
-        {
-          "url": "https://coflix.wiki/ajax/search/suggest?keyword=El%20Peque%C3%B1o%20Ninja%3A%20El%20Orig3n",
-          "response_url": "https://coflix.wiki/ajax/search/suggest?keyword=El%20Peque%C3%B1o%20Ninja%3A%20El%20Orig3n",
-          "method": "GET",
-          "status": 200,
-          "content_type": "application/json",
-          "challenge": "",
-          "response_shape": {
-            "kind": "json",
-            "top": "object",
-            "keys": [
-              "html",
-              "status"
-            ]
-          },
-          "declared_player_candidate_count": 0,
-          "declared_url_player_candidate_count": 0,
-          "declared_indexed_player_candidate_count": 0,
-          "declared_player_hosts": [],
-          "declared_quality_heights": [],
-          "duration_ms": 166
-        },
-        {
-          "url": "https://coflix.wiki/ajax/episode/player?episode_id=216381",
-          "response_url": "https://coflix.wiki/ajax/episode/player?episode_id=216381",
-          "method": "POST",
-          "status": 200,
-          "content_type": "application/json",
-          "challenge": "",
-          "response_shape": {
-            "kind": "json",
-            "top": "object",
-            "keys": [
-              "status",
-              "message"
-            ]
-          },
-          "declared_player_candidate_count": 6,
-          "declared_url_player_candidate_count": 6,
+          "declared_player_candidate_count": 1,
+          "declared_url_player_candidate_count": 1,
           "declared_indexed_player_candidate_count": 0,
           "declared_player_hosts": [
-            "coflix.wiki",
-            "kakaflix.lol",
-            "uqload.is",
-            "vidzy.org"
+            "inceptionmovie.warnerbros.com"
           ],
           "declared_quality_heights": [],
-          "duration_ms": 151
+          "duration_ms": 81
         },
         {
-          "url": "https://vidzy.org/embed-fs3psguhnx3j.html",
-          "response_url": "https://vidzy.org/embed-fs3psguhnx3j.html",
+          "url": "https://pengu.uk/%7B%22source_moviebox%22%3A%22on%22%2C%22res_1080%22%3A%22on%22%2C%22disable_direct%22%3A%22on%22%2C%22auth_token%22%3A%22XwZg2rLkLlbjXBeDVCyxgfHXjxN1ijLMkUuToW8KaKc%22%7D/stream/movie/tt1375666.json",
+          "response_url": "https://pengu.uk/%7B%22source_moviebox%22%3A%22on%22%2C%22res_1080%22%3A%22on%22%2C%22disable_direct%22%3A%22on%22%2C%22auth_token%22%3A%22XwZg2rLkLlbjXBeDVCyxgfHXjxN1ijLMkUuToW8KaKc%22%7D/stream/movie/tt1375666.json",
           "method": "GET",
-          "status": 200,
-          "content_type": "text/html",
+          "status": 429,
+          "content_type": "application/json",
           "challenge": "",
           "response_shape": {
-            "kind": "html",
-            "sampleBytes": 65536,
-            "forms": 0,
-            "iframes": 3,
-            "videos": 1,
-            "sources": 0,
-            "scripts": 25,
-            "anchors": 3,
-            "classTokens": [
-              "hidh",
-              "overdiv",
-              "vjs-icon-cast",
-              "vjs-icon-placeholder"
-            ],
-            "idTokens": [
-              "aclib",
-              "adbd",
-              "play_limit_box",
-              "statut-premium",
-              "vjsplayer"
-            ],
-            "classFacts": [
-              {
-                "token": "hidh",
-                "count": 1,
-                "tags": [
-                  "div"
-                ],
-                "selfHref": 0,
-                "nestedAnchors": 1,
-                "signals": []
-              },
-              {
-                "token": "overdiv",
-                "count": 1,
-                "tags": [
-                  "div"
-                ],
-                "selfHref": 0,
-                "nestedAnchors": 1,
-                "signals": []
-              },
-              {
-                "token": "vjs-icon-cast",
-                "count": 1,
-                "tags": [
-                  "0"
-                ],
-                "selfHref": 0,
-                "nestedAnchors": 0,
-                "signals": []
-              },
-              {
-                "token": "vjs-icon-placeholder",
-                "count": 1,
-                "tags": [
-                  "span"
-                ],
-                "selfHref": 0,
-                "nestedAnchors": 0,
-                "signals": []
-              }
-            ],
-            "markers": [
-              "player",
-              "download",
-              "hls-literal",
-              "mp4-literal"
+            "kind": "json",
+            "top": "object",
+            "keys": [
+              "error"
             ]
           },
-          "declared_player_candidate_count": 9,
-          "declared_url_player_candidate_count": 9,
+          "declared_player_candidate_count": 0,
+          "declared_url_player_candidate_count": 0,
           "declared_indexed_player_candidate_count": 0,
-          "declared_player_hosts": [
-            "ms.corantohughes.cyou",
-            "s1.fsvid.lol",
-            "vidzy.org"
-          ],
-          "declared_quality_heights": [
-            360,
-            480,
-            1080
-          ],
-          "duration_ms": 772
+          "declared_player_hosts": [],
+          "declared_quality_heights": [],
+          "duration_ms": 108
         },
         {
-          "url": "https://uqload.is/embed-0z92cetj11gr.html",
-          "response_url": "https://uqload.vc/embed-0z92cetj11gr.html",
+          "url": "https://moviebox-cfa7.onrender.com/eyJyZXNvbHV0aW9uIjpbIjEwODBwIl0sImxhbmd1YWdlIjpbImVuIiwiaGkiLCJvcmlnIl0sInByb3h5X3VybCI6IiIsInByb3ZpZGVycyI6WyJtb2JpbGUiLCJ3ZWIiLCJsZWdhY3kiXSwibmFtZV90ZW1wbGF0ZSI6IvCfjqUgKip7cmVzb2x1dGlvbn0qKiIsInRpdGxlX3RlbXBsYXRlIjoi8J-UiiB7YXVkaW99IHwg8J-SviAqe3NpemV9KlxcbvCfkqwgU3Viczoge3N1YnRpdGxlc30ifQ/stream/movie/tt1375666.json",
+          "response_url": "https://moviebox-cfa7.onrender.com/eyJyZXNvbHV0aW9uIjpbIjEwODBwIl0sImxhbmd1YWdlIjpbImVuIiwiaGkiLCJvcmlnIl0sInByb3h5X3VybCI6IiIsInByb3ZpZGVycyI6WyJtb2JpbGUiLCJ3ZWIiLCJsZWdhY3kiXSwibmFtZV90ZW1wbGF0ZSI6IvCfjqUgKip7cmVzb2x1dGlvbn0qKiIsInRpdGxlX3RlbXBsYXRlIjoi8J-UiiB7YXVkaW99IHwg8J-SviAqe3NpemV9KlxcbvCfkqwgU3Viczoge3N1YnRpdGxlc30ifQ/stream/movie/tt1375666.json",
+          "method": "GET",
+          "status": 404,
+          "content_type": "text/plain",
+          "challenge": "",
+          "response_shape": null,
+          "declared_player_candidate_count": 0,
+          "declared_url_player_candidate_count": 0,
+          "declared_indexed_player_candidate_count": 0,
+          "declared_player_hosts": [],
+          "declared_quality_heights": [],
+          "duration_ms": 148
+        },
+        {
+          "url": "https://vidsrcme.ru/vs_src.php?type=movie&id=27205",
+          "response_url": "https://vidsrcme.ru/vs_src.php?type=movie&id=27205",
           "method": "GET",
           "status": 200,
-          "content_type": "text/html",
+          "content_type": "application/json",
           "challenge": "",
           "response_shape": {
+            "kind": "json",
+            "top": "object",
+            "keys": [
+              "src"
+            ]
+          },
+          "declared_player_candidate_count": 1,
+          "declared_url_player_candidate_count": 1,
+          "declared_indexed_player_candidate_count": 0,
+          "declared_player_hosts": [
+            "cloudorchestranova.com"
+          ],
+          "declared_quality_heights": [],
+          "duration_ms": 251
+        },
+        {
+          "url": "https://cloudorchestranova.com/embed/movie/27205?vs=fchNeXzjYiektdgsjryACxdwGnD8XUOxAv0QiZK2FmaHEnJY7njS_92FQivMxsZ7jZg3TG3oAbPlCthWRotDj0GCCsx0U5xQjqU",
+          "response_url": "https://cloudorchestranova.com/embed/movie/27205?vs=fchNeXzjYiektdgsjryACxdwGnD8XUOxAv0QiZK2FmaHEnJY7njS_92FQivMxsZ7jZg3TG3oAbPlCthWRotDj0GCCsx0U5xQjqU",
+          "method": "GET",
+          "status": 403,
+          "content_type": "text/html",
+          "challenge": "cloudflare",
+          "response_shape": {
             "kind": "html",
-            "sampleBytes": 14747,
+            "sampleBytes": 6001,
             "forms": 0,
             "iframes": 0,
-            "videos": 1,
+            "videos": 0,
             "sources": 0,
-            "scripts": 24,
-            "anchors": 1,
+            "scripts": 1,
+            "anchors": 0,
             "classTokens": [
-              "overdiv"
+              "h2",
+              "main-content",
+              "main-wrapper"
             ],
             "idTokens": [
-              "adbd",
-              "play_limit_box",
-              "vplayer"
+              "challenge-error-text"
             ],
             "classFacts": [
               {
-                "token": "overdiv",
+                "token": "h2",
                 "count": 1,
                 "tags": [
                   "div"
                 ],
                 "selfHref": 0,
-                "nestedAnchors": 1,
+                "nestedAnchors": 0,
                 "signals": [
-                  "4k"
+                  "movie"
+                ]
+              },
+              {
+                "token": "main-content",
+                "count": 1,
+                "tags": [
+                  "div"
+                ],
+                "selfHref": 0,
+                "nestedAnchors": 0,
+                "signals": [
+                  "movie"
+                ]
+              },
+              {
+                "token": "main-wrapper",
+                "count": 1,
+                "tags": [
+                  "div"
+                ],
+                "selfHref": 0,
+                "nestedAnchors": 0,
+                "signals": [
+                  "movie"
                 ]
               }
             ],
             "markers": [
-              "player",
-              "download"
+              "player"
             ]
           },
-          "declared_player_candidate_count": 2,
-          "declared_url_player_candidate_count": 2,
-          "declared_indexed_player_candidate_count": 0,
-          "declared_player_hosts": [
-            "4xfreedom.com",
-            "uqload.vc"
-          ],
-          "declared_quality_heights": [
-            720
-          ],
-          "duration_ms": 879
-        },
-        {
-          "url": "https://vidzy.org/embed-fs3psguhnx3j.html",
-          "response_url": "https://vidzy.org/embed-fs3psguhnx3j.html",
-          "method": "GET",
-          "status": 200,
-          "content_type": "text/html",
-          "challenge": "",
-          "response_shape": {
-            "kind": "html",
-            "sampleBytes": 65536,
-            "forms": 0,
-            "iframes": 3,
-            "videos": 1,
-            "sources": 0,
-            "scripts": 25,
-            "anchors": 3,
-            "classTokens": [
-              "hidh",
-              "overdiv",
-              "vjs-icon-cast",
-              "vjs-icon-placeholder"
-            ],
-            "idTokens": [
-              "aclib",
-              "adbd",
-              "play_limit_box",
-              "statut-premium",
-              "vjsplayer"
-            ],
-            "classFacts": [
-              {
-                "token": "hidh",
-                "count": 1,
-                "tags": [
-                  "div"
-                ],
-                "selfHref": 0,
-                "nestedAnchors": 1,
-                "signals": []
-              },
-              {
-                "token": "overdiv",
-                "count": 1,
-                "tags": [
-                  "div"
-                ],
-                "selfHref": 0,
-                "nestedAnchors": 1,
-                "signals": []
-              },
-              {
-                "token": "vjs-icon-cast",
-                "count": 1,
-                "tags": [
-                  "0"
-                ],
-                "selfHref": 0,
-                "nestedAnchors": 0,
-                "signals": []
-              },
-              {
-                "token": "vjs-icon-placeholder",
-                "count": 1,
-                "tags": [
-                  "span"
-                ],
-                "selfHref": 0,
-                "nestedAnchors": 0,
-                "signals": []
-              }
-            ],
-            "markers": [
-              "player",
-              "download",
-              "hls-literal",
-              "mp4-literal"
-            ]
-          },
-          "declared_player_candidate_count": 9,
-          "declared_url_player_candidate_count": 9,
-          "declared_indexed_player_candidate_count": 0,
-          "declared_player_hosts": [
-            "ms.corantohughes.cyou",
-            "s1.fsvid.lol",
-            "vidzy.org"
-          ],
-          "declared_quality_heights": [
-            360,
-            480,
-            1080
-          ],
-          "duration_ms": 438
-        },
-        {
-          "url": "https://uqload.vc/embed-0z92cetj11gr.html",
-          "response_url": "https://uqload.vc/embed-0z92cetj11gr.html",
-          "method": "GET",
-          "status": 200,
-          "content_type": "text/html",
-          "challenge": "",
-          "response_shape": {
-            "kind": "html",
-            "sampleBytes": 14686,
-            "forms": 0,
-            "iframes": 0,
-            "videos": 1,
-            "sources": 0,
-            "scripts": 24,
-            "anchors": 1,
-            "classTokens": [
-              "overdiv"
-            ],
-            "idTokens": [
-              "adbd",
-              "play_limit_box",
-              "vplayer"
-            ],
-            "classFacts": [
-              {
-                "token": "overdiv",
-                "count": 1,
-                "tags": [
-                  "div"
-                ],
-                "selfHref": 0,
-                "nestedAnchors": 1,
-                "signals": [
-                  "4k"
-                ]
-              }
-            ],
-            "markers": [
-              "player",
-              "download"
-            ]
-          },
-          "declared_player_candidate_count": 2,
-          "declared_url_player_candidate_count": 2,
-          "declared_indexed_player_candidate_count": 0,
-          "declared_player_hosts": [
-            "4xfreedom.com",
-            "uqload.vc"
-          ],
-          "declared_quality_heights": [
-            720
-          ],
-          "duration_ms": 265
-        },
-        {
-          "url": "https://u14.vidzy.cc/hls2/08/00047/fs3psguhnx3j_n/master.m3u8?t=9tDqu0j1TUfq6ZpjPomyOWqt2U-U7gO5LWSssxsU_z4&s=1791055932&e=172800&f=238832&i=0.0&sp=0",
-          "response_url": "https://u14.vidzy.cc/hls2/08/00047/fs3psguhnx3j_n/master.m3u8?t=9tDqu0j1TUfq6ZpjPomyOWqt2U-U7gO5LWSssxsU_z4&s=1791055932&e=172800&f=238832&i=0.0&sp=0",
-          "method": "GET",
-          "status": 200,
-          "content_type": "application/vnd.apple.mpegurl",
-          "challenge": "",
-          "response_shape": null,
           "declared_player_candidate_count": 0,
           "declared_url_player_candidate_count": 0,
           "declared_indexed_player_candidate_count": 0,
           "declared_player_hosts": [],
           "declared_quality_heights": [],
-          "duration_ms": 398
-        },
-        {
-          "url": "https://strm1.uqload.vc/hls2/04/05212/0z92cetj11gr_,n,x,o,.urlset/master.m3u8?t=Icj_QLZ0zM3y1GIP7Q2InvQKBFDa-1fK5Zpc-X85s6Q&s=1791055933&e=14400&v=3715655&i=57.151&sp=0",
-          "response_url": "https://strm1.uqload.vc/hls2/04/05212/0z92cetj11gr_,n,x,o,.urlset/master.m3u8?t=Icj_QLZ0zM3y1GIP7Q2InvQKBFDa-1fK5Zpc-X85s6Q&s=1791055933&e=14400&v=3715655&i=57.151&sp=0",
-          "method": "GET",
-          "status": 200,
-          "content_type": "application/vnd.apple.mpegurl",
-          "challenge": "",
-          "response_shape": null,
-          "declared_player_candidate_count": 0,
-          "declared_url_player_candidate_count": 0,
-          "declared_indexed_player_candidate_count": 0,
-          "declared_player_hosts": [],
-          "declared_quality_heights": [],
-          "duration_ms": 605
-        },
-        {
-          "url": "https://u14.vidzy.cc/hls2/08/00047/fs3psguhnx3j_n/master.m3u8?t=9tDqu0j1TUfq6ZpjPomyOWqt2U-U7gO5LWSssxsU_z4&s=1791055932&e=172800&f=238832&i=0.0&sp=0",
-          "response_url": "https://u14.vidzy.cc/hls2/08/00047/fs3psguhnx3j_n/master.m3u8?t=9tDqu0j1TUfq6ZpjPomyOWqt2U-U7gO5LWSssxsU_z4&s=1791055932&e=172800&f=238832&i=0.0&sp=0",
-          "method": "GET",
-          "status": 200,
-          "content_type": "application/vnd.apple.mpegurl",
-          "challenge": "",
-          "response_shape": null,
-          "declared_player_candidate_count": 0,
-          "declared_url_player_candidate_count": 0,
-          "declared_indexed_player_candidate_count": 0,
-          "declared_player_hosts": [],
-          "declared_quality_heights": [],
-          "duration_ms": 145
-        },
-        {
-          "url": "https://u14.vidzy.cc/hls2/08/00047/fs3psguhnx3j_n/index-v1-a1.m3u8?t=9tDqu0j1TUfq6ZpjPomyOWqt2U-U7gO5LWSssxsU_z4&s=1791055932&e=172800&f=238832&i=0.0&sp=0",
-          "response_url": "https://u14.vidzy.cc/hls2/08/00047/fs3psguhnx3j_n/index-v1-a1.m3u8?t=9tDqu0j1TUfq6ZpjPomyOWqt2U-U7gO5LWSssxsU_z4&s=1791055932&e=172800&f=238832&i=0.0&sp=0",
-          "method": "GET",
-          "status": 200,
-          "content_type": "application/vnd.apple.mpegurl",
-          "challenge": "",
-          "response_shape": null,
-          "declared_player_candidate_count": 0,
-          "declared_url_player_candidate_count": 0,
-          "declared_indexed_player_candidate_count": 0,
-          "declared_player_hosts": [],
-          "declared_quality_heights": [],
-          "duration_ms": 155
-        },
-        {
-          "url": "https://strm1.uqload.vc/hls2/04/05212/0z92cetj11gr_,n,x,o,.urlset/master.m3u8?t=Icj_QLZ0zM3y1GIP7Q2InvQKBFDa-1fK5Zpc-X85s6Q&s=1791055933&e=14400&v=3715655&i=57.151&sp=0",
-          "response_url": "https://strm1.uqload.vc/hls2/04/05212/0z92cetj11gr_,n,x,o,.urlset/master.m3u8?t=Icj_QLZ0zM3y1GIP7Q2InvQKBFDa-1fK5Zpc-X85s6Q&s=1791055933&e=14400&v=3715655&i=57.151&sp=0",
-          "method": "GET",
-          "status": 200,
-          "content_type": "application/vnd.apple.mpegurl",
-          "challenge": "",
-          "response_shape": null,
-          "declared_player_candidate_count": 0,
-          "declared_url_player_candidate_count": 0,
-          "declared_indexed_player_candidate_count": 0,
-          "declared_player_hosts": [],
-          "declared_quality_heights": [],
-          "duration_ms": 413
-        },
-        {
-          "url": "https://strm1.uqload.vc/hls2/04/05212/0z92cetj11gr_n/index-v1-a1.m3u8?t=Icj_QLZ0zM3y1GIP7Q2InvQKBFDa-1fK5Zpc-X85s6Q&s=1791055933&e=14400&v=3715655&i=57.151&sp=0",
-          "response_url": "https://strm1.uqload.vc/hls2/04/05212/0z92cetj11gr_n/index-v1-a1.m3u8?t=Icj_QLZ0zM3y1GIP7Q2InvQKBFDa-1fK5Zpc-X85s6Q&s=1791055933&e=14400&v=3715655&i=57.151&sp=0",
-          "method": "GET",
-          "status": 200,
-          "content_type": "application/vnd.apple.mpegurl",
-          "challenge": "",
-          "response_shape": null,
-          "declared_player_candidate_count": 0,
-          "declared_url_player_candidate_count": 0,
-          "declared_indexed_player_candidate_count": 0,
-          "declared_player_hosts": [],
-          "declared_quality_heights": [],
-          "duration_ms": 136
-        },
-        {
-          "url": "https://u14.vidzy.cc/hls2/08/00047/fs3psguhnx3j_n/master.m3u8?t=9tDqu0j1TUfq6ZpjPomyOWqt2U-U7gO5LWSssxsU_z4&s=1791055932&e=172800&f=238832&i=0.0&sp=0",
-          "response_url": "https://u14.vidzy.cc/hls2/08/00047/fs3psguhnx3j_n/master.m3u8?t=9tDqu0j1TUfq6ZpjPomyOWqt2U-U7gO5LWSssxsU_z4&s=1791055932&e=172800&f=238832&i=0.0&sp=0",
-          "method": "GET",
-          "status": 200,
-          "content_type": "application/vnd.apple.mpegurl",
-          "challenge": "",
-          "response_shape": null,
-          "declared_player_candidate_count": 0,
-          "declared_url_player_candidate_count": 0,
-          "declared_indexed_player_candidate_count": 0,
-          "declared_player_hosts": [],
-          "declared_quality_heights": [],
-          "duration_ms": 132
-        },
-        {
-          "url": "https://strm1.uqload.vc/hls2/04/05212/0z92cetj11gr_,n,x,o,.urlset/master.m3u8?t=Icj_QLZ0zM3y1GIP7Q2InvQKBFDa-1fK5Zpc-X85s6Q&s=1791055933&e=14400&v=3715655&i=57.151&sp=0",
-          "response_url": "https://strm1.uqload.vc/hls2/04/05212/0z92cetj11gr_,n,x,o,.urlset/master.m3u8?t=Icj_QLZ0zM3y1GIP7Q2InvQKBFDa-1fK5Zpc-X85s6Q&s=1791055933&e=14400&v=3715655&i=57.151&sp=0",
-          "method": "GET",
-          "status": 200,
-          "content_type": "application/vnd.apple.mpegurl",
-          "challenge": "",
-          "response_shape": null,
-          "declared_player_candidate_count": 0,
-          "declared_url_player_candidate_count": 0,
-          "declared_indexed_player_candidate_count": 0,
-          "declared_player_hosts": [],
-          "declared_quality_heights": [],
-          "duration_ms": 135
-        },
-        {
-          "url": "https://u14.vidzy.cc/hls2/08/00047/fs3psguhnx3j_n/index-v1-a1.m3u8?t=9tDqu0j1TUfq6ZpjPomyOWqt2U-U7gO5LWSssxsU_z4&s=1791055932&e=172800&f=238832&i=0.0&sp=0",
-          "response_url": "https://u14.vidzy.cc/hls2/08/00047/fs3psguhnx3j_n/index-v1-a1.m3u8?t=9tDqu0j1TUfq6ZpjPomyOWqt2U-U7gO5LWSssxsU_z4&s=1791055932&e=172800&f=238832&i=0.0&sp=0",
-          "method": "GET",
-          "status": 200,
-          "content_type": "application/vnd.apple.mpegurl",
-          "challenge": "",
-          "response_shape": null,
-          "declared_player_candidate_count": 0,
-          "declared_url_player_candidate_count": 0,
-          "declared_indexed_player_candidate_count": 0,
-          "declared_player_hosts": [],
-          "declared_quality_heights": [],
-          "duration_ms": 129
-        },
-        {
-          "url": "https://strm1.uqload.vc/hls2/04/05212/0z92cetj11gr_n/index-v1-a1.m3u8?t=Icj_QLZ0zM3y1GIP7Q2InvQKBFDa-1fK5Zpc-X85s6Q&s=1791055933&e=14400&v=3715655&i=57.151&sp=0",
-          "response_url": "https://strm1.uqload.vc/hls2/04/05212/0z92cetj11gr_n/index-v1-a1.m3u8?t=Icj_QLZ0zM3y1GIP7Q2InvQKBFDa-1fK5Zpc-X85s6Q&s=1791055933&e=14400&v=3715655&i=57.151&sp=0",
-          "method": "GET",
-          "status": 200,
-          "content_type": "application/vnd.apple.mpegurl",
-          "challenge": "",
-          "response_shape": null,
-          "declared_player_candidate_count": 0,
-          "declared_url_player_candidate_count": 0,
-          "declared_indexed_player_candidate_count": 0,
-          "declared_player_hosts": [],
-          "declared_quality_heights": [],
-          "duration_ms": 135
+          "duration_ms": 64
         }
       ],
       "debug_provider_value_trace_v18": null,
       "debug_provider_value_trace_history_v21": [],
       "debug_provider_runtime_dispatch_error_v1": null,
-      "debug_identity_reasons": [
-        {
-          "host": "u14.vidzy.cc",
-          "title": "🎥 Coflix - 480p",
-          "filename": "",
-          "identity_status": "match",
-          "identity_reason": "expected_title_alias",
-          "metadata_status": "match",
-          "metadata_reason": "expected_title_alias",
-          "duration_status": "match",
-          "duration_reason": "fixture_duration_match",
-          "duration_ratio": 0.9967073863636363,
-          "media_kind": "hls",
-          "media_status": 200,
-          "media_error": ""
-        },
-        {
-          "host": "strm1.uqload.vc",
-          "title": "🎥 Coflix - 1080p",
-          "filename": "",
-          "identity_status": "match",
-          "identity_reason": "expected_title_alias",
-          "metadata_status": "match",
-          "metadata_reason": "expected_title_alias",
-          "duration_status": "match",
-          "duration_reason": "fixture_duration_match",
-          "duration_ratio": 0.9967073863636363,
-          "media_kind": "hls",
-          "media_status": 200,
-          "media_error": ""
-        }
-      ],
+      "debug_identity_reasons": [],
       "stderr_tail": "FIELD_TMDB_PROBE_CONTEXT state=core_ready credential_visible=false metadata_hydrated=false dynamic=true core_capability=true\n",
-      "raw": 2,
-      "playable": 2,
-      "verified": 2,
+      "raw": 0,
+      "playable": 0,
+      "verified": 0,
       "contradictions": 0,
       "identity_safe": true,
-      "duration_ms": 30887,
-      "sample_count": 2,
+      "duration_ms": 2879,
+      "sample_count": 4,
       "fanout_fixture_title": "Interstellar",
       "sample_titles": [
         "Interstellar",
-        "Mon ninja et moi 3"
+        "Mon ninja et moi 3",
+        "The Colony",
+        "Inception"
       ],
       "adaptive_rotated": true,
       "samples": [
         {
           "fixture_title": "Interstellar",
           "fixture": {
-            "slug": "health-movie-157336",
             "tmdbId": "157336",
             "mediaType": "movie",
+            "category": "movie",
             "title": "Interstellar",
             "year": 2014
           },
           "status": "no_streams",
-          "debug_stage": "provider_network_exception",
-          "debug_progress_stage": "chain_reached",
+          "debug_stage": "provider_waf_challenge",
+          "debug_progress_stage": "lookup_only",
           "raw": 0,
           "playable": 0,
           "verified": 0,
           "contradictions": 0,
-          "duration_ms": 25005,
+          "duration_ms": 596,
           "streams_returned": 0,
-          "announced_player_candidates": 7,
-          "announced_variant_candidates": 7,
-          "announced_player_hosts": [
-            "1.multiup.us",
-            "doply.net",
-            "filemoon.sx",
-            "sandratableother.com",
-            "uqload.cx",
-            "vidzy.org"
-          ],
-          "announced_quality_heights": [
-            360,
-            480
-          ],
-          "explored_player_requests": 7,
-          "explored_player_hosts": [
-            "1.multiup.us",
-            "doply.net",
-            "filemoon.sx",
-            "sandratableother.com",
-            "uqload.cx",
-            "vidzy.org"
-          ],
-          "variant_fanout_state": "explored-not-resolved"
+          "announced_player_candidates": 0,
+          "announced_variant_candidates": 0,
+          "announced_player_hosts": [],
+          "announced_quality_heights": [],
+          "explored_player_requests": 0,
+          "explored_player_hosts": [],
+          "variant_fanout_state": "not-observed"
         },
         {
           "fixture_title": "Mon ninja et moi 3",
@@ -1874,103 +336,131 @@
             "title": "Mon ninja et moi 3",
             "year": 2025
           },
-          "status": "playable_verified",
-          "debug_stage": "provider_returned_streams",
-          "debug_progress_stage": "chain_reached",
-          "raw": 2,
-          "playable": 2,
-          "verified": 2,
+          "status": "no_streams",
+          "debug_stage": "provider_waf_challenge",
+          "debug_progress_stage": "lookup_only",
+          "raw": 0,
+          "playable": 0,
+          "verified": 0,
           "contradictions": 0,
-          "duration_ms": 4967,
-          "streams_returned": 2,
-          "announced_player_candidates": 6,
-          "announced_variant_candidates": 6,
-          "announced_player_hosts": [
-            "kakaflix.lol",
-            "uqload.is",
-            "vidzy.org"
-          ],
-          "announced_quality_heights": [
-            360,
-            480,
-            720,
-            1080
-          ],
-          "explored_player_requests": 2,
-          "explored_player_hosts": [
-            "uqload.is",
-            "vidzy.org"
-          ],
-          "variant_fanout_state": "returned-subset"
+          "duration_ms": 665,
+          "streams_returned": 0,
+          "announced_player_candidates": 0,
+          "announced_variant_candidates": 0,
+          "announced_player_hosts": [],
+          "announced_quality_heights": [],
+          "explored_player_requests": 0,
+          "explored_player_hosts": [],
+          "variant_fanout_state": "not-observed"
+        },
+        {
+          "fixture_title": "The Colony",
+          "fixture": {
+            "tmdbId": "760873",
+            "mediaType": "movie",
+            "category": "movie",
+            "title": "The Colony",
+            "year": 2021
+          },
+          "status": "no_streams",
+          "debug_stage": "provider_waf_challenge",
+          "debug_progress_stage": "lookup_only",
+          "raw": 0,
+          "playable": 0,
+          "verified": 0,
+          "contradictions": 0,
+          "duration_ms": 776,
+          "streams_returned": 0,
+          "announced_player_candidates": 0,
+          "announced_variant_candidates": 0,
+          "announced_player_hosts": [],
+          "announced_quality_heights": [],
+          "explored_player_requests": 0,
+          "explored_player_hosts": [],
+          "variant_fanout_state": "not-observed"
+        },
+        {
+          "fixture_title": "Inception",
+          "fixture": {
+            "slug": "inception-2010",
+            "tmdbId": "27205",
+            "mediaType": "movie",
+            "category": "movie",
+            "title": "Inception",
+            "year": 2010
+          },
+          "status": "no_streams",
+          "debug_stage": "provider_waf_challenge",
+          "debug_progress_stage": "lookup_only",
+          "raw": 0,
+          "playable": 0,
+          "verified": 0,
+          "contradictions": 0,
+          "duration_ms": 657,
+          "streams_returned": 0,
+          "announced_player_candidates": 0,
+          "announced_variant_candidates": 0,
+          "announced_player_hosts": [],
+          "announced_quality_heights": [],
+          "explored_player_requests": 0,
+          "explored_player_hosts": [],
+          "variant_fanout_state": "not-observed"
         }
       ],
       "provider_budget_seconds": 90,
       "provider_budget_exhausted": false
     },
     {
-      "provider_id": "coflix",
-      "provider_name": "🎥 Coflix",
+      "provider_id": "moviebox",
+      "provider_name": "📦 MovieBox",
       "semantic_type": "tv",
-      "fixture_title": "Breaking Bad",
+      "fixture_title": "Better Call Saul",
       "fixture": {
-        "slug": "health-tv-1396-s1e1",
-        "tmdbId": "1396",
+        "slug": "health-tv-60059-s1e1",
+        "tmdbId": "60059",
         "mediaType": "tv",
-        "title": "Breaking Bad",
-        "year": 2008,
+        "title": "Better Call Saul",
+        "year": 2015,
         "season": 1,
         "episode": 1
       },
-      "streams_returned": 2,
-      "announced_player_candidates": 5,
-      "announced_variant_candidates": 5,
-      "announced_player_hosts": [
-        "1.multiup.us",
-        "flixeo.xyz",
-        "uqload.cx",
-        "vidzy.org"
-      ],
-      "announced_quality_heights": [
-        360,
-        480
-      ],
-      "explored_player_requests": 3,
-      "explored_player_hosts": [
-        "1.multiup.us",
-        "uqload.cx",
-        "vidzy.org"
-      ],
-      "variant_fanout_state": "returned-subset",
-      "status": "playable_verified",
-      "debug_stage": "provider_returned_streams",
+      "streams_returned": 0,
+      "announced_player_candidates": 0,
+      "announced_variant_candidates": 0,
+      "announced_player_hosts": [],
+      "announced_quality_heights": [],
+      "explored_player_requests": 0,
+      "explored_player_hosts": [],
+      "variant_fanout_state": "not-observed",
+      "status": "no_streams",
+      "debug_stage": "provider_waf_challenge",
       "debug_model": {
-        "strategy": "mixed_embed_resolver",
-        "source_runtime_family": "catalogue-html",
+        "strategy": "api_stream_resolver",
+        "source_runtime_family": "stremio-json",
         "reconstruction_state": "learning-clean-seed",
-        "identity_mode": "catalog_search",
-        "requires_tmdb_before_run": true,
+        "identity_mode": "tmdb_direct",
+        "requires_tmdb_before_run": false,
         "supported_types": [
           "movie",
-          "tv",
-          "anime"
+          "tv"
         ],
-        "route_count": 3,
+        "route_count": 2,
         "route_kinds": [
-          "detail",
-          "api"
+          "unknown",
+          "detail"
         ],
         "has_api_recipe": false,
-        "official_site": "https://coflix.group",
-        "official_hub": "https://coflix.domains/",
+        "official_site": "https://moviebox.yachts",
+        "official_hub": "https://moviiebox.lol/",
         "official_api": null
       },
-      "debug_fetch_count": 25,
-      "debug_provider_fetch_count": 23,
-      "debug_progress_stage": "chain_reached",
+      "debug_fetch_count": 5,
+      "debug_provider_fetch_count": 4,
+      "debug_progress_stage": "lookup_only",
       "debug_fetches": [
         {
-          "url": "https://api.themoviedb.org/3/tv/1396?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Ccontent_ratings&language=fr-FR&api_key=%3Credacted%3E",
-          "response_url": "https://api.themoviedb.org/3/tv/1396?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Ccontent_ratings&language=fr-FR&api_key=%3Credacted%3E",
+          "url": "https://api.themoviedb.org/3/tv/60059?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Ccontent_ratings&language=fr-FR&api_key=%3Credacted%3E",
+          "response_url": "https://api.themoviedb.org/3/tv/60059?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Ccontent_ratings&language=fr-FR&api_key=%3Credacted%3E",
           "method": "GET",
           "status": 200,
           "content_type": "application/json",
@@ -2002,11 +492,47 @@
           "declared_indexed_player_candidate_count": 0,
           "declared_player_hosts": [],
           "declared_quality_heights": [],
-          "duration_ms": 132
+          "duration_ms": 76
         },
         {
-          "url": "https://coflix.wiki/ajax/search/suggest?keyword=Breaking%20Bad",
-          "response_url": "https://coflix.wiki/ajax/search/suggest?keyword=Breaking%20Bad",
+          "url": "https://pengu.uk/%7B%22source_moviebox%22%3A%22on%22%2C%22res_1080%22%3A%22on%22%2C%22disable_direct%22%3A%22on%22%2C%22auth_token%22%3A%22XwZg2rLkLlbjXBeDVCyxgfHXjxN1ijLMkUuToW8KaKc%22%7D/stream/series/tt3032476:1:1.json",
+          "response_url": "https://pengu.uk/%7B%22source_moviebox%22%3A%22on%22%2C%22res_1080%22%3A%22on%22%2C%22disable_direct%22%3A%22on%22%2C%22auth_token%22%3A%22XwZg2rLkLlbjXBeDVCyxgfHXjxN1ijLMkUuToW8KaKc%22%7D/stream/series/tt3032476:1:1.json",
+          "method": "GET",
+          "status": 429,
+          "content_type": "application/json",
+          "challenge": "",
+          "response_shape": {
+            "kind": "json",
+            "top": "object",
+            "keys": [
+              "error"
+            ]
+          },
+          "declared_player_candidate_count": 0,
+          "declared_url_player_candidate_count": 0,
+          "declared_indexed_player_candidate_count": 0,
+          "declared_player_hosts": [],
+          "declared_quality_heights": [],
+          "duration_ms": 81
+        },
+        {
+          "url": "https://moviebox-cfa7.onrender.com/eyJyZXNvbHV0aW9uIjpbIjEwODBwIl0sImxhbmd1YWdlIjpbImVuIiwiaGkiLCJvcmlnIl0sInByb3h5X3VybCI6IiIsInByb3ZpZGVycyI6WyJtb2JpbGUiLCJ3ZWIiLCJsZWdhY3kiXSwibmFtZV90ZW1wbGF0ZSI6IvCfjqUgKip7cmVzb2x1dGlvbn0qKiIsInRpdGxlX3RlbXBsYXRlIjoi8J-UiiB7YXVkaW99IHwg8J-SviAqe3NpemV9KlxcbvCfkqwgU3Viczoge3N1YnRpdGxlc30ifQ/stream/series/tt3032476:1:1.json",
+          "response_url": "https://moviebox-cfa7.onrender.com/eyJyZXNvbHV0aW9uIjpbIjEwODBwIl0sImxhbmd1YWdlIjpbImVuIiwiaGkiLCJvcmlnIl0sInByb3h5X3VybCI6IiIsInByb3ZpZGVycyI6WyJtb2JpbGUiLCJ3ZWIiLCJsZWdhY3kiXSwibmFtZV90ZW1wbGF0ZSI6IvCfjqUgKip7cmVzb2x1dGlvbn0qKiIsInRpdGxlX3RlbXBsYXRlIjoi8J-UiiB7YXVkaW99IHwg8J-SviAqe3NpemV9KlxcbvCfkqwgU3Viczoge3N1YnRpdGxlc30ifQ/stream/series/tt3032476:1:1.json",
+          "method": "GET",
+          "status": 404,
+          "content_type": "text/plain",
+          "challenge": "",
+          "response_shape": null,
+          "declared_player_candidate_count": 0,
+          "declared_url_player_candidate_count": 0,
+          "declared_indexed_player_candidate_count": 0,
+          "declared_player_hosts": [],
+          "declared_quality_heights": [],
+          "duration_ms": 236
+        },
+        {
+          "url": "https://vidsrcme.ru/vs_src.php?type=tv&id=60059&season=1&episode=1",
+          "response_url": "https://vidsrcme.ru/vs_src.php?type=tv&id=60059&season=1&episode=1",
           "method": "GET",
           "status": 200,
           "content_type": "application/json",
@@ -2015,686 +541,68 @@
             "kind": "json",
             "top": "object",
             "keys": [
-              "html",
-              "status"
+              "src"
             ]
           },
-          "declared_player_candidate_count": 2,
-          "declared_url_player_candidate_count": 2,
+          "declared_player_candidate_count": 1,
+          "declared_url_player_candidate_count": 1,
           "declared_indexed_player_candidate_count": 0,
           "declared_player_hosts": [
-            "coflix.wiki"
+            "cloudorchestranova.com"
           ],
           "declared_quality_heights": [],
-          "duration_ms": 457
+          "duration_ms": 251
         },
         {
-          "url": "https://coflix.wiki/film/untold-raygun-breaking-badly-vostfr/",
-          "response_url": "https://coflix.wiki/film/untold-raygun-breaking-badly-vostfr/",
+          "url": "https://cloudorchestranova.com/embed/tv/60059/1/1?vs=noVXamVwP3E487OWDMdwpCqPMdEDoCapmV43OCBrEQpeYfwlarasYpaA0UBwxbHUSiCOdJqog14Mdw2lCaPTuyqYN6MwXskz88Q",
+          "response_url": "https://cloudorchestranova.com/embed/tv/60059/1/1?vs=noVXamVwP3E487OWDMdwpCqPMdEDoCapmV43OCBrEQpeYfwlarasYpaA0UBwxbHUSiCOdJqog14Mdw2lCaPTuyqYN6MwXskz88Q",
           "method": "GET",
-          "status": 200,
+          "status": 403,
           "content_type": "text/html",
-          "challenge": "",
+          "challenge": "cloudflare",
           "response_shape": {
             "kind": "html",
-            "sampleBytes": 21405,
-            "forms": 1,
+            "sampleBytes": 6004,
+            "forms": 0,
             "iframes": 0,
             "videos": 0,
             "sources": 0,
-            "scripts": 14,
-            "anchors": 24,
+            "scripts": 1,
+            "anchors": 0,
             "classTokens": [
-              "hover-wrap",
-              "inner",
-              "item",
-              "version",
-              "body",
-              "title",
-              "start",
-              "tab",
-              "active-type",
-              "addthis_inline_share_toolbox",
-              "alert-player",
-              "aside-wrapper",
-              "backdrop",
-              "bl-meta",
-              "closeButton",
-              "container"
+              "h2",
+              "main-content",
+              "main-wrapper"
             ],
             "idTokens": [
-              "banner-left",
-              "banner-right",
-              "body",
-              "episodes",
-              "mask-overlay",
-              "menu",
-              "menu-toggler",
-              "ngang-pc",
-              "player",
-              "player-wrapper",
-              "related",
-              "search"
+              "challenge-error-text"
             ],
             "classFacts": [
               {
-                "token": "hover-wrap",
-                "count": 7,
-                "tags": [
-                  "div"
-                ],
-                "selfHref": 0,
-                "nestedAnchors": 24,
-                "signals": [
-                  "year"
-                ]
-              },
-              {
-                "token": "inner",
-                "count": 7,
-                "tags": [
-                  "div"
-                ],
-                "selfHref": 0,
-                "nestedAnchors": 24,
-                "signals": [
-                  "year"
-                ]
-              },
-              {
-                "token": "item",
-                "count": 7,
-                "tags": [
-                  "div"
-                ],
-                "selfHref": 0,
-                "nestedAnchors": 24,
-                "signals": [
-                  "year"
-                ]
-              },
-              {
-                "token": "version",
-                "count": 7,
-                "tags": [
-                  "div"
-                ],
-                "selfHref": 0,
-                "nestedAnchors": 24,
-                "signals": [
-                  "year"
-                ]
-              },
-              {
-                "token": "body",
-                "count": 3,
-                "tags": [
-                  "div"
-                ],
-                "selfHref": 0,
-                "nestedAnchors": 15,
-                "signals": [
-                  "movie",
-                  "year"
-                ]
-              },
-              {
-                "token": "title",
-                "count": 11,
-                "tags": [
-                  "span",
-                  "h1",
-                  "h2",
-                  "a"
-                ],
-                "selfHref": 7,
-                "nestedAnchors": 24,
-                "signals": [
-                  "movie",
-                  "year"
-                ]
-              },
-              {
-                "token": "start",
-                "count": 2,
-                "tags": [
-                  "div"
-                ],
-                "selfHref": 0,
-                "nestedAnchors": 19,
-                "signals": [
-                  "movie"
-                ]
-              },
-              {
-                "token": "tab",
-                "count": 4,
-                "tags": [
-                  "span",
-                  "div"
-                ],
-                "selfHref": 0,
-                "nestedAnchors": 0,
-                "signals": [
-                  "year"
-                ]
-              }
-            ],
-            "markers": [
-              "player",
-              "episode"
-            ]
-          },
-          "declared_player_candidate_count": 20,
-          "declared_url_player_candidate_count": 20,
-          "declared_indexed_player_candidate_count": 0,
-          "declared_player_hosts": [
-            "coflix.wiki"
-          ],
-          "declared_quality_heights": [
-            1080
-          ],
-          "duration_ms": 190
-        },
-        {
-          "url": "https://coflix.wiki/ajax/episode/list-episode?movieId=35082",
-          "response_url": "https://coflix.wiki/ajax/episode/list-episode?movieId=35082",
-          "method": "GET",
-          "status": 200,
-          "content_type": "application/json",
-          "challenge": "",
-          "response_shape": {
-            "kind": "json",
-            "top": "object",
-            "keys": [
-              "html",
-              "status",
-              "totalItems"
-            ]
-          },
-          "declared_player_candidate_count": 0,
-          "declared_url_player_candidate_count": 0,
-          "declared_indexed_player_candidate_count": 0,
-          "declared_player_hosts": [],
-          "declared_quality_heights": [],
-          "duration_ms": 142
-        },
-        {
-          "url": "https://coflix.wiki/film/untold-raygun-breaking-badly-vf/",
-          "response_url": "https://coflix.wiki/film/untold-raygun-breaking-badly-vf/",
-          "method": "GET",
-          "status": 200,
-          "content_type": "text/html",
-          "challenge": "",
-          "response_shape": {
-            "kind": "html",
-            "sampleBytes": 21104,
-            "forms": 1,
-            "iframes": 0,
-            "videos": 0,
-            "sources": 0,
-            "scripts": 14,
-            "anchors": 24,
-            "classTokens": [
-              "hover-wrap",
-              "inner",
-              "item",
-              "version",
-              "body",
-              "title",
-              "start",
-              "tab",
-              "active-type",
-              "addthis_inline_share_toolbox",
-              "alert-player",
-              "aside-wrapper",
-              "backdrop",
-              "bl-meta",
-              "closeButton",
-              "container"
-            ],
-            "idTokens": [
-              "banner-left",
-              "banner-right",
-              "body",
-              "episodes",
-              "mask-overlay",
-              "menu",
-              "menu-toggler",
-              "ngang-pc",
-              "player",
-              "player-wrapper",
-              "related",
-              "search"
-            ],
-            "classFacts": [
-              {
-                "token": "hover-wrap",
-                "count": 7,
-                "tags": [
-                  "div"
-                ],
-                "selfHref": 0,
-                "nestedAnchors": 24,
-                "signals": [
-                  "year"
-                ]
-              },
-              {
-                "token": "inner",
-                "count": 7,
-                "tags": [
-                  "div"
-                ],
-                "selfHref": 0,
-                "nestedAnchors": 24,
-                "signals": [
-                  "year"
-                ]
-              },
-              {
-                "token": "item",
-                "count": 7,
-                "tags": [
-                  "div"
-                ],
-                "selfHref": 0,
-                "nestedAnchors": 24,
-                "signals": [
-                  "year"
-                ]
-              },
-              {
-                "token": "version",
-                "count": 7,
-                "tags": [
-                  "div"
-                ],
-                "selfHref": 0,
-                "nestedAnchors": 24,
-                "signals": [
-                  "year"
-                ]
-              },
-              {
-                "token": "body",
-                "count": 3,
-                "tags": [
-                  "div"
-                ],
-                "selfHref": 0,
-                "nestedAnchors": 15,
-                "signals": [
-                  "movie",
-                  "year"
-                ]
-              },
-              {
-                "token": "title",
-                "count": 11,
-                "tags": [
-                  "span",
-                  "h1",
-                  "h2",
-                  "a"
-                ],
-                "selfHref": 7,
-                "nestedAnchors": 24,
-                "signals": [
-                  "movie",
-                  "year"
-                ]
-              },
-              {
-                "token": "start",
-                "count": 2,
-                "tags": [
-                  "div"
-                ],
-                "selfHref": 0,
-                "nestedAnchors": 19,
-                "signals": [
-                  "movie"
-                ]
-              },
-              {
-                "token": "tab",
-                "count": 4,
-                "tags": [
-                  "span",
-                  "div"
-                ],
-                "selfHref": 0,
-                "nestedAnchors": 0,
-                "signals": [
-                  "year"
-                ]
-              }
-            ],
-            "markers": [
-              "player",
-              "episode"
-            ]
-          },
-          "declared_player_candidate_count": 17,
-          "declared_url_player_candidate_count": 17,
-          "declared_indexed_player_candidate_count": 0,
-          "declared_player_hosts": [
-            "coflix.wiki"
-          ],
-          "declared_quality_heights": [
-            1080
-          ],
-          "duration_ms": 193
-        },
-        {
-          "url": "https://coflix.wiki/ajax/episode/list-episode?movieId=35081",
-          "response_url": "https://coflix.wiki/ajax/episode/list-episode?movieId=35081",
-          "method": "GET",
-          "status": 200,
-          "content_type": "application/json",
-          "challenge": "",
-          "response_shape": {
-            "kind": "json",
-            "top": "object",
-            "keys": [
-              "html",
-              "status",
-              "totalItems"
-            ]
-          },
-          "declared_player_candidate_count": 0,
-          "declared_url_player_candidate_count": 0,
-          "declared_indexed_player_candidate_count": 0,
-          "declared_player_hosts": [],
-          "declared_quality_heights": [],
-          "duration_ms": 144
-        },
-        {
-          "url": "https://coflix.wiki/film/Breaking-Bad-Saison-5/",
-          "response_url": "https://coflix.wiki/film/Breaking-Bad-Saison-5/",
-          "method": "GET",
-          "status": 200,
-          "content_type": "text/html",
-          "challenge": "",
-          "response_shape": {
-            "kind": "html",
-            "sampleBytes": 20976,
-            "forms": 1,
-            "iframes": 0,
-            "videos": 0,
-            "sources": 0,
-            "scripts": 14,
-            "anchors": 25,
-            "classTokens": [
-              "hover-wrap",
-              "inner",
-              "item",
-              "version",
-              "body",
-              "title",
-              "start",
-              "tab",
-              "active-type",
-              "addthis_inline_share_toolbox",
-              "alert-player",
-              "aside-wrapper",
-              "backdrop",
-              "bl-meta",
-              "closeButton",
-              "container"
-            ],
-            "idTokens": [
-              "banner-left",
-              "banner-right",
-              "body",
-              "episodes",
-              "mask-overlay",
-              "menu",
-              "menu-toggler",
-              "ngang-pc",
-              "player",
-              "player-wrapper",
-              "related",
-              "search"
-            ],
-            "classFacts": [
-              {
-                "token": "hover-wrap",
-                "count": 7,
-                "tags": [
-                  "div"
-                ],
-                "selfHref": 0,
-                "nestedAnchors": 24,
-                "signals": [
-                  "year"
-                ]
-              },
-              {
-                "token": "inner",
-                "count": 7,
-                "tags": [
-                  "div"
-                ],
-                "selfHref": 0,
-                "nestedAnchors": 24,
-                "signals": [
-                  "year"
-                ]
-              },
-              {
-                "token": "item",
-                "count": 7,
-                "tags": [
-                  "div"
-                ],
-                "selfHref": 0,
-                "nestedAnchors": 24,
-                "signals": [
-                  "year"
-                ]
-              },
-              {
-                "token": "version",
-                "count": 7,
-                "tags": [
-                  "div"
-                ],
-                "selfHref": 0,
-                "nestedAnchors": 24,
-                "signals": [
-                  "year"
-                ]
-              },
-              {
-                "token": "body",
-                "count": 3,
-                "tags": [
-                  "div"
-                ],
-                "selfHref": 0,
-                "nestedAnchors": 16,
-                "signals": [
-                  "series",
-                  "year"
-                ]
-              },
-              {
-                "token": "title",
-                "count": 11,
-                "tags": [
-                  "span",
-                  "h1",
-                  "h2",
-                  "a"
-                ],
-                "selfHref": 7,
-                "nestedAnchors": 24,
-                "signals": [
-                  "series",
-                  "year"
-                ]
-              },
-              {
-                "token": "start",
-                "count": 2,
-                "tags": [
-                  "div"
-                ],
-                "selfHref": 0,
-                "nestedAnchors": 20,
-                "signals": [
-                  "movie",
-                  "series"
-                ]
-              },
-              {
-                "token": "tab",
-                "count": 4,
-                "tags": [
-                  "span",
-                  "div"
-                ],
-                "selfHref": 0,
-                "nestedAnchors": 0,
-                "signals": [
-                  "year"
-                ]
-              }
-            ],
-            "markers": [
-              "player",
-              "episode"
-            ]
-          },
-          "declared_player_candidate_count": 14,
-          "declared_url_player_candidate_count": 14,
-          "declared_indexed_player_candidate_count": 0,
-          "declared_player_hosts": [
-            "coflix.wiki"
-          ],
-          "declared_quality_heights": [
-            1080
-          ],
-          "duration_ms": 195
-        },
-        {
-          "url": "https://coflix.wiki/ajax/episode/list-episode?movieId=20729",
-          "response_url": "https://coflix.wiki/ajax/episode/list-episode?movieId=20729",
-          "method": "GET",
-          "status": 200,
-          "content_type": "application/json",
-          "challenge": "",
-          "response_shape": {
-            "kind": "json",
-            "top": "object",
-            "keys": [
-              "html",
-              "status",
-              "totalItems"
-            ]
-          },
-          "declared_player_candidate_count": 0,
-          "declared_url_player_candidate_count": 0,
-          "declared_indexed_player_candidate_count": 0,
-          "declared_player_hosts": [],
-          "declared_quality_heights": [],
-          "duration_ms": 143
-        },
-        {
-          "url": "https://coflix.wiki/ajax/episode/player?episode_id=188289",
-          "response_url": "https://coflix.wiki/ajax/episode/player?episode_id=188289",
-          "method": "POST",
-          "status": 200,
-          "content_type": "application/json",
-          "challenge": "",
-          "response_shape": {
-            "kind": "json",
-            "top": "object",
-            "keys": [
-              "status",
-              "message"
-            ]
-          },
-          "declared_player_candidate_count": 5,
-          "declared_url_player_candidate_count": 5,
-          "declared_indexed_player_candidate_count": 0,
-          "declared_player_hosts": [
-            "1.multiup.us",
-            "coflix.wiki",
-            "flixeo.xyz",
-            "uqload.cx",
-            "vidzy.org"
-          ],
-          "declared_quality_heights": [],
-          "duration_ms": 142
-        },
-        {
-          "url": "https://vidzy.org/embed-f5ms3hzmsvri.html",
-          "response_url": "https://vidzy.org/embed-f5ms3hzmsvri.html",
-          "method": "GET",
-          "status": 200,
-          "content_type": "text/html",
-          "challenge": "",
-          "response_shape": {
-            "kind": "html",
-            "sampleBytes": 65536,
-            "forms": 0,
-            "iframes": 3,
-            "videos": 1,
-            "sources": 0,
-            "scripts": 25,
-            "anchors": 3,
-            "classTokens": [
-              "hidh",
-              "overdiv",
-              "vjs-icon-cast",
-              "vjs-icon-placeholder"
-            ],
-            "idTokens": [
-              "aclib",
-              "adbd",
-              "play_limit_box",
-              "statut-premium",
-              "vjsplayer"
-            ],
-            "classFacts": [
-              {
-                "token": "hidh",
+                "token": "h2",
                 "count": 1,
                 "tags": [
                   "div"
-                ],
-                "selfHref": 0,
-                "nestedAnchors": 1,
-                "signals": []
-              },
-              {
-                "token": "overdiv",
-                "count": 1,
-                "tags": [
-                  "div"
-                ],
-                "selfHref": 0,
-                "nestedAnchors": 1,
-                "signals": []
-              },
-              {
-                "token": "vjs-icon-cast",
-                "count": 1,
-                "tags": [
-                  "0"
                 ],
                 "selfHref": 0,
                 "nestedAnchors": 0,
                 "signals": []
               },
               {
-                "token": "vjs-icon-placeholder",
+                "token": "main-content",
                 "count": 1,
                 "tags": [
-                  "span"
+                  "div"
+                ],
+                "selfHref": 0,
+                "nestedAnchors": 0,
+                "signals": []
+              },
+              {
+                "token": "main-wrapper",
+                "count": 1,
+                "tags": [
+                  "div"
                 ],
                 "selfHref": 0,
                 "nestedAnchors": 0,
@@ -2702,261 +610,7 @@
               }
             ],
             "markers": [
-              "player",
-              "download",
-              "hls-literal",
-              "mp4-literal"
-            ]
-          },
-          "declared_player_candidate_count": 9,
-          "declared_url_player_candidate_count": 9,
-          "declared_indexed_player_candidate_count": 0,
-          "declared_player_hosts": [
-            "ms.corantohughes.cyou",
-            "s1.fsvid.lol",
-            "vidzy.org"
-          ],
-          "declared_quality_heights": [
-            360,
-            480
-          ],
-          "duration_ms": 496
-        },
-        {
-          "url": "https://uqload.cx/embed-z7ut9g9iicwq.html",
-          "response_url": "https://uqload.vc/embed-z7ut9g9iicwq.html?utm_source=mirror_cx&",
-          "method": "GET",
-          "status": 200,
-          "content_type": "text/html",
-          "challenge": "",
-          "response_shape": {
-            "kind": "html",
-            "sampleBytes": 14647,
-            "forms": 0,
-            "iframes": 0,
-            "videos": 1,
-            "sources": 0,
-            "scripts": 24,
-            "anchors": 1,
-            "classTokens": [
-              "overdiv"
-            ],
-            "idTokens": [
-              "adbd",
-              "play_limit_box",
-              "vplayer"
-            ],
-            "classFacts": [
-              {
-                "token": "overdiv",
-                "count": 1,
-                "tags": [
-                  "div"
-                ],
-                "selfHref": 0,
-                "nestedAnchors": 1,
-                "signals": [
-                  "4k"
-                ]
-              }
-            ],
-            "markers": [
-              "player",
-              "download"
-            ]
-          },
-          "declared_player_candidate_count": 2,
-          "declared_url_player_candidate_count": 2,
-          "declared_indexed_player_candidate_count": 0,
-          "declared_player_hosts": [
-            "4xfreedom.com",
-            "uqload.vc"
-          ],
-          "declared_quality_heights": [
-            360
-          ],
-          "duration_ms": 645
-        },
-        {
-          "url": "https://1.multiup.us/e/mFGcFQ98F4hf",
-          "response_url": "",
-          "method": "GET",
-          "status": 0,
-          "duration_ms": 10487,
-          "error": "TypeError"
-        },
-        {
-          "url": "https://vidzy.org/embed-f5ms3hzmsvri.html",
-          "response_url": "https://vidzy.org/embed-f5ms3hzmsvri.html",
-          "method": "GET",
-          "status": 200,
-          "content_type": "text/html",
-          "challenge": "",
-          "response_shape": {
-            "kind": "html",
-            "sampleBytes": 65536,
-            "forms": 0,
-            "iframes": 3,
-            "videos": 1,
-            "sources": 0,
-            "scripts": 25,
-            "anchors": 3,
-            "classTokens": [
-              "hidh",
-              "overdiv",
-              "vjs-icon-cast",
-              "vjs-icon-placeholder"
-            ],
-            "idTokens": [
-              "aclib",
-              "adbd",
-              "play_limit_box",
-              "statut-premium",
-              "vjsplayer"
-            ],
-            "classFacts": [
-              {
-                "token": "hidh",
-                "count": 1,
-                "tags": [
-                  "div"
-                ],
-                "selfHref": 0,
-                "nestedAnchors": 1,
-                "signals": []
-              },
-              {
-                "token": "overdiv",
-                "count": 1,
-                "tags": [
-                  "div"
-                ],
-                "selfHref": 0,
-                "nestedAnchors": 1,
-                "signals": []
-              },
-              {
-                "token": "vjs-icon-cast",
-                "count": 1,
-                "tags": [
-                  "0"
-                ],
-                "selfHref": 0,
-                "nestedAnchors": 0,
-                "signals": []
-              },
-              {
-                "token": "vjs-icon-placeholder",
-                "count": 1,
-                "tags": [
-                  "span"
-                ],
-                "selfHref": 0,
-                "nestedAnchors": 0,
-                "signals": []
-              }
-            ],
-            "markers": [
-              "player",
-              "download",
-              "hls-literal",
-              "mp4-literal"
-            ]
-          },
-          "declared_player_candidate_count": 9,
-          "declared_url_player_candidate_count": 9,
-          "declared_indexed_player_candidate_count": 0,
-          "declared_player_hosts": [
-            "ms.corantohughes.cyou",
-            "s1.fsvid.lol",
-            "vidzy.org"
-          ],
-          "declared_quality_heights": [
-            360,
-            480
-          ],
-          "duration_ms": 827
-        },
-        {
-          "url": "https://uqload.vc/embed-z7ut9g9iicwq.html?utm_source=mirror_cx&",
-          "response_url": "https://uqload.vc/embed-z7ut9g9iicwq.html?utm_source=mirror_cx&",
-          "method": "GET",
-          "status": 200,
-          "content_type": "text/html",
-          "challenge": "",
-          "response_shape": {
-            "kind": "html",
-            "sampleBytes": 14586,
-            "forms": 0,
-            "iframes": 0,
-            "videos": 1,
-            "sources": 0,
-            "scripts": 24,
-            "anchors": 1,
-            "classTokens": [
-              "overdiv"
-            ],
-            "idTokens": [
-              "adbd",
-              "play_limit_box",
-              "vplayer"
-            ],
-            "classFacts": [
-              {
-                "token": "overdiv",
-                "count": 1,
-                "tags": [
-                  "div"
-                ],
-                "selfHref": 0,
-                "nestedAnchors": 1,
-                "signals": [
-                  "4k"
-                ]
-              }
-            ],
-            "markers": [
-              "player",
-              "download"
-            ]
-          },
-          "declared_player_candidate_count": 2,
-          "declared_url_player_candidate_count": 2,
-          "declared_indexed_player_candidate_count": 0,
-          "declared_player_hosts": [
-            "4xfreedom.com",
-            "uqload.vc"
-          ],
-          "declared_quality_heights": [
-            360
-          ],
-          "duration_ms": 278
-        },
-        {
-          "url": "https://api.themoviedb.org/3/tv/1396/season/1/episode/1?language=fr-FR&api_key=%3Credacted%3E",
-          "response_url": "https://api.themoviedb.org/3/tv/1396/season/1/episode/1?language=fr-FR&api_key=%3Credacted%3E",
-          "method": "GET",
-          "status": 200,
-          "content_type": "application/json",
-          "challenge": "",
-          "response_shape": {
-            "kind": "json",
-            "top": "object",
-            "keys": [
-              "air_date",
-              "crew",
-              "episode_number",
-              "episode_type",
-              "guest_stars",
-              "name",
-              "overview",
-              "id",
-              "production_code",
-              "runtime",
-              "season_number",
-              "still_path",
-              "vote_average",
-              "vote_count"
+              "player"
             ]
           },
           "declared_player_candidate_count": 0,
@@ -2964,247 +618,142 @@
           "declared_indexed_player_candidate_count": 0,
           "declared_player_hosts": [],
           "declared_quality_heights": [],
-          "duration_ms": 95
-        },
-        {
-          "url": "https://u14.vidzy.cc/hls2/06/00014/f5ms3hzmsvri_n/master.m3u8?t=TJ0MwC3LmnzAHX_2Svjdoy_1DC_QSAplx90M2Ft_fGM&s=1791055907&e=172800&f=74553&i=0.0&sp=0",
-          "response_url": "https://u14.vidzy.cc/hls2/06/00014/f5ms3hzmsvri_n/master.m3u8?t=TJ0MwC3LmnzAHX_2Svjdoy_1DC_QSAplx90M2Ft_fGM&s=1791055907&e=172800&f=74553&i=0.0&sp=0",
-          "method": "GET",
-          "status": 200,
-          "content_type": "application/vnd.apple.mpegurl",
-          "challenge": "",
-          "response_shape": null,
-          "declared_player_candidate_count": 0,
-          "declared_url_player_candidate_count": 0,
-          "declared_indexed_player_candidate_count": 0,
-          "declared_player_hosts": [],
-          "declared_quality_heights": [],
-          "duration_ms": 453
-        },
-        {
-          "url": "https://strm1.uqload.vc/hls2/02/02497/z7ut9g9iicwq_n/master.m3u8?t=vhAjkalvEyW7Zq65xq1Py73G6-4ppZ8NCkGkfA41U_g&s=1791055908&e=14400&v=3710755&i=57.151&sp=0",
-          "response_url": "https://strm1.uqload.vc/hls2/02/02497/z7ut9g9iicwq_n/master.m3u8?t=vhAjkalvEyW7Zq65xq1Py73G6-4ppZ8NCkGkfA41U_g&s=1791055908&e=14400&v=3710755&i=57.151&sp=0",
-          "method": "GET",
-          "status": 200,
-          "content_type": "application/vnd.apple.mpegurl",
-          "challenge": "",
-          "response_shape": null,
-          "declared_player_candidate_count": 0,
-          "declared_url_player_candidate_count": 0,
-          "declared_indexed_player_candidate_count": 0,
-          "declared_player_hosts": [],
-          "declared_quality_heights": [],
-          "duration_ms": 537
-        },
-        {
-          "url": "https://u14.vidzy.cc/hls2/06/00014/f5ms3hzmsvri_n/master.m3u8?t=TJ0MwC3LmnzAHX_2Svjdoy_1DC_QSAplx90M2Ft_fGM&s=1791055907&e=172800&f=74553&i=0.0&sp=0",
-          "response_url": "https://u14.vidzy.cc/hls2/06/00014/f5ms3hzmsvri_n/master.m3u8?t=TJ0MwC3LmnzAHX_2Svjdoy_1DC_QSAplx90M2Ft_fGM&s=1791055907&e=172800&f=74553&i=0.0&sp=0",
-          "method": "GET",
-          "status": 200,
-          "content_type": "application/vnd.apple.mpegurl",
-          "challenge": "",
-          "response_shape": null,
-          "declared_player_candidate_count": 0,
-          "declared_url_player_candidate_count": 0,
-          "declared_indexed_player_candidate_count": 0,
-          "declared_player_hosts": [],
-          "declared_quality_heights": [],
-          "duration_ms": 135
-        },
-        {
-          "url": "https://u14.vidzy.cc/hls2/06/00014/f5ms3hzmsvri_n/index-v1-a1.m3u8?t=TJ0MwC3LmnzAHX_2Svjdoy_1DC_QSAplx90M2Ft_fGM&s=1791055907&e=172800&f=74553&i=0.0&sp=0",
-          "response_url": "https://u14.vidzy.cc/hls2/06/00014/f5ms3hzmsvri_n/index-v1-a1.m3u8?t=TJ0MwC3LmnzAHX_2Svjdoy_1DC_QSAplx90M2Ft_fGM&s=1791055907&e=172800&f=74553&i=0.0&sp=0",
-          "method": "GET",
-          "status": 200,
-          "content_type": "application/vnd.apple.mpegurl",
-          "challenge": "",
-          "response_shape": null,
-          "declared_player_candidate_count": 0,
-          "declared_url_player_candidate_count": 0,
-          "declared_indexed_player_candidate_count": 0,
-          "declared_player_hosts": [],
-          "declared_quality_heights": [],
-          "duration_ms": 134
-        },
-        {
-          "url": "https://strm1.uqload.vc/hls2/02/02497/z7ut9g9iicwq_n/master.m3u8?t=vhAjkalvEyW7Zq65xq1Py73G6-4ppZ8NCkGkfA41U_g&s=1791055908&e=14400&v=3710755&i=57.151&sp=0",
-          "response_url": "https://strm1.uqload.vc/hls2/02/02497/z7ut9g9iicwq_n/master.m3u8?t=vhAjkalvEyW7Zq65xq1Py73G6-4ppZ8NCkGkfA41U_g&s=1791055908&e=14400&v=3710755&i=57.151&sp=0",
-          "method": "GET",
-          "status": 200,
-          "content_type": "application/vnd.apple.mpegurl",
-          "challenge": "",
-          "response_shape": null,
-          "declared_player_candidate_count": 0,
-          "declared_url_player_candidate_count": 0,
-          "declared_indexed_player_candidate_count": 0,
-          "declared_player_hosts": [],
-          "declared_quality_heights": [],
-          "duration_ms": 414
-        },
-        {
-          "url": "https://strm1.uqload.vc/hls2/02/02497/z7ut9g9iicwq_n/index-v1-a1.m3u8?t=vhAjkalvEyW7Zq65xq1Py73G6-4ppZ8NCkGkfA41U_g&s=1791055908&e=14400&v=3710755&i=57.151&sp=0",
-          "response_url": "https://strm1.uqload.vc/hls2/02/02497/z7ut9g9iicwq_n/index-v1-a1.m3u8?t=vhAjkalvEyW7Zq65xq1Py73G6-4ppZ8NCkGkfA41U_g&s=1791055908&e=14400&v=3710755&i=57.151&sp=0",
-          "method": "GET",
-          "status": 200,
-          "content_type": "application/vnd.apple.mpegurl",
-          "challenge": "",
-          "response_shape": null,
-          "declared_player_candidate_count": 0,
-          "declared_url_player_candidate_count": 0,
-          "declared_indexed_player_candidate_count": 0,
-          "declared_player_hosts": [],
-          "declared_quality_heights": [],
-          "duration_ms": 132
-        },
-        {
-          "url": "https://strm1.uqload.vc/hls2/02/02497/z7ut9g9iicwq_n/master.m3u8?t=vhAjkalvEyW7Zq65xq1Py73G6-4ppZ8NCkGkfA41U_g&s=1791055908&e=14400&v=3710755&i=57.151&sp=0",
-          "response_url": "https://strm1.uqload.vc/hls2/02/02497/z7ut9g9iicwq_n/master.m3u8?t=vhAjkalvEyW7Zq65xq1Py73G6-4ppZ8NCkGkfA41U_g&s=1791055908&e=14400&v=3710755&i=57.151&sp=0",
-          "method": "GET",
-          "status": 200,
-          "content_type": "application/vnd.apple.mpegurl",
-          "challenge": "",
-          "response_shape": null,
-          "declared_player_candidate_count": 0,
-          "declared_url_player_candidate_count": 0,
-          "declared_indexed_player_candidate_count": 0,
-          "declared_player_hosts": [],
-          "declared_quality_heights": [],
-          "duration_ms": 132
-        },
-        {
-          "url": "https://u14.vidzy.cc/hls2/06/00014/f5ms3hzmsvri_n/master.m3u8?t=TJ0MwC3LmnzAHX_2Svjdoy_1DC_QSAplx90M2Ft_fGM&s=1791055907&e=172800&f=74553&i=0.0&sp=0",
-          "response_url": "https://u14.vidzy.cc/hls2/06/00014/f5ms3hzmsvri_n/master.m3u8?t=TJ0MwC3LmnzAHX_2Svjdoy_1DC_QSAplx90M2Ft_fGM&s=1791055907&e=172800&f=74553&i=0.0&sp=0",
-          "method": "GET",
-          "status": 200,
-          "content_type": "application/vnd.apple.mpegurl",
-          "challenge": "",
-          "response_shape": null,
-          "declared_player_candidate_count": 0,
-          "declared_url_player_candidate_count": 0,
-          "declared_indexed_player_candidate_count": 0,
-          "declared_player_hosts": [],
-          "declared_quality_heights": [],
-          "duration_ms": 135
-        },
-        {
-          "url": "https://strm1.uqload.vc/hls2/02/02497/z7ut9g9iicwq_n/index-v1-a1.m3u8?t=vhAjkalvEyW7Zq65xq1Py73G6-4ppZ8NCkGkfA41U_g&s=1791055908&e=14400&v=3710755&i=57.151&sp=0",
-          "response_url": "https://strm1.uqload.vc/hls2/02/02497/z7ut9g9iicwq_n/index-v1-a1.m3u8?t=vhAjkalvEyW7Zq65xq1Py73G6-4ppZ8NCkGkfA41U_g&s=1791055908&e=14400&v=3710755&i=57.151&sp=0",
-          "method": "GET",
-          "status": 200,
-          "content_type": "application/vnd.apple.mpegurl",
-          "challenge": "",
-          "response_shape": null,
-          "declared_player_candidate_count": 0,
-          "declared_url_player_candidate_count": 0,
-          "declared_indexed_player_candidate_count": 0,
-          "declared_player_hosts": [],
-          "declared_quality_heights": [],
-          "duration_ms": 132
-        },
-        {
-          "url": "https://u14.vidzy.cc/hls2/06/00014/f5ms3hzmsvri_n/index-v1-a1.m3u8?t=TJ0MwC3LmnzAHX_2Svjdoy_1DC_QSAplx90M2Ft_fGM&s=1791055907&e=172800&f=74553&i=0.0&sp=0",
-          "response_url": "https://u14.vidzy.cc/hls2/06/00014/f5ms3hzmsvri_n/index-v1-a1.m3u8?t=TJ0MwC3LmnzAHX_2Svjdoy_1DC_QSAplx90M2Ft_fGM&s=1791055907&e=172800&f=74553&i=0.0&sp=0",
-          "method": "GET",
-          "status": 200,
-          "content_type": "application/vnd.apple.mpegurl",
-          "challenge": "",
-          "response_shape": null,
-          "declared_player_candidate_count": 0,
-          "declared_url_player_candidate_count": 0,
-          "declared_indexed_player_candidate_count": 0,
-          "declared_player_hosts": [],
-          "declared_quality_heights": [],
-          "duration_ms": 133
+          "duration_ms": 64
         }
       ],
       "debug_provider_value_trace_v18": null,
       "debug_provider_value_trace_history_v21": [],
       "debug_provider_runtime_dispatch_error_v1": null,
-      "debug_identity_reasons": [
-        {
-          "host": "u14.vidzy.cc",
-          "title": "🎥 Coflix - 480p",
-          "filename": "",
-          "identity_status": "match",
-          "identity_reason": "season_episode_match",
-          "metadata_status": "match",
-          "metadata_reason": "season_episode_match",
-          "duration_status": "unknown",
-          "duration_reason": "duration_unavailable",
-          "duration_ratio": null,
-          "media_kind": "hls",
-          "media_status": 200,
-          "media_error": ""
-        },
-        {
-          "host": "strm1.uqload.vc",
-          "title": "🎥 Coflix - 360p",
-          "filename": "",
-          "identity_status": "match",
-          "identity_reason": "season_episode_match",
-          "metadata_status": "match",
-          "metadata_reason": "season_episode_match",
-          "duration_status": "unknown",
-          "duration_reason": "duration_unavailable",
-          "duration_ratio": null,
-          "media_kind": "hls",
-          "media_status": 200,
-          "media_error": ""
-        }
-      ],
+      "debug_identity_reasons": [],
       "stderr_tail": "FIELD_TMDB_PROBE_CONTEXT state=core_ready credential_visible=false metadata_hydrated=false dynamic=true core_capability=true\n",
-      "raw": 2,
-      "playable": 2,
-      "verified": 2,
+      "raw": 0,
+      "playable": 0,
+      "verified": 0,
       "contradictions": 0,
       "identity_safe": true,
-      "duration_ms": 16033,
-      "sample_count": 1,
-      "fanout_fixture_title": "Breaking Bad",
+      "duration_ms": 2909,
+      "sample_count": 4,
+      "fanout_fixture_title": "Revenant",
       "sample_titles": [
-        "Breaking Bad"
+        "Revenant",
+        "Breaking Bad",
+        "The Queen's Gambit",
+        "Better Call Saul"
       ],
-      "adaptive_rotated": false,
+      "adaptive_rotated": true,
       "samples": [
+        {
+          "fixture_title": "Revenant",
+          "fixture": {
+            "tmdbId": "210702",
+            "mediaType": "tv",
+            "category": "tv",
+            "title": "Revenant",
+            "year": 2023,
+            "season": 1,
+            "episode": 1
+          },
+          "status": "no_streams",
+          "debug_stage": "provider_waf_challenge",
+          "debug_progress_stage": "lookup_only",
+          "raw": 0,
+          "playable": 0,
+          "verified": 0,
+          "contradictions": 0,
+          "duration_ms": 667,
+          "streams_returned": 0,
+          "announced_player_candidates": 0,
+          "announced_variant_candidates": 0,
+          "announced_player_hosts": [],
+          "announced_quality_heights": [],
+          "explored_player_requests": 0,
+          "explored_player_hosts": [],
+          "variant_fanout_state": "not-observed"
+        },
         {
           "fixture_title": "Breaking Bad",
           "fixture": {
-            "slug": "health-tv-1396-s1e1",
             "tmdbId": "1396",
             "mediaType": "tv",
+            "category": "tv",
             "title": "Breaking Bad",
             "year": 2008,
             "season": 1,
             "episode": 1
           },
-          "status": "playable_verified",
-          "debug_stage": "provider_returned_streams",
-          "debug_progress_stage": "chain_reached",
-          "raw": 2,
-          "playable": 2,
-          "verified": 2,
+          "status": "no_streams",
+          "debug_stage": "provider_waf_challenge",
+          "debug_progress_stage": "lookup_only",
+          "raw": 0,
+          "playable": 0,
+          "verified": 0,
           "contradictions": 0,
-          "duration_ms": 15971,
-          "streams_returned": 2,
-          "announced_player_candidates": 5,
-          "announced_variant_candidates": 5,
-          "announced_player_hosts": [
-            "1.multiup.us",
-            "flixeo.xyz",
-            "uqload.cx",
-            "vidzy.org"
-          ],
-          "announced_quality_heights": [
-            360,
-            480
-          ],
-          "explored_player_requests": 3,
-          "explored_player_hosts": [
-            "1.multiup.us",
-            "uqload.cx",
-            "vidzy.org"
-          ],
-          "variant_fanout_state": "returned-subset"
+          "duration_ms": 651,
+          "streams_returned": 0,
+          "announced_player_candidates": 0,
+          "announced_variant_candidates": 0,
+          "announced_player_hosts": [],
+          "announced_quality_heights": [],
+          "explored_player_requests": 0,
+          "explored_player_hosts": [],
+          "variant_fanout_state": "not-observed"
+        },
+        {
+          "fixture_title": "The Queen's Gambit",
+          "fixture": {
+            "slug": "the-queen-s-gambit-2020-s01e01",
+            "tmdbId": "87739",
+            "mediaType": "tv",
+            "category": "tv",
+            "title": "The Queen's Gambit",
+            "year": 2020,
+            "season": 1,
+            "episode": 1
+          },
+          "status": "no_streams",
+          "debug_stage": "provider_waf_challenge",
+          "debug_progress_stage": "lookup_only",
+          "raw": 0,
+          "playable": 0,
+          "verified": 0,
+          "contradictions": 0,
+          "duration_ms": 676,
+          "streams_returned": 0,
+          "announced_player_candidates": 0,
+          "announced_variant_candidates": 0,
+          "announced_player_hosts": [],
+          "announced_quality_heights": [],
+          "explored_player_requests": 0,
+          "explored_player_hosts": [],
+          "variant_fanout_state": "not-observed"
+        },
+        {
+          "fixture_title": "Better Call Saul",
+          "fixture": {
+            "slug": "health-tv-60059-s1e1",
+            "tmdbId": "60059",
+            "mediaType": "tv",
+            "title": "Better Call Saul",
+            "year": 2015,
+            "season": 1,
+            "episode": 1
+          },
+          "status": "no_streams",
+          "debug_stage": "provider_waf_challenge",
+          "debug_progress_stage": "lookup_only",
+          "raw": 0,
+          "playable": 0,
+          "verified": 0,
+          "contradictions": 0,
+          "duration_ms": 714,
+          "streams_returned": 0,
+          "announced_player_candidates": 0,
+          "announced_variant_candidates": 0,
+          "announced_player_hosts": [],
+          "announced_quality_heights": [],
+          "explored_player_requests": 0,
+          "explored_player_hosts": [],
+          "variant_fanout_state": "not-observed"
         }
       ],
       "provider_budget_seconds": 90,
