@@ -165,9 +165,22 @@ jobs:
           fi
 
           if [ "$external_imported" != "true" ] && git cat-file -e refs/remotes/origin/brain-learning/proposals:engine_v2/learning/llm-guidance.json 2>/dev/null; then
-            git show refs/remotes/origin/brain-learning/proposals:engine_v2/learning/llm-guidance.json > "$RUNNER_TEMP/brain-learning-llm-guidance-fast-repair.json"
-            echo "NIAKVIO_BRAIN_LLM_GUIDANCE=$RUNNER_TEMP/brain-learning-llm-guidance-fast-repair.json" >> "$GITHUB_ENV"
-            echo "FIELD_PROVIDER_FAST_REPAIR_LLM_GUIDANCE imported=true source=niakvio-learning-fallback"
+            git show refs/remotes/origin/brain-learning/proposals:engine_v2/learning/llm-guidance.json > "$RUNNER_TEMP/brain-learning-llm-guidance-raw.json"
+            if python scripts/import_persistent_brain_learning_guidance.py \
+                 --input "$RUNNER_TEMP/brain-learning-llm-guidance-raw.json" \
+                 --output "$RUNNER_TEMP/brain-learning-llm-guidance-fast-repair.json" \
+                 --current-sha "$GITHUB_SHA" \
+                 --negative-memory automation/brain-repair-memory.json; then
+              learning_count="$(python -c 'import json; d=json.load(open("'"$RUNNER_TEMP"'/brain-learning-llm-guidance-fast-repair.json")); print(int(d.get("providerCount") or 0))')"
+              if [ "$learning_count" -gt 0 ]; then
+                echo "NIAKVIO_BRAIN_LLM_GUIDANCE=$RUNNER_TEMP/brain-learning-llm-guidance-fast-repair.json" >> "$GITHUB_ENV"
+                echo "FIELD_PROVIDER_FAST_REPAIR_LLM_GUIDANCE imported=true source=niakvio-learning-fallback providers=$learning_count normalized=true"
+              else
+                echo "FIELD_PROVIDER_FAST_REPAIR_LLM_GUIDANCE imported=false source=niakvio-learning-fallback reason=empty-after-drift-and-negative-memory-filter"
+              fi
+            else
+              echo "FIELD_PROVIDER_FAST_REPAIR_LLM_GUIDANCE imported=false source=niakvio-learning-fallback reason=provider-byte-drift-or-safety-gate"
+            fi
           fi
 
       - name: Run provider-local Brain Repair
