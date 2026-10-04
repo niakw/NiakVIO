@@ -580,13 +580,13 @@ transport_guidance=[{
     "experimentFingerprint":"9"*64,
     "guidanceKind":"meta-gap-synthesis",
 }]
-transport_payload={
+transport_base_payload={
     "mode":"repair",
     "explorationChain":True,
     "policy":policy,
     "learnedSkills":{},
     "historicalSolutions":[],
-    "llmGuidance":transport_guidance,
+    "llmGuidance":[],
     "negativeMemory":[],
     "items":[{
         "key":"published:synthetic-transport-executor-choice",
@@ -595,14 +595,45 @@ transport_payload={
         "state":{},
     }],
 }
+transport_initial_completed=subprocess.run(
+    ["node",str(PLANNER)],
+    cwd=ROOT,input=json.dumps(transport_base_payload),capture_output=True,text=True,check=True,timeout=20,
+)
+transport_initial=next(iter((json.loads(transport_initial_completed.stdout).get("plans") or {}).values()))
+assert transport_initial["failureClass"]=="transport_blocked",transport_initial
+transport_signature=transport_initial["signature"]
+transport_exhausted_memory=[
+    {
+        "providerId":"synthetic-transport-executor-choice",
+        "failureClass":"transport_blocked",
+        "signature":transport_signature,
+        "experimentVariant":variant,
+        "experimentGeneration":2 if variant==4 else 1,
+        "profile":"provider_origin_failover_v1" if variant==4 else "adaptive_runtime_recovery",
+        "failures":1,
+        "consecutiveFailures":1,
+        "successes":0,
+        "executionObserved":True,
+        "lastOutcome":"rejected",
+        "lastReason":"synthetic_transport_variant_exhausted",
+    }
+    for variant in range(5)
+]
+transport_payload={
+    **transport_base_payload,
+    "llmGuidance":transport_guidance,
+    "negativeMemory":transport_exhausted_memory,
+}
 transport_completed=subprocess.run(
     ["node",str(PLANNER)],
     cwd=ROOT,input=json.dumps(transport_payload),capture_output=True,text=True,check=True,timeout=20,
 )
 transport_plan=next(iter((json.loads(transport_completed.stdout).get("plans") or {}).values()))
+assert transport_plan["baseExperimentExhausted"] is True,transport_plan
 assert transport_plan["llmAdvisorApplied"] is True,transport_plan
 assert transport_plan["llmAdvisorProfile"]=="search_contract_inference_v1",transport_plan
 assert transport_plan["llmAdvisorFailureCompatibility"]=="exact",transport_plan
+assert transport_plan["allowedProfiles"][0]=="search_contract_inference_v1",transport_plan
 
 
 # If the current plan is already a confirmed architecture_gap, Repair
