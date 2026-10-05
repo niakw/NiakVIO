@@ -317,6 +317,64 @@ with tempfile.TemporaryDirectory(prefix="brain-arch-force-anchor-") as tmp:
     assert "def unrelated():\n    VALUE = 1" in changed
     assert "def target_strategy():" in changed
 
+# Corrective rounds may receive candidate bytes that no longer occur in the
+# rollback baseline. The resolver must use materializedBaselineSources to bind
+# a repeated find to the exact location that was rejected.
+with tempfile.TemporaryDirectory(prefix="brain-arch-force-anchor-baseline-") as tmp:
+    root = Path(tmp)
+    target = root / "scripts" / "brain_meta_learning.py"
+    target.parent.mkdir(parents=True, exist_ok=True)
+    source = (
+        "def unrelated():\n"
+        "    VALUE = 1\n"
+        "    return VALUE\n\n"
+        "def target_strategy():\n"
+        "    MARKER = 'moviebox-category-gap'\n"
+        "    VALUE = 1\n"
+        "    return VALUE\n"
+    )
+    target.write_text(source, encoding="utf-8")
+    baseline_focus = (
+        "def target_strategy():\n"
+        "    MARKER = 'moviebox-category-gap'\n"
+        "    VALUE = 1\n"
+        "    return VALUE\n"
+    )
+    rejected_focus = baseline_focus.replace("VALUE = 1", "VALUE = 9")
+    raw = [{
+        "operation": "replace",
+        "path": "scripts/brain_meta_learning.py",
+        "find": "VALUE = 1",
+        "replace": "VALUE = 2",
+    }]
+    resolved = mod._resolve_non_unique_replace_edits(
+        raw,
+        {
+            "sources": {"scripts/brain_meta_learning.py": "VALUE = 1\n"},
+            "materializedFailureSources": {
+                "scripts/brain_meta_learning.py": rejected_focus,
+            },
+            "materializedBaselineSources": {
+                "scripts/brain_meta_learning.py": baseline_focus,
+            },
+        },
+        patterns,
+        root=root,
+    )
+    assert resolved[0]["find"] != "VALUE = 1", resolved
+    assert source.count(resolved[0]["find"]) == 1, resolved
+    mod.validate_edits(resolved, patterns, root=root)
+
+# Failure context must be centered on changed bytes rather than truncating the
+# start of a large architecture file.
+before = ("HEADER = 0\n" * 400) + "TARGET = 1\n" + ("TAIL = 0\n" * 400)
+after = before.replace("TARGET = 1", "TARGET = 2")
+after_ctx = mod._materialized_failure_snippet(before, after, 320)
+before_ctx = mod._materialized_failure_snippet(after, before, 320)
+assert "TARGET = 2" in after_ctx and "TARGET = 1" not in after_ctx
+assert "TARGET = 1" in before_ctx and "TARGET = 2" not in before_ctx
+assert not after_ctx.startswith("HEADER = 0\n" * 10)
+
 # If the focused snippet itself does not uniquely identify one repeated find,
 # the resolver must leave the edit untouched so normal validation fails closed.
 with tempfile.TemporaryDirectory(prefix="brain-arch-force-anchor-ambiguous-") as tmp:
@@ -460,8 +518,10 @@ with tempfile.TemporaryDirectory(prefix="brain-arch-force-syntax-") as tmp:
             assert "path" not in payload["rejectedEditIntent"][0]
             assert payload["correctionReason"] == "materialized-source-validation"
             assert payload["correctionContract"]["mustPassMaterializedSyntaxValidation"] is True
+            assert payload["correctionContract"]["useMaterializedBaselineSources"] is True
             assert payload["correctionContract"]["materializedCorrectionRound"] == 1
             assert payload["materializedFailureSources"]["scripts/brain_meta_learning.py"].startswith("    VALUE = 2")
+            assert payload["materializedBaselineSources"]["scripts/brain_meta_learning.py"].startswith("VALUE = 1")
             import json
             return {
                 "choices": [{
@@ -640,6 +700,7 @@ with tempfile.TemporaryDirectory(prefix="brain-arch-force-syntax-fail-") as tmp:
         assert len(invalid_correction_calls) == mod.MATERIALIZED_CORRECTION_ROUNDS
         assert [p["correctionContract"]["materializedCorrectionRound"] for p in invalid_correction_calls] == [1, 2]
         assert invalid_correction_calls[1]["materializedFailureSources"]["scripts/brain_meta_learning.py"].startswith("    VALUE = 3")
+        assert invalid_correction_calls[1]["materializedBaselineSources"]["scripts/brain_meta_learning.py"].startswith("VALUE = 1")
     finally:
         mod.call_model = original_call_model
         mod._model_request = original_request
