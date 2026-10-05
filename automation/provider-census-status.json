@@ -1,7 +1,7 @@
 {
   "schemaVersion": 3,
-  "runId": "37254501812",
-  "triggerSha": "289980bc4ea1b8e765484de3851f9214dbf02aac",
+  "runId": "37254897051",
+  "triggerSha": "b1f7ba8da4cec11e287a95b9b2dba3ee3022de3a",
   "providers": [
     {
       "provider": "4khdhub",
@@ -196,11 +196,11 @@
         "16 live routes / anime"
       ],
       "latestLaneVerdicts": [
-        "anime=no_streams/provider_network_exception"
+        "anime=timeout"
       ],
-      "dominantIssue": "provider_network_exception",
+      "dominantIssue": "timeout",
       "searchProgress": [
-        "anime: 2 works tested / 0 retained misses"
+        "anime: 3 works tested / 0 retained misses"
       ],
       "evidenceDepth": [
         "anime=none"
@@ -695,10 +695,10 @@
         "11 live routes / movie, tv"
       ],
       "latestLaneVerdicts": [
-        "movie=no_streams/provider_zero_before_provider_network",
+        "movie=no_streams/provider_network_http_error",
         "tv=no_streams/provider_network_http_error"
       ],
-      "dominantIssue": "provider_zero_before_provider_network, provider_network_http_error",
+      "dominantIssue": "provider_network_http_error×2",
       "searchProgress": [
         "movie: 8 works tested / 0 retained misses",
         "tv: 8 works tested / 0 retained misses"
@@ -2250,8 +2250,8 @@
   "harnessQueue": [],
   "targetedTransportBlockedQueue": [],
   "clientTransportGapQueue": [],
-  "harnessEvidenceRunId": "37254501812-sharded-waf",
-  "harnessEvidenceSha": "289980bc4ea1b8e765484de3851f9214dbf02aac",
+  "harnessEvidenceRunId": "37254897051-sharded-waf",
+  "harnessEvidenceSha": "b1f7ba8da4cec11e287a95b9b2dba3ee3022de3a",
   "authorityRefreshedProviders": [],
   "harnessTransportUpdatedProviders": [],
   "networkDifferentialUpdatedProviders": [],
