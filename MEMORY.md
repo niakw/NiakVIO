@@ -1,3 +1,12 @@
+## 2026-10-05 — Deep Repair crash fixed; disabled-provider CodeQL noise cleaned
+
+- Fast Repair failures on current cohorts were traced to a Brain pipeline crash, not provider behavior: `scripts/deep_repair_loop.py` logged `identity_contradiction_count(...)` without importing that runtime guard. Commits `4d3152e2` + `8a066deb` import it from `runtime_repair.py` and lock the contract.
+- The authoritative census before replay remains `21 FULL OK · 3 PARTIAL OK · 2 CANDIDATE OK · 10 ROUTE PROVEN · 2 CHAIN REACHED · 1 NO PROOF · 2 REGRESSION PROVIDER · 5 DISABLED` across 46, evidence run `37247456053`, with 17 providers in automated repairQueue. Do not treat the recent Fast red runs as provider regressions; they were interrupted by the NameError.
+- Persistent Learning guidance on `brain-learning/proposals` currently contains 11 providers / 15 rows from NiakVIO `0865aafc`; Moviebox carries `route_proven_gap -> search_contract_inference_v1` at confidence 0.86. This remains prior-only and requires current-byte sandbox + category/identity/playback proof.
+- Security-tab cleanup: the 17 open CodeQL alerts were all lifecycle-disabled VidEasy snapshots under `provider-disabled/**`. Maintained CodeQL now excludes `provider-disabled/**` from Python and JS Core; the one-shot source scan also excludes `provider-disabled/**` and `provider-old/**`. Active `providers/**` and maintained `provider-bases/**` scanning remains enabled.
+- CodeQL cleanup run `37248273443` was deliberately scoped to `provider-disabled/**` only: pass 1 found 17 alerts, 17 were dismissed, pass 2 found 0, and the final state was `Dismissed=17 failed=0 remaining=0`. Blanket dismissal is forbidden by the workflow contract.
+- Next authoritative step: run normal maintained CodeQL on the post-clean HEAD, then replay Fast Repair on that same current HEAD with the Deep import fix and merged Learning priors. Only accepted/rematerialized/current-byte playback proof may change provider status.
+
 ## 2026-10-03 — HindMoviez fifth negative; sixth source-frontier hypothesis
 
 - V6 sandbox run `37081288030` executed Brain's fifth HindMoviez hypothesis, `quality_aware_global_stop`, on exact current bytes. The mutation applied and rematerialized successfully, but acceptance was correctly rejected.
