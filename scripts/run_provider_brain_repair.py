@@ -456,6 +456,7 @@ def untried_advisor_fingerprints(
         candidates.setdefault(provider, set()).add((profile, fingerprint))
 
     failed: dict[str, set[tuple[str, str]]] = {}
+    executed_profile_family: dict[tuple[str, str, str], set[str]] = {}
     memory = load(REPAIR_MEMORY, {})
     entries: list[dict[str, Any]] = []
     if isinstance(memory.get("entries"), list):
@@ -467,19 +468,76 @@ def untried_advisor_fingerprints(
         provider = cid(row.get("providerId"))
         profile = str(row.get("profile") or "").strip().casefold()
         fingerprint = str(row.get("llmAdvisorExperimentFingerprint") or "").strip().casefold()
-        if (
-            provider in selected
-            and profile
-            and len(fingerprint) == 64
-            and int(row.get("consecutiveFailures") or 0) >= 1
-        ):
-            failed.setdefault(provider, set()).add((profile, fingerprint))
+        failure = _canon_failure(row.get("failureClass"))
+        family = META_GAP_FAILURE_FAMILIES.get(failure, failure)
+        valid_fingerprint = (
+            len(fingerprint) == 64
+            and all(ch in "0123456789abcdef" for ch in fingerprint)
+        )
+        if provider in selected and profile and valid_fingerprint:
+            if int(row.get("consecutiveFailures") or 0) >= 1:
+                failed.setdefault(provider, set()).add((profile, fingerprint))
+            if (
+                row.get("executionObserved") is True
+                and (
+                    int(row.get("consecutiveFailures") or 0) >= 1
+                    or int(row.get("failures") or 0) >= 1
+                    or int(row.get("progresses") or 0) >= 1
+                )
+            ):
+                executed_profile_family.setdefault(
+                    (provider, family, profile), set()
+                ).add(fingerprint)
 
-    return {
-        provider: values - failed.get(provider, set())
-        for provider, values in candidates.items()
-        if values - failed.get(provider, set())
-    }
+    guidance_family: dict[tuple[str, str, str], str] = {}
+    for row in payload.get("rows") or []:
+        if not isinstance(row, dict):
+            continue
+        provider = cid(row.get("providerId"))
+        if provider not in selected:
+            continue
+        current_failure = _canon_failure(
+            (failure_classes or {}).get(provider) or row.get("failureClass")
+        )
+        family = META_GAP_FAILURE_FAMILIES.get(current_failure, current_failure)
+        profile = _meta_gap_scheduler_profile(row, current_failure)
+        source_fingerprint = str(row.get("experimentFingerprint") or "").strip().casefold()
+        if profile and source_fingerprint:
+            guidance_family[(provider, profile, source_fingerprint)] = family
+
+    output: dict[str, set[tuple[str, str]]] = {}
+    for provider, values in candidates.items():
+        remaining: set[tuple[str, str]] = set()
+        provider_rows = [
+            row for row in payload.get("rows") or []
+            if isinstance(row, dict) and cid(row.get("providerId")) == provider
+        ]
+        pair_family: dict[tuple[str, str], str] = {}
+        for row in provider_rows:
+            current_failure = _canon_failure(
+                (failure_classes or {}).get(provider) or row.get("failureClass")
+            )
+            family = META_GAP_FAILURE_FAMILIES.get(current_failure, current_failure)
+            guidance_kind = str(row.get("guidanceKind") or "").strip().casefold()
+            strategy = str(row.get("strategy") or "").strip().casefold().replace("-", "_")
+            if guidance_kind == "meta-gap-synthesis" or strategy.startswith("meta_gap_"):
+                for pair in _meta_gap_scheduler_fingerprints(row, current_failure):
+                    pair_family[pair] = family
+            else:
+                profile = str(row.get("profile") or "").strip().casefold()
+                fingerprint = str(row.get("experimentFingerprint") or "").strip().casefold()
+                if profile and fingerprint:
+                    pair_family[(profile, fingerprint)] = family
+
+        for pair in values - failed.get(provider, set()):
+            profile, _fingerprint = pair
+            family = pair_family.get(pair, "")
+            if len(executed_profile_family.get((provider, family, profile), set())) >= 3:
+                continue
+            remaining.add(pair)
+        if remaining:
+            output[provider] = remaining
+    return output
 
 
 def executed_advisor_rotation_pending(
