@@ -852,6 +852,69 @@ assert transport_family_plan["allowedProfiles"][0]=="search_contract_inference_v
 assert transport_family_plan["llmAdvisorFailureCompatibility"]=="exact-rebound",transport_family_plan
 assert transport_family_plan["llmAdvisorSourceFailureClass"]=="transport_blocked",transport_family_plan
 
+# Fresh LLM/persistent fingerprints must not reopen an advisor executor that
+# already consumed the same bounded causal-family budget. This is the Moviebox
+# loop: route_proven/search/transport labels drift, but three real
+# search_contract advisor executions exhaust that executor for route-terminal.
+transport_profile_exhausted_memory=list(transport_memory)
+for index,(failure,fp) in enumerate((
+    ("route_proven_gap","a"*64),
+    ("search_gap","b"*64),
+    ("transport_blocked","c"*64),
+),start=1):
+    transport_profile_exhausted_memory.append({
+        "providerId":"synthetic-transport-executor-choice",
+        "failureClass":failure,
+        "signature":transport_signature,
+        "experimentVariant":4,
+        "experimentGeneration":2,
+        "profile":"search_contract_inference_v1",
+        "llmAdvisorExperimentFingerprint":fp,
+        "failures":1,
+        "consecutiveFailures":1,
+        "successes":0,
+        "progresses":1 if index==2 else 0,
+        "executionObserved":True,
+        "lastOutcome":"rejected",
+        "lastReason":"synthetic_causal_family_advisor_budget",
+    })
+transport_profile_rotation_guidance=[
+    {
+        **transport_guidance[0],
+        "failureClass":"route_proven_gap",
+        "profile":"search_contract_inference_v1",
+        "strategy":"meta-gap-search-contract-fallback",
+        "confidence":0.99,
+        "experimentFingerprint":"d"*64,
+    },
+    {
+        **transport_guidance[0],
+        "failureClass":"route_proven_gap",
+        "profile":"adaptive_runtime_recovery",
+        "strategy":"meta-gap-adaptive-runtime-fallback",
+        "confidence":0.86,
+        "experimentFingerprint":"e"*64,
+    },
+]
+transport_profile_rotation_payload={
+    **transport_base_payload,
+    "llmGuidance":transport_profile_rotation_guidance,
+    "negativeMemory":transport_profile_exhausted_memory,
+}
+transport_profile_rotation_completed=subprocess.run(
+    ["node",str(PLANNER)],
+    cwd=ROOT,input=json.dumps(transport_profile_rotation_payload),
+    capture_output=True,text=True,check=True,timeout=20,
+)
+transport_profile_rotation=next(iter((json.loads(transport_profile_rotation_completed.stdout).get("plans") or {}).values()))
+assert transport_profile_rotation["baseExperimentExhausted"] is True,transport_profile_rotation
+assert transport_profile_rotation["strategyEscalated"] is False,transport_profile_rotation
+assert transport_profile_rotation["metaGapEscalated"] is True,transport_profile_rotation
+assert transport_profile_rotation["llmAdvisorApplied"] is True,transport_profile_rotation
+assert transport_profile_rotation["llmAdvisorProfile"]=="adaptive_runtime_recovery",transport_profile_rotation
+assert transport_profile_rotation["allowedProfiles"][0]=="adaptive_runtime_recovery",transport_profile_rotation
+assert transport_profile_rotation["llmAdvisorProfile"]!="search_contract_inference_v1",transport_profile_rotation
+
 
 # If the current plan is already a confirmed architecture_gap, Repair
 # exploration must not wait for synthetic experiment exhaustion that cannot
