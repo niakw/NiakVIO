@@ -117,6 +117,54 @@ terminal_row=next(r for r in terminal_rotated if r["providerId"]=="terminal-like
 assert terminal_row["failureClass"]=="chain_terminal_gap",terminal_row
 assert terminal_row["profile"]=="player_media_extractor_v1",terminal_row
 
+# Executed Repair diagnosis outranks a coarse census lifecycle floor. This
+# models AnimeVost-FR: census still says ROUTE PROVEN while current Repair has
+# repeatedly executed terminal-media variant coverage attempts.
+repair_specific_census={
+    "repairQueue":["omega"],
+    "providers":[{
+        "provider":"omega",
+        "status":"ROUTE PROVEN",
+        "dominantIssue":"provider_network_zero_result",
+        "evidenceDepth":["anime=route_proven"],
+    }],
+}
+repair_specific_memory={"entries":[
+    {
+        "providerId":"omega",
+        "failureClass":"variant_coverage_gap",
+        "profile":"player_media_extractor_v1",
+        "llmAdvisorExperimentFingerprint":str(i)*64,
+        "experimentVariant":4,
+        "experimentGeneration":2,
+        "failures":1,
+        "consecutiveFailures":1,
+        "progresses":1,
+        "successes":0,
+        "executionObserved":True,
+    }
+    for i in (1,2,3)
+]}
+repair_specific=synthesize_rows(
+    census=repair_specific_census,
+    memory=repair_specific_memory,
+    current_sha="a"*40,
+)
+omega=next(r for r in repair_specific if r["providerId"]=="omega")
+assert omega["failureClass"]=="variant_coverage_gap",omega
+assert omega["profile"]=="chain_terminal_extractor_v1",omega
+
+# A non-executed hypothesis cannot override the census floor.
+repair_specific_memory["entries"][0]["executionObserved"]=False
+repair_specific_memory["entries"]=repair_specific_memory["entries"][:1]
+nonexecuted=synthesize_rows(
+    census=repair_specific_census,
+    memory=repair_specific_memory,
+    current_sha="a"*40,
+)
+omega_nonexecuted=next(r for r in nonexecuted if r["providerId"]=="omega")
+assert omega_nonexecuted["failureClass"]=="route_proven_gap",omega_nonexecuted
+
 print("Brain declarative meta-gap strategy tests passed")
 
 # Runtime integration is covered separately; this generator remains pure.
