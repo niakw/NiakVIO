@@ -206,6 +206,47 @@ with tempfile.TemporaryDirectory() as tmp:
     finally:
         mod.REPAIR_MEMORY=original_memory
 
+# Ordinary persistent/external guidance must not be rebound across causal
+# families by the outer scheduler. Only explicit meta-gap synthesis gets that
+# privilege. This locks the AnimeVost-FR loop where route guidance kept six
+# terminal-media waves alive although the Node planner rejected it immediately.
+with tempfile.TemporaryDirectory() as tmp:
+    tmp=Path(tmp)
+    guidance=tmp/"cross-family-guidance.json"
+    memory=tmp/"memory.json"
+    base_row={
+        "providerId":"animevost-fr",
+        "failureClass":"route_proven_gap",
+        "targetLayer":"provider",
+        "strategy":"search-detail-player-terminal-traversal",
+        "profile":"proven_route_terminal_traversal_v1",
+        "confidence":0.96,
+        "priorOnly":True,
+        "experiment":{"maxDepth":5},
+        "experimentFingerprint":"e"*64,
+    }
+    guidance.write_text(json.dumps({"rows":[base_row]}),encoding="utf-8")
+    original_memory=mod.REPAIR_MEMORY
+    mod.REPAIR_MEMORY=memory
+    try:
+        memory.write_text(json.dumps({"entries":[]}),encoding="utf-8")
+        assert mod.untried_advisor_fingerprints(
+            ["animevost-fr"],guidance,{"animevost-fr":"variant_coverage_gap"}
+        )=={}
+
+        meta={**base_row,
+            "strategy":"meta_gap_route_terminal_fallback",
+            "guidanceKind":"meta-gap-synthesis",
+        }
+        guidance.write_text(json.dumps({"rows":[meta]}),encoding="utf-8")
+        rebound=mod.untried_advisor_fingerprints(
+            ["animevost-fr"],guidance,{"animevost-fr":"variant_coverage_gap"}
+        )
+        assert rebound,rebound
+        assert all(profile=="player_media_extractor_v1" for profile,_fp in rebound["animevost-fr"]),rebound
+    finally:
+        mod.REPAIR_MEMORY=original_memory
+
 source = SCRIPT.read_text(encoding="utf-8")
 assert "FIELD_PROVIDER_BRAIN_ADVISOR_ROTATION" in source
 assert "FIELD_PROVIDER_BRAIN_ADVISOR_DYNAMIC_EXTENSION" in source
@@ -218,6 +259,7 @@ assert "waves += 1" in source
 assert "no_new_repair_experiment" in source
 assert "advisor_rotation_pending" in source
 assert "_meta_gap_scheduler_fingerprints" in source
+assert "Cross-family rebinding is" in source
 assert "advisor_failure_classes" in source
 assert "executed_advisor_rotation_pending" in source
 assert "dynamic_advisor_rotation" in source
