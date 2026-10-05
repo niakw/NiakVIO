@@ -7,17 +7,17 @@
   "advisorHypothesisWaveBudget": 1,
   "batchSize": 48,
   "deferredLearningProviders": [
-    "4khdhub"
+    "moviebox"
   ],
   "effectiveWaves": 1,
-  "elapsedSeconds": 4.917,
+  "elapsedSeconds": 21.701,
   "executionModel": "family-batched-multi-wave-brain-repair",
   "experienceMemory": {
     "operationalProviderCount": 24,
     "providerCount": 46,
     "schemaVersion": 2,
-    "sourceRunId": "37235961681-pre-repair",
-    "sourceSha": "e716258985542ce242a9672e1a5ac75f0a30aa3f",
+    "sourceRunId": "37247456053",
+    "sourceSha": "0865aafc9d761770b12c1ee8c2623174b080a2a2",
     "strategyCount": 5
   },
   "fixedInLabProviders": [],
@@ -26,9 +26,9 @@
   "healthConcurrency": 0,
   "healthConcurrencyMode": "auto-per-batch",
   "initialStatuses": {
-    "4khdhub": "ROUTE PROVEN"
+    "moviebox": "ROUTE PROVEN"
   },
-  "maxRoundsPerBatch": 1,
+  "maxRoundsPerBatch": 3,
   "maxWaves": 1,
   "noProgressReason": "no_new_repair_experiment",
   "positiveProgramRecovery": {
@@ -37,11 +37,11 @@
     ],
     "durableRecordCount": 2,
     "recoveredRecordCount": 0,
-    "reportCount": 41
+    "reportCount": 42
   },
   "processedProviderCount": 1,
   "processedProviders": [
-    "4khdhub"
+    "moviebox"
   ],
   "providerSpecificRules": false,
   "rawLabAcceptedCount": 0,
@@ -64,15 +64,15 @@
   "schemaVersion": 1,
   "selectedProviderCount": 1,
   "selectedProviders": [
-    "4khdhub"
+    "moviebox"
   ],
   "selectionSource": "automation/provider-census-status.json:repairQueue",
   "shardCount": 1,
   "shardIndex": 0,
   "skippedEnvironmentProviders": [],
-  "sourceCensusRunId": "37235961681-pre-repair",
+  "sourceCensusRunId": "37247456053",
   "timeBudgetExhausted": false,
-  "timeBudgetSeconds": 600,
+  "timeBudgetSeconds": 1200,
   "unvisitedProviders": [],
   "waves": [
     {
@@ -91,7 +91,7 @@
             "harnessDifferentialProviders": [],
             "learnedEvents": 0,
             "plans": {
-              "published:4khdhub": {
+              "published:moviebox": {
                 "action": "deferred_retry",
                 "allowedProfiles": [],
                 "baseExperimentExhausted": false,
@@ -100,7 +100,7 @@
                 "experimentGeneration": 2,
                 "experimentVariant": 4,
                 "experimentVariantCount": 5,
-                "failureClass": "search_gap",
+                "failureClass": "transport_blocked",
                 "hypotheses": [],
                 "learningDisposition": "queue_new_strategy_after_variant_exhaustion",
                 "llmAdvisorApplied": false,
@@ -115,21 +115,21 @@
                 "llmAdvisorSourceFailureClass": "",
                 "llmAdvisorStrategy": "",
                 "metaGapEscalated": false,
-                "negativeMemoryMatches": 32,
+                "negativeMemoryMatches": 64,
                 "positiveProgramFingerprint": "",
                 "postExhaustionStrategyMethod": "",
                 "postExhaustionStrategyProfile": "",
-                "providerId": "4khdhub",
+                "providerId": "moviebox",
                 "providerPositiveProgramProductionRescue": false,
                 "providerPositiveProgramReplay": false,
                 "repairScope": "deferred",
                 "repairType": "experiment_strategy_exhausted",
-                "signature": "a5acf1ae6fc3078e15bcfc89",
+                "signature": "9408dea970ee2148302affa4",
                 "targetCategories": []
               }
             },
             "queuedForLearning": [
-              "4khdhub"
+              "moviebox"
             ],
             "validatedRepairLearningExecuted": true
           },
@@ -137,14 +137,14 @@
           "crossWaveExplorationCarryoverApplied": [],
           "crossWaveExplorationCarryoverCaptured": [],
           "deferredToLearning": [
-            "4khdhub"
+            "moviebox"
           ],
           "familyGroups": [
             {
               "capabilityStrategy": "html_scraper",
               "groupId": "route-to-terminal|html_scraper",
               "providers": [
-                "4khdhub"
+                "moviebox"
               ],
               "repairScope": "route-to-terminal"
             }
@@ -156,7 +156,7 @@
           "healthConcurrency": 1,
           "providerCount": 1,
           "providers": [
-            "4khdhub"
+            "moviebox"
           ],
           "repairScope": "route-to-terminal",
           "unexecutableLlmHandoff": []
@@ -164,7 +164,7 @@
       ],
       "compileRejectedToLearning": [],
       "deferredToLearning": [
-        "4khdhub"
+        "moviebox"
       ],
       "deferredToLearningCount": 1,
       "durableMaterializeTargets": [],
