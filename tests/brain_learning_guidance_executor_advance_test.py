@@ -77,4 +77,31 @@ try:
 finally:
     mod.synthesize_rows=original
 
+# When no declarative executor remains for a targeted provider still in Repair
+# debt, Learning must escalate the Brain architecture instead of recycling
+# canonical Repair with no executable hypothesis.
+original=mod.synthesize_rows
+try:
+    mod.synthesize_rows=lambda **_kwargs:[]
+    report=mod.exhaustion_report(
+        providers=["moviebox"],
+        current_sha="1"*40,
+        census={"repairQueue":["moviebox"],"providers":[]},
+        memory={"entries":[]},
+    )
+    assert report["architectureForceRecommended"] is True,report
+    assert report["exhaustedProviders"]==["moviebox"],report
+    assert report["providerMutationAuthority"] is False,report
+    assert report["publicationAuthority"] is False,report
+
+    not_debt=mod.exhaustion_report(
+        providers=["healthy"],
+        current_sha="1"*40,
+        census={"repairQueue":[],"providers":[]},
+        memory={"entries":[]},
+    )
+    assert not_debt["architectureForceRecommended"] is False,not_debt
+finally:
+    mod.synthesize_rows=original
+
 print("Brain Learning guidance executor-advance contract passed")
