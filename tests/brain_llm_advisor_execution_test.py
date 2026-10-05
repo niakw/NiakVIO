@@ -711,11 +711,14 @@ transport_exhausted_memory=[
 ]
 transport_memory=list(transport_exhausted_memory)
 transport_plan=None
+saw_same_family_evolved_strategy=False
 # Exploration Chain deliberately tries each coded post-exhaustion strategy
 # before Learning meta-gap guidance. Exhaust those bounded implementations by
 # their exact implementation fingerprint; never let a meta-gap prior bypass
-# an untried deterministic strategy.
-for _attempt in range(8):
+# an untried deterministic strategy. The route-terminal causal family spans
+# transport/route/search labels, so bounded sibling strategies are valid after
+# the current label's local strategies are exhausted.
+for _attempt in range(20):
     transport_payload={
         **transport_base_payload,
         "llmGuidance":transport_guidance,
@@ -731,8 +734,11 @@ for _attempt in range(8):
         break
     profile=transport_plan["postExhaustionStrategyProfile"]
     implementation_fp=transport_plan["strategyImplementationFingerprint"]
+    source_failure=transport_plan.get("postExhaustionSourceFailureClass") or ""
     assert profile,transport_plan
     assert implementation_fp,transport_plan
+    if source_failure and source_failure!="transport_blocked":
+        saw_same_family_evolved_strategy=True
     transport_memory.append({
         "providerId":"synthetic-transport-executor-choice",
         "failureClass":"transport_blocked",
@@ -752,12 +758,38 @@ else:
     raise AssertionError(("transport post-exhaustion strategies did not converge",transport_plan))
 
 assert transport_plan is not None
+assert saw_same_family_evolved_strategy is True,transport_memory
 assert transport_plan["strategyEscalated"] is False,transport_plan
 assert transport_plan["metaGapEscalated"] is True,transport_plan
 assert transport_plan["llmAdvisorApplied"] is True,transport_plan
 assert transport_plan["llmAdvisorProfile"]=="search_contract_inference_v1",transport_plan
 assert transport_plan["llmAdvisorFailureCompatibility"]=="exact",transport_plan
 assert transport_plan["allowedProfiles"][0]=="search_contract_inference_v1",transport_plan
+
+# An evolved strategy failed under route_proven_gap must stay failed after the
+# current observation drifts to transport_blocked. Strategy implementation
+# identity is provider+causal-family scoped, not failure-label scoped.
+route_transition_fp=None
+for memory_row in transport_memory:
+    if memory_row.get("profile")=="route_transition_graph_v1":
+        route_transition_fp=memory_row.get("strategyImplementationFingerprint")
+        memory_row["failureClass"]="route_proven_gap"
+        break
+assert route_transition_fp,transport_memory
+cross_label_payload={
+    **transport_base_payload,
+    "llmGuidance":transport_guidance,
+    "negativeMemory":transport_memory,
+}
+cross_label_completed=subprocess.run(
+    ["node",str(PLANNER)],
+    cwd=ROOT,input=json.dumps(cross_label_payload),capture_output=True,text=True,check=True,timeout=20,
+)
+cross_label_plan=next(iter((json.loads(cross_label_completed.stdout).get("plans") or {}).values()))
+assert not (
+    cross_label_plan.get("postExhaustionStrategyProfile")=="route_transition_graph_v1"
+    and cross_label_plan.get("strategyImplementationFingerprint")==route_transition_fp
+),cross_label_plan
 
 # A Learning meta-gap executor selected from a sibling failure class in the
 # same causal family must survive current-class drift. This is the Moviebox
