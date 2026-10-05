@@ -352,12 +352,14 @@ def _latest_failure_by_provider(memory: dict[str, Any]) -> dict[str, str]:
     if isinstance(exp.get("entries"), list):
         rows.extend(exp.get("entries") or [])
     for row in rows:
-        if not isinstance(row, dict):
+        if not isinstance(row, dict) or row.get("executionObserved") is not True:
             continue
         provider = _provider(row.get("providerId"))
         failure = _canon(row.get("failureClass"))
         if not provider or failure not in FAILURE_EXECUTORS:
             continue
+        # Only executed Repair observations may outrank a coarse census status.
+        # profile_unavailable / proposal-only rows carry no causal authority.
         score = (
             int(row.get("experimentGeneration") or 0),
             int(row.get("experimentVariant") or 0),
@@ -456,9 +458,12 @@ def synthesize_rows(
     rows: list[dict[str, Any]] = []
     for provider in sorted(repair_queue):
         status_failure = _status_failure(provider_rows.get(provider) or {})
-        # Current strong causal floors (WAF/CHAIN/CANDIDATE/ROUTE) outrank stale
-        # historical labels. Memory fills gaps only when the census is weaker.
-        failure = status_failure or memory_failure.get(provider) or ""
+        # Canonical Repair memory records the failure class observed while an
+        # actual sandbox child executed on current provider bytes. That causal
+        # diagnosis is more specific than the census lifecycle floor
+        # (ROUTE/CHAIN/CANDIDATE). Non-executed rows are excluded above, so the
+        # census remains authoritative when Repair has no executed diagnosis.
+        failure = memory_failure.get(provider) or status_failure or ""
         if failure not in FAILURE_EXECUTORS:
             continue
         base = BASE_EXPERIMENTS[failure]
