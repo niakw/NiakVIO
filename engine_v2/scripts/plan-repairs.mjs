@@ -849,6 +849,9 @@ function buildPlan(item) {
   const positiveProgramReplayHint = experimentExhausted
     ? providerPositiveProgramReplayHint(reusable, allMemoryMatches, rotateEvery)
     : { profile: "", method: "", index: -1, positiveProgramFingerprint: "" };
+  const postExhaustionCandidateProfiles = postExhaustionCandidates(evidence.failureClass)
+    .map((row) => stringValue(row.profile))
+    .filter(Boolean);
   const postExhaustionHint = positiveProgramReplayHint.profile
     ? positiveProgramReplayHint
     : (explorationMode && experimentExhausted)
@@ -1070,6 +1073,9 @@ function buildPlan(item) {
     postExhaustionStrategyMethod: postExhaustionHint.method,
     postExhaustionStrategyIndex: postExhaustionHint.index,
     postExhaustionSourceFailureClass: stringValue(postExhaustionHint.sourceFailureClass),
+    postExhaustionCandidateProfiles,
+    explorationChainEnabled: input.explorationChain === true,
+    explorationModeEnabled: explorationMode,
     experimentRotationEvery: rotateEvery,
     experimentVariantCount: maxVariants,
     experimentGenerationLimit: learningMode ? maxLearningGenerations : finalVariantGeneration,
