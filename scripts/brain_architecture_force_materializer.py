@@ -95,8 +95,17 @@ def _resolve_non_unique_replace_edits(
     only the model's intended inner edit changes behavior. Any uncertainty
     remains fail-closed and is left for normal validation/correction.
     """
-    focused_sources = payload.get("sources")
-    if not isinstance(focused_sources, dict):
+    focused_sources: dict[str, Any] = {}
+    base_sources = payload.get("sources")
+    if isinstance(base_sources, dict):
+        focused_sources.update(base_sources)
+    # Corrective rounds receive the exact materialized candidate bytes that
+    # failed syntax/contract validation. They outrank the original source
+    # context because the next edit must bind to the rejected candidate intent.
+    failure_sources = payload.get("materializedFailureSources")
+    if isinstance(failure_sources, dict):
+        focused_sources.update(failure_sources)
+    if not focused_sources:
         return [dict(edit) for edit in edits]
 
     resolved: list[dict[str, Any]] = []
@@ -329,6 +338,41 @@ def validate_materialized_contracts(
             )
 
 
+def _materialized_failure_snippet(before: str, after: str, limit: int) -> str:
+    """Return exact bounded context centered on bytes changed by a candidate."""
+    if limit <= 0 or not after:
+        return ""
+    if before == after:
+        return after[:limit]
+    prefix = 0
+    prefix_max = min(len(before), len(after))
+    while prefix < prefix_max and before[prefix] == after[prefix]:
+        prefix += 1
+    suffix = 0
+    suffix_max = min(len(before) - prefix, len(after) - prefix)
+    while (
+        suffix < suffix_max
+        and before[len(before) - 1 - suffix] == after[len(after) - 1 - suffix]
+    ):
+        suffix += 1
+    changed_end = len(after) - suffix if suffix else len(after)
+    changed_end = max(prefix + 1, changed_end)
+    changed_len = max(1, changed_end - prefix)
+    if changed_len >= limit:
+        return after[prefix:prefix + limit]
+    spare = limit - changed_len
+    left = min(prefix, spare // 2)
+    right = min(len(after) - changed_end, spare - left)
+    missing = spare - left - right
+    if missing > 0:
+        add_left = min(prefix - left, missing)
+        left += add_left
+        missing -= add_left
+    if missing > 0:
+        right += min(len(after) - changed_end - right, missing)
+    return after[prefix - left:changed_end + right]
+
+
 def validate_materialized_edits(
     edits: list[dict[str, Any]],
     *,
@@ -358,9 +402,14 @@ def validate_materialized_edits(
                 continue
             try:
                 text = target.read_text(encoding="utf-8")
+                baseline = snapshots.get(path, (False, b""))[1].decode("utf-8")
             except (UnicodeError, OSError):
                 continue
-            snippet = text[: min(remaining, 2200)]
+            snippet = _materialized_failure_snippet(
+                baseline,
+                text,
+                min(remaining, 2200),
+            )
             if snippet:
                 candidate_sources[path] = snippet
                 remaining -= len(snippet)
@@ -849,7 +898,7 @@ def validated_model_plan(
         ]
         edits = _resolve_non_unique_replace_edits(
             edits,
-            payload,
+            correction_payload,
             patterns,
             root=root,
         )
@@ -900,7 +949,7 @@ def validated_model_plan(
         ]
         corrected_edits = _resolve_non_unique_replace_edits(
             corrected_edits,
-            payload,
+            correction_payload,
             patterns,
             root=root,
         )
