@@ -80,7 +80,9 @@ unchanged,added=mod.fill(
     memory=memory,
 )
 assert added==[],(unchanged,added)
-assert unchanged==kept,(unchanged,kept)
+assert unchanged["rows"]==kept["rows"],(unchanged,kept)
+assert unchanged["providerCount"]==kept["providerCount"],(unchanged,kept)
+assert unchanged["sourceSha"]=="3"*40,unchanged
 
 # Providers outside current Repair debt never receive synthetic guidance.
 not_debt,added=mod.fill(
