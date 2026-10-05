@@ -1385,6 +1385,17 @@ def main() -> int:
                 env["NUVIO_HEALTH_CONCURRENCY"] = str(batch_concurrency)
                 env["NUVIO_BRAIN_REPAIR_WAVE"] = str(wave)
                 env["NUVIO_BRAIN_EXPLORATION_CHAIN"] = "1"
+                # Fast Repair is production exploration, never Learning mode.
+                # An inherited planner-mode value would make
+                # brain_repair_runtime._exploration_chain_enabled() false even
+                # though the chain flag is explicitly set above.
+                env.pop("NUVIO_BRAIN_PLANNER_MODE", None)
+                print(
+                    "FIELD_PROVIDER_BRAIN_EXPLORATION_ENV "
+                    f"wave={wave} chain={env.get('NUVIO_BRAIN_EXPLORATION_CHAIN','')} "
+                    f"planner_mode={env.get('NUVIO_BRAIN_PLANNER_MODE','') or 'production'}",
+                    flush=True,
+                )
                 batch_timeout = max(
                     120,
                     min(
