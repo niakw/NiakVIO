@@ -61,7 +61,22 @@ for required_path in (
         errors.append(f"security-final-gate.yml: missing security trigger for {required_path}")
 
 if "path.startswith(('provider-disabled/','provider-old/'))" not in security_gate:
-    errors.append('security-final-gate.yml: disabled/archive provider artifacts must remain visible to CodeQL but outside release-reachable alert blocking scope')
+    errors.append('security-final-gate.yml: stale disabled/archive alerts must remain outside release-reachable blocking scope')
+
+codeql = (WORKFLOWS / 'codeql.yml').read_text(encoding='utf-8')
+if codeql.count('- provider-disabled/**') < 2:
+    errors.append('codeql.yml: provider-disabled/** must be excluded from maintained Python and JS Core analysis')
+if 'startswith("provider-disabled/")' not in codeql:
+    errors.append('codeql.yml: alert cleanup must be scoped to provider-disabled/** only')
+if "Bulk dismissal requested by the repository owner" in codeql:
+    errors.append('codeql.yml: blanket CodeQL alert dismissal is forbidden')
+
+security_audit = (WORKFLOWS / 'security-audit-now.yml').read_text(encoding='utf-8')
+source_marker = 'CodeQL · javascript-typescript · source'
+source_pos = security_audit.find(source_marker)
+source_tail = security_audit[source_pos:source_pos + 900] if source_pos >= 0 else ''
+if '- provider-disabled/**' not in source_tail or '- provider-old/**' not in source_tail:
+    errors.append('security-audit-now.yml: one-shot source CodeQL must exclude disabled/archive provider snapshots')
 
 
 brain_learning = (WORKFLOWS / 'brain-learning-lab.yml').read_text(encoding='utf-8')
