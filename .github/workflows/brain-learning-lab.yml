@@ -1825,22 +1825,43 @@ jobs:
 
           git fetch --quiet origin main
           remote_main="$(git rev-parse origin/main)"
+          promotion_base="$GITHUB_SHA"
           if [ "$remote_main" != "$GITHUB_SHA" ]; then
-            args=(gh workflow run brain-learning-lab.yml
-              --repo "$GITHUB_REPOSITORY"
-              --ref main
-              -f publish_proposal=false
-              -f architecture_force=true
-              -f slot_remaining_minutes=360
-              -f slot_phase=1)
-            if [ -n "${TARGET_PROVIDERS:-}" ]; then
-              args+=(-f target_providers="$TARGET_PROVIDERS")
-            elif [ -n "${TARGET_PROVIDER:-}" ]; then
-              args+=(-f target_provider="$TARGET_PROVIDER")
+            if python scripts/brain_force_rebase_guard.py               --source "$GITHUB_SHA"               --current "$remote_main"               --repo-root "$GITHUB_WORKSPACE"               --output "$RUNNER_TEMP/brain-force-rebase.json"; then
+              echo "FIELD_BRAIN_ARCH_FORCE_MAIN_PROMOTION neutral_rebase=true source=$GITHUB_SHA remote=$remote_main"
+              git reset --hard "$remote_main"
+              mkdir -p engine_v2/learning
+              cp brain-learning-output/brain-architecture-proposal.json engine_v2/learning/architecture-proposal.json
+              cp brain-learning-output/brain-architecture-proposal.md engine_v2/learning/architecture-proposal.md
+              if [ "${{ steps.architecture.outputs.policy_changed }}" = "true" ]; then
+                cp brain-learning-output/brain-policy.proposed.json engine_v2/config/brain-policy.json
+              fi
+              test -s brain-learning-output/brain-architecture-force.patch
+              git apply --check brain-learning-output/brain-architecture-force.patch
+              git apply brain-learning-output/brain-architecture-force.patch
+              python tests/brain_meta_learning_gap_synthesis_test.py
+              python tests/brain_architecture_force_materializer_test.py
+              python tests/brain_self_architecture_test.py
+              python tests/brain_architecture_force_promotion_test.py
+              python tests/brain_cron_full_coverage_test.py
+              promotion_base="$remote_main"
+            else
+              args=(gh workflow run brain-learning-lab.yml
+                --repo "$GITHUB_REPOSITORY"
+                --ref main
+                -f publish_proposal=false
+                -f architecture_force=true
+                -f slot_remaining_minutes=360
+                -f slot_phase=1)
+              if [ -n "${TARGET_PROVIDERS:-}" ]; then
+                args+=(-f target_providers="$TARGET_PROVIDERS")
+              elif [ -n "${TARGET_PROVIDER:-}" ]; then
+                args+=(-f target_provider="$TARGET_PROVIDER")
+              fi
+              "${args[@]}"
+              echo "FIELD_BRAIN_ARCH_FORCE_MAIN_PROMOTION skipped=stale source=$GITHUB_SHA remote=$remote_main requeued=true"
+              exit 0
             fi
-            "${args[@]}"
-            echo "FIELD_BRAIN_ARCH_FORCE_MAIN_PROMOTION skipped=stale source=$GITHUB_SHA remote=$remote_main requeued=true"
-            exit 0
           fi
 
           python - "$RUNNER_TEMP/brain-force-stage-paths.txt" <<'PY'
@@ -1928,8 +1949,8 @@ jobs:
           git config user.email "actions@users.noreply.github.com"
           git commit -m "brain(force): promote validated architecture evolution"
           promoted_sha="$(git rev-parse HEAD)"
-          git push --force-with-lease=refs/heads/main:"$GITHUB_SHA" origin HEAD:main
-          echo "FIELD_BRAIN_ARCH_FORCE_MAIN_PROMOTION promoted=true sha=$promoted_sha base=$GITHUB_SHA mode=direct-main-no-pr"
+          git push --force-with-lease=refs/heads/main:"$promotion_base" origin HEAD:main
+          echo "FIELD_BRAIN_ARCH_FORCE_MAIN_PROMOTION promoted=true sha=$promoted_sha base=$promotion_base source=$GITHUB_SHA mode=direct-main-no-pr"
 
   continue-learning-slot:
     name: LEARNING - Continue chained long slot
