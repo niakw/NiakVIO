@@ -150,6 +150,28 @@ const LLM_FAILURE_FAMILIES = Object.freeze({
   playback_context_gap: "terminal-media",
 });
 
+function postExhaustionCandidates(failureClass) {
+  const failure = canonicalFailureClass(failureClass);
+  const family = LLM_FAILURE_FAMILIES[failure] ?? failure;
+  const orderedFailures = [
+    failure,
+    ...Object.keys(POST_EXHAUSTION_STRATEGIES)
+      .filter((candidate) => candidate !== failure && (LLM_FAILURE_FAMILIES[candidate] ?? candidate) === family)
+      .sort(),
+  ];
+  const seenProfiles = new Set();
+  const output = [];
+  for (const candidateFailure of orderedFailures) {
+    for (const row of POST_EXHAUSTION_STRATEGIES[candidateFailure] ?? []) {
+      const profile = stringValue(row.profile).toLowerCase();
+      if (!profile || seenProfiles.has(profile)) continue;
+      seenProfiles.add(profile);
+      output.push({ ...row, sourceFailureClass: candidateFailure });
+    }
+  }
+  return output;
+}
+
 const META_GAP_PROFILE_BY_FAILURE = Object.freeze({
   route_proven_gap: "proven_route_terminal_traversal_v1",
   provider_transport_gap: "provider_origin_failover_v1",
@@ -348,8 +370,8 @@ function historicalStrategyHint(providerId, failureClass, generation, memoryRows
 }
 
 function postExhaustionStrategyHint(failureClass, memoryRows, rotateEvery) {
-  const failure = stringValue(failureClass).toLowerCase();
-  const candidates = POST_EXHAUSTION_STRATEGIES[failure] ?? [];
+  const failure = canonicalFailureClass(failureClass);
+  const candidates = postExhaustionCandidates(failure);
   for (let index = 0; index < candidates.length; index += 1) {
     const row = candidates[index];
     const implementationFingerprint = strategyImplementationFingerprint(row.profile);
@@ -368,11 +390,12 @@ function postExhaustionStrategyHint(failureClass, memoryRows, rotateEvery) {
         profile: row.profile,
         method: row.method,
         index,
+        sourceFailureClass: stringValue(row.sourceFailureClass || failure),
         strategyImplementationFingerprint: implementationFingerprint,
       };
     }
   }
-  return { profile: "", method: "", index: -1, strategyImplementationFingerprint: "" };
+  return { profile: "", method: "", index: -1, sourceFailureClass: "", strategyImplementationFingerprint: "" };
 }
 
 function canonicalFailureClass(value) {
@@ -606,6 +629,17 @@ function buildPlan(item) {
     const successes = Math.max(0, finiteNumber(row.successes, 0));
     return consecutiveFailures > 0 || (successes === 0 && failures > 0);
   });
+  const currentFailureFamily = LLM_FAILURE_FAMILIES[canonicalFailureClass(evidence.failureClass)] ?? canonicalFailureClass(evidence.failureClass);
+  const causalFamilyMemoryMatches = negativeMemory.filter((row) => {
+    if (stringValue(row.providerId).toLowerCase() !== providerId) return false;
+    const rowFailure = canonicalFailureClass(row.failureClass);
+    const rowFamily = LLM_FAILURE_FAMILIES[rowFailure] ?? rowFailure;
+    if (rowFailure && rowFamily !== currentFailureFamily) return false;
+    const consecutiveFailures = Math.max(0, finiteNumber(row.consecutiveFailures, 0));
+    const failures = Math.max(0, finiteNumber(row.failures, 0));
+    const successes = Math.max(0, finiteNumber(row.successes, 0));
+    return consecutiveFailures > 0 || (successes === 0 && failures > 0);
+  });
   const finalProductionProfile = causalStrategyProfile(
     evidence.failureClass,
     finalVariant,
@@ -818,7 +852,7 @@ function buildPlan(item) {
   const postExhaustionHint = positiveProgramReplayHint.profile
     ? positiveProgramReplayHint
     : (explorationMode && experimentExhausted)
-      ? postExhaustionStrategyHint(evidence.failureClass, allMemoryMatches, rotateEvery)
+      ? postExhaustionStrategyHint(evidence.failureClass, causalFamilyMemoryMatches, rotateEvery)
       : { profile: "", method: "", index: -1 };
   const strategyEscalated = Boolean(postExhaustionHint.profile);
   const architectureGapEscalation = (
@@ -836,7 +870,7 @@ function buildPlan(item) {
     ? llmAdvisorStrategyHint(
         providerId,
         evidence.failureClass,
-        allMemoryMatches,
+        causalFamilyMemoryMatches,
         rotateEvery,
         true,
       )
@@ -906,7 +940,7 @@ function buildPlan(item) {
       ? llmAdvisorStrategyHint(
           providerId,
           evidence.failureClass,
-          allMemoryMatches,
+          causalFamilyMemoryMatches,
           rotateEvery,
           experimentExhausted,
         )
@@ -1035,6 +1069,7 @@ function buildPlan(item) {
     postExhaustionStrategyProfile: postExhaustionHint.profile,
     postExhaustionStrategyMethod: postExhaustionHint.method,
     postExhaustionStrategyIndex: postExhaustionHint.index,
+    postExhaustionSourceFailureClass: stringValue(postExhaustionHint.sourceFailureClass),
     experimentRotationEvery: rotateEvery,
     experimentVariantCount: maxVariants,
     experimentGenerationLimit: learningMode ? maxLearningGenerations : finalVariantGeneration,
