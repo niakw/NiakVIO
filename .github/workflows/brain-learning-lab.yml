@@ -41,13 +41,13 @@ on:
   schedule:
     - cron: "17 2 * * *"
 
-# Normal Learning stays globally serialized. Explicit architecture FORCE is
-# serialized per exact targeted cohort: a fresh run cancels stale work for the
-# same cohort, but independent FORCE cohorts (for example allwish vs FAST debt)
-# must not cancel one another.
+# Targeted Learning is isolated by exact cohort so unrelated Fast handoffs can
+# learn concurrently. Publication remains serialized by the dedicated memory
+# writer job below, whose merge is monotone/provider-drift guarded. A fresher
+# run may replace stale work only inside its own exact targeted cohort.
 concurrency:
-  group: ${{ github.event_name == 'workflow_dispatch' && inputs.architecture_force == true && format('niakvio-brain-learning-force-{0}', inputs.target_providers || inputs.target_provider || 'global-force') || 'niakvio-brain-learning-lab-v2' }}
-  cancel-in-progress: ${{ github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.architecture_force == true) }}
+  group: ${{ github.event_name == 'workflow_dispatch' && (inputs.target_providers != '' || inputs.target_provider != '') && format('niakvio-brain-learning-target-{0}', inputs.target_providers || inputs.target_provider) || 'niakvio-brain-learning-lab-v2' }}
+  cancel-in-progress: ${{ github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && (inputs.target_providers != '' || inputs.target_provider != '')) }}
 
 jobs:
   experiment:
