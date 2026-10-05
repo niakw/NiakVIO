@@ -416,6 +416,28 @@ function llmAdvisorStrategyHint(providerId, failureClass, memoryRows, rotateEver
   const provider = stringValue(providerId).toLowerCase();
   const failure = canonicalFailureClass(failureClass);
   const metaGapProfile = allowMetaGap ? metaGapProfileForFailure(failure) : "";
+  // Keep every advisor source on the same causal-executor budget as the
+  // deterministic meta-gap synthesizer. A fresh LLM/persistent fingerprint
+  // must not reopen an executor family that already consumed three genuinely
+  // executed hypotheses under the same provider + causal failure family.
+  const maxExecutedFingerprintsPerProfile = 3;
+  const profileCausallyExhausted = (profile) => {
+    const fingerprints = new Set(
+      memoryRows
+        .filter((memory) => (
+          stringValue(memory.profile).toLowerCase() === profile
+          && memory.executionObserved === true
+          && (
+            Math.max(0, finiteNumber(memory.consecutiveFailures, 0)) > 0
+            || Math.max(0, finiteNumber(memory.failures, 0)) > 0
+            || Math.max(0, finiteNumber(memory.progresses, 0)) > 0
+          )
+        ))
+        .map((memory) => stringValue(memory.llmAdvisorExperimentFingerprint).toLowerCase())
+        .filter((fingerprint) => /^[0-9a-f]{64}$/.test(fingerprint)),
+    );
+    return fingerprints.size >= maxExecutedFingerprintsPerProfile;
+  };
   const rows = llmGuidance
     .map((row) => {
       const guidanceKind = stringValue(row.guidanceKind).toLowerCase();
@@ -478,6 +500,7 @@ function llmAdvisorStrategyHint(providerId, failureClass, memoryRows, rotateEver
 
   for (const row of rows) {
     const profile = stringValue(row.profile).toLowerCase();
+    if (profileCausallyExhausted(profile)) continue;
     if (row.metaGapRebound) {
       // One meta-gap guidance row is a bounded executor hypothesis, not a
       // license to generate an unbounded parameter search. After a full causal
