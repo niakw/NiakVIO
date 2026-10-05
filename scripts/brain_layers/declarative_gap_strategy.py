@@ -458,12 +458,20 @@ def synthesize_rows(
     rows: list[dict[str, Any]] = []
     for provider in sorted(repair_queue):
         status_failure = _status_failure(provider_rows.get(provider) or {})
-        # Canonical Repair memory records the failure class observed while an
-        # actual sandbox child executed on current provider bytes. That causal
-        # diagnosis is more specific than the census lifecycle floor
-        # (ROUTE/CHAIN/CANDIDATE). Non-executed rows are excluded above, so the
-        # census remains authoritative when Repair has no executed diagnosis.
-        failure = memory_failure.get(provider) or status_failure or ""
+        executed_failure = memory_failure.get(provider) or ""
+        # Keep the census label when both signals describe the same causal
+        # family; executor rotation already merges same-family history. If an
+        # actually executed Repair observation crosses into another family,
+        # however, that is a more specific current causal diagnosis than the
+        # coarse ROUTE/CHAIN/CANDIDATE lifecycle floor.
+        if (
+            status_failure
+            and executed_failure
+            and _failure_family(status_failure) == _failure_family(executed_failure)
+        ):
+            failure = status_failure
+        else:
+            failure = executed_failure or status_failure or ""
         if failure not in FAILURE_EXECUTORS:
             continue
         base = BASE_EXPERIMENTS[failure]
