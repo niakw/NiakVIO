@@ -64,6 +64,11 @@ for required in (
     '--providers "$PROVIDER_FILTER"',
     "skipped=stale-source",
     "git merge-base --is-ancestor",
+    "guidance-gap-report.json",
+    "Escalate exhausted targeted Learning to Brain architecture FORCE",
+    "FIELD_BRAIN_ARCH_FORCE_AUTO_ESCALATION",
+    "architecture_force=true",
+    "steps.architecture-escalation.outputs.escalated != 'true'",
 ):
     assert required in workflow, required
 
