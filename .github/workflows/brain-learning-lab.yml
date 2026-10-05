@@ -1003,7 +1003,8 @@ jobs:
               --providers "$PROVIDER_FILTER" \
               --current-sha "$GITHUB_SHA" \
               --census automation/provider-census-status.json \
-              --memory automation/brain-repair-memory.json
+              --memory automation/brain-repair-memory.json \
+              --report brain-sandbox/brain-llm/guidance-gap-report.json
             python scripts/filter_brain_learning_guidance.py \
               --input "$final" \
               --output "$final" \
@@ -1214,6 +1215,7 @@ jobs:
             brain-learning-output/brain-architecture-force.patch
             brain-learning-output/brain-architecture-force-report.json
             brain-sandbox/brain-llm/guidance.json
+            brain-sandbox/brain-llm/guidance-gap-report.json
             brain-learning-input/native-reader-summary.json
             brain-sandbox/daily-learning-coverage.json
             brain-sandbox/health-output/learning-queue-state.json
@@ -1362,8 +1364,48 @@ jobs:
           echo "FIELD_BRAIN_MEMORY_PUBLISH mode=orphan-memory-only files=3"
           echo "published=true" >> "$GITHUB_OUTPUT"
 
-      - name: Resume canonical Repair after push-triggered Learning
+      - name: Escalate exhausted targeted Learning to Brain architecture FORCE
+        id: architecture-escalation
         if: github.event_name == 'push' && steps.publish-memory.outputs.published == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          report="brain-sandbox/brain-llm/guidance-gap-report.json"
+          if [ ! -s "$report" ]; then
+            echo "escalated=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          mapfile -t exhausted < <(python - "$report" <<'PY'
+          import json,sys
+          data=json.load(open(sys.argv[1],encoding="utf-8"))
+          if data.get("architectureForceRecommended") is not True:
+              raise SystemExit(0)
+          for provider in data.get("exhaustedProviders") or []:
+              value=str(provider or "").strip().casefold().replace("_","-")
+              if value:
+                  print(value)
+          PY
+          )
+          if [ "${#exhausted[@]}" -eq 0 ]; then
+            echo "escalated=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          targets="$(IFS=,; echo "${exhausted[*]}")"
+          gh workflow run brain-learning-lab.yml \
+            --repo "$GITHUB_REPOSITORY" \
+            --ref main \
+            -f publish_proposal=false \
+            -f architecture_force=true \
+            -f target_providers="$targets" \
+            -f slot_remaining_minutes=360 \
+            -f slot_phase=1
+          echo "FIELD_BRAIN_ARCH_FORCE_AUTO_ESCALATION providers=$targets source_run=$GITHUB_RUN_ID"
+          echo "escalated=true" >> "$GITHUB_OUTPUT"
+
+      - name: Resume canonical Repair after push-triggered Learning
+        if: github.event_name == 'push' && steps.publish-memory.outputs.published == 'true' && steps.architecture-escalation.outputs.escalated != 'true'
         env:
           GH_TOKEN: ${{ github.token }}
           TARGET_PROVIDER: ${{ needs.experiment.outputs.target_provider || '' }}
