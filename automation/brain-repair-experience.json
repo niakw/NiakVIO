@@ -1721,7 +1721,7 @@
     "animesama-co": {
       "domainMemory": true,
       "evidenceDepth": [
-        "anime=none"
+        "anime=lookup_only"
       ],
       "hasApiRecipe": false,
       "hasProviderValuePlan": false,
@@ -8148,8 +8148,8 @@
     "requiresDeepValidation": true
   },
   "schemaVersion": 2,
-  "sourceRunId": "37341002247",
-  "sourceSha": "888d6fb36c59ca6186c4d9fa27a8f64e7ceaff14",
+  "sourceRunId": "37347611746",
+  "sourceSha": "f87ea17c5b73e6ed9994a5946fdf5eafac2bc814",
   "strategyPatterns": {
     "api_stream_resolver": {
       "commonRequestRecipes": [],
@@ -8161,17 +8161,17 @@
       "routeFamilies": [
         {
           "providerSupport": 1,
+          "role": "detail",
+          "supportRatio": 1.0
+        },
+        {
+          "providerSupport": 1,
           "role": "search",
           "supportRatio": 1.0
         },
         {
           "providerSupport": 1,
           "role": "other",
-          "supportRatio": 1.0
-        },
-        {
-          "providerSupport": 1,
-          "role": "detail",
           "supportRatio": 1.0
         }
       ]
@@ -8461,17 +8461,17 @@
       "routeFamilies": [
         {
           "providerSupport": 1,
-          "role": "episode",
-          "supportRatio": 1.0
-        },
-        {
-          "providerSupport": 1,
           "role": "api",
           "supportRatio": 1.0
         },
         {
           "providerSupport": 1,
           "role": "search",
+          "supportRatio": 1.0
+        },
+        {
+          "providerSupport": 1,
+          "role": "episode",
           "supportRatio": 1.0
         }
       ]
