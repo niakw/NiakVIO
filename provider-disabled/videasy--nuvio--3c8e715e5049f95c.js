@@ -288,14 +288,20 @@ function _spv187QueueScore(url) {
   return _crawlUrlScore(url) + bonus;
 }
 /* NIAKVIO_PROVIDER_PLAYER_FORM_HANDOFF_V18_8 */
+function _spv188DecodeAttr(value) {
+  return _text(value).replace(/&(amp|quot|#39);/gi, function(_match, entity) {
+    const key = String(entity).toLowerCase();
+    return key === "quot" ? '"' : key === "#39" ? "'" : "&";
+  });
+}
 function _spv188HtmlAttr(tag, name) {
   const source = _text(tag);
   const key = _text(name);
   if (!/^[A-Za-z][A-Za-z0-9_-]*$/.test(key)) return "";
   const quoted = source.match(new RegExp("\\b" + key + "\\s*=\\s*([\\\"'])([\\s\\S]*?)\\1", "i"));
-  if (quoted) return quoted[2].replace(/&amp;/gi, "&").replace(/&quot;/gi, '"').replace(/&#39;/gi, "'");
+  if (quoted) return _spv188DecodeAttr(quoted[2]);
   const bare = source.match(new RegExp("\\b" + key + "\\s*=\\s*([^\\s>]+)", "i"));
-  return bare ? bare[1] : "";
+  return bare ? _spv188DecodeAttr(bare[1]) : "";
 }
 function _spv188PlayerForm(html, pageUrl) {
   const source = _text(html).slice(0, 524288);
@@ -4734,7 +4740,7 @@ function explicitIds(row){var out={tmdbId:"",imdbId:""};var tv=s(row&&(row.tmdbI
 function tokens(v){var noise={the:1,a:1,an:1,le:1,la:1,les:1,un:1,une:1,de:1,des:1,du:1,and:1,et:1,film:1,movie:1,episode:1,season:1,saison:1,stream:1,streaming:1,source:1,server:1,serveur:1,player:1,video:1,watch:1,play:1,direct:1,download:1,quality:1,unknown:1,inconnu:1,inconnue:1,fallback:1};var tech={vcloud:1,hubcloud:1,file:1,web:1,dl:1,webrip:1,webdl:1,bluray:1,remux:1,hdr:1,dv:1,dolby:1,atmos:1,aac:1,ac3:1,eac3:1,ddp:1,x264:1,x265:1,h264:1,h265:1,hevc:1,av1:1,multi:1,vf:1,vff:1,vfq:1,vostfr:1,vo:1,french:1,english:1,truefrench:1,hd:1,uhd:1,fhd:1,sd:1};var provider=norm(c.providerId).split(" ");return norm(v).split(" ").filter(function(x){return x.length>1&&!noise[x]&&!tech[x]&&provider.indexOf(x)<0&&!/^\d{4}$/.test(x)&&!/^\d{3,4}p$/.test(x)&&!/^s\d+e\d+$/.test(x)})}
 function expectedTokens(m){var map={};uniq((m.titles||[]).concat(m.episodeTitles||[])).forEach(function(t){tokens(t).forEach(function(x){map[x]=1})});return map}
 function overlapsExpected(text,expected){var w=tokens(text);for(var i=0;i<w.length;i++)if(expected[w[i]])return true;return false}
-function explicitCandidates(row){var out=[],title=s(row&&row.title);if(title)out.push({text:title,kind:"title"});var filename=s(row&&row.filename);if(filename)out.push({text:filename,kind:"filename"});try{var base=decodeURIComponent(new URL(s(row&&row.url)).pathname.split("/").filter(Boolean).pop()||"").replace(/\.(?:m3u8|mpd|mp4|mkv|webm|m4v|ts)$/i,"");if(base)out.push({text:base,kind:"url"})}catch(_e){}var name=s(row&&row.name);if(name&&norm(name)!==norm(c.providerId))out.push({text:name,kind:"name"});return out}
+function explicitCandidates(row){var out=[],title=s(row&&row.title);if(title)out.push({text:title,kind:"title"});var filename=s(row&&row.filename);if(filename)out.push({text:filename,kind:"filename"});try{var base=pathText(new URL(s(row&&row.url)).pathname.split("/").filter(Boolean).pop()||"").replace(/\.(?:m3u8|mpd|mp4|mkv|webm|m4v|ts)$/i,"");if(base)out.push({text:base,kind:"url"})}catch(_e){}var name=s(row&&row.name);if(name&&norm(name)!==norm(c.providerId))out.push({text:name,kind:"name"});return out}
 function contentLike(candidate,q){var w=tokens(candidate.text),se=episode(candidate.text),years=norm(candidate.text).match(/\b(?:19|20)\d{2}\b/g)||[];if(se)return true;if(!episodic(q)&&years.length&&w.length>=1)return true;if((candidate.kind==="title"||candidate.kind==="filename")&&w.length>=3)return true;return false}
 function queryTitle(text){return tokens(text).join(" ").trim()}
 function strongNameMatch(query,result){var a=tokens(query),names=uniq([result&&result.name,result&&result.original_name,result&&result.title,result&&result.original_title]);if(a.length<2)return false;for(var n=0;n<names.length;n++){var b=tokens(names[n]);if(!b.length)continue;var hit=0;a.forEach(function(x){if(b.indexOf(x)>=0)hit++});var ratio=hit/Math.max(a.length,b.length);if(ratio>=0.67)return true}return false}
@@ -6014,7 +6020,7 @@ var ok=false;try{if(typeof module!=="undefined"&&module.exports){ok=install(modu
 ;(function(g,c){"use strict";
 function s(v){return String(v==null?"":v).trim()}
 function bridge(){var x=g&&g.__NIAKVIO_TELEMETRY_V1__;return x&&typeof x==="object"?x:{}}
-function uuid(){try{if(g&&g.crypto&&typeof g.crypto.randomUUID==="function")return g.crypto.randomUUID()}catch(_e){}return"i-"+Date.now().toString(36)+"-"+Math.random().toString(36).slice(2)+Math.random().toString(36).slice(2)}
+function uuid(){try{if(g&&g.crypto&&typeof g.crypto.randomUUID==="function")return g.crypto.randomUUID();if(g&&g.crypto&&typeof g.crypto.getRandomValues==="function"){var a=new Uint32Array(4);g.crypto.getRandomValues(a);return"i-"+Array.prototype.map.call(a,function(v){return v.toString(36)}).join("-")}}catch(_e){}return""}
 function installId(){var b=bridge(),direct=s(b.installId);if(direct)return direct;try{if(g&&g.localStorage){var k=s(c.localInstallKey)||"niakvio.installId.v1",v=s(g.localStorage.getItem(k));if(v)return v;v=uuid();g.localStorage.setItem(k,v);return v}}catch(_e){}return""}
 function sessionId(){var b=bridge(),direct=s(b.sessionId);if(direct)return direct;try{if(g.__nuvioTelemetrySessionIdV1)return s(g.__nuvioTelemetrySessionIdV1);g.__nuvioTelemetrySessionIdV1=uuid();return s(g.__nuvioTelemetrySessionIdV1)}catch(_e){return uuid()}}
 function endpoint(){var u=s(bridge().endpoint)||s(c.defaultEndpoint);return/^https?:\/\//i.test(u)?u:""}

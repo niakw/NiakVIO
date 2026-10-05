@@ -1043,14 +1043,20 @@ function _spv187QueueScore(url) {
   return _crawlUrlScore(url) + bonus;
 }
 /* NIAKVIO_PROVIDER_PLAYER_FORM_HANDOFF_V18_8 */
+function _spv188DecodeAttr(value) {
+  return _text(value).replace(/&(amp|quot|#39);/gi, function(_match, entity) {
+    const key = String(entity).toLowerCase();
+    return key === "quot" ? '"' : key === "#39" ? "'" : "&";
+  });
+}
 function _spv188HtmlAttr(tag, name) {
   const source = _text(tag);
   const key = _text(name);
   if (!/^[A-Za-z][A-Za-z0-9_-]*$/.test(key)) return "";
   const quoted = source.match(new RegExp("\\b" + key + "\\s*=\\s*([\\\"'])([\\s\\S]*?)\\1", "i"));
-  if (quoted) return quoted[2].replace(/&quot;/gi, '"').replace(/&#39;/gi, "'").replace(/&amp;/gi, "&");
+  if (quoted) return _spv188DecodeAttr(quoted[2]);
   const bare = source.match(new RegExp("\\b" + key + "\\s*=\\s*([^\\s>]+)", "i"));
-  return bare ? bare[1] : "";
+  return bare ? _spv188DecodeAttr(bare[1]) : "";
 }
 function _spv188PlayerForm(html, pageUrl) {
   const source = _text(html).slice(0, 524288);

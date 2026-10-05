@@ -56,7 +56,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **kwargs: Any) -> st
 ;(function(g,c){"use strict";
 function s(v){return String(v==null?"":v).trim()}
 function bridge(){var x=g&&g.__NIAKVIO_TELEMETRY_V1__;return x&&typeof x==="object"?x:{}}
-function uuid(){try{if(g&&g.crypto&&typeof g.crypto.randomUUID==="function")return g.crypto.randomUUID()}catch(_e){}return"i-"+Date.now().toString(36)+"-"+Math.random().toString(36).slice(2)+Math.random().toString(36).slice(2)}
+function uuid(){try{if(g&&g.crypto&&typeof g.crypto.randomUUID==="function")return g.crypto.randomUUID();if(g&&g.crypto&&typeof g.crypto.getRandomValues==="function"){var a=new Uint32Array(4);g.crypto.getRandomValues(a);return"i-"+Array.prototype.map.call(a,function(v){return v.toString(36)}).join("-")}}catch(_e){}return""}
 function nodeRuntime(){try{return typeof process!=="undefined"&&process&&process.versions&&process.versions.node?true:false}catch(_e){return false}}
 function runtimeClass(){var b=bridge(),direct=s(b.runtimeClass).toLowerCase();if(direct)return direct;return nodeRuntime()?"synthetic":"production"}
 function installIdentity(){var b=bridge(),direct=s(b.installId);if(direct)return{id:direct,scope:"host-install"};if(runtimeClass()!=="production")return{id:"",scope:""};try{if(g&&g.localStorage){var k=s(c.localInstallKey)||"niakvio.installId.v1",v=s(g.localStorage.getItem(k));if(!v){v=uuid();g.localStorage.setItem(k,v)}if(v)return{id:v,scope:"client-install"}}}catch(_e){}return{id:"",scope:""}}
