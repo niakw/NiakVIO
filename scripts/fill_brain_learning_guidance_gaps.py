@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
-"""Fill missing targeted Learning guidance with deterministic Brain meta-gap synthesis.
+"""Fill or advance targeted Learning guidance with deterministic Brain meta-gap synthesis.
 
 This is a hypothesis-only bridge: it never mutates provider/publication bytes and
 never grants proof/publication authority. It is used only after cached/Qwen rows
-were sanitized and negative-memory filtered. Missing targeted providers can then
-receive the next bounded already-sandboxed executor selected from current census
-and canonical Repair memory instead of returning to Repair with no hypothesis.
+were sanitized and negative-memory filtered. Targeted providers may receive the
+next bounded already-sandboxed executor selected from current census and canonical
+Repair memory even when an older, now-causally-exhausted row for that provider is
+already present. This closes Learning-runtime -> persisted-guidance handoff.
 """
 from __future__ import annotations
 
@@ -68,10 +69,16 @@ def fill(
         provider=canon(raw)
         if provider and provider not in seen_wanted:
             seen_wanted.add(provider);wanted.append(provider)
-    existing={canon(row.get("providerId")) for row in payload.get("rows") or [] if isinstance(row,dict)}
-    missing=[provider for provider in wanted if provider not in existing]
-    if not missing:
-        return payload,[]
+    out=json.loads(json.dumps(payload))
+    rows=[row for row in out.get("rows") or [] if isinstance(row,dict)]
+    existing_keys={
+        (
+            canon(row.get("providerId")),
+            str(row.get("profile") or "").strip().casefold(),
+            str(row.get("experimentFingerprint") or "").strip().casefold(),
+        )
+        for row in rows
+    }
 
     synthesized=synthesize_rows(census=census,memory=memory,current_sha=current_sha,max_rows=128)
     by_provider={}
@@ -79,17 +86,24 @@ def fill(
         if not isinstance(raw,dict):
             continue
         provider=canon(raw.get("providerId"))
-        if provider in missing and provider not in by_provider:
+        if provider in seen_wanted and provider not in by_provider:
             by_provider[provider]=public_row(raw)
 
-    out=json.loads(json.dumps(payload))
-    rows=[row for row in out.get("rows") or [] if isinstance(row,dict)]
     added=[]
-    for provider in missing:
+    for provider in wanted:
         row=by_provider.get(provider)
         if row is None:
             continue
-        rows.append(row);added.append(provider)
+        key=(
+            provider,
+            str(row.get("profile") or "").strip().casefold(),
+            str(row.get("experimentFingerprint") or "").strip().casefold(),
+        )
+        if key in existing_keys:
+            continue
+        rows.append(row)
+        existing_keys.add(key)
+        added.append(provider)
     out["rows"]=rows
     out["providerCount"]=len({canon(row.get("providerId")) for row in rows if canon(row.get("providerId"))})
     if SHA40.fullmatch(str(current_sha or "").strip().casefold()):
@@ -117,7 +131,7 @@ def main()->int:
     print(
         "FIELD_BRAIN_LEARNING_GUIDANCE_GAP_FILL "
         f"requested={len({canon(x) for x in providers if canon(x)})} "
-        f"added={len(added)} providers={','.join(added) or 'none'} "
+        f"advanced={len(added)} providers={','.join(added) or 'none'} "
         f"final={output.get('providerCount',0)}"
     )
     return 0
