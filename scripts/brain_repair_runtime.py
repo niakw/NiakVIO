@@ -1718,7 +1718,14 @@ def annotate_and_learn(output_dir: Path, mode: str) -> dict[str, Any]:
             "experimentVariant": row.get("experimentVariant"),
             "experimentGeneration": row.get("experimentGeneration"),
             "experimentVariantCount": row.get("experimentVariantCount"),
+            "baseExperimentExhausted": row.get("baseExperimentExhausted") is True,
             "experimentExhausted": row.get("experimentExhausted") is True,
+            "strategyEscalated": row.get("strategyEscalated") is True,
+            "explorationChainEnabled": row.get("explorationChainEnabled") is True,
+            "explorationModeEnabled": row.get("explorationModeEnabled") is True,
+            "postExhaustionCandidateProfiles": [
+                str(value) for value in row.get("postExhaustionCandidateProfiles") or [] if str(value)
+            ][:24],
             "negativeMemoryMatches": row.get("negativeMemoryMatches"),
             "llmAdvisorApplied": row.get("llmAdvisorApplied") is True,
             "llmAdvisorRescue": row.get("llmAdvisorRescue") is True,
@@ -1726,6 +1733,7 @@ def annotate_and_learn(output_dir: Path, mode: str) -> dict[str, Any]:
             "providerPositiveProgramProductionRescue": row.get("providerPositiveProgramProductionRescue") is True,
             "postExhaustionStrategyProfile": row.get("postExhaustionStrategyProfile"),
             "postExhaustionStrategyMethod": row.get("postExhaustionStrategyMethod"),
+            "postExhaustionSourceFailureClass": row.get("postExhaustionSourceFailureClass"),
             "llmAdvisorStrategy": row.get("llmAdvisorStrategy"),
             "llmAdvisorProfile": row.get("llmAdvisorProfile"),
             "llmAdvisorConfidence": row.get("llmAdvisorConfidence"),
