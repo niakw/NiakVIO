@@ -111,6 +111,42 @@ def fill(
     return out,added
 
 
+def exhaustion_report(
+    *,
+    providers:list[str],
+    current_sha:str,
+    census:dict[str,Any],
+    memory:dict[str,Any],
+)->dict[str,Any]:
+    wanted=[]
+    seen=set()
+    for raw in providers:
+        provider=canon(raw)
+        if provider and provider not in seen:
+            seen.add(provider);wanted.append(provider)
+    repair_queue={canon(x) for x in census.get("repairQueue") or [] if canon(x)}
+    synthesized=synthesize_rows(census=census,memory=memory,current_sha=current_sha,max_rows=128)
+    synthesized_providers={
+        canon(row.get("providerId"))
+        for row in synthesized
+        if isinstance(row,dict) and canon(row.get("providerId"))
+    }
+    exhausted=[
+        provider for provider in wanted
+        if provider in repair_queue and provider not in synthesized_providers
+    ]
+    return {
+        "schemaVersion":1,
+        "role":"architecture-escalation-signal-only",
+        "publicationAuthority":False,
+        "providerMutationAuthority":False,
+        "requestedProviders":wanted,
+        "synthesizedProviders":sorted(synthesized_providers & set(wanted)),
+        "exhaustedProviders":exhausted,
+        "architectureForceRecommended":bool(exhausted),
+    }
+
+
 def main()->int:
     p=argparse.ArgumentParser()
     p.add_argument("--input",type=Path,required=True)
@@ -120,18 +156,27 @@ def main()->int:
     p.add_argument("--current-sha",required=True)
     p.add_argument("--census",type=Path,default=Path("automation/provider-census-status.json"))
     p.add_argument("--memory",type=Path,default=Path("automation/brain-repair-memory.json"))
+    p.add_argument("--report",type=Path)
     a=p.parse_args()
     providers=[*a.provider,*str(a.providers or "").split(",")]
     payload=load(a.input)
     census=json.loads(a.census.read_text(encoding="utf-8"))
     memory=json.loads(a.memory.read_text(encoding="utf-8"))
     output,added=fill(payload,providers=providers,current_sha=a.current_sha,census=census,memory=memory)
+    report=exhaustion_report(
+        providers=providers,current_sha=a.current_sha,census=census,memory=memory
+    )
     a.output.parent.mkdir(parents=True,exist_ok=True)
     a.output.write_text(json.dumps(output,indent=2,sort_keys=True)+"\n",encoding="utf-8")
+    if a.report is not None:
+        a.report.parent.mkdir(parents=True,exist_ok=True)
+        a.report.write_text(json.dumps(report,indent=2,sort_keys=True)+"\n",encoding="utf-8")
     print(
         "FIELD_BRAIN_LEARNING_GUIDANCE_GAP_FILL "
         f"requested={len({canon(x) for x in providers if canon(x)})} "
         f"advanced={len(added)} providers={','.join(added) or 'none'} "
+        f"exhausted={len(report['exhaustedProviders'])} "
+        f"exhausted_providers={','.join(report['exhaustedProviders']) or 'none'} "
         f"final={output.get('providerCount',0)}"
     )
     return 0
