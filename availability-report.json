@@ -1,17 +1,17 @@
 {
   "schema_version": 63,
-  "generated_at": "2026-10-05T05:58:28.241958+00:00",
+  "generated_at": "2026-10-05T17:16:02.746303+00:00",
   "test_environment": "github-actions-node",
   "checked_providers": 41,
   "status_counts": {
-    "healthy": 5,
+    "healthy": 3,
     "reachable": 0,
-    "blocked": 5,
+    "blocked": 4,
     "degraded": 1,
-    "no_streams": 14,
-    "provider_unreachable": 13,
+    "no_streams": 15,
+    "provider_unreachable": 14,
     "runtime_error": 0,
-    "unavailable": 3,
+    "unavailable": 4,
     "excluded": 0
   },
   "policy": {
@@ -280,18 +280,14 @@
     },
     {
       "id": "movieshunt",
-      "status": "healthy",
+      "status": "no_streams",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
-      "consecutive_successes": 1,
-      "hosts": [
-        "556138dca7367763ed46eecaa4284eca.r2.cloudflarestorage.com"
-      ],
-      "response_categories": [
-        "playable"
-      ],
+      "consecutive_successes": 0,
+      "hosts": [],
+      "response_categories": [],
       "host_health": {
         "pub-a0a5ce422c034486a372657692292682.r2.dev": {
           "last_checked_at": "2026-10-05T05:58:28.241958+00:00",
@@ -552,18 +548,14 @@
     },
     {
       "id": "hindmoviez",
-      "status": "healthy",
+      "status": "no_streams",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
-      "consecutive_successes": 2,
-      "hosts": [
-        "me.vetoilloinipau-9446.workers.dev"
-      ],
-      "response_categories": [
-        "playable"
-      ],
+      "consecutive_successes": 0,
+      "hosts": [],
+      "response_categories": [],
       "host_health": {
         "share.kujeucoixeti-6043.workers.dev": {
           "last_checked_at": "2026-10-05T05:58:28.241958+00:00",
@@ -2416,18 +2408,14 @@
     },
     {
       "id": "sekai",
-      "status": "healthy",
+      "status": "no_streams",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
-      "consecutive_successes": 2,
-      "hosts": [
-        "1.mugiwara.one"
-      ],
-      "response_categories": [
-        "playable"
-      ],
+      "consecutive_successes": 0,
+      "hosts": [],
+      "response_categories": [],
       "host_health": {
         "4.mugiwara.one": {
           "last_checked_at": "2026-10-05T05:58:28.241958+00:00",
@@ -2709,17 +2697,21 @@
     },
     {
       "id": "vidrock",
-      "status": "no_streams",
+      "status": "healthy",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
-      "consecutive_successes": 0,
-      "hosts": [],
-      "response_categories": [],
+      "consecutive_successes": 1,
+      "hosts": [
+        "cdn2.boomchick.org"
+      ],
+      "response_categories": [
+        "playable"
+      ],
       "host_health": {
         "cdn1.ngcorp.dad": {
-          "last_checked_at": "2026-10-04T23:20:35.206274+00:00",
+          "last_checked_at": "2026-10-05T17:16:02.746303+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -2730,7 +2722,7 @@
           "consecutive_blocked": 0
         },
         "dreadnought.flamingo-e55.workers.dev": {
-          "last_checked_at": "2026-10-04T23:20:35.206274+00:00",
+          "last_checked_at": "2026-10-05T17:16:02.746303+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -2741,7 +2733,7 @@
           "consecutive_blocked": 0
         },
         "moonfirekeeper.lol": {
-          "last_checked_at": "2026-10-04T23:20:35.206274+00:00",
+          "last_checked_at": "2026-10-05T17:16:02.746303+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -2752,18 +2744,18 @@
           "consecutive_blocked": 0
         },
         "shadowmoonwanderer.lol": {
-          "last_checked_at": "2026-10-04T23:20:35.206274+00:00",
-          "last_category": "playable",
-          "reachable": true,
-          "http_status": 206,
-          "latency_ms": 509,
+          "last_checked_at": "2026-10-05T17:16:02.746303+00:00",
+          "last_category": "not_returned",
+          "reachable": false,
+          "http_status": null,
+          "latency_ms": null,
           "kind": "hls",
           "consecutive_hard_failures": 0,
-          "consecutive_successes": 1,
+          "consecutive_successes": 0,
           "consecutive_blocked": 0
         },
         "hollowvelocity.live": {
-          "last_checked_at": "2026-10-04T23:20:35.206274+00:00",
+          "last_checked_at": "2026-10-05T17:16:02.746303+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -2774,7 +2766,7 @@
           "consecutive_blocked": 0
         },
         "quantumrapture.site": {
-          "last_checked_at": "2026-10-04T23:20:35.206274+00:00",
+          "last_checked_at": "2026-10-05T17:16:02.746303+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -2785,7 +2777,7 @@
           "consecutive_blocked": 0
         },
         "digitalmonarch.site": {
-          "last_checked_at": "2026-10-04T23:20:35.206274+00:00",
+          "last_checked_at": "2026-10-05T17:16:02.746303+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -2793,6 +2785,17 @@
           "kind": "hls",
           "consecutive_hard_failures": 0,
           "consecutive_successes": 0,
+          "consecutive_blocked": 0
+        },
+        "cdn2.boomchick.org": {
+          "last_checked_at": "2026-10-05T17:16:02.746303+00:00",
+          "last_category": "playable",
+          "reachable": true,
+          "http_status": 200,
+          "latency_ms": 814,
+          "kind": "hls",
+          "consecutive_hard_failures": 0,
+          "consecutive_successes": 1,
           "consecutive_blocked": 0
         }
       },
@@ -2992,7 +2995,7 @@
     },
     {
       "id": "wookafr",
-      "status": "healthy",
+      "status": "unavailable",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
@@ -3120,7 +3123,7 @@
     },
     {
       "id": "anime-ultime",
-      "status": "blocked",
+      "status": "provider_unreachable",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
@@ -3188,17 +3191,21 @@
     },
     {
       "id": "vidlove",
-      "status": "no_streams",
+      "status": "healthy",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
-      "consecutive_successes": 0,
-      "hosts": [],
-      "response_categories": [],
+      "consecutive_successes": 1,
+      "hosts": [
+        "d.phantomflix.net"
+      ],
+      "response_categories": [
+        "playable"
+      ],
       "host_health": {
         "ballerinacappuccinalovestungtungtungsahur.com": {
-          "last_checked_at": "2026-10-04T14:11:09.005871+00:00",
+          "last_checked_at": "2026-10-05T17:16:02.746303+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -3209,7 +3216,7 @@
           "consecutive_blocked": 0
         },
         "a2.whysosigmabro.fun": {
-          "last_checked_at": "2026-10-04T14:11:09.005871+00:00",
+          "last_checked_at": "2026-10-05T17:16:02.746303+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -3220,7 +3227,7 @@
           "consecutive_blocked": 0
         },
         "d.whysosigmabro.fun": {
-          "last_checked_at": "2026-10-04T14:11:09.005871+00:00",
+          "last_checked_at": "2026-10-05T17:16:02.746303+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -3231,7 +3238,7 @@
           "consecutive_blocked": 0
         },
         "a2.whysosigmabro.cfd": {
-          "last_checked_at": "2026-10-04T14:11:09.005871+00:00",
+          "last_checked_at": "2026-10-05T17:16:02.746303+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -3242,7 +3249,7 @@
           "consecutive_blocked": 0
         },
         "d.whysosigmabro.cfd": {
-          "last_checked_at": "2026-10-04T14:11:09.005871+00:00",
+          "last_checked_at": "2026-10-05T17:16:02.746303+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -3253,18 +3260,18 @@
           "consecutive_blocked": 0
         },
         "d.phantomflix.net": {
-          "last_checked_at": "2026-10-04T14:11:09.005871+00:00",
+          "last_checked_at": "2026-10-05T17:16:02.746303+00:00",
           "last_category": "playable",
           "reachable": true,
           "http_status": 200,
-          "latency_ms": 116,
+          "latency_ms": 602,
           "kind": "hls",
           "consecutive_hard_failures": 0,
-          "consecutive_successes": 1,
+          "consecutive_successes": 2,
           "consecutive_blocked": 0
         },
         "a2.phantomflix.net": {
-          "last_checked_at": "2026-10-04T14:11:09.005871+00:00",
+          "last_checked_at": "2026-10-05T17:16:02.746303+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
