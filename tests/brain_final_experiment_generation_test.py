@@ -187,18 +187,45 @@ fourth_escalation_failed={
     "profile":"document_request_contract_mining_v1",
     "strategyImplementationFingerprint":document_fp,
 }
-learning_exhausted=plan(
-    [
-        *base_exhausted,
-        first_escalation_failed,
-        second_escalation_failed,
-        third_escalation_failed,
-        fourth_escalation_failed,
-    ],
-    "learning",
-)
-assert learning_exhausted["experimentGeneration"]==5,learning_exhausted
-assert learning_exhausted["baseExperimentExhausted"] is True,learning_exhausted
+# Causal-family evolution may legitimately discover additional terminal-media
+# executors owned by sibling failure labels (for example media_extraction_gap).
+# Exhaust every distinct implementation before declaring architecture debt.
+evolved_memory=[
+    *base_exhausted,
+    first_escalation_failed,
+    second_escalation_failed,
+    third_escalation_failed,
+    fourth_escalation_failed,
+]
+seen_evolved_profiles={
+    "terminal_transition_graph_v1",
+    "terminal_request_program_inference_v1",
+    "runtime_response_salvage_v1",
+    "document_request_contract_mining_v1",
+}
+learning_exhausted=None
+for _attempt in range(24):
+    learning_exhausted=plan(evolved_memory,"learning")
+    assert learning_exhausted["experimentGeneration"]==5,learning_exhausted
+    assert learning_exhausted["baseExperimentExhausted"] is True,learning_exhausted
+    if not learning_exhausted.get("strategyEscalated"):
+        break
+    profile=learning_exhausted.get("postExhaustionStrategyProfile") or ""
+    implementation_fp=learning_exhausted.get("strategyImplementationFingerprint") or ""
+    source_failure=learning_exhausted.get("postExhaustionSourceFailureClass") or "chain_terminal_gap"
+    assert profile and implementation_fp,learning_exhausted
+    seen_evolved_profiles.add(profile)
+    failed_row={
+        **row(4,5),
+        "failureClass":source_failure,
+        "profile":profile,
+        "strategyImplementationFingerprint":implementation_fp,
+    }
+    evolved_memory.append(failed_row)
+else:
+    raise AssertionError(("causal-family evolved strategies did not exhaust",learning_exhausted))
+assert learning_exhausted is not None
+assert "player_protocol_family_replay_v1" in seen_evolved_profiles,seen_evolved_profiles
 assert learning_exhausted["experimentExhausted"] is True,learning_exhausted
 assert learning_exhausted["strategyEscalated"] is False,learning_exhausted
 assert learning_exhausted["repairScope"]=="learning",learning_exhausted
