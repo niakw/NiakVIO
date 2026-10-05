@@ -16,14 +16,14 @@
     "mallumv"
   ],
   "effectiveWaves": 6,
-  "elapsedSeconds": 1099.759,
+  "elapsedSeconds": 1166.57,
   "executionModel": "family-batched-multi-wave-brain-repair",
   "experienceMemory": {
     "operationalProviderCount": 24,
     "providerCount": 46,
     "schemaVersion": 2,
-    "sourceRunId": "37258962081",
-    "sourceSha": "adca714edce220b2a1619c8ad16462ff5c762d0c",
+    "sourceRunId": "37260696931",
+    "sourceSha": "2492412646b75a1c4753d607d35334cc7df85a48",
     "strategyCount": 5
   },
   "fixedInLabProviders": [],
@@ -47,7 +47,7 @@
   },
   "maxRoundsPerBatch": 3,
   "maxWaves": 6,
-  "noProgressReason": "time_budget_exhausted",
+  "noProgressReason": "time_budget_exhausted_during_batch",
   "positiveProgramRecovery": {
     "durableProviders": [
       "mallumv"
@@ -115,7 +115,7 @@
   "shardCount": 1,
   "shardIndex": 0,
   "skippedEnvironmentProviders": [],
-  "sourceCensusRunId": "37258962081",
+  "sourceCensusRunId": "37260696931",
   "timeBudgetExhausted": true,
   "timeBudgetSeconds": 1200,
   "unvisitedProviders": [],
@@ -607,7 +607,7 @@
                 "llmAdvisorSourceFailureClass": "transport_blocked",
                 "llmAdvisorStrategy": "meta-gap-adaptive-runtime-fallback",
                 "metaGapEscalated": false,
-                "negativeMemoryMatches": 53,
+                "negativeMemoryMatches": 55,
                 "positiveProgramFingerprint": "",
                 "postExhaustionCandidateProfiles": [
                   "transport_request_differential_v1",
@@ -636,7 +636,6 @@
               "published:moviesmod": {
                 "action": "probe-targeted-repair",
                 "allowedProfiles": [
-                  "identity_alias_search_traversal_v1",
                   "provider_origin_failover_v1"
                 ],
                 "baseExperimentExhausted": true,
@@ -645,11 +644,28 @@
                 "experimentGeneration": 2,
                 "experimentVariant": 4,
                 "experimentVariantCount": 5,
-                "explorationChainEnabled": true,
-                "explorationModeEnabled": true,
+                "explorationChainEnabled": false,
+                "explorationModeEnabled": false,
                 "failureClass": "transport_blocked",
-                "hypotheses": [],
-                "learningDisposition": "execute_learning_advisor_strategy",
+                "hypotheses": [
+                  {
+                    "confidence": 0,
+                    "id": "bootstrap-session",
+                    "learned": false,
+                    "maturity": null,
+                    "profile": null,
+                    "transferScore": 0
+                  },
+                  {
+                    "confidence": 0,
+                    "id": "alternate-official-route",
+                    "learned": false,
+                    "maturity": null,
+                    "profile": null,
+                    "transferScore": 0
+                  }
+                ],
+                "learningDisposition": "core_repair_only",
                 "llmAdvisorApplied": true,
                 "llmAdvisorConfidence": 0.86,
                 "llmAdvisorExperiment": {
@@ -679,11 +695,11 @@
                 "llmAdvisorFailureCompatibility": "exact-rebound",
                 "llmAdvisorGuidanceKind": "meta-gap-synthesis",
                 "llmAdvisorProfile": "provider_origin_failover_v1",
-                "llmAdvisorRescue": false,
+                "llmAdvisorRescue": true,
                 "llmAdvisorSourceFailureClass": "transport_blocked",
                 "llmAdvisorStrategy": "meta-gap-origin-fallback",
                 "metaGapEscalated": false,
-                "negativeMemoryMatches": 42,
+                "negativeMemoryMatches": 46,
                 "positiveProgramFingerprint": "",
                 "postExhaustionCandidateProfiles": [
                   "transport_request_differential_v1",
@@ -697,16 +713,16 @@
                   "search_contract_inference_v1",
                   "search_response_route_binding_v1"
                 ],
-                "postExhaustionSourceFailureClass": "route_proven_gap",
-                "postExhaustionStrategyMethod": "tmdb-identity-alias-search-traversal",
-                "postExhaustionStrategyProfile": "identity_alias_search_traversal_v1",
+                "postExhaustionSourceFailureClass": "",
+                "postExhaustionStrategyMethod": "",
+                "postExhaustionStrategyProfile": "",
                 "providerId": "moviesmod",
                 "providerPositiveProgramProductionRescue": false,
                 "providerPositiveProgramReplay": false,
-                "repairScope": "learning",
-                "repairType": "synthesized_strategy",
+                "repairScope": "capability",
+                "repairType": "session_transport",
                 "signature": "407798151f15452ec1ccd098",
-                "strategyEscalated": true,
+                "strategyEscalated": false,
                 "targetCategories": []
               },
               "published:vidfast": {
@@ -824,7 +840,6 @@
               "flemmix",
               "mallumv",
               "moviebox",
-              "moviesmod",
               "vidfast",
               "yflix"
             ],
@@ -833,8 +848,7 @@
           "capabilityStrategy": "mixed",
           "crossWaveExplorationCarryoverApplied": [],
           "crossWaveExplorationCarryoverCaptured": [
-            "moviebox",
-            "moviesmod"
+            "moviebox"
           ],
           "deferredToLearning": [
             "4khdhub",
@@ -953,7 +967,6 @@
       "acceptedProgramCompiledProviders": [],
       "advisorRotationPending": [
         "animevost-fr",
-        "moviebox",
         "moviesmod",
         "vidfast",
         "yflix"
@@ -964,14 +977,12 @@
           "acceptedCount": 0,
           "advisorRemainingFingerprintCounts": {
             "animevost-fr": 1,
-            "moviebox": 1,
             "moviesmod": 2,
             "vidfast": 2,
             "yflix": 1
           },
           "advisorRotationPending": [
             "animevost-fr",
-            "moviebox",
             "moviesmod",
             "vidfast",
             "yflix"
@@ -1030,9 +1041,50 @@
                 "targetCategories": []
               },
               "published:moviebox": {
+                "action": "hold-or-quarantine-pending-proof",
+                "allowedProfiles": [],
+                "baseExperimentExhausted": false,
+                "exitReason": null,
+                "experimentExhausted": false,
+                "experimentGeneration": 1,
+                "experimentVariant": 0,
+                "experimentVariantCount": 5,
+                "explorationChainEnabled": true,
+                "explorationModeEnabled": true,
+                "failureClass": "identity_mismatch",
+                "hypotheses": [],
+                "learningDisposition": "core_repair_only",
+                "llmAdvisorApplied": false,
+                "llmAdvisorConfidence": 0,
+                "llmAdvisorExperiment": {},
+                "llmAdvisorExperimentFingerprint": "",
+                "llmAdvisorExplorationRescue": false,
+                "llmAdvisorFailureCompatibility": "",
+                "llmAdvisorGuidanceKind": "",
+                "llmAdvisorProfile": "",
+                "llmAdvisorRescue": false,
+                "llmAdvisorSourceFailureClass": "",
+                "llmAdvisorStrategy": "",
+                "metaGapEscalated": false,
+                "negativeMemoryMatches": 0,
+                "positiveProgramFingerprint": "",
+                "postExhaustionCandidateProfiles": [],
+                "postExhaustionSourceFailureClass": "",
+                "postExhaustionStrategyMethod": "",
+                "postExhaustionStrategyProfile": "",
+                "providerId": "moviebox",
+                "providerPositiveProgramProductionRescue": false,
+                "providerPositiveProgramReplay": false,
+                "repairScope": "global",
+                "repairType": "media_identity_guard",
+                "signature": "6f63559fd16222aaae2e9d57",
+                "strategyEscalated": false,
+                "targetCategories": []
+              },
+              "published:moviesmod": {
                 "action": "probe-targeted-repair",
                 "allowedProfiles": [
-                  "html_class_token_exact_v1"
+                  "document_request_contract_mining_v1"
                 ],
                 "baseExperimentExhausted": true,
                 "exitReason": null,
@@ -1078,7 +1130,7 @@
                 "llmAdvisorSourceFailureClass": "transport_blocked",
                 "llmAdvisorStrategy": "meta-gap-adaptive-runtime-fallback",
                 "metaGapEscalated": false,
-                "negativeMemoryMatches": 54,
+                "negativeMemoryMatches": 48,
                 "positiveProgramFingerprint": "",
                 "postExhaustionCandidateProfiles": [
                   "transport_request_differential_v1",
@@ -1093,84 +1145,8 @@
                   "search_response_route_binding_v1"
                 ],
                 "postExhaustionSourceFailureClass": "route_proven_gap",
-                "postExhaustionStrategyMethod": "exact-html-class-token-contract",
-                "postExhaustionStrategyProfile": "html_class_token_exact_v1",
-                "providerId": "moviebox",
-                "providerPositiveProgramProductionRescue": false,
-                "providerPositiveProgramReplay": false,
-                "repairScope": "learning",
-                "repairType": "synthesized_strategy",
-                "signature": "9408dea970ee2148302affa4",
-                "strategyEscalated": true,
-                "targetCategories": []
-              },
-              "published:moviesmod": {
-                "action": "probe-targeted-repair",
-                "allowedProfiles": [
-                  "search_response_route_binding_v1",
-                  "provider_origin_failover_v1"
-                ],
-                "baseExperimentExhausted": true,
-                "exitReason": null,
-                "experimentExhausted": false,
-                "experimentGeneration": 2,
-                "experimentVariant": 4,
-                "experimentVariantCount": 5,
-                "explorationChainEnabled": true,
-                "explorationModeEnabled": true,
-                "failureClass": "transport_blocked",
-                "hypotheses": [],
-                "learningDisposition": "execute_learning_advisor_strategy",
-                "llmAdvisorApplied": true,
-                "llmAdvisorConfidence": 0.86,
-                "llmAdvisorExperiment": {
-                  "aliasSearch": true,
-                  "documentRequestMining": true,
-                  "maxDepth": 5,
-                  "maxEmbeds": 24,
-                  "maxPages": 30,
-                  "maxRecipePasses": 5,
-                  "recipePolicy": "current_plus_provider",
-                  "responseSalvage": true,
-                  "roleOrder": [
-                    "api",
-                    "detail",
-                    "search",
-                    "player",
-                    "source",
-                    "episode",
-                    "other"
-                  ],
-                  "routePolicy": "owned_plus_peer",
-                  "sessionBootstrap": true,
-                  "terminalOnly": false
-                },
-                "llmAdvisorExperimentFingerprint": "99c89608404315d2042c57e024fd520e56af243d7043b6c32de21f61ca1ec315",
-                "llmAdvisorExplorationRescue": false,
-                "llmAdvisorFailureCompatibility": "exact-rebound",
-                "llmAdvisorGuidanceKind": "meta-gap-synthesis",
-                "llmAdvisorProfile": "provider_origin_failover_v1",
-                "llmAdvisorRescue": false,
-                "llmAdvisorSourceFailureClass": "transport_blocked",
-                "llmAdvisorStrategy": "meta-gap-origin-fallback",
-                "metaGapEscalated": false,
-                "negativeMemoryMatches": 46,
-                "positiveProgramFingerprint": "",
-                "postExhaustionCandidateProfiles": [
-                  "transport_request_differential_v1",
-                  "provider_session_bootstrap_replay_v1",
-                  "runtime_response_salvage_v1",
-                  "html_class_token_exact_v1",
-                  "route_transition_graph_v1",
-                  "route_peer_transition_replay_v1",
-                  "identity_alias_search_traversal_v1",
-                  "document_request_contract_mining_v1",
-                  "search_contract_inference_v1",
-                  "search_response_route_binding_v1"
-                ],
-                "postExhaustionSourceFailureClass": "search_gap",
-                "postExhaustionStrategyMethod": "search-response-route-binding",
-                "postExhaustionStrategyProfile": "search_response_route_binding_v1",
+                "postExhaustionStrategyMethod": "provider-document-request-contract-mining",
+                "postExhaustionStrategyProfile": "document_request_contract_mining_v1",
                 "providerId": "moviesmod",
                 "providerPositiveProgramProductionRescue": false,
                 "providerPositiveProgramReplay": false,
@@ -1287,7 +1263,6 @@
             },
             "queuedForLearning": [
               "animevost-fr",
-              "moviebox",
               "moviesmod",
               "vidfast",
               "yflix"
@@ -1296,8 +1271,7 @@
           },
           "capabilityStrategy": "mixed",
           "crossWaveExplorationCarryoverApplied": [
-            "moviebox",
-            "moviesmod"
+            "moviebox"
           ],
           "crossWaveExplorationCarryoverCaptured": [
             "moviebox",
@@ -1452,7 +1426,7 @@
               "published:moviebox": {
                 "action": "probe-targeted-repair",
                 "allowedProfiles": [
-                  "identity_alias_search_traversal_v1"
+                  "route_peer_transition_replay_v1"
                 ],
                 "baseExperimentExhausted": true,
                 "exitReason": null,
@@ -1498,7 +1472,7 @@
                 "llmAdvisorSourceFailureClass": "transport_blocked",
                 "llmAdvisorStrategy": "meta-gap-adaptive-runtime-fallback",
                 "metaGapEscalated": false,
-                "negativeMemoryMatches": 58,
+                "negativeMemoryMatches": 57,
                 "positiveProgramFingerprint": "",
                 "postExhaustionCandidateProfiles": [
                   "transport_request_differential_v1",
@@ -1513,8 +1487,8 @@
                   "search_response_route_binding_v1"
                 ],
                 "postExhaustionSourceFailureClass": "route_proven_gap",
-                "postExhaustionStrategyMethod": "tmdb-identity-alias-search-traversal",
-                "postExhaustionStrategyProfile": "identity_alias_search_traversal_v1",
+                "postExhaustionStrategyMethod": "structural-peer-route-transition-replay",
+                "postExhaustionStrategyProfile": "route_peer_transition_replay_v1",
                 "providerId": "moviebox",
                 "providerPositiveProgramProductionRescue": false,
                 "providerPositiveProgramReplay": false,
@@ -1527,7 +1501,7 @@
               "published:moviesmod": {
                 "action": "probe-targeted-repair",
                 "allowedProfiles": [
-                  "provider_origin_failover_v1"
+                  "adaptive_runtime_recovery"
                 ],
                 "baseExperimentExhausted": true,
                 "exitReason": null,
@@ -1546,34 +1520,34 @@
                   "aliasSearch": true,
                   "documentRequestMining": true,
                   "maxDepth": 5,
-                  "maxEmbeds": 25,
-                  "maxPages": 32,
+                  "maxEmbeds": 24,
+                  "maxPages": 30,
                   "maxRecipePasses": 5,
-                  "recipePolicy": "current_only",
+                  "recipePolicy": "current_plus_provider",
                   "responseSalvage": true,
                   "roleOrder": [
+                    "api",
                     "detail",
                     "search",
                     "player",
                     "source",
                     "episode",
-                    "other",
-                    "api"
+                    "other"
                   ],
-                  "routePolicy": "owned_only",
+                  "routePolicy": "owned_plus_peer",
                   "sessionBootstrap": true,
                   "terminalOnly": false
                 },
-                "llmAdvisorExperimentFingerprint": "92e51bee5a69bc7e461cb670d6ca968d035f1831647db8a4d311ea780093e4cb",
+                "llmAdvisorExperimentFingerprint": "99c89608404315d2042c57e024fd520e56af243d7043b6c32de21f61ca1ec315",
                 "llmAdvisorExplorationRescue": false,
                 "llmAdvisorFailureCompatibility": "exact-rebound",
                 "llmAdvisorGuidanceKind": "meta-gap-synthesis",
-                "llmAdvisorProfile": "provider_origin_failover_v1",
+                "llmAdvisorProfile": "adaptive_runtime_recovery",
                 "llmAdvisorRescue": false,
                 "llmAdvisorSourceFailureClass": "transport_blocked",
-                "llmAdvisorStrategy": "meta-gap-origin-fallback",
+                "llmAdvisorStrategy": "meta-gap-adaptive-runtime-fallback",
                 "metaGapEscalated": true,
-                "negativeMemoryMatches": 48,
+                "negativeMemoryMatches": 52,
                 "positiveProgramFingerprint": "",
                 "postExhaustionCandidateProfiles": [
                   "transport_request_differential_v1",
@@ -1795,7 +1769,6 @@
       "acceptedProgramCompiledProviders": [],
       "advisorRotationPending": [
         "animevost-fr",
-        "moviebox",
         "moviesmod",
         "vidfast",
         "yflix"
@@ -1806,14 +1779,12 @@
           "acceptedCount": 0,
           "advisorRemainingFingerprintCounts": {
             "animevost-fr": 1,
-            "moviebox": 1,
             "moviesmod": 2,
             "vidfast": 2,
             "yflix": 1
           },
           "advisorRotationPending": [
             "animevost-fr",
-            "moviebox",
             "moviesmod",
             "vidfast",
             "yflix"
@@ -1874,7 +1845,7 @@
               "published:moviebox": {
                 "action": "probe-targeted-repair",
                 "allowedProfiles": [
-                  "search_contract_inference_v1"
+                  "document_request_contract_mining_v1"
                 ],
                 "baseExperimentExhausted": true,
                 "exitReason": null,
@@ -1920,7 +1891,7 @@
                 "llmAdvisorSourceFailureClass": "transport_blocked",
                 "llmAdvisorStrategy": "meta-gap-adaptive-runtime-fallback",
                 "metaGapEscalated": false,
-                "negativeMemoryMatches": 60,
+                "negativeMemoryMatches": 59,
                 "positiveProgramFingerprint": "",
                 "postExhaustionCandidateProfiles": [
                   "transport_request_differential_v1",
@@ -1934,9 +1905,9 @@
                   "search_contract_inference_v1",
                   "search_response_route_binding_v1"
                 ],
-                "postExhaustionSourceFailureClass": "search_gap",
-                "postExhaustionStrategyMethod": "search-contract-inference",
-                "postExhaustionStrategyProfile": "search_contract_inference_v1",
+                "postExhaustionSourceFailureClass": "route_proven_gap",
+                "postExhaustionStrategyMethod": "provider-document-request-contract-mining",
+                "postExhaustionStrategyProfile": "document_request_contract_mining_v1",
                 "providerId": "moviebox",
                 "providerPositiveProgramProductionRescue": false,
                 "providerPositiveProgramReplay": false,
@@ -1949,7 +1920,7 @@
               "published:moviesmod": {
                 "action": "probe-targeted-repair",
                 "allowedProfiles": [
-                  "provider_origin_failover_v1"
+                  "adaptive_runtime_recovery"
                 ],
                 "baseExperimentExhausted": true,
                 "exitReason": null,
@@ -1990,12 +1961,12 @@
                 "llmAdvisorExplorationRescue": false,
                 "llmAdvisorFailureCompatibility": "exact-rebound",
                 "llmAdvisorGuidanceKind": "meta-gap-synthesis",
-                "llmAdvisorProfile": "provider_origin_failover_v1",
+                "llmAdvisorProfile": "adaptive_runtime_recovery",
                 "llmAdvisorRescue": false,
                 "llmAdvisorSourceFailureClass": "transport_blocked",
-                "llmAdvisorStrategy": "meta-gap-origin-fallback",
+                "llmAdvisorStrategy": "meta-gap-adaptive-runtime-fallback",
                 "metaGapEscalated": true,
-                "negativeMemoryMatches": 48,
+                "negativeMemoryMatches": 53,
                 "positiveProgramFingerprint": "",
                 "postExhaustionCandidateProfiles": [
                   "transport_request_differential_v1",
@@ -2217,7 +2188,6 @@
       "acceptedProgramCompiledProviders": [],
       "advisorRotationPending": [
         "animevost-fr",
-        "moviebox",
         "moviesmod",
         "vidfast",
         "yflix"
@@ -2228,14 +2198,12 @@
           "acceptedCount": 0,
           "advisorRemainingFingerprintCounts": {
             "animevost-fr": 1,
-            "moviebox": 1,
             "moviesmod": 2,
             "vidfast": 2,
             "yflix": 1
           },
           "advisorRotationPending": [
             "animevost-fr",
-            "moviebox",
             "moviesmod",
             "vidfast",
             "yflix"
@@ -2296,11 +2264,11 @@
               "published:moviebox": {
                 "action": "probe-targeted-repair",
                 "allowedProfiles": [
-                  "adaptive_runtime_recovery"
+                  "search_response_route_binding_v1"
                 ],
                 "baseExperimentExhausted": true,
                 "exitReason": null,
-                "experimentExhausted": true,
+                "experimentExhausted": false,
                 "experimentGeneration": 2,
                 "experimentVariant": 4,
                 "experimentVariantCount": 5,
@@ -2308,7 +2276,7 @@
                 "explorationModeEnabled": true,
                 "failureClass": "transport_blocked",
                 "hypotheses": [],
-                "learningDisposition": "execute_meta_gap_synthesized_strategy",
+                "learningDisposition": "execute_learning_advisor_strategy",
                 "llmAdvisorApplied": true,
                 "llmAdvisorConfidence": 0.86,
                 "llmAdvisorExperiment": {
@@ -2341,8 +2309,8 @@
                 "llmAdvisorRescue": false,
                 "llmAdvisorSourceFailureClass": "transport_blocked",
                 "llmAdvisorStrategy": "meta-gap-adaptive-runtime-fallback",
-                "metaGapEscalated": true,
-                "negativeMemoryMatches": 62,
+                "metaGapEscalated": false,
+                "negativeMemoryMatches": 61,
                 "positiveProgramFingerprint": "",
                 "postExhaustionCandidateProfiles": [
                   "transport_request_differential_v1",
@@ -2356,16 +2324,16 @@
                   "search_contract_inference_v1",
                   "search_response_route_binding_v1"
                 ],
-                "postExhaustionSourceFailureClass": "",
-                "postExhaustionStrategyMethod": "",
-                "postExhaustionStrategyProfile": "",
+                "postExhaustionSourceFailureClass": "search_gap",
+                "postExhaustionStrategyMethod": "search-response-route-binding",
+                "postExhaustionStrategyProfile": "search_response_route_binding_v1",
                 "providerId": "moviebox",
                 "providerPositiveProgramProductionRescue": false,
                 "providerPositiveProgramReplay": false,
                 "repairScope": "learning",
                 "repairType": "synthesized_strategy",
                 "signature": "9408dea970ee2148302affa4",
-                "strategyEscalated": false,
+                "strategyEscalated": true,
                 "targetCategories": []
               },
               "published:moviesmod": {
@@ -2394,7 +2362,7 @@
                 "llmAdvisorSourceFailureClass": "",
                 "llmAdvisorStrategy": "",
                 "metaGapEscalated": false,
-                "negativeMemoryMatches": 50,
+                "negativeMemoryMatches": 55,
                 "positiveProgramFingerprint": "",
                 "postExhaustionCandidateProfiles": [
                   "transport_request_differential_v1",
