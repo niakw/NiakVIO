@@ -182,6 +182,27 @@ with tempfile.TemporaryDirectory() as tmp:
         assert mod.untried_advisor_fingerprints(
             ["moviebox"],guidance,{"moviebox":"transport_blocked"}
         )=={}
+
+        # Planner exhaustion is profile-wide inside the causal family, not tied
+        # to one persisted guidance row. Three other executed fingerprints for
+        # search_contract_inference_v1 must suppress fresh-looking derived IDs.
+        memory.write_text(json.dumps({"entries":[{
+            "providerId":"moviebox",
+            "failureClass":failure,
+            "profile":"search_contract_inference_v1",
+            "llmAdvisorExperimentFingerprint":fp,
+            "consecutiveFailures":1,
+            "failures":1,
+            "progresses":1,
+            "executionObserved":True,
+        } for failure,fp in (
+            ("transport_blocked","1"*64),
+            ("route_proven_gap","2"*64),
+            ("search_gap","3"*64),
+        )]}),encoding="utf-8")
+        assert mod.untried_advisor_fingerprints(
+            ["moviebox"],guidance,{"moviebox":"transport_blocked"}
+        )=={}
     finally:
         mod.REPAIR_MEMORY=original_memory
 
