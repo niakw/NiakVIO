@@ -31,6 +31,7 @@ from runtime_repair import (
     compare_results,
     create_repair_candidate,
     health_counts,
+    identity_contradiction_count,
     matching_profiles,
     malformed_request_count,
     playable_stream_count,
