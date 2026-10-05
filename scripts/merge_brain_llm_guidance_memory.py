@@ -111,12 +111,24 @@ def merge(
     drifted_providers: set[str] = set()
     neutral_paths: list[str] = []
     carry_enabled = previous_brain == current_brain
+    global_drift_reset = False
     if carry_enabled and previous_source != current_source:
-        neutral_paths, drifted_providers = source_drift(
-            repo_root,
-            previous_source,
-            current_source,
-        )
+        try:
+            neutral_paths, drifted_providers = source_drift(
+                repo_root,
+                previous_source,
+                current_source,
+            )
+        except ValueError as exc:
+            # A real provider-wide/materialization change invalidates the old
+            # cross-run priors, but it must not discard the freshly generated
+            # guidance from the current SHA. Fail closed on carrying old memory:
+            # keep current rows only. Other ancestry/schema failures still abort.
+            if str(exc).startswith("global/provider-wide drift since guidance source:"):
+                carry_enabled = False
+                global_drift_reset = True
+            else:
+                raise
 
     merged_rows: list[dict[str, Any]] = []
     seen: set[tuple[str, str, str]] = set()
@@ -167,6 +179,10 @@ def merge(
         "carriedRows": carried,
         "droppedProviderDriftRows": dropped_drift,
         "droppedBrainRevisionRows": dropped_brain,
+        "globalDriftReset": global_drift_reset,
+        "droppedGlobalDriftRows": (
+            len(previous.get("rows") or []) if global_drift_reset else 0
+        ),
         "neutralDriftPathCount": len(neutral_paths),
         "driftedProviders": sorted(drifted_providers),
         "sourceSha": current_source,
@@ -203,6 +219,8 @@ def main() -> int:
                 f"providers={stats['providerCount']}",
                 f"provider_drift={stats['droppedProviderDriftRows']}",
                 f"brain_revision_drop={stats['droppedBrainRevisionRows']}",
+                f"global_drift_reset={str(stats['globalDriftReset']).lower()}",
+                f"global_drift_drop={stats['droppedGlobalDriftRows']}",
                 f"neutral_drift={stats['neutralDriftPathCount']}",
             ]
         )
