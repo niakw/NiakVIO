@@ -112,4 +112,34 @@ except ValueError:
 else:
     raise AssertionError("unsafe guidance authority must be rejected")
 
+# A real global/materialization drift invalidates all old priors but must not
+# throw away freshly generated current-SHA guidance. Reset carryover fail-closed.
+original = mod.source_drift
+try:
+    mod.source_drift = lambda *_args, **_kwargs: (_ for _ in ()).throw(
+        ValueError("global/provider-wide drift since guidance source: mode=all providers=- reasons=global:scripts/provider_base_store.py")
+    )
+    reset, stats = mod.merge(previous, current, repo_root=ROOT)
+finally:
+    mod.source_drift = original
+assert {r["providerId"] for r in reset["rows"]} == {"coflix", "moviebox"}, reset
+assert stats["globalDriftReset"] is True, stats
+assert stats["droppedGlobalDriftRows"] == len(previous["rows"]), stats
+assert stats["carriedRows"] == 0, stats
+
+# Non-drift integrity failures remain fail-closed and propagate.
+original = mod.source_drift
+try:
+    mod.source_drift = lambda *_args, **_kwargs: (_ for _ in ()).throw(
+        ValueError("guidance source is not an ancestor of current Repair SHA")
+    )
+    try:
+        mod.merge(previous, current, repo_root=ROOT)
+    except ValueError as exc:
+        assert "not an ancestor" in str(exc), exc
+    else:
+        raise AssertionError("non-drift integrity failure must propagate")
+finally:
+    mod.source_drift = original
+
 print("Brain concurrent Learning guidance merge contract passed")
