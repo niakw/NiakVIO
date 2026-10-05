@@ -3,7 +3,7 @@ name: "SEC - CodeQL"
 # CodeQL scans maintained source, not content-addressed generated Provider JS.
 # Exact published providers remain blocking through NiakVIO's byte-level syntax,
 # runtime, hardening, forbidden-pattern, fixed-point, reverse and integrity gates.
-# Historical provider-old/ and evidence/upstream snapshots are never current code.
+# Historical provider-old/, lifecycle provider-disabled/, and evidence/upstream snapshots are never current code.
 
 on:
   # SEC - Final Gate requires a CodeQL analysis for the exact tested main SHA.
@@ -36,7 +36,7 @@ on:
   workflow_dispatch:
     inputs:
       dismiss_open_alerts:
-        description: "Dismiss all currently open CodeQL alerts instead of running analysis"
+        description: "Dismiss open CodeQL alerts only under provider-disabled/** instead of running analysis"
         required: false
         type: boolean
         default: false
@@ -54,7 +54,7 @@ permissions:
 
 jobs:
   dismiss-open-alerts:
-    name: "CodeQL · dismiss open alerts"
+    name: "CodeQL · dismiss disabled-provider alerts"
     if: ${{ (github.event_name == 'workflow_dispatch' && inputs.dismiss_open_alerts == true) || (github.event_name == 'push' && contains(github.event.head_commit.message, '[dismiss-codeql-alerts]')) }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
@@ -75,11 +75,11 @@ jobs:
               gh api --paginate \
                 -H 'Accept: application/vnd.github+json' \
                 "/repos/${GITHUB_REPOSITORY}/code-scanning/alerts?state=open&per_page=100" \
-                --jq '.[] | select((.tool.name // "") == "CodeQL") | .number' \
+                --jq '.[] | select((.tool.name // "") == "CodeQL") | select(((.most_recent_instance.location.path // "") | startswith("provider-disabled/"))) | .number' \
                 | sort -nu
             )
 
-            echo "Pass ${pass}: ${#alerts[@]} CodeQL alerts currently reported open."
+            echo "Pass ${pass}: ${#alerts[@]} CodeQL alerts currently open under provider-disabled/**."
             (( ${#alerts[@]} == 0 )) && break
 
             for number in "${alerts[@]}"; do
@@ -89,7 +89,7 @@ jobs:
                 "/repos/${GITHUB_REPOSITORY}/code-scanning/alerts/${number}" \
                 -f state='dismissed' \
                 -f dismissed_reason="won't fix" \
-                -f dismissed_comment='Bulk dismissal requested by the repository owner; future CodeQL scanning remains enabled.' \
+                -f dismissed_comment='Lifecycle-disabled provider snapshot is not release-reachable. Maintained CodeQL excludes provider-disabled/**; active provider/base security scanning remains enabled.' \
                 >"${body_file}" 2>&1; then
                 ((dismissed+=1))
               elif grep -qi 'already dismissed' "${body_file}"; then
@@ -107,21 +107,21 @@ jobs:
             gh api --paginate \
               -H 'Accept: application/vnd.github+json' \
               "/repos/${GITHUB_REPOSITORY}/code-scanning/alerts?state=open&per_page=100" \
-              --jq '.[] | select((.tool.name // "") == "CodeQL") | .number' \
+              --jq '.[] | select((.tool.name // "") == "CodeQL") | select(((.most_recent_instance.location.path // "") | startswith("provider-disabled/"))) | .number' \
               | sort -nu
           )
 
           echo "Dismissed=${dismissed} already_dismissed=${already} failed=${failed} remaining=${#remaining[@]}"
 
           if (( ${#remaining[@]} > 0 )); then
-            printf 'Still-open CodeQL alerts: %s\n' "${remaining[*]:-none}" >&2
+            printf 'Still-open disabled-provider CodeQL alerts: %s\n' "${remaining[*]:-none}" >&2
             exit 1
           fi
           if (( failed > 0 )); then
             echo "Transient dismissal API failures were observed but converged to remaining=0; final server state is authoritative." >&2
           fi
 
-          echo 'All CodeQL alerts are dismissed.'
+          echo 'All provider-disabled/** CodeQL alerts are dismissed.'
 
   analyze:
     if: ${{ !((github.event_name == 'workflow_dispatch' && inputs.dismiss_open_alerts == true) || (github.event_name == 'push' && contains(github.event.head_commit.message, '[dismiss-codeql-alerts]'))) }}
@@ -142,6 +142,7 @@ jobs:
             config: |
               paths-ignore:
                 - providers/**
+                - provider-disabled/**
                 - provider-old/**
                 - upstream-lkg/**
                 - audit/**
@@ -153,6 +154,7 @@ jobs:
               paths-ignore:
                 - providers/**
                 - provider-bases/**
+                - provider-disabled/**
                 - provider-old/**
                 - upstream-lkg/**
                 - audit/**
