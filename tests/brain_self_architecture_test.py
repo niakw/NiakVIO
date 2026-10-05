@@ -221,7 +221,9 @@ assert "brain_architecture_force_materializer.py" in WORKFLOW.read_text(encoding
 assert "architecture_force" in WORKFLOW.read_text(encoding="utf-8")
 assert "architecture FORCE crossed provider/publication boundary" in architecture_job
 assert "Promote FORCE architecture directly on main" in architecture_job
-assert 'git push --force-with-lease=refs/heads/main:"$GITHUB_SHA" origin HEAD:main' in architecture_job
+assert 'git push --force-with-lease=refs/heads/main:"$promotion_base" origin HEAD:main' in architecture_job
+assert 'promotion_base="$GITHUB_SHA"' in architecture_job
+assert 'promotion_base="$remote_main"' in architecture_job
 assert "gh pr merge" not in architecture_job
 assert "FIELD_BRAIN_ARCH_FORCE_MAIN_PROMOTION" in architecture_job
 assert "architecture FORCE changed non-allowlisted paths" in architecture_job
