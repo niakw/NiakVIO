@@ -45,9 +45,15 @@ MAX_MATERIALIZED_FAILURE_CONTEXT = 3200
 
 
 class MaterializedValidationError(ValueError):
-    def __init__(self, message: str, candidate_sources: dict[str, str]):
+    def __init__(
+        self,
+        message: str,
+        candidate_sources: dict[str, str],
+        baseline_sources: dict[str, str] | None = None,
+    ):
         super().__init__(message)
         self.candidate_sources = candidate_sources
+        self.baseline_sources = baseline_sources or {}
 
 
 def load(path: Path) -> dict[str, Any]:
@@ -95,16 +101,19 @@ def _resolve_non_unique_replace_edits(
     only the model's intended inner edit changes behavior. Any uncertainty
     remains fail-closed and is left for normal validation/correction.
     """
-    focused_sources: dict[str, Any] = {}
-    base_sources = payload.get("sources")
-    if isinstance(base_sources, dict):
-        focused_sources.update(base_sources)
-    # Corrective rounds receive the exact materialized candidate bytes that
-    # failed syntax/contract validation. They outrank the original source
-    # context because the next edit must bind to the rejected candidate intent.
-    failure_sources = payload.get("materializedFailureSources")
-    if isinstance(failure_sources, dict):
-        focused_sources.update(failure_sources)
+    focused_sources: dict[str, list[str]] = {}
+    for source_key in (
+        "sources",
+        "materializedBaselineSources",
+        "materializedFailureSources",
+    ):
+        values = payload.get(source_key)
+        if not isinstance(values, dict):
+            continue
+        for path, snippet in values.items():
+            text = str(snippet or "")
+            if text:
+                focused_sources.setdefault(str(path), []).append(text)
     if not focused_sources:
         return [dict(edit) for edit in edits]
 
@@ -134,8 +143,16 @@ def _resolve_non_unique_replace_edits(
             resolved.append(edit)
             continue
 
-        snippet = str(focused_sources.get(path) or "")
-        if not snippet or source.count(snippet) != 1 or snippet.count(find) != 1:
+        snippet = ""
+        for candidate_snippet in focused_sources.get(path, []):
+            if (
+                candidate_snippet
+                and source.count(candidate_snippet) == 1
+                and candidate_snippet.count(find) == 1
+            ):
+                snippet = candidate_snippet
+                break
+        if not snippet:
             resolved.append(edit)
             continue
 
@@ -394,6 +411,7 @@ def validate_materialized_edits(
     except ValueError as exc:
         remaining = MAX_MATERIALIZED_FAILURE_CONTEXT
         candidate_sources: dict[str, str] = {}
+        baseline_sources: dict[str, str] = {}
         for path in changed:
             if remaining <= 0:
                 break
@@ -405,15 +423,27 @@ def validate_materialized_edits(
                 baseline = snapshots.get(path, (False, b""))[1].decode("utf-8")
             except (UnicodeError, OSError):
                 continue
+            limit = min(remaining, 2200)
             snippet = _materialized_failure_snippet(
                 baseline,
                 text,
-                min(remaining, 2200),
+                limit,
+            )
+            baseline_snippet = _materialized_failure_snippet(
+                text,
+                baseline,
+                limit,
             )
             if snippet:
                 candidate_sources[path] = snippet
                 remaining -= len(snippet)
-        raise MaterializedValidationError(str(exc), candidate_sources) from exc
+            if baseline_snippet:
+                baseline_sources[path] = baseline_snippet
+        raise MaterializedValidationError(
+            str(exc),
+            candidate_sources,
+            baseline_sources,
+        ) from exc
     finally:
         for path, (existed, content) in snapshots.items():
             target = root / path
@@ -931,14 +961,18 @@ def validated_model_plan(
             extra_exact_paths=exact_paths,
         )
         candidate_sources = getattr(current_error, "candidate_sources", {})
+        baseline_sources = getattr(current_error, "baseline_sources", {})
         if isinstance(candidate_sources, dict) and candidate_sources:
             correction_payload["materializedFailureSources"] = candidate_sources
+        if isinstance(baseline_sources, dict) and baseline_sources:
+            correction_payload["materializedBaselineSources"] = baseline_sources
         correction_payload["correctionReason"] = "materialized-source-validation"
         correction_payload["correctionContract"].update({
             "mustPassMaterializedSyntaxValidation": True,
             "mustPassMaterializedContractValidation": True,
             "doNotRepeatRejectedReplacement": True,
             "useMaterializedFailureSources": bool(candidate_sources),
+            "useMaterializedBaselineSources": bool(baseline_sources),
             "materializedCorrectionRound": correction_round,
             "materializedCorrectionRounds": MATERIALIZED_CORRECTION_ROUNDS,
         })
