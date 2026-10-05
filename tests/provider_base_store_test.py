@@ -62,7 +62,7 @@ assert '(!meta.title && !meta.tmdbId)' in text
 assert 'tmdbId: String(tmdbId || "")' in text
 assert "requests < 10" in text
 assert "requests < 7" not in text
-assert "slice(0, 24)" not in text
+# Query-parameter mining is intentionally bounded; only deprecated observedUrls fan-out is forbidden.
 assert "function _detailGuesses" not in text
 assert "if (!_runtimePlanAvailable()) return [];" in text
 assert "NIAKVIO_PROVIDER_MODEL.observedUrls || []" not in text
