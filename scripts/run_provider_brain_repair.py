@@ -447,11 +447,26 @@ def untried_advisor_fingerprints(
             continue
         guidance_kind = str(row.get("guidanceKind") or "").strip().casefold()
         strategy = str(row.get("strategy") or "").strip().casefold().replace("-", "_")
-        current_failure = _canon_failure((failure_classes or {}).get(provider) or row.get("failureClass"))
-        if guidance_kind == "meta-gap-synthesis" or strategy.startswith("meta_gap_"):
+        source_failure = _canon_failure(row.get("failureClass"))
+        current_failure = _canon_failure((failure_classes or {}).get(provider) or source_failure)
+        source_family = META_GAP_FAILURE_FAMILIES.get(source_failure, source_failure)
+        current_family = META_GAP_FAILURE_FAMILIES.get(current_failure, current_failure)
+        is_meta_gap = guidance_kind == "meta-gap-synthesis" or strategy.startswith("meta_gap_")
+        if is_meta_gap:
             derived = _meta_gap_scheduler_fingerprints(row, current_failure)
             if derived:
                 candidates.setdefault(provider, set()).update(derived)
+                continue
+        else:
+            # Mirror llmFailureCompatibility(): ordinary advisor rows are only
+            # executable for exact/same-family drift. Cross-family rebinding is
+            # reserved for explicit meta-gap synthesis.
+            compatible = (
+                not source_failure
+                or source_failure == current_failure
+                or (source_family and source_family == current_family)
+            )
+            if not compatible:
                 continue
         candidates.setdefault(provider, set()).add((profile, fingerprint))
 
@@ -514,20 +529,30 @@ def untried_advisor_fingerprints(
         ]
         pair_family: dict[tuple[str, str], str] = {}
         for row in provider_rows:
+            source_failure = _canon_failure(row.get("failureClass"))
             current_failure = _canon_failure(
-                (failure_classes or {}).get(provider) or row.get("failureClass")
+                (failure_classes or {}).get(provider) or source_failure
             )
-            family = META_GAP_FAILURE_FAMILIES.get(current_failure, current_failure)
+            source_family = META_GAP_FAILURE_FAMILIES.get(source_failure, source_failure)
+            current_family = META_GAP_FAILURE_FAMILIES.get(current_failure, current_failure)
             guidance_kind = str(row.get("guidanceKind") or "").strip().casefold()
             strategy = str(row.get("strategy") or "").strip().casefold().replace("-", "_")
-            if guidance_kind == "meta-gap-synthesis" or strategy.startswith("meta_gap_"):
+            is_meta_gap = guidance_kind == "meta-gap-synthesis" or strategy.startswith("meta_gap_")
+            if is_meta_gap:
                 for pair in _meta_gap_scheduler_fingerprints(row, current_failure):
-                    pair_family[pair] = family
+                    pair_family[pair] = current_family
             else:
+                compatible = (
+                    not source_failure
+                    or source_failure == current_failure
+                    or (source_family and source_family == current_family)
+                )
+                if not compatible:
+                    continue
                 profile = str(row.get("profile") or "").strip().casefold()
                 fingerprint = str(row.get("experimentFingerprint") or "").strip().casefold()
                 if profile and fingerprint:
-                    pair_family[(profile, fingerprint)] = family
+                    pair_family[(profile, fingerprint)] = current_family if not source_family else source_family
 
         for pair in values - failed.get(provider, set()):
             profile, _fingerprint = pair
