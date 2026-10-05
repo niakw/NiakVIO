@@ -18,10 +18,19 @@ for field in (
     '"llmAdvisorFailureCompatibility": row.get("llmAdvisorFailureCompatibility")',
     '"llmAdvisorExperimentFingerprint": row.get("llmAdvisorExperimentFingerprint")',
     '"llmAdvisorExperiment": copy.deepcopy(',
+    '"baseExperimentExhausted": row.get("baseExperimentExhausted") is True',
+    '"strategyEscalated": row.get("strategyEscalated") is True',
+    '"explorationChainEnabled": row.get("explorationChainEnabled") is True',
+    '"explorationModeEnabled": row.get("explorationModeEnabled") is True',
+    '"postExhaustionCandidateProfiles": [',
+    '"postExhaustionSourceFailureClass": row.get("postExhaustionSourceFailureClass")',
 ):
     assert field in block, field
 
 assert '"llmGuidance": planner_llm_guidance()' in source
+planner=(ROOT/"engine_v2/scripts/plan-repairs.mjs").read_text(encoding="utf-8")
+assert "explorationChainEnabled: input.explorationChain === true" in planner
+assert "postExhaustionCandidateProfiles" in planner
 print("Brain LLM advisor report observability contract passed")
 
 portfolio=(ROOT/"scripts/run_provider_brain_repair.py").read_text(encoding="utf-8")
@@ -38,5 +47,11 @@ for field in (
     '"llmAdvisorFailureCompatibility": row.get("llmAdvisorFailureCompatibility")',
     '"llmAdvisorExperimentFingerprint": row.get("llmAdvisorExperimentFingerprint")',
     '"llmAdvisorExperiment": copy.deepcopy(',
+    '"baseExperimentExhausted": row.get("baseExperimentExhausted") is True',
+    '"strategyEscalated": row.get("strategyEscalated") is True',
+    '"explorationChainEnabled": row.get("explorationChainEnabled") is True',
+    '"explorationModeEnabled": row.get("explorationModeEnabled") is True',
+    '"postExhaustionCandidateProfiles": [',
+    '"postExhaustionSourceFailureClass": row.get("postExhaustionSourceFailureClass")',
 ):
     assert field in pblock, field
