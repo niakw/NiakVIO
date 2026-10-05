@@ -243,6 +243,7 @@ assert 'FIELD_PROVIDER_BRAIN_DEEP_DECISION' in deep
 assert 'production_ok={str(bool(accepted)).lower()}' in deep
 assert 'bool(ok)' not in deep
 assert 'identity_before=' in deep and 'identity_after=' in deep
+assert 'identity_contradiction_count,' in deep
 assert 'malformed_before=' in deep and 'malformed_after=' in deep
 decision_idx=deep.index('FIELD_PROVIDER_BRAIN_DEEP_DECISION')
 rejection_idx=deep.index('rejection_reason = reason if is_selected else "inferior_to_selected_variant"')
