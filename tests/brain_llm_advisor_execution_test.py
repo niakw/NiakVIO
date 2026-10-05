@@ -615,8 +615,37 @@ stale_route_guidance=[{
     "experimentFingerprint":"e"*64,
     "guidanceKind":"meta-gap-synthesis",
 }]
-playback_rebound=playback_plan(playback_memory,stale_route_guidance)
-assert playback_rebound["baseExperimentExhausted"] is True,playback_rebound
+playback_rebound=None
+# Same-family deterministic evolved strategies have higher priority than stale
+# cross-family meta-gap guidance. Exhaust their exact implementation
+# fingerprints first; only then should the planner rebind the advisor.
+for _attempt in range(20):
+    playback_rebound=playback_plan(playback_memory,stale_route_guidance)
+    assert playback_rebound["baseExperimentExhausted"] is True,playback_rebound
+    if not playback_rebound.get("strategyEscalated"):
+        break
+    profile=playback_rebound.get("postExhaustionStrategyProfile") or ""
+    implementation_fp=playback_rebound.get("strategyImplementationFingerprint") or ""
+    source_failure=playback_rebound.get("postExhaustionSourceFailureClass") or "playback_context_gap"
+    assert profile and implementation_fp,playback_rebound
+    playback_memory.append({
+        "providerId":"synthetic-playback-rebind",
+        "failureClass":source_failure,
+        "signature":playback_signature,
+        "experimentVariant":4,
+        "experimentGeneration":2,
+        "profile":profile,
+        "strategyImplementationFingerprint":implementation_fp,
+        "failures":1,
+        "consecutiveFailures":1,
+        "successes":0,
+        "executionObserved":True,
+        "lastOutcome":"rejected",
+        "lastReason":"synthetic_same_family_evolved_strategy_failed",
+    })
+else:
+    raise AssertionError(("playback same-family strategies did not converge",playback_rebound))
+assert playback_rebound is not None
 assert playback_rebound["metaGapEscalated"] is True,playback_rebound
 assert playback_rebound["repairType"]=="synthesized_strategy",playback_rebound
 assert playback_rebound["llmAdvisorFailureCompatibility"]=="exact-rebound",playback_rebound
