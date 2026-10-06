@@ -148,7 +148,7 @@ assert mod.VALIDATION_RETRY_MODEL_TOKENS <= 512
 assert mod.VALIDATION_RETRY_TIMEOUT_SECONDS == 180
 assert mod.RETRY_SOURCE_CONTEXT <= 3600
 assert mod.MINIMAL_SOURCE_CONTEXT <= 1800
-assert mod.MATERIALIZED_CORRECTION_ROUNDS == 2
+assert mod.MATERIALIZED_CORRECTION_ROUNDS == 3
 assert mod.MAX_MATERIALIZED_FAILURE_CONTEXT <= 3200
 
 fmt = mod._response_format()
@@ -601,7 +601,8 @@ with tempfile.TemporaryDirectory(prefix="brain-arch-force-syntax-") as tmp:
             assert "materialized syntax validation failed" in payload["validationError"]
             assert payload["exactAllowedPaths"] == ["scripts/brain_meta_learning.py"]
             assert "path" not in payload["rejectedEditIntent"][0]
-            assert payload["correctionReason"] == "materialized-source-validation"
+            assert payload["correctionReason"] == "materialized-syntax-validation"
+            assert payload["correctionContract"]["syntaxRepairOnly"] is True
             assert payload["correctionContract"]["mustPassMaterializedSyntaxValidation"] is True
             assert payload["correctionContract"]["useMaterializedBaselineSources"] is True
             assert payload["correctionContract"]["materializedCorrectionRound"] == 1
@@ -789,7 +790,7 @@ with tempfile.TemporaryDirectory(prefix="brain-arch-force-syntax-fail-") as tmp:
             raise AssertionError("second syntax-invalid FORCE edit unexpectedly accepted")
         assert target.read_text(encoding="utf-8") == "VALUE = 1\n"
         assert len(invalid_correction_calls) == mod.MATERIALIZED_CORRECTION_ROUNDS
-        assert [p["correctionContract"]["materializedCorrectionRound"] for p in invalid_correction_calls] == [1, 2]
+        assert [p["correctionContract"]["materializedCorrectionRound"] for p in invalid_correction_calls] == list(range(1, mod.MATERIALIZED_CORRECTION_ROUNDS + 1))
         assert invalid_correction_calls[1]["materializedFailureSources"]["scripts/brain_meta_learning.py"].startswith("    VALUE = 3")
         assert invalid_correction_calls[1]["materializedBaselineSources"]["scripts/brain_meta_learning.py"].startswith("VALUE = 1")
     finally:
@@ -816,5 +817,39 @@ minimal = mod._minimal_payload({
 assert minimal["blueprint"]["strategyId"] == "demo"
 assert "architectureLayers" not in minimal
 assert sum(len(v) for v in minimal["sources"].values()) <= mod.MINIMAL_SOURCE_CONTEXT
+
+# Materialized corrections must stay on the file that actually failed. Unrelated
+# architecture source snippets are useful for planning, but must not remain
+# alternate edit targets once transactional validation has rejected one path.
+with tempfile.TemporaryDirectory(prefix="brain-arch-force-restrict-") as tmp:
+    root = Path(tmp)
+    for name in ("brain_meta_learning.py", "brain_repair_runtime.py"):
+        target = root / "scripts" / name
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text("VALUE = 1\n", encoding="utf-8")
+    retry = mod._validation_retry_payload(
+        {
+            "blueprint": {"strategyId": "demo"},
+            "allowedPaths": patterns,
+            "contract": {"requireExecutableDiff": True},
+            "sources": {
+                "scripts/brain_meta_learning.py": "VALUE = 1\n",
+                "scripts/brain_repair_runtime.py": "VALUE = 1\n",
+            },
+        },
+        ValueError("materialized syntax validation failed"),
+        [{
+            "operation": "replace",
+            "path": "scripts/brain_meta_learning.py",
+            "find": "VALUE = 1",
+            "replace": "VALUE = 2",
+        }],
+        extra_exact_paths=["scripts/brain_meta_learning.py"],
+        restrict_to_extra_paths=True,
+        root=root,
+    )
+    assert retry["exactAllowedPaths"] == ["scripts/brain_meta_learning.py"]
+    assert list(retry["sources"]) == ["scripts/brain_meta_learning.py"]
+    assert retry["existingAllowedPaths"] == ["scripts/brain_meta_learning.py"]
 
 print("Brain architecture FORCE materializer tests passed")

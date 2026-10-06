@@ -41,7 +41,7 @@ VALIDATION_FORMAT_RETRY_TIMEOUT_SECONDS = 240
 RETRY_SOURCE_CONTEXT = 3600
 MINIMAL_SOURCE_CONTEXT = 1800
 EDIT_VALIDATION_CORRECTION_ROUNDS = 2
-MATERIALIZED_CORRECTION_ROUNDS = 2
+MATERIALIZED_CORRECTION_ROUNDS = 3
 MAX_MATERIALIZED_FAILURE_CONTEXT = 3200
 
 
@@ -848,6 +848,12 @@ def _model_request(
             "Paths listed in existingAllowedPaths already exist and MUST use replace, never create. "
             "Use create only for a path listed in newAllowedPaths."
         )
+    if str(payload.get("correctionReason") or "") == "materialized-syntax-validation":
+        system += (
+            " Repair only the parser defect in the rejected candidate. "
+            "Use materializedFailureSources as candidate bytes and materializedBaselineSources as original bytes. "
+            "Preserve the intended change, avoid duplicate surrounding tokens, and prefer one small replace."
+        )
     body = {
         "model": model,
         "temperature": 0,
@@ -932,21 +938,27 @@ def _validation_retry_payload(
     edits: list[dict[str, Any]],
     *,
     extra_exact_paths: list[str] | None = None,
+    restrict_to_extra_paths: bool = False,
     root: Path = ROOT,
 ) -> dict[str, Any]:
     retry = _minimal_payload(payload)
-    exact_paths = sorted({
-        *(
-            str(path)
-            for path in (retry.get("sources") or {}).keys()
-            if str(path)
-        ),
-        *(
-            str(path)
-            for path in (extra_exact_paths or [])
-            if str(path)
-        ),
-    })
+    source_paths = {
+        str(path)
+        for path in (retry.get("sources") or {}).keys()
+        if str(path)
+    }
+    extra_paths = {
+        str(path)
+        for path in (extra_exact_paths or [])
+        if str(path)
+    }
+    exact_paths = sorted(extra_paths if restrict_to_extra_paths and extra_paths else source_paths | extra_paths)
+    if restrict_to_extra_paths and extra_paths:
+        retry["sources"] = {
+            path: text
+            for path, text in (retry.get("sources") or {}).items()
+            if path in extra_paths
+        }
     existing_paths = [path for path in exact_paths if (root / path).is_file()]
     new_paths = [
         path for path in exact_paths
@@ -1187,6 +1199,7 @@ def validated_model_plan(
             current_error,
             current_edits,
             extra_exact_paths=exact_paths,
+            restrict_to_extra_paths=True,
             root=root,
         )
         candidate_sources = getattr(current_error, "candidate_sources", {})
@@ -1195,7 +1208,17 @@ def validated_model_plan(
             correction_payload["materializedFailureSources"] = candidate_sources
         if isinstance(baseline_sources, dict) and baseline_sources:
             correction_payload["materializedBaselineSources"] = baseline_sources
-        correction_payload["correctionReason"] = "materialized-source-validation"
+        validation_text = str(current_error).casefold()
+        syntax_failure = any(marker in validation_text for marker in (
+            "syntax validation failed",
+            "json validation failed",
+            "javascript validation failed",
+        ))
+        correction_payload["correctionReason"] = (
+            "materialized-syntax-validation"
+            if syntax_failure
+            else "materialized-source-validation"
+        )
         correction_payload["correctionContract"].update({
             "mustPassMaterializedSyntaxValidation": True,
             "mustPassMaterializedContractValidation": True,
@@ -1204,6 +1227,10 @@ def validated_model_plan(
             "useMaterializedBaselineSources": bool(baseline_sources),
             "materializedCorrectionRound": correction_round,
             "materializedCorrectionRounds": MATERIALIZED_CORRECTION_ROUNDS,
+            "syntaxRepairOnly": syntax_failure,
+            "preserveValidatedIntent": syntax_failure,
+            "doNotConcatenateCandidateAndBaseline": syntax_failure,
+            "doNotDuplicateSurroundingTokens": syntax_failure,
         })
 
         corrected = _request_corrected_plan(endpoint, model, correction_payload)
