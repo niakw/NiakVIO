@@ -40,6 +40,7 @@ VALIDATION_FORMAT_RETRY_MODEL_TOKENS = 768
 VALIDATION_FORMAT_RETRY_TIMEOUT_SECONDS = 240
 RETRY_SOURCE_CONTEXT = 3600
 MINIMAL_SOURCE_CONTEXT = 1800
+EDIT_VALIDATION_CORRECTION_ROUNDS = 2
 MATERIALIZED_CORRECTION_ROUNDS = 2
 MAX_MATERIALIZED_FAILURE_CONTEXT = 3200
 
@@ -843,7 +844,9 @@ def _model_request(
     if exact_paths:
         system += (
             " For this corrective request, edit only a path from exactAllowedPaths. "
-            "Do not rewrite, prefix, relocate, normalize or invent a path."
+            "Do not rewrite, prefix, relocate, normalize or invent a path. "
+            "Paths listed in existingAllowedPaths already exist and MUST use replace, never create. "
+            "Use create only for a path listed in newAllowedPaths."
         )
     body = {
         "model": model,
@@ -929,6 +932,7 @@ def _validation_retry_payload(
     edits: list[dict[str, Any]],
     *,
     extra_exact_paths: list[str] | None = None,
+    root: Path = ROOT,
 ) -> dict[str, Any]:
     retry = _minimal_payload(payload)
     exact_paths = sorted({
@@ -943,7 +947,15 @@ def _validation_retry_payload(
             if str(path)
         ),
     })
+    existing_paths = [path for path in exact_paths if (root / path).is_file()]
+    new_paths = [
+        path for path in exact_paths
+        if not (root / path).exists()
+        and any(path.startswith(prefix) for prefix in CREATE_PREFIXES)
+    ]
     retry["exactAllowedPaths"] = exact_paths
+    retry["existingAllowedPaths"] = existing_paths
+    retry["newAllowedPaths"] = new_paths
     retry["validationError"] = str(error)[:800]
     retry["rejectedEditIntent"] = [
         {
@@ -956,6 +968,8 @@ def _validation_retry_payload(
     ]
     retry["correctionContract"] = {
         "pathMustBeOneOfExactAllowedPaths": True,
+        "existingPathsMustUseReplace": True,
+        "createOnlyForNewAllowedPaths": True,
         "doNotInventPaths": True,
         "doNotRelocatePaths": True,
         "changeOnlyWhatValidationRejected": True,
@@ -1104,32 +1118,49 @@ def validated_model_plan(
 ) -> tuple[dict[str, Any], list[dict[str, Any]]]:
     planned = call_model(endpoint, model, payload)
     edits = [dict(x) for x in planned.get("edits") or [] if isinstance(x, dict)]
-    edits = _resolve_non_unique_replace_edits(
-        edits,
-        payload,
-        patterns,
-        root=root,
-    )
-    try:
-        validate_edits(edits, patterns, root=root)
-    except ValueError as exc:
-        print(
-            "FIELD_BRAIN_ARCH_FORCE_MODEL_RETRY "
-            f"reason=edit-validation mode=corrective error={str(exc)[:240]}",
-            flush=True,
-        )
-        correction_payload = _validation_retry_payload(payload, exc, edits)
-        planned = _request_corrected_plan(endpoint, model, correction_payload)
-        edits = [
-            dict(x) for x in planned.get("edits") or [] if isinstance(x, dict)
-        ]
+    validation_payload = payload
+    for correction_round in range(0, EDIT_VALIDATION_CORRECTION_ROUNDS + 1):
         edits = _resolve_non_unique_replace_edits(
             edits,
-            correction_payload,
+            validation_payload,
             patterns,
             root=root,
         )
-        validate_edits(edits, patterns, root=root)
+        try:
+            validate_edits(edits, patterns, root=root)
+            break
+        except ValueError as exc:
+            if correction_round >= EDIT_VALIDATION_CORRECTION_ROUNDS:
+                raise
+            print(
+                "FIELD_BRAIN_ARCH_FORCE_MODEL_RETRY "
+                f"reason=edit-validation mode=corrective round={correction_round + 1} "
+                f"error={str(exc)[:240]}",
+                flush=True,
+            )
+            exact_paths = [
+                str(edit.get("path") or "")
+                for edit in edits
+                if str(edit.get("path") or "")
+                and path_allowed(str(edit.get("path") or ""), patterns)
+            ]
+            correction_payload = _validation_retry_payload(
+                validation_payload,
+                exc,
+                edits,
+                extra_exact_paths=exact_paths,
+                root=root,
+            )
+            correction_payload["correctionReason"] = "edit-validation"
+            correction_payload["correctionContract"].update({
+                "editValidationCorrectionRound": correction_round + 1,
+                "editValidationCorrectionRounds": EDIT_VALIDATION_CORRECTION_ROUNDS,
+            })
+            planned = _request_corrected_plan(endpoint, model, correction_payload)
+            edits = [
+                dict(x) for x in planned.get("edits") or [] if isinstance(x, dict)
+            ]
+            validation_payload = correction_payload
 
     try:
         validate_materialized_edits(edits, root=root)
@@ -1156,6 +1187,7 @@ def validated_model_plan(
             current_error,
             current_edits,
             extra_exact_paths=exact_paths,
+            root=root,
         )
         candidate_sources = getattr(current_error, "candidate_sources", {})
         baseline_sources = getattr(current_error, "baseline_sources", {})

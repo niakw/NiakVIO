@@ -489,6 +489,91 @@ with tempfile.TemporaryDirectory(prefix="brain-arch-force-correct-") as tmp:
         mod._model_request = original_request
 
 
+# A first corrective plan can still violate operation/path semantics. This
+# reproduces FORCE 37525886424: the original replace was invalid, then Qwen
+# tried to create an allowlisted Brain file that already existed. Brain must
+# feed that exact second validation error back into one more bounded correction
+# round instead of terminating the whole FORCE run.
+with tempfile.TemporaryDirectory(prefix="brain-arch-force-edit-retry-") as tmp:
+    root = Path(tmp)
+    target = root / "scripts" / "brain_meta_learning.py"
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text("VALUE = 1\n", encoding="utf-8")
+    original_call_model = mod.call_model
+    original_request = mod._model_request
+    edit_corrections = []
+    try:
+        mod.call_model = lambda endpoint, model, payload: {
+            "edits": [{
+                "operation": "replace",
+                "path": "scripts/brain_meta_learning.py",
+                "find": "VALUE = 9",
+                "replace": "VALUE = 2",
+            }]
+        }
+
+        def repair_invalid_edit_plan(endpoint, model, payload, *, max_tokens, timeout, compact=False):
+            edit_corrections.append(payload)
+            import json
+            if len(edit_corrections) == 1:
+                assert "replace find must occur exactly once" in payload["validationError"]
+                assert payload["existingAllowedPaths"] == ["scripts/brain_meta_learning.py"]
+                assert payload["newAllowedPaths"] == []
+                assert payload["correctionContract"]["existingPathsMustUseReplace"] is True
+                assert payload["correctionContract"]["editValidationCorrectionRound"] == 1
+                return {
+                    "choices": [{
+                        "message": {
+                            "content": json.dumps({
+                                "edits": [{
+                                    "operation": "create",
+                                    "path": "scripts/brain_meta_learning.py",
+                                    "content": "VALUE = 2\n",
+                                }]
+                            })
+                        }
+                    }]
+                }
+            assert "create target already exists" in payload["validationError"]
+            assert payload["correctionContract"]["editValidationCorrectionRound"] == 2
+            return {
+                "choices": [{
+                    "message": {
+                        "content": json.dumps({
+                            "edits": [{
+                                "operation": "replace",
+                                "path": "scripts/brain_meta_learning.py",
+                                "find": "VALUE = 1",
+                                "replace": "VALUE = 2",
+                            }]
+                        })
+                    }
+                }]
+            }
+
+        mod._model_request = repair_invalid_edit_plan
+        _, corrected_edits = mod.validated_model_plan(
+            "http://127.0.0.1:8080",
+            "demo",
+            {
+                "blueprint": {"strategyId": "demo"},
+                "allowedPaths": patterns,
+                "contract": {"requireExecutableDiff": True},
+                "sources": {"scripts/brain_meta_learning.py": "VALUE = 1\n"},
+                "architectureLayers": [],
+            },
+            patterns,
+            root=root,
+        )
+        assert corrected_edits[0]["operation"] == "replace"
+        assert corrected_edits[0]["replace"] == "VALUE = 2"
+        assert len(edit_corrections) == mod.EDIT_VALIDATION_CORRECTION_ROUNDS
+        assert target.read_text(encoding="utf-8") == "VALUE = 1\n"
+    finally:
+        mod.call_model = original_call_model
+        mod._model_request = original_request
+
+
 # A structurally valid model edit can still produce invalid source. FORCE must
 # validate the materialized bytes transactionally, restore the baseline on
 # failure, and let Qwen correct its own edit using the exact parser error.
