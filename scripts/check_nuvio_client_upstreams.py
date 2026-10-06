@@ -140,10 +140,12 @@ def repo_url(repository: str) -> str:
 def is_infrastructure_transport_error(error: Exception | str) -> bool:
     """Classify transient transport failures without weakening drift review.
 
-    Only explicit network/TLS/DNS signatures are treated as inconclusive. Git
-    history divergence, missing contract refs, malformed configuration and any
-    other unexpected failure remain blocking verification errors.
+    Network/TLS/DNS failures and subprocess timeouts are transport/infrastructure
+    uncertainty. Git history divergence, missing contract refs, malformed
+    configuration and any other unexpected failure remain blocking errors.
     """
+    if isinstance(error, subprocess.TimeoutExpired):
+        return True
     text = str(error).casefold()
     signatures = (
         "server certificate verification failed",
@@ -225,6 +227,10 @@ def compare(
         remote_branch = f"refs/heads/{branch}"
         local_branch = "refs/remotes/origin/niakvio-client-check"
         fetch_spec = f"{remote_branch}:{local_branch}"
+        # Client repositories can advance hundreds of commits between NiakVIO
+        # acceptance snapshots. Fetch enough history in one blobless request:
+        # name-only contract drift needs commit/tree objects, while semantic
+        # patches lazily materialize only the few selected files below.
         run_git(
             [
                 "-c",
@@ -232,12 +238,13 @@ def compare(
                 "fetch",
                 "--quiet",
                 "--no-tags",
-                "--depth=128",
+                "--filter=blob:none",
+                "--depth=1024",
                 "origin",
                 fetch_spec,
             ],
             cwd=work,
-            timeout=90,
+            timeout=150,
         )
 
         def has_commit(ref: str) -> bool:
@@ -252,7 +259,7 @@ def compare(
             return completed.returncode == 0
 
         missing = [ref for ref in (base, head) if not has_commit(ref)]
-        for deepen in (128, 256, 512, 1024):
+        for deepen in (1024, 2048):
             if not missing:
                 break
             run_git(
@@ -262,12 +269,13 @@ def compare(
                     "fetch",
                     "--quiet",
                     "--no-tags",
+                    "--filter=blob:none",
                     f"--deepen={deepen}",
                     "origin",
                     fetch_spec,
                 ],
                 cwd=work,
-                timeout=120,
+                timeout=180,
             )
             missing = [ref for ref in (base, head) if not has_commit(ref)]
 
@@ -533,7 +541,7 @@ def main() -> int:
     report: dict[str, Any] = {
         "schema_version": 4,
         "generated_at": now,
-        "transport": "parallel-git-ls-remote-plus-targeted-partial-tree-diff",
+        "transport": "parallel-git-ls-remote-plus-blobless-deep-history-diff",
         "policy": config.get("policy") or {},
         "selected_clients": requested,
         "clients": {},
