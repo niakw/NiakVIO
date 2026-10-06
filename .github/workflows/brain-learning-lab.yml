@@ -1366,7 +1366,7 @@ jobs:
 
       - name: Escalate exhausted targeted Learning to Brain architecture FORCE
         id: architecture-escalation
-        if: github.event_name == 'push' && steps.publish-memory.outputs.published == 'true'
+        if: steps.publish-memory.outputs.published == 'true' && (github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && needs.experiment.outputs.architecture_force != 'true'))
         env:
           GH_TOKEN: ${{ github.token }}
         shell: bash
