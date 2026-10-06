@@ -1,7 +1,7 @@
 {
   "schemaVersion": 3,
-  "runId": "37514607670",
-  "triggerSha": "643000026417e3ac3c8be04f5716268f5e203408",
+  "runId": "37514906406",
+  "triggerSha": "27008e5a7198f51ab0399339ecb837f60685a01a",
   "providers": [
     {
       "provider": "4khdhub",
@@ -421,10 +421,10 @@
       ],
       "dominantIssue": "provider_network_zero_result",
       "searchProgress": [
-        "anime: 4 works tested / 46 retained misses / 2 retained chain hits"
+        "anime: 4 works tested / 48 retained misses"
       ],
       "evidenceDepth": [
-        "anime=chain_reached"
+        "anime=lookup_only"
       ],
       "harnessTransportClass": "not-applicable",
       "harnessTransportEvidence": [],
@@ -2250,8 +2250,8 @@
   "harnessQueue": [],
   "targetedTransportBlockedQueue": [],
   "clientTransportGapQueue": [],
-  "harnessEvidenceRunId": "37514607670-sharded-waf",
-  "harnessEvidenceSha": "643000026417e3ac3c8be04f5716268f5e203408",
+  "harnessEvidenceRunId": "37514906406-sharded-waf",
+  "harnessEvidenceSha": "27008e5a7198f51ab0399339ecb837f60685a01a",
   "authorityRefreshedProviders": [],
   "harnessTransportUpdatedProviders": [],
   "networkDifferentialUpdatedProviders": [],
@@ -2664,43 +2664,5 @@
         "moviesmod"
       ]
     }
-  },
-  "lastRepairAttempt": {
-    "runId": "37515659608",
-    "sourceCensusRunId": "37514607670",
-    "selectedProviders": [
-      "4khdhub",
-      "allanime",
-      "anime-ultime",
-      "animesalt",
-      "animesultra",
-      "animevost-fr",
-      "flemmix",
-      "mallumv",
-      "moviebox",
-      "moviesmod",
-      "vidfast",
-      "yflix"
-    ],
-    "candidateProviders": [],
-    "validatedProviders": [],
-    "acceptedRepairCount": 0,
-    "deferredToLearningSlotProviders": [
-      "4khdhub",
-      "allanime",
-      "anime-ultime",
-      "animesalt",
-      "animesultra",
-      "animevost-fr",
-      "flemmix",
-      "mallumv",
-      "moviebox",
-      "moviesmod",
-      "vidfast",
-      "yflix"
-    ],
-    "noProgressReason": "no_new_repair_experiment",
-    "timeBudgetExhausted": false,
-    "publicationAllowed": false
   }
 }
