@@ -27,7 +27,7 @@ FAILURE_FAMILY_TAXONOMY: dict[str, tuple[str, ...]] = {
     "pagination_navigation": ("pagination", "page", "cursor", "next"),
     "rate_limit_cache": ("rate", "429", "throttle", "cache", "stale"),
     "provider_runtime_code": ("runtime", "exception", "syntax", "provider_js", "execution"),
-    "materialization_projection": ("materializ", "projection", "manifest", "override", "published_bytes"),
+    "materialization_projection": ("materialization", "projection", "manifest", "override", "published_bytes"),
     "stream_metadata": ("language", "quality", "resolution", "badge", "metadata"),
     "media_integrity": ("playback", "duration", "temporary", "placeholder", "fake_media", "short_vod"),
     "client_runtime_divergence": ("android", "ios", "desktop", "native", "node", "client", "harness"),
