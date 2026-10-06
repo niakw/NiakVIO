@@ -182,6 +182,7 @@ main_only = (ROOT / "scripts/enforce_main_only_repository_policy.py").read_text(
 assert 'BRAIN_PROPOSAL_BRANCH = "brain-repair/proposal"' in main_only
 assert "proposal_pr_opt_in=true" in main_only
 assert "NIAKVIO_ALLOW_BRAIN_PROPOSAL_PR" in main_only
+assert 'FORCE_MAIN_PUSH = \'git push --force-with-lease=refs/heads/main:\"$promotion_base\" origin HEAD:main\'' in main_only
 
 hygiene = (ROOT / ".github/workflows/repository-hygiene.yml").read_text(encoding="utf-8")
 assert "brain-learning/proposals" in hygiene

@@ -22,7 +22,7 @@ BRAIN_PROPOSAL_BRANCH = "brain-repair/proposal"
 LEGACY_FORBIDDEN_BRANCH = "brain-repair/proposals"
 JOB_MARKER = "\n  publish-repair-proposal:\n"
 FORCE_JOB_MARKER = "- name: Promote FORCE architecture directly on main"
-FORCE_MAIN_PUSH = 'git push --force-with-lease=refs/heads/main:"$GITHUB_SHA" origin HEAD:main'
+FORCE_MAIN_PUSH = 'git push --force-with-lease=refs/heads/main:"$promotion_base" origin HEAD:main'
 
 
 def normalize(*, apply: bool) -> list[str]:
