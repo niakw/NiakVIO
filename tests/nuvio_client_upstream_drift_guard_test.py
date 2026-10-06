@@ -109,7 +109,9 @@ def main() -> int:
     desktop_canary = DESKTOP_CANARY.read_text(encoding="utf-8")
     assert '"--clients"' in source
     assert "ThreadPoolExecutor" in source
-    assert "parallel-git-ls-remote-plus-targeted-partial-tree-diff" in source
+    assert "parallel-git-ls-remote-plus-blobless-deep-history-diff" in source
+    assert '"--filter=blob:none"' in source
+    assert '"--depth=1024"' in source
     assert "patch_files = [name for name in files if path_matches(name, patch_rules)]" in source
     assert '"warning" if args.no_fail else "error"' in source
     assert '"--no-fail"' in brain_source
@@ -379,6 +381,9 @@ def main() -> int:
     )
     assert module.is_infrastructure_transport_error(
         RuntimeError("fatal: unable to access https://github.com/x/y: Could not resolve host: github.com")
+    )
+    assert module.is_infrastructure_transport_error(
+        __import__("subprocess").TimeoutExpired(["git","fetch"],120)
     )
     assert not module.is_infrastructure_transport_error(RuntimeError("history status is history_divergence"))
 
