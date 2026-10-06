@@ -610,8 +610,11 @@ with tempfile.TemporaryDirectory(prefix="brain-arch-force-contract-") as tmp:
                             "edits": [{
                                 "operation": "replace",
                                 "path": "scripts/brain_meta_learning.py",
-                                "find": "VALUE = 1",
-                                "replace": "VALUE = 2",
+                                # Correct relative to the rejected candidate,
+                                # not the restored baseline. This is the exact
+                                # failure shape observed in FORCE 37520931361.
+                                "find": "DUPLICATE = True",
+                                "replace": "FIXED = True",
                             }]
                         })
                     }
@@ -632,9 +635,12 @@ with tempfile.TemporaryDirectory(prefix="brain-arch-force-contract-") as tmp:
             patterns,
             root=root,
         )
-        assert corrected_edits[0]["replace"] == "VALUE = 2"
+        assert "FIXED = True" in corrected_edits[0]["replace"]
+        assert "DUPLICATE = True" not in corrected_edits[0]["replace"]
         assert len(correction_calls) == 1
         assert target.read_text(encoding="utf-8") == "VALUE = 1\n"
+        mod.apply_edits(corrected_edits, root=root)
+        assert target.read_text(encoding="utf-8") == "VALUE = 1\nFIXED = True\n"
     finally:
         mod.call_model = original_call_model
         mod._model_request = original_request

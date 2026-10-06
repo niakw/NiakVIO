@@ -68,7 +68,9 @@ for required in (
     "Escalate exhausted targeted Learning to Brain architecture FORCE",
     "FIELD_BRAIN_ARCH_FORCE_AUTO_ESCALATION",
     "architecture_force=true",
-    "github.event_name == 'workflow_dispatch' && needs.experiment.outputs.architecture_force != 'true'",
+    "steps.publish-memory.outputs.published == 'true' && needs.experiment.outputs.architecture_force != 'true' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')",
+    "architecture_escalated: ${{ steps.architecture-escalation.outputs.escalated }}",
+    "needs.publish-learning.outputs.architecture_escalated != 'true'",
     "steps.architecture-escalation.outputs.escalated != 'true'",
 ):
     assert required in workflow, required

@@ -223,6 +223,203 @@ def _resolve_non_unique_replace_edits(
         resolved.append(edit)
     return resolved
 
+
+def _bounded_unique_replace_from_sources(before: str, after: str) -> tuple[str, str] | None:
+    """Collapse a full-file correction into one bounded unique baseline replace.
+
+    Corrective Qwen turns may describe bytes from the rejected materialized
+    candidate instead of the restored checkout.  Once the desired full source
+    is known, reduce baseline -> desired back to the exact bounded replace
+    contract used by FORCE.  Uncertainty or an oversized diff remains
+    fail-closed.
+    """
+    if before == after:
+        return None
+
+    prefix = 0
+    prefix_max = min(len(before), len(after))
+    while prefix < prefix_max and before[prefix] == after[prefix]:
+        prefix += 1
+
+    suffix = 0
+    suffix_max = min(len(before) - prefix, len(after) - prefix)
+    while (
+        suffix < suffix_max
+        and before[len(before) - 1 - suffix] == after[len(after) - 1 - suffix]
+    ):
+        suffix += 1
+
+    before_end = len(before) - suffix if suffix else len(before)
+    after_end = len(after) - suffix if suffix else len(after)
+    find_core = before[prefix:before_end]
+    replace_core = after[prefix:after_end]
+
+    # Exact find/replace cannot express a pure insertion. Bind one unchanged
+    # neighboring byte into both sides so the operation remains reversible.
+    if not find_core:
+        if prefix > 0:
+            prefix -= 1
+            find_core = before[prefix:before_end]
+            replace_core = after[prefix:after_end]
+        elif before_end < len(before):
+            before_end += 1
+            after_end += 1
+            find_core = before[prefix:before_end]
+            replace_core = after[prefix:after_end]
+        else:
+            return None
+
+    if len(find_core) > MAX_FIND or len(replace_core) > MAX_REPLACE:
+        return None
+
+    available_extra = min(
+        MAX_FIND - len(find_core),
+        MAX_REPLACE - len(replace_core),
+    )
+    widths = [0]
+    if available_extra > 0:
+        widths.extend(range(16, available_extra + 1, 16))
+        if widths[-1] != available_extra:
+            widths.append(available_extra)
+
+    for width in widths:
+        left_budget = width // 2
+        right_budget = width - left_budget
+        left = min(left_budget, prefix)
+        right = min(right_budget, len(before) - before_end)
+        missing = width - left - right
+        if missing > 0:
+            add_left = min(missing, prefix - left)
+            left += add_left
+            missing -= add_left
+        if missing > 0:
+            right += min(missing, len(before) - before_end - right)
+
+        stable_prefix = before[prefix - left:prefix]
+        stable_suffix = before[before_end:before_end + right]
+        candidate_find = stable_prefix + find_core + stable_suffix
+        candidate_replace = stable_prefix + replace_core + stable_suffix
+        if (
+            candidate_find
+            and len(candidate_find) <= MAX_FIND
+            and len(candidate_replace) <= MAX_REPLACE
+            and before.count(candidate_find) == 1
+        ):
+            return candidate_find, candidate_replace
+    return None
+
+
+def _rebase_candidate_relative_replace_edits(
+    corrected_edits: list[dict[str, Any]],
+    rejected_edits: list[dict[str, Any]],
+    patterns: list[str],
+    *,
+    root: Path = ROOT,
+) -> list[dict[str, Any]]:
+    """Project candidate-relative correction edits back onto restored bytes.
+
+    Materialized validation is transactional: after a candidate fails, the
+    checkout is restored before Qwen receives the failure. Qwen can correctly
+    say "replace this byte from the rejected candidate", but that find string
+    then occurs zero times in the restored baseline. Reconstruct the rejected
+    candidate in memory, apply the correction there, and collapse the resulting
+    desired source back into one exact unique baseline replace. Provider paths
+    and ambiguous transformations remain untouched so normal validation fails
+    closed.
+    """
+    corrected = [dict(edit) for edit in corrected_edits]
+    candidate_paths: set[str] = set()
+    for edit in corrected:
+        if str(edit.get("operation") or "") != "replace":
+            continue
+        path = str(edit.get("path") or "")
+        find = str(edit.get("find") or "")
+        target = root / path
+        if (
+            path_allowed(path, patterns)
+            and target.is_file()
+            and find
+            and target.read_text(encoding="utf-8").count(find) != 1
+        ):
+            candidate_paths.add(path)
+
+    rebased: dict[str, dict[str, Any]] = {}
+    for path in sorted(candidate_paths):
+        target = root / path
+        baseline = target.read_text(encoding="utf-8")
+        rejected_for_path = [
+            edit for edit in rejected_edits
+            if str(edit.get("path") or "") == path
+        ]
+        corrected_for_path = [
+            edit for edit in corrected
+            if str(edit.get("path") or "") == path
+        ]
+        if (
+            not rejected_for_path
+            or not corrected_for_path
+            or any(str(edit.get("operation") or "") != "replace" for edit in rejected_for_path)
+            or any(str(edit.get("operation") or "") != "replace" for edit in corrected_for_path)
+        ):
+            continue
+
+        candidate = baseline
+        reconstructable = True
+        for edit in rejected_for_path:
+            find = str(edit.get("find") or "")
+            replace = str(edit.get("replace") or "")
+            if not find or candidate.count(find) != 1:
+                reconstructable = False
+                break
+            candidate = candidate.replace(find, replace, 1)
+        if not reconstructable:
+            continue
+
+        desired = candidate
+        for edit in corrected_for_path:
+            find = str(edit.get("find") or "")
+            replace = str(edit.get("replace") or "")
+            if not find or desired.count(find) != 1:
+                reconstructable = False
+                break
+            desired = desired.replace(find, replace, 1)
+        if not reconstructable:
+            continue
+
+        bounded = _bounded_unique_replace_from_sources(baseline, desired)
+        if not bounded:
+            continue
+        find, replace = bounded
+        rebased[path] = {
+            "operation": "replace",
+            "path": path,
+            "find": find,
+            "replace": replace,
+        }
+        print(
+            "FIELD_BRAIN_ARCH_FORCE_CORRECTION_REBASED "
+            f"path={path} rejected_edits={len(rejected_for_path)} "
+            f"corrected_edits={len(corrected_for_path)} "
+            f"find_chars={len(find)} replace_chars={len(replace)}",
+            flush=True,
+        )
+
+    if not rebased:
+        return corrected
+
+    out: list[dict[str, Any]] = []
+    emitted: set[str] = set()
+    for edit in corrected:
+        path = str(edit.get("path") or "")
+        if path in rebased:
+            if path not in emitted:
+                out.append(rebased[path])
+                emitted.add(path)
+            continue
+        out.append(edit)
+    return out
+
+
 def validate_edits(edits: list[dict[str, Any]], patterns: list[str], root: Path = ROOT) -> None:
     if not edits or len(edits) > MAX_EDITS:
         raise ValueError("architecture FORCE requires 1..3 bounded edits")
@@ -984,6 +1181,12 @@ def validated_model_plan(
         corrected_edits = _resolve_non_unique_replace_edits(
             corrected_edits,
             correction_payload,
+            patterns,
+            root=root,
+        )
+        corrected_edits = _rebase_candidate_relative_replace_edits(
+            corrected_edits,
+            current_edits,
             patterns,
             root=root,
         )

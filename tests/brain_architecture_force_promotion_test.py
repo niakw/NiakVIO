@@ -27,6 +27,12 @@ assert 'promotion_base="$remote_main"' in LEARN
 assert "git apply --check brain-learning-output/brain-architecture-force.patch" in LEARN
 assert "FIELD_BRAIN_ARCH_FORCE_MAIN_PROMOTION" in LEARN
 assert "mode=direct-main-no-pr" in LEARN
+assert "FIELD_BRAIN_ARCH_FORCE_REPRESENTATIVE_REPLAY" in LEARN
+assert 'gh workflow run provider-recognition-repair-v6.yml' in LEARN
+assert '-f mode=repair' in LEARN
+assert '-f target_provider="$representative"' in LEARN
+assert "exactly one representative current repairQueue member" in LEARN
+assert "needs.experiment.outputs.architecture_force != 'true' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')" in LEARN
 assert 'gh pr merge "$PR_NUMBER"' not in LEARN
 assert "mode=merge-after-green-pr-checks" not in LEARN
 assert "architecture FORCE changed non-allowlisted paths" in LEARN

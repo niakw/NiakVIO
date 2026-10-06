@@ -1228,6 +1228,8 @@ jobs:
   publish-learning:
     name: LEARNING - Publish sanitized memory
     needs: experiment
+    outputs:
+      architecture_escalated: ${{ steps.architecture-escalation.outputs.escalated }}
     concurrency:
       group: niakvio-brain-learning-memory-publish
       cancel-in-progress: false
@@ -1366,7 +1368,7 @@ jobs:
 
       - name: Escalate exhausted targeted Learning to Brain architecture FORCE
         id: architecture-escalation
-        if: steps.publish-memory.outputs.published == 'true' && (github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && needs.experiment.outputs.architecture_force != 'true'))
+        if: steps.publish-memory.outputs.published == 'true' && needs.experiment.outputs.architecture_force != 'true' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
         env:
           GH_TOKEN: ${{ github.token }}
         shell: bash
@@ -1952,9 +1954,64 @@ jobs:
           git push --force-with-lease=refs/heads/main:"$promotion_base" origin HEAD:main
           echo "FIELD_BRAIN_ARCH_FORCE_MAIN_PROMOTION promoted=true sha=$promoted_sha base=$promotion_base source=$GITHUB_SHA mode=direct-main-no-pr"
 
+          # Architecture promotion is not a provider repair. Prove the new Brain
+          # capability on exactly one representative current repairQueue member
+          # before any cohort-wide retry. Prefer the provider(s) attached to the
+          # FORCE-promotable blueprint, then the explicit requested cohort.
+          representative="$(python - <<'PY'
+          import json, os
+          from pathlib import Path
+
+          def norm(value):
+              return str(value or "").strip().casefold().replace("_", "-")
+
+          requested=[]
+          for raw in (os.environ.get("TARGET_PROVIDERS") or "").split(","):
+              value=norm(raw)
+              if value and value not in requested:
+                  requested.append(value)
+          single=norm(os.environ.get("TARGET_PROVIDER") or "")
+          if single and single not in requested:
+              requested.append(single)
+
+          proposal=json.loads(Path("brain-learning-output/brain-architecture-proposal.json").read_text(encoding="utf-8"))
+          blueprint=[]
+          for row in proposal.get("strategyBlueprints") or []:
+              if not isinstance(row,dict) or row.get("forcePromotionEligible") is not True:
+                  continue
+              for raw in row.get("providers") or []:
+                  value=norm(raw)
+                  if value and value not in blueprint:
+                      blueprint.append(value)
+
+          census=json.loads(Path("automation/provider-census-status.json").read_text(encoding="utf-8"))
+          active={
+              norm(row.get("provider"))
+              for row in census.get("providers") or []
+              if isinstance(row,dict) and row.get("brainCheckRequired") is True and norm(row.get("provider"))
+          }
+
+          ordered=[]
+          for value in blueprint + requested + sorted(active):
+              if value and value not in ordered:
+                  ordered.append(value)
+          eligible=[value for value in ordered if value in active]
+          if not eligible:
+              raise SystemExit("architecture FORCE promoted but no representative current repairQueue provider remained")
+          print(eligible[0])
+          PY
+          )"
+          test -n "$representative"
+          gh workflow run provider-recognition-repair-v6.yml \
+            --repo "$GITHUB_REPOSITORY" \
+            --ref main \
+            -f mode=repair \
+            -f target_provider="$representative"
+          echo "FIELD_BRAIN_ARCH_FORCE_REPRESENTATIVE_REPLAY provider=$representative source_run=$GITHUB_RUN_ID promoted_sha=$promoted_sha target=provider-recognition-repair-v6"
+
   continue-learning-slot:
     name: LEARNING - Continue chained long slot
-    if: ${{ always() && needs.experiment.result == 'success' && needs.publish-learning.result == 'success' && needs.experiment.outputs.slot_continue == 'true' }}
+    if: ${{ always() && needs.experiment.result == 'success' && needs.publish-learning.result == 'success' && needs.publish-learning.outputs.architecture_escalated != 'true' && needs.experiment.outputs.slot_continue == 'true' }}
     needs:
       - experiment
       - publish-learning
