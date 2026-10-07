@@ -63,6 +63,6 @@ finally:
 planner = (ROOT / "engine_v2" / "scripts" / "plan-repairs.mjs").read_text(encoding="utf-8")
 adaptive = (SCRIPTS / "adaptive_runtime" / "brain_repair_runtime.py").read_text(encoding="utf-8")
 assert "input.explorationChain === true" in planner
-assert '"explorationChain": _BASE._exploration_chain_enabled()' in adaptive
+assert adaptive.count('"explorationChain": _BASE._exploration_chain_enabled()') == 2, adaptive
 
 print("Brain exploration-chain budget contract passed")

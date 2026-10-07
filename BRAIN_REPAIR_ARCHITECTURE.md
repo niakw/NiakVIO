@@ -1064,3 +1064,8 @@ Architecture FORCE uses the same blueprint-aware repeated-find resolver across t
 ### route_transition_graph_v2 — reusable manual oracle
 
 When `route_transition_graph_v1` is exhausted, Brain may select `route_transition_graph_v2` as a distinct post-exhaustion executor. v2 is same-provider-first: it combines retained positive/current/historical request programs, compiles transition prefixes only from provider-owned observed route DATA, and enables runtime response salvage so successful HTML/JSON/text responses can yield terminal/player URLs without guessed provider-local routes. It is registered in the planner, Repair runtime registry and adaptive runtime; negative-memory fingerprint rotation controls selection. This oracle is Brain infrastructure and must still pass representative provider replay and normal acceptance proof before cohort use.
+
+
+### Exploration-chain transport integrity
+
+The adaptive bounded planner overlay must preserve the explicit production exploration-chain bit on both initial `update_plans()` and later `replan_observation()` calls. Dropping the bit is a control-plane failure: registered post-exhaustion strategies remain visible as candidates but are incorrectly deferred as Learning debt. Normal production stays fail-closed because the bit is derived from `NUVIO_BRAIN_EXPLORATION_CHAIN=1`; only callers that explicitly own a bounded exploration/replay transaction enable it.

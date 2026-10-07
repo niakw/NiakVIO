@@ -182,6 +182,7 @@ def update_plans(registry_path: Path, report: dict[str, Any], mode: str) -> dict
 
     base_payload = {
         "mode": mode,
+        "explorationChain": _BASE._exploration_chain_enabled(),
         "policy": _BASE.policy(),
         "learnedSkills": _BASE.planner_learned_skills(mode),
         "historicalSolutions": _BASE.planner_historical_solutions(),

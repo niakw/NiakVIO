@@ -1102,3 +1102,13 @@
 - The harness now derives its mocked primary base dynamically from the same `provider_lego_options` used to compile `wookafr_current_runtime_v2.py`. Movie + TV multiplayer behavior passes again without hard-coded historical domains.
 - Targeted validation passes: Wooka current runtime behavior, provider v3 strategy plan, Brain preflight fail-fast ordering, Brain preflight incremental materialization scope, and `git diff --check`.
 - Next authority remains a targeted 4KHDHub Repair using Brain `route_transition_graph_v2`.
+
+
+## 2026-10-07 — Adaptive Repair planner now preserves explorationChain
+
+- Representative Repair `37691213661` on `0ecef5a` completed successfully as a workflow but did **not** repair 4KHDHub: current-byte audit remained raw/playable/verified = 0, Brain accepted 0 repairs, and repairQueue stayed 17.
+- Artifact `automation/provider-brain-repair-latest.json` proved the new `route_transition_graph_v2` capability was visible in `postExhaustionCandidateProfiles`, but the actual plan had `explorationChainEnabled=false`, `strategyEscalated=false`, empty `postExhaustionStrategyProfile`, and deferred the provider to Learning.
+- Root cause: `scripts/adaptive_runtime/brain_repair_runtime.py::update_plans()` rebuilt the bounded planner payload without the `explorationChain` field. The representative runner correctly exported `NUVIO_BRAIN_EXPLORATION_CHAIN=1`, and `replan_observation()` preserved it, but the initial adaptive planning path silently dropped it before Node.
+- The adaptive planner payload now includes `"explorationChain": _BASE._exploration_chain_enabled()` in both initial planning and replanning. Production remains fail-closed unless the caller explicitly enables the exploration chain; normal production runs are not broadened.
+- Regression coverage now functionally exercises adaptive `update_plans()` with the explicit chain bit and asserts two explorationChain transport sites in the overlay. Brain replan transport, exploration budget, LLM advisor execution, second-order runtime strategy, provider Brain orchestrator, main-only policy and `git diff --check` pass locally.
+- Next authority: rerun only 4KHDHub Repair and require the artifact to show `explorationChainEnabled=true`, `postExhaustionStrategyProfile=route_transition_graph_v2`, actual execution, current-byte materialization, and playable/identity-safe improvement before counting a repair.
