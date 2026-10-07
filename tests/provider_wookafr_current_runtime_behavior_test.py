@@ -7,11 +7,15 @@ ROOT=Path(__file__).resolve().parents[1]
 src=(ROOT/"scripts/provider_patches/wookafr_current_runtime_v2.py").read_text(encoding="utf-8")
 ov=json.loads((ROOT/"provider-overrides.json").read_text(encoding="utf-8"))["provider_patches"]["wookafr"]
 opts=ov["provider_lego_options"]["scripts/provider_patches/wookafr_current_runtime_v2.py"]
+bases=[str(value).rstrip("/") for value in opts.get("bases") or [] if str(value).startswith(("http://","https://"))]
+assert bases, opts
+primary_base=bases[0]
 wrapper=src.split("WRAPPER = r'''",1)[1].split("'''",1)[0]
 compiled=wrapper.replace("CONFIG_PLACEHOLDER",json.dumps(opts,separators=(",",":")))
 
 harness=r'''
 const calls=[];
+const BASE=BASE_PLACEHOLDER;
 global.__nuvioCoreGetTmdbDataV1=async function(q){
   if(q.mediaType==="tv") return {state:"ok",metadata:{name:"Breaking Bad",first_air_date:"2008-01-20"}};
   return {state:"ok",metadata:{title:"Inception",release_date:"2010-07-16"}};
@@ -19,11 +23,11 @@ global.__nuvioCoreGetTmdbDataV1=async function(q){
 function R(status,body,url){return{ok:status>=200&&status<300,status,url:url||"",async text(){return String(body||"")},async json(){return JSON.parse(String(body||"{}"))}}}
 global.fetch=async function(url,opt){
   url=String(url);calls.push(url);
-  if(url==="https://wookafr.boston/?s=Inception") return R(200,'<a href="/streaming/aventure/inception/">Inception 2010</a>',url);
-  if(url==="https://wookafr.boston/streaming/aventure/inception/") return R(200,'<iframe src="https://lecteurvideo.com/embed.php?id=dead"></iframe><iframe data-src="https://vidmoly.example/e/live"></iframe>',url);
-  if(url==="https://wookafr.boston/?s=Breaking%20Bad") return R(200,'<a href="/streaming/series/breaking-bad/">Breaking Bad 2008 série</a>',url);
-  if(url==="https://wookafr.boston/streaming/series/breaking-bad/") return R(200,'<a href="/streaming/episodes/breaking-bad-saison-1-episode-1/">Saison 1 Episode 1</a>',url);
-  if(url==="https://wookafr.boston/streaming/episodes/breaking-bad-saison-1-episode-1/") return R(200,'<iframe src="https://vidzy.live/e/bb1"></iframe>',url);
+  if(url===BASE+"/?s=Inception") return R(200,'<a href="/streaming/aventure/inception/">Inception 2010</a>',url);
+  if(url===BASE+"/streaming/aventure/inception/") return R(200,'<iframe src="https://lecteurvideo.com/embed.php?id=dead"></iframe><iframe data-src="https://vidmoly.example/e/live"></iframe>',url);
+  if(url===BASE+"/?s=Breaking%20Bad") return R(200,'<a href="/streaming/series/breaking-bad/">Breaking Bad 2008 série</a>',url);
+  if(url===BASE+"/streaming/series/breaking-bad/") return R(200,'<a href="/streaming/episodes/breaking-bad-saison-1-episode-1/">Saison 1 Episode 1</a>',url);
+  if(url===BASE+"/streaming/episodes/breaking-bad-saison-1-episode-1/") return R(200,'<iframe src="https://vidzy.live/e/bb1"></iframe>',url);
   return R(404,"",url);
 };
 global._crawlDirectMedia=async function(urls,ref,depth){
@@ -51,5 +55,6 @@ module={exports:{getStreams:async()=>[]}};
   console.log("WOOKAFR_CURRENT_MULTIPLAYER_OK");
 })().catch(e=>{console.error(e);process.exit(1)});
 '''
+harness=harness.replace("BASE_PLACEHOLDER",json.dumps(primary_base))
 subprocess.run(["node","-e",harness],check=True)
 print("Wooka current multi-player runtime behavior passed")

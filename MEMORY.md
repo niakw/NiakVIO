@@ -1093,3 +1093,12 @@
 - Planner ordering places v2 immediately after v1 for the route-proven causal family. Existing negative-memory + implementation-fingerprint rotation will skip an exhausted v1 and select v2 when appropriate.
 - Targeted validation is green: Python compile, Node syntax, second-order runtime strategy contract, Brain LLM advisor/planner execution contract, FORCE materializer/promotion contracts, Learning workflow contract, main-only policy and `git diff --check`.
 - Next authority: publish this Brain infrastructure change, run one representative Repair on 4KHDHub, verify planner selected `route_transition_graph_v2`, materialize current bytes, and require real route/terminal/playback + identity-safe proof before any cohort expansion.
+
+
+## 2026-10-07 — Repair preflight WookaFR harness de-staled
+
+- Representative Repair `37690698515` on `9c8b893` never reached 4KHDHub. It failed in preflight `tests/provider_wookafr_current_runtime_behavior_test.py` with `movie fallback failed []`.
+- Reproduction on current main proved the test fixture was stale: it mocked only `https://wookafr.boston`, while authoritative `provider-overrides.json` configures WookaFR runtime bases as `wookafr.blog / .center / .plus` and census authority remains FULL OK. No WookaFR provider bytes were changed.
+- The harness now derives its mocked primary base dynamically from the same `provider_lego_options` used to compile `wookafr_current_runtime_v2.py`. Movie + TV multiplayer behavior passes again without hard-coded historical domains.
+- Targeted validation passes: Wooka current runtime behavior, provider v3 strategy plan, Brain preflight fail-fast ordering, Brain preflight incremental materialization scope, and `git diff --check`.
+- Next authority remains a targeted 4KHDHub Repair using Brain `route_transition_graph_v2`.
