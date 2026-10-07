@@ -306,7 +306,11 @@ jobs:
           set -euo pipefail
           cache="$RUNNER_TEMP/nuvio-client-upstream-status.json"
           validated="$RUNNER_TEMP/nuvio-client-upstream-status-validated.json"
-          python3 scripts/check_nuvio_client_upstreams.py --no-fail --output "$cache"
+          # Provider Repair needs verified exact upstream lineage and all
+          # changed contract paths. Keep semantic body reads in native Labs:
+          # blobless Desktop history can fail fetching old player blobs, and
+          # uninspected paths must remain explicit native re-audit debt.
+          python3 scripts/check_nuvio_client_upstreams.py --no-fail --paths-only --output "$cache"
           python3 - "$cache" <<'PY2'
           import json,sys
           data=json.load(open(sys.argv[1],encoding="utf-8"))

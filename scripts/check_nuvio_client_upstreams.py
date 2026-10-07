@@ -48,6 +48,24 @@ def run_git(args: list[str], *, cwd: Path | None = None, timeout: int = 45) -> s
     return process.stdout
 
 
+def changed_tree_paths(cwd: Path, base: str, head: str) -> list[str]:
+    """Enumerate exact changed names using only commit/tree objects.
+
+    Diff-tree without rename detection cannot trigger blob downloads in a
+    blobless upstream checkout. Renames appear as both old and new paths, which
+    is conservative for hard contract and semantic-review classifications.
+    """
+    names = run_git(
+        [
+            "diff-tree", "-r", "--no-commit-id", "--name-only",
+            "--no-renames", base, head,
+        ],
+        cwd=cwd,
+        timeout=45,
+    )
+    return [name.strip() for name in names.splitlines() if name.strip()]
+
+
 def path_matches(filename: str, rules: list[str]) -> bool:
     normalized = filename.strip().lstrip("/")
     for raw in rules:
@@ -171,11 +189,12 @@ def is_infrastructure_transport_error(error: Exception | str) -> bool:
 
 
 def resilient_inspect_client(
-    key: str, row: dict[str, Any], sources: dict[str, Any] | None = None
+    key: str, row: dict[str, Any], sources: dict[str, Any] | None = None,
+    *, paths_only: bool = False,
 ) -> dict[str, Any]:
     sources = sources or {}
     try:
-        return inspect_client(key, row, sources)
+        return inspect_client(key, row, sources, paths_only=paths_only)
     except Exception as error:
         if not is_infrastructure_transport_error(error):
             raise
@@ -214,6 +233,7 @@ def compare(
     base: str,
     head: str,
     patch_rules: list[str] | None = None,
+    *, paths_only: bool = False,
 ) -> dict[str, Any]:
     """Compare refs while materializing patches only for semantic-review paths.
 
@@ -297,18 +317,18 @@ def compare(
             check=False,
         )
         status = "ahead" if ancestry.returncode == 0 else "history_divergence"
-        names = run_git(
-            ["diff", "--name-only", "refs/niakvio/base", "refs/niakvio/head"],
-            cwd=work,
-            timeout=30,
-        )
-        files = [name.strip() for name in names.splitlines() if name.strip()]
+        files = changed_tree_paths(work, "refs/niakvio/base", "refs/niakvio/head")
         if patch_rules:
             patch_files = [name for name in files if path_matches(name, patch_rules)][:250]
         else:
             patch_files = files[:250]
         patches: dict[str, str] = {}
-        for filename in patch_files:
+        # Repair requires verified upstream ancestry + conservative path drift,
+        # not the bytes of every changed Desktop player file. The blobless
+        # promisor can fail to serve old blobs, which must not block read-only
+        # provider experiments. The paths-only report marks all uninspected
+        # semantic paths for native review and never auto-accepts their HEAD.
+        for filename in ([] if paths_only else patch_files):
             patch = run_git(
                 [
                     "diff",
@@ -346,7 +366,10 @@ def accepted_ref_for(sources: dict[str, Any], key: str, contract_ref: str) -> st
     return contract_ref
 
 
-def inspect_client(key: str, row: dict[str, Any], sources: dict[str, Any] | None = None) -> dict[str, Any]:
+def inspect_client(
+    key: str, row: dict[str, Any], sources: dict[str, Any] | None = None,
+    *, paths_only: bool = False,
+) -> dict[str, Any]:
     sources = sources or {}
     repository = str(row["repository"])
     branch = str(row["branch"])
@@ -378,7 +401,10 @@ def inspect_client(key: str, row: dict[str, Any], sources: dict[str, Any] | None
     if head == accepted_ref:
         return result
 
-    comparison = compare(repository, branch, accepted_ref, head, semantic_rules)
+    comparison = compare(
+        repository, branch, accepted_ref, head, semantic_rules,
+        paths_only=paths_only,
+    )
     status = str(comparison.get("status") or "unknown")
     patches = comparison.get("patches") or {}
     files = [
@@ -396,6 +422,10 @@ def inspect_client(key: str, row: dict[str, Any], sources: dict[str, Any] | None
         if hits:
             semantic_hit_map[name] = hits
     semantic_changed = sorted(semantic_hit_map)
+    # Missing semantic patches are uncertainty, never proof of no semantic
+    # change. Repair's tree-only preflight deliberately leaves these unknown;
+    # retain them as explicit native re-audit debt, not an auto-safe advance.
+    unverified_semantic = [name for name in semantic_candidates if name not in patches]
     observed_sensitive = [name for name in semantic_candidates if name not in semantic_hit_map]
     unrelated = [
         name
@@ -409,13 +439,14 @@ def inspect_client(key: str, row: dict[str, Any], sources: dict[str, Any] | None
             "changed_file_count": len(files),
             "contract_changed_files": contract_changed,
             "semantic_changed_files": semantic_changed,
+            "semantic_review_unverified_files": unverified_semantic,
             "semantic_token_hits": semantic_hit_map,
             "observed_sensitive_changed_files": observed_sensitive,
             "unrelated_changed_files": unrelated,
         }
     )
 
-    if status == "ahead" and not contract_changed and not semantic_changed:
+    if status == "ahead" and not contract_changed and not semantic_changed and not unverified_semantic:
         result["status"] = "safe_advance_available"
         result["auto_advance_safe"] = True
         return result
@@ -427,6 +458,8 @@ def inspect_client(key: str, row: dict[str, Any], sources: dict[str, Any] | None
         reasons.append("hard runtime contract paths changed")
     if semantic_changed:
         reasons.append("player/dependency changes touched runtime-sensitive semantics")
+    if unverified_semantic:
+        reasons.append("semantic paths changed but content not fetched; native reader re-audit required")
     if status != "ahead":
         reasons.append(f"history status is {status}")
     result["reasons"] = reasons or ["unclassified client repository drift"]
@@ -507,6 +540,11 @@ def main() -> int:
         help="Report contract drift without a non-zero exit code.",
     )
     parser.add_argument(
+        "--paths-only",
+        action="store_true",
+        help="Repair preflight: verify exact ancestry/path drift without fetching semantic blobs; changed semantic paths require native review and cannot auto-advance.",
+    )
+    parser.add_argument(
         "--apply-safe-advance",
         action="store_true",
         help="Persist safe accepted_ref advances in sources.json. Never advances the audited contract_ref.",
@@ -554,7 +592,7 @@ def main() -> int:
 
     def inspect_one(key: str, row: dict[str, Any]) -> dict[str, Any]:
         try:
-            return resilient_inspect_client(str(key), row, sources)
+            return resilient_inspect_client(str(key), row, sources, paths_only=args.paths_only)
         except Exception as error:
             return {
                 "id": key,

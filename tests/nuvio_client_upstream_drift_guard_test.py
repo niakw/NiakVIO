@@ -3,7 +3,9 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import subprocess
 import sys
+import tempfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -68,7 +70,7 @@ def run_case(head: str, comparison: dict | None, state: dict | None = None) -> d
     old_compare = module.compare
     try:
         module.current_head = lambda repository, branch: head
-        module.compare = lambda repository, branch, base, current, patch_rules=None: comparison or {}
+        module.compare = lambda repository, branch, base, current, patch_rules=None, paths_only=False: comparison or {}
         return module.inspect_client("client", sample(), state or {})
     finally:
         module.current_head = old_head
@@ -112,9 +114,45 @@ def main() -> int:
     assert "parallel-git-ls-remote-plus-blobless-deep-history-diff" in source
     assert '"--filter=blob:none"' in source
     assert '"--depth=1024"' in source
+    assert "changed_tree_paths(work" in source
     assert "patch_files = [name for name in files if path_matches(name, patch_rules)]" in source
+
+    # The Desktop upstream checker must not compare every blob just to learn
+    # names. Git's rename detector may lazily fetch an entire filtered client
+    # repository, exceeding the Repair preflight timeout. Tree-only enumeration
+    # remains conservative: both paths of a rename are visible to policy.
+    with tempfile.TemporaryDirectory(prefix="nuvio-client-tree-drift-") as tmp:
+        work = Path(tmp)
+        def git(*args: str) -> str:
+            completed = subprocess.run(
+                ["git", *args], cwd=work, capture_output=True, text=True,
+                check=True, timeout=15,
+            )
+            return completed.stdout.strip()
+        git("init", "-q")
+        git("config", "user.name", "NiakVIO test")
+        git("config", "user.email", "tests@example.invalid")
+        (work / "runtime").mkdir()
+        (work / "runtime" / "Old.kt").write_text("contract\n", encoding="utf-8")
+        (work / "README.md").write_text("unrelated\n", encoding="utf-8")
+        git("add", ".")
+        git("commit", "-qm", "baseline")
+        base = git("rev-parse", "HEAD")
+        (work / "runtime" / "Old.kt").rename(work / "runtime" / "New.kt")
+        (work / "README.md").write_text("changed\n", encoding="utf-8")
+        git("add", "-A")
+        git("commit", "-qm", "move contract")
+        head = git("rev-parse", "HEAD")
+        changed = module.changed_tree_paths(work, base, head)
+        assert set(changed) == {
+            "README.md", "runtime/Old.kt", "runtime/New.kt",
+        }, changed
+        assert all(module.path_matches(path, ["runtime/"]) for path in changed if path != "README.md")
     assert '"warning" if args.no_fail else "error"' in source
     assert '"--no-fail"' in brain_source
+    repair_workflow = (ROOT / ".github/workflows/provider-recognition-repair-v6.yml").read_text(encoding="utf-8")
+    assert "check_nuvio_client_upstreams.py --no-fail --paths-only" in repair_workflow
+    assert "--paths-only" in source
     assert "classify_provider_mutation_compat" in brain_source
     assert "adaptation_pending" in brain_source
     assert "contract_review_blocking=false" in brain_source
@@ -211,6 +249,22 @@ def main() -> int:
     )
     assert subtitle_only["status"] == "safe_advance_available"
     assert subtitle_only["observed_sensitive_changed_files"] == ["player/PlayerTrackSelection.kt"]
+
+    # Repair paths-only mode must never mistake an unread semantic patch for a
+    # safe upstream update. It is a review-required adaptation signal; desktop
+    # native acceptance remains outstanding, while isolated Brain work can run.
+    paths_only_unverified = run_case(
+        "c" * 40,
+        {
+            "status": "ahead",
+            "files": [{"filename": "player/Playback.kt"}],
+            "patches": {},
+        },
+    )
+    assert paths_only_unverified["status"] == "contract_review_required"
+    assert paths_only_unverified["auto_advance_safe"] is False
+    assert paths_only_unverified["semantic_review_unverified_files"] == ["player/Playback.kt"]
+    assert "native reader re-audit required" in " ".join(paths_only_unverified["reasons"])
 
     semantic_player = run_case(
         "d" * 40,

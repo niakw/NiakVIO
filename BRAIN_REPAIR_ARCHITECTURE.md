@@ -1076,3 +1076,8 @@ The adaptive bounded planner overlay must preserve the explicit production explo
 Post-exhaustion strategy memory is conservative across historical schema changes. A failed profile row without an implementation fingerprint still exhausts that profile id; a new implementation must use a new generation/id such as `*_v2`. This prevents code movement elsewhere from resurrecting old failed executors.
 
 For the route-terminal family, newer explicit generations are ordered ahead of their exhausted parent generation. In particular `route_transition_graph_v2` is preferred over `route_transition_graph_v1`, and in `search_gap` follows the exact HTML-token strategy so the Brain can move from parser-local recovery directly into same-provider observed transition traversal without replaying the historical v1 strategy chain.
+
+### Repair upstream client snapshot: exact tree lineage + pending native audit
+
+Provider Repair preflight now uses check_nuvio_client_upstreams.py --paths-only to verify exact current upstream branch HEAD, ancestry and all changed path names from commit/tree objects. Rename detection is disabled; old and new paths are conservatively retained. Unknown branches/history or missing tree objects stay fail-closed.
+Semantic paths without readable patches are recorded as semantic_review_unverified_files and classified contract_review_required, never safe_advance_available. Linear known upstream drift can be exercised by isolated Brain Repair, with native reader acceptance still required. Native Labs continue their full semantic content audit. This is a Brain/Core pipeline correction, not a provider mutation.

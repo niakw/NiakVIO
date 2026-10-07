@@ -1123,3 +1123,14 @@
 - Generic route/search post-exhaustion ordering now prioritizes `route_transition_graph_v2` over `route_transition_graph_v1`, and places v2 immediately after the exact HTML parser in `search_gap`. A functional planner contract reproduces the representative sequence: base search variants exhausted -> html_class_token_exact_v1 current implementation fails -> legacy search-contract debt remains exhausted -> next allowed profile is exactly `route_transition_graph_v2`.
 - Brain final-generation, advisor execution, negative-exhaustion, second-order runtime, exploration transport/budget, Repair orchestrator, main-only policy and `git diff --check` all pass locally. No provider-local production bytes were edited.
 - Next authority: rerun only 4KHDHub Repair and require the artifact to select and execute `route_transition_graph_v2`; only current-byte playable/identity-safe improvement may count as a repair.
+
+## 2026-10-08 — Repair client preflight et récupération prioritaire
+
+- Census autoritatif : 21 FULL OK / 46, 17 repairQueue, 2 régressions AnimeKai et UHDMovies. AnimeKai : provider_network_exception, historique Jujutsu Kaisen. UHDMovies : provider_network_zero_result, historique Avengers Endgame. Aucun des deux n'a été testé dans le run census le plus récent.
+- Repair 37694238142 sur 883cba7 interrompu avant exécution provider : timeout Git diff --name-only sur le client Desktop blobless, état verification_inconclusive.
+- Correction Brain/Core : changed_tree_paths utilise git diff-tree -r --no-renames --name-only ; il lit les trees sans charger tous les blobs. Les renommages retiennent ancien et nouveau chemin sensible.
+- Le test live Desktop a révélé en second un objet promisor manquant lors de la lecture des anciens patches sémantiques. Pour le seul préflight Repair, option --paths-only : exact upstream HEAD et ascendance vérifiés, fichiers sensibles énumérés, aucun patch sémantique ancien téléchargé.
+- Tout chemin sémantique non inspecté est conservé dans semantic_review_unverified_files, classé contract_review_required, jamais safe_advance_available. Les Native Labs conservent leur audit complet.
+- Contrôle live sur Git Apple 2.50 : Desktop, Mobile, TV ont compare_status=ahead, zéro verification_error/inconclusive. Respectivement 66, 90, 86 chemins sémantiques non inspectés ; audit natif toujours obligatoire.
+- Le garde Brain accepte le cache vérifié : adaptation_pending=3, native_reader_acceptance_required=true. Tests verts : Nuvio upstream drift, Nuvio latest-HEAD Lab resolver, Brain Learning workflow, Brain strategy runtime, causal replan, main-only.
+- Aucun provider publié ou réparé par cette amélioration. Prochaine autorité : Repair current-byte ciblé AnimeKai puis UHDMovies, preuves réseau/identité/terminal/playback, uniquement via Brain.
