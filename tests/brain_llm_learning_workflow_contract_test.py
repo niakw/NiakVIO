@@ -72,6 +72,11 @@ for required in (
     "architecture_escalated: ${{ steps.architecture-escalation.outputs.escalated }}",
     "needs.publish-learning.outputs.architecture_escalated != 'true'",
     "steps.architecture-escalation.outputs.escalated != 'true'",
+    "- name: Upload sanitized learning and proposal state",
+    "if: ${{ always() }}",
+    "brain-learning-output/brain-architecture-proposal.json",
+    "brain-learning-output/brain-architecture-force-report.json",
+    "if-no-files-found: warn",
 ):
     assert required in workflow, required
 

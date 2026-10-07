@@ -1036,3 +1036,11 @@ The materializer may then select only the uniquely nearest occurrence to that st
 ### Architecture FORCE concurrency ownership
 
 Explicit Architecture FORCE is a proof transaction, not ordinary targeted Learning. Its concurrency key is separated from routine Autopilot/Learning by cohort. Routine targeted Learning may cancel stale routine work in its own cohort lane, but must never cancel an in-flight FORCE before proposal, materialization, promotion and representative replay. Multiple FORCE requests for the same cohort queue rather than canceling one another. Promotion still uses the existing current-main/rebase guards, so this separation does not weaken Git or publication safety.
+
+### Strategy-block anchoring for evolved FORCE profiles
+
+When FORCE evolves an exhausted executable Repair profile (for example `route_transition_graph_v1 -> route_transition_graph_v2`), generated replaces in the adaptive runtime may contain text repeated across adjacent strategy branches. The materializer may resolve such a replace only when the prior strategy's exact `if/elif new_strategy_id == <evolvesFromStrategyId>` block contains that find exactly once. It then widens unchanged surrounding bytes until the final replace anchor is globally unique.
+
+Compact corrective payloads may omit part of the original source window. In that case the same exact prior-strategy block may be located in current repository bytes and used as the sole fallback. Generic nearest-occurrence selection is not sufficient authority; ties, missing blocks, or multiple matches inside the owned block remain fail-closed.
+
+Architecture FORCE failures must preserve sanitized proposal/report artifacts even when executable materialization fails. This evidence has diagnostic authority only and cannot publish provider or production bytes.

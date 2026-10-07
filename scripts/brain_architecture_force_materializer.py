@@ -85,6 +85,46 @@ def path_allowed(path: str, patterns: list[str]) -> bool:
 
 
 
+def _strategy_block_find_offset(
+    snippet: str,
+    find: str,
+    payload: dict[str, Any],
+) -> int | None:
+    """Bind a repeated find to the exact prior-strategy implementation block."""
+    blueprint = payload.get("blueprint") if isinstance(payload.get("blueprint"), dict) else {}
+    strategy_values = [
+        str(blueprint.get("evolvesFromStrategyId") or "").strip(),
+        str(blueprint.get("strategyId") or "").strip(),
+    ]
+    for value in strategy_values:
+        if not value:
+            continue
+        patterns = (
+            rf'(?m)^(?P<indent>[ \t]*)(?:if|elif)\s+new_strategy_id\s*==\s*"{re.escape(value)}"\s*:\s*$',
+            rf"(?m)^(?P<indent>[ \t]*)(?:if|elif)\s+new_strategy_id\s*==\s*'{re.escape(value)}'\s*:\s*$",
+        )
+        for pattern in patterns:
+            for match in re.finditer(pattern, snippet):
+                indent = match.group("indent")
+                boundary = re.search(
+                    rf"(?m)^{re.escape(indent)}(?:elif\s+new_strategy_id\b|else\s*:)",
+                    snippet[match.end():],
+                )
+                block_end = match.end() + boundary.start() if boundary else len(snippet)
+                block = snippet[match.start():block_end]
+                local_positions: list[int] = []
+                cursor = 0
+                while True:
+                    pos = block.find(find, cursor)
+                    if pos < 0:
+                        break
+                    local_positions.append(pos)
+                    cursor = pos + max(1, len(find))
+                if len(local_positions) == 1:
+                    return match.start() + local_positions[0]
+    return None
+
+
 def _focused_find_offset(
     snippet: str,
     find: str,
@@ -103,6 +143,10 @@ def _focused_find_offset(
         return positions[0]
     if not positions:
         return None
+
+    block_offset = _strategy_block_find_offset(snippet, find, payload)
+    if block_offset is not None:
+        return block_offset
 
     blueprint = payload.get("blueprint") if isinstance(payload.get("blueprint"), dict) else {}
     anchor_values = [
@@ -196,23 +240,36 @@ def _resolve_non_unique_replace_edits(
             resolved.append(edit)
             continue
 
-        snippet = ""
-        local_offset: int | None = None
+        absolute_start: int | None = None
         for candidate_snippet in focused_sources.get(path, []):
             if not candidate_snippet or source.count(candidate_snippet) != 1:
                 continue
             candidate_offset = _focused_find_offset(candidate_snippet, find, payload)
             if candidate_offset is None:
                 continue
-            snippet = candidate_snippet
-            local_offset = candidate_offset
+            absolute_start = source.index(candidate_snippet) + candidate_offset
             break
-        if not snippet or local_offset is None:
+
+        # A compact corrective payload may truncate the exact source window.
+        # Fall back only to the blueprint-owned prior strategy block in the
+        # complete current file; never choose a generic nearest occurrence.
+        if absolute_start is None:
+            absolute_start = _strategy_block_find_offset(source, find, payload)
+
+        if absolute_start is None:
+            blueprint = payload.get("blueprint") if isinstance(payload.get("blueprint"), dict) else {}
+            preview = json.dumps(find[:160], ensure_ascii=True)
+            print(
+                "FIELD_BRAIN_ARCH_FORCE_ANCHOR_UNRESOLVED "
+                f"path={path} repeated={occurrence_count} "
+                f"strategy={str(blueprint.get('strategyId') or '')} "
+                f"evolves_from={str(blueprint.get('evolvesFromStrategyId') or '')} "
+                f"find_chars={len(find)} find_preview={preview}",
+                flush=True,
+            )
             resolved.append(edit)
             continue
 
-        snippet_start = source.index(snippet)
-        absolute_start = snippet_start + local_offset
         if source[absolute_start:absolute_start + len(find)] != find:
             resolved.append(edit)
             continue

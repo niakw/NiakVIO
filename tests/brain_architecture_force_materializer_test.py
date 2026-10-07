@@ -461,6 +461,63 @@ with tempfile.TemporaryDirectory(prefix="brain-arch-force-runtime-anchor-") as t
         "    handler = build_transition_v2()"
     ) in changed
 
+# The real FORCE source context can be truncated during corrective turns. The
+# resolver must still bind a repeated find to the exact prior strategy block in
+# the full file, but only when that block contains the find exactly once.
+with tempfile.TemporaryDirectory(prefix="brain-arch-force-runtime-block-fallback-") as tmp:
+    root = Path(tmp)
+    target = root / "scripts" / "adaptive_runtime" / "runtime_repair.py"
+    target.parent.mkdir(parents=True, exist_ok=True)
+    source = (
+        "def choose(new_strategy_id):\n"
+        "    if new_strategy_id == \"positive_program_v1\":\n"
+        "        direct_paths = build_paths()\n"
+        "        return direct_paths\n"
+        "    elif new_strategy_id == \"route_transition_graph_v1\":\n"
+        "        direct_paths = build_paths()\n"
+        "        request_recipes = build_recipes()\n"
+        "        return direct_paths\n"
+        "    elif new_strategy_id == \"route_peer_transition_replay_v1\":\n"
+        "        direct_paths = build_paths()\n"
+        "        return direct_paths\n"
+    )
+    target.write_text(source, encoding="utf-8")
+    raw = [{
+        "operation": "replace",
+        "path": "scripts/adaptive_runtime/runtime_repair.py",
+        "find": "direct_paths = build_paths()",
+        "replace": "direct_paths = build_paths_v2()",
+    }]
+    resolved = mod._resolve_non_unique_replace_edits(
+        raw,
+        {
+            "blueprint": {
+                "strategyId": "route_transition_graph_v2",
+                "evolvesFromStrategyId": "route_transition_graph_v1",
+            },
+            # Simulates a compact corrective payload that no longer contains
+            # the target branch at all.
+            "sources": {
+                "scripts/adaptive_runtime/runtime_repair.py":
+                    "def choose(new_strategy_id):\n"
+                    "    if new_strategy_id == \"positive_program_v1\":\n"
+            },
+        },
+        runtime_patterns,
+        root=root,
+    )
+    assert resolved[0]["find"] != "direct_paths = build_paths()", resolved
+    assert source.count(resolved[0]["find"]) == 1, resolved
+    mod.validate_edits(resolved, runtime_patterns, root=root)
+    mod.apply_edits(resolved, root=root)
+    changed = target.read_text(encoding="utf-8")
+    assert changed.count("direct_paths = build_paths()") == 2
+    assert changed.count("direct_paths = build_paths_v2()") == 1
+    assert (
+        'elif new_strategy_id == "route_transition_graph_v1":\n'
+        "        direct_paths = build_paths_v2()"
+    ) in changed
+
 # Corrective rounds may receive candidate bytes that no longer occur in the
 # rollback baseline. The resolver must use materializedBaselineSources to bind
 # a repeated find to the exact location that was rejected.

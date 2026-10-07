@@ -1200,6 +1200,7 @@ jobs:
           git clean -fd -- scripts/brain_layers tests >/dev/null 2>&1 || true
 
       - name: Upload sanitized learning and proposal state
+        if: ${{ always() }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: niakvio-brain-learning-state
@@ -1225,7 +1226,7 @@ jobs:
             brain-sandbox/health-output/runtime-experiment-memory.json
             brain-sandbox/health-output/targeted-lab-summary.json
           retention-days: 14
-          if-no-files-found: error
+          if-no-files-found: warn
 
   publish-learning:
     name: LEARNING - Publish sanitized memory
