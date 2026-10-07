@@ -256,10 +256,12 @@ def _resolve_non_unique_replace_edits(
             break
 
         # A compact corrective payload may truncate the exact source window.
-        # Fall back only to the blueprint-owned prior strategy block in the
-        # complete current file; never choose a generic nearest occurrence.
+        # Re-run the same blueprint-aware resolver against the complete current
+        # file. Runtime branches bind to the exact parent strategy block first;
+        # registry/planner surfaces bind only when one repeated occurrence is
+        # uniquely nearest to the blueprint strategy id. Ties remain fail-closed.
         if absolute_start is None:
-            absolute_start = _strategy_block_find_offset(source, find, payload)
+            absolute_start = _focused_find_offset(source, find, payload)
 
         if absolute_start is None:
             blueprint = payload.get("blueprint") if isinstance(payload.get("blueprint"), dict) else {}

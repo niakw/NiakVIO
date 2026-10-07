@@ -1054,3 +1054,8 @@ Corrections preserve the same three-surface authority even when the first transa
 ### Additive parent-preserving Repair profile evolution
 
 When Architecture FORCE evolves an exhausted executable Repair profile, the new strategy is additive. The exact parent runtime guard `new_strategy_id == "<evolvesFromStrategyId>"` must remain independently executable and unchanged in `scripts/adaptive_runtime/runtime_repair.py`; the new strategy must be added as a separate sibling branch while also being registered in the Repair registry and planner. A merged condition that routes both ids through one branch is rejected even if the new id is present on all required surfaces. Blueprint implementation validation runs before generic contract tests so corrective feedback describes the causal architecture violation directly.
+
+
+### Blueprint-aware repeated anchors across all Repair surfaces
+
+Architecture FORCE uses the same blueprint-aware repeated-find resolver across the Repair registry, planner and adaptive runtime. Runtime branches first bind to the exact `new_strategy_id == evolvesFromStrategyId` block. Registry/planner surfaces may bind a repeated model `find` only when one occurrence is uniquely nearest to the parent/new strategy id in current bytes. Ties or missing strategy anchors remain fail-closed. This keeps compact corrective prompts deterministic without permitting arbitrary nearest-text mutation.

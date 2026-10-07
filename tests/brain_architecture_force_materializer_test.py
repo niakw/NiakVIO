@@ -648,6 +648,62 @@ with tempfile.TemporaryDirectory(prefix="brain-arch-force-runtime-block-fallback
         "        direct_paths = build_paths_v2()"
     ) in changed
 
+# FORCE 37680228320 reached a different repeated-find family in the Python
+# Repair registry. The full-file fallback must bind generic repeated text to the
+# uniquely nearest parent strategy entry, not only to runtime if/elif blocks.
+with tempfile.TemporaryDirectory(prefix="brain-arch-force-registry-fallback-") as tmp:
+    root = Path(tmp)
+    target = root / "scripts" / "brain_repair_runtime.py"
+    target.parent.mkdir(parents=True, exist_ok=True)
+    source = (
+        "POST_EXHAUSTION_STRATEGY_PROFILES = {\n"
+        '    "provider_positive_program_replay_v1",\n'
+        '    "route_transition_graph_v1",\n'
+        '    "route_peer_transition_replay_v1",\n'
+        "}\n\n"
+        "OTHER = {\n"
+        '    "provider_positive_program_replay_v1",\n'
+        '    "route_peer_transition_replay_v1",\n'
+        "}\n"
+    )
+    target.write_text(source, encoding="utf-8")
+    registry_patterns = patterns + ["scripts/brain_repair_runtime.py"]
+    raw = [{
+        "operation": "replace",
+        "path": "scripts/brain_repair_runtime.py",
+        "find": '    "route_peer_transition_replay_v1",',
+        "replace": (
+            '    "route_transition_graph_v2",\n'
+            '    "route_peer_transition_replay_v1",'
+        ),
+    }]
+    resolved = mod._resolve_non_unique_replace_edits(
+        raw,
+        {
+            "blueprint": {
+                "strategyId": "route_transition_graph_v2",
+                "evolvesFromStrategyId": "route_transition_graph_v1",
+            },
+            # Simulate compact context that misses the registry target entirely.
+            "sources": {
+                "scripts/brain_repair_runtime.py": "POST_EXHAUSTION_STRATEGY_PROFILES = {\n"
+            },
+        },
+        registry_patterns,
+        root=root,
+    )
+    assert resolved[0]["find"] != raw[0]["find"], resolved
+    assert source.count(resolved[0]["find"]) == 1, resolved
+    mod.validate_edits(resolved, registry_patterns, root=root)
+    mod.apply_edits(resolved, root=root)
+    changed = target.read_text(encoding="utf-8")
+    assert (
+        '"route_transition_graph_v1",\n'
+        '    "route_transition_graph_v2",\n'
+        '    "route_peer_transition_replay_v1",'
+    ) in changed
+    assert changed.count('"route_transition_graph_v2"') == 1
+
 # Corrective rounds may receive candidate bytes that no longer occur in the
 # rollback baseline. The resolver must use materializedBaselineSources to bind
 # a repeated find to the exact location that was rejected.

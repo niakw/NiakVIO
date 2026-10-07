@@ -1075,3 +1075,11 @@
 - Root cause: the materializer required the new strategy id on all three Repair surfaces but did not semantically require the exhausted parent runtime branch to remain a separate unchanged guard before running contract tests. The model could therefore satisfy “v2 present” by merging v1/v2 into one condition, which violates additive strategy evolution and corrupts negative-memory semantics.
 - Brain validation now runs blueprint implementation checks before contract tests and rejects any candidate that removes/broadens the exact `new_strategy_id == "<evolvesFrom>"` parent guard. The model prompt explicitly requires a separate sibling v2 branch and forbids renaming/replacing/broadening the parent.
 - Regression coverage rejects a shared `{v1,v2}` runtime guard and accepts a distinct additive sibling branch. Targeted materializer/promotion/Learning contracts and main-only policy pass locally. No provider bytes were edited.
+
+
+## 2026-10-07 — FORCE registry/planner repeated-find fallback
+
+- FORCE `37680228320` on `0b4241a` passed Learning/proposal generation but failed before materialization because Qwen returned a repeated replace anchor in `scripts/brain_repair_runtime.py`. The existing full-file fallback only had a dedicated exact-block resolver for adaptive runtime `if/elif new_strategy_id` branches.
+- Root cause: compact/new-profile model output can legitimately target generic registry/planner text that appears more than once in the full file. The focused snippet may no longer contain the target after bounded corrective compaction, leaving registry/planner edits without a deterministic full-file anchor even though the blueprint parent strategy uniquely identifies the intended occurrence.
+- Brain materialization now reuses the blueprint-aware full-file resolver for all required Repair-profile surfaces. Runtime still prefers exact strategy-block binding; registry/planner repeated finds bind only when one occurrence is uniquely nearest to `evolvesFromStrategyId` / `strategyId`. Equal-distance ambiguity remains fail-closed.
+- Regression coverage reproduces the `brain_repair_runtime.py` repeated registry entry family from FORCE `37680228320` and proves only the parent-adjacent occurrence is modified. No provider bytes were edited.
