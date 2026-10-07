@@ -1069,3 +1069,10 @@ When `route_transition_graph_v1` is exhausted, Brain may select `route_transitio
 ### Exploration-chain transport integrity
 
 The adaptive bounded planner overlay must preserve the explicit production exploration-chain bit on both initial `update_plans()` and later `replan_observation()` calls. Dropping the bit is a control-plane failure: registered post-exhaustion strategies remain visible as candidates but are incorrectly deferred as Learning debt. Normal production stays fail-closed because the bit is derived from `NUVIO_BRAIN_EXPLORATION_CHAIN=1`; only callers that explicitly own a bounded exploration/replay transaction enable it.
+
+
+### Durable profile-id exhaustion and generation priority
+
+Post-exhaustion strategy memory is conservative across historical schema changes. A failed profile row without an implementation fingerprint still exhausts that profile id; a new implementation must use a new generation/id such as `*_v2`. This prevents code movement elsewhere from resurrecting old failed executors.
+
+For the route-terminal family, newer explicit generations are ordered ahead of their exhausted parent generation. In particular `route_transition_graph_v2` is preferred over `route_transition_graph_v1`, and in `search_gap` follows the exact HTML-token strategy so the Brain can move from parser-local recovery directly into same-provider observed transition traversal without replaying the historical v1 strategy chain.

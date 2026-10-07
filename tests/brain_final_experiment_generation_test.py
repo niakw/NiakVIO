@@ -134,15 +134,16 @@ assert learning_escalated["learningDisposition"]=="execute_bounded_evolved_strat
 terminal_fp=learning_escalated["strategyImplementationFingerprint"]
 assert len(terminal_fp)==64 and all(ch in "0123456789abcdef" for ch in terminal_fp),learning_escalated
 
-# Debt from an older/unversioned implementation must not suppress a materially
-# changed evolved strategy.
+# Legacy negative memory without an implementation fingerprint is fail-closed:
+# the profile id already failed. Materially new behavior must use a new profile
+# generation/id rather than silently resurrecting the same v1 implementation.
 stale_first_escalation_failed={
     **row(4,5),
     "profile":"terminal_transition_graph_v1",
 }
 stale_retry=plan([*base_exhausted,stale_first_escalation_failed],"learning")
-assert stale_retry["postExhaustionStrategyProfile"]=="terminal_transition_graph_v1",stale_retry
-assert stale_retry["strategyImplementationFingerprint"]==terminal_fp,stale_retry
+assert stale_retry["postExhaustionStrategyProfile"]=="terminal_request_program_inference_v1",stale_retry
+assert stale_retry["postExhaustionStrategyProfile"]!="terminal_transition_graph_v1",stale_retry
 
 first_escalation_failed={
     **stale_first_escalation_failed,

@@ -75,8 +75,8 @@ const POST_EXHAUSTION_STRATEGIES = {
   ],
   route_proven_gap: [
     { profile: "html_class_token_exact_v1", method: "exact-html-class-token-contract" },
-    { profile: "route_transition_graph_v1", method: "provider-owned-route-transition-graph" },
     { profile: "route_transition_graph_v2", method: "same-provider-observed-transition-salvage" },
+    { profile: "route_transition_graph_v1", method: "provider-owned-route-transition-graph" },
     { profile: "route_peer_transition_replay_v1", method: "structural-peer-route-transition-replay" },
     { profile: "identity_alias_search_traversal_v1", method: "tmdb-identity-alias-search-traversal" },
     { profile: "runtime_response_salvage_v1", method: "successful-runtime-response-salvage" },
@@ -109,6 +109,7 @@ const POST_EXHAUSTION_STRATEGIES = {
   ],
   search_gap: [
     { profile: "html_class_token_exact_v1", method: "exact-html-class-token-contract" },
+    { profile: "route_transition_graph_v2", method: "same-provider-observed-transition-salvage" },
     { profile: "search_contract_inference_v1", method: "search-contract-inference" },
     { profile: "search_response_route_binding_v1", method: "search-response-route-binding" },
     { profile: "identity_alias_search_traversal_v1", method: "tmdb-identity-alias-search-traversal" },
@@ -382,8 +383,12 @@ function postExhaustionStrategyHint(failureClass, memoryRows, rotateEvery) {
         || Math.max(0, finiteNumber(memory.consecutiveFailures, 0)) < rotateEvery
       ) return false;
       const rememberedFingerprint = stringValue(memory.strategyImplementationFingerprint).toLowerCase();
+      // Durable negative memory is fail-closed for legacy rows that predate
+      // implementation fingerprints. A missing historical fingerprint means
+      // "this profile id already failed", not "this profile is fresh again".
+      // Materially new behavior must use a new profile generation/id (v2, v3…).
       return implementationFingerprint
-        ? rememberedFingerprint === implementationFingerprint
+        ? (!rememberedFingerprint || rememberedFingerprint === implementationFingerprint)
         : true;
     });
     if (!alreadyFailed) {

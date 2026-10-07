@@ -986,3 +986,108 @@ assert direct_retry["llmAdvisorProfile"]=="adaptive_runtime_recovery",direct_ret
 assert direct_retry["llmAdvisorExperimentFingerprint"] != direct_first_fp,direct_retry
 assert direct_retry["llmAdvisorMetaGapGeneration"]==1,direct_retry
 assert direct_retry["repairType"]=="synthesized_strategy",direct_retry
+
+# Representative route/search exhaustion contract: after the exact HTML parser
+# gets its one bounded current-implementation attempt, a legacy failure row must
+# remain negative even without an old fingerprint and Brain must advance directly
+# to the new route_transition_graph_v2 executor instead of replaying v1 debt.
+route_v2_provider="synthetic-route-v2-priority"
+route_v2_candidate={
+    "canonical_id":route_v2_provider,
+    "metadata":{"supportedTypes":["movie"]},
+}
+route_v2_result={
+    "status":"no_streams",
+    "evidence":{"streams_playable":0,"streams_returned":0},
+    "tests":[{
+        "fixture":{"mediaType":"movie","category":"movie","title":"Synthetic"},
+        "failure_class":"content_lookup_completed_no_streams",
+        "status":"no_streams",
+        "network_observations":[{"status":200,"stage":"search","infrastructure":False}],
+        "streams_playable":0,
+        "stream_count":0,
+    }],
+}
+route_v2_base_memory=[
+    {
+        "providerId":route_v2_provider,
+        "failureClass":"search_gap",
+        "experimentVariant":variant,
+        "experimentGeneration":2 if variant==4 else 1,
+        "profile":"search_contract_inference_v1" if variant==4 else "adaptive_runtime_recovery",
+        "failures":1,
+        "consecutiveFailures":1,
+        "successes":0,
+        "executionObserved":True,
+        "lastOutcome":"rejected",
+        "lastReason":"synthetic_base_exhausted",
+    }
+    for variant in range(5)
+]
+
+def route_v2_plan(memory_rows):
+    payload={
+        "mode":"repair",
+        "explorationChain":True,
+        "policy":policy,
+        "learnedSkills":{},
+        "historicalSolutions":[],
+        "llmGuidance":[],
+        "negativeMemory":memory_rows,
+        "items":[{
+            "key":f"published:{route_v2_provider}",
+            "candidate":route_v2_candidate,
+            "result":route_v2_result,
+            "state":{},
+        }],
+    }
+    completed=subprocess.run(
+        ["node",str(PLANNER)],
+        cwd=ROOT,input=json.dumps(payload),capture_output=True,text=True,check=True,timeout=20,
+    )
+    return next(iter((json.loads(completed.stdout).get("plans") or {}).values()))
+
+route_v2_first=route_v2_plan(route_v2_base_memory)
+assert route_v2_first["failureClass"]=="search_gap",route_v2_first
+assert route_v2_first["baseExperimentExhausted"] is True,route_v2_first
+assert route_v2_first["postExhaustionStrategyProfile"]=="html_class_token_exact_v1",route_v2_first
+assert route_v2_first["strategyEscalated"] is True,route_v2_first
+html_fp=route_v2_first["strategyImplementationFingerprint"]
+assert html_fp,route_v2_first
+
+route_v2_second=route_v2_plan([
+    *route_v2_base_memory,
+    {
+        "providerId":route_v2_provider,
+        "failureClass":"search_gap",
+        "experimentVariant":4,
+        "experimentGeneration":2,
+        "profile":"html_class_token_exact_v1",
+        "strategyImplementationFingerprint":html_fp,
+        "failures":1,
+        "consecutiveFailures":1,
+        "successes":0,
+        "executionObserved":True,
+        "lastOutcome":"rejected",
+        "lastReason":"synthetic_html_current_impl_failed",
+    },
+    {
+        "providerId":route_v2_provider,
+        "failureClass":"search_gap",
+        "experimentVariant":4,
+        "experimentGeneration":2,
+        "profile":"search_contract_inference_v1",
+        # Legacy memory intentionally has no implementation fingerprint.
+        "failures":1,
+        "consecutiveFailures":1,
+        "successes":0,
+        "executionObserved":True,
+        "lastOutcome":"rejected",
+        "lastReason":"synthetic_legacy_search_contract_failed",
+    },
+])
+assert route_v2_second["explorationChainEnabled"] is True,route_v2_second
+assert route_v2_second["strategyEscalated"] is True,route_v2_second
+assert route_v2_second["postExhaustionStrategyProfile"]=="route_transition_graph_v2",route_v2_second
+assert route_v2_second["allowedProfiles"]==["route_transition_graph_v2"],route_v2_second
+assert route_v2_second["postExhaustionStrategyMethod"]=="same-provider-observed-transition-salvage",route_v2_second
