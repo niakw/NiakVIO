@@ -1044,3 +1044,9 @@ When FORCE evolves an exhausted executable Repair profile (for example `route_tr
 Compact corrective payloads may omit part of the original source window. In that case the same exact prior-strategy block may be located in current repository bytes and used as the sole fallback. Generic nearest-occurrence selection is not sufficient authority; ties, missing blocks, or multiple matches inside the owned block remain fail-closed.
 
 Architecture FORCE failures must preserve sanitized proposal/report artifacts even when executable materialization fails. This evidence has diagnostic authority only and cannot publish provider or production bytes.
+
+### Additive three-surface contract for new Repair profiles
+
+A blueprint with `requiresNewExecutableRepairProfile=true` is a single three-surface transaction. Qwen must see bounded source context from the Repair registry, planner and adaptive runtime simultaneously and must return one replace edit for each surface. The exhausted `evolvesFromStrategyId` remains executable and recorded as negative experience; the new strategy is added, never substituted by renaming the prior strategy. Generic compact fallbacks that prefer one edit are not valid for this class of evolution.
+
+Corrections preserve the same three-surface authority even when the first transactional failure is syntax or a focused Brain contract. The correction must remain additive, use all mandatory surfaces, and pass syntax, Brain contracts and new-profile wiring validation before promotion.

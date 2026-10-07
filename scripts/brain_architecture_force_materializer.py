@@ -40,6 +40,11 @@ VALIDATION_FORMAT_RETRY_MODEL_TOKENS = 768
 VALIDATION_FORMAT_RETRY_TIMEOUT_SECONDS = 240
 RETRY_SOURCE_CONTEXT = 3600
 MINIMAL_SOURCE_CONTEXT = 1800
+NEW_PROFILE_SOURCE_CONTEXT_PER_SURFACE = 2600
+NEW_PROFILE_MODEL_TOKENS = 1024
+NEW_PROFILE_MODEL_TIMEOUT_SECONDS = 240
+NEW_PROFILE_RETRY_MODEL_TOKENS = 1280
+NEW_PROFILE_RETRY_TIMEOUT_SECONDS = 300
 EDIT_VALIDATION_CORRECTION_ROUNDS = 2
 MATERIALIZED_CORRECTION_ROUNDS = 3
 MAX_MATERIALIZED_FAILURE_CONTEXT = 3200
@@ -1002,6 +1007,8 @@ def _model_request(
     timeout: int,
     compact: bool = False,
 ) -> dict[str, Any]:
+    blueprint = payload.get("blueprint") if isinstance(payload.get("blueprint"), dict) else {}
+    requires_new_profile = blueprint.get("requiresNewExecutableRepairProfile") is True
     system = (
         "You are NiakVIO Brain architecture FORCE materializer. "
         "Return JSON only: {edits:[...]}. Create the smallest executable architecture change "
@@ -1009,15 +1016,31 @@ def _model_request(
         "publication files or secrets. Use only exact source snippets supplied. Max 3 edits. "
         "Allowed operations: replace {operation,path,find,replace}; create {operation,path,content}. "
         "New files only under scripts/brain_layers/ or tests/brain_. "
-        "Prefer one minimal code edit plus one focused test. The resulting source must parse/compile. No prose."
+        "The resulting source must parse/compile. No prose."
     )
-    if compact:
+    if requires_new_profile:
         system += (
-            " Be extremely compact. Prefer exactly one small replace edit. "
-            "Avoid creating a new file unless replacement cannot implement the capability. "
-            "Keep the complete JSON response short enough for the supplied token budget. "
-            "The server enforces the edits JSON schema; never emit markdown or commentary."
+            " This is an additive Repair-profile evolution: preserve the exhausted evolvesFromStrategyId "
+            "and ADD the new strategyId. Return exactly 3 replace edits, one for each mandatory surface "
+            "listed in exactAllowedPaths. Do not remove, rename, or replace the prior strategy id. "
+            "Do not edit tests in this request."
         )
+    else:
+        system += " Prefer one minimal code edit plus one focused test."
+    if compact:
+        if requires_new_profile:
+            system += (
+                " Be extremely compact, but still return all 3 required replace edits. "
+                "Keep each replacement narrowly scoped to the supplied strategy block/registry entry. "
+                "The server enforces the edits JSON schema; never emit markdown or commentary."
+            )
+        else:
+            system += (
+                " Be extremely compact. Prefer exactly one small replace edit. "
+                "Avoid creating a new file unless replacement cannot implement the capability. "
+                "Keep the complete JSON response short enough for the supplied token budget. "
+                "The server enforces the edits JSON schema; never emit markdown or commentary."
+            )
     exact_paths = [
         str(path)
         for path in (payload.get("exactAllowedPaths") or [])
@@ -1030,8 +1053,7 @@ def _model_request(
             "Paths listed in existingAllowedPaths already exist and MUST use replace, never create. "
             "Use create only for a path listed in newAllowedPaths."
         )
-    blueprint = payload.get("blueprint") if isinstance(payload.get("blueprint"), dict) else {}
-    if blueprint.get("requiresNewExecutableRepairProfile") is True:
+    if requires_new_profile:
         strategy_id = str(blueprint.get("strategyId") or "")
         evolves_from = str(blueprint.get("evolvesFromStrategyId") or "")
         system += (
@@ -1083,6 +1105,34 @@ def _model_request(
         raise RuntimeError(
             f"architecture model HTTP {exc.code}: {error_body[:1200] or exc.reason}"
         ) from exc
+
+
+def _requires_new_repair_profile(payload: dict[str, Any]) -> bool:
+    blueprint = payload.get("blueprint") if isinstance(payload.get("blueprint"), dict) else {}
+    return blueprint.get("requiresNewExecutableRepairProfile") is True
+
+
+def _new_repair_profile_payload(
+    payload: dict[str, Any],
+    *,
+    per_surface_limit: int = NEW_PROFILE_SOURCE_CONTEXT_PER_SURFACE,
+) -> dict[str, Any]:
+    """Keep all mandatory planner/registry/runtime surfaces visible to Qwen."""
+    compact = {
+        "blueprint": payload.get("blueprint") or {},
+        "allowedPaths": payload.get("allowedPaths") or [],
+        "contract": payload.get("contract") or {},
+        "exactAllowedPaths": list(NEW_REPAIR_PROFILE_SURFACES),
+        "existingAllowedPaths": list(NEW_REPAIR_PROFILE_SURFACES),
+        "newAllowedPaths": [],
+    }
+    source_map = payload.get("sources") if isinstance(payload.get("sources"), dict) else {}
+    compact["sources"] = {
+        path: str(source_map.get(path) or "")[:per_surface_limit]
+        for path in NEW_REPAIR_PROFILE_SURFACES
+        if str(source_map.get(path) or "")
+    }
+    return compact
 
 
 def _compact_payload(payload: dict[str, Any]) -> dict[str, Any]:
@@ -1139,7 +1189,11 @@ def _validation_retry_payload(
     restrict_to_extra_paths: bool = False,
     root: Path = ROOT,
 ) -> dict[str, Any]:
-    retry = _minimal_payload(payload)
+    retry = (
+        _new_repair_profile_payload(payload)
+        if _requires_new_repair_profile(payload)
+        else _minimal_payload(payload)
+    )
     source_paths = {
         str(path)
         for path in (retry.get("sources") or {}).keys()
@@ -1176,16 +1230,22 @@ def _validation_retry_payload(
         }
         for edit in edits[:MAX_EDITS]
     ]
+    requires_new_profile = _requires_new_repair_profile(payload)
     retry["correctionContract"] = {
         "pathMustBeOneOfExactAllowedPaths": True,
         "existingPathsMustUseReplace": True,
         "createOnlyForNewAllowedPaths": True,
         "doNotInventPaths": True,
         "doNotRelocatePaths": True,
-        "changeOnlyWhatValidationRejected": True,
-        "preferSingleSmallReplace": True,
+        "changeOnlyWhatValidationRejected": not requires_new_profile,
+        "preferSingleSmallReplace": not requires_new_profile,
         "reuseRejectedIntentWhenValid": True,
         "maxEdits": MAX_EDITS,
+        "mustPreserveEvolvesFromStrategy": requires_new_profile,
+        "mustUseAllRequiredRepairProfileSurfaces": requires_new_profile,
+        "requiredRepairProfileSurfaces": (
+            list(NEW_REPAIR_PROFILE_SURFACES) if requires_new_profile else []
+        ),
     }
     return retry
 
@@ -1256,9 +1316,36 @@ def _parse_model_value(value: dict[str, Any]) -> dict[str, Any]:
 
 
 def call_model(endpoint: str, model: str, payload: dict[str, Any]) -> dict[str, Any]:
-    # Architecture FORCE runs on CPU-hosted Qwen in GitHub Actions. Keep both
-    # attempts wall-clock bounded, but retry not only transport timeouts: a
-    # max-token-truncated JSON object is also a recoverable model-format failure.
+    # New executable Repair profiles are a mandatory three-surface transaction.
+    # Never starve that request down to the generic one-file/minimal fallback.
+    if _requires_new_repair_profile(payload):
+        try:
+            value = _model_request(
+                endpoint,
+                model,
+                _new_repair_profile_payload(payload),
+                max_tokens=NEW_PROFILE_MODEL_TOKENS,
+                timeout=NEW_PROFILE_MODEL_TIMEOUT_SECONDS,
+                compact=True,
+            )
+            return _parse_model_value(value)
+        except (TimeoutError, ValueError) as exc:
+            reason = "timeout" if isinstance(exc, TimeoutError) else "invalid-json"
+            print(
+                f"FIELD_BRAIN_ARCH_FORCE_MODEL_RETRY reason={reason} mode=new-profile-minimal",
+                flush=True,
+            )
+            value = _model_request(
+                endpoint,
+                model,
+                _new_repair_profile_payload(payload, per_surface_limit=1800),
+                max_tokens=NEW_PROFILE_RETRY_MODEL_TOKENS,
+                timeout=NEW_PROFILE_RETRY_TIMEOUT_SECONDS,
+                compact=True,
+            )
+            return _parse_model_value(value)
+
+    # Generic architecture edits remain small and bounded.
     try:
         value = _model_request(
             endpoint,
@@ -1290,13 +1377,34 @@ def _request_corrected_plan(
     model: str,
     correction_payload: dict[str, Any],
 ) -> dict[str, Any]:
+    requires_new_profile = _requires_new_repair_profile(correction_payload)
+    primary_tokens = (
+        NEW_PROFILE_MODEL_TOKENS
+        if requires_new_profile
+        else VALIDATION_RETRY_MODEL_TOKENS
+    )
+    primary_timeout = (
+        NEW_PROFILE_MODEL_TIMEOUT_SECONDS
+        if requires_new_profile
+        else VALIDATION_RETRY_TIMEOUT_SECONDS
+    )
+    fallback_tokens = (
+        NEW_PROFILE_RETRY_MODEL_TOKENS
+        if requires_new_profile
+        else VALIDATION_FORMAT_RETRY_MODEL_TOKENS
+    )
+    fallback_timeout = (
+        NEW_PROFILE_RETRY_TIMEOUT_SECONDS
+        if requires_new_profile
+        else VALIDATION_FORMAT_RETRY_TIMEOUT_SECONDS
+    )
     try:
         value = _model_request(
             endpoint,
             model,
             correction_payload,
-            max_tokens=VALIDATION_RETRY_MODEL_TOKENS,
-            timeout=VALIDATION_RETRY_TIMEOUT_SECONDS,
+            max_tokens=primary_tokens,
+            timeout=primary_timeout,
             compact=True,
         )
         return _parse_model_value(value)
@@ -1311,8 +1419,8 @@ def _request_corrected_plan(
             endpoint,
             model,
             correction_payload,
-            max_tokens=VALIDATION_FORMAT_RETRY_MODEL_TOKENS,
-            timeout=VALIDATION_FORMAT_RETRY_TIMEOUT_SECONDS,
+            max_tokens=fallback_tokens,
+            timeout=fallback_timeout,
             compact=True,
         )
         return _parse_model_value(value)
@@ -1392,7 +1500,8 @@ def validated_model_plan(
         )
         validation_text = str(current_error).casefold()
         implementation_failure = (
-            "new repair profile" in validation_text
+            _requires_new_repair_profile(payload)
+            or "new repair profile" in validation_text
             or "evolved strategy" in validation_text
         )
         exact_paths = (

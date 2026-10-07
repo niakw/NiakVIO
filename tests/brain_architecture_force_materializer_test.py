@@ -277,6 +277,100 @@ assert [row["id"] for row in compact["architectureLayers"]] == [
     "meta_learning_gap_synthesis"
 ]
 
+new_profile_payload = {
+    "blueprint": {
+        "strategyId": "route_transition_graph_v2",
+        "evolvesFromStrategyId": "route_transition_graph_v1",
+        "requiresNewExecutableRepairProfile": True,
+    },
+    "allowedPaths": list(mod.NEW_REPAIR_PROFILE_SURFACES),
+    "contract": {"requireExecutableDiff": True},
+    "sources": {
+        path: (path + "\n") * 400
+        for path in mod.NEW_REPAIR_PROFILE_SURFACES
+    },
+}
+new_profile_compact = mod._new_repair_profile_payload(new_profile_payload)
+assert set(new_profile_compact["sources"]) == set(mod.NEW_REPAIR_PROFILE_SURFACES)
+assert new_profile_compact["exactAllowedPaths"] == list(mod.NEW_REPAIR_PROFILE_SURFACES)
+assert new_profile_compact["existingAllowedPaths"] == list(mod.NEW_REPAIR_PROFILE_SURFACES)
+assert all(
+    len(text) <= mod.NEW_PROFILE_SOURCE_CONTEXT_PER_SURFACE
+    for text in new_profile_compact["sources"].values()
+)
+
+profile_calls = []
+original_request = mod._model_request
+try:
+    def fake_profile_request(endpoint, model, payload, *, max_tokens, timeout, compact=False):
+        profile_calls.append((payload, max_tokens, timeout, compact))
+        assert set(payload["sources"]) == set(mod.NEW_REPAIR_PROFILE_SURFACES)
+        assert payload["exactAllowedPaths"] == list(mod.NEW_REPAIR_PROFILE_SURFACES)
+        if len(profile_calls) == 1:
+            raise TimeoutError("synthetic new-profile timeout")
+        import json
+        return {
+            "choices": [{
+                "message": {
+                    "content": json.dumps({
+                        "edits": [
+                            {
+                                "operation": "replace",
+                                "path": path,
+                                "find": "route_transition_graph_v1",
+                                "replace": "route_transition_graph_v1 route_transition_graph_v2",
+                            }
+                            for path in mod.NEW_REPAIR_PROFILE_SURFACES
+                        ]
+                    })
+                }
+            }]
+        }
+
+    mod._model_request = fake_profile_request
+    profile_result = mod.call_model(
+        "http://127.0.0.1:8080",
+        "demo",
+        new_profile_payload,
+    )
+    assert len(profile_result["edits"]) == 3
+    assert profile_calls[0][1:] == (
+        mod.NEW_PROFILE_MODEL_TOKENS,
+        mod.NEW_PROFILE_MODEL_TIMEOUT_SECONDS,
+        True,
+    )
+    assert profile_calls[1][1:] == (
+        mod.NEW_PROFILE_RETRY_MODEL_TOKENS,
+        mod.NEW_PROFILE_RETRY_TIMEOUT_SECONDS,
+        True,
+    )
+    assert all(
+        len(text) <= 1800
+        for text in profile_calls[1][0]["sources"].values()
+    )
+finally:
+    mod._model_request = original_request
+
+profile_retry = mod._validation_retry_payload(
+    new_profile_payload,
+    ValueError("materialized contract validation failed"),
+    [{
+        "operation": "replace",
+        "path": "scripts/adaptive_runtime/runtime_repair.py",
+        "find": "route_transition_graph_v1",
+        "replace": "route_transition_graph_v2",
+    }],
+    extra_exact_paths=list(mod.NEW_REPAIR_PROFILE_SURFACES),
+    restrict_to_extra_paths=True,
+)
+assert set(profile_retry["sources"]) == set(mod.NEW_REPAIR_PROFILE_SURFACES)
+assert profile_retry["correctionContract"]["preferSingleSmallReplace"] is False
+assert profile_retry["correctionContract"]["mustPreserveEvolvesFromStrategy"] is True
+assert profile_retry["correctionContract"]["mustUseAllRequiredRepairProfileSurfaces"] is True
+assert profile_retry["correctionContract"]["requiredRepairProfileSurfaces"] == list(
+    mod.NEW_REPAIR_PROFILE_SURFACES
+)
+
 calls = []
 original_request = mod._model_request
 try:
