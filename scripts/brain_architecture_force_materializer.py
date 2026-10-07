@@ -674,6 +674,22 @@ def validate_blueprint_implementation(
             + ",".join(missing_strategy)
         )
 
+    # Evolution is additive: a new profile must never broaden, rename or replace
+    # the exhausted parent runtime branch. Keeping the exact parent guard lets
+    # negative memory remain truthful and prevents v2 behavior from silently
+    # changing v1 replays.
+    runtime_path = "scripts/adaptive_runtime/runtime_repair.py"
+    runtime_target = root / runtime_path
+    runtime_text = runtime_target.read_text(encoding="utf-8") if runtime_target.is_file() else ""
+    parent_guard = re.compile(
+        rf'(?m)^[ \t]*(?:if|elif)\s+new_strategy_id\s*==\s*["\']{re.escape(evolves_from)}["\']\s*:\s*$'
+    )
+    if not parent_guard.search(runtime_text):
+        raise ValueError(
+            "architecture FORCE new Repair profile must preserve evolved strategy parent guard "
+            f"{evolves_from} unchanged in {runtime_path}; add {strategy_id} as a separate sibling branch"
+        )
+
 
 MATERIALIZED_CONTRACT_TESTS = (
     "tests/brain_meta_learning_gap_synthesis_test.py",
@@ -774,13 +790,13 @@ def validate_materialized_edits(
     try:
         changed = apply_edits(edits, root=root)
         validate_changed_syntax(changed, root=root)
-        validate_materialized_contracts(changed, root=root)
         validate_blueprint_implementation(
             changed,
             blueprint,
             root=root,
             baseline_sources=profile_baselines,
         )
+        validate_materialized_contracts(changed, root=root)
         return changed
     except ValueError as exc:
         remaining = MAX_MATERIALIZED_FAILURE_CONTEXT
@@ -1061,6 +1077,10 @@ def _model_request(
             f"evolved from exhausted {evolves_from}. "
             "Wire the new strategy id into scripts/brain_repair_runtime.py, "
             "engine_v2/scripts/plan-repairs.mjs, and scripts/adaptive_runtime/runtime_repair.py. "
+            f"Evolution is strictly additive: preserve the exact {evolves_from} registration and "
+            f"the exact runtime guard new_strategy_id == \"{evolves_from}\" unchanged; add "
+            f"{strategy_id} as a separate registration/planner entry and a separate sibling runtime branch. "
+            "Never broaden the parent condition to include the new strategy and never rename/replace the parent. "
             "Do not satisfy this request with taxonomy, metadata, comments, or proposal-only changes."
         )
     if str(payload.get("correctionReason") or "") == "materialized-syntax-validation":

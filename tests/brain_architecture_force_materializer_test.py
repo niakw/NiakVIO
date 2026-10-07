@@ -200,6 +200,37 @@ with tempfile.TemporaryDirectory(prefix="brain-arch-force-new-profile-") as tmp:
     else:
         raise AssertionError("taxonomy/registry-only evolved profile unexpectedly accepted")
 
+    shared_parent_guard = [
+        {
+            "operation": "replace",
+            "path": "scripts/brain_repair_runtime.py",
+            "find": '{"route_transition_graph_v1"}',
+            "replace": '{"route_transition_graph_v1", "route_transition_graph_v2"}',
+        },
+        {
+            "operation": "replace",
+            "path": "engine_v2/scripts/plan-repairs.mjs",
+            "find": '["route_transition_graph_v1"]',
+            "replace": '["route_transition_graph_v1", "route_transition_graph_v2"]',
+        },
+        {
+            "operation": "replace",
+            "path": "scripts/adaptive_runtime/runtime_repair.py",
+            "find": 'if new_strategy_id == "route_transition_graph_v1":\n    pass',
+            "replace": 'if new_strategy_id in {"route_transition_graph_v1", "route_transition_graph_v2"}:\n    pass',
+        },
+    ]
+    try:
+        mod.validate_materialized_edits(
+            shared_parent_guard,
+            root=root,
+            blueprint=blueprint,
+        )
+    except ValueError as exc:
+        assert "preserve evolved strategy parent guard" in str(exc), exc
+    else:
+        raise AssertionError("shared v1/v2 runtime guard unexpectedly accepted")
+
     complete = [
         {
             "operation": "replace",
@@ -216,8 +247,13 @@ with tempfile.TemporaryDirectory(prefix="brain-arch-force-new-profile-") as tmp:
         {
             "operation": "replace",
             "path": "scripts/adaptive_runtime/runtime_repair.py",
-            "find": 'new_strategy_id == "route_transition_graph_v1"',
-            "replace": 'new_strategy_id in {"route_transition_graph_v1", "route_transition_graph_v2"}',
+            "find": 'if new_strategy_id == "route_transition_graph_v1":\n    pass',
+            "replace": (
+                'if new_strategy_id == "route_transition_graph_v1":\n'
+                '    pass\n'
+                'elif new_strategy_id == "route_transition_graph_v2":\n'
+                '    pass'
+            ),
         },
     ]
     mod.validate_edits(complete, evolved_patterns, root=root)
