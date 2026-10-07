@@ -41,13 +41,15 @@ on:
   schedule:
     - cron: "17 2 * * *"
 
-# Targeted Learning is isolated by exact cohort so unrelated Fast handoffs can
-# learn concurrently. Publication remains serialized by the dedicated memory
-# writer job below, whose merge is monotone/provider-drift guarded. A fresher
-# run may replace stale work only inside its own exact targeted cohort.
+# Targeted routine Learning is isolated by exact cohort so unrelated Fast
+# handoffs can learn concurrently and a fresher routine run may replace stale
+# work inside that cohort. Explicit Architecture FORCE has its own non-cancelling
+# cohort lane: routine Autopilot/Learning must never kill an in-flight FORCE
+# before its materializer/promotion proof. A second FORCE queues behind the
+# first instead of invalidating already-paid Learning/Qwen work.
 concurrency:
-  group: ${{ github.event_name == 'workflow_dispatch' && (inputs.target_providers != '' || inputs.target_provider != '') && format('niakvio-brain-learning-target-{0}', inputs.target_providers || inputs.target_provider) || 'niakvio-brain-learning-lab-v2' }}
-  cancel-in-progress: ${{ github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && (inputs.target_providers != '' || inputs.target_provider != '')) }}
+  group: ${{ github.event_name == 'workflow_dispatch' && inputs.architecture_force == true && format('niakvio-brain-learning-force-{0}', inputs.target_providers || inputs.target_provider || 'global') || github.event_name == 'workflow_dispatch' && (inputs.target_providers != '' || inputs.target_provider != '') && format('niakvio-brain-learning-target-{0}', inputs.target_providers || inputs.target_provider) || 'niakvio-brain-learning-lab-v2' }}
+  cancel-in-progress: ${{ github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.architecture_force != true && (inputs.target_providers != '' || inputs.target_provider != '')) }}
 
 jobs:
   experiment:

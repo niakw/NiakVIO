@@ -1032,3 +1032,7 @@ When repeated current-byte completeness experiments fail, Brain must progress by
 Architecture FORCE may receive a model replace whose `find` text appears more than once in a large executable Repair surface. This is not automatically a model failure when the exact bounded source snippet is unique and the active blueprint's `strategyId` / `evolvesFromStrategyId` identifies one occurrence unambiguously.
 
 The materializer may then select only the uniquely nearest occurrence to that strategy anchor and widen the replace with unchanged real neighboring bytes until the final `find` is globally unique. Equal-distance or otherwise ambiguous matches remain fail-closed and return to the normal corrective loop. This resolver is Brain infrastructure only; it does not grant provider mutation authority or weaken current-byte Repair validation.
+
+### Architecture FORCE concurrency ownership
+
+Explicit Architecture FORCE is a proof transaction, not ordinary targeted Learning. Its concurrency key is separated from routine Autopilot/Learning by cohort. Routine targeted Learning may cancel stale routine work in its own cohort lane, but must never cancel an in-flight FORCE before proposal, materialization, promotion and representative replay. Multiple FORCE requests for the same cohort queue rather than canceling one another. Promotion still uses the existing current-main/rebase guards, so this separation does not weaken Git or publication safety.

@@ -175,10 +175,13 @@ def main() -> int:
     assert "FIELD_BRAIN_LEARNING_SHA" in workflow
     assert "niakvio-brain-learning-lab-v2" in workflow
     assert "niakvio-brain-learning-target-" in workflow
+    assert "niakvio-brain-learning-force-" in workflow
+    assert "inputs.architecture_force == true" in workflow
     assert "inputs.target_providers || inputs.target_provider" in workflow
     assert "niakvio-brain-learning-lab-${{ github.run_id }}" not in workflow
     assert "inputs.target_providers != '' || inputs.target_provider != ''" in workflow
-    assert "cancel-in-progress: ${{ github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && (inputs.target_providers != '' || inputs.target_provider != '')) }}" in workflow, "fresh targeted Learning may cancel stale work only inside its exact cohort concurrency group"
+    assert "inputs.architecture_force != true" in workflow
+    assert "cancel-in-progress: ${{ github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.architecture_force != true && (inputs.target_providers != '' || inputs.target_provider != '')) }}" in workflow, "routine targeted Learning may replace stale routine work but must never cancel Architecture FORCE"
     assert "group: niakvio-brain-learning-memory-publish" in workflow
     assert "group: niakvio-brain-repair-proposal-publish" in workflow
     assert "group: niakvio-brain-architecture-proposal-publish" in workflow

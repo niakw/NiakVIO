@@ -1043,3 +1043,10 @@
 - Root cause: the model's bounded replace token can legitimately occur more than once inside the exact focused source snippet even when the blueprint's `strategyId` / `evolvesFromStrategyId` uniquely identifies one intended occurrence. The existing resolver only handled repeated finds when the find itself was unique inside the snippet.
 - Brain materialization now keeps the fail-closed contract but may bind a repeated find to the uniquely nearest blueprint strategy anchor inside a source snippet that is itself unique in the current file, then widen unchanged neighboring bytes until the replace anchor is globally unique. Ambiguous/tied anchors are still rejected.
 - Regression coverage reproduces the `runtime_repair.py` repeated-find failure family and verifies that only the anchored occurrence changes. No provider-local production code is edited by this fix.
+
+## 2026-10-07 — Architecture FORCE concurrency isolated from routine Learning
+
+- Explicit FORCE run `37653501632` on Brain fix `1c0caae` passed catalogue observation, ProviderBase reconstruction, Brain LLM routing and Qwen guidance, but was cancelled externally during `Run adaptive Learning provider queue` before proposal/materialization. This is not a materializer failure and not provider progress.
+- Root orchestration cause: targeted Learning concurrency was keyed only by provider cohort and always used `cancel-in-progress=true`. Routine Autopilot/Fast handoff Learning on the same 12-provider cohort could therefore cancel an explicit Architecture FORCE after expensive Learning/Qwen work.
+- Brain Learning now gives explicit `architecture_force=true` runs a separate `niakvio-brain-learning-force-<cohort>` concurrency lane with cancellation disabled. Routine targeted Learning retains replacement of stale routine work, but cannot cancel FORCE; a second FORCE queues behind the first.
+- Contract coverage verifies the FORCE-specific concurrency key and cancellation guard. Provider bytes remain untouched; census authority is still 21 FULL / 17 repairQueue.
