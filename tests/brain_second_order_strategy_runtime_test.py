@@ -17,6 +17,7 @@ expected={
     "provider_positive_program_replay_v1",
     "transport_request_differential_v1",
     "route_transition_graph_v1",
+    "route_transition_graph_v2",
     "route_peer_transition_replay_v1",
     "terminal_transition_graph_v1",
     "terminal_request_program_inference_v1",
@@ -83,6 +84,24 @@ assert "/api/source/{id}" in terminal["direct_paths"],terminal
 assert "/detail/{slug}" not in terminal["direct_paths"],terminal
 assert "/film/{slug}" not in terminal["direct_paths"],terminal
 assert terminal["search_paths"]==["/search?q={query}"],terminal
+
+route_v2=runtime._adaptive_runtime_options(
+    candidate("route_transition_graph_v2","route_proven_gap","ROUTE PROVEN"),
+    config,
+)
+assert route_v2,route_v2
+assert route_v2["new_strategy_id"]=="route_transition_graph_v2",route_v2
+assert route_v2["post_exhaustion_strategy_profile"]=="route_transition_graph_v2",route_v2
+assert route_v2["experiment_strategy"]=="learned-family-new-strategy",route_v2
+assert route_v2["runtime_response_salvage"] is True,route_v2
+assert "/player/{id}" in route_v2["direct_paths"],route_v2
+assert "/api/source/{id}" in route_v2["direct_paths"],route_v2
+assert "/detail/{slug}" in route_v2["direct_paths"],route_v2
+assert "/film/{slug}" not in route_v2["direct_paths"],route_v2
+assert any(
+    prefix.startswith("/player/") or prefix.startswith("/api/source/")
+    for prefix in route_v2["transition_prefixes"]
+),route_v2
 
 candidate_replay=runtime._adaptive_runtime_options(
     candidate("candidate_divergence_trace_v1","candidate_replay_gap","CANDIDATE OK"),

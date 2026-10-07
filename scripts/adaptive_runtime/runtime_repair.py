@@ -68,6 +68,7 @@ POST_EXHAUSTION_STRATEGY_PROFILES = {
     "provider_positive_program_replay_v1",
     "transport_request_differential_v1",
     "route_transition_graph_v1",
+    "route_transition_graph_v2",
     "route_peer_transition_replay_v1",
     "terminal_transition_graph_v1",
     "terminal_request_program_inference_v1",
@@ -1557,6 +1558,42 @@ def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any])
             current_request_recipes, provider_request_recipes, peer_request_recipes, limit=36
         )
         second_order_role_preferences = ["detail", "episode", "player", "source", "api", "other"]
+    elif new_strategy_id == "route_transition_graph_v2":
+        # Manual oracle promoted into reusable Brain infrastructure after the
+        # FORCE materializer repeatedly merged v1/v2 instead of synthesizing a
+        # distinct executor. v2 is intentionally same-provider-first: it uses
+        # retained positive/current/historical request programs and follows only
+        # transition prefixes literally observed in provider-owned route DATA.
+        # Runtime-response salvage then mines terminal/player URLs from successful
+        # text/json responses without inventing provider-local routes.
+        positive_routes = _unique_routes(
+            positive_program_routes(provider_id),
+            learned_direct,
+            configured_direct,
+            limit=64,
+        )
+        search_paths = _unique_routes(
+            configured_search,
+            learned_search,
+            [route for route in positive_program_routes(provider_id) if _route_role(route) == "search"],
+            limit=16,
+        )
+        direct_paths = _unique_routes(
+            [
+                route for route in positive_routes
+                if _route_role(route) in {"detail", "episode", "player", "source", "api", "other"}
+            ],
+            limit=40,
+        )
+        transition_prefixes = _owned_transition_prefixes(direct_paths, limit=24)
+        request_recipes = _unique_request_recipes(
+            positive_request_recipes,
+            current_request_recipes,
+            historical_provider_request_recipes,
+            provider_request_recipes,
+            limit=48,
+        )
+        second_order_role_preferences = ["detail", "episode", "player", "source", "api", "other"]
     elif new_strategy_id == "route_peer_transition_replay_v1":
         search_paths = _unique_routes(learned_search, peer_search, limit=18)
         direct_paths = _unique_routes(peer_direct, learned_direct, limit=40)
@@ -1863,7 +1900,11 @@ def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any])
     max_depth = max(2, min(6, int(llm_experiment.get("maxDepth") or default_max_depth)))
     alias_search = new_strategy_id == "identity_alias_search_traversal_v1" or llm_experiment.get("aliasSearch") is True
     runtime_response_salvage = (
-        new_strategy_id in {"runtime_response_salvage_v1", "terminal_transition_graph_v1"}
+        new_strategy_id in {
+            "runtime_response_salvage_v1",
+            "terminal_transition_graph_v1",
+            "route_transition_graph_v2",
+        }
         or llm_experiment.get("responseSalvage") is True
     )
     document_request_mining = new_strategy_id == "document_request_contract_mining_v1" or llm_experiment.get("documentRequestMining") is True

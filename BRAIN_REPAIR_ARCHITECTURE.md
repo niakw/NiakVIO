@@ -1059,3 +1059,8 @@ When Architecture FORCE evolves an exhausted executable Repair profile, the new 
 ### Blueprint-aware repeated anchors across all Repair surfaces
 
 Architecture FORCE uses the same blueprint-aware repeated-find resolver across the Repair registry, planner and adaptive runtime. Runtime branches first bind to the exact `new_strategy_id == evolvesFromStrategyId` block. Registry/planner surfaces may bind a repeated model `find` only when one occurrence is uniquely nearest to the parent/new strategy id in current bytes. Ties or missing strategy anchors remain fail-closed. This keeps compact corrective prompts deterministic without permitting arbitrary nearest-text mutation.
+
+
+### route_transition_graph_v2 — reusable manual oracle
+
+When `route_transition_graph_v1` is exhausted, Brain may select `route_transition_graph_v2` as a distinct post-exhaustion executor. v2 is same-provider-first: it combines retained positive/current/historical request programs, compiles transition prefixes only from provider-owned observed route DATA, and enables runtime response salvage so successful HTML/JSON/text responses can yield terminal/player URLs without guessed provider-local routes. It is registered in the planner, Repair runtime registry and adaptive runtime; negative-memory fingerprint rotation controls selection. This oracle is Brain infrastructure and must still pass representative provider replay and normal acceptance proof before cohort use.
