@@ -1,12 +1,12 @@
 {
   "schema_version": 63,
-  "generated_at": "2026-10-07T15:40:24.764041+00:00",
+  "generated_at": "2026-10-07T21:24:52.277978+00:00",
   "test_environment": "github-actions-node",
   "checked_providers": 41,
   "status_counts": {
-    "healthy": 4,
+    "healthy": 5,
     "reachable": 0,
-    "blocked": 5,
+    "blocked": 4,
     "degraded": 1,
     "no_streams": 13,
     "provider_unreachable": 14,
@@ -280,17 +280,21 @@
     },
     {
       "id": "movieshunt",
-      "status": "no_streams",
+      "status": "healthy",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
-      "consecutive_successes": 0,
-      "hosts": [],
-      "response_categories": [],
+      "consecutive_successes": 1,
+      "hosts": [
+        "556138dca7367763ed46eecaa4284eca.r2.cloudflarestorage.com"
+      ],
+      "response_categories": [
+        "playable"
+      ],
       "host_health": {
         "pub-a0a5ce422c034486a372657692292682.r2.dev": {
-          "last_checked_at": "2026-10-06T18:31:14.164018+00:00",
+          "last_checked_at": "2026-10-07T21:24:52.277978+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -301,7 +305,18 @@
           "consecutive_blocked": 0
         },
         "556138dca7367763ed46eecaa4284eca.r2.cloudflarestorage.com": {
-          "last_checked_at": "2026-10-06T18:31:14.164018+00:00",
+          "last_checked_at": "2026-10-07T21:24:52.277978+00:00",
+          "last_category": "playable",
+          "reachable": true,
+          "http_status": 206,
+          "latency_ms": 315,
+          "kind": "matroska",
+          "consecutive_hard_failures": 0,
+          "consecutive_successes": 1,
+          "consecutive_blocked": 0
+        },
+        "c6b1e8c93683bdde581e2164cb9657c9.r2.cloudflarestorage.com": {
+          "last_checked_at": "2026-10-07T21:24:52.277978+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -311,19 +326,8 @@
           "consecutive_successes": 0,
           "consecutive_blocked": 0
         },
-        "c6b1e8c93683bdde581e2164cb9657c9.r2.cloudflarestorage.com": {
-          "last_checked_at": "2026-10-06T18:31:14.164018+00:00",
-          "last_category": "playable",
-          "reachable": true,
-          "http_status": 206,
-          "latency_ms": 200,
-          "kind": "matroska",
-          "consecutive_hard_failures": 0,
-          "consecutive_successes": 1,
-          "consecutive_blocked": 0
-        },
         "pub-20300597057b48fd94a17cfc923269e9.r2.dev": {
-          "last_checked_at": "2026-10-06T18:31:14.164018+00:00",
+          "last_checked_at": "2026-10-07T21:24:52.277978+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -334,7 +338,7 @@
           "consecutive_blocked": 0
         },
         "628cb77e7ed58a3f0a3b9fbd9187862f.r2.cloudflarestorage.com": {
-          "last_checked_at": "2026-10-06T18:31:14.164018+00:00",
+          "last_checked_at": "2026-10-07T21:24:52.277978+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -345,7 +349,7 @@
           "consecutive_blocked": 0
         },
         "small-brook-3e88.terapiyo248.workers.dev": {
-          "last_checked_at": "2026-10-06T18:31:14.164018+00:00",
+          "last_checked_at": "2026-10-07T21:24:52.277978+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -356,7 +360,7 @@
           "consecutive_blocked": 0
         },
         "files.netflix-server-69.workers.dev": {
-          "last_checked_at": "2026-10-06T18:31:14.164018+00:00",
+          "last_checked_at": "2026-10-07T21:24:52.277978+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -367,7 +371,7 @@
           "consecutive_blocked": 0
         },
         "filexdcn.google-cdn.workers.dev": {
-          "last_checked_at": "2026-10-06T18:31:14.164018+00:00",
+          "last_checked_at": "2026-10-07T21:24:52.277978+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -378,7 +382,7 @@
           "consecutive_blocked": 0
         },
         "nf-cdn.ripah90951.workers.dev": {
-          "last_checked_at": "2026-10-06T18:31:14.164018+00:00",
+          "last_checked_at": "2026-10-07T21:24:52.277978+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -389,7 +393,7 @@
           "consecutive_blocked": 0
         },
         "long-mountain-bb68.xibala6906.workers.dev": {
-          "last_checked_at": "2026-10-06T18:31:14.164018+00:00",
+          "last_checked_at": "2026-10-07T21:24:52.277978+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -400,7 +404,7 @@
           "consecutive_blocked": 0
         },
         "server1.hubcloudxdcn.workers.dev": {
-          "last_checked_at": "2026-10-06T18:31:14.164018+00:00",
+          "last_checked_at": "2026-10-07T21:24:52.277978+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -411,7 +415,7 @@
           "consecutive_blocked": 0
         },
         "delicate-grass-b270.terapiyo239.workers.dev": {
-          "last_checked_at": "2026-10-06T18:31:14.164018+00:00",
+          "last_checked_at": "2026-10-07T21:24:52.277978+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -422,7 +426,7 @@
           "consecutive_blocked": 0
         },
         "bsnl-route.neetflixcdn.workers.dev": {
-          "last_checked_at": "2026-10-06T18:31:14.164018+00:00",
+          "last_checked_at": "2026-10-07T21:24:52.277978+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -433,7 +437,7 @@
           "consecutive_blocked": 0
         },
         "holy-bonus-8aed.roxacob784.workers.dev": {
-          "last_checked_at": "2026-10-06T18:31:14.164018+00:00",
+          "last_checked_at": "2026-10-07T21:24:52.277978+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -444,7 +448,7 @@
           "consecutive_blocked": 0
         },
         "myfiles.directfile3.workers.dev": {
-          "last_checked_at": "2026-10-06T18:31:14.164018+00:00",
+          "last_checked_at": "2026-10-07T21:24:52.277978+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -455,7 +459,7 @@
           "consecutive_blocked": 0
         },
         "hubcloud.downloadservers.workers.dev": {
-          "last_checked_at": "2026-10-06T18:31:14.164018+00:00",
+          "last_checked_at": "2026-10-07T21:24:52.277978+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -466,7 +470,7 @@
           "consecutive_blocked": 0
         },
         "index.cdn-utube.workers.dev": {
-          "last_checked_at": "2026-10-06T18:31:14.164018+00:00",
+          "last_checked_at": "2026-10-07T21:24:52.277978+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -477,7 +481,7 @@
           "consecutive_blocked": 0
         },
         "spring-resonance-3bff.watacoy4847661.workers.dev": {
-          "last_checked_at": "2026-10-06T18:31:14.164018+00:00",
+          "last_checked_at": "2026-10-07T21:24:52.277978+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -488,7 +492,7 @@
           "consecutive_blocked": 0
         },
         "drive.google-index.workers.dev": {
-          "last_checked_at": "2026-10-06T18:31:14.164018+00:00",
+          "last_checked_at": "2026-10-07T21:24:52.277978+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -499,7 +503,7 @@
           "consecutive_blocked": 0
         },
         "dawn-union-d36d.terapiyo365.workers.dev": {
-          "last_checked_at": "2026-10-06T18:31:14.164018+00:00",
+          "last_checked_at": "2026-10-07T21:24:52.277978+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -510,7 +514,7 @@
           "consecutive_blocked": 0
         },
         "api.hubcloud-2.workers.dev": {
-          "last_checked_at": "2026-10-06T18:31:14.164018+00:00",
+          "last_checked_at": "2026-10-07T21:24:52.277978+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -521,7 +525,7 @@
           "consecutive_blocked": 0
         },
         "3a771b2296d1c87878ede7f6b1346c1e.r2.cloudflarestorage.com": {
-          "last_checked_at": "2026-10-06T18:31:14.164018+00:00",
+          "last_checked_at": "2026-10-07T21:24:52.277978+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -532,7 +536,7 @@
           "consecutive_blocked": 0
         },
         "4dad9ad3e94138b7447532d7884e3068.r2.cloudflarestorage.com": {
-          "last_checked_at": "2026-10-06T18:31:14.164018+00:00",
+          "last_checked_at": "2026-10-07T21:24:52.277978+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -3011,7 +3015,7 @@
     },
     {
       "id": "vostfree",
-      "status": "blocked",
+      "status": "no_streams",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
