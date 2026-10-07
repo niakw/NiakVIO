@@ -15,6 +15,7 @@ assert "architecture_force:" in LEARN
 assert "steps.learning-slot.outputs.architecture_force == 'true'" in LEARN
 assert "needs.experiment.outputs.architecture_force == 'true'" in LEARN
 assert "brain_architecture_force_materializer.py" in LEARN
+assert "engine_v2/scripts/plan-repairs.mjs" in LEARN
 assert "brain-architecture-force.patch" in LEARN
 assert "force_promotable=" in LEARN
 assert "no-force-promotable-blueprint" in LEARN
@@ -56,8 +57,10 @@ assert force.get("providerPublicationAuthority") is False
 assert force.get("productionProviderWritesAllowed") is False
 assert "scripts/brain_meta_learning.py" in (SELF.get("structuralProposalSurfaces") or [])
 assert "scripts/brain_architecture_force_materializer.py" in (SELF.get("structuralProposalSurfaces") or [])
+assert "engine_v2/scripts/plan-repairs.mjs" in (SELF.get("structuralProposalSurfaces") or [])
 generated = set((SELF.get("forceArchitecture") or {}).get("generatedEditAllowlist") or [])
 assert "scripts/brain_meta_learning.py" in generated
+assert "engine_v2/scripts/plan-repairs.mjs" in generated
 assert "scripts/brain_layers/*" in generated
 assert ".github/workflows/brain-learning-lab.yml" not in generated
 assert ".github/workflows/provider-recognition-repair-v6.yml" not in generated

@@ -209,15 +209,38 @@ def build_strategy_blueprints(
         if not providers:
             continue
         row = dict(template)
+        strategy_evolved = False
         if scope != "harness-compatibility":
             strategy_id = str(row.get("strategyId") or "").strip()
-            providers = [
+            exhausted_providers = [
                 provider
                 for provider in providers
-                if strategy_id not in failed_profiles_by_provider.get(provider, set())
+                if strategy_id in failed_profiles_by_provider.get(provider, set())
             ]
-            if not providers:
-                continue
+            if exhausted_providers:
+                exhausted_profiles = {
+                    profile
+                    for provider in exhausted_providers
+                    for profile in failed_profiles_by_provider.get(provider, set())
+                    if profile
+                }
+                match = re.fullmatch(r"(.+)_v(\d+)", strategy_id)
+                base = match.group(1) if match else strategy_id
+                version = int(match.group(2)) + 1 if match else 2
+                while f"{base}_v{version}" in exhausted_profiles:
+                    version += 1
+                evolved_id = f"{base}_v{version}"
+                row["evolvesFromStrategyId"] = strategy_id
+                row["strategyId"] = evolved_id
+                row["exhaustedStrategyIds"] = sorted(exhausted_profiles)
+                row["method"] = (
+                    f"derive and implement a genuinely new executable Repair strategy {evolved_id} "
+                    f"from negative evidence for exhausted {strategy_id}; preserve the causal intent "
+                    f"of the prior method without reusing its implementation, register the new profile "
+                    f"in Repair planning/runtime, and require targeted playback/identity proof"
+                )
+                providers = exhausted_providers
+                strategy_evolved = True
         transport_signature = str(group.get("transportSignature") or "").strip().casefold()
         dominant_issues = {
             str(value or "").strip().casefold()
@@ -257,6 +280,7 @@ def build_strategy_blueprints(
         }.get(scope, "harness" if scope == "harness-compatibility" else "core")
         force_promotable = (
             scope != "harness-compatibility"
+            and strategy_evolved
             and bool(providers)
             and all(bool(failed_profiles_by_provider.get(provider)) for provider in providers)
         )
@@ -265,6 +289,7 @@ def build_strategy_blueprints(
             "repairScope": scope,
             "targetLayer": force_target_layer,
             "forcePromotionEligible": force_promotable,
+            "requiresNewExecutableRepairProfile": strategy_evolved,
             "forcePromotionReason": (
                 "deferred-known-family-exhaustion"
                 if force_promotable
@@ -506,21 +531,19 @@ def main() -> int:
         if str(value or "").strip()
     })
     deferred_set = set(deferred_repair_providers)
-    active_signatures_by_provider = active_method_signatures(selection)
     failed_profiles_by_provider: dict[str, set[str]] = {}
     for row in entries:
         provider_id = str(row.get("providerId") or "").strip().casefold()
         profile = str(row.get("profile") or "").strip()
-        signature = str(row.get("signature") or "").strip().casefold()
-        active_signatures = active_signatures_by_provider.get(provider_id, set())
-        if active_signatures and signature not in active_signatures:
-            continue
         if (
             provider_id in deferred_set
             and profile
             and int(row.get("successes") or 0) == 0
             and int(row.get("consecutiveFailures") or 0) > 0
         ):
+            # Architecture novelty uses durable negative experience, not only
+            # the most recent request signature. Otherwise an exhausted profile
+            # can be incorrectly recycled when the active signature rotates.
             failed_profiles_by_provider.setdefault(provider_id, set()).add(profile)
     strategy_blueprints = build_strategy_blueprints(
         batch_plan,

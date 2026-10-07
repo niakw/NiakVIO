@@ -178,11 +178,11 @@ with tempfile.TemporaryDirectory(prefix="niakvio-arch-cohort-") as tmp:
     blueprints = result["strategyBlueprints"]
     assert result["strategyBlueprintCount"] == 3, result
     assert {item["strategyId"] for item in blueprints} == {
-        "terminal_transition_graph_v1",
+        "terminal_transition_graph_v2",
         "transport_request_differential_v1",
         "representative_native_transport_alignment_v1",
     }, blueprints
-    terminal = next(item for item in blueprints if item["strategyId"] == "terminal_transition_graph_v1")
+    terminal = next(item for item in blueprints if item["strategyId"] == "terminal_transition_graph_v2")
     assert terminal["providers"] == ["alpha"], terminal
     assert "playback-verified media" in terminal["acceptanceProof"], terminal
     transport = next(item for item in blueprints if item["strategyId"] == "transport_request_differential_v1")
@@ -196,8 +196,11 @@ with tempfile.TemporaryDirectory(prefix="niakvio-arch-cohort-") as tmp:
     assert "not promoted to playback" in harness["acceptanceProof"][1], harness
     assert "native differential proof" in harness["reentryPolicy"], harness
     assert terminal["forcePromotionEligible"] is True, terminal
+    assert terminal["requiresNewExecutableRepairProfile"] is True, terminal
+    assert terminal["evolvesFromStrategyId"] == "terminal_transition_graph_v1", terminal
     assert terminal["targetLayer"] == "core", terminal
-    assert transport["forcePromotionEligible"] is True, transport
+    assert transport["forcePromotionEligible"] is False, transport
+    assert transport["requiresNewExecutableRepairProfile"] is False, transport
     assert transport["targetLayer"] == "network", transport
     assert harness["forcePromotionEligible"] is False, harness
     assert harness["targetLayer"] == "harness", harness
@@ -231,12 +234,12 @@ filtered = builder.build_strategy_blueprints(
     {"alpha": {"terminal_transition_graph_v1"}},
 )
 assert len(filtered) == 1, filtered
-assert filtered[0]["strategyId"] == "terminal_transition_graph_v1", filtered
-assert filtered[0]["providers"] == ["beta"], filtered
-# beta has no retained failed-profile memory in this fixture. Filtering out
-# alpha must not manufacture FORCE authority for an otherwise unproven provider.
-assert filtered[0]["forcePromotionEligible"] is False, filtered
-assert filtered[0]["forcePromotionReason"] == "diagnostic-only-or-no-exhaustion-proof", filtered
+assert filtered[0]["strategyId"] == "terminal_transition_graph_v2", filtered
+assert filtered[0]["evolvesFromStrategyId"] == "terminal_transition_graph_v1", filtered
+assert filtered[0]["providers"] == ["alpha"], filtered
+assert filtered[0]["forcePromotionEligible"] is True, filtered
+assert filtered[0]["requiresNewExecutableRepairProfile"] is True, filtered
+assert filtered[0]["forcePromotionReason"] == "deferred-known-family-exhaustion", filtered
 assert filtered[0]["targetLayer"] == "core", filtered
 fully_exhausted = builder.build_strategy_blueprints(
     {
@@ -253,7 +256,10 @@ fully_exhausted = builder.build_strategy_blueprints(
         "beta": {"terminal_transition_graph_v1"},
     },
 )
-assert fully_exhausted == [], fully_exhausted
+assert len(fully_exhausted) == 1, fully_exhausted
+assert fully_exhausted[0]["strategyId"] == "terminal_transition_graph_v2", fully_exhausted
+assert fully_exhausted[0]["providers"] == ["alpha", "beta"], fully_exhausted
+assert fully_exhausted[0]["forcePromotionEligible"] is True, fully_exhausted
 
 workflow_source = (ROOT / ".github" / "workflows" / "brain-learning-lab.yml").read_text(encoding="utf-8")
 architecture_job = workflow_source.split("  publish-architecture-proposal:", 1)[1].split("  continue-learning-slot:", 1)[0]

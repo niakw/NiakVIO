@@ -512,6 +512,54 @@ def validate_changed_syntax(changed: list[str], root: Path = ROOT) -> None:
                 )
 
 
+NEW_REPAIR_PROFILE_SURFACES = (
+    "scripts/brain_repair_runtime.py",
+    "engine_v2/scripts/plan-repairs.mjs",
+    "scripts/adaptive_runtime/runtime_repair.py",
+)
+
+
+def validate_blueprint_implementation(
+    changed: list[str],
+    blueprint: dict[str, Any] | None,
+    *,
+    root: Path = ROOT,
+    baseline_sources: dict[str, bytes] | None = None,
+) -> None:
+    blueprint = blueprint if isinstance(blueprint, dict) else {}
+    if blueprint.get("requiresNewExecutableRepairProfile") is not True:
+        return
+    strategy_id = str(blueprint.get("strategyId") or "").strip()
+    evolves_from = str(blueprint.get("evolvesFromStrategyId") or "").strip()
+    if not strategy_id or not evolves_from or strategy_id == evolves_from:
+        raise ValueError("architecture FORCE evolved strategy requires a distinct new strategyId")
+    baselines = baseline_sources or {}
+    for path in NEW_REPAIR_PROFILE_SURFACES:
+        before = baselines.get(path)
+        if before is not None and strategy_id.encode("utf-8") in before:
+            raise ValueError(
+                f"architecture FORCE new Repair profile already existed before materialization: {strategy_id}"
+            )
+    changed_set = {str(path) for path in changed}
+    missing_changed = [path for path in NEW_REPAIR_PROFILE_SURFACES if path not in changed_set]
+    if missing_changed:
+        raise ValueError(
+            "architecture FORCE new Repair profile must wire planner/runtime surfaces: "
+            + ",".join(missing_changed)
+        )
+    missing_strategy = []
+    for path in NEW_REPAIR_PROFILE_SURFACES:
+        target = root / path
+        text = target.read_text(encoding="utf-8") if target.is_file() else ""
+        if strategy_id not in text:
+            missing_strategy.append(path)
+    if missing_strategy:
+        raise ValueError(
+            f"architecture FORCE new Repair profile {strategy_id} missing executable wiring in: "
+            + ",".join(missing_strategy)
+        )
+
+
 MATERIALIZED_CONTRACT_TESTS = (
     "tests/brain_meta_learning_gap_synthesis_test.py",
     "tests/brain_architecture_force_materializer_test.py",
@@ -592,6 +640,7 @@ def validate_materialized_edits(
     edits: list[dict[str, Any]],
     *,
     root: Path = ROOT,
+    blueprint: dict[str, Any] | None = None,
 ) -> list[str]:
     """Apply edits transactionally, validate syntax/contracts, then restore baseline."""
     snapshots: dict[str, tuple[bool, bytes]] = {}
@@ -599,12 +648,24 @@ def validate_materialized_edits(
         path = str(edit.get("path") or "")
         target = root / path
         snapshots[path] = (target.exists(), target.read_bytes() if target.exists() else b"")
+    profile_baselines: dict[str, bytes] = {}
+    if isinstance(blueprint, dict) and blueprint.get("requiresNewExecutableRepairProfile") is True:
+        for path in NEW_REPAIR_PROFILE_SURFACES:
+            target = root / path
+            if target.is_file():
+                profile_baselines[path] = target.read_bytes()
 
     changed: list[str] = []
     try:
         changed = apply_edits(edits, root=root)
         validate_changed_syntax(changed, root=root)
         validate_materialized_contracts(changed, root=root)
+        validate_blueprint_implementation(
+            changed,
+            blueprint,
+            root=root,
+            baseline_sources=profile_baselines,
+        )
         return changed
     except ValueError as exc:
         remaining = MAX_MATERIALIZED_FAILURE_CONTEXT
@@ -666,6 +727,7 @@ def _blueprint_focus_terms(blueprint: dict[str, Any]) -> list[str]:
         str(blueprint.get(key) or "").strip().casefold()
         for key in (
             "strategyId",
+            "evolvesFromStrategyId",
             "repairScope",
             "capabilityStrategy",
             "groupId",
@@ -701,15 +763,17 @@ def _focused_source_snippet(text: str, blueprint: dict[str, Any], limit: int) ->
         return text
 
     strategy_id = str(blueprint.get("strategyId") or "").strip()
+    evolves_from = str(blueprint.get("evolvesFromStrategyId") or "").strip()
     anchors: list[str] = []
-    if strategy_id:
-        anchors.extend([
-            f'new_strategy_id == "{strategy_id}"',
-            f"new_strategy_id == '{strategy_id}'",
-            f'"{strategy_id}"',
-            f"'{strategy_id}'",
-            strategy_id,
-        ])
+    for profile_id in (strategy_id, evolves_from):
+        if profile_id:
+            anchors.extend([
+                f'new_strategy_id == "{profile_id}"',
+                f"new_strategy_id == '{profile_id}'",
+                f'"{profile_id}"',
+                f"'{profile_id}'",
+                profile_id,
+            ])
     anchors.extend(_blueprint_focus_terms(blueprint))
 
     lowered = text.casefold()
@@ -750,13 +814,21 @@ def _focused_source_snippet(text: str, blueprint: dict[str, Any], limit: int) ->
 
 def source_context(blueprint: dict[str, Any], patterns: list[str]) -> dict[str, str]:
     layer = str(blueprint.get("targetLayer") or "")
-    candidates = ["scripts/brain_meta_learning.py", "scripts/brain_repair_runtime.py"]
-    if layer in {"provider", "core"}:
-        candidates.append("scripts/adaptive_runtime/runtime_repair.py")
-    elif layer in {"harness", "network", "client-runtime"}:
-        candidates.append("scripts/nuvio_client_lab.cjs")
+    requires_new_profile = blueprint.get("requiresNewExecutableRepairProfile") is True
+    if requires_new_profile:
+        candidates = [
+            "scripts/brain_repair_runtime.py",
+            "engine_v2/scripts/plan-repairs.mjs",
+            "scripts/adaptive_runtime/runtime_repair.py",
+        ]
     else:
-        candidates.append("scripts/run_brain_learning_sandbox.py")
+        candidates = ["scripts/brain_meta_learning.py", "scripts/brain_repair_runtime.py"]
+        if layer in {"provider", "core"}:
+            candidates.append("scripts/adaptive_runtime/runtime_repair.py")
+        elif layer in {"harness", "network", "client-runtime"}:
+            candidates.append("scripts/nuvio_client_lab.cjs")
+        else:
+            candidates.append("scripts/run_brain_learning_sandbox.py")
     out: dict[str, str] = {}
     remaining = MAX_TOTAL_SOURCE_CONTEXT
     for path in candidates:
@@ -848,11 +920,27 @@ def _model_request(
             "Paths listed in existingAllowedPaths already exist and MUST use replace, never create. "
             "Use create only for a path listed in newAllowedPaths."
         )
+    blueprint = payload.get("blueprint") if isinstance(payload.get("blueprint"), dict) else {}
+    if blueprint.get("requiresNewExecutableRepairProfile") is True:
+        strategy_id = str(blueprint.get("strategyId") or "")
+        evolves_from = str(blueprint.get("evolvesFromStrategyId") or "")
+        system += (
+            f" This blueprint requires a genuinely new executable Repair profile {strategy_id}, "
+            f"evolved from exhausted {evolves_from}. "
+            "Wire the new strategy id into scripts/brain_repair_runtime.py, "
+            "engine_v2/scripts/plan-repairs.mjs, and scripts/adaptive_runtime/runtime_repair.py. "
+            "Do not satisfy this request with taxonomy, metadata, comments, or proposal-only changes."
+        )
     if str(payload.get("correctionReason") or "") == "materialized-syntax-validation":
         system += (
             " Repair only the parser defect in the rejected candidate. "
             "Use materializedFailureSources as candidate bytes and materializedBaselineSources as original bytes. "
             "Preserve the intended change, avoid duplicate surrounding tokens, and prefer one small replace."
+        )
+    if str(payload.get("correctionReason") or "") == "materialized-repair-profile-wiring":
+        system += (
+            " The prior candidate did not wire the new Repair profile end-to-end. "
+            "Return the smallest complete three-surface wiring using the exact newStrategyId."
         )
     body = {
         "model": model,
@@ -1175,7 +1263,11 @@ def validated_model_plan(
             validation_payload = correction_payload
 
     try:
-        validate_materialized_edits(edits, root=root)
+        validate_materialized_edits(
+            edits,
+            root=root,
+            blueprint=payload.get("blueprint") if isinstance(payload.get("blueprint"), dict) else None,
+        )
         return planned, edits
     except ValueError as exc:
         current_error: ValueError = exc
@@ -1188,12 +1280,21 @@ def validated_model_plan(
             f"error={str(current_error)[:240]}",
             flush=True,
         )
-        exact_paths = [
-            str(edit.get("path") or "")
-            for edit in current_edits
-            if str(edit.get("path") or "")
-            and path_allowed(str(edit.get("path") or ""), patterns)
-        ]
+        validation_text = str(current_error).casefold()
+        implementation_failure = (
+            "new repair profile" in validation_text
+            or "evolved strategy" in validation_text
+        )
+        exact_paths = (
+            list(NEW_REPAIR_PROFILE_SURFACES)
+            if implementation_failure
+            else [
+                str(edit.get("path") or "")
+                for edit in current_edits
+                if str(edit.get("path") or "")
+                and path_allowed(str(edit.get("path") or ""), patterns)
+            ]
+        )
         correction_payload = _validation_retry_payload(
             payload,
             current_error,
@@ -1215,7 +1316,9 @@ def validated_model_plan(
             "javascript validation failed",
         ))
         correction_payload["correctionReason"] = (
-            "materialized-syntax-validation"
+            "materialized-repair-profile-wiring"
+            if implementation_failure
+            else "materialized-syntax-validation"
             if syntax_failure
             else "materialized-source-validation"
         )
@@ -1231,6 +1334,14 @@ def validated_model_plan(
             "preserveValidatedIntent": syntax_failure,
             "doNotConcatenateCandidateAndBaseline": syntax_failure,
             "doNotDuplicateSurroundingTokens": syntax_failure,
+            "mustWireNewRepairProfile": implementation_failure,
+            "requiredRepairProfileSurfaces": (
+                list(NEW_REPAIR_PROFILE_SURFACES) if implementation_failure else []
+            ),
+            "newStrategyId": (
+                str((payload.get("blueprint") or {}).get("strategyId") or "")
+                if implementation_failure else ""
+            ),
         })
 
         corrected = _request_corrected_plan(endpoint, model, correction_payload)
@@ -1251,7 +1362,11 @@ def validated_model_plan(
         )
         try:
             validate_edits(corrected_edits, patterns, root=root)
-            validate_materialized_edits(corrected_edits, root=root)
+            validate_materialized_edits(
+                corrected_edits,
+                root=root,
+                blueprint=payload.get("blueprint") if isinstance(payload.get("blueprint"), dict) else None,
+            )
             return corrected, corrected_edits
         except ValueError as correction_error:
             current_error = correction_error
@@ -1294,7 +1409,7 @@ def main() -> int:
         planned = load(a.response_file)
         edits = [dict(x) for x in planned.get("edits") or [] if isinstance(x, dict)]
         validate_edits(edits, patterns)
-        validate_materialized_edits(edits)
+        validate_materialized_edits(edits, blueprint=blueprint)
     else:
         planned, edits = validated_model_plan(
             a.endpoint,

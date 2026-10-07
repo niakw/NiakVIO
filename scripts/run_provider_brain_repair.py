@@ -1146,7 +1146,11 @@ def sanitized_brain(report: dict[str, Any]) -> dict[str, Any]:
                 "postExhaustionStrategyProfile": row.get("postExhaustionStrategyProfile"),
                 "postExhaustionStrategyMethod": row.get("postExhaustionStrategyMethod"),
                 "postExhaustionSourceFailureClass": row.get("postExhaustionSourceFailureClass"),
-                "postExhaustionCandidateProfiles": row.get("postExhaustionCandidateProfiles") or [],
+                "postExhaustionCandidateProfiles": [
+                    str(value)
+                    for value in row.get("postExhaustionCandidateProfiles") or []
+                    if str(value)
+                ],
                 "explorationChainEnabled": row.get("explorationChainEnabled") is True,
                 "explorationModeEnabled": row.get("explorationModeEnabled") is True,
                 "strategyEscalated": row.get("strategyEscalated") is True,

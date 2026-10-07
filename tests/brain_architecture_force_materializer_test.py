@@ -140,6 +140,98 @@ focused_ctx = mod.source_context(
 assert 'new_strategy_id == "route_transition_graph_v1"' in focused_ctx[
     "scripts/adaptive_runtime/runtime_repair.py"
 ]
+
+evolved_patterns = [
+    "scripts/brain_repair_runtime.py",
+    "engine_v2/scripts/plan-repairs.mjs",
+    "scripts/adaptive_runtime/runtime_repair.py",
+]
+evolved_ctx = mod.source_context(
+    {
+        "strategyId": "route_transition_graph_v2",
+        "evolvesFromStrategyId": "route_transition_graph_v1",
+        "requiresNewExecutableRepairProfile": True,
+        "repairScope": "route-to-terminal",
+        "targetLayer": "core",
+    },
+    evolved_patterns,
+)
+assert set(evolved_ctx) == set(mod.NEW_REPAIR_PROFILE_SURFACES), evolved_ctx
+assert "route_transition_graph_v1" in evolved_ctx[
+    "scripts/adaptive_runtime/runtime_repair.py"
+]
+
+# A FORCE evolution that claims a new Repair profile must wire the new strategy
+# through the planner, Repair registry and adaptive runtime. Taxonomy-only edits
+# are intentionally rejected before any direct-main promotion.
+with tempfile.TemporaryDirectory(prefix="brain-arch-force-new-profile-") as tmp:
+    root = Path(tmp)
+    files = {
+        "scripts/brain_repair_runtime.py": 'PROFILES = {"route_transition_graph_v1"}\n',
+        "engine_v2/scripts/plan-repairs.mjs": 'const PROFILES = ["route_transition_graph_v1"];\n',
+        "scripts/adaptive_runtime/runtime_repair.py": (
+            'if new_strategy_id == "route_transition_graph_v1":\n'
+            '    pass\n'
+        ),
+    }
+    for path, text in files.items():
+        target = root / path
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text(text, encoding="utf-8")
+    blueprint = {
+        "strategyId": "route_transition_graph_v2",
+        "evolvesFromStrategyId": "route_transition_graph_v1",
+        "requiresNewExecutableRepairProfile": True,
+    }
+    incomplete = [{
+        "operation": "replace",
+        "path": "scripts/brain_repair_runtime.py",
+        "find": '{"route_transition_graph_v1"}',
+        "replace": '{"route_transition_graph_v1", "route_transition_graph_v2"}',
+    }]
+    try:
+        mod.validate_materialized_edits(
+            incomplete,
+            root=root,
+            blueprint=blueprint,
+        )
+    except ValueError as exc:
+        assert "must wire planner/runtime surfaces" in str(exc), exc
+    else:
+        raise AssertionError("taxonomy/registry-only evolved profile unexpectedly accepted")
+
+    complete = [
+        {
+            "operation": "replace",
+            "path": "scripts/brain_repair_runtime.py",
+            "find": '{"route_transition_graph_v1"}',
+            "replace": '{"route_transition_graph_v1", "route_transition_graph_v2"}',
+        },
+        {
+            "operation": "replace",
+            "path": "engine_v2/scripts/plan-repairs.mjs",
+            "find": '["route_transition_graph_v1"]',
+            "replace": '["route_transition_graph_v1", "route_transition_graph_v2"]',
+        },
+        {
+            "operation": "replace",
+            "path": "scripts/adaptive_runtime/runtime_repair.py",
+            "find": 'new_strategy_id == "route_transition_graph_v1"',
+            "replace": 'new_strategy_id in {"route_transition_graph_v1", "route_transition_graph_v2"}',
+        },
+    ]
+    mod.validate_edits(complete, evolved_patterns, root=root)
+    changed = mod.validate_materialized_edits(
+        complete,
+        root=root,
+        blueprint=blueprint,
+    )
+    assert set(changed) == set(mod.NEW_REPAIR_PROFILE_SURFACES)
+    assert all(
+        "route_transition_graph_v2" not in (root / path).read_text(encoding="utf-8")
+        for path in mod.NEW_REPAIR_PROFILE_SURFACES
+    )
+
 assert mod.MAX_MODEL_TOKENS <= 512
 assert mod.MODEL_TIMEOUT_SECONDS == 180
 assert mod.RETRY_MODEL_TOKENS <= 640
