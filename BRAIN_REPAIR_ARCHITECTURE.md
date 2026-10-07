@@ -1025,3 +1025,10 @@ Brain Repair consumes the current sharded ledger as dynamic completeness evidenc
 
 When repeated current-byte completeness experiments fail, Brain must progress by **causal mechanism**, not by repeatedly raising the same cap. Executed negative memory is therefore part of the selection contract. For bounded source lists, a later progression may change only traversal order (for example a bidirectional source frontier: first, last, second, penultimate) while preserving source-count bounds, deadlines, routes, identity rules and the global stream cap. Such a reorder is still only a hypothesis: it must pass the same strict playable quality/language/host gain and identity/non-regression gate before publication.
 
+
+
+### FORCE repeated replace anchoring
+
+Architecture FORCE may receive a model replace whose `find` text appears more than once in a large executable Repair surface. This is not automatically a model failure when the exact bounded source snippet is unique and the active blueprint's `strategyId` / `evolvesFromStrategyId` identifies one occurrence unambiguously.
+
+The materializer may then select only the uniquely nearest occurrence to that strategy anchor and widen the replace with unchanged real neighboring bytes until the final `find` is globally unique. Equal-distance or otherwise ambiguous matches remain fail-closed and return to the normal corrective loop. This resolver is Brain infrastructure only; it does not grant provider mutation authority or weaken current-byte Repair validation.

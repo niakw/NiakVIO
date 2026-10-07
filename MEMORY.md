@@ -1035,3 +1035,11 @@
 - Repair observability was aligned so `postExhaustionCandidateProfiles` survives the sanitized Repair report contract. Local targeted validation passes: Python compile, Node syntax, deferred-cohort novelty, FORCE materializer, FORCE promotion, LLM advisor observability, meta-learning, self-architecture, main-only policy and `git diff --check`.
 - Separate current Verify/Publish run `37547043314` failed only after its earlier published/Core checks passed, on `FIELD_PROVIDER_FAST_FIXED_POINT status=miss reason=provider-policy-changed:wookafr`. Treat this as distinct WookaFR projection/fixed-point debt, not proof against the Brain FORCE correction.
 - Next authority sequence: publish this Brain correction on current `main`; rerun Architecture FORCE for the exhausted cohort; require a **new** executable profile generation to be present in planner + Repair registry + adaptive runtime; direct-main promote only that complete wiring; then require the one representative canonical Repair to pass preflight, materialize current bytes and demonstrate playable/identity-safe provider improvement before expanding to another failure family.
+
+
+## 2026-10-07 — FORCE repeated-anchor materialization hardened
+
+- Architecture FORCE run `37646660891` reached executable materialization but failed twice on the same edit-validation error: `replace find must occur exactly once: scripts/adaptive_runtime/runtime_repair.py`. The provider cohort was not executed or repaired.
+- Root cause: the model's bounded replace token can legitimately occur more than once inside the exact focused source snippet even when the blueprint's `strategyId` / `evolvesFromStrategyId` uniquely identifies one intended occurrence. The existing resolver only handled repeated finds when the find itself was unique inside the snippet.
+- Brain materialization now keeps the fail-closed contract but may bind a repeated find to the uniquely nearest blueprint strategy anchor inside a source snippet that is itself unique in the current file, then widen unchanged neighboring bytes until the replace anchor is globally unique. Ambiguous/tied anchors are still rejected.
+- Regression coverage reproduces the `runtime_repair.py` repeated-find failure family and verifies that only the anchored occurrence changes. No provider-local production code is edited by this fix.

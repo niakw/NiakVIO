@@ -85,6 +85,58 @@ def path_allowed(path: str, patterns: list[str]) -> bool:
 
 
 
+def _focused_find_offset(
+    snippet: str,
+    find: str,
+    payload: dict[str, Any],
+) -> int | None:
+    """Select one repeated find occurrence from the blueprint's strategy anchor."""
+    positions: list[int] = []
+    start = 0
+    while True:
+        pos = snippet.find(find, start)
+        if pos < 0:
+            break
+        positions.append(pos)
+        start = pos + max(1, len(find))
+    if len(positions) == 1:
+        return positions[0]
+    if not positions:
+        return None
+
+    blueprint = payload.get("blueprint") if isinstance(payload.get("blueprint"), dict) else {}
+    anchor_values = [
+        str(blueprint.get("evolvesFromStrategyId") or "").strip(),
+        str(blueprint.get("strategyId") or "").strip(),
+    ]
+    anchors: list[int] = []
+    lowered = snippet.casefold()
+    for value in anchor_values:
+        if not value:
+            continue
+        needle = value.casefold()
+        cursor = 0
+        while True:
+            pos = lowered.find(needle, cursor)
+            if pos < 0:
+                break
+            anchors.append(pos)
+            cursor = pos + max(1, len(needle))
+    if not anchors:
+        return None
+
+    ranked = sorted(
+        (
+            min(abs((pos + len(find) // 2) - anchor) for anchor in anchors),
+            pos,
+        )
+        for pos in positions
+    )
+    if len(ranked) > 1 and ranked[0][0] == ranked[1][0]:
+        return None
+    return ranked[0][1]
+
+
 def _resolve_non_unique_replace_edits(
     edits: list[dict[str, Any]],
     payload: dict[str, Any],
@@ -145,20 +197,21 @@ def _resolve_non_unique_replace_edits(
             continue
 
         snippet = ""
+        local_offset: int | None = None
         for candidate_snippet in focused_sources.get(path, []):
-            if (
-                candidate_snippet
-                and source.count(candidate_snippet) == 1
-                and candidate_snippet.count(find) == 1
-            ):
-                snippet = candidate_snippet
-                break
-        if not snippet:
+            if not candidate_snippet or source.count(candidate_snippet) != 1:
+                continue
+            candidate_offset = _focused_find_offset(candidate_snippet, find, payload)
+            if candidate_offset is None:
+                continue
+            snippet = candidate_snippet
+            local_offset = candidate_offset
+            break
+        if not snippet or local_offset is None:
             resolved.append(edit)
             continue
 
         snippet_start = source.index(snippet)
-        local_offset = snippet.index(find)
         absolute_start = snippet_start + local_offset
         if source[absolute_start:absolute_start + len(find)] != find:
             resolved.append(edit)

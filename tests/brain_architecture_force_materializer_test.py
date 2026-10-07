@@ -409,6 +409,58 @@ with tempfile.TemporaryDirectory(prefix="brain-arch-force-anchor-") as tmp:
     assert "def unrelated():\n    VALUE = 1" in changed
     assert "def target_strategy():" in changed
 
+# FORCE 37646660891 failed because the model's replace text occurred more than
+# once inside the exact runtime_repair.py focus snippet. When the blueprint's
+# evolved strategy id uniquely identifies one occurrence, Brain must bind that
+# occurrence instead of burning corrective turns on the same ambiguous find.
+with tempfile.TemporaryDirectory(prefix="brain-arch-force-runtime-anchor-") as tmp:
+    root = Path(tmp)
+    target = root / "scripts" / "adaptive_runtime" / "runtime_repair.py"
+    target.parent.mkdir(parents=True, exist_ok=True)
+    source = (
+        "def runtime_strategy():\n"
+        "    handler = build_transition()\n"
+        "    unrelated_a = 1\n"
+        "    unrelated_b = 2\n"
+        "    unrelated_c = 3\n"
+        "    route_transition_graph_v1 = legacy_profile\n"
+        "    handler = build_transition()\n"
+        "    return handler\n"
+    )
+    target.write_text(source, encoding="utf-8")
+    raw = [{
+        "operation": "replace",
+        "path": "scripts/adaptive_runtime/runtime_repair.py",
+        "find": "handler = build_transition()",
+        "replace": "handler = build_transition_v2()",
+    }]
+    runtime_patterns = patterns + ["scripts/adaptive_runtime/runtime_repair.py"]
+    resolved = mod._resolve_non_unique_replace_edits(
+        raw,
+        {
+            "blueprint": {
+                "strategyId": "route_transition_graph_v2",
+                "evolvesFromStrategyId": "route_transition_graph_v1",
+            },
+            "sources": {
+                "scripts/adaptive_runtime/runtime_repair.py": source,
+            },
+        },
+        runtime_patterns,
+        root=root,
+    )
+    assert resolved[0]["find"] != "handler = build_transition()", resolved
+    assert source.count(resolved[0]["find"]) == 1, resolved
+    mod.validate_edits(resolved, runtime_patterns, root=root)
+    mod.apply_edits(resolved, root=root)
+    changed = target.read_text(encoding="utf-8")
+    assert changed.count("handler = build_transition()") == 1
+    assert changed.count("handler = build_transition_v2()") == 1
+    assert (
+        "route_transition_graph_v1 = legacy_profile\n"
+        "    handler = build_transition_v2()"
+    ) in changed
+
 # Corrective rounds may receive candidate bytes that no longer occur in the
 # rollback baseline. The resolver must use materializedBaselineSources to bind
 # a repeated find to the exact location that was rejected.
