@@ -1,14 +1,14 @@
 {
   "schema_version": 63,
-  "generated_at": "2026-10-06T23:55:45.766789+00:00",
+  "generated_at": "2026-10-07T06:13:54.354057+00:00",
   "test_environment": "github-actions-node",
   "checked_providers": 41,
   "status_counts": {
-    "healthy": 3,
+    "healthy": 4,
     "reachable": 0,
     "blocked": 4,
     "degraded": 1,
-    "no_streams": 16,
+    "no_streams": 15,
     "provider_unreachable": 14,
     "runtime_error": 0,
     "unavailable": 3,
@@ -2434,17 +2434,21 @@
     },
     {
       "id": "sekai",
-      "status": "no_streams",
+      "status": "healthy",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
-      "consecutive_successes": 0,
-      "hosts": [],
-      "response_categories": [],
+      "consecutive_successes": 1,
+      "hosts": [
+        "23.mugiwara.one"
+      ],
+      "response_categories": [
+        "playable"
+      ],
       "host_health": {
         "4.mugiwara.one": {
-          "last_checked_at": "2026-10-05T05:58:28.241958+00:00",
+          "last_checked_at": "2026-10-07T06:13:54.354057+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -2455,7 +2459,7 @@
           "consecutive_blocked": 0
         },
         "cdndirector.dailymotion.com": {
-          "last_checked_at": "2026-10-05T05:58:28.241958+00:00",
+          "last_checked_at": "2026-10-07T06:13:54.354057+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -2466,18 +2470,7 @@
           "consecutive_blocked": 0
         },
         "1.mugiwara.one": {
-          "last_checked_at": "2026-10-05T05:58:28.241958+00:00",
-          "last_category": "playable",
-          "reachable": true,
-          "http_status": 206,
-          "latency_ms": 860,
-          "kind": "mp4",
-          "consecutive_hard_failures": 0,
-          "consecutive_successes": 1,
-          "consecutive_blocked": 0
-        },
-        "23.mugiwara.one": {
-          "last_checked_at": "2026-10-05T05:58:28.241958+00:00",
+          "last_checked_at": "2026-10-07T06:13:54.354057+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -2487,8 +2480,19 @@
           "consecutive_successes": 0,
           "consecutive_blocked": 0
         },
+        "23.mugiwara.one": {
+          "last_checked_at": "2026-10-07T06:13:54.354057+00:00",
+          "last_category": "playable",
+          "reachable": true,
+          "http_status": 206,
+          "latency_ms": 583,
+          "kind": "mp4",
+          "consecutive_hard_failures": 0,
+          "consecutive_successes": 1,
+          "consecutive_blocked": 0
+        },
         "5.mugiwara.one": {
-          "last_checked_at": "2026-10-05T05:58:28.241958+00:00",
+          "last_checked_at": "2026-10-07T06:13:54.354057+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -2728,7 +2732,7 @@
       "enabled": true,
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
-      "consecutive_successes": 1,
+      "consecutive_successes": 2,
       "hosts": [
         "cdn2.boomchick.org"
       ],
@@ -2737,7 +2741,7 @@
       ],
       "host_health": {
         "cdn1.ngcorp.dad": {
-          "last_checked_at": "2026-10-06T23:55:45.766789+00:00",
+          "last_checked_at": "2026-10-07T06:13:54.354057+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -2748,7 +2752,7 @@
           "consecutive_blocked": 0
         },
         "dreadnought.flamingo-e55.workers.dev": {
-          "last_checked_at": "2026-10-06T23:55:45.766789+00:00",
+          "last_checked_at": "2026-10-07T06:13:54.354057+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -2759,7 +2763,7 @@
           "consecutive_blocked": 0
         },
         "moonfirekeeper.lol": {
-          "last_checked_at": "2026-10-06T23:55:45.766789+00:00",
+          "last_checked_at": "2026-10-07T06:13:54.354057+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -2770,7 +2774,7 @@
           "consecutive_blocked": 0
         },
         "shadowmoonwanderer.lol": {
-          "last_checked_at": "2026-10-06T23:55:45.766789+00:00",
+          "last_checked_at": "2026-10-07T06:13:54.354057+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -2781,7 +2785,7 @@
           "consecutive_blocked": 0
         },
         "hollowvelocity.live": {
-          "last_checked_at": "2026-10-06T23:55:45.766789+00:00",
+          "last_checked_at": "2026-10-07T06:13:54.354057+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -2792,7 +2796,7 @@
           "consecutive_blocked": 0
         },
         "quantumrapture.site": {
-          "last_checked_at": "2026-10-06T23:55:45.766789+00:00",
+          "last_checked_at": "2026-10-07T06:13:54.354057+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -2803,7 +2807,7 @@
           "consecutive_blocked": 0
         },
         "digitalmonarch.site": {
-          "last_checked_at": "2026-10-06T23:55:45.766789+00:00",
+          "last_checked_at": "2026-10-07T06:13:54.354057+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -2814,14 +2818,14 @@
           "consecutive_blocked": 0
         },
         "cdn2.boomchick.org": {
-          "last_checked_at": "2026-10-06T23:55:45.766789+00:00",
+          "last_checked_at": "2026-10-07T06:13:54.354057+00:00",
           "last_category": "playable",
           "reachable": true,
           "http_status": 200,
-          "latency_ms": 650,
+          "latency_ms": 643,
           "kind": "hls",
           "consecutive_hard_failures": 0,
-          "consecutive_successes": 3,
+          "consecutive_successes": 4,
           "consecutive_blocked": 0
         }
       },
