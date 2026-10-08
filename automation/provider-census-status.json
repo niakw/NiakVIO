@@ -1,8 +1,50 @@
 {
   "schemaVersion": 3,
-  "runId": "37692469203-post-repair-candidate",
-  "triggerSha": "b2f4802cb7b16a93f9757f3f14e115fc03403238",
+  "runId": "37705963499-post-repair-candidate",
+  "triggerSha": "cfed79fa153ce3f06e2917ae9567bfce8dfc1558",
   "providers": [
+    {
+      "provider": "uhdmovies",
+      "status": "REGRESSION PROVIDER",
+      "underlyingStatus": "",
+      "color": "🔴",
+      "declaredLanes": [
+        "movie"
+      ],
+      "currentVerifiedLanes": [],
+      "historicalProof": [
+        "movie: Avengers: Endgame"
+      ],
+      "candidateProof": [],
+      "routeProof": [
+        "69 live routes / movie, tv"
+      ],
+      "latestLaneVerdicts": [
+        "movie=no_streams/provider_network_zero_result"
+      ],
+      "dominantIssue": "provider_network_zero_result",
+      "searchProgress": [
+        "movie: 2 works tested / 42 retained misses"
+      ],
+      "evidenceDepth": [
+        "movie=lookup_only"
+      ],
+      "harnessTransportClass": "not-applicable",
+      "harnessTransportEvidence": [],
+      "authorityRepairEligible": true,
+      "authorityAction": "KEEP_ROUTE_AUTHORITY",
+      "authorityClass": "hub-or-redirect",
+      "authorityConfidence": "high",
+      "authorityReasons": [
+        "authoritative_route_source"
+      ],
+      "authorityKnown": true,
+      "action": "re-run retained proof + verify upstream/provider state",
+      "brainCheckRequired": true,
+      "statusRepairEligible": true,
+      "repairEligible": true,
+      "testedThisRun": true
+    },
     {
       "provider": "4khdhub",
       "status": "ROUTE PROVEN",
@@ -45,7 +87,7 @@
       "brainCheckRequired": true,
       "statusRepairEligible": true,
       "repairEligible": true,
-      "testedThisRun": true
+      "testedThisRun": false
     },
     {
       "provider": "allanime",
@@ -220,11 +262,7 @@
       "brainCheckRequired": true,
       "statusRepairEligible": true,
       "repairEligible": true,
-      "testedThisRun": false,
-      "residentialProviderReplayClass": "no-verified-media",
-      "residentialProviderReplayEvidence": [
-        "anime: status=timeout, stage=timeout, raw=0, playable=0, verified=0, identitySafe=false"
-      ]
+      "testedThisRun": false
     },
     {
       "provider": "animesalt",
@@ -634,54 +672,8 @@
       "testedThisRun": false,
       "residentialProviderReplayClass": "no-verified-media",
       "residentialProviderReplayEvidence": [
-        "movie: status=no_streams, stage=provider_waf_challenge, raw=0, playable=0, verified=0, identitySafe=true",
-        "tv: status=timeout, stage=timeout, raw=0, playable=0, verified=0, identitySafe=false"
-      ]
-    },
-    {
-      "provider": "uhdmovies",
-      "status": "REGRESSION PROVIDER",
-      "underlyingStatus": "",
-      "color": "🔴",
-      "declaredLanes": [
-        "movie"
-      ],
-      "currentVerifiedLanes": [],
-      "historicalProof": [
-        "movie: Avengers: Endgame"
-      ],
-      "candidateProof": [],
-      "routeProof": [
-        "69 live routes / movie, tv"
-      ],
-      "latestLaneVerdicts": [
-        "movie=no_streams/provider_network_zero_result"
-      ],
-      "dominantIssue": "provider_network_zero_result",
-      "searchProgress": [
-        "movie: 2 works tested / 42 retained misses"
-      ],
-      "evidenceDepth": [
-        "movie=lookup_only"
-      ],
-      "harnessTransportClass": "not-applicable",
-      "harnessTransportEvidence": [],
-      "authorityRepairEligible": true,
-      "authorityAction": "KEEP_ROUTE_AUTHORITY",
-      "authorityClass": "hub-or-redirect",
-      "authorityConfidence": "high",
-      "authorityReasons": [
-        "authoritative_route_source"
-      ],
-      "authorityKnown": true,
-      "action": "re-run retained proof + verify upstream/provider state",
-      "brainCheckRequired": true,
-      "statusRepairEligible": true,
-      "repairEligible": true,
-      "testedThisRun": false,
-      "residentialProviderReplayClass": "no-verified-media",
-      "residentialProviderReplayEvidence": [
-        "movie: status=no_streams, stage=provider_network_zero_result, raw=0, playable=0, verified=0, identitySafe=true"
+        "movie: status=no_streams, stage=provider_zero_before_provider_network, raw=0, playable=0, verified=0, identitySafe=true",
+        "tv: status=no_streams, stage=provider_zero_before_provider_network, raw=0, playable=0, verified=0, identitySafe=true"
       ]
     },
     {
@@ -2258,9 +2250,11 @@
   "harnessQueue": [],
   "targetedTransportBlockedQueue": [],
   "clientTransportGapQueue": [],
-  "harnessEvidenceRunId": "37705754200-waf-transport",
-  "harnessEvidenceSha": "db70271d203633df4a2ac7a9092be3e6981f2bf9",
-  "authorityRefreshedProviders": [],
+  "harnessEvidenceRunId": "37705963499-repair-waf-final",
+  "harnessEvidenceSha": "cfed79fa153ce3f06e2917ae9567bfce8dfc1558",
+  "authorityRefreshedProviders": [
+    "vostfree"
+  ],
   "harnessTransportUpdatedProviders": [],
   "networkDifferentialUpdatedProviders": [],
   "residentialProviderReplayPromotedProviders": [
@@ -2272,7 +2266,7 @@
     "enabled": true,
     "available": true,
     "profile": "tailscale-residential-exit",
-    "matchedProviderLanes": 6,
+    "matchedProviderLanes": 3,
     "privacy": {
       "exitNodeNamePersisted": false,
       "tailscaleAddressPersisted": false,
@@ -2284,11 +2278,10 @@
   "residentialProviderReplay": {
     "available": true,
     "profile": "tailscale-residential-exit",
-    "providerCount": 15,
+    "providerCount": 13,
     "providers": [
       "allwish",
       "anime-ultime",
-      "animekai",
       "animesalt",
       "animesultra",
       "animevost-fr",
@@ -2297,7 +2290,6 @@
       "mallumv",
       "moviebox",
       "moviesmod",
-      "uhdmovies",
       "vidfast",
       "vostfree",
       "yflix"
@@ -2365,29 +2357,6 @@
         "verified": 0,
         "contradictions": 0,
         "identitySafe": true
-      },
-      {
-        "provider": "animekai",
-        "lane": "anime",
-        "status": "timeout",
-        "debugStage": "timeout",
-        "sampleCount": 3,
-        "sampleDebugStages": [
-          "provider_network_exception",
-          "timeout"
-        ],
-        "sampleStatuses": [
-          "no_streams",
-          "timeout"
-        ],
-        "sampleProgressStages": [
-          "none"
-        ],
-        "raw": 0,
-        "playable": 0,
-        "verified": 0,
-        "contradictions": 0,
-        "identitySafe": false
       },
       {
         "provider": "animesalt",
@@ -2584,16 +2553,16 @@
         "provider": "moviesmod",
         "lane": "movie",
         "status": "no_streams",
-        "debugStage": "provider_waf_challenge",
+        "debugStage": "provider_zero_before_provider_network",
         "sampleCount": 4,
         "sampleDebugStages": [
-          "provider_waf_challenge"
+          "provider_zero_before_provider_network"
         ],
         "sampleStatuses": [
           "no_streams"
         ],
         "sampleProgressStages": [
-          "lookup_only"
+          "none"
         ],
         "raw": 0,
         "playable": 0,
@@ -2604,40 +2573,17 @@
       {
         "provider": "moviesmod",
         "lane": "tv",
-        "status": "timeout",
-        "debugStage": "timeout",
-        "sampleCount": 3,
-        "sampleDebugStages": [
-          "provider_network_exception",
-          "timeout"
-        ],
-        "sampleStatuses": [
-          "no_streams",
-          "timeout"
-        ],
-        "sampleProgressStages": [
-          "chain_reached"
-        ],
-        "raw": 0,
-        "playable": 0,
-        "verified": 0,
-        "contradictions": 0,
-        "identitySafe": false
-      },
-      {
-        "provider": "uhdmovies",
-        "lane": "movie",
         "status": "no_streams",
-        "debugStage": "provider_network_zero_result",
-        "sampleCount": 2,
+        "debugStage": "provider_zero_before_provider_network",
+        "sampleCount": 4,
         "sampleDebugStages": [
-          "provider_network_zero_result"
+          "provider_zero_before_provider_network"
         ],
         "sampleStatuses": [
           "no_streams"
         ],
         "sampleProgressStages": [
-          "lookup_only"
+          "none"
         ],
         "raw": 0,
         "playable": 0,
@@ -2650,16 +2596,6 @@
         "lane": "movie",
         "status": "no_streams",
         "debugStage": "provider_network_http_error",
-        "sampleCount": 4,
-        "sampleDebugStages": [
-          "provider_network_http_error"
-        ],
-        "sampleStatuses": [
-          "no_streams"
-        ],
-        "sampleProgressStages": [
-          "none"
-        ],
         "raw": 0,
         "playable": 0,
         "verified": 0,
@@ -2671,16 +2607,6 @@
         "lane": "tv",
         "status": "no_streams",
         "debugStage": "provider_network_http_error",
-        "sampleCount": 4,
-        "sampleDebugStages": [
-          "provider_network_http_error"
-        ],
-        "sampleStatuses": [
-          "no_streams"
-        ],
-        "sampleProgressStages": [
-          "none"
-        ],
         "raw": 0,
         "playable": 0,
         "verified": 0,
@@ -2729,40 +2655,33 @@
       "cookiesPersisted": false
     },
     "lastAttempt": {
-      "available": true,
-      "providerCount": 15,
+      "available": false,
+      "providerCount": 0,
       "refreshedProviders": [
         "allwish",
-        "animekai",
         "animesalt",
-        "animesultra",
-        "animevost-fr",
-        "coflix",
         "flemmix",
         "mallumv",
         "moviebox",
-        "moviesmod",
-        "uhdmovies",
-        "vidfast",
-        "vidrock",
-        "vostfree",
-        "yflix"
+        "moviesmod"
       ]
     }
   },
   "lastRepairAttempt": {
-    "runId": "37704969921",
-    "sourceCensusRunId": "37692469203-post-repair-candidate",
+    "runId": "37705963499",
+    "sourceCensusRunId": "37705963499-post-repair-candidate",
     "mode": "repair",
-    "selectedProviders": [],
+    "selectedProviders": [
+      "uhdmovies"
+    ],
     "candidateProviders": [],
     "validatedProviders": [],
     "acceptedRepairCount": 0,
     "deferredToLearningSlotProviders": [],
-    "noProgressReason": "canonical-cancelled",
+    "noProgressReason": "no_new_repair_experiment",
     "timeBudgetExhausted": false,
-    "canonicalOutcome": "cancelled",
-    "candidateGateOutcome": "skipped",
-    "publicationAllowed": false
+    "canonicalOutcome": "success",
+    "candidateGateOutcome": "success",
+    "publicationAllowed": true
   }
 }
