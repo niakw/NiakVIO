@@ -1,3 +1,11 @@
+## 2026-10-08 — Canonical Repair negatives now inform FORCE strategy novelty
+
+- Diagnosed a repeated Brain pipeline stall: FORCE Learning 37821330619 attempted to rematerialize route_transition_graph_v2 although v2 already existed in the Brain registry, planner and runtime. This wasted multiple long Qwen rounds and ended with a strict materialization failure, without provider gains.
+- Repair memory automation/brain-repair-memory.json contains real execution failures for v2 across 4khdhub, animesultra, moviesmod, moviebox and yflix. Learning architecture selection previously consulted sandbox Learning experimentMemory only, losing these execution negatives at the orchestration boundary.
+- Brain infrastructure commits 044a2119 (installed-profile three-surface novelty gate), 2e86f0b (merge actual canonical Repair negative execution records for currently deferred providers), and 6142fad8 (synthetic regression test: executed v2 forces next v3; unexecuted v99 and other providers ignored). No direct provider edits.
+- Reference census: 21 FULL OK / 46 and 17 repairQueue; Fast Repair 37827813922 (older 25e443d9) completed 0/12 validated, 12 Learning handoffs. New test/CI on commit 6142fad8 remains required; these Brain changes do not prove playable provider recovery.
+- Future requirement: real Brain-generated v3 must compile, apply, rematerialize, execute in a current-byte provider sandbox, pass correct-content/terminal playback and non-regression, and persist resulting signatures/experiences. No status promotion from architecture commits alone.
+
 ## 2026-10-08 — Brain FORCE novelty preflight: replay installed v2 first
 
 - Current census 37823121498: 21 FULL, 3 PARTIAL, 2 CANDIDATE, 9 ROUTE, 3 CHAIN, 1 NO PROOF, 2 REGRESSION, 5 DISABLED; 17 repairQueue. Fast Repair 37823871921 accepted 0/12, Learning debt 12, no_new_repair_experiment.
