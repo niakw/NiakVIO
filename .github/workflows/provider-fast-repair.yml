@@ -351,10 +351,19 @@ jobs:
           import json
           from pathlib import Path
           try:
-              d=json.loads(Path(".github/triggers/provider-brain-autopilot.json").read_text(encoding="utf-8"))
-          except Exception:
-              d={}
-          print("true" if str(d.get("mode") or "").strip().casefold()=="force" else "false")
+              trigger=json.loads(Path(".github/triggers/provider-brain-autopilot.json").read_text(encoding="utf-8"))
+          except (OSError, ValueError):
+              trigger={}
+          try:
+              summary=json.loads(Path("automation/provider-fast-repair-summary.json").read_text(encoding="utf-8"))
+          except (OSError, ValueError):
+              summary={}
+          explicit_force=str(trigger.get("mode") or "").strip().casefold()=="force"
+          stalled=str(summary.get("brainNoProgressReason") or "")=="no_new_repair_experiment"
+          unresolved=bool(summary.get("learnHandoffProviders"))
+          # Architecture FORCE only follows a real exhausted Repair cohort.
+          # A healthy or merely blocked provider cannot start an LLM mutation.
+          print("true" if explicit_force or (stalled and unresolved) else "false")
           PY
           )"
           record_learning_debt() {
