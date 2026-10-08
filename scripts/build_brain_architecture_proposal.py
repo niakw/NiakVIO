@@ -169,6 +169,28 @@ def fully_installed_repair_profiles(root: Path = SCRIPTS.parent) -> set[str]:
     return registry_ids & planner_ids & runtime_ids
 
 
+def merge_executed_repair_negatives(
+    learning_failures: dict[str, set[str]],
+    repair_memory: dict[str, Any],
+    deferred_providers: set[str],
+) -> dict[str, set[str]]:
+    """Merge actual Repair failures missing from asynchronous Learning memory."""
+    merged = {provider: set(profiles) for provider, profiles in learning_failures.items()}
+    for row in repair_memory.get("entries") or []:
+        if not isinstance(row, dict) or row.get("executionObserved") is not True:
+            continue
+        provider = str(row.get("providerId") or "").strip().casefold()
+        profile = str(row.get("profile") or "").strip()
+        if provider not in deferred_providers or not re.fullmatch(r"[a-z][a-z0-9_]*_v\d+", profile):
+            continue
+        try:
+            failures = max(int(row.get("failures") or 0), int(row.get("consecutiveFailures") or 0))
+        except (TypeError, ValueError):
+            continue
+        if failures > 0:
+            merged.setdefault(provider, set()).add(profile)
+    return merged
+
 def build_strategy_blueprints(
     batch_plan: dict[str, Any],
     deferred_providers: set[str],
@@ -395,6 +417,7 @@ def main() -> int:
     p.add_argument("--queue-summary", type=Path)
     p.add_argument("--queue-state", type=Path)
     p.add_argument("--batch-plan", type=Path)
+    p.add_argument("--repair-negative-memory", type=Path, default=SCRIPTS.parent / "automation" / "brain-repair-memory.json")
     p.add_argument("--llm-batch", type=Path)
     p.add_argument("--output-policy", type=Path, required=True)
     p.add_argument("--summary", type=Path, required=True)
@@ -600,6 +623,9 @@ def main() -> int:
             # the most recent request signature. Otherwise an exhausted profile
             # can be incorrectly recycled when the active signature rotates.
             failed_profiles_by_provider.setdefault(provider_id, set()).add(profile)
+    failed_profiles_by_provider = merge_executed_repair_negatives(
+        failed_profiles_by_provider, load_optional(a.repair_negative_memory), deferred_set,
+    )
     strategy_blueprints = build_strategy_blueprints(
         batch_plan,
         deferred_set,
