@@ -1687,6 +1687,7 @@ jobs:
             test -s brain-learning-output/brain-architecture-force.patch
             git apply --check brain-learning-output/brain-architecture-force.patch
             git apply brain-learning-output/brain-architecture-force.patch
+            python scripts/brain_force_applied_profile_guard.py --proposal brain-learning-output/brain-architecture-proposal.json --report brain-learning-output/brain-architecture-force-report.json
             python tests/brain_meta_learning_gap_synthesis_test.py
             python tests/brain_architecture_force_materializer_test.py
             python tests/brain_self_architecture_test.py
@@ -1729,6 +1730,7 @@ jobs:
             test -s brain-learning-output/brain-architecture-force.patch
             git apply --check brain-learning-output/brain-architecture-force.patch
             git apply brain-learning-output/brain-architecture-force.patch
+            python scripts/brain_force_applied_profile_guard.py --proposal brain-learning-output/brain-architecture-proposal.json --report brain-learning-output/brain-architecture-force-report.json
             python tests/brain_meta_learning_gap_synthesis_test.py
             python tests/brain_architecture_force_materializer_test.py
             python tests/brain_self_architecture_test.py
@@ -1844,6 +1846,7 @@ jobs:
               test -s brain-learning-output/brain-architecture-force.patch
               git apply --check brain-learning-output/brain-architecture-force.patch
               git apply brain-learning-output/brain-architecture-force.patch
+              python scripts/brain_force_applied_profile_guard.py --proposal brain-learning-output/brain-architecture-proposal.json --report brain-learning-output/brain-architecture-force-report.json
               python tests/brain_meta_learning_gap_synthesis_test.py
               python tests/brain_architecture_force_materializer_test.py
               python tests/brain_self_architecture_test.py
