@@ -169,6 +169,26 @@ jobs:
 
           python scripts/finalize_provider_v3_minimizer.py
           python scripts/finalize_provider_v3_minimizer.py --check
+
+          # Domain-only DATA changes still invalidate per-provider publication
+          # fingerprints. Finalize those hashes AFTER CONFIG Lego projection,
+          # then fail closed if any current published provider remains out of
+          # sync. This never repairs provider runtime behavior or touches Core.
+          python scripts/reindex_provider_publication_fingerprints.py
+          python scripts/reapply_published_overrides.py --check
+          python scripts/detect_provider_projection_drift.py --output "$RUNNER_TEMP/domain-projection-fixed-point.json"
+          python - <<'PY'
+          import json, os
+          from pathlib import Path
+          report=json.loads((Path(os.environ["RUNNER_TEMP"])/"domain-projection-fixed-point.json").read_text(encoding="utf-8"))
+          if report.get("providerCount") != 0:
+              raise SystemExit(
+                  "Domain Refresh left stale Provider DATA or fingerprints: "
+                  + ",".join(report.get("providers") or [])
+              )
+          print("FIELD_DOMAIN_PROVIDER_PUBLICATION_FIXED_POINT providers=0")
+          PY
+
           python scripts/audit_provider_v3_static.py
           python tests/provider_v3_minimizer_publication_pipeline_test.py
           python tests/provider_v3_minimizer_published_test.py
