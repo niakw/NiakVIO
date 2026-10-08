@@ -327,9 +327,11 @@ new_profile_payload = {
     },
 }
 new_profile_compact = mod._new_repair_profile_payload(new_profile_payload)
-assert set(new_profile_compact["sources"]) == set(mod.NEW_REPAIR_PROFILE_SURFACES)
-assert new_profile_compact["exactAllowedPaths"] == list(mod.NEW_REPAIR_PROFILE_SURFACES)
-assert new_profile_compact["existingAllowedPaths"] == list(mod.NEW_REPAIR_PROFILE_SURFACES)
+runtime_path = mod.NEW_REPAIR_PROFILE_SURFACES[2]
+assert set(new_profile_compact["sources"]) == {runtime_path}
+assert new_profile_compact["exactAllowedPaths"] == [runtime_path]
+assert new_profile_compact["existingAllowedPaths"] == [runtime_path]
+assert new_profile_compact["deterministicWiring"] == list(mod.NEW_REPAIR_PROFILE_SURFACES[:2])
 assert all(
     len(text) <= mod.NEW_PROFILE_SOURCE_CONTEXT_PER_SURFACE
     for text in new_profile_compact["sources"].values()
@@ -340,8 +342,8 @@ original_request = mod._model_request
 try:
     def fake_profile_request(endpoint, model, payload, *, max_tokens, timeout, compact=False):
         profile_calls.append((payload, max_tokens, timeout, compact))
-        assert set(payload["sources"]) == set(mod.NEW_REPAIR_PROFILE_SURFACES)
-        assert payload["exactAllowedPaths"] == list(mod.NEW_REPAIR_PROFILE_SURFACES)
+        assert set(payload["sources"]) == {runtime_path}
+        assert payload["exactAllowedPaths"] == [runtime_path]
         if len(profile_calls) == 1:
             raise TimeoutError("synthetic new-profile timeout")
         import json
@@ -356,7 +358,7 @@ try:
                                 "find": "route_transition_graph_v1",
                                 "replace": "route_transition_graph_v1 route_transition_graph_v2",
                             }
-                            for path in mod.NEW_REPAIR_PROFILE_SURFACES
+                            for path in [runtime_path]
                         ]
                     })
                 }
@@ -369,7 +371,8 @@ try:
         "demo",
         new_profile_payload,
     )
-    assert len(profile_result["edits"]) == 3
+    assert len(profile_result["edits"]) == 1
+    assert profile_result["edits"][0]["path"] == runtime_path
     assert profile_calls[0][1:] == (
         mod.NEW_PROFILE_MODEL_TOKENS,
         mod.NEW_PROFILE_MODEL_TIMEOUT_SECONDS,
@@ -399,10 +402,13 @@ profile_retry = mod._validation_retry_payload(
     extra_exact_paths=list(mod.NEW_REPAIR_PROFILE_SURFACES),
     restrict_to_extra_paths=True,
 )
-assert set(profile_retry["sources"]) == set(mod.NEW_REPAIR_PROFILE_SURFACES)
-assert profile_retry["correctionContract"]["preferSingleSmallReplace"] is False
+assert set(profile_retry["sources"]) == {runtime_path}
+assert profile_retry["exactAllowedPaths"] == [runtime_path]
+assert profile_retry["correctionContract"]["preferSingleSmallReplace"] is True
 assert profile_retry["correctionContract"]["mustPreserveEvolvesFromStrategy"] is True
-assert profile_retry["correctionContract"]["mustUseAllRequiredRepairProfileSurfaces"] is True
+assert profile_retry["correctionContract"]["mustUseAllRequiredRepairProfileSurfaces"] is False
+assert profile_retry["correctionContract"]["modelEditsRuntimeOnly"] is True
+assert profile_retry["correctionContract"]["plannerAndRegistryAutowired"] is True
 assert profile_retry["correctionContract"]["requiredRepairProfileSurfaces"] == list(
     mod.NEW_REPAIR_PROFILE_SURFACES
 )
@@ -493,6 +499,70 @@ try:
 finally:
     mod._model_request = original_request
 
+
+# FORCE Qwen only has to produce an executable runtime sibling. The Brain must
+# fill planner/registry on current bytes, then validate/rollback all three.
+with tempfile.TemporaryDirectory(prefix="brain-force-autowire-runtime-only-") as tmp:
+    root = Path(tmp)
+    baseline = {
+        "scripts/brain_repair_runtime.py": (
+            'POST_EXHAUSTION_STRATEGY_PROFILES = {\n'
+            '    "route_transition_graph_v1",\n'
+            '}\n'
+        ),
+        "engine_v2/scripts/plan-repairs.mjs": (
+            'const POST_EXHAUSTION_STRATEGIES = {\n'
+            '  route_proven_gap: [\n'
+            '    { profile: "route_transition_graph_v1", method: "existing" },\n'
+            '  ],\n'
+            '};\n'
+        ),
+        runtime_path: (
+            'if new_strategy_id == "route_transition_graph_v1":\n'
+            '    pass\n'
+        ),
+    }
+    for path, content in baseline.items():
+        target = root / path
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text(content, encoding="utf-8")
+    blueprint = dict(new_profile_payload["blueprint"])
+    blueprint["repairScope"] = "route-to-terminal"
+    runtime_edit = {
+        "operation": "replace",
+        "path": runtime_path,
+        "find": baseline[runtime_path],
+        "replace": (
+            baseline[runtime_path]
+            + 'elif new_strategy_id == "route_transition_graph_v2":\n'
+            + '    pass\n'
+        ),
+    }
+    filled = mod.complete_evolved_profile_wiring([runtime_edit], blueprint, root=root)
+    assert set(edit["path"] for edit in filled) == set(mod.NEW_REPAIR_PROFILE_SURFACES), filled
+    mod.validate_edits(filled, evolved_patterns, root=root)
+    assert set(mod.validate_materialized_edits(filled, root=root, blueprint=blueprint)) == set(baseline)
+    assert all((root / path).read_text(encoding="utf-8") == content for path, content in baseline.items())
+    assert mod.complete_evolved_profile_wiring(
+        [{"operation": "replace", "path": "scripts/brain_repair_runtime.py",
+          "find": "route_transition_graph_v1", "replace": "route_transition_graph_v2"}],
+        blueprint, root=root,
+    ) == [{
+        "operation": "replace", "path": "scripts/brain_repair_runtime.py",
+        "find": "route_transition_graph_v1", "replace": "route_transition_graph_v2"
+    }], "taxonomy-only model edits must never be converted into fake executable repairs"
+
+# The runtime snippet may be centered well inside the original focused source.
+# A second prefix slice must not silently discard the parent executor branch.
+long_runtime = ("START\n" * 650) + (
+    'elif new_strategy_id == "route_transition_graph_v1":\n'
+    '    EXECUTION_BRANCH_SENTINEL = 1\n'
+) + ("END\n" * 650)
+focused_payload = mod._new_repair_profile_payload({
+    **new_profile_payload,
+    "sources": {runtime_path: long_runtime},
+})
+assert "EXECUTION_BRANCH_SENTINEL" in focused_payload["sources"][runtime_path]
 
 # A repeated textual find is not automatically a model failure when Brain can
 # bind it to the exact focused snippet that was supplied to the model. The
