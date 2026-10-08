@@ -127,7 +127,7 @@ player_form_runtime = (
     + """\n
 if (_spv188DecodeAttr("&lt;") !== "&lt;") process.exit(41);
 if (_spv188DecodeAttr("&amp;lt;") !== "&lt;") process.exit(42);
-if (_spv188DecodeAttr("&quot;&amp;&#39;") !== '"&\\\'') process.exit(43);
+if (_spv188DecodeAttr("&quot;&amp;&#39;") !== String.fromCharCode(34,38,39)) process.exit(43);
 if (_spv188HtmlAttr(' action="https://example.test/a?x=1&amp;y=2" ', "action")
     !== "https://example.test/a?x=1&y=2") process.exit(44);
 """
