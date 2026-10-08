@@ -112,16 +112,27 @@ completed = subprocess.run(["node", html_name], capture_output=True, text=True)
 Path(html_name).unlink(missing_ok=True)
 assert completed.returncode == 0, completed.stdout + completed.stderr
 
-# Core player-form HTML decoding is injected after provider hardening. Keep its
-# entity chain single-pass at source so a second published hardening check is a
-# true fixed point rather than mutating otherwise valid provider bytes.
+# Core player-form HTML decoder now uses one bounded regex replacement rather
+# than the historical chained .replace sequence. Test its observable runtime
+# behavior instead of indexing deleted source syntax.
 provider_base = (ROOT / "scripts" / "provider_base_store.py").read_text(encoding="utf-8")
-helper_start = provider_base.index("function _spv188HtmlAttr")
+helper_start = provider_base.index("function _spv188DecodeAttr")
 helper_end = provider_base.index("function _spv188PlayerForm", helper_start)
 player_form_helper = provider_base[helper_start:helper_end]
-assert player_form_helper.index("/&quot;/gi") < player_form_helper.index("/&amp;/gi"), player_form_helper
-assert player_form_helper.index("/&#39;/gi") < player_form_helper.index("/&amp;/gi"), player_form_helper
+assert ".replace(/&(amp|quot|#39);/gi" in player_form_helper, player_form_helper
 assert "double_html_entity_unescape" not in known_unsafe_findings(player_form_helper)
+player_form_runtime = (
+    "function _text(v){return String(v == null ? '' : v);}\n"
+    + player_form_helper
+    + """\n
+if (_spv188DecodeAttr("&lt;") !== "&lt;") process.exit(41);
+if (_spv188DecodeAttr("&amp;lt;") !== "&lt;") process.exit(42);
+if (_spv188DecodeAttr("&quot;&amp;&#39;") !== '"&\\\'') process.exit(43);
+if (_spv188HtmlAttr(' action="https://example.test/a?x=1&amp;y=2" ', "action")
+    !== "https://example.test/a?x=1&y=2") process.exit(44);
+"""
+)
+js_ok(player_form_runtime)
 
 logs = '''var TMDB_API_KEY="secret";function f(u){console.log(u+TMDB_API_KEY);console["warn"](TMDB_API_KEY);globalThis.console.error(u)}'''
 hardened, report = harden_text(logs)
