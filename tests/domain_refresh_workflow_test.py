@@ -75,6 +75,12 @@ assert reconcile_block.index("reconcile=(python scripts/reconcile_targeted_provi
 assert reconcile_block.index("materialize_provider_v3_one.py") < reconcile_block.index('"${reconcile[@]}"'), reconcile_block
 assert reconcile_block.index('"${reconcile[@]}"') < reconcile_block.index("python scripts/audit_provider_v3_static.py"), reconcile_block
 assert reconcile_block.count("python scripts/audit_provider_v3_static.py\n") == 1, reconcile_block
+assert reconcile_block.index("python scripts/finalize_provider_v3_minimizer.py --check") < reconcile_block.index("python scripts/reindex_provider_publication_fingerprints.py"), reconcile_block
+assert reconcile_block.index("python scripts/reindex_provider_publication_fingerprints.py") < reconcile_block.index("python scripts/reapply_published_overrides.py --check"), reconcile_block
+assert reconcile_block.index("python scripts/reapply_published_overrides.py --check") < reconcile_block.index("python scripts/detect_provider_projection_drift.py"), reconcile_block
+assert reconcile_block.index("python scripts/detect_provider_projection_drift.py") < reconcile_block.index("python scripts/audit_provider_v3_static.py"), reconcile_block
+assert "FIELD_DOMAIN_PROVIDER_PUBLICATION_FIXED_POINT providers=0" in reconcile_block
+
 assert "provider_domain_runtime_projection_drift_ids" in source
 assert '"runtime_projection_drift"' in source
 for forbidden in (
