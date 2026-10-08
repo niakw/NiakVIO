@@ -1044,8 +1044,8 @@ def _model_request(
             "sibling execution branch. Preserve the prior strategy guard unchanged. "
             "The Brain deterministically wires any missing registry and JS planner "
             "entries, so do not waste model tokens duplicating boilerplate. "
-            "Return additional replace edits only when essential to the new "
-            "executor behavior (maximum three). Do not edit tests. "
+            "Return only ONE replace edit targeting the runtime executor. "
+            "Do not edit registry, planner or tests. "
             "The resulting three-source transaction is strictly validated."
         )
     else:
@@ -1056,7 +1056,7 @@ def _model_request(
                 " Be extremely compact: PREFER exactly one runtime_repair.py replace edit "
                 "which adds a genuinely distinct sibling executor branch. "
                 "Deterministic materializer wiring will add the missing registry and planner edits. "
-                "You may return three edits if essential. Do not emit markdown or commentary."
+                "Only the runtime path is valid. Do not emit markdown or commentary."
             )
         else:
             system += (
@@ -1099,8 +1099,10 @@ def _model_request(
         )
     if str(payload.get("correctionReason") or "") == "materialized-repair-profile-wiring":
         system += (
-            " The prior candidate did not wire the new Repair profile end-to-end. "
-            "Return the smallest complete three-surface wiring using the exact newStrategyId."
+            " The prior candidate was missing the new executable runtime branch. "
+            "Return exactly one replace edit for scripts/adaptive_runtime/runtime_repair.py "
+            "adding a distinct sibling implementation for newStrategyId. "
+            "Do not emit registry or planner edits: Brain wires those deterministically."
         )
     body = {
         "model": model,
@@ -1145,22 +1147,29 @@ def _new_repair_profile_payload(
     *,
     per_surface_limit: int = NEW_PROFILE_SOURCE_CONTEXT_PER_SURFACE,
 ) -> dict[str, Any]:
-    """Keep all mandatory planner/registry/runtime surfaces visible to Qwen."""
-    compact = {
-        "blueprint": payload.get("blueprint") or {},
-        "allowedPaths": payload.get("allowedPaths") or [],
-        "contract": payload.get("contract") or {},
-        "exactAllowedPaths": list(NEW_REPAIR_PROFILE_SURFACES),
-        "existingAllowedPaths": list(NEW_REPAIR_PROFILE_SURFACES),
-        "newAllowedPaths": [],
-    }
+    """Send Qwen only the runtime algorithm it owns, not deterministic boilerplate.
+
+    The complete three-surface transaction is still assembled and validated by
+    complete_evolved_profile_wiring and validate_blueprint_implementation.
+    Re-focus the source after bounding it: slicing its prefix can hide the
+    exhausted parent branch and teach the 7B model to modify the wrong code.
+    """
+    runtime_path = NEW_REPAIR_PROFILE_SURFACES[2]
+    blueprint = payload.get("blueprint") if isinstance(payload.get("blueprint"), dict) else {}
     source_map = payload.get("sources") if isinstance(payload.get("sources"), dict) else {}
-    compact["sources"] = {
-        path: str(source_map.get(path) or "")[:per_surface_limit]
-        for path in NEW_REPAIR_PROFILE_SURFACES
-        if str(source_map.get(path) or "")
+    runtime_source = str(source_map.get(runtime_path) or "")
+    return {
+        "blueprint": blueprint,
+        "allowedPaths": [runtime_path],
+        "contract": payload.get("contract") or {},
+        "exactAllowedPaths": [runtime_path],
+        "existingAllowedPaths": [runtime_path],
+        "newAllowedPaths": [],
+        "sources": {
+            runtime_path: _focused_source_snippet(runtime_source, blueprint, per_surface_limit)
+        } if runtime_source else {},
+        "deterministicWiring": list(NEW_REPAIR_PROFILE_SURFACES[:2]),
     }
-    return compact
 
 
 def _compact_payload(payload: dict[str, Any]) -> dict[str, Any]:
@@ -1232,6 +1241,10 @@ def _validation_retry_payload(
         for path in (extra_exact_paths or [])
         if str(path)
     }
+    if _requires_new_repair_profile(payload):
+        # Generation only owns the new runtime branch. Planner and registry are
+        # bound to that branch deterministically after the model responds.
+        extra_paths = {NEW_REPAIR_PROFILE_SURFACES[2]}
     exact_paths = sorted(extra_paths if restrict_to_extra_paths and extra_paths else source_paths | extra_paths)
     if restrict_to_extra_paths and extra_paths:
         retry["sources"] = {
@@ -1266,11 +1279,13 @@ def _validation_retry_payload(
         "doNotInventPaths": True,
         "doNotRelocatePaths": True,
         "changeOnlyWhatValidationRejected": not requires_new_profile,
-        "preferSingleSmallReplace": not requires_new_profile,
+        "preferSingleSmallReplace": True,
         "reuseRejectedIntentWhenValid": True,
         "maxEdits": MAX_EDITS,
         "mustPreserveEvolvesFromStrategy": requires_new_profile,
-        "mustUseAllRequiredRepairProfileSurfaces": requires_new_profile,
+        "mustUseAllRequiredRepairProfileSurfaces": False,
+        "modelEditsRuntimeOnly": requires_new_profile,
+        "plannerAndRegistryAutowired": requires_new_profile,
         "requiredRepairProfileSurfaces": (
             list(NEW_REPAIR_PROFILE_SURFACES) if requires_new_profile else []
         ),
@@ -1628,7 +1643,7 @@ def validated_model_plan(
             or "evolved strategy" in validation_text
         )
         exact_paths = (
-            list(NEW_REPAIR_PROFILE_SURFACES)
+            [NEW_REPAIR_PROFILE_SURFACES[2]]
             if implementation_failure
             else [
                 str(edit.get("path") or "")
