@@ -220,7 +220,11 @@
       "brainCheckRequired": true,
       "statusRepairEligible": true,
       "repairEligible": true,
-      "testedThisRun": false
+      "testedThisRun": false,
+      "residentialProviderReplayClass": "no-verified-media",
+      "residentialProviderReplayEvidence": [
+        "anime: status=timeout, stage=timeout, raw=0, playable=0, verified=0, identitySafe=false"
+      ]
     },
     {
       "provider": "animesalt",
@@ -630,8 +634,8 @@
       "testedThisRun": false,
       "residentialProviderReplayClass": "no-verified-media",
       "residentialProviderReplayEvidence": [
-        "movie: status=no_streams, stage=provider_zero_before_provider_network, raw=0, playable=0, verified=0, identitySafe=true",
-        "tv: status=no_streams, stage=provider_zero_before_provider_network, raw=0, playable=0, verified=0, identitySafe=true"
+        "movie: status=no_streams, stage=provider_waf_challenge, raw=0, playable=0, verified=0, identitySafe=true",
+        "tv: status=timeout, stage=timeout, raw=0, playable=0, verified=0, identitySafe=false"
       ]
     },
     {
@@ -674,7 +678,11 @@
       "brainCheckRequired": true,
       "statusRepairEligible": true,
       "repairEligible": true,
-      "testedThisRun": false
+      "testedThisRun": false,
+      "residentialProviderReplayClass": "no-verified-media",
+      "residentialProviderReplayEvidence": [
+        "movie: status=no_streams, stage=provider_network_zero_result, raw=0, playable=0, verified=0, identitySafe=true"
+      ]
     },
     {
       "provider": "videasy",
@@ -2250,11 +2258,9 @@
   "harnessQueue": [],
   "targetedTransportBlockedQueue": [],
   "clientTransportGapQueue": [],
-  "harnessEvidenceRunId": "37692469203-repair-waf-final",
-  "harnessEvidenceSha": "b2f4802cb7b16a93f9757f3f14e115fc03403238",
-  "authorityRefreshedProviders": [
-    "vostfree"
-  ],
+  "harnessEvidenceRunId": "37705754200-waf-transport",
+  "harnessEvidenceSha": "db70271d203633df4a2ac7a9092be3e6981f2bf9",
+  "authorityRefreshedProviders": [],
   "harnessTransportUpdatedProviders": [],
   "networkDifferentialUpdatedProviders": [],
   "residentialProviderReplayPromotedProviders": [
@@ -2266,7 +2272,7 @@
     "enabled": true,
     "available": true,
     "profile": "tailscale-residential-exit",
-    "matchedProviderLanes": 3,
+    "matchedProviderLanes": 6,
     "privacy": {
       "exitNodeNamePersisted": false,
       "tailscaleAddressPersisted": false,
@@ -2278,10 +2284,11 @@
   "residentialProviderReplay": {
     "available": true,
     "profile": "tailscale-residential-exit",
-    "providerCount": 13,
+    "providerCount": 15,
     "providers": [
       "allwish",
       "anime-ultime",
+      "animekai",
       "animesalt",
       "animesultra",
       "animevost-fr",
@@ -2290,6 +2297,7 @@
       "mallumv",
       "moviebox",
       "moviesmod",
+      "uhdmovies",
       "vidfast",
       "vostfree",
       "yflix"
@@ -2357,6 +2365,29 @@
         "verified": 0,
         "contradictions": 0,
         "identitySafe": true
+      },
+      {
+        "provider": "animekai",
+        "lane": "anime",
+        "status": "timeout",
+        "debugStage": "timeout",
+        "sampleCount": 3,
+        "sampleDebugStages": [
+          "provider_network_exception",
+          "timeout"
+        ],
+        "sampleStatuses": [
+          "no_streams",
+          "timeout"
+        ],
+        "sampleProgressStages": [
+          "none"
+        ],
+        "raw": 0,
+        "playable": 0,
+        "verified": 0,
+        "contradictions": 0,
+        "identitySafe": false
       },
       {
         "provider": "animesalt",
@@ -2553,16 +2584,16 @@
         "provider": "moviesmod",
         "lane": "movie",
         "status": "no_streams",
-        "debugStage": "provider_zero_before_provider_network",
+        "debugStage": "provider_waf_challenge",
         "sampleCount": 4,
         "sampleDebugStages": [
-          "provider_zero_before_provider_network"
+          "provider_waf_challenge"
         ],
         "sampleStatuses": [
           "no_streams"
         ],
         "sampleProgressStages": [
-          "none"
+          "lookup_only"
         ],
         "raw": 0,
         "playable": 0,
@@ -2573,17 +2604,40 @@
       {
         "provider": "moviesmod",
         "lane": "tv",
-        "status": "no_streams",
-        "debugStage": "provider_zero_before_provider_network",
-        "sampleCount": 4,
+        "status": "timeout",
+        "debugStage": "timeout",
+        "sampleCount": 3,
         "sampleDebugStages": [
-          "provider_zero_before_provider_network"
+          "provider_network_exception",
+          "timeout"
+        ],
+        "sampleStatuses": [
+          "no_streams",
+          "timeout"
+        ],
+        "sampleProgressStages": [
+          "chain_reached"
+        ],
+        "raw": 0,
+        "playable": 0,
+        "verified": 0,
+        "contradictions": 0,
+        "identitySafe": false
+      },
+      {
+        "provider": "uhdmovies",
+        "lane": "movie",
+        "status": "no_streams",
+        "debugStage": "provider_network_zero_result",
+        "sampleCount": 2,
+        "sampleDebugStages": [
+          "provider_network_zero_result"
         ],
         "sampleStatuses": [
           "no_streams"
         ],
         "sampleProgressStages": [
-          "none"
+          "lookup_only"
         ],
         "raw": 0,
         "playable": 0,
@@ -2596,6 +2650,16 @@
         "lane": "movie",
         "status": "no_streams",
         "debugStage": "provider_network_http_error",
+        "sampleCount": 4,
+        "sampleDebugStages": [
+          "provider_network_http_error"
+        ],
+        "sampleStatuses": [
+          "no_streams"
+        ],
+        "sampleProgressStages": [
+          "none"
+        ],
         "raw": 0,
         "playable": 0,
         "verified": 0,
@@ -2607,6 +2671,16 @@
         "lane": "tv",
         "status": "no_streams",
         "debugStage": "provider_network_http_error",
+        "sampleCount": 4,
+        "sampleDebugStages": [
+          "provider_network_http_error"
+        ],
+        "sampleStatuses": [
+          "no_streams"
+        ],
+        "sampleProgressStages": [
+          "none"
+        ],
         "raw": 0,
         "playable": 0,
         "verified": 0,
@@ -2655,15 +2729,24 @@
       "cookiesPersisted": false
     },
     "lastAttempt": {
-      "available": false,
-      "providerCount": 0,
+      "available": true,
+      "providerCount": 15,
       "refreshedProviders": [
         "allwish",
+        "animekai",
         "animesalt",
+        "animesultra",
+        "animevost-fr",
+        "coflix",
         "flemmix",
         "mallumv",
         "moviebox",
-        "moviesmod"
+        "moviesmod",
+        "uhdmovies",
+        "vidfast",
+        "vidrock",
+        "vostfree",
+        "yflix"
       ]
     }
   },
