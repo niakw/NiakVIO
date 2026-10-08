@@ -1239,4 +1239,76 @@ with tempfile.TemporaryDirectory(prefix="brain-arch-force-restrict-") as tmp:
     assert list(retry["sources"]) == ["scripts/brain_meta_learning.py"]
     assert retry["existingAllowedPaths"] == ["scripts/brain_meta_learning.py"]
 
+
+# The 7B LLM may emit only the genuinely new runtime executor. Registry and
+# planner boilerplate are deterministically wired by Brain, NOT provider edits.
+# This unlocks realistic one-shot code generation within the bounded token
+# budget while retaining three-surface compilation/validation and rollback.
+with tempfile.TemporaryDirectory(prefix="brain-arch-runtime-only-autowire-") as tmp:
+    root = Path(tmp)
+    fixtures = {
+        "scripts/brain_repair_runtime.py": (
+            'POST_EXHAUSTION_STRATEGY_PROFILES = {\n'
+            '    "route_transition_graph_v2",\n'
+            '}\n'
+        ),
+        "engine_v2/scripts/plan-repairs.mjs": (
+            'const POST_EXHAUSTION_STRATEGIES = {\n'
+            '  route_proven_gap: [\n'
+            '    { profile: "html_class_token_exact_v1", method: "html-class" },\n'
+            '    { profile: "route_transition_graph_v2", method: "same-provider-salvage" },\n'
+            '  ],\n'
+            '};\n'
+        ),
+        "scripts/adaptive_runtime/runtime_repair.py": (
+            'if new_strategy_id == "route_transition_graph_v2":\n'
+            '    executor = "retained-graph"\n'
+        ),
+    }
+    for path, content in fixtures.items():
+        target = root / path
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text(content, encoding="utf-8")
+
+    blueprint = {
+        "strategyId": "route_transition_graph_v3",
+        "evolvesFromStrategyId": "route_transition_graph_v2",
+        "repairScope": "route-to-terminal",
+        "requiresNewExecutableRepairProfile": True,
+    }
+    runtime_only = [{
+        "operation": "replace",
+        "path": "scripts/adaptive_runtime/runtime_repair.py",
+        "find": '    executor = "retained-graph"\n',
+        "replace": (
+            '    executor = "retained-graph"\n'
+            'elif new_strategy_id == "route_transition_graph_v3":\n'
+            '    executor = "fresh-observed-transition"\n'
+        ),
+    }]
+    complete = mod.complete_evolved_profile_wiring(runtime_only, blueprint, root=root)
+    assert len(complete) == 3, complete
+    assert {row["path"] for row in complete} == set(mod.NEW_REPAIR_PROFILE_SURFACES), complete
+    assert 'route_transition_graph_v3' in next(
+        row["replace"] for row in complete
+        if row["path"] == "engine_v2/scripts/plan-repairs.mjs"
+    )
+    mod.validate_edits(complete, list(mod.NEW_REPAIR_PROFILE_SURFACES), root=root)
+    changed = mod.validate_materialized_edits(
+        complete, root=root, blueprint=blueprint,
+    )
+    assert set(changed) == set(mod.NEW_REPAIR_PROFILE_SURFACES), changed
+    assert all((root / path).read_text(encoding="utf-8") == content for path, content in fixtures.items())
+    # The Brain cannot autowire a made-up family and must never substitute a
+    # generic source change for a fully wired, executable strategy.
+    try:
+        mod.complete_evolved_profile_wiring(
+            runtime_only, {**blueprint, "repairScope": "unproven-local-guess"},
+            root=root,
+        )
+    except ValueError as exc:
+        assert "unknown planner repair scope" in str(exc), exc
+    else:
+        raise AssertionError("unknown repair family unexpectedly scaffolded")
+
 print("Brain architecture FORCE materializer tests passed")
