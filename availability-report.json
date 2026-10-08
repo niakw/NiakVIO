@@ -1,15 +1,15 @@
 {
   "schema_version": 63,
-  "generated_at": "2026-10-08T15:45:18.046476+00:00",
+  "generated_at": "2026-10-08T21:24:56.994425+00:00",
   "test_environment": "github-actions-node",
   "checked_providers": 41,
   "status_counts": {
-    "healthy": 5,
+    "healthy": 4,
     "reachable": 0,
-    "blocked": 5,
+    "blocked": 7,
     "degraded": 1,
     "no_streams": 13,
-    "provider_unreachable": 14,
+    "provider_unreachable": 13,
     "runtime_error": 0,
     "unavailable": 3,
     "excluded": 0
@@ -1655,18 +1655,14 @@
     },
     {
       "id": "castle",
-      "status": "healthy",
+      "status": "no_streams",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
-      "consecutive_successes": 2,
-      "hosts": [
-        "img1.kwsvon.com"
-      ],
-      "response_categories": [
-        "playable"
-      ],
+      "consecutive_successes": 0,
+      "hosts": [],
+      "response_categories": [],
       "host_health": {
         "img1.fvncw.com": {
           "last_checked_at": "2026-10-06T23:55:45.766789+00:00",
@@ -2439,16 +2435,16 @@
       "enabled": true,
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
-      "consecutive_successes": 1,
+      "consecutive_successes": 2,
       "hosts": [
-        "23.mugiwara.one"
+        "5.mugiwara.one"
       ],
       "response_categories": [
         "playable"
       ],
       "host_health": {
         "4.mugiwara.one": {
-          "last_checked_at": "2026-10-08T15:45:18.046476+00:00",
+          "last_checked_at": "2026-10-08T21:24:56.994425+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -2459,7 +2455,7 @@
           "consecutive_blocked": 0
         },
         "cdndirector.dailymotion.com": {
-          "last_checked_at": "2026-10-08T15:45:18.046476+00:00",
+          "last_checked_at": "2026-10-08T21:24:56.994425+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -2470,7 +2466,7 @@
           "consecutive_blocked": 0
         },
         "1.mugiwara.one": {
-          "last_checked_at": "2026-10-08T15:45:18.046476+00:00",
+          "last_checked_at": "2026-10-08T21:24:56.994425+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -2481,18 +2477,7 @@
           "consecutive_blocked": 0
         },
         "23.mugiwara.one": {
-          "last_checked_at": "2026-10-08T15:45:18.046476+00:00",
-          "last_category": "playable",
-          "reachable": true,
-          "http_status": 206,
-          "latency_ms": 685,
-          "kind": "mp4",
-          "consecutive_hard_failures": 0,
-          "consecutive_successes": 1,
-          "consecutive_blocked": 0
-        },
-        "5.mugiwara.one": {
-          "last_checked_at": "2026-10-08T15:45:18.046476+00:00",
+          "last_checked_at": "2026-10-08T21:24:56.994425+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -2500,6 +2485,17 @@
           "kind": "mp4",
           "consecutive_hard_failures": 0,
           "consecutive_successes": 0,
+          "consecutive_blocked": 0
+        },
+        "5.mugiwara.one": {
+          "last_checked_at": "2026-10-08T21:24:56.994425+00:00",
+          "last_category": "playable",
+          "reachable": true,
+          "http_status": 206,
+          "latency_ms": 728,
+          "kind": "mp4",
+          "consecutive_hard_failures": 0,
+          "consecutive_successes": 1,
           "consecutive_blocked": 0
         }
       },
@@ -2937,7 +2933,7 @@
     },
     {
       "id": "voiranime-homes",
-      "status": "no_streams",
+      "status": "blocked",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
@@ -3030,16 +3026,16 @@
       "enabled": true,
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
-      "consecutive_successes": 1,
+      "consecutive_successes": 2,
       "hosts": [
-        "strm4.uqload.vc"
+        "strm7.uqload.vc"
       ],
       "response_categories": [
         "playable"
       ],
       "host_health": {
         "lecteurvideo.com": {
-          "last_checked_at": "2026-10-08T15:45:18.046476+00:00",
+          "last_checked_at": "2026-10-08T21:24:56.994425+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -3050,7 +3046,7 @@
           "consecutive_blocked": 0
         },
         "strm6.uqload.vc": {
-          "last_checked_at": "2026-10-08T15:45:18.046476+00:00",
+          "last_checked_at": "2026-10-08T21:24:56.994425+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -3061,7 +3057,7 @@
           "consecutive_blocked": 0
         },
         "strm5.uqload.vc": {
-          "last_checked_at": "2026-10-08T15:45:18.046476+00:00",
+          "last_checked_at": "2026-10-08T21:24:56.994425+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -3072,7 +3068,7 @@
           "consecutive_blocked": 0
         },
         "wishonly.site": {
-          "last_checked_at": "2026-10-08T15:45:18.046476+00:00",
+          "last_checked_at": "2026-10-08T21:24:56.994425+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -3083,11 +3079,22 @@
           "consecutive_blocked": 0
         },
         "strm4.uqload.vc": {
-          "last_checked_at": "2026-10-08T15:45:18.046476+00:00",
+          "last_checked_at": "2026-10-08T21:24:56.994425+00:00",
+          "last_category": "not_returned",
+          "reachable": false,
+          "http_status": null,
+          "latency_ms": null,
+          "kind": "hls",
+          "consecutive_hard_failures": 0,
+          "consecutive_successes": 0,
+          "consecutive_blocked": 0
+        },
+        "strm7.uqload.vc": {
+          "last_checked_at": "2026-10-08T21:24:56.994425+00:00",
           "last_category": "playable",
           "reachable": true,
           "http_status": 200,
-          "latency_ms": 589,
+          "latency_ms": 525,
           "kind": "hls",
           "consecutive_hard_failures": 0,
           "consecutive_successes": 1,
@@ -3153,7 +3160,7 @@
     },
     {
       "id": "anime-ultime",
-      "status": "provider_unreachable",
+      "status": "blocked",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
