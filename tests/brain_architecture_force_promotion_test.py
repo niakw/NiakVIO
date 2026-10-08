@@ -98,6 +98,86 @@ global_blocked=guard.classify(
 )
 assert global_blocked["safe"] is False and global_blocked["reason"]=="non-neutral-drift",global_blocked
 
+# The workflow must package the actual generated runtime executor: a
+# registry/planner-only patch is dead code and cannot be promoted.
+force_diff = LEARN.split("git diff --binary --", 1)[1].split(
+    "> brain-learning-output/brain-architecture-force.patch", 1,
+)[0]
+assert "scripts/adaptive_runtime/runtime_repair.py" in force_diff
+assert LEARN.count("python scripts/brain_force_applied_profile_guard.py --proposal") == 3
+assert "scripts/adaptive_runtime/runtime_repair.py" in SELF["forceArchitecture"]["generatedEditAllowlist"]
+
+# Validate the guard on a structurally installed v3 and on real omission
+# scenarios before any workflow consumes a FORCE artifact.
+import sys
+import tempfile
+sys.path.insert(0, str(ROOT / "scripts"))
+GUARD_APPLIED = ROOT / "scripts/brain_force_applied_profile_guard.py"
+applied_spec = importlib.util.spec_from_file_location("brain_force_applied", GUARD_APPLIED)
+assert applied_spec and applied_spec.loader
+applied_guard = importlib.util.module_from_spec(applied_spec)
+applied_spec.loader.exec_module(applied_guard)
+with tempfile.TemporaryDirectory(prefix="brain-force-applied-") as temp:
+    root = Path(temp)
+    fixture = {
+        "scripts/brain_repair_runtime.py": (
+            'POST_EXHAUSTION_STRATEGY_PROFILES = {\n'
+            '    "route_transition_graph_v2",\n'
+            '    "route_transition_graph_v3",\n'
+            '}\n'
+        ),
+        "engine_v2/scripts/plan-repairs.mjs": (
+            'const POST_EXHAUSTION_STRATEGIES = {\n'
+            '  route_proven_gap: [\n'
+            '    { profile: "route_transition_graph_v2", method: "baseline" },\n'
+            '    { profile: "route_transition_graph_v3", method: "new" },\n'
+            '  ],\n'
+            '};\n'
+        ),
+        "scripts/adaptive_runtime/runtime_repair.py": (
+            'POST_EXHAUSTION_STRATEGY_PROFILES = {\n'
+            '    "route_transition_graph_v2",\n'
+            '    "route_transition_graph_v3",\n'
+            '}\n'
+            'if new_strategy_id == "route_transition_graph_v2":\n'
+            '    choice = "old"\n'
+            'elif new_strategy_id == "route_transition_graph_v3":\n'
+            '    choice = "new"\n'
+        ),
+    }
+    for relative, content in fixture.items():
+        file = root / relative
+        file.parent.mkdir(parents=True, exist_ok=True)
+        file.write_text(content, encoding="utf-8")
+    plan = {"strategyBlueprints": [{
+        "strategyId": "route_transition_graph_v3",
+        "evolvesFromStrategyId": "route_transition_graph_v2",
+        "requiresNewExecutableRepairProfile": True,
+        "forcePromotionEligible": True,
+    }]}
+    report = {"strategyId": "route_transition_graph_v3",
+              "editCount": 3, "changedFiles": list(fixture)}
+    assert applied_guard.verify(plan, report, root=root) == "route_transition_graph_v3"
+    try:
+        applied_guard.verify(plan, {**report, "changedFiles": list(fixture)[:2]}, root=root)
+    except ValueError as exc:
+        assert "artifact lost generated runtime" in str(exc), exc
+    else:
+        raise AssertionError("incomplete FORCE artifact unexpectedly accepted")
+    runtime = root / "scripts/adaptive_runtime/runtime_repair.py"
+    runtime.write_text(
+        fixture["scripts/adaptive_runtime/runtime_repair.py"].replace(
+            '    "route_transition_graph_v3",\n', ""
+        ),
+        encoding="utf-8",
+    )
+    try:
+        applied_guard.verify(plan, report, root=root)
+    except ValueError as exc:
+        assert "not selectable by adaptive runtime" in str(exc), exc
+    else:
+        raise AssertionError("unselectable FORCE strategy unexpectedly accepted")
+
 print("Brain architecture FORCE promotion workflow contract passed")
 
 # FORCE proposal-only is a valid non-promotable outcome; executable diff
