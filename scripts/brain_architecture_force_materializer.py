@@ -1052,9 +1052,10 @@ def _model_request(
     if compact:
         if requires_new_profile:
             system += (
-                " Be extremely compact, but still return all 3 required replace edits. "
-                "Keep each replacement narrowly scoped to the supplied strategy block/registry entry. "
-                "The server enforces the edits JSON schema; never emit markdown or commentary."
+                " Be extremely compact: PREFER exactly one runtime_repair.py replace edit "
+                "which adds a genuinely distinct sibling executor branch. "
+                "Deterministic materializer wiring will add the missing registry and planner edits. "
+                "You may return three edits if essential. Do not emit markdown or commentary."
             )
         else:
             system += (
@@ -1081,8 +1082,8 @@ def _model_request(
         system += (
             f" This blueprint requires a genuinely new executable Repair profile {strategy_id}, "
             f"evolved from exhausted {evolves_from}. "
-            "Wire the new strategy id into scripts/brain_repair_runtime.py, "
-            "engine_v2/scripts/plan-repairs.mjs, and scripts/adaptive_runtime/runtime_repair.py. "
+            "Ensure the new strategy is executable in scripts/adaptive_runtime/runtime_repair.py. "
+            "The deterministic materializer wires missing registry/planner entries after model generation. "
             f"Evolution is strictly additive: preserve the exact {evolves_from} registration and "
             f"the exact runtime guard new_strategy_id == \"{evolves_from}\" unchanged; add "
             f"{strategy_id} as a separate registration/planner entry and a separate sibling runtime branch. "
