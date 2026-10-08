@@ -2219,7 +2219,7 @@
     "animevostfr": {
       "domainMemory": true,
       "evidenceDepth": [
-        "anime=chain_reached"
+        "anime=lookup_only"
       ],
       "hasApiRecipe": false,
       "hasProviderValuePlan": false,
@@ -8148,8 +8148,8 @@
     "requiresDeepValidation": true
   },
   "schemaVersion": 2,
-  "sourceRunId": "37757993881",
-  "sourceSha": "631e81d158317fab55cecb868bcd4fea856e2a45",
+  "sourceRunId": "37763127289",
+  "sourceSha": "144c92cac3f13e9f5946bd163e09a28f65b7be6c",
   "strategyPatterns": {
     "api_stream_resolver": {
       "commonRequestRecipes": [],
@@ -8161,17 +8161,17 @@
       "routeFamilies": [
         {
           "providerSupport": 1,
+          "role": "detail",
+          "supportRatio": 1.0
+        },
+        {
+          "providerSupport": 1,
           "role": "search",
           "supportRatio": 1.0
         },
         {
           "providerSupport": 1,
           "role": "other",
-          "supportRatio": 1.0
-        },
-        {
-          "providerSupport": 1,
-          "role": "detail",
           "supportRatio": 1.0
         }
       ]
@@ -8254,12 +8254,12 @@
       "routeFamilies": [
         {
           "providerSupport": 5,
-          "role": "episode",
+          "role": "api",
           "supportRatio": 0.8333
         },
         {
           "providerSupport": 5,
-          "role": "api",
+          "role": "episode",
           "supportRatio": 0.8333
         },
         {
@@ -8269,12 +8269,12 @@
         },
         {
           "providerSupport": 3,
-          "role": "player",
+          "role": "detail",
           "supportRatio": 0.5
         },
         {
           "providerSupport": 3,
-          "role": "detail",
+          "role": "player",
           "supportRatio": 0.5
         },
         {
@@ -8466,12 +8466,12 @@
         },
         {
           "providerSupport": 1,
-          "role": "episode",
+          "role": "api",
           "supportRatio": 1.0
         },
         {
           "providerSupport": 1,
-          "role": "api",
+          "role": "episode",
           "supportRatio": 1.0
         }
       ]
