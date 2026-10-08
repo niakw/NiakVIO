@@ -21,14 +21,14 @@
     "yflix"
   ],
   "effectiveWaves": 3,
-  "elapsedSeconds": 286.365,
+  "elapsedSeconds": 334.312,
   "executionModel": "family-batched-multi-wave-brain-repair",
   "experienceMemory": {
     "operationalProviderCount": 24,
     "providerCount": 46,
     "schemaVersion": 2,
-    "sourceRunId": "37763127289",
-    "sourceSha": "144c92cac3f13e9f5946bd163e09a28f65b7be6c",
+    "sourceRunId": "37766997440",
+    "sourceSha": "2cda0e86cfc6af1f27cf52c7c7882d6ad9fa4ce3",
     "strategyCount": 5
   },
   "fixedInLabProviders": [],
@@ -116,7 +116,7 @@
   "shardCount": 1,
   "shardIndex": 0,
   "skippedEnvironmentProviders": [],
-  "sourceCensusRunId": "37763127289",
+  "sourceCensusRunId": "37766997440",
   "timeBudgetExhausted": false,
   "timeBudgetSeconds": 1200,
   "unvisitedProviders": [],
@@ -239,19 +239,38 @@
                 "targetCategories": []
               },
               "published:anime-ultime": {
-                "action": "collect-more-evidence",
-                "allowedProfiles": [],
-                "baseExperimentExhausted": true,
-                "exitReason": "learning_generations_exhausted",
-                "experimentExhausted": true,
-                "experimentGeneration": 2,
-                "experimentVariant": 4,
+                "action": "probe-targeted-repair",
+                "allowedProfiles": [
+                  "adaptive_runtime_recovery"
+                ],
+                "baseExperimentExhausted": false,
+                "exitReason": null,
+                "experimentExhausted": false,
+                "experimentGeneration": 1,
+                "experimentVariant": 1,
                 "experimentVariantCount": 5,
                 "explorationChainEnabled": true,
                 "explorationModeEnabled": true,
-                "failureClass": "transport_blocked",
-                "hypotheses": [],
-                "learningDisposition": "propose_new_or_evolved_core_type",
+                "failureClass": "media_extraction_gap",
+                "hypotheses": [
+                  {
+                    "confidence": 0,
+                    "id": "capture-media-network",
+                    "learned": false,
+                    "maturity": null,
+                    "profile": null,
+                    "transferScore": 0
+                  },
+                  {
+                    "confidence": 0,
+                    "id": "inspect-player-javascript",
+                    "learned": false,
+                    "maturity": null,
+                    "profile": null,
+                    "transferScore": 0
+                  }
+                ],
+                "learningDisposition": "core_repair_only",
                 "llmAdvisorApplied": false,
                 "llmAdvisorConfidence": 0,
                 "llmAdvisorExperiment": {},
@@ -264,20 +283,15 @@
                 "llmAdvisorSourceFailureClass": "",
                 "llmAdvisorStrategy": "",
                 "metaGapEscalated": false,
-                "negativeMemoryMatches": 89,
+                "negativeMemoryMatches": 1,
                 "positiveProgramFingerprint": "",
                 "postExhaustionCandidateProfiles": [
-                  "transport_request_differential_v1",
-                  "provider_session_bootstrap_replay_v1",
+                  "player_protocol_family_replay_v1",
+                  "media_response_shape_inference_v1",
                   "runtime_response_salvage_v1",
-                  "html_class_token_exact_v1",
-                  "route_transition_graph_v2",
-                  "route_transition_graph_v1",
-                  "route_peer_transition_replay_v1",
-                  "identity_alias_search_traversal_v1",
                   "document_request_contract_mining_v1",
-                  "search_contract_inference_v1",
-                  "search_response_route_binding_v1"
+                  "terminal_transition_graph_v1",
+                  "terminal_request_program_inference_v1"
                 ],
                 "postExhaustionSourceFailureClass": "",
                 "postExhaustionStrategyMethod": "",
@@ -285,9 +299,9 @@
                 "providerId": "anime-ultime",
                 "providerPositiveProgramProductionRescue": false,
                 "providerPositiveProgramReplay": false,
-                "repairScope": "learning",
-                "repairType": "architecture_gap",
-                "signature": "9c5002c2f25fce9cea8338b6",
+                "repairScope": "capability",
+                "repairType": "terminal_media_resolution",
+                "signature": "63b9c15cad21c5231f142be6",
                 "strategyEscalated": false,
                 "targetCategories": []
               },
@@ -762,7 +776,6 @@
             "queuedForLearning": [
               "4khdhub",
               "allanime",
-              "anime-ultime",
               "animesalt",
               "animesultra",
               "animevost-fr",
@@ -777,6 +790,7 @@
           "capabilityStrategy": "mixed",
           "crossWaveExplorationCarryoverApplied": [],
           "crossWaveExplorationCarryoverCaptured": [
+            "anime-ultime",
             "mallumv"
           ],
           "deferredToLearning": [
@@ -849,7 +863,9 @@
             }
           ],
           "fixedInLab": [],
-          "genericLearningHandoff": [],
+          "genericLearningHandoff": [
+            "anime-ultime"
+          ],
           "groupId": "packed",
           "harnessDifferentialProviders": [],
           "healthConcurrency": 8,

@@ -2219,7 +2219,7 @@
     "animevostfr": {
       "domainMemory": true,
       "evidenceDepth": [
-        "anime=lookup_only"
+        "anime=chain_reached"
       ],
       "hasApiRecipe": false,
       "hasProviderValuePlan": false,
@@ -3231,7 +3231,7 @@
         "movie",
         "tv"
       ],
-      "officialHost": "flemmix.eu",
+      "officialHost": "flemmix.rip",
       "operational": false,
       "peerRequestRecipes": [
         {
@@ -7477,7 +7477,7 @@
         "movie",
         "tv"
       ],
-      "officialHost": "wookafr.blog",
+      "officialHost": "wookafr.boston",
       "operational": true,
       "peerRequestRecipes": [
         {
@@ -8148,8 +8148,8 @@
     "requiresDeepValidation": true
   },
   "schemaVersion": 2,
-  "sourceRunId": "37763127289",
-  "sourceSha": "144c92cac3f13e9f5946bd163e09a28f65b7be6c",
+  "sourceRunId": "37766997440",
+  "sourceSha": "2cda0e86cfc6af1f27cf52c7c7882d6ad9fa4ce3",
   "strategyPatterns": {
     "api_stream_resolver": {
       "commonRequestRecipes": [],
@@ -8161,17 +8161,17 @@
       "routeFamilies": [
         {
           "providerSupport": 1,
-          "role": "detail",
-          "supportRatio": 1.0
-        },
-        {
-          "providerSupport": 1,
           "role": "search",
           "supportRatio": 1.0
         },
         {
           "providerSupport": 1,
           "role": "other",
+          "supportRatio": 1.0
+        },
+        {
+          "providerSupport": 1,
+          "role": "detail",
           "supportRatio": 1.0
         }
       ]
@@ -8254,12 +8254,12 @@
       "routeFamilies": [
         {
           "providerSupport": 5,
-          "role": "api",
+          "role": "episode",
           "supportRatio": 0.8333
         },
         {
           "providerSupport": 5,
-          "role": "episode",
+          "role": "api",
           "supportRatio": 0.8333
         },
         {
@@ -8269,12 +8269,12 @@
         },
         {
           "providerSupport": 3,
-          "role": "detail",
+          "role": "player",
           "supportRatio": 0.5
         },
         {
           "providerSupport": 3,
-          "role": "player",
+          "role": "detail",
           "supportRatio": 0.5
         },
         {
@@ -8466,12 +8466,12 @@
         },
         {
           "providerSupport": 1,
-          "role": "api",
+          "role": "episode",
           "supportRatio": 1.0
         },
         {
           "providerSupport": 1,
-          "role": "episode",
+          "role": "api",
           "supportRatio": 1.0
         }
       ]
