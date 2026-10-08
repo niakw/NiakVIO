@@ -1311,4 +1311,11 @@ with tempfile.TemporaryDirectory(prefix="brain-arch-runtime-only-autowire-") as 
     else:
         raise AssertionError("unknown repair family unexpectedly scaffolded")
 
+# A one-executor FORCE workflow must never instruct the 7B advisor to
+# provide three edits and one edit simultaneously (real model loop failure).
+materializer_prompt = SCRIPT.read_text(encoding="utf-8")
+assert "Return exactly 3 replace edits" not in materializer_prompt
+assert "Prefer exactly ONE replace edit" in materializer_prompt
+assert "deterministically wires any missing registry and JS planner" in materializer_prompt
+
 print("Brain architecture FORCE materializer tests passed")
