@@ -1105,83 +1105,43 @@ def _model_request(
 ) -> dict[str, Any]:
     blueprint = payload.get("blueprint") if isinstance(payload.get("blueprint"), dict) else {}
     requires_new_profile = blueprint.get("requiresNewExecutableRepairProfile") is True
-    system = (
-        "You are NiakVIO Brain architecture FORCE materializer. "
-        "Return JSON only: {edits:[...]}. Create the smallest executable architecture change "
-        "that implements the supplied blueprint. Never edit providers, manifests, ProviderBase, "
-        "publication files or secrets. Use only exact source snippets supplied. Max 3 edits. "
-        "Allowed operations: replace {operation,path,find,replace}; create {operation,path,content}. "
-        "New files only under scripts/brain_layers/ or tests/brain_. "
-        "The resulting source must parse/compile. No prose."
-    )
     if requires_new_profile:
-        system += (
-            " This is an additive Repair-profile evolution: preserve the exhausted evolvesFromStrategyId "
-            "and ADD the new strategyId. Prefer exactly ONE replace edit for "
-            "scripts/adaptive_runtime/runtime_repair.py with a genuinely new "
-            "sibling execution branch. Preserve the prior strategy guard unchanged. "
-            "The Brain deterministically wires any missing registry and JS planner "
-            "entries, so do not waste model tokens duplicating boilerplate. "
-            "Return only ONE replace edit targeting the runtime executor. "
-            "Do not edit registry, planner or tests. "
-            "The resulting three-source transaction is strictly validated."
+        child = str(blueprint.get("strategyId") or "")
+        parent = str(blueprint.get("evolvesFromStrategyId") or "")
+        system = (
+            "You are NiakVIO Brain novel Repair executor generator. "
+            "Return JSON ONLY with exactly one string field branchBody. "
+            "Its value must be NEW executable Python statements, not a diff. "
+            "Never output edits, find/replace, paths, imports, Markdown, comments-only code, "
+            "placeholder pass or if/elif new_strategy_id guards. "
+            "Brain will insert the code in its own distinct sibling guard and wire "
+            "the Brain registry, JS planner, and runtime selection registry. "
+            f"Generate useful NEW bounded route/request/media recovery for {child} "
+            f"after exhausted {parent}, using helpers/variables seen in the source. "
+            "Do not copy the parent branch. Respect provider identity, deadlines, "
+            "same-provider evidence, source bounds, and media safety. No prose."
         )
+        if compact:
+            system += " Keep branchBody concise yet executable, preferably 4-15 statements."
+        if payload.get("correctionReason"):
+            system += " Fix branchBody only using the prior failure. Never touch a guard."
     else:
-        system += " Prefer one minimal code edit plus one focused test."
-    if compact:
-        if requires_new_profile:
+        system = (
+            "You are NiakVIO Brain architecture FORCE materializer. "
+            "Return JSON only: {edits:[...]}. Create a minimal executable architecture edit. "
+            "Never edit providers, manifests, ProviderBase, publication or secrets. "
+            "Only exact source snippets supplied may be replaced, with max three edits. "
+            "Create new files only under scripts/brain_layers/ or tests/brain_. "
+            "The resulting source must compile and pass contracts. No prose."
+        )
+        if compact:
+            system += " Prefer one small replace edit."
+        exact_paths = [str(path) for path in payload.get("exactAllowedPaths") or [] if str(path)]
+        if exact_paths:
             system += (
-                " Be extremely compact: PREFER exactly one runtime_repair.py replace edit "
-                "which adds a genuinely distinct sibling executor branch. "
-                "Deterministic materializer wiring will add the missing registry and planner edits. "
-                "Only the runtime path is valid. Do not emit markdown or commentary."
+                " Correct only existingAllowedPaths via replace or newAllowedPaths via create. "
+                "Do not invent or relocate paths."
             )
-        else:
-            system += (
-                " Be extremely compact. Prefer exactly one small replace edit. "
-                "Avoid creating a new file unless replacement cannot implement the capability. "
-                "Keep the complete JSON response short enough for the supplied token budget. "
-                "The server enforces the edits JSON schema; never emit markdown or commentary."
-            )
-    exact_paths = [
-        str(path)
-        for path in (payload.get("exactAllowedPaths") or [])
-        if str(path)
-    ]
-    if exact_paths:
-        system += (
-            " For this corrective request, edit only a path from exactAllowedPaths. "
-            "Do not rewrite, prefix, relocate, normalize or invent a path. "
-            "Paths listed in existingAllowedPaths already exist and MUST use replace, never create. "
-            "Use create only for a path listed in newAllowedPaths."
-        )
-    if requires_new_profile:
-        strategy_id = str(blueprint.get("strategyId") or "")
-        evolves_from = str(blueprint.get("evolvesFromStrategyId") or "")
-        system += (
-            f" This blueprint requires a genuinely new executable Repair profile {strategy_id}, "
-            f"evolved from exhausted {evolves_from}. "
-            "Ensure the new strategy is executable in scripts/adaptive_runtime/runtime_repair.py. "
-            "The deterministic materializer wires missing registry/planner entries after model generation. "
-            f"Evolution is strictly additive: preserve the exact {evolves_from} registration and "
-            f"the exact runtime guard new_strategy_id == \"{evolves_from}\" unchanged; add "
-            f"{strategy_id} as a separate registration/planner entry and a separate sibling runtime branch. "
-            "Never broaden the parent condition to include the new strategy and never rename/replace the parent. "
-            "Do not satisfy this request with taxonomy, metadata, comments, or proposal-only changes."
-        )
-    if str(payload.get("correctionReason") or "") == "materialized-syntax-validation":
-        system += (
-            " Repair only the parser defect in the rejected candidate. "
-            "Use materializedFailureSources as candidate bytes and materializedBaselineSources as original bytes. "
-            "Preserve the intended change, avoid duplicate surrounding tokens, and prefer one small replace."
-        )
-    if str(payload.get("correctionReason") or "") == "materialized-repair-profile-wiring":
-        system += (
-            " The prior candidate was missing the new executable runtime branch. "
-            "Return exactly one replace edit for scripts/adaptive_runtime/runtime_repair.py "
-            "adding a distinct sibling implementation for newStrategyId. "
-            "Do not emit registry or planner edits: Brain wires those deterministically."
-        )
     body = {
         "model": model,
         "temperature": 0,
