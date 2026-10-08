@@ -1498,7 +1498,7 @@ def complete_evolved_profile_wiring(
             raise ValueError("architecture FORCE registry profile set missing")
         parent_line = f'    "{parent_id}",\n'
         replacement = parent_line + f'    "{target_id}",\n'
-        if source[begin:end].count(parent_line) != 1 or source.count(parent_line) != 1:
+        if source[begin:end + 1].count(parent_line) != 1 or source.count(parent_line) != 1:
             raise ValueError("architecture FORCE registry parent anchor ambiguous")
         result.append({
             "operation": "replace",
