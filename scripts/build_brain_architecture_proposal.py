@@ -138,10 +138,42 @@ def active_method_signatures(selection: dict[str, Any]) -> dict[str, set[str]]:
     return out
 
 
+EXECUTABLE_REPAIR_PROFILE_SURFACES = (
+    "scripts/brain_repair_runtime.py",
+    "engine_v2/scripts/plan-repairs.mjs",
+    "scripts/adaptive_runtime/runtime_repair.py",
+)
+
+
+def fully_installed_repair_profiles(root: Path = SCRIPTS.parent) -> set[str]:
+    """Detect executable strategy ids wired in registry, planner and runtime."""
+    try:
+        registry = (root / EXECUTABLE_REPAIR_PROFILE_SURFACES[0]).read_text(encoding="utf-8")
+        planner = (root / EXECUTABLE_REPAIR_PROFILE_SURFACES[1]).read_text(encoding="utf-8")
+        runtime = (root / EXECUTABLE_REPAIR_PROFILE_SURFACES[2]).read_text(encoding="utf-8")
+    except OSError:
+        return set()
+    registry_block = re.search(
+        r"POST_EXHAUSTION_STRATEGY_PROFILES\s*=\s*\{(.*?)\n\}",
+        registry,
+        flags=re.DOTALL,
+    )
+    if registry_block is None:
+        return set()
+    registry_ids = set(re.findall(r"""["']([a-z][a-z0-9_]*_v\d+)["']""", registry_block.group(1)))
+    planner_ids = set(re.findall(r"""\bprofile:\s*["']([a-z][a-z0-9_]*_v\d+)["']""", planner))
+    runtime_ids = set(re.findall(
+        r"""\b(?:if|elif)\s+new_strategy_id\s*==\s*["']([a-z][a-z0-9_]*_v\d+)["']\s*:""",
+        runtime,
+    ))
+    return registry_ids & planner_ids & runtime_ids
+
+
 def build_strategy_blueprints(
     batch_plan: dict[str, Any],
     deferred_providers: set[str],
     failed_profiles_by_provider: dict[str, set[str]] | None = None,
+    existing_executable_profiles: set[str] | None = None,
 ) -> list[dict[str, Any]]:
     """Turn census repair families into bounded, reviewable new-strategy designs.
 
@@ -188,6 +220,11 @@ def build_strategy_blueprints(
         },
     }
     failed_profiles_by_provider = failed_profiles_by_provider or {}
+    installed_profiles = (
+        fully_installed_repair_profiles()
+        if existing_executable_profiles is None
+        else set(existing_executable_profiles)
+    )
     blueprints: list[dict[str, Any]] = []
     for group in batch_plan.get("groups") or []:
         if not isinstance(group, dict):
@@ -230,14 +267,27 @@ def build_strategy_blueprints(
                 while f"{base}_v{version}" in exhausted_profiles:
                     version += 1
                 evolved_id = f"{base}_v{version}"
-                row["evolvesFromStrategyId"] = strategy_id
+                row["evolvesFromStrategyId"] = (
+                    f"{base}_v{version - 1}"
+                    if f"{base}_v{version - 1}" in installed_profiles
+                    else strategy_id
+                )
                 row["strategyId"] = evolved_id
                 row["exhaustedStrategyIds"] = sorted(exhausted_profiles)
+                row["existingExecutableRepairProfile"] = evolved_id in installed_profiles
                 row["method"] = (
-                    f"derive and implement a genuinely new executable Repair strategy {evolved_id} "
-                    f"from negative evidence for exhausted {strategy_id}; preserve the causal intent "
-                    f"of the prior method without reusing its implementation, register the new profile "
-                    f"in Repair planning/runtime, and require targeted playback/identity proof"
+                    (
+                        f"replay already installed executable Repair strategy {evolved_id} "
+                        "against current-byte evidence before another FORCE evolution; "
+                        "preserve playback/identity/non-regression gates"
+                    )
+                    if evolved_id in installed_profiles
+                    else (
+                        f"derive and implement a genuinely new executable Repair strategy {evolved_id} "
+                        f"from negative evidence for exhausted {strategy_id}; preserve the causal intent "
+                        "of the prior method without reusing its implementation, register the new profile "
+                        "in Repair planning/runtime, and require targeted playback/identity proof"
+                    )
                 )
                 providers = exhausted_providers
                 strategy_evolved = True
@@ -282,6 +332,7 @@ def build_strategy_blueprints(
             scope != "harness-compatibility"
             and strategy_evolved
             and bool(providers)
+            and not row.get("existingExecutableRepairProfile", False)
             and all(bool(failed_profiles_by_provider.get(provider)) for provider in providers)
         )
         row.update({
@@ -289,9 +340,13 @@ def build_strategy_blueprints(
             "repairScope": scope,
             "targetLayer": force_target_layer,
             "forcePromotionEligible": force_promotable,
-            "requiresNewExecutableRepairProfile": strategy_evolved,
+            "requiresNewExecutableRepairProfile": (
+                strategy_evolved and not row.get("existingExecutableRepairProfile", False)
+            ),
             "forcePromotionReason": (
-                "deferred-known-family-exhaustion"
+                "already-installed-profile-replay-first"
+                if row.get("existingExecutableRepairProfile", False)
+                else "deferred-known-family-exhaustion"
                 if force_promotable
                 else "diagnostic-only-or-no-exhaustion-proof"
             ),

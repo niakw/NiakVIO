@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import importlib.util
 import json
 import subprocess
 import tempfile
@@ -227,5 +228,68 @@ assert 'promotion_base="$remote_main"' in architecture_job
 assert "gh pr merge" not in architecture_job
 assert "FIELD_BRAIN_ARCH_FORCE_MAIN_PROMOTION" in architecture_job
 assert "architecture FORCE changed non-allowlisted paths" in architecture_job
+
+
+# Current-byte executable profiles must be replayed before invoking costly
+# architecture FORCE. Incomplete wiring must not be mistaken for installation.
+spec = importlib.util.spec_from_file_location("brain_arch_proposal_guard", SCRIPT)
+module = importlib.util.module_from_spec(spec)
+assert spec and spec.loader
+spec.loader.exec_module(module)
+with tempfile.TemporaryDirectory(prefix="brain-existing-profile-") as tmp:
+    root = Path(tmp)
+    surfaces = {
+        "scripts/brain_repair_runtime.py": (
+            'POST_EXHAUSTION_STRATEGY_PROFILES = {\n'
+            '    "route_transition_graph_v1",\n'
+            '    "route_transition_graph_v2",\n'
+            '}\n'
+        ),
+        "engine_v2/scripts/plan-repairs.mjs": (
+            'const strategies = [{ profile: "route_transition_graph_v1" }, '
+            '{ profile: "route_transition_graph_v2" }];\n'
+        ),
+        "scripts/adaptive_runtime/runtime_repair.py": (
+            'if new_strategy_id == "route_transition_graph_v1":\n'
+            '    pass\n'
+        ),
+    }
+    for path, content in surfaces.items():
+        target = root / path
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text(content, encoding="utf-8")
+    assert module.fully_installed_repair_profiles(root) == {"route_transition_graph_v1"}
+    runtime = root / "scripts/adaptive_runtime/runtime_repair.py"
+    runtime.write_text(
+        surfaces["scripts/adaptive_runtime/runtime_repair.py"]
+        + 'elif new_strategy_id == "route_transition_graph_v2":\n'
+        + '    pass\n',
+        encoding="utf-8",
+    )
+    installed = module.fully_installed_repair_profiles(root)
+    assert installed == {"route_transition_graph_v1", "route_transition_graph_v2"}
+    groups = {"groups": [{
+        "repairScope": "route-to-terminal",
+        "groupId": "route-to-terminal|demo",
+        "providers": ["demo"],
+    }]}
+    existing = module.build_strategy_blueprints(
+        groups, {"demo"}, {"demo": {"route_transition_graph_v1"}},
+        existing_executable_profiles=installed,
+    )[0]
+    assert existing["strategyId"] == "route_transition_graph_v2", existing
+    assert existing["existingExecutableRepairProfile"] is True, existing
+    assert existing["requiresNewExecutableRepairProfile"] is False, existing
+    assert existing["forcePromotionEligible"] is False, existing
+    assert existing["forcePromotionReason"] == "already-installed-profile-replay-first", existing
+    new = module.build_strategy_blueprints(
+        groups, {"demo"}, {"demo": {"route_transition_graph_v1", "route_transition_graph_v2"}},
+        existing_executable_profiles=installed,
+    )[0]
+    assert new["strategyId"] == "route_transition_graph_v3", new
+    assert new["evolvesFromStrategyId"] == "route_transition_graph_v2", new
+    assert new["requiresNewExecutableRepairProfile"] is True, new
+    assert new["forcePromotionEligible"] is True, new
+assert "route_transition_graph_v2" in module.fully_installed_repair_profiles()
 
 print("Brain self-architecture tests passed")

@@ -1,3 +1,9 @@
+## 2026-10-08 — Brain FORCE novelty preflight: replay installed v2 first
+
+- Current census 37823121498: 21 FULL, 3 PARTIAL, 2 CANDIDATE, 9 ROUTE, 3 CHAIN, 1 NO PROOF, 2 REGRESSION, 5 DISABLED; 17 repairQueue. Fast Repair 37823871921 accepted 0/12, Learning debt 12, no_new_repair_experiment.
+- Learning FORCE 37821330619 spent over 20 minutes retrying stale route_transition_graph_v2; log explicitly fails with architecture FORCE new Repair profile already existed before materialization. Current Brain registry, planner, adaptive runtime all wire v2.
+- Brain-only architectural novelty fix: reconcile installed strategies across all 3 executable surfaces; existing candidate is replay-first, not eligible for FORCE regeneration. Only exhausted installed strategies may evolve to the next genuinely novel id. Added partial/full registry and v2-v3 negative-memory regression tests. Current-byte provider playback remains unverified; no provider source edited.
+
 ## 2026-10-05 — Deep Repair crash fixed; disabled-provider CodeQL noise cleaned
 
 - Fast Repair failures on current cohorts were traced to a Brain pipeline crash, not provider behavior: `scripts/deep_repair_loop.py` logged `identity_contradiction_count(...)` without importing that runtime guard. Commits `4d3152e2` + `8a066deb` import it from `runtime_repair.py` and lock the contract.
