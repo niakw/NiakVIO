@@ -300,4 +300,7 @@ negative = {"entries": [
 merged = module.merge_executed_repair_negatives({"demo": {"route_transition_graph_v1"}}, negative, {"demo"})
 assert merged == {"demo": {"route_transition_graph_v1", "route_transition_graph_v2"}}, merged
 assert module.build_strategy_blueprints(groups, {"demo"}, merged, existing_executable_profiles=installed)[0]["strategyId"] == "route_transition_graph_v3"
+fast_handoff = (ROOT / ".github/workflows/provider-fast-repair.yml").read_text(encoding="utf-8").split("      - name: Persist validated provider-local repair or evidence", 1)[1]
+assert 'summary.get("brainNoProgressReason")' in fast_handoff
+assert "stalled and unresolved" in fast_handoff
 print("Brain self-architecture tests passed")
