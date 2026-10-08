@@ -1041,7 +1041,11 @@ def _model_request(
             " This is an additive Repair-profile evolution: preserve the exhausted evolvesFromStrategyId "
             "and ADD the new strategyId. Return exactly 3 replace edits, one for each mandatory surface "
             "listed in exactAllowedPaths. Do not remove, rename, or replace the prior strategy id. "
-            "Do not edit tests in this request."
+            "Do not edit tests in this request. If three edits do not fit "
+            "the model budget, return ONLY one runtime_repair.py replace edit "
+            "with a genuinely new sibling implementation. The materializer "
+            "deterministically wires the registry and JS planner around it; "
+            "the resulting three-source transaction is strictly validated."
         )
     else:
         system += " Prefer one minimal code edit plus one focused test."
@@ -1448,6 +1452,95 @@ def _request_corrected_plan(
         return _parse_model_value(value)
 
 
+
+def complete_evolved_profile_wiring(
+    edits: list[dict[str, Any]],
+    blueprint: dict[str, Any] | None,
+    *,
+    root: Path = ROOT,
+) -> list[dict[str, Any]]:
+    """Finish deterministic registration around an LLM-generated runtime branch.
+
+    Qwen's responsibility is the new executable mechanism, not copying
+    unrelated registry/planner boilerplate. This reduces a three-surface LLM
+    transaction to one actual algorithm edit while retaining the strict
+    three-file validator. Anything ambiguous still fails closed.
+    """
+    blueprint = blueprint if isinstance(blueprint, dict) else {}
+    if blueprint.get("requiresNewExecutableRepairProfile") is not True:
+        return [dict(row) for row in edits]
+    target_id = str(blueprint.get("strategyId") or "").strip()
+    parent_id = str(blueprint.get("evolvesFromStrategyId") or "").strip()
+    if (
+        not re.fullmatch(r"[a-z][a-z0-9_]*_v\d+", target_id)
+        or not re.fullmatch(r"[a-z][a-z0-9_]*_v\d+", parent_id)
+        or target_id == parent_id
+    ):
+        return [dict(row) for row in edits]
+
+    result = [dict(row) for row in edits]
+    paths = [str(row.get("path") or "") for row in result]
+    if any(path not in NEW_REPAIR_PROFILE_SURFACES for path in paths):
+        return result
+    if len(set(paths)) != len(paths):
+        return result
+    runtime_path = NEW_REPAIR_PROFILE_SURFACES[2]
+    if runtime_path not in paths or len(result) > len(NEW_REPAIR_PROFILE_SURFACES):
+        return result
+
+    registry_path, planner_path = NEW_REPAIR_PROFILE_SURFACES[:2]
+    if registry_path not in paths:
+        source = (root / registry_path).read_text(encoding="utf-8")
+        begin = source.find("POST_EXHAUSTION_STRATEGY_PROFILES = {")
+        end = source.find("\n}", begin)
+        if begin < 0 or end < 0:
+            raise ValueError("architecture FORCE registry profile set missing")
+        parent_line = f'    "{parent_id}",\n'
+        replacement = parent_line + f'    "{target_id}",\n'
+        if source[begin:end].count(parent_line) != 1 or source.count(parent_line) != 1:
+            raise ValueError("architecture FORCE registry parent anchor ambiguous")
+        result.append({
+            "operation": "replace",
+            "path": registry_path,
+            "find": parent_line,
+            "replace": replacement,
+        })
+    if planner_path not in paths:
+        source = (root / planner_path).read_text(encoding="utf-8")
+        family = {
+            "route-to-terminal": "route_proven_gap",
+            "terminal-extraction": "chain_terminal_gap",
+            "candidate-replay": "candidate_replay_gap",
+            "transport": "provider_transport_gap",
+            "variant-coverage": "variant_coverage_gap",
+        }.get(str(blueprint.get("repairScope") or "").strip().casefold())
+        if not family:
+            raise ValueError("architecture FORCE unknown planner repair scope")
+        group = re.search(
+            rf"(?ms)^  {re.escape(family)}: \[\n.*?^  \],\n",
+            source,
+        )
+        if group is None:
+            raise ValueError("architecture FORCE planner group missing")
+        parent_row = re.search(
+            rf'(?m)^    \{{ profile: "{re.escape(parent_id)}", method: "[^"]+" \}},\n',
+            group.group(0),
+        )
+        if parent_row is None:
+            raise ValueError("architecture FORCE planner parent strategy missing in causal group")
+        find = group.group(0)[:parent_row.end()]
+        new_row = f'    {{ profile: "{target_id}", method: "brain-evolved-executable-transition" }},\n'
+        if len(find) > MAX_FIND or source.count(find) != 1:
+            raise ValueError("architecture FORCE planner parent edit exceeds bounded unique anchor")
+        result.append({
+            "operation": "replace",
+            "path": planner_path,
+            "find": find,
+            "replace": find + new_row,
+        })
+    return result
+
+
 def validated_model_plan(
     endpoint: str,
     model: str,
@@ -1457,7 +1550,11 @@ def validated_model_plan(
     root: Path = ROOT,
 ) -> tuple[dict[str, Any], list[dict[str, Any]]]:
     planned = call_model(endpoint, model, payload)
-    edits = [dict(x) for x in planned.get("edits") or [] if isinstance(x, dict)]
+    edits = complete_evolved_profile_wiring(
+        [dict(x) for x in planned.get("edits") or [] if isinstance(x, dict)],
+        payload.get("blueprint"),
+        root=root,
+    )
     validation_payload = payload
     for correction_round in range(0, EDIT_VALIDATION_CORRECTION_ROUNDS + 1):
         edits = _resolve_non_unique_replace_edits(
@@ -1497,9 +1594,11 @@ def validated_model_plan(
                 "editValidationCorrectionRounds": EDIT_VALIDATION_CORRECTION_ROUNDS,
             })
             planned = _request_corrected_plan(endpoint, model, correction_payload)
-            edits = [
-                dict(x) for x in planned.get("edits") or [] if isinstance(x, dict)
-            ]
+            edits = complete_evolved_profile_wiring(
+                [dict(x) for x in planned.get("edits") or [] if isinstance(x, dict)],
+                payload.get("blueprint"),
+                root=root,
+            )
             validation_payload = correction_payload
 
     try:
@@ -1599,6 +1698,11 @@ def validated_model_plan(
             corrected_edits,
             current_edits,
             patterns,
+            root=root,
+        )
+        corrected_edits = complete_evolved_profile_wiring(
+            corrected_edits,
+            payload.get("blueprint"),
             root=root,
         )
         try:
