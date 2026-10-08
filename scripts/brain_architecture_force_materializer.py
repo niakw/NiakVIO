@@ -723,12 +723,6 @@ def validate_blueprint_implementation(
     child_line = f'    "{strategy_id}",\n'
     if runtime_text[begin:end + 1].count(child_line) != 1 or runtime_text.count(child_line) != 1:
         raise ValueError("architecture FORCE generated strategy not selectable by adaptive runtime")
-    child_guard = re.compile(
-        rf'(?m)^[ \t]*(?:if|elif)\s+new_strategy_id\s*==\s*["\']{re.escape(strategy_id)}["\']\s*:\s*$'
-    )
-    if not child_guard.search(runtime_text):
-        raise ValueError("architecture FORCE generated strategy missing distinct runtime guard")
-
     # Evolution is additive: a new profile must never broaden, rename or replace
     # the exhausted parent runtime branch. Keeping the exact parent guard lets
     # negative memory remain truthful and prevents v2 behavior from silently
@@ -744,6 +738,13 @@ def validate_blueprint_implementation(
             "architecture FORCE new Repair profile must preserve evolved strategy parent guard "
             f"{evolves_from} unchanged in {runtime_path}; add {strategy_id} as a separate sibling branch"
         )
+
+    child_guard = re.compile(
+        rf'(?m)^[ \t]*(?:if|elif)\s+new_strategy_id\s*==\s*["\']{re.escape(strategy_id)}["\']\s*:\s*$'
+    )
+    if not child_guard.search(runtime_text):
+        raise ValueError("architecture FORCE generated strategy missing distinct runtime guard")
+
 
 
 MATERIALIZED_CONTRACT_TESTS = (
