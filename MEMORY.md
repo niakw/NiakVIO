@@ -1,3 +1,9 @@
+## 2026-10-08 — Fast Repair exhausted cohorts now trigger Brain architecture FORCE
+
+- Found recurring auto-handoff contradiction: Fast Brain Repair 37827813922 completed with 12 Learning debt providers, zero accepted repairs, and `no_new_repair_experiment`, but its workflow emitted `learning_dispatch=true architecture_force=false`. LEARN therefore ran without the executable FORCE materializer even though Repair had no new strategy.
+- Updated only the Brain control-plane workflow `.github/workflows/provider-fast-repair.yml` in ef0c5312: automatic handoff sets `architecture_force=true` for a genuinely stalled Repair cohort with nonempty Learning handoff, or for explicit FORCE trigger. Unrelated healthy/mere transport cases are not auto-promoted. Added source contract in `tests/brain_self_architecture_test.py` commit d138cd3d.
+- This is not provider validation: next eligible current-SHA Learning must generate a genuinely novel strategy (after Repair-negative-memory reconciliation), materialize it, execute current-byte sandbox playback and prove identity/non-regression before any FULL promotion.
+
 ## 2026-10-08 — Canonical Repair negatives now inform FORCE strategy novelty
 
 - Diagnosed a repeated Brain pipeline stall: FORCE Learning 37821330619 attempted to rematerialize route_transition_graph_v2 although v2 already existed in the Brain registry, planner and runtime. This wasted multiple long Qwen rounds and ended with a strict materialization failure, without provider gains.
