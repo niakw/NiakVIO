@@ -570,6 +570,73 @@ focused_payload = mod._new_repair_profile_payload({
 })
 assert "EXECUTION_BRANCH_SENTINEL" in focused_payload["sources"][runtime_path]
 
+# Qwen must author only new algorithm statements: Brain deterministically
+# wraps them in a separate sibling guard WITHOUT touching old runtime bytes.
+with tempfile.TemporaryDirectory(prefix="brain-force-body-only-") as tmp:
+    root = Path(tmp)
+    fixtures = {
+        "scripts/brain_repair_runtime.py": (
+            'POST_EXHAUSTION_STRATEGY_PROFILES = {\n'
+            '    "route_transition_graph_v2",\n'
+            '}\n'
+        ),
+        "engine_v2/scripts/plan-repairs.mjs": (
+            'const POST_EXHAUSTION_STRATEGIES = {\n'
+            '  route_proven_gap: [\n'
+            '    { profile: "route_transition_graph_v2", method: "previous" },\n'
+            '  ],\n'
+            '};\n'
+        ),
+        "scripts/adaptive_runtime/runtime_repair.py": (
+            'POST_EXHAUSTION_STRATEGY_PROFILES = {\n'
+            '    "route_transition_graph_v2",\n'
+            '}\n'
+            'if new_strategy_id == "route_transition_graph_v2":\n'
+            '    search_paths = ["old-route"]\n'
+            'elif new_strategy_id == "route_peer_transition_replay_v1":\n'
+            '    search_paths = ["peer-route"]\n'
+        ),
+    }
+    for relative, data in fixtures.items():
+        target = root / relative
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text(data, encoding="utf-8")
+    blueprint = {
+        "strategyId": "route_transition_graph_v3",
+        "evolvesFromStrategyId": "route_transition_graph_v2",
+        "repairScope": "route-to-terminal",
+        "requiresNewExecutableRepairProfile": True,
+    }
+    payload = {"blueprint": blueprint}
+    body = 'search_paths = _unique_routes(configured_search, learned_search, limit=16)\nrequest_recipes = _unique_request_recipes(current_request_recipes, limit=24)\n'
+    output = mod._model_edits({"branchBody": body}, payload, root=root)
+    assert len(output) == 1 and output[0]["path"] == mod.NEW_REPAIR_PROFILE_SURFACES[2]
+    assert 'elif new_strategy_id == "route_transition_graph_v3":' in output[0]["replace"]
+    assert 'if new_strategy_id == "route_transition_graph_v2":' not in output[0]["find"]
+    complete = mod.complete_evolved_profile_wiring(output, blueprint, root=root)
+    assert len(complete) == 3
+    mod.validate_edits(complete, list(mod.NEW_REPAIR_PROFILE_SURFACES), root=root)
+    assert set(mod.validate_materialized_edits(complete, root=root, blueprint=blueprint)) == set(fixtures)
+    assert all((root / k).read_text(encoding="utf-8") == v for k, v in fixtures.items())
+    for bad_body in ("pass\n", "new_strategy_id = 'route_transition_graph_v3'\n", "if :(\n"):
+        try:
+            mod._model_edits({"branchBody": bad_body}, payload, root=root)
+        except ValueError:
+            pass
+        else:
+            raise AssertionError("unsafe or no-op generated executor body accepted")
+    bad_root = root / "scripts/adaptive_runtime/runtime_repair.py"
+    bad_root.write_text(fixtures["scripts/adaptive_runtime/runtime_repair.py"].replace(
+        'elif new_strategy_id == "route_peer_transition_replay_v1":\n',
+        ''
+    ), encoding="utf-8")
+    try:
+        mod._model_edits({"branchBody": body}, payload, root=root)
+    except ValueError as exc:
+        assert "subsequent runtime sibling missing" in str(exc), exc
+    else:
+        raise AssertionError("new strategy inserted without distinct sibling anchor")
+
 # A repeated textual find is not automatically a model failure when Brain can
 # bind it to the exact focused snippet that was supplied to the model. The
 # resolver must widen unchanged real source context until the anchor is unique.
@@ -1409,7 +1476,8 @@ with tempfile.TemporaryDirectory(prefix="brain-arch-runtime-only-autowire-") as 
 # provide three edits and one edit simultaneously (real model loop failure).
 materializer_prompt = SCRIPT.read_text(encoding="utf-8")
 assert "Return exactly 3 replace edits" not in materializer_prompt
-assert "Prefer exactly ONE replace edit" in materializer_prompt
-assert "deterministically wires any missing registry and JS planner" in materializer_prompt
+assert "Return JSON ONLY with exactly one string field branchBody" in materializer_prompt
+assert "Brain will insert the code in its own distinct sibling guard" in materializer_prompt
+assert mod._branch_body_response_format()["schema"]["required"] == ["branchBody"]
 
 print("Brain architecture FORCE materializer tests passed")
