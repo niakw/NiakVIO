@@ -1134,3 +1134,11 @@
 - Contrôle live sur Git Apple 2.50 : Desktop, Mobile, TV ont compare_status=ahead, zéro verification_error/inconclusive. Respectivement 66, 90, 86 chemins sémantiques non inspectés ; audit natif toujours obligatoire.
 - Le garde Brain accepte le cache vérifié : adaptation_pending=3, native_reader_acceptance_required=true. Tests verts : Nuvio upstream drift, Nuvio latest-HEAD Lab resolver, Brain Learning workflow, Brain strategy runtime, causal replan, main-only.
 - Aucun provider publié ou réparé par cette amélioration. Prochaine autorité : Repair current-byte ciblé AnimeKai puis UHDMovies, preuves réseau/identité/terminal/playback, uniquement via Brain.
+
+## 2026-10-08 — Brain stalled Repair must hand off real Learning debt
+
+- Canonical UHDMovies Repair `37705963499` passed the Git/client preflight, proved its search route HTTP 200 and materialized current provider bytes but produced `acceptedRepairCount=0`, `noProgressReason=no_new_repair_experiment`, and `deferredLearningProviders=[]` despite accessible HTTP 200 detail responses and no playable output.
+- Root Brain orchestration defect: `run_provider_brain_repair.py` breaks on `stalled`/`exhausted` without declaring genuinely unresolved remainder as LEARN-owned debt. This produces false convergence and repeated unchanged advisor attempts.
+- Fixed in Brain only: `stalled_experiment_learning_handoff` routes remaining providers to `all_deferred` upon stalled/exhausted decisions, but excludes same-byte harness/transport differentials. It emits `FIELD_PROVIDER_BRAIN_STALLED_LEARNING_HANDOFF`; the original failure reason remains explicit. Tests lock UHDMovies-type stall and harness exclusion.
+- No provider bytes were edited by this patch. Evidence still requires Brain-generated new executable strategy, sandbox, current-byte replay, identity and terminal playback verification before promotion.
+

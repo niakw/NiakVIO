@@ -127,6 +127,20 @@ assert mod.experiment_rotation_decision(
 assert mod.experiment_rotation_decision(
     accepted_count=0, remaining_count=3, wave=1, max_waves=5, memory_advanced=False
 )=="stalled"
+
+# UHDMovies Repair 37705963499: an advisor-planned but non-executable
+# hypothesis yielded no accepted candidate, no memory advancement, and
+# previously *zero* Learning debt despite reachable detail pages. The Brain
+# must escalate remaining providers instead of silently dropping them.
+assert mod.stalled_experiment_learning_handoff(
+    ["uhdmovies", "moviebox", "blocked"],
+    {"blocked"},
+) == {"uhdmovies", "moviebox"}
+assert mod.stalled_experiment_learning_handoff(["blocked"], {"blocked"}) == set()
+source_contract = SCRIPT.read_text(encoding="utf-8")
+assert "all_deferred.update(learning_handoff)" in source_contract
+assert "FIELD_PROVIDER_BRAIN_STALLED_LEARNING_HANDOFF" in source_contract
+
 assert mod.experiment_rotation_decision(
     accepted_count=1, remaining_count=3, wave=1, max_waves=5, memory_advanced=True
 )=="materialize"

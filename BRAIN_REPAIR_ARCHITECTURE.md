@@ -1081,3 +1081,8 @@ For the route-terminal family, newer explicit generations are ordered ahead of t
 
 Provider Repair preflight now uses check_nuvio_client_upstreams.py --paths-only to verify exact current upstream branch HEAD, ancestry and all changed path names from commit/tree objects. Rename detection is disabled; old and new paths are conservatively retained. Unknown branches/history or missing tree objects stay fail-closed.
 Semantic paths without readable patches are recorded as semantic_review_unverified_files and classified contract_review_required, never safe_advance_available. Linear known upstream drift can be exercised by isolated Brain Repair, with native reader acceptance still required. Native Labs continue their full semantic content audit. This is a Brain/Core pipeline correction, not a provider mutation.
+
+### Stalled Repair → Learning ownership
+
+An unsuccessful Repair wave with `stalled` or `exhausted` experiment rotation must not become a silent `no_new_repair_experiment` with an empty Learning handoff. The Brain assigns the remaining non-harness-differential providers to `deferredLearningProviders`, preserving the exact stall reason and all negative fingerprints. Learning may synthesize a new executable strategy; it does not gain publication authority without compile/materialization/current-byte media proof. This escalation never manually mutates individual provider code.
+

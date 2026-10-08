@@ -887,6 +887,21 @@ def health_concurrency_for_batch(requested: int, batch_count: int) -> int:
     return count
 
 
+def stalled_experiment_learning_handoff(
+    remaining: list[str], harness_differential: set[str]
+) -> set[str]:
+    """Route genuine unrepairable-in-this-run cases to LEARN without mutation.
+
+    The exact failure/exhaustion reason is kept by the caller. Current-byte
+    evidence must still be independently validated before any publication.
+    """
+    return {
+        provider
+        for provider in remaining
+        if provider and provider not in harness_differential
+    }
+
+
 def experiment_rotation_decision(
     *,
     accepted_count: int,
@@ -1723,6 +1738,21 @@ def main() -> int:
                 no_progress_reason = "rotating_rejected_experiment"
                 continue
             if decision in {"exhausted", "stalled"}:
+                # A stalled generation is LEARN debt, not successful convergence.
+                # Without this handoff, an LLM-advised provider can return zero
+                # accepted candidates and zero deferred providers forever, even
+                # though current HTTP/detail evidence remains actionable.
+                # Keep transport/harness differentials out of mutation Learning.
+                learning_handoff = stalled_experiment_learning_handoff(
+                    remaining, all_harness_differential
+                )
+                all_deferred.update(learning_handoff)
+                if learning_handoff:
+                    print(
+                        "FIELD_PROVIDER_BRAIN_STALLED_LEARNING_HANDOFF "
+                        f"reason={decision} providers={','.join(sorted(learning_handoff))}",
+                        flush=True,
+                    )
                 no_progress_reason = (
                     "experiment_variants_exhausted"
                     if decision == "exhausted"
