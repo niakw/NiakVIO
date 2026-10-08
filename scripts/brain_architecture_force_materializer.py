@@ -19,6 +19,11 @@ from urllib.error import HTTPError
 from urllib.request import Request, urlopen
 
 ROOT = Path(__file__).resolve().parents[1]
+SCRIPTS = Path(__file__).resolve().parent
+if str(SCRIPTS) not in sys.path:
+    sys.path.insert(0, str(SCRIPTS))
+from brain_force_runtime_branch_body import branch_body_edit
+
 FORBIDDEN_PREFIXES = (
     "providers/", "provider-disabled/", "provider-bases/", "vf/",
 )
@@ -1070,6 +1075,25 @@ def _response_format(exact_paths: list[str] | None = None) -> dict[str, Any]:
     }
 
 
+def _branch_body_response_format() -> dict[str, Any]:
+    return {"type": "json_object", "schema": {
+        "type": "object",
+        "properties": {"branchBody": {"type": "string", "minLength": 8, "maxLength": 4200}},
+        "required": ["branchBody"], "additionalProperties": False,
+    }}
+
+
+def _model_edits(
+    planned: dict[str, Any], payload: dict[str, Any], *, root: Path = ROOT,
+) -> list[dict[str, Any]]:
+    if _requires_new_repair_profile(payload) and isinstance(planned.get("branchBody"), str):
+        return [branch_body_edit(
+            planned["branchBody"], payload["blueprint"], root=root,
+            max_find=MAX_FIND, max_replace=MAX_REPLACE,
+        )]
+    return [dict(row) for row in planned.get("edits") or [] if isinstance(row, dict)]
+
+
 def _model_request(
     endpoint: str,
     model: str,
@@ -1162,7 +1186,7 @@ def _model_request(
         "model": model,
         "temperature": 0,
         "max_tokens": max_tokens,
-        "response_format": _response_format(exact_paths),
+        "response_format": _branch_body_response_format() if requires_new_profile else _response_format(exact_paths),
         "messages": [
             {"role": "system", "content": system},
             {
@@ -1622,7 +1646,7 @@ def validated_model_plan(
 ) -> tuple[dict[str, Any], list[dict[str, Any]]]:
     planned = call_model(endpoint, model, payload)
     edits = complete_evolved_profile_wiring(
-        [dict(x) for x in planned.get("edits") or [] if isinstance(x, dict)],
+        _model_edits(planned, payload, root=root),
         payload.get("blueprint"),
         root=root,
     )
@@ -1666,7 +1690,7 @@ def validated_model_plan(
             })
             planned = _request_corrected_plan(endpoint, model, correction_payload)
             edits = complete_evolved_profile_wiring(
-                [dict(x) for x in planned.get("edits") or [] if isinstance(x, dict)],
+                _model_edits(planned, payload, root=root),
                 payload.get("blueprint"),
                 root=root,
             )
@@ -1756,9 +1780,7 @@ def validated_model_plan(
         })
 
         corrected = _request_corrected_plan(endpoint, model, correction_payload)
-        corrected_edits = [
-            dict(x) for x in corrected.get("edits") or [] if isinstance(x, dict)
-        ]
+        corrected_edits = _model_edits(corrected, payload, root=root)
         corrected_edits = _resolve_non_unique_replace_edits(
             corrected_edits,
             correction_payload,
