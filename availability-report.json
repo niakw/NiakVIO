@@ -1,17 +1,17 @@
 {
   "schema_version": 63,
-  "generated_at": "2026-10-08T06:22:18.450105+00:00",
+  "generated_at": "2026-10-08T15:45:18.046476+00:00",
   "test_environment": "github-actions-node",
   "checked_providers": 41,
   "status_counts": {
-    "healthy": 3,
+    "healthy": 5,
     "reachable": 0,
     "blocked": 5,
     "degraded": 1,
-    "no_streams": 14,
+    "no_streams": 13,
     "provider_unreachable": 14,
     "runtime_error": 0,
-    "unavailable": 4,
+    "unavailable": 3,
     "excluded": 0
   },
   "policy": {
@@ -2434,17 +2434,21 @@
     },
     {
       "id": "sekai",
-      "status": "no_streams",
+      "status": "healthy",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
-      "consecutive_successes": 0,
-      "hosts": [],
-      "response_categories": [],
+      "consecutive_successes": 1,
+      "hosts": [
+        "23.mugiwara.one"
+      ],
+      "response_categories": [
+        "playable"
+      ],
       "host_health": {
         "4.mugiwara.one": {
-          "last_checked_at": "2026-10-07T15:40:24.764041+00:00",
+          "last_checked_at": "2026-10-08T15:45:18.046476+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -2455,7 +2459,7 @@
           "consecutive_blocked": 0
         },
         "cdndirector.dailymotion.com": {
-          "last_checked_at": "2026-10-07T15:40:24.764041+00:00",
+          "last_checked_at": "2026-10-08T15:45:18.046476+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -2466,7 +2470,7 @@
           "consecutive_blocked": 0
         },
         "1.mugiwara.one": {
-          "last_checked_at": "2026-10-07T15:40:24.764041+00:00",
+          "last_checked_at": "2026-10-08T15:45:18.046476+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -2477,7 +2481,18 @@
           "consecutive_blocked": 0
         },
         "23.mugiwara.one": {
-          "last_checked_at": "2026-10-07T15:40:24.764041+00:00",
+          "last_checked_at": "2026-10-08T15:45:18.046476+00:00",
+          "last_category": "playable",
+          "reachable": true,
+          "http_status": 206,
+          "latency_ms": 685,
+          "kind": "mp4",
+          "consecutive_hard_failures": 0,
+          "consecutive_successes": 1,
+          "consecutive_blocked": 0
+        },
+        "5.mugiwara.one": {
+          "last_checked_at": "2026-10-08T15:45:18.046476+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -2485,17 +2500,6 @@
           "kind": "mp4",
           "consecutive_hard_failures": 0,
           "consecutive_successes": 0,
-          "consecutive_blocked": 0
-        },
-        "5.mugiwara.one": {
-          "last_checked_at": "2026-10-07T15:40:24.764041+00:00",
-          "last_category": "playable",
-          "reachable": true,
-          "http_status": 206,
-          "latency_ms": 843,
-          "kind": "mp4",
-          "consecutive_hard_failures": 0,
-          "consecutive_successes": 1,
           "consecutive_blocked": 0
         }
       },
@@ -3021,17 +3025,21 @@
     },
     {
       "id": "wookafr",
-      "status": "unavailable",
+      "status": "healthy",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
-      "consecutive_successes": 0,
-      "hosts": [],
-      "response_categories": [],
+      "consecutive_successes": 1,
+      "hosts": [
+        "strm4.uqload.vc"
+      ],
+      "response_categories": [
+        "playable"
+      ],
       "host_health": {
         "lecteurvideo.com": {
-          "last_checked_at": "2026-10-05T05:58:28.241958+00:00",
+          "last_checked_at": "2026-10-08T15:45:18.046476+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -3042,7 +3050,7 @@
           "consecutive_blocked": 0
         },
         "strm6.uqload.vc": {
-          "last_checked_at": "2026-10-05T05:58:28.241958+00:00",
+          "last_checked_at": "2026-10-08T15:45:18.046476+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -3053,18 +3061,18 @@
           "consecutive_blocked": 0
         },
         "strm5.uqload.vc": {
-          "last_checked_at": "2026-10-05T05:58:28.241958+00:00",
-          "last_category": "playable",
-          "reachable": true,
-          "http_status": 200,
-          "latency_ms": 653,
+          "last_checked_at": "2026-10-08T15:45:18.046476+00:00",
+          "last_category": "not_returned",
+          "reachable": false,
+          "http_status": null,
+          "latency_ms": null,
           "kind": "hls",
           "consecutive_hard_failures": 0,
-          "consecutive_successes": 1,
+          "consecutive_successes": 0,
           "consecutive_blocked": 0
         },
         "wishonly.site": {
-          "last_checked_at": "2026-10-05T05:58:28.241958+00:00",
+          "last_checked_at": "2026-10-08T15:45:18.046476+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -3075,14 +3083,14 @@
           "consecutive_blocked": 0
         },
         "strm4.uqload.vc": {
-          "last_checked_at": "2026-10-05T05:58:28.241958+00:00",
-          "last_category": "not_returned",
-          "reachable": false,
-          "http_status": null,
-          "latency_ms": null,
+          "last_checked_at": "2026-10-08T15:45:18.046476+00:00",
+          "last_category": "playable",
+          "reachable": true,
+          "http_status": 200,
+          "latency_ms": 589,
           "kind": "hls",
           "consecutive_hard_failures": 0,
-          "consecutive_successes": 0,
+          "consecutive_successes": 1,
           "consecutive_blocked": 0
         }
       },
