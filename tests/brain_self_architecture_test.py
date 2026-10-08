@@ -292,4 +292,12 @@ with tempfile.TemporaryDirectory(prefix="brain-existing-profile-") as tmp:
     assert new["forcePromotionEligible"] is True, new
 assert "route_transition_graph_v2" in module.fully_installed_repair_profiles()
 
+negative = {"entries": [
+    {"providerId": "demo", "profile": "route_transition_graph_v2", "executionObserved": True, "failures": 1},
+    {"providerId": "demo", "profile": "route_transition_graph_v99", "executionObserved": False, "failures": 10},
+    {"providerId": "other", "profile": "route_transition_graph_v5", "executionObserved": True, "failures": 3},
+]}
+merged = module.merge_executed_repair_negatives({"demo": {"route_transition_graph_v1"}}, negative, {"demo"})
+assert merged == {"demo": {"route_transition_graph_v1", "route_transition_graph_v2"}}, merged
+assert module.build_strategy_blueprints(groups, {"demo"}, merged, existing_executable_profiles=installed)[0]["strategyId"] == "route_transition_graph_v3"
 print("Brain self-architecture tests passed")
