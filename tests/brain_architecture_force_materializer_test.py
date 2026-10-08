@@ -170,6 +170,9 @@ with tempfile.TemporaryDirectory(prefix="brain-arch-force-new-profile-") as tmp:
         "scripts/brain_repair_runtime.py": 'PROFILES = {"route_transition_graph_v1"}\n',
         "engine_v2/scripts/plan-repairs.mjs": 'const PROFILES = ["route_transition_graph_v1"];\n',
         "scripts/adaptive_runtime/runtime_repair.py": (
+            'POST_EXHAUSTION_STRATEGY_PROFILES = {\n'
+            '    "route_transition_graph_v1",\n'
+            '}\n'
             'if new_strategy_id == "route_transition_graph_v1":\n'
             '    pass\n'
         ),
@@ -518,6 +521,9 @@ with tempfile.TemporaryDirectory(prefix="brain-force-autowire-runtime-only-") as
             '};\n'
         ),
         runtime_path: (
+            'POST_EXHAUSTION_STRATEGY_PROFILES = {\n'
+            '    "route_transition_graph_v1",\n'
+            '}\n'
             'if new_strategy_id == "route_transition_graph_v1":\n'
             '    pass\n'
         ),
@@ -1331,6 +1337,9 @@ with tempfile.TemporaryDirectory(prefix="brain-arch-runtime-only-autowire-") as 
             '};\n'
         ),
         "scripts/adaptive_runtime/runtime_repair.py": (
+            'POST_EXHAUSTION_STRATEGY_PROFILES = {\n'
+            '    "route_transition_graph_v2",\n'
+            '}\n'
             'if new_strategy_id == "route_transition_graph_v2":\n'
             '    executor = "retained-graph"\n'
         ),
@@ -1364,9 +1373,24 @@ with tempfile.TemporaryDirectory(prefix="brain-arch-runtime-only-autowire-") as 
         if row["path"] == "engine_v2/scripts/plan-repairs.mjs"
     )
     mod.validate_edits(complete, list(mod.NEW_REPAIR_PROFILE_SURFACES), root=root)
-    changed = mod.validate_materialized_edits(
-        complete, root=root, blueprint=blueprint,
-    )
+    original_validate = mod.validate_blueprint_implementation
+    registration_observed = []
+    try:
+        def verify_runtime_registration(changed, blueprint, *, root, baseline_sources=None):
+            runtime_body = (root / "scripts/adaptive_runtime/runtime_repair.py").read_text(encoding="utf-8")
+            header = runtime_body.split("POST_EXHAUSTION_STRATEGY_PROFILES = {", 1)[1].split("\n}", 1)[0]
+            assert '    "route_transition_graph_v3",' in header, "generated strategy not selectable"
+            assert header.count('    "route_transition_graph_v3",') == 1, "duplicate runtime registration"
+            assert '    "route_transition_graph_v2",' in header, "exhausted parent registration lost"
+            registration_observed.append(True)
+            return original_validate(changed, blueprint, root=root, baseline_sources=baseline_sources)
+        mod.validate_blueprint_implementation = verify_runtime_registration
+        changed = mod.validate_materialized_edits(
+            complete, root=root, blueprint=blueprint,
+        )
+    finally:
+        mod.validate_blueprint_implementation = original_validate
+    assert registration_observed, "fourth runtime selection gate was not exercised"
     assert set(changed) == set(mod.NEW_REPAIR_PROFILE_SURFACES), changed
     assert all((root / path).read_text(encoding="utf-8") == content for path, content in fixtures.items())
     # The Brain cannot autowire a made-up family and must never substitute a
