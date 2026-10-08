@@ -1,3 +1,12 @@
+## 2026-10-08 — Security final gate restored without weakening HTML decoding
+
+- Independent SEC Final Gate 37831172570 on fa260c3 failed `tests/provider_security_hardening_test.py` with `ValueError: substring not found`. The test expected the deleted chained `/&quot;/gi` then `/&amp;/gi` form in `provider_base_store.py`.
+- Actual current Brain/Core player-form code uses `_spv188DecodeAttr` single regex `/& (amp|quot|#39);/gi` (no space in executable regex) and one-pass replacement. The obsolete test did not demonstrate unsafe runtime behavior.
+- On main commits 7930b1b7 and 9483aa8c, replaced the obsolete string-position check with an actual Node evaluation of the **current** source helper, including nested `&amp;lt;` staying `&lt;`, literal quote/amp/apostrophe decode and preserved form URL attribute query. Provider bundles and Core runtime were not edited.
+- SEC Final Gate **37831520001 SUCCESS** on tested SHA `9483aa8c`; this validates the global security hardening tests and exact SHA security check. Open PR count verified zero; issue #69 remains closed/completed as of this check. Provider Non-Regression run 37831519913 SUCCESS on the same SHA.
+- Brain repair status remains separate: latest verified Fast Repair 37830563972 accepted 0/12, deferred 12; exact current FORCE Learning run 37830016250 on f33e474a is still at `Materialize executable Brain architecture FORCE patch`, not provider success. Census 21/46 FULL and 17 repair queue until a new authoritative census proves otherwise.
+- Publication integrity repair: projection run 37830948298 confirms 2 drift providers Flemmix/WookaFR, 0 after rebuild, 0 provider byte changes, reapply fixed point 41, generic publication commits 54750f5 + fa260c3. Domain Refresh prevention/test commits 959b1f2 and 9c265e9. Final CORE Verify on SHA 9483aa8c still pending at this checkpoint.
+
 ## 2026-10-08 — Domain Refresh publication input fixed point restored and guarded
 
 - Independent CORE Verify & Publish 37829013675 on d138cd3d failed at `python scripts/reapply_published_overrides.py --check`: `FIELD_PROVIDER_FAST_FIXED_POINT status=miss reason=provider-policy-changed:flemmix`. This was a **publication metadata/projection integrity** failure, not a playable stream or a Brain provider repair.
