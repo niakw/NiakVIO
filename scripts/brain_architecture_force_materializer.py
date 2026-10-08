@@ -1039,13 +1039,14 @@ def _model_request(
     if requires_new_profile:
         system += (
             " This is an additive Repair-profile evolution: preserve the exhausted evolvesFromStrategyId "
-            "and ADD the new strategyId. Return exactly 3 replace edits, one for each mandatory surface "
-            "listed in exactAllowedPaths. Do not remove, rename, or replace the prior strategy id. "
-            "Do not edit tests in this request. If three edits do not fit "
-            "the model budget, return ONLY one runtime_repair.py replace edit "
-            "with a genuinely new sibling implementation. The materializer "
-            "deterministically wires the registry and JS planner around it; "
-            "the resulting three-source transaction is strictly validated."
+            "and ADD the new strategyId. Prefer exactly ONE replace edit for "
+            "scripts/adaptive_runtime/runtime_repair.py with a genuinely new "
+            "sibling execution branch. Preserve the prior strategy guard unchanged. "
+            "The Brain deterministically wires any missing registry and JS planner "
+            "entries, so do not waste model tokens duplicating boilerplate. "
+            "Return additional replace edits only when essential to the new "
+            "executor behavior (maximum three). Do not edit tests. "
+            "The resulting three-source transaction is strictly validated."
         )
     else:
         system += " Prefer one minimal code edit plus one focused test."
