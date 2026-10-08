@@ -6,6 +6,17 @@
 > **Scope:** provider diagnosis, isolated mutation, Learning escalation, same-byte validation and return to the canonical census.  
 > **Non-goal:** this document does not freeze a provider count, a census result or a run status.
 
+## 2026-10-08 — FORCE: single runtime-edit model contract and deterministic wiring
+
+The 7B architecture FORCE materializer must not ask Qwen to implement the same strategy in three large, unrelated languages/files. On a `requiresNewExecutableRepairProfile` blueprint:
+
+1. The **model's only editable path** is `scripts/adaptive_runtime/runtime_repair.py`, with the exact exhausted parent execution branch and a novel sibling branch in its bounded source context. A second context reduction must re-focus on the causal branch instead of truncating the beginning of a snippet.
+2. The Brain deterministically inserts the new strategy identifier into `scripts/brain_repair_runtime.py` and the causally matched group in `engine_v2/scripts/plan-repairs.mjs`. It must refuse missing, ambiguous, unknown-scope or nonunique parent anchors.
+3. All three changed files must pass syntax checks, distinct profile/parent-guard validation, contract tests and **transactional rollback** before generating any permanent allowlisted architecture patch. A taxonomy-only model output is never acceptable.
+4. Materialized Brain architecture is **not** provider success. The strategy must be selected, execute against rematerialized current provider bytes, reach identity-matched terminal media and pass playback and non-regression. Only the canonical publication/census pipeline may promote a provider.
+
+The 8 October 2026 failure `37834168084` showed a 7B corrective loop retrying the missing planner/registry wiring after contradictory three-surface correction instructions. Commits `1772d040` (pipeline) and `578487c8` (synthetic runtime-only regression) unify the generated edit contract. Current-SHA GitHub Workflow Gate, explicit FORCE and provider playback are independent acceptance gates; see `MEMORY.md` for their exact statuses.
+
 ## 1. Objective
 
 Brain Repair must scale from tens to hundreds of providers without turning each provider into a manual debugging session.
