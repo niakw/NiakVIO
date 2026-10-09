@@ -169,11 +169,6 @@ learning_escalated_2=plan([*base_exhausted,first_escalation_failed],"learning")
 assert learning_escalated_2["experimentExhausted"] is False,learning_escalated_2
 assert learning_escalated_2["postExhaustionStrategyProfile"]=="terminal_request_program_inference_v1",learning_escalated_2
 assert learning_escalated_2["allowedProfiles"]==["terminal_request_program_inference_v1"],learning_escalated_2
-already_failed_preference=plan(
-    [*base_exhausted,first_escalation_failed,second_escalation_failed],
-    "learning","terminal_request_program_inference_v1",
-)
-assert already_failed_preference["postExhaustionStrategyProfile"]!="terminal_request_program_inference_v1",already_failed_preference
 request_fp=learning_escalated_2["strategyImplementationFingerprint"]
 assert len(request_fp)==64 and request_fp!=terminal_fp,learning_escalated_2
 
@@ -183,6 +178,11 @@ second_escalation_failed={
     "executionObserved":True,
     "strategyImplementationFingerprint":request_fp,
 }
+already_failed_preference=plan(
+    [*base_exhausted,first_escalation_failed,second_escalation_failed],
+    "learning","terminal_request_program_inference_v1",
+)
+assert already_failed_preference["postExhaustionStrategyProfile"]!="terminal_request_program_inference_v1",already_failed_preference
 after_second=plan([*base_exhausted,first_escalation_failed,second_escalation_failed],"learning")
 assert after_second["experimentExhausted"] is False,after_second
 assert after_second["postExhaustionStrategyProfile"]=="runtime_response_salvage_v1",after_second
