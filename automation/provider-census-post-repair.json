@@ -3,16 +3,16 @@
   "requested_scope": "all",
   "resolved_scope": "explicit",
   "selected_providers": [
-    "uhdmovies"
+    "4khdhub"
   ],
   "shard_count": 1,
   "shard_index": 0,
   "environment": "node-adaptive-provider-targeted-first-real-stream-census-with-tmdb-runtime-context",
   "fixture_selection_policy": "retained-proof-first-then-provider-targeted-then-representative-then-three-corpus-rotated",
   "provider_count": 1,
-  "task_count": 1,
-  "probe_count": 2,
-  "rotated_task_count": 1,
+  "task_count": 2,
+  "probe_count": 6,
+  "rotated_task_count": 2,
   "max_samples_per_lane": 4,
   "raw_provider_count": 0,
   "playable_provider_count": 0,
@@ -34,7 +34,7 @@
       "wrong_content": 0
     },
     "tv": {
-      "tasks": 0,
+      "tasks": 1,
       "raw": 0,
       "playable": 0,
       "accepted_playable": 0,
@@ -51,28 +51,28 @@
     }
   },
   "status_counts": {
-    "no_streams": 1
+    "no_streams": 2
   },
   "debug_stage_counts": {
-    "provider_network_zero_result": 1
+    "provider_network_zero_result": 2
   },
   "debug_stage_providers": {
     "provider_network_zero_result": [
-      "uhdmovies"
+      "4khdhub"
     ]
   },
   "rows": [
     {
-      "provider_id": "uhdmovies",
-      "provider_name": "📺 UHDMovies",
+      "provider_id": "4khdhub",
+      "provider_name": "📺 4KHDHub",
       "semantic_type": "movie",
-      "fixture_title": "Interstellar",
+      "fixture_title": "The Colony",
       "fixture": {
-        "tmdbId": "157336",
+        "tmdbId": "760873",
         "mediaType": "movie",
         "category": "movie",
-        "title": "Interstellar",
-        "year": 2014
+        "title": "The Colony",
+        "year": 2021
       },
       "streams_returned": 0,
       "announced_player_candidates": 0,
@@ -86,29 +86,30 @@
       "debug_stage": "provider_network_zero_result",
       "debug_model": {
         "strategy": "html_scraper",
-        "source_runtime_family": "catalogue-form-html",
+        "source_runtime_family": "catalogue-html",
         "reconstruction_state": "learning-clean-seed",
         "identity_mode": "catalog_search",
         "requires_tmdb_before_run": true,
         "supported_types": [
-          "movie"
+          "movie",
+          "tv"
         ],
         "route_count": 1,
         "route_kinds": [
           "search"
         ],
         "has_api_recipe": false,
-        "official_site": "https://uhdmovies.autos",
-        "official_hub": "https://mmodlist.org/",
+        "official_site": "https://4khdhub.one",
+        "official_hub": "https://4khdhub.one/",
         "official_api": null
       },
-      "debug_fetch_count": 5,
-      "debug_provider_fetch_count": 4,
+      "debug_fetch_count": 2,
+      "debug_provider_fetch_count": 1,
       "debug_progress_stage": "lookup_only",
       "debug_fetches": [
         {
-          "url": "https://api.themoviedb.org/3/movie/157336?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Crelease_dates&language=fr-FR&api_key=%3Credacted%3E",
-          "response_url": "https://api.themoviedb.org/3/movie/157336?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Crelease_dates&language=fr-FR&api_key=%3Credacted%3E",
+          "url": "https://api.themoviedb.org/3/movie/760873?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Crelease_dates&language=fr-FR&api_key=%3Credacted%3E",
+          "response_url": "https://api.themoviedb.org/3/movie/760873?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Crelease_dates&language=fr-FR&api_key=%3Credacted%3E",
           "method": "GET",
           "status": 200,
           "content_type": "application/json",
@@ -140,341 +141,60 @@
           "declared_indexed_player_candidate_count": 0,
           "declared_player_hosts": [],
           "declared_quality_heights": [],
-          "duration_ms": 62
+          "duration_ms": 48
         },
         {
-          "url": "https://uhdmovies.autos/?s=Interstellar",
-          "response_url": "https://uhdmovies.my/search/Interstellar",
+          "url": "https://4khdhub.one/?s=La%20Colonie%202021",
+          "response_url": "https://4khdhub.one/?s=La%20Colonie%202021",
           "method": "GET",
           "status": 200,
           "content_type": "text/html",
           "challenge": "",
           "response_shape": {
             "kind": "html",
-            "sampleBytes": 65536,
-            "forms": 3,
+            "sampleBytes": 40708,
+            "forms": 1,
             "iframes": 0,
             "videos": 0,
             "sources": 0,
-            "scripts": 21,
-            "anchors": 30,
+            "scripts": 16,
+            "anchors": 42,
             "classTokens": [
-              "sub-menu",
-              "box-inner-p",
-              "container",
-              "entry-category",
-              "entry-image",
-              "gridlove-button-search",
-              "gridlove-search-form",
-              "sanket",
-              "gridlove-actions-button",
-              "gridlove-sidebar-action",
-              "ads-core-ads-offerwall",
-              "gridlove-action-close",
-              "gridlove-copyright",
-              "gridlove-footer",
-              "gridlove-header-wrapper",
-              "gridlove-logo"
+              "movie-card-format",
+              "dropdown-item",
+              "movie-card",
+              "movie-card-content",
+              "movie-card-formats",
+              "movie-card-image",
+              "movie-card-meta",
+              "movie-card-overlay",
+              "movie-card-title",
+              "quality-badges",
+              "nav-item",
+              "nav-link",
+              "sr-only",
+              "dropdown-menu",
+              "space-y-4",
+              "pagination-container"
             ],
             "idTokens": [
-              "AdsCoreLoader102083",
-              "classic-theme-styles-inline-css",
-              "content",
-              "cool-tag-cloud-css",
-              "footer",
-              "global-styles-inline-css",
-              "gridlove-fonts-css",
-              "gridlove-header-responsive",
-              "gridlove-main-css",
-              "gridlove-main-inline-css",
-              "gridlove-main-js",
-              "gridlove-main-js-extra"
+              "back-to-top",
+              "close-mobile-menu",
+              "close-search",
+              "current-year",
+              "logo",
+              "main-nav",
+              "menu-toggle",
+              "mobile-menu-backdrop",
+              "search",
+              "search-backdrop",
+              "search-overlay",
+              "search-toggle"
             ],
             "classFacts": [
               {
-                "token": "sub-menu",
-                "count": 4,
-                "tags": [
-                  "ul"
-                ],
-                "selfHref": 0,
-                "nestedAnchors": 11,
-                "signals": [
-                  "movie",
-                  "download",
-                  "4k",
-                  "1080p",
-                  "year",
-                  "series"
-                ]
-              },
-              {
-                "token": "box-inner-p",
-                "count": 3,
-                "tags": [
-                  "div"
-                ],
-                "selfHref": 0,
-                "nestedAnchors": 23,
-                "signals": [
-                  "download",
-                  "4k",
-                  "1080p",
-                  "year",
-                  "movie"
-                ]
-              },
-              {
-                "token": "container",
-                "count": 6,
-                "tags": [
-                  "div"
-                ],
-                "selfHref": 0,
-                "nestedAnchors": 24,
-                "signals": [
-                  "movie",
-                  "4k",
-                  "1080p",
-                  "download",
-                  "year",
-                  "series"
-                ]
-              },
-              {
-                "token": "entry-category",
-                "count": 3,
-                "tags": [
-                  "div"
-                ],
-                "selfHref": 0,
-                "nestedAnchors": 21,
-                "signals": [
-                  "download",
-                  "4k",
-                  "1080p",
-                  "year",
-                  "movie"
-                ]
-              },
-              {
-                "token": "entry-image",
-                "count": 3,
-                "tags": [
-                  "div"
-                ],
-                "selfHref": 0,
-                "nestedAnchors": 20,
-                "signals": [
-                  "download",
-                  "4k",
-                  "1080p",
-                  "year",
-                  "movie"
-                ]
-              },
-              {
-                "token": "gridlove-button-search",
-                "count": 3,
-                "tags": [
-                  "button"
-                ],
-                "selfHref": 0,
-                "nestedAnchors": 8,
-                "signals": [
-                  "download",
-                  "4k",
-                  "1080p",
-                  "year"
-                ]
-              },
-              {
-                "token": "gridlove-search-form",
-                "count": 3,
-                "tags": [
-                  "form"
-                ],
-                "selfHref": 0,
-                "nestedAnchors": 8,
-                "signals": [
-                  "movie",
-                  "download",
-                  "4k",
-                  "1080p",
-                  "year"
-                ]
-              },
-              {
-                "token": "sanket",
-                "count": 3,
-                "tags": [
-                  "h1"
-                ],
-                "selfHref": 0,
-                "nestedAnchors": 23,
-                "signals": [
-                  "download",
-                  "4k",
-                  "1080p",
-                  "year",
-                  "movie",
-                  "series"
-                ]
-              }
-            ],
-            "markers": [
-              "json-ld",
-              "player",
-              "download"
-            ]
-          },
-          "declared_player_candidate_count": 27,
-          "declared_url_player_candidate_count": 27,
-          "declared_indexed_player_candidate_count": 0,
-          "declared_player_hosts": [
-            "ds.recrampwiped.com",
-            "s.w.org",
-            "schema.org",
-            "uhdmovies.mov",
-            "uhdmovies.my",
-            "yoast.com"
-          ],
-          "declared_quality_heights": [
-            1080,
-            2160
-          ],
-          "duration_ms": 180
-        },
-        {
-          "url": "https://uhdmovies.my/download-interstellar-2014-dual-audio-hindi-english-2160p-4k-1080p-x264-10bit-remux-hdr-dovi-hevc-bluray-esubs/",
-          "response_url": "https://uhdmovies.my/download-interstellar-2014-dual-audio-hindi-english-2160p-4k-1080p-x264-10bit-remux-hdr-dovi-hevc-bluray-esubs/",
-          "method": "GET",
-          "status": 200,
-          "content_type": "text/html",
-          "challenge": "",
-          "response_shape": {
-            "kind": "html",
-            "sampleBytes": 65536,
-            "forms": 2,
-            "iframes": 1,
-            "videos": 0,
-            "sources": 0,
-            "scripts": 5,
-            "anchors": 35,
-            "classTokens": [
-              "mks_separator",
-              "mb-text",
-              "gridlove-actions-button",
-              "gridlove-button-search",
-              "gridlove-search-form",
-              "gridlove-sidebar-action",
-              "sub-menu",
-              "container",
-              "entry-category",
-              "entry-content",
-              "entry-header",
-              "entry-meta",
-              "entry-title",
-              "gridlove-header-wrapper",
-              "gridlove-logo",
-              "gridlove-logo-mini"
-            ],
-            "idTokens": [
-              "classic-theme-styles-inline-css",
-              "content",
-              "cool-tag-cloud-css",
-              "global-styles-inline-css",
-              "gridlove-fonts-css",
-              "gridlove-header-responsive",
-              "gridlove-main-css",
-              "gridlove-main-inline-css",
-              "header",
-              "jquery-core-js",
-              "jquery-migrate-js",
-              "menu-item-150"
-            ],
-            "classFacts": [
-              {
-                "token": "mks_separator",
-                "count": 7,
-                "tags": [
-                  "div"
-                ],
-                "selfHref": 0,
-                "nestedAnchors": 17,
-                "signals": [
-                  "download",
-                  "4k",
-                  "year",
-                  "1080p"
-                ]
-              },
-              {
-                "token": "mb-text",
-                "count": 5,
-                "tags": [
-                  "span"
-                ],
-                "selfHref": 0,
-                "nestedAnchors": 9,
-                "signals": [
-                  "download",
-                  "4k",
-                  "1080p",
-                  "year"
-                ]
-              },
-              {
-                "token": "gridlove-actions-button",
-                "count": 4,
-                "tags": [
-                  "li"
-                ],
-                "selfHref": 0,
-                "nestedAnchors": 24,
-                "signals": [
-                  "movie",
-                  "4k",
-                  "1080p",
-                  "download",
-                  "year"
-                ]
-              },
-              {
-                "token": "gridlove-button-search",
-                "count": 2,
-                "tags": [
-                  "button"
-                ],
-                "selfHref": 0,
-                "nestedAnchors": 24,
-                "signals": [
-                  "movie",
-                  "4k",
-                  "1080p",
-                  "download",
-                  "year"
-                ]
-              },
-              {
-                "token": "gridlove-search-form",
-                "count": 2,
-                "tags": [
-                  "form"
-                ],
-                "selfHref": 0,
-                "nestedAnchors": 24,
-                "signals": [
-                  "movie",
-                  "4k",
-                  "1080p",
-                  "download",
-                  "year"
-                ]
-              },
-              {
-                "token": "gridlove-sidebar-action",
-                "count": 2,
+                "token": "movie-card-format",
+                "count": 12,
                 "tags": [
                   "span"
                 ],
@@ -482,472 +202,145 @@
                 "nestedAnchors": 24,
                 "signals": [
                   "movie",
-                  "download",
-                  "4k",
+                  "series",
                   "1080p",
                   "year"
                 ]
               },
               {
-                "token": "sub-menu",
-                "count": 2,
+                "token": "dropdown-item",
+                "count": 12,
                 "tags": [
-                  "ul"
+                  "a"
                 ],
-                "selfHref": 0,
+                "selfHref": 12,
                 "nestedAnchors": 24,
                 "signals": [
                   "movie",
+                  "series",
                   "4k",
-                  "1080p",
-                  "download",
                   "year"
                 ]
               },
               {
-                "token": "container",
-                "count": 8,
+                "token": "movie-card",
+                "count": 12,
                 "tags": [
+                  "a",
                   "div",
                   "span"
                 ],
-                "selfHref": 0,
+                "selfHref": 1,
                 "nestedAnchors": 24,
                 "signals": [
                   "movie",
-                  "4k",
+                  "series",
                   "1080p",
-                  "download",
                   "year"
                 ]
-              }
-            ],
-            "markers": [
-              "json-ld",
-              "player",
-              "download"
-            ]
-          },
-          "declared_player_candidate_count": 41,
-          "declared_url_player_candidate_count": 41,
-          "declared_indexed_player_candidate_count": 0,
-          "declared_player_hosts": [
-            "en.thenaukriadda.in",
-            "moviesmod.org",
-            "schema.org",
-            "secure.gravatar.com",
-            "uhdmovies.mov",
-            "uhdmovies.my",
-            "yoast.com"
-          ],
-          "declared_quality_heights": [
-            1080,
-            2160
-          ],
-          "duration_ms": 50
-        },
-        {
-          "url": "https://uhdmovies.my/download-interstellar-2014-english-audio-english-1080p-2160p-4k-hevc-bluray-esubs/",
-          "response_url": "https://uhdmovies.my/download-interstellar-2014-english-audio-english-1080p-2160p-4k-hevc-bluray-esubs/",
-          "method": "GET",
-          "status": 200,
-          "content_type": "text/html",
-          "challenge": "",
-          "response_shape": {
-            "kind": "html",
-            "sampleBytes": 65536,
-            "forms": 2,
-            "iframes": 1,
-            "videos": 0,
-            "sources": 0,
-            "scripts": 5,
-            "anchors": 38,
-            "classTokens": [
-              "mks_separator",
-              "mb-text",
-              "gridlove-actions-button",
-              "gridlove-button-search",
-              "gridlove-search-form",
-              "gridlove-sidebar-action",
-              "sub-menu",
-              "container",
-              "entry-category",
-              "entry-content",
-              "entry-header",
-              "entry-meta",
-              "entry-title",
-              "gridlove-header-wrapper",
-              "gridlove-logo",
-              "gridlove-logo-mini"
-            ],
-            "idTokens": [
-              "classic-theme-styles-inline-css",
-              "content",
-              "cool-tag-cloud-css",
-              "global-styles-inline-css",
-              "gridlove-fonts-css",
-              "gridlove-header-responsive",
-              "gridlove-main-css",
-              "gridlove-main-inline-css",
-              "header",
-              "jquery-core-js",
-              "jquery-migrate-js",
-              "menu-item-150"
-            ],
-            "classFacts": [
+              },
               {
-                "token": "mks_separator",
-                "count": 6,
+                "token": "movie-card-content",
+                "count": 12,
                 "tags": [
                   "div"
                 ],
                 "selfHref": 0,
                 "nestedAnchors": 24,
                 "signals": [
-                  "download",
-                  "4k",
+                  "movie",
+                  "series",
                   "1080p",
                   "year",
-                  "movie"
+                  "4k"
                 ]
               },
               {
-                "token": "mb-text",
-                "count": 5,
-                "tags": [
-                  "span"
-                ],
-                "selfHref": 0,
-                "nestedAnchors": 24,
-                "signals": [
-                  "download",
-                  "4k",
-                  "1080p",
-                  "year",
-                  "movie"
-                ]
-              },
-              {
-                "token": "gridlove-actions-button",
-                "count": 4,
-                "tags": [
-                  "li"
-                ],
-                "selfHref": 0,
-                "nestedAnchors": 24,
-                "signals": [
-                  "movie",
-                  "download",
-                  "4k",
-                  "1080p",
-                  "year"
-                ]
-              },
-              {
-                "token": "gridlove-button-search",
-                "count": 2,
-                "tags": [
-                  "button"
-                ],
-                "selfHref": 0,
-                "nestedAnchors": 24,
-                "signals": [
-                  "movie",
-                  "download",
-                  "4k",
-                  "1080p",
-                  "year"
-                ]
-              },
-              {
-                "token": "gridlove-search-form",
-                "count": 2,
-                "tags": [
-                  "form"
-                ],
-                "selfHref": 0,
-                "nestedAnchors": 24,
-                "signals": [
-                  "movie",
-                  "download",
-                  "4k",
-                  "1080p",
-                  "year"
-                ]
-              },
-              {
-                "token": "gridlove-sidebar-action",
-                "count": 2,
-                "tags": [
-                  "span"
-                ],
-                "selfHref": 0,
-                "nestedAnchors": 24,
-                "signals": [
-                  "movie",
-                  "download",
-                  "4k",
-                  "1080p",
-                  "year"
-                ]
-              },
-              {
-                "token": "sub-menu",
-                "count": 2,
-                "tags": [
-                  "ul"
-                ],
-                "selfHref": 0,
-                "nestedAnchors": 24,
-                "signals": [
-                  "movie",
-                  "download",
-                  "4k",
-                  "1080p",
-                  "year"
-                ]
-              },
-              {
-                "token": "container",
-                "count": 8,
-                "tags": [
-                  "div",
-                  "span"
-                ],
-                "selfHref": 0,
-                "nestedAnchors": 24,
-                "signals": [
-                  "movie",
-                  "4k",
-                  "1080p",
-                  "download",
-                  "year"
-                ]
-              }
-            ],
-            "markers": [
-              "json-ld",
-              "player",
-              "download"
-            ]
-          },
-          "declared_player_candidate_count": 41,
-          "declared_url_player_candidate_count": 41,
-          "declared_indexed_player_candidate_count": 0,
-          "declared_player_hosts": [
-            "en.thenaukriadda.in",
-            "moviesmod.org",
-            "schema.org",
-            "secure.gravatar.com",
-            "uhdmovies.mov",
-            "uhdmovies.my",
-            "yoast.com"
-          ],
-          "declared_quality_heights": [
-            1080,
-            2160
-          ],
-          "duration_ms": 59
-        },
-        {
-          "url": "https://uhdmovies.my/download-interstellar-2014-hindi-english-1080p-10bit-2160p-4k-hevc-bluray-esubs/",
-          "response_url": "https://uhdmovies.my/download-interstellar-2014-hindi-english-1080p-10bit-2160p-4k-hevc-bluray-esubs/",
-          "method": "GET",
-          "status": 200,
-          "content_type": "text/html",
-          "challenge": "",
-          "response_shape": {
-            "kind": "html",
-            "sampleBytes": 65536,
-            "forms": 2,
-            "iframes": 1,
-            "videos": 0,
-            "sources": 0,
-            "scripts": 5,
-            "anchors": 38,
-            "classTokens": [
-              "mks_separator",
-              "mb-text",
-              "gridlove-actions-button",
-              "gridlove-button-search",
-              "gridlove-pn-ico",
-              "gridlove-pn-link",
-              "gridlove-search-form",
-              "gridlove-sidebar-action",
-              "row",
-              "sub-menu",
-              "container",
-              "entry-category",
-              "entry-content",
-              "entry-header",
-              "entry-meta",
-              "entry-title"
-            ],
-            "idTokens": [
-              "classic-theme-styles-inline-css",
-              "comments",
-              "content",
-              "cool-tag-cloud-css",
-              "global-styles-inline-css",
-              "gridlove-fonts-css",
-              "gridlove-header-responsive",
-              "gridlove-main-css",
-              "gridlove-main-inline-css",
-              "header",
-              "jquery-core-js",
-              "jquery-migrate-js"
-            ],
-            "classFacts": [
-              {
-                "token": "mks_separator",
-                "count": 4,
+                "token": "movie-card-formats",
+                "count": 12,
                 "tags": [
                   "div"
                 ],
                 "selfHref": 0,
                 "nestedAnchors": 24,
                 "signals": [
-                  "download",
-                  "4k",
+                  "movie",
+                  "series",
                   "1080p",
                   "year",
-                  "movie"
+                  "4k"
                 ]
               },
               {
-                "token": "mb-text",
-                "count": 3,
+                "token": "movie-card-image",
+                "count": 12,
                 "tags": [
-                  "span"
-                ],
-                "selfHref": 0,
-                "nestedAnchors": 23,
-                "signals": [
-                  "movie",
-                  "download",
-                  "4k",
-                  "1080p",
-                  "year"
-                ]
-              },
-              {
-                "token": "gridlove-actions-button",
-                "count": 4,
-                "tags": [
-                  "li"
+                  "div"
                 ],
                 "selfHref": 0,
                 "nestedAnchors": 24,
                 "signals": [
                   "movie",
-                  "download",
-                  "4k",
+                  "series",
                   "1080p",
-                  "year"
+                  "year",
+                  "4k"
                 ]
               },
               {
-                "token": "gridlove-button-search",
-                "count": 2,
+                "token": "movie-card-meta",
+                "count": 12,
                 "tags": [
-                  "button"
+                  "p"
                 ],
                 "selfHref": 0,
                 "nestedAnchors": 24,
                 "signals": [
                   "movie",
-                  "download",
-                  "4k",
+                  "series",
                   "1080p",
-                  "year"
+                  "year",
+                  "4k"
                 ]
               },
               {
-                "token": "gridlove-pn-ico",
-                "count": 2,
+                "token": "movie-card-overlay",
+                "count": 12,
                 "tags": [
-                  "span"
-                ],
-                "selfHref": 0,
-                "nestedAnchors": 1,
-                "signals": [
-                  "download",
-                  "4k",
-                  "1080p",
-                  "year"
-                ]
-              },
-              {
-                "token": "gridlove-pn-link",
-                "count": 2,
-                "tags": [
-                  "span"
-                ],
-                "selfHref": 0,
-                "nestedAnchors": 1,
-                "signals": [
-                  "download",
-                  "4k",
-                  "1080p",
-                  "year"
-                ]
-              },
-              {
-                "token": "gridlove-search-form",
-                "count": 2,
-                "tags": [
-                  "form"
+                  "div"
                 ],
                 "selfHref": 0,
                 "nestedAnchors": 24,
                 "signals": [
                   "movie",
-                  "download",
-                  "4k",
+                  "series",
                   "1080p",
-                  "year"
-                ]
-              },
-              {
-                "token": "gridlove-sidebar-action",
-                "count": 2,
-                "tags": [
-                  "span"
-                ],
-                "selfHref": 0,
-                "nestedAnchors": 24,
-                "signals": [
-                  "movie",
-                  "download",
-                  "4k",
-                  "1080p",
-                  "year"
+                  "year",
+                  "4k"
                 ]
               }
             ],
             "markers": [
               "json-ld",
-              "player",
-              "download"
+              "download",
+              "episode"
             ]
           },
-          "declared_player_candidate_count": 42,
-          "declared_url_player_candidate_count": 42,
+          "declared_player_candidate_count": 18,
+          "declared_url_player_candidate_count": 18,
           "declared_indexed_player_candidate_count": 0,
           "declared_player_hosts": [
-            "en.thenaukriadda.in",
-            "moviesmod.org",
-            "schema.org",
-            "secure.gravatar.com",
-            "uhdmovies.mov",
-            "uhdmovies.my",
-            "yoast.com"
+            "4khdhub.one",
+            "fonts.googleapis.com",
+            "fonts.gstatic.com",
+            "hdhub4u.download",
+            "schema.org"
           ],
           "declared_quality_heights": [
             1080,
             2160
           ],
-          "duration_ms": 39
+          "duration_ms": 386
         }
       ],
       "debug_provider_value_trace_v18": null,
@@ -960,24 +353,25 @@
       "verified": 0,
       "contradictions": 0,
       "identity_safe": true,
-      "duration_ms": 811,
-      "sample_count": 2,
-      "fanout_fixture_title": "Avengers: Endgame",
+      "duration_ms": 2186,
+      "sample_count": 4,
+      "fanout_fixture_title": "Sinners",
       "sample_titles": [
-        "Avengers: Endgame",
-        "Interstellar"
+        "Sinners",
+        "Interstellar",
+        "Mon ninja et moi 3",
+        "The Colony"
       ],
       "adaptive_rotated": true,
       "samples": [
         {
-          "fixture_title": "Avengers: Endgame",
+          "fixture_title": "Sinners",
           "fixture": {
-            "slug": "avengers-endgame-2019",
-            "tmdbId": "299534",
+            "tmdbId": "1233413",
             "mediaType": "movie",
             "category": "movie",
-            "title": "Avengers: Endgame",
-            "year": 2019
+            "title": "Sinners",
+            "year": 2025
           },
           "status": "no_streams",
           "debug_stage": "provider_network_zero_result",
@@ -986,7 +380,7 @@
           "playable": 0,
           "verified": 0,
           "contradictions": 0,
-          "duration_ms": 295,
+          "duration_ms": 454,
           "streams_returned": 0,
           "announced_player_candidates": 0,
           "announced_variant_candidates": 0,
@@ -1012,7 +406,410 @@
           "playable": 0,
           "verified": 0,
           "contradictions": 0,
-          "duration_ms": 402,
+          "duration_ms": 447,
+          "streams_returned": 0,
+          "announced_player_candidates": 0,
+          "announced_variant_candidates": 0,
+          "announced_player_hosts": [],
+          "announced_quality_heights": [],
+          "explored_player_requests": 0,
+          "explored_player_hosts": [],
+          "variant_fanout_state": "not-observed"
+        },
+        {
+          "fixture_title": "Mon ninja et moi 3",
+          "fixture": {
+            "tmdbId": "1215638",
+            "mediaType": "movie",
+            "category": "movie",
+            "title": "Mon ninja et moi 3",
+            "year": 2025
+          },
+          "status": "no_streams",
+          "debug_stage": "provider_network_zero_result",
+          "debug_progress_stage": "lookup_only",
+          "raw": 0,
+          "playable": 0,
+          "verified": 0,
+          "contradictions": 0,
+          "duration_ms": 663,
+          "streams_returned": 0,
+          "announced_player_candidates": 0,
+          "announced_variant_candidates": 0,
+          "announced_player_hosts": [],
+          "announced_quality_heights": [],
+          "explored_player_requests": 0,
+          "explored_player_hosts": [],
+          "variant_fanout_state": "not-observed"
+        },
+        {
+          "fixture_title": "The Colony",
+          "fixture": {
+            "tmdbId": "760873",
+            "mediaType": "movie",
+            "category": "movie",
+            "title": "The Colony",
+            "year": 2021
+          },
+          "status": "no_streams",
+          "debug_stage": "provider_network_zero_result",
+          "debug_progress_stage": "lookup_only",
+          "raw": 0,
+          "playable": 0,
+          "verified": 0,
+          "contradictions": 0,
+          "duration_ms": 439,
+          "streams_returned": 0,
+          "announced_player_candidates": 0,
+          "announced_variant_candidates": 0,
+          "announced_player_hosts": [],
+          "announced_quality_heights": [],
+          "explored_player_requests": 0,
+          "explored_player_hosts": [],
+          "variant_fanout_state": "not-observed"
+        }
+      ],
+      "provider_budget_seconds": 90,
+      "provider_budget_exhausted": false
+    },
+    {
+      "provider_id": "4khdhub",
+      "provider_name": "📺 4KHDHub",
+      "semantic_type": "tv",
+      "fixture_title": "Revenant",
+      "fixture": {
+        "tmdbId": "210702",
+        "mediaType": "tv",
+        "category": "tv",
+        "title": "Revenant",
+        "year": 2023,
+        "season": 1,
+        "episode": 1
+      },
+      "streams_returned": 0,
+      "announced_player_candidates": 0,
+      "announced_variant_candidates": 0,
+      "announced_player_hosts": [],
+      "announced_quality_heights": [],
+      "explored_player_requests": 0,
+      "explored_player_hosts": [],
+      "variant_fanout_state": "not-observed",
+      "status": "no_streams",
+      "debug_stage": "provider_network_zero_result",
+      "debug_model": {
+        "strategy": "html_scraper",
+        "source_runtime_family": "catalogue-html",
+        "reconstruction_state": "learning-clean-seed",
+        "identity_mode": "catalog_search",
+        "requires_tmdb_before_run": true,
+        "supported_types": [
+          "movie",
+          "tv"
+        ],
+        "route_count": 1,
+        "route_kinds": [
+          "search"
+        ],
+        "has_api_recipe": false,
+        "official_site": "https://4khdhub.one",
+        "official_hub": "https://4khdhub.one/",
+        "official_api": null
+      },
+      "debug_fetch_count": 2,
+      "debug_provider_fetch_count": 1,
+      "debug_progress_stage": "lookup_only",
+      "debug_fetches": [
+        {
+          "url": "https://api.themoviedb.org/3/tv/210702?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Ccontent_ratings&language=fr-FR&api_key=%3Credacted%3E",
+          "response_url": "https://api.themoviedb.org/3/tv/210702?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Ccontent_ratings&language=fr-FR&api_key=%3Credacted%3E",
+          "method": "GET",
+          "status": 200,
+          "content_type": "application/json",
+          "challenge": "",
+          "response_shape": {
+            "kind": "json",
+            "top": "object",
+            "keys": [
+              "adult",
+              "backdrop_path",
+              "created_by",
+              "episode_run_time",
+              "first_air_date",
+              "genres",
+              "homepage",
+              "id",
+              "in_production",
+              "languages",
+              "last_air_date",
+              "last_episode_to_air",
+              "name",
+              "next_episode_to_air",
+              "networks",
+              "number_of_episodes"
+            ]
+          },
+          "declared_player_candidate_count": 0,
+          "declared_url_player_candidate_count": 0,
+          "declared_indexed_player_candidate_count": 0,
+          "declared_player_hosts": [],
+          "declared_quality_heights": [],
+          "duration_ms": 50
+        },
+        {
+          "url": "https://4khdhub.one/?s=Revenant%20Season%201",
+          "response_url": "https://4khdhub.one/?s=Revenant%20Season%201",
+          "method": "GET",
+          "status": 200,
+          "content_type": "text/html",
+          "challenge": "",
+          "response_shape": {
+            "kind": "html",
+            "sampleBytes": 21957,
+            "forms": 1,
+            "iframes": 0,
+            "videos": 0,
+            "sources": 0,
+            "scripts": 16,
+            "anchors": 31,
+            "classTokens": [
+              "dropdown-item",
+              "movie-card-format",
+              "nav-item",
+              "nav-link",
+              "sr-only",
+              "dropdown-menu",
+              "space-y-4",
+              "pagination-container",
+              "card-grid",
+              "container",
+              "dark",
+              "fixed",
+              "flex-1",
+              "header",
+              "latest-releases",
+              "latest-releases-header"
+            ],
+            "idTokens": [
+              "back-to-top",
+              "close-mobile-menu",
+              "close-search",
+              "current-year",
+              "logo",
+              "main-nav",
+              "menu-toggle",
+              "mobile-menu-backdrop",
+              "search",
+              "search-backdrop",
+              "search-overlay",
+              "search-toggle"
+            ],
+            "classFacts": [
+              {
+                "token": "dropdown-item",
+                "count": 12,
+                "tags": [
+                  "a"
+                ],
+                "selfHref": 12,
+                "nestedAnchors": 24,
+                "signals": [
+                  "movie",
+                  "series",
+                  "4k",
+                  "year"
+                ]
+              },
+              {
+                "token": "movie-card-format",
+                "count": 10,
+                "tags": [
+                  "span"
+                ],
+                "selfHref": 0,
+                "nestedAnchors": 24,
+                "signals": [
+                  "movie",
+                  "4k",
+                  "1080p",
+                  "year"
+                ]
+              },
+              {
+                "token": "nav-item",
+                "count": 7,
+                "tags": [
+                  "li"
+                ],
+                "selfHref": 0,
+                "nestedAnchors": 24,
+                "signals": [
+                  "movie",
+                  "series",
+                  "4k"
+                ]
+              },
+              {
+                "token": "nav-link",
+                "count": 7,
+                "tags": [
+                  "a"
+                ],
+                "selfHref": 7,
+                "nestedAnchors": 24,
+                "signals": [
+                  "movie",
+                  "series",
+                  "4k",
+                  "year"
+                ]
+              },
+              {
+                "token": "sr-only",
+                "count": 4,
+                "tags": [
+                  "span"
+                ],
+                "selfHref": 0,
+                "nestedAnchors": 15,
+                "signals": [
+                  "movie",
+                  "series",
+                  "4k",
+                  "season",
+                  "1080p",
+                  "year"
+                ]
+              },
+              {
+                "token": "dropdown-menu",
+                "count": 3,
+                "tags": [
+                  "ul"
+                ],
+                "selfHref": 0,
+                "nestedAnchors": 24,
+                "signals": [
+                  "movie",
+                  "series",
+                  "4k"
+                ]
+              },
+              {
+                "token": "space-y-4",
+                "count": 3,
+                "tags": [
+                  "div"
+                ],
+                "selfHref": 0,
+                "nestedAnchors": 11,
+                "signals": [
+                  "movie",
+                  "year"
+                ]
+              },
+              {
+                "token": "pagination-container",
+                "count": 2,
+                "tags": [
+                  "div"
+                ],
+                "selfHref": 0,
+                "nestedAnchors": 12,
+                "signals": [
+                  "movie",
+                  "year"
+                ]
+              }
+            ],
+            "markers": [
+              "json-ld",
+              "download",
+              "episode"
+            ]
+          },
+          "declared_player_candidate_count": 16,
+          "declared_url_player_candidate_count": 16,
+          "declared_indexed_player_candidate_count": 0,
+          "declared_player_hosts": [
+            "4khdhub.one",
+            "fonts.googleapis.com",
+            "fonts.gstatic.com",
+            "hdhub4u.download",
+            "schema.org"
+          ],
+          "declared_quality_heights": [
+            1080,
+            2160
+          ],
+          "duration_ms": 421
+        }
+      ],
+      "debug_provider_value_trace_v18": null,
+      "debug_provider_value_trace_history_v21": [],
+      "debug_provider_runtime_dispatch_error_v1": null,
+      "debug_identity_reasons": [],
+      "stderr_tail": "FIELD_TMDB_PROBE_CONTEXT state=core_ready credential_visible=false metadata_hydrated=false dynamic=true core_capability=true\n",
+      "raw": 0,
+      "playable": 0,
+      "verified": 0,
+      "contradictions": 0,
+      "identity_safe": true,
+      "duration_ms": 1011,
+      "sample_count": 2,
+      "fanout_fixture_title": "Breaking Bad",
+      "sample_titles": [
+        "Breaking Bad",
+        "Revenant"
+      ],
+      "adaptive_rotated": true,
+      "samples": [
+        {
+          "fixture_title": "Breaking Bad",
+          "fixture": {
+            "tmdbId": "1396",
+            "mediaType": "tv",
+            "category": "tv",
+            "title": "Breaking Bad",
+            "year": 2008,
+            "season": 1,
+            "episode": 1
+          },
+          "status": "no_streams",
+          "debug_stage": "provider_network_zero_result",
+          "debug_progress_stage": "lookup_only",
+          "raw": 0,
+          "playable": 0,
+          "verified": 0,
+          "contradictions": 0,
+          "duration_ms": 445,
+          "streams_returned": 0,
+          "announced_player_candidates": 0,
+          "announced_variant_candidates": 0,
+          "announced_player_hosts": [],
+          "announced_quality_heights": [],
+          "explored_player_requests": 0,
+          "explored_player_hosts": [],
+          "variant_fanout_state": "not-observed"
+        },
+        {
+          "fixture_title": "Revenant",
+          "fixture": {
+            "tmdbId": "210702",
+            "mediaType": "tv",
+            "category": "tv",
+            "title": "Revenant",
+            "year": 2023,
+            "season": 1,
+            "episode": 1
+          },
+          "status": "no_streams",
+          "debug_stage": "provider_network_zero_result",
+          "debug_progress_stage": "lookup_only",
+          "raw": 0,
+          "playable": 0,
+          "verified": 0,
+          "contradictions": 0,
+          "duration_ms": 476,
           "streams_returned": 0,
           "announced_player_candidates": 0,
           "announced_variant_candidates": 0,
