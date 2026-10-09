@@ -65,12 +65,20 @@ def branch_body_edit(
         lines = guarded.splitlines(keepends=True)
         code = textwrap.dedent("".join(lines[1:])).strip("\n")
 
-    if "new_strategy_id" in code:
-        raise ValueError("architecture FORCE branchBody contains strategy guard or selector mutation")
     try:
         parsed = ast.parse("if True:\n" + textwrap.indent(code + "\n", "    "))
     except SyntaxError as exc:
         raise ValueError("architecture FORCE branchBody syntax invalid: " + str(exc.msg)) from exc
+    # The old substring ban rejected valid Python whenever a Qwen comment or
+    # media label merely mentioned "new_strategy_id". Guard ownership is an
+    # AST property, NOT a byte substring property: only executable references
+    # to the selector are forbidden. Constants/comments cannot alter strategy
+    # selection and must not burn an entire FORCE run.
+    if any(
+        isinstance(node, ast.Name) and node.id == "new_strategy_id"
+        for node in ast.walk(parsed)
+    ):
+        raise ValueError("architecture FORCE branchBody cannot read or mutate runtime strategy selector")
     nodes = parsed.body[0].body
     if not any(
         not isinstance(node, ast.Pass)
