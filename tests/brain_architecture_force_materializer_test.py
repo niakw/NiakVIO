@@ -340,6 +340,55 @@ assert all(
     for text in new_profile_compact["sources"].values()
 )
 
+# Before Qwen authors an entirely new Repair strategy, the Brain must reuse
+# verified negative execution signatures from THIS provider, without leaking
+# URLs/secrets or treating prior failures as playable proof.
+with tempfile.TemporaryDirectory(prefix="brain-force-negative-evidence-") as tmp:
+    evidence_root = Path(tmp)
+    (evidence_root / "automation").mkdir(parents=True)
+    (evidence_root / "automation/provider-census-status.json").write_text(
+        json.dumps({"providers": [
+            {"provider": "4khdhub", "status": "ROUTE PROVEN",
+             "dominantIssue": "provider_network_zero_result×2", "repairEligible": True},
+            {"provider": "other", "status": "FULL OK", "dominantIssue": ""},
+        ]}), encoding="utf-8",
+    )
+    (evidence_root / "automation/brain-repair-memory.json").write_text(
+        json.dumps({"entries": [
+            {"providerId": "4khdhub", "executionObserved": True,
+             "lastOutcome": "rejected", "profile": "route_transition_graph_v2",
+             "failureClass": "route_proven_gap", "observedPipelineStage": "player",
+             "lastReason": "required_category_playable_proof:movie,tv"},
+            {"providerId": "4khdhub", "executionObserved": True,
+             "lastOutcome": "rejected", "profile": "secret_override",
+             "lastReason": "https://private.example/token=bad"},
+            {"providerId": "other", "executionObserved": True,
+             "lastOutcome": "rejected", "profile": "unrelated",
+             "lastReason": "other-provider-failure"},
+        ]}), encoding="utf-8",
+    )
+    causal_payload = mod._new_repair_profile_payload(
+        {
+            **new_profile_payload,
+            "blueprint": {
+                **new_profile_payload["blueprint"],
+                "providers": ["4khdhub"],
+            },
+        }, root=evidence_root,
+    )
+    causal = causal_payload["causalNegativeEvidence"]
+    assert causal["authority"] == "sanitized-negatives-only-not-playback-proof"
+    assert causal["currentProviderObservations"][0]["dominantFailure"] == "provider_network_zero_resultx2"
+    assert causal["previouslyExecutedFailures"] == [{
+        "provider": "4khdhub",
+        "profile": "route_transition_graph_v2",
+        "failureClass": "route_proven_gap",
+        "pipelineStage": "player",
+        "observedFailure": "required_category_playable_proof:movie,tv",
+    }], causal
+    assert "private.example" not in json.dumps(causal)
+    assert "other-provider-failure" not in json.dumps(causal)
+
 profile_calls = []
 original_request = mod._model_request
 try:
