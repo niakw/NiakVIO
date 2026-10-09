@@ -618,6 +618,55 @@ with tempfile.TemporaryDirectory(prefix="brain-force-body-only-") as tmp:
     mod.validate_edits(complete, list(mod.NEW_REPAIR_PROFILE_SURFACES), root=root)
     assert set(mod.validate_materialized_edits(complete, root=root, blueprint=blueprint)) == set(fixtures)
     assert all((root / k).read_text(encoding="utf-8") == v for k, v in fixtures.items())
+    # 7B sometimes wraps its valid code in the generated child's guard.
+    # Brain must remove ONLY that guard, never mutate the parent.
+    wrapped_body = (
+        'elif new_strategy_id == "route_transition_graph_v3":\n'
+        '    search_paths = _unique_routes(configured_search, learned_search, limit=16)\n'
+        '    request_recipes = _unique_request_recipes(current_request_recipes, limit=24)\n'
+    )
+    wrapped_edits = mod._model_edits({"branchBody": wrapped_body}, payload, root=root)
+    assert wrapped_edits == output, "a valid child-only wrapper must normalize to the same guarded bytes"
+    for bad_wrapper in (
+        'elif new_strategy_id == "route_transition_graph_v2":\n    search_paths = []\n',
+        'elif new_strategy_id == "route_transition_graph_v3":\n'
+        '    search_paths = []\n'
+        'else:\n'
+        '    search_paths = ["/unsafe-fallback"]\n',
+        'elif new_strategy_id == "route_transition_graph_v3":\n'
+        '    search_paths = []\n'
+        'elif new_strategy_id == "route_transition_graph_v2":\n'
+        '    search_paths = []\n',
+    ):
+        try:
+            mod._model_edits({"branchBody": bad_wrapper}, payload, root=root)
+        except ValueError:
+            pass
+        else:
+            raise AssertionError("multi-branch, parent or fallback guard accepted")
+
+    # A rejected branchBody must be retried by the Brain, not abort the whole
+    # Learning cohort outside the materializer's correction loop.
+    original_correction = mod._request_corrected_plan
+    correction_calls = []
+    try:
+        def fake_body_correction(endpoint, model, retry_payload):
+            correction_calls.append(retry_payload)
+            assert retry_payload["correctionReason"] == "branch-body-validation"
+            assert retry_payload["correctionContract"]["branchBodyOnly"] is True
+            return {"branchBody": body}
+        mod._request_corrected_plan = fake_body_correction
+        corrected, corrected_edits = mod._validated_generated_edits(
+            "http://127.0.0.1:8080", "mock-7b", payload,
+            {"branchBody": 'if new_strategy_id == "route_transition_graph_v2":\n    search_paths = []\n'},
+            root=root,
+        )
+        assert corrected == {"branchBody": body}
+        assert corrected_edits == output
+        assert len(correction_calls) == 1
+    finally:
+        mod._request_corrected_plan = original_correction
+
     for bad_body in ("pass\n", "new_strategy_id = 'route_transition_graph_v3'\n", "if :(\n"):
         try:
             mod._model_edits({"branchBody": bad_body}, payload, root=root)
