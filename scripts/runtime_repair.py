@@ -363,7 +363,7 @@ def identity_contradiction_count(result: dict[str, Any]) -> int:
 
 
 _NETWORK_STAGE_RANK = {
-    "search": 1, "lookup": 1, "lookup_only": 1, "catalogue": 1,
+    "search": 1, "lookup": 1, "lookup_only": 1, "content_lookup": 1, "catalogue": 1,
     "detail": 2, "content_detail": 2, "metadata": 2,
     "episode": 3, "season": 3,
     "embed": 4, "player": 4,

@@ -62,6 +62,15 @@ repeated_search = result("no_streams", 100, [
 ok, reason = runtime.compare_exploration_progress(old_search, repeated_search)
 assert not ok and reason == "exploration_request_amplification_without_frontier", (ok, reason)
 assert runtime._observed_provider_frontier(repeated_search) == (1, "search")
+# Real OPS harness observations use content_lookup for searchable HTTP 200
+# pages; that stage must never be mistaken for a detail/player transition.
+real_harness_lookup = result("no_streams", 100, [
+    {"status": 200, "infrastructure": False, "stage": "content_lookup"},
+])
+assert runtime._observed_provider_frontier(real_harness_lookup) == (1, "content_lookup")
+ok, reason = runtime.compare_exploration_progress(real_harness_lookup, repeated_search)
+assert not ok and reason == "exploration_request_amplification_without_frontier", (ok, reason)
+
 
 # A real transition beyond lookup is useful Learning evidence (not FULL):
 # the candidate must still independently pass playable identity tests.
