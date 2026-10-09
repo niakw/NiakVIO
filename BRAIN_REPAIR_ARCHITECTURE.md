@@ -17,6 +17,10 @@ The 7B architecture FORCE materializer must not ask Qwen to implement the same s
 
 The 8 October 2026 failure `37834168084` showed a 7B corrective loop retrying the missing planner/registry wiring after contradictory three-surface correction instructions. Commits `1772d040` (pipeline) and `578487c8` (synthetic runtime-only regression) unify the generated edit contract. Current-SHA GitHub Workflow Gate, explicit FORCE and provider playback are independent acceptance gates; see `MEMORY.md` for their exact statuses.
 
+## 2026-10-09 — Branch-body corrections must stay within the Brain pipeline
+
+A Qwen branchBody may be wrapped in its own requested `if/elif new_strategy_id == child` despite the structured contract. The Brain validates the AST and extracts only a single exact-child body; it **never** copies or broadens an exhausted parent guard, accepts a second branch/else, or accepts a no-op implementation. Any other malformed algorithm must receive a bounded, targeted correction request **before** the normal bounded edit and materialized-test loop. A failure must be visible in Learning evidence; a model schema violation is not a provider failure. True acceptance still demands current-byte, correct-title terminal playback, not parser success.
+
 ## 1. Objective
 
 Brain Repair must scale from tens to hundreds of providers without turning each provider into a manual debugging session.
