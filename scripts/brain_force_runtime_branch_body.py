@@ -29,6 +29,12 @@ def branch_body_edit(
     if not STRATEGY_ID.fullmatch(child) or not STRATEGY_ID.fullmatch(parent) or child == parent:
         raise ValueError("architecture FORCE invalid child/parent strategy IDs")
     code = textwrap.dedent(str(body or "")).strip("\n")
+    # Harmless leading Qwen comments are metadata, not an executor algorithm;
+    # remove only comment-only prefix lines before inspecting a wrapper guard.
+    lines = code.splitlines(keepends=True)
+    while lines and lines[0].lstrip().startswith("#"):
+        lines.pop(0)
+    code = "".join(lines).strip("\n")
     if not code.strip() or len(code) > 4200:
         raise ValueError("architecture FORCE branchBody must contain bounded statements")
     if "\t" in code:
@@ -38,7 +44,7 @@ def branch_body_edit(
     # if/elif guard, despite the body-only schema. Strip ONLY an exactly
     # child-bound single guard, by AST; never import/copy/modify the exhausted
     # parent, or accept multiple branches or an else fallback.
-    if re.match(r"^\s*(?:if|elif)\s+new_strategy_id\s*==", code):
+    if re.match(r"^\s*(?:if|elif)\s+new_strategy_id\s*(?:==|in\b)", code):
         guarded = re.sub(r"^\s*elif\b", "if", code, count=1)
         try:
             guarded_tree = ast.parse(guarded + "\n")
@@ -48,17 +54,28 @@ def branch_body_edit(
             raise ValueError("architecture FORCE branchBody must contain one new child guard")
         branch = guarded_tree.body[0]
         condition = branch.test
-        if (
-            branch.orelse
-            or not isinstance(condition, ast.Compare)
-            or not isinstance(condition.left, ast.Name)
-            or condition.left.id != "new_strategy_id"
-            or len(condition.ops) != 1
-            or not isinstance(condition.ops[0], ast.Eq)
-            or len(condition.comparators) != 1
-            or not isinstance(condition.comparators[0], ast.Constant)
-            or condition.comparators[0].value != child
-        ):
+        condition_is_child = (
+            isinstance(condition, ast.Compare)
+            and isinstance(condition.left, ast.Name)
+            and condition.left.id == "new_strategy_id"
+            and len(condition.ops) == 1
+            and len(condition.comparators) == 1
+            and (
+                (
+                    isinstance(condition.ops[0], ast.Eq)
+                    and isinstance(condition.comparators[0], ast.Constant)
+                    and condition.comparators[0].value == child
+                )
+                or (
+                    isinstance(condition.ops[0], ast.In)
+                    and isinstance(condition.comparators[0], (ast.Set, ast.List, ast.Tuple))
+                    and len(condition.comparators[0].elts) == 1
+                    and isinstance(condition.comparators[0].elts[0], ast.Constant)
+                    and condition.comparators[0].elts[0].value == child
+                )
+            )
+        )
+        if branch.orelse or not condition_is_child:
             raise ValueError("architecture FORCE branchBody guard is not isolated to new child")
         # Source extraction preserves the LLM-authored algorithm; the guard is
         # Brain-owned and regenerated from the trusted blueprint.
