@@ -362,6 +362,45 @@ def identity_contradiction_count(result: dict[str, Any]) -> int:
     )
 
 
+_NETWORK_STAGE_RANK = {
+    "search": 1, "lookup": 1, "lookup_only": 1, "catalogue": 1,
+    "detail": 2, "content_detail": 2, "metadata": 2, "api": 2,
+    "episode": 3, "season": 3,
+    "embed": 4, "player": 4,
+    "source": 5, "stream": 5, "sources": 5,
+    "manifest": 6, "segment": 6, "terminal": 6, "media": 6,
+}
+
+
+def _observed_provider_frontier(result: dict[str, Any]) -> tuple[int, str]:
+    """Deepest *observed* provider stage, never a model's unexecuted proposal.
+
+    A count of repeated HTTP 200 search pages is not progress after search
+    already works. Require an actual successful provider request at a deeper
+    stage. Do not infer a terminal stream from an HTML response.
+    """
+    best_rank, best_stage = 0, ""
+    provider_success = False
+    for row in observations(result):
+        status = row.get("status")
+        if row.get("infrastructure") or not isinstance(status, int) or not 200 <= status < 400:
+            continue
+        provider_success = True
+        for name in ("stage", "route_role", "role", "phase"):
+            stage = str(row.get(name) or "").strip().casefold().replace("-", "_")
+            rank = _NETWORK_STAGE_RANK.get(stage, 0)
+            if rank > best_rank:
+                best_rank, best_stage = rank, stage
+    if provider_success:
+        for test in _tests(result):
+            for name in ("debug_progress_stage", "progress_stage"):
+                stage = str(test.get(name) or "").strip().casefold().replace("-", "_")
+                rank = _NETWORK_STAGE_RANK.get(stage, 0)
+                if rank > best_rank:
+                    best_rank, best_stage = rank, stage
+    return best_rank, best_stage
+
+
 def compare_exploration_progress(parent: dict[str, Any], repaired: dict[str, Any]) -> tuple[bool, str]:
     """Accept diagnostic progress for Brain sandbox chaining only.
 
@@ -397,15 +436,27 @@ def compare_exploration_progress(parent: dict[str, Any], repaired: dict[str, Any
         reasons.append("provider-success")
     if repaired_accessible and not parent_accessible:
         reasons.append("provider-access")
+    old_frontier, _ = _observed_provider_frontier(parent)
+    new_frontier, stage = _observed_provider_frontier(repaired)
+    frontier_gain = new_frontier > old_frontier
+    if frontier_gain:
+        reasons.append("provider-frontier:" + stage)
     if repaired_requests > parent_requests:
-        reasons.append("provider-requests")
+        # One first successful provider request is real access evidence. But
+        # once a parent already has successful provider requests, merely
+        # repeating search/lookup pages with more aliases is not causal
+        # progress. The new child must reach a strictly deeper observed stage.
+        if parent_requests == 0 or frontier_gain:
+            reasons.append("provider-requests")
 
-    # Score/status-only movement is too weak for chaining. Require concrete
-    # provider/network/media evidence so a cosmetic classifier change cannot
-    # become the parent of another mutation.
+    # Score/status-only or request-volume-only movement is insufficient for
+    # Brain sandbox chaining. Avoid promoting endless no-streams HTTP 200
+    # search retries as successful Learning generations.
     if not reasons:
+        if repaired_requests > parent_requests and parent_requests > 0:
+            return False, "exploration_request_amplification_without_frontier"
         return False, "exploration_no_causal_evidence_gain"
-    if quality_vector(repaired) <= quality_vector(parent):
+    if quality_vector(repaired) <= quality_vector(parent) and not frontier_gain:
         return False, "exploration_no_quality_gain"
     return True, "sandbox_diagnostic_progress:" + ",".join(reasons)
 

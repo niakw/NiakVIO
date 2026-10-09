@@ -48,6 +48,44 @@ ok,reason=runtime.compare_exploration_progress(parent,progress)
 assert ok,reason
 assert "provider-" in reason,reason
 
+# A second HTTP 200 at the *same search frontier* must not be interpreted
+# as Brain success. This was the actual 4KHDHub v3 failure mode: more requests,
+# still 0 details, 0 media and 0 playable streams.
+old_search = result("no_streams", 100, [
+    {"status": 200, "infrastructure": False, "stage": "search"},
+])
+repeated_search = result("no_streams", 100, [
+    {"status": 200, "infrastructure": False, "stage": "search"},
+    {"status": 200, "infrastructure": False, "stage": "search"},
+    {"status": 200, "infrastructure": False, "stage": "search"},
+])
+ok, reason = runtime.compare_exploration_progress(old_search, repeated_search)
+assert not ok and reason == "exploration_request_amplification_without_frontier", (ok, reason)
+assert runtime._observed_provider_frontier(repeated_search) == (1, "search")
+
+# A real transition beyond lookup is useful Learning evidence (not FULL):
+# the candidate must still independently pass playable identity tests.
+observed_detail = result("no_streams", 100, [
+    {"status": 200, "infrastructure": False, "stage": "search"},
+    {"status": 200, "infrastructure": False, "stage": "detail"},
+])
+ok, reason = runtime.compare_exploration_progress(old_search, observed_detail)
+assert ok and "provider-frontier:detail" in reason, (ok, reason)
+
+# An HTTP 200 TMDB/infrastructure page does not prove provider frontier gain.
+infrastructure_detail = result("no_streams", 100, [
+    {"status": 200, "infrastructure": False, "stage": "search"},
+    {"status": 200, "infrastructure": True, "stage": "detail"},
+])
+ok, reason = runtime.compare_exploration_progress(old_search, infrastructure_detail)
+assert not ok, (ok, reason)
+
+# New static proposal stages without an observed provider HTTP response are
+# not enough to change Learning state.
+invented_detail = result("no_streams", 100, [])
+invented_detail["tests"][0]["debug_progress_stage"] = "detail"
+assert runtime._observed_provider_frontier(invented_detail) == (0, "")
+
 score_only=result("no_streams",100,[])
 ok,reason=runtime.compare_exploration_progress(parent,score_only)
 assert not ok and reason=="exploration_no_causal_evidence_gain",(ok,reason)
