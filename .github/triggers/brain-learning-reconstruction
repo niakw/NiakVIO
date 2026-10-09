@@ -1,13 +1,13 @@
 Brain-first representative provider FORCE: learn a genuinely novel executable v3 after observed v1/v2 failure; no manual provider mutation.
 source_census_run: 37960829689
-source_main_sha: ae1cafded12c5f0b2d4ebf8276992261dd4daddd
+source_main_sha: fe180d13447d4f86ffd3f347059fafd55027dc3d
 budget_minutes: 180
-reason: Qwen-child-guard-unwrapping-and-bounded-branch-body-correction-after-real-FORCE-failure
-validation_reason: 4khdhub;real-7B-body;exact-parent-preservation;four-gates;applied-bytes;playback
+reason: replay-model-authored-v3-with-AST-guard-validation-and-diversified-rejected-body-retries
+validation_reason: 4khdhub;Qwen-new-v3-body;unaltered-v2;four-gates;applied-bytes;identity-playback
 expected_scope: one-representative-provider-then-one-per-failure-family
 execution_mode: targeted-main-only
 target_providers: 4khdhub
 architecture_force: true
 publication_policy: direct-main-only-after-allowlisted-patch-tests;no-pr
 required_current_evidence: branchBody-generated;unchanged-v2;new-v3-executed;four-gates;patch-runtime-present;terminal-content-playable
-retry: 24
+retry: 25

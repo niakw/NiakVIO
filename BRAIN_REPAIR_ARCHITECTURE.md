@@ -21,6 +21,10 @@ The 8 October 2026 failure `37834168084` showed a 7B corrective loop retrying th
 
 A Qwen branchBody may be wrapped in its own requested `if/elif new_strategy_id == child` despite the structured contract. The Brain validates the AST and extracts only a single exact-child body; it **never** copies or broadens an exhausted parent guard, accepts a second branch/else, or accepts a no-op implementation. Any other malformed algorithm must receive a bounded, targeted correction request **before** the normal bounded edit and materialized-test loop. A failure must be visible in Learning evidence; a model schema violation is not a provider failure. True acceptance still demands current-byte, correct-title terminal playback, not parser success.
 
+## 2026-10-09 — Corrective sampling for rejected 7B executor bodies
+
+FORCE starts at deterministic temperature zero. Real GitHub Learning run `37962219360` repeated an invalid selector-bearing executor body despite two bounded corrective calls. For new executable Repair profiles only, a **rejected** answer now uses temperature `0.2` to explore a different model-authored algorithm instead of deterministically repeating the rejected bytes. This is not a bypass: child-only guard unwrapping, AST rejection of selector access, parent preservation, four execution gates, materialized-contract tests, playback identity and exact Git artifact checks remain mandatory.
+
 ## 1. Objective
 
 Brain Repair must scale from tens to hundreds of providers without turning each provider into a manual debugging session.
