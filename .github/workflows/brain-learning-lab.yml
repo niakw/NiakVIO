@@ -412,6 +412,7 @@ jobs:
           python tests/brain_learning_fixture_type_authority_test.py
           python tests/learning_new_provider_provenance_test.py
           python tests/brain_self_architecture_test.py
+          python tests/brain_llm_advisor_execution_test.py
           python tests/native_reader_provider_retention_policy_test.py
           python tests/native_reader_ownership_policy_test.py
           python tests/provider_clean_reconstruction_contract_test.py
@@ -1191,6 +1192,7 @@ jobs:
           python tests/brain_meta_learning_gap_synthesis_test.py
           python tests/brain_architecture_force_materializer_test.py
           python tests/brain_self_architecture_test.py
+          python tests/brain_llm_advisor_execution_test.py
           git diff --binary --             .github/workflows/brain-learning-lab.yml             .github/workflows/provider-recognition-repair-v6.yml             engine_v2/config/brain-policy.json             engine_v2/scripts/learning-lab.mjs             engine_v2/scripts/plan-repairs.mjs             engine_v2/src/repair-brain.mjs             scripts/brain_meta_learning.py             scripts/brain_architecture_force_materializer.py             scripts/brain_repair_runtime.py             scripts/adaptive_runtime/runtime_repair.py             scripts/run_brain_learning_sandbox.py             scripts/deep_repair_loop.py             scripts/run_adaptive_quick_repair.py             scripts/nuvio_client_lab.cjs             scripts/generate_diagnostics.py             scripts/resolve_provider_hubs.py             scripts/resolve_provider_hub_search_fallback.py             'scripts/brain_layers/*'             'tests/brain_*'             > brain-learning-output/brain-architecture-force.patch
           test -s brain-learning-output/brain-architecture-force.patch || {
             echo "Architecture FORCE produced no executable allowlisted diff" >&2
@@ -1691,6 +1693,7 @@ jobs:
             python tests/brain_meta_learning_gap_synthesis_test.py
             python tests/brain_architecture_force_materializer_test.py
             python tests/brain_self_architecture_test.py
+            python tests/brain_llm_advisor_execution_test.py
             python tests/brain_architecture_force_promotion_test.py
           fi
           python -m json.tool engine_v2/learning/architecture-proposal.json >/dev/null
@@ -1734,6 +1737,7 @@ jobs:
             python tests/brain_meta_learning_gap_synthesis_test.py
             python tests/brain_architecture_force_materializer_test.py
             python tests/brain_self_architecture_test.py
+            python tests/brain_llm_advisor_execution_test.py
           fi
           # Stage only persistent architecture surfaces. Transient Learning
           # outputs and provider reconstruction candidates are evidence inputs,
@@ -1850,6 +1854,7 @@ jobs:
               python tests/brain_meta_learning_gap_synthesis_test.py
               python tests/brain_architecture_force_materializer_test.py
               python tests/brain_self_architecture_test.py
+              python tests/brain_llm_advisor_execution_test.py
               python tests/brain_architecture_force_promotion_test.py
               python tests/brain_cron_full_coverage_test.py
               promotion_base="$remote_main"

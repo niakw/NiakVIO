@@ -766,6 +766,7 @@ MATERIALIZED_CONTRACT_TESTS = (
     "tests/brain_meta_learning_gap_synthesis_test.py",
     "tests/brain_architecture_force_materializer_test.py",
     "tests/brain_self_architecture_test.py",
+    "tests/brain_llm_advisor_execution_test.py",
 )
 
 

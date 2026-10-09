@@ -104,6 +104,13 @@ force_diff = LEARN.split("git diff --binary --", 1)[1].split(
     "> brain-learning-output/brain-architecture-force.patch", 1,
 )[0]
 assert "scripts/adaptive_runtime/runtime_repair.py" in force_diff
+assert "tests/brain_llm_advisor_execution_test.py" in LEARN, (
+    "FORCE replay must exercise planner exhaustion after a new strategy is installed"
+)
+assert LEARN.count("python tests/brain_llm_advisor_execution_test.py") >= 5, (
+    "materialization, promotion and stale-rebase must run dynamic strategy convergence"
+)
+
 assert LEARN.count("python scripts/brain_force_applied_profile_guard.py --proposal") == 3
 assert "scripts/adaptive_runtime/runtime_repair.py" in SELF["forceArchitecture"]["generatedEditAllowlist"]
 
