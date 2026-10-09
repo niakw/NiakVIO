@@ -1589,5 +1589,15 @@ assert "Return exactly 3 replace edits" not in materializer_prompt
 assert "Return JSON ONLY with exactly one string field branchBody" in materializer_prompt
 assert "Brain will insert the code in its own distinct sibling guard" in materializer_prompt
 assert mod._branch_body_response_format()["schema"]["required"] == ["branchBody"]
+assert mod._force_generation_temperature({"blueprint": {"requiresNewExecutableRepairProfile": True}}) == 0.0
+assert mod._force_generation_temperature({
+    "blueprint": {"requiresNewExecutableRepairProfile": True},
+    "correctionReason": "branch-body-validation",
+}) == 0.2
+assert mod._force_generation_temperature({
+    "blueprint": {"requiresNewExecutableRepairProfile": False},
+    "correctionReason": "edit-validation",
+}) == 0.0
+
 
 print("Brain architecture FORCE materializer tests passed")

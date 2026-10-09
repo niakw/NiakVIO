@@ -1094,6 +1094,19 @@ def _model_edits(
     return [dict(row) for row in planned.get("edits") or [] if isinstance(row, dict)]
 
 
+def _force_generation_temperature(payload: dict[str, Any]) -> float:
+    """Avoid repeating deterministic 7B failure during genuine FORCE corrections.
+
+    The first proposal is deterministic. Only a *rejected* model response may
+    explore a different valid algorithm; all safety and playback gates remain
+    identical, and no provider content is ever patched by this helper.
+    """
+    return 0.2 if (
+        _requires_new_repair_profile(payload)
+        and str(payload.get("correctionReason") or "").strip()
+    ) else 0.0
+
+
 def _model_request(
     endpoint: str,
     model: str,
@@ -1144,7 +1157,7 @@ def _model_request(
             )
     body = {
         "model": model,
-        "temperature": 0,
+        "temperature": _force_generation_temperature(payload),
         "max_tokens": max_tokens,
         "response_format": _branch_body_response_format() if requires_new_profile else _response_format(exact_paths),
         "messages": [
