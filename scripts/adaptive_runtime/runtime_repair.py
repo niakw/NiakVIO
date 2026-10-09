@@ -1081,6 +1081,16 @@ def _new_strategy_id(failure_class: str, variant: int, generation: int = 1) -> s
     return base if generation <= 2 else f"{base}_g{generation}"
 
 
+def _generated_route_profile_preserves_v2_capabilities(profile_name: str) -> bool:
+    """Future Brain-generated route v3+ must inherit its v2 media/owned-route Lego.
+
+    This flag changes only generic runtime composition. A provider still needs
+    identity-matched, actually playable media before any publication.
+    """
+    matched = re.fullmatch(r"route_transition_graph_v([0-9]+)", str(profile_name or ""))
+    return bool(matched and int(matched.group(1)) >= 3)
+
+
 def _is_causal_strategy_profile(profile_name: str) -> bool:
     value = str(profile_name or "").strip()
     if not value:
@@ -1784,6 +1794,22 @@ def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any])
                 if str(role) in allowed_roles
             ] or None
 
+    if _generated_route_profile_preserves_v2_capabilities(new_strategy_id):
+        # A novel LLM strategy may prioritize new peer/semantic evidence, but
+        # must not discard the provider's own known/observed search, detail and
+        # request vocabulary. This restores v2's trusted fallback *without*
+        # editing an individual provider or overriding model-authored strategy.
+        search_paths = _unique_routes(
+            configured_search, learned_search, search_paths, limit=32,
+        )
+        direct_paths = _unique_routes(
+            configured_direct, learned_direct, direct_paths, limit=48,
+        )
+        request_recipes = _unique_request_recipes(
+            current_request_recipes, provider_request_recipes, request_recipes,
+            limit=48,
+        )
+
     role_preferences = llm_roles or second_order_role_preferences or _experiment_role_preferences(
         census_focus,
         experiment_failure,
@@ -1911,6 +1937,7 @@ def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any])
             "terminal_transition_graph_v1",
             "route_transition_graph_v2",
         }
+        or _generated_route_profile_preserves_v2_capabilities(new_strategy_id)
         or llm_experiment.get("responseSalvage") is True
     )
     document_request_mining = new_strategy_id == "document_request_contract_mining_v1" or llm_experiment.get("documentRequestMining") is True

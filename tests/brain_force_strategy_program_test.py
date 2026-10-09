@@ -30,6 +30,18 @@ assert "new_strategy_id" not in code
 assert "positive_program_routes(provider_id)" in code
 assert "_owned_transition_prefixes" in code
 assert m.compile_recovery_program(dict(base)) == code
+# Even a pure peer/generic model experiment cannot suppress the verified
+# provider-local search and request fallback. The new hypothesis remains
+# present but cannot erase the successful older causal inputs.
+exploration = dict(base)
+exploration["searchSources"] = ["peer", "generic"]
+exploration["directSources"] = ["peer"]
+exploration["requestSources"] = ["peer", "historical"]
+generated = m.compile_recovery_program(exploration)
+assert "search_paths = _unique_routes(configured_search, learned_search, peer_search, generic_search" in generated
+assert "direct_paths = _unique_routes(configured_direct, learned_direct, peer_direct" in generated
+assert "request_recipes = _unique_request_recipes(current_request_recipes, provider_request_recipes, peer_request_recipes" in generated
+
 for bad in (
     {**base, "searchSources": ["../provider-private-source"]},
     {**base, "searchSources": ["peer", "peer"]},

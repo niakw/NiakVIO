@@ -61,6 +61,33 @@ with tempfile.TemporaryDirectory() as directory:
         "evidence": {"streams_returned": 0, "streams_playable": 0},
     }
     source = provider.read_text(encoding="utf-8")
+    assert runtime_repair._generated_route_profile_preserves_v2_capabilities("route_transition_graph_v3")
+    assert runtime_repair._generated_route_profile_preserves_v2_capabilities("route_transition_graph_v10")
+    assert not runtime_repair._generated_route_profile_preserves_v2_capabilities("route_transition_graph_v2")
+    assert not runtime_repair._generated_route_profile_preserves_v2_capabilities("terminal_transition_graph_v3")
+    # A new Brain v3 retains the same-provider search observation and safe
+    # response salvage that were available to the exhausted v2 executor.
+    evolved = json.loads(json.dumps(candidate))
+    evolved["brain_repair_plan"] = {
+        "postExhaustionStrategyProfile": "route_transition_graph_v3",
+        "experimentVariant": 4,
+        "experimentGeneration": 2,
+        "failureClass": "search_gap",
+    }
+    evolved["brain_current_structure_evidence"] = {
+        "proofAuthority": False,
+        "executionAuthority": False,
+        "originHost": "demo.example",
+        "routes": [{"path": "/catalog/search?q={query}", "role": "search"}],
+    }
+    evolved_options = runtime_repair._adaptive_runtime_options(evolved, {})
+    assert evolved_options is not None
+    assert evolved_options["new_strategy_id"] == "route_transition_graph_v3"
+    assert evolved_options["runtime_response_salvage"] is True
+    assert "/catalog/search?q={query}" in evolved_options["search_paths"]
+    assert evolved_options["search_paths"].index("/catalog/search?q={query}") == 0
+    assert evolved_options["max_pages"] <= 36 and evolved_options["max_depth"] <= 6
+
     assert "adaptive_runtime_recovery" in runtime_repair.matching_profiles(candidate, failing, source)
     assert "adaptive_runtime_recovery" not in runtime_repair.matching_profiles(candidate, healthy, source)
     assert "adaptive_runtime_recovery" in runtime_repair.matching_profiles(candidate, healthy_without_playable, source)

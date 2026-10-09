@@ -100,10 +100,22 @@ def compile_recovery_program(program: dict[str, Any], *, max_chars: int = 4200) 
             f'[route for route in {src} if _route_role(route) in TERMINAL_MEDIA_ROLES | {{"episode"}}]'
             for src in direct_parts
         ]
+    # A learned peer/semantic hypothesis never removes the existing provider's
+    # current search contract from a brand-new generated strategy. The Brain
+    # composes trusted provider-local evidence first and the 7B's chosen
+    # exploratory sources afterward; all requests remain bounded and subject
+    # to same-provider and title-identity validation.
+    ordered_search = ["configured_search", "learned_search", *search_parts]
+    ordered_direct = ["configured_direct", "learned_direct", *direct_parts]
+    ordered_request = [
+        "current_request_recipes", "provider_request_recipes", *request_parts,
+    ]
+    def distinct(parts: list[str]) -> list[str]:
+        return list(dict.fromkeys(parts))
     lines = [
-        "search_paths = _unique_routes(" + ", ".join(search_parts) + f", limit={s_limit})",
-        "direct_paths = _unique_routes(" + ", ".join(direct_parts) + f", limit={d_limit})",
-        "request_recipes = _unique_request_recipes(" + ", ".join(request_parts) + f", limit={r_limit})",
+        "search_paths = _unique_routes(" + ", ".join(distinct(ordered_search)) + f", limit={s_limit})",
+        "direct_paths = _unique_routes(" + ", ".join(distinct(ordered_direct)) + f", limit={d_limit})",
+        "request_recipes = _unique_request_recipes(" + ", ".join(distinct(ordered_request)) + f", limit={r_limit})",
     ]
     if transition == "owned-direct":
         lines.append(f"transition_prefixes = _owned_transition_prefixes(direct_paths, limit={t_limit})")
