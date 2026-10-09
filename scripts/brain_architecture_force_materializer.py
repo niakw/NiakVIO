@@ -1180,10 +1180,92 @@ def _requires_new_repair_profile(payload: dict[str, Any]) -> bool:
     return blueprint.get("requiresNewExecutableRepairProfile") is True
 
 
+def _bounded_force_negative_evidence(
+    blueprint: dict[str, Any], *, root: Path = ROOT,
+) -> dict[str, Any]:
+    """Give the 7B executor real causal failure memory, not just strategy names.
+
+    Only schema-stable, sanitized status/failure labels enter the local prompt.
+    Raw requests, hosts, tokens, URLs, cookies and provider pages are never read
+    or forwarded. Negative prior outcomes are diagnostics, not proof authority.
+    """
+    providers = [
+        str(pid).strip().casefold()
+        for pid in blueprint.get("providers") or []
+        if str(pid).strip()
+    ][:3]
+    if not providers:
+        return {}
+    provider_set = set(providers)
+    status_path = root / "automation/provider-census-status.json"
+    memory_path = root / "automation/brain-repair-memory.json"
+    def safe_label(value: Any, limit: int = 100) -> str:
+        raw = str(value or "").strip()[:limit]
+        if (
+            len(raw) > limit
+            or re.search(r"https?[:/]|(?:authorization|cookie|token|password|secret)[=:]", raw, re.I)
+            or not re.fullmatch(r"[a-zA-Z0-9_.,:|+ /()\\-]*", raw)
+        ):
+            return ""
+        return raw
+    try:
+        status = load(status_path)
+    except (OSError, ValueError, json.JSONDecodeError):
+        status = {}
+    observation = []
+    for row in status.get("providers") or []:
+        if not isinstance(row, dict):
+            continue
+        pid = str(row.get("provider") or "").strip().casefold()
+        if pid not in provider_set:
+            continue
+        observation.append({
+            "provider": pid,
+            "status": safe_label(row.get("status")),
+            "dominantFailure": safe_label(row.get("dominantIssue")),
+            "repairEligible": row.get("repairEligible") is True,
+        })
+    try:
+        memory = load(memory_path)
+    except (OSError, ValueError, json.JSONDecodeError):
+        memory = {}
+    negative = []
+    seen = set()
+    for row in memory.get("entries") or []:
+        if not isinstance(row, dict) or row.get("executionObserved") is not True:
+            continue
+        pid = str(row.get("providerId") or "").strip().casefold()
+        if pid not in provider_set or str(row.get("lastOutcome") or "") not in {
+            "rejected", "profile_unavailable", "failed", "no_progress",
+        }:
+            continue
+        signature = (
+            pid, safe_label(row.get("profile")), safe_label(row.get("lastReason")),
+        )
+        if not all(signature) or signature in seen:
+            continue
+        seen.add(signature)
+        negative.append({
+            "provider": pid,
+            "profile": signature[1],
+            "failureClass": safe_label(row.get("failureClass")),
+            "pipelineStage": safe_label(row.get("observedPipelineStage")),
+            "observedFailure": signature[2],
+        })
+        if len(negative) >= 9:
+            break
+    return {
+        "authority": "sanitized-negatives-only-not-playback-proof",
+        "currentProviderObservations": observation[:3],
+        "previouslyExecutedFailures": negative,
+    }
+
+
 def _new_repair_profile_payload(
     payload: dict[str, Any],
     *,
     per_surface_limit: int = NEW_PROFILE_SOURCE_CONTEXT_PER_SURFACE,
+    root: Path = ROOT,
 ) -> dict[str, Any]:
     """Send Qwen only the runtime algorithm it owns, not deterministic boilerplate.
 
@@ -1207,6 +1289,7 @@ def _new_repair_profile_payload(
             runtime_path: _focused_source_snippet(runtime_source, blueprint, per_surface_limit)
         } if runtime_source else {},
         "deterministicWiring": list(NEW_REPAIR_PROFILE_SURFACES[:2]),
+        "causalNegativeEvidence": _bounded_force_negative_evidence(blueprint, root=root),
     }
 
 
