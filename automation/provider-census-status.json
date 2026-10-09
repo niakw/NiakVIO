@@ -1,7 +1,7 @@
 {
   "schemaVersion": 3,
-  "runId": "37863818267",
-  "triggerSha": "28bd9d5d6d400b97f66019ba57c16112de4d4c4f",
+  "runId": "37866666948",
+  "triggerSha": "51d00bb83638a767b22703564e4bb0a63353ebe2",
   "providers": [
     {
       "provider": "4khdhub",
@@ -196,9 +196,9 @@
         "16 live routes / anime"
       ],
       "latestLaneVerdicts": [
-        "anime=no_streams/provider_network_exception"
+        "anime=timeout"
       ],
-      "dominantIssue": "provider_network_exception",
+      "dominantIssue": "timeout",
       "searchProgress": [
         "anime: 2 works tested / 0 retained misses"
       ],
@@ -2250,8 +2250,8 @@
   "harnessQueue": [],
   "targetedTransportBlockedQueue": [],
   "clientTransportGapQueue": [],
-  "harnessEvidenceRunId": "37863818267-sharded-waf",
-  "harnessEvidenceSha": "28bd9d5d6d400b97f66019ba57c16112de4d4c4f",
+  "harnessEvidenceRunId": "37866666948-sharded-waf",
+  "harnessEvidenceSha": "51d00bb83638a767b22703564e4bb0a63353ebe2",
   "authorityRefreshedProviders": [],
   "harnessTransportUpdatedProviders": [],
   "networkDifferentialUpdatedProviders": [],
@@ -2663,43 +2663,5 @@
         "moviesmod"
       ]
     }
-  },
-  "lastRepairAttempt": {
-    "runId": "37864397191",
-    "sourceCensusRunId": "37863818267",
-    "selectedProviders": [
-      "4khdhub",
-      "allanime",
-      "anime-ultime",
-      "animesalt",
-      "animesultra",
-      "animevost-fr",
-      "flemmix",
-      "mallumv",
-      "moviebox",
-      "moviesmod",
-      "vidfast",
-      "yflix"
-    ],
-    "candidateProviders": [],
-    "validatedProviders": [],
-    "acceptedRepairCount": 0,
-    "deferredToLearningSlotProviders": [
-      "4khdhub",
-      "allanime",
-      "anime-ultime",
-      "animesalt",
-      "animesultra",
-      "animevost-fr",
-      "flemmix",
-      "mallumv",
-      "moviebox",
-      "moviesmod",
-      "vidfast",
-      "yflix"
-    ],
-    "noProgressReason": "no_new_repair_experiment",
-    "timeBudgetExhausted": false,
-    "publicationAllowed": false
   }
 }
