@@ -97,6 +97,18 @@ for required in (
 ):
     assert required in workflow, required
 assert "workflow_run" not in workflow
+# A stale result has only negative experiment-memory authority. Requeued runs
+# can import it solely from a same-repo, same-workflow, unchanged runtime and
+# provider byte lineage; this never imports or publishes stale provider bytes.
+assert "prior_fast_run_id" in workflow
+assert 'prior_fast_run_id="$GITHUB_RUN_ID"' in workflow
+assert "Restore compatible stale Fast Brain negative priors" in workflow
+assert 'git merge-base --is-ancestor "$prior_sha" "$GITHUB_SHA"' in workflow
+assert 'git diff --quiet "$prior_sha" "$GITHUB_SHA"' in workflow
+assert "merge_stale_fast_repair_memory.py" in workflow
+assert "executable-or-provider-byte-drift" in workflow
+assert "provider-fast-repair-$prior" in workflow
+
 assert "arm_learning_trigger" not in workflow
 assert "cat > .github/triggers/brain-learning-reconstruction" not in workflow
 assert "provider_learning_dispatch_gate.py mark" not in workflow

@@ -36,6 +36,11 @@ on:
         required: false
         default: true
         type: boolean
+      prior_fast_run_id:
+        description: Optional previous same-repo Fast Brain run for compatible negative-prior recovery
+        required: false
+        default: ""
+        type: string
   push:
     branches: [main]
     paths:
@@ -183,6 +188,61 @@ jobs:
               echo "FIELD_PROVIDER_FAST_REPAIR_LLM_GUIDANCE imported=false source=niakvio-learning-fallback reason=provider-byte-drift-or-safety-gate"
             fi
           fi
+
+      - name: Restore compatible stale Fast Brain negative priors
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.prior_fast_run_id != '' }}
+        shell: bash
+        env:
+          PRIOR_FAST_RUN_ID: ${{ inputs.prior_fast_run_id }}
+        run: |
+          set -euo pipefail
+          prior="${PRIOR_FAST_RUN_ID:-}"
+          if ! [[ "$prior" =~ ^[0-9]{6,20}$ ]]; then
+            echo "FIELD_BRAIN_FAST_STALE_PRIOR skipped=true reason=invalid-run-id"
+            exit 0
+          fi
+          metadata="$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$prior" 2>/dev/null)" || {
+            echo "FIELD_BRAIN_FAST_STALE_PRIOR skipped=true reason=unavailable-run"
+            exit 0
+          }
+          prior_sha="$(printf '%s' "$metadata" | jq -r '.head_sha // empty')"
+          prior_workflow="$(printf '%s' "$metadata" | jq -r '.name // empty')"
+          prior_branch="$(printf '%s' "$metadata" | jq -r '.head_branch // empty')"
+          if [ "$prior_workflow" != "PROVIDERS - Fast Brain Repair" ] || [ "$prior_branch" != "main" ]; then
+            echo "FIELD_BRAIN_FAST_STALE_PRIOR skipped=true reason=wrong-workflow-or-branch"
+            exit 0
+          fi
+          if ! [[ "$prior_sha" =~ ^[a-f0-9]{40}$ ]]; then
+            echo "FIELD_BRAIN_FAST_STALE_PRIOR skipped=true reason=invalid-source-sha"
+            exit 0
+          fi
+          if ! git cat-file -e "${prior_sha}^{commit}" 2>/dev/null; then
+            git fetch --quiet origin "$prior_sha" || {
+              echo "FIELD_BRAIN_FAST_STALE_PRIOR skipped=true reason=unavailable-source-commit"
+              exit 0
+            }
+          fi
+          if ! git merge-base --is-ancestor "$prior_sha" "$GITHUB_SHA"; then
+            echo "FIELD_BRAIN_FAST_STALE_PRIOR skipped=true reason=source-not-ancestor"
+            exit 0
+          fi
+          if ! git diff --quiet "$prior_sha" "$GITHUB_SHA" --             providers provider-bases provider-v3-materialization.json             provider-overrides.json scripts engine_v2 provider-v3-quick-yield.json; then
+            echo "FIELD_BRAIN_FAST_STALE_PRIOR skipped=true reason=executable-or-provider-byte-drift"
+            exit 0
+          fi
+          prior_dir="$RUNNER_TEMP/fast-stale-negative-prior"
+          mkdir -p "$prior_dir"
+          if ! gh run download "$prior" --repo "$GITHUB_REPOSITORY"             --name "provider-fast-repair-$prior" --dir "$prior_dir" >/dev/null; then
+            echo "FIELD_BRAIN_FAST_STALE_PRIOR skipped=true reason=artifact-unavailable"
+            exit 0
+          fi
+          prior_memory="$prior_dir/automation/brain-repair-memory.json"
+          if [ ! -s "$prior_memory" ]; then
+            echo "FIELD_BRAIN_FAST_STALE_PRIOR skipped=true reason=missing-negative-memory"
+            exit 0
+          fi
+          python scripts/merge_stale_fast_repair_memory.py             --current automation/brain-repair-memory.json             --prior "$prior_memory"             --census automation/provider-census-status.json
+          echo "FIELD_BRAIN_FAST_STALE_PRIOR restored=true prior_run=$prior source_sha=$prior_sha"
 
       - name: Run provider-local Brain Repair
         id: repair
@@ -454,6 +514,7 @@ jobs:
             fi
             args=(gh workflow run provider-fast-repair.yml
               --repo "$GITHUB_REPOSITORY" --ref main
+              -f prior_fast_run_id="$GITHUB_RUN_ID"
               -f waves="$requeue_waves"
               -f time_budget_seconds="$requeue_budget"
               -f max_rounds_per_batch="$requeue_rounds"

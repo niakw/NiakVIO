@@ -17,6 +17,7 @@ SCRIPTS = ROOT / "scripts"
 if str(SCRIPTS) not in sys.path:
     sys.path.insert(0, str(SCRIPTS))
 
+from brain_negative_memory_retention import select_bounded_negative_memory
 from brain_positive_program_memory import learned_skills as positive_program_learned_skills
 from brain_layers.declarative_gap_strategy import synthesize_rows as synthesize_meta_gap_rows
 from import_external_brain_llm_guidance import source_drift as _guidance_source_drift
@@ -1692,18 +1693,11 @@ def annotate_and_learn(output_dir: Path, mode: str) -> dict[str, Any]:
         _write_json(OVERRIDES_PATH, config)
         if memory_policy.get("enabled") is True:
             memory["schemaVersion"] = 1
-            memory["entries"] = sorted(
-                [row for row in memory_entries if isinstance(row, dict)],
-                key=lambda row: (
-                    -int(row.get("consecutiveFailures") or 0),
-                    -int(row.get("failures") or 0),
-                    str(row.get("providerId") or ""),
-                    str(row.get("signature") or ""),
-                    str(row.get("profile") or ""),
-                    int(row.get("experimentVariant") or 0),
-                    max(1, int(row.get("experimentGeneration") or 1)),
-                ),
-            )[:max_memory_entries]
+            memory["entries"] = select_bounded_negative_memory(
+                memory_entries,
+                limit=max_memory_entries,
+                minimum_per_provider=12,
+            )
             REPAIR_MEMORY_PATH.parent.mkdir(parents=True, exist_ok=True)
             _write_json(REPAIR_MEMORY_PATH, memory)
 
