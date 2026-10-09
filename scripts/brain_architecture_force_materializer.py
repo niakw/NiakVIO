@@ -1841,6 +1841,22 @@ def _validated_generated_edits(
     raise AssertionError("unreachable branch-body recovery")
 
 
+def _deterministic_brain_scaffold_failure(error: BaseException) -> bool:
+    """An LLM cannot repair errors in the Brain-owned autowiring anchors."""
+    message = str(error).casefold()
+    return any(message.startswith(prefix) for prefix in (
+        "architecture force adaptive runtime parent registry anchor ambiguous",
+        "architecture force adaptive runtime child registry anchor ambiguous",
+        "architecture force adaptive runtime profile registry missing",
+        "architecture force registry parent anchor ambiguous",
+        "architecture force registry profile set missing",
+        "architecture force planner group missing",
+        "architecture force planner parent strategy missing in causal group",
+        "architecture force planner parent edit exceeds bounded unique anchor",
+        "architecture force unknown planner repair scope",
+    ))
+
+
 def validated_model_plan(
     endpoint: str,
     model: str,
@@ -1915,6 +1931,13 @@ def validated_model_plan(
         )
         return planned, edits
     except ValueError as exc:
+        if _deterministic_brain_scaffold_failure(exc):
+            print(
+                "FIELD_BRAIN_ARCH_FORCE_OWNER owner=brain-scaffold "
+                f"model_corrections_skipped=true error={str(exc)[:240]}",
+                flush=True,
+            )
+            raise
         current_error: ValueError = exc
         current_edits = edits
 
@@ -2020,6 +2043,13 @@ def validated_model_plan(
             )
             return corrected, corrected_edits
         except ValueError as correction_error:
+            if _deterministic_brain_scaffold_failure(correction_error):
+                print(
+                    "FIELD_BRAIN_ARCH_FORCE_OWNER owner=brain-scaffold "
+                    f"model_corrections_skipped=true error={str(correction_error)[:240]}",
+                    flush=True,
+                )
+                raise
             current_error = correction_error
             current_edits = corrected_edits
 

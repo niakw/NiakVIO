@@ -1676,6 +1676,25 @@ with tempfile.TemporaryDirectory(prefix="brain-arch-runtime-only-autowire-") as 
     else:
         raise AssertionError("unknown repair family unexpectedly scaffolded")
 
+# Real 37973552349 called Qwen three more times for a deterministic
+# registry anchor defect. Keep only genuine model/algorithm errors in
+# corrective prompting; never waste expensive model rounds on Brain-owned
+# planner/registry/source scaffolding failures.
+for code in (
+    "architecture FORCE adaptive runtime parent registry anchor ambiguous",
+    "architecture FORCE adaptive runtime profile registry missing",
+    "architecture FORCE registry parent anchor ambiguous",
+    "architecture FORCE planner group missing",
+    "architecture FORCE planner parent strategy missing in causal group",
+):
+    assert mod._deterministic_brain_scaffold_failure(ValueError(code))
+for code in (
+    "materialized syntax validation failed: scripts/adaptive_runtime/runtime_repair.py",
+    "architecture FORCE generated executor body has no executable behavior",
+    "architecture FORCE program duplicates exhausted v2 mechanisms",
+):
+    assert not mod._deterministic_brain_scaffold_failure(ValueError(code))
+
 # A one-executor FORCE workflow must never instruct the 7B advisor to
 # provide three edits and one edit simultaneously (real model loop failure).
 materializer_prompt = SCRIPT.read_text(encoding="utf-8")
