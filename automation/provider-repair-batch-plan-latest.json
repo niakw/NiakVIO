@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "sourceRunId": "37887946793",
-  "sourceTriggerSha": "6ace3f353bb968437c535f795517516b98bc611a",
+  "sourceRunId": "37890570826",
+  "sourceTriggerSha": "df68c6f5d5061d861ccbc2302171ea979c8a115e",
   "unresolvedProviderCount": 21,
   "dynamicVariantProviderCount": 6,
   "dynamicVariantProviders": [
@@ -42,6 +42,40 @@
   },
   "groups": [
     {
+      "groupId": "route-to-terminal|html_scraper",
+      "repairScope": "route-to-terminal",
+      "runtimeFamilies": [
+        "api_stream_resolver",
+        "html_scraper"
+      ],
+      "capabilityStrategy": "html_scraper",
+      "evidenceDepths": [
+        "lookup",
+        "none"
+      ],
+      "dominantIssues": [
+        "network_exception",
+        "network_zero_result",
+        "waf_challenge"
+      ],
+      "harnessTransportClasses": [],
+      "transportSignature": "not-applicable",
+      "providerCount": 4,
+      "providers": [
+        "4khdhub",
+        "animesalt",
+        "moviebox",
+        "moviesmod"
+      ],
+      "action": "replay proven routes in batch and apply shared detail/player traversal profile",
+      "selectionAuthorities": [
+        "provider-census-status.json:brainCheckRequired"
+      ],
+      "dynamicVariantProviders": [],
+      "executionPolicy": "batch-first",
+      "providerLocalFallback": "only-after-shared-profile-failure"
+    },
+    {
       "groupId": "route-to-terminal|mixed_embed_resolver",
       "repairScope": "route-to-terminal",
       "runtimeFamilies": [
@@ -68,37 +102,6 @@
         "animesultra",
         "flemmix",
         "yflix"
-      ],
-      "action": "replay proven routes in batch and apply shared detail/player traversal profile",
-      "selectionAuthorities": [
-        "provider-census-status.json:brainCheckRequired"
-      ],
-      "dynamicVariantProviders": [],
-      "executionPolicy": "batch-first",
-      "providerLocalFallback": "only-after-shared-profile-failure"
-    },
-    {
-      "groupId": "route-to-terminal|html_scraper",
-      "repairScope": "route-to-terminal",
-      "runtimeFamilies": [
-        "html_scraper"
-      ],
-      "capabilityStrategy": "html_scraper",
-      "evidenceDepths": [
-        "lookup",
-        "none"
-      ],
-      "dominantIssues": [
-        "network_zero_result",
-        "waf_challenge"
-      ],
-      "harnessTransportClasses": [],
-      "transportSignature": "not-applicable",
-      "providerCount": 3,
-      "providers": [
-        "4khdhub",
-        "animesalt",
-        "moviesmod"
       ],
       "action": "replay proven routes in batch and apply shared detail/player traversal profile",
       "selectionAuthorities": [
@@ -165,36 +168,6 @@
         "uhdmovies"
       ],
       "action": "residential full-provider replay disproved transport ownership; learn a provider-side request/route strategy before mutation",
-      "selectionAuthorities": [
-        "provider-census-status.json:brainCheckRequired"
-      ],
-      "dynamicVariantProviders": [],
-      "executionPolicy": "batch-first",
-      "providerLocalFallback": "only-after-shared-profile-failure"
-    },
-    {
-      "groupId": "terminal-extraction|html_scraper",
-      "repairScope": "terminal-extraction",
-      "runtimeFamilies": [
-        "api_stream_resolver",
-        "mallumv-catalogue-confirm-internal-v1"
-      ],
-      "capabilityStrategy": "html_scraper",
-      "evidenceDepths": [
-        "chain"
-      ],
-      "dominantIssues": [
-        "network_http_error",
-        "waf_challenge"
-      ],
-      "harnessTransportClasses": [],
-      "transportSignature": "not-applicable",
-      "providerCount": 2,
-      "providers": [
-        "mallumv",
-        "moviebox"
-      ],
-      "action": "apply/test shared terminal-player extraction profile to the whole capability family",
       "selectionAuthorities": [
         "provider-census-status.json:brainCheckRequired"
       ],
@@ -336,6 +309,33 @@
       "providerCount": 1,
       "providers": [
         "allanime"
+      ],
+      "action": "apply/test shared terminal-player extraction profile to the whole capability family",
+      "selectionAuthorities": [
+        "provider-census-status.json:brainCheckRequired"
+      ],
+      "dynamicVariantProviders": [],
+      "executionPolicy": "batch-first",
+      "providerLocalFallback": "only-after-shared-profile-failure"
+    },
+    {
+      "groupId": "terminal-extraction|html_scraper",
+      "repairScope": "terminal-extraction",
+      "runtimeFamilies": [
+        "mallumv-catalogue-confirm-internal-v1"
+      ],
+      "capabilityStrategy": "html_scraper",
+      "evidenceDepths": [
+        "chain"
+      ],
+      "dominantIssues": [
+        "waf_challenge"
+      ],
+      "harnessTransportClasses": [],
+      "transportSignature": "not-applicable",
+      "providerCount": 1,
+      "providers": [
+        "mallumv"
       ],
       "action": "apply/test shared terminal-player extraction profile to the whole capability family",
       "selectionAuthorities": [
