@@ -675,6 +675,32 @@ with tempfile.TemporaryDirectory(prefix="brain-force-body-only-") as tmp:
     }
     payload = {"blueprint": blueprint}
     body = 'search_paths = _unique_routes(configured_search, learned_search, limit=16)\nrequest_recipes = _unique_request_recipes(current_request_recipes, limit=24)\n'
+    typed_strategy = {
+        "searchSources": ["learned", "peer", "configured"],
+        "directSources": ["positive", "peer", "learned"],
+        "requestSources": ["historical", "current", "peer"],
+        "roleOrder": ["source", "player", "api", "detail"],
+        "transitionMode": "owned-combined",
+        "terminalRoleFilter": True,
+        "budgets": {"search": 16, "direct": 40, "requests": 48, "transitions": 24},
+    }
+    typed_edits = mod._model_edits({"recoveryProgram": typed_strategy}, payload, root=root)
+    assert len(typed_edits) == 1
+    assert 'elif new_strategy_id == "route_transition_graph_v3":' in typed_edits[0]["replace"]
+    assert typed_edits[0]["replace"].count('new_strategy_id == "route_transition_graph_v3"') == 1
+    assert "peer_request_recipes" in typed_edits[0]["replace"]
+    assert set(mod.validate_materialized_edits(
+        mod.complete_evolved_profile_wiring(typed_edits, blueprint, root=root),
+        root=root, blueprint=blueprint,
+    )) == set(fixtures)
+    assert all((root / key).read_text(encoding="utf-8") == content for key, content in fixtures.items())
+    try:
+        mod._model_edits({"recoveryProgram": {**typed_strategy, "directSources": ["provider-url"]}}, payload, root=root)
+    except ValueError:
+        pass
+    else:
+        raise AssertionError("model-supplied provider URL/code accepted as Brain strategy")
+
     output = mod._model_edits({"branchBody": body}, payload, root=root)
     assert len(output) == 1 and output[0]["path"] == mod.NEW_REPAIR_PROFILE_SURFACES[2]
     assert 'elif new_strategy_id == "route_transition_graph_v3":' in output[0]["replace"]
@@ -1633,9 +1659,9 @@ with tempfile.TemporaryDirectory(prefix="brain-arch-runtime-only-autowire-") as 
 # provide three edits and one edit simultaneously (real model loop failure).
 materializer_prompt = SCRIPT.read_text(encoding="utf-8")
 assert "Return exactly 3 replace edits" not in materializer_prompt
-assert "Return JSON ONLY with exactly one string field branchBody" in materializer_prompt
-assert "Brain will insert the code in its own distinct sibling guard" in materializer_prompt
-assert mod._branch_body_response_format()["schema"]["required"] == ["branchBody"]
+assert "Return exactly one JSON recoveryProgram object" in materializer_prompt
+assert "not a raw Python code writer" in materializer_prompt
+assert mod._branch_body_response_format()["schema"]["required"] == ["recoveryProgram"]
 assert mod._force_generation_temperature({"blueprint": {"requiresNewExecutableRepairProfile": True}}) == 0.0
 assert mod._force_generation_temperature({
     "blueprint": {"requiresNewExecutableRepairProfile": True},

@@ -24,6 +24,7 @@ SCRIPTS = Path(__file__).resolve().parent
 if str(SCRIPTS) not in sys.path:
     sys.path.insert(0, str(SCRIPTS))
 from brain_force_runtime_branch_body import branch_body_edit
+from brain_force_strategy_program import compile_recovery_program
 
 FORBIDDEN_PREFIXES = (
     "providers/", "provider-disabled/", "provider-bases/", "vf/",
@@ -1077,21 +1078,71 @@ def _response_format(exact_paths: list[str] | None = None) -> dict[str, Any]:
 
 
 def _branch_body_response_format() -> dict[str, Any]:
+    """Typed Lego program: 7B chooses strategy, Brain writes executable bytes."""
+    src = lambda values: {
+        "type": "array", "items": {"type": "string", "enum": values},
+        "minItems": 1, "maxItems": 5,
+    }
     return {"type": "json_object", "schema": {
         "type": "object",
-        "properties": {"branchBody": {"type": "string", "minLength": 8, "maxLength": 4200}},
-        "required": ["branchBody"], "additionalProperties": False,
+        "properties": {
+            "recoveryProgram": {
+                "type": "object",
+                "properties": {
+                    "searchSources": src(["configured", "learned", "peer", "generic"]),
+                    "directSources": src(["configured", "learned", "peer", "positive"]),
+                    "requestSources": src(["current", "positive", "historical", "provider", "peer"]),
+                    "roleOrder": {
+                        "type": "array",
+                        "items": {"type": "string", "enum": ["source","api","player","episode","detail","other"]},
+                        "minItems": 2, "maxItems": 6,
+                    },
+                    "transitionMode": {
+                        "type": "string",
+                        "enum": ["none", "owned-direct", "owned-learned", "owned-combined"],
+                    },
+                    "terminalRoleFilter": {"type": "boolean"},
+                    "budgets": {
+                        "type": "object",
+                        "properties": {
+                            "search": {"type": "integer", "minimum": 4, "maximum": 40},
+                            "direct": {"type": "integer", "minimum": 4, "maximum": 72},
+                            "requests": {"type": "integer", "minimum": 4, "maximum": 72},
+                            "transitions": {"type": "integer", "minimum": 4, "maximum": 32},
+                        },
+                        "required": ["search", "direct", "requests", "transitions"],
+                        "additionalProperties": False,
+                    },
+                },
+                "required": [
+                    "searchSources", "directSources", "requestSources",
+                    "roleOrder", "transitionMode", "terminalRoleFilter", "budgets",
+                ],
+                "additionalProperties": False,
+            },
+        },
+        "required": ["recoveryProgram"], "additionalProperties": False,
     }}
 
 
 def _model_edits(
     planned: dict[str, Any], payload: dict[str, Any], *, root: Path = ROOT,
 ) -> list[dict[str, Any]]:
-    if _requires_new_repair_profile(payload) and isinstance(planned.get("branchBody"), str):
-        return [branch_body_edit(
-            planned["branchBody"], payload["blueprint"], root=root,
-            max_find=MAX_FIND, max_replace=MAX_REPLACE,
-        )]
+    if _requires_new_repair_profile(payload):
+        if isinstance(planned.get("recoveryProgram"), dict):
+            body = compile_recovery_program(planned["recoveryProgram"], max_chars=4200)
+            return [branch_body_edit(
+                body, payload["blueprint"], root=root,
+                max_find=MAX_FIND, max_replace=MAX_REPLACE,
+            )]
+        if isinstance(planned.get("branchBody"), str):
+            # Older saved algorithms remain replayable, never promoted by
+            # themselves. New 7B requests use typed recoveryProgram only.
+            return [branch_body_edit(
+                planned["branchBody"], payload["blueprint"], root=root,
+                max_find=MAX_FIND, max_replace=MAX_REPLACE,
+            )]
+        raise ValueError("architecture FORCE novel strategy requires executable typed recoveryProgram")
     return [dict(row) for row in planned.get("edits") or [] if isinstance(row, dict)]
 
 
@@ -1123,23 +1174,27 @@ def _model_request(
         child = str(blueprint.get("strategyId") or "")
         parent = str(blueprint.get("evolvesFromStrategyId") or "")
         system = (
-            "You are NiakVIO Brain novel Repair executor generator. "
-            "Return JSON ONLY with exactly one string field branchBody. "
-            "Its value must be NEW executable Python statements, not a diff. "
-            "Never output edits, find/replace, paths, imports, Markdown, comments-only code, "
-            "placeholder pass or ANY executable reference to new_strategy_id, including nested guards. "
-            "Brain will insert the code in its own distinct sibling guard and wire "
-            "the Brain registry, JS planner, and runtime selection registry. "
-            f"Generate useful NEW bounded route/request/media recovery for {child} "
-            f"after exhausted {parent}, using helpers/variables seen in the source. "
-            "The example is an exhausted old algorithm: learn helpers but do not copy it. "
-            "Respect provider identity, deadlines, "
-            "same-provider evidence, source bounds, and media safety. No prose."
+            "You are NiakVIO Brain's strategy designer, not a raw Python code writer. "
+            "Return exactly one JSON recoveryProgram object following the supplied schema. "
+            "Choose the order of EXISTING reusable Brain Lego recovery sources from observed "
+            "provider failure signatures, negative experience and exhausted parent behavior. "
+            "searchSources: configured/learned/peer/generic; directSources: "
+            "configured/learned/peer/positive; requestSources: current/positive/historical/"
+            "provider/peer. roleOrder: source/api/player/episode/detail/other. "
+            "transitionMode: none/owned-direct/owned-learned/owned-combined. "
+            "terminalRoleFilter is boolean; budgets are bounded integer counts. "
+            "Pick a causally DIFFERENT behavior from the exhausted prior: use a peer "
+            "or generic source, terminal-focused routing, or new observed transition "
+            "primitives. Do not merely relabel or reorder an exhausted strategy. "
+            "The Brain compiles and wires all four executor selection gates. "
+            "Never generate Python code, selector conditions, provider edits, routes, "
+            "URLs, secrets, explanation or Markdown. A rejected plan must CHANGE the "
+            "causal recovery mechanism, not repeat the same JSON."
         )
         if compact:
-            system += " Keep branchBody concise yet executable, preferably 4-15 statements."
+            system += " Keep the JSON short and schema-exact."
         if payload.get("correctionReason"):
-            system += " Fix branchBody only using the prior failure. Never touch a guard."
+            system += " Correct the strategy according to validationError. No code."
     else:
         system = (
             "You are NiakVIO Brain architecture FORCE materializer. "
@@ -1763,7 +1818,8 @@ def _validated_generated_edits(
             # Do not show Qwen its previous rejected code: it was repeatedly
             # copying the same invalid selector from its correction payload.
             correction_payload["rejectedBodyReason"] = (
-                "selector-owned-by-Brain" if "selector" in str(error).casefold()
+                "typed-program-invalid" if "recoveryProgram" in str(error)
+                else "selector-owned-by-Brain" if "selector" in str(error).casefold()
                 else "invalid-algorithm"
             )
             correction_payload["correctionContract"] = {
