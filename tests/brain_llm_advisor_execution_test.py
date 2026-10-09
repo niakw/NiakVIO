@@ -204,6 +204,31 @@ rescue_failed=plan("repair",[
 assert rescue_failed["llmAdvisorApplied"] is False,rescue_failed
 assert rescue_failed["experimentExhausted"] is True,rescue_failed
 
+# New Brain v3 MUST be selected after the previously executed v2/html
+# profiles, even when legacy whole-module fingerprints differ after promotion.
+# A changed sibling is not a new implementation of an exhausted parent.
+legacy_runtime_negatives = [
+    {
+        "providerId": "synthetic-llm-advisor",
+        "failureClass": "route_proven_gap",
+        "experimentVariant": 4,
+        "experimentGeneration": 2,
+        "profile": profile,
+        "strategyImplementationFingerprint": "1" * 64,
+        "failures": 1,
+        "consecutiveFailures": 1,
+        "successes": 0,
+        "executionObserved": True,
+        "lastOutcome": "rejected",
+        "lastReason": "executed_candidate_failed_validation",
+    }
+    for profile in ("html_class_token_exact_v1", "route_transition_graph_v2")
+]
+fresh_generated = plan("repair", [
+    *exhausted_memory, *legacy_runtime_negatives,
+], guidance_rows=[], exploration_chain=True)
+assert fresh_generated["postExhaustionStrategyProfile"] == "route_transition_graph_v3", fresh_generated
+
 # Fast Repair exploration must execute a sanitized Learning advisor after the
 # ordinary g2 variants and every coded post-exhaustion strategy are exhausted.
 # It remains sandbox-only: base exhaustion stays visible, while the learned

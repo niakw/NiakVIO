@@ -4,6 +4,7 @@ import crypto from "node:crypto";
 import process from "node:process";
 import { BRAIN_CONTROL_PLANE_VERSION, classifyFailure, planRepair } from "../src/repair-brain.mjs";
 import { evidenceSignature } from "../src/recipe-memory.mjs";
+import { profileRuntimeFingerprintMaterial } from "../src/strategy-fingerprint.mjs";
 
 let input;
 let rawInput = "";
@@ -130,11 +131,22 @@ function strategyImplementationFingerprint(profile) {
   const normalized = stringValue(profile).toLowerCase();
   if (!normalized || normalized === "provider_positive_program_replay_v1") return "";
   const hash = crypto.createHash("sha256");
-  hash.update(`profile:${normalized}\n`);
+  hash.update("profile-scoped-v2:" + normalized + "\n");
   for (const file of EVOLVED_STRATEGY_IMPLEMENTATION_FILES) {
     try {
-      hash.update(`file:${file}\n`);
-      hash.update(fs.readFileSync(file));
+      const content = fs.readFileSync(file, "utf8");
+      if (file === "scripts/adaptive_runtime/runtime_repair.py") {
+        // New sibling code and registry membership cannot resurrect failed
+        // v1/v2 strategies. Shared helper changes still affect their hashes.
+        hash.update("file:" + file + "\n");
+        hash.update(profileRuntimeFingerprintMaterial(content, normalized));
+      } else if (
+        file !== "scripts/adaptive_runtime/html_class_token_exact_v1.py"
+        || normalized === "html_class_token_exact_v1"
+      ) {
+        hash.update("file:" + file + "\n");
+        hash.update(content);
+      }
     } catch (_error) {
       return "";
     }
@@ -383,14 +395,12 @@ function postExhaustionStrategyHint(failureClass, memoryRows, rotateEvery) {
         stringValue(memory.profile) !== row.profile
         || Math.max(0, finiteNumber(memory.consecutiveFailures, 0)) < rotateEvery
       ) return false;
-      const rememberedFingerprint = stringValue(memory.strategyImplementationFingerprint).toLowerCase();
-      // Durable negative memory is fail-closed for legacy rows that predate
-      // implementation fingerprints. A missing historical fingerprint means
-      // "this profile id already failed", not "this profile is fresh again".
-      // Materially new behavior must use a new profile generation/id (v2, v3…).
-      return implementationFingerprint
-        ? (!rememberedFingerprint || rememberedFingerprint === implementationFingerprint)
-        : true;
+      // Before scoped-v2 hashing, adding a new sibling changed EVERY old
+      // fingerprint. Do not let that historical global-hash churn erase a
+      // genuinely executed negative for this same versioned profile ID.
+      // Novel behavior must instead use a new v3/v4 profile; rows without
+      // observed execution cannot suppress a valid new attempt.
+      return memory.executionObserved === true;
     });
     if (!alreadyFailed) {
       return {
