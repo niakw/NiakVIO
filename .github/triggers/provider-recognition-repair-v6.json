@@ -1,25 +1,26 @@
 {
   "schemaVersion": 6,
   "requestedAt": "2026-10-09T21:27:00+02:00",
-  "retry": 214,
-  "mode": "repair",
+  "retry": 215,
+  "mode": "force",
   "directApplyValidated": false,
-  "scope": "representative-brain-v3-after-durable-negative-implementation-fingerprint-fix",
+  "scope": "representative-brain-v3-execution-proof-before-cohort-expansion",
   "targetProviders": [
     "4khdhub"
   ],
-  "goal": "Repair 4khdhub through Brain only: v3 must be selected after executed html/v2 negatives, execute on current provider bytes, prove TMDB-correct playable terminal media in movie and TV with nonregression, update failure memory if unsuccessful; no manual provider patches.",
+  "goal": "Use Brain-generated route_transition_graph_v3 first on exact 4khdhub current bytes; require one actual executed strategy, TMDB/movie/TV correct playable terminal streams and nonregression, persist observed negative evidence if zero streams; no manual provider repair or false FULL.",
   "branch": "main",
   "publication": true,
-  "sourceRef": "a524d1a6d1b2e2d57f5f3efef0d2dc4e289d7510",
+  "sourceRef": "8acdc686a0d48f6bcbac1419d993b6e8d7dec847",
   "sourceCensusRun": "37978493066",
   "brainLlmGuidanceSha": "75a570fc54f32cfcd54dc759bf1851a530802596",
   "brainGuidanceSourceSha": "cc09b62ca21eb48af99def0d13b53f9d39ff7d81",
   "branchPolicy": "main-only-brain-repair",
-  "rerunReason": "Novel v3 was truly model-generated and published in 8904cc26 but current-byte repair 37979345850 reselected old html_class_token_exact_v1 due globally invalidated implementation fingerprints; retry after scoped fingerprint + durable legacy negative correction.",
-  "attemptPolicy": "Brain-generated v3 executed and validated current bytes, no automatic FULL/positive if no terminal playable same-title stream; retain nonplayable negative evidence.",
+  "rerunReason": "FIX: prior generator success led to one-wave Repair selecting historic html_class_token_exact_v1, never proving v3. Current Brain FORCE prefers generated v3 only if registered/causally eligible/unexhausted, with three bounded waves and strict playback gates.",
+  "attemptPolicy": "One representative generated-strategy execution, no implicit publish/full from generated source alone; failed playback must remain negative memory.",
   "preflightValidatedSha": "2ae3f97b789a7e81f1d6d83e119d41d494cb09f8",
   "requireExternalForceMutations": false,
   "requireExternalBrainGuidance": false,
-  "promoteLocalForceCandidates": false
+  "promoteLocalForceCandidates": false,
+  "preferredProfile": "route_transition_graph_v3"
 }
