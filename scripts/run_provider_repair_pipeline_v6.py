@@ -1080,6 +1080,10 @@ def main() -> int:
             f"min_start_batch_seconds={brain_min_start_batch_seconds} targeted_force={str(targeted_force).lower()}",
             flush=True,
         )
+        if args.mode == "force":
+            # A FORCE replay must include the same architecture-failure
+            # catalogue used by the Brain, not silently downgrade to Repair.
+            brain_cmd.append("--architecture-force")
         for provider in targets:
             brain_cmd.extend(["--provider", provider])
         run(

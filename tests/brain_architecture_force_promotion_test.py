@@ -30,7 +30,9 @@ assert "FIELD_BRAIN_ARCH_FORCE_MAIN_PROMOTION" in LEARN
 assert "mode=direct-main-no-pr" in LEARN
 assert "FIELD_BRAIN_ARCH_FORCE_REPRESENTATIVE_REPLAY" in LEARN
 assert 'gh workflow run provider-recognition-repair-v6.yml' in LEARN
-assert '-f mode=repair' in LEARN
+assert '-f mode=force' in LEARN
+assert "A generated Brain executor cannot be proven by a one-wave" in LEARN
+assert 'brain_cmd.append("--architecture-force")' in (ROOT / "scripts/run_provider_repair_pipeline_v6.py").read_text(encoding="utf-8")
 assert '-f target_provider="$representative"' in LEARN
 assert "exactly one representative current repairQueue member" in LEARN
 assert "needs.experiment.outputs.architecture_force != 'true' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')" in LEARN

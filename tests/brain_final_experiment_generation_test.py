@@ -140,10 +140,16 @@ assert len(terminal_fp)==64 and all(ch in "0123456789abcdef" for ch in terminal_
 stale_first_escalation_failed={
     **row(4,5),
     "profile":"terminal_transition_graph_v1",
+    # Only executed negative evidence can exhaust a strategy. Without this
+    # field the planner correctly treats the row as an unexecuted proposal.
+    "executionObserved":True,
 }
 stale_retry=plan([*base_exhausted,stale_first_escalation_failed],"learning")
 assert stale_retry["postExhaustionStrategyProfile"]=="terminal_request_program_inference_v1",stale_retry
 assert stale_retry["postExhaustionStrategyProfile"]!="terminal_transition_graph_v1",stale_retry
+
+unobserved_retry=plan([*base_exhausted,{**stale_first_escalation_failed,"executionObserved":False}],"learning")
+assert unobserved_retry["postExhaustionStrategyProfile"]=="terminal_transition_graph_v1",unobserved_retry
 
 first_escalation_failed={
     **stale_first_escalation_failed,
@@ -159,6 +165,7 @@ assert len(request_fp)==64 and request_fp!=terminal_fp,learning_escalated_2
 second_escalation_failed={
     **row(4,5),
     "profile":"terminal_request_program_inference_v1",
+    "executionObserved":True,
     "strategyImplementationFingerprint":request_fp,
 }
 after_second=plan([*base_exhausted,first_escalation_failed,second_escalation_failed],"learning")
@@ -171,6 +178,7 @@ assert len(salvage_fp)==64 and salvage_fp not in {terminal_fp,request_fp},after_
 third_escalation_failed={
     **row(4,5),
     "profile":"runtime_response_salvage_v1",
+    "executionObserved":True,
     "strategyImplementationFingerprint":salvage_fp,
 }
 after_third=plan(
@@ -186,6 +194,7 @@ assert len(document_fp)==64 and document_fp not in {terminal_fp,request_fp,salva
 fourth_escalation_failed={
     **row(4,5),
     "profile":"document_request_contract_mining_v1",
+    "executionObserved":True,
     "strategyImplementationFingerprint":document_fp,
 }
 # Causal-family evolution may legitimately discover additional terminal-media
@@ -220,6 +229,7 @@ for _attempt in range(24):
         **row(4,5),
         "failureClass":source_failure,
         "profile":profile,
+        "executionObserved":True,
         "strategyImplementationFingerprint":implementation_fp,
     }
     evolved_memory.append(failed_row)

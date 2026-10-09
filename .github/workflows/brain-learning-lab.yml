@@ -2013,10 +2013,13 @@ jobs:
           PY
           )"
           test -n "$representative"
+          # A generated Brain executor cannot be proven by a one-wave
+          # production Repair fallback. Use bounded 3-wave FORCE exploration
+          # on exactly this representative, with normal strict playback gates.
           gh workflow run provider-recognition-repair-v6.yml \
             --repo "$GITHUB_REPOSITORY" \
             --ref main \
-            -f mode=repair \
+            -f mode=force \
             -f target_provider="$representative"
           echo "FIELD_BRAIN_ARCH_FORCE_REPRESENTATIVE_REPLAY provider=$representative source_run=$GITHUB_RUN_ID promoted_sha=$promoted_sha target=provider-recognition-repair-v6"
 
