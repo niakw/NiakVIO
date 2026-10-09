@@ -620,6 +620,22 @@ focused_payload = mod._new_repair_profile_payload({
 })
 assert "EXECUTION_BRANCH_SENTINEL" in focused_payload["sources"][runtime_path]
 
+# The Brain must give 7B helper vocabulary, not the selector it owns.
+parent_reference = (
+    'if new_strategy_id == "route_transition_graph_v2":\n'
+    '    search_paths = _unique_routes(configured_search, learned_search, limit=16)\n'
+    '    request_recipes = _unique_request_recipes(current_request_recipes, limit=24)\n'
+    'elif new_strategy_id == "route_peer_transition_replay_v1":\n'
+    '    search_paths = _unique_routes(peer_search, limit=18)\n'
+)
+parent_context = mod._parent_algorithm_context(
+    parent_reference, {"evolvesFromStrategyId": "route_transition_graph_v2"}, 2200,
+)
+assert "_unique_routes" in parent_context and "_unique_request_recipes" in parent_context
+assert "new_strategy_id" not in parent_context
+assert "peer_search" not in parent_context
+assert parent_reference.startswith("if new_strategy_id"), "original bytes never modified"
+
 # Qwen must author only new algorithm statements: Brain deterministically
 # wraps them in a separate sibling guard WITHOUT touching old runtime bytes.
 with tempfile.TemporaryDirectory(prefix="brain-force-body-only-") as tmp:
@@ -715,6 +731,8 @@ with tempfile.TemporaryDirectory(prefix="brain-force-body-only-") as tmp:
             correction_calls.append(retry_payload)
             assert retry_payload["correctionReason"] == "branch-body-validation"
             assert retry_payload["correctionContract"]["branchBodyOnly"] is True
+            assert "rejectedBranchBody" not in retry_payload
+            assert retry_payload["rejectedBodyReason"] in {"invalid-algorithm", "selector-owned-by-Brain"}
             return {"branchBody": body}
         mod._request_corrected_plan = fake_body_correction
         corrected, corrected_edits = mod._validated_generated_edits(

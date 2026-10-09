@@ -13,6 +13,7 @@ import json
 import re
 import subprocess
 import sys
+import textwrap
 from pathlib import Path
 from typing import Any
 from urllib.error import HTTPError
@@ -1126,12 +1127,13 @@ def _model_request(
             "Return JSON ONLY with exactly one string field branchBody. "
             "Its value must be NEW executable Python statements, not a diff. "
             "Never output edits, find/replace, paths, imports, Markdown, comments-only code, "
-            "placeholder pass or if/elif new_strategy_id guards. "
+            "placeholder pass or ANY executable reference to new_strategy_id, including nested guards. "
             "Brain will insert the code in its own distinct sibling guard and wire "
             "the Brain registry, JS planner, and runtime selection registry. "
             f"Generate useful NEW bounded route/request/media recovery for {child} "
             f"after exhausted {parent}, using helpers/variables seen in the source. "
-            "Do not copy the parent branch. Respect provider identity, deadlines, "
+            "The example is an exhausted old algorithm: learn helpers but do not copy it. "
+            "Respect provider identity, deadlines, "
             "same-provider evidence, source bounds, and media safety. No prose."
         )
         if compact:
@@ -1274,6 +1276,37 @@ def _bounded_force_negative_evidence(
     }
 
 
+def _parent_algorithm_context(
+    source: str, blueprint: dict[str, Any], limit: int,
+) -> str:
+    """Expose prior algorithm vocabulary without exposing its selection guard.
+
+    Only the local Qwen context changes. Original source bytes are untouched.
+    A unique exhausted-parent branch and its following sibling are required.
+    """
+    parent = str(blueprint.get("evolvesFromStrategyId") or "").strip()
+    if not parent or not source or limit <= 0:
+        return source[:max(0, limit)]
+    guard = re.compile(
+        rf'(?m)^(?P<indent>[ \t]*)(?:if|elif)\s+new_strategy_id\s*==\s*["\']{re.escape(parent)}["\']\s*:\s*$'
+    )
+    hits = list(guard.finditer(source))
+    if len(hits) != 1:
+        return _focused_source_snippet(source, blueprint, limit)
+    match = hits[0]
+    following = re.search(
+        rf'(?m)^{re.escape(match.group("indent"))}(?:elif\s+new_strategy_id\b|else\s*:)',
+        source[match.end():],
+    )
+    if following is None:
+        return _focused_source_snippet(source, blueprint, limit)
+    body = textwrap.dedent(source[match.end():match.end() + following.start()]).strip()
+    if not body:
+        return _focused_source_snippet(source, blueprint, limit)
+    prefix = "# Old exhausted algorithm, for variables and helper vocabulary only. Produce a NEW algorithm.\n"
+    return prefix + body[:max(0, limit - len(prefix))]
+
+
 def _new_repair_profile_payload(
     payload: dict[str, Any],
     *,
@@ -1299,7 +1332,10 @@ def _new_repair_profile_payload(
         "existingAllowedPaths": [runtime_path],
         "newAllowedPaths": [],
         "sources": {
-            runtime_path: _focused_source_snippet(runtime_source, blueprint, per_surface_limit)
+            runtime_path: _parent_algorithm_context(
+                _focused_source_snippet(runtime_source, blueprint, per_surface_limit),
+                blueprint, per_surface_limit,
+            )
         } if runtime_source else {},
         "deterministicWiring": list(NEW_REPAIR_PROFILE_SURFACES[:2]),
         "causalNegativeEvidence": _bounded_force_negative_evidence(blueprint, root=root),
@@ -1724,7 +1760,12 @@ def _validated_generated_edits(
             correction_payload = _new_repair_profile_payload(payload, per_surface_limit=1800)
             correction_payload["correctionReason"] = "branch-body-validation"
             correction_payload["validationError"] = str(error)[:400]
-            correction_payload["rejectedBranchBody"] = str(planned.get("branchBody") or "")[:900]
+            # Do not show Qwen its previous rejected code: it was repeatedly
+            # copying the same invalid selector from its correction payload.
+            correction_payload["rejectedBodyReason"] = (
+                "selector-owned-by-Brain" if "selector" in str(error).casefold()
+                else "invalid-algorithm"
+            )
             correction_payload["correctionContract"] = {
                 "branchBodyOnly": True,
                 "noParentGuardChanges": True,
