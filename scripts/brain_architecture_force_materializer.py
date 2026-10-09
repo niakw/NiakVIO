@@ -1596,6 +1596,50 @@ def complete_evolved_profile_wiring(
     return result
 
 
+def _validated_generated_edits(
+    endpoint: str,
+    model: str,
+    payload: dict[str, Any],
+    planned: dict[str, Any],
+    *,
+    root: Path = ROOT,
+) -> tuple[dict[str, Any], list[dict[str, Any]]]:
+    """Correct invalid 7B executor bodies before edit/transaction validation.
+
+    Previously branch_body_edit raised BEFORE validated_model_plan's correction
+    loop, aborting a full cohort after one malformed response (~12 providers
+    handed off for no gain). Keep correction model-authored and bounded: never
+    synthesize a fake provider solution or silently accept invalid bodies.
+    """
+    new_profile = _requires_new_repair_profile(payload)
+    max_corrections = 2 if new_profile else 0
+    for round_index in range(max_corrections + 1):
+        try:
+            return planned, _model_edits(planned, payload, root=root)
+        except ValueError as error:
+            if round_index >= max_corrections:
+                raise
+            print(
+                "FIELD_BRAIN_ARCH_FORCE_MODEL_RETRY "
+                f"reason=branch-body-validation round={round_index + 1} "
+                f"error={str(error)[:200]}",
+                flush=True,
+            )
+            correction_payload = _new_repair_profile_payload(payload, per_surface_limit=1800)
+            correction_payload["correctionReason"] = "branch-body-validation"
+            correction_payload["validationError"] = str(error)[:400]
+            correction_payload["rejectedBranchBody"] = str(planned.get("branchBody") or "")[:900]
+            correction_payload["correctionContract"] = {
+                "branchBodyOnly": True,
+                "noParentGuardChanges": True,
+                "generateActualExecutableAlgorithm": True,
+                "noFileEditsOrProviderMutations": True,
+                "correctionRound": round_index + 1,
+            }
+            planned = _request_corrected_plan(endpoint, model, correction_payload)
+    raise AssertionError("unreachable branch-body recovery")
+
+
 def validated_model_plan(
     endpoint: str,
     model: str,
@@ -1605,8 +1649,11 @@ def validated_model_plan(
     root: Path = ROOT,
 ) -> tuple[dict[str, Any], list[dict[str, Any]]]:
     planned = call_model(endpoint, model, payload)
+    planned, generated_edits = _validated_generated_edits(
+        endpoint, model, payload, planned, root=root,
+    )
     edits = complete_evolved_profile_wiring(
-        _model_edits(planned, payload, root=root),
+        generated_edits,
         payload.get("blueprint"),
         root=root,
     )
@@ -1649,8 +1696,11 @@ def validated_model_plan(
                 "editValidationCorrectionRounds": EDIT_VALIDATION_CORRECTION_ROUNDS,
             })
             planned = _request_corrected_plan(endpoint, model, correction_payload)
+            planned, generated_edits = _validated_generated_edits(
+                endpoint, model, payload, planned, root=root,
+            )
             edits = complete_evolved_profile_wiring(
-                _model_edits(planned, payload, root=root),
+                generated_edits,
                 payload.get("blueprint"),
                 root=root,
             )
@@ -1740,7 +1790,9 @@ def validated_model_plan(
         })
 
         corrected = _request_corrected_plan(endpoint, model, correction_payload)
-        corrected_edits = _model_edits(corrected, payload, root=root)
+        corrected, corrected_edits = _validated_generated_edits(
+            endpoint, model, payload, corrected, root=root,
+        )
         corrected_edits = _resolve_non_unique_replace_edits(
             corrected_edits,
             correction_payload,
