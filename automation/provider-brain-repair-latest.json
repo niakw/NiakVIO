@@ -21,14 +21,14 @@
     "yflix"
   ],
   "effectiveWaves": 3,
-  "elapsedSeconds": 268.385,
+  "elapsedSeconds": 281.578,
   "executionModel": "family-batched-multi-wave-brain-repair",
   "experienceMemory": {
     "operationalProviderCount": 24,
     "providerCount": 46,
     "schemaVersion": 2,
-    "sourceRunId": "37887946793",
-    "sourceSha": "6ace3f353bb968437c535f795517516b98bc611a",
+    "sourceRunId": "37890570826",
+    "sourceSha": "df68c6f5d5061d861ccbc2302171ea979c8a115e",
     "strategyCount": 5
   },
   "fixedInLabProviders": [],
@@ -45,7 +45,7 @@
     "animevost-fr": "ROUTE PROVEN",
     "flemmix": "ROUTE PROVEN",
     "mallumv": "CHAIN REACHED",
-    "moviebox": "CHAIN REACHED",
+    "moviebox": "ROUTE PROVEN",
     "moviesmod": "ROUTE PROVEN",
     "vidfast": "ROUTE PROVEN",
     "yflix": "ROUTE PROVEN"
@@ -116,7 +116,7 @@
   "shardCount": 1,
   "shardIndex": 0,
   "skippedEnvironmentProviders": [],
-  "sourceCensusRunId": "37887946793",
+  "sourceCensusRunId": "37890570826",
   "timeBudgetExhausted": false,
   "timeBudgetSeconds": 1200,
   "unvisitedProviders": [],
@@ -798,6 +798,7 @@
               "groupId": "route-to-terminal|html_scraper",
               "providers": [
                 "moviesmod",
+                "moviebox",
                 "4khdhub",
                 "animesalt"
               ],
@@ -813,15 +814,6 @@
                 "anime-ultime"
               ],
               "repairScope": "route-to-terminal"
-            },
-            {
-              "capabilityStrategy": "html_scraper",
-              "groupId": "terminal-extraction|html_scraper",
-              "providers": [
-                "moviebox",
-                "mallumv"
-              ],
-              "repairScope": "terminal-extraction"
             },
             {
               "capabilityStrategy": "direct_media",
@@ -846,6 +838,14 @@
                 "animevost-fr"
               ],
               "repairScope": "route-to-terminal"
+            },
+            {
+              "capabilityStrategy": "html_scraper",
+              "groupId": "terminal-extraction|html_scraper",
+              "providers": [
+                "mallumv"
+              ],
+              "repairScope": "terminal-extraction"
             }
           ],
           "fixedInLab": [],
@@ -856,17 +856,17 @@
           "providerCount": 12,
           "providers": [
             "moviesmod",
+            "moviebox",
             "4khdhub",
             "animesalt",
             "yflix",
             "flemmix",
             "animesultra",
             "anime-ultime",
-            "moviebox",
-            "mallumv",
             "allanime",
             "vidfast",
-            "animevost-fr"
+            "animevost-fr",
+            "mallumv"
           ],
           "repairScope": "mixed",
           "unexecutableLlmHandoff": []

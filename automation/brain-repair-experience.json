@@ -4335,8 +4335,8 @@
     "moviebox": {
       "domainMemory": true,
       "evidenceDepth": [
-        "movie=chain_reached",
-        "tv=chain_reached"
+        "movie=none",
+        "tv=none"
       ],
       "hasApiRecipe": false,
       "hasProviderValuePlan": false,
@@ -4377,7 +4377,7 @@
         "/vs_src.php?type={mediaType}&id={tmdbId}",
         "/vs_src.php?type=tv&id={tmdbId}&season={season}&episode={episode}"
       ],
-      "status": "CHAIN REACHED",
+      "status": "ROUTE PROVEN",
       "strategy": "html_scraper"
     },
     "movieshunt": {
@@ -8148,8 +8148,8 @@
     "requiresDeepValidation": true
   },
   "schemaVersion": 2,
-  "sourceRunId": "37887946793",
-  "sourceSha": "6ace3f353bb968437c535f795517516b98bc611a",
+  "sourceRunId": "37890570826",
+  "sourceSha": "df68c6f5d5061d861ccbc2302171ea979c8a115e",
   "strategyPatterns": {
     "api_stream_resolver": {
       "commonRequestRecipes": [],
@@ -8166,12 +8166,12 @@
         },
         {
           "providerSupport": 1,
-          "role": "other",
+          "role": "detail",
           "supportRatio": 1.0
         },
         {
           "providerSupport": 1,
-          "role": "detail",
+          "role": "other",
           "supportRatio": 1.0
         }
       ]
@@ -8216,12 +8216,12 @@
         },
         {
           "providerSupport": 1,
-          "role": "player",
+          "role": "other",
           "supportRatio": 0.25
         },
         {
           "providerSupport": 1,
-          "role": "other",
+          "role": "player",
           "supportRatio": 0.25
         }
       ]
@@ -8269,12 +8269,12 @@
         },
         {
           "providerSupport": 3,
-          "role": "player",
+          "role": "detail",
           "supportRatio": 0.5
         },
         {
           "providerSupport": 3,
-          "role": "detail",
+          "role": "player",
           "supportRatio": 0.5
         },
         {
