@@ -1200,7 +1200,7 @@ def _bounded_force_negative_evidence(
     status_path = root / "automation/provider-census-status.json"
     memory_path = root / "automation/brain-repair-memory.json"
     def safe_label(value: Any, limit: int = 100) -> str:
-        raw = str(value or "").strip()[:limit]
+        raw = str(value or "").strip()[:limit].replace("×", "x")
         if (
             len(raw) > limit
             or re.search(r"https?[:/]|(?:authorization|cookie|token|password|secret)[=:]", raw, re.I)
