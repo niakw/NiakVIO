@@ -684,6 +684,12 @@ with tempfile.TemporaryDirectory(prefix="brain-force-body-only-") as tmp:
         "terminalRoleFilter": True,
         "budgets": {"search": 16, "direct": 40, "requests": 48, "transitions": 24},
     }
+    provenance = mod._program_provenance({"recoveryProgram": typed_strategy})
+    assert provenance["generatorFormat"] == "typed-recovery-program"
+    assert provenance["strategyProgram"] == typed_strategy
+    assert len(provenance["programFingerprint"]) == 64
+    assert provenance["priorOnlyUntilAppliedPlayback"] is True
+    assert provenance == mod._program_provenance({"recoveryProgram": dict(typed_strategy)})
     typed_edits = mod._model_edits({"recoveryProgram": typed_strategy}, payload, root=root)
     assert len(typed_edits) == 1
     assert 'elif new_strategy_id == "route_transition_graph_v3":' in typed_edits[0]["replace"]

@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import argparse
 import ast
+import hashlib
 import json
 import re
 import subprocess
@@ -2018,6 +2019,25 @@ def validated_model_plan(
     raise current_error
 
 
+def _program_provenance(planned: dict[str, Any]) -> dict[str, Any]:
+    """Record a bounded model-authored strategy for exact future replay."""
+    program = planned.get("recoveryProgram")
+    if isinstance(program, dict):
+        compile_recovery_program(program)
+        encoded = json.dumps(program, sort_keys=True, separators=(",", ":"))
+        return {
+            "generatorFormat": "typed-recovery-program",
+            "strategyProgram": program,
+            "programFingerprint": hashlib.sha256(encoded.encode("utf-8")).hexdigest(),
+            "priorOnlyUntilAppliedPlayback": True,
+        }
+    return {
+        "generatorFormat": "legacy-branch-body" if isinstance(planned.get("branchBody"), str)
+        else "allowlisted-edits",
+        "priorOnlyUntilAppliedPlayback": True,
+    }
+
+
 def main() -> int:
     p = argparse.ArgumentParser()
     p.add_argument("--proposal", type=Path, required=True)
@@ -2050,7 +2070,12 @@ def main() -> int:
     }
     if a.response_file:
         planned = load(a.response_file)
-        edits = [dict(x) for x in planned.get("edits") or [] if isinstance(x, dict)]
+        if isinstance(planned.get("recoveryProgram"), dict) or isinstance(planned.get("branchBody"), str):
+            edits = _model_edits(planned, payload)
+        else:
+            # Preserve strict legacy approved-edit replay while typed Lego
+            # programs become the default for all new 7B generations.
+            edits = [dict(x) for x in planned.get("edits") or [] if isinstance(x, dict)]
         edits = complete_evolved_profile_wiring(edits, blueprint)
         validate_edits(edits, patterns)
         validate_materialized_edits(edits, blueprint=blueprint)
@@ -2073,6 +2098,7 @@ def main() -> int:
         "productionProviderWritesAllowed": False,
         "requiresTargetedTests": True,
         "requiresRequiredCi": True,
+        **_program_provenance(planned),
     }
     a.report.parent.mkdir(parents=True, exist_ok=True)
     a.report.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
