@@ -80,6 +80,22 @@ infrastructure_detail = result("no_streams", 100, [
 ok, reason = runtime.compare_exploration_progress(old_search, infrastructure_detail)
 assert not ok, (ok, reason)
 
+# A stage label in a test summary cannot masquerade as a correlated
+# successful provider network observation.
+old_search["tests"][0]["debug_progress_stage"] = "media"
+assert runtime._observed_provider_frontier(old_search) == (1, "search")
+
+# A deeper request must never excuse a regression in existing provider quality.
+regressing_detail = result("no_streams", 100, [
+    {"status": 200, "infrastructure": False, "stage": "search"},
+    {"status": 200, "infrastructure": False, "stage": "detail"},
+])
+higher_baseline = result("blocked", 100, [
+    {"status": 200, "infrastructure": False, "stage": "search"},
+])
+ok, reason = runtime.compare_exploration_progress(higher_baseline, regressing_detail)
+assert not ok and reason == "exploration_quality_regression", (ok, reason)
+
 # New static proposal stages without an observed provider HTTP response are
 # not enough to change Learning state.
 invented_detail = result("no_streams", 100, [])

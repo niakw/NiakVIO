@@ -364,7 +364,7 @@ def identity_contradiction_count(result: dict[str, Any]) -> int:
 
 _NETWORK_STAGE_RANK = {
     "search": 1, "lookup": 1, "lookup_only": 1, "catalogue": 1,
-    "detail": 2, "content_detail": 2, "metadata": 2, "api": 2,
+    "detail": 2, "content_detail": 2, "metadata": 2,
     "episode": 3, "season": 3,
     "embed": 4, "player": 4,
     "source": 5, "stream": 5, "sources": 5,
@@ -380,24 +380,17 @@ def _observed_provider_frontier(result: dict[str, Any]) -> tuple[int, str]:
     stage. Do not infer a terminal stream from an HTML response.
     """
     best_rank, best_stage = 0, ""
-    provider_success = False
     for row in observations(result):
         status = row.get("status")
         if row.get("infrastructure") or not isinstance(status, int) or not 200 <= status < 400:
             continue
-        provider_success = True
+        # A test-level progress label is not an observed network transition:
+        # it could refer to an unrelated call or unexecuted proposal.
         for name in ("stage", "route_role", "role", "phase"):
             stage = str(row.get(name) or "").strip().casefold().replace("-", "_")
             rank = _NETWORK_STAGE_RANK.get(stage, 0)
             if rank > best_rank:
                 best_rank, best_stage = rank, stage
-    if provider_success:
-        for test in _tests(result):
-            for name in ("debug_progress_stage", "progress_stage"):
-                stage = str(test.get(name) or "").strip().casefold().replace("-", "_")
-                rank = _NETWORK_STAGE_RANK.get(stage, 0)
-                if rank > best_rank:
-                    best_rank, best_stage = rank, stage
     return best_rank, best_stage
 
 
@@ -456,7 +449,12 @@ def compare_exploration_progress(parent: dict[str, Any], repaired: dict[str, Any
         if repaired_requests > parent_requests and parent_requests > 0:
             return False, "exploration_request_amplification_without_frontier"
         return False, "exploration_no_causal_evidence_gain"
-    if quality_vector(repaired) <= quality_vector(parent) and not frontier_gain:
+    # Frontier evidence may break a quality *tie*, never override a real
+    # status/stream/provider validity regression.
+    before_quality, after_quality = quality_vector(parent), quality_vector(repaired)
+    if after_quality < before_quality:
+        return False, "exploration_quality_regression"
+    if after_quality == before_quality and not frontier_gain:
         return False, "exploration_no_quality_gain"
     return True, "sandbox_diagnostic_progress:" + ",".join(reasons)
 
