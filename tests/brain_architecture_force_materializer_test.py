@@ -728,6 +728,35 @@ with tempfile.TemporaryDirectory(prefix="brain-force-body-only-") as tmp:
     finally:
         mod._request_corrected_plan = original_correction
 
+    # LLM output with an isolated nested guard can be normalized safely;
+    # a parent guard, else fallback, or selector-dependent expression cannot.
+    nested_guard_body = (
+        'search_paths = _unique_routes(configured_search, learned_search, limit=16)\n'
+        'if new_strategy_id == "route_transition_graph_v3":\n'
+        '    request_recipes = _unique_request_recipes(current_request_recipes, limit=24)\n'
+    )
+    nested_edit = mod._model_edits({"branchBody": nested_guard_body}, payload, root=root)
+    assert 'elif new_strategy_id == "route_transition_graph_v3":' in nested_edit[0]["replace"]
+    assert nested_edit[0]["replace"].count('new_strategy_id == "route_transition_graph_v3"') == 1
+    assert "request_recipes = _unique_request_recipes" in nested_edit[0]["replace"]
+    for bad_nested in (
+        'search_paths = []\n'
+        'if new_strategy_id == "route_transition_graph_v2":\n'
+        '    request_recipes = []\n',
+        'search_paths = []\n'
+        'if new_strategy_id == "route_transition_graph_v3":\n'
+        '    request_recipes = []\n'
+        'else:\n'
+        '    request_recipes = ["/bad"]\n',
+        'search_paths = [new_strategy_id]\n',
+    ):
+        try:
+            mod._model_edits({"branchBody": bad_nested}, payload, root=root)
+        except ValueError:
+            pass
+        else:
+            raise AssertionError("unsafe nested selector body accepted")
+
     for bad_body in ("pass\n", "new_strategy_id = 'route_transition_graph_v3'\n", "if :(\n"):
         try:
             mod._model_edits({"branchBody": bad_body}, payload, root=root)

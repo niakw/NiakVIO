@@ -86,16 +86,57 @@ def branch_body_edit(
         parsed = ast.parse("if True:\n" + textwrap.indent(code + "\n", "    "))
     except SyntaxError as exc:
         raise ValueError("architecture FORCE branchBody syntax invalid: " + str(exc.msg)) from exc
-    # The old substring ban rejected valid Python whenever a Qwen comment or
-    # media label merely mentioned "new_strategy_id". Guard ownership is an
-    # AST property, NOT a byte substring property: only executable references
-    # to the selector are forbidden. Constants/comments cannot alter strategy
-    # selection and must not burn an entire FORCE run.
+    # A small LLM can embed an extra child-only selector guard among otherwise
+    # valid statements. A child guard is always true inside the Brain-owned
+    # sibling, so flatten ONLY the exact child condition, never a parent guard,
+    # multi-profile condition or else fallback. Preserve the model's actual
+    # algorithm; the Brain, not the LLM, owns the selector structure.
+    def exact_child(test: ast.expr) -> bool:
+        if not isinstance(test, ast.Compare) or len(test.ops) != 1 or len(test.comparators) != 1:
+            return False
+        if not isinstance(test.left, ast.Name) or test.left.id != "new_strategy_id":
+            return False
+        op = test.ops[0]
+        val = test.comparators[0]
+        if isinstance(op, ast.Eq) and isinstance(val, ast.Constant):
+            return val.value == child
+        return (
+            isinstance(op, ast.In)
+            and isinstance(val, (ast.Set, ast.List, ast.Tuple))
+            and len(val.elts) == 1
+            and isinstance(val.elts[0], ast.Constant)
+            and val.elts[0].value == child
+        )
+
+    class StripOnlyChildGuard(ast.NodeTransformer):
+        stripped = 0
+        def visit_If(self, node: ast.If):
+            if exact_child(node.test):
+                if node.orelse:
+                    raise ValueError("architecture FORCE child selector guard has unsafe else branch")
+                self.stripped += 1
+                statements = []
+                for statement in node.body:
+                    transformed = self.visit(statement)
+                    if isinstance(transformed, list):
+                        statements.extend(transformed)
+                    elif transformed is not None:
+                        statements.append(transformed)
+                return statements
+            return self.generic_visit(node)
+
+    flattened = StripOnlyChildGuard()
+    parsed = flattened.visit(parsed)
     if any(
         isinstance(node, ast.Name) and node.id == "new_strategy_id"
         for node in ast.walk(parsed)
     ):
         raise ValueError("architecture FORCE branchBody cannot read or mutate runtime strategy selector")
+    if flattened.stripped:
+        # Unparse is applied only after guarded structures were proven safe.
+        # This intentionally drops non-executable comments but never inserts
+        # a strategy guard, imports or statements not authored by the LLM.
+        code = "\n".join(ast.unparse(node) for node in parsed.body[0].body)
     nodes = parsed.body[0].body
     if not any(
         not isinstance(node, ast.Pass)
