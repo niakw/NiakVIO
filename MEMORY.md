@@ -1,3 +1,8 @@
+## 2026-10-09 — Representative FORCE preflight fixture sequencing corrected
+
+- Real targeted FORCE `37983048761` on `7b74a739` FAILED before any provider execution: `tests/brain_final_experiment_generation_test.py:173` referenced synthetic `second_escalation_failed` before its definition (introduced by the new preference regression test). This is a TEST/CI preflight bug, not an actual v3 stream failure. No provider bytes modified, no stream result established.
+- Brain-only test fix `51963f8f` moves the already-failed-preference assertion below the executed negative fixture's definition; the earlier preferred-profile and unknown-profile checks already passed before the NameError. Re-dispatch one targeted `mode=force`, `preferredProfile=route_transition_graph_v3` 4khdhub run on exact updated SHA; do not claim playable success until selection, executed bytes and terminal correct-title media are verified. Retain `21 FULL / 17 repairQueue` until fresh census.
+
 ## 2026-10-09 — Deterministic representative execution of Brain-generated architecture
 
 - Current census still **21 FULL / 46, 17 repairQueue**; real 4khdhub replay `37979345850` after generated/published Brain v3 yielded **0 streams**, and actually selected old `html_class_token_exact_v1`. Earlier `37980350466` and `37980458319` were contract-blocked by fake unobserved negatives; these tests are fixed on `1eabb376`. CORE Workflow Gate `37981955352` and Provider Non-Regression Gate `37981955327` passed on `1eabb376`.
