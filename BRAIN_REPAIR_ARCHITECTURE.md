@@ -1,3 +1,7 @@
+## 2026-10-09 — Isolate new executable algorithm from the Brain selector
+
+The Qwen FORCE model is given the exhausted parent executor's *algorithm body* as helper vocabulary whenever a unique parent/sibling boundary can be identified, instead of the surrounding `new_strategy_id` switch. It generates a novel algorithm; the Brain owns the distinct branch guard, Brain registry, JS planner and runtime registry. Nested model-authored guards may be eliminated only if AST proves they select **exclusively the new child** and have no fallback. Parent selector reads/writes, multi-child/multi-parent selectors, unexpected `else` and no-op algorithms still fail closed. Invalid model body text must not be fed back for repeated copying during correction. Synthetic tests prove selector isolation; actual recovery requires applied-byte current-content playable media.
+
 > Schéma de composition Provider v3 et ownership GLOBAL/FAMILLE/PERSONNEL : [PROVIDER_FAMILY_ARCHITECTURE.md](PROVIDER_FAMILY_ARCHITECTURE.md).
 
 # NiakVIO — Brain Repair Architecture
