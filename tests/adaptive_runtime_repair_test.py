@@ -84,6 +84,7 @@ with tempfile.TemporaryDirectory() as directory:
     assert evolved_options is not None
     assert evolved_options["new_strategy_id"] == "route_transition_graph_v3"
     assert evolved_options["runtime_response_salvage"] is True
+    assert evolved_options["alias_search"] is True  # TMDB-localized/title-original queries share bounded budget
     assert "/catalog/search?q={query}" in evolved_options["search_paths"]
     assert evolved_options["search_paths"].index("/catalog/search?q={query}") == 0
     assert evolved_options["max_pages"] <= 36 and evolved_options["max_depth"] <= 6

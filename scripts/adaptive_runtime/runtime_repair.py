@@ -1930,7 +1930,17 @@ def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any])
     max_pages = max(6, min(36, int(llm_experiment.get("maxPages") or default_max_pages)))
     max_embeds = max(6, min(36, int(llm_experiment.get("maxEmbeds") or default_max_embeds)))
     max_depth = max(2, min(6, int(llm_experiment.get("maxDepth") or default_max_depth)))
-    alias_search = new_strategy_id == "identity_alias_search_traversal_v1" or llm_experiment.get("aliasSearch") is True
+    # A generated search/route recovery must be able to query the canonical
+    # title aliases already supplied by TMDB (e.g. localized title vs source
+    # catalogue title). No alias itself grants a new content identity.
+    alias_search = (
+        new_strategy_id == "identity_alias_search_traversal_v1"
+        or (
+            _generated_route_profile_preserves_v2_capabilities(new_strategy_id)
+            and experiment_failure in {"search_gap", "route_proven_gap"}
+        )
+        or llm_experiment.get("aliasSearch") is True
+    )
     runtime_response_salvage = (
         new_strategy_id in {
             "runtime_response_salvage_v1",
