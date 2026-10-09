@@ -210,14 +210,28 @@ assert rescue_failed["experimentExhausted"] is True,rescue_failed
 # hypothesis itself is non-exhausted until current-byte validation actually runs.
 exploration_memory=list(exhausted_memory)
 exploration_plan=None
-for _attempt in range(12):
-    exploration_plan=plan("repair",exploration_memory,rescue_guidance,True)
+first_exploration_plan=plan("repair",exploration_memory,rescue_guidance,True)
+# The Brain adds/removes executable strategy Lego dynamically. A fixed
+# range(12) failed immediately after Qwen successfully promoted v3 and
+# the planner grew from 11 to 12 valid profiles (real run 37978457715).
+# Bound the exercise to the actual planner-owned candidate inventory plus
+# one final replan, preserving the hard requirement to converge.
+candidate_profiles=first_exploration_plan["postExhaustionCandidateProfiles"]
+assert isinstance(candidate_profiles,list) and 1<=len(candidate_profiles)<=64,candidate_profiles
+assert len(set(candidate_profiles))==len(candidate_profiles),candidate_profiles
+explored_profiles=set()
+for _attempt in range(len(candidate_profiles)+1):
+    exploration_plan=(first_exploration_plan if _attempt==0 else
+                      plan("repair",exploration_memory,rescue_guidance,True))
     assert exploration_plan["baseExperimentExhausted"] is True,exploration_plan
     if not exploration_plan.get("strategyEscalated"):
         break
     profile=exploration_plan["postExhaustionStrategyProfile"]
     implementation_fp=exploration_plan["strategyImplementationFingerprint"]
     assert profile and implementation_fp,exploration_plan
+    assert profile in candidate_profiles,("unexpected planner strategy",profile,candidate_profiles)
+    assert profile not in explored_profiles,("replayed exhausted strategy",profile)
+    explored_profiles.add(profile)
     exploration_memory.append({
         "providerId":"synthetic-llm-advisor",
         "failureClass":"route_proven_gap",
@@ -235,6 +249,7 @@ for _attempt in range(12):
 else:
     raise AssertionError(("post-exhaustion strategies did not converge",exploration_plan))
 
+assert len(explored_profiles)<=len(candidate_profiles)
 assert exploration_plan is not None
 assert exploration_plan["strategyEscalated"] is False,exploration_plan
 assert exploration_plan["baseExperimentExhausted"] is True,exploration_plan
