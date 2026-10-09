@@ -1596,6 +1596,11 @@ with tempfile.TemporaryDirectory(prefix="brain-arch-runtime-only-autowire-") as 
             'POST_EXHAUSTION_STRATEGY_PROFILES = {\n'
             '    "route_transition_graph_v2",\n'
             '}\n'
+            '# A second legal reference outside the selector caused FORCE\n'
+            '# to reject its parent anchor in live run 37973552349.\n'
+            'OTHER_RUNTIME_PROFILE_PRIORITY = [\n'
+            '    "route_transition_graph_v2",\n'
+            ']\n'
             'if new_strategy_id == "route_transition_graph_v2":\n'
             '    executor = "retained-graph"\n'
         ),
@@ -1647,6 +1652,16 @@ with tempfile.TemporaryDirectory(prefix="brain-arch-runtime-only-autowire-") as 
     finally:
         mod.validate_blueprint_implementation = original_validate
     assert registration_observed, "fourth runtime selection gate was not exercised"
+    # In-situ register on the fixture: only the actual selector is rewritten.
+    runtime_target = root / "scripts/adaptive_runtime/runtime_repair.py"
+    mod._register_generated_runtime_profile(root, "route_transition_graph_v3", "route_transition_graph_v2")
+    registered = runtime_target.read_text(encoding="utf-8")
+    assert registered.count('    "route_transition_graph_v2",\\n'.replace("\\n", "\n")) == 2
+    assert registered.count('    "route_transition_graph_v3",\\n'.replace("\\n", "\n")) == 1
+    assert 'OTHER_RUNTIME_PROFILE_PRIORITY = [\\n    "route_transition_graph_v2",'.replace("\\n", "\n") in registered
+    mod._register_generated_runtime_profile(root, "route_transition_graph_v3", "route_transition_graph_v2")
+    assert runtime_target.read_text(encoding="utf-8") == registered, "autowire must be idempotent"
+    runtime_target.write_text(fixtures["scripts/adaptive_runtime/runtime_repair.py"], encoding="utf-8")
     assert set(changed) == set(mod.NEW_REPAIR_PROFILE_SURFACES), changed
     assert all((root / path).read_text(encoding="utf-8") == content for path, content in fixtures.items())
     # The Brain cannot autowire a made-up family and must never substitute a

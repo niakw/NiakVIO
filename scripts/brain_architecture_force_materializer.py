@@ -595,13 +595,18 @@ def _register_generated_runtime_profile(root: Path, strategy_id: str, parent_id:
     registry = source[begin:end + 1]
     parent_line = f'    "{parent_id}",\n'
     child_line = f'    "{strategy_id}",\n'
-    if registry.count(parent_line) != 1 or source.count(parent_line) != 1:
-        raise ValueError("architecture FORCE adaptive runtime parent anchor ambiguous")
-    if registry.count(child_line) == 1 and source.count(child_line) == 1:
+    # Identifiers also occur in legitimate runtime priorities / diagnostics.
+    # Never require the literal line to be unique across the entire module:
+    # the authority for selectable profiles is this one registry only.
+    if registry.count(parent_line) != 1:
+        raise ValueError("architecture FORCE adaptive runtime parent registry anchor ambiguous")
+    child_count = registry.count(child_line)
+    if child_count == 1:
         return
-    if registry.count(child_line) or source.count(child_line):
-        raise ValueError("architecture FORCE adaptive runtime new profile anchor ambiguous")
-    target.write_text(source.replace(parent_line, parent_line + child_line, 1), encoding="utf-8")
+    if child_count != 0:
+        raise ValueError("architecture FORCE adaptive runtime child registry anchor ambiguous")
+    updated_registry = registry.replace(parent_line, parent_line + child_line, 1)
+    target.write_text(source[:begin] + updated_registry + source[end + 1:], encoding="utf-8")
 
 
 def apply_edits(
@@ -729,7 +734,9 @@ def validate_blueprint_implementation(
     if begin < 0 or end < 0:
         raise ValueError("architecture FORCE adaptive runtime profile registry missing")
     child_line = f'    "{strategy_id}",\n'
-    if runtime_text[begin:end + 1].count(child_line) != 1 or runtime_text.count(child_line) != 1:
+    # Scope this membership proof to the executable profile registry. The
+    # strategy may legitimately be mentioned by another runtime list.
+    if runtime_text[begin:end + 1].count(child_line) != 1:
         raise ValueError("architecture FORCE generated strategy not selectable by adaptive runtime")
     # Evolution is additive: a new profile must never broaden, rename or replace
     # the exhausted parent runtime branch. Keeping the exact parent guard lets
