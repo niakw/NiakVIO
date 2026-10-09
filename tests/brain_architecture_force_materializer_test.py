@@ -677,6 +677,17 @@ with tempfile.TemporaryDirectory(prefix="brain-force-body-only-") as tmp:
     )
     wrapped_edits = mod._model_edits({"branchBody": wrapped_body}, payload, root=root)
     assert wrapped_edits == output, "a valid child-only wrapper must normalize to the same guarded bytes"
+    wrapped_with_comment = (
+        '# new_strategy_id is a Brain-owned selector, not a provider field\n'
+        'elif new_strategy_id in {"route_transition_graph_v3"}:\n'
+        '    search_paths = _unique_routes(configured_search, learned_search, limit=16)\n'
+        '    request_recipes = _unique_request_recipes(current_request_recipes, limit=24)\n'
+    )
+    assert mod._model_edits({"branchBody": wrapped_with_comment}, payload, root=root) == output
+    # Merely mentioning the selector in a Python string/comment must not be
+    # classified as an executable selector mutation.
+    literal_body = 'search_paths = ["new_strategy_id is not a guard"]\n'
+    assert mod._model_edits({"branchBody": literal_body}, payload, root=root)[0]["path"] == runtime_path
     for bad_wrapper in (
         'elif new_strategy_id == "route_transition_graph_v2":\n    search_paths = []\n',
         'elif new_strategy_id == "route_transition_graph_v3":\n'
