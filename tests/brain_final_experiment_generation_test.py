@@ -63,9 +63,10 @@ def row(variant:int,generation:int=1):
         "successes":0,
     }
 
-def plan(memory, mode="repair"):
+def plan(memory, mode="repair", preferred_profile=""):
     payload={
         "mode":mode,
+        "forcePreferredStrategy":preferred_profile,
         "policy":policy,
         "learnedSkills":{},
         "negativeMemory":memory,
@@ -131,6 +132,15 @@ assert learning_escalated["action"]=="probe-targeted-repair",learning_escalated
 assert learning_escalated["allowedProfiles"]==["terminal_transition_graph_v1"],learning_escalated
 assert learning_escalated["learningDisposition"]=="execute_bounded_evolved_strategy",learning_escalated
 
+# When a new Brain architecture is explicitly promoted, its exact strategy
+# must be replayed first on the representative, not buried after many older
+# strategies. It is still subject to both causal membership and executed
+# negative memory; an unavailable profile cannot be forced.
+preferred=plan(base_exhausted,"learning","terminal_request_program_inference_v1")
+assert preferred["postExhaustionStrategyProfile"]=="terminal_request_program_inference_v1",preferred
+unknown=plan(base_exhausted,"learning","invented_unsafe_provider_v9")
+assert unknown["postExhaustionStrategyProfile"]=="terminal_transition_graph_v1",unknown
+
 terminal_fp=learning_escalated["strategyImplementationFingerprint"]
 assert len(terminal_fp)==64 and all(ch in "0123456789abcdef" for ch in terminal_fp),learning_escalated
 
@@ -159,6 +169,11 @@ learning_escalated_2=plan([*base_exhausted,first_escalation_failed],"learning")
 assert learning_escalated_2["experimentExhausted"] is False,learning_escalated_2
 assert learning_escalated_2["postExhaustionStrategyProfile"]=="terminal_request_program_inference_v1",learning_escalated_2
 assert learning_escalated_2["allowedProfiles"]==["terminal_request_program_inference_v1"],learning_escalated_2
+already_failed_preference=plan(
+    [*base_exhausted,first_escalation_failed,second_escalation_failed],
+    "learning","terminal_request_program_inference_v1",
+)
+assert already_failed_preference["postExhaustionStrategyProfile"]!="terminal_request_program_inference_v1",already_failed_preference
 request_fp=learning_escalated_2["strategyImplementationFingerprint"]
 assert len(request_fp)==64 and request_fp!=terminal_fp,learning_escalated_2
 

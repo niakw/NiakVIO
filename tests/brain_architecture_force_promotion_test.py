@@ -31,6 +31,10 @@ assert "mode=direct-main-no-pr" in LEARN
 assert "FIELD_BRAIN_ARCH_FORCE_REPRESENTATIVE_REPLAY" in LEARN
 assert 'gh workflow run provider-recognition-repair-v6.yml' in LEARN
 assert '-f mode=force' in LEARN
+assert 'preferred_profile="$preferred_profile"' in LEARN
+assert 'forcePreferredStrategy' in (ROOT / "scripts/brain_repair_runtime.py").read_text(encoding="utf-8")
+assert 'NUVIO_BRAIN_FORCE_PREFERRED_PROFILE' in (ROOT / "scripts/run_provider_brain_repair.py").read_text(encoding="utf-8")
+assert 'postExhaustionStrategyHint(' in (ROOT / "engine_v2/scripts/plan-repairs.mjs").read_text(encoding="utf-8")
 assert "A generated Brain executor cannot be proven by a one-wave" in LEARN
 assert 'brain_cmd.append("--architecture-force")' in (ROOT / "scripts/run_provider_repair_pipeline_v6.py").read_text(encoding="utf-8")
 assert '-f target_provider="$representative"' in LEARN

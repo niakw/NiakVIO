@@ -1487,6 +1487,11 @@ def main() -> int:
                 env["NUVIO_HEALTH_CONCURRENCY"] = str(batch_concurrency)
                 env["NUVIO_BRAIN_REPAIR_WAVE"] = str(wave)
                 env["NUVIO_BRAIN_EXPLORATION_CHAIN"] = "1"
+                # Never leak a FORCE-only experiment preference to regular
+                # production Fast Repair. Selection is still causal/negative
+                # memory gated by the Brain planner.
+                if not args.architecture_force:
+                    env.pop("NUVIO_BRAIN_FORCE_PREFERRED_PROFILE", None)
                 # Fast Repair is production exploration, never Learning mode.
                 # An inherited planner-mode value would make
                 # brain_repair_runtime._exploration_chain_enabled() false even

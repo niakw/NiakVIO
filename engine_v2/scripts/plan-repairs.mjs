@@ -384,11 +384,19 @@ function historicalStrategyHint(providerId, failureClass, generation, memoryRows
   return { profile: "", caseId: "", solutionClass: "" };
 }
 
-function postExhaustionStrategyHint(failureClass, memoryRows, rotateEvery) {
+function postExhaustionStrategyHint(failureClass, memoryRows, rotateEvery, preferredProfile = "") {
   const failure = canonicalFailureClass(failureClass);
   const candidates = postExhaustionCandidates(failure);
-  for (let index = 0; index < candidates.length; index += 1) {
-    const row = candidates[index];
+  const preferred = stringValue(preferredProfile).toLowerCase();
+  // A freshly promoted Brain executor must actually be tried on the
+  // representative. Never permit arbitrary/provider-specific profiles:
+  // preference applies only to an installed, causally eligible candidate.
+  const ordered = candidates.some((row) => row.profile === preferred)
+    ? [...candidates.filter((row) => row.profile === preferred),
+       ...candidates.filter((row) => row.profile !== preferred)]
+    : candidates;
+  for (let index = 0; index < ordered.length; index += 1) {
+    const row = ordered[index];
     const implementationFingerprint = strategyImplementationFingerprint(row.profile);
     const alreadyFailed = memoryRows.some((memory) => {
       if (
@@ -895,7 +903,10 @@ function buildPlan(item) {
   const postExhaustionHint = positiveProgramReplayHint.profile
     ? positiveProgramReplayHint
     : (explorationMode && experimentExhausted)
-      ? postExhaustionStrategyHint(evidence.failureClass, causalFamilyMemoryMatches, rotateEvery)
+      ? postExhaustionStrategyHint(
+          evidence.failureClass, causalFamilyMemoryMatches, rotateEvery,
+          stringValue(input.forcePreferredStrategy),
+        )
       : { profile: "", method: "", index: -1 };
   const strategyEscalated = Boolean(postExhaustionHint.profile);
   const architectureGapEscalation = (

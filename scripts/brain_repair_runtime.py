@@ -1076,6 +1076,10 @@ def _execute_planner(
     payload = {
         "mode": mode,
         "explorationChain": _exploration_chain_enabled(),
+        "forcePreferredStrategy": (
+            str(os.environ.get("NUVIO_BRAIN_FORCE_PREFERRED_PROFILE") or "").strip().casefold()
+            if _exploration_chain_enabled() else ""
+        ),
         "policy": policy(),
         "learnedSkills": planner_learned_skills(mode),
         "historicalSolutions": planner_historical_solutions(),

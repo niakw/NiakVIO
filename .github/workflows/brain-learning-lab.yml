@@ -2016,12 +2016,33 @@ jobs:
           # A generated Brain executor cannot be proven by a one-wave
           # production Repair fallback. Use bounded 3-wave FORCE exploration
           # on exactly this representative, with normal strict playback gates.
-          gh workflow run provider-recognition-repair-v6.yml \
-            --repo "$GITHUB_REPOSITORY" \
-            --ref main \
-            -f mode=force \
-            -f target_provider="$representative"
-          echo "FIELD_BRAIN_ARCH_FORCE_REPRESENTATIVE_REPLAY provider=$representative source_run=$GITHUB_RUN_ID promoted_sha=$promoted_sha target=provider-recognition-repair-v6"
+          # Replay the exact Brain-authored new strategy before legacy profiles.
+          # The planner must still reject it if uninstalled, wrong causal
+          # family, or already exhausted by executed negative evidence.
+          preferred_profile="$(python - "$representative" <<'PY'
+          import json,sys
+          from pathlib import Path
+          wanted=sys.argv[1].strip().casefold().replace("_","-")
+          data=json.loads(Path("brain-learning-output/brain-architecture-proposal.json").read_text(encoding="utf-8"))
+          for row in data.get("strategyBlueprints") or []:
+              if not isinstance(row,dict) or row.get("forcePromotionEligible") is not True:
+                  continue
+              providers={str(p).strip().casefold().replace("_","-") for p in row.get("providers") or []}
+              if wanted in providers:
+                  print(str(row.get("strategyId") or "").strip().casefold())
+                  break
+          PY
+          )"
+          args=(gh workflow run provider-recognition-repair-v6.yml
+            --repo "$GITHUB_REPOSITORY" --ref main
+            -f mode=force -f target_provider="$representative")
+          if [[ "$preferred_profile" =~ ^[a-z][a-z0-9_]*_v[0-9]+$ ]]; then
+            args+=(-f preferred_profile="$preferred_profile")
+          else
+            echo "FIELD_BRAIN_FORCE_REPLAY_PROFILE unspecified=true"
+          fi
+          "${args[@]}"
+          echo "FIELD_BRAIN_ARCH_FORCE_REPRESENTATIVE_REPLAY provider=$representative preferred_profile=${preferred_profile:-none} source_run=$GITHUB_RUN_ID promoted_sha=$promoted_sha target=provider-recognition-repair-v6"
 
   continue-learning-slot:
     name: LEARNING - Continue chained long slot

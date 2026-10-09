@@ -14,6 +14,11 @@ on:
         required: false
         default: ""
         type: string
+      preferred_profile:
+        description: Optional Brain-generated novel strategy for bounded representative FORCE replay only
+        required: false
+        default: ""
+        type: string
       allow_upstream_positive_loss:
         description: Diagnostic only; never use for an accepted repair candidate
         required: false
@@ -1318,6 +1323,7 @@ jobs:
         env:
           DISPATCH_MODE: ${{ inputs.mode || '' }}
           TARGET_PROVIDER: ${{ inputs.target_provider || '' }}
+          PREFERRED_BRAIN_PROFILE: ${{ inputs.preferred_profile || '' }}
           ALLOW_LOSS: ${{ inputs.allow_upstream_positive_loss || 'false' }}
           FORCE_ACCEPTED: ${{ steps.force-mutations.outputs.accepted_csv || '' }}
           REQUIRE_EXTERNAL_FORCE_MUTATIONS: ${{ inputs.require_external_force_mutations || 'false' }}
@@ -1341,6 +1347,24 @@ jobs:
             )"
           else
             MODE="${DISPATCH_MODE:-force}"
+          fi
+          # Push-triggered representative FORCE uses the same explicit,
+          # auditable model-produced profile request as workflow_dispatch.
+          if [ "${{ github.event_name }}" = "push" ]; then
+            PREFERRED_BRAIN_PROFILE="$(python - <<'PY'
+          import json
+          from pathlib import Path
+          data=json.loads(Path(".github/triggers/provider-recognition-repair-v6.json").read_text(encoding="utf-8"))
+          print(str(data.get("preferredProfile") or "").strip().casefold())
+          PY
+            )"
+          fi
+          # Only operator-authorized representative FORCE may prioritize a
+          # model-authored strategy; repair/learn runs keep historical ordering.
+          if [ "$MODE" = "force" ] && [[ "${PREFERRED_BRAIN_PROFILE:-}" =~ ^[a-z][a-z0-9_]*_v[0-9]+$ ]]; then
+            export NUVIO_BRAIN_FORCE_PREFERRED_PROFILE="$PREFERRED_BRAIN_PROFILE"
+          else
+            unset NUVIO_BRAIN_FORCE_PREFERRED_PROFILE
           fi
           args=(python scripts/run_provider_repair_pipeline_v6.py --mode "$MODE")
           declare -A FORCE_WINNER_SET=()
