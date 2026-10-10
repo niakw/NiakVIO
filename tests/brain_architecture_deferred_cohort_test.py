@@ -283,23 +283,56 @@ assert missing_v2[0]["strategyId"] == "terminal_transition_graph_v2", missing_v2
 assert missing_v2[0]["forcePromotionEligible"] is True, missing_v2
 assert missing_v2[0]["requiresNewExecutableRepairProfile"] is True, missing_v2
 
-v2_exhausted = builder.build_strategy_blueprints(
-    {"groups": [{
-        "groupId": "terminal-extraction|html_scraper",
-        "repairScope": "terminal-extraction",
-        "capabilityStrategy": "html_scraper",
-        "providers": ["alpha", "beta"],
-    }]},
-    {"alpha", "beta"},
+# Future Brain-generated terminal_graph_vN profiles must not break this
+# preflight. The newest installed executable must be replayed (never
+# force-promoted twice), and only after every installed profile has an
+# execution-observed negative may the Brain propose one genuinely new version.
+installed_graphs = sorted(
+    (
+        p for p in builder.fully_installed_repair_profiles()
+        if p.startswith("terminal_transition_graph_v")
+        and p.removeprefix("terminal_transition_graph_v").isdecimal()
+    ),
+    key=lambda p: int(p.removeprefix("terminal_transition_graph_v")),
+)
+assert installed_graphs[:2] == [
+    "terminal_transition_graph_v1", "terminal_transition_graph_v2"
+], installed_graphs
+current_graph = installed_graphs[-1]
+prior_graphs = set(installed_graphs[:-1])
+graph_group = {"groups": [{
+    "groupId": "terminal-extraction|html_scraper",
+    "repairScope": "terminal-extraction",
+    "capabilityStrategy": "html_scraper",
+    "providers": ["alpha", "beta"],
+}]}
+replay_installed = builder.build_strategy_blueprints(
+    graph_group, {"alpha", "beta"},
+    {"alpha": prior_graphs, "beta": prior_graphs},
+)
+assert len(replay_installed) == 1, replay_installed
+assert replay_installed[0]["strategyId"] == current_graph, replay_installed
+assert replay_installed[0]["existingExecutableRepairProfile"] is True, replay_installed
+assert replay_installed[0]["forcePromotionEligible"] is False, replay_installed
+assert replay_installed[0]["requiresNewExecutableRepairProfile"] is False, replay_installed
+assert replay_installed[0]["forcePromotionReason"] == "already-installed-profile-replay-first", replay_installed
+
+all_installed_executed_negatives = set(installed_graphs)
+next_graph_version = int(current_graph.removeprefix("terminal_transition_graph_v")) + 1
+next_graph_id = f"terminal_transition_graph_v{next_graph_version}"
+needs_new_graph = builder.build_strategy_blueprints(
+    graph_group, {"alpha", "beta"},
     {
-        "alpha": {"terminal_transition_graph_v1", "terminal_transition_graph_v2"},
-        "beta": {"terminal_transition_graph_v1", "terminal_transition_graph_v2"},
+        "alpha": all_installed_executed_negatives,
+        "beta": all_installed_executed_negatives,
     },
 )
-assert v2_exhausted[0]["strategyId"] == "terminal_transition_graph_v3", v2_exhausted
-assert v2_exhausted[0]["evolvesFromStrategyId"] == "terminal_transition_graph_v2", v2_exhausted
-assert v2_exhausted[0]["forcePromotionEligible"] is True, v2_exhausted
-assert v2_exhausted[0]["requiresNewExecutableRepairProfile"] is True, v2_exhausted
+assert len(needs_new_graph) == 1, needs_new_graph
+assert needs_new_graph[0]["strategyId"] == next_graph_id, needs_new_graph
+assert needs_new_graph[0]["evolvesFromStrategyId"] == current_graph, needs_new_graph
+assert needs_new_graph[0]["existingExecutableRepairProfile"] is False, needs_new_graph
+assert needs_new_graph[0]["forcePromotionEligible"] is True, needs_new_graph
+assert needs_new_graph[0]["requiresNewExecutableRepairProfile"] is True, needs_new_graph
 
 workflow_source = (ROOT / ".github" / "workflows" / "brain-learning-lab.yml").read_text(encoding="utf-8")
 architecture_job = workflow_source.split("  publish-architecture-proposal:", 1)[1].split("  continue-learning-slot:", 1)[0]
