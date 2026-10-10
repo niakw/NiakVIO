@@ -1435,14 +1435,26 @@ jobs:
                   print(provider)
           PY
             )
-            for provider in "${repair_targets[@]}"; do
-              echo "FIELD_BRAIN_REPAIR_RETURN source_run=${GITHUB_RUN_ID} target=provider-recognition-repair-v6 provider=$provider scoped=true"
+            if [ "${#repair_targets[@]}" -eq 1 ]; then
+              provider="${repair_targets[0]}"
+              echo "FIELD_BRAIN_REPAIR_RETURN source_run=${GITHUB_RUN_ID} target=provider-recognition-repair-v6 provider=$provider scoped=true dispatched=1"
               gh workflow run provider-recognition-repair-v6.yml \
                 --repo "$GITHUB_REPOSITORY" \
                 --ref main \
                 -f mode=repair \
                 -f target_provider="$provider"
-            done
+            else
+              # V6 owns one shared concurrency group and its untargeted mode
+              # already consumes the entire current census RepairQueue.
+              # Dispatching one run per provider replaces pending siblings in
+              # GitHub Actions, discarding almost all of the 16-provider wave.
+              # One canonical batch preserves all current unresolved providers.
+              echo "FIELD_BRAIN_REPAIR_RETURN source_run=${GITHUB_RUN_ID} target=provider-recognition-repair-v6 cohort=${#repair_targets[@]} scoped=false dispatched=1 mode=whole-repair-queue"
+              gh workflow run provider-recognition-repair-v6.yml \
+                --repo "$GITHUB_REPOSITORY" \
+                --ref main \
+                -f mode=repair
+            fi
           else
             echo "FIELD_BRAIN_REPAIR_RETURN source_run=${GITHUB_RUN_ID} target=provider-recognition-repair-v6 provider=none scoped=false"
             gh workflow run provider-recognition-repair-v6.yml \
