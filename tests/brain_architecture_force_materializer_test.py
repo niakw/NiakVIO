@@ -1773,4 +1773,43 @@ assert mod._force_generation_temperature({
 }) == 0.0
 
 
+# FORCE must not invent one more versioned Lego by just swapping numeric caps.
+# The Brain already promoted route_transition_graph_v11 after v10 with the same
+# executable dataflow and only different traversal budgets. This test is pure
+# Brain architecture, not a manual provider implementation override.
+numeric_clone = """
+if new_strategy_id == "route_transition_graph_v10":
+    search_paths = choose(configured_search, learned_search, limit=10)
+    if search_paths:
+        direct_paths = find_links(search_paths, limit=4)
+elif new_strategy_id == "route_transition_graph_v12":
+    search_paths = choose(configured_search, learned_search, limit=30)
+    if search_paths:
+        direct_paths = find_links(search_paths, limit=20)
+"""
+try:
+    mod.reject_numeric_only_strategy_clone(numeric_clone, "route_transition_graph_v12")
+except ValueError as exc:
+    assert "numeric-only strategy clone" in str(exc), exc
+    assert "route_transition_graph_v10" in str(exc), exc
+else:
+    raise AssertionError("FORCE accepted an exhausted strategy with only numeric limit changes")
+
+novel_executor = numeric_clone.replace(
+    "direct_paths = find_links(search_paths, limit=20)",
+    "direct_paths = extract_terminal_media(find_links(search_paths, limit=20))",
+)
+mod.reject_numeric_only_strategy_clone(novel_executor, "route_transition_graph_v12")
+
+# Validate on the *real* Brain's current installed executor family, as opposed
+# to relying solely on synthetic fixture text.
+actual_runtime = (ROOT / "scripts/adaptive_runtime/runtime_repair.py").read_text(encoding="utf-8")
+try:
+    mod.reject_numeric_only_strategy_clone(actual_runtime, "route_transition_graph_v11")
+except ValueError as exc:
+    assert "numeric-only strategy clone" in str(exc), exc
+else:
+    raise AssertionError("Brain v11 was merely re-budgeted but its clone escaped the guard")
+
+
 print("Brain architecture FORCE materializer tests passed")
