@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "sourceRunId": "38053483375",
-  "sourceTriggerSha": "1239c9769586a7c55f3b5165c0baef6876b4ff6d",
-  "unresolvedProviderCount": 20,
+  "sourceRunId": "38053476672-post-repair-candidate",
+  "sourceTriggerSha": "aa0cd1fbb8c8a0662ecce25b99dbf8c1ffb0a2a1",
+  "unresolvedProviderCount": 21,
   "dynamicVariantProviderCount": 6,
   "dynamicVariantProviders": [
     "animevost-fr",
@@ -16,21 +16,47 @@
     "4khdhub",
     "allanime",
     "allwish",
+    "anikototv",
+    "anime-sama",
+    "anime-ultime",
     "animekai",
     "animesalt",
     "animesama-co",
     "animesultra",
     "animevost-fr",
     "animevostfr",
+    "castle",
+    "coflix",
     "flemmix",
+    "french-manga",
+    "hindmoviez",
+    "kehflix",
+    "kurage",
     "mallumv",
     "moviebox",
+    "movieshunt",
     "moviesmod",
+    "mugiwarastream",
+    "neko-sama",
+    "papadustream",
+    "persianstremio",
+    "playimdb",
+    "purstream",
+    "sekai",
+    "streamzo",
     "uhdmovies",
+    "videasy",
     "vidfast",
+    "vidlove",
+    "vidrock",
+    "voiranime",
+    "voiranime-homes",
+    "voiranime-rip",
+    "vostfree",
+    "wookafr",
     "yflix"
   ],
-  "dynamicVariantFallbackUsed": true,
+  "dynamicVariantFallbackUsed": false,
   "groupCount": 12,
   "executionModel": {
     "default": "family/signature batch",
@@ -78,6 +104,7 @@
       "repairScope": "route-to-terminal",
       "runtimeFamilies": [
         "dle-full-story-sibnet",
+        "menu-search-series-focus-player",
         "mixed_embed_resolver",
         "yflix-db-encrypted-ajax-v1"
       ],
@@ -88,13 +115,15 @@
       ],
       "dominantIssues": [
         "network_exception",
+        "network_http_error",
         "timeout",
         "waf_challenge"
       ],
       "harnessTransportClasses": [],
       "transportSignature": "not-applicable",
-      "providerCount": 3,
+      "providerCount": 4,
       "providers": [
+        "anime-ultime",
         "animesultra",
         "flemmix",
         "yflix"
@@ -205,6 +234,33 @@
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
     {
+      "groupId": "learning|mixed_embed_resolver",
+      "repairScope": "learning",
+      "runtimeFamilies": [
+        "mixed_embed_resolver"
+      ],
+      "capabilityStrategy": "mixed_embed_resolver",
+      "evidenceDepths": [
+        "none"
+      ],
+      "dominantIssues": [
+        "timeout"
+      ],
+      "harnessTransportClasses": [],
+      "transportSignature": "not-applicable",
+      "providerCount": 1,
+      "providers": [
+        "animekai"
+      ],
+      "action": "queue by signature for Brain learning; provider-local repair only after shared profiles fail",
+      "selectionAuthorities": [
+        "provider-census-status.json:brainCheckRequired"
+      ],
+      "dynamicVariantProviders": [],
+      "executionPolicy": "batch-first",
+      "providerLocalFallback": "only-after-shared-profile-failure"
+    },
+    {
       "groupId": "route-to-terminal|api_stream_resolver",
       "repairScope": "route-to-terminal",
       "runtimeFamilies": [
@@ -307,33 +363,6 @@
         "mallumv"
       ],
       "action": "apply/test shared terminal-player extraction profile to the whole capability family",
-      "selectionAuthorities": [
-        "provider-census-status.json:brainCheckRequired"
-      ],
-      "dynamicVariantProviders": [],
-      "executionPolicy": "batch-first",
-      "providerLocalFallback": "only-after-shared-profile-failure"
-    },
-    {
-      "groupId": "transport|mixed_embed_resolver",
-      "repairScope": "transport",
-      "runtimeFamilies": [
-        "mixed_embed_resolver"
-      ],
-      "capabilityStrategy": "mixed_embed_resolver",
-      "evidenceDepths": [
-        "none"
-      ],
-      "dominantIssues": [
-        "network_exception"
-      ],
-      "harnessTransportClasses": [],
-      "transportSignature": "not-applicable",
-      "providerCount": 1,
-      "providers": [
-        "animekai"
-      ],
-      "action": "refresh transport authority before provider-local code changes",
       "selectionAuthorities": [
         "provider-census-status.json:brainCheckRequired"
       ],
