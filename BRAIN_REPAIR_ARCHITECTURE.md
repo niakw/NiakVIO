@@ -1,3 +1,9 @@
+## 2026-10-10 — Generated profile regression contracts and loop economics
+
+Contract tests and architecture-deferred plans must be **data-driven from the Brain's actually installed strategy registry**; generated `terminal_transition_graph_vN` siblings are valid when registered and compiled. Each new sibling is replayed before a later fallback, and its failure must be execution-observed. Never hard-code an assumption that a given vN does not exist.
+
+Autopilot/Fast Repair must distinguish `main` changes that can alter executed behavior (Brain source, provider bytes, strategy registries, negative/positive memory and semantic repairQueue) from pure metadata/census-history commits. When a stale Fast run accepted **zero** candidates, had already handed unresolved providers to Learning, and the remote-main change has **no executable, causal input or semantic census drift**, do not automatically replay the identical Fast cohort. Newly generated strategies and updated evidence still authorize ordinary fresh Repair. No status gains publication authority from this scheduling decision.
+
 ## 2026-10-10 — Strict laboratory playback versus durable accepted repair
 
 A playable/identity-correct stream observed in the sandbox is **evidence** but not, by itself, a new repair. To become an executable candidate, a Brain-authored repair must first be accepted, compiled into persistent provider-owned DATA, and rematerialized on those exact bytes; it must then pass independent current-byte replay and non-regression. A healthy fixture with **zero accepted compiled repair program** must not be rematerialized from unchanged published bytes or reported as newly fixed. Route that positive laboratory observation to Brain Learning as an oracle for an actual reusable repair, without promotion authority. This is a global Repair pipeline contract, not a provider-specific exception.

@@ -465,6 +465,31 @@ jobs:
           remote_main="$(git rev-parse origin/main)"
           if [ "$remote_main" != "$GITHUB_SHA" ]; then
             echo "FIELD_PROVIDER_FAST_REPAIR_STALE source=$GITHUB_SHA remote=$remote_main"
+            # Do not restart a zero-accepted Fast cohort for a metadata-only
+            # census/evidence commit. Preserve all runnable, generated-Lego,
+            # negative/positive Brain memory and explicit target differences.
+            # Those CAN produce new experiments; metadata-only bumps cannot.
+            if [ "$publication_allowed" != "true" ] &&
+               git merge-base --is-ancestor "$GITHUB_SHA" "$remote_main" &&
+               git diff --quiet "$GITHUB_SHA" "$remote_main" -- \
+                 scripts engine_v2 providers provider-bases provider-overrides.json \
+                 manifest.json provider-v3-materialization.json \
+                 automation/brain-repair-memory.json \
+                 automation/brain-positive-program-memory.json \
+                 automation/brain-repair-experience.json \
+                 automation/provider-repair-batch-plan-latest.json \
+                 automation/provider-repair-learn-handoff-v1.json \
+                 automation/provider-repair-candidate-evidence.json \
+                 provider-v3-quick-yield.json \
+                 .github/workflows/provider-fast-repair.yml \
+                 .github/triggers/provider-fast-repair.json; then
+              old_census="$(git show "$GITHUB_SHA:automation/provider-census-status.json" 2>/dev/null | jq -c '{repairQueue:(.repairQueue // [] | sort), statuses:(.providers // [] | map({provider,status}) | sort_by(.provider))}' || true)"
+              new_census="$(git show "$remote_main:automation/provider-census-status.json" 2>/dev/null | jq -c '{repairQueue:(.repairQueue // [] | sort), statuses:(.providers // [] | map({provider,status}) | sort_by(.provider))}' || true)"
+              if [ -n "$old_census" ] && [ "$old_census" = "$new_census" ]; then
+                echo "FIELD_PROVIDER_FAST_REPAIR_REQUEUE skipped=no_executable_or_causal_evidence_drift source=$GITHUB_SHA remote=$remote_main learning_dispatched=true"
+                exit 0
+              fi
+            fi
             requeue_target_provider="${{ inputs.target_provider || '' }}"
             requeue_target_providers="${{ inputs.target_providers || '' }}"
             requeue_waves="${{ inputs.waves || '1' }}"
