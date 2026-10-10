@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "sourceRunId": "38052832887",
-  "sourceTriggerSha": "f924d7a92c666b436a577298e290715109c265a4",
-  "unresolvedProviderCount": 21,
+  "sourceRunId": "38053446811",
+  "sourceTriggerSha": "79d8b6a87e627a97c8c696c6e91c744efc81990c",
+  "unresolvedProviderCount": 20,
   "dynamicVariantProviderCount": 6,
   "dynamicVariantProviders": [
     "animevost-fr",
@@ -79,7 +79,6 @@
       "repairScope": "route-to-terminal",
       "runtimeFamilies": [
         "dle-full-story-sibnet",
-        "menu-search-series-focus-player",
         "mixed_embed_resolver",
         "yflix-db-encrypted-ajax-v1"
       ],
@@ -90,15 +89,13 @@
       ],
       "dominantIssues": [
         "network_exception",
-        "network_http_error",
         "timeout",
         "waf_challenge"
       ],
       "harnessTransportClasses": [],
       "transportSignature": "not-applicable",
-      "providerCount": 4,
+      "providerCount": 3,
       "providers": [
-        "anime-ultime",
         "animesultra",
         "flemmix",
         "yflix"
@@ -209,33 +206,6 @@
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
     {
-      "groupId": "learning|mixed_embed_resolver",
-      "repairScope": "learning",
-      "runtimeFamilies": [
-        "mixed_embed_resolver"
-      ],
-      "capabilityStrategy": "mixed_embed_resolver",
-      "evidenceDepths": [
-        "none"
-      ],
-      "dominantIssues": [
-        "timeout"
-      ],
-      "harnessTransportClasses": [],
-      "transportSignature": "not-applicable",
-      "providerCount": 1,
-      "providers": [
-        "animekai"
-      ],
-      "action": "queue by signature for Brain learning; provider-local repair only after shared profiles fail",
-      "selectionAuthorities": [
-        "provider-census-status.json:brainCheckRequired"
-      ],
-      "dynamicVariantProviders": [],
-      "executionPolicy": "batch-first",
-      "providerLocalFallback": "only-after-shared-profile-failure"
-    },
-    {
       "groupId": "route-to-terminal|api_stream_resolver",
       "repairScope": "route-to-terminal",
       "runtimeFamilies": [
@@ -338,6 +308,33 @@
         "mallumv"
       ],
       "action": "apply/test shared terminal-player extraction profile to the whole capability family",
+      "selectionAuthorities": [
+        "provider-census-status.json:brainCheckRequired"
+      ],
+      "dynamicVariantProviders": [],
+      "executionPolicy": "batch-first",
+      "providerLocalFallback": "only-after-shared-profile-failure"
+    },
+    {
+      "groupId": "transport|mixed_embed_resolver",
+      "repairScope": "transport",
+      "runtimeFamilies": [
+        "mixed_embed_resolver"
+      ],
+      "capabilityStrategy": "mixed_embed_resolver",
+      "evidenceDepths": [
+        "none"
+      ],
+      "dominantIssues": [
+        "network_exception"
+      ],
+      "harnessTransportClasses": [],
+      "transportSignature": "not-applicable",
+      "providerCount": 1,
+      "providers": [
+        "animekai"
+      ],
+      "action": "refresh transport authority before provider-local code changes",
       "selectionAuthorities": [
         "provider-census-status.json:brainCheckRequired"
       ],
