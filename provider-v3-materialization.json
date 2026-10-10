@@ -2,9 +2,9 @@
   "schemaVersion": 3,
   "sourceSha": "e936461a168ba840640fb196bd27b6cf43b791ea",
   "context": "workspace",
-  "generation": "94e6056d2dfc8d9f5aaf43d76bb33efc3dd7c51a592992744f89268f2d6cfdba",
-  "providerCount": 42,
-  "expectedProviderCount": 42,
+  "generation": "bf0b03c4fd53a10ff1f3b7441ef2b1837b036ce00688febc532e07561e77f2bb",
+  "providerCount": 41,
+  "expectedProviderCount": 41,
   "providers": [
     {
       "provider": "anime-sama",
@@ -2990,117 +2990,6 @@
       }
     },
     {
-      "provider": "videasy",
-      "file": "providers/videasy--nuvio--52945d975aea9f83.js",
-      "sha256": "52945d975aea9f83aef17a375fe0ba779fed9fd30b30c21a56d55c28b2ec7005",
-      "providerDataSha256": "cf8939b999a2dc937a25cd842b772ccd235a09c810b53cb3c04d03628a5ac06a",
-      "baseStrippedGeneratedCore": false,
-      "fixIds": [
-        "CORE.HLS_RUNTIME_INTEGRITY.V1",
-        "CORE.MEDIA_ENRICHMENT.V1",
-        "CORE.MEDIA_TYPE_RESOLUTION.V1",
-        "CORE.PROVIDER_BRANDING.V1",
-        "CORE.PROVIDER_SECURITY_BOUNDARY.V1",
-        "CORE.RUNTIME_COMPAT.V1",
-        "CORE.RUNTIME_MEDIA_SAFETY.V4",
-        "CORE.STREAM_FACTS.V1",
-        "CORE.STREAM_IDENTITY.V1",
-        "CORE.STREAM_PRESENTATION.V1",
-        "CORE.STREAM_SANITIZER.V6",
-        "PROVIDER.VIDEASY.CONFIG.V1",
-        "PROVIDER.VIDEASY.WINGS.V1"
-      ],
-      "coreCount": 11,
-      "applied": [
-        {
-          "type": "provider_lego",
-          "path": "scripts/provider_patches/videasy_runtime_v1.py",
-          "phase": "discovery",
-          "scope": "PROVIDER.VIDEASY.WINGS.V1"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_media_enrichment_v1.py",
-          "phase": "discovery",
-          "scope": "global_media_enrichment"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
-          "phase": "discovery",
-          "scope": "global_runtime_media_safety"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
-          "phase": "discovery",
-          "scope": "global_playback_integrity"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_provider_security_hardening_v1.py",
-          "phase": "discovery",
-          "scope": "global_playback_integrity"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_runtime_compat_v1.py",
-          "phase": "discovery",
-          "scope": "global_runtime_compat"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_stream_facts_v1.py",
-          "phase": "discovery",
-          "scope": "global_stream_facts"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_stream_identity_v1.py",
-          "phase": "discovery",
-          "scope": "global_stream_identity"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
-          "phase": "discovery",
-          "scope": "global_media_type_resolution"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_stream_presentation_v1.py",
-          "phase": "discovery",
-          "scope": "global_stream_presentation"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_provider_branding_v1.py",
-          "phase": "discovery",
-          "scope": "global_provider_branding"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/stream_output_sanitizer_v8.py",
-          "phase": "discovery",
-          "scope": "global_terminal_stream_sanitizer"
-        }
-      ],
-      "deviceSpecificJs": false,
-      "devices": [
-        "tv",
-        "mobile",
-        "desktop"
-      ],
-      "legacyProviderJsExecuted": false,
-      "upstreamJsExecuted": false,
-      "minimizer": {
-        "enabled": false,
-        "savedBytes": 0,
-        "transformedLines": 0,
-        "skippedReason": "final-stage-only"
-      }
-    },
-    {
       "provider": "vidfast",
       "file": "providers/vidfast--nuvio--84294ebcc1ae249f.js",
       "sha256": "84294ebcc1ae249f27b1817d73c3b17ef6ca731b99dc77011a90f2a84caf9423",
@@ -4808,7 +4697,7 @@
   "legacyProviderJsExecuted": false,
   "upstreamJsExecuted": false,
   "staticKnowledgeFile": "automation/provider-v3-static-knowledge.json",
-  "staticKnowledgeProviderCount": 42,
+  "staticKnowledgeProviderCount": 41,
   "domainAuthorityOnlyUpdate": true,
   "domainAuthorityUpdatedProviders": [
     "hindmoviez",
@@ -4824,5 +4713,7 @@
   ],
   "activeProviderIdentityCount": 41,
   "lifecycleScopeReconciled": true,
-  "lifecycleReconciledArchivedProviders": []
+  "lifecycleReconciledArchivedProviders": [
+    "videasy"
+  ]
 }
