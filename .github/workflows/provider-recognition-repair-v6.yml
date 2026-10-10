@@ -1663,9 +1663,6 @@ jobs:
           PY
           )"
 
-          # Explicit operator Force is the only mode allowed to publish validated
-          # provider-local candidate bytes directly. Learning remains proposal-only,
-          # and automatic Repair keeps its evidence/current-hypothesis semantics.
           direct_force_apply=0
           force_candidate_applied=0
           force_requested=0
@@ -1754,8 +1751,6 @@ jobs:
             echo "FIELD_FORCE_REPAIR_DIRECT_APPLY enabled=false requested=$force_requested mode=${DISPATCH_MODE:-automatic}"
           fi
 
-          # Reset the sandbox after preserving evidence and, for explicit Force,
-          # a temporary commit containing only validated provider-local bytes.
           git reset --hard "$GITHUB_SHA"
           git clean -fd
           git fetch origin main
@@ -1768,11 +1763,6 @@ jobs:
           fi
           git rebase origin/main
 
-          # Observation-only main drift must not invalidate provider-local proof.
-          # After rebasing, a provider-neutral main advance (docs/badges/UI only)
-          # keeps the tested provider bytes identical, so validated Force/census
-          # evidence may be persisted on top of the newer main. Actual provider
-          # input drift remains fail-closed and requires a fresh census.
           if [ "$canonical_ledger_current" != "1" ]; then
             python scripts/select_provider_materialization_scope.py \
               --base "$GITHUB_SHA" \
@@ -1807,9 +1797,6 @@ jobs:
             fi
           fi
 
-          # Stale Repair output remains downloadable from Actions, but it may
-          # not move main. Even evidence-only commits can supersede the exact
-          # SHA of a newer Repair and create another avoidable cycle.
           if [ "$canonical_ledger_current" = "1" ]; then
             [ ! -f "$tmp/brain-repair-memory.json" ] || cp "$tmp/brain-repair-memory.json" automation/brain-repair-memory.json
             [ ! -f "$tmp/brain-positive-program-memory.json" ] || cp "$tmp/brain-positive-program-memory.json" automation/brain-positive-program-memory.json
@@ -1837,8 +1824,6 @@ jobs:
             echo "FIELD_REPAIR_CANONICAL_LEDGER_SKIPPED reason=canonical-repair-$canonical_repair_outcome"
           fi
 
-          # Attempt activity is evidence-only. Advance it even when provider
-          # proof remains fail-closed, so the census dashboard never looks frozen.
           if [ "$canonical_ledger_current" = "1" ]; then
             attempt_mode=repair
             if [ "$force_requested" = "1" ]; then attempt_mode=force; fi
@@ -1884,7 +1869,10 @@ jobs:
             else
               git commit -m "ci(repair): persist evidence ${counts} from ${GITHUB_SHA::12}"
             fi
-            git push origin HEAD:main
+            if ! git push origin HEAD:main; then
+              if [ "$force_candidate_applied" = "1" ]; then exit 1; fi
+              bash scripts/persist_repair_race_evidence.sh "$tmp/provider-brain-repair-latest.json" "$GITHUB_RUN_ID" "$GITHUB_SHA"
+            fi
           fi
 
           if [ "$force_candidate_applied" = "1" ]; then

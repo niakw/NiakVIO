@@ -1,3 +1,7 @@
+## 2026-10-10 — GitHub Actions run-block size contract
+
+Recognition/Repair workflow shell blocks must remain below GitHub's **21,000-character hard cap per `run` step**, with project budget at 20,500. The 2026-10-10 FORCE promotion run `38017039516` failed to dispatch provider replay after main promotion because a V6 evidence-persistence edit pushed the long `Persist Repair census state` step over that cap. Preserve long-lived behavior in versioned, executable and independently tested Brain scripts; keep only short invocation/ownership gates in YAML, and unit-test the maximum size. Invalid workflow dispatch is an infrastructure failure, never a provider repair failure.
+
 ## 2026-10-10 — Evidence-only retry for racing Repair producers
 
 A Repair run that has already executed provider/runtime tests may lose a race at the final `main` push. The safe convergence rule is **not** to rebase stale published provider or census output without fresh execution. On a rejected evidence-only push, reset to latest main and persist only the run-unique Brain experiment report plus a non-authoritative provenance record (`publicationAllowed=false`, `currentBytePlaybackAuthority=false`, tested SHA retained), with at most three bounded attempts. An accepted provider candidate is never carried through this path. The next learning cycle can use the negative report as a prior, but FULL remains gated by new applied-byte playback proof.
