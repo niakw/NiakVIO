@@ -1002,7 +1002,11 @@ function buildPlan(item) {
     ? metaGapAdvisorHint
     : (
         !providerPositiveProgramProductionRescue
-        && (!experimentExhausted || !learningMode)
+        // Exhausting deterministic generations must not erase genuinely new
+        // fingerprinted LLM hypotheses in Learning. The advisor selector still
+        // rejects executed negative fingerprints and caps each executor family.
+        // Do not override an eligible evolved executor already selected.
+        && (!experimentExhausted || !learningMode || !strategyEscalated)
       )
       ? llmAdvisorStrategyHint(
           providerId,
@@ -1012,6 +1016,12 @@ function buildPlan(item) {
           experimentExhausted,
         )
       : { profile: "", strategy: "", confidence: 0, experiment: {}, experimentFingerprint: "", guidanceKind: "" };
+  // After Learning exhaustion, a profile label alone is not a new experiment.
+  // Only a fingerprinted hypothesis can reopen the exhausted Learning lane.
+  const learningAdvisorExperimentNovel = (
+    !learningMode || !experimentExhausted
+    || /^[0-9a-f]{64}$/.test(stringValue(llmAdvisorHint.experimentFingerprint).toLowerCase())
+  );
   const llmAdvisorProductionRescue = (
     !explorationMode
     && experimentExhausted
@@ -1019,9 +1029,10 @@ function buildPlan(item) {
   );
   const llmAdvisorExplorationRescue = (
     explorationMode
-    && !learningMode
     && experimentExhausted
     && Boolean(llmAdvisorHint.profile)
+    && learningAdvisorExperimentNovel
+    && !strategyEscalated
     && !metaGapEscalated
   );
   const historicalHint = (
