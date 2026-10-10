@@ -86,6 +86,7 @@ const POST_EXHAUSTION_STRATEGIES = {
   ],
   chain_terminal_gap: [
     { profile: "terminal_transition_graph_v1", method: "terminal-response-transition-graph" },
+    { profile: "terminal_transition_graph_v2", method: "brain-evolved-executable-transition" },
     { profile: "terminal_request_program_inference_v1", method: "terminal-request-program-inference" },
     { profile: "runtime_response_salvage_v1", method: "successful-runtime-response-salvage" },
     { profile: "document_request_contract_mining_v1", method: "provider-document-request-contract-mining" },

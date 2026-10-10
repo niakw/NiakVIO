@@ -72,6 +72,7 @@ POST_EXHAUSTION_STRATEGY_PROFILES = {
     "route_transition_graph_v3",
     "route_peer_transition_replay_v1",
     "terminal_transition_graph_v1",
+    "terminal_transition_graph_v2",
     "terminal_request_program_inference_v1",
     "candidate_divergence_trace_v1",
     "candidate_request_program_replay_v1",
@@ -1631,6 +1632,11 @@ def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any])
         # families that are intentionally not classified as player/api routes.
         # Mine them only when they are observed in successful response bodies.
         transition_prefixes = _owned_transition_prefixes(learned_direct)
+        second_order_role_preferences = ["source", "api", "player", "episode", "detail", "other"]
+    elif new_strategy_id == "terminal_transition_graph_v2":
+        search_paths = _unique_routes(configured_search, learned_search, peer_search, generic_search, limit=10)
+        direct_paths = _unique_routes(configured_direct, learned_direct, [route for route in peer_direct if _route_role(route) in TERMINAL_MEDIA_ROLES | {"episode"}], [route for route in positive_program_routes(provider_id) if _route_role(route) in TERMINAL_MEDIA_ROLES | {"episode"}], limit=20)
+        request_recipes = _unique_request_recipes(current_request_recipes, provider_request_recipes, positive_request_recipes, historical_provider_request_recipes, peer_request_recipes, limit=30)
         second_order_role_preferences = ["source", "api", "player", "episode", "detail", "other"]
     elif new_strategy_id == "terminal_request_program_inference_v1":
         search_paths = _unique_routes(learned_search, configured_search, limit=8)
