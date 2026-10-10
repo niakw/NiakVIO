@@ -21,7 +21,7 @@ Targets: scripts/brain_repair_runtime.py, scripts/run_brain_learning_queue.py, s
 
 Priority: high
 
-1 repeatedly failing repair profile(s) show that known methods are not solving the provider.
+2 repeatedly failing repair profile(s) show that known methods are not solving the provider.
 
 Recommendation:
 Propose a genuinely different repair/evidence capability or compose existing capabilities differently; do not widen an arbitrary retry counter.
@@ -30,12 +30,12 @@ Targets: scripts/run_brain_learning_sandbox.py, tests/brain_*
 
 ## New strategy blueprints
 
-### route_transition_graph_v9 — route-to-terminal|html_scraper
+### terminal_transition_graph_v7 — terminal-extraction|direct_media
 
-Providers: 4khdhub
+Providers: allanime
 
-Trigger: catalogue/detail route is live and identity-qualified but no terminal/player media is reached
+Trigger: retained chain hit reaches player/resolver territory but media extraction/validation is incomplete
 
-Method: derive and implement a genuinely new executable Repair strategy route_transition_graph_v9 from negative evidence for exhausted route_transition_graph_v1; preserve the causal intent of the prior method without reusing its implementation, register the new profile in Repair planning/runtime, and require targeted playback/identity proof
+Method: derive and implement a genuinely new executable Repair strategy terminal_transition_graph_v7 from negative evidence for exhausted terminal_transition_graph_v1; preserve the causal intent of the prior method without reusing its implementation, register the new profile in Repair planning/runtime, and require targeted playback/identity proof
 
-Acceptance: playback-verified media; content identity not contradicted; no green-lane regression
+Acceptance: playback-verified media; terminal identity preserved; no green-lane regression
