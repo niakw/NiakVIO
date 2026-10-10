@@ -170,15 +170,41 @@ first_escalation_failed={
     **stale_first_escalation_failed,
     "strategyImplementationFingerprint":terminal_fp,
 }
-# Once the installed v2 itself is EXECUTED and fails, avoid recycling it.
-# This regression reflects the real HEAD's installed strategy registry.
+# An evolving Brain may install terminal graph v3, v4, ... after v2.
+# Do not hardcode the next fallback to terminal_request_program_inference_v1
+# when an installed, untried sibling has a real executable fingerprint.
+# Replay each installed graph and explicitly mark its execution-observed
+# failure before advancing to the next causal strategy; this stays valid for
+# future model-generated profiles without modifying the test for every vN.
 installed_v2_failed={
     **row(4,5),
     "profile":"terminal_transition_graph_v2",
     "executionObserved":True,
     "strategyImplementationFingerprint":stale_retry["strategyImplementationFingerprint"],
 }
-learning_escalated_2=plan([*base_exhausted,first_escalation_failed,installed_v2_failed],"learning")
+terminal_graph_failures=[installed_v2_failed]
+seen_graph_profiles={"terminal_transition_graph_v1","terminal_transition_graph_v2"}
+for _graph_generation in range(2,20):
+    next_graph=plan([*base_exhausted,first_escalation_failed,*terminal_graph_failures],"learning")
+    next_profile=str(next_graph.get("postExhaustionStrategyProfile") or "")
+    if not next_profile.startswith("terminal_transition_graph_v"):
+        break
+    graph_number=next_profile.removeprefix("terminal_transition_graph_v")
+    assert graph_number.isdecimal() and int(graph_number)>2, next_graph
+    assert next_profile not in seen_graph_profiles, "already-executed graph incorrectly reselected"
+    fingerprint=str(next_graph.get("strategyImplementationFingerprint") or "")
+    assert len(fingerprint)==64 and next_graph.get("strategyEscalated") is True,next_graph
+    seen_graph_profiles.add(next_profile)
+    terminal_graph_failures.append({
+        **row(4,5),
+        "failureClass":str(next_graph.get("postExhaustionSourceFailureClass") or "chain_terminal_gap"),
+        "profile":next_profile,
+        "executionObserved":True,
+        "strategyImplementationFingerprint":fingerprint,
+    })
+else:
+    raise AssertionError("Brain terminal graph profiles failed to reach next causal family")
+learning_escalated_2=plan([*base_exhausted,first_escalation_failed,*terminal_graph_failures],"learning")
 assert learning_escalated_2["experimentExhausted"] is False,learning_escalated_2
 assert learning_escalated_2["postExhaustionStrategyProfile"]=="terminal_request_program_inference_v1",learning_escalated_2
 assert learning_escalated_2["allowedProfiles"]==["terminal_request_program_inference_v1"],learning_escalated_2
@@ -192,11 +218,11 @@ second_escalation_failed={
     "strategyImplementationFingerprint":request_fp,
 }
 already_failed_preference=plan(
-    [*base_exhausted,first_escalation_failed,installed_v2_failed,second_escalation_failed],
+    [*base_exhausted,first_escalation_failed,*terminal_graph_failures,second_escalation_failed],
     "learning","terminal_request_program_inference_v1",
 )
 assert already_failed_preference["postExhaustionStrategyProfile"]!="terminal_request_program_inference_v1",already_failed_preference
-after_second=plan([*base_exhausted,first_escalation_failed,installed_v2_failed,second_escalation_failed],"learning")
+after_second=plan([*base_exhausted,first_escalation_failed,*terminal_graph_failures,second_escalation_failed],"learning")
 assert after_second["experimentExhausted"] is False,after_second
 assert after_second["postExhaustionStrategyProfile"]=="runtime_response_salvage_v1",after_second
 assert after_second["allowedProfiles"]==["runtime_response_salvage_v1"],after_second
@@ -210,7 +236,7 @@ third_escalation_failed={
     "strategyImplementationFingerprint":salvage_fp,
 }
 after_third=plan(
-    [*base_exhausted,first_escalation_failed,installed_v2_failed,second_escalation_failed,third_escalation_failed],
+    [*base_exhausted,first_escalation_failed,*terminal_graph_failures,second_escalation_failed,third_escalation_failed],
     "learning",
 )
 assert after_third["experimentExhausted"] is False,after_third
@@ -231,14 +257,13 @@ fourth_escalation_failed={
 evolved_memory=[
     *base_exhausted,
     first_escalation_failed,
-    installed_v2_failed,
+    *terminal_graph_failures,
     second_escalation_failed,
     third_escalation_failed,
     fourth_escalation_failed,
 ]
 seen_evolved_profiles={
-    "terminal_transition_graph_v1",
-    "terminal_transition_graph_v2",
+    *seen_graph_profiles,
     "terminal_request_program_inference_v1",
     "runtime_response_salvage_v1",
     "document_request_contract_mining_v1",
