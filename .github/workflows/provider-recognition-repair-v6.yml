@@ -1884,7 +1884,7 @@ jobs:
             else
               git commit -m "ci(repair): persist evidence ${counts} from ${GITHUB_SHA::12}"
             fi
-            git push origin HEAD:main || { test "$force_candidate_applied" != "1" && bash scripts/persist_repair_race_evidence.sh "$tmp/provider-brain-repair-latest.json" "$GITHUB_RUN_ID" "$GITHUB_SHA"; }
+            git push origin HEAD:main
           fi
 
           if [ "$force_candidate_applied" = "1" ]; then
