@@ -684,6 +684,64 @@ NEW_REPAIR_PROFILE_SURFACES = (
 )
 
 
+def reject_numeric_only_strategy_clone(runtime_source: str, strategy_id: str) -> None:
+    """Reject new-version executors that only rotate numeric search budgets.
+
+    Exhausted variants must add a causal mechanism, not just `v12` with
+    `limit=30` in place of `limit=10`. This compares parsed Python bodies
+    across the installed same-family strategy siblings. Numeric constants are
+    erased, while calls, selectors, operations, strings and control flow stay
+    exact. Different behavior passes through the normal stricter replay gates.
+    """
+    family = re.sub(r"_v[0-9]+$", "_v", strategy_id)
+    if family == strategy_id:
+        return
+    tree = ast.parse(runtime_source)
+    shapes: dict[str, str] = {}
+
+    class StripNumericBudgets(ast.NodeTransformer):
+        def visit_Constant(self, node: ast.Constant) -> ast.AST:
+            if type(node.value) in (int, float):
+                return ast.copy_location(ast.Constant(value=0), node)
+            return node
+
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.If):
+            continue
+        test = node.test
+        if (
+            not isinstance(test, ast.Compare)
+            or not isinstance(test.left, ast.Name)
+            or test.left.id != "new_strategy_id"
+            or len(test.ops) != 1
+            or not isinstance(test.ops[0], ast.Eq)
+            or len(test.comparators) != 1
+            or not isinstance(test.comparators[0], ast.Constant)
+            or not isinstance(test.comparators[0].value, str)
+        ):
+            continue
+        profile = test.comparators[0].value
+        if not profile.startswith(family) or not re.fullmatch(re.escape(family) + r"[0-9]+", profile):
+            continue
+        normalized_body = ast.Module(body=node.body, type_ignores=[])
+        normalized_body = StripNumericBudgets().visit(normalized_body)
+        shapes[profile] = ast.dump(normalized_body, include_attributes=False)
+
+    new_shape = shapes.get(strategy_id)
+    if not new_shape:
+        return  # Missing branch has its own separate, strict validation.
+    clones = sorted(
+        profile for profile, shape in shapes.items()
+        if profile != strategy_id and shape == new_shape
+    )
+    if clones:
+        raise ValueError(
+            "architecture FORCE numeric-only strategy clone: "
+            + strategy_id + " repeats " + ",".join(clones[:5])
+            + "; synthesize a distinct causal algorithm, not changed route quotas"
+        )
+
+
 def validate_blueprint_implementation(
     changed: list[str],
     blueprint: dict[str, Any] | None,
@@ -759,6 +817,7 @@ def validate_blueprint_implementation(
     )
     if not child_guard.search(runtime_text):
         raise ValueError("architecture FORCE generated strategy missing distinct runtime guard")
+    reject_numeric_only_strategy_clone(runtime_text, strategy_id)
 
 
 
