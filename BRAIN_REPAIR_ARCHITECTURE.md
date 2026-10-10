@@ -1,3 +1,7 @@
+## 2026-10-10 — Full-cohort executable replay before duplicate FORCE
+
+Registered executable Repair profiles are capability assets. When `terminal_transition_graph_v2` is already installed, the planner must replay v2 with current-byte semantics and record its true executed outcome before another generated generation. Neither a stale regression test nor a single-provider FORCE should suppress processing of all 17 non-FULL providers. The two general paths — bounded Fast Brain and adaptive Learning — take exactly the census repairQueue, grouped by candidate replay, terminal extraction, regression, and network/transport evidence. Existing playable providers remain protected. A laboratory success is candidate evidence only, and WAF/network errors are classified separately from parser/provider implementation defects.
+
 ## 2026-10-10 — Observed provider frontier governs Brain exploration
 
 The Brain cannot treat sending more HTTP 200 search requests to an already accessible provider as a new repair. Once the parent has one observed successful provider request, request-count-only child improvements must include a new observed provider-side frontier: search/catalogue to detail, episode, player/embed, then source/media. The initial provider request remains diagnostic progress. TMDB/infrastructure calls and unexecuted LLM labels have no progress authority. This is an exploration-chain selection rule, not a production acceptance shortcut: true FULL requires correct-title playable terminal media on current materialized bytes.

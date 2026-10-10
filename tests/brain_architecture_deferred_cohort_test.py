@@ -195,8 +195,11 @@ with tempfile.TemporaryDirectory(prefix="niakvio-arch-cohort-") as tmp:
     assert "harnessTransportClass" in harness["method"], harness
     assert "not promoted to playback" in harness["acceptanceProof"][1], harness
     assert "native differential proof" in harness["reentryPolicy"], harness
-    assert terminal["forcePromotionEligible"] is True, terminal
-    assert terminal["requiresNewExecutableRepairProfile"] is True, terminal
+    # v2 was subsequently installed and is now real executable Brain code.
+    # Replay it first; a duplicate FORCE publication would waste LLM cycles.
+    assert terminal["forcePromotionEligible"] is False, terminal
+    assert terminal["requiresNewExecutableRepairProfile"] is False, terminal
+    assert terminal["existingExecutableRepairProfile"] is True, terminal
     assert terminal["evolvesFromStrategyId"] == "terminal_transition_graph_v1", terminal
     assert terminal["targetLayer"] == "core", terminal
     assert transport["forcePromotionEligible"] is False, transport
@@ -204,7 +207,7 @@ with tempfile.TemporaryDirectory(prefix="niakvio-arch-cohort-") as tmp:
     assert transport["targetLayer"] == "network", transport
     assert harness["forcePromotionEligible"] is False, harness
     assert harness["targetLayer"] == "harness", harness
-    assert terminal["forcePromotionReason"] == "deferred-known-family-exhaustion", terminal
+    assert terminal["forcePromotionReason"] == "already-installed-profile-replay-first", terminal
     assert harness["forcePromotionReason"] == "diagnostic-only-or-no-exhaustion-proof", harness
     assert all(item["productionWritesAllowed"] is False for item in blueprints)
     assert all(item["requiresHumanMerge"] is True for item in blueprints)
@@ -237,9 +240,10 @@ assert len(filtered) == 1, filtered
 assert filtered[0]["strategyId"] == "terminal_transition_graph_v2", filtered
 assert filtered[0]["evolvesFromStrategyId"] == "terminal_transition_graph_v1", filtered
 assert filtered[0]["providers"] == ["alpha"], filtered
-assert filtered[0]["forcePromotionEligible"] is True, filtered
-assert filtered[0]["requiresNewExecutableRepairProfile"] is True, filtered
-assert filtered[0]["forcePromotionReason"] == "deferred-known-family-exhaustion", filtered
+assert filtered[0]["existingExecutableRepairProfile"] is True, filtered
+assert filtered[0]["forcePromotionEligible"] is False, filtered
+assert filtered[0]["requiresNewExecutableRepairProfile"] is False, filtered
+assert filtered[0]["forcePromotionReason"] == "already-installed-profile-replay-first", filtered
 assert filtered[0]["targetLayer"] == "core", filtered
 fully_exhausted = builder.build_strategy_blueprints(
     {
@@ -259,7 +263,43 @@ fully_exhausted = builder.build_strategy_blueprints(
 assert len(fully_exhausted) == 1, fully_exhausted
 assert fully_exhausted[0]["strategyId"] == "terminal_transition_graph_v2", fully_exhausted
 assert fully_exhausted[0]["providers"] == ["alpha", "beta"], fully_exhausted
-assert fully_exhausted[0]["forcePromotionEligible"] is True, fully_exhausted
+assert fully_exhausted[0]["forcePromotionEligible"] is False, fully_exhausted
+assert fully_exhausted[0]["existingExecutableRepairProfile"] is True, fully_exhausted
+
+# Test BOTH states: if v2 does not exist, FORCE is truly required; if v2
+# exists but real executed negative memory exhausts it, evolve to v3.
+missing_v2 = builder.build_strategy_blueprints(
+    {"groups": [{
+        "groupId": "terminal-extraction|html_scraper",
+        "repairScope": "terminal-extraction",
+        "capabilityStrategy": "html_scraper",
+        "providers": ["alpha", "beta"],
+    }]},
+    {"alpha", "beta"},
+    {"alpha": {"terminal_transition_graph_v1"}, "beta": {"terminal_transition_graph_v1"}},
+    existing_executable_profiles={"terminal_transition_graph_v1"},
+)
+assert missing_v2[0]["strategyId"] == "terminal_transition_graph_v2", missing_v2
+assert missing_v2[0]["forcePromotionEligible"] is True, missing_v2
+assert missing_v2[0]["requiresNewExecutableRepairProfile"] is True, missing_v2
+
+v2_exhausted = builder.build_strategy_blueprints(
+    {"groups": [{
+        "groupId": "terminal-extraction|html_scraper",
+        "repairScope": "terminal-extraction",
+        "capabilityStrategy": "html_scraper",
+        "providers": ["alpha", "beta"],
+    }]},
+    {"alpha", "beta"},
+    {
+        "alpha": {"terminal_transition_graph_v1", "terminal_transition_graph_v2"},
+        "beta": {"terminal_transition_graph_v1", "terminal_transition_graph_v2"},
+    },
+)
+assert v2_exhausted[0]["strategyId"] == "terminal_transition_graph_v3", v2_exhausted
+assert v2_exhausted[0]["evolvesFromStrategyId"] == "terminal_transition_graph_v2", v2_exhausted
+assert v2_exhausted[0]["forcePromotionEligible"] is True, v2_exhausted
+assert v2_exhausted[0]["requiresNewExecutableRepairProfile"] is True, v2_exhausted
 
 workflow_source = (ROOT / ".github" / "workflows" / "brain-learning-lab.yml").read_text(encoding="utf-8")
 architecture_job = workflow_source.split("  publish-architecture-proposal:", 1)[1].split("  continue-learning-slot:", 1)[0]

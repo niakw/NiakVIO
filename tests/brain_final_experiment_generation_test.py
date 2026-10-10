@@ -155,7 +155,12 @@ stale_first_escalation_failed={
     "executionObserved":True,
 }
 stale_retry=plan([*base_exhausted,stale_first_escalation_failed],"learning")
-assert stale_retry["postExhaustionStrategyProfile"]=="terminal_request_program_inference_v1",stale_retry
+# terminal_transition_graph_v2 is now a genuinely installed executable
+# successor. It must be replayed with actual evidence BEFORE progressing to
+# terminal_request_program_inference_v1.
+assert stale_retry["postExhaustionStrategyProfile"]=="terminal_transition_graph_v2",stale_retry
+assert stale_retry["allowedProfiles"]==["terminal_transition_graph_v2"],stale_retry
+assert stale_retry["strategyImplementationFingerprint"]
 assert stale_retry["postExhaustionStrategyProfile"]!="terminal_transition_graph_v1",stale_retry
 
 unobserved_retry=plan([*base_exhausted,{**stale_first_escalation_failed,"executionObserved":False}],"learning")
@@ -165,7 +170,15 @@ first_escalation_failed={
     **stale_first_escalation_failed,
     "strategyImplementationFingerprint":terminal_fp,
 }
-learning_escalated_2=plan([*base_exhausted,first_escalation_failed],"learning")
+# Once the installed v2 itself is EXECUTED and fails, avoid recycling it.
+# This regression reflects the real HEAD's installed strategy registry.
+installed_v2_failed={
+    **row(4,5),
+    "profile":"terminal_transition_graph_v2",
+    "executionObserved":True,
+    "strategyImplementationFingerprint":stale_retry["strategyImplementationFingerprint"],
+}
+learning_escalated_2=plan([*base_exhausted,first_escalation_failed,installed_v2_failed],"learning")
 assert learning_escalated_2["experimentExhausted"] is False,learning_escalated_2
 assert learning_escalated_2["postExhaustionStrategyProfile"]=="terminal_request_program_inference_v1",learning_escalated_2
 assert learning_escalated_2["allowedProfiles"]==["terminal_request_program_inference_v1"],learning_escalated_2
@@ -179,11 +192,11 @@ second_escalation_failed={
     "strategyImplementationFingerprint":request_fp,
 }
 already_failed_preference=plan(
-    [*base_exhausted,first_escalation_failed,second_escalation_failed],
+    [*base_exhausted,first_escalation_failed,installed_v2_failed,second_escalation_failed],
     "learning","terminal_request_program_inference_v1",
 )
 assert already_failed_preference["postExhaustionStrategyProfile"]!="terminal_request_program_inference_v1",already_failed_preference
-after_second=plan([*base_exhausted,first_escalation_failed,second_escalation_failed],"learning")
+after_second=plan([*base_exhausted,first_escalation_failed,installed_v2_failed,second_escalation_failed],"learning")
 assert after_second["experimentExhausted"] is False,after_second
 assert after_second["postExhaustionStrategyProfile"]=="runtime_response_salvage_v1",after_second
 assert after_second["allowedProfiles"]==["runtime_response_salvage_v1"],after_second
@@ -197,7 +210,7 @@ third_escalation_failed={
     "strategyImplementationFingerprint":salvage_fp,
 }
 after_third=plan(
-    [*base_exhausted,first_escalation_failed,second_escalation_failed,third_escalation_failed],
+    [*base_exhausted,first_escalation_failed,installed_v2_failed,second_escalation_failed,third_escalation_failed],
     "learning",
 )
 assert after_third["experimentExhausted"] is False,after_third
@@ -218,12 +231,14 @@ fourth_escalation_failed={
 evolved_memory=[
     *base_exhausted,
     first_escalation_failed,
+    installed_v2_failed,
     second_escalation_failed,
     third_escalation_failed,
     fourth_escalation_failed,
 ]
 seen_evolved_profiles={
     "terminal_transition_graph_v1",
+    "terminal_transition_graph_v2",
     "terminal_request_program_inference_v1",
     "runtime_response_salvage_v1",
     "document_request_contract_mining_v1",
