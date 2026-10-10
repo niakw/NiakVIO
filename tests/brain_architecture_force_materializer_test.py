@@ -292,7 +292,7 @@ with tempfile.TemporaryDirectory(prefix="brain-arch-force-new-profile-") as tmp:
                 'if new_strategy_id == "route_transition_graph_v1":\n'
                 '    pass\n'
                 'elif new_strategy_id == "route_transition_graph_v2":\n'
-                '    pass'
+                '    terminal_paths = resolve_source_paths()'
             ),
         },
     ]
