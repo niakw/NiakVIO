@@ -1664,6 +1664,30 @@ with tempfile.TemporaryDirectory(prefix="brain-arch-runtime-only-autowire-") as 
     runtime_target.write_text(fixtures["scripts/adaptive_runtime/runtime_repair.py"], encoding="utf-8")
     assert set(changed) == set(mod.NEW_REPAIR_PROFILE_SURFACES), changed
     assert all((root / path).read_text(encoding="utf-8") == content for path, content in fixtures.items())
+    # Regression: a long family list MUST NOT make the FORCE materializer
+    # replace its full prefix. Real planner had 1185 chars after v3..v7,
+    # causing run 38048466004 to fail before runtime replay.
+    planner_file = root / "engine_v2/scripts/plan-repairs.mjs"
+    planner_original = planner_file.read_text(encoding="utf-8")
+    filler = "".join(
+        f'    {{ profile: "synthetic_prior_family_v{idx}", method: "old" }},\\n'.replace("\\n", "\n")
+        for idx in range(24)
+    )
+    planner_file.write_text(
+        planner_original.replace(
+            '    { profile: "route_transition_graph_v2", method: "same-provider-salvage" },\\n'.replace("\\n", "\n"),
+            filler + '    { profile: "route_transition_graph_v2", method: "same-provider-salvage" },\\n'.replace("\\n", "\n"),
+        ),
+        encoding="utf-8",
+    )
+    long_plan = mod.complete_evolved_profile_wiring(runtime_only, blueprint, root=root)
+    plan_edit = next(x for x in long_plan if x["path"] == "engine_v2/scripts/plan-repairs.mjs")
+    assert len(plan_edit["find"]) <= mod.MAX_FIND
+    assert 'route_transition_graph_v2' in plan_edit["find"]
+    assert "synthetic_prior_family_v0" not in plan_edit["find"]
+    mod.validate_edits(long_plan, list(mod.NEW_REPAIR_PROFILE_SURFACES), root=root)
+    assert set(mod.validate_materialized_edits(long_plan, root=root, blueprint=blueprint)) == set(fixtures)
+    planner_file.write_text(planner_original, encoding="utf-8")
     # The Brain cannot autowire a made-up family and must never substitute a
     # generic source change for a fully wired, executable strategy.
     try:

@@ -1779,10 +1779,26 @@ def complete_evolved_profile_wiring(
         )
         if parent_row is None:
             raise ValueError("architecture FORCE planner parent strategy missing in causal group")
-        find = group.group(0)[:parent_row.end()]
+        # Never make the replacement anchor grow with the entire strategy
+        # family. Every generated vN previously appended ~93 characters to
+        # this prefix, eventually exceeding MAX_FIND=600 and aborting FORCE.
+        # Anchor at the exact parent row and widen backwards *within its
+        # causal group* only if that row is duplicated elsewhere in the file.
+        group_text = group.group(0)
+        row_start, row_end = parent_row.span()
+        find = group_text[row_start:row_end]
+        while source.count(find) != 1 and row_start > 0:
+            previous_newline = group_text.rfind("\n", 0, max(0, row_start - 1))
+            next_start = previous_newline + 1
+            if next_start >= row_start or row_end - next_start > MAX_FIND:
+                break
+            row_start = next_start
+            find = group_text[row_start:row_end]
         new_row = f'    {{ profile: "{target_id}", method: "brain-evolved-executable-transition" }},\n'
         if len(find) > MAX_FIND or source.count(find) != 1:
             raise ValueError("architecture FORCE planner parent edit exceeds bounded unique anchor")
+        if group_text.count(f'profile: "{target_id}"') != 0:
+            raise ValueError("architecture FORCE planner child strategy already registered")
         result.append({
             "operation": "replace",
             "path": planner_path,
