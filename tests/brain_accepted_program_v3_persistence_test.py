@@ -119,9 +119,20 @@ with tempfile.TemporaryDirectory() as directory:
         mod.POSITIVE_MEMORY=old_positive
 
 source=(ROOT/"scripts/run_provider_brain_repair.py").read_text(encoding="utf-8")
-assert "blocked_fixed = accepted_program_providers - compiled_this_wave" in source
-assert "effective_fixed_this_wave = fixed_this_wave - blocked_fixed" in source
-assert "materialize_targets_this_wave" in source
+# Lab-only playable data without a compiled Brain program is an oracle,
+# not a durable new provider repair. This regression was observed on
+# animevostfr in full 17-provider Fast Lab 38009526194.
+assert "classify_lab_playback_durability" in source
+assert "effective_fixed_this_wave, lab_only_this_wave = classify_lab_playback_durability(" in source
+assert "deferred_this_wave.update(lab_only_this_wave)" in source
+assert "materialize_targets_this_wave = set(compiled_this_wave)" in source
+assert "FIELD_PROVIDER_BRAIN_LAB_ONLY" in source
+assert mod.classify_lab_playback_durability({"animevostfr"}, set()) == (
+    set(), {"animevostfr"}
+)
+assert mod.classify_lab_playback_durability(
+    {"animevostfr", "demo"}, {"demo"}
+) == ({"demo"}, {"animevostfr"})
 assert '"acceptedProgramCompileFailures"' in source
 assert "merge_positive_program_records" in source
 assert "positiveProgramMemory" in source
