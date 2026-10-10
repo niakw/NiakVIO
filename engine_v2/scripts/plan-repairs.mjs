@@ -998,7 +998,7 @@ function buildPlan(item) {
   // A strict same-provider positive program is stronger evidence than an
   // advisory hypothesis. Once selected as the production rescue, it owns the
   // bounded attempt and the LLM advisor must not re-open a mixed execution set.
-  const llmAdvisorHint = metaGapEscalated
+  const candidateLlmAdvisorHint = metaGapEscalated
     ? metaGapAdvisorHint
     : (
         !providerPositiveProgramProductionRescue
@@ -1016,6 +1016,12 @@ function buildPlan(item) {
           experimentExhausted,
         )
       : { profile: "", strategy: "", confidence: 0, experiment: {}, experimentFingerprint: "", guidanceKind: "" };
+  const llmAdvisorHint = (
+    learningMode && experimentExhausted
+    && !/^[0-9a-f]{64}$/.test(stringValue(candidateLlmAdvisorHint.experimentFingerprint).toLowerCase())
+  )
+    ? { profile: "", strategy: "", confidence: 0, experiment: {}, experimentFingerprint: "", guidanceKind: "" }
+    : candidateLlmAdvisorHint;
   // After Learning exhaustion, a profile label alone is not a new experiment.
   // Only a fingerprinted hypothesis can reopen the exhausted Learning lane.
   const learningAdvisorExperimentNovel = (
