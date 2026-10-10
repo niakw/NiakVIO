@@ -1,17 +1,17 @@
 {
   "schema_version": 63,
-  "generated_at": "2026-10-09T21:03:57.380690+00:00",
+  "generated_at": "2026-10-10T06:05:40.427241+00:00",
   "test_environment": "github-actions-node",
   "checked_providers": 41,
   "status_counts": {
     "healthy": 4,
     "reachable": 0,
-    "blocked": 6,
-    "degraded": 0,
-    "no_streams": 12,
+    "blocked": 5,
+    "degraded": 1,
+    "no_streams": 13,
     "provider_unreachable": 13,
     "runtime_error": 0,
-    "unavailable": 6,
+    "unavailable": 5,
     "excluded": 0
   },
   "policy": {
@@ -2252,14 +2252,16 @@
     },
     {
       "id": "playimdb",
-      "status": "no_streams",
+      "status": "degraded",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
       "consecutive_successes": 0,
       "hosts": [],
-      "response_categories": [],
+      "response_categories": [
+        "endpoint_reachable"
+      ],
       "host_health": {
         "quietmidnightgardeningideas.site": {
           "last_checked_at": "2026-09-11T22:39:13.523909+00:00",
@@ -2328,11 +2330,11 @@
           "consecutive_blocked": 0
         },
         "nextlevelbrandstudio.site": {
-          "last_checked_at": "2026-10-05T05:58:28.241958+00:00",
+          "last_checked_at": "2026-10-10T06:05:40.427241+00:00",
           "last_category": "endpoint_reachable",
           "reachable": false,
           "http_status": 200,
-          "latency_ms": 242,
+          "latency_ms": 245,
           "kind": "hls",
           "consecutive_hard_failures": 0,
           "consecutive_successes": 0,
@@ -2437,16 +2439,16 @@
       "enabled": true,
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
-      "consecutive_successes": 1,
+      "consecutive_successes": 2,
       "hosts": [
-        "23.mugiwara.one"
+        "5.mugiwara.one"
       ],
       "response_categories": [
         "playable"
       ],
       "host_health": {
         "4.mugiwara.one": {
-          "last_checked_at": "2026-10-09T21:03:57.380690+00:00",
+          "last_checked_at": "2026-10-10T06:05:40.427241+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -2457,7 +2459,7 @@
           "consecutive_blocked": 0
         },
         "cdndirector.dailymotion.com": {
-          "last_checked_at": "2026-10-09T21:03:57.380690+00:00",
+          "last_checked_at": "2026-10-10T06:05:40.427241+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -2468,7 +2470,7 @@
           "consecutive_blocked": 0
         },
         "1.mugiwara.one": {
-          "last_checked_at": "2026-10-09T21:03:57.380690+00:00",
+          "last_checked_at": "2026-10-10T06:05:40.427241+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -2479,18 +2481,7 @@
           "consecutive_blocked": 0
         },
         "23.mugiwara.one": {
-          "last_checked_at": "2026-10-09T21:03:57.380690+00:00",
-          "last_category": "playable",
-          "reachable": true,
-          "http_status": 206,
-          "latency_ms": 723,
-          "kind": "mp4",
-          "consecutive_hard_failures": 0,
-          "consecutive_successes": 1,
-          "consecutive_blocked": 0
-        },
-        "5.mugiwara.one": {
-          "last_checked_at": "2026-10-09T21:03:57.380690+00:00",
+          "last_checked_at": "2026-10-10T06:05:40.427241+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -2498,6 +2489,17 @@
           "kind": "mp4",
           "consecutive_hard_failures": 0,
           "consecutive_successes": 0,
+          "consecutive_blocked": 0
+        },
+        "5.mugiwara.one": {
+          "last_checked_at": "2026-10-10T06:05:40.427241+00:00",
+          "last_category": "playable",
+          "reachable": true,
+          "http_status": 206,
+          "latency_ms": 798,
+          "kind": "mp4",
+          "consecutive_hard_failures": 0,
+          "consecutive_successes": 1,
           "consecutive_blocked": 0
         }
       },
@@ -2725,7 +2727,7 @@
     },
     {
       "id": "vidrock",
-      "status": "unavailable",
+      "status": "no_streams",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
@@ -3016,7 +3018,7 @@
     },
     {
       "id": "vostfree",
-      "status": "blocked",
+      "status": "no_streams",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
