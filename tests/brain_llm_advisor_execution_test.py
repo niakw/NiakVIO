@@ -787,7 +787,24 @@ saw_same_family_evolved_strategy=False
 # an untried deterministic strategy. The route-terminal causal family spans
 # transport/route/search labels, so bounded sibling strategies are valid after
 # the current label's local strategies are exhausted.
-for _attempt in range(20):
+# The exact installed inventory, not a hard-coded historical count, bounds
+# this synthetic exhaustion replay. Brain may add/remove whole strategy Lego
+# families while keeping every exact executed-negative rejection intact.
+transport_first_payload={
+    **transport_base_payload,
+    "llmGuidance":transport_guidance,
+    "negativeMemory":transport_memory,
+}
+transport_first_completed=subprocess.run(
+    ["node",str(PLANNER)],
+    cwd=ROOT,input=json.dumps(transport_first_payload),capture_output=True,text=True,check=True,timeout=20,
+)
+transport_first_plan=next(iter((json.loads(transport_first_completed.stdout).get("plans") or {}).values()))
+transport_inventory=transport_first_plan.get("postExhaustionCandidateProfiles") or []
+assert isinstance(transport_inventory,list) and 1<=len(transport_inventory)<=64,transport_inventory
+assert len(set(transport_inventory))==len(transport_inventory),transport_inventory
+transport_visited=set()
+for _attempt in range(len(transport_inventory)+1):
     transport_payload={
         **transport_base_payload,
         "llmGuidance":transport_guidance,
@@ -804,6 +821,9 @@ for _attempt in range(20):
     profile=transport_plan["postExhaustionStrategyProfile"]
     implementation_fp=transport_plan["strategyImplementationFingerprint"]
     source_failure=transport_plan.get("postExhaustionSourceFailureClass") or ""
+    assert profile in transport_inventory,("unregistered transport executor",profile,transport_inventory)
+    assert profile not in transport_visited,("replayed transport executor",profile)
+    transport_visited.add(profile)
     assert profile,transport_plan
     assert implementation_fp,transport_plan
     if source_failure and source_failure!="transport_blocked":
