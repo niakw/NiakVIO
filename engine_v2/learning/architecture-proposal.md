@@ -36,7 +36,7 @@ Providers: 4khdhub, moviebox
 
 Trigger: catalogue/detail route is live and identity-qualified but no terminal/player media is reached
 
-Method: derive and implement a genuinely new executable Repair strategy route_transition_graph_v8 from negative evidence for exhausted route_transition_graph_v1; preserve the causal intent of the prior method without reusing its implementation, register the new profile in Repair planning/runtime, and require targeted playback/identity proof
+Method: replay already installed executable Repair strategy route_transition_graph_v8 against current-byte evidence before another FORCE evolution; preserve playback/identity/non-regression gates
 
 Acceptance: playback-verified media; content identity not contradicted; no green-lane regression
 
@@ -46,7 +46,7 @@ Providers: anime-ultime, animesultra, yflix
 
 Trigger: catalogue/detail route is live and identity-qualified but no terminal/player media is reached
 
-Method: derive and implement a genuinely new executable Repair strategy route_transition_graph_v8 from negative evidence for exhausted route_transition_graph_v1; preserve the causal intent of the prior method without reusing its implementation, register the new profile in Repair planning/runtime, and require targeted playback/identity proof
+Method: replay already installed executable Repair strategy route_transition_graph_v8 against current-byte evidence before another FORCE evolution; preserve playback/identity/non-regression gates
 
 Acceptance: playback-verified media; content identity not contradicted; no green-lane regression
 
@@ -66,7 +66,7 @@ Providers: vidfast
 
 Trigger: catalogue/detail route is live and identity-qualified but no terminal/player media is reached
 
-Method: derive and implement a genuinely new executable Repair strategy route_transition_graph_v8 from negative evidence for exhausted route_transition_graph_v1; preserve the causal intent of the prior method without reusing its implementation, register the new profile in Repair planning/runtime, and require targeted playback/identity proof
+Method: replay already installed executable Repair strategy route_transition_graph_v8 against current-byte evidence before another FORCE evolution; preserve playback/identity/non-regression gates
 
 Acceptance: playback-verified media; content identity not contradicted; no green-lane regression
 

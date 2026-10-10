@@ -95,6 +95,7 @@ const POST_EXHAUSTION_STRATEGIES = {
     { profile: "terminal_transition_graph_v3", method: "brain-evolved-executable-transition" },
     { profile: "terminal_transition_graph_v4", method: "brain-evolved-executable-transition" },
     { profile: "terminal_transition_graph_v5", method: "brain-evolved-executable-transition" },
+    { profile: "terminal_transition_graph_v6", method: "brain-evolved-executable-transition" },
     { profile: "terminal_request_program_inference_v1", method: "terminal-request-program-inference" },
     { profile: "runtime_response_salvage_v1", method: "successful-runtime-response-salvage" },
     { profile: "document_request_contract_mining_v1", method: "provider-document-request-contract-mining" },
