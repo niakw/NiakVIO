@@ -126,6 +126,31 @@ focused = mod._focused_source_snippet(
 assert "IMPLEMENTATION_SENTINEL" in focused
 assert not focused.startswith("HEADER_ONLY")
 
+# Historical v1 must remain discoverable even when v10+ siblings and registry
+# mentions outnumber its mentions. For a not-yet-installed child, prefer its
+# precise exhausted parent over an unrelated later sibling.
+many_versions = (
+    "HEADER_ONLY = True\n"
+    + ("metadata = 'route_transition_graph_v10'\n" * 500)
+    + 'elif new_strategy_id == "route_transition_graph_v1":\n'
+    + '    LEGACY_EXECUTOR_SENTINEL = True\n'
+    + ("other = 42\n" * 100)
+    + 'elif new_strategy_id == "route_transition_graph_v10":\n'
+    + '    NEW_EXECUTOR_SENTINEL = True\n'
+    + ("tail = 5\n" * 500)
+)
+context_v1 = mod._focused_source_snippet(
+    many_versions, {"strategyId": "route_transition_graph_v1", "targetLayer": "core"}, 900,
+)
+assert 'new_strategy_id == "route_transition_graph_v1"' in context_v1
+assert "LEGACY_EXECUTOR_SENTINEL" in context_v1
+assert "NEW_EXECUTOR_SENTINEL" not in context_v1
+context_v11 = mod._focused_source_snippet(
+    many_versions, {"strategyId": "route_transition_graph_v11", "evolvesFromStrategyId": "route_transition_graph_v10"}, 900,
+)
+assert 'new_strategy_id == "route_transition_graph_v10"' in context_v11
+assert "NEW_EXECUTOR_SENTINEL" in context_v11
+
 focused_ctx = mod.source_context(
     {
         "strategyId": "route_transition_graph_v1",

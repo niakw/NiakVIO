@@ -967,6 +967,30 @@ def _focused_source_snippet(text: str, blueprint: dict[str, Any], limit: int) ->
 
     strategy_id = str(blueprint.get("strategyId") or "").strip()
     evolves_from = str(blueprint.get("evolvesFromStrategyId") or "").strip()
+    # Exact line match is intentionally preferred over fuzzy scoring:
+    # v1/v10 naming collisions and growing history can shift the model/test
+    # context away from the requested executable guard.
+    for profile in (strategy_id, evolves_from):
+        if not profile:
+            continue
+        guards = {
+            f'if new_strategy_id == "{profile}":',
+            f'elif new_strategy_id == "{profile}":',
+            f"if new_strategy_id == '{profile}':",
+            f"elif new_strategy_id == '{profile}':",
+        }
+        positions = []
+        offset = 0
+        for line in text.splitlines(keepends=True):
+            if line.strip() in guards:
+                positions.append(offset + len(line) - len(line.lstrip()))
+            offset += len(line)
+        if len(positions) == 1:
+            pos = positions[0]
+            start = max(0, pos - min(120, limit // 8))
+            end = min(len(text), start + limit)
+            start = max(0, end - limit)
+            return text[start:end]
     anchors: list[str] = []
     for profile_id in (strategy_id, evolves_from):
         if profile_id:
@@ -1882,6 +1906,18 @@ def validated_model_plan(
     *,
     root: Path = ROOT,
 ) -> tuple[dict[str, Any], list[dict[str, Any]]]:
+    # A stale baseline unit test cannot be fixed by asking the 7B to regenerate
+    # an unrelated strategy. Check the pristine Brain before any model calls.
+    if _requires_new_repair_profile(payload):
+        try:
+            validate_materialized_contracts(list(NEW_REPAIR_PROFILE_SURFACES), root=root)
+        except ValueError as exc:
+            print(
+                "FIELD_BRAIN_ARCH_FORCE_OWNER owner=baseline-brain-contract "
+                f"model_calls_skipped=true error={str(exc)[:220]}",
+                flush=True,
+            )
+            raise
     planned = call_model(endpoint, model, payload)
     planned, generated_edits = _validated_generated_edits(
         endpoint, model, payload, planned, root=root,
