@@ -1245,6 +1245,22 @@ def persist_accepted_programs(
     return compiled, rejected
 
 
+def classify_lab_playback_durability(
+    playable_lab_providers: set[str],
+    compiled_accepted_providers: set[str],
+) -> tuple[set[str], set[str]]:
+    """Separate proven lab playback from a durable model-generated repair.
+
+    Playback with zero accepted/compiled program (real 38009526194:
+    animevostfr fixedInLab=1, rawLabAccepted=0) is diagnostic evidence,
+    not a new provider repair. Never rematerialize unchanged baseline bytes
+    and then call the resulting candidate a repair.
+    """
+    playable = {cid(p) for p in playable_lab_providers if cid(p)}
+    compiled = {cid(p) for p in compiled_accepted_providers if cid(p)}
+    return playable & compiled, playable - compiled
+
+
 def durable_accepted_rows(
     accepted: list[dict[str, Any]],
     compiled_providers: set[str],
@@ -1431,6 +1447,7 @@ def main() -> int:
     all_accepted: list[dict[str, Any]] = []
     all_raw_lab_accepted: list[dict[str, Any]] = []
     all_fixed: set[str] = set()
+    all_lab_only: set[str] = set()
     all_deferred: set[str] = set()
     all_harness_differential: set[str] = set()
     all_compiled_programs: set[str] = set()
@@ -1656,12 +1673,21 @@ def main() -> int:
                 accepted_program_providers - compiled_this_wave
             )
             deferred_this_wave.update(compile_rejected_to_learning)
-            blocked_fixed = accepted_program_providers - compiled_this_wave
-            effective_fixed_this_wave = fixed_this_wave - blocked_fixed
-            materialize_targets_this_wave = (
-                (fixed_this_wave - accepted_program_providers)
-                | compiled_this_wave
+            effective_fixed_this_wave, lab_only_this_wave = classify_lab_playback_durability(
+                fixed_this_wave, compiled_this_wave,
             )
+            # Repair has no durable mutation if no accepted program compiled.
+            # Keep identity-correct lab evidence for Brain Learning, but never
+            # rematerialize/publish baseline-only "healthy" fixtures.
+            deferred_this_wave.update(lab_only_this_wave)
+            materialize_targets_this_wave = set(compiled_this_wave)
+            if lab_only_this_wave:
+                print(
+                    "FIELD_PROVIDER_BRAIN_LAB_ONLY "
+                    f"providers={','.join(sorted(lab_only_this_wave))} "
+                    "accepted_program_compiled=false routed_to_learning=true",
+                    flush=True,
+                )
 
             all_raw_lab_accepted.extend(accepted_this_wave)
             accepted_seen = {
@@ -1675,6 +1701,7 @@ def main() -> int:
                     all_accepted.append(row)
                     accepted_seen.add(provider)
             all_fixed.update(effective_fixed_this_wave)
+            all_lab_only.update(lab_only_this_wave)
             all_deferred.update(deferred_this_wave)
             remaining = [
                 provider for provider in remaining
@@ -1695,6 +1722,7 @@ def main() -> int:
                 "fixedInLabCount": len(effective_fixed_this_wave),
                 "fixedInLab": sorted(effective_fixed_this_wave),
                 "rawFixedInLab": sorted(fixed_this_wave),
+                "labOnlyWithoutCompiledRepair": sorted(lab_only_this_wave),
                 "acceptedProgramCompiledProviders": sorted(compiled_this_wave),
                 "acceptedProgramCompileFailures": dict(sorted(compile_failures_this_wave.items())),
                 "compileRejectedToLearning": sorted(compile_rejected_to_learning),
@@ -1830,6 +1858,7 @@ def main() -> int:
             "acceptedProgramCompiledProviders": sorted(all_compiled_programs),
             "acceptedProgramCompileFailures": dict(sorted(all_program_compile_failures.items())),
             "fixedInLabProviders": sorted(all_fixed),
+        "labOnlyWithoutCompiledRepairProviders": sorted(all_lab_only),
             "harnessDifferentialProviders": sorted(all_harness_differential),
             "harnessDifferentialProviderCount": len(all_harness_differential),
             "deferredLearningProviders": sorted(all_deferred - all_harness_differential),

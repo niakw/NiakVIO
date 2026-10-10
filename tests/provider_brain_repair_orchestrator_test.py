@@ -246,6 +246,21 @@ assert [row["provider"] for row in durable]==["good"],durable
 assert durable[0]["acceptedProgram"]["profile"]=="y2",durable
 assert mod.durable_accepted_rows(raw_accept,set())==[]
 
+# Real 38009526194: animevostfr had strict lab playable media but ZERO
+# accepted or compiled repair program. It must feed Learning as an oracle,
+# NOT trigger no-op provider rematerialization/current-byte retest.
+durable_lab, lab_only=mod.classify_lab_playback_durability({"animevostfr"},set())
+assert durable_lab==set() and lab_only=={"animevostfr"}
+durable_lab, lab_only=mod.classify_lab_playback_durability(
+    {"animevostfr","validated"}, {"validated","compiled-without-playback"}
+)
+assert durable_lab=={"validated"} and lab_only=={"animevostfr"}
+assert mod.classify_lab_playback_durability(set(),{"compiled"})==(set(),set())
+assert "materialize_targets_this_wave = set(compiled_this_wave)" in SCRIPT.read_text(encoding="utf-8")
+assert "deferred_this_wave.update(lab_only_this_wave)" in SCRIPT.read_text(encoding="utf-8")
+assert '"labOnlyWithoutCompiledRepairProviders": sorted(all_lab_only)' in SCRIPT.read_text(encoding="utf-8")
+
+
 source_text=SCRIPT.read_text(encoding="utf-8")
 for required in (
     "capture_cross_wave_exploration_parents",
