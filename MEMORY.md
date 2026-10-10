@@ -1,3 +1,8 @@
+## 2026-10-10 — Compact evidence persistence invocation after workflow validation anomaly
+
+- Initial Brain evidence-race commit `6bd6d789` introduced an 11-line inline persistence fallback inside the large V6 GitHub Actions workflow. GitHub reported a no-job failed workflow check `38017398618` at that commit, before runtime tests could run. Pending formal verdict, invocation has been reduced to one bounded shell command calling the independently unit-tested helper, with stale provider publication still fail-closed. Do not claim this is validated until the current-SHA workflows and live replay pass.
+- Incident scope: GitHub action validation/integration, not provider or Brain strategy success; main reset/retry itself remains non-publishing evidence only.
+
 ## 2026-10-10 — Preserve Brain Repair experiments after concurrent main advancement
 
 - Inspected authoritative main `f83a3894` and sharded census `38016451880` on `fbf94ed8`: **21 FULL OK / 46**, **17 RepairQueue**, no newly verified playable stream despite 17-provider Autopilot.
