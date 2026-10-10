@@ -970,7 +970,12 @@ def _focused_source_snippet(text: str, blueprint: dict[str, Any], limit: int) ->
     # Exact line match is intentionally preferred over fuzzy scoring:
     # v1/v10 naming collisions and growing history can shift the model/test
     # context away from the requested executable guard.
-    for profile in (strategy_id, evolves_from):
+    focus_order = (
+        (evolves_from, strategy_id)
+        if blueprint.get("requiresNewExecutableRepairProfile") is True
+        else (strategy_id, evolves_from)
+    )
+    for profile in focus_order:
         if not profile:
             continue
         guards = {

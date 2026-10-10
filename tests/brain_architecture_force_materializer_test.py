@@ -150,6 +150,17 @@ context_v11 = mod._focused_source_snippet(
 )
 assert 'new_strategy_id == "route_transition_graph_v10"' in context_v11
 assert "NEW_EXECUTOR_SENTINEL" in context_v11
+evolved_context_v2 = mod._focused_source_snippet(
+    many_versions,
+    {
+        "strategyId": "route_transition_graph_v10",
+        "evolvesFromStrategyId": "route_transition_graph_v1",
+        "requiresNewExecutableRepairProfile": True,
+    },
+    900,
+)
+assert "LEGACY_EXECUTOR_SENTINEL" in evolved_context_v2, "evolution must inspect parent"
+assert "NEW_EXECUTOR_SENTINEL" not in evolved_context_v2
 
 focused_ctx = mod.source_context(
     {
