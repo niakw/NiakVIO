@@ -1884,7 +1884,18 @@ jobs:
             else
               git commit -m "ci(repair): persist evidence ${counts} from ${GITHUB_SHA::12}"
             fi
-            git push origin HEAD:main
+            if ! git push origin HEAD:main; then
+              if [ "$force_candidate_applied" = "1" ]; then
+                # Never recover a provider-publishing commit onto untested bytes.
+                echo "FIELD_REPAIR_EVIDENCE_RACE preserved=false reason=provider-candidate-requires-fresh-current-byte-retest" >&2
+                exit 1
+              fi
+              # A neutral census/Brain commit may have advanced main between
+              # fetch and push. Keep this run's negative experiments without
+              # overwriting newer census, memory, provider or executable bytes.
+              bash scripts/persist_repair_race_evidence.sh \
+                "$tmp/provider-brain-repair-latest.json" "$GITHUB_RUN_ID" "$GITHUB_SHA"
+            fi
           fi
 
           if [ "$force_candidate_applied" = "1" ]; then

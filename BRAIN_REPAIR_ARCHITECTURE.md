@@ -1,3 +1,7 @@
+## 2026-10-10 — Evidence-only retry for racing Repair producers
+
+A Repair run that has already executed provider/runtime tests may lose a race at the final `main` push. The safe convergence rule is **not** to rebase stale published provider or census output without fresh execution. On a rejected evidence-only push, reset to latest main and persist only the run-unique Brain experiment report plus a non-authoritative provenance record (`publicationAllowed=false`, `currentBytePlaybackAuthority=false`, tested SHA retained), with at most three bounded attempts. An accepted provider candidate is never carried through this path. The next learning cycle can use the negative report as a prior, but FULL remains gated by new applied-byte playback proof.
+
 ## 2026-10-10 — Generated profile regression contracts and loop economics
 
 Contract tests and architecture-deferred plans must be **data-driven from the Brain's actually installed strategy registry**; generated `terminal_transition_graph_vN` siblings are valid when registered and compiled. Each new sibling is replayed before a later fallback, and its failure must be execution-observed. Never hard-code an assumption that a given vN does not exist.
