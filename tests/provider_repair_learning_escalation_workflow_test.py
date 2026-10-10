@@ -135,3 +135,21 @@ assert "Open or refresh Brain architecture PR" in learning
 assert "apply_brain_llm_force_mutations.py" not in learning
 
 print("provider Repair/FORCE scheduled-Learning ownership contract passed")
+
+
+# A 16-provider Learning handoff must dispatch ONE canonical Repair V6 run.
+# V6 intentionally serializes all attempts in one GitHub Actions concurrency
+# group. Launching 16 workflow_dispatch calls cancels pending siblings, which
+# previously caused 16 repair runs to degenerate to one provider at a time.
+handoff = learning[
+    learning.index("- name: Resume canonical Repair after push-triggered Learning"):
+    learning.index("  publish-repair-proposal:")
+]
+assert 'if [ "${#repair_targets[@]}" -eq 1 ]; then' in handoff
+assert handoff.count("gh workflow run provider-recognition-repair-v6.yml") == 3
+assert 'for provider in "${repair_targets[@]}"; do' not in handoff
+assert 'cohort=${#repair_targets[@]} scoped=false dispatched=1 mode=whole-repair-queue' in handoff
+assert 'if [ -n "$targets_csv" ]; then' in handoff
+assert 'repair_targets[0]' in handoff
+assert 'group: provider-repair-main-v3' in workflow
+assert 'cancel-in-progress: ${{ github.event_name == \'push\' }}' in workflow
