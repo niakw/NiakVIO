@@ -11501,6 +11501,26 @@
     {
       "providerId": "allanime",
       "providerVersion": "*",
+      "failureClass": "chain_terminal_gap",
+      "signature": "8daa3e9bedf63b16471f7c0e",
+      "profile": "terminal_transition_graph_v4",
+      "positiveProgramFingerprint": "",
+      "strategyImplementationFingerprint": "b136645c052c182449a983f14f4e379b56c81d6bd5932b4bb548856af1ad6b50",
+      "llmAdvisorExperimentFingerprint": "",
+      "experimentVariant": 4,
+      "experimentGeneration": 2,
+      "capabilityStrategy": "direct_media",
+      "observedPipelineStage": "player",
+      "failures": 1,
+      "consecutiveFailures": 1,
+      "successes": 0,
+      "lastOutcome": "rejected",
+      "lastReason": "required_category_playable_proof:anime",
+      "executionObserved": true
+    },
+    {
+      "providerId": "allanime",
+      "providerVersion": "*",
       "failureClass": "transport_blocked",
       "signature": "ac5f8426938872bee42dae1d",
       "profile": "adaptive_runtime_recovery",
@@ -20437,27 +20457,6 @@
       "lastReason": "required_category_playable_proof:movie,tv",
       "executionObserved": true,
       "progresses": 0
-    },
-    {
-      "providerId": "flemmix",
-      "providerVersion": "*",
-      "failureClass": "playback_context_gap",
-      "signature": "7c6658344f6188f0f77ece7f",
-      "profile": "adaptive_runtime_recovery",
-      "positiveProgramFingerprint": "",
-      "strategyImplementationFingerprint": "",
-      "llmAdvisorExperimentFingerprint": "",
-      "experimentVariant": 0,
-      "experimentGeneration": 1,
-      "capabilityStrategy": "mixed_embed_resolver",
-      "observedPipelineStage": "player",
-      "failures": 1,
-      "consecutiveFailures": 1,
-      "successes": 0,
-      "progresses": 1,
-      "lastOutcome": "exploration_progress_nonpublishable",
-      "lastReason": "sandbox_diagnostic_progress:provider-requests",
-      "executionObserved": true
     }
   ]
 }

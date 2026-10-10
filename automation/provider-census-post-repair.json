@@ -3,16 +3,16 @@
   "requested_scope": "all",
   "resolved_scope": "explicit",
   "selected_providers": [
-    "4khdhub"
+    "allanime"
   ],
   "shard_count": 1,
   "shard_index": 0,
   "environment": "node-adaptive-provider-targeted-first-real-stream-census-with-tmdb-runtime-context",
   "fixture_selection_policy": "retained-proof-first-then-provider-targeted-then-representative-then-three-corpus-rotated",
   "provider_count": 1,
-  "task_count": 2,
-  "probe_count": 6,
-  "rotated_task_count": 2,
+  "task_count": 1,
+  "probe_count": 4,
+  "rotated_task_count": 1,
   "max_samples_per_lane": 4,
   "raw_provider_count": 0,
   "playable_provider_count": 0,
@@ -26,7 +26,7 @@
   "wrong_content_providers": [],
   "type_summary": {
     "movie": {
-      "tasks": 1,
+      "tasks": 0,
       "raw": 0,
       "playable": 0,
       "accepted_playable": 0,
@@ -34,7 +34,7 @@
       "wrong_content": 0
     },
     "tv": {
-      "tasks": 1,
+      "tasks": 0,
       "raw": 0,
       "playable": 0,
       "accepted_playable": 0,
@@ -42,7 +42,7 @@
       "wrong_content": 0
     },
     "anime": {
-      "tasks": 0,
+      "tasks": 1,
       "raw": 0,
       "playable": 0,
       "accepted_playable": 0,
@@ -51,438 +51,28 @@
     }
   },
   "status_counts": {
-    "no_streams": 2
+    "no_streams": 1
   },
   "debug_stage_counts": {
-    "provider_network_zero_result": 2
+    "provider_network_zero_result": 1
   },
   "debug_stage_providers": {
     "provider_network_zero_result": [
-      "4khdhub"
+      "allanime"
     ]
   },
   "rows": [
     {
-      "provider_id": "4khdhub",
-      "provider_name": "📺 4KHDHub",
-      "semantic_type": "movie",
-      "fixture_title": "The Colony",
+      "provider_id": "allanime",
+      "provider_name": "🌐 AllAnime",
+      "semantic_type": "anime",
+      "fixture_title": "Hell Teacher: Jigoku Sensei Nube",
       "fixture": {
-        "tmdbId": "760873",
-        "mediaType": "movie",
-        "category": "movie",
-        "title": "The Colony",
-        "year": 2021
-      },
-      "streams_returned": 0,
-      "announced_player_candidates": 0,
-      "announced_variant_candidates": 0,
-      "announced_player_hosts": [],
-      "announced_quality_heights": [],
-      "explored_player_requests": 0,
-      "explored_player_hosts": [],
-      "variant_fanout_state": "not-observed",
-      "status": "no_streams",
-      "debug_stage": "provider_network_zero_result",
-      "debug_model": {
-        "strategy": "html_scraper",
-        "source_runtime_family": "catalogue-html",
-        "reconstruction_state": "learning-clean-seed",
-        "identity_mode": "catalog_search",
-        "requires_tmdb_before_run": true,
-        "supported_types": [
-          "movie",
-          "tv"
-        ],
-        "route_count": 1,
-        "route_kinds": [
-          "search"
-        ],
-        "has_api_recipe": false,
-        "official_site": "https://4khdhub.one",
-        "official_hub": "https://4khdhub.one/",
-        "official_api": null
-      },
-      "debug_fetch_count": 2,
-      "debug_provider_fetch_count": 1,
-      "debug_progress_stage": "lookup_only",
-      "debug_fetches": [
-        {
-          "url": "https://api.themoviedb.org/3/movie/760873?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Crelease_dates&language=fr-FR&api_key=%3Credacted%3E",
-          "response_url": "https://api.themoviedb.org/3/movie/760873?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Crelease_dates&language=fr-FR&api_key=%3Credacted%3E",
-          "method": "GET",
-          "status": 200,
-          "content_type": "application/json",
-          "challenge": "",
-          "response_shape": {
-            "kind": "json",
-            "top": "object",
-            "keys": [
-              "adult",
-              "backdrop_path",
-              "belongs_to_collection",
-              "budget",
-              "genres",
-              "homepage",
-              "id",
-              "imdb_id",
-              "origin_country",
-              "original_language",
-              "original_title",
-              "overview",
-              "popularity",
-              "poster_path",
-              "production_companies",
-              "production_countries"
-            ]
-          },
-          "declared_player_candidate_count": 0,
-          "declared_url_player_candidate_count": 0,
-          "declared_indexed_player_candidate_count": 0,
-          "declared_player_hosts": [],
-          "declared_quality_heights": [],
-          "duration_ms": 68
-        },
-        {
-          "url": "https://4khdhub.one/?s=La%20Colonie%202021",
-          "response_url": "https://4khdhub.one/?s=La%20Colonie%202021",
-          "method": "GET",
-          "status": 200,
-          "content_type": "text/html",
-          "challenge": "",
-          "response_shape": {
-            "kind": "html",
-            "sampleBytes": 40708,
-            "forms": 1,
-            "iframes": 0,
-            "videos": 0,
-            "sources": 0,
-            "scripts": 16,
-            "anchors": 42,
-            "classTokens": [
-              "movie-card-format",
-              "dropdown-item",
-              "movie-card",
-              "movie-card-content",
-              "movie-card-formats",
-              "movie-card-image",
-              "movie-card-meta",
-              "movie-card-overlay",
-              "movie-card-title",
-              "quality-badges",
-              "nav-item",
-              "nav-link",
-              "sr-only",
-              "dropdown-menu",
-              "space-y-4",
-              "pagination-container"
-            ],
-            "idTokens": [
-              "back-to-top",
-              "close-mobile-menu",
-              "close-search",
-              "current-year",
-              "logo",
-              "main-nav",
-              "menu-toggle",
-              "mobile-menu-backdrop",
-              "search",
-              "search-backdrop",
-              "search-overlay",
-              "search-toggle"
-            ],
-            "classFacts": [
-              {
-                "token": "movie-card-format",
-                "count": 12,
-                "tags": [
-                  "span"
-                ],
-                "selfHref": 0,
-                "nestedAnchors": 24,
-                "signals": [
-                  "movie",
-                  "series",
-                  "1080p",
-                  "year"
-                ]
-              },
-              {
-                "token": "dropdown-item",
-                "count": 12,
-                "tags": [
-                  "a"
-                ],
-                "selfHref": 12,
-                "nestedAnchors": 24,
-                "signals": [
-                  "movie",
-                  "series",
-                  "4k",
-                  "year"
-                ]
-              },
-              {
-                "token": "movie-card",
-                "count": 12,
-                "tags": [
-                  "a",
-                  "div",
-                  "span"
-                ],
-                "selfHref": 1,
-                "nestedAnchors": 24,
-                "signals": [
-                  "movie",
-                  "series",
-                  "1080p",
-                  "year"
-                ]
-              },
-              {
-                "token": "movie-card-content",
-                "count": 12,
-                "tags": [
-                  "div"
-                ],
-                "selfHref": 0,
-                "nestedAnchors": 24,
-                "signals": [
-                  "movie",
-                  "series",
-                  "1080p",
-                  "year",
-                  "4k"
-                ]
-              },
-              {
-                "token": "movie-card-formats",
-                "count": 12,
-                "tags": [
-                  "div"
-                ],
-                "selfHref": 0,
-                "nestedAnchors": 24,
-                "signals": [
-                  "movie",
-                  "series",
-                  "1080p",
-                  "year",
-                  "4k"
-                ]
-              },
-              {
-                "token": "movie-card-image",
-                "count": 12,
-                "tags": [
-                  "div"
-                ],
-                "selfHref": 0,
-                "nestedAnchors": 24,
-                "signals": [
-                  "movie",
-                  "series",
-                  "1080p",
-                  "year",
-                  "4k"
-                ]
-              },
-              {
-                "token": "movie-card-meta",
-                "count": 12,
-                "tags": [
-                  "p"
-                ],
-                "selfHref": 0,
-                "nestedAnchors": 24,
-                "signals": [
-                  "movie",
-                  "series",
-                  "1080p",
-                  "year",
-                  "4k"
-                ]
-              },
-              {
-                "token": "movie-card-overlay",
-                "count": 12,
-                "tags": [
-                  "div"
-                ],
-                "selfHref": 0,
-                "nestedAnchors": 24,
-                "signals": [
-                  "movie",
-                  "series",
-                  "1080p",
-                  "year",
-                  "4k"
-                ]
-              }
-            ],
-            "markers": [
-              "json-ld",
-              "download",
-              "episode"
-            ]
-          },
-          "declared_player_candidate_count": 18,
-          "declared_url_player_candidate_count": 18,
-          "declared_indexed_player_candidate_count": 0,
-          "declared_player_hosts": [
-            "4khdhub.one",
-            "fonts.googleapis.com",
-            "fonts.gstatic.com",
-            "hdhub4u.download",
-            "schema.org"
-          ],
-          "declared_quality_heights": [
-            1080,
-            2160
-          ],
-          "duration_ms": 298
-        }
-      ],
-      "debug_provider_value_trace_v18": null,
-      "debug_provider_value_trace_history_v21": [],
-      "debug_provider_runtime_dispatch_error_v1": null,
-      "debug_identity_reasons": [],
-      "stderr_tail": "FIELD_TMDB_PROBE_CONTEXT state=core_ready credential_visible=false metadata_hydrated=false dynamic=true core_capability=true\n",
-      "raw": 0,
-      "playable": 0,
-      "verified": 0,
-      "contradictions": 0,
-      "identity_safe": true,
-      "duration_ms": 1801,
-      "sample_count": 4,
-      "fanout_fixture_title": "Sinners",
-      "sample_titles": [
-        "Sinners",
-        "Interstellar",
-        "Mon ninja et moi 3",
-        "The Colony"
-      ],
-      "adaptive_rotated": true,
-      "samples": [
-        {
-          "fixture_title": "Sinners",
-          "fixture": {
-            "tmdbId": "1233413",
-            "mediaType": "movie",
-            "category": "movie",
-            "title": "Sinners",
-            "year": 2025
-          },
-          "status": "no_streams",
-          "debug_stage": "provider_network_zero_result",
-          "debug_progress_stage": "lookup_only",
-          "raw": 0,
-          "playable": 0,
-          "verified": 0,
-          "contradictions": 0,
-          "duration_ms": 400,
-          "streams_returned": 0,
-          "announced_player_candidates": 0,
-          "announced_variant_candidates": 0,
-          "announced_player_hosts": [],
-          "announced_quality_heights": [],
-          "explored_player_requests": 0,
-          "explored_player_hosts": [],
-          "variant_fanout_state": "not-observed"
-        },
-        {
-          "fixture_title": "Interstellar",
-          "fixture": {
-            "tmdbId": "157336",
-            "mediaType": "movie",
-            "category": "movie",
-            "title": "Interstellar",
-            "year": 2014
-          },
-          "status": "no_streams",
-          "debug_stage": "provider_network_zero_result",
-          "debug_progress_stage": "lookup_only",
-          "raw": 0,
-          "playable": 0,
-          "verified": 0,
-          "contradictions": 0,
-          "duration_ms": 390,
-          "streams_returned": 0,
-          "announced_player_candidates": 0,
-          "announced_variant_candidates": 0,
-          "announced_player_hosts": [],
-          "announced_quality_heights": [],
-          "explored_player_requests": 0,
-          "explored_player_hosts": [],
-          "variant_fanout_state": "not-observed"
-        },
-        {
-          "fixture_title": "Mon ninja et moi 3",
-          "fixture": {
-            "tmdbId": "1215638",
-            "mediaType": "movie",
-            "category": "movie",
-            "title": "Mon ninja et moi 3",
-            "year": 2025
-          },
-          "status": "no_streams",
-          "debug_stage": "provider_network_zero_result",
-          "debug_progress_stage": "lookup_only",
-          "raw": 0,
-          "playable": 0,
-          "verified": 0,
-          "contradictions": 0,
-          "duration_ms": 408,
-          "streams_returned": 0,
-          "announced_player_candidates": 0,
-          "announced_variant_candidates": 0,
-          "announced_player_hosts": [],
-          "announced_quality_heights": [],
-          "explored_player_requests": 0,
-          "explored_player_hosts": [],
-          "variant_fanout_state": "not-observed"
-        },
-        {
-          "fixture_title": "The Colony",
-          "fixture": {
-            "tmdbId": "760873",
-            "mediaType": "movie",
-            "category": "movie",
-            "title": "The Colony",
-            "year": 2021
-          },
-          "status": "no_streams",
-          "debug_stage": "provider_network_zero_result",
-          "debug_progress_stage": "lookup_only",
-          "raw": 0,
-          "playable": 0,
-          "verified": 0,
-          "contradictions": 0,
-          "duration_ms": 374,
-          "streams_returned": 0,
-          "announced_player_candidates": 0,
-          "announced_variant_candidates": 0,
-          "announced_player_hosts": [],
-          "announced_quality_heights": [],
-          "explored_player_requests": 0,
-          "explored_player_hosts": [],
-          "variant_fanout_state": "not-observed"
-        }
-      ],
-      "provider_budget_seconds": 90,
-      "provider_budget_exhausted": false
-    },
-    {
-      "provider_id": "4khdhub",
-      "provider_name": "📺 4KHDHub",
-      "semantic_type": "tv",
-      "fixture_title": "Revenant",
-      "fixture": {
-        "tmdbId": "210702",
-        "mediaType": "tv",
-        "category": "tv",
-        "title": "Revenant",
-        "year": 2023,
+        "tmdbId": "259544",
+        "mediaType": "anime",
+        "category": "anime",
+        "title": "Hell Teacher: Jigoku Sensei Nube",
+        "year": 2025,
         "season": 1,
         "episode": 1
       },
@@ -497,31 +87,31 @@
       "status": "no_streams",
       "debug_stage": "provider_network_zero_result",
       "debug_model": {
-        "strategy": "html_scraper",
-        "source_runtime_family": "catalogue-html",
+        "strategy": "direct_media",
+        "source_runtime_family": "tmdb-direct-api",
         "reconstruction_state": "learning-clean-seed",
-        "identity_mode": "catalog_search",
+        "identity_mode": "tmdb_direct",
         "requires_tmdb_before_run": true,
         "supported_types": [
-          "movie",
-          "tv"
+          "anime"
         ],
-        "route_count": 1,
+        "route_count": 3,
         "route_kinds": [
-          "search"
+          "api",
+          "detail"
         ],
         "has_api_recipe": false,
-        "official_site": "https://4khdhub.one",
-        "official_hub": "https://4khdhub.one/",
+        "official_site": "https://aniwatchtv.watch",
+        "official_hub": "https://allanime.sa.com/",
         "official_api": null
       },
-      "debug_fetch_count": 2,
-      "debug_provider_fetch_count": 1,
-      "debug_progress_stage": "lookup_only",
+      "debug_fetch_count": 20,
+      "debug_provider_fetch_count": 19,
+      "debug_progress_stage": "chain_reached",
       "debug_fetches": [
         {
-          "url": "https://api.themoviedb.org/3/tv/210702?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Ccontent_ratings&language=fr-FR&api_key=%3Credacted%3E",
-          "response_url": "https://api.themoviedb.org/3/tv/210702?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Ccontent_ratings&language=fr-FR&api_key=%3Credacted%3E",
+          "url": "https://api.themoviedb.org/3/tv/259544?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Ccontent_ratings&language=fr-FR&api_key=%3Credacted%3E",
+          "response_url": "https://api.themoviedb.org/3/tv/259544?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Ccontent_ratings&language=fr-FR&api_key=%3Credacted%3E",
           "method": "GET",
           "status": 200,
           "content_type": "application/json",
@@ -553,195 +143,1520 @@
           "declared_indexed_player_candidate_count": 0,
           "declared_player_hosts": [],
           "declared_quality_heights": [],
-          "duration_ms": 88
+          "duration_ms": 65
         },
         {
-          "url": "https://4khdhub.one/?s=Revenant%20Season%201",
-          "response_url": "https://4khdhub.one/?s=Revenant%20Season%201",
+          "url": "https://api.mkissa.net/api",
+          "response_url": "https://api.mkissa.net/api",
+          "method": "POST",
+          "status": 200,
+          "content_type": "application/json",
+          "challenge": "",
+          "response_shape": {
+            "kind": "json",
+            "top": "object",
+            "keys": [
+              "data"
+            ],
+            "dataType": "object",
+            "dataKeys": [
+              "shows"
+            ]
+          },
+          "declared_player_candidate_count": 0,
+          "declared_url_player_candidate_count": 0,
+          "declared_indexed_player_candidate_count": 0,
+          "declared_player_hosts": [],
+          "declared_quality_heights": [],
+          "duration_ms": 223
+        },
+        {
+          "url": "https://mkissa.to/",
+          "response_url": "https://mkissa.to/",
           "method": "GET",
           "status": 200,
           "content_type": "text/html",
           "challenge": "",
           "response_shape": {
             "kind": "html",
-            "sampleBytes": 21957,
+            "sampleBytes": 21725,
+            "forms": 0,
+            "iframes": 0,
+            "videos": 0,
+            "sources": 0,
+            "scripts": 6,
+            "anchors": 7,
+            "classTokens": [
+              "s-q1o28q"
+            ],
+            "idTokens": [
+              "theme-critical"
+            ],
+            "classFacts": [
+              {
+                "token": "s-q1o28q",
+                "count": 12,
+                "tags": [
+                  "svg",
+                  "ellipse",
+                  "path",
+                  "g"
+                ],
+                "selfHref": 0,
+                "nestedAnchors": 24,
+                "signals": [
+                  "series",
+                  "year"
+                ]
+              }
+            ],
+            "markers": []
+          },
+          "declared_player_candidate_count": 0,
+          "declared_url_player_candidate_count": 0,
+          "declared_indexed_player_candidate_count": 0,
+          "declared_player_hosts": [],
+          "declared_quality_heights": [],
+          "duration_ms": 43
+        },
+        {
+          "url": "https://api.allanime.day/api?variables=%7B%22showId%22%3A%22E6vnDfLoWwKk9G9eH%22%2C%22translationType%22%3A%22sub%22%2C%22episodeString%22%3A%221%22%7D&extensions=%7B%22persistedQuery%22%3A%7B%22version%22%3A1%2C%22sha256Hash%22%3A%22d405d0edd690624b66baba3068e0edc3ac90f1597d898a1ec8db4e5c43c00fec%22%7D%7D",
+          "response_url": "https://api.allanime.day/api?variables=%7B%22showId%22%3A%22E6vnDfLoWwKk9G9eH%22%2C%22translationType%22%3A%22sub%22%2C%22episodeString%22%3A%221%22%7D&extensions=%7B%22persistedQuery%22%3A%7B%22version%22%3A1%2C%22sha256Hash%22%3A%22d405d0edd690624b66baba3068e0edc3ac90f1597d898a1ec8db4e5c43c00fec%22%7D%7D",
+          "method": "GET",
+          "status": 200,
+          "content_type": "application/json",
+          "challenge": "",
+          "response_shape": {
+            "kind": "json",
+            "top": "object",
+            "keys": [
+              "errors",
+              "data"
+            ],
+            "dataType": "object",
+            "dataKeys": [
+              "episode"
+            ]
+          },
+          "declared_player_candidate_count": 0,
+          "declared_url_player_candidate_count": 0,
+          "declared_indexed_player_candidate_count": 0,
+          "declared_player_hosts": [],
+          "declared_quality_heights": [],
+          "duration_ms": 415
+        },
+        {
+          "url": "https://api.mkissa.net/api",
+          "response_url": "https://api.mkissa.net/api",
+          "method": "POST",
+          "status": 200,
+          "content_type": "application/json",
+          "challenge": "",
+          "response_shape": {
+            "kind": "json",
+            "top": "object",
+            "keys": [
+              "data"
+            ],
+            "dataType": "object",
+            "dataKeys": [
+              "shows"
+            ]
+          },
+          "declared_player_candidate_count": 0,
+          "declared_url_player_candidate_count": 0,
+          "declared_indexed_player_candidate_count": 0,
+          "declared_player_hosts": [],
+          "declared_quality_heights": [],
+          "duration_ms": 216
+        },
+        {
+          "url": "https://api.allanime.day/api",
+          "response_url": "https://api.allanime.day/api",
+          "method": "POST",
+          "status": 200,
+          "content_type": "application/json",
+          "challenge": "",
+          "response_shape": {
+            "kind": "json",
+            "top": "object",
+            "keys": [
+              "data"
+            ],
+            "dataType": "object",
+            "dataKeys": [
+              "shows"
+            ]
+          },
+          "declared_player_candidate_count": 0,
+          "declared_url_player_candidate_count": 0,
+          "declared_indexed_player_candidate_count": 0,
+          "declared_player_hosts": [],
+          "declared_quality_heights": [],
+          "duration_ms": 185
+        },
+        {
+          "url": "https://api.mkissa.net/api",
+          "response_url": "https://api.mkissa.net/api",
+          "method": "POST",
+          "status": 200,
+          "content_type": "application/json",
+          "challenge": "",
+          "response_shape": {
+            "kind": "json",
+            "top": "object",
+            "keys": [
+              "data"
+            ],
+            "dataType": "object",
+            "dataKeys": [
+              "shows"
+            ]
+          },
+          "declared_player_candidate_count": 0,
+          "declared_url_player_candidate_count": 0,
+          "declared_indexed_player_candidate_count": 0,
+          "declared_player_hosts": [],
+          "declared_quality_heights": [],
+          "duration_ms": 188
+        },
+        {
+          "url": "https://api.allanime.day/api",
+          "response_url": "https://api.allanime.day/api",
+          "method": "POST",
+          "status": 200,
+          "content_type": "application/json",
+          "challenge": "",
+          "response_shape": {
+            "kind": "json",
+            "top": "object",
+            "keys": [
+              "data"
+            ],
+            "dataType": "object",
+            "dataKeys": [
+              "shows"
+            ]
+          },
+          "declared_player_candidate_count": 0,
+          "declared_url_player_candidate_count": 0,
+          "declared_indexed_player_candidate_count": 0,
+          "declared_player_hosts": [],
+          "declared_quality_heights": [],
+          "duration_ms": 182
+        },
+        {
+          "url": "https://api.mkissa.net/api",
+          "response_url": "https://api.mkissa.net/api",
+          "method": "POST",
+          "status": 200,
+          "content_type": "application/json",
+          "challenge": "",
+          "response_shape": {
+            "kind": "json",
+            "top": "object",
+            "keys": [
+              "data"
+            ],
+            "dataType": "object",
+            "dataKeys": [
+              "shows"
+            ]
+          },
+          "declared_player_candidate_count": 0,
+          "declared_url_player_candidate_count": 0,
+          "declared_indexed_player_candidate_count": 0,
+          "declared_player_hosts": [],
+          "declared_quality_heights": [],
+          "duration_ms": 196
+        },
+        {
+          "url": "https://api.allanime.day/api",
+          "response_url": "https://api.allanime.day/api",
+          "method": "POST",
+          "status": 200,
+          "content_type": "application/json",
+          "challenge": "",
+          "response_shape": {
+            "kind": "json",
+            "top": "object",
+            "keys": [
+              "data"
+            ],
+            "dataType": "object",
+            "dataKeys": [
+              "shows"
+            ]
+          },
+          "declared_player_candidate_count": 0,
+          "declared_url_player_candidate_count": 0,
+          "declared_indexed_player_candidate_count": 0,
+          "declared_player_hosts": [],
+          "declared_quality_heights": [],
+          "duration_ms": 186
+        },
+        {
+          "url": "https://api.mkissa.net/api",
+          "response_url": "https://api.mkissa.net/api",
+          "method": "POST",
+          "status": 200,
+          "content_type": "application/json",
+          "challenge": "",
+          "response_shape": {
+            "kind": "json",
+            "top": "object",
+            "keys": [
+              "data"
+            ],
+            "dataType": "object",
+            "dataKeys": [
+              "shows"
+            ]
+          },
+          "declared_player_candidate_count": 0,
+          "declared_url_player_candidate_count": 0,
+          "declared_indexed_player_candidate_count": 0,
+          "declared_player_hosts": [],
+          "declared_quality_heights": [],
+          "duration_ms": 207
+        },
+        {
+          "url": "https://api.allanime.day/api",
+          "response_url": "https://api.allanime.day/api",
+          "method": "POST",
+          "status": 200,
+          "content_type": "application/json",
+          "challenge": "",
+          "response_shape": {
+            "kind": "json",
+            "top": "object",
+            "keys": [
+              "errors",
+              "data"
+            ]
+          },
+          "declared_player_candidate_count": 0,
+          "declared_url_player_candidate_count": 0,
+          "declared_indexed_player_candidate_count": 0,
+          "declared_player_hosts": [],
+          "declared_quality_heights": [],
+          "duration_ms": 181
+        },
+        {
+          "url": "https://ww2.aniwatch.fit/jigoku-sensei-nube-2025-episode-1-english-subbed",
+          "response_url": "https://ww2.aniwatch.fit/jigoku-sensei-nube-2025-episode-1-english-subbed",
+          "method": "GET",
+          "status": 200,
+          "content_type": "text/html",
+          "challenge": "",
+          "response_shape": {
+            "kind": "html",
+            "sampleBytes": 65536,
             "forms": 1,
             "iframes": 0,
             "videos": 0,
             "sources": 0,
-            "scripts": 16,
-            "anchors": 31,
+            "scripts": 31,
+            "anchors": 37,
             "classTokens": [
-              "dropdown-item",
-              "movie-card-format",
-              "nav-item",
-              "nav-link",
-              "sr-only",
-              "dropdown-menu",
-              "space-y-4",
-              "pagination-container",
-              "card-grid",
-              "container",
-              "dark",
-              "fixed",
-              "flex-1",
-              "header",
-              "latest-releases",
-              "latest-releases-header"
+              "clear",
+              "bound",
+              "centernav",
+              "copyright",
+              "footer-az",
+              "footercopyright",
+              "ftaz",
+              "hdl",
+              "logos",
+              "mainheader",
+              "mainholder",
+              "menu",
+              "mm",
+              "mobilelogo",
+              "notf",
+              "search-live"
             ],
             "idTokens": [
-              "back-to-top",
-              "close-mobile-menu",
-              "close-search",
-              "current-year",
-              "logo",
-              "main-nav",
-              "menu-toggle",
-              "mobile-menu-backdrop",
-              "search",
-              "search-backdrop",
-              "search-overlay",
-              "search-toggle"
+              "bookmarks_script-js",
+              "classic-theme-styles-inline-css",
+              "colophon",
+              "content",
+              "darkstyle-css",
+              "footer",
+              "form",
+              "global-styles-inline-css",
+              "jquery-js",
+              "jquery-js-after",
+              "main-menu",
+              "menu-item-17"
             ],
             "classFacts": [
               {
-                "token": "dropdown-item",
-                "count": 12,
-                "tags": [
-                  "a"
-                ],
-                "selfHref": 12,
-                "nestedAnchors": 24,
-                "signals": [
-                  "movie",
-                  "series",
-                  "4k",
-                  "year"
-                ]
-              },
-              {
-                "token": "movie-card-format",
-                "count": 10,
-                "tags": [
-                  "span"
-                ],
-                "selfHref": 0,
-                "nestedAnchors": 24,
-                "signals": [
-                  "movie",
-                  "4k",
-                  "1080p",
-                  "year"
-                ]
-              },
-              {
-                "token": "nav-item",
-                "count": 7,
-                "tags": [
-                  "li"
-                ],
-                "selfHref": 0,
-                "nestedAnchors": 24,
-                "signals": [
-                  "movie",
-                  "series",
-                  "4k"
-                ]
-              },
-              {
-                "token": "nav-link",
-                "count": 7,
-                "tags": [
-                  "a"
-                ],
-                "selfHref": 7,
-                "nestedAnchors": 24,
-                "signals": [
-                  "movie",
-                  "series",
-                  "4k",
-                  "year"
-                ]
-              },
-              {
-                "token": "sr-only",
-                "count": 4,
-                "tags": [
-                  "span"
-                ],
-                "selfHref": 0,
-                "nestedAnchors": 15,
-                "signals": [
-                  "movie",
-                  "series",
-                  "4k",
-                  "season",
-                  "1080p",
-                  "year"
-                ]
-              },
-              {
-                "token": "dropdown-menu",
-                "count": 3,
-                "tags": [
-                  "ul"
-                ],
-                "selfHref": 0,
-                "nestedAnchors": 24,
-                "signals": [
-                  "movie",
-                  "series",
-                  "4k"
-                ]
-              },
-              {
-                "token": "space-y-4",
+                "token": "clear",
                 "count": 3,
                 "tags": [
                   "div"
                 ],
                 "selfHref": 0,
-                "nestedAnchors": 11,
-                "signals": [
-                  "movie",
-                  "year"
-                ]
+                "nestedAnchors": 24,
+                "signals": []
               },
               {
-                "token": "pagination-container",
+                "token": "bound",
                 "count": 2,
                 "tags": [
                   "div"
                 ],
                 "selfHref": 0,
+                "nestedAnchors": 19,
+                "signals": []
+              },
+              {
+                "token": "centernav",
+                "count": 2,
+                "tags": [
+                  "div"
+                ],
+                "selfHref": 0,
+                "nestedAnchors": 19,
+                "signals": []
+              },
+              {
+                "token": "copyright",
+                "count": 1,
+                "tags": [
+                  "div"
+                ],
+                "selfHref": 0,
+                "nestedAnchors": 0,
+                "signals": []
+              },
+              {
+                "token": "footer-az",
+                "count": 1,
+                "tags": [
+                  "div"
+                ],
+                "selfHref": 0,
                 "nestedAnchors": 12,
-                "signals": [
-                  "movie",
-                  "year"
-                ]
+                "signals": []
+              },
+              {
+                "token": "footercopyright",
+                "count": 1,
+                "tags": [
+                  "div"
+                ],
+                "selfHref": 0,
+                "nestedAnchors": 12,
+                "signals": []
+              },
+              {
+                "token": "ftaz",
+                "count": 1,
+                "tags": [
+                  "span"
+                ],
+                "selfHref": 0,
+                "nestedAnchors": 12,
+                "signals": []
+              },
+              {
+                "token": "hdl",
+                "count": 1,
+                "tags": [
+                  "span"
+                ],
+                "selfHref": 0,
+                "nestedAnchors": 7,
+                "signals": []
               }
             ],
             "markers": [
               "json-ld",
-              "download",
+              "player",
               "episode"
             ]
           },
-          "declared_player_candidate_count": 16,
-          "declared_url_player_candidate_count": 16,
+          "declared_player_candidate_count": 47,
+          "declared_url_player_candidate_count": 47,
           "declared_indexed_player_candidate_count": 0,
           "declared_player_hosts": [
-            "4khdhub.one",
-            "fonts.googleapis.com",
-            "fonts.gstatic.com",
-            "hdhub4u.download",
-            "schema.org"
+            "9animes.me.uk",
+            "api.w.org",
+            "gmpg.org",
+            "s.w.org",
+            "schema.org",
+            "static.cloudflareinsights.com",
+            "ww2.aniwatch.fit",
+            "yoast.com"
           ],
-          "declared_quality_heights": [
-            1080,
-            2160
+          "declared_quality_heights": [],
+          "duration_ms": 545
+        },
+        {
+          "url": "https://ww2.aniwatch.fit/jigoku-sensei-nube-2025-episode-1-english-dubbed",
+          "response_url": "https://ww2.aniwatch.fit/jigoku-sensei-nube-2025-episode-1-english-dubbed",
+          "method": "GET",
+          "status": 200,
+          "content_type": "text/html",
+          "challenge": "",
+          "response_shape": {
+            "kind": "html",
+            "sampleBytes": 65536,
+            "forms": 1,
+            "iframes": 0,
+            "videos": 0,
+            "sources": 0,
+            "scripts": 31,
+            "anchors": 37,
+            "classTokens": [
+              "clear",
+              "bound",
+              "centernav",
+              "copyright",
+              "footer-az",
+              "footercopyright",
+              "ftaz",
+              "hdl",
+              "logos",
+              "mainheader",
+              "mainholder",
+              "menu",
+              "mm",
+              "mobilelogo",
+              "notf",
+              "search-live"
+            ],
+            "idTokens": [
+              "bookmarks_script-js",
+              "classic-theme-styles-inline-css",
+              "colophon",
+              "content",
+              "darkstyle-css",
+              "footer",
+              "form",
+              "global-styles-inline-css",
+              "jquery-js",
+              "jquery-js-after",
+              "main-menu",
+              "menu-item-17"
+            ],
+            "classFacts": [
+              {
+                "token": "clear",
+                "count": 3,
+                "tags": [
+                  "div"
+                ],
+                "selfHref": 0,
+                "nestedAnchors": 24,
+                "signals": []
+              },
+              {
+                "token": "bound",
+                "count": 2,
+                "tags": [
+                  "div"
+                ],
+                "selfHref": 0,
+                "nestedAnchors": 19,
+                "signals": []
+              },
+              {
+                "token": "centernav",
+                "count": 2,
+                "tags": [
+                  "div"
+                ],
+                "selfHref": 0,
+                "nestedAnchors": 19,
+                "signals": []
+              },
+              {
+                "token": "copyright",
+                "count": 1,
+                "tags": [
+                  "div"
+                ],
+                "selfHref": 0,
+                "nestedAnchors": 0,
+                "signals": []
+              },
+              {
+                "token": "footer-az",
+                "count": 1,
+                "tags": [
+                  "div"
+                ],
+                "selfHref": 0,
+                "nestedAnchors": 12,
+                "signals": []
+              },
+              {
+                "token": "footercopyright",
+                "count": 1,
+                "tags": [
+                  "div"
+                ],
+                "selfHref": 0,
+                "nestedAnchors": 12,
+                "signals": []
+              },
+              {
+                "token": "ftaz",
+                "count": 1,
+                "tags": [
+                  "span"
+                ],
+                "selfHref": 0,
+                "nestedAnchors": 12,
+                "signals": []
+              },
+              {
+                "token": "hdl",
+                "count": 1,
+                "tags": [
+                  "span"
+                ],
+                "selfHref": 0,
+                "nestedAnchors": 7,
+                "signals": []
+              }
+            ],
+            "markers": [
+              "json-ld",
+              "player",
+              "episode"
+            ]
+          },
+          "declared_player_candidate_count": 47,
+          "declared_url_player_candidate_count": 47,
+          "declared_indexed_player_candidate_count": 0,
+          "declared_player_hosts": [
+            "9animes.me.uk",
+            "api.w.org",
+            "gmpg.org",
+            "s.w.org",
+            "schema.org",
+            "static.cloudflareinsights.com",
+            "ww2.aniwatch.fit",
+            "yoast.com"
           ],
-          "duration_ms": 299
+          "declared_quality_heights": [],
+          "duration_ms": 534
+        },
+        {
+          "url": "https://ww2.aniwatch.fit/jigoku-sensei-nube-episode-1-english-subbed",
+          "response_url": "https://ww2.aniwatch.fit/jigoku-sensei-nube-episode-1-english-subbed",
+          "method": "GET",
+          "status": 200,
+          "content_type": "text/html",
+          "challenge": "",
+          "response_shape": {
+            "kind": "html",
+            "sampleBytes": 65536,
+            "forms": 1,
+            "iframes": 0,
+            "videos": 0,
+            "sources": 0,
+            "scripts": 31,
+            "anchors": 37,
+            "classTokens": [
+              "clear",
+              "bound",
+              "centernav",
+              "copyright",
+              "footer-az",
+              "footercopyright",
+              "ftaz",
+              "hdl",
+              "logos",
+              "mainheader",
+              "mainholder",
+              "menu",
+              "mm",
+              "mobilelogo",
+              "notf",
+              "search-live"
+            ],
+            "idTokens": [
+              "bookmarks_script-js",
+              "classic-theme-styles-inline-css",
+              "colophon",
+              "content",
+              "darkstyle-css",
+              "footer",
+              "form",
+              "global-styles-inline-css",
+              "jquery-js",
+              "jquery-js-after",
+              "main-menu",
+              "menu-item-17"
+            ],
+            "classFacts": [
+              {
+                "token": "clear",
+                "count": 3,
+                "tags": [
+                  "div"
+                ],
+                "selfHref": 0,
+                "nestedAnchors": 24,
+                "signals": []
+              },
+              {
+                "token": "bound",
+                "count": 2,
+                "tags": [
+                  "div"
+                ],
+                "selfHref": 0,
+                "nestedAnchors": 19,
+                "signals": []
+              },
+              {
+                "token": "centernav",
+                "count": 2,
+                "tags": [
+                  "div"
+                ],
+                "selfHref": 0,
+                "nestedAnchors": 19,
+                "signals": []
+              },
+              {
+                "token": "copyright",
+                "count": 1,
+                "tags": [
+                  "div"
+                ],
+                "selfHref": 0,
+                "nestedAnchors": 0,
+                "signals": []
+              },
+              {
+                "token": "footer-az",
+                "count": 1,
+                "tags": [
+                  "div"
+                ],
+                "selfHref": 0,
+                "nestedAnchors": 12,
+                "signals": []
+              },
+              {
+                "token": "footercopyright",
+                "count": 1,
+                "tags": [
+                  "div"
+                ],
+                "selfHref": 0,
+                "nestedAnchors": 12,
+                "signals": []
+              },
+              {
+                "token": "ftaz",
+                "count": 1,
+                "tags": [
+                  "span"
+                ],
+                "selfHref": 0,
+                "nestedAnchors": 12,
+                "signals": []
+              },
+              {
+                "token": "hdl",
+                "count": 1,
+                "tags": [
+                  "span"
+                ],
+                "selfHref": 0,
+                "nestedAnchors": 7,
+                "signals": []
+              }
+            ],
+            "markers": [
+              "json-ld",
+              "player",
+              "episode"
+            ]
+          },
+          "declared_player_candidate_count": 47,
+          "declared_url_player_candidate_count": 47,
+          "declared_indexed_player_candidate_count": 0,
+          "declared_player_hosts": [
+            "9animes.me.uk",
+            "api.w.org",
+            "gmpg.org",
+            "s.w.org",
+            "schema.org",
+            "static.cloudflareinsights.com",
+            "ww2.aniwatch.fit",
+            "yoast.com"
+          ],
+          "declared_quality_heights": [],
+          "duration_ms": 560
+        },
+        {
+          "url": "https://ww2.aniwatch.fit/jigoku-sensei-nube-episode-1-english-dubbed",
+          "response_url": "https://ww2.aniwatch.fit/jigoku-sensei-nube-episode-1-english-dubbed",
+          "method": "GET",
+          "status": 200,
+          "content_type": "text/html",
+          "challenge": "",
+          "response_shape": {
+            "kind": "html",
+            "sampleBytes": 65536,
+            "forms": 1,
+            "iframes": 0,
+            "videos": 0,
+            "sources": 0,
+            "scripts": 31,
+            "anchors": 37,
+            "classTokens": [
+              "clear",
+              "bound",
+              "centernav",
+              "copyright",
+              "footer-az",
+              "footercopyright",
+              "ftaz",
+              "hdl",
+              "logos",
+              "mainheader",
+              "mainholder",
+              "menu",
+              "mm",
+              "mobilelogo",
+              "notf",
+              "search-live"
+            ],
+            "idTokens": [
+              "bookmarks_script-js",
+              "classic-theme-styles-inline-css",
+              "colophon",
+              "content",
+              "darkstyle-css",
+              "footer",
+              "form",
+              "global-styles-inline-css",
+              "jquery-js",
+              "jquery-js-after",
+              "main-menu",
+              "menu-item-17"
+            ],
+            "classFacts": [
+              {
+                "token": "clear",
+                "count": 3,
+                "tags": [
+                  "div"
+                ],
+                "selfHref": 0,
+                "nestedAnchors": 24,
+                "signals": []
+              },
+              {
+                "token": "bound",
+                "count": 2,
+                "tags": [
+                  "div"
+                ],
+                "selfHref": 0,
+                "nestedAnchors": 19,
+                "signals": []
+              },
+              {
+                "token": "centernav",
+                "count": 2,
+                "tags": [
+                  "div"
+                ],
+                "selfHref": 0,
+                "nestedAnchors": 19,
+                "signals": []
+              },
+              {
+                "token": "copyright",
+                "count": 1,
+                "tags": [
+                  "div"
+                ],
+                "selfHref": 0,
+                "nestedAnchors": 0,
+                "signals": []
+              },
+              {
+                "token": "footer-az",
+                "count": 1,
+                "tags": [
+                  "div"
+                ],
+                "selfHref": 0,
+                "nestedAnchors": 12,
+                "signals": []
+              },
+              {
+                "token": "footercopyright",
+                "count": 1,
+                "tags": [
+                  "div"
+                ],
+                "selfHref": 0,
+                "nestedAnchors": 12,
+                "signals": []
+              },
+              {
+                "token": "ftaz",
+                "count": 1,
+                "tags": [
+                  "span"
+                ],
+                "selfHref": 0,
+                "nestedAnchors": 12,
+                "signals": []
+              },
+              {
+                "token": "hdl",
+                "count": 1,
+                "tags": [
+                  "span"
+                ],
+                "selfHref": 0,
+                "nestedAnchors": 7,
+                "signals": []
+              }
+            ],
+            "markers": [
+              "json-ld",
+              "player",
+              "episode"
+            ]
+          },
+          "declared_player_candidate_count": 47,
+          "declared_url_player_candidate_count": 47,
+          "declared_indexed_player_candidate_count": 0,
+          "declared_player_hosts": [
+            "9animes.me.uk",
+            "api.w.org",
+            "gmpg.org",
+            "s.w.org",
+            "schema.org",
+            "static.cloudflareinsights.com",
+            "ww2.aniwatch.fit",
+            "yoast.com"
+          ],
+          "declared_quality_heights": [],
+          "duration_ms": 536
+        },
+        {
+          "url": "https://ww2.aniwatch.fit/hell-teacher-nube-episode-1-english-subbed",
+          "response_url": "https://ww2.aniwatch.fit/hell-teacher-nube-episode-1-english-subbed",
+          "method": "GET",
+          "status": 200,
+          "content_type": "text/html",
+          "challenge": "",
+          "response_shape": {
+            "kind": "html",
+            "sampleBytes": 65536,
+            "forms": 1,
+            "iframes": 0,
+            "videos": 0,
+            "sources": 0,
+            "scripts": 31,
+            "anchors": 37,
+            "classTokens": [
+              "clear",
+              "bound",
+              "centernav",
+              "copyright",
+              "footer-az",
+              "footercopyright",
+              "ftaz",
+              "hdl",
+              "logos",
+              "mainheader",
+              "mainholder",
+              "menu",
+              "mm",
+              "mobilelogo",
+              "notf",
+              "search-live"
+            ],
+            "idTokens": [
+              "bookmarks_script-js",
+              "classic-theme-styles-inline-css",
+              "colophon",
+              "content",
+              "darkstyle-css",
+              "footer",
+              "form",
+              "global-styles-inline-css",
+              "jquery-js",
+              "jquery-js-after",
+              "main-menu",
+              "menu-item-17"
+            ],
+            "classFacts": [
+              {
+                "token": "clear",
+                "count": 3,
+                "tags": [
+                  "div"
+                ],
+                "selfHref": 0,
+                "nestedAnchors": 24,
+                "signals": []
+              },
+              {
+                "token": "bound",
+                "count": 2,
+                "tags": [
+                  "div"
+                ],
+                "selfHref": 0,
+                "nestedAnchors": 19,
+                "signals": []
+              },
+              {
+                "token": "centernav",
+                "count": 2,
+                "tags": [
+                  "div"
+                ],
+                "selfHref": 0,
+                "nestedAnchors": 19,
+                "signals": []
+              },
+              {
+                "token": "copyright",
+                "count": 1,
+                "tags": [
+                  "div"
+                ],
+                "selfHref": 0,
+                "nestedAnchors": 0,
+                "signals": []
+              },
+              {
+                "token": "footer-az",
+                "count": 1,
+                "tags": [
+                  "div"
+                ],
+                "selfHref": 0,
+                "nestedAnchors": 12,
+                "signals": []
+              },
+              {
+                "token": "footercopyright",
+                "count": 1,
+                "tags": [
+                  "div"
+                ],
+                "selfHref": 0,
+                "nestedAnchors": 12,
+                "signals": []
+              },
+              {
+                "token": "ftaz",
+                "count": 1,
+                "tags": [
+                  "span"
+                ],
+                "selfHref": 0,
+                "nestedAnchors": 12,
+                "signals": []
+              },
+              {
+                "token": "hdl",
+                "count": 1,
+                "tags": [
+                  "span"
+                ],
+                "selfHref": 0,
+                "nestedAnchors": 7,
+                "signals": []
+              }
+            ],
+            "markers": [
+              "json-ld",
+              "player",
+              "episode"
+            ]
+          },
+          "declared_player_candidate_count": 47,
+          "declared_url_player_candidate_count": 47,
+          "declared_indexed_player_candidate_count": 0,
+          "declared_player_hosts": [
+            "9animes.me.uk",
+            "api.w.org",
+            "gmpg.org",
+            "s.w.org",
+            "schema.org",
+            "static.cloudflareinsights.com",
+            "ww2.aniwatch.fit",
+            "yoast.com"
+          ],
+          "declared_quality_heights": [],
+          "duration_ms": 534
+        },
+        {
+          "url": "https://ww2.aniwatch.fit/hell-teacher-nube-episode-1-english-dubbed",
+          "response_url": "https://ww2.aniwatch.fit/hell-teacher-nube-episode-1-english-dubbed",
+          "method": "GET",
+          "status": 200,
+          "content_type": "text/html",
+          "challenge": "",
+          "response_shape": {
+            "kind": "html",
+            "sampleBytes": 65536,
+            "forms": 1,
+            "iframes": 0,
+            "videos": 0,
+            "sources": 0,
+            "scripts": 31,
+            "anchors": 37,
+            "classTokens": [
+              "clear",
+              "bound",
+              "centernav",
+              "copyright",
+              "footer-az",
+              "footercopyright",
+              "ftaz",
+              "hdl",
+              "logos",
+              "mainheader",
+              "mainholder",
+              "menu",
+              "mm",
+              "mobilelogo",
+              "notf",
+              "search-live"
+            ],
+            "idTokens": [
+              "bookmarks_script-js",
+              "classic-theme-styles-inline-css",
+              "colophon",
+              "content",
+              "darkstyle-css",
+              "footer",
+              "form",
+              "global-styles-inline-css",
+              "jquery-js",
+              "jquery-js-after",
+              "main-menu",
+              "menu-item-17"
+            ],
+            "classFacts": [
+              {
+                "token": "clear",
+                "count": 3,
+                "tags": [
+                  "div"
+                ],
+                "selfHref": 0,
+                "nestedAnchors": 24,
+                "signals": []
+              },
+              {
+                "token": "bound",
+                "count": 2,
+                "tags": [
+                  "div"
+                ],
+                "selfHref": 0,
+                "nestedAnchors": 19,
+                "signals": []
+              },
+              {
+                "token": "centernav",
+                "count": 2,
+                "tags": [
+                  "div"
+                ],
+                "selfHref": 0,
+                "nestedAnchors": 19,
+                "signals": []
+              },
+              {
+                "token": "copyright",
+                "count": 1,
+                "tags": [
+                  "div"
+                ],
+                "selfHref": 0,
+                "nestedAnchors": 0,
+                "signals": []
+              },
+              {
+                "token": "footer-az",
+                "count": 1,
+                "tags": [
+                  "div"
+                ],
+                "selfHref": 0,
+                "nestedAnchors": 12,
+                "signals": []
+              },
+              {
+                "token": "footercopyright",
+                "count": 1,
+                "tags": [
+                  "div"
+                ],
+                "selfHref": 0,
+                "nestedAnchors": 12,
+                "signals": []
+              },
+              {
+                "token": "ftaz",
+                "count": 1,
+                "tags": [
+                  "span"
+                ],
+                "selfHref": 0,
+                "nestedAnchors": 12,
+                "signals": []
+              },
+              {
+                "token": "hdl",
+                "count": 1,
+                "tags": [
+                  "span"
+                ],
+                "selfHref": 0,
+                "nestedAnchors": 7,
+                "signals": []
+              }
+            ],
+            "markers": [
+              "json-ld",
+              "player",
+              "episode"
+            ]
+          },
+          "declared_player_candidate_count": 47,
+          "declared_url_player_candidate_count": 47,
+          "declared_indexed_player_candidate_count": 0,
+          "declared_player_hosts": [
+            "9animes.me.uk",
+            "api.w.org",
+            "gmpg.org",
+            "s.w.org",
+            "schema.org",
+            "static.cloudflareinsights.com",
+            "ww2.aniwatch.fit",
+            "yoast.com"
+          ],
+          "declared_quality_heights": [],
+          "duration_ms": 582
+        },
+        {
+          "url": "https://ww2.aniwatch.fit/hellteacher-episode-1-english-subbed",
+          "response_url": "https://ww2.aniwatch.fit/hellteacher-episode-1-english-subbed",
+          "method": "GET",
+          "status": 200,
+          "content_type": "text/html",
+          "challenge": "",
+          "response_shape": {
+            "kind": "html",
+            "sampleBytes": 65536,
+            "forms": 1,
+            "iframes": 0,
+            "videos": 0,
+            "sources": 0,
+            "scripts": 31,
+            "anchors": 37,
+            "classTokens": [
+              "clear",
+              "bound",
+              "centernav",
+              "copyright",
+              "footer-az",
+              "footercopyright",
+              "ftaz",
+              "hdl",
+              "logos",
+              "mainheader",
+              "mainholder",
+              "menu",
+              "mm",
+              "mobilelogo",
+              "notf",
+              "search-live"
+            ],
+            "idTokens": [
+              "bookmarks_script-js",
+              "classic-theme-styles-inline-css",
+              "colophon",
+              "content",
+              "darkstyle-css",
+              "footer",
+              "form",
+              "global-styles-inline-css",
+              "jquery-js",
+              "jquery-js-after",
+              "main-menu",
+              "menu-item-17"
+            ],
+            "classFacts": [
+              {
+                "token": "clear",
+                "count": 3,
+                "tags": [
+                  "div"
+                ],
+                "selfHref": 0,
+                "nestedAnchors": 24,
+                "signals": []
+              },
+              {
+                "token": "bound",
+                "count": 2,
+                "tags": [
+                  "div"
+                ],
+                "selfHref": 0,
+                "nestedAnchors": 19,
+                "signals": []
+              },
+              {
+                "token": "centernav",
+                "count": 2,
+                "tags": [
+                  "div"
+                ],
+                "selfHref": 0,
+                "nestedAnchors": 19,
+                "signals": []
+              },
+              {
+                "token": "copyright",
+                "count": 1,
+                "tags": [
+                  "div"
+                ],
+                "selfHref": 0,
+                "nestedAnchors": 0,
+                "signals": []
+              },
+              {
+                "token": "footer-az",
+                "count": 1,
+                "tags": [
+                  "div"
+                ],
+                "selfHref": 0,
+                "nestedAnchors": 12,
+                "signals": []
+              },
+              {
+                "token": "footercopyright",
+                "count": 1,
+                "tags": [
+                  "div"
+                ],
+                "selfHref": 0,
+                "nestedAnchors": 12,
+                "signals": []
+              },
+              {
+                "token": "ftaz",
+                "count": 1,
+                "tags": [
+                  "span"
+                ],
+                "selfHref": 0,
+                "nestedAnchors": 12,
+                "signals": []
+              },
+              {
+                "token": "hdl",
+                "count": 1,
+                "tags": [
+                  "span"
+                ],
+                "selfHref": 0,
+                "nestedAnchors": 7,
+                "signals": []
+              }
+            ],
+            "markers": [
+              "json-ld",
+              "player",
+              "episode"
+            ]
+          },
+          "declared_player_candidate_count": 47,
+          "declared_url_player_candidate_count": 47,
+          "declared_indexed_player_candidate_count": 0,
+          "declared_player_hosts": [
+            "9animes.me.uk",
+            "api.w.org",
+            "gmpg.org",
+            "s.w.org",
+            "schema.org",
+            "static.cloudflareinsights.com",
+            "ww2.aniwatch.fit",
+            "yoast.com"
+          ],
+          "declared_quality_heights": [],
+          "duration_ms": 551
+        },
+        {
+          "url": "https://ww2.aniwatch.fit/hellteacher-episode-1-english-dubbed",
+          "response_url": "https://ww2.aniwatch.fit/hellteacher-episode-1-english-dubbed",
+          "method": "GET",
+          "status": 200,
+          "content_type": "text/html",
+          "challenge": "",
+          "response_shape": {
+            "kind": "html",
+            "sampleBytes": 65536,
+            "forms": 1,
+            "iframes": 0,
+            "videos": 0,
+            "sources": 0,
+            "scripts": 31,
+            "anchors": 37,
+            "classTokens": [
+              "clear",
+              "bound",
+              "centernav",
+              "copyright",
+              "footer-az",
+              "footercopyright",
+              "ftaz",
+              "hdl",
+              "logos",
+              "mainheader",
+              "mainholder",
+              "menu",
+              "mm",
+              "mobilelogo",
+              "notf",
+              "search-live"
+            ],
+            "idTokens": [
+              "bookmarks_script-js",
+              "classic-theme-styles-inline-css",
+              "colophon",
+              "content",
+              "darkstyle-css",
+              "footer",
+              "form",
+              "global-styles-inline-css",
+              "jquery-js",
+              "jquery-js-after",
+              "main-menu",
+              "menu-item-17"
+            ],
+            "classFacts": [
+              {
+                "token": "clear",
+                "count": 3,
+                "tags": [
+                  "div"
+                ],
+                "selfHref": 0,
+                "nestedAnchors": 24,
+                "signals": []
+              },
+              {
+                "token": "bound",
+                "count": 2,
+                "tags": [
+                  "div"
+                ],
+                "selfHref": 0,
+                "nestedAnchors": 19,
+                "signals": []
+              },
+              {
+                "token": "centernav",
+                "count": 2,
+                "tags": [
+                  "div"
+                ],
+                "selfHref": 0,
+                "nestedAnchors": 19,
+                "signals": []
+              },
+              {
+                "token": "copyright",
+                "count": 1,
+                "tags": [
+                  "div"
+                ],
+                "selfHref": 0,
+                "nestedAnchors": 0,
+                "signals": []
+              },
+              {
+                "token": "footer-az",
+                "count": 1,
+                "tags": [
+                  "div"
+                ],
+                "selfHref": 0,
+                "nestedAnchors": 12,
+                "signals": []
+              },
+              {
+                "token": "footercopyright",
+                "count": 1,
+                "tags": [
+                  "div"
+                ],
+                "selfHref": 0,
+                "nestedAnchors": 12,
+                "signals": []
+              },
+              {
+                "token": "ftaz",
+                "count": 1,
+                "tags": [
+                  "span"
+                ],
+                "selfHref": 0,
+                "nestedAnchors": 12,
+                "signals": []
+              },
+              {
+                "token": "hdl",
+                "count": 1,
+                "tags": [
+                  "span"
+                ],
+                "selfHref": 0,
+                "nestedAnchors": 7,
+                "signals": []
+              }
+            ],
+            "markers": [
+              "json-ld",
+              "player",
+              "episode"
+            ]
+          },
+          "declared_player_candidate_count": 47,
+          "declared_url_player_candidate_count": 47,
+          "declared_indexed_player_candidate_count": 0,
+          "declared_player_hosts": [
+            "9animes.me.uk",
+            "api.w.org",
+            "gmpg.org",
+            "s.w.org",
+            "schema.org",
+            "static.cloudflareinsights.com",
+            "ww2.aniwatch.fit",
+            "yoast.com"
+          ],
+          "declared_quality_heights": [],
+          "duration_ms": 541
         }
       ],
       "debug_provider_value_trace_v18": null,
@@ -754,34 +1669,36 @@
       "verified": 0,
       "contradictions": 0,
       "identity_safe": true,
-      "duration_ms": 913,
-      "sample_count": 2,
-      "fanout_fixture_title": "Breaking Bad",
+      "duration_ms": 27303,
+      "sample_count": 4,
+      "fanout_fixture_title": "One Piece",
       "sample_titles": [
-        "Breaking Bad",
-        "Revenant"
+        "One Piece",
+        "Failure Frame: I Became the Strongest and Annihilated Everything with Low-Level Spells",
+        "Jujutsu Kaisen",
+        "Hell Teacher: Jigoku Sensei Nube"
       ],
       "adaptive_rotated": true,
       "samples": [
         {
-          "fixture_title": "Breaking Bad",
+          "fixture_title": "One Piece",
           "fixture": {
-            "tmdbId": "1396",
-            "mediaType": "tv",
-            "category": "tv",
-            "title": "Breaking Bad",
-            "year": 2008,
+            "tmdbId": "37854",
+            "mediaType": "anime",
+            "category": "anime",
+            "title": "One Piece",
+            "year": 1999,
             "season": 1,
             "episode": 1
           },
           "status": "no_streams",
           "debug_stage": "provider_network_zero_result",
-          "debug_progress_stage": "lookup_only",
+          "debug_progress_stage": "chain_reached",
           "raw": 0,
           "playable": 0,
           "verified": 0,
           "contradictions": 0,
-          "duration_ms": 398,
+          "duration_ms": 6393,
           "streams_returned": 0,
           "announced_player_candidates": 0,
           "announced_variant_candidates": 0,
@@ -792,24 +1709,80 @@
           "variant_fanout_state": "not-observed"
         },
         {
-          "fixture_title": "Revenant",
+          "fixture_title": "Failure Frame: I Became the Strongest and Annihilated Everything with Low-Level Spells",
           "fixture": {
-            "tmdbId": "210702",
-            "mediaType": "tv",
-            "category": "tv",
-            "title": "Revenant",
-            "year": 2023,
+            "tmdbId": "245285",
+            "mediaType": "anime",
+            "category": "anime",
+            "title": "Failure Frame: I Became the Strongest and Annihilated Everything with Low-Level Spells",
+            "year": 2024,
             "season": 1,
             "episode": 1
           },
           "status": "no_streams",
           "debug_stage": "provider_network_zero_result",
-          "debug_progress_stage": "lookup_only",
+          "debug_progress_stage": "chain_reached",
           "raw": 0,
           "playable": 0,
           "verified": 0,
           "contradictions": 0,
-          "duration_ms": 398,
+          "duration_ms": 8315,
+          "streams_returned": 0,
+          "announced_player_candidates": 0,
+          "announced_variant_candidates": 0,
+          "announced_player_hosts": [],
+          "announced_quality_heights": [],
+          "explored_player_requests": 0,
+          "explored_player_hosts": [],
+          "variant_fanout_state": "not-observed"
+        },
+        {
+          "fixture_title": "Jujutsu Kaisen",
+          "fixture": {
+            "tmdbId": "95479",
+            "mediaType": "anime",
+            "category": "anime",
+            "title": "Jujutsu Kaisen",
+            "year": 2020,
+            "season": 1,
+            "episode": 1
+          },
+          "status": "no_streams",
+          "debug_stage": "provider_network_zero_result",
+          "debug_progress_stage": "chain_reached",
+          "raw": 0,
+          "playable": 0,
+          "verified": 0,
+          "contradictions": 0,
+          "duration_ms": 5660,
+          "streams_returned": 0,
+          "announced_player_candidates": 0,
+          "announced_variant_candidates": 0,
+          "announced_player_hosts": [],
+          "announced_quality_heights": [],
+          "explored_player_requests": 0,
+          "explored_player_hosts": [],
+          "variant_fanout_state": "not-observed"
+        },
+        {
+          "fixture_title": "Hell Teacher: Jigoku Sensei Nube",
+          "fixture": {
+            "tmdbId": "259544",
+            "mediaType": "anime",
+            "category": "anime",
+            "title": "Hell Teacher: Jigoku Sensei Nube",
+            "year": 2025,
+            "season": 1,
+            "episode": 1
+          },
+          "status": "no_streams",
+          "debug_stage": "provider_network_zero_result",
+          "debug_progress_stage": "chain_reached",
+          "raw": 0,
+          "playable": 0,
+          "verified": 0,
+          "contradictions": 0,
+          "duration_ms": 6707,
           "streams_returned": 0,
           "announced_player_candidates": 0,
           "announced_variant_candidates": 0,
