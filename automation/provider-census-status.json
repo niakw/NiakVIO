@@ -1,7 +1,7 @@
 {
   "schemaVersion": 3,
-  "runId": "38103805887",
-  "triggerSha": "1a43c915ae4df5ccc711f89e038b18f4e1e4f86f",
+  "runId": "38105666998",
+  "triggerSha": "e4e268c377a6a130f71fae297152df4f387beada",
   "providers": [
     {
       "provider": "4khdhub",
@@ -151,11 +151,11 @@
         "16 live routes / anime"
       ],
       "latestLaneVerdicts": [
-        "anime=no_streams/provider_network_exception"
+        "anime=timeout"
       ],
-      "dominantIssue": "provider_network_exception",
+      "dominantIssue": "timeout",
       "searchProgress": [
-        "anime: 2 works tested / 0 retained misses"
+        "anime: 3 works tested / 0 retained misses"
       ],
       "evidenceDepth": [
         "anime=none"
@@ -284,7 +284,7 @@
       ],
       "dominantIssue": "timeout",
       "searchProgress": [
-        "anime: 3 works tested / 0 retained misses"
+        "anime: 2 works tested / 0 retained misses"
       ],
       "evidenceDepth": [
         "anime=none"
@@ -2245,8 +2245,8 @@
   "harnessQueue": [],
   "targetedTransportBlockedQueue": [],
   "clientTransportGapQueue": [],
-  "harnessEvidenceRunId": "38103805887-sharded-waf",
-  "harnessEvidenceSha": "1a43c915ae4df5ccc711f89e038b18f4e1e4f86f",
+  "harnessEvidenceRunId": "38105666998-sharded-waf",
+  "harnessEvidenceSha": "e4e268c377a6a130f71fae297152df4f387beada",
   "authorityRefreshedProviders": [],
   "harnessTransportUpdatedProviders": [],
   "networkDifferentialUpdatedProviders": [],
@@ -2658,20 +2658,5 @@
         "moviesmod"
       ]
     }
-  },
-  "lastRepairAttempt": {
-    "runId": "38105227153",
-    "sourceCensusRunId": "38103805887",
-    "mode": "force",
-    "selectedProviders": [],
-    "candidateProviders": [],
-    "validatedProviders": [],
-    "acceptedRepairCount": 0,
-    "deferredToLearningSlotProviders": [],
-    "noProgressReason": "canonical-skipped",
-    "timeBudgetExhausted": false,
-    "canonicalOutcome": "skipped",
-    "candidateGateOutcome": "skipped",
-    "publicationAllowed": false
   }
 }
