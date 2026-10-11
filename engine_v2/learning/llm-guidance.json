@@ -1,0 +1,225 @@
+{
+  "brainLlmSha": "5ea1f33529fe0505b5460c5c6db94e0e1a777afe",
+  "directMutationAuthority": false,
+  "minConfidence": 0.8,
+  "proofAuthority": false,
+  "providerCount": 5,
+  "publicationAuthority": false,
+  "rawMutationContentRetained": false,
+  "rows": [
+    {
+      "confidence": 0.99,
+      "experiment": {
+        "aliasSearch": false,
+        "documentRequestMining": false,
+        "maxDepth": 3,
+        "maxEmbeds": 10,
+        "maxPages": 10,
+        "maxRecipePasses": 1,
+        "recipePolicy": "current_only",
+        "responseSalvage": false,
+        "roleOrder": [
+          "player"
+        ],
+        "routePolicy": "owned_only",
+        "sessionBootstrap": false,
+        "terminalOnly": false
+      },
+      "experimentFingerprint": "268d6b5a1f989c82cdf97a4fe360120d39a77799a035167a8539dca4d9ea97ed",
+      "failureClass": "variant-coverage-gap",
+      "priorOnly": true,
+      "profile": "player_media_extractor_v1",
+      "providerId": "coflix",
+      "strategy": "enumerate-stream-variants-before-global-cap",
+      "targetLayer": "provider"
+    },
+    {
+      "confidence": 0.99,
+      "experiment": {
+        "aliasSearch": false,
+        "documentRequestMining": false,
+        "maxDepth": 5,
+        "maxEmbeds": 10,
+        "maxPages": 10,
+        "maxRecipePasses": 1,
+        "recipePolicy": "current_only",
+        "responseSalvage": false,
+        "roleOrder": [
+          "source"
+        ],
+        "routePolicy": "owned_only",
+        "sessionBootstrap": false,
+        "terminalOnly": false
+      },
+      "experimentFingerprint": "4f5899f3d05a4ba2a81708830e2ef65de482c59005958eb9aa895a91408ea14b",
+      "failureClass": "variant-coverage-gap",
+      "priorOnly": true,
+      "profile": "player_media_extractor_v1",
+      "providerId": "hindmoviez",
+      "strategy": "enumerate-stream-variants-before-global-cap",
+      "targetLayer": "provider"
+    },
+    {
+      "confidence": 0.96,
+      "experiment": {
+        "aliasSearch": false,
+        "documentRequestMining": false,
+        "maxDepth": 5,
+        "maxEmbeds": 24,
+        "maxPages": 24,
+        "maxRecipePasses": 4,
+        "recipePolicy": "current_plus_provider_peer",
+        "responseSalvage": false,
+        "roleOrder": [
+          "search",
+          "detail",
+          "episode",
+          "player",
+          "source",
+          "api",
+          "other"
+        ],
+        "routePolicy": "owned_plus_peer",
+        "sessionBootstrap": false,
+        "terminalOnly": false
+      },
+      "experimentFingerprint": "16ad894fc3c03be89539c14fb749def9501831b455f58f6f6f475b20acd36ad6",
+      "failureClass": "route-proven-gap",
+      "priorOnly": true,
+      "profile": "proven_route_terminal_traversal_v1",
+      "providerId": "uhdmovies",
+      "strategy": "search-detail-player-terminal-traversal",
+      "targetLayer": "provider"
+    },
+    {
+      "confidence": 0.96,
+      "experiment": {
+        "aliasSearch": false,
+        "documentRequestMining": false,
+        "maxDepth": 6,
+        "maxEmbeds": 24,
+        "maxPages": 30,
+        "maxRecipePasses": 4,
+        "recipePolicy": "current_plus_provider_peer",
+        "responseSalvage": true,
+        "roleOrder": [
+          "search",
+          "detail",
+          "episode",
+          "player",
+          "source",
+          "api",
+          "other"
+        ],
+        "routePolicy": "owned_plus_peer_generic",
+        "sessionBootstrap": true,
+        "terminalOnly": false
+      },
+      "experimentFingerprint": "6d5994dc0f7b38e76ca801eb2f507e4da75067220a7656e2b87b7793edd098fd",
+      "failureClass": "route-proven-gap",
+      "priorOnly": true,
+      "profile": "proven_route_terminal_traversal_v1",
+      "providerId": "animekai",
+      "strategy": "search-detail-player-terminal-traversal",
+      "targetLayer": "provider"
+    },
+    {
+      "confidence": 0.86,
+      "experiment": {
+        "aliasSearch": false,
+        "documentRequestMining": true,
+        "maxDepth": 4,
+        "maxEmbeds": 16,
+        "maxPages": 18,
+        "maxRecipePasses": 5,
+        "recipePolicy": "current_only",
+        "responseSalvage": true,
+        "roleOrder": [
+          "api",
+          "detail",
+          "search",
+          "player",
+          "source",
+          "episode",
+          "other"
+        ],
+        "routePolicy": "owned_plus_peer",
+        "sessionBootstrap": true,
+        "terminalOnly": false
+      },
+      "experimentFingerprint": "068eee0766c99b2b8208302406b15c8225c1b2a19f058d4f4ef44cbb183b73d4",
+      "failureClass": "provider_transport_gap",
+      "priorOnly": true,
+      "profile": "search_contract_inference_v1",
+      "providerId": "allwish",
+      "strategy": "meta-gap-search-contract-fallback",
+      "targetLayer": "provider"
+    },
+    {
+      "confidence": 0.86,
+      "experiment": {
+        "aliasSearch": false,
+        "documentRequestMining": true,
+        "maxDepth": 4,
+        "maxEmbeds": 16,
+        "maxPages": 18,
+        "maxRecipePasses": 5,
+        "recipePolicy": "current_only",
+        "responseSalvage": true,
+        "roleOrder": [
+          "api",
+          "detail",
+          "search",
+          "player",
+          "source",
+          "episode",
+          "other"
+        ],
+        "routePolicy": "owned_plus_peer_generic",
+        "sessionBootstrap": true,
+        "terminalOnly": false
+      },
+      "experimentFingerprint": "b0fa665228e88372b99033308606da03023d677a4f908e0561325c0eddbecd12",
+      "failureClass": "provider_transport_gap",
+      "priorOnly": true,
+      "profile": "provider_origin_failover_v1",
+      "providerId": "animekai",
+      "strategy": "meta-gap-provider-transport-composition",
+      "targetLayer": "provider"
+    },
+    {
+      "confidence": 0.86,
+      "experiment": {
+        "aliasSearch": true,
+        "documentRequestMining": true,
+        "maxDepth": 5,
+        "maxEmbeds": 20,
+        "maxPages": 32,
+        "maxRecipePasses": 5,
+        "recipePolicy": "current_only",
+        "responseSalvage": true,
+        "roleOrder": [
+          "search",
+          "api",
+          "detail",
+          "player",
+          "source",
+          "episode",
+          "other"
+        ],
+        "routePolicy": "owned_plus_peer",
+        "sessionBootstrap": false,
+        "terminalOnly": false
+      },
+      "experimentFingerprint": "f2993f0666429e5fccf7fe09696dbc4ca9393bdfc70c5d789f99a44a4c18449a",
+      "failureClass": "search_gap",
+      "priorOnly": true,
+      "profile": "search_contract_inference_v1",
+      "providerId": "uhdmovies",
+      "strategy": "meta-gap-search-contract-composition",
+      "targetLayer": "provider"
+    }
+  ],
+  "schemaVersion": 2,
+  "sourceSha": "cb8241e502a6e65798f6248b116bc2b9a411bdf7"
+}
