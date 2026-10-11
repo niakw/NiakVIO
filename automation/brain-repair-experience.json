@@ -4249,7 +4249,7 @@
     "mallumv": {
       "domainMemory": true,
       "evidenceDepth": [
-        "movie=none"
+        "movie=chain_reached"
       ],
       "hasApiRecipe": false,
       "hasProviderValuePlan": false,
@@ -4330,7 +4330,7 @@
         "/confirm/{id}/{fileId}/{slug}.xhtml",
         "/internal/{id}/{fileId}/{slug}.xhtml"
       ],
-      "status": "ROUTE PROVEN",
+      "status": "CHAIN REACHED",
       "strategy": "html_scraper"
     },
     "moviebox": {
@@ -8149,8 +8149,8 @@
     "requiresDeepValidation": true
   },
   "schemaVersion": 2,
-  "sourceRunId": "38159622881",
-  "sourceSha": "c89a83f5d9630416d3c7ce747129a2466f56fbed",
+  "sourceRunId": "38161764806",
+  "sourceSha": "9acaeb629fdbc9f73fb57b7152dfa59543c89abd",
   "strategyPatterns": {
     "api_stream_resolver": {
       "commonRequestRecipes": [],
@@ -8162,17 +8162,17 @@
       "routeFamilies": [
         {
           "providerSupport": 1,
-          "role": "detail",
-          "supportRatio": 1.0
-        },
-        {
-          "providerSupport": 1,
           "role": "search",
           "supportRatio": 1.0
         },
         {
           "providerSupport": 1,
           "role": "other",
+          "supportRatio": 1.0
+        },
+        {
+          "providerSupport": 1,
+          "role": "detail",
           "supportRatio": 1.0
         }
       ]
@@ -8270,12 +8270,12 @@
         },
         {
           "providerSupport": 3,
-          "role": "detail",
+          "role": "player",
           "supportRatio": 0.5
         },
         {
           "providerSupport": 3,
-          "role": "player",
+          "role": "detail",
           "supportRatio": 0.5
         },
         {
@@ -8463,12 +8463,12 @@
       "routeFamilies": [
         {
           "providerSupport": 1,
-          "role": "episode",
+          "role": "search",
           "supportRatio": 1.0
         },
         {
           "providerSupport": 1,
-          "role": "search",
+          "role": "episode",
           "supportRatio": 1.0
         },
         {
