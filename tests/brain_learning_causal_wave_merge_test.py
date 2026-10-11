@@ -76,4 +76,30 @@ wave_assignment = source.index("causal_waves = causal_family_waves(full_handoff_
 assert fair_assignment < frontier_assignment < wave_assignment, (fair_assignment, frontier_assignment, wave_assignment)
 assert "fastRepairHandoffDeferredFamilySiblings" in source
 
+# A busy provider's newer wave must not flush an earlier single executed
+# failure for a different provider. Prior Learning used rows[-1000:] before
+# Repair could apply its provider-fair negative-memory selector.
+cold = row("uhdmovies", "terminal_request_program_inference_v1", "rejected")
+hot = [
+    row("4khdhub", f"route_transition_graph_v{index}", "rejected")
+    for index in range(1, 15)
+]
+overflow = mod.merge_phase_learning_state(
+    {
+        "publicationAllowed": False,
+        "productionWritesAllowed": False,
+        "experimentMemory": {"schemaVersion": 1, "entries": [cold]},
+    },
+    hot,
+    max_entries=10,
+)
+survivors = overflow["experimentMemory"]["entries"]
+assert len(survivors) == 10, len(survivors)
+assert any(r["providerId"] == "uhdmovies" for r in survivors), (
+    "earlier underrepresented provider evidence was lost after wave overflow"
+)
+assert mod._learning_memory_capacity() == 16000, (
+    "Learning and production must use the same persisted bounded capacity"
+)
+
 print("Brain Learning causal-wave memory merge tests passed")
