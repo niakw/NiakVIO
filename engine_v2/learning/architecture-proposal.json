@@ -196,6 +196,9 @@
             "animesultra",
             "animevost-fr"
           ],
+          "route_transition_graph_v12": [
+            "vidfast"
+          ],
           "runtime_response_salvage_v1": [
             "4khdhub",
             "allanime",
@@ -212,6 +215,9 @@
           "search_contract_inference_v1_g3": [
             "4khdhub"
           ],
+          "search_contract_inference_v1_g5": [
+            "4khdhub"
+          ],
           "search_response_route_binding_v1": [
             "4khdhub",
             "animesultra"
@@ -222,6 +228,12 @@
           ],
           "terminal_transition_graph_v1": [
             "allanime",
+            "mallumv"
+          ],
+          "terminal_transition_graph_v2": [
+            "mallumv"
+          ],
+          "terminal_transition_graph_v3": [
             "mallumv"
           ],
           "transport_request_differential_v1": [
@@ -254,6 +266,9 @@
             "animesultra",
             "animevost-fr",
             "vidfast"
+          ],
+          "route_transition_graph_v1": [
+            "animevost-fr"
           ],
           "search_catalogue": [
             "4khdhub",
@@ -303,7 +318,7 @@
           {
             "strategyId": "route_transition_graph_v12",
             "causalTrigger": "catalogue/detail route is live and identity-qualified but no terminal/player media is reached",
-            "method": "derive and implement a genuinely new executable Repair strategy route_transition_graph_v12 from negative evidence for exhausted route_transition_graph_v1; preserve the causal intent of the prior method without reusing its implementation, register the new profile in Repair planning/runtime, and require targeted playback/identity proof",
+            "method": "replay already installed executable Repair strategy route_transition_graph_v12 against current-byte evidence before another FORCE evolution; preserve playback/identity/non-regression gates",
             "requiredEvidence": [
               "retained route proof",
               "same-work identity correlation",
@@ -349,18 +364,19 @@
               "runtime_response_salvage_v1",
               "search_contract_inference_v1",
               "search_contract_inference_v1_g3",
+              "search_contract_inference_v1_g5",
               "search_response_route_binding_v1",
               "terminal_request_program_inference_v1",
               "terminal_transition_graph_v1",
               "transport_request_differential_v1"
             ],
-            "existingExecutableRepairProfile": false,
+            "existingExecutableRepairProfile": true,
             "groupId": "route-to-terminal|html_scraper",
             "repairScope": "route-to-terminal",
             "targetLayer": "core",
-            "forcePromotionEligible": true,
-            "requiresNewExecutableRepairProfile": true,
-            "forcePromotionReason": "deferred-known-family-exhaustion",
+            "forcePromotionEligible": false,
+            "requiresNewExecutableRepairProfile": false,
+            "forcePromotionReason": "already-installed-profile-replay-first",
             "transportSignature": "not-applicable",
             "capabilityStrategy": "html_scraper",
             "providers": [
@@ -386,7 +402,7 @@
           {
             "strategyId": "route_transition_graph_v12",
             "causalTrigger": "catalogue/detail route is live and identity-qualified but no terminal/player media is reached",
-            "method": "derive and implement a genuinely new executable Repair strategy route_transition_graph_v12 from negative evidence for exhausted route_transition_graph_v1; preserve the causal intent of the prior method without reusing its implementation, register the new profile in Repair planning/runtime, and require targeted playback/identity proof",
+            "method": "replay already installed executable Repair strategy route_transition_graph_v12 against current-byte evidence before another FORCE evolution; preserve playback/identity/non-regression gates",
             "requiredEvidence": [
               "retained route proof",
               "same-work identity correlation",
@@ -429,13 +445,13 @@
               "search_response_route_binding_v1",
               "transport_request_differential_v1"
             ],
-            "existingExecutableRepairProfile": false,
+            "existingExecutableRepairProfile": true,
             "groupId": "route-to-terminal|mixed_embed_resolver",
             "repairScope": "route-to-terminal",
             "targetLayer": "core",
-            "forcePromotionEligible": true,
-            "requiresNewExecutableRepairProfile": true,
-            "forcePromotionReason": "deferred-known-family-exhaustion",
+            "forcePromotionEligible": false,
+            "requiresNewExecutableRepairProfile": false,
+            "forcePromotionReason": "already-installed-profile-replay-first",
             "transportSignature": "not-applicable",
             "capabilityStrategy": "mixed_embed_resolver",
             "providers": [
@@ -527,9 +543,9 @@
             "requiresHumanMerge": true
           },
           {
-            "strategyId": "route_transition_graph_v12",
+            "strategyId": "route_transition_graph_v13",
             "causalTrigger": "catalogue/detail route is live and identity-qualified but no terminal/player media is reached",
-            "method": "derive and implement a genuinely new executable Repair strategy route_transition_graph_v12 from negative evidence for exhausted route_transition_graph_v1; preserve the causal intent of the prior method without reusing its implementation, register the new profile in Repair planning/runtime, and require targeted playback/identity proof",
+            "method": "derive and implement a genuinely new executable Repair strategy route_transition_graph_v13 from negative evidence for exhausted route_transition_graph_v1; preserve the causal intent of the prior method without reusing its implementation, register the new profile in Repair planning/runtime, and require targeted playback/identity proof",
             "requiredEvidence": [
               "retained route proof",
               "same-work identity correlation",
@@ -540,7 +556,7 @@
               "content identity not contradicted",
               "no green-lane regression"
             ],
-            "evolvesFromStrategyId": "route_transition_graph_v11",
+            "evolvesFromStrategyId": "route_transition_graph_v12",
             "exhaustedStrategyIds": [
               "adaptive_runtime_recovery",
               "document_request_contract_mining_v1",
@@ -555,6 +571,7 @@
               "route_transition_graph_v1",
               "route_transition_graph_v10",
               "route_transition_graph_v11",
+              "route_transition_graph_v12",
               "route_transition_graph_v2",
               "route_transition_graph_v3",
               "route_transition_graph_v4",
@@ -588,7 +605,7 @@
               "network_http_error"
             ],
             "harnessTransportClasses": [],
-            "negativeMemorySignature": "strategy:route_transition_graph_v12|scope:route-to-terminal|capability:iframe_player|transport:not-applicable",
+            "negativeMemorySignature": "strategy:route_transition_graph_v13|scope:route-to-terminal|capability:iframe_player|transport:not-applicable",
             "reentryPolicy": "proposal -> executable contract -> Learning/Lab proof -> Core Repair eligibility",
             "productionWritesAllowed": false,
             "requiresHumanMerge": true
@@ -658,9 +675,9 @@
             "requiresHumanMerge": true
           },
           {
-            "strategyId": "terminal_transition_graph_v2",
+            "strategyId": "terminal_transition_graph_v4",
             "causalTrigger": "retained chain hit reaches player/resolver territory but media extraction/validation is incomplete",
-            "method": "replay already installed executable Repair strategy terminal_transition_graph_v2 against current-byte evidence before another FORCE evolution; preserve playback/identity/non-regression gates",
+            "method": "replay already installed executable Repair strategy terminal_transition_graph_v4 against current-byte evidence before another FORCE evolution; preserve playback/identity/non-regression gates",
             "requiredEvidence": [
               "retained chain hit",
               "terminal host/player family",
@@ -671,7 +688,7 @@
               "terminal identity preserved",
               "no green-lane regression"
             ],
-            "evolvesFromStrategyId": "terminal_transition_graph_v1",
+            "evolvesFromStrategyId": "terminal_transition_graph_v3",
             "exhaustedStrategyIds": [
               "adaptive_runtime_recovery",
               "chain_terminal_extractor_v1",
@@ -687,7 +704,9 @@
               "provider_positive_program_replay_v1",
               "runtime_response_salvage_v1",
               "terminal_request_program_inference_v1",
-              "terminal_transition_graph_v1"
+              "terminal_transition_graph_v1",
+              "terminal_transition_graph_v2",
+              "terminal_transition_graph_v3"
             ],
             "existingExecutableRepairProfile": true,
             "groupId": "terminal-extraction|html_scraper",
@@ -709,7 +728,7 @@
               "waf_challenge"
             ],
             "harnessTransportClasses": [],
-            "negativeMemorySignature": "strategy:terminal_transition_graph_v2|scope:terminal-extraction|capability:html_scraper|transport:not-applicable",
+            "negativeMemorySignature": "strategy:terminal_transition_graph_v4|scope:terminal-extraction|capability:html_scraper|transport:not-applicable",
             "reentryPolicy": "proposal -> executable contract -> Learning/Lab proof -> Core Repair eligibility",
             "productionWritesAllowed": false,
             "requiresHumanMerge": true
@@ -789,7 +808,7 @@
     {
       "strategyId": "route_transition_graph_v12",
       "causalTrigger": "catalogue/detail route is live and identity-qualified but no terminal/player media is reached",
-      "method": "derive and implement a genuinely new executable Repair strategy route_transition_graph_v12 from negative evidence for exhausted route_transition_graph_v1; preserve the causal intent of the prior method without reusing its implementation, register the new profile in Repair planning/runtime, and require targeted playback/identity proof",
+      "method": "replay already installed executable Repair strategy route_transition_graph_v12 against current-byte evidence before another FORCE evolution; preserve playback/identity/non-regression gates",
       "requiredEvidence": [
         "retained route proof",
         "same-work identity correlation",
@@ -835,18 +854,19 @@
         "runtime_response_salvage_v1",
         "search_contract_inference_v1",
         "search_contract_inference_v1_g3",
+        "search_contract_inference_v1_g5",
         "search_response_route_binding_v1",
         "terminal_request_program_inference_v1",
         "terminal_transition_graph_v1",
         "transport_request_differential_v1"
       ],
-      "existingExecutableRepairProfile": false,
+      "existingExecutableRepairProfile": true,
       "groupId": "route-to-terminal|html_scraper",
       "repairScope": "route-to-terminal",
       "targetLayer": "core",
-      "forcePromotionEligible": true,
-      "requiresNewExecutableRepairProfile": true,
-      "forcePromotionReason": "deferred-known-family-exhaustion",
+      "forcePromotionEligible": false,
+      "requiresNewExecutableRepairProfile": false,
+      "forcePromotionReason": "already-installed-profile-replay-first",
       "transportSignature": "not-applicable",
       "capabilityStrategy": "html_scraper",
       "providers": [
@@ -872,7 +892,7 @@
     {
       "strategyId": "route_transition_graph_v12",
       "causalTrigger": "catalogue/detail route is live and identity-qualified but no terminal/player media is reached",
-      "method": "derive and implement a genuinely new executable Repair strategy route_transition_graph_v12 from negative evidence for exhausted route_transition_graph_v1; preserve the causal intent of the prior method without reusing its implementation, register the new profile in Repair planning/runtime, and require targeted playback/identity proof",
+      "method": "replay already installed executable Repair strategy route_transition_graph_v12 against current-byte evidence before another FORCE evolution; preserve playback/identity/non-regression gates",
       "requiredEvidence": [
         "retained route proof",
         "same-work identity correlation",
@@ -915,13 +935,13 @@
         "search_response_route_binding_v1",
         "transport_request_differential_v1"
       ],
-      "existingExecutableRepairProfile": false,
+      "existingExecutableRepairProfile": true,
       "groupId": "route-to-terminal|mixed_embed_resolver",
       "repairScope": "route-to-terminal",
       "targetLayer": "core",
-      "forcePromotionEligible": true,
-      "requiresNewExecutableRepairProfile": true,
-      "forcePromotionReason": "deferred-known-family-exhaustion",
+      "forcePromotionEligible": false,
+      "requiresNewExecutableRepairProfile": false,
+      "forcePromotionReason": "already-installed-profile-replay-first",
       "transportSignature": "not-applicable",
       "capabilityStrategy": "mixed_embed_resolver",
       "providers": [
@@ -1013,9 +1033,9 @@
       "requiresHumanMerge": true
     },
     {
-      "strategyId": "route_transition_graph_v12",
+      "strategyId": "route_transition_graph_v13",
       "causalTrigger": "catalogue/detail route is live and identity-qualified but no terminal/player media is reached",
-      "method": "derive and implement a genuinely new executable Repair strategy route_transition_graph_v12 from negative evidence for exhausted route_transition_graph_v1; preserve the causal intent of the prior method without reusing its implementation, register the new profile in Repair planning/runtime, and require targeted playback/identity proof",
+      "method": "derive and implement a genuinely new executable Repair strategy route_transition_graph_v13 from negative evidence for exhausted route_transition_graph_v1; preserve the causal intent of the prior method without reusing its implementation, register the new profile in Repair planning/runtime, and require targeted playback/identity proof",
       "requiredEvidence": [
         "retained route proof",
         "same-work identity correlation",
@@ -1026,7 +1046,7 @@
         "content identity not contradicted",
         "no green-lane regression"
       ],
-      "evolvesFromStrategyId": "route_transition_graph_v11",
+      "evolvesFromStrategyId": "route_transition_graph_v12",
       "exhaustedStrategyIds": [
         "adaptive_runtime_recovery",
         "document_request_contract_mining_v1",
@@ -1041,6 +1061,7 @@
         "route_transition_graph_v1",
         "route_transition_graph_v10",
         "route_transition_graph_v11",
+        "route_transition_graph_v12",
         "route_transition_graph_v2",
         "route_transition_graph_v3",
         "route_transition_graph_v4",
@@ -1074,7 +1095,7 @@
         "network_http_error"
       ],
       "harnessTransportClasses": [],
-      "negativeMemorySignature": "strategy:route_transition_graph_v12|scope:route-to-terminal|capability:iframe_player|transport:not-applicable",
+      "negativeMemorySignature": "strategy:route_transition_graph_v13|scope:route-to-terminal|capability:iframe_player|transport:not-applicable",
       "reentryPolicy": "proposal -> executable contract -> Learning/Lab proof -> Core Repair eligibility",
       "productionWritesAllowed": false,
       "requiresHumanMerge": true
@@ -1144,9 +1165,9 @@
       "requiresHumanMerge": true
     },
     {
-      "strategyId": "terminal_transition_graph_v2",
+      "strategyId": "terminal_transition_graph_v4",
       "causalTrigger": "retained chain hit reaches player/resolver territory but media extraction/validation is incomplete",
-      "method": "replay already installed executable Repair strategy terminal_transition_graph_v2 against current-byte evidence before another FORCE evolution; preserve playback/identity/non-regression gates",
+      "method": "replay already installed executable Repair strategy terminal_transition_graph_v4 against current-byte evidence before another FORCE evolution; preserve playback/identity/non-regression gates",
       "requiredEvidence": [
         "retained chain hit",
         "terminal host/player family",
@@ -1157,7 +1178,7 @@
         "terminal identity preserved",
         "no green-lane regression"
       ],
-      "evolvesFromStrategyId": "terminal_transition_graph_v1",
+      "evolvesFromStrategyId": "terminal_transition_graph_v3",
       "exhaustedStrategyIds": [
         "adaptive_runtime_recovery",
         "chain_terminal_extractor_v1",
@@ -1173,7 +1194,9 @@
         "provider_positive_program_replay_v1",
         "runtime_response_salvage_v1",
         "terminal_request_program_inference_v1",
-        "terminal_transition_graph_v1"
+        "terminal_transition_graph_v1",
+        "terminal_transition_graph_v2",
+        "terminal_transition_graph_v3"
       ],
       "existingExecutableRepairProfile": true,
       "groupId": "terminal-extraction|html_scraper",
@@ -1195,7 +1218,7 @@
         "waf_challenge"
       ],
       "harnessTransportClasses": [],
-      "negativeMemorySignature": "strategy:terminal_transition_graph_v2|scope:terminal-extraction|capability:html_scraper|transport:not-applicable",
+      "negativeMemorySignature": "strategy:terminal_transition_graph_v4|scope:terminal-extraction|capability:html_scraper|transport:not-applicable",
       "reentryPolicy": "proposal -> executable contract -> Learning/Lab proof -> Core Repair eligibility",
       "productionWritesAllowed": false,
       "requiresHumanMerge": true

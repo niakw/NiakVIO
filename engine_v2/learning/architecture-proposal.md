@@ -36,7 +36,7 @@ Providers: 4khdhub, moviebox
 
 Trigger: catalogue/detail route is live and identity-qualified but no terminal/player media is reached
 
-Method: derive and implement a genuinely new executable Repair strategy route_transition_graph_v12 from negative evidence for exhausted route_transition_graph_v1; preserve the causal intent of the prior method without reusing its implementation, register the new profile in Repair planning/runtime, and require targeted playback/identity proof
+Method: replay already installed executable Repair strategy route_transition_graph_v12 against current-byte evidence before another FORCE evolution; preserve playback/identity/non-regression gates
 
 Acceptance: playback-verified media; content identity not contradicted; no green-lane regression
 
@@ -46,7 +46,7 @@ Providers: animesultra, yflix
 
 Trigger: catalogue/detail route is live and identity-qualified but no terminal/player media is reached
 
-Method: derive and implement a genuinely new executable Repair strategy route_transition_graph_v12 from negative evidence for exhausted route_transition_graph_v1; preserve the causal intent of the prior method without reusing its implementation, register the new profile in Repair planning/runtime, and require targeted playback/identity proof
+Method: replay already installed executable Repair strategy route_transition_graph_v12 against current-byte evidence before another FORCE evolution; preserve playback/identity/non-regression gates
 
 Acceptance: playback-verified media; content identity not contradicted; no green-lane regression
 
@@ -60,13 +60,13 @@ Method: replay already installed executable Repair strategy route_transition_gra
 
 Acceptance: playback-verified media; content identity not contradicted; no green-lane regression
 
-### route_transition_graph_v12 — route-to-terminal|iframe_player
+### route_transition_graph_v13 — route-to-terminal|iframe_player
 
 Providers: vidfast
 
 Trigger: catalogue/detail route is live and identity-qualified but no terminal/player media is reached
 
-Method: derive and implement a genuinely new executable Repair strategy route_transition_graph_v12 from negative evidence for exhausted route_transition_graph_v1; preserve the causal intent of the prior method without reusing its implementation, register the new profile in Repair planning/runtime, and require targeted playback/identity proof
+Method: derive and implement a genuinely new executable Repair strategy route_transition_graph_v13 from negative evidence for exhausted route_transition_graph_v1; preserve the causal intent of the prior method without reusing its implementation, register the new profile in Repair planning/runtime, and require targeted playback/identity proof
 
 Acceptance: playback-verified media; content identity not contradicted; no green-lane regression
 
@@ -80,12 +80,12 @@ Method: derive and implement a genuinely new executable Repair strategy terminal
 
 Acceptance: playback-verified media; terminal identity preserved; no green-lane regression
 
-### terminal_transition_graph_v2 — terminal-extraction|html_scraper
+### terminal_transition_graph_v4 — terminal-extraction|html_scraper
 
 Providers: mallumv
 
 Trigger: retained chain hit reaches player/resolver territory but media extraction/validation is incomplete
 
-Method: replay already installed executable Repair strategy terminal_transition_graph_v2 against current-byte evidence before another FORCE evolution; preserve playback/identity/non-regression gates
+Method: replay already installed executable Repair strategy terminal_transition_graph_v4 against current-byte evidence before another FORCE evolution; preserve playback/identity/non-regression gates
 
 Acceptance: playback-verified media; terminal identity preserved; no green-lane regression
