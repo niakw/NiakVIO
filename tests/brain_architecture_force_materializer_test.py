@@ -627,7 +627,7 @@ with tempfile.TemporaryDirectory(prefix="brain-force-autowire-runtime-only-") as
         "replace": (
             baseline[runtime_path]
             + 'elif new_strategy_id == "route_transition_graph_v2":\n'
-            + '    pass\n'
+            + '    terminal_paths = resolve_source_paths()\n'
         ),
     }
     filled = mod.complete_evolved_profile_wiring([runtime_edit], blueprint, root=root)
