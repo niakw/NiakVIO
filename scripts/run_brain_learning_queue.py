@@ -19,6 +19,9 @@ from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPTS = ROOT / "scripts"
+if str(SCRIPTS) not in sys.path:
+    sys.path.insert(0, str(SCRIPTS))
+from brain_negative_memory_retention import select_bounded_negative_memory
 
 class BudgetExhausted(RuntimeError):
     """The bounded Learning work window ended; persist state and resume later."""
@@ -348,11 +351,23 @@ def _phase_experiment_key(row: dict[str, Any]) -> tuple[str, str, str, str, str,
     )
 
 
+def _learning_memory_capacity() -> int:
+    """Use the same bounded negative-memory budget in Learning and Repair."""
+    policy_path = ROOT / "engine_v2" / "config" / "brain-policy.json"
+    try:
+        policy = json.loads(policy_path.read_text(encoding="utf-8"))
+        production = policy.get("production") if isinstance(policy, dict) else {}
+        memory = production.get("negativeExperimentMemory") if isinstance(production, dict) else {}
+        return max(1, min(20000, int(memory.get("maxEntries") or 1000)))
+    except (OSError, ValueError, TypeError, OverflowError, AttributeError):
+        return 1000
+
+
 def merge_phase_learning_state(
     state: dict[str, Any],
     entries: list[dict[str, Any]],
     *,
-    max_entries: int = 1000,
+    max_entries: int | None = None,
 ) -> dict[str, Any]:
     """Feed exact experiment outcomes to the next attempt without publishing them."""
     output = copy.deepcopy(state) if isinstance(state, dict) else {}
@@ -399,8 +414,14 @@ def merge_phase_learning_state(
             or row.get("executionObserved") is True
         )
 
-    limit = max(1, int(max_entries))
-    memory["entries"] = rows[-limit:]
+    limit = max(1, min(20000, int(max_entries if max_entries is not None else _learning_memory_capacity())))
+    # Dropping oldest rows before provider-aware selection lets busy cohorts
+    # evict the only executed negative proof for a new hub. Keep smaller
+    # wave histories in their original order; compact only on overflow.
+    memory["entries"] = (
+        select_bounded_negative_memory(rows, limit=limit, minimum_per_provider=12)
+        if len(rows) > limit else rows
+    )
     memory["schemaVersion"] = max(1, int(memory.get("schemaVersion") or 1))
     return output
 
@@ -409,7 +430,7 @@ def merge_wave_experiment_entries(
     state: dict[str, Any],
     provider_entries: list[list[dict[str, Any]]],
     *,
-    max_entries: int = 1000,
+    max_entries: int | None = None,
 ) -> dict[str, Any]:
     """Merge isolated provider evidence deterministically at a causal-wave barrier.
 
