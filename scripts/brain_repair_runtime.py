@@ -618,6 +618,24 @@ def _memory_entry_key(row: dict[str, Any]) -> tuple[str, str, str, str, str, str
     )
 
 
+def _negative_memory_capacity() -> int:
+    """Load one shared, bounded memory budget for on-disk and Learning inputs.
+
+    A hard-coded 1000-row read cap silently discarded recent, not-yet-executed
+    Learning fingerprints *before* the fair provider-aware selector could run.
+    Scale headroom for the intended 800-provider catalogue without lifting the
+    bounded privacy/persistence contract or increasing execution retries.
+    """
+    policy = _load_json(POLICY_PATH, {})
+    production = policy.get("production") if isinstance(policy, dict) else {}
+    negative = production.get("negativeExperimentMemory") if isinstance(production, dict) else {}
+    raw = negative.get("maxEntries") if isinstance(negative, dict) else None
+    try:
+        return max(1, min(20000, int(raw or 1000)))
+    except (TypeError, ValueError, OverflowError):
+        return 1000
+
+
 def _learning_experiment_entries() -> list[dict[str, Any]]:
     if LEARNING_MEMORY_PATH is None:
         return []
@@ -629,7 +647,7 @@ def _learning_experiment_entries() -> list[dict[str, Any]]:
     memory = value.get("experimentMemory") if isinstance(value.get("experimentMemory"), dict) else {}
     rows = memory.get("entries") if isinstance(memory.get("entries"), list) else []
     out: list[dict[str, Any]] = []
-    for raw in rows[:1000]:
+    for raw in rows[:_negative_memory_capacity()]:
         if not isinstance(raw, dict):
             continue
         provider = _clip_text(raw.get("providerId"), 160).casefold()
@@ -684,7 +702,8 @@ def repair_memory() -> dict[str, Any]:
     value = _load_json(REPAIR_MEMORY_PATH, {})
     if not isinstance(value, dict):
         value = {}
-    entries = [row for row in (value.get("entries") or []) if isinstance(row, dict)][:1000]
+    capacity = _negative_memory_capacity()
+    entries = [row for row in (value.get("entries") or []) if isinstance(row, dict)]
 
     # Production Repair remains anchored to automation/brain-repair-memory.json.
     # Only the isolated Learning planner may overlay the read-only sanitized
@@ -722,7 +741,10 @@ def repair_memory() -> dict[str, Any]:
 
     return {
         "schemaVersion": max(1, int(value.get("schemaVersion") or 1)),
-        "entries": entries[:1000],
+        "entries": (
+            select_bounded_negative_memory(entries, limit=capacity, minimum_per_provider=12)
+            if len(entries) > capacity else entries
+        ),
     }
 
 
