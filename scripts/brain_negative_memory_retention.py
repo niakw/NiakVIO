@@ -17,7 +17,7 @@ def select_bounded_negative_memory(
     limit: int = 1000,
     minimum_per_provider: int = 12,
 ) -> list[dict[str, Any]]:
-    cap = max(1, min(10000, int(limit)))
+    cap = max(1, min(20000, int(limit)))
     floor = max(1, min(32, int(minimum_per_provider)))
     ranked = sorted(
         [item for item in records if isinstance(item, dict)],
