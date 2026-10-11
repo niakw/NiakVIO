@@ -20,14 +20,14 @@
     "yflix"
   ],
   "effectiveWaves": 1,
-  "elapsedSeconds": 411.234,
+  "elapsedSeconds": 404.261,
   "executionModel": "family-batched-multi-wave-brain-repair",
   "experienceMemory": {
     "operationalProviderCount": 25,
     "providerCount": 46,
     "schemaVersion": 2,
-    "sourceRunId": "38116722090",
-    "sourceSha": "32850363a280d4bdd1995f4d736151a16f3dfa6c",
+    "sourceRunId": "38118644486",
+    "sourceSha": "08c1ed4a31b31873c43b02682a2106eeba68e52f",
     "strategyCount": 5
   },
   "fixedInLabProviders": [],
@@ -111,7 +111,7 @@
   "shardCount": 1,
   "shardIndex": 0,
   "skippedEnvironmentProviders": [],
-  "sourceCensusRunId": "38116722090",
+  "sourceCensusRunId": "38118644486",
   "timeBudgetExhausted": false,
   "timeBudgetSeconds": 1200,
   "unvisitedProviders": [],
@@ -143,7 +143,7 @@
                 "experimentVariantCount": 5,
                 "explorationChainEnabled": true,
                 "explorationModeEnabled": true,
-                "failureClass": "transport_blocked",
+                "failureClass": "search_gap",
                 "hypotheses": [],
                 "learningDisposition": "propose_new_or_evolved_core_type",
                 "llmAdvisorApplied": false,
@@ -158,14 +158,18 @@
                 "llmAdvisorSourceFailureClass": "",
                 "llmAdvisorStrategy": "",
                 "metaGapEscalated": false,
-                "negativeMemoryMatches": 34,
+                "negativeMemoryMatches": 50,
                 "positiveProgramFingerprint": "",
                 "postExhaustionCandidateProfiles": [
-                  "transport_request_differential_v1",
-                  "provider_session_bootstrap_replay_v1",
-                  "runtime_response_salvage_v1",
                   "html_class_token_exact_v1",
                   "route_transition_graph_v2",
+                  "search_contract_inference_v1",
+                  "search_response_route_binding_v1",
+                  "identity_alias_search_traversal_v1",
+                  "runtime_response_salvage_v1",
+                  "document_request_contract_mining_v1",
+                  "transport_request_differential_v1",
+                  "provider_session_bootstrap_replay_v1",
                   "route_transition_graph_v3",
                   "route_transition_graph_v4",
                   "route_transition_graph_v5",
@@ -180,11 +184,7 @@
                   "route_transition_graph_v14",
                   "route_transition_graph_v15",
                   "route_transition_graph_v16",
-                  "route_transition_graph_v1",
-                  "route_peer_transition_replay_v1",
-                  "identity_alias_search_traversal_v1",
-                  "document_request_contract_mining_v1",
-                  "search_contract_inference_v1"
+                  "route_transition_graph_v1"
                 ],
                 "postExhaustionSourceFailureClass": "",
                 "postExhaustionStrategyMethod": "",
@@ -194,7 +194,7 @@
                 "providerPositiveProgramReplay": false,
                 "repairScope": "learning",
                 "repairType": "architecture_gap",
-                "signature": "407798151f15452ec1ccd098",
+                "signature": "a5acf1ae6fc3078e15bcfc89",
                 "strategyEscalated": false,
                 "targetCategories": []
               },
@@ -278,7 +278,7 @@
                 "llmAdvisorSourceFailureClass": "",
                 "llmAdvisorStrategy": "",
                 "metaGapEscalated": false,
-                "negativeMemoryMatches": 131,
+                "negativeMemoryMatches": 132,
                 "positiveProgramFingerprint": "",
                 "postExhaustionCandidateProfiles": [
                   "transport_request_differential_v1",
@@ -321,7 +321,7 @@
               "published:animesultra": {
                 "action": "probe-targeted-repair",
                 "allowedProfiles": [
-                  "route_transition_graph_v14"
+                  "route_transition_graph_v15"
                 ],
                 "baseExperimentExhausted": true,
                 "exitReason": null,
@@ -363,7 +363,7 @@
                 "llmAdvisorSourceFailureClass": "",
                 "llmAdvisorStrategy": "",
                 "metaGapEscalated": false,
-                "negativeMemoryMatches": 70,
+                "negativeMemoryMatches": 72,
                 "positiveProgramFingerprint": "",
                 "postExhaustionCandidateProfiles": [
                   "html_class_token_exact_v1",
@@ -393,7 +393,7 @@
                 ],
                 "postExhaustionSourceFailureClass": "route_proven_gap",
                 "postExhaustionStrategyMethod": "brain-evolved-executable-transition",
-                "postExhaustionStrategyProfile": "route_transition_graph_v14",
+                "postExhaustionStrategyProfile": "route_transition_graph_v15",
                 "providerId": "animesultra",
                 "providerPositiveProgramProductionRescue": false,
                 "providerPositiveProgramReplay": false,
@@ -460,7 +460,7 @@
               "published:flemmix": {
                 "action": "probe-targeted-repair",
                 "allowedProfiles": [
-                  "route_transition_graph_v11"
+                  "route_transition_graph_v13"
                 ],
                 "baseExperimentExhausted": true,
                 "exitReason": null,
@@ -506,7 +506,7 @@
                 "llmAdvisorSourceFailureClass": "transport_blocked",
                 "llmAdvisorStrategy": "meta-gap-search-contract-fallback",
                 "metaGapEscalated": false,
-                "negativeMemoryMatches": 59,
+                "negativeMemoryMatches": 62,
                 "positiveProgramFingerprint": "",
                 "postExhaustionCandidateProfiles": [
                   "transport_request_differential_v1",
@@ -536,7 +536,7 @@
                 ],
                 "postExhaustionSourceFailureClass": "route_proven_gap",
                 "postExhaustionStrategyMethod": "brain-evolved-executable-transition",
-                "postExhaustionStrategyProfile": "route_transition_graph_v11",
+                "postExhaustionStrategyProfile": "route_transition_graph_v13",
                 "providerId": "flemmix",
                 "providerPositiveProgramProductionRescue": false,
                 "providerPositiveProgramReplay": false,
@@ -549,7 +549,7 @@
               "published:mallumv": {
                 "action": "probe-targeted-repair",
                 "allowedProfiles": [
-                  "terminal_transition_graph_v4",
+                  "terminal_transition_graph_v5",
                   "adaptive_runtime_recovery",
                   "player_media_extractor_v1"
                 ],
@@ -622,7 +622,7 @@
                 "llmAdvisorSourceFailureClass": "chain_terminal_gap",
                 "llmAdvisorStrategy": "meta-gap-route-terminal-fallback",
                 "metaGapEscalated": false,
-                "negativeMemoryMatches": 123,
+                "negativeMemoryMatches": 129,
                 "positiveProgramFingerprint": "",
                 "postExhaustionCandidateProfiles": [
                   "terminal_transition_graph_v1",
@@ -640,7 +640,7 @@
                 ],
                 "postExhaustionSourceFailureClass": "chain_terminal_gap",
                 "postExhaustionStrategyMethod": "brain-evolved-executable-transition",
-                "postExhaustionStrategyProfile": "terminal_transition_graph_v4",
+                "postExhaustionStrategyProfile": "terminal_transition_graph_v5",
                 "providerId": "mallumv",
                 "providerPositiveProgramProductionRescue": false,
                 "providerPositiveProgramReplay": false,
@@ -651,13 +651,11 @@
                 "targetCategories": []
               },
               "published:moviebox": {
-                "action": "probe-targeted-repair",
-                "allowedProfiles": [
-                  "route_transition_graph_v16"
-                ],
+                "action": "collect-more-evidence",
+                "allowedProfiles": [],
                 "baseExperimentExhausted": true,
-                "exitReason": null,
-                "experimentExhausted": false,
+                "exitReason": "learning_generations_exhausted",
+                "experimentExhausted": true,
                 "experimentGeneration": 2,
                 "experimentVariant": 4,
                 "experimentVariantCount": 5,
@@ -665,7 +663,7 @@
                 "explorationModeEnabled": true,
                 "failureClass": "transport_blocked",
                 "hypotheses": [],
-                "learningDisposition": "execute_bounded_evolved_strategy",
+                "learningDisposition": "propose_new_or_evolved_core_type",
                 "llmAdvisorApplied": false,
                 "llmAdvisorConfidence": 0,
                 "llmAdvisorExperiment": {},
@@ -678,7 +676,7 @@
                 "llmAdvisorSourceFailureClass": "",
                 "llmAdvisorStrategy": "",
                 "metaGapEscalated": false,
-                "negativeMemoryMatches": 107,
+                "negativeMemoryMatches": 109,
                 "positiveProgramFingerprint": "",
                 "postExhaustionCandidateProfiles": [
                   "transport_request_differential_v1",
@@ -706,16 +704,16 @@
                   "document_request_contract_mining_v1",
                   "search_contract_inference_v1"
                 ],
-                "postExhaustionSourceFailureClass": "route_proven_gap",
-                "postExhaustionStrategyMethod": "brain-evolved-executable-transition",
-                "postExhaustionStrategyProfile": "route_transition_graph_v16",
+                "postExhaustionSourceFailureClass": "",
+                "postExhaustionStrategyMethod": "",
+                "postExhaustionStrategyProfile": "",
                 "providerId": "moviebox",
                 "providerPositiveProgramProductionRescue": false,
                 "providerPositiveProgramReplay": false,
                 "repairScope": "learning",
-                "repairType": "evolved_strategy",
+                "repairType": "architecture_gap",
                 "signature": "9408dea970ee2148302affa4",
-                "strategyEscalated": true,
+                "strategyEscalated": false,
                 "targetCategories": []
               },
               "published:moviesmod": {
@@ -744,7 +742,7 @@
                 "llmAdvisorSourceFailureClass": "",
                 "llmAdvisorStrategy": "",
                 "metaGapEscalated": false,
-                "negativeMemoryMatches": 104,
+                "negativeMemoryMatches": 105,
                 "positiveProgramFingerprint": "",
                 "postExhaustionCandidateProfiles": [
                   "transport_request_differential_v1",
@@ -853,7 +851,7 @@
               "published:yflix": {
                 "action": "probe-targeted-repair",
                 "allowedProfiles": [
-                  "route_transition_graph_v14"
+                  "route_transition_graph_v15"
                 ],
                 "baseExperimentExhausted": true,
                 "exitReason": null,
@@ -895,7 +893,7 @@
                 "llmAdvisorSourceFailureClass": "",
                 "llmAdvisorStrategy": "",
                 "metaGapEscalated": false,
-                "negativeMemoryMatches": 103,
+                "negativeMemoryMatches": 105,
                 "positiveProgramFingerprint": "",
                 "postExhaustionCandidateProfiles": [
                   "html_class_token_exact_v1",
@@ -925,7 +923,7 @@
                 ],
                 "postExhaustionSourceFailureClass": "route_proven_gap",
                 "postExhaustionStrategyMethod": "brain-evolved-executable-transition",
-                "postExhaustionStrategyProfile": "route_transition_graph_v14",
+                "postExhaustionStrategyProfile": "route_transition_graph_v15",
                 "providerId": "yflix",
                 "providerPositiveProgramProductionRescue": false,
                 "providerPositiveProgramReplay": false,
@@ -954,11 +952,7 @@
           "capabilityStrategy": "mixed",
           "crossWaveExplorationCarryoverApplied": [],
           "crossWaveExplorationCarryoverCaptured": [
-            "4khdhub",
-            "animesalt",
-            "flemmix",
-            "moviebox",
-            "moviesmod"
+            "flemmix"
           ],
           "deferredToLearning": [
             "4khdhub",
