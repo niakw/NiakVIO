@@ -66,13 +66,14 @@
       "provider_id": "vidfast",
       "provider_name": "⚡ VidFast",
       "semantic_type": "movie",
-      "fixture_title": "Avatar",
+      "fixture_title": "The Wolf of Wall Street",
       "fixture": {
-        "slug": "health-movie-19995",
-        "tmdbId": "19995",
+        "slug": "the-wolf-of-wall-street-2013",
+        "tmdbId": "106646",
         "mediaType": "movie",
-        "title": "Avatar",
-        "year": 2009
+        "category": "movie",
+        "title": "The Wolf of Wall Street",
+        "year": 2013
       },
       "streams_returned": 0,
       "announced_player_candidates": 0,
@@ -108,8 +109,8 @@
       "debug_progress_stage": "none",
       "debug_fetches": [
         {
-          "url": "https://vidfast.to/embed/movie/19995",
-          "response_url": "https://vidfast.to/embed/movie/19995",
+          "url": "https://vidfast.to/embed/movie/106646",
+          "response_url": "https://vidfast.to/embed/movie/106646",
           "method": "GET",
           "status": 403,
           "content_type": "text/html",
@@ -146,11 +147,11 @@
           "declared_indexed_player_candidate_count": 0,
           "declared_player_hosts": [],
           "declared_quality_heights": [],
-          "duration_ms": 417
+          "duration_ms": 440
         },
         {
-          "url": "https://vidfast.vc/movie/19995/",
-          "response_url": "https://vidfast.vc/movie/19995/",
+          "url": "https://vidfast.vc/movie/106646/",
+          "response_url": "https://vidfast.vc/movie/106646/",
           "method": "GET",
           "status": 403,
           "content_type": "text/html",
@@ -174,7 +175,7 @@
           "declared_indexed_player_candidate_count": 0,
           "declared_player_hosts": [],
           "declared_quality_heights": [],
-          "duration_ms": 230
+          "duration_ms": 236
         }
       ],
       "debug_provider_value_trace_v18": null,
@@ -187,14 +188,14 @@
       "verified": 0,
       "contradictions": 0,
       "identity_safe": true,
-      "duration_ms": 3024,
+      "duration_ms": 3083,
       "sample_count": 4,
       "fanout_fixture_title": "Interstellar",
       "sample_titles": [
         "Interstellar",
-        "Oppenheimer",
-        "Deadpool & Wolverine",
-        "Avatar"
+        "Soul",
+        "Shutter Island",
+        "The Wolf of Wall Street"
       ],
       "adaptive_rotated": true,
       "samples": [
@@ -214,7 +215,7 @@
           "playable": 0,
           "verified": 0,
           "contradictions": 0,
-          "duration_ms": 656,
+          "duration_ms": 733,
           "streams_returned": 0,
           "announced_player_candidates": 0,
           "announced_variant_candidates": 0,
@@ -225,40 +226,14 @@
           "variant_fanout_state": "not-observed"
         },
         {
-          "fixture_title": "Oppenheimer",
+          "fixture_title": "Soul",
           "fixture": {
-            "slug": "health-movie-872585",
-            "tmdbId": "872585",
-            "mediaType": "movie",
-            "title": "Oppenheimer",
-            "year": 2023
-          },
-          "status": "no_streams",
-          "debug_stage": "provider_network_http_error",
-          "debug_progress_stage": "none",
-          "raw": 0,
-          "playable": 0,
-          "verified": 0,
-          "contradictions": 0,
-          "duration_ms": 660,
-          "streams_returned": 0,
-          "announced_player_candidates": 0,
-          "announced_variant_candidates": 0,
-          "announced_player_hosts": [],
-          "announced_quality_heights": [],
-          "explored_player_requests": 0,
-          "explored_player_hosts": [],
-          "variant_fanout_state": "not-observed"
-        },
-        {
-          "fixture_title": "Deadpool & Wolverine",
-          "fixture": {
-            "slug": "deadpool-wolverine-2024",
-            "tmdbId": "533535",
+            "slug": "soul-2020",
+            "tmdbId": "508442",
             "mediaType": "movie",
             "category": "movie",
-            "title": "Deadpool & Wolverine",
-            "year": 2024
+            "title": "Soul",
+            "year": 2020
           },
           "status": "no_streams",
           "debug_stage": "provider_network_http_error",
@@ -267,7 +242,7 @@
           "playable": 0,
           "verified": 0,
           "contradictions": 0,
-          "duration_ms": 670,
+          "duration_ms": 688,
           "streams_returned": 0,
           "announced_player_candidates": 0,
           "announced_variant_candidates": 0,
@@ -278,13 +253,14 @@
           "variant_fanout_state": "not-observed"
         },
         {
-          "fixture_title": "Avatar",
+          "fixture_title": "Shutter Island",
           "fixture": {
-            "slug": "health-movie-19995",
-            "tmdbId": "19995",
+            "slug": "shutter-island-2010",
+            "tmdbId": "11324",
             "mediaType": "movie",
-            "title": "Avatar",
-            "year": 2009
+            "category": "movie",
+            "title": "Shutter Island",
+            "year": 2010
           },
           "status": "no_streams",
           "debug_stage": "provider_network_http_error",
@@ -293,7 +269,34 @@
           "playable": 0,
           "verified": 0,
           "contradictions": 0,
-          "duration_ms": 652,
+          "duration_ms": 682,
+          "streams_returned": 0,
+          "announced_player_candidates": 0,
+          "announced_variant_candidates": 0,
+          "announced_player_hosts": [],
+          "announced_quality_heights": [],
+          "explored_player_requests": 0,
+          "explored_player_hosts": [],
+          "variant_fanout_state": "not-observed"
+        },
+        {
+          "fixture_title": "The Wolf of Wall Street",
+          "fixture": {
+            "slug": "the-wolf-of-wall-street-2013",
+            "tmdbId": "106646",
+            "mediaType": "movie",
+            "category": "movie",
+            "title": "The Wolf of Wall Street",
+            "year": 2013
+          },
+          "status": "no_streams",
+          "debug_stage": "provider_network_http_error",
+          "debug_progress_stage": "none",
+          "raw": 0,
+          "playable": 0,
+          "verified": 0,
+          "contradictions": 0,
+          "duration_ms": 678,
           "streams_returned": 0,
           "announced_player_candidates": 0,
           "announced_variant_candidates": 0,
@@ -311,14 +314,14 @@
       "provider_id": "vidfast",
       "provider_name": "⚡ VidFast",
       "semantic_type": "tv",
-      "fixture_title": "Stranger Things",
+      "fixture_title": "Peaky Blinders",
       "fixture": {
-        "slug": "stranger-things-2016-s01e01",
-        "tmdbId": "66732",
+        "slug": "peaky-blinders-2013-s01e01",
+        "tmdbId": "60574",
         "mediaType": "tv",
         "category": "tv",
-        "title": "Stranger Things",
-        "year": 2016,
+        "title": "Peaky Blinders",
+        "year": 2013,
         "season": 1,
         "episode": 1
       },
@@ -356,8 +359,8 @@
       "debug_progress_stage": "none",
       "debug_fetches": [
         {
-          "url": "https://vidfast.to/embed/tv/66732/1/1",
-          "response_url": "https://vidfast.to/embed/tv/66732/1/1",
+          "url": "https://vidfast.to/embed/tv/60574/1/1",
+          "response_url": "https://vidfast.to/embed/tv/60574/1/1",
           "method": "GET",
           "status": 403,
           "content_type": "text/html",
@@ -394,11 +397,11 @@
           "declared_indexed_player_candidate_count": 0,
           "declared_player_hosts": [],
           "declared_quality_heights": [],
-          "duration_ms": 419
+          "duration_ms": 458
         },
         {
-          "url": "https://vidfast.vc/tv/66732/1/1/",
-          "response_url": "https://vidfast.vc/tv/66732/1/1/",
+          "url": "https://vidfast.vc/tv/60574/1/1/",
+          "response_url": "https://vidfast.vc/tv/60574/1/1/",
           "method": "GET",
           "status": 403,
           "content_type": "text/html",
@@ -422,7 +425,7 @@
           "declared_indexed_player_candidate_count": 0,
           "declared_player_hosts": [],
           "declared_quality_heights": [],
-          "duration_ms": 230
+          "duration_ms": 254
         }
       ],
       "debug_provider_value_trace_v18": null,
@@ -435,14 +438,14 @@
       "verified": 0,
       "contradictions": 0,
       "identity_safe": true,
-      "duration_ms": 3036,
+      "duration_ms": 3054,
       "sample_count": 4,
       "fanout_fixture_title": "Breaking Bad",
       "sample_titles": [
         "Breaking Bad",
-        "Revenant",
         "The Boys",
-        "Stranger Things"
+        "Stranger Things",
+        "Peaky Blinders"
       ],
       "adaptive_rotated": true,
       "samples": [
@@ -464,36 +467,7 @@
           "playable": 0,
           "verified": 0,
           "contradictions": 0,
-          "duration_ms": 654,
-          "streams_returned": 0,
-          "announced_player_candidates": 0,
-          "announced_variant_candidates": 0,
-          "announced_player_hosts": [],
-          "announced_quality_heights": [],
-          "explored_player_requests": 0,
-          "explored_player_hosts": [],
-          "variant_fanout_state": "not-observed"
-        },
-        {
-          "fixture_title": "Revenant",
-          "fixture": {
-            "slug": "revenant-s01e01",
-            "tmdbId": "210702",
-            "mediaType": "tv",
-            "category": "tv",
-            "title": "Revenant",
-            "year": 2023,
-            "season": 1,
-            "episode": 1
-          },
-          "status": "no_streams",
-          "debug_stage": "provider_network_http_error",
-          "debug_progress_stage": "none",
-          "raw": 0,
-          "playable": 0,
-          "verified": 0,
-          "contradictions": 0,
-          "duration_ms": 645,
+          "duration_ms": 680,
           "streams_returned": 0,
           "announced_player_candidates": 0,
           "announced_variant_candidates": 0,
@@ -506,9 +480,10 @@
         {
           "fixture_title": "The Boys",
           "fixture": {
-            "slug": "health-tv-76479-s1e1",
+            "slug": "the-boys-2019-s01e01",
             "tmdbId": "76479",
             "mediaType": "tv",
+            "category": "tv",
             "title": "The Boys",
             "year": 2019,
             "season": 1,
@@ -521,7 +496,7 @@
           "playable": 0,
           "verified": 0,
           "contradictions": 0,
-          "duration_ms": 703,
+          "duration_ms": 683,
           "streams_returned": 0,
           "announced_player_candidates": 0,
           "announced_variant_candidates": 0,
@@ -550,7 +525,36 @@
           "playable": 0,
           "verified": 0,
           "contradictions": 0,
-          "duration_ms": 653,
+          "duration_ms": 678,
+          "streams_returned": 0,
+          "announced_player_candidates": 0,
+          "announced_variant_candidates": 0,
+          "announced_player_hosts": [],
+          "announced_quality_heights": [],
+          "explored_player_requests": 0,
+          "explored_player_hosts": [],
+          "variant_fanout_state": "not-observed"
+        },
+        {
+          "fixture_title": "Peaky Blinders",
+          "fixture": {
+            "slug": "peaky-blinders-2013-s01e01",
+            "tmdbId": "60574",
+            "mediaType": "tv",
+            "category": "tv",
+            "title": "Peaky Blinders",
+            "year": 2013,
+            "season": 1,
+            "episode": 1
+          },
+          "status": "no_streams",
+          "debug_stage": "provider_network_http_error",
+          "debug_progress_stage": "none",
+          "raw": 0,
+          "playable": 0,
+          "verified": 0,
+          "contradictions": 0,
+          "duration_ms": 714,
           "streams_returned": 0,
           "announced_player_candidates": 0,
           "announced_variant_candidates": 0,
