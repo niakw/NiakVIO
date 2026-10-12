@@ -1,7 +1,7 @@
 {
   "schemaVersion": 3,
-  "runId": "38247695465",
-  "triggerSha": "b68087c3f2d3742089bce582e33eeb4dc851d647",
+  "runId": "38251445648",
+  "triggerSha": "59e3a3347230a32a382bd09ca666d26e7b44d5ae",
   "providers": [
     {
       "provider": "4khdhub",
@@ -280,9 +280,9 @@
         "1 live routes / anime"
       ],
       "latestLaneVerdicts": [
-        "anime=no_streams/provider_network_exception"
+        "anime=timeout"
       ],
-      "dominantIssue": "provider_network_exception",
+      "dominantIssue": "timeout",
       "searchProgress": [
         "anime: 2 works tested / 0 retained misses"
       ],
@@ -2245,8 +2245,8 @@
   "harnessQueue": [],
   "targetedTransportBlockedQueue": [],
   "clientTransportGapQueue": [],
-  "harnessEvidenceRunId": "38247695465-sharded-waf",
-  "harnessEvidenceSha": "b68087c3f2d3742089bce582e33eeb4dc851d647",
+  "harnessEvidenceRunId": "38251445648-sharded-waf",
+  "harnessEvidenceSha": "59e3a3347230a32a382bd09ca666d26e7b44d5ae",
   "authorityRefreshedProviders": [],
   "harnessTransportUpdatedProviders": [],
   "networkDifferentialUpdatedProviders": [],
@@ -2658,41 +2658,5 @@
         "moviesmod"
       ]
     }
-  },
-  "lastRepairAttempt": {
-    "runId": "38248358173",
-    "sourceCensusRunId": "38247695465",
-    "selectedProviders": [
-      "4khdhub",
-      "allanime",
-      "animesalt",
-      "animesultra",
-      "animevost-fr",
-      "flemmix",
-      "mallumv",
-      "moviebox",
-      "moviesmod",
-      "vidfast",
-      "yflix"
-    ],
-    "candidateProviders": [],
-    "validatedProviders": [],
-    "acceptedRepairCount": 0,
-    "deferredToLearningSlotProviders": [
-      "4khdhub",
-      "allanime",
-      "animesalt",
-      "animesultra",
-      "animevost-fr",
-      "flemmix",
-      "mallumv",
-      "moviebox",
-      "moviesmod",
-      "vidfast",
-      "yflix"
-    ],
-    "noProgressReason": "no_new_repair_experiment",
-    "timeBudgetExhausted": false,
-    "publicationAllowed": false
   }
 }
