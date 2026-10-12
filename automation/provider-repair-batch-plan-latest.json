@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "sourceRunId": "38288424945",
-  "sourceTriggerSha": "15c6ae7c34255018057f5adc9419ff3de89c49e8",
+  "sourceRunId": "38292584659",
+  "sourceTriggerSha": "60d51afdb11d156ce9014f053d8c7897f96f22c7",
   "unresolvedProviderCount": 20,
   "dynamicVariantProviderCount": 6,
   "dynamicVariantProviders": [
@@ -31,7 +31,7 @@
     "yflix"
   ],
   "dynamicVariantFallbackUsed": true,
-  "groupCount": 12,
+  "groupCount": 11,
   "executionModel": {
     "default": "family/signature batch",
     "liveProbeConcurrency": "audit_provider_quick_yield ThreadPool",
@@ -44,7 +44,8 @@
       "repairScope": "route-to-terminal",
       "runtimeFamilies": [
         "api_stream_resolver",
-        "html_scraper"
+        "html_scraper",
+        "mallumv-catalogue-confirm-internal-v1"
       ],
       "capabilityStrategy": "html_scraper",
       "evidenceDepths": [
@@ -58,10 +59,11 @@
       ],
       "harnessTransportClasses": [],
       "transportSignature": "not-applicable",
-      "providerCount": 4,
+      "providerCount": 5,
       "providers": [
         "4khdhub",
         "animesalt",
+        "mallumv",
         "moviebox",
         "moviesmod"
       ],
@@ -88,7 +90,6 @@
       ],
       "dominantIssues": [
         "network_exception",
-        "timeout",
         "waf_challenge"
       ],
       "harnessTransportClasses": [],
@@ -278,33 +279,6 @@
       "providerCount": 1,
       "providers": [
         "allanime"
-      ],
-      "action": "apply/test shared terminal-player extraction profile to the whole capability family",
-      "selectionAuthorities": [
-        "provider-census-status.json:brainCheckRequired"
-      ],
-      "dynamicVariantProviders": [],
-      "executionPolicy": "batch-first",
-      "providerLocalFallback": "only-after-shared-profile-failure"
-    },
-    {
-      "groupId": "terminal-extraction|html_scraper",
-      "repairScope": "terminal-extraction",
-      "runtimeFamilies": [
-        "mallumv-catalogue-confirm-internal-v1"
-      ],
-      "capabilityStrategy": "html_scraper",
-      "evidenceDepths": [
-        "chain"
-      ],
-      "dominantIssues": [
-        "waf_challenge"
-      ],
-      "harnessTransportClasses": [],
-      "transportSignature": "not-applicable",
-      "providerCount": 1,
-      "providers": [
-        "mallumv"
       ],
       "action": "apply/test shared terminal-player extraction profile to the whole capability family",
       "selectionAuthorities": [
