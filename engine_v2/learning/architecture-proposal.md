@@ -30,23 +30,23 @@ Targets: scripts/run_brain_learning_sandbox.py, tests/brain_*
 
 ## New strategy blueprints
 
-### route_transition_graph_v19 — route-to-terminal|html_scraper
+### route_transition_graph_v20 — route-to-terminal|html_scraper
 
 Providers: 4khdhub, moviebox
 
 Trigger: catalogue/detail route is live and identity-qualified but no terminal/player media is reached
 
-Method: derive and implement a genuinely new executable Repair strategy route_transition_graph_v19 from negative evidence for exhausted route_transition_graph_v1; preserve the causal intent of the prior method without reusing its implementation, register the new profile in Repair planning/runtime, and require targeted playback/identity proof
+Method: derive and implement a genuinely new executable Repair strategy route_transition_graph_v20 from negative evidence for exhausted route_transition_graph_v1; preserve the causal intent of the prior method without reusing its implementation, register the new profile in Repair planning/runtime, and require targeted playback/identity proof
 
 Acceptance: playback-verified media; content identity not contradicted; no green-lane regression
 
-### route_transition_graph_v19 — route-to-terminal|mixed_embed_resolver
+### route_transition_graph_v20 — route-to-terminal|mixed_embed_resolver
 
 Providers: animesultra, flemmix, yflix
 
 Trigger: catalogue/detail route is live and identity-qualified but no terminal/player media is reached
 
-Method: derive and implement a genuinely new executable Repair strategy route_transition_graph_v19 from negative evidence for exhausted route_transition_graph_v1; preserve the causal intent of the prior method without reusing its implementation, register the new profile in Repair planning/runtime, and require targeted playback/identity proof
+Method: derive and implement a genuinely new executable Repair strategy route_transition_graph_v20 from negative evidence for exhausted route_transition_graph_v1; preserve the causal intent of the prior method without reusing its implementation, register the new profile in Repair planning/runtime, and require targeted playback/identity proof
 
 Acceptance: playback-verified media; content identity not contradicted; no green-lane regression
 
@@ -60,19 +60,29 @@ Method: replay already installed executable Repair strategy route_transition_gra
 
 Acceptance: playback-verified media; content identity not contradicted; no green-lane regression
 
-### route_transition_graph_v19 — route-to-terminal|iframe_player
+### route_transition_graph_v20 — route-to-terminal|iframe_player
 
 Providers: vidfast
 
 Trigger: catalogue/detail route is live and identity-qualified but no terminal/player media is reached
 
-Method: derive and implement a genuinely new executable Repair strategy route_transition_graph_v19 from negative evidence for exhausted route_transition_graph_v1; preserve the causal intent of the prior method without reusing its implementation, register the new profile in Repair planning/runtime, and require targeted playback/identity proof
+Method: derive and implement a genuinely new executable Repair strategy route_transition_graph_v20 from negative evidence for exhausted route_transition_graph_v1; preserve the causal intent of the prior method without reusing its implementation, register the new profile in Repair planning/runtime, and require targeted playback/identity proof
 
 Acceptance: playback-verified media; content identity not contradicted; no green-lane regression
 
 ### terminal_transition_graph_v8 — terminal-extraction|direct_media
 
 Providers: allanime
+
+Trigger: retained chain hit reaches player/resolver territory but media extraction/validation is incomplete
+
+Method: derive and implement a genuinely new executable Repair strategy terminal_transition_graph_v8 from negative evidence for exhausted terminal_transition_graph_v1; preserve the causal intent of the prior method without reusing its implementation, register the new profile in Repair planning/runtime, and require targeted playback/identity proof
+
+Acceptance: playback-verified media; terminal identity preserved; no green-lane regression
+
+### terminal_transition_graph_v8 — terminal-extraction|html_scraper
+
+Providers: mallumv
 
 Trigger: retained chain hit reaches player/resolver territory but media extraction/validation is incomplete
 
