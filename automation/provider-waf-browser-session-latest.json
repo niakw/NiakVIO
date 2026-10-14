@@ -22,8 +22,9 @@
     "exact failed provider GET replay is transport differential evidence only; it cannot grant playback proof"
   ],
   "counts": {
-    "browser_challenge_persisted": 15,
-    "browser_content_reached": 5
+    "browser_challenge_persisted": 14,
+    "browser_content_reached": 5,
+    "browser_timeout": 1
   },
   "rows": [
     {
@@ -77,7 +78,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 18167,
+      "durationMs": 11881,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_challenge_persisted",
@@ -158,7 +159,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 18167,
+      "durationMs": 12278,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_challenge_persisted",
@@ -199,7 +200,7 @@
       "challenge": "cloudflare",
       "seedKind": null,
       "seedRoute": null,
-      "outcome": "browser_challenge_persisted",
+      "outcome": "browser_timeout",
       "attemptCount": 2,
       "attempts": [
         {
@@ -208,8 +209,7 @@
         },
         {
           "attempt": 2,
-          "outcome": "browser_challenge_persisted",
-          "exitCode": 0
+          "outcome": "browser_timeout"
         }
       ],
       "ordinarySessionReused": true,
@@ -217,7 +217,7 @@
         {
           "profile": "github-default-browser",
           "userAgent": null,
-          "outcome": "browser_challenge_persisted",
+          "outcome": "browser_timeout",
           "attemptCount": 2,
           "attempts": [
             {
@@ -226,8 +226,7 @@
             },
             {
               "attempt": 2,
-              "outcome": "browser_challenge_persisted",
-              "exitCode": 0
+              "outcome": "browser_timeout"
             }
           ],
           "ordinarySessionReused": true
@@ -237,7 +236,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 22364,
+      "durationMs": 40089,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_challenge_persisted",
@@ -960,7 +959,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 2814
+      "durationMs": 3625
     },
     {
       "provider": "flemmix",
@@ -1013,7 +1012,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 2950
+      "durationMs": 2888
     },
     {
       "provider": "mallumv",
@@ -1066,7 +1065,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 2317
+      "durationMs": 2316
     },
     {
       "provider": "moviebox",
@@ -1124,9 +1123,9 @@
     {
       "provider": "moviesmod",
       "lane": "movie",
-      "publicUrl": "https://links.modpro.blog/archives/138983",
+      "publicUrl": "https://links.modpro.blog/archives/42612",
       "host": "links.modpro.blog",
-      "path": "/archives/138983",
+      "path": "/archives/42612",
       "method": "GET",
       "fetchStatus": 403,
       "challenge": "cloudflare",
@@ -1172,14 +1171,14 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 2414
+      "durationMs": 2473
     },
     {
       "provider": "moviesmod",
       "lane": "tv",
-      "publicUrl": "https://episodes.modpro.blog/archives/19939",
+      "publicUrl": "https://episodes.modpro.blog/archives/106843",
       "host": "episodes.modpro.blog",
-      "path": "/archives/19939",
+      "path": "/archives/106843",
       "method": "GET",
       "fetchStatus": 403,
       "challenge": "cloudflare",
@@ -1225,7 +1224,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 2181
+      "durationMs": 2065
     },
     {
       "provider": "vidfast",
