@@ -113,6 +113,103 @@
     },
     {
       "providerId": "4khdhub",
+      "mutationFingerprint": "2def7748bdf8e7eef509c833c1359faac7f89323d1f03c506fe35e8614976fa7",
+      "mutationContextFingerprint": "2c3d6fde881a2d16581f557c5a4eaea4d5734b8fcc96289287d7ac7052fdf262",
+      "failures": 1,
+      "consecutiveFailures": 1,
+      "successes": 0,
+      "lastOutcome": "rejected",
+      "lastReason": "required_category_playable_proof:movie,tv",
+      "lastMutationSummary": [
+        {
+          "scope": "provider_bloc",
+          "operation": "upsert",
+          "family": "catalogue_html"
+        }
+      ],
+      "repairFamily": {
+        "version": 2,
+        "key": "e4180b32dccd240450ca7a3a158f60a12377b611f265d65ce647652426c87c11",
+        "failure": "route-proven-gap",
+        "status": "route-proven",
+        "archetype": "route-proven-gap:dom-selector-container",
+        "mediaTypes": [
+          "movie",
+          "tv"
+        ],
+        "signals": [
+          "class-prefix-family",
+          "mixed-tag-nested-container",
+          "nested-anchor-html",
+          "provider-http-2xx",
+          "response-html",
+          "response-json"
+        ],
+        "stages": [
+          "provider-network-zero-result",
+          "provider-network-zero-result×2"
+        ],
+        "mutationSurfaces": [
+          "provider-bloc",
+          "provider-data",
+          "provider-js",
+          "provider-patch"
+        ]
+      },
+      "mechanismFamily": "catalogue-html",
+      "lastBaselineCoverage": {
+        "streamsReturned": 0,
+        "streamsPlayable": 0,
+        "identityContradictions": 0,
+        "qualityHeights": [],
+        "announcedQualityHeights": [
+          1080,
+          2160
+        ],
+        "maxPlayableHeight": 0,
+        "announcedPlayerCandidates": 16,
+        "announcedVariantCandidates": 16,
+        "exploredPlayerRequests": 1,
+        "reachableHostCount": 0,
+        "fanoutStates": [
+          "announced-not-explored"
+        ]
+      },
+      "lastCandidateCoverage": {
+        "streamsReturned": 0,
+        "streamsPlayable": 0,
+        "identityContradictions": 0,
+        "qualityHeights": [],
+        "announcedQualityHeights": [
+          1080,
+          2160
+        ],
+        "maxPlayableHeight": 0,
+        "announcedPlayerCandidates": 16,
+        "announcedVariantCandidates": 16,
+        "exploredPlayerRequests": 1,
+        "reachableHostCount": 0,
+        "fanoutStates": [
+          "announced-not-explored"
+        ]
+      },
+      "lastCoverageDelta": {
+        "streamsReturned": 0,
+        "streamsPlayable": 0,
+        "identityContradictions": 0,
+        "maxPlayableHeight": 0,
+        "announcedPlayerCandidates": 0,
+        "announcedVariantCandidates": 0,
+        "exploredPlayerRequests": 0,
+        "reachableHostCount": 0,
+        "qualityHeightCount": 0
+      },
+      "lastCurrentSha": "e437c82853a8fabce9a2f3c54b6214d3f17c7727",
+      "sourceNiakvioSha": "71547ed213b845c9bdfb759c7d94743b4041b72a",
+      "sourceBrainLlmSha": "52f28232aaf022942b53afc1d3d440a6de83bb73"
+    },
+    {
+      "providerId": "4khdhub",
       "mutationFingerprint": "537993e0a991a0ebe96577819b4f35e0e05686837bc2d51a015d6f6c346d6d51",
       "mutationContextFingerprint": "7a515c2e3d4a6e82d24c5f4776b7f0c8319a95a53e7b0e6a1511de2f09ebb8d7",
       "failures": 1,
