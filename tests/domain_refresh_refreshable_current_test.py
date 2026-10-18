@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import copy
+import json
 import sys
 from pathlib import Path
 
@@ -160,5 +161,67 @@ except RuntimeError as exc:
     assert "operator_pin" in str(exc), exc
 else:
     raise AssertionError("operator_pin rotation must fail closed")
+
+# Real 2026-10-18 scheduled Domain Refresh oracle (run 39110367982).
+# HDHub4u redirected to hdhub4u.kg, a DIFFERENT catalogue from 4KHDHub.
+# It previously superseded the 4khdhub.one explicit current terminal and
+# tripped a hard-coded downstream test, cancelling unrelated domain rotations.
+# Reject at source selection; keep the downstream identity test as defense.
+registry = json.loads((ROOT / "provider-hubs.json").read_text(encoding="utf-8"))["providers"]
+fourk = registry["4khdhub"]
+cross_brand = run_with_candidates(fourk, [{
+    "url": "https://hdhub4u.kg",
+    "label": "authoritative source redirect destination",
+    "score": 120,
+    "source_type": "hub",
+    "source": "https://hdhub4u.ec/",
+    "source_redirect": True,
+}])
+assert cross_brand["official_site"] == "https://4khdhub.one", cross_brand
+assert cross_brand["registry_explicit_current_superseded"] is False, cross_brand
+assert all(
+    "hdhub4u.kg" not in str(row.get("url") or "")
+    for row in cross_brand["site_candidates"]
+), cross_brand
+
+# A genuinely new SAME-BRAND source redirect remains eligible; the fix must
+# not freeze legitimate current provider address refreshes.
+same_brand = run_with_candidates(fourk, [{
+    "url": "https://4khdhub.new",
+    "label": "4KHDHub authoritative source redirect destination",
+    "score": 120,
+    "source_type": "hub",
+    "source": "https://hdhub4u.ec/",
+    "source_redirect": True,
+}])
+assert same_brand["official_site"] == "https://4khdhub.new", same_brand
+assert same_brand["registry_explicit_current_superseded"] is True, same_brand
+
+# A newer official message may propose an HTTP and HTTPS variant.
+# Never demote a previously HTTPS-published terminal to cleartext HTTP.
+hind = registry["hindmoviez"]
+secure_move = run_with_candidates(hind, [
+    {
+        "url": "http://hindmovie.one",
+        "label": "Current HindMovie domain",
+        "score": 100,
+        "source_type": "telegram_public",
+        "source": "https://t.me/s/hindmoviez/1975",
+        "message_id": 2645,
+    },
+    {
+        "url": "https://hindmovie.one",
+        "label": "Current HindMovie domain",
+        "score": 100,
+        "source_type": "telegram_public",
+        "source": "https://t.me/s/hindmoviez/1975",
+        "message_id": 1999,
+    },
+])
+assert secure_move["official_site"] != "http://hindmovie.one", secure_move
+assert all(
+    not str(row.get("url") or "").startswith("http://")
+    for row in secure_move["site_candidates"]
+), secure_move
 
 print("Domain Refresh refreshable-current authority contract passed")
