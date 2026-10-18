@@ -345,6 +345,14 @@ function parseArgs(argv) {
   return args;
 }
 
+// The command line parser represents a valueless --providers as boolean true.
+// Scheduled full-cohort Domain Refresh sends an empty argument; that must
+// select the full registry, not a fabricated provider literally named "true".
+export function requestedProviderIds(value) {
+  if (typeof value !== 'string') return new Set();
+  return new Set(value.split(',').map((id) => id.trim().toLowerCase()).filter(Boolean));
+}
+
 function normalizeHost(value) {
   return String(value || '')
     .trim()
@@ -1095,12 +1103,7 @@ async function runCli() {
 
   const providers = [];
   const concurrency = Math.max(1, Math.min(8, Number(preflightConfig.concurrency || 3)));
-  const requestedProviders = new Set(
-    String(args.providers || '')
-      .split(',')
-      .map((value) => value.trim().toLowerCase())
-      .filter(Boolean),
-  );
+  const requestedProviders = requestedProviderIds(args.providers);
   const allCandidates = Array.isArray(registry.candidates) ? registry.candidates : [];
   const candidates = requestedProviders.size
     ? allCandidates.filter((candidate) => requestedProviders.has(String(candidate?.canonical_id || '').trim().toLowerCase()))
