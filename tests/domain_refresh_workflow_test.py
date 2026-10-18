@@ -560,4 +560,36 @@ assert "fs27.lol" not in patch["runtime_domain_replacements"], "current host mus
 assert patch["runtime_domain_replacements"]["api.example.old"] == "api.example.new"
 assert patch["notes"] == ["must remain byte-for-byte unrelated"]
 
+# Publication liveness: preserve an already validated transaction only
+# over non-executable evidence changes; all other source/authority drift must
+# force a new Domain Refresh rather than graft stale provider bytes onto main.
+assert "scripts/domain_refresh_publication_drift_gate.py" in text
+assert 'git rebase --onto "$CURRENT_SHA" "$BASE_SHA" HEAD' in text
+assert "FIELD_DOMAIN_PUBLICATION_REPLAYED evidence_only=true" in text
+assert 'python scripts/reapply_published_overrides.py --check' in text
+assert "FIELD_DOMAIN_PUBLICATION_SKIPPED reason=main_advanced" in text
+assert 'publication=false' in text
+assert 'gh workflow run domain-refresh.yml --ref main -f mode=quick || true' in text
+from domain_refresh_publication_drift_gate import classify_drift
+safe, unsafe = classify_drift([
+    "MEMORY.md",
+    "PROVIDER_CENSUS_STATUS.md",
+    "automation/provider-census-status.json",
+    "docs/repair-memory.md",
+])
+assert safe is True and unsafe == [], unsafe
+for changed_source in (
+    "scripts/brain_repair_runtime.py",
+    "scripts/provider_patches/global_stream_identity_v1.py",
+    "provider-hubs.json",
+    "provider-overrides.json",
+    "manifest.json",
+    "native-hub46/manifest.json",
+    "providers/demo.js",
+    "automation/provider-v3-static-knowledge.json",
+    ".github/workflows/domain-refresh.yml",
+):
+    safe, unsafe = classify_drift(["MEMORY.md", changed_source])
+    assert safe is False and unsafe == [changed_source], (changed_source, unsafe)
+
 print("CORE domain refresh v2 contract passed: hub registry authority + registry persistence + CONFIG-only rebuild + cache-safe bump + activation-neutral integrity")
