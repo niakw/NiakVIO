@@ -63,6 +63,19 @@ def _safe_authoritative_candidate(
         return False
     if hostname in {str(item).casefold().strip(".") for item in cfg.get("blocked_hosts") or []}:
         return False
+    # An explicit-current provider's identity is stronger than an address hub
+    # redirect. HDHub4u and 4KHDHub, for example, are separate catalogues:
+    # a fresh redirect from the former must never replace the latter merely
+    # because the upstream hub labels it authoritative.
+    authority = str(cfg.get("direct_authority") or "").strip().casefold()
+    if authority in {"explicit_current", "operator_pin"}:
+        current_url = str(cfg.get("direct") or "").strip()
+        current_host = hubresolver.host(current_url)
+        if current_host and hostname != current_host:
+            if current_url.startswith("https://") and not url.startswith("https://"):
+                return False  # never downgrade an HTTPS provider terminal
+            if not hubresolver.same_brand(provider_id, url, cfg):
+                return False  # cross-brand source is discovery-only
     if hubresolver.host_matches_suffixes(
         hostname,
         hubresolver.SOCIAL_HOST_SUFFIXES
