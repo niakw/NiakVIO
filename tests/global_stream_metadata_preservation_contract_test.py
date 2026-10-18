@@ -152,4 +152,13 @@ assert row.get("opaqueProviderField") == "keep-me", row
 assert row.get("size") == row.get("description"), row
 assert row.get("sourceSize") == "9.8 GB", row
 
+# The shared episode-identity Core must reject explicit contradictory reader
+# metadata even when HLS URLs are opaque. Exercise the executable runtime here
+# so Stream Metadata CI never validates labels while missing episode filtering.
+episode_gate = subprocess.run(
+    [sys.executable, str(ROOT / "tests" / "episodic_identity_runtime_test.py")],
+    cwd=ROOT, text=True, capture_output=True, timeout=45, check=False,
+)
+assert episode_gate.returncode == 0, episode_gate.stdout + episode_gate.stderr
+
 print(f"global stream metadata preservation contract passed for shared {EXPECTED}-provider Core")
