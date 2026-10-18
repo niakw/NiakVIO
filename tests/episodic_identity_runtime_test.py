@@ -82,4 +82,24 @@ wrong_movie_year = execute(
 )
 assert wrong_movie_year == [], wrong_movie_year
 
+# A provider can return the right show title but an episode object/reader
+# reference belonging to another S/E. These fields must participate in
+# cross-client filtering even when the terminal CDN URL is opaque.
+for wrong in (
+    {"name": "House of the Dragon", "season": 3, "episode": 2, "url": "https://media.example/opaque.m3u8"},
+    {"name": "House of the Dragon", "seasonNumber": "3", "episodeNumber": "2", "url": "https://media.example/opaque.m3u8"},
+    {"name": "House of the Dragon EP02", "url": "https://media.example/opaque.m3u8"},
+    {"name": "House of the Dragon", "url": "https://media.example/opaque.m3u8", "playerUrl": "https://reader.example/embed/12?season=3&episode=2"},
+    {"name": "House of the Dragon", "url": "https://media.example/opaque.m3u8", "sourceUrl": "https://reader.example/watch?season_number=3&episode_number=2"},
+):
+    assert execute(wrong, hotd_request) == [], wrong
+
+for right in (
+    {"name": "House of the Dragon", "season": 3, "episode": 1, "url": "https://media.example/opaque.m3u8"},
+    {"name": "House of the Dragon EP01", "url": "https://media.example/opaque.m3u8"},
+    {"name": "House of the Dragon", "url": "https://media.example/opaque.m3u8", "playerUrl": "https://reader.example/embed/12?season=3&episode=1"},
+    {"name": "Server 1", "url": "https://media.example/opaque.m3u8"},
+):
+    assert len(execute(right, hotd_request)) == 1, right
+
 print("episodic identity runtime tests passed: provider=kehflix year=ignored S/E=authoritative movie_year=authoritative")
