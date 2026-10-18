@@ -71,9 +71,12 @@ def _safe_authoritative_candidate(
     if authority in {"explicit_current", "operator_pin"}:
         current_url = str(cfg.get("direct") or "").strip()
         current_host = hubresolver.host(current_url)
+        # HTTPS is a security property of the whole terminal, not just the
+        # hostname. An observed http:// sibling of the same host is still a
+        # downgrade and must not be retained as an authoritative candidate.
+        if current_url.startswith("https://") and not url.startswith("https://"):
+            return False
         if current_host and hostname != current_host:
-            if current_url.startswith("https://") and not url.startswith("https://"):
-                return False  # never downgrade an HTTPS provider terminal
             if not hubresolver.same_brand(provider_id, url, cfg):
                 return False  # cross-brand source is discovery-only
     if hubresolver.host_matches_suffixes(
