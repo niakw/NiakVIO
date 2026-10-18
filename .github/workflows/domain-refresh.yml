@@ -337,9 +337,46 @@ jobs:
           git fetch origin main
           CURRENT_SHA="$(git rev-parse origin/main)"
           if [ "$CURRENT_SHA" != "$BASE_SHA" ]; then
-            echo "FIELD_DOMAIN_PUBLICATION_SKIPPED reason=main_advanced observed=$BASE_SHA current=$CURRENT_SHA final=$FINAL_SHA"
-            gh workflow run domain-refresh.yml --ref main -f mode=quick
-            exit 0
+            # A long domain transaction must not be discarded solely because a
+            # census/memory/documentation commit advanced main in the meantime.
+            # Conversely, NEVER rebase published provider bytes over a changed
+            # CORE, Brain runtime, authority, manifest or build input.
+            echo "FIELD_DOMAIN_PUBLICATION_RACE observed=$BASE_SHA current=$CURRENT_SHA staged=$FINAL_SHA"
+            git diff --name-only "$BASE_SHA" "$CURRENT_SHA" > "$RUNNER_TEMP/domain-remote-drift"
+            if python scripts/domain_refresh_publication_drift_gate.py --drift-file "$RUNNER_TEMP/domain-remote-drift"; then
+              if git rebase --onto "$CURRENT_SHA" "$BASE_SHA" HEAD; then
+                # Rebasing changes the first, provider-stage commit SHA.
+                # The native transport manifest pins that exact stage commit;
+                # rebuild the pin and all release hashes before atomic push.
+                PROVIDER_SHA="$(git rev-parse HEAD^)"
+                python scripts/build_hub46_native_manifest.py \
+                  --provider-sha "$PROVIDER_SHA" \
+                  --source manifest-hub46.json \
+                  --output native-hub46/manifest.json
+                python scripts/generate_release_hashes.py
+                python tests/native_hub46_manifest_test.py
+                python tests/native_hub46_transport_manifest_test.py
+                python scripts/reapply_published_overrides.py --check
+                python scripts/validate_release_integrity.py
+                python tests/release_hash_scope_test.py
+                git add native-hub46/manifest.json FILE-HASHES.json PATCH-SHA256SUMS.txt SHA256SUMS.json
+                git commit --amend --no-edit
+                BASE_SHA="$CURRENT_SHA"
+                FINAL_SHA="$(git rev-parse HEAD)"
+                echo "FIELD_DOMAIN_PUBLICATION_REPLAYED evidence_only=true provider=$PROVIDER_SHA final=$FINAL_SHA"
+              else
+                git rebase --abort || true
+                echo "FIELD_DOMAIN_PUBLICATION_REPLAY_BLOCKED reason=git_conflict"
+              fi
+            fi
+          fi
+          git fetch origin main
+          CURRENT_SHA="$(git rev-parse origin/main)"
+          if [ "$CURRENT_SHA" != "$BASE_SHA" ]; then
+            echo "FIELD_DOMAIN_PUBLICATION_SKIPPED reason=main_advanced observed=$BASE_SHA current=$CURRENT_SHA final=$FINAL_SHA publication=false"
+            gh workflow run domain-refresh.yml --ref main -f mode=quick || true
+            # No false SUCCESS when discovered, tested domains never reached main.
+            exit 1
           fi
 
           AUTH="$(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)"
