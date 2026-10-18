@@ -8,7 +8,16 @@ import {
   extractCandidateDomains,
   providerDecision,
   simpleDnsStatus,
+  requestedProviderIds,
 } from '../scripts/provider_dns_preflight.mjs';
+
+// Missing/empty --providers in a scheduled all-hub refresh must never
+// turn a parser boolean flag into a fictitious "true" provider selection.
+assert.deepEqual([...requestedProviderIds(true)], []);
+assert.deepEqual([...requestedProviderIds(false)], []);
+assert.deepEqual([...requestedProviderIds('')], []);
+assert.deepEqual([...requestedProviderIds('  ')], []);
+assert.deepEqual([...requestedProviderIds('HindMoviez, UHDMovies, hindmoviez')], ['hindmoviez', 'uhdmovies']);
 
 const baseConfig = {
   primary_french_isp: 'sfr',
