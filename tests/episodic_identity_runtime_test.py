@@ -59,6 +59,22 @@ wrong_episode = execute(
 )
 assert wrong_episode == [], wrong_episode
 
+# Popular 1x02 naming was previously unparsed by CORE and let explicitly
+# incorrect episodes through when a provider returned a correctly titled show.
+# Keep this one central identity rule for TV, mobile, desktop, and anime.
+for tag in ("3x02", "03x002", "3 x 2"):
+    wrong_x = execute(
+        {"title": "House of the Dragon " + tag, "url": "https://media.example/opaque.m3u8"},
+        hotd_request,
+    )
+    assert wrong_x == [], (tag, wrong_x)
+
+correct_x = execute(
+    {"title": "House of the Dragon 3x01", "url": "https://media.example/opaque.m3u8"},
+    hotd_request,
+)
+assert len(correct_x) == 1, correct_x
+
 # Movie year remains valid identity evidence.
 wrong_movie_year = execute(
     {"name": "Interstellar 2026", "url": "https://media.example/interstellar.m3u8"},
