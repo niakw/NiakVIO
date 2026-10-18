@@ -71,8 +71,18 @@ assert "new.example" not in patch2["runtime_domain_replacements"], patch2
 # Current provider registry authorities must remain provider-local and explicit.
 import json
 hubs = json.loads((ROOT / "provider-hubs.json").read_text(encoding="utf-8"))["providers"]
-assert hubs["4khdhub"]["direct"] == "https://4khdhub.one/"
-assert hubs["4khdhub"]["direct_authority"] == "explicit_current"
+# Rotating current domains must be verified by ownership/projection, not
+# frozen to yesterday's address. The old literal check halted daily refresh
+# precisely when a new valid domain needed to be published.
+hd = hubs["4khdhub"]
+hd_direct = str(hd.get("direct") or "")
+hd_host = ( __import__("urllib.parse", fromlist=["urlparse"]).urlparse(hd_direct).hostname or "").casefold()
+assert hd_direct.startswith("https://") and hd_host, hd
+assert hd["direct_authority"] == "explicit_current", hd
+assert hd_host in hd.get("allowed_terminal_hosts", []), hd
+assert (hd.get("direct_candidates") or [None])[0] == hd_direct, hd
+hd_policy = json.loads((ROOT / "provider-overrides.json").read_text(encoding="utf-8"))["provider_patches"]["4khdhub"]
+assert (__import__("urllib.parse", fromlist=["urlparse"]).urlparse(str(hd_policy.get("official_site") or "")).hostname or "").casefold() == hd_host, (hd, hd_policy)
 for rotating_provider in ("wookafr", "hindmoviez"):
     rotating = hubs[rotating_provider]
     assert rotating["direct_authority"] == "explicit_current", rotating
