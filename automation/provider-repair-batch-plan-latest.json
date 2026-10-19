@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "sourceRunId": "39238451582",
-  "sourceTriggerSha": "c60e3541bbddbf4bfa9e33911cdee2b0e5cbc4bf",
+  "sourceRunId": "39241606344",
+  "sourceTriggerSha": "50de861911a3fb9662df59f087630faedc13c878",
   "unresolvedProviderCount": 20,
   "dynamicVariantProviderCount": 6,
   "dynamicVariantProviders": [
@@ -31,7 +31,7 @@
     "yflix"
   ],
   "dynamicVariantFallbackUsed": true,
-  "groupCount": 12,
+  "groupCount": 11,
   "executionModel": {
     "default": "family/signature batch",
     "liveProbeConcurrency": "audit_provider_quick_yield ThreadPool",
@@ -44,7 +44,8 @@
       "repairScope": "route-to-terminal",
       "runtimeFamilies": [
         "api_stream_resolver",
-        "html_scraper"
+        "html_scraper",
+        "mallumv-catalogue-confirm-internal-v1"
       ],
       "capabilityStrategy": "html_scraper",
       "evidenceDepths": [
@@ -54,14 +55,16 @@
       "dominantIssues": [
         "network_exception",
         "network_zero_result",
+        "timeout",
         "waf_challenge"
       ],
       "harnessTransportClasses": [],
       "transportSignature": "not-applicable",
-      "providerCount": 4,
+      "providerCount": 5,
       "providers": [
         "4khdhub",
         "animesalt",
+        "mallumv",
         "moviebox",
         "moviesmod"
       ],
@@ -278,33 +281,6 @@
       "providerCount": 1,
       "providers": [
         "allanime"
-      ],
-      "action": "apply/test shared terminal-player extraction profile to the whole capability family",
-      "selectionAuthorities": [
-        "provider-census-status.json:brainCheckRequired"
-      ],
-      "dynamicVariantProviders": [],
-      "executionPolicy": "batch-first",
-      "providerLocalFallback": "only-after-shared-profile-failure"
-    },
-    {
-      "groupId": "terminal-extraction|html_scraper",
-      "repairScope": "terminal-extraction",
-      "runtimeFamilies": [
-        "mallumv-catalogue-confirm-internal-v1"
-      ],
-      "capabilityStrategy": "html_scraper",
-      "evidenceDepths": [
-        "chain"
-      ],
-      "dominantIssues": [
-        "waf_challenge"
-      ],
-      "harnessTransportClasses": [],
-      "transportSignature": "not-applicable",
-      "providerCount": 1,
-      "providers": [
-        "mallumv"
       ],
       "action": "apply/test shared terminal-player extraction profile to the whole capability family",
       "selectionAuthorities": [
