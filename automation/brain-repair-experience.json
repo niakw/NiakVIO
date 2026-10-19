@@ -4249,7 +4249,7 @@
     "mallumv": {
       "domainMemory": true,
       "evidenceDepth": [
-        "movie=none"
+        "movie=chain_reached"
       ],
       "hasApiRecipe": false,
       "hasProviderValuePlan": false,
@@ -4330,7 +4330,7 @@
         "/confirm/{id}/{fileId}/{slug}.xhtml",
         "/internal/{id}/{fileId}/{slug}.xhtml"
       ],
-      "status": "ROUTE PROVEN",
+      "status": "CHAIN REACHED",
       "strategy": "html_scraper"
     },
     "moviebox": {
@@ -8149,8 +8149,8 @@
     "requiresDeepValidation": true
   },
   "schemaVersion": 2,
-  "sourceRunId": "39241606344",
-  "sourceSha": "50de861911a3fb9662df59f087630faedc13c878",
+  "sourceRunId": "39245165671",
+  "sourceSha": "4b952db0c184e3dd75d477a5232ec25f7e22cb25",
   "strategyPatterns": {
     "api_stream_resolver": {
       "commonRequestRecipes": [],
@@ -8463,17 +8463,17 @@
       "routeFamilies": [
         {
           "providerSupport": 1,
-          "role": "search",
-          "supportRatio": 1.0
-        },
-        {
-          "providerSupport": 1,
           "role": "episode",
           "supportRatio": 1.0
         },
         {
           "providerSupport": 1,
           "role": "api",
+          "supportRatio": 1.0
+        },
+        {
+          "providerSupport": 1,
+          "role": "search",
           "supportRatio": 1.0
         }
       ]
