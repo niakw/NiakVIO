@@ -1,3 +1,7 @@
+## 2026-10-19 — NiakTV optional Android TV launcher recommendation
+
+- Added an optional [NiakTV](https://github.com/niakw/NiakTV) recommendation under the Nuvio setup section in `README.md` and `README.fr.md`, following the NiakTV project's own public README (Android TV 8+, customizable remote-first launcher, no ads/telemetry, optional Nuvio watch-next, currently development APK). The launcher's use is explicitly independent of NiakVIO and does not replace Nuvio or any provider layer. Commits `b691f76a` (English) and `bf06ab2d` (French); exact remote README bytes verified. Docs-only; no provider/Brain runtime or manifest changed.
+
 ## 2026-10-18 — Domain transaction published; generic episode reader identity v16 validated, publication pending
 
 - Domain Refresh scheduled authority had been failing on stale 4KHDHub assumptions and skipped publication on SHA races; current run `39136247037` finished GH SUCCESS **and actually published** `FIELD_DOMAIN_PUBLICATION_OK base=22d9044 provider=6908c6ff final=85ddcb1f`. It scanned 41 enabled providers, `resolved=20 unresolved=14 applied=3`, and rematerialized **hindmoviez, uhdmovies, wookafr**. The follow-up HEAD `ba2cd77a` (empty scheduled DNS provider selection means full current cohort) passed CORE Gate `39137257038`, Verify & Publish `39137257040`, Non-Regression `39137257067`, CodeQL `39137257023`. This proves current domain authority publication, **not** healthy terminal streams.
