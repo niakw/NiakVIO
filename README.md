@@ -137,6 +137,8 @@ A standalone provider or manifest can be perfectly useful. NiakVIO becomes valua
 > [!TIP]
 > **Simple target stack:** 1 provider layer + 1 metadata/catalogue addon + 1 subtitle addon + 1 tracking service. Avoid stacking several provider packs that compete for the same role unless you are deliberately testing them.
 
+**Optional Android TV launcher — [NiakTV](https://github.com/niakw/NiakTV):** a customizable, remote-friendly Android TV home (Android TV 8+) with app shortcuts, HDMI input access, cinema or minimal themes, and no ads or telemetry. It can show Nuvio's watch-next items when Nuvio is installed and publishes them, but **NiakTV is independent and is not required to use NiakVIO**. NiakTV currently provides a development APK; see its [installation guide](https://github.com/niakw/NiakTV/blob/main/INSTALL.md).
+
 **New to Nuvio?** [`Install Nuvio + NiakVIO step by step`](docs/nuvio-installation.md)
 
 ---
