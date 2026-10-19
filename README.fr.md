@@ -137,6 +137,8 @@ Un provider ou manifest autonome peut très bien convenir. NiakVIO prend surtout
 > [!TIP]
 > **Stack cible simple :** 1 couche providers + 1 addon métadonnées/catalogue + 1 addon sous-titres + 1 service de suivi. Évitez d’empiler plusieurs packs providers qui se disputent le même rôle, sauf si vous les testez volontairement.
 
+**Launcher Android TV facultatif — [NiakTV](https://github.com/niakw/NiakTV) :** un écran d’accueil Android TV personnalisable (Android TV 8+), conçu pour la télécommande, avec raccourcis d’applications, accès aux entrées HDMI, thèmes cinéma ou minimalistes, sans publicité ni télémétrie. Il peut afficher les reprises Nuvio lorsque l’application est installée et publie ces données, mais **NiakTV est indépendant et n’est pas nécessaire pour utiliser NiakVIO**. L’application est actuellement distribuée en APK de développement : consultez son [guide d’installation](https://github.com/niakw/NiakTV/blob/main/INSTALL.fr.md).
+
 **Première installation ?** [`Installer Nuvio + NiakVIO pas à pas`](docs/fr/nuvio-installation.md)
 
 ---
