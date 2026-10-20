@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "sourceRunId": "39455301860",
-  "sourceTriggerSha": "882d7490e47f40f6c1995f39bf23fd17f7999cda",
+  "sourceRunId": "39459702105",
+  "sourceTriggerSha": "3344c64e9ef6bcd049359e70ff0edf769e870e4c",
   "unresolvedProviderCount": 20,
   "dynamicVariantProviderCount": 5,
   "dynamicVariantProviders": [
@@ -201,6 +201,33 @@
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
     {
+      "groupId": "learning|mixed_embed_resolver",
+      "repairScope": "learning",
+      "runtimeFamilies": [
+        "mixed_embed_resolver"
+      ],
+      "capabilityStrategy": "mixed_embed_resolver",
+      "evidenceDepths": [
+        "none"
+      ],
+      "dominantIssues": [
+        "timeout"
+      ],
+      "harnessTransportClasses": [],
+      "transportSignature": "not-applicable",
+      "providerCount": 1,
+      "providers": [
+        "animekai"
+      ],
+      "action": "queue by signature for Brain learning; provider-local repair only after shared profiles fail",
+      "selectionAuthorities": [
+        "provider-census-status.json:brainCheckRequired"
+      ],
+      "dynamicVariantProviders": [],
+      "executionPolicy": "batch-first",
+      "providerLocalFallback": "only-after-shared-profile-failure"
+    },
+    {
       "groupId": "route-to-terminal|api_stream_resolver",
       "repairScope": "route-to-terminal",
       "runtimeFamilies": [
@@ -303,33 +330,6 @@
         "mallumv"
       ],
       "action": "apply/test shared terminal-player extraction profile to the whole capability family",
-      "selectionAuthorities": [
-        "provider-census-status.json:brainCheckRequired"
-      ],
-      "dynamicVariantProviders": [],
-      "executionPolicy": "batch-first",
-      "providerLocalFallback": "only-after-shared-profile-failure"
-    },
-    {
-      "groupId": "transport|mixed_embed_resolver",
-      "repairScope": "transport",
-      "runtimeFamilies": [
-        "mixed_embed_resolver"
-      ],
-      "capabilityStrategy": "mixed_embed_resolver",
-      "evidenceDepths": [
-        "none"
-      ],
-      "dominantIssues": [
-        "network_exception"
-      ],
-      "harnessTransportClasses": [],
-      "transportSignature": "not-applicable",
-      "providerCount": 1,
-      "providers": [
-        "animekai"
-      ],
-      "action": "refresh transport authority before provider-local code changes",
       "selectionAuthorities": [
         "provider-census-status.json:brainCheckRequired"
       ],
