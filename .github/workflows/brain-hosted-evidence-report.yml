@@ -1,0 +1,57 @@
+name: Brain - Read hosted repair evidence
+
+on:
+  push:
+    branches: [codex/niakvio-brain-reliability]
+    paths: [.github/workflows/brain-hosted-evidence-report.yml]
+  workflow_dispatch:
+    inputs:
+      run_id:
+        description: Existing hosted repair run to inspect, without new inference
+        required: true
+        default: '39853941550'
+
+permissions:
+  actions: read
+
+jobs:
+  evidence:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Download existing sanitized experiment evidence
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          name: hosted-repair-check-${{ inputs.run_id || '39853941550' }}
+          run-id: ${{ inputs.run_id || '39853941550' }}
+          github-token: ${{ github.token }}
+          path: evidence
+      - name: Expose verification outcome without repeating generation
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json, os, re
+          from pathlib import Path
+          safe = lambda value: re.sub(r'[^a-zA-Z0-9._:-]', '_', str(value))[:160]
+          result = json.loads(Path('evidence/evaluation.json').read_text())
+          summary = json.loads(Path('evidence/summary.json').read_text())
+          lines = []
+          for row in result.get('rows', []):
+              baseline = row.get('baseline') or {}
+              candidate = row.get('candidate') or {}
+              line = (
+                  f"provider={safe(row.get('provider'))} "
+                  f"executed={row.get('executionObserved') is True} "
+                  f"accepted={row.get('accepted') is True} "
+                  f"reason={safe(row.get('reason'))} "
+                  f"error={safe(row.get('error', 'none'))} "
+                  f"baseline_playable={int(baseline.get('streamsPlayable') or 0)} "
+                  f"candidate_playable={int(candidate.get('streamsPlayable') or 0)}"
+              )
+              lines.append(line)
+              print('::notice title=Hosted verification evidence::' + line)
+          if not lines:
+              print('::notice title=Hosted verification evidence::no_candidates_in_existing_run')
+          with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as handle:
+              handle.write('```json\n' + json.dumps(summary, indent=2) + '\n```\n')
+          PY
