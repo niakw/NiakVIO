@@ -20,14 +20,14 @@
     "yflix"
   ],
   "effectiveWaves": 1,
-  "elapsedSeconds": 194.314,
+  "elapsedSeconds": 215.435,
   "executionModel": "family-batched-multi-wave-brain-repair",
   "experienceMemory": {
     "operationalProviderCount": 25,
     "providerCount": 46,
     "schemaVersion": 2,
-    "sourceRunId": "39854729176",
-    "sourceSha": "24f58c1371c86baf56d6feb961eea017955886c3",
+    "sourceRunId": "39858785648",
+    "sourceSha": "6b13c1c554d8a1daf2ffc8b42a284ff6ab645347",
     "strategyCount": 5
   },
   "fixedInLabProviders": [],
@@ -53,10 +53,8 @@
   "maxWaves": 1,
   "noProgressReason": "experiment_variants_exhausted",
   "positiveProgramRecovery": {
-    "durableProviders": [
-      "mallumv"
-    ],
-    "durableRecordCount": 2,
+    "durableProviders": [],
+    "durableRecordCount": 0,
     "recoveredRecordCount": 0,
     "reportCount": 68
   },
@@ -113,7 +111,7 @@
   "shardCount": 1,
   "shardIndex": 0,
   "skippedEnvironmentProviders": [],
-  "sourceCensusRunId": "39854729176",
+  "sourceCensusRunId": "39858785648",
   "timeBudgetExhausted": false,
   "timeBudgetSeconds": 1200,
   "unvisitedProviders": [],
@@ -507,18 +505,37 @@
                 "targetCategories": []
               },
               "published:mallumv": {
-                "action": "deferred_retry",
-                "allowedProfiles": [],
+                "action": "probe-targeted-repair",
+                "allowedProfiles": [
+                  "player_media_extractor_v1"
+                ],
                 "baseExperimentExhausted": false,
-                "exitReason": "repair_loop_detected",
+                "exitReason": null,
                 "experimentExhausted": false,
-                "experimentGeneration": 1,
-                "experimentVariant": 1,
+                "experimentGeneration": 2,
+                "experimentVariant": 4,
                 "experimentVariantCount": 5,
                 "explorationChainEnabled": true,
                 "explorationModeEnabled": true,
                 "failureClass": "media_extraction_gap",
-                "hypotheses": [],
+                "hypotheses": [
+                  {
+                    "confidence": 0,
+                    "id": "capture-media-network",
+                    "learned": false,
+                    "maturity": null,
+                    "profile": null,
+                    "transferScore": 0
+                  },
+                  {
+                    "confidence": 0,
+                    "id": "inspect-player-javascript",
+                    "learned": false,
+                    "maturity": null,
+                    "profile": null,
+                    "transferScore": 0
+                  }
+                ],
                 "learningDisposition": "core_repair_only",
                 "llmAdvisorApplied": false,
                 "llmAdvisorConfidence": 0,
@@ -532,7 +549,7 @@
                 "llmAdvisorSourceFailureClass": "",
                 "llmAdvisorStrategy": "",
                 "metaGapEscalated": false,
-                "negativeMemoryMatches": 24,
+                "negativeMemoryMatches": 25,
                 "positiveProgramFingerprint": "",
                 "postExhaustionCandidateProfiles": [
                   "player_protocol_family_replay_v1",
