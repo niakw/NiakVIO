@@ -76,15 +76,39 @@ jobs:
           test "$GITHUB_REF" = refs/heads/codex/niakvio-brain-reliability
           [[ "$SOURCE_RUN" =~ ^[0-9]+$ ]]
           receipt="automation/hosted-repair-evidence/$SOURCE_RUN.json"
-          if [ -f "$receipt" ]; then
-            echo "HOSTED_EVIDENCE already_imported=true"
-            exit 0
+          if [ ! -f "$receipt" ]; then
+            python scripts/update_brain_llm_force_memory.py \
+              --memory automation/brain-llm-force-memory.json --evaluation evidence/evaluation.json
+            mkdir -p automation/hosted-repair-evidence
+            cp evidence/summary.json "$receipt"
           fi
-          python scripts/update_brain_llm_force_memory.py \
-            --memory automation/brain-llm-force-memory.json --evaluation evidence/evaluation.json
-          mkdir -p automation/hosted-repair-evidence
-          cp evidence/summary.json "$receipt"
-          git add automation/brain-llm-force-memory.json "$receipt"
+          python3 - <<'PY'
+          import json, os
+          from pathlib import Path
+          result = json.loads(Path('evidence/evaluation.json').read_text())
+          safe_rows = []
+          for row in result.get('rows', [])[:4]:
+              safe_row = {key: row.get(key) for key in ('provider', 'accepted', 'executionObserved', 'reason', 'mutationSummary')}
+              for phase in ('baseline', 'candidate'):
+                  value = row.get(phase) or {}
+                  safe_row[phase] = {key: value.get(key) for key in (
+                      'status', 'score', 'streamsPlayable', 'streamsReturned', 'identityContradictions',
+                      'providerRequests', 'providerHttpStatuses', 'variantCoverage', 'invocationDiagnostics',
+                  )}
+                  safe_row[phase]['networkTrace'] = [
+                      {key: event.get(key) for key in (
+                          'stage', 'host', 'method', 'status', 'ok', 'errorCode',
+                          'announcedPlayerCandidates', 'announcedQualityHeights',
+                      )}
+                      for event in value.get('networkTrace', [])[:64]
+                  ]
+              safe_rows.append(safe_row)
+          output = {'currentSha': result.get('currentSha'), 'rows': safe_rows, 'publicationAuthority': False}
+          path = Path('automation/hosted-repair-evidence') / (os.environ['SOURCE_RUN'] + '-evaluation.json')
+          path.write_text(json.dumps(output, indent=2) + '\n')
+          PY
+          git add automation/brain-llm-force-memory.json automation/hosted-repair-evidence
+          git diff --cached --quiet && exit 0
           git -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' \
             commit -m "ci(brain): retain hosted experiment $SOURCE_RUN"
           git push origin HEAD:refs/heads/codex/niakvio-brain-reliability
