@@ -1,0 +1,144 @@
+name: Brain - Hosted single-provider repair check
+
+on:
+  push:
+    branches: [codex/niakvio-brain-reliability]
+    paths: [.github/workflows/brain-hosted-repair-check.yml]
+  workflow_dispatch:
+    inputs:
+      provider:
+        description: One representative provider, evaluated in an isolated sandbox
+        type: choice
+        options: [allanime, animekai, animevostfr]
+        default: allanime
+
+permissions:
+  contents: read
+
+jobs:
+  repair-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      TARGET_PROVIDER: ${{ inputs.provider || 'allanime' }}
+      BRAIN_SHA: dee979c069b769776086b24b52473f7db88076d7
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          repository: niakw/NiakVIO-Brain-LLM
+          ref: ${{ env.BRAIN_SHA }}
+          path: brain-llm
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '24'
+      - name: Prepare public-only context
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          test "$(git -C brain-llm rev-parse HEAD)" = "$BRAIN_SHA"
+          npm ci --ignore-scripts
+          python -m pip install -e brain-llm
+          mkdir -p local-output/hosted-check
+          python brain-llm/scripts/import_public_niakvio.py --niakvio-root . --output local-output/hosted-check/experience.jsonl
+          python brain-llm/scripts/import_public_docs.py --niakvio-root . --config brain-llm/config/document_sources.json --output local-output/hosted-check/documents.jsonl
+      - name: Generate one bounded repair hypothesis
+        timeout-minutes: 8
+        env:
+          NIAKVIO_OPENAI_API_KEY: ${{ secrets.NIAKVIO_OPENAI_API_KEY }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          python brain-llm/scripts/plan_batch_from_checkout.py \
+            --niakvio-root . \
+            --experience local-output/hosted-check/experience.jsonl \
+            --documents local-output/hosted-check/documents.jsonl \
+            --mode repair --provider "$TARGET_PROVIDER" \
+            --backend hosted --workers 1 --max-hypotheses 1 \
+            --max-tokens 2048 --timeout-seconds 120 --force-provider-budget-seconds 180 \
+            --output local-output/hosted-check/batch.jsonl
+      - name: Validate candidate admission on exact source bytes
+        shell: bash
+        run: |
+          set -euo pipefail
+          python brain-llm/scripts/publish_niakvio_force_diagnostics.py \
+            --input local-output/hosted-check/batch.jsonl \
+            --output local-output/hosted-check/diagnostics.json \
+            --niakvio-sha "$GITHUB_SHA" --brain-llm-sha "$BRAIN_SHA"
+          python brain-llm/scripts/publish_niakvio_force_mutations.py \
+            --input local-output/hosted-check/batch.jsonl \
+            --output local-output/hosted-check/mutations.json \
+            --niakvio-root . --niakvio-sha "$GITHUB_SHA" --brain-llm-sha "$BRAIN_SHA"
+      - name: Compare baseline and candidate with existing identity and playback gates
+        timeout-minutes: 8
+        env:
+          TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+          TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/evaluate_brain_llm_force_candidates.py \
+            --input local-output/hosted-check/mutations.json --current-sha "$GITHUB_SHA" \
+            --provider "$TARGET_PROVIDER" \
+            --report local-output/hosted-check/evaluation.json \
+            --accepted-output local-output/hosted-check/accepted.json
+          python scripts/update_brain_llm_force_memory.py \
+            --memory local-output/hosted-check/force-memory.json \
+            --evaluation local-output/hosted-check/evaluation.json
+      - name: Report generation and verification separately
+        if: always()
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json, os, re
+          from pathlib import Path
+          root = Path('local-output/hosted-check')
+          def read(name):
+              path = root / name
+              return json.loads(path.read_text()) if path.is_file() else {}
+          diagnostics = read('diagnostics.json')
+          evaluation = read('evaluation.json')
+          trace = [event for row in diagnostics.get('rows', []) for event in row.get('scopeTrace', [])]
+          safe = lambda value: re.sub(r'[^a-zA-Z0-9._:-]', '_', str(value))[:120]
+          summary = {
+              'provider': os.environ['TARGET_PROVIDER'],
+              'sourceNiakvioSha': os.environ['GITHUB_SHA'],
+              'sourceBrainLlmSha': os.environ['BRAIN_SHA'],
+              'generationReported': bool(diagnostics),
+              'candidateCount': int(evaluation.get('candidateCount') or 0),
+              'acceptedProviderCount': int(evaluation.get('acceptedProviderCount') or 0),
+              'scopeTrace': [{key: safe(row.get(key, '')) for key in ('scope', 'outcome', 'reason', 'errorType')} for row in trace],
+              'verification': [{
+                  'accepted': row.get('accepted') is True,
+                  'executionObserved': row.get('executionObserved') is True,
+                  'reason': safe(row.get('reason', '')),
+              } for row in evaluation.get('rows', [])],
+              'publicationAuthority': False,
+          }
+          root.mkdir(parents=True, exist_ok=True)
+          (root / 'summary.json').write_text(json.dumps(summary, indent=2) + '\n')
+          line = f"provider={summary['provider']} candidates={summary['candidateCount']} accepted={summary['acceptedProviderCount']}"
+          reasons = ','.join(safe(row.get('reason', '')) for row in trace)
+          print(f'::notice title=Hosted repair check::{line} generation_reasons={reasons or "none"}')
+          with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as handle:
+              handle.write('```json\n' + json.dumps(summary, indent=2) + '\n```\n')
+          PY
+      - name: Retain bounded experiment evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: hosted-repair-check-${{ github.run_id }}
+          retention-days: 7
+          path: |
+            local-output/hosted-check/summary.json
+            local-output/hosted-check/diagnostics.json
+            local-output/hosted-check/evaluation.json
+            local-output/hosted-check/force-memory.json
