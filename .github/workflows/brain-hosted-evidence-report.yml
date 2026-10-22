@@ -13,12 +13,20 @@ on:
 
 permissions:
   actions: read
+  contents: write
 
 jobs:
   evidence:
+    if: github.ref == 'refs/heads/codex/niakvio-brain-reliability'
     runs-on: ubuntu-latest
     timeout-minutes: 3
+    env:
+      SOURCE_RUN: ${{ inputs.run_id || '39853941550' }}
     steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
       - name: Download existing sanitized experiment evidence
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
         with:
@@ -50,8 +58,33 @@ jobs:
               )
               lines.append(line)
               print('::notice title=Hosted verification evidence::' + line)
+              for phase, phase_result in (('baseline', baseline), ('candidate', candidate)):
+                  statuses = ','.join(str(status) for status in phase_result.get('providerHttpStatuses', []) if isinstance(status, int))
+                  print('::notice title=Hosted runtime evidence::' +
+                        f"phase={phase} requests={int(phase_result.get('providerRequests') or 0)} " +
+                        f"returned={int(phase_result.get('streamsReturned') or 0)} " +
+                        f"statuses={statuses or 'none'} failure={safe(phase_result.get('failureClass', ''))}")
           if not lines:
               print('::notice title=Hosted verification evidence::no_candidates_in_existing_run')
           with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as handle:
               handle.write('```json\n' + json.dumps(summary, indent=2) + '\n```\n')
           PY
+      - name: Persist the executed outcome on the diagnostic branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF" = refs/heads/codex/niakvio-brain-reliability
+          [[ "$SOURCE_RUN" =~ ^[0-9]+$ ]]
+          receipt="automation/hosted-repair-evidence/$SOURCE_RUN.json"
+          if [ -f "$receipt" ]; then
+            echo "HOSTED_EVIDENCE already_imported=true"
+            exit 0
+          fi
+          python scripts/update_brain_llm_force_memory.py \
+            --memory automation/brain-llm-force-memory.json --evaluation evidence/evaluation.json
+          mkdir -p automation/hosted-repair-evidence
+          cp evidence/summary.json "$receipt"
+          git add automation/brain-llm-force-memory.json "$receipt"
+          git -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' \
+            commit -m "ci(brain): retain hosted experiment $SOURCE_RUN"
+          git push origin HEAD:refs/heads/codex/niakvio-brain-reliability
