@@ -3,8 +3,7 @@
 > Auto-generated from automation/provider-census-status.json. Probe interpretation belongs to Repair; WAF overlays are transport-only.
 
 Latest provider census state: **🟢 22 FULL OK · 🟡 3 PARTIAL OK · 🟦 2 CANDIDATE OK · 🟪 9 ROUTE PROVEN · 🟣 2 CHAIN REACHED · 🔵 1 NO PROOF · 🔴 2 REGRESSION PROVIDER · ⚫ 5 DISABLED** across **46 providers**.
-Evidence authority: Repair census run 39728412748 · SHA fd29b2f0d374 · transport overlay 39728412748-sharded-waf.
-Latest Repair/FORCE attempt: **run 39729062020** · selected **11** · candidates **0** · validated **0** · Learning debt recorded **11** · result **no_new_repair_experiment**.
+Evidence authority: Repair census run 39731232119 · SHA 44ee83b532bb · transport overlay 39731232119-sharded-waf.
 Symptomatic providers: **16** · automated repair queue: **16** · lifecycle disabled: **0** · authority rediscovery: **0** · harness mismatch: **0** · client transport gap: **0** · environment blocked: **0**.
 Residential harness: **available** · private exit compared where matched.
 
