@@ -8,6 +8,7 @@ import os
 import re
 import subprocess
 import sys
+import tempfile
 import time
 from pathlib import Path
 from typing import Any, Callable
@@ -1139,11 +1140,19 @@ def _execute_planner(
     }
     planner_input = _strict_json_dumps(payload).encode("ascii")
     try:
-        completed = subprocess.run(
-            ["node", str(PLAN_SCRIPT)], cwd=ROOT,
-            input=planner_input,
-            capture_output=True, check=True, timeout=30,
-        )
+        # Node's synchronous stdin reader can encounter EAGAIN or truncated
+        # JSON on a pipe once durable experiment memory exceeds pipe capacity.
+        # Pass the complete payload through the planner's existing file input
+        # contract, retaining every observation and negative fingerprint.
+        with tempfile.TemporaryDirectory(prefix="niakvio-brain-planner-") as directory:
+            input_path = Path(directory) / "input.json"
+            input_path.write_bytes(planner_input)
+            completed = subprocess.run(
+                ["node", str(PLAN_SCRIPT)], cwd=ROOT,
+                input=b"",
+                env={**os.environ, "NUVIO_BRAIN_PLANNER_INPUT_FILE": str(input_path)},
+                capture_output=True, check=True, timeout=30,
+            )
     except subprocess.CalledProcessError as exc:
         detail = _safe_planner_stderr(exc.stderr)
         raise RuntimeError(f"ARCHI2 Brain planner failed (exit={exc.returncode}; stderr={detail or 'empty'}; bytes={len(planner_input)})") from exc

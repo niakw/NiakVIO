@@ -20,6 +20,7 @@ program={
         "base_url":"https://provider.example",
         "types":["movie"],
         "user_agent":"NiakVIO-Persist-Test/1.0",
+        "experiment_failure_class":"media_extraction_gap",
         "request_recipes":[
             {
                 "route":"/search",
@@ -45,6 +46,7 @@ program={
                 "response":"html-or-text",
                 "semanticType":"movie",
                 "requiredBindings":["id"],
+                "streamProof":True,
                 "executable":True,
             },
         ],
@@ -114,6 +116,19 @@ with tempfile.TemporaryDirectory() as directory:
         assert "bad-demo" in rejected2,rejected2
         assert rejected_rows[0]["v3ProgramPersistence"]["status"]=="rejected"
         assert overrides.read_text(encoding="utf-8")==before
+
+        # Legacy program options can omit the media failure label, but their
+        # accepted plan still requires a retained provider-owned terminal proof.
+        missing_proof=json.loads(json.dumps(accepted[0]))
+        missing_proof["acceptedProgram"]["options"].pop("experiment_failure_class")
+        missing_proof["acceptedProgram"]["options"]["request_recipes"][1]["streamProof"]=False
+        positive_before=positive.read_bytes()
+        compiled3,rejected3=mod.persist_accepted_programs([missing_proof])
+        assert compiled3==set(),compiled3
+        assert rejected3=={"demo":"no_provider_owned_terminal_recipe_proof"},rejected3
+        assert missing_proof["v3ProgramPersistence"]["status"]=="rejected"
+        assert overrides.read_text(encoding="utf-8")==before
+        assert positive.read_bytes()==positive_before
     finally:
         mod.OVERRIDES=old_overrides
         mod.POSITIVE_MEMORY=old_positive

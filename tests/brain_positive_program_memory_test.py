@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import importlib.util
+import copy
 import json
 import tempfile
 from pathlib import Path
@@ -145,6 +146,83 @@ with tempfile.TemporaryDirectory() as directory:
     assert all(ch in "0123456789abcdef" for ch in fingerprints["demo"]),fingerprints
     assert memory.provider_program_fingerprint("demo",path=path)==fingerprints["demo"],fingerprints
     assert skill["source"]=="brain-positive-program-memory"
+
+    # A pre-migration record still has valid terminal proof when it is carried
+    # by its bound provider-value step. The new terminal plan is optional.
+    legacy=copy.deepcopy(row)
+    legacy["compiledProgram"].pop("terminalRequestPlan",None)
+    assert memory.validation_rejection_reason(legacy)==""
+
+    # A success flag and playable counter cannot replace a retained terminal
+    # recipe. Old poisoned records remain in the source JSON for diagnosis,
+    # but must not supply routes, skills, or replay fingerprints.
+    stale=copy.deepcopy(legacy)
+    stale["providerId"]="stale"
+    stale["fingerprint"]="a"*64
+    stale["compiledProgram"]["provider"]="stale"
+    stale["compiledProgram"]["providerValuePlan"]=[]
+    stale["compiledProgram"]["learnedRoutes"]=["/unrelated-promo.mp4"]
+    raw_memory=copy.deepcopy(saved2)
+    raw_memory["entries"]=[legacy,stale]
+    path.write_text(json.dumps(raw_memory),encoding="utf-8")
+    before=path.read_bytes()
+    loaded=memory.load_memory(path)
+    assert [r["providerId"] for r in loaded["entries"]]==["demo"],loaded
+    assert loaded["rejectedEntries"]==[{
+        "providerId":"stale",
+        "fingerprint":"a"*64,
+        "reason":"no_provider_owned_terminal_recipe_proof",
+    }],loaded
+    assert memory.provider_entries("stale",path=path)==[]
+    assert memory.provider_routes("stale",path=path)==[]
+    assert memory.provider_request_recipes("stale",path=path)==[]
+    assert memory.provider_program_fingerprint("stale",path=path)==""
+    assert memory.learned_skills(path=path)[skill["id"]]["providers"]==["demo"]
+    assert path.read_bytes()==before,"loading evidence must not rewrite source records"
+
+    # Preserve a legitimate independent terminal recipe through compilation,
+    # capture and load. It has no bound provider-value step by design.
+    independent=copy.deepcopy(program)
+    terminal=independent["options"]["request_recipes"][1]
+    terminal["route"]="/media/chosen-file"
+    terminal["role"]="source"
+    terminal["requiredBindings"]=[]
+    terminal["headerNames"].append("user-agent")
+    independent["options"]["request_recipes"][0]["headerNames"].remove("user-agent")
+    independent_compiled=compiler.compile_program(independent,"independent")
+    assert independent_compiled["providerValuePlan"]==[]
+    assert independent_compiled["terminalRequestPlan"][0]["route"]=="/media/chosen-file"
+    independent_accepted={**accepted,"provider":"independent","acceptedProgram":independent}
+    independent_path=Path(directory)/"independent.json"
+    memory.merge_records([(independent_accepted,independent_compiled)],path=independent_path)
+    independent_recipes=memory.provider_request_recipes("independent",path=independent_path)
+    assert any(r["route"]=="/media/chosen-file" and r["streamProof"] is True for r in independent_recipes),independent_recipes
+    assert memory.provider_program_fingerprint("independent",path=independent_path)
+    assert memory.provider_user_agent("independent",path=independent_path)=="NiakVIO-Positive-Memory-Test/1.0"
+
+    # A full terminal plan must retain the search seed within the 32-recipe
+    # runtime budget; otherwise its bound/traversal context cannot be rebuilt.
+    crowded=copy.deepcopy(independent)
+    crowded["options"]["request_recipes"]=[
+        crowded["options"]["request_recipes"][0],
+        *[{**copy.deepcopy(terminal),"route":f"/media/chosen-{i}"} for i in range(32)],
+    ]
+    crowded_compiled=compiler.compile_program(crowded,"crowded")
+    crowded_path=Path(directory)/"crowded.json"
+    memory.merge_records([({**accepted,"provider":"crowded","acceptedProgram":crowded},crowded_compiled)],path=crowded_path)
+    crowded_recipes=memory.provider_request_recipes("crowded",path=crowded_path)
+    assert len(crowded_recipes)==32,crowded_recipes
+    assert crowded_recipes[0]["role"]=="search",crowded_recipes
+    assert sum(r["streamProof"] is True for r in crowded_recipes)==31,crowded_recipes
+
+    invalid_proof=copy.deepcopy(independent_compiled)
+    invalid_proof["terminalRequestPlan"][0]["base"]="https://www.gstatic.com"
+    try:
+        memory.positive_record(independent_accepted,invalid_proof)
+    except ValueError as exc:
+        assert "terminal_recipe_proof" in str(exc),exc
+    else:
+        raise AssertionError("unowned terminal media must not become positive memory")
 
 adaptive=(ROOT/"scripts/adaptive_runtime/runtime_repair.py").read_text(encoding="utf-8")
 base=(ROOT/"scripts/brain_repair_runtime.py").read_text(encoding="utf-8")

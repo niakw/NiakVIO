@@ -135,6 +135,21 @@ def compile_program(program:dict[str,Any],provider:str)->dict[str,Any]:
             })
         if steps:pvp.append({'searchBase':s['origin'],'searchRoute':s['route'],'searchRequestSpec':s['requestSpec'],'steps':steps[:8],'semanticTypes':s['semanticTypes'],'proofModelVersion':6,'sourceRole':'brain-accepted-provider-value-correlation'})
     if dep and not pvp:raise ValueError('lost dependent dataflow')
+    # Independent terminal recipes do not belong to searchRequestPlan or the
+    # value-bound traversal. Preserve their exact sanitized execution context
+    # so a durable positive program can still justify and replay its proof.
+    terminal=[{
+        'base':x['origin'],
+        'route':x['route'],
+        'requestSpec':x['requestSpec'],
+        'responseKind':x['responseKind'],
+        'streamProof':True,
+        'role':x['role'],
+        'requiredBindings':x['bindings'],
+        'semanticTypes':x['semanticTypes'],
+        'proofModelVersion':6,
+        'sourceRole':'brain-accepted-runtime',
+    } for x in norm if x['streamProof'] is True]
     return {
         'schemaVersion':1,
         'provider':cid(provider),
@@ -145,6 +160,7 @@ def compile_program(program:dict[str,Any],provider:str)->dict[str,Any]:
         'learnedRoutes':learned_routes[:32],
         'searchRequestPlan':srp,
         'providerValuePlan':pvp[:12],
+        'terminalRequestPlan':terminal[:32],
         'experimentVariant':max(0,int(o.get('experiment_variant') or 0)),
         'experimentGeneration':max(1,int(o.get('experiment_generation') or 1)),
         'experimentFailureClass':str(o.get('experiment_failure_class') or ''),

@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """Repository continuity gate for durable positive Brain programs.
 
-The committed durable memory must already contain every historical strict
-accepted program that the current compiler can still recover. Recovery itself is
-tested separately; this test prevents a future evidence-only commit from
-silently resetting the committed memory to an older/empty state.
+The validated view of committed memory must contain every historical strict
+accepted program that the current compiler can still recover. Legacy records
+that no longer satisfy the compiler's terminal proof contract remain historical
+evidence and must not be counted as durable positive programs.
 """
 from __future__ import annotations
 
@@ -22,10 +22,11 @@ spec = importlib.util.spec_from_file_location("recover_positive_repo", SCRIPT)
 mod = importlib.util.module_from_spec(spec)
 assert spec and spec.loader
 spec.loader.exec_module(mod)
+from brain_positive_program_memory import load_memory
 
 
 def fingerprints(path: Path) -> set[str]:
-    data = json.loads(path.read_text(encoding="utf-8"))
+    data = load_memory(path)
     return {
         str(row.get("fingerprint") or "")
         for row in data.get("entries") or []

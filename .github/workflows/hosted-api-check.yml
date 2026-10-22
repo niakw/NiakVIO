@@ -1,0 +1,74 @@
+name: Brain - OpenAI API check
+
+on:
+  push:
+    branches: [codex/niakvio-brain-reliability]
+    paths: [.github/workflows/hosted-api-check.yml]
+  workflow_dispatch:
+    inputs:
+      model:
+        description: Hosted model for one minimal generation
+        type: choice
+        options: [gpt-6.1-sol, gpt-6-astra]
+        default: gpt-6.1-sol
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Verify generation using the repository secret
+        env:
+          NIAKVIO_OPENAI_API_KEY: ${{ secrets.NIAKVIO_OPENAI_API_KEY }}
+          HOSTED_MODEL: ${{ inputs.model || 'gpt-6.1-sol' }}
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json
+          import os
+          from urllib.error import HTTPError, URLError
+          from urllib.request import Request, urlopen
+
+          credential = os.environ.get("NIAKVIO_OPENAI_API_KEY", "")
+          if not credential.strip():
+              raise SystemExit("API_CHECK missing_repository_secret")
+          model = os.environ["HOSTED_MODEL"]
+          if model not in {"gpt-6.1-sol", "gpt-6-astra"}:
+              raise SystemExit("API_CHECK unsupported_model")
+          request = Request(
+              "https://api.openai.com/v1/responses",
+              data=json.dumps({
+                  "model": model,
+                  "input": "Reply with OK only.",
+                  "store": False,
+                  "reasoning": {"effort": "low"},
+                  "max_output_tokens": 1024,
+              }).encode(),
+              headers={"Authorization": "Bearer " + credential, "Content-Type": "application/json"},
+              method="POST",
+          )
+          try:
+              with urlopen(request, timeout=60) as response:
+                  result = json.loads(response.read())
+          except HTTPError as error:
+              try:
+                  code = json.loads(error.read()).get("error", {}).get("code")
+              except (ValueError, AttributeError):
+                  code = None
+              known = {"invalid_api_key", "insufficient_quota", "rate_limit_exceeded", "model_not_found"}
+              safe_code = code if isinstance(code, str) and code in known else "request_failed"
+              raise SystemExit(f"API_CHECK http={error.code} code={safe_code}") from None
+          except (URLError, TimeoutError):
+              raise SystemExit("API_CHECK transport_failed") from None
+          visible = any(
+              part.get("type") == "output_text" and bool(part.get("text", "").strip())
+              for output in result.get("output", []) if isinstance(output, dict)
+              for part in output.get("content", []) if isinstance(part, dict)
+          )
+          if result.get("status") != "completed" or not visible:
+              raise SystemExit("API_CHECK generation_incomplete")
+          print("API_CHECK generation_verified")
+          PY

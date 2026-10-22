@@ -11,16 +11,53 @@ import copy
 import hashlib
 import json
 import re
+import sys
 from pathlib import Path
 from typing import Any
+
+SCRIPT_DIR = Path(__file__).resolve().parent
+if str(SCRIPT_DIR) not in sys.path:
+    sys.path.insert(0, str(SCRIPT_DIR))
+from compile_brain_accepted_program_v3 import safe_origin, safe_route
 
 ROOT = Path(__file__).resolve().parents[1]
 MEMORY_PATH = ROOT / "automation" / "brain-positive-program-memory.json"
 _BINDING = re.compile(r"\{(?:binding:)?(id|slug)\}", re.I)
+_MEDIA_FAILURES = {"media_extraction_gap", "playback_context_gap", "chain_terminal_gap"}
 
 
 def cid(value: object) -> str:
     return str(value or "").strip().casefold().replace("_", "-")
+
+
+def validation_rejection_reason(row: dict[str, Any]) -> str:
+    """Revalidate old positive records against the current compiler contract."""
+    compiled = row.get("compiledProgram")
+    if not isinstance(compiled, dict):
+        return "missing_compiled_program"
+    failure = str(compiled.get("experimentFailureClass") or row.get("failureClass") or "").casefold()
+    if failure not in _MEDIA_FAILURES:
+        return ""
+    recipes = [
+        recipe
+        for key in ("searchRequestPlan", "terminalRequestPlan")
+        for recipe in (compiled.get(key) or [])
+        if isinstance(recipe, dict)
+    ]
+    for plan in compiled.get("providerValuePlan") or []:
+        if isinstance(plan, dict):
+            recipes.extend(step for step in plan.get("steps") or [] if isinstance(step, dict))
+    for recipe in recipes:
+        if recipe.get("streamProof") is not True:
+            continue
+        try:
+            origin = safe_origin(recipe.get("base"))
+            route = safe_route(recipe.get("route"))
+        except ValueError:
+            continue
+        if origin and route:
+            return ""
+    return "no_provider_owned_terminal_recipe_proof"
 
 
 def load_memory(path: Path = MEMORY_PATH) -> dict[str, Any]:
@@ -33,10 +70,25 @@ def load_memory(path: Path = MEMORY_PATH) -> dict[str, Any]:
     entries = value.get("entries")
     if not isinstance(entries, list):
         entries = []
+    valid = []
+    rejected = []
+    for row in entries[:1000]:
+        if not isinstance(row, dict):
+            continue
+        reason = validation_rejection_reason(row)
+        if reason:
+            rejected.append({
+                "providerId": cid(row.get("providerId")),
+                "fingerprint": str(row.get("fingerprint") or ""),
+                "reason": reason,
+            })
+        else:
+            valid.append(row)
     return {
         "schemaVersion": 1,
         "role": "validated-positive-program-prior-only",
-        "entries": [row for row in entries if isinstance(row, dict)][:1000],
+        "entries": valid,
+        "rejectedEntries": rejected,
         "safety": {
             "candidateJavaScriptPersisted": False,
             "publicationAuthority": False,
@@ -100,6 +152,9 @@ def positive_record(
         "compiledProgram": copy.deepcopy(compiled),
     }
     row["fingerprint"] = _fingerprint(row)
+    reason = validation_rejection_reason(row)
+    if reason:
+        raise ValueError(reason)
     return row
 
 
@@ -209,9 +264,28 @@ def _recipe(
 
 def provider_request_recipes(provider_id: str, *, path: Path = MEMORY_PATH) -> list[dict[str, Any]]:
     output: list[dict[str, Any]] = []
+    terminal_output: list[dict[str, Any]] = []
     seen: set[str] = set()
+    terminal_seen: set[str] = set()
     for entry in provider_entries(provider_id, path=path):
         compiled = entry.get("compiledProgram") if isinstance(entry.get("compiledProgram"), dict) else {}
+        for row in compiled.get("terminalRequestPlan") or []:
+            if not isinstance(row, dict):
+                continue
+            for recipe in _recipe(
+                base=row.get("base"),
+                route=row.get("route"),
+                spec=row.get("requestSpec"),
+                role=str(row.get("role") or "source").casefold(),
+                semantic_types=row.get("semanticTypes"),
+                required_bindings=list(row.get("requiredBindings") or []),
+                response_kind=row.get("responseKind"),
+                stream_proof=row.get("streamProof") is True,
+            ):
+                key = json.dumps(recipe, sort_keys=True, separators=(",", ":"))
+                if key not in terminal_seen:
+                    terminal_seen.add(key)
+                    terminal_output.append(recipe)
         for row in compiled.get("searchRequestPlan") or []:
             if not isinstance(row, dict):
                 continue
@@ -257,7 +331,17 @@ def provider_request_recipes(provider_id: str, *, path: Path = MEMORY_PATH) -> l
                     if key not in seen:
                         seen.add(key)
                         output.append(recipe)
-    return output[:32]
+    # Search/value seeds reconstruct the accepted dataflow. Independent
+    # terminal evidence uses the remaining budget, with one reserved slot when
+    # many seed recipes fill the cap. Terminal rows duplicated by value steps
+    # already belong to the seed budget.
+    terminal_output = [
+        recipe for recipe in terminal_output
+        if json.dumps(recipe, sort_keys=True, separators=(",", ":")) not in seen
+    ]
+    seed_limit = 31 if terminal_output else 32
+    selected = output[:seed_limit]
+    return [*selected, *terminal_output[:32 - len(selected)]]
 
 
 def provider_user_agent(provider_id: str, *, path: Path = MEMORY_PATH) -> str:
@@ -266,6 +350,7 @@ def provider_user_agent(provider_id: str, *, path: Path = MEMORY_PATH) -> str:
         compiled = entry.get("compiledProgram") if isinstance(entry.get("compiledProgram"), dict) else {}
         plans = [
             *(compiled.get("searchRequestPlan") or []),
+            *(compiled.get("terminalRequestPlan") or []),
             *(compiled.get("providerValuePlan") or []),
         ]
         for plan in plans:

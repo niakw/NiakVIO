@@ -33,8 +33,9 @@ if str(SCRIPTS) not in sys.path:
 
 from repair_identity_gate import automatic_repair_identity_gate
 from compile_brain_accepted_program_v3 import apply_compiled, compile_program
-from brain_positive_program_memory import MEMORY_PATH as DEFAULT_POSITIVE_MEMORY, merge_records as merge_positive_program_records
+from brain_positive_program_memory import MEMORY_PATH as DEFAULT_POSITIVE_MEMORY, merge_records as merge_positive_program_records, positive_record
 from recover_brain_positive_program_memory import recover as recover_positive_program_memory
+from import_external_brain_llm_guidance import is_executed_negative_experiment
 STATUS = ROOT / "automation" / "provider-census-status.json"
 DEFAULT_OUTPUT = ROOT / "automation" / "provider-brain-repair-latest.json"
 DEFAULT_WORK = ROOT / "automation" / ".provider-brain-repair-work"
@@ -490,7 +491,7 @@ def untried_advisor_fingerprints(
             and all(ch in "0123456789abcdef" for ch in fingerprint)
         )
         if provider in selected and profile and valid_fingerprint:
-            if int(row.get("consecutiveFailures") or 0) >= 1:
+            if is_executed_negative_experiment(row):
                 failed.setdefault(provider, set()).add((profile, fingerprint))
             if (
                 row.get("executionObserved") is True
@@ -1214,6 +1215,10 @@ def persist_accepted_programs(
             continue
         try:
             compiled_data = compile_program(program, provider)
+            # Legacy programs may omit the options failure label while their
+            # accepted Brain plan records a media failure. Validate admission
+            # before changing override DATA, and report rejection per provider.
+            positive_record(row, compiled_data)
             current = apply_compiled(current, compiled_data)
         except (TypeError, ValueError) as exc:
             reason = str(exc)[:240] or type(exc).__name__

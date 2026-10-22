@@ -81,8 +81,10 @@ with tempfile.TemporaryDirectory() as tmp:
             "providerId":"moviebox",
             "profile":"proven_route_terminal_traversal_v1",
             "llmAdvisorExperimentFingerprint":dead,
-            "consecutiveFailures":0,
-            "failures":1,
+            # Older memory debited unavailable profiles as failures even
+            # though the matching strategy never produced a candidate.
+            "consecutiveFailures":4,
+            "failures":4,
             "executionObserved":False,
             "lastOutcome":"profile_unavailable",
         }]
@@ -90,5 +92,71 @@ with tempfile.TemporaryDirectory() as tmp:
     filtered,dropped=mod.filter_guidance(payload,[memory])
 assert dropped==0,(filtered,dropped)
 assert filtered["providerCount"]==2,filtered
+
+# Legacy unavailable rows may predate the explicit execution flag. They are
+# applicability evidence, and must not blacklist an executable advisor prior.
+with tempfile.TemporaryDirectory() as tmp:
+    tmp=Path(tmp)
+    memory=tmp/"repair-memory.json"
+    memory.write_text(json.dumps({
+        "entries":[{
+            "providerId":"moviebox",
+            "profile":"proven_route_terminal_traversal_v1",
+            "llmAdvisorExperimentFingerprint":dead,
+            "consecutiveFailures":2,
+            "lastOutcome":"profile_unavailable",
+            "lastReason":"planned_profile_not_applicable_to_current_bytes",
+        }]
+    }),encoding="utf-8")
+    filtered,dropped=mod.filter_guidance(payload,[memory])
+assert dropped==0,(filtered,dropped)
+assert filtered["providerCount"]==2,filtered
+
+# The outer wave scheduler must agree with the import filter. Otherwise an
+# imported hypothesis can still be called exhausted without ever executing.
+runner_spec=importlib.util.spec_from_file_location(
+    "learning_guidance_runner",ROOT/"scripts"/"run_provider_brain_repair.py"
+)
+assert runner_spec and runner_spec.loader
+runner=importlib.util.module_from_spec(runner_spec)
+runner_spec.loader.exec_module(runner)
+cases=[
+    ({"executionObserved":False,"lastOutcome":"profile_unavailable","consecutiveFailures":4},False),
+    ({"executionObserved":False,"lastOutcome":"rejected","consecutiveFailures":4},False),
+    ({"lastOutcome":"profile_unavailable","consecutiveFailures":2},False),
+    ({"lastOutcome":" PROFILE-UNAVAILABLE ","consecutiveFailures":2},False),
+    ({"lastOutcome":"not_generated","consecutiveFailures":2},False),
+    ({"lastOutcome":"rejected","consecutiveFailures":"invalid"},False),
+    ({"executionObserved":True,"lastOutcome":"rejected","consecutiveFailures":1},True),
+    ({"lastOutcome":"rejected","consecutiveFailures":1},True),
+    ({"executionObserved":True,"lastOutcome":"accepted","consecutiveFailures":0,"successes":1},False),
+    ({"executionObserved":True,"lastOutcome":"accepted","consecutiveFailures":1,"successes":1},False),
+]
+with tempfile.TemporaryDirectory() as tmp:
+    tmp=Path(tmp)
+    memory=tmp/"repair-memory.json"
+    guidance=tmp/"guidance.json"
+    original_memory=runner.REPAIR_MEMORY
+    runner.REPAIR_MEMORY=memory
+    try:
+        for evidence,failed in cases:
+            memory.write_text(json.dumps({"entries":[{
+                "providerId":"moviebox",
+                "profile":"proven_route_terminal_traversal_v1",
+                "llmAdvisorExperimentFingerprint":dead,
+                **evidence,
+            }]}),encoding="utf-8")
+            filtered,dropped=mod.filter_guidance(payload,[memory])
+            assert dropped==int(failed),(evidence,filtered,dropped)
+            # Check the same raw guidance too: scheduler correctness must not
+            # depend on an earlier import having hidden the erroneous debt.
+            guidance.write_text(json.dumps(payload),encoding="utf-8")
+            pending=runner.untried_advisor_fingerprints(["moviebox"],guidance)
+            assert bool(pending.get("moviebox")) is not failed,(evidence,pending)
+            guidance.write_text(json.dumps(filtered),encoding="utf-8")
+            imported_pending=runner.untried_advisor_fingerprints(["moviebox"],guidance)
+            assert imported_pending==pending,(evidence,imported_pending,pending)
+    finally:
+        runner.REPAIR_MEMORY=original_memory
 
 print("Brain Learning negative-guidance filter contract passed")

@@ -58,6 +58,18 @@ def provider_materialization_scope(root:Path,source_sha:str,current_sha:str)->di
  if not isinstance(scope,dict):raise ValueError("provider drift classifier returned invalid payload")
  return scope
 
+def is_executed_negative_experiment(row:dict[str,Any])->bool:
+ # Old memory could debit a selected but unavailable profile as a failure.
+ # An explicit non-execution signal overrides these stale counters. Preserve
+ # legacy executed failures that predate executionObserved, but never infer
+ # an execution from profile_unavailable alone.
+ if row.get("executionObserved") is False:return False
+ outcome=str(row.get("lastOutcome") or "").strip().casefold().replace("-","_")
+ if outcome in {"accepted","verified","success"}:return False
+ if outcome in {"profile_unavailable","not_generated"} and row.get("executionObserved") is not True:return False
+ try:return int(row.get("consecutiveFailures") or 0)>=1
+ except (TypeError,ValueError):return False
+
 def failed_llm_experiments(memory:dict[str,Any])->set[tuple[str,str,str]]:
  rows=[]
  experiment_memory=memory.get("experimentMemory") if isinstance(memory.get("experimentMemory"),dict) else {}
@@ -65,7 +77,7 @@ def failed_llm_experiments(memory:dict[str,Any])->set[tuple[str,str,str]]:
  if isinstance(memory.get("entries"),list):rows.extend(memory.get("entries") or [])
  failed=set()
  for row in rows:
-  if not isinstance(row,dict) or int(row.get("consecutiveFailures") or 0)<1:continue
+  if not isinstance(row,dict) or not is_executed_negative_experiment(row):continue
   provider=canon(row.get("providerId"));profile=str(row.get("profile") or "").strip().casefold()
   fp=str(row.get("llmAdvisorExperimentFingerprint") or "").strip().casefold()
   if provider and profile and re.fullmatch(r"[0-9a-f]{64}",fp):failed.add((provider,profile,fp))
