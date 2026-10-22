@@ -9,7 +9,7 @@ on:
       run_id:
         description: Existing hosted repair run to inspect, without new inference
         required: true
-        default: '39853941550'
+        default: '39856569346'
 
 permissions:
   actions: read
@@ -21,7 +21,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 3
     env:
-      SOURCE_RUN: ${{ inputs.run_id || '39853941550' }}
+      SOURCE_RUN: ${{ inputs.run_id || '39856569346' }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
@@ -30,8 +30,8 @@ jobs:
       - name: Download existing sanitized experiment evidence
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
         with:
-          name: hosted-repair-check-${{ inputs.run_id || '39853941550' }}
-          run-id: ${{ inputs.run_id || '39853941550' }}
+          name: hosted-repair-check-${{ inputs.run_id || '39856569346' }}
+          run-id: ${{ inputs.run_id || '39856569346' }}
           github-token: ${{ github.token }}
           path: evidence
       - name: Expose verification outcome without repeating generation
@@ -106,6 +106,10 @@ jobs:
           output = {'currentSha': result.get('currentSha'), 'rows': safe_rows, 'publicationAuthority': False}
           path = Path('automation/hosted-repair-evidence') / (os.environ['SOURCE_RUN'] + '-evaluation.json')
           path.write_text(json.dumps(output, indent=2) + '\n')
+          mutations = Path('evidence/mutations.json')
+          if mutations.is_file():
+              target = path.with_name(os.environ['SOURCE_RUN'] + '-mutations.json')
+              target.write_bytes(mutations.read_bytes())
           PY
           git add automation/brain-llm-force-memory.json automation/hosted-repair-evidence
           git diff --cached --quiet && exit 0
