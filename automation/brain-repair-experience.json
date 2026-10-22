@@ -916,8 +916,8 @@
     "4khdhub": {
       "domainMemory": true,
       "evidenceDepth": [
-        "movie=none",
-        "tv=none"
+        "movie=lookup_only",
+        "tv=lookup_only"
       ],
       "hasApiRecipe": false,
       "hasProviderValuePlan": false,
@@ -8149,8 +8149,8 @@
     "requiresDeepValidation": true
   },
   "schemaVersion": 2,
-  "sourceRunId": "39833019832",
-  "sourceSha": "3c9d46d7dca621665b31c5de46a2836df5a0f421",
+  "sourceRunId": "39837308786",
+  "sourceSha": "50aaf82391760d5c515ba28797a4142ff8b64062",
   "strategyPatterns": {
     "api_stream_resolver": {
       "commonRequestRecipes": [],
@@ -8162,7 +8162,7 @@
       "routeFamilies": [
         {
           "providerSupport": 1,
-          "role": "other",
+          "role": "search",
           "supportRatio": 1.0
         },
         {
@@ -8172,7 +8172,7 @@
         },
         {
           "providerSupport": 1,
-          "role": "search",
+          "role": "other",
           "supportRatio": 1.0
         }
       ]
@@ -8217,12 +8217,12 @@
         },
         {
           "providerSupport": 1,
-          "role": "other",
+          "role": "player",
           "supportRatio": 0.25
         },
         {
           "providerSupport": 1,
-          "role": "player",
+          "role": "other",
           "supportRatio": 0.25
         }
       ]
@@ -8463,12 +8463,12 @@
       "routeFamilies": [
         {
           "providerSupport": 1,
-          "role": "episode",
+          "role": "search",
           "supportRatio": 1.0
         },
         {
           "providerSupport": 1,
-          "role": "search",
+          "role": "episode",
           "supportRatio": 1.0
         },
         {
