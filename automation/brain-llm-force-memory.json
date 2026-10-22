@@ -499,6 +499,94 @@
       "sourceBrainLlmSha": "715fcec76b04eb9e480382cb0f5d39531fb63f56"
     },
     {
+      "providerId": "allanime",
+      "mutationFingerprint": "2ef20aa1d764c97d0b6ba59ab7879cadfb3ba3addf0eafce14389ccbcc16287d",
+      "mutationContextFingerprint": "620d5f85ffd238c422e06bb97ad01ed4f5e3f8925d6c4c581cf05228db2997fe",
+      "failures": 1,
+      "consecutiveFailures": 1,
+      "successes": 0,
+      "lastOutcome": "rejected",
+      "lastReason": "required_category_playable_proof:anime",
+      "lastMutationSummary": [
+        {
+          "scope": "provider_bloc",
+          "operation": "upsert",
+          "family": "tmdb_direct_api"
+        }
+      ],
+      "repairFamily": {
+        "version": 2,
+        "key": "83cd919990911ba1ebe590f4758d105d45441b947b4bb9f41e6ce8f4c2c9a18e",
+        "failure": "chain-terminal-gap",
+        "status": "chain-reached",
+        "archetype": "chain-terminal-gap:dom-selector-container",
+        "mediaTypes": [
+          "anime"
+        ],
+        "signals": [
+          "mixed-tag-nested-container",
+          "nested-anchor-html",
+          "provider-http-2xx",
+          "response-html",
+          "response-json"
+        ],
+        "stages": [
+          "provider-network-zero-result"
+        ],
+        "mutationSurfaces": [
+          "provider-bloc",
+          "provider-data",
+          "provider-js",
+          "provider-patch"
+        ]
+      },
+      "mechanismFamily": "tmdb-direct-api",
+      "lastBaselineCoverage": {
+        "streamsReturned": 0,
+        "streamsPlayable": 0,
+        "identityContradictions": 0,
+        "qualityHeights": [],
+        "announcedQualityHeights": [],
+        "maxPlayableHeight": 0,
+        "announcedPlayerCandidates": 47,
+        "announcedVariantCandidates": 141,
+        "exploredPlayerRequests": 8,
+        "reachableHostCount": 0,
+        "fanoutStates": [
+          "explored-not-resolved"
+        ]
+      },
+      "lastCandidateCoverage": {
+        "streamsReturned": 0,
+        "streamsPlayable": 0,
+        "identityContradictions": 0,
+        "qualityHeights": [],
+        "announcedQualityHeights": [],
+        "maxPlayableHeight": 0,
+        "announcedPlayerCandidates": 47,
+        "announcedVariantCandidates": 141,
+        "exploredPlayerRequests": 8,
+        "reachableHostCount": 0,
+        "fanoutStates": [
+          "explored-not-resolved"
+        ]
+      },
+      "lastCoverageDelta": {
+        "streamsReturned": 0,
+        "streamsPlayable": 0,
+        "identityContradictions": 0,
+        "maxPlayableHeight": 0,
+        "announcedPlayerCandidates": 0,
+        "announcedVariantCandidates": 0,
+        "exploredPlayerRequests": 0,
+        "reachableHostCount": 0,
+        "qualityHeightCount": 0
+      },
+      "lastCurrentSha": "0c2075d7bf6cb8a7428163458f6f3a897a290aaa",
+      "sourceNiakvioSha": "0c2075d7bf6cb8a7428163458f6f3a897a290aaa",
+      "sourceBrainLlmSha": "f524a984aa976aef08c6cff0e81dca342af8741d"
+    },
+    {
       "providerId": "allwish",
       "mutationFingerprint": "819282e3fb2d3c8caa21eab5e3e5385eb9c50a92b18852822410f71abdc3e490",
       "mutationContextFingerprint": "7191d9ed35d3cf898ec5c68bc2597d6fe6375f24782c728d2fa64105376ebe64",
