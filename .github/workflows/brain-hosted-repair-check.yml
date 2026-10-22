@@ -21,7 +21,7 @@ jobs:
     timeout-minutes: 20
     env:
       TARGET_PROVIDER: ${{ inputs.provider || 'allanime' }}
-      BRAIN_SHA: f524a984aa976aef08c6cff0e81dca342af8741d
+      BRAIN_SHA: 9959c89e76d869444e5ca3d4d2358e10b78f8a69
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
@@ -50,6 +50,14 @@ jobs:
           mkdir -p local-output/hosted-check
           python brain-llm/scripts/import_public_niakvio.py --niakvio-root . --output local-output/hosted-check/experience.jsonl
           python brain-llm/scripts/import_public_docs.py --niakvio-root . --config brain-llm/config/document_sources.json --output local-output/hosted-check/documents.jsonl
+      - name: Observe current provider execution before choosing editable functions
+        timeout-minutes: 5
+        env:
+          TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+          TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+        shell: bash
+        run: |
+          python scripts/capture_brain_live_context.py --provider "$TARGET_PROVIDER" --output local-output/hosted-check/live-context.json
       - name: Generate one bounded repair hypothesis
         timeout-minutes: 8
         env:
@@ -62,8 +70,9 @@ jobs:
             --experience local-output/hosted-check/experience.jsonl \
             --documents local-output/hosted-check/documents.jsonl \
             --mode repair --provider "$TARGET_PROVIDER" \
+            --live-evidence local-output/hosted-check/live-context.json \
             --backend hosted --workers 1 --max-hypotheses 1 \
-            --max-tokens 2048 --timeout-seconds 120 --force-provider-budget-seconds 180 \
+            --max-tokens 4096 --timeout-seconds 120 --force-provider-budget-seconds 240 \
             --output local-output/hosted-check/batch.jsonl
       - name: Validate candidate admission on exact source bytes
         shell: bash
@@ -142,3 +151,5 @@ jobs:
             local-output/hosted-check/diagnostics.json
             local-output/hosted-check/evaluation.json
             local-output/hosted-check/force-memory.json
+            local-output/hosted-check/live-context.json
+            local-output/hosted-check/mutations.json

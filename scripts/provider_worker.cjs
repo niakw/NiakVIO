@@ -14,6 +14,9 @@ const { pathToFileURL } = require('node:url');
 const { webcrypto } = require('node:crypto');
 const { guardedFetch } = require('./network_guard.cjs');
 const { extractResponseVariantHints } = require('./response_variant_hints.cjs');
+const { providerCallNames } = require('./provider_callsite.cjs');
+const DiagnosticError = Error;
+let activeProviderPath = '';
 const Module = require('node:module');
 
 const networkObservations = [];
@@ -631,6 +634,7 @@ function installPolyfills(context = {}) {
     const contactedHosts = new Set();
     const maxDistinctHosts = Math.max(1, Number(context.networkLimits?.maxDistinctHosts || 20));
     defineGlobal('fetch', async (input, init = {}) => {
+      const providerFunctions = providerCallNames(new DiagnosticError().stack, activeProviderPath);
       fetchCount += 1;
       if (fetchCount > maxFetches) throw new Error(`provider fetch limit exceeded (${maxFetches})`);
       const inherited = (typeof Request !== 'undefined' && input instanceof Request) ? input.headers : undefined;
@@ -685,6 +689,7 @@ function installPolyfills(context = {}) {
         if (declaredLength > maxResponseBytes) throw new Error(`response body exceeds limit (${declaredLength} bytes)`);
         const routeProofHints = routeProofEnabled ? await routeProofResponseHints(response) : [];
         const observation = {
+          provider_function_names: providerFunctions,
           stage: requestStage, host, method: requestMeta.method, path_pattern: requestMeta.path_pattern,
           status: response.status, ok: response.ok, duration_ms: Date.now() - started,
           infrastructure: isInfrastructureHost(host), synthetic_fixture_fallback: synthetic,
@@ -729,6 +734,7 @@ function installPolyfills(context = {}) {
       } catch (error) {
         networkObservations.push({
           stage: requestStage, host, method: requestMeta.method, path_pattern: requestMeta.path_pattern,
+          provider_function_names: providerFunctions,
           status: null, ok: false, duration_ms: Date.now() - started, infrastructure: isInfrastructureHost(host),
           invocation: activeInvocation, settings_profile: activeSettingsProfile,
           error_code: error?.code ? String(error.code).slice(0, 120) : null,
@@ -1089,6 +1095,7 @@ async function main() {
   suppressProviderLogs();
 
   const providerPath = path.resolve(providerArg);
+  activeProviderPath = providerPath;
   const fixture = JSON.parse(fixtureArg);
   const inputType = String(fixture.mediaType || fixture.type || fixture.category || 'movie').trim().toLowerCase();
   const category = String(fixture.category || '').trim().toLowerCase();
