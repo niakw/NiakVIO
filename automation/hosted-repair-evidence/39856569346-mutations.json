@@ -1,0 +1,64 @@
+{
+  "brainLlmSha": "9959c89e76d869444e5ca3d4d2358e10b78f8a69",
+  "minConfidence": 0.8,
+  "privateContentRetained": false,
+  "proofAuthority": false,
+  "providerCount": 1,
+  "providerMutationContentRetained": true,
+  "publicationAuthority": false,
+  "rows": [
+    {
+      "candidateOrdinal": 1,
+      "confidence": 0.96,
+      "failureClass": "chain-terminal-gap",
+      "mechanismFamily": "tmdb-direct-api",
+      "mutationContextFingerprint": "620d5f85ffd238c422e06bb97ad01ed4f5e3f8925d6c4c581cf05228db2997fe",
+      "mutationFingerprint": "452d9cdd4f95f37cfc4e8772496b3697c597ed53e280fb2d4ece5c06d7b57230",
+      "mutations": [
+        {
+          "family": "tmdb_direct_api",
+          "find": "abs=absoluteEpisode(q,meta),episodes=uniq([abs,q.episode]),modes=[{suffix:\"english-subbed\",lang:\"VOSTA\"},{suffix:\"english-dubbed\",lang:\"English Dub\"}],out=[],seen={};for(var ni=0;ni<names.length&&ni<4&&out.length<c.maxStreams;ni++){var slug=siteSlug(names[ni]);if(!slug)continue;for(var ei=0;ei<episodes.length&&out.length<c.maxStreams;ei++){for(var mi=0;mi<modes.length&&out.length<c.maxStreams;mi++){var page=c.siteBase.replace(/\\/$/,\"\")+\"/\"+slug+\"-episode-\"+episodes[ei]+\"-\"+modes[mi].suffix,doc=await fetchSitePage(page);if(!doc)continue;var candidates=siteCandidates(doc.text,doc.url),rows=[];try{if(typeof _crawlDirectMedia===\"function\"){if(candidates.length)rows=await _crawlDirectMedia(candidates,doc.url,3);if((!Array.isArray(rows)||!rows.length))rows=await _crawlDirectMedia([doc.url],doc.url,3)}}catch(_e){rows=[]}if(!Array.isArray(rows)||!rows.length)continue;for(var ri=0;ri<rows.length&&out.length<c.maxStreams;ri++){var row=rows[ri]||{},u=s(row.url);if(!/^https?:\\/\\//i.test(u)||seen[u])continue;seen[u]=1;var x=Object.assign({},row);x.provider=\"allanime\";x.name=\"AllAnime | \"+modes[mi].lang;x.title=meta.title+\" | S\"+q.season+\"E\"+q.episode+\" | \"+modes[mi].lang;x.language=modes[mi].lang;if(!x.headers)x.headers={\"Referer\":doc.url,\"User-Agent\":c.ua};out.push(x)}if(out.length)return out",
+          "operation": "upsert",
+          "replace": "eps=uniq([absoluteEpisode(q,meta),q.episode]),modes=[['english-subbed','VOSTA'],['english-dubbed','English Dub']],out=[],seen={};for(var n=0;n<names.length&&n<4;n++)for(var e=0;e<eps.length;e++)for(var m=0;m<modes.length;m++){var slug=siteSlug(names[n]);if(!slug)continue;var doc=await fetchSitePage(c.siteBase.replace(/\\/$/,'')+'/'+slug+'-episode-'+eps[e]+'-'+modes[m][0]);if(!doc)continue;var links=siteCandidates(doc.text,doc.url).concat([doc.url]);for(var j=0;j<links.length;j++){var rows=[];try{rows=await _crawlDirectMedia([links[j]],doc.url,3)}catch(_e){}if(!Array.isArray(rows))continue;for(var r=0;r<rows.length;r++){var x=Object.assign({},rows[r]),u=s(x.url);if(!/^https?:\\/\\//i.test(u)||seen[u])continue;seen[u]=1;x.provider='allanime';x.name='AllAnime | '+modes[m][1];x.title=meta.title+' | S'+q.season+'E'+q.episode+' | '+modes[m][1];x.language=modes[m][1];if(!x.headers)x.headers={'Referer':doc.url,'User-Agent':c.ua};out.push(x)",
+          "scope": "provider_bloc"
+        }
+      ],
+      "providerId": "allanime",
+      "repairFamily": {
+        "archetype": "chain-terminal-gap:dom-selector-container",
+        "failure": "chain-terminal-gap",
+        "key": "83cd919990911ba1ebe590f4758d105d45441b947b4bb9f41e6ce8f4c2c9a18e",
+        "mediaTypes": [
+          "anime"
+        ],
+        "mutationSurfaces": [
+          "provider-bloc",
+          "provider-data",
+          "provider-js",
+          "provider-patch"
+        ],
+        "signals": [
+          "mixed-tag-nested-container",
+          "nested-anchor-html",
+          "provider-http-2xx",
+          "response-html",
+          "response-json"
+        ],
+        "stages": [
+          "provider-network-zero-result"
+        ],
+        "status": "chain-reached",
+        "version": 2
+      },
+      "strategy": "terminal-media-extractor-with-playback-validation",
+      "targetLayer": "provider",
+      "tests": [
+        "replay_proven_chain_to_terminal_media",
+        "validate_media_signature_duration_and_identity"
+      ]
+    }
+  ],
+  "sandboxMutationAuthority": true,
+  "schemaVersion": 1,
+  "sourceNiakvioSha": "1ea3790be280939530a9b1f074fdbd567f004f4b"
+}
