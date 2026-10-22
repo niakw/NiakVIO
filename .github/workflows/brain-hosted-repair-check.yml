@@ -10,7 +10,7 @@ on:
         description: One representative provider, evaluated in an isolated sandbox
         type: choice
         options: [allanime, animekai, animevostfr]
-        default: allanime
+        default: animevostfr
 
 permissions:
   contents: read
@@ -20,7 +20,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
-      TARGET_PROVIDER: ${{ inputs.provider || 'allanime' }}
+      TARGET_PROVIDER: ${{ inputs.provider || 'animevostfr' }}
       BRAIN_SHA: 1969f2dd3e2914b7898c9cf03c233ec159498b17
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
