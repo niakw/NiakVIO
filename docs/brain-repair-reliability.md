@@ -81,3 +81,17 @@ Le Brain conserve désormais le focus d'extraction quand aucun flux n'est
 retourné ; le focus d'énumération reste actif pour une vraie panne de couverture.
 Trois nouvelles régressions reproduisent ce cas et la suite Brain atteint
 300 tests réussis. Le nouvel essai garde le même provider et les mêmes gates.
+
+Le [second essai AllAnime](https://github.com/niakw/NiakVIO/actions/runs/39853941550)
+a produit un candidat exécutable, appliqué puis évalué dans le sandbox.
+L'acceptation reste négative : `required_category_playable_proof:anime`, avec
+zéro flux lisible pour la référence et pour le candidat. Ce résultat ne prouve
+aucune restauration du provider.
+
+Le [rejeu des preuves existantes](https://github.com/niakw/NiakVIO/actions/runs/39854678256)
+a conservé cet échec dans `automation/brain-llm-force-memory.json`, sur la branche
+de diagnostic uniquement. Le reçu
+`automation/hosted-repair-evidence/39853941550.json` empêche de compter deux fois
+le même run. La relecture locale confirme que le Brain reçoit l'empreinte de
+cette mutation rejetée. La prochaine expérience doit donc proposer une mutation
+différente et s'appuyer sur les observations réseau/terminales du provider.
