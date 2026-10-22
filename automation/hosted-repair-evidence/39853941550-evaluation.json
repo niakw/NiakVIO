@@ -1,0 +1,627 @@
+{
+  "currentSha": "0c2075d7bf6cb8a7428163458f6f3a897a290aaa",
+  "rows": [
+    {
+      "provider": "allanime",
+      "accepted": false,
+      "executionObserved": true,
+      "reason": "required_category_playable_proof:anime",
+      "mutationSummary": [
+        {
+          "scope": "provider_bloc",
+          "operation": "upsert",
+          "family": "tmdb_direct_api"
+        }
+      ],
+      "baseline": {
+        "status": "no_streams",
+        "score": 100,
+        "streamsPlayable": 0,
+        "streamsReturned": 0,
+        "identityContradictions": 0,
+        "providerRequests": 0,
+        "providerHttpStatuses": [
+          200
+        ],
+        "variantCoverage": {
+          "qualityHeights": [],
+          "maxPlayableHeight": 0,
+          "audioLanguages": [],
+          "reachableHosts": [],
+          "announcedPlayerCandidates": 47,
+          "announcedVariantCandidates": 141,
+          "exploredPlayerRequests": 8,
+          "fanoutStates": [
+            "explored-not-resolved"
+          ],
+          "announcedQualityHeights": []
+        },
+        "invocationDiagnostics": [
+          {
+            "fixture": "Hell Mode S01E01",
+            "name": "positional_with_settings",
+            "inferredMode": "positional",
+            "result": "empty",
+            "streamCount": 0,
+            "providerObservations": 22,
+            "errorCode": ""
+          },
+          {
+            "fixture": "Jujutsu Kaisen S01E01",
+            "name": "positional_with_settings",
+            "inferredMode": "positional",
+            "result": "empty",
+            "streamCount": 0,
+            "providerObservations": 17,
+            "errorCode": ""
+          },
+          {
+            "fixture": "Attack on Titan S01E01",
+            "name": "positional_with_settings",
+            "inferredMode": "positional",
+            "result": "empty",
+            "streamCount": 0,
+            "providerObservations": 29,
+            "errorCode": ""
+          },
+          {
+            "fixture": "One Piece S01E01",
+            "name": "positional_with_settings",
+            "inferredMode": "positional",
+            "result": "empty",
+            "streamCount": 0,
+            "providerObservations": 14,
+            "errorCode": ""
+          }
+        ],
+        "networkTrace": [
+          {
+            "stage": "content_lookup",
+            "host": "api.themoviedb.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": []
+          },
+          {
+            "stage": "content_lookup",
+            "host": "api.mkissa.net",
+            "method": "POST",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": []
+          },
+          {
+            "stage": "content_lookup",
+            "host": "api.allanime.day",
+            "method": "POST",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": []
+          },
+          {
+            "stage": "origin_probe",
+            "host": "mkissa.to",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": []
+          },
+          {
+            "stage": "content_lookup",
+            "host": "api.allanime.day",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": []
+          },
+          {
+            "stage": "content_lookup",
+            "host": "ww2.aniwatch.fit",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 47,
+            "announcedQualityHeights": []
+          },
+          {
+            "stage": "content_lookup",
+            "host": "api.themoviedb.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": []
+          },
+          {
+            "stage": "content_lookup",
+            "host": "api.mkissa.net",
+            "method": "POST",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": []
+          },
+          {
+            "stage": "content_lookup",
+            "host": "api.allanime.day",
+            "method": "POST",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": []
+          },
+          {
+            "stage": "content_lookup",
+            "host": "api.allanime.day",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": []
+          },
+          {
+            "stage": "origin_probe",
+            "host": "mkissa.to",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": []
+          },
+          {
+            "stage": "content_lookup",
+            "host": "ww2.aniwatch.fit",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 47,
+            "announcedQualityHeights": []
+          },
+          {
+            "stage": "episode",
+            "host": "ww2.aniwatch.fit",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 47,
+            "announcedQualityHeights": []
+          },
+          {
+            "stage": "episode",
+            "host": "ww2.aniwatch.fit",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 47,
+            "announcedQualityHeights": []
+          },
+          {
+            "stage": "content_lookup",
+            "host": "api.themoviedb.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": []
+          },
+          {
+            "stage": "content_lookup",
+            "host": "api.mkissa.net",
+            "method": "POST",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": []
+          },
+          {
+            "stage": "content_lookup",
+            "host": "api.allanime.day",
+            "method": "POST",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": []
+          },
+          {
+            "stage": "content_lookup",
+            "host": "ww2.aniwatch.fit",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 47,
+            "announcedQualityHeights": []
+          },
+          {
+            "stage": "episode",
+            "host": "ww2.aniwatch.fit",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 47,
+            "announcedQualityHeights": []
+          },
+          {
+            "stage": "content_lookup",
+            "host": "api.themoviedb.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": []
+          },
+          {
+            "stage": "content_lookup",
+            "host": "api.mkissa.net",
+            "method": "POST",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": []
+          },
+          {
+            "stage": "origin_probe",
+            "host": "mkissa.to",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": []
+          },
+          {
+            "stage": "content_lookup",
+            "host": "api.allanime.day",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": []
+          },
+          {
+            "stage": "content_lookup",
+            "host": "ww2.aniwatch.fit",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 47,
+            "announcedQualityHeights": []
+          }
+        ]
+      },
+      "candidate": {
+        "status": "no_streams",
+        "score": 100,
+        "streamsPlayable": 0,
+        "streamsReturned": 0,
+        "identityContradictions": 0,
+        "providerRequests": 0,
+        "providerHttpStatuses": [
+          200
+        ],
+        "variantCoverage": {
+          "qualityHeights": [],
+          "maxPlayableHeight": 0,
+          "audioLanguages": [],
+          "reachableHosts": [],
+          "announcedPlayerCandidates": 47,
+          "announcedVariantCandidates": 141,
+          "exploredPlayerRequests": 8,
+          "fanoutStates": [
+            "explored-not-resolved"
+          ],
+          "announcedQualityHeights": []
+        },
+        "invocationDiagnostics": [
+          {
+            "fixture": "Hell Mode S01E01",
+            "name": "positional_with_settings",
+            "inferredMode": "positional",
+            "result": "empty",
+            "streamCount": 0,
+            "providerObservations": 22,
+            "errorCode": ""
+          },
+          {
+            "fixture": "Jujutsu Kaisen S01E01",
+            "name": "positional_with_settings",
+            "inferredMode": "positional",
+            "result": "empty",
+            "streamCount": 0,
+            "providerObservations": 23,
+            "errorCode": ""
+          },
+          {
+            "fixture": "Attack on Titan S01E01",
+            "name": "positional_with_settings",
+            "inferredMode": "positional",
+            "result": "empty",
+            "streamCount": 0,
+            "providerObservations": 29,
+            "errorCode": ""
+          },
+          {
+            "fixture": "One Piece S01E01",
+            "name": "positional_with_settings",
+            "inferredMode": "positional",
+            "result": "empty",
+            "streamCount": 0,
+            "providerObservations": 14,
+            "errorCode": ""
+          }
+        ],
+        "networkTrace": [
+          {
+            "stage": "content_lookup",
+            "host": "api.themoviedb.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": []
+          },
+          {
+            "stage": "content_lookup",
+            "host": "api.mkissa.net",
+            "method": "POST",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": []
+          },
+          {
+            "stage": "content_lookup",
+            "host": "api.allanime.day",
+            "method": "POST",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": []
+          },
+          {
+            "stage": "origin_probe",
+            "host": "mkissa.to",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": []
+          },
+          {
+            "stage": "content_lookup",
+            "host": "api.allanime.day",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": []
+          },
+          {
+            "stage": "content_lookup",
+            "host": "ww2.aniwatch.fit",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 47,
+            "announcedQualityHeights": []
+          },
+          {
+            "stage": "content_lookup",
+            "host": "api.themoviedb.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": []
+          },
+          {
+            "stage": "content_lookup",
+            "host": "api.mkissa.net",
+            "method": "POST",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": []
+          },
+          {
+            "stage": "content_lookup",
+            "host": "api.allanime.day",
+            "method": "POST",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": []
+          },
+          {
+            "stage": "origin_probe",
+            "host": "mkissa.to",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": []
+          },
+          {
+            "stage": "content_lookup",
+            "host": "api.allanime.day",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": []
+          },
+          {
+            "stage": "content_lookup",
+            "host": "ww2.aniwatch.fit",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 47,
+            "announcedQualityHeights": []
+          },
+          {
+            "stage": "episode",
+            "host": "ww2.aniwatch.fit",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 47,
+            "announcedQualityHeights": []
+          },
+          {
+            "stage": "episode",
+            "host": "ww2.aniwatch.fit",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 47,
+            "announcedQualityHeights": []
+          },
+          {
+            "stage": "content_lookup",
+            "host": "api.themoviedb.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": []
+          },
+          {
+            "stage": "content_lookup",
+            "host": "api.mkissa.net",
+            "method": "POST",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": []
+          },
+          {
+            "stage": "content_lookup",
+            "host": "api.allanime.day",
+            "method": "POST",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": []
+          },
+          {
+            "stage": "content_lookup",
+            "host": "ww2.aniwatch.fit",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 47,
+            "announcedQualityHeights": []
+          },
+          {
+            "stage": "episode",
+            "host": "ww2.aniwatch.fit",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 47,
+            "announcedQualityHeights": []
+          },
+          {
+            "stage": "content_lookup",
+            "host": "api.themoviedb.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": []
+          },
+          {
+            "stage": "content_lookup",
+            "host": "api.mkissa.net",
+            "method": "POST",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": []
+          },
+          {
+            "stage": "origin_probe",
+            "host": "mkissa.to",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": []
+          },
+          {
+            "stage": "content_lookup",
+            "host": "api.allanime.day",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": []
+          },
+          {
+            "stage": "content_lookup",
+            "host": "ww2.aniwatch.fit",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 47,
+            "announcedQualityHeights": []
+          }
+        ]
+      }
+    }
+  ],
+  "publicationAuthority": false
+}
