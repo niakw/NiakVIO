@@ -56,7 +56,28 @@ les réservations, les mutations répétées et les nouveaux candidats admissibl
 
 Le mode `--backend hosted` utilise `NIAKVIO_OPENAI_API_KEY`, puis
 `OPENAI_API_KEY` en secours. Les résultats restent soumis aux contrôles NiakVIO.
-Le test réel de génération a retourné HTTP 401 avec le code `invalid_api_key` ;
-la liste des modèles était accessible. Aucun résultat généré ni provider réparé
-n'est donc revendiqué pour ce test. Il faut rendre le secret d'inférence valide
-dans l'environnement pour effectuer la campagne réelle.
+Le test de cette session cloud a retourné HTTP 401 avec le code
+`invalid_api_key`. La liste des modèles répondait également sans authentification ;
+elle ne constituait donc pas une vérification de la clé.
+
+Après publication du secret dans GitHub, la génération minimale a réussi dans
+[le run NiakVIO 39853035153](https://github.com/niakw/NiakVIO/actions/runs/39853035153).
+Le secret fonctionne depuis le runner GitHub ; le problème observé dans la
+session cloud concerne son chemin d'authentification et ne prouve pas une clé
+erronée.
+
+Le workflow `Brain - Hosted single-provider repair check` utilise le secret du
+dépôt NiakVIO, un SHA Brain exact et uniquement la mémoire publique. Il génère une
+hypothèse pour un provider, contrôle son admission puis compare les bytes de
+référence et les bytes candidats avec les gates Deep/identité existantes. Ses
+artefacts séparent génération, exécution et acceptation ; ils ne publient aucun
+provider.
+
+Le premier essai AllAnime a terminé sans candidat : le modèle signalait que les
+deux unités éditables concernaient le décodage hexadécimal et la normalisation,
+sans accès à l'extracteur terminal. Le rejeu local confirme qu'un risque statique
+de troncature (`out.length`) prenait priorité sur la panne `chain_terminal_gap`.
+Le Brain conserve désormais le focus d'extraction quand aucun flux n'est
+retourné ; le focus d'énumération reste actif pour une vraie panne de couverture.
+Trois nouvelles régressions reproduisent ce cas et la suite Brain atteint
+300 tests réussis. Le nouvel essai garde le même provider et les mêmes gates.

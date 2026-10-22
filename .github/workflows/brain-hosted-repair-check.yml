@@ -21,7 +21,7 @@ jobs:
     timeout-minutes: 20
     env:
       TARGET_PROVIDER: ${{ inputs.provider || 'allanime' }}
-      BRAIN_SHA: dee979c069b769776086b24b52473f7db88076d7
+      BRAIN_SHA: f524a984aa976aef08c6cff0e81dca342af8741d
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
