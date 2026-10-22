@@ -95,3 +95,22 @@ de diagnostic uniquement. Le reçu
 le même run. La relecture locale confirme que le Brain reçoit l'empreinte de
 cette mutation rejetée. La prochaine expérience doit donc proposer une mutation
 différente et s'appuyer sur les observations réseau/terminales du provider.
+
+## Utilisation du parcours hosted
+
+Les corrections du Brain et de NiakVIO sont intégrées dans `main`. Les 304 tests
+Brain, les contrats CORE NiakVIO et les tests de sécurité/compatibilité du worker
+passent. Dans GitHub Actions du dépôt NiakVIO, lancer
+`Brain - Hosted single-provider repair check` puis choisir le provider.
+Le secret `NIAKVIO_OPENAI_API_KEY` reste dans ce dépôt.
+
+Le parcours observe les fonctions réellement exécutées avant la génération.
+Il peut vérifier jusqu'à trois propositions en dix minutes et transmet les
+mesures ainsi que les edits rejetés à la tentative suivante. Il s'arrête après
+une acceptation, après épuisement du budget ou quand aucune hypothèse exécutable
+n'est justifiée. Le job de collecte, séparé du sandbox, conserve ensuite les
+verdicts exécutés sur la branche source, une seule fois par run.
+
+Sur AllAnime, le parcours complet identifie désormais explicitement le manque de
+réponses du lecteur ou d'URL média validée et s'abstient. Aucun provider restauré
+n'est revendiqué sur la base d'un workflow vert ou d'un test simulé.

@@ -1,6 +1,9 @@
 name: Brain - Read hosted repair evidence
 
 on:
+  workflow_run:
+    workflows: [Brain - Hosted single-provider repair check]
+    types: [completed]
   push:
     branches: [codex/niakvio-brain-reliability]
     paths: [.github/workflows/brain-hosted-evidence-report.yml]
@@ -9,7 +12,7 @@ on:
       run_id:
         description: Existing hosted repair run to inspect, without new inference
         required: true
-        default: '39856569346'
+        default: '39858290849'
 
 permissions:
   actions: read
@@ -17,21 +20,27 @@ permissions:
 
 jobs:
   evidence:
-    if: github.ref == 'refs/heads/codex/niakvio-brain-reliability'
+    if: >-
+      (github.event_name == 'workflow_run' &&
+       github.event.workflow_run.head_repository.full_name == github.repository &&
+       contains(fromJSON('["main","codex/niakvio-brain-reliability"]'), github.event.workflow_run.head_branch)) ||
+      (github.event_name != 'workflow_run' &&
+       contains(fromJSON('["main","codex/niakvio-brain-reliability"]'), github.ref_name))
     runs-on: ubuntu-latest
     timeout-minutes: 3
     env:
-      SOURCE_RUN: ${{ inputs.run_id || '39856569346' }}
+      SOURCE_RUN: ${{ github.event.workflow_run.id || inputs.run_id || '39858290849' }}
+      TARGET_BRANCH: ${{ github.event.workflow_run.head_branch || github.ref_name }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
-          ref: ${{ github.sha }}
+          ref: ${{ env.TARGET_BRANCH }}
           fetch-depth: 1
       - name: Download existing sanitized experiment evidence
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
         with:
-          name: hosted-repair-check-${{ inputs.run_id || '39856569346' }}
-          run-id: ${{ inputs.run_id || '39856569346' }}
+          name: hosted-repair-check-${{ env.SOURCE_RUN }}
+          run-id: ${{ env.SOURCE_RUN }}
           github-token: ${{ github.token }}
           path: evidence
       - name: Expose verification outcome without repeating generation
@@ -69,11 +78,14 @@ jobs:
           with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as handle:
               handle.write('```json\n' + json.dumps(summary, indent=2) + '\n```\n')
           PY
-      - name: Persist the executed outcome on the diagnostic branch
+      - name: Persist the executed outcome on its trusted source branch
         shell: bash
         run: |
           set -euo pipefail
-          test "$GITHUB_REF" = refs/heads/codex/niakvio-brain-reliability
+          case "$TARGET_BRANCH" in
+            main|codex/niakvio-brain-reliability) ;;
+            *) exit 2 ;;
+          esac
           [[ "$SOURCE_RUN" =~ ^[0-9]+$ ]]
           receipt="automation/hosted-repair-evidence/$SOURCE_RUN.json"
           if [ ! -f "$receipt" ]; then
@@ -115,4 +127,4 @@ jobs:
           git diff --cached --quiet && exit 0
           git -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' \
             commit -m "ci(brain): retain hosted experiment $SOURCE_RUN"
-          git push origin HEAD:refs/heads/codex/niakvio-brain-reliability
+          git push origin "HEAD:refs/heads/$TARGET_BRANCH"

@@ -1,4 +1,6 @@
 import importlib.util
+import contextlib
+import io
 import json
 import os
 import sys
@@ -55,7 +57,8 @@ with tempfile.TemporaryDirectory() as directory:
     with patch.object(loop, 'ROOT', root), patch.object(sys, 'argv', argv), \
          patch.dict(os.environ, {'NIAKVIO_OPENAI_API_KEY': 'test-only'}), \
          patch.object(loop.subprocess, 'check_output', return_value='a' * 40), \
-         patch.object(loop.subprocess, 'run', side_effect=run):
+         patch.object(loop.subprocess, 'run', side_effect=run), \
+         contextlib.redirect_stdout(io.StringIO()):
         assert loop.main() == 0
     result = json.loads((out / 'evaluation.json').read_text())
     assert len(result['attempts']) == 2 and result['acceptedProviderCount'] == 1
