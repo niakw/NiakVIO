@@ -1,7 +1,7 @@
 {
   "schemaVersion": 3,
-  "runId": "39846274602",
-  "triggerSha": "fcdf3480458a719ad9fe3a471bfc30576e8bc3d0",
+  "runId": "39850438538",
+  "triggerSha": "8732b3ee525efb7b74f2a4cc40afdf3d4cc61484",
   "providers": [
     {
       "provider": "4khdhub",
@@ -280,11 +280,11 @@
         "1 live routes / anime"
       ],
       "latestLaneVerdicts": [
-        "anime=no_streams/provider_network_exception"
+        "anime=timeout"
       ],
-      "dominantIssue": "provider_network_exception",
+      "dominantIssue": "timeout",
       "searchProgress": [
-        "anime: 2 works tested / 0 retained misses"
+        "anime: 3 works tested / 0 retained misses"
       ],
       "evidenceDepth": [
         "anime=none"
@@ -2245,8 +2245,8 @@
   "harnessQueue": [],
   "targetedTransportBlockedQueue": [],
   "clientTransportGapQueue": [],
-  "harnessEvidenceRunId": "39846274602-sharded-waf",
-  "harnessEvidenceSha": "fcdf3480458a719ad9fe3a471bfc30576e8bc3d0",
+  "harnessEvidenceRunId": "39850438538-sharded-waf",
+  "harnessEvidenceSha": "8732b3ee525efb7b74f2a4cc40afdf3d4cc61484",
   "authorityRefreshedProviders": [],
   "harnessTransportUpdatedProviders": [],
   "networkDifferentialUpdatedProviders": [],
@@ -2657,41 +2657,5 @@
         "moviesmod"
       ]
     }
-  },
-  "lastRepairAttempt": {
-    "runId": "39847392572",
-    "sourceCensusRunId": "39846274602",
-    "selectedProviders": [
-      "4khdhub",
-      "allanime",
-      "animesalt",
-      "animesultra",
-      "animevost-fr",
-      "flemmix",
-      "mallumv",
-      "moviebox",
-      "moviesmod",
-      "vidfast",
-      "yflix"
-    ],
-    "candidateProviders": [],
-    "validatedProviders": [],
-    "acceptedRepairCount": 0,
-    "deferredToLearningSlotProviders": [
-      "4khdhub",
-      "allanime",
-      "animesalt",
-      "animesultra",
-      "animevost-fr",
-      "flemmix",
-      "mallumv",
-      "moviebox",
-      "moviesmod",
-      "vidfast",
-      "yflix"
-    ],
-    "noProgressReason": "experiment_variants_exhausted",
-    "timeBudgetExhausted": false,
-    "publicationAllowed": false
   }
 }
