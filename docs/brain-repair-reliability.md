@@ -98,3 +98,14 @@ le dispatcher pour suivre ses appels mais propose les fonctions voisines à la
 modification. Le rejeu du dernier échec expose désormais `playerRows`,
 `externalPlayer` et `findAnime`. Cette rotation ne s'applique pas aux essais
 non exécutés et ne constitue pas une interdiction permanente d'une fonction.
+
+Le [premier relevé élargi](https://github.com/niakw/NiakVIO/actions/runs/40035356823)
+observe désormais zéro flux sur cinq titres : les réponses HTTP ne contiennent
+que des scripts obfusqués, sans catalogue ni lecteur exploitable. Un changement
+de parser a été réellement essayé puis refusé ; aucun rétablissement n'est validé.
+
+Quand cette absence de contenu est observée sur toutes les réponses du provider,
+le parcours appelle le diagnostic navigateur ordinaire existant, sans conserver
+DOM ni cookies. Le classifieur navigateur ne compte plus le texte des scripts
+comme du contenu rendu. La synthèse est suspendue tant que ce prérequis manque,
+sans appel API et sans transformer cette non-exécution en échec de code appris.

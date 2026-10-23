@@ -353,7 +353,8 @@ def classify_dom(dom: str) -> str:
     lower = str(dom or "").lower()
     if any(marker in lower for marker in CHALLENGE_MARKERS):
         return "browser_challenge_persisted"
-    text = re.sub(r"<[^>]+>", " ", lower)
+    visible = re.sub(r'<(script|style)\b[^>]*>[\s\S]*?</\1\s*>', ' ', lower)
+    text = re.sub(r"<[^>]+>", " ", visible)
     text = re.sub(r"\s+", " ", text).strip()
     if len(text) < 80:
         return "browser_inconclusive"

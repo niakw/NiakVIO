@@ -1,5 +1,7 @@
 """Repair evidence must cover more than activation's first healthy example."""
 import json
+import contextlib
+import io
 import subprocess
 import sys
 import tempfile
@@ -9,6 +11,34 @@ from unittest.mock import patch
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'scripts'))
 import evaluate_brain_llm_force_candidates as verifier
+from capture_brain_live_context import script_shell_only
+import observe_brain_browser_context as observation
+
+shell = {'ok': True, 'response_structure': {'kind': 'html', 'variables': ['a0x'], 'tags': [{'tag': 'script'}]}}
+assert script_shell_only([shell]) is True
+assert script_shell_only([]) is False
+assert script_shell_only([shell, {'ok': True, 'response_structure': {'kind': 'json'}}]) is False
+assert script_shell_only([{'ok': True, 'response_structure': {'kind': 'html', 'variables': ['players'], 'tags': [{'tag': 'iframe'}]}}]) is False
+
+with tempfile.TemporaryDirectory() as directory:
+    root = Path(directory)
+    live_path = root / 'live.json'
+    live_path.write_text(json.dumps({'sourceSha': 'a' * 40, 'provider': 'demo', 'http_script_shell_only': True}))
+    (root / 'provider-overrides.json').write_text(json.dumps({'provider_patches': {'demo': {
+        'official_site': 'https://fixture.test/path?token=PRIVATE'}}}))
+    def observe(target, browser, **options):
+        assert target['url'] == 'https://fixture.test/'
+        assert options['attempts'] == 1
+        return {'outcome': 'browser_timeout', 'dom': 'PRIVATE', 'cookie': 'PRIVATE'}
+    with patch.object(observation, 'ROOT', root), \
+         patch.object(sys, 'argv', ['observe', '--live-context', str(live_path)]), \
+         patch.object(observation.subprocess, 'check_output', return_value='a' * 40), \
+         patch.object(observation.browser_probe, 'browser_binary', return_value='chrome'), \
+         patch.object(observation.browser_probe, 'probe_target', side_effect=observe), \
+         contextlib.redirect_stdout(io.StringIO()):
+        observation.main()
+    assert json.loads(live_path.read_text())['browser_observation']['outcome'] == 'browser_timeout'
+    assert 'PRIVATE' not in live_path.read_text()
 
 original = json.loads((ROOT / 'health-config.json').read_text())
 seen = []

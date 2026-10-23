@@ -56,6 +56,22 @@ def main() -> int:
     live = json.loads((out / 'live-context.json').read_text())
     if live.get('provider') != args.provider or live.get('sourceSha') != source_sha:
         raise ValueError('live provider evidence must match exact current source')
+    if live.get('http_script_shell_only') is True:
+        # Parser/cap rewrites cannot be justified from an empty script shell.
+        # Keep this a missing-evidence prerequisite, never a failed code experiment.
+        reason = 'http_script_shell_requires_content_evidence'
+        (out / 'diagnostics.json').write_text(json.dumps({'rows': [{'scopeTrace': [{
+            'scope': 'provider_bloc', 'outcome': 'abstain', 'reason': reason,
+        }]}]}))
+        (out / 'evaluation.json').write_text(json.dumps({
+            'currentSha': source_sha, 'candidateCount': 0, 'acceptedProviderCount': 0,
+            'rows': [], 'attempts': [], 'publicationAuthority': False,
+        }))
+        for name in ('mutations.json', 'accepted.json'):
+            (out / name).write_text(json.dumps({'schemaVersion': 1, 'sourceNiakvioSha': source_sha,
+                'rows': [], 'providerCount': 0, 'publicationAuthority': False, 'proofAuthority': False}))
+        print('::notice title=Hosted evidence prerequisite::' + reason)
+        return 0
     # Seed the first call from the latest *executed* diagnostic candidate.
     # This is a counterexample, never a positive training record or proof.
     for path in sorted((ROOT / 'automation/hosted-repair-evidence').glob('*-mutations.json'), reverse=True):

@@ -2,10 +2,19 @@
 """Observe current provider bytes before model synthesis, without editing them."""
 import argparse
 import json
+import os
 import re
 import subprocess
 from pathlib import Path
 import evaluate_brain_llm_force_candidates as verifier
+
+def script_shell_only(events):
+    replies = [event for event in events if event.get('ok') and event.get('response_structure')]
+    return bool(replies) and all(
+        shape.get('kind') == 'html' and shape.get('variables')
+        and {tag.get('tag') for tag in shape.get('tags', [])} == {'script'}
+        for shape in (event['response_structure'] for event in replies)
+    )
 
 def main():
     parser = argparse.ArgumentParser()
@@ -35,6 +44,7 @@ def main():
         'provider': args.provider,
         'sourceSha': subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True, cwd=verifier.ROOT).strip(),
         'active_functions': names[:6],
+        'http_script_shell_only': script_shell_only(events),
         'fixture_evidence': verifier.fixture_summary(result),
         'network_evidence': [{
             'fixture': event.get('fixture_label'),
@@ -48,6 +58,9 @@ def main():
     }
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(payload, indent=2) + '\n')
+    if os.environ.get('GITHUB_OUTPUT'):
+        with open(os.environ['GITHUB_OUTPUT'], 'a') as handle:
+            handle.write('script_shell_only=' + str(payload['http_script_shell_only']).lower() + '\n')
     print('::notice title=Live provider execution::provider=' + args.provider + ' functions=' + ','.join(payload['active_functions']))
 
 if __name__ == '__main__':

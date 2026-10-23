@@ -204,6 +204,7 @@ assert "keyword=" not in allwish["publicUrl"]
 assert mod.classify_dom("<html><title>Just a moment...</title><div>challenge-platform</div></html>") == "browser_challenge_persisted"
 assert mod.classify_dom("<html><body>" + ("normal catalogue content " * 10) + "</body></html>") == "browser_content_reached"
 assert mod.classify_dom("<html></html>") == "browser_inconclusive"
+assert mod.classify_dom('<html><script>' + ('var a0x="opaque";' * 100) + '</script></html>') == 'browser_inconclusive'
 assert mod.probe_target(allwish, "", timeout=5, virtual_time_ms=1000)["outcome"] == "browser_unavailable"
 vostfree = next(row for row in targets if row["provider"] == "vostfree")
 assert vostfree["method"] == "GET", vostfree

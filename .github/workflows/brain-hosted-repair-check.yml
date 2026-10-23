@@ -51,6 +51,7 @@ jobs:
           python brain-llm/scripts/import_public_niakvio.py --niakvio-root . --output local-output/hosted-check/experience.jsonl
           python brain-llm/scripts/import_public_docs.py --niakvio-root . --config brain-llm/config/document_sources.json --output local-output/hosted-check/documents.jsonl
       - name: Observe current provider execution before choosing editable functions
+        id: live_observation
         timeout-minutes: 5
         env:
           TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
@@ -58,6 +59,10 @@ jobs:
         shell: bash
         run: |
           python scripts/capture_brain_live_context.py --provider "$TARGET_PROVIDER" --output local-output/hosted-check/live-context.json
+      - name: Diagnose a script-only response with an ordinary browser
+        if: steps.live_observation.outputs.script_shell_only == 'true'
+        timeout-minutes: 1
+        run: python scripts/observe_brain_browser_context.py --live-context local-output/hosted-check/live-context.json
       - name: Run bounded hosted repair and verification loop
         timeout-minutes: 12
         env:
@@ -89,6 +94,8 @@ jobs:
               'sourceNiakvioSha': os.environ['GITHUB_SHA'],
               'sourceBrainLlmSha': os.environ['BRAIN_SHA'],
               'generationReported': bool(diagnostics),
+              'browserObservation': read('live-context.json').get('browser_observation') or {},
+              'synthesisPausedForMissingEvidence': read('live-context.json').get('http_script_shell_only') is True,
               'candidateCount': int(evaluation.get('candidateCount') or 0),
               'acceptedProviderCount': int(evaluation.get('acceptedProviderCount') or 0),
               'scopeTrace': [{key: safe(row.get(key, '')) for key in ('scope', 'outcome', 'reason', 'errorType')} for row in trace],
