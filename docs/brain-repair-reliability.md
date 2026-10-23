@@ -64,7 +64,7 @@ contexte public. Aucun contenu de la mémoire privée n'est transmis à l'API.
 La pré-observation relève les fonctions exécutées et la structure des réponses
 JSON/HTML, sans leurs valeurs scalaires ni leur contenu brut. Chaque tentative
 suivante reçoit le verdict et les mesures de la précédente. La boucle reste
-limitée à trois propositions et dix minutes ; elle s'arrête sur acceptation,
+limitée à deux propositions et dix minutes dans ce workflow ; elle s'arrête sur acceptation,
 absence de candidat exécutable ou épuisement du budget.
 
 Un job distinct conserve les résultats dans `main`, une fois par run, même quand
@@ -145,6 +145,14 @@ Le test exécute aussi la projection réelle worker → Deep afin qu'une nouvell
 mesure ne disparaisse pas entre les deux rapports. Les fonctions du Core restent
 visibles dans les traces, mais les helpers du provider gardent la priorité dans
 le choix des fonctions éditables.
+
+Le [relevé 40039605264](https://github.com/niakw/NiakVIO/actions/runs/40039605264)
+confirme un MP4 de **cinq secondes** sur Sendvid, référence comme candidat, pour
+Jujutsu Kaisen S01E01 attendu à 24 minutes. Lecture et annulation du préfixe
+s'achèvent sans erreur. Ce n'est pas une panne d'extraction ni un prétexte pour
+relâcher le filtre : cette source courte est légitimement refusée. Le Brain reçoit
+maintenant la durée attendue de la fixture et doit chercher un autre lecteur
+corrélé au même épisode, ou s'abstenir si les observations n'en montrent aucun.
 
 Le préflight privilégie maintenant le titre en échec et ses dernières requêtes
 terminales, avant les wrappers de transport et la branche déjà saine. Les faits

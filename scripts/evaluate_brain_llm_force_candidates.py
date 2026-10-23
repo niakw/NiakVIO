@@ -281,13 +281,18 @@ def evaluate_variant_coverage_pair(
 
 
 def fixture_summary(result: dict[str, Any]) -> list[dict[str, Any]]:
-    return [{
+    output = [{
         'fixture': str((test.get('fixture') or {}).get('label') or '')[:120],
         'category': str((test.get('fixture') or {}).get('category') or '')[:24],
         'status': str(test.get('status') or '')[:64],
         'streamsPlayable': int(test.get('streams_playable') or 0),
         'streamsReturned': int(test.get('streams_returned') or 0),
     } for test in (result.get('tests') or [])[:12] if isinstance(test, dict)]
+    for row, test in zip(output, [test for test in (result.get('tests') or [])[:12] if isinstance(test, dict)]):
+        minutes = (test.get('fixture') or {}).get('expectedDurationMinutes')
+        if type(minutes) in (int, float) and 0 < minutes <= 20160:
+            row['expectedDurationSeconds'] = round(minutes * 60)
+    return output
 
 
 def result_summary(result: dict[str, Any]) -> dict[str, Any]:

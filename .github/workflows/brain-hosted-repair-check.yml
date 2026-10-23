@@ -25,10 +25,10 @@ jobs:
     timeout-minutes: 20
     env:
       TARGET_PROVIDER: ${{ inputs.provider || 'animevostfr' }}
-      BRAIN_SHA: 4d99f589a63c9489d5284d8ae8e0ee1f800b667d
-      # Push checks replay the known compacted-base regression. Manual runs
-      # synthesize normally unless an archived proposal is explicitly selected.
-      REPLAY_EVIDENCE: ${{ inputs.replay_evidence || (github.event_name == 'push' && '40037611469') || '' }}
+      BRAIN_SHA: d8ec92e77443b581f8ee2e0f6a42037322087cb7
+      # An explicit archive replays its exact original proposal without inference.
+      # Otherwise use the current measured failures for bounded synthesis.
+      REPLAY_EVIDENCE: ${{ inputs.replay_evidence || '' }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
@@ -90,7 +90,7 @@ jobs:
           fi
           python scripts/run_hosted_brain_repair_loop.py --brain-root brain-llm \
             --provider "$TARGET_PROVIDER" --output local-output/hosted-check \
-            --max-attempts 3 --budget-seconds 600 "${args[@]}"
+            --max-attempts 2 --budget-seconds 600 "${args[@]}"
       - name: Report generation and verification separately
         if: always()
         shell: bash
