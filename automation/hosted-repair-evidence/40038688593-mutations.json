@@ -1,0 +1,64 @@
+{
+  "brainLlmSha": "4880b7e4a5f875f6ccaffb8fd58f89e514722dbc",
+  "minConfidence": 0.8,
+  "privateContentRetained": false,
+  "proofAuthority": false,
+  "providerCount": 1,
+  "providerMutationContentRetained": true,
+  "publicationAuthority": false,
+  "rows": [
+    {
+      "candidateOrdinal": 1,
+      "confidence": 0.96,
+      "failureClass": "chain-terminal-gap",
+      "mechanismFamily": "wordpress-search-episode",
+      "mutationContextFingerprint": "7338e5b91624899c82233beb8255b3d914c644d1d599ec762ae29a2c171d2493",
+      "mutationFingerprint": "e864b118dae869d1ea836dee28c1792cc73f282b508795da00946c1508de7a46",
+      "mutations": [
+        {
+          "family": "wordpress_search_episode",
+          "find": "playerText = await response.text(); const decodedPlayerText = _spv186UnpackPackedPlayer(playerText); /* NIAKVIO_PROVIDER_EXPLICIT_PLAYER_PRIORITY_V24_3 */ const explicitPlayerUrls = _spv241ExplicitPlayerPayloadUrls(decodedPlayerText, responseUrl);",
+          "operation": "upsert",
+          "replace": "playerText = await response.text(); const decodedPlayerText = _spv186UnpackPackedPlayer(playerText); const mediaUrls = []; const mediaText = _embeddedText(decodedPlayerText); const mediaPattern = /<(?:source|video)\\b[^>]*\\bsrc\\s*=\\s*[\"']([^\"']+)[\"'][^>]*>/gi; let mediaMatch; while ((mediaMatch = mediaPattern.exec(mediaText))) { const mediaUrl = _absolute(mediaMatch[1], responseUrl); if (mediaUrl && /^https?:/i.test(mediaUrl) && (_directMedia(mediaUrl) || /\\btype\\s*=\\s*[\"'](?:video\\/|application\\/(?:x-mpegurl|vnd\\.apple\\.mpegurl))/i.test(mediaMatch[0]))) mediaUrls.push(mediaUrl); } const variablePattern = /\\bvideo_source\\s*=\\s*[\"']([^\"']+)[\"']/gi; while ((mediaMatch = variablePattern.exec(mediaText))) { const mediaUrl = _absolute(mediaMatch[1], responseUrl); if (mediaUrl && _directMedia(mediaUrl)) mediaUrls.push(mediaUrl); } if (mediaUrls.length) { streams.push(..._streams(_uniq(mediaUrls), responseUrl)); continue; } const explicitPlayerUrls = _spv241ExplicitPlayerPayloadUrls(decodedPlayerText, responseUrl);",
+          "scope": "provider_bloc"
+        }
+      ],
+      "providerId": "animevostfr",
+      "repairFamily": {
+        "archetype": "variant-coverage-gap:dom-selector-container",
+        "failure": "variant-coverage-gap",
+        "key": "276ef77a18135059b8b319827cd9910800d8c9f2c1016c6b2c481933b65d9f1c",
+        "mediaTypes": [
+          "anime"
+        ],
+        "mutationSurfaces": [
+          "provider-bloc",
+          "provider-data",
+          "provider-js",
+          "provider-patch"
+        ],
+        "signals": [
+          "mixed-tag-nested-container",
+          "nested-anchor-html",
+          "provider-http-2xx",
+          "response-html",
+          "response-json"
+        ],
+        "stages": [
+          "provider-network-zero-result"
+        ],
+        "status": "candidate-ok",
+        "version": 2
+      },
+      "strategy": "terminal-media-extractor-with-playback-validation",
+      "targetLayer": "provider",
+      "tests": [
+        "replay_proven_chain_to_terminal_media",
+        "validate_media_signature_duration_and_identity"
+      ]
+    }
+  ],
+  "sandboxMutationAuthority": true,
+  "schemaVersion": 1,
+  "sourceNiakvioSha": "6a39790488f078ab7344ba5ea19dd6281cf6eca6"
+}
