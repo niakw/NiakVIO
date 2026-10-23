@@ -21,6 +21,19 @@ with tempfile.TemporaryDirectory() as directory:
     ledger.parent.mkdir()
     original = b'{"entries":[]}\n'
     ledger.write_bytes(original)
+    evidence = ledger.parent / 'hosted-repair-evidence'
+    evidence.mkdir()
+    (evidence / '999-evaluation.json').write_text(json.dumps({'rows': [{
+        'provider': 'demo', 'mutationFingerprint': 'b' * 64, 'accepted': False,
+        'executionObserved': True, 'materializedMutationObserved': True,
+    }, {'provider': 'demo', 'mutationFingerprint': 'c' * 64, 'accepted': False,
+        'executionObserved': False}]}))
+    (evidence / '999-mutations.json').write_text(json.dumps({'rows': [
+        {'providerId': 'demo', 'mutationFingerprint': 'b' * 64,
+         'mutations': [{'find': 'older()', 'replace': 'prior()'}]},
+        {'providerId': 'demo', 'mutationFingerprint': 'c' * 64,
+         'mutations': [{'find': 'unexecuted_poison()', 'replace': 'ignored()'}]},
+    ]}))
     (out / 'live-context.json').write_text(json.dumps({'provider': 'demo', 'sourceSha': 'a' * 40, 'active_functions': ['resolve']}))
     count = 0
     def run(command, **options):
@@ -32,7 +45,10 @@ with tempfile.TemporaryDirectory() as directory:
             assert options['env']['NIAKVIO_OPENAI_API_KEY'] == 'test-only'
             if count == 2:
                 context = json.loads(value('--live-evidence').read_text())
-                assert context['previous_executed_edits'][0]['replace'] == 'second()'
+                assert len(context['previous_executed_edits']) == 2
+                assert context['previous_executed_edits'][-1]['replace'] == 'second()'
+                assert context['previous_executed_edits'][0]['find'] == 'older()'
+                assert 'unexecuted_poison' not in str(context)
                 assert context['previous_verification']['reason'] == 'no_playable'
                 assert context['previous_verification']['candidate']['streamsPlayable'] == 0
                 assert json.loads(ledger.read_text())['executed'] == 1

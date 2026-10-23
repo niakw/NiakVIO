@@ -16,6 +16,27 @@ def script_shell_only(events):
         for shape in (event['response_structure'] for event in replies)
     )
 
+def prioritized_execution(result):
+    events = [{**event, 'fixture_label': (test.get('fixture') or {}).get('label'), 'observation_index': index,
+               'fixture_failed': int(test.get('streams_playable') or 0) == 0}
+              for test in result.get('tests', []) for index, event in enumerate(test.get('network_observations', []))
+              if isinstance(event, dict) and not event.get('infrastructure')]
+    events.sort(key=lambda row: (
+        bool(row['fixture_failed']), {'media': 4, 'source': 3, 'player': 2, 'episode': 1}.get(str(row.get('stage')), 0),
+        row['observation_index'],
+    ), reverse=True)
+    buckets = [[], [], [], []]
+    for event in events:
+        for name in event.get('provider_function_names', []):
+            if not re.fullmatch(r'[A-Za-z_$][\w$]{0,63}', str(name)) or re.search(r'fetch|request', name, re.I):
+                continue
+            utility = name in {'wrapped', 'wrap', 'text', 'json', 'apiJson', 'jsonPostAt'}
+            index = (0 if event['fixture_failed'] else 2) + int(utility)
+            if name not in buckets[index]:
+                buckets[index].append(name)
+    names = list(dict.fromkeys(name for bucket in buckets for name in bucket))
+    return events, names[:6]
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--provider', required=True)
@@ -30,16 +51,7 @@ def main():
     verifier.stage_provider(verifier.ROOT, args.provider, root / 'stage', targets)
     health = verifier.health_provider(root / 'stage', root / 'health')
     result = verifier.provider_result(health, args.provider)
-    events = [{**event, 'fixture_label': (test.get('fixture') or {}).get('label')}
-              for test in result.get('tests', []) for event in test.get('network_observations', [])
-              if isinstance(event, dict) and not event.get('infrastructure')]
-    events.sort(key=lambda row: (int(row.get('declared_player_candidate_count') or 0) > 0,
-                                 str(row.get('stage')) in {'episode', 'player', 'source', 'media'}), reverse=True)
-    names = []
-    for event in events:
-        for name in event.get('provider_function_names', []):
-            if re.fullmatch(r'[A-Za-z_$][\w$]{0,63}', str(name)) and not re.search(r'fetch|request', name, re.I) and name not in names:
-                names.append(name)
+    events, names = prioritized_execution(result)
     payload = {
         'provider': args.provider,
         'sourceSha': subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True, cwd=verifier.ROOT).strip(),

@@ -84,9 +84,12 @@ def main() -> int:
                    and row.get('accepted') is False for row in result.get('rows', [])):
             continue
         payload = json.loads(path.read_text())
+        executed = {row.get('mutationFingerprint') for row in result.get('rows', [])
+                    if row.get('executionObserved') is True and row.get('materializedMutationObserved') is True
+                    and row.get('accepted') is False}
         live['previous_verification'] = verification_feedback(result)
         live['previous_executed_edits'] = [edit for row in payload.get('rows', [])
-                                          if row.get('providerId') == args.provider
+                                          if row.get('providerId') == args.provider and row.get('mutationFingerprint') in executed
                                           for edit in row.get('mutations', [])][-2:]
         break
     limit = max(1, min(3, args.max_attempts))
@@ -155,11 +158,11 @@ def main() -> int:
             live['previous_verification'] = verification_feedback(evaluation)
             executed = {row.get('mutationFingerprint') for row in evaluation.get('rows', [])
                         if row.get('executionObserved') is True}
-            live['previous_executed_edits'] = [
+            live['previous_executed_edits'] = (live.get('previous_executed_edits', []) + [
                 edit for row in mutations.get('rows', [])
                 if row.get('mutationFingerprint') in executed
                 for edit in row.get('mutations', [])
-            ][-2:]
+            ])[-2:]
     finally:
         mutations_path = out / 'mutations.json'
         if mutations_path.exists():

@@ -75,7 +75,7 @@ supplémentaire n'est demandé.
 - Blocage des mutations réellement rejetées dans le même contexte de source.
 - Revalidation des anciennes recettes positives et conservation de leur requête terminale.
 - Priorité au parcours terminal réellement exécuté dans le choix des fonctions éditables.
-- 307 tests Brain et audit de confidentialité réussis.
+- 309 tests Brain et audit de confidentialité réussis.
 - Régressions NiakVIO : dispatch v3 réel, ancre durcie, propriété native,
   reconstruction successive, fichier stagé inchangé, spécification absente,
   mémoire historique non prouvée, feedback borné et isolation des secrets.
@@ -109,3 +109,18 @@ le parcours appelle le diagnostic navigateur ordinaire existant, sans conserver
 DOM ni cookies. Le classifieur navigateur ne compte plus le texte des scripts
 comme du contenu rendu. La synthèse est suspendue tant que ce prérequis manque,
 sans appel API et sans transformer cette non-exécution en échec de code appris.
+
+L'accès varie entre les relevés. Le [run suivant](https://github.com/niakw/NiakVIO/actions/runs/40036152081)
+retrouve Hell Mode lisible et Jujutsu Kaisen sans flux. Pour ce dernier, Sendvid
+répond HTTP 200 avec des balises `video`/`source`, mais le helper
+`_crawlDirectMedia` ne retourne aucun média. La préférence pour le bloc natif
+cachait ce helper effectivement exécuté au modèle.
+
+Le préflight privilégie maintenant le titre en échec et ses dernières requêtes
+terminales, avant les wrappers de transport et la branche déjà saine. Les faits
+actuels peuvent remplacer un ancien diagnostic de perte de variantes. Si le
+helper appartient au préfixe du provider mais dépasse la limite d'une fonction
+éditable, le Brain reçoit son code comme contexte en lecture seule et au plus
+deux séquences d'instructions exactes à modifier. Le Core reste exclu de cette
+surface. Deux edits exécutés récents sont conservés pour éviter l'alternance
+immédiate entre le dispatcher et le dernier helper testé.

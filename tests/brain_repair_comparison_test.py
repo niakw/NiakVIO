@@ -11,7 +11,7 @@ from unittest.mock import patch
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'scripts'))
 import evaluate_brain_llm_force_candidates as verifier
-from capture_brain_live_context import script_shell_only
+from capture_brain_live_context import script_shell_only, prioritized_execution
 import observe_brain_browser_context as observation
 
 shell = {'ok': True, 'response_structure': {'kind': 'html', 'variables': ['a0x'], 'tags': [{'tag': 'script'}]}}
@@ -19,6 +19,15 @@ assert script_shell_only([shell]) is True
 assert script_shell_only([]) is False
 assert script_shell_only([shell, {'ok': True, 'response_structure': {'kind': 'json'}}]) is False
 assert script_shell_only([{'ok': True, 'response_structure': {'kind': 'html', 'variables': ['players'], 'tags': [{'tag': 'iframe'}]}}]) is False
+events, names = prioritized_execution({'tests': [
+    {'fixture': {'label': 'Working title'}, 'streams_playable': 1, 'network_observations': [
+        {'stage': 'player', 'provider_function_names': ['wrapped', 'text', 'externalPlayer', 'resolve']}]},
+    {'fixture': {'label': 'Missing title'}, 'streams_playable': 0, 'network_observations': [
+        {'stage': 'content_lookup', 'provider_function_names': ['wrapped', 'text', 'directAnime', 'findAnime', 'resolve']}]},
+]})
+assert events[0]['fixture_label'] == 'Missing title'
+assert names[:3] == ['directAnime', 'findAnime', 'resolve'], names
+assert names.index('text') > names.index('findAnime')
 
 with tempfile.TemporaryDirectory() as directory:
     root = Path(directory)
