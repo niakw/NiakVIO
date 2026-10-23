@@ -86,7 +86,7 @@ supplémentaire n'est demandé.
 - Blocage des mutations réellement rejetées dans le même contexte de source.
 - Revalidation des anciennes recettes positives et conservation de leur requête terminale.
 - Priorité au parcours terminal réellement exécuté dans le choix des fonctions éditables.
-- 309 tests Brain et audit de confidentialité réussis.
+- 310 tests Brain et audit de confidentialité réussis.
 - Régressions NiakVIO : dispatch v3 réel, ancre durcie, propriété native,
   reconstruction successive, fichier stagé inchangé, spécification absente,
   mémoire historique non prouvée, feedback borné et isolation des secrets.
@@ -127,9 +127,20 @@ détecter le retour du contenu. Le timeout navigateur reste conservé comme tel.
 
 L'accès varie entre les relevés. Le [run suivant](https://github.com/niakw/NiakVIO/actions/runs/40036152081)
 retrouve Hell Mode lisible et Jujutsu Kaisen sans flux. Pour ce dernier, Sendvid
-répond HTTP 200 avec des balises `video`/`source`, mais le helper
-`_crawlDirectMedia` ne retourne aucun média. La préférence pour le bloc natif
+répond HTTP 200 avec des balises `video`/`source`, mais le worker final
+ne retourne aucun flux. La préférence pour le bloc natif
 cachait ce helper effectivement exécuté au modèle.
+
+Le [rejeu 40038688593](https://github.com/niakw/NiakVIO/actions/runs/40038688593)
+confirme ensuite la matérialisation et l'exécution du candidat Sendvid, sans gain :
+Hell Mode reste à un flux lisible et Jujutsu Kaisen à zéro. Le candidat est refusé
+et son échec causal est conservé. Même la référence reçoit déjà un HTTP 206 du
+CDN média ; le statut seul ne permet pas de conclure à un défaut d'extraction.
+Le worker relève désormais uniquement les faits dérivés du préfixe déjà lu par
+le probe terminal : signature, durée MP4 si disponible, taille plafonnée à 64 Kio,
+états de lecture et d'annulation. Aucune requête supplémentaire n'est émise et
+aucun octet brut n'est conservé. Ces faits rejoignent le contexte et le feedback
+du Brain ; ils ne remplacent pas les preuves de lecture et d'identité.
 
 Le préflight privilégie maintenant le titre en échec et ses dernières requêtes
 terminales, avant les wrappers de transport et la branche déjà saine. Les faits

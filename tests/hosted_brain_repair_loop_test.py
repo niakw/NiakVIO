@@ -113,14 +113,14 @@ with tempfile.TemporaryDirectory() as directory:
     with patch.object(loop, 'ROOT', root), \
          patch.dict(os.environ, {'NIAKVIO_OPENAI_API_KEY': 'test-only', 'OPENAI_API_KEY': 'test-only'}), \
          patch.object(loop.subprocess, 'run', side_effect=replay_run):
-        assert loop.replay_mutations(source, out, 'demo', 'a' * 40, 'b' * 40) == 0
-        for provider, brain_sha in [('other', 'b' * 40), ('demo', 'e' * 40)]:
+        assert loop.replay_mutations(source, out, 'demo', 'a' * 40) == 0
+        for provider in ['other']:
             try:
-                loop.replay_mutations(source, out, provider, 'a' * 40, brain_sha)
+                loop.replay_mutations(source, out, provider, 'a' * 40)
             except ValueError:
                 pass
             else:
-                raise AssertionError('replay accepted a mismatched provider or Brain')
+                raise AssertionError('replay accepted a mismatched provider')
     assert calls == ['evaluate_brain_llm_force_candidates.py', 'update_brain_llm_force_memory.py']
     assert ledger.read_text() == '{"original":true}'
 

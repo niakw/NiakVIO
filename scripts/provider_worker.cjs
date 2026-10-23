@@ -16,6 +16,7 @@ const { guardedFetch } = require('./network_guard.cjs');
 const { extractResponseVariantHints } = require('./response_variant_hints.cjs');
 const { providerCallNames } = require('./provider_callsite.cjs');
 const { responseStructure } = require('./response_structure.cjs');
+const { observeMediaResponse } = require('./media_observation.cjs');
 const DiagnosticError = Error;
 let activeProviderPath = '';
 const Module = require('node:module');
@@ -706,7 +707,7 @@ function installPolyfills(context = {}) {
           declared_quality_heights: [],
         };
         networkObservations.push(observation);
-        return wrapLimitedResponse(response, maxResponseBytes, (bytes) => {
+        return wrapLimitedResponse(observeMediaResponse(response, observation), maxResponseBytes, (bytes) => {
           totalResponseBytes += bytes;
           if (totalResponseBytes > maxTotalResponseBytes) throw new Error(`provider cumulative response limit exceeded (${maxTotalResponseBytes} bytes)`);
         }, (value) => {

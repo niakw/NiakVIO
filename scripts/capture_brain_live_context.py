@@ -72,6 +72,7 @@ def main():
             'stage': event.get('stage'), 'host': event.get('host'),
             'status': event.get('status'), 'functions': event.get('provider_function_names', [])[:8],
             'response_structure': event.get('response_structure'),
+            'media_observation': event.get('media_observation'),
             'announced_players': int(event.get('declared_player_candidate_count') or 0),
         } for event in events[:12]],
         'streams_playable': verifier.runtime_repair.playable_stream_count(result),

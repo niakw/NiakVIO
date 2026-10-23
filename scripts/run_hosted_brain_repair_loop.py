@@ -37,20 +37,20 @@ def verification_feedback(evaluation: dict) -> dict:
         'fixture': event.get('fixture'),
         'functions': event.get('providerFunctions', []),
         'response_structure': event.get('responseStructure'),
+        'media_observation': event.get('mediaObservation'),
         'announced_players': event.get('announcedPlayerCandidates', 0),
     } for event in (row.get('candidate') or {}).get('networkTrace', [])[-12:]]
     return result
 
 
-def replay_mutations(path: Path, out: Path, provider: str, source_sha: str, brain_sha: str) -> int:
+def replay_mutations(path: Path, out: Path, provider: str, source_sha: str) -> int:
     """Reverify an archived model proposal without another inference request."""
     payload = json.loads(path.read_text())
-    if payload.get('brainLlmSha') != brain_sha:
-        raise ValueError('replay must use the exact originating Brain revision')
     rows = payload.get('rows')
     if not isinstance(rows, list) or len(rows) != 1 or rows[0].get('providerId') != provider:
         raise ValueError('replay requires exactly one proposal for the selected provider')
-    # Preserve the original source and context fingerprints. The receiver still
+    # Preserve the originating Brain revision, source and context fingerprints.
+    # No Brain code is used for inference during replay. The receiver still
     # checks source drift, runtime bytes, ownership and the current provider entry.
     (out / 'mutations.json').write_text(json.dumps(payload, indent=2) + '\n')
     (out / 'diagnostics.json').write_text(json.dumps({'rows': [{'scopeTrace': [{
@@ -105,7 +105,7 @@ def main() -> int:
         print('::notice title=Hosted evidence prerequisite::' + reason)
         return 0
     if args.replay_mutations:
-        return replay_mutations(args.replay_mutations.resolve(), out, args.provider, source_sha, brain_sha)
+        return replay_mutations(args.replay_mutations.resolve(), out, args.provider, source_sha)
     # Seed the first call from the latest *executed* diagnostic candidate.
     # This is a counterexample, never a positive training record or proof.
     for path in sorted((ROOT / 'automation/hosted-repair-evidence').glob('*-mutations.json'), reverse=True):

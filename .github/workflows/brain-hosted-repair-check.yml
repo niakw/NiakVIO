@@ -25,7 +25,7 @@ jobs:
     timeout-minutes: 20
     env:
       TARGET_PROVIDER: ${{ inputs.provider || 'animevostfr' }}
-      BRAIN_SHA: 4880b7e4a5f875f6ccaffb8fd58f89e514722dbc
+      BRAIN_SHA: 4d99f589a63c9489d5284d8ae8e0ee1f800b667d
       # Push checks replay the known compacted-base regression. Manual runs
       # synthesize normally unless an archived proposal is explicitly selected.
       REPLAY_EVIDENCE: ${{ inputs.replay_evidence || (github.event_name == 'push' && '40037611469') || '' }}
@@ -108,8 +108,9 @@ jobs:
           summary = {
               'provider': os.environ['TARGET_PROVIDER'],
               'sourceNiakvioSha': os.environ['GITHUB_SHA'],
-              'sourceBrainLlmSha': os.environ['BRAIN_SHA'],
-              'generationReported': bool(diagnostics),
+              'sourceBrainLlmSha': read('mutations.json').get('brainLlmSha') or os.environ['BRAIN_SHA'],
+              'generationReported': bool(diagnostics) and not os.environ.get('REPLAY_EVIDENCE') and read('live-context.json').get('http_script_shell_only') is not True,
+              'replayedEvidence': safe(os.environ.get('REPLAY_EVIDENCE', '')),
               'browserObservation': read('live-context.json').get('browser_observation') or {},
               'scriptShellRecheckPerformed': read('live-context.json').get('script_shell_recheck_performed') is True,
               'synthesisPausedForMissingEvidence': read('live-context.json').get('http_script_shell_only') is True,

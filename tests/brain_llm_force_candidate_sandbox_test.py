@@ -257,6 +257,12 @@ network = mod.network_summary({
         ],
     }],
 })
+media = {'signature': 'mp4', 'durationSeconds': 35, 'bytesSampled': 65536,
+         'readState': 'data', 'cancelState': 'complete'}
+terminal = mod.network_summary({'tests': [{'fixture': {'label': 'Missing title'},
+    'network_observations': [{'stage': 'media', 'host': 'cdn.test', 'status': 206,
+                              'media_observation': media}]}]})
+assert terminal[0]['mediaObservation'] == media
 assert network == [
     {"fixture": "Fixture", "stage": "provider_fetch", "host": "example.test", "method": "GET", "path": "/search", "status": 200, "ok": True, "errorCode": "", "announcedPlayerCandidates": 0, "announcedPlayerHosts": [], "announcedQualityHeights": []},
     {"fixture": "Fixture", "stage": "detail_fetch", "host": "example.test", "method": "GET", "path": "/movie/1", "status": 200, "ok": True, "errorCode": "", "announcedPlayerCandidates": 0, "announcedPlayerHosts": [], "announcedQualityHeights": []},

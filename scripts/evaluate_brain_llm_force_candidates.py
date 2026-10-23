@@ -129,6 +129,8 @@ def network_summary(result: dict[str, Any]) -> list[dict[str, Any]]:
             }
             if isinstance(row.get("response_structure"), dict):
                 item["responseStructure"] = row["response_structure"]
+            if isinstance(row.get("media_observation"), dict):
+                item["mediaObservation"] = row["media_observation"]
             if row.get("provider_function_names"):
                 item["providerFunctions"] = row["provider_function_names"][:8]
             key = (

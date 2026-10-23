@@ -117,7 +117,7 @@ jobs:
                       {key: event.get(key) for key in (
                           'fixture', 'stage', 'host', 'method', 'status', 'ok', 'errorCode',
                           'announcedPlayerCandidates', 'announcedQualityHeights',
-                          'responseStructure', 'providerFunctions',
+                          'responseStructure', 'providerFunctions', 'mediaObservation',
                       )}
                       for event in value.get('networkTrace', [])[:64]
                   ]
