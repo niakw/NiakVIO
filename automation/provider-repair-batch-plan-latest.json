@@ -1,12 +1,11 @@
 {
   "schemaVersion": 1,
-  "sourceRunId": "39904928467",
-  "sourceTriggerSha": "fc6dbea71dc7f156d42624dc921587c7fdef17b2",
+  "sourceRunId": "39907300471",
+  "sourceTriggerSha": "a309ca6f001614fcc1fa427c0cc45d795173d025",
   "unresolvedProviderCount": 20,
-  "dynamicVariantProviderCount": 6,
+  "dynamicVariantProviderCount": 5,
   "dynamicVariantProviders": [
     "animevost-fr",
-    "animevostfr",
     "coflix",
     "hindmoviez",
     "kehflix",
@@ -118,7 +117,6 @@
       ],
       "capabilityStrategy": "mixed_embed_resolver",
       "evidenceDepths": [
-        "chain",
         "lookup"
       ],
       "dominantIssues": [
@@ -136,9 +134,7 @@
       "selectionAuthorities": [
         "provider-census-status.json:brainCheckRequired"
       ],
-      "dynamicVariantProviders": [
-        "animevostfr"
-      ],
+      "dynamicVariantProviders": [],
       "executionPolicy": "batch-first",
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
@@ -203,6 +199,33 @@
         "kehflix",
         "vidlove"
       ],
+      "executionPolicy": "batch-first",
+      "providerLocalFallback": "only-after-shared-profile-failure"
+    },
+    {
+      "groupId": "learning|mixed_embed_resolver",
+      "repairScope": "learning",
+      "runtimeFamilies": [
+        "mixed_embed_resolver"
+      ],
+      "capabilityStrategy": "mixed_embed_resolver",
+      "evidenceDepths": [
+        "none"
+      ],
+      "dominantIssues": [
+        "timeout"
+      ],
+      "harnessTransportClasses": [],
+      "transportSignature": "not-applicable",
+      "providerCount": 1,
+      "providers": [
+        "animekai"
+      ],
+      "action": "queue by signature for Brain learning; provider-local repair only after shared profiles fail",
+      "selectionAuthorities": [
+        "provider-census-status.json:brainCheckRequired"
+      ],
+      "dynamicVariantProviders": [],
       "executionPolicy": "batch-first",
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
@@ -282,33 +305,6 @@
         "allanime"
       ],
       "action": "apply/test shared terminal-player extraction profile to the whole capability family",
-      "selectionAuthorities": [
-        "provider-census-status.json:brainCheckRequired"
-      ],
-      "dynamicVariantProviders": [],
-      "executionPolicy": "batch-first",
-      "providerLocalFallback": "only-after-shared-profile-failure"
-    },
-    {
-      "groupId": "transport|mixed_embed_resolver",
-      "repairScope": "transport",
-      "runtimeFamilies": [
-        "mixed_embed_resolver"
-      ],
-      "capabilityStrategy": "mixed_embed_resolver",
-      "evidenceDepths": [
-        "none"
-      ],
-      "dominantIssues": [
-        "network_exception"
-      ],
-      "harnessTransportClasses": [],
-      "transportSignature": "not-applicable",
-      "providerCount": 1,
-      "providers": [
-        "animekai"
-      ],
-      "action": "refresh transport authority before provider-local code changes",
       "selectionAuthorities": [
         "provider-census-status.json:brainCheckRequired"
       ],
