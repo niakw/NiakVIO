@@ -17,6 +17,17 @@ proposition, pas son efficacité en lecture.
 Le pont inscrit maintenant le module dans le registre v3, respecte le propriétaire
 `PROVIDER.<ID>.*` existant et modifie son rectangle en place sans blocs imbriqués.
 Il retrouve l'ancre exacte publiée à travers la normalisation de sécurité et
+la mise sur une ligne. L'alignement par tokens retrouve les bytes lisibles du
+seed ; une seconde normalisation vérifie le span sélectionné avant remplacement.
+La métadonnée de restauration conserve les bytes originaux, commentaires compris.
+Le [run 40037611469](https://github.com/niakw/NiakVIO/actions/runs/40037611469)
+a généré un extracteur terminal Sendvid mais ne l'a pas exécuté à cause de cette
+différence de format. Il ne constitue donc pas un échec causal du candidat.
+Le workflow permet maintenant de rejouer une proposition archivée sans nouvel
+appel API, en conservant son SHA et ses empreintes d'origine. Les vérifications
+de dérive de source et les gates de lecture/identité restent obligatoires.
+
+Le pont
 préserve les modules précédents nécessaires à la reconstruction depuis un seed
 vierge. Il ne promeut pas les anciens scripts archivés en code exécutable v3.
 

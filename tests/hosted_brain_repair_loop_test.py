@@ -91,6 +91,41 @@ assert not loop.should_replan({'rows': [{'executionObserved': False}]}, 1, 3)
 assert not loop.should_replan({'rows': [{'executionObserved': True}]}, 3, 3)
 with tempfile.TemporaryDirectory() as directory:
     root = Path(directory)
+    out = root / 'output'
+    out.mkdir()
+    source = root / 'archived.json'
+    payload = {'brainLlmSha': 'b' * 40, 'sourceNiakvioSha': 'c' * 40,
+               'rows': [{'providerId': 'demo', 'mutationFingerprint': 'd' * 64}]}
+    source.write_text(json.dumps(payload))
+    ledger = root / 'automation/brain-llm-force-memory.json'
+    ledger.parent.mkdir()
+    ledger.write_text('{"original":true}')
+    calls = []
+    def replay_run(command, **options):
+        assert 'NIAKVIO_OPENAI_API_KEY' not in options['env']
+        assert 'OPENAI_API_KEY' not in options['env']
+        calls.append(Path(command[1]).name)
+        if calls[-1] == 'evaluate_brain_llm_force_candidates.py':
+            assert command[command.index('--current-sha') + 1] == 'a' * 40
+            assert json.loads((out / 'mutations.json').read_text()) == payload
+        elif calls[-1] == 'update_brain_llm_force_memory.py':
+            assert Path(command[command.index('--memory') + 1]) == out / 'force-memory.json'
+    with patch.object(loop, 'ROOT', root), \
+         patch.dict(os.environ, {'NIAKVIO_OPENAI_API_KEY': 'test-only', 'OPENAI_API_KEY': 'test-only'}), \
+         patch.object(loop.subprocess, 'run', side_effect=replay_run):
+        assert loop.replay_mutations(source, out, 'demo', 'a' * 40, 'b' * 40) == 0
+        for provider, brain_sha in [('other', 'b' * 40), ('demo', 'e' * 40)]:
+            try:
+                loop.replay_mutations(source, out, provider, 'a' * 40, brain_sha)
+            except ValueError:
+                pass
+            else:
+                raise AssertionError('replay accepted a mismatched provider or Brain')
+    assert calls == ['evaluate_brain_llm_force_candidates.py', 'update_brain_llm_force_memory.py']
+    assert ledger.read_text() == '{"original":true}'
+
+with tempfile.TemporaryDirectory() as directory:
+    root = Path(directory)
     (root / 'live-context.json').write_text(json.dumps({
         'provider': 'demo', 'sourceSha': 'a' * 40, 'http_script_shell_only': True,
     }))

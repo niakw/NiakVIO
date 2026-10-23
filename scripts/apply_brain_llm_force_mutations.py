@@ -515,11 +515,10 @@ def managed_fix_insertion_baseline(text):
         return text
     begin, end = _provider_range(text)
     owned = text[begin:end]
-    if owned.count(FIND) != 1:
-        raise ValueError("generated Bloc anchor is not unique in provider-owned bytes")
-    local = owned.index(FIND)
+    anchor = runtime_anchor(owned, FIND)
+    local = owned.index(anchor)
     start = begin + local
-    return text[:start] + text[start + len(FIND):]
+    return text[:start] + text[start + len(anchor):]
 
 
 def apply(text, **_kwargs):
@@ -550,15 +549,14 @@ def apply(text, **_kwargs):
 
     begin, end = _provider_range(text)
     owned = text[begin:end]
-    if owned.count(FIND) != 1:
-        raise ValueError("generated Bloc anchor is not unique in provider-owned bytes")
-    local = owned.index(FIND)
+    anchor = runtime_anchor(owned, FIND)
+    local = owned.index(anchor)
     start = begin + local
     data = {{
         "schema_version": 1,
         "family": FAMILY,
         "spec_fingerprint": SPEC_FINGERPRINT,
-        "restore_source": FIND,
+        "restore_source": anchor,
         "brain_applied_specs": [SPEC_FINGERPRINT],
     }}
     block = render_managed_fix(MANAGED_FIX_ID, REPLACE, data=data)
@@ -569,7 +567,7 @@ def apply(text, **_kwargs):
     )
     if clean_v3:
         block += "\\n"
-    return text[:start] + block + text[start + len(FIND):]
+    return text[:start] + block + text[start + len(anchor):]
 '''
 
 

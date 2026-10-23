@@ -517,4 +517,68 @@ with tempfile.TemporaryDirectory() as tmp:
     assert actual.count(b'/* STARTFIX:PROVIDER.DEMO.NATIVE */') == 1
     assert b'PROVIDER.DEMO.BRAIN.RUNTIME' not in actual
 
+    # Base helpers are published on one line but composed from readable seed
+    # bytes, outside the native Lego. Apply a real v3 dispatch and verify its
+    # reversible ownership metadata retains the exact original span.
+    from brain_runtime_anchor import runtime_anchor
+    from provider_v3_minimizer import minimize_text
+    from provider_patch_blocks import decode_managed_data, managed_fix_ids
+    readable = ('/* BEGIN NIAKVIO_PROVIDER */\n/* NIAKVIO_PROVIDER_BASE_OWNED_V3 */\n'
+                'async function crawl(response){\n'
+                '  const html = await response.text();\n'
+                '  // Unpublished implementation comment\n'
+                '  const urls = extract(html);\n'
+                '  return urls;\n}\nfunction sibling(){return 7;}\n'
+                '/* END NIAKVIO_PROVIDER */\n')
+    selected = ('const html = await response.text();\n'
+                '  // Unpublished implementation comment\n'
+                '  const urls = extract(html);')
+    compact_find = minimize_text(selected).text
+    assert runtime_anchor(readable, compact_find) == selected
+    (root / 'providers/demo.js').write_text(minimize_text(readable).text)
+    entry = {'provider_lego_scripts': []}
+    replacement = 'const urls = extractDirect(await response.text());'
+    path, _ = mod._apply_generated_bloc('demo', entry, {
+        'scope': 'provider_bloc', 'operation': 'upsert', 'family': 'base_extraction',
+        'find': compact_find, 'replace': replacement,
+    })
+    config.write_text(json.dumps({'provider_patches': {'demo': entry}}))
+    try:
+        provider_overrides.ROOT = root
+        actual, _ = provider_overrides.apply_overrides('demo', readable.encode(),
+            phase='discovery', include_global_core=False, config_path=config)
+    finally:
+        provider_overrides.ROOT = original_root
+    actual_text = actual.decode()
+    assert replacement in actual_text and selected not in actual_text
+    assert 'function sibling(){return 7;}' in actual_text
+    metadata = {fix_id: decode_managed_data(actual_text, fix_id)
+                for fix_id in managed_fix_ids(actual_text)}
+    assert any(data.get('restore_source') == selected for data in metadata.values()), metadata
+    for invalid in ('missingAnchor();', 'return 7; return 7;'):
+        try:
+            runtime_anchor(readable, invalid)
+        except ValueError:
+            pass
+        else:
+            raise AssertionError('nonexistent canonical anchor accepted')
+    try:
+        runtime_anchor('const a = 1;\nconst a = 1;', 'const a = 1;')
+    except ValueError:
+        pass
+    else:
+        raise AssertionError('ambiguous canonical anchor accepted')
+
+    # The actual failing hosted edit selects this ProviderBase statement span.
+    # Exercise the full-sized seed too, where character-wise diff is too costly.
+    from provider_base_store import build_clean_provider_seed
+    seed = build_clean_provider_seed('demo').decode()
+    real_find = ('playerText = await response.text(); '
+                 'const decodedPlayerText = _spv186UnpackPackedPlayer(playerText); '
+                 '/* NIAKVIO_PROVIDER_EXPLICIT_PLAYER_PRIORITY_V24_3 */ '
+                 'const explicitPlayerUrls = _spv241ExplicitPlayerPayloadUrls(decodedPlayerText, responseUrl);')
+    anchor = runtime_anchor(seed, real_find)
+    assert '\n' in anchor and anchor in seed
+    assert minimize_text(anchor).text == real_find
+
 print("Brain LLM Force mutation bridge tests passed")

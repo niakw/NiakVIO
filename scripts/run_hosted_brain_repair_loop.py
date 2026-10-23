@@ -41,6 +41,37 @@ def verification_feedback(evaluation: dict) -> dict:
     } for event in (row.get('candidate') or {}).get('networkTrace', [])[-12:]]
     return result
 
+
+def replay_mutations(path: Path, out: Path, provider: str, source_sha: str, brain_sha: str) -> int:
+    """Reverify an archived model proposal without another inference request."""
+    payload = json.loads(path.read_text())
+    if payload.get('brainLlmSha') != brain_sha:
+        raise ValueError('replay must use the exact originating Brain revision')
+    rows = payload.get('rows')
+    if not isinstance(rows, list) or len(rows) != 1 or rows[0].get('providerId') != provider:
+        raise ValueError('replay requires exactly one proposal for the selected provider')
+    # Preserve the original source and context fingerprints. The receiver still
+    # checks source drift, runtime bytes, ownership and the current provider entry.
+    (out / 'mutations.json').write_text(json.dumps(payload, indent=2) + '\n')
+    (out / 'diagnostics.json').write_text(json.dumps({'rows': [{'scopeTrace': [{
+        'scope': 'provider_bloc', 'outcome': 'replay', 'reason': 'archived_model_proposal_no_inference',
+    }]}]}))
+    env = os.environ.copy()
+    for key in ('NIAKVIO_OPENAI_API_KEY', 'OPENAI_API_KEY'):
+        env.pop(key, None)
+    subprocess.run([sys.executable, str(ROOT / 'scripts/evaluate_brain_llm_force_candidates.py'),
+        '--input', str(out / 'mutations.json'), '--current-sha', source_sha,
+        '--provider', provider, '--report', str(out / 'evaluation.json'),
+        '--accepted-output', str(out / 'accepted.json')], cwd=ROOT, env=env, check=True, timeout=540)
+    ledger = ROOT / 'automation/brain-llm-force-memory.json'
+    memory = out / 'force-memory.json'
+    memory.write_bytes(ledger.read_bytes() if ledger.exists() else b'{}')
+    subprocess.run([sys.executable, str(ROOT / 'scripts/update_brain_llm_force_memory.py'),
+        '--memory', str(memory), '--evaluation', str(out / 'evaluation.json')],
+        cwd=ROOT, env=env, check=True, timeout=30)
+    return 0
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument('--brain-root', type=Path, required=True)
@@ -48,6 +79,7 @@ def main() -> int:
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--max-attempts', type=int, default=3)
     parser.add_argument('--budget-seconds', type=int, default=600)
+    parser.add_argument('--replay-mutations', type=Path)
     args = parser.parse_args()
     out = args.output.resolve()
     brain = args.brain_root.resolve()
@@ -72,6 +104,8 @@ def main() -> int:
                 'rows': [], 'providerCount': 0, 'publicationAuthority': False, 'proofAuthority': False}))
         print('::notice title=Hosted evidence prerequisite::' + reason)
         return 0
+    if args.replay_mutations:
+        return replay_mutations(args.replay_mutations.resolve(), out, args.provider, source_sha, brain_sha)
     # Seed the first call from the latest *executed* diagnostic candidate.
     # This is a counterexample, never a positive training record or proof.
     for path in sorted((ROOT / 'automation/hosted-repair-evidence').glob('*-mutations.json'), reverse=True):

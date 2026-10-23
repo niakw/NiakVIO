@@ -11,6 +11,10 @@ on:
         type: choice
         options: [allanime, animekai, animevostfr]
         default: animevostfr
+      replay_evidence:
+        description: Optional archived run ID to reverify its proposal without inference
+        type: string
+        default: ''
 
 permissions:
   contents: read
@@ -22,6 +26,9 @@ jobs:
     env:
       TARGET_PROVIDER: ${{ inputs.provider || 'animevostfr' }}
       BRAIN_SHA: 4880b7e4a5f875f6ccaffb8fd58f89e514722dbc
+      # Push checks replay the known compacted-base regression. Manual runs
+      # synthesize normally unless an archived proposal is explicitly selected.
+      REPLAY_EVIDENCE: ${{ inputs.replay_evidence || (github.event_name == 'push' && '40037611469') || '' }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
@@ -71,9 +78,14 @@ jobs:
           TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
         shell: bash
         run: |
+          args=()
+          if [ -n "$REPLAY_EVIDENCE" ]; then
+            [[ "$REPLAY_EVIDENCE" =~ ^[0-9]+$ ]] || exit 1
+            args+=(--replay-mutations "automation/hosted-repair-evidence/${REPLAY_EVIDENCE}-mutations.json")
+          fi
           python scripts/run_hosted_brain_repair_loop.py --brain-root brain-llm \
             --provider "$TARGET_PROVIDER" --output local-output/hosted-check \
-            --max-attempts 3 --budget-seconds 600
+            --max-attempts 3 --budget-seconds 600 "${args[@]}"
       - name: Report generation and verification separately
         if: always()
         shell: bash
