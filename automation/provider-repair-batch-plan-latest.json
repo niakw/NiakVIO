@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "sourceRunId": "39987200296",
-  "sourceTriggerSha": "db2679d2b7752d054cbe80934e2b0d773153604d",
+  "sourceRunId": "39991626234",
+  "sourceTriggerSha": "e80d4becc76d33af133bdaa08656a8b644604439",
   "unresolvedProviderCount": 20,
   "dynamicVariantProviderCount": 6,
   "dynamicVariantProviders": [
@@ -263,6 +263,33 @@
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
     {
+      "groupId": "route-to-terminal|direct_media",
+      "repairScope": "route-to-terminal",
+      "runtimeFamilies": [
+        "allanime-mkissa-aaReq-gcm-plus-legacy-ctr-v5"
+      ],
+      "capabilityStrategy": "direct_media",
+      "evidenceDepths": [
+        "none"
+      ],
+      "dominantIssues": [
+        "timeout"
+      ],
+      "harnessTransportClasses": [],
+      "transportSignature": "not-applicable",
+      "providerCount": 1,
+      "providers": [
+        "allanime"
+      ],
+      "action": "replay proven routes in batch and apply shared detail/player traversal profile",
+      "selectionAuthorities": [
+        "provider-census-status.json:brainCheckRequired"
+      ],
+      "dynamicVariantProviders": [],
+      "executionPolicy": "batch-first",
+      "providerLocalFallback": "only-after-shared-profile-failure"
+    },
+    {
       "groupId": "route-to-terminal|iframe_player",
       "repairScope": "route-to-terminal",
       "runtimeFamilies": [
@@ -282,33 +309,6 @@
         "vidfast"
       ],
       "action": "replay proven routes in batch and apply shared detail/player traversal profile",
-      "selectionAuthorities": [
-        "provider-census-status.json:brainCheckRequired"
-      ],
-      "dynamicVariantProviders": [],
-      "executionPolicy": "batch-first",
-      "providerLocalFallback": "only-after-shared-profile-failure"
-    },
-    {
-      "groupId": "terminal-extraction|direct_media",
-      "repairScope": "terminal-extraction",
-      "runtimeFamilies": [
-        "allanime-mkissa-aaReq-gcm-plus-legacy-ctr-v5"
-      ],
-      "capabilityStrategy": "direct_media",
-      "evidenceDepths": [
-        "chain"
-      ],
-      "dominantIssues": [
-        "network_zero_result"
-      ],
-      "harnessTransportClasses": [],
-      "transportSignature": "not-applicable",
-      "providerCount": 1,
-      "providers": [
-        "allanime"
-      ],
-      "action": "apply/test shared terminal-player extraction profile to the whole capability family",
       "selectionAuthorities": [
         "provider-census-status.json:brainCheckRequired"
       ],
