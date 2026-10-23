@@ -2220,7 +2220,7 @@
     "animevostfr": {
       "domainMemory": true,
       "evidenceDepth": [
-        "anime=chain_reached"
+        "anime=lookup_only"
       ],
       "hasApiRecipe": false,
       "hasProviderValuePlan": false,
@@ -8149,8 +8149,8 @@
     "requiresDeepValidation": true
   },
   "schemaVersion": 2,
-  "sourceRunId": "39974890698",
-  "sourceSha": "a71f04aad4abe575693cf978d034e89c07c2e6ae",
+  "sourceRunId": "39978924689",
+  "sourceSha": "e3b7fa42c45ece9a81648ff36f8ba6cb2d1de229",
   "strategyPatterns": {
     "api_stream_resolver": {
       "commonRequestRecipes": [],
@@ -8162,17 +8162,17 @@
       "routeFamilies": [
         {
           "providerSupport": 1,
-          "role": "search",
-          "supportRatio": 1.0
-        },
-        {
-          "providerSupport": 1,
           "role": "other",
           "supportRatio": 1.0
         },
         {
           "providerSupport": 1,
           "role": "detail",
+          "supportRatio": 1.0
+        },
+        {
+          "providerSupport": 1,
+          "role": "search",
           "supportRatio": 1.0
         }
       ]
@@ -8270,12 +8270,12 @@
         },
         {
           "providerSupport": 3,
-          "role": "player",
+          "role": "detail",
           "supportRatio": 0.5
         },
         {
           "providerSupport": 3,
-          "role": "detail",
+          "role": "player",
           "supportRatio": 0.5
         },
         {
@@ -8468,12 +8468,12 @@
         },
         {
           "providerSupport": 1,
-          "role": "search",
+          "role": "api",
           "supportRatio": 1.0
         },
         {
           "providerSupport": 1,
-          "role": "api",
+          "role": "search",
           "supportRatio": 1.0
         }
       ]
