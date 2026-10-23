@@ -1,0 +1,5157 @@
+{
+  "currentSha": "cf1cd6c3c436754308b613a82e92d92d39e550a3",
+  "rows": [
+    {
+      "provider": "animevostfr",
+      "accepted": false,
+      "executionObserved": true,
+      "materializedMutationObserved": true,
+      "baselineBundleSha256": "c52ead0b22d7092a910bd4a9af6db8e33c4ade1ef982cf0eae404a44ad2c21db",
+      "candidateBundleSha256": "5f5efa9b388b2ad765894f6a2e09ce59579e393eafbd4b2476f56909d9b18fe3",
+      "reason": "required_category_playable_proof:anime",
+      "mutationFingerprint": "a9001e5031d04103bd549765893d5a56574d3f7e5d75df3c695ef4a00f0cb192",
+      "mutationSummary": [
+        {
+          "scope": "provider_bloc",
+          "operation": "upsert",
+          "family": "wordpress_search_episode"
+        }
+      ],
+      "baseline": {
+        "status": "no_streams",
+        "score": 100,
+        "streamsPlayable": 0,
+        "streamsReturned": 0,
+        "identityContradictions": 0,
+        "providerRequests": 60,
+        "providerHttpStatuses": [
+          200
+        ],
+        "variantCoverage": {
+          "qualityHeights": [],
+          "maxPlayableHeight": 0,
+          "audioLanguages": [],
+          "reachableHosts": [],
+          "announcedPlayerCandidates": 1,
+          "announcedVariantCandidates": 1,
+          "exploredPlayerRequests": 0,
+          "fanoutStates": [
+            "not-observed"
+          ],
+          "announcedQualityHeights": []
+        },
+        "invocationDiagnostics": [
+          {
+            "fixture": "Hell Mode S01E01",
+            "name": "positional_with_settings",
+            "inferredMode": "positional",
+            "result": "empty",
+            "streamCount": 0,
+            "providerObservations": 12,
+            "errorCode": ""
+          },
+          {
+            "fixture": "Jujutsu Kaisen S01E01",
+            "name": "positional_with_settings",
+            "inferredMode": "positional",
+            "result": "empty",
+            "streamCount": 0,
+            "providerObservations": 12,
+            "errorCode": ""
+          },
+          {
+            "fixture": "Attack on Titan S01E01",
+            "name": "positional_with_settings",
+            "inferredMode": "positional",
+            "result": "empty",
+            "streamCount": 0,
+            "providerObservations": 12,
+            "errorCode": ""
+          },
+          {
+            "fixture": "One Piece S01E01",
+            "name": "positional_with_settings",
+            "inferredMode": "positional",
+            "result": "empty",
+            "streamCount": 0,
+            "providerObservations": 12,
+            "errorCode": ""
+          },
+          {
+            "fixture": "Death Note S01E01",
+            "name": "positional_with_settings",
+            "inferredMode": "positional",
+            "result": "empty",
+            "streamCount": 0,
+            "providerObservations": 12,
+            "errorCode": ""
+          }
+        ],
+        "fixtureCoverage": [
+          {
+            "fixture": "Hell Mode S01E01",
+            "category": "anime",
+            "status": "no_streams",
+            "streamsPlayable": 0,
+            "streamsReturned": 0
+          },
+          {
+            "fixture": "Jujutsu Kaisen S01E01",
+            "category": "anime",
+            "status": "no_streams",
+            "streamsPlayable": 0,
+            "streamsReturned": 0
+          },
+          {
+            "fixture": "Attack on Titan S01E01",
+            "category": "anime",
+            "status": "no_streams",
+            "streamsPlayable": 0,
+            "streamsReturned": 0
+          },
+          {
+            "fixture": "One Piece S01E01",
+            "category": "anime",
+            "status": "no_streams",
+            "streamsPlayable": 0,
+            "streamsReturned": 0
+          },
+          {
+            "fixture": "Death Note S01E01",
+            "category": "anime",
+            "status": "no_streams",
+            "streamsPlayable": 0,
+            "streamsReturned": 0
+          }
+        ],
+        "networkTrace": [
+          {
+            "fixture": "Hell Mode S01E01",
+            "stage": "content_lookup",
+            "host": "api.themoviedb.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": [],
+            "responseStructure": {
+              "kind": "json",
+              "fields": [
+                {
+                  "path": "adult",
+                  "type": "boolean"
+                },
+                {
+                  "path": "backdrop_path",
+                  "type": "string"
+                },
+                {
+                  "path": "created_by",
+                  "type": "array"
+                },
+                {
+                  "path": "episode_run_time",
+                  "type": "array"
+                },
+                {
+                  "path": "first_air_date",
+                  "type": "string"
+                },
+                {
+                  "path": "genres",
+                  "type": "array"
+                },
+                {
+                  "path": "genres[].id",
+                  "type": "number"
+                },
+                {
+                  "path": "genres[].name",
+                  "type": "string"
+                },
+                {
+                  "path": "homepage",
+                  "type": "string"
+                },
+                {
+                  "path": "id",
+                  "type": "number"
+                },
+                {
+                  "path": "in_production",
+                  "type": "boolean"
+                },
+                {
+                  "path": "languages",
+                  "type": "array"
+                },
+                {
+                  "path": "last_air_date",
+                  "type": "string"
+                },
+                {
+                  "path": "last_episode_to_air",
+                  "type": "object"
+                },
+                {
+                  "path": "last_episode_to_air.id",
+                  "type": "number"
+                },
+                {
+                  "path": "last_episode_to_air.name",
+                  "type": "string"
+                },
+                {
+                  "path": "last_episode_to_air.overview",
+                  "type": "string"
+                },
+                {
+                  "path": "last_episode_to_air.vote_average",
+                  "type": "number"
+                },
+                {
+                  "path": "last_episode_to_air.vote_count",
+                  "type": "number"
+                },
+                {
+                  "path": "last_episode_to_air.air_date",
+                  "type": "string"
+                },
+                {
+                  "path": "last_episode_to_air.episode_number",
+                  "type": "number"
+                },
+                {
+                  "path": "last_episode_to_air.episode_type",
+                  "type": "string"
+                },
+                {
+                  "path": "last_episode_to_air.production_code",
+                  "type": "string"
+                },
+                {
+                  "path": "last_episode_to_air.runtime",
+                  "type": "number"
+                },
+                {
+                  "path": "last_episode_to_air.season_number",
+                  "type": "number"
+                },
+                {
+                  "path": "last_episode_to_air.show_id",
+                  "type": "number"
+                },
+                {
+                  "path": "last_episode_to_air.still_path",
+                  "type": "string"
+                },
+                {
+                  "path": "name",
+                  "type": "string"
+                },
+                {
+                  "path": "next_episode_to_air",
+                  "type": "null"
+                },
+                {
+                  "path": "networks",
+                  "type": "array"
+                },
+                {
+                  "path": "networks[].id",
+                  "type": "number"
+                },
+                {
+                  "path": "networks[].logo_path",
+                  "type": "string"
+                },
+                {
+                  "path": "networks[].name",
+                  "type": "string"
+                },
+                {
+                  "path": "networks[].origin_country",
+                  "type": "string"
+                },
+                {
+                  "path": "number_of_episodes",
+                  "type": "number"
+                },
+                {
+                  "path": "number_of_seasons",
+                  "type": "number"
+                },
+                {
+                  "path": "origin_country",
+                  "type": "array"
+                },
+                {
+                  "path": "original_language",
+                  "type": "string"
+                },
+                {
+                  "path": "original_name",
+                  "type": "string"
+                },
+                {
+                  "path": "overview",
+                  "type": "string"
+                },
+                {
+                  "path": "popularity",
+                  "type": "number"
+                },
+                {
+                  "path": "poster_path",
+                  "type": "string"
+                },
+                {
+                  "path": "production_companies",
+                  "type": "array"
+                },
+                {
+                  "path": "production_companies[].id",
+                  "type": "number"
+                },
+                {
+                  "path": "production_companies[].logo_path",
+                  "type": "string"
+                },
+                {
+                  "path": "production_companies[].name",
+                  "type": "string"
+                },
+                {
+                  "path": "production_companies[].origin_country",
+                  "type": "string"
+                },
+                {
+                  "path": "production_countries",
+                  "type": "array"
+                }
+              ]
+            },
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "apiJson",
+              "tmdb",
+              "canonicalResolution",
+              "resolve",
+              "wrap"
+            ]
+          },
+          {
+            "fixture": "Hell Mode S01E01",
+            "stage": "content_lookup",
+            "host": "animevostfr.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 1,
+            "announcedQualityHeights": [],
+            "responseStructure": {
+              "kind": "html",
+              "tags": [
+                {
+                  "tag": "script",
+                  "attributes": [
+                    "crossorigin",
+                    "data-cf-beacon",
+                    "integrity",
+                    "src",
+                    "type"
+                  ]
+                }
+              ],
+              "variables": [
+                "a0y",
+                "a0k",
+                "H",
+                "d",
+                "r",
+                "j",
+                "a0J",
+                "a0V",
+                "a0l",
+                "a0t",
+                "a0W",
+                "u",
+                "a0x",
+                "a0U",
+                "a0P",
+                "a0T"
+              ]
+            },
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "_fetch",
+              "text",
+              "directAnime",
+              "findAnime",
+              "resolve",
+              "wrap"
+            ]
+          },
+          {
+            "fixture": "Hell Mode S01E01",
+            "stage": "content_lookup",
+            "host": "animevostfr.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 1,
+            "announcedQualityHeights": [],
+            "responseStructure": {
+              "kind": "html",
+              "tags": [
+                {
+                  "tag": "script",
+                  "attributes": [
+                    "crossorigin",
+                    "data-cf-beacon",
+                    "integrity",
+                    "src",
+                    "type"
+                  ]
+                }
+              ],
+              "variables": [
+                "a0y",
+                "a0k",
+                "H",
+                "d",
+                "r",
+                "j",
+                "a0J",
+                "a0V",
+                "a0l",
+                "a0t",
+                "a0W",
+                "u",
+                "a0x",
+                "a0U",
+                "a0P",
+                "a0T"
+              ]
+            },
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "_fetch",
+              "text",
+              "directAnime",
+              "findAnime",
+              "resolve",
+              "wrap"
+            ]
+          },
+          {
+            "fixture": "Hell Mode S01E01",
+            "stage": "episode",
+            "host": "animevostfr.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 1,
+            "announcedQualityHeights": [],
+            "responseStructure": {
+              "kind": "html",
+              "tags": [
+                {
+                  "tag": "script",
+                  "attributes": [
+                    "crossorigin",
+                    "data-cf-beacon",
+                    "integrity",
+                    "src",
+                    "type"
+                  ]
+                }
+              ],
+              "variables": [
+                "a0y",
+                "a0k",
+                "H",
+                "d",
+                "r",
+                "j",
+                "a0J",
+                "a0V",
+                "a0l",
+                "a0t",
+                "a0W",
+                "u",
+                "a0x",
+                "a0U",
+                "a0P",
+                "a0T"
+              ]
+            },
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "_fetch",
+              "text",
+              "directAnime",
+              "findAnime",
+              "resolve",
+              "wrap"
+            ]
+          },
+          {
+            "fixture": "Hell Mode S01E01",
+            "stage": "content_lookup",
+            "host": "animevostfr.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 1,
+            "announcedQualityHeights": [],
+            "responseStructure": {
+              "kind": "html",
+              "tags": [
+                {
+                  "tag": "script",
+                  "attributes": [
+                    "crossorigin",
+                    "data-cf-beacon",
+                    "integrity",
+                    "src",
+                    "type"
+                  ]
+                }
+              ],
+              "variables": [
+                "a0y",
+                "a0k",
+                "H",
+                "d",
+                "r",
+                "j",
+                "a0J",
+                "a0V",
+                "a0l",
+                "a0t",
+                "a0W",
+                "u",
+                "a0x",
+                "a0U",
+                "a0P",
+                "a0T"
+              ]
+            },
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "_fetch",
+              "text",
+              "findAnime",
+              "resolve",
+              "wrap"
+            ]
+          },
+          {
+            "fixture": "Jujutsu Kaisen S01E01",
+            "stage": "content_lookup",
+            "host": "api.themoviedb.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": [],
+            "responseStructure": {
+              "kind": "json",
+              "fields": [
+                {
+                  "path": "adult",
+                  "type": "boolean"
+                },
+                {
+                  "path": "backdrop_path",
+                  "type": "string"
+                },
+                {
+                  "path": "created_by",
+                  "type": "array"
+                },
+                {
+                  "path": "episode_run_time",
+                  "type": "array"
+                },
+                {
+                  "path": "first_air_date",
+                  "type": "string"
+                },
+                {
+                  "path": "genres",
+                  "type": "array"
+                },
+                {
+                  "path": "genres[].id",
+                  "type": "number"
+                },
+                {
+                  "path": "genres[].name",
+                  "type": "string"
+                },
+                {
+                  "path": "homepage",
+                  "type": "string"
+                },
+                {
+                  "path": "id",
+                  "type": "number"
+                },
+                {
+                  "path": "in_production",
+                  "type": "boolean"
+                },
+                {
+                  "path": "languages",
+                  "type": "array"
+                },
+                {
+                  "path": "last_air_date",
+                  "type": "string"
+                },
+                {
+                  "path": "last_episode_to_air",
+                  "type": "object"
+                },
+                {
+                  "path": "last_episode_to_air.id",
+                  "type": "number"
+                },
+                {
+                  "path": "last_episode_to_air.name",
+                  "type": "string"
+                },
+                {
+                  "path": "last_episode_to_air.overview",
+                  "type": "string"
+                },
+                {
+                  "path": "last_episode_to_air.vote_average",
+                  "type": "number"
+                },
+                {
+                  "path": "last_episode_to_air.vote_count",
+                  "type": "number"
+                },
+                {
+                  "path": "last_episode_to_air.air_date",
+                  "type": "string"
+                },
+                {
+                  "path": "last_episode_to_air.episode_number",
+                  "type": "number"
+                },
+                {
+                  "path": "last_episode_to_air.episode_type",
+                  "type": "string"
+                },
+                {
+                  "path": "last_episode_to_air.production_code",
+                  "type": "string"
+                },
+                {
+                  "path": "last_episode_to_air.runtime",
+                  "type": "number"
+                },
+                {
+                  "path": "last_episode_to_air.season_number",
+                  "type": "number"
+                },
+                {
+                  "path": "last_episode_to_air.show_id",
+                  "type": "number"
+                },
+                {
+                  "path": "last_episode_to_air.still_path",
+                  "type": "string"
+                },
+                {
+                  "path": "name",
+                  "type": "string"
+                },
+                {
+                  "path": "next_episode_to_air",
+                  "type": "null"
+                },
+                {
+                  "path": "networks",
+                  "type": "array"
+                },
+                {
+                  "path": "networks[].id",
+                  "type": "number"
+                },
+                {
+                  "path": "networks[].logo_path",
+                  "type": "string"
+                },
+                {
+                  "path": "networks[].name",
+                  "type": "string"
+                },
+                {
+                  "path": "networks[].origin_country",
+                  "type": "string"
+                },
+                {
+                  "path": "number_of_episodes",
+                  "type": "number"
+                },
+                {
+                  "path": "number_of_seasons",
+                  "type": "number"
+                },
+                {
+                  "path": "origin_country",
+                  "type": "array"
+                },
+                {
+                  "path": "original_language",
+                  "type": "string"
+                },
+                {
+                  "path": "original_name",
+                  "type": "string"
+                },
+                {
+                  "path": "overview",
+                  "type": "string"
+                },
+                {
+                  "path": "popularity",
+                  "type": "number"
+                },
+                {
+                  "path": "poster_path",
+                  "type": "string"
+                },
+                {
+                  "path": "production_companies",
+                  "type": "array"
+                },
+                {
+                  "path": "production_companies[].id",
+                  "type": "number"
+                },
+                {
+                  "path": "production_companies[].logo_path",
+                  "type": "string"
+                },
+                {
+                  "path": "production_companies[].name",
+                  "type": "string"
+                },
+                {
+                  "path": "production_companies[].origin_country",
+                  "type": "string"
+                },
+                {
+                  "path": "production_countries",
+                  "type": "array"
+                }
+              ]
+            },
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "apiJson",
+              "tmdb",
+              "canonicalResolution",
+              "resolve",
+              "wrap"
+            ]
+          },
+          {
+            "fixture": "Jujutsu Kaisen S01E01",
+            "stage": "content_lookup",
+            "host": "animevostfr.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 1,
+            "announcedQualityHeights": [],
+            "responseStructure": {
+              "kind": "html",
+              "tags": [
+                {
+                  "tag": "script",
+                  "attributes": [
+                    "crossorigin",
+                    "data-cf-beacon",
+                    "integrity",
+                    "src",
+                    "type"
+                  ]
+                }
+              ],
+              "variables": [
+                "a0y",
+                "a0k",
+                "H",
+                "d",
+                "r",
+                "j",
+                "a0J",
+                "a0V",
+                "a0l",
+                "a0t",
+                "a0W",
+                "u",
+                "a0x",
+                "a0U",
+                "a0P",
+                "a0T"
+              ]
+            },
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "_fetch",
+              "text",
+              "directAnime",
+              "findAnime",
+              "resolve",
+              "wrap"
+            ]
+          },
+          {
+            "fixture": "Jujutsu Kaisen S01E01",
+            "stage": "content_lookup",
+            "host": "animevostfr.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 1,
+            "announcedQualityHeights": [],
+            "responseStructure": {
+              "kind": "html",
+              "tags": [
+                {
+                  "tag": "script",
+                  "attributes": [
+                    "crossorigin",
+                    "data-cf-beacon",
+                    "integrity",
+                    "src",
+                    "type"
+                  ]
+                }
+              ],
+              "variables": [
+                "a0y",
+                "a0k",
+                "H",
+                "d",
+                "r",
+                "j",
+                "a0J",
+                "a0V",
+                "a0l",
+                "a0t",
+                "a0W",
+                "u",
+                "a0x",
+                "a0U",
+                "a0P",
+                "a0T"
+              ]
+            },
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "_fetch",
+              "text",
+              "directAnime",
+              "findAnime",
+              "resolve",
+              "wrap"
+            ]
+          },
+          {
+            "fixture": "Jujutsu Kaisen S01E01",
+            "stage": "content_lookup",
+            "host": "animevostfr.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 1,
+            "announcedQualityHeights": [],
+            "responseStructure": {
+              "kind": "html",
+              "tags": [
+                {
+                  "tag": "script",
+                  "attributes": [
+                    "crossorigin",
+                    "data-cf-beacon",
+                    "integrity",
+                    "src",
+                    "type"
+                  ]
+                }
+              ],
+              "variables": [
+                "a0y",
+                "a0k",
+                "H",
+                "d",
+                "r",
+                "j",
+                "a0J",
+                "a0V",
+                "a0l",
+                "a0t",
+                "a0W",
+                "u",
+                "a0x",
+                "a0U",
+                "a0P",
+                "a0T"
+              ]
+            },
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "_fetch",
+              "text",
+              "directAnime",
+              "findAnime",
+              "resolve",
+              "wrap"
+            ]
+          },
+          {
+            "fixture": "Jujutsu Kaisen S01E01",
+            "stage": "content_lookup",
+            "host": "animevostfr.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 1,
+            "announcedQualityHeights": [],
+            "responseStructure": {
+              "kind": "html",
+              "tags": [
+                {
+                  "tag": "script",
+                  "attributes": [
+                    "crossorigin",
+                    "data-cf-beacon",
+                    "integrity",
+                    "src",
+                    "type"
+                  ]
+                }
+              ],
+              "variables": [
+                "a0y",
+                "a0k",
+                "H",
+                "d",
+                "r",
+                "j",
+                "a0J",
+                "a0V",
+                "a0l",
+                "a0t",
+                "a0W",
+                "u",
+                "a0x",
+                "a0U",
+                "a0P",
+                "a0T"
+              ]
+            },
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "_fetch",
+              "text",
+              "directAnime",
+              "findAnime",
+              "resolve",
+              "wrap"
+            ]
+          },
+          {
+            "fixture": "Jujutsu Kaisen S01E01",
+            "stage": "content_lookup",
+            "host": "animevostfr.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 1,
+            "announcedQualityHeights": [],
+            "responseStructure": {
+              "kind": "html",
+              "tags": [
+                {
+                  "tag": "script",
+                  "attributes": [
+                    "crossorigin",
+                    "data-cf-beacon",
+                    "integrity",
+                    "src",
+                    "type"
+                  ]
+                }
+              ],
+              "variables": [
+                "a0y",
+                "a0k",
+                "H",
+                "d",
+                "r",
+                "j",
+                "a0J",
+                "a0V",
+                "a0l",
+                "a0t",
+                "a0W",
+                "u",
+                "a0x",
+                "a0U",
+                "a0P",
+                "a0T"
+              ]
+            },
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "_fetch",
+              "text",
+              "findAnime",
+              "resolve",
+              "wrap"
+            ]
+          },
+          {
+            "fixture": "Attack on Titan S01E01",
+            "stage": "content_lookup",
+            "host": "api.themoviedb.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": [],
+            "responseStructure": {
+              "kind": "json",
+              "fields": [
+                {
+                  "path": "adult",
+                  "type": "boolean"
+                },
+                {
+                  "path": "backdrop_path",
+                  "type": "string"
+                },
+                {
+                  "path": "created_by",
+                  "type": "array"
+                },
+                {
+                  "path": "episode_run_time",
+                  "type": "array"
+                },
+                {
+                  "path": "first_air_date",
+                  "type": "string"
+                },
+                {
+                  "path": "genres",
+                  "type": "array"
+                },
+                {
+                  "path": "genres[].id",
+                  "type": "number"
+                },
+                {
+                  "path": "genres[].name",
+                  "type": "string"
+                },
+                {
+                  "path": "homepage",
+                  "type": "string"
+                },
+                {
+                  "path": "id",
+                  "type": "number"
+                },
+                {
+                  "path": "in_production",
+                  "type": "boolean"
+                },
+                {
+                  "path": "languages",
+                  "type": "array"
+                },
+                {
+                  "path": "last_air_date",
+                  "type": "string"
+                },
+                {
+                  "path": "last_episode_to_air",
+                  "type": "object"
+                },
+                {
+                  "path": "last_episode_to_air.id",
+                  "type": "number"
+                },
+                {
+                  "path": "last_episode_to_air.name",
+                  "type": "string"
+                },
+                {
+                  "path": "last_episode_to_air.overview",
+                  "type": "string"
+                },
+                {
+                  "path": "last_episode_to_air.vote_average",
+                  "type": "number"
+                },
+                {
+                  "path": "last_episode_to_air.vote_count",
+                  "type": "number"
+                },
+                {
+                  "path": "last_episode_to_air.air_date",
+                  "type": "string"
+                },
+                {
+                  "path": "last_episode_to_air.episode_number",
+                  "type": "number"
+                },
+                {
+                  "path": "last_episode_to_air.episode_type",
+                  "type": "string"
+                },
+                {
+                  "path": "last_episode_to_air.production_code",
+                  "type": "string"
+                },
+                {
+                  "path": "last_episode_to_air.runtime",
+                  "type": "number"
+                },
+                {
+                  "path": "last_episode_to_air.season_number",
+                  "type": "number"
+                },
+                {
+                  "path": "last_episode_to_air.show_id",
+                  "type": "number"
+                },
+                {
+                  "path": "last_episode_to_air.still_path",
+                  "type": "string"
+                },
+                {
+                  "path": "name",
+                  "type": "string"
+                },
+                {
+                  "path": "next_episode_to_air",
+                  "type": "null"
+                },
+                {
+                  "path": "networks",
+                  "type": "array"
+                },
+                {
+                  "path": "networks[].id",
+                  "type": "number"
+                },
+                {
+                  "path": "networks[].logo_path",
+                  "type": "string"
+                },
+                {
+                  "path": "networks[].name",
+                  "type": "string"
+                },
+                {
+                  "path": "networks[].origin_country",
+                  "type": "string"
+                },
+                {
+                  "path": "number_of_episodes",
+                  "type": "number"
+                },
+                {
+                  "path": "number_of_seasons",
+                  "type": "number"
+                },
+                {
+                  "path": "origin_country",
+                  "type": "array"
+                },
+                {
+                  "path": "original_language",
+                  "type": "string"
+                },
+                {
+                  "path": "original_name",
+                  "type": "string"
+                },
+                {
+                  "path": "overview",
+                  "type": "string"
+                },
+                {
+                  "path": "popularity",
+                  "type": "number"
+                },
+                {
+                  "path": "poster_path",
+                  "type": "string"
+                },
+                {
+                  "path": "production_companies",
+                  "type": "array"
+                },
+                {
+                  "path": "production_companies[].id",
+                  "type": "number"
+                },
+                {
+                  "path": "production_companies[].logo_path",
+                  "type": "string"
+                },
+                {
+                  "path": "production_companies[].name",
+                  "type": "string"
+                },
+                {
+                  "path": "production_companies[].origin_country",
+                  "type": "string"
+                },
+                {
+                  "path": "production_countries",
+                  "type": "array"
+                }
+              ]
+            },
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "apiJson",
+              "tmdb",
+              "canonicalResolution",
+              "resolve",
+              "wrap"
+            ]
+          },
+          {
+            "fixture": "Attack on Titan S01E01",
+            "stage": "content_lookup",
+            "host": "animevostfr.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 1,
+            "announcedQualityHeights": [],
+            "responseStructure": {
+              "kind": "html",
+              "tags": [
+                {
+                  "tag": "script",
+                  "attributes": [
+                    "crossorigin",
+                    "data-cf-beacon",
+                    "integrity",
+                    "src",
+                    "type"
+                  ]
+                }
+              ],
+              "variables": [
+                "a0y",
+                "a0k",
+                "H",
+                "d",
+                "r",
+                "j",
+                "a0J",
+                "a0V",
+                "a0l",
+                "a0t",
+                "a0W",
+                "u",
+                "a0x",
+                "a0U",
+                "a0P",
+                "a0T"
+              ]
+            },
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "_fetch",
+              "text",
+              "directAnime",
+              "findAnime",
+              "resolve",
+              "wrap"
+            ]
+          },
+          {
+            "fixture": "Attack on Titan S01E01",
+            "stage": "content_lookup",
+            "host": "animevostfr.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 1,
+            "announcedQualityHeights": [],
+            "responseStructure": {
+              "kind": "html",
+              "tags": [
+                {
+                  "tag": "script",
+                  "attributes": [
+                    "crossorigin",
+                    "data-cf-beacon",
+                    "integrity",
+                    "src",
+                    "type"
+                  ]
+                }
+              ],
+              "variables": [
+                "a0y",
+                "a0k",
+                "H",
+                "d",
+                "r",
+                "j",
+                "a0J",
+                "a0V",
+                "a0l",
+                "a0t",
+                "a0W",
+                "u",
+                "a0x",
+                "a0U",
+                "a0P",
+                "a0T"
+              ]
+            },
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "_fetch",
+              "text",
+              "directAnime",
+              "findAnime",
+              "resolve",
+              "wrap"
+            ]
+          },
+          {
+            "fixture": "Attack on Titan S01E01",
+            "stage": "content_lookup",
+            "host": "animevostfr.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 1,
+            "announcedQualityHeights": [],
+            "responseStructure": {
+              "kind": "html",
+              "tags": [
+                {
+                  "tag": "script",
+                  "attributes": [
+                    "crossorigin",
+                    "data-cf-beacon",
+                    "integrity",
+                    "src",
+                    "type"
+                  ]
+                }
+              ],
+              "variables": [
+                "a0y",
+                "a0k",
+                "H",
+                "d",
+                "r",
+                "j",
+                "a0J",
+                "a0V",
+                "a0l",
+                "a0t",
+                "a0W",
+                "u",
+                "a0x",
+                "a0U",
+                "a0P",
+                "a0T"
+              ]
+            },
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "_fetch",
+              "text",
+              "findAnime",
+              "resolve",
+              "wrap"
+            ]
+          },
+          {
+            "fixture": "One Piece S01E01",
+            "stage": "content_lookup",
+            "host": "api.themoviedb.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": [],
+            "responseStructure": {
+              "kind": "json",
+              "fields": [
+                {
+                  "path": "adult",
+                  "type": "boolean"
+                },
+                {
+                  "path": "backdrop_path",
+                  "type": "string"
+                },
+                {
+                  "path": "created_by",
+                  "type": "array"
+                },
+                {
+                  "path": "episode_run_time",
+                  "type": "array"
+                },
+                {
+                  "path": "first_air_date",
+                  "type": "string"
+                },
+                {
+                  "path": "genres",
+                  "type": "array"
+                },
+                {
+                  "path": "genres[].id",
+                  "type": "number"
+                },
+                {
+                  "path": "genres[].name",
+                  "type": "string"
+                },
+                {
+                  "path": "homepage",
+                  "type": "string"
+                },
+                {
+                  "path": "id",
+                  "type": "number"
+                },
+                {
+                  "path": "in_production",
+                  "type": "boolean"
+                },
+                {
+                  "path": "languages",
+                  "type": "array"
+                },
+                {
+                  "path": "last_air_date",
+                  "type": "string"
+                },
+                {
+                  "path": "last_episode_to_air",
+                  "type": "object"
+                },
+                {
+                  "path": "last_episode_to_air.id",
+                  "type": "number"
+                },
+                {
+                  "path": "last_episode_to_air.name",
+                  "type": "string"
+                },
+                {
+                  "path": "last_episode_to_air.overview",
+                  "type": "string"
+                },
+                {
+                  "path": "last_episode_to_air.vote_average",
+                  "type": "number"
+                },
+                {
+                  "path": "last_episode_to_air.vote_count",
+                  "type": "number"
+                },
+                {
+                  "path": "last_episode_to_air.air_date",
+                  "type": "string"
+                },
+                {
+                  "path": "last_episode_to_air.episode_number",
+                  "type": "number"
+                },
+                {
+                  "path": "last_episode_to_air.episode_type",
+                  "type": "string"
+                },
+                {
+                  "path": "last_episode_to_air.production_code",
+                  "type": "string"
+                },
+                {
+                  "path": "last_episode_to_air.runtime",
+                  "type": "number"
+                },
+                {
+                  "path": "last_episode_to_air.season_number",
+                  "type": "number"
+                },
+                {
+                  "path": "last_episode_to_air.show_id",
+                  "type": "number"
+                },
+                {
+                  "path": "last_episode_to_air.still_path",
+                  "type": "string"
+                },
+                {
+                  "path": "name",
+                  "type": "string"
+                },
+                {
+                  "path": "next_episode_to_air",
+                  "type": "null"
+                },
+                {
+                  "path": "networks",
+                  "type": "array"
+                },
+                {
+                  "path": "networks[].id",
+                  "type": "number"
+                },
+                {
+                  "path": "networks[].logo_path",
+                  "type": "string"
+                },
+                {
+                  "path": "networks[].name",
+                  "type": "string"
+                },
+                {
+                  "path": "networks[].origin_country",
+                  "type": "string"
+                },
+                {
+                  "path": "number_of_episodes",
+                  "type": "number"
+                },
+                {
+                  "path": "number_of_seasons",
+                  "type": "number"
+                },
+                {
+                  "path": "origin_country",
+                  "type": "array"
+                },
+                {
+                  "path": "original_language",
+                  "type": "string"
+                },
+                {
+                  "path": "original_name",
+                  "type": "string"
+                },
+                {
+                  "path": "overview",
+                  "type": "string"
+                },
+                {
+                  "path": "popularity",
+                  "type": "number"
+                },
+                {
+                  "path": "poster_path",
+                  "type": "string"
+                },
+                {
+                  "path": "production_companies",
+                  "type": "array"
+                },
+                {
+                  "path": "production_companies[].id",
+                  "type": "number"
+                },
+                {
+                  "path": "production_companies[].logo_path",
+                  "type": "string"
+                },
+                {
+                  "path": "production_companies[].name",
+                  "type": "string"
+                },
+                {
+                  "path": "production_companies[].origin_country",
+                  "type": "string"
+                },
+                {
+                  "path": "production_countries",
+                  "type": "array"
+                }
+              ]
+            },
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "apiJson",
+              "tmdb",
+              "canonicalResolution",
+              "resolve",
+              "wrap"
+            ]
+          },
+          {
+            "fixture": "One Piece S01E01",
+            "stage": "content_lookup",
+            "host": "animevostfr.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 1,
+            "announcedQualityHeights": [],
+            "responseStructure": {
+              "kind": "html",
+              "tags": [
+                {
+                  "tag": "script",
+                  "attributes": [
+                    "crossorigin",
+                    "data-cf-beacon",
+                    "integrity",
+                    "src",
+                    "type"
+                  ]
+                }
+              ],
+              "variables": [
+                "a0y",
+                "a0k",
+                "H",
+                "d",
+                "r",
+                "j",
+                "a0J",
+                "a0V",
+                "a0l",
+                "a0t",
+                "a0W",
+                "u",
+                "a0x",
+                "a0U",
+                "a0P",
+                "a0T"
+              ]
+            },
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "_fetch",
+              "text",
+              "directAnime",
+              "findAnime",
+              "resolve",
+              "wrap"
+            ]
+          },
+          {
+            "fixture": "One Piece S01E01",
+            "stage": "content_lookup",
+            "host": "animevostfr.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 1,
+            "announcedQualityHeights": [],
+            "responseStructure": {
+              "kind": "html",
+              "tags": [
+                {
+                  "tag": "script",
+                  "attributes": [
+                    "crossorigin",
+                    "data-cf-beacon",
+                    "integrity",
+                    "src",
+                    "type"
+                  ]
+                }
+              ],
+              "variables": [
+                "a0y",
+                "a0k",
+                "H",
+                "d",
+                "r",
+                "j",
+                "a0J",
+                "a0V",
+                "a0l",
+                "a0t",
+                "a0W",
+                "u",
+                "a0x",
+                "a0U",
+                "a0P",
+                "a0T"
+              ]
+            },
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "_fetch",
+              "text",
+              "directAnime",
+              "findAnime",
+              "resolve",
+              "wrap"
+            ]
+          },
+          {
+            "fixture": "One Piece S01E01",
+            "stage": "content_lookup",
+            "host": "animevostfr.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 1,
+            "announcedQualityHeights": [],
+            "responseStructure": {
+              "kind": "html",
+              "tags": [
+                {
+                  "tag": "script",
+                  "attributes": [
+                    "crossorigin",
+                    "data-cf-beacon",
+                    "integrity",
+                    "src",
+                    "type"
+                  ]
+                }
+              ],
+              "variables": [
+                "a0y",
+                "a0k",
+                "H",
+                "d",
+                "r",
+                "j",
+                "a0J",
+                "a0V",
+                "a0l",
+                "a0t",
+                "a0W",
+                "u",
+                "a0x",
+                "a0U",
+                "a0P",
+                "a0T"
+              ]
+            },
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "_fetch",
+              "text",
+              "directAnime",
+              "findAnime",
+              "resolve",
+              "wrap"
+            ]
+          },
+          {
+            "fixture": "One Piece S01E01",
+            "stage": "content_lookup",
+            "host": "animevostfr.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 1,
+            "announcedQualityHeights": [],
+            "responseStructure": {
+              "kind": "html",
+              "tags": [
+                {
+                  "tag": "script",
+                  "attributes": [
+                    "crossorigin",
+                    "data-cf-beacon",
+                    "integrity",
+                    "src",
+                    "type"
+                  ]
+                }
+              ],
+              "variables": [
+                "a0y",
+                "a0k",
+                "H",
+                "d",
+                "r",
+                "j",
+                "a0J",
+                "a0V",
+                "a0l",
+                "a0t",
+                "a0W",
+                "u",
+                "a0x",
+                "a0U",
+                "a0P",
+                "a0T"
+              ]
+            },
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "_fetch",
+              "text",
+              "findAnime",
+              "resolve",
+              "wrap"
+            ]
+          },
+          {
+            "fixture": "Death Note S01E01",
+            "stage": "content_lookup",
+            "host": "api.themoviedb.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": [],
+            "responseStructure": {
+              "kind": "json",
+              "fields": [
+                {
+                  "path": "adult",
+                  "type": "boolean"
+                },
+                {
+                  "path": "backdrop_path",
+                  "type": "string"
+                },
+                {
+                  "path": "created_by",
+                  "type": "array"
+                },
+                {
+                  "path": "episode_run_time",
+                  "type": "array"
+                },
+                {
+                  "path": "first_air_date",
+                  "type": "string"
+                },
+                {
+                  "path": "genres",
+                  "type": "array"
+                },
+                {
+                  "path": "genres[].id",
+                  "type": "number"
+                },
+                {
+                  "path": "genres[].name",
+                  "type": "string"
+                },
+                {
+                  "path": "homepage",
+                  "type": "string"
+                },
+                {
+                  "path": "id",
+                  "type": "number"
+                },
+                {
+                  "path": "in_production",
+                  "type": "boolean"
+                },
+                {
+                  "path": "languages",
+                  "type": "array"
+                },
+                {
+                  "path": "last_air_date",
+                  "type": "string"
+                },
+                {
+                  "path": "last_episode_to_air",
+                  "type": "object"
+                },
+                {
+                  "path": "last_episode_to_air.id",
+                  "type": "number"
+                },
+                {
+                  "path": "last_episode_to_air.name",
+                  "type": "string"
+                },
+                {
+                  "path": "last_episode_to_air.overview",
+                  "type": "string"
+                },
+                {
+                  "path": "last_episode_to_air.vote_average",
+                  "type": "number"
+                },
+                {
+                  "path": "last_episode_to_air.vote_count",
+                  "type": "number"
+                },
+                {
+                  "path": "last_episode_to_air.air_date",
+                  "type": "string"
+                },
+                {
+                  "path": "last_episode_to_air.episode_number",
+                  "type": "number"
+                },
+                {
+                  "path": "last_episode_to_air.episode_type",
+                  "type": "string"
+                },
+                {
+                  "path": "last_episode_to_air.production_code",
+                  "type": "string"
+                },
+                {
+                  "path": "last_episode_to_air.runtime",
+                  "type": "number"
+                },
+                {
+                  "path": "last_episode_to_air.season_number",
+                  "type": "number"
+                },
+                {
+                  "path": "last_episode_to_air.show_id",
+                  "type": "number"
+                },
+                {
+                  "path": "last_episode_to_air.still_path",
+                  "type": "string"
+                },
+                {
+                  "path": "name",
+                  "type": "string"
+                },
+                {
+                  "path": "next_episode_to_air",
+                  "type": "null"
+                },
+                {
+                  "path": "networks",
+                  "type": "array"
+                },
+                {
+                  "path": "networks[].id",
+                  "type": "number"
+                },
+                {
+                  "path": "networks[].logo_path",
+                  "type": "string"
+                },
+                {
+                  "path": "networks[].name",
+                  "type": "string"
+                },
+                {
+                  "path": "networks[].origin_country",
+                  "type": "string"
+                },
+                {
+                  "path": "number_of_episodes",
+                  "type": "number"
+                },
+                {
+                  "path": "number_of_seasons",
+                  "type": "number"
+                },
+                {
+                  "path": "origin_country",
+                  "type": "array"
+                },
+                {
+                  "path": "original_language",
+                  "type": "string"
+                },
+                {
+                  "path": "original_name",
+                  "type": "string"
+                },
+                {
+                  "path": "overview",
+                  "type": "string"
+                },
+                {
+                  "path": "popularity",
+                  "type": "number"
+                },
+                {
+                  "path": "poster_path",
+                  "type": "string"
+                },
+                {
+                  "path": "production_companies",
+                  "type": "array"
+                },
+                {
+                  "path": "production_companies[].id",
+                  "type": "number"
+                },
+                {
+                  "path": "production_companies[].logo_path",
+                  "type": "string"
+                },
+                {
+                  "path": "production_companies[].name",
+                  "type": "string"
+                },
+                {
+                  "path": "production_companies[].origin_country",
+                  "type": "string"
+                },
+                {
+                  "path": "production_countries",
+                  "type": "array"
+                }
+              ]
+            },
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "apiJson",
+              "tmdb",
+              "canonicalResolution",
+              "resolve",
+              "wrap"
+            ]
+          },
+          {
+            "fixture": "Death Note S01E01",
+            "stage": "content_lookup",
+            "host": "animevostfr.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 1,
+            "announcedQualityHeights": [],
+            "responseStructure": {
+              "kind": "html",
+              "tags": [
+                {
+                  "tag": "script",
+                  "attributes": [
+                    "crossorigin",
+                    "data-cf-beacon",
+                    "integrity",
+                    "src",
+                    "type"
+                  ]
+                }
+              ],
+              "variables": [
+                "a0y",
+                "a0k",
+                "H",
+                "d",
+                "r",
+                "j",
+                "a0J",
+                "a0V",
+                "a0l",
+                "a0t",
+                "a0W",
+                "u",
+                "a0x",
+                "a0U",
+                "a0P",
+                "a0T"
+              ]
+            },
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "_fetch",
+              "text",
+              "directAnime",
+              "findAnime",
+              "resolve",
+              "wrap"
+            ]
+          },
+          {
+            "fixture": "Death Note S01E01",
+            "stage": "content_lookup",
+            "host": "animevostfr.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 1,
+            "announcedQualityHeights": [],
+            "responseStructure": {
+              "kind": "html",
+              "tags": [
+                {
+                  "tag": "script",
+                  "attributes": [
+                    "crossorigin",
+                    "data-cf-beacon",
+                    "integrity",
+                    "src",
+                    "type"
+                  ]
+                }
+              ],
+              "variables": [
+                "a0y",
+                "a0k",
+                "H",
+                "d",
+                "r",
+                "j",
+                "a0J",
+                "a0V",
+                "a0l",
+                "a0t",
+                "a0W",
+                "u",
+                "a0x",
+                "a0U",
+                "a0P",
+                "a0T"
+              ]
+            },
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "_fetch",
+              "text",
+              "directAnime",
+              "findAnime",
+              "resolve",
+              "wrap"
+            ]
+          },
+          {
+            "fixture": "Death Note S01E01",
+            "stage": "content_lookup",
+            "host": "animevostfr.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 1,
+            "announcedQualityHeights": [],
+            "responseStructure": {
+              "kind": "html",
+              "tags": [
+                {
+                  "tag": "script",
+                  "attributes": [
+                    "crossorigin",
+                    "data-cf-beacon",
+                    "integrity",
+                    "src",
+                    "type"
+                  ]
+                }
+              ],
+              "variables": [
+                "a0y",
+                "a0k",
+                "H",
+                "d",
+                "r",
+                "j",
+                "a0J",
+                "a0V",
+                "a0l",
+                "a0t",
+                "a0W",
+                "u",
+                "a0x",
+                "a0U",
+                "a0P",
+                "a0T"
+              ]
+            },
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "_fetch",
+              "text",
+              "directAnime",
+              "findAnime",
+              "resolve",
+              "wrap"
+            ]
+          },
+          {
+            "fixture": "Death Note S01E01",
+            "stage": "content_lookup",
+            "host": "animevostfr.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 1,
+            "announcedQualityHeights": [],
+            "responseStructure": {
+              "kind": "html",
+              "tags": [
+                {
+                  "tag": "script",
+                  "attributes": [
+                    "crossorigin",
+                    "data-cf-beacon",
+                    "integrity",
+                    "src",
+                    "type"
+                  ]
+                }
+              ],
+              "variables": [
+                "a0y",
+                "a0k",
+                "H",
+                "d",
+                "r",
+                "j",
+                "a0J",
+                "a0V",
+                "a0l",
+                "a0t",
+                "a0W",
+                "u",
+                "a0x",
+                "a0U",
+                "a0P",
+                "a0T"
+              ]
+            },
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "_fetch",
+              "text",
+              "findAnime",
+              "resolve",
+              "wrap"
+            ]
+          }
+        ]
+      },
+      "candidate": {
+        "status": "no_streams",
+        "score": 100,
+        "streamsPlayable": 0,
+        "streamsReturned": 0,
+        "identityContradictions": 0,
+        "providerRequests": 69,
+        "providerHttpStatuses": [
+          200
+        ],
+        "variantCoverage": {
+          "qualityHeights": [],
+          "maxPlayableHeight": 0,
+          "audioLanguages": [],
+          "reachableHosts": [],
+          "announcedPlayerCandidates": 1,
+          "announcedVariantCandidates": 1,
+          "exploredPlayerRequests": 0,
+          "fanoutStates": [
+            "not-observed"
+          ],
+          "announcedQualityHeights": []
+        },
+        "invocationDiagnostics": [
+          {
+            "fixture": "Hell Mode S01E01",
+            "name": "positional_with_settings",
+            "inferredMode": "positional",
+            "result": "empty",
+            "streamCount": 0,
+            "providerObservations": 11,
+            "errorCode": ""
+          },
+          {
+            "fixture": "Jujutsu Kaisen S01E01",
+            "name": "positional_with_settings",
+            "inferredMode": "positional",
+            "result": "empty",
+            "streamCount": 0,
+            "providerObservations": 14,
+            "errorCode": ""
+          },
+          {
+            "fixture": "Attack on Titan S01E01",
+            "name": "positional_with_settings",
+            "inferredMode": "positional",
+            "result": "empty",
+            "streamCount": 0,
+            "providerObservations": 16,
+            "errorCode": ""
+          },
+          {
+            "fixture": "One Piece S01E01",
+            "name": "positional_with_settings",
+            "inferredMode": "positional",
+            "result": "empty",
+            "streamCount": 0,
+            "providerObservations": 15,
+            "errorCode": ""
+          },
+          {
+            "fixture": "Death Note S01E01",
+            "name": "positional_with_settings",
+            "inferredMode": "positional",
+            "result": "empty",
+            "streamCount": 0,
+            "providerObservations": 13,
+            "errorCode": ""
+          }
+        ],
+        "fixtureCoverage": [
+          {
+            "fixture": "Hell Mode S01E01",
+            "category": "anime",
+            "status": "no_streams",
+            "streamsPlayable": 0,
+            "streamsReturned": 0
+          },
+          {
+            "fixture": "Jujutsu Kaisen S01E01",
+            "category": "anime",
+            "status": "no_streams",
+            "streamsPlayable": 0,
+            "streamsReturned": 0
+          },
+          {
+            "fixture": "Attack on Titan S01E01",
+            "category": "anime",
+            "status": "no_streams",
+            "streamsPlayable": 0,
+            "streamsReturned": 0
+          },
+          {
+            "fixture": "One Piece S01E01",
+            "category": "anime",
+            "status": "no_streams",
+            "streamsPlayable": 0,
+            "streamsReturned": 0
+          },
+          {
+            "fixture": "Death Note S01E01",
+            "category": "anime",
+            "status": "no_streams",
+            "streamsPlayable": 0,
+            "streamsReturned": 0
+          }
+        ],
+        "networkTrace": [
+          {
+            "fixture": "Hell Mode S01E01",
+            "stage": "content_lookup",
+            "host": "api.themoviedb.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": [],
+            "responseStructure": {
+              "kind": "json",
+              "fields": [
+                {
+                  "path": "adult",
+                  "type": "boolean"
+                },
+                {
+                  "path": "backdrop_path",
+                  "type": "string"
+                },
+                {
+                  "path": "created_by",
+                  "type": "array"
+                },
+                {
+                  "path": "episode_run_time",
+                  "type": "array"
+                },
+                {
+                  "path": "first_air_date",
+                  "type": "string"
+                },
+                {
+                  "path": "genres",
+                  "type": "array"
+                },
+                {
+                  "path": "genres[].id",
+                  "type": "number"
+                },
+                {
+                  "path": "genres[].name",
+                  "type": "string"
+                },
+                {
+                  "path": "homepage",
+                  "type": "string"
+                },
+                {
+                  "path": "id",
+                  "type": "number"
+                },
+                {
+                  "path": "in_production",
+                  "type": "boolean"
+                },
+                {
+                  "path": "languages",
+                  "type": "array"
+                },
+                {
+                  "path": "last_air_date",
+                  "type": "string"
+                },
+                {
+                  "path": "last_episode_to_air",
+                  "type": "object"
+                },
+                {
+                  "path": "last_episode_to_air.id",
+                  "type": "number"
+                },
+                {
+                  "path": "last_episode_to_air.name",
+                  "type": "string"
+                },
+                {
+                  "path": "last_episode_to_air.overview",
+                  "type": "string"
+                },
+                {
+                  "path": "last_episode_to_air.vote_average",
+                  "type": "number"
+                },
+                {
+                  "path": "last_episode_to_air.vote_count",
+                  "type": "number"
+                },
+                {
+                  "path": "last_episode_to_air.air_date",
+                  "type": "string"
+                },
+                {
+                  "path": "last_episode_to_air.episode_number",
+                  "type": "number"
+                },
+                {
+                  "path": "last_episode_to_air.episode_type",
+                  "type": "string"
+                },
+                {
+                  "path": "last_episode_to_air.production_code",
+                  "type": "string"
+                },
+                {
+                  "path": "last_episode_to_air.runtime",
+                  "type": "number"
+                },
+                {
+                  "path": "last_episode_to_air.season_number",
+                  "type": "number"
+                },
+                {
+                  "path": "last_episode_to_air.show_id",
+                  "type": "number"
+                },
+                {
+                  "path": "last_episode_to_air.still_path",
+                  "type": "string"
+                },
+                {
+                  "path": "name",
+                  "type": "string"
+                },
+                {
+                  "path": "next_episode_to_air",
+                  "type": "null"
+                },
+                {
+                  "path": "networks",
+                  "type": "array"
+                },
+                {
+                  "path": "networks[].id",
+                  "type": "number"
+                },
+                {
+                  "path": "networks[].logo_path",
+                  "type": "string"
+                },
+                {
+                  "path": "networks[].name",
+                  "type": "string"
+                },
+                {
+                  "path": "networks[].origin_country",
+                  "type": "string"
+                },
+                {
+                  "path": "number_of_episodes",
+                  "type": "number"
+                },
+                {
+                  "path": "number_of_seasons",
+                  "type": "number"
+                },
+                {
+                  "path": "origin_country",
+                  "type": "array"
+                },
+                {
+                  "path": "original_language",
+                  "type": "string"
+                },
+                {
+                  "path": "original_name",
+                  "type": "string"
+                },
+                {
+                  "path": "overview",
+                  "type": "string"
+                },
+                {
+                  "path": "popularity",
+                  "type": "number"
+                },
+                {
+                  "path": "poster_path",
+                  "type": "string"
+                },
+                {
+                  "path": "production_companies",
+                  "type": "array"
+                },
+                {
+                  "path": "production_companies[].id",
+                  "type": "number"
+                },
+                {
+                  "path": "production_companies[].logo_path",
+                  "type": "string"
+                },
+                {
+                  "path": "production_companies[].name",
+                  "type": "string"
+                },
+                {
+                  "path": "production_companies[].origin_country",
+                  "type": "string"
+                },
+                {
+                  "path": "production_countries",
+                  "type": "array"
+                }
+              ]
+            },
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "apiJson",
+              "tmdb",
+              "canonicalResolution",
+              "resolve",
+              "wrap"
+            ]
+          },
+          {
+            "fixture": "Hell Mode S01E01",
+            "stage": "content_lookup",
+            "host": "animevostfr.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 1,
+            "announcedQualityHeights": [],
+            "responseStructure": {
+              "kind": "html",
+              "tags": [
+                {
+                  "tag": "script",
+                  "attributes": [
+                    "crossorigin",
+                    "data-cf-beacon",
+                    "integrity",
+                    "src",
+                    "type"
+                  ]
+                }
+              ],
+              "variables": [
+                "a0y",
+                "a0k",
+                "H",
+                "d",
+                "r",
+                "j",
+                "a0J",
+                "a0V",
+                "a0l",
+                "a0t",
+                "a0W",
+                "u",
+                "a0x",
+                "a0U",
+                "a0P",
+                "a0T"
+              ]
+            },
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "_fetch",
+              "text",
+              "directAnime",
+              "findAnime",
+              "resolve",
+              "wrap"
+            ]
+          },
+          {
+            "fixture": "Hell Mode S01E01",
+            "stage": "content_lookup",
+            "host": "animevostfr.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 1,
+            "announcedQualityHeights": [],
+            "responseStructure": {
+              "kind": "html",
+              "tags": [
+                {
+                  "tag": "script",
+                  "attributes": [
+                    "crossorigin",
+                    "data-cf-beacon",
+                    "integrity",
+                    "src",
+                    "type"
+                  ]
+                }
+              ],
+              "variables": [
+                "a0y",
+                "a0k",
+                "H",
+                "d",
+                "r",
+                "j",
+                "a0J",
+                "a0V",
+                "a0l",
+                "a0t",
+                "a0W",
+                "u",
+                "a0x",
+                "a0U",
+                "a0P",
+                "a0T"
+              ]
+            },
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "_fetch",
+              "text",
+              "directAnime",
+              "findAnime",
+              "resolve",
+              "wrap"
+            ]
+          },
+          {
+            "fixture": "Hell Mode S01E01",
+            "stage": "episode",
+            "host": "animevostfr.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 1,
+            "announcedQualityHeights": [],
+            "responseStructure": {
+              "kind": "html",
+              "tags": [
+                {
+                  "tag": "script",
+                  "attributes": [
+                    "crossorigin",
+                    "data-cf-beacon",
+                    "integrity",
+                    "src",
+                    "type"
+                  ]
+                }
+              ],
+              "variables": [
+                "a0y",
+                "a0k",
+                "H",
+                "d",
+                "r",
+                "j",
+                "a0J",
+                "a0V",
+                "a0l",
+                "a0t",
+                "a0W",
+                "u",
+                "a0x",
+                "a0U",
+                "a0P",
+                "a0T"
+              ]
+            },
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "_fetch",
+              "text",
+              "directAnime",
+              "findAnime",
+              "resolve",
+              "wrap"
+            ]
+          },
+          {
+            "fixture": "Hell Mode S01E01",
+            "stage": "content_lookup",
+            "host": "animevostfr.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 1,
+            "announcedQualityHeights": [],
+            "responseStructure": {
+              "kind": "html",
+              "tags": [
+                {
+                  "tag": "script",
+                  "attributes": [
+                    "crossorigin",
+                    "data-cf-beacon",
+                    "integrity",
+                    "src",
+                    "type"
+                  ]
+                }
+              ],
+              "variables": [
+                "a0y",
+                "a0k",
+                "H",
+                "d",
+                "r",
+                "j",
+                "a0J",
+                "a0V",
+                "a0l",
+                "a0t",
+                "a0W",
+                "u",
+                "a0x",
+                "a0U",
+                "a0P",
+                "a0T"
+              ]
+            },
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "_fetch",
+              "text",
+              "findAnime",
+              "resolve",
+              "wrap"
+            ]
+          },
+          {
+            "fixture": "Jujutsu Kaisen S01E01",
+            "stage": "content_lookup",
+            "host": "api.themoviedb.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": [],
+            "responseStructure": {
+              "kind": "json",
+              "fields": [
+                {
+                  "path": "adult",
+                  "type": "boolean"
+                },
+                {
+                  "path": "backdrop_path",
+                  "type": "string"
+                },
+                {
+                  "path": "created_by",
+                  "type": "array"
+                },
+                {
+                  "path": "episode_run_time",
+                  "type": "array"
+                },
+                {
+                  "path": "first_air_date",
+                  "type": "string"
+                },
+                {
+                  "path": "genres",
+                  "type": "array"
+                },
+                {
+                  "path": "genres[].id",
+                  "type": "number"
+                },
+                {
+                  "path": "genres[].name",
+                  "type": "string"
+                },
+                {
+                  "path": "homepage",
+                  "type": "string"
+                },
+                {
+                  "path": "id",
+                  "type": "number"
+                },
+                {
+                  "path": "in_production",
+                  "type": "boolean"
+                },
+                {
+                  "path": "languages",
+                  "type": "array"
+                },
+                {
+                  "path": "last_air_date",
+                  "type": "string"
+                },
+                {
+                  "path": "last_episode_to_air",
+                  "type": "object"
+                },
+                {
+                  "path": "last_episode_to_air.id",
+                  "type": "number"
+                },
+                {
+                  "path": "last_episode_to_air.name",
+                  "type": "string"
+                },
+                {
+                  "path": "last_episode_to_air.overview",
+                  "type": "string"
+                },
+                {
+                  "path": "last_episode_to_air.vote_average",
+                  "type": "number"
+                },
+                {
+                  "path": "last_episode_to_air.vote_count",
+                  "type": "number"
+                },
+                {
+                  "path": "last_episode_to_air.air_date",
+                  "type": "string"
+                },
+                {
+                  "path": "last_episode_to_air.episode_number",
+                  "type": "number"
+                },
+                {
+                  "path": "last_episode_to_air.episode_type",
+                  "type": "string"
+                },
+                {
+                  "path": "last_episode_to_air.production_code",
+                  "type": "string"
+                },
+                {
+                  "path": "last_episode_to_air.runtime",
+                  "type": "number"
+                },
+                {
+                  "path": "last_episode_to_air.season_number",
+                  "type": "number"
+                },
+                {
+                  "path": "last_episode_to_air.show_id",
+                  "type": "number"
+                },
+                {
+                  "path": "last_episode_to_air.still_path",
+                  "type": "string"
+                },
+                {
+                  "path": "name",
+                  "type": "string"
+                },
+                {
+                  "path": "next_episode_to_air",
+                  "type": "null"
+                },
+                {
+                  "path": "networks",
+                  "type": "array"
+                },
+                {
+                  "path": "networks[].id",
+                  "type": "number"
+                },
+                {
+                  "path": "networks[].logo_path",
+                  "type": "string"
+                },
+                {
+                  "path": "networks[].name",
+                  "type": "string"
+                },
+                {
+                  "path": "networks[].origin_country",
+                  "type": "string"
+                },
+                {
+                  "path": "number_of_episodes",
+                  "type": "number"
+                },
+                {
+                  "path": "number_of_seasons",
+                  "type": "number"
+                },
+                {
+                  "path": "origin_country",
+                  "type": "array"
+                },
+                {
+                  "path": "original_language",
+                  "type": "string"
+                },
+                {
+                  "path": "original_name",
+                  "type": "string"
+                },
+                {
+                  "path": "overview",
+                  "type": "string"
+                },
+                {
+                  "path": "popularity",
+                  "type": "number"
+                },
+                {
+                  "path": "poster_path",
+                  "type": "string"
+                },
+                {
+                  "path": "production_companies",
+                  "type": "array"
+                },
+                {
+                  "path": "production_companies[].id",
+                  "type": "number"
+                },
+                {
+                  "path": "production_companies[].logo_path",
+                  "type": "string"
+                },
+                {
+                  "path": "production_companies[].name",
+                  "type": "string"
+                },
+                {
+                  "path": "production_companies[].origin_country",
+                  "type": "string"
+                },
+                {
+                  "path": "production_countries",
+                  "type": "array"
+                }
+              ]
+            },
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "apiJson",
+              "tmdb",
+              "canonicalResolution",
+              "resolve",
+              "wrap"
+            ]
+          },
+          {
+            "fixture": "Jujutsu Kaisen S01E01",
+            "stage": "content_lookup",
+            "host": "animevostfr.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 1,
+            "announcedQualityHeights": [],
+            "responseStructure": {
+              "kind": "html",
+              "tags": [
+                {
+                  "tag": "script",
+                  "attributes": [
+                    "crossorigin",
+                    "data-cf-beacon",
+                    "integrity",
+                    "src",
+                    "type"
+                  ]
+                }
+              ],
+              "variables": [
+                "a0y",
+                "a0k",
+                "H",
+                "d",
+                "r",
+                "j",
+                "a0J",
+                "a0V",
+                "a0l",
+                "a0t",
+                "a0W",
+                "u",
+                "a0x",
+                "a0U",
+                "a0P",
+                "a0T"
+              ]
+            },
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "_fetch",
+              "text",
+              "directAnime",
+              "findAnime",
+              "resolve",
+              "wrap"
+            ]
+          },
+          {
+            "fixture": "Jujutsu Kaisen S01E01",
+            "stage": "content_lookup",
+            "host": "animevostfr.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 1,
+            "announcedQualityHeights": [],
+            "responseStructure": {
+              "kind": "html",
+              "tags": [
+                {
+                  "tag": "script",
+                  "attributes": [
+                    "crossorigin",
+                    "data-cf-beacon",
+                    "integrity",
+                    "src",
+                    "type"
+                  ]
+                }
+              ],
+              "variables": [
+                "a0y",
+                "a0k",
+                "H",
+                "d",
+                "r",
+                "j",
+                "a0J",
+                "a0V",
+                "a0l",
+                "a0t",
+                "a0W",
+                "u",
+                "a0x",
+                "a0U",
+                "a0P",
+                "a0T"
+              ]
+            },
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "_fetch",
+              "text",
+              "directAnime",
+              "findAnime",
+              "resolve",
+              "wrap"
+            ]
+          },
+          {
+            "fixture": "Jujutsu Kaisen S01E01",
+            "stage": "content_lookup",
+            "host": "animevostfr.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 1,
+            "announcedQualityHeights": [],
+            "responseStructure": {
+              "kind": "html",
+              "tags": [
+                {
+                  "tag": "script",
+                  "attributes": [
+                    "crossorigin",
+                    "data-cf-beacon",
+                    "integrity",
+                    "src",
+                    "type"
+                  ]
+                }
+              ],
+              "variables": [
+                "a0y",
+                "a0k",
+                "H",
+                "d",
+                "r",
+                "j",
+                "a0J",
+                "a0V",
+                "a0l",
+                "a0t",
+                "a0W",
+                "u",
+                "a0x",
+                "a0U",
+                "a0P",
+                "a0T"
+              ]
+            },
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "_fetch",
+              "text",
+              "directAnime",
+              "findAnime",
+              "resolve",
+              "wrap"
+            ]
+          },
+          {
+            "fixture": "Jujutsu Kaisen S01E01",
+            "stage": "content_lookup",
+            "host": "animevostfr.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 1,
+            "announcedQualityHeights": [],
+            "responseStructure": {
+              "kind": "html",
+              "tags": [
+                {
+                  "tag": "script",
+                  "attributes": [
+                    "crossorigin",
+                    "data-cf-beacon",
+                    "integrity",
+                    "src",
+                    "type"
+                  ]
+                }
+              ],
+              "variables": [
+                "a0y",
+                "a0k",
+                "H",
+                "d",
+                "r",
+                "j",
+                "a0J",
+                "a0V",
+                "a0l",
+                "a0t",
+                "a0W",
+                "u",
+                "a0x",
+                "a0U",
+                "a0P",
+                "a0T"
+              ]
+            },
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "_fetch",
+              "text",
+              "directAnime",
+              "findAnime",
+              "resolve",
+              "wrap"
+            ]
+          },
+          {
+            "fixture": "Jujutsu Kaisen S01E01",
+            "stage": "content_lookup",
+            "host": "animevostfr.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 1,
+            "announcedQualityHeights": [],
+            "responseStructure": {
+              "kind": "html",
+              "tags": [
+                {
+                  "tag": "script",
+                  "attributes": [
+                    "crossorigin",
+                    "data-cf-beacon",
+                    "integrity",
+                    "src",
+                    "type"
+                  ]
+                }
+              ],
+              "variables": [
+                "a0y",
+                "a0k",
+                "H",
+                "d",
+                "r",
+                "j",
+                "a0J",
+                "a0V",
+                "a0l",
+                "a0t",
+                "a0W",
+                "u",
+                "a0x",
+                "a0U",
+                "a0P",
+                "a0T"
+              ]
+            },
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "_fetch",
+              "text",
+              "directAnime",
+              "findAnime",
+              "resolve",
+              "wrap"
+            ]
+          },
+          {
+            "fixture": "Jujutsu Kaisen S01E01",
+            "stage": "content_lookup",
+            "host": "animevostfr.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 1,
+            "announcedQualityHeights": [],
+            "responseStructure": {
+              "kind": "html",
+              "tags": [
+                {
+                  "tag": "script",
+                  "attributes": [
+                    "crossorigin",
+                    "data-cf-beacon",
+                    "integrity",
+                    "src",
+                    "type"
+                  ]
+                }
+              ],
+              "variables": [
+                "a0y",
+                "a0k",
+                "H",
+                "d",
+                "r",
+                "j",
+                "a0J",
+                "a0V",
+                "a0l",
+                "a0t",
+                "a0W",
+                "u",
+                "a0x",
+                "a0U",
+                "a0P",
+                "a0T"
+              ]
+            },
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "_fetch",
+              "text",
+              "directAnime",
+              "findAnime",
+              "resolve",
+              "wrap"
+            ]
+          },
+          {
+            "fixture": "Jujutsu Kaisen S01E01",
+            "stage": "content_lookup",
+            "host": "animevostfr.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 1,
+            "announcedQualityHeights": [],
+            "responseStructure": {
+              "kind": "html",
+              "tags": [
+                {
+                  "tag": "script",
+                  "attributes": [
+                    "crossorigin",
+                    "data-cf-beacon",
+                    "integrity",
+                    "src",
+                    "type"
+                  ]
+                }
+              ],
+              "variables": [
+                "a0y",
+                "a0k",
+                "H",
+                "d",
+                "r",
+                "j",
+                "a0J",
+                "a0V",
+                "a0l",
+                "a0t",
+                "a0W",
+                "u",
+                "a0x",
+                "a0U",
+                "a0P",
+                "a0T"
+              ]
+            },
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "_fetch",
+              "text",
+              "findAnime",
+              "resolve",
+              "wrap"
+            ]
+          },
+          {
+            "fixture": "Attack on Titan S01E01",
+            "stage": "content_lookup",
+            "host": "api.themoviedb.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": [],
+            "responseStructure": {
+              "kind": "json",
+              "fields": [
+                {
+                  "path": "adult",
+                  "type": "boolean"
+                },
+                {
+                  "path": "backdrop_path",
+                  "type": "string"
+                },
+                {
+                  "path": "created_by",
+                  "type": "array"
+                },
+                {
+                  "path": "episode_run_time",
+                  "type": "array"
+                },
+                {
+                  "path": "first_air_date",
+                  "type": "string"
+                },
+                {
+                  "path": "genres",
+                  "type": "array"
+                },
+                {
+                  "path": "genres[].id",
+                  "type": "number"
+                },
+                {
+                  "path": "genres[].name",
+                  "type": "string"
+                },
+                {
+                  "path": "homepage",
+                  "type": "string"
+                },
+                {
+                  "path": "id",
+                  "type": "number"
+                },
+                {
+                  "path": "in_production",
+                  "type": "boolean"
+                },
+                {
+                  "path": "languages",
+                  "type": "array"
+                },
+                {
+                  "path": "last_air_date",
+                  "type": "string"
+                },
+                {
+                  "path": "last_episode_to_air",
+                  "type": "object"
+                },
+                {
+                  "path": "last_episode_to_air.id",
+                  "type": "number"
+                },
+                {
+                  "path": "last_episode_to_air.name",
+                  "type": "string"
+                },
+                {
+                  "path": "last_episode_to_air.overview",
+                  "type": "string"
+                },
+                {
+                  "path": "last_episode_to_air.vote_average",
+                  "type": "number"
+                },
+                {
+                  "path": "last_episode_to_air.vote_count",
+                  "type": "number"
+                },
+                {
+                  "path": "last_episode_to_air.air_date",
+                  "type": "string"
+                },
+                {
+                  "path": "last_episode_to_air.episode_number",
+                  "type": "number"
+                },
+                {
+                  "path": "last_episode_to_air.episode_type",
+                  "type": "string"
+                },
+                {
+                  "path": "last_episode_to_air.production_code",
+                  "type": "string"
+                },
+                {
+                  "path": "last_episode_to_air.runtime",
+                  "type": "number"
+                },
+                {
+                  "path": "last_episode_to_air.season_number",
+                  "type": "number"
+                },
+                {
+                  "path": "last_episode_to_air.show_id",
+                  "type": "number"
+                },
+                {
+                  "path": "last_episode_to_air.still_path",
+                  "type": "string"
+                },
+                {
+                  "path": "name",
+                  "type": "string"
+                },
+                {
+                  "path": "next_episode_to_air",
+                  "type": "null"
+                },
+                {
+                  "path": "networks",
+                  "type": "array"
+                },
+                {
+                  "path": "networks[].id",
+                  "type": "number"
+                },
+                {
+                  "path": "networks[].logo_path",
+                  "type": "string"
+                },
+                {
+                  "path": "networks[].name",
+                  "type": "string"
+                },
+                {
+                  "path": "networks[].origin_country",
+                  "type": "string"
+                },
+                {
+                  "path": "number_of_episodes",
+                  "type": "number"
+                },
+                {
+                  "path": "number_of_seasons",
+                  "type": "number"
+                },
+                {
+                  "path": "origin_country",
+                  "type": "array"
+                },
+                {
+                  "path": "original_language",
+                  "type": "string"
+                },
+                {
+                  "path": "original_name",
+                  "type": "string"
+                },
+                {
+                  "path": "overview",
+                  "type": "string"
+                },
+                {
+                  "path": "popularity",
+                  "type": "number"
+                },
+                {
+                  "path": "poster_path",
+                  "type": "string"
+                },
+                {
+                  "path": "production_companies",
+                  "type": "array"
+                },
+                {
+                  "path": "production_companies[].id",
+                  "type": "number"
+                },
+                {
+                  "path": "production_companies[].logo_path",
+                  "type": "string"
+                },
+                {
+                  "path": "production_companies[].name",
+                  "type": "string"
+                },
+                {
+                  "path": "production_companies[].origin_country",
+                  "type": "string"
+                },
+                {
+                  "path": "production_countries",
+                  "type": "array"
+                }
+              ]
+            },
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "apiJson",
+              "tmdb",
+              "canonicalResolution",
+              "resolve",
+              "wrap"
+            ]
+          },
+          {
+            "fixture": "Attack on Titan S01E01",
+            "stage": "content_lookup",
+            "host": "animevostfr.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 1,
+            "announcedQualityHeights": [],
+            "responseStructure": {
+              "kind": "html",
+              "tags": [
+                {
+                  "tag": "script",
+                  "attributes": [
+                    "crossorigin",
+                    "data-cf-beacon",
+                    "integrity",
+                    "src",
+                    "type"
+                  ]
+                }
+              ],
+              "variables": [
+                "a0y",
+                "a0k",
+                "H",
+                "d",
+                "r",
+                "j",
+                "a0J",
+                "a0V",
+                "a0l",
+                "a0t",
+                "a0W",
+                "u",
+                "a0x",
+                "a0U",
+                "a0P",
+                "a0T"
+              ]
+            },
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "_fetch",
+              "text",
+              "directAnime",
+              "findAnime",
+              "resolve",
+              "wrap"
+            ]
+          },
+          {
+            "fixture": "Attack on Titan S01E01",
+            "stage": "content_lookup",
+            "host": "animevostfr.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 1,
+            "announcedQualityHeights": [],
+            "responseStructure": {
+              "kind": "html",
+              "tags": [
+                {
+                  "tag": "script",
+                  "attributes": [
+                    "crossorigin",
+                    "data-cf-beacon",
+                    "integrity",
+                    "src",
+                    "type"
+                  ]
+                }
+              ],
+              "variables": [
+                "a0y",
+                "a0k",
+                "H",
+                "d",
+                "r",
+                "j",
+                "a0J",
+                "a0V",
+                "a0l",
+                "a0t",
+                "a0W",
+                "u",
+                "a0x",
+                "a0U",
+                "a0P",
+                "a0T"
+              ]
+            },
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "_fetch",
+              "text",
+              "directAnime",
+              "findAnime",
+              "resolve",
+              "wrap"
+            ]
+          },
+          {
+            "fixture": "Attack on Titan S01E01",
+            "stage": "episode",
+            "host": "animevostfr.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 1,
+            "announcedQualityHeights": [],
+            "responseStructure": {
+              "kind": "html",
+              "tags": [
+                {
+                  "tag": "script",
+                  "attributes": [
+                    "crossorigin",
+                    "data-cf-beacon",
+                    "integrity",
+                    "src",
+                    "type"
+                  ]
+                }
+              ],
+              "variables": [
+                "a0y",
+                "a0k",
+                "H",
+                "d",
+                "r",
+                "j",
+                "a0J",
+                "a0V",
+                "a0l",
+                "a0t",
+                "a0W",
+                "u",
+                "a0x",
+                "a0U",
+                "a0P",
+                "a0T"
+              ]
+            },
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "_fetch",
+              "text",
+              "directAnime",
+              "findAnime",
+              "resolve",
+              "wrap"
+            ]
+          },
+          {
+            "fixture": "Attack on Titan S01E01",
+            "stage": "content_lookup",
+            "host": "animevostfr.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 1,
+            "announcedQualityHeights": [],
+            "responseStructure": {
+              "kind": "html",
+              "tags": [
+                {
+                  "tag": "script",
+                  "attributes": [
+                    "crossorigin",
+                    "data-cf-beacon",
+                    "integrity",
+                    "src",
+                    "type"
+                  ]
+                }
+              ],
+              "variables": [
+                "a0y",
+                "a0k",
+                "H",
+                "d",
+                "r",
+                "j",
+                "a0J",
+                "a0V",
+                "a0l",
+                "a0t",
+                "a0W",
+                "u",
+                "a0x",
+                "a0U",
+                "a0P",
+                "a0T"
+              ]
+            },
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "_fetch",
+              "text",
+              "findAnime",
+              "resolve",
+              "wrap"
+            ]
+          },
+          {
+            "fixture": "One Piece S01E01",
+            "stage": "content_lookup",
+            "host": "api.themoviedb.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": [],
+            "responseStructure": {
+              "kind": "json",
+              "fields": [
+                {
+                  "path": "adult",
+                  "type": "boolean"
+                },
+                {
+                  "path": "backdrop_path",
+                  "type": "string"
+                },
+                {
+                  "path": "created_by",
+                  "type": "array"
+                },
+                {
+                  "path": "episode_run_time",
+                  "type": "array"
+                },
+                {
+                  "path": "first_air_date",
+                  "type": "string"
+                },
+                {
+                  "path": "genres",
+                  "type": "array"
+                },
+                {
+                  "path": "genres[].id",
+                  "type": "number"
+                },
+                {
+                  "path": "genres[].name",
+                  "type": "string"
+                },
+                {
+                  "path": "homepage",
+                  "type": "string"
+                },
+                {
+                  "path": "id",
+                  "type": "number"
+                },
+                {
+                  "path": "in_production",
+                  "type": "boolean"
+                },
+                {
+                  "path": "languages",
+                  "type": "array"
+                },
+                {
+                  "path": "last_air_date",
+                  "type": "string"
+                },
+                {
+                  "path": "last_episode_to_air",
+                  "type": "object"
+                },
+                {
+                  "path": "last_episode_to_air.id",
+                  "type": "number"
+                },
+                {
+                  "path": "last_episode_to_air.name",
+                  "type": "string"
+                },
+                {
+                  "path": "last_episode_to_air.overview",
+                  "type": "string"
+                },
+                {
+                  "path": "last_episode_to_air.vote_average",
+                  "type": "number"
+                },
+                {
+                  "path": "last_episode_to_air.vote_count",
+                  "type": "number"
+                },
+                {
+                  "path": "last_episode_to_air.air_date",
+                  "type": "string"
+                },
+                {
+                  "path": "last_episode_to_air.episode_number",
+                  "type": "number"
+                },
+                {
+                  "path": "last_episode_to_air.episode_type",
+                  "type": "string"
+                },
+                {
+                  "path": "last_episode_to_air.production_code",
+                  "type": "string"
+                },
+                {
+                  "path": "last_episode_to_air.runtime",
+                  "type": "number"
+                },
+                {
+                  "path": "last_episode_to_air.season_number",
+                  "type": "number"
+                },
+                {
+                  "path": "last_episode_to_air.show_id",
+                  "type": "number"
+                },
+                {
+                  "path": "last_episode_to_air.still_path",
+                  "type": "string"
+                },
+                {
+                  "path": "name",
+                  "type": "string"
+                },
+                {
+                  "path": "next_episode_to_air",
+                  "type": "null"
+                },
+                {
+                  "path": "networks",
+                  "type": "array"
+                },
+                {
+                  "path": "networks[].id",
+                  "type": "number"
+                },
+                {
+                  "path": "networks[].logo_path",
+                  "type": "string"
+                },
+                {
+                  "path": "networks[].name",
+                  "type": "string"
+                },
+                {
+                  "path": "networks[].origin_country",
+                  "type": "string"
+                },
+                {
+                  "path": "number_of_episodes",
+                  "type": "number"
+                },
+                {
+                  "path": "number_of_seasons",
+                  "type": "number"
+                },
+                {
+                  "path": "origin_country",
+                  "type": "array"
+                },
+                {
+                  "path": "original_language",
+                  "type": "string"
+                },
+                {
+                  "path": "original_name",
+                  "type": "string"
+                },
+                {
+                  "path": "overview",
+                  "type": "string"
+                },
+                {
+                  "path": "popularity",
+                  "type": "number"
+                },
+                {
+                  "path": "poster_path",
+                  "type": "string"
+                },
+                {
+                  "path": "production_companies",
+                  "type": "array"
+                },
+                {
+                  "path": "production_companies[].id",
+                  "type": "number"
+                },
+                {
+                  "path": "production_companies[].logo_path",
+                  "type": "string"
+                },
+                {
+                  "path": "production_companies[].name",
+                  "type": "string"
+                },
+                {
+                  "path": "production_companies[].origin_country",
+                  "type": "string"
+                },
+                {
+                  "path": "production_countries",
+                  "type": "array"
+                }
+              ]
+            },
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "apiJson",
+              "tmdb",
+              "canonicalResolution",
+              "resolve",
+              "wrap"
+            ]
+          },
+          {
+            "fixture": "One Piece S01E01",
+            "stage": "content_lookup",
+            "host": "animevostfr.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 1,
+            "announcedQualityHeights": [],
+            "responseStructure": {
+              "kind": "html",
+              "tags": [
+                {
+                  "tag": "script",
+                  "attributes": [
+                    "crossorigin",
+                    "data-cf-beacon",
+                    "integrity",
+                    "src",
+                    "type"
+                  ]
+                }
+              ],
+              "variables": [
+                "a0y",
+                "a0k",
+                "H",
+                "d",
+                "r",
+                "j",
+                "a0J",
+                "a0V",
+                "a0l",
+                "a0t",
+                "a0W",
+                "u",
+                "a0x",
+                "a0U",
+                "a0P",
+                "a0T"
+              ]
+            },
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "_fetch",
+              "text",
+              "directAnime",
+              "findAnime",
+              "resolve",
+              "wrap"
+            ]
+          },
+          {
+            "fixture": "One Piece S01E01",
+            "stage": "content_lookup",
+            "host": "animevostfr.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 1,
+            "announcedQualityHeights": [],
+            "responseStructure": {
+              "kind": "html",
+              "tags": [
+                {
+                  "tag": "script",
+                  "attributes": [
+                    "crossorigin",
+                    "data-cf-beacon",
+                    "integrity",
+                    "src",
+                    "type"
+                  ]
+                }
+              ],
+              "variables": [
+                "a0y",
+                "a0k",
+                "H",
+                "d",
+                "r",
+                "j",
+                "a0J",
+                "a0V",
+                "a0l",
+                "a0t",
+                "a0W",
+                "u",
+                "a0x",
+                "a0U",
+                "a0P",
+                "a0T"
+              ]
+            },
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "_fetch",
+              "text",
+              "directAnime",
+              "findAnime",
+              "resolve",
+              "wrap"
+            ]
+          },
+          {
+            "fixture": "One Piece S01E01",
+            "stage": "content_lookup",
+            "host": "animevostfr.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 1,
+            "announcedQualityHeights": [],
+            "responseStructure": {
+              "kind": "html",
+              "tags": [
+                {
+                  "tag": "script",
+                  "attributes": [
+                    "crossorigin",
+                    "data-cf-beacon",
+                    "integrity",
+                    "src",
+                    "type"
+                  ]
+                }
+              ],
+              "variables": [
+                "a0y",
+                "a0k",
+                "H",
+                "d",
+                "r",
+                "j",
+                "a0J",
+                "a0V",
+                "a0l",
+                "a0t",
+                "a0W",
+                "u",
+                "a0x",
+                "a0U",
+                "a0P",
+                "a0T"
+              ]
+            },
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "_fetch",
+              "text",
+              "directAnime",
+              "findAnime",
+              "resolve",
+              "wrap"
+            ]
+          },
+          {
+            "fixture": "One Piece S01E01",
+            "stage": "content_lookup",
+            "host": "animevostfr.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 1,
+            "announcedQualityHeights": [],
+            "responseStructure": {
+              "kind": "html",
+              "tags": [
+                {
+                  "tag": "script",
+                  "attributes": [
+                    "crossorigin",
+                    "data-cf-beacon",
+                    "integrity",
+                    "src",
+                    "type"
+                  ]
+                }
+              ],
+              "variables": [
+                "a0y",
+                "a0k",
+                "H",
+                "d",
+                "r",
+                "j",
+                "a0J",
+                "a0V",
+                "a0l",
+                "a0t",
+                "a0W",
+                "u",
+                "a0x",
+                "a0U",
+                "a0P",
+                "a0T"
+              ]
+            },
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "_fetch",
+              "text",
+              "directAnime",
+              "findAnime",
+              "resolve",
+              "wrap"
+            ]
+          },
+          {
+            "fixture": "One Piece S01E01",
+            "stage": "content_lookup",
+            "host": "animevostfr.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 1,
+            "announcedQualityHeights": [],
+            "responseStructure": {
+              "kind": "html",
+              "tags": [
+                {
+                  "tag": "script",
+                  "attributes": [
+                    "crossorigin",
+                    "data-cf-beacon",
+                    "integrity",
+                    "src",
+                    "type"
+                  ]
+                }
+              ],
+              "variables": [
+                "a0y",
+                "a0k",
+                "H",
+                "d",
+                "r",
+                "j",
+                "a0J",
+                "a0V",
+                "a0l",
+                "a0t",
+                "a0W",
+                "u",
+                "a0x",
+                "a0U",
+                "a0P",
+                "a0T"
+              ]
+            },
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "_fetch",
+              "text",
+              "directAnime",
+              "findAnime",
+              "resolve",
+              "wrap"
+            ]
+          },
+          {
+            "fixture": "One Piece S01E01",
+            "stage": "content_lookup",
+            "host": "animevostfr.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 1,
+            "announcedQualityHeights": [],
+            "responseStructure": {
+              "kind": "html",
+              "tags": [
+                {
+                  "tag": "script",
+                  "attributes": [
+                    "crossorigin",
+                    "data-cf-beacon",
+                    "integrity",
+                    "src",
+                    "type"
+                  ]
+                }
+              ],
+              "variables": [
+                "a0y",
+                "a0k",
+                "H",
+                "d",
+                "r",
+                "j",
+                "a0J",
+                "a0V",
+                "a0l",
+                "a0t",
+                "a0W",
+                "u",
+                "a0x",
+                "a0U",
+                "a0P",
+                "a0T"
+              ]
+            },
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "_fetch",
+              "text",
+              "directAnime",
+              "findAnime",
+              "resolve",
+              "wrap"
+            ]
+          },
+          {
+            "fixture": "One Piece S01E01",
+            "stage": "content_lookup",
+            "host": "animevostfr.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 1,
+            "announcedQualityHeights": [],
+            "responseStructure": {
+              "kind": "html",
+              "tags": [
+                {
+                  "tag": "script",
+                  "attributes": [
+                    "crossorigin",
+                    "data-cf-beacon",
+                    "integrity",
+                    "src",
+                    "type"
+                  ]
+                }
+              ],
+              "variables": [
+                "a0y",
+                "a0k",
+                "H",
+                "d",
+                "r",
+                "j",
+                "a0J",
+                "a0V",
+                "a0l",
+                "a0t",
+                "a0W",
+                "u",
+                "a0x",
+                "a0U",
+                "a0P",
+                "a0T"
+              ]
+            },
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "_fetch",
+              "text",
+              "directAnime",
+              "findAnime",
+              "resolve",
+              "wrap"
+            ]
+          },
+          {
+            "fixture": "One Piece S01E01",
+            "stage": "content_lookup",
+            "host": "animevostfr.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 1,
+            "announcedQualityHeights": [],
+            "responseStructure": {
+              "kind": "html",
+              "tags": [
+                {
+                  "tag": "script",
+                  "attributes": [
+                    "crossorigin",
+                    "data-cf-beacon",
+                    "integrity",
+                    "src",
+                    "type"
+                  ]
+                }
+              ],
+              "variables": [
+                "a0y",
+                "a0k",
+                "H",
+                "d",
+                "r",
+                "j",
+                "a0J",
+                "a0V",
+                "a0l",
+                "a0t",
+                "a0W",
+                "u",
+                "a0x",
+                "a0U",
+                "a0P",
+                "a0T"
+              ]
+            },
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "_fetch",
+              "text",
+              "findAnime",
+              "resolve",
+              "wrap"
+            ]
+          },
+          {
+            "fixture": "Death Note S01E01",
+            "stage": "content_lookup",
+            "host": "api.themoviedb.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": [],
+            "responseStructure": {
+              "kind": "json",
+              "fields": [
+                {
+                  "path": "adult",
+                  "type": "boolean"
+                },
+                {
+                  "path": "backdrop_path",
+                  "type": "string"
+                },
+                {
+                  "path": "created_by",
+                  "type": "array"
+                },
+                {
+                  "path": "episode_run_time",
+                  "type": "array"
+                },
+                {
+                  "path": "first_air_date",
+                  "type": "string"
+                },
+                {
+                  "path": "genres",
+                  "type": "array"
+                },
+                {
+                  "path": "genres[].id",
+                  "type": "number"
+                },
+                {
+                  "path": "genres[].name",
+                  "type": "string"
+                },
+                {
+                  "path": "homepage",
+                  "type": "string"
+                },
+                {
+                  "path": "id",
+                  "type": "number"
+                },
+                {
+                  "path": "in_production",
+                  "type": "boolean"
+                },
+                {
+                  "path": "languages",
+                  "type": "array"
+                },
+                {
+                  "path": "last_air_date",
+                  "type": "string"
+                },
+                {
+                  "path": "last_episode_to_air",
+                  "type": "object"
+                },
+                {
+                  "path": "last_episode_to_air.id",
+                  "type": "number"
+                },
+                {
+                  "path": "last_episode_to_air.name",
+                  "type": "string"
+                },
+                {
+                  "path": "last_episode_to_air.overview",
+                  "type": "string"
+                },
+                {
+                  "path": "last_episode_to_air.vote_average",
+                  "type": "number"
+                },
+                {
+                  "path": "last_episode_to_air.vote_count",
+                  "type": "number"
+                },
+                {
+                  "path": "last_episode_to_air.air_date",
+                  "type": "string"
+                },
+                {
+                  "path": "last_episode_to_air.episode_number",
+                  "type": "number"
+                },
+                {
+                  "path": "last_episode_to_air.episode_type",
+                  "type": "string"
+                },
+                {
+                  "path": "last_episode_to_air.production_code",
+                  "type": "string"
+                },
+                {
+                  "path": "last_episode_to_air.runtime",
+                  "type": "number"
+                },
+                {
+                  "path": "last_episode_to_air.season_number",
+                  "type": "number"
+                },
+                {
+                  "path": "last_episode_to_air.show_id",
+                  "type": "number"
+                },
+                {
+                  "path": "last_episode_to_air.still_path",
+                  "type": "string"
+                },
+                {
+                  "path": "name",
+                  "type": "string"
+                },
+                {
+                  "path": "next_episode_to_air",
+                  "type": "null"
+                },
+                {
+                  "path": "networks",
+                  "type": "array"
+                },
+                {
+                  "path": "networks[].id",
+                  "type": "number"
+                },
+                {
+                  "path": "networks[].logo_path",
+                  "type": "string"
+                },
+                {
+                  "path": "networks[].name",
+                  "type": "string"
+                },
+                {
+                  "path": "networks[].origin_country",
+                  "type": "string"
+                },
+                {
+                  "path": "number_of_episodes",
+                  "type": "number"
+                },
+                {
+                  "path": "number_of_seasons",
+                  "type": "number"
+                },
+                {
+                  "path": "origin_country",
+                  "type": "array"
+                },
+                {
+                  "path": "original_language",
+                  "type": "string"
+                },
+                {
+                  "path": "original_name",
+                  "type": "string"
+                },
+                {
+                  "path": "overview",
+                  "type": "string"
+                },
+                {
+                  "path": "popularity",
+                  "type": "number"
+                },
+                {
+                  "path": "poster_path",
+                  "type": "string"
+                },
+                {
+                  "path": "production_companies",
+                  "type": "array"
+                },
+                {
+                  "path": "production_companies[].id",
+                  "type": "number"
+                },
+                {
+                  "path": "production_companies[].logo_path",
+                  "type": "string"
+                },
+                {
+                  "path": "production_companies[].name",
+                  "type": "string"
+                },
+                {
+                  "path": "production_companies[].origin_country",
+                  "type": "string"
+                },
+                {
+                  "path": "production_countries",
+                  "type": "array"
+                }
+              ]
+            },
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "apiJson",
+              "tmdb",
+              "canonicalResolution",
+              "resolve",
+              "wrap"
+            ]
+          },
+          {
+            "fixture": "Death Note S01E01",
+            "stage": "content_lookup",
+            "host": "animevostfr.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 1,
+            "announcedQualityHeights": [],
+            "responseStructure": {
+              "kind": "html",
+              "tags": [
+                {
+                  "tag": "script",
+                  "attributes": [
+                    "crossorigin",
+                    "data-cf-beacon",
+                    "integrity",
+                    "src",
+                    "type"
+                  ]
+                }
+              ],
+              "variables": [
+                "a0y",
+                "a0k",
+                "H",
+                "d",
+                "r",
+                "j",
+                "a0J",
+                "a0V",
+                "a0l",
+                "a0t",
+                "a0W",
+                "u",
+                "a0x",
+                "a0U",
+                "a0P",
+                "a0T"
+              ]
+            },
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "_fetch",
+              "text",
+              "directAnime",
+              "findAnime",
+              "resolve",
+              "wrap"
+            ]
+          },
+          {
+            "fixture": "Death Note S01E01",
+            "stage": "content_lookup",
+            "host": "animevostfr.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 1,
+            "announcedQualityHeights": [],
+            "responseStructure": {
+              "kind": "html",
+              "tags": [
+                {
+                  "tag": "script",
+                  "attributes": [
+                    "crossorigin",
+                    "data-cf-beacon",
+                    "integrity",
+                    "src",
+                    "type"
+                  ]
+                }
+              ],
+              "variables": [
+                "a0y",
+                "a0k",
+                "H",
+                "d",
+                "r",
+                "j",
+                "a0J",
+                "a0V",
+                "a0l",
+                "a0t",
+                "a0W",
+                "u",
+                "a0x",
+                "a0U",
+                "a0P",
+                "a0T"
+              ]
+            },
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "_fetch",
+              "text",
+              "directAnime",
+              "findAnime",
+              "resolve",
+              "wrap"
+            ]
+          },
+          {
+            "fixture": "Death Note S01E01",
+            "stage": "content_lookup",
+            "host": "animevostfr.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 1,
+            "announcedQualityHeights": [],
+            "responseStructure": {
+              "kind": "html",
+              "tags": [
+                {
+                  "tag": "script",
+                  "attributes": [
+                    "crossorigin",
+                    "data-cf-beacon",
+                    "integrity",
+                    "src",
+                    "type"
+                  ]
+                }
+              ],
+              "variables": [
+                "a0y",
+                "a0k",
+                "H",
+                "d",
+                "r",
+                "j",
+                "a0J",
+                "a0V",
+                "a0l",
+                "a0t",
+                "a0W",
+                "u",
+                "a0x",
+                "a0U",
+                "a0P",
+                "a0T"
+              ]
+            },
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "_fetch",
+              "text",
+              "directAnime",
+              "findAnime",
+              "resolve",
+              "wrap"
+            ]
+          },
+          {
+            "fixture": "Death Note S01E01",
+            "stage": "content_lookup",
+            "host": "animevostfr.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 1,
+            "announcedQualityHeights": [],
+            "responseStructure": {
+              "kind": "html",
+              "tags": [
+                {
+                  "tag": "script",
+                  "attributes": [
+                    "crossorigin",
+                    "data-cf-beacon",
+                    "integrity",
+                    "src",
+                    "type"
+                  ]
+                }
+              ],
+              "variables": [
+                "a0y",
+                "a0k",
+                "H",
+                "d",
+                "r",
+                "j",
+                "a0J",
+                "a0V",
+                "a0l",
+                "a0t",
+                "a0W",
+                "u",
+                "a0x",
+                "a0U",
+                "a0P",
+                "a0T"
+              ]
+            },
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "_fetch",
+              "text",
+              "directAnime",
+              "findAnime",
+              "resolve",
+              "wrap"
+            ]
+          },
+          {
+            "fixture": "Death Note S01E01",
+            "stage": "content_lookup",
+            "host": "animevostfr.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 1,
+            "announcedQualityHeights": [],
+            "responseStructure": {
+              "kind": "html",
+              "tags": [
+                {
+                  "tag": "script",
+                  "attributes": [
+                    "crossorigin",
+                    "data-cf-beacon",
+                    "integrity",
+                    "src",
+                    "type"
+                  ]
+                }
+              ],
+              "variables": [
+                "a0y",
+                "a0k",
+                "H",
+                "d",
+                "r",
+                "j",
+                "a0J",
+                "a0V",
+                "a0l",
+                "a0t",
+                "a0W",
+                "u",
+                "a0x",
+                "a0U",
+                "a0P",
+                "a0T"
+              ]
+            },
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "_fetch",
+              "text",
+              "directAnime",
+              "findAnime",
+              "resolve",
+              "wrap"
+            ]
+          },
+          {
+            "fixture": "Death Note S01E01",
+            "stage": "content_lookup",
+            "host": "animevostfr.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 1,
+            "announcedQualityHeights": [],
+            "responseStructure": {
+              "kind": "html",
+              "tags": [
+                {
+                  "tag": "script",
+                  "attributes": [
+                    "crossorigin",
+                    "data-cf-beacon",
+                    "integrity",
+                    "src",
+                    "type"
+                  ]
+                }
+              ],
+              "variables": [
+                "a0y",
+                "a0k",
+                "H",
+                "d",
+                "r",
+                "j",
+                "a0J",
+                "a0V",
+                "a0l",
+                "a0t",
+                "a0W",
+                "u",
+                "a0x",
+                "a0U",
+                "a0P",
+                "a0T"
+              ]
+            },
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "_fetch",
+              "text",
+              "directAnime",
+              "findAnime",
+              "resolve",
+              "wrap"
+            ]
+          },
+          {
+            "fixture": "Death Note S01E01",
+            "stage": "content_lookup",
+            "host": "animevostfr.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 1,
+            "announcedQualityHeights": [],
+            "responseStructure": {
+              "kind": "html",
+              "tags": [
+                {
+                  "tag": "script",
+                  "attributes": [
+                    "crossorigin",
+                    "data-cf-beacon",
+                    "integrity",
+                    "src",
+                    "type"
+                  ]
+                }
+              ],
+              "variables": [
+                "a0y",
+                "a0k",
+                "H",
+                "d",
+                "r",
+                "j",
+                "a0J",
+                "a0V",
+                "a0l",
+                "a0t",
+                "a0W",
+                "u",
+                "a0x",
+                "a0U",
+                "a0P",
+                "a0T"
+              ]
+            },
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "_fetch",
+              "text",
+              "directAnime",
+              "findAnime",
+              "resolve",
+              "wrap"
+            ]
+          },
+          {
+            "fixture": "Death Note S01E01",
+            "stage": "content_lookup",
+            "host": "animevostfr.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 1,
+            "announcedQualityHeights": [],
+            "responseStructure": {
+              "kind": "html",
+              "tags": [
+                {
+                  "tag": "script",
+                  "attributes": [
+                    "crossorigin",
+                    "data-cf-beacon",
+                    "integrity",
+                    "src",
+                    "type"
+                  ]
+                }
+              ],
+              "variables": [
+                "a0y",
+                "a0k",
+                "H",
+                "d",
+                "r",
+                "j",
+                "a0J",
+                "a0V",
+                "a0l",
+                "a0t",
+                "a0W",
+                "u",
+                "a0x",
+                "a0U",
+                "a0P",
+                "a0T"
+              ]
+            },
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "_fetch",
+              "text",
+              "findAnime",
+              "resolve",
+              "wrap"
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "publicationAuthority": false
+}

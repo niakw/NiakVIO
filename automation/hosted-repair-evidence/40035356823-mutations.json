@@ -1,0 +1,64 @@
+{
+  "brainLlmSha": "9e6acf5ae59c7fa143439c2f0df1da1f9c606d8e",
+  "minConfidence": 0.8,
+  "privateContentRetained": false,
+  "proofAuthority": false,
+  "providerCount": 1,
+  "providerMutationContentRetained": true,
+  "publicationAuthority": false,
+  "rows": [
+    {
+      "candidateOrdinal": 1,
+      "confidence": 0.99,
+      "failureClass": "variant-coverage-gap",
+      "mechanismFamily": "wordpress-search-episode",
+      "mutationContextFingerprint": "7338e5b91624899c82233beb8255b3d914c644d1d599ec762ae29a2c171d2493",
+      "mutationFingerprint": "a9001e5031d04103bd549765893d5a56574d3f7e5d75df3c695ef4a00f0cb192",
+      "mutations": [
+        {
+          "family": "wordpress_search_episode",
+          "find": "for(var t=0;t<Math.min(tt.length,6);t++){var sl=slug(tt[t]);if(!sl)continue;var page=await text(c.base+\"/animes/\"+sl+\"/\",{referer:c.base+\"/\"});var sc=pageIdentity(page,tt[t]);try{if(typeof console!==\"undefined\"&&__nuvioProviderSilentLog)__nuvioProviderSilentLog(\"FIELD_ANIMEVOSTFR_DIRECT_ROUTE \"+JSON.stringify({title:tt[t],slug:sl,status:sc>=45?\"match\":\"miss\",score:sc,url:page&&page.url||\"\"}))}catch(_e){}if(page&&sc>=45)return{url:page.url,label:tt[t],page:page}}return null",
+          "operation": "upsert",
+          "replace": "var best=null,bestScore=44,seen={};for(var t=0;t<tt.length;t++){var sl=slug(tt[t]);if(!sl||seen[sl])continue;seen[sl]=1;var page=await text(c.base+\"/animes/\"+sl+\"/\",{referer:c.base+\"/\"});var sc=pageIdentity(page,tt[t]);if(page&&sc>=45&&sc>bestScore){bestScore=sc;best={url:page.url,label:tt[t],page:page}}}return best;",
+          "scope": "provider_bloc"
+        }
+      ],
+      "providerId": "animevostfr",
+      "repairFamily": {
+        "archetype": "variant-coverage-gap:dom-selector-container",
+        "failure": "variant-coverage-gap",
+        "key": "276ef77a18135059b8b319827cd9910800d8c9f2c1016c6b2c481933b65d9f1c",
+        "mediaTypes": [
+          "anime"
+        ],
+        "mutationSurfaces": [
+          "provider-bloc",
+          "provider-data",
+          "provider-js",
+          "provider-patch"
+        ],
+        "signals": [
+          "mixed-tag-nested-container",
+          "nested-anchor-html",
+          "provider-http-2xx",
+          "response-html",
+          "response-json"
+        ],
+        "stages": [
+          "provider-network-zero-result"
+        ],
+        "status": "candidate-ok",
+        "version": 2
+      },
+      "strategy": "enumerate-stream-variants-before-global-cap",
+      "targetLayer": "provider",
+      "tests": [
+        "replay_provider_on_current_bytes",
+        "validate_playback_identity_and_non_regression"
+      ]
+    }
+  ],
+  "sandboxMutationAuthority": true,
+  "schemaVersion": 1,
+  "sourceNiakvioSha": "cf1cd6c3c436754308b613a82e92d92d39e550a3"
+}
