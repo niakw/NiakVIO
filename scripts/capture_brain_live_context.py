@@ -34,6 +34,12 @@ def main():
         'provider': args.provider,
         'sourceSha': subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True, cwd=verifier.ROOT).strip(),
         'active_functions': names[:6],
+        'network_evidence': [{
+            'stage': event.get('stage'), 'host': event.get('host'),
+            'status': event.get('status'), 'functions': event.get('provider_function_names', [])[:8],
+            'response_structure': event.get('response_structure'),
+            'announced_players': int(event.get('declared_player_candidate_count') or 0),
+        } for event in events[:12]],
         'streams_playable': verifier.runtime_repair.playable_stream_count(result),
         'publicationAuthority': False,
     }

@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import argparse
 import copy
+import hashlib
 import json
 import os
 import shutil
@@ -126,6 +127,10 @@ def network_summary(result: dict[str, Any]) -> list[dict[str, Any]]:
                     if str(value or "").isdigit()
                 ],
             }
+            if isinstance(row.get("response_structure"), dict):
+                item["responseStructure"] = row["response_structure"]
+            if row.get("provider_function_names"):
+                item["providerFunctions"] = row["provider_function_names"][:8]
             key = (
                 item["fixture"],
                 item["stage"],
@@ -281,7 +286,12 @@ def result_summary(result: dict[str, Any]) -> dict[str, Any]:
         "streamsPlayable": runtime_repair.playable_stream_count(result),
         "streamsReturned": runtime_repair.stream_count(result),
         "identityContradictions": runtime_repair.identity_contradiction_count(result),
-        "providerRequests": int(evidence.get("provider_request_count") or 0),
+        "providerRequests": int(evidence.get("provider_request_count"))
+        if evidence.get("provider_request_count") is not None else sum(
+            1 for test in result.get("tests", [])
+            for row in test.get("network_observations", [])
+            if isinstance(row, dict) and not row.get("infrastructure")
+        ),
         "providerHosts": [str(value)[:160] for value in (evidence.get("provider_server_hosts") or [])[:24]],
         "providerHttpStatuses": [
             int(value) for value in (evidence.get("provider_server_http_statuses") or [])[:24]
@@ -382,6 +392,43 @@ def single_row_payload(payload: dict[str, Any], row: dict[str, Any]) -> dict[str
     result["rows"] = [copy.deepcopy(row)]
     result["providerCount"] = 1
     return result
+
+
+def materialization_proof(baseline_stage: Path, candidate_stage: Path, provider: str,
+                          row: dict[str, Any]) -> dict[str, Any]:
+    from provider_patch_blocks import decode_managed_data
+
+    def bundle(stage):
+        registry = load(stage / 'candidates.json')
+        matches = [item for item in registry.get('candidates', [])
+                   if canon(item.get('canonical_id')) == provider]
+        if len(matches) != 1:
+            raise ValueError('materialized provider is missing or ambiguous')
+        path = (stage / matches[0]['local_path']).resolve()
+        if not path.is_relative_to(stage.resolve()):
+            raise ValueError('materialized provider path leaves stage')
+        value = path.read_bytes()
+        digest = hashlib.sha256(value).hexdigest()
+        if digest != matches[0].get('sha256'):
+            raise ValueError('materialized provider digest does not match staged registry')
+        return value.decode('utf-8'), digest
+
+    baseline, baseline_hash = bundle(baseline_stage)
+    candidate, candidate_hash = bundle(candidate_stage)
+    observed = baseline_hash != candidate_hash
+    for mutation in row.get('mutations', []):
+        if mutation.get('scope') != 'provider_bloc':
+            continue
+        spec = {'schemaVersion': 1, 'family': mutation.get('family'),
+                'find': mutation.get('find'), 'replace': mutation.get('replace')}
+        fingerprint = hashlib.sha256(json.dumps(spec, ensure_ascii=True, sort_keys=True,
+                                               separators=(',', ':')).encode('ascii')).hexdigest()
+        data = [decode_managed_data(candidate, fix_id) or {} for fix_id in
+                __import__('re').findall(r'/\* STARTFIX:([A-Z0-9_.-]+) \*/', candidate)
+                if fix_id.startswith(f'PROVIDER.{provider.upper()}.')]
+        observed = observed and any(fingerprint in item.get('brain_applied_specs', []) for item in data)
+    return {'materializedMutationObserved': bool(observed),
+            'baselineBundleSha256': baseline_hash, 'candidateBundleSha256': candidate_hash}
 
 
 def main() -> int:
@@ -527,6 +574,17 @@ def main() -> int:
                         cwd=worktree,
                     )
                     stage_provider(worktree, provider, candidate_stage, targets)
+                    proof = materialization_proof(baseline_stage, candidate_stage, provider, row)
+                    if not proof['materializedMutationObserved']:
+                        report_rows.append({
+                            'provider': provider, 'candidateOrdinal': ordinal,
+                            'mutationFingerprint': fingerprint,
+                            'mutationContextFingerprint': row.get('mutationContextFingerprint'),
+                            'mutationSummary': mutation_summary(row), 'accepted': False,
+                            'executionObserved': False, 'reason': 'force_candidate_not_materialized',
+                            **proof,
+                        })
+                        continue
                     candidate_health = health_provider(candidate_stage, candidate_out)
                     candidate = provider_result(candidate_health, provider)
                     mechanism_family = str(row.get("mechanismFamily") or "")
@@ -555,6 +613,7 @@ def main() -> int:
                                 "mechanismFamily": str(row.get("mechanismFamily") or "")[:160],
                         "accepted": bool(accepted),
                         "executionObserved": True,
+                        **proof,
                         "reason": reason,
                         "baseline": result_summary(baseline),
                         "candidate": result_summary(candidate),

@@ -15,6 +15,7 @@ const { webcrypto } = require('node:crypto');
 const { guardedFetch } = require('./network_guard.cjs');
 const { extractResponseVariantHints } = require('./response_variant_hints.cjs');
 const { providerCallNames } = require('./provider_callsite.cjs');
+const { responseStructure } = require('./response_structure.cjs');
 const DiagnosticError = Error;
 let activeProviderPath = '';
 const Module = require('node:module');
@@ -709,6 +710,7 @@ function installPolyfills(context = {}) {
           totalResponseBytes += bytes;
           if (totalResponseBytes > maxTotalResponseBytes) throw new Error(`provider cumulative response limit exceeded (${maxTotalResponseBytes} bytes)`);
         }, (value) => {
+          observation.response_structure = responseStructure(value);
           const hints = extractResponseVariantHints(value, { baseUrl: response.url || rawRequestUrl });
           observation.declared_player_candidate_count = Math.max(
             Number(observation.declared_player_candidate_count || 0),

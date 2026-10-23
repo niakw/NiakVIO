@@ -249,7 +249,8 @@ with tempfile.TemporaryDirectory() as tmp:
     ]
     assert len(generated_paths) == 1, generated_entry
     generated_path = generated_paths[0]
-    assert "scripts/provider_patches/demo_runtime_v1.py" in generated_entry["patch_scripts"]
+    assert "scripts/provider_patches/demo_runtime_v1.py" in generated_entry["provider_lego_scripts"]
+    assert generated_path in generated_entry["provider_lego_scripts"]
     assert generated_path in generated_report["changedFiles"]
     generated_file = root / generated_path
     assert generated_file.is_file()
@@ -261,10 +262,28 @@ with tempfile.TemporaryDirectory() as tmp:
     first = namespace["apply"](runtime_source)
     assert "return oldResolver();" not in first
     assert "return resolveTerminalMedia();" in first
-    assert "STARTFIX:PROVIDER.BRAIN.RUNTIME.TERMINAL_RESOLUTION" in first
+    assert "STARTFIX:PROVIDER.DEMO.BRAIN.RUNTIME.TERMINAL_RESOLUTION" in first
     assert namespace["apply"](first) == first
 
     import apply_provider_overrides as provider_overrides
+    # Exercise the real v3 dispatcher, not just the generated helper directly.
+    # Before the fix it silently ignored a perfectly valid model mutation.
+    only_generated = json.loads(json.dumps(generated_overrides))
+    only_generated['provider_patches']['demo']['provider_lego_scripts'] = [generated_path]
+    config = root / 'v3-overrides.json'
+    config.write_text(json.dumps(only_generated))
+    original_root = provider_overrides.ROOT
+    try:
+        provider_overrides.ROOT = root
+        dispatched, applied = provider_overrides.apply_overrides(
+            'demo', runtime_source.encode(), phase='discovery',
+            include_global_core=False, config_path=config,
+        )
+    finally:
+        provider_overrides.ROOT = original_root
+    assert b'return resolveTerminalMedia();' in dispatched
+    assert b'return oldResolver();' not in dispatched
+    assert any(row.get('path') == generated_path for row in applied), applied
     baseline = namespace["managed_fix_insertion_baseline"](runtime_source)
     provider_overrides._assert_v3_patch_ownership(
         runtime_source,
@@ -276,7 +295,7 @@ with tempfile.TemporaryDirectory() as tmp:
 
     # Simulate a later canonical current-byte state and evolve the same family.
     # The old content-addressed file stays immutable, while provider registration
-    # moves to a new file and the stable ownership rectangle is edited in place.
+    # adds a new file to the replay chain and edits the owner rectangle in place.
     (root / "providers/demo.js").write_text(first, encoding="utf-8")
     evolution = {
         "scope": "provider_bloc",
@@ -296,7 +315,7 @@ with tempfile.TemporaryDirectory() as tmp:
         for value in generated_entry.get("patch_scripts") or []
         if value.startswith("scripts/provider_patches/brain_runtime_terminal_resolution_")
     ]
-    assert active_generated == [evolved_path], generated_entry
+    assert active_generated == [generated_path, evolved_path], generated_entry
 
     evolved_namespace: dict[str, object] = {}
     evolved_source = (root / evolved_path).read_text(encoding="utf-8")
@@ -306,6 +325,17 @@ with tempfile.TemporaryDirectory() as tmp:
     assert "resolveTerminalMediaStrict()" in evolved
     assert "resolveTerminalMedia()" not in evolved
     assert evolved_namespace["apply"](evolved) == evolved
+    replay_config = json.loads(json.dumps(generated_overrides))
+    replay_config['provider_patches']['demo'] = dict(generated_entry)
+    replay_config['provider_patches']['demo']['provider_lego_scripts'] = [generated_path, evolved_path]
+    config.write_text(json.dumps(replay_config))
+    try:
+        provider_overrides.ROOT = root
+        rebuilt, _ = provider_overrides.apply_overrides('demo', runtime_source.encode(),
+            phase='discovery', include_global_core=False, config_path=config)
+    finally:
+        provider_overrides.ROOT = original_root
+    assert b'resolveTerminalMediaStrict()' in rebuilt
     provider_overrides._assert_v3_patch_ownership(
         first,
         evolved,
@@ -446,5 +476,36 @@ with tempfile.TemporaryDirectory() as tmp:
     assert report["appliedProviderCount"] == 0, report
     assert report["skipped"][0]["reason"] == "provider-drift-since-guidance"
     assert json.loads((root / "provider-overrides.json").read_text()) == unchanged
+
+    # Real providers already own a native Lego; the model sees its published,
+    # hardened code. Composition must translate that exact anchor back without
+    # introducing nested ownership blocks or modifying neighboring helpers.
+    from provider_patch_blocks import render_managed_fix
+    from provider_security_hardening import harden_text
+    native = '/* BEGIN NIAKVIO_PROVIDER */\n/* NIAKVIO_PROVIDER_BASE_OWNED_V3 */\n' + render_managed_fix(
+        'PROVIDER.DEMO.NATIVE',
+        'function resolve(){console.error("trace");return oldResolver();}\nfunction sibling(){return 7;}',
+        data={'runtimeFamily': 'native'},
+    ) + '\n/* END NIAKVIO_PROVIDER */\n'
+    published, _ = harden_text(native)
+    (root / 'providers/demo.js').write_text(published)
+    entry = {'provider_lego_scripts': [], 'patch_scripts': ['scripts/provider_patches/legacy_unused.py']}
+    path, _ = mod._apply_generated_bloc('demo', entry, {
+        'scope': 'provider_bloc', 'operation': 'upsert', 'family': 'native_resolution',
+        'find': '__nuvioProviderSilentLog("trace");return oldResolver();',
+        'replace': 'return resolveTerminalMedia();',
+    })
+    assert entry['provider_lego_scripts'] == [path], entry
+    config.write_text(json.dumps({'provider_patches': {'demo': entry}}))
+    try:
+        provider_overrides.ROOT = root
+        actual, applied = provider_overrides.apply_overrides('demo', native.encode(),
+            phase='discovery', include_global_core=False, config_path=config)
+    finally:
+        provider_overrides.ROOT = original_root
+    assert b'return resolveTerminalMedia();' in actual
+    assert b'function sibling(){return 7;}' in actual
+    assert actual.count(b'/* STARTFIX:PROVIDER.DEMO.NATIVE */') == 1
+    assert b'PROVIDER.DEMO.BRAIN.RUNTIME' not in actual
 
 print("Brain LLM Force mutation bridge tests passed")

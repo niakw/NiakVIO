@@ -2,6 +2,9 @@
 from __future__ import annotations
 
 import importlib.util
+import hashlib
+import json
+import tempfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -276,6 +279,44 @@ summary = mod.result_summary({
 assert summary["providerHosts"] == ["example.test"], summary
 assert summary["providerHttpStatuses"] == [200], summary
 assert summary["networkTrace"][0]["path"] == "/search", summary
+assert summary["providerRequests"] == 1, summary
+trace = mod.network_summary({'tests': [{'network_observations': [{
+    'host': 'example.test', 'response_structure': {'kind': 'json', 'fields': []},
+    'provider_function_names': ['resolve'],
+}]}]})
+assert trace[0]['responseStructure']['kind'] == 'json', trace
+assert trace[0]['providerFunctions'] == ['resolve'], trace
+
+with tempfile.TemporaryDirectory() as directory:
+    from sys import path as search_path
+    search_path.insert(0, str(ROOT / 'scripts'))
+    from provider_patch_blocks import render_managed_fix
+    root = Path(directory)
+    baseline_stage, candidate_stage = root / 'baseline', root / 'candidate'
+    def stage(stage_root, source):
+        stage_root.mkdir(exist_ok=True)
+        raw = source.encode()
+        (stage_root / 'demo.js').write_bytes(raw)
+        (stage_root / 'candidates.json').write_text(json.dumps({'candidates': [{
+            'canonical_id': 'demo', 'local_path': 'demo.js',
+            'sha256': hashlib.sha256(raw).hexdigest(),
+        }]}))
+    mutation = {'scope': 'provider_bloc', 'family': 'terminal_resolution',
+                'find': 'return old();', 'replace': 'return improved();'}
+    row = {'mutations': [mutation]}
+    stage(baseline_stage, 'function resolve(){return old();}')
+    stage(candidate_stage, 'function resolve(){return old();}')
+    assert not mod.materialization_proof(baseline_stage, candidate_stage, 'demo', row)['materializedMutationObserved']
+    # A different digest alone cannot prove that the actual authored edit ran.
+    stage(candidate_stage, 'function resolve(){return old();}\n// unrelated normalization')
+    assert not mod.materialization_proof(baseline_stage, candidate_stage, 'demo', row)['materializedMutationObserved']
+    spec = {'schemaVersion': 1, **{key: mutation[key] for key in ('family', 'find', 'replace')}}
+    fingerprint = hashlib.sha256(json.dumps(spec, sort_keys=True, separators=(',', ':')).encode()).hexdigest()
+    stage(candidate_stage, render_managed_fix('PROVIDER.DEMO.NATIVE',
+          'function resolve(){return improved();}', data={'brain_applied_specs': [fingerprint]}))
+    proof = mod.materialization_proof(baseline_stage, candidate_stage, 'demo', row)
+    assert proof['materializedMutationObserved'] is True
+    assert proof['baselineBundleSha256'] != proof['candidateBundleSha256']
 
 summary = mod.invocation_summary({
     "tests": [{

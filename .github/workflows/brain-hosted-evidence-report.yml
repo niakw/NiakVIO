@@ -105,7 +105,7 @@ jobs:
           result = json.loads(Path('evidence/evaluation.json').read_text())
           safe_rows = []
           for row in result.get('rows', [])[:4]:
-              safe_row = {key: row.get(key) for key in ('provider', 'accepted', 'executionObserved', 'reason', 'mutationFingerprint', 'mutationSummary')}
+              safe_row = {key: row.get(key) for key in ('provider', 'accepted', 'executionObserved', 'materializedMutationObserved', 'baselineBundleSha256', 'candidateBundleSha256', 'reason', 'mutationFingerprint', 'mutationSummary')}
               for phase in ('baseline', 'candidate'):
                   value = row.get(phase) or {}
                   safe_row[phase] = {key: value.get(key) for key in (

@@ -11,6 +11,8 @@ import time
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT / 'scripts') not in sys.path:
+    sys.path.insert(0, str(ROOT / 'scripts'))
 
 def should_replan(evaluation: dict, attempt: int, limit: int) -> bool:
     return (
@@ -18,6 +20,24 @@ def should_replan(evaluation: dict, attempt: int, limit: int) -> bool:
         and attempt < limit
         and any(row.get('executionObserved') is True for row in evaluation.get('rows', []))
     )
+
+def verification_feedback(evaluation: dict) -> dict:
+    executed = [row for row in evaluation.get('rows', []) if row.get('executionObserved') is True]
+    if not executed:
+        return {}
+    row = executed[-1]
+    result = {'reason': row.get('reason')}
+    for phase in ('baseline', 'candidate'):
+        value = row.get(phase) or {}
+        result[phase] = {key: value.get(key) for key in
+                         ('streamsPlayable', 'streamsReturned', 'identityContradictions')}
+    result['candidate_network'] = [{
+        'host': event.get('host'), 'stage': event.get('stage'), 'status': event.get('status'),
+        'functions': event.get('providerFunctions', []),
+        'response_structure': event.get('responseStructure'),
+        'announced_players': event.get('announcedPlayerCandidates', 0),
+    } for event in (row.get('candidate') or {}).get('networkTrace', [])[-12:]]
+    return result
 
 def main() -> int:
     parser = argparse.ArgumentParser()
@@ -42,9 +62,11 @@ def main() -> int:
             continue
         result = json.loads(evaluation_path.read_text())
         if not any(row.get('provider') == args.provider and row.get('executionObserved') is True
+                   and row.get('materializedMutationObserved') is True
                    and row.get('accepted') is False for row in result.get('rows', [])):
             continue
         payload = json.loads(path.read_text())
+        live['previous_verification'] = verification_feedback(result)
         live['previous_executed_edits'] = [edit for row in payload.get('rows', [])
                                           if row.get('providerId') == args.provider
                                           for edit in row.get('mutations', [])][-2:]
@@ -53,9 +75,13 @@ def main() -> int:
     deadline = time.monotonic() + max(60, min(900, args.budget_seconds))
     ledger = ROOT / 'automation/brain-llm-force-memory.json'
     original = ledger.read_bytes() if ledger.exists() else None
+    # Reclassify unverified historical v3 Bloc runs before the first model call.
+    from update_brain_llm_force_memory import merge
+    ledger.write_text(json.dumps(merge(json.loads(original) if original else {}, {}), indent=2) + '\n')
     rows = []
     attempts = []
     accepted = []
+    mutation_rows = []
 
     def run(script: Path, *values: str, inference: bool = False):
         remaining = deadline - time.monotonic()
@@ -101,20 +127,28 @@ def main() -> int:
                              'acceptedProviderCount': evaluation['acceptedProviderCount']})
             rows.extend(evaluation.get('rows') or [])
             accepted.extend(evaluation.get('acceptedProviders') or [])
+            mutations = json.loads((directory / 'mutations.json').read_text())
+            mutation_rows.extend(mutations.get('rows') or [])
             for name in ('diagnostics.json', 'mutations.json', 'accepted.json'):
                 shutil.copyfile(directory / name, out / name)
             print(f'::notice title=Hosted verification loop::attempt={attempt} candidates={evaluation["candidateCount"]} accepted={evaluation["acceptedProviderCount"]}')
             if not should_replan(evaluation, attempt, limit):
                 break
+            live['previous_verification'] = verification_feedback(evaluation)
             executed = {row.get('mutationFingerprint') for row in evaluation.get('rows', [])
                         if row.get('executionObserved') is True}
-            mutations = json.loads((directory / 'mutations.json').read_text())
             live['previous_executed_edits'] = [
                 edit for row in mutations.get('rows', [])
                 if row.get('mutationFingerprint') in executed
                 for edit in row.get('mutations', [])
             ][-2:]
     finally:
+        mutations_path = out / 'mutations.json'
+        if mutations_path.exists():
+            mutations = json.loads(mutations_path.read_text())
+            mutations['rows'] = mutation_rows
+            mutations['providerCount'] = len({row.get('providerId') for row in mutation_rows})
+            mutations_path.write_text(json.dumps(mutations, indent=2) + '\n')
         if ledger.exists():
             shutil.copyfile(ledger, out / 'force-memory.json')
         (out / 'evaluation.json').write_text(json.dumps({

@@ -156,4 +156,17 @@ assert {
     row["mutationContextFingerprint"] for row in four["entries"]
 }=={ctx_a,"f"*64}
 
-print("Brain LLM Force candidate memory tests passed")
+legacy_bloc = {**two['entries'][0], 'lastMutationSummary': [{'scope': 'provider_bloc'}]}
+audited = mod.merge({'entries': [legacy_bloc]}, {})
+assert audited['entries'][0]['executionObserved'] is False
+assert audited['entries'][0]['failures'] == legacy_bloc['failures']
+assert audited['entries'][0]['executionAuditReason'] == 'legacy_bloc_missing_materialization_proof'
+verified = {**failed, 'rows': [{**failed['rows'][0],
+    'mutationSummary': [{'scope': 'provider_bloc'}], 'materializedMutationObserved': True}]}
+retried = mod.merge(audited, verified)
+assert retried['entries'][0]['executionObserved'] is True
+assert retried['entries'][0]['materializedMutationObserved'] is True
+assert mod.merge(retried, {})['entries'][0]['executionObserved'] is True
+assert mod.merge({'entries': []}, {**verified, 'rows': [{**verified['rows'][0],
+    'materializedMutationObserved': False}]})['entries'] == []
+print("Brain LLM Force candidate memory tests passed, including unverified legacy v3 Bloc reclassification")

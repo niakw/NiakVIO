@@ -33,6 +33,8 @@ with tempfile.TemporaryDirectory() as directory:
             if count == 2:
                 context = json.loads(value('--live-evidence').read_text())
                 assert context['previous_executed_edits'][0]['replace'] == 'second()'
+                assert context['previous_verification']['reason'] == 'no_playable'
+                assert context['previous_verification']['candidate']['streamsPlayable'] == 0
                 assert json.loads(ledger.read_text())['executed'] == 1
             value('--output').write_text('{}\n')
         else:
@@ -48,7 +50,8 @@ with tempfile.TemporaryDirectory() as directory:
             value('--report').write_text(json.dumps({
                 'candidateCount': 1, 'acceptedProviderCount': int(count == 2),
                 'acceptedProviders': ['demo'] if count == 2 else [],
-                'rows': [{'executionObserved': True, 'mutationFingerprint': str(count) * 64}],
+                'rows': [{'executionObserved': True, 'mutationFingerprint': str(count) * 64,
+                          'reason': 'no_playable', 'candidate': {'streamsPlayable': 0}}],
             }))
             value('--accepted-output').write_text('{}')
         if script == 'update_brain_llm_force_memory.py':
@@ -65,6 +68,7 @@ with tempfile.TemporaryDirectory() as directory:
     assert count == 2 and result['publicationAuthority'] is False
     assert ledger.read_bytes() == original
     assert json.loads((out / 'force-memory.json').read_text())['executed'] == 2
+    assert len(json.loads((out / 'mutations.json').read_text())['rows']) == 2
 
 assert not loop.should_replan({'rows': []}, 1, 3)
 assert not loop.should_replan({'rows': [{'executionObserved': False}]}, 1, 3)

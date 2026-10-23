@@ -153,6 +153,14 @@ def merge(memory: dict[str, Any], evaluation: dict[str, Any]) -> dict[str, Any]:
     ]
     by_key: dict[tuple[str, str, str], dict[str, Any]] = {}
     for row in rows:
+        summary = row.get('lastMutationSummary') or []
+        if summary and all(item.get('scope') == 'provider_bloc' for item in summary) \
+                and row.get('materializedMutationObserved') is not True:
+            # Older v3 Bloc registrations were written only to ignored legacy
+            # scripts. Preserve history, but require materialization proof before
+            # using these verdicts as causal exclusions or positive priors.
+            row['executionObserved'] = False
+            row['executionAuditReason'] = 'legacy_bloc_missing_materialization_proof'
         key = (
             canon(row.get("providerId")),
             str(row.get("mutationFingerprint") or "").strip().casefold(),
@@ -178,6 +186,10 @@ def merge(memory: dict[str, Any], evaluation: dict[str, Any]) -> dict[str, Any]:
             # or candidates that never reached executable provider bytes, are
             # not sandbox outcomes and must not become negative memory.
             continue
+        summary = safe_mutation_summary(result.get('mutationSummary'))
+        if summary and all(item.get('scope') == 'provider_bloc' for item in summary) \
+                and result.get('materializedMutationObserved') is not True:
+            continue
         key = (provider, mutation_fp, context_fp)
         row = by_key.get(key)
         if row is None:
@@ -192,6 +204,9 @@ def merge(memory: dict[str, Any], evaluation: dict[str, Any]) -> dict[str, Any]:
             by_key[key] = row
 
         accepted = result.get("accepted") is True
+        row['executionObserved'] = True
+        if 'materializedMutationObserved' in result:
+            row['materializedMutationObserved'] = result['materializedMutationObserved'] is True
         if accepted:
             row["successes"] = int(row.get("successes") or 0) + 1
             row["consecutiveFailures"] = 0
@@ -241,6 +256,8 @@ def merge(memory: dict[str, Any], evaluation: dict[str, Any]) -> dict[str, Any]:
 
     validated: dict[tuple[str, str], dict[str, Any]] = {}
     for row in entries:
+        if row.get('executionObserved') is False:
+            continue
         if int(row.get("successes") or 0) <= 0:
             continue
         family = safe_repair_family(row.get("repairFamily"))

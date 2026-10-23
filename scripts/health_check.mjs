@@ -1650,6 +1650,7 @@ async function testCandidate(candidate) {
       provider_server_hosts: Array.isArray(worker.provider_server_hosts) ? worker.provider_server_hosts : [],
       provider_server_http_statuses: Array.isArray(worker.provider_server_http_statuses) ? worker.provider_server_http_statuses : [],
       network_observations: Array.isArray(worker.network_observations) ? worker.network_observations.map((item) => ({
+        response_structure: item.response_structure || null,
         provider_function_names: Array.isArray(item.provider_function_names)
           ? item.provider_function_names.filter(name => /^[A-Za-z_$][\w$]{0,63}$/.test(name)).slice(0, 8) : [],
         stage: item.stage || 'provider_fetch',
