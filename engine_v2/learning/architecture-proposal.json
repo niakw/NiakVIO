@@ -60,7 +60,6 @@
             "yflix"
           ],
           "transport_blocked": [
-            "animesultra",
             "moviebox",
             "vidfast"
           ],
@@ -263,9 +262,6 @@
             "flemmix",
             "vidfast"
           ],
-          "route_transition_graph_v1": [
-            "animevost-fr"
-          ],
           "search_catalogue": [
             "4khdhub",
             "animesultra",
@@ -309,12 +305,12 @@
         ],
         "unknownFailureProviders": [],
         "unknownFailurePolicy": "synthesize-new-strategy-never-retry-blindly",
-        "repeatedSignatureCount": 25,
+        "repeatedSignatureCount": 24,
         "strategyBlueprints": [
           {
-            "strategyId": "route_transition_graph_v22",
+            "strategyId": "route_transition_graph_v23",
             "causalTrigger": "catalogue/detail route is live and identity-qualified but no terminal/player media is reached",
-            "method": "derive and implement a genuinely new executable Repair strategy route_transition_graph_v22 from negative evidence for exhausted route_transition_graph_v1; preserve the causal intent of the prior method without reusing its implementation, register the new profile in Repair planning/runtime, and require targeted playback/identity proof",
+            "method": "derive and implement a genuinely new executable Repair strategy route_transition_graph_v23 from negative evidence for exhausted route_transition_graph_v1; preserve the causal intent of the prior method without reusing its implementation, register the new profile in Repair planning/runtime, and require targeted playback/identity proof",
             "requiredEvidence": [
               "retained route proof",
               "same-work identity correlation",
@@ -325,10 +321,13 @@
               "content identity not contradicted",
               "no green-lane regression"
             ],
-            "evolvesFromStrategyId": "route_transition_graph_v21",
+            "evolvesFromStrategyId": "route_transition_graph_v22",
             "exhaustedStrategyIds": [
               "adaptive_runtime_recovery",
               "chain_terminal_extractor_v1",
+              "chain_terminal_extractor_v1_g3",
+              "chain_terminal_extractor_v1_g4",
+              "chain_terminal_extractor_v1_g5",
               "document_request_contract_mining_v1",
               "html_class_token_exact_v1",
               "identity_alias_search_traversal_v1",
@@ -344,6 +343,7 @@
               "proven_route_terminal_traversal_v1_g5",
               "provider_origin_failover_v1",
               "provider_origin_failover_v1_g3",
+              "provider_positive_program_replay_v1",
               "provider_session_bootstrap_replay_v1",
               "route_peer_transition_replay_v1",
               "route_transition_graph_v1",
@@ -360,6 +360,7 @@
               "route_transition_graph_v2",
               "route_transition_graph_v20",
               "route_transition_graph_v21",
+              "route_transition_graph_v22",
               "route_transition_graph_v3",
               "route_transition_graph_v4",
               "route_transition_graph_v5",
@@ -374,6 +375,12 @@
               "search_response_route_binding_v1",
               "terminal_request_program_inference_v1",
               "terminal_transition_graph_v1",
+              "terminal_transition_graph_v2",
+              "terminal_transition_graph_v3",
+              "terminal_transition_graph_v4",
+              "terminal_transition_graph_v5",
+              "terminal_transition_graph_v6",
+              "terminal_transition_graph_v7",
               "transport_request_differential_v1"
             ],
             "existingExecutableRepairProfile": false,
@@ -387,12 +394,14 @@
             "capabilityStrategy": "html_scraper",
             "providers": [
               "4khdhub",
+              "mallumv",
               "moviebox"
             ],
-            "providerCount": 2,
+            "providerCount": 3,
             "runtimeFamilies": [
               "api_stream_resolver",
-              "html_scraper"
+              "html_scraper",
+              "mallumv-catalogue-confirm-internal-v1"
             ],
             "dominantIssues": [
               "network_exception",
@@ -400,15 +409,15 @@
               "waf_challenge"
             ],
             "harnessTransportClasses": [],
-            "negativeMemorySignature": "strategy:route_transition_graph_v22|scope:route-to-terminal|capability:html_scraper|transport:not-applicable",
+            "negativeMemorySignature": "strategy:route_transition_graph_v23|scope:route-to-terminal|capability:html_scraper|transport:not-applicable",
             "reentryPolicy": "proposal -> executable contract -> Learning/Lab proof -> Core Repair eligibility",
             "productionWritesAllowed": false,
             "requiresHumanMerge": true
           },
           {
-            "strategyId": "route_transition_graph_v22",
+            "strategyId": "route_transition_graph_v23",
             "causalTrigger": "catalogue/detail route is live and identity-qualified but no terminal/player media is reached",
-            "method": "derive and implement a genuinely new executable Repair strategy route_transition_graph_v22 from negative evidence for exhausted route_transition_graph_v1; preserve the causal intent of the prior method without reusing its implementation, register the new profile in Repair planning/runtime, and require targeted playback/identity proof",
+            "method": "derive and implement a genuinely new executable Repair strategy route_transition_graph_v23 from negative evidence for exhausted route_transition_graph_v1; preserve the causal intent of the prior method without reusing its implementation, register the new profile in Repair planning/runtime, and require targeted playback/identity proof",
             "requiredEvidence": [
               "retained route proof",
               "same-work identity correlation",
@@ -419,7 +428,7 @@
               "content identity not contradicted",
               "no green-lane regression"
             ],
-            "evolvesFromStrategyId": "route_transition_graph_v21",
+            "evolvesFromStrategyId": "route_transition_graph_v22",
             "exhaustedStrategyIds": [
               "adaptive_runtime_recovery",
               "document_request_contract_mining_v1",
@@ -449,6 +458,7 @@
               "route_transition_graph_v2",
               "route_transition_graph_v20",
               "route_transition_graph_v21",
+              "route_transition_graph_v22",
               "route_transition_graph_v3",
               "route_transition_graph_v4",
               "route_transition_graph_v5",
@@ -487,7 +497,7 @@
               "waf_challenge"
             ],
             "harnessTransportClasses": [],
-            "negativeMemorySignature": "strategy:route_transition_graph_v22|scope:route-to-terminal|capability:mixed_embed_resolver|transport:not-applicable",
+            "negativeMemorySignature": "strategy:route_transition_graph_v23|scope:route-to-terminal|capability:mixed_embed_resolver|transport:not-applicable",
             "reentryPolicy": "proposal -> executable contract -> Learning/Lab proof -> Core Repair eligibility",
             "productionWritesAllowed": false,
             "requiresHumanMerge": true
@@ -560,9 +570,9 @@
             "requiresHumanMerge": true
           },
           {
-            "strategyId": "route_transition_graph_v22",
+            "strategyId": "route_transition_graph_v23",
             "causalTrigger": "catalogue/detail route is live and identity-qualified but no terminal/player media is reached",
-            "method": "derive and implement a genuinely new executable Repair strategy route_transition_graph_v22 from negative evidence for exhausted route_transition_graph_v1; preserve the causal intent of the prior method without reusing its implementation, register the new profile in Repair planning/runtime, and require targeted playback/identity proof",
+            "method": "derive and implement a genuinely new executable Repair strategy route_transition_graph_v23 from negative evidence for exhausted route_transition_graph_v1; preserve the causal intent of the prior method without reusing its implementation, register the new profile in Repair planning/runtime, and require targeted playback/identity proof",
             "requiredEvidence": [
               "retained route proof",
               "same-work identity correlation",
@@ -573,7 +583,7 @@
               "content identity not contradicted",
               "no green-lane regression"
             ],
-            "evolvesFromStrategyId": "route_transition_graph_v21",
+            "evolvesFromStrategyId": "route_transition_graph_v22",
             "exhaustedStrategyIds": [
               "adaptive_runtime_recovery",
               "document_request_contract_mining_v1",
@@ -599,6 +609,7 @@
               "route_transition_graph_v2",
               "route_transition_graph_v20",
               "route_transition_graph_v21",
+              "route_transition_graph_v22",
               "route_transition_graph_v3",
               "route_transition_graph_v4",
               "route_transition_graph_v5",
@@ -631,7 +642,7 @@
               "network_http_error"
             ],
             "harnessTransportClasses": [],
-            "negativeMemorySignature": "strategy:route_transition_graph_v22|scope:route-to-terminal|capability:iframe_player|transport:not-applicable",
+            "negativeMemorySignature": "strategy:route_transition_graph_v23|scope:route-to-terminal|capability:iframe_player|transport:not-applicable",
             "reentryPolicy": "proposal -> executable contract -> Learning/Lab proof -> Core Repair eligibility",
             "productionWritesAllowed": false,
             "requiresHumanMerge": true
@@ -696,72 +707,6 @@
             ],
             "harnessTransportClasses": [],
             "negativeMemorySignature": "strategy:terminal_transition_graph_v8|scope:terminal-extraction|capability:direct_media|transport:not-applicable",
-            "reentryPolicy": "proposal -> executable contract -> Learning/Lab proof -> Core Repair eligibility",
-            "productionWritesAllowed": false,
-            "requiresHumanMerge": true
-          },
-          {
-            "strategyId": "terminal_transition_graph_v8",
-            "causalTrigger": "retained chain hit reaches player/resolver territory but media extraction/validation is incomplete",
-            "method": "derive and implement a genuinely new executable Repair strategy terminal_transition_graph_v8 from negative evidence for exhausted terminal_transition_graph_v1; preserve the causal intent of the prior method without reusing its implementation, register the new profile in Repair planning/runtime, and require targeted playback/identity proof",
-            "requiredEvidence": [
-              "retained chain hit",
-              "terminal host/player family",
-              "response/body route proof"
-            ],
-            "acceptanceProof": [
-              "playback-verified media",
-              "terminal identity preserved",
-              "no green-lane regression"
-            ],
-            "evolvesFromStrategyId": "terminal_transition_graph_v7",
-            "exhaustedStrategyIds": [
-              "adaptive_runtime_recovery",
-              "chain_terminal_extractor_v1",
-              "chain_terminal_extractor_v1_g3",
-              "chain_terminal_extractor_v1_g4",
-              "chain_terminal_extractor_v1_g5",
-              "document_request_contract_mining_v1",
-              "html_class_token_exact_v1",
-              "media_response_shape_inference_v1",
-              "player_media_extractor_v1",
-              "player_media_extractor_v1_g3",
-              "player_protocol_family_replay_v1",
-              "proven_route_terminal_traversal_v1",
-              "provider_positive_program_replay_v1",
-              "provider_session_bootstrap_replay_v1",
-              "runtime_response_salvage_v1",
-              "terminal_request_program_inference_v1",
-              "terminal_transition_graph_v1",
-              "terminal_transition_graph_v2",
-              "terminal_transition_graph_v3",
-              "terminal_transition_graph_v4",
-              "terminal_transition_graph_v5",
-              "terminal_transition_graph_v6",
-              "terminal_transition_graph_v7",
-              "transport_request_differential_v1"
-            ],
-            "existingExecutableRepairProfile": false,
-            "groupId": "terminal-extraction|html_scraper",
-            "repairScope": "terminal-extraction",
-            "targetLayer": "core",
-            "forcePromotionEligible": true,
-            "requiresNewExecutableRepairProfile": true,
-            "forcePromotionReason": "deferred-known-family-exhaustion",
-            "transportSignature": "not-applicable",
-            "capabilityStrategy": "html_scraper",
-            "providers": [
-              "mallumv"
-            ],
-            "providerCount": 1,
-            "runtimeFamilies": [
-              "mallumv-catalogue-confirm-internal-v1"
-            ],
-            "dominantIssues": [
-              "waf_challenge"
-            ],
-            "harnessTransportClasses": [],
-            "negativeMemorySignature": "strategy:terminal_transition_graph_v8|scope:terminal-extraction|capability:html_scraper|transport:not-applicable",
             "reentryPolicy": "proposal -> executable contract -> Learning/Lab proof -> Core Repair eligibility",
             "productionWritesAllowed": false,
             "requiresHumanMerge": true
@@ -837,12 +782,12 @@
     "yflix"
   ],
   "deferredRepairProviderCount": 9,
-  "strategyBlueprintCount": 6,
+  "strategyBlueprintCount": 5,
   "strategyBlueprints": [
     {
-      "strategyId": "route_transition_graph_v22",
+      "strategyId": "route_transition_graph_v23",
       "causalTrigger": "catalogue/detail route is live and identity-qualified but no terminal/player media is reached",
-      "method": "derive and implement a genuinely new executable Repair strategy route_transition_graph_v22 from negative evidence for exhausted route_transition_graph_v1; preserve the causal intent of the prior method without reusing its implementation, register the new profile in Repair planning/runtime, and require targeted playback/identity proof",
+      "method": "derive and implement a genuinely new executable Repair strategy route_transition_graph_v23 from negative evidence for exhausted route_transition_graph_v1; preserve the causal intent of the prior method without reusing its implementation, register the new profile in Repair planning/runtime, and require targeted playback/identity proof",
       "requiredEvidence": [
         "retained route proof",
         "same-work identity correlation",
@@ -853,10 +798,13 @@
         "content identity not contradicted",
         "no green-lane regression"
       ],
-      "evolvesFromStrategyId": "route_transition_graph_v21",
+      "evolvesFromStrategyId": "route_transition_graph_v22",
       "exhaustedStrategyIds": [
         "adaptive_runtime_recovery",
         "chain_terminal_extractor_v1",
+        "chain_terminal_extractor_v1_g3",
+        "chain_terminal_extractor_v1_g4",
+        "chain_terminal_extractor_v1_g5",
         "document_request_contract_mining_v1",
         "html_class_token_exact_v1",
         "identity_alias_search_traversal_v1",
@@ -872,6 +820,7 @@
         "proven_route_terminal_traversal_v1_g5",
         "provider_origin_failover_v1",
         "provider_origin_failover_v1_g3",
+        "provider_positive_program_replay_v1",
         "provider_session_bootstrap_replay_v1",
         "route_peer_transition_replay_v1",
         "route_transition_graph_v1",
@@ -888,6 +837,7 @@
         "route_transition_graph_v2",
         "route_transition_graph_v20",
         "route_transition_graph_v21",
+        "route_transition_graph_v22",
         "route_transition_graph_v3",
         "route_transition_graph_v4",
         "route_transition_graph_v5",
@@ -902,6 +852,12 @@
         "search_response_route_binding_v1",
         "terminal_request_program_inference_v1",
         "terminal_transition_graph_v1",
+        "terminal_transition_graph_v2",
+        "terminal_transition_graph_v3",
+        "terminal_transition_graph_v4",
+        "terminal_transition_graph_v5",
+        "terminal_transition_graph_v6",
+        "terminal_transition_graph_v7",
         "transport_request_differential_v1"
       ],
       "existingExecutableRepairProfile": false,
@@ -915,12 +871,14 @@
       "capabilityStrategy": "html_scraper",
       "providers": [
         "4khdhub",
+        "mallumv",
         "moviebox"
       ],
-      "providerCount": 2,
+      "providerCount": 3,
       "runtimeFamilies": [
         "api_stream_resolver",
-        "html_scraper"
+        "html_scraper",
+        "mallumv-catalogue-confirm-internal-v1"
       ],
       "dominantIssues": [
         "network_exception",
@@ -928,15 +886,15 @@
         "waf_challenge"
       ],
       "harnessTransportClasses": [],
-      "negativeMemorySignature": "strategy:route_transition_graph_v22|scope:route-to-terminal|capability:html_scraper|transport:not-applicable",
+      "negativeMemorySignature": "strategy:route_transition_graph_v23|scope:route-to-terminal|capability:html_scraper|transport:not-applicable",
       "reentryPolicy": "proposal -> executable contract -> Learning/Lab proof -> Core Repair eligibility",
       "productionWritesAllowed": false,
       "requiresHumanMerge": true
     },
     {
-      "strategyId": "route_transition_graph_v22",
+      "strategyId": "route_transition_graph_v23",
       "causalTrigger": "catalogue/detail route is live and identity-qualified but no terminal/player media is reached",
-      "method": "derive and implement a genuinely new executable Repair strategy route_transition_graph_v22 from negative evidence for exhausted route_transition_graph_v1; preserve the causal intent of the prior method without reusing its implementation, register the new profile in Repair planning/runtime, and require targeted playback/identity proof",
+      "method": "derive and implement a genuinely new executable Repair strategy route_transition_graph_v23 from negative evidence for exhausted route_transition_graph_v1; preserve the causal intent of the prior method without reusing its implementation, register the new profile in Repair planning/runtime, and require targeted playback/identity proof",
       "requiredEvidence": [
         "retained route proof",
         "same-work identity correlation",
@@ -947,7 +905,7 @@
         "content identity not contradicted",
         "no green-lane regression"
       ],
-      "evolvesFromStrategyId": "route_transition_graph_v21",
+      "evolvesFromStrategyId": "route_transition_graph_v22",
       "exhaustedStrategyIds": [
         "adaptive_runtime_recovery",
         "document_request_contract_mining_v1",
@@ -977,6 +935,7 @@
         "route_transition_graph_v2",
         "route_transition_graph_v20",
         "route_transition_graph_v21",
+        "route_transition_graph_v22",
         "route_transition_graph_v3",
         "route_transition_graph_v4",
         "route_transition_graph_v5",
@@ -1015,7 +974,7 @@
         "waf_challenge"
       ],
       "harnessTransportClasses": [],
-      "negativeMemorySignature": "strategy:route_transition_graph_v22|scope:route-to-terminal|capability:mixed_embed_resolver|transport:not-applicable",
+      "negativeMemorySignature": "strategy:route_transition_graph_v23|scope:route-to-terminal|capability:mixed_embed_resolver|transport:not-applicable",
       "reentryPolicy": "proposal -> executable contract -> Learning/Lab proof -> Core Repair eligibility",
       "productionWritesAllowed": false,
       "requiresHumanMerge": true
@@ -1088,9 +1047,9 @@
       "requiresHumanMerge": true
     },
     {
-      "strategyId": "route_transition_graph_v22",
+      "strategyId": "route_transition_graph_v23",
       "causalTrigger": "catalogue/detail route is live and identity-qualified but no terminal/player media is reached",
-      "method": "derive and implement a genuinely new executable Repair strategy route_transition_graph_v22 from negative evidence for exhausted route_transition_graph_v1; preserve the causal intent of the prior method without reusing its implementation, register the new profile in Repair planning/runtime, and require targeted playback/identity proof",
+      "method": "derive and implement a genuinely new executable Repair strategy route_transition_graph_v23 from negative evidence for exhausted route_transition_graph_v1; preserve the causal intent of the prior method without reusing its implementation, register the new profile in Repair planning/runtime, and require targeted playback/identity proof",
       "requiredEvidence": [
         "retained route proof",
         "same-work identity correlation",
@@ -1101,7 +1060,7 @@
         "content identity not contradicted",
         "no green-lane regression"
       ],
-      "evolvesFromStrategyId": "route_transition_graph_v21",
+      "evolvesFromStrategyId": "route_transition_graph_v22",
       "exhaustedStrategyIds": [
         "adaptive_runtime_recovery",
         "document_request_contract_mining_v1",
@@ -1127,6 +1086,7 @@
         "route_transition_graph_v2",
         "route_transition_graph_v20",
         "route_transition_graph_v21",
+        "route_transition_graph_v22",
         "route_transition_graph_v3",
         "route_transition_graph_v4",
         "route_transition_graph_v5",
@@ -1159,7 +1119,7 @@
         "network_http_error"
       ],
       "harnessTransportClasses": [],
-      "negativeMemorySignature": "strategy:route_transition_graph_v22|scope:route-to-terminal|capability:iframe_player|transport:not-applicable",
+      "negativeMemorySignature": "strategy:route_transition_graph_v23|scope:route-to-terminal|capability:iframe_player|transport:not-applicable",
       "reentryPolicy": "proposal -> executable contract -> Learning/Lab proof -> Core Repair eligibility",
       "productionWritesAllowed": false,
       "requiresHumanMerge": true
@@ -1227,72 +1187,6 @@
       "reentryPolicy": "proposal -> executable contract -> Learning/Lab proof -> Core Repair eligibility",
       "productionWritesAllowed": false,
       "requiresHumanMerge": true
-    },
-    {
-      "strategyId": "terminal_transition_graph_v8",
-      "causalTrigger": "retained chain hit reaches player/resolver territory but media extraction/validation is incomplete",
-      "method": "derive and implement a genuinely new executable Repair strategy terminal_transition_graph_v8 from negative evidence for exhausted terminal_transition_graph_v1; preserve the causal intent of the prior method without reusing its implementation, register the new profile in Repair planning/runtime, and require targeted playback/identity proof",
-      "requiredEvidence": [
-        "retained chain hit",
-        "terminal host/player family",
-        "response/body route proof"
-      ],
-      "acceptanceProof": [
-        "playback-verified media",
-        "terminal identity preserved",
-        "no green-lane regression"
-      ],
-      "evolvesFromStrategyId": "terminal_transition_graph_v7",
-      "exhaustedStrategyIds": [
-        "adaptive_runtime_recovery",
-        "chain_terminal_extractor_v1",
-        "chain_terminal_extractor_v1_g3",
-        "chain_terminal_extractor_v1_g4",
-        "chain_terminal_extractor_v1_g5",
-        "document_request_contract_mining_v1",
-        "html_class_token_exact_v1",
-        "media_response_shape_inference_v1",
-        "player_media_extractor_v1",
-        "player_media_extractor_v1_g3",
-        "player_protocol_family_replay_v1",
-        "proven_route_terminal_traversal_v1",
-        "provider_positive_program_replay_v1",
-        "provider_session_bootstrap_replay_v1",
-        "runtime_response_salvage_v1",
-        "terminal_request_program_inference_v1",
-        "terminal_transition_graph_v1",
-        "terminal_transition_graph_v2",
-        "terminal_transition_graph_v3",
-        "terminal_transition_graph_v4",
-        "terminal_transition_graph_v5",
-        "terminal_transition_graph_v6",
-        "terminal_transition_graph_v7",
-        "transport_request_differential_v1"
-      ],
-      "existingExecutableRepairProfile": false,
-      "groupId": "terminal-extraction|html_scraper",
-      "repairScope": "terminal-extraction",
-      "targetLayer": "core",
-      "forcePromotionEligible": true,
-      "requiresNewExecutableRepairProfile": true,
-      "forcePromotionReason": "deferred-known-family-exhaustion",
-      "transportSignature": "not-applicable",
-      "capabilityStrategy": "html_scraper",
-      "providers": [
-        "mallumv"
-      ],
-      "providerCount": 1,
-      "runtimeFamilies": [
-        "mallumv-catalogue-confirm-internal-v1"
-      ],
-      "dominantIssues": [
-        "waf_challenge"
-      ],
-      "harnessTransportClasses": [],
-      "negativeMemorySignature": "strategy:terminal_transition_graph_v8|scope:terminal-extraction|capability:html_scraper|transport:not-applicable",
-      "reentryPolicy": "proposal -> executable contract -> Learning/Lab proof -> Core Repair eligibility",
-      "productionWritesAllowed": false,
-      "requiresHumanMerge": true
     }
   ],
   "failureTaxonomy": {
@@ -1353,7 +1247,7 @@
   ],
   "llmArchitectureGuidanceCount": 0,
   "llmArchitectureGuidance": [],
-  "providersObserved": 6,
+  "providersObserved": 5,
   "pendingProviders": 11,
   "policy": {
     "publicationAllowed": false,
