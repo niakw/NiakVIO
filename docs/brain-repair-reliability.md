@@ -1,116 +1,73 @@
 # Fiabilité des réparations NiakVIO / NiakVIO-Brain-LLM
 
-Diagnostic local du 22 octobre 2026. Les changements concernent le planificateur,
-la mémoire et son admission. Ils ne constituent pas une preuve de réparation
-des providers ni un entraînement des poids du modèle.
+## Cause confirmée : les corrections générées ne rejoignaient pas les bytes v3
 
-## Blocages reproduits et corrections
+Le pont déclarait un `provider_bloc` appliqué après avoir écrit son module dans
+`patch_scripts`. Les providers v3 exécutent `provider_lego_scripts` : la mutation
+était ignorée à la reconstruction. Le contrôle réseau pouvait donc comparer le
+provider original à lui-même, puis apprendre un faux échec de la proposition.
 
-| Blocage | Correction |
-| --- | --- |
-| Le planificateur Node échoue à lire un gros payload sur stdin, avant toute hypothèse. | Transmission complète par fichier temporaire via son contrat `NUVIO_BRAIN_PLANNER_INPUT_FILE`, avec nettoyage après succès ou erreur. |
-| Un essai `executionObserved=false` ou un profil indisponible devient un échec bloquant. | Même distinction entre exécution et sélection dans le choix Brain, la publication de guidance, l'import NiakVIO et le scheduler. Les vrais échecs historiques restent exclus. |
-| L'adaptateur garde les premières 32 lignes, puis le batch tronque encore la mémoire. | Conservation du registre sanitizé du provider pour les exclusions déterministes ; seul le contexte affiché au modèle est borné. Les réservations empêchent les doublons du batch sans oublier les anciens échecs. |
-| Une expérience explicitement échouée impose une stratégie à forte confiance. | Les résultats négatifs ou inconclusifs ne peuvent plus fournir un prior positif. |
-| Une proposition LLM répète une mutation déjà rejetée par le sandbox. | Contrôle de son empreinte avant admission, avec feedback de correction. Un nouveau candidat reste admissible ; les patches sont comparés dans leur contexte de source. |
-| Un programme positif historique contourne le contrat actuel de preuve terminale. | Revalidation à la lecture ; conservation des recettes terminales à la compilation pour permettre le parcours compilation → mémoire → réutilisation. Les entrées rejetées sont signalées sans modifier l'historique source. |
-| Le mode API ignore `NIAKVIO_OPENAI_API_KEY` et hérite du modèle local. | Résolution dédiée au backend hosted, avec la variable NiakVIO prioritaire et un modèle hosted par défaut. |
+Le cas a été reproduit hors ligne avec la proposition réelle AnimeVOSTFR du
+[run 39858290849](https://github.com/niakw/NiakVIO/actions/runs/39858290849), à son
+SHA source exact. Avant correction, la proposition disparaît du bundle. Après
+correction du pont, elle est présente dans le fichier publié reconstruit et dans
+le fichier du stage transmis au worker. Cela prouve la matérialisation de la
+proposition, pas son efficacité en lecture.
 
-## Observations locales
+Le pont inscrit maintenant le module dans le registre v3, respecte le propriétaire
+`PROVIDER.<ID>.*` existant et modifie son rectangle en place sans blocs imbriqués.
+Il retrouve l'ancre exacte publiée à travers la normalisation de sécurité et
+préserve les modules précédents nécessaires à la reconstruction depuis un seed
+vierge. Il ne promeut pas les anciens scripts archivés en code exécutable v3.
 
-- `automation/provider-brain-repair-latest.json` : 11 providers sélectionnés,
-  aucune réparation acceptée, 11 différés à Learning.
-- `automation/brain-repair-memory.json` : 1 154 entrées. L'ancien filtre d'import
-  considérait 543 hypothèses échouées, dont 44 non exécutées.
-- Le payload de mémoire réel de 690 Ko faisait échouer le transport stdin.
-  Le même payload passe par fichier. Une reconstruction hors ligne des 11
-  providers du census produit désormais 11 plans ; ce n'est pas un rejeu exact
-  des résultats health ni une validation média.
-- Les deux programmes positifs MalluMV historiques ne conservent aucune recette
-  terminale avec `streamProof=true`. L'un contient des routes de vidéos marketing.
-  La vue revalidée les exclut des routes et succès réutilisables.
+Avant le health check, le vérificateur contrôle les empreintes des fichiers
+réellement stagés et la présence de la spécification générée dans leurs métadonnées
+d'appartenance. Une proposition absente ou sans effet ne devient plus un échec
+causal. L'acceptation exige toujours les preuves de lecture, d'identité et
+d'amélioration existantes.
 
-## Vérification reproductible
+Les 27 anciens verdicts de Bloc sans preuve de matérialisation sont conservés
+avec leurs compteurs, mais marqués `executionObserved=false`. Ils ne bloquent plus
+une tentative et ne fournissent plus de prior positif. Les trois autres verdicts
+historiques sont préservés. Les reçus et évaluations originaux restent consultables.
 
-Depuis NiakVIO :
+## Boucle hosted et mémoire durable
 
-```sh
-python3 tests/brain_base_planner_large_input_test.py
-python3 tests/brain_learning_guidance_negative_filter_test.py
-python3 tests/brain_positive_program_memory_test.py
-python3 tests/brain_accepted_program_v3_persistence_test.py
-```
+Dans GitHub Actions du dépôt NiakVIO, lancer
+`Brain - Hosted single-provider repair check` depuis `main`, puis choisir le
+provider. La mise à jour de ce workflow sur `main` lance aussi une vérification.
+Le backend utilise `NIAKVIO_OPENAI_API_KEY`, un SHA Brain exact et seulement le
+contexte public. Aucun contenu de la mémoire privée n'est transmis à l'API.
 
-Depuis NiakVIO-Brain-LLM :
+La pré-observation relève les fonctions exécutées et la structure des réponses
+JSON/HTML, sans leurs valeurs scalaires ni leur contenu brut. Chaque tentative
+suivante reçoit le verdict et les mesures de la précédente. La boucle reste
+limitée à trois propositions et dix minutes ; elle s'arrête sur acceptation,
+absence de candidat exécutable ou épuisement du budget.
 
-```sh
-PYTHONPATH=src python3 -m unittest discover -s tests -v
-PYTHONPATH=src python3 scripts/audit_public_repo_privacy.py
-```
+Un job distinct conserve les résultats dans `main`, une fois par run, même quand
+la branche d'expérience a été supprimée. La collecte existante AnimeVOSTFR a été
+[récupérée avec succès](https://github.com/niakw/NiakVIO/actions/runs/40032263921).
+Les mutations de toutes les tentatives sont archivées pour les prochains essais.
+La collecte ne publie pas de provider ; les gates canoniques gardent cette autorité.
 
-Le test de transport exécute réellement Node avec plus de 1 Mo de mémoire.
-Les tests Brain couvrent les exclusions anciennes et récentes, les non-exécutions,
-les réservations, les mutations répétées et les nouveaux candidats admissibles.
+Le secret a permis une vraie génération API dans le
+[runner GitHub NiakVIO](https://github.com/niakw/NiakVIO/actions/runs/39853035153).
+Le test de cette session cloud retourne encore HTTP 401 ; il ne remet pas en
+cause le fonctionnement du secret GitHub. Aucun changement de mot de passe
+supplémentaire n'est demandé.
 
-## Génération par API
+## Autres corrections et vérifications
 
-Le mode `--backend hosted` utilise `NIAKVIO_OPENAI_API_KEY`, puis
-`OPENAI_API_KEY` en secours. Les résultats restent soumis aux contrôles NiakVIO.
-Le test de cette session cloud a retourné HTTP 401 avec le code
-`invalid_api_key`. La liste des modèles répondait également sans authentification ;
-elle ne constituait donc pas une vérification de la clé.
+- Transport du gros payload de mémoire Node par fichier temporaire.
+- Exclusion des essais non exécutés et conservation de toutes les clés historiques.
+- Blocage des mutations réellement rejetées dans le même contexte de source.
+- Revalidation des anciennes recettes positives et conservation de leur requête terminale.
+- Priorité au parcours terminal réellement exécuté dans le choix des fonctions éditables.
+- 305 tests Brain et audit de confidentialité réussis.
+- Régressions NiakVIO : dispatch v3 réel, ancre durcie, propriété native,
+  reconstruction successive, fichier stagé inchangé, spécification absente,
+  mémoire historique non prouvée, feedback borné et isolation des secrets.
 
-Après publication du secret dans GitHub, la génération minimale a réussi dans
-[le run NiakVIO 39853035153](https://github.com/niakw/NiakVIO/actions/runs/39853035153).
-Le secret fonctionne depuis le runner GitHub ; le problème observé dans la
-session cloud concerne son chemin d'authentification et ne prouve pas une clé
-erronée.
-
-Le workflow `Brain - Hosted single-provider repair check` utilise le secret du
-dépôt NiakVIO, un SHA Brain exact et uniquement la mémoire publique. Il génère une
-hypothèse pour un provider, contrôle son admission puis compare les bytes de
-référence et les bytes candidats avec les gates Deep/identité existantes. Ses
-artefacts séparent génération, exécution et acceptation ; ils ne publient aucun
-provider.
-
-Le premier essai AllAnime a terminé sans candidat : le modèle signalait que les
-deux unités éditables concernaient le décodage hexadécimal et la normalisation,
-sans accès à l'extracteur terminal. Le rejeu local confirme qu'un risque statique
-de troncature (`out.length`) prenait priorité sur la panne `chain_terminal_gap`.
-Le Brain conserve désormais le focus d'extraction quand aucun flux n'est
-retourné ; le focus d'énumération reste actif pour une vraie panne de couverture.
-Trois nouvelles régressions reproduisent ce cas et la suite Brain atteint
-300 tests réussis. Le nouvel essai garde le même provider et les mêmes gates.
-
-Le [second essai AllAnime](https://github.com/niakw/NiakVIO/actions/runs/39853941550)
-a produit un candidat exécutable, appliqué puis évalué dans le sandbox.
-L'acceptation reste négative : `required_category_playable_proof:anime`, avec
-zéro flux lisible pour la référence et pour le candidat. Ce résultat ne prouve
-aucune restauration du provider.
-
-Le [rejeu des preuves existantes](https://github.com/niakw/NiakVIO/actions/runs/39854678256)
-a conservé cet échec dans `automation/brain-llm-force-memory.json`, sur la branche
-de diagnostic uniquement. Le reçu
-`automation/hosted-repair-evidence/39853941550.json` empêche de compter deux fois
-le même run. La relecture locale confirme que le Brain reçoit l'empreinte de
-cette mutation rejetée. La prochaine expérience doit donc proposer une mutation
-différente et s'appuyer sur les observations réseau/terminales du provider.
-
-## Utilisation du parcours hosted
-
-Les corrections du Brain et de NiakVIO sont intégrées dans `main`. Les 304 tests
-Brain, les contrats CORE NiakVIO et les tests de sécurité/compatibilité du worker
-passent. Dans GitHub Actions du dépôt NiakVIO, lancer
-`Brain - Hosted single-provider repair check` puis choisir le provider.
-Le secret `NIAKVIO_OPENAI_API_KEY` reste dans ce dépôt.
-
-Le parcours observe les fonctions réellement exécutées avant la génération.
-Il peut vérifier jusqu'à trois propositions en dix minutes et transmet les
-mesures ainsi que les edits rejetés à la tentative suivante. Il s'arrête après
-une acceptation, après épuisement du budget ou quand aucune hypothèse exécutable
-n'est justifiée. Le job de collecte, séparé du sandbox, conserve ensuite les
-verdicts exécutés sur la branche source, une seule fois par run.
-
-Sur AllAnime, le parcours complet identifie désormais explicitement le manque de
-réponses du lecteur ou d'URL média validée et s'abstient. Aucun provider restauré
-n'est revendiqué sur la base d'un workflow vert ou d'un test simulé.
+Un workflow vert et une proposition générée ne suffisent pas à déclarer un
+provider réparé. Le résultat de lecture après le correctif doit être vérifié.

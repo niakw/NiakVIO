@@ -64,6 +64,7 @@ jobs:
               line = (
                   f"provider={safe(row.get('provider'))} "
                   f"executed={row.get('executionObserved') is True} "
+                  f"materialized={row.get('materializedMutationObserved') is True} "
                   f"accepted={row.get('accepted') is True} "
                   f"reason={safe(row.get('reason'))} "
                   f"error={safe(row.get('error', 'none'))} "

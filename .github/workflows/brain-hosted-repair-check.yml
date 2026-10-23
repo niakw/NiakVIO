@@ -2,7 +2,7 @@ name: Brain - Hosted single-provider repair check
 
 on:
   push:
-    branches: [codex/niakvio-brain-reliability]
+    branches: [main]
     paths: [.github/workflows/brain-hosted-repair-check.yml]
   workflow_dispatch:
     inputs:
@@ -21,7 +21,7 @@ jobs:
     timeout-minutes: 20
     env:
       TARGET_PROVIDER: ${{ inputs.provider || 'animevostfr' }}
-      BRAIN_SHA: 1969f2dd3e2914b7898c9cf03c233ec159498b17
+      BRAIN_SHA: ef9e2940b7282716d37f267aac9288562ec5656b
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
@@ -95,6 +95,7 @@ jobs:
               'verification': [{
                   'accepted': row.get('accepted') is True,
                   'executionObserved': row.get('executionObserved') is True,
+                  'materializedMutationObserved': row.get('materializedMutationObserved') is True,
                   'reason': safe(row.get('reason', '')),
               } for row in evaluation.get('rows', [])],
               'publicationAuthority': False,
