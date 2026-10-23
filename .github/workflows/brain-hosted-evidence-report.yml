@@ -5,7 +5,7 @@ on:
     workflows: [Brain - Hosted single-provider repair check]
     types: [completed]
   push:
-    branches: [codex/niakvio-brain-reliability]
+    branches: [main]
     paths: [.github/workflows/brain-hosted-evidence-report.yml]
   workflow_dispatch:
     inputs:
@@ -116,6 +116,7 @@ jobs:
                       {key: event.get(key) for key in (
                           'stage', 'host', 'method', 'status', 'ok', 'errorCode',
                           'announcedPlayerCandidates', 'announcedQualityHeights',
+                          'responseStructure', 'providerFunctions',
                       )}
                       for event in value.get('networkTrace', [])[:64]
                   ]
