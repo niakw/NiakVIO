@@ -16,7 +16,22 @@ def script_shell_only(events):
         for shape in (event['response_structure'] for event in replies)
     )
 
-def prioritized_execution(result):
+def provider_owned_function_names(stage, provider):
+    registry = verifier.load(stage / 'candidates.json')
+    matches = [row for row in registry.get('candidates', [])
+               if verifier.canon(row.get('canonical_id')) == provider]
+    if len(matches) != 1:
+        raise ValueError('provider execution source missing or ambiguous')
+    path = (stage / matches[0]['local_path']).resolve()
+    if not path.is_relative_to(stage.resolve()):
+        raise ValueError('provider execution source leaves its stage')
+    source = path.read_text()
+    for marker in ('/* STARTFIX:CORE.', '/* NUVIO_GLOBAL_CORE_START_BOUNDARY_V1 */'):
+        source = source.split(marker, 1)[0]
+    return set(re.findall(r'\b(?:async\s+)?function\s+([A-Za-z_$][\w$]*)\s*\(', source))
+
+
+def prioritized_execution(result, owned_names=None):
     events = [{**event, 'fixture_label': (test.get('fixture') or {}).get('label'), 'observation_index': index,
                'fixture_failed': int(test.get('streams_playable') or 0) == 0}
               for test in result.get('tests', []) for index, event in enumerate(test.get('network_observations', []))
@@ -30,7 +45,8 @@ def prioritized_execution(result):
         for name in event.get('provider_function_names', []):
             if not re.fullmatch(r'[A-Za-z_$][\w$]{0,63}', str(name)) or re.search(r'fetch|request', name, re.I):
                 continue
-            utility = name in {'wrapped', 'wrap', 'text', 'json', 'apiJson', 'jsonPostAt'}
+            utility = (name in {'wrapped', 'wrap', 'text', 'json', 'apiJson', 'jsonPostAt'}
+                       or (owned_names is not None and name not in owned_names))
             index = (0 if event['fixture_failed'] else 2) + int(utility)
             if name not in buckets[index]:
                 buckets[index].append(name)
@@ -60,7 +76,7 @@ def main():
     verifier.stage_provider(verifier.ROOT, args.provider, root / 'stage', targets)
     health = verifier.health_provider(root / 'stage', root / 'health')
     result = verifier.provider_result(health, args.provider)
-    events, names = prioritized_execution(result)
+    events, names = prioritized_execution(result, provider_owned_function_names(root / 'stage', args.provider))
     payload = {
         'provider': args.provider,
         'sourceSha': source_sha,

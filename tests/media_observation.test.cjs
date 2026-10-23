@@ -1,6 +1,8 @@
 'use strict';
 const assert = require('node:assert/strict');
-const { observeMediaResponse, prefixFacts } = require('../scripts/media_observation.cjs');
+const fs = require('node:fs');
+const vm = require('node:vm');
+const { observeMediaResponse, prefixFacts, safeMediaFacts } = require('../scripts/media_observation.cjs');
 
 function movie(seconds, version = 0) {
   const bytes = Buffer.alloc(80);
@@ -49,5 +51,18 @@ function movie(seconds, version = 0) {
   await assert.rejects(broken.body.getReader().read(), value => value === error);
   assert.equal(failed.media_observation.readState, 'error');
   assert.ok(!JSON.stringify(failed).includes('PRIVATE'));
+  // Execute the production worker -> health-report projection. A worker-only
+  // test misses new facts silently discarded at this serialization boundary.
+  const source = fs.readFileSync(require.resolve('../scripts/health_check.mjs'), 'utf8');
+  const start = source.indexOf('network_observations: Array.isArray(worker.network_observations)');
+  const projection = source.slice(start, source.indexOf('settings_diagnostics:', start));
+  const projected = vm.runInNewContext('({' + projection + '})', {
+    worker: { network_observations: [{ ...observation,
+      media_observation: { ...observation.media_observation, rawBody: 'PRIVATE', url: 'PRIVATE' },
+    }] }, safeMediaFacts, sanitizeError: () => '',
+  });
+  assert.equal(projected.network_observations[0].media_observation.durationSeconds, 35);
+  assert.equal(projected.network_observations[0].media_observation.signature, 'mp4');
+  assert.ok(!JSON.stringify(projected).includes('PRIVATE'));
   console.log('Media observation: unchanged reads, bounded signature/duration, cancellation and error privacy passed');
 })().catch(error => { console.error(error); process.exitCode = 1; });

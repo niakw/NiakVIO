@@ -141,6 +141,10 @@ le probe terminal : signature, durée MP4 si disponible, taille plafonnée à 64
 états de lecture et d'annulation. Aucune requête supplémentaire n'est émise et
 aucun octet brut n'est conservé. Ces faits rejoignent le contexte et le feedback
 du Brain ; ils ne remplacent pas les preuves de lecture et d'identité.
+Le test exécute aussi la projection réelle worker → Deep afin qu'une nouvelle
+mesure ne disparaisse pas entre les deux rapports. Les fonctions du Core restent
+visibles dans les traces, mais les helpers du provider gardent la priorité dans
+le choix des fonctions éditables.
 
 Le préflight privilégie maintenant le titre en échec et ses dernières requêtes
 terminales, avant les wrappers de transport et la branche déjà saine. Les faits

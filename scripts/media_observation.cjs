@@ -92,4 +92,16 @@ function observeMediaResponse(response, observation) {
   });
 }
 
-module.exports = { observeMediaResponse, prefixFacts };
+function safeMediaFacts(value) {
+  if (!value || typeof value !== 'object') return null;
+  const integer = (item, cap) => Number.isInteger(item) ? Math.max(0, Math.min(cap, item)) : 0;
+  return {
+    signature: ['unknown', 'mp4', 'ebml', 'mpegts', 'hls', 'html'].includes(value.signature) ? value.signature : 'unknown',
+    durationSeconds: Number.isInteger(value.durationSeconds) ? integer(value.durationSeconds, 1209600) : null,
+    bytesSampled: integer(value.bytesSampled, PREFIX_LIMIT),
+    readState: ['not_read', 'data', 'empty', 'complete', 'error'].includes(value.readState) ? value.readState : 'not_read',
+    cancelState: ['not_requested', 'requested', 'complete', 'error'].includes(value.cancelState) ? value.cancelState : 'not_requested',
+  };
+}
+
+module.exports = { observeMediaResponse, prefixFacts, safeMediaFacts };

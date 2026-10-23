@@ -53,6 +53,7 @@ jobs:
           test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
           test "$(git -C brain-llm rev-parse HEAD)" = "$BRAIN_SHA"
           npm ci --ignore-scripts
+          node tests/media_observation.test.cjs
           python -m pip install -e brain-llm
           mkdir -p local-output/hosted-check
           python brain-llm/scripts/import_public_niakvio.py --niakvio-root . --output local-output/hosted-check/experience.jsonl

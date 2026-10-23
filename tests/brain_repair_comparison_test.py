@@ -29,6 +29,13 @@ events, names = prioritized_execution({'tests': [
 assert events[0]['fixture_label'] == 'Missing title'
 assert names[:3] == ['directAnime', 'findAnime', 'resolve'], names
 assert names.index('text') > names.index('findAnime')
+events, names = prioritized_execution({'tests': [{'fixture': {'label': 'Missing'},
+    'streams_playable': 0, 'network_observations': [
+        {'stage': 'player', 'provider_function_names': ['_crawlDirectMedia', 'resolve', 'wrap']},
+        {'stage': 'media', 'provider_function_names': ['probeResolved', 'probe', 'checkItem', 'wrap']},
+    ]}]}, {'_crawlDirectMedia', 'resolve'})
+assert events[0]['stage'] == 'media'
+assert names[:2] == ['_crawlDirectMedia', 'resolve'], names
 
 with tempfile.TemporaryDirectory() as directory:
     root = Path(directory)
@@ -58,6 +65,7 @@ with tempfile.TemporaryDirectory() as directory:
     with patch.object(sys, 'argv', ['capture', '--provider', 'demo', '--output', str(live_path), '--recheck-script-shell']), \
          patch.object(capture.subprocess, 'check_output', return_value='a' * 40), \
          patch.object(verifier, 'stage_provider'), \
+         patch.object(capture, 'provider_owned_function_names', return_value=set()), \
          patch.object(verifier, 'health_provider', return_value={'results': [{'provider': 'demo', 'tests': []}]}), \
          contextlib.redirect_stdout(io.StringIO()):
         capture.main()

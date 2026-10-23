@@ -19,6 +19,7 @@ const require = createRequire(import.meta.url);
 const { inferSupportedTypes, isAnimeFocusedCatalogue, roundRobin } = require('./provider_semantics.cjs');
 const { guardedFetch } = require('./network_guard.cjs');
 const { streamIdentity } = require('./nuvio_client_lab.cjs');
+const { safeMediaFacts } = require('./media_observation.cjs');
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const STAGE = path.resolve(process.env.NUVIO_STAGE || path.join(ROOT, 'staging'));
@@ -1652,6 +1653,7 @@ async function testCandidate(candidate) {
       provider_server_http_statuses: Array.isArray(worker.provider_server_http_statuses) ? worker.provider_server_http_statuses : [],
       network_observations: Array.isArray(worker.network_observations) ? worker.network_observations.map((item) => ({
         response_structure: item.response_structure || null,
+        media_observation: safeMediaFacts(item.media_observation),
         provider_function_names: Array.isArray(item.provider_function_names)
           ? item.provider_function_names.filter(name => /^[A-Za-z_$][\w$]{0,63}$/.test(name)).slice(0, 8) : [],
         stage: item.stage || 'provider_fetch',
