@@ -120,6 +120,10 @@ le parcours appelle le diagnostic navigateur ordinaire existant, sans conserver
 DOM ni cookies. Le classifieur navigateur ne compte plus le texte des scripts
 comme du contenu rendu. La synthèse est suspendue tant que ce prérequis manque,
 sans appel API et sans transformer cette non-exécution en échec de code appris.
+Le [rejeu 40038408753](https://github.com/niakw/NiakVIO/actions/runs/40038408753)
+rencontre ce cas et un timeout du navigateur ; zéro candidat est exécuté.
+Un seul nouveau relevé HTTP est désormais autorisé après cette observation pour
+détecter le retour du contenu. Le timeout navigateur reste conservé comme tel.
 
 L'accès varie entre les relevés. Le [run suivant](https://github.com/niakw/NiakVIO/actions/runs/40036152081)
 retrouve Hell Mode lisible et Jujutsu Kaisen sans flux. Pour ce dernier, Sendvid

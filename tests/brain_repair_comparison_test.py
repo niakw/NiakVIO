@@ -13,6 +13,7 @@ sys.path.insert(0, str(ROOT / 'scripts'))
 import evaluate_brain_llm_force_candidates as verifier
 from capture_brain_live_context import script_shell_only, prioritized_execution
 import observe_brain_browser_context as observation
+import capture_brain_live_context as capture
 
 shell = {'ok': True, 'response_structure': {'kind': 'html', 'variables': ['a0x'], 'tags': [{'tag': 'script'}]}}
 assert script_shell_only([shell]) is True
@@ -48,6 +49,29 @@ with tempfile.TemporaryDirectory() as directory:
         observation.main()
     assert json.loads(live_path.read_text())['browser_observation']['outcome'] == 'browser_timeout'
     assert 'PRIVATE' not in live_path.read_text()
+
+    # A transient shell gets one fresh HTTP observation after the ordinary
+    # browser diagnostic. A timeout cannot become positive content evidence.
+    prior = json.loads(live_path.read_text())
+    prior['browser_observation']['dom'] = 'PRIVATE'
+    live_path.write_text(json.dumps(prior))
+    with patch.object(sys, 'argv', ['capture', '--provider', 'demo', '--output', str(live_path), '--recheck-script-shell']), \
+         patch.object(capture.subprocess, 'check_output', return_value='a' * 40), \
+         patch.object(verifier, 'stage_provider'), \
+         patch.object(verifier, 'health_provider', return_value={'results': [{'provider': 'demo', 'tests': []}]}), \
+         contextlib.redirect_stdout(io.StringIO()):
+        capture.main()
+        refreshed = json.loads(live_path.read_text())
+        assert refreshed['script_shell_recheck_performed'] is True
+        assert refreshed['http_script_shell_only'] is False
+        assert refreshed['browser_observation']['outcome'] == 'browser_timeout'
+        assert 'PRIVATE' not in live_path.read_text()
+        try:
+            capture.main()
+        except ValueError:
+            pass
+        else:
+            raise AssertionError('a second transient-content recheck was allowed')
 
 original = json.loads((ROOT / 'health-config.json').read_text())
 seen = []

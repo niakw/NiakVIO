@@ -41,9 +41,18 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--provider', required=True)
     parser.add_argument('--output', type=Path, required=True)
+    parser.add_argument('--recheck-script-shell', action='store_true')
     args = parser.parse_args()
     if not re.fullmatch(r'[a-z0-9][a-z0-9-]{0,79}', args.provider):
         raise SystemExit('invalid provider')
+    source_sha = subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True, cwd=verifier.ROOT).strip()
+    previous = {}
+    if args.recheck_script_shell:
+        previous = json.loads(args.output.read_text())
+        if (previous.get('provider') != args.provider or previous.get('sourceSha') != source_sha
+                or previous.get('http_script_shell_only') is not True
+                or previous.get('script_shell_recheck_performed') is True):
+            raise ValueError('one script-shell recheck requires exact-current missing-content evidence')
     root = args.output.resolve().parent / 'live-preflight'
     root.mkdir(parents=True, exist_ok=True)
     targets = root / 'targets.json'
@@ -54,7 +63,7 @@ def main():
     events, names = prioritized_execution(result)
     payload = {
         'provider': args.provider,
-        'sourceSha': subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True, cwd=verifier.ROOT).strip(),
+        'sourceSha': source_sha,
         'active_functions': names[:6],
         'http_script_shell_only': script_shell_only(events),
         'fixture_evidence': verifier.fixture_summary(result),
@@ -68,6 +77,16 @@ def main():
         'streams_playable': verifier.runtime_repair.playable_stream_count(result),
         'publicationAuthority': False,
     }
+    if previous:
+        payload['script_shell_recheck_performed'] = True
+        browser = previous.get('browser_observation') or {}
+        allowed = {'browser_unavailable', 'browser_content_reached', 'browser_challenge_persisted',
+                   'browser_timeout', 'browser_inconclusive', 'browser_error'}
+        if browser.get('outcome') in allowed:
+            payload['browser_observation'] = {
+                'outcome': browser['outcome'], 'browser_available': browser.get('browser_available') is True,
+                'publicationAuthority': False,
+            }
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(payload, indent=2) + '\n')
     if os.environ.get('GITHUB_OUTPUT'):

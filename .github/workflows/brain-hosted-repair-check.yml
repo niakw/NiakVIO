@@ -70,6 +70,10 @@ jobs:
         if: steps.live_observation.outputs.script_shell_only == 'true'
         timeout-minutes: 1
         run: python scripts/observe_brain_browser_context.py --live-context local-output/hosted-check/live-context.json
+      - name: Recheck transient missing content once after the browser observation
+        if: steps.live_observation.outputs.script_shell_only == 'true'
+        timeout-minutes: 5
+        run: python scripts/capture_brain_live_context.py --provider "$TARGET_PROVIDER" --output local-output/hosted-check/live-context.json --recheck-script-shell
       - name: Run bounded hosted repair and verification loop
         timeout-minutes: 12
         env:
@@ -107,6 +111,7 @@ jobs:
               'sourceBrainLlmSha': os.environ['BRAIN_SHA'],
               'generationReported': bool(diagnostics),
               'browserObservation': read('live-context.json').get('browser_observation') or {},
+              'scriptShellRecheckPerformed': read('live-context.json').get('script_shell_recheck_performed') is True,
               'synthesisPausedForMissingEvidence': read('live-context.json').get('http_script_shell_only') is True,
               'candidateCount': int(evaluation.get('candidateCount') or 0),
               'acceptedProviderCount': int(evaluation.get('acceptedProviderCount') or 0),
