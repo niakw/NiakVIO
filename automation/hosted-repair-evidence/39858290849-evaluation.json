@@ -1,0 +1,1194 @@
+{
+  "currentSha": "23469438574195e7e56592a7aa74e13fb78f5374",
+  "rows": [
+    {
+      "provider": "animevostfr",
+      "accepted": false,
+      "executionObserved": true,
+      "reason": "insufficient_playable_stream_proof",
+      "mutationFingerprint": "b93e49e5c38bffa14cd2f61b63feed5d27f9cf60a8102a5e04b37138b8716dbd",
+      "mutationSummary": [
+        {
+          "scope": "provider_bloc",
+          "operation": "upsert",
+          "family": "wordpress_search_episode"
+        }
+      ],
+      "baseline": {
+        "status": "healthy",
+        "score": 100,
+        "streamsPlayable": 1,
+        "streamsReturned": 1,
+        "identityContradictions": 0,
+        "providerRequests": 0,
+        "providerHttpStatuses": [
+          200
+        ],
+        "variantCoverage": {
+          "qualityHeights": [
+            1080
+          ],
+          "maxPlayableHeight": 1080,
+          "audioLanguages": [
+            "ja"
+          ],
+          "reachableHosts": [
+            "prx-ps-s-2.vmpx.online"
+          ],
+          "announcedPlayerCandidates": 64,
+          "announcedVariantCandidates": 206,
+          "exploredPlayerRequests": 17,
+          "fanoutStates": [
+            "explored-not-resolved"
+          ],
+          "announcedQualityHeights": [
+            720
+          ]
+        },
+        "invocationDiagnostics": [
+          {
+            "fixture": "Hell Mode S01E01",
+            "name": "positional_with_settings",
+            "inferredMode": "positional",
+            "result": "streams",
+            "streamCount": 1,
+            "providerObservations": 17,
+            "errorCode": ""
+          }
+        ],
+        "networkTrace": [
+          {
+            "stage": "content_lookup",
+            "host": "api.themoviedb.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": [],
+            "responseStructure": null,
+            "providerFunctions": null
+          },
+          {
+            "stage": "content_lookup",
+            "host": "animevostfr.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 64,
+            "announcedQualityHeights": [],
+            "responseStructure": null,
+            "providerFunctions": null
+          },
+          {
+            "stage": "content_lookup",
+            "host": "animevostfr.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 64,
+            "announcedQualityHeights": [],
+            "responseStructure": null,
+            "providerFunctions": null
+          },
+          {
+            "stage": "episode",
+            "host": "animevostfr.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 64,
+            "announcedQualityHeights": [],
+            "responseStructure": null,
+            "providerFunctions": null
+          },
+          {
+            "stage": "player",
+            "host": "animevostfr.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 4,
+            "announcedQualityHeights": [],
+            "responseStructure": null,
+            "providerFunctions": null
+          },
+          {
+            "stage": "player",
+            "host": "vidmoly.biz",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 6,
+            "announcedQualityHeights": [
+              720
+            ],
+            "responseStructure": null,
+            "providerFunctions": null
+          },
+          {
+            "stage": "search",
+            "host": "animevostfr.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": [],
+            "responseStructure": null,
+            "providerFunctions": null
+          },
+          {
+            "stage": "content_lookup",
+            "host": "animevostfr.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": [],
+            "responseStructure": null,
+            "providerFunctions": null
+          },
+          {
+            "stage": "content_lookup",
+            "host": "animevostfr.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": [],
+            "responseStructure": null,
+            "providerFunctions": null
+          },
+          {
+            "stage": "episode",
+            "host": "api.themoviedb.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": [],
+            "responseStructure": null,
+            "providerFunctions": null
+          },
+          {
+            "stage": "content_lookup",
+            "host": "prx-ps-s-2.vmpx.online",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": [],
+            "responseStructure": null,
+            "providerFunctions": null
+          },
+          {
+            "stage": "content_lookup",
+            "host": "prx-ps-s-2.vmpx.online",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": [],
+            "responseStructure": null,
+            "providerFunctions": null
+          }
+        ]
+      },
+      "candidate": {
+        "status": "healthy",
+        "score": 100,
+        "streamsPlayable": 1,
+        "streamsReturned": 1,
+        "identityContradictions": 0,
+        "providerRequests": 0,
+        "providerHttpStatuses": [
+          200
+        ],
+        "variantCoverage": {
+          "qualityHeights": [
+            1080
+          ],
+          "maxPlayableHeight": 1080,
+          "audioLanguages": [
+            "ja"
+          ],
+          "reachableHosts": [
+            "prx-ps-s-2.vmpx.online"
+          ],
+          "announcedPlayerCandidates": 64,
+          "announcedVariantCandidates": 206,
+          "exploredPlayerRequests": 17,
+          "fanoutStates": [
+            "explored-not-resolved"
+          ],
+          "announcedQualityHeights": [
+            720
+          ]
+        },
+        "invocationDiagnostics": [
+          {
+            "fixture": "Hell Mode S01E01",
+            "name": "positional_with_settings",
+            "inferredMode": "positional",
+            "result": "streams",
+            "streamCount": 1,
+            "providerObservations": 17,
+            "errorCode": ""
+          }
+        ],
+        "networkTrace": [
+          {
+            "stage": "content_lookup",
+            "host": "api.themoviedb.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": [],
+            "responseStructure": null,
+            "providerFunctions": null
+          },
+          {
+            "stage": "content_lookup",
+            "host": "animevostfr.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 64,
+            "announcedQualityHeights": [],
+            "responseStructure": null,
+            "providerFunctions": null
+          },
+          {
+            "stage": "content_lookup",
+            "host": "animevostfr.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 64,
+            "announcedQualityHeights": [],
+            "responseStructure": null,
+            "providerFunctions": null
+          },
+          {
+            "stage": "episode",
+            "host": "animevostfr.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 64,
+            "announcedQualityHeights": [],
+            "responseStructure": null,
+            "providerFunctions": null
+          },
+          {
+            "stage": "player",
+            "host": "animevostfr.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 4,
+            "announcedQualityHeights": [],
+            "responseStructure": null,
+            "providerFunctions": null
+          },
+          {
+            "stage": "player",
+            "host": "vidmoly.biz",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 6,
+            "announcedQualityHeights": [
+              720
+            ],
+            "responseStructure": null,
+            "providerFunctions": null
+          },
+          {
+            "stage": "search",
+            "host": "animevostfr.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": [],
+            "responseStructure": null,
+            "providerFunctions": null
+          },
+          {
+            "stage": "content_lookup",
+            "host": "animevostfr.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": [],
+            "responseStructure": null,
+            "providerFunctions": null
+          },
+          {
+            "stage": "content_lookup",
+            "host": "animevostfr.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": [],
+            "responseStructure": null,
+            "providerFunctions": null
+          },
+          {
+            "stage": "episode",
+            "host": "api.themoviedb.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": [],
+            "responseStructure": null,
+            "providerFunctions": null
+          },
+          {
+            "stage": "content_lookup",
+            "host": "prx-ps-s-2.vmpx.online",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": [],
+            "responseStructure": null,
+            "providerFunctions": null
+          },
+          {
+            "stage": "content_lookup",
+            "host": "prx-ps-s-2.vmpx.online",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": [],
+            "responseStructure": null,
+            "providerFunctions": null
+          }
+        ]
+      }
+    },
+    {
+      "provider": "animevostfr",
+      "accepted": false,
+      "executionObserved": true,
+      "reason": "insufficient_playable_stream_proof",
+      "mutationFingerprint": "db1a0c53d8c8f3570f7b58532d0c5b2b900151bd2cd638a02fcb0bfb0aaeaf37",
+      "mutationSummary": [
+        {
+          "scope": "provider_bloc",
+          "operation": "upsert",
+          "family": "wordpress_search_episode"
+        }
+      ],
+      "baseline": {
+        "status": "healthy",
+        "score": 100,
+        "streamsPlayable": 1,
+        "streamsReturned": 1,
+        "identityContradictions": 0,
+        "providerRequests": 0,
+        "providerHttpStatuses": [
+          200
+        ],
+        "variantCoverage": {
+          "qualityHeights": [
+            1080
+          ],
+          "maxPlayableHeight": 1080,
+          "audioLanguages": [
+            "ja"
+          ],
+          "reachableHosts": [
+            "prx-ps-s-2.vmpx.online"
+          ],
+          "announcedPlayerCandidates": 64,
+          "announcedVariantCandidates": 206,
+          "exploredPlayerRequests": 17,
+          "fanoutStates": [
+            "explored-not-resolved"
+          ],
+          "announcedQualityHeights": [
+            720
+          ]
+        },
+        "invocationDiagnostics": [
+          {
+            "fixture": "Hell Mode S01E01",
+            "name": "positional_with_settings",
+            "inferredMode": "positional",
+            "result": "streams",
+            "streamCount": 1,
+            "providerObservations": 17,
+            "errorCode": ""
+          }
+        ],
+        "networkTrace": [
+          {
+            "stage": "content_lookup",
+            "host": "api.themoviedb.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": [],
+            "responseStructure": null,
+            "providerFunctions": null
+          },
+          {
+            "stage": "content_lookup",
+            "host": "animevostfr.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 64,
+            "announcedQualityHeights": [],
+            "responseStructure": null,
+            "providerFunctions": null
+          },
+          {
+            "stage": "content_lookup",
+            "host": "animevostfr.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 64,
+            "announcedQualityHeights": [],
+            "responseStructure": null,
+            "providerFunctions": null
+          },
+          {
+            "stage": "episode",
+            "host": "animevostfr.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 64,
+            "announcedQualityHeights": [],
+            "responseStructure": null,
+            "providerFunctions": null
+          },
+          {
+            "stage": "player",
+            "host": "animevostfr.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 4,
+            "announcedQualityHeights": [],
+            "responseStructure": null,
+            "providerFunctions": null
+          },
+          {
+            "stage": "player",
+            "host": "vidmoly.biz",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 6,
+            "announcedQualityHeights": [
+              720
+            ],
+            "responseStructure": null,
+            "providerFunctions": null
+          },
+          {
+            "stage": "search",
+            "host": "animevostfr.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": [],
+            "responseStructure": null,
+            "providerFunctions": null
+          },
+          {
+            "stage": "content_lookup",
+            "host": "animevostfr.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": [],
+            "responseStructure": null,
+            "providerFunctions": null
+          },
+          {
+            "stage": "content_lookup",
+            "host": "animevostfr.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": [],
+            "responseStructure": null,
+            "providerFunctions": null
+          },
+          {
+            "stage": "episode",
+            "host": "api.themoviedb.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": [],
+            "responseStructure": null,
+            "providerFunctions": null
+          },
+          {
+            "stage": "content_lookup",
+            "host": "prx-ps-s-2.vmpx.online",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": [],
+            "responseStructure": null,
+            "providerFunctions": null
+          },
+          {
+            "stage": "content_lookup",
+            "host": "prx-ps-s-2.vmpx.online",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": [],
+            "responseStructure": null,
+            "providerFunctions": null
+          }
+        ]
+      },
+      "candidate": {
+        "status": "healthy",
+        "score": 100,
+        "streamsPlayable": 1,
+        "streamsReturned": 1,
+        "identityContradictions": 0,
+        "providerRequests": 0,
+        "providerHttpStatuses": [
+          200
+        ],
+        "variantCoverage": {
+          "qualityHeights": [
+            1080
+          ],
+          "maxPlayableHeight": 1080,
+          "audioLanguages": [
+            "ja"
+          ],
+          "reachableHosts": [
+            "prx-ps-s-2.vmpx.online"
+          ],
+          "announcedPlayerCandidates": 64,
+          "announcedVariantCandidates": 206,
+          "exploredPlayerRequests": 17,
+          "fanoutStates": [
+            "explored-not-resolved"
+          ],
+          "announcedQualityHeights": [
+            720
+          ]
+        },
+        "invocationDiagnostics": [
+          {
+            "fixture": "Hell Mode S01E01",
+            "name": "positional_with_settings",
+            "inferredMode": "positional",
+            "result": "streams",
+            "streamCount": 1,
+            "providerObservations": 17,
+            "errorCode": ""
+          }
+        ],
+        "networkTrace": [
+          {
+            "stage": "content_lookup",
+            "host": "api.themoviedb.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": [],
+            "responseStructure": null,
+            "providerFunctions": null
+          },
+          {
+            "stage": "content_lookup",
+            "host": "animevostfr.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 64,
+            "announcedQualityHeights": [],
+            "responseStructure": null,
+            "providerFunctions": null
+          },
+          {
+            "stage": "content_lookup",
+            "host": "animevostfr.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 64,
+            "announcedQualityHeights": [],
+            "responseStructure": null,
+            "providerFunctions": null
+          },
+          {
+            "stage": "episode",
+            "host": "animevostfr.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 64,
+            "announcedQualityHeights": [],
+            "responseStructure": null,
+            "providerFunctions": null
+          },
+          {
+            "stage": "player",
+            "host": "animevostfr.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 4,
+            "announcedQualityHeights": [],
+            "responseStructure": null,
+            "providerFunctions": null
+          },
+          {
+            "stage": "player",
+            "host": "vidmoly.biz",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 6,
+            "announcedQualityHeights": [
+              720
+            ],
+            "responseStructure": null,
+            "providerFunctions": null
+          },
+          {
+            "stage": "search",
+            "host": "animevostfr.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": [],
+            "responseStructure": null,
+            "providerFunctions": null
+          },
+          {
+            "stage": "content_lookup",
+            "host": "animevostfr.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": [],
+            "responseStructure": null,
+            "providerFunctions": null
+          },
+          {
+            "stage": "content_lookup",
+            "host": "animevostfr.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": [],
+            "responseStructure": null,
+            "providerFunctions": null
+          },
+          {
+            "stage": "episode",
+            "host": "api.themoviedb.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": [],
+            "responseStructure": null,
+            "providerFunctions": null
+          },
+          {
+            "stage": "content_lookup",
+            "host": "prx-ps-s-2.vmpx.online",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": [],
+            "responseStructure": null,
+            "providerFunctions": null
+          },
+          {
+            "stage": "content_lookup",
+            "host": "prx-ps-s-2.vmpx.online",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": [],
+            "responseStructure": null,
+            "providerFunctions": null
+          }
+        ]
+      }
+    },
+    {
+      "provider": "animevostfr",
+      "accepted": false,
+      "executionObserved": true,
+      "reason": "insufficient_playable_stream_proof",
+      "mutationFingerprint": "62fd8bce1709e0993df49b86ea899e80d4de2fdb1faa7326b48379f3601cf7bb",
+      "mutationSummary": [
+        {
+          "scope": "provider_bloc",
+          "operation": "upsert",
+          "family": "wordpress_search_episode"
+        }
+      ],
+      "baseline": {
+        "status": "healthy",
+        "score": 100,
+        "streamsPlayable": 1,
+        "streamsReturned": 1,
+        "identityContradictions": 0,
+        "providerRequests": 0,
+        "providerHttpStatuses": [
+          200
+        ],
+        "variantCoverage": {
+          "qualityHeights": [
+            1080
+          ],
+          "maxPlayableHeight": 1080,
+          "audioLanguages": [
+            "ja"
+          ],
+          "reachableHosts": [
+            "prx-ps-s-2.vmpx.online"
+          ],
+          "announcedPlayerCandidates": 64,
+          "announcedVariantCandidates": 206,
+          "exploredPlayerRequests": 17,
+          "fanoutStates": [
+            "explored-not-resolved"
+          ],
+          "announcedQualityHeights": [
+            720
+          ]
+        },
+        "invocationDiagnostics": [
+          {
+            "fixture": "Hell Mode S01E01",
+            "name": "positional_with_settings",
+            "inferredMode": "positional",
+            "result": "streams",
+            "streamCount": 1,
+            "providerObservations": 17,
+            "errorCode": ""
+          }
+        ],
+        "networkTrace": [
+          {
+            "stage": "content_lookup",
+            "host": "api.themoviedb.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": [],
+            "responseStructure": null,
+            "providerFunctions": null
+          },
+          {
+            "stage": "content_lookup",
+            "host": "animevostfr.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 64,
+            "announcedQualityHeights": [],
+            "responseStructure": null,
+            "providerFunctions": null
+          },
+          {
+            "stage": "content_lookup",
+            "host": "animevostfr.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 64,
+            "announcedQualityHeights": [],
+            "responseStructure": null,
+            "providerFunctions": null
+          },
+          {
+            "stage": "episode",
+            "host": "animevostfr.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 64,
+            "announcedQualityHeights": [],
+            "responseStructure": null,
+            "providerFunctions": null
+          },
+          {
+            "stage": "player",
+            "host": "animevostfr.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 4,
+            "announcedQualityHeights": [],
+            "responseStructure": null,
+            "providerFunctions": null
+          },
+          {
+            "stage": "player",
+            "host": "vidmoly.biz",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 6,
+            "announcedQualityHeights": [
+              720
+            ],
+            "responseStructure": null,
+            "providerFunctions": null
+          },
+          {
+            "stage": "search",
+            "host": "animevostfr.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": [],
+            "responseStructure": null,
+            "providerFunctions": null
+          },
+          {
+            "stage": "content_lookup",
+            "host": "animevostfr.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": [],
+            "responseStructure": null,
+            "providerFunctions": null
+          },
+          {
+            "stage": "content_lookup",
+            "host": "animevostfr.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": [],
+            "responseStructure": null,
+            "providerFunctions": null
+          },
+          {
+            "stage": "episode",
+            "host": "api.themoviedb.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": [],
+            "responseStructure": null,
+            "providerFunctions": null
+          },
+          {
+            "stage": "content_lookup",
+            "host": "prx-ps-s-2.vmpx.online",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": [],
+            "responseStructure": null,
+            "providerFunctions": null
+          },
+          {
+            "stage": "content_lookup",
+            "host": "prx-ps-s-2.vmpx.online",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": [],
+            "responseStructure": null,
+            "providerFunctions": null
+          }
+        ]
+      },
+      "candidate": {
+        "status": "healthy",
+        "score": 100,
+        "streamsPlayable": 1,
+        "streamsReturned": 1,
+        "identityContradictions": 0,
+        "providerRequests": 0,
+        "providerHttpStatuses": [
+          200
+        ],
+        "variantCoverage": {
+          "qualityHeights": [
+            1080
+          ],
+          "maxPlayableHeight": 1080,
+          "audioLanguages": [
+            "ja"
+          ],
+          "reachableHosts": [
+            "prx-ps-s-2.vmpx.online"
+          ],
+          "announcedPlayerCandidates": 64,
+          "announcedVariantCandidates": 206,
+          "exploredPlayerRequests": 17,
+          "fanoutStates": [
+            "explored-not-resolved"
+          ],
+          "announcedQualityHeights": [
+            720
+          ]
+        },
+        "invocationDiagnostics": [
+          {
+            "fixture": "Hell Mode S01E01",
+            "name": "positional_with_settings",
+            "inferredMode": "positional",
+            "result": "streams",
+            "streamCount": 1,
+            "providerObservations": 17,
+            "errorCode": ""
+          }
+        ],
+        "networkTrace": [
+          {
+            "stage": "content_lookup",
+            "host": "api.themoviedb.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": [],
+            "responseStructure": null,
+            "providerFunctions": null
+          },
+          {
+            "stage": "content_lookup",
+            "host": "animevostfr.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 64,
+            "announcedQualityHeights": [],
+            "responseStructure": null,
+            "providerFunctions": null
+          },
+          {
+            "stage": "content_lookup",
+            "host": "animevostfr.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 64,
+            "announcedQualityHeights": [],
+            "responseStructure": null,
+            "providerFunctions": null
+          },
+          {
+            "stage": "episode",
+            "host": "animevostfr.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 64,
+            "announcedQualityHeights": [],
+            "responseStructure": null,
+            "providerFunctions": null
+          },
+          {
+            "stage": "player",
+            "host": "animevostfr.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 4,
+            "announcedQualityHeights": [],
+            "responseStructure": null,
+            "providerFunctions": null
+          },
+          {
+            "stage": "player",
+            "host": "vidmoly.biz",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 6,
+            "announcedQualityHeights": [
+              720
+            ],
+            "responseStructure": null,
+            "providerFunctions": null
+          },
+          {
+            "stage": "search",
+            "host": "animevostfr.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": [],
+            "responseStructure": null,
+            "providerFunctions": null
+          },
+          {
+            "stage": "content_lookup",
+            "host": "animevostfr.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": [],
+            "responseStructure": null,
+            "providerFunctions": null
+          },
+          {
+            "stage": "content_lookup",
+            "host": "animevostfr.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": [],
+            "responseStructure": null,
+            "providerFunctions": null
+          },
+          {
+            "stage": "episode",
+            "host": "api.themoviedb.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": [],
+            "responseStructure": null,
+            "providerFunctions": null
+          },
+          {
+            "stage": "content_lookup",
+            "host": "prx-ps-s-2.vmpx.online",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": [],
+            "responseStructure": null,
+            "providerFunctions": null
+          },
+          {
+            "stage": "content_lookup",
+            "host": "prx-ps-s-2.vmpx.online",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": [],
+            "responseStructure": null,
+            "providerFunctions": null
+          }
+        ]
+      }
+    }
+  ],
+  "publicationAuthority": false
+}
