@@ -18,6 +18,10 @@ permissions:
   actions: read
   contents: write
 
+concurrency:
+  group: brain-hosted-evidence-main
+  cancel-in-progress: false
+
 jobs:
   evidence:
     if: >-
