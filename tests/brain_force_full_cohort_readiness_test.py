@@ -41,7 +41,9 @@ queue = {
     for value in census.get("repairQueue") or []
     if str(value or "").strip()
 }
-assert queue, "current repairQueue is unexpectedly empty; update readiness semantics if the project is fully repaired"
+# An empty queue is the intended terminal state after current-byte repairs or
+# evidence-backed requalification. Readiness must remain green in that state;
+# the separate census/publication proof gates decide whether it is legitimate.
 
 provider_rows = {
     str(row.get("provider") or "").strip().casefold().replace("_", "-"): row
@@ -111,11 +113,15 @@ for provider in sorted(queue):
         "focus": focus.get("focus"),
     }
 
-# The current cohort requires these three causal families. Keep this assertion
-# descriptive rather than provider-count based so the gate keeps working as the
-# queue shrinks after future successful repairs.
+# Keep all three executable causal families covered even when their current
+# providers have been repaired/requalified and disappear from repairQueue.
+# Requiring each family to remain present in the *live* queue would make the
+# readiness gate fail precisely as the project successfully repairs providers.
+required_families = {"provider_transport_gap", "route_proven_gap", "chain_terminal_gap"}
+assert required_families <= set(meta.FAILURE_EXECUTORS), sorted(required_families - set(meta.FAILURE_EXECUTORS))
+assert required_families <= set(runtime.CAUSAL_STRATEGY_BASES), sorted(required_families - set(runtime.CAUSAL_STRATEGY_BASES))
 current_families = {row["failure"] for row in coverage.values()}
-assert {"provider_transport_gap", "route_proven_gap", "chain_terminal_gap"} <= current_families, current_families
+assert current_families <= set(meta.FAILURE_EXECUTORS), sorted(current_families - set(meta.FAILURE_EXECUTORS))
 
 # A family executor is not enough: a novel runtime mechanism must have a bounded
 # mutation path, isolated rematerialization and strict playable+identity proof.
