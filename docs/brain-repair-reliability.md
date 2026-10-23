@@ -75,10 +75,26 @@ supplémentaire n'est demandé.
 - Blocage des mutations réellement rejetées dans le même contexte de source.
 - Revalidation des anciennes recettes positives et conservation de leur requête terminale.
 - Priorité au parcours terminal réellement exécuté dans le choix des fonctions éditables.
-- 306 tests Brain et audit de confidentialité réussis.
+- 307 tests Brain et audit de confidentialité réussis.
 - Régressions NiakVIO : dispatch v3 réel, ancre durcie, propriété native,
   reconstruction successive, fichier stagé inchangé, spécification absente,
   mémoire historique non prouvée, feedback borné et isolation des secrets.
 
 Un workflow vert et une proposition générée ne suffisent pas à déclarer un
 provider réparé. Le résultat de lecture après le correctif doit être vérifié.
+
+## Comparaison des réparations et changement de fonction après échec
+
+Les essais AnimeVOSTFR précédents ne couvraient que Hell Mode : le mode
+d'activation arrête l'échantillonnage après un premier titre et un flux HD sain.
+Le sandbox de réparation utilise maintenant un profil de comparaison distinct :
+deux titres primaires par catégorie et contrôle de tous les flux dans la limite
+existante de trois. La référence et le candidat utilisent exactement le même
+profil. Les résultats par titre sont transmis au Brain et conservés dans les preuves.
+
+Sur ce provider, le contexte compact ne proposait que `text` et `resolve`.
+Après une mutation matérialisée et exécutée sans gain vérifié, le Brain conserve
+le dispatcher pour suivre ses appels mais propose les fonctions voisines à la
+modification. Le rejeu du dernier échec expose désormais `playerRows`,
+`externalPlayer` et `findAnime`. Cette rotation ne s'applique pas aux essais
+non exécutés et ne constitue pas une interdiction permanente d'une fonction.

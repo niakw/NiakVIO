@@ -21,7 +21,7 @@ jobs:
     timeout-minutes: 20
     env:
       TARGET_PROVIDER: ${{ inputs.provider || 'animevostfr' }}
-      BRAIN_SHA: ee01eba1c4acf7403d362a65355ec250963c7a51
+      BRAIN_SHA: 9e6acf5ae59c7fa143439c2f0df1da1f9c606d8e
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:

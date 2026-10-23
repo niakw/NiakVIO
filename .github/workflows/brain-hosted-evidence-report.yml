@@ -111,11 +111,11 @@ jobs:
                   value = row.get(phase) or {}
                   safe_row[phase] = {key: value.get(key) for key in (
                       'status', 'score', 'streamsPlayable', 'streamsReturned', 'identityContradictions',
-                      'providerRequests', 'providerHttpStatuses', 'variantCoverage', 'invocationDiagnostics',
+                      'providerRequests', 'providerHttpStatuses', 'variantCoverage', 'invocationDiagnostics', 'fixtureCoverage',
                   )}
                   safe_row[phase]['networkTrace'] = [
                       {key: event.get(key) for key in (
-                          'stage', 'host', 'method', 'status', 'ok', 'errorCode',
+                          'fixture', 'stage', 'host', 'method', 'status', 'ok', 'errorCode',
                           'announcedPlayerCandidates', 'announcedQualityHeights',
                           'responseStructure', 'providerFunctions',
                       )}

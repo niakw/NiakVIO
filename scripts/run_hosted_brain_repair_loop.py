@@ -26,13 +26,15 @@ def verification_feedback(evaluation: dict) -> dict:
     if not executed:
         return {}
     row = executed[-1]
-    result = {'reason': row.get('reason')}
+    result = {'reason': row.get('reason'), 'executionObserved': True,
+              'materializedMutationObserved': row.get('materializedMutationObserved') is True}
     for phase in ('baseline', 'candidate'):
         value = row.get(phase) or {}
         result[phase] = {key: value.get(key) for key in
-                         ('streamsPlayable', 'streamsReturned', 'identityContradictions')}
+                         ('streamsPlayable', 'streamsReturned', 'identityContradictions', 'fixtureCoverage')}
     result['candidate_network'] = [{
         'host': event.get('host'), 'stage': event.get('stage'), 'status': event.get('status'),
+        'fixture': event.get('fixture'),
         'functions': event.get('providerFunctions', []),
         'response_structure': event.get('responseStructure'),
         'announced_players': event.get('announcedPlayerCandidates', 0),

@@ -1106,8 +1106,9 @@ function fixturesForCandidate(candidate) {
   const groups = profile.fixtureGroups;
   let fixtures;
   if (requestedMode === 'deep' && modeConfig.fixture_limit_per_category === true) {
+    const perCategory = Math.max(1, Math.min(4, Number(modeConfig.primary_fixture_limit_per_category || 1)));
     fixtures = profile.requiredCategories
-      .map((category) => (groups[category] || [])[0])
+      .flatMap((category) => (groups[category] || []).slice(0, perCategory))
       .filter(Boolean);
   } else {
     fixtures = rotateSlice(profile.pool, start, limit);

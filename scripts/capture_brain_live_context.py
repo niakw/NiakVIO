@@ -21,7 +21,8 @@ def main():
     verifier.stage_provider(verifier.ROOT, args.provider, root / 'stage', targets)
     health = verifier.health_provider(root / 'stage', root / 'health')
     result = verifier.provider_result(health, args.provider)
-    events = [event for test in result.get('tests', []) for event in test.get('network_observations', [])
+    events = [{**event, 'fixture_label': (test.get('fixture') or {}).get('label')}
+              for test in result.get('tests', []) for event in test.get('network_observations', [])
               if isinstance(event, dict) and not event.get('infrastructure')]
     events.sort(key=lambda row: (int(row.get('declared_player_candidate_count') or 0) > 0,
                                  str(row.get('stage')) in {'episode', 'player', 'source', 'media'}), reverse=True)
@@ -34,7 +35,9 @@ def main():
         'provider': args.provider,
         'sourceSha': subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True, cwd=verifier.ROOT).strip(),
         'active_functions': names[:6],
+        'fixture_evidence': verifier.fixture_summary(result),
         'network_evidence': [{
+            'fixture': event.get('fixture_label'),
             'stage': event.get('stage'), 'host': event.get('host'),
             'status': event.get('status'), 'functions': event.get('provider_function_names', [])[:8],
             'response_structure': event.get('response_structure'),

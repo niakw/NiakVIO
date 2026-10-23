@@ -143,9 +143,12 @@ def run_health(
     output_dir: Path,
     mode: str,
     health_check: Path = HEALTH_CHECK,
+    health_config: Path | None = None,
 ) -> dict[str, Any]:
     output_dir.mkdir(parents=True, exist_ok=True)
     env = os.environ.copy()
+    if health_config is not None:
+        env['NUVIO_HEALTH_CONFIG'] = str(health_config.resolve())
     # Deep validation is network-bound. Six workers materially reduce wall time
     # while remaining bounded; callers can lower/raise it explicitly (health
     # check itself clamps the value to 1..8). Quick/availability modes are not

@@ -278,6 +278,16 @@ def evaluate_variant_coverage_pair(
     return True, "variant_coverage_improvement:" + ",".join(gains)
 
 
+def fixture_summary(result: dict[str, Any]) -> list[dict[str, Any]]:
+    return [{
+        'fixture': str((test.get('fixture') or {}).get('label') or '')[:120],
+        'category': str((test.get('fixture') or {}).get('category') or '')[:24],
+        'status': str(test.get('status') or '')[:64],
+        'streamsPlayable': int(test.get('streams_playable') or 0),
+        'streamsReturned': int(test.get('streams_returned') or 0),
+    } for test in (result.get('tests') or [])[:12] if isinstance(test, dict)]
+
+
 def result_summary(result: dict[str, Any]) -> dict[str, Any]:
     evidence = result.get("evidence") if isinstance(result.get("evidence"), dict) else {}
     return {
@@ -285,6 +295,7 @@ def result_summary(result: dict[str, Any]) -> dict[str, Any]:
         "score": int(result.get("score") or 0),
         "streamsPlayable": runtime_repair.playable_stream_count(result),
         "streamsReturned": runtime_repair.stream_count(result),
+        "fixtureCoverage": fixture_summary(result),
         "identityContradictions": runtime_repair.identity_contradiction_count(result),
         "providerRequests": int(evidence.get("provider_request_count"))
         if evidence.get("provider_request_count") is not None else sum(
@@ -347,12 +358,23 @@ def stage_provider(repo_root: Path, provider: str, stage: Path, targets: Path) -
 
 
 def health_provider(stage: Path, output: Path) -> dict[str, Any]:
+    # Activation stops after its first healthy HD example. A repair comparison
+    # must observe more than that first success and probe the bounded stream set.
+    output.mkdir(parents=True, exist_ok=True)
+    config = load(ROOT / 'health-config.json')
+    config['modes']['deep'].update({
+        'primary_fixture_limit_per_category': 2,
+        'probe_streams_adaptively': False,
+    })
+    config_path = output / 'comparison-health-config.json'
+    config_path.write_text(json.dumps(config, indent=2) + '\n')
     return deep.run_health(
         stage=stage,
         registry_path=stage / "candidates.json",
         output_dir=output,
         mode="deep",
         health_check=ROOT / "scripts" / "health_check.mjs",
+        health_config=config_path,
     )
 
 
