@@ -1,0 +1,114 @@
+{
+  "brainLlmSha": "d8ec92e77443b581f8ee2e0f6a42037322087cb7",
+  "minConfidence": 0.8,
+  "privateContentRetained": false,
+  "proofAuthority": false,
+  "providerCount": 1,
+  "providerMutationContentRetained": true,
+  "publicationAuthority": false,
+  "rows": [
+    {
+      "candidateOrdinal": 1,
+      "confidence": 0.96,
+      "failureClass": "chain-terminal-gap",
+      "mechanismFamily": "wordpress-search-episode",
+      "mutationContextFingerprint": "7338e5b91624899c82233beb8255b3d914c644d1d599ec762ae29a2c171d2493",
+      "mutationFingerprint": "5440238414462466c0ba4e09031991f3b0be84b9f061309eea850f25669c2de2",
+      "mutations": [
+        {
+          "family": "wordpress_search_episode",
+          "find": "try{if(typeof console!==\"undefined\"&&__nuvioProviderSilentLog)__nuvioProviderSilentLog(\"FIELD_ANIMEVOSTFR_SEARCH_TITLES \"+JSON.stringify({preferred:q.fixtureTitle||\"\",titles:tt.slice(0,6)}))}catch(_e){}var anime=await findAnime(tt,q);if(!anime)return[];var episode=await findEpisode(anime,q);if(!episode)return[];var ep=await text(episode,{referer:anime.url});if(!ep)return[];var players=playerRows(ep.text,ep.url),out=[],seen={};for(var i=0;i<players.length&&out.length<c.maxStreams;i++){var ext=await externalPlayer(players[i],ep.url);if(!ext||seen[ext])continue;seen[ext]=1;var lang=langFrom(anime.url+\" \"+anime.label),rows=[];try{if(typeof _crawlDirectMedia===\"function\")rows=await _crawlDirectMedia([ext],players[i],2)}catch(_e){rows=[]}if(!Array.isArray(rows)||!rows.length)continue;for(var j=0;j<rows.length&&out.length<c.maxStreams;j++){var st=Object.assign({},rows[j]);if(!st.url)continue;st.name=\"AnimeVOSTFR | \"+lang;st.title=(st.title||\"AnimeVOSTFR\")+\" | S\"+q.season+\"E\"+q.episode+\" | \"+lang;st.language=lang;st.provider=\"animevostfr\";st.headers=Object.assign({\"Referer\"",
+          "operation": "upsert",
+          "replace": "var anime=await findAnime(tt,q);if(!anime)return[];var episode=await findEpisode(anime,q);if(!episode)return[];var ep=await text(episode,{referer:anime.url});if(!ep)return[];var players=playerRows(ep.text,ep.url),out=[],seen={},media={};for(var i=0;i<players.length;i++){var ext=await externalPlayer(players[i],ep.url);if(!ext||seen[ext])continue;seen[ext]=1;var lang=langFrom(anime.url+\" \"+anime.label),rows=[];try{if(typeof _crawlDirectMedia===\"function\")rows=await _crawlDirectMedia([ext],players[i],2)}catch(_e){}if(!Array.isArray(rows))continue;for(var j=0;j<rows.length;j++){var st=Object.assign({},rows[j]);if(!st.url||media[st.url])continue;media[st.url]=1;st.name=\"AnimeVOSTFR | \"+lang;st.title=(st.title||\"AnimeVOSTFR\")+\" | S\"+q.season+\"E\"+q.episode+\" | \"+lang;st.language=lang;st.provider=\"animevostfr\";st.headers=Object.assign({Referer",
+          "scope": "provider_bloc"
+        }
+      ],
+      "providerId": "animevostfr",
+      "repairFamily": {
+        "archetype": "variant-coverage-gap:dom-selector-container",
+        "failure": "variant-coverage-gap",
+        "key": "276ef77a18135059b8b319827cd9910800d8c9f2c1016c6b2c481933b65d9f1c",
+        "mediaTypes": [
+          "anime"
+        ],
+        "mutationSurfaces": [
+          "provider-bloc",
+          "provider-data",
+          "provider-js",
+          "provider-patch"
+        ],
+        "signals": [
+          "mixed-tag-nested-container",
+          "nested-anchor-html",
+          "provider-http-2xx",
+          "response-html",
+          "response-json"
+        ],
+        "stages": [
+          "provider-network-zero-result"
+        ],
+        "status": "candidate-ok",
+        "version": 2
+      },
+      "strategy": "terminal-media-extractor-with-playback-validation",
+      "targetLayer": "provider",
+      "tests": [
+        "replay_proven_chain_to_terminal_media",
+        "validate_media_signature_duration_and_identity"
+      ]
+    },
+    {
+      "candidateOrdinal": 1,
+      "confidence": 0.96,
+      "failureClass": "chain-terminal-gap",
+      "mechanismFamily": "wordpress-search-episode",
+      "mutationContextFingerprint": "7338e5b91624899c82233beb8255b3d914c644d1d599ec762ae29a2c171d2493",
+      "mutationFingerprint": "b03d833c98bce09f450d74d48d998b28c1ec9330c00fea666e4d121fcbcf860a",
+      "mutations": [
+        {
+          "family": "wordpress_search_episode",
+          "find": " const source = _text(text).slice(0, 524288); const out = []; /* NIAKVIO_PROVIDER_EXPLICIT_PLAYER_PAYLOAD_V24_2 */ const re = /(?:showVideo|loadVideo|setVideo|playVideo)\\s*\\(\\s*[\"']([A-Za-z0-9+/_=-]{12,4096})[\"']\\s*(?:,\\s*[\"']?\\d{1,4}[\"']?)?\\s*\\)/gi; let match, scanned = 0; while ((match = re.exec(source)) !== null && scanned++ < 24) { let encoded = _text(match[1]).replace(/-/g, \"+\").replace(/_/g, \"/\"); while (encoded.length % 4) encoded += \"=\"; let decoded = \"\"; try { decoded = atob(encoded); } catch (_) { continue; } if (!decoded || decoded.length > 16384) continue; const direct = _absolute(decoded.trim(), base); if (/^https?:\\/\\//i.test(direct)) out.push(direct); out.push(..._extractUrls(decoded, base)); if (out.length >= 48) break; } return _uniq(out).slice(0, 48); ",
+          "operation": "upsert",
+          "replace": "const source = _text(text).slice(0, 524288); const out = []; const re = /(?:showVideo|loadVideo|setVideo|playVideo)\\s*\\(\\s*[\"']([A-Za-z0-9+/_=-]{12,4096})[\"']\\s*(?:,\\s*[\"']?\\d{1,4}[\"']?)?\\s*\\)/gi; let match; while ((match = re.exec(source)) !== null) { let encoded = _text(match[1]).replace(/-/g, \"+\").replace(/_/g, \"/\"); while (encoded.length % 4) encoded += \"=\"; let decoded = \"\"; try { decoded = atob(encoded); } catch (_) { continue; } if (!decoded || decoded.length > 16384) continue; const direct = _absolute(decoded.trim(), base); if (/^https?:\\/\\//i.test(direct)) out.push(direct); out.push(..._extractUrls(decoded, base)); } return _uniq(out);",
+          "scope": "provider_bloc"
+        }
+      ],
+      "providerId": "animevostfr",
+      "repairFamily": {
+        "archetype": "variant-coverage-gap:dom-selector-container",
+        "failure": "variant-coverage-gap",
+        "key": "276ef77a18135059b8b319827cd9910800d8c9f2c1016c6b2c481933b65d9f1c",
+        "mediaTypes": [
+          "anime"
+        ],
+        "mutationSurfaces": [
+          "provider-bloc",
+          "provider-data",
+          "provider-js",
+          "provider-patch"
+        ],
+        "signals": [
+          "mixed-tag-nested-container",
+          "nested-anchor-html",
+          "provider-http-2xx",
+          "response-html",
+          "response-json"
+        ],
+        "stages": [
+          "provider-network-zero-result"
+        ],
+        "status": "candidate-ok",
+        "version": 2
+      },
+      "strategy": "terminal-media-extractor-with-playback-validation",
+      "targetLayer": "provider",
+      "tests": [
+        "replay_proven_chain_to_terminal_media",
+        "validate_media_signature_duration_and_identity"
+      ]
+    }
+  ],
+  "sandboxMutationAuthority": true,
+  "schemaVersion": 1,
+  "sourceNiakvioSha": "17bc1459355c51e65cbf29ccb07666582a90ded0"
+}
