@@ -31,6 +31,17 @@ avec leurs compteurs, mais marqués `executionObserved=false`. Ils ne bloquent p
 une tentative et ne fournissent plus de prior positif. Les trois autres verdicts
 historiques sont préservés. Les reçus et évaluations originaux restent consultables.
 
+Le [premier essai après correctif](https://github.com/niakw/NiakVIO/actions/runs/40033310896)
+confirme `materializedMutationObserved=true` et `executionObserved=true`, avec
+des empreintes distinctes du bundle de référence et du candidat. Cette proposition
+ne gagne aucun flux lisible : un avant, un après, acceptation refusée. Le verdict
+est maintenant un véritable contre-exemple conservé automatiquement dans `main`.
+
+Le filtre de capacités confondait aussi `function (…)` et `Function(…)`, car sa
+comparaison ignorait la casse. Les callbacks JavaScript ordinaires sont désormais
+admis ; `Function`, `eval`, `process` et les autres capacités interdites restent
+rejetés dans le Brain et dans le récepteur NiakVIO.
+
 ## Boucle hosted et mémoire durable
 
 Dans GitHub Actions du dépôt NiakVIO, lancer
@@ -64,7 +75,7 @@ supplémentaire n'est demandé.
 - Blocage des mutations réellement rejetées dans le même contexte de source.
 - Revalidation des anciennes recettes positives et conservation de leur requête terminale.
 - Priorité au parcours terminal réellement exécuté dans le choix des fonctions éditables.
-- 305 tests Brain et audit de confidentialité réussis.
+- 306 tests Brain et audit de confidentialité réussis.
 - Régressions NiakVIO : dispatch v3 réel, ancre durcie, propriété native,
   reconstruction successive, fichier stagé inchangé, spécification absente,
   mémoire historique non prouvée, feedback borné et isolation des secrets.

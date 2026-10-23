@@ -65,7 +65,7 @@ PLACEHOLDER_MARKERS = (
 )
 BLOC_FAMILY = re.compile(r"^[a-z][a-z0-9_]{2,48}$")
 DANGEROUS_RUNTIME_TOKEN = re.compile(
-    r"(?i)(?:\beval\s*\(|\bFunction\s*\(|\bprocess\.|\brequire\s*\(|"
+    r"(?:\beval\s*\(|\bFunction\s*\(|\bprocess\.|\brequire\s*\(|"
     r"\bchild_process\b|\bDeno\.|\bBun\.|\bimport\s*\()"
 )
 MANAGED_MARKERS = ("/* STARTFIX:", "/* CLOSEFIX:", "/* FIXDATA:")

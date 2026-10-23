@@ -206,6 +206,15 @@ with tempfile.TemporaryDirectory() as tmp:
     assert find == "return oldResolver();"
     assert replace == long_replace
     assert len(replace) > 1200 and len(replace) <= 1800
+    safe_callback = {**long_mutation, 'replace': 'return rows.map(function(row){return row.url;});'}
+    mod._validate_generated_bloc_mutation('demo', safe_callback)
+    for expression in ('Function("return 1")()', 'new Function("return 1")()', 'eval(script)', 'process.env'):
+        try:
+            mod._validate_generated_bloc_mutation('demo', {**safe_callback, 'replace': 'return ' + expression + ';'})
+        except ValueError as exc:
+            assert 'forbidden runtime capability' in str(exc), exc
+        else:
+            raise AssertionError('dynamic runtime capability admitted: ' + expression)
 
     long_find = 'function resolve(page){const marker="' + ("a" * 900) + '";return page.url;}'
     long_find_replace = 'function resolve(page){const marker="' + ("b" * 900) + '";return page.finalUrl||page.url;}'
