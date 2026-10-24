@@ -1722,7 +1722,7 @@
     "animesama-co": {
       "domainMemory": true,
       "evidenceDepth": [
-        "anime=lookup_only"
+        "anime=none"
       ],
       "hasApiRecipe": false,
       "hasProviderValuePlan": false,
@@ -8149,8 +8149,8 @@
     "requiresDeepValidation": true
   },
   "schemaVersion": 2,
-  "sourceRunId": "40062693166",
-  "sourceSha": "91701484f58b50c798bfaa78f9703d3d6e5baf23",
+  "sourceRunId": "40064743076",
+  "sourceSha": "c5e936957b48f882e94c8547cb5c52005d062b87",
   "strategyPatterns": {
     "api_stream_resolver": {
       "commonRequestRecipes": [],
@@ -8162,17 +8162,17 @@
       "routeFamilies": [
         {
           "providerSupport": 1,
+          "role": "search",
+          "supportRatio": 1.0
+        },
+        {
+          "providerSupport": 1,
           "role": "detail",
           "supportRatio": 1.0
         },
         {
           "providerSupport": 1,
           "role": "other",
-          "supportRatio": 1.0
-        },
-        {
-          "providerSupport": 1,
-          "role": "search",
           "supportRatio": 1.0
         }
       ]
@@ -8217,12 +8217,12 @@
         },
         {
           "providerSupport": 1,
-          "role": "other",
+          "role": "player",
           "supportRatio": 0.25
         },
         {
           "providerSupport": 1,
-          "role": "player",
+          "role": "other",
           "supportRatio": 0.25
         }
       ]
@@ -8468,12 +8468,12 @@
         },
         {
           "providerSupport": 1,
-          "role": "episode",
+          "role": "search",
           "supportRatio": 1.0
         },
         {
           "providerSupport": 1,
-          "role": "search",
+          "role": "episode",
           "supportRatio": 1.0
         }
       ]
