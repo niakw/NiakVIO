@@ -1722,7 +1722,7 @@
     "animesama-co": {
       "domainMemory": true,
       "evidenceDepth": [
-        "anime=none"
+        "anime=lookup_only"
       ],
       "hasApiRecipe": false,
       "hasProviderValuePlan": false,
@@ -8149,8 +8149,8 @@
     "requiresDeepValidation": true
   },
   "schemaVersion": 2,
-  "sourceRunId": "40068115029",
-  "sourceSha": "7999a0c4af8ad20f8ea06ad52d2269be2ec97eb6",
+  "sourceRunId": "40070085180",
+  "sourceSha": "1ab9eb8669e787ab9a4e6097d914cb8cf9931e03",
   "strategyPatterns": {
     "api_stream_resolver": {
       "commonRequestRecipes": [],
@@ -8162,12 +8162,12 @@
       "routeFamilies": [
         {
           "providerSupport": 1,
-          "role": "search",
+          "role": "detail",
           "supportRatio": 1.0
         },
         {
           "providerSupport": 1,
-          "role": "detail",
+          "role": "search",
           "supportRatio": 1.0
         },
         {
@@ -8217,12 +8217,12 @@
         },
         {
           "providerSupport": 1,
-          "role": "other",
+          "role": "player",
           "supportRatio": 0.25
         },
         {
           "providerSupport": 1,
-          "role": "player",
+          "role": "other",
           "supportRatio": 0.25
         }
       ]
@@ -8255,12 +8255,12 @@
       "routeFamilies": [
         {
           "providerSupport": 5,
-          "role": "episode",
+          "role": "api",
           "supportRatio": 0.8333
         },
         {
           "providerSupport": 5,
-          "role": "api",
+          "role": "episode",
           "supportRatio": 0.8333
         },
         {
@@ -8423,12 +8423,12 @@
         },
         {
           "providerSupport": 10,
-          "role": "episode",
+          "role": "api",
           "supportRatio": 0.7692
         },
         {
           "providerSupport": 10,
-          "role": "api",
+          "role": "episode",
           "supportRatio": 0.7692
         },
         {
@@ -8463,17 +8463,17 @@
       "routeFamilies": [
         {
           "providerSupport": 1,
+          "role": "api",
+          "supportRatio": 1.0
+        },
+        {
+          "providerSupport": 1,
           "role": "episode",
           "supportRatio": 1.0
         },
         {
           "providerSupport": 1,
           "role": "search",
-          "supportRatio": 1.0
-        },
-        {
-          "providerSupport": 1,
-          "role": "api",
           "supportRatio": 1.0
         }
       ]
