@@ -626,3 +626,112 @@ assert refreshed["authorityBlockedQueue"] == ["showbox-like"], refreshed
 assert refreshed["repairQueue"] == [], refreshed
 
 print("WAF census transport-only merge contract passed")
+
+
+# Retained residential replays are diagnostic priors, not same-byte proof.
+# A WAF seed refresh does not imply a provider runtime replay. This previously
+# re-promoted Vostfree-like rows to FULL OK after a Tailscale-offline attempt.
+stale_replay_baseline = {
+    "runId": "fresh-census",
+    "triggerSha": "fresh-sha",
+    "repairQueue": ["stale"],
+    "environmentQueue": [],
+    "harnessQueue": [],
+    "symptomaticProviders": ["stale"],
+    "brainQueue": ["stale"],
+    "providers": [{
+        "provider": "stale",
+        "status": "ROUTE PROVEN",
+        "color": "🟪",
+        "declaredLanes": ["anime"],
+        "currentVerifiedLanes": [],
+        "repairEligible": True,
+        "brainCheckRequired": True,
+        "authorityRepairEligible": True,
+    }],
+}
+stale_replay_waf = {
+    "rows": [],
+    "residentialProviderReplay": {
+        "available": True,  # retained historical availability, not this attempt
+        "rows": [{
+            "provider": "stale", "lane": "anime",
+            "status": "playable_verified", "raw": 1, "playable": 1,
+            "verified": 1, "contradictions": 0, "identitySafe": True,
+        }],
+        "lastAttempt": {
+            "available": False,
+            "providerCount": 0,
+            "refreshedProviders": ["stale"],
+            "replayedProviders": [],
+        },
+    },
+}
+stale_result = mod.merge_transport(stale_replay_baseline, stale_replay_waf)
+assert stale_result["providers"][0]["status"] == "ROUTE PROVEN", stale_result
+assert stale_result["providers"][0]["repairEligible"] is True, stale_result
+assert stale_result["residentialProviderReplayPromotedProviders"] == [], stale_result
+assert stale_result["repairQueue"] == ["stale"], stale_result
+
+# Even when a residential attempt is available, it may replay only a subset
+# of the WAF-refreshed cohort. Old rows for other providers must not promote.
+partial_fresh_baseline = copy.deepcopy(stale_replay_baseline)
+partial_fresh_baseline["providers"].append({
+    **copy.deepcopy(partial_fresh_baseline["providers"][0]),
+    "provider": "fresh",
+})
+partial_fresh_baseline["repairQueue"] = ["fresh", "stale"]
+partial_fresh_baseline["symptomaticProviders"] = ["fresh", "stale"]
+partial_fresh_baseline["brainQueue"] = ["fresh", "stale"]
+partial_fresh_waf = copy.deepcopy(stale_replay_waf)
+partial_fresh_waf["residentialProviderReplay"]["rows"].append({
+    **copy.deepcopy(partial_fresh_waf["residentialProviderReplay"]["rows"][0]),
+    "provider": "fresh",
+})
+partial_fresh_waf["residentialProviderReplay"]["lastAttempt"] = {
+    "available": True,
+    "providerCount": 1,
+    "refreshedProviders": ["fresh", "stale"],
+    "replayedProviders": ["fresh"],
+}
+partial_fresh_result = mod.merge_transport(partial_fresh_baseline, partial_fresh_waf)
+partial_fresh_rows = {row["provider"]: row for row in partial_fresh_result["providers"]}
+assert partial_fresh_rows["fresh"]["status"] == "FULL OK", partial_fresh_result
+assert partial_fresh_rows["stale"]["status"] == "ROUTE PROVEN", partial_fresh_result
+assert partial_fresh_result["residentialProviderReplayPromotedProviders"] == ["fresh"]
+assert partial_fresh_result["repairQueue"] == ["stale"], partial_fresh_result
+
+# The durable WAF ledger must record actual replay providers independently of
+# the broader seed refresh, including on an unavailable/offline attempt.
+LATEST_SCRIPT = ROOT / "scripts" / "merge_waf_latest_evidence.py"
+latest_spec = importlib.util.spec_from_file_location("merge_waf_latest_evidence", LATEST_SCRIPT)
+assert latest_spec and latest_spec.loader
+latest_mod = importlib.util.module_from_spec(latest_spec)
+latest_spec.loader.exec_module(latest_mod)
+historical = {
+    "rows": [{"provider": "stale", "lane": "anime", "seedKind": "waf"}],
+    "residentialProviderReplay": stale_replay_waf["residentialProviderReplay"],
+}
+current = {
+    "rows": [
+        {"provider": "stale", "lane": "anime", "seedKind": "waf"},
+        {"provider": "fresh", "lane": "anime", "seedKind": "waf"},
+    ],
+    "residentialProviderReplay": {
+        "available": True,
+        "rows": [partial_fresh_waf["residentialProviderReplay"]["rows"][1]],
+    },
+}
+merged_latest = latest_mod.merge(historical, current)
+last_attempt = merged_latest["residentialProviderReplay"]["lastAttempt"]
+assert last_attempt["refreshedProviders"] == ["fresh", "stale"], last_attempt
+assert last_attempt["replayedProviders"] == ["fresh"], last_attempt
+assert merged_latest["residentialProviderReplay"]["providerCount"] == 2
+offline_latest = latest_mod.merge(merged_latest, {
+    "rows": [{"provider": "stale", "lane": "anime", "seedKind": "waf"}],
+    "residentialProviderReplay": {"available": False, "rows": []},
+})
+assert offline_latest["residentialProviderReplay"]["lastAttempt"]["replayedProviders"] == []
+assert offline_latest["residentialProviderReplay"]["lastAttempt"]["available"] is False
+assert offline_latest["residentialProviderReplay"]["providerCount"] == 2
+assert mod.merge_transport(stale_replay_baseline, offline_latest)["repairQueue"] == ["stale"]
