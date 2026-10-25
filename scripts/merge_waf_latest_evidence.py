@@ -126,10 +126,14 @@ def _rebuild_replay(
     })
 
     if isinstance(cur, dict):
+        # A merged diagnostic ledger retains older replay rows by design.
+        # Preserve which providers were ACTUALLY replayed in this attempt:
+        # WAF seed refresh is not proof of a fresh provider runtime replay.
         base["lastAttempt"] = {
             "available": cur.get("available") is True,
             "providerCount": len(cur_providers),
             "refreshedProviders": sorted(refreshed),
+            "replayedProviders": sorted(cur_providers) if cur.get("available") is True else [],
         }
     return base
 
