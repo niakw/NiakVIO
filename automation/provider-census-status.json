@@ -1,7 +1,7 @@
 {
   "schemaVersion": 3,
-  "runId": "40214362525",
-  "triggerSha": "91d16dbca2ed799f61a1bb33272be1fb032b71cb",
+  "runId": "40217268263",
+  "triggerSha": "d5066f1549f4ffe9656646a4cb5e50cf565259f2",
   "providers": [
     {
       "provider": "4khdhub",
@@ -66,7 +66,7 @@
       ],
       "dominantIssue": "provider_network_zero_result",
       "searchProgress": [
-        "anime: 4 works tested / 45 retained misses / 3 retained chain hits"
+        "anime: 4 works tested / 44 retained misses / 4 retained chain hits"
       ],
       "evidenceDepth": [
         "anime=chain_reached"
@@ -150,7 +150,7 @@
       ],
       "dominantIssue": "timeout",
       "searchProgress": [
-        "anime: 2 works tested / 0 retained misses"
+        "anime: 3 works tested / 0 retained misses"
       ],
       "evidenceDepth": [
         "anime=none"
@@ -481,10 +481,10 @@
         "3 live routes / movie, tv"
       ],
       "latestLaneVerdicts": [
-        "movie=timeout",
+        "movie=no_streams/provider_network_exception",
         "tv=no_streams/provider_network_exception"
       ],
-      "dominantIssue": "timeout, provider_network_exception",
+      "dominantIssue": "provider_network_exception×2",
       "searchProgress": [
         "movie: 8 works tested / 28 retained misses",
         "tv: 8 works tested / 32 retained misses"
@@ -525,13 +525,13 @@
         "76 live routes / movie, tv"
       ],
       "latestLaneVerdicts": [
-        "movie=no_streams/provider_waf_challenge",
-        "tv=no_streams/provider_waf_challenge"
+        "movie=timeout",
+        "tv=timeout"
       ],
-      "dominantIssue": "provider_waf_challenge×2",
+      "dominantIssue": "timeout×2",
       "searchProgress": [
-        "movie: 8 works tested / 24 retained misses",
-        "tv: 8 works tested / 20 retained misses"
+        "movie: 7 works tested / 24 retained misses",
+        "tv: 7 works tested / 20 retained misses"
       ],
       "evidenceDepth": [
         "movie=lookup_only",
@@ -2180,8 +2180,8 @@
   "harnessQueue": [],
   "targetedTransportBlockedQueue": [],
   "clientTransportGapQueue": [],
-  "harnessEvidenceRunId": "40214362525-sharded-waf",
-  "harnessEvidenceSha": "91d16dbca2ed799f61a1bb33272be1fb032b71cb",
+  "harnessEvidenceRunId": "40217268263-sharded-waf",
+  "harnessEvidenceSha": "d5066f1549f4ffe9656646a4cb5e50cf565259f2",
   "authorityRefreshedProviders": [],
   "harnessTransportUpdatedProviders": [],
   "networkDifferentialUpdatedProviders": [],
@@ -2587,48 +2587,9 @@
         "allwish",
         "animesalt",
         "flemmix",
-        "moviesmod",
         "vostfree"
       ],
       "replayedProviders": []
     }
-  },
-  "lastRepairAttempt": {
-    "runId": "40214944748",
-    "sourceCensusRunId": "40214362525",
-    "selectedProviders": [
-      "4khdhub",
-      "allanime",
-      "animesalt",
-      "animesultra",
-      "animevost-fr",
-      "flemmix",
-      "mallumv",
-      "moviebox",
-      "moviesmod",
-      "vidfast",
-      "vostfree",
-      "yflix"
-    ],
-    "candidateProviders": [],
-    "validatedProviders": [],
-    "acceptedRepairCount": 0,
-    "deferredToLearningSlotProviders": [
-      "4khdhub",
-      "allanime",
-      "animesalt",
-      "animesultra",
-      "animevost-fr",
-      "flemmix",
-      "mallumv",
-      "moviebox",
-      "moviesmod",
-      "vidfast",
-      "vostfree",
-      "yflix"
-    ],
-    "noProgressReason": "experiment_variants_exhausted",
-    "timeBudgetExhausted": false,
-    "publicationAllowed": false
   }
 }
