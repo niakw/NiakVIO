@@ -21,14 +21,14 @@
     "yflix"
   ],
   "effectiveWaves": 1,
-  "elapsedSeconds": 725.125,
+  "elapsedSeconds": 166.752,
   "executionModel": "family-batched-multi-wave-brain-repair",
   "experienceMemory": {
     "operationalProviderCount": 24,
     "providerCount": 46,
     "schemaVersion": 2,
-    "sourceRunId": "40170852704",
-    "sourceSha": "c374cd481d9c022e851fb31a86d7dd482848cebc",
+    "sourceRunId": "40172612063",
+    "sourceSha": "fb8cf326cfc8d0efa46468e0d4cbe0baf15ce9e2",
     "strategyCount": 5
   },
   "fixedInLabProviders": [],
@@ -113,7 +113,7 @@
   "shardCount": 1,
   "shardIndex": 0,
   "skippedEnvironmentProviders": [],
-  "sourceCensusRunId": "40170852704",
+  "sourceCensusRunId": "40172612063",
   "timeBudgetExhausted": false,
   "timeBudgetSeconds": 1200,
   "unvisitedProviders": [],
@@ -639,38 +639,19 @@
                 "targetCategories": []
               },
               "published:moviesmod": {
-                "action": "probe-targeted-repair",
-                "allowedProfiles": [
-                  "adaptive_runtime_recovery"
-                ],
-                "baseExperimentExhausted": false,
-                "exitReason": null,
-                "experimentExhausted": false,
-                "experimentGeneration": 1,
-                "experimentVariant": 2,
+                "action": "collect-more-evidence",
+                "allowedProfiles": [],
+                "baseExperimentExhausted": true,
+                "exitReason": "learning_generations_exhausted",
+                "experimentExhausted": true,
+                "experimentGeneration": 2,
+                "experimentVariant": 4,
                 "experimentVariantCount": 5,
                 "explorationChainEnabled": true,
                 "explorationModeEnabled": true,
-                "failureClass": "search_gap",
-                "hypotheses": [
-                  {
-                    "confidence": 0,
-                    "id": "rediscover-search-route",
-                    "learned": false,
-                    "maturity": null,
-                    "profile": null,
-                    "transferScore": 0
-                  },
-                  {
-                    "confidence": 0,
-                    "id": "repair-search-parser",
-                    "learned": false,
-                    "maturity": null,
-                    "profile": null,
-                    "transferScore": 0
-                  }
-                ],
-                "learningDisposition": "core_repair_only",
+                "failureClass": "transport_blocked",
+                "hypotheses": [],
+                "learningDisposition": "propose_new_or_evolved_core_type",
                 "llmAdvisorApplied": false,
                 "llmAdvisorConfidence": 0,
                 "llmAdvisorExperiment": {},
@@ -683,18 +664,14 @@
                 "llmAdvisorSourceFailureClass": "",
                 "llmAdvisorStrategy": "",
                 "metaGapEscalated": false,
-                "negativeMemoryMatches": 2,
+                "negativeMemoryMatches": 118,
                 "positiveProgramFingerprint": "",
                 "postExhaustionCandidateProfiles": [
-                  "html_class_token_exact_v1",
-                  "route_transition_graph_v2",
-                  "search_contract_inference_v1",
-                  "search_response_route_binding_v1",
-                  "identity_alias_search_traversal_v1",
-                  "runtime_response_salvage_v1",
-                  "document_request_contract_mining_v1",
                   "transport_request_differential_v1",
                   "provider_session_bootstrap_replay_v1",
+                  "runtime_response_salvage_v1",
+                  "html_class_token_exact_v1",
+                  "route_transition_graph_v2",
                   "route_transition_graph_v3",
                   "route_transition_graph_v4",
                   "route_transition_graph_v5",
@@ -709,7 +686,11 @@
                   "route_transition_graph_v14",
                   "route_transition_graph_v15",
                   "route_transition_graph_v16",
-                  "route_transition_graph_v17"
+                  "route_transition_graph_v17",
+                  "route_transition_graph_v18",
+                  "route_transition_graph_v19",
+                  "route_transition_graph_v20",
+                  "route_transition_graph_v21"
                 ],
                 "postExhaustionSourceFailureClass": "",
                 "postExhaustionStrategyMethod": "",
@@ -717,9 +698,9 @@
                 "providerId": "moviesmod",
                 "providerPositiveProgramProductionRescue": false,
                 "providerPositiveProgramReplay": false,
-                "repairScope": "capability",
-                "repairType": "catalogue_search_resolution",
-                "signature": "a5acf1ae6fc3078e15bcfc89",
+                "repairScope": "learning",
+                "repairType": "architecture_gap",
+                "signature": "407798151f15452ec1ccd098",
                 "strategyEscalated": false,
                 "targetCategories": []
               },
@@ -798,7 +779,7 @@
                 "exitReason": null,
                 "experimentExhausted": false,
                 "experimentGeneration": 1,
-                "experimentVariant": 0,
+                "experimentVariant": 1,
                 "experimentVariantCount": 5,
                 "explorationChainEnabled": true,
                 "explorationModeEnabled": true,
@@ -834,7 +815,7 @@
                 "llmAdvisorSourceFailureClass": "",
                 "llmAdvisorStrategy": "",
                 "metaGapEscalated": false,
-                "negativeMemoryMatches": 0,
+                "negativeMemoryMatches": 1,
                 "positiveProgramFingerprint": "",
                 "postExhaustionCandidateProfiles": [
                   "transport_request_differential_v1",
@@ -950,6 +931,7 @@
               "flemmix",
               "mallumv",
               "moviebox",
+              "moviesmod",
               "vidfast",
               "yflix"
             ],
@@ -1023,7 +1005,6 @@
           ],
           "fixedInLab": [],
           "genericLearningHandoff": [
-            "moviesmod",
             "vostfree"
           ],
           "groupId": "packed",
