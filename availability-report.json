@@ -1,15 +1,15 @@
 {
   "schema_version": 63,
-  "generated_at": "2026-10-25T13:16:30.785771+00:00",
+  "generated_at": "2026-10-25T19:09:30.238029+00:00",
   "test_environment": "github-actions-node",
   "checked_providers": 41,
   "status_counts": {
-    "healthy": 2,
+    "healthy": 4,
     "reachable": 0,
-    "blocked": 6,
+    "blocked": 5,
     "degraded": 1,
-    "no_streams": 13,
-    "provider_unreachable": 13,
+    "no_streams": 11,
+    "provider_unreachable": 14,
     "runtime_error": 0,
     "unavailable": 6,
     "excluded": 0
@@ -2901,7 +2901,7 @@
     },
     {
       "id": "voiranime",
-      "status": "no_streams",
+      "status": "blocked",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
@@ -3004,7 +3004,7 @@
     },
     {
       "id": "voiranime-homes",
-      "status": "blocked",
+      "status": "no_streams",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
@@ -3092,17 +3092,21 @@
     },
     {
       "id": "wookafr",
-      "status": "no_streams",
+      "status": "healthy",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
-      "consecutive_successes": 0,
-      "hosts": [],
-      "response_categories": [],
+      "consecutive_successes": 1,
+      "hosts": [
+        "wishonly.site"
+      ],
+      "response_categories": [
+        "playable"
+      ],
       "host_health": {
         "lecteurvideo.com": {
-          "last_checked_at": "2026-10-23T20:00:28.899606+00:00",
+          "last_checked_at": "2026-10-25T19:09:30.238029+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -3113,7 +3117,7 @@
           "consecutive_blocked": 0
         },
         "strm6.uqload.vc": {
-          "last_checked_at": "2026-10-23T20:00:28.899606+00:00",
+          "last_checked_at": "2026-10-25T19:09:30.238029+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -3124,18 +3128,7 @@
           "consecutive_blocked": 0
         },
         "strm5.uqload.vc": {
-          "last_checked_at": "2026-10-23T20:00:28.899606+00:00",
-          "last_category": "playable",
-          "reachable": true,
-          "http_status": 200,
-          "latency_ms": 530,
-          "kind": "hls",
-          "consecutive_hard_failures": 0,
-          "consecutive_successes": 1,
-          "consecutive_blocked": 0
-        },
-        "wishonly.site": {
-          "last_checked_at": "2026-10-23T20:00:28.899606+00:00",
+          "last_checked_at": "2026-10-25T19:09:30.238029+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -3145,8 +3138,19 @@
           "consecutive_successes": 0,
           "consecutive_blocked": 0
         },
+        "wishonly.site": {
+          "last_checked_at": "2026-10-25T19:09:30.238029+00:00",
+          "last_category": "playable",
+          "reachable": true,
+          "http_status": 200,
+          "latency_ms": 257,
+          "kind": "hls",
+          "consecutive_hard_failures": 0,
+          "consecutive_successes": 1,
+          "consecutive_blocked": 0
+        },
         "strm4.uqload.vc": {
-          "last_checked_at": "2026-10-23T20:00:28.899606+00:00",
+          "last_checked_at": "2026-10-25T19:09:30.238029+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -3157,7 +3161,7 @@
           "consecutive_blocked": 0
         },
         "strm7.uqload.vc": {
-          "last_checked_at": "2026-10-23T20:00:28.899606+00:00",
+          "last_checked_at": "2026-10-25T19:09:30.238029+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -3168,7 +3172,7 @@
           "consecutive_blocked": 0
         },
         "strm1.uqload.vc": {
-          "last_checked_at": "2026-10-23T20:00:28.899606+00:00",
+          "last_checked_at": "2026-10-25T19:09:30.238029+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -3179,7 +3183,7 @@
           "consecutive_blocked": 0
         },
         "strm8.uqload.vc": {
-          "last_checked_at": "2026-10-23T20:00:28.899606+00:00",
+          "last_checked_at": "2026-10-25T19:09:30.238029+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -3249,7 +3253,7 @@
     },
     {
       "id": "anime-ultime",
-      "status": "blocked",
+      "status": "provider_unreachable",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
@@ -3317,17 +3321,21 @@
     },
     {
       "id": "vidlove",
-      "status": "no_streams",
+      "status": "healthy",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
-      "consecutive_successes": 0,
-      "hosts": [],
-      "response_categories": [],
+      "consecutive_successes": 1,
+      "hosts": [
+        "a2.ravenflix.st"
+      ],
+      "response_categories": [
+        "playable"
+      ],
       "host_health": {
         "ballerinacappuccinalovestungtungtungsahur.com": {
-          "last_checked_at": "2026-10-21T23:29:43.192333+00:00",
+          "last_checked_at": "2026-10-25T19:09:30.238029+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -3338,7 +3346,7 @@
           "consecutive_blocked": 0
         },
         "a2.whysosigmabro.fun": {
-          "last_checked_at": "2026-10-21T23:29:43.192333+00:00",
+          "last_checked_at": "2026-10-25T19:09:30.238029+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -3349,7 +3357,7 @@
           "consecutive_blocked": 0
         },
         "d.whysosigmabro.fun": {
-          "last_checked_at": "2026-10-21T23:29:43.192333+00:00",
+          "last_checked_at": "2026-10-25T19:09:30.238029+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -3360,7 +3368,7 @@
           "consecutive_blocked": 0
         },
         "a2.whysosigmabro.cfd": {
-          "last_checked_at": "2026-10-21T23:29:43.192333+00:00",
+          "last_checked_at": "2026-10-25T19:09:30.238029+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -3371,7 +3379,7 @@
           "consecutive_blocked": 0
         },
         "d.whysosigmabro.cfd": {
-          "last_checked_at": "2026-10-21T23:29:43.192333+00:00",
+          "last_checked_at": "2026-10-25T19:09:30.238029+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -3382,7 +3390,7 @@
           "consecutive_blocked": 0
         },
         "d.phantomflix.net": {
-          "last_checked_at": "2026-10-21T23:29:43.192333+00:00",
+          "last_checked_at": "2026-10-25T19:09:30.238029+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -3393,7 +3401,7 @@
           "consecutive_blocked": 0
         },
         "a2.phantomflix.net": {
-          "last_checked_at": "2026-10-21T23:29:43.192333+00:00",
+          "last_checked_at": "2026-10-25T19:09:30.238029+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -3404,7 +3412,7 @@
           "consecutive_blocked": 0
         },
         "a2.sublime.st": {
-          "last_checked_at": "2026-10-21T23:29:43.192333+00:00",
+          "last_checked_at": "2026-10-25T19:09:30.238029+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -3415,7 +3423,7 @@
           "consecutive_blocked": 0
         },
         "d.ravenflix.st": {
-          "last_checked_at": "2026-10-21T23:29:43.192333+00:00",
+          "last_checked_at": "2026-10-25T19:09:30.238029+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -3426,7 +3434,7 @@
           "consecutive_blocked": 0
         },
         "c.ravenflix.st": {
-          "last_checked_at": "2026-10-21T23:29:43.192333+00:00",
+          "last_checked_at": "2026-10-25T19:09:30.238029+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -3437,14 +3445,14 @@
           "consecutive_blocked": 0
         },
         "a2.ravenflix.st": {
-          "last_checked_at": "2026-10-21T23:29:43.192333+00:00",
+          "last_checked_at": "2026-10-25T19:09:30.238029+00:00",
           "last_category": "playable",
           "reachable": true,
           "http_status": 206,
-          "latency_ms": 1710,
+          "latency_ms": 1298,
           "kind": "mp4",
           "consecutive_hard_failures": 0,
-          "consecutive_successes": 2,
+          "consecutive_successes": 3,
           "consecutive_blocked": 0
         }
       },
