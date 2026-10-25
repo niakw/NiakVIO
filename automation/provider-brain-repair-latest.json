@@ -21,14 +21,14 @@
     "yflix"
   ],
   "effectiveWaves": 1,
-  "elapsedSeconds": 198.121,
+  "elapsedSeconds": 163.087,
   "executionModel": "family-batched-multi-wave-brain-repair",
   "experienceMemory": {
     "operationalProviderCount": 24,
     "providerCount": 46,
     "schemaVersion": 2,
-    "sourceRunId": "40225131931",
-    "sourceSha": "985956b7be7c473d7189a559104a58e5f0eeb1e8",
+    "sourceRunId": "40227634046",
+    "sourceSha": "c4ccb657f503ddae11e80db1b36237dee1776637",
     "strategyCount": 5
   },
   "fixedInLabProviders": [],
@@ -53,7 +53,7 @@
   "labOnlyWithoutCompiledRepairProviders": [],
   "maxRoundsPerBatch": 3,
   "maxWaves": 1,
-  "noProgressReason": "experiment_variants_exhausted",
+  "noProgressReason": "no_new_repair_experiment",
   "positiveProgramRecovery": {
     "durableProviders": [],
     "durableRecordCount": 0,
@@ -113,7 +113,7 @@
   "shardCount": 1,
   "shardIndex": 0,
   "skippedEnvironmentProviders": [],
-  "sourceCensusRunId": "40225131931",
+  "sourceCensusRunId": "40227634046",
   "timeBudgetExhausted": false,
   "timeBudgetSeconds": 1200,
   "unvisitedProviders": [],
@@ -796,7 +796,7 @@
                 "llmAdvisorSourceFailureClass": "",
                 "llmAdvisorStrategy": "",
                 "metaGapEscalated": false,
-                "negativeMemoryMatches": 64,
+                "negativeMemoryMatches": 65,
                 "positiveProgramFingerprint": "",
                 "postExhaustionCandidateProfiles": [
                   "transport_request_differential_v1",
@@ -921,9 +921,7 @@
           },
           "capabilityStrategy": "mixed",
           "crossWaveExplorationCarryoverApplied": [],
-          "crossWaveExplorationCarryoverCaptured": [
-            "vostfree"
-          ],
+          "crossWaveExplorationCarryoverCaptured": [],
           "deferredToLearning": [
             "4khdhub",
             "allanime",
@@ -1028,7 +1026,7 @@
       ],
       "deferredToLearningCount": 12,
       "durableMaterializeTargets": [],
-      "experimentMemoryAdvanced": true,
+      "experimentMemoryAdvanced": false,
       "fixedInLab": [],
       "fixedInLabCount": 0,
       "inputProviderCount": 12,
