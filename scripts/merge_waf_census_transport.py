@@ -380,6 +380,29 @@ def merge_transport(
         replay_provider = str(replay_row.get("provider") or "").strip().casefold()
         if replay_provider:
             replay_by_provider.setdefault(replay_provider, []).append(replay_row)
+
+    # A durable WAF ledger intentionally retains previous residential replays.
+    # Its old rows are useful diagnostic priors, NEVER current-byte proof.
+    # Only this attempt's explicit provider-runtime replays may promote a lane
+    # or transfer a network/harness failure back to the Repair queue.
+    last_attempt = replay_summary.get("lastAttempt")
+    if isinstance(last_attempt, dict):
+        fresh_replay_providers = (
+            {
+                str(value or "").strip().casefold()
+                for value in last_attempt.get("replayedProviders") or []
+                if str(value or "").strip()
+            }
+            if last_attempt.get("available") is True
+            else set()
+        )
+    else:
+        # Direct (unmerged) current-run WAF evidence has no lastAttempt field.
+        fresh_replay_providers = (
+            set(replay_by_provider)
+            if replay_summary.get("available") is True
+            else set()
+        )
     for row in providers:
         if not isinstance(row, dict):
             continue
@@ -389,7 +412,11 @@ def merge_transport(
         # applying the evidence collected now.
         for field in census.TRANSPORT_OVERLAY_ROW_FIELDS:
             row.pop(field, None)
-        provider_replay_rows = replay_by_provider.get(provider) or []
+        provider_replay_rows = (
+            replay_by_provider.get(provider) or []
+            if provider in fresh_replay_providers
+            else []
+        )
         if row.get("authorityRepairEligible") is False and census._lifecycle_disabled(row):
             row["status"] = "DISABLED"
             row["color"] = census.STATUS_META["DISABLED"][0]
