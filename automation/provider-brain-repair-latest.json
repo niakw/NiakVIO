@@ -17,17 +17,18 @@
     "moviebox",
     "moviesmod",
     "vidfast",
+    "vostfree",
     "yflix"
   ],
   "effectiveWaves": 1,
-  "elapsedSeconds": 720.513,
+  "elapsedSeconds": 725.125,
   "executionModel": "family-batched-multi-wave-brain-repair",
   "experienceMemory": {
-    "operationalProviderCount": 25,
+    "operationalProviderCount": 24,
     "providerCount": 46,
     "schemaVersion": 2,
-    "sourceRunId": "40169097107",
-    "sourceSha": "2e5f4b3d486c675b95561cc2f20e733b2b6b0409",
+    "sourceRunId": "40170852704",
+    "sourceSha": "c374cd481d9c022e851fb31a86d7dd482848cebc",
     "strategyCount": 5
   },
   "fixedInLabProviders": [],
@@ -46,6 +47,7 @@
     "moviebox": "ROUTE PROVEN",
     "moviesmod": "ROUTE PROVEN",
     "vidfast": "ROUTE PROVEN",
+    "vostfree": "ROUTE PROVEN",
     "yflix": "ROUTE PROVEN"
   },
   "labOnlyWithoutCompiledRepairProviders": [],
@@ -58,7 +60,7 @@
     "recoveredRecordCount": 0,
     "reportCount": 69
   },
-  "processedProviderCount": 11,
+  "processedProviderCount": 12,
   "processedProviders": [
     "4khdhub",
     "allanime",
@@ -70,6 +72,7 @@
     "moviebox",
     "moviesmod",
     "vidfast",
+    "vostfree",
     "yflix"
   ],
   "providerSpecificRules": false,
@@ -91,7 +94,7 @@
     "wafEnvironmentExcludedByDefault": true
   },
   "schemaVersion": 1,
-  "selectedProviderCount": 11,
+  "selectedProviderCount": 12,
   "selectedProviders": [
     "4khdhub",
     "allanime",
@@ -103,13 +106,14 @@
     "moviebox",
     "moviesmod",
     "vidfast",
+    "vostfree",
     "yflix"
   ],
   "selectionSource": "automation/provider-census-status.json:repairQueue",
   "shardCount": 1,
   "shardIndex": 0,
   "skippedEnvironmentProviders": [],
-  "sourceCensusRunId": "40169097107",
+  "sourceCensusRunId": "40170852704",
   "timeBudgetExhausted": false,
   "timeBudgetSeconds": 1200,
   "unvisitedProviders": [],
@@ -643,7 +647,7 @@
                 "exitReason": null,
                 "experimentExhausted": false,
                 "experimentGeneration": 1,
-                "experimentVariant": 1,
+                "experimentVariant": 2,
                 "experimentVariantCount": 5,
                 "explorationChainEnabled": true,
                 "explorationModeEnabled": true,
@@ -679,7 +683,7 @@
                 "llmAdvisorSourceFailureClass": "",
                 "llmAdvisorStrategy": "",
                 "metaGapEscalated": false,
-                "negativeMemoryMatches": 1,
+                "negativeMemoryMatches": 2,
                 "positiveProgramFingerprint": "",
                 "postExhaustionCandidateProfiles": [
                   "html_class_token_exact_v1",
@@ -785,6 +789,91 @@
                 "strategyEscalated": false,
                 "targetCategories": []
               },
+              "published:vostfree": {
+                "action": "probe-targeted-repair",
+                "allowedProfiles": [
+                  "adaptive_runtime_recovery"
+                ],
+                "baseExperimentExhausted": false,
+                "exitReason": null,
+                "experimentExhausted": false,
+                "experimentGeneration": 1,
+                "experimentVariant": 0,
+                "experimentVariantCount": 5,
+                "explorationChainEnabled": true,
+                "explorationModeEnabled": true,
+                "failureClass": "transport_blocked",
+                "hypotheses": [
+                  {
+                    "confidence": 0,
+                    "id": "bootstrap-session",
+                    "learned": false,
+                    "maturity": null,
+                    "profile": null,
+                    "transferScore": 0
+                  },
+                  {
+                    "confidence": 0,
+                    "id": "alternate-official-route",
+                    "learned": false,
+                    "maturity": null,
+                    "profile": null,
+                    "transferScore": 0
+                  }
+                ],
+                "learningDisposition": "core_repair_only",
+                "llmAdvisorApplied": false,
+                "llmAdvisorConfidence": 0,
+                "llmAdvisorExperiment": {},
+                "llmAdvisorExperimentFingerprint": "",
+                "llmAdvisorExplorationRescue": false,
+                "llmAdvisorFailureCompatibility": "",
+                "llmAdvisorGuidanceKind": "",
+                "llmAdvisorProfile": "",
+                "llmAdvisorRescue": false,
+                "llmAdvisorSourceFailureClass": "",
+                "llmAdvisorStrategy": "",
+                "metaGapEscalated": false,
+                "negativeMemoryMatches": 0,
+                "positiveProgramFingerprint": "",
+                "postExhaustionCandidateProfiles": [
+                  "transport_request_differential_v1",
+                  "provider_session_bootstrap_replay_v1",
+                  "runtime_response_salvage_v1",
+                  "html_class_token_exact_v1",
+                  "route_transition_graph_v2",
+                  "route_transition_graph_v3",
+                  "route_transition_graph_v4",
+                  "route_transition_graph_v5",
+                  "route_transition_graph_v6",
+                  "route_transition_graph_v7",
+                  "route_transition_graph_v8",
+                  "route_transition_graph_v9",
+                  "route_transition_graph_v10",
+                  "route_transition_graph_v11",
+                  "route_transition_graph_v12",
+                  "route_transition_graph_v13",
+                  "route_transition_graph_v14",
+                  "route_transition_graph_v15",
+                  "route_transition_graph_v16",
+                  "route_transition_graph_v17",
+                  "route_transition_graph_v18",
+                  "route_transition_graph_v19",
+                  "route_transition_graph_v20",
+                  "route_transition_graph_v21"
+                ],
+                "postExhaustionSourceFailureClass": "",
+                "postExhaustionStrategyMethod": "",
+                "postExhaustionStrategyProfile": "",
+                "providerId": "vostfree",
+                "providerPositiveProgramProductionRescue": false,
+                "providerPositiveProgramReplay": false,
+                "repairScope": "capability",
+                "repairType": "session_transport",
+                "signature": "ac5f8426938872bee42dae1d",
+                "strategyEscalated": false,
+                "targetCategories": []
+              },
               "published:yflix": {
                 "action": "collect-more-evidence",
                 "allowedProfiles": [],
@@ -880,6 +969,7 @@
             "moviebox",
             "moviesmod",
             "vidfast",
+            "vostfree",
             "yflix"
           ],
           "familyGroups": [
@@ -887,6 +977,7 @@
               "capabilityStrategy": "mixed_embed_resolver",
               "groupId": "route-to-terminal|mixed_embed_resolver",
               "providers": [
+                "vostfree",
                 "flemmix",
                 "yflix",
                 "animesultra"
@@ -932,13 +1023,15 @@
           ],
           "fixedInLab": [],
           "genericLearningHandoff": [
-            "moviesmod"
+            "moviesmod",
+            "vostfree"
           ],
           "groupId": "packed",
           "harnessDifferentialProviders": [],
           "healthConcurrency": 8,
-          "providerCount": 11,
+          "providerCount": 12,
           "providers": [
+            "vostfree",
             "flemmix",
             "yflix",
             "animesultra",
@@ -967,14 +1060,15 @@
         "moviebox",
         "moviesmod",
         "vidfast",
+        "vostfree",
         "yflix"
       ],
-      "deferredToLearningCount": 11,
+      "deferredToLearningCount": 12,
       "durableMaterializeTargets": [],
       "experimentMemoryAdvanced": true,
       "fixedInLab": [],
       "fixedInLabCount": 0,
-      "inputProviderCount": 11,
+      "inputProviderCount": 12,
       "labOnlyWithoutCompiledRepair": [],
       "rawFixedInLab": [],
       "rawLabAcceptedCount": 0,
