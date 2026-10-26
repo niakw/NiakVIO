@@ -1,17 +1,17 @@
 {
   "schema_version": 63,
-  "generated_at": "2026-10-26T05:03:31.297810+00:00",
+  "generated_at": "2026-10-26T15:20:22.177193+00:00",
   "test_environment": "github-actions-node",
   "checked_providers": 41,
   "status_counts": {
-    "healthy": 4,
+    "healthy": 2,
     "reachable": 0,
-    "blocked": 6,
+    "blocked": 5,
     "degraded": 1,
-    "no_streams": 11,
-    "provider_unreachable": 13,
+    "no_streams": 12,
+    "provider_unreachable": 14,
     "runtime_error": 0,
-    "unavailable": 6,
+    "unavailable": 7,
     "excluded": 0
   },
   "policy": {
@@ -3092,7 +3092,7 @@
     },
     {
       "id": "wookafr",
-      "status": "healthy",
+      "status": "unavailable",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
@@ -3253,7 +3253,7 @@
     },
     {
       "id": "anime-ultime",
-      "status": "blocked",
+      "status": "provider_unreachable",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
@@ -3321,18 +3321,14 @@
     },
     {
       "id": "vidlove",
-      "status": "healthy",
+      "status": "no_streams",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
-      "consecutive_successes": 2,
-      "hosts": [
-        "a2.ravenflix.st"
-      ],
-      "response_categories": [
-        "playable"
-      ],
+      "consecutive_successes": 0,
+      "hosts": [],
+      "response_categories": [],
       "host_health": {
         "ballerinacappuccinalovestungtungtungsahur.com": {
           "last_checked_at": "2026-10-25T22:41:30.516385+00:00",
