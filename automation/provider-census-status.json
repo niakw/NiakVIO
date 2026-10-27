@@ -1,7 +1,7 @@
 {
   "schemaVersion": 3,
-  "runId": "40579781655-post-repair-candidate",
-  "triggerSha": "596efd9d8ac8407de4007a074357e0d343831395",
+  "runId": "40582903114",
+  "triggerSha": "e47bc2703e8ff318cbaf8bf669e9227a48ebd3c6",
   "providers": [
     {
       "provider": "4khdhub",
@@ -85,7 +85,7 @@
       "brainCheckRequired": true,
       "statusRepairEligible": true,
       "repairEligible": true,
-      "testedThisRun": false
+      "testedThisRun": true
     },
     {
       "provider": "allwish",
@@ -127,7 +127,7 @@
       "brainCheckRequired": true,
       "statusRepairEligible": true,
       "repairEligible": true,
-      "testedThisRun": false
+      "testedThisRun": true
     },
     {
       "provider": "animekai",
@@ -146,11 +146,11 @@
         "16 live routes / anime"
       ],
       "latestLaneVerdicts": [
-        "anime=timeout"
+        "anime=no_streams/provider_network_exception"
       ],
-      "dominantIssue": "timeout",
+      "dominantIssue": "provider_network_exception",
       "searchProgress": [
-        "anime: 3 works tested / 0 retained misses"
+        "anime: 2 works tested / 0 retained misses"
       ],
       "evidenceDepth": [
         "anime=none"
@@ -170,7 +170,7 @@
       "brainCheckRequired": true,
       "statusRepairEligible": true,
       "repairEligible": true,
-      "testedThisRun": false
+      "testedThisRun": true
     },
     {
       "provider": "animesalt",
@@ -210,7 +210,7 @@
       "brainCheckRequired": true,
       "statusRepairEligible": true,
       "repairEligible": true,
-      "testedThisRun": false
+      "testedThisRun": true
     },
     {
       "provider": "animesama-co",
@@ -254,7 +254,7 @@
       "brainCheckRequired": true,
       "statusRepairEligible": true,
       "repairEligible": true,
-      "testedThisRun": false
+      "testedThisRun": true
     },
     {
       "provider": "animesultra",
@@ -275,7 +275,7 @@
       ],
       "dominantIssue": "timeout",
       "searchProgress": [
-        "anime: 3 works tested / 0 retained misses"
+        "anime: 2 works tested / 0 retained misses"
       ],
       "evidenceDepth": [
         "anime=none"
@@ -294,7 +294,7 @@
       "brainCheckRequired": true,
       "statusRepairEligible": true,
       "repairEligible": true,
-      "testedThisRun": false
+      "testedThisRun": true
     },
     {
       "provider": "animevost-fr",
@@ -334,7 +334,7 @@
       "brainCheckRequired": true,
       "statusRepairEligible": true,
       "repairEligible": true,
-      "testedThisRun": false
+      "testedThisRun": true
     },
     {
       "provider": "animevostfr",
@@ -378,7 +378,7 @@
       "brainCheckRequired": true,
       "statusRepairEligible": true,
       "repairEligible": true,
-      "testedThisRun": false
+      "testedThisRun": true
     },
     {
       "provider": "flemmix",
@@ -422,7 +422,7 @@
       "brainCheckRequired": true,
       "statusRepairEligible": true,
       "repairEligible": true,
-      "testedThisRun": false
+      "testedThisRun": true
     },
     {
       "provider": "mallumv",
@@ -463,7 +463,7 @@
       "brainCheckRequired": true,
       "statusRepairEligible": true,
       "repairEligible": true,
-      "testedThisRun": false
+      "testedThisRun": true
     },
     {
       "provider": "moviebox",
@@ -507,7 +507,7 @@
       "brainCheckRequired": true,
       "statusRepairEligible": true,
       "repairEligible": true,
-      "testedThisRun": false
+      "testedThisRun": true
     },
     {
       "provider": "moviesmod",
@@ -551,7 +551,7 @@
       "brainCheckRequired": true,
       "statusRepairEligible": true,
       "repairEligible": true,
-      "testedThisRun": false
+      "testedThisRun": true
     },
     {
       "provider": "uhdmovies",
@@ -593,7 +593,7 @@
       "brainCheckRequired": true,
       "statusRepairEligible": true,
       "repairEligible": true,
-      "testedThisRun": false
+      "testedThisRun": true
     },
     {
       "provider": "vidfast",
@@ -637,7 +637,7 @@
       "brainCheckRequired": true,
       "statusRepairEligible": true,
       "repairEligible": true,
-      "testedThisRun": false
+      "testedThisRun": true
     },
     {
       "provider": "vostfree",
@@ -677,7 +677,7 @@
       "brainCheckRequired": true,
       "statusRepairEligible": true,
       "repairEligible": true,
-      "testedThisRun": false
+      "testedThisRun": true
     },
     {
       "provider": "yflix",
@@ -721,7 +721,7 @@
       "brainCheckRequired": true,
       "statusRepairEligible": true,
       "repairEligible": true,
-      "testedThisRun": false
+      "testedThisRun": true
     },
     {
       "provider": "anime-ultime",
@@ -2180,8 +2180,8 @@
   "harnessQueue": [],
   "targetedTransportBlockedQueue": [],
   "clientTransportGapQueue": [],
-  "harnessEvidenceRunId": "40579781655-repair-waf-final",
-  "harnessEvidenceSha": "596efd9d8ac8407de4007a074357e0d343831395",
+  "harnessEvidenceRunId": "40582903114-sharded-waf",
+  "harnessEvidenceSha": "e47bc2703e8ff318cbaf8bf669e9227a48ebd3c6",
   "authorityRefreshedProviders": [],
   "harnessTransportUpdatedProviders": [],
   "networkDifferentialUpdatedProviders": [],
@@ -2592,24 +2592,5 @@
       ],
       "replayedProviders": []
     }
-  },
-  "lastRepairAttempt": {
-    "runId": "40579781655",
-    "sourceCensusRunId": "40579781655-post-repair-candidate",
-    "mode": "force",
-    "selectedProviders": [
-      "4khdhub"
-    ],
-    "candidateProviders": [],
-    "validatedProviders": [],
-    "acceptedRepairCount": 0,
-    "deferredToLearningSlotProviders": [
-      "4khdhub"
-    ],
-    "noProgressReason": "experiment_variants_exhausted",
-    "timeBudgetExhausted": false,
-    "canonicalOutcome": "success",
-    "candidateGateOutcome": "success",
-    "publicationAllowed": true
   }
 }
