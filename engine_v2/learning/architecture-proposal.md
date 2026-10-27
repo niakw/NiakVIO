@@ -10,7 +10,7 @@ Review-only self-evolution proposal generated from sanitized Learning evidence.
 
 Priority: critical
 
-9 provider(s) exhausted every bounded Core Repair experiment variant and were explicitly deferred for a new strategy.
+10 provider(s) exhausted every bounded Core Repair experiment variant and were explicitly deferred for a new strategy.
 
 Recommendation:
 Synthesize one or more new bounded repair/evidence strategies from the common failure cohorts and independent Lab observations. Do not recycle the exhausted bounded g2..g5 family or increase retry counts. Each new strategy must have an explicit causal trigger, negative-memory signature, playback/identity acceptance proof and regression test before it may re-enter Core Repair.
@@ -30,23 +30,23 @@ Targets: scripts/run_brain_learning_sandbox.py, tests/brain_*
 
 ## New strategy blueprints
 
-### route_transition_graph_v23 — route-to-terminal|html_scraper
+### route_transition_graph_v24 — route-to-terminal|html_scraper
 
 Providers: 4khdhub, mallumv, moviebox
 
 Trigger: catalogue/detail route is live and identity-qualified but no terminal/player media is reached
 
-Method: derive and implement a genuinely new executable Repair strategy route_transition_graph_v23 from negative evidence for exhausted route_transition_graph_v1; preserve the causal intent of the prior method without reusing its implementation, register the new profile in Repair planning/runtime, and require targeted playback/identity proof
+Method: derive and implement a genuinely new executable Repair strategy route_transition_graph_v24 from negative evidence for exhausted route_transition_graph_v1; preserve the causal intent of the prior method without reusing its implementation, register the new profile in Repair planning/runtime, and require targeted playback/identity proof
 
 Acceptance: playback-verified media; content identity not contradicted; no green-lane regression
 
-### route_transition_graph_v23 — route-to-terminal|mixed_embed_resolver
+### route_transition_graph_v24 — route-to-terminal|mixed_embed_resolver
 
-Providers: animesultra, flemmix, yflix
+Providers: animesultra, flemmix, vostfree, yflix
 
 Trigger: catalogue/detail route is live and identity-qualified but no terminal/player media is reached
 
-Method: derive and implement a genuinely new executable Repair strategy route_transition_graph_v23 from negative evidence for exhausted route_transition_graph_v1; preserve the causal intent of the prior method without reusing its implementation, register the new profile in Repair planning/runtime, and require targeted playback/identity proof
+Method: derive and implement a genuinely new executable Repair strategy route_transition_graph_v24 from negative evidence for exhausted route_transition_graph_v1; preserve the causal intent of the prior method without reusing its implementation, register the new profile in Repair planning/runtime, and require targeted playback/identity proof
 
 Acceptance: playback-verified media; content identity not contradicted; no green-lane regression
 
@@ -60,13 +60,13 @@ Method: replay already installed executable Repair strategy route_transition_gra
 
 Acceptance: playback-verified media; content identity not contradicted; no green-lane regression
 
-### route_transition_graph_v23 — route-to-terminal|iframe_player
+### route_transition_graph_v24 — route-to-terminal|iframe_player
 
 Providers: vidfast
 
 Trigger: catalogue/detail route is live and identity-qualified but no terminal/player media is reached
 
-Method: derive and implement a genuinely new executable Repair strategy route_transition_graph_v23 from negative evidence for exhausted route_transition_graph_v1; preserve the causal intent of the prior method without reusing its implementation, register the new profile in Repair planning/runtime, and require targeted playback/identity proof
+Method: derive and implement a genuinely new executable Repair strategy route_transition_graph_v24 from negative evidence for exhausted route_transition_graph_v1; preserve the causal intent of the prior method without reusing its implementation, register the new profile in Repair planning/runtime, and require targeted playback/identity proof
 
 Acceptance: playback-verified media; content identity not contradicted; no green-lane regression
 
