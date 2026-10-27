@@ -40,7 +40,9 @@ for badge_id, row in by_id.items():
             assert payload[:4] == b"RIFF" and payload[8:12] == b"WEBP", rel
 
 assert light_qa.get("schemaVersion") == 2
-assert light_qa.get("revision") == f"full-surface-v{CATALOG_VERSION}-stream-score-v{CATALOG_VERSION}"
+# The artwork surface stays at v8 while the badge catalog/StreamScore evolves.
+# Match the deterministic producer and full-asset validator, not the catalog version twice.
+assert light_qa.get("revision") == f"full-surface-v8-stream-score-v{CATALOG_VERSION}"
 assert light_qa.get("catalogBadges") == len(badges)
 assert light_qa.get("assetCount") == len(badges) * 2
 assert light_qa.get("idempotent") is True
