@@ -1,7 +1,7 @@
 {
   "schemaVersion": 3,
-  "runId": "40619888787",
-  "triggerSha": "a8a34d0f21560ff5000993cb5f39e8d86720ed18",
+  "runId": "40622991237",
+  "triggerSha": "47d1f7aac25dc0851fbbbc407adb1aa9fbbfd76f",
   "providers": [
     {
       "provider": "4khdhub",
@@ -426,9 +426,9 @@
     },
     {
       "provider": "mallumv",
-      "status": "CHAIN REACHED",
+      "status": "ROUTE PROVEN",
       "underlyingStatus": "",
-      "color": "🟣",
+      "color": "🟪",
       "declaredLanes": [
         "movie"
       ],
@@ -439,14 +439,14 @@
         "4 live routes / movie"
       ],
       "latestLaneVerdicts": [
-        "movie=no_streams/provider_network_zero_result"
+        "movie=no_streams/provider_network_http_error"
       ],
-      "dominantIssue": "provider_network_zero_result",
+      "dominantIssue": "provider_network_http_error",
       "searchProgress": [
         "movie: 1 works tested / 42 retained misses / 1 retained chain hit"
       ],
       "evidenceDepth": [
-        "movie=chain_reached"
+        "movie=lookup_only"
       ],
       "harnessTransportClass": "not-applicable",
       "harnessTransportEvidence": [],
@@ -459,7 +459,7 @@
         "existing_positive_route_prior"
       ],
       "authorityKnown": true,
-      "action": "finish terminal extractor/validation; do not promote before verified media",
+      "action": "replay qualified route fixtures and finish terminal extraction/validation",
       "brainCheckRequired": true,
       "statusRepairEligible": true,
       "repairEligible": true,
@@ -2106,13 +2106,13 @@
   ],
   "counts": {
     "CANDIDATE OK": 2,
-    "CHAIN REACHED": 2,
+    "CHAIN REACHED": 1,
     "DISABLED": 5,
     "FULL OK": 21,
     "NO PROOF": 1,
     "PARTIAL OK": 3,
     "REGRESSION PROVIDER": 2,
-    "ROUTE PROVEN": 10
+    "ROUTE PROVEN": 11
   },
   "symptomaticProviders": [
     "4khdhub",
@@ -2180,8 +2180,8 @@
   "harnessQueue": [],
   "targetedTransportBlockedQueue": [],
   "clientTransportGapQueue": [],
-  "harnessEvidenceRunId": "40619888787-sharded-waf",
-  "harnessEvidenceSha": "a8a34d0f21560ff5000993cb5f39e8d86720ed18",
+  "harnessEvidenceRunId": "40622991237-sharded-waf",
+  "harnessEvidenceSha": "47d1f7aac25dc0851fbbbc407adb1aa9fbbfd76f",
   "authorityRefreshedProviders": [],
   "harnessTransportUpdatedProviders": [],
   "networkDifferentialUpdatedProviders": [],
@@ -2592,43 +2592,5 @@
       ],
       "replayedProviders": []
     }
-  },
-  "lastRepairAttempt": {
-    "runId": "40620574716",
-    "sourceCensusRunId": "40619888787",
-    "selectedProviders": [
-      "4khdhub",
-      "allanime",
-      "animesalt",
-      "animesultra",
-      "animevost-fr",
-      "flemmix",
-      "mallumv",
-      "moviebox",
-      "moviesmod",
-      "vidfast",
-      "vostfree",
-      "yflix"
-    ],
-    "candidateProviders": [],
-    "validatedProviders": [],
-    "acceptedRepairCount": 0,
-    "deferredToLearningSlotProviders": [
-      "4khdhub",
-      "allanime",
-      "animesalt",
-      "animesultra",
-      "animevost-fr",
-      "flemmix",
-      "mallumv",
-      "moviebox",
-      "moviesmod",
-      "vidfast",
-      "vostfree",
-      "yflix"
-    ],
-    "noProgressReason": "no_new_repair_experiment",
-    "timeBudgetExhausted": false,
-    "publicationAllowed": false
   }
 }
