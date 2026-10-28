@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "sourceRunId": "40678318478",
-  "sourceTriggerSha": "730fbf15e9ea10f9c5d9ae6c7bd4ea9883c53ed9",
+  "sourceRunId": "40682889763",
+  "sourceTriggerSha": "dd54436ac72738bd7b2fb6e6f48986e3bc9125ad",
   "unresolvedProviderCount": 21,
   "dynamicVariantProviderCount": 6,
   "dynamicVariantProviders": [
@@ -122,7 +122,7 @@
         "lookup"
       ],
       "dominantIssues": [
-        "network_exception",
+        "network_http_error",
         "network_zero_result"
       ],
       "harnessTransportClasses": [],
@@ -203,6 +203,33 @@
         "kehflix",
         "vidlove"
       ],
+      "executionPolicy": "batch-first",
+      "providerLocalFallback": "only-after-shared-profile-failure"
+    },
+    {
+      "groupId": "learning|mixed_embed_resolver",
+      "repairScope": "learning",
+      "runtimeFamilies": [
+        "mixed_embed_resolver"
+      ],
+      "capabilityStrategy": "mixed_embed_resolver",
+      "evidenceDepths": [
+        "none"
+      ],
+      "dominantIssues": [
+        "timeout"
+      ],
+      "harnessTransportClasses": [],
+      "transportSignature": "not-applicable",
+      "providerCount": 1,
+      "providers": [
+        "animekai"
+      ],
+      "action": "queue by signature for Brain learning; provider-local repair only after shared profiles fail",
+      "selectionAuthorities": [
+        "provider-census-status.json:brainCheckRequired"
+      ],
+      "dynamicVariantProviders": [],
       "executionPolicy": "batch-first",
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
@@ -309,33 +336,6 @@
         "mallumv"
       ],
       "action": "apply/test shared terminal-player extraction profile to the whole capability family",
-      "selectionAuthorities": [
-        "provider-census-status.json:brainCheckRequired"
-      ],
-      "dynamicVariantProviders": [],
-      "executionPolicy": "batch-first",
-      "providerLocalFallback": "only-after-shared-profile-failure"
-    },
-    {
-      "groupId": "transport|mixed_embed_resolver",
-      "repairScope": "transport",
-      "runtimeFamilies": [
-        "mixed_embed_resolver"
-      ],
-      "capabilityStrategy": "mixed_embed_resolver",
-      "evidenceDepths": [
-        "none"
-      ],
-      "dominantIssues": [
-        "network_exception"
-      ],
-      "harnessTransportClasses": [],
-      "transportSignature": "not-applicable",
-      "providerCount": 1,
-      "providers": [
-        "animekai"
-      ],
-      "action": "refresh transport authority before provider-local code changes",
       "selectionAuthorities": [
         "provider-census-status.json:brainCheckRequired"
       ],
