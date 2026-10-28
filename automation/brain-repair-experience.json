@@ -4248,7 +4248,7 @@
     "mallumv": {
       "domainMemory": true,
       "evidenceDepth": [
-        "movie=lookup_only"
+        "movie=chain_reached"
       ],
       "hasApiRecipe": false,
       "hasProviderValuePlan": false,
@@ -4329,7 +4329,7 @@
         "/confirm/{id}/{fileId}/{slug}.xhtml",
         "/internal/{id}/{fileId}/{slug}.xhtml"
       ],
-      "status": "ROUTE PROVEN",
+      "status": "CHAIN REACHED",
       "strategy": "html_scraper"
     },
     "moviebox": {
@@ -8148,8 +8148,8 @@
     "requiresDeepValidation": true
   },
   "schemaVersion": 2,
-  "sourceRunId": "40625324243",
-  "sourceSha": "efe17ee2ee45c6d95b1e7a0af3fb18e2dda9bc49",
+  "sourceRunId": "40628088413",
+  "sourceSha": "6923fc9107ade970223aad1804210a8a291744d7",
   "strategyPatterns": {
     "api_stream_resolver": {
       "commonRequestRecipes": [],
@@ -8161,17 +8161,17 @@
       "routeFamilies": [
         {
           "providerSupport": 1,
+          "role": "detail",
+          "supportRatio": 1.0
+        },
+        {
+          "providerSupport": 1,
           "role": "other",
           "supportRatio": 1.0
         },
         {
           "providerSupport": 1,
           "role": "search",
-          "supportRatio": 1.0
-        },
-        {
-          "providerSupport": 1,
-          "role": "detail",
           "supportRatio": 1.0
         }
       ]
@@ -8216,12 +8216,12 @@
         },
         {
           "providerSupport": 1,
-          "role": "player",
+          "role": "other",
           "supportRatio": 0.25
         },
         {
           "providerSupport": 1,
-          "role": "other",
+          "role": "player",
           "supportRatio": 0.25
         }
       ]
@@ -8269,12 +8269,12 @@
         },
         {
           "providerSupport": 3,
-          "role": "player",
+          "role": "detail",
           "supportRatio": 0.5
         },
         {
           "providerSupport": 3,
-          "role": "detail",
+          "role": "player",
           "supportRatio": 0.5
         },
         {
@@ -8455,17 +8455,17 @@
       "routeFamilies": [
         {
           "providerSupport": 1,
-          "role": "api",
-          "supportRatio": 1.0
-        },
-        {
-          "providerSupport": 1,
           "role": "episode",
           "supportRatio": 1.0
         },
         {
           "providerSupport": 1,
           "role": "search",
+          "supportRatio": 1.0
+        },
+        {
+          "providerSupport": 1,
+          "role": "api",
           "supportRatio": 1.0
         }
       ]

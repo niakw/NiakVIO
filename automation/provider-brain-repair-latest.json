@@ -21,14 +21,14 @@
     "yflix"
   ],
   "effectiveWaves": 1,
-  "elapsedSeconds": 170.043,
+  "elapsedSeconds": 168.055,
   "executionModel": "family-batched-multi-wave-brain-repair",
   "experienceMemory": {
     "operationalProviderCount": 24,
     "providerCount": 46,
     "schemaVersion": 2,
-    "sourceRunId": "40625324243",
-    "sourceSha": "efe17ee2ee45c6d95b1e7a0af3fb18e2dda9bc49",
+    "sourceRunId": "40628088413",
+    "sourceSha": "6923fc9107ade970223aad1804210a8a291744d7",
     "strategyCount": 5
   },
   "fixedInLabProviders": [],
@@ -43,7 +43,7 @@
     "animesultra": "ROUTE PROVEN",
     "animevost-fr": "ROUTE PROVEN",
     "flemmix": "ROUTE PROVEN",
-    "mallumv": "ROUTE PROVEN",
+    "mallumv": "CHAIN REACHED",
     "moviebox": "ROUTE PROVEN",
     "moviesmod": "ROUTE PROVEN",
     "vidfast": "ROUTE PROVEN",
@@ -78,9 +78,7 @@
   "providerSpecificRules": false,
   "rawLabAcceptedCount": 0,
   "rawLabAcceptedRepairs": [],
-  "remainingProviders": [
-    "mallumv"
-  ],
+  "remainingProviders": [],
   "requestedWaves": 1,
   "resumeRecommended": false,
   "safety": {
@@ -115,7 +113,7 @@
   "shardCount": 1,
   "shardIndex": 0,
   "skippedEnvironmentProviders": [],
-  "sourceCensusRunId": "40625324243",
+  "sourceCensusRunId": "40628088413",
   "timeBudgetExhausted": false,
   "timeBudgetSeconds": 1200,
   "unvisitedProviders": [],
@@ -511,26 +509,17 @@
               "published:mallumv": {
                 "action": "collect-more-evidence",
                 "allowedProfiles": [],
-                "baseExperimentExhausted": false,
-                "exitReason": null,
-                "experimentExhausted": false,
-                "experimentGeneration": 1,
-                "experimentVariant": 0,
+                "baseExperimentExhausted": true,
+                "exitReason": "learning_generations_exhausted",
+                "experimentExhausted": true,
+                "experimentGeneration": 2,
+                "experimentVariant": 4,
                 "experimentVariantCount": 5,
                 "explorationChainEnabled": true,
                 "explorationModeEnabled": true,
-                "failureClass": "unknown_failure",
-                "hypotheses": [
-                  {
-                    "confidence": 0,
-                    "id": "collect-missing-evidence",
-                    "learned": false,
-                    "maturity": null,
-                    "profile": null,
-                    "transferScore": 0
-                  }
-                ],
-                "learningDisposition": "queue_for_independent_learning",
+                "failureClass": "chain_terminal_gap",
+                "hypotheses": [],
+                "learningDisposition": "propose_new_or_evolved_core_type",
                 "llmAdvisorApplied": false,
                 "llmAdvisorConfidence": 0,
                 "llmAdvisorExperiment": {},
@@ -543,18 +532,31 @@
                 "llmAdvisorSourceFailureClass": "",
                 "llmAdvisorStrategy": "",
                 "metaGapEscalated": false,
-                "negativeMemoryMatches": 0,
+                "negativeMemoryMatches": 161,
                 "positiveProgramFingerprint": "",
-                "postExhaustionCandidateProfiles": [],
+                "postExhaustionCandidateProfiles": [
+                  "terminal_transition_graph_v1",
+                  "terminal_transition_graph_v2",
+                  "terminal_transition_graph_v3",
+                  "terminal_transition_graph_v4",
+                  "terminal_transition_graph_v5",
+                  "terminal_transition_graph_v6",
+                  "terminal_transition_graph_v7",
+                  "terminal_request_program_inference_v1",
+                  "runtime_response_salvage_v1",
+                  "document_request_contract_mining_v1",
+                  "player_protocol_family_replay_v1",
+                  "media_response_shape_inference_v1"
+                ],
                 "postExhaustionSourceFailureClass": "",
                 "postExhaustionStrategyMethod": "",
                 "postExhaustionStrategyProfile": "",
                 "providerId": "mallumv",
                 "providerPositiveProgramProductionRescue": false,
                 "providerPositiveProgramReplay": false,
-                "repairScope": "deferred",
+                "repairScope": "learning",
                 "repairType": "architecture_gap",
-                "signature": "5c839fd0abf2244d9aa0190d",
+                "signature": "4e8d92b8a8961450d87b63b2",
                 "strategyEscalated": false,
                 "targetCategories": []
               },
@@ -915,6 +917,7 @@
             "animesultra",
             "animevost-fr",
             "flemmix",
+            "mallumv",
             "moviebox",
             "moviesmod",
             "vidfast",
@@ -948,8 +951,7 @@
                 "moviesmod",
                 "moviebox",
                 "4khdhub",
-                "animesalt",
-                "mallumv"
+                "animesalt"
               ],
               "repairScope": "route-to-terminal"
             },
@@ -968,6 +970,14 @@
                 "animevost-fr"
               ],
               "repairScope": "route-to-terminal"
+            },
+            {
+              "capabilityStrategy": "html_scraper",
+              "groupId": "terminal-extraction|html_scraper",
+              "providers": [
+                "mallumv"
+              ],
+              "repairScope": "terminal-extraction"
             }
           ],
           "fixedInLab": [],
@@ -986,9 +996,9 @@
             "moviebox",
             "4khdhub",
             "animesalt",
-            "mallumv",
             "vidfast",
-            "animevost-fr"
+            "animevost-fr",
+            "mallumv"
           ],
           "repairScope": "mixed",
           "unexecutableLlmHandoff": []
@@ -1002,13 +1012,14 @@
         "animesultra",
         "animevost-fr",
         "flemmix",
+        "mallumv",
         "moviebox",
         "moviesmod",
         "vidfast",
         "vostfree",
         "yflix"
       ],
-      "deferredToLearningCount": 11,
+      "deferredToLearningCount": 12,
       "durableMaterializeTargets": [],
       "experimentMemoryAdvanced": false,
       "fixedInLab": [],
@@ -1017,7 +1028,7 @@
       "labOnlyWithoutCompiledRepair": [],
       "rawFixedInLab": [],
       "rawLabAcceptedCount": 0,
-      "remainingProviderCount": 1,
+      "remainingProviderCount": 0,
       "timeBudgetExhausted": false,
       "wave": 1
     }
