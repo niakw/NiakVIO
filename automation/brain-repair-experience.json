@@ -1018,7 +1018,7 @@
     "allwish": {
       "domainMemory": true,
       "evidenceDepth": [
-        "movie=none",
+        "movie=lookup_only",
         "tv=none"
       ],
       "hasApiRecipe": false,
@@ -7904,7 +7904,7 @@
     "yflix": {
       "domainMemory": true,
       "evidenceDepth": [
-        "movie=none",
+        "movie=lookup_only",
         "tv=lookup_only"
       ],
       "hasApiRecipe": false,
@@ -8148,8 +8148,8 @@
     "requiresDeepValidation": true
   },
   "schemaVersion": 2,
-  "sourceRunId": "40631036081",
-  "sourceSha": "d8b2a0de4429c92ef030b06956fd3fdd3e0081cf",
+  "sourceRunId": "40633877375",
+  "sourceSha": "9b304f09caaa63575f7536147cae5e85d945021a",
   "strategyPatterns": {
     "api_stream_resolver": {
       "commonRequestRecipes": [],
@@ -8216,12 +8216,12 @@
         },
         {
           "providerSupport": 1,
-          "role": "other",
+          "role": "player",
           "supportRatio": 0.25
         },
         {
           "providerSupport": 1,
-          "role": "player",
+          "role": "other",
           "supportRatio": 0.25
         }
       ]
@@ -8269,12 +8269,12 @@
         },
         {
           "providerSupport": 3,
-          "role": "detail",
+          "role": "player",
           "supportRatio": 0.5
         },
         {
           "providerSupport": 3,
-          "role": "player",
+          "role": "detail",
           "supportRatio": 0.5
         },
         {
@@ -8455,12 +8455,12 @@
       "routeFamilies": [
         {
           "providerSupport": 1,
-          "role": "search",
+          "role": "episode",
           "supportRatio": 1.0
         },
         {
           "providerSupport": 1,
-          "role": "episode",
+          "role": "search",
           "supportRatio": 1.0
         },
         {
