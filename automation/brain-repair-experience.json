@@ -2219,7 +2219,7 @@
     "animevostfr": {
       "domainMemory": true,
       "evidenceDepth": [
-        "anime=chain_reached"
+        "anime=lookup_only"
       ],
       "hasApiRecipe": false,
       "hasProviderValuePlan": false,
@@ -8148,8 +8148,8 @@
     "requiresDeepValidation": true
   },
   "schemaVersion": 2,
-  "sourceRunId": "40838661164",
-  "sourceSha": "f948d3931fcc6664094b6eda73104290c282beeb",
+  "sourceRunId": "40841801799",
+  "sourceSha": "672dfadc5a51fde72c43e451866bc1a640b080bd",
   "strategyPatterns": {
     "api_stream_resolver": {
       "commonRequestRecipes": [],
@@ -8161,17 +8161,17 @@
       "routeFamilies": [
         {
           "providerSupport": 1,
+          "role": "search",
+          "supportRatio": 1.0
+        },
+        {
+          "providerSupport": 1,
           "role": "other",
           "supportRatio": 1.0
         },
         {
           "providerSupport": 1,
           "role": "detail",
-          "supportRatio": 1.0
-        },
-        {
-          "providerSupport": 1,
-          "role": "search",
           "supportRatio": 1.0
         }
       ]
@@ -8216,12 +8216,12 @@
         },
         {
           "providerSupport": 1,
-          "role": "other",
+          "role": "player",
           "supportRatio": 0.25
         },
         {
           "providerSupport": 1,
-          "role": "player",
+          "role": "other",
           "supportRatio": 0.25
         }
       ]
@@ -8254,12 +8254,12 @@
       "routeFamilies": [
         {
           "providerSupport": 5,
-          "role": "api",
+          "role": "episode",
           "supportRatio": 0.8333
         },
         {
           "providerSupport": 5,
-          "role": "episode",
+          "role": "api",
           "supportRatio": 0.8333
         },
         {
@@ -8455,7 +8455,7 @@
       "routeFamilies": [
         {
           "providerSupport": 1,
-          "role": "api",
+          "role": "search",
           "supportRatio": 1.0
         },
         {
@@ -8465,7 +8465,7 @@
         },
         {
           "providerSupport": 1,
-          "role": "search",
+          "role": "api",
           "supportRatio": 1.0
         }
       ]
