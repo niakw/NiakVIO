@@ -975,11 +975,24 @@ def validate_materialized_edits(
                 target.unlink()
 
 
-def select_blueprint(proposal: dict[str, Any]) -> dict[str, Any]:
+def select_blueprint(
+    proposal: dict[str, Any], *, target_provider: str = "",
+) -> dict[str, Any]:
+    """Fail closed for an explicitly targeted FORCE instead of evolving another provider."""
     rows = [x for x in proposal.get("strategyBlueprints") or [] if isinstance(x, dict)]
     eligible = [x for x in rows if x.get("forcePromotionEligible") is True]
+    target = target_provider.strip().casefold()
+    if target:
+        eligible = [
+            row for row in eligible
+            if target in {
+                str(provider).strip().casefold()
+                for provider in row.get("providers") or []
+            }
+        ]
     if not eligible:
-        raise ValueError("no FORCE-promotable architecture blueprint")
+        suffix = f" for target provider {target}" if target else ""
+        raise ValueError(f"no FORCE-promotable architecture blueprint{suffix}")
     return eligible[0]
 
 
@@ -2195,6 +2208,7 @@ def _program_provenance(planned: dict[str, Any]) -> dict[str, Any]:
 def main() -> int:
     p = argparse.ArgumentParser()
     p.add_argument("--proposal", type=Path, required=True)
+    p.add_argument("--target-provider", default="", help="Optional exact provider ID for fail-closed FORCE selection")
     p.add_argument("--self-config", type=Path, required=True)
     p.add_argument("--endpoint", default="http://127.0.0.1:8080")
     p.add_argument("--model", default="qwen2.5-coder-3b")
@@ -2208,7 +2222,7 @@ def main() -> int:
     force = config.get("forceArchitecture") if isinstance(config.get("forceArchitecture"), dict) else {}
     if force.get("enabled") is not True:
         raise SystemExit("architecture FORCE disabled")
-    blueprint = select_blueprint(proposal)
+    blueprint = select_blueprint(proposal, target_provider=a.target_provider)
     patterns = allowed_patterns(config)
     payload = {
         "blueprint": blueprint,
