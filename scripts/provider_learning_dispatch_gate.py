@@ -153,6 +153,9 @@ def select_execution_plan(
         for value in (requested or [])
         if safe_provider(value)
     }
+    # None means no filter; an explicitly supplied empty/invalid filter must
+    # never broaden a targeted dispatch into the entire Learning lane.
+    restrict_to_requested = requested is not None
     rows = ledger.get("providers") if isinstance(ledger.get("providers"), dict) else {}
     eligible: list[dict[str, str]] = []
     repeats: list[str] = []
@@ -167,7 +170,7 @@ def select_execution_plan(
             continue
         for raw_provider in execution.get("providers") or []:
             provider = safe_provider(raw_provider)
-            if not provider or (wanted and provider not in wanted):
+            if not provider or (restrict_to_requested and provider not in wanted):
                 continue
             fingerprint = execution_plan_fingerprint(provider, execution)
             if not fingerprint:
@@ -343,7 +346,9 @@ def mark_dispatched(
 def _requested(raw: str, brain: dict[str, Any]) -> list[str]:
     values = [safe_provider(value) for value in str(raw or "").split(",")]
     values = [value for value in values if value]
-    if values:
+    # A supplied but invalid target is not permission to select the whole
+    # deferred cohort. Only an omitted filter invokes the default cohort.
+    if str(raw or "").strip():
         return values
     return [
         safe_provider(value)
@@ -399,12 +404,13 @@ def main() -> int:
         return 0
 
     if args.command == "select-plan":
-        requested = [safe_provider(value) for value in str(args.providers or "").split(",")]
+        raw_requested = str(args.providers or "")
+        requested = [safe_provider(value) for value in raw_requested.split(",")]
         payload = select_execution_plan(
             load(args.plan),
             load(args.ledger, {"schemaVersion": 2, "providers": {}}),
             lane=args.lane,
-            requested=[value for value in requested if value],
+            requested=[value for value in requested if value] if raw_requested.strip() else None,
         )
         write(args.output, payload)
         print(
