@@ -73,6 +73,22 @@ changed = module.select(brain(signature="sig-b", harness=["harness"]), ledger, [
 assert changed["eligibleProviders"] == ["demo"], changed
 assert changed["eligible"][0]["fingerprint"] != fp
 
+# Retry bookkeeping alone cannot re-authorize a previously dispatched method.
+# A new generation/variant is not a new causal strategy.
+ordinal_only = brain(harness=["harness"])
+ordinal_plan = ordinal_only["waves"][0]["batches"][0]["brain"]["plans"]["demo-key"]
+ordinal_plan["experimentVariant"] = 200
+ordinal_plan["experimentGeneration"] = 300
+assert module.plan_fingerprint("demo", ordinal_plan) == fp
+ordinal_repeat = module.select(ordinal_only, ledger, ["demo"])
+assert ordinal_repeat["eligibleProviders"] == [], ordinal_repeat
+assert ordinal_repeat["suppressedRepeatProviders"] == ["demo"], ordinal_repeat
+
+# Removing the counters also preserves causal identity for older plan schemas.
+ordinal_plan.pop("experimentVariant")
+ordinal_plan.pop("experimentGeneration")
+assert module.plan_fingerprint("demo", ordinal_plan) == fp
+
 changed_method = module.select(
     brain(profile="player_media_extractor_v1", harness=["harness"]),
     ledger,

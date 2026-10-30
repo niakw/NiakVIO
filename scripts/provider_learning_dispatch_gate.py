@@ -65,8 +65,8 @@ def _plan_payload(provider: str, plan: dict[str, Any]) -> dict[str, Any]:
             for value in plan.get("allowedProfiles") or []
             if _stable_text(value, 96)
         }),
-        "experimentVariant": max(0, int(plan.get("experimentVariant") or 0)),
-        "experimentGeneration": max(1, int(plan.get("experimentGeneration") or 1)),
+        # Ordinal retry counters do not identify a new causal method.
+        # Keep them out of the durable dispatch fingerprint.
         "llmAdvisorStrategy": _stable_text(plan.get("llmAdvisorStrategy"), 160),
         "llmAdvisorProfile": _stable_text(plan.get("llmAdvisorProfile"), 96),
         "llmAdvisorExperimentFingerprint": _stable_text(
