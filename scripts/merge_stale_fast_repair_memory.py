@@ -11,11 +11,28 @@ from __future__ import annotations
 import argparse
 import copy
 import json
+import sys
 from pathlib import Path
 from typing import Any
 
+SCRIPTS = Path(__file__).resolve().parent
+if str(SCRIPTS) not in sys.path:
+    sys.path.insert(0, str(SCRIPTS))
+from brain_negative_memory_retention import select_bounded_negative_memory
+
 NEGATIVE = {"rejected", "profile_unavailable", "failed", "no_progress"}
-MAX_ROWS = 1000
+POLICY_PATH = SCRIPTS.parent / "engine_v2" / "config" / "brain-policy.json"
+
+
+def configured_memory_capacity() -> int:
+    """Use the same bounded policy as production Brain negative-memory retention."""
+    policy = json.loads(POLICY_PATH.read_text(encoding="utf-8"))
+    production = policy.get("production") or {}
+    memory_policy = production.get("negativeExperimentMemory") or {}
+    capacity = int(memory_policy.get("maxEntries") or 1000)
+    if not 1 <= capacity <= 20000:
+        raise ValueError("invalid configured Fast Brain negative-memory capacity")
+    return capacity
 
 
 def key(row: dict[str, Any]) -> tuple[str, ...]:
@@ -35,6 +52,8 @@ def merge_memory(
     baseline: dict[str, Any],
     imported: dict[str, Any],
     eligible_providers: set[str],
+    *,
+    max_rows: int | None = None,
 ) -> tuple[dict[str, Any], dict[str, int]]:
     if baseline.get("schemaVersion") != 1 or imported.get("schemaVersion") != 1:
         raise ValueError("incompatible Fast Brain memory schema")
@@ -42,8 +61,11 @@ def merge_memory(
     candidates = imported.get("entries")
     if not isinstance(original, list) or not isinstance(candidates, list):
         raise ValueError("Fast Brain memory entries must be lists")
-    if len(original) > MAX_ROWS or len(candidates) > MAX_ROWS:
-        raise ValueError("Fast Brain memory exceeds bounded schema")
+    capacity = configured_memory_capacity() if max_rows is None else int(max_rows)
+    if not 1 <= capacity <= 20000:
+        raise ValueError("invalid Fast Brain negative-memory capacity")
+    if len(original) > capacity or len(candidates) > capacity:
+        raise ValueError("Fast Brain memory exceeds configured bounded schema")
     rows: dict[tuple[str, ...], dict[str, Any]] = {}
     for item in original:
         if isinstance(item, dict):
@@ -81,20 +103,13 @@ def merge_memory(
                     merged["executionObserved"] = True
             rows[identity] = merged
         accepted += 1
+    # Match production's fair per-provider retention; a hot provider must not
+    # evict the only current negative evidence for an underrepresented one.
     out = {
         "schemaVersion": 1,
-        "entries": sorted(
-            rows.values(),
-            key=lambda item: (
-                -int(item.get("consecutiveFailures") or 0),
-                -int(item.get("failures") or 0),
-                str(item.get("providerId") or ""),
-                str(item.get("signature") or ""),
-                str(item.get("profile") or ""),
-                int(item.get("experimentVariant") or 0),
-                int(item.get("experimentGeneration") or 1),
-            ),
-        )[:MAX_ROWS],
+        "entries": select_bounded_negative_memory(
+            list(rows.values()), limit=capacity, minimum_per_provider=12
+        ),
     }
     return out, {"inspected": inspected, "accepted": accepted, "inserted": inserted}
 
