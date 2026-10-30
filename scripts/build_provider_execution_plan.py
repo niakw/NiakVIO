@@ -78,6 +78,18 @@ def select_batch_plan(
     refined_run=str(refined.get("sourceRunId") or refined.get("sourcePlanRunId") or "")
     if not base_run or refined_run!=base_run:
         return base,"canonical-stale-refined"
+    # A matching run id and provider set do not authenticate the refined
+    # partition: all three plans must agree on the exact census source bytes.
+    base_sha=str(base.get("sourceTriggerSha") or "").strip().casefold()
+    refined_sha=str(refined.get("sourceTriggerSha") or "").strip().casefold()
+    census_run=str(status.get("runId") or "").strip()
+    census_sha=str(status.get("triggerSha") or "").strip().casefold()
+    if (
+        not census_run or base_run!=census_run
+        or not base_sha or not refined_sha or not census_sha
+        or base_sha!=refined_sha or base_sha!=census_sha
+    ):
+        return base,"canonical-stale-refined"
     base_providers=plan_providers(base)
     refined_providers=plan_providers(refined)
     if not base_providers or refined_providers!=base_providers:
@@ -182,6 +194,18 @@ def lane_for(group:dict[str,Any], *, authority_qualified:bool=False)->dict[str,A
 
 
 def build(batch:dict[str,Any],status:dict[str,Any],dynamic_repair:set[str] | None=None)->dict[str,Any]:
+    # A queue overlap is not proof that an old plan belongs to current provider
+    # bytes. Never dispatch any lane from a different (or missing) census run.
+    source_run=str(batch.get("sourceRunId") or "").strip()
+    census_run=str(status.get("runId") or "").strip()
+    source_sha=str(batch.get("sourceTriggerSha") or "").strip().casefold()
+    census_sha=str(status.get("triggerSha") or "").strip().casefold()
+    # A run-id match alone is insufficient: a regenerated or manually edited
+    # plan must also retain the exact source-byte census provenance.
+    stale_batch=(
+        not source_run or not census_run or source_run!=census_run
+        or not source_sha or not census_sha or source_sha!=census_sha
+    )
     current_repair={str(x).strip().casefold() for x in status.get("repairQueue") or [] if str(x).strip()}
     current_dynamic={cid(x) for x in (dynamic_repair or set()) if cid(x)}
     current_environment={
@@ -237,6 +261,9 @@ def build(batch:dict[str,Any],status:dict[str,Any],dynamic_repair:set[str] | Non
             if unexpected:
                 row["dispatchAllowed"]=False
                 row["blocker"]="batch/census queue mismatch; rebuild Retest before dispatch"
+            if stale_batch:
+                row["dispatchAllowed"]=False
+                row["blocker"]="stale batch/census provenance; regenerate execution plan"
             for provider in partition_providers:
                 existing=provider_owner.get(provider)
                 if existing and existing!=row["lane"]:
@@ -259,6 +286,7 @@ def build(batch:dict[str,Any],status:dict[str,Any],dynamic_repair:set[str] | Non
         "sourceCensusRunId":status.get("runId"),
         "sourceCensusSha":status.get("triggerSha"),
         "sourceBatchRunId":batch.get("sourceRunId"),
+        "sourceCensusConsistent":not stale_batch,
         "executionModel":{
             "controlPlane":"causal-owner-router",
             "rule":"deepest-current-proof-owns-lane",
