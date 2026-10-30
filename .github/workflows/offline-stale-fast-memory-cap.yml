@@ -1,0 +1,29 @@
+name: Offline Stale Fast Memory Capacity Contract
+
+on:
+  pull_request:
+    paths:
+      - scripts/merge_stale_fast_repair_memory.py
+      - tests/brain_stale_fast_repair_memory_capacity_test.py
+      - .github/workflows/offline-stale-fast-memory-cap.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  offline-memory-regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+      - name: Compile and exercise offline memory contracts
+        run: |
+          set -euo pipefail
+          python -m py_compile scripts/merge_stale_fast_repair_memory.py scripts/brain_negative_memory_retention.py tests/brain_stale_fast_repair_memory_capacity_test.py
+          python tests/brain_stale_fast_repair_memory_test.py
+          python tests/brain_negative_memory_retention_test.py
+          python tests/brain_stale_fast_repair_memory_capacity_test.py
