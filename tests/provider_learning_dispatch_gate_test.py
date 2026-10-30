@@ -2,7 +2,11 @@
 from __future__ import annotations
 
 import importlib.util
+import json
 from pathlib import Path
+import subprocess
+import sys
+import tempfile
 
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = ROOT / "scripts" / "provider_learning_dispatch_gate.py"
@@ -152,6 +156,47 @@ plan_first = module.select_execution_plan(
     requested=["learn-only"],
 )
 assert plan_first["eligibleProviders"] == ["learn-only"], plan_first
+
+# An omitted filter means the whole lane, but an explicitly supplied empty
+# (e.g. invalid-only) filter must fail closed rather than selecting everyone.
+unfiltered = module.select_execution_plan(
+    execution_plan, {"providers": {}}, lane="BRAIN_LEARNING",
+)
+assert unfiltered["eligibleProviders"] == ["learn-only"], unfiltered
+invalid_only = module.select_execution_plan(
+    execution_plan, {"providers": {}}, lane="BRAIN_LEARNING", requested=[],
+)
+assert invalid_only["eligibleProviders"] == [], invalid_only
+assert module._requested("bad/path", brain()) == []
+assert module._requested("", brain()) == ["demo", "harness"]
+
+# Exercise the CLI, where a user-supplied invalid value is sanitized to [].
+with tempfile.TemporaryDirectory() as tmp:
+    directory = Path(tmp)
+    plan_file = directory / "plan.json"
+    brain_file = directory / "brain.json"
+    ledger_file = directory / "ledger.json"
+    output_file = directory / "selection.json"
+    plan_file.write_text(json.dumps(execution_plan), encoding="utf-8")
+    brain_file.write_text(json.dumps(brain()), encoding="utf-8")
+    ledger_file.write_text('{"providers":{}}', encoding="utf-8")
+    for command, source_flag, source in (
+        ("select", "--brain", brain_file),
+        ("select-plan", "--plan", plan_file),
+    ):
+        args = [
+            sys.executable, str(SCRIPT), command,
+            source_flag, str(source),
+            "--ledger", str(ledger_file),
+            "--providers", "bad/path",
+            "--output", str(output_file),
+        ]
+        if command == "select-plan":
+            args.extend(["--lane", "BRAIN_LEARNING"])
+        subprocess.run(args, check=True, capture_output=True, text=True)
+        result = json.loads(output_file.read_text(encoding="utf-8"))
+        assert result["eligibleProviders"] == [], (command, result)
+
 plan_ledger = module.mark_dispatched({"providers": {}}, plan_first, repair_run_id="auto-1")
 plan_repeat = module.select_execution_plan(
     execution_plan,
