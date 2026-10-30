@@ -1,17 +1,17 @@
 {
   "schema_version": 63,
-  "generated_at": "2026-10-30T15:09:07.655197+00:00",
+  "generated_at": "2026-10-30T20:56:12.634937+00:00",
   "test_environment": "github-actions-node",
   "checked_providers": 41,
   "status_counts": {
-    "healthy": 3,
+    "healthy": 2,
     "reachable": 0,
     "blocked": 8,
     "degraded": 1,
-    "no_streams": 8,
+    "no_streams": 10,
     "provider_unreachable": 13,
     "runtime_error": 0,
-    "unavailable": 8,
+    "unavailable": 7,
     "excluded": 0
   },
   "policy": {
@@ -2038,7 +2038,7 @@
     },
     {
       "id": "moviesmod",
-      "status": "unavailable",
+      "status": "no_streams",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
@@ -2489,18 +2489,14 @@
     },
     {
       "id": "sekai",
-      "status": "healthy",
+      "status": "no_streams",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
-      "consecutive_successes": 2,
-      "hosts": [
-        "5.mugiwara.one"
-      ],
-      "response_categories": [
-        "playable"
-      ],
+      "consecutive_successes": 0,
+      "hosts": [],
+      "response_categories": [],
       "host_health": {
         "4.mugiwara.one": {
           "last_checked_at": "2026-10-30T06:06:22.593310+00:00",
