@@ -13,6 +13,7 @@ spec.loader.exec_module(mod)
 
 batch={
     "sourceRunId":"run",
+    "sourceTriggerSha":"sha",
     "groups":[
         {"groupId":"candidate","repairScope":"candidate-replay","providers":["candidate"],"capabilityStrategy":"direct_media"},
         {"groupId":"route","repairScope":"route-to-terminal","providers":["route"],"capabilityStrategy":"html_scraper"},
@@ -59,6 +60,26 @@ assert by["learn"]["lane"]=="BRAIN_LEARNING"
 assert out["providerCount"]==9
 assert out["blockedExecutionCount"]==0
 
+# Even when every provider still appears in the current queue, a plan from
+# another census run must be entirely non-dispatchable.
+stale_batch={**batch,"sourceRunId":"old-census"}
+stale_output=mod.build(stale_batch,status,{"green"})
+assert stale_output["sourceCensusConsistent"] is False
+assert stale_output["dispatchableExecutionCount"]==0
+assert stale_output["blockedExecutionCount"]==stale_output["executionCount"]
+assert all(row["dispatchAllowed"] is False for row in stale_output["executions"])
+assert all("stale batch/census provenance" in row["blocker"] for row in stale_output["executions"])
+missing_run_output=mod.build({**batch,"sourceRunId":""},status,{"green"})
+assert missing_run_output["dispatchableExecutionCount"]==0
+wrong_sha_output=mod.build({**batch,"sourceTriggerSha":"old-sha"},status,{"green"})
+assert wrong_sha_output["sourceCensusConsistent"] is False
+assert wrong_sha_output["dispatchableExecutionCount"]==0
+missing_sha_output=mod.build({**batch,"sourceTriggerSha":""},status,{"green"})
+assert missing_sha_output["dispatchableExecutionCount"]==0
+missing_census_sha_output=mod.build(batch,{**status,"triggerSha":""},{"green"})
+assert missing_census_sha_output["dispatchableExecutionCount"]==0
+assert mod.build(batch,status,{"green"})["sourceCensusConsistent"] is True
+
 # A stale/mismatched batch may never auto-dispatch.
 bad_status={**status,"repairQueue":["route","chain","network","domain","unknown"]}
 bad=mod.build(batch,bad_status,{"green"})
@@ -72,6 +93,7 @@ assert variant["queueMismatchProviders"]==["green"]
 
 refined={
     "sourceRunId":"run",
+    "sourceTriggerSha":"sha",
     "groups":[
         {**row,"groupId":str(row["groupId"])+"#r1"}
         for row in batch["groups"]
@@ -84,6 +106,22 @@ assert mod.plan_providers(selected)==mod.plan_providers(batch)
 stale={**refined,"sourceRunId":"old"}
 selected,source_name=mod.select_batch_plan(batch,stale,status,{"green"})
 assert selected is batch and source_name=="canonical-stale-refined"
+
+# A refined plan with the same run id and provider partition but stale or
+# missing source bytes must never become execution authority.
+for forged in (
+    {**refined,"sourceTriggerSha":"old-sha"},
+    {**refined,"sourceTriggerSha":""},
+    {**refined,"sourceTriggerSha":None},
+):
+    selected,source_name=mod.select_batch_plan(batch,forged,status,{"green"})
+    assert selected is batch and source_name=="canonical-stale-refined"
+selected,source_name=mod.select_batch_plan(batch,refined,{**status,"triggerSha":"different"},{"green"})
+assert selected is batch and source_name=="canonical-stale-refined"
+selected,source_name=mod.select_batch_plan(batch,refined,{**status,"runId":"different"},{"green"})
+assert selected is batch and source_name=="canonical-stale-refined"
+selected,source_name=mod.select_batch_plan({**batch,"sourceTriggerSha":""},refined,status,{"green"})
+assert selected.get("sourceTriggerSha")=="" and source_name=="canonical-stale-refined"
 
 missing={**refined,"groups":refined["groups"][:-1]}
 selected,source_name=mod.select_batch_plan(batch,missing,status,{"green"})
