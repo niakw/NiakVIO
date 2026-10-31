@@ -320,8 +320,11 @@ def mark_dispatched(
             continue
         prior = providers.get(provider, {})
         history = dispatched_fingerprints(prior)
-        if fingerprint not in history:
-            history.append(fingerprint)
+        # A retried mark for an already recorded causal fingerprint is not a
+        # second dispatch. Preserve its original run provenance and count.
+        if fingerprint in history:
+            continue
+        history.append(fingerprint)
         dispatches = max(0, min(int(prior.get("dispatchCount") or 0) + 1, 9999))
         providers[provider] = {
             "lastDispatchedFingerprint": fingerprint,
