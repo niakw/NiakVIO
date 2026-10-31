@@ -300,6 +300,11 @@ jobs:
             fi
           fi
           force_mode="${{ inputs.architecture_force || false }}"
+          # Only the event-scoped Fast trigger may opt a push run into FORCE.
+          # Never reuse the persisted Autopilot FORCE trigger as a lease.
+          if [ "${GITHUB_EVENT_NAME}" = "push" ]; then
+            force_mode="$(jq -r '.architectureForce == true' .github/triggers/provider-fast-repair.json)"
+          fi
           if [ "$force_mode" != "true" ]; then force_mode=false; fi
           args=(python scripts/run_provider_fast_repair.py --waves "$waves" --time-budget-seconds "$budget" --max-rounds-per-batch "$max_rounds")
           if [ "$force_mode" = "true" ]; then args+=(--architecture-force); fi
@@ -405,6 +410,11 @@ jobs:
           PY
           )
           force_mode="${{ inputs.architecture_force || false }}"
+          # Only the event-scoped Fast trigger may opt a push run into FORCE.
+          # Never reuse the persisted Autopilot FORCE trigger as a lease.
+          if [ "${GITHUB_EVENT_NAME}" = "push" ]; then
+            force_mode="$(jq -r '.architectureForce == true' .github/triggers/provider-fast-repair.json)"
+          fi
           if [ "$force_mode" != "true" ]; then force_mode=false; fi
           record_learning_debt() {
             if [ "${learn_handoff_count:-0}" -le 0 ]; then
