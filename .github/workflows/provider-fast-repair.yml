@@ -36,6 +36,11 @@ on:
         required: false
         default: true
         type: boolean
+      architecture_force:
+        description: Explicit FORCE opt-in for this Fast Repair dispatch; stale Autopilot trigger state never grants FORCE
+        required: false
+        default: false
+        type: boolean
       prior_fast_run_id:
         description: Optional previous same-repo Fast Brain run for compatible negative-prior recovery
         required: false
@@ -294,16 +299,8 @@ jobs:
               [ -z "$provider" ] || providers+=("$provider")
             fi
           fi
-          force_mode="$(python - <<'PY'
-          import json
-          from pathlib import Path
-          try:
-              d=json.loads(Path(".github/triggers/provider-brain-autopilot.json").read_text(encoding="utf-8"))
-          except Exception:
-              d={}
-          print("true" if str(d.get("mode") or "").strip().casefold()=="force" else "false")
-          PY
-          )"
+          force_mode="${{ inputs.architecture_force || false }}"
+          if [ "$force_mode" != "true" ]; then force_mode=false; fi
           args=(python scripts/run_provider_fast_repair.py --waves "$waves" --time-budget-seconds "$budget" --max-rounds-per-batch "$max_rounds")
           if [ "$force_mode" = "true" ]; then args+=(--architecture-force); fi
           for p in "${providers[@]}"; do args+=(--provider "$p"); done
@@ -407,25 +404,8 @@ jobs:
           print(len(rows), ','.join(rows))
           PY
           )
-          force_mode="$(python - <<'PY'
-          import json
-          from pathlib import Path
-          try:
-              trigger=json.loads(Path(".github/triggers/provider-brain-autopilot.json").read_text(encoding="utf-8"))
-          except (OSError, ValueError):
-              trigger={}
-          try:
-              summary=json.loads(Path("automation/provider-fast-repair-summary.json").read_text(encoding="utf-8"))
-          except (OSError, ValueError):
-              summary={}
-          explicit_force=str(trigger.get("mode") or "").strip().casefold()=="force"
-          stalled=str(summary.get("brainNoProgressReason") or "")=="no_new_repair_experiment"
-          unresolved=bool(summary.get("learnHandoffProviders"))
-          # Architecture FORCE only follows a real exhausted Repair cohort.
-          # A healthy or merely blocked provider cannot start an LLM mutation.
-          print("true" if explicit_force or (stalled and unresolved) else "false")
-          PY
-          )"
+          force_mode="${{ inputs.architecture_force || false }}"
+          if [ "$force_mode" != "true" ]; then force_mode=false; fi
           record_learning_debt() {
             if [ "${learn_handoff_count:-0}" -le 0 ]; then
               if gh workflow run provider-census-sharded.yml \
@@ -496,6 +476,7 @@ jobs:
             requeue_budget="${{ inputs.time_budget_seconds || '600' }}"
             requeue_rounds="${{ inputs.max_rounds_per_batch || '1' }}"
             requeue_publish="${{ inputs.publish_validated || true }}"
+            requeue_force="${{ inputs.architecture_force || false }}"
             requeue_source="dispatch-inputs"
 
             # A stale automatic workflow_dispatch must never resurrect its old
@@ -528,6 +509,7 @@ jobs:
           print(str(int(d.get('maxRoundsPerBatch') or 3)))
           print('true' if d.get('publishValidated', True) is True else 'false')
           print(','.join(str(x or '').strip().lower().replace('_','-') for x in d.get('targetProviders') or [] if str(x or '').strip()))
+          print('true' if d.get('architectureForce') is True else 'false')
           PY
               )
               requeue_waves="${requeue_vals[0]:-1}"
@@ -535,6 +517,7 @@ jobs:
               requeue_rounds="${requeue_vals[2]:-1}"
               requeue_publish="${requeue_vals[3]:-true}"
               requeue_target_providers="${requeue_vals[4]:-}"
+              requeue_force="${requeue_vals[5]:-false}"
               requeue_target_provider=""
             fi
             args=(gh workflow run provider-fast-repair.yml
@@ -543,7 +526,8 @@ jobs:
               -f waves="$requeue_waves"
               -f time_budget_seconds="$requeue_budget"
               -f max_rounds_per_batch="$requeue_rounds"
-              -f publish_validated="$requeue_publish")
+              -f publish_validated="$requeue_publish"
+              -f architecture_force="$requeue_force")
             if [ -n "$requeue_target_providers" ]; then
               args+=(-f target_providers="$requeue_target_providers")
             elif [ -n "$requeue_target_provider" ]; then
