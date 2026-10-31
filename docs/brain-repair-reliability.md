@@ -86,7 +86,7 @@ supplémentaire n'est demandé.
 - Blocage des mutations réellement rejetées dans le même contexte de source.
 - Revalidation des anciennes recettes positives et conservation de leur requête terminale.
 - Priorité au parcours terminal réellement exécuté dans le choix des fonctions éditables.
-- 319 tests Brain et audit de confidentialité réussis lors de la reprise du 31 octobre 2026.
+- 321 tests Brain et audit de confidentialité réussis lors de la reprise du 31 octobre 2026.
 - Régressions NiakVIO : dispatch v3 réel, ancre durcie, propriété native,
   reconstruction successive, fichier stagé inchangé, spécification absente,
   mémoire historique non prouvée, feedback borné et isolation des secrets.
@@ -189,7 +189,7 @@ immédiate entre le dispatcher et le dernier helper testé.
 Les deltas du 24 octobre ont été réappliqués aux versions actuelles des deux
 dépôts, en conservant les correctifs ultérieurs du Brain, notamment le confinement
 des chemins et la confidentialité des références. Le workflow utilise le SHA
-Brain réellement publié `28f9783e11e9ee4c04675152651d2b0573998de0`.
+Brain réellement publié `91db65bdae83ce79b6185e5753bf19c2650a1025`.
 Les tests du pont de mutation et des observations média passent également.
 Ces vérifications locales ne valident pas encore une réparation de lecture.
 
@@ -240,3 +240,14 @@ réserve les étapes distinctes par fixture puis les formes distinctes avant les
 doublons, en conservant la limite de huit observations sur douze événements
 d'entrée. Le rejeu réel transmet désormais les 54 options et les trois champs
 au prompt. Les tests couvrent aussi le filtrage de valeurs forgées et l'idempotence.
+
+Le [run 41218371896](https://github.com/niakw/NiakVIO/actions/runs/41218371896)
+n'appelle pourtant pas le modèle : le census classe maintenant ce provider
+`candidate_replay_gap`, stratégie de rejeu sans mutation. L'ancien raffinement
+du diagnostic courant ne remplaçait que le risque de variantes. Le raffinement
+d'un classement de rejeu exige désormais le même contre-exemple média complet :
+épisode long sans flux, MP4 court mesuré pour cette même fixture, HTTP réussi,
+échantillon suffisant et lecture/annulation achevées. Un simple rejeu ou une preuve
+incomplète restent inchangés. Les tests confirment aussi que les exigences de
+preuve courante de la politique de mutation restent obligatoires. Aucun gain de
+lecture n'est déduit d'une abstention préalable à l'appel au modèle.
