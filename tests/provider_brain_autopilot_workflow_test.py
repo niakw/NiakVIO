@@ -91,6 +91,7 @@ for source in (fast, remat):
     assert "DISPATCH_PROVIDERS" in source
 
 assert '-f waves=1 -f time_budget_seconds=1200 -f max_rounds_per_batch=3' in autopilot
+assert 'if [ "$FORCE_MODE" = "true" ]; then args+=(-f architecture_force=true); fi' in autopilot
 assert 'learning_dispatch=true architecture_force=$force_mode publish_proposal=$publish_proposal owner=immediate-targeted-learning' in fast
 fast_learning_start = fast.index("record_learning_debt()")
 fast_learning_end = fast.index("git fetch --quiet origin main", fast_learning_start)
