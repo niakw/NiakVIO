@@ -96,6 +96,43 @@ jobs:
         run: |
           echo "FIELD_PROVIDER_AUTOPILOT_STALE_FORCE ignored=true event=${{ steps.plan.outputs.event_name }} trigger_mode=${{ steps.plan.outputs.trigger_mode }} reason=force-is-explicit-event-scoped"
 
+      # Read-only gate: historical causal fingerprints must not trigger a new
+      # automatic Learning attempt. This does not claim a cross-workflow atomic
+      # reservation; durable coordination still requires a separate transaction.
+      - name: Gate automatic Learning against durable causal history
+        id: learning-gate
+        shell: bash
+        env:
+          PLANNED_LEARNING: ${{ steps.plan.outputs.learning }}
+          PLANNED_HARNESS: ${{ steps.plan.outputs.harness }}
+        run: |
+          set -euo pipefail
+          ledger=automation/provider-learning-dispatch-ledger.json
+          plan="$RUNNER_TEMP/provider-execution-plan.json"
+          # Missing history must fail closed rather than replay old methods.
+          test -s "$ledger"
+          learning=""
+          harness=""
+          if [ -n "$PLANNED_LEARNING" ]; then
+            python scripts/provider_learning_dispatch_gate.py select-plan \
+              --plan "$plan" --ledger "$ledger" --lane BRAIN_LEARNING \
+              --providers "$PLANNED_LEARNING" \
+              --output "$RUNNER_TEMP/autopilot-learning-selection.json"
+            learning="$(python -c 'import json,sys; print(json.load(open(sys.argv[1], encoding="utf-8"))["providerFilter"])' "$RUNNER_TEMP/autopilot-learning-selection.json")"
+          fi
+          if [ -n "$PLANNED_HARNESS" ]; then
+            python scripts/provider_learning_dispatch_gate.py select-plan \
+              --plan "$plan" --ledger "$ledger" --lane CORE_CLIENT_LEARNING \
+              --providers "$PLANNED_HARNESS" \
+              --output "$RUNNER_TEMP/autopilot-harness-learning-selection.json"
+            harness="$(python -c 'import json,sys; print(json.load(open(sys.argv[1], encoding="utf-8"))["providerFilter"])' "$RUNNER_TEMP/autopilot-harness-learning-selection.json")"
+          fi
+          {
+            echo "learning=$learning"
+            echo "harness=$harness"
+          } >> "$GITHUB_OUTPUT"
+          echo "FIELD_PROVIDER_AUTOPILOT_CAUSAL_GATE planned_learning=${PLANNED_LEARNING:-none} eligible_learning=${learning:-none} planned_harness=${PLANNED_HARNESS:-none} eligible_harness=${harness:-none}"
+
       - name: Dispatch causal owner lanes
         if: ${{ inputs.dry_run != true }}
         shell: bash
@@ -103,8 +140,8 @@ jobs:
           DOMAIN: ${{ steps.plan.outputs.domain }}
           REMAT: ${{ steps.plan.outputs.remat }}
           FAST: ${{ steps.plan.outputs.fast }}
-          LEARNING: ${{ steps.plan.outputs.learning }}
-          HARNESS: ${{ steps.plan.outputs.harness }}
+          LEARNING: ${{ steps.learning-gate.outputs.learning }}
+          HARNESS: ${{ steps.learning-gate.outputs.harness }}
           FORCE_MODE: ${{ steps.plan.outputs.force }}
         run: |
           set -euo pipefail
