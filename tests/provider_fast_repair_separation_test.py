@@ -130,6 +130,7 @@ assert "cancel-in-progress: false" in workflow
 assert "cancel-in-progress: true" not in workflow
 
 assert workflow.count('force_mode="${{ inputs.architecture_force || false }}"') == 2
+assert workflow.count("force_mode=\"$(jq -r '.architectureForce == true' .github/triggers/provider-fast-repair.json)\"") == 2
 assert 'architecture_force:' in workflow
 assert 'Path(".github/triggers/provider-brain-autopilot.json")' not in workflow
 assert 'stalled=str(summary.get("brainNoProgressReason")' not in workflow
