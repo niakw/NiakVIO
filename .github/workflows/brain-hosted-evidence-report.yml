@@ -4,15 +4,11 @@ on:
   workflow_run:
     workflows: [Brain - Hosted single-provider repair check]
     types: [completed]
-  push:
-    branches: [main]
-    paths: [.github/workflows/brain-hosted-evidence-report.yml]
   workflow_dispatch:
     inputs:
       run_id:
         description: Existing hosted repair run to inspect, without new inference
         required: true
-        default: '39858290849'
 
 permissions:
   actions: read
@@ -33,7 +29,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 3
     env:
-      SOURCE_RUN: ${{ github.event.workflow_run.id || inputs.run_id || '39858290849' }}
+      SOURCE_RUN: ${{ github.event.workflow_run.id || inputs.run_id }}
       # Learning survives deletion of a merged experiment branch.
       TARGET_BRANCH: main
     steps:
@@ -129,6 +125,13 @@ jobs:
           if mutations.is_file():
               target = path.with_name(os.environ['SOURCE_RUN'] + '-mutations.json')
               target.write_bytes(mutations.read_bytes())
+          # Preserve only independently projected types/counts, including abstentions.
+          live = Path('evidence/live-context.json')
+          if live.is_file():
+              from scripts.player_markup_evidence import public_player_markup
+              context = public_player_markup(json.loads(live.read_text()), result.get('currentSha'))
+              target = path.with_name(os.environ['SOURCE_RUN'] + '-player-markup.json')
+              target.write_text(json.dumps(context, indent=2) + '\n')
           PY
           git add automation/brain-llm-force-memory.json automation/hosted-repair-evidence
           git diff --cached --quiet && exit 0
