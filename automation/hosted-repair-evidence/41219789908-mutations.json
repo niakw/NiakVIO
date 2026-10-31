@@ -1,0 +1,114 @@
+{
+  "brainLlmSha": "91db65bdae83ce79b6185e5753bf19c2650a1025",
+  "minConfidence": 0.8,
+  "privateContentRetained": false,
+  "proofAuthority": false,
+  "providerCount": 1,
+  "providerMutationContentRetained": true,
+  "publicationAuthority": false,
+  "rows": [
+    {
+      "candidateOrdinal": 1,
+      "confidence": 0.96,
+      "failureClass": "chain-terminal-gap",
+      "mechanismFamily": "wordpress-search-episode",
+      "mutationContextFingerprint": "7338e5b91624899c82233beb8255b3d914c644d1d599ec762ae29a2c171d2493",
+      "mutationFingerprint": "b2b6ffb13b7a98cf6e4d8b042aebd58155346972c9690479b7c0cfdd9e2a2da7",
+      "mutations": [
+        {
+          "family": "wordpress_search_episode",
+          "find": "return{url:r.url||url,text:await r.text()",
+          "operation": "upsert",
+          "replace": "var raw=await r.text(),decoded=\"\";try{if(typeof _spv186UnpackPackedPlayer===\"function\")decoded=_spv186UnpackPackedPlayer(raw)}catch(_e){}return{url:r.url||url,text:decoded&&decoded!==raw?raw+\"\\n\"+decoded:raw",
+          "scope": "provider_bloc"
+        }
+      ],
+      "providerId": "animevostfr",
+      "repairFamily": {
+        "archetype": "variant-coverage-gap:dom-selector-container",
+        "failure": "variant-coverage-gap",
+        "key": "276ef77a18135059b8b319827cd9910800d8c9f2c1016c6b2c481933b65d9f1c",
+        "mediaTypes": [
+          "anime"
+        ],
+        "mutationSurfaces": [
+          "provider-bloc",
+          "provider-data",
+          "provider-js",
+          "provider-patch"
+        ],
+        "signals": [
+          "mixed-tag-nested-container",
+          "nested-anchor-html",
+          "provider-http-2xx",
+          "response-html",
+          "response-json"
+        ],
+        "stages": [
+          "provider-network-zero-result"
+        ],
+        "status": "candidate-ok",
+        "version": 2
+      },
+      "strategy": "terminal-media-extractor-with-playback-validation",
+      "targetLayer": "provider",
+      "tests": [
+        "replay_proven_chain_to_terminal_media",
+        "validate_media_signature_duration_and_identity"
+      ]
+    },
+    {
+      "candidateOrdinal": 1,
+      "confidence": 0.96,
+      "failureClass": "chain-terminal-gap",
+      "mechanismFamily": "wordpress-search-episode",
+      "mutationContextFingerprint": "7338e5b91624899c82233beb8255b3d914c644d1d599ec762ae29a2c171d2493",
+      "mutationFingerprint": "a007696066c47633c192781cf1f533084f43752576c9f4eb836d9b004de7d923",
+      "mutations": [
+        {
+          "family": "wordpress_search_episode",
+          "find": "re=/(?:src|data-src)=[\"']([^\"']+)[\"']/gi,m;while((m=re.exec(html||\"\"))!==null&&out.length<20){var u=abs(m[1],base);if(!u||seen[u])continue;if(u.indexOf(\"trembed\")<0&&u.indexOf(c.base)<0)continue;seen[u]=1;out.push(u)}return out",
+          "operation": "upsert",
+          "replace": "tags=/<(iframe|option|div)\\b[^>]*>/gi,t;while((t=tags.exec(html||\"\"))!==null){var kind=t[1].toLowerCase(),re=/\\b(src|data-src|value)\\s*=\\s*[\"']([^\"']+)[\"']/gi,m;while((m=re.exec(t[0]))!==null){var attr=m[1].toLowerCase();if(kind===\"option\"?attr!==\"value\":kind===\"div\"?attr!==\"data-src\":attr===\"value\")continue;var raw=s(m[2]);if(!raw||/^(?:javascript:|data:|about:|#)/i.test(raw))continue;var u=abs(raw,base);if(!/^https?:\\/\\//i.test(u)||seen[u])continue;seen[u]=1;out.push(u)}}return out;",
+          "scope": "provider_bloc"
+        }
+      ],
+      "providerId": "animevostfr",
+      "repairFamily": {
+        "archetype": "variant-coverage-gap:dom-selector-container",
+        "failure": "variant-coverage-gap",
+        "key": "276ef77a18135059b8b319827cd9910800d8c9f2c1016c6b2c481933b65d9f1c",
+        "mediaTypes": [
+          "anime"
+        ],
+        "mutationSurfaces": [
+          "provider-bloc",
+          "provider-data",
+          "provider-js",
+          "provider-patch"
+        ],
+        "signals": [
+          "mixed-tag-nested-container",
+          "nested-anchor-html",
+          "provider-http-2xx",
+          "response-html",
+          "response-json"
+        ],
+        "stages": [
+          "provider-network-zero-result"
+        ],
+        "status": "candidate-ok",
+        "version": 2
+      },
+      "strategy": "terminal-media-extractor-with-playback-validation",
+      "targetLayer": "provider",
+      "tests": [
+        "replay_proven_chain_to_terminal_media",
+        "validate_media_signature_duration_and_identity"
+      ]
+    }
+  ],
+  "sandboxMutationAuthority": true,
+  "schemaVersion": 1,
+  "sourceNiakvioSha": "64ef9d0fc1ba8da8d8bb38e46fe7e8aa84a37569"
+}
