@@ -90,8 +90,14 @@ for rotating_provider in ("wookafr", "hindmoviez"):
     assert str(rotating.get("direct") or "").startswith("https://"), rotating
     assert (rotating.get("direct_candidates") or [None])[0] == rotating["direct"], rotating
     assert str(rotating.get("direct_authority_source") or ""), rotating
-assert hubs["movieshunt"]["direct"] == "https://movieshunt.run/"
-assert hubs["movieshunt"]["direct_authority"] == "explicit_current"
+movieshunt_hub = hubs["movieshunt"]
+movieshunt_direct = str(movieshunt_hub.get("direct") or "")
+movieshunt_host = (urlparse(movieshunt_direct).hostname or "").casefold()
+assert movieshunt_direct.startswith("https://") and movieshunt_host, movieshunt_hub
+assert movieshunt_hub["direct_authority"] == "explicit_current"
+assert (movieshunt_hub.get("direct_candidates") or [None])[0] == movieshunt_direct, movieshunt_hub
+assert movieshunt_host in movieshunt_hub.get("allowed_terminal_hosts", []), movieshunt_hub
+assert movieshunt_host not in movieshunt_hub.get("blocked_hosts", []), movieshunt_hub
 assert hubs["animesalt"]["direct"] == "https://animesalt.cx/"
 assert hubs["animesalt"]["direct_authority"] == "explicit_current"
 assert hubs["animesalt"]["allowed_terminal_hosts"] == ["animesalt.cx"]
@@ -105,7 +111,8 @@ assert hubs["animesama-co"]["allowed_terminal_hosts"] == ["animesama.co"]
 assert set(hubs["animesama-co"]["aliases"]) == {"animesama-co", "animesama.co"}
 assert "animes-sama.fr" in hubs["animesama-co"]["blocked_hosts"]
 
-assert hubs["movieshunt"]["allowed_terminal_hosts"] == ["movieshunt.run"]
+# Old terminals may remain as bounded fallback candidates after a valid rotation.
+assert movieshunt_host in hubs["movieshunt"]["allowed_terminal_hosts"]
 assert "movieshunt.ws" in hubs["movieshunt"]["blocked_hosts"]
 assert "movieshunt.monster" not in hubs["movieshunt"]["blocked_hosts"]
 
@@ -144,12 +151,22 @@ assert "/anime/{id}-{slug}.html" in asco["learned_routes"]
 
 movieshunt_plan = overrides["movieshunt"]["search_request_plan"]
 assert len(movieshunt_plan) == 1, movieshunt_plan
-assert movieshunt_plan[0]["base"] == "https://movieshunt.run", movieshunt_plan
+# The executable search plan may retain a historical, explicitly allowed
+# terminal until separate current-byte route/playback proof requalifies it.
+# Domain Refresh must not be blocked by a fixed historical hostname.
+plan_base = str(movieshunt_plan[0].get("base") or "")
+plan_host = (urlparse(plan_base).hostname or "").casefold()
+assert plan_base.startswith("https://") and plan_host, movieshunt_plan
+assert plan_host in movieshunt_hub["allowed_terminal_hosts"], movieshunt_plan
 assert movieshunt_plan[0]["route"] == "/search.html?q={query}", movieshunt_plan
 assert overrides["movieshunt"]["learned_routes"] == ["/search.html?q={query}", "/?s={query}"], overrides["movieshunt"]["learned_routes"]
 assert movieshunt_plan[0]["requestSpec"]["headers"]["Accept"].startswith("text/html"), movieshunt_plan
-assert movieshunt_plan[0]["requestSpec"]["headers"]["Referer"] == "https://movieshunt.run/", movieshunt_plan
-assert overrides["movieshunt"]["proof_protected_hosts"] == ["movieshunt.run"], overrides["movieshunt"]
+plan_referer = str(movieshunt_plan[0]["requestSpec"]["headers"]["Referer"])
+assert (urlparse(plan_referer).hostname or "").casefold() == plan_host, movieshunt_plan
+# Historical proof-protected hosts are priors, not proof of the newly
+# rotated terminal. Never silently promote a new host from this test.
+assert plan_host in overrides["movieshunt"]["proof_protected_hosts"], overrides["movieshunt"]
+assert (urlparse(str(overrides["movieshunt"].get("official_site") or "")).hostname or "").casefold() == movieshunt_host, overrides["movieshunt"]
 
 assert hubs["voiranime"]["direct"] == "https://voir-anime.to/"
 assert hubs["voiranime"]["direct_authority"] == "explicit_current"
