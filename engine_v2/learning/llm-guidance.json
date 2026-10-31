@@ -1,0 +1,598 @@
+{
+  "brainLlmSha": "424e98c093e7f5da8279f3f11e56520357d5ef3b",
+  "directMutationAuthority": false,
+  "minConfidence": 0.8,
+  "proofAuthority": false,
+  "providerCount": 17,
+  "publicationAuthority": false,
+  "rawMutationContentRetained": false,
+  "rows": [
+    {
+      "confidence": 0.96,
+      "experiment": {
+        "aliasSearch": false,
+        "documentRequestMining": false,
+        "maxDepth": 3,
+        "maxEmbeds": 10,
+        "maxPages": 10,
+        "maxRecipePasses": 1,
+        "recipePolicy": "current_only",
+        "responseSalvage": false,
+        "roleOrder": [
+          "player"
+        ],
+        "routePolicy": "owned_only",
+        "sessionBootstrap": false,
+        "terminalOnly": true
+      },
+      "experimentFingerprint": "8120cc17980309a8ab9f1a2ab6786f54c8655b2a9fbd62b8d303a7ed828d1bd2",
+      "failureClass": "chain-terminal-gap",
+      "priorOnly": true,
+      "profile": "chain_terminal_extractor_v1",
+      "providerId": "allanime",
+      "strategy": "terminal-media-extractor-with-playback-validation",
+      "targetLayer": "provider"
+    },
+    {
+      "confidence": 0.96,
+      "experiment": {
+        "aliasSearch": true,
+        "documentRequestMining": true,
+        "maxDepth": 3,
+        "maxEmbeds": 10,
+        "maxPages": 10,
+        "maxRecipePasses": 3,
+        "recipePolicy": "current_only",
+        "responseSalvage": true,
+        "roleOrder": [
+          "player"
+        ],
+        "routePolicy": "owned_only",
+        "sessionBootstrap": true,
+        "terminalOnly": true
+      },
+      "experimentFingerprint": "5fe747c0268e3421424105b088c7fa3ae22ffb2e6d827300efd26832bcb5accd",
+      "failureClass": "chain-terminal-gap",
+      "priorOnly": true,
+      "profile": "chain_terminal_extractor_v1",
+      "providerId": "mallumv",
+      "strategy": "terminal-media-extractor-with-playback-validation",
+      "targetLayer": "provider"
+    },
+    {
+      "confidence": 0.96,
+      "experiment": {
+        "aliasSearch": false,
+        "documentRequestMining": false,
+        "maxDepth": 3,
+        "maxEmbeds": 10,
+        "maxPages": 10,
+        "maxRecipePasses": 1,
+        "recipePolicy": "current_only",
+        "responseSalvage": false,
+        "roleOrder": [
+          "detail",
+          "player",
+          "source",
+          "api"
+        ],
+        "routePolicy": "owned_only",
+        "sessionBootstrap": false,
+        "terminalOnly": true
+      },
+      "experimentFingerprint": "587d4235549078e36b5fcd5417192a80699b81990b10c1ce3be9dbe475dc5928",
+      "failureClass": "route-proven-gap",
+      "priorOnly": true,
+      "profile": "proven_route_terminal_traversal_v1",
+      "providerId": "animesultra",
+      "strategy": "search-detail-player-terminal-traversal",
+      "targetLayer": "provider"
+    },
+    {
+      "confidence": 0.96,
+      "experiment": {
+        "aliasSearch": true,
+        "documentRequestMining": true,
+        "maxDepth": 3,
+        "maxEmbeds": 10,
+        "maxPages": 20,
+        "maxRecipePasses": 5,
+        "recipePolicy": "current_only",
+        "responseSalvage": true,
+        "roleOrder": [
+          "search",
+          "detail",
+          "player",
+          "source",
+          "api"
+        ],
+        "routePolicy": "owned_only",
+        "sessionBootstrap": true,
+        "terminalOnly": true
+      },
+      "experimentFingerprint": "833838c0ddb31fb9395099c9bbe09e318b5b763ad7b460c5366b11cb5d14b4fe",
+      "failureClass": "route-proven-gap",
+      "priorOnly": true,
+      "profile": "proven_route_terminal_traversal_v1",
+      "providerId": "flemmix",
+      "strategy": "search-detail-player-terminal-traversal",
+      "targetLayer": "provider"
+    },
+    {
+      "confidence": 0.96,
+      "experiment": {
+        "aliasSearch": true,
+        "documentRequestMining": true,
+        "maxDepth": 3,
+        "maxEmbeds": 10,
+        "maxPages": 10,
+        "maxRecipePasses": 3,
+        "recipePolicy": "current_only",
+        "responseSalvage": true,
+        "roleOrder": [
+          "search",
+          "detail",
+          "player"
+        ],
+        "routePolicy": "owned_only",
+        "sessionBootstrap": true,
+        "terminalOnly": true
+      },
+      "experimentFingerprint": "65d7de2d5a84ebd901e1a90e933b92e16e2ca67e28484b1e4d51aa903160413a",
+      "failureClass": "route-proven-gap",
+      "priorOnly": true,
+      "profile": "proven_route_terminal_traversal_v1",
+      "providerId": "moviesmod",
+      "strategy": "search-detail-player-terminal-traversal",
+      "targetLayer": "provider"
+    },
+    {
+      "confidence": 0.96,
+      "experiment": {
+        "aliasSearch": true,
+        "documentRequestMining": true,
+        "maxDepth": 3,
+        "maxEmbeds": 10,
+        "maxPages": 10,
+        "maxRecipePasses": 3,
+        "recipePolicy": "current_only",
+        "responseSalvage": true,
+        "roleOrder": [
+          "detail",
+          "player",
+          "source",
+          "api"
+        ],
+        "routePolicy": "owned_only",
+        "sessionBootstrap": true,
+        "terminalOnly": true
+      },
+      "experimentFingerprint": "74f6d5730bdd0af3e4c3f874406601b356018b942da4af4d3f7d8707d55ee874",
+      "failureClass": "route-proven-gap",
+      "priorOnly": true,
+      "profile": "proven_route_terminal_traversal_v1",
+      "providerId": "vidfast",
+      "strategy": "search-detail-player-terminal-traversal",
+      "targetLayer": "provider"
+    },
+    {
+      "confidence": 0.96,
+      "experiment": {
+        "aliasSearch": false,
+        "documentRequestMining": false,
+        "maxDepth": 3,
+        "maxEmbeds": 10,
+        "maxPages": 10,
+        "maxRecipePasses": 1,
+        "recipePolicy": "current_only",
+        "responseSalvage": false,
+        "roleOrder": [
+          "detail",
+          "player",
+          "source",
+          "api"
+        ],
+        "routePolicy": "owned_only",
+        "sessionBootstrap": false,
+        "terminalOnly": true
+      },
+      "experimentFingerprint": "587d4235549078e36b5fcd5417192a80699b81990b10c1ce3be9dbe475dc5928",
+      "failureClass": "route-proven-gap",
+      "priorOnly": true,
+      "profile": "proven_route_terminal_traversal_v1",
+      "providerId": "yflix",
+      "strategy": "search-detail-player-terminal-traversal",
+      "targetLayer": "provider"
+    },
+    {
+      "confidence": 0.96,
+      "experiment": {
+        "aliasSearch": false,
+        "documentRequestMining": false,
+        "maxDepth": 3,
+        "maxEmbeds": 10,
+        "maxPages": 10,
+        "maxRecipePasses": 1,
+        "recipePolicy": "current_only",
+        "responseSalvage": false,
+        "roleOrder": [
+          "detail",
+          "player",
+          "source",
+          "api"
+        ],
+        "routePolicy": "owned_only",
+        "sessionBootstrap": false,
+        "terminalOnly": true
+      },
+      "experimentFingerprint": "587d4235549078e36b5fcd5417192a80699b81990b10c1ce3be9dbe475dc5928",
+      "failureClass": "route-proven-gap",
+      "priorOnly": true,
+      "profile": "proven_route_terminal_traversal_v1",
+      "providerId": "4khdhub",
+      "strategy": "search-detail-player-terminal-traversal",
+      "targetLayer": "provider"
+    },
+    {
+      "confidence": 0.96,
+      "experiment": {
+        "aliasSearch": true,
+        "documentRequestMining": true,
+        "maxDepth": 3,
+        "maxEmbeds": 10,
+        "maxPages": 10,
+        "maxRecipePasses": 1,
+        "recipePolicy": "current_only",
+        "responseSalvage": true,
+        "roleOrder": [
+          "detail",
+          "player",
+          "source",
+          "api"
+        ],
+        "routePolicy": "owned_only",
+        "sessionBootstrap": true,
+        "terminalOnly": true
+      },
+      "experimentFingerprint": "266d8aa305d36a45b9af9266759a4663de680ed9f16ff796b2a660e433c059a7",
+      "failureClass": "route-proven-gap",
+      "priorOnly": true,
+      "profile": "proven_route_terminal_traversal_v1",
+      "providerId": "animesalt",
+      "strategy": "search-detail-player-terminal-traversal",
+      "targetLayer": "provider"
+    },
+    {
+      "confidence": 0.96,
+      "experiment": {
+        "aliasSearch": true,
+        "documentRequestMining": true,
+        "maxDepth": 3,
+        "maxEmbeds": 10,
+        "maxPages": 10,
+        "maxRecipePasses": 1,
+        "recipePolicy": "current_only",
+        "responseSalvage": true,
+        "roleOrder": [
+          "detail",
+          "player",
+          "source",
+          "api"
+        ],
+        "routePolicy": "owned_only",
+        "sessionBootstrap": true,
+        "terminalOnly": true
+      },
+      "experimentFingerprint": "266d8aa305d36a45b9af9266759a4663de680ed9f16ff796b2a660e433c059a7",
+      "failureClass": "route-proven-gap",
+      "priorOnly": true,
+      "profile": "proven_route_terminal_traversal_v1",
+      "providerId": "animevost-fr",
+      "strategy": "search-detail-player-terminal-traversal",
+      "targetLayer": "provider"
+    },
+    {
+      "confidence": 0.96,
+      "experiment": {
+        "aliasSearch": false,
+        "documentRequestMining": false,
+        "maxDepth": 3,
+        "maxEmbeds": 10,
+        "maxPages": 10,
+        "maxRecipePasses": 1,
+        "recipePolicy": "current_only",
+        "responseSalvage": false,
+        "roleOrder": [
+          "detail",
+          "player",
+          "source",
+          "api"
+        ],
+        "routePolicy": "owned_only",
+        "sessionBootstrap": false,
+        "terminalOnly": true
+      },
+      "experimentFingerprint": "587d4235549078e36b5fcd5417192a80699b81990b10c1ce3be9dbe475dc5928",
+      "failureClass": "route-proven-gap",
+      "priorOnly": true,
+      "profile": "proven_route_terminal_traversal_v1",
+      "providerId": "moviebox",
+      "strategy": "search-detail-player-terminal-traversal",
+      "targetLayer": "provider"
+    },
+    {
+      "confidence": 0.96,
+      "experiment": {
+        "aliasSearch": true,
+        "documentRequestMining": true,
+        "maxDepth": 5,
+        "maxEmbeds": 30,
+        "maxPages": 10,
+        "maxRecipePasses": 5,
+        "recipePolicy": "current_only",
+        "responseSalvage": true,
+        "roleOrder": [
+          "search",
+          "detail",
+          "player",
+          "source",
+          "api"
+        ],
+        "routePolicy": "owned_only",
+        "sessionBootstrap": true,
+        "terminalOnly": true
+      },
+      "experimentFingerprint": "937092b540e453c341706d28731047e55e32bbb4fda54a20f722fed67e851963",
+      "failureClass": "route-proven-gap",
+      "priorOnly": true,
+      "profile": "proven_route_terminal_traversal_v1",
+      "providerId": "vostfree",
+      "strategy": "search-detail-player-terminal-traversal",
+      "targetLayer": "provider"
+    },
+    {
+      "confidence": 0.99,
+      "experiment": {
+        "aliasSearch": false,
+        "documentRequestMining": false,
+        "maxDepth": 3,
+        "maxEmbeds": 10,
+        "maxPages": 10,
+        "maxRecipePasses": 1,
+        "recipePolicy": "current_only",
+        "responseSalvage": false,
+        "roleOrder": [
+          "player"
+        ],
+        "routePolicy": "owned_only",
+        "sessionBootstrap": false,
+        "terminalOnly": false
+      },
+      "experimentFingerprint": "268d6b5a1f989c82cdf97a4fe360120d39a77799a035167a8539dca4d9ea97ed",
+      "failureClass": "variant-coverage-gap",
+      "priorOnly": true,
+      "profile": "player_media_extractor_v1",
+      "providerId": "coflix",
+      "strategy": "enumerate-stream-variants-before-global-cap",
+      "targetLayer": "provider"
+    },
+    {
+      "confidence": 0.99,
+      "experiment": {
+        "aliasSearch": false,
+        "documentRequestMining": false,
+        "maxDepth": 5,
+        "maxEmbeds": 10,
+        "maxPages": 10,
+        "maxRecipePasses": 1,
+        "recipePolicy": "current_only",
+        "responseSalvage": false,
+        "roleOrder": [
+          "source"
+        ],
+        "routePolicy": "owned_only",
+        "sessionBootstrap": false,
+        "terminalOnly": false
+      },
+      "experimentFingerprint": "4f5899f3d05a4ba2a81708830e2ef65de482c59005958eb9aa895a91408ea14b",
+      "failureClass": "variant-coverage-gap",
+      "priorOnly": true,
+      "profile": "player_media_extractor_v1",
+      "providerId": "hindmoviez",
+      "strategy": "enumerate-stream-variants-before-global-cap",
+      "targetLayer": "provider"
+    },
+    {
+      "confidence": 0.96,
+      "experiment": {
+        "aliasSearch": false,
+        "documentRequestMining": false,
+        "maxDepth": 5,
+        "maxEmbeds": 24,
+        "maxPages": 24,
+        "maxRecipePasses": 4,
+        "recipePolicy": "current_plus_provider_peer",
+        "responseSalvage": false,
+        "roleOrder": [
+          "search",
+          "detail",
+          "episode",
+          "player",
+          "source",
+          "api",
+          "other"
+        ],
+        "routePolicy": "owned_plus_peer",
+        "sessionBootstrap": false,
+        "terminalOnly": false
+      },
+      "experimentFingerprint": "16ad894fc3c03be89539c14fb749def9501831b455f58f6f6f475b20acd36ad6",
+      "failureClass": "route-proven-gap",
+      "priorOnly": true,
+      "profile": "proven_route_terminal_traversal_v1",
+      "providerId": "uhdmovies",
+      "strategy": "search-detail-player-terminal-traversal",
+      "targetLayer": "provider"
+    },
+    {
+      "confidence": 0.96,
+      "experiment": {
+        "aliasSearch": true,
+        "documentRequestMining": true,
+        "maxDepth": 5,
+        "maxEmbeds": 24,
+        "maxPages": 32,
+        "maxRecipePasses": 4,
+        "recipePolicy": "current_plus_provider_peer",
+        "responseSalvage": false,
+        "roleOrder": [
+          "search",
+          "detail",
+          "episode",
+          "player",
+          "source",
+          "api",
+          "other"
+        ],
+        "routePolicy": "owned_plus_peer_generic",
+        "sessionBootstrap": false,
+        "terminalOnly": false
+      },
+      "experimentFingerprint": "66804a2b537ebc1978f152ba87355b48c0ec341d342e23d09bed388902c15ad2",
+      "failureClass": "route-proven-gap",
+      "priorOnly": true,
+      "profile": "proven_route_terminal_traversal_v1",
+      "providerId": "animekai",
+      "strategy": "search-detail-player-terminal-traversal",
+      "targetLayer": "provider"
+    },
+    {
+      "confidence": 0.86,
+      "experiment": {
+        "aliasSearch": false,
+        "documentRequestMining": true,
+        "maxDepth": 4,
+        "maxEmbeds": 16,
+        "maxPages": 18,
+        "maxRecipePasses": 5,
+        "recipePolicy": "current_only",
+        "responseSalvage": true,
+        "roleOrder": [
+          "api",
+          "detail",
+          "search",
+          "player",
+          "source",
+          "episode",
+          "other"
+        ],
+        "routePolicy": "owned_plus_peer",
+        "sessionBootstrap": true,
+        "terminalOnly": false
+      },
+      "experimentFingerprint": "068eee0766c99b2b8208302406b15c8225c1b2a19f058d4f4ef44cbb183b73d4",
+      "failureClass": "provider_transport_gap",
+      "priorOnly": true,
+      "profile": "search_contract_inference_v1",
+      "providerId": "allwish",
+      "strategy": "meta-gap-search-contract-fallback",
+      "targetLayer": "provider"
+    },
+    {
+      "confidence": 0.86,
+      "experiment": {
+        "aliasSearch": true,
+        "documentRequestMining": true,
+        "maxDepth": 5,
+        "maxEmbeds": 20,
+        "maxPages": 32,
+        "maxRecipePasses": 5,
+        "recipePolicy": "current_only",
+        "responseSalvage": true,
+        "roleOrder": [
+          "search",
+          "api",
+          "detail",
+          "player",
+          "source",
+          "episode",
+          "other"
+        ],
+        "routePolicy": "owned_plus_peer",
+        "sessionBootstrap": false,
+        "terminalOnly": false
+      },
+      "experimentFingerprint": "f2993f0666429e5fccf7fe09696dbc4ca9393bdfc70c5d789f99a44a4c18449a",
+      "failureClass": "search_gap",
+      "priorOnly": true,
+      "profile": "search_contract_inference_v1",
+      "providerId": "uhdmovies",
+      "strategy": "meta-gap-search-contract-composition",
+      "targetLayer": "provider"
+    },
+    {
+      "confidence": 0.86,
+      "experiment": {
+        "aliasSearch": false,
+        "documentRequestMining": true,
+        "maxDepth": 4,
+        "maxEmbeds": 16,
+        "maxPages": 18,
+        "maxRecipePasses": 5,
+        "recipePolicy": "current_only",
+        "responseSalvage": true,
+        "roleOrder": [
+          "api",
+          "detail",
+          "search",
+          "player",
+          "source",
+          "episode",
+          "other"
+        ],
+        "routePolicy": "owned_plus_peer_generic",
+        "sessionBootstrap": true,
+        "terminalOnly": false
+      },
+      "experimentFingerprint": "b0fa665228e88372b99033308606da03023d677a4f908e0561325c0eddbecd12",
+      "failureClass": "provider_transport_gap",
+      "priorOnly": true,
+      "profile": "provider_origin_failover_v1",
+      "providerId": "animekai",
+      "strategy": "meta-gap-provider-transport-composition",
+      "targetLayer": "provider"
+    },
+    {
+      "confidence": 0.96,
+      "experiment": {
+        "aliasSearch": true,
+        "documentRequestMining": true,
+        "maxDepth": 3,
+        "maxEmbeds": 10,
+        "maxPages": 10,
+        "maxRecipePasses": 1,
+        "recipePolicy": "current_only",
+        "responseSalvage": true,
+        "roleOrder": [
+          "search",
+          "detail",
+          "player",
+          "source",
+          "api"
+        ],
+        "routePolicy": "owned_only",
+        "sessionBootstrap": true,
+        "terminalOnly": true
+      },
+      "experimentFingerprint": "7964fc99f9aa90897f1156165c872ff980087face1d3c744ac38b6ff666909b0",
+      "failureClass": "route-proven-gap",
+      "priorOnly": true,
+      "profile": "proven_route_terminal_traversal_v1",
+      "providerId": "animevost-fr",
+      "strategy": "search-detail-player-terminal-traversal",
+      "targetLayer": "provider"
+    }
+  ],
+  "schemaVersion": 2,
+  "sourceSha": "ac0cac536c622ddea619fc6c05b1b0717703ee95"
+}
