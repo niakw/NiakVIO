@@ -535,6 +535,7 @@ with tempfile.TemporaryDirectory() as tmp:
                 '  const urls = extract(html);')
     compact_find = minimize_text(selected).text
     assert runtime_anchor(readable, compact_find) == selected
+    assert runtime_anchor(readable, ' ' + compact_find + ' ') == selected
     (root / 'providers/demo.js').write_text(minimize_text(readable).text)
     entry = {'provider_lego_scripts': []}
     replacement = 'const urls = extractDirect(await response.text());'
@@ -580,5 +581,15 @@ with tempfile.TemporaryDirectory() as tmp:
     anchor = runtime_anchor(seed, real_find)
     assert '\n' in anchor and anchor in seed
     assert minimize_text(anchor).text == real_find
+    # A complete helper-body window begins after the published opening brace.
+    # Its outer separator must not make canonical span validation reject it.
+    start = seed.index('function _spv241ExplicitPlayerPayloadUrls(')
+    body_start = seed.index('{', start) + 1
+    body_end = seed.index('\n}', body_start)
+    body = seed[body_start:body_end]
+    body_find = ' ' + minimize_text(body).text.strip() + ' '
+    body_anchor = runtime_anchor(seed, body_find)
+    assert minimize_text(body_anchor).text.strip() == body_find.strip()
+    assert body_anchor in seed
 
 print("Brain LLM Force mutation bridge tests passed")

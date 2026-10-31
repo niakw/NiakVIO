@@ -86,7 +86,7 @@ supplémentaire n'est demandé.
 - Blocage des mutations réellement rejetées dans le même contexte de source.
 - Revalidation des anciennes recettes positives et conservation de leur requête terminale.
 - Priorité au parcours terminal réellement exécuté dans le choix des fonctions éditables.
-- 310 tests Brain et audit de confidentialité réussis.
+- 316 tests Brain et audit de confidentialité réussis lors de la reprise du 31 octobre 2026.
 - Régressions NiakVIO : dispatch v3 réel, ancre durcie, propriété native,
   reconstruction successive, fichier stagé inchangé, spécification absente,
   mémoire historique non prouvée, feedback borné et isolation des secrets.
@@ -154,6 +154,27 @@ relâcher le filtre : cette source courte est légitimement refusée. Le Brain r
 maintenant la durée attendue de la fixture et doit chercher un autre lecteur
 corrélé au même épisode, ou s'abstenir si les observations n'en montrent aucun.
 
+Le [run 40039908628](https://github.com/niakw/NiakVIO/actions/runs/40039908628)
+génère ensuite deux propositions avec ce contexte. La première est matérialisée
+et exécutée sans gain ; la seconde n'est pas exécutée car une fenêtre de corps
+de fonction conserve un espace de séparation à sa bordure. La validation
+canonique compare désormais les spans sans cet espace extérieur, en maintenant
+l'unicité et la vérification du contenu entier. Le cas réel est reproduit sur le
+seed lisible, sans changement manuel du provider ni assouplissement des gates.
+
+Le choix des fonctions éditables exploite aussi ce contre-exemple : pour un
+long épisode sans flux, un MP4 de moins d'une minute effectivement lu identifie
+une source trop courte. Si les traces désignent son helper terminal, le Brain
+remonte ses appelants observés et réserve trois unités aux sélecteurs locaux
+qu'ils appellent directement. Le helper terminal garde son rôle dans les traces,
+mais ses décodeurs et limites de parcours ne monopolisent plus les unités.
+Le rejeu hors ligne du run ci-dessus expose désormais `playerRows`,
+`externalPlayer` et `findEpisode`, dans la limite de quatre unités distinctes.
+Les preuves d'une autre fixture, une durée inconnue, une lecture interrompue ou
+un appelant non observé n'activent pas cette sélection. Le Core demeure exclu.
+Cela valide le contexte proposé au modèle ; seul un nouvel essai réseau peut
+valider une amélioration de lecture.
+
 Le préflight privilégie maintenant le titre en échec et ses dernières requêtes
 terminales, avant les wrappers de transport et la branche déjà saine. Les faits
 actuels peuvent remplacer un ancien diagnostic de perte de variantes. Si le
@@ -162,3 +183,12 @@ helper appartient au préfixe du provider mais dépasse la limite d'une fonction
 deux séquences d'instructions exactes à modifier. Le Core reste exclu de cette
 surface. Deux edits exécutés récents sont conservés pour éviter l'alternance
 immédiate entre le dispatcher et le dernier helper testé.
+
+## Reprise du 31 octobre 2026
+
+Les deltas du 24 octobre ont été réappliqués aux versions actuelles des deux
+dépôts, en conservant les correctifs ultérieurs du Brain, notamment le confinement
+des chemins et la confidentialité des références. Le workflow utilise le SHA
+Brain réellement publié `1cc48e37150394ab359cd9683932589a9cdbffba`.
+Les tests du pont de mutation et des observations média passent également.
+Ces vérifications locales ne valident pas encore une réparation de lecture.

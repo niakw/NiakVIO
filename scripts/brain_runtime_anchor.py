@@ -43,7 +43,9 @@ def minimized_runtime_anchor(source: str, hardened: str, find: str) -> str:
     ProviderBase. Matching still uses the exact deterministic minimizer output.
     """
     normalized = minimize_text(hardened).text
-    wanted = minimize_text(find).text
+    # Published statement windows may include the separator after an opening
+    # brace. That outer whitespace is formatting, not part of the token span.
+    wanted = minimize_text(find).text.strip()
     if not wanted or normalized.count(wanted) != 1:
         raise ValueError('generated Bloc anchor absent or ambiguous after canonical normalization')
     left_tokens = list(re.finditer(r'\S+', source))
@@ -77,7 +79,7 @@ def minimized_runtime_anchor(source: str, hardened: str, find: str) -> str:
     # independently normalize to the complete requested span before editing.
     # The surrounding source supplies logging declarations during hardening.
     original_hardened = hardened_span(source, hardened, left, right)
-    if minimize_text(original_hardened).text != wanted or source.count(anchor) != 1:
+    if minimize_text(original_hardened).text.strip() != wanted or source.count(anchor) != 1:
         raise ValueError('generated Bloc canonical span does not match its original bytes')
     return anchor
 
