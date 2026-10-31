@@ -1,14 +1,14 @@
 {
   "schema_version": 63,
-  "generated_at": "2026-10-31T14:38:20.488714+00:00",
+  "generated_at": "2026-10-31T20:08:49.791666+00:00",
   "test_environment": "github-actions-node",
   "checked_providers": 41,
   "status_counts": {
-    "healthy": 2,
+    "healthy": 4,
     "reachable": 0,
     "blocked": 6,
-    "degraded": 1,
-    "no_streams": 11,
+    "degraded": 2,
+    "no_streams": 8,
     "provider_unreachable": 14,
     "runtime_error": 0,
     "unavailable": 7,
@@ -559,14 +559,16 @@
     },
     {
       "id": "hindmoviez",
-      "status": "no_streams",
+      "status": "degraded",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
       "consecutive_successes": 0,
       "hosts": [],
-      "response_categories": [],
+      "response_categories": [
+        "host_down"
+      ],
       "host_health": {
         "share.kujeucoixeti-6043.workers.dev": {
           "last_checked_at": "2026-10-29T15:20:30.259878+00:00",
@@ -1064,13 +1066,13 @@
           "consecutive_blocked": 0
         },
         "abc.heulettafreuyo-7517.workers.dev": {
-          "last_checked_at": "2026-10-29T15:20:30.259878+00:00",
-          "last_category": "not_returned",
+          "last_checked_at": "2026-10-31T20:08:49.791666+00:00",
+          "last_category": "host_down",
           "reachable": false,
           "http_status": null,
           "latency_ms": null,
-          "kind": "matroska",
-          "consecutive_hard_failures": 0,
+          "kind": null,
+          "consecutive_hard_failures": 1,
           "consecutive_successes": 0,
           "consecutive_blocked": 0
         },
@@ -1949,28 +1951,32 @@
     },
     {
       "id": "french-manga",
-      "status": "no_streams",
+      "status": "healthy",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
-      "consecutive_successes": 0,
-      "hosts": [],
-      "response_categories": [],
+      "consecutive_successes": 1,
+      "hosts": [
+        "u14.vidzy.cc"
+      ],
+      "response_categories": [
+        "playable"
+      ],
       "host_health": {
         "u14.vidzy.cc": {
-          "last_checked_at": "2026-10-04T06:05:42.222786+00:00",
+          "last_checked_at": "2026-10-31T20:08:49.791666+00:00",
           "last_category": "playable",
           "reachable": true,
           "http_status": 200,
-          "latency_ms": 533,
+          "latency_ms": 477,
           "kind": "hls",
           "consecutive_hard_failures": 0,
-          "consecutive_successes": 1,
+          "consecutive_successes": 2,
           "consecutive_blocked": 0
         },
         "v80nz3c7i6rr.tnmr.org": {
-          "last_checked_at": "2026-10-04T06:05:42.222786+00:00",
+          "last_checked_at": "2026-10-31T20:08:49.791666+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -1981,7 +1987,7 @@
           "consecutive_blocked": 0
         },
         "s1.fsvid.lol": {
-          "last_checked_at": "2026-10-04T06:05:42.222786+00:00",
+          "last_checked_at": "2026-10-31T20:08:49.791666+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -1992,7 +1998,7 @@
           "consecutive_blocked": 0
         },
         "v6.vidzy.cc": {
-          "last_checked_at": "2026-10-04T06:05:42.222786+00:00",
+          "last_checked_at": "2026-10-31T20:08:49.791666+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -3004,28 +3010,32 @@
     },
     {
       "id": "voiranime-homes",
-      "status": "no_streams",
+      "status": "healthy",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
-      "consecutive_successes": 0,
-      "hosts": [],
-      "response_categories": [],
+      "consecutive_successes": 1,
+      "hosts": [
+        "u14.vidzy.cc"
+      ],
+      "response_categories": [
+        "playable"
+      ],
       "host_health": {
         "u14.vidzy.cc": {
-          "last_checked_at": "2026-10-04T06:05:42.222786+00:00",
+          "last_checked_at": "2026-10-31T20:08:49.791666+00:00",
           "last_category": "playable",
           "reachable": true,
           "http_status": 200,
-          "latency_ms": 413,
+          "latency_ms": 471,
           "kind": "hls",
           "consecutive_hard_failures": 0,
-          "consecutive_successes": 1,
+          "consecutive_successes": 2,
           "consecutive_blocked": 0
         },
         "v6.vidzy.cc": {
-          "last_checked_at": "2026-10-04T06:05:42.222786+00:00",
+          "last_checked_at": "2026-10-31T20:08:49.791666+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
