@@ -434,10 +434,30 @@ jobs:
             # evidence into a failed workflow. A later Autopilot/Learning cycle
             # can consume the persisted debt.
             publish_proposal="false"
+            eligible_csv="$learn_handoff_csv"
+            # Fast Repair's unresolved debt is not itself a new Learning
+            # experiment. Routine automatic handoffs must present a fresh
+            # cause/method fingerprint; otherwise scheduled Learning owns
+            # strategy discovery without replaying the same 12-provider cohort.
+            # This is a read-only gate, NOT an atomic inter-workflow lease.
+            # Explicit FORCE remains an independently authorized path.
+            if [ "$force_mode" != "true" ]; then
+              selection="$RUNNER_TEMP/fast-learning-causal-selection.json"
+              python scripts/provider_learning_dispatch_gate.py select \
+                --brain automation/provider-brain-repair-latest.json \
+                --ledger automation/provider-learning-dispatch-ledger.json \
+                --providers "$learn_handoff_csv" \
+                --output "$selection"
+              eligible_csv="$(python -c 'import json,sys; print(json.load(open(sys.argv[1], encoding="utf-8"))["providerFilter"])' "$selection")"
+              if [ -z "$eligible_csv" ]; then
+                echo "FIELD_PROVIDER_FAST_REPAIR_LEARNING_DEBT providers=${learn_handoff_count:-0} learning_dispatch=false reason=no-new-causal-strategy persisted=true owner=scheduled-learning"
+                return 0
+              fi
+            fi
             args=(
               --repo "$GITHUB_REPOSITORY" --ref main
               -f publish_proposal="$publish_proposal"
-              -f target_providers="$learn_handoff_csv"
+              -f target_providers="$eligible_csv"
               -f slot_remaining_minutes=360
               -f slot_phase=1
             )
