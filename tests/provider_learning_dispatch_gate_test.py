@@ -69,6 +69,16 @@ ledger = module.mark_dispatched(
 assert ledger["providers"]["demo"]["lastDispatchedFingerprint"] == fp
 assert ledger["providers"]["demo"]["dispatchCount"] == 1
 
+# Replaying a successful mark must not inflate dispatchCount or replace the
+# original dispatch provenance; this also covers at-least-once job retries.
+replayed_mark = module.mark_dispatched(
+    ledger,
+    first,
+    repair_run_id="repair-retry",
+    learning_run_id="learn-retry",
+)
+assert replayed_mark == ledger, replayed_mark
+
 repeat = module.select(brain(harness=["harness"]), ledger, ["demo", "harness"])
 assert repeat["eligibleProviders"] == [], repeat
 assert repeat["suppressedRepeatProviders"] == ["demo"], repeat
