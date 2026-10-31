@@ -1,7 +1,7 @@
 {
   "schemaVersion": 3,
-  "runId": "41242129665",
-  "triggerSha": "d8cbfd4383c0addd19857d3731a90eb0d0d94e03",
+  "runId": "41244919585",
+  "triggerSha": "6da5438604b3cc3db9a27da15f4383ba57ac5ecc",
   "providers": [
     {
       "provider": "4khdhub",
@@ -275,7 +275,7 @@
       ],
       "dominantIssue": "timeout",
       "searchProgress": [
-        "anime: 2 works tested / 0 retained misses"
+        "anime: 3 works tested / 0 retained misses"
       ],
       "evidenceDepth": [
         "anime=none"
@@ -481,13 +481,13 @@
         "3 live routes / movie, tv"
       ],
       "latestLaneVerdicts": [
-        "movie=timeout",
-        "tv=timeout"
+        "movie=no_streams/provider_network_exception",
+        "tv=no_streams/provider_network_exception"
       ],
-      "dominantIssue": "timeout×2",
+      "dominantIssue": "provider_network_exception×2",
       "searchProgress": [
-        "movie: 7 works tested / 28 retained misses",
-        "tv: 7 works tested / 32 retained misses"
+        "movie: 8 works tested / 28 retained misses",
+        "tv: 8 works tested / 32 retained misses"
       ],
       "evidenceDepth": [
         "movie=none",
@@ -2180,8 +2180,8 @@
   "harnessQueue": [],
   "targetedTransportBlockedQueue": [],
   "clientTransportGapQueue": [],
-  "harnessEvidenceRunId": "41242129665-sharded-waf",
-  "harnessEvidenceSha": "d8cbfd4383c0addd19857d3731a90eb0d0d94e03",
+  "harnessEvidenceRunId": "41244919585-sharded-waf",
+  "harnessEvidenceSha": "6da5438604b3cc3db9a27da15f4383ba57ac5ecc",
   "authorityRefreshedProviders": [],
   "harnessTransportUpdatedProviders": [],
   "networkDifferentialUpdatedProviders": [],
@@ -2592,43 +2592,5 @@
       ],
       "replayedProviders": []
     }
-  },
-  "lastRepairAttempt": {
-    "runId": "41242687534",
-    "sourceCensusRunId": "41242129665",
-    "selectedProviders": [
-      "4khdhub",
-      "allanime",
-      "animesalt",
-      "animesultra",
-      "animevost-fr",
-      "flemmix",
-      "mallumv",
-      "moviebox",
-      "moviesmod",
-      "vidfast",
-      "vostfree",
-      "yflix"
-    ],
-    "candidateProviders": [],
-    "validatedProviders": [],
-    "acceptedRepairCount": 0,
-    "deferredToLearningSlotProviders": [
-      "4khdhub",
-      "allanime",
-      "animesalt",
-      "animesultra",
-      "animevost-fr",
-      "flemmix",
-      "mallumv",
-      "moviebox",
-      "moviesmod",
-      "vidfast",
-      "vostfree",
-      "yflix"
-    ],
-    "noProgressReason": "no_new_repair_experiment",
-    "timeBudgetExhausted": false,
-    "publicationAllowed": false
   }
 }
