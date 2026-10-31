@@ -253,4 +253,17 @@ assert "LEARNING: ${{ steps.learning-gate.outputs.learning }}" in autopilot
 assert "HARNESS: ${{ steps.learning-gate.outputs.harness }}" in autopilot
 assert 'test -s "$ledger"' in autopilot
 
+# Fast Repair must not launch an unchanged unresolved cohort directly into
+# routine Learning. FORCE is an explicit exception and is still independently
+# governed by its targeted proof contracts.
+fast_workflow = (ROOT / ".github/workflows/provider-fast-repair.yml").read_text(encoding="utf-8")
+assert 'if [ "$force_mode" != "true" ]; then' in fast_workflow
+assert "provider_learning_dispatch_gate.py select" in fast_workflow
+assert '--brain automation/provider-brain-repair-latest.json' in fast_workflow
+assert '--ledger automation/provider-learning-dispatch-ledger.json' in fast_workflow
+assert '--providers "$learn_handoff_csv"' in fast_workflow
+assert 'if [ -z "$eligible_csv" ]; then' in fast_workflow
+assert '-f target_providers="$eligible_csv"' in fast_workflow
+assert 'reason=no-new-causal-strategy' in fast_workflow
+
 print("Provider Learning causal dispatch gate tests passed")
