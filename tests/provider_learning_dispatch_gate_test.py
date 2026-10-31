@@ -266,4 +266,35 @@ assert 'if [ -z "$eligible_csv" ]; then' in fast_workflow
 assert '-f target_providers="$eligible_csv"' in fast_workflow
 assert 'reason=no-new-causal-strategy' in fast_workflow
 
+# Representative current Fast Repair debt: failure causes alone are not new
+# executable strategies. The entire unchanged cohort must fail closed, but a
+# genuinely new profile for one provider must remain eligible.
+stalled_ids = [
+    "4khdhub", "allanime", "animesalt", "animesultra",
+    "animevost-fr", "flemmix", "mallumv", "moviebox",
+    "moviesmod", "vidfast", "vostfree", "yflix",
+]
+stalled_plans = {
+    provider: {
+        "providerId": provider,
+        "failureClass": "route_proven_gap",
+        "signature": "measured-current-byte-failure",
+        "allowedProfiles": [],
+        "llmAdvisorStrategy": "",
+        "llmAdvisorProfile": "",
+        "llmAdvisorExperimentFingerprint": "",
+    }
+    for provider in stalled_ids
+}
+stalled_brain = {
+    "deferredLearningProviders": stalled_ids,
+    "waves": [{"batches": [{"brain": {"plans": stalled_plans}}]}],
+}
+stalled_selection = module.select(stalled_brain, {"providers": {}}, stalled_ids)
+assert stalled_selection["eligibleProviderCount"] == 0, stalled_selection
+assert stalled_selection["suppressedMissingFingerprintProviders"] == sorted(stalled_ids)
+stalled_plans["mallumv"]["allowedProfiles"] = ["new-terminal-extractor-v2"]
+new_method = module.select(stalled_brain, {"providers": {}}, stalled_ids)
+assert new_method["eligibleProviders"] == ["mallumv"], new_method
+
 print("Provider Learning causal dispatch gate tests passed")
