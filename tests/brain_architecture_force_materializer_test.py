@@ -93,6 +93,39 @@ proposal = {
 selected = mod.select_blueprint(proposal)
 assert selected["strategyId"] == "novel_architecture_layer_synthesis_v1"
 
+# A targeted FORCE must not silently spend its model budget on another
+# provider when the requested provider still requires current-byte replay.
+targeted = {
+    "strategyBlueprints": [
+        {
+            "strategyId": "route_transition_graph_v2",
+            "providers": ["animevost-fr"],
+            "forcePromotionEligible": False,
+            "forcePromotionReason": "already-installed-profile-replay-first",
+        },
+        {
+            "strategyId": "route_transition_graph_v24",
+            "providers": ["animevostfr"],
+            "forcePromotionEligible": True,
+        },
+        {
+            "strategyId": "transport_request_differential_v3",
+            "providers": ["vidfast"],
+            "forcePromotionEligible": True,
+        },
+    ],
+}
+assert mod.select_blueprint(targeted)["strategyId"] == "route_transition_graph_v24"
+assert mod.select_blueprint(targeted, target_provider="VIDFAST")["strategyId"] == "transport_request_differential_v3"
+assert mod.select_blueprint(targeted, target_provider="animevostfr")["strategyId"] == "route_transition_graph_v24"
+for exact_target in ("animevost-fr", "absent-provider"):
+    try:
+        mod.select_blueprint(targeted, target_provider=exact_target)
+    except ValueError as exc:
+        assert f"target provider {exact_target}" in str(exc), exc
+    else:
+        raise AssertionError(f"targeted FORCE silently switched provider: {exact_target}")
+
 ctx = mod.source_context(
     {"targetLayer": "provider"},
     [

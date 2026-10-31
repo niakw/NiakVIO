@@ -1175,20 +1175,28 @@ jobs:
         shell: bash
         env:
           LLM_AVAILABLE: ${{ steps.brain_llm_server.outputs.available }}
+          FORCE_TARGET_PROVIDER: ${{ steps.learning-slot.outputs.target_provider }}
+          FORCE_TARGET_PROVIDERS: ${{ steps.learning-slot.outputs.target_providers }}
         run: |
           set -euo pipefail
-          eligible="$(node -e "const x=require('./brain-learning-output/brain-architecture-proposal.json');process.stdout.write(String((x.strategyBlueprints||[]).filter(r=>r&&r.forcePromotionEligible===true).length))")"
+          # Exact single-provider FORCE is fail-closed: never evolve a different
+          # provider while the requested one still needs an installed-profile replay.
+          force_target="${FORCE_TARGET_PROVIDER:-}"
+          if [ -z "$force_target" ] && [ -n "${FORCE_TARGET_PROVIDERS:-}" ] && [[ "${FORCE_TARGET_PROVIDERS}" != *,* ]]; then
+            force_target="$FORCE_TARGET_PROVIDERS"
+          fi
+          eligible="$(FORCE_TARGET="$force_target" node -e 'const x=require("./brain-learning-output/brain-architecture-proposal.json");const t=(process.env.FORCE_TARGET||"").trim().toLowerCase();const rows=(x.strategyBlueprints||[]).filter(r=>r&&r.forcePromotionEligible===true);process.stdout.write(String(rows.filter(r=>!t||(r.providers||[]).some(p=>String(p).trim().toLowerCase()===t)).length))')"
           if [ "$eligible" = "0" ]; then
             : > brain-learning-output/brain-architecture-force.patch
-            printf '%s\n' '{"schemaVersion":1,"skipped":true,"reason":"no-force-promotable-blueprint","editCount":0,"changedFiles":[]}' > brain-learning-output/brain-architecture-force-report.json
-            echo "FIELD_BRAIN_ARCH_FORCE_MATERIALIZED skipped=true reason=no-force-promotable-blueprint"
+            FORCE_TARGET="$force_target" node -e 'const fs=require("fs");const t=(process.env.FORCE_TARGET||"").trim().toLowerCase();const r={schemaVersion:1,skipped:true,reason:"no-force-promotable-blueprint",editCount:0,changedFiles:[]};if(t)r.targetProvider=t;fs.writeFileSync("brain-learning-output/brain-architecture-force-report.json",JSON.stringify(r))'
+            echo "FIELD_BRAIN_ARCH_FORCE_MATERIALIZED skipped=true reason=no-force-promotable-blueprint target=${force_target:-none}"
             exit 0
           fi
           [ "${LLM_AVAILABLE:-false}" = "true" ] || {
             echo "Explicit architecture FORCE requires the bounded local Qwen runtime" >&2
             exit 1
           }
-          python scripts/brain_architecture_force_materializer.py             --proposal brain-learning-output/brain-architecture-proposal.json             --self-config engine_v2/config/brain-self-evolution.json             --endpoint http://127.0.0.1:8080             --model qwen2.5-coder-7b             --report brain-learning-output/brain-architecture-force-report.json             --apply
+          python scripts/brain_architecture_force_materializer.py             --proposal brain-learning-output/brain-architecture-proposal.json             --target-provider "$force_target"             --self-config engine_v2/config/brain-self-evolution.json             --endpoint http://127.0.0.1:8080             --model qwen2.5-coder-7b             --report brain-learning-output/brain-architecture-force-report.json             --apply
           python tests/brain_meta_learning_gap_synthesis_test.py
           python tests/brain_architecture_force_materializer_test.py
           python tests/brain_self_architecture_test.py

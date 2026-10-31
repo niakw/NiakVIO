@@ -52,6 +52,12 @@ assert "-f architecture_force=true" in REPAIR
 assert "-f publish_proposal=false" in REPAIR
 assert '-f target_providers="$deferred_csv"' in REPAIR
 assert "FIELD_PROVIDER_BRAIN_FORCE_ARCH_DISPATCH" in REPAIR
+# Exact single-provider FORCE must be scoped before any Qwen request.
+assert "FORCE_TARGET_PROVIDER:" in LEARN and "FORCE_TARGET_PROVIDERS:" in LEARN
+assert 'force_target="$FORCE_TARGET_PROVIDERS"' in LEARN
+assert 'FORCE_TARGET="$force_target" node -e' in LEARN
+assert '--target-provider "$force_target"' in LEARN
+assert "targetProvider=t" in LEARN
 
 force = SELF.get("forceArchitecture") or {}
 assert force.get("enabled") is True
