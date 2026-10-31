@@ -129,7 +129,13 @@ assert "group: provider-fast-repair-main" in workflow
 assert "cancel-in-progress: false" in workflow
 assert "cancel-in-progress: true" not in workflow
 
-assert 'force_mode="$(python - <<\'PY\'' in workflow
+assert workflow.count('force_mode="${{ inputs.architecture_force || false }}"') == 2
+assert workflow.count("force_mode=\"$(jq -r '.architectureForce == true' .github/triggers/provider-fast-repair.json)\"") == 2
+assert 'architecture_force:' in workflow
+assert 'Path(".github/triggers/provider-brain-autopilot.json")' not in workflow
+assert 'stalled=str(summary.get("brainNoProgressReason")' not in workflow
+assert '-f architecture_force="$requeue_force"' in workflow
+assert "print('true' if d.get('architectureForce') is True else 'false')" in workflow
 assert 'publish_proposal="false"' in workflow
 assert '-f publish_proposal="$publish_proposal"' in workflow
 assert 'args+=(-f architecture_force=true)' in workflow
