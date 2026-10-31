@@ -208,3 +208,22 @@ Le même rejeu expose `findEpisode`, `text`, `episodeRows` et `episodeScore`, so
 quatre unités exactes distinctes. La régression échoue avant correction et passe
 après. Aucune modification manuelle du provider ni des gates de lecture/identité
 n'est incluse ; un nouvel essai réseau doit encore mesurer le résultat.
+
+Le [run 41214293334](https://github.com/niakw/NiakVIO/actions/runs/41214293334)
+s'abstient après cette correction : seule la source de cinq secondes est prouvée,
+sans autre source complète observée. Aucune proposition n'est exécutée ni apprise
+comme échec causal.
+
+Pour compléter ce diagnostic, l'observateur distingue maintenant les emplacements
+d'adresses dans le markup (`iframe`, options, attributs de lecteurs) et leurs
+types : absolu, relatif, fragment, markup inline ou encodé. Il conserve des types
+et compteurs plafonnés, dont le nombre de valeurs distinctes, avec un indicateur
+de troncature et des échantillons séparés du début et de la fin de page. Aucun
+texte de réponse, URL complète ni contenu décodé n'est archivé. Ces déclarations
+ne prouvent ni une autre source complète, ni une lecture réussie.
+
+Le collecteur projette indépendamment ces faits vers
+`automation/hosted-repair-evidence/<run>-player-markup.json`, en vérifiant le SHA
+du relevé, même après une abstention. Les tests suivent la production du schéma,
+son passage par le préflight et sa projection publique ; ils vérifient aussi la
+confidentialité, les plafonds et le rejet d'un SHA différent.
