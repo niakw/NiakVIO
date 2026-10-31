@@ -86,7 +86,7 @@ supplémentaire n'est demandé.
 - Blocage des mutations réellement rejetées dans le même contexte de source.
 - Revalidation des anciennes recettes positives et conservation de leur requête terminale.
 - Priorité au parcours terminal réellement exécuté dans le choix des fonctions éditables.
-- 316 tests Brain et audit de confidentialité réussis lors de la reprise du 31 octobre 2026.
+- 317 tests Brain et audit de confidentialité réussis lors de la reprise du 31 octobre 2026.
 - Régressions NiakVIO : dispatch v3 réel, ancre durcie, propriété native,
   reconstruction successive, fichier stagé inchangé, spécification absente,
   mémoire historique non prouvée, feedback borné et isolation des secrets.
@@ -189,6 +189,22 @@ immédiate entre le dispatcher et le dernier helper testé.
 Les deltas du 24 octobre ont été réappliqués aux versions actuelles des deux
 dépôts, en conservant les correctifs ultérieurs du Brain, notamment le confinement
 des chemins et la confidentialité des références. Le workflow utilise le SHA
-Brain réellement publié `1cc48e37150394ab359cd9683932589a9cdbffba`.
+Brain réellement publié `40bb2cd321d0c1a23b22c77f45d762997556b1c7`.
 Les tests du pont de mutation et des observations média passent également.
 Ces vérifications locales ne valident pas encore une réparation de lecture.
+
+Le [run 41209946518](https://github.com/niakw/NiakVIO/actions/runs/41209946518)
+a matérialisé et exécuté deux propositions : `playerRows`, puis `externalPlayer`.
+Elles sont refusées sans gain : Hell Mode garde un flux lisible, Jujutsu Kaisen
+reste sans flux et sa source Sendvid mesure toujours cinq secondes. Les deux
+contre-exemples sont conservés dans la mémoire durable.
+
+Le rejeu avec ces contre-exemples révèle une limite de la rotation du contexte :
+les fonctions rejetées occupaient encore les racines du parcours des appels,
+avant leur retrait final. `findEpisode` restait visible mais ses propres parseurs
+disparaissaient au profit de `abs`, `text` et `s`. Pour une source courte mesurée,
+le parcours réserve désormais les sélecteurs restants avant de suivre leurs appels.
+Le même rejeu expose `findEpisode`, `text`, `episodeRows` et `episodeScore`, soit
+quatre unités exactes distinctes. La régression échoue avant correction et passe
+après. Aucune modification manuelle du provider ni des gates de lecture/identité
+n'est incluse ; un nouvel essai réseau doit encore mesurer le résultat.
