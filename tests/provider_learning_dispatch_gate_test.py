@@ -240,4 +240,17 @@ closed = module.select(missing, {"providers": {}}, ["unknown"])
 assert closed["eligibleProviders"] == [], closed
 assert closed["suppressedMissingFingerprintProviders"] == ["unknown"], closed
 
+# Keep the automatic dispatcher wired to the tested read-only causal selector.
+# A blank planned cohort must not invoke select-plan without a filter (which
+# would otherwise select every provider in that lane).
+autopilot = (ROOT / ".github/workflows/provider-brain-autopilot.yml").read_text(encoding="utf-8")
+assert "id: learning-gate" in autopilot
+assert 'if [ -n "$PLANNED_LEARNING" ]; then' in autopilot
+assert 'if [ -n "$PLANNED_HARNESS" ]; then' in autopilot
+assert "--lane BRAIN_LEARNING" in autopilot
+assert "--lane CORE_CLIENT_LEARNING" in autopilot
+assert "LEARNING: ${{ steps.learning-gate.outputs.learning }}" in autopilot
+assert "HARNESS: ${{ steps.learning-gate.outputs.harness }}" in autopilot
+assert 'test -s "$ledger"' in autopilot
+
 print("Provider Learning causal dispatch gate tests passed")
