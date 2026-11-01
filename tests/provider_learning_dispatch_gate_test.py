@@ -265,6 +265,10 @@ assert '--providers "$learn_handoff_csv"' in fast_workflow
 assert 'if [ -z "$eligible_csv" ]; then' in fast_workflow
 assert '-f target_providers="$eligible_csv"' in fast_workflow
 assert 'reason=no-new-causal-strategy' in fast_workflow
+assert 'reason=causal-gate-error persisted=true' in fast_workflow
+assert 'reason=invalid-causal-selection persisted=true' in fast_workflow
+assert 'if ! python scripts/provider_learning_dispatch_gate.py select' in fast_workflow
+assert 'if ! eligible_csv="$(python -c' in fast_workflow
 
 # Representative current Fast Repair debt: failure causes alone are not new
 # executable strategies. The entire unchanged cohort must fail closed, but a
