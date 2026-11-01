@@ -29,6 +29,15 @@ assert rows[0]['value_kinds'] == {'data-code': 'encoded_markup'}
 assert rows[1]['value_kinds'] == {'src': 'absolute_url'}
 assert result['publicationAuthority'] is False and result['proofAuthority'] is False
 assert 'PRIVATE' not in json.dumps(result) and 'private.test' not in json.dumps(result)
+typed = copy.deepcopy(context)
+typed_markup = typed['network_evidence'][0]['response_structure']['player_markup']
+typed_markup['rows'] = [{'tag': 'div', 'value_kinds': {'data-src': 'absolute_url'},
+    'value_shapes': {'data-src': {'kind': 'image_extension', 'origin': 'cross_origin', 'url': 'PRIVATE'},
+                     'src': {'kind': 'https://private.test/PRIVATE', 'origin': 'PRIVATE'}},
+    'count': 3, 'distinct_values': 3}]
+typed_row = public_player_markup(typed, 'a' * 40)['observations'][0]['player_markup']['rows'][0]
+assert typed_row['value_shapes'] == {'data-src': {'kind': 'image_extension', 'origin': 'cross_origin'}}
+assert 'PRIVATE' not in json.dumps(typed_row)
 
 # Preserve the producer's schema through the real preflight writer too.
 with tempfile.TemporaryDirectory() as directory:

@@ -9,14 +9,7 @@ const PLAYER_ATTRIBUTES = new Set([
   'data-player-id', 'data-index', 'data-server',
 ]);
 
-function addressKind(raw) {
-  const value = raw.trim();
-  if (!value) return 'empty';
-  if (/^(?:https?:)?\/\//i.test(value)) return 'absolute_url';
-  if (/^<(?:iframe|video|source)\b/i.test(value)) return 'inline_markup';
-  if (/^&lt;(?:iframe|video|source)\b/i.test(value)) return 'escaped_markup';
-  if (/^(?:\/(?!\/)|\.\.?\/|\?)/.test(value)) return 'relative_url';
-  if (/^#/.test(value)) return 'fragment';
+function decodedAddress(value) {
   if (value.length <= 4096) {
     let decoded = '';
     const encoded = value.replace(/^data:text\/html;base64,/i, '');
@@ -26,13 +19,49 @@ function addressKind(raw) {
     if (!decoded && /%(?:3c|3a|2f)/i.test(value)) {
       try { decoded = decodeURIComponent(value).trim(); } catch {}
     }
-    if (/^<(?:iframe|video|source)\b/i.test(decoded)) return 'encoded_markup';
-    if (/^(?:https?:)?\/\//i.test(decoded)) return 'encoded_url';
+    return decoded;
   }
+  return '';
+}
+
+function addressKind(raw) {
+  const value = raw.trim();
+  if (!value) return 'empty';
+  if (/^(?:https?:)?\/\//i.test(value)) return 'absolute_url';
+  if (/^<(?:iframe|video|source)\b/i.test(value)) return 'inline_markup';
+  if (/^&lt;(?:iframe|video|source)\b/i.test(value)) return 'escaped_markup';
+  if (/^(?:\/(?!\/)|\.\.?\/|\?)/.test(value)) return 'relative_url';
+  if (/^#/.test(value)) return 'fragment';
+  const decoded = decodedAddress(value);
+  if (/^<(?:iframe|video|source)\b/i.test(decoded)) return 'encoded_markup';
+  if (/^(?:https?:)?\/\//i.test(decoded)) return 'encoded_url';
   return 'other';
 }
 
-function playerMarkup(value) {
+function addressShape(raw, valueKind, baseUrl) {
+  const unknown = { kind: 'unknown', origin: 'unknown' };
+  if (!['absolute_url', 'relative_url', 'encoded_url'].includes(valueKind)) return unknown;
+  try {
+    const value = valueKind === 'encoded_url' ? decodedAddress(raw.trim()) : raw.trim();
+    const url = new URL(value.replace(/&amp;/gi, '&'), baseUrl || undefined);
+    if (!/^https?:$/.test(url.protocol)) return unknown;
+    let origin = 'unknown';
+    try { origin = url.origin === new URL(baseUrl).origin ? 'same_origin' : 'cross_origin'; } catch {}
+    const path = url.pathname.toLowerCase();
+    let kind = 'other';
+    if (/\.(?:jpe?g|png|gif|webp|avif|svg|ico)$/.test(path)) kind = 'image_extension';
+    else if (/\.(?:js|mjs|cjs)$/.test(path)) kind = 'script_extension';
+    else if (/\.css$/.test(path)) kind = 'style_extension';
+    else if (/\.(?:m3u8|mpd|mp4|mkv|webm|m4v)$/.test(path)) kind = 'media_extension';
+    else if (/\/(?:e|embed|player|watch|play|video|stream|server|source)(?:[/.\-]|$)/.test(path)
+             || [...url.searchParams.keys()].slice(0, 16).some(key =>
+               /(?:^|[_-])(?:embed|player|server|source)(?:$|[_-])|^(?:trembed|embedId|playerId|serverId|sourceId)$/i.test(key))) kind = 'embed_route';
+    else if (/\.(?:html?|php)$/.test(path)) kind = 'page_extension';
+    return { kind, origin };
+  } catch { return unknown; }
+}
+
+function playerMarkup(value, baseUrl) {
   // Independent head/tail samples avoid inventing tags at a joined boundary.
   const samples = value.length > 131072
     ? [value.slice(0, 65536), value.slice(-65536)] : [value];
@@ -43,18 +72,23 @@ function playerMarkup(value) {
     for (const match of sample.matchAll(tags)) {
       if (++examined > 1024) break;
       const kinds = new Map();
+      const shapes = new Map();
       const values = [];
       const attributes = /\s([A-Za-z_:][\w:.-]{0,47})\s*=\s*(?:"([^"]{0,4096})"|'([^']{0,4096})'|([^\s"'<>`=]{1,4096}))/g;
       for (const attr of match[2].matchAll(attributes)) {
         const name = attr[1].toLowerCase();
         if (PLAYER_ATTRIBUTES.has(name) && kinds.size < 8) {
-          kinds.set(name, addressKind(attr[2] ?? attr[3] ?? attr[4] ?? ''));
-          values.push([name, attr[2] ?? attr[3] ?? attr[4] ?? '']);
+          const raw = attr[2] ?? attr[3] ?? attr[4] ?? '';
+          const kind = addressKind(raw);
+          kinds.set(name, kind);
+          shapes.set(name, addressShape(raw, kind, baseUrl));
+          values.push([name, raw]);
         }
       }
       if (!kinds.size) continue;
-      const row = { tag: match[1].toLowerCase(), value_kinds: Object.fromEntries([...kinds].sort()), count: 1, distinct_values: 1 };
-      const key = JSON.stringify([row.tag, row.value_kinds]);
+      const row = { tag: match[1].toLowerCase(), value_kinds: Object.fromEntries([...kinds].sort()),
+        value_shapes: Object.fromEntries([...shapes].sort()), count: 1, distinct_values: 1 };
+      const key = JSON.stringify([row.tag, row.value_kinds, row.value_shapes]);
       const previous = groups.get(key);
       const signature = JSON.stringify(values.sort());
       if (previous) {
@@ -67,7 +101,7 @@ function playerMarkup(value) {
   function priority(row) {
     if (Object.values(row.value_kinds).some(kind => /^(?:encoded|escaped|inline)_/.test(kind))) return 0;
     if (/^(?:iframe|video|source)$/.test(row.tag)) return 1;
-    if (Object.keys(row.value_kinds).some(name => /^data-(?:player|embed|video|code|iframe|source|server)/.test(name))) return 2;
+    if (Object.keys(row.value_kinds).some(name => /^data-(?:src|player|embed|video|code|iframe|source|server)/.test(name))) return 2;
     return row.tag === 'option' ? 3 : 4;
   }
   return {
@@ -77,7 +111,7 @@ function playerMarkup(value) {
   };
 }
 
-function responseStructure(value) {
+function responseStructure(value, options = {}) {
   let root = value;
   const text = typeof value === 'string' ? value.slice(0, 131072) : '';
   if (text && /^[\s]*[\[{]/.test(text)) {
@@ -120,7 +154,7 @@ function responseStructure(value) {
     const variables = [...new Set([...text.matchAll(/\b(?:var|let|const)\s+([A-Za-z_$][\w$]{0,47})\s*=/g)]
       .map(row => row[1]).filter(name => !SENSITIVE.test(name)))].slice(0, 16);
     return { kind: 'html', tags: [...tags].map(([tag, attrs]) => ({ tag, attributes: [...attrs].sort() })),
-      variables, player_markup: playerMarkup(value) };
+      variables, player_markup: playerMarkup(value, options?.baseUrl) };
   }
   return { kind: text ? 'text' : 'binary' };
 }

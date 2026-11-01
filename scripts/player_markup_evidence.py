@@ -11,6 +11,9 @@ KINDS = {
     'empty', 'absolute_url', 'relative_url', 'fragment', 'inline_markup',
     'escaped_markup', 'encoded_markup', 'encoded_url', 'other',
 }
+SHAPES = {'image_extension', 'script_extension', 'style_extension', 'media_extension',
+          'embed_route', 'page_extension', 'other', 'unknown'}
+ORIGINS = {'same_origin', 'cross_origin', 'unknown'}
 
 
 def bounded_count(value, limit):
@@ -44,8 +47,20 @@ def public_player_markup(context, source_sha):
             if not kinds:
                 continue
             count = bounded_count(row.get('count'), 128)
-            rows.append({'tag': row['tag'], 'value_kinds': kinds, 'count': count,
-                         'distinct_values': min(count, bounded_count(row.get('distinct_values'), 128))})
+            projected = {'tag': row['tag'], 'value_kinds': kinds, 'count': count,
+                         'distinct_values': min(count, bounded_count(row.get('distinct_values'), 128))}
+            raw_shapes = row.get('value_shapes')
+            if isinstance(raw_shapes, dict):
+                shapes = {}
+                for attribute in kinds:
+                    shape = raw_shapes.get(attribute)
+                    if (isinstance(shape, dict) and isinstance(shape.get('kind'), str)
+                            and shape['kind'] in SHAPES and isinstance(shape.get('origin'), str)
+                            and shape['origin'] in ORIGINS):
+                        shapes[attribute] = {'kind': shape['kind'], 'origin': shape['origin']}
+                if shapes:
+                    projected['value_shapes'] = shapes
+            rows.append(projected)
         host = str(event.get('host') or '')
         stage = str(event.get('stage') or '')
         observations.append({

@@ -711,7 +711,7 @@ function installPolyfills(context = {}) {
           totalResponseBytes += bytes;
           if (totalResponseBytes > maxTotalResponseBytes) throw new Error(`provider cumulative response limit exceeded (${maxTotalResponseBytes} bytes)`);
         }, (value) => {
-          observation.response_structure = responseStructure(value);
+          observation.response_structure = responseStructure(value, { baseUrl: response.url || rawRequestUrl });
           const hints = extractResponseVariantHints(value, { baseUrl: response.url || rawRequestUrl });
           observation.declared_player_candidate_count = Math.max(
             Number(observation.declared_player_candidate_count || 0),
