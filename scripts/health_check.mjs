@@ -22,6 +22,7 @@ const { streamIdentity } = require('./nuvio_client_lab.cjs');
 const { safeMediaFacts } = require('./media_observation.cjs');
 const { safeHttpFacts } = require('./http_response_observation.cjs');
 const { safeReaderProbe } = require('./reader_user_agent_probe.cjs');
+const { safeAddressFields } = require('./address_reference.cjs');
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const STAGE = path.resolve(process.env.NUVIO_STAGE || path.join(ROOT, 'staging'));
@@ -1656,6 +1657,7 @@ async function testCandidate(candidate) {
       provider_server_hosts: Array.isArray(worker.provider_server_hosts) ? worker.provider_server_hosts : [],
       provider_server_http_statuses: Array.isArray(worker.provider_server_http_statuses) ? worker.provider_server_http_statuses : [],
       network_observations: Array.isArray(worker.network_observations) ? worker.network_observations.map((item) => ({
+        ...safeAddressFields(item),
         response_structure: item.response_structure || null,
         media_observation: safeMediaFacts(item.media_observation),
         http_observation: safeHttpFacts(item.http_observation),

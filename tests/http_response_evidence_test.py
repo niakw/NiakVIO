@@ -18,6 +18,7 @@ from run_hosted_brain_repair_loop import verification_feedback
 code = '''
 const {observeHttpResponse,safeHttpFacts}=require('./scripts/http_response_observation.cjs');
 const {createReaderUserAgentProbe,safeReaderProbe}=require('./scripts/reader_user_agent_probe.cjs');
+const {safeAddressFields}=require('./scripts/address_reference.cjs');
 const {safeMediaFacts}=require('./scripts/media_observation.cjs');
 const fs=require('node:fs');
 (async()=>{
@@ -31,7 +32,7 @@ const fs=require('node:fs');
  const end=source.indexOf('      settings_diagnostics:',begin);
  if(begin<0||end<0) throw new Error('health projection unavailable');
  const expression=source.slice(begin+'network_observations: '.length,end).trim().replace(/,$/,'');
- const normalize=new Function('worker','safeMediaFacts','safeHttpFacts','safeReaderProbe','sanitizeError','return ('+expression+');');
+ const normalize=new Function('worker','safeMediaFacts','safeHttpFacts','safeReaderProbe','safeAddressFields','sanitizeError','return ('+expression+');');
  const event={stage:'player',status:403,host:'reader.test',http_observation:{...facts,raw_body:'PRIVATE'}};
  const probe=createReaderUserAgentProbe({fetch:async()=>new Response('Access denied PRIVATE',{status:403,headers:{'content-type':'text/html'}})});
  probe.record(new Response('html',{headers:{'content-type':'text/html'}}),'https://private.test/ok',
@@ -40,7 +41,7 @@ const fs=require('node:fs');
   {headers:{'User-Agent':'failed profile','Referer':'https://private.test/PRIVATE'}},event);
  await probe.flush();
  const worker={network_observations:[event]};
- const row=normalize(worker,safeMediaFacts,safeHttpFacts,safeReaderProbe,()=>null)[0];
+ const row=normalize(worker,safeMediaFacts,safeHttpFacts,safeReaderProbe,safeAddressFields,()=>null)[0];
  if(!row.http_observation) throw new Error('health projection dropped HTTP diagnostics');
  if(JSON.stringify(row.http_observation).includes('PRIVATE')) throw new Error('health projection leaked raw values');
  console.log(JSON.stringify({http:row.http_observation,probe:row.reader_user_agent_probe}));

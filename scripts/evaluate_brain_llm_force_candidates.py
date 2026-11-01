@@ -32,6 +32,7 @@ import deep_repair_loop as deep  # noqa: E402
 import runtime_repair  # noqa: E402
 from repair_identity_gate import automatic_repair_identity_gate  # noqa: E402
 from http_response_evidence import public_http_observation, public_reader_probe  # noqa: E402
+from address_reference_evidence import public_address_fields  # noqa: E402
 
 SHA40 = __import__("re").compile(r"^[0-9a-f]{40}$")
 
@@ -103,7 +104,7 @@ def invocation_summary(result: dict[str, Any]) -> list[dict[str, Any]]:
 
 def network_summary(result: dict[str, Any]) -> list[dict[str, Any]]:
     output: list[dict[str, Any]] = []
-    seen: set[tuple[str, str, str, str, int | None]] = set()
+    seen: set[tuple[object, ...]] = set()
     for test in result.get("tests") or []:
         if not isinstance(test, dict):
             continue
@@ -113,6 +114,7 @@ def network_summary(result: dict[str, Any]) -> list[dict[str, Any]]:
             if not isinstance(row, dict):
                 continue
             item = {
+                **public_address_fields(row),
                 "fixture": label,
                 "stage": str(row.get("stage") or "")[:80],
                 "host": str(row.get("host") or "")[:160],
@@ -144,13 +146,18 @@ def network_summary(result: dict[str, Any]) -> list[dict[str, Any]]:
                 item["host"],
                 item["path"],
                 item["status"],
+                item.get('address_scope'), item.get('request_ref'),
+                item.get('response_ref'), item.get('referer_ref'),
             )
             if key in seen:
                 continue
             seen.add(key)
-            output.append(item)
-            if len(output) >= 64:
-                return output
+            if len(output) < 64:
+                output.append(item)
+            else:
+                for kept in output:
+                    if kept.get('address_scope'):
+                        kept['address_trace_truncated'] = True
     return output
 
 

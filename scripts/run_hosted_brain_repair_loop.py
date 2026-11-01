@@ -15,6 +15,7 @@ if str(ROOT / 'scripts') not in sys.path:
     sys.path.insert(0, str(ROOT / 'scripts'))
 
 from http_response_evidence import public_http_observation, public_reader_probe
+from address_reference_evidence import public_address_fields
 
 def should_replan(evaluation: dict, attempt: int, limit: int) -> bool:
     return (
@@ -35,6 +36,7 @@ def verification_feedback(evaluation: dict) -> dict:
         result[phase] = {key: value.get(key) for key in
                          ('streamsPlayable', 'streamsReturned', 'identityContradictions', 'fixtureCoverage')}
     result['candidate_network'] = [{
+        **public_address_fields(event),
         'host': event.get('host'), 'stage': event.get('stage'), 'status': event.get('status'),
         'fixture': event.get('fixture'),
         'functions': event.get('providerFunctions', []),
@@ -44,6 +46,10 @@ def verification_feedback(evaluation: dict) -> dict:
         'reader_user_agent_probe': public_reader_probe(event.get('readerUserAgentProbe')) or None,
         'announced_players': event.get('announcedPlayerCandidates', 0),
     } for event in (row.get('candidate') or {}).get('networkTrace', [])[-12:]]
+    omitted = {event.get('address_scope') for event in (row.get('candidate') or {}).get('networkTrace', [])[:-12]}
+    for event in result['candidate_network']:
+        if event.get('address_scope') in omitted:
+            event['address_trace_truncated'] = True
     return result
 
 

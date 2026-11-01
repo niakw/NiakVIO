@@ -8,6 +8,7 @@ import subprocess
 from pathlib import Path
 import evaluate_brain_llm_force_candidates as verifier
 from http_response_evidence import public_http_observation, public_reader_probe
+from address_reference_evidence import public_address_fields, address_scope
 
 def script_shell_only(events):
     replies = [event for event in events if event.get('ok') and event.get('response_structure')]
@@ -85,6 +86,7 @@ def main():
         'http_script_shell_only': script_shell_only(events),
         'fixture_evidence': verifier.fixture_summary(result),
         'network_evidence': [{
+            **public_address_fields(event),
             'fixture': event.get('fixture_label'),
             'stage': event.get('stage'), 'host': event.get('host'),
             'status': event.get('status'), 'functions': event.get('provider_function_names', [])[:8],
@@ -97,6 +99,10 @@ def main():
         'streams_playable': verifier.runtime_repair.playable_stream_count(result),
         'publicationAuthority': False,
     }
+    omitted_scopes = {address_scope(event.get('address_scope')) for event in events[12:]}
+    for event in payload['network_evidence']:
+        if event.get('address_scope') in omitted_scopes:
+            event['address_trace_truncated'] = True
     if previous:
         payload['script_shell_recheck_performed'] = True
         browser = previous.get('browser_observation') or {}
