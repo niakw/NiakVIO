@@ -110,7 +110,7 @@ assert 'max_rounds="${vals[2]:-3}"' in fast
 assert "python tests/brain_exploration_chain_test.py" in fast
 fast_py = (ROOT / "scripts/run_provider_fast_repair.py").read_text(encoding="utf-8")
 assert 'parser.add_argument("--max-rounds-per-batch", type=int, default=3)' in fast_py
-assert '-f target_providers="$learn_handoff_csv"' in fast
+assert '-f target_providers="$eligible_csv"' in fast
 assert 'complete-cloud-convergence:' in learn
 assert 'FIELD_BRAIN_CLOUD_CONVERGENCE next=census' in learn
 assert '-f scope=unresolved -f persist=true' in learn
