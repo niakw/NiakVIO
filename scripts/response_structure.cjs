@@ -43,7 +43,7 @@ function addressShape(raw, valueKind, baseUrl) {
   if (!['absolute_url', 'relative_url', 'encoded_url'].includes(valueKind)) return unknown;
   try {
     const value = valueKind === 'encoded_url' ? decodedAddress(raw.trim()) : raw.trim();
-    const url = new URL(value.replace(/&amp;/gi, '&'), baseUrl || undefined);
+    const url = new URL(value.replace(/&(?:amp|#0*38|#x0*26);/gi, '&'), baseUrl || undefined);
     if (!/^https?:$/.test(url.protocol)) return unknown;
     let origin = 'unknown';
     try { origin = url.origin === new URL(baseUrl).origin ? 'same_origin' : 'cross_origin'; } catch {}
@@ -61,11 +61,18 @@ function addressShape(raw, valueKind, baseUrl) {
   } catch { return unknown; }
 }
 
-function playerMarkup(value, baseUrl) {
+function safeAddressReference(value) {
+  return typeof value === 'string' && /^r[1-9][0-9]{0,2}$/.test(value)
+    && value === 'r' + Number(value.slice(1))
+    && Number(value.slice(1)) <= 512 ? value : '';
+}
+
+function playerMarkup(value, baseUrl, addressRef) {
   // Independent head/tail samples avoid inventing tags at a joined boundary.
   const samples = value.length > 131072
     ? [value.slice(0, 65536), value.slice(-65536)] : [value];
   const groups = new Map();
+  const collectAddresses = typeof addressRef === 'function';
   let examined = 0;
   for (const sample of samples) {
     const tags = /<(iframe|video|source|a|button|option|div|li|input)\b([^>]{0,8192})>/gi;
@@ -89,13 +96,43 @@ function playerMarkup(value, baseUrl) {
       const row = { tag: match[1].toLowerCase(), value_kinds: Object.fromEntries([...kinds].sort()),
         value_shapes: Object.fromEntries([...shapes].sort()), count: 1, distinct_values: 1 };
       const key = JSON.stringify([row.tag, row.value_kinds, row.value_shapes]);
-      const previous = groups.get(key);
+      let group = groups.get(key);
       const signature = JSON.stringify(values.sort());
-      if (previous) {
-        previous.row.count = Math.min(128, previous.row.count + 1);
-        if (previous.values.size < 128) previous.values.add(signature);
-        previous.row.distinct_values = previous.values.size;
-      } else groups.set(key, { row, values: new Set([signature]) });
+      if (group) {
+        group.row.count = Math.min(128, group.row.count + 1);
+        if (group.values.size < 128) group.values.add(signature);
+        group.row.distinct_values = group.values.size;
+      } else {
+        group = { row, values: new Set([signature]) };
+        groups.set(key, group);
+      }
+      if (collectAddresses) {
+        for (const [name, raw] of values) {
+          const kind = addressKind(raw);
+          if (['inline_markup', 'escaped_markup', 'encoded_markup'].includes(kind)) {
+            group.addressRefsTruncated = true;
+            continue;
+          }
+          if (!['absolute_url', 'relative_url', 'encoded_url'].includes(kind)) continue;
+          let canonical;
+          try {
+            const address = kind === 'encoded_url' ? decodedAddress(raw.trim()) : raw.trim();
+            const url = new URL(address.replace(/&(?:amp|#0*38|#x0*26);/gi, '&'), baseUrl || undefined);
+            if (!/^https?:$/.test(url.protocol)) continue;
+            url.hash = '';
+            canonical = url.href;
+          } catch {
+            group.addressRefsTruncated = true;
+            continue;
+          }
+          group.addresses ||= new Map();
+          let addresses = group.addresses.get(name);
+          if (!addresses) group.addresses.set(name, addresses = new Set());
+          if (addresses.has(canonical)) continue;
+          if (addresses.size >= 16) { group.addressRefsTruncated = true; continue; }
+          addresses.add(canonical);
+        }
+      }
     }
   }
   function priority(row) {
@@ -104,10 +141,30 @@ function playerMarkup(value, baseUrl) {
     if (Object.keys(row.value_kinds).some(name => /^data-(?:src|player|embed|video|code|iframe|source|server)/.test(name))) return 2;
     return row.tag === 'option' ? 3 : 4;
   }
+  const selected = [...groups.values()].sort((a, b) => priority(a.row) - priority(b.row)).slice(0, 8);
+  let addressRefsTruncated = false;
+  if (collectAddresses) {
+    for (const group of selected) {
+      const refs = {};
+      for (const [name, addresses] of group.addresses || []) {
+        const references = new Set();
+        for (const address of addresses) {
+          let reference;
+          try { reference = safeAddressReference(addressRef(address)); } catch {}
+          if (reference) references.add(reference);
+          else group.addressRefsTruncated = true;
+        }
+        if (references.size) refs[name] = [...references];
+      }
+      if (Object.keys(refs).length) group.row.address_refs = refs;
+      group.row.address_refs_truncated = group.addressRefsTruncated === true;
+      addressRefsTruncated ||= group.row.address_refs_truncated;
+    }
+  }
   return {
-    rows: [...groups.values()].map(group => group.row).sort((a, b) => priority(a) - priority(b)).slice(0, 8),
+    rows: selected.map(group => group.row),
     sampled_chars: samples.reduce((sum, sample) => sum + sample.length, 0),
-    truncated: value.length > 131072 || examined > 1024 || groups.size > 8,
+    truncated: value.length > 131072 || examined > 1024 || groups.size > 8 || addressRefsTruncated,
   };
 }
 
@@ -154,7 +211,7 @@ function responseStructure(value, options = {}) {
     const variables = [...new Set([...text.matchAll(/\b(?:var|let|const)\s+([A-Za-z_$][\w$]{0,47})\s*=/g)]
       .map(row => row[1]).filter(name => !SENSITIVE.test(name)))].slice(0, 16);
     return { kind: 'html', tags: [...tags].map(([tag, attrs]) => ({ tag, attributes: [...attrs].sort() })),
-      variables, player_markup: playerMarkup(value, options?.baseUrl) };
+      variables, player_markup: playerMarkup(value, options?.baseUrl, options?.addressRef) };
   }
   return { kind: text ? 'text' : 'binary' };
 }

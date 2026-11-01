@@ -29,10 +29,10 @@ jobs:
     timeout-minutes: 20
     env:
       TARGET_PROVIDER: ${{ inputs.provider || 'animevostfr' }}
-      BRAIN_SHA: 89560b995b2879ebd3ab0b8992c30c2c3dbe5d7b
+      BRAIN_SHA: b90234958c6111d8d284d3defa7f262a59269689
       # An explicit archive replays its exact original proposal without inference.
-      # Resume bounded synthesis after the controlled reader diagnostic.
-      REPLAY_EVIDENCE: ${{ inputs.replay_evidence || '' }}
+      # Correlate declared readers with requests using an already-executed candidate.
+      REPLAY_EVIDENCE: ${{ inputs.replay_evidence || (github.event_name == 'push' && '41257855269') || '' }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
@@ -62,6 +62,8 @@ jobs:
           node tests/reader_user_agent_probe_test.cjs
           python tests/http_response_evidence_test.py
           node tests/response_structure_test.cjs
+          node tests/address_reference_test.cjs
+          python tests/player_address_correlation_test.py
           python tests/player_markup_evidence_test.py
           python -m pip install -e brain-llm
           mkdir -p local-output/hosted-check

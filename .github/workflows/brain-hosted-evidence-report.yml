@@ -100,6 +100,17 @@ jobs:
           import json, os
           from pathlib import Path
           from scripts.http_response_evidence import public_http_observation, public_http_evidence, public_reader_probe
+          from scripts.address_reference_evidence import public_address_fields
+          from scripts.player_markup_evidence import project_player_markup
+          def address_structure(event):
+              structure = event.get('responseStructure')
+              if not isinstance(structure, dict):
+                  return None
+              result = dict(structure)
+              if isinstance(result.get('player_markup'), dict):
+                  result['player_markup'] = project_player_markup(result['player_markup'],
+                      allow_address_refs=bool(public_address_fields(event)))
+              return result
           result = json.loads(Path('evidence/evaluation.json').read_text())
           safe_rows = []
           for row in result.get('rows', [])[:4]:
@@ -114,8 +125,9 @@ jobs:
                       {**{key: event.get(key) for key in (
                           'fixture', 'stage', 'host', 'method', 'status', 'ok', 'errorCode',
                           'announcedPlayerCandidates', 'announcedQualityHeights',
-                          'responseStructure', 'providerFunctions', 'mediaObservation',
-                      )}, 'httpObservation': public_http_observation(event.get('httpObservation')),
+                          'providerFunctions', 'mediaObservation',
+                      )}, **public_address_fields(event), 'responseStructure': address_structure(event),
+                          'httpObservation': public_http_observation(event.get('httpObservation')),
                           'readerUserAgentProbe': public_reader_probe(event.get('readerUserAgentProbe'))}
                       for event in value.get('networkTrace', [])[:64]
                   ]

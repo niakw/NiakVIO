@@ -19,6 +19,7 @@ const { responseStructure } = require('./response_structure.cjs');
 const { observeMediaResponse } = require('./media_observation.cjs');
 const { observeHttpResponse } = require('./http_response_observation.cjs');
 const { createReaderUserAgentProbe } = require('./reader_user_agent_probe.cjs');
+const { createAddressReferences, safeAddressFields } = require('./address_reference.cjs');
 const DiagnosticError = Error;
 let activeProviderPath = '';
 const Module = require('node:module');
@@ -27,6 +28,7 @@ const networkObservations = [];
 let activeInvocation = null;
 let activeSettingsProfile = null;
 let flushReaderUserAgentProbes = async () => {};
+let activeAddressReferences = null;
 
 function sanitizeDiagnosticText(value, limit = 1000) {
   return String(value || '')
@@ -436,6 +438,13 @@ function isInfrastructureHost(host) {
 }
 
 function emit(payload) {
+  if (activeAddressReferences) {
+    for (const row of payload.network_observations || []) {
+      if (row.address_scope !== activeAddressReferences.scope) continue;
+      row.address_refs_truncated ||= activeAddressReferences.truncated;
+      row.address_trace_truncated ||= networkObservations.length > 80;
+    }
+  }
   process.stdout.write(`NUVIO_HEALTH_RESULT=${JSON.stringify(payload)}\n`);
 }
 
@@ -631,6 +640,8 @@ function installPolyfills(context = {}) {
 
   if (typeof globalThis.fetch === 'function') {
     const nativeFetch = globalThis.fetch.bind(globalThis);
+    const addressReferences = createAddressReferences();
+    activeAddressReferences = addressReferences;
     const readerProbe = context.readerUserAgentProbe === true ? createReaderUserAgentProbe({
       fetch: (input, init) => guardedFetch(nativeFetch, input, init, { maxRedirects: context.networkLimits?.maxRedirects || 5 }),
     }) : null;
@@ -658,10 +669,14 @@ function installPolyfills(context = {}) {
       const rawRequestUrl = (() => {
         try { return typeof input === 'string' ? input : input?.url || ''; } catch { return ''; }
       })();
+      const addressFields = safeAddressFields({ address_scope: addressReferences.scope,
+        request_ref: addressReferences.ref(rawRequestUrl), referer_ref: addressReferences.ref(headers.get('referer') || ''),
+        address_refs_truncated: addressReferences.truncated, address_trace_truncated: false });
       if (/\[object(?:%20|\s)+object\]|%5Bobject(?:%20|\s)+object%5D/i.test(String(rawRequestUrl))) {
         const invalid = new Error('invalid provider request: an object was serialized into the request URL');
         invalid.code = 'NUVIO_INVALID_REQUEST_ARGUMENT';
         networkObservations.push({
+          ...addressFields,
           stage: inferRequestStage(requestMeta.path_pattern),
           host: requestMeta.host,
           method: requestMeta.method,
@@ -700,6 +715,7 @@ function installPolyfills(context = {}) {
         if (declaredLength > maxResponseBytes) throw new Error(`response body exceeds limit (${declaredLength} bytes)`);
         const routeProofHints = routeProofEnabled ? await routeProofResponseHints(response) : [];
         const observation = {
+          ...addressFields, response_ref: addressReferences.ref(response.url || rawRequestUrl),
           provider_function_names: providerFunctions,
           stage: requestStage, host, method: requestMeta.method, path_pattern: requestMeta.path_pattern,
           status: response.status, ok: response.ok, duration_ms: Date.now() - started,
@@ -724,7 +740,8 @@ function installPolyfills(context = {}) {
           totalResponseBytes += bytes;
           if (totalResponseBytes > maxTotalResponseBytes) throw new Error(`provider cumulative response limit exceeded (${maxTotalResponseBytes} bytes)`);
         }, (value) => {
-          observation.response_structure = responseStructure(value, { baseUrl: response.url || rawRequestUrl });
+          observation.response_structure = responseStructure(value, { baseUrl: response.url || rawRequestUrl,
+            addressRef: address => addressReferences.ref(address) });
           const hints = extractResponseVariantHints(value, { baseUrl: response.url || rawRequestUrl });
           observation.declared_player_candidate_count = Math.max(
             Number(observation.declared_player_candidate_count || 0),
@@ -749,6 +766,7 @@ function installPolyfills(context = {}) {
         });
       } catch (error) {
         networkObservations.push({
+          ...addressFields,
           stage: requestStage, host, method: requestMeta.method, path_pattern: requestMeta.path_pattern,
           provider_function_names: providerFunctions,
           status: null, ok: false, duration_ms: Date.now() - started, infrastructure: isInfrastructureHost(host),

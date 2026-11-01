@@ -404,3 +404,33 @@ avec un rejeu du bundle exact comme preuve de transmission. Les observations
 absentes restent absentes. Le workflow retrouve la synthèse bornée par défaut ;
 le contrôle supplémentaire nécessite désormais l'entrée manuelle explicite
 `reader_user_agent_probe`, désactivée par défaut.
+
+## 2 novembre 2026 — Correspondance entre lecteurs déclarés et requêtes
+
+Le [run 41305337204](https://github.com/niakw/NiakVIO/actions/runs/41305337204)
+confirme une abstention après appel réel au modèle : les sélecteurs d'admission
+ne peuvent réparer les lecteurs déjà atteints. Les trois `div[data-src]`
+observés ne prouvent pas que trois lecteurs différents ont été essayés, car
+les anciennes traces fusionnaient les requêtes de même route qui ne différaient
+que par leurs paramètres.
+
+Une table privée au worker attribue désormais des références opaques aux URL
+HTTP reconnues, dans un espace éphémère propre à l'exécution. Les paramètres
+restent distincts ; seuls les fragments sont retirés. Les valeurs d'adresses
+et la table restent en mémoire. Les groupes de markup conservés émettent les
+références par attribut, puis les événements de requête/réponse et de Referer
+les réutilisent. La déduplication du rapport inclut cet espace et la référence
+de requête. Aucun octet ni requête réseau supplémentaire n'est nécessaire.
+
+Les limites de la table, des attributs, des échantillons et des traces sont
+signalées explicitement. Une référence absente d'une trace partielle ne prouve
+pas qu'un lecteur a été ignoré. Les projections worker → santé → préflight →
+évaluation → archive et Brain valident indépendamment ces champs. Les tests
+couvrent trois wrappers de même route avec paramètres différents, les aliases,
+les limites, les entrées forgées et la confidentialité. Les 337 tests Brain et
+l'audit de confidentialité passent ; le workflow épingle
+`b90234958c6111d8d284d3defa7f262a59269689`.
+
+Le prochain push rejoue le candidat du run 41257855269, sans inférence ni
+modification manuelle du provider, afin d'observer la couverture réelle des
+lecteurs. Aucune réparation de lecture n'est déduite des seules références.

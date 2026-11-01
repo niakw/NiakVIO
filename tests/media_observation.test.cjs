@@ -5,6 +5,7 @@ const vm = require('node:vm');
 const { observeMediaResponse, prefixFacts, safeMediaFacts } = require('../scripts/media_observation.cjs');
 const { safeHttpFacts } = require('../scripts/http_response_observation.cjs');
 const { safeReaderProbe } = require('../scripts/reader_user_agent_probe.cjs');
+const { safeAddressFields } = require('../scripts/address_reference.cjs');
 
 function movie(seconds, version = 0) {
   const bytes = Buffer.alloc(80);
@@ -61,7 +62,7 @@ function movie(seconds, version = 0) {
   const projected = vm.runInNewContext('({' + projection + '})', {
     worker: { network_observations: [{ ...observation,
       media_observation: { ...observation.media_observation, rawBody: 'PRIVATE', url: 'PRIVATE' },
-    }] }, safeMediaFacts, safeHttpFacts, safeReaderProbe, sanitizeError: () => '',
+    }] }, safeMediaFacts, safeHttpFacts, safeReaderProbe, safeAddressFields, sanitizeError: () => '',
   });
   assert.equal(projected.network_observations[0].media_observation.durationSeconds, 35);
   assert.equal(projected.network_observations[0].media_observation.signature, 'mp4');
