@@ -160,9 +160,9 @@ gh() {
     return 7
   fi
   if [[ "$2" == *"status=${MOCK_ACTIVE_STATUS}"* ]] && [ "$MOCK_ACTIVE_STATUS" != none ]; then
-    printf '%s\\n' "$MOCK_COUNT"
+    printf '%s\n' "$MOCK_COUNT"
   else
-    printf '0\\n'
+    printf '0\n'
   fi
 }
 '''
