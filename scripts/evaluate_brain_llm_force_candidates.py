@@ -147,6 +147,7 @@ def network_summary(result: dict[str, Any]) -> list[dict[str, Any]]:
                 item["path"],
                 item["status"],
                 item.get('address_scope'), item.get('request_ref'),
+                item.get('response_ref'), item.get('referer_ref'),
             )
             if key in seen:
                 continue

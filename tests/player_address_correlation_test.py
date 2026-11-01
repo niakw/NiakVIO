@@ -59,6 +59,9 @@ result = {'provider': 'demo', 'tests': [{'fixture': {'label': 'Missing'}, 'strea
                                         'network_observations': events}]}
 trace = verifier.network_summary(result)
 assert len(trace) == 6, 'query-distinct wrappers must survive normalized-path deduplication'
+relationships = [events[1], {**events[1], 'response_ref': 'r100'}, {**events[1], 'referer_ref': 'r200'}]
+assert len(verifier.network_summary({'tests': [{'fixture': {'label': 'Missing'},
+    'network_observations': relationships}]})) == 3, 'redirect and parent relations must not be collapsed'
 assert len({row['request_ref'] for row in trace}) == 6
 assert all(row['address_scope'] == produced['scope'] and row['address_trace_truncated'] is False for row in trace)
 feedback = verification_feedback({'rows': [{'executionObserved': True,
