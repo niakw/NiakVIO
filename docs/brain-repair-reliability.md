@@ -315,3 +315,33 @@ réellement incomplet masqué par une accolade littérale fermante. L'ancre exac
 `_crawlEligible` du bundle publié passe ce contrôle. Le workflow épingle le Brain
 `9c80e6c271d09600e0ae85baefb1b2a17f5683ad` pour permettre un nouvel essai complet.
 Le refus HTTP observé reste une preuve négative, jamais une réparation acceptée.
+
+## 1er novembre 2026 — Diagnostic des réponses de lecteurs refusées
+
+Le [run 41258465778](https://github.com/niakw/NiakVIO/actions/runs/41258465778)
+exécute deux candidats sans gain : Hell Mode reste lisible, Jujutsu Kaisen reste
+sans flux validé et les MP4 Sendvid mesurés durent cinq secondes. Les deux
+candidats atteignent Sibnet, qui répond HTTP 403. Ce statut parvient bien au
+prompt ; il ne suffit pas à conclure que la ressource a disparu. Le provider
+jette sur les réponses HTTP d'erreur avant de les lire et la structure reste vide.
+
+Le worker relève désormais le type de contenu et la relation entre URL demandée
+et URL effective, sous forme d'énumérations fixes. Sur les seules erreurs HTTP
+textuelles, un clone de réponse fournit un échantillon borné à 8192 octets et
+250 ms. Seuls un indice de page (challenge, captcha, refus, absence, limitation
+ou inconnu), l'état de lecture et le compteur sont conservés. Aucun texte,
+en-tête ou URL n'est ajouté au relevé. Le corps original reste lisible et les
+réponses réussies comme les médias ne sont pas échantillonnés par ce diagnostic.
+Ces indices de syntaxe ne prouvent ni disponibilité ni réparation de lecture.
+
+Le préflight, l'évaluation, le retour au Brain et l'archive publique projettent
+ces champs indépendamment. Un reçu `-http-observation.json` conserve aussi le
+préflight lorsqu'aucun candidat n'est produit. Les 328 tests Brain et l'audit de
+confidentialité passent ; les tests Node/Python couvrent les streams réels,
+l'original inchangé, le délai, l'annulation, la confidentialité et la transmission.
+Le Brain publié est épinglé à `ba629acd73df78df06a771c0086b3d8fe6ef73cd`.
+
+L'essai automatique sur push rejoue uniquement le candidat déjà exécuté du
+run 41257855269 afin de diagnostiquer sa réponse HTTP, sans nouvelle inférence
+ni publication de provider. Un lancement manuel sans archive conserve la
+synthèse bornée habituelle. Aucune réparation de lecture n'est encore validée.
