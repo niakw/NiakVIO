@@ -17,6 +17,7 @@ const { extractResponseVariantHints } = require('./response_variant_hints.cjs');
 const { providerCallNames } = require('./provider_callsite.cjs');
 const { responseStructure } = require('./response_structure.cjs');
 const { observeMediaResponse } = require('./media_observation.cjs');
+const { observeHttpResponse } = require('./http_response_observation.cjs');
 const DiagnosticError = Error;
 let activeProviderPath = '';
 const Module = require('node:module');
@@ -707,6 +708,9 @@ function installPolyfills(context = {}) {
           declared_quality_heights: [],
         };
         networkObservations.push(observation);
+        observation.http_observation = await observeHttpResponse(response, rawRequestUrl);
+        totalResponseBytes += observation.http_observation.sampled_bytes;
+        if (totalResponseBytes > maxTotalResponseBytes) throw new Error(`provider cumulative response limit exceeded (${maxTotalResponseBytes} bytes)`);
         return wrapLimitedResponse(observeMediaResponse(response, observation), maxResponseBytes, (bytes) => {
           totalResponseBytes += bytes;
           if (totalResponseBytes > maxTotalResponseBytes) throw new Error(`provider cumulative response limit exceeded (${maxTotalResponseBytes} bytes)`);

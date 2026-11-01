@@ -99,6 +99,7 @@ jobs:
           python3 - <<'PY'
           import json, os
           from pathlib import Path
+          from scripts.http_response_evidence import public_http_observation, public_http_evidence
           result = json.loads(Path('evidence/evaluation.json').read_text())
           safe_rows = []
           for row in result.get('rows', [])[:4]:
@@ -110,11 +111,11 @@ jobs:
                       'providerRequests', 'providerHttpStatuses', 'variantCoverage', 'invocationDiagnostics', 'fixtureCoverage',
                   )}
                   safe_row[phase]['networkTrace'] = [
-                      {key: event.get(key) for key in (
+                      {**{key: event.get(key) for key in (
                           'fixture', 'stage', 'host', 'method', 'status', 'ok', 'errorCode',
                           'announcedPlayerCandidates', 'announcedQualityHeights',
                           'responseStructure', 'providerFunctions', 'mediaObservation',
-                      )}
+                      )}, 'httpObservation': public_http_observation(event.get('httpObservation'))}
                       for event in value.get('networkTrace', [])[:64]
                   ]
               safe_rows.append(safe_row)
@@ -132,6 +133,9 @@ jobs:
               context = public_player_markup(json.loads(live.read_text()), result.get('currentSha'))
               target = path.with_name(os.environ['SOURCE_RUN'] + '-player-markup.json')
               target.write_text(json.dumps(context, indent=2) + '\n')
+              http = public_http_evidence(json.loads(live.read_text()), result.get('currentSha'))
+              target = path.with_name(os.environ['SOURCE_RUN'] + '-http-observation.json')
+              target.write_text(json.dumps(http, indent=2) + '\n')
           PY
           git add automation/brain-llm-force-memory.json automation/hosted-repair-evidence
           git diff --cached --quiet && exit 0

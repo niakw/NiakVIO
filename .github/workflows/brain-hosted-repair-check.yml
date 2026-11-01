@@ -25,10 +25,11 @@ jobs:
     timeout-minutes: 20
     env:
       TARGET_PROVIDER: ${{ inputs.provider || 'animevostfr' }}
-      BRAIN_SHA: 9c80e6c271d09600e0ae85baefb1b2a17f5683ad
+      BRAIN_SHA: ba629acd73df78df06a771c0086b3d8fe6ef73cd
       # An explicit archive replays its exact original proposal without inference.
-      # Otherwise use the current measured failures for bounded synthesis.
-      REPLAY_EVIDENCE: ${{ inputs.replay_evidence || '' }}
+      # The push experiment diagnoses the already-executed reader admission edit.
+      # Manual dispatch without an archive still performs bounded synthesis.
+      REPLAY_EVIDENCE: ${{ inputs.replay_evidence || (github.event_name == 'push' && '41257855269') || '' }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
@@ -54,6 +55,8 @@ jobs:
           test "$(git -C brain-llm rev-parse HEAD)" = "$BRAIN_SHA"
           npm ci --ignore-scripts
           node tests/media_observation.test.cjs
+          node tests/http_response_observation_test.cjs
+          python tests/http_response_evidence_test.py
           node tests/response_structure_test.cjs
           python tests/player_markup_evidence_test.py
           python -m pip install -e brain-llm

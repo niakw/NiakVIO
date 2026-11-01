@@ -14,6 +14,8 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT / 'scripts') not in sys.path:
     sys.path.insert(0, str(ROOT / 'scripts'))
 
+from http_response_evidence import public_http_observation
+
 def should_replan(evaluation: dict, attempt: int, limit: int) -> bool:
     return (
         not int(evaluation.get('acceptedProviderCount') or 0)
@@ -38,6 +40,7 @@ def verification_feedback(evaluation: dict) -> dict:
         'functions': event.get('providerFunctions', []),
         'response_structure': event.get('responseStructure'),
         'media_observation': event.get('mediaObservation'),
+        'http_observation': public_http_observation(event.get('httpObservation')),
         'announced_players': event.get('announcedPlayerCandidates', 0),
     } for event in (row.get('candidate') or {}).get('networkTrace', [])[-12:]]
     return result

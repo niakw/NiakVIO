@@ -31,6 +31,7 @@ if str(SCRIPTS) not in sys.path:
 import deep_repair_loop as deep  # noqa: E402
 import runtime_repair  # noqa: E402
 from repair_identity_gate import automatic_repair_identity_gate  # noqa: E402
+from http_response_evidence import public_http_observation  # noqa: E402
 
 SHA40 = __import__("re").compile(r"^[0-9a-f]{40}$")
 
@@ -131,6 +132,8 @@ def network_summary(result: dict[str, Any]) -> list[dict[str, Any]]:
                 item["responseStructure"] = row["response_structure"]
             if isinstance(row.get("media_observation"), dict):
                 item["mediaObservation"] = row["media_observation"]
+            if isinstance(row.get('http_observation'), dict):
+                item['httpObservation'] = public_http_observation(row['http_observation'])
             if row.get("provider_function_names"):
                 item["providerFunctions"] = row["provider_function_names"][:8]
             key = (
