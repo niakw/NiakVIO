@@ -27,8 +27,8 @@ jobs:
       TARGET_PROVIDER: ${{ inputs.provider || 'animevostfr' }}
       BRAIN_SHA: ba629acd73df78df06a771c0086b3d8fe6ef73cd
       # An explicit archive replays its exact original proposal without inference.
-      # The reader diagnostic is archived; resume bounded synthesis by default.
-      REPLAY_EVIDENCE: ${{ inputs.replay_evidence || '' }}
+      # Isolate the reader User-Agent hypothesis on the already-executed candidate.
+      REPLAY_EVIDENCE: ${{ inputs.replay_evidence || (github.event_name == 'push' && '41257855269') || '' }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
@@ -55,6 +55,7 @@ jobs:
           npm ci --ignore-scripts
           node tests/media_observation.test.cjs
           node tests/http_response_observation_test.cjs
+          node tests/reader_user_agent_probe_test.cjs
           python tests/http_response_evidence_test.py
           node tests/response_structure_test.cjs
           python tests/player_markup_evidence_test.py
@@ -82,6 +83,7 @@ jobs:
       - name: Run bounded hosted repair and verification loop
         timeout-minutes: 12
         env:
+          NIAKVIO_READER_UA_PROBE: '1'
           NIAKVIO_OPENAI_API_KEY: ${{ secrets.NIAKVIO_OPENAI_API_KEY }}
           TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
           TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}

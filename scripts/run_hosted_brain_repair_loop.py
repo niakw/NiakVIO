@@ -14,7 +14,7 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT / 'scripts') not in sys.path:
     sys.path.insert(0, str(ROOT / 'scripts'))
 
-from http_response_evidence import public_http_observation
+from http_response_evidence import public_http_observation, public_reader_probe
 
 def should_replan(evaluation: dict, attempt: int, limit: int) -> bool:
     return (
@@ -41,6 +41,7 @@ def verification_feedback(evaluation: dict) -> dict:
         'response_structure': event.get('responseStructure'),
         'media_observation': event.get('mediaObservation'),
         'http_observation': public_http_observation(event.get('httpObservation')),
+        'reader_user_agent_probe': public_reader_probe(event.get('readerUserAgentProbe')),
         'announced_players': event.get('announcedPlayerCandidates', 0),
     } for event in (row.get('candidate') or {}).get('networkTrace', [])[-12:]]
     return result

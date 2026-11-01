@@ -21,6 +21,7 @@ const { guardedFetch } = require('./network_guard.cjs');
 const { streamIdentity } = require('./nuvio_client_lab.cjs');
 const { safeMediaFacts } = require('./media_observation.cjs');
 const { safeHttpFacts } = require('./http_response_observation.cjs');
+const { safeReaderProbe } = require('./reader_user_agent_probe.cjs');
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const STAGE = path.resolve(process.env.NUVIO_STAGE || path.join(ROOT, 'staging'));
@@ -1169,6 +1170,7 @@ function executionContextForCandidate(candidate) {
     maxSettingsProfiles: Math.max(1, Math.min(12, Number(modeConfig.max_settings_profiles || 6))),
     singleProfileZeroStreamPreflight: modeConfig.zero_stream_preflight === true && !Boolean(metadata.hasSettings),
     routeProofTrace: modeConfig.route_proof_trace === true,
+    readerUserAgentProbe: modeConfig.reader_user_agent_probe === true,
     networkLimits: {
       maxFetches: Number(modeConfig.max_provider_fetches || 30),
       maxRedirects: Number(modeConfig.max_redirects || 5),
@@ -1656,6 +1658,7 @@ async function testCandidate(candidate) {
         response_structure: item.response_structure || null,
         media_observation: safeMediaFacts(item.media_observation),
         http_observation: safeHttpFacts(item.http_observation),
+        reader_user_agent_probe: safeReaderProbe(item.reader_user_agent_probe),
         provider_function_names: Array.isArray(item.provider_function_names)
           ? item.provider_function_names.filter(name => /^[A-Za-z_$][\w$]{0,63}$/.test(name)).slice(0, 8) : [],
         stage: item.stage || 'provider_fetch',

@@ -31,7 +31,7 @@ if str(SCRIPTS) not in sys.path:
 import deep_repair_loop as deep  # noqa: E402
 import runtime_repair  # noqa: E402
 from repair_identity_gate import automatic_repair_identity_gate  # noqa: E402
-from http_response_evidence import public_http_observation  # noqa: E402
+from http_response_evidence import public_http_observation, public_reader_probe  # noqa: E402
 
 SHA40 = __import__("re").compile(r"^[0-9a-f]{40}$")
 
@@ -134,6 +134,8 @@ def network_summary(result: dict[str, Any]) -> list[dict[str, Any]]:
                 item["mediaObservation"] = row["media_observation"]
             if isinstance(row.get('http_observation'), dict):
                 item['httpObservation'] = public_http_observation(row['http_observation'])
+            if isinstance(row.get('reader_user_agent_probe'), dict):
+                item['readerUserAgentProbe'] = public_reader_probe(row['reader_user_agent_probe'])
             if row.get("provider_function_names"):
                 item["providerFunctions"] = row["provider_function_names"][:8]
             key = (
@@ -376,6 +378,8 @@ def health_provider(stage: Path, output: Path) -> dict[str, Any]:
         'primary_fixture_limit_per_category': 2,
         'probe_streams_adaptively': False,
     })
+    if os.environ.get('NIAKVIO_READER_UA_PROBE') == '1':
+        config['modes']['deep']['reader_user_agent_probe'] = True
     config_path = output / 'comparison-health-config.json'
     config_path.write_text(json.dumps(config, indent=2) + '\n')
     return deep.run_health(

@@ -7,7 +7,7 @@ import re
 import subprocess
 from pathlib import Path
 import evaluate_brain_llm_force_candidates as verifier
-from http_response_evidence import public_http_observation
+from http_response_evidence import public_http_observation, public_reader_probe
 
 def script_shell_only(events):
     replies = [event for event in events if event.get('ok') and event.get('response_structure')]
@@ -91,6 +91,7 @@ def main():
             'response_structure': event.get('response_structure'),
             'media_observation': event.get('media_observation'),
             'http_observation': public_http_observation(event.get('http_observation')),
+            'reader_user_agent_probe': public_reader_probe(event.get('reader_user_agent_probe')),
             'announced_players': int(event.get('declared_player_candidate_count') or 0),
         } for event in events[:12]],
         'streams_playable': verifier.runtime_repair.playable_stream_count(result),
