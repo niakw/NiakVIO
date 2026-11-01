@@ -88,6 +88,7 @@ def health(**options):
     seen.append(config)
     assert config['modes']['deep']['primary_fixture_limit_per_category'] == 2
     assert config['modes']['deep']['probe_streams_adaptively'] is False
+    assert config['modes']['deep'].get('reader_user_agent_probe') is not True
     assert config['modes']['deep']['max_streams_to_probe'] == original['modes']['deep']['max_streams_to_probe']
     assert config['fixtures'] == original['fixtures']
     assert config.get('activation') == original.get('activation')

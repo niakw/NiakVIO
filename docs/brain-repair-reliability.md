@@ -362,3 +362,31 @@ du bundle exact confirme la présence de ces faits dans le prompt du Brain.
 Ce signal ne suffit pas à affirmer l'absence de challenge ou la disparition
 de la ressource. La synthèse bornée habituelle est rétablie par défaut ;
 un rejeu sans inférence reste disponible par l'entrée explicite d'archive.
+
+## 1er novembre 2026 — Comparaison contrôlée du profil User-Agent
+
+Après le diagnostic qualifié, le [run 41302490957](https://github.com/niakw/NiakVIO/actions/runs/41302490957)
+appelle effectivement le modèle, qui s'abstient : les fonctions d'admission
+proposées ne peuvent réparer les lecteurs déjà atteints. Le code utilise un
+profil Chrome pour les wrappers via `hdr()`, mais `_fetch` injecte `NiakVIO/3`
+lorsque le crawler appelle le lecteur sans User-Agent explicite. Ce changement
+de profil est une hypothèse à tester, pas une cause acquise du 403.
+
+Le diagnostic optionnel `NIAKVIO_READER_UA_PROBE=1` compare la même requête GET
+de lecteur refusée à un profil User-Agent observé sur une réponse HTML 2xx
+antérieure de la même exécution. Tous les autres en-têtes et paramètres réseau
+sont conservés ; seul le signal d'annulation est renouvelé pour borner le contrôle.
+La requête est différée après l'exécution du provider, avec une limite d'un
+contrôle et 2500 ms par worker. Le verdict, les flux et la durée d'exécution du
+provider sont calculés avant ce contrôle. Une réponse HTTP réussie du contrôle
+ne compte jamais comme un flux vidéo validé.
+Le contrôle respecte aussi la méthode effective d'un objet `Request`. Son délai
+est réduit au budget restant du worker, avec 500 ms réservées à la sortie ;
+il est omis avec le résultat `budget_exhausted` si ce budget manque.
+
+Les URL, valeurs d'en-têtes et profils restent en mémoire. L'archive conserve
+seulement la provenance du profil, le nom du champ changé, un statut, un résultat
+énuméré et le diagnostic HTTP borné. Les projections worker → santé → évaluation
+→ archive sont testées ensemble. Le worker normal ne lance aucun contrôle sans
+activation explicite. Le prochain push rejoue le candidat déjà exécuté du run
+41257855269 avec ce diagnostic, sans inférence ni patch manuel du provider.

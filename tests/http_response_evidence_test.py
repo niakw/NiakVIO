@@ -10,13 +10,14 @@ from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'scripts'))
-from http_response_evidence import public_http_observation, public_http_evidence
+from http_response_evidence import public_http_observation, public_http_evidence, public_reader_probe
 import capture_brain_live_context as capture
 import evaluate_brain_llm_force_candidates as verifier
 from run_hosted_brain_repair_loop import verification_feedback
 
 code = '''
 const {observeHttpResponse,safeHttpFacts}=require('./scripts/http_response_observation.cjs');
+const {createReaderUserAgentProbe,safeReaderProbe}=require('./scripts/reader_user_agent_probe.cjs');
 const {safeMediaFacts}=require('./scripts/media_observation.cjs');
 const fs=require('node:fs');
 (async()=>{
@@ -30,27 +31,45 @@ const fs=require('node:fs');
  const end=source.indexOf('      settings_diagnostics:',begin);
  if(begin<0||end<0) throw new Error('health projection unavailable');
  const expression=source.slice(begin+'network_observations: '.length,end).trim().replace(/,$/,'');
- const normalize=new Function('worker','safeMediaFacts','safeHttpFacts','sanitizeError','return ('+expression+');');
- const worker={network_observations:[{status:403,host:'reader.test',http_observation:{...facts,raw_body:'PRIVATE'}}]};
- const row=normalize(worker,safeMediaFacts,safeHttpFacts,()=>null)[0];
+ const normalize=new Function('worker','safeMediaFacts','safeHttpFacts','safeReaderProbe','sanitizeError','return ('+expression+');');
+ const event={stage:'player',status:403,host:'reader.test',http_observation:{...facts,raw_body:'PRIVATE'}};
+ const probe=createReaderUserAgentProbe({fetch:async()=>new Response('Access denied PRIVATE',{status:403,headers:{'content-type':'text/html'}})});
+ probe.record(new Response('html',{headers:{'content-type':'text/html'}}),'https://private.test/ok',
+  {headers:{'User-Agent':'existing successful profile'}},{});
+ probe.record(response,'https://private.test/embed?token=PRIVATE',
+  {headers:{'User-Agent':'failed profile','Referer':'https://private.test/PRIVATE'}},event);
+ await probe.flush();
+ const worker={network_observations:[event]};
+ const row=normalize(worker,safeMediaFacts,safeHttpFacts,safeReaderProbe,()=>null)[0];
  if(!row.http_observation) throw new Error('health projection dropped HTTP diagnostics');
  if(JSON.stringify(row.http_observation).includes('PRIVATE')) throw new Error('health projection leaked raw values');
- console.log(JSON.stringify(row.http_observation));
+ console.log(JSON.stringify({http:row.http_observation,probe:row.reader_user_agent_probe}));
 })();
 '''
-observed = json.loads(subprocess.check_output(['node', '-e', code], cwd=ROOT, text=True))
+produced = json.loads(subprocess.check_output(['node', '-e', code], cwd=ROOT, text=True))
+observed, probe = produced['http'], produced['probe']
+assert probe['attempted'] is True and probe['status'] == 403 and probe['changed_header'] == 'user-agent'
+for value in ({'attempted': False, 'outcome': 'response', 'status': 200},
+              {'attempted': True, 'outcome': 'PRIVATE', 'status': 200},
+              {'attempted': True, 'outcome': 'response', 'status': True, 'url': 'PRIVATE'}):
+    clean = public_reader_probe(value)
+    assert clean['status'] is None and 'PRIVATE' not in json.dumps(clean)
+    assert public_reader_probe(clean) == clean
 assert observed['page_signal'] == 'challenge_markup' and observed['body_state'] == 'complete'
 forged = {**observed, 'raw_body': 'PRIVATE', 'url': 'https://private.test/PRIVATE', 'cookie': 'PRIVATE'}
 event = {'stage': 'player', 'host': 'reader.test', 'status': 403, 'ok': False,
-         'http_observation': forged, 'provider_function_names': ['resolve']}
+         'http_observation': forged, 'reader_user_agent_probe': {**probe, 'url': 'PRIVATE'},
+         'provider_function_names': ['resolve']}
 result = {'tests': [{'fixture': {'label': 'Missing'}, 'streams_playable': 0,
                      'network_observations': [event]}]}
 summary = verifier.result_summary(result)
 archived = public_http_observation(summary['networkTrace'][0]['httpObservation'])
 assert archived == observed
+assert public_reader_probe(summary['networkTrace'][0]['readerUserAgentProbe']) == probe
 feedback = verification_feedback({'rows': [{'executionObserved': True,
     'materializedMutationObserved': True, 'candidate': summary}]})
 assert feedback['candidate_network'][0]['http_observation'] == observed
+assert feedback['candidate_network'][0]['reader_user_agent_probe'] == probe
 assert 'PRIVATE' not in json.dumps(feedback) and 'private.test' not in json.dumps(feedback)
 
 with tempfile.TemporaryDirectory() as directory:
@@ -64,9 +83,11 @@ with tempfile.TemporaryDirectory() as directory:
         capture.main()
     live = json.loads(output.read_text())
     assert live['network_evidence'][0]['http_observation'] == observed
+    assert live['network_evidence'][0]['reader_user_agent_probe'] == probe
     # The independent preflight receipt also works when no candidate was produced.
     receipt = public_http_evidence(live, 'a' * 40)
     assert receipt['observations'][0]['http_observation'] == observed
+    assert receipt['observations'][0]['reader_user_agent_probe'] == probe
     assert receipt['publicationAuthority'] is False and receipt['proofAuthority'] is False
     assert 'PRIVATE' not in json.dumps(receipt) and 'private.test' not in json.dumps(receipt)
     try:

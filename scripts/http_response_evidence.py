@@ -21,6 +21,25 @@ def public_http_observation(value):
     return result
 
 
+def public_reader_probe(value):
+    if not isinstance(value, dict):
+        return {}
+    attempted = value.get('attempted') is True
+    outcome = value.get('outcome') if isinstance(value.get('outcome'), str) and value['outcome'] in {
+        'response', 'timeout', 'error'} else 'error'
+    if not attempted:
+        outcome = 'budget_exhausted' if value.get('outcome') == 'budget_exhausted' else 'missing_profile'
+    status = value.get('status')
+    return {
+        'attempted': attempted,
+        'profile_source': 'prior_successful_html', 'changed_header': 'user-agent',
+        'status': status if attempted and outcome == 'response' and type(status) is int and 100 <= status <= 599 else None,
+        'outcome': outcome,
+        'http_observation': public_http_observation(value.get('http_observation')
+            if isinstance(value.get('http_observation'), dict) else {}),
+    }
+
+
 def public_http_evidence(context, source_sha):
     if (not isinstance(source_sha, str) or not re.fullmatch(r'[0-9a-f]{40}', source_sha)
             or context.get('sourceSha') != source_sha):
@@ -41,5 +60,7 @@ def public_http_evidence(context, source_sha):
             'status': status if type(status) is int and 100 <= status <= 599 else None,
             'http_observation': public_http_observation(row['http_observation']),
         })
+        if isinstance(row.get('reader_user_agent_probe'), dict):
+            observations[-1]['reader_user_agent_probe'] = public_reader_probe(row['reader_user_agent_probe'])
     return {'sourceSha': source_sha, 'provider': provider, 'observations': observations,
             'publicationAuthority': False, 'proofAuthority': False}

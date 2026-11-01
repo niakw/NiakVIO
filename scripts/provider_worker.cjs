@@ -18,6 +18,7 @@ const { providerCallNames } = require('./provider_callsite.cjs');
 const { responseStructure } = require('./response_structure.cjs');
 const { observeMediaResponse } = require('./media_observation.cjs');
 const { observeHttpResponse } = require('./http_response_observation.cjs');
+const { createReaderUserAgentProbe } = require('./reader_user_agent_probe.cjs');
 const DiagnosticError = Error;
 let activeProviderPath = '';
 const Module = require('node:module');
@@ -25,6 +26,7 @@ const Module = require('node:module');
 const networkObservations = [];
 let activeInvocation = null;
 let activeSettingsProfile = null;
+let flushReaderUserAgentProbes = async () => {};
 
 function sanitizeDiagnosticText(value, limit = 1000) {
   return String(value || '')
@@ -629,6 +631,12 @@ function installPolyfills(context = {}) {
 
   if (typeof globalThis.fetch === 'function') {
     const nativeFetch = globalThis.fetch.bind(globalThis);
+    const readerProbe = context.readerUserAgentProbe === true ? createReaderUserAgentProbe({
+      fetch: (input, init) => guardedFetch(nativeFetch, input, init, { maxRedirects: context.networkLimits?.maxRedirects || 5 }),
+    }) : null;
+    flushReaderUserAgentProbes = async () => {
+      if (readerProbe) await readerProbe.flush({ deadlineAtMs: context.providerDeadlineAtMs });
+    };
     const maxFetches = Math.max(1, Number(context.networkLimits?.maxFetches || 30));
     const maxResponseBytes = Math.max(65536, Number(context.networkLimits?.maxResponseBytes || 5 * 1024 * 1024));
     let fetchCount = 0;
@@ -708,6 +716,7 @@ function installPolyfills(context = {}) {
           declared_quality_heights: [],
         };
         networkObservations.push(observation);
+        if (readerProbe) readerProbe.record(response, rawRequestUrl, { ...init, headers, method: requestMeta.method }, observation);
         observation.http_observation = await observeHttpResponse(response, rawRequestUrl);
         totalResponseBytes += observation.http_observation.sampled_bytes;
         if (totalResponseBytes > maxTotalResponseBytes) throw new Error(`provider cumulative response limit exceeded (${maxTotalResponseBytes} bytes)`);
@@ -1196,9 +1205,11 @@ async function main() {
     }
   }
 
+  const providerFinishedAt = Date.now();
+  await flushReaderUserAgentProbes();
   emit({
     ok: true,
-    duration_ms: Date.now() - startedAt,
+    duration_ms: providerFinishedAt - startedAt,
     raw_stream_count: Array.isArray(value) ? value.length : 0,
     stream_count: streams.length,
     disallowed_stream_count: disallowedReasons.length,
@@ -1282,7 +1293,8 @@ const entry = process.argv[2] === '--self-test-fixture-fallback'
     : main();
 
 entry
-  .catch((error) => {
+  .catch(async (error) => {
+    await flushReaderUserAgentProbes();
     emit({
       ok: false,
       error: sanitizeDiagnosticText(error && error.message ? error.message : error, 2000),

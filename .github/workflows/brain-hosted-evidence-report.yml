@@ -99,7 +99,7 @@ jobs:
           python3 - <<'PY'
           import json, os
           from pathlib import Path
-          from scripts.http_response_evidence import public_http_observation, public_http_evidence
+          from scripts.http_response_evidence import public_http_observation, public_http_evidence, public_reader_probe
           result = json.loads(Path('evidence/evaluation.json').read_text())
           safe_rows = []
           for row in result.get('rows', [])[:4]:
@@ -115,7 +115,8 @@ jobs:
                           'fixture', 'stage', 'host', 'method', 'status', 'ok', 'errorCode',
                           'announcedPlayerCandidates', 'announcedQualityHeights',
                           'responseStructure', 'providerFunctions', 'mediaObservation',
-                      )}, 'httpObservation': public_http_observation(event.get('httpObservation'))}
+                      )}, 'httpObservation': public_http_observation(event.get('httpObservation')),
+                          'readerUserAgentProbe': public_reader_probe(event.get('readerUserAgentProbe'))}
                       for event in value.get('networkTrace', [])[:64]
                   ]
               safe_rows.append(safe_row)
