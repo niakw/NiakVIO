@@ -273,4 +273,29 @@ Ces indices syntaxiques ne prouvent ni le type réel de la réponse, ni une autr
 source complète : les contrôles de média et d'identité restent obligatoires.
 Les 322 tests Brain, l'audit de confidentialité et la vérification de bout en bout
 producteur → préflight/archivage → prompt passent. Le workflow épingle le Brain
-publié `88a520771f75acae7226d15978fa10d2c9e660c9` pour le prochain relevé réel.
+publié `88a520771f75acae7226d15978fa10d2c9e660c9` pour ce relevé réel.
+
+## 1er novembre 2026 — Admission des lecteurs avant HTTP
+
+Le [run 41255639071](https://github.com/niakw/NiakVIO/actions/runs/41255639071)
+confirme deux appels au modèle et deux candidats exécutés, refusés sans gain :
+Hell Mode reste lisible et Jujutsu Kaisen reste sans flux validé, avec un MP4
+mesuré de cinq secondes. Le relevé révèle trois `div[data-src]` de forme
+`embed_route`, de même origine, et des iframes étrangères de forme
+`page_extension` dans les pages de lecteurs. La trace externe observée ne visite
+que Sendvid. Ces formes décrivent la syntaxe des adresses, pas leur disponibilité.
+
+Un rejeu hors ligne des fonctions exactes du bundle publié montre que le filtre
+des graines peut refuser des adresses de pages de lecteurs avant toute requête
+HTTP. Le Brain peut désormais proposer ce filtre nommé et ses helpers d'URL
+après un échec mesuré et des essais de parsing exécutés sans gain, sur la même
+fixture. Il ne modifie aucun provider à la main. Les contrôles de protocole,
+d'assets, d'identité incomplète, de média et d'identité restent obligatoires.
+
+La délimitation structurelle des fonctions évite aussi qu'une accolade littérale
+dans une expression régulière exclue le filtre des unités d'édition. Les 325 tests
+Brain et l'audit de confidentialité passent. Le rejeu des archives contre le SHA
+exact du bundle propose uniquement `_crawlEligible`, `_playerLike` et
+`_crawlUrlScore`. Le workflow épingle le Brain publié
+`12d2d8f81b1dc22d252f7bfb0c2081798636a6be` pour tester cette hypothèse en réseau.
+Aucune réparation de lecture n'est encore validée.
