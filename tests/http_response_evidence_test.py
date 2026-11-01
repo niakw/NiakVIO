@@ -49,6 +49,7 @@ const fs=require('node:fs');
 produced = json.loads(subprocess.check_output(['node', '-e', code], cwd=ROOT, text=True))
 observed, probe = produced['http'], produced['probe']
 assert probe['attempted'] is True and probe['status'] == 403 and probe['changed_header'] == 'user-agent'
+assert public_reader_probe({}) == {}
 for value in ({'attempted': False, 'outcome': 'response', 'status': 200},
               {'attempted': True, 'outcome': 'PRIVATE', 'status': 200},
               {'attempted': True, 'outcome': 'response', 'status': True, 'url': 'PRIVATE'}):

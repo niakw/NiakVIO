@@ -91,7 +91,7 @@ def main():
             'response_structure': event.get('response_structure'),
             'media_observation': event.get('media_observation'),
             'http_observation': public_http_observation(event.get('http_observation')),
-            'reader_user_agent_probe': public_reader_probe(event.get('reader_user_agent_probe')),
+            'reader_user_agent_probe': public_reader_probe(event.get('reader_user_agent_probe')) or None,
             'announced_players': int(event.get('declared_player_candidate_count') or 0),
         } for event in events[:12]],
         'streams_playable': verifier.runtime_repair.playable_stream_count(result),

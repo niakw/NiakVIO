@@ -15,6 +15,10 @@ on:
         description: Optional archived run ID to reverify its proposal without inference
         type: string
         default: ''
+      reader_user_agent_probe:
+        description: Compare one failed reader request with a previously successful HTML User-Agent
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -25,10 +29,10 @@ jobs:
     timeout-minutes: 20
     env:
       TARGET_PROVIDER: ${{ inputs.provider || 'animevostfr' }}
-      BRAIN_SHA: ba629acd73df78df06a771c0086b3d8fe6ef73cd
+      BRAIN_SHA: 89560b995b2879ebd3ab0b8992c30c2c3dbe5d7b
       # An explicit archive replays its exact original proposal without inference.
-      # Isolate the reader User-Agent hypothesis on the already-executed candidate.
-      REPLAY_EVIDENCE: ${{ inputs.replay_evidence || (github.event_name == 'push' && '41257855269') || '' }}
+      # Resume bounded synthesis after the controlled reader diagnostic.
+      REPLAY_EVIDENCE: ${{ inputs.replay_evidence || '' }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
@@ -83,7 +87,7 @@ jobs:
       - name: Run bounded hosted repair and verification loop
         timeout-minutes: 12
         env:
-          NIAKVIO_READER_UA_PROBE: '1'
+          NIAKVIO_READER_UA_PROBE: ${{ inputs.reader_user_agent_probe && '1' || '0' }}
           NIAKVIO_OPENAI_API_KEY: ${{ secrets.NIAKVIO_OPENAI_API_KEY }}
           TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
           TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
