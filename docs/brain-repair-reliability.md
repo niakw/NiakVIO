@@ -390,3 +390,17 @@ seulement la provenance du profil, le nom du champ changé, un statut, un résul
 → archive sont testées ensemble. Le worker normal ne lance aucun contrôle sans
 activation explicite. Le prochain push rejoue le candidat déjà exécuté du run
 41257855269 avec ce diagnostic, sans inférence ni patch manuel du provider.
+
+Le [run 41304513624](https://github.com/niakw/NiakVIO/actions/runs/41304513624)
+exécute le contrôle pour les deux épisodes. Le profil antérieurement réussi
+donne encore HTTP 403, URL inchangée et la même page HTML de 93 octets avec
+indice de refus d'accès. Ce changement d'User-Agent seul ne rétablit donc pas
+l'accès dans cet environnement. Hell Mode reste lisible et Jujutsu Kaisen
+reste sans flux complet validé ; aucun gain du contrôle n'est compté comme vidéo.
+
+Les 329 tests Brain et l'audit de confidentialité passent. Le Brain publié
+`89560b995b2879ebd3ab0b8992c30c2c3dbe5d7b` conserve le contrôle dans le prompt,
+avec un rejeu du bundle exact comme preuve de transmission. Les observations
+absentes restent absentes. Le workflow retrouve la synthèse bornée par défaut ;
+le contrôle supplémentaire nécessite désormais l'entrée manuelle explicite
+`reader_user_agent_probe`, désactivée par défaut.

@@ -22,7 +22,7 @@ def public_http_observation(value):
 
 
 def public_reader_probe(value):
-    if not isinstance(value, dict):
+    if not isinstance(value, dict) or not value:
         return {}
     attempted = value.get('attempted') is True
     outcome = value.get('outcome') if isinstance(value.get('outcome'), str) and value['outcome'] in {

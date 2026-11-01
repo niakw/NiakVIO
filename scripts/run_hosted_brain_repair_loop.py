@@ -41,7 +41,7 @@ def verification_feedback(evaluation: dict) -> dict:
         'response_structure': event.get('responseStructure'),
         'media_observation': event.get('mediaObservation'),
         'http_observation': public_http_observation(event.get('httpObservation')),
-        'reader_user_agent_probe': public_reader_probe(event.get('readerUserAgentProbe')),
+        'reader_user_agent_probe': public_reader_probe(event.get('readerUserAgentProbe')) or None,
         'announced_players': event.get('announcedPlayerCandidates', 0),
     } for event in (row.get('candidate') or {}).get('networkTrace', [])[-12:]]
     return result
