@@ -59,6 +59,8 @@ function privateFree(value) {
   assert.equal(result.http_observation.content_kind, 'html');
   assert.equal(result.http_observation.body_state, 'not_sampled');
   assert.deepEqual(failure.observation.reader_user_agent_probe, result);
+  assert.equal(failure.observation.status, 403);
+  assert.equal(failure.response.status, 403);
   assert.deepEqual([...init.headers], snapshot);
   assert.equal(failure.response.headers.get('set-cookie'), PRIVATE);
   assert.equal(await failure.response.text(), 'Access denied ' + PRIVATE);
@@ -89,6 +91,49 @@ function privateFree(value) {
     assert.equal(fetched, false, mode);
   }
 
+  let inheritedPostFetched = false;
+  const inheritedPost = createReaderUserAgentProbe({ fetch: () => { inheritedPostFetched = true; } });
+  prior(inheritedPost);
+  const inheritedRequest = new Request(URL, { method: 'POST', body: PRIVATE });
+  const inheritedResponse = html(403);
+  const inheritedObservation = { status: 403, stage: 'player', method: inheritedRequest.method };
+  inheritedPost.record(inheritedResponse, inheritedRequest.url, {}, inheritedObservation);
+  assert.equal(await inheritedPost.flush(), null);
+  assert.equal(inheritedPostFetched, false, 'effective Request POST must not become a GET probe');
+  assert.equal(inheritedObservation.reader_user_agent_probe, undefined);
+  assert.equal(await inheritedRequest.text(), PRIVATE);
+  assert.equal(await inheritedResponse.text(), '<p>content</p>');
+
+  let exhaustedFetched = false;
+  const exhausted = createReaderUserAgentProbe({ fetch: () => { exhaustedFetched = true; } });
+  prior(exhausted); const exhaustedFailure = blocked(exhausted);
+  const exhaustedResult = await exhausted.flush({ deadlineAtMs: Date.now() + 400 });
+  assert.equal(exhaustedFetched, false);
+  assert.equal(exhaustedResult.attempted, false);
+  assert.equal(exhaustedResult.outcome, 'budget_exhausted');
+  assert.equal(exhaustedResult.status, null);
+  assert.equal(exhaustedFailure.observation.status, 403);
+  assert.equal(exhaustedFailure.response.status, 403);
+  assert.equal(exhaustedFailure.response.headers.get('set-cookie'), PRIVATE);
+  assert.equal(await exhaustedFailure.response.text(), 'Access denied ' + PRIVATE);
+  assert.deepEqual(safeReaderProbe(exhaustedResult), exhaustedResult);
+  privateFree(exhaustedResult);
+
+  let budgetSignal;
+  const budgeted = createReaderUserAgentProbe({ fetch: (_url, options) => {
+    budgetSignal = options.signal; return new Promise(() => {});
+  } });
+  prior(budgeted); const budgetedFailure = blocked(budgeted);
+  const parentDeadline = Date.now() + 650;
+  const budgetStart = Date.now();
+  const budgetedResult = await budgeted.flush({ deadlineAtMs: parentDeadline });
+  assert.equal(budgetedResult.outcome, 'timeout');
+  assert.equal(budgetSignal.aborted, true);
+  assert.ok(Date.now() - budgetStart < 300, 'parent deadline must shorten the configured timeout');
+  assert.ok(parentDeadline - Date.now() >= 450, 'reserve 500ms for emission and close (allow scheduler jitter)');
+  assert.equal(await budgetedFailure.response.text(), 'Access denied ' + PRIVATE);
+  privateFree(budgetedResult);
+
   let repeatedCalls = 0;
   const repeated = createReaderUserAgentProbe({ fetch: async () => { repeatedCalls++; return html(404, 'Not found'); } });
   prior(repeated);
@@ -118,6 +163,17 @@ function privateFree(value) {
   assert.equal(lateCancelled, 1, 'late responses must be cancelled');
   assert.equal(timedFailure.observation.reader_user_agent_probe.outcome, 'timeout');
 
+  let cappedSignal;
+  const capped = createReaderUserAgentProbe({ timeoutMs: 999999, fetch: (_url, options) => {
+    cappedSignal = options.signal; return new Promise(() => {});
+  } });
+  prior(capped); const cappedFailure = blocked(capped);
+  const cappedStart = Date.now();
+  assert.equal((await capped.flush()).outcome, 'timeout');
+  assert.ok(Date.now() - cappedStart < 3000, 'without parent deadline timeout must still be capped at 2500ms');
+  assert.equal(cappedSignal.aborted, true);
+  assert.equal(await cappedFailure.response.text(), 'Access denied ' + PRIVATE);
+
   const broken = createReaderUserAgentProbe({ fetch: async () => { throw new Error(PRIVATE); } });
   prior(broken); blocked(broken);
   const error = await broken.flush();
@@ -134,5 +190,5 @@ function privateFree(value) {
   assert.equal(invalid.attempted, false); assert.equal(invalid.outcome, 'missing_profile');
   assert.equal(invalid.status, null); privateFree(invalid);
   assert.equal(safeReaderProbe(null), null); assert.equal(safeReaderProbe([]), null);
-  console.log('Reader UA probe: deferred single controlled request, preserved inputs, timeout/cancel and public projection passed');
+  console.log('Reader UA probe: deferred single GET, parent deadline margin, preserved inputs, timeout/cancel and public projection passed');
 })().catch(error => { console.error(error); process.exitCode = 1; });

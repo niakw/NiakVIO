@@ -1194,6 +1194,7 @@ function runWorker(candidate, fixture) {
     const providerPath = path.join(STAGE, candidate.local_path);
     const timeoutMs = Number(modeConfig.provider_timeout_ms || 45000);
     const context = { ...executionContextForCandidate(candidate), fixtureMetadata: fixture };
+    if (context.readerUserAgentProbe === true) context.providerDeadlineAtMs = Date.now() + timeoutMs;
     const nodeMajor = Number(String(process.versions.node || '').split('.')[0]) || 0;
     const permissionArgs = [
       '--permission',

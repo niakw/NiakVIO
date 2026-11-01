@@ -634,7 +634,9 @@ function installPolyfills(context = {}) {
     const readerProbe = context.readerUserAgentProbe === true ? createReaderUserAgentProbe({
       fetch: (input, init) => guardedFetch(nativeFetch, input, init, { maxRedirects: context.networkLimits?.maxRedirects || 5 }),
     }) : null;
-    flushReaderUserAgentProbes = async () => { if (readerProbe) await readerProbe.flush(); };
+    flushReaderUserAgentProbes = async () => {
+      if (readerProbe) await readerProbe.flush({ deadlineAtMs: context.providerDeadlineAtMs });
+    };
     const maxFetches = Math.max(1, Number(context.networkLimits?.maxFetches || 30));
     const maxResponseBytes = Math.max(65536, Number(context.networkLimits?.maxResponseBytes || 5 * 1024 * 1024));
     let fetchCount = 0;
@@ -714,7 +716,7 @@ function installPolyfills(context = {}) {
           declared_quality_heights: [],
         };
         networkObservations.push(observation);
-        if (readerProbe) readerProbe.record(response, rawRequestUrl, { ...init, headers }, observation);
+        if (readerProbe) readerProbe.record(response, rawRequestUrl, { ...init, headers, method: requestMeta.method }, observation);
         observation.http_observation = await observeHttpResponse(response, rawRequestUrl);
         totalResponseBytes += observation.http_observation.sampled_bytes;
         if (totalResponseBytes > maxTotalResponseBytes) throw new Error(`provider cumulative response limit exceeded (${maxTotalResponseBytes} bytes)`);

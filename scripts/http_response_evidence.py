@@ -28,7 +28,7 @@ def public_reader_probe(value):
     outcome = value.get('outcome') if isinstance(value.get('outcome'), str) and value['outcome'] in {
         'response', 'timeout', 'error'} else 'error'
     if not attempted:
-        outcome = 'missing_profile'
+        outcome = 'budget_exhausted' if value.get('outcome') == 'budget_exhausted' else 'missing_profile'
     status = value.get('status')
     return {
         'attempted': attempted,

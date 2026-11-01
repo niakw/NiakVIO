@@ -9,7 +9,7 @@ function safeReaderProbe(value) {
   const attempted = value.attempted === true;
   const outcome = attempted
     ? ['response', 'timeout', 'error'].includes(value.outcome) ? value.outcome : 'error'
-    : 'missing_profile';
+    : value.outcome === 'budget_exhausted' ? 'budget_exhausted' : 'missing_profile';
   return {
     attempted, profile_source: 'prior_successful_html', changed_header: 'user-agent',
     status: attempted && outcome === 'response' && Number.isInteger(value.status)
@@ -42,8 +42,9 @@ function createReaderUserAgentProbe({ fetch: fetchResponse, timeoutMs = 2500 }) 
         }
         return;
       }
+      const method = String(observation.method || settings.method || 'GET').toUpperCase();
       if (queued || response.status !== 403 || observation.status !== 403 || observation.stage !== 'player'
-          || String(settings.method || 'GET').toUpperCase() !== 'GET') return;
+          || method !== 'GET' || String(settings.method || method).toUpperCase() !== 'GET') return;
       const alternate = profiles.find(profile => profile !== userAgent);
       if (!alternate) {
         observation.reader_user_agent_probe = safeReaderProbe({ attempted: false });
@@ -53,7 +54,7 @@ function createReaderUserAgentProbe({ fetch: fetchResponse, timeoutMs = 2500 }) 
     } catch (_) { /* Malformed diagnostic inputs must not change provider execution. */ }
   }
 
-  function flush() {
+  function flush(options = {}) {
     if (flushPromise) return flushPromise;
     flushed = true;
     const target = queued;
@@ -63,9 +64,17 @@ function createReaderUserAgentProbe({ fetch: fetchResponse, timeoutMs = 2500 }) 
       flushPromise = Promise.resolve(null);
       return flushPromise;
     }
+    const parentDeadline = options && Number.isFinite(options.deadlineAtMs) ? options.deadlineAtMs : null;
+    const budget = parentDeadline === null ? timeout : Math.min(timeout, Math.floor(parentDeadline - Date.now() - 500));
+    if (budget <= 0) {
+      const result = safeReaderProbe({ attempted: false, outcome: 'budget_exhausted' });
+      target.observation.reader_user_agent_probe = result;
+      flushPromise = Promise.resolve(result);
+      return flushPromise;
+    }
     flushPromise = (async () => {
       const controller = new AbortController();
-      const deadline = Date.now() + timeout;
+      const deadline = Date.now() + budget;
       const cancelled = new WeakSet();
       let expired = false, activeResponse = null, timer;
       const cancelOnce = response => {
@@ -93,15 +102,13 @@ function createReaderUserAgentProbe({ fetch: fetchResponse, timeoutMs = 2500 }) 
         }
       };
       try {
-        const result = await Promise.race([
-          execute(),
-          new Promise(resolve => { timer = setTimeout(() => {
+        const deadlineResult = new Promise(resolve => { timer = setTimeout(() => {
             expired = true;
             controller.abort();
             cancelOnce(activeResponse);
             resolve(safeReaderProbe({ attempted: true, outcome: 'timeout' }));
-          }, timeout); }),
-        ]);
+          }, budget); });
+        const result = await Promise.race([execute(), deadlineResult]);
         target.observation.reader_user_agent_probe = result;
         return result;
       } finally {

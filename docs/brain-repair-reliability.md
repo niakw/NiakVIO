@@ -380,6 +380,9 @@ La requête est différée après l'exécution du provider, avec une limite d'un
 contrôle et 2500 ms par worker. Le verdict, les flux et la durée d'exécution du
 provider sont calculés avant ce contrôle. Une réponse HTTP réussie du contrôle
 ne compte jamais comme un flux vidéo validé.
+Le contrôle respecte aussi la méthode effective d'un objet `Request`. Son délai
+est réduit au budget restant du worker, avec 500 ms réservées à la sortie ;
+il est omis avec le résultat `budget_exhausted` si ce budget manque.
 
 Les URL, valeurs d'en-têtes et profils restent en mémoire. L'archive conserve
 seulement la provenance du profil, le nom du champ changé, un statut, un résultat
