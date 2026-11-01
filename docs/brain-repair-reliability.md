@@ -353,3 +353,12 @@ worker. Le relevé vide ne permet donc aucune interprétation de la page 403.
 La projection du contrôle de santé conserve désormais les mêmes énumérations
 bornées. Le test de transmission exécute cette expression réelle de production
 entre le sampler et le préflight, puis vérifie l'archive et le retour au Brain.
+
+Le [rejeu 41302016139](https://github.com/niakw/NiakVIO/actions/runs/41302016139)
+conserve enfin le diagnostic pour les deux épisodes : Sibnet répond HTTP 403,
+HTML, URL inchangée, corps entièrement observé de 93 octets et indice textuel
+de refus d'accès. Aucun flux supplémentaire n'est validé. Le rejeu hors ligne
+du bundle exact confirme la présence de ces faits dans le prompt du Brain.
+Ce signal ne suffit pas à affirmer l'absence de challenge ou la disparition
+de la ressource. La synthèse bornée habituelle est rétablie par défaut ;
+un rejeu sans inférence reste disponible par l'entrée explicite d'archive.
