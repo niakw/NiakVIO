@@ -299,3 +299,19 @@ exact du bundle propose uniquement `_crawlEligible`, `_playerLike` et
 `_crawlUrlScore`. Le workflow épingle le Brain publié
 `12d2d8f81b1dc22d252f7bfb0c2081798636a6be` pour tester cette hypothèse en réseau.
 Aucune réparation de lecture n'est encore validée.
+
+Le [run 41257855269](https://github.com/niakw/NiakVIO/actions/runs/41257855269)
+matérialise et exécute un premier candidat qui admet les pages étrangères de
+lecteurs : Sibnet apparaît dans la trace pour les deux épisodes et répond
+HTTP 403. Aucun gain de flux n'est validé. La seconde tentative n'est pas
+exécutée : le convertisseur rejette une fonction complète car il compte encore
+une accolade littérale de regex comme une accolade de code. Les cinq appels au
+modèle ne représentent donc qu'un seul candidat exécuté.
+
+Le convertisseur utilise désormais le même délimiteur structurel JavaScript
+que la sélection des unités. Les 327 tests couvrent la conversion complète avec
+des accolades dans les regex, chaînes et commentaires, ainsi qu'un fragment
+réellement incomplet masqué par une accolade littérale fermante. L'ancre exacte
+`_crawlEligible` du bundle publié passe ce contrôle. Le workflow épingle le Brain
+`9c80e6c271d09600e0ae85baefb1b2a17f5683ad` pour permettre un nouvel essai complet.
+Le refus HTTP observé reste une preuve négative, jamais une réparation acceptée.
