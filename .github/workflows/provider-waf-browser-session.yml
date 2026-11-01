@@ -94,11 +94,11 @@ jobs:
           fi
           echo "FIELD_WAF_EXPLICIT_TARGETS providers=${target:-all-current-waf}"
 
-      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0
         with:
           python-version: '3.12'
 
-      - uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165
+      - uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad
         with:
           distribution: temurin
           java-version: "17"
@@ -161,7 +161,7 @@ jobs:
         continue-on-error: true
         timeout-minutes: 4
         if: ${{ env.TS_OAUTH_CLIENT_ID != '' && env.TS_AUDIENCE != '' && env.TS_EXIT_NODE != '' }}
-        uses: tailscale/github-action@306e68a486fd2350f2bfc3b19fcd143891a4a2d8
+        uses: tailscale/github-action@064b10558093f38325e838ddea35486bdc6b1d5c
         with:
           oauth-client-id: ${{ env.TS_OAUTH_CLIENT_ID }}
           audience: ${{ env.TS_AUDIENCE }}
@@ -328,7 +328,7 @@ jobs:
 
       - name: Upload WAF browser-session evidence
         if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         with:
           name: provider-waf-browser-session-${{ github.run_id }}
           path: automation/provider-waf-browser-session-latest.json
