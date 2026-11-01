@@ -345,3 +345,11 @@ L'essai automatique sur push rejoue uniquement le candidat déjà exécuté du
 run 41257855269 afin de diagnostiquer sa réponse HTTP, sans nouvelle inférence
 ni publication de provider. Un lancement manuel sans archive conserve la
 synthèse bornée habituelle. Aucune réparation de lecture n'est encore validée.
+
+Le [rejeu 41300728008](https://github.com/niakw/NiakVIO/actions/runs/41300728008)
+exécute et refuse le candidat sans nouvelle inférence. Il révèle un raccord
+manquant : `health_check.mjs` supprimait encore le champ HTTP produit par le
+worker. Le relevé vide ne permet donc aucune interprétation de la page 403.
+La projection du contrôle de santé conserve désormais les mêmes énumérations
+bornées. Le test de transmission exécute cette expression réelle de production
+entre le sampler et le préflight, puis vérifie l'archive et le retour au Brain.

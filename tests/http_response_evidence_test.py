@@ -16,12 +16,26 @@ import evaluate_brain_llm_force_candidates as verifier
 from run_hosted_brain_repair_loop import verification_feedback
 
 code = '''
-const {observeHttpResponse}=require('./scripts/http_response_observation.cjs');
+const {observeHttpResponse,safeHttpFacts}=require('./scripts/http_response_observation.cjs');
+const {safeMediaFacts}=require('./scripts/media_observation.cjs');
+const fs=require('node:fs');
 (async()=>{
  const response=new Response('<html><div id="cf-chl-widget">PRIVATE</div></html>',
   {status:403,headers:{'content-type':'text/html','set-cookie':'PRIVATE'}});
  Object.defineProperty(response,'url',{value:'https://private.test/error?token=PRIVATE'});
- console.log(JSON.stringify(await observeHttpResponse(response,'https://private.test/embed?token=PRIVATE')));
+ const facts=await observeHttpResponse(response,'https://private.test/embed?token=PRIVATE');
+ // Execute the actual health-report projection, which previously dropped this field.
+ const source=fs.readFileSync('./scripts/health_check.mjs','utf8');
+ const begin=source.indexOf('network_observations: Array.isArray(worker.network_observations)');
+ const end=source.indexOf('      settings_diagnostics:',begin);
+ if(begin<0||end<0) throw new Error('health projection unavailable');
+ const expression=source.slice(begin+'network_observations: '.length,end).trim().replace(/,$/,'');
+ const normalize=new Function('worker','safeMediaFacts','safeHttpFacts','sanitizeError','return ('+expression+');');
+ const worker={network_observations:[{status:403,host:'reader.test',http_observation:{...facts,raw_body:'PRIVATE'}}]};
+ const row=normalize(worker,safeMediaFacts,safeHttpFacts,()=>null)[0];
+ if(!row.http_observation) throw new Error('health projection dropped HTTP diagnostics');
+ if(JSON.stringify(row.http_observation).includes('PRIVATE')) throw new Error('health projection leaked raw values');
+ console.log(JSON.stringify(row.http_observation));
 })();
 '''
 observed = json.loads(subprocess.check_output(['node', '-e', code], cwd=ROOT, text=True))

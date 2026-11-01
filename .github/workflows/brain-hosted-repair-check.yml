@@ -27,7 +27,7 @@ jobs:
       TARGET_PROVIDER: ${{ inputs.provider || 'animevostfr' }}
       BRAIN_SHA: ba629acd73df78df06a771c0086b3d8fe6ef73cd
       # An explicit archive replays its exact original proposal without inference.
-      # The push experiment diagnoses the already-executed reader admission edit.
+      # The push experiment diagnoses the reader after the health-report projection.
       # Manual dispatch without an archive still performs bounded synthesis.
       REPLAY_EVIDENCE: ${{ inputs.replay_evidence || (github.event_name == 'push' && '41257855269') || '' }}
     steps:

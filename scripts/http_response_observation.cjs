@@ -99,4 +99,18 @@ async function observeHttpResponse(response, requestUrl, options = {}) {
   }
 }
 
-module.exports = { observeHttpResponse };
+function safeHttpFacts(value) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
+  const enums = {
+    content_kind: ['html', 'json', 'text', 'media', 'binary', 'unknown'],
+    url_relation: ['same_url', 'same_origin', 'cross_origin', 'unknown'],
+    body_state: ['not_sampled', 'sampled', 'complete', 'empty', 'timeout', 'error', 'unavailable'],
+    page_signal: ['challenge_markup', 'captcha_markup', 'access_denied_text', 'not_found_text', 'rate_limit_text', 'none', 'unknown'],
+  };
+  const result = Object.fromEntries(Object.entries(enums).map(([key, allowed]) => [key,
+    allowed.includes(value[key]) ? value[key] : allowed.includes('unknown') ? 'unknown' : 'unavailable']));
+  result.sampled_bytes = Number.isInteger(value.sampled_bytes) ? Math.max(0, Math.min(MAX_BYTES, value.sampled_bytes)) : 0;
+  return result;
+}
+
+module.exports = { observeHttpResponse, safeHttpFacts };
