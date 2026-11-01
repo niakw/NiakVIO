@@ -129,3 +129,61 @@ assert trigger.get("mode") in {"auto", "force"}, trigger
 assert "force-requires-new-explicit-trigger" not in autopilot
 assert "bounded_force_suppressed" not in autopilot
 assert "if: ${{ inputs.dry_run != true }}" in autopilot
+
+# In-flight lane protection is an operational guard, not a provider proof or
+# atomic cross-workflow reservation. Keep the existing causal fingerprint gate.
+assert "cancel-in-progress: false" in autopilot
+assert "cancel-in-progress: true" not in autopilot
+assert "FIELD_PROVIDER_AUTOPILOT_INFLIGHT_QUERY_ERROR" in autopilot
+assert "python tests/provider_brain_autopilot_workflow_test.py" in autopilot
+for lane in (
+    "domain-refresh.yml",
+    "provider-remat-test.yml",
+    "provider-fast-repair.yml",
+    "brain-learning-lab.yml",
+    "provider-waf-browser-session.yml",
+):
+    assert f"if lane_busy {lane}; then" in autopilot, lane
+
+# Execute only the extracted shell guard with a stubbed GitHub CLI. No real
+# GitHub API call or provider workflow is made by this regression test.
+import os
+import subprocess
+
+start = autopilot.index("          lane_busy() {")
+end = autopilot.index("          # Exact unresolved-domain", start)
+function = "\n".join(line[10:] for line in autopilot[start:end].splitlines())
+stub = r'''
+gh() {
+  [ "$1" = api ] || return 7
+  if [[ "$2" == *"status=${MOCK_FAIL_STATUS}"* ]] && [ "$MOCK_FAIL_STATUS" != none ]; then
+    return 7
+  fi
+  if [[ "$2" == *"status=${MOCK_ACTIVE_STATUS}"* ]] && [ "$MOCK_ACTIVE_STATUS" != none ]; then
+    printf '%s\\n' "$MOCK_COUNT"
+  else
+    printf '0\\n'
+  fi
+}
+'''
+for active, count, failure, expected in (
+    ("none", "0", "none", "idle"),
+    ("queued", "1", "none", "busy"),
+    ("in_progress", "2", "none", "busy"),
+    ("waiting", "1", "none", "busy"),
+    ("pending", "1", "none", "busy"),
+    ("requested", "1", "none", "busy"),
+    ("queued", "invalid", "none", "busy"),
+    ("none", "0", "in_progress", "busy"),
+):
+    script = "set -euo pipefail\n" + stub + function + "\n" + (
+        "if lane_busy brain-learning-lab.yml; then echo busy; else echo idle; fi\n"
+    )
+    env = {**os.environ, "GITHUB_REPOSITORY": "niakw/NiakVIO",
+           "MOCK_ACTIVE_STATUS": active, "MOCK_COUNT": count,
+           "MOCK_FAIL_STATUS": failure}
+    result = subprocess.run(["bash", "-c", script], env=env, capture_output=True, text=True)
+    assert result.returncode == 0, (active, failure, result.stderr)
+    assert result.stdout.strip().splitlines()[-1] == expected, (active, failure, result.stdout)
+
+print("provider Autopilot in-flight fail-closed guard passed")
