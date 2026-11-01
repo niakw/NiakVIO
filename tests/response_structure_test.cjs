@@ -20,9 +20,10 @@ const markup = responseStructure('<html><a href="/catalogue">PRIVATE</a>' +
   '<iframe src="https://private.test/embed?token=PRIVATE"></iframe>' +
   '<option value="/episode/PRIVATE">PRIVATE</option>' +
   '<button data-code="' + Buffer.from('<iframe src="https://private.test/PRIVATE"></iframe>').toString('base64') +
-  '" data-token="PRIVATE"></button><iframe src="https://other.test/PRIVATE"></iframe></html>').player_markup;
+  '" data-token="PRIVATE"></button><iframe src="https://other.test/embed/PRIVATE"></iframe></html>').player_markup;
 assert.deepEqual(markup.rows.find(row => row.tag === 'iframe'), {
   tag: 'iframe', value_kinds: { src: 'absolute_url' }, count: 2, distinct_values: 2,
+  value_shapes: { src: { kind: 'embed_route', origin: 'unknown' } },
 });
 assert.deepEqual(markup.rows.find(row => row.tag === 'option').value_kinds, { value: 'relative_url' });
 assert.deepEqual(markup.rows[0].value_kinds, { 'data-code': 'encoded_markup' });
@@ -38,4 +39,24 @@ assert.ok(flood.rows.length <= 8);
 assert.equal(flood.rows[0].count, 128);
 assert.equal(flood.rows[0].distinct_values, 1);
 assert.equal(flood.truncated, true);
+const shapes = responseStructure('<html><div data-src="https://cdn.private.test/PRIVATE.jpg?token=PRIVATE"></div>' +
+  '<option value="/show/PRIVATE.html">PRIVATE</option><iframe src="/?trembed=PRIVATE"></iframe>' +
+  '<source src="//media.private.test/PRIVATE.m3u8?key=PRIVATE">' +
+  '<a href="/PRIVATE.js">PRIVATE</a><a href="/PRIVATE.css">PRIVATE</a></html>',
+  { baseUrl: 'https://provider.test/show/episode.html' }).player_markup;
+const shape = (tag, attribute) => shapes.rows.find(row => row.tag === tag && row.value_shapes[attribute]).value_shapes[attribute];
+assert.deepEqual(shape('div', 'data-src'), { kind: 'image_extension', origin: 'cross_origin' });
+assert.deepEqual(shape('option', 'value'), { kind: 'page_extension', origin: 'same_origin' });
+assert.deepEqual(shape('iframe', 'src'), { kind: 'embed_route', origin: 'same_origin' });
+assert.deepEqual(shape('source', 'src'), { kind: 'media_extension', origin: 'cross_origin' });
+assert.ok(shapes.rows.some(row => row.value_shapes.href?.kind === 'script_extension'));
+assert.ok(shapes.rows.some(row => row.value_shapes.href?.kind === 'style_extension'));
+assert.ok(!JSON.stringify(shapes).includes('PRIVATE'));
+assert.ok(!JSON.stringify(shapes).includes('private.test'));
+const encoded = responseStructure('<html><iframe data-src="' +
+  Buffer.from('https://private.test/embed/PRIVATE').toString('base64') + '"></iframe></html>',
+  { baseUrl: 'https://provider.test/episode.html' }).player_markup.rows[0];
+assert.equal(encoded.value_kinds['data-src'], 'encoded_url');
+assert.deepEqual(encoded.value_shapes['data-src'], { kind: 'embed_route', origin: 'cross_origin' });
+assert.ok(!JSON.stringify(encoded).includes('PRIVATE'));
 console.log('Response diagnostics preserve parser structure without response scalar values');

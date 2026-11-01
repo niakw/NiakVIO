@@ -188,7 +188,7 @@ immédiate entre le dispatcher et le dernier helper testé.
 
 Les deltas du 24 octobre ont été réappliqués aux versions actuelles des deux
 dépôts, en conservant les correctifs ultérieurs du Brain, notamment le confinement
-des chemins et la confidentialité des références. Le workflow utilise le SHA
+des chemins et la confidentialité des références. Cette étape a utilisé le SHA
 Brain réellement publié `91db65bdae83ce79b6185e5753bf19c2650a1025`.
 Les tests du pont de mutation et des observations média passent également.
 Ces vérifications locales ne valident pas encore une réparation de lecture.
@@ -251,3 +251,26 @@ d'un classement de rejeu exige désormais le même contre-exemple média complet
 incomplète restent inchangés. Les tests confirment aussi que les exigences de
 preuve courante de la politique de mutation restent obligatoires. Aucun gain de
 lecture n'est déduit d'une abstention préalable à l'appel au modèle.
+
+## 1er novembre 2026 — Forme des adresses et origine
+
+Le [run 41219789908](https://github.com/niakw/NiakVIO/actions/runs/41219789908)
+confirme deux appels au modèle et deux propositions matérialisées/exécutées,
+toutes deux refusées sans gain. La seconde élargit `playerRows` aux options et
+aux `div[data-src]` ; aucun média n'est observé pour Jujutsu Kaisen avec ce candidat.
+Les compteurs d'adresses absolues ne suffisent pas à distinguer les usages de ces
+emplacements.
+
+Le schéma conserve désormais, pour chaque attribut reconnu, une catégorie fondée
+sur la syntaxe de l'URL : extension d'image, script, style, média, page ou route
+de lecteur, avec une relation d'origine identique/différente/inconnue. La base
+utilisée est l'URL effective de la réponse. La projection publique et le Brain
+ne conservent que des énumérations fixes ; les URL et contenus décodés ne sont
+pas archivés. Les formes distinctes ont des compteurs distincts et les attributs
+de données restent prioritaires dans le relevé borné.
+
+Ces indices syntaxiques ne prouvent ni le type réel de la réponse, ni une autre
+source complète : les contrôles de média et d'identité restent obligatoires.
+Les 322 tests Brain, l'audit de confidentialité et la vérification de bout en bout
+producteur → préflight/archivage → prompt passent. Le workflow épingle le Brain
+publié `88a520771f75acae7226d15978fa10d2c9e660c9` pour le prochain relevé réel.
