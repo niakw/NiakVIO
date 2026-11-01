@@ -99,4 +99,6 @@ projected = project_player_markup({'rows': [row], 'truncated': False}, allow_add
 assert projected['rows'][0]['address_refs'] == {'src': ['r1']}
 assert projected['truncated'] and 'PRIVATE' not in json.dumps(projected)
 assert 'address_refs' not in project_player_markup({'rows': [row]})['rows'][0]
+assert project_player_markup({'rows': [{**row, 'address_refs': {'src': ['r1']}}] * 9,
+                             'truncated': False}, allow_address_refs=True)['truncated']
 print('Player address correlation: production health projection, distinct queries, archive/feedback and honest truncation passed')

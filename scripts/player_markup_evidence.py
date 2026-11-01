@@ -25,16 +25,20 @@ def bounded_count(value, limit):
 def project_player_markup(value, allow_address_refs=False):
     markup = value if isinstance(value, dict) else {}
     rows = []
-    address_refs_truncated = False
     raw_rows = markup.get('rows')
+    address_refs_truncated = bool(allow_address_refs and isinstance(raw_rows, list) and len(raw_rows) > 8)
     for row in (raw_rows[:8] if isinstance(raw_rows, list) else []):
         if not isinstance(row, dict) or row.get('tag') not in TAGS:
+            if allow_address_refs and isinstance(row, dict) and 'address_refs' in row:
+                address_refs_truncated = True
             continue
         raw_kinds = row.get('value_kinds')
         kinds = {name: kind for name, kind in raw_kinds.items()
                  if name in ATTRIBUTES and isinstance(kind, str) and kind in KINDS} if isinstance(raw_kinds, dict) else {}
         kinds = dict(list(kinds.items())[:8])
         if not kinds:
+            if allow_address_refs and 'address_refs' in row:
+                address_refs_truncated = True
             continue
         count = bounded_count(row.get('count'), 128)
         projected = {'tag': row['tag'], 'value_kinds': kinds, 'count': count,
