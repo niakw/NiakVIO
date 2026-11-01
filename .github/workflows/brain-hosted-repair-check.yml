@@ -25,7 +25,7 @@ jobs:
     timeout-minutes: 20
     env:
       TARGET_PROVIDER: ${{ inputs.provider || 'animevostfr' }}
-      BRAIN_SHA: 12d2d8f81b1dc22d252f7bfb0c2081798636a6be
+      BRAIN_SHA: 9c80e6c271d09600e0ae85baefb1b2a17f5683ad
       # An explicit archive replays its exact original proposal without inference.
       # Otherwise use the current measured failures for bounded synthesis.
       REPLAY_EVIDENCE: ${{ inputs.replay_evidence || '' }}
