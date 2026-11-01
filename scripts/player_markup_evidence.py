@@ -1,7 +1,10 @@
 """Project untrusted preflight artifacts to bounded player markup facts."""
 import re
 
-from address_reference_evidence import public_address_fields, public_markup_address_refs
+if __package__:
+    from .address_reference_evidence import public_address_fields, public_markup_address_refs
+else:
+    from address_reference_evidence import public_address_fields, public_markup_address_refs
 
 TAGS = {'iframe', 'video', 'source', 'a', 'button', 'option', 'div', 'li', 'input'}
 ATTRIBUTES = {

@@ -11,6 +11,9 @@ from unittest.mock import patch
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'scripts'))
 from player_markup_evidence import project_player_markup, public_player_markup
+subprocess.check_call([sys.executable, '-c',
+    'from scripts.player_markup_evidence import project_player_markup; '
+    'assert project_player_markup({})["rows"] == []'], cwd=ROOT)
 import capture_brain_live_context as capture
 
 # Exercise the actual producer and public archive projection together.
