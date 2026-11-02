@@ -148,6 +148,15 @@ function privateFree(value) {
   assert.equal(cappedResult.media_observation.durationSeconds, 1440);
   assert.equal(cappedResult.media_observation.cancelState, 'requested'); privateFree(cappedResult);
 
+  const asyncCancel = createObservedMediaProbe({ fetch: async () => ({ status: 206, ok: true,
+    headers: new Headers({ 'content-type': 'video/mp4' }), url: SOURCE,
+    body: { getReader: () => ({ read: async () => ({ done: false, value: hugeBytes }),
+      cancel: () => new Promise(resolve => setTimeout(resolve, 10)), releaseLock() {} }) },
+  }) });
+  request(asyncCancel); candidate(asyncCancel);
+  assert.equal((await asyncCancel.flush(OPTIONS)).media_observation.cancelState, 'complete',
+    'snapshot the completed asynchronous cancellation without extending the global deadline');
+
   let upstreamCancelled = 0, upstreamReads = 0;
   const liveStream = createObservedMediaProbe({ fetch: async () => new Response(new ReadableStream({
     pull(controller) { upstreamReads++; controller.enqueue(hugeBytes); },

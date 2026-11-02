@@ -109,16 +109,20 @@ function createObservedMediaProbe({ fetch: fetchResponse, timeoutMs = 2500 }) {
     flushPromise = (async () => {
       const controller = new AbortController(), diagnostic = {};
       const deadline = Date.now() + budget;
-      const cancelled = new WeakSet();
+      const cancelled = new WeakMap();
       let expired = false, activeReader = null, activeResponse = null, timer;
       const cancelReader = reader => {
-        if (!reader || cancelled.has(reader)) return;
-        cancelled.add(reader);
-        try { Promise.resolve(reader.cancel()).catch(() => {}); } catch (_) { /* no error values */ }
+        if (!reader) return Promise.resolve();
+        if (cancelled.has(reader)) return cancelled.get(reader);
+        let completion;
+        try { completion = Promise.resolve(reader.cancel()).catch(() => {}); }
+        catch (_) { completion = Promise.resolve(); }
+        cancelled.set(reader, completion);
+        return completion;
       };
       const cancelResponse = response => {
         if (!response || typeof response !== 'object' || cancelled.has(response)) return;
-        cancelled.add(response); cancelBody(response);
+        cancelled.set(response, Promise.resolve()); cancelBody(response);
       };
       const facts = (outcome, status, http) => safeResult({ attempted: true, outcome, status,
         media_observation: diagnostic.media_observation, http_observation: http });
@@ -159,10 +163,15 @@ function createObservedMediaProbe({ fetch: fetchResponse, timeoutMs = 2500 }) {
               if (expired) return null;
               if (value.done) break;
             }
-            cancelReader(activeReader);
-            // Let an already completed cancellation settle without waiting for
-            // an uncooperative cancel promise.
-            await Promise.resolve();
+            // A native stream may settle cancellation asynchronously. Wait a
+            // small bounded interval before snapshotting its actual state.
+            let cancellationTimer;
+            try {
+              await Promise.race([cancelReader(activeReader), new Promise(resolve => {
+                cancellationTimer = setTimeout(resolve, Math.max(1, Math.min(100, deadline - Date.now())));
+              })]);
+            } finally { clearTimeout(cancellationTimer); }
+            if (expired) return null;
           }
           return facts('response', response.status, http);
         } catch (_) {

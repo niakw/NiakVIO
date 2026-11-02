@@ -19,6 +19,10 @@ on:
         description: Compare one failed reader request with a previously successful HTML User-Agent
         type: boolean
         default: false
+      observed_media_probe:
+        description: Sample one observed but unrequested media source after a failed long-form fixture
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -29,10 +33,9 @@ jobs:
     timeout-minutes: 20
     env:
       TARGET_PROVIDER: ${{ inputs.provider || 'animevostfr' }}
-      BRAIN_SHA: b90234958c6111d8d284d3defa7f262a59269689
+      BRAIN_SHA: 727e108132444b6e62a71939f9e742a8193577af
       # An explicit archive replays its exact original proposal without inference.
-      # Correlate declared readers with requests using an already-executed candidate.
-      REPLAY_EVIDENCE: ${{ inputs.replay_evidence || (github.event_name == 'push' && '41257855269') || '' }}
+      REPLAY_EVIDENCE: ${{ inputs.replay_evidence || '' }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
@@ -91,7 +94,7 @@ jobs:
       - name: Run bounded hosted repair and verification loop
         timeout-minutes: 12
         env:
-          NIAKVIO_OBSERVED_MEDIA_PROBE: '1'
+          NIAKVIO_OBSERVED_MEDIA_PROBE: ${{ inputs.observed_media_probe && '1' || '0' }}
           NIAKVIO_READER_UA_PROBE: ${{ inputs.reader_user_agent_probe && '1' || '0' }}
           NIAKVIO_OPENAI_API_KEY: ${{ secrets.NIAKVIO_OPENAI_API_KEY }}
           TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
