@@ -20,6 +20,7 @@ const { observeMediaResponse } = require('./media_observation.cjs');
 const { observeHttpResponse } = require('./http_response_observation.cjs');
 const { createReaderUserAgentProbe } = require('./reader_user_agent_probe.cjs');
 const { createAddressReferences, safeAddressFields } = require('./address_reference.cjs');
+const { createObservedMediaProbe } = require('./observed_media_probe.cjs');
 const DiagnosticError = Error;
 let activeProviderPath = '';
 const Module = require('node:module');
@@ -28,6 +29,7 @@ const networkObservations = [];
 let activeInvocation = null;
 let activeSettingsProfile = null;
 let flushReaderUserAgentProbes = async () => {};
+let flushObservedMediaProbe = async () => {};
 let activeAddressReferences = null;
 
 function sanitizeDiagnosticText(value, limit = 1000) {
@@ -642,6 +644,12 @@ function installPolyfills(context = {}) {
     const nativeFetch = globalThis.fetch.bind(globalThis);
     const addressReferences = createAddressReferences();
     activeAddressReferences = addressReferences;
+    const observedMediaProbe = context.observedMediaProbe === true ? createObservedMediaProbe({
+      fetch: (input, init) => guardedFetch(nativeFetch, input, init, { maxRedirects: context.networkLimits?.maxRedirects || 5 }),
+    }) : null;
+    flushObservedMediaProbe = async options => {
+      if (observedMediaProbe) await observedMediaProbe.flush({ ...options, deadlineAtMs: context.providerDeadlineAtMs });
+    };
     const readerProbe = context.readerUserAgentProbe === true ? createReaderUserAgentProbe({
       fetch: (input, init) => guardedFetch(nativeFetch, input, init, { maxRedirects: context.networkLimits?.maxRedirects || 5 }),
     }) : null;
@@ -732,6 +740,7 @@ function installPolyfills(context = {}) {
           declared_quality_heights: [],
         };
         networkObservations.push(observation);
+        if (observedMediaProbe) observedMediaProbe.recordRequest(rawRequestUrl, { ...init, headers, method: requestMeta.method }, observation);
         if (readerProbe) readerProbe.record(response, rawRequestUrl, { ...init, headers, method: requestMeta.method }, observation);
         observation.http_observation = await observeHttpResponse(response, rawRequestUrl);
         totalResponseBytes += observation.http_observation.sampled_bytes;
@@ -741,7 +750,14 @@ function installPolyfills(context = {}) {
           if (totalResponseBytes > maxTotalResponseBytes) throw new Error(`provider cumulative response limit exceeded (${maxTotalResponseBytes} bytes)`);
         }, (value) => {
           observation.response_structure = responseStructure(value, { baseUrl: response.url || rawRequestUrl,
-            addressRef: address => addressReferences.ref(address) });
+            addressRef: (address, metadata) => {
+              const ref = addressReferences.ref(address);
+              if (observedMediaProbe && ref && ['source', 'video'].includes(metadata?.tag)
+                  && /\.(?:mp4|m4v|mkv|webm|m3u8|mpd)$/i.test(new URL(address).pathname)) {
+                observedMediaProbe.recordCandidate(address, ref, observation.response_ref, observation);
+              }
+              return ref;
+            } });
           const hints = extractResponseVariantHints(value, { baseUrl: response.url || rawRequestUrl });
           observation.declared_player_candidate_count = Math.max(
             Number(observation.declared_player_candidate_count || 0),
@@ -765,7 +781,7 @@ function installPolyfills(context = {}) {
           ])].sort((a, b) => a - b).slice(0, 12);
         });
       } catch (error) {
-        networkObservations.push({
+        const failureObservation = {
           ...addressFields,
           stage: requestStage, host, method: requestMeta.method, path_pattern: requestMeta.path_pattern,
           provider_function_names: providerFunctions,
@@ -774,7 +790,9 @@ function installPolyfills(context = {}) {
           error_code: error?.code ? String(error.code).slice(0, 120) : null,
           error: sanitizeDiagnosticText(error?.message || error, 300),
           ...routeProofRequest, response_value_hints: [], route_proof_trace: routeProofEnabled,
-        });
+        };
+        networkObservations.push(failureObservation);
+        if (observedMediaProbe) observedMediaProbe.recordRequest(rawRequestUrl, { ...init, headers, method: requestMeta.method }, failureObservation);
         throw error;
       }
     });
@@ -1225,6 +1243,8 @@ async function main() {
 
   const providerFinishedAt = Date.now();
   await flushReaderUserAgentProbes();
+  await flushObservedMediaProbe({ streamsReturned: streams.length,
+    expectedDurationSeconds: Number(fixture.expectedDurationMinutes || 0) * 60 });
   emit({
     ok: true,
     duration_ms: providerFinishedAt - startedAt,

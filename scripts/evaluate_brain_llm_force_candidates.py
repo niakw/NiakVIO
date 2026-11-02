@@ -33,6 +33,7 @@ import runtime_repair  # noqa: E402
 from repair_identity_gate import automatic_repair_identity_gate  # noqa: E402
 from http_response_evidence import public_http_observation, public_reader_probe  # noqa: E402
 from address_reference_evidence import public_address_fields  # noqa: E402
+from observed_media_evidence import public_observed_media_probe  # noqa: E402
 
 SHA40 = __import__("re").compile(r"^[0-9a-f]{40}$")
 
@@ -138,6 +139,8 @@ def network_summary(result: dict[str, Any]) -> list[dict[str, Any]]:
                 item['httpObservation'] = public_http_observation(row['http_observation'])
             if isinstance(row.get('reader_user_agent_probe'), dict):
                 item['readerUserAgentProbe'] = public_reader_probe(row['reader_user_agent_probe'])
+            if item.get('address_scope') and isinstance(row.get('observed_media_probe'), dict):
+                item['observedMediaProbe'] = public_observed_media_probe(row['observed_media_probe'])
             if row.get("provider_function_names"):
                 item["providerFunctions"] = row["provider_function_names"][:8]
             key = (
@@ -149,7 +152,7 @@ def network_summary(result: dict[str, Any]) -> list[dict[str, Any]]:
                 item.get('address_scope'), item.get('request_ref'),
                 item.get('response_ref'), item.get('referer_ref'),
             )
-            if key in seen:
+            if key in seen and not item.get('address_scope'):
                 continue
             seen.add(key)
             if len(output) < 64:
@@ -387,6 +390,8 @@ def health_provider(stage: Path, output: Path) -> dict[str, Any]:
     })
     if os.environ.get('NIAKVIO_READER_UA_PROBE') == '1':
         config['modes']['deep']['reader_user_agent_probe'] = True
+    if os.environ.get('NIAKVIO_OBSERVED_MEDIA_PROBE') == '1':
+        config['modes']['deep']['observed_media_probe'] = True
     config_path = output / 'comparison-health-config.json'
     config_path.write_text(json.dumps(config, indent=2) + '\n')
     return deep.run_health(

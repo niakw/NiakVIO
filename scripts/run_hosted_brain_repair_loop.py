@@ -16,6 +16,7 @@ if str(ROOT / 'scripts') not in sys.path:
 
 from http_response_evidence import public_http_observation, public_reader_probe
 from address_reference_evidence import public_address_fields
+from observed_media_evidence import public_observed_media_probe
 
 def should_replan(evaluation: dict, attempt: int, limit: int) -> bool:
     return (
@@ -44,6 +45,8 @@ def verification_feedback(evaluation: dict) -> dict:
         'media_observation': event.get('mediaObservation'),
         'http_observation': public_http_observation(event.get('httpObservation')),
         'reader_user_agent_probe': public_reader_probe(event.get('readerUserAgentProbe')) or None,
+        'observed_media_probe': public_observed_media_probe(event.get('observedMediaProbe'))
+            if public_address_fields(event) else None,
         'announced_players': event.get('announcedPlayerCandidates', 0),
     } for event in (row.get('candidate') or {}).get('networkTrace', [])[-12:]]
     omitted = {event.get('address_scope') for event in (row.get('candidate') or {}).get('networkTrace', [])[:-12]}
