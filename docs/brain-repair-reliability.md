@@ -458,3 +458,18 @@ média/HTTP bornés sont archivés ; les valeurs d'adresse restent en mémoire.
 Les tests couvrent le préfixe, les délais, l'annulation, les en-têtes, les scopes,
 la confidentialité et le parcours réel de projection. Le rejeu reste sans inférence
 ni modification manuelle du provider.
+
+Le [rejeu 41397746341](https://github.com/niakw/NiakVIO/actions/runs/41397746341)
+a sondé cette référence supplémentaire dans la baseline et le candidat : HTTP
+206, signature MP4, durée annoncée de cinq secondes, préfixe de 32768 octets.
+L'annulation était encore `requested` lors de l'export ; cela ne prouve ni une
+lecture complète ni une annulation achevée. Le diagnostic n'ajoute aucun flux
+lisible et le candidat reste refusé. Les deux lecteurs Sibnet restent en 403.
+
+Le Brain conserve désormais ce diagnostic dans ses deux canaux de contexte,
+même s'il est attaché à une réponse répétée tardive, sans dépasser huit événements.
+Ses 343 tests et l'audit de confidentialité passent. Le workflow épingle
+`727e108132444b6e62a71939f9e742a8193577af`, reprend la synthèse normale et rend
+la sonde média explicitement optionnelle, désactivée par défaut. Une annulation
+asynchrone dispose de 100 ms au maximum pour se terminer avant l'export, toujours
+à l'intérieur du délai global. Aucun résultat n'est transformé en preuve de lecture.
