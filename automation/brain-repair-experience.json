@@ -2219,7 +2219,7 @@
     "animevostfr": {
       "domainMemory": true,
       "evidenceDepth": [
-        "anime=lookup_only"
+        "anime=chain_reached"
       ],
       "hasApiRecipe": false,
       "hasProviderValuePlan": false,
@@ -8148,8 +8148,8 @@
     "requiresDeepValidation": true
   },
   "schemaVersion": 2,
-  "sourceRunId": "41427318296",
-  "sourceSha": "a1cdb597e3b574beae7273002a6c2c57a41f9661",
+  "sourceRunId": "41431508302",
+  "sourceSha": "7d6b43f5c9c3fe79e5e3cac8dace9da00c86d0e8",
   "strategyPatterns": {
     "api_stream_resolver": {
       "commonRequestRecipes": [],
@@ -8161,17 +8161,17 @@
       "routeFamilies": [
         {
           "providerSupport": 1,
-          "role": "detail",
-          "supportRatio": 1.0
-        },
-        {
-          "providerSupport": 1,
           "role": "search",
           "supportRatio": 1.0
         },
         {
           "providerSupport": 1,
           "role": "other",
+          "supportRatio": 1.0
+        },
+        {
+          "providerSupport": 1,
+          "role": "detail",
           "supportRatio": 1.0
         }
       ]
@@ -8269,12 +8269,12 @@
         },
         {
           "providerSupport": 3,
-          "role": "detail",
+          "role": "player",
           "supportRatio": 0.5
         },
         {
           "providerSupport": 3,
-          "role": "player",
+          "role": "detail",
           "supportRatio": 0.5
         },
         {
