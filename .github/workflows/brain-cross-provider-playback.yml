@@ -1,0 +1,93 @@
+name: Brain - Compare measured playback across providers
+
+on:
+  pull_request:
+    paths:
+      - .github/workflows/brain-cross-provider-playback.yml
+      - scripts/check_cross_provider_playback.py
+      - tests/cross_provider_playback_test.py
+      - tests/cross_provider_media_projection_test.cjs
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  measure:
+    name: Measure ${{ matrix.provider }} on the same two episodes
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    strategy:
+      fail-fast: false
+      max-parallel: 4
+      matrix:
+        provider: [animevostfr, anime-sama, french-manga, neko-sama, voiranime, voiranime-homes, allanime, animekai]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '24'
+      - name: Install and check diagnostic contracts
+        run: |
+          npm ci --ignore-scripts
+          node tests/cross_provider_media_projection_test.cjs
+          python tests/cross_provider_playback_test.py
+      - name: Measure current published bytes without repairs
+        env:
+          TARGET_PROVIDER: ${{ matrix.provider }}
+          TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+          TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+        run: python scripts/check_cross_provider_playback.py --provider "$TARGET_PROVIDER" --output "local-output/cross-provider/public/$TARGET_PROVIDER.json"
+      - name: Retain safe measured facts
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: cross-provider-${{ matrix.provider }}
+          path: local-output/cross-provider/public/${{ matrix.provider }}.json
+          if-no-files-found: error
+          retention-days: 14
+
+  positive-control:
+    name: Require a measured Jujutsu Kaisen control from another provider
+    needs: measure
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          pattern: cross-provider-*
+          path: reports
+          merge-multiple: true
+      - name: Separate completed measurements from successful media
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json, os, re
+          from pathlib import Path
+          reports = [json.loads(path.read_text()) for path in sorted(Path('reports').glob('*.json'))]
+          expected = {'animevostfr', 'anime-sama', 'french-manga', 'neko-sama', 'voiranime', 'voiranime-homes', 'allanime', 'animekai'}
+          sources = {row.get('sourceNiakvioSha') for row in reports}
+          measured = {row['providerId'] for row in reports if row.get('executionSucceeded') is True}
+          positive = sorted({row['providerId'] for row in reports if row['providerId'] != 'animevostfr'
+              for fx in row.get('fixtures', []) if str(fx.get('tmdbId')) == '95479' and fx.get('passedMediaControl') is True})
+          summary = {'measuredProviders': sorted(measured), 'missingProviders': sorted(expected - measured),
+              'measuredJjkControls': positive, 'passedMediaControl': bool(positive), 'publicationAuthority': False}
+          print('CROSS_PROVIDER_SUMMARY=' + json.dumps(summary, sort_keys=True))
+          with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as handle:
+              handle.write('| Provider | Episode | Returned | Playable | Measured control |\n|---|---|---:|---:|---|\n')
+              for row in reports:
+                  for fx in row.get('fixtures', []):
+                      handle.write(f"| {row['providerId']} | {fx.get('fixture')} | {fx.get('streamsReturned', 0)} | {fx.get('streamsPlayable', 0)} | {fx.get('passedMediaControl') is True} |\n")
+          if expected - measured:
+              raise SystemExit('Incomplete comparison: some provider measurements failed to execute.')
+          if len(sources) != 1 or not all(isinstance(sha, str) and re.fullmatch(r'[0-9a-f]{40}', sha) for sha in sources):
+              raise SystemExit('Comparison requires one exact source revision.')
+          if not positive:
+              raise SystemExit('No measured positive Jujutsu Kaisen control; failed/unknown media is not success.')
+          PY
