@@ -1,7 +1,7 @@
 {
   "schemaVersion": 3,
-  "runId": "41488793645",
-  "triggerSha": "b163eb9406a6deadf36c00247db0550f23fbed65",
+  "runId": "41494003824",
+  "triggerSha": "77ff7cd644b9f31328a4b3199f7834fd5944d579",
   "providers": [
     {
       "provider": "4khdhub",
@@ -146,11 +146,11 @@
         "16 live routes / anime"
       ],
       "latestLaneVerdicts": [
-        "anime=timeout"
+        "anime=no_streams/provider_network_exception"
       ],
-      "dominantIssue": "timeout",
+      "dominantIssue": "provider_network_exception",
       "searchProgress": [
-        "anime: 3 works tested / 0 retained misses"
+        "anime: 2 works tested / 0 retained misses"
       ],
       "evidenceDepth": [
         "anime=none"
@@ -525,10 +525,10 @@
         "76 live routes / movie, tv"
       ],
       "latestLaneVerdicts": [
-        "movie=no_streams/provider_waf_challenge",
-        "tv=no_streams/provider_waf_challenge"
+        "movie=no_streams/provider_network_exception",
+        "tv=no_streams/provider_network_exception"
       ],
-      "dominantIssue": "provider_waf_challenge×2",
+      "dominantIssue": "provider_network_exception×2",
       "searchProgress": [
         "movie: 8 works tested / 24 retained misses",
         "tv: 8 works tested / 21 retained misses"
@@ -2180,8 +2180,8 @@
   "harnessQueue": [],
   "targetedTransportBlockedQueue": [],
   "clientTransportGapQueue": [],
-  "harnessEvidenceRunId": "41488793645-sharded-waf",
-  "harnessEvidenceSha": "b163eb9406a6deadf36c00247db0550f23fbed65",
+  "harnessEvidenceRunId": "41494003824-sharded-waf",
+  "harnessEvidenceSha": "77ff7cd644b9f31328a4b3199f7834fd5944d579",
   "authorityRefreshedProviders": [],
   "harnessTransportUpdatedProviders": [],
   "networkDifferentialUpdatedProviders": [],
@@ -2587,48 +2587,9 @@
         "allwish",
         "animesalt",
         "flemmix",
-        "moviesmod",
         "vostfree"
       ],
       "replayedProviders": []
     }
-  },
-  "lastRepairAttempt": {
-    "runId": "41490060960",
-    "sourceCensusRunId": "41488793645",
-    "selectedProviders": [
-      "4khdhub",
-      "allanime",
-      "animesalt",
-      "animesultra",
-      "animevost-fr",
-      "flemmix",
-      "mallumv",
-      "moviebox",
-      "moviesmod",
-      "vidfast",
-      "vostfree",
-      "yflix"
-    ],
-    "candidateProviders": [],
-    "validatedProviders": [],
-    "acceptedRepairCount": 0,
-    "deferredToLearningSlotProviders": [
-      "4khdhub",
-      "allanime",
-      "animesalt",
-      "animesultra",
-      "animevost-fr",
-      "flemmix",
-      "mallumv",
-      "moviebox",
-      "moviesmod",
-      "vidfast",
-      "vostfree",
-      "yflix"
-    ],
-    "noProgressReason": "no_new_repair_experiment",
-    "timeBudgetExhausted": false,
-    "publicationAllowed": false
   }
 }
