@@ -1,7 +1,7 @@
 {
   "schemaVersion": 3,
-  "runId": "41388929506",
-  "triggerSha": "dbfb1db3f43a1da609cfd21e5b5ac01c24c905a6",
+  "runId": "41392200344",
+  "triggerSha": "cebf59b822d52f5f2a55aa01b1eb02993c7fc243",
   "providers": [
     {
       "provider": "4khdhub",
@@ -146,11 +146,11 @@
         "16 live routes / anime"
       ],
       "latestLaneVerdicts": [
-        "anime=timeout"
+        "anime=no_streams/provider_network_exception"
       ],
-      "dominantIssue": "timeout",
+      "dominantIssue": "provider_network_exception",
       "searchProgress": [
-        "anime: 3 works tested / 0 retained misses"
+        "anime: 2 works tested / 0 retained misses"
       ],
       "evidenceDepth": [
         "anime=none"
@@ -2180,8 +2180,8 @@
   "harnessQueue": [],
   "targetedTransportBlockedQueue": [],
   "clientTransportGapQueue": [],
-  "harnessEvidenceRunId": "41388929506-sharded-waf",
-  "harnessEvidenceSha": "dbfb1db3f43a1da609cfd21e5b5ac01c24c905a6",
+  "harnessEvidenceRunId": "41392200344-sharded-waf",
+  "harnessEvidenceSha": "cebf59b822d52f5f2a55aa01b1eb02993c7fc243",
   "authorityRefreshedProviders": [],
   "harnessTransportUpdatedProviders": [],
   "networkDifferentialUpdatedProviders": [],
@@ -2592,43 +2592,5 @@
       ],
       "replayedProviders": []
     }
-  },
-  "lastRepairAttempt": {
-    "runId": "41389581001",
-    "sourceCensusRunId": "41388929506",
-    "selectedProviders": [
-      "4khdhub",
-      "allanime",
-      "animesalt",
-      "animesultra",
-      "animevost-fr",
-      "flemmix",
-      "mallumv",
-      "moviebox",
-      "moviesmod",
-      "vidfast",
-      "vostfree",
-      "yflix"
-    ],
-    "candidateProviders": [],
-    "validatedProviders": [],
-    "acceptedRepairCount": 0,
-    "deferredToLearningSlotProviders": [
-      "4khdhub",
-      "allanime",
-      "animesalt",
-      "animesultra",
-      "animevost-fr",
-      "flemmix",
-      "mallumv",
-      "moviebox",
-      "moviesmod",
-      "vidfast",
-      "vostfree",
-      "yflix"
-    ],
-    "noProgressReason": "no_new_repair_experiment",
-    "timeBudgetExhausted": false,
-    "publicationAllowed": false
   }
 }
