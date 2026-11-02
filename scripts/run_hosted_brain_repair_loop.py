@@ -14,7 +14,7 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT / 'scripts') not in sys.path:
     sys.path.insert(0, str(ROOT / 'scripts'))
 
-from http_response_evidence import public_http_observation, public_reader_probe
+from http_response_evidence import public_http_observation, public_reader_probe, public_network_error_code
 from address_reference_evidence import public_address_fields
 from observed_media_evidence import public_observed_media_probe
 
@@ -39,6 +39,7 @@ def verification_feedback(evaluation: dict) -> dict:
     result['candidate_network'] = [{
         **public_address_fields(event),
         'host': event.get('host'), 'stage': event.get('stage'), 'status': event.get('status'),
+        'error_code': public_network_error_code(event.get('errorCode')),
         'fixture': event.get('fixture'),
         'functions': event.get('providerFunctions', []),
         'response_structure': event.get('responseStructure'),

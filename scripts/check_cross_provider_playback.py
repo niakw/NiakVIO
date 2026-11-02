@@ -173,7 +173,7 @@ def staged_hash(provider, stage, repo_root=ROOT):
         raise ValueError('published_provider_path')
     data = staged.read_bytes()
     digest = hashlib.sha256(data).hexdigest()
-    suffix = re.search(r'--([0-9a-f]{16})\.js$', published.name)
+    suffix = re.search(r'-([0-9a-f]{16})\.js$', published.name)
     if (digest != candidates[0].get('sha256') or data != published.read_bytes()
             or not suffix or digest[:16] != suffix[1]):
         raise ValueError('published_provider_hash')

@@ -10,7 +10,7 @@ from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'scripts'))
-from http_response_evidence import public_http_observation, public_http_evidence, public_reader_probe
+from http_response_evidence import public_http_observation, public_http_evidence, public_reader_probe, public_network_error_code
 import capture_brain_live_context as capture
 import evaluate_brain_llm_force_candidates as verifier
 from run_hosted_brain_repair_loop import verification_feedback
@@ -106,4 +106,10 @@ for value in ({**forged, 'sampled_bytes': 999999}, {key: ['PRIVATE'] for key in 
     assert 0 <= clean['sampled_bytes'] <= 8192
     assert public_http_observation(clean) == clean
     assert 'PRIVATE' not in json.dumps(clean) and 'private.test' not in json.dumps(clean)
+for code in ('ENOTFOUND', 'ECONNRESET', 'UND_ERR_CONNECT_TIMEOUT', 'CERT_HAS_EXPIRED'):
+    transport = verification_feedback({'rows': [{'executionObserved': True, 'candidate': {
+        'networkTrace': [{'host': 'provider.test', 'stage': 'content_lookup', 'status': None, 'errorCode': code}]}}]})
+    assert transport['candidate_network'][0]['error_code'] == code
+for code in ('PRIVATE', 'https://private.test/PRIVATE', ['PRIVATE'], {}, True):
+    assert public_network_error_code(code) is None
 print('HTTP evidence: real producer -> preflight/evaluation -> public receipt -> feedback, privacy and source matching passed')
