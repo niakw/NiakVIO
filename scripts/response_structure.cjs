@@ -150,7 +150,7 @@ function playerMarkup(value, baseUrl, addressRef) {
         const references = new Set();
         for (const address of addresses) {
           let reference;
-          try { reference = safeAddressReference(addressRef(address)); } catch {}
+          try { reference = safeAddressReference(addressRef(address, { tag: group.row.tag, attribute: name })); } catch {}
           if (reference) references.add(reference);
           else group.addressRefsTruncated = true;
         }

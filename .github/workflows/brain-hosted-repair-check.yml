@@ -60,6 +60,8 @@ jobs:
           node tests/media_observation.test.cjs
           node tests/http_response_observation_test.cjs
           node tests/reader_user_agent_probe_test.cjs
+          node tests/observed_media_probe_test.cjs
+          python tests/observed_media_evidence_test.py
           python tests/http_response_evidence_test.py
           node tests/response_structure_test.cjs
           node tests/address_reference_test.cjs
@@ -89,6 +91,7 @@ jobs:
       - name: Run bounded hosted repair and verification loop
         timeout-minutes: 12
         env:
+          NIAKVIO_OBSERVED_MEDIA_PROBE: '1'
           NIAKVIO_READER_UA_PROBE: ${{ inputs.reader_user_agent_probe && '1' || '0' }}
           NIAKVIO_OPENAI_API_KEY: ${{ secrets.NIAKVIO_OPENAI_API_KEY }}
           TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}

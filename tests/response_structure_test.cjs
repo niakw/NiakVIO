@@ -90,6 +90,27 @@ assert.ok(!JSON.stringify(queries).includes('PRIVATE'));
 assert.ok(!JSON.stringify(queries).includes('private.test'));
 assert.ok(!JSON.stringify(queries).includes('fragment'));
 
+const metadataMarkup = '<html><div data-src="/embed/PRIVATE"></div>' +
+  '<source src="//cdn.private.test/PRIVATE.m3u8"></html>';
+const metadataCalls = [];
+const metadataReferences = referenceCollector();
+const withMetadata = responseStructure(metadataMarkup, {
+  baseUrl: queryOptions.baseUrl,
+  addressRef(address, metadata) {
+    metadataCalls.push({ address, metadata });
+    return metadataReferences.ref(address);
+  },
+});
+assert.deepEqual(metadataCalls, [
+  { address: 'https://cdn.private.test/PRIVATE.m3u8', metadata: { tag: 'source', attribute: 'src' } },
+  { address: 'https://provider.private.test/embed/PRIVATE', metadata: { tag: 'div', attribute: 'data-src' } },
+]);
+const singleArgumentReferences = referenceCollector();
+assert.deepEqual(withMetadata, responseStructure(metadataMarkup,
+  { baseUrl: queryOptions.baseUrl, addressRef: singleArgumentReferences.ref }));
+assert.ok(!JSON.stringify(withMetadata).includes('PRIVATE'));
+assert.ok(!JSON.stringify(withMetadata).includes('private.test'));
+
 const unionReferences = referenceCollector();
 const unionMarkup = '<html><iframe src="/embed/PRIVATE#one" data-src="/embed/PRIVATE_A"></iframe>' +
   '<iframe src="/embed/PRIVATE#two" data-src="/embed/PRIVATE_B"></iframe>' +
