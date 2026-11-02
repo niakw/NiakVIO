@@ -116,7 +116,7 @@ class CrossProviderTests(unittest.TestCase):
             root = Path(tmp); stage = root / 'stage'; providers = root / 'providers'
             stage.mkdir(); providers.mkdir()
             data = b'published provider bytes'; digest = hashlib.sha256(data).hexdigest()
-            filename = 'providers/anime-sama--nuvio--' + digest[:16] + '.js'
+            filename = 'providers/anime-sama-' + digest[:16] + '.js'
             (root / filename).write_bytes(data); (stage / 'provider.js').write_bytes(data)
             (root / 'manifest.json').write_text(json.dumps({'scrapers': [
                 {'id': 'ANIME-SAMA', 'enabled': True, 'filename': filename}]}))

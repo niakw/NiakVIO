@@ -1,0 +1,131 @@
+name: Brain - Repair measured provider failures
+
+on:
+  pull_request:
+    paths:
+      - .github/workflows/brain-multi-provider-repair.yml
+      - automation/brain-repair-public-references.json
+      - scripts/evaluate_brain_llm_force_candidates.py
+      - tests/brain_decoded_repair_gate_test.py
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  repair:
+    name: Repair ${{ matrix.provider }} with decoded proof
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      max-parallel: 3
+      matrix:
+        provider: [anime-sama, allanime, animekai, neko-sama, animevostfr]
+    env:
+      TARGET_PROVIDER: ${{ matrix.provider }}
+      BRAIN_SHA: 5d038b58ff0102882660af1cf44edb58f084903d
+      NIAKVIO_REQUIRE_DECODE_PROOF: '1'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          repository: niakw/NiakVIO-Brain-LLM
+          ref: ${{ env.BRAIN_SHA }}
+          path: brain-llm
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '24'
+      - name: Prepare model and bounded video verification
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends ffmpeg
+          npm ci --ignore-scripts
+          python -m pip install -e brain-llm
+          python tests/brain_decoded_repair_gate_test.py
+          node tests/media_sample_decode_test.cjs
+          mkdir -p local-output/hosted-repair
+          python brain-llm/scripts/import_public_niakvio.py --niakvio-root . --output local-output/hosted-repair/experience.jsonl
+          python brain-llm/scripts/import_public_docs.py --niakvio-root . --config brain-llm/config/document_sources.json --output local-output/hosted-repair/documents.jsonl
+      - name: Observe exact current provider bytes
+        timeout-minutes: 5
+        env:
+          TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+          TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+        run: python scripts/capture_brain_live_context.py --provider "$TARGET_PROVIDER" --output local-output/hosted-repair/live-context.json
+      - name: Attach immutable public domain references as hypotheses
+        run: |
+          python3 - <<'PY'
+          import json, os
+          from pathlib import Path
+          path = Path('local-output/hosted-repair/live-context.json')
+          live = json.loads(path.read_text())
+          references = json.loads(Path('automation/brain-repair-public-references.json').read_text())
+          live['public_domain_references'] = references.get(os.environ['TARGET_PROVIDER'], [])
+          path.write_text(json.dumps(live, indent=2) + '\n')
+          PY
+      - name: Generate, execute and verify Brain proposals
+        timeout-minutes: 17
+        env:
+          NIAKVIO_OPENAI_API_KEY: ${{ secrets.NIAKVIO_OPENAI_API_KEY }}
+          TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+          TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+        run: |
+          python scripts/run_hosted_brain_repair_loop.py --brain-root brain-llm \
+            --provider "$TARGET_PROVIDER" --output local-output/hosted-repair \
+            --max-attempts 2 --budget-seconds 900
+      - name: Report executed repairs separately from model suggestions
+        if: always()
+        run: |
+          python3 - <<'PY'
+          import json, os, re
+          from pathlib import Path
+          root = Path('local-output/hosted-repair')
+          def read(name):
+              path = root / name
+              return json.loads(path.read_text()) if path.is_file() else {}
+          evaluation, accepted, diagnostics = read('evaluation.json'), read('accepted.json'), read('diagnostics.json')
+          safe = lambda value: re.sub(r'[^a-zA-Z0-9._:-]', '_', str(value))[:180]
+          winners = {row.get('mutationFingerprint') for row in evaluation.get('rows', [])
+              if row.get('accepted') is True and row.get('executionObserved') is True
+              and row.get('materializedMutationObserved') is True and row.get('decodedProofRequired') is True
+              and row.get('improvedFixtures')}
+          summary = {'provider': os.environ['TARGET_PROVIDER'], 'sourceNiakvioSha': os.environ['GITHUB_SHA'],
+              'sourceBrainLlmSha': os.environ['BRAIN_SHA'], 'acceptedCount': len(winners),
+              'verification': [{key: row.get(key) for key in ('accepted', 'reason', 'executionObserved',
+                  'materializedMutationObserved', 'decodedProofRequired', 'improvedFixtures', 'unresolvedFixtures')}
+                  for row in evaluation.get('rows', [])],
+              'generation': [{key: safe(event.get(key, '')) for key in ('scope', 'outcome', 'reason')}
+                  for row in diagnostics.get('rows', []) for event in row.get('scopeTrace', [])],
+              'publicationAuthority': False}
+          root.mkdir(parents=True, exist_ok=True)
+          (root / 'summary.json').write_text(json.dumps(summary, indent=2) + '\n')
+          print('BRAIN_MULTI_REPAIR_RESULT=' + json.dumps(summary, separators=(',', ':')))
+          selected = [row for row in accepted.get('rows', []) if row.get('mutationFingerprint') in winners
+              and row.get('providerId') == os.environ['TARGET_PROVIDER']]
+          if selected:
+              payload = {**accepted, 'rows': selected, 'providerCount': 1}
+              print('BRAIN_MULTI_ACCEPTED_PAYLOAD=' + json.dumps(payload, separators=(',', ':')))
+          PY
+      - name: Retain proposals, accepted subset and decoded evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: brain-multi-repair-${{ matrix.provider }}-${{ github.run_id }}
+          retention-days: 14
+          if-no-files-found: error
+          path: |
+            local-output/hosted-repair/summary.json
+            local-output/hosted-repair/live-context.json
+            local-output/hosted-repair/diagnostics.json
+            local-output/hosted-repair/mutations.json
+            local-output/hosted-repair/accepted.json
+            local-output/hosted-repair/evaluation.json

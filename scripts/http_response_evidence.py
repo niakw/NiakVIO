@@ -9,6 +9,15 @@ HTTP_ENUMS = {
                     'not_found_text', 'rate_limit_text', 'none', 'unknown'},
 }
 
+NETWORK_ERROR_CODES = {'ENOTFOUND', 'EAI_AGAIN', 'ECONNREFUSED', 'ECONNRESET', 'ETIMEDOUT',
+    'UND_ERR_CONNECT_TIMEOUT', 'UND_ERR_HEADERS_TIMEOUT', 'UND_ERR_SOCKET', 'CERT_HAS_EXPIRED',
+    'ERR_TLS_CERT_ALTNAME_INVALID', 'UNABLE_TO_VERIFY_LEAF_SIGNATURE', 'DEPTH_ZERO_SELF_SIGNED_CERT',
+    'NUVIO_FETCH_TIMEOUT'}
+
+
+def public_network_error_code(value):
+    return value if isinstance(value, str) and value in NETWORK_ERROR_CODES else None
+
 
 def public_http_observation(value):
     if not isinstance(value, dict):

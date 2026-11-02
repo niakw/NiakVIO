@@ -7,9 +7,10 @@ import re
 import subprocess
 from pathlib import Path
 import evaluate_brain_llm_force_candidates as verifier
-from http_response_evidence import public_http_observation, public_reader_probe
+from http_response_evidence import public_http_observation, public_reader_probe, public_network_error_code
 from address_reference_evidence import public_address_fields, address_scope
 from observed_media_evidence import public_observed_media_probe
+
 
 def script_shell_only(events):
     replies = [event for event in events if event.get('ok') and event.get('response_structure')]
@@ -91,6 +92,7 @@ def main():
             'fixture': event.get('fixture_label'),
             'stage': event.get('stage'), 'host': event.get('host'),
             'status': event.get('status'), 'functions': event.get('provider_function_names', [])[:8],
+            'error_code': public_network_error_code(event.get('error_code')),
             'response_structure': event.get('response_structure'),
             'media_observation': event.get('media_observation'),
             'http_observation': public_http_observation(event.get('http_observation')),

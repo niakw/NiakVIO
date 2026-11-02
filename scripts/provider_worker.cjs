@@ -787,7 +787,8 @@ function installPolyfills(context = {}) {
           provider_function_names: providerFunctions,
           status: null, ok: false, duration_ms: Date.now() - started, infrastructure: isInfrastructureHost(host),
           invocation: activeInvocation, settings_profile: activeSettingsProfile,
-          error_code: error?.code ? String(error.code).slice(0, 120) : null,
+          error_code: (error?.code || error?.cause?.code)
+            ? String(error.code || error.cause.code).slice(0, 120) : null,
           error: sanitizeDiagnosticText(error?.message || error, 300),
           ...routeProofRequest, response_value_hints: [], route_proof_trace: routeProofEnabled,
         };
