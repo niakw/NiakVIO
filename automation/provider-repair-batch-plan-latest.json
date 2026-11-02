@@ -1,12 +1,11 @@
 {
   "schemaVersion": 1,
-  "sourceRunId": "41455346477",
-  "sourceTriggerSha": "0eb4c87ef2b4aada3d9e007307a23cdc331b1cff",
+  "sourceRunId": "41459601753",
+  "sourceTriggerSha": "143f3d3f93555cea10539798f41200c0b3f65fcf",
   "unresolvedProviderCount": 21,
-  "dynamicVariantProviderCount": 6,
+  "dynamicVariantProviderCount": 5,
   "dynamicVariantProviders": [
     "animevost-fr",
-    "animevostfr",
     "coflix",
     "hindmoviez",
     "kehflix",
@@ -53,8 +52,8 @@
         "none"
       ],
       "dominantIssues": [
+        "network_exception",
         "network_zero_result",
-        "timeout",
         "waf_challenge"
       ],
       "harnessTransportClasses": [],
@@ -118,12 +117,12 @@
       ],
       "capabilityStrategy": "mixed_embed_resolver",
       "evidenceDepths": [
-        "chain",
-        "lookup"
+        "lookup",
+        "none"
       ],
       "dominantIssues": [
         "network_http_error",
-        "network_zero_result"
+        "timeout"
       ],
       "harnessTransportClasses": [],
       "transportSignature": "not-applicable",
@@ -136,9 +135,7 @@
       "selectionAuthorities": [
         "provider-census-status.json:brainCheckRequired"
       ],
-      "dynamicVariantProviders": [
-        "animevostfr"
-      ],
+      "dynamicVariantProviders": [],
       "executionPolicy": "batch-first",
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
