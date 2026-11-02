@@ -29,6 +29,8 @@ permissions:
 
 jobs:
   repair-check:
+    # Local-only policy: never consume paid model API quota.
+    if: ${{ false }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
@@ -96,7 +98,6 @@ jobs:
         env:
           NIAKVIO_OBSERVED_MEDIA_PROBE: ${{ inputs.observed_media_probe && '1' || '0' }}
           NIAKVIO_READER_UA_PROBE: ${{ inputs.reader_user_agent_probe && '1' || '0' }}
-          NIAKVIO_OPENAI_API_KEY: ${{ secrets.NIAKVIO_OPENAI_API_KEY }}
           TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
           TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
         shell: bash
