@@ -211,7 +211,7 @@ assert.deepEqual(lastReference.rows[0].address_refs, { src: ['r512'] });
 assert.equal(lastReference.truncated, false);
 const partial = responseStructure('<html><iframe src="/embed/PRIVATE" data-src="//cdn.private.test/embed/PRIVATE"></iframe></html>',
   { baseUrl: queryOptions.baseUrl, addressRef: address => {
-    if (address.startsWith('https://cdn.private.test/')) throw new Error('PRIVATE');
+    if (new URL(address).origin === 'https://cdn.private.test') throw new Error('PRIVATE');
     return 'r1';
   } }).player_markup;
 assert.deepEqual(partial.rows[0].address_refs, { src: ['r1'] });
