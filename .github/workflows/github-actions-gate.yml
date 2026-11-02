@@ -152,6 +152,7 @@ jobs:
       - name: Validate workflow architecture contracts
         run: |
           python3 tests/workflow_security_policy_test.py
+          python3 tests/brain_no_paid_workflows_test.py
           python3 tests/repository_hygiene_contract_test.py
           python3 tests/release_version_sync_test.py
           python3 tests/release_version_baseline_test.py
