@@ -14,6 +14,8 @@ permissions:
 
 jobs:
   repair:
+    # Local-only policy: never consume paid model API quota.
+    if: ${{ false }}
     name: Repair ${{ matrix.provider }} with decoded proof
     runs-on: ubuntu-latest
     timeout-minutes: 25
@@ -89,7 +91,6 @@ jobs:
       - name: Generate, execute and verify Brain proposals
         timeout-minutes: 17
         env:
-          NIAKVIO_OPENAI_API_KEY: ${{ secrets.NIAKVIO_OPENAI_API_KEY }}
           TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
           TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
         run: |
