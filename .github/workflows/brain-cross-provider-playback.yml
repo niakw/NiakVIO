@@ -35,6 +35,8 @@ jobs:
       - name: Install and check diagnostic contracts
         run: |
           npm ci --ignore-scripts
+          command -v ffmpeg
+          node tests/media_sample_decode_test.cjs
           node tests/cross_provider_media_projection_test.cjs
           python tests/cross_provider_playback_test.py
       - name: Measure current published bytes without repairs
@@ -80,10 +82,17 @@ jobs:
               'measuredJjkControls': positive, 'passedMediaControl': bool(positive), 'publicationAuthority': False}
           print('CROSS_PROVIDER_SUMMARY=' + json.dumps(summary, sort_keys=True))
           with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as handle:
-              handle.write('| Provider | Episode | Returned | Playable | Measured control |\n|---|---|---:|---:|---|\n')
+              handle.write('| Provider | Episode | Returned | Duration (s) | Decoded frames | Identity basis | Media control |\n|---|---|---:|---|---:|---|---|\n')
               for row in reports:
                   for fx in row.get('fixtures', []):
-                      handle.write(f"| {row['providerId']} | {fx.get('fixture')} | {fx.get('streamsReturned', 0)} | {fx.get('streamsPlayable', 0)} | {fx.get('passedMediaControl') is True} |\n")
+                      probes = fx.get('probes', [])
+                      durations = [p['media_duration_seconds'] for p in probes if p.get('media_duration_seconds') is not None]
+                      if not durations:
+                          durations = [e['mediaObservation']['durationSeconds'] for e in fx.get('networkEvidence', []) if e.get('mediaObservation', {}).get('durationSeconds') is not None]
+                      duration = ', '.join(str(round(value, 2)) for value in sorted(set(durations))) or 'unknown'
+                      frames = max((p.get('mediaDecode', {}).get('framesDecoded', 0) for p in probes), default=0)
+                      basis = ', '.join(sorted({p.get('identityBasis', 'unknown') for p in probes})) or 'unknown'
+                      handle.write(f"| {row['providerId']} | {fx.get('fixture')} | {fx.get('streamsReturned', 0)} | {duration} | {frames} | {basis} | {fx.get('passedMediaControl') is True} |\n")
           if expected - measured:
               raise SystemExit('Incomplete comparison: some provider measurements failed to execute.')
           if len(sources) != 1 or not all(isinstance(sha, str) and re.fullmatch(r'[0-9a-f]{40}', sha) for sha in sources):

@@ -24,7 +24,8 @@ def good(kind='mp4'):
             'content_identity_status': 'match', 'content_identity_reason': 'season_episode_match',
             'media_duration_seconds': 1440, 'expected_duration_seconds': 1440,
             'duration_identity_authoritative': True, 'duration_identity_mismatch': False,
-            'short_vod_preview': False}
+            'short_vod_preview': False,
+            'media_decode': {'attempted': True, 'outcome': 'decoded', 'framesDecoded': 1}}
 
 
 class CrossProviderTests(unittest.TestCase):
@@ -40,9 +41,16 @@ class CrossProviderTests(unittest.TestCase):
                      {'expected_duration_seconds': 5}, {'duration_identity_authoritative': False},
                      {'duration_identity_mismatch': True}, {'short_vod_preview': True},
                      {'playback_verified': 1}, {'payload_verified': False}]
+        failures += [{'media_decode': value} for value in (None, {},
+            {'attempted': True, 'outcome': 'failed', 'framesDecoded': 0},
+            {'attempted': False, 'outcome': 'decoded', 'framesDecoded': 1},
+            {'attempted': True, 'outcome': 'decoded', 'framesDecoded': True})]
         for changed in failures:
             with self.subTest(changed=changed):
                 self.assertFalse(mod.public_probe({**good(), **changed})['passedMediaControl'])
+        duration_only = mod.public_probe({**good(), 'content_identity_reason': 'fixture_duration_match'})
+        self.assertTrue(duration_only['passedMediaControl'])
+        self.assertEqual(duration_only['identityBasis'], 'duration_only')
 
     def test_hls_requires_variant_and_segment_and_no_failed_audio(self):
         for field in ('variant_reachable', 'segment_reachable'):

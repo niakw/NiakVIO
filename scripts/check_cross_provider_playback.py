@@ -100,6 +100,17 @@ def public_probe(value, expected_seconds=1440):
     result['bytes_sampled'] = min(value['bytes_sampled'], 1048576) \
         if type(value.get('bytes_sampled')) is int and value['bytes_sampled'] >= 0 else 0
     result['host'] = safe_host(value.get('host'))
+    decode = value.get('media_decode') if isinstance(value.get('media_decode'), dict) else {}
+    frames = decode.get('framesDecoded')
+    outcome = decode.get('outcome')
+    result['mediaDecode'] = {
+        'attempted': decode.get('attempted') is True,
+        'outcome': outcome if isinstance(outcome, str) and outcome in
+            ('decoded', 'failed', 'timeout', 'unavailable', 'unsupported') else 'unsupported',
+        'framesDecoded': 1 if type(frames) is int and frames >= 1 else 0,
+    }
+    result['identityBasis'] = ('duration_only' if result['content_identity_reason'] == 'fixture_duration_match'
+        else 'metadata' if result['content_identity_status'] == 'match' else 'unknown')
     duration = result['media_duration_seconds']
     transport = (result['kind'] in ('mp4', 'matroska') and result['direct_signature_verified'] is True) or (
         result['kind'] == 'hls' and result['variant_reachable'] is True
@@ -114,7 +125,8 @@ def public_probe(value, expected_seconds=1440):
         and duration is not None and duration >= 60
         and 0.55 <= duration / expected_seconds <= 1.8
         and result['http_status'] is not None and 200 <= result['http_status'] < 300
-        and result['bytes_sampled'] > 0 and transport)
+        and result['bytes_sampled'] > 0 and transport
+        and result['mediaDecode'] == {'attempted': True, 'outcome': 'decoded', 'framesDecoded': 1})
     return result
 
 
@@ -141,6 +153,7 @@ def comparison_config(original):
         'minimum_fixture_duration_ratio': 0.55, 'maximum_fixture_duration_ratio': 1.8,
         'minimum_vod_duration_seconds': 60, 'reader_user_agent_probe': False,
         'observed_media_probe': False,
+        'verify_media_decode': True,
     })
     return config
 

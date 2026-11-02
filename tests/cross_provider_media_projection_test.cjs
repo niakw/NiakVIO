@@ -11,6 +11,7 @@ const facts = { host: 'media.example', category: 'playable', http_status: 206, k
   duration_identity_mismatch: false, media_duration_seconds: 1440,
   expected_duration_seconds: 1440, duration_identity_authoritative: true,
   bytes_sampled: 32768, short_vod_preview: false,
+  media_decode: { attempted: true, outcome: 'decoded', framesDecoded: 1 },
   variant_reachable: null, segment_reachable: null,
   audio_manifest_reachable: null, audio_segment_reachable: null,
   url: 'PRIVATE_ADDRESS', headers: { Cookie: 'PRIVATE_COOKIE' }, body: 'PRIVATE_BODY' };
@@ -20,6 +21,7 @@ for (const key of ['media_duration_seconds', 'expected_duration_seconds', 'bytes
   assert.equal(actual[key], facts[key]);
 }
 assert.ok(!JSON.stringify(actual).includes('PRIVATE'));
+assert.deepEqual(actual.media_decode, facts.media_decode);
 const hls = project([{ ...facts, kind: 'hls', variant_reachable: true, segment_reachable: true,
   audio_manifest_reachable: true, audio_segment_reachable: true }])[0];
 for (const key of ['variant_reachable', 'segment_reachable', 'audio_manifest_reachable', 'audio_segment_reachable']) {
