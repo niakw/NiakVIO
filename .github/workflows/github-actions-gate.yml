@@ -100,12 +100,12 @@ jobs:
           persist-credentials: false
 
       - name: Set up Python with candidate major
-        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
           python-version: "3.12"
 
       - name: Set up Node.js with candidate major
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: "24"
           package-manager-cache: false
@@ -181,6 +181,7 @@ jobs:
           python3 tests/brain_base_planner_large_input_test.py
           python3 tests/hosted_brain_repair_loop_test.py
           python3 tests/brain_repair_comparison_test.py
+          python3 tests/provider_response_shape_structural_privacy_test.py
           python3 tests/brain_learning_guidance_gap_fill_test.py
           python3 tests/brain_learning_guidance_executor_advance_test.py
           python3 tests/brain_learning_push_target_workflow_test.py

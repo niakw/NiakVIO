@@ -4,9 +4,11 @@ from __future__ import annotations
 import importlib.util
 import json
 import subprocess
+import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / 'scripts'))
 SCRIPT = ROOT / "scripts" / "run_provider_targeted_recovery.py"
 PROBE = ROOT / "scripts" / "nuvio_tv_probe_tmdb_ci.cjs"
 
@@ -21,12 +23,14 @@ shape = mod.compact_response_shape({
     "anchors": 42,
     "classTokens": [
         "card-item", "movie_card", "x", "123bad", "bad token",
-        "A" * 60, "episode-row",
+        "A" * 60, "episode-row", True, None,
     ],
     "idTokens": ["results", "download-list", "1bad", "bad token"],
     "classFacts": [
         {"token": "movie-card", "count": 3, "tags": ["div"], "selfHref": 0, "nestedAnchors": 3, "signals": ["movie", "year", "bad"]},
         {"token": "bad token", "count": 99, "tags": ["script"], "selfHref": 99, "nestedAnchors": 99, "signals": ["download"]},
+        {"token": "A" * 60, "count": 1},
+        {"token": True, "count": 1},
     ],
     "markers": ["download", "episode", "not-allowed"],
 })
@@ -58,7 +62,10 @@ assert "response bodies remain ephemeral and are never stored" in src
 start = src.index("function structuralTokens(")
 end = src.index("function textShape(", start)
 helper = src[start:end]
-html = '<div id="results" class="movie-card item item"></div><a class="episode-row item"></a>'
+html = ('<div id="results" class="movie-card item item">'
+        '<div class="movie-card-content item" data-class="fake-card" data-id="private-id">'
+        '<a class="episode-row\titem\n" href="/episode">Movie 2014</a></div></div>'
+        '<article class="movie-card-suffix"></article>')
 node = subprocess.run(
     [
         "node",
@@ -73,11 +80,12 @@ node = subprocess.run(
     check=True,
 )
 tokens = json.loads(node.stdout.strip())
-assert tokens["classes"] == ["item", "episode-row", "movie-card"], tokens
+assert tokens["classes"] == ["item", "episode-row", "movie-card", "movie-card-content", "movie-card-suffix"], tokens
 assert tokens["ids"] == ["results"], tokens
 movie = next(row for row in tokens["facts"] if row["token"] == "movie-card")
 assert movie["count"] == 1, tokens
 assert movie["tags"] == ["div"], tokens
+assert movie["selfHref"] == 0, tokens
 assert movie["nestedAnchors"] >= 1, tokens
 
 print("Provider response-shape structural privacy contract passed")

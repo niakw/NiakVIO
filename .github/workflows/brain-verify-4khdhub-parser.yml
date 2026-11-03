@@ -78,6 +78,47 @@ jobs:
           (root / 'lookup-shapes.json').write_text(json.dumps(output, indent=2) + '\n')
           print('FOUR_KHDHUB_LOOKUP_SHAPES=' + json.dumps(output, separators=(',', ':')))
           PY
+      - name: Observe exact class facts on the same two lookup fixtures
+        env:
+          TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+          TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+        run: |
+          python - <<'PY'
+          import json, os, sys
+          from pathlib import Path
+          from urllib.parse import urlsplit
+          sys.path.insert(0, 'scripts')
+          import audit_provider_quick_yield as census
+          import check_cross_provider_playback as playback
+          from run_provider_targeted_recovery import compact_response_shape
+          for key in ('OPENAI_API_KEY', 'NIAKVIO_OPENAI_API_KEY', 'NIAKVIO_ALLOW_PAID_API'):
+              os.environ.pop(key, None)
+          config = playback.comparison_config(json.loads(Path('health-config.json').read_text()), '4khdhub')
+          tasks, _ = census.build_tasks({'4khdhub'})
+          observations = []
+          for category, fixture_id, _season, _episode, _minutes, label in playback.control_fixtures('4khdhub'):
+              task = next(row for row in tasks if row['semantic_type'] == category)
+              fixture = config['fixtures'][category][0]
+              result = census.run_single({**task, 'fixture': fixture}, timeout_seconds=40)
+              replies = []
+              for row in result.get('debug_fetches', []):
+                  try:
+                      requested_host = urlsplit(str(row.get('url') or '')).hostname
+                      response_host = urlsplit(str(row.get('response_url') or '')).hostname
+                  except ValueError:
+                      continue
+                  if requested_host != '4khdhub.one':
+                      continue
+                  replies.append({'host': requested_host, 'responseHost': playback.safe_host(response_host),
+                      'status': row.get('status') if type(row.get('status')) is int else None,
+                      'challenge': row.get('challenge') if row.get('challenge') in ('cloudflare', 'generic') else None,
+                      'shape': compact_response_shape(row.get('response_shape'))})
+              observations.append({'fixture': label, 'tmdbId': fixture_id,
+                                   'observationStatus': result['status'], 'replies': replies[:8]})
+          report = {'observations': observations, 'publicationAuthority': False}
+          Path('local-output/4khdhub/class-facts.json').write_text(json.dumps(report, indent=2) + '\n')
+          print('FOUR_KHDHUB_CLASS_FACTS=' + json.dumps(report, separators=(',', ':')))
+          PY
       - name: Require decoded media gain without a fixture regression
         env:
           EXPECTED_BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
@@ -117,4 +158,5 @@ jobs:
             local-output/4khdhub/**/report.json
             local-output/4khdhub/comparison.json
             local-output/4khdhub/lookup-shapes.json
+            local-output/4khdhub/class-facts.json
           retention-days: 14
