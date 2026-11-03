@@ -15,19 +15,28 @@ on:
         description: Optional archived run ID to reverify its proposal without inference
         type: string
         default: ''
+      reader_user_agent_probe:
+        description: Compare one failed reader request with a previously successful HTML User-Agent
+        type: boolean
+        default: false
+      observed_media_probe:
+        description: Sample one observed but unrequested media source after a failed long-form fixture
+        type: boolean
+        default: false
 
 permissions:
   contents: read
 
 jobs:
   repair-check:
+    # Local-only policy: never consume paid model API quota.
+    if: ${{ false }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
       TARGET_PROVIDER: ${{ inputs.provider || 'animevostfr' }}
-      BRAIN_SHA: 91db65bdae83ce79b6185e5753bf19c2650a1025
+      BRAIN_SHA: 727e108132444b6e62a71939f9e742a8193577af
       # An explicit archive replays its exact original proposal without inference.
-      # Otherwise use the current measured failures for bounded synthesis.
       REPLAY_EVIDENCE: ${{ inputs.replay_evidence || '' }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
@@ -54,7 +63,14 @@ jobs:
           test "$(git -C brain-llm rev-parse HEAD)" = "$BRAIN_SHA"
           npm ci --ignore-scripts
           node tests/media_observation.test.cjs
+          node tests/http_response_observation_test.cjs
+          node tests/reader_user_agent_probe_test.cjs
+          node tests/observed_media_probe_test.cjs
+          python tests/observed_media_evidence_test.py
+          python tests/http_response_evidence_test.py
           node tests/response_structure_test.cjs
+          node tests/address_reference_test.cjs
+          python tests/player_address_correlation_test.py
           python tests/player_markup_evidence_test.py
           python -m pip install -e brain-llm
           mkdir -p local-output/hosted-check
@@ -80,7 +96,8 @@ jobs:
       - name: Run bounded hosted repair and verification loop
         timeout-minutes: 12
         env:
-          NIAKVIO_OPENAI_API_KEY: ${{ secrets.NIAKVIO_OPENAI_API_KEY }}
+          NIAKVIO_OBSERVED_MEDIA_PROBE: ${{ inputs.observed_media_probe && '1' || '0' }}
+          NIAKVIO_READER_UA_PROBE: ${{ inputs.reader_user_agent_probe && '1' || '0' }}
           TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
           TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
         shell: bash

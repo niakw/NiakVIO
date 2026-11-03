@@ -1,0 +1,114 @@
+{
+  "brainLlmSha": "9c80e6c271d09600e0ae85baefb1b2a17f5683ad",
+  "minConfidence": 0.8,
+  "privateContentRetained": false,
+  "proofAuthority": false,
+  "providerCount": 1,
+  "providerMutationContentRetained": true,
+  "publicationAuthority": false,
+  "rows": [
+    {
+      "candidateOrdinal": 1,
+      "confidence": 0.96,
+      "failureClass": "chain-terminal-gap",
+      "mechanismFamily": "wordpress-search-episode",
+      "mutationContextFingerprint": "7338e5b91624899c82233beb8255b3d914c644d1d599ec762ae29a2c171d2493",
+      "mutationFingerprint": "d5c60b8a25669390a9defbf17d005781937abcd014b6c6f351b349477f0eb82f",
+      "mutations": [
+        {
+          "family": "wordpress_search_episode",
+          "find": " try { if (_directMedia(url)) return 5000; const parsed = new URL(url); const host = _text(parsed.hostname).toLowerCase(); const path = (parsed.pathname + parsed.search).toLowerCase(); let score = 0; if (/(?:^|\\.)(?:vcloud|hubcloud|driveseed|hubdrive|gdflix|gofile|pixeldrain|streamtape|vidmoly|filelions|filemoon|streamwish|wishfast|dood|doodstream|mixdrop|voe|lulustream|savefiles)\\./i.test(host)) score += 900; if (/(?:^|\\.)(?:abhilinks\\.(?:site|life))$/i.test(host)) score += 500; if (/\\/(?:watch|embed|player|play|video|stream|source|server|resolve|proxy|drive|download|file|files|dl|links?|redirect)(?:[/?#.-]|$)/i.test(path)) score += 420; if (/\\/archives?\\/\\d+/i.test(path)) score += 180; if (/(?:^|\\.)(?:t\\.me|telegram\\.me|facebook\\.com|instagram\\.com|twitter\\.com|x\\.com|youtube\\.com|youtu\\.be)$/i.test(host)) score -= 1600; if (/\\/(?:feed|comments?\\/feed|wp-json\\/oembed|assets?|static|images?|icons?|fonts?)(?:[/?#.-]|$)/i.test(path)) score -= 1200; if (/\\.(?:css|js|jpe?g|png|gif|webp|svg|avif|ico|woff2?|ttf)(?:[?#]|$)/i.test(path)) score -= 1600; return score; } catch (_) { return -5000; } ",
+          "operation": "upsert",
+          "replace": "try { if (_directMedia(url)) return 5000; const p=new URL(url), h=_text(p.hostname).toLowerCase(), x=(p.pathname+p.search).toLowerCase(); let s=0; if (/\\.(?:html?|php)$/i.test(p.pathname)&&!_runtimeBases().some(b=>_origin(b)===p.origin)) s+=1100; if (/(?:^|\\.)(?:vcloud|hubcloud|driveseed|hubdrive|gdflix|gofile|pixeldrain|streamtape|vidmoly|filelions|filemoon|streamwish|wishfast|dood|doodstream|mixdrop|voe|lulustream|savefiles)\\./i.test(h)) s+=900; if (/(?:^|\\.)abhilinks\\.(?:site|life)$/i.test(h)) s+=500; if (/\\/(?:watch|embed|player|play|video|stream|source|server|resolve|proxy|drive|download|file|files|dl|links?|redirect)(?:[/?#.-]|$)/i.test(x)) s+=420; if (/\\/archives?\\/\\d+/i.test(x)) s+=180; if (/(?:^|\\.)(?:t\\.me|telegram\\.me|facebook\\.com|instagram\\.com|twitter\\.com|x\\.com|youtube\\.com|youtu\\.be)$/i.test(h)) s-=1600; if (/\\/(?:feed|comments?\\/feed|wp-json\\/oembed|assets?|static|images?|icons?|fonts?)(?:[/?#.-]|$)/i.test(x)) s-=1200; if (/\\.(?:css|js|jpe?g|png|gif|webp|svg|avif|ico|woff2?|ttf)(?:[?#]|$)/i.test(x)) s-=1600; return s; } catch (_) { return -5000; }",
+          "scope": "provider_bloc"
+        }
+      ],
+      "providerId": "animevostfr",
+      "repairFamily": {
+        "archetype": "variant-coverage-gap:dom-selector-container",
+        "failure": "variant-coverage-gap",
+        "key": "276ef77a18135059b8b319827cd9910800d8c9f2c1016c6b2c481933b65d9f1c",
+        "mediaTypes": [
+          "anime"
+        ],
+        "mutationSurfaces": [
+          "provider-bloc",
+          "provider-data",
+          "provider-js",
+          "provider-patch"
+        ],
+        "signals": [
+          "mixed-tag-nested-container",
+          "nested-anchor-html",
+          "provider-http-2xx",
+          "response-html",
+          "response-json"
+        ],
+        "stages": [
+          "provider-network-zero-result"
+        ],
+        "status": "candidate-ok",
+        "version": 2
+      },
+      "strategy": "terminal-media-extractor-with-playback-validation",
+      "targetLayer": "provider",
+      "tests": [
+        "replay_proven_chain_to_terminal_media",
+        "validate_media_signature_duration_and_identity"
+      ]
+    },
+    {
+      "candidateOrdinal": 1,
+      "confidence": 0.96,
+      "failureClass": "chain-terminal-gap",
+      "mechanismFamily": "wordpress-search-episode",
+      "mutationContextFingerprint": "7338e5b91624899c82233beb8255b3d914c644d1d599ec762ae29a2c171d2493",
+      "mutationFingerprint": "3eba2636ebc87cdcc67ea8d9d9f530f772e158866f3e8d67ecbf9d783b361e63",
+      "mutations": [
+        {
+          "family": "wordpress_search_episode",
+          "find": " try { if (_directMedia(url)) return true; if (_incompletePlayerUrl(url)) return false; const parsed = new URL(url); if (!/^https?:$/i.test(parsed.protocol)) return false; const host = _text(parsed.hostname).toLowerCase(); const path = (parsed.pathname + parsed.search).toLowerCase(); const hash = _text(parsed.hash).toLowerCase(); if (/^#(?:comments?|respond|reply|share)/i.test(hash)) return false; if (/(?:^|\\.)(?:t\\.me|telegram\\.me|facebook\\.com|instagram\\.com|twitter\\.com|x\\.com|youtube\\.com|youtu\\.be)$/i.test(host)) return false; if (/\\/(?:feed|comments?\\/feed|wp-json(?:\\/|$)|wp-admin|admin|login|register|signin|signup|collapse|assets?|static|images?|icons?|fonts?)(?:[/?#.-]|$)/i.test(path)) return false; if (/\\.(?:css|js|jpe?g|png|gif|webp|svg|avif|ico|woff2?|ttf)(?:[?#]|$)/i.test(path)) return false; if (/(?:\\+t\\.uri|code%3a|message%3a|xhr%3a|\\{status:)/i.test(path)) return false; return _playerLike(url) || _crawlUrlScore(url) > 0; } catch (_) { return false; } ",
+          "operation": "upsert",
+          "replace": "try { if (_directMedia(url)) return true; if (_incompletePlayerUrl(url)) return false; const parsed = new URL(url); if (!/^https?:$/i.test(parsed.protocol)) return false; const host = _text(parsed.hostname).toLowerCase(); const path = (parsed.pathname + parsed.search).toLowerCase(); const hash = _text(parsed.hash).toLowerCase(); if (/^#(?:comments?|respond|reply|share)/i.test(hash)) return false; if (/(?:^|\\.)(?:t\\.me|telegram\\.me|facebook\\.com|instagram\\.com|twitter\\.com|x\\.com|youtube\\.com|youtu\\.be)$/i.test(host)) return false; if (/\\/(?:feed|comments?\\/feed|wp-json(?:\\/|$)|wp-admin|admin|login|register|signin|signup|collapse|assets?|static|images?|icons?|fonts?)(?:[/?#.-]|$)/i.test(path)) return false; if (/\\.(?:css|js|jpe?g|png|gif|webp|svg|avif|ico|woff2?|ttf)(?:[?#]|$)/i.test(path)) return false; if (/(?:\\+t\\.uri|code%3a|message%3a|xhr%3a|\\{status:)/i.test(path)) return false; return _playerLike(url) || _crawlUrlScore(url) > 0 || (!_runtimeBases().some(base => _origin(base) === parsed.origin) && (parsed.pathname !== '/' || !!parsed.search)); } catch (_) { return false; }",
+          "scope": "provider_bloc"
+        }
+      ],
+      "providerId": "animevostfr",
+      "repairFamily": {
+        "archetype": "variant-coverage-gap:dom-selector-container",
+        "failure": "variant-coverage-gap",
+        "key": "276ef77a18135059b8b319827cd9910800d8c9f2c1016c6b2c481933b65d9f1c",
+        "mediaTypes": [
+          "anime"
+        ],
+        "mutationSurfaces": [
+          "provider-bloc",
+          "provider-data",
+          "provider-js",
+          "provider-patch"
+        ],
+        "signals": [
+          "mixed-tag-nested-container",
+          "nested-anchor-html",
+          "provider-http-2xx",
+          "response-html",
+          "response-json"
+        ],
+        "stages": [
+          "provider-network-zero-result"
+        ],
+        "status": "candidate-ok",
+        "version": 2
+      },
+      "strategy": "terminal-media-extractor-with-playback-validation",
+      "targetLayer": "provider",
+      "tests": [
+        "replay_proven_chain_to_terminal_media",
+        "validate_media_signature_duration_and_identity"
+      ]
+    }
+  ],
+  "sandboxMutationAuthority": true,
+  "schemaVersion": 1,
+  "sourceNiakvioSha": "c290286b557c74a4020dcc6d15ccc793013f8a23"
+}

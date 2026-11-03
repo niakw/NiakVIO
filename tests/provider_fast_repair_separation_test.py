@@ -71,7 +71,7 @@ for required in (
     "learning_dispatch=false reason=github_api_unavailable persisted=true",
     "owner=persisted-fast-handoff",
     "gh workflow run brain-learning-lab.yml",
-    '-f target_providers="$learn_handoff_csv"',
+    '-f target_providers="$eligible_csv"',
     "Import sanitized persistent Learning and Brain LLM priors",
     "scripts/import_external_brain_llm_guidance.py",
     "NiakVIO-Brain-LLM.git",

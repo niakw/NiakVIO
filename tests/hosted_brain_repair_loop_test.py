@@ -42,7 +42,11 @@ with tempfile.TemporaryDirectory() as directory:
         value = lambda key: Path(command[command.index(key) + 1])
         if script == 'plan_batch_from_checkout.py':
             count += 1
-            assert options['env']['NIAKVIO_OPENAI_API_KEY'] == 'test-only'
+            assert 'NIAKVIO_OPENAI_API_KEY' not in options['env']
+            assert 'OPENAI_API_KEY' not in options['env']
+            assert 'NIAKVIO_ALLOW_PAID_API' not in options['env']
+            assert command[command.index('--backend') + 1] == 'local'
+            assert command[command.index('--endpoint') + 1] == 'http://127.0.0.1:8080'
             if count == 2:
                 context = json.loads(value('--live-evidence').read_text())
                 assert len(context['previous_executed_edits']) == 2
