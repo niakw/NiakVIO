@@ -10,7 +10,7 @@ from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'scripts'))
-from http_response_evidence import public_http_observation, public_http_evidence, public_reader_probe
+from http_response_evidence import public_http_observation, public_http_evidence, public_reader_probe, public_network_error_code
 import capture_brain_live_context as capture
 import evaluate_brain_llm_force_candidates as verifier
 from run_hosted_brain_repair_loop import verification_feedback
@@ -19,6 +19,7 @@ code = '''
 const {observeHttpResponse,safeHttpFacts}=require('./scripts/http_response_observation.cjs');
 const {createReaderUserAgentProbe,safeReaderProbe}=require('./scripts/reader_user_agent_probe.cjs');
 const {safeAddressFields}=require('./scripts/address_reference.cjs');
+const {safeObservedMediaProbe}=require('./scripts/observed_media_probe.cjs');
 const {safeMediaFacts}=require('./scripts/media_observation.cjs');
 const fs=require('node:fs');
 (async()=>{
@@ -32,7 +33,7 @@ const fs=require('node:fs');
  const end=source.indexOf('      settings_diagnostics:',begin);
  if(begin<0||end<0) throw new Error('health projection unavailable');
  const expression=source.slice(begin+'network_observations: '.length,end).trim().replace(/,$/,'');
- const normalize=new Function('worker','safeMediaFacts','safeHttpFacts','safeReaderProbe','safeAddressFields','sanitizeError','return ('+expression+');');
+ const normalize=new Function('worker','safeMediaFacts','safeHttpFacts','safeReaderProbe','safeAddressFields','safeObservedMediaProbe','sanitizeError','return ('+expression+');');
  const event={stage:'player',status:403,host:'reader.test',http_observation:{...facts,raw_body:'PRIVATE'}};
  const probe=createReaderUserAgentProbe({fetch:async()=>new Response('Access denied PRIVATE',{status:403,headers:{'content-type':'text/html'}})});
  probe.record(new Response('html',{headers:{'content-type':'text/html'}}),'https://private.test/ok',
@@ -41,7 +42,7 @@ const fs=require('node:fs');
   {headers:{'User-Agent':'failed profile','Referer':'https://private.test/PRIVATE'}},event);
  await probe.flush();
  const worker={network_observations:[event]};
- const row=normalize(worker,safeMediaFacts,safeHttpFacts,safeReaderProbe,safeAddressFields,()=>null)[0];
+ const row=normalize(worker,safeMediaFacts,safeHttpFacts,safeReaderProbe,safeAddressFields,safeObservedMediaProbe,()=>null)[0];
  if(!row.http_observation) throw new Error('health projection dropped HTTP diagnostics');
  if(JSON.stringify(row.http_observation).includes('PRIVATE')) throw new Error('health projection leaked raw values');
  console.log(JSON.stringify({http:row.http_observation,probe:row.reader_user_agent_probe}));
@@ -105,4 +106,10 @@ for value in ({**forged, 'sampled_bytes': 999999}, {key: ['PRIVATE'] for key in 
     assert 0 <= clean['sampled_bytes'] <= 8192
     assert public_http_observation(clean) == clean
     assert 'PRIVATE' not in json.dumps(clean) and 'private.test' not in json.dumps(clean)
+for code in ('ENOTFOUND', 'ECONNRESET', 'UND_ERR_CONNECT_TIMEOUT', 'CERT_HAS_EXPIRED'):
+    transport = verification_feedback({'rows': [{'executionObserved': True, 'candidate': {
+        'networkTrace': [{'host': 'provider.test', 'stage': 'content_lookup', 'status': None, 'errorCode': code}]}}]})
+    assert transport['candidate_network'][0]['error_code'] == code
+for code in ('PRIVATE', 'https://private.test/PRIVATE', ['PRIVATE'], {}, True):
+    assert public_network_error_code(code) is None
 print('HTTP evidence: real producer -> preflight/evaluation -> public receipt -> feedback, privacy and source matching passed')

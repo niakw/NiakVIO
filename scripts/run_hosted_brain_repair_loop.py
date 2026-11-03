@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Bounded hosted propose -> external verification -> negative feedback loop."""
+"""Bounded local propose -> external verification -> negative feedback loop."""
 from __future__ import annotations
 import argparse
 import json
@@ -8,14 +8,16 @@ import shutil
 import subprocess
 import sys
 import time
+from urllib.parse import urlsplit
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT / 'scripts') not in sys.path:
     sys.path.insert(0, str(ROOT / 'scripts'))
 
-from http_response_evidence import public_http_observation, public_reader_probe
+from http_response_evidence import public_http_observation, public_reader_probe, public_network_error_code
 from address_reference_evidence import public_address_fields
+from observed_media_evidence import public_observed_media_probe
 
 def should_replan(evaluation: dict, attempt: int, limit: int) -> bool:
     return (
@@ -38,12 +40,15 @@ def verification_feedback(evaluation: dict) -> dict:
     result['candidate_network'] = [{
         **public_address_fields(event),
         'host': event.get('host'), 'stage': event.get('stage'), 'status': event.get('status'),
+        'error_code': public_network_error_code(event.get('errorCode')),
         'fixture': event.get('fixture'),
         'functions': event.get('providerFunctions', []),
         'response_structure': event.get('responseStructure'),
         'media_observation': event.get('mediaObservation'),
         'http_observation': public_http_observation(event.get('httpObservation')),
         'reader_user_agent_probe': public_reader_probe(event.get('readerUserAgentProbe')) or None,
+        'observed_media_probe': public_observed_media_probe(event.get('observedMediaProbe'))
+            if public_address_fields(event) else None,
         'announced_players': event.get('announcedPlayerCandidates', 0),
     } for event in (row.get('candidate') or {}).get('networkTrace', [])[-12:]]
     omitted = {event.get('address_scope') for event in (row.get('candidate') or {}).get('networkTrace', [])[:-12]}
@@ -90,7 +95,12 @@ def main() -> int:
     parser.add_argument('--max-attempts', type=int, default=3)
     parser.add_argument('--budget-seconds', type=int, default=600)
     parser.add_argument('--replay-mutations', type=Path)
+    parser.add_argument('--endpoint', default=os.environ.get('NIAKVIO_LLM_ENDPOINT', 'http://127.0.0.1:8080'))
     args = parser.parse_args()
+    endpoint = urlsplit(args.endpoint)
+    if (endpoint.scheme not in {'http', 'https'} or endpoint.hostname not in {'127.0.0.1', 'localhost', '::1'}
+            or endpoint.username or endpoint.password or endpoint.query or endpoint.fragment):
+        raise ValueError('repair generation requires a local loopback model; paid API fallback is disabled')
     out = args.output.resolve()
     brain = args.brain_root.resolve()
     source_sha = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True).strip()
@@ -153,9 +163,8 @@ def main() -> int:
         if remaining < 10:
             raise TimeoutError('hosted repair loop budget exhausted')
         env = os.environ.copy()
-        if not inference:
-            for key in ('NIAKVIO_OPENAI_API_KEY', 'OPENAI_API_KEY'):
-                env.pop(key, None)
+        for key in ('NIAKVIO_OPENAI_API_KEY', 'OPENAI_API_KEY', 'NIAKVIO_ALLOW_PAID_API'):
+            env.pop(key, None)
         subprocess.run([sys.executable, str(script), *map(str, values)], cwd=ROOT,
                        env=env, check=True, timeout=remaining)
 
@@ -169,7 +178,7 @@ def main() -> int:
             run(brain / 'scripts/plan_batch_from_checkout.py',
                 '--niakvio-root', ROOT, '--experience', out / 'experience.jsonl',
                 '--documents', out / 'documents.jsonl', '--mode', 'repair',
-                '--provider', args.provider, '--backend', 'hosted', '--workers', '1',
+                '--provider', args.provider, '--backend', 'local', '--endpoint', args.endpoint, '--workers', '1',
                 '--max-hypotheses', '1', '--max-tokens', '4096', '--timeout-seconds', '120',
                 '--force-provider-budget-seconds', '180', '--live-evidence', context,
                 '--output', batch, inference=True)

@@ -22,6 +22,7 @@ jobs:
   evidence:
     if: >-
       (github.event_name == 'workflow_run' &&
+       github.event.workflow_run.conclusion != 'skipped' &&
        github.event.workflow_run.head_repository.full_name == github.repository &&
        contains(fromJSON('["main","codex/niakvio-brain-reliability"]'), github.event.workflow_run.head_branch)) ||
       (github.event_name != 'workflow_run' &&
@@ -101,6 +102,7 @@ jobs:
           from pathlib import Path
           from scripts.http_response_evidence import public_http_observation, public_http_evidence, public_reader_probe
           from scripts.address_reference_evidence import public_address_fields
+          from scripts.observed_media_evidence import public_observed_media_probe
           from scripts.player_markup_evidence import project_player_markup
           def address_structure(event):
               structure = event.get('responseStructure')
@@ -128,6 +130,8 @@ jobs:
                           'providerFunctions', 'mediaObservation',
                       )}, **public_address_fields(event), 'responseStructure': address_structure(event),
                           'httpObservation': public_http_observation(event.get('httpObservation')),
+                          'observedMediaProbe': public_observed_media_probe(event.get('observedMediaProbe'))
+                              if public_address_fields(event) else None,
                           'readerUserAgentProbe': public_reader_probe(event.get('readerUserAgentProbe'))}
                       for event in value.get('networkTrace', [])[:64]
                   ]

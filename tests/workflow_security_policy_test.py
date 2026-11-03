@@ -89,6 +89,12 @@ if '460c45fa8a9ebc36c9b08e3a15c06dbdbeb312c6308599521c84d9e7f92a268b' not in bra
 if 'sha256sum -c -' not in brain_learning:
     errors.append('brain-learning-lab.yml: downloaded llama.cpp executable archive must be verified before extraction')
 
+# A skipped hosted producer cannot upload the artifact expected by its
+# workflow_run consumer. Preserve failed-run diagnostics and manual replay.
+hosted_evidence = (WORKFLOWS / 'brain-hosted-evidence-report.yml').read_text(encoding='utf-8')
+if "github.event.workflow_run.conclusion != 'skipped'" not in hosted_evidence:
+    errors.append('brain-hosted-evidence-report.yml: skipped producer must not trigger artifact download')
+
 if errors:
     raise SystemExit('workflow security policy failed:\n- ' + '\n- '.join(errors))
 print('workflow security policy tests passed')

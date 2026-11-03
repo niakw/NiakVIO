@@ -19,6 +19,7 @@ from run_hosted_brain_repair_loop import verification_feedback
 code = r'''
 const fs=require('node:fs');
 const {createAddressReferences,safeAddressFields}=require('./scripts/address_reference.cjs');
+const {safeObservedMediaProbe}=require('./scripts/observed_media_probe.cjs');
 const {responseStructure}=require('./scripts/response_structure.cjs');
 const {safeHttpFacts}=require('./scripts/http_response_observation.cjs');
 const {safeReaderProbe}=require('./scripts/reader_user_agent_probe.cjs');
@@ -44,8 +45,8 @@ const begin=source.indexOf('network_observations: Array.isArray(worker.network_o
 const end=source.indexOf('      settings_diagnostics:',begin);
 if(begin<0||end<0)throw new Error('production projection unavailable');
 const expression=source.slice(begin+'network_observations: '.length,end).trim().replace(/,$/,'');
-const normalize=new Function('worker','safeMediaFacts','safeHttpFacts','safeReaderProbe','safeAddressFields','sanitizeError','return ('+expression+');');
-console.log(JSON.stringify({scope:refs.scope,events:normalize({network_observations:events},safeMediaFacts,safeHttpFacts,safeReaderProbe,safeAddressFields,()=>null)}));
+const normalize=new Function('worker','safeMediaFacts','safeHttpFacts','safeReaderProbe','safeAddressFields','safeObservedMediaProbe','sanitizeError','return ('+expression+');');
+console.log(JSON.stringify({scope:refs.scope,events:normalize({network_observations:events},safeMediaFacts,safeHttpFacts,safeReaderProbe,safeAddressFields,safeObservedMediaProbe,()=>null)}));
 '''
 produced = json.loads(subprocess.check_output(['node', '-e', code], cwd=ROOT, text=True))
 assert 'PRIVATE' not in json.dumps(produced)

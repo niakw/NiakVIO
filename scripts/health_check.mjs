@@ -23,6 +23,8 @@ const { safeMediaFacts } = require('./media_observation.cjs');
 const { safeHttpFacts } = require('./http_response_observation.cjs');
 const { safeReaderProbe } = require('./reader_user_agent_probe.cjs');
 const { safeAddressFields } = require('./address_reference.cjs');
+const { safeObservedMediaProbe } = require('./observed_media_probe.cjs');
+const { decodeVideoSample } = require('./media_sample_decode.cjs');
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const STAGE = path.resolve(process.env.NUVIO_STAGE || path.join(ROOT, 'staging'));
@@ -250,6 +252,7 @@ function parseHls(text, baseUrl) {
   let maxBandwidth = null;
   let totalDurationSeconds = 0;
   let durationEntryCount = 0;
+  let initSegment = null;
   const lines = String(text || '').split(/\r?\n/);
   const hasHeader = lines.some((line) => line.trim() === '#EXTM3U');
   const isVod = lines.some((line) => line.trim() === '#EXT-X-ENDLIST');
@@ -261,6 +264,11 @@ function parseHls(text, baseUrl) {
       if (Number.isFinite(duration) && duration >= 0) {
         totalDurationSeconds += duration;
         durationEntryCount += 1;
+      }
+    } else if (line.startsWith('#EXT-X-MAP:')) {
+      const attrs = parseAttributeList(line.slice('#EXT-X-MAP:'.length));
+      if (attrs.URI) {
+        try { initSegment = new URL(attrs.URI, baseUrl).href; } catch {}
       }
     } else if (line.startsWith('#EXT-X-STREAM-INF:')) {
       const attrs = parseAttributeList(line.slice('#EXT-X-STREAM-INF:'.length));
@@ -333,6 +341,7 @@ function parseHls(text, baseUrl) {
     maxBandwidth,
     bestVariant: variants[0] || null,
     firstSegment: segments[0] || null,
+    initSegment,
     isVod,
     totalDurationSeconds: durationEntryCount ? totalDurationSeconds : null,
     durationEntryCount,
@@ -652,6 +661,7 @@ async function probeStream(stream, mode, fixture = null) {
   let mediaDurationSeconds = null;
   let durationIdentityAuthoritative = false;
   let shortVodPreview = false;
+  let mediaDecode = null;
   let contentIdentity = streamIdentity(stream, fixture || {});
 
   const reported = qualityToHeight(`${stream.quality || ''} ${stream.title || ''} ${stream.url || ''}`);
@@ -792,6 +802,15 @@ async function probeStream(stream, mode, fixture = null) {
             const segmentClass = classifyHttp(segment);
             segmentReachable = segmentClass.endpointReachable
               && !['html', 'json', 'empty', 'subtitle'].includes(segmentClass.kind);
+            if (segmentReachable && mode.verify_media_decode === true) {
+              let sample = segment.body;
+              if (mediaPlaylist.initSegment) {
+                const initialization = await fetchProbe(mediaPlaylist.initSegment, stream.headers || {}, timeoutMs, 65536);
+                if (!initialization.ok) throw new Error('media initialization unavailable');
+                sample = Buffer.concat([initialization.body, sample]);
+              }
+              mediaDecode = await decodeVideoSample(sample);
+            }
           } catch {
             segmentReachable = false;
           }
@@ -821,6 +840,7 @@ async function probeStream(stream, mode, fixture = null) {
       directSignatureVerified = true;
       payloadVerified = true;
       playbackVerified = true;
+      if (mode.verify_media_decode === true) mediaDecode = await decodeVideoSample(result.body);
       if (kind === 'mp4' && mode.inspect_direct_dimensions === true) {
         verifiedHeights.push(...parseMp4TrackHeights(result.body));
         mediaDurationSeconds = parseMp4MovieDurationSeconds(result.body);
@@ -930,6 +950,7 @@ async function probeStream(stream, mode, fixture = null) {
       playback_verified: playbackVerified,
       payload_verified: payloadVerified,
       direct_signature_verified: directSignatureVerified,
+      media_decode: mediaDecode,
       category: playbackCategory(playbackVerified, contentIdentity.status, durationIdentityMismatch, shortVodPreview, classification.category),
       http_status: result.status,
       kind,
@@ -1172,6 +1193,7 @@ function executionContextForCandidate(candidate) {
     singleProfileZeroStreamPreflight: modeConfig.zero_stream_preflight === true && !Boolean(metadata.hasSettings),
     routeProofTrace: modeConfig.route_proof_trace === true,
     readerUserAgentProbe: modeConfig.reader_user_agent_probe === true,
+    observedMediaProbe: modeConfig.observed_media_probe === true,
     networkLimits: {
       maxFetches: Number(modeConfig.max_provider_fetches || 30),
       maxRedirects: Number(modeConfig.max_redirects || 5),
@@ -1195,7 +1217,7 @@ function runWorker(candidate, fixture) {
     const providerPath = path.join(STAGE, candidate.local_path);
     const timeoutMs = Number(modeConfig.provider_timeout_ms || 45000);
     const context = { ...executionContextForCandidate(candidate), fixtureMetadata: fixture };
-    if (context.readerUserAgentProbe === true) context.providerDeadlineAtMs = Date.now() + timeoutMs;
+    if (context.readerUserAgentProbe === true || context.observedMediaProbe === true) context.providerDeadlineAtMs = Date.now() + timeoutMs;
     const nodeMajor = Number(String(process.versions.node || '').split('.')[0]) || 0;
     const permissionArgs = [
       '--permission',
@@ -1662,6 +1684,7 @@ async function testCandidate(candidate) {
         media_observation: safeMediaFacts(item.media_observation),
         http_observation: safeHttpFacts(item.http_observation),
         reader_user_agent_probe: safeReaderProbe(item.reader_user_agent_probe),
+        observed_media_probe: safeAddressFields(item).address_scope ? safeObservedMediaProbe(item.observed_media_probe) : null,
         provider_function_names: Array.isArray(item.provider_function_names)
           ? item.provider_function_names.filter(name => /^[A-Za-z_$][\w$]{0,63}$/.test(name)).slice(0, 8) : [],
         stage: item.stage || 'provider_fetch',
@@ -1786,6 +1809,17 @@ async function testCandidate(candidate) {
           content_identity_status: probe.content_identity_status || 'unknown',
           content_identity_reason: probe.content_identity_reason || null,
           duration_identity_mismatch: Boolean(probe.duration_identity_mismatch),
+          bytes_sampled: Number.isFinite(probe.bytes_sampled) ? probe.bytes_sampled : 0,
+          direct_signature_verified: probe.direct_signature_verified === true,
+          variant_reachable: probe.variant_reachable ?? null,
+          segment_reachable: probe.segment_reachable ?? null,
+          audio_manifest_reachable: probe.audio_manifest_reachable ?? null,
+          audio_segment_reachable: probe.audio_segment_reachable ?? null,
+          media_duration_seconds: Number.isFinite(probe.media_duration_seconds) ? probe.media_duration_seconds : null,
+          expected_duration_seconds: Number.isFinite(probe.expected_duration_seconds) ? probe.expected_duration_seconds : null,
+          duration_identity_authoritative: probe.duration_identity_authoritative === true,
+          short_vod_preview: probe.short_vod_preview === true,
+          media_decode: probe.media_decode || null,
         })),
       response_categories: [...new Set(probes.map((probe) => probe.category).filter(Boolean))].sort(compareText),
       median_probe_latency_ms: median(playable.map((probe) => probe.latency_ms)),

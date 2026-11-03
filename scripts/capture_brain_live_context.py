@@ -7,8 +7,10 @@ import re
 import subprocess
 from pathlib import Path
 import evaluate_brain_llm_force_candidates as verifier
-from http_response_evidence import public_http_observation, public_reader_probe
+from http_response_evidence import public_http_observation, public_reader_probe, public_network_error_code
 from address_reference_evidence import public_address_fields, address_scope
+from observed_media_evidence import public_observed_media_probe
+
 
 def script_shell_only(events):
     replies = [event for event in events if event.get('ok') and event.get('response_structure')]
@@ -33,6 +35,33 @@ def provider_owned_function_names(stage, provider):
     return set(re.findall(r'\b(?:async\s+)?function\s+([A-Za-z_$][\w$]*)\s*\(', source))
 
 
+def diverse_execution_events(events):
+    """Keep distinct response shapes ahead of repeated fallback requests.
+
+    Return every event so truncation accounting still covers omitted addresses.
+    The existing failure/media order decides which event represents each shape.
+    """
+    distinct, repeated, seen = [[], []], [[], []], set()
+    for event in events:
+        shape = event.get('response_structure') or {}
+        fields = tuple(sorted((str(field.get('path')), str(field.get('type')))
+                              for field in shape.get('fields', [])[:48]
+                              if isinstance(field, dict)))
+        html = json.dumps({key: shape[key] for key in
+                           ('tags', 'variables', 'inline_fields', 'script_resources')
+                           if key in shape}, sort_keys=True)
+        group = 0 if event.get('fixture_failed') else 1
+        signature = (str(event.get('fixture_label')), str(event.get('host')),
+                     str(event.get('stage')), str(event.get('status')),
+                     str(event.get('error_code')), str(shape.get('kind')), fields, html, group)
+        if signature in seen:
+            repeated[group].append(event)
+        else:
+            seen.add(signature)
+            distinct[group].append(event)
+    return distinct[0] + repeated[0] + distinct[1] + repeated[1]
+
+
 def prioritized_execution(result, owned_names=None):
     events = [{**event, 'fixture_label': (test.get('fixture') or {}).get('label'), 'observation_index': index,
                'fixture_failed': int(test.get('streams_playable') or 0) == 0}
@@ -42,6 +71,7 @@ def prioritized_execution(result, owned_names=None):
         bool(row['fixture_failed']), {'media': 4, 'source': 3, 'player': 2, 'episode': 1}.get(str(row.get('stage')), 0),
         row['observation_index'],
     ), reverse=True)
+    events = diverse_execution_events(events)
     buckets = [[], [], [], []]
     for event in events:
         for name in event.get('provider_function_names', []):
@@ -90,10 +120,13 @@ def main():
             'fixture': event.get('fixture_label'),
             'stage': event.get('stage'), 'host': event.get('host'),
             'status': event.get('status'), 'functions': event.get('provider_function_names', [])[:8],
+            'error_code': public_network_error_code(event.get('error_code')),
             'response_structure': event.get('response_structure'),
             'media_observation': event.get('media_observation'),
             'http_observation': public_http_observation(event.get('http_observation')),
             'reader_user_agent_probe': public_reader_probe(event.get('reader_user_agent_probe')) or None,
+            'observed_media_probe': public_observed_media_probe(event.get('observed_media_probe'))
+                if public_address_fields(event) else None,
             'announced_players': int(event.get('declared_player_candidate_count') or 0),
         } for event in events[:12]],
         'streams_playable': verifier.runtime_repair.playable_stream_count(result),

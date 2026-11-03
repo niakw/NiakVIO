@@ -1,17 +1,17 @@
 {
   "schema_version": 63,
-  "generated_at": "2026-11-01T20:39:39.263224+00:00",
+  "generated_at": "2026-11-03T02:30:43.813255+00:00",
   "test_environment": "github-actions-node",
   "checked_providers": 41,
   "status_counts": {
-    "healthy": 5,
+    "healthy": 3,
     "reachable": 0,
     "blocked": 6,
     "degraded": 1,
-    "no_streams": 9,
-    "provider_unreachable": 15,
+    "no_streams": 10,
+    "provider_unreachable": 14,
     "runtime_error": 0,
-    "unavailable": 5,
+    "unavailable": 7,
     "excluded": 0
   },
   "policy": {
@@ -559,18 +559,14 @@
     },
     {
       "id": "hindmoviez",
-      "status": "healthy",
+      "status": "no_streams",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
-      "consecutive_successes": 1,
-      "hosts": [
-        "share.cennacobeupo-2111.workers.dev"
-      ],
-      "response_categories": [
-        "playable"
-      ],
+      "consecutive_successes": 0,
+      "hosts": [],
+      "response_categories": [],
       "host_health": {
         "share.kujeucoixeti-6043.workers.dev": {
           "last_checked_at": "2026-11-01T20:39:39.263224+00:00",
@@ -1626,7 +1622,7 @@
     },
     {
       "id": "animesultra",
-      "status": "provider_unreachable",
+      "status": "unavailable",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
@@ -2493,18 +2489,14 @@
     },
     {
       "id": "sekai",
-      "status": "healthy",
+      "status": "no_streams",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
-      "consecutive_successes": 2,
-      "hosts": [
-        "5.mugiwara.one"
-      ],
-      "response_categories": [
-        "playable"
-      ],
+      "consecutive_successes": 0,
+      "hosts": [],
+      "response_categories": [],
       "host_health": {
         "4.mugiwara.one": {
           "last_checked_at": "2026-11-01T20:39:39.263224+00:00",
@@ -3104,17 +3096,21 @@
     },
     {
       "id": "wookafr",
-      "status": "no_streams",
+      "status": "unavailable",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
-      "consecutive_successes": 0,
-      "hosts": [],
-      "response_categories": [],
+      "consecutive_successes": 1,
+      "hosts": [
+        "wishonly.site"
+      ],
+      "response_categories": [
+        "playable"
+      ],
       "host_health": {
         "lecteurvideo.com": {
-          "last_checked_at": "2026-11-01T15:20:51.404531+00:00",
+          "last_checked_at": "2026-11-02T06:30:54.422794+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -3125,7 +3121,7 @@
           "consecutive_blocked": 0
         },
         "strm6.uqload.vc": {
-          "last_checked_at": "2026-11-01T15:20:51.404531+00:00",
+          "last_checked_at": "2026-11-02T06:30:54.422794+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -3136,7 +3132,7 @@
           "consecutive_blocked": 0
         },
         "strm5.uqload.vc": {
-          "last_checked_at": "2026-11-01T15:20:51.404531+00:00",
+          "last_checked_at": "2026-11-02T06:30:54.422794+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -3147,18 +3143,18 @@
           "consecutive_blocked": 0
         },
         "wishonly.site": {
-          "last_checked_at": "2026-11-01T15:20:51.404531+00:00",
-          "last_category": "not_returned",
-          "reachable": false,
-          "http_status": null,
-          "latency_ms": null,
+          "last_checked_at": "2026-11-02T06:30:54.422794+00:00",
+          "last_category": "playable",
+          "reachable": true,
+          "http_status": 200,
+          "latency_ms": 308,
           "kind": "hls",
           "consecutive_hard_failures": 0,
-          "consecutive_successes": 0,
+          "consecutive_successes": 1,
           "consecutive_blocked": 0
         },
         "strm4.uqload.vc": {
-          "last_checked_at": "2026-11-01T15:20:51.404531+00:00",
+          "last_checked_at": "2026-11-02T06:30:54.422794+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -3169,7 +3165,7 @@
           "consecutive_blocked": 0
         },
         "strm7.uqload.vc": {
-          "last_checked_at": "2026-11-01T15:20:51.404531+00:00",
+          "last_checked_at": "2026-11-02T06:30:54.422794+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -3180,7 +3176,7 @@
           "consecutive_blocked": 0
         },
         "strm1.uqload.vc": {
-          "last_checked_at": "2026-11-01T15:20:51.404531+00:00",
+          "last_checked_at": "2026-11-02T06:30:54.422794+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -3191,14 +3187,14 @@
           "consecutive_blocked": 0
         },
         "strm8.uqload.vc": {
-          "last_checked_at": "2026-11-01T15:20:51.404531+00:00",
-          "last_category": "playable",
-          "reachable": true,
-          "http_status": 200,
-          "latency_ms": 686,
+          "last_checked_at": "2026-11-02T06:30:54.422794+00:00",
+          "last_category": "not_returned",
+          "reachable": false,
+          "http_status": null,
+          "latency_ms": null,
           "kind": "hls",
           "consecutive_hard_failures": 0,
-          "consecutive_successes": 1,
+          "consecutive_successes": 0,
           "consecutive_blocked": 0
         }
       },

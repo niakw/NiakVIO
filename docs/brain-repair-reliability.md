@@ -434,3 +434,42 @@ l'audit de confidentialité passent ; le workflow épingle
 Le prochain push rejoue le candidat du run 41257855269, sans inférence ni
 modification manuelle du provider, afin d'observer la couverture réelle des
 lecteurs. Aucune réparation de lecture n'est déduite des seules références.
+
+Le [rejeu 41363674646](https://github.com/niakw/NiakVIO/actions/runs/41363674646)
+relie quatre choix observés (iframe affichée et trois entrées) à quatre pages
+de lecteur atteintes par le candidat : deux adresses Sendvid et deux adresses
+Sibnet. Les deux Sibnet renvoient 403. Les deux sources Sendvid effectivement
+sondées sont des MP4 mesurés à cinq secondes. La trace et la table sont complètes
+pour ce relevé ; ces quatre choix observés ne sont donc pas ignorés par le candidat.
+
+Lors d'une seconde lecture de page Sendvid par le contrôle d'identité, une autre
+référence média apparaît sans requête média correspondante. Cela peut être un
+renouvellement de signature, pas nécessairement une autre vidéo. Un diagnostic
+optionnel `NIAKVIO_OBSERVED_MEDIA_PROBE=1` vérifie cette hypothèse : après un
+épisode long sans flux et un MP4 court mesuré, il peut sonder une source HTTP
+`source`/`video` réellement observée mais non demandée, sur la même page parente.
+
+Le contrôle réutilise les en-têtes non sensibles d'une sonde média antérieure,
+sans Cookie/Authorization, avec Range borné à 32768 octets. Un seul GET, 2500 ms
+au maximum, réduit au budget restant en réservant 500 ms pour la sortie. Les
+corps antérieurs et le verdict du provider sont préservés. Aucun flux diagnostic
+n'entre dans les compteurs de lecture. Seuls références opaques, statut et faits
+média/HTTP bornés sont archivés ; les valeurs d'adresse restent en mémoire.
+Les tests couvrent le préfixe, les délais, l'annulation, les en-têtes, les scopes,
+la confidentialité et le parcours réel de projection. Le rejeu reste sans inférence
+ni modification manuelle du provider.
+
+Le [rejeu 41397746341](https://github.com/niakw/NiakVIO/actions/runs/41397746341)
+a sondé cette référence supplémentaire dans la baseline et le candidat : HTTP
+206, signature MP4, durée annoncée de cinq secondes, préfixe de 32768 octets.
+L'annulation était encore `requested` lors de l'export ; cela ne prouve ni une
+lecture complète ni une annulation achevée. Le diagnostic n'ajoute aucun flux
+lisible et le candidat reste refusé. Les deux lecteurs Sibnet restent en 403.
+
+Le Brain conserve désormais ce diagnostic dans ses deux canaux de contexte,
+même s'il est attaché à une réponse répétée tardive, sans dépasser huit événements.
+Ses 343 tests et l'audit de confidentialité passent. Le workflow épingle
+`727e108132444b6e62a71939f9e742a8193577af`, reprend la synthèse normale et rend
+la sonde média explicitement optionnelle, désactivée par défaut. Une annulation
+asynchrone dispose de 100 ms au maximum pour se terminer avant l'export, toujours
+à l'intérieur du délai global. Aucun résultat n'est transformé en preuve de lecture.
