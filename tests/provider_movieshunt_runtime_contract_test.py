@@ -2,6 +2,7 @@
 from pathlib import Path
 import json
 import subprocess
+from urllib.parse import urlsplit
 
 ROOT = Path(__file__).resolve().parents[1]
 src = (ROOT / "scripts/provider_patches/movieshunt_runtime_v1.py").read_text(encoding="utf-8")
@@ -25,15 +26,22 @@ for needle in (
 ):
     assert needle.lower() in src.lower(), needle
 
-assert hubs["direct"] == "https://movieshunt.run/"
+site = ov["official_site"].rstrip('/')
+origin = urlsplit(site)
+assert origin.scheme == 'https' and origin.hostname in hubs['allowed_terminal_hosts']
+assert not origin.username and not origin.password and not origin.query and not origin.fragment
+assert hubs["direct"] == site + '/'
 assert hubs["direct_authority"] == "explicit_current"
-assert ov["official_site"] == "https://movieshunt.run"
 assert ov["provider_lego_scripts"] == ["scripts/provider_patches/movieshunt_runtime_v1.py"]
 opts = ov["provider_lego_options"]["scripts/provider_patches/movieshunt_runtime_v1.py"]
-assert opts["base"] == "https://movieshunt.run"
+assert opts["base"] == site
 assert int(opts["maxStreams"]) == 6
 assert ov["learned_routes"] == ["/search.html?q={query}", "/?s={query}"], ov["learned_routes"]
-assert ov["search_request_plan"][0]["base"] == "https://movieshunt.run"
+# A retained request recipe may use an explicitly approved mirror while the
+# current runtime origin advances through domain refresh.
+request_origin = urlsplit(ov["search_request_plan"][0]["base"])
+assert request_origin.scheme == 'https' and request_origin.hostname in hubs['allowed_terminal_hosts']
+assert not request_origin.username and not request_origin.password
 assert ov["search_request_plan"][0]["route"] == "/search.html?q={query}"
 # JSON lookup is only a dynamic fallback on the actual host reached by the
 # current /search.html response; it is not promoted as direct-domain authority.
