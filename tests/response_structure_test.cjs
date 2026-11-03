@@ -228,3 +228,87 @@ const entityRefs = responseStructure('<div data-src="/embed?a=1&#038;b=PRIVATE">
 assert.deepEqual(entityAddresses, ['https://provider.test/embed?a=1&b=PRIVATE']);
 assert.deepEqual(entityRefs.rows[0].address_refs, { 'data-src': ['r42'] });
 assert.ok(!JSON.stringify(entityRefs).includes('PRIVATE'));
+
+const bootstrap = responseStructure('<html><script>const config = {' +
+  'epoch: 123, partB: "PRIVATE_CONFIG_VALUE", ready: true, disabled: false, missing: null,' +
+  'data: { nested: "PRIVATE_NESTED_VALUE" }, items: [], negative: -42, hex: 0xff,' +
+  'auth: { doNotExpose: "PRIVATE_AUTH" }, apiKey: "PRIVATE_KEY"};' +
+  'import("./_app/immutable/entry/app.PRIVATE_HASH.js?token=PRIVATE_QUERY");</script></html>');
+assert.deepEqual(bootstrap.inline_fields, [
+  { name: 'epoch', type: 'number', key_syntax: 'bare' },
+  { name: 'partB', type: 'string', key_syntax: 'bare' },
+  { name: 'ready', type: 'boolean', key_syntax: 'bare' },
+  { name: 'disabled', type: 'boolean', key_syntax: 'bare' },
+  { name: 'missing', type: 'null', key_syntax: 'bare' },
+  { name: 'data', type: 'object', key_syntax: 'bare' },
+  { name: 'nested', type: 'string', key_syntax: 'bare' },
+  { name: 'items', type: 'array', key_syntax: 'bare' },
+  { name: 'negative', type: 'number', key_syntax: 'bare' },
+  { name: 'hex', type: 'number', key_syntax: 'bare' },
+]);
+assert.deepEqual(bootstrap.script_resources, [{ kind: 'relative_path', role: 'app_entry', location: 'inline_import' }]);
+assert.ok(!JSON.stringify(bootstrap).includes('PRIVATE'));
+assert.ok(!JSON.stringify(bootstrap.inline_fields).includes('doNotExpose'));
+
+const quotedConfig = responseStructure('<script>const a={epoch:1}; const b={"epoch":2,' +
+  "'partB':'PRIVATE', \"\\u0063ount\": 3, 'not-an-identifier': 4};</script>");
+assert.deepEqual(quotedConfig.inline_fields, [
+  { name: 'epoch', type: 'number', key_syntax: 'bare' },
+  { name: 'epoch', type: 'number', key_syntax: 'quoted' },
+  { name: 'partB', type: 'string', key_syntax: 'quoted' },
+  { name: 'count', type: 'number', key_syntax: 'quoted' },
+]);
+assert.ok(!JSON.stringify(quotedConfig).includes('PRIVATE'));
+
+const scripts = responseStructure('<html>' +
+  '<script src="https://cdn.private.test/_app/immutable/entry/app.PRIVATE.js?secret=PRIVATE"></script>' +
+  '<script src="//cdn.private.test/_app/immutable/entry/start.PRIVATE.js"></script>' +
+  '<script src="/_app/immutable/chunks/PRIVATE.js"></script>' +
+  '<script src="./PRIVATE-other.js">const ignored={notExecuted:1}</script>' +
+  '<script>import "../chunks/PRIVATE.js"; import { part } from "/_app/immutable/entry/app.PRIVATE.js";' +
+  'import("//cdn.private.test/_app/immutable/entry/start.PRIVATE.js");</script></html>');
+assert.deepEqual(scripts.script_resources, [
+  { kind: 'absolute_url', role: 'app_entry', location: 'src_attribute' },
+  { kind: 'root_relative_url', role: 'app_entry', location: 'inline_import' },
+  { kind: 'protocol_relative_url', role: 'start_entry', location: 'src_attribute' },
+  { kind: 'protocol_relative_url', role: 'start_entry', location: 'inline_import' },
+  { kind: 'root_relative_url', role: 'chunk', location: 'src_attribute' },
+  { kind: 'relative_path', role: 'chunk', location: 'inline_import' },
+  { kind: 'relative_path', role: 'other_script', location: 'src_attribute' },
+]);
+assert.deepEqual(scripts.inline_fields, []);
+assert.ok(!JSON.stringify(scripts).includes('PRIVATE'));
+assert.ok(!JSON.stringify(scripts).includes('private.test'));
+
+const inert = responseStructure('<html><!-- <script>const x={commented:1};import("./_app/immutable/entry/app.PRIVATE.js")</script> -->' +
+  '<script>const text="{fake: 123} import(\"./_app/immutable/entry/app.PRIVATE.js\")";' +
+  'const pattern=/{regexField:123}/; if(ready) /({controlRegexField:123})/.test(text);' +
+  'if(ready) /import(".\\/_app\\/immutable\\/entry\\/app.PRIVATE.js")/.test(text);' +
+  'loader.import("./_app/immutable/entry/app.PRIVATE.js");' +
+  '/* const obj={blockComment:1}; import("./_app/immutable/entry/app.PRIVATE.js") */' +
+  '// const obj={lineComment:1}; import("./_app/immutable/entry/app.PRIVATE.js")\n' +
+  'if(ready){label:123;} function sample(){anotherLabel:123;}</script></html>');
+assert.deepEqual(inert.inline_fields, []);
+assert.deepEqual(inert.script_resources, []);
+const falseSrc = responseStructure('<script data-text=\' src="./_app/immutable/entry/app.PRIVATE.js"\'></script>');
+assert.deepEqual(falseSrc.script_resources, []);
+
+const repeatedBootstrap = responseStructure('<script>const config={' +
+  Array.from({ length: 40 }, (_, index) => 'field' + index + ': "PRIVATE"').join(',') + '};' +
+  'const duplicate={field0:"PRIVATE"};' + 'import("./_app/immutable/entry/app.PRIVATE.js");'.repeat(30) + '</script>');
+assert.equal(repeatedBootstrap.inline_fields.length, 12);
+assert.equal(repeatedBootstrap.script_resources.length, 1);
+assert.ok(repeatedBootstrap.inline_fields.every(row => Object.keys(row).sort().join(',') === 'key_syntax,name,type'));
+assert.ok(!JSON.stringify(repeatedBootstrap).includes('PRIVATE'));
+const resourceFlood = responseStructure('<html>' + [
+  'https://cdn.private.test/', '//cdn.private.test/', '/', './',
+].flatMap(prefix => ['_app/immutable/entry/app.PRIVATE.js', '_app/immutable/entry/start.PRIVATE.js',
+  '_app/immutable/chunks/PRIVATE.js', 'PRIVATE-other.js'].flatMap(path => [
+    '<script src="' + prefix + path + '"></script>', '<script>import("' + prefix + path + '")</script>',
+  ])).join('') + '</html>');
+assert.equal(resourceFlood.script_resources.length, 8);
+assert.ok(resourceFlood.script_resources.some(row => row.role === 'app_entry'));
+assert.ok(!JSON.stringify(resourceFlood).includes('PRIVATE'));
+assert.deepEqual(responseStructure('<script type="application/json">{"epoch":1,"partB":"PRIVATE"}</script>').inline_fields,
+  [{ name: 'epoch', type: 'number', key_syntax: 'quoted' }, { name: 'partB', type: 'string', key_syntax: 'quoted' }]);
+console.log('Inline script diagnostics preserve bounded field syntax and resource roles without values');
