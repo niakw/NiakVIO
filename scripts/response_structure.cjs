@@ -168,6 +168,165 @@ function playerMarkup(value, baseUrl, addressRef) {
   };
 }
 
+function scriptTokens(source) {
+  // This is a bounded syntax sampler, not an evaluator. Strings and regexes
+  // stay opaque so their contents cannot invent object keys or imports.
+  const tokens = [];
+  const parentheses = [];
+  let offset = 0;
+  while (offset < source.length && tokens.length < 16384) {
+    const ch = source[offset], next = source[offset + 1];
+    if (/\s/.test(ch)) { offset++; continue; }
+    if (ch === '/' && next === '/') {
+      const end = source.indexOf('\n', offset + 2);
+      offset = end < 0 ? source.length : end + 1;
+      continue;
+    }
+    if (ch === '/' && next === '*') {
+      const end = source.indexOf('*/', offset + 2);
+      offset = end < 0 ? source.length : end + 2;
+      continue;
+    }
+    if (ch === '"' || ch === "'" || ch === '`') {
+      const quote = ch;
+      let value = '', closed = false;
+      offset++;
+      while (offset < source.length) {
+        const current = source[offset++];
+        if (current === quote) { closed = true; break; }
+        if (current !== '\\') { value += current; continue; }
+        const escaped = source[offset++];
+        if (escaped === undefined) break;
+        if (escaped === '\n') continue;
+        if (escaped === '\r') { if (source[offset] === '\n') offset++; continue; }
+        const width = escaped === 'x' ? 2 : escaped === 'u' ? 4 : 0;
+        const hex = source.slice(offset, offset + width);
+        if (width && new RegExp('^[0-9a-f]{' + width + '}$', 'i').test(hex)) {
+          value += String.fromCharCode(parseInt(hex, 16));
+          offset += width;
+        } else {
+          value += ({ n: '\n', r: '\r', t: '\t', b: '\b', f: '\f', v: '\v' })[escaped] ?? escaped;
+        }
+      }
+      if (closed) tokens.push({ type: 'string', value, quote });
+      continue;
+    }
+    const previous = tokens[tokens.length - 1];
+    const regexPrefix = !previous || previous.closesControl
+      || previous.type === 'punctuation' && ['=', '(', ':', ',', '[', '!', '&', '|', '?', ';', '{', '}'].includes(previous.value)
+      || previous.type === 'identifier' && ['return', 'throw', 'case', 'yield', 'void', 'typeof', 'else', 'do'].includes(previous.value);
+    if (ch === '/' && regexPrefix) {
+      let inClass = false;
+      offset++;
+      while (offset < source.length) {
+        const current = source[offset++];
+        if (current === '\\') { offset++; continue; }
+        if (current === '[') inClass = true;
+        else if (current === ']') inClass = false;
+        else if (current === '/' && !inClass) break;
+        else if (current === '\n' || current === '\r') break;
+      }
+      while (/[A-Za-z]/.test(source[offset] || '') && offset < source.length) offset++;
+      tokens.push({ type: 'opaque', value: 'regex' });
+      continue;
+    }
+    const name = source.slice(offset, offset + 256).match(/^[A-Za-z_$][\w$]*/);
+    if (name) {
+      tokens.push({ type: 'identifier', value: name[0] });
+      offset += name[0].length;
+      continue;
+    }
+    const number = source.slice(offset, offset + 256).match(/^(?:0[xX][\da-fA-F_]+|0[bB][01_]+|0[oO][0-7_]+|(?:\d[\d_]*(?:\.[\d_]*)?|\.[\d_]+)(?:[eE][+-]?[\d_]+)?)(?:n)?/);
+    if (number) {
+      tokens.push({ type: number[0].endsWith('n') ? 'opaque' : 'number', value: 'number' });
+      offset += number[0].length;
+      continue;
+    }
+    if (ch === '(') parentheses.push(previous?.type === 'identifier'
+      && ['if', 'while', 'for', 'switch', 'catch', 'with'].includes(previous.value));
+    const closesControl = ch === ')' && parentheses.pop() === true;
+    tokens.push({ type: 'punctuation', value: ch, ...(closesControl ? { closesControl: true } : {}) });
+    offset++;
+  }
+  return tokens;
+}
+
+function inlineScriptFacts(text) {
+  const fields = new Map(), resources = new Map();
+  function resource(raw, location) {
+    if (typeof raw !== 'string' || !raw || raw.length > 4096 || /\s/.test(raw)) return;
+    let kind;
+    if (/^https?:\/\//i.test(raw)) kind = 'absolute_url';
+    else if (/^\/\//.test(raw)) kind = 'protocol_relative_url';
+    else if (/^\//.test(raw)) kind = 'root_relative_url';
+    else if (/^[a-z][a-z0-9+.-]*:/i.test(raw) || /^[#?]/.test(raw)) return;
+    else kind = 'relative_path';
+    let pathname;
+    try { pathname = new URL(raw, 'https://diagnostic.invalid/').pathname; } catch { return; }
+    let role = 'other_script';
+    if (/(?:^|\/)_app\/immutable\/entry\/app\.[A-Za-z0-9_.-]+\.js$/.test(pathname)) role = 'app_entry';
+    else if (/(?:^|\/)_app\/immutable\/entry\/start\.[A-Za-z0-9_.-]+\.js$/.test(pathname)) role = 'start_entry';
+    else if (/(?:^|\/)(?:_app\/immutable\/)?chunks\/[A-Za-z0-9_.-]+\.js$/.test(pathname)) role = 'chunk';
+    const row = { kind, role, location };
+    resources.set(JSON.stringify(row), row);
+  }
+  const scripts = /<!--[\s\S]*?(?:-->|$)|<script\b((?:"[^"]*"|'[^']*'|[^'">]){0,8192})>([\s\S]*?)(?:<\/script\s*>|$)/gi;
+  let examined = 0;
+  for (const script of text.matchAll(scripts)) {
+    if (script[1] === undefined) continue;
+    if (++examined > 256) break;
+    const attributes = [...script[1].matchAll(/\s([A-Za-z_:][\w:.-]{0,47})\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'<>`=]+))/g)];
+    const src = attributes.find(row => row[1].toLowerCase() === 'src');
+    if (src) { resource(src[2] ?? src[3] ?? src[4], 'src_attribute'); continue; }
+    const tokens = scriptTokens(script[2]), stack = [];
+    for (let index = 0; index < tokens.length; index++) {
+      const token = tokens[index], previous = tokens[index - 1], parent = stack[stack.length - 1];
+      if (token.type === 'identifier' && token.value === 'import' && previous?.value !== '.') {
+        if (tokens[index + 1]?.type === 'string') resource(tokens[index + 1].value, 'inline_import');
+        else if (tokens[index + 1]?.value === '(' && tokens[index + 2]?.type === 'string') {
+          resource(tokens[index + 2].value, 'inline_import');
+        } else if (tokens[index + 1]?.value !== '.') {
+          for (let next = index + 1; next < Math.min(tokens.length, index + 65); next++) {
+            if (tokens[next].value === ';') break;
+            if (tokens[next].value === 'from' && tokens[next + 1]?.type === 'string') {
+              resource(tokens[next + 1].value, 'inline_import'); break;
+            }
+          }
+        }
+      }
+      if (token.type === 'punctuation' && ['{', '[', '('].includes(token.value)) {
+        const object = token.value === '{' && (!previous && tokens[index + 1]?.type === 'string'
+          || previous && (/^(?:=|\(|\[|return|yield|\?)$/.test(previous.value)
+            || previous.value === ',' && ['object', 'array'].includes(parent?.kind)
+            || previous.value === ':' && parent?.kind === 'object'));
+        const key = previous?.value === ':' ? tokens[index - 2] : null;
+        const sensitive = parent?.sensitive || (key && SENSITIVE.test(key.value));
+        stack.push({ open: token.value, kind: object ? 'object' : token.value === '[' ? 'array' : 'other', sensitive });
+        continue;
+      }
+      if (token.type === 'punctuation' && ['}', ']', ')'].includes(token.value)) { stack.pop(); continue; }
+      if (fields.size >= 12 || parent?.kind !== 'object' || parent.sensitive
+          || previous?.type !== 'punctuation' || !['{', ','].includes(previous.value) || tokens[index + 1]?.value !== ':'
+          || !['identifier', 'string'].includes(token.type) || token.quote === '`'
+          || !/^[A-Za-z_$][\w$]{0,47}$/.test(token.value) || SENSITIVE.test(token.value)) continue;
+      let value = tokens[index + 2], type;
+      if (value?.value === '-' || value?.value === '+') value = tokens[index + 3];
+      if (value?.type === 'string') type = 'string';
+      else if (value?.type === 'number') type = 'number';
+      else if (value?.value === 'true' || value?.value === 'false') type = 'boolean';
+      else if (value?.value === 'null') type = 'null';
+      else if (value?.value === '{') type = 'object';
+      else if (value?.value === '[') type = 'array';
+      if (!type) continue;
+      const row = { name: token.value, type, key_syntax: token.type === 'string' ? 'quoted' : 'bare' };
+      fields.set(JSON.stringify(row), row);
+    }
+  }
+  const priority = { app_entry: 0, start_entry: 1, chunk: 2, other_script: 3 };
+  return { inline_fields: [...fields.values()], script_resources: [...resources.values()]
+    .sort((a, b) => priority[a.role] - priority[b.role]).slice(0, 8) };
+}
+
 function responseStructure(value, options = {}) {
   let root = value;
   const text = typeof value === 'string' ? value.slice(0, 131072) : '';
@@ -211,7 +370,8 @@ function responseStructure(value, options = {}) {
     const variables = [...new Set([...text.matchAll(/\b(?:var|let|const)\s+([A-Za-z_$][\w$]{0,47})\s*=/g)]
       .map(row => row[1]).filter(name => !SENSITIVE.test(name)))].slice(0, 16);
     return { kind: 'html', tags: [...tags].map(([tag, attrs]) => ({ tag, attributes: [...attrs].sort() })),
-      variables, player_markup: playerMarkup(value, options?.baseUrl, options?.addressRef) };
+      variables, player_markup: playerMarkup(value, options?.baseUrl, options?.addressRef),
+      ...inlineScriptFacts(text) };
   }
   return { kind: text ? 'text' : 'binary' };
 }

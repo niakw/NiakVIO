@@ -26,7 +26,7 @@ jobs:
         provider: [anime-sama, allanime, animekai, neko-sama, animevostfr]
     env:
       TARGET_PROVIDER: ${{ matrix.provider }}
-      BRAIN_SHA: 5d038b58ff0102882660af1cf44edb58f084903d
+      BRAIN_SHA: 86ff0799de8b125cc03ba0bed5ad852517f81c2e
       NIAKVIO_REQUIRE_DECODE_PROOF: '1'
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
@@ -53,16 +53,29 @@ jobs:
           npm ci --ignore-scripts
           python -m pip install -e brain-llm
           python tests/brain_decoded_repair_gate_test.py
+          node tests/response_structure_test.cjs
           node tests/media_sample_decode_test.cjs
           mkdir -p local-output/hosted-repair
           python brain-llm/scripts/import_public_niakvio.py --niakvio-root . --output local-output/hosted-repair/experience.jsonl
           python brain-llm/scripts/import_public_docs.py --niakvio-root . --config brain-llm/config/document_sources.json --output local-output/hosted-repair/documents.jsonl
       - name: Observe exact current provider bytes
+        id: live_observation
         timeout-minutes: 5
         env:
           TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
           TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
         run: python scripts/capture_brain_live_context.py --provider "$TARGET_PROVIDER" --output local-output/hosted-repair/live-context.json
+      - name: Observe a script-only response with an ordinary browser
+        if: steps.live_observation.outputs.script_shell_only == 'true'
+        timeout-minutes: 1
+        run: python scripts/observe_brain_browser_context.py --live-context local-output/hosted-repair/live-context.json
+      - name: Recheck script-only content once before proposing code
+        if: steps.live_observation.outputs.script_shell_only == 'true'
+        timeout-minutes: 5
+        env:
+          TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+          TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+        run: python scripts/capture_brain_live_context.py --provider "$TARGET_PROVIDER" --output local-output/hosted-repair/live-context.json --recheck-script-shell
       - name: Attach immutable public domain references as hypotheses
         run: |
           python3 - <<'PY'
@@ -73,6 +86,7 @@ jobs:
           references = json.loads(Path('automation/brain-repair-public-references.json').read_text())
           live['public_domain_references'] = references.get(os.environ['TARGET_PROVIDER'], [])
           path.write_text(json.dumps(live, indent=2) + '\n')
+          print('BRAIN_MULTI_LIVE_CONTEXT=' + json.dumps(live, separators=(',', ':')))
           PY
       - name: Generate, execute and verify Brain proposals
         timeout-minutes: 17
