@@ -52,7 +52,8 @@ globalThis.fetch=async function(url){
   if(!hook||hook.provider!=="4khdhub") throw new Error("hook missing");
   const movie=await hook.resolve(["760873","movie",null,null]);
   const tv=await hook.resolve(["1396","tv",1,1]);
-  console.log(JSON.stringify({movie,tv}));
+  const wrongEpisode=await hook.resolve(["1396","tv",1,2]);
+  console.log(JSON.stringify({movie,tv,wrongEpisode}));
 })().catch(e=>{console.error(e.stack||e);process.exit(1)});
 '''
 with tempfile.TemporaryDirectory() as td:
@@ -69,6 +70,7 @@ assert "The Colony" in movie[0]["title"],movie
 assert len(tv)==1,tv
 assert tv[0]["url"]=="https://media.workers.dev/bb-s01e01.mkv",tv
 assert "S01E01" in tv[0]["title"],tv
+assert result["wrongEpisode"] == [],result["wrongEpisode"]
 src=PATCH.read_text(encoding="utf-8")
 assert 'classBlocks(html,"episode-download-item")' in src
 assert 'green(?:mount)?motors' in src

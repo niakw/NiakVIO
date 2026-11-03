@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Compare fixed anime episodes using exact published bytes and strict media facts."""
+"""Compare fixed titles using exact published bytes and strict media facts."""
 from __future__ import annotations
 
 import argparse
@@ -15,7 +15,7 @@ import evaluate_brain_llm_force_candidates as verifier
 
 ROOT = Path(__file__).resolve().parents[1]
 PROVIDERS = ('animevostfr', 'anime-sama', 'french-manga', 'neko-sama', 'voiranime',
-             'voiranime-homes', 'allanime', 'animekai')
+             'voiranime-homes', 'allanime', 'animekai', '4khdhub')
 FIXTURES = ('95479', '280049')
 LABELS = {'95479': 'Jujutsu Kaisen S01E01', '280049': 'Hell Mode S01E01'}
 BOOL_FIELDS = ('playback_verified', 'payload_verified', 'direct_signature_verified',
@@ -130,17 +130,24 @@ def public_probe(value, expected_seconds=1440):
     return result
 
 
-def comparison_config(original):
+def control_fixtures(provider):
+    if provider == '4khdhub':
+        return [('movie', '157336', None, None, 169, 'Interstellar'),
+                ('tv', '1396', 1, 1, 58, 'Breaking Bad S01E01')]
+    return [('anime', tmdb_id, 1, 1, 24, LABELS[tmdb_id]) for tmdb_id in FIXTURES]
+
+
+def comparison_config(original, provider='anime-sama'):
     config = copy.deepcopy(original)
-    anime = original.get('fixtures', {}).get('anime', [])
-    chosen = []
-    for tmdb_id in FIXTURES:
-        matching = [row for row in anime if str(row.get('tmdbId')) == tmdb_id
-                    and row.get('season') == 1 and row.get('episode') == 1]
-        if len(matching) != 1 or matching[0].get('expectedDurationMinutes') != 24:
+    chosen = {'anime': [], 'movie': [], 'tv': [], 'anime_movie': []}
+    for category, tmdb_id, season, episode, minutes, _label in control_fixtures(provider):
+        matching = [row for row in original.get('fixtures', {}).get(category, [])
+                    if str(row.get('tmdbId')) == tmdb_id
+                    and row.get('season') == season and row.get('episode') == episode]
+        if len(matching) != 1 or matching[0].get('expectedDurationMinutes') != minutes:
             raise ValueError('fixture_contract')
-        chosen.append(copy.deepcopy(matching[0]))
-    config['fixtures'] = {'anime': chosen, 'movie': [], 'tv': [], 'anime_movie': []}
+        chosen[category].append(copy.deepcopy(matching[0]))
+    config['fixtures'] = chosen
     config['concurrency'] = 1
     config.setdefault('modes', {}).setdefault('deep', {}).update({
         'fixture_limit': 2, 'fixture_limit_per_category': True,
@@ -185,18 +192,18 @@ def public_report(provider, source_sha, bundle_sha, result):
     if not isinstance(tests, list):
         raise ValueError('health_fixture_contract')
     fixtures = []
-    for tmdb_id in FIXTURES:
+    for _category, tmdb_id, season, episode, minutes, label in control_fixtures(provider):
         matches = [test for test in tests if isinstance(test, dict)
                    and str((test.get('fixture') or {}).get('tmdbId')) == tmdb_id
-                   and (test.get('fixture') or {}).get('season') == 1
-                   and (test.get('fixture') or {}).get('episode') == 1]
+                   and (test.get('fixture') or {}).get('season') == season
+                   and (test.get('fixture') or {}).get('episode') == episode]
         if len(matches) != 1:
             raise ValueError('health_fixture_contract')
         test = matches[0]
         raw = test.get('host_results') if isinstance(test.get('host_results'), list) else []
-        probes = [public_probe(row) for row in raw[:3] if isinstance(row, dict)]
-        fixtures.append({'fixture': LABELS[tmdb_id], 'tmdbId': tmdb_id, 'season': 1, 'episode': 1,
-            'expectedDurationSeconds': 1440, 'streamsReturned': count(test.get('streams_returned')),
+        probes = [public_probe(row, minutes * 60) for row in raw[:3] if isinstance(row, dict)]
+        fixtures.append({'fixture': label, 'tmdbId': tmdb_id, 'season': season, 'episode': episode,
+            'expectedDurationSeconds': minutes * 60, 'streamsReturned': count(test.get('streams_returned')),
             'streamsPlayable': count(test.get('streams_playable')), 'streamsProbed': count(test.get('streams_probed')),
             'passedMediaControl': count(test.get('streams_returned')) > 0
                 and count(test.get('streams_playable')) > 0 and count(test.get('streams_probed')) > 0
@@ -217,8 +224,9 @@ def public_report(provider, source_sha, bundle_sha, result):
             'fixtures': fixtures, 'publicationAuthority': False}
 
 
-def run_check(provider, output):
-    source_sha = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True).strip()
+def run_check(provider, output, repo_root=None):
+    repo_root = (repo_root or ROOT).resolve()
+    source_sha = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=repo_root, text=True).strip()
     if not re.fullmatch(r'[0-9a-f]{40}', source_sha):
         raise ValueError('source_sha_contract')
     bundle_sha = None
@@ -227,9 +235,9 @@ def run_check(provider, output):
         work.mkdir(parents=True, exist_ok=True)
         targets, stage, health = work / 'targets.json', work / 'stage', work / 'health'
         verifier.write_targets(targets, provider)
-        verifier.stage_provider(ROOT, provider, stage, targets)
-        bundle_sha = staged_hash(provider, stage)
-        config = comparison_config(verifier.load(ROOT / 'health-config.json'))
+        verifier.stage_provider(repo_root, provider, stage, targets)
+        bundle_sha = staged_hash(provider, stage, repo_root)
+        config = comparison_config(verifier.load(repo_root / 'health-config.json'), provider)
         config_path = work / 'comparison-health-config.json'
         config_path.write_text(json.dumps(config, indent=2) + '\n')
         report = verifier.deep.run_health(stage=stage, registry_path=stage / 'candidates.json',
@@ -237,7 +245,7 @@ def run_check(provider, output):
             health_config=config_path)
         result = verifier.provider_result(report, provider)
         # Runtime execution must not modify the bytes that were selected.
-        if staged_hash(provider, stage) != bundle_sha:
+        if staged_hash(provider, stage, repo_root) != bundle_sha:
             raise ValueError('published_provider_hash')
         return public_report(provider, source_sha, bundle_sha, result)
     except Exception as exc:
@@ -256,8 +264,9 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--provider', choices=PROVIDERS, required=True)
     parser.add_argument('--output', type=Path, required=True)
+    parser.add_argument('--repo-root', type=Path, default=ROOT)
     args = parser.parse_args()
-    report = run_check(args.provider, args.output)
+    report = run_check(args.provider, args.output, args.repo_root)
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(report, indent=2) + '\n')
     print('CROSS_PROVIDER_REPORT=' + json.dumps(report, separators=(',', ':')))

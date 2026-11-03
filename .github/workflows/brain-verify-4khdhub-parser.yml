@@ -1,0 +1,95 @@
+name: Brain - Verify 4KHDHub parser with decoded media controls
+
+on:
+  pull_request:
+    paths:
+      - .github/workflows/brain-verify-4khdhub-parser.yml
+      - scripts/provider_patches/4khdhub_runtime_v1.py
+      - providers/4khdhub*.js
+      - scripts/check_cross_provider_playback.py
+      - tests/provider_4khdhub_runtime_behavior_test.py
+      - tests/cross_provider_playback_test.py
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/brain-verify-4khdhub-parser.yml
+      - scripts/provider_patches/4khdhub_runtime_v1.py
+      - providers/4khdhub*.js
+
+permissions:
+  contents: read
+
+jobs:
+  decoded-comparison:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.event.pull_request.base.sha || github.event.before || 'main' }}
+          path: .baseline-provider
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '24'
+      - name: Prepare bounded video decoding and parser contracts
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends ffmpeg
+          npm ci --ignore-scripts
+          python tests/provider_4khdhub_runtime_behavior_test.py
+          python tests/cross_provider_playback_test.py
+          python tests/brain_no_paid_workflows_test.py
+      - name: Measure identical movie and episode controls on both versions
+        env:
+          TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+          TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+        run: |
+          python scripts/check_cross_provider_playback.py --provider 4khdhub --repo-root .baseline-provider --output local-output/4khdhub/baseline/report.json
+          python scripts/check_cross_provider_playback.py --provider 4khdhub --output local-output/4khdhub/candidate/report.json
+      - name: Require decoded media gain without a fixture regression
+        env:
+          EXPECTED_BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+          EXPECTED_CANDIDATE: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          python - <<'PY'
+          import json, os
+          from pathlib import Path
+          root = Path('local-output/4khdhub')
+          baseline = json.loads((root / 'baseline/report.json').read_text())
+          candidate = json.loads((root / 'candidate/report.json').read_text())
+          assert baseline['executionSucceeded'] and candidate['executionSucceeded']
+          assert baseline['sourceNiakvioSha'] == os.environ['EXPECTED_BASE']
+          assert candidate['sourceNiakvioSha'] == os.environ['EXPECTED_CANDIDATE']
+          assert baseline['bundleSha256'] != candidate['bundleSha256'], 'Provider bytes did not change'
+          def fixtures(report):
+              return {(row['tmdbId'], row['season'], row['episode']): row for row in report['fixtures']}
+          before, after = fixtures(baseline), fixtures(candidate)
+          assert set(before) == set(after) == {('157336', None, None), ('1396', 1, 1)}
+          gains = [row['fixture'] for key, row in after.items()
+                   if row['passedMediaControl'] and not before[key]['passedMediaControl']]
+          regressions = [row['fixture'] for key, row in before.items()
+                         if row['passedMediaControl'] and not after[key]['passedMediaControl']]
+          proof = {'baseline': baseline, 'candidate': candidate, 'gainFixtures': gains,
+                   'regressionFixtures': regressions, 'playbackRepairVerified': bool(gains) and not regressions,
+                   'publicationAuthority': False}
+          (root / 'comparison.json').write_text(json.dumps(proof, indent=2) + '\n')
+          print('FOUR_KHDHUB_COMPARISON=' + json.dumps(proof, separators=(',', ':')))
+          assert not regressions, 'Previously decoded media control regressed'
+          assert gains, 'No new decoded movie/episode control; parser tests alone do not prove playback'
+          PY
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: 4khdhub-decoded-comparison
+          path: |
+            local-output/4khdhub/**/report.json
+            local-output/4khdhub/comparison.json
+          retention-days: 14

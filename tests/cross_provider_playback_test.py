@@ -29,6 +29,38 @@ def good(kind='mp4'):
 
 
 class CrossProviderTests(unittest.TestCase):
+    def test_movie_tv_profile_uses_exact_expected_titles_and_durations(self):
+        original = json.loads((ROOT / 'health-config.json').read_text())
+        selected = mod.comparison_config(original, '4khdhub')
+        self.assertEqual([str(row['tmdbId']) for row in selected['fixtures']['movie']], ['157336'])
+        self.assertEqual([str(row['tmdbId']) for row in selected['fixtures']['tv']], ['1396'])
+        self.assertEqual(selected['fixtures']['anime'], [])
+        self.assertTrue(selected['modes']['deep']['verify_media_decode'])
+        bad = copy.deepcopy(original)
+        next(row for row in bad['fixtures']['movie'] if str(row['tmdbId']) == '157336')['expectedDurationMinutes'] = 24
+        with self.assertRaises(ValueError):
+            mod.comparison_config(bad, '4khdhub')
+        self.assertEqual(original, json.loads((ROOT / 'health-config.json').read_text()))
+
+    def test_movie_tv_controls_reject_refused_short_and_wrong_duration_media(self):
+        tests = []
+        for _category, tmdb, season, episode, minutes, _label in mod.control_fixtures('4khdhub'):
+            probe = {**good(), 'expected_duration_seconds': minutes * 60,
+                     'media_duration_seconds': minutes * 60}
+            tests.append({'fixture': {'tmdbId': tmdb, 'season': season, 'episode': episode},
+                          'streams_returned': 1, 'streams_playable': 1, 'streams_probed': 1,
+                          'host_results': [probe]})
+        report = mod.public_report('4khdhub', 'a' * 40, 'b' * 64, {'tests': tests})
+        self.assertEqual([row['expectedDurationSeconds'] for row in report['fixtures']], [10140, 3480])
+        self.assertTrue(all(row['passedMediaControl'] for row in report['fixtures']))
+        for change in ({'http_status': 403}, {'media_duration_seconds': 5},
+                       {'expected_duration_seconds': 1440}, {'media_decode': {}}):
+            bad = copy.deepcopy(tests)
+            for row in bad:
+                row['host_results'][0].update(change)
+            report = mod.public_report('4khdhub', 'a' * 40, 'b' * 64, {'tests': bad})
+            self.assertFalse(report['passedMediaControl'], change)
+
     def test_real_media_contract_and_boundaries(self):
         for kind in ('mp4', 'matroska', 'hls'):
             self.assertTrue(mod.public_probe(good(kind))['passedMediaControl'])
