@@ -1,0 +1,88 @@
+name: Brain - Verify published Anime-Sama video repair
+
+on:
+  pull_request:
+    paths:
+      - .github/workflows/brain-verify-anime-sama-repair.yml
+      - scripts/provider_patches/anime_sama_runtime_v1.py
+      - providers/anime-sama*.js
+      - scripts/compare_unchanged_provider_controls.py
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  decoded-video:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '24'
+      - name: Prepare bounded decoding without a model API
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends ffmpeg
+          npm ci --ignore-scripts
+      - name: Verify exact published provider bytes on both episodes
+        env:
+          TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+          TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+        run: |
+          python scripts/check_cross_provider_playback.py --provider anime-sama --output local-output/anime-sama-published-proof.json
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          report = json.loads(Path('local-output/anime-sama-published-proof.json').read_text())
+          fixture = next(row for row in report['fixtures'] if row['tmdbId'] == '95479')
+          assert report['executionSucceeded'] is True
+          assert fixture['passedMediaControl'] is True, 'Published Anime-Sama bytes did not reproduce the decoded Jujutsu Kaisen gain'
+          print('PUBLISHED_ANIME_SAMA_PROOF=' + json.dumps(report, separators=(',', ':')))
+          PY
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: anime-sama-published-video-proof
+          path: local-output/anime-sama-published-proof.json
+          retention-days: 14
+
+  unchanged-provider-controls:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '24'
+      - run: npm ci --ignore-scripts
+      - name: Compare unchanged accepted and candidate bundles without waiving gates
+        env:
+          BASE_REF: ${{ github.event.pull_request.base.sha }}
+          TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+          TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+        run: |
+          baseline="${BASE_REF:-$(git rev-parse HEAD^)}"
+          python scripts/compare_unchanged_provider_controls.py --base-ref "$baseline" \
+            --provider animekai --provider french-manga --provider movieshunt --provider voiranime-homes \
+            --output local-output/unchanged-provider-controls.json
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: unchanged-provider-controls
+          path: local-output/unchanged-provider-controls.json
+          retention-days: 14

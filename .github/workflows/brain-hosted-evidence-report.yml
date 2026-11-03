@@ -22,6 +22,7 @@ jobs:
   evidence:
     if: >-
       (github.event_name == 'workflow_run' &&
+       github.event.workflow_run.conclusion != 'skipped' &&
        github.event.workflow_run.head_repository.full_name == github.repository &&
        contains(fromJSON('["main","codex/niakvio-brain-reliability"]'), github.event.workflow_run.head_branch)) ||
       (github.event_name != 'workflow_run' &&
@@ -99,6 +100,19 @@ jobs:
           python3 - <<'PY'
           import json, os
           from pathlib import Path
+          from scripts.http_response_evidence import public_http_observation, public_http_evidence, public_reader_probe
+          from scripts.address_reference_evidence import public_address_fields
+          from scripts.observed_media_evidence import public_observed_media_probe
+          from scripts.player_markup_evidence import project_player_markup
+          def address_structure(event):
+              structure = event.get('responseStructure')
+              if not isinstance(structure, dict):
+                  return None
+              result = dict(structure)
+              if isinstance(result.get('player_markup'), dict):
+                  result['player_markup'] = project_player_markup(result['player_markup'],
+                      allow_address_refs=bool(public_address_fields(event)))
+              return result
           result = json.loads(Path('evidence/evaluation.json').read_text())
           safe_rows = []
           for row in result.get('rows', [])[:4]:
@@ -110,11 +124,15 @@ jobs:
                       'providerRequests', 'providerHttpStatuses', 'variantCoverage', 'invocationDiagnostics', 'fixtureCoverage',
                   )}
                   safe_row[phase]['networkTrace'] = [
-                      {key: event.get(key) for key in (
+                      {**{key: event.get(key) for key in (
                           'fixture', 'stage', 'host', 'method', 'status', 'ok', 'errorCode',
                           'announcedPlayerCandidates', 'announcedQualityHeights',
-                          'responseStructure', 'providerFunctions', 'mediaObservation',
-                      )}
+                          'providerFunctions', 'mediaObservation',
+                      )}, **public_address_fields(event), 'responseStructure': address_structure(event),
+                          'httpObservation': public_http_observation(event.get('httpObservation')),
+                          'observedMediaProbe': public_observed_media_probe(event.get('observedMediaProbe'))
+                              if public_address_fields(event) else None,
+                          'readerUserAgentProbe': public_reader_probe(event.get('readerUserAgentProbe'))}
                       for event in value.get('networkTrace', [])[:64]
                   ]
               safe_rows.append(safe_row)
@@ -132,6 +150,9 @@ jobs:
               context = public_player_markup(json.loads(live.read_text()), result.get('currentSha'))
               target = path.with_name(os.environ['SOURCE_RUN'] + '-player-markup.json')
               target.write_text(json.dumps(context, indent=2) + '\n')
+              http = public_http_evidence(json.loads(live.read_text()), result.get('currentSha'))
+              target = path.with_name(os.environ['SOURCE_RUN'] + '-http-observation.json')
+              target.write_text(json.dumps(http, indent=2) + '\n')
           PY
           git add automation/brain-llm-force-memory.json automation/hosted-repair-evidence
           git diff --cached --quiet && exit 0
@@ -140,5 +161,6 @@ jobs:
           # Census jobs also update main. Rebase evidence instead of losing the
           # verified outcome to an unrelated fast-forward race.
           git fetch origin "$TARGET_BRANCH"
-          git rebase "origin/$TARGET_BRANCH"
+          git -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' \
+            rebase "origin/$TARGET_BRANCH"
           git push origin "HEAD:refs/heads/$TARGET_BRANCH"

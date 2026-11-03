@@ -17,12 +17,13 @@ permissions:
 
 jobs:
   check:
+    # Local-only policy: never consume paid model API quota.
+    if: ${{ false }}
     runs-on: ubuntu-latest
     timeout-minutes: 3
     steps:
       - name: Verify generation using the repository secret
         env:
-          NIAKVIO_OPENAI_API_KEY: ${{ secrets.NIAKVIO_OPENAI_API_KEY }}
           HOSTED_MODEL: ${{ inputs.model || 'gpt-6.1-sol' }}
         shell: bash
         run: |

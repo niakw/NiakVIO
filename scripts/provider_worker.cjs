@@ -17,6 +17,10 @@ const { extractResponseVariantHints } = require('./response_variant_hints.cjs');
 const { providerCallNames } = require('./provider_callsite.cjs');
 const { responseStructure } = require('./response_structure.cjs');
 const { observeMediaResponse } = require('./media_observation.cjs');
+const { observeHttpResponse } = require('./http_response_observation.cjs');
+const { createReaderUserAgentProbe } = require('./reader_user_agent_probe.cjs');
+const { createAddressReferences, safeAddressFields } = require('./address_reference.cjs');
+const { createObservedMediaProbe } = require('./observed_media_probe.cjs');
 const DiagnosticError = Error;
 let activeProviderPath = '';
 const Module = require('node:module');
@@ -24,6 +28,9 @@ const Module = require('node:module');
 const networkObservations = [];
 let activeInvocation = null;
 let activeSettingsProfile = null;
+let flushReaderUserAgentProbes = async () => {};
+let flushObservedMediaProbe = async () => {};
+let activeAddressReferences = null;
 
 function sanitizeDiagnosticText(value, limit = 1000) {
   return String(value || '')
@@ -433,6 +440,13 @@ function isInfrastructureHost(host) {
 }
 
 function emit(payload) {
+  if (activeAddressReferences) {
+    for (const row of payload.network_observations || []) {
+      if (row.address_scope !== activeAddressReferences.scope) continue;
+      row.address_refs_truncated ||= activeAddressReferences.truncated;
+      row.address_trace_truncated ||= networkObservations.length > 80;
+    }
+  }
   process.stdout.write(`NUVIO_HEALTH_RESULT=${JSON.stringify(payload)}\n`);
 }
 
@@ -628,6 +642,20 @@ function installPolyfills(context = {}) {
 
   if (typeof globalThis.fetch === 'function') {
     const nativeFetch = globalThis.fetch.bind(globalThis);
+    const addressReferences = createAddressReferences();
+    activeAddressReferences = addressReferences;
+    const observedMediaProbe = context.observedMediaProbe === true ? createObservedMediaProbe({
+      fetch: (input, init) => guardedFetch(nativeFetch, input, init, { maxRedirects: context.networkLimits?.maxRedirects || 5 }),
+    }) : null;
+    flushObservedMediaProbe = async options => {
+      if (observedMediaProbe) await observedMediaProbe.flush({ ...options, deadlineAtMs: context.providerDeadlineAtMs });
+    };
+    const readerProbe = context.readerUserAgentProbe === true ? createReaderUserAgentProbe({
+      fetch: (input, init) => guardedFetch(nativeFetch, input, init, { maxRedirects: context.networkLimits?.maxRedirects || 5 }),
+    }) : null;
+    flushReaderUserAgentProbes = async () => {
+      if (readerProbe) await readerProbe.flush({ deadlineAtMs: context.providerDeadlineAtMs });
+    };
     const maxFetches = Math.max(1, Number(context.networkLimits?.maxFetches || 30));
     const maxResponseBytes = Math.max(65536, Number(context.networkLimits?.maxResponseBytes || 5 * 1024 * 1024));
     let fetchCount = 0;
@@ -649,10 +677,14 @@ function installPolyfills(context = {}) {
       const rawRequestUrl = (() => {
         try { return typeof input === 'string' ? input : input?.url || ''; } catch { return ''; }
       })();
+      const addressFields = safeAddressFields({ address_scope: addressReferences.scope,
+        request_ref: addressReferences.ref(rawRequestUrl), referer_ref: addressReferences.ref(headers.get('referer') || ''),
+        address_refs_truncated: addressReferences.truncated, address_trace_truncated: false });
       if (/\[object(?:%20|\s)+object\]|%5Bobject(?:%20|\s)+object%5D/i.test(String(rawRequestUrl))) {
         const invalid = new Error('invalid provider request: an object was serialized into the request URL');
         invalid.code = 'NUVIO_INVALID_REQUEST_ARGUMENT';
         networkObservations.push({
+          ...addressFields,
           stage: inferRequestStage(requestMeta.path_pattern),
           host: requestMeta.host,
           method: requestMeta.method,
@@ -691,6 +723,7 @@ function installPolyfills(context = {}) {
         if (declaredLength > maxResponseBytes) throw new Error(`response body exceeds limit (${declaredLength} bytes)`);
         const routeProofHints = routeProofEnabled ? await routeProofResponseHints(response) : [];
         const observation = {
+          ...addressFields, response_ref: addressReferences.ref(response.url || rawRequestUrl),
           provider_function_names: providerFunctions,
           stage: requestStage, host, method: requestMeta.method, path_pattern: requestMeta.path_pattern,
           status: response.status, ok: response.ok, duration_ms: Date.now() - started,
@@ -707,11 +740,24 @@ function installPolyfills(context = {}) {
           declared_quality_heights: [],
         };
         networkObservations.push(observation);
+        if (observedMediaProbe) observedMediaProbe.recordRequest(rawRequestUrl, { ...init, headers, method: requestMeta.method }, observation);
+        if (readerProbe) readerProbe.record(response, rawRequestUrl, { ...init, headers, method: requestMeta.method }, observation);
+        observation.http_observation = await observeHttpResponse(response, rawRequestUrl);
+        totalResponseBytes += observation.http_observation.sampled_bytes;
+        if (totalResponseBytes > maxTotalResponseBytes) throw new Error(`provider cumulative response limit exceeded (${maxTotalResponseBytes} bytes)`);
         return wrapLimitedResponse(observeMediaResponse(response, observation), maxResponseBytes, (bytes) => {
           totalResponseBytes += bytes;
           if (totalResponseBytes > maxTotalResponseBytes) throw new Error(`provider cumulative response limit exceeded (${maxTotalResponseBytes} bytes)`);
         }, (value) => {
-          observation.response_structure = responseStructure(value, { baseUrl: response.url || rawRequestUrl });
+          observation.response_structure = responseStructure(value, { baseUrl: response.url || rawRequestUrl,
+            addressRef: (address, metadata) => {
+              const ref = addressReferences.ref(address);
+              if (observedMediaProbe && ref && ['source', 'video'].includes(metadata?.tag)
+                  && /\.(?:mp4|m4v|mkv|webm|m3u8|mpd)$/i.test(new URL(address).pathname)) {
+                observedMediaProbe.recordCandidate(address, ref, observation.response_ref, observation);
+              }
+              return ref;
+            } });
           const hints = extractResponseVariantHints(value, { baseUrl: response.url || rawRequestUrl });
           observation.declared_player_candidate_count = Math.max(
             Number(observation.declared_player_candidate_count || 0),
@@ -735,15 +781,19 @@ function installPolyfills(context = {}) {
           ])].sort((a, b) => a - b).slice(0, 12);
         });
       } catch (error) {
-        networkObservations.push({
+        const failureObservation = {
+          ...addressFields,
           stage: requestStage, host, method: requestMeta.method, path_pattern: requestMeta.path_pattern,
           provider_function_names: providerFunctions,
           status: null, ok: false, duration_ms: Date.now() - started, infrastructure: isInfrastructureHost(host),
           invocation: activeInvocation, settings_profile: activeSettingsProfile,
-          error_code: error?.code ? String(error.code).slice(0, 120) : null,
+          error_code: (error?.code || error?.cause?.code)
+            ? String(error.code || error.cause.code).slice(0, 120) : null,
           error: sanitizeDiagnosticText(error?.message || error, 300),
           ...routeProofRequest, response_value_hints: [], route_proof_trace: routeProofEnabled,
-        });
+        };
+        networkObservations.push(failureObservation);
+        if (observedMediaProbe) observedMediaProbe.recordRequest(rawRequestUrl, { ...init, headers, method: requestMeta.method }, failureObservation);
         throw error;
       }
     });
@@ -1192,9 +1242,13 @@ async function main() {
     }
   }
 
+  const providerFinishedAt = Date.now();
+  await flushReaderUserAgentProbes();
+  await flushObservedMediaProbe({ streamsReturned: streams.length,
+    expectedDurationSeconds: Number(fixture.expectedDurationMinutes || 0) * 60 });
   emit({
     ok: true,
-    duration_ms: Date.now() - startedAt,
+    duration_ms: providerFinishedAt - startedAt,
     raw_stream_count: Array.isArray(value) ? value.length : 0,
     stream_count: streams.length,
     disallowed_stream_count: disallowedReasons.length,
@@ -1278,7 +1332,8 @@ const entry = process.argv[2] === '--self-test-fixture-fallback'
     : main();
 
 entry
-  .catch((error) => {
+  .catch(async (error) => {
+    await flushReaderUserAgentProbes();
     emit({
       ok: false,
       error: sanitizeDiagnosticText(error && error.message ? error.message : error, 2000),

@@ -24,7 +24,7 @@ permissions:
 
 concurrency:
   group: provider-brain-autopilot-main
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   route:
@@ -49,6 +49,7 @@ jobs:
           python tests/provider_repair_batch_causal_precedence_test.py
           python tests/provider_execution_plan_test.py
           python tests/provider_learning_dispatch_gate_test.py
+          python tests/provider_brain_autopilot_workflow_test.py
 
       - name: Build exact current causal execution plan
         id: plan
@@ -154,26 +155,61 @@ jobs:
             exit 0
           fi
 
+          # Read-only best-effort in-flight protection. This prevents the
+          # serialized Autopilot from re-dispatching a lane while its previous
+          # child is queued/running. It is NOT an atomic cross-workflow lease.
+          # Fail closed on API errors; never infer that no child exists.
+          lane_busy() {
+            local workflow="$1" state count
+            for state in queued in_progress waiting pending requested; do
+              if ! count="$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/$workflow/runs?status=$state&per_page=1" --jq '.total_count' 2>/dev/null)"; then
+                echo "FIELD_PROVIDER_AUTOPILOT_INFLIGHT_QUERY_ERROR workflow=$workflow status=$state action=defer" >&2
+                return 0
+              fi
+              if ! [[ "$count" =~ ^[0-9]+$ ]]; then
+                echo "FIELD_PROVIDER_AUTOPILOT_INFLIGHT_QUERY_ERROR workflow=$workflow status=$state reason=invalid-count action=defer" >&2
+                return 0
+              fi
+              if (( count > 0 )); then
+                echo "FIELD_PROVIDER_AUTOPILOT_INFLIGHT workflow=$workflow status=$state active=$count action=defer"
+                return 0
+              fi
+            done
+            return 1
+          }
+
           # Exact unresolved-domain owners are provider-scoped. They may run beside
           # observational Learning/REMAT for disjoint providers; production Repair
           # waits for fresh post-domain authority.
           if [ -n "$DOMAIN" ]; then
-            gh workflow run domain-refresh.yml --repo "$GITHUB_REPOSITORY" --ref main -f mode=quick -f target_providers="$DOMAIN"
-            echo "FIELD_PROVIDER_AUTOPILOT dispatch=DOMAIN_REFRESH providers=$DOMAIN targeted=true"
+            if lane_busy domain-refresh.yml; then
+              echo "FIELD_PROVIDER_AUTOPILOT deferred=DOMAIN_REFRESH providers=$DOMAIN reason=lane-in-flight-or-query-unavailable"
+            else
+              gh workflow run domain-refresh.yml --repo "$GITHUB_REPOSITORY" --ref main -f mode=quick -f target_providers="$DOMAIN"
+              echo "FIELD_PROVIDER_AUTOPILOT dispatch=DOMAIN_REFRESH providers=$DOMAIN targeted=true"
+            fi
           fi
 
           # REMAT diagnostics and provider-local repair are disjoint cohorts and
           # may execute in parallel. REMAT is observational and never publishes.
           if [ -n "$REMAT" ]; then
-            gh workflow run provider-remat-test.yml               --repo "$GITHUB_REPOSITORY" --ref main               -f scope=non-full -f target_providers="$REMAT"
-            echo "FIELD_PROVIDER_AUTOPILOT dispatch=REMAT_TEST providers=$REMAT"
+            if lane_busy provider-remat-test.yml; then
+              echo "FIELD_PROVIDER_AUTOPILOT deferred=REMAT_TEST providers=$REMAT reason=lane-in-flight-or-query-unavailable"
+            else
+              gh workflow run provider-remat-test.yml               --repo "$GITHUB_REPOSITORY" --ref main               -f scope=non-full -f target_providers="$REMAT"
+              echo "FIELD_PROVIDER_AUTOPILOT dispatch=REMAT_TEST providers=$REMAT"
+            fi
           fi
 
           if [ -n "$FAST" ] && [ -z "$DOMAIN" ]; then
-            args=(gh workflow run provider-fast-repair.yml --repo "$GITHUB_REPOSITORY" --ref main -f target_providers="$FAST" -f waves=1 -f time_budget_seconds=1200 -f max_rounds_per_batch=3 -f publish_validated=true)
-            if [ "$FORCE_MODE" = "true" ]; then args+=(-f architecture_force=true); fi
-            "${args[@]}"
-            echo "FIELD_PROVIDER_AUTOPILOT dispatch=FAST_REPAIR providers=$FAST"
+            if lane_busy provider-fast-repair.yml; then
+              echo "FIELD_PROVIDER_AUTOPILOT deferred=FAST_REPAIR providers=$FAST reason=lane-in-flight-or-query-unavailable"
+            else
+              args=(gh workflow run provider-fast-repair.yml --repo "$GITHUB_REPOSITORY" --ref main -f target_providers="$FAST" -f waves=1 -f time_budget_seconds=1200 -f max_rounds_per_batch=3 -f publish_validated=true)
+              if [ "$FORCE_MODE" = "true" ]; then args+=(-f architecture_force=true); fi
+              "${args[@]}"
+              echo "FIELD_PROVIDER_AUTOPILOT dispatch=FAST_REPAIR providers=$FAST"
+            fi
           elif [ -n "$FAST" ]; then
             echo "FIELD_PROVIDER_AUTOPILOT deferred=FAST_REPAIR providers=$FAST reason=targeted-domain-publication-in-flight"
           fi
@@ -182,6 +218,9 @@ jobs:
           # bounded cohort immediately; Learning remains globally serialized and
           # persists sanitized state/proposals before the next census.
           if [ -n "$LEARNING" ]; then
+            if lane_busy brain-learning-lab.yml; then
+              echo "FIELD_PROVIDER_AUTOPILOT deferred=BRAIN_LEARNING providers=$LEARNING reason=lane-in-flight-or-query-unavailable"
+            else
             # Main-only execution policy: Learning persists knowledge/evidence,
             # then canonical Repair/census consumes it. Never create repair PRs
             # or proposal branches from Autopilot.
@@ -198,15 +237,20 @@ jobs:
             fi
             gh workflow run brain-learning-lab.yml "${args[@]}"
             echo "FIELD_PROVIDER_AUTOPILOT dispatch=BRAIN_LEARNING providers=$LEARNING immediate=true budget_minutes=360 force=$FORCE_MODE publish_proposal=$publish_proposal"
+            fi
           fi
 
           # Harness/Core-client debt may refresh transport evidence now.
           # Architecture Learning waits for the dedicated Learning slot.
           if [ -n "$HARNESS" ]; then
-            gh workflow run provider-waf-browser-session.yml \
-              --repo "$GITHUB_REPOSITORY" --ref main \
-              -f target_providers="$HARNESS"
-            echo "FIELD_PROVIDER_AUTOPILOT dispatch=CORE_CLIENT_LEARNING providers=$HARNESS waf=true architecture_learning=false reason=scheduled-learning-slot-only"
+            if lane_busy provider-waf-browser-session.yml; then
+              echo "FIELD_PROVIDER_AUTOPILOT deferred=CORE_CLIENT_LEARNING providers=$HARNESS reason=lane-in-flight-or-query-unavailable"
+            else
+              gh workflow run provider-waf-browser-session.yml \
+                --repo "$GITHUB_REPOSITORY" --ref main \
+                -f target_providers="$HARNESS"
+              echo "FIELD_PROVIDER_AUTOPILOT dispatch=CORE_CLIENT_LEARNING providers=$HARNESS waf=true architecture_learning=false reason=scheduled-learning-slot-only"
+            fi
           fi
 
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9

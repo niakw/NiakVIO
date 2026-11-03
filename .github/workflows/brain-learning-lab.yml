@@ -42,14 +42,14 @@ on:
     - cron: "17 2 * * *"
 
 # Targeted routine Learning is isolated by exact cohort so unrelated Fast
-# handoffs can learn concurrently and a fresher routine run may replace stale
-# work inside that cohort. Explicit Architecture FORCE has its own non-cancelling
+# handoffs can learn concurrently. New targeted dispatches must queue instead
+# of cancelling an in-flight local Learning/Qwen run for the same cohort. Explicit Architecture FORCE has its own non-cancelling
 # cohort lane: routine Autopilot/Learning must never kill an in-flight FORCE
 # before its materializer/promotion proof. A second FORCE queues behind the
-# first instead of invalidating already-paid Learning/Qwen work.
+# first instead of invalidating already-running Learning/Qwen work.
 concurrency:
   group: ${{ github.event_name == 'workflow_dispatch' && inputs.architecture_force == true && format('niakvio-brain-learning-force-{0}', inputs.target_providers || inputs.target_provider || 'global') || github.event_name == 'workflow_dispatch' && (inputs.target_providers != '' || inputs.target_provider != '') && format('niakvio-brain-learning-target-{0}', inputs.target_providers || inputs.target_provider) || 'niakvio-brain-learning-lab-v2' }}
-  cancel-in-progress: ${{ github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.architecture_force != true && (inputs.target_providers != '' || inputs.target_provider != '')) }}
+  cancel-in-progress: ${{ github.event_name == 'push' }}
 
 jobs:
   experiment:
@@ -396,6 +396,7 @@ jobs:
           python tests/brain_llm_advisor_execution_test.py
           python tests/brain_llm_experiment_runtime_test.py
           python tests/brain_llm_learning_workflow_contract_test.py
+          python tests/brain_learning_concurrency_workflow_test.py
           python tests/provider_repair_transport_overlay_persistence_test.py
           python tests/brain_cross_phase_experiment_memory_test.py
           python tests/brain_learning_unexecuted_evolved_suppression_test.py
