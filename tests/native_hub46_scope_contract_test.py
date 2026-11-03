@@ -5,6 +5,7 @@ import importlib.util
 import json
 import os
 import sys
+import tempfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -25,6 +26,51 @@ sys.path.insert(0, str(ROOT / "scripts"))
 
 import prepare_native_corpus_client as client  # noqa: E402
 assert client.provider_scope_ids() == ids
+
+# Historical September Hub-44 rows must not resurrect providers removed from
+# the current 41-provider published manifest. Preserve historical evidence in
+# the matrix while staging every current provider, with an explicit audit log.
+current_manifest = json.loads((ROOT / "native-hub46/manifest.json").read_text(encoding="utf-8"))
+current_ids = {
+    str(row.get("id") or "").strip().casefold()
+    for row in current_manifest.get("scrapers", [])
+    if isinstance(row, dict) and row.get("enabled") is True
+}
+assert current_ids <= ids, sorted(current_ids - ids)
+assert ids - current_ids == {"animetsu", "showbox", "videasy"}
+staged = client.manifest_providers("native-hub46/manifest.json")
+assert {row["id"].casefold() for row in staged} == current_ids
+assert len(staged) == len(current_ids)
+
+# A fixed/targeted scope remains strict; a dynamic historical scope must not
+# hide a CURRENT provider absent from the allowlist.
+with tempfile.TemporaryDirectory(prefix=".native-scope-contract-", dir=ROOT) as tmp:
+    scope_file = Path(tmp) / "scope.json"
+    selected = sorted(current_ids)[0]
+    scope = {
+        "hubCount": 2,
+        "rows": [{"manifestId": selected}, {"manifestId": "archived-synthetic-provider"}],
+    }
+    try:
+        os.environ["NIAKVIO_PROVIDER_SCOPE_MATRIX"] = str(scope_file)
+        scope_file.write_text(json.dumps(scope), encoding="utf-8")
+        try:
+            client.manifest_providers("native-hub46/manifest.json")
+        except SystemExit as error:
+            assert "absent from manifest" in str(error), error
+        else:
+            raise AssertionError("fixed scope unexpectedly accepted stale provider")
+
+        scope["scopePolicy"] = "dynamic-active-hub-authority"
+        scope_file.write_text(json.dumps(scope), encoding="utf-8")
+        try:
+            client.manifest_providers("native-hub46/manifest.json")
+        except SystemExit as error:
+            assert "omits current enabled provider(s)" in str(error), error
+        else:
+            raise AssertionError("dynamic scope unexpectedly dropped current providers")
+    finally:
+        os.environ["NIAKVIO_PROVIDER_SCOPE_MATRIX"] = "automation/evidence/hub-lab-matrix-46.json"
 
 spec = importlib.util.spec_from_file_location("native_gate", ROOT / "scripts/gate_native_declared_provider_matrix.py")
 assert spec and spec.loader

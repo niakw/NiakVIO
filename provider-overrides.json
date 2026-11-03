@@ -1200,12 +1200,13 @@
     "movieshunt": {
       "capability": "direct_media",
       "official_hub": "https://movieshunt.cc",
-      "official_site": "https://movieshunt.run",
+      "official_site": "https://movieshunt.app",
       "domain_substitutions": {
-        "movieshunt.work": "movieshunt.run",
-        "movieshunt.casa": "movieshunt.run",
-        "movieshunt.monster": "movieshunt.run",
-        "movieshunt.ws": "movieshunt.run"
+        "movieshunt.work": "movieshunt.app",
+        "movieshunt.casa": "movieshunt.app",
+        "movieshunt.monster": "movieshunt.app",
+        "movieshunt.ws": "movieshunt.app",
+        "movieshunt.run": "movieshunt.app"
       },
       "learned_routes": [
         "/search.html?q={query}",
@@ -1379,10 +1380,11 @@
         "evidenceDestructive": false
       },
       "runtime_domain_replacements": {
-        "movieshunt.work": "movieshunt.run",
-        "movieshunt.casa": "movieshunt.run",
-        "movieshunt.monster": "movieshunt.run",
-        "movieshunt.ws": "movieshunt.run"
+        "movieshunt.work": "movieshunt.app",
+        "movieshunt.casa": "movieshunt.app",
+        "movieshunt.monster": "movieshunt.app",
+        "movieshunt.ws": "movieshunt.app",
+        "movieshunt.run": "movieshunt.app"
       },
       "runtime_plan_lkg": {
         "version": 1,
@@ -1394,7 +1396,7 @@
         "activationAuthority": false
       },
       "proof_search_bases": [
-        "https://movieshunt.run"
+        "https://movieshunt.app"
       ],
       "search_request_plan": [
         {
@@ -1457,7 +1459,7 @@
       ],
       "provider_lego_options": {
         "scripts/provider_patches/movieshunt_runtime_v1.py": {
-          "base": "https://movieshunt.run",
+          "base": "https://movieshunt.app",
           "maxStreams": 6
         }
       }
@@ -1465,7 +1467,7 @@
     "hindmoviez": {
       "capability": "direct_media",
       "official_hub": "https://t.me/s/hindmoviez/1975",
-      "official_site": "https://hindmovie.one",
+      "official_site": "https://hindmovie.dad",
       "manifest_overrides": {
         "enabled": true
       },
@@ -1483,9 +1485,10 @@
         }
       },
       "domain_substitutions": {
-        "hindmovie.fit": "hindmovie.one",
-        "hindmovie.icu": "hindmovie.one",
-        "hindmovie.dev": "hindmovie.one"
+        "hindmovie.fit": "hindmovie.dad",
+        "hindmovie.icu": "hindmovie.dad",
+        "hindmovie.dev": "hindmovie.dad",
+        "hindmovie.one": "hindmovie.dad"
       },
       "candidate_learned_routes": [
         "/?s={query}",
@@ -1657,9 +1660,10 @@
         "evidenceDestructive": false
       },
       "runtime_domain_replacements": {
-        "hindmovie.fit": "hindmovie.one",
-        "hindmovie.icu": "hindmovie.one",
-        "hindmovie.dev": "hindmovie.one"
+        "hindmovie.fit": "hindmovie.dad",
+        "hindmovie.icu": "hindmovie.dad",
+        "hindmovie.dev": "hindmovie.dad",
+        "hindmovie.one": "hindmovie.dad"
       },
       "identity_input": {
         "mode": "catalog_search",
@@ -9067,7 +9071,7 @@
         "2026-09-20: current live evidence reaches exact Wooka detail but lecteurvideo.com currently returns HTTP 500. Added a provider-local runtime that extracts all current player seeds and crawls them sequentially so one failing host cannot starve later current embeds; no upstream JavaScript is executed."
       ],
       "official_hub": "https://t.me/s/Wookafr2",
-      "official_site": "https://wookafr.blog",
+      "official_site": "https://wookafr.boston",
       "published_types": [
         "movie",
         "tv"
@@ -9081,12 +9085,12 @@
         }
       },
       "domain_substitutions": {
-        "wookafr.cymru": "wookafr.blog",
-        "wookafr.fyi": "wookafr.blog",
-        "wookafr.to": "wookafr.blog",
-        "wookafr.bond": "wookafr.blog",
-        "wookafr.blue": "wookafr.blog",
-        "wookafr.boston": "wookafr.blog"
+        "wookafr.cymru": "wookafr.boston",
+        "wookafr.fyi": "wookafr.boston",
+        "wookafr.to": "wookafr.boston",
+        "wookafr.bond": "wookafr.boston",
+        "wookafr.blue": "wookafr.boston",
+        "wookafr.blog": "wookafr.boston"
       },
       "candidate_config_reconciliation": {
         "version": 3,
@@ -9296,12 +9300,12 @@
         "evidenceDestructive": false
       },
       "runtime_domain_replacements": {
-        "wookafr.cymru": "wookafr.blog",
-        "wookafr.fyi": "wookafr.blog",
-        "wookafr.to": "wookafr.blog",
-        "wookafr.bond": "wookafr.blog",
-        "wookafr.blue": "wookafr.blog",
-        "wookafr.boston": "wookafr.blog"
+        "wookafr.cymru": "wookafr.boston",
+        "wookafr.fyi": "wookafr.boston",
+        "wookafr.to": "wookafr.boston",
+        "wookafr.bond": "wookafr.boston",
+        "wookafr.blue": "wookafr.boston",
+        "wookafr.blog": "wookafr.boston"
       },
       "provider_lego_scripts": [
         "scripts/provider_patches/wookafr_lecteurvideo_priority_v1.py",
@@ -9313,7 +9317,7 @@
         },
         "scripts/provider_patches/wookafr_current_runtime_v2.py": {
           "bases": [
-            "https://wookafr.blog",
+            "https://wookafr.boston",
             "https://wookafr.center",
             "https://wookafr.plus"
           ],
@@ -9325,14 +9329,14 @@
         }
       },
       "proof_search_bases": [
-        "https://wookafr.blog",
+        "https://wookafr.boston",
         "https://wookafr.center",
         "https://wookafr.plus",
         "https://wookafr.app",
         "https://wookafr.mov"
       ],
       "proof_detail_bases": [
-        "https://wookafr.blog",
+        "https://wookafr.boston",
         "https://wookafr.center",
         "https://wookafr.plus"
       ],

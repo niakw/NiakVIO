@@ -31,8 +31,84 @@ if str(SCRIPTS) not in sys.path:
 import deep_repair_loop as deep  # noqa: E402
 import runtime_repair  # noqa: E402
 from repair_identity_gate import automatic_repair_identity_gate  # noqa: E402
+from http_response_evidence import public_http_observation, public_reader_probe  # noqa: E402
+from address_reference_evidence import public_address_fields  # noqa: E402
+from observed_media_evidence import public_observed_media_probe  # noqa: E402
 
 SHA40 = __import__("re").compile(r"^[0-9a-f]{40}$")
+DECODED_REPAIR_FIXTURES = {
+    '95479': 'Jujutsu Kaisen S01E01',
+    '280049': 'Hell Mode S01E01',
+}
+
+
+def require_decoded_repair() -> bool:
+    return os.environ.get('NIAKVIO_REQUIRE_DECODE_PROOF') == '1'
+
+
+def decoded_media_summary(test: dict[str, Any]) -> tuple[list[dict[str, Any]], int]:
+    # Imported after this module has initialized: the comparison CLI itself
+    # imports the evaluator for staging, but its projection is pure.
+    from check_cross_provider_playback import public_probe
+
+    raw = test.get('host_results')
+    probes = [public_probe(row) for row in raw[:3] if isinstance(row, dict)] \
+        if isinstance(raw, list) else []
+    executed = all(type(test.get(key)) is int and test[key] > 0
+                   for key in ('streams_returned', 'streams_playable', 'streams_probed'))
+    return probes, sum(row['passedMediaControl'] is True for row in probes) if executed else 0
+
+
+def decoded_repair_gate(baseline: dict[str, Any], candidate: dict[str, Any]) \
+        -> tuple[bool, str, dict[str, Any]]:
+    """Require fixture-level decoded improvement; other gates retain authority."""
+    metadata = {'decodedProofRequired': True, 'improvedFixtures': [],
+                'unresolvedFixtures': list(DECODED_REPAIR_FIXTURES.values())}
+
+    def fixtures(result):
+        tests = result.get('tests')
+        if not isinstance(tests, list) or len(tests) != len(DECODED_REPAIR_FIXTURES):
+            return None
+        selected = {}
+        for test in tests:
+            if not isinstance(test, dict) or not isinstance(test.get('fixture'), dict):
+                return None
+            fixture = test['fixture']
+            tmdb = str(fixture.get('tmdbId') or '')
+            if (tmdb not in DECODED_REPAIR_FIXTURES or tmdb in selected
+                    or type(fixture.get('season')) is not int or fixture['season'] != 1
+                    or type(fixture.get('episode')) is not int or fixture['episode'] != 1
+                    or type(fixture.get('expectedDurationMinutes')) not in (int, float)
+                    or fixture['expectedDurationMinutes'] != 24
+                    or fixture.get('category') != 'anime'):
+                return None
+            if any(type(test.get(key)) is not int or test[key] < 0
+                   for key in ('streams_returned', 'streams_playable', 'streams_probed')):
+                return None
+            selected[tmdb] = test
+        return selected
+
+    before, after = fixtures(baseline), fixtures(candidate)
+    if before is None or after is None:
+        return False, 'decoded_repair_fixture_contract', metadata
+    metadata['unresolvedFixtures'] = []
+    regression = None
+    for tmdb, label in DECODED_REPAIR_FIXTURES.items():
+        old, new = before[tmdb], after[tmdb]
+        _, old_controls = decoded_media_summary(old)
+        _, new_controls = decoded_media_summary(new)
+        if new_controls == 0:
+            metadata['unresolvedFixtures'].append(label)
+        if old['streams_playable'] == 0 and new_controls > 0:
+            metadata['improvedFixtures'].append(label)
+        if (new_controls < old_controls or any(new[key] < old[key]
+                for key in ('streams_returned', 'streams_playable'))):
+            regression = regression or f'decoded_repair_fixture_regression:{tmdb}'
+    if regression:
+        return False, regression, metadata
+    if not metadata['improvedFixtures']:
+        return False, 'decoded_repair_no_new_fixture_control', metadata
+    return True, 'decoded_repair_fixture_improvement', metadata
 
 
 def load(path: Path) -> dict[str, Any]:
@@ -102,7 +178,7 @@ def invocation_summary(result: dict[str, Any]) -> list[dict[str, Any]]:
 
 def network_summary(result: dict[str, Any]) -> list[dict[str, Any]]:
     output: list[dict[str, Any]] = []
-    seen: set[tuple[str, str, str, str, int | None]] = set()
+    seen: set[tuple[object, ...]] = set()
     for test in result.get("tests") or []:
         if not isinstance(test, dict):
             continue
@@ -112,6 +188,7 @@ def network_summary(result: dict[str, Any]) -> list[dict[str, Any]]:
             if not isinstance(row, dict):
                 continue
             item = {
+                **public_address_fields(row),
                 "fixture": label,
                 "stage": str(row.get("stage") or "")[:80],
                 "host": str(row.get("host") or "")[:160],
@@ -131,6 +208,12 @@ def network_summary(result: dict[str, Any]) -> list[dict[str, Any]]:
                 item["responseStructure"] = row["response_structure"]
             if isinstance(row.get("media_observation"), dict):
                 item["mediaObservation"] = row["media_observation"]
+            if isinstance(row.get('http_observation'), dict):
+                item['httpObservation'] = public_http_observation(row['http_observation'])
+            if isinstance(row.get('reader_user_agent_probe'), dict):
+                item['readerUserAgentProbe'] = public_reader_probe(row['reader_user_agent_probe'])
+            if item.get('address_scope') and isinstance(row.get('observed_media_probe'), dict):
+                item['observedMediaProbe'] = public_observed_media_probe(row['observed_media_probe'])
             if row.get("provider_function_names"):
                 item["providerFunctions"] = row["provider_function_names"][:8]
             key = (
@@ -139,13 +222,18 @@ def network_summary(result: dict[str, Any]) -> list[dict[str, Any]]:
                 item["host"],
                 item["path"],
                 item["status"],
+                item.get('address_scope'), item.get('request_ref'),
+                item.get('response_ref'), item.get('referer_ref'),
             )
-            if key in seen:
+            if key in seen and not item.get('address_scope'):
                 continue
             seen.add(key)
-            output.append(item)
-            if len(output) >= 64:
-                return output
+            if len(output) < 64:
+                output.append(item)
+            else:
+                for kept in output:
+                    if kept.get('address_scope'):
+                        kept['address_trace_truncated'] = True
     return output
 
 
@@ -292,6 +380,17 @@ def fixture_summary(result: dict[str, Any]) -> list[dict[str, Any]]:
         minutes = (test.get('fixture') or {}).get('expectedDurationMinutes')
         if type(minutes) in (int, float) and 0 < minutes <= 20160:
             row['expectedDurationSeconds'] = round(minutes * 60)
+        raw_probes = test.get('host_results')
+        if require_decoded_repair() or (isinstance(raw_probes, list) and any(
+                isinstance(probe, dict) and isinstance(probe.get('media_decode'), dict)
+                for probe in raw_probes)):
+            probes, controls = decoded_media_summary(test)
+            fixture = test.get('fixture') or {}
+            tmdb = str(fixture.get('tmdbId') or '')
+            row.update({'tmdbId': tmdb if tmdb in DECODED_REPAIR_FIXTURES else '',
+                        'season': fixture.get('season') if type(fixture.get('season')) is int else None,
+                        'episode': fixture.get('episode') if type(fixture.get('episode')) is int else None,
+                        'decodedMediaControls': controls, 'decodedMediaProbes': probes})
     return output
 
 
@@ -327,6 +426,10 @@ def evaluate_pair(
     candidate: dict[str, Any],
     mechanism_family: str = "",
 ) -> tuple[bool, str]:
+    if require_decoded_repair():
+        decoded_ok, decoded_reason, _ = decoded_repair_gate(baseline, candidate)
+        if not decoded_ok:
+            return False, decoded_reason
     family = str(mechanism_family or "").strip().casefold().replace("_", "-")
     if family in {
         "bounded-variant-enumeration-before-cap",
@@ -373,6 +476,13 @@ def health_provider(stage: Path, output: Path) -> dict[str, Any]:
         'primary_fixture_limit_per_category': 2,
         'probe_streams_adaptively': False,
     })
+    if require_decoded_repair():
+        from check_cross_provider_playback import comparison_config
+        config = comparison_config(config)
+    if os.environ.get('NIAKVIO_READER_UA_PROBE') == '1':
+        config['modes']['deep']['reader_user_agent_probe'] = True
+    if os.environ.get('NIAKVIO_OBSERVED_MEDIA_PROBE') == '1':
+        config['modes']['deep']['observed_media_probe'] = True
     config_path = output / 'comparison-health-config.json'
     config_path.write_text(json.dumps(config, indent=2) + '\n')
     return deep.run_health(
@@ -652,6 +762,11 @@ def main() -> int:
                             "sourceNiakvioSha": applied.get("sourceNiakvioSha"),
                         },
                     }
+                    if require_decoded_repair():
+                        # This point is reached only after materialization and
+                        # both actual health executions. These fixture facts
+                        # do not replace the existing runtime/identity verdict.
+                        result.update(decoded_repair_gate(baseline, candidate)[2])
                     report_rows.append(result)
                     if accepted:
                         accepted_rows.append(copy.deepcopy(row))

@@ -315,3 +315,161 @@ réellement incomplet masqué par une accolade littérale fermante. L'ancre exac
 `_crawlEligible` du bundle publié passe ce contrôle. Le workflow épingle le Brain
 `9c80e6c271d09600e0ae85baefb1b2a17f5683ad` pour permettre un nouvel essai complet.
 Le refus HTTP observé reste une preuve négative, jamais une réparation acceptée.
+
+## 1er novembre 2026 — Diagnostic des réponses de lecteurs refusées
+
+Le [run 41258465778](https://github.com/niakw/NiakVIO/actions/runs/41258465778)
+exécute deux candidats sans gain : Hell Mode reste lisible, Jujutsu Kaisen reste
+sans flux validé et les MP4 Sendvid mesurés durent cinq secondes. Les deux
+candidats atteignent Sibnet, qui répond HTTP 403. Ce statut parvient bien au
+prompt ; il ne suffit pas à conclure que la ressource a disparu. Le provider
+jette sur les réponses HTTP d'erreur avant de les lire et la structure reste vide.
+
+Le worker relève désormais le type de contenu et la relation entre URL demandée
+et URL effective, sous forme d'énumérations fixes. Sur les seules erreurs HTTP
+textuelles, un clone de réponse fournit un échantillon borné à 8192 octets et
+250 ms. Seuls un indice de page (challenge, captcha, refus, absence, limitation
+ou inconnu), l'état de lecture et le compteur sont conservés. Aucun texte,
+en-tête ou URL n'est ajouté au relevé. Le corps original reste lisible et les
+réponses réussies comme les médias ne sont pas échantillonnés par ce diagnostic.
+Ces indices de syntaxe ne prouvent ni disponibilité ni réparation de lecture.
+
+Le préflight, l'évaluation, le retour au Brain et l'archive publique projettent
+ces champs indépendamment. Un reçu `-http-observation.json` conserve aussi le
+préflight lorsqu'aucun candidat n'est produit. Les 328 tests Brain et l'audit de
+confidentialité passent ; les tests Node/Python couvrent les streams réels,
+l'original inchangé, le délai, l'annulation, la confidentialité et la transmission.
+Le Brain publié est épinglé à `ba629acd73df78df06a771c0086b3d8fe6ef73cd`.
+
+L'essai automatique sur push rejoue uniquement le candidat déjà exécuté du
+run 41257855269 afin de diagnostiquer sa réponse HTTP, sans nouvelle inférence
+ni publication de provider. Un lancement manuel sans archive conserve la
+synthèse bornée habituelle. Aucune réparation de lecture n'est encore validée.
+
+Le [rejeu 41300728008](https://github.com/niakw/NiakVIO/actions/runs/41300728008)
+exécute et refuse le candidat sans nouvelle inférence. Il révèle un raccord
+manquant : `health_check.mjs` supprimait encore le champ HTTP produit par le
+worker. Le relevé vide ne permet donc aucune interprétation de la page 403.
+La projection du contrôle de santé conserve désormais les mêmes énumérations
+bornées. Le test de transmission exécute cette expression réelle de production
+entre le sampler et le préflight, puis vérifie l'archive et le retour au Brain.
+
+Le [rejeu 41302016139](https://github.com/niakw/NiakVIO/actions/runs/41302016139)
+conserve enfin le diagnostic pour les deux épisodes : Sibnet répond HTTP 403,
+HTML, URL inchangée, corps entièrement observé de 93 octets et indice textuel
+de refus d'accès. Aucun flux supplémentaire n'est validé. Le rejeu hors ligne
+du bundle exact confirme la présence de ces faits dans le prompt du Brain.
+Ce signal ne suffit pas à affirmer l'absence de challenge ou la disparition
+de la ressource. La synthèse bornée habituelle est rétablie par défaut ;
+un rejeu sans inférence reste disponible par l'entrée explicite d'archive.
+
+## 1er novembre 2026 — Comparaison contrôlée du profil User-Agent
+
+Après le diagnostic qualifié, le [run 41302490957](https://github.com/niakw/NiakVIO/actions/runs/41302490957)
+appelle effectivement le modèle, qui s'abstient : les fonctions d'admission
+proposées ne peuvent réparer les lecteurs déjà atteints. Le code utilise un
+profil Chrome pour les wrappers via `hdr()`, mais `_fetch` injecte `NiakVIO/3`
+lorsque le crawler appelle le lecteur sans User-Agent explicite. Ce changement
+de profil est une hypothèse à tester, pas une cause acquise du 403.
+
+Le diagnostic optionnel `NIAKVIO_READER_UA_PROBE=1` compare la même requête GET
+de lecteur refusée à un profil User-Agent observé sur une réponse HTML 2xx
+antérieure de la même exécution. Tous les autres en-têtes et paramètres réseau
+sont conservés ; seul le signal d'annulation est renouvelé pour borner le contrôle.
+La requête est différée après l'exécution du provider, avec une limite d'un
+contrôle et 2500 ms par worker. Le verdict, les flux et la durée d'exécution du
+provider sont calculés avant ce contrôle. Une réponse HTTP réussie du contrôle
+ne compte jamais comme un flux vidéo validé.
+Le contrôle respecte aussi la méthode effective d'un objet `Request`. Son délai
+est réduit au budget restant du worker, avec 500 ms réservées à la sortie ;
+il est omis avec le résultat `budget_exhausted` si ce budget manque.
+
+Les URL, valeurs d'en-têtes et profils restent en mémoire. L'archive conserve
+seulement la provenance du profil, le nom du champ changé, un statut, un résultat
+énuméré et le diagnostic HTTP borné. Les projections worker → santé → évaluation
+→ archive sont testées ensemble. Le worker normal ne lance aucun contrôle sans
+activation explicite. Le prochain push rejoue le candidat déjà exécuté du run
+41257855269 avec ce diagnostic, sans inférence ni patch manuel du provider.
+
+Le [run 41304513624](https://github.com/niakw/NiakVIO/actions/runs/41304513624)
+exécute le contrôle pour les deux épisodes. Le profil antérieurement réussi
+donne encore HTTP 403, URL inchangée et la même page HTML de 93 octets avec
+indice de refus d'accès. Ce changement d'User-Agent seul ne rétablit donc pas
+l'accès dans cet environnement. Hell Mode reste lisible et Jujutsu Kaisen
+reste sans flux complet validé ; aucun gain du contrôle n'est compté comme vidéo.
+
+Les 329 tests Brain et l'audit de confidentialité passent. Le Brain publié
+`89560b995b2879ebd3ab0b8992c30c2c3dbe5d7b` conserve le contrôle dans le prompt,
+avec un rejeu du bundle exact comme preuve de transmission. Les observations
+absentes restent absentes. Le workflow retrouve la synthèse bornée par défaut ;
+le contrôle supplémentaire nécessite désormais l'entrée manuelle explicite
+`reader_user_agent_probe`, désactivée par défaut.
+
+## 2 novembre 2026 — Correspondance entre lecteurs déclarés et requêtes
+
+Le [run 41305337204](https://github.com/niakw/NiakVIO/actions/runs/41305337204)
+confirme une abstention après appel réel au modèle : les sélecteurs d'admission
+ne peuvent réparer les lecteurs déjà atteints. Les trois `div[data-src]`
+observés ne prouvent pas que trois lecteurs différents ont été essayés, car
+les anciennes traces fusionnaient les requêtes de même route qui ne différaient
+que par leurs paramètres.
+
+Une table privée au worker attribue désormais des références opaques aux URL
+HTTP reconnues, dans un espace éphémère propre à l'exécution. Les paramètres
+restent distincts ; seuls les fragments sont retirés. Les valeurs d'adresses
+et la table restent en mémoire. Les groupes de markup conservés émettent les
+références par attribut, puis les événements de requête/réponse et de Referer
+les réutilisent. La déduplication du rapport inclut cet espace et la référence
+de requête. Aucun octet ni requête réseau supplémentaire n'est nécessaire.
+
+Les limites de la table, des attributs, des échantillons et des traces sont
+signalées explicitement. Une référence absente d'une trace partielle ne prouve
+pas qu'un lecteur a été ignoré. Les projections worker → santé → préflight →
+évaluation → archive et Brain valident indépendamment ces champs. Les tests
+couvrent trois wrappers de même route avec paramètres différents, les aliases,
+les limites, les entrées forgées et la confidentialité. Les 337 tests Brain et
+l'audit de confidentialité passent ; le workflow épingle
+`b90234958c6111d8d284d3defa7f262a59269689`.
+
+Le prochain push rejoue le candidat du run 41257855269, sans inférence ni
+modification manuelle du provider, afin d'observer la couverture réelle des
+lecteurs. Aucune réparation de lecture n'est déduite des seules références.
+
+Le [rejeu 41363674646](https://github.com/niakw/NiakVIO/actions/runs/41363674646)
+relie quatre choix observés (iframe affichée et trois entrées) à quatre pages
+de lecteur atteintes par le candidat : deux adresses Sendvid et deux adresses
+Sibnet. Les deux Sibnet renvoient 403. Les deux sources Sendvid effectivement
+sondées sont des MP4 mesurés à cinq secondes. La trace et la table sont complètes
+pour ce relevé ; ces quatre choix observés ne sont donc pas ignorés par le candidat.
+
+Lors d'une seconde lecture de page Sendvid par le contrôle d'identité, une autre
+référence média apparaît sans requête média correspondante. Cela peut être un
+renouvellement de signature, pas nécessairement une autre vidéo. Un diagnostic
+optionnel `NIAKVIO_OBSERVED_MEDIA_PROBE=1` vérifie cette hypothèse : après un
+épisode long sans flux et un MP4 court mesuré, il peut sonder une source HTTP
+`source`/`video` réellement observée mais non demandée, sur la même page parente.
+
+Le contrôle réutilise les en-têtes non sensibles d'une sonde média antérieure,
+sans Cookie/Authorization, avec Range borné à 32768 octets. Un seul GET, 2500 ms
+au maximum, réduit au budget restant en réservant 500 ms pour la sortie. Les
+corps antérieurs et le verdict du provider sont préservés. Aucun flux diagnostic
+n'entre dans les compteurs de lecture. Seuls références opaques, statut et faits
+média/HTTP bornés sont archivés ; les valeurs d'adresse restent en mémoire.
+Les tests couvrent le préfixe, les délais, l'annulation, les en-têtes, les scopes,
+la confidentialité et le parcours réel de projection. Le rejeu reste sans inférence
+ni modification manuelle du provider.
+
+Le [rejeu 41397746341](https://github.com/niakw/NiakVIO/actions/runs/41397746341)
+a sondé cette référence supplémentaire dans la baseline et le candidat : HTTP
+206, signature MP4, durée annoncée de cinq secondes, préfixe de 32768 octets.
+L'annulation était encore `requested` lors de l'export ; cela ne prouve ni une
+lecture complète ni une annulation achevée. Le diagnostic n'ajoute aucun flux
+lisible et le candidat reste refusé. Les deux lecteurs Sibnet restent en 403.
+
+Le Brain conserve désormais ce diagnostic dans ses deux canaux de contexte,
+même s'il est attaché à une réponse répétée tardive, sans dépasser huit événements.
+Ses 343 tests et l'audit de confidentialité passent. Le workflow épingle
+`727e108132444b6e62a71939f9e742a8193577af`, reprend la synthèse normale et rend
+la sonde média explicitement optionnelle, désactivée par défaut. Une annulation
+asynchrone dispose de 100 ms au maximum pour se terminer avant l'export, toujours
+à l'intérieur du délai global. Aucun résultat n'est transformé en preuve de lecture.
