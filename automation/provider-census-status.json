@@ -1,7 +1,7 @@
 {
   "schemaVersion": 3,
-  "runId": "41566795804",
-  "triggerSha": "4d861c77f9a21ac77981bfea09b31da2d0f6b19f",
+  "runId": "41569805530",
+  "triggerSha": "3ff025a5574b88ab6169394b1914f06744fbc601",
   "providers": [
     {
       "provider": "4khdhub",
@@ -271,9 +271,9 @@
         "1 live routes / anime"
       ],
       "latestLaneVerdicts": [
-        "anime=no_streams/provider_network_exception"
+        "anime=timeout"
       ],
-      "dominantIssue": "provider_network_exception",
+      "dominantIssue": "timeout",
       "searchProgress": [
         "anime: 2 works tested / 0 retained misses"
       ],
@@ -2180,8 +2180,8 @@
   "harnessQueue": [],
   "targetedTransportBlockedQueue": [],
   "clientTransportGapQueue": [],
-  "harnessEvidenceRunId": "41566795804-sharded-waf",
-  "harnessEvidenceSha": "4d861c77f9a21ac77981bfea09b31da2d0f6b19f",
+  "harnessEvidenceRunId": "41569805530-sharded-waf",
+  "harnessEvidenceSha": "3ff025a5574b88ab6169394b1914f06744fbc601",
   "authorityRefreshedProviders": [],
   "harnessTransportUpdatedProviders": [],
   "networkDifferentialUpdatedProviders": [],
@@ -2592,43 +2592,5 @@
       ],
       "replayedProviders": []
     }
-  },
-  "lastRepairAttempt": {
-    "runId": "41567477401",
-    "sourceCensusRunId": "41566795804",
-    "selectedProviders": [
-      "4khdhub",
-      "allanime",
-      "animesalt",
-      "animesultra",
-      "animevost-fr",
-      "flemmix",
-      "mallumv",
-      "moviebox",
-      "moviesmod",
-      "vidfast",
-      "vostfree",
-      "yflix"
-    ],
-    "candidateProviders": [],
-    "validatedProviders": [],
-    "acceptedRepairCount": 0,
-    "deferredToLearningSlotProviders": [
-      "4khdhub",
-      "allanime",
-      "animesalt",
-      "animesultra",
-      "animevost-fr",
-      "flemmix",
-      "mallumv",
-      "moviebox",
-      "moviesmod",
-      "vidfast",
-      "vostfree",
-      "yflix"
-    ],
-    "noProgressReason": "no_new_repair_experiment",
-    "timeBudgetExhausted": false,
-    "publicationAllowed": false
   }
 }
