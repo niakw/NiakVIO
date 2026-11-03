@@ -1,0 +1,56 @@
+name: Brain - Observe AllAnime context without model inference
+
+on:
+  pull_request:
+    paths:
+      - .github/workflows/brain-observe-allanime-context.yml
+      - scripts/capture_brain_live_context.py
+      - tests/brain_repair_comparison_test.py
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  observe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '24'
+      - name: Verify observation and disabled paid-model contracts
+        run: |
+          npm ci --ignore-scripts
+          python tests/brain_repair_comparison_test.py
+          python tests/brain_no_paid_workflows_test.py
+      - name: Observe current AllAnime HTTP evidence without a model
+        env:
+          TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+          TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+        run: |
+          python scripts/capture_brain_live_context.py --provider allanime --output local-output/allanime-live-context.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          live = json.loads(Path('local-output/allanime-live-context.json').read_text())
+          report = {key: live[key] for key in ('provider', 'sourceSha', 'active_functions', 'streams_playable')}
+          report['network_evidence'] = [{key: row.get(key) for key in
+              ('fixture', 'stage', 'host', 'status', 'functions', 'response_structure', 'http_observation')}
+              for row in live['network_evidence']]
+          report['publicationAuthority'] = False
+          print('ALLANIME_HTTP_CONTEXT=' + json.dumps(report, separators=(',', ':')))
+          PY
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: allanime-live-context
+          path: local-output/allanime-live-context.json
+          retention-days: 14

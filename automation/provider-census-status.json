@@ -1,7 +1,7 @@
 {
   "schemaVersion": 3,
-  "runId": "41572622228",
-  "triggerSha": "36c50eeff824ee92394ef17f20ce7d4224e3f9f6",
+  "runId": "41637771706",
+  "triggerSha": "4332e0677b6ddb64937a6843aed3df3d071a5a09",
   "providers": [
     {
       "provider": "4khdhub",
@@ -62,11 +62,11 @@
         "4 live routes / anime"
       ],
       "latestLaneVerdicts": [
-        "anime=timeout"
+        "anime=no_streams/provider_network_zero_result"
       ],
-      "dominantIssue": "timeout",
+      "dominantIssue": "provider_network_zero_result",
       "searchProgress": [
-        "anime: 3 works tested / 44 retained misses / 4 retained chain hits"
+        "anime: 4 works tested / 45 retained misses / 3 retained chain hits"
       ],
       "evidenceDepth": [
         "anime=chain_reached"
@@ -2180,8 +2180,8 @@
   "harnessQueue": [],
   "targetedTransportBlockedQueue": [],
   "clientTransportGapQueue": [],
-  "harnessEvidenceRunId": "41572622228-sharded-waf",
-  "harnessEvidenceSha": "36c50eeff824ee92394ef17f20ce7d4224e3f9f6",
+  "harnessEvidenceRunId": "41637771706-sharded-waf",
+  "harnessEvidenceSha": "4332e0677b6ddb64937a6843aed3df3d071a5a09",
   "authorityRefreshedProviders": [],
   "harnessTransportUpdatedProviders": [],
   "networkDifferentialUpdatedProviders": [],
@@ -2592,43 +2592,5 @@
       ],
       "replayedProviders": []
     }
-  },
-  "lastRepairAttempt": {
-    "runId": "41573365268",
-    "sourceCensusRunId": "41572622228",
-    "selectedProviders": [
-      "4khdhub",
-      "allanime",
-      "animesalt",
-      "animesultra",
-      "animevost-fr",
-      "flemmix",
-      "mallumv",
-      "moviebox",
-      "moviesmod",
-      "vidfast",
-      "vostfree",
-      "yflix"
-    ],
-    "candidateProviders": [],
-    "validatedProviders": [],
-    "acceptedRepairCount": 0,
-    "deferredToLearningSlotProviders": [
-      "4khdhub",
-      "allanime",
-      "animesalt",
-      "animesultra",
-      "animevost-fr",
-      "flemmix",
-      "mallumv",
-      "moviebox",
-      "moviesmod",
-      "vidfast",
-      "vostfree",
-      "yflix"
-    ],
-    "noProgressReason": "no_new_repair_experiment",
-    "timeBudgetExhausted": false,
-    "publicationAllowed": false
   }
 }
