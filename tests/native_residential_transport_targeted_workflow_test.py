@@ -13,7 +13,7 @@ required = (
     "TS_AUDIENCE: ${{ secrets.TS_AUDIENCE }}",
     "TS_EXIT_NODE: ${{ secrets.TS_EXIT_NODE }}",
     "TS_TAG_NAME: ${{ secrets.TS_TAG_NAME }}",
-    "tailscale/github-action@306e68a486fd2350f2bfc3b19fcd143891a4a2d8",
+    "tailscale/github-action@064b10558093f38325e838ddea35486bdc6b1d5c",
     "Select residential exit immediately before native runtime",
     'sudo tailscale set --exit-node="$TS_EXIT_NODE" --exit-node-allow-lan-access=false',
     "FIELD_NATIVE_RESIDENTIAL_EXIT active=true",
@@ -31,7 +31,7 @@ for needle in required:
 
 connect = workflow.index("Connect native client host to Tailscale")
 exit_node = workflow.index("Select residential exit immediately before native runtime")
-prepare = workflow.index("Prepare exact upstream client checkout")
+prepare = workflow.index("Checkout accepted official client and stage corpus once")
 mobile_snapshot = workflow.index("Create Mobile AVD snapshot on cache miss")
 tv_snapshot = workflow.index("Create TV AVD snapshot on cache miss")
 desktop_runtime = workflow.index("Execute six works across every provider in official Desktop runtime")

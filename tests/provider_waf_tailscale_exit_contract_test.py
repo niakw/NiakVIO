@@ -14,7 +14,7 @@ required=[
     'raw="${TS_TAG_NAME:-niakvio-ci}"',
     '*) normalized="tag:$raw" ;;',
     "TS_ACTION_TAG=%s",
-    "tailscale/github-action@306e68a486fd2350f2bfc3b19fcd143891a4a2d8",
+    "tailscale/github-action@064b10558093f38325e838ddea35486bdc6b1d5c",
     "oauth-client-id: ${{ env.TS_OAUTH_CLIENT_ID }}",
     "audience: ${{ env.TS_AUDIENCE }}",
     "args: --accept-dns=false",
