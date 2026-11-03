@@ -196,12 +196,43 @@ def manifest_providers(manifest_path: str | Path) -> list[dict]:
         raise SystemExit(f"selected manifest contains no stageable providers: {manifest_file}")
     if scope_ids is not None:
         missing = sorted(scope_ids - seen)
-        if missing:
+        raw_scope = os.environ["NIAKVIO_PROVIDER_SCOPE_MATRIX"].strip()
+        scope_file = Path(raw_scope)
+        if not scope_file.is_absolute():
+            scope_file = ROOT / scope_file
+        scope_data = json.loads(scope_file.read_text(encoding="utf-8"))
+        historical_dynamic = scope_data.get("scopePolicy") == "dynamic-active-hub-authority"
+        if historical_dynamic:
+            # The September Hub matrix is evidence, not authority to resurrect
+            # archived providers. The current published manifest owns execution.
+            # Still fail closed if the historical scope omits any CURRENT enabled
+            # provider: intersection must not silently shrink live coverage.
+            current_enabled = {
+                str(row.get("id") or "").strip().casefold()
+                for row in data.get("scrapers", [])
+                if isinstance(row, dict) and row.get("enabled") is True
+                and str(row.get("id") or "").strip()
+            }
+            unscoped = sorted(current_enabled - scope_ids)
+            if unscoped:
+                raise SystemExit(
+                    "dynamic native provider scope omits current enabled provider(s): "
+                    + ",".join(unscoped)
+                )
+            if missing:
+                print(
+                    "FIELD_NATIVE_PROVIDER_SCOPE_HISTORICAL "
+                    f"excluded={len(missing)} ids={','.join(missing)} "
+                    f"current={len(seen)} historical={len(scope_ids)} "
+                    "reason=not-in-current-manifest"
+                )
+        elif missing:
             raise SystemExit(
                 "native provider scope references provider(s) absent from manifest: " + ",".join(missing)
             )
-        if len(providers) != len(scope_ids):
-            raise SystemExit(f"native provider scope mismatch: staged={len(providers)} expected={len(scope_ids)}")
+        expected = len(scope_ids & seen)
+        if len(providers) != expected:
+            raise SystemExit(f"native provider scope mismatch: staged={len(providers)} expected={expected}")
     return providers
 
 
