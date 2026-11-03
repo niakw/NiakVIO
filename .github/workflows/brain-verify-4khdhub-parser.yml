@@ -54,6 +54,30 @@ jobs:
         run: |
           python scripts/check_cross_provider_playback.py --provider 4khdhub --repo-root .baseline-provider --output local-output/4khdhub/baseline/report.json
           python scripts/check_cross_provider_playback.py --provider 4khdhub --output local-output/4khdhub/candidate/report.json
+      - name: Retain bounded lookup structure from the existing observations
+        run: |
+          python - <<'PY'
+          import json, sys
+          from pathlib import Path
+          sys.path.insert(0, 'scripts')
+          import capture_brain_live_context as capture
+          from http_response_evidence import public_http_observation
+          root = Path('local-output/4khdhub')
+          output = {}
+          for side in ('baseline', 'candidate'):
+              path = root / side / 'cross-provider-4khdhub/health/health-results.json'
+              health = json.loads(path.read_text())
+              result = capture.verifier.provider_result(health, '4khdhub')
+              events, names = capture.prioritized_execution(result)
+              output[side] = {'active_functions': names, 'network_evidence': [{
+                  'fixture': event.get('fixture_label'), 'stage': event.get('stage'),
+                  'host': event.get('host'), 'status': event.get('status'),
+                  'response_structure': event.get('response_structure'),
+                  'http_observation': public_http_observation(event.get('http_observation')),
+              } for event in events[:12]]}
+          (root / 'lookup-shapes.json').write_text(json.dumps(output, indent=2) + '\n')
+          print('FOUR_KHDHUB_LOOKUP_SHAPES=' + json.dumps(output, separators=(',', ':')))
+          PY
       - name: Require decoded media gain without a fixture regression
         env:
           EXPECTED_BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
@@ -92,4 +116,5 @@ jobs:
           path: |
             local-output/4khdhub/**/report.json
             local-output/4khdhub/comparison.json
+            local-output/4khdhub/lookup-shapes.json
           retention-days: 14
