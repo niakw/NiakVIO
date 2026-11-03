@@ -37,6 +37,41 @@ events, names = prioritized_execution({'tests': [{'fixture': {'label': 'Missing'
 assert events[0]['stage'] == 'media'
 assert names[:2] == ['_crawlDirectMedia', 'resolve'], names
 
+# Repeated successful HTML fallbacks must not push the actual JSON API
+# responses outside the twelve-event model context. Preserve both fixtures,
+# error/valid JSON shapes on one host, and the existing media-first ordering.
+api_error = {'stage': 'content_lookup', 'host': 'api.example.test', 'status': 200,
+             'response_structure': {'kind': 'json', 'fields': [
+                 {'path': 'errors', 'type': 'array'}, {'path': 'data', 'type': 'null'}]},
+             'provider_function_names': ['searchOneAt', 'findShow', 'resolve']}
+api_config = {**api_error, 'response_structure': {'kind': 'json', 'fields': [
+    {'path': 'data', 'type': 'object'}, {'path': 'data.currentConfig', 'type': 'object'}]},
+    'provider_function_names': ['currentConfig', 'resolve']}
+fallback = {'stage': 'episode', 'host': 'fallback.example.test', 'status': 200,
+            'response_structure': {'kind': 'html', 'tags': [{'tag': 'a'}]},
+            'provider_function_names': ['siteFallback', 'resolve']}
+flood = {'tests': [{'fixture': {'label': label}, 'streams_playable': 0,
+                   'network_observations': [api_error, api_config] + [fallback] * 20}
+                  for label in ('First episode', 'Second episode')]}
+events, names = prioritized_execution(flood)
+retained = events[:12]
+for label in ('First episode', 'Second episode'):
+    json_events = [row for row in retained if row['fixture_label'] == label
+                   and row.get('response_structure', {}).get('kind') == 'json']
+    assert len(json_events) == 2, retained
+assert len(events) == 44  # No lost events in omitted-address accounting.
+assert {'searchOneAt', 'findShow', 'currentConfig'} <= set(names), names
+media = {'stage': 'media', 'host': 'media.example.test', 'status': 403,
+         'provider_function_names': ['resolve']}
+flood['tests'][0]['network_observations'].append(media)
+events, _ = prioritized_execution(flood)
+assert events[0]['stage'] == 'media'
+flood['tests'].append({'fixture': {'label': 'Working'}, 'streams_playable': 1,
+                       'network_observations': [media, fallback]})
+events, _ = prioritized_execution(flood)
+assert all(event['fixture_failed'] for event in events[:-2])
+assert all(not event['fixture_failed'] for event in events[-2:])
+
 with tempfile.TemporaryDirectory() as directory:
     root = Path(directory)
     live_path = root / 'live.json'
