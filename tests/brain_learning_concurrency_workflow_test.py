@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Keep paid targeted Learning work alive when a duplicate dispatch arrives."""
+"""Keep local targeted Learning work alive when a duplicate dispatch arrives."""
 
 from pathlib import Path
 
