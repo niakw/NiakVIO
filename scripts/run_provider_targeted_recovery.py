@@ -117,7 +117,9 @@ def compact_response_shape(value:Any)->dict[str,Any]:
         if isinstance(rows,list):
             safe=[]
             for item in rows[:limit]:
-                token=str(item)[:48]
+                if not isinstance(item,str):
+                    continue
+                token=item
                 if re.fullmatch(r"[A-Za-z][A-Za-z0-9_-]{1,47}",token):
                     safe.append(token)
             if safe:
@@ -129,7 +131,9 @@ def compact_response_shape(value:Any)->dict[str,Any]:
         for row in facts[:8]:
             if not isinstance(row,dict):
                 continue
-            token=str(row.get("token") or "")[:48]
+            token=row.get("token")
+            if not isinstance(token,str):
+                continue
             if not re.fullmatch(r"[A-Za-z][A-Za-z0-9_-]{1,47}",token):
                 continue
             tags=[

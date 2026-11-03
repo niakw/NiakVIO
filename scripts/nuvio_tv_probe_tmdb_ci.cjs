@@ -182,11 +182,11 @@ function jsonShape(value) {
 function structuralTokens(raw, attribute, limit) {
   const counts = new Map();
   const re = attribute === 'class'
-    ? /\bclass\s*=\s*["']([^"']{1,512})["']/gi
-    : /\bid\s*=\s*["']([^"']{1,512})["']/gi;
+    ? /(?:^|\s)class\s*=\s*["']([^"']{1,512})["']/gi
+    : /(?:^|\s)id\s*=\s*["']([^"']{1,512})["']/gi;
   let match;
   while ((match = re.exec(raw)) !== null && counts.size < 256) {
-    const values = attribute === 'class' ? String(match[1] || '').split(/\\s+/) : [String(match[1] || '')];
+    const values = attribute === 'class' ? String(match[1] || '').split(/\s+/) : [String(match[1] || '')];
     for (const value of values) {
       const token = String(value || '').trim();
       if (!/^[A-Za-z][A-Za-z0-9_-]{1,47}$/.test(token)) continue;
@@ -219,6 +219,8 @@ function structuralClassFacts(raw, tokens, limit) {
     let match, count = 0, selfHref = 0, nestedAnchors = 0;
     const tags = new Set(), signals = new Set();
     while ((match = openRe.exec(source)) !== null && count < 12) {
+      const classes = String(match[2] || '').match(/(?:^|\s)class\s*=\s*["']([^"']*)["']/i);
+      if (!classes || !classes[1].split(/\s+/).includes(String(token))) continue;
       count += 1;
       tags.add(String(match[1] || '').toLowerCase());
       if (/\bhref\s*=/i.test(String(match[2] || ''))) selfHref += 1;
