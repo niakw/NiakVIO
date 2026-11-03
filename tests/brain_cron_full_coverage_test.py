@@ -180,8 +180,10 @@ def main() -> int:
     assert "inputs.target_providers || inputs.target_provider" in workflow
     assert "niakvio-brain-learning-lab-${{ github.run_id }}" not in workflow
     assert "inputs.target_providers != '' || inputs.target_provider != ''" in workflow
-    assert "inputs.architecture_force != true" in workflow
-    assert "cancel-in-progress: ${{ github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.architecture_force != true && (inputs.target_providers != '' || inputs.target_provider != '')) }}" in workflow, "routine targeted Learning may replace stale routine work but must never cancel Architecture FORCE"
+    concurrency = workflow.split("\nconcurrency:\n", 1)[1].split("\n\njobs:\n", 1)[0]
+    assert "inputs.architecture_force == true" in concurrency, "Architecture FORCE must retain its dedicated lane"
+    assert "inputs.architecture_force != true" not in concurrency, "targeted dispatch must not cancel in-flight Learning"
+    assert "cancel-in-progress: ${{ github.event_name == 'push' }}" in concurrency, "only stale push-triggered Learning may be cancelled"
     assert "group: niakvio-brain-learning-memory-publish" in workflow
     assert "group: niakvio-brain-repair-proposal-publish" in workflow
     assert "group: niakvio-brain-architecture-proposal-publish" in workflow
