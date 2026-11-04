@@ -1,15 +1,15 @@
 {
   "schema_version": 63,
-  "generated_at": "2026-11-03T20:59:04.090822+00:00",
+  "generated_at": "2026-11-04T00:44:04.770246+00:00",
   "test_environment": "github-actions-node",
   "checked_providers": 41,
   "status_counts": {
-    "healthy": 5,
+    "healthy": 3,
     "reachable": 0,
-    "blocked": 7,
-    "degraded": 0,
-    "no_streams": 10,
-    "provider_unreachable": 13,
+    "blocked": 6,
+    "degraded": 1,
+    "no_streams": 11,
+    "provider_unreachable": 14,
     "runtime_error": 0,
     "unavailable": 6,
     "excluded": 0
@@ -559,18 +559,14 @@
     },
     {
       "id": "hindmoviez",
-      "status": "healthy",
+      "status": "no_streams",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
-      "consecutive_successes": 2,
-      "hosts": [
-        "dhg.sessauholoippo-5775.workers.dev"
-      ],
-      "response_categories": [
-        "playable"
-      ],
+      "consecutive_successes": 0,
+      "hosts": [],
+      "response_categories": [],
       "host_health": {
         "share.kujeucoixeti-6043.workers.dev": {
           "last_checked_at": "2026-11-03T20:59:04.090822+00:00",
@@ -2322,14 +2318,16 @@
     },
     {
       "id": "playimdb",
-      "status": "no_streams",
+      "status": "degraded",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
       "consecutive_successes": 0,
       "hosts": [],
-      "response_categories": [],
+      "response_categories": [
+        "endpoint_reachable"
+      ],
       "host_health": {
         "quietmidnightgardeningideas.site": {
           "last_checked_at": "2026-09-11T22:39:13.523909+00:00",
@@ -2365,11 +2363,11 @@
           "consecutive_blocked": 0
         },
         "onlinevisibilitysystem.site": {
-          "last_checked_at": "2026-09-11T22:39:13.523909+00:00",
-          "last_category": "not_returned",
+          "last_checked_at": "2026-11-04T00:44:04.770246+00:00",
+          "last_category": "endpoint_reachable",
           "reachable": false,
-          "http_status": null,
-          "latency_ms": null,
+          "http_status": 200,
+          "latency_ms": 300,
           "kind": "hls",
           "consecutive_hard_failures": 0,
           "consecutive_successes": 0,
@@ -3109,18 +3107,14 @@
     },
     {
       "id": "wookafr",
-      "status": "healthy",
+      "status": "no_streams",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
-      "consecutive_successes": 2,
-      "hosts": [
-        "strm6.uqload.vc"
-      ],
-      "response_categories": [
-        "playable"
-      ],
+      "consecutive_successes": 0,
+      "hosts": [],
+      "response_categories": [],
       "host_health": {
         "lecteurvideo.com": {
           "last_checked_at": "2026-11-03T12:08:23.444422+00:00",
@@ -3270,7 +3264,7 @@
     },
     {
       "id": "anime-ultime",
-      "status": "blocked",
+      "status": "provider_unreachable",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
