@@ -1,15 +1,15 @@
 {
   "schema_version": 63,
-  "generated_at": "2026-11-05T00:58:08.908223+00:00",
+  "generated_at": "2026-11-05T12:35:57.492575+00:00",
   "test_environment": "github-actions-node",
   "checked_providers": 41,
   "status_counts": {
     "healthy": 3,
     "reachable": 0,
-    "blocked": 6,
+    "blocked": 7,
     "degraded": 1,
     "no_streams": 10,
-    "provider_unreachable": 15,
+    "provider_unreachable": 14,
     "runtime_error": 0,
     "unavailable": 6,
     "excluded": 0
@@ -1965,7 +1965,7 @@
       "enabled": true,
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
-      "consecutive_successes": 1,
+      "consecutive_successes": 2,
       "hosts": [
         "u14.vidzy.cc"
       ],
@@ -1974,18 +1974,18 @@
       ],
       "host_health": {
         "u14.vidzy.cc": {
-          "last_checked_at": "2026-11-05T00:58:08.908223+00:00",
+          "last_checked_at": "2026-11-05T12:35:57.492575+00:00",
           "last_category": "playable",
           "reachable": true,
           "http_status": 200,
-          "latency_ms": 534,
+          "latency_ms": 524,
           "kind": "hls",
           "consecutive_hard_failures": 0,
-          "consecutive_successes": 4,
+          "consecutive_successes": 5,
           "consecutive_blocked": 0
         },
         "v80nz3c7i6rr.tnmr.org": {
-          "last_checked_at": "2026-11-05T00:58:08.908223+00:00",
+          "last_checked_at": "2026-11-05T12:35:57.492575+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -1996,7 +1996,7 @@
           "consecutive_blocked": 0
         },
         "s1.fsvid.lol": {
-          "last_checked_at": "2026-11-05T00:58:08.908223+00:00",
+          "last_checked_at": "2026-11-05T12:35:57.492575+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -2007,7 +2007,7 @@
           "consecutive_blocked": 0
         },
         "v6.vidzy.cc": {
-          "last_checked_at": "2026-11-05T00:58:08.908223+00:00",
+          "last_checked_at": "2026-11-05T12:35:57.492575+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -2500,17 +2500,21 @@
     },
     {
       "id": "sekai",
-      "status": "no_streams",
+      "status": "healthy",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
-      "consecutive_successes": 0,
-      "hosts": [],
-      "response_categories": [],
+      "consecutive_successes": 1,
+      "hosts": [
+        "23.mugiwara.one"
+      ],
+      "response_categories": [
+        "playable"
+      ],
       "host_health": {
         "4.mugiwara.one": {
-          "last_checked_at": "2026-11-04T12:21:13.053453+00:00",
+          "last_checked_at": "2026-11-05T12:35:57.492575+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -2521,7 +2525,7 @@
           "consecutive_blocked": 0
         },
         "cdndirector.dailymotion.com": {
-          "last_checked_at": "2026-11-04T12:21:13.053453+00:00",
+          "last_checked_at": "2026-11-05T12:35:57.492575+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -2532,7 +2536,7 @@
           "consecutive_blocked": 0
         },
         "1.mugiwara.one": {
-          "last_checked_at": "2026-11-04T12:21:13.053453+00:00",
+          "last_checked_at": "2026-11-05T12:35:57.492575+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -2543,7 +2547,18 @@
           "consecutive_blocked": 0
         },
         "23.mugiwara.one": {
-          "last_checked_at": "2026-11-04T12:21:13.053453+00:00",
+          "last_checked_at": "2026-11-05T12:35:57.492575+00:00",
+          "last_category": "playable",
+          "reachable": true,
+          "http_status": 206,
+          "latency_ms": 879,
+          "kind": "mp4",
+          "consecutive_hard_failures": 0,
+          "consecutive_successes": 1,
+          "consecutive_blocked": 0
+        },
+        "5.mugiwara.one": {
+          "last_checked_at": "2026-11-05T12:35:57.492575+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -2551,17 +2566,6 @@
           "kind": "mp4",
           "consecutive_hard_failures": 0,
           "consecutive_successes": 0,
-          "consecutive_blocked": 0
-        },
-        "5.mugiwara.one": {
-          "last_checked_at": "2026-11-04T12:21:13.053453+00:00",
-          "last_category": "playable",
-          "reachable": true,
-          "http_status": 206,
-          "latency_ms": 886,
-          "kind": "mp4",
-          "consecutive_hard_failures": 0,
-          "consecutive_successes": 1,
           "consecutive_blocked": 0
         }
       },
@@ -3015,18 +3019,14 @@
     },
     {
       "id": "voiranime-homes",
-      "status": "healthy",
+      "status": "blocked",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
-      "consecutive_successes": 1,
-      "hosts": [
-        "u14.vidzy.cc"
-      ],
-      "response_categories": [
-        "playable"
-      ],
+      "consecutive_successes": 0,
+      "hosts": [],
+      "response_categories": [],
       "host_health": {
         "u14.vidzy.cc": {
           "last_checked_at": "2026-11-05T00:58:08.908223+00:00",
@@ -3107,7 +3107,7 @@
     },
     {
       "id": "wookafr",
-      "status": "provider_unreachable",
+      "status": "no_streams",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
