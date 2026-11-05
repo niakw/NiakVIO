@@ -1,15 +1,15 @@
 {
   "schema_version": 63,
-  "generated_at": "2026-11-04T19:57:47.724206+00:00",
+  "generated_at": "2026-11-05T00:58:08.908223+00:00",
   "test_environment": "github-actions-node",
   "checked_providers": 41,
   "status_counts": {
-    "healthy": 2,
+    "healthy": 3,
     "reachable": 0,
-    "blocked": 7,
-    "degraded": 2,
+    "blocked": 6,
+    "degraded": 1,
     "no_streams": 10,
-    "provider_unreachable": 14,
+    "provider_unreachable": 15,
     "runtime_error": 0,
     "unavailable": 6,
     "excluded": 0
@@ -559,16 +559,14 @@
     },
     {
       "id": "hindmoviez",
-      "status": "degraded",
+      "status": "no_streams",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
       "consecutive_successes": 0,
       "hosts": [],
-      "response_categories": [
-        "host_down"
-      ],
+      "response_categories": [],
       "host_health": {
         "share.kujeucoixeti-6043.workers.dev": {
           "last_checked_at": "2026-11-04T12:21:13.053453+00:00",
@@ -1962,28 +1960,32 @@
     },
     {
       "id": "french-manga",
-      "status": "no_streams",
+      "status": "healthy",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
-      "consecutive_successes": 0,
-      "hosts": [],
-      "response_categories": [],
+      "consecutive_successes": 1,
+      "hosts": [
+        "u14.vidzy.cc"
+      ],
+      "response_categories": [
+        "playable"
+      ],
       "host_health": {
         "u14.vidzy.cc": {
-          "last_checked_at": "2026-10-31T23:30:44.633720+00:00",
+          "last_checked_at": "2026-11-05T00:58:08.908223+00:00",
           "last_category": "playable",
           "reachable": true,
           "http_status": 200,
-          "latency_ms": 321,
+          "latency_ms": 534,
           "kind": "hls",
           "consecutive_hard_failures": 0,
-          "consecutive_successes": 3,
+          "consecutive_successes": 4,
           "consecutive_blocked": 0
         },
         "v80nz3c7i6rr.tnmr.org": {
-          "last_checked_at": "2026-10-31T23:30:44.633720+00:00",
+          "last_checked_at": "2026-11-05T00:58:08.908223+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -1994,7 +1996,7 @@
           "consecutive_blocked": 0
         },
         "s1.fsvid.lol": {
-          "last_checked_at": "2026-10-31T23:30:44.633720+00:00",
+          "last_checked_at": "2026-11-05T00:58:08.908223+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -2005,7 +2007,7 @@
           "consecutive_blocked": 0
         },
         "v6.vidzy.cc": {
-          "last_checked_at": "2026-10-31T23:30:44.633720+00:00",
+          "last_checked_at": "2026-11-05T00:58:08.908223+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -3013,28 +3015,32 @@
     },
     {
       "id": "voiranime-homes",
-      "status": "blocked",
+      "status": "healthy",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
-      "consecutive_successes": 0,
-      "hosts": [],
-      "response_categories": [],
+      "consecutive_successes": 1,
+      "hosts": [
+        "u14.vidzy.cc"
+      ],
+      "response_categories": [
+        "playable"
+      ],
       "host_health": {
         "u14.vidzy.cc": {
-          "last_checked_at": "2026-10-31T23:30:44.633720+00:00",
+          "last_checked_at": "2026-11-05T00:58:08.908223+00:00",
           "last_category": "playable",
           "reachable": true,
           "http_status": 200,
-          "latency_ms": 370,
+          "latency_ms": 550,
           "kind": "hls",
           "consecutive_hard_failures": 0,
-          "consecutive_successes": 3,
+          "consecutive_successes": 4,
           "consecutive_blocked": 0
         },
         "v6.vidzy.cc": {
-          "last_checked_at": "2026-10-31T23:30:44.633720+00:00",
+          "last_checked_at": "2026-11-05T00:58:08.908223+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -3101,18 +3107,14 @@
     },
     {
       "id": "wookafr",
-      "status": "healthy",
+      "status": "provider_unreachable",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
-      "consecutive_successes": 1,
-      "hosts": [
-        "wishonly.site"
-      ],
-      "response_categories": [
-        "playable"
-      ],
+      "consecutive_successes": 0,
+      "hosts": [],
+      "response_categories": [],
       "host_health": {
         "lecteurvideo.com": {
           "last_checked_at": "2026-11-04T19:57:47.724206+00:00",
