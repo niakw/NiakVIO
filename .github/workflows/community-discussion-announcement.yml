@@ -1,0 +1,22 @@
+name: COMMUNITY - Contributions invitation
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/triggers/community-discussion-2026-11-06.json'
+  workflow_dispatch:
+permissions:
+  contents: read
+  discussions: write
+jobs:
+  announce:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Publish one deduplicated community discussion
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 scripts/publish_community_discussion.py

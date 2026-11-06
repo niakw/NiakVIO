@@ -322,3 +322,6 @@ Provider JavaScript is treated as untrusted input. NiakVIO uses bounded workers,
 > NiakVIO is an independent community project and is not affiliated with Nuvio or referenced third-party services. Nothing in this repository grants rights to third-party media/services or authorizes bypassing authentication, paywalls, encryption or access controls.
 
 **Project docs:** [`SECURITY.md`](SECURITY.md) · [`TESTING_NOTICE.md`](TESTING_NOTICE.md) · [`DISCLAIMER.md`](DISCLAIMER.md) · [`CONTRIBUTING.md`](CONTRIBUTING.md) · [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md) · [`LICENSE`](LICENSE) · [`NOTICE`](NOTICE)
+## 🤝 Community & contributions
+
+NiakVIO welcomes contributors and testers. Join [GitHub Discussions](https://github.com/niakw/NiakVIO/discussions), read [CONTRIBUTING.md](CONTRIBUTING.md), and explore [Brain-LLM](https://github.com/niakw/NiakVIO-Brain-LLM). Bring reproducible evidence and regression tests; please never publish credentials or copyrighted media.

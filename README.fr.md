@@ -439,3 +439,6 @@ Le JavaScript provider est traité comme une entrée non fiable. NiakVIO utilise
 > NiakVIO est un projet communautaire indépendant, non affilié à Nuvio ni aux services tiers cités. Rien dans ce repository n’accorde de droits sur des médias/services tiers ni n’autorise le contournement d’une authentification, d’un paywall, d’un chiffrement ou d’un contrôle d’accès.
 
 **Documents projet :** [`SECURITY.md`](SECURITY.md) · [`TESTING_NOTICE.md`](TESTING_NOTICE.md) · [`DISCLAIMER.md`](DISCLAIMER.md) · [`CONTRIBUTING.md`](CONTRIBUTING.md) · [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md) · [`LICENSE`](LICENSE) · [`NOTICE`](NOTICE)
+## 🤝 Communauté et contributions
+
+Les contributions et tests sont les bienvenus ! Rejoins les [Discussions GitHub](https://github.com/niakw/NiakVIO/discussions), consulte [CONTRIBUTING.md](CONTRIBUTING.md) et le dépôt [Brain-LLM](https://github.com/niakw/NiakVIO-Brain-LLM). Privilégie les bugs reproductibles, les tests et les preuves anonymisées.

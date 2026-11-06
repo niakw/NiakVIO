@@ -203,3 +203,7 @@ Never publish cookies, tokens or private information.
 Domains, APIs and players change. Avoid statements like “permanently fixed”. State what was tested and on which client/device/date.
 
 A missing proof is not a success, but it is not automatically proof of death either.
+
+## Community discussions
+
+Newcomers are very welcome. Start in [GitHub Discussions](https://github.com/niakw/NiakVIO/discussions) for help, ideas, episode-identity issues or collaboration before opening a large PR. The companion [Brain-LLM repository](https://github.com/niakw/NiakVIO-Brain-LLM) documents model-side work. Keep stream and security observations sanitized, and follow the verified-behavior rules above.

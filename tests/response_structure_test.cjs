@@ -6,7 +6,7 @@ const result = responseStructure(payload);
 assert.equal(result.kind, 'json');
 assert.ok(result.fields.some(row => row.path === 'data.sources[].file' && row.type === 'string'));
 assert.ok(!JSON.stringify(result).includes('PRIVATE'));
-assert.ok(!JSON.stringify(result).includes('example.test'));
+assert.doesNotMatch(JSON.stringify(result), /example\.test/i);
 assert.ok(!JSON.stringify(result).includes('token'));
 const html = responseStructure('<html><iframe data-src="PRIVATE" src="about:blank"></iframe><script>var players = "PRIVATE"; const authToken="PRIVATE";</script></html>');
 assert.ok(html.tags.some(row => row.tag === 'iframe' && row.attributes.includes('data-src')));
@@ -28,7 +28,7 @@ assert.deepEqual(markup.rows.find(row => row.tag === 'iframe'), {
 assert.deepEqual(markup.rows.find(row => row.tag === 'option').value_kinds, { value: 'relative_url' });
 assert.deepEqual(markup.rows[0].value_kinds, { 'data-code': 'encoded_markup' });
 assert.ok(!JSON.stringify(markup).includes('PRIVATE'));
-assert.ok(!JSON.stringify(markup).includes('private.test'));
+assert.doesNotMatch(JSON.stringify(markup), /private\.test/i);
 assert.ok(!JSON.stringify(markup).includes('token'));
 const tail = responseStructure('<html>' + ' '.repeat(150000) + '<iframe data-src="/PRIVATE"></iframe></html>').player_markup;
 assert.equal(tail.truncated, true);
@@ -52,7 +52,7 @@ assert.deepEqual(shape('source', 'src'), { kind: 'media_extension', origin: 'cro
 assert.ok(shapes.rows.some(row => row.value_shapes.href?.kind === 'script_extension'));
 assert.ok(shapes.rows.some(row => row.value_shapes.href?.kind === 'style_extension'));
 assert.ok(!JSON.stringify(shapes).includes('PRIVATE'));
-assert.ok(!JSON.stringify(shapes).includes('private.test'));
+assert.doesNotMatch(JSON.stringify(shapes), /private\.test/i);
 const encoded = responseStructure('<html><iframe data-src="' +
   Buffer.from('https://private.test/embed/PRIVATE').toString('base64') + '"></iframe></html>',
   { baseUrl: 'https://provider.test/episode.html' }).player_markup.rows[0];
@@ -87,7 +87,7 @@ assert.deepEqual(queryReferences.calls, [1, 2, 3].map(index =>
 assert.equal(queries.truncated, false);
 assert.equal(queries.rows[0].address_refs_truncated, false);
 assert.ok(!JSON.stringify(queries).includes('PRIVATE'));
-assert.ok(!JSON.stringify(queries).includes('private.test'));
+assert.doesNotMatch(JSON.stringify(queries), /private\.test/i);
 assert.ok(!JSON.stringify(queries).includes('fragment'));
 
 const metadataMarkup = '<html><div data-src="/embed/PRIVATE"></div>' +
@@ -109,7 +109,7 @@ const singleArgumentReferences = referenceCollector();
 assert.deepEqual(withMetadata, responseStructure(metadataMarkup,
   { baseUrl: queryOptions.baseUrl, addressRef: singleArgumentReferences.ref }));
 assert.ok(!JSON.stringify(withMetadata).includes('PRIVATE'));
-assert.ok(!JSON.stringify(withMetadata).includes('private.test'));
+assert.doesNotMatch(JSON.stringify(withMetadata), /private\.test/i);
 
 const unionReferences = referenceCollector();
 const unionMarkup = '<html><iframe src="/embed/PRIVATE#one" data-src="/embed/PRIVATE_A"></iframe>' +
@@ -163,7 +163,7 @@ assert.equal(selected.rows.length, 8);
 assert.equal(selected.rows[0].tag, 'iframe');
 assert.deepEqual(selected.rows[0].address_refs, { src: ['r1'] });
 assert.equal(selectedReferences.calls.length, 8);
-assert.ok(!selectedReferences.calls.includes('https://other.private.test/PRIVATE'));
+assert.ok(selectedReferences.calls.every(address => new URL(address).origin !== 'https://other.private.test'));
 
 for (const address of ['/embed/PRIVATE', '//private.test/embed/PRIVATE', 'https://']) {
   let called = false;
@@ -278,7 +278,7 @@ assert.deepEqual(scripts.script_resources, [
 ]);
 assert.deepEqual(scripts.inline_fields, []);
 assert.ok(!JSON.stringify(scripts).includes('PRIVATE'));
-assert.ok(!JSON.stringify(scripts).includes('private.test'));
+assert.doesNotMatch(JSON.stringify(scripts), /private\.test/i);
 
 const inert = responseStructure('<html><!-- <script>const x={commented:1};import("./_app/immutable/entry/app.PRIVATE.js")</script> -->' +
   '<script>const text="{fake: 123} import(\"./_app/immutable/entry/app.PRIVATE.js\")";' +

@@ -1548,3 +1548,10 @@
 ## 2026-11-06 — Fix bounded evidence filename pattern before publish
 
 - Inspection of the just-authored safe publication classifier found an escaping bug: Python raw regex had two backslashes before .json and would reject numbered evidence artifacts despite the intended allowlist. Corrected to a single regex escape (literal dot), leaving all non-evidence paths denied. Re-triggered exact-main reconciliation; previous run cannot be treated as published.
+
+## 2026-11-06 — Two-repository cleanup + public contribution invitation
+
+- Closed NiakVIO stale draft PR #252 (candidate a4cc1f5c1afd60fe64548fd8e5bf61d5c712af85) without merge after exact verification run 41702179015 failed. Archived its Brain deterministic query hypothesis in PR conversation comment 6697453689; no current-byte playable provider repair asserted.
+- Projection Reconcile run 42303162753 on e49b5fdd succeeded, manifest advanced to 5.21.137, final publication commit 9e830a63. Separate client/S00 and terminal stream proof pending.
+- Security Final Gate 42304250008 on 9e830a failed: exact CodeQL #2531 High in tests/response_structure_test.cjs, rule js/incomplete-url-substring-sanitization. Strengthened test host comparisons using parsed URL origins, replaced raw hostname substring checks with explicit leak regex assertions. Must recheck new CodeQL alert disposition; not considered resolved until scanner confirms.
+- Added single-shot GitHub Discussions publication (discussion creation via GitHub Actions with discussions:write permission; the connector itself has no createDiscussion method). Idempotent by title; published link must be verified in action logs before claiming live. Community invitation and README/CONTRIBUTING links added. No secrets/copyrighted media permitted in submissions.
