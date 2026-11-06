@@ -178,13 +178,46 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          git fetch origin main
-          CURRENT_SHA="$(git rev-parse origin/main)"
-          if [ "$CURRENT_SHA" != "$GITHUB_SHA" ]; then
-            echo "FIELD_PROVIDER_PROJECTION_PUBLISH_SKIPPED reason=main_advanced baseline=$GITHUB_SHA current=$CURRENT_SHA"
+          # Do not discard validated provider bundles when Brain publishes only evidence.
+          # The baseline must be an ancestor; any executable/authority drift is blocked.
+          published=false
+          for attempt in 1 2 3 4; do
+            git fetch --no-tags origin main
+            CURRENT_SHA="$(git rev-parse origin/main)"
+            if [ "$CURRENT_SHA" != "$GITHUB_SHA" ]; then
+              git merge-base --is-ancestor "$GITHUB_SHA" "$CURRENT_SHA" || {
+                echo "FIELD_PROVIDER_PROJECTION_PUBLISH_BLOCKED reason=non_ancestor" >&2
+                exit 1
+              }
+              git diff-tree -r --no-renames --name-only "$GITHUB_SHA" "$CURRENT_SHA" > "$RUNNER_TEMP/projection-main-drift.paths"
+              python scripts/domain_refresh_publication_drift_gate.py --drift-file "$RUNNER_TEMP/projection-main-drift.paths" || {
+                echo "FIELD_PROVIDER_PROJECTION_PUBLISH_BLOCKED reason=executable_main_drift" >&2
+                exit 1
+              }
+              # A merge preserves the exact earlier provider SHA pinned in native-hub46.
+              git merge --no-ff --no-edit -m "ci(providers): join safe Brain evidence" origin/main || {
+                echo "FIELD_PROVIDER_PROJECTION_PUBLISH_BLOCKED reason=merge_conflict" >&2
+                exit 1
+              }
+              python scripts/generate_release_hashes.py
+              python scripts/validate_release_integrity.py
+              python tests/release_hash_scope_test.py
+              git add FILE-HASHES.json PATCH-SHA256SUMS.txt SHA256SUMS.json
+              if ! git diff --cached --quiet; then
+                git commit -m "chore(release): rehash merged evidence-only projection"
+              fi
+              git diff --check
+            fi
+            if git push origin HEAD:main; then
+              published=true
+              break
+            fi
+            echo "FIELD_PROVIDER_PROJECTION_PUBLISH_RETRY attempt=$attempt" >&2
+          done
+          if [ "$published" != "true" ]; then
+            echo "FIELD_PROVIDER_PROJECTION_PUBLISH_BLOCKED reason=retry_exhausted" >&2
             exit 1
           fi
-          git push origin HEAD:main
           echo "FIELD_PROVIDER_PROJECTION_PUBLISHED baseline=$GITHUB_SHA final=$(git rev-parse HEAD) providers=${{ steps.drift.outputs.providers }}"
 
       - name: Report no-op

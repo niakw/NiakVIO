@@ -22,7 +22,10 @@ for required in (
     "build_hub46_native_manifest.py",
     "validate_release_integrity.py",
     'CURRENT_SHA="$(git rev-parse origin/main)"',
-    'if [ "$CURRENT_SHA" != "$GITHUB_SHA" ]',
+    'git merge-base --is-ancestor "$GITHUB_SHA" "$CURRENT_SHA"',
+    "domain_refresh_publication_drift_gate.py",
+    "git merge --no-ff --no-edit",
+    "FIELD_PROVIDER_PROJECTION_PUBLISH_BLOCKED reason=executable_main_drift",
     "git push origin HEAD:main",
     "temp-current-bytes-full-provider-census.yml",
     "--preserve-structured-data",
@@ -33,6 +36,14 @@ for required in (
 prove = wf.split("- name: Prove projection fixed point", 1)[1].split("- name: Build atomic provider publication", 1)[0]
 assert prove.index("reindex_provider_publication_fingerprints.py") < prove.index("detect_provider_projection_drift.py"), prove
 assert prove.count("reindex_provider_publication_fingerprints.py") == 1, prove
+
+publisher=wf.split("- name: Publish exact reconciled projection", 1)[1].split("- name: Report no-op", 1)[0]
+assert publisher.index("git merge-base --is-ancestor") < publisher.index("domain_refresh_publication_drift_gate.py")
+assert publisher.index("domain_refresh_publication_drift_gate.py") < publisher.index("git merge --no-ff --no-edit")
+assert publisher.index("git merge --no-ff --no-edit") < publisher.index("git push origin HEAD:main")
+assert "git rebase" not in publisher and "git push --force" not in publisher
+assert "for attempt in 1 2 3 4" in publisher
+assert "python scripts/validate_release_integrity.py" in publisher
 
 assert "materialize_provider_v3_all.py" not in wf
 assert 'steps.drift.outputs.count != \'0\'' in wf
