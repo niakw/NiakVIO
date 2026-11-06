@@ -1,0 +1,22 @@
+name: SEC - Inspect exact CodeQL alert
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/triggers/codeql-2531-inspection-2026-11-06.json'
+  workflow_dispatch:
+permissions:
+  contents: read
+  security-events: read
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Read authoritative High alert location and dataflow
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh api "repos/$GITHUB_REPOSITORY/code-scanning/alerts/2531" --jq '{number, state, rule: .rule.id, severity: .rule.security_severity_level, location: .most_recent_instance.location, message: .most_recent_instance.message, analysis_key: .most_recent_instance.analysis_key}'

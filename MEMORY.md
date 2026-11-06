@@ -1561,3 +1561,8 @@
 - Closed failed unmerged PR #252; branch fix/4khdhub-exact-css-class-20261101 scheduled for exact-SHA guarded deletion via one-shot CI. PR diff/comment and SHA preserved, current branch deletion not inferred until workflow and remote verify.
 - Three inert one-shot temporary workflows removed from main: temp-anime-sama-config-rematerialize, temp-repair28-observable-resume, temp-resume-repair28-post-apply. Both current byte census and targeted recovery workflows explicitly preserved. Detailed rationale in docs/REPO_CLEANUP_AUDIT_2026-11-06.md.
 - Security Final Gate extended to workflow_run after successful exact-head CodeQL scan, with strict equality to current github.sha. This avoids stale pre-CodeQL gate races while retaining the current High/Critical policy. No alert dismissal or security weakening.
+
+## 2026-11-06 — Security High #2531 remains after initial test hardening
+
+- Exact main Security Final Gate 42306887115 failed at 22:49 UTC despite CodeQL exact-SHA analysis: one open High #2531 (`js/incomplete-url-substring-sanitization`) in `tests/response_structure_test.cjs`, no current provider High. Old assertion-only changes were insufficient; no dismissal applied.
+- Added read-only, one-shot CodeQL alert detail workflow with security-events:read and fixed alert number to inspect authoritative line and message before further patch. The verified scanner location, not guessed syntax, must drive the fix. Pending execution.
