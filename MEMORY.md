@@ -1566,3 +1566,8 @@
 
 - Exact main Security Final Gate 42306887115 failed at 22:49 UTC despite CodeQL exact-SHA analysis: one open High #2531 (`js/incomplete-url-substring-sanitization`) in `tests/response_structure_test.cjs`, no current provider High. Old assertion-only changes were insufficient; no dismissal applied.
 - Added read-only, one-shot CodeQL alert detail workflow with security-events:read and fixed alert number to inspect authoritative line and message before further patch. The verified scanner location, not guessed syntax, must drive the fix. Pending execution.
+
+## 2026-11-06 — Identified stale CodeQL High #2531 by authoritative alert API
+
+- One-shot inspect run 42307670677 SUCCESS: alert #2531 path `tests/response_structure_test.cjs` line 166; rule `js/incomplete-url-substring-sanitization`; message says `https://other.private.test/PRIVATE` can occur anywhere inside a URL; analysis_key `.github/workflows/codeql.yml:analyze` (legacy, pre-split category). Current test source no longer uses that URL substring; it compares parsed URL.origin exactly. New maintained CodeQL categories include JS Core `/language:javascript-typescript/scope:core` covering tests.
+- Security Gate 42306887115 still failed because old analysis category alert remains open; no active current provider High. Added strict one-alert stale-category retirement workflow triggered only on successful exact-head CodeQL. It confirms source line, rule/category, current maintained JS Core analysis and absence of other current-core High/Critical before dismissing the obsolete test-only alert with explicit justification and dispatching fresh SEC Final Gate. Not yet proof of a clean final gate.

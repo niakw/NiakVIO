@@ -1,0 +1,23 @@
+name: SEC - Retire verified stale CodeQL category
+on:
+  workflow_run:
+    workflows: ["SEC - CodeQL"]
+    types: [completed]
+    branches: [main]
+permissions:
+  contents: read
+  security-events: write
+  actions: write
+jobs:
+  retire:
+    if: ${{ github.repository == 'niakw/NiakVIO' && github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_sha == github.sha }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Verify source and retire only old category finding 2531
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 scripts/retire_stale_codeql_2531.py
