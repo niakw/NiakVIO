@@ -1544,3 +1544,7 @@
 
 - A new sharded census commit 9e529fed advanced main after publication trigger 114a41f, touching seven evidence-only files. The conservative Domain/Projection safe drift gate omitted provider-census-proof-history.json, provider-repair-batch-plan-latest.json, provider-waf-browser-session-latest.json and numbered census/WAF artifacts. These are neither provider source bytes nor production authority inputs of the projection detector/reapply publisher (inspected).
 - Exact allowlist expanded with these three named files and strictly numeric bounded artifact filenames. No wildcard automation JSON, no provider-overrides, Core, executable, manifest or authority DATA allowed; negative and positive gate contracts were extended. Bounded merge/re-hash publication remains fail-closed. Re-triggered current-main projection. Acceptance still requires final pushed manifest SHA and refreshed streams.
+
+## 2026-11-06 — Fix bounded evidence filename pattern before publish
+
+- Inspection of the just-authored safe publication classifier found an escaping bug: Python raw regex had two backslashes before .json and would reject numbered evidence artifacts despite the intended allowlist. Corrected to a single regex escape (literal dot), leaving all non-evidence paths denied. Re-triggered exact-main reconciliation; previous run cannot be treated as published.

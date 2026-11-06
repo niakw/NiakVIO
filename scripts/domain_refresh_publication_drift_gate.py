@@ -32,8 +32,8 @@ SAFE_FILES = {
 # Timestamped census/WAF session artifacts are evidence only. Never accept a
 # generic automation/*.json glob: provider-overrides and authority DATA live there.
 SAFE_ARTIFACT_PATTERNS = (
-    re.compile(r"^automation/provider-census-sharded-[0-9]{8,20}\\.json$"),
-    re.compile(r"^automation/provider-waf-browser-session-[0-9]{8,20}\\.json$"),
+    re.compile(r"^automation/provider-census-sharded-[0-9]{8,20}\.json$"),
+    re.compile(r"^automation/provider-waf-browser-session-[0-9]{8,20}\.json$"),
 )
 
 
