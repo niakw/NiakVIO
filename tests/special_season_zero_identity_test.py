@@ -1,0 +1,75 @@
+#!/usr/bin/env python3
+"""Regression: specials S00 remain distinct from season 1, while unknown stays unknown."""
+from __future__ import annotations
+import importlib.util
+import json
+import subprocess
+import sys
+import tempfile
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "scripts"))
+spec = importlib.util.spec_from_file_location("specials_core", ROOT / "scripts/provider_patches/global_stream_identity_v1.py")
+assert spec and spec.loader
+core = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(core)
+
+source = "module.exports={getStreams:async()=>ROWS};"
+query = {"tmdbId": "129261", "mediaType": "tv", "title": "Spartacus", "season": 0, "episode": 1}
+rows = [
+    {"title": "Spartacus S01E01", "url": "https://cdn.example/wrong-s1.m3u8"},
+    {"title": "Spartacus S02E01", "url": "https://cdn.example/unverified-alternate-s2.m3u8"},
+    {"name": "Spartacus", "season": 1, "episode": 1, "url": "https://cdn.example/wrong-structured.m3u8"},
+    {"name": "Spartacus", "sourceUrl": "https://reader.example/watch?season=2&episode=1", "url": "https://cdn.example/wrong-reader.m3u8"},
+    {"title": "Spartacus S00E01", "url": "https://cdn.example/correct-s00.m3u8"},
+    {"name": "Spartacus", "seasonNumber": 0, "episodeNumber": 1, "url": "https://cdn.example/correct-structured.m3u8"},
+    {"name": "Server 1", "url": "https://cdn.example/opaque-unverified.m3u8"},
+]
+compiled = core.apply(source.replace("ROWS", json.dumps(rows)), context={"provider_id": "example"})
+runner = compiled + """
+(async()=> {
+  const assert=require('assert');
+  const q=QUERY;
+  const rows=await module.exports.getStreams(q);
+  assert.deepEqual(rows.map(r=>r.url), [
+    'https://cdn.example/correct-s00.m3u8',
+    'https://cdn.example/correct-structured.m3u8',
+    'https://cdn.example/opaque-unverified.m3u8'
+  ], JSON.stringify(rows));
+  const s1=await module.exports.getStreams({...q,season:1});
+  assert(s1.some(r=>r.url==='https://cdn.example/wrong-s1.m3u8'));
+  assert(!s1.some(r=>r.url==='https://cdn.example/correct-s00.m3u8'));
+  const pos=await module.exports.getStreams(q.tmdbId,q.mediaType,0,1);
+  assert.deepEqual(pos.map(r=>r.url), rows.map(r=>r.url));
+})().catch(e=>{console.error(e);process.exit(1)});
+""".replace("QUERY", json.dumps(query))
+base = (ROOT / "scripts/provider_base_store.py").read_text(encoding="utf-8")
+marker = base[base.index("function _spv22EpisodeMarker"):base.index("function _spv221EpisodeTableState")]
+external = base[base.index("function _externalEpisodeMarker"):base.index("function _externalPlaybackHeaders")]
+scoped = base[base.index("function _spv251SeasonNumber"):base.index("function _spv214EpisodeNumber")]
+runner += """
+function _text(value){return String(value==null?'':value);}
+""" + marker + external + scoped + """
+const assert=require('assert');
+assert(_spv22EpisodeMarker('https://example.test/?season=0&episode=1',0,1).matches);
+assert(!_spv22EpisodeMarker('https://example.test/?season=1&episode=1',0,1).matches);
+assert(_spv22EpisodeMarker('https://example.test/s00e01',0,1).matches);
+assert(!_spv22EpisodeMarker('https://example.test/s01e01',0,1).matches);
+assert(_externalEpisodeMarker('https://example.test/s00e01',0,1).matches);
+assert(!_externalEpisodeMarker('https://example.test/s01e01',0,1).matches);
+const all=[{season:0,episodes:['special']},{season:1,episodes:['normal']},{season:2,episodes:['alternate']}];
+const s0=_spv251SeasonEpisodeScopedValue(all,'tv',0,1,0);
+assert.deepEqual(s0,[{season:0,episodes:['special']}]);
+const s1=_spv251SeasonEpisodeScopedValue(all,'tv',1,1,0);
+assert.deepEqual(s1,[{season:1,episodes:['normal']}]);
+assert.deepEqual(_spv251SeasonEpisodeScopedValue(all,'tv',3,1,0),[]);
+"""
+assert "if (!chosen && wantedSeason === 0) continue;" in base, "missing S00-safe catalogue selection"
+with tempfile.TemporaryDirectory() as td:
+    script = Path(td) / "specials.cjs"
+    script.write_text(runner, encoding="utf-8")
+    out = subprocess.run(["node", str(script)], text=True, capture_output=True, timeout=25)
+    assert out.returncode == 0, out.stdout + out.stderr
+
+print("SPECIAL_SEASON_ZERO_IDENTITY_OK s00 and s01 distinct structured/query/marker/scoped; opaque unverified")

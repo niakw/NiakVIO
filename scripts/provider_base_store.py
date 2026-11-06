@@ -2321,7 +2321,8 @@ function _spv22EpisodeMarker(rawUrl, season, episode) {
   let path = "";
   try { const parsed = new URL(_text(rawUrl)); path = decodeURIComponent((parsed.pathname || "") + (parsed.search || "")).toLowerCase(); }
   catch (_) { return { marked: false, matches: false, strength: 0 }; }
-  const wantedSeason = Math.max(1, Number(season) || 1);
+  const requestedSeason = _text(season).trim();
+  const wantedSeason = requestedSeason !== "" && Number(requestedSeason) === 0 ? 0 : Math.max(1, Number(season) || 1);
   const wantedEpisode = Math.max(1, Number(episode) || 1);
   const patterns = [
     { re: /[?&](?:season|s)=0*(\d{1,3})[^#]{0,120}?[&](?:episode|ep|e)=0*(\d{1,4})(?:[&#]|$)/i, strength: 5 },
@@ -2556,7 +2557,8 @@ function _externalEpisodeMarker(url, season, episode) {
   let path = "";
   try { path = decodeURIComponent(new URL(url).pathname || "").toLowerCase(); }
   catch (_) { return { marked: false, matches: false }; }
-  const wantedSeason = Math.max(1, Number(season) || 1);
+  const requestedSeason = _text(season).trim();
+  const wantedSeason = requestedSeason !== "" && Number(requestedSeason) === 0 ? 0 : Math.max(1, Number(season) || 1);
   const wantedEpisode = Math.max(1, Number(episode) || 1);
   let match = path.match(/\/(\d{1,3})\/(\d{1,4})\/[^/]*(?:playlist\.m3u8|manifest\.mpd|[^/]+\.(?:mp4|mkv|webm))(?:$|[?#])/i);
   if (match) return {
@@ -2963,15 +2965,16 @@ function _spv251EmbeddedJsonValues(raw) {
   return out;
 }
 function _spv251SeasonNumber(row) {
-  if (!row || typeof row !== "object" || Array.isArray(row)) return 0;
+  if (!row || typeof row !== "object" || Array.isArray(row)) return -1;
   for (const key of ["season", "season_number", "seasonNumber"]) {
+    if (row[key] == null || _text(row[key]).trim() === "") continue;
     const value = Number(row[key]);
-    if (Number.isFinite(value) && value > 0 && value <= 1000) return Math.floor(value);
+    if (Number.isInteger(value) && value >= 0 && value <= 1000) return value;
   }
   const id = _text(row.id).trim();
   const structural = row.lang || row.languages || row.episodes || row.episode || row.sources;
   if (structural && /^\d{1,3}$/.test(id)) return Number(id);
-  return 0;
+  return -1;
 }
 function _spv251UrlMatrix(value, wantedEpisode) {
   if (!Array.isArray(value) || !value.length || value.length > 12 || wantedEpisode <= 0) return null;
@@ -2989,14 +2992,15 @@ function _spv251UrlMatrix(value, wantedEpisode) {
 }
 function _spv251SeasonEpisodeScopedValue(value, mediaType, season, episode, depth) {
   const lane = _text(mediaType).trim().toLowerCase();
-  const wantedSeason = Math.floor(Number(season) || 0), wantedEpisode = Math.floor(Number(episode) || 0);
+  const wantedSeason = season == null || _text(season).trim() === "" ? -1 : Math.floor(Number(season)), wantedEpisode = Math.floor(Number(episode) || 0);
   depth = Number(depth) || 0;
   if ((lane !== "tv" && lane !== "anime") || wantedEpisode <= 0 || depth > 12 || value == null) return value;
   if (Array.isArray(value)) {
-    const seasonRows = value.filter(row => _spv251SeasonNumber(row) > 0);
-    if (wantedSeason > 0 && seasonRows.length) {
+    const seasonRows = value.filter(row => _spv251SeasonNumber(row) >= 0);
+    if (wantedSeason >= 0 && seasonRows.length) {
       const exact = seasonRows.filter(row => _spv251SeasonNumber(row) === wantedSeason);
       if (exact.length) return exact.map(row => _spv251SeasonEpisodeScopedValue(row, lane, wantedSeason, wantedEpisode, depth + 1));
+      return []; // Explicit season catalogue exists but the requested season is absent.
     }
     const matrix = _spv251UrlMatrix(value, wantedEpisode);
     if (matrix) return matrix;
@@ -3004,7 +3008,7 @@ function _spv251SeasonEpisodeScopedValue(value, mediaType, season, episode, dept
   }
   if (typeof value !== "object") return value;
   const rowSeason = _spv251SeasonNumber(value);
-  if (wantedSeason > 0 && rowSeason > 0 && rowSeason !== wantedSeason) return null;
+  if (wantedSeason >= 0 && rowSeason >= 0 && rowSeason !== wantedSeason) return null;
   const out = {};
   for (const [key, child] of Object.entries(value).slice(0, 256)) {
     const scoped = _spv251SeasonEpisodeScopedValue(child, lane, wantedSeason, wantedEpisode, depth + 1);
@@ -4545,7 +4549,8 @@ async function _spv7DleFindDetails(meta, mediaType, season, episode) {
 }
 async function _spv7DleTv(tmdbId, mediaType, season, episode) {
   if (mediaType === "movie" || tmdbId == null || episode == null) return [];
-  const wantedSeason = Math.max(1, Number(season) || 1);
+  const requestedSeason = _text(season).trim();
+  const wantedSeason = requestedSeason !== "" && Number(requestedSeason) === 0 ? 0 : Math.max(1, Number(season) || 1);
   const wantedEpisode = String(Math.max(1, Number(episode) || 1));
   for (const base of _spv7ProviderSiteBases().slice(0,2)) {
     try {
@@ -4557,7 +4562,9 @@ async function _spv7DleTv(tmdbId, mediaType, season, episode) {
       let chosen = seasons.find(row => {
         const match = _text(row && row.title).match(/saison\s*(\d+)/i);
         return match && Number(match[1]) === wantedSeason;
-      }) || seasons[0];
+      });
+      if (!chosen && wantedSeason === 0) continue; // Never substitute saison 1 for specials.
+      chosen = chosen || seasons[0];
       const seasonId = _text(chosen && chosen.id).trim();
       if (!seasonId) continue;
       const epsUrl = new URL("/data/eps_"+encodeURIComponent(seasonId)+".txt?v="+Math.floor(Date.now()/30000), base).toString();

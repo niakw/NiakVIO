@@ -15,6 +15,7 @@ on:
       - 'engine_v2/src/stream-presentation.mjs'
       - 'scripts/nuvio_client_lab.cjs'
       - 'tests/core_runtime_nonregression_contract_test.py'
+      - 'tests/special_season_zero_identity_test.py'
       - 'tests/global_stream_metadata_preservation_contract_test.py'
       - 'tests/global_stream_presentation_pipeline_test.py'
       - 'tests/provider_branding_contract_test.py'
@@ -59,7 +60,9 @@ jobs:
       - name: Validate Core stream presentation pipeline
         run: python3 tests/global_stream_presentation_pipeline_test.py
       - name: Validate cross-client stream identity and external player identity
-        run: python3 tests/global_stream_identity_test.py
+        run: |
+          python3 tests/global_stream_identity_test.py
+          python3 tests/special_season_zero_identity_test.py
       - name: Validate final provider branding preserves visible player metadata
         run: python3 tests/provider_branding_contract_test.py
       - name: Validate quality recovery contract
