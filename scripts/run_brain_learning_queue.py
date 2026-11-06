@@ -1310,6 +1310,7 @@ def main() -> int:
     p.add_argument("--previous-state", type=Path, required=True)
     p.add_argument("--output-dir", type=Path, required=True)
     p.add_argument("--provider", default="")
+    p.add_argument("--provider-filter", default="", help="Explicit, comma-separated Learning cohort from the caller; never silently narrow it to family representatives.")
     p.add_argument("--budget-minutes", type=int, default=60)
     p.add_argument("--reserve-minutes", type=int, default=5)
     p.add_argument("--stream-safety-cap", type=int, default=2)
@@ -1329,6 +1330,25 @@ def main() -> int:
     order, info_by_id, queue = build_queue(health, previous, args.provider)
 
     staged_candidates = candidate_map(full_registry)
+    explicit_cohort = unique([
+        norm(item) for item in args.provider_filter.split(",") if item.strip()
+    ])
+    if explicit_cohort:
+        bad = [provider_id for provider_id in explicit_cohort
+               if not re.fullmatch(r"[a-z0-9][a-z0-9-]{0,95}", provider_id)]
+        if bad:
+            raise ValueError("invalid explicit Learning cohort provider: " + ",".join(bad))
+        if args.provider and norm(args.provider) not in explicit_cohort:
+            raise ValueError("single Learning target is outside explicit cohort")
+        unavailable = [
+            provider_id for provider_id in explicit_cohort
+            if provider_id not in staged_candidates or provider_id not in info_by_id
+        ]
+        if unavailable:
+            raise ValueError(
+                "explicit Learning cohort lacks current staged/health evidence: "
+                + ",".join(unavailable)
+            )
     repair_deferred = exhausted_repair_providers(
         load_json(ROOT / "automation" / "brain-repair-memory.json", {}),
         load_json(ROOT / "engine_v2" / "config" / "brain-policy.json", {}),
@@ -1393,6 +1413,15 @@ def main() -> int:
     causal_group_order: list[str] = []
     if handoff_priority and not args.provider:
         order, causal_group_order = causal_batch_round_robin(order, batch_plan)
+    if explicit_cohort:
+        requested_set = set(explicit_cohort)
+        # The caller owns the exact targeted cohort. Never silently add the
+        # whole census, nor drop requested siblings just because a causal
+        # family representative was already chosen.
+        order = unique([
+            *[provider_id for provider_id in order if provider_id in requested_set],
+            *explicit_cohort,
+        ])
 
     # Fast-Handoff Learning learns one representative per causal family, then
     # returns new strategy memory to canonical Repair. Siblings are deliberately
@@ -1404,8 +1433,15 @@ def main() -> int:
     family_deferred: list[str] = []
     if fair_handoff:
         family_frontier, family_deferred = causal_family_frontier(order, batch_plan)
-        order = family_frontier
+        if explicit_cohort:
+            # Keep all explicitly requested providers. They remain strictly
+            # bounded by one attempt/provider, exact memory and wall-clock.
+            family_deferred = []
+        else:
+            order = family_frontier
 
+    queue["explicitLearningCohort"] = explicit_cohort
+    queue["explicitLearningCohortCount"] = len(explicit_cohort)
     queue["fastRepairHandoffProviders"] = handoff_priority
     queue["fastRepairHandoffProviderCount"] = len(handoff_priority)
     queue["fastRepairHandoffAuthority"] = "provider-repair-learn-handoff-v1.json"
@@ -1423,7 +1459,10 @@ def main() -> int:
     queue["fastRepairHandoffFamilyFrontierCount"] = len(family_frontier)
     queue["fastRepairHandoffDeferredFamilySiblings"] = family_deferred
     queue["fastRepairHandoffDeferredFamilySiblingCount"] = len(family_deferred)
-    queue["fastRepairHandoffFamilyFrontierPolicy"] = "one-representative-per-causal-family-then-return-to-repair"
+    queue["fastRepairHandoffFamilyFrontierPolicy"] = (
+        "all-explicit-targets-with-bounded-per-provider-attempts"
+        if explicit_cohort else "one-representative-per-causal-family-then-return-to-repair"
+    )
     queue["fastRepairHandoffMaxAttemptsPerProviderThisPhase"] = 1 if fair_handoff else 0
     queue["fastRepairHandoffMaxEvolvedAttemptsPerProviderThisPhase"] = 3 if fair_handoff else 0
     queue["deferredRepairProviders"] = repair_deferred

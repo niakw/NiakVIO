@@ -75,6 +75,16 @@ frontier_assignment = source.index("family_frontier, family_deferred = causal_fa
 wave_assignment = source.index("causal_waves = causal_family_waves(full_handoff_order, batch_plan, max_parallel=4) if fair_handoff else []")
 assert fair_assignment < frontier_assignment < wave_assignment, (fair_assignment, frontier_assignment, wave_assignment)
 assert "fastRepairHandoffDeferredFamilySiblings" in source
+assert "if explicit_cohort:" in source
+assert "order = family_frontier" in source
+assert "family_deferred = []" in source
+assert 'p.add_argument("--provider-filter", default="")' in source
+assert 'requested_set = set(explicit_cohort)' in source
+assert 'queue["explicitLearningCohort"] = explicit_cohort' in source
+
+workflow = (ROOT / ".github/workflows/brain-learning-lab.yml").read_text(encoding="utf-8")
+assert 'TARGET_PROVIDER_COHORT: ${{ steps.learning-slot.outputs.provider_filter || \'\' }}' in workflow
+assert 'args+=(--provider-filter "$TARGET_PROVIDER_COHORT")' in workflow
 
 # A busy provider's newer wave must not flush an earlier single executed
 # failure for a different provider. Prior Learning used rows[-1000:] before
