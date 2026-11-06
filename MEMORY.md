@@ -1555,3 +1555,9 @@
 - Projection Reconcile run 42303162753 on e49b5fdd succeeded, manifest advanced to 5.21.137, final publication commit 9e830a63. Separate client/S00 and terminal stream proof pending.
 - Security Final Gate 42304250008 on 9e830a failed: exact CodeQL #2531 High in tests/response_structure_test.cjs, rule js/incomplete-url-substring-sanitization. Strengthened test host comparisons using parsed URL origins, replaced raw hostname substring checks with explicit leak regex assertions. Must recheck new CodeQL alert disposition; not considered resolved until scanner confirms.
 - Added single-shot GitHub Discussions publication (discussion creation via GitHub Actions with discussions:write permission; the connector itself has no createDiscussion method). Idempotent by title; published link must be verified in action logs before claiming live. Community invitation and README/CONTRIBUTING links added. No secrets/copyrighted media permitted in submissions.
+
+## 2026-11-06 — NiakVIO repository cleanup and security trigger
+
+- Closed failed unmerged PR #252; branch fix/4khdhub-exact-css-class-20261101 scheduled for exact-SHA guarded deletion via one-shot CI. PR diff/comment and SHA preserved, current branch deletion not inferred until workflow and remote verify.
+- Three inert one-shot temporary workflows removed from main: temp-anime-sama-config-rematerialize, temp-repair28-observable-resume, temp-resume-repair28-post-apply. Both current byte census and targeted recovery workflows explicitly preserved. Detailed rationale in docs/REPO_CLEANUP_AUDIT_2026-11-06.md.
+- Security Final Gate extended to workflow_run after successful exact-head CodeQL scan, with strict equality to current github.sha. This avoids stale pre-CodeQL gate races while retaining the current High/Critical policy. No alert dismissal or security weakening.

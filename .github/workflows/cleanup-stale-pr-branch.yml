@@ -1,0 +1,25 @@
+name: CLEAN - Retire failed historical PR branch
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/triggers/stale-pr-branch-cleanup-2026-11-06.json'
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+jobs:
+  retire:
+    if: github.repository == 'niakw/NiakVIO'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Verify exact allowlist and removed inert workflows
+        run: python3 tests/stale_pr_branch_cleanup_policy_test.py
+      - name: Retire only closed unmerged failed PR branch
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 scripts/cleanup_stale_pr_branch.py

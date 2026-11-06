@@ -3,6 +3,11 @@ name: SEC - Final Gate
 
 on:
   workflow_dispatch:
+  # Run after the CodeQL result for the exact main SHA is known.
+  workflow_run:
+    workflows: ["SEC - CodeQL"]
+    types: [completed]
+    branches: [main]
   push:
     branches: [main]
     paths:
@@ -48,6 +53,7 @@ concurrency:
 
 jobs:
   security:
+    if: ${{ github.event_name != 'workflow_run' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_sha == github.sha) }}
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
