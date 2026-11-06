@@ -9,6 +9,7 @@ more conservative than a general git rebase.
 from __future__ import annotations
 
 import argparse
+import re
 from pathlib import Path
 
 SAFE_FILES = {
@@ -22,7 +23,18 @@ SAFE_FILES = {
     "automation/provider-repair-learn-handoff-v1.json",
     "automation/provider-census-sharded-latest.json",
     "automation/provider-learning-handoff.json",
+    # Census publications are generated evidence, never provider source DATA.
+    "automation/provider-census-proof-history.json",
+    "automation/provider-repair-batch-plan-latest.json",
+    "automation/provider-waf-browser-session-latest.json",
 }
+
+# Timestamped census/WAF session artifacts are evidence only. Never accept a
+# generic automation/*.json glob: provider-overrides and authority DATA live there.
+SAFE_ARTIFACT_PATTERNS = (
+    re.compile(r"^automation/provider-census-sharded-[0-9]{8,20}\\.json$"),
+    re.compile(r"^automation/provider-waf-browser-session-[0-9]{8,20}\\.json$"),
+)
 
 
 def classify_drift(paths: list[str]) -> tuple[bool, list[str]]:
@@ -31,7 +43,7 @@ def classify_drift(paths: list[str]) -> tuple[bool, list[str]]:
         path = raw.strip().replace("\\", "/")
         if not path:
             continue
-        if path in SAFE_FILES or (path.startswith("docs/") and path.endswith(".md")):
+        if path in SAFE_FILES or any(pattern.fullmatch(path) for pattern in SAFE_ARTIFACT_PATTERNS) or (path.startswith("docs/") and path.endswith(".md")):
             continue
         unsafe.append(path)
     return not unsafe, sorted(set(unsafe))

@@ -50,3 +50,18 @@ assert 'steps.drift.outputs.count != \'0\'' in wf
 assert "Projection reconcile staged a forbidden path." in wf
 assert "PROVENANCE.json provider-overrides.json provider-v3-materialization.json" not in wf
 print("provider projection reconcile workflow contract passed")
+
+from sys import path as _pythonpath
+_pythonpath.insert(0, str(ROOT / "scripts"))
+from domain_refresh_publication_drift_gate import classify_drift
+known_evidence = [
+    "automation/provider-census-proof-history.json",
+    "automation/provider-repair-batch-plan-latest.json",
+    "automation/provider-census-sharded-42301845438.json",
+    "automation/provider-waf-browser-session-42301845438.json",
+    "automation/provider-waf-browser-session-latest.json",
+]
+assert classify_drift(known_evidence) == (True, []), "census evidence cannot starve provider publication"
+for source in ("provider-overrides.json", "manifest.json", "scripts/provider_base_store.py",
+               "automation/provider-v3-static-knowledge.json", ".github/workflows/provider-projection-reconcile.yml"):
+    assert classify_drift([*known_evidence, source]) == (False, [source]), source

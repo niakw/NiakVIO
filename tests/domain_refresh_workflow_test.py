@@ -575,6 +575,11 @@ safe, unsafe = classify_drift([
     "MEMORY.md",
     "PROVIDER_CENSUS_STATUS.md",
     "automation/provider-census-status.json",
+    "automation/provider-census-proof-history.json",
+    "automation/provider-repair-batch-plan-latest.json",
+    "automation/provider-census-sharded-42301845438.json",
+    "automation/provider-waf-browser-session-42301845438.json",
+    "automation/provider-waf-browser-session-latest.json",
     "docs/repair-memory.md",
 ])
 assert safe is True and unsafe == [], unsafe
@@ -588,6 +593,12 @@ for changed_source in (
     "providers/demo.js",
     "automation/provider-v3-static-knowledge.json",
     ".github/workflows/domain-refresh.yml",
+    "automation/provider-overrides.json",
+    "automation/provider-v3-static-knowledge.json",
+    "automation/provider-census-sharded-malicious.py",
+    "automation/provider-waf-browser-session-42301845438.json.js",
+    "automation/provider-waf-browser-session-abc.json",
+    "automation/provider-census-sharded-42301845438.json/../../provider-overrides.json",
 ):
     safe, unsafe = classify_drift(["MEMORY.md", changed_source])
     assert safe is False and unsafe == [changed_source], (changed_source, unsafe)
