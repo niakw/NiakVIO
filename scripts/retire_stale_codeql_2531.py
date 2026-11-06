@@ -63,9 +63,9 @@ SAFE_EVIDENCE_FILES = frozenset({
     "automation/provider-census-sharded-latest.json",
 })
 SAFE_NUMBERED_EVIDENCE = (
-    r"automation/provider-census-status-[0-9]{8,14}\\.json",
-    r"automation/provider-census-proof-[0-9]{8,14}\\.json",
-    r"automation/provider-waf-browser-session-[0-9]{8,14}\\.json",
+    r"automation/provider-census-status-[0-9]{8,14}\.json",
+    r"automation/provider-census-proof-[0-9]{8,14}\.json",
+    r"automation/provider-waf-browser-session-[0-9]{8,14}\.json",
 )
 
 def evidence_only_drift(expected: str, head: str) -> bool:
