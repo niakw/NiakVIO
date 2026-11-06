@@ -4552,9 +4552,9 @@
       ],
       "capability": "mixed_embed_resolver",
       "official_hub": "https://coflix.domains/",
-      "official_site": "https://coflix.ac",
+      "official_site": "https://coflix.red",
       "manifest_overrides": {
-        "logo": "https://coflix.ac/favicon.ico",
+        "logo": "https://coflix.red/favicon.ico",
         "supportsExternalPlayer": false,
         "enabled": true
       },
@@ -4588,16 +4588,17 @@
         }
       },
       "domain_substitutions": {
-        "coflix.cymru": "coflix.ac",
-        "coflix.blue": "coflix.ac",
-        "coflix.wiki": "coflix.ac",
-        "coflix.life": "coflix.ac",
-        "coflix.fr": "coflix.ac",
-        "coflix.boston": "coflix.ac",
-        "coflix.to": "coflix.ac",
-        "coflix.blog": "coflix.ac",
-        "coflix.esq": "coflix.ac",
-        "coflix.group": "coflix.ac"
+        "coflix.cymru": "coflix.red",
+        "coflix.blue": "coflix.red",
+        "coflix.wiki": "coflix.red",
+        "coflix.life": "coflix.red",
+        "coflix.fr": "coflix.red",
+        "coflix.boston": "coflix.red",
+        "coflix.to": "coflix.red",
+        "coflix.blog": "coflix.red",
+        "coflix.esq": "coflix.red",
+        "coflix.group": "coflix.red",
+        "coflix.ac": "coflix.red"
       },
       "candidate_learned_routes": [
         "/?s={query}",
@@ -4852,7 +4853,8 @@
         "evidenceDestructive": false
       },
       "runtime_domain_replacements": {
-        "coflix.group": "coflix.ac"
+        "coflix.group": "coflix.red",
+        "coflix.ac": "coflix.red"
       },
       "api_recipe": {
         "proofModelVersion": 5,
@@ -4872,7 +4874,7 @@
       ],
       "provider_lego_options": {
         "scripts/provider_patches/coflix_runtime_v1.py": {
-          "base": "https://coflix.ac"
+          "base": "https://coflix.red"
         }
       }
     },
