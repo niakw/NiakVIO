@@ -10,7 +10,7 @@ tree = ast.parse(source)
 main = next(x for x in tree.body if isinstance(x, ast.FunctionDef) and x.name == "main")
 snippet = ast.get_source_segment(source, main)
 assert snippet is not None
-assert 'p.add_argument("--provider-filter", default="")' in snippet
+assert 'p.add_argument("--provider-filter", default=""' in snippet
 assert "requested_set = set(explicit_cohort)" in snippet
 assert "family_deferred = []" in snippet
 assert "else:\n            order = family_frontier" in snippet

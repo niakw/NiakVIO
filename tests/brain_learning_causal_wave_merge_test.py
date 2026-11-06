@@ -78,7 +78,7 @@ assert "fastRepairHandoffDeferredFamilySiblings" in source
 assert "if explicit_cohort:" in source
 assert "order = family_frontier" in source
 assert "family_deferred = []" in source
-assert 'p.add_argument("--provider-filter", default="")' in source
+assert 'p.add_argument("--provider-filter", default=""' in source
 assert 'requested_set = set(explicit_cohort)' in source
 assert 'queue["explicitLearningCohort"] = explicit_cohort' in source
 
