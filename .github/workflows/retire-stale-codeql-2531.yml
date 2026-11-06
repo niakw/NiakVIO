@@ -10,7 +10,7 @@ permissions:
   actions: write
 jobs:
   retire:
-    if: ${{ github.repository == 'niakw/NiakVIO' && github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_sha == github.sha }}
+    if: ${{ github.repository == 'niakw/NiakVIO' && github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main' }}
     runs-on: ubuntu-latest
     timeout-minutes: 12
     steps:

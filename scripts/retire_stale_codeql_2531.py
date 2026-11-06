@@ -47,13 +47,70 @@ def verify_current_source() -> None:
     if ".includes('https://other.private.test/PRIVATE')" in text:
         raise RuntimeError("Legacy incomplete URL substring check returned")
 
+# Only non-executable, append-only evidence may advance main after a successful scan.
+# A workflow_run is attached to the event's original source SHA, not github.sha
+# (the latter can refer to a newer default-branch commit).
+SAFE_EVIDENCE_FILES = frozenset({
+    "PROVIDER_CENSUS_STATUS.md",
+    "automation/brain-repair-experience.json",
+    "automation/provider-brain-repair-latest.json",
+    "automation/provider-census-status.json",
+    "automation/provider-fast-repair-summary.json",
+    "automation/provider-repair-learn-handoff-v1.json",
+    "automation/provider-repair-batch-plan-latest.json",
+    "automation/provider-census-proof-history.json",
+    "automation/provider-waf-browser-session-latest.json",
+    "automation/provider-census-sharded-latest.json",
+})
+SAFE_NUMBERED_EVIDENCE = (
+    r"automation/provider-census-status-[0-9]{8,14}\\.json",
+    r"automation/provider-census-proof-[0-9]{8,14}\\.json",
+    r"automation/provider-waf-browser-session-[0-9]{8,14}\\.json",
+)
+
+def evidence_only_drift(expected: str, head: str) -> bool:
+    if expected == head:
+        return True
+    import re
+    compare = api("repos/"+REPO+"/compare/"+expected+"..."+head+"?per_page=100")
+    if (compare.get("status") != "ahead"
+        or compare.get("ahead_by", 0) > 100
+        or compare.get("total_commits") != len(compare.get("commits") or [])
+        or not compare.get("files")):
+        return False
+    for item in compare["files"]:
+        path = str(item.get("filename") or "")
+        if item.get("status") not in {"modified","added"}:
+            return False
+        if path not in SAFE_EVIDENCE_FILES and not any(
+            re.fullmatch(pattern, path) for pattern in SAFE_NUMBERED_EVIDENCE
+        ):
+            return False
+    return True
+
+def scan_source_sha() -> str:
+    event_path = Path(os.environ.get("GITHUB_EVENT_PATH") or "")
+    if not event_path.is_file():
+        raise RuntimeError("Missing authenticated workflow_run event source")
+    event = json.loads(event_path.read_text(encoding="utf-8"))
+    run = event.get("workflow_run") or {}
+    if (run.get("name") != "SEC - CodeQL" or run.get("conclusion") != "success"
+        or run.get("head_branch") != "main"):
+        raise RuntimeError("Unexpected CodeQL workflow_run source")
+    sha = str(run.get("head_sha") or "")
+    if len(sha) != 40 or any(c not in "0123456789abcdef" for c in sha):
+        raise RuntimeError("Invalid CodeQL event source SHA")
+    return sha
+
 def main() -> None:
     verify_current_source()
+    expected = scan_source_sha()
     branch=api("repos/"+REPO+"/branches/main")
     head=(branch or {}).get("commit",{}).get("sha")
-    expected=os.environ.get("GITHUB_SHA","").strip()
-    if head!=expected:
-        raise RuntimeError("Default branch advanced since requested exact scan")
+    if not head or not evidence_only_drift(expected, head):
+        print("FIELD_CODEQL_STALE_2531_DEFERRED source="+expected+" current="+str(head)+
+              " reason=non_evidence_drift_or_unverifiable_comparison")
+        return
     alert=api("repos/"+REPO+"/code-scanning/alerts/"+str(LEGACY_ALERT))
     if alert.get("state")!="open":
         print("FIELD_CODEQL_LEGACY_CATEGORY_CLEANUP already_nonopen "+str(alert.get("state")))
@@ -91,14 +148,14 @@ def main() -> None:
                  "dismissed_comment":explanation})
     if updated.get("state")!="dismissed":
         raise RuntimeError("CodeQL did not confirm dismissal of stale historical alert")
-    print("FIELD_CODEQL_STALE_2531_DISMISSED exact_main="+expected+" core_analyses="+str(len(matched)))
+    print("FIELD_CODEQL_STALE_2531_DISMISSED scanned_source="+expected+" current_main="+str(head)+" core_analyses="+str(len(matched)))
     # The Final Gate must run AFTER this status change, on the exact same main.
     after=(api("repos/"+REPO+"/branches/main") or {}).get("commit",{}).get("sha")
-    if after!=expected:
-        raise RuntimeError("Main moved after stale alert resolution; no validation dispatch")
+    if not after or not evidence_only_drift(expected, after):
+        raise RuntimeError("Main moved in unverified or executable way after stale alert resolution")
     api("repos/"+REPO+"/actions/workflows/security-final-gate.yml/dispatches",
         "POST",{"ref":"main"})
-    print("FIELD_CODEQL_POST_CLEANUP_FINAL_GATE_DISPATCH sha="+expected)
+    print("FIELD_CODEQL_POST_CLEANUP_FINAL_GATE_DISPATCH sha="+str(after))
 
 if __name__=="__main__":
     main()
