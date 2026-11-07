@@ -451,7 +451,7 @@ def fixture_summary(result: dict[str, Any]) -> list[dict[str, Any]]:
     trusted = {
         (category, str(fixture.get('tmdbId') or ''),
          fixture.get('season') if category in ('anime', 'tv') else None,
-         fixture.get('episode') if category in ('anime', 'tv') else None)
+         fixture.get('episode') if category in ('anime', 'tv') else None): fixture
         for category, fixtures in reference.items()
         if category in ('anime', 'tv', 'movie', 'anime_movie') and isinstance(fixtures, list)
         for fixture in fixtures if isinstance(fixture, dict)
@@ -472,20 +472,27 @@ def fixture_summary(result: dict[str, Any]) -> list[dict[str, Any]]:
         category = str(fixture.get('category') or '')
         season = fixture.get('season') if type(fixture.get('season')) is int else None
         episode = fixture.get('episode') if type(fixture.get('episode')) is int else None
-        trusted_identity = (category, tmdb, season, episode) in trusted
+        trusted_spec = trusted.get((category, tmdb, season, episode))
+        trusted_identity = (trusted_spec is not None
+                            and fixture.get('label') == trusted_spec.get('label')
+                            and fixture.get('expectedDurationMinutes') == trusted_spec.get('expectedDurationMinutes'))
         # Diagnostics must retain their catalog-authoritative identity even
         # when the *preflight* performs no decode and all streams are missing.
         row.update({'tmdbId': tmdb if trusted_identity else '',
                     'season': season if trusted_identity else None,
                     'episode': episode if trusted_identity else None})
-        minutes = fixture.get('expectedDurationMinutes')
+        # A duration claimed by an untrusted fixture may not be fed back to
+        # Brain as the expected duration of the requested work.
+        minutes = trusted_spec.get('expectedDurationMinutes') if trusted_identity else None
         if type(minutes) in (int, float) and 0 < minutes <= 20160:
             row['expectedDurationSeconds'] = round(minutes * 60)
         raw_probes = test.get('host_results')
         if require_decoded_repair() or (isinstance(raw_probes, list) and any(
                 isinstance(probe, dict) and isinstance(probe.get('media_decode'), dict)
                 for probe in raw_probes)):
-            probes, controls = decoded_media_summary(test)
+            # Unknown/spoofed fixture coordinates cannot qualify as a decoded
+            # media control in the model's context, even if a forged probe says yes.
+            probes, controls = decoded_media_summary(test) if trusted_identity else ([], 0)
             row.update({'decodedMediaControls': controls, 'decodedMediaProbes': probes})
     return output
 

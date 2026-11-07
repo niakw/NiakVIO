@@ -106,6 +106,18 @@ with patch.dict(os.environ,{'NIAKVIO_REQUIRE_DECODE_PROOF':'1'}):
     season_spoof['season']=0
     wrong_summary=verify.fixture_summary({'tests':[observation(season_spoof,'tv')]})
     assert wrong_summary[0]['tmdbId']=='' and wrong_summary[0]['episode'] is None
+    # A forged label/duration or decoder probe must never become a trusted
+    # film/episode identity or proof in the Brain observation context.
+    changed_label=copy.deepcopy(tv_spec)
+    changed_label['label']='An unrelated special'
+    label_summary=verify.fixture_summary({'tests':[observation(changed_label,'tv')]})
+    assert label_summary[0]['tmdbId']=='' and 'expectedDurationSeconds' not in label_summary[0]
+    changed_duration=copy.deepcopy(tv_spec)
+    changed_duration['expectedDurationMinutes']=24
+    duration_summary=verify.fixture_summary({'tests':[observation(changed_duration,'tv')]})
+    assert duration_summary[0]['tmdbId']=='' and 'expectedDurationSeconds' not in duration_summary[0]
+    wrong_decoded=verify.fixture_summary({'tests':[observation(changed_duration,'tv',[probe])]})
+    assert wrong_decoded[0]['decodedMediaControls']==0 and wrong_decoded[0]['decodedMediaProbes']==[]
     assert configs[0]==configs[1]
     assert [x['tmdbId'] for x in configs[0]['fixtures']['movie']]==['157336']
     assert configs[0]['fixtures']['anime']==[]
