@@ -343,6 +343,15 @@ def _status_failure(row: dict[str, Any]) -> str:
     return ""
 
 
+def _observed_executable_child(row: dict[str, Any]) -> bool:
+    """Reject legacy no-child debt even if a buggy writer marked it executed."""
+    return (
+        row.get("executionObserved") is True
+        and str(row.get("lastOutcome") or "").strip().casefold().replace("-", "_")
+        not in {"profile_unavailable", "not_generated"}
+    )
+
+
 def _latest_failure_by_provider(memory: dict[str, Any]) -> dict[str, str]:
     ranked: dict[str, tuple[tuple[int, int, int, int], str]] = {}
     rows = []
@@ -352,7 +361,7 @@ def _latest_failure_by_provider(memory: dict[str, Any]) -> dict[str, str]:
     if isinstance(exp.get("entries"), list):
         rows.extend(exp.get("entries") or [])
     for row in rows:
-        if not isinstance(row, dict) or row.get("executionObserved") is not True:
+        if not isinstance(row, dict) or not _observed_executable_child(row):
             continue
         provider = _provider(row.get("providerId"))
         failure = _canon(row.get("failureClass"))
@@ -380,7 +389,12 @@ def _failed_fingerprints(memory: dict[str, Any]) -> set[tuple[str, str, str]]:
     if isinstance(exp.get("entries"), list):
         rows.extend(exp.get("entries") or [])
     for row in rows:
-        if not isinstance(row, dict) or int(row.get("consecutiveFailures") or 0) < 1:
+        if (
+            not isinstance(row, dict)
+            or not _observed_executable_child(row)
+            or str(row.get("lastOutcome") or "").strip().casefold() in {"accepted", "verified", "success"}
+            or int(row.get("consecutiveFailures") or 0) < 1
+        ):
             continue
         provider = _provider(row.get("providerId"))
         profile = str(row.get("profile") or "").strip().casefold()
@@ -400,7 +414,7 @@ def _executed_profile_fingerprints(memory: dict[str, Any]) -> dict[tuple[str, st
     if isinstance(exp.get("entries"), list):
         rows.extend(row for row in exp.get("entries") or [] if isinstance(row, dict))
     for row in rows:
-        if row.get("executionObserved") is not True:
+        if not _observed_executable_child(row):
             continue
         provider = _provider(row.get("providerId"))
         failure = _canon(row.get("failureClass"))
