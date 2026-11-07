@@ -202,8 +202,8 @@ with patch.object(mod,"urlopen",side_effect=refused_update), patch.dict(os.envir
     assert "PRIVATE" not in line and "test-token" not in line
 
 
-# Explicitly request policy-compliant review and never turn a pending request
-# into a cleared security gate. No Final Gate dispatch until state dismissed.
+# Use the standard GitHub PATCH shape, respecting any server-enforced approval
+# policy; a pending/unresolved alert must never clear the security gate.
 with patch.object(mod,"verify_current_source"), patch.object(mod,"scan_source_sha",return_value=src), \
      patch.object(mod,"evidence_only_drift",return_value=True), \
      patch.object(mod,"read_pages",return_value=[core]), \
@@ -230,7 +230,7 @@ with patch.object(mod,"verify_current_source"), patch.object(mod,"scan_source_sh
     changes=[(path,body) for path,method,body in calls if method=="PATCH"]
     assert len(changes)==1
     assert changes[0][0].endswith("/code-scanning/alerts/2531")
-    assert changes[0][1]["create_request"] is True
+    assert "create_request" not in changes[0][1]
     assert changes[0][1]["dismissed_reason"]=="used in tests"
     assert "FIELD_CODEQL_STALE_2531_NOT_DISMISSED" in buf.getvalue()
     assert not any("/dispatches" in path for path,_,_ in calls)
