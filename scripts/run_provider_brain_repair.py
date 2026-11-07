@@ -495,6 +495,7 @@ def untried_advisor_fingerprints(
                 failed.setdefault(provider, set()).add((profile, fingerprint))
             if (
                 row.get("executionObserved") is True
+                and is_executed_negative_experiment(row)
                 and (
                     int(row.get("consecutiveFailures") or 0) >= 1
                     or int(row.get("failures") or 0) >= 1
@@ -598,6 +599,7 @@ def executed_advisor_rotation_pending(
             and profile
             and len(fingerprint) == 64
             and row.get("executionObserved") is True
+            and is_executed_negative_experiment(row)
             and int(row.get("consecutiveFailures") or 0) >= 1
         ):
             executed_failed.add((provider, profile, fingerprint))
@@ -990,8 +992,8 @@ def unexecutable_llm_advisor_handoff(
                 continue
             if str(row.get("llmAdvisorExperimentFingerprint") or "").strip().casefold() != fingerprint:
                 continue
-            if row.get("executionObserved") is True:
-                continue
+            # A legacy flag cannot turn an unavailable, never-generated
+            # profile into executed negative evidence or hide Learning debt.
             if str(row.get("lastOutcome") or "") != "profile_unavailable":
                 continue
             if str(row.get("lastReason") or "") != "planned_profile_not_applicable_to_current_bytes":
