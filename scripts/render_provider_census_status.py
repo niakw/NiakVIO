@@ -16,8 +16,8 @@ from typing import Any
 GOOD = "playable_verified"
 
 STATUS_META = {
-    "FULL OK": ("🟢", "all declared semantic lanes have current verified playback"),
-    "PARTIAL OK": ("🟡", "at least one declared lane has current verified playback"),
+    "FULL OK": ("🟢", "all declared lanes have retained verified playback evidence; carried rows were not revalidated on this census SHA"),
+    "PARTIAL OK": ("🟡", "at least one lane has retained verified playback evidence; carried rows were not revalidated on this census SHA"),
     "CANDIDATE OK": ("🟦", "an unpublished repair/reconstruction candidate was live/playback verified, but current published bytes have not reproduced it yet"),
     "ROUTE PROVEN": ("🟪", "live provider routes are qualified for the declared lanes, but terminal media is not currently verified"),
     "NO PROOF": ("🔵", "search/lookup ran but no content-specific chain was reached; keep rotating the corpus"),
