@@ -45,11 +45,16 @@ def negative_history(directory: Path) -> dict[str, int]:
             str(row.get("reason") or "").strip().casefold()
             for row in trace if isinstance(row, dict)
         }
+        # A real generated no-op/deletion is causal negative proof, not a
+        # new hypothesis. One such run must rotate to another eligible family
+        # before burning another full 3B CPU budget on identical source bytes.
+        # Timeouts are infrastructure/model evidence, so their penalty is
+        # smaller: don't confuse a timeout with an invalid provider mechanism.
         if "no_op" in reasons or "causally_empty_deletion" in reasons:
-            debt[provider] = debt.get(provider, 0) + 30
+            debt[provider] = debt.get(provider, 0) + 100
         elif trace:
-            debt[provider] = debt.get(provider, 0) + 12
-    return {key: min(150, value) for key, value in debt.items()}
+            debt[provider] = debt.get(provider, 0) + 25
+    return {key: min(300, value) for key, value in debt.items()}
 
 
 def choose(state: dict, debt: dict[str, int], manual: str = "") -> tuple[str, int]:

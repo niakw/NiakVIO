@@ -13,6 +13,10 @@ for required in (
     "select_providers",
     "publicationAllowed",
     "changedByteProviders",
+    "candidateReplayProvenance",
+    "candidateProgramReplayPerformed",
+    "historicalBrainProgramReplayed",
+    "not_established_by_remat",
 ):
     assert required in source, required
 

@@ -38,10 +38,29 @@ with TemporaryDirectory() as td:
             "scopeTrace":[{"scope":"provider_bloc","reason":"no_op"}]}))
     (base/"not-an-archive.json").write_text("{}")
     debt=mod.negative_history(base)
-    assert debt["allanime"]==60
+    assert debt["allanime"]==200
     # The strongest retained CANDIDATE has a replay-only Brain strategy and
     # must NOT be scored as source synthesis: choose eligible regression.
     assert mod.choose(state,debt)[0]=="animekai"
+    # One historical regression no-op now causes a representative rotation;
+    # the old 30-point penalty still selected the same high-scoring target.
+    (base/"42351400247.json").write_text(json.dumps({
+        "provider":"uhdmovies","publicationAuthority":False,
+        "acceptedProviderCount":0,
+        "scopeTrace":[{"scope":"provider_bloc","reason":"no_op"}]}))
+    state["providers"].append({
+        "provider":"uhdmovies","status":"REGRESSION PROVIDER",
+        "repairEligible":True,"authorityRepairEligible":True,
+        "historicalProof":["movie:Interstellar"],
+        "dominantIssue":"provider_network_zero_result",
+    })
+    state["repairQueue"].append("uhdmovies")
+    debt=mod.negative_history(base)
+    assert debt["uhdmovies"]==100
+    assert mod.choose(state,debt)[0]=="animekai"
+    # A single high score is not authority to consume another unchanged
+    # synthesis run; manual targeting still remains explicit/operator-owned.
+    assert mod.choose(state,debt,"uhdmovies")[0]=="uhdmovies"
     try:mod.choose(state,debt,"animevostfr")
     except ValueError as error:
         assert "Candidate replay" in str(error)

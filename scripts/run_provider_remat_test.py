@@ -124,6 +124,40 @@ def main() -> int:
         for row in refreshed.get("providers") or []
         if isinstance(row, dict) and cid(row.get("provider"))
     }
+    # A current-DATA rebuild is NOT the same operation as replaying a
+    # historical Brain-produced candidate program. Keep both proofs separate.
+    # Candidate labels can reference expired CI runs without preserving the
+    # exact candidate mutation, so never infer executable replay authority.
+    prior_rows = {
+        cid(row.get("provider")): row
+        for row in status.get("providers") or []
+        if isinstance(row, dict) and cid(row.get("provider"))
+    }
+    retest_report = load(ROOT / "automation" / "provider-retest-latest.json")
+    verified_now = {
+        cid(value) for value in retest_report.get("verified_providers") or []
+    }
+    candidate_provenance = {
+        provider: {
+            "historicalCandidateProof": list((prior_rows.get(provider) or {}).get("candidateProof") or []),
+            "currentDataRematerialized": True,
+            "historicalBrainProgramReplayed": False,
+            "executableProgramProvenance": "not_established_by_remat",
+            "currentStrictRetestVerified": provider in verified_now,
+            "nextRequiredAction": "locate_exact_candidate_program_or_reconstruct_via_Brain",
+        }
+        for provider in selected
+        if ((prior_rows.get(provider) or {}).get("status") == "CANDIDATE OK"
+            or (prior_rows.get(provider) or {}).get("candidateProof"))
+    }
+    print(
+        "FIELD_BRAIN_CANDIDATE_PROVENANCE candidate_rows="
+        +str(len(candidate_provenance))
+        +" historical_programs_replayed=0 strict_verified="
+        +str(sum(1 for row in candidate_provenance.values()
+                 if row["currentStrictRetestVerified"])),
+        flush=True,
+    )
     payload = {
         "schemaVersion": 1,
         "scope": args.scope,
@@ -132,6 +166,8 @@ def main() -> int:
         "providerCount": len(selected),
         "changedByteProviders": changed,
         "changedByteProviderCount": len(changed),
+        "candidateReplayProvenance": candidate_provenance,
+        "candidateProgramReplayPerformed": False,
         "before": before,
         "after": after,
         "statusesAfterRemat": {
