@@ -1999,15 +1999,40 @@ jobs:
       # Execute AFTER evidence persistence: an invalid selection remains
       # an observable Brain failure, not a silently successful provider run.
       - name: Verify explicitly requested Brain FORCE representative selection
-        if: ${{ always() && github.event_name == 'workflow_dispatch' && inputs.mode == 'force' && inputs.preferred_profile != '' }}
+        if: ${{ always() && ((github.event_name == 'workflow_dispatch' && inputs.mode == 'force' && inputs.preferred_profile != '') || github.event_name == 'push') }}
         shell: bash
         env:
-          TARGET_PROVIDER: ${{ inputs.target_provider }}
-          PREFERRED_PROFILE: ${{ inputs.preferred_profile }}
+          TARGET_PROVIDER: ${{ inputs.target_provider || '' }}
+          PREFERRED_PROFILE: ${{ inputs.preferred_profile || '' }}
           FORCE_RUN_ID: ${{ github.run_id }}
           FORCE_SOURCE_SHA: ${{ github.sha }}
         run: |
           set -euo pipefail
+          # Push-triggered FORCE reads the same trusted, tracked dispatch file
+          # as canonical Repair. Do not silently accept a multi-provider plan
+          # as an isolated newly promoted architecture witness.
+          if [ "$GITHUB_EVENT_NAME" = "push" ]; then
+            selection="$(python3 - <<'PY'
+          import json
+          from pathlib import Path
+          cfg=json.loads(Path(".github/triggers/provider-recognition-repair-v6.json").read_text(encoding="utf-8"))
+          mode=str(cfg.get("mode") or "").strip().casefold()
+          preferred=str(cfg.get("preferredProfile") or "").strip().casefold()
+          if mode!="force" or not preferred:
+              print("skip")
+          else:
+              targets=[str(p).strip().casefold().replace("_","-") for p in cfg.get("targetProviders") or [] if str(p).strip()]
+              if len(targets)!=1:
+                  raise SystemExit("Brain FORCE preferred strategy requires exactly one representative")
+              print(mode+"|"+preferred+"|"+targets[0])
+          PY
+            )"
+            if [ "$selection" = "skip" ]; then
+              echo "FIELD_BRAIN_FORCE_REPRESENTATIVE_SELECTION skipped=true reason=no-push-preferred-profile"
+              exit 0
+            fi
+            IFS='|' read -r _mode PREFERRED_PROFILE TARGET_PROVIDER <<< "$selection"
+          fi
           python3 scripts/brain_force_representative_plan_guard.py \
             --report automation/provider-brain-repair-latest.json \
             --provider "$TARGET_PROVIDER" --profile "$PREFERRED_PROFILE" \
