@@ -19,6 +19,16 @@ from http_response_evidence import public_http_observation, public_reader_probe,
 from address_reference_evidence import public_address_fields
 from observed_media_evidence import public_observed_media_probe
 
+def requires_transport_differential(live: dict) -> bool:
+    """Skip only an observed blocked transport, not ambiguous unreachable code.
+
+    'provider_unreachable' may mean a JS/runtime defect before any request,
+    which the Brain *must* still be allowed to investigate and repair.
+    """
+    return (str(live.get('preflight_status') or '').strip().casefold() == 'blocked'
+            and live.get('preflight_playable') == 0)
+
+
 def should_replan(evaluation: dict, attempt: int, limit: int) -> bool:
     return (
         not int(evaluation.get('acceptedProviderCount') or 0)
@@ -117,9 +127,7 @@ def main() -> int:
     live = json.loads((out / 'live-context.json').read_text())
     if live.get('provider') != args.provider or live.get('sourceSha') != source_sha:
         raise ValueError('live provider evidence must match exact current source')
-    preflight_status = str(live.get('preflight_status') or '').strip().casefold()
-    network_blocked = (preflight_status in {'blocked', 'provider_unreachable'}
-                       and live.get('preflight_playable') == 0)
+    network_blocked = requires_transport_differential(live)
     if live.get('http_script_shell_only') is True or network_blocked:
         # Never spend LLM repair tokens when the current exact-SHA preflight
         # cannot reach content at all. This is a transport/harness observation,

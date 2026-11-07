@@ -176,6 +176,13 @@ with tempfile.TemporaryDirectory() as directory:
     result = json.loads((root / 'evaluation.json').read_text())
     assert result['rows'] == [] and result['candidateCount'] == 0
     assert json.loads((root / 'diagnostics.json').read_text())['rows'][0]['scopeTrace'][0]['reason'] == 'http_script_shell_requires_content_evidence'
+# 'unreachable' is not sufficient proof of an external HTTP/WAF blocker.
+# It can be a broken provider execution that never issues a request.
+assert loop.requires_transport_differential({'preflight_status':'blocked','preflight_playable':0})
+assert not loop.requires_transport_differential({'preflight_status':'provider_unreachable','preflight_playable':0})
+assert not loop.requires_transport_differential({'preflight_status':'blocked','preflight_playable':1})
+assert not loop.requires_transport_differential({'preflight_status':'runtime_error','preflight_playable':0})
+
 # The census may be stale: a route-proven source which is blocked in today's
 # live preflight must not burn CPU/model budget generating unsupported JS edits.
 with tempfile.TemporaryDirectory() as directory:
