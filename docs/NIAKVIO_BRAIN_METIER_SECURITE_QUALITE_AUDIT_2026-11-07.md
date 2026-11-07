@@ -79,3 +79,11 @@ Le backend OpenAI Responses Brain existait déjà, désactivé sauf opt-in expli
 | P2 Coût/temps/stockage CI | Non mesuré | Mesurer performance sur workflow exact avant optimisation, sans fragiliser provenance |
 
 **Documents canoniques :** [Brain Repair Roadmap](../BRAIN_REPAIR_ROADMAP.md), [Brain Repair Architecture](../BRAIN_REPAIR_ARCHITECTURE.md), [Security Policy](../SECURITY.md), [Memory](../MEMORY.md). Tout nouveau run supersédant ce checkpoint doit y noter son SHA, son artifact, ce qui a réellement été testé et ce qui reste bloqué.
+
+
+### Checkpoint complémentaire : transparence replay, sécurité, publication
+
+- Deux CANDIDATE OK historiques référencent le run 34309729426 ; ni l'arbre GitHub consulté ni l'API d'artefacts utilisée ne livrent le programme exact. Nouveau diagnostic Brain `f2a620b`, CI 42367960593 SUCCESS, consommé en lecture seule par hosted ; aucun faux replay/promotion.
+- CodeQL #2531 : le run retirement 42367868331 est SUCCESS technique mais **deferred**, car un shard census ajouté avançait HEAD. L'allowlist couvre désormais ces shards seulement **ajoutés**, pas modifiés ; nouvelle preuve exacte et fermeture toujours à vérifier.
+- Domain Refresh 42366117014 a publié `ae9e931` ; la race précédente est corrigée en fail-closed sans rebases de code provider, qualification Core/non-regression sur `e11f6cc` verte.
+- Budget API Brain testable : pas de dépenses automatiques, plafond monétaire local optionnel et persistant ; pas encore de plafond global multi-runner. Aucune prétention « totalement optimisé » ni « 17 réparés ».

@@ -108,6 +108,15 @@ with TemporaryDirectory() as directory:
     finally:
         mod.ROOT=original
 
+# Numbered sharded evidence may advance main after CodeQL, but never be edited.
+shard="automation/provider-census-sharded-42367067272.json"
+with patch.object(mod,"api",return_value={
+    **response([]),"files":[{"filename":shard,"status":"added"}]}):
+    assert mod.evidence_only_drift(src,head)
+with patch.object(mod,"api",return_value={
+    **response([]),"files":[{"filename":shard,"status":"modified"}]}):
+    assert not mod.evidence_only_drift(src,head)
+
 # Only the immutable, added JSON facts emitted by hosted Brain proof may
 # follow a successful CodeQL source SHA. Modifications or unknown files fail.
 hosted_paths=[

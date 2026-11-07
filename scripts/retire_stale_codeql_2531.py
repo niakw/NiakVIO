@@ -138,6 +138,7 @@ SAFE_NUMBERED_EVIDENCE = (
     r"automation/provider-census-status-[0-9]{8,14}\.json",
     r"automation/provider-census-proof-[0-9]{8,14}\.json",
     r"automation/provider-waf-browser-session-[0-9]{8,14}\.json",
+    r"automation/provider-census-sharded-[0-9]{8,20}\.json",
 )
 # Only immutable, append-only hosted Brain diagnostic JSON. Never permit a
 # provider or workflow mutation to be treated as drift-safe evidence.
@@ -165,9 +166,10 @@ def evidence_only_drift(expected: str, head: str) -> bool:
             if item.get("status")!="added":
                 return False
             continue
-        if path not in SAFE_EVIDENCE_FILES and not any(
-            re.fullmatch(pattern, path) for pattern in SAFE_NUMBERED_EVIDENCE
-        ):
+        numbered = any(re.fullmatch(pattern, path) for pattern in SAFE_NUMBERED_EVIDENCE)
+        if numbered and item.get("status") != "added":
+            return False  # Numbered archive evidence is immutable.
+        if path not in SAFE_EVIDENCE_FILES and not numbered:
             return False
     return True
 

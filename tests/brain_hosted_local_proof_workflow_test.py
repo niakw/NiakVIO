@@ -46,6 +46,9 @@ assert 'test_live_function_context.py' in source
 assert 'brain-llm/tests/test_force_cpu_tight_prompt.py' in source
 assert 'FIELD_BRAIN_GRAPHQL_OBSERVATION' in source
 assert 'python -m unittest discover -s brain-llm/tests' in source
+assert 'audit_replay_provenance.py' in source
+assert 'test_replay_provenance.py' in source
+assert 'replay-program-inventory.json' in source
 assert 'run_hosted_brain_repair_loop.py' in source
 assert 'hosted-repair-check-${{ github.run_id }}' in source
 assert "published" not in source.lower().split('name: require executed, materialized and decoded provider repair evidence',1)[1].split('name: retain bounded experiment evidence',1)[0], "proof step cannot publish provider code"
