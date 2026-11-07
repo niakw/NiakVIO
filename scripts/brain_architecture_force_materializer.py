@@ -694,6 +694,38 @@ def _numeric_erased_strategy_body(statements: list[ast.stmt]) -> str:
                 return ast.copy_location(ast.Constant(value=0), node)
             return node
 
+        def visit_Call(self, node: ast.Call) -> ast.AST:
+            node = self.generic_visit(node)
+            # The order of an identical source pool can change traversal
+            # priority, but it is not a new causal Repair mechanism. Only
+            # canonicalize simple source-name arguments of these two known
+            # combinators; keep all other expressions and control flow intact.
+            if (
+                isinstance(node.func, ast.Name)
+                and node.func.id in {"_unique_routes", "_unique_request_recipes"}
+                and len(node.args) > 1
+                and all(isinstance(arg, ast.Name) for arg in node.args)
+            ):
+                node.args.sort(key=lambda arg: arg.id)
+            return node
+
+        def visit_Assign(self, node: ast.Assign) -> ast.AST:
+            node = self.generic_visit(node)
+            if (
+                len(node.targets) == 1
+                and isinstance(node.targets[0], ast.Name)
+                and node.targets[0].id == "second_order_role_preferences"
+                and isinstance(node.value, (ast.List, ast.Tuple))
+                and all(
+                    isinstance(elt, ast.Constant) and isinstance(elt.value, str)
+                    for elt in node.value.elts
+                )
+            ):
+                # Reordering identical roles is prioritization, not evidence
+                # of a newly synthesized search/terminal transition algorithm.
+                node.value.elts.sort(key=lambda elt: elt.value)
+            return node
+
     isolated = ast.Module(body=copy.deepcopy(statements), type_ignores=[])
     return ast.dump(
         StripNumericBudgets().visit(isolated), include_attributes=False,
