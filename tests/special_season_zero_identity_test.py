@@ -16,7 +16,12 @@ core = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(core)
 
 source = "module.exports={getStreams:async()=>ROWS};"
-query = {"tmdbId": "129261", "mediaType": "tv", "title": "Spartacus", "season": 0, "episode": 1}
+# 129261 is the TheTVDB series ID, not a TMDB TV ID. The real canonical
+# TMDB series ID for Spartacus (2010) is 46296. Never conflate namespaces.
+TMDB_SPARTACUS = "46296"
+TVDB_SPARTACUS = "129261"
+assert TMDB_SPARTACUS != TVDB_SPARTACUS
+query = {"tmdbId": TMDB_SPARTACUS, "mediaType": "tv", "title": "Spartacus", "season": 0, "episode": 1}
 rows = [
     {"title": "Spartacus S01E01", "url": "https://cdn.example/wrong-s1.m3u8"},
     {"title": "Spartacus S02E01", "url": "https://cdn.example/unverified-alternate-s2.m3u8"},

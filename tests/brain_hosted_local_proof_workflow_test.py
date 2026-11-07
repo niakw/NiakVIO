@@ -16,6 +16,10 @@ assert 'Qwen/Qwen2.5-Coder-7B-Instruct-GGUF:Q4_K_M' in source
 assert '127.0.0.1:8080' in source
 assert 'sha256sum -c -' in source and 'llama-b11140' in source
 assert "NIAKVIO_REQUIRE_DECODE_PROOF: '1'" in source
+assert "NIAKVIO_FORCE_CPU_TIGHT_PROMPT: '1'" in source
+loop_source=(root/'scripts/run_hosted_brain_repair_loop.py').read_text(encoding='utf-8')
+assert "'--timeout-seconds', '180'" in loop_source
+assert "'--force-provider-budget-seconds', '360'" in loop_source
 assert 'run_hosted_brain_repair_loop.py' in source
 assert 'hosted-repair-check-${{ github.run_id }}' in source
 assert "published" not in source.lower().split('name: require executed, materialized and decoded provider repair evidence',1)[1].split('name: retain bounded experiment evidence',1)[0], "proof step cannot publish provider code"

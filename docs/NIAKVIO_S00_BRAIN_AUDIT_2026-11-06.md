@@ -25,3 +25,7 @@ Codex PRs in Brain-LLM #6–#20 mainly evolved context/budget/request transport,
 ## Status
 
 **Root cause reproduced.** Core/ProviderBase code and regression tests prepared for publication; 16 representative isolated JS cases passed in diagnostic session. Not yet proof of production rebuild, end-to-end stream validation, client delivery or any provider repair. CI and final remote SHA are the authority.
+
+## 2026-11-07 — External catalogue identity correction in S00 regression fixture
+
+Independent catalogue cross-check: Spartacus (2010) is **TMDB TV 46296** (IMDb tt1442449); **129261 is TheTVDB**, not TMDB. The former unit regression incorrectly labeled TVDB 129261 as `tmdbId`. Correct the oracle to 46296 and preserve both namespaces in test constants. References: https://thetvdb.com/series/spartacus and https://mooveedb.com/tv/2010/spartacus-46296 . TheTVDB identifies `Past Transgressions` as special S00E01, whereas the standalone mini-series `Gods of the Arena` calls it S01E01: https://thetvdb.com/series/spartacus/seasons/official/0 and https://www.imdb.com/title/tt39020004/episodes/ . **No numeric-only catalogue crosswalk** is justified. Current shared Core tests are still local synthetic tests, not a verified Nuvio request/terminal decoded episode proof; avoid reporting Spartacus production fixed.
