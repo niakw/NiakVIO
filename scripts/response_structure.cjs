@@ -327,6 +327,60 @@ function inlineScriptFacts(text) {
     .sort((a, b) => priority[a.role] - priority[b.role]).slice(0, 8) };
 }
 
+/* NIAKVIO_BRAIN_GRAPHQL_CAUSAL_EVIDENCE_V1 */
+function graphqlFailureFacts(root) {
+  if (!root || typeof root !== 'object' || Array.isArray(root)) return null;
+  const errors = Array.isArray(root.errors) ? root.errors : [];
+  const data = root.data;
+  const knownRoots = new Set(['episode', 'shows', 'sources', 'search', 'media',
+    'video', 'results', 'title']);
+  const hasGraphqlRoots = data && typeof data === 'object' && !Array.isArray(data)
+    && Object.keys(data).some(key => knownRoots.has(key));
+  if (!Array.isArray(root.errors) && !hasGraphqlRoots) return null;
+
+  // Only fixed categories leave the worker; no GraphQL message or value ever
+  // becomes a Brain observation. A 200 response can still be a failed query.
+  const validCodes = new Set(['GRAPHQL_VALIDATION_FAILED', 'GRAPHQL_PARSE_FAILED',
+    'BAD_USER_INPUT', 'BAD_REQUEST', 'UNAUTHENTICATED', 'FORBIDDEN',
+    'INTERNAL_SERVER_ERROR', 'SERVICE_UNAVAILABLE', 'PERSISTED_QUERY_NOT_FOUND',
+    'TOO_MANY_REQUESTS', 'NOT_FOUND']);
+  const codes = [], kinds = [];
+  function add(list, token) {
+    if (token && !list.includes(token) && list.length < 8) list.push(token);
+  }
+  for (const raw of errors.slice(0, 8)) {
+    if (!raw || typeof raw !== 'object') continue;
+    const code = typeof raw.extensions?.code === 'string'
+      ? raw.extensions.code.toUpperCase().slice(0, 64) : '';
+    if (validCodes.has(code)) add(codes, code);
+    let kind = 'unknown';
+    if (code === 'GRAPHQL_VALIDATION_FAILED' || code === 'BAD_USER_INPUT'
+        || code === 'BAD_REQUEST') kind = 'schema_mismatch';
+    else if (code === 'GRAPHQL_PARSE_FAILED') kind = 'syntax';
+    else if (code === 'UNAUTHENTICATED' || code === 'FORBIDDEN') kind = 'auth';
+    else if (code === 'TOO_MANY_REQUESTS') kind = 'rate_limit';
+    else if (code === 'NOT_FOUND' || code === 'PERSISTED_QUERY_NOT_FOUND') kind = 'not_found';
+    else if (code === 'INTERNAL_SERVER_ERROR' || code === 'SERVICE_UNAVAILABLE') kind = 'server_error';
+    if (kind === 'unknown' && typeof raw.message === 'string') {
+      const message = raw.message.slice(0, 512);
+      if (/cannot query field|unknown argument|not defined by type|variable .* not provided/i.test(message)) kind = 'schema_mismatch';
+      else if (/syntax error|unexpected token|parse error/i.test(message)) kind = 'syntax';
+      else if (/unauthoriz|forbidden|permission denied/i.test(message)) kind = 'auth';
+      else if (/rate.?limit|too many requests/i.test(message)) kind = 'rate_limit';
+      else if (/time.?out|timed out/i.test(message)) kind = 'timeout';
+      else if (/not found|does not exist/i.test(message)) kind = 'not_found';
+    }
+    add(kinds, kind);
+  }
+  const present = Object.prototype.hasOwnProperty.call(root, 'data');
+  const dataState = !present ? 'missing' : data === null ? 'null'
+    : Array.isArray(data) ? 'array' : typeof data === 'object' ? 'object' : 'scalar';
+  const nullRoots = data && typeof data === 'object' && !Array.isArray(data)
+    ? Object.keys(data).filter(key => knownRoots.has(key) && data[key] === null).slice(0, 8)
+    : [];
+  return { errorCount: Math.min(16, errors.length), codes, kinds, dataState, nullRoots };
+}
+
 function responseStructure(value, options = {}) {
   let root = value;
   const text = typeof value === 'string' ? value.slice(0, 131072) : '';
@@ -353,7 +407,8 @@ function responseStructure(value, options = {}) {
       }
     }
     walk(root, '', 0);
-    return { kind: 'json', fields };
+    const graphql = graphqlFailureFacts(root);
+    return { kind: 'json', fields, ...(graphql ? { graphql } : {}) };
   }
   if (text && /<(?:html|body|iframe|script|video|source|a|div)\b/i.test(text)) {
     const tags = new Map();

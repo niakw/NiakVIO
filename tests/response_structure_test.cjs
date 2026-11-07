@@ -311,4 +311,27 @@ assert.ok(resourceFlood.script_resources.some(row => row.role === 'app_entry'));
 assert.ok(!JSON.stringify(resourceFlood).includes('PRIVATE'));
 assert.deepEqual(responseStructure('<script type="application/json">{"epoch":1,"partB":"PRIVATE"}</script>').inline_fields,
   [{ name: 'epoch', type: 'number', key_syntax: 'quoted' }, { name: 'partB', type: 'string', key_syntax: 'quoted' }]);
+const graphql = responseStructure({
+  errors: [{
+    message: 'Cannot query field PRIVATE with https://secret.test/PRIVATE?token=PRIVATE',
+    extensions: { code: 'GRAPHQL_VALIDATION_FAILED', privateValue: 'PRIVATE' },
+  }],
+  data: null,
+});
+assert.deepEqual(graphql.graphql, {
+  errorCount: 1, codes: ['GRAPHQL_VALIDATION_FAILED'],
+  kinds: ['schema_mismatch'], dataState: 'null', nullRoots: [],
+});
+assert.ok(graphql.fields.some(row => row.path === 'errors[].extensions.code'));
+assert.doesNotMatch(JSON.stringify(graphql), /PRIVATE|secret\\.test|token=/);
+const graphqlNull = responseStructure({ data: { episode: null, title: 'PRIVATE' } });
+assert.deepEqual(graphqlNull.graphql, {
+  errorCount: 0, codes: [], kinds: [], dataState: 'object', nullRoots: ['episode'],
+});
+assert.doesNotMatch(JSON.stringify(graphqlNull), /PRIVATE/);
+assert.equal(responseStructure({ errors: [{
+  message: 'PRIVATE', extensions: { code: 'PRIVATE' },
+}], data: null }).graphql.kinds[0], 'unknown');
+assert.deepEqual(responseStructure({ foo: { bar: 1 } }).graphql, undefined);
+
 console.log('Inline script diagnostics preserve bounded field syntax and resource roles without values');
