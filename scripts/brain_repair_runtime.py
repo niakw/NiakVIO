@@ -1363,6 +1363,8 @@ def _plan_snapshot(plan: dict[str, Any]) -> dict[str, Any]:
         # These fields are executable planner intent, not presentation metadata.
         # Dropping them makes the runtime recompute the final g5 family and
         # silently prevents post-exhaustion strategies from materializing.
+        "forcePreferredRequested": str(plan.get("forcePreferredRequested") or ""),
+        "forcePreferredSelected": plan.get("forcePreferredSelected") is True,
         "postExhaustionStrategyProfile": str(plan.get("postExhaustionStrategyProfile") or ""),
         "postExhaustionStrategyMethod": str(plan.get("postExhaustionStrategyMethod") or ""),
         "repairType": str(plan.get("repairType") or ""),
@@ -1801,6 +1803,8 @@ def annotate_and_learn(output_dir: Path, mode: str) -> dict[str, Any]:
             "llmAdvisorRescue": row.get("llmAdvisorRescue") is True,
             "providerPositiveProgramReplay": row.get("providerPositiveProgramReplay") is True,
             "providerPositiveProgramProductionRescue": row.get("providerPositiveProgramProductionRescue") is True,
+            "forcePreferredRequested": row.get("forcePreferredRequested"),
+            "forcePreferredSelected": row.get("forcePreferredSelected") is True,
             "postExhaustionStrategyProfile": row.get("postExhaustionStrategyProfile"),
             "postExhaustionStrategyMethod": row.get("postExhaustionStrategyMethod"),
             "postExhaustionSourceFailureClass": row.get("postExhaustionSourceFailureClass"),

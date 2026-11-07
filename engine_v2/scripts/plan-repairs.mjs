@@ -962,7 +962,7 @@ function buildPlan(item) {
   // An executed-negative preferred strategy may rotate to a sibling inside
   // the selector, but BEFORE base exhaustion that fallback is not authorized
   // by the explicit replay contract. Never silently test a different profile.
-  const forcePreferredSelected = (
+  const forcePreferredSelectedEarly = (
     forcePreferredEligible && earlyForceHint.profile === forcePreferredProfile
   );
   const postExhaustionHint = positiveProgramReplayHint.profile
@@ -972,9 +972,15 @@ function buildPlan(item) {
           evidence.failureClass, causalFamilyMemoryMatches, rotateEvery,
           forcePreferredProfile,
         )
-      : forcePreferredSelected
+      : forcePreferredSelectedEarly
         ? earlyForceHint
         : { profile: "", method: "", index: -1 };
+  // The requested executor can also be selected AFTER base exhaustion.
+  // Record the exact final selection, not just the pre-exhaustion branch.
+  const forcePreferredSelected = Boolean(
+    explorationMode && !learningMode && forcePreferredProfile
+    && postExhaustionHint.profile === forcePreferredProfile
+  );
   const strategyEscalated = Boolean(postExhaustionHint.profile);
   const architectureGapEscalation = (
     explorationMode

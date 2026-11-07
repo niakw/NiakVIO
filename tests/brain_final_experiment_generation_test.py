@@ -165,6 +165,19 @@ assert exhausted["repairScope"]=="deferred",exhausted
 assert exhausted["action"]=="deferred_retry",exhausted
 assert exhausted["experimentGenerationLimit"]==2,exhausted
 
+
+# A newly promoted FORCE executor must be reported selected even after base
+# generations exhaust; the real 42416717760 silently chose v8 instead of v9.
+exhausted_preferred=plan(
+    [*old,row(4,2)], "repair", "terminal_transition_graph_v9",
+    exploration_chain=True,
+)
+assert exhausted_preferred["baseExperimentExhausted"] is True, exhausted_preferred
+assert exhausted_preferred["forcePreferredRequested"]=="terminal_transition_graph_v9", exhausted_preferred
+assert exhausted_preferred["forcePreferredSelected"] is True, exhausted_preferred
+assert exhausted_preferred["postExhaustionStrategyProfile"]=="terminal_transition_graph_v9", exhausted_preferred
+assert exhausted_preferred["allowedProfiles"]==["terminal_transition_graph_v9"], exhausted_preferred
+
 # Learning owns bounded strategy evolution after production g2 is exhausted.
 # Each failed final generation advances to a genuinely new generation until the
 # configured limit, then turns into explicit architecture debt.

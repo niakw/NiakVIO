@@ -18,6 +18,7 @@ import copy
 import hashlib
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -1161,6 +1162,8 @@ def sanitized_brain(report: dict[str, Any]) -> dict[str, Any]:
                 "providerPositiveProgramReplay": row.get("providerPositiveProgramReplay") is True,
                 "providerPositiveProgramProductionRescue": row.get("providerPositiveProgramProductionRescue") is True,
                 "positiveProgramFingerprint": row.get("positiveProgramFingerprint"),
+                "forcePreferredRequested": row.get("forcePreferredRequested"),
+                "forcePreferredSelected": row.get("forcePreferredSelected") is True,
                 "postExhaustionStrategyProfile": row.get("postExhaustionStrategyProfile"),
                 "postExhaustionStrategyMethod": row.get("postExhaustionStrategyMethod"),
                 "postExhaustionSourceFailureClass": row.get("postExhaustionSourceFailureClass"),
@@ -1334,6 +1337,7 @@ def main() -> int:
         action="store_true",
         help="Allow explicit current dynamic completeness targets outside repairQueue; implicit portfolio selection remains repairQueue-only.",
     )
+    parser.add_argument("--force-preferred-profile", default="", help="Approved one-provider Brain architecture FORCE profile")
     parser.add_argument("--waves", type=int, default=5)
     parser.add_argument("--batch-size", type=int, default=48)
     parser.add_argument("--health-concurrency", type=int, default=0, help="0 = auto per packed batch (1..8)")
@@ -1347,6 +1351,14 @@ def main() -> int:
     parser.add_argument("--time-budget-seconds", type=int, default=2100, help="Graceful portfolio work budget; writes a resumable report before outer workflow timeout.")
     parser.add_argument("--min-start-batch-seconds", type=int, default=360, help="Do not start another expensive batch below this remaining budget.")
     args = parser.parse_args()
+    preferred = str(args.force_preferred_profile or "").strip().casefold()
+    if preferred and (
+        not args.architecture_force or len(args.provider) != 1
+        or not re.fullmatch(r"[a-z][a-z0-9_]*_v[0-9]+", preferred)
+    ):
+        raise SystemExit("Brain preferred profile requires --architecture-force and one provider")
+    if preferred:
+        os.environ["NUVIO_BRAIN_FORCE_PREFERRED_PROFILE"] = preferred
 
     shard_count = max(1, min(int(args.shard_count), 64))
     shard_index = int(args.shard_index)
@@ -1524,7 +1536,9 @@ def main() -> int:
                 print(
                     "FIELD_PROVIDER_BRAIN_EXPLORATION_ENV "
                     f"wave={wave} chain={env.get('NUVIO_BRAIN_EXPLORATION_CHAIN','')} "
-                    f"planner_mode={env.get('NUVIO_BRAIN_PLANNER_MODE','') or 'production'}",
+                    f"planner_mode={env.get('NUVIO_BRAIN_PLANNER_MODE','') or 'production'} "
+                    f"architecture_force={str(args.architecture_force).lower()} "
+                    f"preferred_profile={env.get('NUVIO_BRAIN_FORCE_PREFERRED_PROFILE','') or 'none'}",
                     flush=True,
                 )
                 batch_timeout = max(

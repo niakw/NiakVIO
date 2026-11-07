@@ -1441,6 +1441,13 @@ jobs:
             exit 0
           fi
           for provider in "${REMAINING_TARGETS[@]}"; do args+=(--provider "$provider"); done
+          if [ "$MODE" = "force" ] && [ -n "${PREFERRED_BRAIN_PROFILE:-}" ]; then
+            if [ "${#REMAINING_TARGETS[@]}" -ne 1 ]; then
+              echo "FIELD_PROVIDER_FORCE_PREFERRED invalid_target_count=${#REMAINING_TARGETS[@]}" >&2
+              exit 2
+            fi
+            args+=(--preferred-profile "$PREFERRED_BRAIN_PROFILE")
+          fi
           if [ "$ALLOW_LOSS" = "true" ]; then args+=(--allow-upstream-positive-loss); fi
           printf 'CANONICAL_REPAIR_ARGS %q ' "${args[@]}"; echo
           "${args[@]}"

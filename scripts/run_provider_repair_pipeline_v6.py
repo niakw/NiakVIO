@@ -6,6 +6,7 @@ import argparse
 import concurrent.futures
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -717,11 +718,21 @@ def main() -> int:
     parser.add_argument("--mode", choices=("repair", "learn", "force"), default="repair")
     parser.add_argument("--skip-file", type=Path, default=DEFAULT_SKIP.relative_to(ROOT))
     parser.add_argument("--provider", action="append", default=[])
+    parser.add_argument("--preferred-profile", default="", help="Explicit one-provider Brain FORCE strategy only")
     parser.add_argument("--workers", type=int, default=0, help="0=auto-scale from unresolved provider count")
     parser.add_argument("--timeout", type=int, default=55)
     parser.add_argument("--attempts", type=int, default=3)
     parser.add_argument("--allow-upstream-positive-loss", action="store_true")
     args = parser.parse_args()
+    preferred = str(args.preferred_profile or "").strip().casefold()
+    if preferred and (
+        args.mode != "force" or len(args.provider) != 1
+        or not re.fullmatch(r"[a-z][a-z0-9_]*_v[0-9]+", preferred)
+    ):
+        raise SystemExit("Brain preferred profile requires exactly one provider in FORCE mode")
+    if preferred:
+        os.environ["NUVIO_BRAIN_FORCE_PREFERRED_PROFILE"] = preferred
+        print("FIELD_PROVIDER_FORCE_PREFERRED requested="+preferred+" mode=force providers=1", flush=True)
 
     manifest = load(MANIFEST)
     skip_path = args.skip_file if args.skip_file.is_absolute() else ROOT / args.skip_file
@@ -1084,6 +1095,10 @@ def main() -> int:
             # A FORCE replay must include the same architecture-failure
             # catalogue used by the Brain, not silently downgrade to Repair.
             brain_cmd.append("--architecture-force")
+            if preferred:
+                if len(targets) != 1 or targets[0] != cid(args.provider[0]):
+                    raise RuntimeError("FORCE preferred target drifted from caller")
+                brain_cmd.extend(["--force-preferred-profile", preferred])
         for provider in targets:
             brain_cmd.extend(["--provider", provider])
         run(

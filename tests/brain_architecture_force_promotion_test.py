@@ -163,6 +163,19 @@ for invalid_patch in (
         raise AssertionError("ambiguous/unsafe Brain patch was accepted")
 
 
+# The preferred FORCE profile must cross the canonical and portfolio CLI
+# as an explicit, scope-checked argument, not an unobserved ambient override.
+# The final run report must retain that selection for exact-SHA verification.
+REPAIR_WORKFLOW=(ROOT/".github/workflows/provider-recognition-repair-v6.yml").read_text(encoding="utf-8")
+CANONICAL_PIPELINE=(ROOT/"scripts/run_provider_repair_pipeline_v6.py").read_text(encoding="utf-8")
+PORTFOLIO=(ROOT/"scripts/run_provider_brain_repair.py").read_text(encoding="utf-8")
+BRAIN_RUNTIME=(ROOT/"scripts/brain_repair_runtime.py").read_text(encoding="utf-8")
+assert '--preferred-profile "$PREFERRED_BRAIN_PROFILE"' in REPAIR_WORKFLOW
+assert '--force-preferred-profile' in CANONICAL_PIPELINE and 'args.preferred_profile' in CANONICAL_PIPELINE
+assert '--force-preferred-profile' in PORTFOLIO and 'args.force_preferred_profile' in PORTFOLIO
+assert 'forcePreferredRequested' in PORTFOLIO and 'forcePreferredSelected' in PORTFOLIO
+assert 'forcePreferredRequested' in BRAIN_RUNTIME and 'forcePreferredSelected' in BRAIN_RUNTIME
+
 # The workflow must package the actual generated runtime executor: a
 # registry/planner-only patch is dead code and cannot be promoted.
 force_diff = LEARN.split("git diff --binary --", 1)[1].split(
