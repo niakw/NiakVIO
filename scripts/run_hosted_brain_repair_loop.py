@@ -179,7 +179,7 @@ def main() -> int:
                 '--niakvio-root', ROOT, '--experience', out / 'experience.jsonl',
                 '--documents', out / 'documents.jsonl', '--mode', 'repair',
                 '--provider', args.provider, '--backend', 'local', '--endpoint', args.endpoint, '--workers', '1',
-                '--max-hypotheses', '1', '--max-tokens', '4096', '--timeout-seconds', '180',
+                '--max-hypotheses', '1', '--max-tokens', '4096', '--timeout-seconds', '300',
                 '--force-provider-budget-seconds', '360', '--live-evidence', context,
                 '--output', batch, inference=True)
             for name, script in (('diagnostics', 'publish_niakvio_force_diagnostics.py'),
