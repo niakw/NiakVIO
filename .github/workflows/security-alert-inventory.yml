@@ -90,13 +90,14 @@ jobs:
                       bucket = "maintained_source"
                   scopes[bucket] += 1
                   if bucket in {"release_referenced", "maintained_source"} and len(examples) < 25:
-                      examples.append((row.get("number"), bucket, rule, path))
+                      location = ((row.get("most_recent_instance") or {}).get("location") or {})
+                      examples.append((row.get("number"), bucket, rule, path, location.get("start_line")))
               print("FIELD_CODEQL_SCOPE_TRIAGE open={} active_release_paths={} scopes={} rules={}".format(
                   len(items),len(active),json.dumps(scopes,sort_keys=True),
                   json.dumps(dict(sorted(rules.items(),key=lambda x:(-x[1],x[0]))),sort_keys=True)))
-              for alert, scope, rule, path in examples:
-                  print("FIELD_CODEQL_REQUIRES_REVIEW number={} scope={} rule={} path={}".format(
-                      clean(alert),clean(scope),clean(rule),clean(path)))
+              for alert, scope, rule, path, lineno in examples:
+                  print("FIELD_CODEQL_REQUIRES_REVIEW number={} scope={} rule={} path={} line={}".format(
+                      clean(alert),clean(scope),clean(rule),clean(path),clean(lineno)))
               with open(os.environ["GITHUB_STEP_SUMMARY"], "a", encoding="utf-8") as summary:
                   summary.write(f"  - Release source triage: {scopes}; reviewed rules: {rules}\\n")
                   summary.write("  - **These classifications are triage only; zero alerts dismissed.**\\n")
