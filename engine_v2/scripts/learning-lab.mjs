@@ -580,7 +580,11 @@ function sanitizeMemoryEntry(raw) {
   const profile = String(raw.profile || '').trim().slice(0, 96);
   if (!providerId || !signature || !profile) return null;
   const lastOutcome = raw.lastOutcome ? String(raw.lastOutcome).slice(0, 48) : null;
-  const executionObserved = raw.executionObserved === true;
+  // A generation failure cannot be promoted into executed negative memory.
+  // Normalize legacy rows which incorrectly set executionObserved on
+  // not_generated/profile_unavailable outcomes before cross-run persistence.
+  const executionObserved = raw.executionObserved === true
+    && !['not_generated', 'profile_unavailable'].includes(lastOutcome);
   // Memory created before exact event-plan attribution could persist the next
   // post-g5 strategy as unavailable before it had ever been executed. Drop that
   // stale debt at persistence time as well as planner-read time so it cannot
@@ -611,6 +615,7 @@ function sanitizeMemoryEntry(raw) {
     lastReason: raw.lastReason ? sanitizeReason(raw.lastReason) : null,
     lastSeenAt: raw.lastSeenAt ? String(raw.lastSeenAt).slice(0, 48) : null,
     executionObserved,
+    generationAttemptObserved: lastOutcome === 'not_generated',
   };
 }
 function memoryKey(row) {
