@@ -13,6 +13,40 @@ spec = importlib.util.spec_from_file_location('hosted_loop', ROOT / 'scripts/run
 loop = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(loop)
 
+
+# A real executed, rejected sandbox row must retain only numeric player-fanout
+# progress for the following Brain attempt. Never copy raw host/URL evidence.
+sandbox = {
+    'rows': [
+        {'executionObserved': False, 'reason': 'unexecuted_poison'},
+        {
+            'executionObserved': True, 'materializedMutationObserved': True,
+            'reason': 'decoded_repair_no_new_fixture_control',
+            'baseline': {'streamsPlayable': 0, 'streamsReturned': 0,
+                         'identityContradictions': 0, 'variantCoverage': {
+                             'announcedPlayerCandidates': 16,
+                             'exploredPlayerRequests': 1, 'reachableHosts': ['private.example'],
+                         }},
+            'candidate': {'streamsPlayable': 0, 'streamsReturned': 0,
+                          'identityContradictions': 0, 'variantCoverage': {
+                              'announcedPlayerCandidates': 16,
+                              'exploredPlayerRequests': 3, 'readerUrl': 'https://private.example/secret',
+                          }},
+        },
+    ],
+}
+feedback = loop.verification_feedback(sandbox)
+assert feedback['reason'] == 'decoded_repair_no_new_fixture_control'
+assert feedback['executionObserved'] and feedback['materializedMutationObserved']
+assert feedback['baseline']['variantCoverage']['exploredPlayerRequests'] == 1
+assert feedback['candidate']['variantCoverage']['exploredPlayerRequests'] == 3
+assert feedback['baseline']['variantCoverage']['announcedPlayerCandidates'] == 16
+assert 'private.example' not in str(feedback)
+assert set(feedback['candidate']['variantCoverage']) == {
+    'announcedPlayerCandidates', 'announcedVariantCandidates',
+    'exploredPlayerRequests', 'maxPlayableHeight',
+}
+
 with tempfile.TemporaryDirectory() as directory:
     root = Path(directory)
     out = root / 'output'
