@@ -19,12 +19,12 @@ Targets: scripts/brain_repair_runtime.py, scripts/run_brain_learning_queue.py, s
 
 ## New strategy blueprints
 
-### terminal_transition_graph_v12 — terminal-extraction|direct_media
+### terminal_transition_graph_v13 — terminal-extraction|direct_media
 
 Providers: allanime
 
 Trigger: retained chain hit reaches player/resolver territory but media extraction/validation is incomplete
 
-Method: derive and implement a genuinely new executable Repair strategy terminal_transition_graph_v12 from negative evidence for exhausted terminal_transition_graph_v1; preserve the causal intent of the prior method without reusing its implementation, register the new profile in Repair planning/runtime, and require targeted playback/identity proof
+Method: derive and implement a genuinely new executable Repair strategy terminal_transition_graph_v13 from negative evidence for exhausted terminal_transition_graph_v1; preserve the causal intent of the prior method without reusing its implementation, register the new profile in Repair planning/runtime, and require targeted playback/identity proof
 
 Acceptance: playback-verified media; terminal identity preserved; no green-lane regression
