@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
 import { REPAIR_RECIPES } from '../src/repair-brain.mjs';
+import { retainBoundedBrainExperiments } from '../src/brain-negative-memory-retention.mjs';
 
 const POST_EXHAUSTION_STRATEGY_PROFILES = new Set([
   'provider_positive_program_replay_v1',
@@ -69,7 +70,10 @@ const providerInScope = (value) => (
 const currentSkills = overrides.runtime_repair?.learned_skills ?? {};
 const learnedSkills = mergeLearnedSkills(previous.learnedSkills, currentSkills);
 const plans = repair.brain?.plans ?? {};
-const maxMemory = Number(policy.learningLab?.memoryMaxEntries || 1000);
+// Match Learning's durable capacity to the production Brain memory budget.
+// Clamp input to preserve a bounded privacy/artifact contract at 800 hubs.
+const configuredMemory = Number(policy.learningLab?.memoryMaxEntries || policy.production?.negativeExperimentMemory?.maxEntries || 1000);
+const maxMemory = Number.isFinite(configuredMemory) ? Math.max(1, Math.min(20000, Math.trunc(configuredMemory))) : 1000;
 const repeatedThreshold = Number(policy.learningLab?.maxRepeatedFailedProfile || 2);
 
 const counts = new Map();
@@ -568,9 +572,10 @@ function mergeExperimentMemory(previousMemory, runtimeMemory, report, planMap, l
       map.set(key, next);
     }
   }
-  const entries = [...map.values()].map(sanitizeMemoryEntry).filter(Boolean)
-    .sort((a, b) => String(b.lastSeenAt || '').localeCompare(String(a.lastSeenAt || '')) || b.failures - a.failures)
-    .slice(0, Math.max(1, Number(limit || 1000)));
+  const entries = retainBoundedBrainExperiments(
+    [...map.values()].map(sanitizeMemoryEntry).filter(Boolean),
+    { limit, minimumPerProvider: 12 },
+  );
   return { schemaVersion: 1, updatedAt: new Date().toISOString(), entries };
 }
 function sanitizeMemoryEntry(raw) {
