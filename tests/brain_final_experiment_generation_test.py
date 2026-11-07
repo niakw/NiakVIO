@@ -85,6 +85,26 @@ def plan(memory, mode="repair", preferred_profile="", exploration_chain=False):
     parsed=json.loads(completed.stdout)
     return next(iter((parsed.get("plans") or {}).values()))
 
+# Reproduce the planner contract against retained, *real* executed-negative
+# run metadata (not a made-up playback fixture). Its plan executed the base
+# runtime, despite the promoter requesting terminal_transition_graph_v9.
+# This archive is a diagnosis, never a terminal media or success oracle.
+retained=json.loads(
+    (ROOT/"automation/provider-brain-repair-42414140056.json").read_text(encoding="utf-8")
+)
+assert retained["processedProviders"]==["allanime"] and retained["acceptedRepairCount"]==0
+prior_plans=[
+    plan for wave in retained.get("waves", [])
+    for batch in wave.get("batches", [])
+    for plan in (batch.get("brain", {}).get("plans", {}) or {}).values()
+]
+assert len(prior_plans)==1, prior_plans
+prior=prior_plans[0]
+assert prior["failureClass"]=="chain_terminal_gap", prior
+assert prior["baseExperimentExhausted"] is False, prior
+assert prior["postExhaustionStrategyProfile"]=="", prior
+assert prior["allowedProfiles"]==["adaptive_runtime_recovery"], prior
+
 # Real FORCE run 42414140056 was dispatched with terminal_transition_graph_v9
 # but used adaptive_runtime_recovery because the production base variants were
 # not exhausted. The representative must exercise the newly promoted executor
