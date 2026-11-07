@@ -215,11 +215,19 @@ def main() -> None:
                  "former test line used URL substring matching, now uses parsed URL.origin equality. "
                  "Exact current main analyzed cleanly in CodeQL core category. "
                  "This is a historical test-only diagnostic, not a provider runtime bypass.")
+    # Do not bypass a repository policy that requires approval for dismissals.
+    # GitHub's create_request flag asks for review where enabled, and otherwise
+    # permits the same ordinary dismissal. Both outcomes remain independently
+    # verified against the alert state; a pending request is NOT a clean gate.
     updated=api("repos/"+REPO+"/code-scanning/alerts/"+str(LEGACY_ALERT),
         "PATCH",{"state":"dismissed","dismissed_reason":"false positive",
-                 "dismissed_comment":explanation})
+                 "dismissed_comment":explanation,"create_request":True})
+    if not isinstance(updated,dict):
+        raise RuntimeError("GitHub returned an invalid CodeQL dismissal response")
     if updated.get("state")!="dismissed":
-        raise RuntimeError("CodeQL did not confirm dismissal of stale historical alert")
+        print("FIELD_CODEQL_STALE_2531_NOT_DISMISSED state="+str(updated.get("state"))[:32]+
+              " approval_or_policy_recheck_required=true",flush=True)
+        return
     print("FIELD_CODEQL_STALE_2531_DISMISSED scanned_source="+expected+" current_main="+str(head)+" core_analyses="+str(len(matched)))
     # The Final Gate must run AFTER this status change, on the exact same main.
     after=(api("repos/"+REPO+"/branches/main") or {}).get("commit",{}).get("sha")

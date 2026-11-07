@@ -158,4 +158,38 @@ with patch.object(mod,"urlopen",side_effect=refused_update), patch.dict(os.envir
     assert "dismissed_reason:invalid" in line
     assert "PRIVATE" not in line and "test-token" not in line
 
+
+# Explicitly request policy-compliant review and never turn a pending request
+# into a cleared security gate. No Final Gate dispatch until state dismissed.
+with patch.object(mod,"verify_current_source"), patch.object(mod,"scan_source_sha",return_value=src), \
+     patch.object(mod,"evidence_only_drift",return_value=True), \
+     patch.object(mod,"read_pages",return_value=[core]), \
+     patch.object(mod,"open_high_critical_alerts",return_value=[]):
+    calls=[]
+    def pending_api(path,method="GET",body=None):
+        calls.append((path,method,body))
+        if path.endswith("/branches/main"):
+            return {"commit":{"sha":src}}
+        if path.endswith("/code-scanning/alerts/2531") and method=="GET":
+            return {"number":2531,"state":"open",
+                    "rule":{"id":"js/incomplete-url-substring-sanitization"},
+                    "most_recent_instance":{
+                        "analysis_key":mod.LEGACY_KEY,
+                        "location":{"path":"tests/response_structure_test.cjs",
+                                    "start_line":166}}}
+        if path.endswith("/code-scanning/alerts/2531") and method=="PATCH":
+            return {"number":2531,"state":"open"}
+        raise AssertionError("Unexpected security API call: "+path)
+    with patch.object(mod,"api",side_effect=pending_api):
+        buf=StringIO()
+        with redirect_stdout(buf):
+            mod.main()
+    changes=[(path,body) for path,method,body in calls if method=="PATCH"]
+    assert len(changes)==1
+    assert changes[0][0].endswith("/code-scanning/alerts/2531")
+    assert changes[0][1]["create_request"] is True
+    assert changes[0][1]["dismissed_reason"]=="false positive"
+    assert "FIELD_CODEQL_STALE_2531_NOT_DISMISSED" in buf.getvalue()
+    assert not any("/dispatches" in path for path,_,_ in calls)
+
 print("CodeQL evidence-only drift regression passed")

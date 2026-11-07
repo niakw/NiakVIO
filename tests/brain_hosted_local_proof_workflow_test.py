@@ -21,6 +21,7 @@ assert 'Qwen/Qwen2.5-Coder-7B-Instruct-GGUF:Q4_K_M' not in source
 assert 'sha256sum -c -' in source and 'llama-b11140' in source
 assert "NIAKVIO_REQUIRE_DECODE_PROOF: '1'" in source
 assert "NIAKVIO_FORCE_CPU_TIGHT_PROMPT: '1'" in source
+assert "FIELD_BRAIN_GRAPHQL_CAUSAL_PREFLIGHT exact_unit_selection=true" in source
 assert "NIAKVIO_FORCE_CPU_LONG_CALL: '1'" in source
 assert "NIAKVIO_FORCE_CPU_OUTPUT_BUDGET: '1'" in source
 loop_source=(root/'scripts/run_hosted_brain_repair_loop.py').read_text(encoding='utf-8')

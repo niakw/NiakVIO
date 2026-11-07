@@ -1668,3 +1668,15 @@
 - SEC stale alert retirement run 42329657272 on analyzed source `5f4cd6d` reached the exact alert PATCH after current-source, maintained JS Core category, severity inventory and source drift checks, but GitHub returned **HTTP 422 Unprocessable Entity**. The former script only emitted the exception stack, not a reason. This is not an alert dismissal or a passing Final Gate.
 - Hardened `scripts/retire_stale_codeql_2531.py` to emit an allowlisted `FIELD_CODEQL_DISMISSAL_REJECTED` classification and validation field codes for the exact #2531 PATCH. Raw GitHub error message, secrets and request body are deliberately not logged; HTTPError is re-raised fail-closed. A synthetic HTTP 422 regression test verifies no sensitive text is exposed.
 - Do NOT force-clear #2531, bypass the final gate, or assume the 422 means authorization failure until the diagnostic workflow reports a specific reason. GitHub API documents optional dismissal requests that might require approval. If policy requires approval, request review rather than falsifying a dismissal.
+
+## 2026-11-07 — Exact-source Brain GraphQL repair replay scheduled
+
+- Brain-LLM current main `1d459f9e6d6b9fa5fbbbc08e544349d938a77968` includes a generic GraphQL lookup-producer causal focus; its CI `42349738453` is green after correcting the test's deterministic helper rank. No provider runtime edit.
+- NiakVIO hosted proof now emits a positive marker only after running the pinned Brain `test_force_rejected_unit_diversification.py` preflight. Push should trigger a new exact-main AllAnime Qwen3B proof, but a correct source focus still does not imply a playable candidate. Previous `42328950352` had one pure deletion and repeated no-op, 0 materialized, 0 accepted.
+- This workflow/public architecture change is separate from CodeQL #2531 422 diagnosis (`596a0e77`). To prevent cancellation of concurrent full CodeQL, hold push until the `596a0e77` scan completes; then push and verify remote SHA and test evidence. Avoid concurrently modifying provider code.
+
+## 2026-11-07 — CodeQL 422 validation request path, still fail closed
+
+- Run [42349451681](https://github.com/niakw/NiakVIO/actions/runs/42349451681) passed Python/Actions/JS Core/JS ProviderBase, Core Workflow Gate and provider non-regression all passed at `596a0e77`. The exact legacy #2531 retirement run [42350018829](https://github.com/niakw/NiakVIO/actions/runs/42350018829) reached PATCH again, returned HTTP 422 `validation_error` with no field codes. **Alert not closed**; Final Gate remains blocked.
+- GitHub's documented CodeQL update endpoint supports `create_request: true` to request a dismissal under policies requiring review. Retry the exact validated alert with this field; if the result is still open, label `NOT_DISMISSED` and do not dispatch/claim a clean Final Gate. If still HTTP 422, preserve the fail-closed failure and investigate GitHub policy/manual review; never auto-close unrelated alerts.
+- Offline regression now explicitly verifies one exact #2531 request with approval flag and absence of Final Gate dispatch when the server returns open. Branches and published providers untouched.
