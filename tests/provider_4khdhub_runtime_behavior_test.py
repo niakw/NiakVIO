@@ -25,8 +25,10 @@ globalThis.__nuvioCoreGetTmdbDataV1=async({mediaType})=>({metadata:mediaType==="
   ? {name:"Breaking Bad",first_air_date:"2008-01-20"}
   : {title:"The Colony",release_date:"2021-08-27"}});
 function response(url,text){return {ok:true,status:200,url,async text(){return text}}}
+const fetchTrace=[];
 globalThis.fetch=async function(url){
   url=String(url);
+  fetchTrace.push(url);
   if(url.includes("/?s=The%20Colony%202021")) return response(url,
     '<a class="movie-card" href="/the-colony-movie-7978/"><div class="movie-card-content"><span class="movie-card-title">The Colony</span><span class="movie-card-format">Movies</span><span class="movie-card-meta">2021</span></div></a>');
   if(url.endsWith("/the-colony-movie-7978/")) return response(url,
@@ -52,7 +54,7 @@ globalThis.fetch=async function(url){
   if(!hook||hook.provider!=="4khdhub") throw new Error("hook missing");
   const movie=await hook.resolve(["760873","movie",null,null]);
   const tv=await hook.resolve(["1396","tv",1,1]);
-  console.log(JSON.stringify({movie,tv}));
+  console.log(JSON.stringify({movie,tv,fetchTrace}));
 })().catch(e=>{console.error(e.stack||e);process.exit(1)});
 '''
 with tempfile.TemporaryDirectory() as td:
@@ -62,7 +64,7 @@ with tempfile.TemporaryDirectory() as td:
 result=json.loads(proc.stdout.strip().splitlines()[-1])
 movie=result["movie"]
 tv=result["tv"]
-assert len(movie)==1,movie
+assert len(movie)==1,{"movie":movie,"fetchTrace":result["fetchTrace"]}
 assert movie[0]["url"]=="https://media.workers.dev/colony.mkv",movie
 assert movie[0]["quality"]=="2160p",movie
 assert "The Colony" in movie[0]["title"],movie
