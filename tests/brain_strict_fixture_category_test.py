@@ -47,6 +47,13 @@ with patch.dict(os.environ,{'NIAKVIO_REQUIRE_DECODE_PROOF':'1'}):
     assert ok and reason=='decoded_repair_fixture_improvement',(reason,facts)
     assert facts['improvedFixtures']==[spec['label']]
     assert not facts['unresolvedFixtures']
+    # A URL which was counted "playable" without strict terminal decode is
+    # not a decoded control. Genuine decoding of that same URL is a new proof.
+    opaque_before=copy.deepcopy(after)
+    opaque_before['tests'][0]['host_results'][0]['media_decode']=None
+    gained, gained_reason, gained_facts=verify.decoded_repair_gate(opaque_before,after,'MALLUMV')
+    assert gained and gained_reason=='decoded_repair_fixture_improvement',(gained_reason,gained_facts)
+    assert gained_facts['improvedFixtures']==[spec['label']]
     assert verify.decoded_repair_gate(before,after)[1]=='decoded_repair_fixture_contract'
     wrong=copy.deepcopy(after)
     wrong['tests'][0]['fixture']['tmdbId']='95479'
