@@ -444,6 +444,21 @@ def evaluate_variant_coverage_pair(
 
 
 def fixture_summary(result: dict[str, Any]) -> list[dict[str, Any]]:
+    # The fixture source, not a provider response or an LLM candidate, owns
+    # these public identities. Previously only the two legacy anime TMDB IDs
+    # survived, silently erasing legitimate movie/TV identities from Brain RAG.
+    reference = load(ROOT / 'health-config.json').get('fixtures') or {}
+    trusted = {
+        (category, str(fixture.get('tmdbId') or ''),
+         fixture.get('season') if category in ('anime', 'tv') else None,
+         fixture.get('episode') if category in ('anime', 'tv') else None)
+        for category, fixtures in reference.items()
+        if category in ('anime', 'tv', 'movie', 'anime_movie') and isinstance(fixtures, list)
+        for fixture in fixtures if isinstance(fixture, dict)
+        and str(fixture.get('tmdbId') or '').isdigit()
+        and (category in ('movie', 'anime_movie') or
+             (type(fixture.get('season')) is int and type(fixture.get('episode')) is int))
+    }
     output = [{
         'fixture': str((test.get('fixture') or {}).get('label') or '')[:120],
         'category': str((test.get('fixture') or {}).get('category') or '')[:24],
@@ -462,9 +477,13 @@ def fixture_summary(result: dict[str, Any]) -> list[dict[str, Any]]:
             probes, controls = decoded_media_summary(test)
             fixture = test.get('fixture') or {}
             tmdb = str(fixture.get('tmdbId') or '')
-            row.update({'tmdbId': tmdb if tmdb in DECODED_REPAIR_FIXTURES else '',
-                        'season': fixture.get('season') if type(fixture.get('season')) is int else None,
-                        'episode': fixture.get('episode') if type(fixture.get('episode')) is int else None,
+            category = str(fixture.get('category') or '')
+            season = fixture.get('season') if type(fixture.get('season')) is int else None
+            episode = fixture.get('episode') if type(fixture.get('episode')) is int else None
+            valid = (category, tmdb, season, episode) in trusted
+            row.update({'tmdbId': tmdb if valid else '',
+                        'season': season if valid else None,
+                        'episode': episode if valid else None,
                         'decodedMediaControls': controls, 'decodedMediaProbes': probes})
     return output
 
