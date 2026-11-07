@@ -1,0 +1,114 @@
+{
+  "brainLlmSha": "e03334b1715a56235d26858c7255604db0effc87",
+  "minConfidence": 0.8,
+  "privateContentRetained": false,
+  "proofAuthority": false,
+  "providerCount": 1,
+  "providerMutationContentRetained": true,
+  "publicationAuthority": false,
+  "rows": [
+    {
+      "candidateOrdinal": 1,
+      "confidence": 0.96,
+      "failureClass": "route-proven-gap",
+      "mechanismFamily": "yflix",
+      "mutationContextFingerprint": "7877190261a8217381fc88d181f227437cd972711838c4b287e0739a08700d22",
+      "mutationFingerprint": "86ff905369a43ffa0aea6082e1860d54fa8915d9baa70b40f0a4fb6b6ccc1a06",
+      "mutations": [
+        {
+          "family": "yflix",
+          "find": "q){var eps=row&&row.episodes;if(!eps)return\"\";var sn=String(q.season),en=String(q.episode),hit=eps&&eps[sn]&&eps[sn][en];if(hit&&typeof hit===\"object\")return s(hit.eid||hit.id||hit.episode_id);if(Array.isArray(eps)){for(var i=0;i<eps.length;i++){var e=eps[i]||{};if((!e.season||n(e.season)===q.season)&&n(e.episode||e.number||e.ep)===q.episode){var id=s(e.eid||e.id||e.episode_id);if(id)return id}}}return\"\"",
+          "operation": "upsert",
+          "replace": " q) {\n  var eps = row && row.episodes;\n  if (!eps) return \"\";\n  var sn = String(q.season),\n      en = String(q.episode),\n      hit = eps && eps[sn] && eps[sn][en];\n  if (hit && typeof hit === \"object\") return s(hit.eid || hit.id || hit.episode_id);\n  if (Array.isArray(eps)) {\n    for (var i = 0; i < eps.length; i++) {\n      var e = eps[i] || {};\n      if ((!e.season || n(e.season) === q.season) && n(e.episode || e.number || e.ep) === q.episode) {\n        var id = s(e.eid || e.id || e.episode_id);\n        if (id) return id;\n      }\n    }\n  }\n  return \"\";\n",
+          "scope": "provider_bloc"
+        }
+      ],
+      "providerId": "yflix",
+      "repairFamily": {
+        "archetype": "route-proven-gap:route-parser",
+        "failure": "route-proven-gap",
+        "key": "3d41033886e9ee6dcd07f2b297bd85eeb51403b7dda3ef64c6f46340f0b069fd",
+        "mediaTypes": [
+          "movie",
+          "tv"
+        ],
+        "mutationSurfaces": [
+          "provider-bloc",
+          "provider-data",
+          "provider-js",
+          "provider-patch"
+        ],
+        "signals": [
+          "provider-http-2xx",
+          "response-json"
+        ],
+        "stages": [
+          "provider-network-exception",
+          "provider-network-exception\u00d72"
+        ],
+        "status": "route-proven",
+        "version": 2
+      },
+      "strategy": "search-detail-player-terminal-traversal",
+      "targetLayer": "provider",
+      "tests": [
+        "replay_proven_route",
+        "traverse_search_detail_player_terminal",
+        "validate_terminal_media_identity"
+      ]
+    },
+    {
+      "candidateOrdinal": 1,
+      "confidence": 0.96,
+      "failureClass": "route-proven-gap",
+      "mechanismFamily": "yflix",
+      "mutationContextFingerprint": "7877190261a8217381fc88d181f227437cd972711838c4b287e0739a08700d22",
+      "mutationFingerprint": "c1a292c21160cfbbcc6ff7e36c89f473704f8e179e5d145143669697613fb3f9",
+      "mutations": [
+        {
+          "family": "yflix",
+          "find": "var cid=contentId(row);if(!cid)return\"\";var token=await enc(cid);if(!token)return\"\";var parsed=await ajaxParsed(base,\"/episodes/list?id=\"+encodeURIComponent(cid)+\"&_=\"+encodeURIComponent(token)),ids=episodeCandidates(parsed,q);return ids[0]||\"\"",
+          "operation": "upsert",
+          "replace": "\n  var cid = contentId(row);\n  if (!cid) return \"\";\n  var token = await enc(cid);\n  if (!token) return \"\";\n  var parsed = await ajaxParsed(base, \"/episodes/list?id=\" + encodeURIComponent(cid) + \"&_=\" + encodeURIComponent(token));\n  var ids = episodeCandidates(parsed, q);\n  return ids[0] || \"\";\n",
+          "scope": "provider_bloc"
+        }
+      ],
+      "providerId": "yflix",
+      "repairFamily": {
+        "archetype": "route-proven-gap:route-parser",
+        "failure": "route-proven-gap",
+        "key": "3d41033886e9ee6dcd07f2b297bd85eeb51403b7dda3ef64c6f46340f0b069fd",
+        "mediaTypes": [
+          "movie",
+          "tv"
+        ],
+        "mutationSurfaces": [
+          "provider-bloc",
+          "provider-data",
+          "provider-js",
+          "provider-patch"
+        ],
+        "signals": [
+          "provider-http-2xx",
+          "response-json"
+        ],
+        "stages": [
+          "provider-network-exception",
+          "provider-network-exception\u00d72"
+        ],
+        "status": "route-proven",
+        "version": 2
+      },
+      "strategy": "search-detail-player-terminal-traversal",
+      "targetLayer": "provider",
+      "tests": [
+        "replay_proven_route",
+        "traverse_search_detail_player_terminal",
+        "validate_terminal_media_identity"
+      ]
+    }
+  ],
+  "sandboxMutationAuthority": true,
+  "schemaVersion": 1,
+  "sourceNiakvioSha": "b54812113ce103a6e9ccce8340171bb5f211042b"
+}
