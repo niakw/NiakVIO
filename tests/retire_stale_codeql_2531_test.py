@@ -85,6 +85,28 @@ with patch.object(mod,"api",return_value=[{}]*100):
         assert "exceeded bounded pages" in str(exc)
     else:raise AssertionError("truncated security inventory was accepted")
 
+# Only the immutable, added JSON facts emitted by hosted Brain proof may
+# follow a successful CodeQL source SHA. Modifications or unknown files fail.
+hosted_paths=[
+    "automation/hosted-repair-evidence/42326911944.json",
+    "automation/hosted-repair-evidence/42326911944-evaluation.json",
+    "automation/hosted-repair-evidence/42326911944-http-observation.json",
+    "automation/hosted-repair-evidence/42326911944-mutations.json",
+    "automation/hosted-repair-evidence/42326911944-player-markup.json",
+]
+with patch.object(mod,"api",return_value={
+    **response([]), "files":[{"filename":path,"status":"added"} for path in hosted_paths],
+}):
+    assert mod.evidence_only_drift(src,head)
+for invalid in (
+    {"filename":hosted_paths[0],"status":"modified"},
+    {"filename":"automation/hosted-repair-evidence/42326911944-source.js","status":"added"},
+    {"filename":"automation/hosted-repair-evidence/42326911944-context.json","status":"added"},
+    {"filename":"scripts/provider_worker.cjs","status":"added"},
+):
+    with patch.object(mod,"api",return_value={**response([]),"files":[invalid]}):
+        assert not mod.evidence_only_drift(src,head), invalid
+
 # Filter BEFORE pagination: unrelated medium/low and test-only alerts may exceed
 # the six-page bound. A severe category must still be exhausted independently.
 seen.clear()
