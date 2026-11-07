@@ -1,8 +1,48 @@
 {
   "schemaVersion": 3,
-  "runId": "42411845808-post-repair-candidate",
-  "triggerSha": "e3c6cad9f71cc2dc49ceeee03f0cffb03ca4428b",
+  "runId": "42412793051-post-repair-candidate",
+  "triggerSha": "46a36f97e4696bbb97971b01a56eb3f5bb385e96",
   "providers": [
+    {
+      "provider": "allanime",
+      "status": "CHAIN REACHED",
+      "underlyingStatus": "",
+      "color": "🟣",
+      "declaredLanes": [
+        "anime"
+      ],
+      "currentVerifiedLanes": [],
+      "historicalProof": [],
+      "candidateProof": [],
+      "routeProof": [
+        "4 live routes / anime"
+      ],
+      "latestLaneVerdicts": [
+        "anime=no_streams/provider_network_zero_result"
+      ],
+      "dominantIssue": "provider_network_zero_result",
+      "searchProgress": [
+        "anime: 4 works tested / 44 retained misses / 4 retained chain hits"
+      ],
+      "evidenceDepth": [
+        "anime=chain_reached"
+      ],
+      "harnessTransportClass": "not-applicable",
+      "harnessTransportEvidence": [],
+      "authorityRepairEligible": true,
+      "authorityAction": "KEEP_BACKEND",
+      "authorityClass": "api-or-backend",
+      "authorityConfidence": "high",
+      "authorityReasons": [
+        "structured_backend_authority"
+      ],
+      "authorityKnown": true,
+      "action": "finish terminal extractor/validation; do not promote before verified media",
+      "brainCheckRequired": true,
+      "statusRepairEligible": true,
+      "repairEligible": true,
+      "testedThisRun": true
+    },
     {
       "provider": "4khdhub",
       "status": "ROUTE PROVEN",
@@ -42,46 +82,6 @@
       ],
       "authorityKnown": true,
       "action": "replay qualified route fixtures and finish terminal extraction/validation",
-      "brainCheckRequired": true,
-      "statusRepairEligible": true,
-      "repairEligible": true,
-      "testedThisRun": true
-    },
-    {
-      "provider": "allanime",
-      "status": "CHAIN REACHED",
-      "underlyingStatus": "",
-      "color": "🟣",
-      "declaredLanes": [
-        "anime"
-      ],
-      "currentVerifiedLanes": [],
-      "historicalProof": [],
-      "candidateProof": [],
-      "routeProof": [
-        "4 live routes / anime"
-      ],
-      "latestLaneVerdicts": [
-        "anime=no_streams/provider_network_zero_result"
-      ],
-      "dominantIssue": "provider_network_zero_result",
-      "searchProgress": [
-        "anime: 4 works tested / 44 retained misses / 4 retained chain hits"
-      ],
-      "evidenceDepth": [
-        "anime=chain_reached"
-      ],
-      "harnessTransportClass": "not-applicable",
-      "harnessTransportEvidence": [],
-      "authorityRepairEligible": true,
-      "authorityAction": "KEEP_BACKEND",
-      "authorityClass": "api-or-backend",
-      "authorityConfidence": "high",
-      "authorityReasons": [
-        "structured_backend_authority"
-      ],
-      "authorityKnown": true,
-      "action": "finish terminal extractor/validation; do not promote before verified media",
       "brainCheckRequired": true,
       "statusRepairEligible": true,
       "repairEligible": true,
@@ -2180,8 +2180,8 @@
   "harnessQueue": [],
   "targetedTransportBlockedQueue": [],
   "clientTransportGapQueue": [],
-  "harnessEvidenceRunId": "42411845808-repair-waf-final",
-  "harnessEvidenceSha": "e3c6cad9f71cc2dc49ceeee03f0cffb03ca4428b",
+  "harnessEvidenceRunId": "42412793051-repair-waf-final",
+  "harnessEvidenceSha": "46a36f97e4696bbb97971b01a56eb3f5bb385e96",
   "authorityRefreshedProviders": [],
   "harnessTransportUpdatedProviders": [],
   "networkDifferentialUpdatedProviders": [],
@@ -2594,17 +2594,17 @@
     }
   },
   "lastRepairAttempt": {
-    "runId": "42411845808",
-    "sourceCensusRunId": "42411845808-post-repair-candidate",
+    "runId": "42412793051",
+    "sourceCensusRunId": "42412793051-post-repair-candidate",
     "mode": "force",
     "selectedProviders": [
-      "4khdhub"
+      "allanime"
     ],
     "candidateProviders": [],
     "validatedProviders": [],
     "acceptedRepairCount": 0,
     "deferredToLearningSlotProviders": [
-      "4khdhub"
+      "allanime"
     ],
     "noProgressReason": "experiment_variants_exhausted",
     "timeBudgetExhausted": false,
