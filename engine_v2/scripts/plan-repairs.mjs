@@ -941,14 +941,39 @@ function buildPlan(item) {
   const postExhaustionCandidateProfiles = postExhaustionCandidates(evidence.failureClass)
     .map((row) => stringValue(row.profile))
     .filter(Boolean);
+  // An architecture FORCE promotion is followed by ONE representative replay.
+  // That replay must execute the newly materialized profile even when older
+  // base variants have not yet exhausted: otherwise the run measures a base
+  // profile and falsely appears to validate (or reject) the new architecture.
+  // Ordinary production and Learning preserve their previous rotation policy.
+  const forcePreferredProfile = stringValue(input.forcePreferredStrategy).toLowerCase();
+  const forcePreferredEligible = (
+    explorationMode && !learningMode && !experimentExhausted
+    && Boolean(forcePreferredProfile)
+    && postExhaustionCandidateProfiles.includes(forcePreferredProfile)
+  );
+  const earlyForceHint = forcePreferredEligible
+    ? postExhaustionStrategyHint(
+        evidence.failureClass, causalFamilyMemoryMatches, rotateEvery,
+        forcePreferredProfile,
+      )
+    : { profile: "", method: "", index: -1 };
+  // An executed-negative preferred strategy may rotate to a sibling inside
+  // the selector, but BEFORE base exhaustion that fallback is not authorized
+  // by the explicit replay contract. Never silently test a different profile.
+  const forcePreferredSelected = (
+    forcePreferredEligible && earlyForceHint.profile === forcePreferredProfile
+  );
   const postExhaustionHint = positiveProgramReplayHint.profile
     ? positiveProgramReplayHint
     : (explorationMode && experimentExhausted)
       ? postExhaustionStrategyHint(
           evidence.failureClass, causalFamilyMemoryMatches, rotateEvery,
-          stringValue(input.forcePreferredStrategy),
+          forcePreferredProfile,
         )
-      : { profile: "", method: "", index: -1 };
+      : forcePreferredSelected
+        ? earlyForceHint
+        : { profile: "", method: "", index: -1 };
   const strategyEscalated = Boolean(postExhaustionHint.profile);
   const architectureGapEscalation = (
     explorationMode
@@ -980,7 +1005,7 @@ function buildPlan(item) {
     && postExhaustionHint.profile === "provider_positive_program_replay_v1"
     && /^[0-9a-f]{64}$/.test(stringValue(postExhaustionHint.positiveProgramFingerprint).toLowerCase())
   );
-  const repairTarget = (experimentExhausted || metaGapEscalated)
+  const repairTarget = (experimentExhausted || metaGapEscalated || forcePreferredSelected)
     ? (
         (strategyEscalated || metaGapEscalated)
           ? (
@@ -1173,6 +1198,8 @@ function buildPlan(item) {
       && !llmAdvisorExplorationRescue
     ),
     strategyEscalated,
+    forcePreferredRequested: forcePreferredProfile,
+    forcePreferredSelected,
     metaGapEscalated,
     architectureGapEscalation,
     providerPositiveProgramReplay: postExhaustionHint.profile === "provider_positive_program_replay_v1",
