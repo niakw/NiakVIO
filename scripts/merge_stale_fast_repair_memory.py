@@ -20,7 +20,9 @@ if str(SCRIPTS) not in sys.path:
     sys.path.insert(0, str(SCRIPTS))
 from brain_negative_memory_retention import select_bounded_negative_memory
 
-NEGATIVE = {"rejected", "profile_unavailable", "failed", "no_progress"}
+# Only retested child outcomes can cross a stale-SHA boundary. A profile
+# that was unavailable or failed before code generation was never executed.
+NEGATIVE = {"rejected", "failed", "no_progress"}
 POLICY_PATH = SCRIPTS.parent / "engine_v2" / "config" / "brain-policy.json"
 
 
