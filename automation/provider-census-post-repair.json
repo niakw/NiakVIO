@@ -66,13 +66,13 @@
       "provider_id": "allanime",
       "provider_name": "🌐 AllAnime",
       "semantic_type": "anime",
-      "fixture_title": "Hell Teacher: Jigoku Sensei Nube",
+      "fixture_title": "One Piece",
       "fixture": {
-        "tmdbId": "259544",
+        "tmdbId": "37854",
         "mediaType": "anime",
         "category": "anime",
-        "title": "Hell Teacher: Jigoku Sensei Nube",
-        "year": 2025,
+        "title": "One Piece",
+        "year": 1999,
         "season": 1,
         "episode": 1
       },
@@ -105,13 +105,13 @@
         "official_hub": "https://allanime.sa.com/",
         "official_api": null
       },
-      "debug_fetch_count": 20,
-      "debug_provider_fetch_count": 19,
+      "debug_fetch_count": 33,
+      "debug_provider_fetch_count": 32,
       "debug_progress_stage": "chain_reached",
       "debug_fetches": [
         {
-          "url": "https://api.themoviedb.org/3/tv/259544?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Ccontent_ratings&language=fr-FR&api_key=%3Credacted%3E",
-          "response_url": "https://api.themoviedb.org/3/tv/259544?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Ccontent_ratings&language=fr-FR&api_key=%3Credacted%3E",
+          "url": "https://api.themoviedb.org/3/tv/37854?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Ccontent_ratings&language=fr-FR&api_key=%3Credacted%3E",
+          "response_url": "https://api.themoviedb.org/3/tv/37854?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Ccontent_ratings&language=fr-FR&api_key=%3Credacted%3E",
           "method": "GET",
           "status": 200,
           "content_type": "application/json",
@@ -143,195 +143,12 @@
           "declared_indexed_player_candidate_count": 0,
           "declared_player_hosts": [],
           "declared_quality_heights": [],
-          "duration_ms": 109
+          "duration_ms": 65
         },
         {
           "url": "https://api.mkissa.net/api",
           "response_url": "https://api.mkissa.net/api",
           "method": "POST",
-          "status": 200,
-          "content_type": "application/json",
-          "challenge": "",
-          "response_shape": {
-            "kind": "json",
-            "top": "object",
-            "keys": [
-              "data"
-            ],
-            "dataType": "object",
-            "dataKeys": [
-              "shows"
-            ]
-          },
-          "declared_player_candidate_count": 0,
-          "declared_url_player_candidate_count": 0,
-          "declared_indexed_player_candidate_count": 0,
-          "declared_player_hosts": [],
-          "declared_quality_heights": [],
-          "duration_ms": 225
-        },
-        {
-          "url": "https://mkissa.to/",
-          "response_url": "https://mkissa.to/",
-          "method": "GET",
-          "status": 200,
-          "content_type": "text/html",
-          "challenge": "",
-          "response_shape": {
-            "kind": "html",
-            "sampleBytes": 21397,
-            "forms": 0,
-            "iframes": 0,
-            "videos": 0,
-            "sources": 0,
-            "scripts": 6,
-            "anchors": 7,
-            "classTokens": [
-              "s-133oy1v",
-              "s-1554tx6",
-              "s-q1o28q",
-              "icon",
-              "s-1aaflua",
-              "route-link",
-              "site-landing__portal",
-              "site-landing__portal-chevron",
-              "site-landing__portal-desc",
-              "site-landing__portal-glow",
-              "site-landing__portal-icon",
-              "site-landing__portal-label",
-              "site-landing__portal-text",
-              "landing-bg__orb",
-              "landing-bg__orb-blob",
-              "mkissa-mark__note"
-            ],
-            "idTokens": [
-              "theme-critical"
-            ],
-            "classFacts": [
-              {
-                "token": "s-133oy1v",
-                "count": 12,
-                "tags": [
-                  "section",
-                  "div",
-                  "h1",
-                  "span"
-                ],
-                "selfHref": 0,
-                "nestedAnchors": 24,
-                "signals": [
-                  "year",
-                  "series"
-                ]
-              },
-              {
-                "token": "s-1554tx6",
-                "count": 12,
-                "tags": [
-                  "div",
-                  "span"
-                ],
-                "selfHref": 0,
-                "nestedAnchors": 24,
-                "signals": [
-                  "year",
-                  "series"
-                ]
-              },
-              {
-                "token": "s-q1o28q",
-                "count": 12,
-                "tags": [
-                  "svg",
-                  "ellipse",
-                  "path",
-                  "g"
-                ],
-                "selfHref": 0,
-                "nestedAnchors": 24,
-                "signals": [
-                  "series",
-                  "year"
-                ]
-              },
-              {
-                "token": "icon",
-                "count": 12,
-                "tags": [
-                  "svg"
-                ],
-                "selfHref": 0,
-                "nestedAnchors": 24,
-                "signals": [
-                  "series",
-                  "year"
-                ]
-              },
-              {
-                "token": "s-1aaflua",
-                "count": 12,
-                "tags": [
-                  "svg"
-                ],
-                "selfHref": 0,
-                "nestedAnchors": 24,
-                "signals": [
-                  "series",
-                  "year"
-                ]
-              },
-              {
-                "token": "route-link",
-                "count": 7,
-                "tags": [
-                  "a"
-                ],
-                "selfHref": 7,
-                "nestedAnchors": 20,
-                "signals": [
-                  "series",
-                  "year"
-                ]
-              },
-              {
-                "token": "site-landing__portal",
-                "count": 6,
-                "tags": [
-                  "a"
-                ],
-                "selfHref": 6,
-                "nestedAnchors": 16,
-                "signals": [
-                  "series",
-                  "year"
-                ]
-              },
-              {
-                "token": "site-landing__portal-chevron",
-                "count": 6,
-                "tags": [
-                  "svg"
-                ],
-                "selfHref": 0,
-                "nestedAnchors": 12,
-                "signals": [
-                  "series"
-                ]
-              }
-            ],
-            "markers": []
-          },
-          "declared_player_candidate_count": 0,
-          "declared_url_player_candidate_count": 0,
-          "declared_indexed_player_candidate_count": 0,
-          "declared_player_hosts": [],
-          "declared_quality_heights": [],
-          "duration_ms": 95
-        },
-        {
-          "url": "https://api.allanime.day/api?variables=%7B%22showId%22%3A%22E6vnDfLoWwKk9G9eH%22%2C%22translationType%22%3A%22sub%22%2C%22episodeString%22%3A%221%22%7D&extensions=%7B%22persistedQuery%22%3A%7B%22version%22%3A1%2C%22sha256Hash%22%3A%22d405d0edd690624b66baba3068e0edc3ac90f1597d898a1ec8db4e5c43c00fec%22%7D%7D",
-          "response_url": "https://api.allanime.day/api?variables=%7B%22showId%22%3A%22E6vnDfLoWwKk9G9eH%22%2C%22translationType%22%3A%22sub%22%2C%22episodeString%22%3A%221%22%7D&extensions=%7B%22persistedQuery%22%3A%7B%22version%22%3A1%2C%22sha256Hash%22%3A%22d405d0edd690624b66baba3068e0edc3ac90f1597d898a1ec8db4e5c43c00fec%22%7D%7D",
-          "method": "GET",
           "status": 200,
           "content_type": "application/json",
           "challenge": "",
@@ -341,10 +158,6 @@
             "keys": [
               "errors",
               "data"
-            ],
-            "dataType": "object",
-            "dataKeys": [
-              "episode"
             ]
           },
           "declared_player_candidate_count": 0,
@@ -352,182 +165,7 @@
           "declared_indexed_player_candidate_count": 0,
           "declared_player_hosts": [],
           "declared_quality_heights": [],
-          "duration_ms": 378
-        },
-        {
-          "url": "https://api.mkissa.net/api",
-          "response_url": "https://api.mkissa.net/api",
-          "method": "POST",
-          "status": 200,
-          "content_type": "application/json",
-          "challenge": "",
-          "response_shape": {
-            "kind": "json",
-            "top": "object",
-            "keys": [
-              "data"
-            ],
-            "dataType": "object",
-            "dataKeys": [
-              "shows"
-            ]
-          },
-          "declared_player_candidate_count": 0,
-          "declared_url_player_candidate_count": 0,
-          "declared_indexed_player_candidate_count": 0,
-          "declared_player_hosts": [],
-          "declared_quality_heights": [],
-          "duration_ms": 179
-        },
-        {
-          "url": "https://api.allanime.day/api",
-          "response_url": "https://api.allanime.day/api",
-          "method": "POST",
-          "status": 200,
-          "content_type": "application/json",
-          "challenge": "",
-          "response_shape": {
-            "kind": "json",
-            "top": "object",
-            "keys": [
-              "data"
-            ],
-            "dataType": "object",
-            "dataKeys": [
-              "shows"
-            ]
-          },
-          "declared_player_candidate_count": 0,
-          "declared_url_player_candidate_count": 0,
-          "declared_indexed_player_candidate_count": 0,
-          "declared_player_hosts": [],
-          "declared_quality_heights": [],
-          "duration_ms": 179
-        },
-        {
-          "url": "https://api.mkissa.net/api",
-          "response_url": "https://api.mkissa.net/api",
-          "method": "POST",
-          "status": 200,
-          "content_type": "application/json",
-          "challenge": "",
-          "response_shape": {
-            "kind": "json",
-            "top": "object",
-            "keys": [
-              "data"
-            ],
-            "dataType": "object",
-            "dataKeys": [
-              "shows"
-            ]
-          },
-          "declared_player_candidate_count": 0,
-          "declared_url_player_candidate_count": 0,
-          "declared_indexed_player_candidate_count": 0,
-          "declared_player_hosts": [],
-          "declared_quality_heights": [],
-          "duration_ms": 184
-        },
-        {
-          "url": "https://api.allanime.day/api",
-          "response_url": "https://api.allanime.day/api",
-          "method": "POST",
-          "status": 200,
-          "content_type": "application/json",
-          "challenge": "",
-          "response_shape": {
-            "kind": "json",
-            "top": "object",
-            "keys": [
-              "data"
-            ],
-            "dataType": "object",
-            "dataKeys": [
-              "shows"
-            ]
-          },
-          "declared_player_candidate_count": 0,
-          "declared_url_player_candidate_count": 0,
-          "declared_indexed_player_candidate_count": 0,
-          "declared_player_hosts": [],
-          "declared_quality_heights": [],
-          "duration_ms": 176
-        },
-        {
-          "url": "https://api.mkissa.net/api",
-          "response_url": "https://api.mkissa.net/api",
-          "method": "POST",
-          "status": 200,
-          "content_type": "application/json",
-          "challenge": "",
-          "response_shape": {
-            "kind": "json",
-            "top": "object",
-            "keys": [
-              "data"
-            ],
-            "dataType": "object",
-            "dataKeys": [
-              "shows"
-            ]
-          },
-          "declared_player_candidate_count": 0,
-          "declared_url_player_candidate_count": 0,
-          "declared_indexed_player_candidate_count": 0,
-          "declared_player_hosts": [],
-          "declared_quality_heights": [],
-          "duration_ms": 176
-        },
-        {
-          "url": "https://api.allanime.day/api",
-          "response_url": "https://api.allanime.day/api",
-          "method": "POST",
-          "status": 200,
-          "content_type": "application/json",
-          "challenge": "",
-          "response_shape": {
-            "kind": "json",
-            "top": "object",
-            "keys": [
-              "data"
-            ],
-            "dataType": "object",
-            "dataKeys": [
-              "shows"
-            ]
-          },
-          "declared_player_candidate_count": 0,
-          "declared_url_player_candidate_count": 0,
-          "declared_indexed_player_candidate_count": 0,
-          "declared_player_hosts": [],
-          "declared_quality_heights": [],
-          "duration_ms": 176
-        },
-        {
-          "url": "https://api.mkissa.net/api",
-          "response_url": "https://api.mkissa.net/api",
-          "method": "POST",
-          "status": 200,
-          "content_type": "application/json",
-          "challenge": "",
-          "response_shape": {
-            "kind": "json",
-            "top": "object",
-            "keys": [
-              "data"
-            ],
-            "dataType": "object",
-            "dataKeys": [
-              "shows"
-            ]
-          },
-          "declared_player_candidate_count": 0,
-          "declared_url_player_candidate_count": 0,
-          "declared_indexed_player_candidate_count": 0,
-          "declared_player_hosts": [],
-          "declared_quality_heights": [],
-          "duration_ms": 184
+          "duration_ms": 160
         },
         {
           "url": "https://api.allanime.day/api",
@@ -549,11 +187,507 @@
           "declared_indexed_player_candidate_count": 0,
           "declared_player_hosts": [],
           "declared_quality_heights": [],
-          "duration_ms": 175
+          "duration_ms": 162
         },
         {
-          "url": "https://ww2.aniwatch.fit/jigoku-sensei-nube-2025-episode-1-english-subbed",
-          "response_url": "https://ww2.aniwatch.fit/jigoku-sensei-nube-2025-episode-1-english-subbed",
+          "url": "https://api.mkissa.net/api",
+          "response_url": "https://api.mkissa.net/api",
+          "method": "POST",
+          "status": 200,
+          "content_type": "application/json",
+          "challenge": "",
+          "response_shape": {
+            "kind": "json",
+            "top": "object",
+            "keys": [
+              "errors",
+              "data"
+            ]
+          },
+          "declared_player_candidate_count": 0,
+          "declared_url_player_candidate_count": 0,
+          "declared_indexed_player_candidate_count": 0,
+          "declared_player_hosts": [],
+          "declared_quality_heights": [],
+          "duration_ms": 144
+        },
+        {
+          "url": "https://api.allanime.day/api",
+          "response_url": "https://api.allanime.day/api",
+          "method": "POST",
+          "status": 200,
+          "content_type": "application/json",
+          "challenge": "",
+          "response_shape": {
+            "kind": "json",
+            "top": "object",
+            "keys": [
+              "errors",
+              "data"
+            ]
+          },
+          "declared_player_candidate_count": 0,
+          "declared_url_player_candidate_count": 0,
+          "declared_indexed_player_candidate_count": 0,
+          "declared_player_hosts": [],
+          "declared_quality_heights": [],
+          "duration_ms": 138
+        },
+        {
+          "url": "https://api.mkissa.net/api",
+          "response_url": "https://api.mkissa.net/api",
+          "method": "POST",
+          "status": 200,
+          "content_type": "application/json",
+          "challenge": "",
+          "response_shape": {
+            "kind": "json",
+            "top": "object",
+            "keys": [
+              "errors",
+              "data"
+            ]
+          },
+          "declared_player_candidate_count": 0,
+          "declared_url_player_candidate_count": 0,
+          "declared_indexed_player_candidate_count": 0,
+          "declared_player_hosts": [],
+          "declared_quality_heights": [],
+          "duration_ms": 144
+        },
+        {
+          "url": "https://api.allanime.day/api",
+          "response_url": "https://api.allanime.day/api",
+          "method": "POST",
+          "status": 200,
+          "content_type": "application/json",
+          "challenge": "",
+          "response_shape": {
+            "kind": "json",
+            "top": "object",
+            "keys": [
+              "errors",
+              "data"
+            ]
+          },
+          "declared_player_candidate_count": 0,
+          "declared_url_player_candidate_count": 0,
+          "declared_indexed_player_candidate_count": 0,
+          "declared_player_hosts": [],
+          "declared_quality_heights": [],
+          "duration_ms": 143
+        },
+        {
+          "url": "https://api.mkissa.net/api",
+          "response_url": "https://api.mkissa.net/api",
+          "method": "POST",
+          "status": 200,
+          "content_type": "application/json",
+          "challenge": "",
+          "response_shape": {
+            "kind": "json",
+            "top": "object",
+            "keys": [
+              "errors",
+              "data"
+            ]
+          },
+          "declared_player_candidate_count": 0,
+          "declared_url_player_candidate_count": 0,
+          "declared_indexed_player_candidate_count": 0,
+          "declared_player_hosts": [],
+          "declared_quality_heights": [],
+          "duration_ms": 151
+        },
+        {
+          "url": "https://api.allanime.day/api",
+          "response_url": "https://api.allanime.day/api",
+          "method": "POST",
+          "status": 200,
+          "content_type": "application/json",
+          "challenge": "",
+          "response_shape": {
+            "kind": "json",
+            "top": "object",
+            "keys": [
+              "errors",
+              "data"
+            ]
+          },
+          "declared_player_candidate_count": 0,
+          "declared_url_player_candidate_count": 0,
+          "declared_indexed_player_candidate_count": 0,
+          "declared_player_hosts": [],
+          "declared_quality_heights": [],
+          "duration_ms": 141
+        },
+        {
+          "url": "https://api.mkissa.net/api",
+          "response_url": "https://api.mkissa.net/api",
+          "method": "POST",
+          "status": 200,
+          "content_type": "application/json",
+          "challenge": "",
+          "response_shape": {
+            "kind": "json",
+            "top": "object",
+            "keys": [
+              "errors",
+              "data"
+            ]
+          },
+          "declared_player_candidate_count": 0,
+          "declared_url_player_candidate_count": 0,
+          "declared_indexed_player_candidate_count": 0,
+          "declared_player_hosts": [],
+          "declared_quality_heights": [],
+          "duration_ms": 137
+        },
+        {
+          "url": "https://api.allanime.day/api",
+          "response_url": "https://api.allanime.day/api",
+          "method": "POST",
+          "status": 200,
+          "content_type": "application/json",
+          "challenge": "",
+          "response_shape": {
+            "kind": "json",
+            "top": "object",
+            "keys": [
+              "errors",
+              "data"
+            ]
+          },
+          "declared_player_candidate_count": 0,
+          "declared_url_player_candidate_count": 0,
+          "declared_indexed_player_candidate_count": 0,
+          "declared_player_hosts": [],
+          "declared_quality_heights": [],
+          "duration_ms": 139
+        },
+        {
+          "url": "https://api.mkissa.net/api",
+          "response_url": "https://api.mkissa.net/api",
+          "method": "POST",
+          "status": 200,
+          "content_type": "application/json",
+          "challenge": "",
+          "response_shape": {
+            "kind": "json",
+            "top": "object",
+            "keys": [
+              "errors",
+              "data"
+            ]
+          },
+          "declared_player_candidate_count": 0,
+          "declared_url_player_candidate_count": 0,
+          "declared_indexed_player_candidate_count": 0,
+          "declared_player_hosts": [],
+          "declared_quality_heights": [],
+          "duration_ms": 144
+        },
+        {
+          "url": "https://api.allanime.day/api",
+          "response_url": "https://api.allanime.day/api",
+          "method": "POST",
+          "status": 200,
+          "content_type": "application/json",
+          "challenge": "",
+          "response_shape": {
+            "kind": "json",
+            "top": "object",
+            "keys": [
+              "errors",
+              "data"
+            ]
+          },
+          "declared_player_candidate_count": 0,
+          "declared_url_player_candidate_count": 0,
+          "declared_indexed_player_candidate_count": 0,
+          "declared_player_hosts": [],
+          "declared_quality_heights": [],
+          "duration_ms": 142
+        },
+        {
+          "url": "https://api.mkissa.net/api",
+          "response_url": "https://api.mkissa.net/api",
+          "method": "POST",
+          "status": 200,
+          "content_type": "application/json",
+          "challenge": "",
+          "response_shape": {
+            "kind": "json",
+            "top": "object",
+            "keys": [
+              "errors",
+              "data"
+            ]
+          },
+          "declared_player_candidate_count": 0,
+          "declared_url_player_candidate_count": 0,
+          "declared_indexed_player_candidate_count": 0,
+          "declared_player_hosts": [],
+          "declared_quality_heights": [],
+          "duration_ms": 143
+        },
+        {
+          "url": "https://api.allanime.day/api",
+          "response_url": "https://api.allanime.day/api",
+          "method": "POST",
+          "status": 200,
+          "content_type": "application/json",
+          "challenge": "",
+          "response_shape": {
+            "kind": "json",
+            "top": "object",
+            "keys": [
+              "errors",
+              "data"
+            ]
+          },
+          "declared_player_candidate_count": 0,
+          "declared_url_player_candidate_count": 0,
+          "declared_indexed_player_candidate_count": 0,
+          "declared_player_hosts": [],
+          "declared_quality_heights": [],
+          "duration_ms": 145
+        },
+        {
+          "url": "https://api.mkissa.net/api",
+          "response_url": "https://api.mkissa.net/api",
+          "method": "POST",
+          "status": 200,
+          "content_type": "application/json",
+          "challenge": "",
+          "response_shape": {
+            "kind": "json",
+            "top": "object",
+            "keys": [
+              "errors",
+              "data"
+            ]
+          },
+          "declared_player_candidate_count": 0,
+          "declared_url_player_candidate_count": 0,
+          "declared_indexed_player_candidate_count": 0,
+          "declared_player_hosts": [],
+          "declared_quality_heights": [],
+          "duration_ms": 142
+        },
+        {
+          "url": "https://api.allanime.day/api",
+          "response_url": "https://api.allanime.day/api",
+          "method": "POST",
+          "status": 200,
+          "content_type": "application/json",
+          "challenge": "",
+          "response_shape": {
+            "kind": "json",
+            "top": "object",
+            "keys": [
+              "errors",
+              "data"
+            ]
+          },
+          "declared_player_candidate_count": 0,
+          "declared_url_player_candidate_count": 0,
+          "declared_indexed_player_candidate_count": 0,
+          "declared_player_hosts": [],
+          "declared_quality_heights": [],
+          "duration_ms": 140
+        },
+        {
+          "url": "https://api.mkissa.net/api",
+          "response_url": "https://api.mkissa.net/api",
+          "method": "POST",
+          "status": 200,
+          "content_type": "application/json",
+          "challenge": "",
+          "response_shape": {
+            "kind": "json",
+            "top": "object",
+            "keys": [
+              "errors",
+              "data"
+            ]
+          },
+          "declared_player_candidate_count": 0,
+          "declared_url_player_candidate_count": 0,
+          "declared_indexed_player_candidate_count": 0,
+          "declared_player_hosts": [],
+          "declared_quality_heights": [],
+          "duration_ms": 151
+        },
+        {
+          "url": "https://api.allanime.day/api",
+          "response_url": "https://api.allanime.day/api",
+          "method": "POST",
+          "status": 200,
+          "content_type": "application/json",
+          "challenge": "",
+          "response_shape": {
+            "kind": "json",
+            "top": "object",
+            "keys": [
+              "errors",
+              "data"
+            ]
+          },
+          "declared_player_candidate_count": 0,
+          "declared_url_player_candidate_count": 0,
+          "declared_indexed_player_candidate_count": 0,
+          "declared_player_hosts": [],
+          "declared_quality_heights": [],
+          "duration_ms": 149
+        },
+        {
+          "url": "https://api.mkissa.net/api",
+          "response_url": "https://api.mkissa.net/api",
+          "method": "POST",
+          "status": 200,
+          "content_type": "application/json",
+          "challenge": "",
+          "response_shape": {
+            "kind": "json",
+            "top": "object",
+            "keys": [
+              "errors",
+              "data"
+            ]
+          },
+          "declared_player_candidate_count": 0,
+          "declared_url_player_candidate_count": 0,
+          "declared_indexed_player_candidate_count": 0,
+          "declared_player_hosts": [],
+          "declared_quality_heights": [],
+          "duration_ms": 152
+        },
+        {
+          "url": "https://api.allanime.day/api",
+          "response_url": "https://api.allanime.day/api",
+          "method": "POST",
+          "status": 200,
+          "content_type": "application/json",
+          "challenge": "",
+          "response_shape": {
+            "kind": "json",
+            "top": "object",
+            "keys": [
+              "errors",
+              "data"
+            ]
+          },
+          "declared_player_candidate_count": 0,
+          "declared_url_player_candidate_count": 0,
+          "declared_indexed_player_candidate_count": 0,
+          "declared_player_hosts": [],
+          "declared_quality_heights": [],
+          "duration_ms": 142
+        },
+        {
+          "url": "https://api.mkissa.net/api",
+          "response_url": "https://api.mkissa.net/api",
+          "method": "POST",
+          "status": 200,
+          "content_type": "application/json",
+          "challenge": "",
+          "response_shape": {
+            "kind": "json",
+            "top": "object",
+            "keys": [
+              "data"
+            ],
+            "dataType": "object",
+            "dataKeys": [
+              "shows"
+            ]
+          },
+          "declared_player_candidate_count": 0,
+          "declared_url_player_candidate_count": 0,
+          "declared_indexed_player_candidate_count": 0,
+          "declared_player_hosts": [],
+          "declared_quality_heights": [],
+          "duration_ms": 139
+        },
+        {
+          "url": "https://api.allanime.day/api",
+          "response_url": "https://api.allanime.day/api",
+          "method": "POST",
+          "status": 200,
+          "content_type": "application/json",
+          "challenge": "",
+          "response_shape": {
+            "kind": "json",
+            "top": "object",
+            "keys": [
+              "data"
+            ],
+            "dataType": "object",
+            "dataKeys": [
+              "shows"
+            ]
+          },
+          "declared_player_candidate_count": 0,
+          "declared_url_player_candidate_count": 0,
+          "declared_indexed_player_candidate_count": 0,
+          "declared_player_hosts": [],
+          "declared_quality_heights": [],
+          "duration_ms": 147
+        },
+        {
+          "url": "https://api.mkissa.net/api",
+          "response_url": "https://api.mkissa.net/api",
+          "method": "POST",
+          "status": 200,
+          "content_type": "application/json",
+          "challenge": "",
+          "response_shape": {
+            "kind": "json",
+            "top": "object",
+            "keys": [
+              "data"
+            ],
+            "dataType": "object",
+            "dataKeys": [
+              "shows"
+            ]
+          },
+          "declared_player_candidate_count": 0,
+          "declared_url_player_candidate_count": 0,
+          "declared_indexed_player_candidate_count": 0,
+          "declared_player_hosts": [],
+          "declared_quality_heights": [],
+          "duration_ms": 142
+        },
+        {
+          "url": "https://api.allanime.day/api",
+          "response_url": "https://api.allanime.day/api",
+          "method": "POST",
+          "status": 200,
+          "content_type": "application/json",
+          "challenge": "",
+          "response_shape": {
+            "kind": "json",
+            "top": "object",
+            "keys": [
+              "data"
+            ],
+            "dataType": "object",
+            "dataKeys": [
+              "shows"
+            ]
+          },
+          "declared_player_candidate_count": 0,
+          "declared_url_player_candidate_count": 0,
+          "declared_indexed_player_candidate_count": 0,
+          "declared_player_hosts": [],
+          "declared_quality_heights": [],
+          "duration_ms": 154
+        },
+        {
+          "url": "https://ww2.aniwatch.fit/one-piece-episode-1-english-subbed",
+          "response_url": "https://ww2.aniwatch.fit/one-piece-episode-1-english-subbed",
           "method": "GET",
           "status": 200,
           "content_type": "text/html",
@@ -701,11 +835,11 @@
             "yoast.com"
           ],
           "declared_quality_heights": [],
-          "duration_ms": 645
+          "duration_ms": 637
         },
         {
-          "url": "https://ww2.aniwatch.fit/jigoku-sensei-nube-2025-episode-1-english-dubbed",
-          "response_url": "https://ww2.aniwatch.fit/jigoku-sensei-nube-2025-episode-1-english-dubbed",
+          "url": "https://ww2.aniwatch.fit/one-piece-episode-1-english-dubbed",
+          "response_url": "https://ww2.aniwatch.fit/one-piece-episode-1-english-dubbed",
           "method": "GET",
           "status": 200,
           "content_type": "text/html",
@@ -853,11 +987,11 @@
             "yoast.com"
           ],
           "declared_quality_heights": [],
-          "duration_ms": 597
+          "duration_ms": 629
         },
         {
-          "url": "https://ww2.aniwatch.fit/jigoku-sensei-nube-episode-1-english-subbed",
-          "response_url": "https://ww2.aniwatch.fit/jigoku-sensei-nube-episode-1-english-subbed",
+          "url": "https://ww2.aniwatch.fit/ek-tukda-episode-1-english-subbed",
+          "response_url": "https://ww2.aniwatch.fit/ek-tukda-episode-1-english-subbed",
           "method": "GET",
           "status": 200,
           "content_type": "text/html",
@@ -1005,11 +1139,11 @@
             "yoast.com"
           ],
           "declared_quality_heights": [],
-          "duration_ms": 636
+          "duration_ms": 566
         },
         {
-          "url": "https://ww2.aniwatch.fit/jigoku-sensei-nube-episode-1-english-dubbed",
-          "response_url": "https://ww2.aniwatch.fit/jigoku-sensei-nube-episode-1-english-dubbed",
+          "url": "https://ww2.aniwatch.fit/ek-tukda-episode-1-english-dubbed",
+          "response_url": "https://ww2.aniwatch.fit/ek-tukda-episode-1-english-dubbed",
           "method": "GET",
           "status": 200,
           "content_type": "text/html",
@@ -1157,11 +1291,11 @@
             "yoast.com"
           ],
           "declared_quality_heights": [],
-          "duration_ms": 842
+          "duration_ms": 558
         },
         {
-          "url": "https://ww2.aniwatch.fit/hell-teacher-nube-episode-1-english-subbed",
-          "response_url": "https://ww2.aniwatch.fit/hell-teacher-nube-episode-1-english-subbed",
+          "url": "https://ww2.aniwatch.fit/tutti-allarrembaggio-episode-1-english-subbed",
+          "response_url": "https://ww2.aniwatch.fit/tutti-allarrembaggio-episode-1-english-subbed",
           "method": "GET",
           "status": 200,
           "content_type": "text/html",
@@ -1309,11 +1443,11 @@
             "yoast.com"
           ],
           "declared_quality_heights": [],
-          "duration_ms": 597
+          "duration_ms": 549
         },
         {
-          "url": "https://ww2.aniwatch.fit/hell-teacher-nube-episode-1-english-dubbed",
-          "response_url": "https://ww2.aniwatch.fit/hell-teacher-nube-episode-1-english-dubbed",
+          "url": "https://ww2.aniwatch.fit/tutti-allarrembaggio-episode-1-english-dubbed",
+          "response_url": "https://ww2.aniwatch.fit/tutti-allarrembaggio-episode-1-english-dubbed",
           "method": "GET",
           "status": 200,
           "content_type": "text/html",
@@ -1461,11 +1595,11 @@
             "yoast.com"
           ],
           "declared_quality_heights": [],
-          "duration_ms": 587
+          "duration_ms": 607
         },
         {
-          "url": "https://ww2.aniwatch.fit/hellteacher-episode-1-english-subbed",
-          "response_url": "https://ww2.aniwatch.fit/hellteacher-episode-1-english-subbed",
+          "url": "https://ww2.aniwatch.fit/one-piece-tutti-allarrembaggio-episode-1-english-subbed",
+          "response_url": "https://ww2.aniwatch.fit/one-piece-tutti-allarrembaggio-episode-1-english-subbed",
           "method": "GET",
           "status": 200,
           "content_type": "text/html",
@@ -1613,11 +1747,11 @@
             "yoast.com"
           ],
           "declared_quality_heights": [],
-          "duration_ms": 622
+          "duration_ms": 551
         },
         {
-          "url": "https://ww2.aniwatch.fit/hellteacher-episode-1-english-dubbed",
-          "response_url": "https://ww2.aniwatch.fit/hellteacher-episode-1-english-dubbed",
+          "url": "https://ww2.aniwatch.fit/one-piece-tutti-allarrembaggio-episode-1-english-dubbed",
+          "response_url": "https://ww2.aniwatch.fit/one-piece-tutti-allarrembaggio-episode-1-english-dubbed",
           "method": "GET",
           "status": 200,
           "content_type": "text/html",
@@ -1765,7 +1899,7 @@
             "yoast.com"
           ],
           "declared_quality_heights": [],
-          "duration_ms": 734
+          "duration_ms": 589
         }
       ],
       "debug_provider_value_trace_v18": null,
@@ -1778,25 +1912,25 @@
       "verified": 0,
       "contradictions": 0,
       "identity_safe": true,
-      "duration_ms": 30603,
+      "duration_ms": 28977,
       "sample_count": 4,
-      "fanout_fixture_title": "One Piece",
+      "fanout_fixture_title": "Hell Teacher: Jigoku Sensei Nube",
       "sample_titles": [
-        "One Piece",
-        "Failure Frame: I Became the Strongest and Annihilated Everything with Low-Level Spells",
+        "Hell Teacher: Jigoku Sensei Nube",
         "Jujutsu Kaisen",
-        "Hell Teacher: Jigoku Sensei Nube"
+        "Failure Frame: I Became the Strongest and Annihilated Everything with Low-Level Spells",
+        "One Piece"
       ],
       "adaptive_rotated": true,
       "samples": [
         {
-          "fixture_title": "One Piece",
+          "fixture_title": "Hell Teacher: Jigoku Sensei Nube",
           "fixture": {
-            "tmdbId": "37854",
+            "tmdbId": "259544",
             "mediaType": "anime",
             "category": "anime",
-            "title": "One Piece",
-            "year": 1999,
+            "title": "Hell Teacher: Jigoku Sensei Nube",
+            "year": 2025,
             "season": 1,
             "episode": 1
           },
@@ -1807,35 +1941,7 @@
           "playable": 0,
           "verified": 0,
           "contradictions": 0,
-          "duration_ms": 6596,
-          "streams_returned": 0,
-          "announced_player_candidates": 0,
-          "announced_variant_candidates": 0,
-          "announced_player_hosts": [],
-          "announced_quality_heights": [],
-          "explored_player_requests": 0,
-          "explored_player_hosts": [],
-          "variant_fanout_state": "not-observed"
-        },
-        {
-          "fixture_title": "Failure Frame: I Became the Strongest and Annihilated Everything with Low-Level Spells",
-          "fixture": {
-            "tmdbId": "245285",
-            "mediaType": "anime",
-            "category": "anime",
-            "title": "Failure Frame: I Became the Strongest and Annihilated Everything with Low-Level Spells",
-            "year": 2024,
-            "season": 1,
-            "episode": 1
-          },
-          "status": "no_streams",
-          "debug_stage": "provider_network_zero_result",
-          "debug_progress_stage": "chain_reached",
-          "raw": 0,
-          "playable": 0,
-          "verified": 0,
-          "contradictions": 0,
-          "duration_ms": 7952,
+          "duration_ms": 6493,
           "streams_returned": 0,
           "announced_player_candidates": 0,
           "announced_variant_candidates": 0,
@@ -1863,7 +1969,7 @@
           "playable": 0,
           "verified": 0,
           "contradictions": 0,
-          "duration_ms": 8282,
+          "duration_ms": 6867,
           "streams_returned": 0,
           "announced_player_candidates": 0,
           "announced_variant_candidates": 0,
@@ -1874,13 +1980,13 @@
           "variant_fanout_state": "not-observed"
         },
         {
-          "fixture_title": "Hell Teacher: Jigoku Sensei Nube",
+          "fixture_title": "Failure Frame: I Became the Strongest and Annihilated Everything with Low-Level Spells",
           "fixture": {
-            "tmdbId": "259544",
+            "tmdbId": "245285",
             "mediaType": "anime",
             "category": "anime",
-            "title": "Hell Teacher: Jigoku Sensei Nube",
-            "year": 2025,
+            "title": "Failure Frame: I Became the Strongest and Annihilated Everything with Low-Level Spells",
+            "year": 2024,
             "season": 1,
             "episode": 1
           },
@@ -1891,7 +1997,35 @@
           "playable": 0,
           "verified": 0,
           "contradictions": 0,
-          "duration_ms": 7535,
+          "duration_ms": 7093,
+          "streams_returned": 0,
+          "announced_player_candidates": 0,
+          "announced_variant_candidates": 0,
+          "announced_player_hosts": [],
+          "announced_quality_heights": [],
+          "explored_player_requests": 0,
+          "explored_player_hosts": [],
+          "variant_fanout_state": "not-observed"
+        },
+        {
+          "fixture_title": "One Piece",
+          "fixture": {
+            "tmdbId": "37854",
+            "mediaType": "anime",
+            "category": "anime",
+            "title": "One Piece",
+            "year": 1999,
+            "season": 1,
+            "episode": 1
+          },
+          "status": "no_streams",
+          "debug_stage": "provider_network_zero_result",
+          "debug_progress_stage": "lookup_only",
+          "raw": 0,
+          "playable": 0,
+          "verified": 0,
+          "contradictions": 0,
+          "duration_ms": 8279,
           "streams_returned": 0,
           "announced_player_candidates": 0,
           "announced_variant_candidates": 0,

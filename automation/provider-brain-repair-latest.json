@@ -10,14 +10,14 @@
     "allanime"
   ],
   "effectiveWaves": 3,
-  "elapsedSeconds": 67.815,
+  "elapsedSeconds": 59.108,
   "executionModel": "family-batched-multi-wave-brain-repair",
   "experienceMemory": {
     "operationalProviderCount": 24,
     "providerCount": 46,
     "schemaVersion": 2,
-    "sourceRunId": "42414140056-pre-repair",
-    "sourceSha": "8b5ef622df9c558e028ba646351c0779ee3de0fd",
+    "sourceRunId": "42416717760-pre-repair",
+    "sourceSha": "a3362891c08147df828e01c08da6b41868106960",
     "strategyCount": 5
   },
   "fixedInLabProviders": [],
@@ -36,7 +36,7 @@
     "durableProviders": [],
     "durableRecordCount": 0,
     "recoveredRecordCount": 0,
-    "reportCount": 77
+    "reportCount": 78
   },
   "processedProviderCount": 1,
   "processedProviders": [
@@ -69,7 +69,7 @@
   "shardCount": 1,
   "shardIndex": 0,
   "skippedEnvironmentProviders": [],
-  "sourceCensusRunId": "42414140056-pre-repair",
+  "sourceCensusRunId": "42416717760-pre-repair",
   "timeBudgetExhausted": false,
   "timeBudgetSeconds": 360,
   "unvisitedProviders": [],
@@ -93,13 +93,13 @@
               "published:allanime": {
                 "action": "probe-targeted-repair",
                 "allowedProfiles": [
-                  "adaptive_runtime_recovery"
+                  "terminal_transition_graph_v8"
                 ],
-                "baseExperimentExhausted": false,
+                "baseExperimentExhausted": true,
                 "exitReason": null,
                 "experimentExhausted": false,
-                "experimentGeneration": 1,
-                "experimentVariant": 3,
+                "experimentGeneration": 2,
+                "experimentVariant": 4,
                 "experimentVariantCount": 5,
                 "explorationChainEnabled": true,
                 "explorationModeEnabled": true,
@@ -122,7 +122,7 @@
                     "transferScore": 0
                   }
                 ],
-                "learningDisposition": "core_repair_only",
+                "learningDisposition": "execute_bounded_evolved_strategy",
                 "llmAdvisorApplied": false,
                 "llmAdvisorConfidence": 0,
                 "llmAdvisorExperiment": {},
@@ -135,7 +135,7 @@
                 "llmAdvisorSourceFailureClass": "",
                 "llmAdvisorStrategy": "",
                 "metaGapEscalated": false,
-                "negativeMemoryMatches": 69,
+                "negativeMemoryMatches": 71,
                 "positiveProgramFingerprint": "",
                 "postExhaustionCandidateProfiles": [
                   "terminal_transition_graph_v1",
@@ -153,20 +153,22 @@
                   "player_protocol_family_replay_v1",
                   "media_response_shape_inference_v1"
                 ],
-                "postExhaustionSourceFailureClass": "",
-                "postExhaustionStrategyMethod": "",
-                "postExhaustionStrategyProfile": "",
+                "postExhaustionSourceFailureClass": "chain_terminal_gap",
+                "postExhaustionStrategyMethod": "brain-evolved-executable-transition",
+                "postExhaustionStrategyProfile": "terminal_transition_graph_v8",
                 "providerId": "allanime",
                 "providerPositiveProgramProductionRescue": false,
                 "providerPositiveProgramReplay": false,
-                "repairScope": "capability",
-                "repairType": "terminal_media_resolution",
+                "repairScope": "learning",
+                "repairType": "evolved_strategy",
                 "signature": "8daa3e9bedf63b16471f7c0e",
-                "strategyEscalated": false,
+                "strategyEscalated": true,
                 "targetCategories": []
               }
             },
-            "queuedForLearning": [],
+            "queuedForLearning": [
+              "allanime"
+            ],
             "validatedRepairLearningExecuted": true
           },
           "capabilityStrategy": "direct_media",
@@ -186,9 +188,7 @@
             }
           ],
           "fixedInLab": [],
-          "genericLearningHandoff": [
-            "allanime"
-          ],
+          "genericLearningHandoff": [],
           "groupId": "terminal-extraction|direct_media",
           "harnessDifferentialProviders": [],
           "healthConcurrency": 1,
