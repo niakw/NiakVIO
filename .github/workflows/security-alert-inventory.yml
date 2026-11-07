@@ -17,6 +17,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
       - name: Inspect CodeQL, Dependabot and secret scanning without dismissing findings
         env:
           GH_TOKEN: ${{ github.token }}
@@ -44,6 +47,59 @@ jobs:
               counts[sev] = counts.get(sev, 0) + 1
           print(f"FIELD_SECURITY_ALERT_INVENTORY source={source} status=read open={len(items)} severities={json.dumps(counts,sort_keys=True)}")
           if source == "code-scanning":
+              from pathlib import Path
+              active = set()
+              for manifest_name in ("manifest.json", "manifest-hub46.json",
+                                    "native-hub46/manifest.json", "vf/manifest.json",
+                                    "no-anime/manifest.json", "vf-no-anime/manifest.json",
+                                    "vostfr/manifest.json"):
+                  manifest = Path(manifest_name)
+                  if not manifest.is_file():
+                      continue
+                  try:
+                      data = json.loads(manifest.read_text(encoding="utf-8"))
+                  except (ValueError, OSError):
+                      raise SystemExit("Invalid manifest in security triage: " + manifest_name)
+                  for entry in data.get("scrapers") or []:
+                      if isinstance(entry, dict):
+                          source_path = str(entry.get("filename") or "")
+                          if source_path.startswith("providers/"):
+                              active.add(source_path)
+              provenance = Path("PROVENANCE.json")
+              if provenance.is_file():
+                  raw = json.loads(provenance.read_text(encoding="utf-8"))
+                  for entry in (raw.get("providers") or {}).values():
+                      if isinstance(entry, dict):
+                          for field in ("published_filename", "base_filename"):
+                              value = str(entry.get(field) or "")
+                              if value.startswith(("providers/", "provider-bases/")):
+                                  active.add(value)
+              scopes = {"release_referenced":0, "snapshot_unreferenced":0,
+                        "maintained_source":0, "lifecycle_archive":0}
+              rules = {}
+              examples = []
+              for row in items:
+                  path = str((((row.get("most_recent_instance") or {}).get("location") or {}).get("path") or ""))
+                  rule = str((row.get("rule") or {}).get("id") or "")
+                  rules[rule] = rules.get(rule, 0) + 1
+                  if path.startswith(("provider-old/", "provider-disabled/", "upstream-lkg/")):
+                      bucket = "lifecycle_archive"
+                  elif path.startswith("providers/"):
+                      bucket = "release_referenced" if path in active else "snapshot_unreferenced"
+                  else:
+                      bucket = "maintained_source"
+                  scopes[bucket] += 1
+                  if bucket in {"release_referenced", "maintained_source"} and len(examples) < 25:
+                      examples.append((row.get("number"), bucket, rule, path))
+              print("FIELD_CODEQL_SCOPE_TRIAGE open={} active_release_paths={} scopes={} rules={}".format(
+                  len(items),len(active),json.dumps(scopes,sort_keys=True),
+                  json.dumps(dict(sorted(rules.items(),key=lambda x:(-x[1],x[0]))),sort_keys=True)))
+              for alert, scope, rule, path in examples:
+                  print("FIELD_CODEQL_REQUIRES_REVIEW number={} scope={} rule={} path={}".format(
+                      clean(alert),clean(scope),clean(rule),clean(path)))
+              with open(os.environ["GITHUB_STEP_SUMMARY"], "a", encoding="utf-8") as summary:
+                  summary.write(f"  - Release source triage: {scopes}; reviewed rules: {rules}\\n")
+                  summary.write("  - **These classifications are triage only; zero alerts dismissed.**\\n")
               for row in items[:100]:
                   print("OPEN_CODEQL_ALERT number={} severity={} rule={} path={}".format(
                       clean(row.get("number")), clean((row.get("rule") or {}).get("security_severity_level")),
