@@ -2142,10 +2142,11 @@ def _validated_generated_edits(
 ) -> tuple[dict[str, Any], list[dict[str, Any]]]:
     """Correct invalid 7B executor bodies before edit/transaction validation.
 
-    Previously branch_body_edit raised BEFORE validated_model_plan's correction
-    loop, aborting a full cohort after one malformed response (~12 providers
-    handed off for no gain). Keep correction model-authored and bounded: never
-    synthesize a fake provider solution or silently accept invalid bodies.
+    A 7B may repeat an already installed family member with only numeric
+    changes even after model correction. After one corrective attempt, the
+    Brain can compose an AST-novel program from the existing typed Lego menu.
+    This is architecture-only generation; all materialized and playback
+    validation gates remain mandatory and can reject every candidate.
     """
     new_profile = _requires_new_repair_profile(payload)
     max_corrections = 2 if new_profile else 0
@@ -2153,6 +2154,17 @@ def _validated_generated_edits(
         try:
             return planned, _model_edits(planned, payload, root=root)
         except ValueError as error:
+            numeric_clone = "numeric-only strategy clone" in str(error).casefold()
+            if new_profile and numeric_clone and round_index >= 1:
+                fallback = _brain_lego_recovery_fallback(payload, root=root)
+                if fallback is not None:
+                    print(
+                        "FIELD_BRAIN_ARCH_FORCE_LEGO_SELECTION "
+                        "strategy=ast-novel program=typed recovery "
+                        "model_clones_rejected=true publication=false",
+                        flush=True,
+                    )
+                    return fallback, _model_edits(fallback, payload, root=root)
             if round_index >= max_corrections:
                 raise
             print(
@@ -2178,7 +2190,23 @@ def _validated_generated_edits(
                 "noFileEditsOrProviderMutations": True,
                 "correctionRound": round_index + 1,
             }
-            planned = _request_corrected_plan(endpoint, model, correction_payload)
+            try:
+                planned = _request_corrected_plan(endpoint, model, correction_payload)
+            except TimeoutError:
+                # The earlier model proposal was demonstrably a numeric clone,
+                # and the corrective model failed to return. Reuse Brain's
+                # already-verified distinct Lego menu instead of looping on
+                # another long 7B timeout. Not an accepted provider repair.
+                if new_profile and numeric_clone:
+                    fallback = _brain_lego_recovery_fallback(payload, root=root)
+                    if fallback is not None:
+                        print(
+                            "FIELD_BRAIN_ARCH_FORCE_LEGO_SELECTION "
+                            "strategy=ast-novel model_timeout=true publication=false",
+                            flush=True,
+                        )
+                        return fallback, _model_edits(fallback, payload, root=root)
+                raise
     raise AssertionError("unreachable branch-body recovery")
 
 
@@ -2416,7 +2444,11 @@ def _program_provenance(planned: dict[str, Any]) -> dict[str, Any]:
         compile_recovery_program(program)
         encoded = json.dumps(program, sort_keys=True, separators=(",", ":"))
         return {
-            "generatorFormat": "typed-recovery-program",
+            "generatorFormat": (
+                "typed-brain-causal-lego-selection"
+                if planned.get("generatorOrigin") == "brain-causal-lego-novelty-fallback"
+                else "typed-recovery-program"
+            ),
             "strategyProgram": program,
             "programFingerprint": hashlib.sha256(encoded.encode("utf-8")).hexdigest(),
             "priorOnlyUntilAppliedPlayback": True,
