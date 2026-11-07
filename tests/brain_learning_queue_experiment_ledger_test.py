@@ -258,4 +258,63 @@ assert "phase_learning_state_path" in source
 assert "merge_phase_learning_state(" in source
 assert "fastRepairHandoffMaxEvolvedAttemptsPerProviderThisPhase" in source
 
+# A sandbox profile can be selected and fail before child bytes exist. Its
+# generation attempt is useful rotation evidence, but NOT executed-negative
+# authority. Replaying a different executor must not inherit a false failure.
+not_generated_repair = {
+    "attemptedProfiles": ["chain_terminal_extractor_v1_g3"],
+    "report": {
+        "rounds": [{
+            "attempts": [{
+                "profile": "chain_terminal_extractor_v1_g3",
+                "status": "not_generated",
+                "reason": "structural_profile_made_no_change",
+                "brain_plan": plan,
+            }],
+            "accepted": [],
+            "exploration_progress": [],
+            "rejected": [],
+        }]
+    },
+}
+generation_rows = queue.phase_experiment_entries(
+    "synthetic-ledger", plan, not_generated_repair, {"status": "no_streams"},
+)
+assert len(generation_rows) == 1, generation_rows
+assert generation_rows[0]["lastOutcome"] == "not_generated", generation_rows
+assert generation_rows[0]["executionObserved"] is False, generation_rows
+assert generation_rows[0]["generationAttemptObserved"] is True, generation_rows
+
+# Real failed execution still outranks a later no-child attempt for the same
+# profile fingerprint. Reversed order must yield identical safe semantics.
+for first, second in ((generation_rows, rows), (rows, generation_rows)):
+    test_state = {
+        "publicationAllowed": False,
+        "productionWritesAllowed": False,
+        "experimentMemory": {"schemaVersion": 1, "entries": []},
+    }
+    test_state = queue.merge_phase_learning_state(test_state, first)
+    test_state = queue.merge_phase_learning_state(test_state, second)
+    observed = test_state["experimentMemory"]["entries"]
+    assert len(observed) == 1, observed
+    assert observed[0]["executionObserved"] is True, observed
+    assert observed[0]["lastOutcome"] == "rejected", observed
+    assert observed[0]["generationAttemptObserved"] is True, observed
+    assert test_state["publicationAllowed"] is False
+    assert test_state["productionWritesAllowed"] is False
+
+# Legacy no-child memory incorrectly marked executionObserved=true. It cannot
+# turn repeated generation-only failures into fake terminal replay evidence.
+legacy_state = {
+    "publicationAllowed": False,
+    "productionWritesAllowed": False,
+    "experimentMemory": {
+        "schemaVersion": 1,
+        "entries": [{**generation_rows[0], "executionObserved": True}],
+    },
+}
+merged = queue.merge_phase_learning_state(legacy_state, generation_rows)
+assert merged["experimentMemory"]["entries"][0]["executionObserved"] is False, merged
+assert merged["experimentMemory"]["entries"][0]["lastOutcome"] == "not_generated", merged
+
 print("Brain fair-share exact experiment ledger contract passed")
