@@ -20,11 +20,22 @@ def response(files, *, status="ahead", commits=1, total=1):
             "commits":[{"sha":head} for _ in range(commits)],
             "files":[{"filename":path,"status":"modified"} for path in files]}
 
-with patch.object(mod,"api",side_effect=lambda *_:response([
-    "automation/provider-census-status.json","PROVIDER_CENSUS_STATUS.md",
-    "automation/provider-census-status-42308514242.json"])):
+# Canonical evidence may be updated; numbered archive bytes are append-only.
+initial=response([
+    "automation/provider-census-status.json","PROVIDER_CENSUS_STATUS.md"])
+initial["files"].append({
+    "filename":"automation/provider-census-status-42308514242.json",
+    "status":"added",
+})
+with patch.object(mod,"api",return_value=initial):
     assert mod.evidence_only_drift(src,head)
     assert mod.evidence_only_drift(src,src)
+with patch.object(mod,"api",return_value={
+    **initial,
+    "files":[{"filename":"automation/provider-census-status-42308514242.json",
+              "status":"modified"}],
+}):
+    assert not mod.evidence_only_drift(src,head)
 for invalid in (
     response(["scripts/response_structure.cjs"]),
     response(["provider-overrides.json"]),
