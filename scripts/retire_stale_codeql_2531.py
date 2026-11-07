@@ -211,6 +211,9 @@ def main() -> None:
         category=str(recent.get("analysis_key") or "").lower()
         if "scope:core" in category and row.get("number")!=LEGACY_ALERT:
             raise RuntimeError("Unresolved current JS Core High/Critical alerts remain")
+    # This is a historical *test-only* alert, not a live provider finding.
+    # GitHub officially accepts "used in tests"; previous false-positive PATCH
+    # and create_request attempts returned 422. Never hide a current alert.
     explanation=("Obsolete CodeQL analysis key after split to maintained JS Core category; "
                  "former test line used URL substring matching, now uses parsed URL.origin equality. "
                  "Exact current main analyzed cleanly in CodeQL core category. "
@@ -220,7 +223,7 @@ def main() -> None:
     # permits the same ordinary dismissal. Both outcomes remain independently
     # verified against the alert state; a pending request is NOT a clean gate.
     updated=api("repos/"+REPO+"/code-scanning/alerts/"+str(LEGACY_ALERT),
-        "PATCH",{"state":"dismissed","dismissed_reason":"false positive",
+        "PATCH",{"state":"dismissed","dismissed_reason":"used in tests",
                  "dismissed_comment":explanation,"create_request":True})
     if not isinstance(updated,dict):
         raise RuntimeError("GitHub returned an invalid CodeQL dismissal response")

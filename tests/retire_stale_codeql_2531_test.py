@@ -188,7 +188,7 @@ with patch.object(mod,"verify_current_source"), patch.object(mod,"scan_source_sh
     assert len(changes)==1
     assert changes[0][0].endswith("/code-scanning/alerts/2531")
     assert changes[0][1]["create_request"] is True
-    assert changes[0][1]["dismissed_reason"]=="false positive"
+    assert changes[0][1]["dismissed_reason"]=="used in tests"
     assert "FIELD_CODEQL_STALE_2531_NOT_DISMISSED" in buf.getvalue()
     assert not any("/dispatches" in path for path,_,_ in calls)
 

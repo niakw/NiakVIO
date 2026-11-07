@@ -258,18 +258,34 @@ jobs:
           import json, os, re
           from pathlib import Path
           root = Path('local-output/hosted-check')
+          root.mkdir(parents=True, exist_ok=True)
           def read(name):
               path = root / name
               return json.loads(path.read_text()) if path.is_file() else {}
           diagnostics = read('diagnostics.json')
           evaluation = read('evaluation.json')
+          selected_provider = os.environ.get('TARGET_PROVIDER') or ''
+          if not evaluation:
+              # On selector/preflight failure there are no candidate bytes.
+              # Persist a bounded negative receipt so the evidence reader does
+              # not lose the run; the hosting job STILL fails its strict gate.
+              reason = 'selection_failed' if not selected_provider else 'evaluation_missing'
+              evaluation = {
+                  'currentSha': os.environ.get('GITHUB_SHA', ''),
+                  'rows': [], 'candidateCount': 0,
+                  'acceptedProviderCount': 0, 'publicationAuthority': False,
+                  'unavailableEvidenceReason': reason,
+              }
+              (root / 'evaluation.json').write_text(
+                  json.dumps(evaluation, indent=2) + '\n', encoding='utf-8')
+              print('FIELD_BRAIN_HOSTED_PRECHECK failure=' + reason)
           trace = [event for row in diagnostics.get('rows', []) for event in row.get('scopeTrace', [])]
           safe = lambda value: re.sub(r'[^a-zA-Z0-9._:-]', '_', str(value))[:120]
           summary = {
-              'provider': os.environ['TARGET_PROVIDER'],
+              'provider': selected_provider or 'unselected',
               'sourceNiakvioSha': os.environ['GITHUB_SHA'],
-              'sourceBrainLlmSha': read('mutations.json').get('brainLlmSha') or os.environ['BRAIN_SHA'],
-              'generationReported': bool(diagnostics) and not os.environ.get('REPLAY_EVIDENCE') and read('live-context.json').get('http_script_shell_only') is not True,
+              'sourceBrainLlmSha': read('mutations.json').get('brainLlmSha') or os.environ.get('BRAIN_SHA', ''),
+              'generationReported': bool(selected_provider and diagnostics) and not os.environ.get('REPLAY_EVIDENCE') and read('live-context.json').get('http_script_shell_only') is not True,
               'replayedEvidence': safe(os.environ.get('REPLAY_EVIDENCE', '')),
               'browserObservation': read('live-context.json').get('browser_observation') or {},
               'scriptShellRecheckPerformed': read('live-context.json').get('script_shell_recheck_performed') is True,

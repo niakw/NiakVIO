@@ -53,5 +53,9 @@ assert "remaining_fixture_debt=" in source
 assert "decodedProofRequired" in source and "improvedFixtures" in source
 assert "acceptedProviderCount" in source and "publicationAuthority" in source
 assert 'if: ${{ always() }}' in source
+assert "FIELD_BRAIN_HOSTED_PRECHECK failure=" in source
+assert "selected_provider or 'unselected'" in source
+assert "'unavailableEvidenceReason': reason" in source
+assert "'acceptedProviderCount': 0" in source
 assert 'No strictly decoded, materialized Brain repair proved' in source
 print("BRAIN_HOSTED_LOCAL_PROOF_WORKFLOW_OK local-inference exact-main strict decode no-provider-writes")
