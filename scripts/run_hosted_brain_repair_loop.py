@@ -37,6 +37,15 @@ def verification_feedback(evaluation: dict) -> dict:
         value = row.get(phase) or {}
         result[phase] = {key: value.get(key) for key in
                          ('streamsPlayable', 'streamsReturned', 'identityContradictions', 'fixtureCoverage')}
+        # The Brain needs bounded reader/variant exploration deltas to avoid
+        # treating an executed but deeper crawl as an unchanged failed edit.
+        # Do not pass reachable hostnames, URLs, headers or raw network data.
+        raw_coverage = value.get('variantCoverage') if isinstance(value.get('variantCoverage'), dict) else {}
+        result[phase]['variantCoverage'] = {
+            key: max(0, min(100000, raw_coverage[key])) if type(raw_coverage.get(key)) is int else 0
+            for key in ('announcedPlayerCandidates', 'announcedVariantCandidates',
+                        'exploredPlayerRequests', 'maxPlayableHeight')
+        }
     result['candidate_network'] = [{
         **public_address_fields(event),
         'host': event.get('host'), 'stage': event.get('stage'), 'status': event.get('status'),
