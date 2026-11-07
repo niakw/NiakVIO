@@ -14,7 +14,7 @@ assert len(entries)==x["archivedFromMain"]>=1000
 assert len(kept)==x["retainedOnMain"]>=64
 assert x["countBefore"]==len(kept)+len(entries)
 assert sum(e["size"] for e in entries)==x["archivedBytes"]
-pattern=re.compile(r"automation/provider-census-sharded-[0-9]{8,20}\\.json")
+pattern=re.compile(r"automation/provider-census-sharded-[0-9]{8,20}\.json")
 assert len(set(kept))==len(kept)
 assert len({e["path"] for e in entries})==len(entries)
 assert set(kept).isdisjoint(e["path"] for e in entries)
