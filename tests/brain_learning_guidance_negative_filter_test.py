@@ -126,6 +126,8 @@ cases=[
     ({"lastOutcome":"profile_unavailable","consecutiveFailures":2},False),
     ({"lastOutcome":" PROFILE-UNAVAILABLE ","consecutiveFailures":2},False),
     ({"lastOutcome":"not_generated","consecutiveFailures":2},False),
+    ({"executionObserved":True,"lastOutcome":"not_generated","consecutiveFailures":3},False),
+    ({"executionObserved":True,"lastOutcome":"profile_unavailable","consecutiveFailures":3},False),
     ({"lastOutcome":"rejected","consecutiveFailures":"invalid"},False),
     ({"executionObserved":True,"lastOutcome":"rejected","consecutiveFailures":1},True),
     ({"lastOutcome":"rejected","consecutiveFailures":1},True),
