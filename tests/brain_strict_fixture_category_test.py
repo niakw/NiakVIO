@@ -76,6 +76,28 @@ with patch.dict(os.environ,{'NIAKVIO_REQUIRE_DECODE_PROOF':'1'}):
         root=Path(directory)
         verify.health_provider(root/'baseline',root/'before', 'MALLUMV')
         verify.health_provider(root/'candidate',root/'after','MALLUMV')
+    # Brain evidence must not silently erase the trusted movie and TV identities.
+    # A provider/candidate cannot substitute an unregistered TMDB/episode ID.
+    movie_summary=verify.fixture_summary({'tests':[observation(spec,'movie')]})
+    assert movie_summary[0]['tmdbId']=='157336',movie_summary
+    tv_spec=next(f for f in verify.load(ROOT/'health-config.json')['fixtures']['tv']
+                 if f['tmdbId']=='1396')
+    tv_summary=verify.fixture_summary({'tests':[observation(tv_spec,'tv')]})
+    assert tv_summary[0]['tmdbId']=='1396',tv_summary
+    assert tv_summary[0]['season']==1 and tv_summary[0]['episode']==1
+    anime_spec=next(f for f in verify.load(ROOT/'health-config.json')['fixtures']['anime']
+                    if f['tmdbId']=='95479')
+    anime_summary=verify.fixture_summary({'tests':[observation(anime_spec,'anime')]})
+    assert anime_summary[0]['tmdbId']=='95479',anime_summary
+    forged=copy.deepcopy(tv_spec)
+    forged['tmdbId']='999999999'
+    wrong_summary=verify.fixture_summary({'tests':[observation(forged,'tv')]})
+    assert wrong_summary[0]['tmdbId']==''
+    assert wrong_summary[0]['season'] is None and wrong_summary[0]['episode'] is None
+    season_spoof=copy.deepcopy(tv_spec)
+    season_spoof['season']=0
+    wrong_summary=verify.fixture_summary({'tests':[observation(season_spoof,'tv')]})
+    assert wrong_summary[0]['tmdbId']=='' and wrong_summary[0]['episode'] is None
     assert configs[0]==configs[1]
     assert [x['tmdbId'] for x in configs[0]['fixtures']['movie']]==['157336']
     assert configs[0]['fixtures']['anime']==[]
