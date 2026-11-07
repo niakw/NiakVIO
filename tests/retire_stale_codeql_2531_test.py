@@ -77,4 +77,28 @@ with patch.object(mod,"api",return_value=[{}]*100):
         assert "exceeded bounded pages" in str(exc)
     else:raise AssertionError("truncated security inventory was accepted")
 
+# Filter BEFORE pagination: unrelated medium/low and test-only alerts may exceed
+# the six-page bound. A severe category must still be exhausted independently.
+seen.clear()
+def severe_page(path):
+    seen.append(path)
+    if "severity=critical" in path:
+        return [{"number": 9001, "rule": {"security_severity_level": "critical"}}]
+    if "severity=high" in path:
+        return [{"number": 9002, "rule": {"security_severity_level": "high"}}]
+    raise AssertionError("unfiltered security inventory requested")
+with patch.object(mod, "api", side_effect=severe_page):
+    alerts=mod.open_high_critical_alerts()
+    assert [row["number"] for row in alerts]==[9001,9002]
+    assert len(seen)==2 and all("state=open" in path and "ref=refs/heads/main" in path
+                                 for path in seen)
+    assert all("severity=" in path for path in seen)
+with patch.object(mod, "api", return_value=[{"number": 9001}]*100):
+    try:
+        mod.open_high_critical_alerts()
+    except RuntimeError as exc:
+        assert "exceeded bounded pages" in str(exc)
+    else:
+        raise AssertionError("permanently full severe list was incorrectly accepted")
+
 print("CodeQL evidence-only drift regression passed")

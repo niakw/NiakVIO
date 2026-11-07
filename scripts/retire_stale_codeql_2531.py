@@ -43,6 +43,25 @@ def read_pages(path,max_pages=6,*,stop_after=None):
             return all_rows
     raise RuntimeError("Security listing exceeded bounded pages")
 
+def open_high_critical_alerts():
+    """Exhaustively enumerate the TWO severe groups, not the entire alert backlog.
+
+    GitHub's Code Scanning list-alerts endpoint accepts a severity filter.
+    Each filtered collection is fully paginated or fails closed. Do not sample
+    an arbitrary first page of ALL open alerts, which can exceed 600 legacy rows.
+    """
+    found = []
+    for severity in ("critical", "high"):
+        path = ("repos/" + REPO
+                + "/code-scanning/alerts?state=open&ref=refs/heads/main"
+                + "&severity=" + severity)
+        rows = read_pages(path)
+        if not all(isinstance(row, dict) for row in rows):
+            raise ValueError("GitHub filtered security alert shape invalid")
+        found.extend(rows)
+    return found
+
+
 def verify_current_source() -> None:
     text=(ROOT/"tests/response_structure_test.cjs").read_text(encoding="utf-8")
     if "new URL(address).origin !== 'https://other.private.test'" not in text:
@@ -137,7 +156,7 @@ def main() -> None:
     matched=[row for row in analyses if is_exact_core_analysis(row)]
     if not matched:
         raise RuntimeError("Exact-main maintained JS Core CodeQL analysis not found")
-    alerts=read_pages("repos/"+REPO+"/code-scanning/alerts?state=open&ref=refs/heads/main")
+    alerts=open_high_critical_alerts()
     for row in alerts:
         severity=str((row.get("rule") or {}).get("security_severity_level") or "").lower()
         if severity not in ("high","critical"):

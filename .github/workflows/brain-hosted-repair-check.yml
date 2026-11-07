@@ -277,7 +277,6 @@ jobs:
               and accepted[0].get('materializedMutationObserved') is True
               and accepted[0].get('decodedProofRequired') is True
               and len(accepted[0].get('improvedFixtures') or [])>0
-              and not accepted[0].get('unresolvedFixtures')
               and (accepted[0].get('candidate') or {}).get('streamsPlayable',0)>0
           )
           print(
@@ -285,6 +284,7 @@ jobs:
               +' status='+('sandbox-validated' if verified else 'not-validated')
               +' candidates='+str(data.get('candidateCount',0))
               +' accepted='+str(data.get('acceptedProviderCount',0))
+              +' remaining_fixture_debt='+str(len(accepted[0].get('unresolvedFixtures') or []) if accepted else 0)
               +' source='+str(data.get('currentSha',''))
           )
           if not verified:

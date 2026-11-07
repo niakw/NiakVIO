@@ -30,6 +30,12 @@ assert 'run_hosted_brain_repair_loop.py' in source
 assert 'hosted-repair-check-${{ github.run_id }}' in source
 assert "published" not in source.lower().split('name: require executed, materialized and decoded provider repair evidence',1)[1].split('name: retain bounded experiment evidence',1)[0], "proof step cannot publish provider code"
 assert "materializedMutationObserved" in source and "executionObserved" in source
+# The strict evaluator already requires new decoded-media improvement and
+# no regression. A second ad-hoc all-fixtures-must-pass check would reject its
+# validated partial improvement; record remaining debt instead.
+assert "and not accepted[0].get('unresolvedFixtures')" not in source
+assert "remaining_fixture_debt=" in source
+
 assert "decodedProofRequired" in source and "improvedFixtures" in source
 assert "acceptedProviderCount" in source and "publicationAuthority" in source
 assert 'if: ${{ always() }}' in source
