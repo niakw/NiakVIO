@@ -87,7 +87,9 @@ write(previous, {
     providerId: 'executed-evolved', providerVersion: '*', signature: 'sig-executed', failureClass: 'chain_terminal_gap',
     profile: 'terminal_transition_graph_v1', experimentVariant: 4, experimentGeneration: 5,
     attempts: 1, successes: 0, failures: 1, consecutiveFailures: 1,
-    lastOutcome: 'profile_unavailable', lastReason: 'candidate_generation_failed',
+    // An actually replayed and rejected child is distinct from a profile
+    // unavailable before any candidate bytes were produced.
+    lastOutcome: 'rejected', lastReason: 'required_category_playable_proof:anime',
     lastSeenAt: '2026-08-16T00:00:00Z', executionObserved: true,
   }] },
   nativeReaderRepairMemory: readerMemory,
@@ -171,6 +173,7 @@ assert.equal(
 const executedEvolved = latest.experimentMemory.entries.find((row) => row.providerId === 'executed-evolved');
 assert.ok(executedEvolved, 'actually executed evolved-strategy evidence must be retained');
 assert.equal(executedEvolved.executionObserved, true);
+assert.equal(executedEvolved.lastOutcome, 'rejected');
 // Runtime ledger is authoritative when available; the repair-report fallback
 // must not double-count the same current phase.
 assert.equal(
