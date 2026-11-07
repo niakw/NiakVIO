@@ -176,4 +176,24 @@ with tempfile.TemporaryDirectory() as directory:
     result = json.loads((root / 'evaluation.json').read_text())
     assert result['rows'] == [] and result['candidateCount'] == 0
     assert json.loads((root / 'diagnostics.json').read_text())['rows'][0]['scopeTrace'][0]['reason'] == 'http_script_shell_requires_content_evidence'
+# The census may be stale: a route-proven source which is blocked in today's
+# live preflight must not burn CPU/model budget generating unsupported JS edits.
+with tempfile.TemporaryDirectory() as directory:
+    root = Path(directory)
+    (root / 'live-context.json').write_text(json.dumps({
+        'provider':'demo', 'sourceSha':'a'*40,
+        'preflight_status':'blocked', 'preflight_playable':0,
+        'network_evidence':[], 'fixture_evidence':[{'fixture':'example','status':'blocked'}],
+        'http_script_shell_only':False,
+    }))
+    argv=['loop','--brain-root',str(root/'brain'),'--provider','demo','--output',str(root)]
+    with patch.object(sys,'argv',argv), \\
+         patch.object(loop.subprocess,'check_output',return_value='a'*40), \\
+         patch.object(loop.subprocess,'run',side_effect=AssertionError('blocked transport must not invoke a model')), \\
+         contextlib.redirect_stdout(io.StringIO()):
+        assert loop.main()==0
+    verdict=json.loads((root/'evaluation.json').read_text())
+    assert verdict['rows']==[] and verdict['acceptedProviderCount']==0
+    assert json.loads((root/'diagnostics.json').read_text())['rows'][0]['scopeTrace'][0]['reason']=='network_blocked_requires_transport_differential'
+
 print('Hosted verification loop: measured rejection feedback, acceptance stop, credential isolation and source restoration passed')

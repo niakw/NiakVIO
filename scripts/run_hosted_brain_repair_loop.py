@@ -117,10 +117,16 @@ def main() -> int:
     live = json.loads((out / 'live-context.json').read_text())
     if live.get('provider') != args.provider or live.get('sourceSha') != source_sha:
         raise ValueError('live provider evidence must match exact current source')
-    if live.get('http_script_shell_only') is True:
-        # Parser/cap rewrites cannot be justified from an empty script shell.
-        # Keep this a missing-evidence prerequisite, never a failed code experiment.
-        reason = 'http_script_shell_requires_content_evidence'
+    preflight_status = str(live.get('preflight_status') or '').strip().casefold()
+    network_blocked = (preflight_status in {'blocked', 'provider_unreachable'}
+                       and live.get('preflight_playable') == 0)
+    if live.get('http_script_shell_only') is True or network_blocked:
+        # Never spend LLM repair tokens when the current exact-SHA preflight
+        # cannot reach content at all. This is a transport/harness observation,
+        # not a code failure or a finite retry-count rule. Preserve the debt.
+        reason = ('http_script_shell_requires_content_evidence'
+                  if live.get('http_script_shell_only') is True
+                  else 'network_blocked_requires_transport_differential')
         (out / 'diagnostics.json').write_text(json.dumps({'rows': [{'scopeTrace': [{
             'scope': 'provider_bloc', 'outcome': 'abstain', 'reason': reason,
         }]}]}))
