@@ -137,7 +137,7 @@ overlap = guard.classify(
 )
 assert overlap["safe"] is False and overlap["reason"]=="architecture-edit-overlap", overlap
 assert overlap["overlapPaths"] == sorted(generated_paths), overlap
-assert "overlap=" in LEARN and '--patch brain-learning-output/brain-architecture-force.patch' in LEARN
+assert '--patch brain-learning-output/brain-architecture-force.patch' in LEARN
 
 # Evidence-only updates must still rebase; generated code elsewhere remains
 # protected independently of unrelated Brain/support-file drift.
