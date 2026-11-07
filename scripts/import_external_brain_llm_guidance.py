@@ -66,7 +66,10 @@ def is_executed_negative_experiment(row:dict[str,Any])->bool:
  if row.get("executionObserved") is False:return False
  outcome=str(row.get("lastOutcome") or "").strip().casefold().replace("-","_")
  if outcome in {"accepted","verified","success"}:return False
- if outcome in {"profile_unavailable","not_generated"} and row.get("executionObserved") is not True:return False
+ # No executable child exists for either outcome, even if a legacy writer
+ # incorrectly persisted executionObserved=true. These records must never
+ # blacklist a fingerprint or erase a future viable Brain hypothesis.
+ if outcome in {"profile_unavailable","not_generated"}:return False
  try:return int(row.get("consecutiveFailures") or 0)>=1
  except (TypeError,ValueError):return False
 
