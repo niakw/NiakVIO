@@ -61,11 +61,10 @@ def _negative_entries(state: dict[str, Any]) -> list[dict[str, Any]]:
         # evolved strategy profile_unavailable before any candidate bytes were
         # generated. Such rows must not suppress the very strategy that still
         # needs its first real execution.
-        if (
-            profile in post_g5
-            and str(row.get("lastOutcome") or "") == "profile_unavailable"
-            and row.get("executionObserved") is not True
-        ):
+        # An unavailable profile never produced child bytes, regardless of
+        # the legacy executionObserved flag. Keep generation failures as
+        # evidence for exact-implementation retry control, not execution.
+        if profile in post_g5 and str(row.get("lastOutcome") or "").strip().casefold() == "profile_unavailable":
             continue
         out.append(row)
     return out
