@@ -61,6 +61,11 @@ def row(variant:int,generation:int=1):
         "failures":1,
         "consecutiveFailures":1,
         "successes":0,
+        # Base experiment debt is a REAL executed/retested failure, not a
+        # profile selection or generation attempt without candidate bytes.
+        "executionObserved":True,
+        "lastOutcome":"rejected",
+        "lastReason":"required_category_playable_proof:anime",
     }
 
 def plan(memory, mode="repair", preferred_profile=""):
@@ -315,6 +320,26 @@ with tempfile.TemporaryDirectory() as td:
     finally:
         brain.REPAIR_MEMORY_PATH=prior
     assert [x["experimentGeneration"] for x in sent]==[1,2],sent
+    # The same final generation failed BEFORE creating executable bytes:
+    # production must not debit it as a rejected playable-media experiment.
+    path.write_text(json.dumps({
+        "schemaVersion":1,
+        "entries":[row(4,1),{
+            **row(4,2), "lastOutcome":"not_generated",
+            "lastReason":"candidate_generation_failed",
+            "executionObserved":False,
+        }],
+    }),encoding="utf-8")
+    prior=brain.REPAIR_MEMORY_PATH
+    brain.REPAIR_MEMORY_PATH=path
+    try:
+        unexecuted_filtered=brain.planner_negative_memory("repair")
+        generation_learning=brain.planner_negative_memory("learning")
+    finally:
+        brain.REPAIR_MEMORY_PATH=prior
+    assert [x["experimentGeneration"] for x in unexecuted_filtered]==[1],unexecuted_filtered
+    assert [x["experimentGeneration"] for x in generation_learning]==[1,2],generation_learning
+    assert generation_learning[1]["generationAttemptObserved"] is True,generation_learning
 
 # Orchestrator exhaustion must use the same generation rule.
 spec2=importlib.util.spec_from_file_location("brain_orchestrator",ROOT/"scripts/run_provider_brain_repair.py")
