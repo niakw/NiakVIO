@@ -3509,6 +3509,91 @@
     },
     {
       "providerId": "mallumv",
+      "mutationFingerprint": "551dad6dda417dc7858967f703d121fba7927015667a19ae9b13076493cdfb43",
+      "mutationContextFingerprint": "225f6330b7cd54e1225d6a80dd32f0078d3e8af91687761f4a2a9579faee5d04",
+      "failures": 1,
+      "consecutiveFailures": 1,
+      "successes": 0,
+      "executionObserved": true,
+      "materializedMutationObserved": true,
+      "lastOutcome": "rejected",
+      "lastReason": "decoded_repair_fixture_contract",
+      "lastMutationSummary": [
+        {
+          "scope": "provider_bloc",
+          "operation": "upsert",
+          "family": "html_extractor"
+        }
+      ],
+      "repairFamily": {
+        "version": 2,
+        "key": "83cd919990911ba1ebe590f4758d105d45441b947b4bb9f41e6ce8f4c2c9a18e",
+        "failure": "chain-terminal-gap",
+        "status": "chain-reached",
+        "archetype": "chain-terminal-gap:dom-selector-container",
+        "mediaTypes": [
+          "movie"
+        ],
+        "signals": [
+          "class-prefix-family",
+          "provider-http-2xx",
+          "response-html",
+          "response-json"
+        ],
+        "stages": [
+          "provider-network-zero-result"
+        ],
+        "mutationSurfaces": [
+          "provider-bloc",
+          "provider-data",
+          "provider-js",
+          "provider-patch"
+        ]
+      },
+      "mechanismFamily": "html-extractor",
+      "lastBaselineCoverage": {
+        "streamsReturned": 0,
+        "streamsPlayable": 0,
+        "identityContradictions": 0,
+        "qualityHeights": [],
+        "announcedQualityHeights": [],
+        "maxPlayableHeight": 0,
+        "announcedPlayerCandidates": 0,
+        "announcedVariantCandidates": 0,
+        "exploredPlayerRequests": 0,
+        "reachableHostCount": 0,
+        "fanoutStates": []
+      },
+      "lastCandidateCoverage": {
+        "streamsReturned": 0,
+        "streamsPlayable": 0,
+        "identityContradictions": 0,
+        "qualityHeights": [],
+        "announcedQualityHeights": [],
+        "maxPlayableHeight": 0,
+        "announcedPlayerCandidates": 0,
+        "announcedVariantCandidates": 0,
+        "exploredPlayerRequests": 0,
+        "reachableHostCount": 0,
+        "fanoutStates": []
+      },
+      "lastCoverageDelta": {
+        "streamsReturned": 0,
+        "streamsPlayable": 0,
+        "identityContradictions": 0,
+        "maxPlayableHeight": 0,
+        "announcedPlayerCandidates": 0,
+        "announcedVariantCandidates": 0,
+        "exploredPlayerRequests": 0,
+        "reachableHostCount": 0,
+        "qualityHeightCount": 0
+      },
+      "lastCurrentSha": "258519ff09672302ab7e928410c31fde0f053343",
+      "sourceNiakvioSha": "258519ff09672302ab7e928410c31fde0f053343",
+      "sourceBrainLlmSha": "1d459f9e6d6b9fa5fbbbc08e544349d938a77968"
+    },
+    {
+      "providerId": "mallumv",
       "mutationFingerprint": "eccb35d951887b213b6d9a504b2871075e8cb2f3ec910d67a3a81cc4c3dbafc8",
       "mutationContextFingerprint": "81d9670beeecdccc4ede71c64bf229f6fd3faa33fa643801cc912fe85347137c",
       "failures": 1,

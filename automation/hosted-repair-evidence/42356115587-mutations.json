@@ -1,0 +1,63 @@
+{
+  "brainLlmSha": "1d459f9e6d6b9fa5fbbbc08e544349d938a77968",
+  "minConfidence": 0.8,
+  "privateContentRetained": false,
+  "proofAuthority": false,
+  "providerCount": 1,
+  "providerMutationContentRetained": true,
+  "publicationAuthority": false,
+  "rows": [
+    {
+      "candidateOrdinal": 1,
+      "confidence": 0.96,
+      "failureClass": "chain-terminal-gap",
+      "mechanismFamily": "html-extractor",
+      "mutationContextFingerprint": "225f6330b7cd54e1225d6a80dd32f0078d3e8af91687761f4a2a9579faee5d04",
+      "mutationFingerprint": "551dad6dda417dc7858967f703d121fba7927015667a19ae9b13076493cdfb43",
+      "mutations": [
+        {
+          "family": "html_extractor",
+          "find": "\"\":v).trim()",
+          "operation": "upsert",
+          "replace": "'':v).trim();",
+          "scope": "provider_bloc"
+        }
+      ],
+      "providerId": "mallumv",
+      "repairFamily": {
+        "archetype": "chain-terminal-gap:dom-selector-container",
+        "failure": "chain-terminal-gap",
+        "key": "83cd919990911ba1ebe590f4758d105d45441b947b4bb9f41e6ce8f4c2c9a18e",
+        "mediaTypes": [
+          "movie"
+        ],
+        "mutationSurfaces": [
+          "provider-bloc",
+          "provider-data",
+          "provider-js",
+          "provider-patch"
+        ],
+        "signals": [
+          "class-prefix-family",
+          "provider-http-2xx",
+          "response-html",
+          "response-json"
+        ],
+        "stages": [
+          "provider-network-zero-result"
+        ],
+        "status": "chain-reached",
+        "version": 2
+      },
+      "strategy": "terminal-media-extractor-with-playback-validation",
+      "targetLayer": "provider",
+      "tests": [
+        "replay_proven_chain_to_terminal_media",
+        "validate_media_signature_duration_and_identity"
+      ]
+    }
+  ],
+  "sandboxMutationAuthority": true,
+  "schemaVersion": 1,
+  "sourceNiakvioSha": "258519ff09672302ab7e928410c31fde0f053343"
+}
