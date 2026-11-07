@@ -1971,4 +1971,102 @@ with tempfile.TemporaryDirectory(prefix="brain-force-negative-evidence-") as tmp
     ], evidence
     assert "publicationAllowed" not in evidence, evidence
 
+
+# Production-scale novelty oracle: the real Brain already has 24 different
+# route-transition strategies. New Qwen outputs used to copy v14/v15 with only
+# revised numeric caps. The Brain must offer distinct executable Lego programs
+# checked against every installed AST, not fixture-specific parser strings.
+real_runtime_path = ROOT / mod.NEW_REPAIR_PROFILE_SURFACES[2]
+real_runtime_bytes = real_runtime_path.read_bytes()
+for repair_scope in ("route-to-terminal", "terminal-extraction", "candidate-replay"):
+    target_id = "route_transition_graph_v25" if repair_scope == "route-to-terminal" else (
+        "terminal_transition_graph_v25" if repair_scope == "terminal-extraction"
+        else "candidate_replay_graph_v25"
+    )
+    target = {
+        "blueprint": {
+            "requiresNewExecutableRepairProfile": True,
+            "strategyId": target_id,
+            "evolvesFromStrategyId": "route_transition_graph_v24",
+            "repairScope": repair_scope,
+            "providers": ["synthetic-representative"],
+        }
+    }
+    menu = mod._novel_recovery_lego_menu(target, root=ROOT, limit=6)
+    if repair_scope == "route-to-terminal":
+        assert len(menu) == 6, menu
+    else:
+        # A family without installed siblings cannot assert novelty against
+        # real bytes. Never invent an authority or silently use route siblings.
+        assert isinstance(menu, list), menu
+    shapes = mod._installed_strategy_shapes(real_runtime_bytes.decode(), target_id)
+    seen_shapes = set(shapes.values())
+    for program in menu:
+        body = mod.compile_recovery_program(program)
+        node = mod.ast.parse("if True:\n" + mod.textwrap.indent(body, "    ")).body[0]
+        shape = mod._numeric_erased_strategy_body(node.body)
+        assert shape not in seen_shapes, (target_id, program)
+        seen_shapes.add(shape)
+        mod.reject_recovery_program_clone(body, target_id, real_runtime_bytes.decode())
+        assert program["budgets"] == {
+            "search": 12, "direct": 16, "requests": 20, "transitions": 10,
+        }, program
+    if menu:
+        fallback = mod._brain_lego_recovery_fallback(target, root=ROOT)
+        assert fallback and fallback["recoveryProgram"] == menu[0], fallback
+        assert fallback["generatorOrigin"] == "brain-causal-lego-novelty-fallback"
+        metadata = mod._program_provenance(fallback)
+        assert metadata["generatorFormat"] == "typed-brain-causal-lego-selection"
+        assert metadata["priorOnlyUntilAppliedPlayback"] is True
+        evidence = mod._new_repair_profile_payload(target, root=ROOT)
+        assert evidence["novelRecoveryPrograms"] == menu, evidence
+
+assert real_runtime_path.read_bytes() == real_runtime_bytes, (
+    "novelty selection changed published Brain executor bytes"
+)
+assert mod._novel_recovery_lego_menu(
+    {"blueprint": {"requiresNewExecutableRepairProfile": False}},
+    root=ROOT,
+) == [], "ordinary architecture edits must not reuse the profile-generation fallback"
+
+# Two repeated numeric-only 7B proposals should rotate to an AST-distinct
+# Brain-composed executor on the second attempt. Test orchestration without
+# a model or fake provider playback, and keep error/publishing gates unchanged.
+payload = {
+    "blueprint": {
+        "requiresNewExecutableRepairProfile": True,
+        "strategyId": "route_transition_graph_v25",
+        "evolvesFromStrategyId": "route_transition_graph_v24",
+        "repairScope": "route-to-terminal",
+    }
+}
+original_model_edits = mod._model_edits
+original_corrected = mod._request_corrected_plan
+model_attempts = []
+def fail_numeric_and_accept_fallback(planned, request_payload, *, root=ROOT):
+    model_attempts.append(planned.get("generatorOrigin") or "llm")
+    if planned.get("generatorOrigin") == "brain-causal-lego-novelty-fallback":
+        return original_model_edits(planned, request_payload, root=root)
+    raise ValueError(
+        "architecture FORCE recoveryProgram numeric-only strategy clone: "
+        "route_transition_graph_v25 repeats route_transition_graph_v14"
+    )
+try:
+    mod._model_edits = fail_numeric_and_accept_fallback
+    mod._request_corrected_plan = lambda endpoint, model, corrected: {
+        "recoveryProgram": {"rejected": "same"}
+    }
+    planned, edits = mod._validated_generated_edits(
+        "offline", "no-model", payload, {"recoveryProgram": {}}, root=ROOT,
+    )
+    assert model_attempts == ["llm", "llm", "brain-causal-lego-novelty-fallback"], model_attempts
+    assert planned["generatorOrigin"] == "brain-causal-lego-novelty-fallback"
+    assert len(edits) == 1 and edits[0]["path"] == mod.NEW_REPAIR_PROFILE_SURFACES[2], edits
+finally:
+    mod._model_edits = original_model_edits
+    mod._request_corrected_plan = original_corrected
+assert real_runtime_path.read_bytes() == real_runtime_bytes, (
+    "offline FORCE novelty oracle accidentally modified real files"
+)
+
 print("Brain architecture FORCE materializer tests passed")
