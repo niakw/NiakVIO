@@ -115,10 +115,10 @@ assert global_blocked["safe"] is False and global_blocked["reason"]=="non-neutra
 # was non-rebasable even though the provider source-drift guard said neutral.
 # Requeue on the current source instead of attempting an invalid git apply.
 generated_patch = (
-    "diff --git a/engine_v2/scripts/plan-repairs.mjs b/engine_v2/scripts/plan-repairs.mjs\\n"
-    "index 1111111..2222222 100644\\n"
-    "diff --git a/scripts/adaptive_runtime/runtime_repair.py b/scripts/adaptive_runtime/runtime_repair.py\\n"
-    "index 3333333..4444444 100644\\n"
+    "diff --git a/engine_v2/scripts/plan-repairs.mjs b/engine_v2/scripts/plan-repairs.mjs\n"
+    "index 1111111..2222222 100644\n"
+    "diff --git a/scripts/adaptive_runtime/runtime_repair.py b/scripts/adaptive_runtime/runtime_repair.py\n"
+    "index 3333333..4444444 100644\n"
 )
 generated_paths = guard.patch_changed_paths(generated_patch)
 assert generated_paths == {
@@ -151,9 +151,9 @@ unrelated = guard.classify(
 assert unrelated["safe"] is True and unrelated["reason"]=="neutral-only", unrelated
 for invalid_patch in (
     "",
-    "diff --git a/safe.py b/other.py\\n",
-    'diff --git "a/quoted name.py" "b/quoted name.py"\\n',
-    "diff --git a/../escape.py b/../escape.py\\n",
+    "diff --git a/safe.py b/other.py\n",
+    'diff --git "a/quoted name.py" "b/quoted name.py"\n',
+    "diff --git a/../escape.py b/../escape.py\n",
 ):
     try:
         guard.patch_changed_paths(invalid_patch)
