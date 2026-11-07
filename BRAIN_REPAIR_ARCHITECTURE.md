@@ -1270,3 +1270,11 @@ remain out of scope; Brain-owned orchestration and validation are the only
 modified production-facing surfaces here.
 
 The decoded probe projection must pass the verified fixture's expected duration to the media-control predicate. The standalone 24-minute anime default is **not** a film/TV duration policy. Other identity/media/short-preview checks remain unchanged.
+
+
+## 2026-11-07 — Decoded-repair negative feedback and roadmap authority
+
+- Brain-LLM `057d8d0`/`1f7096b` extends generic source-locality negative feedback to the **executed and rejected** `decoded_repair_no_new_fixture_control` outcome. This is a source-selection/learning correction, not a provider fix. The source unit is rotated only if execution and materialization were proved **and** sanitized baseline/candidate metrics and numeric reader fanout are unchanged.
+- The numeric fanout projection includes announced player/variant counts, explored player requests and maximal playable height, excluding raw URLs, headers and media payloads. Increasing actual exploration prevents premature 'non-improving function' rotation; announced options alone are not decoded playback.
+- Real 4KHDHub proof `42358985990` showed 16 announced players, 1 visited, 0 streams before and after a materialized regex edit; this was rejected as `decoded_repair_no_new_fixture_control`. Brain LLM CI on `1f7096b` and a fresh hosted proof using that Brain pin are separate necessary checks.
+- The canonical execution/decision checklist, 17-item repair queue snapshot, blockers and model/transport/escalation criteria now live in [`BRAIN_REPAIR_ROADMAP.md`](BRAIN_REPAIR_ROADMAP.md). Check current census and SHA before treating any snapshot as live state. Security #2531 retirement workflow `42359913056` returned SUCCESS but actually logged `FIELD_CODEQL_STALE_2531_DEFERRED` because of source drift, not a verified alert dismissal.
