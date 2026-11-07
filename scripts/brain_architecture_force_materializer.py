@@ -1581,6 +1581,104 @@ def _parent_algorithm_context(
     return prefix + body[:max(0, limit - len(prefix))]
 
 
+def _novel_recovery_lego_menu(
+    payload: dict[str, Any], *, root: Path = ROOT, limit: int = 6,
+) -> list[dict[str, Any]]:
+    """Choose viable semantic Lego combinations from installed Brain evidence.
+
+    A 7B model repeatedly emitted v25 clones of installed v14/v15 with only
+    numeric quotas changed. Do not spend further corrections on such clones:
+    pre-screen a small, generic, executable set of recovery programs against
+    *all* installed sibling ASTs, not merely the immediate parent. The menu
+    is a generation prior, not a validated provider fix or publication grant.
+    """
+    blueprint = payload.get("blueprint") if isinstance(payload.get("blueprint"), dict) else {}
+    strategy_id = str(blueprint.get("strategyId") or "").strip()
+    if not _requires_new_repair_profile(payload) or not re.fullmatch(r"[a-z][a-z0-9_]*_v\d+", strategy_id):
+        return []
+    runtime_path = root / NEW_REPAIR_PROFILE_SURFACES[2]
+    if not runtime_path.is_file():
+        return []  # no reliable source AST: never invent an execution baseline
+    runtime = runtime_path.read_text(encoding="utf-8")
+    siblings = _installed_strategy_shapes(runtime, strategy_id)
+    if not siblings:
+        return []  # generated novelty requires an installed family as oracle
+    installed = set(siblings.values())
+    chosen: set[str] = set()
+    programs: list[dict[str, Any]] = []
+    scope = str(blueprint.get("repairScope") or "").strip().casefold()
+    terminal_first = scope in {"terminal-extraction", "candidate-replay"}
+    search_choices = (
+        [["configured", "learned", "peer"], ["configured", "generic"],
+         ["configured", "learned", "generic"], ["configured", "peer", "generic"]]
+    )
+    direct_choices = (
+        [["configured", "positive", "peer"], ["learned", "peer"],
+         ["configured", "learned", "positive"], ["configured", "peer"]]
+    )
+    request_choices = (
+        [["current", "positive", "historical"], ["provider", "peer"],
+         ["current", "provider", "peer"], ["current", "historical", "peer"]]
+    )
+    role_choices = (
+        [["source", "player", "api", "episode", "detail"],
+         ["player", "source", "episode", "api", "detail"]]
+        if terminal_first else
+        [["source", "api", "player", "episode", "detail"],
+         ["episode", "source", "player", "api", "detail"]]
+    )
+    # Rotate causal source families and role priorities, not numeric budgets.
+    # Fixed safe budgets make it impossible for this menu to "innovate" just
+    # by lifting retry counts or expanding the number of destinations.
+    for i in range(48):
+        program = {
+            "searchSources": search_choices[i % len(search_choices)],
+            "directSources": direct_choices[(i // 2) % len(direct_choices)],
+            "requestSources": request_choices[(i // 3) % len(request_choices)],
+            "roleOrder": role_choices[(i // 4) % len(role_choices)],
+            "transitionMode": ("owned-combined", "owned-learned", "owned-direct")[i % 3],
+            "terminalRoleFilter": (i % 4 != 0) if terminal_first else (i % 3 == 0),
+            "budgets": {"search": 12, "direct": 16, "requests": 20, "transitions": 10},
+        }
+        body = compile_recovery_program(program, max_chars=4200)
+        node = ast.parse("if True:\n" + textwrap.indent(body, "    ")).body[0]
+        if not isinstance(node, ast.If):
+            continue
+        shape = _numeric_erased_strategy_body(node.body)
+        if shape in installed or shape in chosen:
+            continue
+        chosen.add(shape)
+        programs.append(program)
+        if len(programs) >= max(1, min(12, int(limit))):
+            break
+    return programs
+
+
+def _brain_lego_recovery_fallback(
+    payload: dict[str, Any], *, root: Path = ROOT,
+) -> dict[str, Any] | None:
+    """Return a distinct Brain-composed executor after repeated 7B clones.
+
+    No provider is changed here. The ordinary edit, materialized syntax,
+    sandbox playback/identity and non-regression gates remain mandatory.
+    """
+    for program in _novel_recovery_lego_menu(payload, root=root):
+        try:
+            body = compile_recovery_program(program, max_chars=4200)
+            reject_recovery_program_clone(
+                body,
+                str(payload["blueprint"].get("strategyId") or ""),
+                (root / NEW_REPAIR_PROFILE_SURFACES[2]).read_text(encoding="utf-8"),
+            )
+        except ValueError:
+            continue
+        return {
+            "recoveryProgram": program,
+            "generatorOrigin": "brain-causal-lego-novelty-fallback",
+        }
+    return None
+
+
 def _new_repair_profile_payload(
     payload: dict[str, Any],
     *,
@@ -1624,6 +1722,7 @@ def _new_repair_profile_payload(
         "installedFamilyMechanisms": installed_family_mechanisms(
             installed_source, str(blueprint.get("strategyId") or ""),
         ) if installed_source else [],
+        "novelRecoveryPrograms": _novel_recovery_lego_menu(payload, root=root),
         "semanticNoveltyRequired": (
             "new evidence or transition primitives; numeric budgets and profile IDs "
             "do not establish a new algorithm"
