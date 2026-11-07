@@ -1149,6 +1149,13 @@ def _execute_planner(
         ],
         "items": items,
     }
+    if payload["forcePreferredStrategy"]:
+        print(
+            "FIELD_BRAIN_FORCE_PLANNER_INPUT requested="
+            + payload["forcePreferredStrategy"] + " exploration="
+            + str(payload["explorationChain"]).lower(),
+            flush=True,
+        )
     planner_input = _strict_json_dumps(payload).encode("ascii")
     try:
         # Node's synchronous stdin reader can encounter EAGAIN or truncated
@@ -1175,6 +1182,22 @@ def _execute_planner(
         raise RuntimeError("ARCHI2 Brain planner returned invalid JSON") from exc
     for key, row in (parsed.get("plans") or {}).items():
         if isinstance(row, dict):
+            if payload["forcePreferredStrategy"]:
+                requested = payload["forcePreferredStrategy"]
+                reported = str(row.get("forcePreferredRequested") or "").strip().casefold()
+                if reported != requested:
+                    print(
+                        "FIELD_BRAIN_FORCE_PLANNER_INTENT_MISMATCH "
+                        f"requested={requested} returned={reported or 'none'}",
+                        flush=True,
+                    )
+                    raise RuntimeError("Brain planner dropped explicitly requested FORCE strategy")
+                print(
+                    "FIELD_BRAIN_FORCE_PLANNER_SELECTION "
+                    f"requested={requested} selected={str(row.get('forcePreferredSelected') is True).lower()} "
+                    f"profile={row.get('postExhaustionStrategyProfile') or 'none'}",
+                    flush=True,
+                )
             PLANS[str(key)] = row
     return PLANS
 

@@ -17,6 +17,7 @@ sys.path.insert(1, str(SCRIPTS))
 
 import runtime_repair  # noqa: E402
 import deep_repair_loop as loop  # noqa: E402
+from brain_force_preferred_context import consume as consume_force_preferred  # noqa: E402
 import brain_repair_runtime as brain  # noqa: E402
 from guard_nuvio_client_brain_compat import guard as guard_nuvio_client_brain_compat  # noqa: E402
 from provider_byte_stability import verify_candidate, verify_registry  # noqa: E402
@@ -182,6 +183,16 @@ def main() -> int:
     original_config = HEALTH_CONFIG.read_bytes()
     original_argv = list(sys.argv)
     try:
+        # Reject an ambiguous or missing explicit FORCE context BEFORE Deep
+        # stages any bytes, and remove the private flag from the generic loop
+        # CLI. The Brain planner sees this same scoped intent in its own process.
+        sys.argv[:], preferred = consume_force_preferred(sys.argv, os.environ)
+        if preferred:
+            print(
+                "FIELD_BRAIN_FORCE_DEEP_CONTEXT requested=" + preferred
+                + " exploration=1 origin=explicit-cli",
+                flush=True,
+            )
         global _HARNESS_DIFFERENTIAL_AUDITED
         _HARNESS_DIFFERENTIAL_PROVIDERS.clear()
         _HARNESS_DIFFERENTIAL_ROWS.clear()

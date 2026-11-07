@@ -1549,16 +1549,20 @@ def main() -> int:
                     ),
                 )
                 try:
-                    run(
+                    deep_cmd = [
                         sys.executable,
                         "scripts/run_adaptive_deep_repair.py",
                         "--stage", str(stage),
                         "--registry", str(stage / "candidates.json"),
                         "--output", str(output),
                         "--max-rounds", str(max_rounds_per_batch),
-                        env=env,
-                        timeout=batch_timeout,
-                    )
+                    ]
+                    # Inherited shell/process environment alone did not retain
+                    # caller intent in real FORCE 42418798197/42419700785.
+                    # Pass the scoped selection to the Deep process explicitly.
+                    if preferred:
+                        deep_cmd.extend(["--force-preferred-profile", preferred])
+                    run(*deep_cmd, env=env, timeout=batch_timeout)
                 except subprocess.TimeoutExpired:
                     time_budget_exhausted = True
                     no_progress_reason = "time_budget_exhausted_during_batch"
