@@ -976,17 +976,13 @@ def planner_negative_memory(_mode: str) -> list[dict[str, Any]]:
     learning_mode = str(_mode or "").strip().casefold() == "learning"
     for raw in repair_memory().get("entries") or []:
         execution_observed = (raw.get("executionObserved") is True and str(raw.get("lastOutcome") or "") not in {"not_generated", "profile_unavailable"})
-        # Legacy/old Repair memory could debit a selected profile even when the
-        # runtime produced no matching candidate and therefore never executed
-        # the strategy. Keep that applicability signal for Learning exploration,
-        # but never let it suppress a production Repair/LLM prior as if it were
-        # an observed negative experiment.
-        if (
-            not learning_mode
-            and _clip_text(raw.get("lastOutcome"), 48) == "profile_unavailable"
-            and _clip_text(raw.get("lastReason"), 240) == "planned_profile_not_applicable_to_current_bytes"
-            and not execution_observed
-        ):
+        # Production negative-memory authority requires a child that was
+        # *actually executed*. Older versions only skipped one flavour of
+        # profile_unavailable and leaked not_generated (executionObserved=false)
+        # into the production planner, exhausting legitimate strategies.
+        # Learning keeps both no-child outcomes as separate generation
+        # attempts for bounded strategy rotation, never as playback proof.
+        if not learning_mode and not execution_observed:
             continue
         rows.append({
             "providerId": _clip_text(raw.get("providerId"), 160).casefold(),
