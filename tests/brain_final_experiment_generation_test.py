@@ -68,9 +68,10 @@ def row(variant:int,generation:int=1):
         "lastReason":"required_category_playable_proof:anime",
     }
 
-def plan(memory, mode="repair", preferred_profile=""):
+def plan(memory, mode="repair", preferred_profile="", exploration_chain=False):
     payload={
         "mode":mode,
+        "explorationChain":exploration_chain,
         "forcePreferredStrategy":preferred_profile,
         "policy":policy,
         "learnedSkills":{},
@@ -83,6 +84,47 @@ def plan(memory, mode="repair", preferred_profile=""):
     )
     parsed=json.loads(completed.stdout)
     return next(iter((parsed.get("plans") or {}).values()))
+
+# Real FORCE run 42414140056 was dispatched with terminal_transition_graph_v9
+# but used adaptive_runtime_recovery because the production base variants were
+# not exhausted. The representative must exercise the newly promoted executor
+# itself, without granting any playback/publication authority.
+early_force=plan([], "repair", "terminal_transition_graph_v9", exploration_chain=True)
+assert early_force["baseExperimentExhausted"] is False, early_force
+assert early_force["forcePreferredSelected"] is True, early_force
+assert early_force["postExhaustionStrategyProfile"]=="terminal_transition_graph_v9", early_force
+assert early_force["allowedProfiles"]==["terminal_transition_graph_v9"], early_force
+assert early_force["repairScope"]=="learning", early_force
+assert early_force["repairType"]=="evolved_strategy", early_force
+assert early_force["action"]=="probe-targeted-repair", early_force
+assert early_force["learningDisposition"]=="execute_bounded_evolved_strategy", early_force
+
+# A normal Repair run, an unknown invented profile, or a non-exploratory call
+# must not receive the FORCE override. A previously executed and rejected
+# v9 must not silently fall back to another post-exhaustion vN before the
+# ordinary base family is exhausted.
+for nonforce in (
+    plan([], "repair", "terminal_transition_graph_v9"),
+    plan([], "repair", "invented_untrusted_v500", exploration_chain=True),
+    plan([], "repair", "", exploration_chain=True),
+    plan([], "learning", "terminal_transition_graph_v9", exploration_chain=True),
+):
+    assert nonforce["forcePreferredSelected"] is False, nonforce
+    assert nonforce["postExhaustionStrategyProfile"]=="", nonforce
+    assert "terminal_transition_graph_v9" not in nonforce["allowedProfiles"], nonforce
+
+executed_force_failure = {
+    **row(0), "profile":"terminal_transition_graph_v9",
+    "failureClass":"chain_terminal_gap", "lastOutcome":"rejected",
+    "executionObserved":True, "consecutiveFailures":1,
+}
+blocked_force=plan(
+    [executed_force_failure], "repair", "terminal_transition_graph_v9",
+    exploration_chain=True,
+)
+assert blocked_force["forcePreferredSelected"] is False, blocked_force
+assert blocked_force["postExhaustionStrategyProfile"]=="", blocked_force
+assert "terminal_transition_graph_v9" not in blocked_force["allowedProfiles"], blocked_force
 
 # v0-v3 historical failures remain authoritative. Old v4 belongs to generation 1
 # and must not exhaust materially new generation 2 semantics.
