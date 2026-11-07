@@ -29,10 +29,27 @@ failed={"entries":[{
     "profile":first[0]["profile"],
     "llmAdvisorExperimentFingerprint":first[0]["experimentFingerprint"],
     "consecutiveFailures":1,
+    "executionObserved":True,
+    "lastOutcome":"rejected",
 }]}
 second=synthesize_rows(census=census,memory=failed,current_sha="a"*40)
 alpha=next(r for r in second if r["providerId"]=="alpha")
 assert alpha["experimentFingerprint"] != first[0]["experimentFingerprint"]
+
+# Legacy no-child debt never exhausts an LLM experiment, even if a broken
+# historical writer marked it executed. Do not convert counters into proof.
+for outcome in ("profile_unavailable", "not_generated"):
+    contradictory={"entries":[{
+        **failed["entries"][0],
+        "lastOutcome":outcome,
+        "executionObserved":True,
+        "consecutiveFailures":9,
+    }]}
+    fresh=synthesize_rows(census=census,memory=contradictory,current_sha="a"*40)
+    target=next(row for row in fresh if row["providerId"]=="alpha")
+    assert target["experimentFingerprint"]==first[0]["experimentFingerprint"],(outcome,target)
+
+
 
 # Three distinct executed attempts of one executor are enough. Learning must
 # rotate executor family instead of inventing a fourth parameter permutation
