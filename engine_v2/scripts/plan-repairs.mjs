@@ -430,11 +430,18 @@ function postExhaustionStrategyHint(failureClass, memoryRows, rotateEvery, prefe
         stringValue(memory.profile) !== row.profile
         || Math.max(0, finiteNumber(memory.consecutiveFailures, 0)) < rotateEvery
       ) return false;
-      // Before scoped-v2 hashing, adding a new sibling changed EVERY old
-      // fingerprint. Do not let that historical global-hash churn erase a
-      // genuinely executed negative for this same versioned profile ID.
-      // Novel behavior must instead use a new v3/v4 profile; rows without
-      // observed execution cannot suppress a valid new attempt.
+      // A profile that never produced child bytes was NOT executed. It
+      // must not poison genuine execution-negative memory, even when older
+      // runners wrongly persisted executionObserved=true. Still rotate away
+      // from an unchanged generator after a bounded generation failure.
+      const outcome = stringValue(memory.lastOutcome).toLowerCase();
+      if (outcome === "not_generated") {
+        const previous = stringValue(memory.strategyImplementationFingerprint).toLowerCase();
+        return /^[0-9a-f]{64}$/.test(previous) && previous === implementationFingerprint;
+      }
+      if (outcome === "profile_unavailable") return false;
+      // A real rejected/retested child remains negative even across legacy
+      // global fingerprint churn; new behavior needs a new strategy identity.
       return memory.executionObserved === true;
     });
     if (!alreadyFailed) {
