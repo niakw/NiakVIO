@@ -39,8 +39,24 @@ with TemporaryDirectory() as td:
     (base/"not-an-archive.json").write_text("{}")
     debt=mod.negative_history(base)
     assert debt["allanime"]==60
-    assert mod.choose(state,debt)[0]=="animevostfr"
+    # The strongest retained CANDIDATE has a replay-only Brain strategy and
+    # must NOT be scored as source synthesis: choose eligible regression.
+    assert mod.choose(state,debt)[0]=="animekai"
+    try:mod.choose(state,debt,"animevostfr")
+    except ValueError as error:
+        assert "Candidate replay" in str(error)
+    else:raise AssertionError("replay-only candidate sent to mutation pipeline")
     assert mod.choose(state,debt,"animekai")[0]=="animekai"
+    # Historical candidate data changes failure classification regardless of
+    # superficial status; the Brain adapter always selects replay first.
+    enriched=dict(rows[2],candidateProof=["a verified sandbox candidate"])
+    state["providers"][2]=enriched
+    assert mod.choose(state,debt)[0]=="allanime"
+    state["providers"][2]=rows[2]
+    try:mod.choose(state,debt,"waf")
+    except ValueError:
+        raise AssertionError("known but WAF target is allowed by policy; scorer should downrank")
+
     try:mod.choose(state,debt,"not-a-provider")
     except ValueError:pass
     else:raise AssertionError("invented manual provider accepted")

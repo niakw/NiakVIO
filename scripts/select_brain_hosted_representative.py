@@ -13,13 +13,14 @@ from pathlib import Path
 ID = re.compile(r"[a-z0-9][a-z0-9-]{0,63}\Z")
 ARCHIVE = re.compile(r"[0-9]{8,14}\.json\Z")
 
+# CANDIDATE OK must go to same_provider_candidate_program_replay, a
+# *non-mutation* Brain policy. Do not feed those targets to a synthesis-only
+# workflow that cannot replay the recorded candidate's exact bytes.
 STATUS_PRIOR = {
-    "CANDIDATE OK": 100,
     "REGRESSION PROVIDER": 72,
     "REGRESSION PROVIDER JS": 72,
     "CHAIN REACHED": 62,
     "ROUTE PROVEN": 45,
-    "NO PROOF": 10,
 }
 
 
@@ -61,8 +62,15 @@ def choose(state: dict, debt: dict[str, int], manual: str = "") -> tuple[str, in
     if manual:
         if not ID.fullmatch(manual) or manual not in providers:
             raise ValueError("Manual Brain target is not a known current provider")
-        if providers[manual].get("status") == "DISABLED":
+        row = providers[manual]
+        if row.get("status") == "DISABLED":
             raise ValueError("Brain proof cannot target lifecycle-disabled provider")
+        if (manual not in set(state.get("repairQueue") or [])
+            or row.get("repairEligible") is not True
+            or row.get("authorityRepairEligible") is False):
+            raise ValueError("Manual Brain target is not currently eligible for repair")
+        if row.get("status") not in STATUS_PRIOR or row.get("candidateProof"):
+            raise ValueError("Candidate replay/NO PROOF requires a separate evidence workflow, not source synthesis")
         return manual, 0
     queue = {
         str(value).strip().casefold()
@@ -77,11 +85,13 @@ def choose(state: dict, debt: dict[str, int], manual: str = "") -> tuple[str, in
         if row.get("authorityRepairEligible") is False:
             continue
         status = str(row.get("status") or "")
-        if status not in STATUS_PRIOR:
+        # In the Brain adapter, *any* candidateProof takes precedence over a
+        # route or terminal gap and maps to candidate_replay_gap. Its strategy
+        # is intentionally NO_MUTATION. Never silently override that policy.
+        if status not in STATUS_PRIOR or row.get("candidateProof"):
             continue
         issue = str(row.get("dominantIssue") or "").casefold()
         score = STATUS_PRIOR[status]
-        score += 24 if row.get("candidateProof") else 0
         score += 17 if row.get("historicalProof") else 0
         score += 12 if "zero_result" in issue else 0
         score += 4 if "http_error" in issue else 0
@@ -109,6 +119,14 @@ def main() -> int:
         raise SystemExit("Brain representative requires current census state")
     debt = negative_history(args.evidence_dir)
     provider, score = choose(state, debt, args.manual)
+    # Failed/replay-only targets are explicitly withheld from this mutation
+    # lane rather than being counted as 0 Qwen candidates.
+    replay = [row.get("provider") for row in state.get("providers") or []
+              if isinstance(row, dict)
+              and row.get("provider") in (state.get("repairQueue") or [])
+              and (row.get("status") == "CANDIDATE OK" or row.get("candidateProof"))]
+    print("FIELD_BRAIN_REPLAY_ONLY_QUEUE count="+str(len(replay))
+          +" route=same_provider_candidate_program_replay",flush=True)
     if not ID.fullmatch(provider):
         raise SystemExit("Invalid selected Brain provider")
     for path in (args.github_env, args.github_output):
