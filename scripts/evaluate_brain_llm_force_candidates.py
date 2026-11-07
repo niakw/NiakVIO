@@ -171,7 +171,10 @@ def decoded_repair_gate(baseline: dict[str, Any], candidate: dict[str, Any],
         label = str(spec.get('label') or key[1])
         if new_controls == 0:
             metadata['unresolvedFixtures'].append(label)
-        if old['streams_playable'] == 0 and new_controls > 0:
+        # A previously returned/playable URL can still have zero genuinely
+        # decoded, identity-safe controls. Count new *verified controls*, not
+        # a transition in the weaker playable-stream metric.
+        if new_controls > old_controls:
             metadata['improvedFixtures'].append(label)
         if (new_controls < old_controls or any(new[field] < old[field]
                 for field in ('streams_returned', 'streams_playable'))):
