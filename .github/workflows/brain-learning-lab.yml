@@ -1864,7 +1864,7 @@ jobs:
           remote_main="$(git rev-parse origin/main)"
           promotion_base="$GITHUB_SHA"
           if [ "$remote_main" != "$GITHUB_SHA" ]; then
-            if python scripts/brain_force_rebase_guard.py               --source "$GITHUB_SHA"               --current "$remote_main"               --repo-root "$GITHUB_WORKSPACE"               --output "$RUNNER_TEMP/brain-force-rebase.json"; then
+            if python scripts/brain_force_rebase_guard.py               --source "$GITHUB_SHA"               --current "$remote_main"               --repo-root "$GITHUB_WORKSPACE"               --patch brain-learning-output/brain-architecture-force.patch               --output "$RUNNER_TEMP/brain-force-rebase.json"; then
               echo "FIELD_BRAIN_ARCH_FORCE_MAIN_PROMOTION neutral_rebase=true source=$GITHUB_SHA remote=$remote_main"
               git reset --hard "$remote_main"
               mkdir -p engine_v2/learning
