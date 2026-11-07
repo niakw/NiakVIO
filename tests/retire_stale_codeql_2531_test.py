@@ -85,6 +85,29 @@ with patch.object(mod,"api",return_value=[{}]*100):
         assert "exceeded bounded pages" in str(exc)
     else:raise AssertionError("truncated security inventory was accepted")
 
+# The retiring workflow must not reject the upgraded positive URL-origin
+# invariant. A previous stale assertion made the entire security gate fail.
+mod.verify_current_source()
+with TemporaryDirectory() as directory:
+    original=mod.ROOT
+    try:
+        fixture=Path(directory)/"tests"
+        fixture.mkdir()
+        file=fixture/"response_structure_test.cjs"
+        mod.ROOT=Path(directory)
+        for content in (
+            "assert.ok(selectedReferences.calls.every(address => new URL(address).origin !== 'https://other.private.test'));",
+            "assert.ok(selectedReferences.calls.every(address => !address.includes('https://other.private.test/PRIVATE')));",
+            "",
+        ):
+            file.write_text(content,encoding="utf-8")
+            try:
+                mod.verify_current_source()
+            except RuntimeError: pass
+            else: raise AssertionError("Incomplete origin check accepted by security retirement")
+    finally:
+        mod.ROOT=original
+
 # Only the immutable, added JSON facts emitted by hosted Brain proof may
 # follow a successful CodeQL source SHA. Modifications or unknown files fail.
 hosted_paths=[

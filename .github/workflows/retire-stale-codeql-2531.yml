@@ -19,6 +19,8 @@ jobs:
           persist-credentials: false
       - name: Fail-closed source drift contract regression
         run: python3 tests/retire_stale_codeql_2531_test.py
+      - name: Execute positive-origin security regression
+        run: node tests/response_structure_test.cjs
       - name: Verify source and retire only old category finding 2531
         env:
           GH_TOKEN: ${{ github.token }}

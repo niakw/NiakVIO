@@ -98,11 +98,26 @@ def open_high_critical_alerts():
 
 
 def verify_current_source() -> None:
+    """Require the actual positive, parsed-origin invariant, not old denylist.
+
+    Test-only CodeQL #2531 was originally detected on a negative comparison
+    against one disallowed host. The source now requires every selected reader
+    to match the known fixture base URL's exact origin.
+    """
     text=(ROOT/"tests/response_structure_test.cjs").read_text(encoding="utf-8")
-    if "new URL(address).origin !== 'https://other.private.test'" not in text:
-        raise RuntimeError("Parsed URL origin regression is absent")
-    if ".includes('https://other.private.test/PRIVATE')" in text:
-        raise RuntimeError("Legacy incomplete URL substring check returned")
+    required=(
+        "selectedReferences.calls.map(address => new URL(address).origin)",
+        "Array(8).fill(new URL(queryOptions.baseUrl).origin)",
+        "assert.deepEqual(selectedReferences.calls.map(address => new URL(address).origin)",
+    )
+    if not all(marker in text for marker in required):
+        raise RuntimeError("Positive exact-origin invariant is absent")
+    forbidden=(
+        "new URL(address).origin !== 'https://other.private.test'",
+        ".includes('https://other.private.test/PRIVATE')",
+    )
+    if any(marker in text for marker in forbidden):
+        raise RuntimeError("Incomplete negative URL substring/origin check returned")
 
 # Only non-executable, append-only evidence may advance main after a successful scan.
 # A workflow_run is attached to the event's original source SHA, not github.sha
@@ -215,7 +230,7 @@ def main() -> None:
     # GitHub officially accepts "used in tests"; previous false-positive PATCH
     # and create_request attempts returned 422. Never hide a current alert.
     explanation=("Obsolete CodeQL analysis key after split to maintained JS Core category; "
-                 "former test line used URL substring matching, now uses parsed URL.origin equality. "
+                 "former test line excluded only one host, now asserts a positive exact-origin allowlist. "
                  "Exact current main analyzed cleanly in CodeQL core category. "
                  "This is a historical test-only diagnostic, not a provider runtime bypass.")
     # Do not bypass a repository policy that requires approval for dismissals.
