@@ -110,6 +110,59 @@ global_blocked=guard.classify(
 )
 assert global_blocked["safe"] is False and global_blocked["reason"]=="non-neutral-drift",global_blocked
 
+# Historical FORCE 42411463034: provider-neutral main drift included the
+# Brain planner and adaptive executor. A generated patch touching those files
+# was non-rebasable even though the provider source-drift guard said neutral.
+# Requeue on the current source instead of attempting an invalid git apply.
+generated_patch = (
+    "diff --git a/engine_v2/scripts/plan-repairs.mjs b/engine_v2/scripts/plan-repairs.mjs\\n"
+    "index 1111111..2222222 100644\\n"
+    "diff --git a/scripts/adaptive_runtime/runtime_repair.py b/scripts/adaptive_runtime/runtime_repair.py\\n"
+    "index 3333333..4444444 100644\\n"
+)
+generated_paths = guard.patch_changed_paths(generated_patch)
+assert generated_paths == {
+    "engine_v2/scripts/plan-repairs.mjs",
+    "scripts/adaptive_runtime/runtime_repair.py",
+}
+actual_neutral = [
+    "PROVIDER_CENSUS_STATUS.md",
+    "engine_v2/scripts/plan-repairs.mjs",
+    "scripts/adaptive_runtime/runtime_repair.py",
+]
+overlap = guard.classify(
+    ROOT, "a"*40, "b"*40,
+    drift_fn=lambda *_args: (actual_neutral, set()),
+    patch_paths=generated_paths,
+)
+assert overlap["safe"] is False and overlap["reason"]=="architecture-edit-overlap", overlap
+assert overlap["overlapPaths"] == sorted(generated_paths), overlap
+assert "overlap=" in LEARN and '--patch brain-learning-output/brain-architecture-force.patch' in LEARN
+
+# Evidence-only updates must still rebase; generated code elsewhere remains
+# protected independently of unrelated Brain/support-file drift.
+unrelated = guard.classify(
+    ROOT, "a"*40, "b"*40,
+    drift_fn=lambda *_args: (
+        ["automation/provider-census-status.json", "docs/QA.md"], set(),
+    ),
+    patch_paths=generated_paths,
+)
+assert unrelated["safe"] is True and unrelated["reason"]=="neutral-only", unrelated
+for invalid_patch in (
+    "",
+    "diff --git a/safe.py b/other.py\\n",
+    'diff --git "a/quoted name.py" "b/quoted name.py"\\n',
+    "diff --git a/../escape.py b/../escape.py\\n",
+):
+    try:
+        guard.patch_changed_paths(invalid_patch)
+    except ValueError:
+        pass
+    else:
+        raise AssertionError("ambiguous/unsafe Brain patch was accepted")
+
+
 # The workflow must package the actual generated runtime executor: a
 # registry/planner-only patch is dead code and cannot be promoted.
 force_diff = LEARN.split("git diff --binary --", 1)[1].split(
