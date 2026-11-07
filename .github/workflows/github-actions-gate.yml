@@ -227,6 +227,7 @@ jobs:
           # Execute the representative FORCE selection contract directly, not
           # only as a side effect of a different Brain fixture.
           python3 tests/brain_final_experiment_generation_test.py
+          python3 tests/brain_force_representative_plan_guard_test.py
           python3 tests/brain_self_architecture_test.py
           python3 tests/brain_llm_advisor_execution_test.py
           node engine_v2/tests/brain-strategy-fingerprint.test.mjs

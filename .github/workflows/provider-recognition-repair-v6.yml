@@ -1995,3 +1995,17 @@ jobs:
               echo "FIELD_PROVIDER_BRAIN_FORCE_ARCH_DISPATCH skipped=true reason=empty-fallback-cohort"
             fi
           fi
+
+      # Execute AFTER evidence persistence: an invalid selection remains
+      # an observable Brain failure, not a silently successful provider run.
+      - name: Verify explicitly requested Brain FORCE representative selection
+        if: ${{ always() && github.event_name == 'workflow_dispatch' && inputs.mode == 'force' && inputs.preferred_profile != '' }}
+        shell: bash
+        env:
+          TARGET_PROVIDER: ${{ inputs.target_provider }}
+          PREFERRED_PROFILE: ${{ inputs.preferred_profile }}
+        run: |
+          set -euo pipefail
+          python3 scripts/brain_force_representative_plan_guard.py \
+            --report automation/provider-brain-repair-latest.json \
+            --provider "$TARGET_PROVIDER" --profile "$PREFERRED_PROFILE"
