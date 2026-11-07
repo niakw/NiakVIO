@@ -9,6 +9,7 @@ assert "if: ${{ false }}" not in source, "hosted proof remains disabled"
 assert "github.ref == 'refs/heads/main'" in source
 assert "github.repository == 'niakw/NiakVIO'" in source
 assert 'default: allanime' in source
+assert 'tests/brain_hosted_representative_selection_test.py' in source
 assert "options: [allanime, animekai, uhdmovies, mallumv]" in source
 assert "animevostfr" not in source.split("workflow_dispatch:",1)[1].split("permissions:",1)[0]
 assert "MANUAL_PROVIDER: ${{ inputs.provider || '' }}" in source

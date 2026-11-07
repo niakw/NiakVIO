@@ -1711,3 +1711,8 @@
 ## 2026-11-07 — Correct first no-op rotation regression assertion
 
 - Hosted run 42355197547 at `01e7463` stopped at selector unit test before inference; failing line 73 expected `allanime` after test injected a newer `uhdmovies` synthetic alternative. New penalty correctly downranks exhausted AllAnime; expectation must now be `uhdmovies` while enriched Animekai remains replay-only. Correct the fixture expectation, preserve prior test that a single UhdMovies no-op rotates to Animekai, and rerun exact new main. **No provider repair generated or applied by failed run.**
+
+## 2026-11-07 — Hosted proof validation trigger after selection fixture correction
+
+- `01e7463` hosted proof 42355197547 failed in the **selector unit test**, not provider inference: synthetic state had newly injected `uhdmovies` with no-op debt 100 while `allanime` carried 200; an old assertion still expected AllAnime after marking Animekai replay-only. Corrected expected choice to UhdMovies at `f0c645cd`; no candidate generated in failed run, and no experiment artifact was uploaded. Reader workflow 42355223382 therefore cannot download that nonexistent artifact.
+- Include the selector's own test path in the hosted workflow push filter so a corrected test triggers a fresh exact-main representative proof. This prevents a source/test mismatch from sitting untested. No provider files changed. Check the new run's select step first; only then infer generator/decoder stages.
