@@ -219,8 +219,19 @@ advisor_memory={
 assert mod.unexecutable_llm_advisor_handoff(
     advisor_summary,memory_payload=advisor_memory
 )=={"advisor"}
+legacy_memory=json.loads(json.dumps(advisor_memory))
+legacy_memory["entries"][0]["executionObserved"]=True
+# Even legacy contradictory flags never turn an unavailable plan into a
+# genuine executed child. The Learning handoff remains necessary.
+assert mod.unexecutable_llm_advisor_handoff(
+    advisor_summary,memory_payload=legacy_memory
+)=={"advisor"}
 executed_memory=json.loads(json.dumps(advisor_memory))
-executed_memory["entries"][0]["executionObserved"]=True
+executed_memory["entries"][0].update({
+    "executionObserved":True,
+    "lastOutcome":"rejected",
+    "lastReason":"required_category_playable_proof:movie",
+})
 assert mod.unexecutable_llm_advisor_handoff(
     advisor_summary,memory_payload=executed_memory
 )==set()
