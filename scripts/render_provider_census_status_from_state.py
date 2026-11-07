@@ -166,6 +166,23 @@ def render(state: dict[str, Any]) -> str:
         else:
             residential_notice = "⚠️ Residential harness: **unavailable** · this overlay used GitHub-hosted transport only."
 
+    # Retained positive proofs are valuable but not new verification on this
+    # census SHA. A FULL row carried from history must never be presented as
+    # if the current run independently decoded its media.
+    full_rows = [row for row in providers if row.get("status") == "FULL OK"]
+    partial_rows = [row for row in providers if row.get("status") == "PARTIAL OK"]
+    fresh_full = sum(row.get("testedThisRun") is True for row in full_rows)
+    fresh_partial = sum(row.get("testedThisRun") is True for row in partial_rows)
+    freshness_line = (
+        "Playback proof freshness (this census only): FULL tested **"
+        + str(fresh_full) + "/" + str(len(full_rows))
+        + "** · PARTIAL tested **"
+        + str(fresh_partial) + "/" + str(len(partial_rows))
+        + "**. Untested FULL/PARTIAL rows are **carried prior playback evidence**, "
+          "not a new playable-stream validation on this census SHA. "
+          "The independent availability check is not interchangeable with decoded playback proof."
+    )
+
     lines = [
         "# NiakVIO Provider Census Status",
         "",
@@ -173,6 +190,7 @@ def render(state: dict[str, Any]) -> str:
         "",
         "Latest provider census state: **" + " · ".join(count_parts) + f"** across **{len(providers)} providers**.",
         evidence_line + ".",
+        freshness_line,
         *([attempt_notice] if attempt_notice else []),
         f"Symptomatic providers: **{len(state.get('symptomaticProviders') or [])}** · automated repair queue: **{len(state.get('repairQueue') or [])}** · lifecycle disabled: **{len(state.get('lifecycleDisabledQueue') or [])}** · authority rediscovery: **{len(state.get('authorityRediscoveryQueue') or [])}** · harness mismatch: **{len(harness_mismatch_queue)}** · client transport gap: **{len(client_transport_gap_queue)}** · environment blocked: **{len(environment_blocked_queue)}**.",
         *([residential_notice] if residential_notice else []),

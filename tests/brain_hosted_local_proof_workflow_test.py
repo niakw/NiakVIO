@@ -9,6 +9,11 @@ assert "if: ${{ false }}" not in source, "hosted proof remains disabled"
 assert "github.ref == 'refs/heads/main'" in source
 assert "github.repository == 'niakw/NiakVIO'" in source
 assert 'default: allanime' in source
+assert "MANUAL_PROVIDER: ${{ inputs.provider || '' }}" in source
+assert "select_brain_hosted_representative.py" in source
+assert "brain_hosted_representative_selection_test.py" in source
+assert 'FIELD_BRAIN_REPRESENTATIVE' in (root/'scripts/select_brain_hosted_representative.py').read_text(encoding='utf-8')
+assert "TARGET_PROVIDER: ${{ inputs.provider || 'allanime' }}" not in source
 assert "ref: ${{ steps.brain_pin.outputs.sha }}" in source
 assert 'BRAIN_SHA=$sha' in source
 assert '727e108132444b6e62a71939f9e742a8193577af' not in source

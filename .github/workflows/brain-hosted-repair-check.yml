@@ -34,7 +34,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 45
     env:
-      TARGET_PROVIDER: ${{ inputs.provider || 'allanime' }}
+      MANUAL_PROVIDER: ${{ inputs.provider || '' }}
       # An explicit archive replays its exact original proposal without inference.
       REPLAY_EVIDENCE: ${{ inputs.replay_evidence || '' }}
     steps:
@@ -42,6 +42,18 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
+      - name: Choose an evidence-based representative, not a repeatedly failed default
+        id: representative
+        shell: bash
+        run: |
+          set -euo pipefail
+          python tests/brain_hosted_representative_selection_test.py
+          python scripts/select_brain_hosted_representative.py \
+            --census automation/provider-census-status.json \
+            --evidence-dir automation/hosted-repair-evidence \
+            --manual "$MANUAL_PROVIDER" \
+            --github-env "$GITHUB_ENV" --github-output "$GITHUB_OUTPUT"
+
       - name: Pin current Brain-LLM source for this exact repair run
         id: brain_pin
         shell: bash
