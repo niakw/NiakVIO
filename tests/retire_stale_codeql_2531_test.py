@@ -45,4 +45,36 @@ with TemporaryDirectory() as tmp:
         try:mod.scan_source_sha()
         except RuntimeError:pass
         else:raise AssertionError("unexpected workflow name accepted")
+# CodeQL analyses can have thousands of old rows. Stop only when the
+# exact current SHA + maintained JS Core category is present.
+core={"commit_sha":src,"category":"javascript-typescript/scope:core"}
+old={"commit_sha":head,"category":"javascript-typescript/scope:core"}
+seen=[]
+def core_page(path):
+    seen.append(path)
+    if "page=1" in path:
+        return [old]*100
+    if "page=2" in path:
+        return [core]+[old]*99
+    raise AssertionError("analysis traversal continued beyond exact proof")
+with patch.object(mod,"api",side_effect=core_page):
+    results=mod.read_pages("repos/"+mod.REPO+"/code-scanning/analyses?ref=refs/heads/main",
+        stop_after=lambda rows:any(row.get("commit_sha")==src and
+        row.get("category")=="javascript-typescript/scope:core" for row in rows))
+    assert len(results)==200 and len(seen)==2
+# Alerts MUST still be enumerated to completion, not stopped after a sample.
+seen.clear()
+def alert_page(path):
+    seen.append(path)
+    return [{}]*100 if "page=1" in path else [{"number":2531}]
+with patch.object(mod,"api",side_effect=alert_page):
+    assert len(mod.read_pages("repos/"+mod.REPO+"/code-scanning/alerts?state=open"))==101
+    assert len(seen)==2
+# A permanently full listing must fail closed, never yield partial security rows.
+with patch.object(mod,"api",return_value=[{}]*100):
+    try:mod.read_pages("unbounded-list",max_pages=2)
+    except RuntimeError as exc:
+        assert "exceeded bounded pages" in str(exc)
+    else:raise AssertionError("truncated security inventory was accepted")
+
 print("CodeQL evidence-only drift regression passed")
