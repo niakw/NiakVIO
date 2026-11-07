@@ -1,5 +1,20 @@
 # NiakVIO — Brain Repair Roadmap and Decision Register
 
+## Synthèse de décision — français (7 novembre 2026)
+
+**Statut constaté : 0 réparation de provider démontrée de bout en bout par le Brain ; 17 en file de réparation.** La présence de 21 statuts FULL est historique : 0/21 avait été retesté dans le census de référence. Le vrai critère de succès est un correctif produit par le modèle, appliqué aux octets exécutés, aboutissant à une vidéo réellement décodée et à l'identité TMDB/saison/épisode correcte, sans régression.
+
+| Priorité | Décision ou action | Critère pour avancer |
+| --- | --- | --- |
+| P0 — Brain | Fiabiliser les retours négatifs, les métadonnées de lecteurs explorés et les critères de décodage | CI ciblée verte **et** nouveau run de réparation sur le SHA exact, avec artefacts |
+| P0 — Première preuve | Obtenir une réparation causale, pas une modification de regex sans effet | ≥1 nouveau média décodé/identifié par le Brain, octets et relecture prouvés |
+| P0 — Collecte | Distinguer les 16 lecteurs annoncés de 4KHDHub et l'unique lecteur réellement exploré | Trace des lecteurs visités/ignorés et cause de non-exploration, sans présumer une qualité 4K lisible |
+| P1 — Générateur | Comparer Qwen 3B à un modèle de code plus puissant **sur les mêmes preuves et tests** | Plus de correctifs réellement valides, coût/temps/confidentialité bornés |
+| P1 — Cohorte | Valider un exemple par famille, puis répartir les 17 providers | Les cas WAF, réseau, replay historique et erreur de provider restent distincts |
+| P1 — Sécurité/épisodes | Maintenir CodeQL, TMDB, épisodes S00, mini-séries et saison incorrecte | Vérifications au SHA actuel et lecture terminale, pas une URL ou un job vert |
+
+**Dernier progrès d'infrastructure :** le retour d'expérience conserve maintenant l'exploration réelle des lecteurs, et le validateur reconnaît l'amélioration « lien déjà retourné mais non décodé → média désormais décodé ». Les deux changements doivent rester soumis aux tests réels avant toute promotion de provider. Les décisions, preuves et limites détaillées figurent plus bas dans ce document.
+
 > **Baseline: 2026-11-07, Europe/Paris.** This is an evidence-led execution roadmap, not a claim that broken providers are repaired. All acceptance decisions must reference the **actual tested source SHA and immutable run/artifact**. Do not confuse historical/carry-forward FULL status with freshly decoded playable content.
 >
 > **Source checkpoint:** NiakVIO `06eaea585f637e080c2956ac22737e79926b200b` · Brain-LLM `6284be0eecadb04d9fc242917af268ef73e53a75` (Brain CI successful; hosted replay pending). Current protected working branch: `main` in both repositories; no repair candidate has publication authority.
@@ -125,3 +140,10 @@ All boxes must be met for **one** concrete fixture, with no regression on previo
 - NiakVIO `80e328f` repairs a second, independently proven loss: `run_hosted_brain_repair_loop.verification_feedback` correctly selected an individual executed evaluation row but silently discarded its `variantCoverage`. The Brain could not tell if a candidate had explored 1 or 3 actual reader requests. The shared Bridge now forwards **only four bounded numeric counts** (announced players, announced variants, explored player requests and max playable height). This is diagnostic context, never playable proof.
 - `5402f16` tests unchanged vs increased real fanout, plus forbids raw hostnames/URLs in the next Brain request. `06eaea5` makes the hosted proof trigger on this bridge/test and requires the Brain negative-feedback contract before CPU inference. [Hosted run 42361093507](https://github.com/niakw/NiakVIO/actions/runs/42361093507) was queued at this snapshot; do not claim it passed or repaired a provider.
 - **Decision remains unchanged:** first strict decoded, identity-correct Brain repair is still absent. Prioritize diagnosing the specific player fanout route rather than increasing blind generations. Later census/hosted results may supersede this static snapshot, only with explicit proven artifacts.
+
+
+### 2026-11-07 — Décodage réellement nouveau malgré une URL déjà marquée « playable »
+
+- Le comparateur strict `decoded_repair_gate` conditionnait une amélioration à `old.streams_playable == 0`, puis `new decoded controls > 0`. Une URL déjà comptabilisée « playable » mais **sans aucune image décodée** ne pouvait donc jamais être améliorée aux yeux du Brain, même si le correctif décodait effectivement le média attendu.
+- Infrastructure Brain corrigée dans [`43f9e361`](https://github.com/niakw/NiakVIO/commit/43f9e3616f4cdb2016f905830498c0286db2b014) : compter une amélioration uniquement si `new_decoded_identity_safe_controls > old_decoded_identity_safe_controls`; préserver les contrôles de non-régression et d'identité. La validation par l'URL seule reste insuffisante.
+- Test [`06ea7688`](https://github.com/niakw/NiakVIO/commit/06ea7688b9c1d29f00456d6fdcf911c7e4c06fa7) : même flux « playable » avant/après, décode absent avant et vérifié après. Exiger qu'il soit reconnu comme un gain strict. [Provider non-regression 42361530112](https://github.com/niakw/NiakVIO/actions/runs/42361530112) **SUCCESS** sur ce SHA ; [Core gate 42361530114](https://github.com/niakw/NiakVIO/actions/runs/42361530114) et [Brain hosted 42361530133](https://github.com/niakw/NiakVIO/actions/runs/42361530133) **en attente/en cours** au moment du constat. Aucun succès de réparation provider n'est affirmé.

@@ -1305,3 +1305,10 @@ strict decoded, identity-safe terminal playback and no-regression remain
 mandatory. Exact-new-source hosted proof, CI logs and artifacts are required
 before any success statement. See `BRAIN_REPAIR_ROADMAP.md` for the live
 checkpoint and decision gates.
+
+
+## 2026-11-07 — Count genuinely new decoded controls, not changes in weak playable URLs
+
+Strict Brain media improvement formerly required `old['streams_playable']==0` plus `new_controls>0`. A pre-existing playable-but-undecoded URL could therefore be made *genuinely decoded* by a model patch while the deterministic validator still rejected it because the weaker original playable count was nonzero. This was a harness/acceptance defect, not evidence that a provider fix should be hand-written.
+
+NiakVIO `43f9e361` counts an accepted **candidate fixture improvement** when the candidate has *more identity-safe decoded media controls* than the baseline; it **does not** relax the existing guard rejecting any loss of decoded controls or regression in returned/playable stream counts. `tests/brain_strict_fixture_category_test.py` commit `06ea7688` checks playable-but-undecoded→decoded with unchanged URL/stream count; historical wrong fixture, wrong movie duration and missing decode controls continue to be rejected. A passing fixture unit test cannot prove real provider playback. See [roadmap](BRAIN_REPAIR_ROADMAP.md), run `42361530133` for real hosted proof, and the exact-SHA Core and non-regression gates.
