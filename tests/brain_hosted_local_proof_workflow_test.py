@@ -26,6 +26,8 @@ assert "NIAKVIO_FORCE_CPU_OUTPUT_BUDGET: '1'" in source
 loop_source=(root/'scripts/run_hosted_brain_repair_loop.py').read_text(encoding='utf-8')
 assert "'--timeout-seconds', '300'" in loop_source
 assert "'--force-provider-budget-seconds', '360'" in loop_source
+assert 'test_force_rejected_unit_diversification.py' in source
+assert 'python -m unittest discover -s brain-llm/tests' in source
 assert 'run_hosted_brain_repair_loop.py' in source
 assert 'hosted-repair-check-${{ github.run_id }}' in source
 assert "published" not in source.lower().split('name: require executed, materialized and decoded provider repair evidence',1)[1].split('name: retain bounded experiment evidence',1)[0], "proof step cannot publish provider code"
