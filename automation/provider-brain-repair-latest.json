@@ -9,15 +9,15 @@
   "deferredLearningProviders": [
     "4khdhub"
   ],
-  "effectiveWaves": 1,
-  "elapsedSeconds": 4.605,
+  "effectiveWaves": 3,
+  "elapsedSeconds": 82.498,
   "executionModel": "family-batched-multi-wave-brain-repair",
   "experienceMemory": {
     "operationalProviderCount": 24,
     "providerCount": 46,
     "schemaVersion": 2,
-    "sourceRunId": "42406236203-pre-repair",
-    "sourceSha": "ee164a131188d6e4b33e871a7045a81272373138",
+    "sourceRunId": "42406257748-pre-repair",
+    "sourceSha": "0d01335f7ec0a75a78f5be9b896bf88f6fe674b0",
     "strategyCount": 5
   },
   "fixedInLabProviders": [],
@@ -30,8 +30,8 @@
   },
   "labOnlyWithoutCompiledRepairProviders": [],
   "maxRoundsPerBatch": 1,
-  "maxWaves": 1,
-  "noProgressReason": "no_new_repair_experiment",
+  "maxWaves": 3,
+  "noProgressReason": "experiment_variants_exhausted",
   "positiveProgramRecovery": {
     "durableProviders": [],
     "durableRecordCount": 0,
@@ -46,7 +46,7 @@
   "rawLabAcceptedCount": 0,
   "rawLabAcceptedRepairs": [],
   "remainingProviders": [],
-  "requestedWaves": 1,
+  "requestedWaves": 3,
   "resumeRecommended": false,
   "safety": {
     "acceptedMutationRequiresStrictImprovement": true,
@@ -69,9 +69,9 @@
   "shardCount": 1,
   "shardIndex": 0,
   "skippedEnvironmentProviders": [],
-  "sourceCensusRunId": "42406236203-pre-repair",
+  "sourceCensusRunId": "42406257748-pre-repair",
   "timeBudgetExhausted": false,
-  "timeBudgetSeconds": 600,
+  "timeBudgetSeconds": 360,
   "unvisitedProviders": [],
   "waves": [
     {
@@ -91,19 +91,38 @@
             "learnedEvents": 0,
             "plans": {
               "published:4khdhub": {
-                "action": "collect-more-evidence",
-                "allowedProfiles": [],
+                "action": "probe-targeted-repair",
+                "allowedProfiles": [
+                  "route_transition_graph_v25"
+                ],
                 "baseExperimentExhausted": true,
-                "exitReason": "learning_generations_exhausted",
-                "experimentExhausted": true,
+                "exitReason": null,
+                "experimentExhausted": false,
                 "experimentGeneration": 2,
                 "experimentVariant": 4,
                 "experimentVariantCount": 5,
                 "explorationChainEnabled": true,
                 "explorationModeEnabled": true,
                 "failureClass": "search_gap",
-                "hypotheses": [],
-                "learningDisposition": "propose_new_or_evolved_core_type",
+                "hypotheses": [
+                  {
+                    "confidence": 0,
+                    "id": "rediscover-search-route",
+                    "learned": false,
+                    "maturity": null,
+                    "profile": null,
+                    "transferScore": 0
+                  },
+                  {
+                    "confidence": 0,
+                    "id": "repair-search-parser",
+                    "learned": false,
+                    "maturity": null,
+                    "profile": null,
+                    "transferScore": 0
+                  }
+                ],
+                "learningDisposition": "execute_bounded_evolved_strategy",
                 "llmAdvisorApplied": false,
                 "llmAdvisorConfidence": 0,
                 "llmAdvisorExperiment": {},
@@ -144,16 +163,16 @@
                   "route_transition_graph_v16",
                   "route_transition_graph_v17"
                 ],
-                "postExhaustionSourceFailureClass": "",
-                "postExhaustionStrategyMethod": "",
-                "postExhaustionStrategyProfile": "",
+                "postExhaustionSourceFailureClass": "route_proven_gap",
+                "postExhaustionStrategyMethod": "brain-evolved-executable-transition",
+                "postExhaustionStrategyProfile": "route_transition_graph_v25",
                 "providerId": "4khdhub",
                 "providerPositiveProgramProductionRescue": false,
                 "providerPositiveProgramReplay": false,
                 "repairScope": "learning",
-                "repairType": "architecture_gap",
+                "repairType": "evolved_strategy",
                 "signature": "a5acf1ae6fc3078e15bcfc89",
-                "strategyEscalated": false,
+                "strategyEscalated": true,
                 "targetCategories": []
               }
             },
@@ -164,7 +183,9 @@
           },
           "capabilityStrategy": "html_scraper",
           "crossWaveExplorationCarryoverApplied": [],
-          "crossWaveExplorationCarryoverCaptured": [],
+          "crossWaveExplorationCarryoverCaptured": [
+            "4khdhub"
+          ],
           "deferredToLearning": [
             "4khdhub"
           ],
@@ -197,7 +218,7 @@
       ],
       "deferredToLearningCount": 1,
       "durableMaterializeTargets": [],
-      "experimentMemoryAdvanced": false,
+      "experimentMemoryAdvanced": true,
       "fixedInLab": [],
       "fixedInLabCount": 0,
       "inputProviderCount": 1,
