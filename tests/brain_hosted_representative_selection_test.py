@@ -70,7 +70,9 @@ with TemporaryDirectory() as td:
     # superficial status; the Brain adapter always selects replay first.
     enriched=dict(rows[2],candidateProof=["a verified sandbox candidate"])
     state["providers"][2]=enriched
-    assert mod.choose(state,debt)[0]=="allanime"
+    # The replay-only regression is excluded; the next available genuine
+    # regression has no replay flag and still outranks exhausted AllAnime.
+    assert mod.choose(state,debt)[0]=="uhdmovies"
     state["providers"][2]=rows[2]
     try:mod.choose(state,debt,"waf")
     except ValueError:
