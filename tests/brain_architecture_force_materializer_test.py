@@ -777,6 +777,32 @@ with tempfile.TemporaryDirectory(prefix="brain-force-body-only-") as tmp:
     }
     quota_body = mod.compile_recovery_program(quota_only, max_chars=4200)
     runtime_file.write_text(baseline_runtime + sibling, encoding="utf-8")
+    # The Brain must see old same-family v14 behavior even though its focused
+    # prompt context only contains the immediate v2 parent.
+    hinted = mod._new_repair_profile_payload(payload, root=root)
+    installed = hinted["installedFamilyMechanisms"]
+    assert any(x["strategyId"] == "route_transition_graph_v14" for x in installed), installed
+    assert hinted["semanticNoveltyRequired"].startswith("new evidence"), hinted
+    old_v14 = next(x for x in installed if x["strategyId"] == "route_transition_graph_v14")
+    assert "limit=*" in old_v14["search"], old_v14
+    assert "limit=16" not in str(installed), installed
+    # With 24 old variants, keep a bounded cross-generation history including
+    # the v14/v15 algorithms that previously caused Qwen's clone retries.
+    old_versions = "".join(
+        '\nif new_strategy_id == "route_transition_graph_v' + str(version) + '":\n'
+        + textwrap.indent(sibling_body, "    ")
+        for version in range(1, 25)
+    )
+    finite = mod.installed_family_mechanisms(
+        old_versions, "route_transition_graph_v25", limit=16,
+    )
+    assert len(finite) == 16, finite
+    assert {"route_transition_graph_v14", "route_transition_graph_v15"}.issubset(
+        {x["strategyId"] for x in finite}
+    ), finite
+    assert all(not any(
+        raw in str(item) for raw in ("PRIVATE_URL", "limit=16", "limit=24")
+    ) for item in finite), finite
     try:
         try:
             mod._model_edits({"recoveryProgram": quota_only}, payload, root=root)
