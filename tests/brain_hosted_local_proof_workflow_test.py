@@ -28,6 +28,7 @@ assert "'--timeout-seconds', '300'" in loop_source
 assert "'--force-provider-budget-seconds', '360'" in loop_source
 assert 'test_force_rejected_unit_diversification.py' in source
 assert 'test_live_function_context.py' in source
+assert 'brain-llm/tests/test_force_cpu_tight_prompt.py' in source
 assert 'FIELD_BRAIN_GRAPHQL_OBSERVATION' in source
 assert 'python -m unittest discover -s brain-llm/tests' in source
 assert 'run_hosted_brain_repair_loop.py' in source

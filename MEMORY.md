@@ -1657,3 +1657,8 @@
 ## 2026-11-07 — Live GraphQL causal evidence replay preflight (pending execution)
 
 - The shared response classifier at NiakVIO `7f8d978` and Brain projector at `3c2fab7` now have a fixed enum contract, but must be exercised together against the exact current published provider runtime before claiming a learning improvement. Extend the main-only, no-provider-write hosted proof workflow to run the pinned Brain live-function privacy/shape tests and to report only counts of GraphQL errors, null data and fixed cause classes from current live context. No GraphQL error text, response body, URL or private values in logs. This workflow change triggers a fresh hosted AllAnime Brain generation/replay on the current NiakVIO SHA. Positive HTTP 200 remains distinct from usable response and playable media.
+
+## 2026-11-07 — Exact CPU GraphQL bridge preflight on current Brain main (pending CI/live)
+
+- Brain-LLM `2d94b8f7` fixes the opt-in CPU compact prompt path that previously dropped `response_structure.graphql` and sanitized JSON fields. It now prioritizes actual classified GraphQL errors over duplicate HTML responses, keeps fixed enums only, and preserves exact mutation-unit IDs. Add the pinned Brain CPU prompt regression test to NiakVIO hosted proof preflight alongside live-context privacy tests; this workflow must be run on actual current SHA before judging model behavior.
+- This intentionally modifies only Brain/orchestration, not published provider JS. AllAnime remains no repair until a generated edit reaches materialized/current-byte replay and strict decoded stream proof; security #2531 needs separate current-head CodeQL dismissal and Final Gate confirmation.

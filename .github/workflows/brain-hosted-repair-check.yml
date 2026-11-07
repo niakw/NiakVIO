@@ -95,6 +95,7 @@ jobs:
           # Pin and run the Brain retry-selection guard before expensive inference.
           python -m unittest discover -s brain-llm/tests -p test_force_rejected_unit_diversification.py
           python -m unittest discover -s brain-llm/tests -p test_live_function_context.py
+          python brain-llm/tests/test_force_cpu_tight_prompt.py
 
       - name: Download pinned local llama.cpp runtime
         shell: bash
