@@ -1,0 +1,70 @@
+name: SEC - Read-only alert inventory
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/security-alert-inventory.yml']
+  schedule:
+    - cron: '19 4 * * 1'
+
+permissions:
+  contents: read
+  security-events: read
+
+jobs:
+  read-alerts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Inspect CodeQL, Dependabot and secret scanning without dismissing findings
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          failed=0
+          for source in code-scanning dependabot secret-scanning; do
+            tmp="$(mktemp)"
+            if gh api --paginate --slurp -H 'Accept: application/vnd.github+json' \
+                 "/repos/${GITHUB_REPOSITORY}/${source}/alerts?state=open&per_page=100" \
+                 >"${tmp}" 2>/dev/null; then
+              SOURCE="${source}" REPORT="${tmp}" python3 - <<'PY'
+          import json, os, re
+          with open(os.environ["REPORT"], encoding="utf-8") as handle:
+              pages = json.load(handle)
+          items = [row for page in pages if isinstance(page, list) for row in page if isinstance(row,dict)]
+          source = os.environ["SOURCE"]
+          def clean(value):
+              return re.sub(r"[^A-Za-z0-9_./:#-]", "_", str(value or ""))[:160]
+          counts = {}
+          for row in items:
+              sev = (row.get("rule") or {}).get("security_severity_level") if source == "code-scanning" else (row.get("security_advisory") or {}).get("severity") if source == "dependabot" else "unclassified"
+              sev = clean(sev).lower() or "unclassified"
+              counts[sev] = counts.get(sev, 0) + 1
+          print(f"FIELD_SECURITY_ALERT_INVENTORY source={source} status=read open={len(items)} severities={json.dumps(counts,sort_keys=True)}")
+          if source == "code-scanning":
+              for row in items[:100]:
+                  print("OPEN_CODEQL_ALERT number={} severity={} rule={} path={}".format(
+                      clean(row.get("number")), clean((row.get("rule") or {}).get("security_severity_level")),
+                      clean((row.get("rule") or {}).get("id")),
+                      clean((((row.get("most_recent_instance") or {}).get("location") or {}).get("path")))))
+          if source == "dependabot":
+              for row in items[:100]:
+                  print("OPEN_DEPENDABOT_ALERT number={} severity={} package={}".format(
+                      clean(row.get("number")), clean((row.get("security_advisory") or {}).get("severity")),
+                      clean((((row.get("dependency") or {}).get("package") or {}).get("name")))))
+          with open(os.environ["GITHUB_STEP_SUMMARY"], "a", encoding="utf-8") as output:
+              output.write(f"- {source}: **{len(items)} open**, visibility confirmed; severities {counts}\n")
+          PY
+            else
+              echo "FIELD_SECURITY_ALERT_INVENTORY source=${source} status=unavailable_not_clean"
+              echo "- ${source}: **UNVERIFIED** (token permission, feature disabled or API unavailable)" >> "${GITHUB_STEP_SUMMARY}"
+              if [ "${source}" = "code-scanning" ]; then failed=1; fi
+            fi
+            rm -f "${tmp}"
+          done
+          if [ "${failed}" -ne 0 ]; then
+            echo "CodeQL inventory inaccessible; cannot claim security clear" >&2
+            exit 1
+          fi
