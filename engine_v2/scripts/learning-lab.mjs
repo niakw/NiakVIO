@@ -487,6 +487,12 @@ function mergeExperimentMemory(previousMemory, runtimeMemory, report, planMap, l
       map.set(key, row);
       continue;
     }
+    // The latest sandbox can fail to generate a child after a previous
+    // run actually executed and rejected one. Such an attempt is useful
+    // rotation evidence, but MUST NOT erase the executed-negative verdict.
+    const priorExecuted = current.executionObserved === true;
+    const incomingExecuted = row.executionObserved === true;
+    const retainExecuted = priorExecuted && !incomingExecuted;
     map.set(key, {
       ...current,
       ...row,
@@ -498,9 +504,12 @@ function mergeExperimentMemory(previousMemory, runtimeMemory, report, planMap, l
         nonNegative(row.consecutiveFailures),
       ),
       progresses: Math.max(nonNegative(current.progresses), nonNegative(row.progresses)),
-      lastOutcome: row.lastOutcome || current.lastOutcome,
-      lastReason: row.lastReason || current.lastReason,
+      lastOutcome: retainExecuted ? current.lastOutcome : (row.lastOutcome || current.lastOutcome),
+      lastReason: retainExecuted ? current.lastReason : (row.lastReason || current.lastReason),
       lastSeenAt: row.lastSeenAt || current.lastSeenAt,
+      executionObserved: priorExecuted || incomingExecuted,
+      generationAttemptObserved: current.generationAttemptObserved === true
+        || row.generationAttemptObserved === true,
     });
   }
 
@@ -620,7 +629,7 @@ function sanitizeMemoryEntry(raw) {
     lastReason: raw.lastReason ? sanitizeReason(raw.lastReason) : null,
     lastSeenAt: raw.lastSeenAt ? String(raw.lastSeenAt).slice(0, 48) : null,
     executionObserved,
-    generationAttemptObserved: lastOutcome === 'not_generated',
+    generationAttemptObserved: lastOutcome === 'not_generated' || raw.generationAttemptObserved === true,
   };
 }
 function memoryKey(row) {
