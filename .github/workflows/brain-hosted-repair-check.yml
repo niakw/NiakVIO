@@ -10,7 +10,7 @@ on:
         description: One representative provider, evaluated in an isolated sandbox
         type: choice
         options: [allanime, animekai, animevostfr]
-        default: animevostfr
+        default: allanime
       replay_evidence:
         description: Optional archived run ID to reverify its proposal without inference
         type: string
@@ -29,13 +29,12 @@ permissions:
 
 jobs:
   repair-check:
-    # Local-only policy: never consume paid model API quota.
-    if: ${{ false }}
+    # Only current main and local loopback Qwen inference; no paid API or provider writes.
+    if: ${{ github.repository == 'niakw/NiakVIO' && github.ref == 'refs/heads/main' }}
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 45
     env:
-      TARGET_PROVIDER: ${{ inputs.provider || 'animevostfr' }}
-      BRAIN_SHA: 727e108132444b6e62a71939f9e742a8193577af
+      TARGET_PROVIDER: ${{ inputs.provider || 'allanime' }}
       # An explicit archive replays its exact original proposal without inference.
       REPLAY_EVIDENCE: ${{ inputs.replay_evidence || '' }}
     steps:
@@ -43,10 +42,20 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
+      - name: Pin current Brain-LLM source for this exact repair run
+        id: brain_pin
+        shell: bash
+        run: |
+          set -euo pipefail
+          sha="$(git ls-remote https://github.com/niakw/NiakVIO-Brain-LLM.git refs/heads/main | awk 'NR==1{print $1}')"
+          [[ "$sha" =~ ^[0-9a-f]{40}$ ]] || { echo "Brain main SHA unavailable" >&2; exit 1; }
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+          echo "BRAIN_SHA=$sha" >> "$GITHUB_ENV"
+          echo "FIELD_BRAIN_HOSTED_PIN sha=$sha"
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           repository: niakw/NiakVIO-Brain-LLM
-          ref: ${{ env.BRAIN_SHA }}
+          ref: ${{ steps.brain_pin.outputs.sha }}
           path: brain-llm
           persist-credentials: false
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0
@@ -76,6 +85,56 @@ jobs:
           mkdir -p local-output/hosted-check
           python brain-llm/scripts/import_public_niakvio.py --niakvio-root . --output local-output/hosted-check/experience.jsonl
           python brain-llm/scripts/import_public_docs.py --niakvio-root . --config brain-llm/config/document_sources.json --output local-output/hosted-check/documents.jsonl
+      - name: Validate existing local-Brain sandbox and identity contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          python tests/hosted_brain_repair_loop_test.py
+          python tests/brain_llm_force_candidate_sandbox_test.py
+          python tests/brain_hosted_local_proof_workflow_test.py
+
+      - name: Download pinned local llama.cpp runtime
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p .brain-local/llama
+          curl -fL --retry 3 \
+            https://github.com/ggml-org/llama.cpp/releases/download/b11140/llama-b11140-bin-ubuntu-x64.tar.gz \
+            -o "$RUNNER_TEMP/llama-b11140.tar.gz"
+          printf '%s  %s\n' \
+            '460c45fa8a9ebc36c9b08e3a15c06dbdbeb312c6308599521c84d9e7f92a268b' \
+            "$RUNNER_TEMP/llama-b11140.tar.gz" | sha256sum -c -
+          tar -xzf "$RUNNER_TEMP/llama-b11140.tar.gz" -C .brain-local/llama
+          test -n "$(find .brain-local/llama -type f -name llama-server -print -quit)"
+
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9
+        with:
+          path: |
+            ~/.cache/llama.cpp
+            ~/.cache/huggingface
+          key: qwen25-coder-7b-q4-km-v1
+
+      - name: Start local 7B Qwen provider-mutation planner
+        shell: bash
+        run: |
+          set -euo pipefail
+          binary="$(find .brain-local/llama -type f -name llama-server -print -quit)"
+          test -n "$binary"
+          chmod +x "$binary"
+          "$binary" -hf Qwen/Qwen2.5-Coder-7B-Instruct-GGUF:Q4_K_M \
+            --host 127.0.0.1 --port 8080 -c 8192 -np 1 \
+            > "$RUNNER_TEMP/brain-hosted-llama.log" 2>&1 &
+          for attempt in $(seq 1 90); do
+            if curl -fsS http://127.0.0.1:8080/health >/dev/null 2>&1; then
+              echo "FIELD_BRAIN_HOSTED_LOCAL_QWEN ready=true"
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "FIELD_BRAIN_HOSTED_LOCAL_QWEN ready=false" >&2
+          tail -50 "$RUNNER_TEMP/brain-hosted-llama.log" >&2
+          exit 1
+
       - name: Observe current provider execution before choosing editable functions
         id: live_observation
         timeout-minutes: 5
@@ -94,10 +153,11 @@ jobs:
         timeout-minutes: 5
         run: python scripts/capture_brain_live_context.py --provider "$TARGET_PROVIDER" --output local-output/hosted-check/live-context.json --recheck-script-shell
       - name: Run bounded hosted repair and verification loop
-        timeout-minutes: 12
+        timeout-minutes: 19
         env:
           NIAKVIO_OBSERVED_MEDIA_PROBE: ${{ inputs.observed_media_probe && '1' || '0' }}
           NIAKVIO_READER_UA_PROBE: ${{ inputs.reader_user_agent_probe && '1' || '0' }}
+          NIAKVIO_REQUIRE_DECODE_PROOF: '1'
           TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
           TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
         shell: bash
@@ -109,7 +169,7 @@ jobs:
           fi
           python scripts/run_hosted_brain_repair_loop.py --brain-root brain-llm \
             --provider "$TARGET_PROVIDER" --output local-output/hosted-check \
-            --max-attempts 2 --budget-seconds 600 "${args[@]}"
+            --max-attempts 2 --budget-seconds 900 --endpoint http://127.0.0.1:8080 "${args[@]}"
       - name: Report generation and verification separately
         if: always()
         shell: bash
@@ -153,12 +213,49 @@ jobs:
           with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as handle:
               handle.write('```json\n' + json.dumps(summary, indent=2) + '\n```\n')
           PY
+      - name: Require executed, materialized and decoded provider repair evidence
+        if: ${{ always() }}
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json, os, sys
+          from pathlib import Path
+          root=Path('local-output/hosted-check')
+          path=root/'evaluation.json'
+          if not path.is_file():
+              raise SystemExit('FIELD_BRAIN_HOSTED_PROOF status=missing-evaluation')
+          data=json.loads(path.read_text(encoding='utf-8'))
+          rows=[row for row in data.get('rows') or [] if isinstance(row,dict)]
+          accepted=[row for row in rows if row.get('accepted') is True]
+          provider=os.environ.get('TARGET_PROVIDER','')
+          verified=(
+              data.get('publicationAuthority') is False
+              and data.get('acceptedProviderCount')==1
+              and len(accepted)==1
+              and accepted[0].get('provider')==provider
+              and accepted[0].get('executionObserved') is True
+              and accepted[0].get('materializedMutationObserved') is True
+              and accepted[0].get('decodedProofRequired') is True
+              and len(accepted[0].get('improvedFixtures') or [])>0
+              and not accepted[0].get('unresolvedFixtures')
+              and (accepted[0].get('candidate') or {}).get('streamsPlayable',0)>0
+          )
+          print(
+              'FIELD_BRAIN_HOSTED_PROOF provider='+provider
+              +' status='+('sandbox-validated' if verified else 'not-validated')
+              +' candidates='+str(data.get('candidateCount',0))
+              +' accepted='+str(data.get('acceptedProviderCount',0))
+              +' source='+str(data.get('currentSha',''))
+          )
+          if not verified:
+              raise SystemExit('No strictly decoded, materialized Brain repair proved; production unchanged')
+          PY
       - name: Retain bounded experiment evidence
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         with:
           name: hosted-repair-check-${{ github.run_id }}
-          retention-days: 7
+          retention-days: 14
           path: |
             local-output/hosted-check/summary.json
             local-output/hosted-check/diagnostics.json
