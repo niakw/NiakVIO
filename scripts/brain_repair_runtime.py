@@ -74,6 +74,7 @@ POST_EXHAUSTION_STRATEGY_PROFILES = {
     "route_transition_graph_v22",
     "route_transition_graph_v23",
     "route_transition_graph_v24",
+    "route_transition_graph_v25",
     "route_peer_transition_replay_v1",
     "terminal_transition_graph_v1",
     "terminal_transition_graph_v2",
