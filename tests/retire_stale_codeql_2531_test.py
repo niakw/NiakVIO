@@ -226,7 +226,12 @@ with patch.object(mod,"verify_current_source"), patch.object(mod,"scan_source_sh
     with patch.object(mod,"api",side_effect=pending_api):
         buf=StringIO()
         with redirect_stdout(buf):
-            mod.main()
+            try:
+                mod.main()
+            except RuntimeError as exc:
+                assert "remains unresolved" in str(exc), exc
+            else:
+                raise AssertionError("unapproved dismissal returned success")
     changes=[(path,body) for path,method,body in calls if method=="PATCH"]
     assert len(changes)==1
     assert changes[0][0].endswith("/code-scanning/alerts/2531")
@@ -234,5 +239,28 @@ with patch.object(mod,"verify_current_source"), patch.object(mod,"scan_source_sh
     assert changes[0][1]["dismissed_reason"]=="used in tests"
     assert "FIELD_CODEQL_STALE_2531_NOT_DISMISSED" in buf.getvalue()
     assert not any("/dispatches" in path for path,_,_ in calls)
+
+# A scan may pass on an older SHA while mutable Brain memory changes.
+# Security must remain fail-closed: a deferred action is a FAILED job, not a
+# misleading green status and not a retirement/dismissal authority.
+with patch.object(mod, "verify_current_source"), \
+     patch.object(mod, "scan_source_sha", return_value=src), \
+     patch.object(mod, "evidence_only_drift", return_value=False):
+    calls=[]
+    def drift_api(path, method="GET", body=None):
+        calls.append((path,method))
+        assert path.endswith("/branches/main") and method=="GET"
+        return {"commit":{"sha":head}}
+    with patch.object(mod, "api", side_effect=drift_api):
+        buf=StringIO()
+        with redirect_stdout(buf):
+            try:
+                mod.main()
+            except RuntimeError as exc:
+                assert "retirement deferred" in str(exc), exc
+            else:
+                raise AssertionError("unverified scan drift returned success")
+    assert "FIELD_CODEQL_STALE_2531_DEFERRED" in buf.getvalue()
+    assert calls==[("repos/"+mod.REPO+"/branches/main","GET")], calls
 
 print("CodeQL evidence-only drift regression passed")
