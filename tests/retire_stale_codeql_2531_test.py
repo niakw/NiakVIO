@@ -131,4 +131,31 @@ with patch.object(mod, "api", return_value=[{"number": 9001}]*100):
     else:
         raise AssertionError("permanently full severe list was incorrectly accepted")
 
+
+# A live 422 must be visible without exposing arbitrary GitHub payload contents.
+from contextlib import redirect_stdout
+from io import StringIO, BytesIO
+from urllib.error import HTTPError
+def refused_update(request,timeout=0):
+    assert request.get_method()=="PATCH"
+    raise HTTPError(request.full_url,422,"Unprocessable Entity",{},
+        BytesIO(json.dumps({"message":"Dismissal request approval required",
+            "errors":[{"field":"dismissed_reason","code":"invalid",
+                       "message":"PRIVATE-TOKEN"}]}).encode("utf-8")))
+with patch.object(mod,"urlopen",side_effect=refused_update), patch.dict(os.environ,{
+    "GH_TOKEN":"test-token-not-for-logs", "GITHUB_REPOSITORY":mod.REPO}):
+    stdout=StringIO()
+    with redirect_stdout(stdout):
+        try:
+            mod.api("repos/"+mod.REPO+"/code-scanning/alerts/"+str(mod.LEGACY_ALERT),
+                    "PATCH",{"state":"dismissed","dismissed_reason":"false positive"})
+        except HTTPError as exc:
+            assert exc.code==422
+        else:
+            raise AssertionError("422 was swallowed")
+    line=stdout.getvalue()
+    assert "FIELD_CODEQL_DISMISSAL_REJECTED status=422 reason=approval_required" in line
+    assert "dismissed_reason:invalid" in line
+    assert "PRIVATE" not in line and "test-token" not in line
+
 print("CodeQL evidence-only drift regression passed")

@@ -1662,3 +1662,9 @@
 
 - Brain-LLM `2d94b8f7` fixes the opt-in CPU compact prompt path that previously dropped `response_structure.graphql` and sanitized JSON fields. It now prioritizes actual classified GraphQL errors over duplicate HTML responses, keeps fixed enums only, and preserves exact mutation-unit IDs. Add the pinned Brain CPU prompt regression test to NiakVIO hosted proof preflight alongside live-context privacy tests; this workflow must be run on actual current SHA before judging model behavior.
 - This intentionally modifies only Brain/orchestration, not published provider JS. AllAnime remains no repair until a generated edit reaches materialized/current-byte replay and strict decoded stream proof; security #2531 needs separate current-head CodeQL dismissal and Final Gate confirmation.
+
+## 2026-11-07 — CodeQL #2531 dismissal 422 diagnostic after full source proof
+
+- SEC stale alert retirement run 42329657272 on analyzed source `5f4cd6d` reached the exact alert PATCH after current-source, maintained JS Core category, severity inventory and source drift checks, but GitHub returned **HTTP 422 Unprocessable Entity**. The former script only emitted the exception stack, not a reason. This is not an alert dismissal or a passing Final Gate.
+- Hardened `scripts/retire_stale_codeql_2531.py` to emit an allowlisted `FIELD_CODEQL_DISMISSAL_REJECTED` classification and validation field codes for the exact #2531 PATCH. Raw GitHub error message, secrets and request body are deliberately not logged; HTTPError is re-raised fail-closed. A synthetic HTTP 422 regression test verifies no sensitive text is exposed.
+- Do NOT force-clear #2531, bypass the final gate, or assume the 422 means authorization failure until the diagnostic workflow reports a specific reason. GitHub API documents optional dismissal requests that might require approval. If policy requires approval, request review rather than falsifying a dismissal.

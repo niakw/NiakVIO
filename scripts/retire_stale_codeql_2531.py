@@ -5,6 +5,7 @@ import json
 import os
 from pathlib import Path
 from urllib.parse import urlencode
+from urllib.error import HTTPError
 from urllib.request import Request,urlopen
 
 REPO="niakw/NiakVIO"
@@ -22,11 +23,45 @@ def api(path,method="GET",body=None):
         "Accept":"application/vnd.github+json",
         "Content-Type":"application/json",
         "X-GitHub-Api-Version":"2022-11-28"})
-    with urlopen(req,timeout=45) as res:
-        raw=res.read(5_000_001)
-        if len(raw)>5_000_000:
-            raise RuntimeError("GitHub security response exceeded safe limit")
-        return json.loads(raw.decode("utf-8")) if raw else None
+    try:
+        with urlopen(req,timeout=45) as res:
+            raw=res.read(5_000_001)
+            if len(raw)>5_000_000:
+                raise RuntimeError("GitHub security response exceeded safe limit")
+            return json.loads(raw.decode("utf-8")) if raw else None
+    except HTTPError as exc:
+        # GitHub's 422 dismissal response can mean validation or mandatory
+        # approval. Classify *only* fixed, non-sensitive flags, never log the
+        # raw server text, request, Authorization header or alert payload.
+        if (method=="PATCH" and path=="repos/"+REPO+"/code-scanning/alerts/"+str(LEGACY_ALERT)
+            and exc.code==422):
+            try:
+                payload=json.loads(exc.read(4096).decode("utf-8",errors="replace"))
+            except (ValueError,UnicodeError):
+                payload={}
+            if not isinstance(payload,dict):
+                payload={}
+            message=str(payload.get("message") or "").casefold()
+            reasons=(
+                ("approval_required",("dismissal request","review required","approval required","request a dismissal")),
+                ("permission_or_policy",("policy","not permitted","permission","not authorized","forbidden")),
+                ("dismissal_unavailable",("cannot dismiss","can't dismiss","not dismissible","cannot update")),
+                ("already_resolved",("already dismissed","already closed","already fixed")),
+                ("validation_error",("validation","invalid","unprocessable")),
+            )
+            kind=next((name for name,needles in reasons if any(x in message for x in needles)),"unknown_422")
+            allowed_fields={"state","dismissed_reason","dismissed_comment","create_request"}
+            codes=[]
+            for row in (payload.get("errors") or [])[:5]:
+                if not isinstance(row,dict):
+                    continue
+                field=row.get("field")
+                code=row.get("code")
+                if field in allowed_fields and isinstance(code,str) and code.isascii() and code.replace("_","").isalnum() and len(code)<=30:
+                    codes.append(field+":"+code)
+            print("FIELD_CODEQL_DISMISSAL_REJECTED status=422 reason="+kind+
+                  " validation_fields="+(",".join(codes) if codes else "none"),flush=True)
+        raise
 
 def read_pages(path,max_pages=6,*,stop_after=None):
     """Enumerate alerts exhaustively; stop analysis history only on exact positive proof."""
