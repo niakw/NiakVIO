@@ -187,10 +187,10 @@ with tempfile.TemporaryDirectory() as directory:
         'http_script_shell_only':False,
     }))
     argv=['loop','--brain-root',str(root/'brain'),'--provider','demo','--output',str(root)]
-    with patch.object(sys,'argv',argv), \\
-         patch.object(loop.subprocess,'check_output',return_value='a'*40), \\
-         patch.object(loop.subprocess,'run',side_effect=AssertionError('blocked transport must not invoke a model')), \\
-         contextlib.redirect_stdout(io.StringIO()):
+    with (patch.object(sys, 'argv', argv),
+          patch.object(loop.subprocess, 'check_output', return_value='a'*40),
+          patch.object(loop.subprocess, 'run', side_effect=AssertionError('blocked transport must not invoke a model')),
+          contextlib.redirect_stdout(io.StringIO())):
         assert loop.main()==0
     verdict=json.loads((root/'evaluation.json').read_text())
     assert verdict['rows']==[] and verdict['acceptedProviderCount']==0
