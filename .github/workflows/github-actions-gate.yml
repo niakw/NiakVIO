@@ -224,6 +224,9 @@ jobs:
           python3 tests/brain_alias_search_fair_share_test.py
           python3 tests/brain_architecture_force_materializer_test.py
           python3 tests/brain_architecture_force_promotion_test.py
+          # Execute the representative FORCE selection contract directly, not
+          # only as a side effect of a different Brain fixture.
+          python3 tests/brain_final_experiment_generation_test.py
           python3 tests/brain_self_architecture_test.py
           python3 tests/brain_llm_advisor_execution_test.py
           node engine_v2/tests/brain-strategy-fingerprint.test.mjs
