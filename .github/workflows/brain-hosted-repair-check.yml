@@ -107,6 +107,9 @@ jobs:
           python tests/brain_hosted_local_proof_workflow_test.py
           # Pin and run the Brain retry-selection guard before expensive inference.
           python -m unittest discover -s brain-llm/tests -p test_force_rejected_unit_diversification.py
+          # Reject replay of an executed no-gain edit without hiding real reader fanout progress.
+          python -m unittest discover -s brain-llm/tests -p test_force_execution_feedback.py
+          echo "FIELD_BRAIN_DECODE_NEGATIVE_FEEDBACK_PREFLIGHT exact_source_rotation=true"
           echo "FIELD_BRAIN_GRAPHQL_CAUSAL_PREFLIGHT exact_unit_selection=true"
           python -m unittest discover -s brain-llm/tests -p test_live_function_context.py
           python brain-llm/tests/test_force_cpu_tight_prompt.py
