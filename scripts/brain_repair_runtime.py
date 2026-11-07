@@ -670,7 +670,7 @@ def _learning_experiment_entries() -> list[dict[str, Any]]:
         if not provider or not signature or not profile:
             continue
         last_outcome = _clip_text(raw.get("lastOutcome"), 48)
-        execution_observed = raw.get("executionObserved") is True
+        execution_observed = (raw.get("executionObserved") is True and str(raw.get("lastOutcome") or "") not in {"not_generated", "profile_unavailable"})
         # Memory published before the exact-ledger fix could mark a newly
         # planned post-g5 strategy as profile_unavailable without ever running
         # it. Such rows are applicability noise, not executed negative evidence,
@@ -708,6 +708,7 @@ def _learning_experiment_entries() -> list[dict[str, Any]]:
             "lastOutcome": last_outcome,
             "lastReason": _clip_text(raw.get("lastReason"), 240),
             "executionObserved": execution_observed,
+            "generationAttemptObserved": last_outcome == "not_generated",
         })
     return out
 
@@ -974,7 +975,7 @@ def planner_negative_memory(_mode: str) -> list[dict[str, Any]]:
     rows: list[dict[str, Any]] = []
     learning_mode = str(_mode or "").strip().casefold() == "learning"
     for raw in repair_memory().get("entries") or []:
-        execution_observed = raw.get("executionObserved") is True
+        execution_observed = (raw.get("executionObserved") is True and str(raw.get("lastOutcome") or "") not in {"not_generated", "profile_unavailable"})
         # Legacy/old Repair memory could debit a selected profile even when the
         # runtime produced no matching candidate and therefore never executed
         # the strategy. Keep that applicability signal for Learning exploration,
@@ -1010,6 +1011,9 @@ def planner_negative_memory(_mode: str) -> list[dict[str, Any]]:
             "consecutiveFailures": max(0, int(raw.get("consecutiveFailures") or 0)),
             "successes": max(0, int(raw.get("successes") or 0)),
             "executionObserved": execution_observed,
+            "lastOutcome": _clip_text(raw.get("lastOutcome"), 48),
+            "lastReason": _clip_text(raw.get("lastReason"), 240),
+            "generationAttemptObserved": str(raw.get("lastOutcome") or "") == "not_generated",
         })
     return rows
 
@@ -1653,7 +1657,11 @@ def annotate_and_learn(output_dir: Path, mode: str) -> dict[str, Any]:
                 mem["consecutiveFailures"] = int(mem.get("consecutiveFailures") or 0) + 1
                 mem["lastOutcome"] = "not_generated"
                 mem["lastReason"] = _clip_text(attempt.get("reason"), 160)
-                mem["executionObserved"] = True
+                # No candidate bytes were materialized, so this is a generation
+                # attempt, not an executed negative. The planner can still
+                # suppress re-generation for the same exact implementation.
+                mem["generationAttemptObserved"] = True
+                mem["executionObserved"] = False
                 negative_experiment_events += 1
 
         # Sandbox progress is deliberately non-publishable. If a bounded Deep
