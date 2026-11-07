@@ -141,7 +141,7 @@
           "declared_indexed_player_candidate_count": 0,
           "declared_player_hosts": [],
           "declared_quality_heights": [],
-          "duration_ms": 51
+          "duration_ms": 64
         },
         {
           "url": "https://4khdhub.one/?s=La%20Colonie%202021",
@@ -161,7 +161,10 @@
             "anchors": 43,
             "classTokens": [
               "movie-card-format",
+              "quality-badge",
               "dropdown-item",
+              "w-full",
+              "h-full",
               "movie-card",
               "movie-card-content",
               "movie-card-formats",
@@ -169,13 +172,10 @@
               "movie-card-meta",
               "movie-card-overlay",
               "movie-card-title",
+              "object-cover",
               "quality-badges",
-              "nav-item",
-              "nav-link",
-              "sr-only",
-              "dropdown-menu",
-              "space-y-4",
-              "pagination-container"
+              "text-muted-foreground",
+              "nav-item"
             ],
             "idTokens": [
               "back-to-top",
@@ -209,6 +209,22 @@
                 ]
               },
               {
+                "token": "quality-badge",
+                "count": 12,
+                "tags": [
+                  "span"
+                ],
+                "selfHref": 0,
+                "nestedAnchors": 24,
+                "signals": [
+                  "movie",
+                  "4k",
+                  "1080p",
+                  "year",
+                  "series"
+                ]
+              },
+              {
                 "token": "dropdown-item",
                 "count": 12,
                 "tags": [
@@ -224,14 +240,46 @@
                 ]
               },
               {
+                "token": "w-full",
+                "count": 12,
+                "tags": [
+                  "header",
+                  "div",
+                  "img"
+                ],
+                "selfHref": 0,
+                "nestedAnchors": 24,
+                "signals": [
+                  "movie",
+                  "series",
+                  "4k",
+                  "1080p",
+                  "year"
+                ]
+              },
+              {
+                "token": "h-full",
+                "count": 12,
+                "tags": [
+                  "img"
+                ],
+                "selfHref": 0,
+                "nestedAnchors": 24,
+                "signals": [
+                  "movie",
+                  "4k",
+                  "1080p",
+                  "year",
+                  "series"
+                ]
+              },
+              {
                 "token": "movie-card",
                 "count": 12,
                 "tags": [
-                  "a",
-                  "div",
-                  "span"
+                  "a"
                 ],
-                "selfHref": 1,
+                "selfHref": 12,
                 "nestedAnchors": 24,
                 "signals": [
                   "movie",
@@ -272,54 +320,6 @@
                   "1080p",
                   "year"
                 ]
-              },
-              {
-                "token": "movie-card-image",
-                "count": 12,
-                "tags": [
-                  "div"
-                ],
-                "selfHref": 0,
-                "nestedAnchors": 24,
-                "signals": [
-                  "movie",
-                  "4k",
-                  "1080p",
-                  "year",
-                  "series"
-                ]
-              },
-              {
-                "token": "movie-card-meta",
-                "count": 12,
-                "tags": [
-                  "p"
-                ],
-                "selfHref": 0,
-                "nestedAnchors": 24,
-                "signals": [
-                  "movie",
-                  "series",
-                  "1080p",
-                  "year",
-                  "4k"
-                ]
-              },
-              {
-                "token": "movie-card-overlay",
-                "count": 12,
-                "tags": [
-                  "div"
-                ],
-                "selfHref": 0,
-                "nestedAnchors": 24,
-                "signals": [
-                  "movie",
-                  "series",
-                  "4k",
-                  "1080p",
-                  "year"
-                ]
               }
             ],
             "markers": [
@@ -342,7 +342,7 @@
             1080,
             2160
           ],
-          "duration_ms": 484
+          "duration_ms": 381
         }
       ],
       "debug_provider_value_trace_v18": null,
@@ -355,7 +355,7 @@
       "verified": 0,
       "contradictions": 0,
       "identity_safe": true,
-      "duration_ms": 2529,
+      "duration_ms": 1966,
       "sample_count": 4,
       "fanout_fixture_title": "Sinners",
       "sample_titles": [
@@ -382,7 +382,7 @@
           "playable": 0,
           "verified": 0,
           "contradictions": 0,
-          "duration_ms": 544,
+          "duration_ms": 431,
           "streams_returned": 0,
           "announced_player_candidates": 0,
           "announced_variant_candidates": 0,
@@ -408,7 +408,7 @@
           "playable": 0,
           "verified": 0,
           "contradictions": 0,
-          "duration_ms": 534,
+          "duration_ms": 433,
           "streams_returned": 0,
           "announced_player_candidates": 0,
           "announced_variant_candidates": 0,
@@ -434,7 +434,7 @@
           "playable": 0,
           "verified": 0,
           "contradictions": 0,
-          "duration_ms": 709,
+          "duration_ms": 445,
           "streams_returned": 0,
           "announced_player_candidates": 0,
           "announced_variant_candidates": 0,
@@ -460,7 +460,7 @@
           "playable": 0,
           "verified": 0,
           "contradictions": 0,
-          "duration_ms": 543,
+          "duration_ms": 452,
           "streams_returned": 0,
           "announced_player_candidates": 0,
           "announced_variant_candidates": 0,
@@ -555,7 +555,7 @@
           "declared_indexed_player_candidate_count": 0,
           "declared_player_hosts": [],
           "declared_quality_heights": [],
-          "duration_ms": 64
+          "duration_ms": 71
         },
         {
           "url": "https://4khdhub.one/?s=Revenant%20Season%201",
@@ -576,20 +576,20 @@
             "classTokens": [
               "dropdown-item",
               "movie-card-format",
+              "text-muted-foreground",
               "nav-item",
               "nav-link",
-              "sr-only",
-              "dropdown-menu",
-              "space-y-4",
-              "pagination-container",
-              "card-grid",
-              "container",
-              "dark",
+              "flex",
               "fixed",
-              "flex-1",
-              "header",
-              "latest-releases",
-              "latest-releases-header"
+              "h-5",
+              "w-5",
+              "h-4",
+              "hidden",
+              "sr-only",
+              "w-4",
+              "container",
+              "dropdown",
+              "dropdown-indicator"
             ],
             "idTokens": [
               "back-to-top",
@@ -637,6 +637,20 @@
                 ]
               },
               {
+                "token": "text-muted-foreground",
+                "count": 8,
+                "tags": [
+                  "p",
+                  "a"
+                ],
+                "selfHref": 4,
+                "nestedAnchors": 22,
+                "signals": [
+                  "movie",
+                  "year"
+                ]
+              },
+              {
                 "token": "nav-item",
                 "count": 7,
                 "tags": [
@@ -666,26 +680,10 @@
                 ]
               },
               {
-                "token": "sr-only",
-                "count": 4,
+                "token": "flex",
+                "count": 6,
                 "tags": [
-                  "span"
-                ],
-                "selfHref": 0,
-                "nestedAnchors": 15,
-                "signals": [
-                  "movie",
-                  "series",
-                  "4k",
-                  "season",
-                  "1080p",
-                  "year"
-                ]
-              },
-              {
-                "token": "dropdown-menu",
-                "count": 3,
-                "tags": [
+                  "div",
                   "ul"
                 ],
                 "selfHref": 0,
@@ -693,32 +691,43 @@
                 "signals": [
                   "movie",
                   "series",
-                  "4k"
+                  "season",
+                  "4k",
+                  "1080p",
+                  "year"
                 ]
               },
               {
-                "token": "space-y-4",
-                "count": 3,
+                "token": "fixed",
+                "count": 5,
                 "tags": [
-                  "div"
+                  "div",
+                  "button"
                 ],
                 "selfHref": 0,
-                "nestedAnchors": 11,
+                "nestedAnchors": 4,
                 "signals": [
+                  "season",
+                  "4k",
+                  "1080p",
                   "movie",
                   "year"
                 ]
               },
               {
-                "token": "pagination-container",
-                "count": 2,
+                "token": "h-5",
+                "count": 5,
                 "tags": [
-                  "div"
+                  "svg"
                 ],
                 "selfHref": 0,
-                "nestedAnchors": 12,
+                "nestedAnchors": 15,
                 "signals": [
                   "movie",
+                  "series",
+                  "season",
+                  "4k",
+                  "1080p",
                   "year"
                 ]
               }
@@ -743,7 +752,7 @@
             1080,
             2160
           ],
-          "duration_ms": 660
+          "duration_ms": 366
         }
       ],
       "debug_provider_value_trace_v18": null,
@@ -756,7 +765,7 @@
       "verified": 0,
       "contradictions": 0,
       "identity_safe": true,
-      "duration_ms": 1371,
+      "duration_ms": 1001,
       "sample_count": 2,
       "fanout_fixture_title": "Breaking Bad",
       "sample_titles": [
@@ -783,7 +792,7 @@
           "playable": 0,
           "verified": 0,
           "contradictions": 0,
-          "duration_ms": 547,
+          "duration_ms": 457,
           "streams_returned": 0,
           "announced_player_candidates": 0,
           "announced_variant_candidates": 0,
@@ -811,7 +820,7 @@
           "playable": 0,
           "verified": 0,
           "contradictions": 0,
-          "duration_ms": 730,
+          "duration_ms": 442,
           "streams_returned": 0,
           "announced_player_candidates": 0,
           "announced_variant_candidates": 0,
