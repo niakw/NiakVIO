@@ -1845,4 +1845,47 @@ else:
     raise AssertionError("Brain v11 was merely re-budgeted but its clone escaped the guard")
 
 
+# FORCE must not train the next executor on fabricated "executed" failures.
+# Earlier ledgers sometimes set executionObserved=true even when no candidate
+# was generated. The oracle here is the real FORCE negative-memory projection.
+with tempfile.TemporaryDirectory(prefix="brain-force-negative-evidence-") as tmp:
+    root = Path(tmp)
+    data_dir = root / "automation"
+    data_dir.mkdir()
+    (data_dir / "provider-census-status.json").write_text(json.dumps({
+        "providers": [{
+            "provider": "representative",
+            "status": "ROUTE PROVEN",
+            "dominantIssue": "provider_network_zero_result",
+            "repairEligible": True,
+        }],
+    }), encoding="utf-8")
+    (data_dir / "brain-repair-memory.json").write_text(json.dumps({
+        "entries": [
+            {
+                "providerId": "representative", "profile": "html_class_token_exact_v1",
+                "lastOutcome": "not_generated", "lastReason": "no_executable_child",
+                "executionObserved": True, "failureClass": "route_proven_gap",
+            },
+            {
+                "providerId": "representative", "profile": "route_transition_graph_v2",
+                "lastOutcome": "profile_unavailable", "lastReason": "planned_not_applicable",
+                "executionObserved": True, "failureClass": "route_proven_gap",
+            },
+            {
+                "providerId": "representative", "profile": "runtime_response_salvage_v1",
+                "lastOutcome": "rejected", "lastReason": "identity_gate_failed",
+                "executionObserved": True, "failureClass": "route_proven_gap",
+            },
+        ],
+    }), encoding="utf-8")
+    evidence = mod._bounded_force_negative_evidence(
+        {"providers": ["representative"]}, root=root,
+    )
+    assert evidence["authority"] == "sanitized-negatives-only-not-playback-proof"
+    assert [row["profile"] for row in evidence["previouslyExecutedFailures"]] == [
+        "runtime_response_salvage_v1"
+    ], evidence
+    assert "publicationAllowed" not in evidence, evidence
+
 print("Brain architecture FORCE materializer tests passed")
