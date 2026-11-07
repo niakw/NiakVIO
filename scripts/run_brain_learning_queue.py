@@ -332,7 +332,11 @@ def phase_experiment_entries(
             "lastReason": sanitize_experiment_reason(reason),
             "lastSeenAt": now,
             "memoryRole": "fair-share-exact-experiment-ledger",
-            "executionObserved": bool(attempts),
+            # A generated-and-retested child is distinct from an attempt that
+            # never produced executable bytes. Do not poison runtime-negative
+            # memory with not_generated/profile_unavailable outcomes.
+            "executionObserved": bool(accepted or rejected or progress),
+            "generationAttemptObserved": bool(not_generated),
         })
     return entries
 
@@ -406,12 +410,26 @@ def merge_phase_learning_state(
             if new_successes > 0
             else max(0, int(current.get("consecutiveFailures") or 0)) + new_failures
         )
-        for field in ("lastOutcome", "lastReason", "lastSeenAt", "memoryRole", "capabilityStrategy", "observedPipelineStage"):
-            if field in row:
-                current[field] = row[field]
-        current["executionObserved"] = (
+        # Preserve genuine executed-negative authority if a later phase only
+        # failed to generate bytes for this same fingerprint. Conversely, an
+        # old not_generated row with executionObserved=true was never executed.
+        nonexecuted_outcomes = {"not_generated", "profile_unavailable"}
+        prior_executed = (
             current.get("executionObserved") is True
-            or row.get("executionObserved") is True
+            and str(current.get("lastOutcome") or "") not in nonexecuted_outcomes
+        )
+        incoming_executed = (
+            row.get("executionObserved") is True
+            and str(row.get("lastOutcome") or "") not in nonexecuted_outcomes
+        )
+        for field in ("lastOutcome", "lastReason", "lastSeenAt", "memoryRole", "capabilityStrategy", "observedPipelineStage"):
+            if field in row and (incoming_executed or not prior_executed or field not in {"lastOutcome", "lastReason"}):
+                current[field] = row[field]
+        current["executionObserved"] = prior_executed or incoming_executed
+        current["generationAttemptObserved"] = (
+            current.get("generationAttemptObserved") is True
+            or row.get("generationAttemptObserved") is True
+            or str(row.get("lastOutcome") or "") == "not_generated"
         )
 
     limit = max(1, min(20000, int(max_entries if max_entries is not None else _learning_memory_capacity())))
