@@ -1104,6 +1104,7 @@ jobs:
           "${args[@]}"
           node engine_v2/tests/repair-brain.test.mjs
           node engine_v2/tests/recipe-memory.test.mjs
+          node engine_v2/tests/brain-negative-memory-retention.test.mjs
           node engine_v2/tests/learning-lab-memory.test.mjs
           python -m py_compile scripts/run_brain_learning_sandbox.py scripts/run_brain_learning_queue.py scripts/build_brain_repair_proposal.py scripts/build_brain_architecture_proposal.py scripts/build_native_reader_learning_summary.py scripts/merge_native_reader_learning_failures.py scripts/classify_native_reader_ownership.py
           node -e "const x=require('./brain-learning-output/latest.json'); if(x.productionWritesAllowed!==false||x.publicationAllowed!==false||x.sandboxExecutedProviders!==true) process.exit(1)"
