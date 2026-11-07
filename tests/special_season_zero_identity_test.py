@@ -72,4 +72,26 @@ with tempfile.TemporaryDirectory() as td:
     out = subprocess.run(["node", str(script)], text=True, capture_output=True, timeout=25)
     assert out.returncode == 0, out.stdout + out.stderr
 
-print("SPECIAL_SEASON_ZERO_IDENTITY_OK s00 and s01 distinct structured/query/marker/scoped; opaque unverified")
+# The shared fix must exist in every *published* provider bundle, not just
+# the source compiler or a hand-picked fixture. This is a static check only:
+# alternate-catalogue episode equivalence and terminal playback need live proof.
+manifest = json.loads((ROOT / "manifest.json").read_text(encoding="utf-8"))
+published = [row for row in manifest.get("scrapers", []) if isinstance(row, dict)]
+assert published, "empty published provider manifest"
+seen_paths = set()
+for row in published:
+    filename = str(row.get("filename") or "")
+    assert filename.startswith("providers/") and ".." not in Path(filename).parts, (row.get("id"), filename)
+    assert filename not in seen_paths, "duplicate published bundle: " + filename
+    seen_paths.add(filename)
+    published_path = ROOT / filename
+    assert published_path.is_file(), "missing published provider: " + filename
+    published_js = published_path.read_text(encoding="utf-8")
+    for required in (
+        "NUVIO_GLOBAL_STREAM_IDENTITY_V1",
+        "cross-client-player-page-identity-v17-s00-identity",
+        "_spv251SeasonEpisodeScopedValue",
+    ):
+        assert required in published_js, (filename, required)
+
+print(f"SPECIAL_SEASON_ZERO_IDENTITY_OK published={len(published)} s00 and s01 distinct structured/query/marker/scoped; opaque unverified")
