@@ -729,6 +729,72 @@ def _installed_strategy_shapes(runtime_source: str, strategy_id: str) -> dict[st
     return shapes
 
 
+def installed_family_mechanisms(
+    runtime_source: str, strategy_id: str, *, limit: int = 16,
+) -> list[dict[str, Any]]:
+    """Bounded, source-derived evidence for Qwen's next causal hypothesis.
+
+    The earlier prompt showed only the immediate parent. Qwen then repeatedly
+    reinvented older same-family v14/v15 algorithms as v25 with new quotas.
+    Give it a bounded summary of installed sibling *mechanisms*, not source
+    code, numerical budgets, URLs, credentials, or playback authority.
+    """
+    family = re.sub(r"_v[0-9]+$", "_v", strategy_id)
+    if family == strategy_id:
+        return []
+    tree = ast.parse(runtime_source)
+    entries: list[tuple[int, dict[str, Any]]] = []
+    wanted = {
+        "search_paths": "search",
+        "direct_paths": "direct",
+        "request_recipes": "requests",
+        "transition_prefixes": "transition",
+        "second_order_role_preferences": "roles",
+    }
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.If):
+            continue
+        test = node.test
+        if (
+            not isinstance(test, ast.Compare)
+            or not isinstance(test.left, ast.Name)
+            or test.left.id != "new_strategy_id"
+            or len(test.ops) != 1
+            or not isinstance(test.ops[0], ast.Eq)
+            or len(test.comparators) != 1
+            or not isinstance(test.comparators[0], ast.Constant)
+            or not isinstance(test.comparators[0].value, str)
+        ):
+            continue
+        name = test.comparators[0].value
+        match = re.fullmatch(re.escape(family) + r"([0-9]+)", name)
+        if not match or name == strategy_id:
+            continue
+        summary: dict[str, Any] = {"strategyId": name}
+        for statement in node.body:
+            if not isinstance(statement, (ast.Assign, ast.AnnAssign)):
+                continue
+            targets = statement.targets if isinstance(statement, ast.Assign) else [statement.target]
+            if len(targets) != 1 or not isinstance(targets[0], ast.Name):
+                continue
+            field = wanted.get(targets[0].id)
+            if not field or statement.value is None:
+                continue
+            # Diagnostic only: trim expressions and erase numeric quotas. The
+            # full source and model inputs remain untrusted non-proof priors.
+            expression = ast.unparse(statement.value)
+            expression = re.sub(r"\blimit\s*=\s*[0-9]+", "limit=*", expression)
+            expression = re.sub(r"\s+", " ", expression).strip()
+            summary[field] = expression[:155]
+        if len(summary) > 1:
+            entries.append((int(match.group(1)), summary))
+    entries.sort(key=lambda x: x[0])
+    if len(entries) > limit:
+        keep_old = min(4, limit // 3)
+        entries = entries[:keep_old] + entries[-(limit - keep_old):]
+    return [entry for _, entry in entries]
+
+
 def reject_numeric_only_strategy_clone(runtime_source: str, strategy_id: str) -> None:
     """Final materialized-byte guard: no numeric-only strategy evolution."""
     shapes = _installed_strategy_shapes(runtime_source, strategy_id)
@@ -1336,6 +1402,9 @@ def _model_request(
             "rejected clone EVEN IF those numbers differ; choose genuinely "
             "different evidence sources, terminal-role filtering or transition "
             "logic from every installed same-family sibling. "
+            "The installedFamilyMechanisms list records previous sibling "
+            "search/direct/request/transition/role algorithms, with quotas masked. "
+            "Do not replay those mechanisms under a new vN label. "
             "The Brain compiles and wires all four executor selection gates. "
             "Never generate Python code, selector conditions, provider edits, routes, "
             "URLs, secrets, explanation or Markdown. A rejected plan must CHANGE the "
@@ -1529,6 +1598,14 @@ def _new_repair_profile_payload(
     blueprint = payload.get("blueprint") if isinstance(payload.get("blueprint"), dict) else {}
     source_map = payload.get("sources") if isinstance(payload.get("sources"), dict) else {}
     runtime_source = str(source_map.get(runtime_path) or "")
+    # The focused context can hide old siblings (e.g. v14/v15) whose exact
+    # numeric-only clones the model must not propose again. Use immutable
+    # on-disk Brain source for bounded, sanitized mechanism summaries.
+    current_runtime = root / runtime_path
+    installed_source = (
+        current_runtime.read_text(encoding="utf-8")
+        if current_runtime.is_file() else runtime_source
+    )
     return {
         "blueprint": blueprint,
         "allowedPaths": [runtime_path],
@@ -1544,6 +1621,13 @@ def _new_repair_profile_payload(
         } if runtime_source else {},
         "deterministicWiring": list(NEW_REPAIR_PROFILE_SURFACES[:2]),
         "causalNegativeEvidence": _bounded_force_negative_evidence(blueprint, root=root),
+        "installedFamilyMechanisms": installed_family_mechanisms(
+            installed_source, str(blueprint.get("strategyId") or ""),
+        ) if installed_source else [],
+        "semanticNoveltyRequired": (
+            "new evidence or transition primitives; numeric budgets and profile IDs "
+            "do not establish a new algorithm"
+        ),
     }
 
 
@@ -1602,7 +1686,7 @@ def _validation_retry_payload(
     root: Path = ROOT,
 ) -> dict[str, Any]:
     retry = (
-        _new_repair_profile_payload(payload)
+        _new_repair_profile_payload(payload, root=root)
         if _requires_new_repair_profile(payload)
         else _minimal_payload(payload)
     )
