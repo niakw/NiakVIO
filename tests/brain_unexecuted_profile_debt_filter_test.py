@@ -39,7 +39,21 @@ with tempfile.TemporaryDirectory() as td:
         "lastReason": "playback_gate_failed",
         "executionObserved": True,
     }
-    memory.write_text(json.dumps({"schemaVersion": 1, "entries": [stale, executed]}), encoding="utf-8")
+    # Historical writers sometimes recorded executionObserved=True despite
+    # never producing a candidate. Both cases must remain non-executed.
+    legacy_unavailable = {
+        **stale, "providerId": "vidfast", "signature": "legacy-false-execution",
+        "executionObserved": True,
+    }
+    missing_candidate = {
+        **stale, "providerId": "moviebox", "signature": "generation-only",
+        "lastOutcome": "not_generated", "lastReason": "no_candidate_bytes",
+        "executionObserved": True,
+    }
+    memory.write_text(json.dumps({
+        "schemaVersion": 1,
+        "entries": [stale, executed, legacy_unavailable, missing_candidate],
+    }), encoding="utf-8")
     old = brain.REPAIR_MEMORY_PATH
     brain.REPAIR_MEMORY_PATH = memory
     try:
@@ -51,14 +65,19 @@ with tempfile.TemporaryDirectory() as td:
         assert [row["providerId"] for row in deep] == ["mallumv"], deep
 
         learning = brain.planner_negative_memory("learning")
-        assert {row["providerId"] for row in learning} == {"allanime", "mallumv"}, learning
-        unavailable = next(row for row in learning if row["providerId"] == "allanime")
-        assert unavailable["executionObserved"] is False, unavailable
+        assert {row["providerId"] for row in learning} == {
+            "allanime", "mallumv", "vidfast", "moviebox",
+        }, learning
+        for provider in ("allanime", "vidfast", "moviebox"):
+            unexecuted = next(row for row in learning if row["providerId"] == provider)
+            assert unexecuted["executionObserved"] is False, unexecuted
+        generation = next(row for row in learning if row["providerId"] == "moviebox")
+        assert generation["lastOutcome"] == "not_generated", generation
+        assert generation["generationAttemptObserved"] is True, generation
     finally:
         brain.REPAIR_MEMORY_PATH = old
 
-source = (ROOT / "scripts" / "brain_repair_runtime.py").read_text(encoding="utf-8")
-assert 'mem["executionObserved"] = False' in source
-assert source.count('mem["executionObserved"] = True') >= 4
-
+# This is a behavioral gate. Counting assignment statements in the Brain
+# source was non-representative and broke a safe refactor without exposing any
+# genuine execution failure. Only the observed runtime memory output matters.
 print("Brain unexecuted profile debt filter contract passed")
