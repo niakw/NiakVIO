@@ -1325,3 +1325,17 @@ NiakVIO `43f9e361` counts an accepted **candidate fixture improvement** when the
 ### 2026-11-07 — Provenance des candidats et dette de replay
 
 Le statut `CANDIDATE OK` peut seulement indiquer un run historique ; il ne garantit pas que son programme mutation exact existe encore et puisse être rejoué. Le nouveau module Brain `replay_inventory` confronte chaque candidate de la repairQueue au fichier de mutations archivé, au provider exact et à son SHA source, puis produit uniquement des statuts non autoritatifs : `missing_exact_replay_program`, `historical_program_needs_safe_rematerialization`, `source_matched_program_needs_live_replay`. Même le dernier statut exige une application/sandbox/décodage indépendant. Le workflow hosted archive ce constat avant l'inférence locale ; il ne reconstruit pas arbitrairement un patch manquant. Les deux anciens candidats référencés par `run 34309729426` n'ont pas de fichier exact dans le dépôt courant.
+
+
+## 2026-11-07 — Contrat de mémoire Brain : génération vs exécution
+
+Le registre Brain conserve deux natures de preuves qu'il ne faut plus confondre :
+
+- **Tentative de génération** : `not_generated`, aucun fichier candidat exécutable ; `generationAttemptObserved=true`, `executionObserved=false`. Un échec répété à empreinte d'implémentation `strategyImplementationFingerprint` strictement identique bloque la même génération afin de ne pas boucler ; une ancienne tentative sans empreinte fiable ne doit pas épuiser un exécuteur nouveau.
+- **Exécution effectivement éprouvée** : `rejected` après génération/retest, `exploration_progress_nonpublishable` ou `accepted` ; seule une observation réelle garde `executionObserved=true`. Les rejets identité/lecture restent bloquants même si la génération structurelle fonctionne.
+- **Indisponibilité de profil** : `profile_unavailable` n'est pas une tentative exécutée. Les anciennes lignes contradictoires (`executionObserved=true` sans enfant) sont normalisées lors de la lecture de mémoire, de la synthèse Learning et de la fusion des phases.
+- **Fusion de mémoire** : si un ancien enfant a été exécuté puis qu'une phase ne parvient plus à le générer, l'échec réellement exécuté conserve son autorité ; l'inverse n'autorise pas à inventer une exécution.
+
+Responsables modifiés : `scripts/brain_repair_runtime.py`, `engine_v2/scripts/plan-repairs.mjs`, `engine_v2/scripts/learning-lab.mjs`, `scripts/run_brain_learning_queue.py`. Tests : `tests/brain_generation_attempt_memory_test.py`, `tests/brain_learning_queue_experiment_ledger_test.py`, `tests/brain_cross_phase_experiment_memory_test.py`. Ces tests ne prouvent ni la lecture réseau, ni la matérialisation publiée, ni la réparation autonome d'un provider.
+
+L'oracle 4KHDHub en mémoire (`0/0 → 1/1` film/épisode sur HTML local) demeure **evidence-only**, jamais une autorisation de publication. Il faut toujours : plan Brain → candidat exact → bytes exécutés → retest réseau/identité/stream terminal → non-régression → publication/persistance vérifiées.
