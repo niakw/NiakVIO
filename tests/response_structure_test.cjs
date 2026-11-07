@@ -163,7 +163,10 @@ assert.equal(selected.rows.length, 8);
 assert.equal(selected.rows[0].tag, 'iframe');
 assert.deepEqual(selected.rows[0].address_refs, { src: ['r1'] });
 assert.equal(selectedReferences.calls.length, 8);
-assert.ok(selectedReferences.calls.every(address => new URL(address).origin !== 'https://other.private.test'));
+// The selected hosts must match the fixture's trusted origin exactly.
+// Negating one blocked host is not an allowlist (CodeQL #2531).
+assert.deepEqual(selectedReferences.calls.map(address => new URL(address).origin),
+  Array(8).fill(new URL(queryOptions.baseUrl).origin));
 
 for (const address of ['/embed/PRIVATE', '//private.test/embed/PRIVATE', 'https://']) {
   let called = false;
