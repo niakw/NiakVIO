@@ -54,4 +54,23 @@ for invalid in ({"schemaVersion": 3, "entries": []}, {"schemaVersion": 1, "entri
         pass
     else:
         raise AssertionError("invalid stale artifact schema accepted")
+# "profile_unavailable" and "not_generated" never crossed the executed
+# boundary. Older artifacts could incorrectly mark them observed=true; the
+# stale bridge must not convert such rows into blocking negative experiments.
+unexecuted = {
+    "schemaVersion": 1,
+    "entries": [
+        row("new-unavailable", "profile_unavailable", observed=True),
+        row("new-no-child", "not_generated", observed=True),
+        row("new-false", "rejected", observed=False),
+    ],
+}
+safely_imported, stale_stats = module.merge_memory(
+    {"schemaVersion": 1, "entries": []},
+    unexecuted,
+    {"new-unavailable", "new-no-child", "new-false"},
+)
+assert stale_stats == {"inspected": 3, "accepted": 0, "inserted": 0}, stale_stats
+assert safely_imported["entries"] == [], safely_imported
+
 print("Brain Fast stale evidence import contract passed")
