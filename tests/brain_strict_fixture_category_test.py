@@ -54,6 +54,9 @@ with patch.dict(os.environ,{'NIAKVIO_REQUIRE_DECODE_PROOF':'1'}):
     wrong=copy.deepcopy(after)
     wrong['tests'][0]['fixture']['expectedDurationMinutes']=24
     assert verify.decoded_repair_gate(before,wrong,'MALLUMV')[1]=='decoded_repair_fixture_contract'
+    short=copy.deepcopy(after)
+    short['tests'][0]['host_results'][0]['media_duration_seconds']=1440
+    assert verify.decoded_repair_gate(before,short,'MALLUMV')[1]=='decoded_repair_no_new_fixture_control'
     wrong=copy.deepcopy(after)
     wrong['tests'][0]['host_results'][0]['media_decode']=None
     assert verify.decoded_repair_gate(before,wrong,'MALLUMV')[1]=='decoded_repair_no_new_fixture_control'

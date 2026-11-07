@@ -52,7 +52,14 @@ def decoded_media_summary(test: dict[str, Any]) -> tuple[list[dict[str, Any]], i
     from check_cross_provider_playback import public_probe
 
     raw = test.get('host_results')
-    probes = [public_probe(row) for row in raw[:3] if isinstance(row, dict)] \
+    fixture = test.get('fixture') if isinstance(test.get('fixture'), dict) else {}
+    minutes = fixture.get('expectedDurationMinutes')
+    # The standalone cross-provider anime analyzer defaults to 1440s. Brain
+    # must instead pass the current *verified fixture* duration for films/TV.
+    expected_seconds = (round(minutes * 60) if type(minutes) in (int, float)
+                        and 0 < minutes <= 20160 else 1440)
+    probes = [public_probe(row, expected_seconds=expected_seconds)
+              for row in raw[:3] if isinstance(row, dict)] \
         if isinstance(raw, list) else []
     executed = all(type(test.get(key)) is int and test[key] > 0
                    for key in ('streams_returned', 'streams_playable', 'streams_probed'))

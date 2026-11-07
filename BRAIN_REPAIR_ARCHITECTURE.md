@@ -1268,3 +1268,5 @@ Regression and hosted proof preflight both run
 \`tests/brain_strict_fixture_category_test.py\`. Direct manual provider repairs
 remain out of scope; Brain-owned orchestration and validation are the only
 modified production-facing surfaces here.
+
+The decoded probe projection must pass the verified fixture's expected duration to the media-control predicate. The standalone 24-minute anime default is **not** a film/TV duration policy. Other identity/media/short-preview checks remain unchanged.
