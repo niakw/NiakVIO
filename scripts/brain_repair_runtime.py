@@ -93,6 +93,7 @@ POST_EXHAUSTION_STRATEGY_PROFILES = {
     "terminal_transition_graph_v11",
     "terminal_transition_graph_v12",
     "terminal_transition_graph_v13",
+    "terminal_transition_graph_v14",
     "terminal_request_program_inference_v1",
     "candidate_divergence_trace_v1",
     "candidate_request_program_replay_v1",
