@@ -194,8 +194,11 @@ def main() -> None:
     head=(branch or {}).get("commit",{}).get("sha")
     if not head or not evidence_only_drift(expected, head):
         print("FIELD_CODEQL_STALE_2531_DEFERRED source="+expected+" current="+str(head)+
-              " reason=non_evidence_drift_or_unverifiable_comparison")
-        return
+              " reason=non_evidence_drift_or_unverifiable_comparison",flush=True)
+        # No verified dismissal occurred. A green retirement job would falsely
+        # suggest that the security backlog was resolved. Fail closed so the
+        # workflow cannot be mistaken for a successful cleanup.
+        raise RuntimeError("CodeQL legacy alert retirement deferred: unverified source drift")
     alert=api("repos/"+REPO+"/code-scanning/alerts/"+str(LEGACY_ALERT))
     if alert.get("state")!="open":
         print("FIELD_CODEQL_LEGACY_CATEGORY_CLEANUP already_nonopen "+str(alert.get("state")))
@@ -248,7 +251,7 @@ def main() -> None:
     if updated.get("state")!="dismissed":
         print("FIELD_CODEQL_STALE_2531_NOT_DISMISSED state="+str(updated.get("state"))[:32]+
               " approval_or_policy_recheck_required=true",flush=True)
-        return
+        raise RuntimeError("CodeQL legacy alert remains unresolved after dismissal request")
     print("FIELD_CODEQL_STALE_2531_DISMISSED scanned_source="+expected+" current_main="+str(head)+" core_analyses="+str(len(matched)))
     # The Final Gate must run AFTER this status change, on the exact same main.
     after=(api("repos/"+REPO+"/branches/main") or {}).get("commit",{}).get("sha")
