@@ -2,7 +2,7 @@
 
 > **Baseline: 2026-11-07, Europe/Paris.** This is an evidence-led execution roadmap, not a claim that broken providers are repaired. All acceptance decisions must reference the **actual tested source SHA and immutable run/artifact**. Do not confuse historical/carry-forward FULL status with freshly decoded playable content.
 >
-> **Source checkpoint:** NiakVIO `3b07e1f5a4430f7111708047fccce815ec645756` · Brain-LLM `1f7096babc0bf8ca80d0878238d912e630b47a3f` (new Brain CI pending at document creation). Current protected working branch: `main` in both repositories; no repair candidate has publication authority.
+> **Source checkpoint:** NiakVIO `06eaea585f637e080c2956ac22737e79926b200b` · Brain-LLM `6284be0eecadb04d9fc242917af268ef73e53a75` (Brain CI successful; hosted replay pending). Current protected working branch: `main` in both repositories; no repair candidate has publication authority.
 
 ## 1. Decision dashboard
 
@@ -15,7 +15,7 @@
 | Best demonstrated mutation | **Generated + applied + differing executed bundle bytes** | Hosted run `42358985990`, 4KHDHub; nevertheless **0 accepted, 0 decoded**. |
 | Reader exploration gap in that proof | **16 announced candidate players, 1 explored** | Announced 1080p/2160p is not a verified playable variant. Baseline and candidate both returned 0 streams. |
 | Film/series/anime fixture mismatch in Brain sandbox | **Correction landed, CI gates passed** | NiakVIO `f751cc7` + `09b9c10`; Core gate `42358986168`, non-regression `42358986032` succeeded on `09b9c10`. End-to-end Brain still failed. |
-| Learning after an executed but ineffective decoded patch | **Correction landed, CI pending** | Brain-LLM `057d8d0` / `1f7096b` recognizes `decoded_repair_no_new_fixture_control` and preserves real player-fanout gains before rotating source locality. Do not count as repaired until tested. |
+| Learning after an executed but ineffective decoded patch | **Brain unit CI SUCCESS; hosted replay pending** | Brain-LLM `057d8d0` / `1f7096b` recognizes `decoded_repair_no_new_fixture_control` and preserves real player-fanout gains before rotating source locality. Do not count as repaired until tested. |
 | Security release gate | **Unverified/blocked** | `42359913056` displayed SUCCESS but log said `FIELD_CODEQL_STALE_2531_DEFERRED` due to source drift. A green retirement workflow is **not** confirmation #2531 is closed. |
 | ~800-provider/hub ambition | **Not qualified** | No evidence of autonomous repair portability at that scale. No mass import/promotion before family-level proofs. |
 
@@ -117,3 +117,11 @@ All boxes must be met for **one** concrete fixture, with no regression on previo
 4. Persist meaningful work in `MEMORY.md`; update `BRAIN_REPAIR_ARCHITECTURE.md` on structural pipeline changes.
 5. Prefer Brain-owned fixes (observability, prompt/RAG, tooling, compiler/apply/remat, deterministic validator, learning persistence); do **not** manually fix a single provider to mask Brain incapacity.
 6. Keep this document as a decision register. Its numbers are a timestamped snapshot, not an automatically refreshed live dashboard. Compare with the cited current JSON and CI before deciding.
+
+
+### 2026-11-07 — Follow-up: no-gain reader exploration bridge
+
+- Brain-LLM `057d8d0` (feedback extension) and `1f7096b` (regression test): Brain LLM CI [42360619339](https://github.com/niakw/NiakVIO-Brain-LLM/actions/runs/42360619339) **SUCCESS**; current memory-doc `6284be0` CI [42360846097](https://github.com/niakw/NiakVIO-Brain-LLM/actions/runs/42360846097) **SUCCESS**.
+- NiakVIO `80e328f` repairs a second, independently proven loss: `run_hosted_brain_repair_loop.verification_feedback` correctly selected an individual executed evaluation row but silently discarded its `variantCoverage`. The Brain could not tell if a candidate had explored 1 or 3 actual reader requests. The shared Bridge now forwards **only four bounded numeric counts** (announced players, announced variants, explored player requests and max playable height). This is diagnostic context, never playable proof.
+- `5402f16` tests unchanged vs increased real fanout, plus forbids raw hostnames/URLs in the next Brain request. `06eaea5` makes the hosted proof trigger on this bridge/test and requires the Brain negative-feedback contract before CPU inference. [Hosted run 42361093507](https://github.com/niakw/NiakVIO/actions/runs/42361093507) was queued at this snapshot; do not claim it passed or repaired a provider.
+- **Decision remains unchanged:** first strict decoded, identity-correct Brain repair is still absent. Prioritize diagnosing the specific player fanout route rather than increasing blind generations. Later census/hosted results may supersede this static snapshot, only with explicit proven artifacts.

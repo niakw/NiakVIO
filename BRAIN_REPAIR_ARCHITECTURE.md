@@ -1278,3 +1278,30 @@ The decoded probe projection must pass the verified fixture's expected duration 
 - The numeric fanout projection includes announced player/variant counts, explored player requests and maximal playable height, excluding raw URLs, headers and media payloads. Increasing actual exploration prevents premature 'non-improving function' rotation; announced options alone are not decoded playback.
 - Real 4KHDHub proof `42358985990` showed 16 announced players, 1 visited, 0 streams before and after a materialized regex edit; this was rejected as `decoded_repair_no_new_fixture_control`. Brain LLM CI on `1f7096b` and a fresh hosted proof using that Brain pin are separate necessary checks.
 - The canonical execution/decision checklist, 17-item repair queue snapshot, blockers and model/transport/escalation criteria now live in [`BRAIN_REPAIR_ROADMAP.md`](BRAIN_REPAIR_ROADMAP.md). Check current census and SHA before treating any snapshot as live state. Security #2531 retirement workflow `42359913056` returned SUCCESS but actually logged `FIELD_CODEQL_STALE_2531_DEFERRED` because of source drift, not a verified alert dismissal.
+
+
+## 2026-11-07 — Sandbox feedback projection must preserve causal fanout progress
+
+The hosted sandbox `scripts/run_hosted_brain_repair_loop.py::verification_feedback`
+correctly extracts the **last executed candidate row** from the evaluation,
+but previously projected only playable/returned stream and identity/fixture
+counters, omitting `variantCoverage`. Consequently, even though the executor
+recorded the number of actual reader requests, Brain-LLM never received those
+numbers as `previous_verification`; its locality rotation could treat real
+reader traversal progress as an unchanged failure.
+
+NiakVIO `80e328f` now carries four non-negative bounded integers for each
+baseline/candidate: announced player count, announced variant count, actually
+explored player requests and maximum playable height. It **does not** project
+hostnames, reader URLs, tokens, headers or raw network bodies. Regression
+`5402f16` asserts the before/after counts and proves sensitive values are
+not copied. Workflow `06eaea5` includes the bridge and regression in the
+hosted push paths; `tests/hosted_brain_repair_loop_test.py` and the matching
+Brain-LLM `test_force_execution_feedback.py` are now both preflight checks.
+
+This change only makes an independent negative experiment observable to the
+next Brain inference. It does not make player fanout an acceptance criterion;
+strict decoded, identity-safe terminal playback and no-regression remain
+mandatory. Exact-new-source hosted proof, CI logs and artifacts are required
+before any success statement. See `BRAIN_REPAIR_ROADMAP.md` for the live
+checkpoint and decision gates.
