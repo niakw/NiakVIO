@@ -28,7 +28,8 @@ def api(path,method="GET",body=None):
             raise RuntimeError("GitHub security response exceeded safe limit")
         return json.loads(raw.decode("utf-8")) if raw else None
 
-def read_pages(path,max_pages=6):
+def read_pages(path,max_pages=6,*,stop_after=None):
+    """Enumerate alerts exhaustively; stop analysis history only on exact positive proof."""
     all_rows=[]
     for page in range(1,max_pages+1):
         separator="&" if "?" in path else "?"
@@ -36,6 +37,8 @@ def read_pages(path,max_pages=6):
         if not isinstance(result,list):
             raise ValueError("GitHub alert/analysis collection shape invalid")
         all_rows.extend(result)
+        if stop_after is not None and stop_after(all_rows):
+            return all_rows
         if len(result)<100:
             return all_rows
     raise RuntimeError("Security listing exceeded bounded pages")
@@ -123,11 +126,15 @@ def main() -> None:
         or loc.get("start_line")!=166
         or inst.get("analysis_key")!=LEGACY_KEY):
         raise RuntimeError("Live alert is not the exact known stale test-only finding")
-    analyses=read_pages("repos/"+REPO+"/code-scanning/analyses?ref=refs/heads/main")
-    matched=[row for row in analyses
-        if row.get("commit_sha")==expected
-        and "javascript" in str(row.get("category") or row.get("analysis_key") or "").lower()
-        and "scope:core" in str(row.get("category") or row.get("analysis_key") or "").lower()]
+    def is_exact_core_analysis(row):
+        category=str(row.get("category") or row.get("analysis_key") or "").lower()
+        return (row.get("commit_sha")==expected and "javascript" in category
+                and "scope:core" in category)
+    # Analysis history is unbounded. The exact-SHA current category is a positive
+    # witness; unlike the High/Critical alert inventory, older rows need not be scanned.
+    analyses=read_pages("repos/"+REPO+"/code-scanning/analyses?ref=refs/heads/main",
+                        stop_after=lambda rows:any(is_exact_core_analysis(row) for row in rows))
+    matched=[row for row in analyses if is_exact_core_analysis(row)]
     if not matched:
         raise RuntimeError("Exact-main maintained JS Core CodeQL analysis not found")
     alerts=read_pages("repos/"+REPO+"/code-scanning/alerts?state=open&ref=refs/heads/main")
