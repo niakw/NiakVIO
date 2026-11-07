@@ -235,13 +235,14 @@ def main() -> None:
                  "former test line excluded only one host, now asserts a positive exact-origin allowlist. "
                  "Exact current main analyzed cleanly in CodeQL core category. "
                  "This is a historical test-only diagnostic, not a provider runtime bypass.")
-    # Do not bypass a repository policy that requires approval for dismissals.
-    # GitHub's create_request flag asks for review where enabled, and otherwise
-    # permits the same ordinary dismissal. Both outcomes remain independently
-    # verified against the alert state; a pending request is NOT a clean gate.
+    # Use GitHub's ordinary dismissal endpoint. The optional create_request
+    # flag was explicitly set in prior runs and produced HTTP 422 without
+    # field-level errors on this repository; do not assume delegated requests
+    # are supported. An enabled approval policy is enforced by GitHub itself,
+    # and any unresolved/pending response remains a failing security gate.
     updated=api("repos/"+REPO+"/code-scanning/alerts/"+str(LEGACY_ALERT),
         "PATCH",{"state":"dismissed","dismissed_reason":"used in tests",
-                 "dismissed_comment":explanation,"create_request":True})
+                 "dismissed_comment":explanation})
     if not isinstance(updated,dict):
         raise RuntimeError("GitHub returned an invalid CodeQL dismissal response")
     if updated.get("state")!="dismissed":
