@@ -75,6 +75,11 @@ def row(variant: int, generation: int = 1) -> dict:
         "failures": 1,
         "consecutiveFailures": 1,
         "successes": 0,
+        # A production negative represents a child actually executed and
+        # rejected by the strict media/identity gate, not a mere retry count.
+        "executionObserved": True,
+        "lastOutcome": "rejected",
+        "lastReason": "required_category_playable_proof:anime",
     }
 
 def plan(memory: list[dict], mode: str) -> dict:
@@ -117,15 +122,22 @@ with tempfile.TemporaryDirectory() as td:
         "entries": [row(0), row(1), row(2), row(3), row(4, 1)],
     }), encoding="utf-8")
 
-    # The previous isolated Learning phase failed generation 2. This state is
-    # explicitly read-only and must affect only the next Learning phase.
+    # This is a genuine generation-only failure, not an executed child.
+    # Learning rotates away from a failed generation, while production uses
+    # only the five executed baseline variants and never borrows this result.
+    generation_only = {
+        **row(4, 2),
+        "lastOutcome": "not_generated",
+        "lastReason": "candidate_generation_failed",
+        "executionObserved": False,
+    }
     learning.write_text(json.dumps({
         "schemaVersion": 1,
         "publicationAllowed": False,
         "productionWritesAllowed": False,
         "experimentMemory": {
             "schemaVersion": 1,
-            "entries": [row(4, 2)],
+            "entries": [generation_only],
         },
     }), encoding="utf-8")
 
@@ -163,7 +175,7 @@ with tempfile.TemporaryDirectory() as td:
             "productionWritesAllowed": False,
             "experimentMemory": {
                 "schemaVersion": 1,
-                "entries": [row(4, 2), stale_post_g5],
+                "entries": [generation_only, stale_post_g5],
             },
         }), encoding="utf-8")
         migrated_memory = brain.planner_negative_memory("learning")
@@ -186,7 +198,7 @@ with tempfile.TemporaryDirectory() as td:
             "productionWritesAllowed": False,
             "experimentMemory": {
                 "schemaVersion": 1,
-                "entries": [row(4, 2), misleading_unavailable],
+                "entries": [generation_only, misleading_unavailable],
             },
         }), encoding="utf-8")
         invalid_memory = brain.planner_negative_memory("learning")
@@ -209,7 +221,7 @@ with tempfile.TemporaryDirectory() as td:
             "productionWritesAllowed": False,
             "experimentMemory": {
                 "schemaVersion": 1,
-                "entries": [row(4, 2), executed_post_g5],
+                "entries": [generation_only, executed_post_g5],
             },
         }), encoding="utf-8")
         executed_memory = brain.planner_negative_memory("learning")
