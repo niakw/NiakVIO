@@ -1245,3 +1245,26 @@ Brain-LLM maps a census `CANDIDATE OK` (or any retained candidateProof) to `cand
 The representative source-mutation selector now assigns stronger *negative proof weight* to a generated no-op or pure deletion: a single 3B failure must not repeatedly consume another full inference budget merely because the provider has a high historical score. Historical timeouts receive a lower penalty (model/infrastructure rather than provider causality). This is deterministic, provider-agnostic and reversible as new evidence is recorded. Its unit test covers the actual regression-then-no-op pattern and ensures explicit manual requests remain distinct from automation. Changes to the selector now trigger the main-only sandbox test.
 
 The Remat Test lane explicitly emits `candidateReplayProvenance` and `candidateProgramReplayPerformed=false`. It does **not** execute a historical Brain candidate program: it reconstructs *current structured DATA* then runs a current-byte retest. A retained `CANDIDATE OK` label such as the historical `run 34309729426` is not an executable program or current terminal proof. The diagnostic records historical run labels, current strict retest result and the required next stage (exact-program recovery or Brain reconstruction); it never invents missing patches, promotes statuses or weakens the decoded identity gate.
+
+## 2026-11-07 — Category-specific decoded sandbox repair fixtures
+
+The Brain candidate evaluator must not reuse an anime-only cross-provider playback
+fixture collection for a movie- or TV-only provider. Strict Force validation now
+derives the immutable comparison fixture set from the enabled provider's
+\`manifest.json\` supportedTypes and the audited \`health-config.json\` reference
+fixtures that have known positive expected durations. Baseline and candidate
+run the same fixed examples. At least one real fixture per declared supported
+media type is required; unknown or missing categories fail closed.
+
+A candidate cannot nominate its own easier tests. The decoder must see at least
+one new verified duration- and identity-safe decoded media control, while all
+previously working fixture controls must be preserved. The pre-existing
+anime-only \`check_cross_provider_playback\` harness retains its independent
+fixed Jujutsu Kaisen/Hell Mode contract. A multi-category provider's unresolved
+fixtures remain explicit in proof reports; a generated, materialized patch is
+not automatically counted as a playable provider.
+
+Regression and hosted proof preflight both run
+\`tests/brain_strict_fixture_category_test.py\`. Direct manual provider repairs
+remain out of scope; Brain-owned orchestration and validation are the only
+modified production-facing surfaces here.

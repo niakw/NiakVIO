@@ -3,7 +3,7 @@ name: Brain - Hosted single-provider repair check
 on:
   push:
     branches: [main]
-    paths: [.github/workflows/brain-hosted-repair-check.yml, scripts/select_brain_hosted_representative.py, tests/brain_hosted_representative_selection_test.py]
+    paths: [.github/workflows/brain-hosted-repair-check.yml, scripts/select_brain_hosted_representative.py, scripts/evaluate_brain_llm_force_candidates.py, tests/brain_hosted_representative_selection_test.py, tests/brain_strict_fixture_category_test.py]
   workflow_dispatch:
     inputs:
       provider:
@@ -103,6 +103,7 @@ jobs:
           set -euo pipefail
           python tests/hosted_brain_repair_loop_test.py
           python tests/brain_llm_force_candidate_sandbox_test.py
+          python tests/brain_strict_fixture_category_test.py
           python tests/brain_hosted_local_proof_workflow_test.py
           # Pin and run the Brain retry-selection guard before expensive inference.
           python -m unittest discover -s brain-llm/tests -p test_force_rejected_unit_diversification.py

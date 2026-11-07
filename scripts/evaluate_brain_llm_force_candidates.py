@@ -59,51 +59,116 @@ def decoded_media_summary(test: dict[str, Any]) -> tuple[list[dict[str, Any]], i
     return probes, sum(row['passedMediaControl'] is True for row in probes) if executed else 0
 
 
-def decoded_repair_gate(baseline: dict[str, Any], candidate: dict[str, Any]) \
-        -> tuple[bool, str, dict[str, Any]]:
-    """Require fixture-level decoded improvement; other gates retain authority."""
+def strict_repair_fixture_contract(provider: str | None = None) -> dict[tuple[str, str], dict[str, Any]]:
+    """Select immutable, category-matched fixture facts from health-config.json.
+
+    The source of authority is never a provider, candidate output or model prompt.
+    Anime-only legacy callers retain the same two fixed regression fixtures.
+    A movie provider cannot be declared fixed by running two anime episodes.
+    """
+    source = load(ROOT / 'health-config.json').get('fixtures') or {}
+    if provider is None:
+        categories = {'anime'}
+    else:
+        manifest = load(ROOT / 'manifest.json')
+        selected = [row for row in manifest.get('scrapers') or []
+                    if isinstance(row, dict) and canon(row.get('id')) == canon(provider)
+                    and row.get('enabled') is True]
+        if len(selected) != 1:
+            raise ValueError('decoded_repair_provider_manifest_contract')
+        supported = {str(value).strip().casefold()
+                     for value in (selected[0].get('supportedTypes') or [])}
+        categories = supported.intersection({'movie', 'tv', 'anime', 'anime_movie'})
+        if not categories or supported - categories:
+            raise ValueError('decoded_repair_unsupported_media_category')
+    result: dict[tuple[str, str], dict[str, Any]] = {}
+    for category in ('anime', 'movie', 'tv', 'anime_movie'):
+        if category not in categories:
+            continue
+        candidates = [row for row in source.get(category) or []
+                      if isinstance(row, dict)
+                      and str(row.get('tmdbId') or '').isdigit()
+                      and type(row.get('expectedDurationMinutes')) in (int, float)
+                      and row['expectedDurationMinutes'] > 0
+                      and (category in ('movie', 'anime_movie') or
+                           (type(row.get('season')) is int and row['season'] >= 0
+                            and type(row.get('episode')) is int and row['episode'] > 0))]
+        if provider is None:
+            candidates = [row for tmdb in DECODED_REPAIR_FIXTURES
+                          for row in candidates if str(row.get('tmdbId')) == tmdb]
+            if len(candidates) != len(DECODED_REPAIR_FIXTURES):
+                raise ValueError('decoded_repair_fixture_contract')
+        elif not candidates:
+            raise ValueError('decoded_repair_missing_category_fixture:' + category)
+        # Two independently identified anime fixtures; at least one authentic
+        # fixture per other declared media category, never a synthetic stand-in.
+        for fixture in candidates[:2]:
+            key = category, str(fixture['tmdbId'])
+            if key in result:
+                raise ValueError('decoded_repair_duplicate_fixture')
+            result[key] = copy.deepcopy(fixture)
+    if not result:
+        raise ValueError('decoded_repair_empty_fixture_contract')
+    return result
+
+
+def decoded_repair_gate(baseline: dict[str, Any], candidate: dict[str, Any],
+                        provider: str | None = None) -> tuple[bool, str, dict[str, Any]]:
+    """Require actual decoded improvement on the provider's own media types."""
+    required = strict_repair_fixture_contract(provider)
     metadata = {'decodedProofRequired': True, 'improvedFixtures': [],
-                'unresolvedFixtures': list(DECODED_REPAIR_FIXTURES.values())}
+                'unresolvedFixtures': [str(row.get('label') or key[1])
+                                       for key, row in required.items()]}
 
     def fixtures(result):
         tests = result.get('tests')
-        if not isinstance(tests, list) or len(tests) != len(DECODED_REPAIR_FIXTURES):
+        if not isinstance(tests, list) or len(tests) != len(required):
             return None
         selected = {}
         for test in tests:
             if not isinstance(test, dict) or not isinstance(test.get('fixture'), dict):
                 return None
             fixture = test['fixture']
-            tmdb = str(fixture.get('tmdbId') or '')
-            if (tmdb not in DECODED_REPAIR_FIXTURES or tmdb in selected
-                    or type(fixture.get('season')) is not int or fixture['season'] != 1
-                    or type(fixture.get('episode')) is not int or fixture['episode'] != 1
-                    or type(fixture.get('expectedDurationMinutes')) not in (int, float)
-                    or fixture['expectedDurationMinutes'] != 24
-                    or fixture.get('category') != 'anime'):
+            category = str(fixture.get('category') or '')
+            key = (category, str(fixture.get('tmdbId') or ''))
+            spec = required.get(key)
+            if spec is None or key in selected:
                 return None
-            if any(type(test.get(key)) is not int or test[key] < 0
-                   for key in ('streams_returned', 'streams_playable', 'streams_probed')):
+            if (fixture.get('label') != spec.get('label')
+                    or fixture.get('expectedDurationMinutes') != spec['expectedDurationMinutes']
+                    or type(fixture.get('expectedDurationMinutes')) not in (int, float)):
                 return None
-            selected[tmdb] = test
-        return selected
+            if category in ('anime', 'tv'):
+                if (type(fixture.get('season')) is not int
+                        or fixture['season'] != spec['season']
+                        or type(fixture.get('episode')) is not int
+                        or fixture['episode'] != spec['episode']):
+                    return None
+            elif fixture.get('season') is not None or fixture.get('episode') is not None:
+                return None
+            if any(type(test.get(field)) is not int or test[field] < 0
+                   for field in ('streams_returned', 'streams_playable', 'streams_probed')):
+                return None
+            selected[key] = test
+        return selected if set(selected) == set(required) else None
 
     before, after = fixtures(baseline), fixtures(candidate)
     if before is None or after is None:
         return False, 'decoded_repair_fixture_contract', metadata
     metadata['unresolvedFixtures'] = []
     regression = None
-    for tmdb, label in DECODED_REPAIR_FIXTURES.items():
-        old, new = before[tmdb], after[tmdb]
+    for key, spec in required.items():
+        old, new = before[key], after[key]
         _, old_controls = decoded_media_summary(old)
         _, new_controls = decoded_media_summary(new)
+        label = str(spec.get('label') or key[1])
         if new_controls == 0:
             metadata['unresolvedFixtures'].append(label)
         if old['streams_playable'] == 0 and new_controls > 0:
             metadata['improvedFixtures'].append(label)
-        if (new_controls < old_controls or any(new[key] < old[key]
-                for key in ('streams_returned', 'streams_playable'))):
-            regression = regression or f'decoded_repair_fixture_regression:{tmdb}'
+        if (new_controls < old_controls or any(new[field] < old[field]
+                for field in ('streams_returned', 'streams_playable'))):
+            regression = regression or f'decoded_repair_fixture_regression:{key[1]}'
     if regression:
         return False, regression, metadata
     if not metadata['improvedFixtures']:
@@ -425,9 +490,10 @@ def evaluate_pair(
     baseline: dict[str, Any],
     candidate: dict[str, Any],
     mechanism_family: str = "",
+    provider: str | None = None,
 ) -> tuple[bool, str]:
     if require_decoded_repair():
-        decoded_ok, decoded_reason, _ = decoded_repair_gate(baseline, candidate)
+        decoded_ok, decoded_reason, _ = decoded_repair_gate(baseline, candidate, provider)
         if not decoded_ok:
             return False, decoded_reason
     family = str(mechanism_family or "").strip().casefold().replace("_", "-")
@@ -467,7 +533,7 @@ def stage_provider(repo_root: Path, provider: str, stage: Path, targets: Path) -
     )
 
 
-def health_provider(stage: Path, output: Path) -> dict[str, Any]:
+def health_provider(stage: Path, output: Path, provider: str | None = None) -> dict[str, Any]:
     # Activation stops after its first healthy HD example. A repair comparison
     # must observe more than that first success and probe the bounded stream set.
     output.mkdir(parents=True, exist_ok=True)
@@ -479,6 +545,18 @@ def health_provider(stage: Path, output: Path) -> dict[str, Any]:
     if require_decoded_repair():
         from check_cross_provider_playback import comparison_config
         config = comparison_config(config)
+        if provider is not None:
+            # The baseline and candidate must run precisely the same immutable,
+            # media-type-correct fixtures; the model cannot choose them.
+            required = strict_repair_fixture_contract(provider)
+            config['fixtures'] = {key: [] for key in ('anime', 'movie', 'tv', 'anime_movie')}
+            for (category, _tmdb), fixture in required.items():
+                config['fixtures'][category].append(copy.deepcopy(fixture))
+            count = len(required)
+            config['modes']['deep']['fixture_limit'] = count
+            print('FIELD_BRAIN_STRICT_FIXTURES provider=' + canon(provider)
+                  + ' categories=' + ','.join(sorted({key[0] for key in required}))
+                  + ' fixtures=' + str(count), flush=True)
     if os.environ.get('NIAKVIO_READER_UA_PROBE') == '1':
         config['modes']['deep']['reader_user_agent_probe'] = True
     if os.environ.get('NIAKVIO_OBSERVED_MEDIA_PROBE') == '1':
@@ -659,7 +737,7 @@ def main() -> int:
             write_targets(targets, provider)
 
             stage_provider(ROOT, provider, baseline_stage, targets)
-            baseline_health = health_provider(baseline_stage, baseline_out)
+            baseline_health = health_provider(baseline_stage, baseline_out, provider)
             baseline = provider_result(baseline_health, provider)
 
             run("git", "worktree", "add", "--detach", str(worktree), current_sha)
@@ -724,7 +802,7 @@ def main() -> int:
                             **proof,
                         })
                         continue
-                    candidate_health = health_provider(candidate_stage, candidate_out)
+                    candidate_health = health_provider(candidate_stage, candidate_out, provider)
                     candidate = provider_result(candidate_health, provider)
                     mechanism_family = str(row.get("mechanismFamily") or "")
                     if not mechanism_family:
@@ -740,6 +818,7 @@ def main() -> int:
                         baseline,
                         candidate,
                         mechanism_family,
+                        provider,
                     )
 
                     result = {
@@ -766,7 +845,7 @@ def main() -> int:
                         # This point is reached only after materialization and
                         # both actual health executions. These fixture facts
                         # do not replace the existing runtime/identity verdict.
-                        result.update(decoded_repair_gate(baseline, candidate)[2])
+                        result.update(decoded_repair_gate(baseline, candidate, provider)[2])
                     report_rows.append(result)
                     if accepted:
                         accepted_rows.append(copy.deepcopy(row))
