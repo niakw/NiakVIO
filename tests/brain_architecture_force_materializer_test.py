@@ -4,6 +4,7 @@ from __future__ import annotations
 import importlib.util
 import json
 import tempfile
+import textwrap
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -759,6 +760,62 @@ with tempfile.TemporaryDirectory(prefix="brain-force-body-only-") as tmp:
     assert len(provenance["programFingerprint"]) == 64
     assert provenance["priorOnlyUntilAppliedPlayback"] is True
     assert provenance == mod._program_provenance({"recoveryProgram": dict(typed_strategy)})
+    # Test a REAL parsed executable sibling, not a string/count fixture.
+    # Previous hosted Learning FORCE 42385368377 spent several expensive Qwen
+    # retries on v25 plans that only changed quotas relative to v14/v15.
+    # Reject that candidate *before* opening a materialization worktree.
+    runtime_file = root / mod.NEW_REPAIR_PROFILE_SURFACES[2]
+    baseline_runtime = runtime_file.read_text(encoding="utf-8")
+    sibling_body = mod.compile_recovery_program(typed_strategy, max_chars=4200)
+    sibling = (
+        '\nif new_strategy_id == "route_transition_graph_v14":\n'
+        + textwrap.indent(sibling_body, "    ")
+    )
+    quota_only = {
+        **typed_strategy,
+        "budgets": {"search": 20, "direct": 42, "requests": 50, "transitions": 28},
+    }
+    quota_body = mod.compile_recovery_program(quota_only, max_chars=4200)
+    runtime_file.write_text(baseline_runtime + sibling, encoding="utf-8")
+    try:
+        try:
+            mod._model_edits({"recoveryProgram": quota_only}, payload, root=root)
+        except ValueError as exc:
+            assert "recoveryProgram numeric-only strategy clone" in str(exc), exc
+            assert "route_transition_graph_v14" in str(exc), exc
+        else:
+            raise AssertionError("Brain accepted previously installed numeric-only typed clone")
+        both = (
+            baseline_runtime + sibling
+            + '\nif new_strategy_id == "route_transition_graph_v3":\n'
+            + textwrap.indent(quota_body, "    ")
+        )
+        try:
+            mod.reject_numeric_only_strategy_clone(both, "route_transition_graph_v3")
+        except ValueError as exc:
+            assert "numeric-only strategy clone" in str(exc), exc
+        else:
+            raise AssertionError("final materialized AST accepted same numeric-only clone")
+        distinct = {**typed_strategy, "transitionMode": "owned-learned"}
+        distinct_body = mod.compile_recovery_program(distinct, max_chars=4200)
+        mod.reject_recovery_program_clone(
+            distinct_body, "route_transition_graph_v3",
+            runtime_file.read_text(encoding="utf-8"),
+        )
+        proposed = mod._model_edits(
+            {"recoveryProgram": distinct}, payload, root=root,
+        )
+        assert len(proposed) == 1 and "learned_direct" in proposed[0]["replace"]
+        # A same-shaped strategy from an unrelated repair family is NOT evidence
+        # that this family's novelty has been exhausted.
+        mod.reject_recovery_program_clone(
+            quota_body, "route_transition_graph_v3",
+            'if new_strategy_id == "terminal_transition_graph_v14":\n'
+            + textwrap.indent(sibling_body, "    "),
+        )
+    finally:
+        runtime_file.write_text(baseline_runtime, encoding="utf-8")
+
     typed_edits = mod._model_edits({"recoveryProgram": typed_strategy}, payload, root=root)
     assert len(typed_edits) == 1
     assert 'elif new_strategy_id == "route_transition_graph_v3":' in typed_edits[0]["replace"]
