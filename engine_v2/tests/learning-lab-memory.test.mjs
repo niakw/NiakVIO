@@ -91,6 +91,14 @@ write(previous, {
     // unavailable before any candidate bytes were produced.
     lastOutcome: 'rejected', lastReason: 'required_category_playable_proof:anime',
     lastSeenAt: '2026-08-16T00:00:00Z', executionObserved: true,
+  }, {
+    providerId: 'generation-then-executed', providerVersion: '*',
+    signature: 'sig-generator', failureClass: 'route_proven_gap',
+    profile: 'adaptive_runtime_recovery', experimentVariant: 2, experimentGeneration: 1,
+    attempts: 1, successes: 0, failures: 1, consecutiveFailures: 1,
+    // Legacy contradictory flag must not turn a no-child attempt into proof.
+    lastOutcome: 'not_generated', lastReason: 'no child emitted',
+    lastSeenAt: '2026-08-16T00:00:00Z', executionObserved: true,
   }] },
   nativeReaderRepairMemory: readerMemory,
   nativeFeedback: { readerRepairAccepted: 3, readerRepairRejected: 2, readerRepairInconclusive: 1 },
@@ -112,6 +120,22 @@ write(runtimeMemory, {
     progresses: 2,
     lastOutcome: 'profile_unavailable',
     lastReason: 'planned_profile_not_applicable_to_current_bytes',
+  }, {
+    providerId: 'executed-evolved', providerVersion: '*',
+    signature: 'sig-executed', failureClass: 'chain_terminal_gap',
+    profile: 'terminal_transition_graph_v1', experimentVariant: 4,
+    experimentGeneration: 5, attempts: 2, failures: 1,
+    consecutiveFailures: 1, successes: 0,
+    lastOutcome: 'not_generated', lastReason: 'no executable child',
+    lastSeenAt: '2026-11-07T00:00:00Z', executionObserved: false,
+  }, {
+    providerId: 'generation-then-executed', providerVersion: '*',
+    signature: 'sig-generator', failureClass: 'route_proven_gap',
+    profile: 'adaptive_runtime_recovery', experimentVariant: 2,
+    experimentGeneration: 1, attempts: 2, failures: 1,
+    consecutiveFailures: 1, successes: 0,
+    lastOutcome: 'rejected', lastReason: 'required_category_playable_proof:movie',
+    lastSeenAt: '2026-11-07T00:00:00Z', executionObserved: true,
   }],
 });
 write(historical, {
@@ -174,6 +198,16 @@ const executedEvolved = latest.experimentMemory.entries.find((row) => row.provid
 assert.ok(executedEvolved, 'actually executed evolved-strategy evidence must be retained');
 assert.equal(executedEvolved.executionObserved, true);
 assert.equal(executedEvolved.lastOutcome, 'rejected');
+assert.equal(executedEvolved.lastReason, 'required_category_playable_proof:anime');
+assert.equal(executedEvolved.generationAttemptObserved, true,
+  'later failed generation must remain recorded without erasing executed rejection');
+const laterExecuted = latest.experimentMemory.entries.find(row =>
+  row.providerId === 'generation-then-executed');
+assert.ok(laterExecuted, 'new executed child must be retained after prior no-child');
+assert.equal(laterExecuted.executionObserved, true);
+assert.equal(laterExecuted.lastOutcome, 'rejected');
+assert.equal(laterExecuted.lastReason, 'required_category_playable_proof:movie');
+assert.equal(laterExecuted.generationAttemptObserved, true);
 // Runtime ledger is authoritative when available; the repair-report fallback
 // must not double-count the same current phase.
 assert.equal(
