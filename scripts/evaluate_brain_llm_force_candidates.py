@@ -467,7 +467,18 @@ def fixture_summary(result: dict[str, Any]) -> list[dict[str, Any]]:
         'streamsReturned': int(test.get('streams_returned') or 0),
     } for test in (result.get('tests') or [])[:12] if isinstance(test, dict)]
     for row, test in zip(output, [test for test in (result.get('tests') or [])[:12] if isinstance(test, dict)]):
-        minutes = (test.get('fixture') or {}).get('expectedDurationMinutes')
+        fixture = test.get('fixture') if isinstance(test.get('fixture'), dict) else {}
+        tmdb = str(fixture.get('tmdbId') or '')
+        category = str(fixture.get('category') or '')
+        season = fixture.get('season') if type(fixture.get('season')) is int else None
+        episode = fixture.get('episode') if type(fixture.get('episode')) is int else None
+        trusted_identity = (category, tmdb, season, episode) in trusted
+        # Diagnostics must retain their catalog-authoritative identity even
+        # when the *preflight* performs no decode and all streams are missing.
+        row.update({'tmdbId': tmdb if trusted_identity else '',
+                    'season': season if trusted_identity else None,
+                    'episode': episode if trusted_identity else None})
+        minutes = fixture.get('expectedDurationMinutes')
         if type(minutes) in (int, float) and 0 < minutes <= 20160:
             row['expectedDurationSeconds'] = round(minutes * 60)
         raw_probes = test.get('host_results')
@@ -475,16 +486,7 @@ def fixture_summary(result: dict[str, Any]) -> list[dict[str, Any]]:
                 isinstance(probe, dict) and isinstance(probe.get('media_decode'), dict)
                 for probe in raw_probes)):
             probes, controls = decoded_media_summary(test)
-            fixture = test.get('fixture') or {}
-            tmdb = str(fixture.get('tmdbId') or '')
-            category = str(fixture.get('category') or '')
-            season = fixture.get('season') if type(fixture.get('season')) is int else None
-            episode = fixture.get('episode') if type(fixture.get('episode')) is int else None
-            valid = (category, tmdb, season, episode) in trusted
-            row.update({'tmdbId': tmdb if valid else '',
-                        'season': season if valid else None,
-                        'episode': episode if valid else None,
-                        'decodedMediaControls': controls, 'decodedMediaProbes': probes})
+            row.update({'decodedMediaControls': controls, 'decodedMediaProbes': probes})
     return output
 
 
