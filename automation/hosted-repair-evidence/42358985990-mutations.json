@@ -1,0 +1,68 @@
+{
+  "brainLlmSha": "0f559e4e9ce95d9869d625f122d630b85c3aadb5",
+  "minConfidence": 0.8,
+  "privateContentRetained": false,
+  "proofAuthority": false,
+  "providerCount": 1,
+  "providerMutationContentRetained": true,
+  "publicationAuthority": false,
+  "rows": [
+    {
+      "candidateOrdinal": 1,
+      "confidence": 0.96,
+      "failureClass": "route-proven-gap",
+      "mechanismFamily": "exact-class-token-boundary",
+      "mutationContextFingerprint": "6648bbf622bdf4fb023e1e6f5987e4647341fef6bd59d500bb028002180c8920",
+      "mutationFingerprint": "81b4792d235bd51618568dd689d8ddd6f75e95de4e9346b039fa057254c1ac91",
+      "mutations": [
+        {
+          "family": "exact_class_token_boundary",
+          "find": "function classBlocks(html,cls){var esc=cls.replace(/[-/\\\\^$*+?.()|[\\]{}]/g,\"\\\\$&\"),re=new RegExp(\"<(?:div|article|li|a)\\\\b[^>]*class=[\\\"'][^\\\"']*\\\\b\"+esc+\"\\\\b[^\\\"']*[\\\"'][^>]*>\",\"gi\"),starts=[],m;while((m=re.exec(html||\"\"))!==null)starts.push({at:m.index,tag:m[0]});var out=[];for(var i=0;i<starts.length;i++){var end=i+1<starts.length?starts[i+1].at:Math.min(String(html||\"\").length,starts[i].at+12000);out.push({html:String(html||\"\").slice(starts[i].at,end),tag:starts[i].tag})}return out}",
+          "operation": "upsert",
+          "replace": "function classBlocks(html,cls){var esc=cls.replace(/[-/\\\\^$*+?.()|[\\]{}]/g,\"\\\\$&\"),re=new RegExp(\"<(?:div|article|li|a)\\\\b[^>]*class=[\\\"'][^\\\"']*\\\\b\"+esc+\"(?![-_])\\\\b[^\\\"']*[\\\"'][^>]*>\",\"gi\"),starts=[],m;while((m=re.exec(html||\"\"))!==null)starts.push({at:m.index,tag:m[0]});var out=[];for(var i=0;i<starts.length;i++){var end=i+1<starts.length?starts[i+1].at:Math.min(String(html||\"\").length,starts[i].at+12000);out.push({html:String(html||\"\").slice(starts[i].at,end),tag:starts[i].tag})}return out}",
+          "scope": "provider_bloc"
+        }
+      ],
+      "providerId": "4khdhub",
+      "repairFamily": {
+        "archetype": "route-proven-gap:dom-selector-container",
+        "failure": "route-proven-gap",
+        "key": "e4180b32dccd240450ca7a3a158f60a12377b611f265d65ce647652426c87c11",
+        "mediaTypes": [
+          "movie",
+          "tv"
+        ],
+        "mutationSurfaces": [
+          "provider-bloc",
+          "provider-data",
+          "provider-js",
+          "provider-patch"
+        ],
+        "signals": [
+          "class-prefix-family",
+          "mixed-tag-nested-container",
+          "nested-anchor-html",
+          "provider-http-2xx",
+          "response-html",
+          "response-json"
+        ],
+        "stages": [
+          "provider-network-zero-result",
+          "provider-network-zero-result\u00d72"
+        ],
+        "status": "route-proven",
+        "version": 2
+      },
+      "strategy": "search-detail-player-terminal-traversal",
+      "targetLayer": "provider",
+      "tests": [
+        "replay_proven_route",
+        "traverse_search_detail_player_terminal",
+        "validate_terminal_media_identity"
+      ]
+    }
+  ],
+  "sandboxMutationAuthority": true,
+  "schemaVersion": 1,
+  "sourceNiakvioSha": "09b9c108811f6522a85e8d3391d6475bc1deaff8"
+}
