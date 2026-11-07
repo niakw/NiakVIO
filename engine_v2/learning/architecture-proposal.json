@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "proposalCount": 2,
+  "proposalCount": 1,
   "policyChanged": false,
   "policyChanges": [],
   "proposals": [
@@ -8,7 +8,7 @@
       "type": "brain_architecture_evolution",
       "evolutionKind": "repair_strategy_exhaustion_cohort",
       "priority": "critical",
-      "reason": "4 provider(s) exhausted every bounded Core Repair experiment variant and were explicitly deferred for a new strategy.",
+      "reason": "1 provider(s) exhausted every bounded Core Repair experiment variant and were explicitly deferred for a new strategy.",
       "targets": [
         "scripts/brain_repair_runtime.py",
         "scripts/run_brain_learning_queue.py",
@@ -17,128 +17,71 @@
       ],
       "recommendation": "Synthesize one or more new bounded repair/evidence strategies from the common failure cohorts and independent Lab observations. Do not recycle the exhausted bounded g2..g5 family or increase retry counts. Each new strategy must have an explicit causal trigger, negative-memory signature, playback/identity acceptance proof and regression test before it may re-enter Core Repair.",
       "evidence": {
-        "deferredProviderCount": 4,
+        "deferredProviderCount": 1,
         "providers": [
-          "allanime",
-          "mallumv",
-          "moviebox",
-          "yflix"
+          "4khdhub"
         ],
         "failureCohorts": {
-          "chain_terminal_gap": [
-            "allanime",
-            "mallumv",
-            "moviebox"
-          ],
-          "media_extraction_gap": [
-            "mallumv",
-            "moviebox"
+          "route_proven_gap": [
+            "4khdhub"
           ],
           "search_gap": [
-            "yflix"
-          ],
-          "transport_blocked": [
-            "moviebox"
+            "4khdhub"
           ]
         },
         "failedProfileCohorts": {
           "adaptive_runtime_recovery": [
-            "allanime",
-            "mallumv",
-            "moviebox",
-            "yflix"
-          ],
-          "chain_terminal_extractor_v1": [
-            "allanime",
-            "mallumv"
-          ],
-          "chain_terminal_extractor_v1_g3": [
-            "allanime",
-            "mallumv"
-          ],
-          "chain_terminal_extractor_v1_g4": [
-            "allanime",
-            "mallumv"
-          ],
-          "chain_terminal_extractor_v1_g5": [
-            "allanime",
-            "mallumv"
+            "4khdhub"
           ],
           "document_request_contract_mining_v1": [
-            "allanime",
-            "mallumv",
-            "moviebox"
+            "4khdhub"
           ],
-          "media_response_shape_inference_v1": [
-            "moviebox"
+          "html_class_token_exact_v1": [
+            "4khdhub"
           ],
-          "player_media_extractor_v1": [
-            "mallumv"
+          "identity_alias_search_traversal_v1": [
+            "4khdhub"
           ],
-          "player_media_extractor_v1_g3": [
-            "mallumv",
-            "moviebox"
+          "proven_route_terminal_traversal_v1": [
+            "4khdhub"
           ],
-          "player_media_extractor_v1_g4": [
-            "moviebox"
+          "proven_route_terminal_traversal_v1_g3": [
+            "4khdhub"
           ],
-          "player_media_extractor_v1_g5": [
-            "moviebox"
+          "proven_route_terminal_traversal_v1_g4": [
+            "4khdhub"
           ],
-          "player_protocol_family_replay_v1": [
-            "moviebox"
+          "proven_route_terminal_traversal_v1_g5": [
+            "4khdhub"
           ],
-          "provider_origin_failover_v1": [
-            "moviebox"
+          "route_peer_transition_replay_v1": [
+            "4khdhub"
           ],
-          "provider_origin_failover_v1_g3": [
-            "moviebox"
-          ],
-          "provider_origin_failover_v1_g4": [
-            "moviebox"
-          ],
-          "provider_origin_failover_v1_g5": [
-            "moviebox"
-          ],
-          "provider_positive_program_replay_v1": [
-            "mallumv"
-          ],
-          "route_transition_graph_v25": [
-            "moviebox"
+          "route_transition_graph_v1": [
+            "4khdhub"
           ],
           "runtime_response_salvage_v1": [
-            "allanime",
-            "moviebox"
+            "4khdhub"
           ],
-          "terminal_request_program_inference_v1": [
-            "allanime"
+          "search_contract_inference_v1": [
+            "4khdhub"
           ],
-          "terminal_transition_graph_v1": [
-            "allanime",
-            "mallumv"
+          "search_contract_inference_v1_g3": [
+            "4khdhub"
+          ],
+          "search_contract_inference_v1_g5": [
+            "4khdhub"
+          ],
+          "search_response_route_binding_v1": [
+            "4khdhub"
           ]
         },
         "failureFamilyCohorts": {
-          "api_schema": [
-            "moviebox"
-          ],
-          "network_transport": [
-            "moviebox"
-          ],
-          "player_embed": [
-            "allanime",
-            "mallumv",
-            "moviebox"
-          ],
           "route_discovery": [
-            "moviebox"
+            "4khdhub"
           ],
           "search_catalogue": [
-            "yflix"
-          ],
-          "terminal_media": [
-            "allanime",
-            "mallumv"
+            "4khdhub"
           ]
         },
         "knownFailureFamilies": [
@@ -165,12 +108,12 @@
         ],
         "unknownFailureProviders": [],
         "unknownFailurePolicy": "synthesize-new-strategy-never-retry-blindly",
-        "repeatedSignatureCount": 10,
+        "repeatedSignatureCount": 6,
         "strategyBlueprints": [
           {
-            "strategyId": "route_transition_graph_v26",
+            "strategyId": "route_transition_graph_v29",
             "causalTrigger": "catalogue/detail route is live and identity-qualified but no terminal/player media is reached",
-            "method": "replay already installed executable Repair strategy route_transition_graph_v26 against current-byte evidence before another FORCE evolution; preserve playback/identity/non-regression gates",
+            "method": "derive and implement a genuinely new executable Repair strategy route_transition_graph_v29 from negative evidence for exhausted route_transition_graph_v1; preserve the causal intent of the prior method without reusing its implementation, register the new profile in Repair planning/runtime, and require targeted playback/identity proof",
             "requiredEvidence": [
               "retained route proof",
               "same-work identity correlation",
@@ -181,24 +124,20 @@
               "content identity not contradicted",
               "no green-lane regression"
             ],
-            "evolvesFromStrategyId": "route_transition_graph_v25",
+            "evolvesFromStrategyId": "route_transition_graph_v28",
             "exhaustedStrategyIds": [
               "adaptive_runtime_recovery",
-              "chain_terminal_extractor_v1",
               "document_request_contract_mining_v1",
               "html_class_token_exact_v1",
               "identity_alias_search_traversal_v1",
               "media_response_shape_inference_v1",
               "player_media_extractor_v1",
-              "player_media_extractor_v1_g3",
-              "player_media_extractor_v1_g4",
-              "player_media_extractor_v1_g5",
               "player_protocol_family_replay_v1",
               "proven_route_terminal_traversal_v1",
+              "proven_route_terminal_traversal_v1_g3",
+              "proven_route_terminal_traversal_v1_g4",
+              "proven_route_terminal_traversal_v1_g5",
               "provider_origin_failover_v1",
-              "provider_origin_failover_v1_g3",
-              "provider_origin_failover_v1_g4",
-              "provider_origin_failover_v1_g5",
               "provider_session_bootstrap_replay_v1",
               "route_peer_transition_replay_v1",
               "route_transition_graph_v1",
@@ -219,6 +158,9 @@
               "route_transition_graph_v23",
               "route_transition_graph_v24",
               "route_transition_graph_v25",
+              "route_transition_graph_v26",
+              "route_transition_graph_v27",
+              "route_transition_graph_v28",
               "route_transition_graph_v3",
               "route_transition_graph_v4",
               "route_transition_graph_v5",
@@ -228,20 +170,26 @@
               "route_transition_graph_v9",
               "runtime_response_salvage_v1",
               "search_contract_inference_v1",
+              "search_contract_inference_v1_g3",
+              "search_contract_inference_v1_g5",
               "search_response_route_binding_v1",
+              "terminal_request_program_inference_v1",
+              "terminal_transition_graph_v1",
+              "terminal_transition_graph_v2",
+              "terminal_transition_graph_v3",
               "transport_request_differential_v1"
             ],
-            "existingExecutableRepairProfile": true,
+            "existingExecutableRepairProfile": false,
             "groupId": "route-to-terminal|html_scraper",
             "repairScope": "route-to-terminal",
             "targetLayer": "core",
-            "forcePromotionEligible": false,
-            "requiresNewExecutableRepairProfile": false,
-            "forcePromotionReason": "already-installed-profile-replay-first",
+            "forcePromotionEligible": true,
+            "requiresNewExecutableRepairProfile": true,
+            "forcePromotionReason": "deferred-known-family-exhaustion",
             "transportSignature": "not-applicable",
             "capabilityStrategy": "html_scraper",
             "providers": [
-              "moviebox"
+              "4khdhub"
             ],
             "providerCount": 1,
             "runtimeFamilies": [
@@ -254,269 +202,12 @@
               "waf_challenge"
             ],
             "harnessTransportClasses": [],
-            "negativeMemorySignature": "strategy:route_transition_graph_v26|scope:route-to-terminal|capability:html_scraper|transport:not-applicable",
-            "reentryPolicy": "proposal -> executable contract -> Learning/Lab proof -> Core Repair eligibility",
-            "productionWritesAllowed": false,
-            "requiresHumanMerge": true
-          },
-          {
-            "strategyId": "route_transition_graph_v25",
-            "causalTrigger": "catalogue/detail route is live and identity-qualified but no terminal/player media is reached",
-            "method": "replay already installed executable Repair strategy route_transition_graph_v25 against current-byte evidence before another FORCE evolution; preserve playback/identity/non-regression gates",
-            "requiredEvidence": [
-              "retained route proof",
-              "same-work identity correlation",
-              "terminal/player response trace"
-            ],
-            "acceptanceProof": [
-              "playback-verified media",
-              "content identity not contradicted",
-              "no green-lane regression"
-            ],
-            "evolvesFromStrategyId": "route_transition_graph_v24",
-            "exhaustedStrategyIds": [
-              "adaptive_runtime_recovery",
-              "document_request_contract_mining_v1",
-              "html_class_token_exact_v1",
-              "identity_alias_search_traversal_v1",
-              "proven_route_terminal_traversal_v1",
-              "provider_origin_failover_v1",
-              "provider_session_bootstrap_replay_v1",
-              "route_peer_transition_replay_v1",
-              "route_transition_graph_v1",
-              "route_transition_graph_v10",
-              "route_transition_graph_v11",
-              "route_transition_graph_v12",
-              "route_transition_graph_v13",
-              "route_transition_graph_v14",
-              "route_transition_graph_v15",
-              "route_transition_graph_v16",
-              "route_transition_graph_v17",
-              "route_transition_graph_v18",
-              "route_transition_graph_v19",
-              "route_transition_graph_v2",
-              "route_transition_graph_v20",
-              "route_transition_graph_v21",
-              "route_transition_graph_v22",
-              "route_transition_graph_v23",
-              "route_transition_graph_v24",
-              "route_transition_graph_v3",
-              "route_transition_graph_v4",
-              "route_transition_graph_v5",
-              "route_transition_graph_v6",
-              "route_transition_graph_v7",
-              "route_transition_graph_v8",
-              "route_transition_graph_v9",
-              "runtime_response_salvage_v1",
-              "search_contract_inference_v1",
-              "search_response_route_binding_v1",
-              "transport_request_differential_v1"
-            ],
-            "existingExecutableRepairProfile": true,
-            "groupId": "route-to-terminal|mixed_embed_resolver",
-            "repairScope": "route-to-terminal",
-            "targetLayer": "core",
-            "forcePromotionEligible": false,
-            "requiresNewExecutableRepairProfile": false,
-            "forcePromotionReason": "already-installed-profile-replay-first",
-            "transportSignature": "not-applicable",
-            "capabilityStrategy": "mixed_embed_resolver",
-            "providers": [
-              "yflix"
-            ],
-            "providerCount": 1,
-            "runtimeFamilies": [
-              "dle-full-story-sibnet",
-              "mixed_embed_resolver",
-              "yflix-db-encrypted-ajax-v1"
-            ],
-            "dominantIssues": [
-              "network_exception",
-              "timeout",
-              "waf_challenge"
-            ],
-            "harnessTransportClasses": [],
-            "negativeMemorySignature": "strategy:route_transition_graph_v25|scope:route-to-terminal|capability:mixed_embed_resolver|transport:not-applicable",
-            "reentryPolicy": "proposal -> executable contract -> Learning/Lab proof -> Core Repair eligibility",
-            "productionWritesAllowed": false,
-            "requiresHumanMerge": true
-          },
-          {
-            "strategyId": "terminal_transition_graph_v8",
-            "causalTrigger": "retained chain hit reaches player/resolver territory but media extraction/validation is incomplete",
-            "method": "derive and implement a genuinely new executable Repair strategy terminal_transition_graph_v8 from negative evidence for exhausted terminal_transition_graph_v1; preserve the causal intent of the prior method without reusing its implementation, register the new profile in Repair planning/runtime, and require targeted playback/identity proof",
-            "requiredEvidence": [
-              "retained chain hit",
-              "terminal host/player family",
-              "response/body route proof"
-            ],
-            "acceptanceProof": [
-              "playback-verified media",
-              "terminal identity preserved",
-              "no green-lane regression"
-            ],
-            "evolvesFromStrategyId": "terminal_transition_graph_v7",
-            "exhaustedStrategyIds": [
-              "adaptive_runtime_recovery",
-              "chain_terminal_extractor_v1",
-              "chain_terminal_extractor_v1_g3",
-              "chain_terminal_extractor_v1_g4",
-              "chain_terminal_extractor_v1_g5",
-              "document_request_contract_mining_v1",
-              "media_response_shape_inference_v1",
-              "player_media_extractor_v1",
-              "player_protocol_family_replay_v1",
-              "proven_route_terminal_traversal_v1",
-              "provider_origin_failover_v1",
-              "provider_session_bootstrap_replay_v1",
-              "runtime_response_salvage_v1",
-              "terminal_request_program_inference_v1",
-              "terminal_transition_graph_v1",
-              "terminal_transition_graph_v2",
-              "terminal_transition_graph_v3",
-              "terminal_transition_graph_v4",
-              "terminal_transition_graph_v5",
-              "terminal_transition_graph_v6",
-              "terminal_transition_graph_v7",
-              "transport_request_differential_v1"
-            ],
-            "existingExecutableRepairProfile": false,
-            "groupId": "terminal-extraction|direct_media",
-            "repairScope": "terminal-extraction",
-            "targetLayer": "core",
-            "forcePromotionEligible": true,
-            "requiresNewExecutableRepairProfile": true,
-            "forcePromotionReason": "deferred-known-family-exhaustion",
-            "transportSignature": "not-applicable",
-            "capabilityStrategy": "direct_media",
-            "providers": [
-              "allanime"
-            ],
-            "providerCount": 1,
-            "runtimeFamilies": [
-              "allanime-mkissa-aaReq-gcm-plus-legacy-ctr-v5"
-            ],
-            "dominantIssues": [
-              "network_zero_result"
-            ],
-            "harnessTransportClasses": [],
-            "negativeMemorySignature": "strategy:terminal_transition_graph_v8|scope:terminal-extraction|capability:direct_media|transport:not-applicable",
-            "reentryPolicy": "proposal -> executable contract -> Learning/Lab proof -> Core Repair eligibility",
-            "productionWritesAllowed": false,
-            "requiresHumanMerge": true
-          },
-          {
-            "strategyId": "terminal_transition_graph_v8",
-            "causalTrigger": "retained chain hit reaches player/resolver territory but media extraction/validation is incomplete",
-            "method": "derive and implement a genuinely new executable Repair strategy terminal_transition_graph_v8 from negative evidence for exhausted terminal_transition_graph_v1; preserve the causal intent of the prior method without reusing its implementation, register the new profile in Repair planning/runtime, and require targeted playback/identity proof",
-            "requiredEvidence": [
-              "retained chain hit",
-              "terminal host/player family",
-              "response/body route proof"
-            ],
-            "acceptanceProof": [
-              "playback-verified media",
-              "terminal identity preserved",
-              "no green-lane regression"
-            ],
-            "evolvesFromStrategyId": "terminal_transition_graph_v7",
-            "exhaustedStrategyIds": [
-              "adaptive_runtime_recovery",
-              "chain_terminal_extractor_v1",
-              "chain_terminal_extractor_v1_g3",
-              "chain_terminal_extractor_v1_g4",
-              "chain_terminal_extractor_v1_g5",
-              "document_request_contract_mining_v1",
-              "html_class_token_exact_v1",
-              "identity_alias_search_traversal_v1",
-              "media_response_shape_inference_v1",
-              "player_media_extractor_v1",
-              "player_media_extractor_v1_g3",
-              "player_protocol_family_replay_v1",
-              "proven_route_terminal_traversal_v1",
-              "provider_positive_program_replay_v1",
-              "provider_session_bootstrap_replay_v1",
-              "route_peer_transition_replay_v1",
-              "route_transition_graph_v1",
-              "route_transition_graph_v10",
-              "route_transition_graph_v11",
-              "route_transition_graph_v12",
-              "route_transition_graph_v13",
-              "route_transition_graph_v14",
-              "route_transition_graph_v15",
-              "route_transition_graph_v16",
-              "route_transition_graph_v17",
-              "route_transition_graph_v18",
-              "route_transition_graph_v19",
-              "route_transition_graph_v2",
-              "route_transition_graph_v20",
-              "route_transition_graph_v21",
-              "route_transition_graph_v22",
-              "route_transition_graph_v23",
-              "route_transition_graph_v24",
-              "route_transition_graph_v3",
-              "route_transition_graph_v4",
-              "route_transition_graph_v5",
-              "route_transition_graph_v6",
-              "route_transition_graph_v7",
-              "route_transition_graph_v8",
-              "route_transition_graph_v9",
-              "runtime_response_salvage_v1",
-              "search_contract_inference_v1",
-              "search_response_route_binding_v1",
-              "terminal_request_program_inference_v1",
-              "terminal_transition_graph_v1",
-              "terminal_transition_graph_v2",
-              "terminal_transition_graph_v3",
-              "terminal_transition_graph_v4",
-              "terminal_transition_graph_v5",
-              "terminal_transition_graph_v6",
-              "terminal_transition_graph_v7",
-              "transport_request_differential_v1"
-            ],
-            "existingExecutableRepairProfile": false,
-            "groupId": "terminal-extraction|html_scraper",
-            "repairScope": "terminal-extraction",
-            "targetLayer": "core",
-            "forcePromotionEligible": true,
-            "requiresNewExecutableRepairProfile": true,
-            "forcePromotionReason": "deferred-known-family-exhaustion",
-            "transportSignature": "not-applicable",
-            "capabilityStrategy": "html_scraper",
-            "providers": [
-              "mallumv"
-            ],
-            "providerCount": 1,
-            "runtimeFamilies": [
-              "mallumv-catalogue-confirm-internal-v1"
-            ],
-            "dominantIssues": [
-              "network_zero_result"
-            ],
-            "harnessTransportClasses": [],
-            "negativeMemorySignature": "strategy:terminal_transition_graph_v8|scope:terminal-extraction|capability:html_scraper|transport:not-applicable",
+            "negativeMemorySignature": "strategy:route_transition_graph_v29|scope:route-to-terminal|capability:html_scraper|transport:not-applicable",
             "reentryPolicy": "proposal -> executable contract -> Learning/Lab proof -> Core Repair eligibility",
             "productionWritesAllowed": false,
             "requiresHumanMerge": true
           }
         ]
-      },
-      "requiresHumanMerge": true,
-      "productionWritesAllowed": false,
-      "publicationAllowed": false
-    },
-    {
-      "type": "brain_architecture_evolution",
-      "evolutionKind": "method_exhaustion",
-      "priority": "high",
-      "reason": "7 repeated failed method/signature observations indicate the current toolbox may be too narrow.",
-      "targets": [
-        "scripts/run_brain_learning_sandbox.py",
-        "tests/brain_*"
-      ],
-      "recommendation": "Propose a different method or capability type instead of repeating a known failed method.",
-      "evidence": {
-        "repeatedMethodSignals": 7
       },
       "requiresHumanMerge": true,
       "productionWritesAllowed": false,
@@ -554,20 +245,17 @@
     "conditionalRouteSearch": true,
     "selfArchitecturePr": true
   },
-  "targetProvider": "moviesmod",
+  "targetProvider": "4khdhub",
   "deferredRepairProviders": [
-    "allanime",
-    "mallumv",
-    "moviebox",
-    "yflix"
+    "4khdhub"
   ],
-  "deferredRepairProviderCount": 4,
-  "strategyBlueprintCount": 4,
+  "deferredRepairProviderCount": 1,
+  "strategyBlueprintCount": 1,
   "strategyBlueprints": [
     {
-      "strategyId": "route_transition_graph_v26",
+      "strategyId": "route_transition_graph_v29",
       "causalTrigger": "catalogue/detail route is live and identity-qualified but no terminal/player media is reached",
-      "method": "replay already installed executable Repair strategy route_transition_graph_v26 against current-byte evidence before another FORCE evolution; preserve playback/identity/non-regression gates",
+      "method": "derive and implement a genuinely new executable Repair strategy route_transition_graph_v29 from negative evidence for exhausted route_transition_graph_v1; preserve the causal intent of the prior method without reusing its implementation, register the new profile in Repair planning/runtime, and require targeted playback/identity proof",
       "requiredEvidence": [
         "retained route proof",
         "same-work identity correlation",
@@ -578,24 +266,20 @@
         "content identity not contradicted",
         "no green-lane regression"
       ],
-      "evolvesFromStrategyId": "route_transition_graph_v25",
+      "evolvesFromStrategyId": "route_transition_graph_v28",
       "exhaustedStrategyIds": [
         "adaptive_runtime_recovery",
-        "chain_terminal_extractor_v1",
         "document_request_contract_mining_v1",
         "html_class_token_exact_v1",
         "identity_alias_search_traversal_v1",
         "media_response_shape_inference_v1",
         "player_media_extractor_v1",
-        "player_media_extractor_v1_g3",
-        "player_media_extractor_v1_g4",
-        "player_media_extractor_v1_g5",
         "player_protocol_family_replay_v1",
         "proven_route_terminal_traversal_v1",
+        "proven_route_terminal_traversal_v1_g3",
+        "proven_route_terminal_traversal_v1_g4",
+        "proven_route_terminal_traversal_v1_g5",
         "provider_origin_failover_v1",
-        "provider_origin_failover_v1_g3",
-        "provider_origin_failover_v1_g4",
-        "provider_origin_failover_v1_g5",
         "provider_session_bootstrap_replay_v1",
         "route_peer_transition_replay_v1",
         "route_transition_graph_v1",
@@ -616,6 +300,9 @@
         "route_transition_graph_v23",
         "route_transition_graph_v24",
         "route_transition_graph_v25",
+        "route_transition_graph_v26",
+        "route_transition_graph_v27",
+        "route_transition_graph_v28",
         "route_transition_graph_v3",
         "route_transition_graph_v4",
         "route_transition_graph_v5",
@@ -625,20 +312,26 @@
         "route_transition_graph_v9",
         "runtime_response_salvage_v1",
         "search_contract_inference_v1",
+        "search_contract_inference_v1_g3",
+        "search_contract_inference_v1_g5",
         "search_response_route_binding_v1",
+        "terminal_request_program_inference_v1",
+        "terminal_transition_graph_v1",
+        "terminal_transition_graph_v2",
+        "terminal_transition_graph_v3",
         "transport_request_differential_v1"
       ],
-      "existingExecutableRepairProfile": true,
+      "existingExecutableRepairProfile": false,
       "groupId": "route-to-terminal|html_scraper",
       "repairScope": "route-to-terminal",
       "targetLayer": "core",
-      "forcePromotionEligible": false,
-      "requiresNewExecutableRepairProfile": false,
-      "forcePromotionReason": "already-installed-profile-replay-first",
+      "forcePromotionEligible": true,
+      "requiresNewExecutableRepairProfile": true,
+      "forcePromotionReason": "deferred-known-family-exhaustion",
       "transportSignature": "not-applicable",
       "capabilityStrategy": "html_scraper",
       "providers": [
-        "moviebox"
+        "4khdhub"
       ],
       "providerCount": 1,
       "runtimeFamilies": [
@@ -651,247 +344,7 @@
         "waf_challenge"
       ],
       "harnessTransportClasses": [],
-      "negativeMemorySignature": "strategy:route_transition_graph_v26|scope:route-to-terminal|capability:html_scraper|transport:not-applicable",
-      "reentryPolicy": "proposal -> executable contract -> Learning/Lab proof -> Core Repair eligibility",
-      "productionWritesAllowed": false,
-      "requiresHumanMerge": true
-    },
-    {
-      "strategyId": "route_transition_graph_v25",
-      "causalTrigger": "catalogue/detail route is live and identity-qualified but no terminal/player media is reached",
-      "method": "replay already installed executable Repair strategy route_transition_graph_v25 against current-byte evidence before another FORCE evolution; preserve playback/identity/non-regression gates",
-      "requiredEvidence": [
-        "retained route proof",
-        "same-work identity correlation",
-        "terminal/player response trace"
-      ],
-      "acceptanceProof": [
-        "playback-verified media",
-        "content identity not contradicted",
-        "no green-lane regression"
-      ],
-      "evolvesFromStrategyId": "route_transition_graph_v24",
-      "exhaustedStrategyIds": [
-        "adaptive_runtime_recovery",
-        "document_request_contract_mining_v1",
-        "html_class_token_exact_v1",
-        "identity_alias_search_traversal_v1",
-        "proven_route_terminal_traversal_v1",
-        "provider_origin_failover_v1",
-        "provider_session_bootstrap_replay_v1",
-        "route_peer_transition_replay_v1",
-        "route_transition_graph_v1",
-        "route_transition_graph_v10",
-        "route_transition_graph_v11",
-        "route_transition_graph_v12",
-        "route_transition_graph_v13",
-        "route_transition_graph_v14",
-        "route_transition_graph_v15",
-        "route_transition_graph_v16",
-        "route_transition_graph_v17",
-        "route_transition_graph_v18",
-        "route_transition_graph_v19",
-        "route_transition_graph_v2",
-        "route_transition_graph_v20",
-        "route_transition_graph_v21",
-        "route_transition_graph_v22",
-        "route_transition_graph_v23",
-        "route_transition_graph_v24",
-        "route_transition_graph_v3",
-        "route_transition_graph_v4",
-        "route_transition_graph_v5",
-        "route_transition_graph_v6",
-        "route_transition_graph_v7",
-        "route_transition_graph_v8",
-        "route_transition_graph_v9",
-        "runtime_response_salvage_v1",
-        "search_contract_inference_v1",
-        "search_response_route_binding_v1",
-        "transport_request_differential_v1"
-      ],
-      "existingExecutableRepairProfile": true,
-      "groupId": "route-to-terminal|mixed_embed_resolver",
-      "repairScope": "route-to-terminal",
-      "targetLayer": "core",
-      "forcePromotionEligible": false,
-      "requiresNewExecutableRepairProfile": false,
-      "forcePromotionReason": "already-installed-profile-replay-first",
-      "transportSignature": "not-applicable",
-      "capabilityStrategy": "mixed_embed_resolver",
-      "providers": [
-        "yflix"
-      ],
-      "providerCount": 1,
-      "runtimeFamilies": [
-        "dle-full-story-sibnet",
-        "mixed_embed_resolver",
-        "yflix-db-encrypted-ajax-v1"
-      ],
-      "dominantIssues": [
-        "network_exception",
-        "timeout",
-        "waf_challenge"
-      ],
-      "harnessTransportClasses": [],
-      "negativeMemorySignature": "strategy:route_transition_graph_v25|scope:route-to-terminal|capability:mixed_embed_resolver|transport:not-applicable",
-      "reentryPolicy": "proposal -> executable contract -> Learning/Lab proof -> Core Repair eligibility",
-      "productionWritesAllowed": false,
-      "requiresHumanMerge": true
-    },
-    {
-      "strategyId": "terminal_transition_graph_v8",
-      "causalTrigger": "retained chain hit reaches player/resolver territory but media extraction/validation is incomplete",
-      "method": "derive and implement a genuinely new executable Repair strategy terminal_transition_graph_v8 from negative evidence for exhausted terminal_transition_graph_v1; preserve the causal intent of the prior method without reusing its implementation, register the new profile in Repair planning/runtime, and require targeted playback/identity proof",
-      "requiredEvidence": [
-        "retained chain hit",
-        "terminal host/player family",
-        "response/body route proof"
-      ],
-      "acceptanceProof": [
-        "playback-verified media",
-        "terminal identity preserved",
-        "no green-lane regression"
-      ],
-      "evolvesFromStrategyId": "terminal_transition_graph_v7",
-      "exhaustedStrategyIds": [
-        "adaptive_runtime_recovery",
-        "chain_terminal_extractor_v1",
-        "chain_terminal_extractor_v1_g3",
-        "chain_terminal_extractor_v1_g4",
-        "chain_terminal_extractor_v1_g5",
-        "document_request_contract_mining_v1",
-        "media_response_shape_inference_v1",
-        "player_media_extractor_v1",
-        "player_protocol_family_replay_v1",
-        "proven_route_terminal_traversal_v1",
-        "provider_origin_failover_v1",
-        "provider_session_bootstrap_replay_v1",
-        "runtime_response_salvage_v1",
-        "terminal_request_program_inference_v1",
-        "terminal_transition_graph_v1",
-        "terminal_transition_graph_v2",
-        "terminal_transition_graph_v3",
-        "terminal_transition_graph_v4",
-        "terminal_transition_graph_v5",
-        "terminal_transition_graph_v6",
-        "terminal_transition_graph_v7",
-        "transport_request_differential_v1"
-      ],
-      "existingExecutableRepairProfile": false,
-      "groupId": "terminal-extraction|direct_media",
-      "repairScope": "terminal-extraction",
-      "targetLayer": "core",
-      "forcePromotionEligible": true,
-      "requiresNewExecutableRepairProfile": true,
-      "forcePromotionReason": "deferred-known-family-exhaustion",
-      "transportSignature": "not-applicable",
-      "capabilityStrategy": "direct_media",
-      "providers": [
-        "allanime"
-      ],
-      "providerCount": 1,
-      "runtimeFamilies": [
-        "allanime-mkissa-aaReq-gcm-plus-legacy-ctr-v5"
-      ],
-      "dominantIssues": [
-        "network_zero_result"
-      ],
-      "harnessTransportClasses": [],
-      "negativeMemorySignature": "strategy:terminal_transition_graph_v8|scope:terminal-extraction|capability:direct_media|transport:not-applicable",
-      "reentryPolicy": "proposal -> executable contract -> Learning/Lab proof -> Core Repair eligibility",
-      "productionWritesAllowed": false,
-      "requiresHumanMerge": true
-    },
-    {
-      "strategyId": "terminal_transition_graph_v8",
-      "causalTrigger": "retained chain hit reaches player/resolver territory but media extraction/validation is incomplete",
-      "method": "derive and implement a genuinely new executable Repair strategy terminal_transition_graph_v8 from negative evidence for exhausted terminal_transition_graph_v1; preserve the causal intent of the prior method without reusing its implementation, register the new profile in Repair planning/runtime, and require targeted playback/identity proof",
-      "requiredEvidence": [
-        "retained chain hit",
-        "terminal host/player family",
-        "response/body route proof"
-      ],
-      "acceptanceProof": [
-        "playback-verified media",
-        "terminal identity preserved",
-        "no green-lane regression"
-      ],
-      "evolvesFromStrategyId": "terminal_transition_graph_v7",
-      "exhaustedStrategyIds": [
-        "adaptive_runtime_recovery",
-        "chain_terminal_extractor_v1",
-        "chain_terminal_extractor_v1_g3",
-        "chain_terminal_extractor_v1_g4",
-        "chain_terminal_extractor_v1_g5",
-        "document_request_contract_mining_v1",
-        "html_class_token_exact_v1",
-        "identity_alias_search_traversal_v1",
-        "media_response_shape_inference_v1",
-        "player_media_extractor_v1",
-        "player_media_extractor_v1_g3",
-        "player_protocol_family_replay_v1",
-        "proven_route_terminal_traversal_v1",
-        "provider_positive_program_replay_v1",
-        "provider_session_bootstrap_replay_v1",
-        "route_peer_transition_replay_v1",
-        "route_transition_graph_v1",
-        "route_transition_graph_v10",
-        "route_transition_graph_v11",
-        "route_transition_graph_v12",
-        "route_transition_graph_v13",
-        "route_transition_graph_v14",
-        "route_transition_graph_v15",
-        "route_transition_graph_v16",
-        "route_transition_graph_v17",
-        "route_transition_graph_v18",
-        "route_transition_graph_v19",
-        "route_transition_graph_v2",
-        "route_transition_graph_v20",
-        "route_transition_graph_v21",
-        "route_transition_graph_v22",
-        "route_transition_graph_v23",
-        "route_transition_graph_v24",
-        "route_transition_graph_v3",
-        "route_transition_graph_v4",
-        "route_transition_graph_v5",
-        "route_transition_graph_v6",
-        "route_transition_graph_v7",
-        "route_transition_graph_v8",
-        "route_transition_graph_v9",
-        "runtime_response_salvage_v1",
-        "search_contract_inference_v1",
-        "search_response_route_binding_v1",
-        "terminal_request_program_inference_v1",
-        "terminal_transition_graph_v1",
-        "terminal_transition_graph_v2",
-        "terminal_transition_graph_v3",
-        "terminal_transition_graph_v4",
-        "terminal_transition_graph_v5",
-        "terminal_transition_graph_v6",
-        "terminal_transition_graph_v7",
-        "transport_request_differential_v1"
-      ],
-      "existingExecutableRepairProfile": false,
-      "groupId": "terminal-extraction|html_scraper",
-      "repairScope": "terminal-extraction",
-      "targetLayer": "core",
-      "forcePromotionEligible": true,
-      "requiresNewExecutableRepairProfile": true,
-      "forcePromotionReason": "deferred-known-family-exhaustion",
-      "transportSignature": "not-applicable",
-      "capabilityStrategy": "html_scraper",
-      "providers": [
-        "mallumv"
-      ],
-      "providerCount": 1,
-      "runtimeFamilies": [
-        "mallumv-catalogue-confirm-internal-v1"
-      ],
-      "dominantIssues": [
-        "network_zero_result"
-      ],
-      "harnessTransportClasses": [],
-      "negativeMemorySignature": "strategy:terminal_transition_graph_v8|scope:terminal-extraction|capability:html_scraper|transport:not-applicable",
+      "negativeMemorySignature": "strategy:route_transition_graph_v29|scope:route-to-terminal|capability:html_scraper|transport:not-applicable",
       "reentryPolicy": "proposal -> executable contract -> Learning/Lab proof -> Core Repair eligibility",
       "productionWritesAllowed": false,
       "requiresHumanMerge": true
@@ -955,8 +408,8 @@
   ],
   "llmArchitectureGuidanceCount": 0,
   "llmArchitectureGuidance": [],
-  "providersObserved": 6,
-  "pendingProviders": 6,
+  "providersObserved": 1,
+  "pendingProviders": 1,
   "policy": {
     "publicationAllowed": false,
     "productionWritesAllowed": false,
