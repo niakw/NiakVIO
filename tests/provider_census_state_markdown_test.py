@@ -76,6 +76,10 @@ assert "🟢 1 FULL OK" in text, text
 assert "FULL tested **0/1**" in text, text
 assert "PARTIAL tested **0/0**" in text, text
 assert "carried prior playback evidence" in text, text
+assert "FULL OK** — all declared lanes have retained verified playback evidence" in text, text
+assert "PARTIAL OK** — at least one lane has retained verified playback evidence" in text, text
+assert "carried rows were not revalidated on this census SHA" in text, text
+assert "current verified playback" not in text, text
 assert "🟧 1 HARNESS MISMATCH" in text, text
 assert "Repair census run repair-run" in text, text
 assert "transport overlay waf-run" in text, text
