@@ -10,6 +10,10 @@ const learnedCap = policy.learningLab?.memoryMaxEntries;
 const productionCap = policy.production?.negativeExperimentMemory?.maxEntries;
 assert.equal(learnedCap, 16000, 'Learning budget must cover 800-hub retained experiments');
 assert.equal(learnedCap, productionCap, 'Learning and production memories must share a bounded capacity');
+const selfEvolution = JSON.parse(fs.readFileSync(path.join(repo, 'engine_v2/config/brain-self-evolution.json'), 'utf8'));
+const autoBounds = selfEvolution.autoPatchAllowlist?.['learningLab.memoryMaxEntries'];
+assert.ok(autoBounds && autoBounds.min >= learnedCap && autoBounds.max <= 20000,
+  'self-evolution must not silently reduce proven catalogue-scale retention');
 
 const rows = [];
 // 800 independent providers with 12 negative observations each.
