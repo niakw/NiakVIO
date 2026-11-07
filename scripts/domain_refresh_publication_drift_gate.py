@@ -16,6 +16,7 @@ SAFE_FILES = {
     "MEMORY.md",
     "PROVIDER_CENSUS_STATUS.md",
     "automation/brain-repair-memory.json",
+    "automation/brain-llm-force-memory.json",
     "automation/brain-repair-experience.json",
     "automation/provider-census-status.json",
     "automation/provider-brain-repair-latest.json",
@@ -36,16 +37,41 @@ SAFE_ARTIFACT_PATTERNS = (
     re.compile(r"^automation/provider-waf-browser-session-[0-9]{8,20}\.json$"),
 )
 
+# Each retained hosted JSON is a source-SHA-qualified, immutable experiment.
+# Only newly ADDED entries can be treated as non-executable drift.
+HOSTED_EVIDENCE_ARCHIVE = re.compile(
+    r"^automation/hosted-repair-evidence/[0-9]{8,14}"
+    r"(?:-(?:evaluation|http-observation|mutations|player-markup))?\.json$"
+)
+
+
 
 def classify_drift(paths: list[str]) -> tuple[bool, list[str]]:
+    """Permit evidence-only rebase, reject provider/runtime edits.
+
+    Input from git diff --name-status preserves archive addition vs overwrite.
+    A legacy path-only row is conservatively interpreted as modified.
+    """
     unsafe: list[str] = []
     for raw in paths:
-        path = raw.strip().replace("\\", "/")
-        if not path:
+        row = raw.strip()
+        if not row:
             continue
-        if path in SAFE_FILES or any(pattern.fullmatch(path) for pattern in SAFE_ARTIFACT_PATTERNS) or (path.startswith("docs/") and path.endswith(".md")):
+        if "\t" in row:
+            status, path = row.split("\t", 1)
+            if status not in {"A", "M"}:
+                unsafe.append(row)
+                continue
+        else:
+            status, path = "M", row
+        path = path.replace("\\", "/")
+        if path in SAFE_FILES or any(p.fullmatch(path) for p in SAFE_ARTIFACT_PATTERNS):
             continue
-        unsafe.append(path)
+        if path.startswith("docs/") and path.endswith(".md"):
+            continue
+        if status == "A" and HOSTED_EVIDENCE_ARCHIVE.fullmatch(path):
+            continue
+        unsafe.append(row)
     return not unsafe, sorted(set(unsafe))
 
 

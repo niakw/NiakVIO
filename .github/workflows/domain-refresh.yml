@@ -197,6 +197,7 @@ jobs:
         run: |
           set -euo pipefail
           python tests/domain_refresh_transaction_guard_test.py
+          python tests/domain_refresh_publication_drift_gate_test.py
           python tests/domain_refresh_priority_wrapper_test.py
           python tests/domain_refresh_refreshable_current_test.py
           python tests/domain_refresh_guard_wrapper_test.py
@@ -342,7 +343,8 @@ jobs:
             # Conversely, NEVER rebase published provider bytes over a changed
             # CORE, Brain runtime, authority, manifest or build input.
             echo "FIELD_DOMAIN_PUBLICATION_RACE observed=$BASE_SHA current=$CURRENT_SHA staged=$FINAL_SHA"
-            git diff --name-only "$BASE_SHA" "$CURRENT_SHA" > "$RUNNER_TEMP/domain-remote-drift"
+            # Only NEW hosted records are immutable; preserve A/M/D status.
+            git diff --name-status --no-renames "$BASE_SHA" "$CURRENT_SHA" > "$RUNNER_TEMP/domain-remote-drift"
             if python scripts/domain_refresh_publication_drift_gate.py --drift-file "$RUNNER_TEMP/domain-remote-drift"; then
               if git rebase --onto "$CURRENT_SHA" "$BASE_SHA" HEAD; then
                 # Rebasing changes the first, provider-stage commit SHA.
