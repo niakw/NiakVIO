@@ -94,6 +94,7 @@ jobs:
           python tests/brain_hosted_local_proof_workflow_test.py
           # Pin and run the Brain retry-selection guard before expensive inference.
           python -m unittest discover -s brain-llm/tests -p test_force_rejected_unit_diversification.py
+          python -m unittest discover -s brain-llm/tests -p test_live_function_context.py
 
       - name: Download pinned local llama.cpp runtime
         shell: bash
@@ -183,6 +184,29 @@ jobs:
         shell: bash
         run: |
           python scripts/capture_brain_live_context.py --provider "$TARGET_PROVIDER" --output local-output/hosted-check/live-context.json
+      - name: Summarize bounded GraphQL evidence (no payloads)
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json
+          from collections import Counter
+          from pathlib import Path
+          data=json.loads(Path('local-output/hosted-check/live-context.json').read_text(encoding='utf-8'))
+          rows=[row for row in data.get('network_evidence') or [] if isinstance(row,dict)]
+          facts=[row['response_structure']['graphql'] for row in rows
+                 if isinstance(row.get('response_structure'),dict)
+                 and isinstance(row['response_structure'].get('graphql'),dict)]
+          kinds=Counter(kind for row in facts for kind in row.get('kinds') or []
+                        if kind in {'schema_mismatch','syntax','auth','rate_limit',
+                                    'timeout','not_found','server_error','unknown'})
+          nulls=sum(1 for row in facts if row.get('dataState')=='null'
+                    or row.get('nullRoots'))
+          print('FIELD_BRAIN_GRAPHQL_OBSERVATION events='+str(len(facts))
+                +' with_errors='+str(sum(1 for row in facts if row.get('errorCount',0)>0))
+                +' null_data='+str(nulls)
+                +' classes='+','.join(k+':'+str(v) for k,v in sorted(kinds.items())))
+          PY
+
       - name: Diagnose a script-only response with an ordinary browser
         if: steps.live_observation.outputs.script_shell_only == 'true'
         timeout-minutes: 1
