@@ -172,10 +172,36 @@ with tempfile.TemporaryDirectory() as td:
             for x in migrated_memory
         ), migrated_memory
 
+        # A genuinely executed child has a tested outcome. A contradictory
+        # legacy profile_unavailable row with executionObserved=True remains
+        # non-executed regardless of the old boolean.
+        misleading_unavailable = {
+            **stale_post_g5,
+            "strategyImplementationFingerprint": "b" * 64,
+            "executionObserved": True,
+        }
+        learning.write_text(json.dumps({
+            "schemaVersion": 1,
+            "publicationAllowed": False,
+            "productionWritesAllowed": False,
+            "experimentMemory": {
+                "schemaVersion": 1,
+                "entries": [row(4, 2), misleading_unavailable],
+            },
+        }), encoding="utf-8")
+        invalid_memory = brain.planner_negative_memory("learning")
+        assert not any(
+            x.get("profile") == "terminal_transition_graph_v1"
+            and x.get("executionObserved") is True
+            for x in invalid_memory
+        ), invalid_memory
+
         executed_post_g5 = {
             **stale_post_g5,
             "strategyImplementationFingerprint": "b" * 64,
             "executionObserved": True,
+            "lastOutcome": "rejected",
+            "lastReason": "required_category_playable_proof:anime",
         }
         learning.write_text(json.dumps({
             "schemaVersion": 1,
