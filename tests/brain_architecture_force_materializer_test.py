@@ -1917,6 +1917,38 @@ novel_executor = numeric_clone.replace(
 )
 mod.reject_numeric_only_strategy_clone(novel_executor, "route_transition_graph_v12")
 
+# A new vN with the same underlying sources/roles merely permuted is
+# not a new causal algorithm either, even when limits are changed.
+source_order_clone = """
+if new_strategy_id == "route_transition_graph_v26":
+    search_paths = _unique_routes(configured_search, learned_search, generic_search, limit=12)
+    request_recipes = _unique_request_recipes(current_request_recipes, provider_request_recipes, limit=20)
+    second_order_role_preferences = ["source", "player", "api", "episode"]
+elif new_strategy_id == "route_transition_graph_v27":
+    search_paths = _unique_routes(generic_search, configured_search, learned_search, limit=99)
+    request_recipes = _unique_request_recipes(provider_request_recipes, current_request_recipes, limit=30)
+    second_order_role_preferences = ["episode", "api", "source", "player"]
+"""
+try:
+    mod.reject_numeric_only_strategy_clone(source_order_clone, "route_transition_graph_v27")
+except ValueError as exc:
+    assert "numeric-only strategy clone" in str(exc), exc
+    assert "route_transition_graph_v26" in str(exc), exc
+else:
+    raise AssertionError("FORCE accepted source/role-order-only pseudo-novelty")
+
+# A truly new source family or new transition extractor remains eligible
+# for the ordinary materialization/playback checks (not automatically valid).
+meaningful_change = source_order_clone.replace(
+    "provider_request_recipes, current_request_recipes, limit=30",
+    "provider_request_recipes, current_request_recipes, positive_request_recipes, limit=30",
+)
+mod.reject_numeric_only_strategy_clone(meaningful_change, "route_transition_graph_v27")
+# Even though Python list ordering changes semantics at runtime, the
+# *novelty* fingerprint intentionally ignores pure priority permutations.
+actual_runtime = (ROOT / "scripts/adaptive_runtime/runtime_repair.py").read_text(encoding="utf-8")
+mod.reject_numeric_only_strategy_clone(actual_runtime, "route_transition_graph_v26")
+
 # Validate on the *real* Brain's current installed executor family, as opposed
 # to relying solely on synthetic fixture text.
 actual_runtime = (ROOT / "scripts/adaptive_runtime/runtime_repair.py").read_text(encoding="utf-8")
