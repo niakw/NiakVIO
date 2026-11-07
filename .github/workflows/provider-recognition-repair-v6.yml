@@ -2004,8 +2004,11 @@ jobs:
         env:
           TARGET_PROVIDER: ${{ inputs.target_provider }}
           PREFERRED_PROFILE: ${{ inputs.preferred_profile }}
+          FORCE_RUN_ID: ${{ github.run_id }}
+          FORCE_SOURCE_SHA: ${{ github.sha }}
         run: |
           set -euo pipefail
           python3 scripts/brain_force_representative_plan_guard.py \
             --report automation/provider-brain-repair-latest.json \
-            --provider "$TARGET_PROVIDER" --profile "$PREFERRED_PROFILE"
+            --provider "$TARGET_PROVIDER" --profile "$PREFERRED_PROFILE" \
+            --run-id "$FORCE_RUN_ID" --source-sha "$FORCE_SOURCE_SHA"

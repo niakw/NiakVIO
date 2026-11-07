@@ -15,6 +15,10 @@ spec.loader.exec_module(mod)
 actual=json.loads(
     (ROOT/"automation/provider-brain-repair-42414140056.json").read_text(encoding="utf-8")
 )
+RUN_ID="42414140056"
+SOURCE_SHA="8b5ef622df9c558e028ba646351c0779ee3de0fd"
+assert actual["sourceCensusRunId"]==RUN_ID+"-pre-repair"
+assert actual["experienceMemory"]["sourceSha"]==SOURCE_SHA
 assert actual["processedProviders"]==["allanime"] and actual["acceptedRepairCount"]==0
 try:
     mod.verify(actual,provider="allanime",profile="terminal_transition_graph_v9")
@@ -27,7 +31,7 @@ plan=positive["waves"][0]["batches"][0]["brain"]["plans"]["published:allanime"]
 plan["forcePreferredSelected"]=True
 plan["postExhaustionStrategyProfile"]="terminal_transition_graph_v9"
 plan["allowedProfiles"]=["terminal_transition_graph_v9"]
-assert mod.verify(positive,provider="allanime",profile="terminal_transition_graph_v9")==1
+assert mod.verify(positive,provider="allanime",profile="terminal_transition_graph_v9",run_id=RUN_ID,source_sha=SOURCE_SHA)==1
 for wrong in ("terminal_transition_graph_v8","unknown_v900"):
     try:
         mod.verify(positive,provider="allanime",profile=wrong)
@@ -42,4 +46,20 @@ for broken in (
         mod.verify(broken,provider="allanime",profile="terminal_transition_graph_v9")
     except ValueError:pass
     else:raise AssertionError("Unverified mixed/malformed FORCE report accepted")
+# Copying the exact accepted-looking plan onto a stale "latest" artifact
+# must fail on provenance even for the same provider and profile.
+for wrong_run, wrong_sha in (
+    ("42413160855", SOURCE_SHA),
+    (RUN_ID, "b"*40),
+    ("not-a-github-run", SOURCE_SHA),
+):
+    try:
+        mod.verify(
+            positive, provider="allanime", profile="terminal_transition_graph_v9",
+            run_id=wrong_run, source_sha=wrong_sha,
+        )
+    except ValueError:
+        pass
+    else:
+        raise AssertionError("stale-run or wrong-SHA FORCE report accepted")
 print("FORCE representative plan selection gate passed; playable media unproven")

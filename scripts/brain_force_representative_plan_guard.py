@@ -11,7 +11,7 @@ from pathlib import Path
 from typing import Any
 
 
-def verify(report: dict[str, Any], *, provider: str, profile: str) -> int:
+def verify(report: dict[str, Any], *, provider: str, profile: str, run_id: str = "", source_sha: str = "") -> int:
     provider = provider.strip().casefold().replace("_", "-")
     profile = profile.strip().casefold()
     if not re.fullmatch(r"[a-z0-9][a-z0-9-]*", provider):
@@ -20,6 +20,22 @@ def verify(report: dict[str, Any], *, provider: str, profile: str) -> int:
         raise ValueError("invalid preferred FORCE strategy")
     if report.get("schemaVersion") != 1:
         raise ValueError("invalid Brain report schema")
+    # A persistent "latest" report from an older FORCE against the same
+    # provider/profile is not evidence of this run. Bind provenance to the
+    # workflow's own immutable run id and source commit when provided.
+    if run_id:
+        if not re.fullmatch(r"[0-9]{8,20}", run_id):
+            raise ValueError("invalid GitHub FORCE run identifier")
+        expected = run_id + "-pre-repair"
+        if report.get("sourceCensusRunId") != expected or (
+            (report.get("experienceMemory") or {}).get("sourceRunId") != expected
+        ):
+            raise ValueError("stale Brain report: source run does not match requested FORCE")
+    if source_sha:
+        if not re.fullmatch(r"[a-f0-9]{40}", source_sha):
+            raise ValueError("invalid FORCE source SHA")
+        if (report.get("experienceMemory") or {}).get("sourceSha") != source_sha:
+            raise ValueError("stale Brain report: tested source SHA differs")
     processed = [
         str(value).strip().casefold().replace("_", "-")
         for value in report.get("processedProviders") or []
@@ -63,10 +79,12 @@ def main() -> int:
     parser.add_argument("--report", type=Path, required=True)
     parser.add_argument("--provider", required=True)
     parser.add_argument("--profile", required=True)
+    parser.add_argument("--run-id", default="")
+    parser.add_argument("--source-sha", default="")
     args = parser.parse_args()
     try:
         report = json.loads(args.report.read_text(encoding="utf-8"))
-        matched = verify(report, provider=args.provider, profile=args.profile)
+        matched = verify(report, provider=args.provider, profile=args.profile, run_id=args.run_id, source_sha=args.source_sha)
     except (OSError, UnicodeError, ValueError, TypeError):
         print("FIELD_BRAIN_FORCE_REPRESENTATIVE_SELECTION verified=false")
         return 2
