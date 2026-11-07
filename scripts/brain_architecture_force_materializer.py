@@ -1416,7 +1416,7 @@ def _bounded_force_negative_evidence(
             continue
         pid = str(row.get("providerId") or "").strip().casefold()
         if pid not in provider_set or str(row.get("lastOutcome") or "") not in {
-            "rejected", "profile_unavailable", "failed", "no_progress",
+            "rejected", "failed", "no_progress",
         }:
             continue
         signature = (
