@@ -53,3 +53,94 @@ with tempfile.TemporaryDirectory(prefix="niakvio-html-class-token-") as tmp:
     )
 
 print(json.dumps({"html_class_token_exact_profile": "ok"}, sort_keys=True))
+
+
+# Production HTML parser oracle: replay the existing realistic nested-card
+# fixture unchanged. The Brain profile must improve the *actual runtime*;
+# merely emitting a marker or compiling a synthetic regex is insufficient.
+# This is offline HTML/URL traversal proof, never evidence of playable media.
+import ast
+import subprocess
+
+runtime_patch = ROOT / "scripts/provider_patches/4khdhub_runtime_v1.py"
+runtime_spec = importlib.util.spec_from_file_location("niakvio_html_class_runtime_oracle", runtime_patch)
+assert runtime_spec and runtime_spec.loader
+runtime_module = importlib.util.module_from_spec(runtime_spec)
+runtime_spec.loader.exec_module(runtime_module)
+published_path = next((ROOT / "providers").glob("4khdhub--nuvio--*.js"), None)
+assert published_path and published_path.is_file(), "missing published 4KHDHub runtime bytes"
+published_bytes = published_path.read_text(encoding="utf-8")
+assert "NIAKVIO_4KHDHUB_RUNTIME_V1" in published_bytes
+assert "function classBlocks(html,cls)" in published_bytes
+assert 'classBlocks(sr.text,"movie-card")' in published_bytes
+assert "NUVIO_HTML_CLASS_TOKEN_EXACT_V1" not in published_bytes
+
+fixture_path = ROOT / "tests/provider_4khdhub_runtime_behavior_test.py"
+fixture_ast = ast.parse(fixture_path.read_text(encoding="utf-8"))
+assignments = [
+    node.value for node in fixture_ast.body
+    if isinstance(node, ast.Assign)
+    and any(isinstance(target, ast.Name) and target.id == "js" for target in node.targets)
+]
+assert len(assignments) == 1, "runtime fixture must provide exactly one JS scenario"
+expression = assignments[0]
+assert (
+    isinstance(expression, ast.BinOp)
+    and isinstance(expression.left, ast.BinOp)
+    and isinstance(expression.left.left, ast.Constant)
+    and isinstance(expression.left.right, ast.Name)
+    and expression.left.right.id == "wrapper"
+    and isinstance(expression.right, ast.Constant)
+), "runtime fixture JS expression changed: review oracle before proceeding"
+prefix, suffix = expression.left.left.value, expression.right.value
+
+cfg = {"base": "https://4khdhub.one", "maxStreams": 8, "ua": "NiakVIO-Test"}
+module_spec = importlib.util.spec_from_file_location(
+    "niakvio_html_class_current_brain_profile",
+    ROOT / "scripts/adaptive_runtime/html_class_token_exact_v1.py",
+)
+assert module_spec and module_spec.loader
+profile = importlib.util.module_from_spec(module_spec)
+module_spec.loader.exec_module(profile)
+original_wrapper = runtime_module.WRAPPER
+repaired_wrapper = profile.apply(original_wrapper)
+assert repaired_wrapper != original_wrapper
+assert "NUVIO_HTML_CLASS_TOKEN_EXACT_V1" in repaired_wrapper
+
+def run_runtime_oracle(wrapper: str) -> dict:
+    js_source = (
+        prefix
+        + wrapper.replace("CONFIG_PLACEHOLDER", json.dumps(cfg, separators=(",", ":")))
+        + suffix
+    )
+    with tempfile.TemporaryDirectory(prefix="niakvio-runtime-oracle-") as folder:
+        script = Path(folder) / "probe.cjs"
+        script.write_text(js_source, encoding="utf-8")
+        result = subprocess.run(
+            ["node", str(script)],
+            cwd=ROOT,
+            capture_output=True,
+            text=True,
+            timeout=20,
+            check=True,
+        )
+        return json.loads(result.stdout.strip().splitlines()[-1])
+
+before = run_runtime_oracle(original_wrapper)
+after = run_runtime_oracle(repaired_wrapper)
+assert before["movie"] == [] and before["tv"] == [], before
+assert len(after["movie"]) == 1 and len(after["tv"]) == 1, after
+assert after["movie"][0]["url"] == "https://media.workers.dev/colony.mkv", after
+assert after["tv"][0]["url"] == "https://media.workers.dev/bb-s01e01.mkv", after
+assert after["movie"][0]["quality"] == "2160p", after
+assert "S01E01" in after["tv"][0]["title"], after
+assert any("/the-colony-movie-7978/" in u for u in after["fetchTrace"]), after
+assert any("/breaking-bad-series-1385/" in u for u in after["fetchTrace"]), after
+
+print(json.dumps({
+    "html_class_token_runtime_oracle": "offline-parser-improved",
+    "before": [len(before["movie"]), len(before["tv"])],
+    "after": [len(after["movie"]), len(after["tv"])],
+    "published_provider_mutated": False,
+    "live_playback_proven": False,
+}, sort_keys=True))
