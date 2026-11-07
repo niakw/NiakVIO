@@ -4,6 +4,7 @@ import importlib.util
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from unittest.mock import patch
+from urllib.parse import parse_qs, urlsplit
 import json, os
 
 root=Path(__file__).resolve().parents[1]
@@ -50,11 +51,18 @@ with TemporaryDirectory() as tmp:
 core={"commit_sha":src,"category":"javascript-typescript/scope:core"}
 old={"commit_sha":head,"category":"javascript-typescript/scope:core"}
 seen=[]
+def page_number(url):
+    # An 'in' substring match on "page=1" also matches "per_page=100".
+    # Always extract the page parameter from the decoded query string.
+    values=parse_qs(urlsplit(url).query)
+    assert values.get("per_page")==["100"], url
+    return int(values["page"][0])
+
 def core_page(path):
     seen.append(path)
-    if "page=1" in path:
+    if page_number(path)==1:
         return [old]*100
-    if "page=2" in path:
+    if page_number(path)==2:
         return [core]+[old]*99
     raise AssertionError("analysis traversal continued beyond exact proof")
 with patch.object(mod,"api",side_effect=core_page):
@@ -66,7 +74,7 @@ with patch.object(mod,"api",side_effect=core_page):
 seen.clear()
 def alert_page(path):
     seen.append(path)
-    return [{}]*100 if "page=1" in path else [{"number":2531}]
+    return [{}]*100 if page_number(path)==1 else [{"number":2531}]
 with patch.object(mod,"api",side_effect=alert_page):
     assert len(mod.read_pages("repos/"+mod.REPO+"/code-scanning/alerts?state=open"))==101
     assert len(seen)==2
