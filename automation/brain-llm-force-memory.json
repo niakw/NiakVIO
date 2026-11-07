@@ -3759,6 +3759,95 @@
     },
     {
       "providerId": "yflix",
+      "mutationFingerprint": "2f90d820176847ccf22c096a98bc062d96b485c3f0a47e908a6db1f815a8363f",
+      "mutationContextFingerprint": "7877190261a8217381fc88d181f227437cd972711838c4b287e0739a08700d22",
+      "failures": 1,
+      "consecutiveFailures": 1,
+      "successes": 0,
+      "executionObserved": true,
+      "materializedMutationObserved": true,
+      "lastOutcome": "rejected",
+      "lastReason": "decoded_repair_no_new_fixture_control",
+      "lastMutationSummary": [
+        {
+          "scope": "provider_bloc",
+          "operation": "upsert",
+          "family": "yflix"
+        }
+      ],
+      "repairFamily": {
+        "version": 2,
+        "key": "3d41033886e9ee6dcd07f2b297bd85eeb51403b7dda3ef64c6f46340f0b069fd",
+        "failure": "route-proven-gap",
+        "status": "route-proven",
+        "archetype": "route-proven-gap:route-parser",
+        "mediaTypes": [
+          "movie",
+          "tv"
+        ],
+        "signals": [
+          "provider-http-2xx",
+          "response-json"
+        ],
+        "stages": [
+          "provider-network-exception",
+          "provider-network-exception×2"
+        ],
+        "mutationSurfaces": [
+          "provider-bloc",
+          "provider-data",
+          "provider-js",
+          "provider-patch"
+        ]
+      },
+      "mechanismFamily": "yflix",
+      "lastBaselineCoverage": {
+        "streamsReturned": 0,
+        "streamsPlayable": 0,
+        "identityContradictions": 0,
+        "qualityHeights": [],
+        "announcedQualityHeights": [],
+        "maxPlayableHeight": 0,
+        "announcedPlayerCandidates": 10,
+        "announcedVariantCandidates": 10,
+        "exploredPlayerRequests": 0,
+        "reachableHostCount": 0,
+        "fanoutStates": [
+          "announced-not-explored"
+        ]
+      },
+      "lastCandidateCoverage": {
+        "streamsReturned": 0,
+        "streamsPlayable": 0,
+        "identityContradictions": 0,
+        "qualityHeights": [],
+        "announcedQualityHeights": [],
+        "maxPlayableHeight": 0,
+        "announcedPlayerCandidates": 10,
+        "announcedVariantCandidates": 10,
+        "exploredPlayerRequests": 0,
+        "reachableHostCount": 0,
+        "fanoutStates": [
+          "announced-not-explored"
+        ]
+      },
+      "lastCoverageDelta": {
+        "streamsReturned": 0,
+        "streamsPlayable": 0,
+        "identityContradictions": 0,
+        "maxPlayableHeight": 0,
+        "announcedPlayerCandidates": 0,
+        "announcedVariantCandidates": 0,
+        "exploredPlayerRequests": 0,
+        "reachableHostCount": 0,
+        "qualityHeightCount": 0
+      },
+      "lastCurrentSha": "9fed39c34df0b28e12d32056ed2087fab1af7f51",
+      "sourceNiakvioSha": "9fed39c34df0b28e12d32056ed2087fab1af7f51",
+      "sourceBrainLlmSha": "7195256952495fc14efecd1b223a39b65ece5a52"
+    },
+    {
+      "providerId": "yflix",
       "mutationFingerprint": "86ff905369a43ffa0aea6082e1860d54fa8915d9baa70b40f0a4fb6b6ccc1a06",
       "mutationContextFingerprint": "7877190261a8217381fc88d181f227437cd972711838c4b287e0739a08700d22",
       "failures": 1,

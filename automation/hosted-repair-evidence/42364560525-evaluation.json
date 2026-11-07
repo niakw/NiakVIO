@@ -1,0 +1,1803 @@
+{
+  "currentSha": "9fed39c34df0b28e12d32056ed2087fab1af7f51",
+  "rows": [
+    {
+      "provider": "yflix",
+      "accepted": false,
+      "executionObserved": true,
+      "materializedMutationObserved": true,
+      "baselineBundleSha256": "8750337f3cf78e3110798be77b6e3920fda03ac3412d8178063a748026dee6d8",
+      "candidateBundleSha256": "bf615c1fece165209caf33fa00d5368f623cd8c80bc54b2a287d985d6aa6b29e",
+      "reason": "decoded_repair_no_new_fixture_control",
+      "mutationFingerprint": "2f90d820176847ccf22c096a98bc062d96b485c3f0a47e908a6db1f815a8363f",
+      "mutationSummary": [
+        {
+          "scope": "provider_bloc",
+          "operation": "upsert",
+          "family": "yflix"
+        }
+      ],
+      "baseline": {
+        "status": "no_streams",
+        "score": 100,
+        "streamsPlayable": 0,
+        "streamsReturned": 0,
+        "identityContradictions": 0,
+        "providerRequests": 18,
+        "providerHttpStatuses": [
+          200
+        ],
+        "variantCoverage": {
+          "qualityHeights": [],
+          "maxPlayableHeight": 0,
+          "audioLanguages": [],
+          "reachableHosts": [],
+          "announcedPlayerCandidates": 10,
+          "announcedVariantCandidates": 10,
+          "exploredPlayerRequests": 0,
+          "fanoutStates": [
+            "announced-not-explored"
+          ],
+          "announcedQualityHeights": []
+        },
+        "invocationDiagnostics": [
+          {
+            "fixture": "Interstellar",
+            "name": "positional_with_settings",
+            "inferredMode": "positional",
+            "result": "empty",
+            "streamCount": 0,
+            "providerObservations": 9,
+            "errorCode": ""
+          },
+          {
+            "fixture": "Breaking Bad S01E01",
+            "name": "positional_with_settings",
+            "inferredMode": "positional",
+            "result": "empty",
+            "streamCount": 0,
+            "providerObservations": 9,
+            "errorCode": ""
+          }
+        ],
+        "fixtureCoverage": [
+          {
+            "fixture": "Interstellar",
+            "category": "movie",
+            "status": "no_streams",
+            "streamsPlayable": 0,
+            "streamsReturned": 0,
+            "tmdbId": "157336",
+            "season": null,
+            "episode": null,
+            "expectedDurationSeconds": 10140,
+            "decodedMediaControls": 0,
+            "decodedMediaProbes": []
+          },
+          {
+            "fixture": "Breaking Bad S01E01",
+            "category": "tv",
+            "status": "no_streams",
+            "streamsPlayable": 0,
+            "streamsReturned": 0,
+            "tmdbId": "1396",
+            "season": 1,
+            "episode": 1,
+            "expectedDurationSeconds": 3480,
+            "decodedMediaControls": 0,
+            "decodedMediaProbes": []
+          }
+        ],
+        "networkTrace": [
+          {
+            "fixture": "Interstellar",
+            "stage": "content_lookup",
+            "host": "enc-dec.app",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 10,
+            "announcedQualityHeights": [],
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "jsonReq",
+              "db",
+              "resolve",
+              "wrap",
+              "invokeNativeWithBudget"
+            ],
+            "mediaObservation": null,
+            "address_scope": "s1ac414ea80fb7beb",
+            "address_refs_truncated": false,
+            "address_trace_truncated": false,
+            "request_ref": "r1",
+            "response_ref": "r1",
+            "responseStructure": {
+              "kind": "json",
+              "fields": [
+                {
+                  "path": "[].info",
+                  "type": "object"
+                },
+                {
+                  "path": "[].info.title_en",
+                  "type": "string"
+                },
+                {
+                  "path": "[].info.type",
+                  "type": "string"
+                },
+                {
+                  "path": "[].info.year",
+                  "type": "string"
+                },
+                {
+                  "path": "[].info.flix_watch",
+                  "type": "string"
+                },
+                {
+                  "path": "[].info.flix_id",
+                  "type": "string"
+                },
+                {
+                  "path": "[].info.tmdb_id",
+                  "type": "string"
+                },
+                {
+                  "path": "[].info.imdb_id",
+                  "type": "string"
+                },
+                {
+                  "path": "[].info.episode_count",
+                  "type": "string"
+                },
+                {
+                  "path": "[].info.mirrors",
+                  "type": "object"
+                },
+                {
+                  "path": "[].info.mirrors.animekai",
+                  "type": "array"
+                },
+                {
+                  "path": "[].info.mirrors.megaup",
+                  "type": "array"
+                },
+                {
+                  "path": "[].info.mirrors.rapidshare",
+                  "type": "array"
+                },
+                {
+                  "path": "[].episodes",
+                  "type": "object"
+                }
+              ]
+            },
+            "httpObservation": {
+              "content_kind": "json",
+              "url_relation": "same_url",
+              "body_state": "not_sampled",
+              "page_signal": "unknown",
+              "sampled_bytes": 0
+            },
+            "observedMediaProbe": null,
+            "readerUserAgentProbe": {}
+          },
+          {
+            "fixture": "Interstellar",
+            "stage": "content_lookup",
+            "host": "enc-dec.app",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": [],
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "jsonReq",
+              "enc",
+              "resolveBase",
+              "resolve",
+              "wrap"
+            ],
+            "mediaObservation": null,
+            "address_scope": "s1ac414ea80fb7beb",
+            "address_refs_truncated": false,
+            "address_trace_truncated": false,
+            "request_ref": "r2",
+            "response_ref": "r2",
+            "responseStructure": {
+              "kind": "json",
+              "fields": [
+                {
+                  "path": "status",
+                  "type": "number"
+                },
+                {
+                  "path": "result",
+                  "type": "string"
+                }
+              ]
+            },
+            "httpObservation": {
+              "content_kind": "json",
+              "url_relation": "same_url",
+              "body_state": "not_sampled",
+              "page_signal": "unknown",
+              "sampled_bytes": 0
+            },
+            "observedMediaProbe": null,
+            "readerUserAgentProbe": {}
+          },
+          {
+            "fixture": "Interstellar",
+            "stage": "search",
+            "host": "yflix.to",
+            "method": "GET",
+            "status": null,
+            "ok": false,
+            "errorCode": "ENOTFOUND",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": [],
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "jsonReq",
+              "ajaxParsed",
+              "resolveBase",
+              "resolve",
+              "wrap"
+            ],
+            "mediaObservation": null,
+            "address_scope": "s1ac414ea80fb7beb",
+            "address_refs_truncated": false,
+            "address_trace_truncated": false,
+            "request_ref": "r3",
+            "referer_ref": "r4",
+            "responseStructure": null,
+            "httpObservation": {},
+            "observedMediaProbe": null,
+            "readerUserAgentProbe": {}
+          },
+          {
+            "fixture": "Interstellar",
+            "stage": "content_lookup",
+            "host": "enc-dec.app",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": [],
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "jsonReq",
+              "enc",
+              "resolveBase",
+              "resolve",
+              "wrap"
+            ],
+            "mediaObservation": null,
+            "address_scope": "s1ac414ea80fb7beb",
+            "address_refs_truncated": false,
+            "address_trace_truncated": false,
+            "request_ref": "r2",
+            "response_ref": "r2",
+            "responseStructure": {
+              "kind": "json",
+              "fields": [
+                {
+                  "path": "status",
+                  "type": "number"
+                },
+                {
+                  "path": "result",
+                  "type": "string"
+                }
+              ]
+            },
+            "httpObservation": {
+              "content_kind": "json",
+              "url_relation": "same_url",
+              "body_state": "not_sampled",
+              "page_signal": "unknown",
+              "sampled_bytes": 0
+            },
+            "observedMediaProbe": null,
+            "readerUserAgentProbe": {}
+          },
+          {
+            "fixture": "Interstellar",
+            "stage": "search",
+            "host": "1moviesz.to",
+            "method": "GET",
+            "status": null,
+            "ok": false,
+            "errorCode": "ENOTFOUND",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": [],
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "jsonReq",
+              "ajaxParsed",
+              "resolveBase",
+              "resolve",
+              "wrap"
+            ],
+            "mediaObservation": null,
+            "address_scope": "s1ac414ea80fb7beb",
+            "address_refs_truncated": false,
+            "address_trace_truncated": false,
+            "request_ref": "r5",
+            "referer_ref": "r6",
+            "responseStructure": null,
+            "httpObservation": {},
+            "observedMediaProbe": null,
+            "readerUserAgentProbe": {}
+          },
+          {
+            "fixture": "Interstellar",
+            "stage": "content_lookup",
+            "host": "enc-dec.app",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": [],
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "jsonReq",
+              "enc",
+              "resolveBase",
+              "resolve",
+              "wrap"
+            ],
+            "mediaObservation": null,
+            "address_scope": "s1ac414ea80fb7beb",
+            "address_refs_truncated": false,
+            "address_trace_truncated": false,
+            "request_ref": "r2",
+            "response_ref": "r2",
+            "responseStructure": {
+              "kind": "json",
+              "fields": [
+                {
+                  "path": "status",
+                  "type": "number"
+                },
+                {
+                  "path": "result",
+                  "type": "string"
+                }
+              ]
+            },
+            "httpObservation": {
+              "content_kind": "json",
+              "url_relation": "same_url",
+              "body_state": "not_sampled",
+              "page_signal": "unknown",
+              "sampled_bytes": 0
+            },
+            "observedMediaProbe": null,
+            "readerUserAgentProbe": {}
+          },
+          {
+            "fixture": "Interstellar",
+            "stage": "search",
+            "host": "1movies.bz",
+            "method": "GET",
+            "status": null,
+            "ok": false,
+            "errorCode": "ENOTFOUND",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": [],
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "jsonReq",
+              "ajaxParsed",
+              "resolveBase",
+              "resolve",
+              "wrap"
+            ],
+            "mediaObservation": null,
+            "address_scope": "s1ac414ea80fb7beb",
+            "address_refs_truncated": false,
+            "address_trace_truncated": false,
+            "request_ref": "r7",
+            "referer_ref": "r8",
+            "responseStructure": null,
+            "httpObservation": {},
+            "observedMediaProbe": null,
+            "readerUserAgentProbe": {}
+          },
+          {
+            "fixture": "Interstellar",
+            "stage": "content_lookup",
+            "host": "enc-dec.app",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": [],
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "jsonReq",
+              "enc",
+              "resolveBase",
+              "resolve",
+              "wrap"
+            ],
+            "mediaObservation": null,
+            "address_scope": "s1ac414ea80fb7beb",
+            "address_refs_truncated": false,
+            "address_trace_truncated": false,
+            "request_ref": "r2",
+            "response_ref": "r2",
+            "responseStructure": {
+              "kind": "json",
+              "fields": [
+                {
+                  "path": "status",
+                  "type": "number"
+                },
+                {
+                  "path": "result",
+                  "type": "string"
+                }
+              ]
+            },
+            "httpObservation": {
+              "content_kind": "json",
+              "url_relation": "same_url",
+              "body_state": "not_sampled",
+              "page_signal": "unknown",
+              "sampled_bytes": 0
+            },
+            "observedMediaProbe": null,
+            "readerUserAgentProbe": {}
+          },
+          {
+            "fixture": "Interstellar",
+            "stage": "search",
+            "host": "solarmovie.fi",
+            "method": "GET",
+            "status": null,
+            "ok": false,
+            "errorCode": "UND_ERR_CONNECT_TIMEOUT",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": [],
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "jsonReq",
+              "ajaxParsed",
+              "resolveBase",
+              "resolve",
+              "wrap"
+            ],
+            "mediaObservation": null,
+            "address_scope": "s1ac414ea80fb7beb",
+            "address_refs_truncated": false,
+            "address_trace_truncated": false,
+            "request_ref": "r9",
+            "referer_ref": "r10",
+            "responseStructure": null,
+            "httpObservation": {},
+            "observedMediaProbe": null,
+            "readerUserAgentProbe": {}
+          },
+          {
+            "fixture": "Breaking Bad S01E01",
+            "stage": "content_lookup",
+            "host": "enc-dec.app",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 10,
+            "announcedQualityHeights": [],
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "jsonReq",
+              "db",
+              "resolve",
+              "wrap",
+              "invokeNativeWithBudget"
+            ],
+            "mediaObservation": null,
+            "address_scope": "s525a1a5012ea750f",
+            "address_refs_truncated": false,
+            "address_trace_truncated": false,
+            "request_ref": "r1",
+            "response_ref": "r1",
+            "responseStructure": {
+              "kind": "json",
+              "fields": [
+                {
+                  "path": "[].info",
+                  "type": "object"
+                },
+                {
+                  "path": "[].info.title_en",
+                  "type": "string"
+                },
+                {
+                  "path": "[].info.type",
+                  "type": "string"
+                },
+                {
+                  "path": "[].info.year",
+                  "type": "string"
+                },
+                {
+                  "path": "[].info.flix_watch",
+                  "type": "string"
+                },
+                {
+                  "path": "[].info.flix_id",
+                  "type": "string"
+                },
+                {
+                  "path": "[].info.tmdb_id",
+                  "type": "string"
+                },
+                {
+                  "path": "[].info.imdb_id",
+                  "type": "string"
+                },
+                {
+                  "path": "[].info.episode_count",
+                  "type": "string"
+                },
+                {
+                  "path": "[].info.mirrors",
+                  "type": "object"
+                },
+                {
+                  "path": "[].info.mirrors.animekai",
+                  "type": "array"
+                },
+                {
+                  "path": "[].info.mirrors.megaup",
+                  "type": "array"
+                },
+                {
+                  "path": "[].info.mirrors.rapidshare",
+                  "type": "array"
+                },
+                {
+                  "path": "[].episodes",
+                  "type": "object"
+                }
+              ]
+            },
+            "httpObservation": {
+              "content_kind": "json",
+              "url_relation": "same_url",
+              "body_state": "not_sampled",
+              "page_signal": "unknown",
+              "sampled_bytes": 0
+            },
+            "observedMediaProbe": null,
+            "readerUserAgentProbe": {}
+          },
+          {
+            "fixture": "Breaking Bad S01E01",
+            "stage": "content_lookup",
+            "host": "enc-dec.app",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": [],
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "jsonReq",
+              "enc",
+              "resolveBase",
+              "resolve",
+              "wrap"
+            ],
+            "mediaObservation": null,
+            "address_scope": "s525a1a5012ea750f",
+            "address_refs_truncated": false,
+            "address_trace_truncated": false,
+            "request_ref": "r2",
+            "response_ref": "r2",
+            "responseStructure": {
+              "kind": "json",
+              "fields": [
+                {
+                  "path": "status",
+                  "type": "number"
+                },
+                {
+                  "path": "result",
+                  "type": "string"
+                }
+              ]
+            },
+            "httpObservation": {
+              "content_kind": "json",
+              "url_relation": "same_url",
+              "body_state": "not_sampled",
+              "page_signal": "unknown",
+              "sampled_bytes": 0
+            },
+            "observedMediaProbe": null,
+            "readerUserAgentProbe": {}
+          },
+          {
+            "fixture": "Breaking Bad S01E01",
+            "stage": "search",
+            "host": "yflix.to",
+            "method": "GET",
+            "status": null,
+            "ok": false,
+            "errorCode": "ENOTFOUND",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": [],
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "jsonReq",
+              "ajaxParsed",
+              "resolveBase",
+              "resolve",
+              "wrap"
+            ],
+            "mediaObservation": null,
+            "address_scope": "s525a1a5012ea750f",
+            "address_refs_truncated": false,
+            "address_trace_truncated": false,
+            "request_ref": "r3",
+            "referer_ref": "r4",
+            "responseStructure": null,
+            "httpObservation": {},
+            "observedMediaProbe": null,
+            "readerUserAgentProbe": {}
+          },
+          {
+            "fixture": "Breaking Bad S01E01",
+            "stage": "content_lookup",
+            "host": "enc-dec.app",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": [],
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "jsonReq",
+              "enc",
+              "resolveBase",
+              "resolve",
+              "wrap"
+            ],
+            "mediaObservation": null,
+            "address_scope": "s525a1a5012ea750f",
+            "address_refs_truncated": false,
+            "address_trace_truncated": false,
+            "request_ref": "r2",
+            "response_ref": "r2",
+            "responseStructure": {
+              "kind": "json",
+              "fields": [
+                {
+                  "path": "status",
+                  "type": "number"
+                },
+                {
+                  "path": "result",
+                  "type": "string"
+                }
+              ]
+            },
+            "httpObservation": {
+              "content_kind": "json",
+              "url_relation": "same_url",
+              "body_state": "not_sampled",
+              "page_signal": "unknown",
+              "sampled_bytes": 0
+            },
+            "observedMediaProbe": null,
+            "readerUserAgentProbe": {}
+          },
+          {
+            "fixture": "Breaking Bad S01E01",
+            "stage": "search",
+            "host": "1moviesz.to",
+            "method": "GET",
+            "status": null,
+            "ok": false,
+            "errorCode": "ENOTFOUND",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": [],
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "jsonReq",
+              "ajaxParsed",
+              "resolveBase",
+              "resolve",
+              "wrap"
+            ],
+            "mediaObservation": null,
+            "address_scope": "s525a1a5012ea750f",
+            "address_refs_truncated": false,
+            "address_trace_truncated": false,
+            "request_ref": "r5",
+            "referer_ref": "r6",
+            "responseStructure": null,
+            "httpObservation": {},
+            "observedMediaProbe": null,
+            "readerUserAgentProbe": {}
+          },
+          {
+            "fixture": "Breaking Bad S01E01",
+            "stage": "content_lookup",
+            "host": "enc-dec.app",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": [],
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "jsonReq",
+              "enc",
+              "resolveBase",
+              "resolve",
+              "wrap"
+            ],
+            "mediaObservation": null,
+            "address_scope": "s525a1a5012ea750f",
+            "address_refs_truncated": false,
+            "address_trace_truncated": false,
+            "request_ref": "r2",
+            "response_ref": "r2",
+            "responseStructure": {
+              "kind": "json",
+              "fields": [
+                {
+                  "path": "status",
+                  "type": "number"
+                },
+                {
+                  "path": "result",
+                  "type": "string"
+                }
+              ]
+            },
+            "httpObservation": {
+              "content_kind": "json",
+              "url_relation": "same_url",
+              "body_state": "not_sampled",
+              "page_signal": "unknown",
+              "sampled_bytes": 0
+            },
+            "observedMediaProbe": null,
+            "readerUserAgentProbe": {}
+          },
+          {
+            "fixture": "Breaking Bad S01E01",
+            "stage": "search",
+            "host": "1movies.bz",
+            "method": "GET",
+            "status": null,
+            "ok": false,
+            "errorCode": "ENOTFOUND",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": [],
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "jsonReq",
+              "ajaxParsed",
+              "resolveBase",
+              "resolve",
+              "wrap"
+            ],
+            "mediaObservation": null,
+            "address_scope": "s525a1a5012ea750f",
+            "address_refs_truncated": false,
+            "address_trace_truncated": false,
+            "request_ref": "r7",
+            "referer_ref": "r8",
+            "responseStructure": null,
+            "httpObservation": {},
+            "observedMediaProbe": null,
+            "readerUserAgentProbe": {}
+          },
+          {
+            "fixture": "Breaking Bad S01E01",
+            "stage": "content_lookup",
+            "host": "enc-dec.app",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": [],
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "jsonReq",
+              "enc",
+              "resolveBase",
+              "resolve",
+              "wrap"
+            ],
+            "mediaObservation": null,
+            "address_scope": "s525a1a5012ea750f",
+            "address_refs_truncated": false,
+            "address_trace_truncated": false,
+            "request_ref": "r2",
+            "response_ref": "r2",
+            "responseStructure": {
+              "kind": "json",
+              "fields": [
+                {
+                  "path": "status",
+                  "type": "number"
+                },
+                {
+                  "path": "result",
+                  "type": "string"
+                }
+              ]
+            },
+            "httpObservation": {
+              "content_kind": "json",
+              "url_relation": "same_url",
+              "body_state": "not_sampled",
+              "page_signal": "unknown",
+              "sampled_bytes": 0
+            },
+            "observedMediaProbe": null,
+            "readerUserAgentProbe": {}
+          },
+          {
+            "fixture": "Breaking Bad S01E01",
+            "stage": "search",
+            "host": "solarmovie.fi",
+            "method": "GET",
+            "status": null,
+            "ok": false,
+            "errorCode": "UND_ERR_CONNECT_TIMEOUT",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": [],
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "jsonReq",
+              "ajaxParsed",
+              "resolveBase",
+              "resolve",
+              "wrap"
+            ],
+            "mediaObservation": null,
+            "address_scope": "s525a1a5012ea750f",
+            "address_refs_truncated": false,
+            "address_trace_truncated": false,
+            "request_ref": "r9",
+            "referer_ref": "r10",
+            "responseStructure": null,
+            "httpObservation": {},
+            "observedMediaProbe": null,
+            "readerUserAgentProbe": {}
+          }
+        ]
+      },
+      "candidate": {
+        "status": "no_streams",
+        "score": 100,
+        "streamsPlayable": 0,
+        "streamsReturned": 0,
+        "identityContradictions": 0,
+        "providerRequests": 18,
+        "providerHttpStatuses": [
+          200
+        ],
+        "variantCoverage": {
+          "qualityHeights": [],
+          "maxPlayableHeight": 0,
+          "audioLanguages": [],
+          "reachableHosts": [],
+          "announcedPlayerCandidates": 10,
+          "announcedVariantCandidates": 10,
+          "exploredPlayerRequests": 0,
+          "fanoutStates": [
+            "announced-not-explored"
+          ],
+          "announcedQualityHeights": []
+        },
+        "invocationDiagnostics": [
+          {
+            "fixture": "Interstellar",
+            "name": "positional_with_settings",
+            "inferredMode": "positional",
+            "result": "empty",
+            "streamCount": 0,
+            "providerObservations": 9,
+            "errorCode": ""
+          },
+          {
+            "fixture": "Breaking Bad S01E01",
+            "name": "positional_with_settings",
+            "inferredMode": "positional",
+            "result": "empty",
+            "streamCount": 0,
+            "providerObservations": 9,
+            "errorCode": ""
+          }
+        ],
+        "fixtureCoverage": [
+          {
+            "fixture": "Interstellar",
+            "category": "movie",
+            "status": "no_streams",
+            "streamsPlayable": 0,
+            "streamsReturned": 0,
+            "tmdbId": "157336",
+            "season": null,
+            "episode": null,
+            "expectedDurationSeconds": 10140,
+            "decodedMediaControls": 0,
+            "decodedMediaProbes": []
+          },
+          {
+            "fixture": "Breaking Bad S01E01",
+            "category": "tv",
+            "status": "no_streams",
+            "streamsPlayable": 0,
+            "streamsReturned": 0,
+            "tmdbId": "1396",
+            "season": 1,
+            "episode": 1,
+            "expectedDurationSeconds": 3480,
+            "decodedMediaControls": 0,
+            "decodedMediaProbes": []
+          }
+        ],
+        "networkTrace": [
+          {
+            "fixture": "Interstellar",
+            "stage": "content_lookup",
+            "host": "enc-dec.app",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 10,
+            "announcedQualityHeights": [],
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "jsonReq",
+              "db",
+              "resolve",
+              "wrap",
+              "invokeNativeWithBudget"
+            ],
+            "mediaObservation": null,
+            "address_scope": "s5dc550d00f4b0165",
+            "address_refs_truncated": false,
+            "address_trace_truncated": false,
+            "request_ref": "r1",
+            "response_ref": "r1",
+            "responseStructure": {
+              "kind": "json",
+              "fields": [
+                {
+                  "path": "[].info",
+                  "type": "object"
+                },
+                {
+                  "path": "[].info.title_en",
+                  "type": "string"
+                },
+                {
+                  "path": "[].info.type",
+                  "type": "string"
+                },
+                {
+                  "path": "[].info.year",
+                  "type": "string"
+                },
+                {
+                  "path": "[].info.flix_watch",
+                  "type": "string"
+                },
+                {
+                  "path": "[].info.flix_id",
+                  "type": "string"
+                },
+                {
+                  "path": "[].info.tmdb_id",
+                  "type": "string"
+                },
+                {
+                  "path": "[].info.imdb_id",
+                  "type": "string"
+                },
+                {
+                  "path": "[].info.episode_count",
+                  "type": "string"
+                },
+                {
+                  "path": "[].info.mirrors",
+                  "type": "object"
+                },
+                {
+                  "path": "[].info.mirrors.animekai",
+                  "type": "array"
+                },
+                {
+                  "path": "[].info.mirrors.megaup",
+                  "type": "array"
+                },
+                {
+                  "path": "[].info.mirrors.rapidshare",
+                  "type": "array"
+                },
+                {
+                  "path": "[].episodes",
+                  "type": "object"
+                }
+              ]
+            },
+            "httpObservation": {
+              "content_kind": "json",
+              "url_relation": "same_url",
+              "body_state": "not_sampled",
+              "page_signal": "unknown",
+              "sampled_bytes": 0
+            },
+            "observedMediaProbe": null,
+            "readerUserAgentProbe": {}
+          },
+          {
+            "fixture": "Interstellar",
+            "stage": "content_lookup",
+            "host": "enc-dec.app",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": [],
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "jsonReq",
+              "enc",
+              "resolveBase",
+              "resolve",
+              "wrap"
+            ],
+            "mediaObservation": null,
+            "address_scope": "s5dc550d00f4b0165",
+            "address_refs_truncated": false,
+            "address_trace_truncated": false,
+            "request_ref": "r2",
+            "response_ref": "r2",
+            "responseStructure": {
+              "kind": "json",
+              "fields": [
+                {
+                  "path": "status",
+                  "type": "number"
+                },
+                {
+                  "path": "result",
+                  "type": "string"
+                }
+              ]
+            },
+            "httpObservation": {
+              "content_kind": "json",
+              "url_relation": "same_url",
+              "body_state": "not_sampled",
+              "page_signal": "unknown",
+              "sampled_bytes": 0
+            },
+            "observedMediaProbe": null,
+            "readerUserAgentProbe": {}
+          },
+          {
+            "fixture": "Interstellar",
+            "stage": "search",
+            "host": "yflix.to",
+            "method": "GET",
+            "status": null,
+            "ok": false,
+            "errorCode": "ENOTFOUND",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": [],
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "jsonReq",
+              "ajaxParsed",
+              "resolveBase",
+              "resolve",
+              "wrap"
+            ],
+            "mediaObservation": null,
+            "address_scope": "s5dc550d00f4b0165",
+            "address_refs_truncated": false,
+            "address_trace_truncated": false,
+            "request_ref": "r3",
+            "referer_ref": "r4",
+            "responseStructure": null,
+            "httpObservation": {},
+            "observedMediaProbe": null,
+            "readerUserAgentProbe": {}
+          },
+          {
+            "fixture": "Interstellar",
+            "stage": "content_lookup",
+            "host": "enc-dec.app",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": [],
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "jsonReq",
+              "enc",
+              "resolveBase",
+              "resolve",
+              "wrap"
+            ],
+            "mediaObservation": null,
+            "address_scope": "s5dc550d00f4b0165",
+            "address_refs_truncated": false,
+            "address_trace_truncated": false,
+            "request_ref": "r2",
+            "response_ref": "r2",
+            "responseStructure": {
+              "kind": "json",
+              "fields": [
+                {
+                  "path": "status",
+                  "type": "number"
+                },
+                {
+                  "path": "result",
+                  "type": "string"
+                }
+              ]
+            },
+            "httpObservation": {
+              "content_kind": "json",
+              "url_relation": "same_url",
+              "body_state": "not_sampled",
+              "page_signal": "unknown",
+              "sampled_bytes": 0
+            },
+            "observedMediaProbe": null,
+            "readerUserAgentProbe": {}
+          },
+          {
+            "fixture": "Interstellar",
+            "stage": "search",
+            "host": "1moviesz.to",
+            "method": "GET",
+            "status": null,
+            "ok": false,
+            "errorCode": "ENOTFOUND",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": [],
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "jsonReq",
+              "ajaxParsed",
+              "resolveBase",
+              "resolve",
+              "wrap"
+            ],
+            "mediaObservation": null,
+            "address_scope": "s5dc550d00f4b0165",
+            "address_refs_truncated": false,
+            "address_trace_truncated": false,
+            "request_ref": "r5",
+            "referer_ref": "r6",
+            "responseStructure": null,
+            "httpObservation": {},
+            "observedMediaProbe": null,
+            "readerUserAgentProbe": {}
+          },
+          {
+            "fixture": "Interstellar",
+            "stage": "content_lookup",
+            "host": "enc-dec.app",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": [],
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "jsonReq",
+              "enc",
+              "resolveBase",
+              "resolve",
+              "wrap"
+            ],
+            "mediaObservation": null,
+            "address_scope": "s5dc550d00f4b0165",
+            "address_refs_truncated": false,
+            "address_trace_truncated": false,
+            "request_ref": "r2",
+            "response_ref": "r2",
+            "responseStructure": {
+              "kind": "json",
+              "fields": [
+                {
+                  "path": "status",
+                  "type": "number"
+                },
+                {
+                  "path": "result",
+                  "type": "string"
+                }
+              ]
+            },
+            "httpObservation": {
+              "content_kind": "json",
+              "url_relation": "same_url",
+              "body_state": "not_sampled",
+              "page_signal": "unknown",
+              "sampled_bytes": 0
+            },
+            "observedMediaProbe": null,
+            "readerUserAgentProbe": {}
+          },
+          {
+            "fixture": "Interstellar",
+            "stage": "search",
+            "host": "1movies.bz",
+            "method": "GET",
+            "status": null,
+            "ok": false,
+            "errorCode": "ENOTFOUND",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": [],
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "jsonReq",
+              "ajaxParsed",
+              "resolveBase",
+              "resolve",
+              "wrap"
+            ],
+            "mediaObservation": null,
+            "address_scope": "s5dc550d00f4b0165",
+            "address_refs_truncated": false,
+            "address_trace_truncated": false,
+            "request_ref": "r7",
+            "referer_ref": "r8",
+            "responseStructure": null,
+            "httpObservation": {},
+            "observedMediaProbe": null,
+            "readerUserAgentProbe": {}
+          },
+          {
+            "fixture": "Interstellar",
+            "stage": "content_lookup",
+            "host": "enc-dec.app",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": [],
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "jsonReq",
+              "enc",
+              "resolveBase",
+              "resolve",
+              "wrap"
+            ],
+            "mediaObservation": null,
+            "address_scope": "s5dc550d00f4b0165",
+            "address_refs_truncated": false,
+            "address_trace_truncated": false,
+            "request_ref": "r2",
+            "response_ref": "r2",
+            "responseStructure": {
+              "kind": "json",
+              "fields": [
+                {
+                  "path": "status",
+                  "type": "number"
+                },
+                {
+                  "path": "result",
+                  "type": "string"
+                }
+              ]
+            },
+            "httpObservation": {
+              "content_kind": "json",
+              "url_relation": "same_url",
+              "body_state": "not_sampled",
+              "page_signal": "unknown",
+              "sampled_bytes": 0
+            },
+            "observedMediaProbe": null,
+            "readerUserAgentProbe": {}
+          },
+          {
+            "fixture": "Interstellar",
+            "stage": "search",
+            "host": "solarmovie.fi",
+            "method": "GET",
+            "status": null,
+            "ok": false,
+            "errorCode": "UND_ERR_CONNECT_TIMEOUT",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": [],
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "jsonReq",
+              "ajaxParsed",
+              "resolveBase",
+              "resolve",
+              "wrap"
+            ],
+            "mediaObservation": null,
+            "address_scope": "s5dc550d00f4b0165",
+            "address_refs_truncated": false,
+            "address_trace_truncated": false,
+            "request_ref": "r9",
+            "referer_ref": "r10",
+            "responseStructure": null,
+            "httpObservation": {},
+            "observedMediaProbe": null,
+            "readerUserAgentProbe": {}
+          },
+          {
+            "fixture": "Breaking Bad S01E01",
+            "stage": "content_lookup",
+            "host": "enc-dec.app",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 10,
+            "announcedQualityHeights": [],
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "jsonReq",
+              "db",
+              "resolve",
+              "wrap",
+              "invokeNativeWithBudget"
+            ],
+            "mediaObservation": null,
+            "address_scope": "s47f23de3ab40ee23",
+            "address_refs_truncated": false,
+            "address_trace_truncated": false,
+            "request_ref": "r1",
+            "response_ref": "r1",
+            "responseStructure": {
+              "kind": "json",
+              "fields": [
+                {
+                  "path": "[].info",
+                  "type": "object"
+                },
+                {
+                  "path": "[].info.title_en",
+                  "type": "string"
+                },
+                {
+                  "path": "[].info.type",
+                  "type": "string"
+                },
+                {
+                  "path": "[].info.year",
+                  "type": "string"
+                },
+                {
+                  "path": "[].info.flix_watch",
+                  "type": "string"
+                },
+                {
+                  "path": "[].info.flix_id",
+                  "type": "string"
+                },
+                {
+                  "path": "[].info.tmdb_id",
+                  "type": "string"
+                },
+                {
+                  "path": "[].info.imdb_id",
+                  "type": "string"
+                },
+                {
+                  "path": "[].info.episode_count",
+                  "type": "string"
+                },
+                {
+                  "path": "[].info.mirrors",
+                  "type": "object"
+                },
+                {
+                  "path": "[].info.mirrors.animekai",
+                  "type": "array"
+                },
+                {
+                  "path": "[].info.mirrors.megaup",
+                  "type": "array"
+                },
+                {
+                  "path": "[].info.mirrors.rapidshare",
+                  "type": "array"
+                },
+                {
+                  "path": "[].episodes",
+                  "type": "object"
+                }
+              ]
+            },
+            "httpObservation": {
+              "content_kind": "json",
+              "url_relation": "same_url",
+              "body_state": "not_sampled",
+              "page_signal": "unknown",
+              "sampled_bytes": 0
+            },
+            "observedMediaProbe": null,
+            "readerUserAgentProbe": {}
+          },
+          {
+            "fixture": "Breaking Bad S01E01",
+            "stage": "content_lookup",
+            "host": "enc-dec.app",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": [],
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "jsonReq",
+              "enc",
+              "resolveBase",
+              "resolve",
+              "wrap"
+            ],
+            "mediaObservation": null,
+            "address_scope": "s47f23de3ab40ee23",
+            "address_refs_truncated": false,
+            "address_trace_truncated": false,
+            "request_ref": "r2",
+            "response_ref": "r2",
+            "responseStructure": {
+              "kind": "json",
+              "fields": [
+                {
+                  "path": "status",
+                  "type": "number"
+                },
+                {
+                  "path": "result",
+                  "type": "string"
+                }
+              ]
+            },
+            "httpObservation": {
+              "content_kind": "json",
+              "url_relation": "same_url",
+              "body_state": "not_sampled",
+              "page_signal": "unknown",
+              "sampled_bytes": 0
+            },
+            "observedMediaProbe": null,
+            "readerUserAgentProbe": {}
+          },
+          {
+            "fixture": "Breaking Bad S01E01",
+            "stage": "search",
+            "host": "yflix.to",
+            "method": "GET",
+            "status": null,
+            "ok": false,
+            "errorCode": "ENOTFOUND",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": [],
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "jsonReq",
+              "ajaxParsed",
+              "resolveBase",
+              "resolve",
+              "wrap"
+            ],
+            "mediaObservation": null,
+            "address_scope": "s47f23de3ab40ee23",
+            "address_refs_truncated": false,
+            "address_trace_truncated": false,
+            "request_ref": "r3",
+            "referer_ref": "r4",
+            "responseStructure": null,
+            "httpObservation": {},
+            "observedMediaProbe": null,
+            "readerUserAgentProbe": {}
+          },
+          {
+            "fixture": "Breaking Bad S01E01",
+            "stage": "content_lookup",
+            "host": "enc-dec.app",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": [],
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "jsonReq",
+              "enc",
+              "resolveBase",
+              "resolve",
+              "wrap"
+            ],
+            "mediaObservation": null,
+            "address_scope": "s47f23de3ab40ee23",
+            "address_refs_truncated": false,
+            "address_trace_truncated": false,
+            "request_ref": "r2",
+            "response_ref": "r2",
+            "responseStructure": {
+              "kind": "json",
+              "fields": [
+                {
+                  "path": "status",
+                  "type": "number"
+                },
+                {
+                  "path": "result",
+                  "type": "string"
+                }
+              ]
+            },
+            "httpObservation": {
+              "content_kind": "json",
+              "url_relation": "same_url",
+              "body_state": "not_sampled",
+              "page_signal": "unknown",
+              "sampled_bytes": 0
+            },
+            "observedMediaProbe": null,
+            "readerUserAgentProbe": {}
+          },
+          {
+            "fixture": "Breaking Bad S01E01",
+            "stage": "search",
+            "host": "1moviesz.to",
+            "method": "GET",
+            "status": null,
+            "ok": false,
+            "errorCode": "ENOTFOUND",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": [],
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "jsonReq",
+              "ajaxParsed",
+              "resolveBase",
+              "resolve",
+              "wrap"
+            ],
+            "mediaObservation": null,
+            "address_scope": "s47f23de3ab40ee23",
+            "address_refs_truncated": false,
+            "address_trace_truncated": false,
+            "request_ref": "r5",
+            "referer_ref": "r6",
+            "responseStructure": null,
+            "httpObservation": {},
+            "observedMediaProbe": null,
+            "readerUserAgentProbe": {}
+          },
+          {
+            "fixture": "Breaking Bad S01E01",
+            "stage": "content_lookup",
+            "host": "enc-dec.app",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": [],
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "jsonReq",
+              "enc",
+              "resolveBase",
+              "resolve",
+              "wrap"
+            ],
+            "mediaObservation": null,
+            "address_scope": "s47f23de3ab40ee23",
+            "address_refs_truncated": false,
+            "address_trace_truncated": false,
+            "request_ref": "r2",
+            "response_ref": "r2",
+            "responseStructure": {
+              "kind": "json",
+              "fields": [
+                {
+                  "path": "status",
+                  "type": "number"
+                },
+                {
+                  "path": "result",
+                  "type": "string"
+                }
+              ]
+            },
+            "httpObservation": {
+              "content_kind": "json",
+              "url_relation": "same_url",
+              "body_state": "not_sampled",
+              "page_signal": "unknown",
+              "sampled_bytes": 0
+            },
+            "observedMediaProbe": null,
+            "readerUserAgentProbe": {}
+          },
+          {
+            "fixture": "Breaking Bad S01E01",
+            "stage": "search",
+            "host": "1movies.bz",
+            "method": "GET",
+            "status": null,
+            "ok": false,
+            "errorCode": "ENOTFOUND",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": [],
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "jsonReq",
+              "ajaxParsed",
+              "resolveBase",
+              "resolve",
+              "wrap"
+            ],
+            "mediaObservation": null,
+            "address_scope": "s47f23de3ab40ee23",
+            "address_refs_truncated": false,
+            "address_trace_truncated": false,
+            "request_ref": "r7",
+            "referer_ref": "r8",
+            "responseStructure": null,
+            "httpObservation": {},
+            "observedMediaProbe": null,
+            "readerUserAgentProbe": {}
+          },
+          {
+            "fixture": "Breaking Bad S01E01",
+            "stage": "content_lookup",
+            "host": "enc-dec.app",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": [],
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "jsonReq",
+              "enc",
+              "resolveBase",
+              "resolve",
+              "wrap"
+            ],
+            "mediaObservation": null,
+            "address_scope": "s47f23de3ab40ee23",
+            "address_refs_truncated": false,
+            "address_trace_truncated": false,
+            "request_ref": "r2",
+            "response_ref": "r2",
+            "responseStructure": {
+              "kind": "json",
+              "fields": [
+                {
+                  "path": "status",
+                  "type": "number"
+                },
+                {
+                  "path": "result",
+                  "type": "string"
+                }
+              ]
+            },
+            "httpObservation": {
+              "content_kind": "json",
+              "url_relation": "same_url",
+              "body_state": "not_sampled",
+              "page_signal": "unknown",
+              "sampled_bytes": 0
+            },
+            "observedMediaProbe": null,
+            "readerUserAgentProbe": {}
+          },
+          {
+            "fixture": "Breaking Bad S01E01",
+            "stage": "search",
+            "host": "solarmovie.fi",
+            "method": "GET",
+            "status": null,
+            "ok": false,
+            "errorCode": "UND_ERR_CONNECT_TIMEOUT",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": [],
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "jsonReq",
+              "ajaxParsed",
+              "resolveBase",
+              "resolve",
+              "wrap"
+            ],
+            "mediaObservation": null,
+            "address_scope": "s47f23de3ab40ee23",
+            "address_refs_truncated": false,
+            "address_trace_truncated": false,
+            "request_ref": "r9",
+            "referer_ref": "r10",
+            "responseStructure": null,
+            "httpObservation": {},
+            "observedMediaProbe": null,
+            "readerUserAgentProbe": {}
+          }
+        ]
+      }
+    }
+  ],
+  "publicationAuthority": false
+}
