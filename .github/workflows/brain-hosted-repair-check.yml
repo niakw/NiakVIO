@@ -112,16 +112,16 @@ jobs:
           path: |
             ~/.cache/llama.cpp
             ~/.cache/huggingface
-          key: qwen25-coder-7b-q4-km-v1
+          key: qwen25-coder-3b-q4-km-v1
 
-      - name: Start local 7B Qwen provider-mutation planner
+      - name: Start local 3B Qwen provider-mutation planner
         shell: bash
         run: |
           set -euo pipefail
           binary="$(find .brain-local/llama -type f -name llama-server -print -quit)"
           test -n "$binary"
           chmod +x "$binary"
-          "$binary" -hf Qwen/Qwen2.5-Coder-7B-Instruct-GGUF:Q4_K_M \
+          "$binary" -hf Qwen/Qwen2.5-Coder-3B-Instruct-GGUF:Q4_K_M \
             --host 127.0.0.1 --port 8080 -c 8192 -np 1 \
             > "$RUNNER_TEMP/brain-hosted-llama.log" 2>&1 &
           for attempt in $(seq 1 90); do
@@ -134,6 +134,43 @@ jobs:
           echo "FIELD_BRAIN_HOSTED_LOCAL_QWEN ready=false" >&2
           tail -50 "$RUNNER_TEMP/brain-hosted-llama.log" >&2
           exit 1
+
+      - name: Prove local model can generate before repair
+        timeout-minutes: 2
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json, time
+          from urllib.request import Request, urlopen
+          body = {
+              "model": "niakvio-local",
+              "temperature": 0,
+              "max_tokens": 16,
+              "messages": [{"role": "user", "content": "Reply with the word OK."}],
+          }
+          start = time.monotonic()
+          req = Request("http://127.0.0.1:8080/v1/chat/completions",
+                        data=json.dumps(body).encode("utf-8"),
+                        headers={"Content-Type": "application/json"}, method="POST")
+          try:
+              with urlopen(req, timeout=90) as response:
+                  result = json.load(response)
+              choices = result.get("choices") or []
+              answer = choices[0].get("message", {}).get("content") if choices else None
+              if not isinstance(answer, str) or not answer.strip():
+                  raise ValueError("empty completion")
+              timing = result.get("timings") or {}
+              prompt_tokens = timing.get("prompt_n")
+              predicted = timing.get("predicted_n")
+              print("FIELD_BRAIN_LOCAL_SMOKE generated=true"
+                    f" seconds={time.monotonic()-start:.2f}"
+                    f" prompt_tokens={prompt_tokens if type(prompt_tokens) is int else 'unknown'}"
+                    f" output_tokens={predicted if type(predicted) is int else 'unknown'}")
+          except Exception as error:
+              print("FIELD_BRAIN_LOCAL_SMOKE generated=false"
+                    f" error_type={type(error).__name__}")
+              raise
+          PY
 
       - name: Observe current provider execution before choosing editable functions
         id: live_observation

@@ -20,7 +20,7 @@ assert "github.repository == 'niakw/NiakVIO'" in text
 assert "github.ref == 'refs/heads/main'" in text
 assert 'contents: read' in text
 assert '127.0.0.1:8080' in text
-assert 'Qwen/Qwen2.5-Coder-7B-Instruct-GGUF:Q4_K_M' in text
+assert 'Qwen/Qwen2.5-Coder-3B-Instruct-GGUF:Q4_K_M' in text
 assert "NIAKVIO_REQUIRE_DECODE_PROOF: '1'" in text
 assert "NIAKVIO_FORCE_CPU_TIGHT_PROMPT: '1'" in text
 assert 'publicationAuthority' in text

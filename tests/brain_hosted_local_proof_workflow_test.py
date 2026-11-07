@@ -12,8 +12,12 @@ assert 'default: allanime' in source
 assert "ref: ${{ steps.brain_pin.outputs.sha }}" in source
 assert 'BRAIN_SHA=$sha' in source
 assert '727e108132444b6e62a71939f9e742a8193577af' not in source
-assert 'Qwen/Qwen2.5-Coder-7B-Instruct-GGUF:Q4_K_M' in source
+assert 'Qwen/Qwen2.5-Coder-3B-Instruct-GGUF:Q4_K_M' in source
 assert '127.0.0.1:8080' in source
+assert 'FIELD_BRAIN_LOCAL_SMOKE generated=true' in source
+assert 'FIELD_BRAIN_LOCAL_SMOKE generated=false' in source
+assert 'qwen25-coder-3b-q4-km-v1' in source
+assert 'Qwen/Qwen2.5-Coder-7B-Instruct-GGUF:Q4_K_M' not in source
 assert 'sha256sum -c -' in source and 'llama-b11140' in source
 assert "NIAKVIO_REQUIRE_DECODE_PROOF: '1'" in source
 assert "NIAKVIO_FORCE_CPU_TIGHT_PROMPT: '1'" in source
