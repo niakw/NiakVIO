@@ -3,7 +3,7 @@ name: Brain - Hosted single-provider repair check
 on:
   push:
     branches: [main]
-    paths: [.github/workflows/brain-hosted-repair-check.yml, scripts/select_brain_hosted_representative.py, scripts/evaluate_brain_llm_force_candidates.py, tests/brain_hosted_representative_selection_test.py, tests/brain_strict_fixture_category_test.py]
+    paths: [.github/workflows/brain-hosted-repair-check.yml, scripts/select_brain_hosted_representative.py, scripts/evaluate_brain_llm_force_candidates.py, scripts/run_hosted_brain_repair_loop.py, tests/hosted_brain_repair_loop_test.py, tests/brain_hosted_representative_selection_test.py, tests/brain_strict_fixture_category_test.py]
   workflow_dispatch:
     inputs:
       provider:
