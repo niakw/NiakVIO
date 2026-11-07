@@ -37,6 +37,16 @@ state = {
             {
                 "providerId": "demo",
                 "signature": "sig",
+                "profile": "terminal_transition_graph_v2",
+                "successes": 0,
+                "failures": 1,
+                "consecutiveFailures": 1,
+                "lastOutcome": "rejected",
+                "executionObserved": True,
+            },
+            {
+                "providerId": "demo",
+                "signature": "sig",
                 "profile": "adaptive_runtime_recovery",
                 "successes": 0,
                 "failures": 2,
@@ -50,11 +60,12 @@ state = {
 rows = sandbox._negative_entries(state)
 profiles = [row["profile"] for row in rows]
 assert "terminal_transition_graph_v1" not in profiles, rows
-assert "terminal_request_program_inference_v1" in profiles, rows
+assert "terminal_request_program_inference_v1" not in profiles, rows
+assert "terminal_transition_graph_v2" in profiles, rows
 assert "adaptive_runtime_recovery" in profiles, rows
 
 source = SCRIPT.read_text(encoding="utf-8")
-assert 'row.get("executionObserved") is not True' in source
+assert 'str(row.get("lastOutcome") or "").strip().casefold() == "profile_unavailable"' in source
 assert "POST_EXHAUSTION_STRATEGY_PROFILES" in source
 
 print("Brain Learning unexecuted evolved-strategy suppression migration passed")
