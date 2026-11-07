@@ -151,7 +151,9 @@ La surface publique reste simple ; la complexité est repoussée derrière des c
 2. **Le runtime est gaté et validé** sans transformer un zéro résultat en faux succès.
 3. **Les bytes acceptés sont publiés atomiquement** avec manifests, versions et métadonnées d’intégrité synchronisés.
 
-**Pour aller plus loin :** [`ARCHITECTURE.md`](ARCHITECTURE.md) · [`INSTALL.md`](INSTALL.md) · [`VALIDATION.md`](VALIDATION.md)
+**Pour aller plus loin :** [`ARCHITECTURE.md`](ARCHITECTURE.md) · [`INSTALL.md`](INSTALL.md) · [`VALIDATION.md`](VALIDATION.md) · [`Roadmap Brain Repair`](BRAIN_REPAIR_ROADMAP.md) · [Audit métier et sécurité](docs/NIAKVIO_BRAIN_METIER_SECURITE_QUALITE_AUDIT_2026-11-07.md)
+
+**Preuve de réparation :** actuellement aucune réparation de provider validée de bout en bout par le Brain. Les statuts historiques FULL/PARTIAL ne valent pas une relecture fraîche sur le code courant.
 
 <details>
 <summary><strong>Provider v3, DATA et contrats runtime</strong></summary>

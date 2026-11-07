@@ -151,7 +151,9 @@ The public surface stays simple; most of the complexity lives behind explicit co
 2. **Runtime behavior is gated and validated** without turning a zero result into fabricated success.
 3. **Accepted bytes are published atomically** with synchronized manifests, versions and integrity metadata.
 
-**Deep dive:** [`ARCHITECTURE.md`](ARCHITECTURE.md) · [`BRAIN_REPAIR_ARCHITECTURE.md`](BRAIN_REPAIR_ARCHITECTURE.md) · [`INSTALL.md`](INSTALL.md) · [`VALIDATION.md`](VALIDATION.md)
+**Deep dive:** [`ARCHITECTURE.md`](ARCHITECTURE.md) · [`BRAIN_REPAIR_ARCHITECTURE.md`](BRAIN_REPAIR_ARCHITECTURE.md) · [`INSTALL.md`](INSTALL.md) · [`VALIDATION.md`](VALIDATION.md) · [`Brain Repair Roadmap`](BRAIN_REPAIR_ROADMAP.md) · [Business/security audit](docs/NIAKVIO_BRAIN_METIER_SECURITE_QUALITE_AUDIT_2026-11-07.md)
+
+**Repair proof:** 0 providers currently verified repaired end-to-end by the Brain; current census FULL/PARTIAL positive states may be historical carry-forward. See the evidence-based roadmap, not a green workflow, before making runtime claims.
 
 <details>
 <summary><strong>Provider v3, DATA and runtime contracts</strong></summary>

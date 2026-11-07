@@ -1,5 +1,7 @@
 # NiakVIO — Brain Repair Roadmap and Decision Register
 
+> **Actualisation audit du 7 novembre 2026** — [Analyse métier / sécurité / qualité](docs/NIAKVIO_BRAIN_METIER_SECURITE_QUALITE_AUDIT_2026-11-07.md). Pannes du validateur de durée/catégorie, remontée des identités et du parcours lecteur corrigées au niveau Brain ; aucune preuve de réparation vidéo encore validée. État de la sécurité : **377 alertes CodeQL High NiakVIO** lors du tri par manifeste (376 snapshots non référencés, une alerte de test #2531 corrigée dans `d5325feb` et à revalider en analyse), **0 alerte CodeQL Brain-LLM** après correction `b3031d36`, inventaire [42364586403](https://github.com/niakw/NiakVIO-Brain-LLM/actions/runs/42364586403). Dependabot/secret scanning restent **non vérifiés** via les droits disponibles. `0/17` repairs; ne pas considérer un status CodeQL « non-référencé » comme un effacement de risque client ancien.
+
 ## Synthèse de décision — français (7 novembre 2026)
 
 **Statut constaté : 0 réparation de provider démontrée de bout en bout par le Brain ; 17 en file de réparation.** La présence de 21 statuts FULL est historique : 0/21 avait été retesté dans le census de référence. Le vrai critère de succès est un correctif produit par le modèle, appliqué aux octets exécutés, aboutissant à une vidéo réellement décodée et à l'identité TMDB/saison/épisode correcte, sans régression.

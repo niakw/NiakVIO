@@ -30,3 +30,10 @@ Active essential diagnostics **kept**: `temp-current-bytes-full-provider-census.
 ## To verify completion
 
 The one-shot stale PR cleanup Action must show the exact deleted ref, then GET `/branches` must show only `main` and `brain-learning/proposals`. CodeQL and SEC - Final Gate must both be green on exact current bytes. Provider playback remains a separate status.
+
+
+## 2026-11-07 — Verified follow-up: preserve archive, delete inert root placeholder only
+
+- Removed `noop.tmp` (`a1662cc`), a literal inert root placeholder with no references. No provider runtime/manifest changed by cleanup.
+- Security triage now separates 376 unreferenced historical `providers/...` snapshots and CodeQL #2531 under maintained `tests/response_structure_test.cjs`. Older content-addressed JS may be used by cached manifests/clients; do not erase URLs solely to reduce alerts or repository size. See [full security audit](NIAKVIO_BRAIN_METIER_SECURITE_QUALITE_AUDIT_2026-11-07.md).
+- Brain-LLM pinned 11 workflows to full Action SHAs, restricted checkout credentials and fixed its false-sanitizer high alert, with 0 open CodeQL after rerun; Dependabot/secrets API remain unavailable. Branch/PR retention remains evidence-dependent; no destructive branch cleanup asserted.
