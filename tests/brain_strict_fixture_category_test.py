@@ -85,6 +85,14 @@ with patch.dict(os.environ,{'NIAKVIO_REQUIRE_DECODE_PROOF':'1'}):
     tv_summary=verify.fixture_summary({'tests':[observation(tv_spec,'tv')]})
     assert tv_summary[0]['tmdbId']=='1396',tv_summary
     assert tv_summary[0]['season']==1 and tv_summary[0]['episode']==1
+    # The first evidence pass can have no decoded media at all; it still must
+    # carry trusted work identity, not erase the TMDB coordinates.
+    with patch.dict(os.environ, {'NIAKVIO_REQUIRE_DECODE_PROOF':'0'}):
+        undecoded_summary=verify.fixture_summary({'tests':[observation(tv_spec,'tv')]})
+    assert undecoded_summary[0]['tmdbId']=='1396',undecoded_summary
+    assert undecoded_summary[0]['season']==1
+    assert undecoded_summary[0]['episode']==1
+    assert 'decodedMediaControls' not in undecoded_summary[0]
     anime_spec=next(f for f in verify.load(ROOT/'health-config.json')['fixtures']['anime']
                     if f['tmdbId']=='95479')
     anime_summary=verify.fixture_summary({'tests':[observation(anime_spec,'anime')]})
