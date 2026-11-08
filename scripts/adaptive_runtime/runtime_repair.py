@@ -115,6 +115,7 @@ POST_EXHAUSTION_STRATEGY_PROFILES = {
     "route_transition_graph_v46",
     "route_transition_graph_v47",
     "route_transition_graph_v48",
+    "route_transition_graph_v49",
     "route_peer_transition_replay_v1",
     "terminal_transition_graph_v1",
     "terminal_transition_graph_v2",
@@ -1931,6 +1932,12 @@ def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any])
         request_recipes = _unique_request_recipes(current_request_recipes, provider_request_recipes, peer_request_recipes, limit=20)
         transition_prefixes = _owned_transition_prefixes(direct_paths, limit=10)
         second_order_role_preferences = ["source", "api", "player", "episode", "detail"]
+    elif new_strategy_id == "route_transition_graph_v49":
+        search_paths = _unique_routes(configured_search, learned_search, peer_search, generic_search, limit=12)
+        direct_paths = _unique_routes(configured_direct, learned_direct, [route for route in learned_direct if _route_role(route) in TERMINAL_MEDIA_ROLES | {"episode"}], [route for route in positive_program_routes(provider_id) if _route_role(route) in TERMINAL_MEDIA_ROLES | {"episode"}], limit=16)
+        request_recipes = _unique_request_recipes(current_request_recipes, provider_request_recipes, historical_provider_request_recipes, peer_request_recipes, limit=20)
+        transition_prefixes = _owned_transition_prefixes(_unique_routes(direct_paths, learned_direct, limit=16), limit=10)
+        second_order_role_preferences = ["episode", "source", "player", "api", "detail"]
     elif new_strategy_id == "route_peer_transition_replay_v1":
         search_paths = _unique_routes(learned_search, peer_search, limit=18)
         direct_paths = _unique_routes(peer_direct, learned_direct, limit=40)
