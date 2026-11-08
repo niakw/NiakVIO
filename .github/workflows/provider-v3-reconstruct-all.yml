@@ -1,4 +1,4 @@
-name: MANUAL - Reconstruct Provider v3 46/46
+name: MANUAL - Reconstruct Current Active Provider v3
 
 on:
   workflow_dispatch:
@@ -126,7 +126,7 @@ jobs:
           python tests/provider_v3_sequential_reconstruction_contract_test.py
           python tests/active_provider_live_coverage_test.py
 
-      - name: Reconstruct and validate 46 providers sequentially live
+      - name: Reconstruct and validate all active providers sequentially live
         shell: bash
         run: |
           set -euo pipefail
@@ -140,9 +140,11 @@ jobs:
           python - <<'PY'
           import json
           from pathlib import Path
+          from scripts.current_provider_scope import active_provider_count
+          expected=active_provider_count()
           report=json.loads(Path("provider-v3-live-route-validation.json").read_text(encoding="utf-8"))
-          assert report.get("providerCount") == 46, report.get("providerCount")
-          assert report.get("completedProviderCount") == 46, report.get("completedProviderCount")
+          assert report.get("providerCount") == expected, (report.get("providerCount"), expected)
+          assert report.get("completedProviderCount") == expected, (report.get("completedProviderCount"), expected)
           assert report.get("allProvidersAdvancedSequentially") is True, report
           assert report.get("sequentialNoInterProviderConcurrency") is True, report
           assert report.get("globalCandidateMaterialization") is False, report
@@ -154,7 +156,7 @@ jobs:
           )
           PY
 
-      - name: Reconstruct all 46 current providers from final live DATA + Lego
+      - name: Reconstruct all active providers from final live DATA + Blocks
         run: |
           set -euo pipefail
           python scripts/materialize_provider_v3_all.py
@@ -165,20 +167,22 @@ jobs:
           python - <<'PY'
           import json
           from pathlib import Path
+          from scripts.current_provider_scope import active_provider_count, active_provider_ids
+          expected=active_provider_count()
           m=json.loads(Path("manifest.json").read_text(encoding="utf-8"))
           r=json.loads(Path("provider-v3-materialization.json").read_text(encoding="utf-8"))
           live=json.loads(Path("provider-v3-live-route-validation.json").read_text(encoding="utf-8"))
           rows=m.get("scrapers") or []
           active=sum(1 for row in rows if row.get("enabled") is not False)
-          assert len(rows)==46, len(rows)
-          assert active==46, active
-          assert r.get("providerCount")==46, r.get("providerCount")
+          assert active==expected, (active,expected)
+          assert {str(row.get("id") or "").strip().casefold().replace("_","-") for row in rows if row.get("enabled") is not False}==active_provider_ids()
+          assert r.get("providerCount")==expected, (r.get("providerCount"),expected)
           assert r.get("context")=="workspace", r.get("context")
           assert r.get("publication") is False
           assert r.get("mainTouched") is False
           assert all(str(x.get("filename") or "").startswith("providers/") for x in rows)
           print(
-              f"FIELD_MANUAL_RECONSTRUCTION providers=46 active={active} context=workspace "
+              f"FIELD_MANUAL_RECONSTRUCTION providers={expected} active={active} context=workspace "
               f"mainTouched=false liveRoutes={live.get('liveValidatedRouteCount', 0)}"
           )
           PY
@@ -215,7 +219,7 @@ jobs:
           python scripts/validate_release_integrity.py
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         with:
-          name: provider-v3-reconstruction-46-${{ github.run_id }}
+          name: provider-v3-reconstruction-active-${{ github.run_id }}
           path: |
             PROVENANCE.json
             provider-bases/
@@ -262,5 +266,5 @@ jobs:
             echo "Reconstruction already byte-identical; nothing to commit."
             exit 0
           fi
-          git commit -m "chore: reconstruct Provider v3 46/46 sequentially with live route proof"
+          git commit -m "chore: reconstruct current active Provider v3 sequentially with live route proof"
           git push origin "HEAD:${GITHUB_REF_NAME}"
