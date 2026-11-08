@@ -30,8 +30,12 @@ rows = [
     {"title": "Spartacus S00E01", "url": "https://cdn.example/correct-s00.m3u8"},
     {"name": "Spartacus", "seasonNumber": 0, "episodeNumber": 1, "url": "https://cdn.example/correct-structured.m3u8"},
     {"name": "Server 1", "url": "https://cdn.example/opaque-unverified.m3u8"},
+    {"name": "Server 2", "sourceUrl": "https://reader.example/watch?season=0&episode=1", "url": "https://cdn.example/correct-source-coordinate.m3u8"},
 ]
 compiled = core.apply(source.replace("ROWS", json.dumps(rows)), context={"provider_id": "example"})
+assert 'cross-client-player-page-identity-v18-s00-evidence' in compiled
+assert 'function exactSpecialEpisodeEvidence(row,q)' in compiled
+
 runner = compiled + """
 (async()=> {
   const assert=require('assert');
@@ -40,7 +44,7 @@ runner = compiled + """
   assert.deepEqual(rows.map(r=>r.url), [
     'https://cdn.example/correct-s00.m3u8',
     'https://cdn.example/correct-structured.m3u8',
-    'https://cdn.example/opaque-unverified.m3u8'
+    'https://cdn.example/correct-source-coordinate.m3u8'
   ], JSON.stringify(rows));
   const s1=await module.exports.getStreams({...q,season:1});
   assert(s1.some(r=>r.url==='https://cdn.example/wrong-s1.m3u8'));
@@ -71,11 +75,17 @@ assert.deepEqual(s1,[{season:1,episodes:['normal']}]);
 assert.deepEqual(_spv251SeasonEpisodeScopedValue(all,'tv',3,1,0),[]);
 """
 assert "if (!chosen && wantedSeason === 0) continue;" in base, "missing S00-safe catalogue selection"
+assert "cross-client-player-page-identity-v18-s00-evidence" in (ROOT / "scripts/provider_patches/global_stream_identity_v1.py").read_text(encoding="utf-8")
+
 with tempfile.TemporaryDirectory() as td:
     script = Path(td) / "specials.cjs"
     script.write_text(runner, encoding="utf-8")
     out = subprocess.run(["node", str(script)], text=True, capture_output=True, timeout=25)
     assert out.returncode == 0, out.stdout + out.stderr
+
+# The generated Core wrapper rejects S00 streams with no exact episode evidence.
+# Strict source tests above do not prove that old published bytes were rebuilt.
+# A separate release gate must block shipping stale v17 wrappers until remat.
 
 # The shared fix must exist in every *published* provider bundle, not just
 # the source compiler or a hand-picked fixture. This is a static check only:
@@ -99,4 +109,13 @@ for row in published:
     ):
         assert required in published_js, (filename, required)
 
-print(f"SPECIAL_SEASON_ZERO_IDENTITY_OK published={len(published)} s00 and s01 distinct structured/query/marker/scoped; opaque unverified")
+v18_published = sum(
+    'cross-client-player-page-identity-v18-s00-evidence'
+    in (ROOT / str(row['filename'])).read_text(encoding='utf-8')
+    for row in published
+)
+print(
+    f"SPECIAL_SEASON_ZERO_IDENTITY_SOURCE_OK published={len(published)} "
+    f"v18_published={v18_published} pending_rematerialization={len(published)-v18_published} "
+    "source_v18_exact_s00_only; no live terminal playback inferred"
+)
