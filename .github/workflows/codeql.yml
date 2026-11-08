@@ -42,9 +42,13 @@ on:
         default: false
 
 concurrency:
-  # Keep cancellation local to the same ref. A main push must never cancel a PR scan.
+  # Automated census/evidence commits advance main while CodeQL is still scanning.
+  # Cancelling every in-flight scan starves the exact-SHA security matrix and
+  # leaves the Final Gate with no complete analysis. Keep one scan running;
+  # GitHub's concurrency queue coalesces pending runs to the newest SHA.
+  # Keep PR isolation through the per-ref group.
   group: niakvio-codeql-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 permissions:
   contents: read
