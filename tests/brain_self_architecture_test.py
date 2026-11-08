@@ -271,6 +271,7 @@ with tempfile.TemporaryDirectory(prefix="brain-existing-profile-") as tmp:
     groups = {"groups": [{
         "repairScope": "route-to-terminal",
         "groupId": "route-to-terminal|demo",
+        "evidenceDepths": ["detail", "player"],
         "providers": ["demo"],
     }]}
     existing = module.build_strategy_blueprints(
