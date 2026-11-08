@@ -826,14 +826,29 @@ jobs:
           set -euo pipefail
           rm -rf .brain-llm-runtime/llama-prebuilt
           mkdir -p .brain-llm-runtime/llama-prebuilt
-          curl -fL --retry 3 \
-            https://github.com/ggml-org/llama.cpp/releases/download/b11140/llama-b11140-bin-ubuntu-x64.tar.gz \
-            -o "$RUNNER_TEMP/llama-b11140.tar.gz"
-          printf '%s  %s\n' \
-            '460c45fa8a9ebc36c9b08e3a15c06dbdbeb312c6308599521c84d9e7f92a268b' \
-            "$RUNNER_TEMP/llama-b11140.tar.gz" | sha256sum -c -
-          tar -xzf "$RUNNER_TEMP/llama-b11140.tar.gz" -C .brain-llm-runtime/llama-prebuilt
+          archive="$RUNNER_TEMP/llama-b11140.tar.gz"
+          expected_sha='460c45fa8a9ebc36c9b08e3a15c06dbdbeb312c6308599521c84d9e7f92a268b'
+          # Both URLs are official ggml-org/llama.cpp GitHub release endpoints
+          # for the SAME pinned b11140 ubuntu-x64 asset (REST asset id 584287303).
+          # Never cache or trust executable bytes before validating the SHA-256.
+          if curl -fLsS --retry 4 --retry-all-errors --retry-delay 2 --connect-timeout 20 --max-time 120 \
+            'https://github.com/ggml-org/llama.cpp/releases/download/b11140/llama-b11140-bin-ubuntu-x64.tar.gz' \
+            -o "$archive"; then
+            echo 'FIELD_BRAIN_LLAMA_DOWNLOAD source=release-url downloaded=true'
+          else
+            rm -f "$archive"
+            echo 'FIELD_BRAIN_LLAMA_DOWNLOAD source=release-url downloaded=false fallback=official-release-asset-api'
+            curl -fLsS --retry 4 --retry-all-errors --retry-delay 2 --connect-timeout 20 --max-time 120 \
+              -H 'Accept: application/octet-stream' \
+              -H 'X-GitHub-Api-Version: 2022-11-28' \
+              'https://api.github.com/repos/ggml-org/llama.cpp/releases/assets/584287303' \
+              -o "$archive"
+            echo 'FIELD_BRAIN_LLAMA_DOWNLOAD source=release-asset-api downloaded=true'
+          fi
+          printf '%s  %s\n' "$expected_sha" "$archive" | sha256sum -c -
+          tar -xzf "$archive" -C .brain-llm-runtime/llama-prebuilt
           test -n "$(find .brain-llm-runtime/llama-prebuilt -type f -name llama-server -print -quit)"
+          echo 'FIELD_BRAIN_LLAMA_PREBUILT verified_sha256=true release=b11140'
 
       - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9
         if: steps.learning-slot.outputs.architecture_force == 'true' || (steps.brain_llm_route.outputs.llm_needed == 'true' && (steps.learning-slot.outputs.fast_handoff != 'true' || steps.brain_llm_fast_cache.outputs.complete != 'true'))
