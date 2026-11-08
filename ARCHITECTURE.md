@@ -504,7 +504,7 @@ le même programme sous une saison événementielle ou renvoyer silencieusement
 l'épisode. Le Core doit donc refuser de publier ce résultat au client comme
 `S00E01` sans preuve explicite des coordonnées demandées.
 
-Le Lego commun `scripts/provider_patches/global_stream_identity_v1.py`,
+Le Bloc commun `scripts/provider_patches/global_stream_identity_v1.py`,
 révision génératrice `cross-client-player-page-identity-v18-s00-evidence`,
 exige soit une paire saison/épisode structurée, soit un marqueur `S00E01`
 explicite dans les champs de la ligne, soit des coordonnées `season=0&episode=1`
@@ -522,7 +522,7 @@ prouvent aucune lecture réseau réelle ni un épisode correct sur Nuvio.**
 L'application du code commun aux **bundles publiés** est un étage distinct :
 `tests/published_s00_identity_rollout_test.py` bloque la finalisation de
 release après `reapply_published_overrides.py` si un seul provider référencé
-dans le manifeste possède encore un Lego d'identité ancien. Le statut du
+dans le manifeste possède encore un Bloc d'identité ancien. Le statut du
 source code et celui des bytes publiés doivent rester distincts dans le
 census, les CI et la mémoire, et aucun provider ne doit être déclaré FULL
 pour le seul motif que la révision v18 est présente.
