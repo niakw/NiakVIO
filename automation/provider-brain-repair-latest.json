@@ -21,14 +21,14 @@
     "yflix"
   ],
   "effectiveWaves": 1,
-  "elapsedSeconds": 156.968,
+  "elapsedSeconds": 154.343,
   "executionModel": "family-batched-multi-wave-brain-repair",
   "experienceMemory": {
     "operationalProviderCount": 24,
     "providerCount": 46,
     "schemaVersion": 2,
-    "sourceRunId": "42505794709",
-    "sourceSha": "e9502d5e7a444f21575ab943f251ce1d762d3c29",
+    "sourceRunId": "42507067048",
+    "sourceSha": "d1f18acd9893671d03d34d376f460ece94412cb0",
     "strategyCount": 5
   },
   "fixedInLabProviders": [],
@@ -113,7 +113,7 @@
   "shardCount": 1,
   "shardIndex": 0,
   "skippedEnvironmentProviders": [],
-  "sourceCensusRunId": "42505794709",
+  "sourceCensusRunId": "42507067048",
   "timeBudgetExhausted": false,
   "timeBudgetSeconds": 1200,
   "unvisitedProviders": [],
@@ -1186,6 +1186,14 @@
           ],
           "familyGroups": [
             {
+              "capabilityStrategy": "direct_media",
+              "groupId": "terminal-extraction|direct_media",
+              "providers": [
+                "allanime"
+              ],
+              "repairScope": "terminal-extraction"
+            },
+            {
               "capabilityStrategy": "mixed_embed_resolver",
               "groupId": "route-to-terminal|mixed_embed_resolver",
               "providers": [
@@ -1195,14 +1203,6 @@
                 "animesultra"
               ],
               "repairScope": "route-to-terminal"
-            },
-            {
-              "capabilityStrategy": "direct_media",
-              "groupId": "terminal-extraction|direct_media",
-              "providers": [
-                "allanime"
-              ],
-              "repairScope": "terminal-extraction"
             },
             {
               "capabilityStrategy": "html_scraper",
@@ -1247,11 +1247,11 @@
           "healthConcurrency": 8,
           "providerCount": 12,
           "providers": [
+            "allanime",
             "vostfree",
             "flemmix",
             "yflix",
             "animesultra",
-            "allanime",
             "moviesmod",
             "moviebox",
             "4khdhub",
