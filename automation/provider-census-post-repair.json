@@ -66,13 +66,14 @@
       "provider_id": "vidfast",
       "provider_name": "⚡ VidFast",
       "semantic_type": "movie",
-      "fixture_title": "Avatar",
+      "fixture_title": "Dune",
       "fixture": {
-        "slug": "health-movie-19995",
-        "tmdbId": "19995",
+        "slug": "dune-2021",
+        "tmdbId": "438631",
         "mediaType": "movie",
-        "title": "Avatar",
-        "year": 2009
+        "category": "movie",
+        "title": "Dune",
+        "year": 2021
       },
       "streams_returned": 0,
       "announced_player_candidates": 0,
@@ -108,8 +109,8 @@
       "debug_progress_stage": "none",
       "debug_fetches": [
         {
-          "url": "https://vidfast.to/embed/movie/19995",
-          "response_url": "https://vidfast.to/embed/movie/19995",
+          "url": "https://vidfast.to/embed/movie/438631",
+          "response_url": "https://vidfast.to/embed/movie/438631",
           "method": "GET",
           "status": 403,
           "content_type": "text/html",
@@ -146,11 +147,11 @@
           "declared_indexed_player_candidate_count": 0,
           "declared_player_hosts": [],
           "declared_quality_heights": [],
-          "duration_ms": 798
+          "duration_ms": 489
         },
         {
-          "url": "https://vidfast.vc/movie/19995/",
-          "response_url": "https://vidfast.vc/movie/19995/",
+          "url": "https://vidfast.vc/movie/438631/",
+          "response_url": "https://vidfast.vc/movie/438631/",
           "method": "GET",
           "status": 403,
           "content_type": "text/html",
@@ -174,7 +175,7 @@
           "declared_indexed_player_candidate_count": 0,
           "declared_player_hosts": [],
           "declared_quality_heights": [],
-          "duration_ms": 308
+          "duration_ms": 272
         }
       ],
       "debug_provider_value_trace_v18": null,
@@ -187,14 +188,14 @@
       "verified": 0,
       "contradictions": 0,
       "identity_safe": true,
-      "duration_ms": 4079,
+      "duration_ms": 3747,
       "sample_count": 4,
       "fanout_fixture_title": "Interstellar",
       "sample_titles": [
         "Interstellar",
-        "Deadpool & Wolverine",
-        "Avengers: Age of Ultron",
-        "Avatar"
+        "Oppenheimer",
+        "Guardians of the Galaxy Vol. 2",
+        "Dune"
       ],
       "adaptive_rotated": true,
       "samples": [
@@ -214,7 +215,7 @@
           "playable": 0,
           "verified": 0,
           "contradictions": 0,
-          "duration_ms": 850,
+          "duration_ms": 804,
           "streams_returned": 0,
           "announced_player_candidates": 0,
           "announced_variant_candidates": 0,
@@ -225,14 +226,40 @@
           "variant_fanout_state": "not-observed"
         },
         {
-          "fixture_title": "Deadpool & Wolverine",
+          "fixture_title": "Oppenheimer",
           "fixture": {
-            "slug": "deadpool-wolverine-2024",
-            "tmdbId": "533535",
+            "slug": "health-movie-872585",
+            "tmdbId": "872585",
+            "mediaType": "movie",
+            "title": "Oppenheimer",
+            "year": 2023
+          },
+          "status": "no_streams",
+          "debug_stage": "provider_network_http_error",
+          "debug_progress_stage": "none",
+          "raw": 0,
+          "playable": 0,
+          "verified": 0,
+          "contradictions": 0,
+          "duration_ms": 880,
+          "streams_returned": 0,
+          "announced_player_candidates": 0,
+          "announced_variant_candidates": 0,
+          "announced_player_hosts": [],
+          "announced_quality_heights": [],
+          "explored_player_requests": 0,
+          "explored_player_hosts": [],
+          "variant_fanout_state": "not-observed"
+        },
+        {
+          "fixture_title": "Guardians of the Galaxy Vol. 2",
+          "fixture": {
+            "slug": "guardians-of-the-galaxy-vol-2-2017",
+            "tmdbId": "283995",
             "mediaType": "movie",
             "category": "movie",
-            "title": "Deadpool & Wolverine",
-            "year": 2024
+            "title": "Guardians of the Galaxy Vol. 2",
+            "year": 2017
           },
           "status": "no_streams",
           "debug_stage": "provider_network_http_error",
@@ -241,7 +268,7 @@
           "playable": 0,
           "verified": 0,
           "contradictions": 0,
-          "duration_ms": 951,
+          "duration_ms": 1020,
           "streams_returned": 0,
           "announced_player_candidates": 0,
           "announced_variant_candidates": 0,
@@ -252,14 +279,14 @@
           "variant_fanout_state": "not-observed"
         },
         {
-          "fixture_title": "Avengers: Age of Ultron",
+          "fixture_title": "Dune",
           "fixture": {
-            "slug": "avengers-age-of-ultron-2015",
-            "tmdbId": "99861",
+            "slug": "dune-2021",
+            "tmdbId": "438631",
             "mediaType": "movie",
             "category": "movie",
-            "title": "Avengers: Age of Ultron",
-            "year": 2015
+            "title": "Dune",
+            "year": 2021
           },
           "status": "no_streams",
           "debug_stage": "provider_network_http_error",
@@ -268,33 +295,7 @@
           "playable": 0,
           "verified": 0,
           "contradictions": 0,
-          "duration_ms": 849,
-          "streams_returned": 0,
-          "announced_player_candidates": 0,
-          "announced_variant_candidates": 0,
-          "announced_player_hosts": [],
-          "announced_quality_heights": [],
-          "explored_player_requests": 0,
-          "explored_player_hosts": [],
-          "variant_fanout_state": "not-observed"
-        },
-        {
-          "fixture_title": "Avatar",
-          "fixture": {
-            "slug": "health-movie-19995",
-            "tmdbId": "19995",
-            "mediaType": "movie",
-            "title": "Avatar",
-            "year": 2009
-          },
-          "status": "no_streams",
-          "debug_stage": "provider_network_http_error",
-          "debug_progress_stage": "none",
-          "raw": 0,
-          "playable": 0,
-          "verified": 0,
-          "contradictions": 0,
-          "duration_ms": 1110,
+          "duration_ms": 763,
           "streams_returned": 0,
           "announced_player_candidates": 0,
           "announced_variant_candidates": 0,
@@ -312,14 +313,14 @@
       "provider_id": "vidfast",
       "provider_name": "⚡ VidFast",
       "semantic_type": "tv",
-      "fixture_title": "Adolescence",
+      "fixture_title": "The Queen's Gambit",
       "fixture": {
-        "slug": "adolescence-2025-s01e01",
-        "tmdbId": "249042",
+        "slug": "the-queen-s-gambit-2020-s01e01",
+        "tmdbId": "87739",
         "mediaType": "tv",
         "category": "tv",
-        "title": "Adolescence",
-        "year": 2025,
+        "title": "The Queen's Gambit",
+        "year": 2020,
         "season": 1,
         "episode": 1
       },
@@ -357,8 +358,8 @@
       "debug_progress_stage": "none",
       "debug_fetches": [
         {
-          "url": "https://vidfast.to/embed/tv/249042/1/1",
-          "response_url": "https://vidfast.to/embed/tv/249042/1/1",
+          "url": "https://vidfast.to/embed/tv/87739/1/1",
+          "response_url": "https://vidfast.to/embed/tv/87739/1/1",
           "method": "GET",
           "status": 403,
           "content_type": "text/html",
@@ -395,11 +396,11 @@
           "declared_indexed_player_candidate_count": 0,
           "declared_player_hosts": [],
           "declared_quality_heights": [],
-          "duration_ms": 540
+          "duration_ms": 712
         },
         {
-          "url": "https://vidfast.vc/tv/249042/1/1/",
-          "response_url": "https://vidfast.vc/tv/249042/1/1/",
+          "url": "https://vidfast.vc/tv/87739/1/1/",
+          "response_url": "https://vidfast.vc/tv/87739/1/1/",
           "method": "GET",
           "status": 403,
           "content_type": "text/html",
@@ -423,7 +424,7 @@
           "declared_indexed_player_candidate_count": 0,
           "declared_player_hosts": [],
           "declared_quality_heights": [],
-          "duration_ms": 531
+          "duration_ms": 261
         }
       ],
       "debug_provider_value_trace_v18": null,
@@ -436,14 +437,14 @@
       "verified": 0,
       "contradictions": 0,
       "identity_safe": true,
-      "duration_ms": 4568,
+      "duration_ms": 3748,
       "sample_count": 4,
       "fanout_fixture_title": "Breaking Bad",
       "sample_titles": [
         "Breaking Bad",
-        "Revenant",
-        "The Boys",
-        "Adolescence"
+        "Shōgun",
+        "The Walking Dead",
+        "The Queen's Gambit"
       ],
       "adaptive_rotated": true,
       "samples": [
@@ -465,7 +466,7 @@
           "playable": 0,
           "verified": 0,
           "contradictions": 0,
-          "duration_ms": 842,
+          "duration_ms": 814,
           "streams_returned": 0,
           "announced_player_candidates": 0,
           "announced_variant_candidates": 0,
@@ -476,14 +477,14 @@
           "variant_fanout_state": "not-observed"
         },
         {
-          "fixture_title": "Revenant",
+          "fixture_title": "Shōgun",
           "fixture": {
-            "slug": "revenant-s01e01",
-            "tmdbId": "210702",
+            "slug": "shgun-2024-s01e01",
+            "tmdbId": "126308",
             "mediaType": "tv",
             "category": "tv",
-            "title": "Revenant",
-            "year": 2023,
+            "title": "Shōgun",
+            "year": 2024,
             "season": 1,
             "episode": 1
           },
@@ -494,7 +495,7 @@
           "playable": 0,
           "verified": 0,
           "contradictions": 0,
-          "duration_ms": 1141,
+          "duration_ms": 889,
           "streams_returned": 0,
           "announced_player_candidates": 0,
           "announced_variant_candidates": 0,
@@ -505,13 +506,13 @@
           "variant_fanout_state": "not-observed"
         },
         {
-          "fixture_title": "The Boys",
+          "fixture_title": "The Walking Dead",
           "fixture": {
-            "slug": "health-tv-76479-s1e1",
-            "tmdbId": "76479",
+            "slug": "health-tv-1402-s1e1",
+            "tmdbId": "1402",
             "mediaType": "tv",
-            "title": "The Boys",
-            "year": 2019,
+            "title": "The Walking Dead",
+            "year": 2010,
             "season": 1,
             "episode": 1
           },
@@ -522,7 +523,7 @@
           "playable": 0,
           "verified": 0,
           "contradictions": 0,
-          "duration_ms": 1196,
+          "duration_ms": 800,
           "streams_returned": 0,
           "announced_player_candidates": 0,
           "announced_variant_candidates": 0,
@@ -533,14 +534,14 @@
           "variant_fanout_state": "not-observed"
         },
         {
-          "fixture_title": "Adolescence",
+          "fixture_title": "The Queen's Gambit",
           "fixture": {
-            "slug": "adolescence-2025-s01e01",
-            "tmdbId": "249042",
+            "slug": "the-queen-s-gambit-2020-s01e01",
+            "tmdbId": "87739",
             "mediaType": "tv",
             "category": "tv",
-            "title": "Adolescence",
-            "year": 2025,
+            "title": "The Queen's Gambit",
+            "year": 2020,
             "season": 1,
             "episode": 1
           },
@@ -551,7 +552,7 @@
           "playable": 0,
           "verified": 0,
           "contradictions": 0,
-          "duration_ms": 1074,
+          "duration_ms": 974,
           "streams_returned": 0,
           "announced_player_candidates": 0,
           "announced_variant_candidates": 0,
