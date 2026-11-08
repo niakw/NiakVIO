@@ -47,6 +47,37 @@ LLM_ADVISOR_PROFILES = {
 PLANS: dict[str, dict[str, Any]] = {}
 RUNTIME_STATE: dict[str, dict[str, Any]] = {}
 
+# Explicit Deep FORCE intent is bound from the already validated process CLI.
+# An ambient environment variable alone proved insufficient in the retained
+# 42495157046 replay: Deep received v50, the persisted plan omitted it.
+_EXPLICIT_DEEP_FORCE_PROFILE = ""
+
+
+def bind_explicit_deep_force_profile(profile: str) -> None:
+    """Bind one caller-validated strategy within this Deep process only."""
+    global _EXPLICIT_DEEP_FORCE_PROFILE
+    candidate = str(profile or "").strip().casefold()
+    if candidate and not re.fullmatch(r"[a-z][a-z0-9_]*_v[0-9]+", candidate):
+        raise ValueError("Invalid explicit Deep FORCE profile")
+    if candidate and not _exploration_chain_enabled():
+        raise ValueError("Explicit Deep FORCE requires production exploration")
+    inherited = str(os.environ.get("NUVIO_BRAIN_FORCE_PREFERRED_PROFILE") or "").strip().casefold()
+    if candidate and inherited and inherited != candidate:
+        raise ValueError("Conflicting ambient and explicit Deep FORCE profiles")
+    _EXPLICIT_DEEP_FORCE_PROFILE = candidate
+
+
+def _force_preferred_strategy(mode: str) -> str:
+    """Never silently lose a bound FORCE intent through an ambient env change."""
+    explicit = _EXPLICIT_DEEP_FORCE_PROFILE
+    if explicit and (str(mode).casefold() == "learning" or not _exploration_chain_enabled()):
+        raise RuntimeError("Explicit Deep FORCE scope changed before planner execution")
+    ambient = str(os.environ.get("NUVIO_BRAIN_FORCE_PREFERRED_PROFILE") or "").strip().casefold()
+    if explicit and ambient and ambient != explicit:
+        raise RuntimeError("Deep FORCE preferred profile changed after CLI binding")
+    return (explicit or ambient) if _exploration_chain_enabled() else ""
+
+
 POST_EXHAUSTION_STRATEGY_PROFILES = {
     "provider_positive_program_replay_v1",
     "transport_request_differential_v1",
@@ -1086,8 +1117,10 @@ def planner_transient_negative_memory(candidate: dict[str, Any]) -> list[dict[st
 
 
 def reset_runtime_state() -> None:
+    global _EXPLICIT_DEEP_FORCE_PROFILE
     PLANS.clear()
     RUNTIME_STATE.clear()
+    _EXPLICIT_DEEP_FORCE_PROFILE = ""
 
 
 def _provider_state_key(candidate: dict[str, Any], fallback_key: str) -> str:
@@ -1159,10 +1192,7 @@ def _execute_planner(
     payload = {
         "mode": mode,
         "explorationChain": _exploration_chain_enabled(),
-        "forcePreferredStrategy": (
-            str(os.environ.get("NUVIO_BRAIN_FORCE_PREFERRED_PROFILE") or "").strip().casefold()
-            if _exploration_chain_enabled() else ""
-        ),
+        "forcePreferredStrategy": _force_preferred_strategy(mode),
         "policy": policy(),
         "learnedSkills": planner_learned_skills(mode),
         "historicalSolutions": planner_historical_solutions(),
@@ -1177,7 +1207,8 @@ def _execute_planner(
         print(
             "FIELD_BRAIN_FORCE_PLANNER_INPUT requested="
             + payload["forcePreferredStrategy"] + " exploration="
-            + str(payload["explorationChain"]).lower(),
+            + str(payload["explorationChain"]).lower()
+            + " origin=" + ("explicit-deep-cli" if _EXPLICIT_DEEP_FORCE_PROFILE else "ambient"),
             flush=True,
         )
     planner_input = _strict_json_dumps(payload).encode("ascii")
