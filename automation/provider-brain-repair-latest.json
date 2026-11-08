@@ -21,14 +21,14 @@
     "yflix"
   ],
   "effectiveWaves": 6,
-  "elapsedSeconds": 932.076,
+  "elapsedSeconds": 1074.332,
   "executionModel": "family-batched-multi-wave-brain-repair",
   "experienceMemory": {
     "operationalProviderCount": 24,
     "providerCount": 46,
     "schemaVersion": 2,
-    "sourceRunId": "42523693837",
-    "sourceSha": "724c56131bd03d5cb4dbcab33cf63b08884b09d7",
+    "sourceRunId": "42530122687",
+    "sourceSha": "f1e54cf080e782e108e677233bd4939857f9a4b8",
     "strategyCount": 5
   },
   "fixedInLabProviders": [],
@@ -117,7 +117,7 @@
   "shardCount": 1,
   "shardIndex": 0,
   "skippedEnvironmentProviders": [],
-  "sourceCensusRunId": "42523693837",
+  "sourceCensusRunId": "42530122687",
   "timeBudgetExhausted": false,
   "timeBudgetSeconds": 1200,
   "unvisitedProviders": [],
@@ -1218,6 +1218,14 @@
               "repairScope": "route-to-terminal"
             },
             {
+              "capabilityStrategy": "api_stream_resolver",
+              "groupId": "route-to-terminal|api_stream_resolver",
+              "providers": [
+                "animevost-fr"
+              ],
+              "repairScope": "route-to-terminal"
+            },
+            {
               "capabilityStrategy": "html_scraper",
               "groupId": "route-to-terminal|html_scraper",
               "providers": [
@@ -1225,14 +1233,6 @@
                 "moviebox",
                 "4khdhub",
                 "animesalt"
-              ],
-              "repairScope": "route-to-terminal"
-            },
-            {
-              "capabilityStrategy": "api_stream_resolver",
-              "groupId": "route-to-terminal|api_stream_resolver",
-              "providers": [
-                "animevost-fr"
               ],
               "repairScope": "route-to-terminal"
             },
@@ -1265,11 +1265,11 @@
             "yflix",
             "flemmix",
             "animesultra",
+            "animevost-fr",
             "moviesmod",
             "moviebox",
             "4khdhub",
             "animesalt",
-            "animevost-fr",
             "vidfast",
             "mallumv"
           ],
