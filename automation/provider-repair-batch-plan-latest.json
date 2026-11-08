@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "sourceRunId": "42473565861-post-repair-candidate",
-  "sourceTriggerSha": "5424fe35df51a01a0f4bbb7f906db9d8002a503b",
+  "sourceRunId": "42473595736",
+  "sourceTriggerSha": "f226cae58d5ead15c32704168ad6ce3b53e0a365",
   "unresolvedProviderCount": 21,
   "dynamicVariantProviderCount": 6,
   "dynamicVariantProviders": [
@@ -16,47 +16,22 @@
     "4khdhub",
     "allanime",
     "allwish",
-    "anikototv",
-    "anime-sama",
-    "anime-ultime",
     "animekai",
     "animesalt",
     "animesama-co",
     "animesultra",
     "animevost-fr",
     "animevostfr",
-    "castle",
-    "coflix",
     "flemmix",
-    "french-manga",
-    "hindmoviez",
-    "kehflix",
-    "kurage",
     "mallumv",
     "moviebox",
-    "movieshunt",
     "moviesmod",
-    "mugiwarastream",
-    "neko-sama",
-    "papadustream",
-    "persianstremio",
-    "playimdb",
-    "purstream",
-    "sekai",
-    "streamzo",
     "uhdmovies",
-    "videasy",
     "vidfast",
-    "vidlove",
-    "vidrock",
-    "voiranime",
-    "voiranime-homes",
-    "voiranime-rip",
     "vostfree",
-    "wookafr",
     "yflix"
   ],
-  "dynamicVariantFallbackUsed": false,
+  "dynamicVariantFallbackUsed": true,
   "groupCount": 12,
   "executionModel": {
     "default": "family/signature batch",
@@ -65,6 +40,40 @@
     "providerLocalRepair": "exception path only"
   },
   "groups": [
+    {
+      "groupId": "route-to-terminal|html_scraper",
+      "repairScope": "route-to-terminal",
+      "runtimeFamilies": [
+        "api_stream_resolver",
+        "html_scraper"
+      ],
+      "capabilityStrategy": "html_scraper",
+      "evidenceDepths": [
+        "lookup",
+        "none"
+      ],
+      "dominantIssues": [
+        "network_exception",
+        "network_zero_result",
+        "waf_challenge"
+      ],
+      "harnessTransportClasses": [],
+      "transportSignature": "not-applicable",
+      "providerCount": 4,
+      "providers": [
+        "4khdhub",
+        "animesalt",
+        "moviebox",
+        "moviesmod"
+      ],
+      "action": "replay proven routes in batch and apply shared detail/player traversal profile",
+      "selectionAuthorities": [
+        "provider-census-status.json:brainCheckRequired"
+      ],
+      "dynamicVariantProviders": [],
+      "executionPolicy": "batch-first",
+      "providerLocalFallback": "only-after-shared-profile-failure"
+    },
     {
       "groupId": "route-to-terminal|mixed_embed_resolver",
       "repairScope": "route-to-terminal",
@@ -91,72 +100,6 @@
         "flemmix",
         "vostfree",
         "yflix"
-      ],
-      "action": "replay proven routes in batch and apply shared detail/player traversal profile",
-      "selectionAuthorities": [
-        "provider-census-status.json:brainCheckRequired"
-      ],
-      "dynamicVariantProviders": [],
-      "executionPolicy": "batch-first",
-      "providerLocalFallback": "only-after-shared-profile-failure"
-    },
-    {
-      "groupId": "learning|html_scraper",
-      "repairScope": "learning",
-      "runtimeFamilies": [
-        "html_scraper",
-        "mixed_embed_resolver",
-        "uhdmovies-search-gateway-driveseed-v4-button-first-multiterminal"
-      ],
-      "capabilityStrategy": "html_scraper",
-      "evidenceDepths": [
-        "lookup",
-        "none"
-      ],
-      "dominantIssues": [
-        "network_zero_result",
-        "provider_zero_before_provider_network",
-        "waf_challenge"
-      ],
-      "harnessTransportClasses": [],
-      "transportSignature": "not-applicable",
-      "providerCount": 3,
-      "providers": [
-        "4khdhub",
-        "allwish",
-        "uhdmovies"
-      ],
-      "action": "queue by signature for Brain learning; provider-local repair only after shared profiles fail",
-      "selectionAuthorities": [
-        "provider-census-status.json:brainCheckRequired"
-      ],
-      "dynamicVariantProviders": [],
-      "executionPolicy": "batch-first",
-      "providerLocalFallback": "only-after-shared-profile-failure"
-    },
-    {
-      "groupId": "route-to-terminal|html_scraper",
-      "repairScope": "route-to-terminal",
-      "runtimeFamilies": [
-        "api_stream_resolver",
-        "html_scraper"
-      ],
-      "capabilityStrategy": "html_scraper",
-      "evidenceDepths": [
-        "lookup",
-        "none"
-      ],
-      "dominantIssues": [
-        "network_exception",
-        "waf_challenge"
-      ],
-      "harnessTransportClasses": [],
-      "transportSignature": "not-applicable",
-      "providerCount": 3,
-      "providers": [
-        "animesalt",
-        "moviebox",
-        "moviesmod"
       ],
       "action": "replay proven routes in batch and apply shared detail/player traversal profile",
       "selectionAuthorities": [
@@ -196,6 +139,37 @@
       "dynamicVariantProviders": [
         "animevostfr"
       ],
+      "executionPolicy": "batch-first",
+      "providerLocalFallback": "only-after-shared-profile-failure"
+    },
+    {
+      "groupId": "learning|html_scraper",
+      "repairScope": "learning",
+      "runtimeFamilies": [
+        "mixed_embed_resolver",
+        "uhdmovies-search-gateway-driveseed-v4-button-first-multiterminal"
+      ],
+      "capabilityStrategy": "html_scraper",
+      "evidenceDepths": [
+        "lookup",
+        "none"
+      ],
+      "dominantIssues": [
+        "network_zero_result",
+        "waf_challenge"
+      ],
+      "harnessTransportClasses": [],
+      "transportSignature": "not-applicable",
+      "providerCount": 2,
+      "providers": [
+        "allwish",
+        "uhdmovies"
+      ],
+      "action": "final census NO PROOF remains repair/Learning-owned; issue-only WAF/network text cannot recreate harness or transport ownership",
+      "selectionAuthorities": [
+        "provider-census-status.json:brainCheckRequired"
+      ],
+      "dynamicVariantProviders": [],
       "executionPolicy": "batch-first",
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
