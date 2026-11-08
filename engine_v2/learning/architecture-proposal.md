@@ -19,12 +19,12 @@ Targets: scripts/brain_repair_runtime.py, scripts/run_brain_learning_queue.py, s
 
 ## New strategy blueprints
 
-### route_transition_graph_v51 — route-to-terminal|html_scraper
+### route_transition_graph_v52 — route-to-terminal|html_scraper
 
 Providers: 4khdhub
 
 Trigger: catalogue/detail route is live and identity-qualified but no terminal/player media is reached
 
-Method: derive and implement a genuinely new executable Repair strategy route_transition_graph_v51 from negative evidence for exhausted route_transition_graph_v1; preserve the causal intent of the prior method without reusing its implementation, register the new profile in Repair planning/runtime, and require targeted playback/identity proof
+Method: derive and implement a genuinely new executable Repair strategy route_transition_graph_v52 from negative evidence for exhausted route_transition_graph_v1; preserve the causal intent of the prior method without reusing its implementation, register the new profile in Repair planning/runtime, and require targeted playback/identity proof
 
 Acceptance: playback-verified media; content identity not contradicted; no green-lane regression
