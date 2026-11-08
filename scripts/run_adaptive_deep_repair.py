@@ -198,6 +198,10 @@ def main() -> int:
         _HARNESS_DIFFERENTIAL_ROWS.clear()
         _HARNESS_DIFFERENTIAL_AUDITED = False
         brain.reset_runtime_state()
+        # A validated explicit CLI selection is authoritative, independent of
+        # subsequent incidental environment mutation in nested runtime stages.
+        # The planner will fail closed on any conflicting intent.
+        brain.bind_explicit_deep_force_profile(preferred)
         health_config = json.loads(original_config.decode("utf-8"))
         deep_config = health_config.setdefault("modes", {}).setdefault("deep", {})
         deep_config["max_streams_to_probe"] = max(10, int(deep_config.get("max_streams_to_probe") or 1))
