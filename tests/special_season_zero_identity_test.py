@@ -104,10 +104,15 @@ for row in published:
     published_js = published_path.read_text(encoding="utf-8")
     for required in (
         "NUVIO_GLOBAL_STREAM_IDENTITY_V1",
-        "cross-client-player-page-identity-v17-s00-identity",
         "_spv251SeasonEpisodeScopedValue",
     ):
         assert required in published_js, (filename, required)
+    # Diagnostic gate tolerates pre-rollout v17 on main, but reports it as
+    # pending. The release-only test rejects v17 after rematerialization.
+    assert (
+        "cross-client-player-page-identity-v17-s00-identity" in published_js
+        or "cross-client-player-page-identity-v18-s00-evidence" in published_js
+    ), (filename, "identity Core revision missing")
 
 v18_published = sum(
     'cross-client-player-page-identity-v18-s00-evidence'
