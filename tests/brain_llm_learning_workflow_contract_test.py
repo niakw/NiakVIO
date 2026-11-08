@@ -103,6 +103,24 @@ for required in (
 
 assert "key: llama-cpp-b11140-ubuntu-x64" not in llm, "executable llama.cpp binary must not be restored from actions/cache"
 
+# November 8 real FORCE failure (Learning 42467678058): a release CDN 504
+# left LLM_AVAILABLE=false and prevented architecture materialization. The
+# alternate path must use the SAME official release asset and exact pinned
+# digest. A metadata JSON body or corrupted download must fail closed.
+download_step = llm[
+    llm.index("- name: Download and verify official llama.cpp binary when needed"):
+    llm.index("- uses: actions/cache@", llm.index("- name: Download and verify official llama.cpp binary when needed"))
+]
+assert "continue-on-error: true" in download_step
+assert "https://github.com/ggml-org/llama.cpp/releases/download/b11140/llama-b11140-bin-ubuntu-x64.tar.gz" in download_step
+assert "https://api.github.com/repos/ggml-org/llama.cpp/releases/assets/584287303" in download_step
+assert "Accept: application/octet-stream" in download_step
+assert "rm -f \"$archive\"" in download_step, "old partial bytes must be discarded before fallback"
+assert "expected_sha='460c45fa8a9ebc36c9b08e3a15c06dbdbeb312c6308599521c84d9e7f92a268b'" in download_step
+assert download_step.index('sha256sum -c -') < download_step.index('tar -xzf "$archive"')
+assert "FIELD_BRAIN_LLAMA_PREBUILT verified_sha256=true" in download_step
+assert "actions/cache@" not in download_step, "never cache an unverified executable release"
+
 arch = workflow[workflow.index("- name: Open or refresh Brain architecture PR"):]
 assert "git add -A" not in arch, "architecture PR must not stage transient Learning outputs"
 assert "git add engine_v2/learning/architecture-proposal.json engine_v2/learning/architecture-proposal.md" in arch
