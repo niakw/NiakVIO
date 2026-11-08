@@ -170,19 +170,9 @@ def replan_observation(
         "result": _BASE._planner_result(result),
         "state": _BASE._public_state(candidate, key),
     }
-    base_payload = {
-        "mode": mode,
-        "explorationChain": _BASE._exploration_chain_enabled(),
-        "forcePreferredStrategy": _BASE._force_preferred_strategy(mode),
-        "policy": _BASE.policy(),
-        "learnedSkills": _BASE.planner_learned_skills(mode),
-        "historicalSolutions": _BASE.planner_historical_solutions(),
-        "llmGuidance": _BASE.planner_llm_guidance(),
-        "negativeMemory": [
-            *_BASE.planner_negative_memory(mode),
-            *_BASE.planner_transient_negative_memory(candidate),
-        ],
-    }
+    base_payload = _BASE._planner_base_payload(
+        mode, _BASE.planner_transient_negative_memory(candidate)
+    )
     plans = _run_planner_batch(base_payload, [item])
     _BASE.PLANS.update(plans)
     return _BASE.PLANS.get(key) or {}
@@ -216,16 +206,7 @@ def update_plans(registry_path: Path, report: dict[str, Any], mode: str) -> dict
     if not items:
         return _BASE.PLANS
 
-    base_payload = {
-        "mode": mode,
-        "explorationChain": _BASE._exploration_chain_enabled(),
-        "forcePreferredStrategy": _BASE._force_preferred_strategy(mode),
-        "policy": _BASE.policy(),
-        "learnedSkills": _BASE.planner_learned_skills(mode),
-        "historicalSolutions": _BASE.planner_historical_solutions(),
-        "llmGuidance": _BASE.planner_llm_guidance(),
-        "negativeMemory": _BASE.planner_negative_memory(mode),
-    }
+    base_payload = _BASE._planner_base_payload(mode)
     # 24 keeps normal stdin payloads well below the failing ~500 KiB batch seen
     # in production while retaining efficient multi-provider planning.
     for start in range(0, len(items), 24):
