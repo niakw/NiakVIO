@@ -561,3 +561,36 @@ de contexte, exécute le planificateur JavaScript et garantit le refus en cas
 de perte de l'intention. Un Workflow Gate vert reste une preuve de contrat
 technique, non une validation d'un provider.
 
+## Brain Deep — un seul contrat de payload entre canonique et adaptateur
+
+Le point d'entrée Deep place `scripts/adaptive_runtime/` **avant**
+`scripts/` dans l'ordre d'import. `import brain_repair_runtime` résout donc
+`scripts/adaptive_runtime/brain_repair_runtime.py`, pas le fichier canonique.
+Cet adaptateur charge `scripts/brain_repair_runtime.py` sous `_BASE`, puis
+encadre le transport Python → planificateur JavaScript en lots bornés avec
+repli sur fichier pour les gros payloads.
+
+**Règle d'architecture :** la définition des champs de contexte du Brain
+(`mode`, `explorationChain`, `forcePreferredStrategy`, `policy`,
+`learnedSkills`, `historicalSolutions`, `llmGuidance`,
+`negativeMemory`) ne peut exister qu'à un endroit :
+`scripts/brain_repair_runtime.py::_planner_base_payload`. L'adaptateur
+l'appelle aussi bien pour les plans initiaux que pour la replanification des
+parents exploratoires, sans redéfinir son propre dictionnaire partiel.
+
+Un replay FORCE doit porter le profil explicitement demandé jusqu'au
+planificateur. L'adaptateur vérifie que chaque plan retourné expose
+`forcePreferredRequested` égal à ce profil. Le champ
+`forcePreferredSelected` reste un fait causal du planificateur : **il ne doit
+pas être forcé à `true`** quand la stratégie est refusée par la mémoire
+négative ou une contrainte métier. Les divergences de transport, pertes
+d'intention ou batches FORCE multi-provider échouent explicitement. Le retour
+`deferred_retry` ne constitue jamais un succès de réparation.
+
+Le témoin réel est le run [FORCE 42500072566](https://github.com/niakw/NiakVIO/actions/runs/42500072566) :
+le profil `route_transition_graph_v50` a été exécuté, mais sa préférence
+était absente du plan enregistré. Le test
+`tests/brain_force_adaptive_planner_bridge_test.py` couvre cette frontière
+**réelle** et exécute le vrai planificateur Node ; le Workflow Gate confirme le
+contrat au SHA exact. Ni cette vérification ni la progression sandbox vers le
+lecteur ne prouvent le média terminal, l'identité du contenu ou une publication.
