@@ -526,3 +526,38 @@ dans le manifeste possède encore un Bloc d'identité ancien. Le statut du
 source code et celui des bytes publiés doivent rester distincts dans le
 census, les CI et la mémoire, et aucun provider ne doit être déclaré FULL
 pour le seul motif que la révision v18 est présente.
+
+## FORCE — intention explicite liée au planificateur Deep
+
+La voie FORCE utilise une intention de stratégie explicitement validée pour un
+seul provider et un périmètre d'exploration. Sa transmission suit la chaîne :
+
+`workflow → canonical Repair → portfolio → Deep CLI → état local Brain → JSON
+du planificateur Node → plan exécuté → replay et preuve terminale`.
+
+Le binaire Python `run_adaptive_deep_repair.py` consomme
+`--force-preferred-profile` puis appelle
+`brain_repair_runtime.bind_explicit_deep_force_profile` immédiatement après
+`reset_runtime_state`. Le planificateur doit lire la préférence liée au
+processus et refuser les conflits d'environnement, le mode Learning ou la
+disparition du mode exploratoire. L'environnement reste une entrée de
+compatibilité, jamais une justification pour oublier la préférence CLI.
+
+**La stratégie demandée ne doit jamais être déclarée sélectionnée par défaut.**
+Le plan JavaScript doit renvoyer le profil réellement choisi et les indicateurs
+`forcePreferredRequested` / `forcePreferredSelected`. Si la préférence a été
+perdue, le Brain échoue fermé. Si une stratégie est rejetée par l'expérience
+négative ou la sélection causale, ce rejet reste visible et n'autorise pas une
+substitution silencieuse. Le garde-fou post-run sur la preuve de sélection
+reste obligatoire, mais ne démontre ni génération compilée, ni application
+aux octets exécutés, ni lecture média terminale.
+
+Un témoin de régression terrain est le run FORCE 42495157046
+(`route_transition_graph_v50` pour `4khdhub`) : entrée CLI correcte,
+`allowedProfiles=[v50]`, `postExhaustionStrategyProfile=v50`, mais
+`forcePreferredRequested=""` et `forcePreferredSelected=false`.
+Le test `tests/brain_force_deep_cli_plan_handoff_test.py` reproduit ce défaut
+de contexte, exécute le planificateur JavaScript et garantit le refus en cas
+de perte de l'intention. Un Workflow Gate vert reste une preuve de contrat
+technique, non une validation d'un provider.
+
