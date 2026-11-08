@@ -493,3 +493,36 @@ The runtime reads an optional host bridge at `globalThis.__NIAKVIO_TELEMETRY_V1_
 The provider runtime sends only coarse operational facts to the VPS collector: provider id, canonical media type, success/failure, final stream count and latency. It must never emit stream URLs, request headers, auth/cookies/tokens, raw titles/search terms, raw account ids, or raw media/TMDB identifiers. Cross-reinstall dedupe requires host/account continuity; the provider runtime must not fake it from network identity.
 
 The current collector/display surface is hosted on the same OVH-backed Eitty deployment: POST collection at `https://www.eittyweb.fr/niakvio-telemetry-collect.php`, aggregate read at `https://www.eittyweb.fr/niakvio-telemetry-data.php`, and the standalone dashboard at `https://www.eittyweb.fr/niakvio-telemetry.html`. Collector storage is outside the webroot in the persistent private Eitty state volume; install/session/account identifiers are HMAC-hashed server-side before persistence. The provider bundle still contains no hard-coded collector URL: the host bridge owns endpoint injection.
+
+
+## CORE.STREAM_IDENTITY.V1 — preuves explicites S00
+
+Un épisode spécial demandé par le client sous `season=0, episode>0` est un cas
+d'identité **plus exigeant** qu'un épisode ordinaire. Un provider peut présenter
+le même programme sous une saison événementielle ou renvoyer silencieusement
+`S01E01`; une URL HLS opaque ne prouve ni l'œuvre ni les coordonnées de
+l'épisode. Le Core doit donc refuser de publier ce résultat au client comme
+`S00E01` sans preuve explicite des coordonnées demandées.
+
+Le Lego commun `scripts/provider_patches/global_stream_identity_v1.py`,
+révision génératrice `cross-client-player-page-identity-v18-s00-evidence`,
+exige soit une paire saison/épisode structurée, soit un marqueur `S00E01`
+explicite dans les champs de la ligne, soit des coordonnées `season=0&episode=1`
+dans une URL source/lecteur corrélée. La vérification de contradiction des
+identifiants d'œuvre et des épisodes continue à s'appliquer après cette preuve
+positive. Une réponse sans preuves est **rejetée** et n'est pas remplacée par
+une autre saison par défaut. Cette règle est limitée à la saison zéro et
+n'altère pas la politique fail-open documentée pour les films et les épisodes
+ordinaires quand une métadonnée annexe manque.
+
+Les contrôles `tests/special_season_zero_identity_test.py` exécutent le Core
+généré sur des fixtures positives/négatives, notamment Spartacus, un média
+opaque et un lecteur à paramètres explicites. **Ces fixtures synthétiques ne
+prouvent aucune lecture réseau réelle ni un épisode correct sur Nuvio.**
+L'application du code commun aux **bundles publiés** est un étage distinct :
+`tests/published_s00_identity_rollout_test.py` bloque la finalisation de
+release après `reapply_published_overrides.py` si un seul provider référencé
+dans le manifeste possède encore un Lego d'identité ancien. Le statut du
+source code et celui des bytes publiés doivent rester distincts dans le
+census, les CI et la mémoire, et aucun provider ne doit être déclaré FULL
+pour le seul motif que la révision v18 est présente.
