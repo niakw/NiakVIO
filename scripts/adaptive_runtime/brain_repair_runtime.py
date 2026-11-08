@@ -57,6 +57,19 @@ def _run_planner_batch(base_payload: dict[str, Any], items: list[dict[str, Any]]
         return {}
     payload = dict(base_payload)
     payload["items"] = items
+    requested = str(payload.get("forcePreferredStrategy") or "").strip().casefold()
+    # This adapter is Deep's actual planner transport. Keep the explicitly
+    # scoped CLI intent that the canonical Brain bound before any health run.
+    # An ordinary batch may split/defer; a FORCE replay must never silently
+    # return a different or unmarked plan in place of its requested strategy.
+    if requested:
+        if not payload.get("explorationChain") or str(payload.get("mode") or "") == "learning":
+            raise RuntimeError("Explicit FORCE preference escaped production exploration")
+        print(
+            f"FIELD_BRAIN_FORCE_ADAPTIVE_INPUT requested={requested} items={len(items)} "
+            "origin=explicit-deep-planner",
+            flush=True,
+        )
     planner_input = _BASE._strict_json_dumps(payload).encode("ascii")
     try:
         # Verify the exact bytes locally before they cross the Python -> Node
@@ -93,11 +106,31 @@ def _run_planner_batch(base_payload: dict[str, Any], items: list[dict[str, Any]]
                     timeout=30,
                 )
         parsed = json.loads((completed.stdout or b"{}").decode("utf-8"))
-        return {
+        plans = {
             str(key): row
             for key, row in (parsed.get("plans") or {}).items()
             if isinstance(row, dict)
         }
+        if requested:
+            expected_keys = {str(item.get("key") or "") for item in items}
+            if set(plans) != expected_keys:
+                raise RuntimeError("Explicit FORCE planner output omits or adds a candidate")
+            for key, row in plans.items():
+                reported = str(row.get("forcePreferredRequested") or "").strip().casefold()
+                if reported != requested:
+                    print(
+                        f"FIELD_BRAIN_FORCE_ADAPTIVE_INTENT_MISMATCH requested={requested} "
+                        f"returned={reported or 'none'}",
+                        flush=True,
+                    )
+                    raise RuntimeError("Adaptive Brain planner dropped explicit FORCE strategy")
+                print(
+                    f"FIELD_BRAIN_FORCE_ADAPTIVE_SELECTION requested={requested} "
+                    f"selected={str(row.get('forcePreferredSelected') is True).lower()} "
+                    f"profile={str(row.get('postExhaustionStrategyProfile') or 'none')[:100]}",
+                    flush=True,
+                )
+        return plans
     except (subprocess.CalledProcessError, subprocess.TimeoutExpired, UnicodeDecodeError, json.JSONDecodeError) as exc:
         if len(items) > 1:
             midpoint = max(1, len(items) // 2)
@@ -138,6 +171,7 @@ def replan_observation(
     base_payload = {
         "mode": mode,
         "explorationChain": _BASE._exploration_chain_enabled(),
+        "forcePreferredStrategy": _BASE._force_preferred_strategy(mode),
         "policy": _BASE.policy(),
         "learnedSkills": _BASE.planner_learned_skills(mode),
         "historicalSolutions": _BASE.planner_historical_solutions(),
@@ -183,6 +217,7 @@ def update_plans(registry_path: Path, report: dict[str, Any], mode: str) -> dict
     base_payload = {
         "mode": mode,
         "explorationChain": _BASE._exploration_chain_enabled(),
+        "forcePreferredStrategy": _BASE._force_preferred_strategy(mode),
         "policy": _BASE.policy(),
         "learnedSkills": _BASE.planner_learned_skills(mode),
         "historicalSolutions": _BASE.planner_historical_solutions(),
