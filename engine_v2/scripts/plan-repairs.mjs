@@ -118,6 +118,7 @@ const POST_EXHAUSTION_STRATEGIES = {
     { profile: "route_transition_graph_v41", method: "brain-evolved-executable-transition" },
     { profile: "route_transition_graph_v42", method: "brain-evolved-executable-transition" },
     { profile: "route_transition_graph_v43", method: "brain-evolved-executable-transition" },
+    { profile: "route_transition_graph_v44", method: "brain-evolved-executable-transition" },
     { profile: "route_transition_graph_v1", method: "provider-owned-route-transition-graph" },
     { profile: "route_peer_transition_replay_v1", method: "structural-peer-route-transition-replay" },
     { profile: "identity_alias_search_traversal_v1", method: "tmdb-identity-alias-search-traversal" },
