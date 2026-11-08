@@ -63,6 +63,8 @@ def _run_planner_batch(base_payload: dict[str, Any], items: list[dict[str, Any]]
     # An ordinary batch may split/defer; a FORCE replay must never silently
     # return a different or unmarked plan in place of its requested strategy.
     if requested:
+        if len(items) != 1:
+            raise RuntimeError("Explicit FORCE planner transport requires one representative")
         if not payload.get("explorationChain") or str(payload.get("mode") or "") == "learning":
             raise RuntimeError("Explicit FORCE preference escaped production exploration")
         print(
