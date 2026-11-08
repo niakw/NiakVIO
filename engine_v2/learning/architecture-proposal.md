@@ -2,7 +2,7 @@
 
 Review-only self-evolution proposal generated from sanitized Learning evidence.
 
-- Proposals: 2
+- Proposals: 1
 - Policy changed: false
 - Human merge required: true
 
@@ -17,25 +17,14 @@ Synthesize one or more new bounded repair/evidence strategies from the common fa
 
 Targets: scripts/brain_repair_runtime.py, scripts/run_brain_learning_queue.py, scripts/run_brain_learning_sandbox.py, tests/brain_*
 
-## method_exhaustion
-
-Priority: high
-
-1 repeatedly failing repair profile(s) show that known methods are not solving the provider.
-
-Recommendation:
-Propose a genuinely different repair/evidence capability or compose existing capabilities differently; do not widen an arbitrary retry counter.
-
-Targets: scripts/run_brain_learning_sandbox.py, tests/brain_*
-
 ## New strategy blueprints
 
-### route_transition_graph_v39 — route-to-terminal|iframe_player
+### route_transition_graph_v40 — route-to-terminal|html_scraper
 
-Providers: vidfast
+Providers: 4khdhub
 
 Trigger: catalogue/detail route is live and identity-qualified but no terminal/player media is reached
 
-Method: derive and implement a genuinely new executable Repair strategy route_transition_graph_v39 from negative evidence for exhausted route_transition_graph_v1; preserve the causal intent of the prior method without reusing its implementation, register the new profile in Repair planning/runtime, and require targeted playback/identity proof
+Method: derive and implement a genuinely new executable Repair strategy route_transition_graph_v40 from negative evidence for exhausted route_transition_graph_v1; preserve the causal intent of the prior method without reusing its implementation, register the new profile in Repair planning/runtime, and require targeted playback/identity proof
 
 Acceptance: playback-verified media; content identity not contradicted; no green-lane regression
