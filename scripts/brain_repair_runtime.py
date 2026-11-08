@@ -1182,14 +1182,17 @@ def _safe_planner_stderr(value: Any) -> str:
     return " ".join(text.split())[:600]
 
 
-def _execute_planner(
-    items: list[dict[str, Any]],
+def _planner_base_payload(
     mode: str,
     transient_negative_memory: list[dict[str, Any]] | None = None,
-) -> dict[str, dict[str, Any]]:
-    if not items:
-        return PLANS
-    payload = {
+) -> dict[str, Any]:
+    """Single authority for canonical AND adaptive Deep planner context.
+
+    The adaptive batch transport must not reimplement the set of fields: real
+    FORCE 42500072566 lost forcePreferredStrategy in a duplicated dict and
+    silently logged forcePreferredRequested="" despite executing the profile.
+    """
+    return {
         "mode": mode,
         "explorationChain": _exploration_chain_enabled(),
         "forcePreferredStrategy": _force_preferred_strategy(mode),
@@ -1201,8 +1204,18 @@ def _execute_planner(
             *planner_negative_memory(mode),
             *(transient_negative_memory or []),
         ],
-        "items": items,
     }
+
+
+def _execute_planner(
+    items: list[dict[str, Any]],
+    mode: str,
+    transient_negative_memory: list[dict[str, Any]] | None = None,
+) -> dict[str, dict[str, Any]]:
+    if not items:
+        return PLANS
+    payload = _planner_base_payload(mode, transient_negative_memory)
+    payload["items"] = items
     if payload["forcePreferredStrategy"]:
         print(
             "FIELD_BRAIN_FORCE_PLANNER_INPUT requested="
