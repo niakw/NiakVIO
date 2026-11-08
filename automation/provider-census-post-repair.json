@@ -3,7 +3,7 @@
   "requested_scope": "all",
   "resolved_scope": "explicit",
   "selected_providers": [
-    "vidfast"
+    "4khdhub"
   ],
   "shard_count": 1,
   "shard_index": 0,
@@ -11,7 +11,7 @@
   "fixture_selection_policy": "retained-proof-first-then-provider-targeted-then-representative-then-three-corpus-rotated",
   "provider_count": 1,
   "task_count": 2,
-  "probe_count": 8,
+  "probe_count": 6,
   "rotated_task_count": 2,
   "max_samples_per_lane": 4,
   "raw_provider_count": 0,
@@ -54,26 +54,25 @@
     "no_streams": 2
   },
   "debug_stage_counts": {
-    "provider_network_http_error": 2
+    "provider_zero_before_provider_network": 2
   },
   "debug_stage_providers": {
-    "provider_network_http_error": [
-      "vidfast"
+    "provider_zero_before_provider_network": [
+      "4khdhub"
     ]
   },
   "rows": [
     {
-      "provider_id": "vidfast",
-      "provider_name": "⚡ VidFast",
+      "provider_id": "4khdhub",
+      "provider_name": "📺 4KHDHub",
       "semantic_type": "movie",
-      "fixture_title": "Deadpool & Wolverine",
+      "fixture_title": "The Colony",
       "fixture": {
-        "slug": "deadpool-wolverine-2024",
-        "tmdbId": "533535",
+        "tmdbId": "760873",
         "mediaType": "movie",
         "category": "movie",
-        "title": "Deadpool & Wolverine",
-        "year": 2024
+        "title": "The Colony",
+        "year": 2021
       },
       "streams_returned": 0,
       "announced_player_candidates": 0,
@@ -84,98 +83,53 @@
       "explored_player_hosts": [],
       "variant_fanout_state": "not-observed",
       "status": "no_streams",
-      "debug_stage": "provider_network_http_error",
+      "debug_stage": "provider_zero_before_provider_network",
       "debug_model": {
-        "strategy": "mixed_embed_resolver",
-        "source_runtime_family": "catalogue-html-embed",
+        "strategy": "html_scraper",
+        "source_runtime_family": "catalogue-html",
         "reconstruction_state": "learning-clean-seed",
-        "identity_mode": "tmdb_direct",
-        "requires_tmdb_before_run": false,
+        "identity_mode": "catalog_search",
+        "requires_tmdb_before_run": true,
         "supported_types": [
           "movie",
           "tv"
         ],
-        "route_count": 2,
+        "route_count": 1,
         "route_kinds": [
-          "detail"
+          "search"
         ],
         "has_api_recipe": false,
-        "official_site": "https://vidfast.to",
-        "official_hub": null,
+        "official_site": "https://4khdhub.one",
+        "official_hub": "https://4khdhub.one/",
         "official_api": null
       },
-      "debug_fetch_count": 2,
-      "debug_provider_fetch_count": 2,
+      "debug_fetch_count": 3,
+      "debug_provider_fetch_count": 0,
       "debug_progress_stage": "none",
       "debug_fetches": [
         {
-          "url": "https://vidfast.to/embed/movie/533535",
-          "response_url": "https://vidfast.to/embed/movie/533535",
+          "url": "https://api.themoviedb.org/3/movie/760873?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Crelease_dates&language=fr-FR&api_key=%3Credacted%3E",
+          "response_url": "",
           "method": "GET",
-          "status": 403,
-          "content_type": "text/html",
-          "challenge": "",
-          "response_shape": {
-            "kind": "html",
-            "sampleBytes": 722,
-            "forms": 0,
-            "iframes": 0,
-            "videos": 0,
-            "sources": 0,
-            "scripts": 0,
-            "anchors": 0,
-            "classTokens": [
-              "content"
-            ],
-            "idTokens": [],
-            "classFacts": [
-              {
-                "token": "content",
-                "count": 1,
-                "tags": [
-                  "div"
-                ],
-                "selfHref": 0,
-                "nestedAnchors": 0,
-                "signals": []
-              }
-            ],
-            "markers": []
-          },
-          "declared_player_candidate_count": 0,
-          "declared_url_player_candidate_count": 0,
-          "declared_indexed_player_candidate_count": 0,
-          "declared_player_hosts": [],
-          "declared_quality_heights": [],
-          "duration_ms": 578
+          "status": 0,
+          "duration_ms": 1801,
+          "error": "TimeoutError"
         },
         {
-          "url": "https://vidfast.vc/movie/533535/",
-          "response_url": "https://vidfast.vc/movie/533535/",
+          "url": "https://api.themoviedb.org/3/tv/760873?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Ccontent_ratings&language=fr-FR&api_key=%3Credacted%3E",
+          "response_url": "",
           "method": "GET",
-          "status": 403,
-          "content_type": "text/html",
-          "challenge": "",
-          "response_shape": {
-            "kind": "html",
-            "sampleBytes": 548,
-            "forms": 0,
-            "iframes": 0,
-            "videos": 0,
-            "sources": 0,
-            "scripts": 0,
-            "anchors": 0,
-            "classTokens": [],
-            "idTokens": [],
-            "classFacts": [],
-            "markers": []
-          },
-          "declared_player_candidate_count": 0,
-          "declared_url_player_candidate_count": 0,
-          "declared_indexed_player_candidate_count": 0,
-          "declared_player_hosts": [],
-          "declared_quality_heights": [],
-          "duration_ms": 829
+          "status": 0,
+          "duration_ms": 1800,
+          "error": "TimeoutError"
+        },
+        {
+          "url": "https://api.themoviedb.org/3/movie/760873?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Crelease_dates&language=fr-FR&api_key=%3Credacted%3E",
+          "response_url": "",
+          "method": "GET",
+          "status": 0,
+          "duration_ms": 1800,
+          "error": "TimeoutError"
         }
       ],
       "debug_provider_value_trace_v18": null,
@@ -188,17 +142,43 @@
       "verified": 0,
       "contradictions": 0,
       "identity_safe": true,
-      "duration_ms": 4602,
+      "duration_ms": 27752,
       "sample_count": 4,
-      "fanout_fixture_title": "Interstellar",
+      "fanout_fixture_title": "Sinners",
       "sample_titles": [
+        "Sinners",
         "Interstellar",
-        "Joker",
-        "Guardians of the Galaxy Vol. 2",
-        "Deadpool & Wolverine"
+        "Mon ninja et moi 3",
+        "The Colony"
       ],
       "adaptive_rotated": true,
       "samples": [
+        {
+          "fixture_title": "Sinners",
+          "fixture": {
+            "tmdbId": "1233413",
+            "mediaType": "movie",
+            "category": "movie",
+            "title": "Sinners",
+            "year": 2025
+          },
+          "status": "no_streams",
+          "debug_stage": "provider_zero_before_provider_network",
+          "debug_progress_stage": "none",
+          "raw": 0,
+          "playable": 0,
+          "verified": 0,
+          "contradictions": 0,
+          "duration_ms": 5405,
+          "streams_returned": 0,
+          "announced_player_candidates": 0,
+          "announced_variant_candidates": 0,
+          "announced_player_hosts": [],
+          "announced_quality_heights": [],
+          "explored_player_requests": 0,
+          "explored_player_hosts": [],
+          "variant_fanout_state": "not-observed"
+        },
         {
           "fixture_title": "Interstellar",
           "fixture": {
@@ -209,13 +189,13 @@
             "year": 2014
           },
           "status": "no_streams",
-          "debug_stage": "provider_network_http_error",
+          "debug_stage": "provider_zero_before_provider_network",
           "debug_progress_stage": "none",
           "raw": 0,
           "playable": 0,
           "verified": 0,
           "contradictions": 0,
-          "duration_ms": 896,
+          "duration_ms": 5404,
           "streams_returned": 0,
           "announced_player_candidates": 0,
           "announced_variant_candidates": 0,
@@ -226,23 +206,22 @@
           "variant_fanout_state": "not-observed"
         },
         {
-          "fixture_title": "Joker",
+          "fixture_title": "Mon ninja et moi 3",
           "fixture": {
-            "slug": "joker-2019",
-            "tmdbId": "475557",
+            "tmdbId": "1215638",
             "mediaType": "movie",
             "category": "movie",
-            "title": "Joker",
-            "year": 2019
+            "title": "Mon ninja et moi 3",
+            "year": 2025
           },
           "status": "no_streams",
-          "debug_stage": "provider_network_http_error",
+          "debug_stage": "provider_zero_before_provider_network",
           "debug_progress_stage": "none",
           "raw": 0,
           "playable": 0,
           "verified": 0,
           "contradictions": 0,
-          "duration_ms": 1111,
+          "duration_ms": 5406,
           "streams_returned": 0,
           "announced_player_candidates": 0,
           "announced_variant_candidates": 0,
@@ -253,50 +232,22 @@
           "variant_fanout_state": "not-observed"
         },
         {
-          "fixture_title": "Guardians of the Galaxy Vol. 2",
+          "fixture_title": "The Colony",
           "fixture": {
-            "slug": "guardians-of-the-galaxy-vol-2-2017",
-            "tmdbId": "283995",
+            "tmdbId": "760873",
             "mediaType": "movie",
             "category": "movie",
-            "title": "Guardians of the Galaxy Vol. 2",
-            "year": 2017
+            "title": "The Colony",
+            "year": 2021
           },
           "status": "no_streams",
-          "debug_stage": "provider_network_http_error",
+          "debug_stage": "provider_zero_before_provider_network",
           "debug_progress_stage": "none",
           "raw": 0,
           "playable": 0,
           "verified": 0,
           "contradictions": 0,
-          "duration_ms": 872,
-          "streams_returned": 0,
-          "announced_player_candidates": 0,
-          "announced_variant_candidates": 0,
-          "announced_player_hosts": [],
-          "announced_quality_heights": [],
-          "explored_player_requests": 0,
-          "explored_player_hosts": [],
-          "variant_fanout_state": "not-observed"
-        },
-        {
-          "fixture_title": "Deadpool & Wolverine",
-          "fixture": {
-            "slug": "deadpool-wolverine-2024",
-            "tmdbId": "533535",
-            "mediaType": "movie",
-            "category": "movie",
-            "title": "Deadpool & Wolverine",
-            "year": 2024
-          },
-          "status": "no_streams",
-          "debug_stage": "provider_network_http_error",
-          "debug_progress_stage": "none",
-          "raw": 0,
-          "playable": 0,
-          "verified": 0,
-          "contradictions": 0,
-          "duration_ms": 1409,
+          "duration_ms": 5404,
           "streams_returned": 0,
           "announced_player_candidates": 0,
           "announced_variant_candidates": 0,
@@ -311,17 +262,16 @@
       "provider_budget_exhausted": false
     },
     {
-      "provider_id": "vidfast",
-      "provider_name": "⚡ VidFast",
+      "provider_id": "4khdhub",
+      "provider_name": "📺 4KHDHub",
       "semantic_type": "tv",
-      "fixture_title": "Squid Game",
+      "fixture_title": "Revenant",
       "fixture": {
-        "slug": "squid-game-2021-s01e01",
-        "tmdbId": "93405",
+        "tmdbId": "210702",
         "mediaType": "tv",
         "category": "tv",
-        "title": "Squid Game",
-        "year": 2021,
+        "title": "Revenant",
+        "year": 2023,
         "season": 1,
         "episode": 1
       },
@@ -334,98 +284,53 @@
       "explored_player_hosts": [],
       "variant_fanout_state": "not-observed",
       "status": "no_streams",
-      "debug_stage": "provider_network_http_error",
+      "debug_stage": "provider_zero_before_provider_network",
       "debug_model": {
-        "strategy": "mixed_embed_resolver",
-        "source_runtime_family": "catalogue-html-embed",
+        "strategy": "html_scraper",
+        "source_runtime_family": "catalogue-html",
         "reconstruction_state": "learning-clean-seed",
-        "identity_mode": "tmdb_direct",
-        "requires_tmdb_before_run": false,
+        "identity_mode": "catalog_search",
+        "requires_tmdb_before_run": true,
         "supported_types": [
           "movie",
           "tv"
         ],
-        "route_count": 2,
+        "route_count": 1,
         "route_kinds": [
-          "detail"
+          "search"
         ],
         "has_api_recipe": false,
-        "official_site": "https://vidfast.to",
-        "official_hub": null,
+        "official_site": "https://4khdhub.one",
+        "official_hub": "https://4khdhub.one/",
         "official_api": null
       },
-      "debug_fetch_count": 2,
-      "debug_provider_fetch_count": 2,
+      "debug_fetch_count": 3,
+      "debug_provider_fetch_count": 0,
       "debug_progress_stage": "none",
       "debug_fetches": [
         {
-          "url": "https://vidfast.to/embed/tv/93405/1/1",
-          "response_url": "https://vidfast.to/embed/tv/93405/1/1",
+          "url": "https://api.themoviedb.org/3/tv/210702?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Ccontent_ratings&language=fr-FR&api_key=%3Credacted%3E",
+          "response_url": "",
           "method": "GET",
-          "status": 403,
-          "content_type": "text/html",
-          "challenge": "",
-          "response_shape": {
-            "kind": "html",
-            "sampleBytes": 722,
-            "forms": 0,
-            "iframes": 0,
-            "videos": 0,
-            "sources": 0,
-            "scripts": 0,
-            "anchors": 0,
-            "classTokens": [
-              "content"
-            ],
-            "idTokens": [],
-            "classFacts": [
-              {
-                "token": "content",
-                "count": 1,
-                "tags": [
-                  "div"
-                ],
-                "selfHref": 0,
-                "nestedAnchors": 0,
-                "signals": []
-              }
-            ],
-            "markers": []
-          },
-          "declared_player_candidate_count": 0,
-          "declared_url_player_candidate_count": 0,
-          "declared_indexed_player_candidate_count": 0,
-          "declared_player_hosts": [],
-          "declared_quality_heights": [],
-          "duration_ms": 572
+          "status": 0,
+          "duration_ms": 1800,
+          "error": "TimeoutError"
         },
         {
-          "url": "https://vidfast.vc/tv/93405/1/1/",
-          "response_url": "https://vidfast.vc/tv/93405/1/1/",
+          "url": "https://api.themoviedb.org/3/movie/210702?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Crelease_dates&language=fr-FR&api_key=%3Credacted%3E",
+          "response_url": "",
           "method": "GET",
-          "status": 403,
-          "content_type": "text/html",
-          "challenge": "",
-          "response_shape": {
-            "kind": "html",
-            "sampleBytes": 548,
-            "forms": 0,
-            "iframes": 0,
-            "videos": 0,
-            "sources": 0,
-            "scripts": 0,
-            "anchors": 0,
-            "classTokens": [],
-            "idTokens": [],
-            "classFacts": [],
-            "markers": []
-          },
-          "declared_player_candidate_count": 0,
-          "declared_url_player_candidate_count": 0,
-          "declared_indexed_player_candidate_count": 0,
-          "declared_player_hosts": [],
-          "declared_quality_heights": [],
-          "duration_ms": 301
+          "status": 0,
+          "duration_ms": 1799,
+          "error": "TimeoutError"
+        },
+        {
+          "url": "https://api.themoviedb.org/3/tv/210702?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Ccontent_ratings&language=fr-FR&api_key=%3Credacted%3E",
+          "response_url": "",
+          "method": "GET",
+          "status": 0,
+          "duration_ms": 1801,
+          "error": "TimeoutError"
         }
       ],
       "debug_provider_value_trace_v18": null,
@@ -438,14 +343,12 @@
       "verified": 0,
       "contradictions": 0,
       "identity_safe": true,
-      "duration_ms": 3887,
-      "sample_count": 4,
+      "duration_ms": 13894,
+      "sample_count": 2,
       "fanout_fixture_title": "Breaking Bad",
       "sample_titles": [
         "Breaking Bad",
-        "Peaky Blinders",
-        "Stranger Things",
-        "Squid Game"
+        "Revenant"
       ],
       "adaptive_rotated": true,
       "samples": [
@@ -461,13 +364,13 @@
             "episode": 1
           },
           "status": "no_streams",
-          "debug_stage": "provider_network_http_error",
+          "debug_stage": "provider_zero_before_provider_network",
           "debug_progress_stage": "none",
           "raw": 0,
           "playable": 0,
           "verified": 0,
           "contradictions": 0,
-          "duration_ms": 915,
+          "duration_ms": 5404,
           "streams_returned": 0,
           "announced_player_candidates": 0,
           "announced_variant_candidates": 0,
@@ -478,83 +381,24 @@
           "variant_fanout_state": "not-observed"
         },
         {
-          "fixture_title": "Peaky Blinders",
+          "fixture_title": "Revenant",
           "fixture": {
-            "slug": "peaky-blinders-2013-s01e01",
-            "tmdbId": "60574",
+            "tmdbId": "210702",
             "mediaType": "tv",
             "category": "tv",
-            "title": "Peaky Blinders",
-            "year": 2013,
+            "title": "Revenant",
+            "year": 2023,
             "season": 1,
             "episode": 1
           },
           "status": "no_streams",
-          "debug_stage": "provider_network_http_error",
+          "debug_stage": "provider_zero_before_provider_network",
           "debug_progress_stage": "none",
           "raw": 0,
           "playable": 0,
           "verified": 0,
           "contradictions": 0,
-          "duration_ms": 898,
-          "streams_returned": 0,
-          "announced_player_candidates": 0,
-          "announced_variant_candidates": 0,
-          "announced_player_hosts": [],
-          "announced_quality_heights": [],
-          "explored_player_requests": 0,
-          "explored_player_hosts": [],
-          "variant_fanout_state": "not-observed"
-        },
-        {
-          "fixture_title": "Stranger Things",
-          "fixture": {
-            "slug": "stranger-things-2016-s01e01",
-            "tmdbId": "66732",
-            "mediaType": "tv",
-            "category": "tv",
-            "title": "Stranger Things",
-            "year": 2016,
-            "season": 1,
-            "episode": 1
-          },
-          "status": "no_streams",
-          "debug_stage": "provider_network_http_error",
-          "debug_progress_stage": "none",
-          "raw": 0,
-          "playable": 0,
-          "verified": 0,
-          "contradictions": 0,
-          "duration_ms": 879,
-          "streams_returned": 0,
-          "announced_player_candidates": 0,
-          "announced_variant_candidates": 0,
-          "announced_player_hosts": [],
-          "announced_quality_heights": [],
-          "explored_player_requests": 0,
-          "explored_player_hosts": [],
-          "variant_fanout_state": "not-observed"
-        },
-        {
-          "fixture_title": "Squid Game",
-          "fixture": {
-            "slug": "squid-game-2021-s01e01",
-            "tmdbId": "93405",
-            "mediaType": "tv",
-            "category": "tv",
-            "title": "Squid Game",
-            "year": 2021,
-            "season": 1,
-            "episode": 1
-          },
-          "status": "no_streams",
-          "debug_stage": "provider_network_http_error",
-          "debug_progress_stage": "none",
-          "raw": 0,
-          "playable": 0,
-          "verified": 0,
-          "contradictions": 0,
-          "duration_ms": 876,
+          "duration_ms": 5404,
           "streams_returned": 0,
           "announced_player_candidates": 0,
           "announced_variant_candidates": 0,

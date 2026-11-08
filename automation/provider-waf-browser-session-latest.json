@@ -6,12 +6,46 @@
   "targetCount": 20,
   "providerFilter": [],
   "attemptsPerTarget": 2,
-  "clientProfileMatrixEnabled": false,
+  "clientProfileMatrixEnabled": true,
   "clientProfiles": [
     {
       "id": "github-default-browser",
       "transportApproximation": "GitHub-hosted Chromium",
       "userAgent": "browser-default"
+    },
+    {
+      "id": "nuvio-tv-ua-browser",
+      "transportApproximation": "GitHub-hosted Chromium with audited NuvioTV default UA only",
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+      "nativeContract": {
+        "httpStack": "OkHttp",
+        "proxyPolicy": "Proxy.NO_PROXY",
+        "dnsPolicy": "IPv4FirstDns",
+        "redirects": "HTTP+SSL enabled"
+      }
+    },
+    {
+      "id": "nuvio-tv-okhttp-jvm",
+      "transportApproximation": "GitHub JVM OkHttp 4.12.0 with audited NuvioTV PluginRuntime policy",
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+      "nativeContractApproximation": {
+        "httpStack": "OkHttp 4.12.0",
+        "proxyPolicy": "Proxy.NO_PROXY",
+        "dnsPolicy": "IPv4FirstDns",
+        "redirects": "HTTP+SSL enabled",
+        "tlsRuntime": "GitHub JVM, not Android device"
+      }
+    },
+    {
+      "id": "nuvio-tv-direct-http-approx",
+      "transportApproximation": "GitHub libcurl with IPv4, NO_PROXY, redirects and audited NuvioTV UA",
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+      "nativeContractApproximation": {
+        "httpStack": "libcurl-not-OkHttp",
+        "proxyPolicy": "NO_PROXY",
+        "dnsPolicy": "IPv4 only",
+        "redirects": "enabled"
+      }
     }
   ],
   "limitations": [
@@ -42,8 +76,7 @@
       "attempts": [
         {
           "attempt": 1,
-          "outcome": "browser_challenge_persisted",
-          "exitCode": 0
+          "outcome": "browser_timeout"
         },
         {
           "attempt": 2,
@@ -61,8 +94,7 @@
           "attempts": [
             {
               "attempt": 1,
-              "outcome": "browser_challenge_persisted",
-              "exitCode": 0
+              "outcome": "browser_timeout"
             },
             {
               "attempt": 2,
@@ -77,7 +109,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 5901
+      "durationMs": 25116
     },
     {
       "provider": "allwish",
@@ -95,8 +127,7 @@
       "attempts": [
         {
           "attempt": 1,
-          "outcome": "browser_challenge_persisted",
-          "exitCode": 0
+          "outcome": "browser_timeout"
         },
         {
           "attempt": 2,
@@ -114,8 +145,7 @@
           "attempts": [
             {
               "attempt": 1,
-              "outcome": "browser_challenge_persisted",
-              "exitCode": 0
+              "outcome": "browser_timeout"
             },
             {
               "attempt": 2,
@@ -130,7 +160,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 5876,
+      "durationMs": 25102,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_challenge_persisted",
@@ -176,8 +206,7 @@
       "attempts": [
         {
           "attempt": 1,
-          "outcome": "browser_challenge_persisted",
-          "exitCode": 0
+          "outcome": "browser_timeout"
         },
         {
           "attempt": 2,
@@ -195,8 +224,7 @@
           "attempts": [
             {
               "attempt": 1,
-              "outcome": "browser_challenge_persisted",
-              "exitCode": 0
+              "outcome": "browser_timeout"
             },
             {
               "attempt": 2,
@@ -211,7 +239,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 6363,
+      "durationMs": 25136,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_challenge_persisted",
@@ -934,7 +962,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 5105
+      "durationMs": 4969
     },
     {
       "provider": "flemmix",
@@ -987,7 +1015,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 5028
+      "durationMs": 5008
     },
     {
       "provider": "mallumv",
@@ -1098,9 +1126,9 @@
     {
       "provider": "moviesmod",
       "lane": "movie",
-      "publicUrl": "https://links.modpro.blog/archives/1538",
+      "publicUrl": "https://links.modpro.blog/archives/141508",
       "host": "links.modpro.blog",
-      "path": "/archives/1538",
+      "path": "/archives/141508",
       "method": "GET",
       "fetchStatus": 403,
       "challenge": "cloudflare",
@@ -1146,14 +1174,14 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 5018
+      "durationMs": 4983
     },
     {
       "provider": "moviesmod",
       "lane": "tv",
-      "publicUrl": "https://episodes.modpro.blog/archives/128885",
+      "publicUrl": "https://episodes.modpro.blog/archives/55645",
       "host": "episodes.modpro.blog",
-      "path": "/archives/128885",
+      "path": "/archives/55645",
       "method": "GET",
       "fetchStatus": 403,
       "challenge": "cloudflare",
@@ -1199,7 +1227,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 3510
+      "durationMs": 3549
     },
     {
       "provider": "vidfast",
@@ -1573,7 +1601,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 3481,
+      "durationMs": 3557,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_challenge_persisted",
@@ -1882,7 +1910,7 @@
     "enabled": true,
     "available": true,
     "profile": "tailscale-residential-exit",
-    "matchedProviderLanes": 3,
+    "matchedProviderLanes": 0,
     "privacy": {
       "exitNodeNamePersisted": false,
       "tailscaleAddressPersisted": false,
@@ -2273,28 +2301,16 @@
     "lastAttempt": {
       "available": false,
       "providerCount": 0,
-      "refreshedProviders": [
-        "allwish",
-        "animesalt",
-        "flemmix",
-        "moviesmod",
-        "vostfree"
-      ],
+      "refreshedProviders": [],
       "replayedProviders": []
     }
   },
-  "lastRefreshProviderFilter": [
-    "allwish",
-    "animesalt",
-    "flemmix",
-    "moviesmod",
-    "vostfree"
-  ],
+  "lastRefreshProviderFilter": [],
   "residentialExitNodeLastAttempt": {
     "enabled": true,
     "available": true,
     "profile": "tailscale-residential-exit",
-    "matchedProviderLanes": 3,
+    "matchedProviderLanes": 0,
     "privacy": {
       "exitNodeNamePersisted": false,
       "tailscaleAddressPersisted": false,
