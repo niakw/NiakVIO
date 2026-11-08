@@ -104,6 +104,17 @@ assert "NUVIO_PROVIDER_V3_CONTEXT: workspace" in manual
 assert 'GITHUB_REF_NAME}" != "main"' in manual
 assert "python scripts/materialize_provider_v3_all.py" in manual
 assert "python scripts/verify_provider_v3_reverse_rebuild.py" in manual
+# The current active manifest has changed independently of the historical
+# 46-provider census. A full reconstruction workflow must derive its
+# denominator from the same physical source as its live-route validator.
+assert "from scripts.current_provider_scope import active_provider_count" in manual
+assert "expected=active_provider_count()" in manual
+assert 'report.get("providerCount") == expected' in manual
+assert 'report.get("completedProviderCount") == expected' in manual
+assert 'r.get("providerCount")==expected' in manual
+assert "active==expected" in manual
+assert "==46" not in manual and "46/46" not in manual
+
 
 assert machine["schema_version"] >= 5
 source = machine["provider_source_of_truth"]
