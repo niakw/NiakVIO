@@ -10,14 +10,14 @@
     "4khdhub"
   ],
   "effectiveWaves": 3,
-  "elapsedSeconds": 60.121,
+  "elapsedSeconds": 5.678,
   "executionModel": "family-batched-multi-wave-brain-repair",
   "experienceMemory": {
     "operationalProviderCount": 24,
     "providerCount": 46,
     "schemaVersion": 2,
-    "sourceRunId": "42500072566-pre-repair",
-    "sourceSha": "69aeda2f7b5e4caa98f702d10ca17e2598dd56ac",
+    "sourceRunId": "42503113558-pre-repair",
+    "sourceSha": "328d62ab13cf2f2ee022dadeac4b81f3246ea68f",
     "strategyCount": 5
   },
   "fixedInLabProviders": [],
@@ -31,12 +31,12 @@
   "labOnlyWithoutCompiledRepairProviders": [],
   "maxRoundsPerBatch": 1,
   "maxWaves": 3,
-  "noProgressReason": "experiment_variants_exhausted",
+  "noProgressReason": "no_new_repair_experiment",
   "positiveProgramRecovery": {
     "durableProviders": [],
     "durableRecordCount": 0,
     "recoveredRecordCount": 0,
-    "reportCount": 107
+    "reportCount": 108
   },
   "processedProviderCount": 1,
   "processedProviders": [
@@ -69,7 +69,7 @@
   "shardCount": 1,
   "shardIndex": 0,
   "skippedEnvironmentProviders": [],
-  "sourceCensusRunId": "42500072566-pre-repair",
+  "sourceCensusRunId": "42503113558-pre-repair",
   "timeBudgetExhausted": false,
   "timeBudgetSeconds": 360,
   "unvisitedProviders": [],
@@ -91,40 +91,21 @@
             "learnedEvents": 0,
             "plans": {
               "published:4khdhub": {
-                "action": "probe-targeted-repair",
-                "allowedProfiles": [
-                  "route_transition_graph_v50"
-                ],
+                "action": "collect-more-evidence",
+                "allowedProfiles": [],
                 "baseExperimentExhausted": true,
-                "exitReason": null,
-                "experimentExhausted": false,
+                "exitReason": "learning_generations_exhausted",
+                "experimentExhausted": true,
                 "experimentGeneration": 2,
                 "experimentVariant": 4,
                 "experimentVariantCount": 5,
                 "explorationChainEnabled": true,
                 "explorationModeEnabled": true,
                 "failureClass": "search_gap",
-                "forcePreferredRequested": "",
+                "forcePreferredRequested": "route_transition_graph_v50",
                 "forcePreferredSelected": false,
-                "hypotheses": [
-                  {
-                    "confidence": 0,
-                    "id": "rediscover-search-route",
-                    "learned": false,
-                    "maturity": null,
-                    "profile": null,
-                    "transferScore": 0
-                  },
-                  {
-                    "confidence": 0,
-                    "id": "repair-search-parser",
-                    "learned": false,
-                    "maturity": null,
-                    "profile": null,
-                    "transferScore": 0
-                  }
-                ],
-                "learningDisposition": "execute_bounded_evolved_strategy",
+                "hypotheses": [],
+                "learningDisposition": "propose_new_or_evolved_core_type",
                 "llmAdvisorApplied": false,
                 "llmAdvisorConfidence": 0,
                 "llmAdvisorExperiment": {},
@@ -137,7 +118,7 @@
                 "llmAdvisorSourceFailureClass": "",
                 "llmAdvisorStrategy": "",
                 "metaGapEscalated": false,
-                "negativeMemoryMatches": 83,
+                "negativeMemoryMatches": 84,
                 "positiveProgramFingerprint": "",
                 "postExhaustionCandidateProfiles": [
                   "html_class_token_exact_v1",
@@ -165,16 +146,16 @@
                   "route_transition_graph_v16",
                   "route_transition_graph_v17"
                 ],
-                "postExhaustionSourceFailureClass": "route_proven_gap",
-                "postExhaustionStrategyMethod": "brain-evolved-executable-transition",
-                "postExhaustionStrategyProfile": "route_transition_graph_v50",
+                "postExhaustionSourceFailureClass": "",
+                "postExhaustionStrategyMethod": "",
+                "postExhaustionStrategyProfile": "",
                 "providerId": "4khdhub",
                 "providerPositiveProgramProductionRescue": false,
                 "providerPositiveProgramReplay": false,
                 "repairScope": "learning",
-                "repairType": "evolved_strategy",
+                "repairType": "architecture_gap",
                 "signature": "a5acf1ae6fc3078e15bcfc89",
-                "strategyEscalated": true,
+                "strategyEscalated": false,
                 "targetCategories": []
               }
             },
@@ -185,9 +166,7 @@
           },
           "capabilityStrategy": "html_scraper",
           "crossWaveExplorationCarryoverApplied": [],
-          "crossWaveExplorationCarryoverCaptured": [
-            "4khdhub"
-          ],
+          "crossWaveExplorationCarryoverCaptured": [],
           "deferredToLearning": [
             "4khdhub"
           ],
@@ -220,7 +199,7 @@
       ],
       "deferredToLearningCount": 1,
       "durableMaterializeTargets": [],
-      "experimentMemoryAdvanced": true,
+      "experimentMemoryAdvanced": false,
       "fixedInLab": [],
       "fixedInLabCount": 0,
       "inputProviderCount": 1,
