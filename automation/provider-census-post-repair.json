@@ -54,10 +54,10 @@
     "no_streams": 2
   },
   "debug_stage_counts": {
-    "provider_zero_before_provider_network": 2
+    "provider_network_zero_result": 2
   },
   "debug_stage_providers": {
-    "provider_zero_before_provider_network": [
+    "provider_network_zero_result": [
       "4khdhub"
     ]
   },
@@ -83,7 +83,7 @@
       "explored_player_hosts": [],
       "variant_fanout_state": "not-observed",
       "status": "no_streams",
-      "debug_stage": "provider_zero_before_provider_network",
+      "debug_stage": "provider_network_zero_result",
       "debug_model": {
         "strategy": "html_scraper",
         "source_runtime_family": "catalogue-html",
@@ -103,33 +103,246 @@
         "official_hub": "https://4khdhub.one/",
         "official_api": null
       },
-      "debug_fetch_count": 3,
-      "debug_provider_fetch_count": 0,
-      "debug_progress_stage": "none",
+      "debug_fetch_count": 2,
+      "debug_provider_fetch_count": 1,
+      "debug_progress_stage": "lookup_only",
       "debug_fetches": [
         {
           "url": "https://api.themoviedb.org/3/movie/760873?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Crelease_dates&language=fr-FR&api_key=%3Credacted%3E",
-          "response_url": "",
+          "response_url": "https://api.themoviedb.org/3/movie/760873?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Crelease_dates&language=fr-FR&api_key=%3Credacted%3E",
           "method": "GET",
-          "status": 0,
-          "duration_ms": 1801,
-          "error": "TimeoutError"
+          "status": 200,
+          "content_type": "application/json",
+          "challenge": "",
+          "response_shape": {
+            "kind": "json",
+            "top": "object",
+            "keys": [
+              "adult",
+              "backdrop_path",
+              "belongs_to_collection",
+              "budget",
+              "genres",
+              "homepage",
+              "id",
+              "imdb_id",
+              "origin_country",
+              "original_language",
+              "original_title",
+              "overview",
+              "popularity",
+              "poster_path",
+              "production_companies",
+              "production_countries"
+            ]
+          },
+          "declared_player_candidate_count": 0,
+          "declared_url_player_candidate_count": 0,
+          "declared_indexed_player_candidate_count": 0,
+          "declared_player_hosts": [],
+          "declared_quality_heights": [],
+          "duration_ms": 76
         },
         {
-          "url": "https://api.themoviedb.org/3/tv/760873?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Ccontent_ratings&language=fr-FR&api_key=%3Credacted%3E",
-          "response_url": "",
+          "url": "https://4khdhub.one/?s=La%20Colonie%202021",
+          "response_url": "https://4khdhub.one/?s=La%20Colonie%202021",
           "method": "GET",
-          "status": 0,
-          "duration_ms": 1800,
-          "error": "TimeoutError"
-        },
-        {
-          "url": "https://api.themoviedb.org/3/movie/760873?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Crelease_dates&language=fr-FR&api_key=%3Credacted%3E",
-          "response_url": "",
-          "method": "GET",
-          "status": 0,
-          "duration_ms": 1800,
-          "error": "TimeoutError"
+          "status": 200,
+          "content_type": "text/html",
+          "challenge": "",
+          "response_shape": {
+            "kind": "html",
+            "sampleBytes": 42287,
+            "forms": 1,
+            "iframes": 0,
+            "videos": 0,
+            "sources": 0,
+            "scripts": 16,
+            "anchors": 43,
+            "classTokens": [
+              "movie-card-format",
+              "quality-badge",
+              "dropdown-item",
+              "w-full",
+              "h-full",
+              "movie-card",
+              "movie-card-content",
+              "movie-card-formats",
+              "movie-card-image",
+              "movie-card-meta",
+              "movie-card-overlay",
+              "movie-card-title",
+              "object-cover",
+              "quality-badges",
+              "text-muted-foreground",
+              "nav-item"
+            ],
+            "idTokens": [
+              "back-to-top",
+              "close-mobile-menu",
+              "close-search",
+              "current-year",
+              "logo",
+              "main-nav",
+              "menu-toggle",
+              "mobile-menu-backdrop",
+              "search",
+              "search-backdrop",
+              "search-overlay",
+              "search-toggle"
+            ],
+            "classFacts": [
+              {
+                "token": "movie-card-format",
+                "count": 12,
+                "tags": [
+                  "span"
+                ],
+                "selfHref": 0,
+                "nestedAnchors": 24,
+                "signals": [
+                  "movie",
+                  "series",
+                  "4k",
+                  "1080p",
+                  "year"
+                ]
+              },
+              {
+                "token": "quality-badge",
+                "count": 12,
+                "tags": [
+                  "span"
+                ],
+                "selfHref": 0,
+                "nestedAnchors": 24,
+                "signals": [
+                  "movie",
+                  "4k",
+                  "1080p",
+                  "year",
+                  "series"
+                ]
+              },
+              {
+                "token": "dropdown-item",
+                "count": 12,
+                "tags": [
+                  "a"
+                ],
+                "selfHref": 12,
+                "nestedAnchors": 24,
+                "signals": [
+                  "movie",
+                  "series",
+                  "4k",
+                  "year"
+                ]
+              },
+              {
+                "token": "w-full",
+                "count": 12,
+                "tags": [
+                  "header",
+                  "div",
+                  "img"
+                ],
+                "selfHref": 0,
+                "nestedAnchors": 24,
+                "signals": [
+                  "movie",
+                  "series",
+                  "4k",
+                  "1080p",
+                  "year"
+                ]
+              },
+              {
+                "token": "h-full",
+                "count": 12,
+                "tags": [
+                  "img"
+                ],
+                "selfHref": 0,
+                "nestedAnchors": 24,
+                "signals": [
+                  "movie",
+                  "4k",
+                  "1080p",
+                  "year",
+                  "series"
+                ]
+              },
+              {
+                "token": "movie-card",
+                "count": 12,
+                "tags": [
+                  "a"
+                ],
+                "selfHref": 12,
+                "nestedAnchors": 24,
+                "signals": [
+                  "movie",
+                  "4k",
+                  "1080p",
+                  "year",
+                  "series"
+                ]
+              },
+              {
+                "token": "movie-card-content",
+                "count": 12,
+                "tags": [
+                  "div"
+                ],
+                "selfHref": 0,
+                "nestedAnchors": 24,
+                "signals": [
+                  "movie",
+                  "series",
+                  "1080p",
+                  "year",
+                  "4k"
+                ]
+              },
+              {
+                "token": "movie-card-formats",
+                "count": 12,
+                "tags": [
+                  "div"
+                ],
+                "selfHref": 0,
+                "nestedAnchors": 24,
+                "signals": [
+                  "movie",
+                  "series",
+                  "4k",
+                  "1080p",
+                  "year"
+                ]
+              }
+            ],
+            "markers": [
+              "json-ld",
+              "download",
+              "episode"
+            ]
+          },
+          "declared_player_candidate_count": 19,
+          "declared_url_player_candidate_count": 19,
+          "declared_indexed_player_candidate_count": 0,
+          "declared_player_hosts": [
+            "4khdhub.one",
+            "fonts.googleapis.com",
+            "fonts.gstatic.com",
+            "hdhub4u.download",
+            "schema.org"
+          ],
+          "declared_quality_heights": [
+            1080,
+            2160
+          ],
+          "duration_ms": 447
         }
       ],
       "debug_provider_value_trace_v18": null,
@@ -142,7 +355,7 @@
       "verified": 0,
       "contradictions": 0,
       "identity_safe": true,
-      "duration_ms": 27752,
+      "duration_ms": 2418,
       "sample_count": 4,
       "fanout_fixture_title": "Sinners",
       "sample_titles": [
@@ -163,13 +376,13 @@
             "year": 2025
           },
           "status": "no_streams",
-          "debug_stage": "provider_zero_before_provider_network",
-          "debug_progress_stage": "none",
+          "debug_stage": "provider_network_zero_result",
+          "debug_progress_stage": "lookup_only",
           "raw": 0,
           "playable": 0,
           "verified": 0,
           "contradictions": 0,
-          "duration_ms": 5405,
+          "duration_ms": 542,
           "streams_returned": 0,
           "announced_player_candidates": 0,
           "announced_variant_candidates": 0,
@@ -189,13 +402,13 @@
             "year": 2014
           },
           "status": "no_streams",
-          "debug_stage": "provider_zero_before_provider_network",
-          "debug_progress_stage": "none",
+          "debug_stage": "provider_network_zero_result",
+          "debug_progress_stage": "lookup_only",
           "raw": 0,
           "playable": 0,
           "verified": 0,
           "contradictions": 0,
-          "duration_ms": 5404,
+          "duration_ms": 554,
           "streams_returned": 0,
           "announced_player_candidates": 0,
           "announced_variant_candidates": 0,
@@ -215,13 +428,13 @@
             "year": 2025
           },
           "status": "no_streams",
-          "debug_stage": "provider_zero_before_provider_network",
-          "debug_progress_stage": "none",
+          "debug_stage": "provider_network_zero_result",
+          "debug_progress_stage": "lookup_only",
           "raw": 0,
           "playable": 0,
           "verified": 0,
           "contradictions": 0,
-          "duration_ms": 5406,
+          "duration_ms": 542,
           "streams_returned": 0,
           "announced_player_candidates": 0,
           "announced_variant_candidates": 0,
@@ -241,13 +454,13 @@
             "year": 2021
           },
           "status": "no_streams",
-          "debug_stage": "provider_zero_before_provider_network",
-          "debug_progress_stage": "none",
+          "debug_stage": "provider_network_zero_result",
+          "debug_progress_stage": "lookup_only",
           "raw": 0,
           "playable": 0,
           "verified": 0,
           "contradictions": 0,
-          "duration_ms": 5404,
+          "duration_ms": 532,
           "streams_returned": 0,
           "announced_player_candidates": 0,
           "announced_variant_candidates": 0,
@@ -284,7 +497,7 @@
       "explored_player_hosts": [],
       "variant_fanout_state": "not-observed",
       "status": "no_streams",
-      "debug_stage": "provider_zero_before_provider_network",
+      "debug_stage": "provider_network_zero_result",
       "debug_model": {
         "strategy": "html_scraper",
         "source_runtime_family": "catalogue-html",
@@ -304,33 +517,242 @@
         "official_hub": "https://4khdhub.one/",
         "official_api": null
       },
-      "debug_fetch_count": 3,
-      "debug_provider_fetch_count": 0,
-      "debug_progress_stage": "none",
+      "debug_fetch_count": 2,
+      "debug_provider_fetch_count": 1,
+      "debug_progress_stage": "lookup_only",
       "debug_fetches": [
         {
           "url": "https://api.themoviedb.org/3/tv/210702?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Ccontent_ratings&language=fr-FR&api_key=%3Credacted%3E",
-          "response_url": "",
+          "response_url": "https://api.themoviedb.org/3/tv/210702?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Ccontent_ratings&language=fr-FR&api_key=%3Credacted%3E",
           "method": "GET",
-          "status": 0,
-          "duration_ms": 1800,
-          "error": "TimeoutError"
+          "status": 200,
+          "content_type": "application/json",
+          "challenge": "",
+          "response_shape": {
+            "kind": "json",
+            "top": "object",
+            "keys": [
+              "adult",
+              "backdrop_path",
+              "created_by",
+              "episode_run_time",
+              "first_air_date",
+              "genres",
+              "homepage",
+              "id",
+              "in_production",
+              "languages",
+              "last_air_date",
+              "last_episode_to_air",
+              "name",
+              "next_episode_to_air",
+              "networks",
+              "number_of_episodes"
+            ]
+          },
+          "declared_player_candidate_count": 0,
+          "declared_url_player_candidate_count": 0,
+          "declared_indexed_player_candidate_count": 0,
+          "declared_player_hosts": [],
+          "declared_quality_heights": [],
+          "duration_ms": 159
         },
         {
-          "url": "https://api.themoviedb.org/3/movie/210702?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Crelease_dates&language=fr-FR&api_key=%3Credacted%3E",
-          "response_url": "",
+          "url": "https://4khdhub.one/?s=Revenant%20Season%201",
+          "response_url": "https://4khdhub.one/?s=Revenant%20Season%201",
           "method": "GET",
-          "status": 0,
-          "duration_ms": 1799,
-          "error": "TimeoutError"
-        },
-        {
-          "url": "https://api.themoviedb.org/3/tv/210702?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Ccontent_ratings&language=fr-FR&api_key=%3Credacted%3E",
-          "response_url": "",
-          "method": "GET",
-          "status": 0,
-          "duration_ms": 1801,
-          "error": "TimeoutError"
+          "status": 200,
+          "content_type": "text/html",
+          "challenge": "",
+          "response_shape": {
+            "kind": "html",
+            "sampleBytes": 21957,
+            "forms": 1,
+            "iframes": 0,
+            "videos": 0,
+            "sources": 0,
+            "scripts": 16,
+            "anchors": 31,
+            "classTokens": [
+              "dropdown-item",
+              "movie-card-format",
+              "text-muted-foreground",
+              "nav-item",
+              "nav-link",
+              "flex",
+              "fixed",
+              "h-5",
+              "w-5",
+              "h-4",
+              "hidden",
+              "sr-only",
+              "w-4",
+              "container",
+              "dropdown",
+              "dropdown-indicator"
+            ],
+            "idTokens": [
+              "back-to-top",
+              "close-mobile-menu",
+              "close-search",
+              "current-year",
+              "logo",
+              "main-nav",
+              "menu-toggle",
+              "mobile-menu-backdrop",
+              "search",
+              "search-backdrop",
+              "search-overlay",
+              "search-toggle"
+            ],
+            "classFacts": [
+              {
+                "token": "dropdown-item",
+                "count": 12,
+                "tags": [
+                  "a"
+                ],
+                "selfHref": 12,
+                "nestedAnchors": 24,
+                "signals": [
+                  "movie",
+                  "series",
+                  "4k",
+                  "year"
+                ]
+              },
+              {
+                "token": "movie-card-format",
+                "count": 10,
+                "tags": [
+                  "span"
+                ],
+                "selfHref": 0,
+                "nestedAnchors": 24,
+                "signals": [
+                  "movie",
+                  "4k",
+                  "1080p",
+                  "year"
+                ]
+              },
+              {
+                "token": "text-muted-foreground",
+                "count": 8,
+                "tags": [
+                  "p",
+                  "a"
+                ],
+                "selfHref": 4,
+                "nestedAnchors": 22,
+                "signals": [
+                  "movie",
+                  "year"
+                ]
+              },
+              {
+                "token": "nav-item",
+                "count": 7,
+                "tags": [
+                  "li"
+                ],
+                "selfHref": 0,
+                "nestedAnchors": 24,
+                "signals": [
+                  "movie",
+                  "series",
+                  "4k"
+                ]
+              },
+              {
+                "token": "nav-link",
+                "count": 7,
+                "tags": [
+                  "a"
+                ],
+                "selfHref": 7,
+                "nestedAnchors": 24,
+                "signals": [
+                  "movie",
+                  "series",
+                  "4k",
+                  "year"
+                ]
+              },
+              {
+                "token": "flex",
+                "count": 6,
+                "tags": [
+                  "div",
+                  "ul"
+                ],
+                "selfHref": 0,
+                "nestedAnchors": 24,
+                "signals": [
+                  "movie",
+                  "series",
+                  "season",
+                  "4k",
+                  "1080p",
+                  "year"
+                ]
+              },
+              {
+                "token": "fixed",
+                "count": 5,
+                "tags": [
+                  "div",
+                  "button"
+                ],
+                "selfHref": 0,
+                "nestedAnchors": 4,
+                "signals": [
+                  "season",
+                  "4k",
+                  "1080p",
+                  "movie",
+                  "year"
+                ]
+              },
+              {
+                "token": "h-5",
+                "count": 5,
+                "tags": [
+                  "svg"
+                ],
+                "selfHref": 0,
+                "nestedAnchors": 15,
+                "signals": [
+                  "movie",
+                  "series",
+                  "season",
+                  "4k",
+                  "1080p",
+                  "year"
+                ]
+              }
+            ],
+            "markers": [
+              "json-ld",
+              "download",
+              "episode"
+            ]
+          },
+          "declared_player_candidate_count": 16,
+          "declared_url_player_candidate_count": 16,
+          "declared_indexed_player_candidate_count": 0,
+          "declared_player_hosts": [
+            "4khdhub.one",
+            "fonts.googleapis.com",
+            "fonts.gstatic.com",
+            "hdhub4u.download",
+            "schema.org"
+          ],
+          "declared_quality_heights": [
+            1080,
+            2160
+          ],
+          "duration_ms": 464
         }
       ],
       "debug_provider_value_trace_v18": null,
@@ -343,7 +765,7 @@
       "verified": 0,
       "contradictions": 0,
       "identity_safe": true,
-      "duration_ms": 13894,
+      "duration_ms": 1306,
       "sample_count": 2,
       "fanout_fixture_title": "Breaking Bad",
       "sample_titles": [
@@ -364,13 +786,13 @@
             "episode": 1
           },
           "status": "no_streams",
-          "debug_stage": "provider_zero_before_provider_network",
-          "debug_progress_stage": "none",
+          "debug_stage": "provider_network_zero_result",
+          "debug_progress_stage": "lookup_only",
           "raw": 0,
           "playable": 0,
           "verified": 0,
           "contradictions": 0,
-          "duration_ms": 5404,
+          "duration_ms": 555,
           "streams_returned": 0,
           "announced_player_candidates": 0,
           "announced_variant_candidates": 0,
@@ -392,13 +814,13 @@
             "episode": 1
           },
           "status": "no_streams",
-          "debug_stage": "provider_zero_before_provider_network",
-          "debug_progress_stage": "none",
+          "debug_stage": "provider_network_zero_result",
+          "debug_progress_stage": "lookup_only",
           "raw": 0,
           "playable": 0,
           "verified": 0,
           "contradictions": 0,
-          "duration_ms": 5404,
+          "duration_ms": 631,
           "streams_returned": 0,
           "announced_player_candidates": 0,
           "announced_variant_candidates": 0,
