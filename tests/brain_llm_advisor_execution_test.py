@@ -313,8 +313,14 @@ assert exploration_failed["experimentExhausted"] is True,exploration_failed
 brain=(ROOT/"scripts/brain_repair_runtime.py").read_text(encoding="utf-8")
 overlay=(ROOT/"scripts/adaptive_runtime/brain_repair_runtime.py").read_text(encoding="utf-8")
 assert '"llmGuidance": planner_llm_guidance()' in brain
-assert overlay.count('"llmGuidance": _BASE.planner_llm_guidance()')==2,overlay
-assert overlay.count('"historicalSolutions": _BASE.planner_historical_solutions()')==2,overlay
+# The Deep adapter must never maintain a second set of Brain context fields:
+# its duplicated planner payload lost FORCE preference in actual run 42500072566.
+assert overlay.count("_BASE._planner_base_payload(")==2,overlay
+assert '"llmGuidance": _BASE.planner_llm_guidance()' not in overlay
+assert '"historicalSolutions": _BASE.planner_historical_solutions()' not in overlay
+assert 'def _planner_base_payload(' in brain
+assert '"llmGuidance": planner_llm_guidance()' in brain
+assert '"historicalSolutions": planner_historical_solutions()' in brain
 assert "rawMutationContentRetained" in brain
 assert "llmAdvisorExperimentFingerprint" in brain
 assert "llmAdvisorExperiment" in brain
