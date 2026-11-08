@@ -319,6 +319,43 @@ def build_strategy_blueprints(
             for value in group.get("dominantIssues") or []
             if str(value or "").strip()
         }
+        # Retained/historical ROUTE PROVEN is not today's successful
+        # detail/player/identity traversal. The real 4khdhub FORCE 42504716876
+        # had provider_network_zero_result and only lookup/none depths, yet the
+        # template falsely asserted that detail was live and identity-qualified.
+        # Do not evolve route_transition_graph_v53 on that unsupported premise.
+        observed_depths = {
+            str(value or "").strip().casefold().replace("-", "_")
+            for value in group.get("evidenceDepths") or []
+            if str(value or "").strip()
+        }
+        has_detail_frontier = bool(observed_depths & {
+            "detail", "episode", "player", "media", "reader", "terminal", "stream",
+        })
+        if scope == "route-to-terminal" and not has_detail_frontier:
+            row.update({
+                "causalTrigger": (
+                    "retained route authority exists, but current detail/player "
+                    "and same-work identity evidence has not been established"
+                ),
+                "method": (
+                    "requalify the retained provider-owned route against current "
+                    "bytes and the exact movie/episode fixture; separate network, "
+                    "search and harness failure before generating a new terminal "
+                    "traversal. Do not silently treat historical route labels as "
+                    "current executable evidence"
+                ),
+                "requiredEvidence": [
+                    "current provider-owned detail/player HTTP evidence",
+                    "current same-work TMDB and episode correlation",
+                    "current route/transport failure differential",
+                ],
+                "currentRouteEvidenceReady": False,
+                "currentObservedDepths": sorted(observed_depths),
+            })
+        elif scope == "route-to-terminal":
+            row["currentRouteEvidenceReady"] = True
+            row["currentObservedDepths"] = sorted(observed_depths)
         if scope == "harness-compatibility":
             if transport_signature == "residential-exit-all-challenged":
                 row.update({
@@ -356,6 +393,7 @@ def build_strategy_blueprints(
             and bool(providers)
             and not row.get("existingExecutableRepairProfile", False)
             and all(bool(failed_profiles_by_provider.get(provider)) for provider in providers)
+            and (scope != "route-to-terminal" or has_detail_frontier)
         )
         row.update({
             "groupId": str(group.get("groupId") or ""),
@@ -370,6 +408,8 @@ def build_strategy_blueprints(
                 if row.get("existingExecutableRepairProfile", False)
                 else "deferred-known-family-exhaustion"
                 if force_promotable
+                else "current-route-identity-proof-unavailable"
+                if scope == "route-to-terminal" and not has_detail_frontier
                 else "diagnostic-only-or-no-exhaustion-proof"
             ),
             "transportSignature": transport_signature or "not-applicable",
