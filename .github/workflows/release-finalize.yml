@@ -74,6 +74,7 @@ jobs:
           python3 scripts/finalize_provider_v3_minimizer.py
           python3 scripts/finalize_provider_v3_minimizer.py --check
           python3 scripts/reapply_published_overrides.py --check
+          python3 tests/published_s00_identity_rollout_test.py
           python3 tests/provider_v3_minimizer_contract_test.py
           python3 tests/provider_v3_minimizer_preview_test.py
           python3 tests/provider_v3_minimizer_publication_pipeline_test.py
