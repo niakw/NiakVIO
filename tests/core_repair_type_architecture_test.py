@@ -162,7 +162,12 @@ assert "persistent anomaly-first queue" in brain_policy["executionLanes"]["daily
 assert brain_policy["executionLanes"]["dailyLearning"]["productionWritesAllowed"] is False
 assert brain_policy["executionLanes"]["dailyLearning"]["publicationAllowed"] is False
 assert 'learnedSkills": planner_learned_skills(mode)' in brain_runtime_source
-assert 'learnedSkills": _BASE.planner_learned_skills(mode)' in brain_overlay_source
+# Canonical Brain constructs the complete planner context once.
+# The adaptive Deep overlay must not drift on learned skills, LLM, FORCE intent
+# or evidence fields (real lost-intent counterexample: run 42500072566).
+assert 'def _planner_base_payload(' in brain_runtime_source
+assert brain_overlay_source.count("_BASE._planner_base_payload(") == 2
+assert 'learnedSkills": _BASE.planner_learned_skills(mode)' not in brain_overlay_source
 assert '"profile_persistence"] = "learning_memory" if planner_mode == "learning" else "none_core_repair_only"' in quick_source
 assert '"learning_executed"] = planner_mode == "learning"' in quick_source
 assert "provider_purification" not in quick_source
