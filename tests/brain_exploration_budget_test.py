@@ -63,6 +63,13 @@ finally:
 planner = (ROOT / "engine_v2" / "scripts" / "plan-repairs.mjs").read_text(encoding="utf-8")
 adaptive = (SCRIPTS / "adaptive_runtime" / "brain_repair_runtime.py").read_text(encoding="utf-8")
 assert "input.explorationChain === true" in planner
-assert adaptive.count('"explorationChain": _BASE._exploration_chain_enabled()') == 2, adaptive
+# Both adaptive transports must inherit the canonical Brain context;
+# duplicating explorationChain/forcePreferredStrategy caused a real FORCE
+# execution with a missing preferred intent on run 42500072566.
+canonical = (SCRIPTS / "brain_repair_runtime.py").read_text(encoding="utf-8")
+assert 'def _planner_base_payload(' in canonical
+assert canonical.count('"explorationChain": _exploration_chain_enabled()') == 1
+assert adaptive.count("_BASE._planner_base_payload(") == 2, adaptive
+assert '"explorationChain": _BASE._exploration_chain_enabled()' not in adaptive, adaptive
 
 print("Brain exploration-chain budget contract passed")
