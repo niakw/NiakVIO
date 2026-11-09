@@ -22,9 +22,8 @@
     "exact failed provider GET replay is transport differential evidence only; it cannot grant playback proof"
   ],
   "counts": {
-    "browser_challenge_persisted": 14,
-    "browser_content_reached": 5,
-    "browser_timeout": 1
+    "browser_challenge_persisted": 15,
+    "browser_content_reached": 5
   },
   "rows": [
     {
@@ -78,7 +77,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 12973
+      "durationMs": 6115
     },
     {
       "provider": "allwish",
@@ -131,7 +130,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 12831,
+      "durationMs": 5105,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_challenge_persisted",
@@ -212,7 +211,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 14246,
+      "durationMs": 5534,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_challenge_persisted",
@@ -935,7 +934,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 3054
+      "durationMs": 4547
     },
     {
       "provider": "flemmix",
@@ -988,7 +987,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 2601
+      "durationMs": 5110
     },
     {
       "provider": "mallumv",
@@ -1099,9 +1098,9 @@
     {
       "provider": "moviesmod",
       "lane": "movie",
-      "publicUrl": "https://links.modpro.blog/archives/143509",
+      "publicUrl": "https://links.modpro.blog/archives/64573",
       "host": "links.modpro.blog",
-      "path": "/archives/143509",
+      "path": "/archives/64573",
       "method": "GET",
       "fetchStatus": 403,
       "challenge": "cloudflare",
@@ -1147,14 +1146,14 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 3455
+      "durationMs": 4766
     },
     {
       "provider": "moviesmod",
       "lane": "tv",
-      "publicUrl": "https://episodes.modpro.blog/archives/76130",
+      "publicUrl": "https://episodes.modpro.blog/archives/55645",
       "host": "episodes.modpro.blog",
-      "path": "/archives/76130",
+      "path": "/archives/55645",
       "method": "GET",
       "fetchStatus": 403,
       "challenge": "cloudflare",
@@ -1200,7 +1199,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 2759
+      "durationMs": 3590
     },
     {
       "provider": "vidfast",
@@ -1534,16 +1533,18 @@
       "challenge": "cloudflare",
       "seedKind": null,
       "seedRoute": null,
-      "outcome": "browser_timeout",
+      "outcome": "browser_challenge_persisted",
       "attemptCount": 2,
       "attempts": [
         {
           "attempt": 1,
-          "outcome": "browser_timeout"
+          "outcome": "browser_challenge_persisted",
+          "exitCode": 0
         },
         {
           "attempt": 2,
-          "outcome": "browser_timeout"
+          "outcome": "browser_challenge_persisted",
+          "exitCode": 0
         }
       ],
       "ordinarySessionReused": true,
@@ -1551,16 +1552,18 @@
         {
           "profile": "github-default-browser",
           "userAgent": null,
-          "outcome": "browser_timeout",
+          "outcome": "browser_challenge_persisted",
           "attemptCount": 2,
           "attempts": [
             {
               "attempt": 1,
-              "outcome": "browser_timeout"
+              "outcome": "browser_challenge_persisted",
+              "exitCode": 0
             },
             {
               "attempt": 2,
-              "outcome": "browser_timeout"
+              "outcome": "browser_challenge_persisted",
+              "exitCode": 0
             }
           ],
           "ordinarySessionReused": true
@@ -1570,7 +1573,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 40141,
+      "durationMs": 6436,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_challenge_persisted",
