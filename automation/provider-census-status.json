@@ -1,7 +1,7 @@
 {
   "schemaVersion": 3,
-  "runId": "42594457233",
-  "triggerSha": "0de0d4ee06a85543869e7cfe459d81fc04a2f71c",
+  "runId": "42600777310",
+  "triggerSha": "6317c23dc34d4d54dd093780581999a0b42808c2",
   "providers": [
     {
       "provider": "4khdhub",
@@ -271,9 +271,9 @@
         "1 live routes / anime"
       ],
       "latestLaneVerdicts": [
-        "anime=no_streams/provider_network_exception"
+        "anime=timeout"
       ],
-      "dominantIssue": "provider_network_exception",
+      "dominantIssue": "timeout",
       "searchProgress": [
         "anime: 2 works tested / 0 retained misses"
       ],
@@ -2180,8 +2180,8 @@
   "harnessQueue": [],
   "targetedTransportBlockedQueue": [],
   "clientTransportGapQueue": [],
-  "harnessEvidenceRunId": "42594457233-sharded-waf",
-  "harnessEvidenceSha": "0de0d4ee06a85543869e7cfe459d81fc04a2f71c",
+  "harnessEvidenceRunId": "42600777310-sharded-waf",
+  "harnessEvidenceSha": "6317c23dc34d4d54dd093780581999a0b42808c2",
   "authorityRefreshedProviders": [],
   "harnessTransportUpdatedProviders": [],
   "networkDifferentialUpdatedProviders": [],
@@ -2592,43 +2592,5 @@
       ],
       "replayedProviders": []
     }
-  },
-  "lastRepairAttempt": {
-    "runId": "42595545869",
-    "sourceCensusRunId": "42594457233",
-    "selectedProviders": [
-      "4khdhub",
-      "allanime",
-      "animesalt",
-      "animesultra",
-      "animevost-fr",
-      "flemmix",
-      "mallumv",
-      "moviebox",
-      "moviesmod",
-      "vidfast",
-      "vostfree",
-      "yflix"
-    ],
-    "candidateProviders": [],
-    "validatedProviders": [],
-    "acceptedRepairCount": 0,
-    "deferredToLearningSlotProviders": [
-      "4khdhub",
-      "allanime",
-      "animesalt",
-      "animesultra",
-      "animevost-fr",
-      "flemmix",
-      "mallumv",
-      "moviebox",
-      "moviesmod",
-      "vidfast",
-      "vostfree",
-      "yflix"
-    ],
-    "noProgressReason": "experiment_variants_exhausted",
-    "timeBudgetExhausted": false,
-    "publicationAllowed": false
   }
 }
