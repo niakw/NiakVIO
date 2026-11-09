@@ -21,14 +21,14 @@
     "yflix"
   ],
   "effectiveWaves": 6,
-  "elapsedSeconds": 969.203,
+  "elapsedSeconds": 1022.567,
   "executionModel": "family-batched-multi-wave-brain-repair",
   "experienceMemory": {
     "operationalProviderCount": 24,
     "providerCount": 46,
     "schemaVersion": 2,
-    "sourceRunId": "42545396566",
-    "sourceSha": "5eb0e50250932415e1c4533d41a20d80da24968c",
+    "sourceRunId": "42550103035",
+    "sourceSha": "9254f1ef6e218198ffe9fab790b290ef6354e446",
     "strategyCount": 5
   },
   "fixedInLabProviders": [],
@@ -117,7 +117,7 @@
   "shardCount": 1,
   "shardIndex": 0,
   "skippedEnvironmentProviders": [],
-  "sourceCensusRunId": "42545396566",
+  "sourceCensusRunId": "42550103035",
   "timeBudgetExhausted": false,
   "timeBudgetSeconds": 1200,
   "unvisitedProviders": [],
@@ -1207,21 +1207,21 @@
               "repairScope": "terminal-extraction"
             },
             {
-              "capabilityStrategy": "mixed_embed_resolver",
-              "groupId": "route-to-terminal|mixed_embed_resolver",
-              "providers": [
-                "vostfree",
-                "yflix",
-                "flemmix",
-                "animesultra"
-              ],
-              "repairScope": "route-to-terminal"
-            },
-            {
               "capabilityStrategy": "api_stream_resolver",
               "groupId": "route-to-terminal|api_stream_resolver",
               "providers": [
                 "animevost-fr"
+              ],
+              "repairScope": "route-to-terminal"
+            },
+            {
+              "capabilityStrategy": "mixed_embed_resolver",
+              "groupId": "route-to-terminal|mixed_embed_resolver",
+              "providers": [
+                "yflix",
+                "vostfree",
+                "flemmix",
+                "animesultra"
               ],
               "repairScope": "route-to-terminal"
             },
@@ -1261,11 +1261,11 @@
           "providerCount": 12,
           "providers": [
             "allanime",
-            "vostfree",
+            "animevost-fr",
             "yflix",
+            "vostfree",
             "flemmix",
             "animesultra",
-            "animevost-fr",
             "moviesmod",
             "moviebox",
             "4khdhub",
