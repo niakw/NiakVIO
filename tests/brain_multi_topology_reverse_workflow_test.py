@@ -12,7 +12,9 @@ assert 'publicationAuthority' in workflow and 'False' in workflow
 assert 'providerMutationAllowed' in workflow
 assert 'candidateDecodedIdentityProven' in workflow
 assert 'fixtureCoverageIncomplete' in workflow
-assert 'BRAIN_REVERSE_HARNESS_NO_FIXTURE' in workflow
+assert 'BRAIN_REVERSE_FIXTURE_COVERAGE' in workflow
+assert 'missingFixtureCategories' in workflow
+assert 'expectedFixtureCount' in workflow
 assert "api.themoviedb.org" in workflow
 assert 'max-parallel: 3' in workflow
 for banned in ('NIAKVIO_ALLOW_PAID_API=1','plan_batch_from_checkout.py',

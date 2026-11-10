@@ -102,7 +102,9 @@ jobs:
               "networkErrors":sorted(set(external)),
               "preflightStatus":raw.get("preflight_status") or "not-executed",
               "fixtureCount":len(raw.get("fixture_evidence") or []),
-              "fixtureCoverageIncomplete":not bool(raw.get("fixture_evidence")),
+              "expectedFixtureCount":int(raw.get("expected_fixture_count") or 0),
+              "fixtureCoverageIncomplete":raw.get("fixture_selection_complete") is not True,
+              "missingFixtureCategories":raw.get("missing_fixture_categories") or [],
               "candidateDecodedIdentityProven":False,
               "newRepairAccepted":False,
               "publicationAuthority":False,
@@ -113,7 +115,7 @@ jobs:
               json.dumps(summary,sort_keys=True,indent=2)+"\n")
           print("FIELD_BRAIN_REVERSE_TOPOLOGY "+json.dumps(summary,sort_keys=True))
           if summary["fixtureCoverageIncomplete"]:
-              raise SystemExit("BRAIN_REVERSE_HARNESS_NO_FIXTURE: cannot classify provider from zero fixtures")
+              raise SystemExit("BRAIN_REVERSE_FIXTURE_COVERAGE: missing exact declared media category or fixture")
           PY
       - name: Upload isolated observations for reverse-causal debugging
         if: always()

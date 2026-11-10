@@ -2099,3 +2099,25 @@ matrix now reports fixture count and **fails** explicitly on zero fixtures
 while retaining negative artifacts, instead of greenwashing harness absence.
 The new SHA and live rerun must be checked before calling this validated.
 No provider source changed and no repair accepted.
+
+### 2026-11-10 — Exact category/episode fixture coverage guard
+
+[Multi-topology replay 42796423969](https://github.com/niakw/NiakVIO/actions/runs/42796423969)
+on `d8b64fb0`: 4KHDHub (movie+TV 2 fixtures/2, HTML 200 x2,
+0 streams), MoviesMod (2/2, HTML 200 x4 and 403 x6, 0 streams),
+Yflix (2/2, JSON 200 x4 + connect/DNS errors, 0 streams),
+Flemmix (2/2, HTTP 403 x6, external block), AllAnime (anime+TV
+manifest; **2 tests executed of 3 expected**, 0 streams), AnimeVostFR
+(anime+TV; **2 tests of 3 expected**, 1 returned stream; decoded identity
+unproven). This is real provider network / fixture evidence, not accepted
+repair. Both anime+TV rows previously appeared as successful observation
+jobs despite missing their declared TV fixture; Brain must not misclassify
+the untested category as a provider result.
+`capture_brain_live_context.py` now projects the strict immutable
+media/episode keys from `strict_repair_fixture_contract(provider)`,
+compares with the actually executed fixture summary, emits missing
+category diagnostics, and the read-only workflow fails closed on
+incomplete category coverage. Does not introduce fictitious fixtures or
+change provider implementations. Source fixture origin remains
+`health-config.json`. Re-test on exact new SHA; the Brain can
+investigate `inferSupportedTypes` vs published manifest separately.

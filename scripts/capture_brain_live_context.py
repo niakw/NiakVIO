@@ -112,6 +112,27 @@ def main():
     health = verifier.health_provider(root / 'stage', root / 'health', args.provider)
     result = verifier.provider_result(health, args.provider)
     events, names = prioritized_execution(result, provider_owned_function_names(root / 'stage', args.provider))
+    fixture_rows = verifier.fixture_summary(result)
+    required_fixtures = verifier.strict_repair_fixture_contract(args.provider)
+    expected_keys = {
+        (category, str(fixture['tmdbId']),
+         fixture.get('season') if category in {'anime', 'tv'} else None,
+         fixture.get('episode') if category in {'anime', 'tv'} else None)
+        for (category, _), fixture in required_fixtures.items()
+    }
+    actual_keys = {
+        (str(row.get('category') or ''), str(row.get('tmdbId') or ''),
+         row.get('season'), row.get('episode'))
+        for row in fixture_rows if row.get('tmdbId')
+    }
+    fixture_selection_complete = actual_keys == expected_keys
+    if not fixture_selection_complete:
+        print('FIELD_BRAIN_REVERSE_FIXTURE_GAP provider=' + args.provider
+              + ' expected=' + str(len(expected_keys))
+              + ' observed=' + str(len(actual_keys))
+              + ' missingCategories='
+              + ','.join(sorted({key[0] for key in expected_keys - actual_keys})),
+              flush=True)
     payload = {
         'provider': args.provider,
         'sourceSha': source_sha,
@@ -122,7 +143,10 @@ def main():
         'preflight_playable': verifier.runtime_repair.playable_stream_count(result),
         'active_functions': names[:6],
         'http_script_shell_only': script_shell_only(events),
-        'fixture_evidence': verifier.fixture_summary(result),
+        'fixture_evidence': fixture_rows,
+        'expected_fixture_count': len(expected_keys),
+        'fixture_selection_complete': fixture_selection_complete,
+        'missing_fixture_categories': sorted({key[0] for key in expected_keys - actual_keys}),
         'network_evidence': [{
             **public_address_fields(event),
             'fixture': event.get('fixture_label'),
