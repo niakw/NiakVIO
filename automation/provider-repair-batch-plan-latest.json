@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "sourceRunId": "42891242990",
-  "sourceTriggerSha": "5be32c7545a8fb23bb77b223fbbd092138d5240c",
+  "sourceRunId": "42903285761",
+  "sourceTriggerSha": "fb84b1264ea61385f0acb2af8e2c877fce713cab",
   "unresolvedProviderCount": 28,
   "dynamicVariantProviderCount": 3,
   "dynamicVariantProviders": [
@@ -38,7 +38,7 @@
     "yflix"
   ],
   "dynamicVariantFallbackUsed": true,
-  "groupCount": 14,
+  "groupCount": 13,
   "executionModel": {
     "default": "family/signature batch",
     "liveProbeConcurrency": "audit_provider_quick_yield ThreadPool",
@@ -97,7 +97,8 @@
       "dominantIssues": [
         "network_http_error",
         "network_zero_result",
-        "provider_returned_streams"
+        "provider_returned_streams",
+        "timeout"
       ],
       "harnessTransportClasses": [],
       "transportSignature": "not-applicable",
@@ -146,6 +147,37 @@
         "yflix"
       ],
       "action": "replay proven routes in batch and apply shared detail/player traversal profile",
+      "selectionAuthorities": [
+        "provider-census-status.json:brainCheckRequired"
+      ],
+      "dynamicVariantProviders": [],
+      "executionPolicy": "batch-first",
+      "providerLocalFallback": "only-after-shared-profile-failure"
+    },
+    {
+      "groupId": "transport|mixed_embed_resolver",
+      "repairScope": "transport",
+      "runtimeFamilies": [
+        "menu-search-series-focus-player",
+        "mixed_embed_resolver"
+      ],
+      "capabilityStrategy": "mixed_embed_resolver",
+      "evidenceDepths": [
+        "none"
+      ],
+      "dominantIssues": [
+        "network_exception",
+        "network_http_error"
+      ],
+      "harnessTransportClasses": [],
+      "transportSignature": "not-applicable",
+      "providerCount": 3,
+      "providers": [
+        "anime-ultime",
+        "animekai",
+        "voiranime-homes"
+      ],
+      "action": "refresh transport authority before provider-local code changes",
       "selectionAuthorities": [
         "provider-census-status.json:brainCheckRequired"
       ],
@@ -235,63 +267,6 @@
         "vidrock"
       ],
       "action": "refresh transport authority before provider-local code changes",
-      "selectionAuthorities": [
-        "provider-census-status.json:brainCheckRequired"
-      ],
-      "dynamicVariantProviders": [],
-      "executionPolicy": "batch-first",
-      "providerLocalFallback": "only-after-shared-profile-failure"
-    },
-    {
-      "groupId": "transport|mixed_embed_resolver",
-      "repairScope": "transport",
-      "runtimeFamilies": [
-        "menu-search-series-focus-player",
-        "mixed_embed_resolver"
-      ],
-      "capabilityStrategy": "mixed_embed_resolver",
-      "evidenceDepths": [
-        "none"
-      ],
-      "dominantIssues": [
-        "network_exception",
-        "network_http_error"
-      ],
-      "harnessTransportClasses": [],
-      "transportSignature": "not-applicable",
-      "providerCount": 2,
-      "providers": [
-        "anime-ultime",
-        "animekai"
-      ],
-      "action": "refresh transport authority before provider-local code changes",
-      "selectionAuthorities": [
-        "provider-census-status.json:brainCheckRequired"
-      ],
-      "dynamicVariantProviders": [],
-      "executionPolicy": "batch-first",
-      "providerLocalFallback": "only-after-shared-profile-failure"
-    },
-    {
-      "groupId": "learning|mixed_embed_resolver",
-      "repairScope": "learning",
-      "runtimeFamilies": [
-        "mixed_embed_resolver"
-      ],
-      "capabilityStrategy": "mixed_embed_resolver",
-      "evidenceDepths": [
-        "lookup"
-      ],
-      "dominantIssues": [
-        "provider_returned_streams"
-      ],
-      "harnessTransportClasses": [],
-      "transportSignature": "not-applicable",
-      "providerCount": 1,
-      "providers": [
-        "voiranime-homes"
-      ],
-      "action": "queue by signature for Brain learning; provider-local repair only after shared profiles fail",
       "selectionAuthorities": [
         "provider-census-status.json:brainCheckRequired"
       ],

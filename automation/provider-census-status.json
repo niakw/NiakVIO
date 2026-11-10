@@ -1,7 +1,7 @@
 {
   "schemaVersion": 3,
-  "runId": "42891242990",
-  "triggerSha": "5be32c7545a8fb23bb77b223fbbd092138d5240c",
+  "runId": "42903285761",
+  "triggerSha": "fb84b1264ea61385f0acb2af8e2c877fce713cab",
   "providers": [
     {
       "provider": "4khdhub",
@@ -318,7 +318,7 @@
       ],
       "dominantIssue": "timeout",
       "searchProgress": [
-        "anime: 3 works tested / 0 retained misses"
+        "anime: 2 works tested / 0 retained misses"
       ],
       "evidenceDepth": [
         "anime=none"
@@ -446,11 +446,11 @@
         "1 live routes / anime, movie, tv"
       ],
       "latestLaneVerdicts": [
-        "anime=no_streams/provider_network_http_error",
-        "movie=no_streams/provider_network_http_error",
-        "tv=no_streams/provider_network_http_error"
+        "anime=timeout",
+        "movie=timeout",
+        "tv=timeout"
       ],
-      "dominantIssue": "provider_network_http_error×3",
+      "dominantIssue": "timeout×3",
       "searchProgress": [
         "anime: 8 works tested / 0 retained misses",
         "movie: 8 works tested / 0 retained misses",
@@ -1021,9 +1021,9 @@
     },
     {
       "provider": "voiranime-homes",
-      "status": "REGRESSION PROVIDER JS",
+      "status": "REGRESSION PROVIDER",
       "underlyingStatus": "",
-      "color": "🟣",
+      "color": "🔴",
       "declaredLanes": [
         "anime"
       ],
@@ -1036,14 +1036,14 @@
         "1 live routes / anime"
       ],
       "latestLaneVerdicts": [
-        "anime=returned_unplayable/provider_returned_streams"
+        "anime=no_streams/provider_network_http_error"
       ],
-      "dominantIssue": "provider_returned_streams",
+      "dominantIssue": "provider_network_http_error",
       "searchProgress": [
-        "anime: 1 works tested / 0 retained misses"
+        "anime: 8 works tested / 0 retained misses"
       ],
       "evidenceDepth": [
-        "anime=lookup_only"
+        "anime=none"
       ],
       "harnessTransportClass": "not-applicable",
       "harnessTransportEvidence": [],
@@ -1056,7 +1056,7 @@
         "existing_positive_route_prior"
       ],
       "authorityKnown": true,
-      "action": "A/B against retained proof; restore JS/runtime",
+      "action": "re-run retained proof + verify upstream/provider state",
       "brainCheckRequired": true,
       "statusRepairEligible": true,
       "repairEligible": true,
@@ -2088,8 +2088,7 @@
     "FULL OK": 14,
     "NO PROOF": 1,
     "PARTIAL OK": 1,
-    "REGRESSION PROVIDER": 5,
-    "REGRESSION PROVIDER JS": 1,
+    "REGRESSION PROVIDER": 6,
     "ROUTE PROVEN": 11
   },
   "symptomaticProviders": [
@@ -2185,8 +2184,8 @@
   "harnessQueue": [],
   "targetedTransportBlockedQueue": [],
   "clientTransportGapQueue": [],
-  "harnessEvidenceRunId": "42891242990-sharded-waf",
-  "harnessEvidenceSha": "5be32c7545a8fb23bb77b223fbbd092138d5240c",
+  "harnessEvidenceRunId": "42903285761-sharded-waf",
+  "harnessEvidenceSha": "fb84b1264ea61385f0acb2af8e2c877fce713cab",
   "authorityRefreshedProviders": [],
   "harnessTransportUpdatedProviders": [],
   "networkDifferentialUpdatedProviders": [],
@@ -2598,45 +2597,5 @@
       ],
       "replayedProviders": []
     }
-  },
-  "lastRepairAttempt": {
-    "runId": "42892491467",
-    "sourceCensusRunId": "42891242990",
-    "selectedProviders": [
-      "4khdhub",
-      "allanime",
-      "animesalt",
-      "animesultra",
-      "animevost-fr",
-      "flemmix",
-      "kehflix",
-      "mallumv",
-      "moviebox",
-      "moviesmod",
-      "vidfast",
-      "vostfree",
-      "yflix"
-    ],
-    "candidateProviders": [],
-    "validatedProviders": [],
-    "acceptedRepairCount": 0,
-    "deferredToLearningSlotProviders": [
-      "4khdhub",
-      "allanime",
-      "animesalt",
-      "animesultra",
-      "animevost-fr",
-      "flemmix",
-      "kehflix",
-      "mallumv",
-      "moviebox",
-      "moviesmod",
-      "vidfast",
-      "vostfree",
-      "yflix"
-    ],
-    "noProgressReason": "time_budget_exhausted_during_batch",
-    "timeBudgetExhausted": true,
-    "publicationAllowed": false
   }
 }
