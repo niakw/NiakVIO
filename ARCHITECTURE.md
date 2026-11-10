@@ -1,3 +1,18 @@
+## Oracle reverse-engineering shared renderer — 2026-11-10
+
+The shared `anime_catalogue_runtime_common.py` renderer previously coerced
+`season=0` to 1 and selected the first season/episode when exact provider
+records were absent. The Brain learned from a *test-only* fixed-provider oracle
+and the historical version `f43011bb`. The shared renderer now requires
+well-formed explicit coordinates, selects exact provider detail records, and
+tries a second structured search route after HTTP 200 with empty results.
+`tests/brain_oracles/animevost_fr/test_reverse_chain.py` checks old/current/
+reference semantics and `test_compiler_episode_bindings.py` checks the
+accepted-program compiler. GitHub [Oracle #42738431259](https://github.com/niakw/NiakVIO/actions/runs/42738431259)
+proved these **offline** properties. It did not prove an upstream playable media
+response, independently correct subtitles or a Brain-generated autonomous repair.
+See `MEMORY.md` for the terminal proof backlog and publication SHA status.
+
 # Architecture NiakVIO — Provider v3
 
 > [!IMPORTANT]
