@@ -8,6 +8,9 @@ on:
       - 'tests/brain_oracles/4khdhub/brain_materialization_replay.py'
       - 'scripts/adaptive_runtime/html_class_token_exact_v1.py'
       - 'scripts/adaptive_runtime/runtime_repair.py'
+      - 'scripts/apply_provider_overrides.py'
+      - 'scripts/reapply_published_overrides.py'
+      - 'tests/brain_owned_html_class_persistence_test.py'
   workflow_dispatch:
 
 permissions:
@@ -37,6 +40,7 @@ jobs:
         run: |
           python -m py_compile tests/brain_oracles/4khdhub/brain_materialization_replay.py
           python tests/brain_oracles/4khdhub/brain_materialization_replay.py
+          python tests/brain_owned_html_class_persistence_test.py
       - name: Mark deterministic oracle as non-production evidence
         run: |
           echo 'FIELD_BRAIN_HTML_CLASS_ORACLE_STATUS offline_only=true network_terminal_verified=false accepted_program=false'
