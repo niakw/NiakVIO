@@ -71,7 +71,15 @@ def compile_program(program:dict[str,Any],provider:str)->dict[str,Any]:
             learned_routes.append(route)
     norm=[];seen_norm=set()
     for i,r in enumerate(recipes):
-        origin=safe_origin(r.get('origin') or o.get('base_url'));route=safe_route(r.get('route'))
+        origin=safe_origin(r.get('origin') or o.get('base_url'))
+        if not origin:continue
+        # Report actual unsupported provider-owned bindings before safe_route
+        # filters the recipe; otherwise Brain sees a misleading missing-proof
+        # error instead of why its generated program was not representable.
+        declared={m.group(1).casefold() for m in BINDING.finditer(str(r.get('route') or ''))}
+        if declared - SUPPORTED_BINDINGS:
+            raise ValueError('unsupported provider-owned binding: '+','.join(sorted(declared-SUPPORTED_BINDINGS)))
+        route=safe_route(r.get('route'))
         if not origin or not route:
             # Runtime observation can include identity/search-engine/analytics
             # navigation unrelated to the provider. Ignore that noise rather
