@@ -22,7 +22,7 @@ from compile_brain_accepted_program_v3 import safe_origin, safe_route
 
 ROOT = Path(__file__).resolve().parents[1]
 MEMORY_PATH = ROOT / "automation" / "brain-positive-program-memory.json"
-_BINDING = re.compile(r"\{(?:binding:)?(id|slug)\}", re.I)
+_BINDING = re.compile(r"\{(?:binding:)?(id|slug|season|episode)\}", re.I)
 _MEDIA_FAILURES = {"media_extraction_gap", "playback_context_gap", "chain_terminal_gap"}
 
 
@@ -309,6 +309,8 @@ def provider_request_recipes(provider_id: str, *, path: Path = MEMORY_PATH) -> l
                 if not isinstance(step, dict):
                     continue
                 route = str(step.get("route") or "")
+                # Compiler now supports episode coordinates; replay must retain
+                # all dependent placeholders instead of silently losing S00.
                 bindings = sorted({m.group(1).casefold() for m in _BINDING.finditer(route)})
                 for binding in bindings:
                     route = re.sub(
