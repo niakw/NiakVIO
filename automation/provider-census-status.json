@@ -1,7 +1,7 @@
 {
   "schemaVersion": 3,
-  "runId": "42779127774",
-  "triggerSha": "a56dbde6b04bc4a1a4807157e909951d28c539a7",
+  "runId": "42785682750",
+  "triggerSha": "a734be4cae207f2fe7428f34df277fd37975c533",
   "providers": [
     {
       "provider": "4khdhub",
@@ -274,14 +274,14 @@
         "1 live routes / anime"
       ],
       "latestLaneVerdicts": [
-        "anime=no_streams/provider_network_http_error"
+        "anime=no_streams/provider_network_exception"
       ],
-      "dominantIssue": "provider_network_http_error",
+      "dominantIssue": "provider_network_exception",
       "searchProgress": [
         "anime: 7 works tested / 41 retained misses"
       ],
       "evidenceDepth": [
-        "anime=lookup_only"
+        "anime=none"
       ],
       "harnessTransportClass": "not-applicable",
       "harnessTransportEvidence": [],
@@ -2185,8 +2185,8 @@
   "harnessQueue": [],
   "targetedTransportBlockedQueue": [],
   "clientTransportGapQueue": [],
-  "harnessEvidenceRunId": "42779127774-sharded-waf",
-  "harnessEvidenceSha": "a56dbde6b04bc4a1a4807157e909951d28c539a7",
+  "harnessEvidenceRunId": "42785682750-sharded-waf",
+  "harnessEvidenceSha": "a734be4cae207f2fe7428f34df277fd37975c533",
   "authorityRefreshedProviders": [],
   "harnessTransportUpdatedProviders": [],
   "networkDifferentialUpdatedProviders": [],
@@ -2598,45 +2598,5 @@
       ],
       "replayedProviders": []
     }
-  },
-  "lastRepairAttempt": {
-    "runId": "42779996201",
-    "sourceCensusRunId": "42779127774",
-    "selectedProviders": [
-      "4khdhub",
-      "allanime",
-      "animesalt",
-      "animesultra",
-      "animevost-fr",
-      "flemmix",
-      "kehflix",
-      "mallumv",
-      "moviebox",
-      "moviesmod",
-      "vidfast",
-      "vostfree",
-      "yflix"
-    ],
-    "candidateProviders": [],
-    "validatedProviders": [],
-    "acceptedRepairCount": 0,
-    "deferredToLearningSlotProviders": [
-      "4khdhub",
-      "allanime",
-      "animesalt",
-      "animesultra",
-      "animevost-fr",
-      "flemmix",
-      "kehflix",
-      "mallumv",
-      "moviebox",
-      "moviesmod",
-      "vidfast",
-      "vostfree",
-      "yflix"
-    ],
-    "noProgressReason": "experiment_variants_exhausted",
-    "timeBudgetExhausted": false,
-    "publicationAllowed": false
   }
 }
