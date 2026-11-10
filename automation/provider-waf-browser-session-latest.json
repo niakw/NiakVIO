@@ -22,9 +22,9 @@
     "exact failed provider GET replay is transport differential evidence only; it cannot grant playback proof"
   ],
   "counts": {
-    "browser_challenge_persisted": 16,
+    "browser_challenge_persisted": 15,
     "browser_content_reached": 5,
-    "browser_inconclusive": 2
+    "browser_inconclusive": 3
   },
   "rows": [
     {
@@ -78,7 +78,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 4798
+      "durationMs": 19741
     },
     {
       "provider": "allwish",
@@ -131,7 +131,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 4778,
+      "durationMs": 19687,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_challenge_persisted",
@@ -212,7 +212,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 5942,
+      "durationMs": 20913,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_challenge_persisted",
@@ -935,7 +935,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 3627
+      "durationMs": 4036
     },
     {
       "provider": "flemmix",
@@ -988,7 +988,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 3590
+      "durationMs": 4004
     },
     {
       "provider": "kehflix",
@@ -1041,30 +1041,30 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 2418
+      "durationMs": 2467
     },
     {
       "provider": "kehflix",
       "lane": "movie",
-      "publicUrl": "https://kehflix.com/title/movie/533535-deadpool-3",
+      "publicUrl": "https://kehflix.com/api/streams/movie",
       "host": "kehflix.com",
-      "path": "/title/movie/533535-deadpool-3",
+      "path": "/api/streams/movie",
       "method": "GET",
       "fetchStatus": 403,
       "challenge": "cloudflare",
       "seedKind": null,
       "seedRoute": null,
-      "outcome": "browser_challenge_persisted",
+      "outcome": "browser_inconclusive",
       "attemptCount": 2,
       "attempts": [
         {
           "attempt": 1,
-          "outcome": "browser_challenge_persisted",
+          "outcome": "browser_inconclusive",
           "exitCode": 0
         },
         {
           "attempt": 2,
-          "outcome": "browser_challenge_persisted",
+          "outcome": "browser_inconclusive",
           "exitCode": 0
         }
       ],
@@ -1073,17 +1073,17 @@
         {
           "profile": "github-default-browser",
           "userAgent": null,
-          "outcome": "browser_challenge_persisted",
+          "outcome": "browser_inconclusive",
           "attemptCount": 2,
           "attempts": [
             {
               "attempt": 1,
-              "outcome": "browser_challenge_persisted",
+              "outcome": "browser_inconclusive",
               "exitCode": 0
             },
             {
               "attempt": 2,
-              "outcome": "browser_challenge_persisted",
+              "outcome": "browser_inconclusive",
               "exitCode": 0
             }
           ],
@@ -1094,7 +1094,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 1712
+      "durationMs": 2594
     },
     {
       "provider": "kehflix",
@@ -1147,7 +1147,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 2711
+      "durationMs": 2293
     },
     {
       "provider": "mallumv",
@@ -1258,9 +1258,9 @@
     {
       "provider": "moviesmod",
       "lane": "movie",
-      "publicUrl": "https://links.modpro.blog/archives/1538",
+      "publicUrl": "https://links.modpro.blog/archives/138983",
       "host": "links.modpro.blog",
-      "path": "/archives/1538",
+      "path": "/archives/138983",
       "method": "GET",
       "fetchStatus": 403,
       "challenge": "cloudflare",
@@ -1306,14 +1306,14 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 4037
+      "durationMs": 3924
     },
     {
       "provider": "moviesmod",
       "lane": "tv",
-      "publicUrl": "https://episodes.modpro.blog/archives/78337",
+      "publicUrl": "https://episodes.modpro.blog/archives/67625",
       "host": "episodes.modpro.blog",
-      "path": "/archives/78337",
+      "path": "/archives/67625",
       "method": "GET",
       "fetchStatus": 403,
       "challenge": "cloudflare",
@@ -1359,7 +1359,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 3493
+      "durationMs": 4075
     },
     {
       "provider": "vidfast",
@@ -1733,7 +1733,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 3076,
+      "durationMs": 4006,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_challenge_persisted",
