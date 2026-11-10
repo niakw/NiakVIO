@@ -510,8 +510,12 @@ exige soit une paire saison/épisode structurée, soit un marqueur `S00E01`
 explicite dans les champs de la ligne, soit des coordonnées `season=0&episode=1`
 dans une URL source/lecteur corrélée. La vérification de contradiction des
 identifiants d'œuvre et des épisodes continue à s'appliquer après cette preuve
-positive. Une réponse sans preuves est **rejetée** et n'est pas remplacée par
-une autre saison par défaut. Cette règle est limitée à la saison zéro et
+positive. **Un libellé S00E01 affiché par le provider n'est pas une preuve
+indépendante** : il peut être recopié de la requête alors que la vidéo CDN
+opaque appartient à S03. Pour S00, le Core v19 exige une paire de coordonnées
+structurée ou une URL source/lecteur (chemin ou paramètres) comportant le
+marqueur exact ; le titre seul est rejeté. Une réponse sans preuves est
+**rejetée** et n'est pas remplacée par une autre saison par défaut. Cette règle est limitée à la saison zéro et
 n'altère pas la politique fail-open documentée pour les films et les épisodes
 ordinaires quand une métadonnée annexe manque.
 
