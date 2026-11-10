@@ -1,3 +1,9 @@
+## 2026-11-10 — Security Final Gate CodeQL matrix race fixed
+
+- On NiakVIO `20dea07f`, CodeQL `42854772396` successfully uploaded the JS legacy reconciler under **exact** historical key `.github/workflows/codeql.yml:analyze` (runner logs `CODEQL_ACTION_ANALYSIS_KEY` confirm). But the push-triggered Final Gate `42854772815` checked alert #2531 **while ProviderBase/Python CodeQL jobs had not all finished**: the old gate accepted the *first exact-SHA analysis* as though all security configurations had finalized, and reported the still-open test-only high alert. It is not proof that all CodeQL categories finished.
+- Security pipeline fix adds read-only Actions API permission and waits for the full `SEC - CodeQL` workflow with matching exact SHA and `completed:success`, failing closed on workflow failure/timeout, before reading any exact-SHA CodeQL analysis or open High/Critical alert inventory. Security alert block rules remain unchanged and strict; this is not a dismissal or a provider-code edit. Policy test asserts complete-workflow gate.
+- Do not declare #2531 fixed until a new full CodeQL run and its SHA-matched Final Gate have completed and the actual open-alert inventory shows zero release-reachable high/critical. Previous `42852628822` GitHub API dismissal HTTP 422 remains documented, no alternate suppression attempted.
+
 ## 2026-11-10 — CodeQL #2531 stale analysis origin, exact-key reconciliation
 
 - Independent NiakVIO CodeQL run `42850985013` on `1c593f7e` completed SUCCESS with 41/41 published bundles checked, zero known unsafe provider signatures. Security Final Gate `42852628601` nevertheless FAILED because **one open high** CodeQL alert `#2531`, `js/incomplete-url-substring-sanitization`, in `tests/response_structure_test.cjs`. Current fixture uses a positive exact `URL.origin` allowlist, not the original negative host substring; production provider security scan was clean.

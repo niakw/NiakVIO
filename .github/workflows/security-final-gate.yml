@@ -44,6 +44,7 @@ on:
 
 permissions:
   contents: read
+  actions: read
   security-events: read
   issues: write
 
@@ -139,6 +140,37 @@ jobs:
               raise SystemExit(f'known unsafe provider shapes or incomplete catalogue scan remain: {len(failures)}')
           print(f'FIELD_PUBLISHED_PROVIDER_SECURITY_SCAN checked={checked} expected={expected} unsafe=0')
           PY
+
+      # An early CodeQL analysis (e.g. Actions) is NOT the complete five-job
+      # matrix. A push-triggered gate must not inspect stale open alerts while
+      # the matching legacy/category reconciliation is still uploading.
+      - name: Wait for complete CodeQL workflow on exact tested main SHA
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          state=missing
+          for attempt in $(seq 1 90); do
+            state="$(gh api \
+              -H 'Accept: application/vnd.github+json' \
+              -H 'X-GitHub-Api-Version: 2022-11-28' \
+              "repos/${GITHUB_REPOSITORY}/actions/runs?head_sha=${GITHUB_SHA}&per_page=100" \
+              --jq ".workflow_runs | map(select(.name == \"SEC - CodeQL\" and .head_sha == \"${GITHUB_SHA}\")) | sort_by(.created_at) | last | if . == null then \"missing\" else .status + \":\" + (.conclusion // \"none\") end")"
+            if [ "$state" = "completed:success" ]; then
+              echo "FIELD_CODEQL_FULL_WORKFLOW state=completed:success sha=${GITHUB_SHA}"
+              break
+            fi
+            if [[ "$state" == completed:* ]]; then
+              echo "FIELD_CODEQL_FULL_WORKFLOW state=$state sha=${GITHUB_SHA}" >&2
+              exit 1
+            fi
+            sleep 20
+          done
+          if [ "$state" != "completed:success" ]; then
+            echo "CodeQL full workflow not completed successfully on exact tested SHA: $state" >&2
+            exit 1
+          fi
 
       - name: Wait for CodeQL analysis of exact tested main SHA
         env:

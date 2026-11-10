@@ -50,6 +50,10 @@ if 'expected=len(rows)' not in security_gate:
 if "if checked != expected:" not in security_gate:
     errors.append('security-final-gate.yml: exhaustive scan completion check is required')
 
+if "FIELD_CODEQL_FULL_WORKFLOW state=completed:success" not in security_gate or \
+        "Wait for complete CodeQL workflow on exact tested main SHA" not in security_gate or \
+        "actions: read" not in security_gate:
+    errors.append('security-final-gate.yml: block on complete successful CodeQL matrix, not just first analysis')
 if "ref: ${{ github.sha }}" not in security_gate:
     errors.append('security-final-gate.yml: security gate must checkout the exact triggering SHA')
 for required_path in (
