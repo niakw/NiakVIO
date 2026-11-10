@@ -527,6 +527,15 @@ source code et celui des bytes publiés doivent rester distincts dans le
 census, les CI et la mémoire, et aucun provider ne doit être déclaré FULL
 pour le seul motif que la révision v18 est présente.
 
+La finalisation `release-finalize.yml` surveille désormais les modifications du
+Core partagé, de ProviderBase et de l'applicateur de correctifs afin de
+rematérialiser **les bundles publiés**, pas seulement d'exécuter les tests
+unitaires de source. Le contrôle read-only `sync.yml` exécute aussi
+`tests/published_s00_identity_rollout_test.py` sur les octets effectivement
+référencés par le manifeste ; une révision Core obsolète sur un seul provider
+fait échouer la vérification de publication. Ces portes attestent la parité
+statique et les hashes, jamais l'identité de l'épisode effectivement décodé.
+
 ## FORCE — intention explicite liée au planificateur Deep
 
 La voie FORCE utilise une intention de stratégie explicitement validée pour un
