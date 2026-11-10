@@ -2121,3 +2121,20 @@ incomplete category coverage. Does not introduce fictitious fixtures or
 change provider implementations. Source fixture origin remains
 `health-config.json`. Re-test on exact new SHA; the Brain can
 investigate `inferSupportedTypes` vs published manifest separately.
+
+### 2026-11-10 — Brain manifest canonical-vs-Nuvio transport alias repair
+
+The allAnime/AnimeVostFR `anime + tv` manifest labels observed above are
+*transport* `supportedTypes`; each has `canonicalSupportedTypes=["anime"]`.
+`scripts/provider_semantics.cjs::inferSupportedTypes` already honors the
+explicit canonical types and the health harness executed exactly two anime
+fixtures (not an omitted live-action TV lane). The Brain's stricter
+`strict_repair_fixture_contract(provider)` was incorrectly selecting
+`supportedTypes` and demanding an unrelated third TV fixture, creating a
+false Brain validation inconsistency. Select explicit non-empty
+`canonicalSupportedTypes` first, with supportedTypes fallback only when
+canonical absent; this matches the executable stage's current semantic
+contract without adding provider-side type claims. Test AllAnime,
+AnimeVostFR, AnimeKai canonical anime-only; 4KHDHub and Yflix film/TV.
+Retain no-media and no-identity proof on live observations; no real
+repair accepted until provider terminal decoded identity and persistence.

@@ -1387,3 +1387,15 @@ observation, model candidate, HTML marker, HTTP 200 or returned URL promotes a
 provider: promotion still requires Brain-produced compile→apply→rematerialize→
 independent terminal decoded media/episode/subtitles→non-regression and
 persisted experience on executed bytes. No manual provider-specific patches.
+
+### Brain strict fixture type ownership: canonical content vs client aliases
+
+For provider-specific decoded repair gates, use the published manifest's
+non-empty `canonicalSupportedTypes` when present, otherwise declared
+`supportedTypes`; these are *different* notions. Nuvio may route an anime
+series through `tv`, but this does not qualify a second general-TV content
+catalogue. Immutable title/episode fixtures are selected per **canonical
+semantic** category and validated against exact executed tests; no
+type widening, synthetic S00 remapping, unverified URLs or alias-success
+promotion. `scripts/provider_semantics.cjs` uses this contract already;
+Brain's `strict_repair_fixture_contract` and reverse diagnostics must match.

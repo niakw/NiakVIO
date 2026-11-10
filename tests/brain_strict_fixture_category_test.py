@@ -15,7 +15,16 @@ movie=verify.strict_repair_fixture_contract('mallumv')
 assert set(key[0] for key in movie)=={'movie'}, movie
 assert ('movie','157336') in movie, movie
 assert verify.strict_repair_fixture_contract('animekai')
-assert {'anime','tv'} == {key[0] for key in verify.strict_repair_fixture_contract('animekai')}
+assert {'anime'} == {key[0] for key in verify.strict_repair_fixture_contract('animekai')}
+assert {'anime'} == {key[0] for key in verify.strict_repair_fixture_contract('allanime')}
+assert {'anime'} == {key[0] for key in verify.strict_repair_fixture_contract('animevostfr')}
+assert {'movie', 'tv'} == {key[0] for key in verify.strict_repair_fixture_contract('4khdhub')}
+assert {'movie', 'tv'} == {key[0] for key in verify.strict_repair_fixture_contract('yflix')}
+# An anime-to-TV client transport alias must NEVER manufacture a live-action
+# TV decoding fixture or allow an unrelated TV episode to validate a provider.
+with patch.dict(os.environ, {'NIAKVIO_REQUIRE_DECODE_PROOF':'1'}):
+    anime_expected=verify.strict_repair_fixture_contract('allanime')
+    assert {key[0] for key in anime_expected}=={'anime'}
 assert len(verify.strict_repair_fixture_contract(None))==2
 assert {key[1] for key in verify.strict_repair_fixture_contract(None)}=={'95479','280049'}
 

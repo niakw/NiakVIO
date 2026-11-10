@@ -83,8 +83,16 @@ def strict_repair_fixture_contract(provider: str | None = None) -> dict[tuple[st
                     and row.get('enabled') is True]
         if len(selected) != 1:
             raise ValueError('decoded_repair_provider_manifest_contract')
-        supported = {str(value).strip().casefold()
-                     for value in (selected[0].get('supportedTypes') or [])}
+        # A Nuvio transport alias (anime exposed as tv) is not evidence
+        # of a distinct live-action TV catalogue. The shared provider
+        # semantics runtime uses canonicalSupportedTypes when explicitly
+        # present. The immutable repair fixture contract must agree, or
+        # it will report a bogus missing TV fixture / force a wrong show.
+        manifest_row = selected[0]
+        canonical = manifest_row.get('canonicalSupportedTypes')
+        raw_supported = (canonical if isinstance(canonical, list) and canonical
+                         else manifest_row.get('supportedTypes') or [])
+        supported = {str(value).strip().casefold() for value in raw_supported}
         categories = supported.intersection({'movie', 'tv', 'anime', 'anime_movie'})
         if not categories or supported - categories:
             raise ValueError('decoded_repair_unsupported_media_category')
