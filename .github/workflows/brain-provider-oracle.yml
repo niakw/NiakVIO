@@ -10,6 +10,9 @@ on:
       - 'scripts/provider_patches/anime_catalogue_runtime_common.py'
       - 'scripts/compile_brain_accepted_program_v3.py'
       - 'scripts/brain_positive_program_memory.py'
+      - 'scripts/brain_repair_runtime.py'
+      - 'engine_v2/scripts/plan-repairs.mjs'
+      - 'tests/brain_html_class_source_to_strategy_replay_test.py'
       - 'tests/brain_positive_program_episode_replay_test.py'
       - 'scripts/select_provider_materialization_scope.py'
       - 'tests/brain_family_renderer_drift_scope_test.py'
@@ -50,6 +53,10 @@ jobs:
         run: python tests/brain_positive_program_episode_replay_test.py
       - name: Verify shared Lego source drift invalidates only registered importing providers
         run: python tests/brain_family_renderer_drift_scope_test.py
+      - name: Prove real parser source signature reaches Brain strategy selection and respects negative memory
+        run: |
+          python tests/brain_html_class_source_to_strategy_replay_test.py
+          python tests/adaptive_html_class_token_profile_test.py
       - name: Replay Brain acceptance compiler with episode-aware plan and safety negatives
         run: |
           python tests/brain_oracles/animevost_fr/test_compiler_episode_bindings.py
