@@ -8,6 +8,11 @@ on:
       - '.github/workflows/s00-series-live-regression.yml'
       - 'scripts/tv_regression_matrix.py'
       - 'scripts/nuvio_tv_probe_v2.cjs'
+      # Recheck authentic published bytes after every Core release, not only
+      # after editing the probe itself. This is an observational network QA.
+      - 'manifest.json'
+      - 'providers/**'
+      - 'scripts/provider_patches/global_stream_identity_v1.py'
       - 'tests/tv_regression_matrix_semantic_scope_test.py'
       - 'tests/tv_probe_invocation_contract_test.py'
 
