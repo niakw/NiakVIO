@@ -22,7 +22,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:
-      NIAKVIO_BRAIN_ORACLE_LIVE_OUTPUT: ${{ runner.temp }}/brain-live-upstream.json
+      NIAKVIO_BRAIN_ORACLE_LIVE_OUTPUT: health-output/brain-live-upstream.json
     steps:
       - name: Checkout exact accepted code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
@@ -64,6 +64,6 @@ jobs:
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         with:
           name: brain-oracle-real-upstream-${{ github.run_id }}
-          path: ${{ runner.temp }}/brain-live-upstream.json
+          path: health-output/brain-live-upstream.json
           retention-days: 7
           if-no-files-found: warn
