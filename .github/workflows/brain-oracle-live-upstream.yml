@@ -1,0 +1,69 @@
+name: BRAIN - Reverse Oracle Real Upstream Probe
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/brain-oracle-live-upstream.yml'
+      - 'tests/brain_oracles/4khdhub/live_runtime_probe.cjs'
+      - 'tests/brain_oracles/4khdhub/live_upstream_replay.py'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: brain-real-upstream-oracle-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  compare:
+    name: Observe real upstream for original vs Brain-materialized candidate
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      NIAKVIO_BRAIN_ORACLE_LIVE_OUTPUT: ${{ runner.temp }}/brain-live-upstream.json
+    steps:
+      - name: Checkout exact accepted code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - name: Validate probes are syntactically runnable
+        run: |
+          node --check tests/brain_oracles/4khdhub/live_runtime_probe.cjs
+          python -m py_compile tests/brain_oracles/4khdhub/live_upstream_replay.py
+      - name: Execute actual network on isolated current-byte repaired candidate
+        run: python tests/brain_oracles/4khdhub/live_upstream_replay.py
+      - name: Validate read-only evidence and preserve failure taxonomy
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+          path=Path(os.environ["NIAKVIO_BRAIN_ORACLE_LIVE_OUTPUT"])
+          data=json.loads(path.read_text())
+          rows=data.get("rows") or []
+          assert len(rows)==4, rows
+          assert all(row.get("attemptedRequests",0)>0 for row in rows), rows
+          assert all(row.get("upstreamRealNetwork") is True for row in rows), rows
+          assert data["candidateMaterialized"] and data["originalUnmodified"]
+          assert not data["actualTerminalMediaProven"]
+          print("FIELD_BRAIN_REAL_UPSTREAM_RUN recorded=4 real_requests=true source_unchanged=true")
+          print("FIELD_BRAIN_REAL_UPSTREAM_PLAYBACK proven=false reason=media_header_inspection_not_decoded_identity")
+          PY
+      - name: Upload sanitized status-only evidence
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: brain-oracle-real-upstream-${{ github.run_id }}
+          path: ${{ runner.temp }}/brain-live-upstream.json
+          retention-days: 7
+          if-no-files-found: warn
