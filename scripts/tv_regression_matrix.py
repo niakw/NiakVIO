@@ -99,7 +99,9 @@ def load_json(path: Path) -> dict[str, Any]:
 
 
 def canonical_types(row: dict[str, Any]) -> set[str]:
-    values = row.get("supportedTypes") or row.get("types") or []
+    # canonicalSupportedTypes carries semantic capability; supportedTypes may
+    # include TV only as a transport alias for anime-only Nuvio providers.
+    values = row.get("canonicalSupportedTypes") or row.get("supportedTypes") or row.get("types") or []
     if isinstance(values, str):
         values = [values]
     return {str(v).strip().casefold() for v in values if str(v).strip()}
