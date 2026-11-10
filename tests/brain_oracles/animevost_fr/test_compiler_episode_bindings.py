@@ -41,7 +41,7 @@ assert compiled["providerValuePlan"], compiled
 step = compiled["providerValuePlan"][0]["steps"][0]
 assert step["route"] == "/api/animes/{slug}/seasons/{season}/episodes/{episode}/sources", step
 assert step["streamProof"] is True
-assert step["semanticTypes"] == ["anime"]
+assert compiled["providerValuePlan"][0]["semanticTypes"] == ["anime"]
 assert compiled["terminalRequestPlan"][0]["requiredBindings"] == ["slug","season","episode"]
 
 saved=compiler.apply_compiled({"provider_patches":{"animevost-fr":{}}},compiled)
