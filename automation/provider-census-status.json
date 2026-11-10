@@ -1,7 +1,7 @@
 {
   "schemaVersion": 3,
-  "runId": "42800721075",
-  "triggerSha": "b6a8cf3e004573dbdaf7189dfb0edc596d4898ce",
+  "runId": "42802824788",
+  "triggerSha": "6cd0d9fdc1ffd6bb66cdcb213fab9ca8021ba81a",
   "providers": [
     {
       "provider": "4khdhub",
@@ -66,7 +66,7 @@
       ],
       "dominantIssue": "provider_network_zero_result",
       "searchProgress": [
-        "anime: 4 works tested / 45 retained misses / 3 retained chain hits"
+        "anime: 4 works tested / 44 retained misses / 4 retained chain hits"
       ],
       "evidenceDepth": [
         "anime=chain_reached"
@@ -314,11 +314,11 @@
         "1 live routes / anime"
       ],
       "latestLaneVerdicts": [
-        "anime=timeout"
+        "anime=no_streams/provider_network_exception"
       ],
-      "dominantIssue": "timeout",
+      "dominantIssue": "provider_network_exception",
       "searchProgress": [
-        "anime: 3 works tested / 0 retained misses"
+        "anime: 2 works tested / 0 retained misses"
       ],
       "evidenceDepth": [
         "anime=none"
@@ -2185,8 +2185,8 @@
   "harnessQueue": [],
   "targetedTransportBlockedQueue": [],
   "clientTransportGapQueue": [],
-  "harnessEvidenceRunId": "42800721075-sharded-waf",
-  "harnessEvidenceSha": "b6a8cf3e004573dbdaf7189dfb0edc596d4898ce",
+  "harnessEvidenceRunId": "42802824788-sharded-waf",
+  "harnessEvidenceSha": "6cd0d9fdc1ffd6bb66cdcb213fab9ca8021ba81a",
   "authorityRefreshedProviders": [],
   "harnessTransportUpdatedProviders": [],
   "networkDifferentialUpdatedProviders": [],
@@ -2598,27 +2598,5 @@
       ],
       "replayedProviders": []
     }
-  },
-  "lastRepairAttempt": {
-    "runId": "42802317399",
-    "sourceCensusRunId": "42800721075",
-    "selectedProviders": [
-      "4khdhub",
-      "allanime",
-      "moviesmod",
-      "yflix"
-    ],
-    "candidateProviders": [],
-    "validatedProviders": [],
-    "acceptedRepairCount": 0,
-    "deferredToLearningSlotProviders": [
-      "4khdhub",
-      "allanime",
-      "moviesmod",
-      "yflix"
-    ],
-    "noProgressReason": "experiment_variants_exhausted",
-    "timeBudgetExhausted": false,
-    "publicationAllowed": false
   }
 }
