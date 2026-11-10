@@ -27,7 +27,7 @@ rows = [
     {"title": "Spartacus S02E01", "url": "https://cdn.example/unverified-alternate-s2.m3u8"},
     {"name": "Spartacus", "season": 1, "episode": 1, "url": "https://cdn.example/wrong-structured.m3u8"},
     {"name": "Spartacus", "sourceUrl": "https://reader.example/watch?season=2&episode=1", "url": "https://cdn.example/wrong-reader.m3u8"},
-    {"title": "Spartacus S00E01", "url": "https://cdn.example/correct-s00.m3u8",
+    {"title": "Spartacus S00E01", "url": "https://cdn.example/Spartacus.S00E01.m3u8",
      "subtitles": [
          {"url": "https://subs.example/Spartacus.S00E01.fr.vtt", "language": "fr"},
          {"url": "https://subs.example/Spartacus.S03E01.fr.vtt", "language": "fr"},
@@ -35,6 +35,7 @@ rows = [
          {"url": "https://subs.example/generic.vtt", "seasonNumber": 2, "episodeNumber": 1},
      ]},
     {"name": "Spartacus", "seasonNumber": 0, "episodeNumber": 1, "url": "https://cdn.example/correct-structured.m3u8"},
+    {"title": "Spartacus S00E01", "url": "https://cdn.example/opaque-season3-mislabeled.m3u8"},
     {"name": "Server 1", "url": "https://cdn.example/opaque-unverified.m3u8"},
     {"name": "Server 2", "sourceUrl": "https://reader.example/watch?season=0&episode=1", "url": "https://cdn.example/correct-source-coordinate.m3u8"},
 ]
@@ -48,17 +49,19 @@ runner = compiled + """
   const q=QUERY;
   const rows=await module.exports.getStreams(q);
   assert.deepEqual(rows.map(r=>r.url), [
-    'https://cdn.example/correct-s00.m3u8',
+    'https://cdn.example/Spartacus.S00E01.m3u8',
     'https://cdn.example/correct-structured.m3u8',
     'https://cdn.example/correct-source-coordinate.m3u8'
   ], JSON.stringify(rows));
   const s1=await module.exports.getStreams({...q,season:1});
   assert(s1.some(r=>r.url==='https://cdn.example/wrong-s1.m3u8'));
-  assert(!s1.some(r=>r.url==='https://cdn.example/correct-s00.m3u8'));
-  const special=rows.find(r=>r.url==='https://cdn.example/correct-s00.m3u8');
+  assert(!s1.some(r=>r.url==='https://cdn.example/Spartacus.S00E01.m3u8'));
+  const special=rows.find(r=>r.url==='https://cdn.example/Spartacus.S00E01.m3u8');
   assert.deepEqual(special.subtitles.map(r=>r.url),[
     'https://subs.example/Spartacus.S00E01.fr.vtt'
   ],'S00 special requires explicit caption season/episode identity; opaque or S03 must be rejected');
+  assert(!rows.some(r=>r.url==='https://cdn.example/opaque-season3-mislabeled.m3u8'),
+    'caller-derived S00 title must not authenticate an opaque S03 URL');
   const pos=await module.exports.getStreams(q.tmdbId,q.mediaType,0,1);
   assert.deepEqual(pos.map(r=>r.url), rows.map(r=>r.url));
 })().catch(e=>{console.error(e);process.exit(1)});
