@@ -2060,3 +2060,25 @@ La version v19 acceptait encore dans certains cas un stream étiqueté S00E01 pa
 - **Live TV replay after v20 publication:** [42757271929](https://github.com/niakw/NiakVIO/actions/runs/42757271929) **SUCCESS as an observational probe**, 19 semantically TV-capable published providers × 3 authentic episode requests. Spartacus `TMDB TV 46296 S00E01`: **0/19 providers with any raw result or endpoint-playable media**. Spartacus S03E01: 2/19 providers (PlayIMDb, HindMoviez), 2 endpoint-playable; Breaking Bad S01E01: 2/19 (PlayIMDb, HindMoviez). `decoded_episode_identity_verified=false`; no proof of correct decoded episodes or subtitles. Updated `.github/workflows/s00-series-live-regression.yml` to rerun this QA on every `manifest.json`/`providers/**`/identity Core release. GH Actions success does not imply S00 availability.
 - **Brain remains the business blocker:** [Fast Brain Repair 42755523492](https://github.com/niakw/NiakVIO/actions/runs/42755523492) selected 13, **0 accepted / 0 fixed lab / 0 programme compiled**, 13 deferred to Learning; `noProgressReason=experiment_variants_exhausted`. Full census [42754829190](https://github.com/niakw/NiakVIO/actions/runs/42754829190) is 46 total, 14 carried FULL, 1 carried PARTIAL, **26 repairQueue**; fresh decoded playback evidence on this census **0**. Brain-LLM head `2b74cdeae2050826f9c92cd9cb79808bd5df5216` had [Brain CI 42755078672](https://github.com/niakw/NiakVIO-Brain-LLM/actions/runs/42755078672) SUCCESS; that is source/contract test proof. Learning [42755530892](https://github.com/niakw/NiakVIO/actions/runs/42755530892) and [42756127640](https://github.com/niakw/NiakVIO/actions/runs/42756127640) were still running at this checkpoint; do not assert their outcome.
 - **Actual closure status:** shared S00 source/episode/subtitle safety changes and publication verified; `animevost-fr` and `4khdhub` reverse-oracles saved in test tree and Brain context/plan/materialization improved. Not closed: *user's Nuvio* loaded manifest/cache version, Spartacus S00E01 correct terminal decoded media (0/19 negative), subtitle provenance (provider/embedded/SubSense), 26 symptomatic providers, Brain autonomous real provider repair end-to-end (generated→compiled→applied→materialized→decoded→persisted). A user-facing "fixed" or fully optimized claim would be false.
+
+## 2026-11-10 — Multi-topology actual-network reverse experiment
+
+- Brain selection changed on Brain-LLM `a48efab92c43302a657dfeba77277d063c56f73c` and later:
+  causal family SHA remains shared, but independently observed 2xx provider
+  JSON/API, HTML download, player-page and HTML catalogue topologies retain
+  different reverse witnesses; WAF pages and TMDB lookups are excluded.
+  Brain-LLM CI `42795008209` passed 416 tests. Production provider
+  repairs are still 0 accepted.
+- The 2026-11-10 sharded census `42785682750` includes authentic provider
+  response structure witnesses from 4KHDHub, AllAnime, AnimeVostFR, MoviesMod,
+  Yflix and other sources. It does NOT prove decoded media or correct TMDB
+  episode. A single HTML download provider cannot represent all source types.
+- Added GitHub Actions read-only cross-topology actual-network matrix with
+  six independent providers, a WAF/transport negative control (Flemmix),
+  exact immutable checkout, bounded concurrent observations and sanitized
+  per-provider evidence. This runs the *existing* current-source Brain
+  `capture_brain_live_context.py` without mutating providers or producing
+  acceptance, and publishes artifacts for reverse-causal follow-up. The
+  matrix run result on new HEAD must be inspected; it is not a repair.
+- Qwen3.5-9B Q4 CPU pilot in Brain-LLM runs separately, no paid/API,
+  and remains a diagnostic benchmark, not promoted model.

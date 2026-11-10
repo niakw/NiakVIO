@@ -1372,3 +1372,18 @@ Après un clone numérique et une correction du modèle également clonée, ou u
 A changed `main` can be provider-neutral and still invalidate generated Brain code. The FORCE promotion rebase guard now reads the **exact diff being promoted**, intersects its touched paths with the source-to-current drift, and rejects overlapping planner/runtime/executor changes. That case must requeue on the current SHA rather than attempt a stale `git apply`. Unrelated append-only observations can still be rebased, but never override provider/source/architecture conflict checks or executable-byte validation.
 
 The automatically dispatched representative FORCE replay is **not equivalent** to an ordinary production experiment. If a newly promoted profile is in the installed causal candidate family, it takes precedence even if older base profile generations remain unexhausted. This early selection is available only to an explicit exploratory FORCE request, cannot select arbitrary profile names, cannot override a real executed-negative history, and cannot publish on a route or parsing witness alone. Without this, [run 42414140056](https://github.com/niakw/NiakVIO/actions/runs/42414140056) reached `allanime` but used `adaptive_runtime_recovery` instead of the promoted `terminal_transition_graph_v9`. The real negative report is retained as a test witness; regenerated code still needs materialization, exact bytes, episode identity and terminal media proof.
+
+## 2026-11-10 — Representative reverse inputs across source topologies
+
+A reusable failure-family strategy is not equivalent to one representative
+provider: verify independent current-source network witnesses for HTML
+catalogue/download, JSON/GraphQL API, player/embed and blocked transport.
+Keep TMDB API calls out of provider-source response topology classifications;
+HTTP challenges cannot certify the origin's content. Brain family selection
+can preserve same causal mechanism SHA while scheduling additional topology
+witnesses; the six-source read-only reverse workflow records independent
+exact source SHA and sanitized real-network response shapes. No source
+observation, model candidate, HTML marker, HTTP 200 or returned URL promotes a
+provider: promotion still requires Brain-produced compile→apply→rematerialize→
+independent terminal decoded media/episode/subtitles→non-regression and
+persisted experience on executed bytes. No manual provider-specific patches.

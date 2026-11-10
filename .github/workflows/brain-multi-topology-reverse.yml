@@ -1,0 +1,123 @@
+name: BRAIN - Multi-topology reverse evidence (read-only)
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/brain-multi-topology-reverse.yml'
+      - 'tests/brain_multi_topology_reverse_workflow_test.py'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: brain-multi-topology-reverse-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  observe:
+    name: Reverse ${{ matrix.provider }} (${{ matrix.family }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    strategy:
+      fail-fast: false
+      max-parallel: 3
+      matrix:
+        include:
+          - { provider: 4khdhub, family: html-download }
+          - { provider: allanime, family: api-plus-embedded-player }
+          - { provider: animevostfr, family: anime-catalogue-html }
+          - { provider: moviesmod, family: player-page }
+          - { provider: yflix, family: json-api }
+          - { provider: flemmix, family: external-challenge-negative }
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - name: Confirm immutable checkout and preserve negative controls
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          python tests/brain_multi_topology_reverse_workflow_test.py
+          python -m py_compile scripts/capture_brain_live_context.py
+          npm ci --ignore-scripts --no-audit --no-fund
+      - name: Observe real provider network and exact current source (no mutation)
+        timeout-minutes: 12
+        env:
+          TARGET_PROVIDER: ${{ matrix.provider }}
+          NIAKVIO_REQUIRE_DECODE_PROOF: '1'
+          TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+          TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p health-output/reverse-topology
+          python scripts/capture_brain_live_context.py --provider "$TARGET_PROVIDER" \
+            --output "health-output/reverse-topology/$TARGET_PROVIDER.json"
+      - name: Record provider-owned proof boundary
+        if: always()
+        env:
+          TARGET_PROVIDER: ${{ matrix.provider }}
+          TARGET_FAMILY: ${{ matrix.family }}
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json, os
+          from pathlib import Path
+          root=Path("health-output/reverse-topology")
+          path=root/(os.environ["TARGET_PROVIDER"]+".json")
+          raw=json.loads(path.read_text()) if path.is_file() else {}
+          records=raw.get("network_evidence") or []
+          response_counts={}
+          external=[]
+          for item in records:
+              if not isinstance(item,dict):
+                  continue
+              host=str(item.get("host") or "").casefold()
+              if host in {"api.themoviedb.org","www.themoviedb.org","image.tmdb.org"}:
+                  continue
+              status=item.get("status")
+              shape=item.get("response_structure") or {}
+              kind=str(shape.get("kind") or "unknown") if isinstance(shape,dict) else "unknown"
+              key=f"{kind}:{status if isinstance(status,int) else 'none'}"
+              response_counts[key]=response_counts.get(key,0)+1
+              if item.get("error_code"):
+                  external.append(str(item["error_code"])[:60])
+          summary={
+              "schemaVersion":1, "sourceSha": os.environ["GITHUB_SHA"],
+              "provider":os.environ["TARGET_PROVIDER"],
+              "requestedFamily":os.environ["TARGET_FAMILY"],
+              "actualNetworkSamples":sum(response_counts.values()),
+              "responseShapes":dict(sorted(response_counts.items())),
+              "networkErrors":sorted(set(external)),
+              "preflightStatus":raw.get("preflight_status") or "not-executed",
+              "candidateDecodedIdentityProven":False,
+              "newRepairAccepted":False,
+              "publicationAuthority":False,
+              "providerMutationAllowed":False,
+          }
+          root.mkdir(parents=True,exist_ok=True)
+          (root/(os.environ["TARGET_PROVIDER"]+"-summary.json")).write_text(
+              json.dumps(summary,sort_keys=True,indent=2)+"\n")
+          print("FIELD_BRAIN_REVERSE_TOPOLOGY "+json.dumps(summary,sort_keys=True))
+          PY
+      - name: Upload isolated observations for reverse-causal debugging
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: reverse-topology-${{ matrix.provider }}-${{ github.run_id }}
+          path: |
+            health-output/reverse-topology/${{ matrix.provider }}.json
+            health-output/reverse-topology/${{ matrix.provider }}-summary.json
+          if-no-files-found: warn
+          retention-days: 7

@@ -1,0 +1,19 @@
+#!/usr/bin/env python3
+"""The cross-source reverse matrix remains read-only and honest."""
+from pathlib import Path
+ROOT=Path(__file__).resolve().parents[1]
+workflow=(ROOT/'.github/workflows/brain-multi-topology-reverse.yml').read_text(encoding='utf-8')
+expected={"4khdhub","allanime","animevostfr","moviesmod","yflix","flemmix"}
+assert {line.split('provider: ',1)[1].split(',')[0].strip() for line in workflow.splitlines()
+        if '- { provider: ' in line}==expected
+assert "ref: ${{ github.sha }}" in workflow
+assert 'NIAKVIO_REQUIRE_DECODE_PROOF' in workflow
+assert 'publicationAuthority' in workflow and 'False' in workflow
+assert 'providerMutationAllowed' in workflow
+assert 'candidateDecodedIdentityProven' in workflow
+assert "api.themoviedb.org" in workflow
+assert 'max-parallel: 3' in workflow
+for banned in ('NIAKVIO_ALLOW_PAID_API=1','plan_batch_from_checkout.py',
+               'publish_niakvio_force_mutations.py','--apply','git push','gh workflow run'):
+    assert banned not in workflow,banned
+print('BRAIN_MULTI_TOPOLOGY_REVERSE_WORKFLOW_OK read-only 6 independent current-byte witnesses')
