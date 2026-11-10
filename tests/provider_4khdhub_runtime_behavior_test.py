@@ -17,9 +17,24 @@ mod=importlib.util.module_from_spec(spec)
 spec.loader.exec_module(mod)
 
 cfg={"base":"https://4khdhub.one","maxStreams":8,"ua":"NiakVIO-Test"}
-wrapper=mod.WRAPPER.replace("CONFIG_PLACEHOLDER",json.dumps(cfg,separators=(",",":")))
-# Instrument only this temporary test wrapper to classify which parsing stage
-# failed. The repository provider source is not mutated or bypassed.
+# Test the *published* generated runtime block, not the unnormalized source
+# template. The shared Brain Lego is applied in the ProviderBase materializer.
+# A green source-template test while published bytes remain broken is invalid.
+manifest=json.loads((ROOT/"manifest.json").read_text(encoding="utf-8"))
+matches=[row for row in manifest.get("scrapers",[])
+         if str(row.get("id") or "").casefold()=="4khdhub"]
+assert len(matches)==1,matches
+bundle_path=ROOT/matches[0]["filename"]
+bundle=bundle_path.read_text(encoding="utf-8")
+begin="/* STARTFIX:PROVIDER.4KHDHUB.RUNTIME.V1 */"
+end="/* CLOSEFIX:PROVIDER.4KHDHUB.RUNTIME.V1 */"
+assert bundle.count(begin)==bundle.count(end)==1,(str(bundle_path),"missing owned runtime")
+wrapper=bundle[bundle.index(begin):bundle.index(end)+len(end)]
+assert "NUVIO_HTML_CLASS_TOKEN_EXACT_V1" in wrapper, (
+    str(bundle_path),"published Brain parser Lego missing; run release finalizer"
+)
+# The exact published block is executed against the existing deterministic
+# nested-card/search->detail->HubCloud fixture, never an amended fake provider.
 search_hook='var cards=classBlocks(sr.text,"movie-card"),best=null;'
 assert wrapper.count(search_hook)==1, "real runtime's search stage moved: renew oracle"
 wrapper=wrapper.replace(search_hook,search_hook+(
