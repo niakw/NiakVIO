@@ -9,6 +9,8 @@ on:
     paths:
       - 'scripts/provider_semantics.cjs'
       - 'tests/provider_semantics.test.cjs'
+      - 'scripts/availability_fallback_policy.cjs'
+      - 'tests/availability_fallback_policy.test.cjs'
       - '.github/workflows/availability.yml'
   schedule:
     # Six low-cost diagnostic checks per day. GitHub schedules use UTC.
@@ -51,8 +53,10 @@ jobs:
         run: |
           npm ci --ignore-scripts --no-audit --no-fund
 
-      - name: Verify canonical catalogue categories before live probes
-        run: node tests/provider_semantics.test.cjs
+      - name: Verify canonical catalogue categories and diagnostic fallback before live probes
+        run: |
+          node tests/provider_semantics.test.cjs
+          node tests/availability_fallback_policy.test.cjs
 
       - name: Stage current published providers
         run: python scripts/stage_published.py

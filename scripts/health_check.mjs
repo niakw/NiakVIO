@@ -17,6 +17,7 @@ import { createRequire } from 'node:module';
 
 const require = createRequire(import.meta.url);
 const { inferSupportedTypes, isAnimeFocusedCatalogue, roundRobin } = require('./provider_semantics.cjs');
+const { shouldRetryNoRequest } = require('./availability_fallback_policy.cjs');
 const { guardedFetch } = require('./network_guard.cjs');
 const { streamIdentity } = require('./nuvio_client_lab.cjs');
 const { safeMediaFacts } = require('./media_observation.cjs');
@@ -1141,7 +1142,7 @@ function fixturesForCandidate(candidate) {
   const selected = new Set(fixtures.map(fixtureKey));
   const fallbackPerCategory = requestedMode === 'deep'
     ? Math.max(0, Number(modeConfig.fallback_fixture_limit_per_category || 0))
-    : 0;
+    : requestedMode === 'availability' ? 1 : 0;
   const fallbackFixtures = [];
   for (const category of profile.requiredCategories) {
     const alternatives = (groups[category] || [])
@@ -1847,6 +1848,21 @@ async function testCandidate(candidate) {
   // Deep fallback is a bounded cascade per catalogue category. Stop as soon
   // as one alternate work proves the category healthy. A catalogue miss is not
   // evidence that the provider itself is dead.
+  if (requestedMode === 'availability') {
+    // A single rotated title giving no provider request is inconclusive.
+    // Spend at most ONE additional worker invocation on an independent real
+    // TMDB work from the SAME canonical catalogue category. Do not broaden
+    // anime-only providers into generic TV, change publication gates, or
+    // retry an already observed HTTP/WAF/stream failure.
+    for (const category of profile.requiredCategories) {
+      if (!shouldRetryNoRequest(primaryResults, category)) continue;
+      const alternate = fallbackFixtures.find((row) => row.category === category);
+      if (!alternate) continue;
+      fallbackExecuted = true;
+      await executeFixture(alternate, 'fallback');
+      break;
+    }
+  }
   if (requestedMode === 'deep') {
     for (const category of categoriesNeedingFallback) {
       const categoryFallbacks = fallbackFixtures.filter((fixture) => fixture.category === category);

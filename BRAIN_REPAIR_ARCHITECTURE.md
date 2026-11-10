@@ -1423,3 +1423,7 @@ Explicit `canonicalSupportedTypes` from current provider manifest (and explicitl
 ### 2026-11-10 — Bounded causal attempt evidence across Deep → portfolio
 
 Each Deep run's `repair-report.json.rounds[].attempts/rejected/exploration_progress` must reach the persisted portfolio status as a bounded `brain.attemptDiagnostics` array, including provider, round, phase, selected profile, status and *reason code* only. There must be no raw error messages (which may contain network URLs/headers), source text, patch bytes, request parameters or private context. This closes the diagnostic gap in which two different 0-accepted runs (no profile generated vs generated child rejected for playable proof) looked identical at the portfolio boundary. The trace is **evidence only**, never proof authority or permission to publish/override provider scripts.
+
+### Availability-only second-title causal differential (2026-11-10)
+
+The scheduled, diagnostic-only availability probe may spend one additional same-canonical-category real TMDB title ONLY after a first `no_provider_request_observed` without runtime error. This narrows "title-specific absence" vs "generic pre-network/Core gate" before Brain chooses provider network strategy. The retry does not widen `canonicalSupportedTypes`, does not alter Deep/Repair fixtures, does not grant playable-media authority and cannot promote published providers.
