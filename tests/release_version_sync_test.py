@@ -56,6 +56,10 @@ for required in (
 ):
     assert required in publisher, required
 assert publisher.index("domain_refresh_publication_drift_gate.py") < publisher.index("git merge --no-ff --no-edit")
+assert publisher.index("git merge --no-ff --no-edit") < publisher.index("python3 scripts/generate_release_hashes.py",publisher.index("git merge --no-ff --no-edit"))
+assert publisher.index("python3 scripts/generate_release_hashes.py",publisher.index("git merge --no-ff --no-edit")) < publisher.index("python3 scripts/validate_release_integrity.py",publisher.index("git merge --no-ff --no-edit"))
+assert "git add FILE-HASHES.json PATCH-SHA256SUMS.txt SHA256SUMS.json" in publisher
+assert "chore(release): reseal accepted evidence-only merge" in publisher
 assert publisher.index("git merge --no-ff --no-edit") < publisher.index("git push origin HEAD:main")
 assert "git push --force" not in publisher
 assert 'ref: ${{ github.event_name == \'workflow_dispatch\' && inputs.expected_sha || github.sha }}' in workflow

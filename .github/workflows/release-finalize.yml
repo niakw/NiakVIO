@@ -203,8 +203,16 @@ jobs:
                 exit 1
               }
               git merge --no-ff --no-edit origin/main
+              # Release hash inventories include MEMORY.md and some canonical
+              # evidence. An allowlisted merge must be resealed, not validated
+              # against pre-merge hashes, and must NEVER authorize provider edits.
+              python3 scripts/generate_release_hashes.py
+              git add FILE-HASHES.json PATCH-SHA256SUMS.txt SHA256SUMS.json
+              if ! git diff --cached --quiet; then
+                git commit -m 'chore(release): reseal accepted evidence-only merge'
+              fi
               python3 scripts/validate_release_integrity.py
-              echo "FIELD_RELEASE_EVIDENCE_ONLY_MAIN_MERGE base=$BASE_SHA current=$CURRENT_SHA"
+              echo "FIELD_RELEASE_EVIDENCE_ONLY_MAIN_MERGE base=$BASE_SHA current=$CURRENT_SHA resealed=true"
             fi
             if git push origin HEAD:main; then
               FINAL_SHA="$(git rev-parse HEAD)"
