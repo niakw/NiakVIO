@@ -9,6 +9,69 @@ const ASSET_EXT = /\.(?:woff2?|ttf|otf|eot|css|js|mjs|map|png|jpe?g|gif|svg|ico|
 const REJECT_HOSTS = /(?:^|\.)(?:twitter\.com|x\.com|twimg\.com|google\.com|googleusercontent\.com|gitlab\.com|github\.com|facebook\.com|instagram\.com)$/i;
 const DEMO_PATH = /(?:chrome\/static\/videos|sticky\/videos|static\/money|grok-|radar_promo|big[_-]?buck[_-]?bunny|sample[-_]?videos)/i;
 
+// The canonical provider_worker probes both request forms when a generated
+// wrapper returns an empty result without contacting an upstream provider.
+// The TV live harness must exercise the same boundary, rather than silently
+// counting a positional-only empty result as missing catalogue coverage.
+let upstreamRequestCount = 0;
+function installProviderFetchObservation() {
+  const original = globalThis.fetch;
+  if (typeof original !== 'function') return;
+  define('fetch', async (...args) => {
+    try {
+      const candidate = args[0];
+      const raw = typeof candidate === 'string' ? candidate : candidate?.url;
+      const host = new URL(String(raw || '')).hostname.toLowerCase();
+      if (host && !/(?:^|\\.)(?:themoviedb\\.org|tmdb\\.org|github\\.com|githubusercontent\\.com)$/.test(host)) {
+        upstreamRequestCount += 1;
+      }
+    } catch (_) {}
+    return original(...args);
+  });
+}
+function inferInvocationMode(getStreams) {
+  let source = '';
+  try { source = Function.prototype.toString.call(getStreams); } catch (_) {}
+  const compact = source.replace(/\\s+/g, ' ');
+  if (/^(?:async\\s*)?(?:function\\s*[^()]*)?\\(\\s*\\{/.test(compact)
+      || /^(?:async\\s*)?\\(?\\s*\\{[^}]*\\}\\s*\\)?\\s*=>/.test(compact)) return 'object';
+  const first = compact.match(/^[^(]*\\(\\s*([A-Za-z_$][A-Za-z0-9_$]*)/)?.[1]
+    || compact.match(/^\\s*(?:async\\s*)?([A-Za-z_$][A-Za-z0-9_$]*)\\s*=>/)?.[1];
+  if (first && new RegExp('\\\\b' + first + '\\\\s*\\\\.\\\\s*(?:tmdbId|id|mediaType|type|season|episode|title)\\\\b').test(compact)) return 'object';
+  return Number(getStreams.length || 0) >= 2 ? 'positional' : 'positional';
+}
+async function invokeLikeProviderWorker(provider, fixture, settings) {
+  const fn = provider.getStreams;
+  const positional = [String(fixture.tmdbId || fixture.id || ''), String(fixture.mediaType || fixture.type || 'movie'), fixture.season ?? null, fixture.episode ?? null];
+  const data = { ...fixture, id: positional[0], tmdbId: positional[0],
+    mediaType: positional[1], type: positional[1], category: fixture.category || positional[1],
+    season: positional[2], episode: positional[3], settings };
+  const mode = inferInvocationMode(fn);
+  const attempts = mode === 'object'
+    ? [{ name: 'object', run: () => fn.call(provider, data) },
+       { name: 'positional_with_settings', run: () => fn.call(provider, ...positional, settings) }]
+    : [{ name: 'positional_with_settings', run: () => fn.call(provider, ...positional, settings) },
+       { name: 'object', run: () => fn.call(provider, data) }];
+  const diagnostics = [];
+  let lastEmpty = [];
+  for (const attempt of attempts) {
+    const before = upstreamRequestCount;
+    try {
+      const value = await attempt.run();
+      const rows = rowsFrom(value);
+      const reachedUpstream = upstreamRequestCount > before;
+      diagnostics.push({ name: attempt.name, count: rows.length, reached_upstream: reachedUpstream });
+      if (rows.length || reachedUpstream) return { value, diagnostics };
+      lastEmpty = value;
+    } catch (error) {
+      const reachedUpstream = upstreamRequestCount > before;
+      diagnostics.push({ name: attempt.name, error: String(error?.message || error).slice(0, 180), reached_upstream: reachedUpstream });
+      if (reachedUpstream) throw error;
+    }
+  }
+  return { value: lastEmpty, diagnostics };
+}
+
 class MemoryStorage {
   constructor(seed = {}) { this.map = new Map(Object.entries(seed).map(([k, v]) => [String(k), String(v)])); }
   get length() { return this.map.size; }
@@ -245,6 +308,7 @@ async function main() {
   const fixture = JSON.parse(fixtureArg);
   const settings = JSON.parse(settingsArg);
   installRuntime(settings);
+  installProviderFetchObservation();
   const providerPath = path.resolve(providerArg);
   delete require.cache[providerPath];
   const loaded = require(providerPath);
@@ -253,8 +317,11 @@ async function main() {
   const started = Date.now();
   let raw;
   let runtimeError = null;
+  let invocationDiagnostics = [];
   try {
-    raw = await provider.getStreams(String(fixture.tmdbId || fixture.id || ''), String(fixture.mediaType || fixture.type || 'movie'), fixture.season ?? null, fixture.episode ?? null);
+    const result = await invokeLikeProviderWorker(provider, fixture, settings);
+    raw = result.value;
+    invocationDiagnostics = result.diagnostics;
   } catch (error) {
     runtimeError = `${error?.name || 'Error'}: ${error?.message || error}`;
     raw = [];
@@ -296,6 +363,7 @@ async function main() {
     ok: !runtimeError && strictComplete,
     duration_ms: Date.now() - started,
     runtime_error: runtimeError,
+    invocation_diagnostics: invocationDiagnostics,
     raw_stream_count: rows.length,
     playable_stream_count: playable.length,
     content_verified_count: identityVerified.length,
