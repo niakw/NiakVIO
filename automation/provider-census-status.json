@@ -1,7 +1,7 @@
 {
   "schemaVersion": 3,
-  "runId": "42903285761",
-  "triggerSha": "fb84b1264ea61385f0acb2af8e2c877fce713cab",
+  "runId": "42910722573",
+  "triggerSha": "0651a5488b7626712d67808b72a4d81179daad6c",
   "providers": [
     {
       "provider": "4khdhub",
@@ -446,11 +446,11 @@
         "1 live routes / anime, movie, tv"
       ],
       "latestLaneVerdicts": [
-        "anime=timeout",
-        "movie=timeout",
-        "tv=timeout"
+        "anime=no_streams/provider_network_http_error",
+        "movie=no_streams/provider_network_http_error",
+        "tv=no_streams/provider_network_http_error"
       ],
-      "dominantIssue": "timeout×3",
+      "dominantIssue": "provider_network_http_error×3",
       "searchProgress": [
         "anime: 8 works tested / 0 retained misses",
         "movie: 8 works tested / 0 retained misses",
@@ -1021,9 +1021,9 @@
     },
     {
       "provider": "voiranime-homes",
-      "status": "REGRESSION PROVIDER",
+      "status": "REGRESSION PROVIDER JS",
       "underlyingStatus": "",
-      "color": "🔴",
+      "color": "🟣",
       "declaredLanes": [
         "anime"
       ],
@@ -1036,14 +1036,14 @@
         "1 live routes / anime"
       ],
       "latestLaneVerdicts": [
-        "anime=no_streams/provider_network_http_error"
+        "anime=returned_unplayable/provider_returned_streams"
       ],
-      "dominantIssue": "provider_network_http_error",
+      "dominantIssue": "provider_returned_streams",
       "searchProgress": [
-        "anime: 8 works tested / 0 retained misses"
+        "anime: 1 works tested / 0 retained misses"
       ],
       "evidenceDepth": [
-        "anime=none"
+        "anime=lookup_only"
       ],
       "harnessTransportClass": "not-applicable",
       "harnessTransportEvidence": [],
@@ -1056,7 +1056,7 @@
         "existing_positive_route_prior"
       ],
       "authorityKnown": true,
-      "action": "re-run retained proof + verify upstream/provider state",
+      "action": "A/B against retained proof; restore JS/runtime",
       "brainCheckRequired": true,
       "statusRepairEligible": true,
       "repairEligible": true,
@@ -2088,7 +2088,8 @@
     "FULL OK": 14,
     "NO PROOF": 1,
     "PARTIAL OK": 1,
-    "REGRESSION PROVIDER": 6,
+    "REGRESSION PROVIDER": 5,
+    "REGRESSION PROVIDER JS": 1,
     "ROUTE PROVEN": 11
   },
   "symptomaticProviders": [
@@ -2184,8 +2185,8 @@
   "harnessQueue": [],
   "targetedTransportBlockedQueue": [],
   "clientTransportGapQueue": [],
-  "harnessEvidenceRunId": "42903285761-sharded-waf",
-  "harnessEvidenceSha": "fb84b1264ea61385f0acb2af8e2c877fce713cab",
+  "harnessEvidenceRunId": "42910722573-sharded-waf",
+  "harnessEvidenceSha": "0651a5488b7626712d67808b72a4d81179daad6c",
   "authorityRefreshedProviders": [],
   "harnessTransportUpdatedProviders": [],
   "networkDifferentialUpdatedProviders": [],
@@ -2597,45 +2598,5 @@
       ],
       "replayedProviders": []
     }
-  },
-  "lastRepairAttempt": {
-    "runId": "42904390765",
-    "sourceCensusRunId": "42903285761",
-    "selectedProviders": [
-      "4khdhub",
-      "allanime",
-      "animesalt",
-      "animesultra",
-      "animevost-fr",
-      "flemmix",
-      "kehflix",
-      "mallumv",
-      "moviebox",
-      "moviesmod",
-      "vidfast",
-      "vostfree",
-      "yflix"
-    ],
-    "candidateProviders": [],
-    "validatedProviders": [],
-    "acceptedRepairCount": 0,
-    "deferredToLearningSlotProviders": [
-      "4khdhub",
-      "allanime",
-      "animesalt",
-      "animesultra",
-      "animevost-fr",
-      "flemmix",
-      "kehflix",
-      "mallumv",
-      "moviebox",
-      "moviesmod",
-      "vidfast",
-      "vostfree",
-      "yflix"
-    ],
-    "noProgressReason": "time_budget_exhausted_during_batch",
-    "timeBudgetExhausted": true,
-    "publicationAllowed": false
   }
 }
