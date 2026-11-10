@@ -1169,6 +1169,13 @@ def sanitized_brain_attempts(report: dict[str, Any]) -> list[dict[str, Any]]:
                 # required_category_playable_proof, exploration_no_causal...).
                 reason = str(raw.get("reason") or "").split(":", 1)[0].strip().casefold()
                 reason = reason if re.fullmatch(r"[a-z][a-z0-9_\-]{0,79}", reason) else ""
+                # Full SHA-256 values identify the exact bytes generated
+                # and run in the Deep sandbox; truncated/invalid tokens never
+                # become evidence. Only cryptographic digests, no source bytes,
+                # network URLs, response values or unreviewed candidate edits.
+                def bounded_sha(value: object) -> str:
+                    token = str(value or "").strip().casefold()
+                    return token if re.fullmatch(r"[a-f0-9]{64}", token) else ""
                 rows.append({
                     "provider": provider,
                     "round": round_number,
@@ -1176,6 +1183,8 @@ def sanitized_brain_attempts(report: dict[str, Any]) -> list[dict[str, Any]]:
                     "profile": profile,
                     "status": status,
                     "reasonCode": reason,
+                    "parentSha256": bounded_sha(raw.get("parent_sha256")),
+                    "repairSha256": bounded_sha(raw.get("repair_sha256") or raw.get("sha256")),
                 })
                 if len(rows) >= 120:
                     return rows

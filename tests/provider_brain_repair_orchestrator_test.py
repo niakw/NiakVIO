@@ -447,9 +447,10 @@ diagnostics=mod.sanitized_brain_attempts({
     "rounds":[
         {"round":1,"attempts":[
             {"parent_key":"published:moviesmod","profile":"route_transition_graph_v13",
-             "status":"generated","reason":""},
+             "status":"generated","reason":"","parent_sha256":"a"*64,"repair_sha256":"b"*64},
             {"parent_key":"published:animekai","profile":"html_class_token_exact_v1",
-             "status":"not_generated","reason":"profile_unavailable:https://secret.example/path?token=secret"},
+             "status":"not_generated","reason":"profile_unavailable:https://secret.example/path?token=secret",
+             "repair_sha256":"malformed_url_here"},
         ],"rejected":[
             {"parent_key":"published:moviesmod","profile":"route_transition_graph_v13",
              "status":"no_streams","reason":"required_category_playable_proof:movie,tv"},
@@ -463,8 +464,11 @@ assert len(diagnostics)==4,diagnostics
 assert diagnostics[0]=={
     "provider":"moviesmod","round":1,"phase":"attempts",
     "profile":"route_transition_graph_v13","status":"generated","reasonCode":"",
+    "parentSha256":"a"*64,"repairSha256":"b"*64,
 },diagnostics
 assert diagnostics[1]["reasonCode"]=="profile_unavailable",diagnostics
+assert diagnostics[1]["repairSha256"]=="",diagnostics
+assert diagnostics[2]["repairSha256"]=="",diagnostics
 assert diagnostics[2]["reasonCode"]=="required_category_playable_proof",diagnostics
 assert diagnostics[3]["reasonCode"]=="sandbox_diagnostic_progress",diagnostics
 assert "secret" not in json.dumps(diagnostics)
