@@ -35,12 +35,16 @@ rows = [
          {"url": "https://subs.example/generic.vtt", "seasonNumber": 2, "episodeNumber": 1},
      ]},
     {"name": "Spartacus", "seasonNumber": 0, "episodeNumber": 1, "url": "https://cdn.example/correct-structured.m3u8"},
+    {"name": "Spartacus S00E01", "seasonNumber": 0, "episodeNumber": 1, "url": "https://cdn.example/Spartacus.S03E01.m3u8"},
+    {"name": "Spartacus S00E01", "seasonNumber": 0, "episodeNumber": 1, "url": "https://cdn.example/media.m3u8?season=3&episode=1"},
+    {"name": "Spartacus S00E01", "seasonNumber": 0, "episodeNumber": 1, "sourceUrl": "https://reader.example/watch/S03E01", "url": "https://cdn.example/opaque-labelled.mp4"},
+    {"name": "Spartacus S01E01", "seasonNumber": 1, "episodeNumber": 1, "url": "https://cdn.example/Spartacus.S02E01.m3u8"},
     {"title": "Spartacus S00E01", "url": "https://cdn.example/opaque-season3-mislabeled.m3u8"},
     {"name": "Server 1", "url": "https://cdn.example/opaque-unverified.m3u8"},
     {"name": "Server 2", "sourceUrl": "https://reader.example/watch?season=0&episode=1", "url": "https://cdn.example/correct-source-coordinate.m3u8"},
 ]
 compiled = core.apply(source.replace("ROWS", json.dumps(rows)), context={"provider_id": "example"})
-assert 'cross-client-player-page-identity-v19-s00-source-proof' in compiled
+assert 'cross-client-player-page-identity-v20-url-path-consistency' in compiled
 assert 'function exactSpecialEpisodeEvidence(row,q)' in compiled
 
 runner = compiled + """
@@ -62,6 +66,15 @@ runner = compiled + """
   ],'S00 special requires explicit caption season/episode identity; opaque or S03 must be rejected');
   assert(!rows.some(r=>r.url==='https://cdn.example/opaque-season3-mislabeled.m3u8'),
     'caller-derived S00 title must not authenticate an opaque S03 URL');
+  for(const forbidden of [
+    'https://cdn.example/Spartacus.S03E01.m3u8',
+    'https://cdn.example/media.m3u8?season=3&episode=1',
+    'https://cdn.example/opaque-labelled.mp4',
+    'https://cdn.example/Spartacus.S02E01.m3u8'
+  ])assert(!rows.some(r=>r.url===forbidden),
+      'provider-declared S00 metadata must not override an explicit contrary media URL: '+forbidden);
+  assert(!s1.some(r=>r.url==='https://cdn.example/Spartacus.S02E01.m3u8'),
+    'S01 must also reject a file explicitly marked S02E01');
   const pos=await module.exports.getStreams(q.tmdbId,q.mediaType,0,1);
   assert.deepEqual(pos.map(r=>r.url), rows.map(r=>r.url));
 })().catch(e=>{console.error(e);process.exit(1)});
@@ -88,7 +101,7 @@ assert.deepEqual(s1,[{season:1,episodes:['normal']}]);
 assert.deepEqual(_spv251SeasonEpisodeScopedValue(all,'tv',3,1,0),[]);
 """
 assert "if (!chosen && wantedSeason === 0) continue;" in base, "missing S00-safe catalogue selection"
-assert "cross-client-player-page-identity-v19-s00-source-proof" in (ROOT / "scripts/provider_patches/global_stream_identity_v1.py").read_text(encoding="utf-8")
+assert "cross-client-player-page-identity-v20-url-path-consistency" in (ROOT / "scripts/provider_patches/global_stream_identity_v1.py").read_text(encoding="utf-8")
 
 with tempfile.TemporaryDirectory() as td:
     script = Path(td) / "specials.cjs"
@@ -121,22 +134,23 @@ for row in published:
     ):
         assert required in published_js, (filename, required)
     # Source gate recognizes historical v17/v18 and reports rollout debt;
-    # release-only check requires v19 on every published bundle.
+    # release-only check requires v20 on every published bundle.
     assert any(
         revision in published_js for revision in (
             "cross-client-player-page-identity-v17-s00-identity",
             "cross-client-player-page-identity-v18-s00-evidence",
             "cross-client-player-page-identity-v19-s00-source-proof",
+            "cross-client-player-page-identity-v20-url-path-consistency",
         )
     ), (filename, "identity Core revision missing")
 
-v19_published = sum(
-    'cross-client-player-page-identity-v19-s00-source-proof'
+v20_published = sum(
+    'cross-client-player-page-identity-v20-url-path-consistency'
     in (ROOT / str(row['filename'])).read_text(encoding='utf-8')
     for row in published
 )
 print(
     f"SPECIAL_SEASON_ZERO_IDENTITY_SOURCE_OK published={len(published)} "
-    f"v19_published={v19_published} pending_rematerialization={len(published)-v19_published} "
-    "source_v19_source_backed_s00_only; no live terminal playback inferred"
+    f"v20_published={v20_published} pending_rematerialization={len(published)-v20_published} "
+    "source_v20_media_url_consistency_only; no live terminal playback inferred"
 )

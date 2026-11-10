@@ -40,7 +40,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **kwargs: Any) -> st
         "providerId": str(context.get("provider_id") or "").strip().casefold(),
         "tmdbRuntimeKeyRequired": True,
         "tmdbTimeoutMs": max(350, min(int(cfg.get("tmdb_timeout_ms", 1200)), 2500)),
-        "implementationRevision": "cross-client-player-page-identity-v19-s00-source-proof",
+        "implementationRevision": "cross-client-player-page-identity-v20-url-path-consistency",
         "catalogueYearPolicy": "movie-only",
         "playerPageIdentity": True,
         "playerIdentityProbeLimit": 2,
@@ -210,7 +210,28 @@ function keepEpisodeBoundSubtitles(row,q,m){
   });
   return out;
 }
-async function mismatch(row,q,m,state){if(!exactSpecialEpisodeEvidence(row,q))return true;if(structuredEpisodeMismatch(row,q))return true;var ids=explicitIds(row);if(ids.tmdbId&&q.tmdbId&&ids.tmdbId!==q.tmdbId)return true;if(ids.imdbId&&(q.imdbId||m.imdbId)&&ids.imdbId!==(q.imdbId||m.imdbId))return true;var expected=expectedTokens(m),cands=explicitCandidates(row);for(var i=0;i<cands.length;i++)if(await candidateContradicts(cands[i],q,m,expected))return true;var pt=await playerPageTitle(row,state);if(pt&&await candidateContradicts({text:pt,kind:"player-page"},q,m,expected))return true;return false}
+function mediaUrlEpisodeContradicts(row,q){
+  // A catalogue may label a row S00E01 while its terminal media URL is S03E01.
+  // Explicit source path/query evidence beats provider metadata and display labels.
+  if(!episodic(q)||q.episode<=0||!row||typeof row!=="object")return false;
+  var sources=[row.url,row.streamUrl,row.videoUrl,row.fileUrl,row.sourceUrl,row.playerUrl,row.embedUrl,row.pageUrl];
+  for(var i=0;i<sources.length;i++){
+    var raw=s(sources[i]);if(!raw)continue;
+    var url;
+    try{url=new URL(raw)}catch(_e){continue}
+    if(!/^https?:$/i.test(url.protocol))continue;
+    var path=url.pathname||"";
+    try{path=decodeURIComponent(path)}catch(_e){}
+    var marker=episode(path);
+    if(marker&&((q.hasSeason&&Number(marker[1])!==q.season)||Number(marker[2])!==q.episode))return true;
+    var params=url.searchParams;
+    var us=observedEpisodeNumber({season:params.get("season"),season_number:params.get("season_number")},["season","season_number"]);
+    var ue=observedEpisodeNumber({episode:params.get("episode"),episode_number:params.get("episode_number")},["episode","episode_number"]);
+    if((q.hasSeason&&us!==null&&us!==q.season)||(ue!==null&&ue!==q.episode))return true;
+  }
+  return false;
+}
+async function mismatch(row,q,m,state){if(!exactSpecialEpisodeEvidence(row,q))return true;if(structuredEpisodeMismatch(row,q))return true;if(mediaUrlEpisodeContradicts(row,q))return true;var ids=explicitIds(row);if(ids.tmdbId&&q.tmdbId&&ids.tmdbId!==q.tmdbId)return true;if(ids.imdbId&&(q.imdbId||m.imdbId)&&ids.imdbId!==(q.imdbId||m.imdbId))return true;var expected=expectedTokens(m),cands=explicitCandidates(row);for(var i=0;i<cands.length;i++)if(await candidateContradicts(cands[i],q,m,expected))return true;var pt=await playerPageTitle(row,state);if(pt&&await candidateContradicts({text:pt,kind:"player-page"},q,m,expected))return true;return false}
 function install(o,k){if(!o||typeof o[k]!=="function"||o[k].__nuvioGlobalStreamIdentityV1)return false;var native=o[k];var wrap=async function(){var q=req(arguments),v=await native.apply(this,arguments),x=slot(v);if(!x||!x.list.length)return v;var m=await tmdb(q),kept=[],state={playerProbes:0,playerCache:{}};for(var i=0;i<x.list.length;i++)if(!(await mismatch(x.list[i],q,m,state)))kept.push(keepEpisodeBoundSubtitles(x.list[i],q,m));return rebuild(v,x,kept)};wrap.__nuvioGlobalStreamIdentityV1=true;o[k]=wrap;return true}
 var ok=false;try{if(typeof module!=="undefined"&&module.exports){ok=install(module.exports,"getStreams")||install(module.exports,"streams")}}catch(_e){}try{if(g&&typeof g.getStreams==="function"){if(ok&&typeof module!=="undefined"&&module.exports)g.getStreams=module.exports.getStreams;else install(g,"getStreams")}}catch(_e){}
 })(typeof globalThis!=="undefined"?globalThis:this,CONFIG_PLACEHOLDER);

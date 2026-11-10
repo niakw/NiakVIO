@@ -520,7 +520,7 @@ l'épisode. Le Core doit donc refuser de publier ce résultat au client comme
 `S00E01` sans preuve explicite des coordonnées demandées.
 
 Le Bloc commun `scripts/provider_patches/global_stream_identity_v1.py`,
-révision génératrice `cross-client-player-page-identity-v19-s00-source-proof`,
+révision génératrice `cross-client-player-page-identity-v20-url-path-consistency`,
 exige soit une paire saison/épisode structurée, soit un marqueur `S00E01`
 explicite dans les champs de la ligne, soit des coordonnées `season=0&episode=1`
 dans une URL source/lecteur corrélée. La vérification de contradiction des
@@ -658,3 +658,16 @@ le profil `route_transition_graph_v50` a été exécuté, mais sa préférence
 **réelle** et exécute le vrai planificateur Node ; le Workflow Gate confirme le
 contrat au SHA exact. Ni cette vérification ni la progression sandbox vers le
 lecteur ne prouvent le média terminal, l'identité du contenu ou une publication.
+
+### 10 novembre 2026 — Cohérence URL média/épisode (Core v20)
+
+Une réponse peut déclarer `seasonNumber=0, episodeNumber=1`, mais contenir
+une URL média réellement marquée `S03E01`. La métadonnée du catalogue n'est
+pas une preuve supérieure au chemin du fichier ou du player. Le Core partagé
+v20 refuse une contradiction explicite dans les chemins SxxEyy ou les paramètres
+`season/episode` des URL de stream/source/player, également pour les
+saisons ordinaires. Les URL opaques restent sans preuve positive du contenu.
+La porte de publication exige cette fonction dans tous les bundles v20, et le
+test Spartacus couvre les faux S00 structurés avec des URL S03 ainsi qu'un
+faux S01 avec URL S02. Le décodage média réel et le sous-titrage synchronisé
+restent à prouver après rematérialisation.

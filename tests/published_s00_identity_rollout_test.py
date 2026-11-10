@@ -19,10 +19,11 @@ source = SOURCE.read_text(encoding="utf-8")
 match = re.search(r'"implementationRevision":\s*"([^"]+)"', source)
 assert match, "Core identity implementation revision missing"
 revision = match.group(1)
-assert revision == "cross-client-player-page-identity-v19-s00-source-proof", revision
+assert revision == "cross-client-player-page-identity-v20-url-path-consistency", revision
 assert "function exactSpecialEpisodeEvidence(row,q)" in source
 assert "function keepEpisodeBoundSubtitles(row,q,m)" in source
 assert "function subtitleContradictsEpisode(sub,q,m)" in source
+assert "function mediaUrlEpisodeContradicts(row,q)" in source
 assert "if(!exactSpecialEpisodeEvidence(row,q))return true" in source
 
 manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
@@ -48,6 +49,7 @@ for entry in rows:
             or "function exactSpecialEpisodeEvidence(row,q)" not in text
             or "function keepEpisodeBoundSubtitles(row,q,m)" not in text
             or "function subtitleContradictsEpisode(sub,q,m)" not in text
+            or "function mediaUrlEpisodeContradicts(row,q)" not in text
             or text.count("STARTFIX:CORE.STREAM_IDENTITY.V1") != 1
             or text.count("CLOSEFIX:CORE.STREAM_IDENTITY.V1") != 1):
         missing.append(provider_id or filename)
