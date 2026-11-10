@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import copy
+import hashlib
 import json
 import math
 import os
@@ -1297,7 +1298,46 @@ def replan_observation(
     return PLANS.get(key) or {}
 
 
-def update_plans(registry_path: Path, report: dict[str, Any], mode: str) -> dict[str, dict[str, Any]]:
+def _current_source_structural_repair_evidence(
+    stage: Path, candidate: dict[str, Any], result: dict[str, Any],
+) -> dict[str, Any]:
+    """Read current sandbox bytes to support a bounded parser repair hypothesis.
+
+    A source-match signal is diagnostic only. The JS planner must authorize
+    the specific profile and Deep must validate the actual result.
+    """
+    if str(result.get("status") or "").casefold() not in {"no_streams", "reachable", "degraded"}:
+        return {}
+    rel = str(candidate.get("local_path") or "").strip()
+    if not rel.startswith("providers/") or "\\" in rel or "\x00" in rel:
+        return {}
+    if any(part in {"", ".", ".."} for part in Path(rel).parts):
+        return {}
+    root = Path(stage).resolve()
+    provider_dir = (root / "providers").resolve()
+    path = (root / rel).resolve()
+    if not path.is_relative_to(provider_dir) or not path.is_file():
+        return {}
+    try:
+        source_bytes = path.read_bytes()
+        if len(source_bytes) > 2_000_000:
+            return {}
+        source_text = source_bytes.decode("utf-8")
+        from adaptive_runtime.html_class_token_exact_v1 import apply as apply_html_fix
+        if apply_html_fix(source_text) == source_text:
+            return {}
+    except (ImportError, OSError, UnicodeError, ValueError):
+        return {}
+    return {
+        "profile": "html_class_token_exact_v1",
+        "source": "current_candidate_bytes",
+        "sourceSha256": hashlib.sha256(source_bytes).hexdigest(),
+        "diagnosticOnly": True,
+        "proofAuthority": False,
+    }
+
+
+def update_plans(registry_path: Path, report: dict[str, Any], mode: str, *, stage: Path | None = None) -> dict[str, dict[str, Any]]:
     registry = _load_json(registry_path, {})
     candidates = {
         str(row.get("key")): row
@@ -1319,9 +1359,14 @@ def update_plans(registry_path: Path, report: dict[str, Any], mode: str) -> dict
         # after Deep has proven that the child made safe diagnostic progress.
         if parent_key and plan_key in PLANS:
             continue
+        current_candidate = _planner_candidate(candidate)
+        if stage is not None:
+            structural = _current_source_structural_repair_evidence(stage, candidate, result)
+            if structural:
+                current_candidate["structuralRepairEvidence"] = structural
         items.append({
             "key": plan_key,
-            "candidate": _planner_candidate(candidate),
+            "candidate": current_candidate,
             "result": _planner_result(result),
             "state": _public_state(candidate, plan_key),
         })
@@ -1331,7 +1376,7 @@ def update_plans(registry_path: Path, report: dict[str, Any], mode: str) -> dict
 def wrap_run_health(base_run_health: Callable[..., dict[str, Any]], mode: str) -> Callable[..., dict[str, Any]]:
     def _run_health(*, stage: Path, registry_path: Path, output_dir: Path, mode: str = mode, health_check: Path):
         report = base_run_health(stage=stage, registry_path=registry_path, output_dir=output_dir, mode=mode, health_check=health_check)
-        update_plans(registry_path, report, mode)
+        update_plans(registry_path, report, mode, stage=stage)
         return report
     return _run_health
 
