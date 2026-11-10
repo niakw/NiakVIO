@@ -30,6 +30,26 @@ FIXTURE_FILTER = {
 }
 
 FIXTURES: dict[str, dict[str, Any]] = {
+    # Live user-reported regression: do not silently turn TV season zero into
+    # another Spartacus season. TMDB TV 46296 (TVDB 129261 is NOT a TMDB ID).
+    "spartacus_s00e01": {
+        "label": "Spartacus S00E01 (Gods of the Arena)",
+        "tmdbId": "46296",
+        "mediaType": "tv",
+        "season": 0,
+        "episode": 1,
+        "title": "Spartacus",
+        "year": 2010,
+    },
+    "spartacus_s03e01": {
+        "label": "Spartacus S03E01 (wrong-season comparator)",
+        "tmdbId": "46296",
+        "mediaType": "tv",
+        "season": 3,
+        "episode": 1,
+        "title": "Spartacus",
+        "year": 2010,
+    },
     "revenant_s01e01": {
         "label": "Revenant S01E01",
         "tmdbId": "210702",
