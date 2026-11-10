@@ -1,3 +1,9 @@
+## 2026-11-10 — CodeQL #2531 runtime-independent test allowlist correction
+
+- Exact NiakVIO run `42857880351` on `a33a6ee5b2d2`: security final gate FAILED on precisely one release-tree high alert, `#2531 js/incomplete-url-substring-sanitization`, `tests/response_structure_test.cjs` (all 41 published providers scanned clean). Repeated `SEC - Retire stale CodeQL category` dismiss attempts returned HTTP 422 and did not resolve the actual alert.
+- Source inspection showed the test's reader stub rejected **one specific CDN origin** and accepted all others (`if (new URL(address).origin === blocked) throw; return ref`). Replaced this negative-list pattern with explicit equality to the expected trusted fixture origin; cross-origin data-src still throws, same-origin src still yields `r1`. This fixes the test code rather than dismissing a security alert or weakening runtime checks. Provider code and Brain pipeline remain unmodified by this commit.
+- Require exact new SHA provider tests, CodeQL reanalysis and final security gate before labeling #2531 resolved; stale GitHub alert state can lag, not automatically security-clear.
+
 ## 2026-11-10 — Security Final Gate CodeQL matrix race fixed
 
 - On NiakVIO `20dea07f`, CodeQL `42854772396` successfully uploaded the JS legacy reconciler under **exact** historical key `.github/workflows/codeql.yml:analyze` (runner logs `CODEQL_ACTION_ANALYSIS_KEY` confirm). But the push-triggered Final Gate `42854772815` checked alert #2531 **while ProviderBase/Python CodeQL jobs had not all finished**: the old gate accepted the *first exact-SHA analysis* as though all security configurations had finalized, and reported the still-open test-only high alert. It is not proof that all CodeQL categories finished.

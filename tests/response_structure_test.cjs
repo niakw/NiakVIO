@@ -212,9 +212,12 @@ assert.ok(!JSON.stringify(thrown).includes('PRIVATE'));
 const lastReference = responseStructure(hostileMarkup, { addressRef: () => 'r512' }).player_markup;
 assert.deepEqual(lastReference.rows[0].address_refs, { src: ['r512'] });
 assert.equal(lastReference.truncated, false);
+// Simulate a strict trusted-origin reader: reject everything outside the exact
+// fixture origin. A negative match against one blocked host is not an allowlist.
+const trustedReaderOrigin = new URL(queryOptions.baseUrl).origin;
 const partial = responseStructure('<html><iframe src="/embed/PRIVATE" data-src="//cdn.private.test/embed/PRIVATE"></iframe></html>',
   { baseUrl: queryOptions.baseUrl, addressRef: address => {
-    if (new URL(address).origin === 'https://cdn.private.test') throw new Error('PRIVATE');
+    if (new URL(address).origin !== trustedReaderOrigin) throw new Error('PRIVATE');
     return 'r1';
   } }).player_markup;
 assert.deepEqual(partial.rows[0].address_refs, { src: ['r1'] });
