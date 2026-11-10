@@ -33,6 +33,7 @@ if str(SCRIPTS) not in sys.path:
     sys.path.insert(0, str(SCRIPTS))
 
 from repair_identity_gate import automatic_repair_identity_gate
+from repair_promotion_state import durable_accepted_event
 from compile_brain_accepted_program_v3 import apply_compiled, compile_program
 from brain_positive_program_memory import MEMORY_PATH as DEFAULT_POSITIVE_MEMORY, merge_records as merge_positive_program_records, positive_record
 from recover_brain_positive_program_memory import recover as recover_positive_program_memory
@@ -1102,7 +1103,7 @@ def accepted_rows(report: dict[str, Any]) -> list[dict[str, Any]]:
         if not isinstance(round_row, dict):
             continue
         for accepted in round_row.get("accepted") or []:
-            if not isinstance(accepted, dict):
+            if not durable_accepted_event(accepted):
                 continue
             parent = str(accepted.get("parent_key") or "")
             provider = cid(parent.split(":", 1)[-1].split("::", 1)[0])

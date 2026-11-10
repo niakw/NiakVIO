@@ -19,6 +19,7 @@ if str(SCRIPTS) not in sys.path:
     sys.path.insert(0, str(SCRIPTS))
 
 from brain_negative_memory_retention import select_bounded_negative_memory
+from repair_promotion_state import durable_accepted_event, provisional_accepted_event
 from brain_positive_program_memory import learned_skills as positive_program_learned_skills
 from brain_layers.declarative_gap_strategy import synthesize_rows as synthesize_meta_gap_rows
 from import_external_brain_llm_guidance import source_drift as _guidance_source_drift
@@ -1626,6 +1627,17 @@ def annotate_and_learn(output_dir: Path, mode: str) -> dict[str, Any]:
                     continue
                 parent_key = str(accepted.get("parent_key") or "")
                 plan = event_plan(accepted, parent_key)
+                if provisional_accepted_event(accepted):
+                    # Keep this observed hypothesis for future Brain replay,
+                    # but never create a validated learned skill or success.
+                    profile = str(accepted.get("profile") or "")
+                    if memory_policy.get("enabled") is True and profile:
+                        mem = memory_entry(plan, profile)
+                        mem["progresses"] = int(mem.get("progresses") or 0) + 1
+                        mem["lastOutcome"] = "provisional_quick_candidate_unverified"
+                        mem["lastReason"] = _clip_text(accepted.get("reason"), 160)
+                        mem["executionObserved"] = True
+                    continue
                 provider_id = str(plan.get("providerId") or parent_key.split(":")[-1]).casefold()
                 profile = str(accepted.get("profile") or "")
                 if not profile:
@@ -1777,7 +1789,9 @@ def annotate_and_learn(output_dir: Path, mode: str) -> dict[str, Any]:
             str(accepted.get("parent_key") or "")
             for round_row in report.get("rounds") or []
             for accepted in round_row.get("accepted") or []
-            if isinstance(accepted, dict) and str(accepted.get("parent_key") or "")
+            if isinstance(accepted, dict)
+            and durable_accepted_event(accepted)
+            and str(accepted.get("parent_key") or "")
         }
         if memory_policy.get("enabled") is True:
             for round_row in report.get("rounds") or []:

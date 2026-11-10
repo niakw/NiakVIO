@@ -22,6 +22,7 @@ SCRIPTS = ROOT / "scripts"
 if str(SCRIPTS) not in sys.path:
     sys.path.insert(0, str(SCRIPTS))
 from brain_negative_memory_retention import select_bounded_negative_memory
+from repair_promotion_state import durable_accepted_event, provisional_accepted_event
 
 class BudgetExhausted(RuntimeError):
     """The bounded Learning work window ended; persist state and resume later."""
@@ -1889,7 +1890,12 @@ def main() -> int:
         "rounds": combined_rounds,
         "queue": queue,
         "accepted_repairs": sum(
-            len(row.get("accepted") or []) for row in combined_rounds if isinstance(row, dict)
+            sum(durable_accepted_event(event) for event in row.get("accepted") or [])
+            for row in combined_rounds if isinstance(row, dict)
+        ),
+        "provisional_candidates": sum(
+            sum(provisional_accepted_event(event) for event in row.get("accepted") or [])
+            for row in combined_rounds if isinstance(row, dict)
         ),
         "brain": {"plans": combined_plans},
     })
