@@ -26,6 +26,7 @@ from pathlib import Path
 from typing import Any
 
 from apply_provider_overrides import load_overrides
+from repair_identity_gate import automatic_repair_identity_gate
 from runtime_repair import (
     compare_exploration_progress,
     compare_results,
@@ -56,6 +57,14 @@ def load_json(path: Path) -> dict[str, Any]:
 def write_json(path: Path, value: Any) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(value, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+
+
+def durable_promotion_state(result: dict[str, Any], reason: str) -> tuple[bool, str]:
+    """Keep quick-only endpoint improvements as Learning evidence, never mutations."""
+    identity_ok, proof = automatic_repair_identity_gate(result)
+    if str(reason or "").startswith("provisional_quick_"):
+        return False, "quick_candidate_requires_strict_identity_replay"
+    return bool(identity_ok), proof
 
 
 def learning_deadline_reached() -> bool:
@@ -355,6 +364,7 @@ def main() -> int:
             ranked = sorted(variants, key=lambda pair: quality_vector(pair[1]), reverse=True)
             selected_candidate, selected_result = ranked[0]
             accepted, reason = compare_results(parent_result, selected_result)
+            durable_promotable, durable_proof = durable_promotion_state(selected_result, reason)
             exploration_ok, exploration_reason = (
                 compare_exploration_progress(parent_result, selected_result)
                 if exploration_chain_enabled and not accepted
@@ -373,6 +383,8 @@ def main() -> int:
                             "result_status": selected_result.get("status"),
                             "result_score": selected_result.get("score"),
                             "reason": reason,
+                            "durable_promotion_eligible": durable_promotable,
+                            "identity_strict_reason": durable_proof,
                             "streams_returned_before": stream_count(parent_result),
                             "streams_returned_after": stream_count(selected_result),
                             "streams_playable_before": playable_stream_count(parent_result),
@@ -383,14 +395,20 @@ def main() -> int:
                     )
                     history.append(repair_event)
                     updated_candidate["repair_history"] = history
-                    updated_candidate["provider_base_change_authorized"] = {
-                        "reason": "accepted_runtime_repair",
-                        "parent_sha256": str(repair_event.get("parent_sha256") or ""),
-                        "profile": str(repair_event.get("profile") or ""),
-                    }
-                    accepted_program = accepted_runtime_program(updated_candidate, selected_result)
-                    if accepted_program:
-                        updated_candidate["accepted_runtime_program"] = accepted_program
+                    if durable_promotable:
+                        updated_candidate["provider_base_change_authorized"] = {
+                            "reason": "strict_identity_validated_runtime_repair",
+                            "parent_sha256": str(repair_event.get("parent_sha256") or ""),
+                            "profile": str(repair_event.get("profile") or ""),
+                        }
+                        accepted_program = accepted_runtime_program(updated_candidate, selected_result)
+                        if accepted_program:
+                            updated_candidate["accepted_runtime_program"] = accepted_program
+                    else:
+                        # Retain the hypothesis and its health delta; do not
+                        # attach executable authority without decoded identity.
+                        updated_candidate.pop("provider_base_change_authorized", None)
+                        updated_candidate.pop("accepted_runtime_program", None)
                     updated_candidate["key"] = parent_key
                     current_candidates[parent_key] = updated_candidate
                     current_results[parent_key] = result_with_parent_key(
@@ -409,6 +427,8 @@ def main() -> int:
                             "parent_key": parent_key,
                             "profile": repair_event.get("profile"),
                             "brain_plan": copy.deepcopy(candidate_variant.get("brain_repair_plan") or {}),
+                            "durable_promotion_eligible": durable_promotable,
+                            "identity_strict_reason": durable_proof,
                             "accepted_program": copy.deepcopy(updated_candidate.get("accepted_runtime_program") or {}),
                             "sha256": updated_candidate.get("sha256"),
                             "status_before": parent_result.get("status"),

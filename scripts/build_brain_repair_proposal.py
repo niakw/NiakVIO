@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Materialize validated Brain sandbox repairs as a reproducible config proposal.
+"""Materialize strictly identity-verified Brain sandbox repairs as a config proposal.
 
 This script never publishes providers. It translates only repairs already accepted
 by the bounded sandbox retest into a proposed provider-overrides.json that can be
@@ -97,6 +97,19 @@ def accepted_profile(round_row: dict[str, Any], accepted: dict[str, Any]) -> str
     exact = [row for row in generated if accepted_sha and str(row.get("repair_sha256") or "") == accepted_sha]
     choice = exact[0] if exact else (generated[0] if len(generated) == 1 else None)
     return str(choice.get("profile") or "").strip() if isinstance(choice, dict) else ""
+
+
+def durable_candidate_proof(accepted: dict[str, Any]) -> tuple[bool, str]:
+    """A playable endpoint without positive episode identity is not a repair."""
+    if str(accepted.get("reason") or "").startswith("provisional_quick_"):
+        return False, "quick_candidate_not_terminal_verified"
+    if accepted.get("durable_promotion_eligible") is not True:
+        return False, "no_durable_promotion_proof"
+    if str(accepted.get("identity_strict_reason") or "") != "positive_content_identity_proof":
+        return False, "no_positive_episode_identity_proof"
+    if int(accepted.get("streams_playable_after") or 0) <= 0:
+        return False, "no_playable_media_proof"
+    return True, "strict_identity_verified"
 
 
 def adaptive_options(candidate: dict[str, Any]) -> dict[str, Any] | None:
@@ -285,6 +298,10 @@ def main() -> int:
                 skipped.append({"parentKey": parent_key, "reason": "missing_final_candidate"})
                 continue
             pid = provider_id(candidate)
+            eligible, proof_reason = durable_candidate_proof(accepted)
+            if not eligible:
+                skipped.append({"parentKey": parent_key, "providerId": pid or None, "reason": proof_reason})
+                continue
             profile = accepted_profile(round_row, accepted)
             if not pid or not profile:
                 skipped.append({"parentKey": parent_key, "providerId": pid or None, "reason": "missing_provider_or_profile"})

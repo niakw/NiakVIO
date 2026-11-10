@@ -347,7 +347,7 @@ def main() -> int:
             rc = loop.main()
         for line in buffer.getvalue().splitlines():
             if line.startswith("Deep repair loop complete:"):
-                print(line.replace("Deep repair loop complete:", "Core Quick repair loop complete:", 1))
+                print(line.replace("Deep repair loop complete:", "Core Quick exploratory loop complete:", 1).replace("validated repair(s) accepted", "provisional candidate(s) retained"))
             else:
                 print(line)
         _rewrite_mode_metadata(stage, output)

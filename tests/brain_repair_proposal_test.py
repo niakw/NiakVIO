@@ -46,6 +46,7 @@ def main() -> None:
             "provider_patches": {
                 "foo": {"profiles": []},
                 "bar": {"profiles": []},
+                "uhdmovies": {"profiles": []},
             },
             "patch_profiles": {"metadata_context_recovery": {"phase": "runtime"}},
             "runtime_repair": {
@@ -89,6 +90,11 @@ def main() -> None:
                     "canonical_id": "bar",
                     "local_patches": [],
                 },
+                {
+                    "key": "aio:uhdmovies",
+                    "canonical_id": "uhdmovies",
+                    "local_patches": [],
+                },
             ]
         })
         write(report, {
@@ -111,6 +117,9 @@ def main() -> None:
                         "status_after": "healthy",
                         "streams_playable_before": 0,
                         "streams_playable_after": 1,
+                        "reason": "strict_playable_stream_improvement",
+                        "durable_promotion_eligible": True,
+                        "identity_strict_reason": "positive_content_identity_proof",
                     },
                     {
                         "parent_key": "yoru:bar",
@@ -120,6 +129,20 @@ def main() -> None:
                         "status_after": "healthy",
                         "streams_playable_before": 0,
                         "streams_playable_after": 1,
+                        "reason": "strict_playable_stream_improvement",
+                        "durable_promotion_eligible": True,
+                        "identity_strict_reason": "positive_content_identity_proof",
+                    },
+                    {
+                        "parent_key": "aio:uhdmovies",
+                        "profile": "route_transition_graph_v6",
+                        "status_before": "no_streams",
+                        "status_after": "healthy",
+                        "streams_playable_before": 0,
+                        "streams_playable_after": 2,
+                        "reason": "provisional_quick_runtime_improvement",
+                        "durable_promotion_eligible": False,
+                        "identity_strict_reason": "identity_gate:no_positive_content_identity_proof",
                     },
                 ],
             }]
@@ -142,6 +165,10 @@ def main() -> None:
         assert adaptive in foo["patch_scripts"]
         assert foo["patch_script_options"][adaptive]["provider_name"] == "Foo"
         assert bar["profiles"] == ["metadata_context_recovery"]
+        assert proposed["provider_patches"]["uhdmovies"]["profiles"] == []
+        assert any(row.get("providerId") == "uhdmovies"
+                   and row.get("reason") == "quick_candidate_not_terminal_verified"
+                   for row in proposal["skipped"]), proposal["skipped"]
         assert proposal["baselineSource"] == "input-file"
         assert proposal["proposalCount"] == 3
         assert proposal["providerProposalCount"] == 2
