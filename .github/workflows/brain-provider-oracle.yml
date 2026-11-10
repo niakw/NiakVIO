@@ -11,6 +11,8 @@ on:
       - 'scripts/compile_brain_accepted_program_v3.py'
       - 'scripts/brain_positive_program_memory.py'
       - 'tests/brain_positive_program_episode_replay_test.py'
+      - 'scripts/select_provider_materialization_scope.py'
+      - 'tests/brain_family_renderer_drift_scope_test.py'
 
 permissions:
   contents: read
@@ -46,6 +48,8 @@ jobs:
         run: python tests/brain_oracles/animevost_fr/test_reverse_chain.py
       - name: Verify accepted episodic programme survives durable positive-memory replay
         run: python tests/brain_positive_program_episode_replay_test.py
+      - name: Verify shared Lego source drift invalidates only registered importing providers
+        run: python tests/brain_family_renderer_drift_scope_test.py
       - name: Replay Brain acceptance compiler with episode-aware plan and safety negatives
         run: |
           python tests/brain_oracles/animevost_fr/test_compiler_episode_bindings.py
