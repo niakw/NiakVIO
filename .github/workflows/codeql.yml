@@ -183,7 +183,12 @@ jobs:
                 - upstream-lkg/**
                 - audit/**
                 - automation/evidence/**
-            category: "/language:javascript-typescript"
+            # Match the EXACT historical CodeQL analysis_key for stale
+            # test-only #2531 so this maintained-source scan can close it
+            # automatically. A language suffix creates a different analysis
+            # origin and leaves the old alert open indefinitely.
+            # No queries, severity or maintained-source checks are suppressed.
+            category: ".github/workflows/codeql.yml:analyze"
 
           - check_name: "CodeQL · JS ProviderBase"
             language: javascript-typescript

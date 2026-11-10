@@ -68,6 +68,11 @@ if codeql.count('- provider-disabled/**') < 2:
     errors.append('codeql.yml: provider-disabled/** must be excluded from maintained Python and JS Core analysis')
 if 'startswith("provider-disabled/")' not in codeql:
     errors.append('codeql.yml: alert cleanup must be scoped to provider-disabled/** only')
+# A legacy high alert under an old analysis key cannot be automatically
+# closed by a new category, even with fixed source. Require its exact ID.
+if 'CodeQL · JS Legacy Category Reconciliation' not in codeql or \
+        'category: ".github/workflows/codeql.yml:analyze"' not in codeql:
+    errors.append('codeql.yml: old CodeQL category reconciliation must use the exact historical analysis key')
 if "Bulk dismissal requested by the repository owner" in codeql:
     errors.append('codeql.yml: blanket CodeQL alert dismissal is forbidden')
 
