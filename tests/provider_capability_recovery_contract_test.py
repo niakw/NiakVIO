@@ -3,8 +3,17 @@ from pathlib import Path
 import json
 ROOT=Path(__file__).resolve().parents[1]
 common=(ROOT/"scripts/provider_patches/anime_catalogue_runtime_common.py").read_text(encoding="utf-8")
-assert 'c.base+"/api/anime/search?q="+encodeURIComponent' in common
-assert 'if(!data)data=await json(c.base+"/api/animes/search?q="+encodeURIComponent' in common
+# Verify the current shared runtime search contract, not a retired
+# literal expression. Both provider-owned paths must be tried when a
+# 200/empty response yields no catalogue candidates.
+assert 'var paths=["/api/anime/search?q=","/api/animes/search?q="]' in common
+assert 'for(var p=0;p<paths.length&&!found;p++)' in common
+assert 'var data=await json(c.base+paths[p]+query)' in common
+assert 'if(!rows.length)rows=arr(data&&data.animes)' in common
+assert 'if(!rows.length)rows=arr(data&&data.data&&data.data.results)' in common
+# An exact episode cannot be manufactured from season[0] / episode[0].
+assert 'if(!season)return []' in common
+assert 'if(!ep)return []' in common
 over=json.loads((ROOT/"provider-overrides.json").read_text(encoding="utf-8"))
 uhd=over["provider_patches"]["uhdmovies"]
 assert uhd["published_types"]==["movie"], uhd.get("published_types")
