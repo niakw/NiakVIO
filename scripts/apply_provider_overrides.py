@@ -274,6 +274,43 @@ def _assert_v3_patch_ownership(
         )
 
 
+def _canonicalize_owned_html_class_tokens(source: str, managed_fix_id: str | None) -> str:
+    """Persist Brain's exact-CSS-class Lego inside its own PROVIDER.* block.
+
+    A sandbox-only html_class_token_exact_v1 candidate currently improves the
+    real 4KHDHub nested-card HTML, but a global prefix marker cannot survive
+    clean ProviderBase reconstruction. Restrict the reusable transformation
+    to the current provider-owned managed span, never Core, DATA or neighbors.
+    This is syntax canonicalization, NOT evidence of playable terminal media.
+    """
+    fix_id = str(managed_fix_id or "").strip().upper()
+    if not fix_id.startswith("PROVIDER."):
+        return source
+    span = owned_span(source, fix_id)
+    if span is None:
+        return source
+    start, end = span
+    original = source[start:end]
+    from adaptive_runtime.html_class_token_exact_v1 import (
+        MARKER as html_marker,
+        apply as normalize_class_matchers,
+    )
+    repaired = normalize_class_matchers(original)
+    if repaired == original:
+        return source
+    marker_prefix = html_marker + "\n"
+    if not repaired.startswith(marker_prefix):
+        raise ValueError(f"{fix_id}: unexpected HTML class-token repair envelope")
+    repaired = repaired[len(marker_prefix):]
+    begin = f"/* STARTFIX:{fix_id} */"
+    if repaired.count(begin) != 1:
+        raise ValueError(f"{fix_id}: ambiguous HTML class-token ownership")
+    repaired = repaired.replace(begin, begin + "\n" + html_marker, 1)
+    if repaired.count(html_marker) != 1:
+        raise ValueError(f"{fix_id}: duplicate HTML class-token marker")
+    return source[:start] + repaired + source[end:]
+
+
 def _apply_patch_script(
     text: str,
     provider_id: str,
@@ -301,6 +338,9 @@ def _apply_patch_script(
         raise TypeError(f"provider patch {patch_script} must return str")
 
     managed_fix_id = getattr(module, "MANAGED_FIX_ID", None)
+    # Canonical generic Lego transformation must be inside the actual owned
+    # block, both for initial materialization and for idempotent reapply.
+    result = _canonicalize_owned_html_class_tokens(result, managed_fix_id)
     managed_fix_optional = bool(getattr(module, "MANAGED_FIX_OPTIONAL", False))
     insertion_baseline = None
     if managed_fix_id and owned_span(text, str(managed_fix_id)) is None:
@@ -341,6 +381,7 @@ def _apply_patch_script(
     ) else apply_fn(result)
     if not isinstance(second, str):
         raise TypeError(f"provider patch {patch_script} must return str on reapply")
+    second = _canonicalize_owned_html_class_tokens(second, managed_fix_id)
     _assert_v3_patch_ownership(result, second, patch_script, managed_fix_id)
     try:
         validate_managed_fixes(second)
