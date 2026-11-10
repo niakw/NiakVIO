@@ -529,7 +529,7 @@ le dernier SHA et l'identité du média n'ont pas été rejoués.
 Le diagnostic inverse Brain utilise deux oracles **conservés uniquement en
 tests** (`animevost-fr` pour le repli saison/épisode et `4khdhub` pour
 le parseur HTML à classes imbriquées). L'amélioration de la sélection du
-Lego, son application et sa matérialisation sont des étapes distinctes de
+Bloc, son application et sa matérialisation sont des étapes distinctes de
 la validation réseau terminale. Le dernier cycle Fast Brain examinait 13
 providers sans accepter de réparation. Ne pas promouvoir de simples flux
 HTTP 200, une URL ou une réussite d'oracle comme lecture valide.
