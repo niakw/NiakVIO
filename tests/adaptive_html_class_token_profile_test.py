@@ -67,13 +67,19 @@ runtime_spec = importlib.util.spec_from_file_location("niakvio_html_class_runtim
 assert runtime_spec and runtime_spec.loader
 runtime_module = importlib.util.module_from_spec(runtime_spec)
 runtime_spec.loader.exec_module(runtime_module)
-published_path = next((ROOT / "providers").glob("4khdhub--nuvio--*.js"), None)
-assert published_path and published_path.is_file(), "missing published 4KHDHub runtime bytes"
+manifest = json.loads((ROOT / "manifest.json").read_text(encoding="utf-8"))
+published_rows = [row for row in manifest.get("scrapers", [])
+                  if str(row.get("id") or "").casefold() == "4khdhub"]
+assert len(published_rows) == 1, published_rows
+published_path = ROOT / published_rows[0]["filename"]
+assert published_path.is_file(), "missing exact published 4KHDHub runtime bytes"
 published_bytes = published_path.read_text(encoding="utf-8")
 assert "NIAKVIO_4KHDHUB_RUNTIME_V1" in published_bytes
 assert "function classBlocks(html,cls)" in published_bytes
 assert 'classBlocks(sr.text,"movie-card")' in published_bytes
-assert "NUVIO_HTML_CLASS_TOKEN_EXACT_V1" not in published_bytes
+assert "NUVIO_HTML_CLASS_TOKEN_EXACT_V1" in published_bytes, (
+    str(published_path), "Brain generic HTML class parser was not persisted into published bytes"
+)
 
 fixture_path = ROOT / "tests/provider_4khdhub_runtime_behavior_test.py"
 fixture_ast = ast.parse(fixture_path.read_text(encoding="utf-8"))
