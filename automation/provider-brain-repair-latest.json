@@ -13,14 +13,14 @@
     "yflix"
   ],
   "effectiveWaves": 1,
-  "elapsedSeconds": 138.391,
+  "elapsedSeconds": 362.797,
   "executionModel": "family-batched-multi-wave-brain-repair",
   "experienceMemory": {
     "operationalProviderCount": 15,
     "providerCount": 46,
     "schemaVersion": 2,
-    "sourceRunId": "42800721075",
-    "sourceSha": "b6a8cf3e004573dbdaf7189dfb0edc596d4898ce",
+    "sourceRunId": "42807469571",
+    "sourceSha": "884ebf7abcecb36c0f3b736669455038465b3dd0",
     "strategyCount": 5
   },
   "fixedInLabProviders": [],
@@ -81,7 +81,7 @@
   "shardCount": 1,
   "shardIndex": 0,
   "skippedEnvironmentProviders": [],
-  "sourceCensusRunId": "42800721075",
+  "sourceCensusRunId": "42807469571",
   "timeBudgetExhausted": false,
   "timeBudgetSeconds": 900,
   "unvisitedProviders": [],
@@ -133,7 +133,6 @@
                 "negativeMemoryMatches": 86,
                 "positiveProgramFingerprint": "",
                 "postExhaustionCandidateProfiles": [
-                  "html_class_token_exact_v1",
                   "route_transition_graph_v2",
                   "search_contract_inference_v1",
                   "search_response_route_binding_v1",
@@ -156,7 +155,8 @@
                   "route_transition_graph_v14",
                   "route_transition_graph_v15",
                   "route_transition_graph_v16",
-                  "route_transition_graph_v17"
+                  "route_transition_graph_v17",
+                  "route_transition_graph_v18"
                 ],
                 "postExhaustionSourceFailureClass": "",
                 "postExhaustionStrategyMethod": "",
@@ -236,7 +236,7 @@
               "published:moviesmod": {
                 "action": "probe-targeted-repair",
                 "allowedProfiles": [
-                  "html_class_token_exact_v1"
+                  "route_transition_graph_v13"
                 ],
                 "baseExperimentExhausted": true,
                 "exitReason": null,
@@ -286,7 +286,6 @@
                   "transport_request_differential_v1",
                   "provider_session_bootstrap_replay_v1",
                   "runtime_response_salvage_v1",
-                  "html_class_token_exact_v1",
                   "route_transition_graph_v2",
                   "route_transition_graph_v3",
                   "route_transition_graph_v4",
@@ -306,11 +305,12 @@
                   "route_transition_graph_v18",
                   "route_transition_graph_v19",
                   "route_transition_graph_v20",
-                  "route_transition_graph_v21"
+                  "route_transition_graph_v21",
+                  "route_transition_graph_v22"
                 ],
                 "postExhaustionSourceFailureClass": "route_proven_gap",
-                "postExhaustionStrategyMethod": "exact-html-class-token-contract",
-                "postExhaustionStrategyProfile": "html_class_token_exact_v1",
+                "postExhaustionStrategyMethod": "brain-evolved-executable-transition",
+                "postExhaustionStrategyProfile": "route_transition_graph_v13",
                 "providerId": "moviesmod",
                 "providerPositiveProgramProductionRescue": false,
                 "providerPositiveProgramReplay": false,
@@ -323,7 +323,7 @@
               "published:yflix": {
                 "action": "probe-targeted-repair",
                 "allowedProfiles": [
-                  "html_class_token_exact_v1"
+                  "route_transition_graph_v25"
                 ],
                 "baseExperimentExhausted": true,
                 "exitReason": null,
@@ -370,7 +370,6 @@
                 "negativeMemoryMatches": 121,
                 "positiveProgramFingerprint": "",
                 "postExhaustionCandidateProfiles": [
-                  "html_class_token_exact_v1",
                   "route_transition_graph_v2",
                   "search_contract_inference_v1",
                   "search_response_route_binding_v1",
@@ -393,11 +392,12 @@
                   "route_transition_graph_v14",
                   "route_transition_graph_v15",
                   "route_transition_graph_v16",
-                  "route_transition_graph_v17"
+                  "route_transition_graph_v17",
+                  "route_transition_graph_v18"
                 ],
-                "postExhaustionSourceFailureClass": "search_gap",
-                "postExhaustionStrategyMethod": "exact-html-class-token-contract",
-                "postExhaustionStrategyProfile": "html_class_token_exact_v1",
+                "postExhaustionSourceFailureClass": "route_proven_gap",
+                "postExhaustionStrategyMethod": "brain-evolved-executable-transition",
+                "postExhaustionStrategyProfile": "route_transition_graph_v25",
                 "providerId": "yflix",
                 "providerPositiveProgramProductionRescue": false,
                 "providerPositiveProgramReplay": false,
@@ -418,7 +418,9 @@
           },
           "capabilityStrategy": "mixed",
           "crossWaveExplorationCarryoverApplied": [],
-          "crossWaveExplorationCarryoverCaptured": [],
+          "crossWaveExplorationCarryoverCaptured": [
+            "moviesmod"
+          ],
           "deferredToLearning": [
             "4khdhub",
             "allanime",
