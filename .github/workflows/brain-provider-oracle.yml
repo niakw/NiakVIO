@@ -1,0 +1,56 @@
+name: BRAIN - Provider Reverse Engineering Oracle
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/brain-provider-oracle.yml'
+      - 'tests/brain_oracles/**'
+      - 'scripts/provider_patches/anime_catalogue_runtime_common.py'
+      - 'scripts/compile_brain_accepted_program_v3.py'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: brain-provider-oracle-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  isolated-reference:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - name: Validate reference and test syntax
+        run: |
+          node --check tests/brain_oracles/animevost_fr/provider_repaired_oracle.cjs
+          node --check tests/brain_oracles/animevost_fr/run_oracle.cjs
+          node --check tests/brain_oracles/animevost_fr/probe_live_api.mjs
+          python -m py_compile tests/brain_oracles/animevost_fr/test_reverse_chain.py
+      - name: Reproduce failing runtime then execute preserved repaired-provider oracle
+        run: python tests/brain_oracles/animevost_fr/test_reverse_chain.py
+
+  provider-live-schema:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - name: Inspect live provider search/detail JSON schema (never media payload)
+        run: node tests/brain_oracles/animevost_fr/probe_live_api.mjs
