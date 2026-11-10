@@ -443,6 +443,34 @@ assert accepted[0]["provider"]=="a"
 assert accepted[0]["acceptedProgram"]=={}, accepted
 assert accepted[0]["playableAfter"]==2
 
+diagnostics=mod.sanitized_brain_attempts({
+    "rounds":[
+        {"round":1,"attempts":[
+            {"parent_key":"published:moviesmod","profile":"route_transition_graph_v13",
+             "status":"generated","reason":""},
+            {"parent_key":"published:animekai","profile":"html_class_token_exact_v1",
+             "status":"not_generated","reason":"profile_unavailable:https://secret.example/path?token=secret"},
+        ],"rejected":[
+            {"parent_key":"published:moviesmod","profile":"route_transition_graph_v13",
+             "status":"no_streams","reason":"required_category_playable_proof:movie,tv"},
+        ],"exploration_progress":[
+            {"parent_key":"published:moviesmod","profile":"route_transition_graph_v13",
+             "reason":"sandbox_diagnostic_progress:provider-frontier:player"},
+        ]},
+    ],
+})
+assert len(diagnostics)==4,diagnostics
+assert diagnostics[0]=={
+    "provider":"moviesmod","round":1,"phase":"attempts",
+    "profile":"route_transition_graph_v13","status":"generated","reasonCode":"",
+},diagnostics
+assert diagnostics[1]["reasonCode"]=="profile_unavailable",diagnostics
+assert diagnostics[2]["reasonCode"]=="required_category_playable_proof",diagnostics
+assert diagnostics[3]["reasonCode"]=="sandbox_diagnostic_progress",diagnostics
+assert "secret" not in json.dumps(diagnostics)
+assert "http" not in json.dumps(diagnostics)
+assert mod.sanitized_brain({"rounds":[]})["attemptDiagnostics"]==[]
+
 brain_summary=mod.sanitized_brain({
     "brain":{
         "plans":{

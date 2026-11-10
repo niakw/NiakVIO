@@ -1129,10 +1129,64 @@ def accepted_rows(report: dict[str, Any]) -> list[dict[str, Any]]:
     return out
 
 
+def sanitized_brain_attempts(report: dict[str, Any]) -> list[dict[str, Any]]:
+    """Bounded, code-only evidence of WHY Brain did or did not materialize.
+
+    The raw Deep report can contain detailed error messages, source paths,
+    proposals and per-request observations. Never publish those here. Carry
+    only finite counts and allowlisted stage/profile/reason tokens, for later
+    causal diagnosis without exposing source, provider endpoints or secrets.
+    """
+    rows: list[dict[str, Any]] = []
+    phases = ("attempts", "rejected", "exploration_progress")
+    for raw_round in (report.get("rounds") or [])[:5]:
+        if not isinstance(raw_round, dict):
+            continue
+        try:
+            round_number = max(1, min(5, int(raw_round.get("round") or 1)))
+        except (TypeError, ValueError):
+            round_number = 1
+        for phase in phases:
+            for raw in (raw_round.get(phase) or [])[:80]:
+                if not isinstance(raw, dict):
+                    continue
+                parent = str(raw.get("parent_key") or "")
+                provider = cid(parent.rsplit(":", 1)[-1])
+                if not provider:
+                    continue
+                profile = str(raw.get("profile") or "").strip().casefold()
+                if not re.fullmatch(r"[a-z][a-z0-9_]{0,79}", profile):
+                    profile = ""
+                status = str(raw.get("status") or "").strip().casefold()
+                if status not in {
+                    "generated", "not_generated", "skipped", "healthy",
+                    "reachable", "no_streams", "blocked", "degraded",
+                    "unavailable", "runtime_error", "provider_unreachable",
+                }:
+                    status = ""
+                # Strip all details after the first colon and permit only an
+                # inert vocabulary token (e.g. no_op, profile_unavailable,
+                # required_category_playable_proof, exploration_no_causal...).
+                reason = str(raw.get("reason") or "").split(":", 1)[0].strip().casefold()
+                reason = reason if re.fullmatch(r"[a-z][a-z0-9_\-]{0,79}", reason) else ""
+                rows.append({
+                    "provider": provider,
+                    "round": round_number,
+                    "phase": phase,
+                    "profile": profile,
+                    "status": status,
+                    "reasonCode": reason,
+                })
+                if len(rows) >= 120:
+                    return rows
+    return rows
+
+
 def sanitized_brain(report: dict[str, Any]) -> dict[str, Any]:
     brain = report.get("brain") if isinstance(report.get("brain"), dict) else {}
     plans = brain.get("plans") if isinstance(brain.get("plans"), dict) else {}
     return {
+        "attemptDiagnostics": sanitized_brain_attempts(report),
         "learnedEvents": int(brain.get("learnedEvents") or 0),
         "validatedRepairLearningExecuted": bool(brain.get("validatedRepairLearningExecuted")),
         "harnessDifferentialProviders": sorted({
