@@ -29,7 +29,7 @@ globalThis.fetch = async (url) => {
   if (url.startsWith(ORIGIN+'/api/anime/search?')) {
     data={results:alternateSearchOnly?[]:[{title:'Jujutsu Kaisen',slug:'jjk'}]};
   } else if (url.startsWith(ORIGIN+'/api/animes/search?')) {
-    data={animes:[{title:'Jujutsu Kaisen',slug:'jjk'}],results:[]};
+    data={animes:[{title:'Jujutsu Kaisen',slug:'jjk'}],results:alternateSearchOnly?[]:[{title:'Jujutsu Kaisen',slug:'jjk'}]};
   } else {
     const endpoint=new URL(url);
     data=cases[endpoint.pathname];
