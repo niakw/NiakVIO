@@ -9,6 +9,8 @@ on:
       - 'tests/brain_oracles/**'
       - 'scripts/provider_patches/anime_catalogue_runtime_common.py'
       - 'scripts/compile_brain_accepted_program_v3.py'
+      - 'scripts/brain_positive_program_memory.py'
+      - 'tests/brain_positive_program_episode_replay_test.py'
 
 permissions:
   contents: read
@@ -42,6 +44,8 @@ jobs:
           python -m py_compile tests/brain_oracles/animevost_fr/test_compiler_episode_bindings.py
       - name: Compare actual historical failure against current family Lego and preserved repaired-provider oracle
         run: python tests/brain_oracles/animevost_fr/test_reverse_chain.py
+      - name: Verify accepted episodic programme survives durable positive-memory replay
+        run: python tests/brain_positive_program_episode_replay_test.py
       - name: Replay Brain acceptance compiler with episode-aware plan and safety negatives
         run: |
           python tests/brain_oracles/animevost_fr/test_compiler_episode_bindings.py
