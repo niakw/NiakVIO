@@ -57,9 +57,8 @@ runner = compiled + """
   assert(!s1.some(r=>r.url==='https://cdn.example/correct-s00.m3u8'));
   const special=rows.find(r=>r.url==='https://cdn.example/correct-s00.m3u8');
   assert.deepEqual(special.subtitles.map(r=>r.url),[
-    'https://subs.example/Spartacus.S00E01.fr.vtt',
-    'https://subs.example/opaque-episode-attached.vtt'
-  ],'wrong-episode external subtitles must not be associated with S00 media');
+    'https://subs.example/Spartacus.S00E01.fr.vtt'
+  ],'S00 special requires explicit caption season/episode identity; opaque or S03 must be rejected');
   const pos=await module.exports.getStreams(q.tmdbId,q.mediaType,0,1);
   assert.deepEqual(pos.map(r=>r.url), rows.map(r=>r.url));
 })().catch(e=>{console.error(e);process.exit(1)});
