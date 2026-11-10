@@ -146,6 +146,17 @@ assert "group: niakvio-core-release-mutation-main" in domain
 assert "cancel-in-progress: false" in domain
 assert "group: niakvio-core-release-mutation-main" in finalizer
 assert "cancel-in-progress: false" in finalizer
+# Release jobs can queue behind read-only evidence; pin executable input at
+# event SHA then merge ONLY explicitly approved non-executable drift.
+assert "inputs.expected_sha || github.sha" in finalizer
+assert 'git diff --name-status "$BASE_SHA" "$CURRENT_SHA"' in finalizer
+assert 'domain_refresh_publication_drift_gate.py --drift-file' in finalizer
+assert finalizer.index('domain_refresh_publication_drift_gate.py --drift-file') < finalizer.index('git merge --no-ff --no-edit origin/main')
+assert 'git merge-base --is-ancestor "$BASE_SHA" "$CURRENT_SHA"' in finalizer
+assert 'FIELD_RELEASE_PUBLISH_BLOCKED reason=executable_main_drift' in finalizer
+assert 'python3 scripts/validate_release_integrity.py' in finalizer
+assert finalizer.index('git merge --no-ff --no-edit origin/main') < finalizer.index('git push origin HEAD:main')
+assert "git push --force" not in finalizer
 sanitizer=(ROOT/"scripts/sanitize_provider_hub_registry.py").read_text(encoding="utf-8")
 for required in (
     'parser.add_argument("--manifest", default="manifest.json")',
