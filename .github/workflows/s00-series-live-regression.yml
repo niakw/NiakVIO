@@ -8,6 +8,7 @@ on:
       - '.github/workflows/s00-series-live-regression.yml'
       - 'scripts/tv_regression_matrix.py'
       - 'scripts/nuvio_tv_probe_v2.cjs'
+      - 'tests/tv_regression_matrix_semantic_scope_test.py'
 
 permissions:
   contents: read
@@ -41,6 +42,8 @@ jobs:
           package-manager-cache: false
       - name: Install locked probe dependencies
         run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Verify semantic TV coverage is not inflated by anime transport alias
+        run: python tests/tv_regression_matrix_semantic_scope_test.py
       - name: Probe actual published TV provider bytes on real episode requests
         run: python scripts/tv_regression_matrix.py
       - name: Report observed streams without asserting decoded episode identity
