@@ -536,6 +536,42 @@ référencés par le manifeste ; une révision Core obsolète sur un seul provid
 fait échouer la vérification de publication. Ces portes attestent la parité
 statique et les hashes, jamais l'identité de l'épisode effectivement décodé.
 
+## Sous-titres épisodiques et oracle inverse Brain — 10 novembre 2026
+
+Les sous-titres détachés d'une ligne média sont des **candidats propres à
+l'épisode**, jamais un autre catalogue indépendant implicitement fiable. Le
+Core `CORE.STREAM_IDENTITY.V1` filtre les sous-titres `subtitles`,
+`extCaptions` et `captions` dont les coordonnées explicites saison/épisode ou
+TMDB/IMDb contredisent la requête, **sans supprimer la ligne de stream valide**.
+Pour une requête spéciale `S00E01`, les sous-titres détachés sans preuve
+explicite `S00E01` sont également rejetés (fail-closed), comme les URLs média
+opaques non corrélées. Les épisodes ordinaires restent conservateurs : une
+piste opaque n'est pas proclamée exacte, mais n'est pas supprimée sans preuve
+contradictoire. Le test `special_season_zero_identity_test.py` exerce cette
+propriété avec un sous-titre S03 et un sous-titre S00.
+
+Il faut distinguer les **sous-titres renvoyés dans le stream NiakVIO** des
+sous-titres éventuellement trouvés après coup par un plugin séparé du client
+(Nuvio recommande notamment SubSense). Le Core NiakVIO ne peut pas garantir
+l'identité d'une piste ajoutée **après** son retour par une autre extension.
+La validation réelle doit collecter l'origine de la piste (embedded / provider
+/ extension), l'identité du média sélectionné, et des preuves de synchronisme
+sans confondre disponibilité HLS et identité décodée.
+
+Reverse engineering Brain : le runtime partagé
+`scripts/provider_patches/anime_catalogue_runtime_common.py` a été exécuté
+dans `tests/brain_oracles/animevost_fr/test_reverse_chain.py` contre une API
+simulée ; le fichier témoin
+`tests/brain_oracles/animevost_fr/provider_repaired_oracle.cjs` corrige
+strictement S00 et les sous-titres dans les **tests uniquement**. Le Brain-LLM
+reçoit désormais les signatures de risques statiques **du vrai renderer
+partagé**, plutôt qu'un simple chemin de wrapper. Le compilateur
+`compile_brain_accepted_program_v3.py` conserve les variables
+`{binding:season}` et `{binding:episode}` sur les voies épisodiques, sans les
+confondre avec un ID de provider. Ces tests n'ont **aucune autorité positive
+de réparation** : un flux terminal correct, réellement décodé et persisté
+reste à démontrer, et le Brain doit encore produire lui-même sa réparation.
+
 ## FORCE — intention explicite liée au planificateur Deep
 
 La voie FORCE utilise une intention de stratégie explicitement validée pour un
