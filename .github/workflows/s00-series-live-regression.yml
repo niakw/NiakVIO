@@ -1,0 +1,80 @@
+name: QA - Live Spartacus S00 and Popular Series
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/s00-series-live-regression.yml'
+      - 'scripts/tv_regression_matrix.py'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: live-s00-series-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  live-tv-matrix:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+      TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+      NUVIO_TV_MATRIX_FIXTURES: spartacus_s00e01,spartacus_s03e01,breaking_bad_s01e01
+      NUVIO_TV_MATRIX_WORKERS: '6'
+      NUVIO_TV_MATRIX_TIMEOUT: '85'
+      NUVIO_TV_MATRIX_OUTPUT: ${{ runner.temp }}/live-spartacus-series.json
+    steps:
+      - name: Checkout exact published SHA
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - name: Install locked probe dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Probe actual published TV provider bytes on real episode requests
+        run: python scripts/tv_regression_matrix.py
+      - name: Report observed streams without asserting decoded episode identity
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+          p=Path(os.environ["NUVIO_TV_MATRIX_OUTPUT"])
+          data=json.loads(p.read_text(encoding="utf-8"))
+          required={"spartacus_s00e01","spartacus_s03e01","breaking_bad_s01e01"}
+          rows=data.get("rows") or []
+          observed={row.get("fixture") for row in rows}
+          if not required.issubset(observed):
+              raise SystemExit(f"Missing real episode probes: {sorted(required-observed)}")
+          for fixture in sorted(required):
+              candidates=[r for r in rows if r.get("fixture")==fixture]
+              print("FIELD_LIVE_TV_EPISODE_PROBE",
+                  json.dumps({
+                      "fixture":fixture,
+                      "providers":len(candidates),
+                      "raw":sum(int(r.get("raw") or 0)>0 for r in candidates),
+                      "endpoint_playable":sum(int(r.get("playable") or 0)>0 for r in candidates),
+                      "status_counts":{s:sum(r.get("status")==s for r in candidates)
+                                       for s in sorted({r.get("status") for r in candidates})},
+                      "decoded_episode_identity_verified":False,
+                  },sort_keys=True))
+          print("FIELD_S00_TERMINAL_IDENTITY_VALIDATED false reason=stream_endpoint_playability_does_not_prove_episode_bytes")
+          PY
+      - name: Upload sanitized real request matrix
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: live-spartacus-series-${{ github.run_id }}
+          path: ${{ runner.temp }}/live-spartacus-series.json
+          retention-days: 7
+          if-no-files-found: warn
