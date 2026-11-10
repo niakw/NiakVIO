@@ -7060,7 +7060,7 @@
     "voiranime-homes": {
       "domainMemory": true,
       "evidenceDepth": [
-        "anime=none"
+        "anime=lookup_only"
       ],
       "hasApiRecipe": true,
       "hasProviderValuePlan": false,
@@ -7260,7 +7260,7 @@
         "/api/v2/themoviedb?id={tmdbId}",
         "/meta/series/tt12343534.json"
       ],
-      "status": "REGRESSION PROVIDER",
+      "status": "REGRESSION PROVIDER JS",
       "strategy": "mixed_embed_resolver"
     },
     "voiranime-rip": {
@@ -8139,8 +8139,8 @@
     "requiresDeepValidation": true
   },
   "schemaVersion": 2,
-  "sourceRunId": "42903285761",
-  "sourceSha": "fb84b1264ea61385f0acb2af8e2c877fce713cab",
+  "sourceRunId": "42910722573",
+  "sourceSha": "0651a5488b7626712d67808b72a4d81179daad6c",
   "strategyPatterns": {
     "api_stream_resolver": {
       "commonRequestRecipes": [],
@@ -8152,17 +8152,17 @@
       "routeFamilies": [
         {
           "providerSupport": 1,
-          "role": "search",
-          "supportRatio": 1.0
-        },
-        {
-          "providerSupport": 1,
           "role": "detail",
           "supportRatio": 1.0
         },
         {
           "providerSupport": 1,
           "role": "other",
+          "supportRatio": 1.0
+        },
+        {
+          "providerSupport": 1,
+          "role": "search",
           "supportRatio": 1.0
         }
       ]
@@ -8178,22 +8178,22 @@
       "routeFamilies": [
         {
           "providerSupport": 1,
-          "role": "search",
-          "supportRatio": 0.5
-        },
-        {
-          "providerSupport": 1,
           "role": "detail",
           "supportRatio": 0.5
         },
         {
           "providerSupport": 1,
-          "role": "other",
+          "role": "search",
           "supportRatio": 0.5
         },
         {
           "providerSupport": 1,
           "role": "player",
+          "supportRatio": 0.5
+        },
+        {
+          "providerSupport": 1,
+          "role": "other",
           "supportRatio": 0.5
         },
         {
@@ -8376,12 +8376,12 @@
         },
         {
           "providerSupport": 1,
-          "role": "api",
+          "role": "episode",
           "supportRatio": 1.0
         },
         {
           "providerSupport": 1,
-          "role": "episode",
+          "role": "api",
           "supportRatio": 1.0
         }
       ]
