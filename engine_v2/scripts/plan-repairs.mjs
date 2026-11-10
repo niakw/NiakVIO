@@ -1208,6 +1208,45 @@ function buildPlan(item) {
     && !llmAdvisorProductionRescue
     && !llmAdvisorExplorationRescue
   ) ? [] : hypotheses;
+  let allowedProfiles = profilesForRepairTarget(
+    { ...plan, action: effectiveAction, hypotheses: effectiveHypotheses },
+    executionRepairTarget,
+  );
+  const structuralEvidence = asRecord(candidate.structuralRepairEvidence);
+  const staticProfile = "html_class_token_exact_v1";
+  const staticFingerprint = strategyImplementationFingerprint(staticProfile);
+  // A real source-byte signature may prioritize a known generic parser Lego.
+  // It cannot bypass an exhausted/deferred/identity-protection plan, explicit
+  // FORCE strategy, or a failed same-implementation negative-memory replay.
+  const structurallyEligible = (
+    effectiveAction === "probe-targeted-repair"
+    && executionRepairTarget.scope === "capability"
+    && allowedProfiles.length > 0
+    && !forcePreferredProfile
+    && structuralEvidence.profile === staticProfile
+    && structuralEvidence.source === "current_candidate_bytes"
+    && structuralEvidence.diagnosticOnly === true
+    && structuralEvidence.proofAuthority === false
+    && /^[0-9a-f]{64}$/.test(stringValue(structuralEvidence.sourceSha256))
+    && ["route_proven_gap", "search_gap"].includes(canonicalFailureClass(evidence.failureClass))
+  );
+  const structuralAlreadyFailed = structurallyEligible && negativeMemory.some((row) => (
+    stringValue(row.providerId).toLowerCase() === providerId
+    && stringValue(row.profile).toLowerCase() === staticProfile
+    && row.executionObserved === true
+    && (
+      finiteNumber(row.consecutiveFailures, 0) > 0
+      || (finiteNumber(row.failures, 0) > 0 && finiteNumber(row.successes, 0) === 0)
+    )
+    && (
+      !stringValue(row.strategyImplementationFingerprint)
+      || stringValue(row.strategyImplementationFingerprint).toLowerCase() === staticFingerprint
+    )
+  ));
+  const sourceStructuralProfileSelected = structurallyEligible && !structuralAlreadyFailed;
+  if (sourceStructuralProfileSelected) {
+    allowedProfiles = [staticProfile, ...allowedProfiles.filter((profile) => profile !== staticProfile)];
+  }
   return {
     brainVersion: finiteNumber(plan.brainVersion, BRAIN_CONTROL_PLANE_VERSION),
     providerId,
@@ -1282,7 +1321,10 @@ function buildPlan(item) {
       transferScore: finiteNumber(row.transferScore, 0),
       confidence: finiteNumber(row.confidence, 0),
     })).filter((row) => row.id),
-    allowedProfiles: profilesForRepairTarget({ ...plan, action: effectiveAction, hypotheses: effectiveHypotheses }, executionRepairTarget),
+    allowedProfiles,
+    sourceStructuralProfileSelected,
+    sourceStructuralProfile: sourceStructuralProfileSelected ? staticProfile : "",
+    sourceStructuralProfileFingerprint: sourceStructuralProfileSelected ? staticFingerprint : "",
     budget: asRecord(plan.budget),
     fallbackPolicy: stringValue(plan.fallbackPolicy, "lkg_only_after_repair_budget"),
     coreMutationPolicy: stringValue(plan.coreMutationPolicy, "proposal_only"),
