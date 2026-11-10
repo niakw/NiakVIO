@@ -135,5 +135,5 @@ v18_published = sum(
 print(
     f"SPECIAL_SEASON_ZERO_IDENTITY_SOURCE_OK published={len(published)} "
     f"v18_published={v18_published} pending_rematerialization={len(published)-v18_published} "
-    "source_v18_exact_s00_only; no live terminal playback inferred"
+    "source_v19_source_backed_s00_only; no live terminal playback inferred"
 )
