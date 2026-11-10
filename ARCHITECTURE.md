@@ -510,6 +510,30 @@ The provider runtime sends only coarse operational facts to the VPS collector: p
 The current collector/display surface is hosted on the same OVH-backed Eitty deployment: POST collection at `https://www.eittyweb.fr/niakvio-telemetry-collect.php`, aggregate read at `https://www.eittyweb.fr/niakvio-telemetry-data.php`, and the standalone dashboard at `https://www.eittyweb.fr/niakvio-telemetry.html`. Collector storage is outside the webroot in the persistent private Eitty state volume; install/session/account identifiers are HMAC-hashed server-side before persistence. The provider bundle still contains no hard-coded collector URL: the host bridge owns endpoint injection.
 
 
+## État de publication et limites d'identité (10 novembre 2026)
+
+Le finalizer [42754514677](https://github.com/niakw/NiakVIO/actions/runs/42754514677) a reconstruit et publié les 41 bundles avec la
+révision `cross-client-player-page-identity-v20-url-path-consistency`,
+les garde-fous des sous-titres et le refus d'un média épisodique dont l'URL
+source contredit la requête. La version publiée est `5.21.141` (SHA final
+`42eb982a99f39c7e43b452c24c429d0d52c4b0da`). Ne pas confondre cette
+parité des octets avec la preuve d'un épisode réellement décodé ou de pistes
+de sous-titres correctes sur Nuvio.
+
+Le garde-fou `CORE - Verify & Publish` exécuté avant la publication finale
+a échoué sur des empreintes de manifest obsolètes ; une vérification sur le
+**main courant** est nécessaire pour qualifier le fixed point. Un provider
+FULL historique dans le census n'est pas considéré fraîchement lu tant que
+le dernier SHA et l'identité du média n'ont pas été rejoués.
+
+Le diagnostic inverse Brain utilise deux oracles **conservés uniquement en
+tests** (`animevost-fr` pour le repli saison/épisode et `4khdhub` pour
+le parseur HTML à classes imbriquées). L'amélioration de la sélection du
+Lego, son application et sa matérialisation sont des étapes distinctes de
+la validation réseau terminale. Le dernier cycle Fast Brain examinait 13
+providers sans accepter de réparation. Ne pas promouvoir de simples flux
+HTTP 200, une URL ou une réussite d'oracle comme lecture valide.
+
 ## CORE.STREAM_IDENTITY.V1 — preuves explicites S00
 
 Un épisode spécial demandé par le client sous `season=0, episode>0` est un cas
