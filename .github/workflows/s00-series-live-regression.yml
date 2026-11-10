@@ -26,7 +26,7 @@ jobs:
       NUVIO_TV_MATRIX_FIXTURES: spartacus_s00e01,spartacus_s03e01,breaking_bad_s01e01
       NUVIO_TV_MATRIX_WORKERS: '6'
       NUVIO_TV_MATRIX_TIMEOUT: '85'
-      NUVIO_TV_MATRIX_OUTPUT: ${{ runner.temp }}/live-spartacus-series.json
+      NUVIO_TV_MATRIX_OUTPUT: health-output/live-spartacus-series.json
     steps:
       - name: Checkout exact published SHA
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
@@ -76,6 +76,6 @@ jobs:
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         with:
           name: live-spartacus-series-${{ github.run_id }}
-          path: ${{ runner.temp }}/live-spartacus-series.json
+          path: health-output/live-spartacus-series.json
           retention-days: 7
           if-no-files-found: warn
