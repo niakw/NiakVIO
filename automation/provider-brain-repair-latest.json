@@ -22,14 +22,14 @@
     "yflix"
   ],
   "effectiveWaves": 6,
-  "elapsedSeconds": 1115.363,
+  "elapsedSeconds": 1045.765,
   "executionModel": "family-batched-multi-wave-brain-repair",
   "experienceMemory": {
     "operationalProviderCount": 15,
     "providerCount": 46,
     "schemaVersion": 2,
-    "sourceRunId": "42779127774",
-    "sourceSha": "a56dbde6b04bc4a1a4807157e909951d28c539a7",
+    "sourceRunId": "42785682750",
+    "sourceSha": "a734be4cae207f2fe7428f34df277fd37975c533",
     "strategyCount": 5
   },
   "fixedInLabProviders": [],
@@ -122,7 +122,7 @@
   "shardCount": 1,
   "shardIndex": 0,
   "skippedEnvironmentProviders": [],
-  "sourceCensusRunId": "42779127774",
+  "sourceCensusRunId": "42785682750",
   "timeBudgetExhausted": false,
   "timeBudgetSeconds": 1200,
   "unvisitedProviders": [],
@@ -485,13 +485,11 @@
                 "targetCategories": []
               },
               "published:animevost-fr": {
-                "action": "probe-targeted-repair",
-                "allowedProfiles": [
-                  "player_media_extractor_v1"
-                ],
-                "baseExperimentExhausted": false,
-                "exitReason": null,
-                "experimentExhausted": false,
+                "action": "collect-more-evidence",
+                "allowedProfiles": [],
+                "baseExperimentExhausted": true,
+                "exitReason": "learning_generations_exhausted",
+                "experimentExhausted": true,
                 "experimentGeneration": 2,
                 "experimentVariant": 4,
                 "experimentVariantCount": 5,
@@ -500,25 +498,8 @@
                 "failureClass": "variant_coverage_gap",
                 "forcePreferredRequested": "",
                 "forcePreferredSelected": false,
-                "hypotheses": [
-                  {
-                    "confidence": 0,
-                    "id": "enumerate-announced-player-variants",
-                    "learned": false,
-                    "maturity": null,
-                    "profile": null,
-                    "transferScore": 0
-                  },
-                  {
-                    "confidence": 0,
-                    "id": "remove-premature-variant-short-circuit",
-                    "learned": false,
-                    "maturity": null,
-                    "profile": null,
-                    "transferScore": 0
-                  }
-                ],
-                "learningDisposition": "core_repair_only",
+                "hypotheses": [],
+                "learningDisposition": "propose_new_or_evolved_core_type",
                 "llmAdvisorApplied": false,
                 "llmAdvisorConfidence": 0,
                 "llmAdvisorExperiment": {},
@@ -531,7 +512,7 @@
                 "llmAdvisorSourceFailureClass": "",
                 "llmAdvisorStrategy": "",
                 "metaGapEscalated": false,
-                "negativeMemoryMatches": 4,
+                "negativeMemoryMatches": 5,
                 "positiveProgramFingerprint": "",
                 "postExhaustionCandidateProfiles": [
                   "player_protocol_family_replay_v1",
@@ -560,8 +541,8 @@
                 "providerId": "animevost-fr",
                 "providerPositiveProgramProductionRescue": false,
                 "providerPositiveProgramReplay": false,
-                "repairScope": "capability",
-                "repairType": "variant_enumeration",
+                "repairScope": "learning",
+                "repairType": "architecture_gap",
                 "signature": "449b9de6f9f16a56c2c206bb",
                 "strategyEscalated": false,
                 "targetCategories": []
@@ -1307,6 +1288,7 @@
               "allanime",
               "animesalt",
               "animesultra",
+              "animevost-fr",
               "flemmix",
               "kehflix",
               "mallumv",
