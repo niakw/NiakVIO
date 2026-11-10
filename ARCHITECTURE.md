@@ -505,7 +505,7 @@ l'épisode. Le Core doit donc refuser de publier ce résultat au client comme
 `S00E01` sans preuve explicite des coordonnées demandées.
 
 Le Bloc commun `scripts/provider_patches/global_stream_identity_v1.py`,
-révision génératrice `cross-client-player-page-identity-v18-s00-evidence`,
+révision génératrice `cross-client-player-page-identity-v19-s00-source-proof`,
 exige soit une paire saison/épisode structurée, soit un marqueur `S00E01`
 explicite dans les champs de la ligne, soit des coordonnées `season=0&episode=1`
 dans une URL source/lecteur corrélée. La vérification de contradiction des
