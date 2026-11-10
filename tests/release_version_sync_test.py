@@ -40,7 +40,25 @@ assert "Unexpected path changed by provider-generation finalization" in workflow
 assert "Commit final pinned release locally" in workflow
 assert "Unexpected path changed by pinned release finalization" in workflow
 assert "Publish accepted release atomically" in workflow
-assert 'test "$CURRENT_SHA" = "$BASE_SHA"' in workflow
+# Publication may accept subsequent evidence-only commits, but executable Core,
+# provider or registry drift must reject the prior candidate before pushing.
+# Pin accepted executable SHA, permit only classified non-executable changes.
+publisher=workflow.split("- name: Publish accepted release atomically",1)[1]
+for required in (
+    'BASE_SHA="$(cat "$RUNNER_TEMP/accepted-main-sha")"',
+    'git merge-base --is-ancestor "$BASE_SHA" "$CURRENT_SHA"',
+    'git diff --name-status "$BASE_SHA" "$CURRENT_SHA"',
+    'python3 scripts/domain_refresh_publication_drift_gate.py --drift-file "$RUNNER_TEMP/release-main-drift.txt"',
+    "FIELD_RELEASE_PUBLISH_BLOCKED reason=executable_main_drift",
+    "git merge --no-ff --no-edit origin/main",
+    "python3 scripts/validate_release_integrity.py",
+    "git push origin HEAD:main",
+):
+    assert required in publisher, required
+assert publisher.index("domain_refresh_publication_drift_gate.py") < publisher.index("git merge --no-ff --no-edit")
+assert publisher.index("git merge --no-ff --no-edit") < publisher.index("git push origin HEAD:main")
+assert "git push --force" not in publisher
+assert 'ref: ${{ github.event_name == \'workflow_dispatch\' && inputs.expected_sha || github.sha }}' in workflow
 assert workflow.index("Stage provider generation locally") < workflow.index("Rebuild exact pinned Hub46 transport and release integrity")
 assert workflow.index("Rebuild exact pinned Hub46 transport and release integrity") < workflow.index("Commit final pinned release locally")
 assert workflow.index("Commit final pinned release locally") < workflow.index("Publish accepted release atomically")
