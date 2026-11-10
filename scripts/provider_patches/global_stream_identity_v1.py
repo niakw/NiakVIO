@@ -187,7 +187,13 @@ function keepEpisodeBoundSubtitles(row,q,m){
   ["subtitles","extCaptions","captions"].forEach(function(key){
     var source=row[key];
     if(!Array.isArray(source)||!source.length)return;
-    var kept=source.filter(function(sub){return !subtitleContradictsEpisode(sub,q,m)});
+    var kept=source.filter(function(sub){
+      if(subtitleContradictsEpisode(sub,q,m))return false;
+      // Season-zero specials require positive source-coordinate evidence for
+      // detachable subtitles too; an opaque caption URL might belong to S03.
+      if(q.hasSeason&&q.season===0&&!exactSpecialEpisodeEvidence(sub,q))return false;
+      return true;
+    });
     if(kept.length!==source.length){
       if(out===row)out=Object.assign({},row);
       out[key]=kept;
