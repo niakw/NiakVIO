@@ -18,6 +18,19 @@ spec.loader.exec_module(mod)
 
 cfg={"base":"https://4khdhub.one","maxStreams":8,"ua":"NiakVIO-Test"}
 wrapper=mod.WRAPPER.replace("CONFIG_PLACEHOLDER",json.dumps(cfg,separators=(",",":")))
+# Instrument only this temporary test wrapper to classify which parsing stage
+# failed. The repository provider source is not mutated or bypassed.
+search_hook='var cards=classBlocks(sr.text,"movie-card"),best=null;'
+assert wrapper.count(search_hook)==1, "real runtime's search stage moved: renew oracle"
+wrapper=wrapper.replace(search_hook,search_hook+(
+    'g.__oracle4kDebug=g.__oracle4kDebug||[];'
+    'g.__oracle4kDebug.push({query:query,cardCount:cards.length,'
+    'cards:cards.map(function(c){return {tag:c.tag,'
+    'title:classText(c.html,"movie-card-title"),'
+    'format:classText(c.html,"movie-card-format"),'
+    'year:classText(c.html,"movie-card-meta"),'
+    'href:attr(c.tag,"href")}})});'
+))
 js=r'''
 "use strict";
 const NIAKVIO_PROVIDER_MODEL={officialSite:"https://4khdhub.one",knownSite:"https://4khdhub.one"};
@@ -54,7 +67,7 @@ globalThis.fetch=async function(url){
   if(!hook||hook.provider!=="4khdhub") throw new Error("hook missing");
   const movie=await hook.resolve(["760873","movie",null,null]);
   const tv=await hook.resolve(["1396","tv",1,1]);
-  console.log(JSON.stringify({movie,tv,fetchTrace}));
+  console.log(JSON.stringify({movie,tv,fetchTrace,debug:globalThis.__oracle4kDebug||[]}));
 })().catch(e=>{console.error(e.stack||e);process.exit(1)});
 '''
 with tempfile.TemporaryDirectory() as td:
@@ -64,7 +77,7 @@ with tempfile.TemporaryDirectory() as td:
 result=json.loads(proc.stdout.strip().splitlines()[-1])
 movie=result["movie"]
 tv=result["tv"]
-assert len(movie)==1,{"movie":movie,"fetchTrace":result["fetchTrace"]}
+assert len(movie)==1,{"movie":movie,"fetchTrace":result["fetchTrace"],"searchStages":result["debug"]}
 assert movie[0]["url"]=="https://media.workers.dev/colony.mkv",movie
 assert movie[0]["quality"]=="2160p",movie
 assert "The Colony" in movie[0]["title"],movie
