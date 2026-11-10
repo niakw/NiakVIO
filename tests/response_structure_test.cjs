@@ -120,7 +120,7 @@ assert.equal(union.rows[0].count, 3);
 assert.equal(union.rows[0].distinct_values, 2);
 assert.deepEqual(union.rows[0].address_refs, { 'data-src': ['r1', 'r2'], src: ['r3'] });
 assert.equal(unionReferences.calls.length, 3);
-assert.ok(unionReferences.calls.every(address => !address.includes('#')));
+assert.ok(unionReferences.calls.every(address => new URL(address).hash === ''));
 const unionWithoutRefs = responseStructure(unionMarkup, { baseUrl: queryOptions.baseUrl }).player_markup;
 const { address_refs: unionRefs, address_refs_truncated: unionTruncated, ...unionStructure } = union.rows[0];
 assert.deepEqual(unionStructure, unionWithoutRefs.rows[0]);

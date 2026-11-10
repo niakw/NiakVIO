@@ -17,7 +17,9 @@ assert 'fixtureCoverageIncomplete' in workflow
 assert 'BRAIN_REVERSE_FIXTURE_COVERAGE' in workflow
 assert 'missingFixtureCategories' in workflow
 assert 'expectedFixtureCount' in workflow
-assert "api.themoviedb.org" in workflow
+assert 'if host in {"api.themoviedb.org","www.themoviedb.org","image.tmdb.org"}:' in [
+    line.strip() for line in workflow.splitlines()
+]
 assert 'max-parallel: 3' in workflow
 for banned in ('NIAKVIO_ALLOW_PAID_API=1','plan_batch_from_checkout.py',
                'publish_niakvio_force_mutations.py','--apply','git push','gh workflow run'):
