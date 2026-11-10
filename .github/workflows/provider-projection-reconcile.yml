@@ -12,8 +12,11 @@ permissions:
   actions: write
 
 concurrency:
+  # Shared with Domain Refresh and Release Finalizer: serialize all publication
+  # mutations but never cancel an unrelated in-flight accepted release. The
+  # exact-head and drift guards below reject superseded work after queueing.
   group: niakvio-core-release-mutation-main
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   reconcile:
