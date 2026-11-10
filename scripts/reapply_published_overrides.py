@@ -719,6 +719,7 @@ LEGACY_PUBLICATION_CONTRACT_SCHEMA = 2
 PUBLICATION_CONTRACT_FILES = (
     "scripts/reapply_published_overrides.py",
     "scripts/apply_provider_overrides.py",
+    "scripts/adaptive_runtime/html_class_token_exact_v1.py",
     "scripts/provider_base_store.py",
     "scripts/materialize_provider_v3_all.py",
     "scripts/override_text_utils.py",
