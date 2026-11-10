@@ -41,7 +41,9 @@ jobs:
       - name: Checkout accepted main candidate
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
-          ref: main
+          # Pin accepted executable bytes even if evidence-only commits reach
+          # main before this queued mutation job starts.
+          ref: ${{ github.event_name == 'workflow_dispatch' && inputs.expected_sha || github.sha }}
           fetch-depth: 0
           persist-credentials: true
 
@@ -183,11 +185,33 @@ jobs:
             echo 'Accepted release finalization is already a no-op.'
             exit 0
           fi
-          git fetch origin main
-          CURRENT_SHA="$(git rev-parse origin/main)"
-          test "$CURRENT_SHA" = "$BASE_SHA" || {
-            echo "Accepted main moved during finalization expected=$BASE_SHA actual=$CURRENT_SHA" >&2
-            exit 1
-          }
-          git push origin HEAD:main
-          echo "FIELD_RELEASE_PUBLICATION_OK base=$BASE_SHA provider=$(cat "$RUNNER_TEMP/release-provider-sha") final=$FINAL_SHA"
+          # The on-push job can queue while unrelated census/learning evidence
+          # advances. Such evidence must not discard an expensive validated
+          # executable publication. However, a changed provider/Core/authority
+          # input MUST fail closed and be regenerated from the new HEAD.
+          for attempt in 1 2 3; do
+            git fetch origin main
+            CURRENT_SHA="$(git rev-parse origin/main)"
+            if [ "$CURRENT_SHA" != "$BASE_SHA" ]; then
+              git merge-base --is-ancestor "$BASE_SHA" "$CURRENT_SHA" || {
+                echo "FIELD_RELEASE_PUBLISH_BLOCKED reason=non_descendant_main base=$BASE_SHA current=$CURRENT_SHA" >&2
+                exit 1
+              }
+              git diff --name-status "$BASE_SHA" "$CURRENT_SHA" > "$RUNNER_TEMP/release-main-drift.txt"
+              python3 scripts/domain_refresh_publication_drift_gate.py --drift-file "$RUNNER_TEMP/release-main-drift.txt" || {
+                echo "FIELD_RELEASE_PUBLISH_BLOCKED reason=executable_main_drift base=$BASE_SHA current=$CURRENT_SHA" >&2
+                exit 1
+              }
+              git merge --no-ff --no-edit origin/main
+              python3 scripts/validate_release_integrity.py
+              echo "FIELD_RELEASE_EVIDENCE_ONLY_MAIN_MERGE base=$BASE_SHA current=$CURRENT_SHA"
+            fi
+            if git push origin HEAD:main; then
+              FINAL_SHA="$(git rev-parse HEAD)"
+              echo "FIELD_RELEASE_PUBLICATION_OK base=$BASE_SHA provider=$(cat "$RUNNER_TEMP/release-provider-sha") final=$FINAL_SHA"
+              exit 0
+            fi
+            echo "FIELD_RELEASE_PUBLISH_RETRY attempt=$attempt reason=remote_moved"
+          done
+          echo 'FIELD_RELEASE_PUBLISH_BLOCKED reason=remote_did_not_converge' >&2
+          exit 1
