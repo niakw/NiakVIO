@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import ast
 import json
 import subprocess
 from pathlib import Path
@@ -123,6 +124,70 @@ def unscoped_override_change(before: dict[str, Any], after: dict[str, Any]) -> b
     )
 
 
+def transitively_imported_shared_patch_owners(
+    path: str,
+    before_overrides: dict[str, Any],
+    after_overrides: dict[str, Any],
+) -> set[str]:
+    """Identify one-hop source-import owners of shared family Lego.
+
+    A shared Core file with no statically attributable registered import still
+    expands to ALL providers. Only a literal Python import in a registered
+    provider script is accepted as proof of a narrower family blast radius.
+    """
+    if not path.startswith("scripts/provider_patches/") or not path.endswith(".py"):
+        return set()
+    # Global cross-provider identity/presentation patches have an independent
+    # materializer owner and cannot be narrowed by unrelated wrapper imports.
+    module = Path(path).stem
+    if module.startswith(("global_", "core_")):
+        return set()
+    target_root = (ROOT / "scripts/provider_patches").resolve()
+    owners: set[str] = set()
+    checked: dict[str, bool] = {}
+    for payload in (before_overrides, after_overrides):
+        patches = payload.get("provider_patches")
+        if not isinstance(patches, dict):
+            continue
+        for provider, row in patches.items():
+            if not isinstance(row, dict):
+                continue
+            scripts: list[str] = []
+            for key in ("provider_lego_scripts", "patch_scripts"):
+                value = row.get(key)
+                if isinstance(value, str):
+                    scripts.append(value)
+                elif isinstance(value, list):
+                    scripts.extend(str(item) for item in value if isinstance(item, str))
+            for script in scripts:
+                if not script.startswith("scripts/provider_patches/") or ".." in Path(script).parts:
+                    continue
+                if script == path:
+                    continue
+                if script not in checked:
+                    source = (ROOT / script).resolve()
+                    if not source.is_relative_to(target_root) or not source.is_file():
+                        checked[script] = False
+                    else:
+                        try:
+                            tree = ast.parse(source.read_text(encoding="utf-8"))
+                        except (OSError, UnicodeError, SyntaxError):
+                            checked[script] = False
+                        else:
+                            checked[script] = any(
+                                isinstance(node, ast.ImportFrom)
+                                and (node.module or "").split(".")[-1] == module
+                                or isinstance(node, ast.Import)
+                                and any(alias.name.split(".")[-1] == module for alias in node.names)
+                                for node in ast.walk(tree)
+                            )
+                if checked[script]:
+                    item = norm(provider)
+                    if item:
+                        owners.add(item)
+    return owners
+
+
 def patch_script_owners(
     path: str,
     before_overrides: dict[str, Any],
@@ -193,6 +258,8 @@ def classify(
             before_overrides = before_docs.get("provider-overrides.json", {})
             after_overrides = after_docs.get("provider-overrides.json", {})
             owners = patch_script_owners(path, before_overrides, after_overrides)
+            if not owners:
+                owners = transitively_imported_shared_patch_owners(path, before_overrides, after_overrides)
             if not owners:
                 return "all", [], [*reasons, f"unowned-patch:{path}"]
             providers.update(owners)
