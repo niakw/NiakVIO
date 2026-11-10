@@ -1403,3 +1403,7 @@ Brain's `strict_repair_fixture_contract` and reverse diagnostics must match.
 ### 2026-11-10 — Source bytes into the actual Deep Brain planner
 
 The Deep adapter must call `update_plans(registry, health, "deep", stage=stage)` with its exact staged current provider bundle directory. The planner's bounded `structuralRepairEvidence` requires the current source hash and is diagnostic-only. A synthetic direct planner test cannot substitute for this Deep stage-to-planner link. Selecting a structural Lego is not proof of repair; materialization, media decoding, episode/subtitle identity, safe replay and non-regression retain exclusive acceptance authority.
+
+### 2026-11-10 — Canonical/adaptive Brain planner parity requirement
+
+`run_adaptive_deep_repair.py` imports `scripts/adaptive_runtime/brain_repair_runtime.py` through the adaptive-first import order. Any canonical `brain_repair_runtime.update_plans` diagnostic input (including `stage` and its bounded `structuralRepairEvidence`) must be explicitly forwarded by this adaptive overlay into the *same* batch `items[].candidate` before the Node planner. The overlay may split/batch/defer transport errors but cannot silently drop evidence or change source authority. The integration test must invoke the adaptive planner function, not mock away its signature; blocked upstream responses remain negative controls. Terminal media decoding/identity/non-regression remain mandatory for repair acceptance.

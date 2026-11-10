@@ -68,5 +68,35 @@ with tempfile.TemporaryDirectory(prefix="brain-deep-source-boundary-") as direct
     assert observed[0]["diagnosticOnly"] is True
     assert observed[0]["proofAuthority"] is False
 
+    # The real adaptive transport is what production Deep imports, not the
+    # canonical helper in isolation. Its batch must receive the exact source
+    # signal before the Node planner is invoked. A mocked update_plans above
+    # would miss the adapter-signature regression seen in run 42801267351.
+    adaptive_batches = []
+    def adaptive_batch(base_payload, items):
+        assert base_payload["mode"] == "deep"
+        adaptive_batches.extend(items)
+        return {key: {"action": "collect-more-evidence", "allowedProfiles": []}}
+
+    with patch.object(deep, "_base_run_health", return_value=report), \
+         patch.object(deep.brain, "_run_planner_batch", side_effect=adaptive_batch), \
+         patch.object(deep, "_HARNESS_DIFFERENTIAL_AUDITED", True):
+        checked = deep._brain_run_health(
+            stage=stage, registry_path=registry, output_dir=output, mode="deep")
+    assert checked == report
+    assert len(adaptive_batches) == 1
+    forwarded = adaptive_batches[0]["candidate"]["structuralRepairEvidence"]
+    assert forwarded["profile"] == "html_class_token_exact_v1", forwarded
+    assert forwarded["sourceSha256"] == observed[0]["sourceSha256"], forwarded
+    assert forwarded["diagnosticOnly"] and forwarded["proofAuthority"] is False
+
+    # Negative control: blocked transport must NOT authorize a source-repair
+    # inference just because the JS source contains a known structural marker.
+    blocked = {"results": [{**result, "status": "blocked"}]}
+    adaptive_batches.clear()
+    with patch.object(deep.brain, "_run_planner_batch", side_effect=adaptive_batch):
+        deep.brain.update_plans(registry, blocked, "deep", stage=stage)
+    assert adaptive_batches and "structuralRepairEvidence" not in adaptive_batches[0]["candidate"]
+
 print("BRAIN_DEEP_SOURCE_BOUNDARY_OK stage_current_bytes_reached_planner=true "
       "independent_validation_still_required=true publication_authority=false")

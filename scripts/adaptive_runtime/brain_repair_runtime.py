@@ -178,7 +178,7 @@ def replan_observation(
     return _BASE.PLANS.get(key) or {}
 
 
-def update_plans(registry_path: Path, report: dict[str, Any], mode: str) -> dict[str, dict[str, Any]]:
+def update_plans(registry_path: Path, report: dict[str, Any], mode: str, *, stage: Path | None = None) -> dict[str, dict[str, Any]]:
     registry = _BASE._load_json(registry_path, {})
     candidates = {
         str(row.get("key")): row
@@ -197,9 +197,20 @@ def update_plans(registry_path: Path, report: dict[str, Any], mode: str) -> dict
         plan_key = parent_key or raw_key
         if parent_key and plan_key in _BASE.PLANS:
             continue
+        # Do not duplicate or truncate the canonical planner's current-byte
+        # structural evidence. This adaptive overlay owns batch transport,
+        # not source-diagnosis semantics. Its stage is the same sandbox used
+        # for the health result; no provider mutations are performed here.
+        planner_candidate = _BASE._planner_candidate(candidate)
+        if stage is not None:
+            evidence = _BASE._current_source_structural_repair_evidence(
+                stage, candidate, result
+            )
+            if evidence:
+                planner_candidate["structuralRepairEvidence"] = evidence
         items.append({
             "key": plan_key,
-            "candidate": _BASE._planner_candidate(candidate),
+            "candidate": planner_candidate,
             "result": _BASE._planner_result(result),
             "state": _BASE._public_state(candidate, plan_key),
         })
@@ -223,6 +234,6 @@ def wrap_run_health(base_run_health: Callable[..., dict[str, Any]], mode: str) -
             mode=mode,
             health_check=health_check,
         )
-        update_plans(registry_path, report, mode)
+        update_plans(registry_path, report, mode, stage=stage)
         return report
     return _run_health
