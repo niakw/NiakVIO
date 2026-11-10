@@ -9,6 +9,7 @@ on:
       - 'scripts/tv_regression_matrix.py'
       - 'scripts/nuvio_tv_probe_v2.cjs'
       - 'tests/tv_regression_matrix_semantic_scope_test.py'
+      - 'tests/tv_probe_invocation_contract_test.py'
 
 permissions:
   contents: read
@@ -44,6 +45,10 @@ jobs:
         run: npm ci --ignore-scripts --no-audit --no-fund
       - name: Verify semantic TV coverage is not inflated by anime transport alias
         run: python tests/tv_regression_matrix_semantic_scope_test.py
+      - name: Validate Node probe source syntax and invocation fallback contract
+        run: |
+          node --check scripts/nuvio_tv_probe_v2.cjs
+          python tests/tv_probe_invocation_contract_test.py
       - name: Probe actual published TV provider bytes on real episode requests
         run: python scripts/tv_regression_matrix.py
       - name: Report observed streams without asserting decoded episode identity
@@ -57,6 +62,9 @@ jobs:
           data=json.loads(p.read_text(encoding="utf-8"))
           required={"spartacus_s00e01","spartacus_s03e01","breaking_bad_s01e01"}
           rows=data.get("rows") or []
+          invalid=[r.get("provider_id") for r in rows if r.get("status") in {"probe_output_invalid", "audit_error"}]
+          if not rows or invalid:
+              raise SystemExit(f"Invalid live probe evidence; reject green run: {invalid[:20]}")
           observed={row.get("fixture") for row in rows}
           if not required.issubset(observed):
               raise SystemExit(f"Missing real episode probes: {sorted(required-observed)}")
