@@ -6,8 +6,8 @@ wf=(ROOT/".github/workflows/provider-projection-reconcile.yml").read_text(encodi
 
 assert wf.startswith("name: PROVIDERS - Projection Reconcile")
 assert "group: niakvio-core-release-mutation-main" in wf
-assert "cancel-in-progress: true" in wf, "new exact-head projection must cancel guaranteed-stale work"
-assert "cancel-in-progress: true" in wf
+assert "cancel-in-progress: false" in wf, "shared release mutation concurrency must never cancel finalization"
+assert "cancel-in-progress: true" not in wf, "projection must queue; exact-head/drift guard rejects stale after acquisition"
 for required in (
     "detect_provider_projection_drift.py",
     "materialize_provider_v3_one.py",
