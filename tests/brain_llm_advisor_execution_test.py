@@ -5,6 +5,8 @@ import json
 import subprocess
 import os
 import tempfile
+import importlib.util
+import sys
 from pathlib import Path
 
 ROOT=Path(__file__).resolve().parents[1]
@@ -1091,7 +1093,37 @@ route_v2_base_memory=[
     for variant in range(5)
 ]
 
-def route_v2_plan(memory_rows):
+def verified_html_parser_signal():
+    """Use real retained provider renderer bytes; never invent a signature."""
+    scripts = ROOT / "scripts"
+    if str(scripts) not in sys.path:
+        sys.path.insert(0, str(scripts))
+    spec = importlib.util.spec_from_file_location(
+        "historical_html_renderer_oracle", scripts / "provider_patches/4khdhub_runtime_v1.py")
+    assert spec and spec.loader
+    oracle = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(oracle)
+    import brain_repair_runtime as runtime
+    with tempfile.TemporaryDirectory(prefix="brain-post-exhaustion-html-") as folder:
+        stage = Path(folder)
+        path = stage / "providers" / "historical-html-renderer.js"
+        path.parent.mkdir(parents=True)
+        path.write_text(oracle.WRAPPER.replace(
+            "CONFIG_PLACEHOLDER",
+            json.dumps({"base":"https://provider.example","maxStreams":8,"ua":"test"})),
+            encoding="utf-8")
+        signal = runtime._current_source_structural_repair_evidence(
+            stage, {"local_path": "providers/historical-html-renderer.js"}, route_v2_result)
+    assert signal["profile"] == "html_class_token_exact_v1" and signal["diagnosticOnly"]
+    assert signal["proofAuthority"] is False and len(signal["sourceSha256"]) == 64
+    return signal
+
+
+def route_v2_plan(memory_rows, source_evidence=None):
+    current_candidate = {
+        **route_v2_candidate,
+        **({"structuralRepairEvidence": source_evidence} if source_evidence else {}),
+    }
     payload={
         "mode":"repair",
         "explorationChain":True,
@@ -1102,7 +1134,7 @@ def route_v2_plan(memory_rows):
         "negativeMemory":memory_rows,
         "items":[{
             "key":f"published:{route_v2_provider}",
-            "candidate":route_v2_candidate,
+            "candidate":current_candidate,
             "result":route_v2_result,
             "state":{},
         }],
@@ -1113,7 +1145,13 @@ def route_v2_plan(memory_rows):
     )
     return next(iter((json.loads(completed.stdout).get("plans") or {}).values()))
 
-route_v2_first=route_v2_plan(route_v2_base_memory)
+# Without proven current source applicability the generic Brain must NOT
+# select a non-generating HTML Lego (production regression 42802317399).
+unproven_html=route_v2_plan(route_v2_base_memory)
+assert unproven_html["postExhaustionStrategyProfile"]=="route_transition_graph_v2",unproven_html
+assert "html_class_token_exact_v1" not in unproven_html["postExhaustionCandidateProfiles"],unproven_html
+source_evidence=verified_html_parser_signal()
+route_v2_first=route_v2_plan(route_v2_base_memory, source_evidence)
 assert route_v2_first["failureClass"]=="search_gap",route_v2_first
 assert route_v2_first["baseExperimentExhausted"] is True,route_v2_first
 assert route_v2_first["postExhaustionStrategyProfile"]=="html_class_token_exact_v1",route_v2_first
@@ -1151,7 +1189,7 @@ route_v2_second=route_v2_plan([
         "lastOutcome":"rejected",
         "lastReason":"synthetic_legacy_search_contract_failed",
     },
-])
+], source_evidence)
 assert route_v2_second["explorationChainEnabled"] is True,route_v2_second
 assert route_v2_second["strategyEscalated"] is True,route_v2_second
 assert route_v2_second["postExhaustionStrategyProfile"]=="route_transition_graph_v2",route_v2_second

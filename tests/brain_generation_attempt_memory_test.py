@@ -46,6 +46,29 @@ result = {
         "stream_count": 0,
     }],
 }
+def verified_html_parser_signal() -> dict:
+    # Real historical provider renderer used as a structural oracle; no
+    # provider-specific workaround, no mutation and no success declaration.
+    spec = importlib.util.spec_from_file_location(
+        "historical_html_generation_oracle", ROOT / "scripts/provider_patches/4khdhub_runtime_v1.py")
+    assert spec and spec.loader
+    oracle = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(oracle)
+    with tempfile.TemporaryDirectory(prefix="brain-generation-source-") as folder:
+        stage = Path(folder)
+        source = stage / "providers" / "historical-html-renderer.js"
+        source.parent.mkdir(parents=True)
+        source.write_text(oracle.WRAPPER.replace(
+            "CONFIG_PLACEHOLDER",
+            json.dumps({"base":"https://provider.example","maxStreams":8,"ua":"test"})),
+            encoding="utf-8")
+        signal = runtime._current_source_structural_repair_evidence(
+            stage, {"local_path": "providers/historical-html-renderer.js"}, result)
+    assert signal["profile"] == "html_class_token_exact_v1" and signal["diagnosticOnly"]
+    assert signal["proofAuthority"] is False and len(signal["sourceSha256"]) == 64
+    return signal
+
+
 policy = {
     "production": {
         "negativeExperimentMemory": {
@@ -63,7 +86,11 @@ policy = {
     "skillMaturity": {},
 }
 
-def plan(memory: list[dict], force: str = "") -> dict:
+def plan(memory: list[dict], force: str = "", source_evidence: dict | None = None) -> dict:
+    current_candidate = {
+        **candidate,
+        **({"structuralRepairEvidence": source_evidence} if source_evidence else {}),
+    }
     payload = {
         "mode": "learning",
         "policy": policy,
@@ -72,7 +99,7 @@ def plan(memory: list[dict], force: str = "") -> dict:
         "negativeMemory": memory,
         "items": [{
             "key": "published:synthetic-route-cards",
-            "candidate": candidate,
+            "candidate": current_candidate,
             "result": result,
             "state": {},
         }],
@@ -114,7 +141,13 @@ def row(variant: int, generation: int = 1) -> dict:
     }
 
 exhausted = [*[row(i) for i in range(5)], *[row(4, g) for g in range(2, 6)]]
-first = plan(exhausted)
+# A reported failure alone cannot authorize an HTML parser fix. It has to
+# be grounded in the same staged source that the runtime actually executes.
+negative_without_source = plan(exhausted)
+assert negative_without_source["postExhaustionStrategyProfile"] == "route_transition_graph_v2", negative_without_source
+assert "html_class_token_exact_v1" not in negative_without_source["postExhaustionCandidateProfiles"], negative_without_source
+source_signal = verified_html_parser_signal()
+first = plan(exhausted, source_evidence=source_signal)
 assert first["baseExperimentExhausted"] is True, first
 assert first["postExhaustionStrategyProfile"] == "html_class_token_exact_v1", first
 assert first["action"] == "probe-targeted-repair", first
@@ -133,7 +166,7 @@ for previous_fp in ("", "a" * 64):
         "executionObserved": True,
         "strategyImplementationFingerprint": previous_fp,
     }
-    replay = plan([*exhausted, legacy])
+    replay = plan([*exhausted, legacy], source_evidence=source_signal)
     assert replay["postExhaustionStrategyProfile"] == "html_class_token_exact_v1", replay
 
 # Same profile implementation, repeatedly failing to generate a candidate:
@@ -147,7 +180,7 @@ no_child_same_impl = {
     "generationAttemptObserved": True,
     "strategyImplementationFingerprint": fp,
 }
-rotated = plan([*exhausted, no_child_same_impl])
+rotated = plan([*exhausted, no_child_same_impl], source_evidence=source_signal)
 assert rotated["postExhaustionStrategyProfile"] != "html_class_token_exact_v1", rotated
 assert rotated["postExhaustionStrategyProfile"], rotated
 assert rotated["action"] == "probe-targeted-repair", rotated
@@ -162,7 +195,7 @@ executed_rejection = {
     "lastReason": "required_category_playable_proof:movie",
     "strategyImplementationFingerprint": "a" * 64,
 }
-rejected = plan([*exhausted, executed_rejection])
+rejected = plan([*exhausted, executed_rejection], source_evidence=source_signal)
 assert rejected["postExhaustionStrategyProfile"] != "html_class_token_exact_v1", rejected
 
 # Legacy ingestion must normalize "not_generated" regardless of old flag.
