@@ -8,6 +8,8 @@ assert {line.split('provider: ',1)[1].split(',')[0].strip() for line in workflow
         if '- { provider: ' in line}==expected
 assert "ref: ${{ github.sha }}" in workflow
 assert 'NIAKVIO_REQUIRE_DECODE_PROOF' in workflow
+assert 'python tests/brain_strict_fixture_category_test.py' in workflow
+assert "'scripts/evaluate_brain_llm_force_candidates.py'" in workflow
 assert 'publicationAuthority' in workflow and 'False' in workflow
 assert 'providerMutationAllowed' in workflow
 assert 'candidateDecodedIdentityProven' in workflow

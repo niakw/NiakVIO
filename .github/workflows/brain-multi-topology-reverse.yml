@@ -7,6 +7,9 @@ on:
     paths:
       - '.github/workflows/brain-multi-topology-reverse.yml'
       - 'tests/brain_multi_topology_reverse_workflow_test.py'
+      - 'tests/brain_strict_fixture_category_test.py'
+      - 'scripts/evaluate_brain_llm_force_candidates.py'
+      - 'scripts/capture_brain_live_context.py'
 
 permissions:
   contents: read
@@ -49,6 +52,7 @@ jobs:
           set -euo pipefail
           test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
           python tests/brain_multi_topology_reverse_workflow_test.py
+          python tests/brain_strict_fixture_category_test.py
           python -m py_compile scripts/capture_brain_live_context.py
           npm ci --ignore-scripts --no-audit --no-fund
       - name: Observe real provider network and exact current source (no mutation)
