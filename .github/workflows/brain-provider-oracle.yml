@@ -38,8 +38,13 @@ jobs:
           node --check tests/brain_oracles/animevost_fr/run_oracle.cjs
           node --check tests/brain_oracles/animevost_fr/probe_live_api.mjs
           python -m py_compile tests/brain_oracles/animevost_fr/test_reverse_chain.py
+          python -m py_compile tests/brain_oracles/animevost_fr/test_compiler_episode_bindings.py
       - name: Reproduce failing runtime then execute preserved repaired-provider oracle
         run: python tests/brain_oracles/animevost_fr/test_reverse_chain.py
+      - name: Replay Brain acceptance compiler with episode-aware plan and safety negatives
+        run: |
+          python tests/brain_oracles/animevost_fr/test_compiler_episode_bindings.py
+          python tests/brain_accepted_program_v3_compiler_test.py
 
   provider-live-schema:
     runs-on: ubuntu-latest
