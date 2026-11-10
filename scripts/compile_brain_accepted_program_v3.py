@@ -5,7 +5,7 @@ from typing import Any
 from urllib.parse import urlsplit
 SAFE_TYPES={'movie','tv','anime'}; SAFE_METHODS={'GET','POST'}
 SAFE_HEADER_NAMES={'accept','accept-language','content-type','origin','referer','user-agent'}
-SUPPORTED_BINDINGS={'id','slug'}; BINDING=re.compile(r'\{binding:([A-Za-z0-9_.-]+)\}',re.I); PROOF_MODEL_VERSION=6
+SUPPORTED_BINDINGS={'id','slug','season','episode'}; BINDING=re.compile(r'\{binding:([A-Za-z0-9_.-]+)\}',re.I); PROOF_MODEL_VERSION=6
 NON_PROVIDER_HOSTS={
     'api.themoviedb.org','graphql.anilist.co','kitsu.io','v3-cinemeta.strem.io','arm.haglund.dev',
     'github.com','raw.githubusercontent.com','google.com','www.google.com','google.co.in','www.google.co.in',
@@ -80,6 +80,11 @@ def compile_program(program:dict[str,Any],provider:str)->dict[str,Any]:
         semantic=str(r.get('semanticType') or '').strip().casefold();lanes=[semantic] if semantic in SAFE_TYPES else types
         bindings=[str(x).strip().casefold() for x in r.get('requiredBindings') or [] if str(x).strip()]
         if any(x not in SUPPORTED_BINDINGS for x in bindings):raise ValueError('unsupported binding')
+        # Coordinate bindings are request parameters, never upstream catalogue IDs.
+        # ProviderBase already renders {season}/{episode} from the canonical request,
+        # including season zero. Forbid them on movie lanes to prevent identity drift.
+        if {'season','episode'}.intersection(bindings) and 'movie' in lanes:
+            raise ValueError('episodic coordinate binding on movie lane')
         rb=[m.group(1).casefold() for m in BINDING.finditer(route)]
         if sorted(set(rb))!=sorted(set(bindings)) and (rb or bindings):raise ValueError('binding not route representable')
         response_kind=str(r.get('response') or 'html-or-text').casefold()
