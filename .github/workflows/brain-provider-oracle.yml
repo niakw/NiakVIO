@@ -24,6 +24,7 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
+          fetch-depth: 0
           persist-credentials: false
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0
         with:
@@ -39,7 +40,7 @@ jobs:
           node --check tests/brain_oracles/animevost_fr/probe_live_api.mjs
           python -m py_compile tests/brain_oracles/animevost_fr/test_reverse_chain.py
           python -m py_compile tests/brain_oracles/animevost_fr/test_compiler_episode_bindings.py
-      - name: Reproduce failing runtime then execute preserved repaired-provider oracle
+      - name: Compare actual historical failure against current family Lego and preserved repaired-provider oracle
         run: python tests/brain_oracles/animevost_fr/test_reverse_chain.py
       - name: Replay Brain acceptance compiler with episode-aware plan and safety negatives
         run: |

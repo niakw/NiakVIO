@@ -33,7 +33,12 @@ WRAPPER = r'''
     var md=mdRow((obj&&(obj.tmdbMetadata||obj.tmdb_metadata||obj.metadata))||ctx.tmdbMetadata||null);
     var type=s((obj&&(obj.canonicalMediaType||obj.mediaType||obj.type))||ctx.canonicalMediaType||args[1]||"tv").toLowerCase();
     if(type==="movie")return null;
-    var season=Number((obj&&obj.season)!=null?obj.season:args[2])||1,episode=Number((obj&&obj.episode)!=null?obj.episode:args[3])||1;
+    var rawSeason=(obj&&obj.season)!=null?obj.season:args[2],rawEpisode=(obj&&obj.episode)!=null?obj.episode:args[3];
+    // Never treat a requested S00 as a falsy default to S01. Missing or
+    // malformed coordinates cannot justify returning another episode.
+    if(rawSeason==null||rawEpisode==null||s(rawSeason)===""||s(rawEpisode)==="")return null;
+    var season=Number(rawSeason),episode=Number(rawEpisode);
+    if(!Number.isInteger(season)||season<0||season>1000||!Number.isInteger(episode)||episode<1||episode>10000)return null;
     var aliases=aliasesFrom(md);if(!aliases.length)return null;
     var seasonCounts={};if(Array.isArray(md.seasons)){for(var i=0;i<md.seasons.length;i++){var row=md.seasons[i]||{},sn=Number(row.season_number),ec=Number(row.episode_count);if(sn>0&&ec>0)seasonCounts[sn]=ec}}
     return {aliases:aliases,title:aliases[0],season:season,episode:episode,seasonCounts:seasonCounts,type:"tv"}
@@ -86,10 +91,50 @@ WRAPPER = r'''
 
   async function animevost(meta){
     var found=null;
-    for(var i=0;i<meta.aliases.length&&i<4&&!found;i++){var data=await json(c.base+"/api/anime/search?q="+encodeURIComponent(meta.aliases[i]));if(!data)data=await json(c.base+"/api/animes/search?q="+encodeURIComponent(meta.aliases[i]));var rows=arr(data&&data.results);if(rows.length){rows.sort(function(a,b){return score(b.title||b.name||b.slug,meta.aliases[i])-score(a.title||a.name||a.slug,meta.aliases[i])});found=rows[0]}}
-    if(!found||!found.slug)return [];var detail=await json(c.base+"/api/animes/"+encodeURIComponent(found.slug)),seasons=arr(detail&&detail.seasons),season=null;for(var a=0;a<seasons.length;a++)if(Number(seasons[a]&&seasons[a].season_number)===meta.season){season=seasons[a];break}if(!season)season=seasons[0]||null;if(!season)return [];
-    var eps=arr(season.episodes),ep=null;for(var e=0;e<eps.length;e++)if(Number(eps[e]&&eps[e].episode_number)===meta.episode){ep=eps[e];break}if(!ep)ep=eps[0]||null;if(!ep)return [];
-    var streams=arr(ep.streams),out=[];for(var z=0;z<streams.length&&out.length<8;z++){var r=streams[z]||{},u=s(r.video_url);if(!u)continue;out.push(stream(u,c.name+" ["+s(r.quality||"1080p")+"] ["+s(r.language||"VOSTFR")+"]","fr",s(r.quality||"1080p"),null))}return out
+    for(var i=0;i<meta.aliases.length&&i<4&&!found;i++){
+      var query=encodeURIComponent(meta.aliases[i]);
+      // HTTP 200 + results=[] is not a successful catalogue lookup. Probe
+      // both observed provider-owned search routes without trusting status.
+      var paths=["/api/anime/search?q=","/api/animes/search?q="];
+      for(var p=0;p<paths.length&&!found;p++){
+        var data=await json(c.base+paths[p]+query);
+        var rows=arr(data&&data.results);
+        if(!rows.length)rows=arr(data&&data.animes);
+        if(!rows.length)rows=arr(data&&data.data&&data.data.results);
+        rows=rows.filter(function(row){
+          return row&&s(row.slug)&&score(row.title||row.name||"",meta.aliases[i])>=70;
+        });
+        rows.sort(function(a,b){
+          return score(b.title||b.name,meta.aliases[i])-score(a.title||a.name,meta.aliases[i]);
+        });
+        if(rows.length)found=rows[0];
+      }
+    }
+    if(!found||!found.slug)return [];
+    var detail=await json(c.base+"/api/animes/"+encodeURIComponent(s(found.slug)));
+    var seasons=arr(detail&&detail.seasons),season=null;
+    for(var a=0;a<seasons.length;a++){
+      if(Number(seasons[a]&&seasons[a].season_number)===meta.season){season=seasons[a];break}
+    }
+    // A catalogue does not authorize falling back to seasons[0] or eps[0]:
+    // the wrong media would appear under the caller's S00/S01 label.
+    if(!season)return [];
+    var eps=arr(season.episodes),ep=null;
+    for(var e=0;e<eps.length;e++){
+      if(Number(eps[e]&&eps[e].episode_number)===meta.episode){ep=eps[e];break}
+    }
+    if(!ep)return [];
+    var streams=arr(ep.streams),out=[];
+    for(var z=0;z<streams.length&&out.length<8;z++){
+      var r=streams[z]||{},u=s(r.video_url);if(!/^https?:\/\/\S+$/i.test(u))continue;
+      var item=stream(u,c.name+" ["+s(r.quality||"1080p")+"] ["+s(r.language||"VOSTFR")+"]","fr",s(r.quality||"1080p"),null);
+      // These coordinates come from matching provider detail records, not
+      // a fabricated display title, and keep downstream S00 identity intact.
+      item.seasonNumber=Number(season.season_number);
+      item.episodeNumber=Number(ep.episode_number);
+      out.push(item);
+    }
+    return out;
   }
 
   async function wave(meta){
