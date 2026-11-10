@@ -12,6 +12,11 @@ on:
     paths:
       - '.github/workflows/release-finalize.yml'
       - '.github/triggers/release-finalize.json'
+      # Core/ProviderBase edits must reach published bundles, not stop at source tests.
+      - 'scripts/provider_patches/**'
+      - 'scripts/provider_base_store.py'
+      - 'scripts/reapply_published_overrides.py'
+      - 'tests/published_s00_identity_rollout_test.py'
       - 'scripts/finalize_provider_v3_minimizer.py'
       - 'scripts/provider_v3_minimizer.py'
       - 'tests/provider_v3_minimizer_contract_test.py'
