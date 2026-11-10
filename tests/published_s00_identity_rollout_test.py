@@ -58,5 +58,5 @@ assert not missing, (
 )
 print(
     f"FIELD_S00_PUBLISHED_CORE_REVISION verified={len(rows)} "
-    "revision=v18 static_parity_only=true decoded_playback_proven=false"
+    "revision=v19 static_parity_only=true decoded_playback_proven=false"
 )
