@@ -1,0 +1,36 @@
+name: BRAIN - Authenticated multi-family Qwen challenger (read-only)
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/brain-authenticated-source-challenger.yml'
+      - 'tests/brain_authenticated_source_challenger_workflow_test.py'
+
+permissions:
+  contents: read
+
+# This caller's scoped TMDB metadata secrets stay inside the authorized
+# workflow runtime. The reusable Brain worker is immutable SHA-pinned and
+# runs exact source-matched baseline / candidate / confirmation Deep evidence.
+jobs:
+  validate-caller:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Check exact Brain checkout, identity and least privilege
+        run: python tests/brain_authenticated_source_challenger_workflow_test.py
+
+  model-replay:
+    needs: validate-caller
+    uses: niakw/NiakVIO-Brain-LLM/.github/workflows/source-model-challenger-cpu.yml@8fa2f120c11936bcd085d61f8faf2fedcb7c29be
+    with:
+      brain_ref: 8fa2f120c11936bcd085d61f8faf2fedcb7c29be
+      niakvio_ref: ${{ github.sha }}
+    secrets:
+      TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+      TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}

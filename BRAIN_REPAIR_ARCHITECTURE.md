@@ -1444,3 +1444,17 @@ not a provider parse defect. Safe artifacts record categories, counts, SHA and
 test invocation diagnostics without credentials or raw response bodies.
 Preserve all six distinct provider families, never mark those probes as media
 identity, provider repair, or production publication.
+
+
+### Pinned cross-repository live Qwen replay with authenticated TMDB preflight
+NiakVIO owns the TMDB secret context required to hydrate exact film/TV/anime
+fixtures in its native runtime; the Brain repository's unauthenticated runner
+cannot be assumed equivalent when Deep issues zero provider requests. A
+least-privileged NiakVIO caller now executes the SHA-pinned Brain reusable
+workflow, passing only TMDB metadata secrets while checking both exact
+checkout refs. Neither repository uploads credentials, response bodies or raw
+model patch input. A missing credential is an infrastructure error, not a
+provider zero-request status. Publication remains disabled; even a model edit
+must pass canonical source apply, materialized bytes, per-fixture baseline →
+candidate → confirmation Deep with playable correct media identity, then
+independent production acceptance.
