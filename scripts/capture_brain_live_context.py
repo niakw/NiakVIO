@@ -106,7 +106,10 @@ def main():
     targets = root / 'targets.json'
     verifier.write_targets(targets, args.provider)
     verifier.stage_provider(verifier.ROOT, args.provider, root / 'stage', targets)
-    health = verifier.health_provider(root / 'stage', root / 'health')
+    # The decoded comparison must use this provider's declared film/TV/anime
+    # fixtures, not the evaluator's anime-only legacy defaults. Otherwise a
+    # movie provider can report runtime_error with zero executed fixtures.
+    health = verifier.health_provider(root / 'stage', root / 'health', args.provider)
     result = verifier.provider_result(health, args.provider)
     events, names = prioritized_execution(result, provider_owned_function_names(root / 'stage', args.provider))
     payload = {

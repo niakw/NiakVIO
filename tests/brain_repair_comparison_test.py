@@ -101,9 +101,12 @@ with tempfile.TemporaryDirectory() as directory:
          patch.object(capture.subprocess, 'check_output', return_value='a' * 40), \
          patch.object(verifier, 'stage_provider'), \
          patch.object(capture, 'provider_owned_function_names', return_value=set()), \
-         patch.object(verifier, 'health_provider', return_value={'results': [{'provider': 'demo', 'tests': []}]}), \
+         patch.object(verifier, 'health_provider', return_value={'results': [{'provider': 'demo', 'tests': []}]}) as provider_health, \
          contextlib.redirect_stdout(io.StringIO()):
         capture.main()
+        assert provider_health.call_args.args[2] == 'demo', (
+            'Brain reverse preflight dropped provider-owned fixture category'
+        )
         refreshed = json.loads(live_path.read_text())
         assert refreshed['script_shell_recheck_performed'] is True
         assert refreshed['http_script_shell_only'] is False

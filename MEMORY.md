@@ -2082,3 +2082,20 @@ La version v19 acceptait encore dans certains cas un stream étiqueté S00E01 pa
   matrix run result on new HEAD must be inspected; it is not a repair.
 - Qwen3.5-9B Q4 CPU pilot in Brain-LLM runs separately, no paid/API,
   and remains a diagnostic benchmark, not promoted model.
+
+### 2026-11-10 — Reverse harness zero-fixture classification fixed
+
+Actual run [42795904155](https://github.com/niakw/NiakVIO/actions/runs/42795904155) produced six green *observation* jobs but revealed four untested providers:
+4KHDHub, MoviesMod, Yflix and Flemmix returned `runtime_error` with
+`fixtures=0`, not proven provider defects. AllAnime (2 fixtures) returned
+HTML 200 + JSON 200 with 0 streams; AnimeVostFR (2 fixtures) returned
+one stream but independently decoded episode identity was unproven.
+The bug was in Brain observation: `capture_brain_live_context.py` called
+`verifier.health_provider(stage, output)` without its supported provider
+argument under strict decode mode, invoking anime-only legacy fixtures for
+other media types. Pass exact provider to obtain immutable declared
+movie/TV/anime fixtures; protect by regression test. The cross-topology
+matrix now reports fixture count and **fails** explicitly on zero fixtures
+while retaining negative artifacts, instead of greenwashing harness absence.
+The new SHA and live rerun must be checked before calling this validated.
+No provider source changed and no repair accepted.
