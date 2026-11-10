@@ -27,7 +27,13 @@ rows = [
     {"title": "Spartacus S02E01", "url": "https://cdn.example/unverified-alternate-s2.m3u8"},
     {"name": "Spartacus", "season": 1, "episode": 1, "url": "https://cdn.example/wrong-structured.m3u8"},
     {"name": "Spartacus", "sourceUrl": "https://reader.example/watch?season=2&episode=1", "url": "https://cdn.example/wrong-reader.m3u8"},
-    {"title": "Spartacus S00E01", "url": "https://cdn.example/correct-s00.m3u8"},
+    {"title": "Spartacus S00E01", "url": "https://cdn.example/correct-s00.m3u8",
+     "subtitles": [
+         {"url": "https://subs.example/Spartacus.S00E01.fr.vtt", "language": "fr"},
+         {"url": "https://subs.example/Spartacus.S03E01.fr.vtt", "language": "fr"},
+         {"url": "https://subs.example/opaque-episode-attached.vtt", "language": "fr"},
+         {"url": "https://subs.example/generic.vtt", "seasonNumber": 2, "episodeNumber": 1},
+     ]},
     {"name": "Spartacus", "seasonNumber": 0, "episodeNumber": 1, "url": "https://cdn.example/correct-structured.m3u8"},
     {"name": "Server 1", "url": "https://cdn.example/opaque-unverified.m3u8"},
     {"name": "Server 2", "sourceUrl": "https://reader.example/watch?season=0&episode=1", "url": "https://cdn.example/correct-source-coordinate.m3u8"},
@@ -49,6 +55,11 @@ runner = compiled + """
   const s1=await module.exports.getStreams({...q,season:1});
   assert(s1.some(r=>r.url==='https://cdn.example/wrong-s1.m3u8'));
   assert(!s1.some(r=>r.url==='https://cdn.example/correct-s00.m3u8'));
+  const special=rows.find(r=>r.url==='https://cdn.example/correct-s00.m3u8');
+  assert.deepEqual(special.subtitles.map(r=>r.url),[
+    'https://subs.example/Spartacus.S00E01.fr.vtt',
+    'https://subs.example/opaque-episode-attached.vtt'
+  ],'wrong-episode external subtitles must not be associated with S00 media');
   const pos=await module.exports.getStreams(q.tmdbId,q.mediaType,0,1);
   assert.deepEqual(pos.map(r=>r.url), rows.map(r=>r.url));
 })().catch(e=>{console.error(e);process.exit(1)});
