@@ -446,7 +446,7 @@ function historicalStrategyHint(providerId, failureClass, generation, memoryRows
   return { profile: "", caseId: "", solutionClass: "" };
 }
 
-function postExhaustionStrategyHint(failureClass, memoryRows, rotateEvery, preferredProfile = "") {
+function postExhaustionStrategyHint(failureClass, memoryRows, rotateEvery, preferredProfile = "", sourceEligibility = {}) {
   const failure = canonicalFailureClass(failureClass);
   const candidates = postExhaustionCandidates(failure);
   const preferred = stringValue(preferredProfile).toLowerCase();
@@ -459,6 +459,12 @@ function postExhaustionStrategyHint(failureClass, memoryRows, rotateEvery, prefe
     : candidates;
   for (let index = 0; index < ordered.length; index += 1) {
     const row = ordered[index];
+    // A named HTML parser Lego is not an executable hypothesis unless the
+    // exact currently staged source contains its known defect. Historical
+    // family memory / causal classification cannot create applicability.
+    // Other already-installed strategies may still be tried normally.
+    if (row.profile === "html_class_token_exact_v1"
+        && sourceEligibility.exactHtmlTokenSource !== true) continue;
     const implementationFingerprint = strategyImplementationFingerprint(row.profile);
     const alreadyFailed = memoryRows.some((memory) => {
       if (
@@ -966,9 +972,18 @@ function buildPlan(item) {
   const positiveProgramReplayHint = experimentExhausted
     ? providerPositiveProgramReplayHint(reusable, allMemoryMatches, rotateEvery)
     : { profile: "", method: "", index: -1, positiveProgramFingerprint: "" };
+  const structuralEvidence = asRecord(candidate.structuralRepairEvidence);
+  const exactHtmlTokenSource = (
+    structuralEvidence.profile === "html_class_token_exact_v1"
+    && structuralEvidence.source === "current_candidate_bytes"
+    && structuralEvidence.diagnosticOnly === true
+    && structuralEvidence.proofAuthority === false
+    && /^[0-9a-f]{64}$/.test(stringValue(structuralEvidence.sourceSha256))
+  );
+  const sourceEligibility = { exactHtmlTokenSource };
   const postExhaustionCandidateProfiles = postExhaustionCandidates(evidence.failureClass)
     .map((row) => stringValue(row.profile))
-    .filter(Boolean);
+    .filter((profile) => profile && (profile !== "html_class_token_exact_v1" || exactHtmlTokenSource));
   // An architecture FORCE promotion is followed by ONE representative replay.
   // That replay must execute the newly materialized profile even when older
   // base variants have not yet exhausted: otherwise the run measures a base
@@ -983,7 +998,7 @@ function buildPlan(item) {
   const earlyForceHint = forcePreferredEligible
     ? postExhaustionStrategyHint(
         evidence.failureClass, causalFamilyMemoryMatches, rotateEvery,
-        forcePreferredProfile,
+        forcePreferredProfile, sourceEligibility,
       )
     : { profile: "", method: "", index: -1 };
   // An executed-negative preferred strategy may rotate to a sibling inside
@@ -997,7 +1012,7 @@ function buildPlan(item) {
     : (explorationMode && experimentExhausted)
       ? postExhaustionStrategyHint(
           evidence.failureClass, causalFamilyMemoryMatches, rotateEvery,
-          forcePreferredProfile,
+          forcePreferredProfile, sourceEligibility,
         )
       : forcePreferredSelectedEarly
         ? earlyForceHint
@@ -1212,7 +1227,6 @@ function buildPlan(item) {
     { ...plan, action: effectiveAction, hypotheses: effectiveHypotheses },
     executionRepairTarget,
   );
-  const structuralEvidence = asRecord(candidate.structuralRepairEvidence);
   const staticProfile = "html_class_token_exact_v1";
   const staticFingerprint = strategyImplementationFingerprint(staticProfile);
   // A real source-byte signature may prioritize a known generic parser Lego.

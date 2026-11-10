@@ -1407,3 +1407,7 @@ The Deep adapter must call `update_plans(registry, health, "deep", stage=stage)`
 ### 2026-11-10 — Canonical/adaptive Brain planner parity requirement
 
 `run_adaptive_deep_repair.py` imports `scripts/adaptive_runtime/brain_repair_runtime.py` through the adaptive-first import order. Any canonical `brain_repair_runtime.update_plans` diagnostic input (including `stage` and its bounded `structuralRepairEvidence`) must be explicitly forwarded by this adaptive overlay into the *same* batch `items[].candidate` before the Node planner. The overlay may split/batch/defer transport errors but cannot silently drop evidence or change source authority. The integration test must invoke the adaptive planner function, not mock away its signature; blocked upstream responses remain negative controls. Terminal media decoding/identity/non-regression remain mandatory for repair acceptance.
+
+### 2026-11-10 — Source-applicable post-exhaustion Lego selection
+
+A profile named in the post-exhaustion family catalogue does not imply it can rewrite current provider bytes. For the exact HTML CSS-class token Lego, only the bounded, freshly computed `candidate.structuralRepairEvidence` from the staged source SHA may authorize selection. When absent, skip this executor and consider other strategies, not a fake `probe-targeted-repair` plan that runtime filters to zero candidates. Keep historical memory separate from current applicability. This is **selection validity**, not publication authority or a relaxation of identity/media requirements.
