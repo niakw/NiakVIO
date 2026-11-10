@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 import sys
 
@@ -242,7 +243,16 @@ for path in (ROOT / ".github/workflows").glob("*.yml"):
     text = path.read_text(encoding="utf-8")
     if path.name == "brain-learning-lab.yml":
         continue
-    assert "run_adaptive_quick_repair.py" not in text, path.name
-    assert "run_adaptive_deep_repair.py" not in text, path.name
+    # A workflow may *watch* an executable's source path as a change trigger.
+    # Only executing legacy Quick/Deep scripts outside Learning violates the
+    # ownership contract; scanning raw YAML gave a false red for valid "paths".
+    watched_source = re.compile(
+        r"""^\s*-\s*["']?scripts/run_adaptive_(?:quick|deep)_repair\.py["']?\s*$"""
+    )
+    executable_yaml = "\n".join(
+        line for line in text.splitlines() if not watched_source.fullmatch(line)
+    )
+    assert "run_adaptive_quick_repair.py" not in executable_yaml, path.name
+    assert "run_adaptive_deep_repair.py" not in executable_yaml, path.name
 
 print(f"Provider v3 documentation and workflow ownership contract passed: current={VISIBLE_EXPECTED} historical={HISTORICAL_PROVIDER_COUNT}")
