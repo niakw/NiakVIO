@@ -1,38 +1,60 @@
 {
   "schemaVersion": 1,
-  "sourceRunId": "42723572588",
-  "sourceTriggerSha": "d886d7cc40681137798d2c29a9c27fc8ec1f5cf0",
-  "unresolvedProviderCount": 21,
-  "dynamicVariantProviderCount": 6,
+  "sourceRunId": "42729534813",
+  "sourceTriggerSha": "86fdf442761dd6629f2ea34073deb8ee5e0cd61e",
+  "unresolvedProviderCount": 28,
+  "dynamicVariantProviderCount": 4,
   "dynamicVariantProviders": [
     "animevost-fr",
     "animevostfr",
-    "coflix",
     "hindmoviez",
-    "kehflix",
-    "vidlove"
+    "papadustream"
   ],
   "dynamicVariantCurrentObservedProviders": [
     "4khdhub",
     "allanime",
     "allwish",
+    "anikototv",
+    "anime-sama",
+    "anime-ultime",
     "animekai",
     "animesalt",
     "animesama-co",
     "animesultra",
     "animevost-fr",
     "animevostfr",
+    "castle",
+    "coflix",
     "flemmix",
+    "french-manga",
+    "hindmoviez",
+    "kehflix",
+    "kurage",
     "mallumv",
     "moviebox",
+    "movieshunt",
     "moviesmod",
+    "mugiwarastream",
+    "neko-sama",
+    "papadustream",
+    "persianstremio",
+    "playimdb",
+    "purstream",
+    "sekai",
+    "streamzo",
     "uhdmovies",
     "vidfast",
+    "vidlove",
+    "vidrock",
+    "voiranime",
+    "voiranime-homes",
+    "voiranime-rip",
     "vostfree",
+    "wookafr",
     "yflix"
   ],
   "dynamicVariantFallbackUsed": true,
-  "groupCount": 12,
+  "groupCount": 14,
   "executionModel": {
     "default": "family/signature batch",
     "liveProbeConcurrency": "audit_provider_quick_yield ThreadPool",
@@ -59,10 +81,11 @@
       ],
       "harnessTransportClasses": [],
       "transportSignature": "not-applicable",
-      "providerCount": 4,
+      "providerCount": 5,
       "providers": [
         "4khdhub",
         "animesalt",
+        "kehflix",
         "moviebox",
         "moviesmod"
       ],
@@ -71,6 +94,43 @@
         "provider-census-status.json:brainCheckRequired"
       ],
       "dynamicVariantProviders": [],
+      "executionPolicy": "batch-first",
+      "providerLocalFallback": "only-after-shared-profile-failure"
+    },
+    {
+      "groupId": "candidate-replay|mixed_embed_resolver",
+      "repairScope": "candidate-replay",
+      "runtimeFamilies": [
+        "dle-search-series-season-episode",
+        "mixed_embed_resolver"
+      ],
+      "capabilityStrategy": "mixed_embed_resolver",
+      "evidenceDepths": [
+        "chain",
+        "lookup",
+        "none"
+      ],
+      "dominantIssues": [
+        "network_http_error",
+        "network_zero_result",
+        "provider_returned_streams"
+      ],
+      "harnessTransportClasses": [],
+      "transportSignature": "not-applicable",
+      "providerCount": 4,
+      "providers": [
+        "animesama-co",
+        "animevostfr",
+        "coflix",
+        "french-manga"
+      ],
+      "action": "replay/rematerialize retained candidate knowledge against current bytes before new mutation",
+      "selectionAuthorities": [
+        "provider-census-status.json:brainCheckRequired"
+      ],
+      "dynamicVariantProviders": [
+        "animevostfr"
+      ],
       "executionPolicy": "batch-first",
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
@@ -110,35 +170,32 @@
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
     {
-      "groupId": "candidate-replay|mixed_embed_resolver",
+      "groupId": "candidate-replay|direct_media",
       "repairScope": "candidate-replay",
       "runtimeFamilies": [
-        "dle-search-series-season-episode",
-        "mixed_embed_resolver"
+        "api_stream_resolver",
+        "direct_media"
       ],
-      "capabilityStrategy": "mixed_embed_resolver",
+      "capabilityStrategy": "direct_media",
       "evidenceDepths": [
-        "chain",
-        "lookup"
+        "lookup",
+        "none"
       ],
       "dominantIssues": [
-        "network_http_error",
-        "network_zero_result"
+        "network_http_error"
       ],
       "harnessTransportClasses": [],
       "transportSignature": "not-applicable",
       "providerCount": 2,
       "providers": [
-        "animesama-co",
-        "animevostfr"
+        "movieshunt",
+        "persianstremio"
       ],
       "action": "replay/rematerialize retained candidate knowledge against current bytes before new mutation",
       "selectionAuthorities": [
         "provider-census-status.json:brainCheckRequired"
       ],
-      "dynamicVariantProviders": [
-        "animevostfr"
-      ],
+      "dynamicVariantProviders": [],
       "executionPolicy": "batch-first",
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
@@ -174,35 +231,87 @@
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
     {
-      "groupId": "variant-coverage|html_scraper",
-      "repairScope": "variant-coverage",
+      "groupId": "transport|html_scraper",
+      "repairScope": "transport",
       "runtimeFamilies": [
         "html_scraper"
       ],
       "capabilityStrategy": "html_scraper",
       "evidenceDepths": [
-        "chain",
-        "lookup"
+        "none"
       ],
       "dominantIssues": [
-        "none",
-        "provider_returned_wrong_content"
+        "network_exception"
       ],
       "harnessTransportClasses": [],
       "transportSignature": "not-applicable",
       "providerCount": 2,
       "providers": [
-        "kehflix",
-        "vidlove"
+        "vidlove",
+        "vidrock"
       ],
-      "action": "current execution proves playable output but fewer variants than the provider announced; keep publication authority unchanged and send completeness repair to Brain Learning",
+      "action": "refresh transport authority before provider-local code changes",
       "selectionAuthorities": [
-        "provider-census-sharded-latest.json:dynamic-variant-debt"
+        "provider-census-status.json:brainCheckRequired"
       ],
-      "dynamicVariantProviders": [
-        "kehflix",
-        "vidlove"
+      "dynamicVariantProviders": [],
+      "executionPolicy": "batch-first",
+      "providerLocalFallback": "only-after-shared-profile-failure"
+    },
+    {
+      "groupId": "transport|mixed_embed_resolver",
+      "repairScope": "transport",
+      "runtimeFamilies": [
+        "menu-search-series-focus-player",
+        "mixed_embed_resolver"
       ],
+      "capabilityStrategy": "mixed_embed_resolver",
+      "evidenceDepths": [
+        "none"
+      ],
+      "dominantIssues": [
+        "network_exception",
+        "network_http_error"
+      ],
+      "harnessTransportClasses": [],
+      "transportSignature": "not-applicable",
+      "providerCount": 2,
+      "providers": [
+        "anime-ultime",
+        "animekai"
+      ],
+      "action": "refresh transport authority before provider-local code changes",
+      "selectionAuthorities": [
+        "provider-census-status.json:brainCheckRequired"
+      ],
+      "dynamicVariantProviders": [],
+      "executionPolicy": "batch-first",
+      "providerLocalFallback": "only-after-shared-profile-failure"
+    },
+    {
+      "groupId": "learning|mixed_embed_resolver",
+      "repairScope": "learning",
+      "runtimeFamilies": [
+        "mixed_embed_resolver"
+      ],
+      "capabilityStrategy": "mixed_embed_resolver",
+      "evidenceDepths": [
+        "lookup"
+      ],
+      "dominantIssues": [
+        "provider_returned_streams"
+      ],
+      "harnessTransportClasses": [],
+      "transportSignature": "not-applicable",
+      "providerCount": 1,
+      "providers": [
+        "voiranime-homes"
+      ],
+      "action": "queue by signature for Brain learning; provider-local repair only after shared profiles fail",
+      "selectionAuthorities": [
+        "provider-census-status.json:brainCheckRequired"
+      ],
+      "dynamicVariantProviders": [],
       "executionPolicy": "batch-first",
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
@@ -317,33 +426,6 @@
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
     {
-      "groupId": "transport|mixed_embed_resolver",
-      "repairScope": "transport",
-      "runtimeFamilies": [
-        "mixed_embed_resolver"
-      ],
-      "capabilityStrategy": "mixed_embed_resolver",
-      "evidenceDepths": [
-        "none"
-      ],
-      "dominantIssues": [
-        "network_exception"
-      ],
-      "harnessTransportClasses": [],
-      "transportSignature": "not-applicable",
-      "providerCount": 1,
-      "providers": [
-        "animekai"
-      ],
-      "action": "refresh transport authority before provider-local code changes",
-      "selectionAuthorities": [
-        "provider-census-status.json:brainCheckRequired"
-      ],
-      "dynamicVariantProviders": [],
-      "executionPolicy": "batch-first",
-      "providerLocalFallback": "only-after-shared-profile-failure"
-    },
-    {
       "groupId": "variant-coverage|direct_media",
       "repairScope": "variant-coverage",
       "runtimeFamilies": [
@@ -354,7 +436,7 @@
         "lookup"
       ],
       "dominantIssues": [
-        "none"
+        "provider_returned_streams"
       ],
       "harnessTransportClasses": [],
       "transportSignature": "not-applicable",
@@ -373,12 +455,12 @@
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
     {
-      "groupId": "variant-coverage|mixed_embed_resolver",
+      "groupId": "variant-coverage|html_scraper",
       "repairScope": "variant-coverage",
       "runtimeFamilies": [
-        "mixed_embed_resolver"
+        "html_scraper"
       ],
-      "capabilityStrategy": "mixed_embed_resolver",
+      "capabilityStrategy": "html_scraper",
       "evidenceDepths": [
         "chain"
       ],
@@ -389,14 +471,14 @@
       "transportSignature": "not-applicable",
       "providerCount": 1,
       "providers": [
-        "coflix"
+        "papadustream"
       ],
       "action": "current execution proves playable output but fewer variants than the provider announced; keep publication authority unchanged and send completeness repair to Brain Learning",
       "selectionAuthorities": [
         "provider-census-sharded-latest.json:dynamic-variant-debt"
       ],
       "dynamicVariantProviders": [
-        "coflix"
+        "papadustream"
       ],
       "executionPolicy": "batch-first",
       "providerLocalFallback": "only-after-shared-profile-failure"
