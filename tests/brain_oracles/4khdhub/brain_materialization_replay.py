@@ -19,6 +19,12 @@ sys.path.insert(0,str(ROOT/"scripts"/"adaptive_runtime"))
 sys.path.insert(1,str(ROOT/"scripts"))
 import runtime_repair as brain_runtime  # noqa: E402
 
+brain_spec=importlib.util.spec_from_file_location(
+    "niakvio_oracle_canonical_brain",ROOT/"scripts/brain_repair_runtime.py")
+assert brain_spec and brain_spec.loader
+brain_planner=importlib.util.module_from_spec(brain_spec)
+brain_spec.loader.exec_module(brain_planner)
+
 manifest = json.loads((ROOT/"manifest.json").read_text(encoding="utf-8"))
 matches = [row for row in manifest["scrapers"]
            if str(row.get("id") or "").casefold()=="4khdhub"]
@@ -69,12 +75,57 @@ with tempfile.TemporaryDirectory(prefix="brain-html-class-oracle-") as folder:
         "local_patches":[]
     }
     observation={"status":"no_streams","tests":[{"status":"no_streams","stream_count":0}]}
-    applicable=brain_runtime.matching_profiles(
-        candidate,observation,old_bytes.decode("utf-8"),config={}
-    )
-    assert brain_runtime.HTML_CLASS_TOKEN_PROFILE in applicable,applicable
+    evidence=brain_planner._current_source_structural_repair_evidence(
+        stage,candidate,observation)
+    assert evidence.get("profile")=="html_class_token_exact_v1",evidence
+    assert evidence["sourceSha256"]==original_sha,evidence
+    # Run the real Brain JS decision over this *same* published source SHA.
+    planner_input={
+        "mode":"repair","policy":{
+            "production":{
+                "negativeExperimentMemory":{
+                    "rotateExperimentAfterFailures":1,"maxVariantsPerSignature":5},
+                "maxHypotheses":3,"maxMutationsPerProvider":2,
+                "maxRepeatedSignature":2,"maxGeneratedBytesPerProvider":180000,
+                "maxElapsedMsPerProvider":45000,
+            },"skillMaturity":{},
+        },
+        "negativeMemory":[],"historicalSolutions":[],"llmGuidance":[],
+        "learnedSkills":[],
+        "items":[{
+            "key":candidate["key"],
+            "candidate":{"canonical_id":candidate["canonical_id"],
+                         "metadata":{"supportedTypes":["movie","tv"]},
+                         "censusPrior":{"status":"ROUTE PROVEN",
+                                        "dominantIssue":"provider_network_zero_result"},
+                         "structuralRepairEvidence":evidence},
+            "result":{"status":"no_streams",
+                      "evidence":{"streams_playable":0,"streams_returned":0},
+                      "tests":[{"status":"no_streams",
+                                "failure_class":"content_lookup_completed_no_streams",
+                                "fixture":{"category":"movie","mediaType":"movie"},
+                                "stream_count":0,"streams_playable":0,
+                                "network_observations":[{"status":200,"ok":True,
+                                                         "stage":"search"}]}]},
+            "state":{},
+        }],
+    }
+    planned=subprocess.run(
+        ["node",str(ROOT/"engine_v2/scripts/plan-repairs.mjs")],
+        cwd=ROOT,input=json.dumps(planner_input),text=True,capture_output=True,
+        check=False,timeout=24)
+    assert planned.returncode==0,planned.stderr
+    selected=json.loads(planned.stdout)["plans"][candidate["key"]]
+    assert selected["action"]=="probe-targeted-repair",selected
+    assert selected["allowedProfiles"][0]=="html_class_token_exact_v1",selected
+    assert selected["sourceStructuralProfileSelected"] is True,selected
+    brain_planner.reset_runtime_state()
+    brain_planner.PLANS[candidate["key"]]=selected
+    matching=brain_planner.wrap_matching_profiles(brain_runtime.matching_profiles)
+    chosen=matching(candidate,observation,old_bytes.decode("utf-8"),config={})
+    assert chosen and chosen[0]==brain_runtime.HTML_CLASS_TOKEN_PROFILE,chosen
     repaired,error=brain_runtime.create_repair_candidate(
-        stage,candidate,brain_runtime.HTML_CLASS_TOKEN_PROFILE,1
+        stage,candidate,chosen[0],1
     )
     assert error is None,(error,repaired)
     assert repaired is not None
@@ -101,6 +152,6 @@ with tempfile.TemporaryDirectory(prefix="brain-html-class-oracle-") as folder:
             "source_bytes_modified":False,"mock_movie_before":0,
             "mock_movie_after":1,"mock_tv_before":0,"mock_tv_after":1,
             "identity_proof":"fixture-label-only","network_real":False,
-            "decoded_playback_verified":False,"brain_plan_selected":False,
+            "decoded_playback_verified":False,"brain_plan_selected":True,
             "published_repair":False
           },sort_keys=True))
