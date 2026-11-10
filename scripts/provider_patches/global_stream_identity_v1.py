@@ -155,8 +155,48 @@ function exactSpecialEpisodeEvidence(row,q){
   }
   return false;
 }
+function subtitleContradictsEpisode(sub,q,m){
+  if(!episodic(q)||q.episode<=0||sub==null)return false;
+  var fields=[];
+  if(typeof sub==="string")fields.push(sub);
+  else if(typeof sub==="object"){
+    if(structuredEpisodeMismatch(sub,q))return true;
+    var ids=explicitIds(sub);
+    if(ids.tmdbId&&q.tmdbId&&ids.tmdbId!==q.tmdbId)return true;
+    if(ids.imdbId&&(q.imdbId||m.imdbId)&&ids.imdbId!==(q.imdbId||m.imdbId))return true;
+    ["filename","title","name","sourceUrl","pageUrl","playerUrl","url"].forEach(function(k){
+      var value=sub[k];
+      if(k==="url"&&value&&typeof value==="object")value=value.url;
+      if(typeof value==="string")fields.push(value);
+    });
+  }
+  for(var i=0;i<fields.length;i++){
+    var marker=episode(fields[i]);
+    if(marker&&((q.hasSeason&&Number(marker[1])!==q.season)||Number(marker[2])!==q.episode))return true;
+    var solo=standaloneEpisode(fields[i]);
+    if(!marker&&solo&&Number(solo[1])!==q.episode)return true;
+  }
+  return false;
+}
+function keepEpisodeBoundSubtitles(row,q,m){
+  // A stream accepted for one episode must not ship explicitly contradictory
+  // detached captions. Preserve unknown/opaque captions associated with this
+  // stream: only proven contradictions are removed (no fabricated exactness).
+  if(!episodic(q)||q.episode<=0||!row||typeof row!=="object")return row;
+  var out=row;
+  ["subtitles","extCaptions","captions"].forEach(function(key){
+    var source=row[key];
+    if(!Array.isArray(source)||!source.length)return;
+    var kept=source.filter(function(sub){return !subtitleContradictsEpisode(sub,q,m)});
+    if(kept.length!==source.length){
+      if(out===row)out=Object.assign({},row);
+      out[key]=kept;
+    }
+  });
+  return out;
+}
 async function mismatch(row,q,m,state){if(!exactSpecialEpisodeEvidence(row,q))return true;if(structuredEpisodeMismatch(row,q))return true;var ids=explicitIds(row);if(ids.tmdbId&&q.tmdbId&&ids.tmdbId!==q.tmdbId)return true;if(ids.imdbId&&(q.imdbId||m.imdbId)&&ids.imdbId!==(q.imdbId||m.imdbId))return true;var expected=expectedTokens(m),cands=explicitCandidates(row);for(var i=0;i<cands.length;i++)if(await candidateContradicts(cands[i],q,m,expected))return true;var pt=await playerPageTitle(row,state);if(pt&&await candidateContradicts({text:pt,kind:"player-page"},q,m,expected))return true;return false}
-function install(o,k){if(!o||typeof o[k]!=="function"||o[k].__nuvioGlobalStreamIdentityV1)return false;var native=o[k];var wrap=async function(){var q=req(arguments),v=await native.apply(this,arguments),x=slot(v);if(!x||!x.list.length)return v;var m=await tmdb(q),kept=[],state={playerProbes:0,playerCache:{}};for(var i=0;i<x.list.length;i++)if(!(await mismatch(x.list[i],q,m,state)))kept.push(x.list[i]);return rebuild(v,x,kept)};wrap.__nuvioGlobalStreamIdentityV1=true;o[k]=wrap;return true}
+function install(o,k){if(!o||typeof o[k]!=="function"||o[k].__nuvioGlobalStreamIdentityV1)return false;var native=o[k];var wrap=async function(){var q=req(arguments),v=await native.apply(this,arguments),x=slot(v);if(!x||!x.list.length)return v;var m=await tmdb(q),kept=[],state={playerProbes:0,playerCache:{}};for(var i=0;i<x.list.length;i++)if(!(await mismatch(x.list[i],q,m,state)))kept.push(keepEpisodeBoundSubtitles(x.list[i],q,m));return rebuild(v,x,kept)};wrap.__nuvioGlobalStreamIdentityV1=true;o[k]=wrap;return true}
 var ok=false;try{if(typeof module!=="undefined"&&module.exports){ok=install(module.exports,"getStreams")||install(module.exports,"streams")}}catch(_e){}try{if(g&&typeof g.getStreams==="function"){if(ok&&typeof module!=="undefined"&&module.exports)g.getStreams=module.exports.getStreams;else install(g,"getStreams")}}catch(_e){}
 })(typeof globalThis!=="undefined"?globalThis:this,CONFIG_PLACEHOLDER);
 '''.replace("MARKER_PLACEHOLDER", marker).replace("CONFIG_PLACEHOLDER", serialized)
