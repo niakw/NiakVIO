@@ -17,6 +17,14 @@ assert 'fixtureCoverageIncomplete' in workflow
 assert 'BRAIN_REVERSE_FIXTURE_COVERAGE' in workflow
 assert 'missingFixtureCategories' in workflow
 assert 'expectedFixtureCount' in workflow
+assert 'audit_brain_harness_differential.py' in workflow
+assert 'tests/brain_harness_differential_test.py' in workflow
+assert 'sameByteHarnessDifferential' in workflow
+assert 'harnessDifferentialChecked' in workflow
+assert 'worker_zero_nuvio_provider_request' in workflow
+assert '--stage health-output/reverse-topology/live-preflight/stage' in workflow
+assert '--health health-output/reverse-topology/live-preflight/health/health-results.json' in workflow
+assert 'health-output/reverse-topology/${{ matrix.provider }}-harness.json' in workflow
 assert 'if host in {"api.themoviedb.org","www.themoviedb.org","image.tmdb.org"}:' in [
     line.strip() for line in workflow.splitlines()
 ]

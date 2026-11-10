@@ -12,6 +12,8 @@ on:
       - 'scripts/capture_brain_live_context.py'
       - 'scripts/run_adaptive_deep_repair.py'
       - 'tests/brain_deep_source_evidence_boundary_test.py'
+      - 'scripts/audit_brain_harness_differential.py'
+      - 'tests/brain_harness_differential_test.py'
 
 permissions:
   contents: read
@@ -56,7 +58,8 @@ jobs:
           python tests/brain_multi_topology_reverse_workflow_test.py
           python tests/brain_strict_fixture_category_test.py
           python tests/brain_deep_source_evidence_boundary_test.py
-          python -m py_compile scripts/capture_brain_live_context.py
+          python tests/brain_harness_differential_test.py
+          python -m py_compile scripts/capture_brain_live_context.py scripts/audit_brain_harness_differential.py
           npm ci --ignore-scripts --no-audit --no-fund
       - name: Observe real provider network and exact current source (no mutation)
         timeout-minutes: 12
@@ -71,6 +74,20 @@ jobs:
           mkdir -p health-output/reverse-topology
           python scripts/capture_brain_live_context.py --provider "$TARGET_PROVIDER" \
             --output "health-output/reverse-topology/$TARGET_PROVIDER.json"
+      - name: Cross-check no-request Deep execution against identical Nuvio bytes
+        timeout-minutes: 6
+        env:
+          TARGET_PROVIDER: ${{ matrix.provider }}
+          TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+          TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/audit_brain_harness_differential.py \
+            --stage health-output/reverse-topology/live-preflight/stage \
+            --health health-output/reverse-topology/live-preflight/health/health-results.json \
+            --output "health-output/reverse-topology/$TARGET_PROVIDER-harness.json" \
+            --timeout 45
       - name: Record provider-owned proof boundary
         if: always()
         env:
@@ -84,6 +101,9 @@ jobs:
           root=Path("health-output/reverse-topology")
           path=root/(os.environ["TARGET_PROVIDER"]+".json")
           raw=json.loads(path.read_text()) if path.is_file() else {}
+          harness_path=root/(os.environ["TARGET_PROVIDER"]+"-harness.json")
+          harness=json.loads(harness_path.read_text()) if harness_path.is_file() else {}
+          differential=(os.environ["TARGET_PROVIDER"] in (harness.get("providers") or []))
           records=raw.get("network_evidence") or []
           response_counts={}
           external=[]
@@ -112,6 +132,13 @@ jobs:
               "expectedFixtureCount":int(raw.get("expected_fixture_count") or 0),
               "fixtureCoverageIncomplete":raw.get("fixture_selection_complete") is not True,
               "missingFixtureCategories":raw.get("missing_fixture_categories") or [],
+              "sameByteHarnessDifferential":bool(differential),
+              "harnessDifferentialChecked":harness_path.is_file(),
+              "harnessClassification":(
+                  "worker_zero_nuvio_provider_request" if differential
+                  else "not_proven" if harness_path.is_file()
+                  else "not_checked"
+              ),
               "candidateDecodedIdentityProven":False,
               "newRepairAccepted":False,
               "publicationAuthority":False,
@@ -132,5 +159,6 @@ jobs:
           path: |
             health-output/reverse-topology/${{ matrix.provider }}.json
             health-output/reverse-topology/${{ matrix.provider }}-summary.json
+            health-output/reverse-topology/${{ matrix.provider }}-harness.json
           if-no-files-found: warn
           retention-days: 7
