@@ -131,30 +131,39 @@ function strongNameMatch(query,result){var a=tokens(query),names=uniq([result&&r
 async function confirmOtherTitle(candidate,q){var key=runtimeTmdbKey();if(!key||!/^\d+$/.test(q.tmdbId||""))return false;var query=queryTitle(candidate.text),qt=tokens(query),singleExplicit=(candidate.kind==="player-page"||candidate.kind==="provenance")&&qt.length===1&&qt[0].length>=4;if(qt.length<2&&!singleExplicit)return false;var endpoint=episodic(q)?"tv":"movie",d=await jsonFetch("https://api.themoviedb.org/3/search/"+endpoint+"?api_key="+encodeURIComponent(key)+"&language=fr-FR&query="+encodeURIComponent(query)+"&include_adult=false");if(!d||!Array.isArray(d.results))return false;for(var i=0;i<Math.min(5,d.results.length);i++){var row=d.results[i];if(!strongNameMatch(query,row))continue;var id=s(row&&row.id);if(id===q.tmdbId)return false;return /^\d+$/.test(id)&&id!==q.tmdbId}return false}
 async function candidateContradicts(candidate,q,m,expected){var text=candidate.text,se=episode(text),solo=standaloneEpisode(text);if(episodic(q)&&q.episode>0&&!se&&solo&&Number(solo[1])!==q.episode)return true;if(q.mediaType==="movie"&&se)return true;if(se&&episodic(q)){var ss=Number(se[1])||0,ee=Number(se[2])||0;if((q.hasSeason&&ss!==q.season)||(q.episode&&ee&&ee!==q.episode))return true;if(overlapsExpected(text,expected))return false;m=await ensureEpisodeTitles(q,m);expected=expectedTokens(m);if(overlapsExpected(text,expected))return false;return await confirmOtherTitle(candidate,q)}var years=norm(text).match(/\b(?:19|20)\d{2}\b/g)||[];if(!episodic(q)&&m.year&&years.length&&!years.some(function(y){return Math.abs(Number(y)-Number(m.year))<=1}))return true;if(overlapsExpected(text,expected))return false;var w=tokens(text),explicit=(candidate.kind==="title"||candidate.kind==="filename"||candidate.kind==="provenance"||candidate.kind==="player-page");if(!contentLike(candidate,q)){if(!explicit||!w.length)return false;if(episodic(q)&&q.hasSeason&&q.season>=0&&q.episode>0){m=await ensureEpisodeTitles(q,m);expected=expectedTokens(m);if(overlapsExpected(text,expected))return false}if(w.length===1&&w[0].length>=4){if(await confirmOtherTitle(candidate,q))return true;if(candidate.kind==="title"&&Object.keys(expected).length)return true}return false}if(candidate.kind==="player-page"&&w.length>=1)return await confirmOtherTitle(candidate,q);if(w.length<2)return false;if(explicit&&w.length>=3)return await confirmOtherTitle(candidate,q);return false}
 function exactSpecialEpisodeEvidence(row,q){
-  // S00 specials can be represented by a different upstream catalogue.
-  // Without an explicit source episode coordinate, an opaque CDN stream may
-  // actually be the provider's S01E01 or an event-season entry. Fail closed.
+  // A provider can manufacture the *display title* "S00E01" from the caller
+  // while returning an opaque S03 player. Display labels are NOT independent
+  // episode identity evidence, so never promote title/name-only markers.
   if(!episodic(q)||!q.hasSeason||q.season!==0||q.episode<=0)return true;
   if(!row||typeof row!=="object")return false;
   var rs=observedEpisodeNumber(row,["season","seasonNumber","season_number"]);
   var re=observedEpisodeNumber(row,["episode","episodeNumber","episode_number"]);
   if(rs===0&&re===q.episode)return true;
-  var candidates=explicitCandidates(row);
-  for(var i=0;i<candidates.length;i++){
-    var marker=episode(candidates[i].text);
-    if(marker&&Number(marker[1])===0&&Number(marker[2])===q.episode)return true;
-  }
+  // An actual source/file URL can carry an explicit episode path or query
+  // coordinate. An opaque URL cannot establish S00 identity.
   var sources=identitySources(row).concat([s(row.url)]);
-  for(var j=0;j<sources.length;j++){
+  if(typeof row.filename==="string")sources.push(s(row.filename));
+  for(var i=0;i<sources.length;i++){
     try{
-      var p=new URL(sources[j]).searchParams;
+      var source=sources[i],url=new URL(source),path=url.pathname;
+      var marker=episode(path);
+      if(marker&&Number(marker[1])===0&&Number(marker[2])===q.episode)return true;
+      var p=url.searchParams;
       var us=observedEpisodeNumber({season:p.get("season"),season_number:p.get("season_number")},["season","season_number"]);
       var ue=observedEpisodeNumber({episode:p.get("episode"),episode_number:p.get("episode_number")},["episode","episode_number"]);
       if(us===0&&ue===q.episode)return true;
-    }catch(_e){}
+    }catch(_e){
+      // Filename is not always a URL, but an explicit source filename may
+      // provide a coordinate. Generic result titles never reach this branch.
+      if(i===sources.length-1&&typeof row.filename==="string"){
+        var fileMarker=episode(sources[i]);
+        if(fileMarker&&Number(fileMarker[1])===0&&Number(fileMarker[2])===q.episode)return true;
+      }
+    }
   }
   return false;
 }
+
 function subtitleContradictsEpisode(sub,q,m){
   if(!episodic(q)||q.episode<=0||sub==null)return false;
   var fields=[];
