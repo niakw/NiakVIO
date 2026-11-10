@@ -2138,3 +2138,18 @@ contract without adding provider-side type claims. Test AllAnime,
 AnimeVostFR, AnimeKai canonical anime-only; 4KHDHub and Yflix film/TV.
 Retain no-media and no-identity proof on live observations; no real
 repair accepted until provider terminal decoded identity and persistence.
+
+### 2026-11-10 — Align structural test doubles with strict fixture provenance
+
+Hosted Brain run [42797317517](https://github.com/niakw/NiakVIO/actions/runs/42797317517)
+failed before model inference, in `tests/observed_media_evidence_test.py`
+on `decoded_repair_provider_manifest_contract`: a structural test invokes
+the actual `capture_brain_live_context.main` with a fake `demo`
+provider while mocking staging/health and did not mock the *new* strict
+manifest fixture source. The production verifier must fail closed on a
+provider absent from the manifest. Align four structural mock-network tests
+(observed media, HTTP, player markup, address correlation) with explicitly
+mocked immutable fixture contract; this preserves strict real-network
+behavior and avoids confusing test-harness preflight with provider failure.
+Re-run exact-SHA targeted tests and hosted inference before assigning repair
+status. No provider-specific production override added.
