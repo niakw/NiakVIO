@@ -77,7 +77,7 @@ with tempfile.TemporaryDirectory() as directory:
          patch.object(capture, 'provider_owned_function_names', return_value={'resolve'}), \
          patch.object(capture.verifier, 'health_provider', return_value={'results': [result]}), \
          patch.object(capture.verifier, 'strict_repair_fixture_contract',
-                      return_value={('anime', '95479'): {'tmdbId': '95479', 'season': 1, 'episode': 1}}), \\
+                      return_value={('anime', '95479'): {'tmdbId': '95479', 'season': 1, 'episode': 1}}), \
          contextlib.redirect_stdout(io.StringIO()):
         capture.main()
     receipt = public_player_markup(json.loads(output.read_text()), 'a' * 40)
