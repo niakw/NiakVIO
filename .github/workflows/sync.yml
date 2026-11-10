@@ -167,6 +167,9 @@ jobs:
           python tests/peachify_runtime_crypto_test.py
           python scripts/audit_provider_v3_static.py
           python scripts/reapply_published_overrides.py --check
+          # Source-only Core tests are insufficient: every published bundle must
+          # contain the current S00-safe identity revision before this gate is green.
+          python tests/published_s00_identity_rollout_test.py
           python tests/provider_brick_portfolio_audit_test.py --published --require-all
           python tests/provider_521_capability_regression_test.py
           python tests/global_media_type_pre_network_gate_test.py
