@@ -22,7 +22,7 @@ function installProviderFetchObservation() {
       const candidate = args[0];
       const raw = typeof candidate === 'string' ? candidate : candidate?.url;
       const host = new URL(String(raw || '')).hostname.toLowerCase();
-      if (host && !/(?:^|\\.)(?:themoviedb\\.org|tmdb\\.org|github\\.com|githubusercontent\\.com)$/.test(host)) {
+      if (host && !/(?:^|\.)(?:themoviedb\.org|tmdb\.org|github\.com|githubusercontent\.com)$/.test(host)) {
         upstreamRequestCount += 1;
       }
     } catch (_) {}
@@ -32,13 +32,13 @@ function installProviderFetchObservation() {
 function inferInvocationMode(getStreams) {
   let source = '';
   try { source = Function.prototype.toString.call(getStreams); } catch (_) {}
-  const compact = source.replace(/\\s+/g, ' ');
-  if (/^(?:async\\s*)?(?:function\\s*[^()]*)?\\(\\s*\\{/.test(compact)
-      || /^(?:async\\s*)?\\(?\\s*\\{[^}]*\\}\\s*\\)?\\s*=>/.test(compact)) return 'object';
-  const first = compact.match(/^[^(]*\\(\\s*([A-Za-z_$][A-Za-z0-9_$]*)/)?.[1]
-    || compact.match(/^\\s*(?:async\\s*)?([A-Za-z_$][A-Za-z0-9_$]*)\\s*=>/)?.[1];
-  if (first && new RegExp('\\\\b' + first + '\\\\s*\\\\.\\\\s*(?:tmdbId|id|mediaType|type|season|episode|title)\\\\b').test(compact)) return 'object';
-  return Number(getStreams.length || 0) >= 2 ? 'positional' : 'positional';
+  const compact = source.replace(/\s+/g, ' ');
+  if (/^(?:async\s*)?(?:function\s*[^()]*)?\(\s*\{/.test(compact)
+      || /^(?:async\s*)?\(?\s*\{[^}]*\}\s*\)?\s*=>/.test(compact)) return 'object';
+  const first = compact.match(/^[^(]*\(\s*([A-Za-z_$][A-Za-z0-9_$]*)/)?.[1]
+    || compact.match(/^\s*(?:async\s*)?([A-Za-z_$][A-Za-z0-9_$]*)\s*=>/)?.[1];
+  if (first && new RegExp('\\b' + first + '\\s*\\.\\s*(?:tmdbId|id|mediaType|type|season|episode|title)\\b').test(compact)) return 'object';
+  return 'positional';
 }
 async function invokeLikeProviderWorker(provider, fixture, settings) {
   const fn = provider.getStreams;
