@@ -30,5 +30,19 @@ assert module.durable_promotion_state(result(0,2), "strict_playable_stream_impro
 assert module.durable_promotion_state(result(2,0), "strict_playable_stream_improvement") == (
     True, "positive_content_identity_proof")
 assert module.durable_promotion_state(result(2,0,1), "strict_playable_stream_improvement")[0] is False
+# Retained anonymized observation from the real UHDMovies Learning artifact.
+# Use the lab's 0->2 delta as input but do not invent decoded proof counters.
+import json
+oracle=json.loads((ROOT / "tests" / "brain_oracles" / "uhdmovies" /
+                   "provisional_42740261560.json").read_text(encoding="utf-8"))
+assert oracle["reportedEndpointPlayableBefore"] == 0
+assert oracle["reportedEndpointPlayableAfter"] == 2
+assert oracle["acceptedReason"] == "provisional_quick_runtime_improvement"
+assert oracle["terminalDecodedEpisodeIdentityProven"] is False
+assert oracle["providerReconstructionCandidateCount"] == 0
+assert oracle["publishedByLearning"] is False
+assert module.durable_promotion_state(
+    result(0,2), oracle["acceptedReason"]
+)[0] is False
 print("FIELD_BRAIN_QUICK_PROVISIONAL_NO_PUBLISH quick_2_streams_blocked=true "
       "positive_identity_required=true retained_experiment_not_production=true")
