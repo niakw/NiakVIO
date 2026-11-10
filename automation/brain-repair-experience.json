@@ -8139,8 +8139,8 @@
     "requiresDeepValidation": true
   },
   "schemaVersion": 2,
-  "sourceRunId": "42821676294",
-  "sourceSha": "530d2bc16c1a38a54cfdba484117be25a75ba6ed",
+  "sourceRunId": "42827447955",
+  "sourceSha": "82fe80d3bcabb6438246a589ae172e5fb62aabd5",
   "strategyPatterns": {
     "api_stream_resolver": {
       "commonRequestRecipes": [],
@@ -8152,12 +8152,12 @@
       "routeFamilies": [
         {
           "providerSupport": 1,
-          "role": "search",
+          "role": "detail",
           "supportRatio": 1.0
         },
         {
           "providerSupport": 1,
-          "role": "detail",
+          "role": "search",
           "supportRatio": 1.0
         },
         {
@@ -8178,12 +8178,17 @@
       "routeFamilies": [
         {
           "providerSupport": 1,
+          "role": "detail",
+          "supportRatio": 0.5
+        },
+        {
+          "providerSupport": 1,
           "role": "search",
           "supportRatio": 0.5
         },
         {
           "providerSupport": 1,
-          "role": "detail",
+          "role": "episode",
           "supportRatio": 0.5
         },
         {
@@ -8194,11 +8199,6 @@
         {
           "providerSupport": 1,
           "role": "other",
-          "supportRatio": 0.5
-        },
-        {
-          "providerSupport": 1,
-          "role": "episode",
           "supportRatio": 0.5
         }
       ]
@@ -8227,12 +8227,12 @@
         },
         {
           "providerSupport": 2,
-          "role": "other",
+          "role": "episode",
           "supportRatio": 0.6667
         },
         {
           "providerSupport": 2,
-          "role": "episode",
+          "role": "other",
           "supportRatio": 0.6667
         },
         {
@@ -8331,12 +8331,12 @@
       "routeFamilies": [
         {
           "providerSupport": 7,
-          "role": "episode",
+          "role": "detail",
           "supportRatio": 0.875
         },
         {
           "providerSupport": 7,
-          "role": "detail",
+          "role": "episode",
           "supportRatio": 0.875
         },
         {
@@ -8371,7 +8371,7 @@
       "routeFamilies": [
         {
           "providerSupport": 1,
-          "role": "search",
+          "role": "api",
           "supportRatio": 1.0
         },
         {
@@ -8381,7 +8381,7 @@
         },
         {
           "providerSupport": 1,
-          "role": "api",
+          "role": "search",
           "supportRatio": 1.0
         }
       ]
