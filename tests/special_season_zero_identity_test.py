@@ -40,7 +40,7 @@ rows = [
     {"name": "Server 2", "sourceUrl": "https://reader.example/watch?season=0&episode=1", "url": "https://cdn.example/correct-source-coordinate.m3u8"},
 ]
 compiled = core.apply(source.replace("ROWS", json.dumps(rows)), context={"provider_id": "example"})
-assert 'cross-client-player-page-identity-v18-s00-evidence' in compiled
+assert 'cross-client-player-page-identity-v19-s00-source-proof' in compiled
 assert 'function exactSpecialEpisodeEvidence(row,q)' in compiled
 
 runner = compiled + """
@@ -88,7 +88,7 @@ assert.deepEqual(s1,[{season:1,episodes:['normal']}]);
 assert.deepEqual(_spv251SeasonEpisodeScopedValue(all,'tv',3,1,0),[]);
 """
 assert "if (!chosen && wantedSeason === 0) continue;" in base, "missing S00-safe catalogue selection"
-assert "cross-client-player-page-identity-v18-s00-evidence" in (ROOT / "scripts/provider_patches/global_stream_identity_v1.py").read_text(encoding="utf-8")
+assert "cross-client-player-page-identity-v19-s00-source-proof" in (ROOT / "scripts/provider_patches/global_stream_identity_v1.py").read_text(encoding="utf-8")
 
 with tempfile.TemporaryDirectory() as td:
     script = Path(td) / "specials.cjs"
@@ -124,11 +124,11 @@ for row in published:
     # pending. The release-only test rejects v17 after rematerialization.
     assert (
         "cross-client-player-page-identity-v17-s00-identity" in published_js
-        or "cross-client-player-page-identity-v18-s00-evidence" in published_js
+        or "cross-client-player-page-identity-v19-s00-source-proof" in published_js
     ), (filename, "identity Core revision missing")
 
 v18_published = sum(
-    'cross-client-player-page-identity-v18-s00-evidence'
+    'cross-client-player-page-identity-v19-s00-source-proof'
     in (ROOT / str(row['filename'])).read_text(encoding='utf-8')
     for row in published
 )

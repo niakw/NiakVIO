@@ -19,7 +19,7 @@ source = SOURCE.read_text(encoding="utf-8")
 match = re.search(r'"implementationRevision":\s*"([^"]+)"', source)
 assert match, "Core identity implementation revision missing"
 revision = match.group(1)
-assert revision == "cross-client-player-page-identity-v18-s00-evidence", revision
+assert revision == "cross-client-player-page-identity-v19-s00-source-proof", revision
 assert "function exactSpecialEpisodeEvidence(row,q)" in source
 assert "function keepEpisodeBoundSubtitles(row,q,m)" in source
 assert "function subtitleContradictsEpisode(sub,q,m)" in source

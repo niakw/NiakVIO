@@ -40,7 +40,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **kwargs: Any) -> st
         "providerId": str(context.get("provider_id") or "").strip().casefold(),
         "tmdbRuntimeKeyRequired": True,
         "tmdbTimeoutMs": max(350, min(int(cfg.get("tmdb_timeout_ms", 1200)), 2500)),
-        "implementationRevision": "cross-client-player-page-identity-v18-s00-evidence",
+        "implementationRevision": "cross-client-player-page-identity-v19-s00-source-proof",
         "catalogueYearPolicy": "movie-only",
         "playerPageIdentity": True,
         "playerIdentityProbeLimit": 2,

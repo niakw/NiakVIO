@@ -14,7 +14,7 @@ cleanup = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(cleanup)
 
 identity = IDENTITY.read_text(encoding="utf-8")
-assert "cross-client-player-page-identity-v18-s00-evidence" in identity
+assert "cross-client-player-page-identity-v19-s00-source-proof" in identity
 assert cleanup.identity_semantics_current(identity)
 cleanup.validate_source_state()
 
