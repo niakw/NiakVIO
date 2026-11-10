@@ -120,20 +120,23 @@ for row in published:
         "_spv251SeasonEpisodeScopedValue",
     ):
         assert required in published_js, (filename, required)
-    # Diagnostic gate tolerates pre-rollout v17 on main, but reports it as
-    # pending. The release-only test rejects v17 after rematerialization.
-    assert (
-        "cross-client-player-page-identity-v17-s00-identity" in published_js
-        or "cross-client-player-page-identity-v19-s00-source-proof" in published_js
+    # Source gate recognizes historical v17/v18 and reports rollout debt;
+    # release-only check requires v19 on every published bundle.
+    assert any(
+        revision in published_js for revision in (
+            "cross-client-player-page-identity-v17-s00-identity",
+            "cross-client-player-page-identity-v18-s00-evidence",
+            "cross-client-player-page-identity-v19-s00-source-proof",
+        )
     ), (filename, "identity Core revision missing")
 
-v18_published = sum(
+v19_published = sum(
     'cross-client-player-page-identity-v19-s00-source-proof'
     in (ROOT / str(row['filename'])).read_text(encoding='utf-8')
     for row in published
 )
 print(
     f"SPECIAL_SEASON_ZERO_IDENTITY_SOURCE_OK published={len(published)} "
-    f"v18_published={v18_published} pending_rematerialization={len(published)-v18_published} "
+    f"v19_published={v19_published} pending_rematerialization={len(published)-v19_published} "
     "source_v19_source_backed_s00_only; no live terminal playback inferred"
 )
