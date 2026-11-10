@@ -1,0 +1,42 @@
+name: BRAIN - Exact Published HTML Parser Reverse Oracle
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/brain-html-class-reverse-oracle.yml'
+      - 'tests/brain_oracles/4khdhub/brain_materialization_replay.py'
+      - 'scripts/adaptive_runtime/html_class_token_exact_v1.py'
+      - 'scripts/adaptive_runtime/runtime_repair.py'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: niakvio-exact-html-parser-oracle-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  reverse-oracle:
+    runs-on: ubuntu-latest
+    timeout-minutes: 9
+    steps:
+      - name: Checkout exact current published bytes
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - name: Prove failed published bytes and Brain-materialized candidate on unchanged realistic HTML
+        run: |
+          python -m py_compile tests/brain_oracles/4khdhub/brain_materialization_replay.py
+          python tests/brain_oracles/4khdhub/brain_materialization_replay.py
+      - name: Mark deterministic oracle as non-production evidence
+        run: |
+          echo 'FIELD_BRAIN_HTML_CLASS_ORACLE_STATUS offline_only=true network_terminal_verified=false accepted_program=false'
