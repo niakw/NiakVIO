@@ -2,6 +2,14 @@ name: OPS - Published Provider Availability
 
 on:
   workflow_dispatch:
+  # Re-observe the current executable bundles when catalogue fixture
+  # selection changes; don't wait for the next 4-hour schedule.
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/provider_semantics.cjs'
+      - 'tests/provider_semantics.test.cjs'
+      - '.github/workflows/availability.yml'
   schedule:
     # Six low-cost diagnostic checks per day. GitHub schedules use UTC.
     - cron: "23 */4 * * *"
@@ -42,6 +50,9 @@ jobs:
       - name: Install pinned direct runtime dependencies without lifecycle scripts
         run: |
           npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Verify canonical catalogue categories before live probes
+        run: node tests/provider_semantics.test.cjs
 
       - name: Stage current published providers
         run: python scripts/stage_published.py

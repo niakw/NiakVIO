@@ -116,19 +116,24 @@ function inferSupportedTypes(candidate) {
   const explicitCanonical = new Set(
     explicitCanonicalValues.map(normalizeSupportedType).filter(Boolean),
   );
+  // A current canonical declaration is the catalogue authority. Descriptions
+  // may say "TV episodes" or "séries" to describe the anime catalogue (or
+  // the Nuvio TV launch alias); those words are NOT independent TV proof.
+  // An independent *live* upstream's canonical declaration is already
+  // considered above, but a published-baseline-only claim cannot expand it.
+  if (explicitCanonical.size > 0) {
+    return ['movie', 'tv', 'anime'].filter((value) => explicitCanonical.has(value));
+  }
   const signals = descriptionTypeSignals(semanticText(candidate));
   const inferred = new Set();
   if (signals.movie) inferred.add('movie');
   if (signals.tv) inferred.add('tv');
   if (signals.anime) inferred.add('anime');
 
-  // Launch aliases never manufacture canonical catalogue capability.
-  // Explicit canonical movie+anime remains movie+anime; anime-only stays anime-only.
+  // No explicit canonical source: retain legacy semantic fallback, but do not
+  // invent a general movie/TV catalogue for a clearly anime-only description.
   if (signals.anime && !signals.movie && !signals.tv) {
-    const semantic = explicitCanonical.size
-      ? new Set([...explicitCanonical, 'anime'])
-      : new Set(['anime']);
-    return ['movie', 'tv', 'anime'].filter((value) => semantic.has(value));
+    return ['anime'];
   }
 
   const combined = new Set([...declared, ...inferred]);
