@@ -2153,3 +2153,9 @@ mocked immutable fixture contract; this preserves strict real-network
 behavior and avoids confusing test-harness preflight with provider failure.
 Re-run exact-SHA targeted tests and hosted inference before assigning repair
 status. No provider-specific production override added.
+
+## 2026-11-10 — Actual Deep Repair lost current staged source evidence
+
+- Fast Brain Repair run [42797405135](https://github.com/niakw/NiakVIO/actions/runs/42797405135) ended `selected=13, candidates=0, accepted=0` after six waves, despite successfully executing baseline network probes. A prior external advisor was also safely rejected because `scripts/apply_provider_overrides.py` had materially changed since its source SHA; **do not bypass that drift guard**.
+- Generic Brain root-cause confirmed in code: `brain_repair_runtime.update_plans(..., stage=Path)` projects bounded, diagnostic-only source structural evidence from the actual staged provider JS. Normal `wrap_run_health` passes that parameter. The *production Deep* adapter `run_adaptive_deep_repair._brain_run_health` omitted it, so `plan-repairs.mjs` could not select that class of source-grounded structural mechanism. Source-to-strategy test existed but did not cover this integration boundary. Fixed the caller to pass `stage=Path(stage)`.
+- New integration test uses the actual provider-owned 4KHDHub renderer as an oracle but asserts only stage-to-planner evidence transport, diagnostic authority and no publication. Six-source read-only workflow executes this new test before network probes. **No provider marked repaired**: selected Lego still must generate changed bytes, run independently on live source, pass terminal decoding/episode identity and non-regression before acceptance.

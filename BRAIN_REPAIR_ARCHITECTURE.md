@@ -1399,3 +1399,7 @@ semantic** category and validated against exact executed tests; no
 type widening, synthetic S00 remapping, unverified URLs or alias-success
 promotion. `scripts/provider_semantics.cjs` uses this contract already;
 Brain's `strict_repair_fixture_contract` and reverse diagnostics must match.
+
+### 2026-11-10 — Source bytes into the actual Deep Brain planner
+
+The Deep adapter must call `update_plans(registry, health, "deep", stage=stage)` with its exact staged current provider bundle directory. The planner's bounded `structuralRepairEvidence` requires the current source hash and is diagnostic-only. A synthetic direct planner test cannot substitute for this Deep stage-to-planner link. Selecting a structural Lego is not proof of repair; materialization, media decoding, episode/subtitle identity, safe replay and non-regression retain exclusive acceptance authority.

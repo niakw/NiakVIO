@@ -115,7 +115,12 @@ def _brain_run_health(*, stage, registry_path, output_dir, mode, health_check=lo
                 flush=True,
             )
 
-    brain.update_plans(registry_path, report, "deep")
+    # The Deep process executes the same staged provider bytes that we just
+    # measured. Without stage=, structural source evidence silently vanishes
+    # before plan-repairs.mjs (despite being supported by update_plans).
+    # The signal is diagnostic-only and still requires independent terminal
+    # media/episode/identity proof before publication.
+    brain.update_plans(registry_path, report, "deep", stage=Path(stage))
     if _HARNESS_DIFFERENTIAL_PROVIDERS:
         for plan in brain.PLANS.values():
             if not isinstance(plan, dict):
