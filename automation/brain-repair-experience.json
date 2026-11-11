@@ -4486,7 +4486,7 @@
       "domainMemory": true,
       "evidenceDepth": [
         "movie=lookup_only",
-        "tv=lookup_only"
+        "tv=none"
       ],
       "hasApiRecipe": false,
       "hasProviderValuePlan": false,
@@ -8141,8 +8141,8 @@
     "requiresDeepValidation": true
   },
   "schemaVersion": 2,
-  "sourceRunId": "43058188394",
-  "sourceSha": "b68fd035e42c6570a9c7133fd2b4ed48fb4bb6c5",
+  "sourceRunId": "43068035661",
+  "sourceSha": "f4abb6f470f4b32c58738cbdababeea424379596",
   "strategyPatterns": {
     "api_stream_resolver": {
       "commonRequestRecipes": [],
@@ -8154,17 +8154,17 @@
       "routeFamilies": [
         {
           "providerSupport": 1,
-          "role": "detail",
-          "supportRatio": 1.0
-        },
-        {
-          "providerSupport": 1,
           "role": "other",
           "supportRatio": 1.0
         },
         {
           "providerSupport": 1,
           "role": "search",
+          "supportRatio": 1.0
+        },
+        {
+          "providerSupport": 1,
+          "role": "detail",
           "supportRatio": 1.0
         }
       ]
@@ -8180,22 +8180,22 @@
       "routeFamilies": [
         {
           "providerSupport": 1,
-          "role": "detail",
-          "supportRatio": 0.5
-        },
-        {
-          "providerSupport": 1,
           "role": "search",
           "supportRatio": 0.5
         },
         {
           "providerSupport": 1,
-          "role": "other",
+          "role": "detail",
           "supportRatio": 0.5
         },
         {
           "providerSupport": 1,
           "role": "player",
+          "supportRatio": 0.5
+        },
+        {
+          "providerSupport": 1,
+          "role": "other",
           "supportRatio": 0.5
         },
         {
@@ -8366,12 +8366,12 @@
       "routeFamilies": [
         {
           "providerSupport": 9,
-          "role": "detail",
+          "role": "episode",
           "supportRatio": 0.9
         },
         {
           "providerSupport": 9,
-          "role": "episode",
+          "role": "detail",
           "supportRatio": 0.9
         },
         {
@@ -8406,17 +8406,17 @@
       "routeFamilies": [
         {
           "providerSupport": 1,
-          "role": "api",
-          "supportRatio": 1.0
-        },
-        {
-          "providerSupport": 1,
           "role": "search",
           "supportRatio": 1.0
         },
         {
           "providerSupport": 1,
           "role": "episode",
+          "supportRatio": 1.0
+        },
+        {
+          "providerSupport": 1,
+          "role": "api",
           "supportRatio": 1.0
         }
       ]
