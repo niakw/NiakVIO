@@ -6,6 +6,7 @@
       "anikototv",
       "anime-sama",
       "castle",
+      "french-manga",
       "hindmoviez",
       "kurage",
       "mugiwarastream",
@@ -16,6 +17,7 @@
       "sekai",
       "streamzo",
       "voiranime",
+      "voiranime-homes",
       "voiranime-rip",
       "wookafr"
     ],
@@ -900,7 +902,7 @@
       ]
     }
   ],
-  "operationalProviderCount": 15,
+  "operationalProviderCount": 17,
   "providerCount": 46,
   "providers": {
     "4khdhub": {
@@ -3342,7 +3344,7 @@
         "anime"
       ],
       "officialHost": "w16.french-manga.net",
-      "operational": false,
+      "operational": true,
       "peerRequestRecipes": [
         {
           "body": {},
@@ -3537,7 +3539,7 @@
         "/api/v2/themoviedb?id={tmdbId}",
         "/meta/series/tt12343534.json"
       ],
-      "status": "CANDIDATE OK",
+      "status": "FULL OK",
       "strategy": "mixed_embed_resolver"
     },
     "fullanime": {
@@ -7069,7 +7071,7 @@
         "anime"
       ],
       "officialHost": "voiranime.homes",
-      "operational": false,
+      "operational": true,
       "peerRequestRecipes": [
         {
           "body": {},
@@ -7260,7 +7262,7 @@
         "/api/v2/themoviedb?id={tmdbId}",
         "/meta/series/tt12343534.json"
       ],
-      "status": "REGRESSION PROVIDER JS",
+      "status": "FULL OK",
       "strategy": "mixed_embed_resolver"
     },
     "voiranime-rip": {
@@ -8139,8 +8141,8 @@
     "requiresDeepValidation": true
   },
   "schemaVersion": 2,
-  "sourceRunId": "42949276494",
-  "sourceSha": "43fe639bf7d8797c84b77d2804938351d851b2a3",
+  "sourceRunId": "42954902984",
+  "sourceSha": "5351d77d3273b5dd66051e912e2b931bd3ebc7e7",
   "strategyPatterns": {
     "api_stream_resolver": {
       "commonRequestRecipes": [],
@@ -8152,12 +8154,12 @@
       "routeFamilies": [
         {
           "providerSupport": 1,
-          "role": "search",
+          "role": "other",
           "supportRatio": 1.0
         },
         {
           "providerSupport": 1,
-          "role": "other",
+          "role": "search",
           "supportRatio": 1.0
         },
         {
@@ -8188,7 +8190,7 @@
         },
         {
           "providerSupport": 1,
-          "role": "episode",
+          "role": "other",
           "supportRatio": 0.5
         },
         {
@@ -8198,7 +8200,7 @@
         },
         {
           "providerSupport": 1,
-          "role": "other",
+          "role": "episode",
           "supportRatio": 0.5
         }
       ]
@@ -8227,12 +8229,12 @@
         },
         {
           "providerSupport": 2,
-          "role": "episode",
+          "role": "other",
           "supportRatio": 0.6667
         },
         {
           "providerSupport": 2,
-          "role": "other",
+          "role": "episode",
           "supportRatio": 0.6667
         },
         {
@@ -8270,7 +8272,7 @@
           "route": "/embed/wa805bkcrb02",
           "semanticType": "anime",
           "streamProof": true,
-          "supportRatio": 0.25
+          "supportRatio": 0.2
         },
         {
           "body": {},
@@ -8288,76 +8290,109 @@
           "route": "/embed/ihd7l819etlv",
           "semanticType": "anime",
           "streamProof": true,
-          "supportRatio": 0.25
+          "supportRatio": 0.2
+        },
+        {
+          "body": {},
+          "bodyKind": "none",
+          "executable": true,
+          "headerNames": [
+            "accept",
+            "accept-language",
+            "referer",
+            "user-agent"
+          ],
+          "method": "GET",
+          "providerSupport": 2,
+          "response": "json",
+          "role": "detail",
+          "route": "/engine/ajax/manga_episodes_api.php?id={id}",
+          "semanticType": "anime",
+          "streamProof": true,
+          "supportRatio": 0.2
         }
       ],
       "commonRouteTemplates": [
         {
-          "providerSupport": 4,
+          "providerSupport": 6,
           "role": "api",
           "route": "/api/v2/themoviedb?id={tmdbId}",
+          "supportRatio": 0.6
+        },
+        {
+          "providerSupport": 5,
+          "role": "search",
+          "route": "/?s={query}",
           "supportRatio": 0.5
         },
         {
           "providerSupport": 3,
-          "role": "search",
-          "route": "/?s={query}",
-          "supportRatio": 0.375
+          "role": "episode",
+          "route": "/engine/ajax/manga_episodes_api.php?id={id}",
+          "supportRatio": 0.3
+        },
+        {
+          "providerSupport": 2,
+          "role": "detail",
+          "route": "/{slug}",
+          "supportRatio": 0.2
         },
         {
           "providerSupport": 2,
           "role": "detail",
           "route": "/anime/{slug}/",
-          "supportRatio": 0.25
+          "supportRatio": 0.2
         },
         {
           "providerSupport": 2,
           "role": "player",
           "route": "/embed",
-          "supportRatio": 0.25
+          "supportRatio": 0.2
         }
       ],
-      "greenProviderCount": 8,
+      "greenProviderCount": 10,
       "greenProviders": [
         "anikototv",
         "anime-sama",
+        "french-manga",
         "mugiwarastream",
         "neko-sama",
         "streamzo",
         "voiranime",
+        "voiranime-homes",
         "voiranime-rip",
         "wookafr"
       ],
       "routeFamilies": [
         {
-          "providerSupport": 7,
+          "providerSupport": 9,
           "role": "episode",
-          "supportRatio": 0.875
+          "supportRatio": 0.9
+        },
+        {
+          "providerSupport": 9,
+          "role": "detail",
+          "supportRatio": 0.9
         },
         {
           "providerSupport": 7,
-          "role": "detail",
-          "supportRatio": 0.875
-        },
-        {
-          "providerSupport": 5,
           "role": "api",
-          "supportRatio": 0.625
+          "supportRatio": 0.7
+        },
+        {
+          "providerSupport": 7,
+          "role": "search",
+          "supportRatio": 0.7
         },
         {
           "providerSupport": 5,
-          "role": "search",
-          "supportRatio": 0.625
-        },
-        {
-          "providerSupport": 4,
           "role": "other",
           "supportRatio": 0.5
         },
         {
           "providerSupport": 4,
           "role": "player",
-          "supportRatio": 0.5
+          "supportRatio": 0.4
         }
       ]
     },
@@ -8371,17 +8406,17 @@
       "routeFamilies": [
         {
           "providerSupport": 1,
-          "role": "episode",
-          "supportRatio": 1.0
-        },
-        {
-          "providerSupport": 1,
           "role": "api",
           "supportRatio": 1.0
         },
         {
           "providerSupport": 1,
           "role": "search",
+          "supportRatio": 1.0
+        },
+        {
+          "providerSupport": 1,
+          "role": "episode",
           "supportRatio": 1.0
         }
       ]
