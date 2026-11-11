@@ -4485,7 +4485,7 @@
     "moviesmod": {
       "domainMemory": true,
       "evidenceDepth": [
-        "movie=lookup_only",
+        "movie=none",
         "tv=none"
       ],
       "hasApiRecipe": false,
@@ -8141,8 +8141,8 @@
     "requiresDeepValidation": true
   },
   "schemaVersion": 2,
-  "sourceRunId": "43068035661",
-  "sourceSha": "f4abb6f470f4b32c58738cbdababeea424379596",
+  "sourceRunId": "43072559699",
+  "sourceSha": "13458bd23130e5a7aad9409d359a9e3874fec4f2",
   "strategyPatterns": {
     "api_stream_resolver": {
       "commonRequestRecipes": [],
@@ -8154,7 +8154,7 @@
       "routeFamilies": [
         {
           "providerSupport": 1,
-          "role": "other",
+          "role": "detail",
           "supportRatio": 1.0
         },
         {
@@ -8164,7 +8164,7 @@
         },
         {
           "providerSupport": 1,
-          "role": "detail",
+          "role": "other",
           "supportRatio": 1.0
         }
       ]
@@ -8180,12 +8180,17 @@
       "routeFamilies": [
         {
           "providerSupport": 1,
+          "role": "detail",
+          "supportRatio": 0.5
+        },
+        {
+          "providerSupport": 1,
           "role": "search",
           "supportRatio": 0.5
         },
         {
           "providerSupport": 1,
-          "role": "detail",
+          "role": "episode",
           "supportRatio": 0.5
         },
         {
@@ -8196,11 +8201,6 @@
         {
           "providerSupport": 1,
           "role": "other",
-          "supportRatio": 0.5
-        },
-        {
-          "providerSupport": 1,
-          "role": "episode",
           "supportRatio": 0.5
         }
       ]
@@ -8229,12 +8229,12 @@
         },
         {
           "providerSupport": 2,
-          "role": "other",
+          "role": "episode",
           "supportRatio": 0.6667
         },
         {
           "providerSupport": 2,
-          "role": "episode",
+          "role": "other",
           "supportRatio": 0.6667
         },
         {
@@ -8406,12 +8406,12 @@
       "routeFamilies": [
         {
           "providerSupport": 1,
-          "role": "search",
+          "role": "episode",
           "supportRatio": 1.0
         },
         {
           "providerSupport": 1,
-          "role": "episode",
+          "role": "search",
           "supportRatio": 1.0
         },
         {
