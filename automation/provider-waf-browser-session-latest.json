@@ -23,8 +23,8 @@
   ],
   "counts": {
     "browser_challenge_persisted": 16,
-    "browser_content_reached": 5,
-    "browser_inconclusive": 2
+    "browser_content_reached": 6,
+    "browser_inconclusive": 1
   },
   "rows": [
     {
@@ -78,7 +78,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 4173
+      "durationMs": 13067
     },
     {
       "provider": "allwish",
@@ -131,7 +131,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 4029,
+      "durationMs": 13050,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_challenge_persisted",
@@ -212,7 +212,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 5089,
+      "durationMs": 13949,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_challenge_persisted",
@@ -935,7 +935,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 3861
+      "durationMs": 3451
     },
     {
       "provider": "flemmix",
@@ -988,7 +988,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 3713
+      "durationMs": 3721
     },
     {
       "provider": "kehflix",
@@ -1041,14 +1041,14 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 2800
+      "durationMs": 2463
     },
     {
       "provider": "kehflix",
       "lane": "movie",
-      "publicUrl": "https://kehflix.com/title/movie/447365-les-gardiens-de-la-galaxie-3",
+      "publicUrl": "https://kehflix.com/title/movie/118340-g-o-t-g",
       "host": "kehflix.com",
-      "path": "/title/movie/447365-les-gardiens-de-la-galaxie-3",
+      "path": "/title/movie/118340-g-o-t-g",
       "method": "GET",
       "fetchStatus": 403,
       "challenge": "cloudflare",
@@ -1094,30 +1094,25 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 1860
+      "durationMs": 1938
     },
     {
       "provider": "kehflix",
       "lane": "tv",
-      "publicUrl": "https://kehflix.com/api/streams/episode",
+      "publicUrl": "https://kehflix.com/api/streams/tv",
       "host": "kehflix.com",
-      "path": "/api/streams/episode",
+      "path": "/api/streams/tv",
       "method": "GET",
       "fetchStatus": 403,
       "challenge": "cloudflare",
       "seedKind": null,
       "seedRoute": null,
-      "outcome": "browser_inconclusive",
-      "attemptCount": 2,
+      "outcome": "browser_content_reached",
+      "attemptCount": 1,
       "attempts": [
         {
           "attempt": 1,
-          "outcome": "browser_inconclusive",
-          "exitCode": 0
-        },
-        {
-          "attempt": 2,
-          "outcome": "browser_inconclusive",
+          "outcome": "browser_content_reached",
           "exitCode": 0
         }
       ],
@@ -1126,17 +1121,12 @@
         {
           "profile": "github-default-browser",
           "userAgent": null,
-          "outcome": "browser_inconclusive",
-          "attemptCount": 2,
+          "outcome": "browser_content_reached",
+          "attemptCount": 1,
           "attempts": [
             {
               "attempt": 1,
-              "outcome": "browser_inconclusive",
-              "exitCode": 0
-            },
-            {
-              "attempt": 2,
-              "outcome": "browser_inconclusive",
+              "outcome": "browser_content_reached",
               "exitCode": 0
             }
           ],
@@ -1145,9 +1135,11 @@
       ],
       "directHttpProfile": null,
       "okHttpJvmProfile": null,
-      "contentProfiles": [],
+      "contentProfiles": [
+        "github-default-browser"
+      ],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 4179
+      "durationMs": 1642
     },
     {
       "provider": "mallumv",
@@ -1258,9 +1250,9 @@
     {
       "provider": "moviesmod",
       "lane": "movie",
-      "publicUrl": "https://links.modpro.blog/archives/110947",
+      "publicUrl": "https://links.modpro.blog/archives/140832",
       "host": "links.modpro.blog",
-      "path": "/archives/110947",
+      "path": "/archives/140832",
       "method": "GET",
       "fetchStatus": 403,
       "challenge": "cloudflare",
@@ -1306,14 +1298,14 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 3570
+      "durationMs": 4012
     },
     {
       "provider": "moviesmod",
       "lane": "tv",
-      "publicUrl": "https://episodes.modpro.blog/archives/53354",
+      "publicUrl": "https://episodes.modpro.blog/archives/55645",
       "host": "episodes.modpro.blog",
-      "path": "/archives/53354",
+      "path": "/archives/55645",
       "method": "GET",
       "fetchStatus": 403,
       "challenge": "cloudflare",
@@ -1359,7 +1351,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 3170
+      "durationMs": 3705
     },
     {
       "provider": "vidfast",
@@ -1733,7 +1725,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 2520,
+      "durationMs": 3530,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_challenge_persisted",
