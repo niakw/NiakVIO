@@ -8141,8 +8141,8 @@
     "requiresDeepValidation": true
   },
   "schemaVersion": 2,
-  "sourceRunId": "43079873580",
-  "sourceSha": "b020f8bf55dd578070ea288d9977b3ecb7ee0fc8",
+  "sourceRunId": "43089844558",
+  "sourceSha": "31175748e6bed2bedb1ab6512d4b169a3a30d0e7",
   "strategyPatterns": {
     "api_stream_resolver": {
       "commonRequestRecipes": [],
@@ -8154,7 +8154,7 @@
       "routeFamilies": [
         {
           "providerSupport": 1,
-          "role": "other",
+          "role": "detail",
           "supportRatio": 1.0
         },
         {
@@ -8164,7 +8164,7 @@
         },
         {
           "providerSupport": 1,
-          "role": "detail",
+          "role": "other",
           "supportRatio": 1.0
         }
       ]
@@ -8180,12 +8180,17 @@
       "routeFamilies": [
         {
           "providerSupport": 1,
+          "role": "detail",
+          "supportRatio": 0.5
+        },
+        {
+          "providerSupport": 1,
           "role": "search",
           "supportRatio": 0.5
         },
         {
           "providerSupport": 1,
-          "role": "detail",
+          "role": "player",
           "supportRatio": 0.5
         },
         {
@@ -8196,11 +8201,6 @@
         {
           "providerSupport": 1,
           "role": "other",
-          "supportRatio": 0.5
-        },
-        {
-          "providerSupport": 1,
-          "role": "player",
           "supportRatio": 0.5
         }
       ]
@@ -8411,12 +8411,12 @@
         },
         {
           "providerSupport": 1,
-          "role": "search",
+          "role": "api",
           "supportRatio": 1.0
         },
         {
           "providerSupport": 1,
-          "role": "api",
+          "role": "search",
           "supportRatio": 1.0
         }
       ]
