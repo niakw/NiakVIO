@@ -22,8 +22,9 @@
     "exact failed provider GET replay is transport differential evidence only; it cannot grant playback proof"
   ],
   "counts": {
-    "browser_challenge_persisted": 17,
-    "browser_content_reached": 6
+    "browser_challenge_persisted": 16,
+    "browser_content_reached": 5,
+    "browser_inconclusive": 2
   },
   "rows": [
     {
@@ -77,7 +78,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 13994
+      "durationMs": 4173
     },
     {
       "provider": "allwish",
@@ -130,7 +131,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 14006,
+      "durationMs": 4029,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_challenge_persisted",
@@ -211,7 +212,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 14646,
+      "durationMs": 5089,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_challenge_persisted",
@@ -934,7 +935,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 4460
+      "durationMs": 3861
     },
     {
       "provider": "flemmix",
@@ -987,25 +988,30 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 4528
+      "durationMs": 3713
     },
     {
       "provider": "kehflix",
       "lane": "anime",
-      "publicUrl": "https://kehflix.com/api/streams/tv",
+      "publicUrl": "https://kehflix.com/api/streams/episode",
       "host": "kehflix.com",
-      "path": "/api/streams/tv",
+      "path": "/api/streams/episode",
       "method": "GET",
       "fetchStatus": 403,
       "challenge": "cloudflare",
       "seedKind": null,
       "seedRoute": null,
-      "outcome": "browser_content_reached",
-      "attemptCount": 1,
+      "outcome": "browser_inconclusive",
+      "attemptCount": 2,
       "attempts": [
         {
           "attempt": 1,
-          "outcome": "browser_content_reached",
+          "outcome": "browser_inconclusive",
+          "exitCode": 0
+        },
+        {
+          "attempt": 2,
+          "outcome": "browser_inconclusive",
           "exitCode": 0
         }
       ],
@@ -1014,12 +1020,17 @@
         {
           "profile": "github-default-browser",
           "userAgent": null,
-          "outcome": "browser_content_reached",
-          "attemptCount": 1,
+          "outcome": "browser_inconclusive",
+          "attemptCount": 2,
           "attempts": [
             {
               "attempt": 1,
-              "outcome": "browser_content_reached",
+              "outcome": "browser_inconclusive",
+              "exitCode": 0
+            },
+            {
+              "attempt": 2,
+              "outcome": "browser_inconclusive",
               "exitCode": 0
             }
           ],
@@ -1028,18 +1039,16 @@
       ],
       "directHttpProfile": null,
       "okHttpJvmProfile": null,
-      "contentProfiles": [
-        "github-default-browser"
-      ],
+      "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 1798
+      "durationMs": 2800
     },
     {
       "provider": "kehflix",
       "lane": "movie",
-      "publicUrl": "https://kehflix.com/title/movie/577922-verovanje",
+      "publicUrl": "https://kehflix.com/title/movie/447365-les-gardiens-de-la-galaxie-3",
       "host": "kehflix.com",
-      "path": "/title/movie/577922-verovanje",
+      "path": "/title/movie/447365-les-gardiens-de-la-galaxie-3",
       "method": "GET",
       "fetchStatus": 403,
       "challenge": "cloudflare",
@@ -1085,30 +1094,30 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 2239
+      "durationMs": 1860
     },
     {
       "provider": "kehflix",
       "lane": "tv",
-      "publicUrl": "https://kehflix.com/title/tv/71446-kuca-od-papira",
+      "publicUrl": "https://kehflix.com/api/streams/episode",
       "host": "kehflix.com",
-      "path": "/title/tv/71446-kuca-od-papira",
+      "path": "/api/streams/episode",
       "method": "GET",
       "fetchStatus": 403,
       "challenge": "cloudflare",
       "seedKind": null,
       "seedRoute": null,
-      "outcome": "browser_challenge_persisted",
+      "outcome": "browser_inconclusive",
       "attemptCount": 2,
       "attempts": [
         {
           "attempt": 1,
-          "outcome": "browser_challenge_persisted",
+          "outcome": "browser_inconclusive",
           "exitCode": 0
         },
         {
           "attempt": 2,
-          "outcome": "browser_challenge_persisted",
+          "outcome": "browser_inconclusive",
           "exitCode": 0
         }
       ],
@@ -1117,17 +1126,17 @@
         {
           "profile": "github-default-browser",
           "userAgent": null,
-          "outcome": "browser_challenge_persisted",
+          "outcome": "browser_inconclusive",
           "attemptCount": 2,
           "attempts": [
             {
               "attempt": 1,
-              "outcome": "browser_challenge_persisted",
+              "outcome": "browser_inconclusive",
               "exitCode": 0
             },
             {
               "attempt": 2,
-              "outcome": "browser_challenge_persisted",
+              "outcome": "browser_inconclusive",
               "exitCode": 0
             }
           ],
@@ -1138,7 +1147,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 2432
+      "durationMs": 4179
     },
     {
       "provider": "mallumv",
@@ -1249,9 +1258,9 @@
     {
       "provider": "moviesmod",
       "lane": "movie",
-      "publicUrl": "https://links.modpro.blog/archives/5787",
+      "publicUrl": "https://links.modpro.blog/archives/110947",
       "host": "links.modpro.blog",
-      "path": "/archives/5787",
+      "path": "/archives/110947",
       "method": "GET",
       "fetchStatus": 403,
       "challenge": "cloudflare",
@@ -1297,7 +1306,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 4687
+      "durationMs": 3570
     },
     {
       "provider": "moviesmod",
@@ -1350,7 +1359,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 4499
+      "durationMs": 3170
     },
     {
       "provider": "vidfast",
@@ -1724,7 +1733,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 3415,
+      "durationMs": 2520,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_challenge_persisted",
