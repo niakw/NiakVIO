@@ -1,7 +1,7 @@
 {
   "schemaVersion": 3,
-  "runId": "42949276494",
-  "triggerSha": "43fe639bf7d8797c84b77d2804938351d851b2a3",
+  "runId": "42954902984",
+  "triggerSha": "5351d77d3273b5dd66051e912e2b931bd3ebc7e7",
   "providers": [
     {
       "provider": "4khdhub",
@@ -66,7 +66,7 @@
       ],
       "dominantIssue": "provider_network_zero_result",
       "searchProgress": [
-        "anime: 4 works tested / 44 retained misses / 4 retained chain hits"
+        "anime: 4 works tested / 45 retained misses / 3 retained chain hits"
       ],
       "evidenceDepth": [
         "anime=chain_reached"
@@ -523,13 +523,15 @@
     },
     {
       "provider": "french-manga",
-      "status": "CANDIDATE OK",
+      "status": "FULL OK",
       "underlyingStatus": "",
-      "color": "🟦",
+      "color": "🟢",
       "declaredLanes": [
         "anime"
       ],
-      "currentVerifiedLanes": [],
+      "currentVerifiedLanes": [
+        "anime"
+      ],
       "historicalProof": [
         "anime: Jujutsu Kaisen"
       ],
@@ -540,9 +542,9 @@
         "1 live routes / anime"
       ],
       "latestLaneVerdicts": [
-        "anime=returned_unplayable/provider_returned_streams"
+        "anime=OK"
       ],
-      "dominantIssue": "provider_returned_streams",
+      "dominantIssue": "none",
       "searchProgress": [
         "anime: 1 works tested / 0 retained misses"
       ],
@@ -560,10 +562,10 @@
         "existing_positive_route_prior"
       ],
       "authorityKnown": true,
-      "action": "replay candidate proof against current bytes; publish only after current verified media",
-      "brainCheckRequired": true,
-      "statusRepairEligible": true,
-      "repairEligible": true,
+      "action": "protect + replay retained proof",
+      "brainCheckRequired": false,
+      "statusRepairEligible": false,
+      "repairEligible": false,
       "testedThisRun": true
     },
     {
@@ -1021,13 +1023,15 @@
     },
     {
       "provider": "voiranime-homes",
-      "status": "REGRESSION PROVIDER JS",
+      "status": "FULL OK",
       "underlyingStatus": "",
-      "color": "🟣",
+      "color": "🟢",
       "declaredLanes": [
         "anime"
       ],
-      "currentVerifiedLanes": [],
+      "currentVerifiedLanes": [
+        "anime"
+      ],
       "historicalProof": [
         "anime: Hell Mode: The Hardcore Gamer Dominates in Another World with Garbage Balancing / Jujutsu Kaisen"
       ],
@@ -1036,9 +1040,9 @@
         "1 live routes / anime"
       ],
       "latestLaneVerdicts": [
-        "anime=returned_unplayable/provider_returned_streams"
+        "anime=OK"
       ],
-      "dominantIssue": "provider_returned_streams",
+      "dominantIssue": "none",
       "searchProgress": [
         "anime: 1 works tested / 0 retained misses"
       ],
@@ -1056,10 +1060,10 @@
         "existing_positive_route_prior"
       ],
       "authorityKnown": true,
-      "action": "A/B against retained proof; restore JS/runtime",
-      "brainCheckRequired": true,
-      "statusRepairEligible": true,
-      "repairEligible": true,
+      "action": "protect + replay retained proof",
+      "brainCheckRequired": false,
+      "statusRepairEligible": false,
+      "repairEligible": false,
       "testedThisRun": true
     },
     {
@@ -2082,14 +2086,13 @@
     }
   ],
   "counts": {
-    "CANDIDATE OK": 6,
+    "CANDIDATE OK": 5,
     "CHAIN REACHED": 2,
     "DISABLED": 5,
-    "FULL OK": 14,
+    "FULL OK": 16,
     "NO PROOF": 1,
     "PARTIAL OK": 1,
     "REGRESSION PROVIDER": 5,
-    "REGRESSION PROVIDER JS": 1,
     "ROUTE PROVEN": 11
   },
   "symptomaticProviders": [
@@ -2105,7 +2108,6 @@
     "animevostfr",
     "coflix",
     "flemmix",
-    "french-manga",
     "kehflix",
     "mallumv",
     "moviebox",
@@ -2116,7 +2118,6 @@
     "vidfast",
     "vidlove",
     "vidrock",
-    "voiranime-homes",
     "vostfree",
     "yflix"
   ],
@@ -2133,7 +2134,6 @@
     "animevostfr",
     "coflix",
     "flemmix",
-    "french-manga",
     "kehflix",
     "mallumv",
     "moviebox",
@@ -2144,7 +2144,6 @@
     "vidfast",
     "vidlove",
     "vidrock",
-    "voiranime-homes",
     "vostfree",
     "yflix"
   ],
@@ -2161,7 +2160,6 @@
     "animevostfr",
     "coflix",
     "flemmix",
-    "french-manga",
     "kehflix",
     "mallumv",
     "moviebox",
@@ -2172,7 +2170,6 @@
     "vidfast",
     "vidlove",
     "vidrock",
-    "voiranime-homes",
     "vostfree",
     "yflix"
   ],
@@ -2185,8 +2182,8 @@
   "harnessQueue": [],
   "targetedTransportBlockedQueue": [],
   "clientTransportGapQueue": [],
-  "harnessEvidenceRunId": "42949276494-sharded-waf",
-  "harnessEvidenceSha": "43fe639bf7d8797c84b77d2804938351d851b2a3",
+  "harnessEvidenceRunId": "42954902984-sharded-waf",
+  "harnessEvidenceSha": "5351d77d3273b5dd66051e912e2b931bd3ebc7e7",
   "authorityRefreshedProviders": [],
   "harnessTransportUpdatedProviders": [],
   "networkDifferentialUpdatedProviders": [],
@@ -2598,45 +2595,5 @@
       ],
       "replayedProviders": []
     }
-  },
-  "lastRepairAttempt": {
-    "runId": "42950085798",
-    "sourceCensusRunId": "42949276494",
-    "selectedProviders": [
-      "4khdhub",
-      "allanime",
-      "animesalt",
-      "animesultra",
-      "animevost-fr",
-      "flemmix",
-      "kehflix",
-      "mallumv",
-      "moviebox",
-      "moviesmod",
-      "vidfast",
-      "vostfree",
-      "yflix"
-    ],
-    "candidateProviders": [],
-    "validatedProviders": [],
-    "acceptedRepairCount": 0,
-    "deferredToLearningSlotProviders": [
-      "4khdhub",
-      "allanime",
-      "animesalt",
-      "animesultra",
-      "animevost-fr",
-      "flemmix",
-      "kehflix",
-      "mallumv",
-      "moviebox",
-      "moviesmod",
-      "vidfast",
-      "vostfree",
-      "yflix"
-    ],
-    "noProgressReason": "time_budget_exhausted_during_batch",
-    "timeBudgetExhausted": true,
-    "publicationAllowed": false
   }
 }
