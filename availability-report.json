@@ -1,12 +1,12 @@
 {
   "schema_version": 63,
-  "generated_at": "2026-11-11T16:27:34.762763+00:00",
+  "generated_at": "2026-11-12T01:57:28.517337+00:00",
   "test_environment": "github-actions-node",
   "checked_providers": 41,
   "status_counts": {
-    "healthy": 5,
+    "healthy": 4,
     "reachable": 0,
-    "blocked": 6,
+    "blocked": 7,
     "degraded": 0,
     "no_streams": 10,
     "provider_unreachable": 13,
@@ -2075,7 +2075,7 @@
     },
     {
       "id": "moviesmod",
-      "status": "no_streams",
+      "status": "blocked",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
@@ -3142,18 +3142,14 @@
     },
     {
       "id": "wookafr",
-      "status": "healthy",
+      "status": "no_streams",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
-      "consecutive_successes": 1,
-      "hosts": [
-        "strm5.uqload.vc"
-      ],
-      "response_categories": [
-        "playable"
-      ],
+      "consecutive_successes": 0,
+      "hosts": [],
+      "response_categories": [],
       "host_health": {
         "lecteurvideo.com": {
           "last_checked_at": "2026-11-11T16:27:34.762763+00:00",
