@@ -1,12 +1,12 @@
 {
   "schema_version": 63,
-  "generated_at": "2026-11-12T01:57:28.517337+00:00",
+  "generated_at": "2026-11-12T13:00:18.121170+00:00",
   "test_environment": "github-actions-node",
   "checked_providers": 41,
   "status_counts": {
-    "healthy": 4,
+    "healthy": 5,
     "reachable": 0,
-    "blocked": 7,
+    "blocked": 6,
     "degraded": 0,
     "no_streams": 10,
     "provider_unreachable": 13,
@@ -2075,7 +2075,7 @@
     },
     {
       "id": "moviesmod",
-      "status": "blocked",
+      "status": "no_streams",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
@@ -2524,17 +2524,21 @@
     },
     {
       "id": "sekai",
-      "status": "no_streams",
+      "status": "healthy",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
-      "consecutive_successes": 0,
-      "hosts": [],
-      "response_categories": [],
+      "consecutive_successes": 1,
+      "hosts": [
+        "5.mugiwara.one"
+      ],
+      "response_categories": [
+        "playable"
+      ],
       "host_health": {
         "4.mugiwara.one": {
-          "last_checked_at": "2026-11-11T06:51:06.076036+00:00",
+          "last_checked_at": "2026-11-12T13:00:18.121170+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -2545,7 +2549,7 @@
           "consecutive_blocked": 0
         },
         "cdndirector.dailymotion.com": {
-          "last_checked_at": "2026-11-11T06:51:06.076036+00:00",
+          "last_checked_at": "2026-11-12T13:00:18.121170+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -2556,7 +2560,7 @@
           "consecutive_blocked": 0
         },
         "1.mugiwara.one": {
-          "last_checked_at": "2026-11-11T06:51:06.076036+00:00",
+          "last_checked_at": "2026-11-12T13:00:18.121170+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -2567,7 +2571,7 @@
           "consecutive_blocked": 0
         },
         "23.mugiwara.one": {
-          "last_checked_at": "2026-11-11T06:51:06.076036+00:00",
+          "last_checked_at": "2026-11-12T13:00:18.121170+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -2578,14 +2582,14 @@
           "consecutive_blocked": 0
         },
         "5.mugiwara.one": {
-          "last_checked_at": "2026-11-11T06:51:06.076036+00:00",
+          "last_checked_at": "2026-11-12T13:00:18.121170+00:00",
           "last_category": "playable",
           "reachable": true,
           "http_status": 206,
-          "latency_ms": 747,
+          "latency_ms": 742,
           "kind": "mp4",
           "consecutive_hard_failures": 0,
-          "consecutive_successes": 1,
+          "consecutive_successes": 2,
           "consecutive_blocked": 0
         }
       },
