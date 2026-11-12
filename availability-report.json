@@ -1,17 +1,17 @@
 {
   "schema_version": 63,
-  "generated_at": "2026-11-12T13:00:18.121170+00:00",
+  "generated_at": "2026-11-12T22:21:17.287800+00:00",
   "test_environment": "github-actions-node",
   "checked_providers": 41,
   "status_counts": {
-    "healthy": 5,
+    "healthy": 4,
     "reachable": 0,
-    "blocked": 6,
+    "blocked": 7,
     "degraded": 0,
-    "no_streams": 10,
+    "no_streams": 9,
     "provider_unreachable": 13,
     "runtime_error": 0,
-    "unavailable": 7,
+    "unavailable": 8,
     "excluded": 0
   },
   "policy": {
@@ -1710,18 +1710,14 @@
     },
     {
       "id": "castle",
-      "status": "healthy",
+      "status": "no_streams",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
-      "consecutive_successes": 2,
-      "hosts": [
-        "img1.fcxmb.com"
-      ],
-      "response_categories": [
-        "playable"
-      ],
+      "consecutive_successes": 0,
+      "hosts": [],
+      "response_categories": [],
       "host_health": {
         "img1.fvncw.com": {
           "last_checked_at": "2026-11-08T15:25:51.717964+00:00",
@@ -2529,16 +2525,16 @@
       "enabled": true,
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
-      "consecutive_successes": 1,
+      "consecutive_successes": 2,
       "hosts": [
-        "5.mugiwara.one"
+        "1.mugiwara.one"
       ],
       "response_categories": [
         "playable"
       ],
       "host_health": {
         "4.mugiwara.one": {
-          "last_checked_at": "2026-11-12T13:00:18.121170+00:00",
+          "last_checked_at": "2026-11-12T22:21:17.287800+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -2549,7 +2545,7 @@
           "consecutive_blocked": 0
         },
         "cdndirector.dailymotion.com": {
-          "last_checked_at": "2026-11-12T13:00:18.121170+00:00",
+          "last_checked_at": "2026-11-12T22:21:17.287800+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -2560,18 +2556,18 @@
           "consecutive_blocked": 0
         },
         "1.mugiwara.one": {
-          "last_checked_at": "2026-11-12T13:00:18.121170+00:00",
-          "last_category": "not_returned",
-          "reachable": false,
-          "http_status": null,
-          "latency_ms": null,
+          "last_checked_at": "2026-11-12T22:21:17.287800+00:00",
+          "last_category": "playable",
+          "reachable": true,
+          "http_status": 206,
+          "latency_ms": 981,
           "kind": "mp4",
           "consecutive_hard_failures": 0,
-          "consecutive_successes": 0,
+          "consecutive_successes": 1,
           "consecutive_blocked": 0
         },
         "23.mugiwara.one": {
-          "last_checked_at": "2026-11-12T13:00:18.121170+00:00",
+          "last_checked_at": "2026-11-12T22:21:17.287800+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -2582,14 +2578,14 @@
           "consecutive_blocked": 0
         },
         "5.mugiwara.one": {
-          "last_checked_at": "2026-11-12T13:00:18.121170+00:00",
-          "last_category": "playable",
-          "reachable": true,
-          "http_status": 206,
-          "latency_ms": 742,
+          "last_checked_at": "2026-11-12T22:21:17.287800+00:00",
+          "last_category": "not_returned",
+          "reachable": false,
+          "http_status": null,
+          "latency_ms": null,
           "kind": "mp4",
           "consecutive_hard_failures": 0,
-          "consecutive_successes": 2,
+          "consecutive_successes": 0,
           "consecutive_blocked": 0
         }
       },
@@ -2940,7 +2936,7 @@
     },
     {
       "id": "voiranime",
-      "status": "no_streams",
+      "status": "unavailable",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
@@ -3043,18 +3039,14 @@
     },
     {
       "id": "voiranime-homes",
-      "status": "healthy",
+      "status": "blocked",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
-      "consecutive_successes": 2,
-      "hosts": [
-        "u14.vidzy.org"
-      ],
-      "response_categories": [
-        "playable"
-      ],
+      "consecutive_successes": 0,
+      "hosts": [],
+      "response_categories": [],
       "host_health": {
         "u14.vidzy.cc": {
           "last_checked_at": "2026-11-10T13:13:12.372998+00:00",
@@ -3146,17 +3138,21 @@
     },
     {
       "id": "wookafr",
-      "status": "no_streams",
+      "status": "healthy",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
-      "consecutive_successes": 0,
-      "hosts": [],
-      "response_categories": [],
+      "consecutive_successes": 1,
+      "hosts": [
+        "strm7.uqload.vc"
+      ],
+      "response_categories": [
+        "playable"
+      ],
       "host_health": {
         "lecteurvideo.com": {
-          "last_checked_at": "2026-11-11T16:27:34.762763+00:00",
+          "last_checked_at": "2026-11-12T22:21:17.287800+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -3167,7 +3163,7 @@
           "consecutive_blocked": 0
         },
         "strm6.uqload.vc": {
-          "last_checked_at": "2026-11-11T16:27:34.762763+00:00",
+          "last_checked_at": "2026-11-12T22:21:17.287800+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -3178,18 +3174,18 @@
           "consecutive_blocked": 0
         },
         "strm5.uqload.vc": {
-          "last_checked_at": "2026-11-11T16:27:34.762763+00:00",
-          "last_category": "playable",
-          "reachable": true,
-          "http_status": 200,
-          "latency_ms": 470,
+          "last_checked_at": "2026-11-12T22:21:17.287800+00:00",
+          "last_category": "not_returned",
+          "reachable": false,
+          "http_status": null,
+          "latency_ms": null,
           "kind": "hls",
           "consecutive_hard_failures": 0,
-          "consecutive_successes": 1,
+          "consecutive_successes": 0,
           "consecutive_blocked": 0
         },
         "wishonly.site": {
-          "last_checked_at": "2026-11-11T16:27:34.762763+00:00",
+          "last_checked_at": "2026-11-12T22:21:17.287800+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -3200,7 +3196,7 @@
           "consecutive_blocked": 0
         },
         "strm4.uqload.vc": {
-          "last_checked_at": "2026-11-11T16:27:34.762763+00:00",
+          "last_checked_at": "2026-11-12T22:21:17.287800+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -3211,18 +3207,18 @@
           "consecutive_blocked": 0
         },
         "strm7.uqload.vc": {
-          "last_checked_at": "2026-11-11T16:27:34.762763+00:00",
-          "last_category": "not_returned",
-          "reachable": false,
-          "http_status": null,
-          "latency_ms": null,
+          "last_checked_at": "2026-11-12T22:21:17.287800+00:00",
+          "last_category": "playable",
+          "reachable": true,
+          "http_status": 200,
+          "latency_ms": 429,
           "kind": "hls",
           "consecutive_hard_failures": 0,
-          "consecutive_successes": 0,
+          "consecutive_successes": 1,
           "consecutive_blocked": 0
         },
         "strm1.uqload.vc": {
-          "last_checked_at": "2026-11-11T16:27:34.762763+00:00",
+          "last_checked_at": "2026-11-12T22:21:17.287800+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -3233,7 +3229,7 @@
           "consecutive_blocked": 0
         },
         "strm8.uqload.vc": {
-          "last_checked_at": "2026-11-11T16:27:34.762763+00:00",
+          "last_checked_at": "2026-11-12T22:21:17.287800+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
