@@ -23,8 +23,8 @@
   ],
   "counts": {
     "browser_challenge_persisted": 15,
-    "browser_content_reached": 6,
-    "browser_inconclusive": 2
+    "browser_content_reached": 5,
+    "browser_inconclusive": 3
   },
   "rows": [
     {
@@ -78,7 +78,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 4984
+      "durationMs": 20651
     },
     {
       "provider": "allwish",
@@ -131,7 +131,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 4255,
+      "durationMs": 20644,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_challenge_persisted",
@@ -212,7 +212,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 6456,
+      "durationMs": 21805,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_challenge_persisted",
@@ -935,7 +935,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 4890
+      "durationMs": 5035
     },
     {
       "provider": "flemmix",
@@ -988,7 +988,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 4158
+      "durationMs": 5239
     },
     {
       "provider": "kehflix",
@@ -1041,11 +1041,64 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 2670
+      "durationMs": 3383
     },
     {
       "provider": "kehflix",
       "lane": "movie",
+      "publicUrl": "https://kehflix.com/api/streams/movie",
+      "host": "kehflix.com",
+      "path": "/api/streams/movie",
+      "method": "GET",
+      "fetchStatus": 403,
+      "challenge": "cloudflare",
+      "seedKind": null,
+      "seedRoute": null,
+      "outcome": "browser_inconclusive",
+      "attemptCount": 2,
+      "attempts": [
+        {
+          "attempt": 1,
+          "outcome": "browser_inconclusive",
+          "exitCode": 0
+        },
+        {
+          "attempt": 2,
+          "outcome": "browser_inconclusive",
+          "exitCode": 0
+        }
+      ],
+      "ordinarySessionReused": true,
+      "clientProfileMatrix": [
+        {
+          "profile": "github-default-browser",
+          "userAgent": null,
+          "outcome": "browser_inconclusive",
+          "attemptCount": 2,
+          "attempts": [
+            {
+              "attempt": 1,
+              "outcome": "browser_inconclusive",
+              "exitCode": 0
+            },
+            {
+              "attempt": 2,
+              "outcome": "browser_inconclusive",
+              "exitCode": 0
+            }
+          ],
+          "ordinarySessionReused": true
+        }
+      ],
+      "directHttpProfile": null,
+      "okHttpJvmProfile": null,
+      "contentProfiles": [],
+      "nativeTvTransportStillUnproven": true,
+      "durationMs": 3255
+    },
+    {
+      "provider": "kehflix",
+      "lane": "tv",
       "publicUrl": "https://kehflix.com/api/streams/episode",
       "host": "kehflix.com",
       "path": "/api/streams/episode",
@@ -1094,52 +1147,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 2433
-    },
-    {
-      "provider": "kehflix",
-      "lane": "tv",
-      "publicUrl": "https://kehflix.com/api/streams/tv",
-      "host": "kehflix.com",
-      "path": "/api/streams/tv",
-      "method": "GET",
-      "fetchStatus": 403,
-      "challenge": "cloudflare",
-      "seedKind": null,
-      "seedRoute": null,
-      "outcome": "browser_content_reached",
-      "attemptCount": 1,
-      "attempts": [
-        {
-          "attempt": 1,
-          "outcome": "browser_content_reached",
-          "exitCode": 0
-        }
-      ],
-      "ordinarySessionReused": true,
-      "clientProfileMatrix": [
-        {
-          "profile": "github-default-browser",
-          "userAgent": null,
-          "outcome": "browser_content_reached",
-          "attemptCount": 1,
-          "attempts": [
-            {
-              "attempt": 1,
-              "outcome": "browser_content_reached",
-              "exitCode": 0
-            }
-          ],
-          "ordinarySessionReused": true
-        }
-      ],
-      "directHttpProfile": null,
-      "okHttpJvmProfile": null,
-      "contentProfiles": [
-        "github-default-browser"
-      ],
-      "nativeTvTransportStillUnproven": true,
-      "durationMs": 2431
+      "durationMs": 2970
     },
     {
       "provider": "mallumv",
@@ -1250,9 +1258,9 @@
     {
       "provider": "moviesmod",
       "lane": "movie",
-      "publicUrl": "https://links.modpro.blog/archives/1516",
+      "publicUrl": "https://links.modpro.blog/archives/38196",
       "host": "links.modpro.blog",
-      "path": "/archives/1516",
+      "path": "/archives/38196",
       "method": "GET",
       "fetchStatus": 403,
       "challenge": "cloudflare",
@@ -1298,14 +1306,14 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 4418
+      "durationMs": 5090
     },
     {
       "provider": "moviesmod",
       "lane": "tv",
-      "publicUrl": "https://episodes.modpro.blog/archives/22985",
+      "publicUrl": "https://episodes.modpro.blog/archives/66976",
       "host": "episodes.modpro.blog",
-      "path": "/archives/22985",
+      "path": "/archives/66976",
       "method": "GET",
       "fetchStatus": 403,
       "challenge": "cloudflare",
@@ -1351,7 +1359,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 3815
+      "durationMs": 5099
     },
     {
       "provider": "vidfast",
@@ -1725,7 +1733,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 3968,
+      "durationMs": 4985,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_challenge_persisted",
