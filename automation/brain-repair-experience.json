@@ -8141,8 +8141,8 @@
     "requiresDeepValidation": true
   },
   "schemaVersion": 2,
-  "sourceRunId": "43299606517",
-  "sourceSha": "fe9f30034d180d8bd1b8344d7bb649cef6974c28",
+  "sourceRunId": "43307268053",
+  "sourceSha": "e2193efb9a760cb11d9db94be0878f1a0ac13137",
   "strategyPatterns": {
     "api_stream_resolver": {
       "commonRequestRecipes": [],
@@ -8154,17 +8154,17 @@
       "routeFamilies": [
         {
           "providerSupport": 1,
-          "role": "search",
-          "supportRatio": 1.0
-        },
-        {
-          "providerSupport": 1,
           "role": "other",
           "supportRatio": 1.0
         },
         {
           "providerSupport": 1,
           "role": "detail",
+          "supportRatio": 1.0
+        },
+        {
+          "providerSupport": 1,
+          "role": "search",
           "supportRatio": 1.0
         }
       ]
@@ -8180,12 +8180,17 @@
       "routeFamilies": [
         {
           "providerSupport": 1,
+          "role": "detail",
+          "supportRatio": 0.5
+        },
+        {
+          "providerSupport": 1,
           "role": "search",
           "supportRatio": 0.5
         },
         {
           "providerSupport": 1,
-          "role": "detail",
+          "role": "episode",
           "supportRatio": 0.5
         },
         {
@@ -8196,11 +8201,6 @@
         {
           "providerSupport": 1,
           "role": "player",
-          "supportRatio": 0.5
-        },
-        {
-          "providerSupport": 1,
-          "role": "episode",
           "supportRatio": 0.5
         }
       ]
@@ -8229,12 +8229,12 @@
         },
         {
           "providerSupport": 2,
-          "role": "other",
+          "role": "episode",
           "supportRatio": 0.6667
         },
         {
           "providerSupport": 2,
-          "role": "episode",
+          "role": "other",
           "supportRatio": 0.6667
         },
         {
@@ -8366,12 +8366,12 @@
       "routeFamilies": [
         {
           "providerSupport": 9,
-          "role": "detail",
+          "role": "episode",
           "supportRatio": 0.9
         },
         {
           "providerSupport": 9,
-          "role": "episode",
+          "role": "detail",
           "supportRatio": 0.9
         },
         {
@@ -8406,7 +8406,7 @@
       "routeFamilies": [
         {
           "providerSupport": 1,
-          "role": "search",
+          "role": "episode",
           "supportRatio": 1.0
         },
         {
@@ -8416,7 +8416,7 @@
         },
         {
           "providerSupport": 1,
-          "role": "episode",
+          "role": "search",
           "supportRatio": 1.0
         }
       ]
