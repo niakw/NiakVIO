@@ -22,8 +22,8 @@
     "exact failed provider GET replay is transport differential evidence only; it cannot grant playback proof"
   ],
   "counts": {
-    "browser_challenge_persisted": 16,
-    "browser_content_reached": 6,
+    "browser_challenge_persisted": 15,
+    "browser_content_reached": 7,
     "browser_inconclusive": 1
   },
   "rows": [
@@ -43,8 +43,7 @@
       "attempts": [
         {
           "attempt": 1,
-          "outcome": "browser_challenge_persisted",
-          "exitCode": 0
+          "outcome": "browser_timeout"
         },
         {
           "attempt": 2,
@@ -62,8 +61,7 @@
           "attempts": [
             {
               "attempt": 1,
-              "outcome": "browser_challenge_persisted",
-              "exitCode": 0
+              "outcome": "browser_timeout"
             },
             {
               "attempt": 2,
@@ -78,7 +76,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 6050
+      "durationMs": 28746
     },
     {
       "provider": "allwish",
@@ -96,8 +94,7 @@
       "attempts": [
         {
           "attempt": 1,
-          "outcome": "browser_challenge_persisted",
-          "exitCode": 0
+          "outcome": "browser_timeout"
         },
         {
           "attempt": 2,
@@ -115,8 +112,7 @@
           "attempts": [
             {
               "attempt": 1,
-              "outcome": "browser_challenge_persisted",
-              "exitCode": 0
+              "outcome": "browser_timeout"
             },
             {
               "attempt": 2,
@@ -131,7 +127,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 6105,
+      "durationMs": 28745,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_challenge_persisted",
@@ -177,8 +173,7 @@
       "attempts": [
         {
           "attempt": 1,
-          "outcome": "browser_challenge_persisted",
-          "exitCode": 0
+          "outcome": "browser_timeout"
         },
         {
           "attempt": 2,
@@ -196,8 +191,7 @@
           "attempts": [
             {
               "attempt": 1,
-              "outcome": "browser_challenge_persisted",
-              "exitCode": 0
+              "outcome": "browser_timeout"
             },
             {
               "attempt": 2,
@@ -212,7 +206,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 6853,
+      "durationMs": 29025,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_challenge_persisted",
@@ -935,7 +929,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 4655
+      "durationMs": 4662
     },
     {
       "provider": "flemmix",
@@ -988,14 +982,59 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 4578
+      "durationMs": 4480
     },
     {
       "provider": "kehflix",
       "lane": "anime",
-      "publicUrl": "https://kehflix.com/api/streams/episode",
+      "publicUrl": "https://kehflix.com/api/streams/tv",
       "host": "kehflix.com",
-      "path": "/api/streams/episode",
+      "path": "/api/streams/tv",
+      "method": "GET",
+      "fetchStatus": 403,
+      "challenge": "cloudflare",
+      "seedKind": null,
+      "seedRoute": null,
+      "outcome": "browser_content_reached",
+      "attemptCount": 1,
+      "attempts": [
+        {
+          "attempt": 1,
+          "outcome": "browser_content_reached",
+          "exitCode": 0
+        }
+      ],
+      "ordinarySessionReused": true,
+      "clientProfileMatrix": [
+        {
+          "profile": "github-default-browser",
+          "userAgent": null,
+          "outcome": "browser_content_reached",
+          "attemptCount": 1,
+          "attempts": [
+            {
+              "attempt": 1,
+              "outcome": "browser_content_reached",
+              "exitCode": 0
+            }
+          ],
+          "ordinarySessionReused": true
+        }
+      ],
+      "directHttpProfile": null,
+      "okHttpJvmProfile": null,
+      "contentProfiles": [
+        "github-default-browser"
+      ],
+      "nativeTvTransportStillUnproven": true,
+      "durationMs": 3180
+    },
+    {
+      "provider": "kehflix",
+      "lane": "movie",
+      "publicUrl": "https://kehflix.com/api/streams/movie",
+      "host": "kehflix.com",
+      "path": "/api/streams/movie",
       "method": "GET",
       "fetchStatus": 403,
       "challenge": "cloudflare",
@@ -1041,60 +1080,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 2786
-    },
-    {
-      "provider": "kehflix",
-      "lane": "movie",
-      "publicUrl": "https://kehflix.com/title/movie/1215638-rutete-ninja-3",
-      "host": "kehflix.com",
-      "path": "/title/movie/1215638-rutete-ninja-3",
-      "method": "GET",
-      "fetchStatus": 403,
-      "challenge": "cloudflare",
-      "seedKind": null,
-      "seedRoute": null,
-      "outcome": "browser_challenge_persisted",
-      "attemptCount": 2,
-      "attempts": [
-        {
-          "attempt": 1,
-          "outcome": "browser_challenge_persisted",
-          "exitCode": 0
-        },
-        {
-          "attempt": 2,
-          "outcome": "browser_challenge_persisted",
-          "exitCode": 0
-        }
-      ],
-      "ordinarySessionReused": true,
-      "clientProfileMatrix": [
-        {
-          "profile": "github-default-browser",
-          "userAgent": null,
-          "outcome": "browser_challenge_persisted",
-          "attemptCount": 2,
-          "attempts": [
-            {
-              "attempt": 1,
-              "outcome": "browser_challenge_persisted",
-              "exitCode": 0
-            },
-            {
-              "attempt": 2,
-              "outcome": "browser_challenge_persisted",
-              "exitCode": 0
-            }
-          ],
-          "ordinarySessionReused": true
-        }
-      ],
-      "directHttpProfile": null,
-      "okHttpJvmProfile": null,
-      "contentProfiles": [],
-      "nativeTvTransportStillUnproven": true,
-      "durationMs": 2081
+      "durationMs": 12210
     },
     {
       "provider": "kehflix",
@@ -1139,7 +1125,7 @@
         "github-default-browser"
       ],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 1960
+      "durationMs": 1491
     },
     {
       "provider": "mallumv",
@@ -1250,9 +1236,9 @@
     {
       "provider": "moviesmod",
       "lane": "movie",
-      "publicUrl": "https://links.modpro.blog/archives/141508",
+      "publicUrl": "https://links.modpro.blog/archives/1538",
       "host": "links.modpro.blog",
-      "path": "/archives/141508",
+      "path": "/archives/1538",
       "method": "GET",
       "fetchStatus": 403,
       "challenge": "cloudflare",
@@ -1298,14 +1284,14 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 4333
+      "durationMs": 4034
     },
     {
       "provider": "moviesmod",
       "lane": "tv",
-      "publicUrl": "https://episodes.modpro.blog/archives/125716",
+      "publicUrl": "https://episodes.modpro.blog/archives/22985",
       "host": "episodes.modpro.blog",
-      "path": "/archives/125716",
+      "path": "/archives/22985",
       "method": "GET",
       "fetchStatus": 403,
       "challenge": "cloudflare",
@@ -1351,7 +1337,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 4052
+      "durationMs": 3869
     },
     {
       "provider": "vidfast",
@@ -1725,7 +1711,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 3443,
+      "durationMs": 2931,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_challenge_persisted",
