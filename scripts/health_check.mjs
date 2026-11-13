@@ -1578,9 +1578,14 @@ async function testCandidate(candidate) {
       for (const stream of candidates) {
         const probe = await probeStream(stream, modeConfig, normalizedFixture);
         probes.push(probe);
-        // Do not pay for extra mirrors once a current, playable media endpoint
-        // has actually met the unchanged HD quality threshold.
-        if (probe.playback_verified === true && Number(probe.effective_height || 0) >= minimumHeight) break;
+        // Normal acceptance can stop after a proven HD result to save probes.
+        // An explicit read-only quality audit instead tests every selected
+        // candidate, including later 1080/4K variants, within the same cap.
+        if (
+          modeConfig.probe_all_selected_quality_variants !== true
+          && probe.playback_verified === true
+          && Number(probe.effective_height || 0) >= minimumHeight
+        ) break;
       }
     }
 

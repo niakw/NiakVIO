@@ -22,13 +22,15 @@ assert 'function rankedDeepStreamCandidates(items, count)' in source
 assert "qualityToHeight(`${stream?.quality || ''} ${stream?.title || ''} ${stream?.url || ''}`)" in source
 assert 'right.claimedHeight - left.claimedHeight || left.index - right.index' in source
 assert 'const candidates = rankedDeepStreamCandidates(streams, maxStreamsToProbe);' in source
-assert 'probe.playback_verified === true && Number(probe.effective_height || 0) >= minimumHeight' in source
+assert 'probe.playback_verified === true' in source
+assert 'Number(probe.effective_height || 0) >= minimumHeight' in source
+assert 'modeConfig.probe_all_selected_quality_variants !== true' in source
 assert "qualityToHeight(`${stream.quality || ''} ${stream.title || ''} ${stream.url || ''}`)" in source
 
 # Claimed quality is only a probe-selection hint. The activation shortcut must
 # still require the network/media probe to verify playback and effective height.
 rank_index = source.index('right.claimedHeight - left.claimedHeight')
-verify_index = source.index('probe.playback_verified === true && Number(probe.effective_height || 0) >= minimumHeight')
+verify_index = source.index('probe.playback_verified === true')
 assert rank_index < verify_index
 
 print('deep quality-ranked adaptive stream sampling tests passed')

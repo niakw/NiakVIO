@@ -8,6 +8,8 @@ on:
       - '.github/workflows/provider-quality-deep-diagnostic.yml'
       - 'scripts/summarize_provider_quality_probe.py'
       - 'tests/provider_quality_deep_probe_test.py'
+      - 'scripts/health_check.mjs'
+      - 'tests/deep_stream_sampling_test.py'
   schedule:
     - cron: "17 5 * * 1"
 
@@ -56,6 +58,7 @@ jobs:
           set -euo pipefail
           test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
           python tests/provider_quality_deep_probe_test.py
+          python tests/deep_stream_sampling_test.py
           npm ci --ignore-scripts --no-audit --no-fund
           python scripts/stage_published.py
       - name: Deep probe declared HD and 4K candidate fanout (no promotion)
@@ -79,6 +82,7 @@ jobs:
           mode["fixture_limit"]=2
           mode["max_streams_to_probe"]=3
           mode["probe_streams_adaptively"]=True
+          mode["probe_all_selected_quality_variants"]=True
           mode["inspect_quality"]=True
           mode["probe_best_variant"]=True
           mode["inspect_direct_dimensions"]=True

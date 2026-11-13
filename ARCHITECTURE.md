@@ -732,3 +732,14 @@ bundle digest, media-type category, counts and quality-height tiers. Its positiv
 HD/4K signal requires both measured height and verified content identity, never
 an advertised tag alone. This oracle cannot write provider code or alter the
 manifest; Brain repair must still generate and replay an improvement.
+
+
+### Complete bounded stream variant diagnostic (2026-11-14)
+The default Deep candidate validator retains its early exit at a verified
+720p stream to avoid cost in production/Learning. The independent read-only
+HD/4K completeness lab sets `probe_all_selected_quality_variants=true`
+and tests every quality-ranked candidate already inside the same strict
+three-stream cap; no extra URLs outside the nominated candidates are probed.
+The wider observation cannot grant publication or falsely report 4K without
+validated terminal bytes, measured height and film/episode identity. This fixes
+a diagnostic sampling bias, not the provider's video qualities by itself.

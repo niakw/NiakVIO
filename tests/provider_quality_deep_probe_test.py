@@ -58,6 +58,7 @@ for token in (
     "TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}",
     "max_streams_to_probe",
     "probe_streams_adaptively",
+    "probe_all_selected_quality_variants",
     "inspect_quality",
     "NUVIO_HEALTH_PROVIDER_FILTER",
     "node scripts/health_check.mjs --deep",
