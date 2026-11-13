@@ -22,9 +22,9 @@
     "exact failed provider GET replay is transport differential evidence only; it cannot grant playback proof"
   ],
   "counts": {
-    "browser_challenge_persisted": 17,
+    "browser_challenge_persisted": 16,
     "browser_content_reached": 5,
-    "browser_inconclusive": 1
+    "browser_inconclusive": 2
   },
   "rows": [
     {
@@ -43,7 +43,8 @@
       "attempts": [
         {
           "attempt": 1,
-          "outcome": "browser_timeout"
+          "outcome": "browser_challenge_persisted",
+          "exitCode": 0
         },
         {
           "attempt": 2,
@@ -61,7 +62,8 @@
           "attempts": [
             {
               "attempt": 1,
-              "outcome": "browser_timeout"
+              "outcome": "browser_challenge_persisted",
+              "exitCode": 0
             },
             {
               "attempt": 2,
@@ -76,7 +78,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 24285
+      "durationMs": 11080
     },
     {
       "provider": "allwish",
@@ -94,7 +96,8 @@
       "attempts": [
         {
           "attempt": 1,
-          "outcome": "browser_timeout"
+          "outcome": "browser_challenge_persisted",
+          "exitCode": 0
         },
         {
           "attempt": 2,
@@ -112,7 +115,8 @@
           "attempts": [
             {
               "attempt": 1,
-              "outcome": "browser_timeout"
+              "outcome": "browser_challenge_persisted",
+              "exitCode": 0
             },
             {
               "attempt": 2,
@@ -127,7 +131,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 24291,
+      "durationMs": 11056,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_challenge_persisted",
@@ -173,7 +177,8 @@
       "attempts": [
         {
           "attempt": 1,
-          "outcome": "browser_timeout"
+          "outcome": "browser_challenge_persisted",
+          "exitCode": 0
         },
         {
           "attempt": 2,
@@ -191,7 +196,8 @@
           "attempts": [
             {
               "attempt": 1,
-              "outcome": "browser_timeout"
+              "outcome": "browser_challenge_persisted",
+              "exitCode": 0
             },
             {
               "attempt": 2,
@@ -206,7 +212,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 24577,
+      "durationMs": 11721,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_challenge_persisted",
@@ -929,7 +935,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 5163
+      "durationMs": 5042
     },
     {
       "provider": "flemmix",
@@ -982,7 +988,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 5059
+      "durationMs": 5016
     },
     {
       "provider": "kehflix",
@@ -1035,14 +1041,14 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 3089
+      "durationMs": 2524
     },
     {
       "provider": "kehflix",
       "lane": "movie",
-      "publicUrl": "https://kehflix.com/title/movie/810693-gekijo-ban-jujutsu-kaisen-0",
+      "publicUrl": "https://kehflix.com/title/movie/68721-i-3",
       "host": "kehflix.com",
-      "path": "/title/movie/810693-gekijo-ban-jujutsu-kaisen-0",
+      "path": "/title/movie/68721-i-3",
       "method": "GET",
       "fetchStatus": 403,
       "challenge": "cloudflare",
@@ -1088,30 +1094,30 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 3593
+      "durationMs": 2767
     },
     {
       "provider": "kehflix",
       "lane": "tv",
-      "publicUrl": "https://kehflix.com/title/tv/1399-igra-prijestolja",
+      "publicUrl": "https://kehflix.com/api/streams/episode",
       "host": "kehflix.com",
-      "path": "/title/tv/1399-igra-prijestolja",
+      "path": "/api/streams/episode",
       "method": "GET",
       "fetchStatus": 403,
       "challenge": "cloudflare",
       "seedKind": null,
       "seedRoute": null,
-      "outcome": "browser_challenge_persisted",
+      "outcome": "browser_inconclusive",
       "attemptCount": 2,
       "attempts": [
         {
           "attempt": 1,
-          "outcome": "browser_challenge_persisted",
+          "outcome": "browser_inconclusive",
           "exitCode": 0
         },
         {
           "attempt": 2,
-          "outcome": "browser_challenge_persisted",
+          "outcome": "browser_inconclusive",
           "exitCode": 0
         }
       ],
@@ -1120,17 +1126,17 @@
         {
           "profile": "github-default-browser",
           "userAgent": null,
-          "outcome": "browser_challenge_persisted",
+          "outcome": "browser_inconclusive",
           "attemptCount": 2,
           "attempts": [
             {
               "attempt": 1,
-              "outcome": "browser_challenge_persisted",
+              "outcome": "browser_inconclusive",
               "exitCode": 0
             },
             {
               "attempt": 2,
-              "outcome": "browser_challenge_persisted",
+              "outcome": "browser_inconclusive",
               "exitCode": 0
             }
           ],
@@ -1141,7 +1147,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 2888
+      "durationMs": 2828
     },
     {
       "provider": "mallumv",
@@ -1252,9 +1258,9 @@
     {
       "provider": "moviesmod",
       "lane": "movie",
-      "publicUrl": "https://links.modpro.blog/archives/7428",
+      "publicUrl": "https://links.modpro.blog/archives/138983",
       "host": "links.modpro.blog",
-      "path": "/archives/7428",
+      "path": "/archives/138983",
       "method": "GET",
       "fetchStatus": 403,
       "challenge": "cloudflare",
@@ -1300,14 +1306,14 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 5280
+      "durationMs": 4836
     },
     {
       "provider": "moviesmod",
       "lane": "tv",
-      "publicUrl": "https://episodes.modpro.blog/archives/78337",
+      "publicUrl": "https://episodes.modpro.blog/archives/125716",
       "host": "episodes.modpro.blog",
-      "path": "/archives/78337",
+      "path": "/archives/125716",
       "method": "GET",
       "fetchStatus": 403,
       "challenge": "cloudflare",
@@ -1353,7 +1359,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 4339
+      "durationMs": 5146
     },
     {
       "provider": "vidfast",
@@ -1727,7 +1733,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 3852,
+      "durationMs": 3759,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_challenge_persisted",
