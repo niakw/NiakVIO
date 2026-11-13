@@ -709,3 +709,14 @@ and headers remain byte-identical, untested streams remain unproven.
 Runtime stream adapters also retain height/width/resolution metadata.
 Quality recovery is distinct from provider repair, route refresh, TMDB
 identity, network reachability and native device playback checks.
+
+
+### Availability observations require TMDB identity parity (2026-11-14)
+The scheduled `availability.yml` diagnostic must execute media requests with
+the same TMDB metadata credential class used by NiakVIO's native and full Deep
+harnesses. Without that identity bootstrap, a provider can never issue
+a provider-owned network request; `provider_unreachable` on a credentialless
+host is inconclusive, not a provider diagnosis. The availability health step
+receives only existing GitHub TMDB secrets, fails closed when absent, and
+retains report-only (never manifest activation or disabling). This does not
+constitute playable or correct HD/4K stream evidence.

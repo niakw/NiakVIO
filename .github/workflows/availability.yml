@@ -11,6 +11,7 @@ on:
       - 'tests/provider_semantics.test.cjs'
       - 'scripts/availability_fallback_policy.cjs'
       - 'tests/availability_fallback_policy.test.cjs'
+      - 'tests/availability_tmdb_auth_workflow_test.py'
       - '.github/workflows/availability.yml'
   schedule:
     # Six low-cost diagnostic checks per day. GitHub schedules use UTC.
@@ -57,6 +58,7 @@ jobs:
         run: |
           node tests/provider_semantics.test.cjs
           node tests/availability_fallback_policy.test.cjs
+          python tests/availability_tmdb_auth_workflow_test.py
 
       - name: Stage current published providers
         run: python scripts/stage_published.py
@@ -69,7 +71,20 @@ jobs:
       - name: Run low-cost availability diagnostics
         env:
           NUVIO_HEALTH_OUTPUT: health-output
-        run: node scripts/health_check.mjs --availability
+          # TMDB metadata is needed to obtain the actual film/episode identity.
+          # Without it many provider functions never make a provider request.
+          # Scope credentials to this health process, never printed or stored.
+          TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+          TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -z "${TMDB_API_KEY:-}" ] && [ -z "${TMDB_ACCESS_TOKEN:-}" ]; then
+            echo "FIELD_AVAILABILITY_DIAGNOSTIC_BLOCKED reason=missing_tmdb_credential"
+            exit 1
+          fi
+          echo "FIELD_AVAILABILITY_DIAGNOSTIC_PREFLIGHT metadata_credentials_present=true"
+          node scripts/health_check.mjs --availability
 
       - name: Upload diagnostic result
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
