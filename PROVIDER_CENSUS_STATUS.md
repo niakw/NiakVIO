@@ -5,6 +5,7 @@
 Latest provider census state: **🟢 16 FULL OK · 🟡 1 PARTIAL OK · 🟦 5 CANDIDATE OK · 🟪 11 ROUTE PROVEN · 🟣 2 CHAIN REACHED · 🔵 1 NO PROOF · 🔴 5 REGRESSION PROVIDER · ⚫ 5 DISABLED** across **46 providers**.
 Evidence authority: Repair census run 43430420409 · SHA bedaa4dadad4 · transport overlay 43430420409-sharded-waf.
 Playback proof freshness (this census only): FULL tested **0/16** · PARTIAL tested **0/1**. Untested FULL/PARTIAL rows are **carried prior playback evidence**, not a new playable-stream validation on this census SHA. The independent availability check is not interchangeable with decoded playback proof.
+Latest Repair/FORCE attempt: **run 43431528923** · selected **13** · candidates **0** · validated **0** · Learning debt recorded **13** · result **no_new_repair_experiment**.
 Symptomatic providers: **24** · automated repair queue: **24** · lifecycle disabled: **0** · authority rediscovery: **0** · harness mismatch: **0** · client transport gap: **0** · environment blocked: **0**.
 Residential harness: **available** · private exit compared where matched.
 

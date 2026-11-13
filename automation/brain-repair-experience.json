@@ -8141,8 +8141,8 @@
     "requiresDeepValidation": true
   },
   "schemaVersion": 2,
-  "sourceRunId": "43423944122",
-  "sourceSha": "8aa90dea4c1ae99e1003534ed1d7cfb716c17247",
+  "sourceRunId": "43430420409",
+  "sourceSha": "bedaa4dadad4748b112b2befa969c69e10492b8a",
   "strategyPatterns": {
     "api_stream_resolver": {
       "commonRequestRecipes": [],
@@ -8154,17 +8154,17 @@
       "routeFamilies": [
         {
           "providerSupport": 1,
+          "role": "detail",
+          "supportRatio": 1.0
+        },
+        {
+          "providerSupport": 1,
           "role": "other",
           "supportRatio": 1.0
         },
         {
           "providerSupport": 1,
           "role": "search",
-          "supportRatio": 1.0
-        },
-        {
-          "providerSupport": 1,
-          "role": "detail",
           "supportRatio": 1.0
         }
       ]
@@ -8180,12 +8180,17 @@
       "routeFamilies": [
         {
           "providerSupport": 1,
+          "role": "detail",
+          "supportRatio": 0.5
+        },
+        {
+          "providerSupport": 1,
           "role": "search",
           "supportRatio": 0.5
         },
         {
           "providerSupport": 1,
-          "role": "detail",
+          "role": "episode",
           "supportRatio": 0.5
         },
         {
@@ -8196,11 +8201,6 @@
         {
           "providerSupport": 1,
           "role": "player",
-          "supportRatio": 0.5
-        },
-        {
-          "providerSupport": 1,
-          "role": "episode",
           "supportRatio": 0.5
         }
       ]
@@ -8366,12 +8366,12 @@
       "routeFamilies": [
         {
           "providerSupport": 9,
-          "role": "detail",
+          "role": "episode",
           "supportRatio": 0.9
         },
         {
           "providerSupport": 9,
-          "role": "episode",
+          "role": "detail",
           "supportRatio": 0.9
         },
         {
@@ -8406,17 +8406,17 @@
       "routeFamilies": [
         {
           "providerSupport": 1,
-          "role": "api",
-          "supportRatio": 1.0
-        },
-        {
-          "providerSupport": 1,
           "role": "search",
           "supportRatio": 1.0
         },
         {
           "providerSupport": 1,
           "role": "episode",
+          "supportRatio": 1.0
+        },
+        {
+          "providerSupport": 1,
+          "role": "api",
           "supportRatio": 1.0
         }
       ]
