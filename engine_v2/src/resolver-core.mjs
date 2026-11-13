@@ -235,11 +235,35 @@ function applyValidationResult(context, result = {}) {
 
   const annotated = context.streams.map((stream, originalIndex) => {
     const validation = byUrl.get(stream.url) ?? null;
+    let displayStream = stream;
+    // HLS masters can advertise an unknown, lower or inflated quality.
+    // Only after the selected child playlist and segments are playable do we
+    // project that actual selected variant into Core's stream presentation.
+    const selectedHeight = Number(validation?.chain?.selectedVariant?.height);
+    if (
+      validation?.playable === true &&
+      validation?.chain?.kind === "master" &&
+      Number.isInteger(selectedHeight) &&
+      [4320, 2160, 1440, 1080, 720, 576, 480, 360, 240].includes(selectedHeight)
+    ) {
+      const projected = {
+        ...stream,
+        quality: `${selectedHeight}p`,
+        height: selectedHeight,
+        width: null,
+        resolution: null,
+      };
+      displayStream = {
+        ...presentStreamCandidates([projected], presentationMetadata(context), context.provider)[0],
+        declaredQuality: stream.quality,
+        qualityEvidence: "playable-hls-selected-variant",
+      };
+    }
     return {
       originalIndex,
       rank: rankByUrl.has(stream.url) ? rankByUrl.get(stream.url) : Number.POSITIVE_INFINITY,
       stream: {
-        ...stream,
+        ...displayStream,
         playable: validation?.playable === true,
         validation,
       },

@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { validateMediaCandidate, validateMediaCandidates } from "../src/media-validator.mjs";
+import { validateMediaCandidate, validateMediaCandidates, selectMediaValidationCandidates } from "../src/media-validator.mjs";
 
 const requiredHeaders = {
   Referer: "https://player.example/watch",
@@ -184,6 +184,29 @@ const ranked = await validateMediaCandidates([
 ], { fetchImpl: rankingFetch, timeoutMs: 1500, maxCandidates: 3 });
 assert.equal(ranked.rankedResults[0].candidate.url, "https://rank.example/stable.m3u8");
 assert(ranked.rankedResults[0].rankScore > ranked.rankedResults[1].rankScore);
+
+const buriedHighQuality = [
+  { url: "https://rank.example/stable.m3u8", type: "hls", quality: "720p" },
+  { url: "https://rank.example/flaky.m3u8", type: "hls", quality: "1080p" },
+  { url: "https://rank.example/stable.m3u8", type: "hls", quality: "720p" },
+  { url: "https://rank.example/healthy4k.m3u8", type: "hls", quality: "2160p" },
+];
+assert.deepEqual(
+  selectMediaValidationCandidates(buriedHighQuality, 2).map((row) => row.url),
+  ["https://rank.example/stable.m3u8", "https://rank.example/healthy4k.m3u8"],
+);
+assert.deepEqual(
+  selectMediaValidationCandidates(buriedHighQuality, 1).map((row) => row.url),
+  ["https://rank.example/stable.m3u8"],
+);
+const recoveredBuried4k = await validateMediaCandidates(
+  buriedHighQuality, { fetchImpl: rankingFetch, timeoutMs: 1500, maxCandidates: 2 }
+);
+assert.equal(recoveredBuried4k.playableCount, 2);
+assert.equal(recoveredBuried4k.candidateCount, 4);
+assert.equal(recoveredBuried4k.testedCount, 2);
+assert.equal(recoveredBuried4k.untestedCount, 2);
+assert.equal(recoveredBuried4k.rankedResults[0].candidate.url, "https://rank.example/healthy4k.m3u8");
 
 const healthy4k = await validateMediaCandidates([
   { url: "https://rank.example/stable.m3u8", type: "hls", quality: "1080p" },

@@ -695,3 +695,17 @@ La porte de publication exige cette fonction dans tous les bundles v20, et le
 test Spartacus couvre les faux S00 structurés avec des URL S03 ainsi qu'un
 faux S01 avec URL S02. Le décodage média réel et le sous-titrage synchronisé
 restent à prouver après rematérialisation.
+
+
+### Quality-sensitive media validation and observed HLS projection (2026-11-14)
+Core validation uses a strict bounded candidate probe budget, but now
+preserves the first provider mirror **plus** highest-claimed resolution
+candidates rather than testing only the first N slots. A 1080p/4K claim
+selects a candidate for testing; it never verifies media or identity.
+For verified playable HLS master playlists, the actual selected child
+variant height is fed back into the Core's title, quality and badges,
+including fallbacks from advertised 4K to verified 1080p. Signed URLs
+and headers remain byte-identical, untested streams remain unproven.
+Runtime stream adapters also retain height/width/resolution metadata.
+Quality recovery is distinct from provider repair, route refresh, TMDB
+identity, network reachability and native device playback checks.

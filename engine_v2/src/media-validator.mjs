@@ -112,10 +112,31 @@ export async function validateMediaCandidate(candidate, options = {}) {
   }
 }
 
+export function selectMediaValidationCandidates(candidates = [], maxCandidates = 3) {
+  const rows = Array.isArray(candidates) ? candidates : [];
+  const budget = clamp(Number(maxCandidates), 1, 8);
+  if (rows.length <= budget) return rows.slice();
+  // Keep the provider's first-choice mirror. Then include the strongest
+  // independently advertised 1080p/4K options even when they occur later.
+  // This selects candidates for PROBING, not playback or quality acceptance.
+  const preferred = rows.map((candidate, index) => ({
+    candidate, index, declaredHeight: Number(inferHeight(candidate) || 0),
+  }));
+  const picked = [preferred[0]];
+  for (const row of preferred.slice(1).sort((a, b) => (
+    b.declaredHeight - a.declaredHeight || a.index - b.index
+  ))) {
+    if (picked.length >= budget) break;
+    picked.push(row);
+  }
+  return picked.map((row) => row.candidate);
+}
+
 export async function validateMediaCandidates(candidates = [], options = {}) {
   const maxCandidates = clamp(Number(options.maxCandidates ?? 3), 1, 8);
+  const selected = selectMediaValidationCandidates(candidates, maxCandidates);
   const results = [];
-  for (const candidate of candidates.slice(0, maxCandidates)) {
+  for (const candidate of selected) {
     const validation = await validateMediaCandidate(candidate, options);
     results.push({ candidate, validation, rankScore: scoreMediaCandidate(candidate, validation) });
   }
@@ -126,6 +147,9 @@ export async function validateMediaCandidates(candidates = [], options = {}) {
   return {
     playable: results.some((row) => row.validation.playable),
     playableCount: results.filter((row) => row.validation.playable).length,
+    candidateCount: Array.isArray(candidates) ? candidates.length : 0,
+    testedCount: results.length,
+    untestedCount: Math.max(0, (Array.isArray(candidates) ? candidates.length : 0) - results.length),
     results,
     rankedResults,
     best: rankedResults[0] ?? null,

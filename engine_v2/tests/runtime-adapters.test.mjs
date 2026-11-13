@@ -88,6 +88,15 @@ for (const device of ["mobile", "desktop", "tv"]) {
   assert.equal(row.headers.Origin, "https://player.example/");
 }
 
+const dimensions = toRuntimeStream({
+  url: "https://cdn.example/master.m3u8", width: 3840, height: 2160,
+  resolution: "3840x2160", title: "Source",
+}, "tv", { providerId: "example" });
+assert.equal(dimensions.quality, "2160p");
+assert.equal(dimensions.width, 3840);
+assert.equal(dimensions.height, 2160);
+assert.equal(dimensions.resolution, "3840x2160");
+
 const mobile = toRuntimeStream(raw, "mobile", { providerId: "example" });
 const desktop = toRuntimeStream(raw, "desktop", { providerId: "example" });
 const tv = toRuntimeStream(raw, "tv", { providerId: "example" });

@@ -87,4 +87,44 @@ const searchFailure = await core.resolve({
 assert.equal(searchFailure.repair.failureClass, "search_gap");
 assert.ok(searchFailure.repair.hypotheses.length <= 2);
 
+// A master HLS stream's proven playable variant, not its original 4K
+// advertising nor its pre-probe title, must determine the visible quality.
+const validatedHls = new ResolverCore({
+  mediaValidator: async (streams) => ({
+    playable: true, playableCount: 1,
+    results: streams.map((candidate) => ({
+      candidate,
+      validation: {
+        playable: true, status: 200, kind: "hls",
+        effectiveHeight: 1080,
+        chain: { kind: "master", selectedVariant: { height: 1080 } },
+      },
+    })),
+  }),
+});
+const measured = await validatedHls.resolve({
+  provider: { id: "quality-test", name: "Quality Source" },
+  request: { tmdbId: "157336", mediaType: "movie", title: "Interstellar" },
+  adapter: {
+    pipeline: ["media", "validation"],
+    async media() {
+      return { streams: [{
+        url: "https://cdn.example/master.m3u8?sig=unchanged",
+        title: "Quality Source - 4K", quality: "2160p",
+        resolution: "3840x2160", headers: { Referer: "https://origin.example/" },
+      }] };
+    },
+  },
+});
+assert.equal(measured.streams[0].quality, "1080p");
+assert.match(measured.streams[0].title, /1080p/);
+assert.doesNotMatch(measured.streams[0].title, /4K/);
+assert(measured.streams[0].badgeIds.includes("1080p-full-hd"));
+assert(!measured.streams[0].badgeIds.includes("4k-ultra-hd"));
+assert.equal(measured.streams[0].declaredQuality, "2160p");
+assert.equal(measured.streams[0].qualityEvidence, "playable-hls-selected-variant");
+assert.equal(measured.streams[0].url, "https://cdn.example/master.m3u8?sig=unchanged");
+assert.equal(measured.streams[0].headers.Referer, "https://origin.example/");
+assert.equal(measured.streams[0].playable, true);
+
 console.log("engine v2 resolver core tests passed");
