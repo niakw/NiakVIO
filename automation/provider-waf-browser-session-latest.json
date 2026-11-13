@@ -22,9 +22,9 @@
     "exact failed provider GET replay is transport differential evidence only; it cannot grant playback proof"
   ],
   "counts": {
-    "browser_challenge_persisted": 16,
+    "browser_challenge_persisted": 17,
     "browser_content_reached": 5,
-    "browser_inconclusive": 2
+    "browser_inconclusive": 1
   },
   "rows": [
     {
@@ -48,8 +48,7 @@
         },
         {
           "attempt": 2,
-          "outcome": "browser_challenge_persisted",
-          "exitCode": 0
+          "outcome": "browser_timeout"
         }
       ],
       "ordinarySessionReused": true,
@@ -67,8 +66,7 @@
             },
             {
               "attempt": 2,
-              "outcome": "browser_challenge_persisted",
-              "exitCode": 0
+              "outcome": "browser_timeout"
             }
           ],
           "ordinarySessionReused": true
@@ -78,7 +76,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 15127
+      "durationMs": 22126
     },
     {
       "provider": "allwish",
@@ -131,7 +129,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 15208,
+      "durationMs": 3402,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_challenge_persisted",
@@ -212,7 +210,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 16434,
+      "durationMs": 5143,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_challenge_persisted",
@@ -935,7 +933,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 3838
+      "durationMs": 2951
     },
     {
       "provider": "flemmix",
@@ -988,7 +986,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 3749
+      "durationMs": 2494
     },
     {
       "provider": "kehflix",
@@ -1041,14 +1039,14 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 2521
+      "durationMs": 2997
     },
     {
       "provider": "kehflix",
       "lane": "movie",
-      "publicUrl": "https://kehflix.com/title/movie/68718-angova-osveta",
+      "publicUrl": "https://kehflix.com/title/movie/693134-dune-2",
       "host": "kehflix.com",
-      "path": "/title/movie/68718-angova-osveta",
+      "path": "/title/movie/693134-dune-2",
       "method": "GET",
       "fetchStatus": 403,
       "challenge": "cloudflare",
@@ -1094,30 +1092,30 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 1625
+      "durationMs": 1033
     },
     {
       "provider": "kehflix",
       "lane": "tv",
-      "publicUrl": "https://kehflix.com/api/streams/episode",
+      "publicUrl": "https://kehflix.com/title/tv/71446-kuca-od-papira",
       "host": "kehflix.com",
-      "path": "/api/streams/episode",
+      "path": "/title/tv/71446-kuca-od-papira",
       "method": "GET",
       "fetchStatus": 403,
       "challenge": "cloudflare",
       "seedKind": null,
       "seedRoute": null,
-      "outcome": "browser_inconclusive",
+      "outcome": "browser_challenge_persisted",
       "attemptCount": 2,
       "attempts": [
         {
           "attempt": 1,
-          "outcome": "browser_inconclusive",
+          "outcome": "browser_challenge_persisted",
           "exitCode": 0
         },
         {
           "attempt": 2,
-          "outcome": "browser_inconclusive",
+          "outcome": "browser_challenge_persisted",
           "exitCode": 0
         }
       ],
@@ -1126,17 +1124,17 @@
         {
           "profile": "github-default-browser",
           "userAgent": null,
-          "outcome": "browser_inconclusive",
+          "outcome": "browser_challenge_persisted",
           "attemptCount": 2,
           "attempts": [
             {
               "attempt": 1,
-              "outcome": "browser_inconclusive",
+              "outcome": "browser_challenge_persisted",
               "exitCode": 0
             },
             {
               "attempt": 2,
-              "outcome": "browser_inconclusive",
+              "outcome": "browser_challenge_persisted",
               "exitCode": 0
             }
           ],
@@ -1147,7 +1145,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 2436
+      "durationMs": 1358
     },
     {
       "provider": "mallumv",
@@ -1258,9 +1256,9 @@
     {
       "provider": "moviesmod",
       "lane": "movie",
-      "publicUrl": "https://links.modpro.blog/archives/133479",
+      "publicUrl": "https://links.modpro.blog/archives/1550",
       "host": "links.modpro.blog",
-      "path": "/archives/133479",
+      "path": "/archives/1550",
       "method": "GET",
       "fetchStatus": 403,
       "challenge": "cloudflare",
@@ -1306,14 +1304,14 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 4402
+      "durationMs": 2954
     },
     {
       "provider": "moviesmod",
       "lane": "tv",
-      "publicUrl": "https://episodes.modpro.blog/archives/132404",
+      "publicUrl": "https://episodes.modpro.blog/archives/67625",
       "host": "episodes.modpro.blog",
-      "path": "/archives/132404",
+      "path": "/archives/67625",
       "method": "GET",
       "fetchStatus": 403,
       "challenge": "cloudflare",
@@ -1359,7 +1357,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 3635
+      "durationMs": 3066
     },
     {
       "provider": "vidfast",
@@ -1733,7 +1731,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 3292,
+      "durationMs": 2137,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_challenge_persisted",
