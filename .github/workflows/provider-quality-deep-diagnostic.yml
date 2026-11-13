@@ -1,0 +1,104 @@
+name: PROVIDERS - Deep HD and 4K coverage diagnostic (read-only)
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/provider-quality-deep-diagnostic.yml'
+      - 'scripts/summarize_provider_quality_probe.py'
+      - 'tests/provider_quality_deep_probe_test.py'
+  schedule:
+    - cron: "17 5 * * 1"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: provider-quality-proof-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: Quality ${{ matrix.provider }} (${{ matrix.family }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    strategy:
+      fail-fast: false
+      max-parallel: 4
+      matrix:
+        include:
+          - { provider: castle, family: api-tv-movie }
+          - { provider: purstream, family: site-player }
+          - { provider: hindmoviez, family: quality-fanout }
+          - { provider: streamzo, family: anime-catalogue }
+          - { provider: 4khdhub, family: html-download }
+          - { provider: uhdmovies, family: download-mirrors }
+          - { provider: allanime, family: anime-api }
+          - { provider: moviesmod, family: player-page }
+    env:
+      TARGET_PROVIDER: ${{ matrix.provider }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0
+        with:
+          python-version: '3.12'
+      - name: Check fixed source and no synthetic acceptance
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          python tests/provider_quality_deep_probe_test.py
+          npm ci --ignore-scripts --no-audit --no-fund
+          python scripts/stage_published.py
+      - name: Deep probe declared HD and 4K candidate fanout (no promotion)
+        timeout-minutes: 26
+        shell: bash
+        env:
+          TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+          TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+        run: |
+          set -euo pipefail
+          if [ -z "${TMDB_API_KEY:-}" ] && [ -z "${TMDB_ACCESS_TOKEN:-}" ]; then
+            echo "FIELD_PROVIDER_QUALITY_INFRA_BLOCKER missing_tmdb_credential"
+            exit 1
+          fi
+          mkdir -p quality-output
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          config=json.loads(Path("health-config.json").read_text())
+          mode=config["modes"]["deep"]
+          mode["fixture_limit"]=2
+          mode["max_streams_to_probe"]=3
+          mode["probe_streams_adaptively"]=True
+          mode["inspect_quality"]=True
+          mode["probe_best_variant"]=True
+          mode["inspect_direct_dimensions"]=True
+          mode["verify_fixture_duration_identity"]=True
+          Path("quality-output/deep-config.json").write_text(json.dumps(config))
+          PY
+          NUVIO_HEALTH_PROVIDER_FILTER="$TARGET_PROVIDER" \
+            NUVIO_HEALTH_CONFIG="$GITHUB_WORKSPACE/quality-output/deep-config.json" \
+            NUVIO_HEALTH_OUTPUT="$GITHUB_WORKSPACE/quality-output/health" \
+            node scripts/health_check.mjs --deep
+          python scripts/summarize_provider_quality_probe.py \
+            --input quality-output/health/health-results.json \
+            --provider "$TARGET_PROVIDER" \
+            --source-sha "$GITHUB_SHA" \
+            --output quality-output/quality-summary.json
+      - name: Upload sanitized quality-only proof
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: provider-quality-${{ matrix.provider }}-${{ github.run_id }}
+          path: quality-output/quality-summary.json
+          retention-days: 7
+          if-no-files-found: warn
