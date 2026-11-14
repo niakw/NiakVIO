@@ -8,6 +8,7 @@ from typing import Any
 from provider_patch_blocks import replace_managed_fix
 
 MANAGED_FIX_ID = "PROVIDER.GENERIC.TMDB_CATALOG_DIRECT_EMBED.RUNTIME.V1"
+GENERIC_REUSABLE = True
 MARKER = "NIAKVIO_TMDB_CATALOG_DIRECT_EMBED_RUNTIME_V1"
 
 WRAPPER = r'''
