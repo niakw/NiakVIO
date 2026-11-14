@@ -53,15 +53,21 @@ def main() -> int:
     accepted_count=int(brain.get("acceptedRepairCount") or 0)
     canonical=str(args.canonical_outcome or "").strip().casefold()
     gate=str(args.candidate_gate_outcome or "").strip().casefold()
-    validated=candidate if canonical=="success" and gate=="success" else []
+    # Job-level outcomes do not establish individual candidate playback proof.
+    # This helper has no per-provider replay report input; never invent identities.
+    gate_passed=canonical=="success" and gate=="success"
+    validation_basis=("aggregate-gates-only" if gate_passed else "gate-not-passed")
+    validated=[]
 
     state["lastRepairAttempt"]={
         "runId":str(args.run_id),
-        "sourceCensusRunId":str(state.get("runId") or ""),
+        "sourceCensusRunId":str(brain.get("sourceCensusRunId") or ""),
+        "recordedAgainstCensusRunId":str(state.get("runId") or ""),
         "mode":args.mode,
         "selectedProviders":selected,
         "candidateProviders":candidate,
         "validatedProviders":validated,
+        "validationBasis":validation_basis,
         "acceptedRepairCount":accepted_count,
         "deferredToLearningSlotProviders":deferred,
         "noProgressReason":str(
@@ -71,7 +77,7 @@ def main() -> int:
         "timeBudgetExhausted":brain.get("timeBudgetExhausted") is True,
         "canonicalOutcome":canonical,
         "candidateGateOutcome":gate,
-        "publicationAllowed":canonical=="success" and gate=="success",
+        "publicationAllowed":gate_passed,
     }
     args.status.write_text(
         json.dumps(state,ensure_ascii=False,indent=2)+"\n",
@@ -81,7 +87,7 @@ def main() -> int:
         "FIELD_REPAIR_ATTEMPT_METADATA "
         f"run={args.run_id} mode={args.mode} selected={len(selected)} "
         f"candidates={len(candidate)} validated={len(validated)} "
-        f"outcome={canonical} gate={gate}"
+        f"outcome={canonical} gate={gate} validation_basis={validation_basis}"
     )
     return 0
 

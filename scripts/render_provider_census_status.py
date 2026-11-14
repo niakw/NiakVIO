@@ -961,12 +961,17 @@ def repair_attempt_notice(attempt: dict[str, Any], census_run: str) -> str:
     def count(key: str) -> int:
         values = attempt.get(key)
         return len(values) if isinstance(values, list) else 0
+    validated_label = (
+        " · individual validation **not recorded** (aggregate gates passed)"
+        if attempt.get("validationBasis") == "aggregate-gates-only"
+        else " · validated **" + str(count("validatedProviders")) + "**"
+    )
     return (
         "Latest Repair/FORCE attempt: **run " + str(attempt["runId"])
         + "** · selected **" + str(count("selectedProviders"))
         + "** · candidates **" + str(count("candidateProviders"))
-        + "** · validated **" + str(count("validatedProviders"))
-        + "** · Learning debt recorded **" + str(count("deferredToLearningSlotProviders"))
+        + "**" + validated_label
+        + " · Learning debt recorded **" + str(count("deferredToLearningSlotProviders"))
         + "** · result **" + str(attempt.get("noProgressReason") or "no recorded reason")
         + "** (" + scope + ")."
     )

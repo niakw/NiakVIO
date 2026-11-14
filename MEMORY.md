@@ -1,3 +1,9 @@
+## 2026-11-14 — Repair activity provenance and individual-proof reporting
+
+- Main d888b35f had successful Workflow Gate 43572729247, Verify & Publish 43572729217, Non-Regression 43572729227 and Branch Maintenance 43572729239; CodeQL 43572729290 and sharded census 43573395888 were in progress at verification. Security retirement 43573238455 used older analysis source 8f98369f and correctly failed closed on current executable/test drift. Do not suppress the finding.
+- Public status on d888b35f preserves the latest Fast Repair attempt 43570493808: selected 9, candidates 0, validated 0, deferred 9, reason no_new_repair_experiment. Playback proof remains historical 16 FULL + 1 PARTIAL, 20 repair queue, no new positive proof.
+- The canonical Repair activity helper attributed the current destination census to a historical Brain attempt and inferred individual validated identities from aggregate job outcomes. Preserve explicit Brain sourceCensusRunId (unknown if absent) separately from recordedAgainstCensusRunId; an aggregate successful gate without an individual proof input is labeled not recorded, not individual validation. Display-only metadata; provider state, queues, gate execution and publication workflow unchanged. Extend synthetic provenance regression and run it from Core Workflow Gate. Exact new SHA CI pending.
+
 ## 2026-11-14 — Deferred-cohort contract aligned with routine architecture validation
 
 - Workflow Gate 43572546386 progressed through the Brain architecture FORCE materializer/promotion/self-architecture/advisor tests successfully, then failed only because tests/brain_architecture_deferred_cohort_test.py still asserted the old job-level manual/FORCE condition.
