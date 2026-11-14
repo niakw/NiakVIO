@@ -1,3 +1,10 @@
+## 2026-11-14 — Disabled recovery observation is now transactionally non-publishing
+
+- Disabled Recovery run 43631622835 reached the intended Brain result for wookafr: Brain-LLM selected the explicit disabled target, Qwen ran, causal routing remained unknown/candidate_replay_gap, and the model abstained under evidence policy. The workflow classified this as transport_inconclusive_replay rather than inventing a provider mutation.
+- The final non-publishing guard then caught a real harness violation: build_provider_runtime_profiles.py --stage --apply-stage still rewrote root provider-overrides.json while constructing staged profiles, including unrelated observed origins. This meant a supposedly diagnostic/sandbox run could dirty production authority even with no Brain repair.
+- Fix b88231f adds --ephemeral-overrides: generated profiles are temporarily exposed for staged reapply, then provider-overrides.json is restored byte-for-byte in finally. Workflow 2d90db5 scopes profile generation to the single requested provider and uses the ephemeral mode. Test cd65968 exercises the production-byte restoration contract. The existing final git-diff guard remains mandatory rather than being weakened.
+- Residential Tailscale credentials are present, but run 43631622835 could not obtain the GitHub OIDC token for the Tailscale action and therefore correctly continued without residential exit; GitHub-only transport evidence remains inconclusive, not provider failure.
+
 ## 2026-11-14 — Bulk onboarding fingerprint coupling removed; continuation waves now target exact 60 with 20/20/20 priority
 
 - Bulk replay 43630826047 on eb048c5 staged all 40 providers successfully but stopped before contract validation because finalize_provider_v3_minimizer.py --check treated provider-local onboarding metadata as a stale global publication fingerprint. Clean-main Verify & Publish separately proved the 11 current active JS files themselves are minimizer fixed-points, so this was metadata coupling rather than active byte drift.
