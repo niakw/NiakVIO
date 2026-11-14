@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "sourceRunId": "43577236590",
-  "sourceTriggerSha": "9ca7a7db691ae95cc26aa0e8fd9a7aaacf866ac1",
-  "unresolvedProviderCount": 22,
+  "sourceRunId": "43583704544",
+  "sourceTriggerSha": "6f726cfc4e5c028e0a5c084c1ea0359694a0b2b4",
+  "unresolvedProviderCount": 21,
   "dynamicVariantProviderCount": 3,
   "dynamicVariantProviders": [
     "animevostfr",
@@ -14,6 +14,8 @@
     "4khdhub",
     "allanime",
     "allwish",
+    "anikototv",
+    "anime-sama",
     "anime-ultime",
     "animekai",
     "animesalt",
@@ -21,23 +23,38 @@
     "animesultra",
     "animevost-fr",
     "animevostfr",
+    "castle",
     "coflix",
     "flemmix",
+    "french-manga",
+    "hindmoviez",
     "kehflix",
+    "kurage",
     "mallumv",
     "moviebox",
     "movieshunt",
     "moviesmod",
+    "mugiwarastream",
+    "neko-sama",
+    "papadustream",
     "persianstremio",
+    "playimdb",
+    "purstream",
+    "sekai",
+    "streamzo",
     "uhdmovies",
     "vidfast",
     "vidlove",
     "vidrock",
+    "voiranime",
+    "voiranime-homes",
+    "voiranime-rip",
     "vostfree",
+    "wookafr",
     "yflix"
   ],
   "dynamicVariantFallbackUsed": true,
-  "groupCount": 10,
+  "groupCount": 11,
   "executionModel": {
     "default": "family/signature batch",
     "liveProbeConcurrency": "audit_provider_quick_yield ThreadPool",
@@ -179,8 +196,8 @@
       "groupId": "learning|html_scraper",
       "repairScope": "learning",
       "runtimeFamilies": [
-        "mixed_embed_resolver",
-        "uhdmovies-search-gateway-driveseed-v4-button-first-multiterminal"
+        "html_scraper",
+        "mixed_embed_resolver"
       ],
       "capabilityStrategy": "html_scraper",
       "evidenceDepths": [
@@ -196,7 +213,7 @@
       "providerCount": 2,
       "providers": [
         "allwish",
-        "uhdmovies"
+        "kurage"
       ],
       "action": "final census NO PROOF remains repair/Learning-owned; issue-only WAF/network text cannot recreate harness or transport ownership",
       "selectionAuthorities": [
@@ -207,26 +224,25 @@
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
     {
-      "groupId": "transport|html_scraper",
-      "repairScope": "transport",
+      "groupId": "learning|direct_media",
+      "repairScope": "learning",
       "runtimeFamilies": [
-        "html_scraper"
+        "direct_media"
       ],
-      "capabilityStrategy": "html_scraper",
+      "capabilityStrategy": "direct_media",
       "evidenceDepths": [
-        "none"
+        "lookup"
       ],
       "dominantIssues": [
-        "network_exception"
+        "network_zero_result"
       ],
       "harnessTransportClasses": [],
       "transportSignature": "not-applicable",
-      "providerCount": 2,
+      "providerCount": 1,
       "providers": [
-        "vidlove",
-        "vidrock"
+        "playimdb"
       ],
-      "action": "refresh transport authority before provider-local code changes",
+      "action": "queue by signature for Brain learning; provider-local repair only after shared profiles fail",
       "selectionAuthorities": [
         "provider-census-status.json:brainCheckRequired"
       ],
@@ -235,28 +251,25 @@
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
     {
-      "groupId": "transport|mixed_embed_resolver",
-      "repairScope": "transport",
+      "groupId": "learning|mixed_embed_resolver",
+      "repairScope": "learning",
       "runtimeFamilies": [
-        "menu-search-series-focus-player",
         "mixed_embed_resolver"
       ],
       "capabilityStrategy": "mixed_embed_resolver",
       "evidenceDepths": [
-        "none"
+        "lookup"
       ],
       "dominantIssues": [
-        "network_exception",
-        "network_http_error"
+        "timeout"
       ],
       "harnessTransportClasses": [],
       "transportSignature": "not-applicable",
-      "providerCount": 2,
+      "providerCount": 1,
       "providers": [
-        "anime-ultime",
-        "animekai"
+        "anime-sama"
       ],
-      "action": "refresh transport authority before provider-local code changes",
+      "action": "queue by signature for Brain learning; provider-local repair only after shared profiles fail",
       "selectionAuthorities": [
         "provider-census-status.json:brainCheckRequired"
       ],
@@ -292,6 +305,33 @@
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
     {
+      "groupId": "transport|mixed_embed_resolver",
+      "repairScope": "transport",
+      "runtimeFamilies": [
+        "mixed_embed_resolver"
+      ],
+      "capabilityStrategy": "mixed_embed_resolver",
+      "evidenceDepths": [
+        "none"
+      ],
+      "dominantIssues": [
+        "network_exception"
+      ],
+      "harnessTransportClasses": [],
+      "transportSignature": "not-applicable",
+      "providerCount": 1,
+      "providers": [
+        "voiranime"
+      ],
+      "action": "refresh transport authority before provider-local code changes",
+      "selectionAuthorities": [
+        "provider-census-status.json:brainCheckRequired"
+      ],
+      "dynamicVariantProviders": [],
+      "executionPolicy": "batch-first",
+      "providerLocalFallback": "only-after-shared-profile-failure"
+    },
+    {
       "groupId": "variant-coverage|direct_media",
       "repairScope": "variant-coverage",
       "runtimeFamilies": [
@@ -302,7 +342,7 @@
         "lookup"
       ],
       "dominantIssues": [
-        "provider_returned_streams"
+        "none"
       ],
       "harnessTransportClasses": [],
       "transportSignature": "not-applicable",
