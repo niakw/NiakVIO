@@ -63,6 +63,9 @@ for pid,row in disabled.items():
     assert ledger[pid].get("state")=="disabled-retained"
     assert ledger[pid].get("manifestVisible") is True
 
+workflow=(ROOT/".github/workflows/provider-disabled-lifecycle.yml").read_text(encoding="utf-8")
+assert "- 'automation/provider-census-status.json'" in workflow, "fresh canonical census must trigger lifecycle"
+
 print(
     f"provider disabled lifecycle contract passed active={len(active)} "
     f"disabled={len(disabled)} pending={len(pending)} retention={RETENTION_DAYS} vf_only={len(vf_only_rows)}"

@@ -1,3 +1,9 @@
+## 2026-11-14 — Fresh canonical census now triggers lifecycle withdrawal
+
+- Full sharded census 43583704544 on 6f726cfc completed successfully and persisted canonical evidence at 705a50ce. It produced 13 current FULL providers with fresh verified lanes and four current tested REGRESSION PROVIDER rows still enabled: anime-sama (timeout), kurage (network zero), playimdb (network zero), voiranime (network exception).
+- classify_provider_authority already has a fail-closed DISABLE_ARCHITECTURE_REGRESSION rule requiring REGRESSION PROVIDER + testedThisRun=true + brainCheckRequired=true + repairEligible=true, but provider-disabled-lifecycle did not trigger on census publication and therefore left fresh regressions active until schedule/manual dispatch.
+- Add automation/provider-census-status.json to lifecycle push paths and enforce that link in the lifecycle contract. This commit itself triggers the lifecycle against the fresh canonical census. Pending onboarding remains excluded by the separate pending/runtime contract.
+
 ## 2026-11-14 — Historical floors exclude never-activated pending staging
 
 - Workflow Gate 43583704566 on 6f726cfc failed because provider_version_floor_test treated the four Global pending candidates as current production providers and demanded historical version floors they never earned.
