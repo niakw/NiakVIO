@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "source": "NiakVIO pinned upstream + retained ProviderBase history",
+  "purpose": "distinct France candidates absent from current catalog; reuse accumulated NiakVIO knowledge before new discovery",
+  "generatedAt": "2026-11-14",
+  "activationPolicy": "route-discovery-then-standard-bulk-offline-contract",
+  "providers": [
+    {
+      "id": "animoflix",
+      "name": "AnimoFlix",
+      "scope": "france",
+      "direct": "https://animoflix.to",
+      "types": [
+        "movie",
+        "tv"
+      ],
+      "languages": [
+        "fr"
+      ],
+      "formats": [
+        "mp4",
+        "mkv"
+      ],
+      "strategy": "mixed_embed_resolver",
+      "sourceManifest": "upstream-lkg/manifests/gowaru-c063207a4facc7a5.json",
+      "retainedKnowledge": "provider-old/animoflix--base--9eef980cbac68086.js",
+      "sourceNote": "Pinned Gowaru manifest declares French movie/TV; retained NiakVIO ProviderBase records knownSite animoflix.to and historical route/origin knowledge. Candidate remains non-active until normal route/onboarding proof."
+    }
+  ]
+}
