@@ -66,6 +66,8 @@ for pid,row in disabled.items():
 
 workflow=(ROOT/".github/workflows/provider-disabled-lifecycle.yml").read_text(encoding="utf-8")
 assert "- 'automation/provider-census-status.json'" in workflow, "fresh canonical census must trigger lifecycle"
+assert "python scripts/reconcile_provider_static_authority.py --apply" in workflow, "lifecycle must self-heal exact managed static authority before projection"
+assert "python scripts/build_provider_disabled_recovery_queue.py" in workflow, "lifecycle must preserve eligible auto-disabled Brain recovery debt"
 
 with tempfile.TemporaryDirectory(prefix="provider-lifecycle-prefix-") as tmp:
     folder=Path(tmp)
