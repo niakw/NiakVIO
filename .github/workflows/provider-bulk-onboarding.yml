@@ -262,6 +262,7 @@ jobs:
     timeout-minutes: 20
     permissions:
       contents: write
+      actions: write
     outputs:
       published_sha: ${{ steps.publish.outputs.published_sha }}
     steps:
@@ -299,8 +300,35 @@ jobs:
           fi
           git config user.name "niakvio-provider-bulk-onboarding"
           git config user.email "actions@users.noreply.github.com"
-          git commit -m "provider: bulk onboard $PROVIDER_COUNT providers"
+          git commit -m "provider: bulk activate $PROVIDER_COUNT offline-unverified"
           git fetch origin main
           git rebase origin/main
           git push origin HEAD:main
           echo "published_sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Continue deferred discovery toward 60/60
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          python - <<'PY' > /tmp/provider-bulk-continuation.env
+          import json
+          from pathlib import Path
+          request=json.loads(Path(".github/provider-onboarding/batch.json").read_text(encoding="utf-8"))
+          deferred=[row for row in request.get("deferredProviders") or [] if isinstance(row,dict)]
+          global_manifest=json.loads(Path("manifest.json").read_text(encoding="utf-8"))
+          france_manifest=json.loads(Path("vf/manifest.json").read_text(encoding="utf-8"))
+          g=sum(1 for row in global_manifest.get("scrapers") or [] if isinstance(row,dict) and row.get("enabled") is not False)
+          f=sum(1 for row in france_manifest.get("scrapers") or [] if isinstance(row,dict) and row.get("enabled") is not False)
+          run=bool(deferred) and (g < 60 or f < 60)
+          print(f"RUN={'true' if run else 'false'}")
+          print(f"GLOBAL_ACTIVE={g}")
+          print(f"FRANCE_ACTIVE={f}")
+          print(f"DEFERRED={len(deferred)}")
+          PY
+          source /tmp/provider-bulk-continuation.env
+          echo "FIELD_BULK_CONTINUATION global=$GLOBAL_ACTIVE france=$FRANCE_ACTIVE deferred=$DEFERRED run=$RUN"
+          if [ "$RUN" = "true" ]; then
+            gh workflow run provider-bulk-route-discovery.yml --ref main
+          fi
