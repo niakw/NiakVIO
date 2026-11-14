@@ -1,16 +1,16 @@
 {
   "schemaVersion": 1,
-  "requestVersion": 16,
+  "requestVersion": 17,
   "source": "NiakVIO-GLOBAL-FINAL-STRICT-TOP20-2026-09-11(5).xlsx",
   "transportProfiles": [
     "github-hosted"
   ],
   "candidateCount": 101,
-  "qualifiedCount": 29,
-  "deferredCount": 72,
+  "qualifiedCount": 15,
+  "deferredCount": 86,
   "qualifiedScopes": {
-    "global": 16,
-    "france": 13
+    "global": 9,
+    "france": 6
   },
   "currentActiveBeforeWave": {
     "global": 11,
@@ -18,120 +18,13 @@
   },
   "providers": [
     {
-      "provider": "kisskh",
-      "scope": "global",
-      "direct": "https://kisskh.co",
-      "transport": "github-hosted",
-      "probeAttempted": true,
-      "probeReachedSite": true,
-      "probeReturnCode": 0,
-      "routePatterns": [],
-      "routeCount": 0,
-      "qualified": false,
-      "reason": "reachable_no_executable_route_observed"
-    },
-    {
-      "provider": "watch-cartoon-online",
-      "scope": "global",
-      "direct": "https://www.wco.tv",
-      "transport": "github-hosted",
-      "probeAttempted": true,
-      "probeReachedSite": true,
-      "probeReturnCode": 0,
-      "routePatterns": [],
-      "routeCount": 0,
-      "qualified": false,
-      "reason": "reachable_no_executable_route_observed"
-    },
-    {
-      "provider": "cinemabz",
-      "scope": "global",
-      "direct": "https://cinema.army",
-      "transport": "github-hosted",
-      "probeAttempted": true,
-      "probeReachedSite": true,
-      "probeReturnCode": 0,
-      "routePatterns": [],
-      "routeCount": 0,
-      "qualified": false,
-      "reason": "reachable_no_executable_route_observed"
-    },
-    {
-      "provider": "flixer",
-      "scope": "global",
-      "direct": "https://flixer.gd",
-      "transport": "github-hosted",
-      "probeAttempted": true,
-      "probeReachedSite": true,
-      "probeReturnCode": 0,
-      "routePatterns": [],
-      "routeCount": 0,
-      "qualified": false,
-      "reason": "reachable_no_executable_route_observed"
-    },
-    {
-      "provider": "overlook",
-      "scope": "global",
-      "direct": "https://overlook.cx",
-      "transport": "github-hosted",
-      "probeAttempted": true,
-      "probeReachedSite": false,
-      "probeReturnCode": 0,
-      "routePatterns": [],
-      "routeCount": 0,
-      "qualified": false,
-      "reason": "network_or_site_unreached"
-    },
-    {
-      "provider": "vidsrc",
-      "scope": "global",
-      "direct": "https://vidsrc.sh/",
-      "transport": "github-hosted",
-      "probeAttempted": true,
-      "probeReachedSite": true,
-      "probeReturnCode": 0,
-      "routePatterns": [],
-      "routeCount": 0,
-      "qualified": false,
-      "reason": "reachable_no_executable_route_observed"
-    },
-    {
-      "provider": "cinegram",
-      "scope": "global",
-      "direct": "https://cinegram.tv",
-      "transport": "github-hosted",
-      "probeAttempted": true,
-      "probeReachedSite": true,
-      "probeReturnCode": 0,
-      "routePatterns": [],
-      "routeCount": 0,
-      "qualified": false,
-      "reason": "reachable_no_executable_route_observed"
-    },
-    {
-      "provider": "cinejoy",
-      "scope": "global",
-      "direct": "https://cinejoy.pk",
-      "transport": "github-hosted",
-      "probeAttempted": true,
-      "probeReachedSite": true,
-      "probeReturnCode": 0,
-      "routePatterns": [],
-      "routeCount": 0,
-      "qualified": false,
-      "reason": "reachable_no_executable_route_observed"
-    },
-    {
       "provider": "corsflix",
       "scope": "global",
-      "direct": "https://watch.corsflix.net",
-      "transport": "github-hosted",
-      "probeAttempted": true,
+      "transport": "request-existing",
+      "probeAttempted": false,
       "probeReachedSite": true,
-      "probeReturnCode": 0,
       "routePatterns": [
         "/search",
-        "/tv",
         "/search?rating=7.3..10",
         "/search?with_runtime=95..300",
         "/search?with_genres=27",
@@ -152,47 +45,493 @@
         "/search?watch_providers=8",
         "/search?vote_count=10000"
       ],
-      "routeCount": 21,
+      "routeCount": 20,
       "qualified": true,
-      "reason": "observed_executable_routes"
+      "reason": "existing_identity_executable_route_plan"
     },
     {
       "provider": "emnexmovies",
       "scope": "global",
-      "direct": "https://emnexmovies.tech",
+      "transport": "request-existing",
+      "probeAttempted": false,
+      "probeReachedSite": true,
+      "routePatterns": [
+        "/play?id=254630&type={media}&season={season}&episode={episode}"
+      ],
+      "routeCount": 1,
+      "qualified": true,
+      "reason": "existing_identity_executable_route_plan"
+    },
+    {
+      "provider": "flikhub",
+      "scope": "global",
+      "transport": "request-existing",
+      "probeAttempted": false,
+      "probeReachedSite": true,
+      "routePatterns": [
+        "/search"
+      ],
+      "routeCount": 1,
+      "qualified": true,
+      "reason": "existing_identity_executable_route_plan"
+    },
+    {
+      "provider": "latestmovies",
+      "scope": "global",
+      "transport": "request-existing",
+      "probeAttempted": false,
+      "probeReachedSite": true,
+      "routePatterns": [
+        "/play?id=1396&type={media}&title=Breaking%20Bad&poster=%2FanFx9aTOOYqgS3v7x3R84Kz67ly.jpg&backdrop=%2FtsRy63Mu5cu8etL1X7ZLyf7UP1M.jpg",
+        "/play?id={tmdbId}&type={media}&title=Breaking%20Bad&poster=%2FanFx9aTOOYqgS3v7x3R84Kz67ly.jpg&backdrop=%2FtsRy63Mu5cu8etL1X7ZLyf7UP1M.jpg",
+        "/tv/{tmdbId}"
+      ],
+      "routeCount": 3,
+      "qualified": true,
+      "reason": "existing_identity_executable_route_plan"
+    },
+    {
+      "provider": "movy",
+      "scope": "global",
+      "direct": "https://www.movy.sx",
       "transport": "github-hosted",
       "probeAttempted": true,
       "probeReachedSite": true,
       "probeReturnCode": 0,
       "routePatterns": [
-        "/tv",
-        "/play?id=254630&type={media}&season={season}&episode={episode}",
-        "/tv/254630",
-        "/movie/1423191-resident-evil",
-        "/movie/1263337-heart-of-the-beast",
-        "/movie/1058424-hope",
-        "/movie/1400837-other-mommy",
-        "/movie/1813355-a-story-of-derry",
-        "/movie/1507696-apocalypse-z-new-world",
-        "/movie/1381071-godzilla-minus-zero",
-        "/movie/1244523-beware-boi-na",
-        "/movie/1616687-never-surrender",
-        "/movie/656908-ramayana-rise-of-a-legend",
-        "/movie/1294189-the-mongoose",
-        "/movie/1283515-verity",
-        "/movie/1422041-la-bola-negra",
-        "/movie/1596275-drive-the-pretenders",
-        "/movie/1562642-ghost-soldier",
-        "/movie/1101412-fall-2-deadpoint",
-        "/movie/1657630-the-awakening",
-        "/movie/1514026-buddy",
-        "/movie/1228834-the-fix",
-        "/movie/1570488-a-dog-s-perfect-christmas",
-        "/movie/1560520-batman-knightfall-part-1-knightfall"
+        "/movie/{tmdbId}",
+        "/tv/{tmdbId}"
       ],
-      "routeCount": 24,
+      "routeCount": 2,
       "qualified": true,
-      "reason": "observed_executable_routes"
+      "reason": "observed_identity_executable_routes"
+    },
+    {
+      "provider": "shuttletv",
+      "scope": "global",
+      "direct": "https://shuttletv.pk",
+      "transport": "github-hosted",
+      "probeAttempted": true,
+      "probeReachedSite": true,
+      "probeReturnCode": 0,
+      "routePatterns": [],
+      "routeCount": 0,
+      "qualified": false,
+      "reason": "reachable_no_identity_route_observed"
+    },
+    {
+      "provider": "primewire",
+      "scope": "global",
+      "direct": "https://primewire.pw",
+      "transport": "github-hosted",
+      "probeAttempted": true,
+      "probeReachedSite": true,
+      "probeReturnCode": 0,
+      "routePatterns": [],
+      "routeCount": 0,
+      "qualified": false,
+      "reason": "reachable_no_identity_route_observed"
+    },
+    {
+      "provider": "67movies",
+      "scope": "global",
+      "direct": "https://67movies.st",
+      "transport": "github-hosted",
+      "probeAttempted": true,
+      "probeReachedSite": true,
+      "probeReturnCode": 0,
+      "routePatterns": [],
+      "routeCount": 0,
+      "qualified": false,
+      "reason": "reachable_no_identity_route_observed"
+    },
+    {
+      "provider": "arrowtv",
+      "scope": "global",
+      "direct": "https://arrowtv.net",
+      "transport": "github-hosted",
+      "probeAttempted": true,
+      "probeReachedSite": true,
+      "probeReturnCode": 0,
+      "routePatterns": [
+        "/movie/{tmdbId}",
+        "/tv/{tmdbId}"
+      ],
+      "routeCount": 2,
+      "qualified": true,
+      "reason": "observed_identity_executable_routes"
+    },
+    {
+      "provider": "chillflix",
+      "scope": "global",
+      "transport": "request-existing",
+      "probeAttempted": false,
+      "probeReachedSite": true,
+      "routePatterns": [
+        "/search",
+        "/tv/291507?play=true&s={query}&e=1",
+        "/tv/303044?play=true&s={query}&e=1"
+      ],
+      "routeCount": 3,
+      "qualified": true,
+      "reason": "existing_identity_executable_route_plan"
+    },
+    {
+      "provider": "diostream",
+      "scope": "global",
+      "direct": "https://diostream.cc",
+      "transport": "github-hosted",
+      "probeAttempted": true,
+      "probeReachedSite": true,
+      "probeReturnCode": 0,
+      "routePatterns": [],
+      "routeCount": 0,
+      "qualified": false,
+      "reason": "reachable_no_identity_route_observed"
+    },
+    {
+      "provider": "moviebite",
+      "scope": "global",
+      "direct": "https://moviebite.org",
+      "transport": "github-hosted",
+      "probeAttempted": true,
+      "probeReachedSite": true,
+      "probeReturnCode": 0,
+      "routePatterns": [],
+      "routeCount": 0,
+      "qualified": false,
+      "reason": "reachable_no_identity_route_observed"
+    },
+    {
+      "provider": "neonflix",
+      "scope": "global",
+      "transport": "request-existing",
+      "probeAttempted": false,
+      "probeReachedSite": true,
+      "routePatterns": [
+        "/search"
+      ],
+      "routeCount": 1,
+      "qualified": true,
+      "reason": "existing_identity_executable_route_plan"
+    },
+    {
+      "provider": "nomorflix",
+      "scope": "global",
+      "direct": "https://nomorflix.cc",
+      "transport": "github-hosted",
+      "probeAttempted": true,
+      "probeReachedSite": true,
+      "probeReturnCode": 0,
+      "routePatterns": [],
+      "routeCount": 0,
+      "qualified": false,
+      "reason": "reachable_no_identity_route_observed"
+    },
+    {
+      "provider": "boredflix",
+      "scope": "global",
+      "direct": "https://boredflix.to/",
+      "transport": "github-hosted",
+      "probeAttempted": true,
+      "probeReachedSite": true,
+      "probeReturnCode": 0,
+      "routePatterns": [
+        "/search"
+      ],
+      "routeCount": 1,
+      "qualified": true,
+      "reason": "observed_identity_executable_routes"
+    },
+    {
+      "provider": "svstream",
+      "scope": "global",
+      "direct": "https://svstream.cc",
+      "transport": "github-hosted",
+      "probeAttempted": true,
+      "probeReachedSite": true,
+      "probeReturnCode": 0,
+      "routePatterns": [],
+      "routeCount": 0,
+      "qualified": false,
+      "reason": "reachable_no_identity_route_observed"
+    },
+    {
+      "provider": "frenchstream",
+      "scope": "france",
+      "direct": "https://fs16.lol/",
+      "transport": "github-hosted",
+      "probeAttempted": true,
+      "probeReachedSite": true,
+      "probeReturnCode": 0,
+      "routePatterns": [],
+      "routeCount": 0,
+      "qualified": false,
+      "reason": "reachable_no_identity_route_observed"
+    },
+    {
+      "provider": "openflix",
+      "scope": "france",
+      "transport": "request-existing",
+      "probeAttempted": false,
+      "probeReachedSite": true,
+      "routePatterns": [
+        "/search"
+      ],
+      "routeCount": 1,
+      "qualified": true,
+      "reason": "existing_identity_executable_route_plan"
+    },
+    {
+      "provider": "dessinanime",
+      "scope": "france",
+      "direct": "https://dessinanime.net/",
+      "transport": "github-hosted",
+      "probeAttempted": true,
+      "probeReachedSite": true,
+      "probeReturnCode": 0,
+      "routePatterns": [],
+      "routeCount": 0,
+      "qualified": false,
+      "reason": "reachable_no_identity_route_observed"
+    },
+    {
+      "provider": "fexini",
+      "scope": "france",
+      "direct": "https://fexini.net/",
+      "transport": "github-hosted",
+      "probeAttempted": true,
+      "probeReachedSite": true,
+      "probeReturnCode": 0,
+      "routePatterns": [
+        "/series/{slug}"
+      ],
+      "routeCount": 1,
+      "qualified": true,
+      "reason": "observed_identity_executable_routes"
+    },
+    {
+      "provider": "moiflix",
+      "scope": "france",
+      "direct": "https://moiflix.fans/",
+      "transport": "github-hosted",
+      "probeAttempted": true,
+      "probeReachedSite": true,
+      "probeReturnCode": 0,
+      "routePatterns": [],
+      "routeCount": 0,
+      "qualified": false,
+      "reason": "reachable_no_identity_route_observed"
+    },
+    {
+      "provider": "webflix",
+      "scope": "france",
+      "direct": "https://webflix.art/",
+      "transport": "github-hosted",
+      "probeAttempted": true,
+      "probeReachedSite": true,
+      "probeReturnCode": 0,
+      "routePatterns": [],
+      "routeCount": 0,
+      "qualified": false,
+      "reason": "reachable_no_identity_route_observed"
+    },
+    {
+      "provider": "showbox",
+      "scope": "france",
+      "direct": "https://showbox.media/",
+      "transport": "github-hosted",
+      "probeAttempted": true,
+      "probeReachedSite": true,
+      "probeReturnCode": 0,
+      "routePatterns": [
+        "/search"
+      ],
+      "routeCount": 1,
+      "qualified": true,
+      "reason": "observed_identity_executable_routes"
+    },
+    {
+      "provider": "neobam",
+      "scope": "france",
+      "direct": "https://www.neobam.fr/",
+      "transport": "github-hosted",
+      "probeAttempted": true,
+      "probeReachedSite": true,
+      "probeReturnCode": 0,
+      "routePatterns": [],
+      "routeCount": 0,
+      "qualified": false,
+      "reason": "reachable_no_identity_route_observed"
+    },
+    {
+      "provider": "fullanime",
+      "scope": "france",
+      "transport": "request-existing",
+      "probeAttempted": false,
+      "probeReachedSite": true,
+      "routePatterns": [
+        "/search"
+      ],
+      "routeCount": 1,
+      "qualified": true,
+      "reason": "existing_identity_executable_route_plan"
+    },
+    {
+      "provider": "animeo",
+      "scope": "france",
+      "transport": "request-existing",
+      "probeAttempted": false,
+      "probeReachedSite": true,
+      "routePatterns": [
+        "/search"
+      ],
+      "routeCount": 1,
+      "qualified": true,
+      "reason": "existing_identity_executable_route_plan"
+    },
+    {
+      "provider": "animeonsen",
+      "scope": "france",
+      "transport": "request-existing",
+      "probeAttempted": false,
+      "probeReachedSite": true,
+      "routePatterns": [
+        "/search"
+      ],
+      "routeCount": 1,
+      "qualified": true,
+      "reason": "existing_identity_executable_route_plan"
+    },
+    {
+      "provider": "myfluneo",
+      "scope": "france",
+      "direct": "https://myfluneo.eu",
+      "transport": "github-hosted",
+      "probeAttempted": true,
+      "probeReachedSite": true,
+      "probeReturnCode": 0,
+      "routePatterns": [],
+      "routeCount": 0,
+      "qualified": false,
+      "reason": "reachable_no_identity_route_observed"
+    },
+    {
+      "provider": "frembed",
+      "scope": "france",
+      "direct": "https://frembed.surf",
+      "transport": "github-hosted",
+      "probeAttempted": true,
+      "probeReachedSite": true,
+      "probeReturnCode": 0,
+      "routePatterns": [],
+      "routeCount": 0,
+      "qualified": false,
+      "reason": "reachable_no_identity_route_observed"
+    },
+    {
+      "provider": "kisskh",
+      "scope": "global",
+      "direct": "https://kisskh.co",
+      "transport": "github-hosted",
+      "probeAttempted": true,
+      "probeReachedSite": true,
+      "probeReturnCode": 0,
+      "routePatterns": [],
+      "routeCount": 0,
+      "qualified": false,
+      "reason": "reachable_no_identity_route_observed"
+    },
+    {
+      "provider": "watch-cartoon-online",
+      "scope": "global",
+      "direct": "https://www.wco.tv",
+      "transport": "github-hosted",
+      "probeAttempted": true,
+      "probeReachedSite": true,
+      "probeReturnCode": 0,
+      "routePatterns": [],
+      "routeCount": 0,
+      "qualified": false,
+      "reason": "reachable_no_identity_route_observed"
+    },
+    {
+      "provider": "cinemabz",
+      "scope": "global",
+      "direct": "https://cinema.army",
+      "transport": "github-hosted",
+      "probeAttempted": true,
+      "probeReachedSite": true,
+      "probeReturnCode": 0,
+      "routePatterns": [],
+      "routeCount": 0,
+      "qualified": false,
+      "reason": "reachable_no_identity_route_observed"
+    },
+    {
+      "provider": "flixer",
+      "scope": "global",
+      "direct": "https://flixer.gd",
+      "transport": "github-hosted",
+      "probeAttempted": true,
+      "probeReachedSite": true,
+      "probeReturnCode": 0,
+      "routePatterns": [],
+      "routeCount": 0,
+      "qualified": false,
+      "reason": "reachable_no_identity_route_observed"
+    },
+    {
+      "provider": "overlook",
+      "scope": "global",
+      "direct": "https://overlook.cx",
+      "transport": "github-hosted",
+      "probeAttempted": true,
+      "probeReachedSite": true,
+      "probeReturnCode": 0,
+      "routePatterns": [],
+      "routeCount": 0,
+      "qualified": false,
+      "reason": "reachable_no_identity_route_observed"
+    },
+    {
+      "provider": "vidsrc",
+      "scope": "global",
+      "direct": "https://vidsrc.sh/",
+      "transport": "github-hosted",
+      "probeAttempted": true,
+      "probeReachedSite": true,
+      "probeReturnCode": 0,
+      "routePatterns": [],
+      "routeCount": 0,
+      "qualified": false,
+      "reason": "reachable_no_identity_route_observed"
+    },
+    {
+      "provider": "cinegram",
+      "scope": "global",
+      "direct": "https://cinegram.tv",
+      "transport": "github-hosted",
+      "probeAttempted": true,
+      "probeReachedSite": true,
+      "probeReturnCode": 0,
+      "routePatterns": [],
+      "routeCount": 0,
+      "qualified": false,
+      "reason": "reachable_no_identity_route_observed"
+    },
+    {
+      "provider": "cinejoy",
+      "scope": "global",
+      "direct": "https://cinejoy.pk",
+      "transport": "github-hosted",
+      "probeAttempted": true,
+      "probeReachedSite": true,
+      "probeReturnCode": 0,
+      "routePatterns": [],
+      "routeCount": 0,
+      "qualified": false,
+      "reason": "reachable_no_identity_route_observed"
     },
     {
       "provider": "flickystream",
@@ -205,32 +544,7 @@
       "routePatterns": [],
       "routeCount": 0,
       "qualified": false,
-      "reason": "reachable_no_executable_route_observed"
-    },
-    {
-      "provider": "flikhub",
-      "scope": "global",
-      "direct": "https://www.flikhub.net",
-      "transport": "github-hosted",
-      "probeAttempted": true,
-      "probeReachedSite": true,
-      "probeReturnCode": 0,
-      "routePatterns": [
-        "/tv",
-        "/tv?genre=10759",
-        "/tv?genre=10765",
-        "/tv?genre=80",
-        "/tv?genre=35",
-        "/tv?genre=18",
-        "/tv?genre=16",
-        "/tv?genre=9648",
-        "/tv?genre=10764",
-        "/tv?genre=10768",
-        "/search"
-      ],
-      "routeCount": 11,
-      "qualified": true,
-      "reason": "observed_executable_routes"
+      "reason": "reachable_no_identity_route_observed"
     },
     {
       "provider": "hexa",
@@ -243,45 +557,7 @@
       "routePatterns": [],
       "routeCount": 0,
       "qualified": false,
-      "reason": "reachable_no_executable_route_observed"
-    },
-    {
-      "provider": "latestmovies",
-      "scope": "global",
-      "direct": "https://latestmovies.net",
-      "transport": "github-hosted",
-      "probeAttempted": true,
-      "probeReachedSite": true,
-      "probeReturnCode": 0,
-      "routePatterns": [
-        "/tv",
-        "/play?id=1396&type={media}&title=Breaking%20Bad&poster=%2FanFx9aTOOYqgS3v7x3R84Kz67ly.jpg&backdrop=%2FtsRy63Mu5cu8etL1X7ZLyf7UP1M.jpg",
-        "/tv/1396",
-        "/movie/1185344",
-        "/movie/1824935",
-        "/movie/1419036",
-        "/movie/1543469",
-        "/movie/1389379",
-        "/movie/1824694",
-        "/movie/1050981",
-        "/movie/1518204",
-        "/movie/1757174",
-        "/movie/1616687",
-        "/movie/1666787",
-        "/movie/1664682",
-        "/movie/1394740",
-        "/movie/1238735",
-        "/movie/1559980",
-        "/movie/1484085",
-        "/movie/1596249",
-        "/movie/1585239",
-        "/movie/1669915",
-        "/movie/1562642",
-        "/movie/13"
-      ],
-      "routeCount": 24,
-      "qualified": true,
-      "reason": "observed_executable_routes"
+      "reason": "reachable_no_identity_route_observed"
     },
     {
       "provider": "meowtv",
@@ -294,62 +570,7 @@
       "routePatterns": [],
       "routeCount": 0,
       "qualified": false,
-      "reason": "reachable_no_executable_route_observed"
-    },
-    {
-      "provider": "movy",
-      "scope": "global",
-      "direct": "https://www.movy.sx",
-      "transport": "github-hosted",
-      "probeAttempted": true,
-      "probeReachedSite": true,
-      "probeReturnCode": 0,
-      "routePatterns": [
-        "/tv/254630?play=true",
-        "/tv/254630",
-        "/tv/84773",
-        "/movie/1616687",
-        "/movie/1368337",
-        "/tv/213375",
-        "/movie/1518204",
-        "/movie/1003596",
-        "/movie/1400837",
-        "/tv/291507",
-        "/tv/131488",
-        "/tv/65701",
-        "/tv/764",
-        "/tv/247718",
-        "/tv/153312",
-        "/tv/2912",
-        "/tv/456",
-        "/tv/4656",
-        "/tv/291",
-        "/tv/1871",
-        "/tv/37678",
-        "/tv/31991",
-        "/tv/4614",
-        "/tv/44006"
-      ],
-      "routeCount": 24,
-      "qualified": true,
-      "reason": "observed_executable_routes"
-    },
-    {
-      "provider": "shuttletv",
-      "scope": "global",
-      "direct": "https://shuttletv.pk",
-      "transport": "github-hosted",
-      "probeAttempted": true,
-      "probeReachedSite": true,
-      "probeReturnCode": 0,
-      "routePatterns": [
-        "/api/site-migration/start?to=",
-        "/watch",
-        "/api/settings"
-      ],
-      "routeCount": 3,
-      "qualified": true,
-      "reason": "observed_executable_routes"
+      "reason": "reachable_no_identity_route_observed"
     },
     {
       "provider": "willow",
@@ -362,37 +583,7 @@
       "routePatterns": [],
       "routeCount": 0,
       "qualified": false,
-      "reason": "reachable_no_executable_route_observed"
-    },
-    {
-      "provider": "primewire",
-      "scope": "global",
-      "direct": "https://primewire.pw",
-      "transport": "github-hosted",
-      "probeAttempted": true,
-      "probeReachedSite": true,
-      "probeReturnCode": 0,
-      "routePatterns": [
-        "/tv"
-      ],
-      "routeCount": 1,
-      "qualified": true,
-      "reason": "observed_executable_routes"
-    },
-    {
-      "provider": "67movies",
-      "scope": "global",
-      "direct": "https://67movies.st",
-      "transport": "github-hosted",
-      "probeAttempted": true,
-      "probeReachedSite": true,
-      "probeReturnCode": 0,
-      "routePatterns": [
-        "/watch"
-      ],
-      "routeCount": 1,
-      "qualified": true,
-      "reason": "observed_executable_routes"
+      "reason": "reachable_no_identity_route_observed"
     },
     {
       "provider": "7movies",
@@ -418,45 +609,7 @@
       "routePatterns": [],
       "routeCount": 0,
       "qualified": false,
-      "reason": "reachable_no_executable_route_observed"
-    },
-    {
-      "provider": "arrowtv",
-      "scope": "global",
-      "direct": "https://arrowtv.net",
-      "transport": "github-hosted",
-      "probeAttempted": true,
-      "probeReachedSite": true,
-      "probeReturnCode": 0,
-      "routePatterns": [
-        "/tv",
-        "/watch/movie/1368337",
-        "/movie/1368337",
-        "/tv/84773",
-        "/tv/213375",
-        "/movie/1792170",
-        "/movie/1400837",
-        "/movie/1263337",
-        "/movie/1423191",
-        "/movie/1003596",
-        "/tv/254630",
-        "/movie/1381071",
-        "/movie/687163",
-        "/movie/969681",
-        "/movie/1058424",
-        "/movie/1813355",
-        "/movie/1507696",
-        "/movie/1244523",
-        "/movie/1616687",
-        "/movie/656908",
-        "/movie/1294189",
-        "/movie/1283515",
-        "/movie/155",
-        "/movie/354912"
-      ],
-      "routeCount": 24,
-      "qualified": true,
-      "reason": "observed_executable_routes"
+      "reason": "reachable_no_identity_route_observed"
     },
     {
       "provider": "bcine",
@@ -483,44 +636,6 @@
       "routeCount": 0,
       "qualified": false,
       "reason": "network_or_site_unreached"
-    },
-    {
-      "provider": "chillflix",
-      "scope": "global",
-      "direct": "https://chillflix.lol",
-      "transport": "github-hosted",
-      "probeAttempted": true,
-      "probeReachedSite": true,
-      "probeReturnCode": 0,
-      "routePatterns": [
-        "/api/app/android",
-        "/embed/",
-        "/embed/movie/",
-        "/embed/tv/",
-        "/embed",
-        "/search",
-        "/movie/1567605?play=true",
-        "/movie/1567605",
-        "/tv/291507?play=true&s={query}&e=1",
-        "/tv/291507",
-        "/movie/1798383?play=true",
-        "/movie/1798383",
-        "/movie/1286656?play=true",
-        "/movie/1286656",
-        "/tv/303044?play=true&s={query}&e=1",
-        "/tv/303044",
-        "/movie/1654940?play=true",
-        "/movie/1654940",
-        "/movie/656908?play=true",
-        "/movie/656908",
-        "/movie/1585239?play=true",
-        "/movie/1585239",
-        "/movie/1368337",
-        "/movie/1368337?play=true"
-      ],
-      "routeCount": 24,
-      "qualified": true,
-      "reason": "observed_executable_routes"
     },
     {
       "provider": "cineapse",
@@ -559,7 +674,7 @@
       "routePatterns": [],
       "routeCount": 0,
       "qualified": false,
-      "reason": "reachable_no_executable_route_observed"
+      "reason": "reachable_no_identity_route_observed"
     },
     {
       "provider": "cinezo",
@@ -585,22 +700,7 @@
       "routePatterns": [],
       "routeCount": 0,
       "qualified": false,
-      "reason": "reachable_no_executable_route_observed"
-    },
-    {
-      "provider": "diostream",
-      "scope": "global",
-      "direct": "https://diostream.cc",
-      "transport": "github-hosted",
-      "probeAttempted": true,
-      "probeReachedSite": true,
-      "probeReturnCode": 0,
-      "routePatterns": [
-        "/embed/sw.js"
-      ],
-      "routeCount": 1,
-      "qualified": true,
-      "reason": "observed_executable_routes"
+      "reason": "reachable_no_identity_route_observed"
     },
     {
       "provider": "ffmovies",
@@ -613,7 +713,7 @@
       "routePatterns": [],
       "routeCount": 0,
       "qualified": false,
-      "reason": "reachable_no_executable_route_observed"
+      "reason": "reachable_no_identity_route_observed"
     },
     {
       "provider": "frame",
@@ -626,7 +726,7 @@
       "routePatterns": [],
       "routeCount": 0,
       "qualified": false,
-      "reason": "reachable_no_executable_route_observed"
+      "reason": "reachable_no_identity_route_observed"
     },
     {
       "provider": "hivex",
@@ -639,7 +739,7 @@
       "routePatterns": [],
       "routeCount": 0,
       "qualified": false,
-      "reason": "reachable_no_executable_route_observed"
+      "reason": "reachable_no_identity_route_observed"
     },
     {
       "provider": "moonflix",
@@ -652,22 +752,7 @@
       "routePatterns": [],
       "routeCount": 0,
       "qualified": false,
-      "reason": "reachable_no_executable_route_observed"
-    },
-    {
-      "provider": "moviebite",
-      "scope": "global",
-      "direct": "https://moviebite.org",
-      "transport": "github-hosted",
-      "probeAttempted": true,
-      "probeReachedSite": true,
-      "probeReturnCode": 0,
-      "routePatterns": [
-        "/tv/"
-      ],
-      "routeCount": 1,
-      "qualified": true,
-      "reason": "observed_executable_routes"
+      "reason": "reachable_no_identity_route_observed"
     },
     {
       "provider": "movish",
@@ -680,60 +765,7 @@
       "routePatterns": [],
       "routeCount": 0,
       "qualified": false,
-      "reason": "reachable_no_executable_route_observed"
-    },
-    {
-      "provider": "neonflix",
-      "scope": "global",
-      "direct": "https://neonflix.st",
-      "transport": "github-hosted",
-      "probeAttempted": true,
-      "probeReachedSite": true,
-      "probeReturnCode": 0,
-      "routePatterns": [
-        "/tv",
-        "/search",
-        "/watch/movie/1368337",
-        "/movie/1368337",
-        "/tv/254630",
-        "/tv/84773",
-        "/movie/1003596",
-        "/movie/1518204",
-        "/tv/213375",
-        "/movie/1185344",
-        "/movie/1400837",
-        "/tv/291507",
-        "/movie/1543469",
-        "/movie/1263337",
-        "/movie/1792170",
-        "/movie/1423191",
-        "/movie/1381071",
-        "/movie/1567605",
-        "/movie/1300968",
-        "/movie/1483525",
-        "/movie/969681",
-        "/movie/1375441",
-        "/movie/1616687",
-        "/movie/656908"
-      ],
-      "routeCount": 24,
-      "qualified": true,
-      "reason": "observed_executable_routes"
-    },
-    {
-      "provider": "nomorflix",
-      "scope": "global",
-      "direct": "https://nomorflix.cc",
-      "transport": "github-hosted",
-      "probeAttempted": true,
-      "probeReachedSite": true,
-      "probeReturnCode": 0,
-      "routePatterns": [
-        "/embed/sw.js"
-      ],
-      "routeCount": 1,
-      "qualified": true,
-      "reason": "observed_executable_routes"
+      "reason": "reachable_no_identity_route_observed"
     },
     {
       "provider": "phantomflix",
@@ -762,44 +794,6 @@
       "reason": "network_or_site_unreached"
     },
     {
-      "provider": "boredflix",
-      "scope": "global",
-      "direct": "https://boredflix.to/",
-      "transport": "github-hosted",
-      "probeAttempted": true,
-      "probeReachedSite": true,
-      "probeReturnCode": 0,
-      "routePatterns": [
-        "/movie/1283515/verity",
-        "/movie/1384216/the-dog-stars",
-        "/movie/1465063/forgotten-island",
-        "/movie/1596275/drive-the-pretenders",
-        "/movie/1727734/ali-g-who-iz-i",
-        "/movie/1400940/clayface",
-        "/movie/1170608/dune-part-three",
-        "/movie/1503762/sense-and-sensibility",
-        "/movie/1377237/runner",
-        "/movie/791523/wildwood",
-        "/movie/1058424/hope",
-        "/movie/1562777/the-stunt-driver",
-        "/movie/1003596/avengers-doomsday",
-        "/movie/1368337/the-odyssey",
-        "/movie/1195803/wicker",
-        "/movie/1290418/the-cycle",
-        "/movie/1629051/never-after-dark",
-        "/movie/969681/spider-man-brand-new-day",
-        "/movie/1376400/crawlers",
-        "/movie/1423191/resident-evil",
-        "/movie/1339713/obsession",
-        "/movie/1422041/la-bola-negra",
-        "/movie/1108427/moana",
-        "/movie/1153576/street-fighter"
-      ],
-      "routeCount": 24,
-      "qualified": true,
-      "reason": "observed_executable_routes"
-    },
-    {
       "provider": "streamaggregator",
       "scope": "global",
       "direct": "https://streamaggregator.in",
@@ -810,22 +804,7 @@
       "routePatterns": [],
       "routeCount": 0,
       "qualified": false,
-      "reason": "reachable_no_executable_route_observed"
-    },
-    {
-      "provider": "svstream",
-      "scope": "global",
-      "direct": "https://svstream.cc",
-      "transport": "github-hosted",
-      "probeAttempted": true,
-      "probeReachedSite": true,
-      "probeReturnCode": 0,
-      "routePatterns": [
-        "/embed/sw.js"
-      ],
-      "routeCount": 1,
-      "qualified": true,
-      "reason": "observed_executable_routes"
+      "reason": "reachable_no_identity_route_observed"
     },
     {
       "provider": "tonkacine",
@@ -838,7 +817,7 @@
       "routePatterns": [],
       "routeCount": 0,
       "qualified": false,
-      "reason": "reachable_no_executable_route_observed"
+      "reason": "reachable_no_identity_route_observed"
     },
     {
       "provider": "vidplay",
@@ -851,7 +830,7 @@
       "routePatterns": [],
       "routeCount": 0,
       "qualified": false,
-      "reason": "reachable_no_executable_route_observed"
+      "reason": "reachable_no_identity_route_observed"
     },
     {
       "provider": "vivarium",
@@ -877,24 +856,7 @@
       "routePatterns": [],
       "routeCount": 0,
       "qualified": false,
-      "reason": "reachable_no_executable_route_observed"
-    },
-    {
-      "provider": "frenchstream",
-      "scope": "france",
-      "direct": "https://fs16.lol/",
-      "transport": "github-hosted",
-      "probeAttempted": true,
-      "probeReachedSite": true,
-      "probeReturnCode": 0,
-      "routePatterns": [
-        "/series/en-cours/",
-        "/series/terminees/",
-        "/series/annulees/"
-      ],
-      "routeCount": 3,
-      "qualified": true,
-      "reason": "observed_executable_routes"
+      "reason": "reachable_no_identity_route_observed"
     },
     {
       "provider": "aether",
@@ -907,25 +869,7 @@
       "routePatterns": [],
       "routeCount": 0,
       "qualified": false,
-      "reason": "reachable_no_executable_route_observed"
-    },
-    {
-      "provider": "openflix",
-      "scope": "france",
-      "direct": "https://openflix.pro",
-      "transport": "github-hosted",
-      "probeAttempted": true,
-      "probeReachedSite": true,
-      "probeReturnCode": 0,
-      "routePatterns": [
-        "/search",
-        "/api/p/event",
-        "/api/cc/ceaimwa",
-        "/api/cc/ceaiplumwa"
-      ],
-      "routeCount": 4,
-      "qualified": true,
-      "reason": "observed_executable_routes"
+      "reason": "reachable_no_identity_route_observed"
     },
     {
       "provider": "kordoz",
@@ -938,7 +882,7 @@
       "routePatterns": [],
       "routeCount": 0,
       "qualified": false,
-      "reason": "reachable_no_executable_route_observed"
+      "reason": "reachable_no_identity_route_observed"
     },
     {
       "provider": "anisama",
@@ -951,31 +895,7 @@
       "routePatterns": [],
       "routeCount": 0,
       "qualified": false,
-      "reason": "reachable_no_executable_route_observed"
-    },
-    {
-      "provider": "dessinanime",
-      "scope": "france",
-      "direct": "https://dessinanime.net/",
-      "transport": "github-hosted",
-      "probeAttempted": true,
-      "probeReachedSite": true,
-      "probeReturnCode": 0,
-      "routePatterns": [
-        "/movie/f0uvM3AAsdrmLtbXHh1YGKcD4EttSppn",
-        "/movie/JSAVQlaSeRFet8uzVoCypijNk8WJgQH4",
-        "/movie/BGjjI4M22tJXQT90FlnMbHT0OP77UJlK",
-        "/movie/Pxus9SmeguD0lynhDkGHZfwSROnq5X6l",
-        "/movie/ko3EijqyluJExbCywmpFLVNOU4NECZEf",
-        "/movie/cEGnx8Wm9JSsCgCaB8FvfYwqDKfiIbfI",
-        "/movie/WgeaBXDefLipRNdGCJiQOckcNLnRtBeB",
-        "/movie/AcbtO682dMmPl6vwbsVOHT4yud2S4zFu",
-        "/movie/iWv9CxfguAMFqdYJHJrlgwZLcstJzbn5",
-        "/movie/vekxOLljlkTbpqfCNCsRQyqKEmXIAQVU"
-      ],
-      "routeCount": 10,
-      "qualified": true,
-      "reason": "observed_executable_routes"
+      "reason": "reachable_no_identity_route_observed"
     },
     {
       "provider": "french-anime",
@@ -1004,44 +924,6 @@
       "reason": "network_or_site_unreached"
     },
     {
-      "provider": "fexini",
-      "scope": "france",
-      "direct": "https://fexini.net/",
-      "transport": "github-hosted",
-      "probeAttempted": true,
-      "probeReachedSite": true,
-      "probeReturnCode": 0,
-      "routePatterns": [
-        "/tv",
-        "/series",
-        "/api/encarts/media/72b156ca-81b9-4416-90ed-9e710fb285ae",
-        "/film/malfaisante",
-        "/film/heart-of-the-beast",
-        "/film/resident-evil",
-        "/film/tombe-du-ciel",
-        "/series/un-job-mortel",
-        "/film/lodyssee",
-        "/film/never-surrender",
-        "/film/primetime",
-        "/film/possible-love",
-        "/film/spider-man-brand-new-day",
-        "/film/la-bola-negra",
-        "/film/the-mongoose",
-        "/film/letrange-noel-de-monsieur-jack",
-        "/film/maman-jai-rate-lavion",
-        "/film/la-vie-est-belle",
-        "/film/le-grinch-2000",
-        "/series/home-for-christmas",
-        "/film/klaus",
-        "/film/le-grinch",
-        "/film/les-cinq-legendes",
-        "/film/red-one"
-      ],
-      "routeCount": 24,
-      "qualified": true,
-      "reason": "observed_executable_routes"
-    },
-    {
       "provider": "zone-streaming",
       "scope": "france",
       "direct": "https://www.zone-streaming.fr/",
@@ -1052,7 +934,7 @@
       "routePatterns": [],
       "routeCount": 0,
       "qualified": false,
-      "reason": "reachable_no_executable_route_observed"
+      "reason": "reachable_no_identity_route_observed"
     },
     {
       "provider": "dulourd",
@@ -1065,7 +947,7 @@
       "routePatterns": [],
       "routeCount": 0,
       "qualified": false,
-      "reason": "reachable_no_executable_route_observed"
+      "reason": "reachable_no_identity_route_observed"
     },
     {
       "provider": "cinelibre",
@@ -1091,32 +973,7 @@
       "routePatterns": [],
       "routeCount": 0,
       "qualified": false,
-      "reason": "reachable_no_executable_route_observed"
-    },
-    {
-      "provider": "moiflix",
-      "scope": "france",
-      "direct": "https://moiflix.fans/",
-      "transport": "github-hosted",
-      "probeAttempted": true,
-      "probeReachedSite": true,
-      "probeReturnCode": 0,
-      "routePatterns": [
-        "/movie/WTMuSLiJCmVDK1dvK4DBSXNfnVTpEGdu",
-        "/movie/X8j4NWKEaqnJc2IuV2W0DHpL5bChTLQ8",
-        "/movie/GdJqCOmwyUQ5Gv0rgSGjglSpgNz4Efxt",
-        "/movie/Ujl95hTPi1UxJEWrjJsqw5hMb5uB6pN3",
-        "/movie/fFwEtiqgUZJbvGNBMoKbcbIR5ibl0IJS",
-        "/movie/4Piad6iHAD9DDvlUgve5Km95NH6Sou6A",
-        "/movie/noPSa7N3qkymKd4UXBZr5ssx7N3CWM3H",
-        "/movie/TqF5EaZuMal4ta0yGqwq1KGI299lRopM",
-        "/movie/W98YJh3txgQHghaw9JHMMFCFYcgxldAW",
-        "/movie/0VaevReWhQEJFmZydmPPxxeFpwRFImv2",
-        "/movie/IAt2S3ueA7GUSWaxc8q6K5qGZLvICqX3"
-      ],
-      "routeCount": 11,
-      "qualified": true,
-      "reason": "observed_executable_routes"
+      "reason": "reachable_no_identity_route_observed"
     },
     {
       "provider": "nakios",
@@ -1129,22 +986,7 @@
       "routePatterns": [],
       "routeCount": 0,
       "qualified": false,
-      "reason": "reachable_no_executable_route_observed"
-    },
-    {
-      "provider": "webflix",
-      "scope": "france",
-      "direct": "https://webflix.art/",
-      "transport": "github-hosted",
-      "probeAttempted": true,
-      "probeReachedSite": true,
-      "probeReturnCode": 0,
-      "routePatterns": [
-        "/api/push/subscribe"
-      ],
-      "routeCount": 1,
-      "qualified": true,
-      "reason": "observed_executable_routes"
+      "reason": "reachable_no_identity_route_observed"
     },
     {
       "provider": "fawesome",
@@ -1157,7 +999,7 @@
       "routePatterns": [],
       "routeCount": 0,
       "qualified": false,
-      "reason": "reachable_no_executable_route_observed"
+      "reason": "reachable_no_identity_route_observed"
     },
     {
       "provider": "cinemaos",
@@ -1196,7 +1038,7 @@
       "routePatterns": [],
       "routeCount": 0,
       "qualified": false,
-      "reason": "reachable_no_executable_route_observed"
+      "reason": "reachable_no_identity_route_observed"
     },
     {
       "provider": "dpstream",
@@ -1209,7 +1051,7 @@
       "routePatterns": [],
       "routeCount": 0,
       "qualified": false,
-      "reason": "reachable_no_executable_route_observed"
+      "reason": "reachable_no_identity_route_observed"
     },
     {
       "provider": "motomaz",
@@ -1235,45 +1077,7 @@
       "routePatterns": [],
       "routeCount": 0,
       "qualified": false,
-      "reason": "reachable_no_executable_route_observed"
-    },
-    {
-      "provider": "showbox",
-      "scope": "france",
-      "direct": "https://showbox.media/",
-      "transport": "github-hosted",
-      "probeAttempted": true,
-      "probeReachedSite": true,
-      "probeReturnCode": 0,
-      "routePatterns": [
-        "/movie?genre=1",
-        "/movie?genre=2",
-        "/movie?genre=3",
-        "/movie?genre=4",
-        "/movie?genre=22",
-        "/movie?genre=5",
-        "/movie?genre=6",
-        "/movie?genre=7",
-        "/movie?genre=8",
-        "/movie?genre=9",
-        "/movie?genre=10",
-        "/movie?genre=11",
-        "/movie?genre=51",
-        "/movie?genre=12",
-        "/movie?genre=13",
-        "/movie?genre=14",
-        "/movie?genre=15",
-        "/movie?genre=45",
-        "/movie?genre=24",
-        "/movie?genre=16",
-        "/movie?genre=17",
-        "/movie?genre=53",
-        "/movie?genre=18",
-        "/movie?genre=52"
-      ],
-      "routeCount": 24,
-      "qualified": true,
-      "reason": "observed_executable_routes"
+      "reason": "reachable_no_identity_route_observed"
     },
     {
       "provider": "skstream",
@@ -1286,7 +1090,7 @@
       "routePatterns": [],
       "routeCount": 0,
       "qualified": false,
-      "reason": "reachable_no_executable_route_observed"
+      "reason": "reachable_no_identity_route_observed"
     },
     {
       "provider": "voirserie",
@@ -1312,7 +1116,7 @@
       "routePatterns": [],
       "routeCount": 0,
       "qualified": false,
-      "reason": "reachable_no_executable_route_observed"
+      "reason": "reachable_no_identity_route_observed"
     },
     {
       "provider": "wavewatch",
@@ -1325,22 +1129,7 @@
       "routePatterns": [],
       "routeCount": 0,
       "qualified": false,
-      "reason": "reachable_no_executable_route_observed"
-    },
-    {
-      "provider": "neobam",
-      "scope": "france",
-      "direct": "https://www.neobam.fr/",
-      "transport": "github-hosted",
-      "probeAttempted": true,
-      "probeReachedSite": true,
-      "probeReturnCode": 0,
-      "routePatterns": [
-        "/series"
-      ],
-      "routeCount": 1,
-      "qualified": true,
-      "reason": "observed_executable_routes"
+      "reason": "reachable_no_identity_route_observed"
     },
     {
       "provider": "youtitou",
@@ -1353,7 +1142,7 @@
       "routePatterns": [],
       "routeCount": 0,
       "qualified": false,
-      "reason": "reachable_no_executable_route_observed"
+      "reason": "reachable_no_identity_route_observed"
     },
     {
       "provider": "zone-telechargement",
@@ -1366,22 +1155,7 @@
       "routePatterns": [],
       "routeCount": 0,
       "qualified": false,
-      "reason": "reachable_no_executable_route_observed"
-    },
-    {
-      "provider": "fullanime",
-      "scope": "france",
-      "direct": "https://www.fullanime.fr",
-      "transport": "github-hosted",
-      "probeAttempted": true,
-      "probeReachedSite": true,
-      "probeReturnCode": 0,
-      "routePatterns": [
-        "/search"
-      ],
-      "routeCount": 1,
-      "qualified": true,
-      "reason": "observed_executable_routes"
+      "reason": "reachable_no_identity_route_observed"
     },
     {
       "provider": "waveanime",
@@ -1394,7 +1168,7 @@
       "routePatterns": [],
       "routeCount": 0,
       "qualified": false,
-      "reason": "reachable_no_executable_route_observed"
+      "reason": "reachable_no_identity_route_observed"
     },
     {
       "provider": "animeko",
@@ -1420,7 +1194,7 @@
       "routePatterns": [],
       "routeCount": 0,
       "qualified": false,
-      "reason": "reachable_no_executable_route_observed"
+      "reason": "reachable_no_identity_route_observed"
     },
     {
       "provider": "film-a-revoir",
@@ -1428,42 +1202,12 @@
       "direct": "https://filmarevoirnad.blogspot.com",
       "transport": "github-hosted",
       "probeAttempted": true,
-      "probeReachedSite": true,
+      "probeReachedSite": false,
       "probeReturnCode": 0,
       "routePatterns": [],
       "routeCount": 0,
       "qualified": false,
-      "reason": "reachable_no_executable_route_observed"
-    },
-    {
-      "provider": "animeo",
-      "scope": "france",
-      "direct": "https://animeovf.fr/",
-      "transport": "github-hosted",
-      "probeAttempted": true,
-      "probeReachedSite": true,
-      "probeReturnCode": 0,
-      "routePatterns": [
-        "/search"
-      ],
-      "routeCount": 1,
-      "qualified": true,
-      "reason": "observed_executable_routes"
-    },
-    {
-      "provider": "animeonsen",
-      "scope": "france",
-      "direct": "https://www.animeonsen.xyz/",
-      "transport": "github-hosted",
-      "probeAttempted": true,
-      "probeReachedSite": true,
-      "probeReturnCode": 0,
-      "routePatterns": [
-        "/search"
-      ],
-      "routeCount": 1,
-      "qualified": true,
-      "reason": "observed_executable_routes"
+      "reason": "network_or_site_unreached"
     },
     {
       "provider": "fankai",
@@ -1476,7 +1220,7 @@
       "routePatterns": [],
       "routeCount": 0,
       "qualified": false,
-      "reason": "reachable_no_executable_route_observed"
+      "reason": "reachable_no_identity_route_observed"
     },
     {
       "provider": "hianime",
@@ -1489,7 +1233,7 @@
       "routePatterns": [],
       "routeCount": 0,
       "qualified": false,
-      "reason": "reachable_no_executable_route_observed"
+      "reason": "reachable_no_identity_route_observed"
     },
     {
       "provider": "tenshitv",
@@ -1528,7 +1272,7 @@
       "routePatterns": [],
       "routeCount": 0,
       "qualified": false,
-      "reason": "reachable_no_executable_route_observed"
+      "reason": "reachable_no_identity_route_observed"
     },
     {
       "provider": "yablom",
@@ -1541,23 +1285,7 @@
       "routePatterns": [],
       "routeCount": 0,
       "qualified": false,
-      "reason": "reachable_no_executable_route_observed"
-    },
-    {
-      "provider": "myfluneo",
-      "scope": "france",
-      "direct": "https://myfluneo.eu",
-      "transport": "github-hosted",
-      "probeAttempted": true,
-      "probeReachedSite": true,
-      "probeReturnCode": 0,
-      "routePatterns": [
-        "/api/webtv/guide?channel=1",
-        "/api"
-      ],
-      "routeCount": 2,
-      "qualified": true,
-      "reason": "observed_executable_routes"
+      "reason": "reachable_no_identity_route_observed"
     },
     {
       "provider": "cpasmal",
@@ -1570,22 +1298,7 @@
       "routePatterns": [],
       "routeCount": 0,
       "qualified": false,
-      "reason": "reachable_no_executable_route_observed"
-    },
-    {
-      "provider": "frembed",
-      "scope": "france",
-      "direct": "https://frembed.surf",
-      "transport": "github-hosted",
-      "probeAttempted": true,
-      "probeReachedSite": true,
-      "probeReturnCode": 0,
-      "routePatterns": [
-        "/api/session-handoff/issue"
-      ],
-      "routeCount": 1,
-      "qualified": true,
-      "reason": "observed_executable_routes"
+      "reason": "reachable_no_identity_route_observed"
     },
     {
       "provider": "nakastream",
@@ -1598,7 +1311,7 @@
       "routePatterns": [],
       "routeCount": 0,
       "qualified": false,
-      "reason": "reachable_no_executable_route_observed"
+      "reason": "reachable_no_identity_route_observed"
     },
     {
       "provider": "1jour1film0626",
@@ -1611,7 +1324,7 @@
       "routePatterns": [],
       "routeCount": 0,
       "qualified": false,
-      "reason": "reachable_no_executable_route_observed"
+      "reason": "reachable_no_identity_route_observed"
     },
     {
       "provider": "dotriv",
@@ -1637,7 +1350,7 @@
       "routePatterns": [],
       "routeCount": 0,
       "qualified": false,
-      "reason": "reachable_no_executable_route_observed"
+      "reason": "reachable_no_identity_route_observed"
     },
     {
       "provider": "kidraz",
@@ -1650,7 +1363,7 @@
       "routePatterns": [],
       "routeCount": 0,
       "qualified": false,
-      "reason": "reachable_no_executable_route_observed"
+      "reason": "reachable_no_identity_route_observed"
     }
   ]
 }
