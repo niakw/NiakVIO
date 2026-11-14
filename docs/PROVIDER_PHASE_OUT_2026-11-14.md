@@ -31,3 +31,16 @@ Do not phase out FULL/PARTIAL providers on old evidence alone; do not phase out 
 - Exacts fichiers contrôlés sur GitHub : `provider-disabled/yflix--nuvio--d9a87c04b9e1aa32.js` et `provider-disabled/animevost-fr--nuvio--a47f44cd69693435.js` présents ; originaux `providers/` correspondants absents. `provider_catalog.json` et `provider-v3-materialization.json` indiquent 39 actifs.
 - `automation/provider-disabled-lifecycle.json`: `state=disabled-retained`, `disabledAt=2026-11-14`, `purgeAfter=2026-11-21` pour les deux. Archivage physique/removal des manifests seulement après l'échéance et un nouveau run de cycle de vie.
 - **Pas de preuve de playback nouvelle:** les autres providers et le ratio 20/20/20 par manifest n'ont pas été requalifiés. Les CI Core/CodeQL générales sur l'état post-lifecycle étaient encore en attente ou sur d'anciens SHA au moment de cette mise à jour. Ne pas appeler « full validated ».
+
+
+## Cohorte 2 — AllAnime / MalluMV : contrôle supplémentaire du 14 novembre 2026
+
+| Provider | Genre / manifest | Preuve négative croisée | Précaution |
+| --- | --- | --- | --- |
+| AllAnime | anime / Global seulement | Census #43460048984 : CHAIN REACHED, 4/45 recherches et aucun média terminal ; availability 2026-11-13 : no_streams ; Fast Repair #43536125705 : 4 fixtures, 0 flux, `no_streams` | Sites référencés ; conserver DATA et historique, désactivation provisoire uniquement |
+| MalluMV | film / Global seulement | Census #43460048984 : CHAIN REACHED, 1/42 recherches, 0 terminal ; availability 2026-11-13 : no_streams ; Fast Repair #43536125705 : 4 fixtures, 0 flux, `no_streams` | Dépendances réseau à rechercher ; désactivation provisoire uniquement |
+
+- Aucune correspondance d'épisode ni lecture terminale prouvée. La CI Fast Repair a terminé sans accepter de réparation : `selected=13, accepted=0, validated=0`.
+- Les décisions sont des *retraits du catalogue actif* et non des jugements sur la réparabilité des sites.
+- Utiliser le même cycle de vie générique : `provider-hubs.json` → trigger → `classify_provider_authority.py --apply-safe-disables` → `manage_provider_lifecycle.py --apply`, conservation 7 jours, puis archivage uniquement après nouvelle vérification.
+- Les providers historico-FULL et WAF-only restent protégés en attendant un diagnostic Brain / Client approprié.
