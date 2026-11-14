@@ -755,4 +755,6 @@ Production onboarding has an explicit `bulk_offline_contract_live_unverified` pa
 
 This path is intentionally weaker than `FULL OK` and cannot manufacture runtime evidence. Activation requires the exact post-rebuild Provider v3 bytes, minimizer fixed-point, Node syntax, provider identity/ownership contract, a valid declared public origin, and exact provenance hashes. Activated rows remain `live_unverified`, `strict_activation_eligible=false`, `runtime_evidence_eligible=false`, with `live_native_validation_pending`. Only a later WAF-capable/native replay may promote the provider to `FULL OK`.
 
+Large onboarding waves are **proof-partitioned**, not all-or-nothing. Each candidate is independently evaluated against the same exact-byte offline contract. Eligible candidates may be published even when siblings are blocked; blocked identities remain non-active with explicit blocker evidence and continue through route discovery/Brain recovery. A wave with zero eligible providers still fails closed. This prevents one bad candidate from freezing dozens of unrelated valid integrations without weakening any per-provider proof gate.
+
 Portfolio publication targets are 60 active Global and 60 active France providers. France-only identities remain first-class catalog rows (`general=false, vf=true`) and must never leak into Global.
