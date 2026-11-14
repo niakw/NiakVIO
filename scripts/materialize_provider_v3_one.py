@@ -20,6 +20,7 @@ from provider_security_hardening import assert_hardened, harden_bytes
 
 ROOT = Path(__file__).resolve().parents[1]
 REGISTRY = ROOT / "provider-hubs.json"
+PROVIDER_CATALOG = ROOT / "provider_catalog.json"
 
 
 def _host(value: object) -> str:
@@ -410,6 +411,7 @@ def materialize_one(
 ) -> dict[str, object]:
     provider_id = allmat.canonical_id(provider_id)
     manifest = allmat.load(allmat.DEFAULT_SOURCE_MANIFEST)
+    catalog = allmat.load(PROVIDER_CATALOG) if PROVIDER_CATALOG.is_file() else {}
     overrides = allmat.load(allmat.DEFAULT_OVERRIDES)
     static_knowledge = allmat.load(allmat.DEFAULT_STATIC_KNOWLEDGE)
     registry = allmat.load(REGISTRY)
@@ -447,8 +449,31 @@ def materialize_one(
         ),
         None,
     )
+    entry_authority = "global-manifest"
+    catalog_record: dict[str, object] | None = None
     if not isinstance(entry, dict):
-        raise ValueError(f"{provider_id}: manifest row not found")
+        providers = catalog.get("providers") if isinstance(catalog, dict) else None
+        if isinstance(providers, list):
+            for record in providers:
+                if not isinstance(record, dict):
+                    continue
+                scraper = record.get("scraper")
+                projections = record.get("projections")
+                canonical = allmat.canonical_id(
+                    str(record.get("canonicalId") or (scraper or {}).get("id") or "")
+                )
+                if canonical != provider_id or not isinstance(scraper, dict):
+                    continue
+                if not isinstance(projections, dict) or projections.get("vf") is not True or projections.get("general") is not False:
+                    raise ValueError(
+                        f"{provider_id}: non-global catalog row lacks strict France-only projection authority"
+                    )
+                entry = scraper
+                catalog_record = record
+                entry_authority = "france-only-catalog"
+                break
+    if not isinstance(entry, dict):
+        raise ValueError(f"{provider_id}: manifest/catalog row not found")
     patch = patches.get(provider_id)
     capability = capabilities.get(provider_id)
     static_row = static_rows.get(provider_id)
@@ -587,12 +612,18 @@ def materialize_one(
     (allmat.DEFAULT_OUT / filename).write_bytes(bundle)
     entry["filename"] = relative
     entry["version"] = allmat.base_version(entry.get("version"))
-    allmat.write_json(allmat.DEFAULT_SOURCE_MANIFEST, manifest)
+    if entry_authority == "global-manifest":
+        allmat.write_json(allmat.DEFAULT_SOURCE_MANIFEST, manifest)
+    else:
+        if not isinstance(catalog_record, dict) or catalog_record.get("scraper") is not entry:
+            raise AssertionError(f"{provider_id}: France-only catalog authority detached during materialization")
+        allmat.write_json(PROVIDER_CATALOG, catalog)
     from sync_manifest_projection_rows import sync as sync_manifest_projections
     sync_manifest_projections(check=False)
 
     report = {
         "provider": provider_id,
+        "entryAuthority": entry_authority,
         "file": relative,
         "sha256": digest,
         "providerDataSha256": hashlib.sha256(
