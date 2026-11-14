@@ -12959,13 +12959,16 @@
     "webflix": {
       "notes": [
         "Created by the NiakVIO full-auto provider onboarding workflow from structured route knowledge only.",
-        "Activation remains disabled until the onboarding quick Lab proves the provider on every requested runtime group."
+        "Activation remains disabled until the onboarding quick Lab proves the provider on every requested runtime group.",
+        "Mac residential oracle 2026-11-14 proved Webflix FastFlux movie and episode APIs return direct MP4 candidates for exact requested TMDB/season/episode.",
+        "Provider-owned Webflix runtime uses only public deterministic JSON APIs; no challenge solver or upstream JS execution.",
+        "TV identity is bound by discovery response tmdb_id plus exact season/episode key before terminal media is returned."
       ],
       "replacements": {},
       "runtime_domain_replacements": {},
       "route_replacements": {},
       "profiles": [],
-      "capability": "mixed_embed_resolver",
+      "capability": "api_stream_resolver",
       "official_hub": null,
       "official_site": "https://webflix.art/",
       "published_types": [
@@ -12977,8 +12980,27 @@
         "disabledPlatforms": []
       },
       "learned_routes": [
-        "/api/search?q={query}"
-      ]
+        "/api/fastflux?type=movie&tmdb_id={tmdbId}",
+        "/api/series-season-discovery?tmdb_id={tmdbId}",
+        "/api/fastflux?type=episode&tmdb_id={tmdbId}&season={season}&episode={episode}"
+      ],
+      "official_api": "https://webflix.art",
+      "provider_lego_scripts": [
+        "scripts/provider_patches/webflix_runtime_v1.py"
+      ],
+      "provider_lego_options": {
+        "scripts/provider_patches/webflix_runtime_v1.py": {
+          "base": "https://webflix.art"
+        }
+      },
+      "identity_input": {
+        "mode": "tmdb_direct",
+        "requires_tmdb_before_run": true,
+        "required_fields": [
+          "tmdbId",
+          "mediaType"
+        ]
+      }
     },
     "zone-telechargement": {
       "notes": [
