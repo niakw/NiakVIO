@@ -139,6 +139,8 @@ for token in (
     "python scripts/check_provider_non_regression_v1.py",
     "python scripts/audit_provider_quick_yield.py",
     "python tests/global_media_type_pre_network_gate_test.py",
+    "python tests/provider_html_filter_security_test.py --published",
+    "python tests/provider_bulk_spa_route_discovery_test.py",
     "--candidate-gate",
     "provider-v3-quick-yield.json",
     "provider-non-regression-gate.json",
