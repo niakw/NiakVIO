@@ -1,3 +1,10 @@
+## 2026-11-14 — Production active-provider freshness gate
+
+- Current production state on 8e9194e2 is intentionally reduced to 13 active Global providers and 10 active VF providers. All 13 active Global identities are FULL OK, tested in the latest census, and every declared lane is currently verified; the other current catalogue entries are disabled/retained. This is the truthful baseline before any new onboarding.
+- Added a generic production contract: every enabled row in manifest.json or vf/manifest.json must exist in the authoritative current census, be FULL OK, have testedThisRun=true, cover every declared canonical lane with currentVerifiedLanes, and not remain repair-eligible. This prevents stale/carried/route-only/regression providers from silently re-entering production through manifest drift. It does not authorize or activate any new provider.
+- The attached source workbook contains many third-party streaming sites marked NON VÉRIFIÉ — LOCAL UNIQUEMENT. Treat spreadsheet presence as discovery only, never as playback/rights/architecture proof. The France sheet also contains Cinémathèque de Bretagne, whose official site currently advertises more than 12,000 films in free access; that is a legitimate research candidate but does not satisfy the 60-provider objective by itself.
+- New exact-SHA CI required before the gate is considered validated.
+
 ## 2026-11-14 — Sharded exact replay requested for all 13 active providers
 
 - The ordinary current-byte census defaults to unresolved scope and therefore cannot establish fresh playback for carried/active FULL rows. Use the existing explicit sharded trigger with scope=all and targetProviders set to the exact 13 enabled Global identities from the current manifest.
