@@ -23,8 +23,10 @@ assert probe.identity_route_candidate("/api/push/subscribe") is False
 assert probe.identity_route_candidate("/api/session-handoff/issue") is False
 assert probe.identity_route_candidate("/embed/sw.js") is False
 assert probe.identity_route_candidate("/series") is False
-assert probe.identity_route_candidate("/search") is True
+assert probe.identity_route_candidate("/search") is False
 assert probe.identity_route_candidate("/movie/{tmdbId}") is True
+assert probe.identity_route_candidate("/search?q={query}") is True
+assert probe.identity_route_candidate("/search?s={query}") is True
 
 request={
     "providers":[{"id":"a","direct":"https://a.invalid"}],
