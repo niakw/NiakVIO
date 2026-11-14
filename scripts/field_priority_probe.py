@@ -153,13 +153,13 @@ def worker_payload(stdout: str) -> dict[str, Any] | None:
     return payload
 
 
-def run_once(filename: str, fixture: dict[str, Any], timeout: int, max_profiles: int) -> dict[str, Any]:
+def run_once(provider_path: Path, fixture: dict[str, Any], timeout: int, max_profiles: int) -> dict[str, Any]:
     request = {key: value for key, value in fixture.items() if key != "metadata"}
     command = [
         "node",
         "--max-old-space-size=768",
         str(WORKER),
-        str(ROOT / filename),
+        str(provider_path),
         json.dumps(request, ensure_ascii=False, separators=(",", ":")),
         json.dumps(context_for(fixture, max_profiles), ensure_ascii=False, separators=(",", ":")),
     ]
@@ -248,7 +248,7 @@ def probe(row: dict[str, Any], fixture: dict[str, Any], timeout: int) -> dict[st
     strict = run_once(filename, fixture, timeout, 1)
     diagnostic = None
     if strict.get("stream_count", 0) <= 0 and bool(row.get("hasSettings")):
-        diagnostic = run_once(filename, fixture, timeout, 4)
+        diagnostic = run_once(provider_path, fixture, timeout, 4)
     return {
         "provider": canonical(row.get("id")),
         "version": row.get("version"),
@@ -280,7 +280,7 @@ def main() -> int:
 
     results: list[dict[str, Any]] = []
     with ThreadPoolExecutor(max_workers=workers) as executor:
-        futures = {executor.submit(probe, row, fixture, timeout): (row, fixture) for row, fixture in jobs}
+        futures = {executor.submit(probe, row, fixture, timeout, manifest_path): (row, fixture) for row, fixture in jobs}
         done = 0
         for future in as_completed(futures):
             done += 1
@@ -323,7 +323,9 @@ def main() -> int:
     report = {
         "schemaVersion": 1,
         "generatedAt": datetime.now(timezone.utc).isoformat(),
+        "manifest": str(manifest_path.relative_to(ROOT)),
         "manifestVersion": manifest.get("version"),
+        "requestedProviders": sorted(requested),
         "timeoutSeconds": timeout,
         "workers": workers,
         "fixtures": [{key: value for key, value in fixture.items() if key != "metadata"} for fixture in FIXTURES],
