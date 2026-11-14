@@ -34,6 +34,8 @@ from provider_base_store import (  # noqa: E402
     canonical_id,
     compose_provider_bundle,
     NON_EXECUTABLE_KNOWLEDGE_HOSTS,
+    provider_model_has_executable_plan,
+    provider_model_has_identity_execution_plan,
 )
 from apply_provider_overrides import apply_overrides  # noqa: E402
 from provider_patch_blocks import owned_span, validate_managed_fixes  # noqa: E402
@@ -356,11 +358,32 @@ def provider_model(
         )
     )
     proof_version = max(patch_proof, static_proof)
+
+    # BULK_OFFLINE_LIVE_UNVERIFIED_EXECUTION_AUTHORITY_V1
+    # The WAF-limited onboarding path already validates the exact staged Provider
+    # v3 model with provider_model_has_executable_plan() and
+    # provider_model_has_identity_execution_plan() before activation.  It must
+    # remain executable after canonical rematerialization even though it
+    # deliberately has no live route proof yet.  Preserve the same provider-owned
+    # learned routes as *execution authority only*; never promote routeProofVersion
+    # or runtime evidence from this condition.
+    offline_live_unverified = (
+        str(capability.get("validation") or "").strip().casefold()
+        == "bulk_offline_contract_live_unverified"
+    )
+    offline_route_model = {"routes": list(patch_routes)}
+    offline_routes_executable = bool(
+        offline_live_unverified
+        and patch_routes
+        and provider_model_has_executable_plan(offline_route_model)
+        and provider_model_has_identity_execution_plan(offline_route_model)
+    )
+
     routes: list[str] = []
-    route_values = patch_routes if patch_has_execution_authority else [
+    route_values = patch_routes if (patch_has_execution_authority or offline_routes_executable) else [
         *(patch.get("learned_routes") or []), *(static_model.get("routes") or [])
     ]
-    if proof_version >= 5:
+    if proof_version >= 5 or offline_routes_executable:
         for value in route_values:
             item = str(value).strip()
             if item and item != "/" and item not in routes:
