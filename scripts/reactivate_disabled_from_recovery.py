@@ -92,6 +92,39 @@ def find_health(health: dict[str, Any], provider: str) -> dict[str, Any]:
         raise RuntimeError(f"{provider}: expected one health row, got {len(rows)}")
     return rows[0]
 
+def identity_verified_lanes(row: dict[str, Any]) -> dict[str, list[dict[str, Any]]]:
+    proven: dict[str, list[dict[str, Any]]] = {}
+    for test in row.get("tests") or []:
+        if not isinstance(test, dict):
+            continue
+        fixture = test.get("fixture") if isinstance(test.get("fixture"), dict) else {}
+        lane = canon(fixture.get("category") or fixture.get("mediaType"))
+        if not lane:
+            continue
+        hosts = []
+        for host in test.get("host_results") or []:
+            if not isinstance(host, dict):
+                continue
+            if (
+                host.get("playback_verified") is True
+                and host.get("payload_verified") is True
+                and str(host.get("content_identity_status") or "") == "match"
+                and host.get("duration_identity_mismatch") is not True
+            ):
+                hosts.append({
+                    "host": host.get("host"),
+                    "kind": host.get("kind"),
+                    "reason": host.get("content_identity_reason"),
+                })
+        if hosts:
+            proven.setdefault(lane, []).append({
+                "fixture": fixture.get("label") or fixture.get("title") or fixture.get("tmdbId"),
+                "tmdbId": str(fixture.get("tmdbId") or ""),
+                "hosts": hosts,
+            })
+    return proven
+
+
 def validate_recovery(
     root: Path,
     provider: str,
@@ -146,6 +179,12 @@ def validate_recovery(
         raise RuntimeError(f"{provider}: insufficient payload-verified streams")
     if int(evidence.get("identity_verified_streams") or 0) < len(declared):
         raise RuntimeError(f"{provider}: insufficient identity-verified streams")
+    lane_identity = identity_verified_lanes(row)
+    missing_identity_lanes = sorted(declared - set(lane_identity))
+    if missing_identity_lanes:
+        raise RuntimeError(
+            f"{provider}: missing per-lane identity-verified playable proof for {missing_identity_lanes}"
+        )
     for key in (
         "identity_contradiction_count",
         "duration_identity_mismatch_count",
@@ -197,7 +236,8 @@ def validate_recovery(
         "repairRequired": False,
         "directMutationAuthority": False,
         "declaredLanes": sorted(declared),
-        "verifiedLanes": sorted(healthy & declared),
+        "verifiedLanes": sorted(set(lane_identity) & declared),
+        "laneIdentityEvidence": lane_identity,
         "streamsPlayable": int(evidence.get("streams_playable") or 0),
         "payloadVerifiedStreams": int(evidence.get("payload_verified_streams") or 0),
         "identityVerifiedStreams": int(evidence.get("identity_verified_streams") or 0),

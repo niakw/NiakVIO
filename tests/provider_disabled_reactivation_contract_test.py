@@ -52,6 +52,26 @@ with tempfile.TemporaryDirectory() as td:
             "streams_rejected_identity":0,"streams_rejected_duration":0,
             "provider_server_accessible":True,"provider_server_successful_response":True,
         },
+        "tests":[
+            {
+                "fixture":{"category":"movie","label":"Movie","tmdbId":"1"},
+                "host_results":[{
+                    "host":"movie.example","kind":"hls","playback_verified":True,
+                    "payload_verified":True,"content_identity_status":"match",
+                    "content_identity_reason":"fixture_duration_match",
+                    "duration_identity_mismatch":False,
+                }],
+            },
+            {
+                "fixture":{"category":"tv","label":"TV S01E01","tmdbId":"2"},
+                "host_results":[{
+                    "host":"tv.example","kind":"hls","playback_verified":True,
+                    "payload_verified":True,"content_identity_status":"match",
+                    "content_identity_reason":"fixture_duration_match",
+                    "duration_identity_mismatch":False,
+                }],
+            },
+        ],
     }]}
     (root/"brain-disabled-recovery/health/health-results.json").write_text(json.dumps(health),encoding="utf-8")
     disposition={
@@ -75,6 +95,17 @@ with tempfile.TemporaryDirectory() as td:
     assert proof["verifiedLanes"]==["movie","tv"]
     assert proof["identityVerifiedStreams"]==2
     assert proof["proofStatus"]=="terminal_identity_verified"
+
+    # Aggregate identity counts are insufficient: each declared lane must own
+    # at least one playable payload-verified identity match.
+    health["results"][0]["tests"][1]["host_results"][0]["content_identity_status"]="unknown"
+    try:
+        mod.validate_recovery(root,"demo",root,proof_run_id="42",proof_head_sha="abc123")
+    except RuntimeError as exc:
+        assert "missing per-lane identity-verified playable proof" in str(exc)
+    else:
+        raise AssertionError("per-lane identity proof was accepted")
+    health["results"][0]["tests"][1]["host_results"][0]["content_identity_status"]="match"
 
     # Exact-byte drift must invalidate the proof before any activation write.
     asset.write_text("console.log('drift')\n",encoding="utf-8")
