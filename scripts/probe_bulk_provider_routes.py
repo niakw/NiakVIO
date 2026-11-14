@@ -62,14 +62,20 @@ def slug(value: str) -> str:
 def _template_query(query: str, fixture: dict[str, Any]) -> str | None:
     if not query:
         return ""
+    pairs = parse_qsl(query, keep_blank_values=True)
+    lowered_keys = {str(key or "").strip().casefold() for key, _ in pairs}
+    episode_context = bool(lowered_keys & {"e", "ep", "episode"})
     out: list[tuple[str, str]] = []
-    for key, value in parse_qsl(query, keep_blank_values=True):
+    for key, value in pairs:
         k = key.strip()
         lk = k.casefold()
         if lk in SENSITIVE_KEYS:
             return None
         raw = str(value or "")
-        if lk in SEARCH_KEYS:
+        # A common player pattern is ?s=1&e=1 where s means season, not search.
+        if lk == "s" and episode_context and raw.strip().isdigit():
+            value = "{season}"
+        elif lk in SEARCH_KEYS:
             value = "{query}"
         elif lk in TMDB_KEYS:
             value = "{tmdbId}"
@@ -79,7 +85,7 @@ def _template_query(query: str, fixture: dict[str, Any]) -> str | None:
             value = "{media}"
         elif lk in SEASON_KEYS:
             value = "{season}"
-        elif lk in EPISODE_KEYS:
+        elif lk in EPISODE_KEYS or lk in {"e", "ep"}:
             value = "{episode}"
         elif raw == str(fixture.get("tmdbId") or ""):
             value = "{tmdbId}"
