@@ -500,9 +500,28 @@ def materialize_one(
     allmat.normalize_anime_transport_compatibility(entry)
     model = allmat.provider_model(provider_id, patch, capability, static_row)
     if preserve_structured_data:
-        if not allmat.provider_model_has_executable_plan(model):
+        scripts = [
+            str(value).strip()
+            for value in (patch.get("provider_lego_scripts") or [])
+            if str(value).strip()
+        ]
+        identity = patch.get("identity_input") if isinstance(patch.get("identity_input"), dict) else {}
+        required_identity = {
+            str(value).strip()
+            for value in (identity.get("required_fields") or [])
+            if str(value).strip()
+        }
+        france_owned_tmdb_lego = bool(
+            entry_authority == "france-only-catalog"
+            and scripts
+            and all(value.startswith("scripts/provider_patches/") for value in scripts)
+            and str(identity.get("mode") or "").strip().casefold() == "tmdb_direct"
+            and identity.get("requires_tmdb_before_run") is True
+            and {"tmdbId", "mediaType"} <= required_identity
+        )
+        if not allmat.provider_model_has_executable_plan(model) and not france_owned_tmdb_lego:
             raise ValueError(f"{provider_id}: projection-only DATA lacks executable plan")
-        if not allmat.provider_model_has_identity_execution_plan(model):
+        if not allmat.provider_model_has_identity_execution_plan(model) and not france_owned_tmdb_lego:
             raise ValueError(f"{provider_id}: projection-only DATA lacks identity execution plan")
     seed = allmat.build_clean_provider_seed(
         provider_id,
