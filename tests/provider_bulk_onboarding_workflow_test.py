@@ -43,6 +43,10 @@ assert "--offline-fallback" in bulk
 assert '"Pillow==12.3.0"' in bulk
 assert "provider_logo_asset_contract_test.py" in bulk
 assert "provider_base_store.py validate" in bulk
+for token in ("scripts/finalize_provider_v3_minimizer.py","scripts/finalize_provider_v3_minimizer.py --check","scripts/reapply_published_overrides.py --check","tests/provider_v3_minimizer_published_test.py"):
+    assert token in bulk, token
+assert bulk.index("python scripts/reapply_published_overrides.py") < bulk.index("python scripts/finalize_provider_v3_minimizer.py")
+assert bulk.index("python scripts/finalize_provider_v3_minimizer.py --check") < bulk.index("python scripts/generate_language_manifests.py")
 assert "provider_clean_reconstruction_contract_test.py" not in bulk
 assert "materialize_provider_base_v3_store.py" not in bulk
 assert "assets/providers" in bulk

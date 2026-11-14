@@ -115,6 +115,11 @@ jobs:
           # Capture staged France-only vf rows into catalog authority before rebuilding projections.
           node engine_v2/scripts/bootstrap-provider-catalog.mjs
           python scripts/reapply_published_overrides.py
+          # Reapply emits readable canonical bundles; publication requires the same safe fixed-point minimizer as accepted releases.
+          python scripts/finalize_provider_v3_minimizer.py
+          python scripts/finalize_provider_v3_minimizer.py --check
+          python scripts/reapply_published_overrides.py --check
+          python tests/provider_v3_minimizer_published_test.py
           python scripts/generate_language_manifests.py
           node engine_v2/scripts/bootstrap-provider-catalog.mjs
           node engine_v2/scripts/render-manifests-from-catalog.mjs
