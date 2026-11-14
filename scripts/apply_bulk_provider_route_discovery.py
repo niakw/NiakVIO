@@ -32,6 +32,19 @@ TARGET_ACTIVE = 60
 TARGET_LANE = 20
 
 
+def current_active_ids() -> set[str]:
+    ids: set[str] = set()
+    for path in (ROOT / "manifest.json", ROOT / "vf" / "manifest.json"):
+        payload = load(path)
+        for row in payload.get("scrapers") or []:
+            if not isinstance(row, dict) or row.get("enabled") is False:
+                continue
+            pid = norm(row.get("id"))
+            if pid:
+                ids.add(pid)
+    return ids
+
+
 def current_active_state() -> dict[str, dict[str, Any]]:
     state: dict[str, dict[str, Any]] = {}
     for scope, path in (("global", ROOT / "manifest.json"), ("france", ROOT / "vf/manifest.json")):
@@ -126,6 +139,7 @@ def main() -> int:
     ap.add_argument("--request", type=Path, default=DEFAULT_REQUEST)
     ap.add_argument("--evidence", type=Path, default=DEFAULT_EVIDENCE)
     ap.add_argument("--output-request", type=Path, default=DEFAULT_REQUEST)
+    ap.add_argument("--expected-shards", type=int, default=8)
     args = ap.parse_args()
 
     request = load(args.request)
@@ -134,6 +148,7 @@ def main() -> int:
     version = request.get("requestVersion")
     rows = source_rows(request)
     by_id = {norm(row.get("id") or row.get("provider")): row for row in rows}
+    active_ids = current_active_ids()
 
     merged: dict[str, dict[str, Any]] = {}
     transports: set[str] = set()
@@ -159,8 +174,14 @@ def main() -> int:
         pid = norm(row.get("id") or row.get("provider"))
         result = merged.get(pid)
         if result is None:
-            # Active rows are intentionally omitted by the probe; do not put them
-            # back into an onboarding wave.
+            # Active rows are intentionally omitted by the probe. Missing inactive
+            # rows, however, may belong to a shard that timed out/cancelled; keep
+            # them in the next wave instead of silently dropping the candidate.
+            if pid in active_ids:
+                continue
+            deferred_row = dict(row)
+            deferred_row["routeDiscoveryLastReason"] = "probe_shard_missing_or_timeout"
+            deferred.append(deferred_row)
             continue
         patterns = [
             str(value).strip()
@@ -209,6 +230,9 @@ def main() -> int:
         "requestVersion": version,
         "source": request.get("source"),
         "transportProfiles": sorted(transports),
+        "shardArtifactCount": len(args.shards),
+        "expectedShardCount": int(args.expected_shards),
+        "completeShardSet": len(args.shards) == int(args.expected_shards),
         "candidateCount": len(evidence_rows),
         "qualifiedCount": len(qualified),
         "selectedCount": len(selected),
@@ -252,6 +276,9 @@ def main() -> int:
         "standbyQualified": len(standby),
         "deferred": len(deferred),
         "transports": sorted(transports),
+        "shardArtifactCount": len(args.shards),
+        "expectedShardCount": int(args.expected_shards),
+        "completeShardSet": len(args.shards) == int(args.expected_shards),
         "activationRequiresExecutablePlan": True,
     }
     write(args.output_request, next_request)
