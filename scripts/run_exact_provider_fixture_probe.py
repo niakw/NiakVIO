@@ -162,6 +162,26 @@ def main() -> int:
         "provider_server_http_statuses": payload.get("provider_server_http_statuses") or [],
         "error_code": str(error.get("code") or "") or None,
         "streams": safe_stream_rows(payload),
+        "invocation_diagnostics": [
+            {
+                "profile": str(profile.get("name") or ""),
+                "stream_count": int(profile.get("stream_count") or 0),
+                "attempts": [
+                    {
+                        "name": str(attempt.get("name") or ""),
+                        "inferred_mode": str(attempt.get("inferred_mode") or ""),
+                        "result": str(attempt.get("result") or ""),
+                        "stream_count": int(attempt.get("stream_count") or 0),
+                        "provider_observations": int(attempt.get("provider_observations") or 0),
+                        "error_code": str(((attempt.get("error") or {}).get("code")) or "") or None,
+                    }
+                    for attempt in (profile.get("invocation_diagnostics") or [])
+                    if isinstance(attempt, dict)
+                ],
+            }
+            for profile in (payload.get("settings_diagnostics") or [])
+            if isinstance(profile, dict)
+        ],
         "network_observations": safe_observations(payload),
     }
     out = Path(args.output)
