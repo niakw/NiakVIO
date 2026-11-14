@@ -1,3 +1,8 @@
+## 2026-11-14 — Exact release retry after projection-union integrity fix
+
+- Trigger release finalization again from c6372a3e after correcting the last observed VF-subset assumption. The prior run reached and passed minimizer, release version/cache synchronization, generation staging, Hub transport build and native transport tests before the stale projection-scope assertion.
+- This retry remains activation-neutral and must publish only if origin/main still matches its accepted executable tree.
+
 ## 2026-11-14 — Release projection integrity now uses Global + France-only union authority
 
 - Release-finalize 43587482341 on c811dd7c passed the 13-provider minimizer fixed point, synchronized release/cache versions with first-class VF-only support, staged provider generation, rebuilt the active Hub transport and validated its 13 pinned provider URLs. It then failed in release_projection_scope_test.py because that legacy test still required every VF identity and every provider_catalog identity to belong to manifest.json.
