@@ -1,3 +1,9 @@
+## 2026-11-14 — Bulk pending providers made physically non-executable
+
+- Retry onboarding run 43579306546 again staged all 17 candidates, then current_provider_scope correctly rejected sflix: enabled=false while its generated artifact remained under providers/. This exposed an older contradiction in bulk onboarding: logical pending/disabled state did not match filesystem activation authority.
+- Bulk stage now relocates each newly generated pending JS to provider-disabled/ and its ProviderBase bytes to provider-disabled/provider-bases/ before writing the manifest/provenance row. France-only rows project ../provider-disabled/...; Global rows use provider-disabled/... directly. Bulk transaction packaging includes provider-disabled.
+- Proof-driven activation now requires pending bytes to be in the disabled directories and atomically restores provider JS + ProviderBase to providers/ + provider-bases/ before setting enabled=true. Provenance published_filename follows the restored runtime path. One malformed candidate is blocked as pending_artifact_state_invalid rather than activating; blocked candidates stay disabled. Activation transaction packaging includes provider-disabled deletions. Synthetic tests cover relocation, Global/France activation and blocked retention. No candidate has been activated yet.
+
 ## 2026-11-14 — ProviderBase maintenance aligned with disabled lifecycle
 
 - Bulk onboarding run 43579074333 successfully staged all 17 requested candidates in its workspace, then failed after staging in provider_base_store.repair_legacy_bases(): uhdmovies durable base was no longer under provider-bases/ because lifecycle had correctly moved it to provider-disabled/provider-bases/.

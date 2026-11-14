@@ -69,7 +69,7 @@ jobs:
           ACTIVATION_COUNT: ${{ steps.activation.outputs.count }}
         run: |
           set -euo pipefail
-          git add             manifest.json vf/manifest.json no-anime/manifest.json vf-no-anime/manifest.json             provider_catalog.json PROVENANCE.json provider-overrides.json provider-hubs.json             provider-bases providers automation/provider-bulk-activation-latest.json
+          git add             manifest.json vf/manifest.json no-anime/manifest.json vf-no-anime/manifest.json             provider_catalog.json PROVENANCE.json provider-overrides.json provider-hubs.json             provider-bases providers provider-disabled automation/provider-bulk-activation-latest.json
           git diff --cached --quiet && exit 0
           git config user.name "niakvio-provider-bulk-activation"
           git config user.email "actions@users.noreply.github.com"

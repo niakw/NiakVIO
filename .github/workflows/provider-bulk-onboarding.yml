@@ -122,7 +122,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          git add             manifest.json vf/manifest.json no-anime/manifest.json vf-no-anime/manifest.json             provider_catalog.json PROVENANCE.json provider-overrides.json provider-hubs.json provider-type-policy.json             provider-bases providers automation/provider-bulk-onboarding-stage.json
+          git add             manifest.json vf/manifest.json no-anime/manifest.json vf-no-anime/manifest.json             provider_catalog.json PROVENANCE.json provider-overrides.json provider-hubs.json provider-type-policy.json             provider-bases providers provider-disabled automation/provider-bulk-onboarding-stage.json
           mkdir -p .provider-onboarding
           git rev-parse HEAD > .provider-onboarding/bulk-base-sha.txt
           git diff --cached --binary --full-index > .provider-onboarding/bulk-provider-transaction.patch

@@ -35,9 +35,13 @@ for token in (
     'prov["activation_mode"]="bulk_census_full_ok"',
     'scope="france"',
     'write(CATALOG,catalog)',
+    "restore_pending_artifacts(",
+    "provider-disabled",
 ):
     assert token in script, token
 
+assert "provider-disabled" in activation
+assert "provider-disabled" in onboard
 assert "automation/provider-bulk-activation-latest.json" in sharded
 assert "'provider_catalog.json'" in sharded
 assert "provider: bulk activate " in sharded

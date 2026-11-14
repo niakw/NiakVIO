@@ -8,7 +8,7 @@ import tempfile
 ROOT=Path(__file__).resolve().parents[1]
 script=ROOT/"scripts/stage_provider_batch.py"
 sys.path.insert(0,str(ROOT/"scripts"))
-from add_provider import staged_existing_entry, normalized_scope
+from add_provider import staged_existing_entry, normalized_scope, relocate_bulk_pending_artifacts
 
 with tempfile.TemporaryDirectory() as td:
     td=Path(td)
@@ -86,5 +86,23 @@ with tempfile.TemporaryDirectory(prefix="niakvio-onboard-scope-") as td:
         assert "Global scope" in str(exc)
     else:
         raise AssertionError("Global identity duplicated into France-only staging")
+
+with tempfile.TemporaryDirectory(prefix="niakvio-bulk-pending-path-") as td:
+    root=Path(td)
+    (root/"providers").mkdir()
+    (root/"provider-bases").mkdir()
+    published=root/"providers/demo--nuvio--abc.js"
+    base=root/"provider-bases/demo--base--abc.js"
+    published.write_bytes(b"provider")
+    base.write_bytes(b"base")
+    relative=relocate_bulk_pending_artifacts(
+        "providers/demo--nuvio--abc.js",
+        "provider-bases/demo--base--abc.js",
+        root=root,
+    )
+    assert relative=="provider-disabled/demo--nuvio--abc.js"
+    assert not published.exists() and not base.exists()
+    assert (root/relative).read_bytes()==b"provider"
+    assert (root/"provider-disabled/provider-bases/demo--base--abc.js").read_bytes()==b"base"
 
 print("Bulk provider onboarding dry-run + Global/France-only scope contract passed")

@@ -29,6 +29,47 @@ def write(path:Path, value:Any)->None:
 def norm(value:Any)->str:
     return re.sub(r"[^a-z0-9._-]+","-",str(value or "").strip().casefold()).strip("-")
 
+
+def _move_exact(source:Path,target:Path,*,dry_run:bool=False)->None:
+    if not source.is_file():
+        raise RuntimeError(f"missing pending artifact: {source}")
+    if target.exists() and source.read_bytes()!=target.read_bytes():
+        raise RuntimeError(f"activation artifact collision: {target}")
+    if dry_run:
+        return
+    target.parent.mkdir(parents=True,exist_ok=True)
+    if target.exists():
+        source.unlink()
+    else:
+        source.replace(target)
+
+def restore_pending_artifacts(
+    pid:str,
+    manifest_row:dict[str,Any],
+    provenance_row:dict[str,Any],
+    *,
+    dry_run:bool=False,
+)->str:
+    """Restore one FULL-OK bulk candidate to executable directories."""
+    filename=str(manifest_row.get("filename") or "").strip()
+    if filename.startswith("../"):
+        filename=filename[3:]
+    if not filename.startswith("provider-disabled/"):
+        raise RuntimeError(f"{pid}: pending provider path is not disabled: {filename}")
+    source=(ROOT/filename).resolve()
+    target=(ROOT/"providers"/source.name).resolve()
+    base_relative=str(provenance_row.get("base_filename") or "").strip()
+    if not base_relative.startswith("provider-bases/"):
+        raise RuntimeError(f"{pid}: pending ProviderBase reference invalid: {base_relative}")
+    base_target=(ROOT/base_relative).resolve()
+    base_source=(ROOT/"provider-disabled"/"provider-bases"/base_target.name).resolve()
+    _move_exact(source,target,dry_run=dry_run)
+    _move_exact(base_source,base_target,dry_run=dry_run)
+    active_relative=target.relative_to(ROOT).as_posix()
+    manifest_row["filename"]=active_relative
+    provenance_row["published_filename"]=active_relative
+    return active_relative
+
 def main()->int:
     ap=argparse.ArgumentParser(description="Activate only bulk-pending providers with current FULL OK proof")
     ap.add_argument("--status",type=Path,default=STATUS)
@@ -104,6 +145,11 @@ def main()->int:
         prov=prov_map.get(pid)
         if not isinstance(manifest_row,dict) or not isinstance(patch,dict) or not isinstance(prov,dict):
             blocked.append({"provider":pid,"reason":"canonical_provider_state_missing"})
+            continue
+        try:
+            restore_pending_artifacts(pid,manifest_row,prov,dry_run=args.dry_run)
+        except RuntimeError as exc:
+            blocked.append({"provider":pid,"reason":"pending_artifact_state_invalid","detail":str(exc)})
             continue
         manifest_row["enabled"]=True
         patch.setdefault("manifest_overrides",{})["enabled"]=True
