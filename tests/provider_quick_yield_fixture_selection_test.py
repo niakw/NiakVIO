@@ -15,10 +15,20 @@ spec.loader.exec_module(mod)
 
 
 from current_provider_scope import pending_provider_ids, runtime_visible_provider_count
+from generate_language_manifests import france_only_catalog_rows
 
 tasks, provider_count = mod.build_tasks()
-assert provider_count == runtime_visible_provider_count(), (provider_count, runtime_visible_provider_count())
-assert not ({row.get("provider_id") for row in tasks} & pending_provider_ids())
+pending = pending_provider_ids()
+france_only_runtime = {
+    str(row.get("id") or "").strip().casefold().replace("_", "-")
+    for row in france_only_catalog_rows(root=ROOT)
+    if str(row.get("id") or "").strip()
+} - pending
+expected_current_union = runtime_visible_provider_count() + len(france_only_runtime)
+assert provider_count == expected_current_union, (provider_count, expected_current_union)
+task_ids = {row.get("provider_id") for row in tasks}
+assert not (task_ids & pending)
+assert france_only_runtime <= task_ids, sorted(france_only_runtime - task_ids)
 
 
 def task(provider: str, semantic: str) -> dict:
