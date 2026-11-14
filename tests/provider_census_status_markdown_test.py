@@ -488,3 +488,48 @@ for pid, expected_lanes in route_proven_real_provider_ids.items():
     assert int(gate.get("live_validated_route_count") or 0) > 0, (pid, gate)
 
 print("provider census status/state-machine markdown contract passed")
+
+
+# Report schema v3 separates the current raw evidence from carried aggregate
+# health. A green scoped run can still have zero fresh positive observations.
+from summarize_current_census import summarize
+
+scope_raw = {
+    "resolved_scope": "unresolved", "provider_count": 2,
+    "verified_provider_count": 0, "verified_providers": [],
+    "accepted_playable_provider_count": 0, "accepted_playable_providers": [],
+}
+scope_state = {"runId": "123", "triggerSha": "fixture-sha", "providers": [
+    {"provider": "carried-full", "status": "FULL OK", "testedThisRun": False},
+    {"provider": "carried-partial", "status": "PARTIAL OK", "testedThisRun": False},
+    {"provider": "tested-retained", "status": "FULL OK", "testedThisRun": True},
+    {"provider": "unresolved", "status": "NO PROOF", "testedThisRun": True},
+]}
+summary = summarize(scope_raw, scope_state, run_id=123, sha="fixture-sha")
+assert summary["schemaVersion"] == 3
+assert summary["operationalOkCount"] == 3
+assert summary["testedProviderCount"] == 2
+assert summary["verifiedProviderCount"] == summary["acceptedPlayableProviderCount"] == 0
+assert summary["carriedOperationalProviderCount"] == 2
+assert summary["operationalWithoutCurrentVerifiedCount"] == 3
+assert summary["acceptanceReached"] is True and "carried" in summary["acceptanceBasis"]
+fresh_raw = {**scope_raw, "verified_provider_count": 1, "verified_providers": ["tested-retained"],
+             "accepted_playable_provider_count": 1, "accepted_playable_providers": ["tested-retained"]}
+fresh = summarize(fresh_raw, scope_state, run_id=123, sha="fixture-sha")
+assert fresh["verifiedProviderCount"] == fresh["acceptedPlayableProviderCount"] == 1
+assert fresh["operationalWithoutCurrentVerifiedCount"] == 2
+for invalid in ({**scope_raw, "verified_provider_count": 1},
+                {**scope_raw, "accepted_playable_providers": ["invented"]}):
+    try:
+        summarize(invalid, scope_state, run_id=123, sha="fixture-sha")
+    except ValueError:
+        pass
+    else:
+        raise AssertionError("inconsistent current evidence accepted")
+try:
+    summarize(scope_raw, scope_state, run_id=123, sha="wrong")
+except ValueError:
+    pass
+else:
+    raise AssertionError("inconsistent census SHA accepted")
+print("Current census fresh-versus-retained summary contract passed")

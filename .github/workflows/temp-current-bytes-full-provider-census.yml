@@ -362,53 +362,11 @@ jobs:
             --output automation/provider-repair-batch-plan.json
 
           cp provider-v3-quick-yield.json automation/current-bytes-full-provider-census.json
-          python - <<'PY'
-          import json, math, os
-          from pathlib import Path
-          d=json.loads(Path("automation/current-bytes-full-provider-census.json").read_text())
-          state=json.loads(Path("automation/provider-census-status.json").read_text())
-          rows=[x for x in state.get("providers") or [] if isinstance(x,dict)]
-          count=len(rows)
-          operational=sorted(
-              str(x.get("provider") or "")
-              for x in rows
-              if str(x.get("status") or "") in {"FULL OK","PARTIAL OK"}
-          )
-          full=sorted(str(x.get("provider") or "") for x in rows if str(x.get("status") or "")=="FULL OK")
-          partial=sorted(str(x.get("provider") or "") for x in rows if str(x.get("status") or "")=="PARTIAL OK")
-          target=math.ceil(count*0.75)
-          summary={
-              "schemaVersion":2,
-              "runId":int(os.environ["GITHUB_RUN_ID"]),
-              "triggerSha":os.environ["GITHUB_SHA"],
-              "scope":d.get("resolved_scope") or d.get("requested_scope") or "unknown",
-              "providerCount":count,
-              "testedProviderCount":int(d.get("provider_count") or 0),
-              "operationalOkCount":len(operational),
-              "operationalOkProviders":operational,
-              "fullOkCount":len(full),
-              "fullOkProviders":full,
-              "partialOkCount":len(partial),
-              "partialOkProviders":partial,
-              "statusCounts":state.get("counts") or {},
-              "brainQueue":state.get("brainQueue") or [],
-              # Legacy compatibility: FULL/PARTIAL are both non-blocking provider states.
-              "verifiedProviderCount":len(operational),
-              "verifiedProviders":operational,
-              "acceptedPlayableProviderCount":len(operational),
-              "acceptedPlayableProviders":operational,
-              "wrongContentProviderCount":int(d.get("wrong_content_provider_count") or 0),
-              "wrongContentProviders":d.get("wrong_content_providers") or [],
-              "acceptanceTarget":target,
-              "acceptanceReached":len(operational)>=target,
-              "debugStageCounts":d.get("debug_stage_counts") or {},
-              "debugStageProviders":d.get("debug_stage_providers") or {},
-          }
-          Path("automation/current-bytes-full-provider-census-summary.json").write_text(
-              json.dumps(summary,indent=2,sort_keys=True)+"\n"
-          )
-          print("FIELD_CURRENT_BYTES_PROVIDER_CENSUS "+json.dumps(summary,sort_keys=True))
-          PY
+          python scripts/summarize_current_census.py \
+            --report automation/current-bytes-full-provider-census.json \
+            --state automation/provider-census-status.json \
+            --output automation/current-bytes-full-provider-census-summary.json \
+            --run-id "$GITHUB_RUN_ID" --sha "$GITHUB_SHA"
 
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         if: always()
@@ -450,7 +408,7 @@ jobs:
           import json
           from pathlib import Path
           d=json.loads(Path("automation/current-bytes-full-provider-census-summary.json").read_text())
-          print(f"{d.get('verifiedProviderCount',0)}/{d.get('providerCount',0)}")
+          print(f"{d['verifiedProviderCount']}/{d['testedProviderCount']} fresh; {d['operationalOkCount']}/{d['providerCount']} operational")
           PY
           )"
           # Canonical census evidence is byte/SHA-specific. Manual dispatches may persist too,\n          # but only while they still test the exact current main SHA. Never rebase an old
