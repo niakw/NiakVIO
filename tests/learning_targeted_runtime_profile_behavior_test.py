@@ -131,6 +131,7 @@ try:
         # transiently to repatch its candidate, but production authority must
         # be restored byte-for-byte afterwards.
         before_ephemeral = OVERRIDES.read_bytes()
+        ephemeral_output = stage / "provider-overrides.ephemeral.json"
         completed = subprocess.run(
             [
                 sys.executable,
@@ -141,6 +142,8 @@ try:
                 "--provider",
                 "alpha",
                 "--ephemeral-overrides",
+                "--ephemeral-overrides-output",
+                str(ephemeral_output),
             ],
             cwd=ROOT,
             capture_output=True,
@@ -153,6 +156,9 @@ try:
             f"stderr={completed.stderr[-5000:]}"
         )
         assert OVERRIDES.read_bytes() == before_ephemeral, "ephemeral profile refresh mutated production overrides"
+        assert ephemeral_output.is_file(), "ephemeral profile refresh did not materialize sandbox override state"
+        ephemeral_data = json.loads(ephemeral_output.read_text(encoding="utf-8"))
+        assert "alpha" in (ephemeral_data.get("provider_capabilities") or {}), ephemeral_data
         updated_registry = json.loads(registry_path.read_text(encoding="utf-8"))
         assert any(row["canonical_id"] == "alpha" for row in updated_registry["candidates"])
 finally:
