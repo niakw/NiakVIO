@@ -40,32 +40,6 @@ from urllib.parse import urlsplit
 
 ROOT = Path(__file__).resolve().parents[1]
 
-# A French-only publication is not a subset of Global. Its canonical metadata
-# lives in this durable source, and regeneration must preserve those providers.
-FRANCE_ONLY_SOURCE = Path("vf/production-source.json")
-
-
-def france_only_rows(*, root: Path = ROOT) -> list[dict[str, Any]]:
-    path = root / FRANCE_ONLY_SOURCE
-    if not path.is_file():
-        return []
-    payload = json.loads(path.read_text(encoding="utf-8"))
-    rows = payload.get("scrapers") if isinstance(payload, dict) else None
-    if not isinstance(rows, list):
-        raise ValueError(f"{path}: scrapers must be a list")
-    seen: set[str] = set()
-    result: list[dict[str, Any]] = []
-    for row in rows:
-        if not isinstance(row, dict):
-            raise ValueError(f"{path}: invalid French-only row")
-        identity = str(row.get("id") or "").strip().casefold()
-        languages = normalized_declared_languages(row)
-        if not identity or identity in seen or not any(x.startswith("fr") for x in languages):
-            raise ValueError(f"{path}: duplicate, missing or non-French provider: {identity}")
-        seen.add(identity)
-        result.append(row)
-    return result
-
 URL_RE = re.compile(r"https?://[^\s'\"`<>]+", re.IGNORECASE)
 HTML_LANG_FR_RE = re.compile(
     r"<html\b[^>]*\blang\s*=\s*['\"]?fr(?:[-_][a-z]{2})?\b",
@@ -377,12 +351,6 @@ def build_manifest(
         if not observed_accepted and not declared_fr and not inferred_fr:
             continue
         entries.append(nested_entry(entry))
-    present = {str(entry.get("id") or "").casefold() for entry in source.get("scrapers", []) if isinstance(entry, dict)}
-    for french_row in france_only_rows(root=root):
-        canonical = str(french_row.get("id") or "").casefold()
-        if canonical in present:
-            raise ValueError(f"{canonical}: France-only entry duplicated in Global")
-        entries.append(nested_entry(french_row))
     return {
         "name": f"{source.get('name', 'NiakVIO')} — {name_suffix}",
         "version": source.get("version"),

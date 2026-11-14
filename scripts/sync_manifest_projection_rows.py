@@ -4,7 +4,7 @@ from __future__ import annotations
 import argparse, json
 from pathlib import Path
 from typing import Any
-from generate_language_manifests import build_no_anime_manifest, nested_entry, france_only_rows
+from generate_language_manifests import build_no_anime_manifest, nested_entry
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -18,11 +18,10 @@ def canonical(value: object) -> str:
 
 def synced_vf(root_manifest: dict[str, Any], current_vf: dict[str, Any]) -> dict[str, Any]:
     root_rows={canonical(row.get('id')):row for row in root_manifest.get('scrapers') or [] if isinstance(row,dict) and canonical(row.get('id'))}
-    french_only={canonical(row.get('id')):row for row in france_only_rows()}
     rows=[]
     for old in current_vf.get('scrapers') or []:
         if not isinstance(old,dict): continue
-        source=root_rows.get(canonical(old.get('id'))) or french_only.get(canonical(old.get('id')))
+        source=root_rows.get(canonical(old.get('id')))
         if source is None: raise SystemExit(f'VF projection contains provider absent from root: {old.get("id")}')
         rows.append(nested_entry(source))
     return {'name':f"{root_manifest.get('name','NiakVIO')} — VF uniquement",'version':root_manifest.get('version'),'scrapers':rows}

@@ -3,16 +3,11 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from generate_language_manifests import france_only_rows
 
 ROOT = Path(__file__).resolve().parents[1]
 main = json.loads((ROOT / "manifest.json").read_text(encoding="utf-8"))
 vf = json.loads((ROOT / "vf" / "manifest.json").read_text(encoding="utf-8"))
 main_by_id = {str(row.get("id") or "").casefold(): row for row in main.get("scrapers", [])}
-france_by_id = {str(row.get("id") or "").casefold(): row for row in france_only_rows()}
-if set(main_by_id) & set(france_by_id):
-    raise SystemExit("France-only provider must not exist in Global")
-main_by_id.update(france_by_id)
 
 functional_fields = (
     "id",

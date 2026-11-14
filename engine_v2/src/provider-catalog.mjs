@@ -29,17 +29,13 @@ export function buildCatalogFromPublished({ generalManifest, vfManifest }) {
   }
 
   const vfOrder = [];
-  const vfOnlyById = new Map();
   for (const scraper of vf.scrapers) {
     const canonicalId = canonicalProviderId(scraper.id);
     if (vfOrder.includes(canonicalId)) {
       throw new Error(`vf manifest contains duplicate provider id: ${scraper.id}`);
     }
     if (!generalById.has(canonicalId)) {
-      // French-only providers are first-class catalog entries, never synthetic Global rows.
-      vfOnlyById.set(canonicalId, normalizeProjectionScraper(scraper, "vf"));
-      vfOrder.push(canonicalId);
-      continue;
+      throw new Error(`vf provider is absent from general manifest: ${scraper.id}`);
     }
     const generalScraper = generalById.get(canonicalId);
     const normalizedVf = normalizeProjectionScraper(scraper, "vf");
@@ -62,10 +58,6 @@ export function buildCatalogFromPublished({ generalManifest, vfManifest }) {
       },
     };
   });
-
-  for (const [canonicalId, scraper] of vfOnlyById) {
-    providers.push({ canonicalId, scraper, projections: { general: false, vf: true } });
-  }
 
   const catalog = {
     schemaVersion: PROVIDER_CATALOG_SCHEMA_VERSION,
@@ -171,7 +163,7 @@ export function validateProviderCatalog(catalog) {
     if (!Array.isArray(row.scraper.disabledPlatforms) || row.scraper.disabledPlatforms.length !== 0) {
       throw new Error(`${canonicalId}: disabledPlatforms must exist and stay empty in the NiakVIO provider contract`);
     }
-    if (row.projections?.general !== true && row.projections?.vf !== true) throw new Error(`${canonicalId}: provider must belong to Global or France`);
+    if (row.projections?.general !== true) throw new Error(`${canonicalId}: every catalog provider must project to general`);
     byId.set(canonicalId, row);
   }
 
