@@ -762,9 +762,9 @@ def provider_route_is_identity_aware(route: Any) -> bool:
     # can refine a resolved title but cannot select the requested title.
     if re.search(r"\{(?:query|title|slug|tmdb_?id|imdb_?id|id)\}", text, re.I):
         return True
-    if re.search(r"/(?:search|recherche)(?:[/?#]|$)", text, re.I):
-        return True
-    if re.search(r"[?&](?:q|query|keyword|search|story)=", text, re.I):
+    # A bare /search page is navigation, not a content request. Search
+    # qualification requires the primary query to be present in the route.
+    if re.search(r"[?&](?:q|query|keyword|search|story)=\{query\}(?:&|#|$)", text, re.I):
         return True
     # WordPress-style ?s= is a title search only when discovery normalized it
     # to the primary query placeholder. ?s={season}&e={episode} is episodic
