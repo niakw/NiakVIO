@@ -320,6 +320,7 @@ def main() -> int:
             "dryRun": bool(args.dry_run),
         }
         write(args.output, payload)
+        print("PROVIDER_BULK_OFFLINE_ACTIVATION_BLOCKED " + json.dumps(blocked, ensure_ascii=False, sort_keys=True))
         raise RuntimeError(f"offline activation is atomic: {len(blocked)} provider(s) failed proof")
 
     payload = {
