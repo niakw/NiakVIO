@@ -23,8 +23,8 @@
   ],
   "counts": {
     "browser_challenge_persisted": 16,
-    "browser_content_reached": 5,
-    "browser_inconclusive": 2
+    "browser_content_reached": 6,
+    "browser_inconclusive": 1
   },
   "rows": [
     {
@@ -78,7 +78,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 14135
+      "durationMs": 19070
     },
     {
       "provider": "allwish",
@@ -131,7 +131,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 14166,
+      "durationMs": 18767,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_challenge_persisted",
@@ -212,7 +212,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 14654,
+      "durationMs": 19931,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_challenge_persisted",
@@ -935,7 +935,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 4062
+      "durationMs": 3151
     },
     {
       "provider": "flemmix",
@@ -988,30 +988,25 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 4132
+      "durationMs": 3673
     },
     {
       "provider": "kehflix",
       "lane": "anime",
-      "publicUrl": "https://kehflix.com/api/streams/episode",
+      "publicUrl": "https://kehflix.com/api/streams/tv",
       "host": "kehflix.com",
-      "path": "/api/streams/episode",
+      "path": "/api/streams/tv",
       "method": "GET",
       "fetchStatus": 403,
       "challenge": "cloudflare",
       "seedKind": null,
       "seedRoute": null,
-      "outcome": "browser_inconclusive",
-      "attemptCount": 2,
+      "outcome": "browser_content_reached",
+      "attemptCount": 1,
       "attempts": [
         {
           "attempt": 1,
-          "outcome": "browser_inconclusive",
-          "exitCode": 0
-        },
-        {
-          "attempt": 2,
-          "outcome": "browser_inconclusive",
+          "outcome": "browser_content_reached",
           "exitCode": 0
         }
       ],
@@ -1020,17 +1015,12 @@
         {
           "profile": "github-default-browser",
           "userAgent": null,
-          "outcome": "browser_inconclusive",
-          "attemptCount": 2,
+          "outcome": "browser_content_reached",
+          "attemptCount": 1,
           "attempts": [
             {
               "attempt": 1,
-              "outcome": "browser_inconclusive",
-              "exitCode": 0
-            },
-            {
-              "attempt": 2,
-              "outcome": "browser_inconclusive",
+              "outcome": "browser_content_reached",
               "exitCode": 0
             }
           ],
@@ -1039,16 +1029,18 @@
       ],
       "directHttpProfile": null,
       "okHttpJvmProfile": null,
-      "contentProfiles": [],
+      "contentProfiles": [
+        "github-default-browser"
+      ],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 2856
+      "durationMs": 15408
     },
     {
       "provider": "kehflix",
       "lane": "movie",
-      "publicUrl": "https://kehflix.com/title/movie/577922-verovanje",
+      "publicUrl": "https://kehflix.com/title/movie/76600-isikunijimas-2",
       "host": "kehflix.com",
-      "path": "/title/movie/577922-verovanje",
+      "path": "/title/movie/76600-isikunijimas-2",
       "method": "GET",
       "fetchStatus": 403,
       "challenge": "cloudflare",
@@ -1094,7 +1086,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 2278
+      "durationMs": 1636
     },
     {
       "provider": "kehflix",
@@ -1147,7 +1139,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 2369
+      "durationMs": 2307
     },
     {
       "provider": "mallumv",
@@ -1258,9 +1250,9 @@
     {
       "provider": "moviesmod",
       "lane": "movie",
-      "publicUrl": "https://links.modpro.blog/archives/65890",
+      "publicUrl": "https://links.modpro.blog/archives/5787",
       "host": "links.modpro.blog",
-      "path": "/archives/65890",
+      "path": "/archives/5787",
       "method": "GET",
       "fetchStatus": 403,
       "challenge": "cloudflare",
@@ -1306,14 +1298,14 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 4404
+      "durationMs": 2567
     },
     {
       "provider": "moviesmod",
       "lane": "tv",
-      "publicUrl": "https://episodes.modpro.blog/archives/53354",
+      "publicUrl": "https://episodes.modpro.blog/archives/132404",
       "host": "episodes.modpro.blog",
-      "path": "/archives/53354",
+      "path": "/archives/132404",
       "method": "GET",
       "fetchStatus": 403,
       "challenge": "cloudflare",
@@ -1359,7 +1351,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 3893
+      "durationMs": 2784
     },
     {
       "provider": "vidfast",
@@ -1733,7 +1725,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 3572,
+      "durationMs": 2511,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_challenge_persisted",

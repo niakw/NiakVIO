@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "sourceRunId": "43629759862",
-  "sourceTriggerSha": "91e0d2fa629b3c232a7be6fbcd3347891ed5b137",
-  "unresolvedProviderCount": 2,
+  "sourceRunId": "43632440487",
+  "sourceTriggerSha": "c4c21871bf7cd76973048530005c93955f9baa91",
+  "unresolvedProviderCount": 1,
   "dynamicVariantProviderCount": 1,
   "dynamicVariantProviders": [
     "papadustream"
@@ -15,7 +15,6 @@
     "4khdhub",
     "allanime",
     "allwish",
-    "anikototv",
     "anime-sama",
     "anime-ultime",
     "animekai",
@@ -24,26 +23,17 @@
     "animesultra",
     "animevost-fr",
     "animevostfr",
-    "castle",
     "coflix",
     "flemmix",
-    "french-manga",
     "hindmoviez",
-    "internet-archive",
     "kehflix",
     "kurage",
     "mallumv",
     "moviebox",
     "movieshunt",
     "moviesmod",
-    "mugiwarastream",
-    "neko-sama",
-    "papadustream",
     "persianstremio",
     "playimdb",
-    "purstream",
-    "sekai",
-    "streamzo",
     "uhdmovies",
     "vidfast",
     "vidlove",
@@ -56,7 +46,7 @@
     "yflix"
   ],
   "dynamicVariantFallbackUsed": true,
-  "groupCount": 2,
+  "groupCount": 1,
   "executionModel": {
     "default": "family/signature batch",
     "liveProbeConcurrency": "audit_provider_quick_yield ThreadPool",
@@ -64,33 +54,6 @@
     "providerLocalRepair": "exception path only"
   },
   "groups": [
-    {
-      "groupId": "transport|mixed_embed_resolver",
-      "repairScope": "transport",
-      "runtimeFamilies": [
-        "search-episode-embed"
-      ],
-      "capabilityStrategy": "mixed_embed_resolver",
-      "evidenceDepths": [
-        "lookup"
-      ],
-      "dominantIssues": [
-        "network_http_error"
-      ],
-      "harnessTransportClasses": [],
-      "transportSignature": "not-applicable",
-      "providerCount": 1,
-      "providers": [
-        "voiranime-rip"
-      ],
-      "action": "refresh transport authority before provider-local code changes",
-      "selectionAuthorities": [
-        "provider-census-status.json:brainCheckRequired"
-      ],
-      "dynamicVariantProviders": [],
-      "executionPolicy": "batch-first",
-      "providerLocalFallback": "only-after-shared-profile-failure"
-    },
     {
       "groupId": "variant-coverage|html_scraper",
       "repairScope": "variant-coverage",
