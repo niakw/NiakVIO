@@ -8,6 +8,7 @@ repository's authorized residential exit; the report records that transport.
 from __future__ import annotations
 
 import argparse
+import html
 import json
 import os
 import re
