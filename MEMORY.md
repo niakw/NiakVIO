@@ -1,3 +1,7 @@
+## 2026-11-14 — Internet Archive bulk transaction retry requested on provider-scoped Lego
+
+- Bump only the onboarding request revision after the ownership fix so PROVIDER - Bulk Onboarding executes the same single Internet Archive candidate on the new bytes. Candidate scope/types/origins/rights policy are unchanged; no additional workbook row is introduced by the retry.
+
 ## 2026-11-14 — Open-archive Lego ownership corrected without weakening v3 isolation
 
 - Bulk onboarding run 43595865731 on 3b372980 failed before publication exactly at v3 Lego ownership: internet-archive could not use a generic MANAGED_FIX_ID outside PROVIDER.INTERNET-ARCHIVE.*. This is a valid isolation barrier and must remain strict.
