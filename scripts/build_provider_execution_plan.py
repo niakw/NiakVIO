@@ -98,6 +98,7 @@ def select_batch_plan(
         str(value).strip().casefold()
         for value in [
             *(status.get("repairQueue") or []),
+            *(status.get("authorityRediscoveryQueue") or []),
             *(status.get("environmentQueue") or []),
             *(status.get("targetedTransportBlockedQueue") or []),
         ]
