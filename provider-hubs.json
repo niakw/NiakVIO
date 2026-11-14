@@ -401,7 +401,7 @@
     "anime-sama": {
       "id": "anime-sama",
       "name": "Anime-Sama",
-      "manifest_status": "Actif",
+      "manifest_status": "Désactivé",
       "category": "Francophone / Anime",
       "hub": "https://anime-sama.wiki/",
       "direct": "https://animes-sama.fr/",
@@ -432,12 +432,13 @@
       "resolver": "official_outbound",
       "allowed_terminal_host_patterns": [
         "^animes?-sama[a-z0-9-]*\\.[a-z0-9-]{2,20}$"
-      ]
+      ],
+      "activation_eligible": false
     },
     "voiranime": {
       "id": "voiranime",
       "name": "VoirAnime",
-      "manifest_status": "Actif",
+      "manifest_status": "Désactivé",
       "category": "Francophone / Anime",
       "hub": "https://voiranime.org.uk/",
       "direct": "https://voir-anime.to/",
@@ -478,7 +479,8 @@
       ],
       "direct_authority": "explicit_current",
       "direct_authority_source": "current-live-provider-catalogue",
-      "direct_authority_observed_at": "2026-09-19"
+      "direct_authority_observed_at": "2026-09-19",
+      "activation_eligible": false
     },
     "movix": {
       "id": "movix",
@@ -668,7 +670,7 @@
     "playimdb": {
       "id": "playimdb",
       "name": "PlayIMDb",
-      "manifest_status": "Actif",
+      "manifest_status": "Désactivé",
       "category": "International",
       "hub": "https://playimdb.domains/",
       "direct": null,
@@ -696,7 +698,8 @@
           "purpose": "Fallback discovery when curated sources fail"
         }
       ],
-      "search_confirmation_runs": 2
+      "search_confirmation_runs": 2,
+      "activation_eligible": false
     },
     "desiflix": {
       "id": "desiflix",
@@ -1529,7 +1532,7 @@
     "kurage": {
       "id": "kurage",
       "name": "Kurage",
-      "manifest_status": "Actif",
+      "manifest_status": "Désactivé",
       "category": "International / Anime",
       "hub": null,
       "direct": "https://kurage.live/",
@@ -1555,7 +1558,8 @@
           "purpose": "Fallback discovery when curated sources fail"
         }
       ],
-      "search_confirmation_runs": 2
+      "search_confirmation_runs": 2,
+      "activation_eligible": false
     },
     "moviesmod": {
       "id": "moviesmod",

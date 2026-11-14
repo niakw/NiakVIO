@@ -17,7 +17,6 @@
     "4khdhub",
     "allwish",
     "anikototv",
-    "anime-sama",
     "animesalt",
     "animesama-co",
     "animesultra",
@@ -28,7 +27,6 @@
     "french-manga",
     "hindmoviez",
     "kehflix",
-    "kurage",
     "moviebox",
     "movieshunt",
     "moviesmod",
@@ -36,12 +34,10 @@
     "neko-sama",
     "papadustream",
     "persianstremio",
-    "playimdb",
     "purstream",
     "sekai",
     "streamzo",
     "vidfast",
-    "voiranime",
     "voiranime-homes",
     "voiranime-rip",
     "vostfree",
@@ -49,31 +45,42 @@
   ],
   "repairBlocked": [
     "allanime",
+    "anime-sama",
     "anime-ultime",
     "animekai",
     "animevost-fr",
     "asiaflix",
+    "kurage",
     "mallumv",
+    "playimdb",
     "rivestream",
     "sflix",
     "uhdmovies",
     "vidlove",
     "vidrock",
     "vidsrc2",
+    "voiranime",
     "yflix"
   ],
-  "disabledNow": [],
+  "disabledNow": [
+    "anime-sama",
+    "kurage",
+    "playimdb",
+    "voiranime"
+  ],
   "providers": [
     {
       "provider": "anime-sama",
-      "action": "KEEP_ROUTE_AUTHORITY",
-      "repairEligible": true,
-      "confidence": "high",
-      "authorityClass": "hub-or-redirect",
+      "action": "DISABLE_ARCHITECTURE_REGRESSION",
+      "repairEligible": false,
+      "confidence": "current-census",
+      "authorityClass": "current-architecture-regression",
       "failureCount": 0,
       "reasons": [
-        "authoritative_route_source"
-      ]
+        "authoritative_route_source",
+        "current_census_regression_provider"
+      ],
+      "appliedDisableReason": "auto_off_current_architecture_regression"
     },
     {
       "provider": "purstream",
@@ -277,15 +284,17 @@
     },
     {
       "provider": "kurage",
-      "action": "KEEP_DIRECT",
-      "repairEligible": true,
-      "confidence": "medium",
-      "authorityClass": "direct",
+      "action": "DISABLE_ARCHITECTURE_REGRESSION",
+      "repairEligible": false,
+      "confidence": "current-census",
+      "authorityClass": "current-architecture-regression",
       "failureCount": 0,
       "reasons": [
         "curated_direct",
-        "existing_positive_route_prior"
-      ]
+        "existing_positive_route_prior",
+        "current_census_regression_provider"
+      ],
+      "appliedDisableReason": "auto_off_current_architecture_regression"
     },
     {
       "provider": "moviesmod",
@@ -334,17 +343,19 @@
     },
     {
       "provider": "playimdb",
-      "action": "KEEP_BACKEND",
-      "repairEligible": true,
-      "confidence": "high",
-      "authorityClass": "api-or-backend",
+      "action": "DISABLE_ARCHITECTURE_REGRESSION",
+      "repairEligible": false,
+      "confidence": "current-census",
+      "authorityClass": "current-architecture-regression",
       "failureCount": 0,
       "backendUrls": [
         "https://streamdata.vaplayer.ru"
       ],
       "reasons": [
-        "structured_backend_authority"
-      ]
+        "structured_backend_authority",
+        "current_census_regression_provider"
+      ],
+      "appliedDisableReason": "auto_off_current_architecture_regression"
     },
     {
       "provider": "sekai",
@@ -394,14 +405,16 @@
     },
     {
       "provider": "voiranime",
-      "action": "KEEP_ROUTE_AUTHORITY",
-      "repairEligible": true,
-      "confidence": "high",
-      "authorityClass": "hub-or-redirect",
+      "action": "DISABLE_ARCHITECTURE_REGRESSION",
+      "repairEligible": false,
+      "confidence": "current-census",
+      "authorityClass": "current-architecture-regression",
       "failureCount": 0,
       "reasons": [
-        "authoritative_route_source"
-      ]
+        "authoritative_route_source",
+        "current_census_regression_provider"
+      ],
+      "appliedDisableReason": "auto_off_current_architecture_regression"
     },
     {
       "provider": "voiranime-homes",
