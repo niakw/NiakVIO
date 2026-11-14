@@ -5,6 +5,9 @@ from pathlib import Path
 
 ROOT=Path(__file__).resolve().parents[1]
 script=ROOT/"scripts/build_disabled_provider_recovery_stage.py"
+workflow=(ROOT/".github/workflows/brain-disabled-recovery-lab.yml").read_text(encoding="utf-8")
+assert "group: niakvio-brain-disabled-recovery-lab" in workflow
+assert "cancel-in-progress: true" in workflow
 queue=json.loads((ROOT/"automation/provider-disabled-recovery-queue.json").read_text(encoding="utf-8"))
 assert queue.get("proofAuthority") is False
 assert queue.get("executionAuthority") is False
