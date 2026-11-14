@@ -151,7 +151,7 @@ jobs:
         run: |
           set -euo pipefail
           python scripts/discover_candidates.py             --stage staging-disabled-recovery-reconstruction             --clean-reconstruction             --provider "$PROVIDER"
-          python scripts/build_provider_runtime_profiles.py             --stage staging-disabled-recovery-reconstruction             --apply-stage
+          python scripts/build_provider_runtime_profiles.py             --stage staging-disabled-recovery-reconstruction             --apply-stage             --provider "$PROVIDER"             --ephemeral-overrides
           python scripts/normalize_terminal_quarantine_stage.py             --stage staging-disabled-recovery-reconstruction
           python scripts/validate_override_pipeline.py             --stage staging-disabled-recovery-reconstruction
           python - <<'PY'
