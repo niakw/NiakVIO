@@ -61,13 +61,13 @@ jobs:
   shard:
     needs: prepare
     if: ${{ needs.prepare.outputs.should_run == 'true' }}
-    name: Route discovery shard ${{ matrix.shard }} of 8
+    name: Route discovery shard ${{ matrix.shard }} of 16
     runs-on: ubuntu-latest
     timeout-minutes: 35
     strategy:
       fail-fast: false
       matrix:
-        shard: [0, 1, 2, 3, 4, 5, 6, 7]
+        shard: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
     env:
       TS_OAUTH_CLIENT_ID: ${{ secrets.TS_OAUTH_CLIENT_ID }}
       TS_AUDIENCE: ${{ secrets.TS_AUDIENCE }}
@@ -131,7 +131,7 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p automation
-          python scripts/probe_bulk_provider_routes.py             --request .github/provider-onboarding/batch.json             --output "automation/provider-bulk-route-discovery-shard-${{ matrix.shard }}.json"             --shard-count 8             --shard-index "${{ matrix.shard }}"             --timeout 8             --max-chunks 8             --max-runtime-chunks 8             --provider-timeout 140
+          python scripts/probe_bulk_provider_routes.py             --request .github/provider-onboarding/batch.json             --output "automation/provider-bulk-route-discovery-shard-${{ matrix.shard }}.json"             --shard-count 16             --shard-index "${{ matrix.shard }}"             --timeout 8             --max-chunks 8             --max-runtime-chunks 8             --provider-timeout 140
 
       - name: Upload route-discovery shard
         if: always()
@@ -176,10 +176,10 @@ jobs:
             echo "No route-discovery shard artifacts were produced" >&2
             exit 1
           fi
-          if [ "${#files[@]}" -lt 8 ]; then
-            echo "Partial route-discovery merge: ${#files[@]}/8 shard artifacts; missing-shard candidates stay deferred" >&2
+          if [ "${#files[@]}" -lt 16 ]; then
+            echo "Partial route-discovery merge: ${#files[@]}/16 shard artifacts; missing-shard candidates stay deferred" >&2
           fi
-          python scripts/apply_bulk_provider_route_discovery.py "${files[@]}"             --expected-shards 8             --request .github/provider-onboarding/batch.json             --evidence automation/provider-bulk-route-discovery-latest.json             --output-request .github/provider-onboarding/batch.json
+          python scripts/apply_bulk_provider_route_discovery.py "${files[@]}"             --expected-shards 16             --request .github/provider-onboarding/batch.json             --evidence automation/provider-bulk-route-discovery-latest.json             --output-request .github/provider-onboarding/batch.json
           cp automation/provider-bulk-route-discovery-latest.json /tmp/provider-bulk-route-discovery-latest.json
           cp .github/provider-onboarding/batch.json /tmp/provider-bulk-route-next-batch.json
 
