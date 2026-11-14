@@ -9,6 +9,7 @@ ROOT=Path(__file__).resolve().parents[1]
 script=ROOT/"scripts/stage_provider_batch.py"
 sys.path.insert(0,str(ROOT/"scripts"))
 from add_provider import staged_existing_entry, normalized_scope, relocate_bulk_pending_artifacts
+from stage_provider_batch import safe_pending_restage_ids
 
 with tempfile.TemporaryDirectory() as td:
     td=Path(td)
@@ -106,3 +107,8 @@ with tempfile.TemporaryDirectory(prefix="niakvio-bulk-pending-path-") as td:
     assert (root/"provider-disabled/provider-bases/demo--base--abc.js").read_bytes()==b"base"
 
 print("Bulk provider onboarding dry-run + Global/France-only scope contract passed")
+
+pending_manifest={"scrapers":[{"id":"pending-demo","enabled":False,"filename":"provider-disabled/pending-demo.js"},{"id":"disabled-demo","enabled":False,"filename":"provider-disabled/disabled-demo.js"},{"id":"active-demo","enabled":True,"filename":"providers/active-demo.js"}]}
+pending_provenance={"providers":{"pending-demo":{"activation_mode":"bulk_onboarding_pending"},"disabled-demo":{"activation_mode":"disabled_retained"},"active-demo":{"activation_mode":"bulk_onboarding_pending"}}}
+assert safe_pending_restage_ids(pending_manifest,{"scrapers":[]},pending_provenance)=={"pending-demo"}
+print("Bulk pending restage authority is fail-closed outside inactive onboarding identities")

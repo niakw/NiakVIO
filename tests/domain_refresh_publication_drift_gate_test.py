@@ -19,6 +19,10 @@ safe=[
     "A\tautomation/hosted-repair-evidence/42364560525-http-observation.json",
     "A\tautomation/hosted-repair-evidence/42364560525-mutations.json",
     "A\tautomation/hosted-repair-evidence/42364560525-player-markup.json",
+    "A\tautomation/provider-onboarding-pending-census-43598921818.json",
+    "A\tautomation/provider-onboarding-pending-status-43598921818.json",
+    "M\tautomation/provider-onboarding-pending-census-latest.json",
+    "M\tautomation/provider-onboarding-pending-status-latest.json",
 ]
 assert gate.classify_drift(safe) == (True, [])
 assert gate.classify_drift(["automation/provider-census-status.json"]) == (True, [])

@@ -61,7 +61,9 @@ with tempfile.TemporaryDirectory() as td:
     }),encoding="utf-8")
     old={name:getattr(mod,name) for name in ("MANIFEST","CATALOG","OVERRIDES","PROVENANCE","HUBS","STATUS","OUTPUT")}
     old_root=mod.ROOT
+    old_digest=mod.pending_artifact_digest
     mod.ROOT=td
+    mod.pending_artifact_digest=lambda path: hashlib.sha256(path.read_bytes()).hexdigest()
     for name,value in paths.items(): setattr(mod,name,value)
     argv=sys.argv[:]
     sys.argv=[str(module_path)]
@@ -71,6 +73,7 @@ with tempfile.TemporaryDirectory() as td:
         sys.argv=argv
         for name,value in old.items(): setattr(mod,name,value)
         mod.ROOT=old_root
+        mod.pending_artifact_digest=old_digest
 
     activation=json.loads(paths["OUTPUT"].read_text(encoding="utf-8"))
     manifest=json.loads(paths["MANIFEST"].read_text(encoding="utf-8"))

@@ -28,6 +28,8 @@ SAFE_FILES = {
     "automation/provider-census-proof-history.json",
     "automation/provider-repair-batch-plan-latest.json",
     "automation/provider-waf-browser-session-latest.json",
+    "automation/provider-onboarding-pending-census-latest.json",
+    "automation/provider-onboarding-pending-status-latest.json",
 }
 
 # Timestamped census/WAF session artifacts are evidence only. Never accept a
@@ -35,6 +37,8 @@ SAFE_FILES = {
 SAFE_ARTIFACT_PATTERNS = (
     re.compile(r"^automation/provider-census-sharded-[0-9]{8,20}\.json$"),
     re.compile(r"^automation/provider-waf-browser-session-[0-9]{8,20}\.json$"),
+    re.compile(r"^automation/provider-onboarding-pending-census-[0-9]{8,20}\.json$"),
+    re.compile(r"^automation/provider-onboarding-pending-status-[0-9]{8,20}\.json$"),
 )
 
 # Each retained hosted JSON is a source-SHA-qualified, immutable experiment.

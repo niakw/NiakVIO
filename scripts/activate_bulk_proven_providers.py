@@ -9,6 +9,8 @@ import re
 from pathlib import Path
 from typing import Any
 
+from provider_v3_minimizer import minimize_text, validate_transform
+
 ROOT=Path(__file__).resolve().parents[1]
 MANIFEST=ROOT/"manifest.json"
 CATALOG=ROOT/"provider_catalog.json"
@@ -29,6 +31,17 @@ def write(path:Path, value:Any)->None:
 
 def norm(value:Any)->str:
     return re.sub(r"[^a-z0-9._-]+","-",str(value or "").strip().casefold()).strip("-")
+
+
+def pending_artifact_digest(path:Path)->str:
+    if not path.is_file():
+        raise RuntimeError(f"missing pending artifact: {path}")
+    text=path.read_text(encoding="utf-8")
+    result=minimize_text(text)
+    validate_transform(text,result.text)
+    if result.text != text:
+        raise RuntimeError("pending artifact is not provider-v3 minimizer fixed-point")
+    return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
 def _move_exact(source:Path,target:Path,*,dry_run:bool=False)->None:
@@ -64,6 +77,12 @@ def restore_pending_artifacts(
         raise RuntimeError(f"{pid}: pending ProviderBase reference invalid: {base_relative}")
     base_target=(ROOT/base_relative).resolve()
     base_source=(ROOT/"provider-disabled"/"provider-bases"/base_target.name).resolve()
+    if not source.is_file() or not base_source.is_file():
+        raise RuntimeError(f"{pid}: pending provider/base artifact missing")
+    if target.exists() and source.read_bytes()!=target.read_bytes():
+        raise RuntimeError(f"activation artifact collision: {target}")
+    if base_target.exists() and base_source.read_bytes()!=base_target.read_bytes():
+        raise RuntimeError(f"activation artifact collision: {base_target}")
     _move_exact(source,target,dry_run=dry_run)
     _move_exact(base_source,base_target,dry_run=dry_run)
     active_relative=target.relative_to(ROOT).as_posix()
@@ -150,17 +169,26 @@ def main()->int:
         if not isinstance(manifest_row,dict) or not isinstance(patch,dict) or not isinstance(prov,dict):
             blocked.append({"provider":pid,"reason":"canonical_provider_state_missing"})
             continue
+        filename=str(manifest_row.get("filename") or "").replace("../","",1)
+        pending_path=(ROOT/filename).resolve()
         try:
-            restore_pending_artifacts(pid,manifest_row,prov,dry_run=args.dry_run)
+            pending_sha=pending_artifact_digest(pending_path)
+        except Exception as exc:
+            blocked.append({"provider":pid,"reason":"pending_artifact_not_fixed_point","detail":str(exc)})
+            continue
+        recorded_sha=str(prov.get("sha256") or "").strip().casefold()
+        if len(recorded_sha)==64 and recorded_sha!=pending_sha:
+            blocked.append({"provider":pid,"reason":"pending_artifact_hash_mismatch"})
+            continue
+        try:
+            active_relative=restore_pending_artifacts(pid,manifest_row,prov,dry_run=args.dry_run)
         except RuntimeError as exc:
             blocked.append({"provider":pid,"reason":"pending_artifact_state_invalid","detail":str(exc)})
             continue
         active_path=ROOT/active_relative
-        active_sha=hashlib.sha256(active_path.read_bytes()).hexdigest()
-        recorded_sha=str(prov.get("sha256") or "").strip().casefold()
-        if len(recorded_sha)==64 and recorded_sha!=active_sha:
-            blocked.append({"provider":pid,"reason":"pending_artifact_hash_mismatch"})
-            continue
+        active_sha=pending_sha if args.dry_run else hashlib.sha256(active_path.read_bytes()).hexdigest()
+        if active_sha!=pending_sha:
+            raise RuntimeError(f"{pid}: activation changed provider bytes after proof")
         manifest_row["enabled"]=True
         patch.setdefault("manifest_overrides",{})["enabled"]=True
         capability=capabilities.get(pid)

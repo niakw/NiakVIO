@@ -1,3 +1,11 @@
+## 2026-11-14 — First new provider passes fresh terminal proof; exact-byte activation convergence
+
+- Pending census 43598921818 on 2f8bd2c7 produced fresh accepted playback for `internet-archive`: FULL OK, testedThisRun=true, currentVerifiedLanes=[movie], brainCheckRequired=false, repairEligible=false, acceptedPlayableProviderCount=1. Canonical production remains the separately proven 13 active providers until activation.
+- The exact tested pending artifact is pre-finalizer/multiline, so it is not eligible for production activation. Bulk onboarding v10 restages only this same inactive pending identity through the corrected minimizer pipeline; active/lifecycle-disabled replacements still fail closed without explicit replacement authority. The new pending bytes must be replayed again.
+- Activation now requires minimizer fixed-point before moving bytes, checks provenance SHA before any move, validates provider+base before moving either, and asserts the post-move SHA is identical. It never calls reapply_published_overrides after pending proof. It converges from successful sharded-census/finalize workflow_run events because GITHUB_TOKEN evidence commits do not reliably trigger push workflows.
+- Isolated pending census/status archives are classified as evidence-only drift for release races. They do not alter provider bytes/manifests/authority and do not authorize activation by themselves. The current-catalogue authority test now loads scripts/current_provider_scope consistently.
+- GitHub-hosted transport failures remain distinct from provider failures; stronger residential/browser/native proof must win the environment/harness classification. No WAF bypass is added.
+
 ## 2026-11-14 — Bulk onboarding fixed-point + lifecycle harness repair; Internet Archive replay retriggered
 
 - On ccf2d146, Workflow Gate 43598383415, Non-Regression 43598383288, Branch Maintenance 43598383380 and CodeQL 43598383338 succeeded. Verify & Publish 43598383359 failed only at provider_v3_minimizer_published_test: all 13 active provider bundles were no longer minimizer fixed-points. Root cause: Bulk Onboarding called reapply_published_overrides.py but omitted the accepted-release minimizer/fixed-point sequence, so staging a pending provider could republish unrelated active bundles in readable/non-final form.

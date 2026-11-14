@@ -15,7 +15,7 @@ for token in (
     "scripts/activate_bulk_proven_providers.py",
     "automation/provider-bulk-activation-latest.json",
     "provider: bulk activate $ACTIVATION_COUNT full-ok",
-    "scripts/reapply_published_overrides.py",
+    "tests/provider_v3_minimizer_published_test.py",
     "scripts/validate_published_provider_config.py",
     "tests/production_active_provider_freshness_test.py",
     "provider_catalog.json",
@@ -61,3 +61,11 @@ assert "pending_artifact_hash_mismatch" in script
 assert "onboarding-pending-status" in script
 assert "automation/provider-onboarding-pending-status-latest.json" in sharded
 print("Bulk activation is byte-bound to isolated pending census proof")
+
+assert "workflow_run:" in activation
+assert "Provider Census - Sharded" in activation
+assert "CORE - Finalize Accepted Release" in activation
+assert "github.event.workflow_run.conclusion == 'success'" in activation
+assert "scripts/reapply_published_overrides.py" not in activation
+assert "Never rebuild/reapply provider code here" in activation
+print("Bulk activation preserves exact replayed pending bytes and converges from workflow_run")

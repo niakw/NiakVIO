@@ -46,9 +46,26 @@ def load_requests(path:Path)->list[dict[str,Any]]:
     return out
 
 
+def safe_pending_restage_ids(manifest:dict[str,Any], vf_manifest:dict[str,Any], provenance:dict[str,Any])->set[str]:
+    prov=provenance.get("providers") if isinstance(provenance.get("providers"),dict) else {}
+    result=set()
+    for source in (manifest,vf_manifest):
+        for row in source.get("scrapers") or []:
+            if not isinstance(row,dict):
+                continue
+            pid=add_provider.norm_id(row.get("id"))
+            meta=prov.get(pid) if isinstance(prov.get(pid),dict) else {}
+            filename=str(row.get("filename") or "").replace("../","",1)
+            if pid and row.get("enabled") is False and filename.startswith("provider-disabled/") and str(meta.get("activation_mode") or "") in {"bulk_onboarding_pending","onboarding_pending"}:
+                result.add(pid)
+    return result
+
+
 def preflight(rows:list[dict[str,Any]], allow_replace_existing:bool)->dict[str,Any]:
     manifest=add_provider.load_json(add_provider.MANIFEST,{})
     vf_manifest=add_provider.load_json(add_provider.VF_MANIFEST,{"scrapers":[]})
+    provenance=add_provider.load_json(add_provider.PROVENANCE,{"providers":{}})
+    safe_pending_restage=safe_pending_restage_ids(manifest,vf_manifest,provenance)
     existing={
         add_provider.norm_id(row.get("id"))
         for row in manifest.get("scrapers") or []
@@ -71,8 +88,8 @@ def preflight(rows:list[dict[str,Any]], allow_replace_existing:bool)->dict[str,A
             raise ValueError(f"{pid}: Global provider cannot be duplicated as France-only")
         if scope=="global" and pid in france_only:
             raise ValueError(f"{pid}: France-only provider cannot be duplicated in Global")
-        if replace and not allow_replace_existing:
-            raise ValueError(f"{pid}: replace_existing requires --allow-replace-existing in bulk mode")
+        if replace and not allow_replace_existing and pid not in safe_pending_restage:
+            raise ValueError(f"{pid}: replace_existing requires --allow-replace-existing unless replacing the same disabled pending onboarding identity")
         if pid in target_existing and not replace:
             raise ValueError(f"{pid}: provider already exists in {scope} scope; bulk import refuses silent overwrite")
         (replacing if pid in target_existing else new).append(pid)
@@ -89,6 +106,7 @@ def preflight(rows:list[dict[str,Any]], allow_replace_existing:bool)->dict[str,A
         "strategies":dict(sorted(strategies.items())),
         "declaredTypeCounts":dict(sorted(type_counts.items())),
         "scopeCounts":dict(sorted(scope_counts.items())),
+        "safePendingRestageProviders":sorted(pid for pid in replacing if pid in safe_pending_restage),
     }
 
 

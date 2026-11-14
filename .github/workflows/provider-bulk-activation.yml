@@ -1,6 +1,13 @@
 name: PROVIDER - Bulk Activation
 
 on:
+  workflow_dispatch:
+  workflow_run:
+    workflows:
+      - Provider Census - Sharded
+      - CORE - Finalize Accepted Release
+    types:
+      - completed
   push:
     branches: [main]
     paths:
@@ -15,6 +22,7 @@ concurrency:
 
 jobs:
   activate:
+    if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -53,12 +61,14 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          python scripts/reapply_published_overrides.py
+          # Activation must preserve the exact provider JS bytes that earned pending FULL proof.
+          # Never rebuild/reapply provider code here.
           python scripts/generate_language_manifests.py
           node engine_v2/scripts/bootstrap-provider-catalog.mjs
           node engine_v2/scripts/render-manifests-from-catalog.mjs
           python scripts/provider_base_store.py repair-legacy
           python scripts/validate_published_provider_config.py
+          python tests/provider_v3_minimizer_published_test.py
           python tests/provider_bulk_activation_test.py
           python tests/production_active_provider_freshness_test.py
           python tests/provider_js_lego_ownership_test.py
