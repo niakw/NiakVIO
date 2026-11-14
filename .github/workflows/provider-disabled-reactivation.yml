@@ -1,0 +1,199 @@
+name: PROVIDER - Disabled Reactivation
+
+on:
+  workflow_run:
+    workflows: ["BRAIN - Disabled Provider Recovery Lab"]
+    types: [completed]
+  push:
+    paths:
+      - '.github/triggers/provider-disabled-reactivation.json'
+      - '.github/workflows/provider-disabled-reactivation.yml'
+      - 'scripts/reactivate_disabled_from_recovery.py'
+      - 'tests/provider_disabled_reactivation_contract_test.py'
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: provider-disabled-reactivation
+  cancel-in-progress: false
+
+jobs:
+  reactivate:
+    if: ${{ github.event_name == 'push' || github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: main
+          fetch-depth: 0
+          persist-credentials: true
+
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0
+        with:
+          python-version: '3.12'
+
+      - id: source
+        name: Resolve successful recovery run
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EVENT_NAME: ${{ github.event_name }}
+          WORKFLOW_RUN_ID: ${{ github.event.workflow_run.id }}
+          WORKFLOW_HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ "$EVENT_NAME" = "workflow_run" ]; then
+            run_id="$WORKFLOW_RUN_ID"
+            expected_head="$WORKFLOW_HEAD_SHA"
+            requested_provider=""
+          else
+            readarray -t fields < <(python - <<'PY'
+          import json
+          from pathlib import Path
+          d=json.loads(Path('.github/triggers/provider-disabled-reactivation.json').read_text(encoding='utf-8'))
+          print(str(d.get('runId') or '').strip())
+          print(str(d.get('headSha') or '').strip())
+          print(str(d.get('provider') or '').strip().casefold().replace('_','-'))
+          PY
+            )
+            run_id="${fields[0]}"
+            expected_head="${fields[1]}"
+            requested_provider="${fields[2]}"
+          fi
+          test -n "$run_id"
+          meta="$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$run_id")"
+          conclusion="$(python -c 'import json,sys; print(json.load(sys.stdin).get("conclusion") or "")' <<<"$meta")"
+          actual_head="$(python -c 'import json,sys; print(json.load(sys.stdin).get("head_sha") or "")' <<<"$meta")"
+          workflow_name="$(python -c 'import json,sys; print(json.load(sys.stdin).get("name") or "")' <<<"$meta")"
+          test "$conclusion" = "success"
+          test "$workflow_name" = "BRAIN - Disabled Provider Recovery Lab"
+          if [ -n "$expected_head" ]; then
+            test "$actual_head" = "$expected_head"
+          fi
+          echo "run_id=$run_id" >> "$GITHUB_OUTPUT"
+          echo "head_sha=$actual_head" >> "$GITHUB_OUTPUT"
+          echo "requested_provider=$requested_provider" >> "$GITHUB_OUTPUT"
+          echo "FIELD_DISABLED_REACTIVATION_SOURCE run=$run_id head=$actual_head"
+
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
+        with:
+          pattern: brain-disabled-recovery-*-${{ steps.source.outputs.run_id }}
+          path: recovery-proof
+          merge-multiple: true
+          run-id: ${{ steps.source.outputs.run_id }}
+          github-token: ${{ github.token }}
+          repository: ${{ github.repository }}
+
+      - id: provider
+        name: Resolve proof provider
+        env:
+          REQUESTED: ${{ steps.source.outputs.requested_provider }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          provider="$(python - <<'PY'
+          import json
+          from pathlib import Path
+          p=Path('recovery-proof/brain-disabled-recovery/brain-llm/recovery-disposition.json')
+          d=json.loads(p.read_text(encoding='utf-8'))
+          print(str(d.get('provider') or '').strip().casefold().replace('_','-'))
+          PY
+          )"
+          test -n "$provider"
+          if [ -n "$REQUESTED" ]; then
+            test "$provider" = "$REQUESTED"
+          fi
+          echo "provider=$provider" >> "$GITHUB_OUTPUT"
+          echo "FIELD_DISABLED_REACTIVATION_PROVIDER provider=$provider"
+
+      - name: Validate proof-bound reactivation contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m py_compile scripts/reactivate_disabled_from_recovery.py
+          python tests/provider_disabled_reactivation_contract_test.py
+          python scripts/reactivate_disabled_from_recovery.py \
+            --provider "${{ steps.provider.outputs.provider }}" \
+            --artifact-root recovery-proof \
+            --proof-run-id "${{ steps.source.outputs.run_id }}" \
+            --proof-head-sha "${{ steps.source.outputs.head_sha }}" \
+            --receipt /tmp/reactivation-validation.json
+
+      - name: Apply same-byte lifecycle reactivation
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/reactivate_disabled_from_recovery.py \
+            --provider "${{ steps.provider.outputs.provider }}" \
+            --artifact-root recovery-proof \
+            --proof-run-id "${{ steps.source.outputs.run_id }}" \
+            --proof-head-sha "${{ steps.source.outputs.head_sha }}" \
+            --apply \
+            --receipt automation/provider-disabled-reactivation-latest.json
+          python tests/provider_disabled_lifecycle_contract_test.py
+          python tests/provider_language_manifest_vf_only_test.py
+          python tests/provider_authority_current_catalogue_test.py
+          python tests/production_active_provider_freshness_test.py
+          python scripts/audit_provider_v3_static.py
+          git diff --check
+
+      - name: Queue exact provider replay
+        env:
+          PROVIDER: ${{ steps.provider.outputs.provider }}
+          SOURCE_RUN: ${{ steps.source.outputs.run_id }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json, os
+          from pathlib import Path
+          p=Path('.github/triggers/provider-census-sharded.json')
+          d=json.loads(p.read_text(encoding='utf-8')) if p.is_file() else {}
+          d.update({
+            'schemaVersion': 2,
+            'scope': 'unresolved',
+            'reason': 'Targeted post-reactivation replay for exact disabled-recovery bytes',
+            'validation': 'post-disabled-reactivation-exact-byte',
+            'source': 'provider-disabled-reactivation',
+            'targetProviders': [os.environ['PROVIDER']],
+            'allowPendingTargets': False,
+            'requiredEvidence': 'Terminal replay of reactivated exact bytes; identity/playback proof must remain contradiction-free before broader cohort expansion',
+            'reactivationSourceRun': os.environ['SOURCE_RUN'],
+            'retryRevision': int(d.get('retryRevision') or 0) + 1,
+          })
+          p.write_text(json.dumps(d,indent=2,ensure_ascii=False)+'\n',encoding='utf-8')
+          PY
+
+      - name: Commit proof-bound reactivation
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PROVIDER: ${{ steps.provider.outputs.provider }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add manifest.json vf/manifest.json no-anime/manifest.json vf-no-anime/manifest.json \
+            manifest-hub46.json native-hub46/manifest.json provider_catalog.json provider-overrides.json \
+            automation/provider-disabled-lifecycle.json automation/provider-disabled-reactivation-ledger.json \
+            automation/provider-disabled-reactivation-latest.json automation/provider-v3-static-knowledge.json \
+            provider-v3-materialization.json providers provider-disabled provider-bases \
+            .github/triggers/provider-census-sharded.json
+          git diff --cached --check
+          if git diff --cached --quiet; then
+            echo "FIELD_DISABLED_REACTIVATION_NO_CHANGE provider=$PROVIDER"
+            exit 0
+          fi
+          git commit -m "provider: reactivate $PROVIDER from exact recovery proof"
+          base="$(git rev-parse HEAD^)"
+          git fetch origin main
+          remote="$(git rev-parse origin/main)"
+          if [ "$remote" != "$base" ]; then
+            echo "FIELD_DISABLED_REACTIVATION_SUPERSEDED base=$base remote=$remote" >&2
+            exit 1
+          fi
+          git push origin HEAD:main
+          echo "FIELD_DISABLED_REACTIVATION_PUBLISHED provider=$PROVIDER sha=$(git rev-parse HEAD)"
