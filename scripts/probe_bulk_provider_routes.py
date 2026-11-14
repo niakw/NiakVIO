@@ -107,6 +107,24 @@ def _template_query(query: str, fixture: dict[str, Any]) -> str | None:
     )
 
 
+def _hardcoded_content_id_mismatch(path: str, fixture: dict[str, Any]) -> bool:
+    """Reject detail/player paths pinned to another content identity.
+
+    A query placeholder elsewhere in the URL must never make a fixed movie/TV
+    identity reusable. This is the exact failure shape observed on Chillflix:
+    /tv/291507?...s={query} was accepted while the requested TMDB id differed.
+    """
+    requested = str(fixture.get("tmdbId") or "").strip()
+    if not requested:
+        return False
+    matches = re.findall(
+        r"/(?:movie|movies|film|films|tv|series|show|watch|play|player|embed|title)/([0-9]{3,})(?:[/?#.-]|$)",
+        str(path or ""),
+        flags=re.I,
+    )
+    return any(value != requested for value in matches)
+
+
 def route_pattern(raw: Any, fixture: dict[str, Any]) -> str:
     value = str(raw or "").strip()
     if not value:
@@ -119,6 +137,8 @@ def route_pattern(raw: Any, fixture: dict[str, Any]) -> str:
     path = parsed.path or ("/" if absolute else "")
     query = parsed.query
     tmdb_id = str(fixture.get("tmdbId") or "")
+    if _hardcoded_content_id_mismatch(path, fixture):
+        return ""
     title_slug = slug(str(fixture.get("title") or ""))
     if tmdb_id:
         path = re.sub(rf"(?<!\d){re.escape(tmdb_id)}(?!\d)", "{tmdbId}", path)
