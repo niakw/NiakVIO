@@ -32,7 +32,7 @@ with tempfile.TemporaryDirectory() as td:
     }
     activation={
         "mode":"bulk_offline_contract_live_unverified",
-        "activatedProviders":[{
+        "providers":[{
             "provider":"demo",
             "providerSha256":digest,
             "minimizerFixedPoint":True,
@@ -50,6 +50,14 @@ with tempfile.TemporaryDirectory() as td:
     )
     assert allowed=={"demo"},allowed
 
+    # Archived ledgers using the old key stay readable, but current production
+    # schema is "providers".
+    legacy=dict(activation)
+    legacy["activatedProviders"]=legacy.pop("providers")
+    assert mod.offline_live_unverified_transport_authority(
+        root,manifest,vf,overrides,legacy
+    )=={"demo"}
+
     # Byte drift removes transport authority.
     asset.write_text("console.log('drift')\n",encoding="utf-8")
     assert mod.offline_live_unverified_transport_authority(
@@ -64,7 +72,7 @@ with tempfile.TemporaryDirectory() as td:
     )==set()
 
     manifest["scrapers"][0]["enabled"]=True
-    activation["activatedProviders"][0]["providerIdentityExecutionPlan"]="failed"
+    activation["providers"][0]["providerIdentityExecutionPlan"]="failed"
     assert mod.offline_live_unverified_transport_authority(
         root,manifest,vf,overrides,activation
     )==set()
