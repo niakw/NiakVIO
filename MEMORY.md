@@ -2346,3 +2346,12 @@ Measured clean V3 oracle #43539920416 showed a **provider transport differential
 - Added synthetic round-trip tests to `engine_v2/tests/provider-catalog.test.mjs` and `tests/provider_language_manifest_vf_only_test.py`, wired into Core Verify quick gate. Explicitly rejects accidental Global leakage, foreign-language-only entries, path traversal and semantic anime-to-live-action-TV mistakes.
 - This is a **foundation**, not full France-only publication: `current_provider_scope.py`, `manage_provider_lifecycle.py`, `sync_release_versions.py`, native coverage/ledger and add-provider onboarding still use Global as authority. They must be updated and proven on a complete representative before a France-only provider can be enabled in production.
 - No claim of newly working provider or 60/60. Existing GitHub installation links are unchanged.
+
+
+## 2026-11-14 — Projection integrity audit and post-census status
+
+- Main before this change: `3b031ed0d1a7383fa60d0e5e12028f5058426941`. Census run `43540868432` tested `fda7822b`: 46 recorded rows (16 FULL, 1 PARTIAL, 9 DISABLED, 5 CANDIDATE OK, 5 REGRESSION PROVIDER, 9 ROUTE PROVEN, 1 NO PROOF); these are census labels, not fresh native playback proof on current HEAD. Published manifests remain 37/41 active/visible Global and 20/21 France, with no France-only row.
+- Added a **read-only** union projection filesystem audit and synthetic regression cases: shared identity de-duplication, independent France-only rows, disabled retention, missing/escaped paths, duplicate IDs and shared-asset conflicts. No execution-scope change, provider activation, stream access or manifest mutation. This is a structural validation only.
+- Fast Repair #43541573082 on `3dee576d` completed with 9 targets, 0 accepted/validated, 9 deferred. The Learning run #43541578132 failed before execution: missing private advisor checkout token and an automated requested cohort that included an ineligible retired ID. Eligibility and security checks must remain fail-closed.
+- Last verified Core/Workflow/Non-Regression/CodeQL runs succeeded on `6ca4fbcd`; later security retirement #43542725953 rejected drift from that SHA to `3b031ed0`. Do not widen the stale alert dismissal allowlist or report #2531 as resolved without exact valid security evidence.
+- The projection audit is wired into the existing structural test called by CORE Verify; awaiting CI evidence on this commit. No new provider publication or native playback validation is claimed.

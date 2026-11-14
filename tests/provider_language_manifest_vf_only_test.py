@@ -81,3 +81,59 @@ with tempfile.TemporaryDirectory(prefix="niakvio-vf-only-contract-") as director
         raise AssertionError("France-only row leaked into Global")
 
 print("France-only catalog/projection contract passed: no duplicates, correct paths, anime alias preserved")
+
+
+# The independent filesystem scope audit must count a France-only identity
+# exactly once without mutating the Global manifest or executing any asset.
+from current_provider_scope import audit_projection_scope
+
+with tempfile.TemporaryDirectory(prefix="niakvio-projection-scope-") as directory:
+    root = Path(directory)
+    for folder in ("providers", "provider-disabled", "vf"):
+        (root / folder).mkdir()
+    for filename in ("providers/shared.js", "providers/global.js",
+                     "providers/france.js", "provider-disabled/retained.js"):
+        (root / filename).write_text("/* synthetic non-executable fixture */\n", encoding="utf-8")
+
+    def row(pid, filename, enabled=True):
+        return {"id": pid, "filename": filename, "enabled": enabled}
+
+    global_rows = [row("shared", "providers/shared.js"),
+                   row("global", "providers/global.js")]
+    french_rows = [row("SHARED", "../providers/shared.js"),
+                   row("france", "../providers/france.js"),
+                   row("retained", "../provider-disabled/retained.js", False)]
+
+    def write_manifests(g, v):
+        (root / "manifest.json").write_text(json.dumps({"scrapers": g}), encoding="utf-8")
+        (root / "vf/manifest.json").write_text(json.dumps({"scrapers": v}), encoding="utf-8")
+
+    write_manifests(global_rows, french_rows)
+    assert audit_projection_scope(root) == {
+        "global_visible": 2, "global_active": 2, "france_visible": 3,
+        "france_active": 2, "shared": 1, "global_only": 1,
+        "france_only": 2, "union_visible": 4, "union_active": 3,
+    }
+    for invalid in (
+        [*french_rows, row("FRANCE", "../providers/france.js")],
+        [row("shared", "../providers/france.js")],
+        [row("shared", "../providers/shared.js", False)],
+        [row("escaped", "../../providers/shared.js")],
+        [row("escaped", "https://example.invalid/provider.js")],
+        [row("missing", "../providers/nonexistent.js")],
+        [row("shared", "../providers/shared.js"), row("alias", "../providers/shared.js")],
+        [row("retained", "../provider-disabled/retained.js", True)],
+    ):
+        write_manifests(global_rows, invalid)
+        try:
+            audit_projection_scope(root)
+        except RuntimeError:
+            pass
+        else:
+            raise AssertionError(("invalid manifest accepted", invalid))
+
+actual_scope = audit_projection_scope(ROOT)
+assert actual_scope["union_visible"] == (
+    actual_scope["global_only"] + actual_scope["france_only"] + actual_scope["shared"]
+)
+print("Projection filesystem scope audit passed:", actual_scope)

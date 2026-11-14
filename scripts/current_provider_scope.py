@@ -137,3 +137,66 @@ def assert_directory_contract() -> None:
     disabled_ids = {cid(row.get("id")) for row in disabled}
     if active_ids & disabled_ids:
         raise RuntimeError("active/disabled provider identity collision")
+
+
+def audit_projection_scope(root: Path = ROOT) -> dict[str, int]:
+    """Read-only filesystem integrity/accounting for the union of both manifests.
+
+    This is deliberately independent of the legacy Global execution scope.
+    A shared ID is counted once only if both projections agree on the asset
+    and enabled state. The audit never adds, enables, or executes providers.
+    """
+    root = root.resolve()
+    def read_projection(relative: str, prefix: str) -> dict[str, tuple[str, bool]]:
+        raw = json.loads((root / relative).read_text(encoding="utf-8"))
+        rows = raw.get("scrapers")
+        if not isinstance(rows, list):
+            raise RuntimeError(f"{relative}: missing scraper list")
+        found: dict[str, tuple[str, bool]] = {}
+        for row in rows:
+            if not isinstance(row, dict):
+                raise RuntimeError(f"{relative}: invalid row")
+            provider = cid(row.get("id"))
+            if not provider or provider in found:
+                raise RuntimeError(f"{relative}: empty or duplicate provider id: {provider}")
+            filename = row.get("filename")
+            enabled = row.get("enabled")
+            if not isinstance(filename, str) or not isinstance(enabled, bool):
+                raise RuntimeError(f"{relative}: invalid asset or enabled state: {provider}")
+            if prefix and not filename.startswith(prefix):
+                raise RuntimeError(f"{relative}: incorrect projection path: {provider}")
+            asset = filename[len(prefix):]
+            parts = asset.split("/")
+            folder = "providers" if enabled else "provider-disabled"
+            if (len(parts) != 2 or parts[0] != folder or
+                    not parts[1].endswith(".js") or "\\" in asset or
+                    "/" in parts[1] or parts[1] in {".", ".."}):
+                raise RuntimeError(f"{relative}: invalid managed asset path: {provider}")
+            managed = root / folder
+            path = root / asset
+            if (managed.is_symlink() or path.is_symlink() or
+                    path.resolve().parent != managed or not path.is_file()):
+                raise RuntimeError(f"{relative}: missing or escaped managed asset: {provider}")
+            found[provider] = (asset, enabled)
+        return found
+
+    general = read_projection("manifest.json", "")
+    france = read_projection("vf/manifest.json", "../")
+    shared = general.keys() & france.keys()
+    for provider in shared:
+        if general[provider] != france[provider]:
+            raise RuntimeError(f"projection asset or enabled state mismatch: {provider}")
+    union = {**general, **france}
+    if len({asset for asset, _ in union.values()}) != len(union):
+        raise RuntimeError("distinct provider IDs share a managed asset")
+    return {
+        "global_visible": len(general),
+        "global_active": sum(enabled for _, enabled in general.values()),
+        "france_visible": len(france),
+        "france_active": sum(enabled for _, enabled in france.values()),
+        "shared": len(shared),
+        "global_only": len(general.keys() - france.keys()),
+        "france_only": len(france.keys() - general.keys()),
+        "union_visible": len(union),
+        "union_active": sum(enabled for _, enabled in union.values()),
+    }
