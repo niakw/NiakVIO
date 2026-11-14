@@ -1,7 +1,7 @@
 {
   "schemaVersion": 3,
-  "runId": "43632974154",
-  "triggerSha": "9c6d535492b95d59f3a289ed39eadde4ac37f6f8",
+  "runId": "43633390365",
+  "triggerSha": "c64111deb0b878a84f1f2771a6d135968f48e081",
   "providers": [
     {
       "provider": "4khdhub",
@@ -44,6 +44,53 @@
       "action": "provider lifecycle/authority blocks Repair; keep disabled until a new authoritative provider address/backend is qualified",
       "brainCheckRequired": false,
       "statusRepairEligible": false,
+      "repairEligible": false,
+      "testedThisRun": true
+    },
+    {
+      "provider": "67movies",
+      "status": "PROVIDER JS BROKEN",
+      "underlyingStatus": "",
+      "color": "🟠",
+      "declaredLanes": [
+        "anime",
+        "movie",
+        "tv"
+      ],
+      "currentVerifiedLanes": [],
+      "historicalProof": [],
+      "candidateProof": [],
+      "routeProof": [],
+      "latestLaneVerdicts": [
+        "anime=no_streams/gate_runtime_plan_missing",
+        "movie=no_streams/gate_runtime_plan_missing",
+        "tv=no_streams/gate_runtime_plan_missing"
+      ],
+      "dominantIssue": "gate_runtime_plan_missing×3",
+      "searchProgress": [
+        "anime: 8 works tested / 0 retained misses",
+        "movie: 8 works tested / 0 retained misses",
+        "tv: 8 works tested / 0 retained misses"
+      ],
+      "evidenceDepth": [
+        "anime=none",
+        "movie=none",
+        "tv=none"
+      ],
+      "harnessTransportClass": "not-applicable",
+      "harnessTransportEvidence": [],
+      "authorityRepairEligible": false,
+      "authorityAction": "REDISCOVER_SEARCH",
+      "authorityClass": "unproven-direct-candidate",
+      "authorityConfidence": "low",
+      "authorityReasons": [
+        "direct_candidate_unproven",
+        "search_supplement_only"
+      ],
+      "authorityKnown": true,
+      "action": "Domain/authority rediscovery required before Repair; search remains supplementary evidence only and cannot authorize provider mutation",
+      "brainCheckRequired": true,
+      "statusRepairEligible": true,
       "repairEligible": false,
       "testedThisRun": true
     },
@@ -197,7 +244,7 @@
         "anime: 2 works tested / 1 retained misses"
       ],
       "evidenceDepth": [
-        "anime=lookup_only"
+        "anime=none"
       ],
       "harnessTransportClass": "not-applicable",
       "harnessTransportEvidence": [],
@@ -398,11 +445,11 @@
         "1 live routes / anime"
       ],
       "latestLaneVerdicts": [
-        "anime=timeout"
+        "anime=no_streams/provider_network_exception"
       ],
-      "dominantIssue": "timeout",
+      "dominantIssue": "provider_network_exception",
       "searchProgress": [
-        "anime: 2 works tested / 0 retained misses"
+        "anime: 8 works tested / 0 retained misses"
       ],
       "evidenceDepth": [
         "anime=none"
@@ -508,6 +555,100 @@
       "testedThisRun": true
     },
     {
+      "provider": "arrowtv",
+      "status": "PROVIDER JS BROKEN",
+      "underlyingStatus": "",
+      "color": "🟠",
+      "declaredLanes": [
+        "anime",
+        "movie",
+        "tv"
+      ],
+      "currentVerifiedLanes": [],
+      "historicalProof": [],
+      "candidateProof": [],
+      "routeProof": [],
+      "latestLaneVerdicts": [
+        "anime=no_streams/gate_runtime_plan_missing",
+        "movie=no_streams/gate_runtime_plan_missing",
+        "tv=no_streams/gate_runtime_plan_missing"
+      ],
+      "dominantIssue": "gate_runtime_plan_missing×3",
+      "searchProgress": [
+        "anime: 8 works tested / 0 retained misses",
+        "movie: 8 works tested / 0 retained misses",
+        "tv: 8 works tested / 0 retained misses"
+      ],
+      "evidenceDepth": [
+        "anime=none",
+        "movie=none",
+        "tv=none"
+      ],
+      "harnessTransportClass": "not-applicable",
+      "harnessTransportEvidence": [],
+      "authorityRepairEligible": false,
+      "authorityAction": "REDISCOVER_SEARCH",
+      "authorityClass": "unproven-direct-candidate",
+      "authorityConfidence": "low",
+      "authorityReasons": [
+        "direct_candidate_unproven",
+        "search_supplement_only"
+      ],
+      "authorityKnown": true,
+      "action": "Domain/authority rediscovery required before Repair; search remains supplementary evidence only and cannot authorize provider mutation",
+      "brainCheckRequired": true,
+      "statusRepairEligible": true,
+      "repairEligible": false,
+      "testedThisRun": true
+    },
+    {
+      "provider": "boredflix",
+      "status": "PROVIDER JS BROKEN",
+      "underlyingStatus": "",
+      "color": "🟠",
+      "declaredLanes": [
+        "anime",
+        "movie",
+        "tv"
+      ],
+      "currentVerifiedLanes": [],
+      "historicalProof": [],
+      "candidateProof": [],
+      "routeProof": [],
+      "latestLaneVerdicts": [
+        "anime=no_streams/gate_runtime_plan_missing",
+        "movie=no_streams/gate_runtime_plan_missing",
+        "tv=no_streams/gate_runtime_plan_missing"
+      ],
+      "dominantIssue": "gate_runtime_plan_missing×3",
+      "searchProgress": [
+        "anime: 8 works tested / 0 retained misses",
+        "movie: 8 works tested / 0 retained misses",
+        "tv: 8 works tested / 0 retained misses"
+      ],
+      "evidenceDepth": [
+        "anime=none",
+        "movie=none",
+        "tv=none"
+      ],
+      "harnessTransportClass": "not-applicable",
+      "harnessTransportEvidence": [],
+      "authorityRepairEligible": false,
+      "authorityAction": "REDISCOVER_SEARCH",
+      "authorityClass": "unproven-direct-candidate",
+      "authorityConfidence": "low",
+      "authorityReasons": [
+        "direct_candidate_unproven",
+        "search_supplement_only"
+      ],
+      "authorityKnown": true,
+      "action": "Domain/authority rediscovery required before Repair; search remains supplementary evidence only and cannot authorize provider mutation",
+      "brainCheckRequired": true,
+      "statusRepairEligible": true,
+      "repairEligible": false,
+      "testedThisRun": true
+    },
+    {
       "provider": "castle",
       "status": "FULL OK",
       "underlyingStatus": "",
@@ -554,6 +695,147 @@
       "action": "protect + replay retained proof",
       "brainCheckRequired": false,
       "statusRepairEligible": false,
+      "repairEligible": false,
+      "testedThisRun": true
+    },
+    {
+      "provider": "chillflix",
+      "status": "PROVIDER JS BROKEN",
+      "underlyingStatus": "",
+      "color": "🟠",
+      "declaredLanes": [
+        "anime",
+        "movie",
+        "tv"
+      ],
+      "currentVerifiedLanes": [],
+      "historicalProof": [],
+      "candidateProof": [],
+      "routeProof": [],
+      "latestLaneVerdicts": [
+        "anime=no_streams/gate_runtime_plan_missing",
+        "movie=no_streams/gate_runtime_plan_missing",
+        "tv=no_streams/gate_runtime_plan_missing"
+      ],
+      "dominantIssue": "gate_runtime_plan_missing×3",
+      "searchProgress": [
+        "anime: 8 works tested / 0 retained misses",
+        "movie: 8 works tested / 0 retained misses",
+        "tv: 8 works tested / 0 retained misses"
+      ],
+      "evidenceDepth": [
+        "anime=none",
+        "movie=none",
+        "tv=none"
+      ],
+      "harnessTransportClass": "not-applicable",
+      "harnessTransportEvidence": [],
+      "authorityRepairEligible": false,
+      "authorityAction": "REDISCOVER_SEARCH",
+      "authorityClass": "unproven-direct-candidate",
+      "authorityConfidence": "low",
+      "authorityReasons": [
+        "direct_candidate_unproven",
+        "search_supplement_only"
+      ],
+      "authorityKnown": true,
+      "action": "Domain/authority rediscovery required before Repair; search remains supplementary evidence only and cannot authorize provider mutation",
+      "brainCheckRequired": true,
+      "statusRepairEligible": true,
+      "repairEligible": false,
+      "testedThisRun": true
+    },
+    {
+      "provider": "cinegram",
+      "status": "PROVIDER JS BROKEN",
+      "underlyingStatus": "",
+      "color": "🟠",
+      "declaredLanes": [
+        "anime",
+        "movie",
+        "tv"
+      ],
+      "currentVerifiedLanes": [],
+      "historicalProof": [],
+      "candidateProof": [],
+      "routeProof": [],
+      "latestLaneVerdicts": [
+        "anime=no_streams/gate_runtime_plan_missing",
+        "movie=no_streams/gate_runtime_plan_missing",
+        "tv=no_streams/gate_runtime_plan_missing"
+      ],
+      "dominantIssue": "gate_runtime_plan_missing×3",
+      "searchProgress": [
+        "anime: 8 works tested / 0 retained misses",
+        "movie: 8 works tested / 0 retained misses",
+        "tv: 8 works tested / 0 retained misses"
+      ],
+      "evidenceDepth": [
+        "anime=none",
+        "movie=none",
+        "tv=none"
+      ],
+      "harnessTransportClass": "not-applicable",
+      "harnessTransportEvidence": [],
+      "authorityRepairEligible": false,
+      "authorityAction": "REDISCOVER_SEARCH",
+      "authorityClass": "unproven-direct-candidate",
+      "authorityConfidence": "low",
+      "authorityReasons": [
+        "direct_candidate_unproven",
+        "search_supplement_only"
+      ],
+      "authorityKnown": true,
+      "action": "Domain/authority rediscovery required before Repair; search remains supplementary evidence only and cannot authorize provider mutation",
+      "brainCheckRequired": true,
+      "statusRepairEligible": true,
+      "repairEligible": false,
+      "testedThisRun": true
+    },
+    {
+      "provider": "cinemabz",
+      "status": "PROVIDER JS BROKEN",
+      "underlyingStatus": "",
+      "color": "🟠",
+      "declaredLanes": [
+        "anime",
+        "movie",
+        "tv"
+      ],
+      "currentVerifiedLanes": [],
+      "historicalProof": [],
+      "candidateProof": [],
+      "routeProof": [],
+      "latestLaneVerdicts": [
+        "anime=no_streams/gate_runtime_plan_missing",
+        "movie=no_streams/gate_runtime_plan_missing",
+        "tv=no_streams/gate_runtime_plan_missing"
+      ],
+      "dominantIssue": "gate_runtime_plan_missing×3",
+      "searchProgress": [
+        "anime: 8 works tested / 0 retained misses",
+        "movie: 8 works tested / 0 retained misses",
+        "tv: 8 works tested / 0 retained misses"
+      ],
+      "evidenceDepth": [
+        "anime=none",
+        "movie=none",
+        "tv=none"
+      ],
+      "harnessTransportClass": "not-applicable",
+      "harnessTransportEvidence": [],
+      "authorityRepairEligible": false,
+      "authorityAction": "REDISCOVER_SEARCH",
+      "authorityClass": "unproven-direct-candidate",
+      "authorityConfidence": "low",
+      "authorityReasons": [
+        "direct_candidate_unproven",
+        "search_supplement_only"
+      ],
+      "authorityKnown": true,
+      "action": "Domain/authority rediscovery required before Repair; search remains supplementary evidence only and cannot authorize provider mutation",
+      "brainCheckRequired": true,
+      "statusRepairEligible": true,
       "repairEligible": false,
       "testedThisRun": true
     },
@@ -612,6 +894,100 @@
       "testedThisRun": true
     },
     {
+      "provider": "corsflix",
+      "status": "PROVIDER JS BROKEN",
+      "underlyingStatus": "",
+      "color": "🟠",
+      "declaredLanes": [
+        "anime",
+        "movie",
+        "tv"
+      ],
+      "currentVerifiedLanes": [],
+      "historicalProof": [],
+      "candidateProof": [],
+      "routeProof": [],
+      "latestLaneVerdicts": [
+        "anime=no_streams/gate_runtime_plan_missing",
+        "movie=no_streams/gate_runtime_plan_missing",
+        "tv=no_streams/gate_runtime_plan_missing"
+      ],
+      "dominantIssue": "gate_runtime_plan_missing×3",
+      "searchProgress": [
+        "anime: 8 works tested / 0 retained misses",
+        "movie: 8 works tested / 0 retained misses",
+        "tv: 8 works tested / 0 retained misses"
+      ],
+      "evidenceDepth": [
+        "anime=none",
+        "movie=none",
+        "tv=none"
+      ],
+      "harnessTransportClass": "not-applicable",
+      "harnessTransportEvidence": [],
+      "authorityRepairEligible": false,
+      "authorityAction": "REDISCOVER_SEARCH",
+      "authorityClass": "unproven-direct-candidate",
+      "authorityConfidence": "low",
+      "authorityReasons": [
+        "direct_candidate_unproven",
+        "search_supplement_only"
+      ],
+      "authorityKnown": true,
+      "action": "Domain/authority rediscovery required before Repair; search remains supplementary evidence only and cannot authorize provider mutation",
+      "brainCheckRequired": true,
+      "statusRepairEligible": true,
+      "repairEligible": false,
+      "testedThisRun": true
+    },
+    {
+      "provider": "emnexmovies",
+      "status": "PROVIDER JS BROKEN",
+      "underlyingStatus": "",
+      "color": "🟠",
+      "declaredLanes": [
+        "anime",
+        "movie",
+        "tv"
+      ],
+      "currentVerifiedLanes": [],
+      "historicalProof": [],
+      "candidateProof": [],
+      "routeProof": [],
+      "latestLaneVerdicts": [
+        "anime=no_streams/gate_runtime_plan_missing",
+        "movie=no_streams/gate_runtime_plan_missing",
+        "tv=no_streams/gate_runtime_plan_missing"
+      ],
+      "dominantIssue": "gate_runtime_plan_missing×3",
+      "searchProgress": [
+        "anime: 8 works tested / 0 retained misses",
+        "movie: 8 works tested / 0 retained misses",
+        "tv: 8 works tested / 0 retained misses"
+      ],
+      "evidenceDepth": [
+        "anime=none",
+        "movie=none",
+        "tv=none"
+      ],
+      "harnessTransportClass": "not-applicable",
+      "harnessTransportEvidence": [],
+      "authorityRepairEligible": false,
+      "authorityAction": "REDISCOVER_SEARCH",
+      "authorityClass": "unproven-direct-candidate",
+      "authorityConfidence": "low",
+      "authorityReasons": [
+        "direct_candidate_unproven",
+        "search_supplement_only"
+      ],
+      "authorityKnown": true,
+      "action": "Domain/authority rediscovery required before Repair; search remains supplementary evidence only and cannot authorize provider mutation",
+      "brainCheckRequired": true,
+      "statusRepairEligible": true,
+      "repairEligible": false,
+      "testedThisRun": true
+    },
+    {
       "provider": "flemmix",
       "status": "DISABLED",
       "underlyingStatus": "DISABLED",
@@ -652,6 +1028,53 @@
       "action": "provider lifecycle/authority blocks Repair; keep disabled until a new authoritative provider address/backend is qualified",
       "brainCheckRequired": false,
       "statusRepairEligible": false,
+      "repairEligible": false,
+      "testedThisRun": true
+    },
+    {
+      "provider": "flixer",
+      "status": "PROVIDER JS BROKEN",
+      "underlyingStatus": "",
+      "color": "🟠",
+      "declaredLanes": [
+        "anime",
+        "movie",
+        "tv"
+      ],
+      "currentVerifiedLanes": [],
+      "historicalProof": [],
+      "candidateProof": [],
+      "routeProof": [],
+      "latestLaneVerdicts": [
+        "anime=no_streams/gate_runtime_plan_missing",
+        "movie=no_streams/gate_runtime_plan_missing",
+        "tv=no_streams/gate_runtime_plan_missing"
+      ],
+      "dominantIssue": "gate_runtime_plan_missing×3",
+      "searchProgress": [
+        "anime: 8 works tested / 0 retained misses",
+        "movie: 8 works tested / 0 retained misses",
+        "tv: 8 works tested / 0 retained misses"
+      ],
+      "evidenceDepth": [
+        "anime=none",
+        "movie=none",
+        "tv=none"
+      ],
+      "harnessTransportClass": "not-applicable",
+      "harnessTransportEvidence": [],
+      "authorityRepairEligible": false,
+      "authorityAction": "REDISCOVER_SEARCH",
+      "authorityClass": "unproven-direct-candidate",
+      "authorityConfidence": "low",
+      "authorityReasons": [
+        "direct_candidate_unproven",
+        "search_supplement_only"
+      ],
+      "authorityKnown": true,
+      "action": "Domain/authority rediscovery required before Repair; search remains supplementary evidence only and cannot authorize provider mutation",
+      "brainCheckRequired": true,
+      "statusRepairEligible": true,
       "repairEligible": false,
       "testedThisRun": true
     },
@@ -855,9 +1278,7 @@
       "declaredLanes": [
         "anime"
       ],
-      "currentVerifiedLanes": [
-        "anime"
-      ],
+      "currentVerifiedLanes": [],
       "historicalProof": [
         "anime: Black Clover / Jujutsu Kaisen"
       ],
@@ -866,11 +1287,11 @@
         "12 live routes / anime"
       ],
       "latestLaneVerdicts": [
-        "anime=OK"
+        "anime=no_streams/provider_network_exception"
       ],
-      "dominantIssue": "none",
+      "dominantIssue": "provider_network_exception",
       "searchProgress": [
-        "anime: 1 works tested / 6 retained misses"
+        "anime: 8 works tested / 12 retained misses"
       ],
       "evidenceDepth": [
         "anime=lookup_only"
@@ -888,6 +1309,53 @@
       "action": "provider lifecycle/authority blocks Repair; keep disabled until a new authoritative provider address/backend is qualified",
       "brainCheckRequired": false,
       "statusRepairEligible": false,
+      "repairEligible": false,
+      "testedThisRun": true
+    },
+    {
+      "provider": "latestmovies",
+      "status": "PROVIDER JS BROKEN",
+      "underlyingStatus": "",
+      "color": "🟠",
+      "declaredLanes": [
+        "anime",
+        "movie",
+        "tv"
+      ],
+      "currentVerifiedLanes": [],
+      "historicalProof": [],
+      "candidateProof": [],
+      "routeProof": [],
+      "latestLaneVerdicts": [
+        "anime=no_streams/gate_runtime_plan_missing",
+        "movie=no_streams/gate_runtime_plan_missing",
+        "tv=no_streams/gate_runtime_plan_missing"
+      ],
+      "dominantIssue": "gate_runtime_plan_missing×3",
+      "searchProgress": [
+        "anime: 8 works tested / 0 retained misses",
+        "movie: 8 works tested / 0 retained misses",
+        "tv: 8 works tested / 0 retained misses"
+      ],
+      "evidenceDepth": [
+        "anime=none",
+        "movie=none",
+        "tv=none"
+      ],
+      "harnessTransportClass": "not-applicable",
+      "harnessTransportEvidence": [],
+      "authorityRepairEligible": false,
+      "authorityAction": "REDISCOVER_SEARCH",
+      "authorityClass": "unproven-direct-candidate",
+      "authorityConfidence": "low",
+      "authorityReasons": [
+        "direct_candidate_unproven",
+        "search_supplement_only"
+      ],
+      "authorityKnown": true,
+      "action": "Domain/authority rediscovery required before Repair; search remains supplementary evidence only and cannot authorize provider mutation",
+      "brainCheckRequired": true,
+      "statusRepairEligible": true,
       "repairEligible": false,
       "testedThisRun": true
     },
@@ -1035,12 +1503,12 @@
         "76 live routes / movie, tv"
       ],
       "latestLaneVerdicts": [
-        "movie=no_streams/provider_waf_challenge",
+        "movie=no_streams/provider_network_zero_result",
         "tv=no_streams/provider_waf_challenge"
       ],
-      "dominantIssue": "provider_waf_challenge×2",
+      "dominantIssue": "provider_network_zero_result, provider_waf_challenge",
       "searchProgress": [
-        "movie: 8 works tested / 24 retained misses",
+        "movie: 8 works tested / 25 retained misses",
         "tv: 8 works tested / 21 retained misses"
       ],
       "evidenceDepth": [
@@ -1060,6 +1528,100 @@
       "action": "provider lifecycle/authority blocks Repair; keep disabled until a new authoritative provider address/backend is qualified",
       "brainCheckRequired": false,
       "statusRepairEligible": false,
+      "repairEligible": false,
+      "testedThisRun": true
+    },
+    {
+      "provider": "movish",
+      "status": "PROVIDER JS BROKEN",
+      "underlyingStatus": "",
+      "color": "🟠",
+      "declaredLanes": [
+        "anime",
+        "movie",
+        "tv"
+      ],
+      "currentVerifiedLanes": [],
+      "historicalProof": [],
+      "candidateProof": [],
+      "routeProof": [],
+      "latestLaneVerdicts": [
+        "anime=no_streams/gate_runtime_plan_missing",
+        "movie=no_streams/gate_runtime_plan_missing",
+        "tv=no_streams/gate_runtime_plan_missing"
+      ],
+      "dominantIssue": "gate_runtime_plan_missing×3",
+      "searchProgress": [
+        "anime: 8 works tested / 0 retained misses",
+        "movie: 8 works tested / 0 retained misses",
+        "tv: 8 works tested / 0 retained misses"
+      ],
+      "evidenceDepth": [
+        "anime=none",
+        "movie=none",
+        "tv=none"
+      ],
+      "harnessTransportClass": "not-applicable",
+      "harnessTransportEvidence": [],
+      "authorityRepairEligible": false,
+      "authorityAction": "REDISCOVER_SEARCH",
+      "authorityClass": "unproven-direct-candidate",
+      "authorityConfidence": "low",
+      "authorityReasons": [
+        "direct_candidate_unproven",
+        "search_supplement_only"
+      ],
+      "authorityKnown": true,
+      "action": "Domain/authority rediscovery required before Repair; search remains supplementary evidence only and cannot authorize provider mutation",
+      "brainCheckRequired": true,
+      "statusRepairEligible": true,
+      "repairEligible": false,
+      "testedThisRun": true
+    },
+    {
+      "provider": "movy",
+      "status": "PROVIDER JS BROKEN",
+      "underlyingStatus": "",
+      "color": "🟠",
+      "declaredLanes": [
+        "anime",
+        "movie",
+        "tv"
+      ],
+      "currentVerifiedLanes": [],
+      "historicalProof": [],
+      "candidateProof": [],
+      "routeProof": [],
+      "latestLaneVerdicts": [
+        "anime=no_streams/gate_runtime_plan_missing",
+        "movie=no_streams/gate_runtime_plan_missing",
+        "tv=no_streams/gate_runtime_plan_missing"
+      ],
+      "dominantIssue": "gate_runtime_plan_missing×3",
+      "searchProgress": [
+        "anime: 8 works tested / 0 retained misses",
+        "movie: 8 works tested / 0 retained misses",
+        "tv: 8 works tested / 0 retained misses"
+      ],
+      "evidenceDepth": [
+        "anime=none",
+        "movie=none",
+        "tv=none"
+      ],
+      "harnessTransportClass": "not-applicable",
+      "harnessTransportEvidence": [],
+      "authorityRepairEligible": false,
+      "authorityAction": "REDISCOVER_SEARCH",
+      "authorityClass": "unproven-direct-candidate",
+      "authorityConfidence": "low",
+      "authorityReasons": [
+        "direct_candidate_unproven",
+        "search_supplement_only"
+      ],
+      "authorityKnown": true,
+      "action": "Domain/authority rediscovery required before Repair; search remains supplementary evidence only and cannot authorize provider mutation",
+      "brainCheckRequired": true,
+      "statusRepairEligible": true,
       "repairEligible": false,
       "testedThisRun": true
     },
@@ -1149,6 +1711,53 @@
       "action": "protect + replay retained proof",
       "brainCheckRequired": false,
       "statusRepairEligible": false,
+      "repairEligible": false,
+      "testedThisRun": true
+    },
+    {
+      "provider": "neonflix",
+      "status": "PROVIDER JS BROKEN",
+      "underlyingStatus": "",
+      "color": "🟠",
+      "declaredLanes": [
+        "anime",
+        "movie",
+        "tv"
+      ],
+      "currentVerifiedLanes": [],
+      "historicalProof": [],
+      "candidateProof": [],
+      "routeProof": [],
+      "latestLaneVerdicts": [
+        "anime=no_streams/gate_runtime_plan_missing",
+        "movie=no_streams/gate_runtime_plan_missing",
+        "tv=no_streams/gate_runtime_plan_missing"
+      ],
+      "dominantIssue": "gate_runtime_plan_missing×3",
+      "searchProgress": [
+        "anime: 8 works tested / 0 retained misses",
+        "movie: 8 works tested / 0 retained misses",
+        "tv: 8 works tested / 0 retained misses"
+      ],
+      "evidenceDepth": [
+        "anime=none",
+        "movie=none",
+        "tv=none"
+      ],
+      "harnessTransportClass": "not-applicable",
+      "harnessTransportEvidence": [],
+      "authorityRepairEligible": false,
+      "authorityAction": "REDISCOVER_SEARCH",
+      "authorityClass": "unproven-direct-candidate",
+      "authorityConfidence": "low",
+      "authorityReasons": [
+        "direct_candidate_unproven",
+        "search_supplement_only"
+      ],
+      "authorityKnown": true,
+      "action": "Domain/authority rediscovery required before Repair; search remains supplementary evidence only and cannot authorize provider mutation",
+      "brainCheckRequired": true,
+      "statusRepairEligible": true,
       "repairEligible": false,
       "testedThisRun": true
     },
@@ -1276,12 +1885,12 @@
       ],
       "latestLaneVerdicts": [
         "movie=no_streams/provider_network_zero_result",
-        "tv=no_streams/provider_network_http_error"
+        "tv=no_streams/provider_network_zero_result"
       ],
-      "dominantIssue": "provider_network_zero_result, provider_network_http_error",
+      "dominantIssue": "provider_network_zero_result×2",
       "searchProgress": [
         "movie: 8 works tested / 18 retained misses",
-        "tv: 8 works tested / 16 retained misses"
+        "tv: 8 works tested / 13 retained misses"
       ],
       "evidenceDepth": [
         "movie=lookup_only",
@@ -1300,6 +1909,49 @@
       "action": "provider lifecycle/authority blocks Repair; keep disabled until a new authoritative provider address/backend is qualified",
       "brainCheckRequired": false,
       "statusRepairEligible": false,
+      "repairEligible": false,
+      "testedThisRun": true
+    },
+    {
+      "provider": "primewire",
+      "status": "PROVIDER JS BROKEN",
+      "underlyingStatus": "",
+      "color": "🟠",
+      "declaredLanes": [
+        "movie",
+        "tv"
+      ],
+      "currentVerifiedLanes": [],
+      "historicalProof": [],
+      "candidateProof": [],
+      "routeProof": [],
+      "latestLaneVerdicts": [
+        "movie=no_streams/gate_runtime_plan_missing",
+        "tv=no_streams/gate_runtime_plan_missing"
+      ],
+      "dominantIssue": "gate_runtime_plan_missing×2",
+      "searchProgress": [
+        "movie: 8 works tested / 0 retained misses",
+        "tv: 8 works tested / 0 retained misses"
+      ],
+      "evidenceDepth": [
+        "movie=none",
+        "tv=none"
+      ],
+      "harnessTransportClass": "not-applicable",
+      "harnessTransportEvidence": [],
+      "authorityRepairEligible": false,
+      "authorityAction": "REDISCOVER_SEARCH",
+      "authorityClass": "unproven-direct-candidate",
+      "authorityConfidence": "low",
+      "authorityReasons": [
+        "direct_candidate_unproven",
+        "search_supplement_only"
+      ],
+      "authorityKnown": true,
+      "action": "Domain/authority rediscovery required before Repair; search remains supplementary evidence only and cannot authorize provider mutation",
+      "brainCheckRequired": true,
+      "statusRepairEligible": true,
       "repairEligible": false,
       "testedThisRun": true
     },
@@ -1395,6 +2047,53 @@
       "action": "protect + replay retained proof",
       "brainCheckRequired": false,
       "statusRepairEligible": false,
+      "repairEligible": false,
+      "testedThisRun": true
+    },
+    {
+      "provider": "shuttletv",
+      "status": "PROVIDER JS BROKEN",
+      "underlyingStatus": "",
+      "color": "🟠",
+      "declaredLanes": [
+        "anime",
+        "movie",
+        "tv"
+      ],
+      "currentVerifiedLanes": [],
+      "historicalProof": [],
+      "candidateProof": [],
+      "routeProof": [],
+      "latestLaneVerdicts": [
+        "anime=no_streams/gate_runtime_plan_missing",
+        "movie=no_streams/gate_runtime_plan_missing",
+        "tv=no_streams/gate_runtime_plan_missing"
+      ],
+      "dominantIssue": "gate_runtime_plan_missing×3",
+      "searchProgress": [
+        "anime: 8 works tested / 0 retained misses",
+        "movie: 8 works tested / 0 retained misses",
+        "tv: 8 works tested / 0 retained misses"
+      ],
+      "evidenceDepth": [
+        "anime=none",
+        "movie=none",
+        "tv=none"
+      ],
+      "harnessTransportClass": "not-applicable",
+      "harnessTransportEvidence": [],
+      "authorityRepairEligible": false,
+      "authorityAction": "REDISCOVER_SEARCH",
+      "authorityClass": "unproven-direct-candidate",
+      "authorityConfidence": "low",
+      "authorityReasons": [
+        "direct_candidate_unproven",
+        "search_supplement_only"
+      ],
+      "authorityKnown": true,
+      "action": "Domain/authority rediscovery required before Repair; search remains supplementary evidence only and cannot authorize provider mutation",
+      "brainCheckRequired": true,
+      "statusRepairEligible": true,
       "repairEligible": false,
       "testedThisRun": true
     },
@@ -1738,11 +2437,11 @@
         "1 live routes / anime"
       ],
       "latestLaneVerdicts": [
-        "anime=no_streams/provider_network_zero_result"
+        "anime=no_streams/provider_network_http_error"
       ],
-      "dominantIssue": "provider_network_zero_result",
+      "dominantIssue": "provider_network_http_error",
       "searchProgress": [
-        "anime: 8 works tested / 23 retained misses"
+        "anime: 8 works tested / 21 retained misses"
       ],
       "evidenceDepth": [
         "anime=lookup_only"
@@ -1800,6 +2499,100 @@
       "action": "provider lifecycle/authority blocks Repair; keep disabled until a new authoritative provider address/backend is qualified",
       "brainCheckRequired": false,
       "statusRepairEligible": false,
+      "repairEligible": false,
+      "testedThisRun": true
+    },
+    {
+      "provider": "vuflix",
+      "status": "PROVIDER JS BROKEN",
+      "underlyingStatus": "",
+      "color": "🟠",
+      "declaredLanes": [
+        "anime",
+        "movie",
+        "tv"
+      ],
+      "currentVerifiedLanes": [],
+      "historicalProof": [],
+      "candidateProof": [],
+      "routeProof": [],
+      "latestLaneVerdicts": [
+        "anime=no_streams/gate_runtime_plan_missing",
+        "movie=no_streams/gate_runtime_plan_missing",
+        "tv=no_streams/gate_runtime_plan_missing"
+      ],
+      "dominantIssue": "gate_runtime_plan_missing×3",
+      "searchProgress": [
+        "anime: 8 works tested / 0 retained misses",
+        "movie: 8 works tested / 0 retained misses",
+        "tv: 8 works tested / 0 retained misses"
+      ],
+      "evidenceDepth": [
+        "anime=none",
+        "movie=none",
+        "tv=none"
+      ],
+      "harnessTransportClass": "not-applicable",
+      "harnessTransportEvidence": [],
+      "authorityRepairEligible": false,
+      "authorityAction": "REDISCOVER_SEARCH",
+      "authorityClass": "unproven-direct-candidate",
+      "authorityConfidence": "low",
+      "authorityReasons": [
+        "direct_candidate_unproven",
+        "search_supplement_only"
+      ],
+      "authorityKnown": true,
+      "action": "Domain/authority rediscovery required before Repair; search remains supplementary evidence only and cannot authorize provider mutation",
+      "brainCheckRequired": true,
+      "statusRepairEligible": true,
+      "repairEligible": false,
+      "testedThisRun": true
+    },
+    {
+      "provider": "watch-cartoon-online",
+      "status": "PROVIDER JS BROKEN",
+      "underlyingStatus": "",
+      "color": "🟠",
+      "declaredLanes": [
+        "anime",
+        "movie",
+        "tv"
+      ],
+      "currentVerifiedLanes": [],
+      "historicalProof": [],
+      "candidateProof": [],
+      "routeProof": [],
+      "latestLaneVerdicts": [
+        "anime=no_streams/gate_runtime_plan_missing",
+        "movie=no_streams/gate_runtime_plan_missing",
+        "tv=no_streams/gate_runtime_plan_missing"
+      ],
+      "dominantIssue": "gate_runtime_plan_missing×3",
+      "searchProgress": [
+        "anime: 8 works tested / 0 retained misses",
+        "movie: 8 works tested / 0 retained misses",
+        "tv: 8 works tested / 0 retained misses"
+      ],
+      "evidenceDepth": [
+        "anime=none",
+        "movie=none",
+        "tv=none"
+      ],
+      "harnessTransportClass": "not-applicable",
+      "harnessTransportEvidence": [],
+      "authorityRepairEligible": false,
+      "authorityAction": "REDISCOVER_SEARCH",
+      "authorityClass": "unproven-direct-candidate",
+      "authorityConfidence": "low",
+      "authorityReasons": [
+        "direct_candidate_unproven",
+        "search_supplement_only"
+      ],
+      "authorityKnown": true,
+      "action": "Domain/authority rediscovery required before Repair; search remains supplementary evidence only and cannot authorize provider mutation",
+      "brainCheckRequired": true,
+      "statusRepairEligible": true,
       "repairEligible": false,
       "testedThisRun": true
     },
@@ -1996,9 +2789,7 @@
       "currentVerifiedLanes": [],
       "historicalProof": [],
       "candidateProof": [],
-      "routeProof": [
-        "3 live routes / movie, tv"
-      ],
+      "routeProof": [],
       "latestLaneVerdicts": [
         "movie=no_streams/provider_network_zero_result",
         "tv=no_streams/provider_network_zero_result"
@@ -2084,9 +2875,7 @@
       "currentVerifiedLanes": [],
       "historicalProof": [],
       "candidateProof": [],
-      "routeProof": [
-        "2 live routes / anime"
-      ],
+      "routeProof": [],
       "latestLaneVerdicts": [
         "anime=no_streams/provider_waf_challenge"
       ],
@@ -2116,13 +2905,51 @@
   ],
   "counts": {
     "DISABLED": 37,
-    "FULL OK": 10
+    "FULL OK": 10,
+    "PROVIDER JS BROKEN": 17
   },
-  "symptomaticProviders": [],
-  "brainQueue": [],
+  "symptomaticProviders": [
+    "67movies",
+    "arrowtv",
+    "boredflix",
+    "chillflix",
+    "cinegram",
+    "cinemabz",
+    "corsflix",
+    "emnexmovies",
+    "flixer",
+    "latestmovies",
+    "movish",
+    "movy",
+    "neonflix",
+    "primewire",
+    "shuttletv",
+    "vuflix",
+    "watch-cartoon-online"
+  ],
+  "brainQueue": [
+    "67movies",
+    "arrowtv",
+    "boredflix",
+    "chillflix",
+    "cinegram",
+    "cinemabz",
+    "corsflix",
+    "emnexmovies",
+    "flixer",
+    "latestmovies",
+    "movish",
+    "movy",
+    "neonflix",
+    "primewire",
+    "shuttletv",
+    "vuflix",
+    "watch-cartoon-online"
+  ],
   "repairQueue": [],
   "authorityBlockedQueue": [
     "4khdhub",
+    "67movies",
     "allanime",
     "allwish",
     "anime-sama",
@@ -2133,17 +2960,31 @@
     "animesultra",
     "animevost-fr",
     "animevostfr",
+    "arrowtv",
+    "boredflix",
+    "chillflix",
+    "cinegram",
+    "cinemabz",
     "coflix",
+    "corsflix",
+    "emnexmovies",
     "flemmix",
+    "flixer",
     "hindmoviez",
     "kehflix",
     "kurage",
+    "latestmovies",
     "mallumv",
     "moviebox",
     "movieshunt",
     "moviesmod",
+    "movish",
+    "movy",
+    "neonflix",
     "persianstremio",
     "playimdb",
+    "primewire",
+    "shuttletv",
     "uhdmovies",
     "vidfast",
     "vidlove",
@@ -2152,6 +2993,8 @@
     "voiranime-homes",
     "voiranime-rip",
     "vostfree",
+    "vuflix",
+    "watch-cartoon-online",
     "wookafr",
     "yflix"
   ],
@@ -2189,7 +3032,25 @@
     "wookafr",
     "yflix"
   ],
-  "authorityRediscoveryQueue": [],
+  "authorityRediscoveryQueue": [
+    "67movies",
+    "arrowtv",
+    "boredflix",
+    "chillflix",
+    "cinegram",
+    "cinemabz",
+    "corsflix",
+    "emnexmovies",
+    "flixer",
+    "latestmovies",
+    "movish",
+    "movy",
+    "neonflix",
+    "primewire",
+    "shuttletv",
+    "vuflix",
+    "watch-cartoon-online"
+  ],
   "environmentQueue": [],
   "harnessMismatchQueue": [],
   "environmentBlockedQueue": [],
@@ -2228,8 +3089,8 @@
   },
   "targetedTransportBlockedQueue": [],
   "clientTransportGapQueue": [],
-  "harnessEvidenceRunId": "43632974154-sharded-waf",
-  "harnessEvidenceSha": "9c6d535492b95d59f3a289ed39eadde4ac37f6f8",
+  "harnessEvidenceRunId": "43633390365-sharded-waf",
+  "harnessEvidenceSha": "c64111deb0b878a84f1f2771a6d135968f48e081",
   "authorityRefreshedProviders": [],
   "harnessTransportUpdatedProviders": [],
   "networkDifferentialUpdatedProviders": [],

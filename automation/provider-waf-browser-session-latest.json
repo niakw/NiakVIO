@@ -3,7 +3,7 @@
   "mode": "ordinary-headless-browser-session-no-challenge-solver",
   "browserAvailable": true,
   "browserExecutable": "google-chrome",
-  "targetCount": 23,
+  "targetCount": 22,
   "providerFilter": [],
   "attemptsPerTarget": 2,
   "clientProfileMatrixEnabled": false,
@@ -23,7 +23,7 @@
   ],
   "counts": {
     "browser_challenge_persisted": 16,
-    "browser_content_reached": 6,
+    "browser_content_reached": 5,
     "browser_inconclusive": 1
   },
   "rows": [
@@ -78,7 +78,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 17360
+      "durationMs": 14803
     },
     {
       "provider": "allwish",
@@ -131,7 +131,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 17316,
+      "durationMs": 14819,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_challenge_persisted",
@@ -212,7 +212,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 18189,
+      "durationMs": 17311,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_challenge_persisted",
@@ -935,7 +935,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 4232
+      "durationMs": 3485
     },
     {
       "provider": "flemmix",
@@ -988,7 +988,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 4574
+      "durationMs": 3524
     },
     {
       "provider": "kehflix",
@@ -1041,14 +1041,14 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 6903
+      "durationMs": 2860
     },
     {
       "provider": "kehflix",
       "lane": "movie",
-      "publicUrl": "https://kehflix.com/title/movie/118340-g-o-t-g",
+      "publicUrl": "https://kehflix.com/title/movie/155-batman-the-dark-knight",
       "host": "kehflix.com",
-      "path": "/title/movie/118340-g-o-t-g",
+      "path": "/title/movie/155-batman-the-dark-knight",
       "method": "GET",
       "fetchStatus": 403,
       "challenge": "cloudflare",
@@ -1094,25 +1094,30 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 1545
+      "durationMs": 1975
     },
     {
       "provider": "kehflix",
       "lane": "tv",
-      "publicUrl": "https://kehflix.com/api/streams/tv",
+      "publicUrl": "https://kehflix.com/title/tv/87739-gambito-de-dama",
       "host": "kehflix.com",
-      "path": "/api/streams/tv",
+      "path": "/title/tv/87739-gambito-de-dama",
       "method": "GET",
       "fetchStatus": 403,
       "challenge": "cloudflare",
       "seedKind": null,
       "seedRoute": null,
-      "outcome": "browser_content_reached",
-      "attemptCount": 1,
+      "outcome": "browser_challenge_persisted",
+      "attemptCount": 2,
       "attempts": [
         {
           "attempt": 1,
-          "outcome": "browser_content_reached",
+          "outcome": "browser_challenge_persisted",
+          "exitCode": 0
+        },
+        {
+          "attempt": 2,
+          "outcome": "browser_challenge_persisted",
           "exitCode": 0
         }
       ],
@@ -1121,12 +1126,17 @@
         {
           "profile": "github-default-browser",
           "userAgent": null,
-          "outcome": "browser_content_reached",
-          "attemptCount": 1,
+          "outcome": "browser_challenge_persisted",
+          "attemptCount": 2,
           "attempts": [
             {
               "attempt": 1,
-              "outcome": "browser_content_reached",
+              "outcome": "browser_challenge_persisted",
+              "exitCode": 0
+            },
+            {
+              "attempt": 2,
+              "outcome": "browser_challenge_persisted",
               "exitCode": 0
             }
           ],
@@ -1135,11 +1145,9 @@
       ],
       "directHttpProfile": null,
       "okHttpJvmProfile": null,
-      "contentProfiles": [
-        "github-default-browser"
-      ],
+      "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 6744
+      "durationMs": 2391
     },
     {
       "provider": "mallumv",
@@ -1249,63 +1257,10 @@
     },
     {
       "provider": "moviesmod",
-      "lane": "movie",
-      "publicUrl": "https://links.modpro.blog/archives/7428",
-      "host": "links.modpro.blog",
-      "path": "/archives/7428",
-      "method": "GET",
-      "fetchStatus": 403,
-      "challenge": "cloudflare",
-      "seedKind": null,
-      "seedRoute": null,
-      "outcome": "browser_challenge_persisted",
-      "attemptCount": 2,
-      "attempts": [
-        {
-          "attempt": 1,
-          "outcome": "browser_challenge_persisted",
-          "exitCode": 0
-        },
-        {
-          "attempt": 2,
-          "outcome": "browser_challenge_persisted",
-          "exitCode": 0
-        }
-      ],
-      "ordinarySessionReused": true,
-      "clientProfileMatrix": [
-        {
-          "profile": "github-default-browser",
-          "userAgent": null,
-          "outcome": "browser_challenge_persisted",
-          "attemptCount": 2,
-          "attempts": [
-            {
-              "attempt": 1,
-              "outcome": "browser_challenge_persisted",
-              "exitCode": 0
-            },
-            {
-              "attempt": 2,
-              "outcome": "browser_challenge_persisted",
-              "exitCode": 0
-            }
-          ],
-          "ordinarySessionReused": true
-        }
-      ],
-      "directHttpProfile": null,
-      "okHttpJvmProfile": null,
-      "contentProfiles": [],
-      "nativeTvTransportStillUnproven": true,
-      "durationMs": 2847
-    },
-    {
-      "provider": "moviesmod",
       "lane": "tv",
-      "publicUrl": "https://episodes.modpro.blog/archives/66976",
+      "publicUrl": "https://episodes.modpro.blog/archives/79363",
       "host": "episodes.modpro.blog",
-      "path": "/archives/66976",
+      "path": "/archives/79363",
       "method": "GET",
       "fetchStatus": 403,
       "challenge": "cloudflare",
@@ -1351,7 +1306,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 3433
+      "durationMs": 3384
     },
     {
       "provider": "vidfast",
@@ -1725,7 +1680,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 3369,
+      "durationMs": 3330,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_challenge_persisted",
