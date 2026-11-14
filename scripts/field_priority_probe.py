@@ -300,10 +300,15 @@ def main() -> int:
                     "classification": "runtime_error",
                 }
             results.append(result)
+            strict = result.get("strict") or {}
             print(
                 "FIELD_PRIORITY_PROBE "
                 f"progress={done}/{len(jobs)} fixture={result['fixture']} provider={provider} "
-                f"class={result['classification']} streams={result.get('strict',{}).get('stream_count',0)}",
+                f"class={result['classification']} streams={strict.get('stream_count',0)} "
+                f"http_ok={bool(strict.get('provider_http_ok'))} "
+                f"statuses={strict.get('http_statuses') or []} "
+                f"hosts={strict.get('provider_hosts') or []} "
+                f"error={strict.get('error_class') or '-'}",
                 flush=True,
             )
 
