@@ -1,23 +1,16 @@
 {
   "schemaVersion": 1,
-  "requestedAt": "2026-11-14T21:25:00+01:00",
+  "requestVersion": 3,
+  "requestedAt": "2026-11-14T21:38:00+01:00",
   "targetProviders": [
-    "arrowtv",
-    "chillflix",
-    "cinegram",
-    "watch-cartoon-online",
-    "corsflix",
-    "emnexmovies",
-    "latestmovies",
-    "movy",
-    "boredflix",
-    "cinemabz",
-    "primewire",
-    "67movies"
+    "flixer",
+    "shuttletv",
+    "neonflix",
+    "movish",
+    "vuflix"
   ],
   "reuseExistingEvidence": false,
-  "reason": "Retry first 12/17 exact-byte offline-live-unverified cohort after current activation ledger schema fix; require non-zero residential full-provider selection and keep transport authority separate from Repair.",
-  "sourceSha": "6f5af84690eec9d971efea7b029cd63369f1008f",
-  "cohort": "offline-live-unverified-1-of-2-retry-ledger-schema",
-  "requestVersion": 2
+  "reason": "Residential full-provider replay for remaining 5/17 bulk_offline_contract_live_unverified providers after first 12 produced zero playable/verified streams. Observation-only; no Repair authority or FULL promotion without terminal identity proof.",
+  "cohort": "offline-live-unverified-2-of-2",
+  "sourceSha": "3ae03489bce78b0ae8cc7d9d4f14501cab6836d4"
 }
