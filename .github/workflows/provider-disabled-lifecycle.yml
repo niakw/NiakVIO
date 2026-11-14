@@ -49,11 +49,12 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          python scripts/classify_provider_authority.py --apply-safe-disables
-          # Lifecycle consumes the complete current structured authority. Repair
-          # older activation drift from exact managed Provider-v3 CONFIG before
-          # lifecycle projection instead of failing or hand-editing ledgers.
+          # Reconcile the currently published active authority before any row
+          # flips enabled=false. Otherwise reconcile sees a providers/ artifact
+          # paired with a just-disabled manifest row before lifecycle has had a
+          # chance to move that exact artifact into provider-disabled/.
           python scripts/reconcile_provider_static_authority.py --apply
+          python scripts/classify_provider_authority.py --apply-safe-disables
           python scripts/manage_provider_lifecycle.py --apply
           python -m py_compile scripts/manage_provider_lifecycle.py scripts/current_provider_scope.py scripts/classify_provider_authority.py
           python tests/provider_authority_arbiter_test.py
