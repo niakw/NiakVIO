@@ -2821,3 +2821,18 @@ Measured clean V3 oracle #43539920416 showed a **provider transport differential
 - Fast Repair #43541573082 on `3dee576d` completed with 9 targets, 0 accepted/validated, 9 deferred. The Learning run #43541578132 failed before execution: missing private advisor checkout token and an automated requested cohort that included an ineligible retired ID. Eligibility and security checks must remain fail-closed.
 - Last verified Core/Workflow/Non-Regression/CodeQL runs succeeded on `6ca4fbcd`; later security retirement #43542725953 rejected drift from that SHA to `3b031ed0`. Do not widen the stale alert dismissal allowlist or report #2531 as resolved without exact valid security evidence.
 - The projection audit is wired into the existing structural test called by CORE Verify; awaiting CI evidence on this commit. No new provider publication or native playback validation is claimed.
+
+
+### 2026-11-14 — 60 Global / 60 France bulk cohort (in progress)
+
+- User target is explicit: **60 active providers in `manifest.json` and 60 active providers in `vf/manifest.json`**, keeping the existing production install URLs.
+- Inventory authority: `NiakVIO-GLOBAL-FINAL-STRICT-TOP20-2026-09-11(5).xlsx`.
+- Baseline before the cohort: Global 11 active / 46 rows; France 8 active / 34 rows.
+- Request commit: `064d0f0f5636fdf0a5788280bd89fcb9e422d298`.
+- Bulk Onboarding run: `43605764304` (trigger SHA above).
+- Requested transaction: **101 provider operations = 49 Global + 52 France**, including 11 explicit France-only replacements/restages. With the baseline this is designed to reach exactly 60 active Global and 60 active France.
+- Type support in the requested additions already exceeds the 20/20/20 floor: Global additions support movie=49, tv=49, anime=47; France additions support movie=40, tv=39, anime=32.
+- GitHub-hosted network rejection is now treated as **inconclusive**, not as proof that a provider is broken. New activation mode `bulk_offline_contract_live_unverified` requires exact post-rebuild bytes, minimizer fixed-point, Node syntax, Provider v3 identity/ownership contract, valid public-origin syntax, and provenance hash binding.
+- This offline mode **must never be labelled FULL OK**. It persists `live_unverified`, `strict_activation_eligible=false`, `runtime_evidence_eligible=false`, blocker `live_native_validation_pending`; later WAF-capable/native replay is still required for real playback validation.
+- Infrastructure commits before request: `53cf80e`, `689916c`, `2c28b86`, `789ed9d`, `33be9dd`; architecture note `2b46a59`.
+- Status at this checkpoint: bulk run is still executing; no claim yet that manifests reached 60/60.
