@@ -1,13 +1,13 @@
 {
   "schemaVersion": 2,
   "scope": "all",
-  "reason": "Re-run full current Global + France-only census after 0c7cd508 France-only scope fix",
-  "requestedAt": "2026-11-14T21:41:00+01:00",
-  "validation": "byte-bound-all-scope-global-plus-france-only",
+  "reason": "Full Global + France-only replay after sharding fix a1668e40",
+  "requestedAt": "2026-11-14T21:49:00+01:00",
+  "validation": "byte-bound-all-scope-global-plus-france-only-sharded-union",
   "source": "exact-60-60-continuation",
   "targetProviders": [],
   "allowPendingTargets": false,
-  "requiredEvidence": "Fresh current-byte replay for every active Global and France-only provider; no pending candidates; preserve WAF transport-only semantics",
-  "retryRevision": 8,
-  "fullRefreshRevision": 8
+  "requiredEvidence": "Every non-pending Global and France-only runtime identity must appear in exactly one shard, then receive byte-bound freshness or explicit current verdict",
+  "retryRevision": 9,
+  "fullRefreshRevision": 9
 }
