@@ -1,3 +1,8 @@
+## 2026-11-14 — Strict Brain fixture test follows truthful active category shapes
+
+- Workflow Gate 43586782197 on a9ceb28a passed release version synchronization, security/hygiene and the new Repair provenance tests, then failed late because brain_strict_fixture_category_test.py required an active provider whose canonical type set was exactly {movie}. After current-tested nonfunctional withdrawal, all six active movie-capable providers are legitimately movie+tv (some also anime); keeping a movie-only nonfunctional provider active just to satisfy a fixture would violate production truth.
+- Use an actually active movie+tv provider for the movie repair contract and exercise its complete immutable movie+tv fixture set. Decode-gate synthetic probes now cover every required fixture, while negative controls invalidate every probe so another category cannot mask the intended failure. Health-config assertions derive expected fixture categories from the selected provider contract. Anime-only transport-alias control remains exact. Test-only correction; no provider activation or acceptance rule changed.
+
 ## 2026-11-14 — Validation documentation no longer hard-codes the retired 46-provider Hub
 
 - CORE Verify 43586782164 on a9ceb28a passed the Global/France-only pending-scope assertion and then failed only because VALIDATION.md still said a full Provider v3 rebuild “covers 46 Provider Objects Hub”. The same document already defines current scope dynamically and treats Hub-46 as historical compatibility evidence.

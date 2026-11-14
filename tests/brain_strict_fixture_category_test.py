@@ -29,11 +29,14 @@ def active_provider(types):
 
 # Tests select a live provider with the precise semantic category contract, not
 # a historic hard-coded source that may have been withdrawn by lifecycle.
-movie_id = active_provider({'movie'})
 anime_id = active_provider({'anime'})
 movie_tv_id = active_provider({'movie','tv'})
+# Current truthful production may have no movie-only provider. The fixture
+# contract must follow an actually active provider rather than forcing lifecycle
+# to keep a category-shape solely for this test.
+movie_id = movie_tv_id
 movie=verify.strict_repair_fixture_contract(movie_id)
-assert set(key[0] for key in movie)=={'movie'}, movie
+assert {'movie','tv'} == {key[0] for key in movie}, movie
 assert ('movie','157336') in movie, movie
 assert {'anime'} == {key[0] for key in verify.strict_repair_fixture_contract(anime_id)}
 assert {'movie','tv'} == {key[0] for key in verify.strict_repair_fixture_contract(movie_tv_id)}
@@ -66,23 +69,30 @@ def observation(spec,category, probes=()):
             'identity_contradiction_count':0,'duration_identity_mismatch_count':0,
             'host_results':list(probes)}
 
-key, spec=next(iter(movie.items()))
-probe={
-    'host':'media.example.org','http_status':200,'kind':'hls',
-    'bytes_sampled':4096,'playback_verified':True,'payload_verified':True,
-    'direct_signature_verified':False,'variant_reachable':True,
-    'segment_reachable':True,'audio_manifest_reachable':True,
-    'audio_segment_reachable':True,'duration_identity_authoritative':True,
-    'duration_identity_mismatch':False,'short_vod_preview':False,
-    'media_duration_seconds':10140,'expected_duration_seconds':10140,
-    'content_identity_status':'match','content_identity_reason':'fixture_duration_match',
-    'media_decode':{'attempted':True,'outcome':'decoded','framesDecoded':1}}
-before={'tests':[observation(spec,key[0])]}
-after={'tests':[observation(spec,key[0],[probe])]}
+key, spec=next((item for item in movie.items() if item[0][0]=='movie'))
+
+def decoded_probe(fixture):
+    expected=round(fixture['expectedDurationMinutes']*60)
+    return {
+        'host':'media.example.org','http_status':200,'kind':'hls',
+        'bytes_sampled':4096,'playback_verified':True,'payload_verified':True,
+        'direct_signature_verified':False,'variant_reachable':True,
+        'segment_reachable':True,'audio_manifest_reachable':True,
+        'audio_segment_reachable':True,'duration_identity_authoritative':True,
+        'duration_identity_mismatch':False,'short_vod_preview':False,
+        'media_duration_seconds':expected,'expected_duration_seconds':expected,
+        'content_identity_status':'match','content_identity_reason':'fixture_duration_match',
+        'media_decode':{'attempted':True,'outcome':'decoded','framesDecoded':1},
+    }
+
+probe=decoded_probe(spec)
+before={'tests':[observation(fixture,fixture_key[0]) for fixture_key,fixture in movie.items()]}
+after={'tests':[observation(fixture,fixture_key[0],[decoded_probe(fixture)])
+                for fixture_key,fixture in movie.items()]}
 with patch.dict(os.environ,{'NIAKVIO_REQUIRE_DECODE_PROOF':'1'}):
     ok, reason, facts=verify.decoded_repair_gate(before,after,movie_id)
     assert ok and reason=='decoded_repair_fixture_improvement',(reason,facts)
-    assert facts['improvedFixtures']==[spec['label']]
+    assert set(facts['improvedFixtures'])=={row['label'] for row in movie.values()}
     assert not facts['unresolvedFixtures']
     # A URL which was counted "playable" without strict terminal decode is
     # not a decoded control. Genuine decoding of that same URL is a new proof.
@@ -99,10 +109,12 @@ with patch.dict(os.environ,{'NIAKVIO_REQUIRE_DECODE_PROOF':'1'}):
     wrong['tests'][0]['fixture']['expectedDurationMinutes']=24
     assert verify.decoded_repair_gate(before,wrong,movie_id)[1]=='decoded_repair_fixture_contract'
     short=copy.deepcopy(after)
-    short['tests'][0]['host_results'][0]['media_duration_seconds']=1440
+    for row in short['tests']:
+        row['host_results'][0]['media_duration_seconds']=1
     assert verify.decoded_repair_gate(before,short,movie_id)[1]=='decoded_repair_no_new_fixture_control'
     wrong=copy.deepcopy(after)
-    wrong['tests'][0]['host_results'][0]['media_decode']=None
+    for row in wrong['tests']:
+        row['host_results'][0]['media_decode']=None
     assert verify.decoded_repair_gate(before,wrong,movie_id)[1]=='decoded_repair_no_new_fixture_control'
 
     configs=[]
@@ -156,9 +168,12 @@ with patch.dict(os.environ,{'NIAKVIO_REQUIRE_DECODE_PROOF':'1'}):
     wrong_decoded=verify.fixture_summary({'tests':[observation(changed_duration,'tv',[probe])]})
     assert wrong_decoded[0]['decodedMediaControls']==0 and wrong_decoded[0]['decodedMediaProbes']==[]
     assert configs[0]==configs[1]
-    assert [x['tmdbId'] for x in configs[0]['fixtures']['movie']]==['157336']
-    assert configs[0]['fixtures']['anime']==[]
-    assert configs[0]['fixtures']['tv']==[]
+    required_by_category={}
+    for (category,_tmdb),fixture in movie.items():
+        required_by_category.setdefault(category,[]).append(str(fixture['tmdbId']))
+    for category in ('movie','tv','anime','anime_movie'):
+        actual_ids=[str(x['tmdbId']) for x in configs[0]['fixtures'].get(category,[])]
+        assert actual_ids==required_by_category.get(category,[]),(category,actual_ids,required_by_category)
     assert configs[0]['modes']['deep']['verify_media_decode'] is True
 
 print('BRAIN_CATEGORY_STRICT_DECODE_OK movie fixture baseline/candidate exact + no regression')
