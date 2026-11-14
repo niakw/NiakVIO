@@ -12960,7 +12960,8 @@
       "notes": [
         "Created by the NiakVIO full-auto provider onboarding workflow from structured route knowledge only.",
         "Activation remains disabled until the onboarding quick Lab proves the provider on every requested runtime group.",
-        "Activated from exact-byte offline Provider v3 contract proof because GitHub-hosted network/WAF checks are non-authoritative; live native validation remains pending."
+        "Activated from exact-byte offline Provider v3 contract proof because GitHub-hosted network/WAF checks are non-authoritative; live native validation remains pending.",
+        "MAC_IDENTITY_GUARD_2026_11_14: movie FastFlux returned matching TMDB/title but an episodic S01/E01 media path, so Core/runtime must reject it; signed Vidzy fallback reached Interstellar 2014 1080p HLS metadata but terminal HLS access is not yet promoted as playback proof."
       ],
       "replacements": {},
       "runtime_domain_replacements": {},
@@ -12985,7 +12986,22 @@
         "/api/fastflux?type=movie&tmdb_id={tmdbId}",
         "/api/series-season-discovery?tmdb_id={tmdbId}",
         "/api/fastflux?type=episode&tmdb_id={tmdbId}&season={season}&episode={episode}"
-      ]
+      ],
+      "route_proof": {
+        "terminalEvidence": "tv: exact S/E FastFlux direct MP4 HTTP 206 on Mac; movie: FastFlux rejected as episodic-shaped, signed Vidzy HLS resolver reached but terminal media access still pending",
+        "laneEvidence": {
+          "tv": {
+            "route": "proven",
+            "terminal": "direct_mp4_http_206",
+            "identity": "tmdb+season+episode"
+          },
+          "movie": {
+            "route": "proven_signed_vidzy_chain",
+            "terminal": "pending_terminal_access",
+            "identity": "tmdb+title+year"
+          }
+        }
+      }
     },
     "zone-telechargement": {
       "notes": [
