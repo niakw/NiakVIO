@@ -68,8 +68,16 @@ def provider_rows() -> dict[str, dict[str, Any]]:
                 continue
             provider_id = cid(row.get("id"))
             filename = str(row.get("filename") or "").strip()
-            if not provider_id or not filename or not (ROOT / filename).is_file():
+            provider_path = (manifest_path.parent / filename).resolve() if filename else None
+            if (
+                not provider_id
+                or provider_path is None
+                or ROOT not in provider_path.parents
+                or not provider_path.is_file()
+            ):
                 continue
+            row = dict(row)
+            row["_resolved_provider_path"] = str(provider_path)
             # Keep an enabled projection over a disabled duplicate when both
             # manifests reference the same canonical provider.
             existing = out.get(provider_id)
@@ -115,7 +123,7 @@ def main() -> int:
     for provider_id in providers:
         row = rows[provider_id]
         lanes = canonical_types(row)
-        path = ROOT / str(row["filename"])
+        path = Path(str(row["_resolved_provider_path"]))
         for fixture_id in fixture_ids:
             fixture = dict(FIXTURES[fixture_id])
             lane = fixture["mediaType"]
