@@ -27,7 +27,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 sys.path.insert(0, str(ROOT / "scripts" / "provider_patches"))
 
-from current_provider_scope import active_provider_ids, disabled_provider_ids, visible_provider_ids
+from current_provider_scope import active_provider_ids, disabled_provider_ids, pending_provider_ids, visible_provider_ids
 HUB46 = ROOT / "automation" / "evidence" / "hub-lab-matrix-46.json"
 LIFECYCLE = ROOT / "automation" / "provider-disabled-lifecycle.json"
 ALLOWED = {
@@ -172,6 +172,8 @@ def main() -> int:
     visible_ids = visible_provider_ids()
     active_ids = active_provider_ids()
     disabled_ids = disabled_provider_ids()
+    pending_ids = pending_provider_ids() & visible_ids
+    assert pending_ids <= disabled_ids, (sorted(pending_ids), sorted(disabled_ids))
     lifecycle = json.loads(LIFECYCLE.read_text(encoding="utf-8"))
     archived_ids = {
         cid(provider)
@@ -212,6 +214,7 @@ def main() -> int:
     terminal_audited: list[str] = []
     repair_audited: list[str] = []
     off_audited: list[str] = []
+    pending_staged: list[str] = []
     enabled_count = 0
 
     for row, provider_id in zip(rows, ids):
@@ -244,6 +247,15 @@ def main() -> int:
 
         if strategy not in ALLOWED:
             failures.append(f"{provider_id}: unsupported strategy={strategy!r}")
+            continue
+
+        if provider_id in pending_ids:
+            # Pending onboarding is a catalogue/staging state, never an executable
+            # plan. Its exact bytes stay under provider-disabled/ and it cannot be
+            # promoted by satisfying this strategy contract.
+            if enabled or expected_enabled:
+                failures.append(f"{provider_id}: pending onboarding provider unexpectedly enabled")
+            pending_staged.append(provider_id)
             continue
 
         legos = [
@@ -335,13 +347,13 @@ def main() -> int:
     if failures:
         raise AssertionError("\n".join(failures))
 
-    diagnostic_non_executable = len(quarantined) + len(terminal_audited) + len(off_audited) + len(repair_audited)
+    diagnostic_non_executable = len(quarantined) + len(terminal_audited) + len(off_audited) + len(repair_audited) + len(pending_staged)
     executable_count = len(rows) - diagnostic_non_executable
     print(
         "PROVIDER_V3_STRATEGY_PLAN_OK "
         f"providers={len(rows)} enabled={enabled_count} disabled={len(rows)-enabled_count} executable={executable_count} diagnostic_non_executable={diagnostic_non_executable} "
         f"quarantined={len(quarantined)} terminal_legacy={len(terminal_audited)} "
-        f"off_diagnostic={len(off_audited)} repair_diagnostic={len(repair_audited)} "
+        f"off_diagnostic={len(off_audited)} repair_diagnostic={len(repair_audited)} pending_staged={len(pending_staged)} "
         f"strategies={json.dumps(counts, sort_keys=True)}"
     )
     return 0

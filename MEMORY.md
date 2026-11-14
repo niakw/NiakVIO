@@ -1,3 +1,8 @@
+## 2026-11-14 — Override strategy gate distinguishes staged pending from broken runtime
+
+- Provider Overrides Gate 43583241856 on 53a63dd7 failed because the strategy contract treated four Global bulk-pending rows (sflix, rivestream, vidsrc2, asiaflix) as ordinary disabled runtime providers and therefore demanded executable LIVE DATA or a Repair/off disposition.
+- Keep the active/runtime gate unchanged, but recognize durable pending_provider_ids() as a separate non-executable staging state. Pending must remain disabled/provider-folder aligned and is counted only as pending_staged diagnostic state; it cannot satisfy, bypass or promote an active execution plan. France-only pending remains outside the Global strategy rows but is covered by lifecycle/projection staging invariants. Exact-SHA gate rerun required.
+
 ## 2026-11-14 — Runtime ledger consumers aligned with non-executable pending staging
 
 - Non-Regression 43582997745 exposed another stale 41-vs-45 assertion in quick-yield fixture priority after pending isolation. Audit identified the same semantic mismatch in Core metadata sanitizer, reverse rebuild, source-plan finalization, observational health, Domain Refresh/update and materialization metadata checks.
