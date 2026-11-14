@@ -24,4 +24,4 @@ jobs:
       - name: Verify source and retire only old category finding 2531
         env:
           GH_TOKEN: ${{ github.token }}
-        run: python3 scripts/retire_stale_codeql_2531.py
+        run: python3 scripts/delete_stale_codeql_2531_configuration.py
