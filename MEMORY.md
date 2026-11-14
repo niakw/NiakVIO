@@ -1,3 +1,9 @@
+## 2026-11-14 — Global stream guard aligned with pending-vs-retention state
+
+- Workflow Gate 43584096571 reached and passed the corrected runtime version floor (current=41, retained_floors=96), then failed because global_stream_output_guard_test required disabledAt/purgeAfter on bulk-pending sflix.
+- Keep terminal sanitizer/static Core checks on all visible bundles, including pending staged bytes, but apply retention timestamps only to genuine lifecycle-disabled rows. Pending rows must stay under provider-disabled/ with no disabledAt/purgeAfter. This preserves static safety coverage without inventing retention state for onboarding staging.
+- Lifecycle commit 2a6ae6a3 is already published and correctly disabled anime-sama, kurage, playimdb and voiranime while leaving voiranime-homes active.
+
 ## 2026-11-14 — Lifecycle provider-id prefix collision caught before publication
 
 - Lifecycle run 43584428633 correctly classified four fresh active regressions for disable (disabled_now=4; target state active=28, lifecycle-disabled=13, pending=17) but failed before commit because provider_artifacts() used startswith(pid + "-"). Disabling voiranime therefore also moved the healthy sibling voiranime-homes bundle, and current_provider_scope correctly stopped on the missing active asset.

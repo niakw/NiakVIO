@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 """Current provider artifacts must materialize the Core terminal stream sanitizer.
 
-Active providers are sourced only from ``providers/``. Disabled-retained providers
-may remain visible in the manifest under ``provider-disabled/`` while they are in
-the 28-day retention window. No fixed provider census is a test invariant.
+Active providers are sourced only from ``providers/``. Lifecycle-disabled providers
+may remain visible under ``provider-disabled/`` during retention. Bulk-pending
+onboarding also lives under ``provider-disabled/``, but it is staging rather than
+retention and deliberately has no disabledAt/purgeAfter. No fixed provider census is
+a test invariant.
 """
 from __future__ import annotations
 
@@ -17,6 +19,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 
 from apply_provider_overrides import apply_overrides  # noqa: E402
+from current_provider_scope import pending_provider_ids  # noqa: E402
 
 # Keep the historical legacy-guard removal contract too.
 result = subprocess.run([sys.executable, str(ROOT / "tests/provider_capabilities_test.py")], check=False)
@@ -46,6 +49,9 @@ if provider_filter:
 
 active_rows = [row for row in rows if row.get("enabled") is not False]
 disabled_rows = [row for row in rows if row.get("enabled") is False]
+pending_ids = pending_provider_ids()
+pending_rows = [row for row in disabled_rows if str(row.get("id") or "").strip().casefold().replace("_", "-") in pending_ids]
+retained_rows = [row for row in disabled_rows if str(row.get("id") or "").strip().casefold().replace("_", "-") not in pending_ids]
 assert active_rows, "current active provider publication must not be empty"
 
 missing = []
@@ -56,7 +62,11 @@ for row in rows:
     assert provider_id, row
     if row.get("enabled") is False:
         assert relative.startswith("provider-disabled/"), row
-        assert row.get("disabledAt") and row.get("purgeAfter"), row
+        canonical_id = provider_id.casefold().replace("_", "-")
+        if canonical_id in pending_ids:
+            assert not row.get("disabledAt") and not row.get("purgeAfter"), row
+        else:
+            assert row.get("disabledAt") and row.get("purgeAfter"), row
     else:
         assert relative.startswith("providers/"), row
     target = ROOT / relative
@@ -108,6 +118,6 @@ assert not weak, f"providers missing current V6/V7 fail-closed ownership/policy:
 print(
     "global stream output guard passed: "
     f"scope={'targeted' if provider_filter else 'full'} "
-    f"active={len(active_rows)} disabled_retained={len(disabled_rows)} visible={len(rows)} "
+    f"active={len(active_rows)} disabled_retained={len(retained_rows)} pending={len(pending_rows)} visible={len(rows)} "
     f"managed_media_sanitizer={len(rows)} startfix_v3=true fail_closed_v6=true v7_extension_accepted=true final_branding_after_media=true"
 )
