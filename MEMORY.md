@@ -1,3 +1,9 @@
+## 2026-11-14 — Historical floors exclude never-activated pending staging
+
+- Workflow Gate 43583704566 on 6f726cfc failed because provider_version_floor_test treated the four Global pending candidates as current production providers and demanded historical version floors they never earned.
+- Version floors and the frozen 5.21 capability regression gate now use runtime_visible_provider_ids (active + genuine lifecycle-retained disabled), excluding bulk-pending catalogue staging. This preserves real historical floors while refusing to manufacture production history for never-activated candidates. No provider bytes/activation/proof changed.
+- Full sharded census 43583704544 on 6f726cfc successfully passed prepare and multiple shard jobs at this observation; it remains pinned to that exact SHA and continues independently.
+
 ## 2026-11-14 — Explicit full runtime census requested after pending isolation
 
 - Provider Overrides Gate 43583562600 is green on 0239e19b after the pending-staging strategy contract fix.

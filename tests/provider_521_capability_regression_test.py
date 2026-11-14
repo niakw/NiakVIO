@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 """Preserve trustworthy 5.21.0 capability evidence without reviving archived providers.
 
-The 5.21.0 fixture is a historical capability floor. Current identities are
-owned by the physical current-provider folders; providers absent from that
-identity set may still remain in provider-old/ as historical evidence.
+The 5.21.0 fixture is a historical capability floor. Current production identities are
+owned by the runtime-visible provider set (active plus lifecycle-retained disabled);
+bulk-pending catalogue staging has never entered production and therefore receives
+no synthetic historical floor. Providers absent from runtime may still remain in
+provider-old/ as historical evidence.
 
 The old fixture predates the strict semantic/transport split. Its `types` field
 can therefore contain transport aliases that are not semantic capability proof.
@@ -17,7 +19,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
-from current_provider_scope import visible_provider_ids
+from current_provider_scope import runtime_visible_provider_ids
 
 HISTORICAL_PROVIDER_COUNT = 50
 FIXTURE = json.loads(
@@ -26,7 +28,7 @@ FIXTURE = json.loads(
 MANIFEST = json.loads((ROOT / "manifest.json").read_text(encoding="utf-8"))
 OVERRIDES = json.loads((ROOT / "provider-overrides.json").read_text(encoding="utf-8"))
 LIFECYCLE = json.loads((ROOT / "automation/provider-disabled-lifecycle.json").read_text(encoding="utf-8"))
-CURRENT_IDS = visible_provider_ids()
+CURRENT_IDS = runtime_visible_provider_ids()
 
 rows = {
     str(row.get("id") or "").strip().casefold(): row
