@@ -1,11 +1,11 @@
 {
-  "requestVersion": 16,
+  "requestVersion": 17,
   "source": "NiakVIO-GLOBAL-FINAL-STRICT-TOP20-2026-09-11(5).xlsx",
   "activationPolicy": "bulk_offline_contract_live_unverified",
   "allowReplaceExisting": true,
   "targetActive": {
-    "global": 60,
-    "france": 60
+    "global": 27,
+    "france": 21
   },
   "validationPolicy": {
     "githubNetworkFailuresAreInconclusive": true,
@@ -18,181 +18,6 @@
   },
   "policy": "Reach exactly 60 active Global and 60 active France. GitHub/WAF network rejection is inconclusive; exact-byte offline activation stays live-unverified. Explicit current-domain migrations/shutdowns are applied before publication.",
   "providers": [
-    {
-      "id": "kisskh",
-      "name": "KissKH",
-      "scope": "global",
-      "types": [
-        "movie",
-        "tv",
-        "anime"
-      ],
-      "languages": [
-        "en"
-      ],
-      "formats": [
-        "mp4",
-        "m3u8"
-      ],
-      "strategy": "mixed_embed_resolver",
-      "direct": "https://kisskh.co",
-      "replace_existing": false,
-      "inventory_rank": 2,
-      "inventory_score": 100
-    },
-    {
-      "id": "watch-cartoon-online",
-      "name": "Watch Cartoon Online",
-      "scope": "global",
-      "types": [
-        "movie",
-        "tv",
-        "anime"
-      ],
-      "languages": [
-        "en"
-      ],
-      "formats": [
-        "mp4",
-        "m3u8"
-      ],
-      "strategy": "mixed_embed_resolver",
-      "direct": "https://www.wco.tv",
-      "replace_existing": false,
-      "inventory_rank": 3,
-      "inventory_score": 94
-    },
-    {
-      "id": "cinemabz",
-      "name": "Cinema BZ",
-      "scope": "global",
-      "types": [
-        "movie",
-        "tv",
-        "anime"
-      ],
-      "languages": [
-        "en"
-      ],
-      "formats": [
-        "mp4",
-        "m3u8"
-      ],
-      "strategy": "mixed_embed_resolver",
-      "direct": "https://cinema.army",
-      "replace_existing": false,
-      "inventory_rank": 5,
-      "inventory_score": 91
-    },
-    {
-      "id": "flixer",
-      "name": "Flixer",
-      "scope": "global",
-      "types": [
-        "movie",
-        "tv",
-        "anime"
-      ],
-      "languages": [
-        "en"
-      ],
-      "formats": [
-        "mp4",
-        "m3u8"
-      ],
-      "strategy": "mixed_embed_resolver",
-      "direct": "https://flixer.gd",
-      "replace_existing": false,
-      "inventory_rank": 6,
-      "inventory_score": 90
-    },
-    {
-      "id": "overlook",
-      "name": "Overlook",
-      "scope": "global",
-      "types": [
-        "movie",
-        "tv",
-        "anime"
-      ],
-      "languages": [
-        "en"
-      ],
-      "formats": [
-        "mp4",
-        "m3u8"
-      ],
-      "strategy": "mixed_embed_resolver",
-      "direct": "https://overlook.cx",
-      "replace_existing": false,
-      "inventory_rank": 7,
-      "inventory_score": 90
-    },
-    {
-      "id": "vidsrc",
-      "name": "VidSrc",
-      "scope": "global",
-      "types": [
-        "movie",
-        "tv"
-      ],
-      "languages": [
-        "en"
-      ],
-      "formats": [
-        "mp4",
-        "m3u8"
-      ],
-      "strategy": "mixed_embed_resolver",
-      "direct": "https://vidsrc.sh/",
-      "replace_existing": false,
-      "inventory_rank": 9,
-      "inventory_score": 90
-    },
-    {
-      "id": "cinegram",
-      "name": "Cinegram",
-      "scope": "global",
-      "types": [
-        "movie",
-        "tv",
-        "anime"
-      ],
-      "languages": [
-        "en"
-      ],
-      "formats": [
-        "mp4",
-        "m3u8"
-      ],
-      "strategy": "mixed_embed_resolver",
-      "direct": "https://cinegram.tv",
-      "replace_existing": false,
-      "inventory_rank": 11,
-      "inventory_score": 88
-    },
-    {
-      "id": "cinejoy",
-      "name": "Cinejoy",
-      "scope": "global",
-      "types": [
-        "movie",
-        "tv",
-        "anime"
-      ],
-      "languages": [
-        "en"
-      ],
-      "formats": [
-        "mp4",
-        "m3u8"
-      ],
-      "strategy": "mixed_embed_resolver",
-      "direct": "https://cinejoy.pk",
-      "replace_existing": false,
-      "inventory_rank": 12,
-      "inventory_score": 88
-    },
     {
       "id": "corsflix",
       "name": "CorsFlix",
@@ -213,7 +38,35 @@
       "direct": "https://watch.corsflix.net",
       "replace_existing": false,
       "inventory_rank": 13,
-      "inventory_score": 88
+      "inventory_score": 88,
+      "routes": [
+        "/search",
+        "/tv",
+        "/search?rating=7.3..10",
+        "/search?with_runtime=95..300",
+        "/search?with_genres=27",
+        "/search?release_date=2026-08-14..2026-11-14",
+        "/search?release_date=2026-11-15..2027-02-14",
+        "/search?sort_by=vote_count.desc",
+        "/movies/{tmdbId}-{slug}",
+        "/search?with_keywords=210024",
+        "/search?with_companies=174",
+        "/search?with_companies=521",
+        "/tv?s={query}",
+        "/search?q={query}",
+        "/tv/search?q={query}",
+        "/search?release_date=2026-11-15..2027-12-31",
+        "/tv/search?sort_by=vote_count.desc",
+        "/search?with_genres=16",
+        "/search?with_cast=6384",
+        "/search?watch_providers=8",
+        "/search?vote_count=10000"
+      ],
+      "routeDiscoveryEvidence": {
+        "transport": "github-hosted",
+        "reason": "observed_executable_routes",
+        "routeCount": 21
+      }
     },
     {
       "id": "emnexmovies",
@@ -235,29 +88,38 @@
       "direct": "https://emnexmovies.tech",
       "replace_existing": false,
       "inventory_rank": 14,
-      "inventory_score": 88
-    },
-    {
-      "id": "flickystream",
-      "name": "FlickyStream",
-      "scope": "global",
-      "types": [
-        "movie",
-        "tv",
-        "anime"
+      "inventory_score": 88,
+      "routes": [
+        "/tv",
+        "/play?id=254630&type={media}&season={season}&episode={episode}",
+        "/tv/254630",
+        "/movie/1423191-resident-evil",
+        "/movie/1263337-heart-of-the-beast",
+        "/movie/1058424-hope",
+        "/movie/1400837-other-mommy",
+        "/movie/1813355-a-story-of-derry",
+        "/movie/1507696-apocalypse-z-new-world",
+        "/movie/1381071-godzilla-minus-zero",
+        "/movie/1244523-beware-boi-na",
+        "/movie/1616687-never-surrender",
+        "/movie/656908-ramayana-rise-of-a-legend",
+        "/movie/1294189-the-mongoose",
+        "/movie/1283515-verity",
+        "/movie/1422041-la-bola-negra",
+        "/movie/1596275-drive-the-pretenders",
+        "/movie/1562642-ghost-soldier",
+        "/movie/1101412-fall-2-deadpoint",
+        "/movie/1657630-the-awakening",
+        "/movie/1514026-buddy",
+        "/movie/1228834-the-fix",
+        "/movie/1570488-a-dog-s-perfect-christmas",
+        "/movie/1560520-batman-knightfall-part-1-knightfall"
       ],
-      "languages": [
-        "en"
-      ],
-      "formats": [
-        "mp4",
-        "m3u8"
-      ],
-      "strategy": "mixed_embed_resolver",
-      "direct": "https://flickystream.mov",
-      "replace_existing": false,
-      "inventory_rank": 15,
-      "inventory_score": 88
+      "routeDiscoveryEvidence": {
+        "transport": "github-hosted",
+        "reason": "observed_executable_routes",
+        "routeCount": 24
+      }
     },
     {
       "id": "flikhub",
@@ -279,29 +141,25 @@
       "direct": "https://www.flikhub.net",
       "replace_existing": false,
       "inventory_rank": 16,
-      "inventory_score": 88
-    },
-    {
-      "id": "hexa",
-      "name": "Hexa",
-      "scope": "global",
-      "types": [
-        "movie",
-        "tv",
-        "anime"
+      "inventory_score": 88,
+      "routes": [
+        "/tv",
+        "/tv?genre=10759",
+        "/tv?genre=10765",
+        "/tv?genre=80",
+        "/tv?genre=35",
+        "/tv?genre=18",
+        "/tv?genre=16",
+        "/tv?genre=9648",
+        "/tv?genre=10764",
+        "/tv?genre=10768",
+        "/search"
       ],
-      "languages": [
-        "en"
-      ],
-      "formats": [
-        "mp4",
-        "m3u8"
-      ],
-      "strategy": "mixed_embed_resolver",
-      "direct": "https://hexa.su",
-      "replace_existing": false,
-      "inventory_rank": 17,
-      "inventory_score": 88
+      "routeDiscoveryEvidence": {
+        "transport": "github-hosted",
+        "reason": "observed_executable_routes",
+        "routeCount": 11
+      }
     },
     {
       "id": "latestmovies",
@@ -323,29 +181,38 @@
       "direct": "https://latestmovies.net",
       "replace_existing": false,
       "inventory_rank": 18,
-      "inventory_score": 88
-    },
-    {
-      "id": "meowtv",
-      "name": "MeowTV",
-      "scope": "global",
-      "types": [
-        "movie",
-        "tv",
-        "anime"
+      "inventory_score": 88,
+      "routes": [
+        "/tv",
+        "/play?id=1396&type={media}&title=Breaking%20Bad&poster=%2FanFx9aTOOYqgS3v7x3R84Kz67ly.jpg&backdrop=%2FtsRy63Mu5cu8etL1X7ZLyf7UP1M.jpg",
+        "/tv/1396",
+        "/movie/1185344",
+        "/movie/1824935",
+        "/movie/1419036",
+        "/movie/1543469",
+        "/movie/1389379",
+        "/movie/1824694",
+        "/movie/1050981",
+        "/movie/1518204",
+        "/movie/1757174",
+        "/movie/1616687",
+        "/movie/1666787",
+        "/movie/1664682",
+        "/movie/1394740",
+        "/movie/1238735",
+        "/movie/1559980",
+        "/movie/1484085",
+        "/movie/1596249",
+        "/movie/1585239",
+        "/movie/1669915",
+        "/movie/1562642",
+        "/movie/13"
       ],
-      "languages": [
-        "en"
-      ],
-      "formats": [
-        "mp4",
-        "m3u8"
-      ],
-      "strategy": "mixed_embed_resolver",
-      "direct": "https://meowtv.ru",
-      "replace_existing": false,
-      "inventory_rank": 19,
-      "inventory_score": 88
+      "routeDiscoveryEvidence": {
+        "transport": "github-hosted",
+        "reason": "observed_executable_routes",
+        "routeCount": 24
+      }
     },
     {
       "id": "movy",
@@ -367,7 +234,38 @@
       "direct": "https://www.movy.sx",
       "replace_existing": false,
       "inventory_rank": 20,
-      "inventory_score": 88
+      "inventory_score": 88,
+      "routes": [
+        "/tv/254630?play=true",
+        "/tv/254630",
+        "/tv/84773",
+        "/movie/1616687",
+        "/movie/1368337",
+        "/tv/213375",
+        "/movie/1518204",
+        "/movie/1003596",
+        "/movie/1400837",
+        "/tv/291507",
+        "/tv/131488",
+        "/tv/65701",
+        "/tv/764",
+        "/tv/247718",
+        "/tv/153312",
+        "/tv/2912",
+        "/tv/456",
+        "/tv/4656",
+        "/tv/291",
+        "/tv/1871",
+        "/tv/37678",
+        "/tv/31991",
+        "/tv/4614",
+        "/tv/44006"
+      ],
+      "routeDiscoveryEvidence": {
+        "transport": "github-hosted",
+        "reason": "observed_executable_routes",
+        "routeCount": 24
+      }
     },
     {
       "id": "shuttletv",
@@ -389,29 +287,17 @@
       "direct": "https://shuttletv.pk",
       "replace_existing": false,
       "inventory_rank": 22,
-      "inventory_score": 88
-    },
-    {
-      "id": "willow",
-      "name": "Willow",
-      "scope": "global",
-      "types": [
-        "movie",
-        "tv",
-        "anime"
+      "inventory_score": 88,
+      "routes": [
+        "/api/site-migration/start?to=",
+        "/watch",
+        "/api/settings"
       ],
-      "languages": [
-        "en"
-      ],
-      "formats": [
-        "mp4",
-        "m3u8"
-      ],
-      "strategy": "mixed_embed_resolver",
-      "direct": "https://willow.arlen.icu",
-      "replace_existing": false,
-      "inventory_rank": 23,
-      "inventory_score": 88
+      "routeDiscoveryEvidence": {
+        "transport": "github-hosted",
+        "reason": "observed_executable_routes",
+        "routeCount": 3
+      }
     },
     {
       "id": "primewire",
@@ -432,7 +318,15 @@
       "direct": "https://primewire.pw",
       "replace_existing": false,
       "inventory_rank": 26,
-      "inventory_score": 85
+      "inventory_score": 85,
+      "routes": [
+        "/tv"
+      ],
+      "routeDiscoveryEvidence": {
+        "transport": "github-hosted",
+        "reason": "observed_executable_routes",
+        "routeCount": 1
+      }
     },
     {
       "id": "67movies",
@@ -454,51 +348,15 @@
       "direct": "https://67movies.st",
       "replace_existing": false,
       "inventory_rank": 27,
-      "inventory_score": 83
-    },
-    {
-      "id": "7movies",
-      "name": "7Movies",
-      "scope": "global",
-      "types": [
-        "movie",
-        "tv",
-        "anime"
+      "inventory_score": 83,
+      "routes": [
+        "/watch"
       ],
-      "languages": [
-        "en"
-      ],
-      "formats": [
-        "mp4",
-        "m3u8"
-      ],
-      "strategy": "mixed_embed_resolver",
-      "direct": "https://7movies.in",
-      "replace_existing": false,
-      "inventory_rank": 28,
-      "inventory_score": 83
-    },
-    {
-      "id": "all-you-can-watch",
-      "name": "All You Can Watch",
-      "scope": "global",
-      "types": [
-        "movie",
-        "tv",
-        "anime"
-      ],
-      "languages": [
-        "en"
-      ],
-      "formats": [
-        "mp4",
-        "m3u8"
-      ],
-      "strategy": "mixed_embed_resolver",
-      "direct": "https://allyoucanwatch.net",
-      "replace_existing": false,
-      "inventory_rank": 30,
-      "inventory_score": 83
+      "routeDiscoveryEvidence": {
+        "transport": "github-hosted",
+        "reason": "observed_executable_routes",
+        "routeCount": 1
+      }
     },
     {
       "id": "arrowtv",
@@ -520,51 +378,38 @@
       "direct": "https://arrowtv.net",
       "replace_existing": false,
       "inventory_rank": 31,
-      "inventory_score": 83
-    },
-    {
-      "id": "bcine",
-      "name": "bCine",
-      "scope": "global",
-      "types": [
-        "movie",
-        "tv",
-        "anime"
+      "inventory_score": 83,
+      "routes": [
+        "/tv",
+        "/watch/movie/1368337",
+        "/movie/1368337",
+        "/tv/84773",
+        "/tv/213375",
+        "/movie/1792170",
+        "/movie/1400837",
+        "/movie/1263337",
+        "/movie/1423191",
+        "/movie/1003596",
+        "/tv/254630",
+        "/movie/1381071",
+        "/movie/687163",
+        "/movie/969681",
+        "/movie/1058424",
+        "/movie/1813355",
+        "/movie/1507696",
+        "/movie/1244523",
+        "/movie/1616687",
+        "/movie/656908",
+        "/movie/1294189",
+        "/movie/1283515",
+        "/movie/155",
+        "/movie/354912"
       ],
-      "languages": [
-        "en"
-      ],
-      "formats": [
-        "mp4",
-        "m3u8"
-      ],
-      "strategy": "mixed_embed_resolver",
-      "direct": "https://bcine.ru",
-      "replace_existing": false,
-      "inventory_rank": 32,
-      "inventory_score": 83
-    },
-    {
-      "id": "bingey",
-      "name": "Bingey",
-      "scope": "global",
-      "types": [
-        "movie",
-        "tv",
-        "anime"
-      ],
-      "languages": [
-        "en"
-      ],
-      "formats": [
-        "mp4",
-        "m3u8"
-      ],
-      "strategy": "mixed_embed_resolver",
-      "direct": "https://www.bingey.cfd",
-      "replace_existing": false,
-      "inventory_rank": 33,
-      "inventory_score": 83
+      "routeDiscoveryEvidence": {
+        "transport": "github-hosted",
+        "reason": "observed_executable_routes",
+        "routeCount": 24
+      }
     },
     {
       "id": "chillflix",
@@ -586,117 +431,38 @@
       "direct": "https://chillflix.lol",
       "replace_existing": false,
       "inventory_rank": 34,
-      "inventory_score": 83
-    },
-    {
-      "id": "cineapse",
-      "name": "Cineapse",
-      "scope": "global",
-      "types": [
-        "movie",
-        "tv",
-        "anime"
+      "inventory_score": 83,
+      "routes": [
+        "/api/app/android",
+        "/embed/",
+        "/embed/movie/",
+        "/embed/tv/",
+        "/embed",
+        "/search",
+        "/movie/1567605?play=true",
+        "/movie/1567605",
+        "/tv/291507?play=true&s={query}&e=1",
+        "/tv/291507",
+        "/movie/1798383?play=true",
+        "/movie/1798383",
+        "/movie/1286656?play=true",
+        "/movie/1286656",
+        "/tv/303044?play=true&s={query}&e=1",
+        "/tv/303044",
+        "/movie/1654940?play=true",
+        "/movie/1654940",
+        "/movie/656908?play=true",
+        "/movie/656908",
+        "/movie/1585239?play=true",
+        "/movie/1585239",
+        "/movie/1368337",
+        "/movie/1368337?play=true"
       ],
-      "languages": [
-        "en"
-      ],
-      "formats": [
-        "mp4",
-        "m3u8"
-      ],
-      "strategy": "mixed_embed_resolver",
-      "direct": "https://www.cineapse.net",
-      "replace_existing": false,
-      "inventory_rank": 35,
-      "inventory_score": 83
-    },
-    {
-      "id": "cineflix",
-      "name": "CineFlix",
-      "scope": "global",
-      "types": [
-        "movie",
-        "tv",
-        "anime"
-      ],
-      "languages": [
-        "en"
-      ],
-      "formats": [
-        "mp4",
-        "m3u8"
-      ],
-      "strategy": "mixed_embed_resolver",
-      "direct": "https://fstream.app",
-      "replace_existing": false,
-      "inventory_rank": 36,
-      "inventory_score": 83
-    },
-    {
-      "id": "cinepro",
-      "name": "CinePro",
-      "scope": "global",
-      "types": [
-        "movie",
-        "tv",
-        "anime"
-      ],
-      "languages": [
-        "en"
-      ],
-      "formats": [
-        "mp4",
-        "m3u8"
-      ],
-      "strategy": "mixed_embed_resolver",
-      "direct": "https://cineby.gdn",
-      "replace_existing": false,
-      "inventory_rank": 38,
-      "inventory_score": 83
-    },
-    {
-      "id": "cinezo",
-      "name": "Cinezo",
-      "scope": "global",
-      "types": [
-        "movie",
-        "tv",
-        "anime"
-      ],
-      "languages": [
-        "en"
-      ],
-      "formats": [
-        "mp4",
-        "m3u8"
-      ],
-      "strategy": "mixed_embed_resolver",
-      "direct": "https://www.cinezo.org",
-      "replace_existing": false,
-      "inventory_rank": 39,
-      "inventory_score": 83
-    },
-    {
-      "id": "coreflix",
-      "name": "Coreflix",
-      "scope": "global",
-      "types": [
-        "movie",
-        "tv",
-        "anime"
-      ],
-      "languages": [
-        "en"
-      ],
-      "formats": [
-        "mp4",
-        "m3u8"
-      ],
-      "strategy": "mixed_embed_resolver",
-      "direct": "https://coreflix.tv",
-      "replace_existing": false,
-      "inventory_rank": 40,
-      "inventory_score": 83
+      "routeDiscoveryEvidence": {
+        "transport": "github-hosted",
+        "reason": "observed_executable_routes",
+        "routeCount": 24
+      }
     },
     {
       "id": "diostream",
@@ -718,95 +484,15 @@
       "direct": "https://diostream.cc",
       "replace_existing": false,
       "inventory_rank": 43,
-      "inventory_score": 83
-    },
-    {
-      "id": "ffmovies",
-      "name": "FFMovies",
-      "scope": "global",
-      "types": [
-        "movie",
-        "tv",
-        "anime"
+      "inventory_score": 83,
+      "routes": [
+        "/embed/sw.js"
       ],
-      "languages": [
-        "en"
-      ],
-      "formats": [
-        "mp4",
-        "m3u8"
-      ],
-      "strategy": "mixed_embed_resolver",
-      "direct": "https://ffmovies.org",
-      "replace_existing": false,
-      "inventory_rank": 44,
-      "inventory_score": 83
-    },
-    {
-      "id": "frame",
-      "name": "FRAME",
-      "scope": "global",
-      "types": [
-        "movie",
-        "tv",
-        "anime"
-      ],
-      "languages": [
-        "en"
-      ],
-      "formats": [
-        "mp4",
-        "m3u8"
-      ],
-      "strategy": "mixed_embed_resolver",
-      "direct": "https://www.framemovie.online",
-      "replace_existing": false,
-      "inventory_rank": 46,
-      "inventory_score": 83
-    },
-    {
-      "id": "hivex",
-      "name": "HiveX",
-      "scope": "global",
-      "types": [
-        "movie",
-        "tv",
-        "anime"
-      ],
-      "languages": [
-        "en"
-      ],
-      "formats": [
-        "mp4",
-        "m3u8"
-      ],
-      "strategy": "mixed_embed_resolver",
-      "direct": "https://hivex.stream",
-      "replace_existing": false,
-      "inventory_rank": 47,
-      "inventory_score": 83
-    },
-    {
-      "id": "moonflix",
-      "name": "Moonflix",
-      "scope": "global",
-      "types": [
-        "movie",
-        "tv",
-        "anime"
-      ],
-      "languages": [
-        "en"
-      ],
-      "formats": [
-        "mp4",
-        "m3u8"
-      ],
-      "strategy": "mixed_embed_resolver",
-      "direct": "https://moonflix.website",
-      "replace_existing": false,
-      "inventory_rank": 48,
-      "inventory_score": 83
+      "routeDiscoveryEvidence": {
+        "transport": "github-hosted",
+        "reason": "observed_executable_routes",
+        "routeCount": 1
+      }
     },
     {
       "id": "moviebite",
@@ -828,29 +514,15 @@
       "direct": "https://moviebite.org",
       "replace_existing": false,
       "inventory_rank": 49,
-      "inventory_score": 83
-    },
-    {
-      "id": "movish",
-      "name": "Movish",
-      "scope": "global",
-      "types": [
-        "movie",
-        "tv",
-        "anime"
+      "inventory_score": 83,
+      "routes": [
+        "/tv/"
       ],
-      "languages": [
-        "en"
-      ],
-      "formats": [
-        "mp4",
-        "m3u8"
-      ],
-      "strategy": "mixed_embed_resolver",
-      "direct": "https://movish.to",
-      "replace_existing": false,
-      "inventory_rank": 50,
-      "inventory_score": 83
+      "routeDiscoveryEvidence": {
+        "transport": "github-hosted",
+        "reason": "observed_executable_routes",
+        "routeCount": 1
+      }
     },
     {
       "id": "neonflix",
@@ -872,7 +544,38 @@
       "direct": "https://neonflix.st",
       "replace_existing": false,
       "inventory_rank": 51,
-      "inventory_score": 83
+      "inventory_score": 83,
+      "routes": [
+        "/tv",
+        "/search",
+        "/watch/movie/1368337",
+        "/movie/1368337",
+        "/tv/254630",
+        "/tv/84773",
+        "/movie/1003596",
+        "/movie/1518204",
+        "/tv/213375",
+        "/movie/1185344",
+        "/movie/1400837",
+        "/tv/291507",
+        "/movie/1543469",
+        "/movie/1263337",
+        "/movie/1792170",
+        "/movie/1423191",
+        "/movie/1381071",
+        "/movie/1567605",
+        "/movie/1300968",
+        "/movie/1483525",
+        "/movie/969681",
+        "/movie/1375441",
+        "/movie/1616687",
+        "/movie/656908"
+      ],
+      "routeDiscoveryEvidence": {
+        "transport": "github-hosted",
+        "reason": "observed_executable_routes",
+        "routeCount": 24
+      }
     },
     {
       "id": "nomorflix",
@@ -894,51 +597,15 @@
       "direct": "https://nomorflix.cc",
       "replace_existing": false,
       "inventory_rank": 52,
-      "inventory_score": 83
-    },
-    {
-      "id": "phantomflix",
-      "name": "PhantomFlix",
-      "scope": "global",
-      "types": [
-        "movie",
-        "tv",
-        "anime"
+      "inventory_score": 83,
+      "routes": [
+        "/embed/sw.js"
       ],
-      "languages": [
-        "en"
-      ],
-      "formats": [
-        "mp4",
-        "m3u8"
-      ],
-      "strategy": "mixed_embed_resolver",
-      "direct": "https://phantomflix.net",
-      "replace_existing": false,
-      "inventory_rank": 53,
-      "inventory_score": 83
-    },
-    {
-      "id": "pstream",
-      "name": "PStream",
-      "scope": "global",
-      "types": [
-        "movie",
-        "tv",
-        "anime"
-      ],
-      "languages": [
-        "en"
-      ],
-      "formats": [
-        "mp4",
-        "m3u8"
-      ],
-      "strategy": "mixed_embed_resolver",
-      "direct": "https://pstream.cfd/",
-      "replace_existing": false,
-      "inventory_rank": 59,
-      "inventory_score": 83
+      "routeDiscoveryEvidence": {
+        "transport": "github-hosted",
+        "reason": "observed_executable_routes",
+        "routeCount": 1
+      }
     },
     {
       "id": "boredflix",
@@ -960,29 +627,38 @@
       "direct": "https://boredflix.to/",
       "replace_existing": false,
       "inventory_rank": 36,
-      "inventory_score": 82
-    },
-    {
-      "id": "streamaggregator",
-      "name": "StreamAggregator",
-      "scope": "global",
-      "types": [
-        "movie",
-        "tv",
-        "anime"
+      "inventory_score": 82,
+      "routes": [
+        "/movie/1283515/verity",
+        "/movie/1384216/the-dog-stars",
+        "/movie/1465063/forgotten-island",
+        "/movie/1596275/drive-the-pretenders",
+        "/movie/1727734/ali-g-who-iz-i",
+        "/movie/1400940/clayface",
+        "/movie/1170608/dune-part-three",
+        "/movie/1503762/sense-and-sensibility",
+        "/movie/1377237/runner",
+        "/movie/791523/wildwood",
+        "/movie/1058424/hope",
+        "/movie/1562777/the-stunt-driver",
+        "/movie/1003596/avengers-doomsday",
+        "/movie/1368337/the-odyssey",
+        "/movie/1195803/wicker",
+        "/movie/1290418/the-cycle",
+        "/movie/1629051/never-after-dark",
+        "/movie/969681/spider-man-brand-new-day",
+        "/movie/1376400/crawlers",
+        "/movie/1423191/resident-evil",
+        "/movie/1339713/obsession",
+        "/movie/1422041/la-bola-negra",
+        "/movie/1108427/moana",
+        "/movie/1153576/street-fighter"
       ],
-      "languages": [
-        "en"
-      ],
-      "formats": [
-        "mp4",
-        "m3u8"
-      ],
-      "strategy": "mixed_embed_resolver",
-      "direct": "https://streamaggregator.in",
-      "replace_existing": false,
-      "inventory_rank": 60,
-      "inventory_score": 83
+      "routeDiscoveryEvidence": {
+        "transport": "github-hosted",
+        "reason": "observed_executable_routes",
+        "routeCount": 24
+      }
     },
     {
       "id": "svstream",
@@ -1004,95 +680,15 @@
       "direct": "https://svstream.cc",
       "replace_existing": false,
       "inventory_rank": 61,
-      "inventory_score": 83
-    },
-    {
-      "id": "tonkacine",
-      "name": "TonkaCine",
-      "scope": "global",
-      "types": [
-        "movie",
-        "tv",
-        "anime"
+      "inventory_score": 83,
+      "routes": [
+        "/embed/sw.js"
       ],
-      "languages": [
-        "en"
-      ],
-      "formats": [
-        "mp4",
-        "m3u8"
-      ],
-      "strategy": "mixed_embed_resolver",
-      "direct": "https://tonkacine.watch",
-      "replace_existing": false,
-      "inventory_rank": 62,
-      "inventory_score": 83
-    },
-    {
-      "id": "vidplay",
-      "name": "VidPlay",
-      "scope": "global",
-      "types": [
-        "movie",
-        "tv",
-        "anime"
-      ],
-      "languages": [
-        "en"
-      ],
-      "formats": [
-        "mp4",
-        "m3u8"
-      ],
-      "strategy": "mixed_embed_resolver",
-      "direct": "https://vidplay.to",
-      "replace_existing": false,
-      "inventory_rank": 64,
-      "inventory_score": 83
-    },
-    {
-      "id": "vivarium",
-      "name": "Vivarium",
-      "scope": "global",
-      "types": [
-        "movie",
-        "tv",
-        "anime"
-      ],
-      "languages": [
-        "en"
-      ],
-      "formats": [
-        "mp4",
-        "m3u8"
-      ],
-      "strategy": "mixed_embed_resolver",
-      "direct": "https://vivarium.su/",
-      "replace_existing": false,
-      "inventory_rank": 65,
-      "inventory_score": 83
-    },
-    {
-      "id": "vuflix",
-      "name": "Vuflix",
-      "scope": "global",
-      "types": [
-        "movie",
-        "tv",
-        "anime"
-      ],
-      "languages": [
-        "en"
-      ],
-      "formats": [
-        "mp4",
-        "m3u8"
-      ],
-      "strategy": "mixed_embed_resolver",
-      "direct": "https://vuflix.co",
-      "replace_existing": false,
-      "inventory_rank": 66,
-      "inventory_score": 83
+      "routeDiscoveryEvidence": {
+        "transport": "github-hosted",
+        "reason": "observed_executable_routes",
+        "routeCount": 1
+      }
     },
     {
       "id": "frenchstream",
@@ -1114,29 +710,17 @@
       "direct": "https://fs16.lol/",
       "replace_existing": false,
       "inventory_rank": 1,
-      "inventory_score": 103
-    },
-    {
-      "id": "aether",
-      "name": "Aether",
-      "scope": "france",
-      "types": [
-        "movie",
-        "tv",
-        "anime"
+      "inventory_score": 103,
+      "routes": [
+        "/series/en-cours/",
+        "/series/terminees/",
+        "/series/annulees/"
       ],
-      "languages": [
-        "fr"
-      ],
-      "formats": [
-        "mp4",
-        "m3u8"
-      ],
-      "strategy": "mixed_embed_resolver",
-      "direct": "https://aether.ist",
-      "replace_existing": false,
-      "inventory_rank": 14,
-      "inventory_score": 83
+      "routeDiscoveryEvidence": {
+        "transport": "github-hosted",
+        "reason": "observed_executable_routes",
+        "routeCount": 3
+      }
     },
     {
       "id": "openflix",
@@ -1158,7 +742,1190 @@
       "direct": "https://openflix.pro",
       "replace_existing": false,
       "inventory_rank": 22,
-      "inventory_score": 83
+      "inventory_score": 83,
+      "routes": [
+        "/search",
+        "/api/p/event",
+        "/api/cc/ceaimwa",
+        "/api/cc/ceaiplumwa"
+      ],
+      "routeDiscoveryEvidence": {
+        "transport": "github-hosted",
+        "reason": "observed_executable_routes",
+        "routeCount": 4
+      }
+    },
+    {
+      "id": "dessinanime",
+      "name": "Dessinanime",
+      "scope": "france",
+      "types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "languages": [
+        "fr"
+      ],
+      "formats": [
+        "mp4",
+        "m3u8"
+      ],
+      "strategy": "mixed_embed_resolver",
+      "direct": "https://dessinanime.net/",
+      "replace_existing": false,
+      "inventory_rank": 27,
+      "inventory_score": 80,
+      "routes": [
+        "/movie/f0uvM3AAsdrmLtbXHh1YGKcD4EttSppn",
+        "/movie/JSAVQlaSeRFet8uzVoCypijNk8WJgQH4",
+        "/movie/BGjjI4M22tJXQT90FlnMbHT0OP77UJlK",
+        "/movie/Pxus9SmeguD0lynhDkGHZfwSROnq5X6l",
+        "/movie/ko3EijqyluJExbCywmpFLVNOU4NECZEf",
+        "/movie/cEGnx8Wm9JSsCgCaB8FvfYwqDKfiIbfI",
+        "/movie/WgeaBXDefLipRNdGCJiQOckcNLnRtBeB",
+        "/movie/AcbtO682dMmPl6vwbsVOHT4yud2S4zFu",
+        "/movie/iWv9CxfguAMFqdYJHJrlgwZLcstJzbn5",
+        "/movie/vekxOLljlkTbpqfCNCsRQyqKEmXIAQVU"
+      ],
+      "routeDiscoveryEvidence": {
+        "transport": "github-hosted",
+        "reason": "observed_executable_routes",
+        "routeCount": 10
+      }
+    },
+    {
+      "id": "fexini",
+      "name": "Fexini",
+      "scope": "france",
+      "types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "languages": [
+        "fr"
+      ],
+      "formats": [
+        "mp4",
+        "m3u8"
+      ],
+      "strategy": "mixed_embed_resolver",
+      "direct": "https://fexini.net/",
+      "replace_existing": false,
+      "inventory_rank": 30,
+      "inventory_score": 76,
+      "routes": [
+        "/tv",
+        "/series",
+        "/api/encarts/media/72b156ca-81b9-4416-90ed-9e710fb285ae",
+        "/film/malfaisante",
+        "/film/heart-of-the-beast",
+        "/film/resident-evil",
+        "/film/tombe-du-ciel",
+        "/series/un-job-mortel",
+        "/film/lodyssee",
+        "/film/never-surrender",
+        "/film/primetime",
+        "/film/possible-love",
+        "/film/spider-man-brand-new-day",
+        "/film/la-bola-negra",
+        "/film/the-mongoose",
+        "/film/letrange-noel-de-monsieur-jack",
+        "/film/maman-jai-rate-lavion",
+        "/film/la-vie-est-belle",
+        "/film/le-grinch-2000",
+        "/series/home-for-christmas",
+        "/film/klaus",
+        "/film/le-grinch",
+        "/film/les-cinq-legendes",
+        "/film/red-one"
+      ],
+      "routeDiscoveryEvidence": {
+        "transport": "github-hosted",
+        "reason": "observed_executable_routes",
+        "routeCount": 24
+      }
+    },
+    {
+      "id": "moiflix",
+      "name": "Moiflix",
+      "scope": "france",
+      "types": [
+        "movie",
+        "tv"
+      ],
+      "languages": [
+        "fr"
+      ],
+      "formats": [
+        "mp4",
+        "m3u8"
+      ],
+      "strategy": "mixed_embed_resolver",
+      "direct": "https://moiflix.fans/",
+      "replace_existing": false,
+      "inventory_rank": 40,
+      "inventory_score": 68,
+      "routes": [
+        "/movie/WTMuSLiJCmVDK1dvK4DBSXNfnVTpEGdu",
+        "/movie/X8j4NWKEaqnJc2IuV2W0DHpL5bChTLQ8",
+        "/movie/GdJqCOmwyUQ5Gv0rgSGjglSpgNz4Efxt",
+        "/movie/Ujl95hTPi1UxJEWrjJsqw5hMb5uB6pN3",
+        "/movie/fFwEtiqgUZJbvGNBMoKbcbIR5ibl0IJS",
+        "/movie/4Piad6iHAD9DDvlUgve5Km95NH6Sou6A",
+        "/movie/noPSa7N3qkymKd4UXBZr5ssx7N3CWM3H",
+        "/movie/TqF5EaZuMal4ta0yGqwq1KGI299lRopM",
+        "/movie/W98YJh3txgQHghaw9JHMMFCFYcgxldAW",
+        "/movie/0VaevReWhQEJFmZydmPPxxeFpwRFImv2",
+        "/movie/IAt2S3ueA7GUSWaxc8q6K5qGZLvICqX3"
+      ],
+      "routeDiscoveryEvidence": {
+        "transport": "github-hosted",
+        "reason": "observed_executable_routes",
+        "routeCount": 11
+      }
+    },
+    {
+      "id": "webflix",
+      "name": "Webflix",
+      "scope": "france",
+      "types": [
+        "movie",
+        "tv"
+      ],
+      "languages": [
+        "fr"
+      ],
+      "formats": [
+        "mp4",
+        "m3u8"
+      ],
+      "strategy": "mixed_embed_resolver",
+      "direct": "https://webflix.art/",
+      "replace_existing": false,
+      "inventory_rank": 44,
+      "inventory_score": 68,
+      "routes": [
+        "/api/push/subscribe"
+      ],
+      "routeDiscoveryEvidence": {
+        "transport": "github-hosted",
+        "reason": "observed_executable_routes",
+        "routeCount": 1
+      }
+    },
+    {
+      "id": "showbox",
+      "name": "ShowBox",
+      "scope": "france",
+      "types": [
+        "movie",
+        "tv"
+      ],
+      "languages": [
+        "fr"
+      ],
+      "formats": [
+        "mp4",
+        "m3u8"
+      ],
+      "strategy": "mixed_embed_resolver",
+      "direct": "https://showbox.media/",
+      "replace_existing": false,
+      "inventory_rank": 59,
+      "inventory_score": 64,
+      "routes": [
+        "/movie?genre=1",
+        "/movie?genre=2",
+        "/movie?genre=3",
+        "/movie?genre=4",
+        "/movie?genre=22",
+        "/movie?genre=5",
+        "/movie?genre=6",
+        "/movie?genre=7",
+        "/movie?genre=8",
+        "/movie?genre=9",
+        "/movie?genre=10",
+        "/movie?genre=11",
+        "/movie?genre=51",
+        "/movie?genre=12",
+        "/movie?genre=13",
+        "/movie?genre=14",
+        "/movie?genre=15",
+        "/movie?genre=45",
+        "/movie?genre=24",
+        "/movie?genre=16",
+        "/movie?genre=17",
+        "/movie?genre=53",
+        "/movie?genre=18",
+        "/movie?genre=52"
+      ],
+      "routeDiscoveryEvidence": {
+        "transport": "github-hosted",
+        "reason": "observed_executable_routes",
+        "routeCount": 24
+      }
+    },
+    {
+      "id": "neobam",
+      "name": "Neobam",
+      "scope": "france",
+      "types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "languages": [
+        "fr"
+      ],
+      "formats": [
+        "mp4",
+        "m3u8"
+      ],
+      "strategy": "mixed_embed_resolver",
+      "direct": "https://www.neobam.fr/",
+      "replace_existing": true,
+      "inventory_rank": 21,
+      "inventory_score": 83,
+      "routes": [
+        "/series"
+      ],
+      "routeDiscoveryEvidence": {
+        "transport": "github-hosted",
+        "reason": "observed_executable_routes",
+        "routeCount": 1
+      }
+    },
+    {
+      "id": "fullanime",
+      "name": "FullAnime",
+      "scope": "france",
+      "types": [
+        "anime"
+      ],
+      "languages": [
+        "fr"
+      ],
+      "formats": [
+        "mp4",
+        "m3u8"
+      ],
+      "strategy": "mixed_embed_resolver",
+      "direct": "https://www.fullanime.fr",
+      "replace_existing": false,
+      "inventory_rank": 71,
+      "inventory_score": 61,
+      "routes": [
+        "/search"
+      ],
+      "routeDiscoveryEvidence": {
+        "transport": "github-hosted",
+        "reason": "observed_executable_routes",
+        "routeCount": 1
+      }
+    },
+    {
+      "id": "animeo",
+      "name": "Animeo",
+      "scope": "france",
+      "types": [
+        "anime"
+      ],
+      "languages": [
+        "fr"
+      ],
+      "formats": [
+        "mp4",
+        "m3u8"
+      ],
+      "strategy": "mixed_embed_resolver",
+      "direct": "https://animeovf.fr/",
+      "replace_existing": false,
+      "inventory_rank": 77,
+      "inventory_score": 52,
+      "routes": [
+        "/search"
+      ],
+      "routeDiscoveryEvidence": {
+        "transport": "github-hosted",
+        "reason": "observed_executable_routes",
+        "routeCount": 1
+      }
+    },
+    {
+      "id": "animeonsen",
+      "name": "AnimeOnsen",
+      "scope": "france",
+      "types": [
+        "anime"
+      ],
+      "languages": [
+        "fr"
+      ],
+      "formats": [
+        "mp4",
+        "m3u8"
+      ],
+      "strategy": "mixed_embed_resolver",
+      "direct": "https://www.animeonsen.xyz/",
+      "replace_existing": false,
+      "inventory_rank": 78,
+      "inventory_score": 52,
+      "routes": [
+        "/search"
+      ],
+      "routeDiscoveryEvidence": {
+        "transport": "github-hosted",
+        "reason": "observed_executable_routes",
+        "routeCount": 1
+      }
+    },
+    {
+      "id": "myfluneo",
+      "name": "MyFluneo",
+      "scope": "france",
+      "types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "languages": [
+        "fr"
+      ],
+      "formats": [
+        "mp4",
+        "m3u8"
+      ],
+      "strategy": "mixed_embed_resolver",
+      "direct": "https://myfluneo.eu",
+      "replace_existing": true,
+      "inventory_rank": 6,
+      "inventory_score": 93,
+      "routes": [
+        "/api/webtv/guide?channel=1",
+        "/api"
+      ],
+      "routeDiscoveryEvidence": {
+        "transport": "github-hosted",
+        "reason": "observed_executable_routes",
+        "routeCount": 2
+      }
+    },
+    {
+      "id": "frembed",
+      "name": "Frembed",
+      "scope": "france",
+      "types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "languages": [
+        "fr"
+      ],
+      "formats": [
+        "mp4",
+        "m3u8"
+      ],
+      "strategy": "mixed_embed_resolver",
+      "direct": "https://frembed.surf",
+      "replace_existing": true,
+      "inventory_rank": 10,
+      "inventory_score": 86,
+      "routes": [
+        "/api/session-handoff/issue"
+      ],
+      "routeDiscoveryEvidence": {
+        "transport": "github-hosted",
+        "reason": "observed_executable_routes",
+        "routeCount": 1
+      }
+    }
+  ],
+  "domainEvidenceFile": "automation/provider-domain-refresh-2026-11-14.json",
+  "activationPipelineFix": "retry_on_main_3eb4e1f_exact_60_60_after_identity_schema_and_catalog_activation_fixes",
+  "deferredProviders": [
+    {
+      "id": "kisskh",
+      "name": "KissKH",
+      "scope": "global",
+      "types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "languages": [
+        "en"
+      ],
+      "formats": [
+        "mp4",
+        "m3u8"
+      ],
+      "strategy": "mixed_embed_resolver",
+      "direct": "https://kisskh.co",
+      "replace_existing": false,
+      "inventory_rank": 2,
+      "inventory_score": 100,
+      "routeDiscoveryLastReason": "reachable_no_executable_route_observed"
+    },
+    {
+      "id": "watch-cartoon-online",
+      "name": "Watch Cartoon Online",
+      "scope": "global",
+      "types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "languages": [
+        "en"
+      ],
+      "formats": [
+        "mp4",
+        "m3u8"
+      ],
+      "strategy": "mixed_embed_resolver",
+      "direct": "https://www.wco.tv",
+      "replace_existing": false,
+      "inventory_rank": 3,
+      "inventory_score": 94,
+      "routeDiscoveryLastReason": "reachable_no_executable_route_observed"
+    },
+    {
+      "id": "cinemabz",
+      "name": "Cinema BZ",
+      "scope": "global",
+      "types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "languages": [
+        "en"
+      ],
+      "formats": [
+        "mp4",
+        "m3u8"
+      ],
+      "strategy": "mixed_embed_resolver",
+      "direct": "https://cinema.army",
+      "replace_existing": false,
+      "inventory_rank": 5,
+      "inventory_score": 91,
+      "routeDiscoveryLastReason": "reachable_no_executable_route_observed"
+    },
+    {
+      "id": "flixer",
+      "name": "Flixer",
+      "scope": "global",
+      "types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "languages": [
+        "en"
+      ],
+      "formats": [
+        "mp4",
+        "m3u8"
+      ],
+      "strategy": "mixed_embed_resolver",
+      "direct": "https://flixer.gd",
+      "replace_existing": false,
+      "inventory_rank": 6,
+      "inventory_score": 90,
+      "routeDiscoveryLastReason": "reachable_no_executable_route_observed"
+    },
+    {
+      "id": "overlook",
+      "name": "Overlook",
+      "scope": "global",
+      "types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "languages": [
+        "en"
+      ],
+      "formats": [
+        "mp4",
+        "m3u8"
+      ],
+      "strategy": "mixed_embed_resolver",
+      "direct": "https://overlook.cx",
+      "replace_existing": false,
+      "inventory_rank": 7,
+      "inventory_score": 90,
+      "routeDiscoveryLastReason": "network_or_site_unreached"
+    },
+    {
+      "id": "vidsrc",
+      "name": "VidSrc",
+      "scope": "global",
+      "types": [
+        "movie",
+        "tv"
+      ],
+      "languages": [
+        "en"
+      ],
+      "formats": [
+        "mp4",
+        "m3u8"
+      ],
+      "strategy": "mixed_embed_resolver",
+      "direct": "https://vidsrc.sh/",
+      "replace_existing": false,
+      "inventory_rank": 9,
+      "inventory_score": 90,
+      "routeDiscoveryLastReason": "reachable_no_executable_route_observed"
+    },
+    {
+      "id": "cinegram",
+      "name": "Cinegram",
+      "scope": "global",
+      "types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "languages": [
+        "en"
+      ],
+      "formats": [
+        "mp4",
+        "m3u8"
+      ],
+      "strategy": "mixed_embed_resolver",
+      "direct": "https://cinegram.tv",
+      "replace_existing": false,
+      "inventory_rank": 11,
+      "inventory_score": 88,
+      "routeDiscoveryLastReason": "reachable_no_executable_route_observed"
+    },
+    {
+      "id": "cinejoy",
+      "name": "Cinejoy",
+      "scope": "global",
+      "types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "languages": [
+        "en"
+      ],
+      "formats": [
+        "mp4",
+        "m3u8"
+      ],
+      "strategy": "mixed_embed_resolver",
+      "direct": "https://cinejoy.pk",
+      "replace_existing": false,
+      "inventory_rank": 12,
+      "inventory_score": 88,
+      "routeDiscoveryLastReason": "reachable_no_executable_route_observed"
+    },
+    {
+      "id": "flickystream",
+      "name": "FlickyStream",
+      "scope": "global",
+      "types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "languages": [
+        "en"
+      ],
+      "formats": [
+        "mp4",
+        "m3u8"
+      ],
+      "strategy": "mixed_embed_resolver",
+      "direct": "https://flickystream.mov",
+      "replace_existing": false,
+      "inventory_rank": 15,
+      "inventory_score": 88,
+      "routeDiscoveryLastReason": "reachable_no_executable_route_observed"
+    },
+    {
+      "id": "hexa",
+      "name": "Hexa",
+      "scope": "global",
+      "types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "languages": [
+        "en"
+      ],
+      "formats": [
+        "mp4",
+        "m3u8"
+      ],
+      "strategy": "mixed_embed_resolver",
+      "direct": "https://hexa.su",
+      "replace_existing": false,
+      "inventory_rank": 17,
+      "inventory_score": 88,
+      "routeDiscoveryLastReason": "reachable_no_executable_route_observed"
+    },
+    {
+      "id": "meowtv",
+      "name": "MeowTV",
+      "scope": "global",
+      "types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "languages": [
+        "en"
+      ],
+      "formats": [
+        "mp4",
+        "m3u8"
+      ],
+      "strategy": "mixed_embed_resolver",
+      "direct": "https://meowtv.ru",
+      "replace_existing": false,
+      "inventory_rank": 19,
+      "inventory_score": 88,
+      "routeDiscoveryLastReason": "reachable_no_executable_route_observed"
+    },
+    {
+      "id": "willow",
+      "name": "Willow",
+      "scope": "global",
+      "types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "languages": [
+        "en"
+      ],
+      "formats": [
+        "mp4",
+        "m3u8"
+      ],
+      "strategy": "mixed_embed_resolver",
+      "direct": "https://willow.arlen.icu",
+      "replace_existing": false,
+      "inventory_rank": 23,
+      "inventory_score": 88,
+      "routeDiscoveryLastReason": "reachable_no_executable_route_observed"
+    },
+    {
+      "id": "7movies",
+      "name": "7Movies",
+      "scope": "global",
+      "types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "languages": [
+        "en"
+      ],
+      "formats": [
+        "mp4",
+        "m3u8"
+      ],
+      "strategy": "mixed_embed_resolver",
+      "direct": "https://7movies.in",
+      "replace_existing": false,
+      "inventory_rank": 28,
+      "inventory_score": 83,
+      "routeDiscoveryLastReason": "network_or_site_unreached"
+    },
+    {
+      "id": "all-you-can-watch",
+      "name": "All You Can Watch",
+      "scope": "global",
+      "types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "languages": [
+        "en"
+      ],
+      "formats": [
+        "mp4",
+        "m3u8"
+      ],
+      "strategy": "mixed_embed_resolver",
+      "direct": "https://allyoucanwatch.net",
+      "replace_existing": false,
+      "inventory_rank": 30,
+      "inventory_score": 83,
+      "routeDiscoveryLastReason": "reachable_no_executable_route_observed"
+    },
+    {
+      "id": "bcine",
+      "name": "bCine",
+      "scope": "global",
+      "types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "languages": [
+        "en"
+      ],
+      "formats": [
+        "mp4",
+        "m3u8"
+      ],
+      "strategy": "mixed_embed_resolver",
+      "direct": "https://bcine.ru",
+      "replace_existing": false,
+      "inventory_rank": 32,
+      "inventory_score": 83,
+      "routeDiscoveryLastReason": "network_or_site_unreached"
+    },
+    {
+      "id": "bingey",
+      "name": "Bingey",
+      "scope": "global",
+      "types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "languages": [
+        "en"
+      ],
+      "formats": [
+        "mp4",
+        "m3u8"
+      ],
+      "strategy": "mixed_embed_resolver",
+      "direct": "https://www.bingey.cfd",
+      "replace_existing": false,
+      "inventory_rank": 33,
+      "inventory_score": 83,
+      "routeDiscoveryLastReason": "network_or_site_unreached"
+    },
+    {
+      "id": "cineapse",
+      "name": "Cineapse",
+      "scope": "global",
+      "types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "languages": [
+        "en"
+      ],
+      "formats": [
+        "mp4",
+        "m3u8"
+      ],
+      "strategy": "mixed_embed_resolver",
+      "direct": "https://www.cineapse.net",
+      "replace_existing": false,
+      "inventory_rank": 35,
+      "inventory_score": 83,
+      "routeDiscoveryLastReason": "network_or_site_unreached"
+    },
+    {
+      "id": "cineflix",
+      "name": "CineFlix",
+      "scope": "global",
+      "types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "languages": [
+        "en"
+      ],
+      "formats": [
+        "mp4",
+        "m3u8"
+      ],
+      "strategy": "mixed_embed_resolver",
+      "direct": "https://fstream.app",
+      "replace_existing": false,
+      "inventory_rank": 36,
+      "inventory_score": 83,
+      "routeDiscoveryLastReason": "network_or_site_unreached"
+    },
+    {
+      "id": "cinepro",
+      "name": "CinePro",
+      "scope": "global",
+      "types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "languages": [
+        "en"
+      ],
+      "formats": [
+        "mp4",
+        "m3u8"
+      ],
+      "strategy": "mixed_embed_resolver",
+      "direct": "https://cineby.gdn",
+      "replace_existing": false,
+      "inventory_rank": 38,
+      "inventory_score": 83,
+      "routeDiscoveryLastReason": "reachable_no_executable_route_observed"
+    },
+    {
+      "id": "cinezo",
+      "name": "Cinezo",
+      "scope": "global",
+      "types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "languages": [
+        "en"
+      ],
+      "formats": [
+        "mp4",
+        "m3u8"
+      ],
+      "strategy": "mixed_embed_resolver",
+      "direct": "https://www.cinezo.org",
+      "replace_existing": false,
+      "inventory_rank": 39,
+      "inventory_score": 83,
+      "routeDiscoveryLastReason": "network_or_site_unreached"
+    },
+    {
+      "id": "coreflix",
+      "name": "Coreflix",
+      "scope": "global",
+      "types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "languages": [
+        "en"
+      ],
+      "formats": [
+        "mp4",
+        "m3u8"
+      ],
+      "strategy": "mixed_embed_resolver",
+      "direct": "https://coreflix.tv",
+      "replace_existing": false,
+      "inventory_rank": 40,
+      "inventory_score": 83,
+      "routeDiscoveryLastReason": "reachable_no_executable_route_observed"
+    },
+    {
+      "id": "ffmovies",
+      "name": "FFMovies",
+      "scope": "global",
+      "types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "languages": [
+        "en"
+      ],
+      "formats": [
+        "mp4",
+        "m3u8"
+      ],
+      "strategy": "mixed_embed_resolver",
+      "direct": "https://ffmovies.org",
+      "replace_existing": false,
+      "inventory_rank": 44,
+      "inventory_score": 83,
+      "routeDiscoveryLastReason": "reachable_no_executable_route_observed"
+    },
+    {
+      "id": "frame",
+      "name": "FRAME",
+      "scope": "global",
+      "types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "languages": [
+        "en"
+      ],
+      "formats": [
+        "mp4",
+        "m3u8"
+      ],
+      "strategy": "mixed_embed_resolver",
+      "direct": "https://www.framemovie.online",
+      "replace_existing": false,
+      "inventory_rank": 46,
+      "inventory_score": 83,
+      "routeDiscoveryLastReason": "reachable_no_executable_route_observed"
+    },
+    {
+      "id": "hivex",
+      "name": "HiveX",
+      "scope": "global",
+      "types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "languages": [
+        "en"
+      ],
+      "formats": [
+        "mp4",
+        "m3u8"
+      ],
+      "strategy": "mixed_embed_resolver",
+      "direct": "https://hivex.stream",
+      "replace_existing": false,
+      "inventory_rank": 47,
+      "inventory_score": 83,
+      "routeDiscoveryLastReason": "reachable_no_executable_route_observed"
+    },
+    {
+      "id": "moonflix",
+      "name": "Moonflix",
+      "scope": "global",
+      "types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "languages": [
+        "en"
+      ],
+      "formats": [
+        "mp4",
+        "m3u8"
+      ],
+      "strategy": "mixed_embed_resolver",
+      "direct": "https://moonflix.website",
+      "replace_existing": false,
+      "inventory_rank": 48,
+      "inventory_score": 83,
+      "routeDiscoveryLastReason": "reachable_no_executable_route_observed"
+    },
+    {
+      "id": "movish",
+      "name": "Movish",
+      "scope": "global",
+      "types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "languages": [
+        "en"
+      ],
+      "formats": [
+        "mp4",
+        "m3u8"
+      ],
+      "strategy": "mixed_embed_resolver",
+      "direct": "https://movish.to",
+      "replace_existing": false,
+      "inventory_rank": 50,
+      "inventory_score": 83,
+      "routeDiscoveryLastReason": "reachable_no_executable_route_observed"
+    },
+    {
+      "id": "phantomflix",
+      "name": "PhantomFlix",
+      "scope": "global",
+      "types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "languages": [
+        "en"
+      ],
+      "formats": [
+        "mp4",
+        "m3u8"
+      ],
+      "strategy": "mixed_embed_resolver",
+      "direct": "https://phantomflix.net",
+      "replace_existing": false,
+      "inventory_rank": 53,
+      "inventory_score": 83,
+      "routeDiscoveryLastReason": "network_or_site_unreached"
+    },
+    {
+      "id": "pstream",
+      "name": "PStream",
+      "scope": "global",
+      "types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "languages": [
+        "en"
+      ],
+      "formats": [
+        "mp4",
+        "m3u8"
+      ],
+      "strategy": "mixed_embed_resolver",
+      "direct": "https://pstream.cfd/",
+      "replace_existing": false,
+      "inventory_rank": 59,
+      "inventory_score": 83,
+      "routeDiscoveryLastReason": "network_or_site_unreached"
+    },
+    {
+      "id": "streamaggregator",
+      "name": "StreamAggregator",
+      "scope": "global",
+      "types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "languages": [
+        "en"
+      ],
+      "formats": [
+        "mp4",
+        "m3u8"
+      ],
+      "strategy": "mixed_embed_resolver",
+      "direct": "https://streamaggregator.in",
+      "replace_existing": false,
+      "inventory_rank": 60,
+      "inventory_score": 83,
+      "routeDiscoveryLastReason": "reachable_no_executable_route_observed"
+    },
+    {
+      "id": "tonkacine",
+      "name": "TonkaCine",
+      "scope": "global",
+      "types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "languages": [
+        "en"
+      ],
+      "formats": [
+        "mp4",
+        "m3u8"
+      ],
+      "strategy": "mixed_embed_resolver",
+      "direct": "https://tonkacine.watch",
+      "replace_existing": false,
+      "inventory_rank": 62,
+      "inventory_score": 83,
+      "routeDiscoveryLastReason": "reachable_no_executable_route_observed"
+    },
+    {
+      "id": "vidplay",
+      "name": "VidPlay",
+      "scope": "global",
+      "types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "languages": [
+        "en"
+      ],
+      "formats": [
+        "mp4",
+        "m3u8"
+      ],
+      "strategy": "mixed_embed_resolver",
+      "direct": "https://vidplay.to",
+      "replace_existing": false,
+      "inventory_rank": 64,
+      "inventory_score": 83,
+      "routeDiscoveryLastReason": "reachable_no_executable_route_observed"
+    },
+    {
+      "id": "vivarium",
+      "name": "Vivarium",
+      "scope": "global",
+      "types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "languages": [
+        "en"
+      ],
+      "formats": [
+        "mp4",
+        "m3u8"
+      ],
+      "strategy": "mixed_embed_resolver",
+      "direct": "https://vivarium.su/",
+      "replace_existing": false,
+      "inventory_rank": 65,
+      "inventory_score": 83,
+      "routeDiscoveryLastReason": "network_or_site_unreached"
+    },
+    {
+      "id": "vuflix",
+      "name": "Vuflix",
+      "scope": "global",
+      "types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "languages": [
+        "en"
+      ],
+      "formats": [
+        "mp4",
+        "m3u8"
+      ],
+      "strategy": "mixed_embed_resolver",
+      "direct": "https://vuflix.co",
+      "replace_existing": false,
+      "inventory_rank": 66,
+      "inventory_score": 83,
+      "routeDiscoveryLastReason": "reachable_no_executable_route_observed"
+    },
+    {
+      "id": "aether",
+      "name": "Aether",
+      "scope": "france",
+      "types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "languages": [
+        "fr"
+      ],
+      "formats": [
+        "mp4",
+        "m3u8"
+      ],
+      "strategy": "mixed_embed_resolver",
+      "direct": "https://aether.ist",
+      "replace_existing": false,
+      "inventory_rank": 14,
+      "inventory_score": 83,
+      "routeDiscoveryLastReason": "reachable_no_executable_route_observed"
     },
     {
       "id": "kordoz",
@@ -1181,7 +1948,8 @@
       "replace_existing": true,
       "inventory_rank": 19,
       "inventory_score": 83,
-      "domain_evidence": "https://kordoz.com/"
+      "domain_evidence": "https://kordoz.com/",
+      "routeDiscoveryLastReason": "reachable_no_executable_route_observed"
     },
     {
       "id": "anisama",
@@ -1201,29 +1969,8 @@
       "direct": "https://anisama.fr/",
       "replace_existing": false,
       "external_replacement": true,
-      "domain_evidence": "https://anisama.fr/"
-    },
-    {
-      "id": "dessinanime",
-      "name": "Dessinanime",
-      "scope": "france",
-      "types": [
-        "movie",
-        "tv",
-        "anime"
-      ],
-      "languages": [
-        "fr"
-      ],
-      "formats": [
-        "mp4",
-        "m3u8"
-      ],
-      "strategy": "mixed_embed_resolver",
-      "direct": "https://dessinanime.net/",
-      "replace_existing": false,
-      "inventory_rank": 27,
-      "inventory_score": 80
+      "domain_evidence": "https://anisama.fr/",
+      "routeDiscoveryLastReason": "reachable_no_executable_route_observed"
     },
     {
       "id": "french-anime",
@@ -1243,7 +1990,8 @@
       "direct": "https://french-anime.com",
       "replace_existing": false,
       "inventory_rank": 28,
-      "inventory_score": 78
+      "inventory_score": 78,
+      "routeDiscoveryLastReason": "network_or_site_unreached"
     },
     {
       "id": "cineflux",
@@ -1265,29 +2013,8 @@
       "direct": "https://cineflux.wiki/",
       "replace_existing": false,
       "inventory_rank": 29,
-      "inventory_score": 76
-    },
-    {
-      "id": "fexini",
-      "name": "Fexini",
-      "scope": "france",
-      "types": [
-        "movie",
-        "tv",
-        "anime"
-      ],
-      "languages": [
-        "fr"
-      ],
-      "formats": [
-        "mp4",
-        "m3u8"
-      ],
-      "strategy": "mixed_embed_resolver",
-      "direct": "https://fexini.net/",
-      "replace_existing": false,
-      "inventory_rank": 30,
-      "inventory_score": 76
+      "inventory_score": 76,
+      "routeDiscoveryLastReason": "network_or_site_unreached"
     },
     {
       "id": "zone-streaming",
@@ -1309,7 +2036,8 @@
       "direct": "https://www.zone-streaming.fr/",
       "replace_existing": false,
       "inventory_rank": 32,
-      "inventory_score": 76
+      "inventory_score": 76,
+      "routeDiscoveryLastReason": "reachable_no_executable_route_observed"
     },
     {
       "id": "dulourd",
@@ -1330,7 +2058,8 @@
       "direct": "https://www.dulourd.hair",
       "replace_existing": false,
       "inventory_rank": 34,
-      "inventory_score": 73
+      "inventory_score": 73,
+      "routeDiscoveryLastReason": "reachable_no_executable_route_observed"
     },
     {
       "id": "cinelibre",
@@ -1351,7 +2080,8 @@
       "direct": "https://cinelibre.fr",
       "replace_existing": false,
       "inventory_rank": 37,
-      "inventory_score": 71
+      "inventory_score": 71,
+      "routeDiscoveryLastReason": "network_or_site_unreached"
     },
     {
       "id": "franime",
@@ -1371,28 +2101,8 @@
       "direct": "https://franime.fr",
       "replace_existing": false,
       "inventory_rank": 39,
-      "inventory_score": 69
-    },
-    {
-      "id": "moiflix",
-      "name": "Moiflix",
-      "scope": "france",
-      "types": [
-        "movie",
-        "tv"
-      ],
-      "languages": [
-        "fr"
-      ],
-      "formats": [
-        "mp4",
-        "m3u8"
-      ],
-      "strategy": "mixed_embed_resolver",
-      "direct": "https://moiflix.fans/",
-      "replace_existing": false,
-      "inventory_rank": 40,
-      "inventory_score": 68
+      "inventory_score": 69,
+      "routeDiscoveryLastReason": "reachable_no_executable_route_observed"
     },
     {
       "id": "nakios",
@@ -1413,28 +2123,8 @@
       "direct": "https://nakios.live/",
       "replace_existing": false,
       "inventory_rank": 41,
-      "inventory_score": 68
-    },
-    {
-      "id": "webflix",
-      "name": "Webflix",
-      "scope": "france",
-      "types": [
-        "movie",
-        "tv"
-      ],
-      "languages": [
-        "fr"
-      ],
-      "formats": [
-        "mp4",
-        "m3u8"
-      ],
-      "strategy": "mixed_embed_resolver",
-      "direct": "https://webflix.art/",
-      "replace_existing": false,
-      "inventory_rank": 44,
-      "inventory_score": 68
+      "inventory_score": 68,
+      "routeDiscoveryLastReason": "reachable_no_executable_route_observed"
     },
     {
       "id": "fawesome",
@@ -1455,7 +2145,8 @@
       "direct": "https://fawesome.tv",
       "replace_existing": false,
       "inventory_rank": 45,
-      "inventory_score": 66
+      "inventory_score": 66,
+      "routeDiscoveryLastReason": "reachable_no_executable_route_observed"
     },
     {
       "id": "cinemaos",
@@ -1476,7 +2167,8 @@
       "direct": "https://cinemaos.live/",
       "replace_existing": false,
       "inventory_rank": 47,
-      "inventory_score": 64
+      "inventory_score": 64,
+      "routeDiscoveryLastReason": "network_or_site_unreached"
     },
     {
       "id": "cineplateforme",
@@ -1497,7 +2189,8 @@
       "direct": "https://www.cineplateforme.help/",
       "replace_existing": false,
       "inventory_rank": 48,
-      "inventory_score": 64
+      "inventory_score": 64,
+      "routeDiscoveryLastReason": "network_or_site_unreached"
     },
     {
       "id": "cinetimes",
@@ -1518,7 +2211,8 @@
       "direct": "https://cinetimes.org/en/",
       "replace_existing": false,
       "inventory_rank": 49,
-      "inventory_score": 64
+      "inventory_score": 64,
+      "routeDiscoveryLastReason": "reachable_no_executable_route_observed"
     },
     {
       "id": "dpstream",
@@ -1539,7 +2233,8 @@
       "direct": "https://dpstream.fyi/",
       "replace_existing": false,
       "inventory_rank": 50,
-      "inventory_score": 64
+      "inventory_score": 64,
+      "routeDiscoveryLastReason": "reachable_no_executable_route_observed"
     },
     {
       "id": "motomaz",
@@ -1560,7 +2255,8 @@
       "direct": "https://motomaz.com/",
       "replace_existing": false,
       "inventory_rank": 54,
-      "inventory_score": 64
+      "inventory_score": 64,
+      "routeDiscoveryLastReason": "network_or_site_unreached"
     },
     {
       "id": "sadisflix",
@@ -1581,28 +2277,8 @@
       "direct": "https://sadisflix-officiel.cfd",
       "replace_existing": false,
       "inventory_rank": 58,
-      "inventory_score": 64
-    },
-    {
-      "id": "showbox",
-      "name": "ShowBox",
-      "scope": "france",
-      "types": [
-        "movie",
-        "tv"
-      ],
-      "languages": [
-        "fr"
-      ],
-      "formats": [
-        "mp4",
-        "m3u8"
-      ],
-      "strategy": "mixed_embed_resolver",
-      "direct": "https://showbox.media/",
-      "replace_existing": false,
-      "inventory_rank": 59,
-      "inventory_score": 64
+      "inventory_score": 64,
+      "routeDiscoveryLastReason": "reachable_no_executable_route_observed"
     },
     {
       "id": "skstream",
@@ -1623,7 +2299,8 @@
       "direct": "https://wvw.skstream.rip/",
       "replace_existing": false,
       "inventory_rank": 60,
-      "inventory_score": 64
+      "inventory_score": 64,
+      "routeDiscoveryLastReason": "reachable_no_executable_route_observed"
     },
     {
       "id": "voirserie",
@@ -1644,7 +2321,8 @@
       "direct": "https://www.voirserie.org/",
       "replace_existing": false,
       "inventory_rank": 61,
-      "inventory_score": 64
+      "inventory_score": 64,
+      "routeDiscoveryLastReason": "network_or_site_unreached"
     },
     {
       "id": "vombam",
@@ -1665,7 +2343,8 @@
       "direct": "https://varloz.com",
       "replace_existing": false,
       "inventory_rank": 62,
-      "inventory_score": 64
+      "inventory_score": 64,
+      "routeDiscoveryLastReason": "reachable_no_executable_route_observed"
     },
     {
       "id": "wavewatch",
@@ -1686,29 +2365,8 @@
       "direct": "https://wavewatch.icu/",
       "replace_existing": false,
       "inventory_rank": 63,
-      "inventory_score": 64
-    },
-    {
-      "id": "neobam",
-      "name": "Neobam",
-      "scope": "france",
-      "types": [
-        "movie",
-        "tv",
-        "anime"
-      ],
-      "languages": [
-        "fr"
-      ],
-      "formats": [
-        "mp4",
-        "m3u8"
-      ],
-      "strategy": "mixed_embed_resolver",
-      "direct": "https://www.neobam.fr/",
-      "replace_existing": true,
-      "inventory_rank": 21,
-      "inventory_score": 83
+      "inventory_score": 64,
+      "routeDiscoveryLastReason": "reachable_no_executable_route_observed"
     },
     {
       "id": "youtitou",
@@ -1728,7 +2386,8 @@
       "direct": "https://youtitou.com/",
       "replace_existing": false,
       "inventory_rank": 65,
-      "inventory_score": 64
+      "inventory_score": 64,
+      "routeDiscoveryLastReason": "reachable_no_executable_route_observed"
     },
     {
       "id": "zone-telechargement",
@@ -1749,27 +2408,8 @@
       "direct": "https://www.zone-telechargement.rentals/",
       "replace_existing": false,
       "inventory_rank": 66,
-      "inventory_score": 64
-    },
-    {
-      "id": "fullanime",
-      "name": "FullAnime",
-      "scope": "france",
-      "types": [
-        "anime"
-      ],
-      "languages": [
-        "fr"
-      ],
-      "formats": [
-        "mp4",
-        "m3u8"
-      ],
-      "strategy": "mixed_embed_resolver",
-      "direct": "https://www.fullanime.fr",
-      "replace_existing": false,
-      "inventory_rank": 71,
-      "inventory_score": 61
+      "inventory_score": 64,
+      "routeDiscoveryLastReason": "reachable_no_executable_route_observed"
     },
     {
       "id": "waveanime",
@@ -1789,7 +2429,8 @@
       "direct": "https://waveanime.fr",
       "replace_existing": false,
       "inventory_rank": 72,
-      "inventory_score": 61
+      "inventory_score": 61,
+      "routeDiscoveryLastReason": "reachable_no_executable_route_observed"
     },
     {
       "id": "animeko",
@@ -1809,7 +2450,8 @@
       "direct": "https://w2.animeko.ws",
       "replace_existing": false,
       "inventory_rank": 73,
-      "inventory_score": 59
+      "inventory_score": 59,
+      "routeDiscoveryLastReason": "network_or_site_unreached"
     },
     {
       "id": "cinematheque-de-bretagne",
@@ -1829,7 +2471,8 @@
       "direct": "https://www.cinematheque-bretagne.bzh",
       "replace_existing": false,
       "inventory_rank": 74,
-      "inventory_score": 59
+      "inventory_score": 59,
+      "routeDiscoveryLastReason": "reachable_no_executable_route_observed"
     },
     {
       "id": "film-a-revoir",
@@ -1849,47 +2492,8 @@
       "direct": "https://filmarevoirnad.blogspot.com",
       "replace_existing": false,
       "inventory_rank": 75,
-      "inventory_score": 59
-    },
-    {
-      "id": "animeo",
-      "name": "Animeo",
-      "scope": "france",
-      "types": [
-        "anime"
-      ],
-      "languages": [
-        "fr"
-      ],
-      "formats": [
-        "mp4",
-        "m3u8"
-      ],
-      "strategy": "mixed_embed_resolver",
-      "direct": "https://animeovf.fr/",
-      "replace_existing": false,
-      "inventory_rank": 77,
-      "inventory_score": 52
-    },
-    {
-      "id": "animeonsen",
-      "name": "AnimeOnsen",
-      "scope": "france",
-      "types": [
-        "anime"
-      ],
-      "languages": [
-        "fr"
-      ],
-      "formats": [
-        "mp4",
-        "m3u8"
-      ],
-      "strategy": "mixed_embed_resolver",
-      "direct": "https://www.animeonsen.xyz/",
-      "replace_existing": false,
-      "inventory_rank": 78,
-      "inventory_score": 52
+      "inventory_score": 59,
+      "routeDiscoveryLastReason": "reachable_no_executable_route_observed"
     },
     {
       "id": "fankai",
@@ -1909,7 +2513,8 @@
       "direct": "https://fankai.fr/",
       "replace_existing": false,
       "inventory_rank": 79,
-      "inventory_score": 52
+      "inventory_score": 52,
+      "routeDiscoveryLastReason": "reachable_no_executable_route_observed"
     },
     {
       "id": "hianime",
@@ -1929,7 +2534,8 @@
       "direct": "https://hianime.at/",
       "replace_existing": false,
       "inventory_rank": 80,
-      "inventory_score": 52
+      "inventory_score": 52,
+      "routeDiscoveryLastReason": "reachable_no_executable_route_observed"
     },
     {
       "id": "tenshitv",
@@ -1949,7 +2555,8 @@
       "direct": "https://tenshitv.com/",
       "replace_existing": false,
       "inventory_rank": 81,
-      "inventory_score": 52
+      "inventory_score": 52,
+      "routeDiscoveryLastReason": "network_or_site_unreached"
     },
     {
       "id": "cinestream",
@@ -1971,7 +2578,8 @@
       "direct": "https://cinestream.info",
       "replace_existing": true,
       "inventory_rank": 2,
-      "inventory_score": 99
+      "inventory_score": 99,
+      "routeDiscoveryLastReason": "network_or_site_unreached"
     },
     {
       "id": "movix-fr",
@@ -1993,7 +2601,8 @@
       "direct": "https://movix.zip/",
       "replace_existing": true,
       "inventory_rank": 3,
-      "inventory_score": 97
+      "inventory_score": 97,
+      "routeDiscoveryLastReason": "reachable_no_executable_route_observed"
     },
     {
       "id": "yablom",
@@ -2015,29 +2624,8 @@
       "direct": "https://trimav.com",
       "replace_existing": true,
       "inventory_rank": 4,
-      "inventory_score": 97
-    },
-    {
-      "id": "myfluneo",
-      "name": "MyFluneo",
-      "scope": "france",
-      "types": [
-        "movie",
-        "tv",
-        "anime"
-      ],
-      "languages": [
-        "fr"
-      ],
-      "formats": [
-        "mp4",
-        "m3u8"
-      ],
-      "strategy": "mixed_embed_resolver",
-      "direct": "https://myfluneo.eu",
-      "replace_existing": true,
-      "inventory_rank": 6,
-      "inventory_score": 93
+      "inventory_score": 97,
+      "routeDiscoveryLastReason": "reachable_no_executable_route_observed"
     },
     {
       "id": "cpasmal",
@@ -2059,29 +2647,8 @@
       "direct": "https://www.cpasmal.rip/",
       "replace_existing": true,
       "inventory_rank": 9,
-      "inventory_score": 88
-    },
-    {
-      "id": "frembed",
-      "name": "Frembed",
-      "scope": "france",
-      "types": [
-        "movie",
-        "tv",
-        "anime"
-      ],
-      "languages": [
-        "fr"
-      ],
-      "formats": [
-        "mp4",
-        "m3u8"
-      ],
-      "strategy": "mixed_embed_resolver",
-      "direct": "https://frembed.surf",
-      "replace_existing": true,
-      "inventory_rank": 10,
-      "inventory_score": 86
+      "inventory_score": 88,
+      "routeDiscoveryLastReason": "reachable_no_executable_route_observed"
     },
     {
       "id": "nakastream",
@@ -2103,7 +2670,8 @@
       "direct": "https://nakastream.tv",
       "replace_existing": true,
       "inventory_rank": 11,
-      "inventory_score": 86
+      "inventory_score": 86,
+      "routeDiscoveryLastReason": "reachable_no_executable_route_observed"
     },
     {
       "id": "1jour1film0626",
@@ -2125,7 +2693,8 @@
       "direct": "https://1jour1film1026.monster",
       "replace_existing": true,
       "inventory_rank": 13,
-      "inventory_score": 83
+      "inventory_score": 83,
+      "routeDiscoveryLastReason": "reachable_no_executable_route_observed"
     },
     {
       "id": "dotriv",
@@ -2147,7 +2716,8 @@
       "direct": "https://dotriv.com",
       "replace_existing": true,
       "inventory_rank": 15,
-      "inventory_score": 83
+      "inventory_score": 83,
+      "routeDiscoveryLastReason": "network_or_site_unreached"
     },
     {
       "id": "ilmiv",
@@ -2169,7 +2739,8 @@
       "direct": "https://bimdav.com",
       "replace_existing": true,
       "inventory_rank": 17,
-      "inventory_score": 83
+      "inventory_score": 83,
+      "routeDiscoveryLastReason": "reachable_no_executable_route_observed"
     },
     {
       "id": "kidraz",
@@ -2191,9 +2762,17 @@
       "direct": "https://fronav.com",
       "replace_existing": true,
       "inventory_rank": 18,
-      "inventory_score": 83
+      "inventory_score": 83,
+      "routeDiscoveryLastReason": "reachable_no_executable_route_observed"
     }
   ],
-  "domainEvidenceFile": "automation/provider-domain-refresh-2026-11-14.json",
-  "activationPipelineFix": "retry_on_main_3eb4e1f_exact_60_60_after_identity_schema_and_catalog_activation_fixes"
+  "routeDiscoveryWave": {
+    "sourceRequestVersion": 16,
+    "qualified": 29,
+    "deferred": 72,
+    "transports": [
+      "github-hosted"
+    ],
+    "activationRequiresExecutablePlan": true
+  }
 }
