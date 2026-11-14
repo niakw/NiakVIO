@@ -24,6 +24,10 @@ assert "id-token: write" in workflow
 assert "server_pid=$!" in workflow
 assert "seq 1 300" in workflow
 assert 'reason=process_exited' in workflow
+assert "Clear residential exit before Brain model bootstrap" in workflow
+assert "sudo tailscale set --exit-node=" in workflow
+assert "Restore residential exit for provider recovery replay" in workflow
+assert "FIELD_DISABLED_RECOVERY_RESIDENTIAL_RESTORED active=true" in workflow
 assert "--ephemeral-overrides" in workflow
 assert 'next_action="exact_playback_identity_replay"' in workflow
 assert 'next_action="bounded_learning_repair"' in workflow
