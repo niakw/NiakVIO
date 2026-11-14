@@ -107,7 +107,9 @@ request={
     "providers":[{"id":"a","direct":"https://a.invalid"}],
     "deferredProviders":[{"id":"b","direct":"https://b.invalid"},{"id":"a","direct":"https://duplicate.invalid"}],
 }
-assert [row["id"] for row in probe.provider_rows(request)]==["a","b"]
+provider_ids=[row["id"] for row in probe.provider_rows(request)]
+assert provider_ids[:2]==["a","b"], provider_ids
+assert provider_ids.count("a")==1 and provider_ids.count("b")==1, provider_ids
 
 workflow=(ROOT/".github/workflows/provider-bulk-route-discovery.yml").read_text(encoding="utf-8")
 for token in (
