@@ -26,8 +26,7 @@
     "purstream",
     "sekai",
     "streamzo",
-    "voiranime-rip",
-    "wookafr"
+    "voiranime-rip"
   ],
   "repairBlocked": [
     "4khdhub",
@@ -63,9 +62,12 @@
     "voiranime",
     "voiranime-homes",
     "vostfree",
+    "wookafr",
     "yflix"
   ],
-  "disabledNow": [],
+  "disabledNow": [
+    "wookafr"
+  ],
   "providers": [
     {
       "provider": "anime-sama",
@@ -435,14 +437,17 @@
     },
     {
       "provider": "wookafr",
-      "action": "KEEP_ROUTE_AUTHORITY",
-      "repairEligible": true,
-      "confidence": "high",
-      "authorityClass": "hub-or-redirect",
+      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "repairEligible": false,
+      "confidence": "current-census",
+      "authorityClass": "current-architecture-nonfunctional",
       "failureCount": 0,
       "reasons": [
-        "authoritative_route_source"
-      ]
+        "authoritative_route_source",
+        "current_census_tested_without_terminal_verified_playback",
+        "current_status:CANDIDATE OK"
+      ],
+      "appliedDisableReason": "auto_off_current_architecture_nonfunctional"
     },
     {
       "provider": "yflix",
