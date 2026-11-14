@@ -13000,6 +13000,60 @@
           "tmdbId",
           "mediaType"
         ]
+      },
+      "route_proof_version": 5,
+      "candidate_learned_routes": [
+        "/api/fastflux?type=movie&tmdb_id={tmdbId}",
+        "/api/series-season-discovery?tmdb_id={tmdbId}",
+        "/api/fastflux?type=episode&tmdb_id={tmdbId}&season={season}&episode={episode}"
+      ],
+      "route_proof": {
+        "version": 5,
+        "authority": "mac-residential-provider-http-request",
+        "evidenceRun": "NiakGH-MacBridge/43649703460",
+        "terminalRun": "NiakGH-MacBridge/43649792760",
+        "provenRouteCount": 3,
+        "evidenceRouteCount": 3,
+        "runtimePlanPreserved": true,
+        "runtimePlanRouteCount": 3,
+        "supportedLanes": [
+          "movie",
+          "tv"
+        ],
+        "coveredLanes": [
+          "movie",
+          "tv"
+        ],
+        "missingLanes": [],
+        "identityBinding": "movie=tmdb_id; tv=tmdb_id+season+episode",
+        "terminalEvidence": "direct MP4 HTTP 200 with byte length matching API metadata",
+        "lastRepairProbe": {
+          "status": "proven",
+          "positiveExecutionEvidence": true
+        },
+        "canonicalExecutionAuthorityPolicy": "preferred-order-only-preserve-all-proven-authorities",
+        "canonicalExecutionAuthority": {
+          "candidateCount": 3,
+          "preferredCount": 3,
+          "selectedCount": 3,
+          "supportedLanes": [
+            "movie",
+            "tv"
+          ],
+          "coveredLanes": [
+            "movie",
+            "tv"
+          ],
+          "missingLanes": [],
+          "preferredOwners": [
+            "route"
+          ],
+          "owners": [
+            "route"
+          ],
+          "destructiveFiltering": false,
+          "allEvidenceBackedAuthoritiesPreserved": true
+        }
       }
     },
     "zone-telechargement": {
