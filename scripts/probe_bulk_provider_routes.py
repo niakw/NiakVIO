@@ -24,7 +24,7 @@ DEFAULT_OUTPUT = ROOT / "automation/provider-bulk-route-discovery-shard.json"
 PROBE = ROOT / "scripts/probe_provider_site_structure.py"
 
 sys.path.insert(0, str((ROOT / "scripts").resolve()))
-from provider_base_store import provider_model_route_kind
+from provider_base_store import provider_model_route_kind, provider_route_is_identity_aware
 
 SENSITIVE_KEYS = {"k","key","token","sig","signature","auth","authorization","expires","expiry","exp"}
 SEARCH_KEYS = {"s","q","query","keyword","search","story"}
@@ -123,31 +123,8 @@ def route_pattern(raw: Any, fixture: dict[str, Any]) -> str:
 
 
 def identity_route_candidate(value: Any) -> bool:
-    """Require a route that can plausibly consume the requested media identity.
-
-    Route discovery is stricter than the runtime's generic route classifier.
-    Static navigation, telemetry and control APIs can be crawl evidence but
-    must never by themselves authorize onboarding activation.
-    """
-    text = str(value or "").strip()
-    if not text:
-        return False
-    lowered = text.casefold()
-    if re.search(
-        r"/(?:api/)?(?:push|subscribe|settings|site-migration|session-handoff|webtv/guide|p/event|cc/|app/android|health|status|analytics|telemetry)(?:[/?#]|$)",
-        lowered,
-        re.I,
-    ):
-        return False
-    if re.search(r"/(?:sw\.js|service-worker(?:\.js)?|manifest\.json)(?:[?#]|$)", lowered, re.I):
-        return False
-    if lowered.rstrip("/") == "/api":
-        return False
-    if re.search(r"\{(?:query|title|slug|tmdb_?id|imdb_?id|season|episode|media)\}", text, re.I):
-        return True
-    if re.search(r"/(?:search|recherche)(?:[/?#]|$)|[?&](?:s|q|query|keyword|search|story)=", text, re.I):
-        return True
-    return False
+    """Discovery uses the same identity-aware publication contract."""
+    return provider_route_is_identity_aware(value)
 
 
 def observed_candidates(report: dict[str, Any]) -> list[Any]:
