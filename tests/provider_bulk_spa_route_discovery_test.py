@@ -35,6 +35,10 @@ assert "/api/source?tmdb_id={tmdbId}&type={media}" in movie_routes, movie_routes
 assert "/embed/tv/{tmdbId}/{season}/{episode}" in tv_routes, tv_routes
 assert not any("themoviedb.org" in route for route in movie_routes + tv_routes)
 
+assert module._safe_spa_route_candidate("/api/source?tmdb_id={tmdbId}&type={media}")
+assert not module._safe_spa_route_candidate('/<iframe src="https://vidsrc.sh/embed/movie/{tmdbId}">')
+assert not module._safe_spa_route_candidate("/,{query:e,include_adult:!1,page:1})).results")
+
 assert module._identity_bound_api_response(
     b'{"src":"https://player.example/embed/movie/157336"}',
     "/api/source?tmdb_id={tmdbId}&type=movie",
