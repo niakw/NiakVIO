@@ -29,7 +29,7 @@ def proof_map(state: dict) -> dict[str, dict]:
     }
 
 
-def fresh_full(evidence: dict | None, declared: set[str]) -> bool:
+def fresh_full(evidence: dict | None, declared: set[str], digest: str) -> bool:
     if not isinstance(evidence, dict):
         return False
     verified = {str(x).strip().lower() for x in evidence.get("currentVerifiedLanes") or [] if str(x).strip()}
@@ -39,6 +39,8 @@ def fresh_full(evidence: dict | None, declared: set[str]) -> bool:
         and bool(declared)
         and declared <= verified
         and evidence.get("repairEligible") is not True
+        and bool(digest)
+        and str(evidence.get("providerArtifactSha256") or "").strip().casefold() == digest
     )
 
 
@@ -84,8 +86,10 @@ def exact_offline_contract(prov: dict, digest: str, expected_scope: str) -> bool
 
 
 canonical = load(ROOT / "automation/provider-census-status.json")
+all_scope = load(ROOT / "automation/provider-census-all-status-latest.json")
 pending = load(ROOT / "automation/provider-onboarding-pending-status-latest.json")
 canonical_proof = proof_map(canonical)
+all_scope_proof = proof_map(all_scope)
 pending_proof = proof_map(pending)
 provenance = load(ROOT / "PROVENANCE.json")
 prov_rows = provenance.get("providers") if isinstance(provenance.get("providers"), dict) else {}
@@ -106,11 +110,14 @@ for manifest_path, projection in (
             for x in row.get("canonicalSupportedTypes") or row.get("supportedTypes") or []
             if str(x).strip()
         }
-        if fresh_full(canonical_proof.get(pid), declared):
+        digest = artifact_digest(str(row.get("filename") or ""))
+        # Production freshness comes from the last complete all-scope replay,
+        # byte-bound to the current artifact. Operational unresolved/targeted
+        # censuses remain free to update Repair state without erasing this proof.
+        if fresh_full(all_scope_proof.get(pid), declared, digest):
             continue
 
         prov = prov_by_id.get(pid) or {}
-        digest = artifact_digest(str(row.get("filename") or ""))
         offline_scope = str((prov.get("bulk_offline_activation_proof") or {}).get("scope") or "")
         expected_offline_scope = "global" if projection == "global" else offline_scope
         if exact_offline_contract(prov, digest, expected_offline_scope):
@@ -121,7 +128,7 @@ for manifest_path, projection in (
 
         evidence = pending_proof.get(pid)
         activation = prov.get("bulk_activation_proof") if isinstance(prov.get("bulk_activation_proof"), dict) else {}
-        assert fresh_full(evidence, declared), (
+        assert fresh_full(evidence, declared, digest), (
             f"{manifest_path}: active {pid} lacks fresh FULL proof or exact-byte offline-live-unverified contract proof"
         )
         assert prov.get("activation_mode") == "bulk_census_full_ok", f"{pid}: pending proof without completed bulk activation"
@@ -135,7 +142,8 @@ for manifest_path, projection in (
         if len(recorded) == 64:
             assert digest == recorded, f"{pid}: provenance hash mismatch"
 
+assert int(all_scope.get("artifactHashSchemaVersion") or 0) >= 1, "missing byte-bound all-scope freshness ledger"
 print(
-    "Production active providers require fresh FULL OK evidence or exact-byte offline contract proof; "
+    "Production active providers require byte-bound all-scope FULL OK evidence or exact-byte offline contract proof; "
     f"offline_live_unverified_checks={offline_seen} and never count as FULL OK"
 )
