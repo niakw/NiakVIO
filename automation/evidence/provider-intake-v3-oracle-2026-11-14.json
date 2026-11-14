@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 1,
+  "authority": "NiakVIO-local-Lego-A/B-source-worker-terminal",
+  "date": "2026-11-14",
+  "runIds": [
+    43539208479,
+    43539920416
+  ],
+  "sourcePins": {
+    "frenchstream": "66494c595865fd2e6d664876935d577389eb23b6",
+    "movix": "66494c595865fd2e6d664876935d577389eb23b6"
+  },
+  "statuses": {
+    "sourceReproducible": true,
+    "sandboxLegoExecuted": true,
+    "cleanV3BaseComposed": true,
+    "coreDispatchIdentityPreview": true,
+    "fullCorePublisher": false,
+    "correctContentIdentity": false,
+    "nativePlayback": false,
+    "productionPromoted": false
+  },
+  "cases": [
+    {
+      "provider": "frenchstream",
+      "region": "france",
+      "fixtureSlugs": [
+        "thor-2011",
+        "mr-robot-2015-s01e01"
+      ],
+      "upstreamTerminalTasks": 2,
+      "standaloneLegoTerminalTasks": 2,
+      "cleanV3PreviewTerminalTasks": 2,
+      "networkStatuses": [
+        200
+      ],
+      "mediaKinds": [
+        "hls"
+      ],
+      "lego": "scripts/provider_patches/frenchstream_exact_runtime_v3.py",
+      "diagnosis": "provider-owned extraction and minimal clean V3 preview both reach HLS; remaining unknown full Core/materialization/native identity/region projection"
+    },
+    {
+      "provider": "movix",
+      "region": "france",
+      "fixtureSlugs": [
+        "spider-man-homecoming-2017",
+        "deadpool-2016",
+        "the-queen-s-gambit-2020-s01e01"
+      ],
+      "upstreamTerminalTasks": 3,
+      "standaloneLegoTerminalTasks": 0,
+      "cleanV3PreviewTerminalTasks": 0,
+      "localNetworkStatuses": [
+        403
+      ],
+      "upstreamNetworkStatuses": [
+        200,
+        403,
+        404
+      ],
+      "mediaKinds": [
+        "hls"
+      ],
+      "lego": "scripts/provider_patches/movix_runtime_v1.py",
+      "diagnosis": "old NiakVIO Lego reaches a 403-only API path while pinned upstream still returns verified media; Brain must compare bounded request shapes/identity and reconstruct API/transport family, not publish upstream JS"
+    }
+  ],
+  "publicationAuthority": false
+}
