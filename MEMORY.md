@@ -1,3 +1,9 @@
+## 2026-11-14 — Bulk validation isolated from pre-existing active ProviderBase template drift
+
+- Bulk retry 43579984626 passed 17/17 staging, 17/17 offline branding, catalogue/manifests reconstruction and published-config validation. It then failed only because provider_clean_reconstruction_contract_test compares all active ProviderBase bytes against the latest common template.
+- The current template hashes to 733c668675009335 for newly staged bases, while current active anime-sama still references verified base ede6ce28ae5b4a72. ProviderBase source changed after the active fleet was last materialized (notably 2be0fed0 on 2026-11-06); this is pre-existing global reconstruction debt, not a mutation introduced by the bulk transaction. The dedicated manual sequential-live reconstruction workflow is the correct authority for changing all active ProviderBases.
+- Bulk onboarding must not silently rematerialize the entire production provider fleet. Replace the global byte-equality reconstruction test in this workflow with provider_base_store.py validate, which checks exact active provenance references, SHA and layering without changing bytes. Keep provider_clean_reconstruction_contract_test unchanged globally; base-template drift remains explicitly unresolved and must not be called repaired. Retry required.
+
 ## 2026-11-14 — Bulk branding generalized to Global + France-only with offline fallback
 
 - Onboarding retry 43579669402 staged all 17 candidates successfully into provider-disabled/, then catalog bootstrap failed closed because committed branding coverage did not know the new identities. This is the expected catalogue safety invariant; no batch was published.

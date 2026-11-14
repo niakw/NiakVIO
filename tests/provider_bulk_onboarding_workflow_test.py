@@ -42,6 +42,9 @@ assert "provider_branding_assets.py" in bulk
 assert "--offline-fallback" in bulk
 assert '"Pillow==12.3.0"' in bulk
 assert "provider_logo_asset_contract_test.py" in bulk
+assert "provider_base_store.py validate" in bulk
+assert "provider_clean_reconstruction_contract_test.py" not in bulk
+assert "materialize_provider_base_v3_store.py" not in bulk
 assert "assets/providers" in bulk
 assert "nativeLabExecuted" in stage
 assert "activationAttempted" in stage
