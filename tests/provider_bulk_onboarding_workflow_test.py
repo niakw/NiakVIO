@@ -63,6 +63,7 @@ assert '"enabled": False' in single
 assert '"validation": "bulk_onboarding_pending" if bulk else "onboarding_pending"' in single
 assert "materialize_onboarding_bundle(" in single
 assert "compose_provider_bundle(" in single
+assert 'overrides["provider_patches"][provider_id]["learned_routes"] = routes[:24]' in single
 assert "shutil.copy2" not in single
 
 # Bulk publication hands off to sharded evidence before any repair loop.
