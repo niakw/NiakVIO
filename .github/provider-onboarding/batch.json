@@ -1,5 +1,5 @@
 {
-  "requestVersion": 12,
+  "requestVersion": 13,
   "source": "NiakVIO-GLOBAL-FINAL-STRICT-TOP20-2026-09-11(5).xlsx",
   "activationPolicy": "bulk_offline_contract_live_unverified",
   "allowReplaceExisting": true,
@@ -16,7 +16,7 @@
     "liveNativeValidationStillRequiredForFullOk": true,
     "neverPromoteOfflineProofToFullOk": true
   },
-  "policy": "Reach 60 active Global and 60 active France without treating GitHub/WAF network rejection as provider failure. Offline-contract activations remain explicitly live-unverified until native/WAF-capable replay.",
+  "policy": "Reach exactly 60 active Global and 60 active France. GitHub/WAF network rejection is inconclusive; exact-byte offline activation stays live-unverified. Explicit current-domain migrations/shutdowns are applied before publication.",
   "providers": [
     {
       "id": "kisskh",
@@ -144,7 +144,7 @@
         "m3u8"
       ],
       "strategy": "mixed_embed_resolver",
-      "direct": "https://vidsrc2.ru/",
+      "direct": "https://vidsrc.sh/",
       "replace_existing": false,
       "inventory_rank": 9,
       "inventory_score": 90
@@ -188,7 +188,7 @@
         "m3u8"
       ],
       "strategy": "mixed_embed_resolver",
-      "direct": "https://cinejoy.to",
+      "direct": "https://cinejoy.pk",
       "replace_existing": false,
       "inventory_rank": 12,
       "inventory_score": 88
@@ -386,7 +386,7 @@
         "m3u8"
       ],
       "strategy": "mixed_embed_resolver",
-      "direct": "https://shuttletv.su",
+      "direct": "https://shuttletv.pk",
       "replace_existing": false,
       "inventory_rank": 22,
       "inventory_score": 88
@@ -429,7 +429,7 @@
         "m3u8"
       ],
       "strategy": "mixed_embed_resolver",
-      "direct": "https://primewire.nexus",
+      "direct": "https://primewire.pw",
       "replace_existing": false,
       "inventory_rank": 26,
       "inventory_score": 85
@@ -919,8 +919,8 @@
       "inventory_score": 83
     },
     {
-      "id": "spenflix",
-      "name": "SpenFlix",
+      "id": "pstream",
+      "name": "PStream",
       "scope": "global",
       "types": [
         "movie",
@@ -935,14 +935,14 @@
         "m3u8"
       ],
       "strategy": "mixed_embed_resolver",
-      "direct": "https://watch.spencerdevs.xyz",
+      "direct": "https://pstream.cfd/",
       "replace_existing": false,
-      "inventory_rank": 56,
+      "inventory_rank": 59,
       "inventory_score": 83
     },
     {
-      "id": "stellar",
-      "name": "Stellar",
+      "id": "boredflix",
+      "name": "BoredFlix",
       "scope": "global",
       "types": [
         "movie",
@@ -957,10 +957,10 @@
         "m3u8"
       ],
       "strategy": "mixed_embed_resolver",
-      "direct": "https://stellar.gdn",
+      "direct": "https://boredflix.to/",
       "replace_existing": false,
-      "inventory_rank": 57,
-      "inventory_score": 83
+      "inventory_rank": 36,
+      "inventory_score": 82
     },
     {
       "id": "streamaggregator",
@@ -1067,7 +1067,7 @@
         "m3u8"
       ],
       "strategy": "mixed_embed_resolver",
-      "direct": "https://vivarium.wtf",
+      "direct": "https://vivarium.su/",
       "replace_existing": false,
       "inventory_rank": 65,
       "inventory_score": 83
@@ -1161,8 +1161,8 @@
       "inventory_score": 83
     },
     {
-      "id": "stigstream",
-      "name": "Stigstream",
+      "id": "coflix",
+      "name": "Coflix",
       "scope": "france",
       "types": [
         "movie",
@@ -1177,18 +1177,17 @@
         "m3u8"
       ],
       "strategy": "mixed_embed_resolver",
-      "direct": "https://stigstream.ru",
-      "replace_existing": false,
-      "inventory_rank": 23,
-      "inventory_score": 83
+      "direct": "https://coflix.red/",
+      "hub": "https://coflix.domains/",
+      "replace_existing": true,
+      "inventory_rank": 5,
+      "inventory_score": 95
     },
     {
-      "id": "wowfilms0626",
-      "name": "wowfilms0626",
+      "id": "vostfree",
+      "name": "VostFree",
       "scope": "france",
       "types": [
-        "movie",
-        "tv",
         "anime"
       ],
       "languages": [
@@ -1199,10 +1198,10 @@
         "m3u8"
       ],
       "strategy": "mixed_embed_resolver",
-      "direct": "https://wowfilms0626c.site",
-      "replace_existing": false,
-      "inventory_rank": 25,
-      "inventory_score": 83
+      "direct": "https://vostfree.ws/",
+      "replace_existing": true,
+      "inventory_rank": 31,
+      "inventory_score": 76
     },
     {
       "id": "dessinanime",
@@ -1579,7 +1578,7 @@
         "m3u8"
       ],
       "strategy": "mixed_embed_resolver",
-      "direct": "https://sadisflix-officiel.biz/",
+      "direct": "https://sadisflix-officiel.cfd",
       "replace_existing": false,
       "inventory_rank": 58,
       "inventory_score": 64
@@ -1663,7 +1662,7 @@
         "m3u8"
       ],
       "strategy": "mixed_embed_resolver",
-      "direct": "https://vombam.com/",
+      "direct": "https://varloz.com",
       "replace_existing": false,
       "inventory_rank": 62,
       "inventory_score": 64
@@ -1684,18 +1683,19 @@
         "m3u8"
       ],
       "strategy": "mixed_embed_resolver",
-      "direct": "https://wavewatch.top/",
+      "direct": "https://wavewatch.icu/",
       "replace_existing": false,
       "inventory_rank": 63,
       "inventory_score": 64
     },
     {
-      "id": "wiflix",
-      "name": "WiFlix",
+      "id": "neobam",
+      "name": "Neobam",
       "scope": "france",
       "types": [
         "movie",
-        "tv"
+        "tv",
+        "anime"
       ],
       "languages": [
         "fr"
@@ -1705,10 +1705,10 @@
         "m3u8"
       ],
       "strategy": "mixed_embed_resolver",
-      "direct": "https://flemmix.cafe/",
-      "replace_existing": false,
-      "inventory_rank": 64,
-      "inventory_score": 64
+      "direct": "https://www.neobam.fr/",
+      "replace_existing": true,
+      "inventory_rank": 21,
+      "inventory_score": 83
     },
     {
       "id": "youtitou",
@@ -1746,7 +1746,7 @@
         "m3u8"
       ],
       "strategy": "mixed_embed_resolver",
-      "direct": "https://www.zone-telechargement.estate/",
+      "direct": "https://www.zone-telechargement.rentals/",
       "replace_existing": false,
       "inventory_rank": 66,
       "inventory_score": 64
@@ -1926,7 +1926,7 @@
         "m3u8"
       ],
       "strategy": "mixed_embed_resolver",
-      "direct": "https://hianimestv.su/",
+      "direct": "https://hianime.at/",
       "replace_existing": false,
       "inventory_rank": 80,
       "inventory_score": 52
@@ -2012,7 +2012,7 @@
         "m3u8"
       ],
       "strategy": "mixed_embed_resolver",
-      "direct": "https://yablom.com",
+      "direct": "https://trimav.com",
       "replace_existing": true,
       "inventory_rank": 4,
       "inventory_score": 97
@@ -2122,7 +2122,7 @@
         "m3u8"
       ],
       "strategy": "mixed_embed_resolver",
-      "direct": "https://1jour1film0626.site",
+      "direct": "https://1jour1film1026.monster",
       "replace_existing": true,
       "inventory_rank": 13,
       "inventory_score": 83
@@ -2166,7 +2166,7 @@
         "m3u8"
       ],
       "strategy": "mixed_embed_resolver",
-      "direct": "https://ilmiv.com",
+      "direct": "https://bimdav.com",
       "replace_existing": true,
       "inventory_rank": 17,
       "inventory_score": 83
@@ -2188,10 +2188,11 @@
         "m3u8"
       ],
       "strategy": "mixed_embed_resolver",
-      "direct": "https://www.kidraz.com",
+      "direct": "https://fronav.com",
       "replace_existing": true,
       "inventory_rank": 18,
       "inventory_score": 83
     }
-  ]
+  ],
+  "domainEvidenceFile": "automation/provider-domain-refresh-2026-11-14.json"
 }
