@@ -53,6 +53,9 @@ const HISTORICAL_SOLUTION_PROFILES = {
   terminal_media_extractor_with_playback_validation: "chain_terminal_extractor_v1",
   same_provider_candidate_program_replay: "retained_candidate_replay_v1",
   proven_request_program_and_terminal_extraction: "player_media_extractor_v1",
+  discover_api_from_current_page_and_bundles: "transport_request_differential_v1",
+  provider_owned_api_request_differential: "transport_request_differential_v1",
+  reuse_existing_clean_provider_lego: "chain_terminal_extractor_v1",
 };
 const LLM_ADVISOR_PROFILES = new Set([
   "provider_origin_failover_v1",
