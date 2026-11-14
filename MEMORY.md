@@ -1,3 +1,10 @@
+## 2026-11-14 — Current regression blocks onboarding; hand it to official disabled lifecycle
+
+- Scope=all census 43602671784 on 69249582 succeeded across 8/8 shards + merge and persisted a9db1ce8: 12 FULL OK freshly tested, 1 current active REGRESSION PROVIDER (voiranime-homes), 33 disabled. voiranime-homes was tested this run, returned anime=no_streams/provider_network_http_error, has no current verified lane, remains authority-known/repair-eligible, and is still enabled in manifest.
+- Bulk Activation 43603069928 correctly selected the one pending FULL candidate (internet-archive), rebuilt/minimized a 14-provider candidate cohort, passed the corrected synthetic bulk activation test, then failed production_active_provider_freshness_test because active voiranime-homes lacks fresh FULL proof. No activation commit was published.
+- Trigger the repository's existing Provider Disabled Lifecycle. Its authority arbiter explicitly maps current tested Repair symptoms to DISABLE_ARCHITECTURE_NONFUNCTIONAL and retains bytes for seven days. This satisfies the user's rule to stop counting nonfunctional existing providers without deleting their reversible evidence. Do not manually edit provider bytes or waive freshness.
+- After lifecycle publication, rerun full active census, then let Bulk Activation re-evaluate Internet Archive from its isolated pending FULL proof.
+
 ## 2026-11-14 — Requeue full active-cohort proof before Internet Archive activation
 
 - Exact 6f42275: Core Verify & Publish 43602288683, Provider Overrides 43602288653, Non-Regression 43602288645, Branch Maintenance 43602288616 and CodeQL 43602288637 succeeded. Workflow architecture gate 43602288655 remained in progress at trigger time; security Final Gate separately fails on unresolved CodeQL retirement and is not waived.
