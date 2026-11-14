@@ -620,7 +620,7 @@
       "manifest_overrides": {
         "supportsExternalPlayer": true,
         "logo": "https://flemmix.land/favicon.ico",
-        "enabled": true
+        "enabled": false
       },
       "published_types": [
         "movie",
@@ -837,7 +837,7 @@
           }
         ]
       },
-      "route_data_state": "repair",
+      "route_data_state": "off",
       "repair_disposition": {
         "schemaVersion": 1,
         "authority": "provider-repair-disposition-v1",
@@ -931,7 +931,8 @@
             "tv"
           ]
         }
-      ]
+      ],
+      "activation_eligible": false
     },
     "uhdmovies": {
       "notes": [
@@ -1344,9 +1345,9 @@
         ]
       },
       "manifest_overrides": {
-        "enabled": true
+        "enabled": false
       },
-      "route_data_state": "on",
+      "route_data_state": "off",
       "repair_disposition": {
         "schemaVersion": 1,
         "authority": "provider-repair-disposition-v1",
@@ -1464,7 +1465,8 @@
           "base": "https://movieshunt.app",
           "maxStreams": 6
         }
-      }
+      },
+      "activation_eligible": false
     },
     "hindmoviez": {
       "capability": "direct_media",
@@ -1732,7 +1734,7 @@
       "official_hub": "https://hdhub4u.ec",
       "official_site": "https://4khdhub.one",
       "manifest_overrides": {
-        "enabled": true
+        "enabled": false
       },
       "learned_urls": [
         "https://4khdhub.one"
@@ -1870,7 +1872,7 @@
           }
         ]
       },
-      "route_data_state": "repair",
+      "route_data_state": "off",
       "repair_disposition": {
         "schemaVersion": 1,
         "authority": "provider-repair-disposition-v1",
@@ -1953,7 +1955,8 @@
           "base": "https://4khdhub.one",
           "maxStreams": 8
         }
-      }
+      },
+      "activation_eligible": false
     },
     "persianstremio": {
       "capability": "api_stream_resolver",
@@ -2112,9 +2115,9 @@
         ]
       },
       "manifest_overrides": {
-        "enabled": true
+        "enabled": false
       },
-      "route_data_state": "repair",
+      "route_data_state": "off",
       "repair_disposition": {
         "schemaVersion": 1,
         "authority": "provider-repair-disposition-v1",
@@ -2180,7 +2183,8 @@
         "blocked_plan_preserved": false,
         "declared_types_are_gate_denominator": true,
         "sequential": true
-      }
+      },
+      "activation_eligible": false
     },
     "desiflix": {
       "capability": "api_stream_resolver",
@@ -2438,7 +2442,7 @@
         "anime"
       ],
       "manifest_overrides": {
-        "enabled": true
+        "enabled": false
       },
       "learned_routes": [
         "/title/movie/{id}-{slug}",
@@ -2610,7 +2614,7 @@
           }
         ]
       },
-      "route_data_state": "repair",
+      "route_data_state": "off",
       "repair_disposition": {
         "schemaVersion": 1,
         "authority": "provider-repair-disposition-v1",
@@ -2689,7 +2693,8 @@
         "blocked_plan_preserved": false,
         "declared_types_are_gate_denominator": true,
         "sequential": true
-      }
+      },
+      "activation_eligible": false
     },
     "anikototv": {
       "capability": "mixed_embed_resolver",
@@ -3143,7 +3148,7 @@
       "official_hub": "https://animesalt.ac/",
       "official_site": "https://animesalt.cx",
       "manifest_overrides": {
-        "enabled": true
+        "enabled": false
       },
       "domain_substitutions": {
         "animesalt.link": "animesalt.cx"
@@ -3303,7 +3308,7 @@
           }
         ]
       },
-      "route_data_state": "repair",
+      "route_data_state": "off",
       "repair_disposition": {
         "schemaVersion": 1,
         "authority": "provider-repair-disposition-v1",
@@ -3352,14 +3357,15 @@
           "base": "https://animesalt.cx",
           "maxStreams": 2
         }
-      }
+      },
+      "activation_eligible": false
     },
     "animesama-co": {
       "capability": "mixed_embed_resolver",
       "official_hub": "https://anime-sama.wiki/",
       "official_site": "https://animesama.co",
       "manifest_overrides": {
-        "enabled": true
+        "enabled": false
       },
       "published_types": [
         "anime"
@@ -3516,7 +3522,7 @@
           }
         ]
       },
-      "route_data_state": "repair",
+      "route_data_state": "off",
       "repair_disposition": {
         "schemaVersion": 1,
         "authority": "provider-repair-disposition-v1",
@@ -3585,12 +3591,13 @@
         "2026-09-24 route authority reconciled with the current provider runtime and v2 migration contract: /catalogue/?search={query} is the executable catalogue search; /template-php/defaut/fetch.php remains candidate/history only."
       ],
       "source_runtime_family": "dle-search-series-season-episode",
-      "reconstruction_state": "provider-local-current-site"
+      "reconstruction_state": "provider-local-current-site",
+      "activation_eligible": false
     },
     "animesultra": {
       "capability": "mixed_embed_resolver",
       "manifest_overrides": {
-        "enabled": true
+        "enabled": false
       },
       "official_hub": null,
       "official_site": "https://v2.animesultra.org",
@@ -3754,7 +3761,7 @@
           }
         ]
       },
-      "route_data_state": "repair",
+      "route_data_state": "off",
       "repair_disposition": {
         "schemaVersion": 1,
         "authority": "provider-repair-disposition-v1",
@@ -3805,7 +3812,8 @@
         }
       },
       "source_runtime_family": "dle-full-story-sibnet",
-      "reconstruction_state": "provider-local-current-site"
+      "reconstruction_state": "provider-local-current-site",
+      "activation_eligible": false
     },
     "animetsu": {
       "capability": "direct_media",
@@ -4056,7 +4064,7 @@
       "official_hub": null,
       "official_site": "https://animevostfr.org",
       "manifest_overrides": {
-        "enabled": true
+        "enabled": false
       },
       "learned_routes": [
         "/?s={query}",
@@ -4251,7 +4259,7 @@
           "mediaType"
         ]
       },
-      "route_data_state": "repair",
+      "route_data_state": "off",
       "repair_disposition": {
         "schemaVersion": 1,
         "authority": "provider-repair-disposition-v1",
@@ -4306,7 +4314,8 @@
       },
       "domain_substitutions": {
         "v2.animevostfr.org": "animevostfr.org"
-      }
+      },
+      "activation_eligible": false
     },
     "castle": {
       "capability": "api_stream_resolver",
@@ -4563,7 +4572,7 @@
       "manifest_overrides": {
         "logo": "https://coflix.red/favicon.ico",
         "supportsExternalPlayer": false,
-        "enabled": true
+        "enabled": false
       },
       "published_types": [
         "movie",
@@ -4814,7 +4823,7 @@
           }
         }
       },
-      "route_data_state": "repair",
+      "route_data_state": "off",
       "repair_disposition": {
         "schemaVersion": 1,
         "authority": "provider-repair-disposition-v1",
@@ -4883,7 +4892,8 @@
         "scripts/provider_patches/coflix_runtime_v1.py": {
           "base": "https://coflix.red"
         }
-      }
+      },
+      "activation_eligible": false
     },
     "french-manga": {
       "capability": "mixed_embed_resolver",
@@ -5394,7 +5404,7 @@
       "official_hub": "https://modlist.in/?type=hollywood",
       "official_site": "https://moviesmod.ai.in",
       "manifest_overrides": {
-        "enabled": true
+        "enabled": false
       },
       "domain_substitutions": {
         "moviesmod.money": "moviesmod.ai.in",
@@ -5628,7 +5638,7 @@
           }
         ]
       },
-      "route_data_state": "repair",
+      "route_data_state": "off",
       "repair_disposition": {
         "schemaVersion": 1,
         "authority": "provider-repair-disposition-v1",
@@ -5679,7 +5689,8 @@
       "runtime_domain_replacements": {
         "moviesmod.zone": "moviesmod.ai.in"
       },
-      "reconstruction_state": "provider-local-current-site"
+      "reconstruction_state": "provider-local-current-site",
+      "activation_eligible": false
     },
     "mugiwarastream": {
       "capability": "mixed_embed_resolver",
@@ -7775,9 +7786,9 @@
         ]
       },
       "manifest_overrides": {
-        "enabled": true
+        "enabled": false
       },
-      "route_data_state": "repair",
+      "route_data_state": "off",
       "repair_disposition": {
         "schemaVersion": 1,
         "authority": "provider-repair-disposition-v1",
@@ -7862,7 +7873,8 @@
         "routeCount": 2,
         "proofScope": "architecture-prior-not-playback-proof",
         "observedAt": "2026-09-21"
-      }
+      },
+      "activation_eligible": false
     },
     "vidrock": {
       "capability": "html_scraper",
@@ -8845,7 +8857,7 @@
     "vostfree": {
       "capability": "mixed_embed_resolver",
       "manifest_overrides": {
-        "enabled": true
+        "enabled": false
       },
       "candidate_config_reconciliation": {
         "version": 3,
@@ -8972,7 +8984,7 @@
           }
         ]
       },
-      "route_data_state": "repair",
+      "route_data_state": "off",
       "repair_disposition": {
         "schemaVersion": 1,
         "authority": "provider-repair-disposition-v1",
@@ -9075,7 +9087,8 @@
             "anime"
           ]
         }
-      ]
+      ],
+      "activation_eligible": false
     },
     "wookafr": {
       "capability": "mixed_embed_resolver",
@@ -9922,9 +9935,9 @@
         }
       },
       "manifest_overrides": {
-        "enabled": true
+        "enabled": false
       },
-      "route_data_state": "repair",
+      "route_data_state": "off",
       "repair_disposition": {
         "schemaVersion": 1,
         "authority": "provider-repair-disposition-v1",
@@ -9982,7 +9995,8 @@
           "depth": 3,
           "maxStreams": 6
         }
-      }
+      },
+      "activation_eligible": false
     },
     "anime-ultime": {
       "capability": "mixed_embed_resolver",
@@ -10883,7 +10897,7 @@
       "official_hub": "https://moviiebox.lol/",
       "official_site": "https://moviebox.yachts",
       "manifest_overrides": {
-        "enabled": true
+        "enabled": false
       },
       "notes": [
         "Recovered user browser proof: MovieBox HOTD resolved through data.vidsrcme.ru / vidsrcme.ru using exact TMDB + season + episode and reached a terminal HLS playlist.",
@@ -11048,7 +11062,7 @@
           }
         ]
       },
-      "route_data_state": "repair",
+      "route_data_state": "off",
       "repair_disposition": {
         "schemaVersion": 1,
         "authority": "provider-repair-disposition-v1",
@@ -11120,7 +11134,8 @@
             }
           ]
         }
-      }
+      },
+      "activation_eligible": false
     },
     "showbox": {
       "capability": "html_scraper",
