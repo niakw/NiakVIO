@@ -1,3 +1,9 @@
+## 2026-11-14 — Lifecycle workflow now validates the full Global + France-only union
+
+- Dedicated lifecycle run 43572290222 on 9522f1fd succeeded with no repository mutation, but its inline directory/static/materialization assertions still used current_provider_scope's intentionally Global-only counts. That would reject a future valid France-only lifecycle row after static/materialization had correctly expanded to the union. The workflow also did not directly execute the new France-only synthetic lifecycle test.
+- Keep current_provider_scope's Global runtime semantics, but make the lifecycle workflow independently verify catalog union authority: Global rows + exact VF-only projection identities, projection filesystem audit, static knowledge/materialization identity equality and active/disabled union counts. Add provider_disabled_lifecycle_contract_test.py and provider_language_manifest_vf_only_test.py to both workflow triggers and the lifecycle test phase.
+- No provider activation or bytes changed. Exact-SHA CI pending.
+
 ## 2026-11-14 — Routine architecture validation publication boundary fixed
 
 - Workflow Gate 43572363983 exposed a real consequence of moving architecture validation from manual/FORCE-only to every successful Learning run: the "Open or refresh Brain architecture PR" step had relied on the old job-level manual condition and only retained NIAKVIO_ALLOW_BRAIN_PROPOSAL_PR + non-FORCE checks. If that repository variable were enabled, routine Learning could have opened/refreshed a review PR without publish_proposal=true.

@@ -14,6 +14,8 @@ on:
       - 'tests/provider_authority_arbiter_test.py'
       - 'tests/provider_authority_current_catalogue_test.py'
       - 'tests/provider_route_reconstructor_test.py'
+      - 'tests/provider_disabled_lifecycle_contract_test.py'
+      - 'tests/provider_language_manifest_vf_only_test.py'
 
 permissions:
   contents: write
@@ -48,31 +50,54 @@ jobs:
           python tests/provider_authority_current_catalogue_test.py
           python tests/provider_domain_authority_memory_test.py
           python tests/provider_v3_local_recognition_contract_test.py
+          python tests/provider_disabled_lifecycle_contract_test.py
+          python tests/provider_language_manifest_vf_only_test.py
           python scripts/audit_provider_v3_static.py
           python - <<'PY'
           import json
           import sys
           from pathlib import Path
-          sys.path.insert(0, str(Path('scripts').resolve()))
+
+          root=Path.cwd()
+          sys.path.insert(0, str((root/'scripts').resolve()))
           from current_provider_scope import (
               active_provider_count,
               active_provider_ids,
               disabled_provider_count,
               disabled_provider_ids,
               visible_provider_count,
+              audit_projection_scope,
           )
+          from manage_provider_lifecycle import lifecycle_catalog_rows, rows_by_id
 
-          manifest=json.loads(Path('manifest.json').read_text(encoding='utf-8'))
-          rows=[row for row in manifest.get('scrapers') or [] if isinstance(row,dict)]
-          manifest_active={str(row.get('id') or '').strip().casefold().replace('_','-') for row in rows if row.get('enabled') is not False}
-          manifest_disabled={str(row.get('id') or '').strip().casefold().replace('_','-') for row in rows if row.get('enabled') is False}
+          manifest=json.loads((root/'manifest.json').read_text(encoding='utf-8'))
+          vf_manifest=json.loads((root/'vf/manifest.json').read_text(encoding='utf-8'))
+          root_rows=rows_by_id(manifest)
+          vf_rows=rows_by_id(vf_manifest)
+          catalog_rows=lifecycle_catalog_rows(root_rows, root=root)
+
+          # current_provider_scope remains the Global runtime scope; prove that
+          # contract separately from lifecycle's full Global + France-only union.
+          manifest_active={pid for pid,row in root_rows.items() if row.get('enabled') is not False}
+          manifest_disabled={pid for pid,row in root_rows.items() if row.get('enabled') is False}
           assert active_provider_ids() == manifest_active
           assert disabled_provider_ids() == manifest_disabled
           assert visible_provider_count() == active_provider_count() + disabled_provider_count()
-          knowledge=json.loads(Path('automation/provider-v3-static-knowledge.json').read_text(encoding='utf-8'))
-          materialization=json.loads(Path('provider-v3-materialization.json').read_text(encoding='utf-8'))
+
+          vf_only=set(vf_rows)-set(root_rows)
+          catalog_vf_only=set(catalog_rows)-set(root_rows)
+          assert vf_only == catalog_vf_only, (sorted(vf_only), sorted(catalog_vf_only))
+          assert set(catalog_rows) == set(root_rows) | vf_only
+          scope=audit_projection_scope(root)
+          assert scope['union_visible'] == len(catalog_rows), (scope,len(catalog_rows))
+
+          active_union={pid for pid,row in catalog_rows.items() if row.get('enabled') is not False}
+          disabled_union={pid for pid,row in catalog_rows.items() if row.get('enabled') is False}
+          visible_ids=active_union | disabled_union
+
+          knowledge=json.loads((root/'automation/provider-v3-static-knowledge.json').read_text(encoding='utf-8'))
+          materialization=json.loads((root/'provider-v3-materialization.json').read_text(encoding='utf-8'))
           knowledge_ids={str(value).strip().casefold().replace('_','-') for value in (knowledge.get('providers') or {})}
-          visible_ids=manifest_active | manifest_disabled
           assert knowledge_ids == visible_ids, (sorted(knowledge_ids-visible_ids), sorted(visible_ids-knowledge_ids))
           assert int(knowledge.get('providerCount') or 0) == len(visible_ids)
           for section in ('contractRecognition','routeReconstruction','routeRecovery'):
@@ -83,16 +108,25 @@ jobs:
           assert materialization_ids == visible_ids, (sorted(materialization_ids-visible_ids), sorted(visible_ids-materialization_ids))
           assert int(materialization.get('providerCount') or 0) == len(visible_ids)
           assert int(materialization.get('expectedProviderCount') or len(visible_ids)) == len(visible_ids)
-          assert int(materialization.get('activeProviderIdentityCount') or 0) == len(manifest_active)
+          assert int(materialization.get('activeProviderIdentityCount') or 0) == len(active_union)
           assert int(materialization.get('staticKnowledgeProviderCount') or 0) == len(visible_ids)
-          for row in rows:
+
+          for pid,row in root_rows.items():
               filename=str(row.get('filename') or '')
               if row.get('enabled') is False:
-                  assert filename.startswith('provider-disabled/'), (row.get('id'), filename)
+                  assert filename.startswith('provider-disabled/'), (pid, filename)
                   assert row.get('disabledAt') and row.get('purgeAfter')
               else:
-                  assert filename.startswith('providers/'), (row.get('id'), filename)
-          print('PROVIDER_DIRECTORY_CONTRACT_OK', f'active={active_provider_count()}', f'disabled={disabled_provider_count()}')
+                  assert filename.startswith('providers/'), (pid, filename)
+
+          print(
+              'PROVIDER_DIRECTORY_CONTRACT_OK',
+              f'global_active={len(manifest_active)}',
+              f'global_disabled={len(manifest_disabled)}',
+              f'union_active={len(active_union)}',
+              f'union_disabled={len(disabled_union)}',
+              f'vf_only={len(vf_only)}',
+          )
           PY
           git diff --check
 
