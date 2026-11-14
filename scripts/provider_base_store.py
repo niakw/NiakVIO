@@ -762,13 +762,14 @@ def provider_route_is_identity_aware(route: Any) -> bool:
     # can refine a resolved title but cannot select the requested title.
     if re.search(r"\{(?:query|title|slug|tmdb_?id|imdb_?id|id)\}", text, re.I):
         return True
-    return bool(
-        re.search(
-            r"/(?:search|recherche)(?:[/?#]|$)|[?&](?:s|q|query|keyword|search|story)=",
-            text,
-            re.I,
-        )
-    )
+    if re.search(r"/(?:search|recherche)(?:[/?#]|$)", text, re.I):
+        return True
+    if re.search(r"[?&](?:q|query|keyword|search|story)=", text, re.I):
+        return True
+    # WordPress-style ?s= is a title search only when discovery normalized it
+    # to the primary query placeholder. ?s={season}&e={episode} is episodic
+    # refinement and must not authorize a provider by itself.
+    return bool(re.search(r"[?&]s=\{query\}(?:&|#|$)", text, re.I))
 
 
 def provider_model_has_executable_plan(model: Any) -> bool:
