@@ -1,3 +1,9 @@
+## 2026-11-14 — Current-tested nonfunctional cohort withdrawn from production
+
+- Provider Disabled Lifecycle 43585932732 succeeded and published 5261b714. Authority disabled exactly 15 previously active current-tested rows without terminal playback proof. Global production is now 13 active, all from the current FULL cohort; declared lanes movie=6, tv=6, anime=9. France projection is 10 active with movie=4, tv=4, anime=8. Lifecycle retained-disabled authority is 28 identities; bulk-pending staging remains separate/non-executable.
+- This intentionally makes production truthful before expansion: ROUTE PROVEN, CANDIDATE OK and NO PROOF no longer count as active. The target 20/20/20 remains unmet and must only be rebuilt from providers that pass terminal playback and identity checks.
+- Prior Core Verify exposed that active bundles were not minimizer fixed-points after recent control-plane transitions. Trigger exact release finalization on the lifecycle result so the conservative minimizer, projections, prune, versions and release hashes are rebuilt atomically before any new activation.
+
 ## 2026-11-14 — Catalogue authority contract follows generalized current withdrawal
 
 - Lifecycle 43585830587 again reached disabled_now=15 and passed the updated unit matrix, then stopped in provider_authority_current_catalogue_test.py because its final AnimesUltra fixture still required KEEP_DIRECT even after the current census had just made the row disabled-retained.
