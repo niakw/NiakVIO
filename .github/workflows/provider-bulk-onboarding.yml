@@ -308,27 +308,40 @@ jobs:
         run: |
           set -euo pipefail
           BASE_SHA="$(tr -d '\r\n' < checked-transaction/bulk-base-sha.txt)"
+          PATCH="$RUNNER_TEMP/bulk-provider-transaction.patch"
+          cp checked-transaction/bulk-provider-transaction.patch "$PATCH"
           test -n "$BASE_SHA"
-          git merge-base --is-ancestor "$BASE_SHA" HEAD || {
-            echo "Validated bulk base $BASE_SHA is not an ancestor of current main." >&2
-            exit 3
-          }
-          if [ ! -s checked-transaction/bulk-provider-transaction.patch ]; then
-            echo "published_sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-          git apply --3way --index checked-transaction/bulk-provider-transaction.patch
-          if git diff --cached --quiet; then
-            echo "published_sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
           git config user.name "niakvio-provider-bulk-onboarding"
           git config user.email "actions@users.noreply.github.com"
-          git commit -m "provider: bulk activate $PROVIDER_COUNT offline-unverified"
-          git fetch origin main
-          git rebase origin/main
-          git push origin HEAD:main
-          echo "published_sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+          for attempt in 1 2 3; do
+            git fetch origin main
+            git reset --hard origin/main
+            git merge-base --is-ancestor "$BASE_SHA" HEAD || {
+              echo "Validated bulk base $BASE_SHA is not an ancestor of current main." >&2
+              exit 3
+            }
+            if [ ! -s "$PATCH" ]; then
+              echo "published_sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+            if ! git apply --3way --index "$PATCH"; then
+              echo "Bulk patch no longer merges on latest main (attempt $attempt); retrying from fresh origin/main." >&2
+              git reset --hard origin/main
+              continue
+            fi
+            if git diff --cached --quiet; then
+              echo "published_sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+            git commit -m "provider: bulk activate $PROVIDER_COUNT offline-unverified"
+            if git push origin HEAD:main; then
+              echo "published_sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+            echo "main advanced during bulk publication (attempt $attempt); replaying validated patch on newest main." >&2
+          done
+          echo "Bulk publication could not obtain a stable latest-main transaction after 3 attempts." >&2
+          exit 4
 
       - name: Continue deferred discovery toward 60/60
         shell: bash
