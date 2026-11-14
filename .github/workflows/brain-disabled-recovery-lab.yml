@@ -169,7 +169,7 @@ jobs:
           rm -rf .brain-disabled-llm-runtime
           mkdir -p .brain-disabled-llm-runtime
           archive="$RUNNER_TEMP/llama-b11140.tar.gz"
-          expected_sha='460c45fa8a9ebc36c9b08e3a15c06dbdb312c6308599521c84d9e7f92a268b'
+          expected_sha='460c45fa8a9ebc36c9b08e3a15c06dbdbeb312c6308599521c84d9e7f92a268b'
           curl -fLsS --retry 4 --retry-all-errors --retry-delay 2 --connect-timeout 20 --max-time 120 \
             'https://github.com/ggml-org/llama.cpp/releases/download/b11140/llama-b11140-bin-ubuntu-x64.tar.gz' \
             -o "$archive"
