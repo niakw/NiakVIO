@@ -160,6 +160,53 @@ def normalized_declared_languages(entry: dict[str, Any]) -> list[str]:
     return [str(value).strip().casefold() for value in declared if str(value).strip()]
 
 
+def france_only_catalog_rows(*, root: Path = ROOT) -> list[dict[str, Any]]:
+    """Restore canonical VF-only providers from catalog during projection rebuild.
+
+    A French-only provider is never inserted into Global. This step is read-only:
+    activation, artifact placement and native acceptance stay owned by the
+    lifecycle and final publication pipeline. Strict paths prevent source data
+    from turning into arbitrary local or network dependencies.
+    """
+    catalog_path = root / "provider_catalog.json"
+    if not catalog_path.is_file():
+        return []
+    catalog = load_json(catalog_path)
+    if not isinstance(catalog, dict) or catalog.get("sourceOfTruth") is not True:
+        raise ValueError("France-only catalog authority is invalid")
+    providers = catalog.get("providers")
+    if not isinstance(providers, list):
+        raise ValueError("France-only catalog providers must be an array")
+    result: list[dict[str, Any]] = []
+    seen: set[str] = set()
+    for record in providers:
+        if not isinstance(record, dict):
+            continue
+        projection = record.get("projections")
+        if not isinstance(projection, dict) or projection.get("vf") is not True or projection.get("general") is not False:
+            continue
+        row = record.get("scraper")
+        if not isinstance(row, dict):
+            raise ValueError("France-only catalog row is missing scraper DATA")
+        cid = str(row.get("id") or "").strip().casefold()
+        filename = str(row.get("filename") or "").strip()
+        languages = normalized_declared_languages(row)
+        if not re.fullmatch(r"[a-z0-9_-]{2,100}", cid) or cid in seen:
+            raise ValueError(f"invalid or duplicate France-only provider: {cid}")
+        if not any(lang == "fr" or lang.startswith("fr-") for lang in languages):
+            raise ValueError(f"{cid}: France-only provider lacks declared French capability")
+        if not re.fullmatch(r"(?:providers|provider-disabled)/[a-zA-Z0-9_.-]+[.]js", filename):
+            raise ValueError(f"{cid}: unsafe or unmaterialized executable path")
+        seen.add(cid)
+        copied = dict(row)
+        semantic = semantic_supported_types(copied)
+        if "anime" in semantic and "tv" not in semantic:
+            copied["canonicalSupportedTypes"] = semantic
+            copied["supportedTypes"] = semantic + ["tv"]
+        result.append(copied)
+    return result
+
+
 def _public_hostname(hostname: str) -> bool:
     """Reject local/private/special destinations before any homepage request."""
     host = str(hostname or "").strip().rstrip(".").casefold()
@@ -351,6 +398,20 @@ def build_manifest(
         if not observed_accepted and not declared_fr and not inferred_fr:
             continue
         entries.append(nested_entry(entry))
+
+    # The canonical provider catalog owns France-only identities. Rebuilding
+    # from Global alone must never erase them or leak them into General.
+    general_ids = {
+        str(row.get("id") or "").strip().casefold()
+        for row in source.get("scrapers", [])
+        if isinstance(row, dict)
+    }
+    for france_row in france_only_catalog_rows(root=root):
+        identity = str(france_row["id"]).strip().casefold()
+        if identity in general_ids:
+            raise ValueError(f"{identity}: France-only provider was duplicated in Global")
+        entries.append(nested_entry(france_row))
+
     return {
         "name": f"{source.get('name', 'NiakVIO')} — {name_suffix}",
         "version": source.get("version"),

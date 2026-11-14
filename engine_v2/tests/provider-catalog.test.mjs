@@ -62,8 +62,41 @@ for (const scraper of vf.scrapers) {
   );
 }
 
-assert.equal(catalog.providers.length, general.scrapers.length, "catalog must preserve every general provider");
+assert.equal(
+  catalog.providers.length,
+  new Set([...general.scrapers, ...vf.scrapers].map((row) => String(row.id).toLowerCase())).size,
+  "catalog must preserve the full union of Global and France providers",
+);
 assert.equal(catalog.manifestOrder.vf.length, vf.scrapers.length, "catalog must preserve every VF provider");
+// France-only providers must never be silently duplicated into the Global
+// installation URL by catalog construction or round-trip rendering.
+const exclusive = structuredClone(vf.scrapers[0]);
+exclusive.id = "france-exclusive-synthetic";
+exclusive.name = "France Exclusive (synthetic)";
+exclusive.filename = "../providers/france-exclusive-synthetic--v3--fixture.js";
+exclusive.contentLanguage = ["fr"];
+exclusive.enabled = false;
+const extendedVf = { ...structuredClone(vf), scrapers: [...vf.scrapers, exclusive] };
+const unionCatalog = buildCatalogFromPublished({ generalManifest: general, vfManifest: extendedVf });
+const vfOnlyRow = unionCatalog.providers.find((row) => row.canonicalId === "france-exclusive-synthetic");
+assert.ok(vfOnlyRow, "France-only entry must exist as an independent catalog object");
+assert.deepEqual(vfOnlyRow.projections, { general: false, vf: true });
+assert.equal(unionCatalog.manifestOrder.general.includes("france-exclusive-synthetic"), false);
+assert.equal(unionCatalog.manifestOrder.vf.at(-1), "france-exclusive-synthetic");
+const unionRendered = manifestsFromCatalog(unionCatalog);
+assert.deepEqual(unionRendered.general, general, "Global projection must be unchanged by VF-only entry");
+assert.deepEqual(unionRendered.vf, extendedVf, "VF-only projection must survive byte-semantic catalog round trip");
+const missingProjection = structuredClone(unionCatalog);
+missingProjection.providers.find((row) => row.canonicalId === "france-exclusive-synthetic").projections = {general:false,vf:false};
+assert.throws(() => validateProviderCatalog(missingProjection), /must belong to Global or France/);
+// A shared ID with conflicting metadata must still be rejected, not split.
+const divergent = structuredClone(vf);
+divergent.scrapers[0].description = "unrelated-content";
+assert.throws(
+  () => buildCatalogFromPublished({ generalManifest: general, vfManifest: divergent }),
+  /metadata diverges from general manifest/,
+);
+
 assert.equal(catalog.policy.repairBeforeTriage, true);
 assert.equal(catalog.policy.retainLastKnownGoodOnInconclusive, true);
 assert.equal(catalog.policy.quickRefreshMayRepairAndPublish, true);

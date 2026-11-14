@@ -29,16 +29,21 @@ export function buildCatalogFromPublished({ generalManifest, vfManifest }) {
   }
 
   const vfOrder = [];
+  const vfOnlyById = new Map();
   for (const scraper of vf.scrapers) {
     const canonicalId = canonicalProviderId(scraper.id);
     if (vfOrder.includes(canonicalId)) {
       throw new Error(`vf manifest contains duplicate provider id: ${scraper.id}`);
     }
+    const normalizedVf = normalizeProjectionScraper(scraper, "vf");
     if (!generalById.has(canonicalId)) {
-      throw new Error(`vf provider is absent from general manifest: ${scraper.id}`);
+      // France-only providers are first-class objects, not hidden Global rows.
+      // Preserve their exact published bytes and projection path on round-trip.
+      vfOnlyById.set(canonicalId, normalizedVf);
+      vfOrder.push(canonicalId);
+      continue;
     }
     const generalScraper = generalById.get(canonicalId);
-    const normalizedVf = normalizeProjectionScraper(scraper, "vf");
     if (!deepEqual(generalScraper, normalizedVf)) {
       throw new Error(`vf provider metadata diverges from general manifest beyond projection path: ${scraper.id}`);
     }
@@ -58,6 +63,14 @@ export function buildCatalogFromPublished({ generalManifest, vfManifest }) {
       },
     };
   });
+
+  for (const [canonicalId, scraper] of vfOnlyById.entries()) {
+    providers.push({
+      canonicalId,
+      scraper,
+      projections: { general: false, vf: true },
+    });
+  }
 
   const catalog = {
     schemaVersion: PROVIDER_CATALOG_SCHEMA_VERSION,
@@ -163,7 +176,7 @@ export function validateProviderCatalog(catalog) {
     if (!Array.isArray(row.scraper.disabledPlatforms) || row.scraper.disabledPlatforms.length !== 0) {
       throw new Error(`${canonicalId}: disabledPlatforms must exist and stay empty in the NiakVIO provider contract`);
     }
-    if (row.projections?.general !== true) throw new Error(`${canonicalId}: every catalog provider must project to general`);
+    if (row.projections?.general !== true && row.projections?.vf !== true) throw new Error(`${canonicalId}: provider must belong to Global or France`);
     byId.set(canonicalId, row);
   }
 

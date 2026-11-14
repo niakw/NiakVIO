@@ -2338,3 +2338,11 @@ Measured clean V3 oracle #43539920416 showed a **provider transport differential
 - Fixed a concrete planner omission: `engine_v2/scripts/plan-repairs.mjs` previously ignored the longstanding Movix `discover_api_from_current_page_and_bundles` solution class. Now maps that and the new `provider_owned_api_request_differential` into the already installed **`transport_request_differential_v1`** Brain strategy. FrenchStream local clean V3 reuse maps to the existing terminal extractor family.
 - Added a representative learning-mode test with provider HTTP403 while source is terminal-positive and an explicit production-mode assertion that historical experience cannot authorize immediate repair/publication.
 - **Not a repaired provider:** still needs Brain-generated executable correct route, full materialization, bytes inspection, exact TMDB/episode and native decoding, and a France-only manifest authority migration.
+
+## 2026-11-14 — France-only projections: union-catalog foundation
+
+- Refactored `engine_v2/src/provider-catalog.mjs` to represent `general=false,vf=true` as a first-class source identity. A VF-only provider no longer has to appear in Global. Existing shared providers still require identical content metadata across both projections; any duplicate mismatch is rejected.
+- Updated `scripts/generate_language_manifests.py` to preserve explicitly declared French-only rows from `provider_catalog.json` during VF regeneration, with strict ID, language and local provider bundle path checking. No providers were added or reactivated; current published Global/VF counts remain unchanged.
+- Added synthetic round-trip tests to `engine_v2/tests/provider-catalog.test.mjs` and `tests/provider_language_manifest_vf_only_test.py`, wired into Core Verify quick gate. Explicitly rejects accidental Global leakage, foreign-language-only entries, path traversal and semantic anime-to-live-action-TV mistakes.
+- This is a **foundation**, not full France-only publication: `current_provider_scope.py`, `manage_provider_lifecycle.py`, `sync_release_versions.py`, native coverage/ledger and add-provider onboarding still use Global as authority. They must be updated and proven on a complete representative before a France-only provider can be enabled in production.
+- No claim of newly working provider or 60/60. Existing GitHub installation links are unchanged.
