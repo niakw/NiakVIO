@@ -902,26 +902,6 @@
       ]
     },
     {
-      "id": "hist-2026-11-14-upstream-positive-provider-old-api-403",
-      "firstObserved": "2026-11-14",
-      "providers": [
-        "global",
-        "movix"
-      ],
-      "symptomFamilies": [
-        "provider_transport_gap",
-        "api_403",
-        "stale_provider_owned_api",
-        "upstream_terminal_positive_local_zero"
-      ],
-      "failureClass": "provider_transport_gap",
-      "solutionClass": "provider_owned_api_request_differential",
-      "transferableSignals": [
-        "same pinned provider upstream produces 3/3 verified HLS media",
-        "NiakVIO managed Lego and clean V3 preview produce 0/3",
-        "old local fixed API returns HTTP 403, upstream traverses live provider-owned paths",
-        "compare request stage+methods+headers+path shapes without copying secrets"
-      ],
       "avoid": [
         "retry stale API paths from legacy memory",
         "disable provider for source-unavailability without upstream differential",
@@ -931,26 +911,29 @@
       "evidence": [
         "repo-history"
       ],
-      "lesson": "Observed 2026-11-14 in GitHub oracle #43539920416: Movix pinned upstream 3/3 HLS, local clean V3 Lego 0/3 with 403. Route repair is a Brain provider-owned API request-differential task. Rebuild route/transport DATA from current source observations; never graft upstream JS or confuse Node media response with native decoded playback."
+      "failureClass": "provider_transport_gap",
+      "firstObserved": "2026-11-14",
+      "id": "hist-2026-11-14-upstream-positive-provider-old-api-403",
+      "lesson": "Observed 2026-11-14 in GitHub oracle #43539920416: Movix pinned upstream 3/3 HLS, local clean V3 Lego 0/3 with 403. Route repair is a Brain provider-owned API request-differential task. Rebuild route/transport DATA from current source observations; never graft upstream JS or confuse Node media response with native decoded playback.",
+      "providers": [
+        "global",
+        "movix"
+      ],
+      "solutionClass": "provider_owned_api_request_differential",
+      "symptomFamilies": [
+        "provider_transport_gap",
+        "api_403",
+        "stale_provider_owned_api",
+        "upstream_terminal_positive_local_zero"
+      ],
+      "transferableSignals": [
+        "same pinned provider upstream produces 3/3 verified HLS media",
+        "NiakVIO managed Lego and clean V3 preview produce 0/3",
+        "old local fixed API returns HTTP 403, upstream traverses live provider-owned paths",
+        "compare request stage+methods+headers+path shapes without copying secrets"
+      ]
     },
     {
-      "id": "hist-2026-11-14-reusable-clean-v3-lego-before-publish",
-      "firstObserved": "2026-11-14",
-      "providers": [
-        "frenchstream"
-      ],
-      "symptomFamilies": [
-        "chain_terminal_gap",
-        "clean_providerbase_v3",
-        "reusable_lego_with_terminal_media"
-      ],
-      "failureClass": "chain_terminal_gap",
-      "solutionClass": "reuse_existing_clean_provider_lego",
-      "transferableSignals": [
-        "same pinned upstream and clean V3 ProviderBase+Lego reach 2/2 HLS media",
-        "provider-owned runtime resolver registered before Core dispatcher",
-        "Core identity layers preserve media extraction in sandbox"
-      ],
       "avoid": [
         "replace functioning managed Lego with copied foreign source",
         "claim native playback from Node HLS probe",
@@ -959,7 +942,24 @@
       "evidence": [
         "repo-history"
       ],
-      "lesson": "GitHub Brain oracle #43539920416 proved FrenchStream clean V3+existing reusable Lego reached HLS in 2/2. Keep it as prior for full Provider v3 composition and native identity/audio/quality proof. Failure of actual publication must be diagnosed after assembly, not blamed on extractor by default."
+      "failureClass": "chain_terminal_gap",
+      "firstObserved": "2026-11-14",
+      "id": "hist-2026-11-14-reusable-clean-v3-lego-before-publish",
+      "lesson": "GitHub Brain oracle #43539920416 proved FrenchStream clean V3+existing reusable Lego reached HLS in 2/2. Keep it as prior for full Provider v3 composition and native identity/audio/quality proof. Failure of actual publication must be diagnosed after assembly, not blamed on extractor by default.",
+      "providers": [
+        "frenchstream"
+      ],
+      "solutionClass": "reuse_existing_clean_provider_lego",
+      "symptomFamilies": [
+        "chain_terminal_gap",
+        "clean_providerbase_v3",
+        "reusable_lego_with_terminal_media"
+      ],
+      "transferableSignals": [
+        "same pinned upstream and clean V3 ProviderBase+Lego reach 2/2 HLS media",
+        "provider-owned runtime resolver registered before Core dispatcher",
+        "Core identity layers preserve media extraction in sandbox"
+      ]
     }
   ],
   "operationalProviderCount": 17,
@@ -1065,7 +1065,7 @@
         "/api",
         "/apivtwo/clock.json"
       ],
-      "status": "CHAIN REACHED",
+      "status": "DISABLED",
       "strategy": "direct_media"
     },
     "allwish": {
@@ -2266,7 +2266,7 @@
         "/api/animes/search?q=HOTD",
         "/api/animes/search?q=The+House+That+Dragons+Built"
       ],
-      "status": "ROUTE PROVEN",
+      "status": "DISABLED",
       "strategy": "api_stream_resolver"
     },
     "animevostfr": {
@@ -4382,7 +4382,7 @@
         "/confirm/{id}/{fileId}/{slug}.xhtml",
         "/internal/{id}/{fileId}/{slug}.xhtml"
       ],
-      "status": "CHAIN REACHED",
+      "status": "DISABLED",
       "strategy": "html_scraper"
     },
     "moviebox": {
@@ -4545,8 +4545,8 @@
     "moviesmod": {
       "domainMemory": true,
       "evidenceDepth": [
-        "movie=lookup_only",
-        "tv=lookup_only"
+        "movie=none",
+        "tv=none"
       ],
       "hasApiRecipe": false,
       "hasProviderValuePlan": false,
@@ -8181,7 +8181,7 @@
         "/api/dec-movies-flix",
         "/api/dec-rapid"
       ],
-      "status": "ROUTE PROVEN",
+      "status": "DISABLED",
       "strategy": "mixed_embed_resolver"
     }
   },
@@ -8201,8 +8201,8 @@
     "requiresDeepValidation": true
   },
   "schemaVersion": 2,
-  "sourceRunId": "43460048984",
-  "sourceSha": "875427198f48c6755954260787252b1ba229105e",
+  "sourceRunId": "43540868432",
+  "sourceSha": "fda7822b756a27964c07e4ba4cc1e5315d8e108d",
   "strategyPatterns": {
     "api_stream_resolver": {
       "commonRequestRecipes": [],
@@ -8214,18 +8214,18 @@
       "routeFamilies": [
         {
           "providerSupport": 1,
-          "role": "search",
-          "supportRatio": 1
-        },
-        {
-          "providerSupport": 1,
           "role": "detail",
-          "supportRatio": 1
+          "supportRatio": 1.0
         },
         {
           "providerSupport": 1,
           "role": "other",
-          "supportRatio": 1
+          "supportRatio": 1.0
+        },
+        {
+          "providerSupport": 1,
+          "role": "search",
+          "supportRatio": 1.0
         }
       ]
     },
@@ -8240,12 +8240,17 @@
       "routeFamilies": [
         {
           "providerSupport": 1,
+          "role": "detail",
+          "supportRatio": 0.5
+        },
+        {
+          "providerSupport": 1,
           "role": "search",
           "supportRatio": 0.5
         },
         {
           "providerSupport": 1,
-          "role": "detail",
+          "role": "other",
           "supportRatio": 0.5
         },
         {
@@ -8256,11 +8261,6 @@
         {
           "providerSupport": 1,
           "role": "episode",
-          "supportRatio": 0.5
-        },
-        {
-          "providerSupport": 1,
-          "role": "other",
           "supportRatio": 0.5
         }
       ]
@@ -8285,16 +8285,16 @@
         {
           "providerSupport": 3,
           "role": "api",
-          "supportRatio": 1
-        },
-        {
-          "providerSupport": 2,
-          "role": "episode",
-          "supportRatio": 0.6667
+          "supportRatio": 1.0
         },
         {
           "providerSupport": 2,
           "role": "other",
+          "supportRatio": 0.6667
+        },
+        {
+          "providerSupport": 2,
+          "role": "episode",
           "supportRatio": 0.6667
         },
         {
@@ -8467,17 +8467,17 @@
         {
           "providerSupport": 1,
           "role": "search",
-          "supportRatio": 1
+          "supportRatio": 1.0
         },
         {
           "providerSupport": 1,
           "role": "episode",
-          "supportRatio": 1
+          "supportRatio": 1.0
         },
         {
           "providerSupport": 1,
           "role": "api",
-          "supportRatio": 1
+          "supportRatio": 1.0
         }
       ]
     }
