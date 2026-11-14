@@ -9,10 +9,12 @@ import sys
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
-from current_provider_scope import active_provider_count, visible_provider_count
+from current_provider_scope import active_provider_count, pending_provider_ids, runtime_visible_provider_count, visible_provider_count
 
 ACTIVE_EXPECTED = active_provider_count()
 VISIBLE_EXPECTED = visible_provider_count()
+RUNTIME_VISIBLE_EXPECTED = runtime_visible_provider_count()
+PENDING_IDS = pending_provider_ids()
 HISTORICAL_PROVIDER_COUNT = 50
 
 architecture = (ROOT / "ARCHITECTURE.md").read_text(encoding="utf-8")
@@ -46,6 +48,8 @@ for required in (
     "fingerprint de publication est en **schéma v4**",
     "placeholder d'environ **4,5 s**",
     "StreamBadge public actuel est **v10**",
+    "runtime_visible_provider_ids()",
+    "bulk_onboarding_pending",
 ):
     assert required in architecture, required
 
@@ -117,7 +121,7 @@ assert "active==expected" in manual
 assert "==46" not in manual and "46/46" not in manual
 
 
-assert machine["schema_version"] >= 5
+assert machine["schema_version"] >= 6
 source = machine["provider_source_of_truth"]
 assert source["canonical_provider_base_marker"] == "NIAKVIO_PROVIDER_BASE_OWNED_V3"
 assert source["legacy_provider_js_seed_allowed"] is False
@@ -130,6 +134,17 @@ assert media["transport_field"] == "supportedTypes"
 assert media["anime_only_transport_compatibility"] == ["anime", "tv"]
 assert media["transport_aliases_do_not_expand_semantic_capability"] is True
 assert media["capability_gate_before_provider_network"] is True
+
+scopes = machine["provider_scopes"]
+assert scopes["global_catalogue_visible"] == "scripts/current_provider_scope.py:visible_provider_ids"
+assert scopes["global_active"] == "scripts/current_provider_scope.py:active_provider_ids"
+assert scopes["global_pending"] == "scripts/current_provider_scope.py:pending_provider_ids"
+assert scopes["global_runtime_visible"] == "scripts/current_provider_scope.py:runtime_visible_provider_ids"
+assert scopes["pending_is_executable"] is False
+assert scopes["pending_is_lifecycle_retention"] is False
+assert scopes["france_only_must_not_leak_global"] is True
+assert machine["provider_source_of_truth"]["runtime_ledger_scope_authority"] == "scripts/current_provider_scope.py:runtime_visible_provider_ids"
+assert machine["route_recognition"]["provider_scope_authority"] == "scripts/current_provider_scope.py:runtime_visible_provider_ids"
 
 assert machine["routine"]["quick"]["repair_allowed"] is False
 assert machine["routine"]["quick"]["provider_reconstruction_allowed"] is False
@@ -186,6 +201,10 @@ assert plan["provider_scope_authority"] == "scripts/current_provider_scope.py:vi
 assert plan["historical_provider_count"] == HISTORICAL_PROVIDER_COUNT
 assert plan["historical_provider_directory"] == "provider-old"
 assert plan["disabled_providers_are_audited"] is True
+assert plan["runtime_scope_authority"] == "scripts/current_provider_scope.py:runtime_visible_provider_ids"
+assert plan["pending_scope_authority"] == "scripts/current_provider_scope.py:pending_provider_ids"
+assert plan["pending_staging_is_executable"] is False
+assert plan["pending_staging_requires_lifecycle_timestamps"] is False
 assert machine["security_html_filtering"]["regex_html_stripping_allowed"] is False
 
 lab = machine["native_lab_contract"]
@@ -207,6 +226,10 @@ assert lab["test_plumbing_must_not_change_official_runtime_behavior"] is True
 rows = manifest.get("scrapers") or []
 assert len(rows) == VISIBLE_EXPECTED
 assert sum(1 for row in rows if row.get("enabled") is not False) == ACTIVE_EXPECTED
+row_ids = {str(row.get("id") or "").strip().casefold().replace("_", "-") for row in rows}
+assert PENDING_IDS <= row_ids
+assert all(row.get("enabled") is False for row in rows if str(row.get("id") or "").strip().casefold().replace("_", "-") in PENDING_IDS)
+assert RUNTIME_VISIBLE_EXPECTED == VISIBLE_EXPECTED - len(PENDING_IDS)
 canonical_valid = {"movie", "tv", "anime"}
 transport_valid = canonical_valid
 for row in rows:
@@ -255,4 +278,5 @@ for path in (ROOT / ".github/workflows").glob("*.yml"):
     assert "run_adaptive_quick_repair.py" not in executable_yaml, path.name
     assert "run_adaptive_deep_repair.py" not in executable_yaml, path.name
 
-print(f"Provider v3 documentation and workflow ownership contract passed: current={VISIBLE_EXPECTED} historical={HISTORICAL_PROVIDER_COUNT}")
+assert "46 providers" not in validation and "46 Provider Objects" not in validation
+print(f"Provider v3 documentation and workflow ownership contract passed: visible={VISIBLE_EXPECTED} runtime={RUNTIME_VISIBLE_EXPECTED} active={ACTIVE_EXPECTED} pending={len(PENDING_IDS)} historical={HISTORICAL_PROVIDER_COUNT}")

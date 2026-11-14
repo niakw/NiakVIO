@@ -1,5 +1,5 @@
 {
-  "schema_version": 5,
+  "schema_version": 6,
   "branch_contract": "provider-v3-clean-architecture",
   "provider_source_of_truth": {
     "runtime_artifacts": "providers/*.js",
@@ -23,7 +23,8 @@
       "FIXDATA"
     ],
     "core_boundary": "NUVIO_GLOBAL_CORE_START_BOUNDARY_V1",
-    "published_provider_js_is_reconstruction_seed": false
+    "published_provider_js_is_reconstruction_seed": false,
+    "runtime_ledger_scope_authority": "scripts/current_provider_scope.py:runtime_visible_provider_ids"
   },
   "media_types": {
     "semantic_field": "canonicalSupportedTypes",
@@ -64,7 +65,7 @@
         "topcartoons"
       ]
     },
-    "provider_scope_authority": "scripts/current_provider_scope.py:visible_provider_ids"
+    "provider_scope_authority": "scripts/current_provider_scope.py:runtime_visible_provider_ids"
   },
   "routine": {
     "quick": {
@@ -263,7 +264,11 @@
       "iframe_player",
       "quarantined"
     ],
-    "provider_scope_authority": "scripts/current_provider_scope.py:visible_provider_ids"
+    "provider_scope_authority": "scripts/current_provider_scope.py:visible_provider_ids",
+    "runtime_scope_authority": "scripts/current_provider_scope.py:runtime_visible_provider_ids",
+    "pending_scope_authority": "scripts/current_provider_scope.py:pending_provider_ids",
+    "pending_staging_is_executable": false,
+    "pending_staging_requires_lifecycle_timestamps": false
   },
   "security_html_filtering": {
     "codeql_rule_family": "Bad HTML filtering regexp",
@@ -271,5 +276,17 @@
     "provider_base_scanner": "_htmlVisibleText",
     "catalogue_alias_scanner": "plainHtml",
     "source_and_published_gate": "tests/provider_html_filter_security_test.py"
+  },
+  "provider_scopes": {
+    "global_catalogue_visible": "scripts/current_provider_scope.py:visible_provider_ids",
+    "global_active": "scripts/current_provider_scope.py:active_provider_ids",
+    "global_pending": "scripts/current_provider_scope.py:pending_provider_ids",
+    "global_runtime_visible": "scripts/current_provider_scope.py:runtime_visible_provider_ids",
+    "runtime_visible_definition": "visible_provider_ids - pending_provider_ids",
+    "pending_provenance_contract": "PROVENANCE.json: activation_mode=bulk_onboarding_pending and activation_eligible!=true",
+    "pending_is_executable": false,
+    "pending_is_lifecycle_retention": false,
+    "france_only_lifecycle_authority": "provider_catalog.json projections general=false,vf=true",
+    "france_only_must_not_leak_global": true
   }
 }

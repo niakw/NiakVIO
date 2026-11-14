@@ -4,7 +4,7 @@
   <p><a href="README.md">English</a> · <strong>Français</strong></p>
   <h3>Une seule couche providers maintenue pour Nuvio.</h3>
   <p>
-    <kbd>Hub-46</kbd>
+    <kbd>Catalogue dynamique</kbd>
     <kbd>VO / VF</kbd>
     <kbd>TV · Mobile · Desktop</kbd>
     <kbd>Provider v3</kbd>
@@ -85,7 +85,7 @@ NiakVIO est conçu pour la partie qui devient difficile avec le temps : **garder
 
 | | Ce qui reste explicite |
 | --- | --- |
-| **🔌 Catalogue** | **46 Provider Objects Hub** restent visibles ; un état désactivé ou non résolu n’est pas effacé pour améliorer artificiellement un taux de réussite. |
+| **🔌 Catalogue** | Le catalogue visible est dérivé dynamiquement ; les états actif, disabled-lifecycle et pending non exécutable restent explicites au lieu d’être supprimés pour améliorer artificiellement un taux de réussite. |
 | **🌍 Projections** | Les manifests général, francophone et sans anime viennent d’une seule couche maintenue. |
 | **🧠 Connaissance** | Routes, sémantique des requêtes, identité média, domaines officiels et provenance vivent hors des bundles opaques publiés. |
 | **🧩 Réparation** | Les défauts communs peuvent être traités au niveau Provider/Core/famille ; les changements incertains passent par des propositions Learning reviewables. |
@@ -107,7 +107,7 @@ Un provider ou manifest autonome peut très bien convenir. NiakVIO prend surtout
 | Capacité | Provider / manifest brut | NiakVIO |
 | --- | --- | --- |
 | Installation | Un ou plusieurs manifests | Une couche maintenue avec plusieurs projections |
-| Maintenance catalogue | Principalement manuelle | Hub-46 conservé et audité |
+| Maintenance catalogue | Principalement manuelle | Scope actif/runtime dynamique + preuves historiques conservées |
 | Source durable | Souvent le JS publié lui-même | ProviderBase v3 + DATA structurée + Bloc Provider/Core détenus |
 | Connaissance routes | Souvent enfouie dans le code | Routes/requêtes/provenance structurées |
 | Rotation domaines | Changement manuel/statique | Découverte hub officiel + refresh `official_site` borné |
@@ -397,7 +397,7 @@ Les Labs consomment les clients officiels tels quels. Une erreur upstream de com
 
 <br>
 
-Le catalogue maintenu reste **46 Provider Objects Hub**. L’acceptation native finale utilise le scope physique explicite **Hub-46** défini par `automation/evidence/hub-lab-matrix-46.json` ; les lignes désactivées ou hors scope restent visibles comme dette de maintenance et ne sont pas supprimées artificiellement.
+L’acceptation native dérive son dénominateur provider de `scripts/current_provider_scope.py:active_provider_ids`. Les lignes disabled-lifecycle et bulk-pending restent visibles comme état de maintenance/staging mais ne sont pas exécutées par les cinq Labs. `automation/evidence/hub-lab-matrix-46.json` et `native-hub46/manifest.json` restent des artefacts de compatibilité/historique, pas le dénominateur courant.
 
 Le corpus Lab ordinaire est adaptatif. `.github/triggers/rotating-popular-corpus.json` possède trois réserves globales récentes — **movie, TV et anime**. Une campagne native démarre avec **1 film + 1 épisode TV + 1 épisode anime**. Un provider/lane n’avance qu’après un résultat propre `0 streams`. Une preuve positive arrête la rotation ; une erreur runtime/load/timeout/transport/player/identité s’arrête et reste visible.
 

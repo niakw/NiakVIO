@@ -1,3 +1,9 @@
+## 2026-11-14 — Catalogue, runtime, pending and native scopes documented as distinct authorities
+
+- Persist the structural distinction introduced by bulk onboarding: Global catalogue visible (`visible_provider_ids`), active execution (`active_provider_ids`), non-executable bulk pending (`pending_provider_ids`) and runtime-ledger scope (`runtime_visible_provider_ids = visible - pending`). France-only lifecycle authority remains catalog-owned and cannot leak into Global.
+- Pending staging has no live census/Repair authority, lifecycle timestamps, historical version floor, static/materialization membership or native-Lab execution. Activation remains a separate proof-driven transaction.
+- README/VALIDATION no longer present Hub-46/46 as the current denominator. Five native Labs already derive their scope from active_provider_ids; Hub-46 files remain historical/compatibility artifacts only. Machine architecture schema is bumped to v6 and documentation tests enforce the four scopes. No provider bytes or activation changed.
+
 ## 2026-11-14 — Global stream guard aligned with pending-vs-retention state
 
 - Workflow Gate 43584096571 reached and passed the corrected runtime version floor (current=41, retained_floors=96), then failed because global_stream_output_guard_test required disabledAt/purgeAfter on bulk-pending sflix.

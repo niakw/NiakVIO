@@ -4,7 +4,7 @@
   <p><strong>English</strong> · <a href="README.fr.md">Français</a></p>
   <h3>One maintained provider layer for Nuvio.</h3>
   <p>
-    <kbd>Hub-46</kbd>
+    <kbd>Dynamic catalogue</kbd>
     <kbd>VO / VF</kbd>
     <kbd>TV · Mobile · Desktop</kbd>
     <kbd>Provider v3</kbd>
@@ -85,7 +85,7 @@ NiakVIO is built for the part that becomes difficult over time: **keeping a larg
 
 | | What stays explicit |
 | --- | --- |
-| **🔌 Catalogue** | **46 Hub Provider Objects** remain visible; unresolved or disabled state is not silently erased to improve a success rate. |
+| **🔌 Catalogue** | The visible catalogue is derived dynamically; active, lifecycle-disabled and non-executable pending states remain explicit instead of being deleted to improve a success rate. |
 | **🌍 Projections** | General, French-focused and no-anime manifests come from one maintained provider layer. |
 | **🧠 Knowledge** | Routes, request semantics, identity rules, official-domain evidence and provenance live outside opaque published bundles. |
 | **🧩 Repair model** | Common failures can be handled at Provider/Core-family level; uncertain changes go through reviewable Learning proposals. |
@@ -107,7 +107,7 @@ A standalone provider or manifest can be perfectly useful. NiakVIO becomes valua
 | Capability | Raw provider / standalone manifest | NiakVIO |
 | --- | --- | --- |
 | Installation | One or several provider manifests | One maintained layer with several projections |
-| Catalogue maintenance | Mostly manual | Hub-46 retained and audited |
+| Catalogue maintenance | Mostly manual | Dynamic active/runtime scope + retained historical evidence |
 | Durable source | Often the published JS itself | ProviderBase v3 + structured DATA + owned Provider/Core Bloc |
 | Route knowledge | Usually embedded in provider code | Structured route/request/provenance data |
 | Domain rotation | Manual/static URL changes | Official-hub discovery + bounded `official_site` refresh |
@@ -280,7 +280,7 @@ Labs consume the official clients as-is. An upstream compile, dependency, packag
 
 <br>
 
-The maintained catalogue remains **46 Hub Provider Objects**. Final native acceptance uses the explicit physical **Hub-46** scope from `automation/evidence/hub-lab-matrix-46.json`; disabled or out-of-scope catalogue rows remain visible maintenance debt and are not silently deleted.
+Native acceptance derives its provider denominator from `scripts/current_provider_scope.py:active_provider_ids`. Lifecycle-disabled and bulk-pending catalogue rows remain visible maintenance/staging state but are not executed by the five Labs. `automation/evidence/hub-lab-matrix-46.json` and `native-hub46/manifest.json` are retained compatibility/history artifacts, not the current acceptance denominator.
 
 The ordinary Lab corpus is adaptive. `.github/triggers/rotating-popular-corpus.json` owns three recent global reserves — **movie, TV and anime**. A native campaign starts with **1 movie + 1 TV episode + 1 anime episode**. A provider/lane advances only after a clean `0 streams` result. Positive proof stops rotation; runtime/load/timeout/transport/player/identity failures stop and remain visible instead of being rotated away.
 
