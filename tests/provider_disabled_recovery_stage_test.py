@@ -20,6 +20,8 @@ assert "currentDisabledHealthHealthy" in workflow
 assert "transport_inconclusive_replay" in workflow
 assert "NIAKVIO_DISABLED_RECOVERY_RESIDENTIAL" in workflow
 assert "tailscale/github-action@064b10558093f38325e838ddea35486bdc6b1d5c" in workflow
+assert "id-token: write" in workflow
+assert "--ephemeral-overrides" in workflow
 assert 'next_action="exact_playback_identity_replay"' in workflow
 assert 'next_action="bounded_learning_repair"' in workflow
 assert 'next_action="transport_inconclusive_replay"' in workflow
