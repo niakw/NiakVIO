@@ -27,7 +27,14 @@ assert 'duration = body.readUInt32BE(start + 24)' in source
 assert 'timescale = body.readUInt32BE(start + 28)' in source
 assert 'duration = readUInt64BEAsNumber(body, start + 32)' in source
 assert 'async function probeStream(stream, mode, fixture = null)' in source
-assert 'expectedDurationMinutes: fixture.expectedDurationMinutes ?? null' in source
+assert ('expectedDurationMinutes: fixture.expectedDurationMinutes ?? null' in source
+        or 'expectedDurationMinutes: hydratedFixture.expectedDurationMinutes ?? null' in source)
+assert 'async function hydrateFixtureExpectedDuration(fixture)' in source
+assert "'/3/movie/' + encodeURIComponent(tmdbId)" in source
+assert "'/3/tv/' + encodeURIComponent(tmdbId) + '/season/' + season + '/episode/' + episode" in source
+assert "expectedDurationSource: 'tmdb-runtime'" in source
+assert 'fixtureDurationCache.set(cacheKey, null)' in source
+assert "headers.Authorization = 'Bearer ' + accessToken" in source
 assert source.count('probeStream(stream, modeConfig, normalizedFixture)') >= 2
 assert 'durationIdentityRatio = mediaDurationSeconds / expectedDurationSeconds' in source
 assert 'durationIdentityAuthoritative = Boolean(master.isVod)' in source
