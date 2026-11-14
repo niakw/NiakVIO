@@ -153,7 +153,7 @@ def patch_enforcer() -> None:
     )
 
     patch_materializer_block = textwrap.dedent(
-        '''
+        r'''
         def patch_materializer() -> bool:
             path = ROOT / "scripts" / "materialize_provider_v3_all.py"
             text = path.read_text(encoding="utf-8")
