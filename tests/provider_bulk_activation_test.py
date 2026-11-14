@@ -14,6 +14,7 @@ with tempfile.TemporaryDirectory() as td:
     td=Path(td)
     paths={
         "MANIFEST":td/"manifest.json",
+        "CATALOG":td/"provider_catalog.json",
         "OVERRIDES":td/"provider-overrides.json",
         "PROVENANCE":td/"PROVENANCE.json",
         "HUBS":td/"provider-hubs.json",
@@ -23,28 +24,37 @@ with tempfile.TemporaryDirectory() as td:
     paths["MANIFEST"].write_text(json.dumps({"scrapers":[
         {"id":"a","enabled":False},{"id":"b","enabled":False},{"id":"c","enabled":False}
     ]}),encoding="utf-8")
+    paths["CATALOG"].write_text(json.dumps({"providers":[
+        {"canonicalId":"a","scraper":{"id":"a","enabled":False},"projections":{"general":True,"vf":False}},
+        {"canonicalId":"b","scraper":{"id":"b","enabled":False},"projections":{"general":True,"vf":False}},
+        {"canonicalId":"c","scraper":{"id":"c","enabled":False},"projections":{"general":True,"vf":False}},
+        {"canonicalId":"d","scraper":{"id":"d","enabled":False},"projections":{"general":False,"vf":True}},
+    ]}),encoding="utf-8")
     paths["OVERRIDES"].write_text(json.dumps({
         "provider_patches":{
             "a":{"manifest_overrides":{"enabled":False}},
             "b":{"manifest_overrides":{"enabled":False}},
             "c":{"manifest_overrides":{"enabled":False}},
+            "d":{"manifest_overrides":{"enabled":False}},
         },
-        "provider_capabilities":{"a":{},"b":{},"c":{}},
+        "provider_capabilities":{"a":{},"b":{},"c":{},"d":{}},
     }),encoding="utf-8")
     paths["PROVENANCE"].write_text(json.dumps({"providers":{
         "a":{"activation_mode":"bulk_onboarding_pending"},
         "b":{"activation_mode":"bulk_onboarding_pending"},
         "c":{"activation_mode":"bulk_onboarding_pending"},
+        "d":{"activation_mode":"bulk_onboarding_pending"},
     }}),encoding="utf-8")
-    paths["HUBS"].write_text(json.dumps({"providers":{"a":{},"b":{},"c":{}}}),encoding="utf-8")
+    paths["HUBS"].write_text(json.dumps({"providers":{"a":{},"b":{},"c":{},"d":{}}}),encoding="utf-8")
     paths["STATUS"].write_text(json.dumps({
         "runId":77,"triggerSha":"deadbeef","providers":[
             {"provider":"a","status":"FULL OK","declaredLanes":["movie","tv"],"currentVerifiedLanes":["movie","tv"],"brainCheckRequired":False},
             {"provider":"b","status":"PARTIAL OK","declaredLanes":["movie","tv"],"currentVerifiedLanes":["movie"],"brainCheckRequired":False},
             {"provider":"c","status":"FULL OK","declaredLanes":["anime"],"currentVerifiedLanes":[],"brainCheckRequired":False},
+            {"provider":"d","status":"FULL OK","declaredLanes":["movie","tv"],"currentVerifiedLanes":["movie","tv"],"brainCheckRequired":False},
         ]
     }),encoding="utf-8")
-    old={name:getattr(mod,name) for name in ("MANIFEST","OVERRIDES","PROVENANCE","HUBS","STATUS","OUTPUT")}
+    old={name:getattr(mod,name) for name in ("MANIFEST","CATALOG","OVERRIDES","PROVENANCE","HUBS","STATUS","OUTPUT")}
     for name,value in paths.items(): setattr(mod,name,value)
     argv=sys.argv[:]
     sys.argv=[str(module_path)]
@@ -58,9 +68,11 @@ with tempfile.TemporaryDirectory() as td:
     manifest=json.loads(paths["MANIFEST"].read_text(encoding="utf-8"))
     overrides=json.loads(paths["OVERRIDES"].read_text(encoding="utf-8"))
     provenance=json.loads(paths["PROVENANCE"].read_text(encoding="utf-8"))
+    catalog=json.loads(paths["CATALOG"].read_text(encoding="utf-8"))
 
-assert activation["activatedProviders"]==["a"]
-assert activation["activationCount"]==1
+assert activation["activatedProviders"]==["a","d"]
+assert activation["activationCount"]==2
+assert activation["activationScopes"]=={"a":"global","d":"france"}
 assert {x["provider"] for x in activation["blockedProviders"]}=={"b","c"}
 rows={x["id"]:x for x in manifest["scrapers"]}
 assert rows["a"]["enabled"] is True
@@ -69,4 +81,8 @@ assert overrides["provider_patches"]["a"]["manifest_overrides"]["enabled"] is Tr
 assert overrides["provider_capabilities"]["a"]["validation"]=="bulk_census_full_ok"
 assert provenance["providers"]["a"]["activation_mode"]=="bulk_census_full_ok"
 assert provenance["providers"]["a"]["bulk_activation_proof"]["runId"]==77
+assert provenance["providers"]["d"]["bulk_activation_proof"]["scope"]=="france"
+cat={x["canonicalId"]:x for x in catalog["providers"]}
+assert cat["d"]["scraper"]["enabled"] is True
+assert "d" not in rows
 print("Bulk FULL OK activation gate passed")

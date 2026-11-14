@@ -1,3 +1,9 @@
+## 2026-11-14 — Bulk onboarding/activation now models France-only as a first-class scope
+
+- User batch requires Global candidates to remain Global and France candidates to exist only in France. Existing bulk onboarding staged exclusively into manifest.json; France-only identities could not enter the high-volume path, while bulk activation only mutated Global manifest rows.
+- Add explicit request scope global|france (aliases general/shared and vf/france-only), collision checks, scopeCounts and France-only staging into vf/manifest.json. Bulk publication bootstraps catalog once before language regeneration so staged exclusive rows become {general:false,vf:true} authority instead of being erased by projection rebuild.
+- Bulk activation now resolves pending rows from Global manifest or France-only provider_catalog entries and persists activation scope; France-only FULL OK updates catalog rather than leaking into Global. Existing FULL OK + all declared lanes current + no remaining Brain check criteria are unchanged. Synthetic tests cover scope collisions and France-only activation. Exact-SHA CI pending; no provider activation is claimed by this infrastructure commit.
+
 ## 2026-11-14 — Onboarding identity guard now respects France-only scope
 
 - add_provider.stage() previously checked duplicate IDs only in Global manifest.json. A catalog-owned {general:false,vf:true} identity could therefore be staged into Global, defeating the France-only projection/lifecycle invariant.

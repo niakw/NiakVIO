@@ -48,23 +48,34 @@ def load_requests(path:Path)->list[dict[str,Any]]:
 
 def preflight(rows:list[dict[str,Any]], allow_replace_existing:bool)->dict[str,Any]:
     manifest=add_provider.load_json(add_provider.MANIFEST,{})
+    vf_manifest=add_provider.load_json(add_provider.VF_MANIFEST,{"scrapers":[]})
     existing={
         add_provider.norm_id(row.get("id"))
         for row in manifest.get("scrapers") or []
         if isinstance(row,dict) and str(row.get("id") or "").strip()
     }
+    vf_ids={add_provider.norm_id(row.get("id")) for row in vf_manifest.get("scrapers") or [] if isinstance(row,dict) and row.get("id")}
+    france_only=vf_ids-existing
     replacing=[]
     new=[]
     strategies=Counter()
     type_counts=Counter()
+    scope_counts=Counter()
     for row in rows:
         pid=str(row["id"])
         replace=add_provider.bool_value(row.get("replace_existing"),False)
+        scope=add_provider.normalized_scope(row.get("scope") or row.get("manifest_scope") or "global")
+        scope_counts[scope]+=1
+        target_existing=existing if scope=="global" else france_only
+        if scope=="france" and pid in existing:
+            raise ValueError(f"{pid}: Global provider cannot be duplicated as France-only")
+        if scope=="global" and pid in france_only:
+            raise ValueError(f"{pid}: France-only provider cannot be duplicated in Global")
         if replace and not allow_replace_existing:
             raise ValueError(f"{pid}: replace_existing requires --allow-replace-existing in bulk mode")
-        if pid in existing and not replace:
-            raise ValueError(f"{pid}: provider already exists; bulk import refuses silent overwrite")
-        (replacing if pid in existing else new).append(pid)
+        if pid in target_existing and not replace:
+            raise ValueError(f"{pid}: provider already exists in {scope} scope; bulk import refuses silent overwrite")
+        (replacing if pid in target_existing else new).append(pid)
         strategy=str(row.get("strategy") or "html_scraper").strip().casefold()
         strategies[strategy]+=1
         for media in add_provider.normalized_types(row.get("types") or row.get("supportedTypes")):
@@ -77,6 +88,7 @@ def preflight(rows:list[dict[str,Any]], allow_replace_existing:bool)->dict[str,A
         "replaceProviders":sorted(replacing),
         "strategies":dict(sorted(strategies.items())),
         "declaredTypeCounts":dict(sorted(type_counts.items())),
+        "scopeCounts":dict(sorted(scope_counts.items())),
     }
 
 

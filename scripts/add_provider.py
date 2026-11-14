@@ -12,6 +12,7 @@ from urllib.parse import urlsplit
 
 ROOT = Path(__file__).resolve().parents[1]
 MANIFEST = ROOT / "manifest.json"
+VF_MANIFEST = ROOT / "vf/manifest.json"
 PROVENANCE = ROOT / "PROVENANCE.json"
 OVERRIDES = ROOT / "provider-overrides.json"
 HUBS = ROOT / "provider-hubs.json"
@@ -45,26 +46,50 @@ def norm_id(value: Any) -> str:
         raise ValueError("provider id is required")
     return base_store.canonical_id(raw)
 
+def normalized_scope(value: Any) -> str:
+    text = str(value or "global").strip().casefold().replace("_", "-")
+    if text in {"global", "general", "shared"}:
+        return "global"
+    if text in {"france", "vf", "france-only"}:
+        return "france"
+    raise ValueError(f"unsupported provider manifest scope: {value}")
+
+
 def staged_existing_entry(
     provider_id: str,
     manifest: dict[str, Any],
     *,
     replace_existing: bool,
     root: Path = ROOT,
+    scope: str = "global",
+    vf_manifest: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
-    """Resolve a Global replacement while keeping France-only identities exclusive."""
+    """Resolve a replacement without leaking identities across Global/France scopes."""
     france_only_ids = {
         norm_id(row.get("id"))
         for row in france_only_catalog_rows(root=root)
         if isinstance(row, dict) and row.get("id")
     }
-    if provider_id in france_only_ids:
+    scope = normalized_scope(scope)
+    global_ids = {
+        norm_id(row.get("id"))
+        for row in manifest.get("scrapers") or []
+        if isinstance(row, dict) and row.get("id")
+    }
+    if scope == "global" and provider_id in france_only_ids:
         raise ValueError(
             f"provider id belongs to France-only catalog scope and cannot be staged into Global: {provider_id}"
         )
+    if scope == "france" and provider_id in global_ids:
+        raise ValueError(
+            f"provider id belongs to Global scope and cannot be duplicated as France-only: {provider_id}"
+        )
+    target = manifest
+    if scope == "france":
+        target = vf_manifest if isinstance(vf_manifest, dict) else load_json(root / "vf/manifest.json", {"scrapers": []})
     existing = next(
         (
-            row for row in manifest.get("scrapers") or []
+            row for row in target.get("scrapers") or []
             if isinstance(row, dict) and norm_id(row.get("id")) == provider_id
         ),
         None,
@@ -342,14 +367,24 @@ def stage(request_path: Path, *, bulk: bool = False) -> dict[str, Any]:
     if vf and not any(value.startswith("fr") for value in languages):
         languages.insert(0, "fr")
 
+    scope = normalized_scope(request.get("scope") or request.get("manifest_scope") or "global")
+    if scope == "france":
+        vf = True
+        if not any(value.startswith("fr") for value in languages):
+            languages.insert(0, "fr")
     manifest = load_json(MANIFEST, {})
+    vf_manifest = load_json(VF_MANIFEST, {"scrapers": []})
     replace_existing = bool_value(request.get("replace_existing"), False)
     existing_entry = staged_existing_entry(
         provider_id,
         manifest,
         replace_existing=replace_existing,
         root=ROOT,
+        scope=scope,
+        vf_manifest=vf_manifest,
     )
+    target_manifest = vf_manifest if scope == "france" else manifest
+    target_manifest_path = VF_MANIFEST if scope == "france" else MANIFEST
 
     description = str(
         request.get("description")
@@ -491,8 +526,8 @@ def stage(request_path: Path, *, bulk: bool = False) -> dict[str, Any]:
         provider_model,
         base_relative,
     )
-    entry["filename"] = published_relative
-    scrapers = manifest.setdefault("scrapers", [])
+    entry["filename"] = ("../" + published_relative) if scope == "france" else published_relative
+    scrapers = target_manifest.setdefault("scrapers", [])
     if replace_existing:
         replaced = False
         for index, row in enumerate(scrapers):
@@ -504,7 +539,7 @@ def stage(request_path: Path, *, bulk: bool = False) -> dict[str, Any]:
             raise ValueError(f"{provider_id}: replace_existing requested but manifest row disappeared")
     else:
         scrapers.append(entry)
-    write_json(MANIFEST, manifest)
+    write_json(target_manifest_path, target_manifest)
 
     provenance = load_json(PROVENANCE, {})
     providers = provenance.setdefault("providers", {})
@@ -588,6 +623,7 @@ def stage(request_path: Path, *, bulk: bool = False) -> dict[str, Any]:
         "api": api,
         "site": direct or hub or telegram,
         "vf": vf,
+        "scope": scope,
         "strategy": strategy,
         "routes": routes,
         "fixture": lab_config["fixture"],
@@ -599,7 +635,7 @@ def stage(request_path: Path, *, bulk: bool = False) -> dict[str, Any]:
         write_json(WORK / "lab-config.json", lab_config)
     print(
         "FIELD_PROVIDER_ONBOARDING_STAGE "
-        f"id={provider_id} types={','.join(types)} vf={str(vf).lower()} "
+        f"id={provider_id} types={','.join(types)} vf={str(vf).lower()} scope={scope} "
         f"replace_existing={str(replace_existing).lower()} bulk={str(bulk).lower()} "
         f"base={base_relative} published={published_relative}"
     )

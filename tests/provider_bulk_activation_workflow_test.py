@@ -17,6 +17,7 @@ for token in (
     "provider: bulk activate $ACTIVATION_COUNT full-ok",
     "scripts/reapply_published_overrides.py",
     "scripts/validate_published_provider_config.py",
+    "provider_catalog.json",
 ):
     assert token in activation, token
 
@@ -32,6 +33,8 @@ for token in (
     "declared.issubset(verified)",
     'proof.get("brainCheckRequired") is True',
     'prov["activation_mode"]="bulk_census_full_ok"',
+    'scope="france"',
+    'write(CATALOG,catalog)',
 ):
     assert token in script, token
 

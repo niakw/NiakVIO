@@ -10,6 +10,7 @@ from typing import Any
 
 ROOT=Path(__file__).resolve().parents[1]
 MANIFEST=ROOT/"manifest.json"
+CATALOG=ROOT/"provider_catalog.json"
 OVERRIDES=ROOT/"provider-overrides.json"
 PROVENANCE=ROOT/"PROVENANCE.json"
 HUBS=ROOT/"provider-hubs.json"
@@ -37,6 +38,7 @@ def main()->int:
 
     status=load(args.status,{})
     manifest=load(MANIFEST,{"scrapers":[]})
+    catalog=load(CATALOG,{"providers":[]})
     overrides=load(OVERRIDES,{})
     provenance=load(PROVENANCE,{"providers":{}})
     hubs=load(HUBS,{"providers":{}})
@@ -50,6 +52,10 @@ def main()->int:
         norm(row.get("id")):row
         for row in manifest.get("scrapers") or []
         if isinstance(row,dict) and norm(row.get("id"))
+    }
+    catalog_map={
+        norm(entry.get("canonicalId") or ((entry.get("scraper") or {}).get("id") if isinstance(entry.get("scraper"),dict) else "")):entry
+        for entry in catalog.get("providers") or [] if isinstance(entry,dict)
     }
     prov_map=provenance.get("providers") if isinstance(provenance.get("providers"),dict) else {}
     patches=overrides.get("provider_patches") if isinstance(overrides.get("provider_patches"),dict) else {}
@@ -87,6 +93,13 @@ def main()->int:
             blocked.append({"provider":pid,"reason":"brain_check_still_required"})
             continue
         manifest_row=manifest_map.get(pid)
+        catalog_entry=catalog_map.get(pid)
+        scope="global"
+        if not isinstance(manifest_row,dict) and isinstance(catalog_entry,dict):
+            projections=catalog_entry.get("projections") if isinstance(catalog_entry.get("projections"),dict) else {}
+            if projections.get("general") is False and projections.get("vf") is True and isinstance(catalog_entry.get("scraper"),dict):
+                manifest_row=catalog_entry["scraper"]
+                scope="france"
         patch=patches.get(pid)
         prov=prov_map.get(pid)
         if not isinstance(manifest_row,dict) or not isinstance(patch,dict) or not isinstance(prov,dict):
@@ -109,6 +122,7 @@ def main()->int:
         prov["activation_mode"]="bulk_census_full_ok"
         prov["activation_blockers"]=[]
         prov["bulk_activation_proof"]={
+            "scope":scope,
             "runId":run_id,
             "triggerSha":trigger_sha,
             "status":"FULL OK",
@@ -124,6 +138,7 @@ def main()->int:
         "pendingBulkProviderCount":len(pending),
         "activationCount":len(activated),
         "activatedProviders":activated,
+        "activationScopes":{pid:("global" if pid in manifest_map else "france") for pid in activated},
         "blockedCount":len(blocked),
         "blockedProviders":blocked,
         "policy":"FULL OK + every declared lane currently verified + no remaining Brain check",
@@ -131,6 +146,7 @@ def main()->int:
     }
     if not args.dry_run and activated:
         write(MANIFEST,manifest)
+        write(CATALOG,catalog)
         write(OVERRIDES,overrides)
         write(PROVENANCE,provenance)
         write(HUBS,hubs)

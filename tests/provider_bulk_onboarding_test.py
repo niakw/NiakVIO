@@ -8,7 +8,7 @@ import tempfile
 ROOT=Path(__file__).resolve().parents[1]
 script=ROOT/"scripts/stage_provider_batch.py"
 sys.path.insert(0,str(ROOT/"scripts"))
-from add_provider import staged_existing_entry
+from add_provider import staged_existing_entry, normalized_scope
 
 with tempfile.TemporaryDirectory() as td:
     td=Path(td)
@@ -36,9 +36,11 @@ assert value["nativeLabExecuted"] is False
 assert value["activationAttempted"] is False
 assert value["strategies"]=={"mixed_embed_resolver":1}
 assert value["declaredTypeCounts"]=={"movie":1,"tv":1}
+assert value["scopeCounts"]=={"global":1}
+assert normalized_scope("vf")=="france"
+assert normalized_scope("global")=="global"
 
-# add_provider.stage publishes into Global. A catalog-owned France-only identity
-# must fail closed instead of being duplicated/leaked into manifest.json.
+# Global and France-only identities are distinct authorities and collisions fail closed.
 with tempfile.TemporaryDirectory(prefix="niakvio-onboard-scope-") as td:
     root=Path(td)
     france={
@@ -75,4 +77,14 @@ with tempfile.TemporaryDirectory(prefix="niakvio-onboard-scope-") as td:
         else:
             raise AssertionError("France-only identity leaked into Global staging")
 
-print("Bulk provider onboarding dry-run + Global/France-only collision contract passed")
+    vf_manifest={"scrapers":[france]}
+    assert staged_existing_entry("france-reserved",manifest,replace_existing=True,root=root,scope="france",vf_manifest=vf_manifest)["id"]=="france-reserved"
+    assert staged_existing_entry("new-france",manifest,replace_existing=False,root=root,scope="france",vf_manifest=vf_manifest)=={}
+    try:
+        staged_existing_entry("global-existing",manifest,replace_existing=False,root=root,scope="france",vf_manifest=vf_manifest)
+    except ValueError as exc:
+        assert "Global scope" in str(exc)
+    else:
+        raise AssertionError("Global identity duplicated into France-only staging")
+
+print("Bulk provider onboarding dry-run + Global/France-only scope contract passed")

@@ -80,6 +80,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          # Capture staged France-only vf rows into catalog authority before rebuilding projections.
+          node engine_v2/scripts/bootstrap-provider-catalog.mjs
           python scripts/reapply_published_overrides.py
           python scripts/generate_language_manifests.py
           node engine_v2/scripts/bootstrap-provider-catalog.mjs
