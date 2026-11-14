@@ -18,6 +18,7 @@ OVERRIDES = ROOT / "provider-overrides.json"
 HUBS = ROOT / "provider-hubs.json"
 TYPE_POLICY = ROOT / "provider-type-policy.json"
 HEALTH_CONFIG = ROOT / "health-config.json"
+HISTORICAL_CAPABILITY_FLOOR = ROOT / "tests/fixtures/provider-production-5.21.0-capabilities.json"
 WORK = ROOT / ".provider-onboarding"
 
 import sys
@@ -45,6 +46,24 @@ def norm_id(value: Any) -> str:
     if not raw:
         raise ValueError("provider id is required")
     return base_store.canonical_id(raw)
+
+
+def historical_formats(provider_id: str) -> list[str]:
+    """Retain known manifest-format capability when an old ID is re-onboarded.
+
+    The historical fixture is a metadata floor, not current playback proof.
+    Explicit request formats always win; this fallback only prevents an
+    onboarding transaction from silently erasing known format capability.
+    """
+    payload = load_json(HISTORICAL_CAPABILITY_FLOOR, {})
+    providers = payload.get("providers") if isinstance(payload, dict) else {}
+    row = providers.get(provider_id) if isinstance(providers, dict) else None
+    values = row.get("formats") if isinstance(row, dict) else []
+    return sorted({
+        str(value).strip().casefold()
+        for value in (values if isinstance(values, list) else [])
+        if str(value).strip()
+    })
 
 def normalized_scope(value: Any) -> str:
     text = str(value or "global").strip().casefold().replace("_", "-")
@@ -429,6 +448,8 @@ def stage(request_path: Path, *, bulk: bool = False) -> dict[str, Any]:
     types = normalized_types(request.get("types") or request.get("supportedTypes"))
     languages = [value.casefold() for value in parse_list(request.get("languages") or request.get("contentLanguage"))]
     formats = [value.casefold() for value in parse_list(request.get("formats"))]
+    if not formats:
+        formats = historical_formats(provider_id)
     hub = normalized_url(request.get("hub") or request.get("hub_url"))
     direct = normalized_url(request.get("direct") or request.get("direct_url"))
     telegram = normalized_url(request.get("telegram") or request.get("telegram_url"))
@@ -499,6 +520,7 @@ def stage(request_path: Path, *, bulk: bool = False) -> dict[str, Any]:
         "manifest_overrides": {
             "enabled": False,
             "disabledPlatforms": [],
+            "formats": formats,
         },
     }
     if strategy == "open_archive_public_domain":
