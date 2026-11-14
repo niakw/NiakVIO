@@ -168,6 +168,7 @@ for token in (
     "github.event_name == 'push' && github.sha || 'main'",
     "Partial route-discovery merge:",
     "--expected-shards 16",
+    "--provider-timeout 45",
 ):
     assert token in workflow, token
 
