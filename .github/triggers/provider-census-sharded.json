@@ -1,13 +1,13 @@
 {
   "schemaVersion": 2,
   "scope": "all",
-  "reason": "Build byte-bound all-scope production freshness ledger after separating unresolved Repair state",
-  "requestedAt": "2026-11-14T21:31:00+01:00",
-  "validation": "byte-bound-all-scope-freshness-ledger",
-  "source": "NiakVIO exact 60/60 continuation",
+  "reason": "Re-run full current Global + France-only census after 0c7cd508 France-only scope fix",
+  "requestedAt": "2026-11-14T21:41:00+01:00",
+  "validation": "byte-bound-all-scope-global-plus-france-only",
+  "source": "exact-60-60-continuation",
   "targetProviders": [],
   "allowPendingTargets": false,
-  "requiredEvidence": "8-shard full current-byte replay; stamp exact active Provider SHA-256 into provider-census-all-status-latest.json; unresolved/targeted runs must not replace it",
-  "retryRevision": 7,
-  "fullRefreshRevision": 7
+  "requiredEvidence": "Fresh current-byte replay for every active Global and France-only provider; no pending candidates; preserve WAF transport-only semantics",
+  "retryRevision": 8,
+  "fullRefreshRevision": 8
 }
