@@ -22,3 +22,12 @@ The durable `provider-hubs.json` manual-off signal triggers the existing `script
 Read workflow job and log + commit SHA; independently inspect current main `manifest.json`, `vf/manifest.json`, `provider-disabled/`, lifecycle state and CI. Once the lifecycle job succeeds, report the exact counts. If it fails, the cohort is only **staged**, never **disabled**. No gain in number of functional providers is claimed.
 
 Do not phase out FULL/PARTIAL providers on old evidence alone; do not phase out WAF/transport-blocked cases without client/harness differential diagnosis. Continue cohort-based replacement targeting ~20 movie, 20 TV, 20 anime for each manifest with terminal validated streams. Preserve all failures in Brain experience, not as per-provider hacks.
+
+
+## Phase-out cohort 1 : preuve de publication (2026-11-14)
+
+- **Réussite effective:** workflow [Provider Disabled Lifecycle #43535544778](https://github.com/niakw/NiakVIO/actions/runs/43535544778) **success** ; commit de publication `b3263ad5a0859009e9dec7e61316c750a1dc6558`.
+- `manifest.json` **41 visibles / 39 actifs**, dont `yflix` et `ANIMEVOST-FR` désactivés. `vf/manifest.json` **21 visibles / 20 actifs**, `ANIMEVOST-FR` désactivé. Deux entrées visibles restent le temps de la rétention plutôt que de casser l'import.
+- Exacts fichiers contrôlés sur GitHub : `provider-disabled/yflix--nuvio--d9a87c04b9e1aa32.js` et `provider-disabled/animevost-fr--nuvio--a47f44cd69693435.js` présents ; originaux `providers/` correspondants absents. `provider_catalog.json` et `provider-v3-materialization.json` indiquent 39 actifs.
+- `automation/provider-disabled-lifecycle.json`: `state=disabled-retained`, `disabledAt=2026-11-14`, `purgeAfter=2026-11-21` pour les deux. Archivage physique/removal des manifests seulement après l'échéance et un nouveau run de cycle de vie.
+- **Pas de preuve de playback nouvelle:** les autres providers et le ratio 20/20/20 par manifest n'ont pas été requalifiés. Les CI Core/CodeQL générales sur l'état post-lifecycle étaient encore en attente ou sur d'anciens SHA au moment de cette mise à jour. Ne pas appeler « full validated ».
