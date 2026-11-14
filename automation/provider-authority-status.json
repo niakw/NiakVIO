@@ -19,7 +19,6 @@
     "anikototv",
     "castle",
     "french-manga",
-    "hindmoviez",
     "mugiwarastream",
     "neko-sama",
     "papadustream",
@@ -43,6 +42,7 @@
     "asiaflix",
     "coflix",
     "flemmix",
+    "hindmoviez",
     "internet-archive",
     "kehflix",
     "kurage",
@@ -66,7 +66,7 @@
     "yflix"
   ],
   "disabledNow": [
-    "wookafr"
+    "hindmoviez"
   ],
   "providers": [
     {
@@ -129,17 +129,20 @@
     },
     {
       "provider": "hindmoviez",
-      "action": "KEEP_BACKEND",
-      "repairEligible": true,
-      "confidence": "high",
-      "authorityClass": "api-or-backend",
+      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "repairEligible": false,
+      "confidence": "current-census",
+      "authorityClass": "current-architecture-nonfunctional",
       "failureCount": 0,
       "backendUrls": [
         "https://hindmovie.icu/wp-json/wp/v2/posts"
       ],
       "reasons": [
-        "structured_backend_authority"
-      ]
+        "structured_backend_authority",
+        "current_census_tested_without_terminal_verified_playback",
+        "current_status:PARTIAL OK"
+      ],
+      "appliedDisableReason": "auto_off_current_architecture_nonfunctional"
     },
     {
       "provider": "4khdhub",
@@ -437,17 +440,14 @@
     },
     {
       "provider": "wookafr",
-      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "action": "KEEP_DISABLED",
       "repairEligible": false,
-      "confidence": "current-census",
-      "authorityClass": "current-architecture-nonfunctional",
+      "confidence": "terminal",
+      "authorityClass": "disabled",
       "failureCount": 0,
       "reasons": [
-        "authoritative_route_source",
-        "current_census_tested_without_terminal_verified_playback",
-        "current_status:CANDIDATE OK"
-      ],
-      "appliedDisableReason": "auto_off_current_architecture_nonfunctional"
+        "already_disabled"
+      ]
     },
     {
       "provider": "yflix",
