@@ -199,10 +199,13 @@ assert "pull_request:" in nonreg and "branches: [main]" in nonreg
 # requiring a dead CLI flag that the census never accepted.
 for required in (
     'MANIFEST = ROOT / "manifest.json"',
-    'for row in manifest.get("scrapers") or []:',
+    'current_rows = [',
+    'for row in (manifest.get("scrapers") or [])',
+    'for row in france_only_catalog_rows(root=ROOT):',
+    'for row in current_rows:',
     '"provider_count": provider_count',
 ):
-    assert required in quick_yield, f"quick-yield census must remain current-manifest scoped: {required}"
+    assert required in quick_yield, f"quick-yield census must remain current-runtime-authority scoped: {required}"
 import re
 assert re.search(r"(?<![A-Za-z0-9_-])--all(?![A-Za-z0-9_-])", quick_yield) is None, "quick-yield census must not grow a historical-provider switch"
 
