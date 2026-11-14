@@ -255,8 +255,11 @@ archive = ROOT / "provider-old"
 assert archive.is_dir(), "provider-old historical archive missing"
 archived_ids = {path.name.split("--base--", 1)[0] for path in archive.glob("*--base--*.js")}
 current_ids = {str(row.get("id") or "").strip().casefold() for row in rows}
-assert len(archived_ids - current_ids) == HISTORICAL_PROVIDER_COUNT, (
-    len(archived_ids - current_ids), sorted(archived_ids & current_ids)
+# provider-old is frozen historical evidence, not current lifecycle authority.
+# A provider may legitimately be reintroduced as new current V3 bytes while its
+# historical base remains archived for provenance/replay.
+assert len(archived_ids) == HISTORICAL_PROVIDER_COUNT, (
+    len(archived_ids), sorted(archived_ids & current_ids)
 )
 
 for text, label in ((architecture, "ARCHITECTURE"), (readme, "README"), (readme_fr, "README.fr")):
