@@ -124,6 +124,10 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          # Repair any active clean Provider v3 whose older activation published
+          # exact bytes before persisting all three structured DATA authorities.
+          # This is local/exact-byte reconciliation only: no provider HTTP is used.
+          python scripts/reconcile_provider_static_authority.py --apply
           # Capture staged France-only vf rows into catalog authority before rebuilding projections.
           node engine_v2/scripts/bootstrap-provider-catalog.mjs
           python scripts/reapply_published_overrides.py
@@ -142,7 +146,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          python -m py_compile scripts/add_provider.py scripts/stage_provider_batch.py scripts/audit_provider_quick_yield.py scripts/merge_provider_census_shards.py
+          python -m py_compile scripts/add_provider.py scripts/stage_provider_batch.py scripts/audit_provider_quick_yield.py scripts/merge_provider_census_shards.py scripts/reconcile_provider_static_authority.py scripts/activate_bulk_offline_proven_providers.py
           python tests/provider_bulk_onboarding_test.py
           python tests/provider_bulk_onboarding_workflow_test.py
           python tests/provider_pending_minimizer_test.py
@@ -207,7 +211,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          git add             manifest.json vf/manifest.json no-anime/manifest.json vf-no-anime/manifest.json             provider_catalog.json PROVENANCE.json provider-overrides.json provider-hubs.json provider-type-policy.json             provider-bases providers provider-disabled assets/providers automation/provider-bulk-onboarding-stage.json automation/provider-bulk-offline-activation-latest.json
+          git add             manifest.json vf/manifest.json no-anime/manifest.json vf-no-anime/manifest.json             provider_catalog.json PROVENANCE.json provider-overrides.json provider-hubs.json provider-type-policy.json automation/provider-v3-static-knowledge.json             provider-bases providers provider-disabled assets/providers automation/provider-bulk-onboarding-stage.json automation/provider-bulk-offline-activation-latest.json
           mkdir -p .provider-onboarding
           git rev-parse HEAD > .provider-onboarding/bulk-base-sha.txt
           git diff --cached --binary --full-index > .provider-onboarding/bulk-provider-transaction.patch
