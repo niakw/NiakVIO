@@ -21,6 +21,8 @@ WRAPPER = r'''
 ;(function(g,c){
   "use strict";
   function s(v){return String(v==null?"":v).trim()}
+  function seasonCoord(v){if(v==null||s(v)==="")return 1;var n=Number(v);return Number.isInteger(n)&&n>=0?n:1}
+  function episodeCoord(v){if(v==null||s(v)==="")return 1;var n=Number(v);return Number.isInteger(n)&&n>=1?n:1}
   function argsOf(args){
     var first=args[0],o=first&&typeof first==="object"&&!Array.isArray(first)?first:null,ctx={};
     try{ctx=g&&g.__nuvioMediaContext||{}}catch(_e){}
@@ -31,8 +33,8 @@ WRAPPER = r'''
     return {
       id:id,
       type:type==="movie"?"movie":"tv",
-      season:Number((o&&o.season)!=null?o.season:(args[2]!=null?args[2]:ctx.season))||1,
-      episode:Number((o&&o.episode)!=null?o.episode:(args[3]!=null?args[3]:ctx.episode))||1,
+      season:seasonCoord((o&&o.season)!=null?o.season:(args[2]!=null?args[2]:ctx.season)),
+      episode:episodeCoord((o&&o.episode)!=null?o.episode:(args[3]!=null?args[3]:ctx.episode)),
       title:s((o&&(o.title||o.name))||meta.title||meta.name||meta.original_title||meta.original_name||""),
       year:Number((o&&o.year)||meta.year||String(meta.release_date||"").slice(0,4)||0)||0
     };
