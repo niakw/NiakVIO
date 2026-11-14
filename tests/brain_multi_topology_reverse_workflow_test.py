@@ -33,3 +33,11 @@ for banned in ('NIAKVIO_ALLOW_PAID_API=1','plan_batch_from_checkout.py',
                'publish_niakvio_force_mutations.py','--apply','git push','gh workflow run'):
     assert banned not in workflow,banned
 print('BRAIN_MULTI_TOPOLOGY_REVERSE_WORKFLOW_OK read-only 6 independent current-byte witnesses')
+
+# Lifecycle-disabled historical representatives are not live Repair targets.
+assert 'id: eligibility' in workflow
+assert 'FIELD_BRAIN_REVERSE_SCOPE' in workflow
+assert workflow.count("if: steps.eligibility.outputs.eligible == 'true'") >= 2
+assert "if: always() && steps.eligibility.outputs.eligible == 'true'" in workflow
+assert "lifecycle-disabled-or-not-current" in workflow
+print('BRAIN_MULTI_TOPOLOGY_LIFECYCLE_SCOPE_OK disabled targets are not re-probed')

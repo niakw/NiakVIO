@@ -1,3 +1,9 @@
+## 2026-11-14 — Reverse topology lab stops before network work for disabled identities
+
+- Multi-topology run 43587230474 on 9170afd7 targeted six historical representatives now lifecycle-disabled. Strict Repair fixture authority rejected each before observation, so the red matrix is stale orchestration, not six fresh provider failures.
+- Add exact checked-out manifest eligibility before network work. Disabled/not-current matrix entries emit a scope diagnostic and skip provider observation, same-byte harness differential and proof-boundary evaluation. Active representatives retain the existing read-only path.
+- No provider bytes, activation, Repair acceptance or stream handling changed.
+
 ## 2026-11-14 — Strict Brain fixture test follows truthful active category shapes
 
 - Workflow Gate 43586782197 on a9ceb28a passed release version synchronization, security/hygiene and the new Repair provenance tests, then failed late because brain_strict_fixture_category_test.py required an active provider whose canonical type set was exactly {movie}. After current-tested nonfunctional withdrawal, all six active movie-capable providers are legitimately movie+tv (some also anime); keeping a movie-only nonfunctional provider active just to satisfy a fixture would violate production truth.

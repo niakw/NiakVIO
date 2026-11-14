@@ -61,7 +61,35 @@ jobs:
           python tests/brain_harness_differential_test.py
           python -m py_compile scripts/capture_brain_live_context.py scripts/audit_brain_harness_differential.py
           npm ci --ignore-scripts --no-audit --no-fund
+      - name: Enforce current active-provider scope
+        id: eligibility
+        env:
+          TARGET_PROVIDER: ${{ matrix.provider }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json, os
+          from pathlib import Path
+          target=str(os.environ["TARGET_PROVIDER"]).strip().casefold().replace("_","-")
+          manifest=json.loads(Path("manifest.json").read_text(encoding="utf-8"))
+          rows=[
+              row for row in manifest.get("scrapers") or []
+              if isinstance(row,dict)
+              and str(row.get("id") or "").strip().casefold().replace("_","-")==target
+          ]
+          eligible=len(rows)==1 and rows[0].get("enabled") is True
+          with Path(os.environ["GITHUB_OUTPUT"]).open("a",encoding="utf-8") as fh:
+              fh.write("eligible="+("true" if eligible else "false")+"\n")
+          print(
+              "FIELD_BRAIN_REVERSE_SCOPE "
+              f"provider={target} eligible={str(eligible).lower()} "
+              f"reason={'active-current-provider' if eligible else 'lifecycle-disabled-or-not-current'}"
+          )
+          PY
+
       - name: Observe real provider network and exact current source (no mutation)
+        if: steps.eligibility.outputs.eligible == 'true'
         timeout-minutes: 12
         env:
           TARGET_PROVIDER: ${{ matrix.provider }}
@@ -75,6 +103,7 @@ jobs:
           python scripts/capture_brain_live_context.py --provider "$TARGET_PROVIDER" \
             --output "health-output/reverse-topology/$TARGET_PROVIDER.json"
       - name: Cross-check no-request Deep execution against identical Nuvio bytes
+        if: steps.eligibility.outputs.eligible == 'true'
         timeout-minutes: 6
         env:
           TARGET_PROVIDER: ${{ matrix.provider }}
@@ -89,7 +118,7 @@ jobs:
             --output "health-output/reverse-topology/$TARGET_PROVIDER-harness.json" \
             --timeout 45
       - name: Record provider-owned proof boundary
-        if: always()
+        if: always() && steps.eligibility.outputs.eligible == 'true'
         env:
           TARGET_PROVIDER: ${{ matrix.provider }}
           TARGET_FAMILY: ${{ matrix.family }}
