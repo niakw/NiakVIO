@@ -22,6 +22,7 @@ if str(SCRIPT_DIR) not in sys.path:
 
 from rotating_corpus import default_seed, provider_census_candidates
 from current_provider_scope import pending_provider_ids
+from generate_language_manifests import france_only_catalog_rows
 
 ROOT = Path(__file__).resolve().parents[1]
 MANIFEST = ROOT / "manifest.json"
@@ -256,10 +257,31 @@ def build_tasks(
     tasks: list[dict[str, Any]] = []
     providers = 0
     pending = pending_provider_ids()
-    for row in manifest.get("scrapers") or []:
-        if not isinstance(row, dict):
-            continue
-        provider_id = str(row.get("id") or "").strip().casefold()
+
+    # A production census covers the full current catalogue authority: Global
+    # plus first-class France-only identities. France-only rows must never leak
+    # into manifest.json, but they are executable providers and therefore must
+    # be probed by scope=all rather than disappearing from health/freshness.
+    current_rows = [
+        row for row in (manifest.get("scrapers") or [])
+        if isinstance(row, dict)
+    ]
+    seen_ids = {
+        str(row.get("id") or "").strip().casefold().replace("_", "-")
+        for row in current_rows
+        if str(row.get("id") or "").strip()
+    }
+    for row in france_only_catalog_rows(root=ROOT):
+        provider_id = str(row.get("id") or "").strip().casefold().replace("_", "-")
+        if not provider_id:
+            raise RuntimeError("France-only census row without provider id")
+        if provider_id in seen_ids:
+            raise RuntimeError(f"{provider_id}: France-only census identity collides with Global")
+        seen_ids.add(provider_id)
+        current_rows.append(row)
+
+    for row in current_rows:
+        provider_id = str(row.get("id") or "").strip().casefold().replace("_", "-")
         filename = str(row.get("filename") or "").strip()
         if not provider_id or not filename or not (ROOT / filename).is_file():
             continue
