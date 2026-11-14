@@ -3,6 +3,8 @@ from __future__ import annotations
 
 import importlib.util
 import sys
+import json
+import tempfile
 from pathlib import Path
 
 ROOT=Path(__file__).resolve().parents[1]
@@ -52,6 +54,29 @@ except ValueError as exc:
     assert "duplicate VF projection rows" in str(exc)
 else:
     raise AssertionError("duplicate shared VF rows were accepted")
+
+stage_path=ROOT/"scripts"/"stage_provider_batch.py"
+stage_spec=importlib.util.spec_from_file_location("stage_provider_batch_vf_projection_test",stage_path)
+assert stage_spec and stage_spec.loader
+stage_mod=importlib.util.module_from_spec(stage_spec)
+stage_spec.loader.exec_module(stage_mod)
+with tempfile.TemporaryDirectory() as td:
+    td=Path(td)
+    vf_path=td/"vf"/"manifest.json"
+    vf_path.parent.mkdir(parents=True,exist_ok=True)
+    vf_path.write_text(json.dumps({"scrapers":[
+        {"id":"france-only","filename":"../provider-disabled/france-only.js"},
+        {"id":"multilingual","filename":"../provider-disabled/old.js"},
+    ]}),encoding="utf-8")
+    original=stage_mod.add_provider.VF_MANIFEST
+    stage_mod.add_provider.VF_MANIFEST=vf_path
+    try:
+        stage_mod.sync_finalized_shared_vf_filename("multilingual","provider-disabled/newhash.js")
+    finally:
+        stage_mod.add_provider.VF_MANIFEST=original
+    rows=json.loads(vf_path.read_text(encoding="utf-8"))["scrapers"]
+    assert rows[0]["filename"]=="../provider-disabled/france-only.js"
+    assert rows[1]["filename"]=="../provider-disabled/newhash.js"
 
 source=path.read_text(encoding="utf-8")
 assert 'vf = bool_value(request.get("vf"), any(value.startswith("fr") for value in languages))' in source
