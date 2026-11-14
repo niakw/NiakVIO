@@ -35,7 +35,7 @@ assert provider_model_has_executable_plan({**direct_only, "routes": ["/api/push/
 assert provider_model_has_identity_execution_plan({**direct_only, "routes": ["/api/push/subscribe"]}) is False
 assert provider_model_has_identity_execution_plan({**direct_only, "routes": ["/embed/sw.js"]}) is False
 assert provider_model_has_identity_execution_plan({**direct_only, "routes": ["/series"]}) is False
-assert provider_model_has_identity_execution_plan({**direct_only, "routes": ["/search"]}) is True
+assert provider_model_has_identity_execution_plan({**direct_only, "routes": ["/search"]}) is False
 assert provider_model_has_identity_execution_plan({**direct_only, "routes": ["/movie/{tmdbId}"]}) is True
 assert provider_route_is_identity_aware("/api/session-handoff/issue") is False
 assert provider_route_is_identity_aware("/search?q={query}") is True
