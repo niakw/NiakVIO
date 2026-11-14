@@ -55,6 +55,8 @@ assert runtime._is_causal_strategy_profile("chain_terminal_extractor_v1")
 assert runtime._is_causal_strategy_profile("chain_terminal_extractor_v1_g3")
 assert runtime.CAUSAL_STRATEGY_BASES["unknown_failure"] == "adaptive_runtime_recovery"
 assert runtime.CAUSAL_STRATEGY_BASES["variant_coverage_gap"] == "player_media_extractor_v1"
+assert runtime.CAUSAL_STRATEGY_BASES["content_identity_gap"] == "identity_alias_search_traversal_v1"
+assert runtime._is_causal_strategy_profile("identity_alias_search_traversal_v1")
 assert runtime._is_causal_strategy_profile("adaptive_runtime_recovery")
 assert runtime._is_causal_strategy_profile("player_media_extractor_v1")
 assert not runtime._is_causal_strategy_profile("expanded_family_strategy_v1")
