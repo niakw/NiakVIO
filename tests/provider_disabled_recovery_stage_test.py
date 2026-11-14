@@ -19,6 +19,9 @@ assert "Brain LLM abstained despite deterministic runtime error" in workflow
 assert "currentDisabledHealthHealthy" in workflow
 assert "transport_inconclusive_replay" in workflow
 assert "NIAKVIO_DISABLED_RECOVERY_RESIDENTIAL" in workflow
+observe_block = workflow.split("      - name: Observe disabled bytes without production authority\\n", 1)[1].split("      - name:", 1)[0]
+assert "TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}" in observe_block
+assert "TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}" in observe_block
 assert "tailscale/github-action@064b10558093f38325e838ddea35486bdc6b1d5c" in workflow
 assert "id-token: write" in workflow
 assert "server_pid=$!" in workflow
