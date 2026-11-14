@@ -12962,7 +12962,8 @@
         "Activation remains disabled until the onboarding quick Lab proves the provider on every requested runtime group.",
         "Mac residential oracle 2026-11-14 proved Webflix FastFlux movie and episode APIs return direct MP4 candidates for exact requested TMDB/season/episode.",
         "Provider-owned Webflix runtime uses only public deterministic JSON APIs; no challenge solver or upstream JS execution.",
-        "TV identity is bound by discovery response tmdb_id plus exact season/episode key before terminal media is returned."
+        "TV identity is bound by discovery response tmdb_id plus exact season/episode key before terminal media is returned.",
+        "MAC_ROUTE_PROOF_V5_2026_11_14: physical Mac runs 43649703460/43649792760 proved TMDB-bound movie and exact TV season/episode FastFlux JSON plus direct MP4 response; route proof is provider-owned and does not imply native decoded playback/FULL OK."
       ],
       "replacements": {},
       "runtime_domain_replacements": {},
@@ -15270,7 +15271,7 @@
     },
     "webflix": {
       "strategy": "api_stream_resolver",
-      "validation": "residential_runtime_oracle",
+      "validation": "residential_route_proof_v5_pending_native_playback",
       "allow_html_url": false,
       "requires_direct_media": true,
       "observed_origins": [
