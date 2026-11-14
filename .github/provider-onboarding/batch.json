@@ -1,5 +1,5 @@
 {
-  "requestVersion": 41,
+  "requestVersion": 42,
   "source": "NiakVIO-GLOBAL-FINAL-STRICT-TOP20-2026-09-11(5).xlsx",
   "activationPolicy": "bulk_offline_contract_live_unverified",
   "allowReplaceExisting": true,
@@ -87,7 +87,7 @@
     }
   ],
   "domainEvidenceFile": "automation/provider-domain-refresh-2026-11-14.json",
-  "activationPipelineFix": "retry_on_main_3eb4e1f_exact_60_60_after_identity_schema_and_catalog_activation_fixes",
+  "activationPipelineFix": "latest_main_apply_retry_53880a5_plus_new_provider_projection_fe10b17",
   "deferredProviders": [
     {
       "id": "flikhub",
@@ -1584,5 +1584,5 @@
     "exact60CeilingFix": "c0c08f6933a3e5d8bf0f88d16ef3030ad0720080",
     "exact60CeilingContract": "e455b81216c6537e4447eae2fbe80f57d39e06ca"
   },
-  "notes": " Post-activation replay: Watchott and AnimeJL were already published and are removed from the pending onboarding transaction; their current bytes are handled by normal provider materialization/publication. Webflix and Zone-Téléchargement are existing France-only disabled identities; replacement is explicit and must preserve a single canonical ID. Webflix upgraded from search-only discovery to Mac-proven TMDB FastFlux movie/episode/discovery APIs."
+  "notes": " Post-activation replay: Watchott and AnimeJL were already published and are removed from the pending onboarding transaction; their current bytes are handled by normal provider materialization/publication. Webflix and Zone-Téléchargement are existing France-only disabled identities; replacement is explicit and must preserve a single canonical ID. Webflix upgraded from search-only discovery to Mac-proven TMDB FastFlux movie/episode/discovery APIs. Retry after generic publish race fix 53880a5 and projection-only static-history decoupling fe10b17/7f11b50."
 }
