@@ -57,6 +57,7 @@ CAUSAL_STRATEGY_BASES = {
     "transport_blocked": "provider_origin_failover_v1",
     "route_proven_gap": "proven_route_terminal_traversal_v1",
     "search_gap": "search_contract_inference_v1",
+    "content_identity_gap": "identity_alias_search_traversal_v1",
     "chain_terminal_gap": "chain_terminal_extractor_v1",
     "candidate_replay_gap": "retained_candidate_replay_v1",
     "media_extraction_gap": "player_media_extractor_v1",
@@ -196,6 +197,12 @@ def _census_runtime_focus(provider_id: str) -> dict[str, Any]:
                 "max_pages": 8, "max_embeds": 8, "max_depth": 2,
             },
         }
+        identity_failure = any(token in issue for token in (
+            "wrong_content",
+            "content_identity_mismatch",
+            "identity_mismatch",
+            "identity_contradiction",
+        ))
         structural_state = state in {"CHAIN REACHED", "ROUTE PROVEN", "CANDIDATE OK"}
         # BRAIN_TRANSPORT_BARE_TIMEOUT_V1: census may emit the compact
         # dominantIssue "timeout"; it has the same causal owner as
@@ -211,7 +218,15 @@ def _census_runtime_focus(provider_id: str) -> dict[str, Any]:
                 "provider_network_tls_error",
             ))
         )
-        if not structural_state and (
+        if identity_failure:
+            result = {
+                "focus": "content-identity",
+                "direct_role_order": ["search", "detail", "api", "episode", "player", "source", "other"],
+                "max_pages": 18,
+                "max_embeds": 14,
+                "max_depth": 4,
+            }
+        elif not structural_state and (
             any(token in issue for token in ("waf", "challenge", "blocked"))
             or network_regression
         ):
