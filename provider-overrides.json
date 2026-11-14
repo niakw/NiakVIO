@@ -11648,13 +11648,7 @@
         "disabledPlatforms": []
       },
       "learned_routes": [
-        {
-          "method": "GET",
-          "url": "https://www.chillflix.lol/search?q={query}",
-          "role": "search",
-          "source": "manual_residential_oracle",
-          "identityAware": true
-        }
+        "/search?q={query}"
       ],
       "provider_lego_scripts": [
         "scripts/provider_patches/chillflix_tmdb_direct_embed_runtime_v1.py"
@@ -11682,7 +11676,8 @@
           "mediaType",
           "title"
         ]
-      }
+      },
+      "route_proof_version": 5
     },
     "neonflix": {
       "notes": [
@@ -11967,13 +11962,7 @@
         "disabledPlatforms": []
       },
       "learned_routes": [
-        {
-          "method": "GET",
-          "url": "https://cinegram.tv/index.php?menu=search&query={query}",
-          "role": "search",
-          "source": "manual_residential_oracle",
-          "identityAware": true
-        }
+        "/index.php?menu=search&query={query}"
       ],
       "provider_lego_scripts": [
         "scripts/provider_patches/cinegram_runtime_v1.py"
@@ -11995,7 +11984,8 @@
           "title",
           "year"
         ]
-      }
+      },
+      "route_proof_version": 5
     },
     "movish": {
       "notes": [
