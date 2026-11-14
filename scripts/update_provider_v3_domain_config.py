@@ -8,7 +8,7 @@ materialization inventory are updated deterministically.
 from __future__ import annotations
 import argparse, hashlib, json, re
 from pathlib import Path
-from current_provider_scope import visible_provider_count
+from current_provider_scope import runtime_visible_provider_count, runtime_visible_provider_ids
 from typing import Any
 from provider_patch_blocks import decode_managed_data, owned_span, replace_provider_fix, validate_managed_fixes
 
@@ -60,9 +60,11 @@ def main()->int:
         return 0
 
     manifest=load(args.manifest); overrides=load(args.overrides); material=load(args.materialization)
-    mrows=manifest.get("scrapers") or []; rrows=material.get("providers") or []
-    if len(mrows) != visible_provider_count() or len(rrows) != visible_provider_count():
-        raise SystemExit("domain update requires 96/96 published Provider v3 state")
+    runtime_ids=runtime_visible_provider_ids()
+    mrows=[r for r in manifest.get("scrapers") or [] if isinstance(r,dict) and canonical(r.get("id")) in runtime_ids]
+    rrows=material.get("providers") or []
+    if len(mrows) != runtime_visible_provider_count() or len(rrows) != runtime_visible_provider_count():
+        raise SystemExit(f"domain update requires {runtime_visible_provider_count()}/{runtime_visible_provider_count()} runtime Provider v3 state")
     mb={canonical(r.get("id")):r for r in mrows if isinstance(r,dict)}
     rb={canonical(r.get("provider")):r for r in rrows if isinstance(r,dict)}
     patches=overrides.get("provider_patches") or {}
@@ -105,7 +107,7 @@ def main()->int:
 
     if updated:
         material["generation"]=generation(rrows)
-        material["providerCount"]=96; material["expectedProviderCount"]=96
+        material["providerCount"]=runtime_visible_provider_count(); material["expectedProviderCount"]=runtime_visible_provider_count()
         material["domainConfigOnlyUpdate"]=True; material["domainConfigUpdatedProviders"]=updated
         write(args.manifest,manifest); write(args.materialization,material)
     print(f"FIELD_PROVIDER_DOMAIN_CONFIG_UPDATE providers={len(updated)} ids={','.join(updated)} reconstruction=false core_mutation=false")

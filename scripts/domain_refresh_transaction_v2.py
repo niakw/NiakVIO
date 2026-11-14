@@ -29,7 +29,7 @@ from typing import Any
 import materialize_provider_v3_all as allmat
 import refresh_authoritative_hub_domains as refresh
 import resolve_provider_hubs as resolver
-from current_provider_scope import active_provider_ids, visible_provider_count
+from current_provider_scope import active_provider_ids, runtime_visible_provider_count, runtime_visible_provider_ids
 from provider_patch_blocks import (
     decode_managed_data,
     owned_span,
@@ -46,7 +46,7 @@ MANIFEST_PATH = ROOT / "manifest.json"
 MATERIALIZATION_PATH = ROOT / "provider-v3-materialization.json"
 STATIC_KNOWLEDGE_PATH = ROOT / "automation" / "provider-v3-static-knowledge.json"
 PROVIDERS_DIR = ROOT / "providers"
-CURRENT_PROVIDER_COUNT = visible_provider_count()
+CURRENT_PROVIDER_COUNT = runtime_visible_provider_count()
 
 DOMAIN_PATCH_FIELDS = {
     "official_site",
@@ -744,7 +744,8 @@ def rebuild_provider_configs(provider_ids: list[str]) -> list[dict[str, str]]:
     materialization = load(MATERIALIZATION_PATH)
     static = load(STATIC_KNOWLEDGE_PATH)
 
-    manifest_rows = [row for row in manifest.get("scrapers") or [] if isinstance(row, dict)]
+    runtime_ids = runtime_visible_provider_ids()
+    manifest_rows = [row for row in manifest.get("scrapers") or [] if isinstance(row, dict) and canonical(row.get("id")) in runtime_ids]
     material_rows = [row for row in materialization.get("providers") or [] if isinstance(row, dict)]
     manifest_ids = {canonical(row.get("id")) for row in manifest_rows if canonical(row.get("id"))}
     material_ids = {canonical(row.get("provider")) for row in material_rows if canonical(row.get("provider"))}

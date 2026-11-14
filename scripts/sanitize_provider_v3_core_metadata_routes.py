@@ -16,7 +16,7 @@ import argparse
 import json
 import re
 from pathlib import Path
-from current_provider_scope import visible_provider_count
+from current_provider_scope import runtime_visible_provider_count
 from typing import Any, Iterable
 from urllib.parse import urlsplit
 
@@ -187,7 +187,7 @@ def main() -> int:
     path = args.knowledge.resolve()
     payload = load(path)
     providers = payload.get("providers")
-    if not isinstance(providers, dict) or len(providers) != visible_provider_count():
+    if not isinstance(providers, dict) or len(providers) != runtime_visible_provider_count():
         raise ValueError("durable knowledge does not match the current visible provider identity set")
 
     removed = 0

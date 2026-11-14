@@ -1,3 +1,9 @@
+## 2026-11-14 — Runtime ledger consumers aligned with non-executable pending staging
+
+- Non-Regression 43582997745 exposed another stale 41-vs-45 assertion in quick-yield fixture priority after pending isolation. Audit identified the same semantic mismatch in Core metadata sanitizer, reverse rebuild, source-plan finalization, observational health, Domain Refresh/update and materialization metadata checks.
+- These consumers operate on executable/static/materialized runtime state, so align them to runtime_visible_provider_ids/count. Domain operations explicitly filter manifest rows to runtime identities before matching materialization. Catalogue/manifest-only checks continue to count pending rows. No provider route, domain, activation or playback decision changed.
+- Main advanced concurrently to 826f5ee5 only through lifecycle authority evidence; this change is based on and preserves that commit.
+
 ## 2026-11-14 — Runtime-scope test fallout after pending isolation
 
 - Provider Disabled Lifecycle 43582833517 executed the new control-plane correctly before its test failure: active=32, lifecycle-disabled=9, pending=17, catalogue-visible=58, runtime-visible=41, archived_now=0. The failure was a stale route-reconstructor assertion still comparing the 41-row static/runtime model to Global-visible cardinality 45.
