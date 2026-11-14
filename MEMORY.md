@@ -1,3 +1,9 @@
+## 2026-11-14 — Bulk activation now rejects carried FULL evidence
+
+- Production freshness gate work exposed a separate activation gap: activate_bulk_proven_providers.py required FULL OK and currentVerifiedLanes, but did not require testedThisRun=true. A retained historical FULL row could therefore satisfy activation if its old verified lanes remained in state.
+- Require testedThisRun=true before any bulk-pending Global or France-only provider can become enabled. Synthetic activation coverage now includes a carried FULL row with complete lanes and proves it stays disabled specifically as full_ok_not_fresh_this_run. Existing lane, PARTIAL, Brain-check and artifact gates remain unchanged.
+- This is activation-control-plane hardening only; no provider was activated by this commit.
+
 ## 2026-11-14 — Local FORCE prior unit test decoupled from live disabled lifecycle
 
 - Core Workflow Gate 43594037231 on 3c427649 reached and executed the new production-active freshness test successfully, then failed later in brain_local_force_learning_prior_test.py. The test expected a live meta-gap row from the repository repairQueue, but the truthful current lifecycle has repairQueue=[] after nonfunctional providers were disabled; synthesize_meta_gap_rows correctly returned no live meta-gap work.

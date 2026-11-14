@@ -120,6 +120,9 @@ def main()->int:
         if str(proof.get("status") or "")!="FULL OK":
             blocked.append({"provider":pid,"reason":"not_full_ok","status":proof.get("status")})
             continue
+        if proof.get("testedThisRun") is not True:
+            blocked.append({"provider":pid,"reason":"full_ok_not_fresh_this_run"})
+            continue
         declared={str(x).strip().lower() for x in proof.get("declaredLanes") or [] if str(x).strip()}
         verified={str(x).strip().lower() for x in proof.get("currentVerifiedLanes") or [] if str(x).strip()}
         if not declared or not declared.issubset(verified):
@@ -187,7 +190,7 @@ def main()->int:
         "activationScopes":{pid:("global" if pid in manifest_map else "france") for pid in activated},
         "blockedCount":len(blocked),
         "blockedProviders":blocked,
-        "policy":"FULL OK + every declared lane currently verified + no remaining Brain check",
+        "policy":"fresh FULL OK (testedThisRun) + every declared lane currently verified + no remaining Brain check",
         "dryRun":bool(args.dry_run),
     }
     if not args.dry_run and activated:

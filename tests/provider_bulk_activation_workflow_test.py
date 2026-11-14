@@ -30,6 +30,7 @@ for token in (
 
 for token in (
     '"status") or "")!="FULL OK"',
+    'proof.get("testedThisRun") is not True',
     "declared.issubset(verified)",
     'proof.get("brainCheckRequired") is True',
     'prov["activation_mode"]="bulk_census_full_ok"',

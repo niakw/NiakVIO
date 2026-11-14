@@ -52,10 +52,10 @@ with tempfile.TemporaryDirectory() as td:
         (td/f"provider-disabled/provider-bases/{pid}--base.js").write_bytes(("base-"+pid).encode())
     paths["STATUS"].write_text(json.dumps({
         "runId":77,"triggerSha":"deadbeef","providers":[
-            {"provider":"a","status":"FULL OK","declaredLanes":["movie","tv"],"currentVerifiedLanes":["movie","tv"],"brainCheckRequired":False},
-            {"provider":"b","status":"PARTIAL OK","declaredLanes":["movie","tv"],"currentVerifiedLanes":["movie"],"brainCheckRequired":False},
-            {"provider":"c","status":"FULL OK","declaredLanes":["anime"],"currentVerifiedLanes":[],"brainCheckRequired":False},
-            {"provider":"d","status":"FULL OK","declaredLanes":["movie","tv"],"currentVerifiedLanes":["movie","tv"],"brainCheckRequired":False},
+            {"provider":"a","status":"FULL OK","testedThisRun":True,"declaredLanes":["movie","tv"],"currentVerifiedLanes":["movie","tv"],"brainCheckRequired":False},
+            {"provider":"b","status":"PARTIAL OK","testedThisRun":True,"declaredLanes":["movie","tv"],"currentVerifiedLanes":["movie"],"brainCheckRequired":False},
+            {"provider":"c","status":"FULL OK","testedThisRun":False,"declaredLanes":["anime"],"currentVerifiedLanes":["anime"],"brainCheckRequired":False},
+            {"provider":"d","status":"FULL OK","testedThisRun":True,"declaredLanes":["movie","tv"],"currentVerifiedLanes":["movie","tv"],"brainCheckRequired":False},
         ]
     }),encoding="utf-8")
     old={name:getattr(mod,name) for name in ("MANIFEST","CATALOG","OVERRIDES","PROVENANCE","HUBS","STATUS","OUTPUT")}
@@ -81,6 +81,8 @@ assert activation["activatedProviders"]==["a","d"]
 assert activation["activationCount"]==2
 assert activation["activationScopes"]=={"a":"global","d":"france"}
 assert {x["provider"] for x in activation["blockedProviders"]}=={"b","c"}
+blocked={x["provider"]:x for x in activation["blockedProviders"]}
+assert blocked["c"]["reason"]=="full_ok_not_fresh_this_run"
 rows={x["id"]:x for x in manifest["scrapers"]}
 assert rows["a"]["enabled"] is True
 assert rows["a"]["filename"]=="providers/a.js"
