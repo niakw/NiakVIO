@@ -16,6 +16,12 @@ assert probe.route_pattern("/api?m=search&q=",fixture)=="/api?m=search&q={query}
 assert probe.route_pattern("/title/movie/157336-interstellar",fixture)=="/title/movie/{tmdbId}-{slug}"
 assert probe.route_pattern("/api/streams/movie?token=secret&q=",fixture)==""
 assert probe.route_pattern("/",fixture)==""
+assert probe.identity_route_candidate("/api/push/subscribe") is False
+assert probe.identity_route_candidate("/api/session-handoff/issue") is False
+assert probe.identity_route_candidate("/embed/sw.js") is False
+assert probe.identity_route_candidate("/series") is False
+assert probe.identity_route_candidate("/search") is True
+assert probe.identity_route_candidate("/movie/{tmdbId}") is True
 
 request={
     "providers":[{"id":"a","direct":"https://a.invalid"}],
