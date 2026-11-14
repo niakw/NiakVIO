@@ -1,5 +1,5 @@
 {
-  "requestVersion": 39,
+  "requestVersion": 40,
   "source": "NiakVIO-GLOBAL-FINAL-STRICT-TOP20-2026-09-11(5).xlsx",
   "activationPolicy": "bulk_offline_contract_live_unverified",
   "allowReplaceExisting": true,
@@ -35,7 +35,7 @@
       ],
       "strategy": "mixed_embed_resolver",
       "direct": "https://webflix.art/",
-      "replace_existing": false,
+      "replace_existing": true,
       "inventory_rank": 44,
       "inventory_score": 68,
       "routes": [
@@ -65,7 +65,7 @@
       ],
       "strategy": "mixed_embed_resolver",
       "direct": "https://www.zone-telechargement.rentals/",
-      "replace_existing": false,
+      "replace_existing": true,
       "inventory_rank": 66,
       "inventory_score": 64,
       "routeDiscoveryLastReason": "probe_shard_missing_or_timeout",
@@ -1580,5 +1580,5 @@
     "exact60CeilingFix": "c0c08f6933a3e5d8bf0f88d16ef3030ad0720080",
     "exact60CeilingContract": "e455b81216c6537e4447eae2fbe80f57d39e06ca"
   },
-  "notes": " Post-activation replay: Watchott and AnimeJL were already published and are removed from the pending onboarding transaction; their current bytes are handled by normal provider materialization/publication."
+  "notes": " Post-activation replay: Watchott and AnimeJL were already published and are removed from the pending onboarding transaction; their current bytes are handled by normal provider materialization/publication. Webflix and Zone-Téléchargement are existing France-only disabled identities; replacement is explicit and must preserve a single canonical ID."
 }
