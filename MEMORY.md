@@ -1,3 +1,9 @@
+## 2026-11-14 — Stale hygiene assertion updated for routine architecture validation
+
+- Workflow Gate 43572158240 on d9d89b12 failed only in tests/repository_hygiene_contract_test.py: the test still required the architecture validation *job itself* to be workflow_dispatch/FORCE-only. That directly contradicted the new Brain invariant that every successful Learning experiment must validate its architecture artifact.
+- Updated the hygiene contract to require job-level needs.experiment.result == success while separately proving the PR publication gate remains manual + NIAKVIO_ALLOW_BRAIN_PROPOSAL_PR and direct promotion remains architecture_force-only. No runtime/Brain/provider behavior changed in this follow-up.
+- Re-run required on exact new SHA before considering the Brain pipeline correction validated.
+
 ## 2026-11-14 — Lifecycle authority extended to France-only catalog without Global leakage
 
 - Lifecycle apply previously read only manifest.json, so a future catalog-owned {general:false,vf:true} provider could survive VF generation but never enter disabled retention, re-enable or archive handling. This contradicted the already-existing France-only projection authority.

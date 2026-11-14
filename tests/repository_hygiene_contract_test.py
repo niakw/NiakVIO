@@ -153,11 +153,16 @@ assert "github.event_name == 'push'" not in repair_proposal_block
 architecture_proposal_block = brain[brain.index("  publish-architecture-proposal:"):brain.index("\n  continue-learning-slot:")]
 assert "vars.NIAKVIO_ALLOW_BRAIN_PROPOSAL_PR == 'true'" in architecture_proposal_block
 architecture_if = architecture_proposal_block.split("    needs:", 1)[0]
-assert "github.event_name == 'workflow_dispatch'" in architecture_if
-assert "github.event.inputs.publish_proposal == 'true'" in architecture_if
-assert "needs.experiment.outputs.architecture_force == 'true'" in architecture_if
+assert "if: needs.experiment.result == 'success'" in architecture_if
+assert "github.event_name == 'workflow_dispatch'" not in architecture_if
 assert "github.event_name == 'schedule'" not in architecture_if
 assert "github.event_name == 'push'" not in architecture_if
+# Routine validation has no publication authority. The actual PR and FORCE
+# write surfaces retain their independent explicit gates inside the job.
+assert "github.event.inputs.publish_proposal == 'true'" in architecture_proposal_block
+assert "vars.NIAKVIO_ALLOW_BRAIN_PROPOSAL_PR == 'true'" in architecture_proposal_block
+assert "needs.experiment.outputs.architecture_force != 'true'" in architecture_proposal_block
+assert "needs.experiment.outputs.architecture_force == 'true'" in architecture_proposal_block
 assert "pull-requests: write" in brain
 assert "gh pr create" in brain
 assert 'BRANCH="brain-learning/proposals"' in brain
