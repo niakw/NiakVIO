@@ -138,7 +138,11 @@ class _SearchFormParser(HTMLParser):
         elif tag.casefold() in {"input", "select", "textarea"} and self.current is not None:
             name = values.get("name", "").strip()
             if name:
-                self.current["inputs"].append(name)
+                self.current["inputs"].append({
+                    "name": name,
+                    "type": values.get("type", "").strip().casefold(),
+                    "value": values.get("value", ""),
+                })
 
     def handle_endtag(self, tag: str) -> None:
         if tag.casefold() == "form" and self.current is not None:
@@ -166,8 +170,13 @@ def search_form_routes(text: str, base_url: str) -> list[str]:
     for form in parser.forms[:24]:
         if str(form.get("method") or "get").casefold() != "get":
             continue
+        inputs = [row for row in (form.get("inputs") or []) if isinstance(row, dict)]
         key = next(
-            (str(name) for name in form.get("inputs") or [] if str(name).casefold() in SEARCH_FORM_KEYS),
+            (
+                str(row.get("name") or "")
+                for row in inputs
+                if str(row.get("name") or "").casefold() in SEARCH_FORM_KEYS
+            ),
             "",
         )
         if not key:
@@ -185,6 +194,23 @@ def search_form_routes(text: str, base_url: str) -> list[str]:
             if k.casefold() not in {"k", "key", "token", "sig", "signature", "auth", "authorization"}
             and k.casefold() != key.casefold()
         ]
+        present = {str(k).casefold() for k, _ in pairs}
+        for row in inputs:
+            name = str(row.get("name") or "").strip()
+            lower = name.casefold()
+            if (
+                not name
+                or lower == key.casefold()
+                or lower in present
+                or lower in {"k", "key", "token", "sig", "signature", "auth", "authorization"}
+                or str(row.get("type") or "").casefold() != "hidden"
+            ):
+                continue
+            value = str(row.get("value") or "")
+            if len(value) > 160:
+                continue
+            pairs.append((name, value))
+            present.add(lower)
         pairs.append((key, "{query}"))
         query = urlencode(pairs, doseq=True).replace("%7Bquery%7D", "{query}")
         route = urlunsplit(("", "", parsed.path or "/", query, ""))
