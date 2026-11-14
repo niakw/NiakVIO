@@ -33,6 +33,13 @@ assert probe._identity_response(b"<a>Interstellar</a>", fixture, direct_media_ro
 assert probe._identity_response(b'{"tmdb":"157336","stream":"https://cdn.example/x.m3u8"}', fixture, direct_media_route=True) is True
 assert probe._identity_response(b"<html>unrelated page</html>", fixture, direct_media_route=False) is False
 
+legacy_model = probe._decode_owned_provider_model(
+    '/* NIAKVIO_PROVIDER_BASE_OWNED_V2 */\nconst NIAKVIO_PROVIDER_MODEL = Object.freeze({"providerId":"legacy","officialSite":"https://legacy.example","routes":["/movie/{tmdbId}"]});',
+    "PROVIDER.LEGACY.CONFIG.V1",
+)
+assert legacy_model == {"providerId":"legacy","officialSite":"https://legacy.example","routes":["/movie/{tmdbId}"]}
+assert "provider-old" in probe.retained_v3_routes.__doc__
+
 request={
     "providers":[{"id":"a","direct":"https://a.invalid"}],
     "deferredProviders":[{"id":"b","direct":"https://b.invalid"},{"id":"a","direct":"https://duplicate.invalid"}],
