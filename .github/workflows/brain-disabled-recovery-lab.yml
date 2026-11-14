@@ -335,54 +335,16 @@ jobs:
             --source-sha "$source_sha" \
             --brain-llm-sha "$BRAIN_LLM_SHA"
           test -s brain-disabled-recovery/brain-llm/guidance.json
-          python - <<'PY'
-          import json, os
-          from pathlib import Path
-          provider=os.environ["PROVIDER"].strip().casefold()
-          d=json.loads(Path("brain-disabled-recovery/brain-llm/guidance.json").read_text(encoding="utf-8"))
-          rows=[r for r in d.get("rows") or [] if isinstance(r,dict) and str(r.get("providerId") or "").casefold()==provider]
-          if d.get("publicationAuthority") is not False or d.get("directMutationAuthority") is not False:
-              raise SystemExit("Brain guidance unexpectedly grants publication/direct mutation authority")
-          health=json.loads(Path("brain-disabled-recovery/health/health-results.json").read_text(encoding="utf-8"))
-          health_rows=health.get("providers") or health.get("results") or []
-          matching=[
-              r for r in health_rows
-              if isinstance(r,dict)
-              and str(r.get("provider") or r.get("canonical_id") or r.get("upstream_id") or r.get("id") or "").casefold()==provider
-          ]
-          healthy=any(str(r.get("status") or "").casefold()=="healthy" for r in matching)
-          statuses={str(r.get("status") or "").casefold() for r in matching}
-          runtime_error="runtime_error" in statuses
-          if not rows and runtime_error:
-              raise SystemExit(f"Brain LLM abstained despite deterministic runtime error for {provider}")
-          if rows:
-              next_action="bounded_learning_repair"
-          elif healthy:
-              next_action="exact_playback_identity_replay"
-          else:
-              # GitHub no-stream/unreachable/blocked observations are transport
-              # evidence only. With no causal Brain hypothesis, preserve bytes
-              # and request stronger residential/native replay instead of
-              # manufacturing a provider mutation.
-              next_action="transport_inconclusive_replay"
-          disposition={
-              "schemaVersion":1,
-              "provider":provider,
-              "brainGuidanceRows":len(rows),
-              "brainAbstained":not bool(rows),
-              "currentDisabledHealthHealthy":healthy,
-              "observedStatuses":sorted(statuses),
-              "residentialTransportActive":bool(os.environ.get("NIAKVIO_DISABLED_RECOVERY_RESIDENTIAL")),
-              "repairRequired":bool(rows),
-              "publicationAuthority":False,
-              "directMutationAuthority":False,
-              "nextAction":next_action,
-          }
-          Path("brain-disabled-recovery/brain-llm/recovery-disposition.json").write_text(
-              json.dumps(disposition,ensure_ascii=False,indent=2)+"\n",encoding="utf-8"
-          )
-          print(f"FIELD_DISABLED_RECOVERY_BRAIN_GUIDANCE provider={provider} rows={len(rows)} healthy={str(healthy).lower()} action={disposition['nextAction']}")
-          PY
+          residential_args=()
+          if [ "${NIAKVIO_DISABLED_RECOVERY_RESIDENTIAL:-0}" = "1" ]; then
+            residential_args+=(--residential-active)
+          fi
+          python scripts/classify_disabled_recovery_disposition.py \
+            --health brain-disabled-recovery/health/health-results.json \
+            --guidance brain-disabled-recovery/brain-llm/guidance.json \
+            --provider "$PROVIDER" \
+            "${residential_args[@]}" \
+            --output brain-disabled-recovery/brain-llm/recovery-disposition.json
           rows="$(python - <<'PY'
           import json
           from pathlib import Path
