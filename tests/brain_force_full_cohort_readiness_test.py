@@ -73,6 +73,7 @@ assert set(by_provider) == queue, {
 expected_focus = {
     "provider_transport_gap": "transport-first",
     "route_proven_gap": "proven-route-chain",
+    "content_identity_gap": "content-identity",
     "chain_terminal_gap": "terminal-chain",
     "candidate_replay_gap": "candidate-replay",
 }
