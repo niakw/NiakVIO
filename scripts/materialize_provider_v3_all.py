@@ -36,6 +36,7 @@ from provider_base_store import (  # noqa: E402
     NON_EXECUTABLE_KNOWLEDGE_HOSTS,
     provider_model_has_executable_plan,
     provider_model_has_identity_execution_plan,
+    provider_route_has_fixed_content_identity,
 )
 from apply_provider_overrides import apply_overrides  # noqa: E402
 from provider_patch_blocks import owned_span, validate_managed_fixes  # noqa: E402
@@ -340,7 +341,9 @@ def provider_model(
 
     patch_routes = [
         str(value).strip() for value in (patch.get("learned_routes") or [])
-        if str(value).strip() and str(value).strip() != "/"
+        if str(value).strip()
+        and str(value).strip() != "/"
+        and not provider_route_has_fixed_content_identity(value)
     ]
     patch_recipe = patch.get("api_recipe") if isinstance(patch.get("api_recipe"), dict) else None
     patch_recipe_proof = int(patch_recipe.get("proofModelVersion") or 0) if isinstance(patch_recipe, dict) else 0
@@ -386,7 +389,12 @@ def provider_model(
     if proof_version >= 5 or offline_routes_executable:
         for value in route_values:
             item = str(value).strip()
-            if item and item != "/" and item not in routes:
+            if (
+                item
+                and item != "/"
+                and not provider_route_has_fixed_content_identity(item)
+                and item not in routes
+            ):
                 routes.append(item)
 
     static_recipe = static_model.get("apiRecipe") if isinstance(static_model.get("apiRecipe"), dict) else None
