@@ -14,6 +14,10 @@ import re
 import subprocess
 import sys
 import tempfile
+import unicodedata
+import urllib.error
+import urllib.parse
+import urllib.request
 from pathlib import Path
 from typing import Any
 from urllib.parse import parse_qsl, quote, urlencode, urlsplit, urlunsplit
@@ -194,6 +198,107 @@ def retained_v3_routes(row: dict[str, Any]) -> tuple[list[str], list[str]]:
     return routes[:24], sources[:24]
 
 
+def _norm_text(value: Any) -> str:
+    text = unicodedata.normalize("NFKD", str(value or ""))
+    text = "".join(ch for ch in text if not unicodedata.combining(ch))
+    return re.sub(r"[^a-z0-9]+", " ", text.casefold()).strip()
+
+
+def _render_route(route: str, fixture: dict[str, Any]) -> str:
+    values = {
+        "query": urllib.parse.quote_plus(str(fixture.get("title") or "")),
+        "title": urllib.parse.quote_plus(str(fixture.get("title") or "")),
+        "slug": slug(str(fixture.get("title") or "")),
+        "tmdbId": str(fixture.get("tmdbId") or ""),
+        "media": str(fixture.get("mediaType") or "movie"),
+        "season": str(fixture.get("season") or 1),
+        "episode": str(fixture.get("episode") or 1),
+    }
+    out = route
+    for key, value in values.items():
+        out = out.replace("{" + key + "}", value)
+    return out
+
+
+def _identity_response(body: bytes, fixture: dict[str, Any], *, direct_media_route: bool) -> bool:
+    if not body:
+        return False
+    text = body[:1_500_000].decode("utf-8", errors="ignore")
+    norm = _norm_text(text)
+    title = _norm_text(fixture.get("title"))
+    if title and title in norm:
+        return True
+    if direct_media_route:
+        lowered = text.casefold()
+        tmdb = str(fixture.get("tmdbId") or "")
+        media_markers = (".m3u8", ".mp4", '"stream"', '"streams"', '"url"', "playlist")
+        if tmdb and tmdb in text and any(marker in lowered for marker in media_markers):
+            return True
+    return False
+
+
+def probe_common_identity_routes(
+    direct: str,
+    fixture: dict[str, Any],
+    *,
+    timeout: int,
+) -> list[str]:
+    """Validate a tiny generic route vocabulary against a real content fixture.
+
+    This is ordinary HTTP observation, not a WAF bypass. Challenges/timeouts
+    simply yield no route and remain transport-inconclusive.
+    """
+    lane = str(fixture.get("mediaType") or "movie").casefold()
+    search_routes = [
+        "/?s={query}",
+        "/search?q={query}",
+        "/search?query={query}",
+        "/search?keyword={query}",
+        "/recherche?q={query}",
+        "/recherche?query={query}",
+        "/index.php?do=search&subaction=search&story={query}",
+    ]
+    direct_routes = [
+        f"/{lane}/{{tmdbId}}",
+        f"/embed/{lane}/{{tmdbId}}",
+        f"/api/{lane}/{{tmdbId}}",
+        f"/api/sources/{lane}/{{tmdbId}}",
+    ]
+    if lane in {"tv", "anime"}:
+        direct_routes.extend([
+            f"/{lane}/{{tmdbId}}/{{season}}/{{episode}}",
+            f"/embed/{lane}/{{tmdbId}}/{{season}}/{{episode}}",
+            f"/api/sources/{lane}/{{tmdbId}}/{{season}}/{{episode}}",
+        ])
+    headers = {
+        "User-Agent": "NiakVIO/5 provider-route-discovery",
+        "Accept": "text/html,application/json;q=0.9,*/*;q=0.7",
+    }
+    accepted: list[str] = []
+    for route, direct_media in [
+        *((value, False) for value in search_routes),
+        *((value, True) for value in direct_routes),
+    ]:
+        rendered = _render_route(route, fixture)
+        url = urllib.parse.urljoin(direct.rstrip("/") + "/", rendered.lstrip("/"))
+        try:
+            req = urllib.request.Request(url, headers=headers, method="GET")
+            with urllib.request.urlopen(req, timeout=max(2, min(timeout, 10))) as response:
+                status = int(getattr(response, "status", 200) or 200)
+                if status >= 400:
+                    continue
+                body = response.read(1_500_000)
+        except (urllib.error.URLError, TimeoutError, OSError, ValueError):
+            continue
+        if _identity_response(body, fixture, direct_media_route=direct_media):
+            accepted.append(route)
+            # One real search and one direct-media contract are enough for this
+            # bounded discovery pass.
+            if len(accepted) >= 2:
+                break
+    return accepted
+
+
 def observed_candidates(report: dict[str, Any]) -> list[Any]:
     values: list[Any] = []
     for row in report.get("route_hints") or []:
@@ -346,7 +451,18 @@ def main() -> int:
                 if len(patterns) >= 24:
                     break
 
-        reason = "observed_identity_executable_routes" if patterns else ("reachable_no_identity_route_observed" if reached else "network_or_site_unreached")
+        if not patterns:
+            for fixture in fixtures:
+                for route in probe_common_identity_routes(direct, fixture, timeout=args.timeout):
+                    if route not in patterns and identity_route_candidate(route):
+                        patterns.append(route)
+                if len(patterns) >= 2:
+                    break
+        reason = (
+            "observed_identity_executable_routes"
+            if patterns
+            else ("reachable_no_identity_route_observed" if reached else "network_or_site_unreached")
+        )
         results.append({
             "provider": pid,
             "scope": str(row.get("scope") or "global"),
