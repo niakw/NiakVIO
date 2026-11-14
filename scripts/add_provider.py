@@ -499,9 +499,13 @@ def stage(request_path: Path, *, bulk: bool = False) -> dict[str, Any]:
             "/download/{identifier}/{file}",
         ]
         patch["identity_input"] = {
-            "mode": "tmdb_title_year",
-            "requires_tmdb_before_run": True,
-            "required_fields": ["tmdbId", "mediaType", "title", "year"],
+            # Provider runtime receives the typed TMDB identity and hydrates
+            # title/year through NiakVIO Core before querying archive.org.
+            # Keep this inside the supported identity schema so later
+            # Provider-v3 rematerialization is deterministic.
+            "mode": "tmdb_direct",
+            "requires_tmdb_before_run": False,
+            "required_fields": ["tmdbId", "mediaType"],
         }
     overrides["provider_capabilities"][provider_id] = {
         "strategy": strategy,
