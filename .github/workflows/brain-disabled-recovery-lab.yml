@@ -202,7 +202,8 @@ jobs:
           echo "FIELD_DISABLED_RECOVERY_LLM_SERVER available=false" >&2
           exit 1
 
-      - name: Synthesize disabled-provider guidance through Brain LLM
+      - id: brain_guidance
+        name: Synthesize disabled-provider guidance through Brain LLM
         shell: bash
         env:
           PROVIDER: ${{ steps.target.outputs.provider }}
@@ -255,15 +256,46 @@ jobs:
           provider=os.environ["PROVIDER"].strip().casefold()
           d=json.loads(Path("brain-disabled-recovery/brain-llm/guidance.json").read_text(encoding="utf-8"))
           rows=[r for r in d.get("rows") or [] if isinstance(r,dict) and str(r.get("providerId") or "").casefold()==provider]
-          if not rows:
-              raise SystemExit(f"Brain LLM produced no guidance row for explicit disabled target {provider}")
           if d.get("publicationAuthority") is not False or d.get("directMutationAuthority") is not False:
               raise SystemExit("Brain guidance unexpectedly grants publication/direct mutation authority")
-          print(f"FIELD_DISABLED_RECOVERY_BRAIN_GUIDANCE provider={provider} rows={len(rows)}")
+          health=json.loads(Path("brain-disabled-recovery/health/health-results.json").read_text(encoding="utf-8"))
+          health_rows=health.get("providers") or health.get("results") or []
+          matching=[r for r in health_rows if isinstance(r,dict) and str(r.get("provider") or r.get("id") or "").casefold()==provider]
+          healthy=any(str(r.get("status") or "").casefold()=="healthy" for r in matching)
+          if not rows and not healthy:
+              raise SystemExit(f"Brain LLM abstained for non-healthy disabled target {provider}")
+          disposition={
+              "schemaVersion":1,
+              "provider":provider,
+              "brainGuidanceRows":len(rows),
+              "brainAbstained":not bool(rows),
+              "currentDisabledHealthHealthy":healthy,
+              "repairRequired":bool(rows),
+              "publicationAuthority":False,
+              "directMutationAuthority":False,
+              "nextAction":"exact_playback_identity_replay" if healthy and not rows else "bounded_learning_repair",
+          }
+          Path("brain-disabled-recovery/brain-llm/recovery-disposition.json").write_text(
+              json.dumps(disposition,ensure_ascii=False,indent=2)+"\n",encoding="utf-8"
+          )
+          print(f"FIELD_DISABLED_RECOVERY_BRAIN_GUIDANCE provider={provider} rows={len(rows)} healthy={str(healthy).lower()} action={disposition['nextAction']}")
           PY
-          echo "NIAKVIO_BRAIN_LLM_GUIDANCE=$GITHUB_WORKSPACE/brain-disabled-recovery/brain-llm/guidance.json" >> "$GITHUB_ENV"
+          rows="$(python - <<'PY'
+          import json
+          from pathlib import Path
+          d=json.loads(Path("brain-disabled-recovery/brain-llm/recovery-disposition.json").read_text(encoding="utf-8"))
+          print(int(d.get("brainGuidanceRows") or 0))
+          PY
+          )"
+          if [ "$rows" -gt 0 ]; then
+            echo "NIAKVIO_BRAIN_LLM_GUIDANCE=$GITHUB_WORKSPACE/brain-disabled-recovery/brain-llm/guidance.json" >> "$GITHUB_ENV"
+            echo "has_guidance=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_guidance=false" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Run bounded Brain Learning recovery
+        if: steps.brain_guidance.outputs.has_guidance == 'true'
         shell: bash
         env:
           PROVIDER: ${{ steps.target.outputs.provider }}
