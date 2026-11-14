@@ -28,6 +28,8 @@ for required in (
     "Number(row.season)===q.season",
     "Number(row.episode)===q.episode",
     "__niakvioWebflixRuntimeV1",
+    "function seasonCoord(v)",
+    "function episodeCoord(v)",
 ):
     assert required in patched, required
 
@@ -39,6 +41,8 @@ for forbidden in (
     "1396",
     "interstellar",
     "breaking-bad",
+    "q.season||1",
+    "Number(q.season)||1",
 ):
     assert forbidden not in patched.casefold(), forbidden
 
