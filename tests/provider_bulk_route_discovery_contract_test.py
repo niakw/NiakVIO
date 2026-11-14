@@ -91,6 +91,23 @@ selected, standby = apply_mod.select_to_target(
 assert selected == [] and [row["id"] for row in standby] == ["overflow"]
 assert apply_mod.TARGET_ACTIVE == 60
 assert apply_mod.TARGET_LANE == 20
+shared=[
+    {"id":"shared-fr","scope":"global","vf":True,"languages":["en","fr"],"types":["movie","tv"]},
+    {"id":"global-only","scope":"global","vf":False,"languages":["en"],"types":["anime"]},
+]
+assert apply_mod.projects_to_vf(shared[0]) is True
+assert apply_mod.projects_to_vf(shared[1]) is False
+france_after=apply_mod.state_after_shared_global(
+    {"active":59,"lanes":{"movie":19,"tv":18,"anime":21}},
+    shared,
+)
+assert france_after=={"active":60,"lanes":{"movie":20,"tv":19,"anime":21}},france_after
+selected_fr, standby_fr = apply_mod.select_to_target(
+    [{"id":"france-only-extra","scope":"france","types":["movie","tv"]}],
+    scope="france",
+    current=france_after,
+)
+assert selected_fr==[] and [row["id"] for row in standby_fr]==["france-only-extra"]
 assert apply_mod.defer_missing_probe_result(
     {"id":"slow","scope":"france","types":["movie","tv"]},
     "slow",
