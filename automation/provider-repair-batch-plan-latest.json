@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "sourceRunId": "43601020256",
-  "sourceTriggerSha": "60aad9b0683ca2443cc417efcefee8d8f4eff678",
-  "unresolvedProviderCount": 2,
+  "sourceRunId": "43602671784",
+  "sourceTriggerSha": "69249582792efc055fbe240f9fb7f9e48461ae84",
+  "unresolvedProviderCount": 3,
   "dynamicVariantProviderCount": 2,
   "dynamicVariantProviders": [
     "hindmoviez",
@@ -55,7 +55,7 @@
     "yflix"
   ],
   "dynamicVariantFallbackUsed": true,
-  "groupCount": 2,
+  "groupCount": 3,
   "executionModel": {
     "default": "family/signature batch",
     "liveProbeConcurrency": "audit_provider_quick_yield ThreadPool",
@@ -63,6 +63,33 @@
     "providerLocalRepair": "exception path only"
   },
   "groups": [
+    {
+      "groupId": "transport|mixed_embed_resolver",
+      "repairScope": "transport",
+      "runtimeFamilies": [
+        "mixed_embed_resolver"
+      ],
+      "capabilityStrategy": "mixed_embed_resolver",
+      "evidenceDepths": [
+        "none"
+      ],
+      "dominantIssues": [
+        "network_http_error"
+      ],
+      "harnessTransportClasses": [],
+      "transportSignature": "not-applicable",
+      "providerCount": 1,
+      "providers": [
+        "voiranime-homes"
+      ],
+      "action": "refresh transport authority before provider-local code changes",
+      "selectionAuthorities": [
+        "provider-census-status.json:brainCheckRequired"
+      ],
+      "dynamicVariantProviders": [],
+      "executionPolicy": "batch-first",
+      "providerLocalFallback": "only-after-shared-profile-failure"
+    },
     {
       "groupId": "variant-coverage|direct_media",
       "repairScope": "variant-coverage",

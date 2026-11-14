@@ -1,7 +1,7 @@
 {
   "schemaVersion": 3,
-  "runId": "43601020256",
-  "triggerSha": "60aad9b0683ca2443cc417efcefee8d8f4eff678",
+  "runId": "43602671784",
+  "triggerSha": "69249582792efc055fbe240f9fb7f9e48461ae84",
   "providers": [
     {
       "provider": "4khdhub",
@@ -66,7 +66,7 @@
       ],
       "dominantIssue": "provider_network_zero_result",
       "searchProgress": [
-        "anime: 4 works tested / 45 retained misses / 3 retained chain hits"
+        "anime: 4 works tested / 44 retained misses / 4 retained chain hits"
       ],
       "evidenceDepth": [
         "anime=chain_reached"
@@ -194,7 +194,7 @@
       ],
       "dominantIssue": "timeout",
       "searchProgress": [
-        "anime: 3 works tested / 1 retained misses"
+        "anime: 4 works tested / 1 retained misses"
       ],
       "evidenceDepth": [
         "anime=lookup_only"
@@ -398,9 +398,9 @@
         "1 live routes / anime"
       ],
       "latestLaneVerdicts": [
-        "anime=timeout"
+        "anime=no_streams/provider_network_exception"
       ],
-      "dominantIssue": "timeout",
+      "dominantIssue": "provider_network_exception",
       "searchProgress": [
         "anime: 2 works tested / 0 retained misses"
       ],
@@ -716,7 +716,7 @@
         "tv"
       ],
       "historicalProof": [
-        "movie: The Colony / Interstellar",
+        "movie: Interstellar / The Colony",
         "tv: Breaking Bad"
       ],
       "candidateProof": [],
@@ -729,7 +729,7 @@
       ],
       "dominantIssue": "none",
       "searchProgress": [
-        "movie: 2 works tested / 2 retained misses",
+        "movie: 1 works tested / 2 retained misses",
         "tv: 1 works tested / 5 retained misses"
       ],
       "evidenceDepth": [
@@ -997,7 +997,7 @@
       ],
       "dominantIssue": "provider_waf_challenge×2",
       "searchProgress": [
-        "movie: 8 works tested / 25 retained misses",
+        "movie: 8 works tested / 24 retained misses",
         "tv: 8 works tested / 21 retained misses"
       ],
       "evidenceDepth": [
@@ -1233,12 +1233,12 @@
       ],
       "latestLaneVerdicts": [
         "movie=no_streams/provider_network_zero_result",
-        "tv=no_streams/provider_network_http_error"
+        "tv=no_streams/provider_network_zero_result"
       ],
-      "dominantIssue": "provider_network_zero_result, provider_network_http_error",
+      "dominantIssue": "provider_network_zero_result×2",
       "searchProgress": [
         "movie: 8 works tested / 18 retained misses",
-        "tv: 8 works tested / 15 retained misses"
+        "tv: 8 works tested / 16 retained misses"
       ],
       "evidenceDepth": [
         "movie=lookup_only",
@@ -1636,15 +1636,13 @@
     },
     {
       "provider": "voiranime-homes",
-      "status": "FULL OK",
+      "status": "REGRESSION PROVIDER",
       "underlyingStatus": "",
-      "color": "🟢",
+      "color": "🔴",
       "declaredLanes": [
         "anime"
       ],
-      "currentVerifiedLanes": [
-        "anime"
-      ],
+      "currentVerifiedLanes": [],
       "historicalProof": [
         "anime: Hell Mode: The Hardcore Gamer Dominates in Another World with Garbage Balancing / Jujutsu Kaisen"
       ],
@@ -1653,14 +1651,14 @@
         "1 live routes / anime"
       ],
       "latestLaneVerdicts": [
-        "anime=OK"
+        "anime=no_streams/provider_network_http_error"
       ],
-      "dominantIssue": "none",
+      "dominantIssue": "provider_network_http_error",
       "searchProgress": [
-        "anime: 1 works tested / 0 retained misses"
+        "anime: 8 works tested / 0 retained misses"
       ],
       "evidenceDepth": [
-        "anime=lookup_only"
+        "anime=none"
       ],
       "harnessTransportClass": "not-applicable",
       "harnessTransportEvidence": [],
@@ -1673,10 +1671,10 @@
         "existing_positive_route_prior"
       ],
       "authorityKnown": true,
-      "action": "protect + replay retained proof",
-      "brainCheckRequired": false,
-      "statusRepairEligible": false,
-      "repairEligible": false,
+      "action": "re-run retained proof + verify upstream/provider state",
+      "brainCheckRequired": true,
+      "statusRepairEligible": true,
+      "repairEligible": true,
       "testedThisRun": true
     },
     {
@@ -2077,11 +2075,18 @@
   ],
   "counts": {
     "DISABLED": 33,
-    "FULL OK": 13
+    "FULL OK": 12,
+    "REGRESSION PROVIDER": 1
   },
-  "symptomaticProviders": [],
-  "brainQueue": [],
-  "repairQueue": [],
+  "symptomaticProviders": [
+    "voiranime-homes"
+  ],
+  "brainQueue": [
+    "voiranime-homes"
+  ],
+  "repairQueue": [
+    "voiranime-homes"
+  ],
   "authorityBlockedQueue": [
     "4khdhub",
     "allanime",
@@ -2181,8 +2186,8 @@
   },
   "targetedTransportBlockedQueue": [],
   "clientTransportGapQueue": [],
-  "harnessEvidenceRunId": "43601020256-sharded-waf",
-  "harnessEvidenceSha": "60aad9b0683ca2443cc417efcefee8d8f4eff678",
+  "harnessEvidenceRunId": "43602671784-sharded-waf",
+  "harnessEvidenceSha": "69249582792efc055fbe240f9fb7f9e48461ae84",
   "authorityRefreshedProviders": [],
   "harnessTransportUpdatedProviders": [],
   "networkDifferentialUpdatedProviders": [],
