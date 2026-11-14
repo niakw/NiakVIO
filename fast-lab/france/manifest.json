@@ -1,0 +1,81 @@
+{
+  "name": "NiakVIO FAST LAB — FRANCE (experimental, not production)",
+  "version": "0.1.0",
+  "description": "Three isolated France-targeted externally pinned upstream providers for live validation only; not evidence of playable streams.",
+  "scrapers": [
+    {
+      "id": "movix",
+      "name": "Movix",
+      "description": "[EXPERIMENTAL LAB — terminal playback not validated by NiakVIO] Films, Séries et Animes en VF et VOSTFR.",
+      "version": "0.1.6",
+      "hasSettings": true,
+      "author": "Gowaru",
+      "supportedTypes": [
+        "movie",
+        "tv"
+      ],
+      "filename": "https://raw.githubusercontent.com/Gowaru/gowaru-nuvio-providers/66494c595865fd2e6d664876935d577389eb23b6/providers/movix.js",
+      "enabled": true,
+      "logo": "https://movix.fun/movix.png",
+      "contentLanguage": [
+        "fr"
+      ],
+      "formats": [
+        "mp4",
+        "mkv",
+        "m3u8"
+      ],
+      "limited": false,
+      "disabledPlatforms": [],
+      "supportsExternalPlayer": true
+    },
+    {
+      "id": "franime",
+      "name": "Franime",
+      "description": "[EXPERIMENTAL LAB — terminal playback not validated by NiakVIO] Anime VF et VOSTFR en streaming sur franime.fr (catalogue indexé Kitsu).",
+      "version": "0.0.3",
+      "author": "Gowaru",
+      "supportedTypes": [
+        "movie",
+        "tv"
+      ],
+      "filename": "https://raw.githubusercontent.com/Gowaru/gowaru-nuvio-providers/66494c595865fd2e6d664876935d577389eb23b6/providers/franime.js",
+      "enabled": true,
+      "logo": "https://franime.fr/favicon.ico",
+      "contentLanguage": [
+        "fr"
+      ],
+      "formats": [
+        "mp4",
+        "m3u8"
+      ],
+      "limited": false,
+      "disabledPlatforms": [],
+      "supportsExternalPlayer": false
+    },
+    {
+      "id": "nakios",
+      "name": "Nakios",
+      "description": "[EXPERIMENTAL LAB — terminal playback not validated by NiakVIO] Films et séries en streaming MP4 via Nakios (API REST, TMDB natif, CDN direct).",
+      "version": "1.0.4",
+      "author": "Gowaru",
+      "supportedTypes": [
+        "movie",
+        "tv"
+      ],
+      "filename": "https://raw.githubusercontent.com/Gowaru/gowaru-nuvio-providers/66494c595865fd2e6d664876935d577389eb23b6/providers/nakios.js",
+      "enabled": true,
+      "logo": "https://nakios.store/favicon.png",
+      "contentLanguage": [
+        "fr",
+        "en"
+      ],
+      "formats": [
+        "mp4"
+      ],
+      "limited": false,
+      "disabledPlatforms": [],
+      "supportsExternalPlayer": false
+    }
+  ]
+}
