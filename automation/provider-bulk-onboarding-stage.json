@@ -1,44 +1,26 @@
 {
-  "providerCount": 22,
-  "newProviderCount": 22,
+  "providerCount": 4,
+  "newProviderCount": 4,
   "replaceProviderCount": 0,
   "newProviders": [
-    "anidb",
-    "aniflix-uno",
-    "documentary-area",
-    "flixhq",
-    "french-anime",
-    "frenchstream",
-    "fsharetv",
-    "hexa",
-    "ihavenotv",
-    "moiflix",
-    "moviebite",
-    "overlook",
-    "pstream",
-    "rarefilmm",
-    "reanime-to",
-    "rivestream-app",
-    "rivestream-ru",
-    "stigstream",
-    "topcartoons",
-    "videasy",
-    "vidlink",
-    "voirserie"
+    "animejlprovider",
+    "watchott",
+    "webflix",
+    "zone-telechargement"
   ],
   "replaceProviders": [],
   "strategies": {
-    "html_scraper": 14,
-    "mixed_embed_resolver": 8
+    "html_scraper": 2,
+    "mixed_embed_resolver": 2
   },
   "declaredTypeCounts": {
-    "anime": 12,
-    "movie": 18,
-    "tv": 15
+    "anime": 2,
+    "movie": 3,
+    "tv": 3
   },
   "scopeCounts": {
-    "france": 5,
-    "global": 17
+    "france": 2,
+    "global": 2
   },
   "safePendingRestageProviders": [],
   "schemaVersion": 1,
@@ -50,312 +32,59 @@
   "nextStage": "sharded census -> repair batches -> proof-driven activation",
   "providers": [
     {
-      "id": "rivestream-app",
-      "name": "Rive / RiveStream",
+      "id": "watchott",
+      "name": "Watchott",
       "types": [
         "movie",
         "tv",
         "anime"
       ],
       "strategy": "html_scraper",
-      "site": "https://www.rivestream.app",
+      "site": "https://watchott.org",
       "scope": "global",
-      "pendingFilename": "provider-disabled/rivestream-app--nuvio--8647c4bc53ff9194.js",
-      "pendingSha256": "8647c4bc53ff9194c0bdb8a986ac3433e165d28a71d5b0eb90acd2d084909f09",
+      "pendingFilename": "provider-disabled/watchott--nuvio--7671f653747d04c3.js",
+      "pendingSha256": "7671f653747d04c3411782ba713cb5355600f3049c68dc4dfc5a774461e9faf7",
       "pendingFixedPoint": true
     },
     {
-      "id": "overlook",
-      "name": "Overlook",
+      "id": "animejlprovider",
+      "name": "AnimeJL",
       "types": [
-        "movie",
-        "tv",
-        "anime"
-      ],
-      "strategy": "mixed_embed_resolver",
-      "site": "https://overlook.cx",
-      "scope": "global",
-      "pendingFilename": "provider-disabled/overlook--nuvio--5dbd35538b214075.js",
-      "pendingSha256": "5dbd35538b2140755069061bd866e34f9a331fa839e0b1d10b3a8bd25e86da5e",
-      "pendingFixedPoint": true
-    },
-    {
-      "id": "hexa",
-      "name": "Hexa",
-      "types": [
-        "movie",
-        "tv",
-        "anime"
-      ],
-      "strategy": "mixed_embed_resolver",
-      "site": "https://hexa.su",
-      "scope": "global",
-      "pendingFilename": "provider-disabled/hexa--nuvio--aedac9288a0f6f16.js",
-      "pendingSha256": "aedac9288a0f6f1673dc31c7c329ec6847e7dc09380597efee1a75c2368bc119",
-      "pendingFixedPoint": true
-    },
-    {
-      "id": "rivestream-ru",
-      "name": "Rive alt RU",
-      "types": [
-        "movie",
-        "tv",
         "anime"
       ],
       "strategy": "html_scraper",
-      "site": "https://rivestream.ru",
+      "site": "https://www.anime-jl.net",
       "scope": "global",
-      "pendingFilename": "provider-disabled/rivestream-ru--nuvio--f4cc04c01f29bd4f.js",
-      "pendingSha256": "f4cc04c01f29bd4f427c85e1d90127bf2d8307eca437b5848b353d8e74564013",
+      "pendingFilename": "provider-disabled/animejlprovider--nuvio--1606673e3b4efa68.js",
+      "pendingSha256": "1606673e3b4efa6843af3dfec230d3924bfeb52b8f85b29ea488cc3f94cb8655",
       "pendingFixedPoint": true
     },
     {
-      "id": "moviebite",
-      "name": "MovieBite",
-      "types": [
-        "movie",
-        "tv",
-        "anime"
-      ],
-      "strategy": "mixed_embed_resolver",
-      "site": "https://moviebite.org",
-      "scope": "global",
-      "pendingFilename": "provider-disabled/moviebite--nuvio--fd89a246c574ed08.js",
-      "pendingSha256": "fd89a246c574ed08b345a609297d2c43f548fc1ef8d426087305ef896f0b3f53",
-      "pendingFixedPoint": true
-    },
-    {
-      "id": "pstream",
-      "name": "PStream",
-      "types": [
-        "movie",
-        "tv",
-        "anime"
-      ],
-      "strategy": "mixed_embed_resolver",
-      "site": "https://pstream.cfd/",
-      "scope": "global",
-      "pendingFilename": "provider-disabled/pstream--nuvio--84619271772ecd87.js",
-      "pendingSha256": "84619271772ecd872a0464f4274ae2192a3cecfdc1bfce8d5afe5431d974b681",
-      "pendingFixedPoint": true
-    },
-    {
-      "id": "ihavenotv",
-      "name": "IHaveNoTV",
+      "id": "webflix",
+      "name": "Webflix",
       "types": [
         "movie",
         "tv"
       ],
-      "strategy": "html_scraper",
-      "site": "https://ihavenotv.com",
-      "scope": "global",
-      "pendingFilename": "provider-disabled/ihavenotv--nuvio--ee2e9d2ec63e6b64.js",
-      "pendingSha256": "ee2e9d2ec63e6b6483874da3efe913b52ab91cb309cfaa2f4ab5881429218b2f",
-      "pendingFixedPoint": true
-    },
-    {
-      "id": "reanime-to",
-      "name": "Re:ANIME",
-      "types": [
-        "anime"
-      ],
-      "strategy": "html_scraper",
-      "site": "https://reanime.to",
-      "scope": "global",
-      "pendingFilename": "provider-disabled/reanime-to--nuvio--e79600ae8ae961e1.js",
-      "pendingSha256": "e79600ae8ae961e18624004ff7e781425f38e525ef890e051d26d6a671c38c3d",
-      "pendingFixedPoint": true
-    },
-    {
-      "id": "flixhq",
-      "name": "FlixHQ",
-      "types": [
-        "movie",
-        "tv"
-      ],
-      "strategy": "html_scraper",
-      "site": "https://flixhq.vc/",
-      "scope": "global",
-      "pendingFilename": "provider-disabled/flixhq--nuvio--a8970c3a8563cac1.js",
-      "pendingSha256": "a8970c3a8563cac1ecc20f5da7af2f8ef7e72df0871b5385a7ab898bffc9ca12",
-      "pendingFixedPoint": true
-    },
-    {
-      "id": "topcartoons",
-      "name": "TopCartoons",
-      "types": [
-        "movie",
-        "tv"
-      ],
-      "strategy": "html_scraper",
-      "site": "https://www.topcartoons.tv",
-      "scope": "global",
-      "pendingFilename": "provider-disabled/topcartoons--nuvio--b7a97f5a7f2a2e4b.js",
-      "pendingSha256": "b7a97f5a7f2a2e4bcdce30da06d90ad17d46ca410ae234fab4ec0ecc66c60c95",
-      "pendingFixedPoint": true
-    },
-    {
-      "id": "videasy",
-      "name": "VidEasy",
-      "types": [
-        "movie",
-        "tv"
-      ],
-      "strategy": "html_scraper",
-      "site": "https://www.vidking.net",
-      "scope": "global",
-      "pendingFilename": "provider-disabled/videasy--nuvio--b3c105c91cd35fa9.js",
-      "pendingSha256": "b3c105c91cd35fa9d687e2140ee50f34c561f2f3ceafa1646126b14f0dae3f36",
-      "pendingFixedPoint": true
-    },
-    {
-      "id": "vidlink",
-      "name": "VidLink",
-      "types": [
-        "movie",
-        "tv"
-      ],
-      "strategy": "html_scraper",
-      "site": "https://vidlink.pro",
-      "scope": "global",
-      "pendingFilename": "provider-disabled/vidlink--nuvio--2f00b10f33fb8207.js",
-      "pendingSha256": "2f00b10f33fb82072225c4545664dd4be8b7e80d876e3aeb56fac814adcc06f6",
-      "pendingFixedPoint": true
-    },
-    {
-      "id": "documentary-area",
-      "name": "Documentary Area",
-      "types": [
-        "movie"
-      ],
-      "strategy": "html_scraper",
-      "site": "https://www.documentarymania.com",
-      "scope": "global",
-      "pendingFilename": "provider-disabled/documentary-area--nuvio--98b015b55a6cd778.js",
-      "pendingSha256": "98b015b55a6cd778d04adcef40eea91d2e899239c8b406ed00d65c89b1ed95e8",
-      "pendingFixedPoint": true
-    },
-    {
-      "id": "fsharetv",
-      "name": "FshareTV",
-      "types": [
-        "movie"
-      ],
-      "strategy": "html_scraper",
-      "site": "https://fsharetv.co/",
-      "scope": "global",
-      "pendingFilename": "provider-disabled/fsharetv--nuvio--7a63bf303b07f5f6.js",
-      "pendingSha256": "7a63bf303b07f5f64438c9e946cb05e8d2ecd42f6f69fff8ede3edc0b33d94a8",
-      "pendingFixedPoint": true
-    },
-    {
-      "id": "aniflix-uno",
-      "name": "AniFlix",
-      "types": [
-        "anime"
-      ],
-      "strategy": "html_scraper",
-      "site": "https://aniflix.uno",
-      "scope": "global",
-      "pendingFilename": "provider-disabled/aniflix-uno--nuvio--d766a00a72e57f41.js",
-      "pendingSha256": "d766a00a72e57f41dd1b46370fc0491e8341dc7f4b63c843052f53678c6bdd1c",
-      "pendingFixedPoint": true
-    },
-    {
-      "id": "anidb",
-      "name": "AniDB",
-      "types": [
-        "anime"
-      ],
-      "strategy": "html_scraper",
-      "site": "https://anidb.pics",
-      "scope": "global",
-      "pendingFilename": "provider-disabled/anidb--nuvio--1323b5ec0e9c40ca.js",
-      "pendingSha256": "1323b5ec0e9c40ca55773c3d632cee45262681c3709aa04476ef114b77ff68d4",
-      "pendingFixedPoint": true
-    },
-    {
-      "id": "rarefilmm",
-      "name": "Rarefilmm",
-      "types": [
-        "movie"
-      ],
-      "strategy": "html_scraper",
-      "site": "https://rarefilmm.com/",
-      "scope": "global",
-      "pendingFilename": "provider-disabled/rarefilmm--nuvio--8350ff0eef07f04d.js",
-      "pendingSha256": "8350ff0eef07f04d5d7c3ba83ab9e270683afacff7a7fc631579eb5f9dfb8bdb",
-      "pendingFixedPoint": true
-    },
-    {
-      "id": "frenchstream",
-      "name": "French-stream",
-      "types": [
-        "movie",
-        "tv",
-        "anime"
-      ],
       "strategy": "mixed_embed_resolver",
-      "site": "https://fs16.lol/",
+      "site": "https://webflix.art/",
       "scope": "france",
-      "pendingFilename": "provider-disabled/frenchstream--nuvio--1c415541fa19de34.js",
-      "pendingSha256": "1c415541fa19de347dc05374ea2c652dfe9e44e3e4ebc93e52d421dcd8df37e0",
+      "pendingFilename": "provider-disabled/webflix--nuvio--77f578a29c77bbb8.js",
+      "pendingSha256": "77f578a29c77bbb8013b2e86515cf9ae68aa0f21ba11f845018d17c149c51414",
       "pendingFixedPoint": true
     },
     {
-      "id": "stigstream",
-      "name": "Stigstream",
-      "types": [
-        "movie",
-        "tv",
-        "anime"
-      ],
-      "strategy": "html_scraper",
-      "site": "https://stigstream.ru",
-      "scope": "france",
-      "pendingFilename": "provider-disabled/stigstream--nuvio--5705ac9ca7db4c33.js",
-      "pendingSha256": "5705ac9ca7db4c33af662593920f6705b3cbcbc4883a1665347efa7a39182201",
-      "pendingFixedPoint": true
-    },
-    {
-      "id": "french-anime",
-      "name": "French Anime",
-      "types": [
-        "anime"
-      ],
-      "strategy": "mixed_embed_resolver",
-      "site": "https://french-anime.com",
-      "scope": "france",
-      "pendingFilename": "provider-disabled/french-anime--nuvio--3f4be7e21036b0af.js",
-      "pendingSha256": "3f4be7e21036b0af01868bf92cda57f72d0dc00c09818bbf79bb7f41e1b4f0ac",
-      "pendingFixedPoint": true
-    },
-    {
-      "id": "moiflix",
-      "name": "Moiflix",
+      "id": "zone-telechargement",
+      "name": "Zone-Téléchargement",
       "types": [
         "movie",
         "tv"
       ],
       "strategy": "mixed_embed_resolver",
-      "site": "https://moiflix.fans/",
+      "site": "https://www.zone-telechargement.rentals/",
       "scope": "france",
-      "pendingFilename": "provider-disabled/moiflix--nuvio--b0e0396f8d6ee5f3.js",
-      "pendingSha256": "b0e0396f8d6ee5f32a083d5d8548914f142fabbf479dc2cf4b07ff702ac9b1e7",
-      "pendingFixedPoint": true
-    },
-    {
-      "id": "voirserie",
-      "name": "VoirSerie",
-      "types": [
-        "movie",
-        "tv"
-      ],
-      "strategy": "mixed_embed_resolver",
-      "site": "https://www.voirserie.org/",
-      "scope": "france",
-      "pendingFilename": "provider-disabled/voirserie--nuvio--edfbc45f4fcc51d1.js",
-      "pendingSha256": "edfbc45f4fcc51d11a03ae66b2e1d15c673f3b7c4ede6da6fef49bc299c8134c",
+      "pendingFilename": "provider-disabled/zone-telechargement--nuvio--b601e6c86132abc5.js",
+      "pendingSha256": "b601e6c86132abc57885fbb6ba2d997e2dec4e94a800f172771f1ba2f08b0ca7",
       "pendingFixedPoint": true
     }
   ]

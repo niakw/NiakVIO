@@ -4,13 +4,13 @@
   "notice": "Third-party files retain upstream authorship and licence. See THIRD_PARTY_NOTICES.md.",
   "provider_base_store": {
     "schema_version": 4,
-    "provider_count": 44,
-    "unique_base_count": 44,
+    "provider_count": 46,
+    "unique_base_count": 46,
     "initial_reconstruction_scope": 10,
     "migration_scope": "all-current-providers",
     "owner": "provider_pipeline",
     "future_source": "provider_pipeline_only",
-    "clean_reconstructed": 44,
+    "clean_reconstructed": 46,
     "reconstruction_required": 0,
     "authoring_version": 3,
     "authoring_policy": "niakvio-owned-clean-reconstruction-only",
@@ -69357,6 +69357,520 @@
         "inventorySource": "NiakVIO-GLOBAL-FINAL-STRICT-TOP20-2026-09-11(5).xlsx",
         "inventoryRank": 61,
         "inventoryScore": 64
+      }
+    },
+    "watchott": {
+      "id": "watchott",
+      "published_filename": "providers/watchott--nuvio--7671f653747d04c3.js",
+      "sha256": "7671f653747d04c3411782ba713cb5355600f3049c68dc4dfc5a774461e9faf7",
+      "patched_sha256": "7671f653747d04c3411782ba713cb5355600f3049c68dc4dfc5a774461e9faf7",
+      "base_filename": "provider-bases/watchott--base--7c925f6a07ae3d37.js",
+      "base_sha256": "7c925f6a07ae3d37a833b9a636972b8a42338718224962ef7172c0f80686afa3",
+      "base_source": "niakvio-clean-reconstruction-v3",
+      "clean_reconstruction_required": false,
+      "clean_reconstruction_verified": true,
+      "clean_reconstruction_authoring_version": 3,
+      "clean_reconstruction_verified_at": "2026-11-14T22:21:02.555668+00:00",
+      "local_patches": [
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_catalogue_alias_recovery_v2.py",
+          "phase": "discovery",
+          "scope": "global_catalogue_resolution"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_enrichment_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_enrichment"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
+          "phase": "discovery",
+          "scope": "global_playback_integrity"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_provider_security_hardening_v1.py",
+          "phase": "discovery",
+          "scope": "global_playback_integrity"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_runtime_compat_v1.py",
+          "phase": "discovery",
+          "scope": "global_runtime_compat"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_stream_facts_v1.py",
+          "phase": "discovery",
+          "scope": "global_stream_facts"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_stream_identity_v1.py",
+          "phase": "discovery",
+          "scope": "global_stream_identity"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_type_resolution"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_stream_presentation_v1.py",
+          "phase": "discovery",
+          "scope": "global_stream_presentation"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/stream_output_sanitizer_v10.py",
+          "phase": "discovery",
+          "scope": "global_terminal_stream_sanitizer"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
+          "phase": "discovery",
+          "scope": "global_runtime_media_safety"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_stream_score_v1.py",
+          "phase": "discovery",
+          "scope": "global_stream_score"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_telemetry_v1.py",
+          "phase": "discovery",
+          "scope": "global_telemetry"
+        }
+      ],
+      "source": "niakvio-onboarding",
+      "source_name": "NiakVIO structured provider onboarding",
+      "source_repository": "NiakVIO",
+      "source_license": "GPL-3.0-only",
+      "source_license_evidence": "LICENSE",
+      "upstream_id": "watchott",
+      "upstream_filename": null,
+      "checked_at": "2026-11-14T22:21:02.555687+00:00",
+      "check_mode": "bulk_offline_contract_live_unverified",
+      "check_status": "live_unverified",
+      "health_score": 0,
+      "activation_eligible": true,
+      "strict_activation_eligible": false,
+      "runtime_evidence_eligible": false,
+      "activation_mode": "bulk_offline_contract_live_unverified",
+      "activation_blockers": [
+        "live_native_validation_pending"
+      ],
+      "onboarding_rebuild": false,
+      "pending_minimizer": {
+        "schemaVersion": 1,
+        "fixedPoint": true,
+        "sha256": "7671f653747d04c3411782ba713cb5355600f3049c68dc4dfc5a774461e9faf7",
+        "savedBytes": 35390,
+        "transformedLines": 6257
+      },
+      "bulk_offline_activation_proof": {
+        "schemaVersion": 1,
+        "scope": "global",
+        "providerSha256": "7671f653747d04c3411782ba713cb5355600f3049c68dc4dfc5a774461e9faf7",
+        "pendingSha256": "7671f653747d04c3411782ba713cb5355600f3049c68dc4dfc5a774461e9faf7",
+        "stageInitialSha256": "7671f653747d04c3411782ba713cb5355600f3049c68dc4dfc5a774461e9faf7",
+        "minimizerFixedPoint": true,
+        "nodeSyntax": "passed",
+        "providerV3Contract": "passed",
+        "providerExecutablePlan": "passed",
+        "providerIdentityExecutionPlan": "passed",
+        "directOriginSyntax": "passed",
+        "networkValidation": "not_authoritative_in_github_waf_limited",
+        "livePlaybackValidated": false,
+        "fullOkClaimed": false,
+        "inventorySource": "NiakVIO-GLOBAL-FINAL-STRICT-TOP20-2026-09-11(5).xlsx",
+        "inventoryRank": 67,
+        "inventoryScore": 83
+      }
+    },
+    "animejlprovider": {
+      "id": "animejlprovider",
+      "published_filename": "providers/animejlprovider--nuvio--1606673e3b4efa68.js",
+      "sha256": "1606673e3b4efa6843af3dfec230d3924bfeb52b8f85b29ea488cc3f94cb8655",
+      "patched_sha256": "1606673e3b4efa6843af3dfec230d3924bfeb52b8f85b29ea488cc3f94cb8655",
+      "base_filename": "provider-bases/animejlprovider--base--7c925f6a07ae3d37.js",
+      "base_sha256": "7c925f6a07ae3d37a833b9a636972b8a42338718224962ef7172c0f80686afa3",
+      "base_source": "niakvio-clean-reconstruction-v3",
+      "clean_reconstruction_required": false,
+      "clean_reconstruction_verified": true,
+      "clean_reconstruction_authoring_version": 3,
+      "clean_reconstruction_verified_at": "2026-11-14T22:21:08.821077+00:00",
+      "local_patches": [
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_catalogue_alias_recovery_v2.py",
+          "phase": "discovery",
+          "scope": "global_catalogue_resolution"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_enrichment_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_enrichment"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
+          "phase": "discovery",
+          "scope": "global_playback_integrity"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_provider_security_hardening_v1.py",
+          "phase": "discovery",
+          "scope": "global_playback_integrity"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_runtime_compat_v1.py",
+          "phase": "discovery",
+          "scope": "global_runtime_compat"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_stream_facts_v1.py",
+          "phase": "discovery",
+          "scope": "global_stream_facts"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_stream_identity_v1.py",
+          "phase": "discovery",
+          "scope": "global_stream_identity"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_type_resolution"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_stream_presentation_v1.py",
+          "phase": "discovery",
+          "scope": "global_stream_presentation"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/stream_output_sanitizer_v10.py",
+          "phase": "discovery",
+          "scope": "global_terminal_stream_sanitizer"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
+          "phase": "discovery",
+          "scope": "global_runtime_media_safety"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_stream_score_v1.py",
+          "phase": "discovery",
+          "scope": "global_stream_score"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_telemetry_v1.py",
+          "phase": "discovery",
+          "scope": "global_telemetry"
+        }
+      ],
+      "source": "niakvio-onboarding",
+      "source_name": "NiakVIO structured provider onboarding",
+      "source_repository": "NiakVIO",
+      "source_license": "GPL-3.0-only",
+      "source_license_evidence": "LICENSE",
+      "upstream_id": "animejlprovider",
+      "upstream_filename": null,
+      "checked_at": "2026-11-14T22:21:08.821094+00:00",
+      "check_mode": "bulk_offline_contract_live_unverified",
+      "check_status": "live_unverified",
+      "health_score": 0,
+      "activation_eligible": true,
+      "strict_activation_eligible": false,
+      "runtime_evidence_eligible": false,
+      "activation_mode": "bulk_offline_contract_live_unverified",
+      "activation_blockers": [
+        "live_native_validation_pending"
+      ],
+      "onboarding_rebuild": false,
+      "pending_minimizer": {
+        "schemaVersion": 1,
+        "fixedPoint": true,
+        "sha256": "1606673e3b4efa6843af3dfec230d3924bfeb52b8f85b29ea488cc3f94cb8655",
+        "savedBytes": 35390,
+        "transformedLines": 6257
+      },
+      "bulk_offline_activation_proof": {
+        "schemaVersion": 1,
+        "scope": "global",
+        "providerSha256": "1606673e3b4efa6843af3dfec230d3924bfeb52b8f85b29ea488cc3f94cb8655",
+        "pendingSha256": "1606673e3b4efa6843af3dfec230d3924bfeb52b8f85b29ea488cc3f94cb8655",
+        "stageInitialSha256": "1606673e3b4efa6843af3dfec230d3924bfeb52b8f85b29ea488cc3f94cb8655",
+        "minimizerFixedPoint": true,
+        "nodeSyntax": "passed",
+        "providerV3Contract": "passed",
+        "providerExecutablePlan": "passed",
+        "providerIdentityExecutionPlan": "passed",
+        "directOriginSyntax": "passed",
+        "networkValidation": "not_authoritative_in_github_waf_limited",
+        "livePlaybackValidated": false,
+        "fullOkClaimed": false,
+        "inventorySource": "NiakVIO-GLOBAL-FINAL-STRICT-TOP20-2026-09-11(5).xlsx",
+        "inventoryRank": 213,
+        "inventoryScore": 60
+      }
+    },
+    "webflix": {
+      "id": "webflix",
+      "published_filename": "provider-disabled/webflix--nuvio--77f578a29c77bbb8.js",
+      "sha256": "77f578a29c77bbb8013b2e86515cf9ae68aa0f21ba11f845018d17c149c51414",
+      "patched_sha256": "77f578a29c77bbb8013b2e86515cf9ae68aa0f21ba11f845018d17c149c51414",
+      "base_filename": "provider-bases/webflix--base--7c925f6a07ae3d37.js",
+      "base_sha256": "7c925f6a07ae3d37a833b9a636972b8a42338718224962ef7172c0f80686afa3",
+      "base_source": "niakvio-clean-reconstruction-v3",
+      "clean_reconstruction_required": false,
+      "clean_reconstruction_verified": true,
+      "clean_reconstruction_authoring_version": 3,
+      "clean_reconstruction_verified_at": "2026-11-14T22:21:15.185210+00:00",
+      "local_patches": [
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_catalogue_alias_recovery_v2.py",
+          "phase": "discovery",
+          "scope": "global_catalogue_resolution"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_enrichment_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_enrichment"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
+          "phase": "discovery",
+          "scope": "global_playback_integrity"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_provider_security_hardening_v1.py",
+          "phase": "discovery",
+          "scope": "global_playback_integrity"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_runtime_compat_v1.py",
+          "phase": "discovery",
+          "scope": "global_runtime_compat"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_stream_facts_v1.py",
+          "phase": "discovery",
+          "scope": "global_stream_facts"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_stream_identity_v1.py",
+          "phase": "discovery",
+          "scope": "global_stream_identity"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_type_resolution"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_stream_presentation_v1.py",
+          "phase": "discovery",
+          "scope": "global_stream_presentation"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/stream_output_sanitizer_v10.py",
+          "phase": "discovery",
+          "scope": "global_terminal_stream_sanitizer"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
+          "phase": "discovery",
+          "scope": "global_runtime_media_safety"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_stream_score_v1.py",
+          "phase": "discovery",
+          "scope": "global_stream_score"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_telemetry_v1.py",
+          "phase": "discovery",
+          "scope": "global_telemetry"
+        }
+      ],
+      "source": "niakvio-onboarding",
+      "source_name": "NiakVIO structured provider onboarding",
+      "source_repository": "NiakVIO",
+      "source_license": "GPL-3.0-only",
+      "source_license_evidence": "LICENSE",
+      "upstream_id": "webflix",
+      "upstream_filename": null,
+      "checked_at": "2026-11-14T22:21:15.185226+00:00",
+      "check_mode": "bulk_onboarding_pending",
+      "check_status": "pending",
+      "health_score": 0,
+      "activation_eligible": false,
+      "strict_activation_eligible": false,
+      "runtime_evidence_eligible": false,
+      "activation_mode": "bulk_onboarding_pending",
+      "activation_blockers": [
+        "bulk_census_full_ok_required"
+      ],
+      "onboarding_rebuild": false,
+      "pending_minimizer": {
+        "schemaVersion": 1,
+        "fixedPoint": true,
+        "sha256": "77f578a29c77bbb8013b2e86515cf9ae68aa0f21ba11f845018d17c149c51414",
+        "savedBytes": 35390,
+        "transformedLines": 6257
+      }
+    },
+    "zone-telechargement": {
+      "id": "zone-telechargement",
+      "published_filename": "provider-disabled/zone-telechargement--nuvio--b601e6c86132abc5.js",
+      "sha256": "b601e6c86132abc57885fbb6ba2d997e2dec4e94a800f172771f1ba2f08b0ca7",
+      "patched_sha256": "b601e6c86132abc57885fbb6ba2d997e2dec4e94a800f172771f1ba2f08b0ca7",
+      "base_filename": "provider-bases/zone-telechargement--base--7c925f6a07ae3d37.js",
+      "base_sha256": "7c925f6a07ae3d37a833b9a636972b8a42338718224962ef7172c0f80686afa3",
+      "base_source": "niakvio-clean-reconstruction-v3",
+      "clean_reconstruction_required": false,
+      "clean_reconstruction_verified": true,
+      "clean_reconstruction_authoring_version": 3,
+      "clean_reconstruction_verified_at": "2026-11-14T22:21:21.447363+00:00",
+      "local_patches": [
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_catalogue_alias_recovery_v2.py",
+          "phase": "discovery",
+          "scope": "global_catalogue_resolution"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_enrichment_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_enrichment"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
+          "phase": "discovery",
+          "scope": "global_playback_integrity"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_provider_security_hardening_v1.py",
+          "phase": "discovery",
+          "scope": "global_playback_integrity"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_runtime_compat_v1.py",
+          "phase": "discovery",
+          "scope": "global_runtime_compat"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_stream_facts_v1.py",
+          "phase": "discovery",
+          "scope": "global_stream_facts"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_stream_identity_v1.py",
+          "phase": "discovery",
+          "scope": "global_stream_identity"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_type_resolution"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_stream_presentation_v1.py",
+          "phase": "discovery",
+          "scope": "global_stream_presentation"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/stream_output_sanitizer_v10.py",
+          "phase": "discovery",
+          "scope": "global_terminal_stream_sanitizer"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
+          "phase": "discovery",
+          "scope": "global_runtime_media_safety"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_stream_score_v1.py",
+          "phase": "discovery",
+          "scope": "global_stream_score"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_telemetry_v1.py",
+          "phase": "discovery",
+          "scope": "global_telemetry"
+        }
+      ],
+      "source": "niakvio-onboarding",
+      "source_name": "NiakVIO structured provider onboarding",
+      "source_repository": "NiakVIO",
+      "source_license": "GPL-3.0-only",
+      "source_license_evidence": "LICENSE",
+      "upstream_id": "zone-telechargement",
+      "upstream_filename": null,
+      "checked_at": "2026-11-14T22:21:21.447382+00:00",
+      "check_mode": "bulk_onboarding_pending",
+      "check_status": "pending",
+      "health_score": 0,
+      "activation_eligible": false,
+      "strict_activation_eligible": false,
+      "runtime_evidence_eligible": false,
+      "activation_mode": "bulk_onboarding_pending",
+      "activation_blockers": [
+        "bulk_census_full_ok_required"
+      ],
+      "onboarding_rebuild": false,
+      "pending_minimizer": {
+        "schemaVersion": 1,
+        "fixedPoint": true,
+        "sha256": "b601e6c86132abc57885fbb6ba2d997e2dec4e94a800f172771f1ba2f08b0ca7",
+        "savedBytes": 35390,
+        "transformedLines": 6257
       }
     }
   },

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "providerCount": 76,
+  "providerCount": 78,
   "source": "niakvio.provider-contract-local-enricher",
   "role": "durable-structured-provider-data",
   "legacyProviderJsExecuted": false,
@@ -269850,6 +269850,216 @@
       ],
       "legacyProviderJsExecuted": false,
       "upstreamJsExecuted": false
+    },
+    "watchott": {
+      "model": {
+        "apiRecipe": null,
+        "authoring": "niakvio-owned-v3",
+        "displayName": "Watchott",
+        "domainSubstitutions": {},
+        "externalIdentityPlan": [],
+        "fixedApi": null,
+        "identityInput": {
+          "mode": "tmdb_direct",
+          "requiredFields": [
+            "tmdbId",
+            "mediaType"
+          ],
+          "requiresTmdbBeforeRun": false
+        },
+        "knownSite": "https://watchott.org",
+        "modelSchemaVersion": 4,
+        "observedUrls": [
+          "https://watchott.org"
+        ],
+        "officialApi": null,
+        "officialHub": null,
+        "officialSite": "https://watchott.org",
+        "origins": [
+          "https://watchott.org"
+        ],
+        "outputLanguageRules": [],
+        "outputUrlHostRewrites": [],
+        "proofDetailBases": [],
+        "proofProtectedHosts": [],
+        "proofSearchBases": [],
+        "providerValuePlan": [],
+        "reconstructionState": "learning-clean-seed",
+        "routePlanVersion": 3,
+        "routeProofVersion": 0,
+        "routes": [
+          "/movie/{tmdbId}-{slug}",
+          "/tv/212171-{slug}-ella",
+          "/movie/529107-inside-{slug}",
+          "/tv/198237-{slug}-wanderer",
+          "/movie/649745-{slug}-wandering",
+          "/movie/398188-{slug}-wars",
+          "/movie/287954-lolita-from-{slug}-space",
+          "/movie/1786250-short-cuts-{slug}",
+          "/movie/336592-the-science-of-{slug}",
+          "/movie/1282990-{slug}-interference",
+          "/movie/1443305-container-{slug}",
+          "/movie/1391726-{slug}-stella",
+          "/movie/1450827-{slug}-political-prisoner",
+          "/movie/1642987-primus-{slug}-drum-derby",
+          "/movie/301959-{slug}-nolan-s-odyssey",
+          "/movie/716603-only-{slug}-pinball-lives-forever",
+          "/movie/460616-{slug}-civil-war-shadows-of-the-empire",
+          "/movie/660698-faster-than-light-the-dream-of-{slug}-flight",
+          "/movie/552531-the-prom-goer-s-{slug}-excursion",
+          "/movie/763179-cosmic-journey-the-voyager-{slug}-mission-and-message",
+          "/tv/{tmdbId}-{slug}",
+          "/movie/559969-el-camino-a-{slug}-movie",
+          "/tv/337563-{slug}-original-minisodes",
+          "/tv/232533-{slug}-fortune-teller"
+        ],
+        "runtimeDiscovery": false,
+        "runtimeRole": "reader",
+        "searchRequestPlan": [],
+        "sourceRuntimeFamily": "unknown",
+        "strategy": "html_scraper",
+        "strictHtmlIdentity": false,
+        "strictIdentity": false,
+        "supportedTypes": [
+          "movie",
+          "tv",
+          "anime"
+        ],
+        "upstreamCodeEmbedded": false,
+        "upstreamCodeExecuted": false
+      },
+      "knowledge": {
+        "hosts": [
+          "watchott.org"
+        ],
+        "routes": [
+          "/movie/{tmdbId}-{slug}",
+          "/tv/212171-{slug}-ella",
+          "/movie/529107-inside-{slug}",
+          "/tv/198237-{slug}-wanderer",
+          "/movie/649745-{slug}-wandering",
+          "/movie/398188-{slug}-wars",
+          "/movie/287954-lolita-from-{slug}-space",
+          "/movie/1786250-short-cuts-{slug}",
+          "/movie/336592-the-science-of-{slug}",
+          "/movie/1282990-{slug}-interference",
+          "/movie/1443305-container-{slug}",
+          "/movie/1391726-{slug}-stella",
+          "/movie/1450827-{slug}-political-prisoner",
+          "/movie/1642987-primus-{slug}-drum-derby",
+          "/movie/301959-{slug}-nolan-s-odyssey",
+          "/movie/716603-only-{slug}-pinball-lives-forever",
+          "/movie/460616-{slug}-civil-war-shadows-of-the-empire",
+          "/movie/660698-faster-than-light-the-dream-of-{slug}-flight",
+          "/movie/552531-the-prom-goer-s-{slug}-excursion",
+          "/movie/763179-cosmic-journey-the-voyager-{slug}-mission-and-message",
+          "/tv/{tmdbId}-{slug}",
+          "/movie/559969-el-camino-a-{slug}-movie",
+          "/tv/337563-{slug}-original-minisodes",
+          "/tv/232533-{slug}-fortune-teller"
+        ],
+        "routeFragments": [],
+        "observedUrls": [
+          "https://watchott.org"
+        ],
+        "decodedStaticStringCount": 0,
+        "runtimeFamily": "unknown"
+      },
+      "sources": [
+        {
+          "source": "activation-static-config",
+          "sourceName": "NiakVIO exact managed Provider CONFIG",
+          "upstreamId": "watchott",
+          "manifestOrigin": "",
+          "upstreamSha256": "",
+          "upstreamKnowledgeSource": "managed-config-lego",
+          "codeRole": "knowledge-only",
+          "codeExecuted": false
+        }
+      ],
+      "legacyProviderJsExecuted": false,
+      "upstreamJsExecuted": false
+    },
+    "animejlprovider": {
+      "model": {
+        "apiRecipe": null,
+        "authoring": "niakvio-owned-v3",
+        "displayName": "AnimeJL",
+        "domainSubstitutions": {},
+        "externalIdentityPlan": [],
+        "fixedApi": null,
+        "identityInput": {
+          "mode": "tmdb_direct",
+          "requiredFields": [
+            "tmdbId",
+            "mediaType"
+          ],
+          "requiresTmdbBeforeRun": false
+        },
+        "knownSite": "https://www.anime-jl.net",
+        "modelSchemaVersion": 4,
+        "observedUrls": [
+          "https://www.anime-jl.net"
+        ],
+        "officialApi": null,
+        "officialHub": null,
+        "officialSite": "https://www.anime-jl.net",
+        "origins": [
+          "https://www.anime-jl.net"
+        ],
+        "outputLanguageRules": [],
+        "outputUrlHostRewrites": [],
+        "proofDetailBases": [],
+        "proofProtectedHosts": [],
+        "proofSearchBases": [],
+        "providerValuePlan": [],
+        "reconstructionState": "learning-clean-seed",
+        "routePlanVersion": 3,
+        "routeProofVersion": 0,
+        "routes": [
+          "/animes?q={query}"
+        ],
+        "runtimeDiscovery": false,
+        "runtimeRole": "reader",
+        "searchRequestPlan": [],
+        "sourceRuntimeFamily": "unknown",
+        "strategy": "html_scraper",
+        "strictHtmlIdentity": false,
+        "strictIdentity": false,
+        "supportedTypes": [
+          "anime"
+        ],
+        "upstreamCodeEmbedded": false,
+        "upstreamCodeExecuted": false
+      },
+      "knowledge": {
+        "hosts": [
+          "www.anime-jl.net"
+        ],
+        "routes": [
+          "/animes?q={query}"
+        ],
+        "routeFragments": [],
+        "observedUrls": [
+          "https://www.anime-jl.net"
+        ],
+        "decodedStaticStringCount": 0,
+        "runtimeFamily": "unknown"
+      },
+      "sources": [
+        {
+          "source": "activation-static-config",
+          "sourceName": "NiakVIO exact managed Provider CONFIG",
+          "upstreamId": "animejlprovider",
+          "manifestOrigin": "",
+          "upstreamSha256": "",
+          "upstreamKnowledgeSource": "managed-config-lego",
+          "codeRole": "knowledge-only",
+          "codeExecuted": false
+        }
+      ],
+      "legacyProviderJsExecuted": false,
+      "upstreamJsExecuted": false
     }
   },
   "gowaruSourceRef": "c3ce6f43a1ba8ccf2f3838b5cd9db40745c33fa2",
@@ -269865,7 +270075,7 @@
     "mode": "niakvio-local-data",
     "externalProviderRepositoriesRequired": false,
     "providerJavaScriptExecuted": false,
-    "providerCount": 76,
+    "providerCount": 78,
     "seedCount": 6,
     "prunedRouteCount": 476,
     "canonicalRouteData": "providers.<id>.model.routeData",
@@ -269874,7 +270084,7 @@
   "routeReconstruction": {
     "version": 1,
     "canonicalRouteData": "providers.<id>.model.routeData",
-    "providerCount": 76,
+    "providerCount": 78,
     "routeCount": 401,
     "httpProvenRouteCount": 6,
     "unknownProviders": [
@@ -269885,7 +270095,7 @@
   },
   "routeRecovery": {
     "schemaVersion": 5,
-    "providerCount": 76,
+    "providerCount": 78,
     "provenRouteCount": 0,
     "apiRecipeCount": 0,
     "authority": "upstream-or-native-provider-runtime-http-proof",

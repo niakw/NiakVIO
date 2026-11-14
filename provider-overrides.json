@@ -12886,6 +12886,130 @@
       "learned_routes": [
         "/recherche?q={query}"
       ]
+    },
+    "watchott": {
+      "notes": [
+        "Created by the NiakVIO full-auto provider onboarding workflow from structured route knowledge only.",
+        "Activation remains disabled until the onboarding quick Lab proves the provider on every requested runtime group.",
+        "Activated from exact-byte offline Provider v3 contract proof because GitHub-hosted network/WAF checks are non-authoritative; live native validation remains pending."
+      ],
+      "replacements": {},
+      "runtime_domain_replacements": {},
+      "route_replacements": {},
+      "profiles": [],
+      "capability": "html_scraper",
+      "official_hub": null,
+      "official_site": "https://watchott.org",
+      "published_types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "manifest_overrides": {
+        "enabled": true,
+        "disabledPlatforms": []
+      },
+      "learned_routes": [
+        "/movie/{tmdbId}-{slug}",
+        "/tv/212171-{slug}-ella",
+        "/movie/529107-inside-{slug}",
+        "/tv/198237-{slug}-wanderer",
+        "/movie/649745-{slug}-wandering",
+        "/movie/398188-{slug}-wars",
+        "/movie/287954-lolita-from-{slug}-space",
+        "/movie/1786250-short-cuts-{slug}",
+        "/movie/336592-the-science-of-{slug}",
+        "/movie/1282990-{slug}-interference",
+        "/movie/1443305-container-{slug}",
+        "/movie/1391726-{slug}-stella",
+        "/movie/1450827-{slug}-political-prisoner",
+        "/movie/1642987-primus-{slug}-drum-derby",
+        "/movie/301959-{slug}-nolan-s-odyssey",
+        "/movie/716603-only-{slug}-pinball-lives-forever",
+        "/movie/460616-{slug}-civil-war-shadows-of-the-empire",
+        "/movie/660698-faster-than-light-the-dream-of-{slug}-flight",
+        "/movie/552531-the-prom-goer-s-{slug}-excursion",
+        "/movie/763179-cosmic-journey-the-voyager-{slug}-mission-and-message",
+        "/tv/{tmdbId}-{slug}",
+        "/movie/559969-el-camino-a-{slug}-movie",
+        "/tv/337563-{slug}-original-minisodes",
+        "/tv/232533-{slug}-fortune-teller"
+      ]
+    },
+    "animejlprovider": {
+      "notes": [
+        "Created by the NiakVIO full-auto provider onboarding workflow from structured route knowledge only.",
+        "Activation remains disabled until the onboarding quick Lab proves the provider on every requested runtime group.",
+        "Activated from exact-byte offline Provider v3 contract proof because GitHub-hosted network/WAF checks are non-authoritative; live native validation remains pending."
+      ],
+      "replacements": {},
+      "runtime_domain_replacements": {},
+      "route_replacements": {},
+      "profiles": [],
+      "capability": "html_scraper",
+      "official_hub": null,
+      "official_site": "https://www.anime-jl.net",
+      "published_types": [
+        "anime"
+      ],
+      "manifest_overrides": {
+        "enabled": true,
+        "disabledPlatforms": []
+      },
+      "learned_routes": [
+        "/animes?q={query}"
+      ]
+    },
+    "webflix": {
+      "notes": [
+        "Created by the NiakVIO full-auto provider onboarding workflow from structured route knowledge only.",
+        "Activation remains disabled until the onboarding quick Lab proves the provider on every requested runtime group."
+      ],
+      "replacements": {},
+      "runtime_domain_replacements": {},
+      "route_replacements": {},
+      "profiles": [],
+      "capability": "mixed_embed_resolver",
+      "official_hub": null,
+      "official_site": "https://webflix.art/",
+      "published_types": [
+        "movie",
+        "tv"
+      ],
+      "manifest_overrides": {
+        "enabled": false,
+        "disabledPlatforms": []
+      },
+      "learned_routes": [
+        "/api/search?q={query}"
+      ]
+    },
+    "zone-telechargement": {
+      "notes": [
+        "Created by the NiakVIO full-auto provider onboarding workflow from structured route knowledge only.",
+        "Activation remains disabled until the onboarding quick Lab proves the provider on every requested runtime group."
+      ],
+      "replacements": {},
+      "runtime_domain_replacements": {},
+      "route_replacements": {},
+      "profiles": [],
+      "capability": "mixed_embed_resolver",
+      "official_hub": null,
+      "official_site": "https://www.zone-telechargement.rentals/",
+      "published_types": [
+        "movie",
+        "tv"
+      ],
+      "manifest_overrides": {
+        "enabled": false,
+        "disabledPlatforms": []
+      },
+      "learned_routes": [
+        "/?search={query}",
+        "/?p=films&search={query}",
+        "/?s={query}&search={query}",
+        "/?p=404&search={query}"
+      ]
     }
   },
   "route_override_defaults": {
@@ -15034,6 +15158,66 @@
       "requires_direct_media": false,
       "observed_origins": [
         "https://www.voirserie.org"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true,
+      "catalogue_types": [
+        "movie",
+        "tv"
+      ]
+    },
+    "watchott": {
+      "strategy": "html_scraper",
+      "validation": "bulk_offline_contract_live_unverified",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://watchott.org"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true,
+      "catalogue_types": [
+        "movie",
+        "tv",
+        "anime"
+      ]
+    },
+    "animejlprovider": {
+      "strategy": "html_scraper",
+      "validation": "bulk_offline_contract_live_unverified",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://www.anime-jl.net"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true,
+      "catalogue_types": [
+        "anime"
+      ]
+    },
+    "webflix": {
+      "strategy": "mixed_embed_resolver",
+      "validation": "bulk_onboarding_pending",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://webflix.art"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true,
+      "catalogue_types": [
+        "movie",
+        "tv"
+      ]
+    },
+    "zone-telechargement": {
+      "strategy": "mixed_embed_resolver",
+      "validation": "bulk_onboarding_pending",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://www.zone-telechargement.rentals"
       ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true,
