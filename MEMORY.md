@@ -1,3 +1,8 @@
+## 2026-11-14 — Provider Overrides push trigger covered stale test incompletely
+
+- The pending-staging strategy fix e2a7f3fc changed tests/provider_v3_strategy_plan_contract_test.py, but Provider Overrides Gate only listed that test for pull_request, not push, so main could not prove the exact correction.
+- Add the strategy contract and its current_provider_scope dependency to push triggers (and current_provider_scope to PR triggers). This is CI observability only; no provider/runtime behavior changes.
+
 ## 2026-11-14 — Override strategy gate distinguishes staged pending from broken runtime
 
 - Provider Overrides Gate 43583241856 on 53a63dd7 failed because the strategy contract treated four Global bulk-pending rows (sflix, rivestream, vidsrc2, asiaflix) as ordinary disabled runtime providers and therefore demanded executable LIVE DATA or a Repair/off disposition.
