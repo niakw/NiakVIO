@@ -22,6 +22,7 @@ on:
 
 permissions:
   contents: read
+  id-token: write
 
 concurrency:
   group: niakvio-brain-disabled-recovery-lab
@@ -151,9 +152,9 @@ jobs:
         run: |
           set -euo pipefail
           python scripts/discover_candidates.py             --stage staging-disabled-recovery-reconstruction             --clean-reconstruction             --provider "$PROVIDER"
-          python scripts/build_provider_runtime_profiles.py             --stage staging-disabled-recovery-reconstruction             --apply-stage             --provider "$PROVIDER"             --ephemeral-overrides
-          python scripts/normalize_terminal_quarantine_stage.py             --stage staging-disabled-recovery-reconstruction
-          python scripts/validate_override_pipeline.py             --stage staging-disabled-recovery-reconstruction
+          python scripts/build_provider_runtime_profiles.py             --stage staging-disabled-recovery-reconstruction             --apply-stage             --provider "$PROVIDER"             --ephemeral-overrides             --ephemeral-overrides-output staging-disabled-recovery-reconstruction/provider-overrides.ephemeral.json
+          python scripts/normalize_terminal_quarantine_stage.py             --stage staging-disabled-recovery-reconstruction             --overrides staging-disabled-recovery-reconstruction/provider-overrides.ephemeral.json
+          python scripts/validate_override_pipeline.py             --stage staging-disabled-recovery-reconstruction             --config staging-disabled-recovery-reconstruction/provider-overrides.ephemeral.json             --provider "$PROVIDER"
           python - <<'PY'
           import json, os
           from pathlib import Path
@@ -308,7 +309,11 @@ jobs:
               raise SystemExit("Brain guidance unexpectedly grants publication/direct mutation authority")
           health=json.loads(Path("brain-disabled-recovery/health/health-results.json").read_text(encoding="utf-8"))
           health_rows=health.get("providers") or health.get("results") or []
-          matching=[r for r in health_rows if isinstance(r,dict) and str(r.get("provider") or r.get("id") or "").casefold()==provider]
+          matching=[
+              r for r in health_rows
+              if isinstance(r,dict)
+              and str(r.get("provider") or r.get("canonical_id") or r.get("upstream_id") or r.get("id") or "").casefold()==provider
+          ]
           healthy=any(str(r.get("status") or "").casefold()=="healthy" for r in matching)
           statuses={str(r.get("status") or "").casefold() for r in matching}
           runtime_error="runtime_error" in statuses
