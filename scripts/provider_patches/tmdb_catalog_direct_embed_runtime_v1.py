@@ -34,11 +34,13 @@ function cardIdentity(html,q){var id=q.tmdbId,type=q.transport==="movie"?"movie"
 function detailUrl(q){return c.siteBase+"/"+(q.transport==="movie"?"movie":"tv")+"/"+q.tmdbId}
 function htmlDecode(v){return s(v).replace(/&amp;/gi,"&").replace(/&#0*39;|&apos;/gi,"'").replace(/&quot;/gi,'"').replace(/&lt;/gi,"<").replace(/&gt;/gi,">")}
 function preloadUrl(html,q){var re=/\bdata-preload-src\s*=\s*["']([^"']+)["']/ig,m;while((m=re.exec(html||""))!==null){var raw=htmlDecode(m[1]);try{var u=new URL(raw,c.siteBase);if(u.hostname===new URL(c.embedBase).hostname&&u.pathname.indexOf("/"+q.tmdbId)>=0)return u}catch(_e){}}return null}
-function embedUrl(q,html){var template=q.transport==="movie"?c.movieEmbedTemplate:c.tvEmbedTemplate;var path=fill(template,q,null);var base=c.embedBase.replace(/\/$/,"");var u=new URL(/^https?:/i.test(path)?path:base+(path.charAt(0)==="/"?path:"/"+path));
- var preload=preloadUrl(html,q);if(preload){preload.searchParams.forEach(function(v,k){u.searchParams.set(k,v)})}
- if(c.parentOriginParam&&!u.searchParams.has(c.parentOriginParam))u.searchParams.set(c.parentOriginParam,c.siteBase);
- if(q.transport==="tv"&&c.tvAutoNextParam&&!u.searchParams.has(c.tvAutoNextParam))u.searchParams.set(c.tvAutoNextParam,"true");
- return u.toString()}
+function queryHas(query,key){var parts=s(query).replace(/^\?/,"").split("&");for(var i=0;i<parts.length;i++){if(decodeURIComponent((parts[i].split("=")[0]||"").replace(/\+/g," "))===key)return true}return false}
+function queryAdd(query,key,value){var q=s(query).replace(/^\?/,"");if(queryHas(q,key))return q;var pair=encodeURIComponent(key)+"="+encodeURIComponent(value);return q?q+"&"+pair:pair}
+function embedUrl(q,html){var template=q.transport==="movie"?c.movieEmbedTemplate:c.tvEmbedTemplate;var path=fill(template,q,null);var base=c.embedBase.replace(/\/$/,"");var raw=/^https?:/i.test(path)?path:base+(path.charAt(0)==="/"?path:"/"+path);var split=raw.indexOf("?"),root=split>=0?raw.slice(0,split):raw,query=split>=0?raw.slice(split+1):"";
+ var preload=preloadUrl(html,q);if(preload&&preload.search)query=s(preload.search).replace(/^\?/,"");
+ if(c.parentOriginParam)query=queryAdd(query,c.parentOriginParam,c.siteBase);
+ if(q.transport==="tv"&&c.tvAutoNextParam)query=queryAdd(query,c.tvAutoNextParam,"true");
+ return root+(query?"?"+query:"")}
 async function terminal(seed,referer,q){var rows=[];try{if(typeof _crawlDirectMedia==="function")rows=await _crawlDirectMedia([seed],referer,c.maxDepth)}catch(_e){rows=[]}if(!Array.isArray(rows))return[];var out=[],seen={};for(var i=0;i<rows.length&&out.length<c.maxStreams;i++){var row=rows[i]||{},u=s(row.url);if(!/^https?:\/\//i.test(u)||seen[u])continue;seen[u]=1;var x=Object.assign({},row);x.provider=c.provider;x.name=x.name||c.name;x.title=x.title||c.name;x.headers=Object.assign({"Referer":referer,"User-Agent":c.userAgent},x.headers||{});if(q.transport==="tv"){x.season=q.season;x.episode=q.episode}out.push(x)}return out}
 async function resolve(args,_ctx){var q=req(args);if(q===null)return null;if(!q)return[];var md=await metadata(q),want=title(md);if(!want)return[];
  var search=fill(c.searchTemplate,q,md);if(!/^https?:/i.test(search))search=c.siteBase+(search.charAt(0)==="/"?search:"/"+search);
