@@ -31,19 +31,30 @@ rows = manifest.get("scrapers")
 assert isinstance(rows, list) and rows, "release manifest has no providers"
 missing = []
 seen = set()
+active_count = 0
+disabled_count = 0
 for entry in rows:
     assert isinstance(entry, dict), "invalid published provider row"
     provider_id = str(entry.get("id") or "")
     filename = str(entry.get("filename") or "")
     relative = Path(filename)
-    assert (filename.startswith("providers/") and not relative.is_absolute()
+    enabled = entry.get("enabled") is not False
+    expected_folder = "providers/" if enabled else "provider-disabled/"
+    assert (filename.startswith(expected_folder) and not relative.is_absolute()
             and ".." not in relative.parts and len(relative.parts) == 2), (
-        provider_id, filename
+        provider_id, filename, enabled
     )
-    assert filename not in seen, ("duplicate published provider", filename)
+    assert filename not in seen, ("duplicate visible provider artifact", filename)
     seen.add(filename)
     path = ROOT / relative
-    assert path.is_file(), ("published provider missing", filename)
+    assert path.is_file(), ("visible provider artifact missing", filename)
+    if not enabled:
+        # Retired-but-retained bytes must exist, but they are not executable
+        # publication. A CodeQL/Core revision on current active bundles cannot
+        # require rematerializing intentionally disabled historical artifacts.
+        disabled_count += 1
+        continue
+    active_count += 1
     text = path.read_text(encoding="utf-8")
     if (revision not in text
             or "function exactSpecialEpisodeEvidence(row,q)" not in text
@@ -55,10 +66,10 @@ for entry in rows:
         missing.append(provider_id or filename)
 
 assert not missing, (
-    f"stale S00 identity Core on {len(missing)}/{len(rows)} published providers: "
+    f"stale S00 identity Core on {len(missing)}/{active_count} active providers: "
     f"{missing[:12]}; reapply managed Core and verify release bytes"
 )
 print(
-    f"FIELD_S00_PUBLISHED_CORE_REVISION verified={len(rows)} "
+    f"FIELD_S00_PUBLISHED_CORE_REVISION verified={active_count} retained_disabled={disabled_count} "
     f"revision={revision} static_parity_only=true decoded_playback_proven=false"
 )

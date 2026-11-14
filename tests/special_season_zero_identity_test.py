@@ -117,9 +117,17 @@ with tempfile.TemporaryDirectory() as td:
 # the source compiler or a hand-picked fixture. This is a static check only:
 # alternate-catalogue episode equivalence and terminal playback need live proof.
 manifest = json.loads((ROOT / "manifest.json").read_text(encoding="utf-8"))
-published = [row for row in manifest.get("scrapers", []) if isinstance(row, dict)]
-assert published, "empty published provider manifest"
+visible = [row for row in manifest.get("scrapers", []) if isinstance(row, dict)]
+published = [row for row in visible if row.get("enabled") is not False]
+disabled = [row for row in visible if row.get("enabled") is False]
+assert published, "no active published providers"
 seen_paths = set()
+for row in disabled:
+    filename = str(row.get("filename") or "")
+    assert filename.startswith("provider-disabled/") and ".." not in Path(filename).parts, (row.get("id"), filename)
+    assert (ROOT / filename).is_file(), ("retained disabled artifact missing", filename)
+    assert filename not in seen_paths, ("duplicate disabled provider", filename)
+    seen_paths.add(filename)
 for row in published:
     filename = str(row.get("filename") or "")
     assert filename.startswith("providers/") and ".." not in Path(filename).parts, (row.get("id"), filename)
@@ -150,7 +158,7 @@ v20_published = sum(
     for row in published
 )
 print(
-    f"SPECIAL_SEASON_ZERO_IDENTITY_SOURCE_OK published={len(published)} "
+    f"SPECIAL_SEASON_ZERO_IDENTITY_SOURCE_OK published={len(published)} retained_disabled={len(disabled)} "
     f"v20_published={v20_published} pending_rematerialization={len(published)-v20_published} "
     "source_v20_media_url_consistency_only; no live terminal playback inferred"
 )
