@@ -25,6 +25,10 @@ assert site_probe.search_form_routes(
     "https://demo.example/",
 ) == ["/find?term={query}"]
 assert site_probe.search_form_routes(
+    '<form method="get" action="/index.php"><input type="hidden" name="menu" value="search"><input name="query"></form>',
+    "https://demo.example/",
+) == ["/index.php?menu=search&query={query}"]
+assert site_probe.search_form_routes(
     '<form method="post" action="/search"><input name="q"></form>',
     "https://demo.example/",
 ) == []
@@ -60,7 +64,9 @@ assert probe.identity_route_candidate("/search?q={query}") is True
 assert probe.identity_route_candidate("/search?s={query}") is True
 assert probe._render_route("/search?q={query}", fixture) == "/search?q=Interstellar"
 assert probe._render_route("/movie/{tmdbId}", fixture) == "/movie/157336"
-assert probe._identity_response(b"<a>Interstellar</a>", fixture, direct_media_route=False) is True
+assert probe._identity_response(b'<a href="/movie/42" title="Interstellar online free">watch</a>', fixture, direct_media_route=False) is True
+assert probe._identity_response(b'<div data-id="157336">movie card</div>', fixture, direct_media_route=False) is True
+assert probe._identity_response(b'<html><head><title>Stream Interstellar Full HD</title><link rel="canonical" href="/?s=Interstellar"></head><body><h1>Search: Interstellar</h1></body></html>', fixture, direct_media_route=False) is False
 assert probe._identity_response(b'{"tmdb":"157336","stream":"https://cdn.example/x.m3u8"}', fixture, direct_media_route=True) is True
 assert probe._identity_response(b"<html>unrelated page</html>", fixture, direct_media_route=False) is False
 
