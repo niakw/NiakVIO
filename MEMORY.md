@@ -1,3 +1,9 @@
+## 2026-11-14 — Force full 12-active replay after lifecycle
+
+- Lifecycle commit fcc4d8a8 disabled voiranime-homes with auto_off_current_architecture_nonfunctional and seven-day retention (purgeAfter 2026-11-21). Current Global manifest is 12 active / 34 disabled; Internet Archive remains pending disabled with isolated fresh FULL movie proof run 43600537871 on source 7c51e342.
+- Automatic sharded census 43603416122 succeeded but was scope=unresolved. It correctly reports zero symptoms after lifecycle, yet all 12 operational rows are carried (FULL tested 0/12), so it is insufficient for production_active_provider_freshness_test and must not authorize onboarding promotion.
+- Requeue explicit scope=all, no pending targets, to freshly replay the 12 active cohort before Bulk Activation. Do not modify Internet Archive pending bytes or its proof ledger.
+
 ## 2026-11-14 — Current regression blocks onboarding; hand it to official disabled lifecycle
 
 - Scope=all census 43602671784 on 69249582 succeeded across 8/8 shards + merge and persisted a9db1ce8: 12 FULL OK freshly tested, 1 current active REGRESSION PROVIDER (voiranime-homes), 33 disabled. voiranime-homes was tested this run, returned anime=no_streams/provider_network_http_error, has no current verified lane, remains authority-known/repair-eligible, and is still enabled in manifest.
