@@ -31,6 +31,11 @@ jobs:
   recovery:
     runs-on: ubuntu-latest
     timeout-minutes: 35
+    env:
+      TS_OAUTH_CLIENT_ID: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+      TS_AUDIENCE: ${{ secrets.TS_AUDIENCE }}
+      TS_EXIT_NODE: ${{ secrets.TS_EXIT_NODE }}
+      TS_TAG_NAME: ${{ secrets.TS_TAG_NAME }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
@@ -79,6 +84,49 @@ jobs:
           set -euo pipefail
           python scripts/build_disabled_provider_recovery_stage.py             --stage staging-disabled-recovery             --provider "$PROVIDER"
           python tests/provider_disabled_recovery_stage_test.py
+
+      - name: Normalize optional residential Tailscale tag
+        if: ${{ env.TS_OAUTH_CLIENT_ID != '' && env.TS_AUDIENCE != '' && env.TS_EXIT_NODE != '' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          raw="${TS_TAG_NAME:-niakvio-ci}"
+          case "$raw" in
+            tag:*) normalized="$raw" ;;
+            *) normalized="tag:$raw" ;;
+          esac
+          printf 'TS_ACTION_TAG=%s\n' "$normalized" >> "$GITHUB_ENV"
+
+      - name: Connect optional residential transport
+        id: tailscale_connect
+        continue-on-error: true
+        timeout-minutes: 4
+        if: ${{ env.TS_OAUTH_CLIENT_ID != '' && env.TS_AUDIENCE != '' && env.TS_EXIT_NODE != '' }}
+        uses: tailscale/github-action@064b10558093f38325e838ddea35486bdc6b1d5c
+        with:
+          oauth-client-id: ${{ env.TS_OAUTH_CLIENT_ID }}
+          audience: ${{ env.TS_AUDIENCE }}
+          tags: ${{ env.TS_ACTION_TAG }}
+          version: '1.94.2'
+          args: --accept-dns=false
+
+      - name: Select optional residential exit
+        id: residential_exit
+        continue-on-error: true
+        if: ${{ env.TS_EXIT_NODE != '' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          for attempt in 1 2 3 4 5; do
+            if sudo tailscale set --exit-node="$TS_EXIT_NODE" --exit-node-allow-lan-access=false >/dev/null 2>&1; then
+              echo "NIAKVIO_DISABLED_RECOVERY_RESIDENTIAL=1" >> "$GITHUB_ENV"
+              echo "FIELD_DISABLED_RECOVERY_RESIDENTIAL active=true"
+              exit 0
+            fi
+            sleep "$((attempt * 2))"
+          done
+          echo "FIELD_DISABLED_RECOVERY_RESIDENTIAL active=false" >&2
+          exit 1
 
       - name: Observe disabled bytes without production authority
         shell: bash
@@ -262,18 +310,32 @@ jobs:
           health_rows=health.get("providers") or health.get("results") or []
           matching=[r for r in health_rows if isinstance(r,dict) and str(r.get("provider") or r.get("id") or "").casefold()==provider]
           healthy=any(str(r.get("status") or "").casefold()=="healthy" for r in matching)
-          if not rows and not healthy:
-              raise SystemExit(f"Brain LLM abstained for non-healthy disabled target {provider}")
+          statuses={str(r.get("status") or "").casefold() for r in matching}
+          runtime_error="runtime_error" in statuses
+          if not rows and runtime_error:
+              raise SystemExit(f"Brain LLM abstained despite deterministic runtime error for {provider}")
+          if rows:
+              next_action="bounded_learning_repair"
+          elif healthy:
+              next_action="exact_playback_identity_replay"
+          else:
+              # GitHub no-stream/unreachable/blocked observations are transport
+              # evidence only. With no causal Brain hypothesis, preserve bytes
+              # and request stronger residential/native replay instead of
+              # manufacturing a provider mutation.
+              next_action="transport_inconclusive_replay"
           disposition={
               "schemaVersion":1,
               "provider":provider,
               "brainGuidanceRows":len(rows),
               "brainAbstained":not bool(rows),
               "currentDisabledHealthHealthy":healthy,
+              "observedStatuses":sorted(statuses),
+              "residentialTransportActive":bool(os.environ.get("NIAKVIO_DISABLED_RECOVERY_RESIDENTIAL")),
               "repairRequired":bool(rows),
               "publicationAuthority":False,
               "directMutationAuthority":False,
-              "nextAction":"exact_playback_identity_replay" if healthy and not rows else "bounded_learning_repair",
+              "nextAction":next_action,
           }
           Path("brain-disabled-recovery/brain-llm/recovery-disposition.json").write_text(
               json.dumps(disposition,ensure_ascii=False,indent=2)+"\n",encoding="utf-8"
