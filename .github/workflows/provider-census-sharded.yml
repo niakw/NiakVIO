@@ -29,6 +29,7 @@ on:
   workflow_run:
     workflows:
       - PROVIDER - Bulk Onboarding
+      - PROVIDER - Bulk Activation
       - PROVIDERS - Fast Brain Repair
       - LEARN - Brain Repair Lab
     types:
@@ -164,6 +165,12 @@ jobs:
             test -n "$target_providers"
             allow_pending_targets=true
             census_scope="unresolved"
+          elif [ "$GITHUB_EVENT_NAME" = "workflow_run" ] && [ "$source_workflow" = "PROVIDER - Bulk Activation" ]; then
+            # Activation changes production membership. Revalidate the complete
+            # active cohort so canonical freshness remains truthful for all rows.
+            target_providers=""
+            allow_pending_targets=false
+            census_scope="all"
           elif [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ]; then
             census_scope="${{ inputs.scope }}"
             target_providers="${{ inputs.target_providers }}"
