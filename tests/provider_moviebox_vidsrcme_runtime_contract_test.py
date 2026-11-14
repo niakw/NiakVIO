@@ -28,7 +28,20 @@ assert current[1]["base"].startswith("https://moviebox-cfa7.onrender.com/"), cur
 assert current[1]["referer"]=="https://moviebox-cfa7.onrender.com/", current
 assert opts["legacyBase"]=="https://vidsrcme.ru", opts
 assert ov["provider_lego_scripts"]==[lego]
-assert ov["route_data_state"]=="repair"
+manifest=json.loads((ROOT/"manifest.json").read_text(encoding="utf-8"))
+manifest_row=next(
+    row for row in manifest.get("scrapers") or []
+    if isinstance(row,dict) and str(row.get("id") or "").casefold()=="moviebox"
+)
+# Lifecycle-disabled runtime must be off even when retained Repair knowledge still
+# describes a repair-capable historical/current contract.
+if manifest_row.get("enabled") is False:
+    assert ov["route_data_state"]=="off", ov["route_data_state"]
+    assert (ov.get("manifest_overrides") or {}).get("enabled") is False
+    assert ov.get("activation_eligible") is False
+else:
+    assert ov["route_data_state"]=="repair"
+assert ov["repair_disposition"]["routeDataState"]=="repair"
 assert ov["repair_disposition"]["quarantined"] is False
 assert "/stream/movie/{imdbId}.json" in ov["candidate_learned_routes"]
 assert "/stream/series/{imdbId}:{season}:{episode}.json" in ov["candidate_learned_routes"]

@@ -1,3 +1,9 @@
+## 2026-11-14 — MovieBox contract respects lifecycle-disabled runtime state
+
+- Post-release census 43589271099 on 1e0430bd stopped before live probing in Validate current provider contracts. The failure was provider_moviebox_vidsrcme_runtime_contract_test.py requiring override route_data_state="repair" although MovieBox is now lifecycle-disabled in manifest.json and its executable override correctly has route_data_state="off", enabled=false, activation_eligible=false.
+- Preserve the provider-local route/parser knowledge and repair_disposition.routeDataState="repair" as retained Repair knowledge, but require runtime route_data_state="off" whenever the published manifest row is disabled. If active again after future validated promotion, the test still requires "repair". No provider reactivation, route change or proof relaxation.
+- Rerun the current-byte census via this existing test path; previous failed census produced no new functional proof.
+
 ## 2026-11-14 — Post-release current-byte revalidation requested on truthful production
 
 - Automatic lifecycle-to-release handoff was exercised successfully: lifecycle transition 5a1203a6 dispatched finalizer 43588695696 with its exact SHA; finalizer completed successfully and published 4c80ff9d, preserving release 5.21.144 and the truthful active cohort.
