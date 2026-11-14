@@ -10,6 +10,23 @@ probe_path=ROOT/"scripts/probe_bulk_provider_routes.py"
 spec=importlib.util.spec_from_file_location("bulk_route_probe_test",probe_path)
 probe=importlib.util.module_from_spec(spec); spec.loader.exec_module(probe)
 
+site_probe_path=ROOT/"scripts/probe_provider_site_structure.py"
+site_spec=importlib.util.spec_from_file_location("provider_site_structure_test",site_probe_path)
+site_probe=importlib.util.module_from_spec(site_spec); site_spec.loader.exec_module(site_probe)
+
+assert site_probe.search_form_routes(
+    '<form method="get" action="/index.php"><input name="story"></form>',
+    "https://demo.example/",
+) == ["/index.php?story={query}"]
+assert site_probe.search_form_routes(
+    '<form method="post" action="/search"><input name="q"></form>',
+    "https://demo.example/",
+) == []
+assert site_probe.search_form_routes(
+    '<form method="get" action="https://other.example/search"><input name="q"></form>',
+    "https://demo.example/",
+) == []
+
 fixture={"title":"Interstellar","tmdbId":"157336","mediaType":"movie"}
 assert probe.route_pattern("/search?q=",fixture)=="/search?q={query}"
 assert probe.route_pattern("/api?m=search&q=",fixture)=="/api?m=search&q={query}"
