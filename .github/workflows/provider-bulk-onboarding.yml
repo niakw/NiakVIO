@@ -72,7 +72,13 @@ jobs:
         run: |
           set -euo pipefail
           args=(--request "$REQUEST" --output automation/provider-bulk-onboarding-preflight.json --dry-run)
-          if [ "$ALLOW_REPLACE" = "true" ]; then args+=(--allow-replace-existing); fi
+          request_allow_replace="$(python - <<'PY'
+          import json, os
+          value=json.load(open(os.environ["REQUEST"], encoding="utf-8"))
+          print("true" if isinstance(value,dict) and value.get("allowReplaceExisting") is True else "false")
+          PY
+          )"
+          if [ "$ALLOW_REPLACE" = "true" ] || [ "$request_allow_replace" = "true" ]; then args+=(--allow-replace-existing); fi
           python scripts/stage_provider_batch.py "${args[@]}"
 
       - name: Stage all providers disabled and pending
@@ -82,7 +88,13 @@ jobs:
         run: |
           set -euo pipefail
           args=(--request "$REQUEST" --output automation/provider-bulk-onboarding-stage.json)
-          if [ "$ALLOW_REPLACE" = "true" ]; then args+=(--allow-replace-existing); fi
+          request_allow_replace="$(python - <<'PY'
+          import json, os
+          value=json.load(open(os.environ["REQUEST"], encoding="utf-8"))
+          print("true" if isinstance(value,dict) and value.get("allowReplaceExisting") is True else "false")
+          PY
+          )"
+          if [ "$ALLOW_REPLACE" = "true" ] || [ "$request_allow_replace" = "true" ]; then args+=(--allow-replace-existing); fi
           python scripts/stage_provider_batch.py "${args[@]}"
 
       - name: Generate deterministic offline branding placeholders
@@ -144,6 +156,40 @@ jobs:
           python tests/provider_census_new_provider_scope_test.py
           node engine_v2/tests/provider-catalog.test.mjs
 
+      - id: offline_activation
+        name: Activate exact bytes under explicit WAF-limited offline contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          mode="$(python - <<'PY'
+          import json, os
+          value=json.load(open(os.environ["REQUEST"], encoding="utf-8"))
+          print(str(value.get("activationPolicy") or "") if isinstance(value,dict) else "")
+          PY
+          )"
+          if [ "$mode" != "bulk_offline_contract_live_unverified" ]; then
+            echo "activation_count=0" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          python scripts/activate_bulk_offline_proven_providers.py \
+            --stage automation/provider-bulk-onboarding-stage.json \
+            --request "$REQUEST" \
+            --output automation/provider-bulk-offline-activation-latest.json
+          node engine_v2/scripts/render-manifests-from-catalog.mjs
+          python scripts/provider_base_store.py repair-legacy
+          python scripts/validate_published_provider_config.py
+          python tests/provider_v3_minimizer_published_test.py
+          python tests/production_active_provider_freshness_test.py
+          python tests/provider_js_lego_ownership_test.py
+          count="$(python - <<'PY'
+          import json
+          value=json.load(open("automation/provider-bulk-offline-activation-latest.json", encoding="utf-8"))
+          print(int(value.get("activationCount") or 0))
+          PY
+          )"
+          test "$count" -eq "${{ steps.summary.outputs.provider_count || 0 }}" || true
+          echo "activation_count=$count" >> "$GITHUB_OUTPUT"
+
       - id: summary
         name: Export batch size
         shell: bash
@@ -161,7 +207,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          git add             manifest.json vf/manifest.json no-anime/manifest.json vf-no-anime/manifest.json             provider_catalog.json PROVENANCE.json provider-overrides.json provider-hubs.json provider-type-policy.json             provider-bases providers provider-disabled assets/providers automation/provider-bulk-onboarding-stage.json
+          git add             manifest.json vf/manifest.json no-anime/manifest.json vf-no-anime/manifest.json             provider_catalog.json PROVENANCE.json provider-overrides.json provider-hubs.json provider-type-policy.json             provider-bases providers provider-disabled assets/providers automation/provider-bulk-onboarding-stage.json automation/provider-bulk-offline-activation-latest.json
           mkdir -p .provider-onboarding
           git rev-parse HEAD > .provider-onboarding/bulk-base-sha.txt
           git diff --cached --binary --full-index > .provider-onboarding/bulk-provider-transaction.patch
@@ -222,7 +268,7 @@ jobs:
           fi
           git config user.name "niakvio-provider-bulk-onboarding"
           git config user.email "actions@users.noreply.github.com"
-          git commit -m "provider: bulk stage $PROVIDER_COUNT pending"
+          git commit -m "provider: bulk onboard $PROVIDER_COUNT providers"
           git fetch origin main
           git rebase origin/main
           git push origin HEAD:main
