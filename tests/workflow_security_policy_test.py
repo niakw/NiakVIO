@@ -60,9 +60,13 @@ for required_path in (
     "scripts/provider_base_store.py",
     "scripts/add_provider.py",
     "scripts/probe_provider_runtime_parity.py",
+    "tests/provider_bulk_spa_route_discovery_test.py",
 ):
     if f"- '{required_path}'" not in security_gate:
         errors.append(f"security-final-gate.yml: missing security trigger for {required_path}")
+
+if "python tests/provider_bulk_spa_route_discovery_test.py" not in security_gate:
+    errors.append("security-final-gate.yml: malformed SPA route regression must block final security certification")
 
 if "path.startswith(('provider-disabled/','provider-old/'))" not in security_gate:
     errors.append('security-final-gate.yml: stale disabled/archive alerts must remain outside release-reachable blocking scope')
