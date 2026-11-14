@@ -17,6 +17,13 @@ assert 'await _crawlDirectMedia([url],url,c.depth)' in src
 assert '__niakvioProviderRuntimeResolverV1={provider:"allwish",resolve:resolve}' in src
 assert "fetch.nexabloom.top" in (ROOT/"automation/USER-PROVIDER-EVIDENCE-LEDGER.md").read_text(encoding="utf-8")
 
+manifest=json.loads((ROOT/"manifest.json").read_text(encoding="utf-8"))
+row=next(r for r in manifest["scrapers"] if str(r.get("id","")).casefold()=="allwish")
+if row.get("enabled") is False:
+    assert "provider-disabled/" in str(row.get("filename") or ""), row
+    print("AllWish historical runtime source retained; active contract skipped for lifecycle-disabled provider")
+    raise SystemExit(0)
+
 lego="scripts/provider_patches/allwish_runtime_v1.py"
 assert ov["official_site"]=="https://all-wish.me"
 assert ov["provider_lego_scripts"]==[lego]
@@ -30,8 +37,6 @@ spec=importlib.util.spec_from_file_location("allwish_runtime_v1",ROOT/lego)
 assert spec and spec.loader
 module=importlib.util.module_from_spec(spec)
 spec.loader.exec_module(module)
-manifest=json.loads((ROOT/"manifest.json").read_text(encoding="utf-8"))
-row=next(r for r in manifest["scrapers"] if str(r.get("id","")).casefold()=="allwish")
 bundle=(ROOT/row["filename"]).read_text(encoding="utf-8")
 patched=module.apply(bundle,ov["provider_lego_options"][lego])
 assert "NIAKVIO_ALLWISH_RUNTIME_V1" in patched

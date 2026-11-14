@@ -1,3 +1,9 @@
+## 2026-11-14 — Archive test import parity and disabled-provider targeted regression
+
+- Core Workflow Gate 43596033200 on ee2b3641 reached the new archive test but the test's direct import omitted scripts/provider_patches from sys.path; the real Lego loader already adds that directory. Align only the test harness with loader semantics.
+- Targeted Regression Recovery 43596033001 failed on the historical AllWish active-runtime assertions even though AllWish is lifecycle-disabled and production must not preserve an active contract for it. Keep static historical source markers, but when the current manifest row is disabled require its provider-disabled path and stop before active override/materialization assertions. This does not re-enable or repair AllWish.
+- Current Internet Archive bulk retry 43596083858 was already running on 05c4a078 when these test-only corrections were identified; its result remains authoritative for that SHA.
+
 ## 2026-11-14 — Internet Archive bulk transaction retry requested on provider-scoped Lego
 
 - Bump only the onboarding request revision after the ownership fix so PROVIDER - Bulk Onboarding executes the same single Internet Archive candidate on the new bytes. Candidate scope/types/origins/rights policy are unchanged; no additional workbook row is introduced by the retry.

@@ -8,6 +8,8 @@ import tempfile
 from pathlib import Path
 
 ROOT=Path(__file__).resolve().parents[1]
+import sys
+sys.path.insert(0,str(ROOT/"scripts"/"provider_patches"))
 path=ROOT/"scripts/provider_patches/internet_archive_public_domain_runtime_v1.py"
 spec=importlib.util.spec_from_file_location("internet_archive_public_domain_runtime_v1",path)
 assert spec and spec.loader
