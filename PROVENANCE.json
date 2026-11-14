@@ -4,13 +4,13 @@
   "notice": "Third-party files retain upstream authorship and licence. See THIRD_PARTY_NOTICES.md.",
   "provider_base_store": {
     "schema_version": 4,
-    "provider_count": 13,
-    "unique_base_count": 13,
-    "initial_reconstruction_scope": 13,
+    "provider_count": 11,
+    "unique_base_count": 11,
+    "initial_reconstruction_scope": 11,
     "migration_scope": "all-current-providers",
     "owner": "provider_pipeline",
     "future_source": "provider_pipeline_only",
-    "clean_reconstructed": 13,
+    "clean_reconstructed": 11,
     "reconstruction_required": 0,
     "authoring_version": 3,
     "authoring_policy": "niakvio-owned-clean-reconstruction-only",
@@ -65653,7 +65653,7 @@
     },
     "internet-archive": {
       "id": "internet-archive",
-      "published_filename": "provider-disabled/internet-archive--nuvio--8872a408be60d6d0.js",
+      "published_filename": "providers/internet-archive--nuvio--8872a408be60d6d0.js",
       "sha256": "8872a408be60d6d034c9891c9f49cd4f84857057101d809cf1b763feb184b1de",
       "patched_sha256": "8872a408be60d6d034c9891c9f49cd4f84857057101d809cf1b763feb184b1de",
       "base_filename": "provider-bases/internet-archive--base--733c668675009335.js",
@@ -65757,16 +65757,14 @@
       "upstream_id": "internet-archive",
       "upstream_filename": null,
       "checked_at": "2026-11-14T13:31:50.434532+00:00",
-      "check_mode": "bulk_onboarding_pending",
-      "check_status": "pending",
+      "check_mode": "bulk_sharded_census",
+      "check_status": "healthy",
       "health_score": 0,
-      "activation_eligible": false,
-      "strict_activation_eligible": false,
-      "runtime_evidence_eligible": false,
-      "activation_mode": "bulk_onboarding_pending",
-      "activation_blockers": [
-        "bulk_census_full_ok_required"
-      ],
+      "activation_eligible": true,
+      "strict_activation_eligible": true,
+      "runtime_evidence_eligible": true,
+      "activation_mode": "bulk_census_full_ok",
+      "activation_blockers": [],
       "onboarding_rebuild": true,
       "pending_minimizer": {
         "schemaVersion": 1,
@@ -65774,6 +65772,20 @@
         "sha256": "8872a408be60d6d034c9891c9f49cd4f84857057101d809cf1b763feb184b1de",
         "savedBytes": 35538,
         "transformedLines": 6254
+      },
+      "bulk_activation_proof": {
+        "scope": "global",
+        "runId": "43600537871",
+        "triggerSha": "7c51e342caea4ef253c2b512bb99f66d02831f39",
+        "status": "FULL OK",
+        "declaredLanes": [
+          "movie"
+        ],
+        "verifiedLanes": [
+          "movie"
+        ],
+        "providerSha256": "8872a408be60d6d034c9891c9f49cd4f84857057101d809cf1b763feb184b1de",
+        "proofSource": "onboarding-pending-status"
       }
     }
   },
