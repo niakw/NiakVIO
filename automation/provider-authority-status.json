@@ -14,7 +14,6 @@
   "providerCount": 41,
   "repairEligible": [
     "4khdhub",
-    "allanime",
     "allwish",
     "anikototv",
     "anime-sama",
@@ -31,7 +30,6 @@
     "hindmoviez",
     "kehflix",
     "kurage",
-    "mallumv",
     "moviebox",
     "movieshunt",
     "moviesmod",
@@ -54,12 +52,14 @@
     "wookafr"
   ],
   "repairBlocked": [
+    "allanime",
     "animevost-fr",
+    "mallumv",
     "yflix"
   ],
   "disabledNow": [
-    "animevost-fr",
-    "yflix"
+    "allanime",
+    "mallumv"
   ],
   "providers": [
     {
@@ -450,29 +450,26 @@
     },
     {
       "provider": "yflix",
+      "action": "KEEP_DISABLED",
+      "repairEligible": false,
+      "confidence": "terminal",
+      "authorityClass": "disabled",
+      "failureCount": 0,
+      "reasons": [
+        "manual_off_zero_playable_movie_tv_2026-11-14"
+      ]
+    },
+    {
+      "provider": "allanime",
       "action": "DISABLE_MANUAL_POLICY",
       "repairEligible": false,
       "confidence": "terminal",
       "authorityClass": "manual-off",
       "failureCount": 0,
       "reasons": [
-        "manual_off_zero_playable_movie_tv_2026-11-14"
+        "manual_off_zero_playable_anime_2026-11-14_cohort2"
       ],
-      "appliedDisableReason": "manual_off_zero_playable_movie_tv_2026-11-14"
-    },
-    {
-      "provider": "allanime",
-      "action": "KEEP_BACKEND",
-      "repairEligible": true,
-      "confidence": "high",
-      "authorityClass": "api-or-backend",
-      "failureCount": 0,
-      "backendUrls": [
-        "https://api.allanime.day/api"
-      ],
-      "reasons": [
-        "structured_backend_authority"
-      ]
+      "appliedDisableReason": "manual_off_zero_playable_anime_2026-11-14_cohort2"
     },
     {
       "provider": "allwish",
@@ -499,27 +496,26 @@
     },
     {
       "provider": "animevost-fr",
+      "action": "KEEP_DISABLED",
+      "repairEligible": false,
+      "confidence": "terminal",
+      "authorityClass": "disabled",
+      "failureCount": 0,
+      "reasons": [
+        "manual_off_zero_playable_anime_2026-11-14"
+      ]
+    },
+    {
+      "provider": "mallumv",
       "action": "DISABLE_MANUAL_POLICY",
       "repairEligible": false,
       "confidence": "terminal",
       "authorityClass": "manual-off",
       "failureCount": 0,
       "reasons": [
-        "manual_off_zero_playable_anime_2026-11-14"
+        "manual_off_zero_playable_movie_2026-11-14_cohort2"
       ],
-      "appliedDisableReason": "manual_off_zero_playable_anime_2026-11-14"
-    },
-    {
-      "provider": "mallumv",
-      "action": "KEEP_PROVEN_SITE",
-      "repairEligible": true,
-      "confidence": "medium",
-      "authorityClass": "structured-site-plus-route-proof",
-      "failureCount": 0,
-      "reasons": [
-        "structured_official_site",
-        "existing_positive_route_prior"
-      ]
+      "appliedDisableReason": "manual_off_zero_playable_movie_2026-11-14_cohort2"
     },
     {
       "provider": "moviebox",
