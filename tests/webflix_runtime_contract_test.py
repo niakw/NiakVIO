@@ -46,12 +46,14 @@ overrides = json.loads((ROOT / "provider-overrides.json").read_text(encoding="ut
 patch = overrides["provider_patches"]["webflix"]
 assert patch["capability"] == "api_stream_resolver"
 assert patch["provider_lego_scripts"] == ["scripts/provider_patches/webflix_runtime_v1.py"]
+assert patch["published_types"] == ["tv"]
 assert patch["identity_input"]["mode"] == "tmdb_direct"
 routes = patch["learned_routes"]
-assert len(routes) == 3
+assert len(routes) == 2
 assert all("{tmdbId}" in route for route in routes)
+assert all("movie" not in route for route in routes)
 
-print("WEBFLIX_RUNTIME_CONTRACT_OK routes=3 challenge_solver=false")
+print("WEBFLIX_RUNTIME_CONTRACT_OK routes=2 active_lane=tv challenge_solver=false")
 
 
 for required in (
@@ -60,4 +62,4 @@ for required in (
     "Webflix - Vidzy",
     "direct-mp4-or-tmdb-signed-vidzy-hls",
 ):
-    assert required in text, required
+    assert required in patched, required
