@@ -28,7 +28,8 @@ batch={
 status={
     "runId":"run",
     "triggerSha":"sha",
-    "repairQueue":["candidate","route","chain","network","domain","unknown"],
+    "repairQueue":["candidate","route","chain","network","unknown"],
+    "authorityRediscoveryQueue":["domain"],
     "providers":[
         {"provider":"network","authorityAction":"KEEP_PROVEN_SITE"},
         {"provider":"domain","authorityAction":"KEEP_DIAGNOSTIC"},
@@ -81,7 +82,7 @@ assert missing_census_sha_output["dispatchableExecutionCount"]==0
 assert mod.build(batch,status,{"green"})["sourceCensusConsistent"] is True
 
 # A stale/mismatched batch may never auto-dispatch.
-bad_status={**status,"repairQueue":["route","chain","network","domain","unknown"]}
+bad_status={**status,"repairQueue":["route","chain","network","unknown"]}
 bad=mod.build(batch,bad_status,{"green"})
 candidate=next(row for row in bad["executions"] if row["groupId"]=="candidate")
 assert candidate["dispatchAllowed"] is False
