@@ -1,3 +1,10 @@
+## 2026-11-14 — Bulk onboarding no longer lets one blocked candidate freeze the whole 60/60 wave
+
+- Production remained at 11 active Global / 8 active France while batch request v24 held 40 route-qualified candidates (17 Global, 23 France) plus 61 deferred identities. The WAF-limited activation script evaluated candidates independently but then raised if *any* candidate was blocked, so one malformed/incomplete candidate rolled back all otherwise eligible members of the wave.
+- Fix the common pipeline cause rather than weakening provider gates: commit 388afc0 keeps exact provenance SHA, minimizer fixed-point, Node syntax, Provider-v3 ownership/CONFIG, executable-plan, identity-plan and public-origin requirements per provider, records blocked identities explicitly, and publishes the eligible subset. A wave with zero eligible providers still fails closed.
+- Workflow commit c66cdd6 now validates actual activationCount (1..stagedCount), treats targetActive as a ceiling/progress target rather than requiring the entire staged cohort to pass simultaneously, and exports the actual activated count to publication/census handoff. Regression 595b7b7 protects these semantics; architecture commit 2d102d6 documents proof-partitioned onboarding.
+- Batch request v25 (8e1c184) retriggers the 40-provider wave. GitHub/WAF-only failures remain inconclusive and cannot earn FULL OK; offline activations remain live_unverified until native/WAF-capable replay. Do not claim the 60/60 target until manifests and post-publication census show it.
+
 ## 2026-11-14 — 60/60 onboarding must prove an executable Provider-v3 plan before activation
 
 - User target remains exactly 60 active providers in Global and 60 in France, with the existing production manifest URLs unchanged. Current production before the new intake wave is 11 Global active and 8 France active; workbook rows are discovery candidates, not functional proof.
