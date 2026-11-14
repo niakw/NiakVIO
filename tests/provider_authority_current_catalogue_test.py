@@ -114,6 +114,16 @@ for provider, baseline_action in expected.items():
     if action in {"KEEP_DISABLED", "REDISCOVER_SEARCH", "DISABLE_MANUAL_POLICY"}:
         assert result["repairEligible"] is False, (provider, result)
 
+# Disabled production rows are terminal lifecycle authority. Once a row has
+# entered retention it must not remain a Repair candidate merely because older
+# direct/route authority still exists.
+for provider, row in rows.items():
+    if row.get("enabled") is not False:
+        continue
+    result = classify(provider)
+    assert result["action"] == "KEEP_DISABLED", (provider, result)
+    assert result["repairEligible"] is False, (provider, result)
+
 # Any current-tested production identity lacking terminal playback may be moved
 # into disabled retention before this catalogue contract runs. This is
 # status-driven, never a provider-specific exception list.

@@ -1,3 +1,9 @@
+## 2026-11-14 — Disabled lifecycle revalidation on current catalogue
+
+- The last dedicated lifecycle run 43590854858 failed after successfully applying lifecycle state because an older catalogue assertion expected disabled animesultra to remain KEEP_DIRECT. Current test logic had since been made lifecycle-aware, but no current-SHA dedicated lifecycle run had revalidated the complete apply path.
+- Strengthen the current-catalogue contract generically: every Global manifest row with enabled=false must classify as KEEP_DISABLED and repairEligible=false even if historical direct/route authority survives. This prevents disabled retention from re-entering Brain Repair through stale authority. The file is a lifecycle workflow trigger, so the current main will execute classify -> lifecycle apply -> authority tests -> static/materialization checks end-to-end.
+- No provider activation, source byte, domain or playback acceptance changed.
+
 ## 2026-11-14 — Production freshness enforced inside bulk activation transaction
 
 - Exact SHA 44018ca0: Core Workflow Gate 43594393157, Core Verify & Publish 43594393163, Provider Non-Regression 43594393096, Brain Branch Maintenance 43594393144 and CodeQL 43594393108 succeeded. The fresh-FULL activation contract is therefore validated on current main. Security legacy alert retirement remains separate and unresolved.
