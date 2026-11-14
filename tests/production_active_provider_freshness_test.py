@@ -44,6 +44,27 @@ def fresh_full(evidence: dict | None, declared: set[str], digest: str) -> bool:
     )
 
 
+def exact_disabled_reactivation(proof: dict | None, declared: set[str], digest: str) -> bool:
+    if not isinstance(proof, dict) or not digest:
+        return False
+    verified = {str(x).strip().lower() for x in proof.get("verifiedLanes") or [] if str(x).strip()}
+    proof_declared = {str(x).strip().lower() for x in proof.get("declaredLanes") or [] if str(x).strip()}
+    return (
+        proof.get("proofAuthority") == "disabled-recovery-exact-byte-residential-v1"
+        and proof.get("proofStatus") == "terminal_identity_verified"
+        and proof.get("brainAbstained") is True
+        and proof.get("repairRequired") is False
+        and proof.get("directMutationAuthority") is False
+        and bool(declared)
+        and proof_declared == declared
+        and declared <= verified
+        and int(proof.get("streamsPlayable") or 0) >= len(declared)
+        and int(proof.get("payloadVerifiedStreams") or 0) >= len(declared)
+        and int(proof.get("identityVerifiedStreams") or 0) >= len(declared)
+        and str(proof.get("providerArtifactSha256") or "").strip().casefold() == digest
+    )
+
+
 def artifact_digest(filename: str) -> str:
     relative = str(filename or "").strip().replace("\\", "/")
     if relative.startswith("../"):
@@ -91,11 +112,15 @@ pending = load(ROOT / "automation/provider-onboarding-pending-status-latest.json
 canonical_proof = proof_map(canonical)
 all_scope_proof = proof_map(all_scope)
 pending_proof = proof_map(pending)
+reactivation = load(ROOT / "automation/provider-disabled-reactivation-ledger.json")
+reactivation_rows = reactivation.get("providers") if isinstance(reactivation.get("providers"), dict) else {}
+reactivation_by_id = {canon(k): v for k, v in reactivation_rows.items() if isinstance(v, dict)}
 provenance = load(ROOT / "PROVENANCE.json")
 prov_rows = provenance.get("providers") if isinstance(provenance.get("providers"), dict) else {}
 prov_by_id = {canon(k): v for k, v in prov_rows.items() if isinstance(v, dict)}
 
 offline_seen = 0
+reactivated_seen = 0
 for manifest_path, projection in (
     (ROOT / "manifest.json", "global"),
     (ROOT / "vf" / "manifest.json", "france"),
@@ -115,6 +140,10 @@ for manifest_path, projection in (
         # byte-bound to the current artifact. Operational unresolved/targeted
         # censuses remain free to update Repair state without erasing this proof.
         if fresh_full(all_scope_proof.get(pid), declared, digest):
+            continue
+
+        if exact_disabled_reactivation(reactivation_by_id.get(pid), declared, digest):
+            reactivated_seen += 1
             continue
 
         prov = prov_by_id.get(pid) or {}
@@ -145,5 +174,5 @@ for manifest_path, projection in (
 assert int(all_scope.get("artifactHashSchemaVersion") or 0) >= 1, "missing byte-bound all-scope freshness ledger"
 print(
     "Production active providers require byte-bound all-scope FULL OK evidence or exact-byte offline contract proof; "
-    f"offline_live_unverified_checks={offline_seen} and never count as FULL OK"
+    f"offline_live_unverified_checks={offline_seen} reactivation_checks={reactivated_seen}; neither is mislabeled as census FULL OK"
 )
