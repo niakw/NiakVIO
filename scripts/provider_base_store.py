@@ -758,7 +758,9 @@ def provider_route_is_identity_aware(route: Any) -> bool:
         return False
     if lowered.rstrip("/") == "/api":
         return False
-    if re.search(r"\{(?:query|title|slug|tmdb_?id|imdb_?id|season|episode|media)\}", text, re.I):
+    # Activation needs a primary content identity. media/season/episode alone
+    # can refine a resolved title but cannot select the requested title.
+    if re.search(r"\{(?:query|title|slug|tmdb_?id|imdb_?id|id)\}", text, re.I):
         return True
     return bool(
         re.search(
