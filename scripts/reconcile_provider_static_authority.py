@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Keep active Global Provider v3 structured authority complete.
+"""Keep active Global + France-only Provider v3 structured authority complete.
 
 ProviderBase / published bytes are derived artifacts. A clean Provider v3 bundle
 cannot be replayed safely unless its three durable DATA authorities exist:
@@ -10,7 +10,7 @@ This module can:
   already embedded in current NiakVIO-owned bytes;
 * recover the one explicitly-supported open_archive_public_domain contract when
   an older activation published its bytes before persisting overrides;
-* persist exact CONFIG-derived static DATA for newly activated Global providers.
+* persist exact CONFIG-derived static DATA for newly activated Global and France-only providers.
 
 It never performs HTTP and never executes provider JavaScript.
 """
@@ -25,6 +25,7 @@ from typing import Any
 from urllib.parse import urlparse
 
 from current_provider_scope import active_provider_rows
+from generate_language_manifests import france_only_catalog_rows
 from provider_base_store import canonical_id
 from provider_patch_blocks import decode_managed_data, validate_managed_fixes
 
@@ -37,6 +38,23 @@ OPEN_ARCHIVE_PROVIDER = "internet-archive"
 OPEN_ARCHIVE_STRATEGY = "open_archive_public_domain"
 OPEN_ARCHIVE_BASE = "https://archive.org"
 OPEN_ARCHIVE_LEGO = "scripts/provider_patches/internet_archive_public_domain_runtime_v1.py"
+
+def active_current_rows() -> list[dict[str, Any]]:
+    """Return active current catalogue rows across Global + France-only authority."""
+    rows = [dict(row) for row in active_provider_rows() if isinstance(row, dict)]
+    seen = {canonical_id(row.get("id")) for row in rows if canonical_id(row.get("id"))}
+    for row in france_only_catalog_rows(root=ROOT):
+        if not isinstance(row, dict) or row.get("enabled") is False:
+            continue
+        pid = canonical_id(row.get("id"))
+        if not pid:
+            raise ValueError("France-only active provider without canonical id")
+        if pid in seen:
+            raise ValueError(f"{pid}: France-only identity collides with Global active scope")
+        seen.add(pid)
+        rows.append(dict(row))
+    return rows
+
 
 
 def load(path: Path, default: Any) -> Any:
@@ -267,7 +285,7 @@ def reconcile_materialization_from_active_bundles(*, apply: bool) -> dict[str, A
     rows = [row for row in doc.get("providers") or [] if isinstance(row, dict)]
     by_id = {canonical_id(row.get("provider")): row for row in rows if canonical_id(row.get("provider"))}
     recovered: list[str] = []
-    for row in active_provider_rows():
+    for row in active_current_rows():
         pid = canonical_id(row.get("id"))
         if not pid or pid in by_id:
             continue
@@ -282,10 +300,10 @@ def reconcile_materialization_from_active_bundles(*, apply: bool) -> dict[str, A
         doc["providerCount"] = len(rows)
         if "expectedProviderCount" in doc:
             doc["expectedProviderCount"] = len(rows)
-        doc["activeProviderIdentityCount"] = len(active_provider_rows())
+        doc["activeProviderIdentityCount"] = len(active_current_rows())
         doc["staticKnowledgeProviderCount"] = max(
             int(doc.get("staticKnowledgeProviderCount") or 0),
-            len(active_provider_rows()),
+            len(active_current_rows()),
         )
         doc["targetedPublicationReconciledProviders"] = sorted(set(
             [str(x) for x in doc.get("targetedPublicationReconciledProviders") or []] + recovered
@@ -352,6 +370,7 @@ def reconcile_active_global(*, apply: bool) -> dict[str, Any]:
         "materializationRecoveredCount": materialization["recoveredCount"],
         "materializationRecovered": materialization["recovered"],
         "activeGlobal": len(active_provider_rows()),
+        "activeCurrent": len(active_current_rows()),
         "apply": bool(apply),
     }
 
@@ -363,7 +382,7 @@ def main() -> int:
     result = reconcile_active_global(apply=args.apply)
     print(
         "PROVIDER_STATIC_AUTHORITY_RECONCILE_OK "
-        f"active_global={result['activeGlobal']} recovered={result['recoveredCount']} "
+        f"active_global={result['activeGlobal']} active_current={result['activeCurrent']} recovered={result['recoveredCount']} "
         f"materialization_recovered={result['materializationRecoveredCount']} "
         f"mode={'apply' if args.apply else 'check'}"
     )
