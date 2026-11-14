@@ -107,3 +107,4 @@ for token in (
 assert "provider-bulk-route-discovery.json" in workflow
 assert "activation" not in probe_path.name.lower()
 print("Bulk route-discovery sanitization, sharding, residential transport and explicit onboarding handoff contract passed")
+\nassert "id-token: write" in workflow\n
