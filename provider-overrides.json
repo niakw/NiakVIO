@@ -11629,7 +11629,8 @@
       "notes": [
         "Created by the NiakVIO full-auto provider onboarding workflow from structured route knowledge only.",
         "Activation remains disabled until the onboarding quick Lab proves the provider on every requested runtime group.",
-        "Activated from exact-byte offline Provider v3 contract proof because GitHub-hosted network/WAF checks are non-authoritative; live native validation remains pending."
+        "Activated from exact-byte offline Provider v3 contract proof because GitHub-hosted network/WAF checks are non-authoritative; live native validation remains pending.",
+        "NIAKVIO_CHILLFLIX_TMDB_DIRECT_EMBED_ORACLE_V1: physical-Mac oracle proves TMDB-bound /movie/{id} and /tv/{id} pages plus chillflix.pw direct embed templates; fixed TV routes removed."
       ],
       "replacements": {},
       "runtime_domain_replacements": {},
@@ -11640,17 +11641,42 @@
       "official_site": "https://chillflix.lol",
       "published_types": [
         "movie",
-        "tv",
-        "anime"
+        "tv"
       ],
       "manifest_overrides": {
         "enabled": true,
         "disabledPlatforms": []
       },
       "learned_routes": [
-        "/tv/291507?play=true&s={query}&e={episode}",
-        "/tv/303044?play=true&s={query}&e={episode}"
-      ]
+        "/search?q={query}"
+      ],
+      "provider_lego_scripts": [
+        "scripts/provider_patches/chillflix_tmdb_direct_embed_runtime_v1.py"
+      ],
+      "provider_lego_options": {
+        "scripts/provider_patches/chillflix_tmdb_direct_embed_runtime_v1.py": {
+          "provider": "chillflix",
+          "name": "Chillflix",
+          "siteBase": "https://www.chillflix.lol",
+          "searchTemplate": "/search?q={query}",
+          "embedBase": "https://www.chillflix.pw",
+          "movieEmbedTemplate": "/embed/movie/{tmdbId}",
+          "tvEmbedTemplate": "/embed/tv/{tmdbId}/{season}/{episode}",
+          "parentOriginParam": "parent_origin",
+          "tvAutoNextParam": "autonext",
+          "maxDepth": 2,
+          "maxStreams": 8
+        }
+      },
+      "identity_input": {
+        "mode": "catalog_search",
+        "requires_tmdb_before_run": true,
+        "required_fields": [
+          "tmdbId",
+          "mediaType",
+          "title"
+        ]
+      }
     },
     "neonflix": {
       "notes": [
@@ -11917,7 +11943,8 @@
       "notes": [
         "Created by the NiakVIO full-auto provider onboarding workflow from structured route knowledge only.",
         "Activation remains disabled until the onboarding quick Lab proves the provider on every requested runtime group.",
-        "Activated from exact-byte offline Provider v3 contract proof because GitHub-hosted network/WAF checks are non-authoritative; live native validation remains pending."
+        "Activated from exact-byte offline Provider v3 contract proof because GitHub-hosted network/WAF checks are non-authoritative; live native validation remains pending.",
+        "NIAKVIO_CINEGRAM_RUNTIME_ORACLE_V1: physical-Mac oracle proves current GET search, exact title/year selection and /ajax/cinemov.php?t=<token> movie player chain."
       ],
       "replacements": {},
       "runtime_domain_replacements": {},
@@ -11927,18 +11954,42 @@
       "official_hub": null,
       "official_site": "https://cinegram.tv",
       "published_types": [
-        "movie",
-        "tv",
-        "anime"
+        "movie"
       ],
       "manifest_overrides": {
         "enabled": true,
         "disabledPlatforms": []
       },
       "learned_routes": [
-        "/?s={query}",
-        "/index.php?do=search&subaction=search&story={query}"
-      ]
+        {
+          "method": "GET",
+          "url": "https://cinegram.tv/index.php?menu=search&query={query}",
+          "role": "search",
+          "source": "manual_residential_oracle",
+          "identityAware": true
+        }
+      ],
+      "provider_lego_scripts": [
+        "scripts/provider_patches/cinegram_runtime_v1.py"
+      ],
+      "provider_lego_options": {
+        "scripts/provider_patches/cinegram_runtime_v1.py": {
+          "base": "https://cinegram.tv",
+          "provider": "cinegram",
+          "name": "Cinegram",
+          "maxStreams": 8
+        }
+      },
+      "identity_input": {
+        "mode": "catalog_search",
+        "requires_tmdb_before_run": true,
+        "required_fields": [
+          "tmdbId",
+          "mediaType",
+          "title",
+          "year"
+        ]
+      }
     },
     "movish": {
       "notes": [
@@ -14466,7 +14517,7 @@
     },
     "chillflix": {
       "strategy": "mixed_embed_resolver",
-      "validation": "bulk_offline_contract_live_unverified",
+      "validation": "residential_tmdb_embed_oracle_pending_terminal",
       "allow_html_url": true,
       "requires_direct_media": false,
       "observed_origins": [
@@ -14476,8 +14527,7 @@
       "generated_from_manifest_or_stage": true,
       "catalogue_types": [
         "movie",
-        "tv",
-        "anime"
+        "tv"
       ]
     },
     "neonflix": {
@@ -14639,7 +14689,7 @@
     },
     "cinegram": {
       "strategy": "mixed_embed_resolver",
-      "validation": "bulk_offline_contract_live_unverified",
+      "validation": "residential_movie_oracle_pending_terminal",
       "allow_html_url": true,
       "requires_direct_media": false,
       "observed_origins": [
@@ -14648,9 +14698,7 @@
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true,
       "catalogue_types": [
-        "movie",
-        "tv",
-        "anime"
+        "movie"
       ]
     },
     "movish": {
