@@ -123,6 +123,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          python tests/provider_static_authority_france_only_test.py
+          python scripts/reconcile_provider_static_authority.py --apply
           python scripts/reactivate_disabled_from_recovery.py \
             --provider "${{ steps.provider.outputs.provider }}" \
             --artifact-root recovery-proof \
