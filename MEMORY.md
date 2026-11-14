@@ -1,3 +1,13 @@
+## 2026-11-14 — Residential continuation, exact proof semantics and Brain model transport isolation
+
+- Exact production remains 27 active Global / 30 active France. The first 40-provider offline activation is intentionally live-unverified; it is execution authority only, never a fabricated FULL/playback claim.
+- Residential Bulk Route Discovery proved the authorized exit path works. The superseded v33 wave already qualified representative candidates while many reachable sites failed only as reachable_no_identity_route_observed. Fix 7e312de expands generic identity-aware GET/form/search patterns and still requires the requested fixture identity in the response before qualification; v34 run 43636477020 is the current continuation wave.
+- Codex-era census markdown regression was real: ShowBox is bulk_offline_contract_live_unverified and intentionally has no live_route_gate. Test b78f37f now distinguishes offline execution authority from live route proof instead of demanding a fake gate; Provider Non-Regression subsequently passed.
+- WAF/residential transport evidence commit 8325e65 records matched residential lanes without promoting playback. Challenge persistence under residential/browser/OkHttp remains transport evidence, not provider breakage.
+- Wookafr exact disabled bytes are healthy under residential deep health (movie+TV, 3 playable HLS, 2 identity-verified, zero contradictions), but recovery run 43635053059 failed later because llama-server attempted the Qwen model download through the residential exit. Fix 3ed8cb0 clears the exit for Brain model bootstrap and restores it for provider replay; test 46075ba protects that separation and rerun 43636704901 is current.
+- Production freshness remains fail-closed: the current carried 10 FULL rows are not fresh enough for activation continuation. Trigger c32e3d9 requests a full scope=all current-byte census (run 43636868845) rather than weakening production_active_provider_freshness_test.
+- Remaining structural Brain gap: a healthy disabled-provider lab result is non-publishing and still needs a generic proof-bound handoff into lifecycle reactivation. Do not directly flip a provider active; bind exact disabled SHA + current deep playback/identity proof + authority, then use lifecycle/client activation transition and fresh post-reactivation census.
+
 ## 2026-11-14 — Offline-activated routes now survive canonical rematerialization; false JS-broken cohort eliminated
 
 - Full-scope census run 43635105039 on source 37f98b6783fd completed 8/8 shards and persisted 36c56392: 10 FULL OK, 10 CHAIN REACHED, 3 NO PROOF, 4 HARNESS/ENV BLOCKED and 37 DISABLED across 64 current identities. The prior 17-provider `gate_runtime_plan_missing` / PROVIDER JS BROKEN wave disappeared entirely.
