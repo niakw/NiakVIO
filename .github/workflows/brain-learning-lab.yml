@@ -201,6 +201,11 @@ jobs:
             --output /tmp/fast-learning-handoff.json
           fast_handoff="$(python -c "import json; d=json.load(open('/tmp/fast-learning-handoff.json')); print('true' if d.get('fastHandoff') else 'false')")"
           provider_filter="$(python -c "import json; d=json.load(open('/tmp/fast-learning-handoff.json')); print(d.get('providerFilter') or '')")"
+          # Rebuild the same plan as Autopilot from exact checked-out census and evidence.
+          # The committed automation/provider-repair-batch-plan-latest.json can lag the dispatch plan.
+          if [ -n "$target_providers" ] || [ -n "$target_provider" ]; then
+            python scripts/build_provider_repair_batch_plan.py --output /tmp/current-learning-repair-batch-plan.json
+          fi
           if [ -n "$target_providers" ]; then
             python - "$target_providers" automation/provider-census-status.json /tmp/fast-learning-handoff.json "$architecture_force" <<'PY'
           import json,sys
@@ -212,11 +217,11 @@ jobs:
           census=json.load(open(sys.argv[2],encoding="utf-8"))
           repair={str(v or "").strip().lower().replace("_","-") for v in census.get("repairQueue") or [] if str(v or "").strip()}
           environment={str(v or "").strip().lower().replace("_","-") for v in census.get("environmentQueue") or [] if str(v or "").strip()}
-          try:
-              plan=json.load(open("automation/provider-repair-batch-plan-latest.json",encoding="utf-8"))
-          except Exception:
-              plan={}
-          same_run=str(plan.get("sourceRunId") or "")==str(census.get("runId") or "")
+          plan=json.load(open("/tmp/current-learning-repair-batch-plan.json",encoding="utf-8"))
+          same_run=str(plan.get("sourceRunId") or "")==str(census.get("runId") or "") and bool(census.get("runId"))
+          same_run=same_run and bool(census.get("triggerSha")) and str(plan.get("sourceTriggerSha") or "").casefold()==str(census.get("triggerSha") or "").casefold()
+          if not same_run:
+              raise SystemExit("targeted Learning plan/census provenance mismatch")
           dynamic={
               str(v or "").strip().lower().replace("_","-")
               for v in (plan.get("dynamicVariantProviders") or [])
@@ -230,9 +235,18 @@ jobs:
               and str(row.get("provider") or "").strip()
               and "disabled" not in str(row.get("status") or "").strip().casefold().replace("_"," ")
           }
+          disabled={str(v or "").strip().lower().replace("_","-") for v in census.get("lifecycleDisabledQueue") or [] if str(v or "").strip()}
+          disabled.update(str(row.get("provider") or "").strip().lower().replace("_","-") for row in census.get("providers") or [] if isinstance(row,dict) and str(row.get("status") or "").strip().casefold()=="disabled")
           eligible=(repair|environment|dynamic|current) if force else (repair|environment|dynamic)
+          eligible-=disabled
+          # A routine multi-target dispatch can outlive a lifecycle change.
+          # Drop only known disabled identities, never unknown or arbitrary scope.
+          suppressed=[v for v in requested if v in disabled and not force]
+          if suppressed:
+              print("FIELD_LEARNING_COHORT_LIFECYCLE_SUPPRESSED providers="+",".join(suppressed),flush=True)
+          requested=[v for v in requested if v not in suppressed]
           missing=[v for v in requested if v not in eligible]
-          if not requested: raise SystemExit("targeted Learning cohort is empty")
+          if not requested: raise SystemExit("targeted Learning cohort is empty after lifecycle suppression")
           if missing:
               scope="current non-disabled providers under explicit architecture FORCE" if force else "current repair/environment/dynamic-completeness queues"
               raise SystemExit("targeted Learning cohort escaped "+scope+": "+",".join(missing))
@@ -254,7 +268,8 @@ jobs:
           json.dump(data,open(sys.argv[3],"w",encoding="utf-8"),ensure_ascii=False,indent=2)
           PY
             fast_handoff=true
-            provider_filter="$target_providers"
+            provider_filter="$(python -c 'import json; print(json.load(open("/tmp/fast-learning-handoff.json"))["providerFilter"])')"
+            target_providers="$provider_filter"
           elif [ -n "$target_provider" ]; then
             python - "$target_provider" automation/provider-census-status.json automation/provider-repair-learn-handoff-v1.json /tmp/fast-learning-handoff.json "$architecture_force" <<'PY'
           import json,sys
@@ -266,11 +281,11 @@ jobs:
               for value in census.get('repairQueue') or []
               if str(value or '').strip()
           }
-          try:
-              plan=json.load(open("automation/provider-repair-batch-plan-latest.json",encoding="utf-8"))
-          except Exception:
-              plan={}
-          same_run=str(plan.get("sourceRunId") or "")==str(census.get("runId") or "")
+          plan=json.load(open("/tmp/current-learning-repair-batch-plan.json",encoding="utf-8"))
+          same_run=str(plan.get("sourceRunId") or "")==str(census.get("runId") or "") and bool(census.get("runId"))
+          same_run=same_run and bool(census.get("triggerSha")) and str(plan.get("sourceTriggerSha") or "").casefold()==str(census.get("triggerSha") or "").casefold()
+          if not same_run:
+              raise SystemExit("targeted Learning plan/census provenance mismatch")
           dynamic={
               str(value or '').strip().lower().replace('_','-')
               for value in (plan.get('dynamicVariantProviders') or [])
@@ -284,7 +299,9 @@ jobs:
               and str(item.get('provider') or '').strip()
               and 'disabled' not in str(item.get('status') or '').strip().casefold().replace('_',' ')
           }
-          if target not in repair and target not in dynamic and not (force and target in current):
+          disabled={str(v or "").strip().lower().replace("_","-") for v in census.get("lifecycleDisabledQueue") or [] if str(v or "").strip()}
+          disabled.update(str(row.get("provider") or "").strip().lower().replace("_","-") for row in census.get("providers") or [] if isinstance(row,dict) and str(row.get("status") or "").strip().casefold()=="disabled")
+          if target in disabled or (target not in repair and target not in dynamic and not (force and target in current)):
               raise SystemExit(f"target provider is not eligible for current Learning/FORCE scope: {target}")
           rows=handoff.get('providers') if isinstance(handoff.get('providers'),dict) else {}
           row=rows.get(target)

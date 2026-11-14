@@ -219,6 +219,12 @@ def build(batch:dict[str,Any],status:dict[str,Any],dynamic_repair:set[str] | Non
     executions=[]
     provider_owner:dict[str,str]={}
     status_rows={cid(row.get("provider")):row for row in status.get("providers") or [] if isinstance(row,dict) and cid(row.get("provider"))}
+    # Even a persisted plan with matching census provenance may retain an off identity.
+    disabled={cid(value) for value in status.get("lifecycleDisabledQueue") or [] if cid(value)}
+    disabled.update(pid for pid,row in status_rows.items() if str(row.get("status") or "").strip().casefold()=="disabled")
+    current_repair-=disabled
+    current_environment-=disabled
+    current_dynamic-=disabled
     for group in batch.get("groups") or []:
         if not isinstance(group,dict):
             continue

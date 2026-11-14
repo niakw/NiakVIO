@@ -91,3 +91,26 @@ assert groups["variant-coverage"]["dynamicVariantProviders"]==["carry","green"]
 assert "cleared" not in plan["dynamicVariantProviders"]
 assert groups["variant-coverage"]["selectionAuthorities"]==["provider-census-sharded-latest.json:dynamic-variant-debt"]
 print("Provider repair batch plan grouping passed")
+
+
+# Regression: old completeness evidence must not reintroduce a provider whose
+# current lifecycle is DISABLED, including contradictory stale Brain flags.
+with tempfile.TemporaryDirectory() as td:
+    td=Path(td)
+    sp=td/"status.json"; cp=td/"sharded.json"; fp=td/"fallback.json"; op=td/"overrides.json"; out=td/"plan.json"
+    off_status={"runId":124,"triggerSha":"def","lifecycleDisabledQueue":["ledger-off"],"providers":[
+        {"provider":"status-off","status":"DISABLED","brainCheckRequired":True},
+        {"provider":"ledger-off","status":"FULL OK","brainCheckRequired":True},
+        {"provider":"still-live","status":"FULL OK","brainCheckRequired":False},
+    ]}
+    def variant(pid):
+        return {"provider_id":pid,"semantic_type":"movie","streams_returned":1,"announced_variant_candidates":4,"variant_fanout_state":"returned-subset"}
+    sp.write_text(json.dumps(off_status)); cp.write_text(json.dumps({"rows":[variant("status-off"),variant("still-live")]}))
+    fp.write_text(json.dumps({"rows":[variant("ledger-off")]})); op.write_text("{}")
+    subprocess.run(["python",str(script),"--status",str(sp),"--sharded-census",str(cp),"--fallback-sharded-census",str(fp),"--overrides",str(op),"--output",str(out)],check=True)
+    result=json.loads(out.read_text())
+    assert result["dynamicVariantProviders"]==["still-live"],result
+    assert result["lifecycleSuppressedDynamicProviders"]==["ledger-off","status-off"],result
+    assert result["unresolvedProviderCount"]==1,result
+    assert result["groups"][0]["providers"]==["still-live"],result
+print("Disabled lifecycle overrides retained variant debt")

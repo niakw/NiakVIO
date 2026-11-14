@@ -167,6 +167,13 @@ def main()->int:
         if provider not in current_observed
     }
     completeness_debt.update(current_debt)
+    # Current lifecycle authority outranks both current and retained fan-out evidence.
+    # Keep observations in their immutable evidence ledgers; never dispatch an off provider.
+    disabled_ids={cid(value) for value in status.get("lifecycleDisabledQueue") or [] if cid(value)}
+    disabled_ids.update(cid(row.get("provider")) for row in status.get("providers") or []
+                        if isinstance(row,dict) and str(row.get("status") or "").strip().casefold()=="disabled")
+    disabled_dynamic=sorted(set(completeness_debt)&disabled_ids)
+    completeness_debt={provider:debt for provider,debt in completeness_debt.items() if provider not in disabled_ids}
     patches=overrides.get("provider_patches") if isinstance(overrides.get("provider_patches"),dict) else {}
     caps=overrides.get("provider_capabilities") if isinstance(overrides.get("provider_capabilities"),dict) else {}
     groups:dict[tuple[str,...],list[dict[str,Any]]]=defaultdict(list)
@@ -175,7 +182,7 @@ def main()->int:
         if not isinstance(row,dict):
             continue
         pid=cid(row.get("provider"))
-        if not pid:
+        if not pid or pid in disabled_ids:
             continue
         dynamic_debt=completeness_debt.get(pid)
         brain_required=row.get("brainCheckRequired") is True
@@ -259,6 +266,7 @@ def main()->int:
         "unresolvedProviderCount":sum(x["providerCount"] for x in out_groups),
         "dynamicVariantProviderCount":len(completeness_debt),
         "dynamicVariantProviders":sorted(completeness_debt),
+        "lifecycleSuppressedDynamicProviders":disabled_dynamic,
         "dynamicVariantCurrentObservedProviders":sorted(current_observed),
         "dynamicVariantFallbackUsed":bool(fallback_debt),
         "groupCount":len(out_groups),

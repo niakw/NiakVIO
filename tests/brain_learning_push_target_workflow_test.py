@@ -72,6 +72,12 @@ assert 'scope="current non-disabled providers under explicit architecture FORCE"
 assert 'autopilot-targeted-core-learning' in multi_block, multi_block
 assert 'autopilot-targeted-completeness-learning' in multi_block, multi_block
 assert 'same_run=str(plan.get("sourceRunId") or "")==str(census.get("runId") or "")' in multi_block, multi_block
+assert "current-learning-repair-batch-plan.json" in multi_block
+assert "sourceTriggerSha" in multi_block
+assert "eligible-=disabled" in multi_block
+assert "FIELD_LEARNING_COHORT_LIFECYCLE_SUPPRESSED" in multi_block
+assert 'target_providers="$provider_filter"' in multi_block
+assert "targeted Learning cohort is empty after lifecycle suppression" in multi_block
 assert "target-scoped-handoff" in workflow, workflow
 assert "explicit-force-completeness-learning" in workflow, workflow
 assert 'row.get("owner")' in target_block or "row.get('owner')" in target_block, target_block
@@ -106,3 +112,30 @@ assert "filtered_rows" in cache_block
 assert "providerId" in cache_block
 assert "required_set" in cache_block
 assert "cached_path.write_text" in cache_block
+
+
+# Execute the actual multi-cohort Python heredoc without network or providers.
+# Substitute only the temporary plan path so the test cannot touch CI /tmp.
+import json
+import subprocess
+import sys
+import tempfile
+source=multi_block.split("<<'PY'\n",1)[1].split("\n          PY",1)[0]
+source="\n".join(line[10:] for line in source.splitlines())
+with tempfile.TemporaryDirectory() as directory:
+    tmp=Path(directory); plan=tmp/"plan.json"; state=tmp/"census.json"; result=tmp/"handoff.json"
+    source=source.replace("/tmp/current-learning-repair-batch-plan.json",str(plan))
+    plan.write_text(json.dumps({"sourceRunId":"run","sourceTriggerSha":"sha","dynamicVariantProviders":["healthy","off"]}))
+    state.write_text(json.dumps({"runId":"run","triggerSha":"sha","repairQueue":["pending","off"],"environmentQueue":[],"lifecycleDisabledQueue":["off"],"providers":[{"provider":"pending","status":"NO PROOF"},{"provider":"healthy","status":"FULL OK"},{"provider":"off","status":"DISABLED"}]}))
+    def run_scope(request,force="false"):
+        return subprocess.run([sys.executable,"-c",source,request,str(state),str(result),force],capture_output=True,text=True)
+    good=run_scope("pending,off,healthy")
+    assert good.returncode==0,(good.stdout,good.stderr)
+    assert json.loads(result.read_text())["providers"]==["pending","healthy"]
+    assert "LIFECYCLE_SUPPRESSED" in good.stdout
+    assert run_scope("off").returncode!=0
+    assert run_scope("pending,unknown").returncode!=0
+    assert run_scope("pending,off","true").returncode!=0
+    plan.write_text(json.dumps({"sourceRunId":"run","sourceTriggerSha":"wrong","dynamicVariantProviders":["healthy"]}))
+    assert run_scope("healthy").returncode!=0
+print("Learning cohort scope executable regression passed")

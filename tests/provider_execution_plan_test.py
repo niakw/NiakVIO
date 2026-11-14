@@ -144,3 +144,14 @@ for required in (
     assert required in source,required
 
 print("provider causal execution router contract passed")
+
+
+# A stale batch that contains a disabled identity must not auto-dispatch,
+# even when its old queue and dynamic observations still claim eligibility.
+off_status={**status,"lifecycleDisabledQueue":["candidate"],"providers":[*status["providers"],{"provider":"green","status":"DISABLED"}]}
+off=mod.build(batch,off_status,{"green"})
+off_groups={row["groupId"]:row for row in off["executions"]}
+assert off_groups["candidate"]["dispatchAllowed"] is False
+assert off_groups["variant"]["dispatchAllowed"] is False
+assert off_groups["learn"]["dispatchAllowed"] is True
+print("Disabled lifecycle cannot escape causal routing")
