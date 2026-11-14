@@ -404,6 +404,55 @@ def reconcile_domain_substitutions(
     return changed
 
 
+
+def project_authoritative_types(
+    entry: dict[str, object],
+    patch: dict[str, object],
+    capability: dict[str, object],
+) -> bool:
+    """Project provider-owned semantic lanes before targeted materialization.
+
+    published_types is durable publication authority. capability catalogue_types
+    is the fallback for providers without an explicit narrowed publication set.
+    This mirrors the full publication path and prevents targeted materialization
+    from re-advertising unverified lanes.
+    """
+    raw = patch.get("published_types")
+    if not isinstance(raw, list) or not raw:
+        raw = capability.get("catalogue_types")
+    semantic: list[str] = []
+    for value in raw if isinstance(raw, list) else []:
+        item = str(value or "").strip().casefold()
+        if item in {"movie", "tv", "anime"} and item not in semantic:
+            semantic.append(item)
+    if not semantic:
+        return False
+
+    before_supported = [
+        str(value or "").strip().casefold()
+        for value in entry.get("supportedTypes") or []
+        if str(value or "").strip().casefold() in {"movie", "tv", "anime"}
+    ]
+    had_canonical = "canonicalSupportedTypes" in entry
+    before_canonical = [
+        str(value or "").strip().casefold()
+        for value in entry.get("canonicalSupportedTypes") or []
+        if str(value or "").strip().casefold() in {"movie", "tv", "anime"}
+    ]
+    transport = list(semantic)
+    if "anime" in semantic and "tv" not in transport:
+        transport.append("tv")
+
+    entry["supportedTypes"] = transport
+    if transport != semantic or had_canonical:
+        entry["canonicalSupportedTypes"] = semantic
+    else:
+        entry.pop("canonicalSupportedTypes", None)
+    after_canonical = semantic if "canonicalSupportedTypes" in entry else []
+    return before_supported != transport or before_canonical != after_canonical
+
+
+
 def materialize_one(
     provider_id: str,
     *,
@@ -497,6 +546,7 @@ def materialize_one(
             "upstreamJsExecuted": False,
         }
 
+    project_authoritative_types(entry, patch, capability)
     allmat.normalize_anime_transport_compatibility(entry)
     model = allmat.provider_model(provider_id, patch, capability, static_row)
     if preserve_structured_data:
