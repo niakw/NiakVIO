@@ -49,12 +49,10 @@ def norm(value: Any) -> str:
     return re.sub(r"[^a-z0-9._-]+", "-", str(value or "").strip().casefold()).strip("-")
 
 
-def fixture_for(row: dict[str, Any]) -> dict[str, Any]:
+def fixtures_for(row: dict[str, Any]) -> list[dict[str, Any]]:
     types = [str(x).strip().casefold() for x in row.get("types") or row.get("supportedTypes") or []]
-    for lane in ("movie", "tv", "anime"):
-        if lane in types:
-            return dict(FIXTURES[lane])
-    return dict(FIXTURES["movie"])
+    fixtures = [dict(FIXTURES[lane]) for lane in ("movie", "tv", "anime") if lane in types]
+    return fixtures or [dict(FIXTURES["movie"])]
 
 
 def slug(value: str) -> str:
@@ -122,6 +120,34 @@ def route_pattern(raw: Any, fixture: dict[str, Any]) -> str:
     # Empty search query literals are common in site JS. Turn them into Core title input.
     value = re.sub(r"([?&](?:s|q|query|keyword|search|story)=)(?=&|$)", r"\1{query}", value, flags=re.I)
     return value[:420] if provider_model_route_kind(value) != "ignore" else ""
+
+
+def identity_route_candidate(value: Any) -> bool:
+    """Require a route that can plausibly consume the requested media identity.
+
+    Route discovery is stricter than the runtime's generic route classifier.
+    Static navigation, telemetry and control APIs can be crawl evidence but
+    must never by themselves authorize onboarding activation.
+    """
+    text = str(value or "").strip()
+    if not text:
+        return False
+    lowered = text.casefold()
+    if re.search(
+        r"/(?:api/)?(?:push|subscribe|settings|site-migration|session-handoff|webtv/guide|p/event|cc/|app/android|health|status|analytics|telemetry)(?:[/?#]|$)",
+        lowered,
+        re.I,
+    ):
+        return False
+    if re.search(r"/(?:sw\.js|service-worker(?:\.js)?|manifest\.json)(?:[?#]|$)", lowered, re.I):
+        return False
+    if lowered.rstrip("/") == "/api":
+        return False
+    if re.search(r"\{(?:query|title|slug|tmdb_?id|imdb_?id|season|episode|media)\}", text, re.I):
+        return True
+    if re.search(r"/(?:search|recherche)(?:[/?#]|$)|[?&](?:s|q|query|keyword|search|story)=", text, re.I):
+        return True
+    return False
 
 
 def observed_candidates(report: dict[str, Any]) -> list[Any]:
@@ -202,9 +228,13 @@ def main() -> int:
     for row in selected:
         pid = norm(row.get("id") or row.get("provider"))
         direct = str(row.get("direct") or row.get("direct_url") or "").strip()
-        fixture = fixture_for(row)
-        existing = [route_pattern(v, fixture) for v in row.get("routes") or []]
-        existing = list(dict.fromkeys(v for v in existing if v))
+        fixtures = fixtures_for(row)
+        existing: list[str] = []
+        for fixture in fixtures:
+            for raw_route in row.get("routes") or []:
+                pattern = route_pattern(raw_route, fixture)
+                if pattern and identity_route_candidate(pattern) and pattern not in existing:
+                    existing.append(pattern)
         if existing:
             results.append({
                 "provider": pid,
@@ -215,7 +245,7 @@ def main() -> int:
                 "routePatterns": existing,
                 "routeCount": len(existing),
                 "qualified": True,
-                "reason": "existing_executable_route_plan",
+                "reason": "existing_identity_executable_route_plan",
             })
             continue
         if not re.match(r"^https?://[^/\s]+", direct):
@@ -227,44 +257,49 @@ def main() -> int:
             })
             continue
 
+        reached = False
+        patterns: list[str] = []
+        return_codes: list[int] = []
         with tempfile.TemporaryDirectory(prefix=f"niakvio-route-{pid}-") as td:
             td_path = Path(td)
-            current = td_path / "current.json"
-            report_path = td_path / "site-structure.json"
-            current.write_text(json.dumps({
-                "id": pid,
-                "direct": direct,
-                "site": direct,
-                "fixture": fixture,
-            }, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-            cmd = [
-                sys.executable, str(PROBE),
-                "--current", str(current),
-                "--output", str(report_path),
-                "--timeout", str(args.timeout),
-                "--max-chunks", str(args.max_chunks),
-                "--max-runtime-chunks", str(args.max_runtime_chunks),
-            ]
-            try:
-                proc = subprocess.run(
-                    cmd, cwd=ROOT, text=True, capture_output=True,
-                    timeout=max(30, args.provider_timeout), check=False,
-                )
-                report = load(report_path) if report_path.is_file() else {}
-            except subprocess.TimeoutExpired:
-                proc = None
-                report = {}
+            for fixture_index, fixture in enumerate(fixtures):
+                current = td_path / f"current-{fixture_index}.json"
+                report_path = td_path / f"site-structure-{fixture_index}.json"
+                current.write_text(json.dumps({
+                    "id": pid,
+                    "direct": direct,
+                    "site": direct,
+                    "fixture": fixture,
+                }, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+                cmd = [
+                    sys.executable, str(PROBE),
+                    "--current", str(current),
+                    "--output", str(report_path),
+                    "--timeout", str(args.timeout),
+                    "--max-chunks", str(args.max_chunks),
+                    "--max-runtime-chunks", str(args.max_runtime_chunks),
+                ]
+                try:
+                    proc = subprocess.run(
+                        cmd, cwd=ROOT, text=True, capture_output=True,
+                        timeout=max(30, args.provider_timeout), check=False,
+                    )
+                    return_codes.append(proc.returncode)
+                    report = load(report_path) if report_path.is_file() else {}
+                except subprocess.TimeoutExpired:
+                    report = {}
+                pages = [x for x in report.get("pages") or [] if isinstance(x, dict)]
+                reached = reached or any(x.get("ok") is True and int(x.get("status") or 0) < 500 for x in pages)
+                for raw in observed_candidates(report):
+                    pattern = route_pattern(raw, fixture)
+                    if pattern and identity_route_candidate(pattern) and pattern not in patterns:
+                        patterns.append(pattern)
+                    if len(patterns) >= 24:
+                        break
+                if len(patterns) >= 24:
+                    break
 
-        pages = [x for x in report.get("pages") or [] if isinstance(x, dict)]
-        reached = any(x.get("ok") is True and int(x.get("status") or 0) < 500 for x in pages)
-        patterns: list[str] = []
-        for raw in observed_candidates(report):
-            pattern = route_pattern(raw, fixture)
-            if pattern and pattern not in patterns:
-                patterns.append(pattern)
-            if len(patterns) >= 24:
-                break
-        reason = "observed_executable_routes" if patterns else ("reachable_no_executable_route_observed" if reached else "network_or_site_unreached")
+        reason = "observed_identity_executable_routes" if patterns else ("reachable_no_identity_route_observed" if reached else "network_or_site_unreached")
         results.append({
             "provider": pid,
             "scope": str(row.get("scope") or "global"),
@@ -272,7 +307,7 @@ def main() -> int:
             "transport": transport,
             "probeAttempted": True,
             "probeReachedSite": reached,
-            "probeReturnCode": None if proc is None else proc.returncode,
+            "probeReturnCode": max(return_codes) if return_codes else None,
             "routePatterns": patterns,
             "routeCount": len(patterns),
             "qualified": bool(patterns),
