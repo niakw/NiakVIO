@@ -45,7 +45,12 @@ try{if(g)g.__niakvioProviderRuntimeResolverV1={provider:c.provider,resolve:resol
 '''
 
 
-def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> str:
+def apply_owned(
+    text: str,
+    managed_fix_id: str,
+    options: dict[str, Any] | None = None,
+    **_kwargs: Any,
+) -> str:
     cfg = {
         "provider": "",
         "name": "",
@@ -75,7 +80,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
     )
     return replace_managed_fix(
         text,
-        MANAGED_FIX_ID,
+        str(managed_fix_id).strip().upper(),
         js.lstrip(),
         data={
             "runtimeFamily": "tmdb-catalog-direct-embed-v1",
@@ -86,6 +91,10 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
             "upstreamJsExecuted": False,
         },
     )
+
+
+def apply(text: str, options: dict[str, Any] | None = None, **kwargs: Any) -> str:
+    return apply_owned(text, MANAGED_FIX_ID, options=options, **kwargs)
 
 
 if __name__ == "__main__":
