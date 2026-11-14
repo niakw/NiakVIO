@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "sourceRunId": "43602671784",
-  "sourceTriggerSha": "69249582792efc055fbe240f9fb7f9e48461ae84",
-  "unresolvedProviderCount": 3,
+  "sourceRunId": "43603416122",
+  "sourceTriggerSha": "fcc4d8a890ea91908524cbc263b4ce37216f77a9",
+  "unresolvedProviderCount": 2,
   "dynamicVariantProviderCount": 2,
   "dynamicVariantProviders": [
     "hindmoviez",
@@ -15,7 +15,6 @@
     "4khdhub",
     "allanime",
     "allwish",
-    "anikototv",
     "anime-sama",
     "anime-ultime",
     "animekai",
@@ -24,38 +23,27 @@
     "animesultra",
     "animevost-fr",
     "animevostfr",
-    "castle",
     "coflix",
     "flemmix",
-    "french-manga",
-    "hindmoviez",
     "kehflix",
     "kurage",
     "mallumv",
     "moviebox",
     "movieshunt",
     "moviesmod",
-    "mugiwarastream",
-    "neko-sama",
-    "papadustream",
     "persianstremio",
     "playimdb",
-    "purstream",
-    "sekai",
-    "streamzo",
     "uhdmovies",
     "vidfast",
     "vidlove",
     "vidrock",
     "voiranime",
     "voiranime-homes",
-    "voiranime-rip",
     "vostfree",
-    "wookafr",
     "yflix"
   ],
   "dynamicVariantFallbackUsed": true,
-  "groupCount": 3,
+  "groupCount": 2,
   "executionModel": {
     "default": "family/signature batch",
     "liveProbeConcurrency": "audit_provider_quick_yield ThreadPool",
@@ -63,33 +51,6 @@
     "providerLocalRepair": "exception path only"
   },
   "groups": [
-    {
-      "groupId": "transport|mixed_embed_resolver",
-      "repairScope": "transport",
-      "runtimeFamilies": [
-        "mixed_embed_resolver"
-      ],
-      "capabilityStrategy": "mixed_embed_resolver",
-      "evidenceDepths": [
-        "none"
-      ],
-      "dominantIssues": [
-        "network_http_error"
-      ],
-      "harnessTransportClasses": [],
-      "transportSignature": "not-applicable",
-      "providerCount": 1,
-      "providers": [
-        "voiranime-homes"
-      ],
-      "action": "refresh transport authority before provider-local code changes",
-      "selectionAuthorities": [
-        "provider-census-status.json:brainCheckRequired"
-      ],
-      "dynamicVariantProviders": [],
-      "executionPolicy": "batch-first",
-      "providerLocalFallback": "only-after-shared-profile-failure"
-    },
     {
       "groupId": "variant-coverage|direct_media",
       "repairScope": "variant-coverage",
