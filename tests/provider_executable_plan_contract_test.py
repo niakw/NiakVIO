@@ -22,6 +22,7 @@ assert provider_model_has_executable_plan(direct_only) is False
 
 for route, expected in (
     ("/search?q={query}", "search"),
+    ("/index.php?do=search&subaction=search&story={query}", "search"),
     ("/api?m=stream&id={id}", "api"),
     ("/embed/{id}", "player"),
     ("/watch/{id}", "detail"),
@@ -39,6 +40,9 @@ assert provider_model_has_identity_execution_plan({**direct_only, "routes": ["/s
 assert provider_model_has_identity_execution_plan({**direct_only, "routes": ["/movie/{tmdbId}"]}) is True
 assert provider_route_is_identity_aware("/api/session-handoff/issue") is False
 assert provider_route_is_identity_aware("/search?q={query}") is True
+assert provider_route_is_identity_aware("/index.php?do=search&subaction=search&story={query}") is True
+assert provider_model_has_executable_plan({**direct_only, "routes": ["/index.php?do=search&subaction=search&story={query}"]}) is True
+assert provider_model_has_identity_execution_plan({**direct_only, "routes": ["/index.php?do=search&subaction=search&story={query}"]}) is True
 
 for model in (
     {**direct_only, "routes": ["/search?q={query}"]},
