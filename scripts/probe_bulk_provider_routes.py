@@ -25,6 +25,7 @@ PROBE = ROOT / "scripts/probe_provider_site_structure.py"
 
 sys.path.insert(0, str((ROOT / "scripts").resolve()))
 from provider_base_store import provider_model_route_kind, provider_route_is_identity_aware
+from provider_patch_blocks import decode_managed_data
 
 SENSITIVE_KEYS = {"k","key","token","sig","signature","auth","authorization","expires","expiry","exp"}
 SEARCH_KEYS = {"s","q","query","keyword","search","story"}
@@ -133,6 +134,66 @@ def identity_route_candidate(value: Any) -> bool:
     return provider_route_is_identity_aware(value)
 
 
+def _host_key(value: Any) -> str:
+    raw = str(value or "").strip()
+    if not raw:
+        return ""
+    try:
+        host = str(urlsplit(raw).hostname or "").strip().casefold()
+    except ValueError:
+        return ""
+    return host[4:] if host.startswith("www.") else host
+
+
+def retained_v3_routes(row: dict[str, Any]) -> tuple[list[str], list[str]]:
+    """Reuse only exact managed Provider-v3 route DATA on the same current host.
+
+    Historical JS is never executed. Relative routes are accepted only when the
+    old managed CONFIG binds the same canonical host as today's intake origin.
+    """
+    pid = norm(row.get("id") or row.get("provider"))
+    current_host = _host_key(row.get("direct") or row.get("direct_url"))
+    if not pid or not current_host:
+        return [], []
+    routes: list[str] = []
+    sources: list[str] = []
+    config_id = f"PROVIDER.{pid.upper()}.CONFIG.V1"
+    archive = ROOT / "provider-old" / "providers"
+    for path in sorted(archive.glob(f"{pid}--nuvio--*.js")):
+        try:
+            text = path.read_text(encoding="utf-8", errors="strict")
+            model = decode_managed_data(text, config_id)
+        except (OSError, UnicodeError, ValueError):
+            continue
+        if not isinstance(model, dict):
+            continue
+        model_hosts = {
+            _host_key(value)
+            for value in [
+                model.get("knownSite"),
+                model.get("officialSite"),
+                model.get("officialApi"),
+                model.get("fixedApi"),
+                *(model.get("origins") or []),
+            ]
+            if _host_key(value)
+        }
+        if current_host not in model_hosts:
+            continue
+        accepted = [
+            str(route).strip()
+            for route in model.get("routes") or []
+            if str(route).strip() and identity_route_candidate(route)
+        ]
+        if not accepted:
+            continue
+        for route in accepted:
+            if route not in routes:
+                routes.append(route)
+        sources.append(path.relative_to(ROOT).as_posix())
+    return routes[:24], sources[:24]
+
+
 def observed_candidates(report: dict[str, Any]) -> list[Any]:
     values: list[Any] = []
     for row in report.get("route_hints") or []:
@@ -212,9 +273,10 @@ def main() -> int:
         pid = norm(row.get("id") or row.get("provider"))
         direct = str(row.get("direct") or row.get("direct_url") or "").strip()
         fixtures = fixtures_for(row)
+        retained_routes, retained_sources = retained_v3_routes(row)
         existing: list[str] = []
         for fixture in fixtures:
-            for raw_route in row.get("routes") or []:
+            for raw_route in [*(row.get("routes") or []), *retained_routes]:
                 pattern = route_pattern(raw_route, fixture)
                 if pattern and identity_route_candidate(pattern) and pattern not in existing:
                     existing.append(pattern)
@@ -222,13 +284,15 @@ def main() -> int:
             results.append({
                 "provider": pid,
                 "scope": str(row.get("scope") or "global"),
-                "transport": "request-existing",
+                "transport": "retained-v3-rag" if retained_sources else "request-existing",
                 "probeAttempted": False,
-                "probeReachedSite": True,
+                "probeReachedSite": False if retained_sources else True,
                 "routePatterns": existing,
                 "routeCount": len(existing),
                 "qualified": True,
-                "reason": "existing_identity_executable_route_plan",
+                "reason": "retained_identity_route_plan_host_matched" if retained_sources else "existing_identity_executable_route_plan",
+                "retainedRouteSources": retained_sources,
+                "liveProof": False if retained_sources else None,
             })
             continue
         if not re.match(r"^https?://[^/\s]+", direct):
