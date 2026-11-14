@@ -15,7 +15,10 @@ assert "--allow-disabled-explicit" in workflow
 assert "Synthesize disabled-provider guidance through Brain LLM" in workflow
 assert "NIAKVIO_BRAIN_LLM_GUIDANCE=$GITHUB_WORKSPACE/brain-disabled-recovery/brain-llm/guidance.json" in workflow
 assert "disabled recovery Brain routing did not select exactly one target" in workflow
-assert "Brain LLM produced no guidance row for explicit disabled target" in workflow
+assert "Brain LLM abstained for non-healthy disabled target" in workflow
+assert "currentDisabledHealthHealthy" in workflow
+assert '"nextAction":"exact_playback_identity_replay" if healthy and not rows else "bounded_learning_repair"' in workflow
+assert "steps.brain_guidance.outputs.has_guidance == 'true'" in workflow
 assert "publicationAuthority" in workflow and "directMutationAuthority" in workflow
 queue=json.loads((ROOT/"automation/provider-disabled-recovery-queue.json").read_text(encoding="utf-8"))
 assert queue.get("proofAuthority") is False
