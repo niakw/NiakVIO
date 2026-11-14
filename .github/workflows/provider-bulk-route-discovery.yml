@@ -172,11 +172,14 @@ jobs:
         run: |
           set -euo pipefail
           mapfile -t files < <(find shards -maxdepth 1 -type f -name 'provider-bulk-route-discovery-shard-*.json' | sort -V)
-          if [ "${#files[@]}" -ne 8 ]; then
-            echo "Expected 8 route-discovery shards, found ${#files[@]}" >&2
+          if [ "${#files[@]}" -lt 1 ]; then
+            echo "No route-discovery shard artifacts were produced" >&2
             exit 1
           fi
-          python scripts/apply_bulk_provider_route_discovery.py "${files[@]}"             --request .github/provider-onboarding/batch.json             --evidence automation/provider-bulk-route-discovery-latest.json             --output-request .github/provider-onboarding/batch.json
+          if [ "${#files[@]}" -lt 8 ]; then
+            echo "Partial route-discovery merge: ${#files[@]}/8 shard artifacts; missing-shard candidates stay deferred" >&2
+          fi
+          python scripts/apply_bulk_provider_route_discovery.py "${files[@]}"             --expected-shards 8             --request .github/provider-onboarding/batch.json             --evidence automation/provider-bulk-route-discovery-latest.json             --output-request .github/provider-onboarding/batch.json
           cp automation/provider-bulk-route-discovery-latest.json /tmp/provider-bulk-route-discovery-latest.json
           cp .github/provider-onboarding/batch.json /tmp/provider-bulk-route-next-batch.json
 
