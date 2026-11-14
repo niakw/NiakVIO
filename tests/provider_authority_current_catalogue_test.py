@@ -147,7 +147,7 @@ for proof in census.get("providers") or []:
 # runtime evidence wins the production activation decision. Do not special-case
 # an identity merely because its address authority is strong.
 animesultra = classify("animesultra")
-if "animesultra" in withdrawn_current:
+if rows["animesultra"].get("enabled") is False or "animesultra" in withdrawn_current:
     assert animesultra["action"] == "KEEP_DISABLED", animesultra
     assert animesultra["repairEligible"] is False, animesultra
 else:

@@ -1,3 +1,9 @@
+## 2026-11-14 — Removed remaining disabled-authority contradiction
+
+- Dedicated lifecycle run 43595076872 on db1c72fc again applied lifecycle successfully (active=13, disabled=28 Global, pending=17, union visible=58) and passed the new generic disabled invariant, then failed on a later legacy animesultra-specific branch that still selected KEEP_DIRECT unless the provider appeared in withdrawn_current.
+- A provider already persisted enabled=false is independently authoritative lifecycle state; withdrawn_current only describes the latest census transition and is not required for already-disabled rows. Align the special regression with the generic rule: disabled row OR current withdrawal => KEEP_DISABLED and repairEligible=false; KEEP_DIRECT only while still active.
+- Test-only correction; no provider, manifest, domain, bytes or acceptance change. Current-SHA lifecycle revalidation required.
+
 ## 2026-11-14 — Disabled lifecycle revalidation on current catalogue
 
 - The last dedicated lifecycle run 43590854858 failed after successfully applying lifecycle state because an older catalogue assertion expected disabled animesultra to remain KEEP_DIRECT. Current test logic had since been made lifecycle-aware, but no current-SHA dedicated lifecycle run had revalidated the complete apply path.
