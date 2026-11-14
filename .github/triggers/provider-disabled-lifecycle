@@ -27,3 +27,9 @@ reason: scope=all sharded census 43602671784 tested current active bytes and cla
 requested_head: 0ccf0423bccbfc26ecb4d504ed49fb91cf7adcb7
 reason: replay lifecycle after exact-CONFIG audit recovery fix 7c8cab7e; persist internet-archive static/materialization authority and provider-disabled Brain recovery queue without enabling disabled providers
 expected_runtime_global: 42
+
+
+2026-11-14 cohort4: retire fresh active regression before 40-provider bulk activation.
+source_head: eb048c50f917067235d669254da14ec0df0e110a
+cohort4: voiranime-rip
+reason: scope=all census 43629759862 tested current active bytes; status REGRESSION PROVIDER, zero currentVerifiedLanes, provider_network_http_error, repairEligible=true. Keep reversible disabled bytes/recovery debt; do not let stale active row block production freshness.
