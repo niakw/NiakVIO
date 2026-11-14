@@ -1,0 +1,392 @@
+{
+  "schema_version": 6,
+  "requested_scope": "sharded",
+  "resolved_scope": "merged-shards",
+  "selected_providers": [
+    "internet-archive"
+  ],
+  "environment": "node-adaptive-provider-targeted-first-real-stream-census-with-tmdb-runtime-context",
+  "fixture_selection_policy": "retained-proof-first-then-provider-targeted-then-representative-then-three-corpus-rotated",
+  "provider_count": 1,
+  "task_count": 1,
+  "probe_count": 1,
+  "rotated_task_count": 0,
+  "max_samples_per_lane": 8,
+  "raw_provider_count": 1,
+  "playable_provider_count": 1,
+  "accepted_playable_provider_count": 1,
+  "verified_provider_count": 1,
+  "wrong_content_provider_count": 0,
+  "raw_providers": [
+    "internet-archive"
+  ],
+  "playable_providers": [
+    "internet-archive"
+  ],
+  "accepted_playable_providers": [
+    "internet-archive"
+  ],
+  "verified_providers": [
+    "internet-archive"
+  ],
+  "wrong_content_providers": [],
+  "type_summary": {
+    "movie": {
+      "tasks": 1,
+      "raw": 1,
+      "playable": 1,
+      "accepted_playable": 1,
+      "verified": 1,
+      "wrong_content": 0
+    },
+    "tv": {
+      "tasks": 0,
+      "raw": 0,
+      "playable": 0,
+      "accepted_playable": 0,
+      "verified": 0,
+      "wrong_content": 0
+    },
+    "anime": {
+      "tasks": 0,
+      "raw": 0,
+      "playable": 0,
+      "accepted_playable": 0,
+      "verified": 0,
+      "wrong_content": 0
+    }
+  },
+  "status_counts": {
+    "playable_verified": 1
+  },
+  "debug_stage_counts": {
+    "provider_returned_streams": 1
+  },
+  "debug_stage_providers": {
+    "provider_returned_streams": [
+      "internet-archive"
+    ]
+  },
+  "shards": [
+    {
+      "file": "provider-census-shard-0.json",
+      "shardCount": 1,
+      "shardIndex": 0,
+      "providerCount": 1
+    }
+  ],
+  "rows": [
+    {
+      "provider_id": "internet-archive",
+      "provider_name": "🔗 Internet Archive — Public Domain",
+      "semantic_type": "movie",
+      "fixture_title": "Plan 9 from Outer Space",
+      "fixture": {
+        "tmdbId": "10513",
+        "mediaType": "movie",
+        "category": "movie",
+        "title": "Plan 9 from Outer Space",
+        "year": 1957
+      },
+      "streams_returned": 2,
+      "announced_player_candidates": 0,
+      "announced_variant_candidates": 0,
+      "announced_player_hosts": [],
+      "announced_quality_heights": [],
+      "explored_player_requests": 0,
+      "explored_player_hosts": [],
+      "variant_fanout_state": "not-observed",
+      "status": "playable_verified",
+      "debug_stage": "provider_returned_streams",
+      "debug_model": {
+        "strategy": "open_archive_public_domain",
+        "source_runtime_family": "unknown",
+        "reconstruction_state": "learning-clean-seed",
+        "identity_mode": "tmdb_direct",
+        "requires_tmdb_before_run": false,
+        "supported_types": [
+          "movie"
+        ],
+        "route_count": 3,
+        "route_kinds": [
+          "search",
+          "unknown"
+        ],
+        "has_api_recipe": false,
+        "official_site": "https://archive.org",
+        "official_hub": null,
+        "official_api": "https://archive.org"
+      },
+      "debug_fetch_count": 9,
+      "debug_provider_fetch_count": 8,
+      "debug_progress_stage": "chain_reached",
+      "debug_fetches": [
+        {
+          "url": "https://api.themoviedb.org/3/movie/10513?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Crelease_dates&language=fr-FR&api_key=%3Credacted%3E",
+          "response_url": "https://api.themoviedb.org/3/movie/10513?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Crelease_dates&language=fr-FR&api_key=%3Credacted%3E",
+          "method": "GET",
+          "status": 200,
+          "content_type": "application/json",
+          "challenge": "",
+          "response_shape": {
+            "kind": "json",
+            "top": "object",
+            "keys": [
+              "adult",
+              "backdrop_path",
+              "belongs_to_collection",
+              "budget",
+              "genres",
+              "homepage",
+              "id",
+              "imdb_id",
+              "origin_country",
+              "original_language",
+              "original_title",
+              "overview",
+              "popularity",
+              "poster_path",
+              "production_companies",
+              "production_countries"
+            ]
+          },
+          "declared_player_candidate_count": 0,
+          "declared_url_player_candidate_count": 0,
+          "declared_indexed_player_candidate_count": 0,
+          "declared_player_hosts": [],
+          "declared_quality_heights": [],
+          "duration_ms": 307
+        },
+        {
+          "url": "https://archive.org/advancedsearch.php?q=title%3A%22Plan%209%20from%20Outer%20Space%22%20AND%20mediatype%3Amovies%20AND%20licenseurl%3A*publicdomain*&fl%5B%5D=identifier&fl%5B%5D=title&fl%5B%5D=date&fl%5B%5D=year&fl%5B%5D=licenseurl&rows=20&page=1&output=json",
+          "response_url": "https://archive.org/advancedsearch.php?q=title%3A%22Plan%209%20from%20Outer%20Space%22%20AND%20mediatype%3Amovies%20AND%20licenseurl%3A*publicdomain*&fl%5B%5D=identifier&fl%5B%5D=title&fl%5B%5D=date&fl%5B%5D=year&fl%5B%5D=licenseurl&rows=20&page=1&output=json",
+          "method": "GET",
+          "status": 200,
+          "content_type": "application/json",
+          "challenge": "",
+          "response_shape": {
+            "kind": "json",
+            "top": "object",
+            "keys": [
+              "responseHeader",
+              "response"
+            ]
+          },
+          "declared_player_candidate_count": 2,
+          "declared_url_player_candidate_count": 2,
+          "declared_indexed_player_candidate_count": 0,
+          "declared_player_hosts": [
+            "creativecommons.org"
+          ],
+          "declared_quality_heights": [],
+          "duration_ms": 211
+        },
+        {
+          "url": "https://archive.org/metadata/plan-9-from-outer-space",
+          "response_url": "https://archive.org/metadata/plan-9-from-outer-space",
+          "method": "GET",
+          "status": 200,
+          "content_type": "application/json",
+          "challenge": "",
+          "response_shape": {
+            "kind": "json",
+            "top": "object",
+            "keys": [
+              "alternate_locations",
+              "created",
+              "d1",
+              "dir",
+              "files",
+              "files_count",
+              "item_last_updated",
+              "item_size",
+              "metadata",
+              "reviews",
+              "server",
+              "simplelists",
+              "solo",
+              "uniq",
+              "workable_servers"
+            ]
+          },
+          "declared_player_candidate_count": 1,
+          "declared_url_player_candidate_count": 1,
+          "declared_indexed_player_candidate_count": 0,
+          "declared_player_hosts": [
+            "archive.org"
+          ],
+          "declared_quality_heights": [],
+          "duration_ms": 112
+        },
+        {
+          "url": "https://archive.org/download/plan-9-from-outer-space/plan-9-from-outer-space.mp4",
+          "response_url": "https://dn720404.ca.archive.org/0/items/plan-9-from-outer-space/plan-9-from-outer-space.mp4",
+          "method": "GET",
+          "status": 206,
+          "content_type": "video/mp4",
+          "challenge": "",
+          "response_shape": null,
+          "declared_player_candidate_count": 0,
+          "declared_url_player_candidate_count": 0,
+          "declared_indexed_player_candidate_count": 0,
+          "declared_player_hosts": [],
+          "declared_quality_heights": [],
+          "duration_ms": 250
+        },
+        {
+          "url": "https://archive.org/download/plan-9-from-outer-space/plan-9-from-outer-space.mpeg4",
+          "response_url": "https://dn720404.ca.archive.org/0/items/plan-9-from-outer-space/plan-9-from-outer-space.mpeg4",
+          "method": "GET",
+          "status": 206,
+          "content_type": "video/mp4",
+          "challenge": "",
+          "response_shape": null,
+          "declared_player_candidate_count": 0,
+          "declared_url_player_candidate_count": 0,
+          "declared_indexed_player_candidate_count": 0,
+          "declared_player_hosts": [],
+          "declared_quality_heights": [],
+          "duration_ms": 259
+        },
+        {
+          "url": "https://dn720404.ca.archive.org/0/items/plan-9-from-outer-space/plan-9-from-outer-space.mp4",
+          "response_url": "https://dn720404.ca.archive.org/0/items/plan-9-from-outer-space/plan-9-from-outer-space.mp4",
+          "method": "GET",
+          "status": 206,
+          "content_type": "video/mp4",
+          "challenge": "",
+          "response_shape": null,
+          "declared_player_candidate_count": 0,
+          "declared_url_player_candidate_count": 0,
+          "declared_indexed_player_candidate_count": 0,
+          "declared_player_hosts": [],
+          "declared_quality_heights": [],
+          "duration_ms": 160
+        },
+        {
+          "url": "https://dn720404.ca.archive.org/0/items/plan-9-from-outer-space/plan-9-from-outer-space.mpeg4",
+          "response_url": "https://dn720404.ca.archive.org/0/items/plan-9-from-outer-space/plan-9-from-outer-space.mpeg4",
+          "method": "GET",
+          "status": 206,
+          "content_type": "video/mp4",
+          "challenge": "",
+          "response_shape": null,
+          "declared_player_candidate_count": 0,
+          "declared_url_player_candidate_count": 0,
+          "declared_indexed_player_candidate_count": 0,
+          "declared_player_hosts": [],
+          "declared_quality_heights": [],
+          "duration_ms": 316
+        },
+        {
+          "url": "https://dn720404.ca.archive.org/0/items/plan-9-from-outer-space/plan-9-from-outer-space.mp4",
+          "response_url": "https://dn720404.ca.archive.org/0/items/plan-9-from-outer-space/plan-9-from-outer-space.mp4",
+          "method": "GET",
+          "status": 206,
+          "content_type": "video/mp4",
+          "challenge": "",
+          "response_shape": null,
+          "declared_player_candidate_count": 0,
+          "declared_url_player_candidate_count": 0,
+          "declared_indexed_player_candidate_count": 0,
+          "declared_player_hosts": [],
+          "declared_quality_heights": [],
+          "duration_ms": 62
+        },
+        {
+          "url": "https://dn720404.ca.archive.org/0/items/plan-9-from-outer-space/plan-9-from-outer-space.mpeg4",
+          "response_url": "https://dn720404.ca.archive.org/0/items/plan-9-from-outer-space/plan-9-from-outer-space.mpeg4",
+          "method": "GET",
+          "status": 206,
+          "content_type": "video/mp4",
+          "challenge": "",
+          "response_shape": null,
+          "declared_player_candidate_count": 0,
+          "declared_url_player_candidate_count": 0,
+          "declared_indexed_player_candidate_count": 0,
+          "declared_player_hosts": [],
+          "declared_quality_heights": [],
+          "duration_ms": 67
+        }
+      ],
+      "debug_provider_value_trace_v18": null,
+      "debug_provider_value_trace_history_v21": [],
+      "debug_provider_runtime_dispatch_error_v1": null,
+      "debug_identity_reasons": [
+        {
+          "host": "dn720404.ca.archive.org",
+          "title": "🔗 Internet Archive — Public Domain",
+          "filename": "",
+          "identity_status": "match",
+          "identity_reason": "expected_title_alias",
+          "metadata_status": "match",
+          "metadata_reason": "expected_title_alias",
+          "duration_status": "unknown",
+          "duration_reason": "duration_unavailable",
+          "duration_ratio": null,
+          "media_kind": "mp4",
+          "media_status": 206,
+          "media_error": ""
+        },
+        {
+          "host": "dn720404.ca.archive.org",
+          "title": "🔗 Internet Archive — Public Domain",
+          "filename": "",
+          "identity_status": "match",
+          "identity_reason": "expected_title_alias",
+          "metadata_status": "match",
+          "metadata_reason": "expected_title_alias",
+          "duration_status": "unknown",
+          "duration_reason": "duration_unavailable",
+          "duration_ratio": null,
+          "media_kind": "mp4",
+          "media_status": 206,
+          "media_error": ""
+        }
+      ],
+      "stderr_tail": "FIELD_TMDB_PROBE_CONTEXT state=core_ready credential_visible=false metadata_hydrated=false dynamic=true core_capability=true\n",
+      "raw": 2,
+      "playable": 2,
+      "verified": 2,
+      "contradictions": 0,
+      "identity_safe": true,
+      "duration_ms": 1416,
+      "sample_count": 1,
+      "fanout_fixture_title": "Plan 9 from Outer Space",
+      "sample_titles": [
+        "Plan 9 from Outer Space"
+      ],
+      "adaptive_rotated": false,
+      "samples": [
+        {
+          "fixture_title": "Plan 9 from Outer Space",
+          "fixture": {
+            "tmdbId": "10513",
+            "mediaType": "movie",
+            "category": "movie",
+            "title": "Plan 9 from Outer Space",
+            "year": 1957
+          },
+          "status": "playable_verified",
+          "debug_stage": "provider_returned_streams",
+          "debug_progress_stage": "chain_reached",
+          "raw": 2,
+          "playable": 2,
+          "verified": 2,
+          "contradictions": 0,
+          "duration_ms": 1354,
+          "streams_returned": 2,
+          "announced_player_candidates": 0,
+          "announced_variant_candidates": 0,
+          "announced_player_hosts": [],
+          "announced_quality_heights": [],
+          "explored_player_requests": 0,
+          "explored_player_hosts": [],
+          "variant_fanout_state": "not-observed"
+        }
+      ],
+      "provider_budget_seconds": 90,
+      "provider_budget_exhausted": false
+    }
+  ]
+}
