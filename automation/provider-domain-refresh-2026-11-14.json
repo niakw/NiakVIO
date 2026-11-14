@@ -91,6 +91,96 @@
       "verdict": "externally_reachable_catalog",
       "evidence": "https://nakios.live/",
       "note": "External fetch exposes current movie/series catalogue and official-address link."
+    },
+    {
+      "provider": "sadisflix",
+      "scope": "france",
+      "oldDirect": "https://sadisflix-officiel.biz/",
+      "recommendedDirect": "https://sadisflix-officiel.cfd",
+      "verdict": "migrated",
+      "evidence": "https://referia.lol/sadisflix/",
+      "note": "Current address authority lists sadisflix-officiel.cfd as current address dated 2026-10-16."
+    },
+    {
+      "provider": "vombam",
+      "scope": "france",
+      "oldDirect": "https://vombam.com/",
+      "recommendedDirect": "https://varloz.com",
+      "verdict": "migrated",
+      "evidence": "https://vombam.com/",
+      "note": "Current page explicitly announces Vombam becomes varloz.com."
+    },
+    {
+      "provider": "wavewatch",
+      "scope": "france",
+      "oldDirect": "https://wavewatch.top/",
+      "recommendedDirect": "https://wavewatch.icu/",
+      "verdict": "redirected_live_unverified",
+      "evidence": "https://wavewatch.top/",
+      "note": "Observed redirect to wavewatch.icu; terminal playback remains unverified."
+    },
+    {
+      "provider": "zone-telechargement",
+      "scope": "france",
+      "oldDirect": "https://www.zone-telechargement.estate/",
+      "recommendedDirect": "https://www.zone-telechargement.rentals/",
+      "verdict": "migrated",
+      "evidence": "https://www.zone-telechargement.rentals/",
+      "note": "Current page calls zone-telechargement.rentals its unique official domain."
+    },
+    {
+      "provider": "hianime",
+      "scope": "france",
+      "oldDirect": "https://hianimestv.su/",
+      "recommendedDirect": "https://hianime.at/",
+      "verdict": "redirected",
+      "evidence": "https://hianimestv.su/",
+      "note": "Observed redirect to hianime.at with current anime catalogue."
+    },
+    {
+      "provider": "1jour1film0626",
+      "scope": "france",
+      "oldDirect": "https://1jour1film0626.site",
+      "recommendedDirect": "https://1jour1film1026.monster",
+      "verdict": "migrated",
+      "evidence": "https://1jour1film0626.site/",
+      "note": "Official transition page links current address 1jour1film1026.monster."
+    },
+    {
+      "provider": "ilmiv",
+      "scope": "france",
+      "oldDirect": "https://ilmiv.com",
+      "recommendedDirect": "https://bimdav.com",
+      "verdict": "migrated",
+      "evidence": "https://ilmiv.com/",
+      "note": "Current page explicitly announces ILMIV becomes bimdav.com."
+    },
+    {
+      "provider": "kidraz",
+      "scope": "france",
+      "oldDirect": "https://www.kidraz.com",
+      "recommendedDirect": "https://fronav.com",
+      "verdict": "migrated",
+      "evidence": "https://www.kidraz.com/",
+      "note": "Current page explicitly announces Kidraz becomes fronav.com."
+    },
+    {
+      "provider": "stigstream",
+      "scope": "france",
+      "oldDirect": "https://stigstream.ru",
+      "recommendedAction": "retire_and_replace",
+      "verdict": "identity_gone_redirects_to_directory",
+      "evidence": "https://stigstream.ru/",
+      "note": "Observed redirect to FMHY directory, not a Stigstream provider."
+    },
+    {
+      "provider": "wowfilms0626",
+      "scope": "france",
+      "oldDirect": "https://wowfilms0626c.site",
+      "recommendedAction": "retire_and_replace",
+      "verdict": "redirects_to_other_provider",
+      "evidence": "https://wowfilms0626c.site/",
+      "note": "Observed redirect to 1JOUR1FILM transition page; not an independent provider identity."
     }
   ],
   "replacementCandidates": [
@@ -117,6 +207,29 @@
       ],
       "externalEvidence": "https://boredflix.to/",
       "reason": "Current catalogue page reachable with Movies/TV/Anime lanes."
+    },
+    {
+      "id": "coflix",
+      "scope": "france",
+      "direct": "https://coflix.red/",
+      "types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "externalEvidence": "https://coflix.domains/",
+      "reason": "Official domain authority lists coflix.red as available; live catalogue externally reachable."
+    },
+    {
+      "id": "vostfree",
+      "scope": "france",
+      "direct": "https://vostfree.ws/",
+      "types": [
+        "movie",
+        "anime"
+      ],
+      "externalEvidence": "https://vostfree.ws/",
+      "reason": "Current VF/VOSTFR anime/film catalogue externally reachable; distinct France identity."
     }
   ]
 }
