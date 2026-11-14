@@ -1,3 +1,9 @@
+## 2026-11-14 — Catalogue authority contract follows generalized current withdrawal
+
+- Lifecycle 43585830587 again reached disabled_now=15 and passed the updated unit matrix, then stopped in provider_authority_current_catalogue_test.py because its final AnimesUltra fixture still required KEEP_DIRECT even after the current census had just made the row disabled-retained.
+- Generalize the catalogue contract: for every census row matching current_architecture_nonfunctional and already moved disabled, require KEEP_DISABLED/repairEligible=false. Address authority remains valid Repair knowledge but cannot override current production activation evidence. The AnimesUltra address assertion is now conditional on whether runtime withdrawal applied. No provider mutation from the failed run was committed.
+- Push retriggers lifecycle for the same 15 exact identities.
+
 ## 2026-11-14 — Lifecycle withdrawal reached 15 targets; stale unit contract fixed
 
 - Provider Disabled Lifecycle 43585599861 on 7bcb3092 executed authority classification before its test stop and reported disabled_now=15, exactly the current active cohort lacking terminal playback proof (5 CANDIDATE OK, 9 ROUTE PROVEN, 1 NO PROOF). No lifecycle mutation was committed because the same job failed before commit.

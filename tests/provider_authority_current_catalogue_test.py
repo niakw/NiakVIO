@@ -114,29 +114,35 @@ for provider, baseline_action in expected.items():
     if action in {"KEEP_DISABLED", "REDISCOVER_SEARCH", "DISABLE_MANUAL_POLICY"}:
         assert result["repairEligible"] is False, (provider, result)
 
-# Current tested regressions may be moved into disabled retention by the
-# lifecycle before this catalogue contract runs. This is status-driven, not a
-# provider-specific exception list.
+# Any current-tested production identity lacking terminal playback may be moved
+# into disabled retention before this catalogue contract runs. This is
+# status-driven, never a provider-specific exception list.
 census = json.loads((ROOT / "automation/provider-census-status.json").read_text(encoding="utf-8"))
+withdrawn_current = set()
 for proof in census.get("providers") or []:
     if not isinstance(proof, dict):
         continue
     provider = str(proof.get("provider") or "").strip().casefold().replace("_", "-")
     if (
-        proof.get("status") == "REGRESSION PROVIDER"
-        and proof.get("testedThisRun") is True
+        module.current_architecture_nonfunctional(proof)
         and provider in rows
         and rows[provider].get("enabled") is False
     ):
+        withdrawn_current.add(provider)
         result = classify(provider)
         assert result["action"] == "KEEP_DISABLED", (provider, result)
         assert result["repairEligible"] is False, (provider, result)
 
-# An explicit-current site is allowed while Domain has no persisted contradiction.
-# Domain failure memory, not a human hunch or raw search result, must demote it.
+# Explicit-current authority remains useful for Repair while active, but current
+# runtime evidence wins the production activation decision. Do not special-case
+# an identity merely because its address authority is strong.
 animesultra = classify("animesultra")
-assert animesultra["action"] == "KEEP_DIRECT", animesultra
-assert animesultra["failureCount"] == 0, animesultra
+if "animesultra" in withdrawn_current:
+    assert animesultra["action"] == "KEEP_DISABLED", animesultra
+    assert animesultra["repairEligible"] is False, animesultra
+else:
+    assert animesultra["action"] == "KEEP_DIRECT", animesultra
+    assert animesultra["failureCount"] == 0, animesultra
 
 # Search is still available for the historical catalogue, but never as current
 # authority by itself. ShowBox has now been explicitly marked non-activable after
