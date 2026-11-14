@@ -1,3 +1,10 @@
+## 2026-11-14 — Post-release current-byte revalidation requested on truthful production
+
+- Automatic lifecycle-to-release handoff was exercised successfully: lifecycle transition 5a1203a6 dispatched finalizer 43588695696 with its exact SHA; finalizer completed successfully and published 4c80ff9d, preserving release 5.21.144 and the truthful active cohort.
+- Release-generated GITHUB_TOKEN pushes do not start the current-byte census. Add an explicit no-runtime-change workflow marker to trigger the existing census on the exact post-release tree. Provider materialization scope for a census-workflow-only change is expected to remain none.
+- Update PROVIDER_INTAKE_2026-11-14.md: France-only onboarding/lifecycle/version/cache/projection architecture is now first-class. Remaining blockers are candidate source authority and full terminal/identity/native validation, not manifest topology. Current production baseline is Global 13 active (movie6/tv6/anime9), France 10 active (movie4/tv4/anime8), union visible 58.
+- This commit does not activate, re-enable or alter provider bytes.
+
 ## 2026-11-14 — Lifecycle publication now hands exact SHA to release finalization
 
 - Release-finalize 43588137631 completed successfully and atomically published 6d08a469, release 5.21.144. Global is 45 visible / 13 active; France is 34 visible / 10 active; Nuvio client state schema v2 records 58 union-visible identities and 13 first-class France-only identities. The active Global canonical lane counts are movie=6, tv=6, anime=9; France active counts movie=4, tv=4, anime=8.

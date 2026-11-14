@@ -33,10 +33,19 @@ Source code is upstream *diagnostic input*, **not** an executable provider bundl
 
 ## Known blockers
 
-- Existing production `provider_catalog.json` and language projection scripts assume France is a subset of Global; a France-only first-class candidate cannot be published as Global without an architecture migration. Do not fake this with a duplicated Global entry.
-- The existing bulk onboarding stages candidates as `disabled/pending` by design, and does not imply playable media; it also currently uses Global as the canonical source for VF projection.
-- Historic lifecycle-disabled sources (such as Videasy and ShowBox) must not be silently reactivated.
-- A successful CI workflow is not a native decoding proof.
+- **France-only architecture is no longer a blocker.** `add_provider.py`, batch staging, lifecycle authority, static/materialization ledgers, release version/cache synchronization and language projections now support first-class `general:false, vf:true` identities without inserting them into Global.
+- Bulk onboarding still stages candidates as `disabled/pending` by design. A staged row is non-executable and does **not** imply playable media; promotion still requires terminal media, identity and native/client validation on the materialized Provider v3 bytes.
+- Current production deliberately contains only the cohort that survived current-byte functional evidence; lifecycle-disabled and bulk-pending rows remain repair/onboarding knowledge, not quota fillers.
+- Historic lifecycle-disabled sources must not be silently reactivated.
+- A successful CI workflow, upstream terminal URL or route proof is not a native decoding proof.
+
+### Current production baseline after lifecycle cleanup
+
+- Release: **5.21.144**.
+- Global: **45 visible / 13 active**, canonical active lanes **movie 6 / TV 6 / anime 9**.
+- France: **34 visible / 10 active**, canonical active lanes **movie 4 / TV 4 / anime 8**.
+- Catalogue union: **58 visible**, including **13 first-class France-only** identities.
+- The 20/20/20 target remains a target, not a reason to reactivate rows lacking current terminal playback proof.
 
 Goal: prove a representative source per failure/runtime family before broad promotion. Persist useful positive and negative source patterns for Brain/Learning.
 
