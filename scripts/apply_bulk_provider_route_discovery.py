@@ -32,6 +32,16 @@ TARGET_ACTIVE = 60
 TARGET_LANE = 20
 
 
+def defer_missing_probe_result(
+    row: dict[str, Any], pid: str, active_ids: set[str]
+) -> dict[str, Any] | None:
+    if pid in active_ids:
+        return None
+    deferred = dict(row)
+    deferred["routeDiscoveryLastReason"] = "probe_shard_missing_or_timeout"
+    return deferred
+
+
 def current_active_ids() -> set[str]:
     ids: set[str] = set()
     for path in (ROOT / "manifest.json", ROOT / "vf" / "manifest.json"):
@@ -177,11 +187,9 @@ def main() -> int:
             # Active rows are intentionally omitted by the probe. Missing inactive
             # rows, however, may belong to a shard that timed out/cancelled; keep
             # them in the next wave instead of silently dropping the candidate.
-            if pid in active_ids:
-                continue
-            deferred_row = dict(row)
-            deferred_row["routeDiscoveryLastReason"] = "probe_shard_missing_or_timeout"
-            deferred.append(deferred_row)
+            deferred_row = defer_missing_probe_result(row, pid, active_ids)
+            if deferred_row is not None:
+                deferred.append(deferred_row)
             continue
         patterns = [
             str(value).strip()
