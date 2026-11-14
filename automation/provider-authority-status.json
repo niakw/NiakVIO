@@ -63,23 +63,7 @@
     "vostfree",
     "yflix"
   ],
-  "disabledNow": [
-    "4khdhub",
-    "allwish",
-    "animesalt",
-    "animesama-co",
-    "animesultra",
-    "animevostfr",
-    "coflix",
-    "flemmix",
-    "kehflix",
-    "moviebox",
-    "movieshunt",
-    "moviesmod",
-    "persianstremio",
-    "vidfast",
-    "vostfree"
-  ],
+  "disabledNow": [],
   "providers": [
     {
       "provider": "anime-sama",
@@ -108,17 +92,14 @@
     },
     {
       "provider": "flemmix",
-      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "action": "KEEP_DISABLED",
       "repairEligible": false,
-      "confidence": "current-census",
-      "authorityClass": "current-architecture-nonfunctional",
+      "confidence": "terminal",
+      "authorityClass": "disabled",
       "failureCount": 0,
       "reasons": [
-        "authoritative_route_source",
-        "current_census_tested_without_terminal_verified_playback",
-        "current_status:ROUTE PROVEN"
-      ],
-      "appliedDisableReason": "auto_off_current_architecture_nonfunctional"
+        "already_disabled"
+      ]
     },
     {
       "provider": "uhdmovies",
@@ -133,17 +114,14 @@
     },
     {
       "provider": "movieshunt",
-      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "action": "KEEP_DISABLED",
       "repairEligible": false,
-      "confidence": "current-census",
-      "authorityClass": "current-architecture-nonfunctional",
+      "confidence": "terminal",
+      "authorityClass": "disabled",
       "failureCount": 0,
       "reasons": [
-        "authoritative_route_source",
-        "current_census_tested_without_terminal_verified_playback",
-        "current_status:CANDIDATE OK"
-      ],
-      "appliedDisableReason": "auto_off_current_architecture_nonfunctional"
+        "already_disabled"
+      ]
     },
     {
       "provider": "hindmoviez",
@@ -161,48 +139,36 @@
     },
     {
       "provider": "4khdhub",
-      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "action": "KEEP_DISABLED",
       "repairEligible": false,
-      "confidence": "current-census",
-      "authorityClass": "current-architecture-nonfunctional",
+      "confidence": "terminal",
+      "authorityClass": "disabled",
       "failureCount": 0,
       "reasons": [
-        "authoritative_route_source",
-        "current_census_tested_without_terminal_verified_playback",
-        "current_status:ROUTE PROVEN"
-      ],
-      "appliedDisableReason": "auto_off_current_architecture_nonfunctional"
+        "already_disabled"
+      ]
     },
     {
       "provider": "persianstremio",
-      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "action": "KEEP_DISABLED",
       "repairEligible": false,
-      "confidence": "current-census",
-      "authorityClass": "current-architecture-nonfunctional",
+      "confidence": "terminal",
+      "authorityClass": "disabled",
       "failureCount": 0,
-      "backendUrls": [
-        "https://persianstremio.vercel.app"
-      ],
       "reasons": [
-        "structured_backend_authority",
-        "current_census_tested_without_terminal_verified_playback",
-        "current_status:CANDIDATE OK"
-      ],
-      "appliedDisableReason": "auto_off_current_architecture_nonfunctional"
+        "already_disabled"
+      ]
     },
     {
       "provider": "kehflix",
-      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "action": "KEEP_DISABLED",
       "repairEligible": false,
-      "confidence": "current-census",
-      "authorityClass": "current-architecture-nonfunctional",
+      "confidence": "terminal",
+      "authorityClass": "disabled",
       "failureCount": 0,
       "reasons": [
-        "authoritative_route_source",
-        "current_census_tested_without_terminal_verified_playback",
-        "current_status:ROUTE PROVEN"
-      ],
-      "appliedDisableReason": "auto_off_current_architecture_nonfunctional"
+        "already_disabled"
+      ]
     },
     {
       "provider": "anikototv",
@@ -228,59 +194,47 @@
     },
     {
       "provider": "animesalt",
-      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "action": "KEEP_DISABLED",
       "repairEligible": false,
-      "confidence": "current-census",
-      "authorityClass": "current-architecture-nonfunctional",
+      "confidence": "terminal",
+      "authorityClass": "disabled",
       "failureCount": 0,
       "reasons": [
-        "authoritative_route_source",
-        "current_census_tested_without_terminal_verified_playback",
-        "current_status:ROUTE PROVEN"
-      ],
-      "appliedDisableReason": "auto_off_current_architecture_nonfunctional"
+        "already_disabled"
+      ]
     },
     {
       "provider": "animesama-co",
-      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "action": "KEEP_DISABLED",
       "repairEligible": false,
-      "confidence": "current-census",
-      "authorityClass": "current-architecture-nonfunctional",
+      "confidence": "terminal",
+      "authorityClass": "disabled",
       "failureCount": 0,
       "reasons": [
-        "current_authority_direct",
-        "current_census_tested_without_terminal_verified_playback",
-        "current_status:CANDIDATE OK"
-      ],
-      "appliedDisableReason": "auto_off_current_architecture_nonfunctional"
+        "already_disabled"
+      ]
     },
     {
       "provider": "animesultra",
-      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "action": "KEEP_DISABLED",
       "repairEligible": false,
-      "confidence": "current-census",
-      "authorityClass": "current-architecture-nonfunctional",
+      "confidence": "terminal",
+      "authorityClass": "disabled",
       "failureCount": 0,
       "reasons": [
-        "current_authority_direct",
-        "current_census_tested_without_terminal_verified_playback",
-        "current_status:ROUTE PROVEN"
-      ],
-      "appliedDisableReason": "auto_off_current_architecture_nonfunctional"
+        "already_disabled"
+      ]
     },
     {
       "provider": "animevostfr",
-      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "action": "KEEP_DISABLED",
       "repairEligible": false,
-      "confidence": "current-census",
-      "authorityClass": "current-architecture-nonfunctional",
+      "confidence": "terminal",
+      "authorityClass": "disabled",
       "failureCount": 0,
       "reasons": [
-        "authoritative_route_source",
-        "current_census_tested_without_terminal_verified_playback",
-        "current_status:CANDIDATE OK"
-      ],
-      "appliedDisableReason": "auto_off_current_architecture_nonfunctional"
+        "already_disabled"
+      ]
     },
     {
       "provider": "castle",
@@ -298,17 +252,14 @@
     },
     {
       "provider": "coflix",
-      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "action": "KEEP_DISABLED",
       "repairEligible": false,
-      "confidence": "current-census",
-      "authorityClass": "current-architecture-nonfunctional",
+      "confidence": "terminal",
+      "authorityClass": "disabled",
       "failureCount": 0,
       "reasons": [
-        "authoritative_route_source",
-        "current_census_tested_without_terminal_verified_playback",
-        "current_status:CANDIDATE OK"
-      ],
-      "appliedDisableReason": "auto_off_current_architecture_nonfunctional"
+        "already_disabled"
+      ]
     },
     {
       "provider": "french-manga",
@@ -335,17 +286,14 @@
     },
     {
       "provider": "moviesmod",
-      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "action": "KEEP_DISABLED",
       "repairEligible": false,
-      "confidence": "current-census",
-      "authorityClass": "current-architecture-nonfunctional",
+      "confidence": "terminal",
+      "authorityClass": "disabled",
       "failureCount": 0,
       "reasons": [
-        "authoritative_route_source",
-        "current_census_tested_without_terminal_verified_playback",
-        "current_status:ROUTE PROVEN"
-      ],
-      "appliedDisableReason": "auto_off_current_architecture_nonfunctional"
+        "already_disabled"
+      ]
     },
     {
       "provider": "mugiwarastream",
@@ -418,17 +366,14 @@
     },
     {
       "provider": "vidfast",
-      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "action": "KEEP_DISABLED",
       "repairEligible": false,
-      "confidence": "current-census",
-      "authorityClass": "current-architecture-nonfunctional",
+      "confidence": "terminal",
+      "authorityClass": "disabled",
       "failureCount": 0,
       "reasons": [
-        "authoritative_route_source",
-        "current_census_tested_without_terminal_verified_playback",
-        "current_status:ROUTE PROVEN"
-      ],
-      "appliedDisableReason": "auto_off_current_architecture_nonfunctional"
+        "already_disabled"
+      ]
     },
     {
       "provider": "vidrock",
@@ -478,17 +423,14 @@
     },
     {
       "provider": "vostfree",
-      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "action": "KEEP_DISABLED",
       "repairEligible": false,
-      "confidence": "current-census",
-      "authorityClass": "current-architecture-nonfunctional",
+      "confidence": "terminal",
+      "authorityClass": "disabled",
       "failureCount": 0,
       "reasons": [
-        "authoritative_route_source",
-        "current_census_tested_without_terminal_verified_playback",
-        "current_status:ROUTE PROVEN"
-      ],
-      "appliedDisableReason": "auto_off_current_architecture_nonfunctional"
+        "already_disabled"
+      ]
     },
     {
       "provider": "wookafr",
@@ -525,17 +467,14 @@
     },
     {
       "provider": "allwish",
-      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "action": "KEEP_DISABLED",
       "repairEligible": false,
-      "confidence": "current-census",
-      "authorityClass": "current-architecture-nonfunctional",
+      "confidence": "terminal",
+      "authorityClass": "disabled",
       "failureCount": 0,
       "reasons": [
-        "authoritative_route_source",
-        "current_census_tested_without_terminal_verified_playback",
-        "current_status:NO PROOF"
-      ],
-      "appliedDisableReason": "auto_off_current_architecture_nonfunctional"
+        "already_disabled"
+      ]
     },
     {
       "provider": "anime-ultime",
@@ -572,17 +511,14 @@
     },
     {
       "provider": "moviebox",
-      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "action": "KEEP_DISABLED",
       "repairEligible": false,
-      "confidence": "current-census",
-      "authorityClass": "current-architecture-nonfunctional",
+      "confidence": "terminal",
+      "authorityClass": "disabled",
       "failureCount": 0,
       "reasons": [
-        "authoritative_route_source",
-        "current_census_tested_without_terminal_verified_playback",
-        "current_status:ROUTE PROVEN"
-      ],
-      "appliedDisableReason": "auto_off_current_architecture_nonfunctional"
+        "already_disabled"
+      ]
     },
     {
       "provider": "vidlove",
