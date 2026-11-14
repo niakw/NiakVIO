@@ -6,6 +6,7 @@ import argparse
 import hashlib
 import json
 import re
+import subprocess
 from pathlib import Path
 from typing import Any
 
@@ -31,6 +32,19 @@ def write(path:Path, value:Any)->None:
 
 def norm(value:Any)->str:
     return re.sub(r"[^a-z0-9._-]+","-",str(value or "").strip().casefold()).strip("-")
+
+
+def proof_source_artifact_digest(trigger_sha:str, relative:str)->str:
+    sha=str(trigger_sha or "").strip().casefold()
+    rel=str(relative or "").strip().replace("\\","/")
+    if not re.fullmatch(r"[0-9a-f]{40}",sha):
+        raise RuntimeError("pending proof trigger SHA is invalid")
+    if rel.startswith("../") or not rel.startswith("provider-disabled/"):
+        raise RuntimeError("pending proof artifact path is unsafe")
+    proc=subprocess.run(["git","show",f"{sha}:{rel}"],cwd=ROOT,capture_output=True,timeout=30,check=False)
+    if proc.returncode!=0:
+        raise RuntimeError("pending proof source artifact is unavailable")
+    return hashlib.sha256(proc.stdout).hexdigest()
 
 
 def pending_artifact_digest(path:Path)->str:
@@ -79,6 +93,9 @@ def restore_pending_artifacts(
     base_source=(ROOT/"provider-disabled"/"provider-bases"/base_target.name).resolve()
     if not source.is_file() or not base_source.is_file():
         raise RuntimeError(f"{pid}: pending provider/base artifact missing")
+    expected_base=str(provenance_row.get("base_sha256") or "").strip().casefold()
+    if len(expected_base)==64 and hashlib.sha256(base_source.read_bytes()).hexdigest()!=expected_base:
+        raise RuntimeError(f"{pid}: pending ProviderBase hash mismatch")
     if target.exists() and source.read_bytes()!=target.read_bytes():
         raise RuntimeError(f"activation artifact collision: {target}")
     if base_target.exists() and base_source.read_bytes()!=base_target.read_bytes():
@@ -179,6 +196,14 @@ def main()->int:
         recorded_sha=str(prov.get("sha256") or "").strip().casefold()
         if len(recorded_sha)==64 and recorded_sha!=pending_sha:
             blocked.append({"provider":pid,"reason":"pending_artifact_hash_mismatch"})
+            continue
+        try:
+            proof_sha=proof_source_artifact_digest(str(trigger_sha or ""),filename)
+        except Exception as exc:
+            blocked.append({"provider":pid,"reason":"pending_proof_source_unavailable","detail":str(exc)})
+            continue
+        if proof_sha!=pending_sha:
+            blocked.append({"provider":pid,"reason":"pending_proof_source_byte_drift"})
             continue
         try:
             active_relative=restore_pending_artifacts(pid,manifest_row,prov,dry_run=args.dry_run)
