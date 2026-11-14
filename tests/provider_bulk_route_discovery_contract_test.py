@@ -57,6 +57,30 @@ legacy_model = probe._decode_owned_provider_model(
 assert legacy_model == {"providerId":"legacy","officialSite":"https://legacy.example","routes":["/movie/{tmdbId}"]}
 assert "provider-old" in probe.retained_v3_routes.__doc__
 
+apply_path=ROOT/"scripts/apply_bulk_provider_route_discovery.py"
+apply_spec=importlib.util.spec_from_file_location("bulk_route_apply_test",apply_path)
+apply_mod=importlib.util.module_from_spec(apply_spec); apply_spec.loader.exec_module(apply_mod)
+
+selected, standby = apply_mod.select_to_target(
+    [
+        {"id":"anime-only","scope":"france","types":["anime"],"inventory_score":99,"inventory_rank":1},
+        {"id":"movie-tv","scope":"france","types":["movie","tv"],"inventory_score":70,"inventory_rank":20},
+        {"id":"movie-only","scope":"france","types":["movie"],"inventory_score":90,"inventory_rank":2},
+    ],
+    scope="france",
+    current={"active":58,"lanes":{"movie":18,"tv":17,"anime":22}},
+)
+assert [row["id"] for row in selected] == ["movie-tv","movie-only"], selected
+assert [row["id"] for row in standby] == ["anime-only"], standby
+selected, standby = apply_mod.select_to_target(
+    [{"id":"overflow","scope":"global","types":["movie","tv","anime"]}],
+    scope="global",
+    current={"active":60,"lanes":{"movie":20,"tv":20,"anime":20}},
+)
+assert selected == [] and [row["id"] for row in standby] == ["overflow"]
+assert apply_mod.TARGET_ACTIVE == 60
+assert apply_mod.TARGET_LANE == 20
+
 request={
     "providers":[{"id":"a","direct":"https://a.invalid"}],
     "deferredProviders":[{"id":"b","direct":"https://b.invalid"},{"id":"a","direct":"https://duplicate.invalid"}],
