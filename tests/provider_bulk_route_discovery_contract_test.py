@@ -91,6 +91,16 @@ selected, standby = apply_mod.select_to_target(
 assert selected == [] and [row["id"] for row in standby] == ["overflow"]
 assert apply_mod.TARGET_ACTIVE == 60
 assert apply_mod.TARGET_LANE == 20
+assert apply_mod.defer_missing_probe_result(
+    {"id":"slow","scope":"france","types":["movie","tv"]},
+    "slow",
+    set(),
+)["routeDiscoveryLastReason"] == "probe_shard_missing_or_timeout"
+assert apply_mod.defer_missing_probe_result(
+    {"id":"already-active","scope":"global","types":["movie"]},
+    "already-active",
+    {"already-active"},
+) is None
 
 # Reserve intake is a non-active extension of the route-discovery pool; it must
 # be deduplicated against the live batch rather than bypassing normal probing.
@@ -135,6 +145,8 @@ for token in (
     "gh workflow run provider-bulk-onboarding.yml --ref main",
     "FIELD_BULK_ROUTE_HANDOFF dispatched=provider-bulk-onboarding",
     "github.event_name == 'push' && github.sha || 'main'",
+    "Partial route-discovery merge:",
+    "--expected-shards 8",
 ):
     assert token in workflow, token
 
