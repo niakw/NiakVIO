@@ -2940,3 +2940,16 @@ Measured clean V3 oracle #43539920416 showed a **provider transport differential
 - Cohort corrected: no France row now collides with a Global ID. Stale/invalid candidates removed or migrated, including Stellar discontinued, SpenFlix coming-soon, Stigstream redirect-to-directory, Wowfilms redirect-to-another-provider, Wiflix stale Flemmix domain; replacements/current authorities include PStream, BoredFlix, Neobam, Kordoz→Limdav, Anisama and the dated migrations recorded in the domain-refresh evidence file.
 - Current request SHA: `7b38b048ad71578f2dee04df9894b6f29538d0ca`; transaction remains **101 operations = 49 Global + 52 France**, designed to add exactly +49 Global and +52 France from the 11/8 baseline.
 - Current run: `43607641124`. Preflight is green; provider staging is running. No 60/60 completion claim until publication, manifest counts, bytes, gates and remote HEAD are verified.
+
+
+## 2026-11-15 — Chillflix S00 terminal proof published; exact-byte harness fixed
+
+- User fixtures are now explicit truth gates: Spartacus S00E01 (TMDB 46296), VisionQuest S01E01 (213375), Fahrenheit 451 (2018, 401905).
+- Fixed shared season-zero handling in the TMDB direct-embed Lego and Castle so season=0 is not silently coerced to season=1.
+- Fixed targeted materialization so explicit provider-owned identity Legos are executable authority for Global as well as France-only projections; fixed the user terminal matrix to resolve ../providers paths from France manifests.
+- Fixed run_exact_provider_fixture_probe.py to replay the exact bytes referenced by the current production manifest projection instead of stale provider_catalog bytes.
+- Physical-Mac run 43655424940 on source 125b0cdd35a148f8331f71c960049cc70e90ef84 rematerialized Chillflix to providers/chillflix-588fcd374860a66b.js. Exact playback proved Spartacus S00E01 with 1 terminal HLS stream, 1080p/en; terminal matrix reason hls_segment_media. VisionQuest S01E01 and Fahrenheit 451 reached Chillflix/Rive source discovery but direct vip.1x2.space media returned HTTP 403, so they remain unvalidated/zero for Chillflix.
+- Published the exact Mac-tested Chillflix bytes plus manifest/no-anime projection and evidence on main commit 572a9170d3b95cef300447d1abb5dd3b3b5e060b. Remote manifest.json now points chillflix to providers/chillflix-588fcd374860a66b.js and keeps it enabled for movie/tv.
+- Earlier physical-Mac matrix proved Webflix VisionQuest S01E01 terminal-positive (HTTP 200 -> 206). Do not confuse France-only Webflix proof with Global visibility.
+- Chillflix browser/API reverse found /api/cinepro/sources and the player proxy path. Current blocker for VisionQuest/Fahrenheit is media authorization/proxy handling, not catalogue identity or WAF at the provider page.
+- CodeQL cleanup scripts were made import-safe after the Mac test exposed a sibling-module import failure. Current CodeQL must still be revalidated on the final publication SHA; do not claim security green until that exact-SHA run completes.
