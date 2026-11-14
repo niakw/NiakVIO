@@ -1,3 +1,9 @@
+## 2026-11-14 — Lifecycle authority extended to France-only catalog without Global leakage
+
+- Lifecycle apply previously read only manifest.json, so a future catalog-owned {general:false,vf:true} provider could survive VF generation but never enter disabled retention, re-enable or archive handling. This contradicted the already-existing France-only projection authority.
+- Lifecycle now builds its visible authority as Global rows plus strict france_only_catalog_rows() from provider_catalog.json. Duplicate Global/France-only identities fail closed. Global manifest persistence still writes only its original Global row set; France-only lifecycle mutations flow through catalog + VF projections. Static knowledge/materialization reconciliation now sees the full current union, so incomplete onboarding cannot silently bypass those ledgers.
+- Disabled lifecycle contract now compares the ledger against Global plus VF-only visible rows and validates nested VF asset paths. Added synthetic union/collision coverage. No provider activation or provider byte change in this commit; current catalog has no required France-only activation claim. Exact-SHA CI pending.
+
 ## 2026-11-14 — Routine Brain architecture proposals were generated but never validated
 
 - Learning run 43570497187 completed successfully: 38 proposals / 45 skills / 1970 memory rows, 7 learned-skill repair proposals, 3 architecture proposals, but 0 provider proposals and 0 validated repairs. The downstream job named "Validate Brain architecture evolution" was skipped because its job-level condition allowed only explicit architecture FORCE or manual proposal publication. Routine/scheduled Learning therefore generated architecture debt but never exercised the materialization + architecture contract tests.

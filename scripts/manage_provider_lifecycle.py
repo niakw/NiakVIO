@@ -21,6 +21,8 @@ from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 
+from generate_language_manifests import france_only_catalog_rows
+
 ROOT = Path(__file__).resolve().parents[1]
 ACTIVE_DIR = ROOT / "providers"
 DISABLED_DIR = ROOT / "provider-disabled"
@@ -133,6 +135,23 @@ def rows_by_id(doc: dict[str, Any]) -> dict[str, dict[str, Any]]:
         for row in doc.get("scrapers") or []
         if isinstance(row, dict) and cid(row.get("id"))
     }
+
+
+def lifecycle_catalog_rows(
+    root_rows: dict[str, dict[str, Any]],
+    *,
+    root: Path = ROOT,
+) -> dict[str, dict[str, Any]]:
+    """Return current lifecycle authority without leaking France-only into Global."""
+    merged = dict(root_rows)
+    for row in france_only_catalog_rows(root=root):
+        pid = cid(row.get("id"))
+        if not pid:
+            raise RuntimeError("France-only lifecycle row has no canonical id")
+        if pid in merged:
+            raise RuntimeError(f"{pid}: France-only lifecycle identity collides with Global")
+        merged[pid] = row
+    return merged
 
 
 def current_asset(row: dict[str, Any]) -> Path:
@@ -362,9 +381,10 @@ def apply_lifecycle(root: Path = ROOT, *, day: date, apply: bool = False) -> dic
     state = state_doc()
     manifest = load_json(ROOT_MANIFEST)
     rows = [row for row in manifest.get("scrapers") or [] if isinstance(row, dict)]
-    by_id = {cid(row.get("id")): row for row in rows if cid(row.get("id"))}
-    if len(by_id) != len(rows):
+    root_by_id = {cid(row.get("id")): row for row in rows if cid(row.get("id"))}
+    if len(root_by_id) != len(rows):
         raise RuntimeError("manifest provider ids must be unique and non-empty")
+    by_id = lifecycle_catalog_rows(root_by_id, root=ROOT)
 
     disabled_state = state["disabled"]
     archived_state = state["archived"]
@@ -439,12 +459,18 @@ def apply_lifecycle(root: Path = ROOT, *, day: date, apply: bool = False) -> dic
     if archived_now:
         rows = [row for row in rows if cid(row.get("id")) not in archived_now]
         manifest["scrapers"] = rows
-        by_id = {cid(row.get("id")): row for row in rows if cid(row.get("id"))}
+        root_by_id = {cid(row.get("id")): row for row in rows if cid(row.get("id"))}
+        by_id = {
+            pid: row
+            for pid, row in by_id.items()
+            if pid not in archived_now
+        }
 
     active_ids = {pid for pid, row in by_id.items() if row.get("enabled") is not False}
     disabled_ids = {pid for pid, row in by_id.items() if row.get("enabled") is False}
 
     if apply:
+        # Global remains Global-only. France-only rows live in catalog/projections.
         dump_json(ROOT_MANIFEST, manifest)
         for path in PROJECTION_MANIFESTS:
             update_projection(path, by_id, archived_now)

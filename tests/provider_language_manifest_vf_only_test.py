@@ -235,3 +235,38 @@ with tempfile.TemporaryDirectory(prefix="niakvio-lifecycle-projection-") as dire
         assert row["version"] == "2.0.1" and row["enabled"] is True
         assert not any(k in row for k in ("disabledReason", "disabledAt", "purgeAfter", "lifecycleState"))
 print("Lifecycle projection metadata/reenable contract passed")
+
+
+# Lifecycle authority is the union of Global plus catalog-owned France-only rows,
+# without ever inserting the exclusive identity into Global.
+with tempfile.TemporaryDirectory(prefix="niakvio-vf-lifecycle-union-") as directory:
+    root = Path(directory)
+    global_row = {
+        "id": "global-fixture", "filename": "providers/global-fixture.js",
+        "enabled": True, "contentLanguage": ["en"], "supportedTypes": ["movie"],
+    }
+    france_row = {
+        "id": "france-lifecycle", "filename": "provider-disabled/france-lifecycle.js",
+        "enabled": False, "contentLanguage": ["fr"], "supportedTypes": ["movie"],
+        "disabledAt": "2026-11-14", "purgeAfter": "2026-11-21",
+        "lifecycleState": "disabled-retained",
+    }
+    sample_catalog(root, france_row)
+    merged = lifecycle.lifecycle_catalog_rows(
+        {"global-fixture": global_row},
+        root=root,
+    )
+    assert set(merged) == {"global-fixture", "france-lifecycle"}
+    assert merged["france-lifecycle"]["enabled"] is False
+    assert merged["global-fixture"] is global_row
+    try:
+        lifecycle.lifecycle_catalog_rows(
+            {"france-lifecycle": {**global_row, "id": "france-lifecycle"}},
+            root=root,
+        )
+    except RuntimeError as exc:
+        assert "collides with Global" in str(exc)
+    else:
+        raise AssertionError("France-only lifecycle identity collision accepted")
+
+print("Lifecycle Global + France-only authority union contract passed")
