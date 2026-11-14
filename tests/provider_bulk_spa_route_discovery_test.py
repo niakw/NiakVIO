@@ -31,7 +31,7 @@ bundle = (
 movie_routes = module._js_route_templates(bundle, movie, origin_host="example.test")
 tv_routes = module._js_route_templates(bundle, tv, origin_host="example.test")
 
-assert "/api/source?tmdb_id={tmdbId}&type=movie" in movie_routes, movie_routes
+assert "/api/source?tmdb_id={tmdbId}&type={media}" in movie_routes, movie_routes
 assert "/embed/tv/{tmdbId}/{season}/{episode}" in tv_routes, tv_routes
 assert not any("themoviedb.org" in route for route in movie_routes + tv_routes)
 
