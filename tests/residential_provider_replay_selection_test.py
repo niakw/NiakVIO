@@ -49,6 +49,14 @@ assert explicit==["all-blocked","client-gap","green","route","waf-only","yflix"]
 assert "green" in explicit and "route" in explicit
 assert "authority-blocked" not in explicit
 
+# Exact-byte offline activation may authorize residential transport replay without
+# granting Repair authority. This is transport-only and must be explicitly bounded.
+offline=mod.select(
+    report,status,["authority-blocked"],
+    offline_transport_allowed={"authority-blocked"},
+)
+assert offline==["all-blocked","authority-blocked","client-gap","waf-only","yflix"],offline
+
 unavailable={"residentialExitNodeEvidence":{"available":False}}
 assert mod.select(unavailable,status)==[]
 assert mod.ELIGIBLE_STATUSES=={
