@@ -1,3 +1,8 @@
+## 2026-11-14 — Lifecycle withdrawal reached 15 targets; stale unit contract fixed
+
+- Provider Disabled Lifecycle 43585599861 on 7bcb3092 executed authority classification before its test stop and reported disabled_now=15, exactly the current active cohort lacking terminal playback proof (5 CANDIDATE OK, 9 ROUTE PROVEN, 1 NO PROOF). No lifecycle mutation was committed because the same job failed before commit.
+- Failure was test-only: provider_authority_arbiter_test.py still called removed current_architecture_regression / DISABLE_ARCHITECTURE_REGRESSION after the generalized nonfunctional policy was introduced. Align the stale section to current_architecture_nonfunctional; the exhaustive status/action checks already added remain authoritative. Push retriggers lifecycle; production still unchanged until that run completes and commits atomically.
+
 ## 2026-11-14 — Active production now requires current terminal playback proof
 
 - Canonical census on 6f726cfc/43583704544 has 28 Global-active rows: 13 FULL with fresh tested verified lanes, 5 CANDIDATE OK, 9 ROUTE PROVEN and 1 NO PROOF. The 15 non-FULL active rows were all testedThisRun=true and remain Repair symptoms; CANDIDATE OK proves only an unpublished candidate, ROUTE PROVEN proves routes without terminal media, and NO PROOF has no positive runtime proof.
