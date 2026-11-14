@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "authority": "read-only-local-lego-vs-pinned-upstream-parity",
+  "sourceEvidence": "automation/evidence/provider-intake-terminal-2026-11-14.json",
+  "note": "Two independent positive French movie/TV providers; compare historical NiakVIO Lego without publishing or modifying any manifest.",
+  "providers": [
+    {
+      "id": "frenchstream",
+      "region": "france",
+      "lego": "scripts/provider_patches/frenchstream_exact_runtime_v3.py",
+      "mode": "resolver",
+      "options": {
+        "bases": [
+          "https://french-stream.one",
+          "https://french-stream.net"
+        ]
+      },
+      "fixtures": [
+        "thor-2011",
+        "mr-robot-2015-s01e01"
+      ]
+    },
+    {
+      "id": "movix",
+      "region": "france",
+      "lego": "scripts/provider_patches/movix_runtime_v1.py",
+      "mode": "replace-export",
+      "options": {
+        "api_base": "https://api.movix.fun",
+        "referer": "https://movix.fun/"
+      },
+      "fixtures": [
+        "spider-man-homecoming-2017",
+        "deadpool-2016",
+        "the-queen-s-gambit-2020-s01e01"
+      ]
+    }
+  ]
+}

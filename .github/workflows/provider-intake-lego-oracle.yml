@@ -1,0 +1,53 @@
+name: PROVIDERS - Reusable Lego Oracle (Brain)
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'automation/provider-intake-lego-oracle.json'
+      - 'scripts/run_provider_intake_lego_oracle.py'
+      - '.github/workflows/provider-intake-lego-oracle.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: niakvio-lego-oracle-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  oracle:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - name: Install pinned sandbox libraries
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Verify exact source+Lego mapping and syntax
+        run: |
+          python -m py_compile scripts/run_provider_intake_lego_oracle.py
+          python scripts/run_provider_intake_lego_oracle.py --dry-run
+      - name: Replay source-positive fixtures against clean managed Lego
+        run: |
+          python scripts/run_provider_intake_lego_oracle.py \
+            --timeout 30 \
+            --output automation/provider-intake-lego-oracle-report.json
+      - name: Save sanitized causal evidence
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: provider-brain-lego-oracle-${{ github.run_id }}
+          path: automation/provider-intake-lego-oracle-report.json
+          retention-days: 14
+          if-no-files-found: warn
