@@ -12,7 +12,7 @@
     "effectiveOperatorShutdownEntersDisabledRetentionImmediately": true,
     "currentTestedRegressionEntersDisabledRetention": true
   },
-  "providerCount": 41,
+  "providerCount": 45,
   "repairEligible": [
     "4khdhub",
     "allwish",
@@ -52,19 +52,17 @@
     "anime-ultime",
     "animekai",
     "animevost-fr",
+    "asiaflix",
     "mallumv",
+    "rivestream",
+    "sflix",
     "uhdmovies",
     "vidlove",
     "vidrock",
+    "vidsrc2",
     "yflix"
   ],
-  "disabledNow": [
-    "anime-ultime",
-    "animekai",
-    "uhdmovies",
-    "vidlove",
-    "vidrock"
-  ],
+  "disabledNow": [],
   "providers": [
     {
       "provider": "anime-sama",
@@ -104,16 +102,14 @@
     },
     {
       "provider": "uhdmovies",
-      "action": "DISABLE_ARCHITECTURE_REGRESSION",
+      "action": "KEEP_DISABLED",
       "repairEligible": false,
-      "confidence": "current-census",
-      "authorityClass": "current-architecture-regression",
+      "confidence": "terminal",
+      "authorityClass": "disabled",
       "failureCount": 0,
       "reasons": [
-        "authoritative_route_source",
-        "current_census_regression_provider"
-      ],
-      "appliedDisableReason": "auto_off_current_architecture_regression"
+        "already_disabled"
+      ]
     },
     {
       "provider": "movieshunt",
@@ -189,17 +185,14 @@
     },
     {
       "provider": "animekai",
-      "action": "DISABLE_ARCHITECTURE_REGRESSION",
+      "action": "KEEP_DISABLED",
       "repairEligible": false,
-      "confidence": "current-census",
-      "authorityClass": "current-architecture-regression",
+      "confidence": "terminal",
+      "authorityClass": "disabled",
       "failureCount": 0,
       "reasons": [
-        "structured_official_site",
-        "existing_positive_route_prior",
-        "current_census_regression_provider"
-      ],
-      "appliedDisableReason": "auto_off_current_architecture_regression"
+        "already_disabled"
+      ]
     },
     {
       "provider": "animesalt",
@@ -390,16 +383,14 @@
     },
     {
       "provider": "vidrock",
-      "action": "DISABLE_ARCHITECTURE_REGRESSION",
+      "action": "KEEP_DISABLED",
       "repairEligible": false,
-      "confidence": "current-census",
-      "authorityClass": "current-architecture-regression",
+      "confidence": "terminal",
+      "authorityClass": "disabled",
       "failureCount": 0,
       "reasons": [
-        "authoritative_route_source",
-        "current_census_regression_provider"
-      ],
-      "appliedDisableReason": "auto_off_current_architecture_regression"
+        "already_disabled"
+      ]
     },
     {
       "provider": "voiranime",
@@ -493,17 +484,14 @@
     },
     {
       "provider": "anime-ultime",
-      "action": "DISABLE_ARCHITECTURE_REGRESSION",
+      "action": "KEEP_DISABLED",
       "repairEligible": false,
-      "confidence": "current-census",
-      "authorityClass": "current-architecture-regression",
+      "confidence": "terminal",
+      "authorityClass": "disabled",
       "failureCount": 0,
       "reasons": [
-        "structured_official_site",
-        "existing_positive_route_prior",
-        "current_census_regression_provider"
-      ],
-      "appliedDisableReason": "auto_off_current_architecture_regression"
+        "already_disabled"
+      ]
     },
     {
       "provider": "animevost-fr",
@@ -540,19 +528,58 @@
     },
     {
       "provider": "vidlove",
-      "action": "DISABLE_ARCHITECTURE_REGRESSION",
+      "action": "KEEP_DISABLED",
       "repairEligible": false,
-      "confidence": "current-census",
-      "authorityClass": "current-architecture-regression",
+      "confidence": "terminal",
+      "authorityClass": "disabled",
       "failureCount": 0,
-      "backendUrls": [
-        "https://api.vidlove.cc"
-      ],
       "reasons": [
-        "structured_backend_authority",
-        "current_census_regression_provider"
-      ],
-      "appliedDisableReason": "auto_off_current_architecture_regression"
+        "already_disabled"
+      ]
+    },
+    {
+      "provider": "sflix",
+      "action": "KEEP_DISABLED",
+      "repairEligible": false,
+      "confidence": "terminal",
+      "authorityClass": "disabled",
+      "failureCount": 0,
+      "reasons": [
+        "already_disabled"
+      ]
+    },
+    {
+      "provider": "rivestream",
+      "action": "KEEP_DISABLED",
+      "repairEligible": false,
+      "confidence": "terminal",
+      "authorityClass": "disabled",
+      "failureCount": 0,
+      "reasons": [
+        "already_disabled"
+      ]
+    },
+    {
+      "provider": "vidsrc2",
+      "action": "KEEP_DISABLED",
+      "repairEligible": false,
+      "confidence": "terminal",
+      "authorityClass": "disabled",
+      "failureCount": 0,
+      "reasons": [
+        "already_disabled"
+      ]
+    },
+    {
+      "provider": "asiaflix",
+      "action": "KEEP_DISABLED",
+      "repairEligible": false,
+      "confidence": "terminal",
+      "authorityClass": "disabled",
+      "failureCount": 0,
+      "reasons": [
+        "already_disabled"
+      ]
     }
   ]
 }
