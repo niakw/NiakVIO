@@ -5,6 +5,8 @@ import importlib.util
 from pathlib import Path
 
 ROOT=Path(__file__).resolve().parents[1]
+import sys
+sys.path.insert(0,str(ROOT/"scripts"))
 SCRIPT=ROOT/"scripts"/"activate_bulk_proven_providers.py"
 spec=importlib.util.spec_from_file_location("activate_bulk_proven_providers_version_floor_test",SCRIPT)
 assert spec and spec.loader
