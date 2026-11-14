@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import shutil
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
@@ -99,11 +100,14 @@ def move_file(source: Path, target: Path, *, apply: bool) -> None:
 def provider_artifacts(directory: Path, pid: str) -> list[Path]:
     if not directory.exists():
         return []
-    prefixes = (pid + "-", pid + "--")
-    return sorted(
-        path for path in directory.glob("*.js")
-        if path.name.casefold().startswith(prefixes)
+    # Provider ids can prefix another valid id (e.g. voiranime vs
+    # voiranime-homes). Match only the two content-addressed Provider v3
+    # filename shapes; a textual prefix is not ownership.
+    pattern = re.compile(
+        rf"^{re.escape(pid)}(?:-[0-9a-f]{{16}}|--[A-Za-z0-9._-]+--[0-9a-f]{{16}})\.js$",
+        re.IGNORECASE,
     )
+    return sorted(path for path in directory.glob("*.js") if pattern.fullmatch(path.name))
 
 
 def provider_bases(directory: Path, pid: str) -> list[Path]:

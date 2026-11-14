@@ -2,12 +2,13 @@
 from __future__ import annotations
 import json
 import sys
+import tempfile
 from datetime import date, timedelta
 from pathlib import Path
 
 ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
-from manage_provider_lifecycle import RETENTION_DAYS
+from manage_provider_lifecycle import RETENTION_DAYS, provider_artifacts
 from current_provider_scope import pending_provider_ids
 
 manifest=json.loads((ROOT/"manifest.json").read_text(encoding="utf-8"))
@@ -65,6 +66,17 @@ for pid,row in disabled.items():
 
 workflow=(ROOT/".github/workflows/provider-disabled-lifecycle.yml").read_text(encoding="utf-8")
 assert "- 'automation/provider-census-status.json'" in workflow, "fresh canonical census must trigger lifecycle"
+
+with tempfile.TemporaryDirectory(prefix="provider-lifecycle-prefix-") as tmp:
+    folder=Path(tmp)
+    exact=folder/"voiranime--nuvio--0123456789abcdef.js"
+    child=folder/"voiranime-homes--nuvio--fedcba9876543210.js"
+    workspace=folder/"voiranime-0011223344556677.js"
+    for path in (exact,child,workspace):
+        path.write_text("// fixture\n",encoding="utf-8")
+    matched=[path.name for path in provider_artifacts(folder,"voiranime")]
+    assert matched==sorted([exact.name,workspace.name]), matched
+    assert child.name not in matched, matched
 
 print(
     f"provider disabled lifecycle contract passed active={len(active)} "

@@ -1,3 +1,9 @@
+## 2026-11-14 — Lifecycle provider-id prefix collision caught before publication
+
+- Lifecycle run 43584428633 correctly classified four fresh active regressions for disable (disabled_now=4; target state active=28, lifecycle-disabled=13, pending=17) but failed before commit because provider_artifacts() used startswith(pid + "-"). Disabling voiranime therefore also moved the healthy sibling voiranime-homes bundle, and current_provider_scope correctly stopped on the missing active asset.
+- Replace prefix ownership with exact content-addressed Provider v3 filename shapes (workspace <id>-<16hex>.js or published <id>--<source>--<16hex>.js). Add a synthetic voiranime/voiranime-homes collision regression. No failed lifecycle workspace was committed, so production bytes remained intact.
+- Re-run lifecycle on the same fresh census; only the four exact regression identities may move to provider-disabled.
+
 ## 2026-11-14 — Fresh canonical census now triggers lifecycle withdrawal
 
 - Full sharded census 43583704544 on 6f726cfc completed successfully and persisted canonical evidence at 705a50ce. It produced 13 current FULL providers with fresh verified lanes and four current tested REGRESSION PROVIDER rows still enabled: anime-sama (timeout), kurage (network zero), playimdb (network zero), voiranime (network exception).
