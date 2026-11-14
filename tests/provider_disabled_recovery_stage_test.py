@@ -8,6 +8,15 @@ script=ROOT/"scripts/build_disabled_provider_recovery_stage.py"
 workflow=(ROOT/".github/workflows/brain-disabled-recovery-lab.yml").read_text(encoding="utf-8")
 assert "group: niakvio-brain-disabled-recovery-lab" in workflow
 assert "cancel-in-progress: true" in workflow
+
+assert "Resolve exact current Brain LLM revision" in workflow
+assert "repository: niakw/NiakVIO-Brain-LLM" in workflow
+assert "--allow-disabled-explicit" in workflow
+assert "Synthesize disabled-provider guidance through Brain LLM" in workflow
+assert "NIAKVIO_BRAIN_LLM_GUIDANCE=$GITHUB_WORKSPACE/brain-disabled-recovery/brain-llm/guidance.json" in workflow
+assert "disabled recovery Brain routing did not select exactly one target" in workflow
+assert "Brain LLM produced no guidance row for explicit disabled target" in workflow
+assert "publicationAuthority" in workflow and "directMutationAuthority" in workflow
 queue=json.loads((ROOT/"automation/provider-disabled-recovery-queue.json").read_text(encoding="utf-8"))
 assert queue.get("proofAuthority") is False
 assert queue.get("executionAuthority") is False
