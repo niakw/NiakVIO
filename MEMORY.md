@@ -1,3 +1,8 @@
+## 2026-11-14 — Release finalization retriggered on corrected Global + VF-only control plane
+
+- Previous finalization 43586059001 proved minimizer fixed-point for all 13 active providers but stopped at the obsolete VF-subset versioning assumption. The version/cache tooling, pending-scope documentation and strict fixture tests have since been corrected; Workflow Gate on a9ceb28a independently passed release version synchronization before encountering the later fixture-shape test.
+- Trigger a new exact release finalization from the current main after the disabled reverse-lab guard. Expected result: publish the already-proven 13-provider minimizer fixed-point, preserve France-only rows without Global leakage, synchronize versions, regenerate projections/Hub transport/hashes and run integrity validation. This trigger does not authorize any new provider.
+
 ## 2026-11-14 — Reverse topology lab stops before network work for disabled identities
 
 - Multi-topology run 43587230474 on 9170afd7 targeted six historical representatives now lifecycle-disabled. Strict Repair fixture authority rejected each before observation, so the red matrix is stale orchestration, not six fresh provider failures.
