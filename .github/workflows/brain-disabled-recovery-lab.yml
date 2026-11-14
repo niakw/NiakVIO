@@ -34,7 +34,7 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
-          ref: main
+          ref: ${{ github.sha }}
           fetch-depth: 0
 
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0
@@ -117,6 +117,152 @@ jobs:
               raise SystemExit(f"clean disabled recovery reconstruction missing {provider}")
           PY
 
+      - name: Resolve exact current Brain LLM revision
+        id: brain_llm_pin
+        shell: bash
+        run: |
+          set -euo pipefail
+          tmp="$(mktemp -d)"
+          git -C "$tmp" init -q
+          git -C "$tmp" remote add origin https://github.com/niakw/NiakVIO-Brain-LLM.git
+          git -C "$tmp" fetch --quiet --depth=1 origin refs/heads/main:refs/remotes/origin/main
+          sha="$(git -C "$tmp" rev-parse refs/remotes/origin/main)"
+          [[ "$sha" =~ ^[0-9a-f]{40}$ ]]
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+          echo "FIELD_DISABLED_RECOVERY_BRAIN_PIN sha=$sha source=main"
+
+      - name: Checkout pinned Brain LLM synthesis authority
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          repository: niakw/NiakVIO-Brain-LLM
+          ref: ${{ steps.brain_llm_pin.outputs.sha }}
+          path: brain-llm
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Install pinned Brain LLM package
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install -e brain-llm
+
+      - name: Build bounded Brain LLM public memory
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p brain-disabled-recovery/brain-llm
+          python brain-llm/scripts/import_public_niakvio.py \
+            --niakvio-root . \
+            --output brain-disabled-recovery/brain-llm/public-experience.jsonl
+          python brain-llm/scripts/import_public_docs.py \
+            --niakvio-root . \
+            --config brain-llm/config/document_sources.json \
+            --output brain-disabled-recovery/brain-llm/public-documents.jsonl \
+            > brain-disabled-recovery/brain-llm/public-document-report.json
+          test -s brain-disabled-recovery/brain-llm/public-experience.jsonl
+          test -s brain-disabled-recovery/brain-llm/public-documents.jsonl
+
+      - name: Download and verify official llama.cpp runtime
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf .brain-disabled-llm-runtime
+          mkdir -p .brain-disabled-llm-runtime
+          archive="$RUNNER_TEMP/llama-b11140.tar.gz"
+          expected_sha='460c45fa8a9ebc36c9b08e3a15c06dbdb312c6308599521c84d9e7f92a268b'
+          curl -fLsS --retry 4 --retry-all-errors --retry-delay 2 --connect-timeout 20 --max-time 120 \
+            'https://github.com/ggml-org/llama.cpp/releases/download/b11140/llama-b11140-bin-ubuntu-x64.tar.gz' \
+            -o "$archive"
+          printf '%s  %s\n' "$expected_sha" "$archive" | sha256sum -c -
+          tar -xzf "$archive" -C .brain-disabled-llm-runtime
+          binary="$(find .brain-disabled-llm-runtime -type f -name llama-server -print -quit)"
+          test -n "$binary"
+          chmod +x "$binary"
+          echo "FIELD_DISABLED_RECOVERY_LLAMA verified_sha256=true release=b11140"
+
+      - name: Start bounded Brain LLM advisor
+        id: brain_llm_server
+        shell: bash
+        run: |
+          set -euo pipefail
+          binary="$(find .brain-disabled-llm-runtime -type f -name llama-server -print -quit)"
+          test -x "$binary"
+          "$binary" \
+            -hf 'Qwen/Qwen2.5-Coder-3B-Instruct-GGUF:Q4_K_M' \
+            --host 127.0.0.1 --port 8080 -c 8192 -np 1 \
+            > brain-disabled-recovery/brain-llm/llama-server.log 2>&1 &
+          for _ in $(seq 1 90); do
+            if curl -fsS http://127.0.0.1:8080/health >/dev/null 2>&1; then
+              echo "FIELD_DISABLED_RECOVERY_LLM_SERVER available=true model=qwen2.5-coder-3b"
+              exit 0
+            fi
+            sleep 2
+          done
+          tail -80 brain-disabled-recovery/brain-llm/llama-server.log || true
+          echo "FIELD_DISABLED_RECOVERY_LLM_SERVER available=false" >&2
+          exit 1
+
+      - name: Synthesize disabled-provider guidance through Brain LLM
+        shell: bash
+        env:
+          PROVIDER: ${{ steps.target.outputs.provider }}
+          BRAIN_LLM_SHA: ${{ steps.brain_llm_pin.outputs.sha }}
+        run: |
+          set -euo pipefail
+          source_sha="$(git rev-parse HEAD)"
+          test "$source_sha" = "$GITHUB_SHA"
+          python brain-llm/scripts/route_batch_from_checkout.py \
+            --niakvio-root . \
+            --experience brain-disabled-recovery/brain-llm/public-experience.jsonl \
+            --mode brain \
+            --provider "$PROVIDER" \
+            --allow-disabled-explicit \
+            --advisor-only \
+            --output brain-disabled-recovery/brain-llm/routing.jsonl \
+            --summary brain-disabled-recovery/brain-llm/routing-summary.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          p=Path("brain-disabled-recovery/brain-llm/routing-summary.json")
+          d=json.loads(p.read_text(encoding="utf-8"))
+          if int(d.get("targets") or 0) != 1:
+              raise SystemExit(f"disabled recovery Brain routing did not select exactly one target: {d}")
+          PY
+          python brain-llm/scripts/plan_batch_from_checkout.py \
+            --niakvio-root . \
+            --experience brain-disabled-recovery/brain-llm/public-experience.jsonl \
+            --documents brain-disabled-recovery/brain-llm/public-documents.jsonl \
+            --mode brain \
+            --provider "$PROVIDER" \
+            --allow-disabled-explicit \
+            --advisor-only \
+            --max-hypotheses 1 \
+            --endpoint http://127.0.0.1:8080 \
+            --model qwen2.5-coder-3b \
+            --workers 1 \
+            --max-tokens 256 \
+            --timeout-seconds 180 \
+            --output brain-disabled-recovery/brain-llm/batch.jsonl
+          python scripts/brain_llm_guidance.py \
+            --input brain-disabled-recovery/brain-llm/batch.jsonl \
+            --output brain-disabled-recovery/brain-llm/guidance.json \
+            --source-sha "$source_sha" \
+            --brain-llm-sha "$BRAIN_LLM_SHA"
+          test -s brain-disabled-recovery/brain-llm/guidance.json
+          python - <<'PY'
+          import json, os
+          from pathlib import Path
+          provider=os.environ["PROVIDER"].strip().casefold()
+          d=json.loads(Path("brain-disabled-recovery/brain-llm/guidance.json").read_text(encoding="utf-8"))
+          rows=[r for r in d.get("rows") or [] if isinstance(r,dict) and str(r.get("providerId") or "").casefold()==provider]
+          if not rows:
+              raise SystemExit(f"Brain LLM produced no guidance row for explicit disabled target {provider}")
+          if d.get("publicationAuthority") is not False or d.get("directMutationAuthority") is not False:
+              raise SystemExit("Brain guidance unexpectedly grants publication/direct mutation authority")
+          print(f"FIELD_DISABLED_RECOVERY_BRAIN_GUIDANCE provider={provider} rows={len(rows)}")
+          PY
+          echo "NIAKVIO_BRAIN_LLM_GUIDANCE=$GITHUB_WORKSPACE/brain-disabled-recovery/brain-llm/guidance.json" >> "$GITHUB_ENV"
+
       - name: Run bounded Brain Learning recovery
         shell: bash
         env:
@@ -129,6 +275,8 @@ jobs:
           python scripts/run_brain_learning_queue.py             --stage staging-disabled-recovery-reconstruction             --health brain-disabled-recovery/health/health-results.json             --previous-state brain-disabled-recovery/input/previous.json             --output-dir brain-disabled-recovery/output             --budget-minutes "$BUDGET"             --reserve-minutes 2             --stream-safety-cap 1             --provider "$PROVIDER"             --provider-filter "$PROVIDER"
           test -s brain-disabled-recovery/output/repair-report.json
           test -s brain-disabled-recovery/output/learning-queue-summary.json
+          test -n "${NIAKVIO_BRAIN_LLM_GUIDANCE:-}"
+          test -s "$NIAKVIO_BRAIN_LLM_GUIDANCE"
 
       - name: Prove recovery stayed non-publishing
         shell: bash
@@ -153,5 +301,6 @@ jobs:
             staging-disabled-recovery-reconstruction/candidates.json
             brain-disabled-recovery/health/health-results.json
             brain-disabled-recovery/output/
+            brain-disabled-recovery/brain-llm/
           if-no-files-found: warn
           retention-days: 14
