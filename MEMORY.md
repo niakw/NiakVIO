@@ -1,3 +1,10 @@
+## 2026-11-14 — Onboarding identity guard now respects France-only scope
+
+- add_provider.stage() previously checked duplicate IDs only in Global manifest.json. A catalog-owned {general:false,vf:true} identity could therefore be staged into Global, defeating the France-only projection/lifecycle invariant.
+- Added a pure staging identity resolver that rejects any current France-only catalog identity before Global staging, including when replace_existing=true; normal Global replacement semantics are unchanged. Bulk onboarding inherits the guard because it delegates to add_provider.stage().
+- Synthetic dry-run coverage proves: new Global allowed, explicit Global replace allowed, unapproved Global duplicate rejected, France-only collision rejected with and without replace. No provider added, activated, probed or modified.
+- Security state immediately before this commit: exact CodeQL run 43573768421 on e00ddfc4 succeeded; retirement 43574427061 crossed source/drift checks through evidence-only main c1642fd2 but GitHub rejected alert #2531 dismissal with HTTP 422 validation_error and no validation fields. Current REST docs still accept "used in tests"; prior create_request=true + "used in tests" had already returned 422, so no blind retry or gate suppression.
+
 ## 2026-11-14 — Repair activity provenance and individual-proof reporting
 
 - Main d888b35f had successful Workflow Gate 43572729247, Verify & Publish 43572729217, Non-Regression 43572729227 and Branch Maintenance 43572729239; CodeQL 43572729290 and sharded census 43573395888 were in progress at verification. Security retirement 43573238455 used older analysis source 8f98369f and correctly failed closed on current executable/test drift. Do not suppress the finding.

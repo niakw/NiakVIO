@@ -24,6 +24,7 @@ sys.path.insert(0, str(ROOT / "scripts"))
 import provider_base_store as base_store  # noqa: E402
 from apply_provider_overrides import apply_overrides  # noqa: E402
 from provider_byte_stability import verify_bytes  # noqa: E402
+from generate_language_manifests import france_only_catalog_rows  # noqa: E402
 
 
 def load_json(path: Path, default: Any) -> Any:
@@ -43,6 +44,34 @@ def norm_id(value: Any) -> str:
     if not raw:
         raise ValueError("provider id is required")
     return base_store.canonical_id(raw)
+
+def staged_existing_entry(
+    provider_id: str,
+    manifest: dict[str, Any],
+    *,
+    replace_existing: bool,
+    root: Path = ROOT,
+) -> dict[str, Any]:
+    """Resolve a Global replacement while keeping France-only identities exclusive."""
+    france_only_ids = {
+        norm_id(row.get("id"))
+        for row in france_only_catalog_rows(root=root)
+        if isinstance(row, dict) and row.get("id")
+    }
+    if provider_id in france_only_ids:
+        raise ValueError(
+            f"provider id belongs to France-only catalog scope and cannot be staged into Global: {provider_id}"
+        )
+    existing = next(
+        (
+            row for row in manifest.get("scrapers") or []
+            if isinstance(row, dict) and norm_id(row.get("id")) == provider_id
+        ),
+        None,
+    )
+    if isinstance(existing, dict) and not replace_existing:
+        raise ValueError(f"provider already exists: {provider_id}")
+    return existing if isinstance(existing, dict) else {}
 
 
 def parse_list(value: Any) -> list[str]:
@@ -315,16 +344,12 @@ def stage(request_path: Path, *, bulk: bool = False) -> dict[str, Any]:
 
     manifest = load_json(MANIFEST, {})
     replace_existing = bool_value(request.get("replace_existing"), False)
-    existing_entry = next(
-        (
-            row for row in manifest.get("scrapers") or []
-            if isinstance(row, dict) and norm_id(row.get("id")) == provider_id
-        ),
-        None,
+    existing_entry = staged_existing_entry(
+        provider_id,
+        manifest,
+        replace_existing=replace_existing,
+        root=ROOT,
     )
-    if isinstance(existing_entry, dict) and not replace_existing:
-        raise ValueError(f"provider already exists: {provider_id}")
-    existing_entry = existing_entry if isinstance(existing_entry, dict) else {}
 
     description = str(
         request.get("description")
