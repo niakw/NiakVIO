@@ -10,11 +10,39 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[1]
 WORKER = ROOT / "scripts" / "provider_worker.cjs"
 CATALOG = ROOT / "provider_catalog.json"
+MANIFESTS = (ROOT / "manifest.json", ROOT / "vf" / "manifest.json")
 
 
 def load_catalog_provider(provider_id: str) -> tuple[dict[str, Any], Path]:
-    data = json.loads(CATALOG.read_text(encoding="utf-8"))
+    """Resolve the exact bytes clients currently load.
+
+    Targeted materialization updates manifest projections before publication.
+    The canonical catalog can intentionally lag that worktree projection, so
+    manifest bytes are authoritative for a physical replay. Falling back to the
+    catalog is only for providers absent from both production projections.
+    """
     target = provider_id.strip().casefold()
+    for manifest_path in MANIFESTS:
+        if not manifest_path.is_file():
+            continue
+        data = json.loads(manifest_path.read_text(encoding="utf-8"))
+        for scraper in data.get("scrapers") or []:
+            if not isinstance(scraper, dict):
+                continue
+            cid = str(scraper.get("id") or "").strip().casefold()
+            if cid != target:
+                continue
+            filename = str(scraper.get("filename") or "").strip()
+            if not filename:
+                continue
+            path = (manifest_path.parent / filename).resolve()
+            if ROOT != path and ROOT not in path.parents:
+                raise SystemExit(f"{provider_id}: manifest provider path escapes repository")
+            if not path.is_file():
+                raise SystemExit(f"{provider_id}: manifest bytes missing at {filename}")
+            return {"canonicalId": cid, "scraper": scraper, "sourceManifest": str(manifest_path.relative_to(ROOT))}, path
+
+    data = json.loads(CATALOG.read_text(encoding="utf-8"))
     for record in data.get("providers") or []:
         if not isinstance(record, dict):
             continue
@@ -28,12 +56,12 @@ def load_catalog_provider(provider_id: str) -> tuple[dict[str, Any], Path]:
         if not filename:
             raise SystemExit(f"{provider_id}: catalog filename missing")
         path = (ROOT / filename).resolve()
-        if ROOT not in path.parents:
+        if ROOT != path and ROOT not in path.parents:
             raise SystemExit(f"{provider_id}: provider path escapes repository")
         if not path.is_file():
             raise SystemExit(f"{provider_id}: provider bytes missing at {path.relative_to(ROOT)}")
         return record, path
-    raise SystemExit(f"{provider_id}: provider catalog row missing")
+    raise SystemExit(f"{provider_id}: provider row missing from manifests and catalog")
 
 
 def parse_worker(stdout: str) -> dict[str, Any]:
