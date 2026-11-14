@@ -153,6 +153,9 @@ def main() -> int:
     assert "github.event_name == 'workflow_dispatch'" in architecture_proposal_block
     assert "github.event.inputs.publish_proposal == 'true'" in architecture_proposal_block
     assert "needs.experiment.outputs.architecture_force == 'true'" in architecture_proposal_block
+    assert "if: needs.experiment.result == 'success'" in architecture_proposal_block, "routine Learning architecture validation must not be skipped"
+    assert "github.event.inputs.publish_proposal == 'true'" in architecture_proposal_block, "review publication must remain explicit"
+    assert "vars.NIAKVIO_ALLOW_BRAIN_PROPOSAL_PR == 'true'" in architecture_proposal_block, "architecture PR publication variable gate disappeared"
     assert "github.event_name == 'schedule'" not in architecture_proposal_block.split("    needs:", 1)[0]
     assert "github.event_name == 'push'" not in architecture_proposal_block.split("    needs:", 1)[0]
     assert "Import latest weekly FULL native Lab diagnostics into Learning memory" in workflow

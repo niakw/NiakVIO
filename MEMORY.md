@@ -1,3 +1,9 @@
+## 2026-11-14 — Routine Brain architecture proposals were generated but never validated
+
+- Learning run 43570497187 completed successfully: 38 proposals / 45 skills / 1970 memory rows, 7 learned-skill repair proposals, 3 architecture proposals, but 0 provider proposals and 0 validated repairs. The downstream job named "Validate Brain architecture evolution" was skipped because its job-level condition allowed only explicit architecture FORCE or manual proposal publication. Routine/scheduled Learning therefore generated architecture debt but never exercised the materialization + architecture contract tests.
+- Change the job-level gate to run after every successful Learning experiment. This does not grant routine Learning any publication or production mutation authority: architecture PR creation remains gated by manual publish_proposal + NIAKVIO_ALLOW_BRAIN_PROPOSAL_PR, and direct main promotion remains architecture_force-only. Zero-proposal runs validate the artifact then skip materialization. Add workflow contract tests ensuring routine validation cannot disappear while PR/FORCE gates remain explicit.
+- This addresses the Brain pipeline itself, not provider bytes. Exact-SHA CI pending.
+
 ## 2026-11-14 — CodeQL retirement evidence drift narrowed to immutable census outputs
 
 - Exact ff0dc871 CI completed green: Workflow Gate 43569878207, Verify & Publish 43569878308, Non-Regression 43569878247, CodeQL 43569878332, Branch Maintenance 43569878241, full census 43569878269 and sharded census 43569878250. Census persistence produced 866cb177; Fast Repair 43570493808 later persisted evidence at 882df769. No new provider repair was validated.

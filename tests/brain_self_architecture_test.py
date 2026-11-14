@@ -213,6 +213,10 @@ with tempfile.TemporaryDirectory(prefix="brain-self-arch-") as tmp:
 
 workflow_source = WORKFLOW.read_text(encoding="utf-8")
 architecture_job = workflow_source.split("  publish-architecture-proposal:", 1)[1].split("  continue-learning-slot:", 1)[0]
+assert "if: needs.experiment.result == 'success'" in architecture_job
+assert "Open or refresh Brain architecture PR" in architecture_job
+assert "github.event.inputs.publish_proposal == 'true'" in architecture_job
+assert "vars.NIAKVIO_ALLOW_BRAIN_PROPOSAL_PR == 'true'" in architecture_job
 assert "actions: write" in architecture_job
 assert "gh workflow run brain-learning-lab.yml" in architecture_job
 assert 'git status --porcelain --untracked-files=all' in architecture_job

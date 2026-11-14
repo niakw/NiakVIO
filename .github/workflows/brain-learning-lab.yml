@@ -1660,7 +1660,9 @@ jobs:
 
   publish-architecture-proposal:
     name: LEARNING - Validate Brain architecture evolution
-    if: needs.experiment.outputs.architecture_force == 'true' || (github.event_name == 'workflow_dispatch' && github.event.inputs.publish_proposal == 'true' && vars.NIAKVIO_ALLOW_BRAIN_PROPOSAL_PR == 'true')
+    # Architecture proposals are part of Learning output and must always be validated.
+    # Publication remains separately gated below; routine Learning gets no production write authority.
+    if: needs.experiment.result == 'success'
     needs: experiment
     concurrency:
       group: niakvio-brain-architecture-proposal-publish
