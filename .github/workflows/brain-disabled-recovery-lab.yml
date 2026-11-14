@@ -1,0 +1,157 @@
+name: BRAIN - Disabled Provider Recovery Lab
+
+on:
+  workflow_dispatch:
+    inputs:
+      provider:
+        description: Exact lifecycle-disabled provider id
+        required: false
+        default: wookafr
+        type: string
+      budget_minutes:
+        description: Bounded Brain recovery budget
+        required: false
+        default: "15"
+        type: string
+  push:
+    branches: [main]
+    paths:
+      - '.github/triggers/brain-disabled-recovery-lab.json'
+      - 'scripts/build_disabled_provider_recovery_stage.py'
+      - '.github/workflows/brain-disabled-recovery-lab.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: niakvio-brain-disabled-recovery-lab
+  cancel-in-progress: false
+
+jobs:
+  recovery:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0
+        with:
+          python-version: '3.12'
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
+        with:
+          node-version: '24'
+          package-manager-cache: false
+
+      - name: Install pinned runtime dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - id: target
+        name: Resolve exact disabled recovery target
+        shell: bash
+        env:
+          INPUT_PROVIDER: ${{ inputs.provider || '' }}
+          INPUT_BUDGET: ${{ inputs.budget_minutes || '' }}
+        run: |
+          set -euo pipefail
+          python - <<'PY' >> "$GITHUB_OUTPUT"
+          import json, os, re
+          from pathlib import Path
+          trigger=Path(".github/triggers/brain-disabled-recovery-lab.json")
+          cfg=json.loads(trigger.read_text(encoding="utf-8")) if trigger.is_file() else {}
+          raw=os.environ.get("INPUT_PROVIDER") or cfg.get("provider") or "wookafr"
+          provider=re.sub(r"[^a-z0-9._-]+","-",str(raw).strip().casefold()).strip("-")
+          budget=str(os.environ.get("INPUT_BUDGET") or cfg.get("budgetMinutes") or 15)
+          if not provider:
+              raise SystemExit("disabled recovery target provider is required")
+          print("provider="+provider)
+          print("budget_minutes="+budget)
+          PY
+
+      - name: Build exact disabled-byte observation stage
+        shell: bash
+        env:
+          PROVIDER: ${{ steps.target.outputs.provider }}
+        run: |
+          set -euo pipefail
+          python scripts/build_disabled_provider_recovery_stage.py             --stage staging-disabled-recovery             --provider "$PROVIDER"
+          python tests/provider_disabled_recovery_stage_test.py
+
+      - name: Observe disabled bytes without production authority
+        shell: bash
+        env:
+          PROVIDER: ${{ steps.target.outputs.provider }}
+          NUVIO_STAGE: staging-disabled-recovery
+          NUVIO_CANDIDATES_PATH: staging-disabled-recovery/candidates.json
+          NUVIO_HEALTH_OUTPUT: brain-disabled-recovery/health
+          NUVIO_HEALTH_RESULTS_FILENAME: health-results.json
+          NUVIO_HEALTH_PROVIDER_FILTER: ${{ steps.target.outputs.provider }}
+          NUVIO_WORKER_MEMORY_MB: "768"
+        run: |
+          set -euo pipefail
+          mkdir -p brain-disabled-recovery/health
+          node scripts/health_check.mjs --deep
+          test -s brain-disabled-recovery/health/health-results.json
+
+      - name: Build clean Brain reconstruction stage
+        shell: bash
+        env:
+          PROVIDER: ${{ steps.target.outputs.provider }}
+        run: |
+          set -euo pipefail
+          python scripts/discover_candidates.py             --stage staging-disabled-recovery-reconstruction             --clean-reconstruction             --provider "$PROVIDER"
+          python scripts/build_provider_runtime_profiles.py             --stage staging-disabled-recovery-reconstruction             --apply-stage
+          python scripts/normalize_terminal_quarantine_stage.py             --stage staging-disabled-recovery-reconstruction
+          python scripts/validate_override_pipeline.py             --stage staging-disabled-recovery-reconstruction
+          python - <<'PY'
+          import json, os
+          from pathlib import Path
+          provider=os.environ["PROVIDER"].strip().lower().replace("_","-")
+          path=Path("staging-disabled-recovery-reconstruction/candidates.json")
+          data=json.loads(path.read_text(encoding="utf-8"))
+          ids={str(row.get("canonical_id") or "").strip().lower().replace("_","-") for row in data.get("candidates") or []}
+          if provider not in ids:
+              raise SystemExit(f"clean disabled recovery reconstruction missing {provider}")
+          PY
+
+      - name: Run bounded Brain Learning recovery
+        shell: bash
+        env:
+          PROVIDER: ${{ steps.target.outputs.provider }}
+          BUDGET: ${{ steps.target.outputs.budget_minutes }}
+        run: |
+          set -euo pipefail
+          mkdir -p brain-disabled-recovery/output brain-disabled-recovery/input
+          printf '{}\n' > brain-disabled-recovery/input/previous.json
+          python scripts/run_brain_learning_queue.py             --stage staging-disabled-recovery-reconstruction             --health brain-disabled-recovery/health/health-results.json             --previous-state brain-disabled-recovery/input/previous.json             --output-dir brain-disabled-recovery/output             --budget-minutes "$BUDGET"             --reserve-minutes 2             --stream-safety-cap 1             --provider "$PROVIDER"             --provider-filter "$PROVIDER"
+          test -s brain-disabled-recovery/output/repair-report.json
+          test -s brain-disabled-recovery/output/learning-queue-summary.json
+
+      - name: Prove recovery stayed non-publishing
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --exit-code --             manifest.json vf/manifest.json provider-overrides.json PROVENANCE.json             provider_catalog.json providers provider-disabled
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          stage=json.loads(Path("staging-disabled-recovery/candidates.json").read_text(encoding="utf-8"))
+          if stage.get("productionExecutionAllowed") is not False or stage.get("publicationAllowed") is not False:
+              raise SystemExit("disabled recovery stage escaped non-publishing policy")
+          print("FIELD_DISABLED_RECOVERY_NON_PUBLISHING production=false publication=false")
+          PY
+
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        if: always()
+        with:
+          name: brain-disabled-recovery-${{ steps.target.outputs.provider }}-${{ github.run_id }}
+          path: |
+            staging-disabled-recovery/candidates.json
+            staging-disabled-recovery-reconstruction/candidates.json
+            brain-disabled-recovery/health/health-results.json
+            brain-disabled-recovery/output/
+          if-no-files-found: warn
+          retention-days: 14
