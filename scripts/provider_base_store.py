@@ -742,6 +742,33 @@ def provider_model_route_kind(route: Any) -> str:
     return "ignore"
 
 
+def provider_route_is_identity_aware(route: Any) -> bool:
+    """Return whether a discovered route can consume the requested media identity."""
+    text = str(route or "").strip()
+    if not text:
+        return False
+    lowered = text.casefold()
+    if re.search(
+        r"/(?:api/)?(?:push|subscribe|settings|site-migration|session-handoff|webtv/guide|p/event|cc/|app/android|health|status|analytics|telemetry)(?:[/?#]|$)",
+        lowered,
+        re.I,
+    ):
+        return False
+    if re.search(r"/(?:sw\.js|service-worker(?:\.js)?|manifest\.json)(?:[?#]|$)", lowered, re.I):
+        return False
+    if lowered.rstrip("/") == "/api":
+        return False
+    if re.search(r"\{(?:query|title|slug|tmdb_?id|imdb_?id|season|episode|media)\}", text, re.I):
+        return True
+    return bool(
+        re.search(
+            r"/(?:search|recherche)(?:[/?#]|$)|[?&](?:s|q|query|keyword|search|story)=",
+            text,
+            re.I,
+        )
+    )
+
+
 def provider_model_has_executable_plan(model: Any) -> bool:
     """Match the clean ProviderBase _runtimePlanAvailable() contract.
 
@@ -759,6 +786,23 @@ def provider_model_has_executable_plan(model: Any) -> bool:
             return True
     return any(
         provider_model_route_kind(route) in {"search", "detail", "player", "api"}
+        for route in (model.get("routes") or [])
+    )
+
+
+def provider_model_has_identity_execution_plan(model: Any) -> bool:
+    """Activation-level contract: runtime plan plus requested-media identity binding."""
+    if not isinstance(model, dict):
+        return False
+    if isinstance(model.get("apiRecipe"), dict):
+        return True
+    for key in ("providerValuePlan", "searchRequestPlan", "externalIdentityPlan"):
+        value = model.get(key)
+        if isinstance(value, list) and value:
+            return True
+    return any(
+        provider_model_route_kind(route) in {"search", "detail", "player", "api"}
+        and provider_route_is_identity_aware(route)
         for route in (model.get("routes") or [])
     )
 
