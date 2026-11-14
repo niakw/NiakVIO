@@ -1,11 +1,11 @@
 {
-  "requestVersion": 30,
+  "requestVersion": 31,
   "source": "NiakVIO-GLOBAL-FINAL-STRICT-TOP20-2026-09-11(5).xlsx",
   "activationPolicy": "bulk_offline_contract_live_unverified",
   "allowReplaceExisting": true,
   "targetActive": {
-    "global": 28,
-    "france": 31
+    "global": 27,
+    "france": 30
   },
   "validationPolicy": {
     "githubNetworkFailuresAreInconclusive": true,
@@ -2781,8 +2781,8 @@
     "activationRequiresExecutablePlan": true
   },
   "handoff": {
-    "reason": "retry_after_provider_local_fingerprint_decoupling",
-    "previousRequestVersion": 29,
+    "reason": "replay_on_current_lifecycle_head_with_exact_active_byte_guard",
+    "previousRequestVersion": 30,
     "retryAfterContractFix": "bare-search-not-identity-aware",
     "retryAfterActivationDiagnostics": true,
     "partialActivationAllowed": true,
@@ -2793,6 +2793,12 @@
     "activeExactBytePreservationFix": "88e9df0c5862a9e33c9078aa1eb0a96649baa6c7",
     "workflowContractFix": "1d631a75435558b44d7b244ed8470119e8ccb1a0",
     "fingerprintDecouplingFix": "1a30735f",
-    "fingerprintDecouplingTest": "dc39e6c0"
+    "fingerprintDecouplingTest": "dc39e6c0",
+    "baselineActive": {
+      "global": 10,
+      "france": 7
+    },
+    "activeByteGuardFix": "581bee29",
+    "activeByteGuardTest": "211822c8"
   }
 }
