@@ -496,9 +496,16 @@ def current_architecture_nonfunctional(row: dict[str, Any] | None) -> bool:
     """
     if not isinstance(row, dict):
         return False
+    status = str(row.get("status") or "")
+    tested = row.get("testedThisRun") is True
+    if status == "PARTIAL OK":
+        # A fresh PARTIAL row is intrinsically incomplete for the production
+        # active contract even when the status renderer protects its surviving
+        # lane and therefore does not enqueue Brain Repair.
+        return tested
     return (
-        str(row.get("status") or "") in CURRENT_NONFUNCTIONAL_STATUSES
-        and row.get("testedThisRun") is True
+        status in CURRENT_NONFUNCTIONAL_STATUSES
+        and tested
         and row.get("brainCheckRequired") is True
         and row.get("repairEligible") is True
     )

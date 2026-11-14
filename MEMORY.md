@@ -1,3 +1,9 @@
+## 2026-11-14 — Fresh PARTIAL must retire even when Repair queue intentionally protects its good lane
+
+- Lifecycle run 43604657767 on ce039acd succeeded and published 91b32cdf: wookafr moved to disabled retention. Global is now 11 active. However hindmoviez remained active because its fresh PARTIAL row has testedThisRun=true but brainCheckRequired=false/statusRepairEligible=false/repairEligible=false: TV is verified while movie is returned_unplayable, and the census intentionally protects the surviving TV lane instead of entering Repair.
+- This exposed a policy mismatch: production_active_provider_freshness_test requires every active provider to be fresh FULL, while lifecycle only withdrew incomplete rows that were also Repair symptoms. Fresh PARTIAL is intrinsically incomplete for the active contract regardless of whether Repair owns it. Change only that case to require testedThisRun=true; historical/untested PARTIAL remains protected. Environment-only states retain their stricter Brain/repair eligibility guards.
+- Internet Archive activation remains correctly blocked until the active baseline is all FULL. No activation proof, provider byte or quality gate is weakened.
+
 ## 2026-11-14 — Production active contract now rejects fresh PARTIAL rows
 
 - Full active replay 43603937483 on a51be853 completed across 8/8 shards and persisted 6ecc8d50: 10 FULL OK, hindmoviez PARTIAL OK with only TV freshly verified, wookafr CANDIDATE OK with timeout×2, 34 disabled. This is fresh current-byte evidence, not carried history.

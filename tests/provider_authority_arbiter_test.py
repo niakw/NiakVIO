@@ -270,6 +270,8 @@ for status in ("FULL OK","DISABLED"):
 assert module.current_architecture_nonfunctional(census("ROUTE PROVEN",tested=False)) is False
 assert module.current_architecture_nonfunctional(census("NO PROOF",brain=False)) is False
 assert module.current_architecture_nonfunctional(census("CANDIDATE OK",repair=False)) is False
+assert module.current_architecture_nonfunctional(census("PARTIAL OK",brain=False,repair=False)) is True
+assert module.current_architecture_nonfunctional(census("PARTIAL OK",tested=False,brain=False,repair=False)) is False
 
 manifest_row=row(True)
 registry=reg()
