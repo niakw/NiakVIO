@@ -9,7 +9,8 @@
     "staleDirectDisableAfterConsecutiveDomainFailures": 3,
     "apiBackendMayOperateWithoutHomepage": true,
     "manualOffEntersDisabledRetentionImmediately": true,
-    "effectiveOperatorShutdownEntersDisabledRetentionImmediately": true
+    "effectiveOperatorShutdownEntersDisabledRetentionImmediately": true,
+    "currentTestedRegressionEntersDisabledRetention": true
   },
   "providerCount": 41,
   "repairEligible": [
@@ -17,8 +18,6 @@
     "allwish",
     "anikototv",
     "anime-sama",
-    "anime-ultime",
-    "animekai",
     "animesalt",
     "animesama-co",
     "animesultra",
@@ -41,10 +40,7 @@
     "purstream",
     "sekai",
     "streamzo",
-    "uhdmovies",
     "vidfast",
-    "vidlove",
-    "vidrock",
     "voiranime",
     "voiranime-homes",
     "voiranime-rip",
@@ -53,11 +49,22 @@
   ],
   "repairBlocked": [
     "allanime",
+    "anime-ultime",
+    "animekai",
     "animevost-fr",
     "mallumv",
+    "uhdmovies",
+    "vidlove",
+    "vidrock",
     "yflix"
   ],
-  "disabledNow": [],
+  "disabledNow": [
+    "anime-ultime",
+    "animekai",
+    "uhdmovies",
+    "vidlove",
+    "vidrock"
+  ],
   "providers": [
     {
       "provider": "anime-sama",
@@ -97,14 +104,16 @@
     },
     {
       "provider": "uhdmovies",
-      "action": "KEEP_ROUTE_AUTHORITY",
-      "repairEligible": true,
-      "confidence": "high",
-      "authorityClass": "hub-or-redirect",
+      "action": "DISABLE_ARCHITECTURE_REGRESSION",
+      "repairEligible": false,
+      "confidence": "current-census",
+      "authorityClass": "current-architecture-regression",
       "failureCount": 0,
       "reasons": [
-        "authoritative_route_source"
-      ]
+        "authoritative_route_source",
+        "current_census_regression_provider"
+      ],
+      "appliedDisableReason": "auto_off_current_architecture_regression"
     },
     {
       "provider": "movieshunt",
@@ -180,15 +189,17 @@
     },
     {
       "provider": "animekai",
-      "action": "KEEP_PROVEN_SITE",
-      "repairEligible": true,
-      "confidence": "medium",
-      "authorityClass": "structured-site-plus-route-proof",
+      "action": "DISABLE_ARCHITECTURE_REGRESSION",
+      "repairEligible": false,
+      "confidence": "current-census",
+      "authorityClass": "current-architecture-regression",
       "failureCount": 0,
       "reasons": [
         "structured_official_site",
-        "existing_positive_route_prior"
-      ]
+        "existing_positive_route_prior",
+        "current_census_regression_provider"
+      ],
+      "appliedDisableReason": "auto_off_current_architecture_regression"
     },
     {
       "provider": "animesalt",
@@ -379,14 +390,16 @@
     },
     {
       "provider": "vidrock",
-      "action": "KEEP_ROUTE_AUTHORITY",
-      "repairEligible": true,
-      "confidence": "high",
-      "authorityClass": "hub-or-redirect",
+      "action": "DISABLE_ARCHITECTURE_REGRESSION",
+      "repairEligible": false,
+      "confidence": "current-census",
+      "authorityClass": "current-architecture-regression",
       "failureCount": 0,
       "reasons": [
-        "authoritative_route_source"
-      ]
+        "authoritative_route_source",
+        "current_census_regression_provider"
+      ],
+      "appliedDisableReason": "auto_off_current_architecture_regression"
     },
     {
       "provider": "voiranime",
@@ -480,15 +493,17 @@
     },
     {
       "provider": "anime-ultime",
-      "action": "KEEP_PROVEN_SITE",
-      "repairEligible": true,
-      "confidence": "medium",
-      "authorityClass": "structured-site-plus-route-proof",
+      "action": "DISABLE_ARCHITECTURE_REGRESSION",
+      "repairEligible": false,
+      "confidence": "current-census",
+      "authorityClass": "current-architecture-regression",
       "failureCount": 0,
       "reasons": [
         "structured_official_site",
-        "existing_positive_route_prior"
-      ]
+        "existing_positive_route_prior",
+        "current_census_regression_provider"
+      ],
+      "appliedDisableReason": "auto_off_current_architecture_regression"
     },
     {
       "provider": "animevost-fr",
@@ -525,17 +540,19 @@
     },
     {
       "provider": "vidlove",
-      "action": "KEEP_BACKEND",
-      "repairEligible": true,
-      "confidence": "high",
-      "authorityClass": "api-or-backend",
+      "action": "DISABLE_ARCHITECTURE_REGRESSION",
+      "repairEligible": false,
+      "confidence": "current-census",
+      "authorityClass": "current-architecture-regression",
       "failureCount": 0,
       "backendUrls": [
         "https://api.vidlove.cc"
       ],
       "reasons": [
-        "structured_backend_authority"
-      ]
+        "structured_backend_authority",
+        "current_census_regression_provider"
+      ],
+      "appliedDisableReason": "auto_off_current_architecture_regression"
     }
   ]
 }

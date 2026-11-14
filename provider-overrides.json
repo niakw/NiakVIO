@@ -943,7 +943,7 @@
       "official_hub": "https://mmodlist.org/",
       "official_site": "https://uhdmovies.beauty",
       "manifest_overrides": {
-        "enabled": true
+        "enabled": false
       },
       "learned_urls": [
         "https://uhdmovies.autos"
@@ -1107,7 +1107,7 @@
           }
         ]
       },
-      "route_data_state": "repair",
+      "route_data_state": "off",
       "repair_disposition": {
         "schemaVersion": 1,
         "authority": "provider-repair-disposition-v1",
@@ -1195,7 +1195,8 @@
         }
       },
       "source_runtime_family": "uhdmovies-search-gateway-driveseed-v4-button-first-multiterminal",
-      "reconstruction_state": "provider-local-terminal-multiserver"
+      "reconstruction_state": "provider-local-terminal-multiserver",
+      "activation_eligible": false
     },
     "movieshunt": {
       "capability": "direct_media",
@@ -3070,9 +3071,9 @@
         ]
       },
       "manifest_overrides": {
-        "enabled": true
+        "enabled": false
       },
-      "route_data_state": "on",
+      "route_data_state": "off",
       "repair_disposition": {
         "schemaVersion": 1,
         "authority": "provider-repair-disposition-v1",
@@ -3133,7 +3134,8 @@
         "declared_types_are_gate_denominator": true,
         "sequential": true
       },
-      "official_site": "https://www3.anikai.cc"
+      "official_site": "https://www3.anikai.cc",
+      "activation_eligible": false
     },
     "animesalt": {
       "capability": "html_scraper",
@@ -7862,7 +7864,7 @@
     "vidrock": {
       "capability": "html_scraper",
       "manifest_overrides": {
-        "enabled": true
+        "enabled": false
       },
       "official_site": "https://vidrock.to",
       "candidate_config_reconciliation": {
@@ -7992,7 +7994,7 @@
           }
         ]
       },
-      "route_data_state": "repair",
+      "route_data_state": "off",
       "repair_disposition": {
         "schemaVersion": 1,
         "authority": "provider-repair-disposition-v1",
@@ -8088,7 +8090,8 @@
       },
       "domain_substitutions": {
         "vidrock.net": "vidrock.to"
-      }
+      },
+      "activation_eligible": false
     },
     "voiranime": {
       "capability": "mixed_embed_resolver",
@@ -10110,9 +10113,9 @@
         ]
       },
       "manifest_overrides": {
-        "enabled": true
+        "enabled": false
       },
-      "route_data_state": "repair",
+      "route_data_state": "off",
       "repair_disposition": {
         "schemaVersion": 1,
         "authority": "provider-repair-disposition-v1",
@@ -10189,7 +10192,8 @@
         }
       },
       "source_runtime_family": "menu-search-series-focus-player",
-      "reconstruction_state": "provider-local-current-site"
+      "reconstruction_state": "provider-local-current-site",
+      "activation_eligible": false
     },
     "animevost-fr": {
       "capability": "api_stream_resolver",
@@ -11319,7 +11323,7 @@
     "vidlove": {
       "capability": "html_scraper",
       "manifest_overrides": {
-        "enabled": true
+        "enabled": false
       },
       "notes": [
         "Clean ProviderBase reconstruction models VidLove as a bounded multi-source JSON API recipe derived from the upstream provider contract."
@@ -11502,7 +11506,7 @@
           }
         ]
       },
-      "route_data_state": "on",
+      "route_data_state": "off",
       "repair_disposition": {
         "schemaVersion": 1,
         "authority": "provider-repair-disposition-v1",
@@ -11598,7 +11602,8 @@
           }
         },
         "requiresFreshIdentitySafePositive": true
-      }
+      },
+      "activation_eligible": false
     }
   },
   "route_override_defaults": {
