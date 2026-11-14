@@ -6,7 +6,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 PATH = ROOT / "provider-overrides.json"
-LEGO = "scripts/provider_patches/tmdb_catalog_direct_embed_runtime_v1.py"
+LEGO = "scripts/provider_patches/chillflix_tmdb_direct_embed_runtime_v1.py"
 MARKER = "NIAKVIO_CHILLFLIX_TMDB_DIRECT_EMBED_ORACLE_V1"
 
 
