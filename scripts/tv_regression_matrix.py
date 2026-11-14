@@ -68,6 +68,15 @@ FIXTURES: dict[str, dict[str, Any]] = {
         "title": "Breaking Bad",
         "year": 2008,
     },
+    "visionquest_s01e01": {
+        "label": "VisionQuest S01E01",
+        "tmdbId": "213375",
+        "mediaType": "tv",
+        "season": 1,
+        "episode": 1,
+        "title": "VisionQuest",
+        "year": 2026,
+    },
     "mushoku_tensei_s01e01": {
         "label": "Mushoku Tensei: Jobless Reincarnation S01E01",
         "tmdbId": "94664",
@@ -84,6 +93,13 @@ FIXTURES: dict[str, dict[str, Any]] = {
         "mediaType": "movie",
         "title": "Interstellar",
         "year": 2014,
+    },
+    "fahrenheit_451_2018": {
+        "label": "Fahrenheit 451 (2018)",
+        "tmdbId": "401905",
+        "mediaType": "movie",
+        "title": "Fahrenheit 451",
+        "year": 2018,
     },
 }
 
