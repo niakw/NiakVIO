@@ -146,7 +146,40 @@ def main() -> int:
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(summary, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
-    print("GLOBAL_FIXTURE_MATRIX " + json.dumps(summary, ensure_ascii=False, separators=(",", ":")))
+    compact = {
+        "fixture": fixture,
+        "active_global_candidates": summary["active_global_candidates"],
+        "tested": summary["tested"],
+        "providers_with_streams": summary["providers_with_streams"],
+        "providers_with_successful_server_response": summary["providers_with_successful_server_response"],
+        "providers_with_server_access": summary["providers_with_server_access"],
+        "timeouts": summary["timeouts"],
+        "rows": [
+            {
+                "provider": row.get("provider"),
+                "stream_count": row.get("stream_count"),
+                "provider_server_accessible": row.get("provider_server_accessible"),
+                "provider_server_successful_response": row.get("provider_server_successful_response"),
+                "statuses": row.get("statuses"),
+                "hosts": row.get("hosts"),
+                "error_code": row.get("error_code"),
+                "timeout": row.get("timeout"),
+                "observations": [
+                    {
+                        "stage": obs.get("stage"),
+                        "host": obs.get("host"),
+                        "status": obs.get("status"),
+                        "ok": obs.get("ok"),
+                        "error_code": obs.get("error_code"),
+                    }
+                    for obs in (row.get("observations") or [])[:12]
+                    if isinstance(obs, dict)
+                ],
+            }
+            for row in rows
+        ],
+    }
+    print("GLOBAL_FIXTURE_MATRIX " + json.dumps(compact, ensure_ascii=False, separators=(",", ":")))
     return 0
 
 
