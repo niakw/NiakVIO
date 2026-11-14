@@ -62,7 +62,7 @@ for (const scraper of vf.scrapers) {
   );
 }
 
-assert.equal(catalog.providers.length, general.scrapers.length, "catalog must preserve every general provider");
+assert.equal(catalog.providers.length, new Set([...general.scrapers, ...vf.scrapers].map(x => String(x.id).toLowerCase())).size, "catalog must preserve the union of Global and France providers");
 assert.equal(catalog.manifestOrder.vf.length, vf.scrapers.length, "catalog must preserve every VF provider");
 assert.equal(catalog.policy.repairBeforeTriage, true);
 assert.equal(catalog.policy.retainLastKnownGoodOnInconclusive, true);

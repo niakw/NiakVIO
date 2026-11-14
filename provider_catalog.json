@@ -7,9 +7,9 @@
     "quickRefreshMayRepairAndPublish": true,
     "deepRefreshRebuildsKnowledge": true,
     "committedProviderNames": true,
-    "committedProviderNameCount": 46,
+    "committedProviderNameCount": 47,
     "committedProviderLogos": true,
-    "committedProviderLogoCount": 46
+    "committedProviderLogoCount": 47
   },
   "manifestMeta": {
     "general": {
@@ -64,7 +64,10 @@
       "animevost-fr",
       "mallumv",
       "moviebox",
-      "vidlove"
+      "vidlove",
+      "kisskh",
+      "videasy",
+      "vidlink"
     ],
     "vf": [
       "anime-sama",
@@ -87,7 +90,10 @@
       "vostfree",
       "wookafr",
       "anime-ultime",
-      "animevost-fr"
+      "animevost-fr",
+      "movix",
+      "nakios",
+      "frenchstream"
     ]
   },
   "providers": [
@@ -1336,6 +1342,196 @@
       "projections": {
         "general": true,
         "vf": false
+      }
+    },
+    {
+      "canonicalId": "kisskh",
+      "scraper": {
+        "id": "kisskh",
+        "name": "💋 Kisskh",
+        "description": "Streams Korean dramas and movies from onlykdrama.top (Intégration rapide NiakVIO — lecture native encore à valider.)",
+        "version": "1.0.0",
+        "author": "Michat88",
+        "supportedTypes": [
+          "movie",
+          "tv"
+        ],
+        "filename": "providers/kisskh--aio--81b0afffb3373907.js",
+        "enabled": true,
+        "hasSettings": true,
+        "formats": [
+          "mp4",
+          "m3u8"
+        ],
+        "logo": "https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/96x96/kisskh.webp",
+        "contentLanguage": [
+          "ko",
+          "ch",
+          "ja",
+          "th"
+        ],
+        "disabledPlatforms": []
+      },
+      "projections": {
+        "general": true,
+        "vf": false
+      }
+    },
+    {
+      "canonicalId": "videasy",
+      "scraper": {
+        "id": "videasy",
+        "name": "▶️ VidEasy",
+        "description": "Videasy streaming with encrypted TMDB ID support for movies and TV shows (Intégration rapide NiakVIO — lecture native encore à valider.)",
+        "version": "1.0.0",
+        "author": "Nuvio Team",
+        "supportedTypes": [
+          "movie",
+          "tv"
+        ],
+        "filename": "providers/videasy--aio--8fb7fbc12e23d281.js",
+        "enabled": true,
+        "hasSettings": true,
+        "formats": [
+          "mp4",
+          "m3u8"
+        ],
+        "logo": "https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/96x96/videasy.webp",
+        "contentLanguage": [
+          "en"
+        ],
+        "disabledPlatforms": []
+      },
+      "projections": {
+        "general": true,
+        "vf": false
+      }
+    },
+    {
+      "canonicalId": "vidlink",
+      "scraper": {
+        "id": "vidlink",
+        "name": "🔗 VidLink",
+        "description": "Vidlink streaming with encrypted TMDB ID support for movies and TV shows (Intégration rapide NiakVIO — lecture native encore à valider.)",
+        "version": "1.0.0",
+        "author": "Nuvio Team",
+        "supportedTypes": [
+          "movie",
+          "tv"
+        ],
+        "filename": "providers/vidlink--aio--bedc41b8caf7e7cb.js",
+        "enabled": true,
+        "hasSettings": true,
+        "formats": [
+          "mp4",
+          "m3u8"
+        ],
+        "logo": "https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/96x96/vidlink.webp",
+        "contentLanguage": [
+          "en"
+        ],
+        "disabledPlatforms": []
+      },
+      "projections": {
+        "general": true,
+        "vf": false
+      }
+    },
+    {
+      "canonicalId": "movix",
+      "scraper": {
+        "id": "movix",
+        "name": "🎥 Movix",
+        "description": "Films, Séries et Animes en VF et VOSTFR. (Intégration rapide NiakVIO — lecture native encore à valider.)",
+        "version": "0.1.6",
+        "hasSettings": true,
+        "author": "Gowaru",
+        "supportedTypes": [
+          "movie",
+          "tv"
+        ],
+        "filename": "providers/movix--gowaru--22105e776f3ff038.js",
+        "enabled": true,
+        "logo": "https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/96x96/movix.webp",
+        "contentLanguage": [
+          "fr"
+        ],
+        "formats": [
+          "mp4",
+          "mkv",
+          "m3u8"
+        ],
+        "limited": false,
+        "disabledPlatforms": [],
+        "supportsExternalPlayer": true
+      },
+      "projections": {
+        "general": false,
+        "vf": true
+      }
+    },
+    {
+      "canonicalId": "nakios",
+      "scraper": {
+        "id": "nakios",
+        "name": "🇳 Nakios",
+        "description": "Films et séries en streaming MP4 via Nakios (API REST, TMDB natif, CDN direct). (Intégration rapide NiakVIO — lecture native encore à valider.)",
+        "version": "1.0.4",
+        "author": "Gowaru",
+        "supportedTypes": [
+          "movie",
+          "tv"
+        ],
+        "filename": "providers/nakios--gowaru--6080d0a1c1d9316f.js",
+        "enabled": true,
+        "logo": "https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/96x96/nakios.webp",
+        "contentLanguage": [
+          "fr",
+          "en"
+        ],
+        "formats": [
+          "mp4"
+        ],
+        "limited": false,
+        "disabledPlatforms": [],
+        "supportsExternalPlayer": false
+      },
+      "projections": {
+        "general": false,
+        "vf": true
+      }
+    },
+    {
+      "canonicalId": "frenchstream",
+      "scraper": {
+        "id": "frenchstream",
+        "name": "🇫🇷 Frenchstream",
+        "description": "Films, séries et animes en VF et VOSTFR (recherche exacte par tag TMDB, réglages langue/hosts — Mobile uniquement). (Intégration rapide NiakVIO — lecture native encore à valider.)",
+        "version": "2.0.24",
+        "hasSettings": true,
+        "author": "Gowaru",
+        "supportedTypes": [
+          "movie",
+          "tv"
+        ],
+        "filename": "providers/frenchstream--gowaru--a82b08cbededa60c.js",
+        "enabled": true,
+        "logo": "https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/96x96/frenchstream.webp",
+        "contentLanguage": [
+          "fr"
+        ],
+        "formats": [
+          "mp4",
+          "mkv",
+          "m3u8"
+        ],
+        "limited": false,
+        "disabledPlatforms": [],
+        "supportsExternalPlayer": true
+      },
+      "projections": {
+        "general": false,
+        "vf": true
       }
     }
   ]

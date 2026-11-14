@@ -25,6 +25,7 @@ import re
 import subprocess
 import sys
 from typing import Any
+from generate_language_manifests import france_only_rows
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 SEMVER = re.compile(r"^(\d+)\.(\d+)\.(\d+)$")
@@ -240,7 +241,8 @@ def finalize_provider_versions(previous_path: pathlib.Path, manifest_path: pathl
             row["filename"] = vf_filename(source.get("filename"))
         dump(path, projection)
 
-    sync_projection(vf_path, current_by_id, "VF")
+    france_only_by_id = {canonical_id(row.get("id")): row for row in france_only_rows()}
+    sync_projection(vf_path, {**france_only_by_id, **current_by_id}, "VF")
     vf = load(vf_path)
     vf_by_id = {
         canonical_id(row.get("id")): row

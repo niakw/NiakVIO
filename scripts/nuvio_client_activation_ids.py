@@ -25,6 +25,7 @@ import json
 import re
 from pathlib import Path
 from typing import Any
+from generate_language_manifests import france_only_rows
 
 ROOT = Path(__file__).resolve().parents[1]
 STATE_PATH = ROOT / "nuvio-client-id-state.json"
@@ -119,13 +120,14 @@ def apply_policy(*, bootstrap_active: bool = False) -> dict[str, Any]:
     for canonical in sorted(set(providers_state) - set(main_by_canonical)):
         providers_state.pop(canonical, None)
 
-    # VF is a functional projection of principal; its relative bundle path is
-    # intentionally different because vf/manifest.json is one directory lower.
+    # VF also contains persistent France-only providers that never enter Global.
+    france_only = {canonical_id(item.get("id")): item for item in france_only_rows()}
+    # Shared rows preserve current case-toggle semantics and functional metadata.
     for row in [item for item in vf.get("scrapers", []) if isinstance(item, dict)]:
         canonical = canonical_id(row.get("id"))
-        source = main_by_canonical.get(canonical)
+        source = main_by_canonical.get(canonical) or france_only.get(canonical)
         if source is None:
-            raise RuntimeError(f"VF provider absent from principal manifest: {canonical}")
+            raise RuntimeError(f"VF provider absent from Global and France-only source: {canonical}")
         row["id"] = source["id"]
         row["version"] = source.get("version")
         row["filename"] = vf_filename(source.get("filename"))
