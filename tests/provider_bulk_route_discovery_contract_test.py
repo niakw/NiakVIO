@@ -50,9 +50,12 @@ for token in (
     "actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333",
     "source_version=evidence.get(\"requestVersion\")",
     "reason=no-qualified-routes",
+    "actions: write",
+    "gh workflow run provider-bulk-onboarding.yml --ref main",
+    "FIELD_BULK_ROUTE_HANDOFF dispatched=provider-bulk-onboarding",
 ):
     assert token in workflow, token
 
 assert "provider-bulk-route-discovery.json" in workflow
 assert "activation" not in probe_path.name.lower()
-print("Bulk route-discovery sanitization, sharding and residential transport contract passed")
+print("Bulk route-discovery sanitization, sharding, residential transport and explicit onboarding handoff contract passed")
