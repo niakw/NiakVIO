@@ -337,10 +337,14 @@ assert needs_new_graph[0]["requiresNewExecutableRepairProfile"] is True, needs_n
 workflow_source = (ROOT / ".github" / "workflows" / "brain-learning-lab.yml").read_text(encoding="utf-8")
 architecture_job = workflow_source.split("  publish-architecture-proposal:", 1)[1].split("  continue-learning-slot:", 1)[0]
 architecture_if = architecture_job.split("    needs:", 1)[0]
-assert "github.event_name == 'workflow_dispatch'" in architecture_if, architecture_if
-assert "github.event.inputs.publish_proposal == 'true'" in architecture_if, architecture_if
-assert "needs.experiment.outputs.architecture_force == 'true'" in architecture_if, architecture_if
+assert "if: needs.experiment.result == 'success'" in architecture_if, architecture_if
 assert "github.event_name == 'push'" not in architecture_if, architecture_if
 assert "github.event_name == 'schedule'" not in architecture_if, architecture_if
+# Validation runs routinely; write surfaces remain separately gated.
+assert "github.event_name == 'workflow_dispatch'" in architecture_job, architecture_job
+assert "github.event.inputs.publish_proposal == 'true'" in architecture_job, architecture_job
+assert "vars.NIAKVIO_ALLOW_BRAIN_PROPOSAL_PR == 'true'" in architecture_job, architecture_job
+assert "needs.experiment.outputs.architecture_force != 'true'" in architecture_job, architecture_job
+assert "needs.experiment.outputs.architecture_force == 'true'" in architecture_job, architecture_job
 
 print("Brain architecture deferred repair cohort contract passed")

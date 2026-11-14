@@ -1,3 +1,9 @@
+## 2026-11-14 — Deferred-cohort contract aligned with routine architecture validation
+
+- Workflow Gate 43572546386 progressed through the Brain architecture FORCE materializer/promotion/self-architecture/advisor tests successfully, then failed only because tests/brain_architecture_deferred_cohort_test.py still asserted the old job-level manual/FORCE condition.
+- Updated that contract to require routine successful-experiment validation while independently requiring manual PR publication and architecture_force-only direct promotion gates. No executable Brain/provider behavior changed.
+- Exact-SHA rerun required.
+
 ## 2026-11-14 — Architecture documentation synchronized with Brain/lifecycle control-plane changes
 
 - ARCHITECTURE.md now states that manifest.json is Global-only, provider_catalog may own France-only identities, lifecycle/static/materialization authority is their union, and France-only rows must never leak into Global.
