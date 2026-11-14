@@ -14,6 +14,7 @@ import re
 import subprocess
 import sys
 import tempfile
+import time
 import unicodedata
 import urllib.error
 import urllib.parse
@@ -268,6 +269,7 @@ def probe_common_identity_routes(
     fixture: dict[str, Any],
     *,
     timeout: int,
+    deadline: float | None = None,
 ) -> list[str]:
     """Validate a tiny generic route vocabulary against a real content fixture.
 
@@ -325,11 +327,17 @@ def probe_common_identity_routes(
         *((value, False) for value in search_routes),
         *((value, True) for value in direct_routes),
     ]:
+        remaining = (deadline - time.monotonic()) if deadline is not None else None
+        if remaining is not None and remaining <= 0.5:
+            break
         rendered = _render_route(route, fixture)
         url = urllib.parse.urljoin(direct.rstrip("/") + "/", rendered.lstrip("/"))
         try:
             req = urllib.request.Request(url, headers=headers, method="GET")
-            with urllib.request.urlopen(req, timeout=max(2, min(timeout, 10))) as response:
+            request_timeout = max(0.5, min(float(timeout), 10.0))
+            if remaining is not None:
+                request_timeout = max(0.5, min(request_timeout, remaining))
+            with urllib.request.urlopen(req, timeout=request_timeout) as response:
                 status = int(getattr(response, "status", 200) or 200)
                 if status >= 400:
                     continue
@@ -469,9 +477,13 @@ def main() -> int:
         reached = False
         patterns: list[str] = []
         return_codes: list[int] = []
+        provider_deadline = time.monotonic() + max(10.0, float(args.provider_timeout))
         with tempfile.TemporaryDirectory(prefix=f"niakvio-route-{pid}-") as td:
             td_path = Path(td)
             for fixture_index, fixture in enumerate(fixtures):
+                remaining = provider_deadline - time.monotonic()
+                if remaining <= 0.5:
+                    break
                 current = td_path / f"current-{fixture_index}.json"
                 report_path = td_path / f"site-structure-{fixture_index}.json"
                 current.write_text(json.dumps({
@@ -491,7 +503,7 @@ def main() -> int:
                 try:
                     proc = subprocess.run(
                         cmd, cwd=ROOT, text=True, capture_output=True,
-                        timeout=max(30, args.provider_timeout), check=False,
+                        timeout=max(0.5, remaining), check=False,
                     )
                     return_codes.append(proc.returncode)
                     report = load(report_path) if report_path.is_file() else {}
@@ -510,15 +522,27 @@ def main() -> int:
 
         if not patterns:
             for fixture in fixtures:
-                for route in probe_common_identity_routes(direct, fixture, timeout=args.timeout):
+                if provider_deadline - time.monotonic() <= 0.5:
+                    break
+                for route in probe_common_identity_routes(
+                    direct,
+                    fixture,
+                    timeout=args.timeout,
+                    deadline=provider_deadline,
+                ):
                     if route not in patterns and identity_route_candidate(route):
                         patterns.append(route)
                 if len(patterns) >= 2:
                     break
+        budget_exhausted = provider_deadline - time.monotonic() <= 0.5
         reason = (
             "observed_identity_executable_routes"
             if patterns
-            else ("reachable_no_identity_route_observed" if reached else "network_or_site_unreached")
+            else (
+                "provider_probe_budget_exhausted"
+                if budget_exhausted
+                else ("reachable_no_identity_route_observed" if reached else "network_or_site_unreached")
+            )
         )
         results.append({
             "provider": pid,
@@ -528,6 +552,7 @@ def main() -> int:
             "probeAttempted": True,
             "probeReachedSite": reached,
             "probeReturnCode": max(return_codes) if return_codes else None,
+            "probeBudgetExhausted": budget_exhausted,
             "routePatterns": patterns,
             "routeCount": len(patterns),
             "qualified": bool(patterns),
