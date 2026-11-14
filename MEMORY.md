@@ -1,3 +1,8 @@
+## 2026-11-14 — Internet Archive staging reaches validation; test loader completed
+
+- Bulk onboarding 43596291642 on 321bac65 again staged the single provider and rebuilt publication successfully. Validation failed only because the direct unit-test loader had scripts/provider_patches but not scripts, so the shared Lego could not import provider_patch_blocks. Real materialization had already loaded the Lego successfully.
+- Align the test with actual loader search paths (scripts + scripts/provider_patches) and bump the unchanged one-provider batch for another atomic retry. Publish remained skipped on the failed run; no active/provider row claim yet.
+
 ## 2026-11-14 — Internet Archive bulk retry after stage-success/test-only failure
 
 - Bulk onboarding 43596083858 on 05c4a078 completed staging/rebuild and reached validation; it failed only because open_archive_public_domain_runtime_test.py used the direct-import harness fixed in c9548322. Publish was skipped, so main still has no Internet Archive provider row from that run.
