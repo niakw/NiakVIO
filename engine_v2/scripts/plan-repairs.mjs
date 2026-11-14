@@ -136,6 +136,14 @@ const POST_EXHAUSTION_STRATEGIES = {
     { profile: "runtime_response_salvage_v1", method: "successful-runtime-response-salvage" },
     { profile: "document_request_contract_mining_v1", method: "provider-document-request-contract-mining" },
   ],
+  content_identity_gap: [
+    { profile: "identity_alias_search_traversal_v1", method: "tmdb-identity-alias-search-traversal" },
+    { profile: "search_response_route_binding_v1", method: "search-response-route-binding" },
+    { profile: "search_contract_inference_v1", method: "search-contract-inference" },
+    { profile: "proven_route_terminal_traversal_v1", method: "identity-safe-route-traversal" },
+    { profile: "runtime_response_salvage_v1", method: "successful-runtime-response-salvage" },
+    { profile: "document_request_contract_mining_v1", method: "provider-document-request-contract-mining" },
+  ],
   chain_terminal_gap: [
     { profile: "terminal_transition_graph_v1", method: "terminal-response-transition-graph" },
     { profile: "terminal_transition_graph_v2", method: "brain-evolved-executable-transition" },
@@ -224,6 +232,7 @@ const LLM_FAILURE_FAMILIES = Object.freeze({
   provider_transport_gap: "route-terminal",
   transport_blocked: "route-terminal",
   search_gap: "route-terminal",
+  content_identity_gap: "content-identity",
   chain_terminal_gap: "terminal-media",
   media_extraction_gap: "terminal-media",
   variant_coverage_gap: "terminal-media",
@@ -257,6 +266,7 @@ const META_GAP_PROFILE_BY_FAILURE = Object.freeze({
   provider_transport_gap: "provider_origin_failover_v1",
   transport_blocked: "provider_origin_failover_v1",
   search_gap: "search_contract_inference_v1",
+  content_identity_gap: "identity_alias_search_traversal_v1",
   chain_terminal_gap: "chain_terminal_extractor_v1",
   media_extraction_gap: "player_media_extractor_v1",
   variant_coverage_gap: "player_media_extractor_v1",
@@ -281,6 +291,15 @@ function rebindMetaGapExperiment(experiment, failureClass) {
     next.sessionBootstrap = true;
     next.responseSalvage = true;
     next.documentRequestMining = true;
+  } else if (current === "content_identity_gap") {
+    next.routePolicy = "owned_plus_peer_generic";
+    next.recipePolicy = "current_plus_provider_peer";
+    next.roleOrder = ["search", "detail", "api", "episode", "player", "source", "other"];
+    next.terminalOnly = false;
+    next.aliasSearch = true;
+    next.responseSalvage = true;
+    next.documentRequestMining = true;
+    next.sessionBootstrap = false;
   } else if (current === "route_proven_gap" || current === "search_gap") {
     next.routePolicy = "owned_plus_peer_generic";
     next.recipePolicy = "current_plus_provider_peer";
@@ -338,6 +357,13 @@ function rotateMetaGapExperiment(experiment, failureClass, generation) {
     next.routePolicy = routes[step % routes.length];
     next.recipePolicy = recipes[(step + 1) % recipes.length];
     next.sessionBootstrap = step % 2 === 0 ? true : Boolean(next.sessionBootstrap);
+  } else if (current === "content_identity_gap") {
+    const routes = ["owned_plus_peer_generic", "owned_only", "owned_plus_peer"];
+    const recipes = ["current_plus_provider_peer", "current_plus_provider", "current_only"];
+    next.routePolicy = routes[step % routes.length];
+    next.recipePolicy = recipes[step % recipes.length];
+    next.aliasSearch = true;
+    next.terminalOnly = false;
   } else if (current === "route_proven_gap" || current === "search_gap") {
     const routes = ["owned_plus_peer_generic", "owned_plus_peer", "owned_only"];
     const recipes = ["current_plus_provider_peer", "current_plus_provider", "current_only"];
@@ -406,6 +432,7 @@ function causalStrategyProfile(failureClass, variant, generation, finalVariant) 
   const base = {
     provider_transport_gap: "provider_origin_failover_v1",
     route_proven_gap: "proven_route_terminal_traversal_v1",
+    content_identity_gap: "identity_alias_search_traversal_v1",
     chain_terminal_gap: "chain_terminal_extractor_v1",
     candidate_replay_gap: "retained_candidate_replay_v1",
     media_extraction_gap: "player_media_extractor_v1",
