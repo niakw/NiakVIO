@@ -1,13 +1,13 @@
 {
   "schemaVersion": 2,
   "scope": "all",
-  "reason": "Full fresh production-cohort proof before Internet Archive activation; keep canonical 13 active providers fresh while pending Internet Archive proof remains isolated",
-  "requestedAt": "2026-11-14T13:41:00+01:00",
-  "validation": "full-active-cohort-pre-activation-refresh",
+  "reason": "Retry full fresh production-cohort proof after activation tempfile-lifetime test fix and open-archive strategy contract fix; preserve pending Internet Archive exact bytes",
+  "requestedAt": "2026-11-14T14:46:00+01:00",
+  "validation": "full-active-cohort-pre-activation-refresh-v2",
   "source": "NiakVIO authorized open-archive onboarding",
   "targetProviders": [],
   "allowPendingTargets": false,
-  "requiredEvidence": "Fresh FULL OK on every currently active provider and every declared lane; pending Internet Archive remains governed by its isolated exact-byte proof",
-  "retryRevision": 1,
-  "fullRefreshRevision": 1
+  "requiredEvidence": "Fresh FULL OK on every currently active provider and every declared lane; pending Internet Archive stays governed by isolated exact-byte proof before activation",
+  "retryRevision": 2,
+  "fullRefreshRevision": 2
 }

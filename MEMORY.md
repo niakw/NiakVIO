@@ -1,3 +1,9 @@
+## 2026-11-14 — Requeue full active-cohort proof before Internet Archive activation
+
+- Exact 6f42275: Core Verify & Publish 43602288683, Provider Overrides 43602288653, Non-Regression 43602288645, Branch Maintenance 43602288616 and CodeQL 43602288637 succeeded. Workflow architecture gate 43602288655 remained in progress at trigger time; security Final Gate separately fails on unresolved CodeQL retirement and is not waived.
+- Bump only provider-census-sharded trigger metadata to run a fresh scope=all production cohort census. Internet Archive pending provider bytes are not restaged, rebuilt, materialized or modified; its isolated FULL proof remains bound to the previously tested pending SHA.
+- Expected chain is explicit and proof-gated: fresh current 13-active census -> successful sharded workflow_run -> Bulk Activation selects only pending FULL candidates -> move exact bytes -> full 14-active post-activation census. Any failed proof stops promotion.
+
 ## 2026-11-14 — Publication contract recognizes the authorized open-archive strategy
 
 - Core Verify & Publish 43601924892 on 381ef595 failed in the exact strategy-plan contract because tests/provider_v3_strategy_plan_contract_test.py rejected internet-archive capability=open_archive_public_domain as unsupported.
