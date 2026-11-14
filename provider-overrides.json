@@ -7363,260 +7363,28 @@
     },
     "videasy": {
       "notes": [
-        "Clean v3 VidEasy uses the shared Wings/speedracelight seed + mvm1 encrypted-source family through a provider-owned Lego.",
-        "Core supplies title/year/TMDB identity and final stream sanitation remains Core-owned.",
-        "Nine content-safe Wings source endpoints are executable. Nitrogen/m4uhd remains recognition evidence only after live movie+TV probes proved a media identity contradiction; it must not be emitted by the VidEasy runtime."
+        "Created by the NiakVIO full-auto provider onboarding workflow from structured route knowledge only.",
+        "Activation remains disabled until the onboarding quick Lab proves the provider on every requested runtime group.",
+        "Activated from exact-byte offline Provider v3 contract proof because GitHub-hosted network/WAF checks are non-authoritative; live native validation remains pending."
       ],
-      "capability": "api_stream_resolver",
-      "official_hub": "https://www.videasy.to/docs",
+      "replacements": {},
+      "runtime_domain_replacements": {},
+      "route_replacements": {},
+      "profiles": [],
+      "capability": "html_scraper",
+      "official_hub": null,
       "official_site": "https://www.vidking.net",
-      "domain_substitutions": {
-        "player.videasy.net": "www.vidking.net"
-      },
-      "official_api": "https://api.speedracelight.com",
-      "learned_routes": [
-        "/seed?mediaId={id}",
-        "/cdn/sources-with-title",
-        "/lamovie/sources-with-title"
+      "published_types": [
+        "movie",
+        "tv"
       ],
-      "provider_lego_scripts": [
-        "scripts/provider_patches/videasy_runtime_v1.py"
-      ],
-      "provider_lego_options": {
-        "scripts/provider_patches/videasy_runtime_v1.py": {
-          "api_base": "https://api.speedracelight.com",
-          "origin": "https://www.vidking.net",
-          "referer": "https://www.vidking.net/"
-        }
-      },
-      "identity_input": {
-        "mode": "catalog_search",
-        "requires_tmdb_before_run": true,
-        "required_fields": [
-          "title",
-          "year",
-          "mediaType"
-        ]
-      },
-      "candidate_learned_routes": [
-        "/seed?mediaId={id}",
-        "/cdn/sources-with-title",
-        "/lamovie/sources-with-title",
-        "/m4uhd/sources-with-title",
-        "/vd/X0ZKRXB3VkFuajNmV2hGSmFZQU8wZzpwSld4UEZ1bzZxWTNuVXFSZnJsQ0RBaWpic0JUQ01MTUFiaEhUWE5HNnVZ/index-s2160p-v1-a1.m3u8",
-        "/vd/X0ZKRXB3VkFuajNmV2hGSmFZQU8wZzpwSld4UEZ1bzZxWTNuVXFSZnJsQ0RBaWpic0JUQ01MTUFiaEhUWE5HNnVZ/index-s1080p-v1-a1.m3u8",
-        "/vd/X0ZKRXB3VkFuajNmV2hGSmFZQU8wZzpwSld4UEZ1bzZxWTNuVXFSZnJsQ0RBaWpic0JUQ01MTUFiaEhUWE5HNnVZ/index-s480p-v1-a1.m3u8",
-        "/vd/X0ZKRXB3VkFuajNmV2hGSmFZQU8wZzpwSld4UEZ1bzZxWTNuVXFSZnJsQ0RBaWpic0JUQ01MTUFiaEhUWE5HNnVZ/index-s720p-v1-a1.m3u8",
-        "/r6/ma9yIsUHLd1oEUKmveBRD6CL9aSh9fi08J7f9fAYJaJBpCdYD0B-GAdVd7Zg6lACo8F67V8n20Xhl51_593TUkhcd9hFZcoR7LlT9DOAAq0slTZjhKqJapt6Dq7jqdYGFf9Z_L8IdXpyDJsvmSQGn5NfBmisKFsxcmff3eNEETzYsgKsXvNAYtY4LbNo74mcgDqsljw0_F9ocjFPncBGZEAzKIei4FVvrz8bhn56qyD_zSEKvabAZfGQIO4laN-4Ge1sK8w3NF6ZLOGZGaTKIDIPA7qVsJ0KlN_BKTarQfMsqY0NBWsh_xl3cOQd4ufbrWESo1OM_7jNaHJw-mCyww.m3u8",
-        "/vd/YjRtUlF5YURIODZhYlk2d3hKbDVwdzpXV0FGTkVJUk5JMTFhS1pzbWlBN1lSWHpfNmJYWWxvWjVWcDBmVjBELVlJ/index-s480p-v1-a1.m3u8",
-        "/vd/YjRtUlF5YURIODZhYlk2d3hKbDVwdzpXV0FGTkVJUk5JMTFhS1pzbWlBN1lSWHpfNmJYWWxvWjVWcDBmVjBELVlJ/index-s2160p-v1-a1.m3u8",
-        "/vd/YjRtUlF5YURIODZhYlk2d3hKbDVwdzpXV0FGTkVJUk5JMTFhS1pzbWlBN1lSWHpfNmJYWWxvWjVWcDBmVjBELVlJ/index-s1080p-v1-a1.m3u8",
-        "/vd/YjRtUlF5YURIODZhYlk2d3hKbDVwdzpXV0FGTkVJUk5JMTFhS1pzbWlBN1lSWHpfNmJYWWxvWjVWcDBmVjBELVlJ/index-s720p-v1-a1.m3u8",
-        "/r6/ma9yIsUHLd1oEUKmveBRD6CL9aSh9fi08J7f9fAYJaJBpCdYD0B-GAdVd7Zg6lACo8F67V8n20Xhl51_593TUkhcd9hFZcoR7LlT9DOAAq3o2AYXY--gNgO5_mT-onQgBmnM9kzRVGlbYZN2a8EFhh4ZorByF1QqIz3y2oLc3ZH1DPQiw4lxSnqqyxOFgVefkqdgLsSy347-YFIQHJDgotDdgrzkB61yOOgjaLqIvZUhjC5L0dXKY6B1ccSdDblJkrPobQZYIG6fOr4uwvk-yc2txYfCRCXRpZrvGXoKrP7LyaE6MBCvM5uoG30XyTjxCmHYq-VTOCjvGRgVG_bwNw.m3u8",
-        "/vd/T1A2YnNRVEIzVVVRaXBmaV9BbEE3QTphd2E4VlM0dTZuNGpBOExTU0k0TlhyS1JLaEdPOGlJcEVyWkQwbklKdWtv/index-s480p-v1-a1.m3u8",
-        "/vd/T1A2YnNRVEIzVVVRaXBmaV9BbEE3QTphd2E4VlM0dTZuNGpBOExTU0k0TlhyS1JLaEdPOGlJcEVyWkQwbklKdWtv/index-s720p-v1-a1.m3u8",
-        "/vd/T1A2YnNRVEIzVVVRaXBmaV9BbEE3QTphd2E4VlM0dTZuNGpBOExTU0k0TlhyS1JLaEdPOGlJcEVyWkQwbklKdWtv/index-s1080p-v1-a1.m3u8",
-        "/vd/YXlGR2Z0Y010TmlCMlB4MzhxWlA5QTp1UXFjM19ZUUxMelB4R0hSaWRPUDdDc3RTYlVQanh5aUJLM3d4bTBiX2lZ/index-s480p-v1-a1.m3u8",
-        "/vd/YXlGR2Z0Y010TmlCMlB4MzhxWlA5QTp1UXFjM19ZUUxMelB4R0hSaWRPUDdDc3RTYlVQanh5aUJLM3d4bTBiX2lZ/index-s720p-v1-a1.m3u8",
-        "/vd/YXlGR2Z0Y010TmlCMlB4MzhxWlA5QTp1UXFjM19ZUUxMelB4R0hSaWRPUDdDc3RTYlVQanh5aUJLM3d4bTBiX2lZ/index-s1080p-v1-a1.m3u8",
-        "/vd/ZVQwNjVpX1NpaU03c19ZRmdlenN0dzpDYmRtcXVwemhTRklWZGNtS1ZuVDhCb2FfbDlWVDdGLVRnaTdYT05STlNB/index-s720p-v1-a1.m3u8",
-        "/vd/ZVQwNjVpX1NpaU03c19ZRmdlenN0dzpDYmRtcXVwemhTRklWZGNtS1ZuVDhCb2FfbDlWVDdGLVRnaTdYT05STlNB/index-s2160p-v1-a1.m3u8",
-        "/vd/ZVQwNjVpX1NpaU03c19ZRmdlenN0dzpDYmRtcXVwemhTRklWZGNtS1ZuVDhCb2FfbDlWVDdGLVRnaTdYT05STlNB/index-s1080p-v1-a1.m3u8",
-        "/vd/ZVQwNjVpX1NpaU03c19ZRmdlenN0dzpDYmRtcXVwemhTRklWZGNtS1ZuVDhCb2FfbDlWVDdGLVRnaTdYT05STlNB/index-s480p-v1-a1.m3u8",
-        "/r6/ma9yIsUHLd1oEUKmveBRD6CL9aSh9fi08J7f9fAYJaJBpCdYD0B-GAdVd7Zg6lACo8F67V8n20Xhl51_593TUkhcd9hFZcoR7LlT9DOAAq1w4cHUWuKab880sETptIBQ5-_lu748gx7O67ccaeDUQqHTO9bp2zglrIT5deqYTYiuSTq9wkUY5QcJ-4kXKyRiEYsKsUJp92hn_ArYIoEihBiQDJ_a2ulLoEF6VSdaULUK-ANgN7Mo09GoAiYFtzsVgWkeg7zU4AfWyn1oOTaFU1AotCkNSRMmDEbvicFNWIXl_MQaEMcc4zVSWEjWnKnPrgymA4eHCTPHRK2T1g_4Iw.m3u8",
-        "/episode/",
-        "/sources-with-title"
-      ],
-      "live_route_gate": {
-        "completion_state": "declared-types-qualified",
-        "effective_coverage_ratio": 1,
-        "required_coverage_ratio": 1,
-        "declared_type_coverage_ratio": 1,
-        "required_types": [
-          "movie",
-          "tv"
-        ],
-        "validated_types": [
-          "movie",
-          "tv"
-        ],
-        "missing_types": [],
-        "provider_request_count": 48,
-        "live_validated_route_count": 11,
-        "execution_plan_route_count": 3,
-        "runtime_derived_route_count": 23,
-        "runtime_derived_routes_persisted": false,
-        "safe_runtime_derived_route_count": 0,
-        "safe_runtime_derived_routes_promoted": 0,
-        "runtime_observed_url_count": 16,
-        "runtime_observed_origin_count": 4,
-        "runtime_observations_persisted_as_provider_data": false,
-        "blocked_plan_preserved": false,
-        "declared_types_are_gate_denominator": true,
-        "sequential": true
-      },
-      "candidate_config_reconciliation": {
-        "version": 3,
-        "route_plan_source": "provider-overrides",
-        "current_config_route_count": 4,
-        "recognition_seed_present": false,
-        "materialization_integrity_state": "matched",
-        "materialization_is_route_source": false,
-        "live_validated_route_count_preserved": 21,
-        "stale_candidate_count_suppressed": 13,
-        "new_routes_require_live_proof": true,
-        "recognition_seed_is_http_proof": false
-      },
-      "route_proof_version": 5,
-      "route_proof": {
-        "version": 5,
-        "authority": "observed-provider-http-request",
-        "staticCandidatesExecutable": false,
-        "providerSource": {
-          "kind": "upstream",
-          "sourceId": "aio",
-          "sha256": "8fb7fbc12e23d28185927a5a7f47fa65874ff0d1b1f3e01f4dbf9813c4fc7862",
-          "providerUrl": "https://raw.githubusercontent.com/NuvioPlugin/All-in-One-Nuvio/refs/heads/main/providers/videasy.js",
-          "wantedSha256": "8fb7fbc12e23d28185927a5a7f47fa65874ff0d1b1f3e01f4dbf9813c4fc7862",
-          "capturedAt": "2026-09-01T19:53:09+00:00",
-          "currentSha256": "8fb7fbc12e23d28185927a5a7f47fa65874ff0d1b1f3e01f4dbf9813c4fc7862",
-          "mode": "lkg-current-byte-exact"
-        },
-        "provenRouteCount": 0,
-        "genericExecutionRouteCount": 0,
-        "runtimePlanPreserved": true,
-        "runtimePlanRouteCount": 3,
-        "lastRepairProbe": {
-          "status": "no-proven-route",
-          "positiveExecutionEvidence": false
-        },
-        "normalRuntimeEntryPlanTarget": 3,
-        "runtimeEntryPlanOptimization": "compact-simple-alternatives-preserve-complex-graphs",
-        "runtimePlanRouteCountBeforeOptimization": 3,
-        "runtimePlanSemanticLanes": [],
-        "runtimePlanTargetExceeded": false,
-        "runtimePlanExceptionReason": "",
-        "runtimeFanoutPreserved": false,
-        "evidenceRouteCount": 0,
-        "evidenceRoutesAreNotPlanCount": true,
-        "normalStructuredRuntimePlanTarget": 3,
-        "structuredRuntimePlanPolicy": "merge-equivalent-preserve-distinct-evidence-backed-plans",
-        "structuredRuntimePlanAudit": {
-          "searchRequestPlan": {
-            "before": 0,
-            "afterMerge": 0,
-            "after": 0,
-            "coveredLanes": [],
-            "merged": false,
-            "capped": false,
-            "normalTarget": 3,
-            "targetExceeded": false,
-            "exceptionReason": ""
-          },
-          "providerValuePlan": {
-            "before": 0,
-            "afterMerge": 0,
-            "after": 0,
-            "coveredLanes": [],
-            "merged": false,
-            "capped": false,
-            "normalTarget": 3,
-            "targetExceeded": false,
-            "exceptionReason": ""
-          },
-          "externalIdentityPlan": {
-            "before": 0,
-            "afterMerge": 0,
-            "after": 0,
-            "coveredLanes": [],
-            "merged": false,
-            "capped": false,
-            "normalTarget": 3,
-            "targetExceeded": false,
-            "exceptionReason": ""
-          }
-        },
-        "canonicalExecutionAuthorityPolicy": "preferred-order-only-preserve-all-proven-authorities",
-        "canonicalExecutionAuthority": {
-          "candidateCount": 3,
-          "preferredCount": 1,
-          "selectedCount": 1,
-          "supportedLanes": [
-            "movie",
-            "tv"
-          ],
-          "coveredLanes": [
-            "movie",
-            "tv"
-          ],
-          "missingLanes": [],
-          "preferredOwners": [
-            "route"
-          ],
-          "owners": [
-            "route"
-          ],
-          "destructiveFiltering": false,
-          "allEvidenceBackedAuthoritiesPreserved": true
-        },
-        "canonicalExecutionPreference": [
-          {
-            "owner": "route",
-            "index": 0,
-            "lanes": [
-              "movie",
-              "tv"
-            ],
-            "route": "/seed?mediaId={id}"
-          }
-        ]
-      },
       "manifest_overrides": {
-        "enabled": false
+        "enabled": true,
+        "disabledPlatforms": []
       },
-      "route_data_state": "off",
-      "repair_disposition": {
-        "schemaVersion": 1,
-        "authority": "provider-repair-disposition-v1",
-        "activationState": "enabled",
-        "activationAuthority": "provider-folder-lifecycle",
-        "declaredHub": "https://www.videasy.to/docs",
-        "forcedEnabled": true,
-        "routeDataState": "on",
-        "requiredLanes": [
-          "movie",
-          "tv"
-        ],
-        "currentVerifiedLanes": [
-          "movie",
-          "tv"
-        ],
-        "exactLockedLanes": [],
-        "provenLanes": [
-          "movie",
-          "tv"
-        ],
-        "missingLanes": [],
-        "completeCapabilityProof": true,
-        "recoveryStatus": "proven",
-        "provenRouteCount": 1,
-        "terminalState": null,
-        "quarantined": false,
-        "reasonCodes": [
-          "all_declared_lanes_live_proven"
-        ],
-        "laneStatuses": {
-          "movie": [
-            "playable_verified"
-          ],
-          "tv": [
-            "playable_verified"
-          ]
-        },
-        "evidenceDestructive": false
-      },
-      "activation_eligible": false,
-      "manual_off_reason": "auto_off_upstream_shutdown"
+      "learned_routes": [
+        "/seed?mediaId={id}"
+      ]
     },
     "vidfast": {
       "notes": [
@@ -12571,6 +12339,553 @@
         "/?s={query}",
         "/search?q={query}"
       ]
+    },
+    "rivestream-app": {
+      "notes": [
+        "Created by the NiakVIO full-auto provider onboarding workflow from structured route knowledge only.",
+        "Activation remains disabled until the onboarding quick Lab proves the provider on every requested runtime group.",
+        "Activated from exact-byte offline Provider v3 contract proof because GitHub-hosted network/WAF checks are non-authoritative; live native validation remains pending."
+      ],
+      "replacements": {},
+      "runtime_domain_replacements": {},
+      "route_replacements": {},
+      "profiles": [],
+      "capability": "html_scraper",
+      "official_hub": null,
+      "official_site": "https://www.rivestream.app",
+      "published_types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "manifest_overrides": {
+        "enabled": true,
+        "disabledPlatforms": []
+      },
+      "learned_routes": [
+        "/search/multi?query={query}",
+        "/search/keyword?query={query}",
+        "/search/movie?query={query}",
+        "/search/tv?query={query}",
+        "/search/collection?query={query}",
+        "/api/search?query={query}",
+        "/api/search-with-title?query={query}"
+      ]
+    },
+    "overlook": {
+      "notes": [
+        "Created by the NiakVIO full-auto provider onboarding workflow from structured route knowledge only.",
+        "Activation remains disabled until the onboarding quick Lab proves the provider on every requested runtime group.",
+        "Activated from exact-byte offline Provider v3 contract proof because GitHub-hosted network/WAF checks are non-authoritative; live native validation remains pending."
+      ],
+      "replacements": {},
+      "runtime_domain_replacements": {},
+      "route_replacements": {},
+      "profiles": [],
+      "capability": "mixed_embed_resolver",
+      "official_hub": null,
+      "official_site": "https://overlook.cx",
+      "published_types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "manifest_overrides": {
+        "enabled": true,
+        "disabledPlatforms": []
+      },
+      "learned_routes": [
+        "/api/search?q={query}"
+      ]
+    },
+    "hexa": {
+      "notes": [
+        "Created by the NiakVIO full-auto provider onboarding workflow from structured route knowledge only.",
+        "Activation remains disabled until the onboarding quick Lab proves the provider on every requested runtime group.",
+        "Activated from exact-byte offline Provider v3 contract proof because GitHub-hosted network/WAF checks are non-authoritative; live native validation remains pending."
+      ],
+      "replacements": {},
+      "runtime_domain_replacements": {},
+      "route_replacements": {},
+      "profiles": [],
+      "capability": "mixed_embed_resolver",
+      "official_hub": null,
+      "official_site": "https://hexa.su",
+      "published_types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "manifest_overrides": {
+        "enabled": true,
+        "disabledPlatforms": []
+      },
+      "learned_routes": [
+        "/search/{slug}",
+        "/recherche/{slug}"
+      ]
+    },
+    "rivestream-ru": {
+      "notes": [
+        "Created by the NiakVIO full-auto provider onboarding workflow from structured route knowledge only.",
+        "Activation remains disabled until the onboarding quick Lab proves the provider on every requested runtime group.",
+        "Activated from exact-byte offline Provider v3 contract proof because GitHub-hosted network/WAF checks are non-authoritative; live native validation remains pending."
+      ],
+      "replacements": {},
+      "runtime_domain_replacements": {},
+      "route_replacements": {},
+      "profiles": [],
+      "capability": "html_scraper",
+      "official_hub": null,
+      "official_site": "https://rivestream.ru",
+      "published_types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "manifest_overrides": {
+        "enabled": true,
+        "disabledPlatforms": []
+      },
+      "learned_routes": [
+        "/search/multi?query={query}",
+        "/search/keyword?query={query}",
+        "/search/movie?query={query}",
+        "/search/tv?query={query}",
+        "/search/collection?query={query}",
+        "/api/search?query={query}",
+        "/api/search-with-title?query={query}"
+      ]
+    },
+    "moviebite": {
+      "notes": [
+        "Created by the NiakVIO full-auto provider onboarding workflow from structured route knowledge only.",
+        "Activation remains disabled until the onboarding quick Lab proves the provider on every requested runtime group.",
+        "Activated from exact-byte offline Provider v3 contract proof because GitHub-hosted network/WAF checks are non-authoritative; live native validation remains pending."
+      ],
+      "replacements": {},
+      "runtime_domain_replacements": {},
+      "route_replacements": {},
+      "profiles": [],
+      "capability": "mixed_embed_resolver",
+      "official_hub": null,
+      "official_site": "https://moviebite.org",
+      "published_types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "manifest_overrides": {
+        "enabled": true,
+        "disabledPlatforms": []
+      },
+      "learned_routes": [
+        "/search/{slug}",
+        "/recherche/{slug}"
+      ]
+    },
+    "pstream": {
+      "notes": [
+        "Created by the NiakVIO full-auto provider onboarding workflow from structured route knowledge only.",
+        "Activation remains disabled until the onboarding quick Lab proves the provider on every requested runtime group.",
+        "Activated from exact-byte offline Provider v3 contract proof because GitHub-hosted network/WAF checks are non-authoritative; live native validation remains pending."
+      ],
+      "replacements": {},
+      "runtime_domain_replacements": {},
+      "route_replacements": {},
+      "profiles": [],
+      "capability": "mixed_embed_resolver",
+      "official_hub": null,
+      "official_site": "https://pstream.cfd/",
+      "published_types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "manifest_overrides": {
+        "enabled": true,
+        "disabledPlatforms": []
+      },
+      "learned_routes": [
+        "/media/anilist-anime-113415-{slug}"
+      ]
+    },
+    "ihavenotv": {
+      "notes": [
+        "Created by the NiakVIO full-auto provider onboarding workflow from structured route knowledge only.",
+        "Activation remains disabled until the onboarding quick Lab proves the provider on every requested runtime group.",
+        "Activated from exact-byte offline Provider v3 contract proof because GitHub-hosted network/WAF checks are non-authoritative; live native validation remains pending."
+      ],
+      "replacements": {},
+      "runtime_domain_replacements": {},
+      "route_replacements": {},
+      "profiles": [],
+      "capability": "html_scraper",
+      "official_hub": null,
+      "official_site": "https://ihavenotv.com",
+      "published_types": [
+        "movie",
+        "tv"
+      ],
+      "manifest_overrides": {
+        "enabled": true,
+        "disabledPlatforms": []
+      },
+      "learned_routes": [
+        "/?s={query}",
+        "/?q={query}"
+      ]
+    },
+    "reanime-to": {
+      "notes": [
+        "Created by the NiakVIO full-auto provider onboarding workflow from structured route knowledge only.",
+        "Activation remains disabled until the onboarding quick Lab proves the provider on every requested runtime group.",
+        "Activated from exact-byte offline Provider v3 contract proof because GitHub-hosted network/WAF checks are non-authoritative; live native validation remains pending."
+      ],
+      "replacements": {},
+      "runtime_domain_replacements": {},
+      "route_replacements": {},
+      "profiles": [],
+      "capability": "html_scraper",
+      "official_hub": null,
+      "official_site": "https://reanime.to",
+      "published_types": [
+        "anime"
+      ],
+      "manifest_overrides": {
+        "enabled": true,
+        "disabledPlatforms": []
+      },
+      "learned_routes": [
+        "/search?q={query}"
+      ]
+    },
+    "flixhq": {
+      "notes": [
+        "Created by the NiakVIO full-auto provider onboarding workflow from structured route knowledge only.",
+        "Activation remains disabled until the onboarding quick Lab proves the provider on every requested runtime group.",
+        "Activated from exact-byte offline Provider v3 contract proof because GitHub-hosted network/WAF checks are non-authoritative; live native validation remains pending."
+      ],
+      "replacements": {},
+      "runtime_domain_replacements": {},
+      "route_replacements": {},
+      "profiles": [],
+      "capability": "html_scraper",
+      "official_hub": null,
+      "official_site": "https://flixhq.vc/",
+      "published_types": [
+        "movie",
+        "tv"
+      ],
+      "manifest_overrides": {
+        "enabled": true,
+        "disabledPlatforms": []
+      },
+      "learned_routes": [
+        "/search?keyword={query}"
+      ]
+    },
+    "topcartoons": {
+      "notes": [
+        "Created by the NiakVIO full-auto provider onboarding workflow from structured route knowledge only.",
+        "Activation remains disabled until the onboarding quick Lab proves the provider on every requested runtime group.",
+        "Activated from exact-byte offline Provider v3 contract proof because GitHub-hosted network/WAF checks are non-authoritative; live native validation remains pending."
+      ],
+      "replacements": {},
+      "runtime_domain_replacements": {},
+      "route_replacements": {},
+      "profiles": [],
+      "capability": "html_scraper",
+      "official_hub": null,
+      "official_site": "https://www.topcartoons.tv",
+      "published_types": [
+        "movie",
+        "tv"
+      ],
+      "manifest_overrides": {
+        "enabled": true,
+        "disabledPlatforms": []
+      },
+      "learned_routes": [
+        "/?s={query}"
+      ]
+    },
+    "vidlink": {
+      "notes": [
+        "Created by the NiakVIO full-auto provider onboarding workflow from structured route knowledge only.",
+        "Activation remains disabled until the onboarding quick Lab proves the provider on every requested runtime group.",
+        "Activated from exact-byte offline Provider v3 contract proof because GitHub-hosted network/WAF checks are non-authoritative; live native validation remains pending."
+      ],
+      "replacements": {},
+      "runtime_domain_replacements": {},
+      "route_replacements": {},
+      "profiles": [],
+      "capability": "html_scraper",
+      "official_hub": null,
+      "official_site": "https://vidlink.pro",
+      "published_types": [
+        "movie",
+        "tv"
+      ],
+      "manifest_overrides": {
+        "enabled": true,
+        "disabledPlatforms": []
+      },
+      "learned_routes": [
+        "/movie/{tmdbId}",
+        "/tv/{tmdbId}/{season}/{episode}"
+      ]
+    },
+    "documentary-area": {
+      "notes": [
+        "Created by the NiakVIO full-auto provider onboarding workflow from structured route knowledge only.",
+        "Activation remains disabled until the onboarding quick Lab proves the provider on every requested runtime group.",
+        "Activated from exact-byte offline Provider v3 contract proof because GitHub-hosted network/WAF checks are non-authoritative; live native validation remains pending."
+      ],
+      "replacements": {},
+      "runtime_domain_replacements": {},
+      "route_replacements": {},
+      "profiles": [],
+      "capability": "html_scraper",
+      "official_hub": null,
+      "official_site": "https://www.documentarymania.com",
+      "published_types": [
+        "movie"
+      ],
+      "manifest_overrides": {
+        "enabled": true,
+        "disabledPlatforms": []
+      },
+      "learned_routes": [
+        "/results.php?search={query}"
+      ]
+    },
+    "fsharetv": {
+      "notes": [
+        "Created by the NiakVIO full-auto provider onboarding workflow from structured route knowledge only.",
+        "Activation remains disabled until the onboarding quick Lab proves the provider on every requested runtime group.",
+        "Activated from exact-byte offline Provider v3 contract proof because GitHub-hosted network/WAF checks are non-authoritative; live native validation remains pending."
+      ],
+      "replacements": {},
+      "runtime_domain_replacements": {},
+      "route_replacements": {},
+      "profiles": [],
+      "capability": "html_scraper",
+      "official_hub": null,
+      "official_site": "https://fsharetv.co/",
+      "published_types": [
+        "movie"
+      ],
+      "manifest_overrides": {
+        "enabled": true,
+        "disabledPlatforms": []
+      },
+      "learned_routes": [
+        "/movie/{slug}-episode-1-tt0816692"
+      ]
+    },
+    "aniflix-uno": {
+      "notes": [
+        "Created by the NiakVIO full-auto provider onboarding workflow from structured route knowledge only.",
+        "Activation remains disabled until the onboarding quick Lab proves the provider on every requested runtime group.",
+        "Activated from exact-byte offline Provider v3 contract proof because GitHub-hosted network/WAF checks are non-authoritative; live native validation remains pending."
+      ],
+      "replacements": {},
+      "runtime_domain_replacements": {},
+      "route_replacements": {},
+      "profiles": [],
+      "capability": "html_scraper",
+      "official_hub": null,
+      "official_site": "https://aniflix.uno",
+      "published_types": [
+        "anime"
+      ],
+      "manifest_overrides": {
+        "enabled": true,
+        "disabledPlatforms": []
+      },
+      "learned_routes": [
+        "/?s={query}",
+        "/?q={query}"
+      ]
+    },
+    "anidb": {
+      "notes": [
+        "Created by the NiakVIO full-auto provider onboarding workflow from structured route knowledge only.",
+        "Activation remains disabled until the onboarding quick Lab proves the provider on every requested runtime group.",
+        "Activated from exact-byte offline Provider v3 contract proof because GitHub-hosted network/WAF checks are non-authoritative; live native validation remains pending."
+      ],
+      "replacements": {},
+      "runtime_domain_replacements": {},
+      "route_replacements": {},
+      "profiles": [],
+      "capability": "html_scraper",
+      "official_hub": null,
+      "official_site": "https://anidb.pics",
+      "published_types": [
+        "anime"
+      ],
+      "manifest_overrides": {
+        "enabled": true,
+        "disabledPlatforms": []
+      },
+      "learned_routes": [
+        "/watch/${slug}",
+        "/?search={query}"
+      ]
+    },
+    "rarefilmm": {
+      "notes": [
+        "Created by the NiakVIO full-auto provider onboarding workflow from structured route knowledge only.",
+        "Activation remains disabled until the onboarding quick Lab proves the provider on every requested runtime group.",
+        "Activated from exact-byte offline Provider v3 contract proof because GitHub-hosted network/WAF checks are non-authoritative; live native validation remains pending."
+      ],
+      "replacements": {},
+      "runtime_domain_replacements": {},
+      "route_replacements": {},
+      "profiles": [],
+      "capability": "html_scraper",
+      "official_hub": null,
+      "official_site": "https://rarefilmm.com/",
+      "published_types": [
+        "movie"
+      ],
+      "manifest_overrides": {
+        "enabled": true,
+        "disabledPlatforms": []
+      },
+      "learned_routes": [
+        "/?s={query}"
+      ]
+    },
+    "frenchstream": {
+      "notes": [
+        "Created by the NiakVIO full-auto provider onboarding workflow from structured route knowledge only.",
+        "Activation remains disabled until the onboarding quick Lab proves the provider on every requested runtime group.",
+        "Activated from exact-byte offline Provider v3 contract proof because GitHub-hosted network/WAF checks are non-authoritative; live native validation remains pending."
+      ],
+      "replacements": {},
+      "runtime_domain_replacements": {},
+      "route_replacements": {},
+      "profiles": [],
+      "capability": "mixed_embed_resolver",
+      "official_hub": null,
+      "official_site": "https://fs16.lol/",
+      "published_types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "manifest_overrides": {
+        "enabled": true,
+        "disabledPlatforms": []
+      },
+      "learned_routes": [
+        "/search/{slug}",
+        "/recherche/{slug}"
+      ]
+    },
+    "stigstream": {
+      "notes": [
+        "Created by the NiakVIO full-auto provider onboarding workflow from structured route knowledge only.",
+        "Activation remains disabled until the onboarding quick Lab proves the provider on every requested runtime group.",
+        "Activated from exact-byte offline Provider v3 contract proof because GitHub-hosted network/WAF checks are non-authoritative; live native validation remains pending."
+      ],
+      "replacements": {},
+      "runtime_domain_replacements": {},
+      "route_replacements": {},
+      "profiles": [],
+      "capability": "html_scraper",
+      "official_hub": null,
+      "official_site": "https://stigstream.ru",
+      "published_types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "manifest_overrides": {
+        "enabled": true,
+        "disabledPlatforms": []
+      },
+      "learned_routes": [
+        "/tv/{tmdbId}",
+        "/watch/{tmdbId}"
+      ]
+    },
+    "french-anime": {
+      "notes": [
+        "Created by the NiakVIO full-auto provider onboarding workflow from structured route knowledge only.",
+        "Activation remains disabled until the onboarding quick Lab proves the provider on every requested runtime group.",
+        "Activated from exact-byte offline Provider v3 contract proof because GitHub-hosted network/WAF checks are non-authoritative; live native validation remains pending."
+      ],
+      "replacements": {},
+      "runtime_domain_replacements": {},
+      "route_replacements": {},
+      "profiles": [],
+      "capability": "mixed_embed_resolver",
+      "official_hub": null,
+      "official_site": "https://french-anime.com",
+      "published_types": [
+        "anime"
+      ],
+      "manifest_overrides": {
+        "enabled": true,
+        "disabledPlatforms": []
+      },
+      "learned_routes": [
+        "/?s={query}",
+        "/?q={query}"
+      ]
+    },
+    "moiflix": {
+      "notes": [
+        "Created by the NiakVIO full-auto provider onboarding workflow from structured route knowledge only.",
+        "Activation remains disabled until the onboarding quick Lab proves the provider on every requested runtime group.",
+        "Activated from exact-byte offline Provider v3 contract proof because GitHub-hosted network/WAF checks are non-authoritative; live native validation remains pending."
+      ],
+      "replacements": {},
+      "runtime_domain_replacements": {},
+      "route_replacements": {},
+      "profiles": [],
+      "capability": "mixed_embed_resolver",
+      "official_hub": null,
+      "official_site": "https://moiflix.fans/",
+      "published_types": [
+        "movie",
+        "tv"
+      ],
+      "manifest_overrides": {
+        "enabled": true,
+        "disabledPlatforms": []
+      },
+      "learned_routes": [
+        "/search/{slug}"
+      ]
+    },
+    "voirserie": {
+      "notes": [
+        "Created by the NiakVIO full-auto provider onboarding workflow from structured route knowledge only.",
+        "Activation remains disabled until the onboarding quick Lab proves the provider on every requested runtime group.",
+        "Activated from exact-byte offline Provider v3 contract proof because GitHub-hosted network/WAF checks are non-authoritative; live native validation remains pending."
+      ],
+      "replacements": {},
+      "runtime_domain_replacements": {},
+      "route_replacements": {},
+      "profiles": [],
+      "capability": "mixed_embed_resolver",
+      "official_hub": null,
+      "official_site": "https://www.voirserie.org/",
+      "published_types": [
+        "movie",
+        "tv"
+      ],
+      "manifest_overrides": {
+        "enabled": true,
+        "disabledPlatforms": []
+      },
+      "learned_routes": [
+        "/recherche?q={query}"
+      ]
     }
   },
   "route_override_defaults": {
@@ -13235,28 +13550,18 @@
       "identity_request_source": "original_nuvio_request"
     },
     "videasy": {
-      "strategy": "api_stream_resolver",
-      "validation": "api_and_provider_native",
-      "allow_html_url": false,
+      "strategy": "html_scraper",
+      "validation": "bulk_offline_contract_live_unverified",
+      "allow_html_url": true,
       "requires_direct_media": false,
       "observed_origins": [
-        "https://www.vidking.net",
-        "https://old.invalid"
+        "https://www.vidking.net"
       ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true,
-      "routes": [
-        "/seed?mediaId={id}",
-        "/cdn/sources-with-title",
-        "/tejo/sources-with-title",
-        "/neon2/sources-with-title",
-        "/downloader2/sources-with-title",
-        "/ym/sources-with-title",
-        "/mb-flix/sources-with-title",
-        "/lamovie/sources-with-title",
-        "/m4uhd/sources-with-title",
-        "/superflix/sources-with-title",
-        "/1movies/sources-with-title"
+      "catalogue_types": [
+        "movie",
+        "tv"
       ]
     },
     "vidfast": {
@@ -14419,6 +14724,322 @@
       "generated_from_manifest_or_stage": true,
       "catalogue_types": [
         "anime"
+      ]
+    },
+    "rivestream-app": {
+      "strategy": "html_scraper",
+      "validation": "bulk_offline_contract_live_unverified",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://www.rivestream.app"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true,
+      "catalogue_types": [
+        "movie",
+        "tv",
+        "anime"
+      ]
+    },
+    "overlook": {
+      "strategy": "mixed_embed_resolver",
+      "validation": "bulk_offline_contract_live_unverified",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://overlook.cx"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true,
+      "catalogue_types": [
+        "movie",
+        "tv",
+        "anime"
+      ]
+    },
+    "hexa": {
+      "strategy": "mixed_embed_resolver",
+      "validation": "bulk_offline_contract_live_unverified",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://hexa.su"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true,
+      "catalogue_types": [
+        "movie",
+        "tv",
+        "anime"
+      ]
+    },
+    "rivestream-ru": {
+      "strategy": "html_scraper",
+      "validation": "bulk_offline_contract_live_unverified",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://rivestream.ru"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true,
+      "catalogue_types": [
+        "movie",
+        "tv",
+        "anime"
+      ]
+    },
+    "moviebite": {
+      "strategy": "mixed_embed_resolver",
+      "validation": "bulk_offline_contract_live_unverified",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://moviebite.org"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true,
+      "catalogue_types": [
+        "movie",
+        "tv",
+        "anime"
+      ]
+    },
+    "pstream": {
+      "strategy": "mixed_embed_resolver",
+      "validation": "bulk_offline_contract_live_unverified",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://pstream.cfd"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true,
+      "catalogue_types": [
+        "movie",
+        "tv",
+        "anime"
+      ]
+    },
+    "ihavenotv": {
+      "strategy": "html_scraper",
+      "validation": "bulk_offline_contract_live_unverified",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://ihavenotv.com"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true,
+      "catalogue_types": [
+        "movie",
+        "tv"
+      ]
+    },
+    "reanime-to": {
+      "strategy": "html_scraper",
+      "validation": "bulk_offline_contract_live_unverified",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://reanime.to"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true,
+      "catalogue_types": [
+        "anime"
+      ]
+    },
+    "flixhq": {
+      "strategy": "html_scraper",
+      "validation": "bulk_offline_contract_live_unverified",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://flixhq.vc"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true,
+      "catalogue_types": [
+        "movie",
+        "tv"
+      ]
+    },
+    "topcartoons": {
+      "strategy": "html_scraper",
+      "validation": "bulk_offline_contract_live_unverified",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://www.topcartoons.tv"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true,
+      "catalogue_types": [
+        "movie",
+        "tv"
+      ]
+    },
+    "vidlink": {
+      "strategy": "html_scraper",
+      "validation": "bulk_offline_contract_live_unverified",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://vidlink.pro"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true,
+      "catalogue_types": [
+        "movie",
+        "tv"
+      ]
+    },
+    "documentary-area": {
+      "strategy": "html_scraper",
+      "validation": "bulk_offline_contract_live_unverified",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://www.documentarymania.com"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true,
+      "catalogue_types": [
+        "movie"
+      ]
+    },
+    "fsharetv": {
+      "strategy": "html_scraper",
+      "validation": "bulk_offline_contract_live_unverified",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://fsharetv.co"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true,
+      "catalogue_types": [
+        "movie"
+      ]
+    },
+    "aniflix-uno": {
+      "strategy": "html_scraper",
+      "validation": "bulk_offline_contract_live_unverified",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://aniflix.uno"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true,
+      "catalogue_types": [
+        "anime"
+      ]
+    },
+    "anidb": {
+      "strategy": "html_scraper",
+      "validation": "bulk_offline_contract_live_unverified",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://anidb.pics"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true,
+      "catalogue_types": [
+        "anime"
+      ]
+    },
+    "rarefilmm": {
+      "strategy": "html_scraper",
+      "validation": "bulk_offline_contract_live_unverified",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://rarefilmm.com"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true,
+      "catalogue_types": [
+        "movie"
+      ]
+    },
+    "frenchstream": {
+      "strategy": "mixed_embed_resolver",
+      "validation": "bulk_offline_contract_live_unverified",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://fs16.lol"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true,
+      "catalogue_types": [
+        "movie",
+        "tv",
+        "anime"
+      ]
+    },
+    "stigstream": {
+      "strategy": "html_scraper",
+      "validation": "bulk_offline_contract_live_unverified",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://stigstream.ru"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true,
+      "catalogue_types": [
+        "movie",
+        "tv",
+        "anime"
+      ]
+    },
+    "french-anime": {
+      "strategy": "mixed_embed_resolver",
+      "validation": "bulk_offline_contract_live_unverified",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://french-anime.com"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true,
+      "catalogue_types": [
+        "anime"
+      ]
+    },
+    "moiflix": {
+      "strategy": "mixed_embed_resolver",
+      "validation": "bulk_offline_contract_live_unverified",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://moiflix.fans"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true,
+      "catalogue_types": [
+        "movie",
+        "tv"
+      ]
+    },
+    "voirserie": {
+      "strategy": "mixed_embed_resolver",
+      "validation": "bulk_offline_contract_live_unverified",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://www.voirserie.org"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true,
+      "catalogue_types": [
+        "movie",
+        "tv"
       ]
     }
   },
