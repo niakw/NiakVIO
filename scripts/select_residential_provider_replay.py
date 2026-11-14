@@ -87,9 +87,17 @@ def offline_live_unverified_transport_authority(
 
     patches = overrides.get("provider_patches") if isinstance(overrides.get("provider_patches"), dict) else {}
     capabilities = overrides.get("provider_capabilities") if isinstance(overrides.get("provider_capabilities"), dict) else {}
+    # Current production ledger stores exact-byte activation proof rows under
+    # "providers". Keep the legacy key readable for older archived ledgers, but
+    # never synthesize authority when neither contains structured proof rows.
+    raw_activation_rows = activation.get("providers")
+    if not isinstance(raw_activation_rows, list):
+        raw_activation_rows = activation.get("activatedProviders")
+    if not isinstance(raw_activation_rows, list):
+        raw_activation_rows = []
     activation_rows = {
         canon(row.get("provider")): row
-        for row in activation.get("activatedProviders") or []
+        for row in raw_activation_rows
         if isinstance(row, dict) and canon(row.get("provider"))
     }
 
