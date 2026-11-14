@@ -1,3 +1,8 @@
+## 2026-11-14 — Documentation scope test no longer assumes all pending rows are Global
+
+- CORE Verify 43586631876 on 491f0e54 stopped in provider_v3_documentation_contract_test.py because PENDING_IDS is catalogue-wide (Global + France-only) while the test required every pending id to appear in manifest.json. This directly contradicted the first-class VF-only architecture.
+- Keep current_provider_scope Global runtime semantics: derive global_pending_ids as pending_provider_ids() intersect manifest row IDs, require only those Global rows disabled, and subtract only that intersection from Global runtime-visible count. France-only pending remains visible only to VF/catalogue authority. No provider bytes or activation changed.
+
 ## 2026-11-14 — Release finalizer now supports first-class France-only rows
 
 - Exact release-finalize run 43586059001 on e5e82899 successfully minimized all 13 active production bundles (13 changed, 457662 bytes saved, 82280 transformed lines), then proved fixed-point/Node parse and static active=13. It failed only at release-version synchronization because nuvio_client_activation_ids.py still required every VF row to exist in Global; current VF contains legitimate first-class France-only pending identities such as cinestream.

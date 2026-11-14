@@ -227,9 +227,16 @@ rows = manifest.get("scrapers") or []
 assert len(rows) == VISIBLE_EXPECTED
 assert sum(1 for row in rows if row.get("enabled") is not False) == ACTIVE_EXPECTED
 row_ids = {str(row.get("id") or "").strip().casefold().replace("_", "-") for row in rows}
-assert PENDING_IDS <= row_ids
-assert all(row.get("enabled") is False for row in rows if str(row.get("id") or "").strip().casefold().replace("_", "-") in PENDING_IDS)
-assert RUNTIME_VISIBLE_EXPECTED == VISIBLE_EXPECTED - len(PENDING_IDS)
+global_pending_ids = PENDING_IDS & row_ids
+assert all(
+    row.get("enabled") is False
+    for row in rows
+    if str(row.get("id") or "").strip().casefold().replace("_", "-") in global_pending_ids
+)
+# pending_provider_ids() is catalogue-wide and may contain first-class VF-only
+# staging identities. Global runtime scope subtracts only pending IDs that are
+# actually visible in manifest.json.
+assert RUNTIME_VISIBLE_EXPECTED == VISIBLE_EXPECTED - len(global_pending_ids)
 canonical_valid = {"movie", "tv", "anime"}
 transport_valid = canonical_valid
 for row in rows:
