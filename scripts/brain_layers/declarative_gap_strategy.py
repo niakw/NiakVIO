@@ -45,6 +45,10 @@ FAILURE_EXECUTORS: dict[str, tuple[str, str]] = {
         "search_contract_inference_v1",
         "meta-gap-search-contract-composition",
     ),
+    "content_identity_gap": (
+        "identity_alias_search_traversal_v1",
+        "meta-gap-content-identity-composition",
+    ),
     "chain_terminal_gap": (
         "chain_terminal_extractor_v1",
         "meta-gap-terminal-media-composition",
@@ -88,6 +92,7 @@ FAILURE_CAUSAL_FAMILIES: dict[str, str] = {
     "transport_blocked": "route-terminal",
     "route_proven_gap": "route-terminal",
     "search_gap": "route-terminal",
+    "content_identity_gap": "content-identity",
     "chain_terminal_gap": "terminal-media",
     "media_extraction_gap": "terminal-media",
     "variant_coverage_gap": "terminal-media",
@@ -125,6 +130,12 @@ FAILURE_EXECUTOR_ROTATIONS: dict[str, tuple[tuple[str, str], ...]] = {
         FAILURE_EXECUTORS["search_gap"],
         ("proven_route_terminal_traversal_v1", "meta-gap-route-terminal-fallback"),
         ("provider_origin_failover_v1", "meta-gap-origin-fallback"),
+        ("adaptive_runtime_recovery", "meta-gap-adaptive-runtime-fallback"),
+    ),
+    "content_identity_gap": (
+        FAILURE_EXECUTORS["content_identity_gap"],
+        ("search_contract_inference_v1", "meta-gap-search-contract-fallback"),
+        ("proven_route_terminal_traversal_v1", "meta-gap-route-terminal-fallback"),
         ("adaptive_runtime_recovery", "meta-gap-adaptive-runtime-fallback"),
     ),
     "chain_terminal_gap": (
@@ -205,6 +216,20 @@ BASE_EXPERIMENTS: dict[str, dict[str, Any]] = {
         "maxDepth": 5,
         "maxPages": 32,
         "maxEmbeds": 20,
+        "maxRecipePasses": 5,
+    },
+    "content_identity_gap": {
+        "routePolicy": "owned_plus_peer_generic",
+        "recipePolicy": "current_plus_provider_peer",
+        "roleOrder": ["search", "detail", "api", "episode", "player", "source", "other"],
+        "terminalOnly": False,
+        "aliasSearch": True,
+        "responseSalvage": True,
+        "documentRequestMining": True,
+        "sessionBootstrap": False,
+        "maxDepth": 5,
+        "maxPages": 28,
+        "maxEmbeds": 18,
         "maxRecipePasses": 5,
     },
     "chain_terminal_gap": {
@@ -315,6 +340,13 @@ def _status_failure(row: dict[str, Any]) -> str:
     status = str(row.get("status") or "").strip().upper()
     issue = str(row.get("dominantIssue") or "").casefold()
     depth = " ".join(str(x or "").casefold() for x in row.get("evidenceDepth") or [])
+    if any(token in issue for token in (
+        "wrong_content",
+        "content_identity_mismatch",
+        "identity_mismatch",
+        "identity_contradiction",
+    )):
+        return "content_identity_gap"
     if status == "CANDIDATE OK":
         return "candidate_replay_gap"
     if status == "CHAIN REACHED" or "chain_reached" in depth:
