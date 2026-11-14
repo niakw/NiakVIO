@@ -119,6 +119,38 @@ with TemporaryDirectory() as directory:
     finally:
         mod.ROOT=original
 
+
+# Exact current-byte census publication may land after the CodeQL source SHA.
+# Its numbered archives are immutable evidence; the latest summary is a
+# non-executable pointer. Accept those facts without allowing scripts, workflow
+# files, provider bytes or edited numbered archives to cross the security scan.
+current_bytes_archives = [
+    "automation/current-bytes-full-provider-census-43569878269.json",
+    "automation/current-bytes-full-provider-census-43569878269-summary.json",
+    "automation/provider-repair-batch-plan-43569878269.json",
+]
+allowed_current_bytes = response([
+    "automation/current-bytes-full-provider-census-latest-summary.json",
+    "automation/provider-census-status.json",
+])
+allowed_current_bytes["files"] += [
+    {"filename": path, "status": "added"} for path in current_bytes_archives
+]
+with patch.object(mod, "api", return_value=allowed_current_bytes):
+    assert mod.evidence_only_drift(src, head)
+for path in current_bytes_archives:
+    with patch.object(mod, "api", return_value={
+        **response([]), "files": [{"filename": path, "status": "modified"}]
+    }):
+        assert not mod.evidence_only_drift(src, head), path
+with patch.object(mod, "api", return_value={
+    **response([]), "files": [{
+        "filename": "automation/current-bytes-full-provider-census-43569878269.txt",
+        "status": "added",
+    }]
+}):
+    assert not mod.evidence_only_drift(src, head)
+
 # Numbered sharded evidence may advance main after CodeQL, but never be edited.
 shard="automation/provider-census-sharded-42367067272.json"
 with patch.object(mod,"api",return_value={

@@ -1,3 +1,9 @@
+## 2026-11-14 — CodeQL retirement evidence drift narrowed to immutable census outputs
+
+- Exact ff0dc871 CI completed green: Workflow Gate 43569878207, Verify & Publish 43569878308, Non-Regression 43569878247, CodeQL 43569878332, Branch Maintenance 43569878241, full census 43569878269 and sharded census 43569878250. Census persistence produced 866cb177; Fast Repair 43570493808 later persisted evidence at 882df769. No new provider repair was validated.
+- Retirement run 43570584270 failed before touching alert #2531 because its CodeQL source ff0dc871 compared against census evidence commit 866cb177 and rejected known non-executable outputs: numbered current-byte census archives, numbered repair-batch-plan archive and current-byte latest summary. Extend only the evidence-drift allowlist for these exact JSON shapes. Numbered archives remain add-only; modification, extension drift, scripts/workflows/provider bytes remain rejected. Existing current status/Brain evidence rules unchanged. This only permits the retirement workflow to reach live GitHub alert policy checks; it does not dismiss or suppress #2531.
+- Regression added for valid census evidence, modified archive denial and unknown extension denial. CI pending.
+
 ## 2026-11-14 — Current census reporting v3 validated; historical Repair activity persistence
 
 - Exact SHA fa864c62: CORE Workflow Gate 43568205428 (fresh-versus-retained contract passed), Verify & Publish 43568205458, Non-Regression 43568205449, CodeQL 43568205445 and branch maintenance 43568205467 succeeded. Census 43568205490 persisted ae0c17b0 and correctly reports 0 verified/accepted of 24 tested, 17/46 retained operational, 234 probes, 20 repair queue. No new successful repair. Security retirement 43568895875 deferred on census evidence drift; final gate skipped. No dismissal, whitelist relaxation or security closure claimed.

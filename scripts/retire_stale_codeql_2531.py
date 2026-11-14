@@ -133,12 +133,15 @@ SAFE_EVIDENCE_FILES = frozenset({
     "automation/provider-census-proof-history.json",
     "automation/provider-waf-browser-session-latest.json",
     "automation/provider-census-sharded-latest.json",
+    "automation/current-bytes-full-provider-census-latest-summary.json",
 })
 SAFE_NUMBERED_EVIDENCE = (
     r"automation/provider-census-status-[0-9]{8,14}\.json",
     r"automation/provider-census-proof-[0-9]{8,14}\.json",
     r"automation/provider-waf-browser-session-[0-9]{8,14}\.json",
     r"automation/provider-census-sharded-[0-9]{8,20}\.json",
+    r"automation/current-bytes-full-provider-census-[0-9]{8,20}(?:-summary)?\.json",
+    r"automation/provider-repair-batch-plan-[0-9]{8,20}\.json",
 )
 # Only immutable, append-only hosted Brain diagnostic JSON. Never permit a
 # provider or workflow mutation to be treated as drift-safe evidence.
