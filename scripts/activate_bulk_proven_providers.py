@@ -11,6 +11,7 @@ from pathlib import Path
 from typing import Any
 
 from provider_v3_minimizer import minimize_text, validate_transform
+from reconcile_provider_static_authority import persist_static_from_bundle, refresh_static_counts
 
 ROOT=Path(__file__).resolve().parents[1]
 MANIFEST=ROOT/"manifest.json"
@@ -20,6 +21,7 @@ PROVENANCE=ROOT/"PROVENANCE.json"
 HUBS=ROOT/"provider-hubs.json"
 STATUS=ROOT/"automation/provider-census-status.json"
 OUTPUT=ROOT/"automation/provider-bulk-activation-latest.json"
+STATIC_KNOWLEDGE=ROOT/"automation/provider-v3-static-knowledge.json"
 
 def load(path:Path, default:Any)->Any:
     if not path.is_file():
@@ -120,6 +122,7 @@ def main()->int:
     overrides=load(OVERRIDES,{})
     provenance=load(PROVENANCE,{"providers":{}})
     hubs=load(HUBS,{"providers":{}})
+    static_knowledge=load(STATIC_KNOWLEDGE,{"schemaVersion":1,"providers":{}})
 
     status_map={
         norm(row.get("provider")):row
@@ -212,6 +215,11 @@ def main()->int:
             continue
         active_path=ROOT/active_relative
         active_sha=pending_sha if args.dry_run else hashlib.sha256(active_path.read_bytes()).hexdigest()
+        if scope=="global":
+            source_path=pending_path if args.dry_run else active_path
+            persist_static_from_bundle(
+                static_knowledge,pid,source_path,source="activation-static-config",overwrite=True,
+            )
         if active_sha!=pending_sha:
             raise RuntimeError(f"{pid}: activation changed provider bytes after proof")
         manifest_row["enabled"]=True
@@ -261,6 +269,8 @@ def main()->int:
         write(OVERRIDES,overrides)
         write(PROVENANCE,provenance)
         write(HUBS,hubs)
+        refresh_static_counts(static_knowledge)
+        write(STATIC_KNOWLEDGE,static_knowledge)
     write(args.output,payload)
     print(
         "PROVIDER_BULK_ACTIVATION "
