@@ -38,10 +38,17 @@ projected=vf["scrapers"][1]
 assert projected["filename"]=="../provider-disabled/multilingual--nuvio--abc.js"
 assert projected["contentLanguage"]==["en","fr"]
 
-updated=dict(global_row,version="1.0.1")
+updated=dict(
+    global_row,
+    version="1.0.1",
+    name="🎬 Multilingual",
+    logo="https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/96x96/multilingual.webp",
+)
 mod.sync_global_vf_projection(vf,updated,"multilingual",include_vf=True)
 assert [r["id"] for r in vf["scrapers"]].count("multilingual")==1
 assert vf["scrapers"][1]["version"]=="1.0.1"
+assert vf["scrapers"][1]["name"]==updated["name"]
+assert vf["scrapers"][1]["logo"]==updated["logo"]
 
 mod.sync_global_vf_projection(vf,updated,"multilingual",include_vf=False)
 assert [r["id"] for r in vf["scrapers"]]==["france-only"]
@@ -83,4 +90,10 @@ assert 'vf = bool_value(request.get("vf"), any(value.startswith("fr") for value 
 assert 'sync_global_vf_projection(' in source
 assert 'if scope == "global":' in source
 
-print("Global multilingual VF projection contract passed: shared identity, relative path, idempotent membership")
+branding_source=(ROOT/"scripts"/"provider_branding_assets.py").read_text(encoding="utf-8")
+assert "from add_provider import sync_global_vf_projection" in branding_source
+assert "shared_vf_ids" in branding_source
+assert "sync_global_vf_projection(" in branding_source
+assert "provider_id in shared_vf_ids" in branding_source
+
+print("Global multilingual VF projection contract passed: shared identity, relative path, idempotent membership, branding parity")
