@@ -120,6 +120,10 @@ assert production["allowedProfiles"]==["adaptive_runtime_recovery"],production
 # local 403 before media, and NO authority to publish the upstream bytes.
 transport_payload=copy.deepcopy(payload)
 transport_payload["mode"]="learning"
+# The prior becomes eligible only after the matching causal family has exhausted
+# three actually attempted variants; route-gap memory is not transport memory.
+for entry in transport_payload["negativeMemory"]:
+    entry["failureClass"] = "provider_transport_gap"
 transport_payload["historicalSolutions"]=[{
     "id":"hist-2026-11-14-upstream-positive-provider-old-api-403",
     "failureClass":"provider_transport_gap",
