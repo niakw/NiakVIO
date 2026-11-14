@@ -888,20 +888,36 @@ def _provider_shard(provider_id: str, shard_count: int) -> int:
     return int.from_bytes(digest[:8], "big") % shard_count
 
 
+def _current_census_provider_ids() -> set[str]:
+    """Runtime census authority across Global and first-class France-only rows."""
+    pending = pending_provider_ids()
+    manifest = load(MANIFEST)
+    rows = [
+        row for row in (manifest.get("scrapers") or [])
+        if isinstance(row, dict)
+    ]
+    ids = {
+        str(row.get("id") or "").strip().casefold().replace("_", "-")
+        for row in rows
+        if str(row.get("id") or "").strip()
+    }
+    for row in france_only_catalog_rows(root=ROOT):
+        provider = str(row.get("id") or "").strip().casefold().replace("_", "-")
+        if not provider:
+            raise RuntimeError("France-only census row without provider id")
+        if provider in ids:
+            raise RuntimeError(f"{provider}: France-only census identity collides with Global")
+        ids.add(provider)
+    return ids - pending
+
+
 def _shard_filter(provider_filter: set[str] | None, shard_count: int, shard_index: int) -> set[str] | None:
     if shard_count <= 1:
         return provider_filter
     if shard_index < 0 or shard_index >= shard_count:
         raise ValueError(f"shard index {shard_index} outside [0,{shard_count})")
     if provider_filter is None:
-        manifest = load(MANIFEST)
-        pending = pending_provider_ids()
-        provider_filter = {
-            str(row.get("id") or "").strip().casefold()
-            for row in manifest.get("scrapers") or []
-            if isinstance(row, dict) and str(row.get("id") or "").strip()
-            and str(row.get("id") or "").strip().casefold() not in pending
-        }
+        provider_filter = _current_census_provider_ids()
     return {provider for provider in provider_filter if _provider_shard(provider, shard_count) == shard_index}
 
 
@@ -945,13 +961,7 @@ def _scope_provider_filter(
     # first census verdict. This matters when hundreds of providers are added
     # between status snapshots: never let a stale status file hide new manifest
     # entries from the next unresolved pass.
-    manifest = load(MANIFEST)
-    current = {
-        str(row.get("id") or "").strip().casefold()
-        for row in manifest.get("scrapers") or []
-        if isinstance(row, dict) and str(row.get("id") or "").strip()
-        and str(row.get("id") or "").strip().casefold() not in pending
-    }
+    current = _current_census_provider_ids()
     unresolved.update(current - known)
     return unresolved, "unresolved"
 

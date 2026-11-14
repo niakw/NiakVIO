@@ -30,6 +30,22 @@ task_ids = {row.get("provider_id") for row in tasks}
 assert not (task_ids & pending)
 assert france_only_runtime <= task_ids, sorted(france_only_runtime - task_ids)
 
+# scope=all sharding must partition the same Global + France-only runtime union;
+# otherwise France-only providers disappear before build_tasks sees them.
+current_union = mod._current_census_provider_ids()
+assert france_only_runtime <= current_union
+sharded_union = set().union(*(mod._shard_filter(None, 8, index) or set() for index in range(8)))
+assert sharded_union == current_union, (
+    sorted(current_union - sharded_union),
+    sorted(sharded_union - current_union),
+)
+for provider in current_union:
+    memberships = sum(
+        provider in (mod._shard_filter(None, 8, index) or set())
+        for index in range(8)
+    )
+    assert memberships == 1, (provider, memberships)
+
 
 def task(provider: str, semantic: str) -> dict:
     matches = [
