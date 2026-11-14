@@ -104,6 +104,11 @@ selected, standby = apply_mod.select_to_target(
 assert selected == [] and [row["id"] for row in standby] == ["overflow"]
 assert apply_mod.TARGET_ACTIVE == 60
 assert apply_mod.TARGET_LANE == 20
+apply_source=apply_path.read_text(encoding="utf-8")
+assert '"global": TARGET_ACTIVE' in apply_source
+assert '"france": TARGET_ACTIVE' in apply_source
+assert '"global": current_global + global_add' not in apply_source
+assert '"france": current_france + france_add' not in apply_source
 shared=[
     {"id":"shared-fr","scope":"global","vf":True,"languages":["en","fr"],"types":["movie","tv"]},
     {"id":"global-only","scope":"global","vf":False,"languages":["en"],"types":["anime"]},
