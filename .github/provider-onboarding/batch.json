@@ -1,5 +1,5 @@
 {
-  "requestVersion": 42,
+  "requestVersion": 43,
   "source": "NiakVIO-GLOBAL-FINAL-STRICT-TOP20-2026-09-11(5).xlsx",
   "activationPolicy": "bulk_offline_contract_live_unverified",
   "allowReplaceExisting": true,
@@ -19,42 +19,42 @@
   "policy": "Reach exactly 60 active Global and 60 active France. GitHub/WAF network rejection is inconclusive; exact-byte offline activation stays live-unverified. Explicit current-domain migrations/shutdowns are applied before publication.",
   "providers": [
     {
-      "id": "webflix",
-      "name": "Webflix",
-      "scope": "france",
+      "id": "flickystream",
+      "name": "FlickyStream",
+      "scope": "global",
       "types": [
         "movie",
-        "tv"
+        "tv",
+        "anime"
       ],
       "languages": [
-        "fr"
+        "en"
       ],
       "formats": [
         "mp4",
         "m3u8"
       ],
-      "strategy": "api_stream_resolver",
-      "direct": "https://webflix.art/",
-      "replace_existing": true,
-      "inventory_rank": 44,
-      "inventory_score": 68,
+      "strategy": "mixed_embed_resolver",
+      "direct": "https://flickystream.mov",
+      "replace_existing": false,
+      "inventory_rank": 15,
+      "inventory_score": 88,
+      "routeDiscoveryLastReason": "provider_probe_budget_exhausted",
       "routes": [
-        "/api/fastflux?type=movie&tmdb_id={tmdbId}",
-        "/api/series-season-discovery?tmdb_id={tmdbId}",
-        "/api/fastflux?type=episode&tmdb_id={tmdbId}&season={season}&episode={episode}"
+        "),c(`/anime/{tmdbId}`,{state:{backgroundLocation:u}})},className:",
+        "/genre/movie/{tmdbId}",
+        "/anime/{tmdbId}",
+        ",children:(u=s.data)==null?void%200%3Au.genres.map%28g=%3Ef.jsx%28yr%2C{to%3A%60%2Fgenre%2Fmovie%2F{tmdbId}%60%2Cchildren%3Af.jsx%28tt%2C{variant%3A"
       ],
       "routeDiscoveryEvidence": {
-        "transport": "mac-residential",
-        "reason": "mac_tmdb_fastflux_terminal_chain",
-        "routeCount": 3,
-        "identityBound": true,
-        "terminalCandidate": true
-      },
-      "routeDiscoveryLastReason": "mac_tmdb_fastflux_terminal_chain"
+        "transport": "residential-exit",
+        "reason": "observed_identity_executable_routes",
+        "routeCount": 4
+      }
     },
     {
-      "id": "zone-telechargement",
-      "name": "Zone-Téléchargement",
+      "id": "dpstream",
+      "name": "DPStream",
       "scope": "france",
       "types": [
         "movie",
@@ -68,16 +68,16 @@
         "m3u8"
       ],
       "strategy": "mixed_embed_resolver",
-      "direct": "https://www.zone-telechargement.rentals/",
-      "replace_existing": true,
-      "inventory_rank": 66,
+      "direct": "https://dpstream.fyi/",
+      "replace_existing": false,
+      "inventory_rank": 50,
       "inventory_score": 64,
-      "routeDiscoveryLastReason": "probe_shard_missing_or_timeout",
+      "routeDiscoveryLastReason": "provider_probe_budget_exhausted",
       "routes": [
-        "/?search={query}",
-        "/?p=films&search={query}",
-        "/?s={query}&search={query}",
-        "/?p=404&search={query}"
+        "?oe=%60https%3A%2F%2Fwww.vidking.net%2Fembed%2Ftv%2F{tmdbId}%2F{season}%2F{episode}%60%3AY.id%3D%3D%3D",
+        "?oe=%60https%3A%2F%2Fvidsrc.io%2Fembed%2Ftv%3Ftmdb%3D{tmdbId}&season={season}&episode={episode}",
+        "?oe=%60https%3A%2F%2Fplayer.vidplus.to%2Fembed%2Ftv%2F{tmdbId}%2F{season}%2F{episode}%3Fautoplay%3Dtrue&autonext=true&nextbutton=true&poster=true&title={query}&watchparty=false&primarycolor=6C63FF&secondarycolor=9F9BFF&iconcolor=FFFFFF%60%3AY.id%3D%3D%3D",
+        "?oe=%60https%3A%2F%2Fwww.vidking.net%2Fembed%2Fmovie%2F{tmdbId}%60%3AY.id%3D%3D%3D"
       ],
       "routeDiscoveryEvidence": {
         "transport": "residential-exit",
@@ -118,7 +118,7 @@
         "reason": "existing_identity_executable_route_plan",
         "routeCount": 1
       },
-      "routeDiscoveryLastReason": "provider_probe_budget_exhausted"
+      "routeDiscoveryLastReason": "probe_shard_missing_or_timeout"
     },
     {
       "id": "openflix",
@@ -240,7 +240,7 @@
         "reason": "observed_executable_routes",
         "routeCount": 1
       },
-      "routeDiscoveryLastReason": "provider_probe_budget_exhausted"
+      "routeDiscoveryLastReason": "probe_shard_missing_or_timeout"
     },
     {
       "id": "svstream",
@@ -388,7 +388,7 @@
       "replace_existing": false,
       "inventory_rank": 9,
       "inventory_score": 90,
-      "routeDiscoveryLastReason": "provider_probe_budget_exhausted"
+      "routeDiscoveryLastReason": "probe_shard_missing_or_timeout"
     },
     {
       "id": "cinejoy",
@@ -411,30 +411,7 @@
       "replace_existing": false,
       "inventory_rank": 12,
       "inventory_score": 88,
-      "routeDiscoveryLastReason": "provider_probe_budget_exhausted"
-    },
-    {
-      "id": "flickystream",
-      "name": "FlickyStream",
-      "scope": "global",
-      "types": [
-        "movie",
-        "tv",
-        "anime"
-      ],
-      "languages": [
-        "en"
-      ],
-      "formats": [
-        "mp4",
-        "m3u8"
-      ],
-      "strategy": "mixed_embed_resolver",
-      "direct": "https://flickystream.mov",
-      "replace_existing": false,
-      "inventory_rank": 15,
-      "inventory_score": 88,
-      "routeDiscoveryLastReason": "provider_probe_budget_exhausted"
+      "routeDiscoveryLastReason": "probe_shard_missing_or_timeout"
     },
     {
       "id": "meowtv",
@@ -457,7 +434,7 @@
       "replace_existing": false,
       "inventory_rank": 19,
       "inventory_score": 88,
-      "routeDiscoveryLastReason": "provider_probe_budget_exhausted"
+      "routeDiscoveryLastReason": "probe_shard_missing_or_timeout"
     },
     {
       "id": "willow",
@@ -549,7 +526,7 @@
       "replace_existing": false,
       "inventory_rank": 32,
       "inventory_score": 83,
-      "routeDiscoveryLastReason": "provider_probe_budget_exhausted"
+      "routeDiscoveryLastReason": "probe_shard_missing_or_timeout"
     },
     {
       "id": "bingey",
@@ -641,7 +618,7 @@
       "replace_existing": false,
       "inventory_rank": 38,
       "inventory_score": 83,
-      "routeDiscoveryLastReason": "provider_probe_budget_exhausted"
+      "routeDiscoveryLastReason": "probe_shard_missing_or_timeout"
     },
     {
       "id": "cinezo",
@@ -756,7 +733,7 @@
       "replace_existing": false,
       "inventory_rank": 47,
       "inventory_score": 83,
-      "routeDiscoveryLastReason": "provider_probe_budget_exhausted"
+      "routeDiscoveryLastReason": "probe_shard_missing_or_timeout"
     },
     {
       "id": "moonflix",
@@ -779,7 +756,7 @@
       "replace_existing": false,
       "inventory_rank": 48,
       "inventory_score": 83,
-      "routeDiscoveryLastReason": "provider_probe_budget_exhausted"
+      "routeDiscoveryLastReason": "probe_shard_missing_or_timeout"
     },
     {
       "id": "phantomflix",
@@ -825,7 +802,7 @@
       "replace_existing": false,
       "inventory_rank": 60,
       "inventory_score": 83,
-      "routeDiscoveryLastReason": "provider_probe_budget_exhausted"
+      "routeDiscoveryLastReason": "probe_shard_missing_or_timeout"
     },
     {
       "id": "tonkacine",
@@ -917,7 +894,7 @@
       "replace_existing": false,
       "inventory_rank": 14,
       "inventory_score": 83,
-      "routeDiscoveryLastReason": "provider_probe_budget_exhausted"
+      "routeDiscoveryLastReason": "probe_shard_missing_or_timeout"
     },
     {
       "id": "kordoz",
@@ -1008,7 +985,7 @@
       "replace_existing": false,
       "inventory_rank": 47,
       "inventory_score": 64,
-      "routeDiscoveryLastReason": "provider_probe_budget_exhausted"
+      "routeDiscoveryLastReason": "probe_shard_missing_or_timeout"
     },
     {
       "id": "cineplateforme",
@@ -1029,28 +1006,6 @@
       "direct": "https://www.cineplateforme.help/",
       "replace_existing": false,
       "inventory_rank": 48,
-      "inventory_score": 64,
-      "routeDiscoveryLastReason": "provider_probe_budget_exhausted"
-    },
-    {
-      "id": "dpstream",
-      "name": "DPStream",
-      "scope": "france",
-      "types": [
-        "movie",
-        "tv"
-      ],
-      "languages": [
-        "fr"
-      ],
-      "formats": [
-        "mp4",
-        "m3u8"
-      ],
-      "strategy": "mixed_embed_resolver",
-      "direct": "https://dpstream.fyi/",
-      "replace_existing": false,
-      "inventory_rank": 50,
       "inventory_score": 64,
       "routeDiscoveryLastReason": "provider_probe_budget_exhausted"
     },
@@ -1118,7 +1073,7 @@
       "replace_existing": false,
       "inventory_rank": 63,
       "inventory_score": 64,
-      "routeDiscoveryLastReason": "provider_probe_budget_exhausted"
+      "routeDiscoveryLastReason": "probe_shard_missing_or_timeout"
     },
     {
       "id": "animeko",
@@ -1139,7 +1094,7 @@
       "replace_existing": false,
       "inventory_rank": 73,
       "inventory_score": 59,
-      "routeDiscoveryLastReason": "network_or_site_unreached"
+      "routeDiscoveryLastReason": "probe_shard_missing_or_timeout"
     },
     {
       "id": "fankai",
@@ -1181,7 +1136,7 @@
       "replace_existing": false,
       "inventory_rank": 81,
       "inventory_score": 52,
-      "routeDiscoveryLastReason": "provider_probe_budget_exhausted"
+      "routeDiscoveryLastReason": "probe_shard_missing_or_timeout"
     },
     {
       "id": "cinestream",
@@ -1273,7 +1228,7 @@
       "replace_existing": true,
       "inventory_rank": 11,
       "inventory_score": 86,
-      "routeDiscoveryLastReason": "provider_probe_budget_exhausted"
+      "routeDiscoveryLastReason": "probe_shard_missing_or_timeout"
     },
     {
       "id": "dotriv",
@@ -1351,7 +1306,7 @@
       "inventory_score": 83,
       "grade": "A-",
       "workbookSheet": "Global",
-      "routeDiscoveryLastReason": "provider_probe_budget_exhausted"
+      "routeDiscoveryLastReason": "probe_shard_missing_or_timeout"
     },
     {
       "id": "stellar",
@@ -1397,7 +1352,7 @@
       "inventory_score": 82,
       "grade": "A-",
       "workbookSheet": "Global",
-      "routeDiscoveryLastReason": "provider_probe_budget_exhausted"
+      "routeDiscoveryLastReason": "reachable_no_identity_route_observed"
     },
     {
       "id": "onetouch-tv",
@@ -1427,7 +1382,7 @@
       "inventory_score": 78,
       "grade": "B+",
       "workbookSheet": "Global",
-      "routeDiscoveryLastReason": "network_or_site_unreached"
+      "routeDiscoveryLastReason": "probe_shard_missing_or_timeout"
     },
     {
       "id": "zoechip",
@@ -1442,7 +1397,7 @@
       "inventory_score": 78,
       "grade": "B+",
       "workbookSheet": "Global",
-      "routeDiscoveryLastReason": "network_or_site_unreached"
+      "routeDiscoveryLastReason": "probe_shard_missing_or_timeout"
     },
     {
       "id": "anizone",
@@ -1456,7 +1411,7 @@
       "inventory_score": 77,
       "grade": "B+",
       "workbookSheet": "Global",
-      "routeDiscoveryLastReason": "reachable_no_identity_route_observed"
+      "routeDiscoveryLastReason": "provider_probe_budget_exhausted"
     },
     {
       "id": "streamflix",
@@ -1471,7 +1426,7 @@
       "inventory_score": 73,
       "grade": "B",
       "workbookSheet": "Global",
-      "routeDiscoveryLastReason": "provider_probe_budget_exhausted"
+      "routeDiscoveryLastReason": "probe_shard_missing_or_timeout"
     },
     {
       "id": "vidnest",
@@ -1501,7 +1456,7 @@
       "inventory_score": 73,
       "grade": "B",
       "workbookSheet": "Global",
-      "routeDiscoveryLastReason": "reachable_no_identity_route_observed"
+      "routeDiscoveryLastReason": "provider_probe_budget_exhausted"
     },
     {
       "id": "anilight",
@@ -1537,21 +1492,21 @@
       "sourceManifest": "upstream-lkg/manifests/gowaru-c063207a4facc7a5.json",
       "retainedKnowledge": "provider-old/animoflix--base--9eef980cbac68086.js",
       "sourceNote": "Pinned Gowaru manifest declares French movie/TV; retained NiakVIO ProviderBase records knownSite animoflix.to and historical route/origin knowledge. Candidate remains non-active until normal route/onboarding proof.",
-      "routeDiscoveryLastReason": "provider_probe_budget_exhausted"
+      "routeDiscoveryLastReason": "probe_shard_missing_or_timeout"
     }
   ],
   "routeDiscoveryWave": {
-    "sourceRequestVersion": 36,
-    "qualified": 4,
-    "selected": 4,
+    "sourceRequestVersion": 42,
+    "qualified": 2,
+    "selected": 2,
     "standbyQualified": 0,
-    "deferred": 65,
+    "deferred": 63,
     "transports": [
       "residential-exit"
     ],
-    "shardArtifactCount": 16,
+    "shardArtifactCount": 11,
     "expectedShardCount": 16,
-    "completeShardSet": true,
+    "completeShardSet": false,
     "activationRequiresExecutablePlan": true
   },
   "handoff": {
