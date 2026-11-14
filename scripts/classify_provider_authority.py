@@ -24,6 +24,8 @@ from datetime import datetime, timezone
 from typing import Any
 from urllib.parse import urlsplit
 
+from current_provider_scope import pending_provider_ids
+
 ROOT = Path(__file__).resolve().parents[1]
 HUBS = ROOT / "provider-hubs.json"
 OVERRIDES = ROOT / "provider-overrides.json"
@@ -206,6 +208,8 @@ def classify(
     registry: dict[str, Any],
     patch: dict[str, Any],
     history: dict[str, Any],
+    *,
+    pending_onboarding: bool = False,
 ) -> dict[str, Any]:
     enabled = manifest_row.get("enabled") is not False
     manual_off = str(patch.get("manual_off_reason") or registry.get("manual_off_reason") or "").strip()
@@ -233,6 +237,17 @@ def classify(
             "repairEligible": False,
             "confidence": "terminal",
             "authorityClass": "manual-off",
+            "failureCount": failures,
+            "reasons": reasons,
+        }
+    if pending_onboarding and not manual_off:
+        reasons.append("bulk_onboarding_pending")
+        return {
+            "provider": provider,
+            "action": "ONBOARDING_PENDING",
+            "repairEligible": False,
+            "confidence": "onboarding-pending",
+            "authorityClass": "onboarding-pending",
             "failureCount": failures,
             "reasons": reasons,
         }
@@ -542,6 +557,7 @@ def main() -> int:
     registries = hubs.setdefault("providers", {})
     patches = overrides.setdefault("provider_patches", {})
     histories = history.get("providers") if isinstance(history.get("providers"), dict) else {}
+    pending = pending_provider_ids()
     census_by_provider = {
         cid(row.get("provider")): row
         for row in census.get("providers") or []
@@ -558,7 +574,10 @@ def main() -> int:
         registry = registries.get(provider) if isinstance(registries.get(provider), dict) else {}
         patch = patches.get(provider) if isinstance(patches.get(provider), dict) else {}
         hist = histories.get(provider) if isinstance(histories.get(provider), dict) else {}
-        result = classify(provider, manifest_row, registry, patch, hist)
+        result = classify(
+            provider, manifest_row, registry, patch, hist,
+            pending_onboarding=provider in pending,
+        )
         census_row = census_by_provider.get(provider)
         if manifest_row.get("enabled") is not False and current_architecture_nonfunctional(census_row):
             current_status = str(census_row.get("status") or "")
@@ -597,6 +616,7 @@ def main() -> int:
             "effectiveOperatorShutdownEntersDisabledRetentionImmediately": True,
             "currentTestedNonfunctionalEntersDisabledRetention": True,
             "terminalPlaybackRequiredForActiveCurrentBytes": True,
+            "bulkOnboardingPendingGetsTargetedProofWithoutRuntimeAuthority": True,
         },
         "providerCount": len(results),
         "repairEligible": sorted(row["provider"] for row in results if row.get("repairEligible") is True),

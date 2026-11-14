@@ -23,12 +23,23 @@ with tempfile.TemporaryDirectory() as td:
         {"provider":"red","status":"ROUTE PROVEN"},
     ]}),encoding="utf-8")
     old_manifest=mod.MANIFEST
+    old_pending=mod.pending_provider_ids
     mod.MANIFEST=manifest
+    mod.pending_provider_ids=lambda:{"brand-new"}
     try:
         selected,scope=mod._scope_provider_filter("unresolved",status,[])
+        assert scope=="unresolved"
+        assert selected=={"red"},selected
+        try:
+            mod._scope_provider_filter("unresolved",status,["brand-new"])
+        except ValueError:
+            pass
+        else:
+            raise AssertionError("pending provider accepted without explicit onboarding authority")
+        targeted,target_scope=mod._scope_provider_filter("unresolved",status,["brand-new"],allow_pending_targets=True)
+        assert targeted=={"brand-new"} and target_scope=="explicit"
     finally:
         mod.MANIFEST=old_manifest
+        mod.pending_provider_ids=old_pending
 
-assert scope=="unresolved"
-assert selected=={"red","brand-new"},selected
-print("Newly onboarded providers enter unresolved census scope")
+print("New onboarding pending scope requires explicit census authority")

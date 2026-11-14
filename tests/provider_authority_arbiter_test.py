@@ -239,6 +239,12 @@ regression = {
 assert module.current_architecture_nonfunctional(regression) is True
 assert module.current_architecture_nonfunctional({**regression,"testedThisRun":False}) is False
 
+# Bulk onboarding pending is non-active but distinct from disabled retention.
+r=module.classify("demo",row(False),reg(),patch(),{},pending_onboarding=True)
+assert r["action"]=="ONBOARDING_PENDING",r
+assert r["repairEligible"] is False,r
+assert r["authorityClass"]=="onboarding-pending",r
+
 # Existing manual lifecycle decisions remain terminal.
 r=module.classify("demo",row(False),reg(),patch(manual_off_reason="manual_off_test"),{})
 assert r["action"]=="KEEP_DISABLED",r

@@ -637,6 +637,11 @@ def _authority_action(status: str, transport_class: str, authority: dict[str, An
     if authority.get("authorityRepairEligible") is not False:
         return _harness_action(status, transport_class)
     action = str(authority.get("authorityAction") or "")
+    if action == "ONBOARDING_PENDING":
+        return (
+            "onboarding candidate is non-active/non-repairable; run only the explicit "
+            "pending current-byte census and activate only after fresh FULL OK proof"
+        )
     if action.startswith("REDISCOVER"):
         return (
             "Domain/authority rediscovery required before Repair; search remains "

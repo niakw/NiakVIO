@@ -213,7 +213,12 @@ def _adaptive_fixtures(
     return rows
 
 
-def build_tasks(provider_filter: set[str] | None = None, *, history: dict[str, Any] | None = None) -> tuple[list[dict[str, Any]], int]:
+def build_tasks(
+    provider_filter: set[str] | None = None,
+    *,
+    history: dict[str, Any] | None = None,
+    allow_pending_targets: bool = False,
+) -> tuple[list[dict[str, Any]], int]:
     manifest = load(MANIFEST)
     corpus = load(CORPUS)
     history = history or {}
@@ -258,7 +263,11 @@ def build_tasks(provider_filter: set[str] | None = None, *, history: dict[str, A
         filename = str(row.get("filename") or "").strip()
         if not provider_id or not filename or not (ROOT / filename).is_file():
             continue
-        if provider_id in pending:
+        if provider_id in pending and not (
+            allow_pending_targets
+            and provider_filter is not None
+            and provider_id in provider_filter
+        ):
             continue
         if provider_filter is not None and provider_id not in provider_filter:
             continue
@@ -874,7 +883,13 @@ def _shard_filter(provider_filter: set[str] | None, shard_count: int, shard_inde
     return {provider for provider in provider_filter if _provider_shard(provider, shard_count) == shard_index}
 
 
-def _scope_provider_filter(scope: str, status_file: Path, explicit: list[str]) -> tuple[set[str] | None, str]:
+def _scope_provider_filter(
+    scope: str,
+    status_file: Path,
+    explicit: list[str],
+    *,
+    allow_pending_targets: bool = False,
+) -> tuple[set[str] | None, str]:
     requested = {
         str(value or "").strip().casefold()
         for item in explicit
@@ -884,8 +899,8 @@ def _scope_provider_filter(scope: str, status_file: Path, explicit: list[str]) -
     pending = pending_provider_ids()
     if requested:
         blocked = sorted(requested & pending)
-        if blocked:
-            raise ValueError("pending onboarding providers are non-executable census targets: " + ",".join(blocked))
+        if blocked and not allow_pending_targets:
+            raise ValueError("pending onboarding providers require explicit onboarding census authority: " + ",".join(blocked))
         return requested, "explicit"
     if scope == "all":
         return None, "all"
@@ -928,13 +943,19 @@ def main() -> int:
     parser.add_argument("--shard-count", type=int, default=1, help="Deterministic provider shard count")
     parser.add_argument("--shard-index", type=int, default=0, help="Zero-based deterministic provider shard index")
     parser.add_argument("--output", type=Path, default=OUTPUT)
+    parser.add_argument("--allow-pending-targets", action="store_true", help="Allow only explicitly targeted bulk-onboarding pending providers")
     args = parser.parse_args()
+    if args.allow_pending_targets and not args.provider:
+        raise SystemExit("--allow-pending-targets requires at least one explicit --provider")
 
     if not (str(os.environ.get("TMDB_API_KEY") or "").strip() or str(os.environ.get("TMDB_ACCESS_TOKEN") or "").strip()):
         raise SystemExit("TMDB_API_KEY or TMDB_ACCESS_TOKEN is required for quick yield census")
 
     history = load(args.history) if args.history.is_file() else {}
-    provider_filter, resolved_scope = _scope_provider_filter(args.scope, args.status_file, args.provider)
+    provider_filter, resolved_scope = _scope_provider_filter(
+        args.scope, args.status_file, args.provider,
+        allow_pending_targets=args.allow_pending_targets,
+    )
     if args.shard_count < 1:
         raise SystemExit("--shard-count must be >= 1")
     if args.shard_index < 0 or args.shard_index >= args.shard_count:
@@ -942,7 +963,11 @@ def main() -> int:
     provider_filter = _shard_filter(provider_filter, args.shard_count, args.shard_index)
     if args.shard_count > 1:
         resolved_scope = f"{resolved_scope}-shard-{args.shard_index + 1}-of-{args.shard_count}"
-    tasks, provider_count = build_tasks(provider_filter, history=history)
+    tasks, provider_count = build_tasks(
+        provider_filter,
+        history=history,
+        allow_pending_targets=args.allow_pending_targets,
+    )
     rows: list[dict[str, Any]] = []
     with concurrent.futures.ThreadPoolExecutor(max_workers=WORKERS) as pool:
         futures = [pool.submit(run, task) for task in tasks]

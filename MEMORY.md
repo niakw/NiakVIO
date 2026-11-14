@@ -1,3 +1,10 @@
+## 2026-11-14 — Pending onboarding proof semantics separated from lifecycle disable
+
+- Sharded census 43596683352 persisted 13/46 from 703ae697 but omitted Internet Archive entirely. Generic root cause: pending_provider_ids() was blocked by explicit census selection and build_tasks, while authority classified all enabled=false rows as lifecycle KEEP_DISABLED. A staged candidate therefore could not earn the fresh FULL proof required by activation.
+- Add a strict allow_pending_targets mode that is rejected unless explicit --provider targets are supplied. Ordinary unresolved/all census still excludes pending. Targeted pending bytes may be executed for proof without gaining runtime/Repair authority.
+- Authority now distinguishes ONBOARDING_PENDING (enabled=false, repairEligible=false, not lifecycle-retained) from KEEP_DISABLED. This lets actual fresh lane status remain visible to the activation gate while preventing Brain Repair or normal runtime inclusion. Current-catalogue and arbiter tests cover the distinction.
+- Workflow handoff still requires wiring to the committed bulk stage ledger before live replay; exact-SHA CI pending.
+
 ## 2026-11-14 — Internet Archive staging reaches validation; test loader completed
 
 - Bulk onboarding 43596291642 on 321bac65 again staged the single provider and rebuilt publication successfully. Validation failed only because the direct unit-test loader had scripts/provider_patches but not scripts, so the shared Lego could not import provider_patch_blocks. Real materialization had already loaded the Lego successfully.
