@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "sourceRunId": "43635597908",
-  "sourceTriggerSha": "36c563922b3bf5058811b71cf9d31fd2bce442dd",
+  "sourceRunId": "43636868845",
+  "sourceTriggerSha": "c32e3d94dc8c522b499d388cf14ac6612424cb07",
   "unresolvedProviderCount": 18,
   "dynamicVariantProviderCount": 1,
   "dynamicVariantProviders": [
@@ -72,8 +72,8 @@
     "wookafr",
     "yflix"
   ],
-  "dynamicVariantFallbackUsed": false,
-  "groupCount": 5,
+  "dynamicVariantFallbackUsed": true,
+  "groupCount": 6,
   "executionModel": {
     "default": "family/signature batch",
     "liveProbeConcurrency": "audit_provider_quick_yield ThreadPool",
@@ -119,37 +119,6 @@
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
     {
-      "groupId": "harness-compatibility|mixed_embed_resolver|github-all-transports-challenged",
-      "repairScope": "harness-compatibility",
-      "runtimeFamilies": [
-        "mixed_embed_resolver"
-      ],
-      "capabilityStrategy": "mixed_embed_resolver",
-      "evidenceDepths": [
-        "none"
-      ],
-      "dominantIssues": [
-        "waf_challenge"
-      ],
-      "harnessTransportClasses": [
-        "github-all-transports-challenged"
-      ],
-      "transportSignature": "github-all-transports-challenged",
-      "providerCount": 3,
-      "providers": [
-        "arrowtv",
-        "chillflix",
-        "cinegram"
-      ],
-      "action": "compare browser/native/residential transport and route client-owned gaps away from provider mutation",
-      "selectionAuthorities": [
-        "provider-census-status.json:brainCheckRequired"
-      ],
-      "dynamicVariantProviders": [],
-      "executionPolicy": "batch-first",
-      "providerLocalFallback": "only-after-shared-profile-failure"
-    },
-    {
       "groupId": "learning|mixed_embed_resolver",
       "repairScope": "learning",
       "runtimeFamilies": [
@@ -179,6 +148,36 @@
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
     {
+      "groupId": "harness-compatibility|mixed_embed_resolver|residential-exit-all-challenged",
+      "repairScope": "harness-compatibility",
+      "runtimeFamilies": [
+        "mixed_embed_resolver"
+      ],
+      "capabilityStrategy": "mixed_embed_resolver",
+      "evidenceDepths": [
+        "none"
+      ],
+      "dominantIssues": [
+        "waf_challenge"
+      ],
+      "harnessTransportClasses": [
+        "residential-exit-all-challenged"
+      ],
+      "transportSignature": "residential-exit-all-challenged",
+      "providerCount": 2,
+      "providers": [
+        "chillflix",
+        "cinegram"
+      ],
+      "action": "compare browser/native/residential transport and route client-owned gaps away from provider mutation",
+      "selectionAuthorities": [
+        "provider-census-status.json:brainCheckRequired"
+      ],
+      "dynamicVariantProviders": [],
+      "executionPolicy": "batch-first",
+      "providerLocalFallback": "only-after-shared-profile-failure"
+    },
+    {
       "groupId": "harness-compatibility|mixed_embed_resolver|no-transport-evidence",
       "repairScope": "harness-compatibility",
       "runtimeFamilies": [
@@ -198,6 +197,35 @@
       "providerCount": 1,
       "providers": [
         "watch-cartoon-online"
+      ],
+      "action": "compare browser/native/residential transport and route client-owned gaps away from provider mutation",
+      "selectionAuthorities": [
+        "provider-census-status.json:brainCheckRequired"
+      ],
+      "dynamicVariantProviders": [],
+      "executionPolicy": "batch-first",
+      "providerLocalFallback": "only-after-shared-profile-failure"
+    },
+    {
+      "groupId": "harness-compatibility|mixed_embed_resolver|residential-exit-inconclusive",
+      "repairScope": "harness-compatibility",
+      "runtimeFamilies": [
+        "mixed_embed_resolver"
+      ],
+      "capabilityStrategy": "mixed_embed_resolver",
+      "evidenceDepths": [
+        "none"
+      ],
+      "dominantIssues": [
+        "waf_challenge"
+      ],
+      "harnessTransportClasses": [
+        "residential-exit-inconclusive"
+      ],
+      "transportSignature": "residential-exit-inconclusive",
+      "providerCount": 1,
+      "providers": [
+        "arrowtv"
       ],
       "action": "compare browser/native/residential transport and route client-owned gaps away from provider mutation",
       "selectionAuthorities": [
