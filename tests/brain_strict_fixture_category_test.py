@@ -11,19 +11,47 @@ ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT/'scripts'))
 import evaluate_brain_llm_force_candidates as verify
 
-movie=verify.strict_repair_fixture_contract('mallumv')
+manifest = verify.load(ROOT / 'manifest.json')
+rows = {verify.canon(row.get('id')):row for row in manifest.get('scrapers') or [] if isinstance(row,dict)}
+def canonical_types(row):
+    types = row.get('canonicalSupportedTypes')
+    if not isinstance(types,list) or not types:
+        types = row.get('supportedTypes') or []
+    return {str(value).strip().casefold() for value in types}
+
+def active_provider(types):
+    selected = sorted(
+        key for key,row in rows.items()
+        if row.get('enabled') is True and canonical_types(row)==set(types)
+    )
+    assert selected, ('no-active-provider-for-fixture-contract', types)
+    return selected[0]
+
+# Tests select a live provider with the precise semantic category contract, not
+# a historic hard-coded source that may have been withdrawn by lifecycle.
+movie_id = active_provider({'movie'})
+anime_id = active_provider({'anime'})
+movie_tv_id = active_provider({'movie','tv'})
+movie=verify.strict_repair_fixture_contract(movie_id)
 assert set(key[0] for key in movie)=={'movie'}, movie
 assert ('movie','157336') in movie, movie
-assert verify.strict_repair_fixture_contract('animekai')
-assert {'anime'} == {key[0] for key in verify.strict_repair_fixture_contract('animekai')}
-assert {'anime'} == {key[0] for key in verify.strict_repair_fixture_contract('allanime')}
-assert {'anime'} == {key[0] for key in verify.strict_repair_fixture_contract('animevostfr')}
-assert {'movie', 'tv'} == {key[0] for key in verify.strict_repair_fixture_contract('4khdhub')}
-assert {'movie', 'tv'} == {key[0] for key in verify.strict_repair_fixture_contract('yflix')}
-# An anime-to-TV client transport alias must NEVER manufacture a live-action
-# TV decoding fixture or allow an unrelated TV episode to validate a provider.
+assert {'anime'} == {key[0] for key in verify.strict_repair_fixture_contract(anime_id)}
+assert {'movie','tv'} == {key[0] for key in verify.strict_repair_fixture_contract(movie_tv_id)}
+
+# A disabled row must never be accepted as a newly repaired active provider,
+# even if old fixtures, terminal URLs or historical proofs exist.
+for provider,row in rows.items():
+    if row.get('enabled') is False:
+        try:
+            verify.strict_repair_fixture_contract(provider)
+        except ValueError as exc:
+            assert str(exc) == 'decoded_repair_provider_manifest_contract', (provider,exc)
+        else:
+            raise AssertionError(('disabled-provider-accepted-for-decoded-repair',provider))
+
+# Anime-to-TV transport aliases are not a license to decode live-action TV.
 with patch.dict(os.environ, {'NIAKVIO_REQUIRE_DECODE_PROOF':'1'}):
-    anime_expected=verify.strict_repair_fixture_contract('allanime')
+    anime_expected=verify.strict_repair_fixture_contract(anime_id)
     assert {key[0] for key in anime_expected}=={'anime'}
 assert len(verify.strict_repair_fixture_contract(None))==2
 assert {key[1] for key in verify.strict_repair_fixture_contract(None)}=={'95479','280049'}
@@ -52,7 +80,7 @@ probe={
 before={'tests':[observation(spec,key[0])]}
 after={'tests':[observation(spec,key[0],[probe])]}
 with patch.dict(os.environ,{'NIAKVIO_REQUIRE_DECODE_PROOF':'1'}):
-    ok, reason, facts=verify.decoded_repair_gate(before,after,'MALLUMV')
+    ok, reason, facts=verify.decoded_repair_gate(before,after,movie_id)
     assert ok and reason=='decoded_repair_fixture_improvement',(reason,facts)
     assert facts['improvedFixtures']==[spec['label']]
     assert not facts['unresolvedFixtures']
@@ -60,22 +88,22 @@ with patch.dict(os.environ,{'NIAKVIO_REQUIRE_DECODE_PROOF':'1'}):
     # not a decoded control. Genuine decoding of that same URL is a new proof.
     opaque_before=copy.deepcopy(after)
     opaque_before['tests'][0]['host_results'][0]['media_decode']=None
-    gained, gained_reason, gained_facts=verify.decoded_repair_gate(opaque_before,after,'MALLUMV')
+    gained, gained_reason, gained_facts=verify.decoded_repair_gate(opaque_before,after,movie_id)
     assert gained and gained_reason=='decoded_repair_fixture_improvement',(gained_reason,gained_facts)
     assert gained_facts['improvedFixtures']==[spec['label']]
     assert verify.decoded_repair_gate(before,after)[1]=='decoded_repair_fixture_contract'
     wrong=copy.deepcopy(after)
     wrong['tests'][0]['fixture']['tmdbId']='95479'
-    assert verify.decoded_repair_gate(before,wrong,'MALLUMV')[1]=='decoded_repair_fixture_contract'
+    assert verify.decoded_repair_gate(before,wrong,movie_id)[1]=='decoded_repair_fixture_contract'
     wrong=copy.deepcopy(after)
     wrong['tests'][0]['fixture']['expectedDurationMinutes']=24
-    assert verify.decoded_repair_gate(before,wrong,'MALLUMV')[1]=='decoded_repair_fixture_contract'
+    assert verify.decoded_repair_gate(before,wrong,movie_id)[1]=='decoded_repair_fixture_contract'
     short=copy.deepcopy(after)
     short['tests'][0]['host_results'][0]['media_duration_seconds']=1440
-    assert verify.decoded_repair_gate(before,short,'MALLUMV')[1]=='decoded_repair_no_new_fixture_control'
+    assert verify.decoded_repair_gate(before,short,movie_id)[1]=='decoded_repair_no_new_fixture_control'
     wrong=copy.deepcopy(after)
     wrong['tests'][0]['host_results'][0]['media_decode']=None
-    assert verify.decoded_repair_gate(before,wrong,'MALLUMV')[1]=='decoded_repair_no_new_fixture_control'
+    assert verify.decoded_repair_gate(before,wrong,movie_id)[1]=='decoded_repair_no_new_fixture_control'
 
     configs=[]
     def fake_health(**options):
@@ -83,8 +111,8 @@ with patch.dict(os.environ,{'NIAKVIO_REQUIRE_DECODE_PROOF':'1'}):
         return {'results':[]}
     with tempfile.TemporaryDirectory() as directory,patch.object(verify.deep,'run_health',side_effect=fake_health):
         root=Path(directory)
-        verify.health_provider(root/'baseline',root/'before', 'MALLUMV')
-        verify.health_provider(root/'candidate',root/'after','MALLUMV')
+        verify.health_provider(root/'baseline',root/'before', movie_id)
+        verify.health_provider(root/'candidate',root/'after',movie_id)
     # Brain evidence must not silently erase the trusted movie and TV identities.
     # A provider/candidate cannot substitute an unregistered TMDB/episode ID.
     movie_summary=verify.fixture_summary({'tests':[observation(spec,'movie')]})
