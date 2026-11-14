@@ -471,11 +471,41 @@ def stage(request_path: Path, *, bulk: bool = False) -> dict[str, Any]:
             "disabledPlatforms": [],
         },
     }
+    if strategy == "open_archive_public_domain":
+        archive_base = (api or direct).rstrip("/")
+        if archive_base != "https://archive.org":
+            raise ValueError("open_archive_public_domain requires the official https://archive.org origin")
+        if types != ["movie"]:
+            raise ValueError("open_archive_public_domain currently supports the movie lane only")
+        lego = "scripts/provider_patches/open_archive_public_domain_runtime_v1.py"
+        patch = overrides["provider_patches"][provider_id]
+        patch["notes"].append(
+            "Runtime searches only explicitly public-domain Internet Archive movie items and rechecks per-item license metadata before returning direct media."
+        )
+        patch["provider_lego_scripts"] = [lego]
+        patch["provider_lego_options"] = {
+            lego: {
+                "base": archive_base,
+                "provider": provider_id,
+                "name": name,
+                "max_streams": 4,
+            }
+        }
+        patch["learned_routes"] = [
+            "/advancedsearch.php",
+            "/metadata/{identifier}",
+            "/download/{identifier}/{file}",
+        ]
+        patch["identity_input"] = {
+            "mode": "tmdb_title_year",
+            "requires_tmdb_before_run": True,
+            "required_fields": ["tmdbId", "mediaType", "title", "year"],
+        }
     overrides["provider_capabilities"][provider_id] = {
         "strategy": strategy,
         "validation": "bulk_onboarding_pending" if bulk else "onboarding_pending",
         "allow_html_url": strategy in {"html_scraper", "mixed_embed_resolver", "iframe"},
-        "requires_direct_media": strategy in {"api_stream_resolver", "direct_media"},
+        "requires_direct_media": strategy in {"api_stream_resolver", "direct_media", "open_archive_public_domain"},
         "observed_origins": origins,
         "generated_from_manifest": True,
         "generated_from_manifest_or_stage": True,

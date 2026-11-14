@@ -1,3 +1,10 @@
+## 2026-11-14 — Authorized open-archive onboarding strategy and first candidate
+
+- After the lifecycle cleanup, production remains 13 active providers with fresh FULL proof; the dedicated Provider Disabled Lifecycle 43595236196 succeeded on 4f5e073e. Lifecycle automation subsequently advanced main with retention/release bookkeeping only.
+- The supplied workbook contains InternetArchiveProvider in its raw/hub inventory but marks it NON VÉRIFIÉ — LOCAL UNIQUEMENT. Do not treat workbook presence as proof. Implement a reusable open_archive_public_domain Provider Lego instead of copying upstream executable code: official archive.org origin only, movie lane only, advanced search restricted to licenseurl:*publicdomain*, exact metadata license recheck requiring creativecommons.org/publicdomain/, title/year identity check and same-origin direct video output.
+- Add a provider-owned real corpus fixture for Plan 9 from Outer Space (TMDB 10513) so this specialized public-domain catalogue is evaluated against content it can legitimately contain rather than Interstellar. The normal representative corpus is unchanged for every other provider.
+- Replace the bulk intake request with one Internet Archive candidate, staged disabled/pending. Activation authority remains the fresh FULL/currentVerifiedLanes gate already validated; no quota-based activation. Core and bulk-onboarding tests cover Lego idempotence, origin confinement, title rejection and rights rejection. Exact-SHA CI/onboarding and live census still required before any active claim.
+
 ## 2026-11-14 — Removed remaining disabled-authority contradiction
 
 - Dedicated lifecycle run 43595076872 on db1c72fc again applied lifecycle successfully (active=13, disabled=28 Global, pending=17, union visible=58) and passed the new generic disabled invariant, then failed on a later legacy animesultra-specific branch that still selected KEEP_DIRECT unless the provider appeared in withdrawn_current.

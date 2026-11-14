@@ -59,3 +59,20 @@ Goal: prove a representative source per failure/runtime family before broad prom
 - Artefacts : `provider-intake-global-43538083385` et `provider-intake-france-43538083385` (détails HTTP, sans URL de stream). Résumé durable `automation/evidence/provider-intake-terminal-2026-11-14.json`.
 - Les scores du fichier `automation/provider-intake-top-global-france.json` sont corrigés selon les nombres exacts du classeur septembre, sans interpréter un score comme une preuve fonctionnelle.
 - Le dépôt conserve d'anciens Lego NiakVIO pour FrenchStream (`frenchstream_exact_runtime_v3.py`) et Movix (`movix_runtime_v1.py`) et des bases historiques `provider-old/`. Ils doivent servir de connaissances Brain pour reconstruction, **pas** être réactivés tels quels.
+
+
+## Authorized open-archive candidate — Internet Archive
+
+The supplied workbook also references **InternetArchiveProvider** in its hub/raw inventory. It is treated as discovery input only: the workbook itself marks the row non-verified.
+
+NiakVIO now has a reusable `open_archive_public_domain` onboarding strategy. It is intentionally narrower than generic Internet Archive access:
+
+- official origin fixed to `https://archive.org`;
+- movie lane only;
+- search requires `mediatype:movies AND licenseurl:*publicdomain*`;
+- the item metadata endpoint must independently expose a `creativecommons.org/publicdomain/` license URL before any media is returned;
+- title identity is matched to Core TMDB metadata and release year is bounded;
+- only direct video files from the same Archive origin are emitted;
+- the staged provider remains disabled until current materialized bytes pass the normal terminal/identity/playback census.
+
+A provider-specific real fixture, **Plan 9 from Outer Space** (TMDB 10513), is used only for this provider. It does not replace the representative movie corpus for other providers.
