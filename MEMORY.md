@@ -1,3 +1,8 @@
+## 2026-11-14 — Internet Archive bulk retry after stage-success/test-only failure
+
+- Bulk onboarding 43596083858 on 05c4a078 completed staging/rebuild and reached validation; it failed only because open_archive_public_domain_runtime_test.py used the direct-import harness fixed in c9548322. Publish was skipped, so main still has no Internet Archive provider row from that run.
+- Bump the same one-provider request again on the corrected test bytes. Candidate and rights/runtime policy are unchanged.
+
 ## 2026-11-14 — Archive test import parity and disabled-provider targeted regression
 
 - Core Workflow Gate 43596033200 on ee2b3641 reached the new archive test but the test's direct import omitted scripts/provider_patches from sys.path; the real Lego loader already adds that directory. Align only the test harness with loader semantics.
