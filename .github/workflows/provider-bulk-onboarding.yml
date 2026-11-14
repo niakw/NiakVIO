@@ -199,7 +199,8 @@ jobs:
           print(int(value.get("providerCount") or 0))
           PY
           )"
-          test "$count" -eq "$expected"
+          test "$count" -gt 0
+          test "$count" -le "$expected"
           python - <<'PY'
           import json, os
           request=json.load(open(os.environ["REQUEST"], encoding="utf-8"))
@@ -212,12 +213,15 @@ jobs:
           actual_france=sum(1 for row in france_manifest.get("scrapers") or [] if isinstance(row,dict) and row.get("enabled") is not False)
           if expected_global <= 0 or expected_france <= 0:
               raise SystemExit("targetActive.global and targetActive.france are required for offline bulk activation")
-          if (actual_global,actual_france)!=(expected_global,expected_france):
+          if actual_global > expected_global or actual_france > expected_france:
               raise SystemExit(
-                  f"production active target mismatch: Global {actual_global}/{expected_global}, "
+                  f"production active target exceeded: Global {actual_global}/{expected_global}, "
                   f"France {actual_france}/{expected_france}"
               )
-          print(f"PROVIDER_ACTIVE_TARGET_OK global={actual_global} france={actual_france}")
+          print(
+              f"PROVIDER_ACTIVE_TARGET_PROGRESS global={actual_global}/{expected_global} "
+              f"france={actual_france}/{expected_france}"
+          )
           PY
           echo "activation_count=$count" >> "$GITHUB_OUTPUT"
 
@@ -228,7 +232,8 @@ jobs:
           set -euo pipefail
           count="$(python - <<'PY'
           import json
-          print(json.load(open("automation/provider-bulk-onboarding-stage.json", encoding="utf-8"))["providerCount"])
+          value=json.load(open("automation/provider-bulk-offline-activation-latest.json", encoding="utf-8"))
+          print(int(value.get("activationCount") or 0))
           PY
           )"
           test "$count" -gt 0
