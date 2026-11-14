@@ -131,6 +131,16 @@ def contract_ok(provider_id: str, path: Path) -> tuple[bool, list[str]]:
     return not missing, missing
 
 
+def canonical_catalog_scraper(row: dict[str, Any]) -> dict[str, Any]:
+    """Mirror the Node catalog canonicalizer for activation-time catalog writes."""
+    scraper = dict(row)
+    scraper["disabledPlatforms"] = []
+    semantic = scraper.pop("canonicalSupportedTypes", None)
+    if isinstance(semantic, list) and semantic:
+        scraper["supportedTypes"] = list(semantic)
+    return scraper
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description="Activate exact bulk bytes with offline Provider v3 proof only")
     ap.add_argument("--stage", type=Path, default=STAGE)
@@ -351,7 +361,7 @@ def main() -> int:
         # manifest_row comes from manifest.json, so explicitly advance the
         # catalog scraper to the exact activated row before any rerender.
         if isinstance(catalog_entry, dict):
-            catalog_entry["scraper"] = dict(manifest_row)
+            catalog_entry["scraper"] = canonical_catalog_scraper(manifest_row)
         patch.setdefault("manifest_overrides", {})["enabled"] = True
         notes = patch.setdefault("notes", [])
         offline_note = (
