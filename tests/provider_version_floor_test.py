@@ -8,7 +8,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
-from current_provider_scope import runtime_visible_provider_ids
+from current_provider_scope import projection_runtime_visible_provider_ids
 
 SCRIPTS = ROOT / "scripts"
 sys.path.insert(0, str(SCRIPTS))
@@ -23,7 +23,7 @@ spec.loader.exec_module(module)
 
 floors_payload = json.loads(FLOORS.read_text(encoding="utf-8"))
 floors = floors_payload.get("providers") or {}
-current_ids = runtime_visible_provider_ids()
+current_ids = projection_runtime_visible_provider_ids()
 assert current_ids, "current provider identity set must not be empty"
 missing_current = sorted(current_ids - set(floors))
 assert not missing_current, f"current providers missing version floors: {missing_current}"
@@ -48,5 +48,5 @@ assert not module.version_is_strictly_above_floor("1.0.69", "1.0.70")
 
 print(
     "provider version floor tests passed "
-    f"current={len(current_ids)} retained_floors={len(floors)}"
+    f"current_union={len(current_ids)} retained_floors={len(floors)}"
 )
