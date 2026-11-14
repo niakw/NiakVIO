@@ -52,6 +52,10 @@ assert probe.route_pattern("/title/movie/157336-interstellar",fixture)=="/title/
 assert probe.route_pattern("/api/streams/movie?token=secret&q=",fixture)==""
 assert probe.route_pattern("/",fixture)==""
 assert probe.route_pattern("/tv/1396?play=true&s=1&e=1", {"title":"Breaking Bad","tmdbId":"1396","mediaType":"tv","season":1,"episode":1}) == "/tv/{tmdbId}?play=true&s={season}&e={episode}"
+assert probe.route_pattern("/tv/291507?play=true&s=Interstellar&e=1", fixture) == ""
+assert probe.route_pattern("/movie/291507?q=Interstellar", fixture) == ""
+assert probe._hardcoded_content_id_mismatch("/tv/291507?play=true&s={query}", fixture) is True
+assert probe._hardcoded_content_id_mismatch("/movie/157336?play=true", fixture) is False
 assert probe.identity_route_candidate("/play?id=254630&type={media}&season={season}&episode={episode}") is False
 assert probe.identity_route_candidate("/tv/254630?play=true&s={season}&e={episode}") is False
 assert probe.identity_route_candidate("/api/push/subscribe") is False
