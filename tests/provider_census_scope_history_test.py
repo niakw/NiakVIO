@@ -39,7 +39,9 @@ with tempfile.TemporaryDirectory() as tmp:
     # from a stale status snapshot; this test is about status semantics, not the
     # current repository onboarding delta.
     previous_manifest = audit.MANIFEST
+    previous_france_only = audit.france_only_catalog_rows
     audit.MANIFEST = manifest_path
+    audit.france_only_catalog_rows = lambda **kwargs: []
     try:
         selected, scope = audit._scope_provider_filter("unresolved", status_path, [])
         assert scope == "unresolved"
@@ -52,6 +54,7 @@ with tempfile.TemporaryDirectory() as tmp:
         assert selected == {"green", "miss"} and scope == "explicit"
     finally:
         audit.MANIFEST = previous_manifest
+        audit.france_only_catalog_rows = previous_france_only
 
 # The proof search really spans the three durable sources, rather than only the
 # 32-row rotating lane used by the old quick census.
