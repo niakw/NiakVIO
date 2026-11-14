@@ -67,6 +67,18 @@ Sources principales :
 `providers/*.js` est une **sortie runtime adressée par contenu**, jamais une seed de reconstruction. Les bundles historiques/upstream servent uniquement de connaissance et de provenance.
 
 Les projections de production ont des scopes distincts. `manifest.json` reste l’autorité catalogue **Global** ; `provider_catalog.json` peut porter une identité `{general:false,vf:true}` qui n’existe que dans la projection France. `visible_provider_ids()` décrit le catalogue Global visible, tandis que `pending_provider_ids()` identifie depuis `PROVENANCE.json` les imports `bulk_onboarding_pending` non activés. `runtime_visible_provider_ids()` est strictement `visible - pending` : actifs et disabled-lifecycle restent dans l’autorité runtime/ledgers, mais le staging pending n’entre ni dans l’exécution, ni dans le census live, ni dans les floors historiques. Le lifecycle raisonne sur l’union Global + France-only cataloguée pour disabled/re-enable/archive, puis retire les pending avant de réconcilier static knowledge/materialization. Un pending reste sous `provider-disabled/` sans `disabledAt`/`purgeAfter` jusqu’à une transaction d’activation séparée et prouvée. Le lifecycle **ne doit jamais réinjecter une ligne France-only dans Global**. Les collisions d’identité Global/France-only sont fail-closed. `vf/manifest.json` et `vf-no-anime/manifest.json` restent des projections dérivées, jamais une deuxième autorité indépendante.
+### Projection Global partagée avec France
+
+Une identité Global peut appartenir simultanément à la projection France lorsqu'elle déclare explicitement `vf=true` ou une langue de contenu `fr*`. Cela reste **une seule identité provider** : le catalogue porte `{general:true,vf:true}`, `manifest.json` conserve la ligne Global et `vf/manifest.json` projette les mêmes bytes avec un chemin relatif `../...`. Le staging/minimizer doit synchroniser le filename content-addressed dans les deux projections. Une identité `{general:false,vf:true}` reste, elle, France-only et ne doit jamais être injectée dans Global.
+
+La capacité 60/60 est calculée sur les projections réelles, pas seulement sur le scope d'onboarding. Un nouveau Global partagé VF consomme donc une place et ses lanes dans **Global et France** avant la sélection des France-only. Les activations strictes et offline vérifient la capacité avant mutation ; aucun chemin ne doit compter un alias ou un second domaine du même provider comme une identité supplémentaire.
+
+### Publication versionnée et Route Discovery partitionné
+
+Toute première activation seed un floor de version provider `0.0.0`. Une identité déjà connue ne peut être réactivée qu'avec une version strictement supérieure à son floor retenu. Le registre couvre l'union runtime Global + France-only afin qu'une projection France ne contourne jamais la monotonie de version.
+
+Route Discovery est proof-partitioned jusque dans le sharding : chaque shard produit une preuve indépendante. Les artefacts disponibles sont fusionnés même si un shard manque ou dépasse son budget ; les candidats inactifs du shard absent restent différés avec une raison explicite et ne gagnent aucune preuve par défaut. Cette règle évite qu'un domaine lent annule les preuves acquises par des dizaines d'autres candidats. Le nombre de shards peut évoluer pour borner le temps par groupe sans modifier les critères de qualification.
+
 
 Le ProviderBase canonique porte `NIAKVIO_PROVIDER_BASE_OWNED_V3`.
 
