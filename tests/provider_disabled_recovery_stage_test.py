@@ -6,6 +6,7 @@ from pathlib import Path
 ROOT=Path(__file__).resolve().parents[1]
 script=ROOT/"scripts/build_disabled_provider_recovery_stage.py"
 workflow=(ROOT/".github/workflows/brain-disabled-recovery-lab.yml").read_text(encoding="utf-8")
+classifier=(ROOT/"scripts/classify_disabled_recovery_disposition.py").read_text(encoding="utf-8")
 assert "group: niakvio-brain-disabled-recovery-lab" in workflow
 assert "cancel-in-progress: true" in workflow
 
@@ -15,9 +16,11 @@ assert "--allow-disabled-explicit" in workflow
 assert "Synthesize disabled-provider guidance through Brain LLM" in workflow
 assert "NIAKVIO_BRAIN_LLM_GUIDANCE=$GITHUB_WORKSPACE/brain-disabled-recovery/brain-llm/guidance.json" in workflow
 assert "disabled recovery Brain routing did not select exactly one target" in workflow
-assert "Brain LLM abstained despite deterministic runtime error" in workflow
-assert "currentDisabledHealthHealthy" in workflow
-assert "transport_inconclusive_replay" in workflow
+assert "classify_disabled_recovery_disposition.py" in workflow
+assert "Brain LLM abstained despite deterministic runtime error" in classifier
+assert "currentDisabledHealthHealthy" in classifier
+assert "identity_inconclusive_replay" in classifier
+assert "transport_inconclusive_replay" in classifier
 assert "NIAKVIO_DISABLED_RECOVERY_RESIDENTIAL" in workflow
 observe_block = workflow.split("      - name: Observe disabled bytes without production authority\\n", 1)[1].split("      - name:", 1)[0]
 assert "TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}" in observe_block
@@ -32,11 +35,12 @@ assert "sudo tailscale set --exit-node=" in workflow
 assert "Restore residential exit for provider recovery replay" in workflow
 assert "FIELD_DISABLED_RECOVERY_RESIDENTIAL_RESTORED active=true" in workflow
 assert "--ephemeral-overrides" in workflow
-assert 'next_action="exact_playback_identity_replay"' in workflow
-assert 'next_action="bounded_learning_repair"' in workflow
-assert 'next_action="transport_inconclusive_replay"' in workflow
+assert 'next_action="exact_playback_identity_replay"' in classifier
+assert 'next_action="bounded_learning_repair"' in classifier
+assert 'next_action="identity_inconclusive_replay"' in classifier
+assert 'next_action="transport_inconclusive_replay"' in classifier
 assert "steps.brain_guidance.outputs.has_guidance == 'true'" in workflow
-assert "publicationAuthority" in workflow and "directMutationAuthority" in workflow
+assert "publicationAuthority" in classifier and "directMutationAuthority" in classifier
 assert "id-token: write" in workflow
 assert 'r.get("canonical_id")' in workflow
 assert "--ephemeral-overrides-output staging-disabled-recovery-reconstruction/provider-overrides.ephemeral.json" in workflow
