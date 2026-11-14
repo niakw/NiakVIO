@@ -742,10 +742,29 @@ def provider_model_route_kind(route: Any) -> str:
     return "ignore"
 
 
+def provider_route_has_fixed_content_identity(route: Any) -> bool:
+    """Reject reusable runtime routes pinned to one movie/TV/content identity.
+
+    A discovered example such as /movie/157336-interstellar is useful evidence
+    for route shape, but it is not a reusable execution plan. Persisted runtime
+    authority must bind the requested identity through a placeholder/binding.
+    """
+    text = str(route or "").strip()
+    if not text:
+        return False
+    return bool(re.search(
+        r"/(?:title|movie|movies|film|films|tv|series|show|watch|play|player|embed)/[0-9]{3,}(?:[/?#.-]|$)",
+        text,
+        re.I,
+    ))
+
+
 def provider_route_is_identity_aware(route: Any) -> bool:
     """Return whether a discovered route can consume the requested media identity."""
     text = str(route or "").strip()
     if not text:
+        return False
+    if provider_route_has_fixed_content_identity(text):
         return False
     lowered = text.casefold()
     if re.search(
