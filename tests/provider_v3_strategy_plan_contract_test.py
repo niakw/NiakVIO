@@ -83,6 +83,17 @@ def module_fix_id(script: str) -> str:
     return str(getattr(module, "MANAGED_FIX_ID", "") or "").strip().upper()
 
 
+def module_generic_reusable(script: str) -> bool:
+    path = (ROOT / script).resolve()
+    if ROOT not in path.parents or not path.is_file():
+        raise AssertionError(f"missing provider Lego: {script}")
+    spec = importlib.util.spec_from_file_location("plan_contract_generic_" + path.stem, path)
+    assert spec and spec.loader, script
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return bool(getattr(module, "GENERIC_REUSABLE", False))
+
+
 def run_child_test(filename: str) -> None:
     result = subprocess.run(
         [sys.executable, str(ROOT / "tests" / filename)],
@@ -267,10 +278,19 @@ def main() -> int:
         for script in legos:
             fix_id = module_fix_id(script)
             expected = f"PROVIDER.{provider_id.upper()}."
-            if not fix_id.startswith(expected):
+            generic_reusable = fix_id.startswith("PROVIDER.GENERIC.") and module_generic_reusable(script)
+            if not fix_id.startswith(expected) and not generic_reusable:
                 failures.append(
-                    f"{provider_id}: Lego {script} owns {fix_id!r}, expected prefix {expected!r}"
+                    f"{provider_id}: Lego {script} owns {fix_id!r}, expected prefix {expected!r} "
+                    "or an explicitly GENERIC_REUSABLE PROVIDER.GENERIC.* Lego"
                 )
+            if generic_reusable:
+                options = (patch.get("provider_lego_options") or {}).get(script) or {}
+                option_provider = cid(options.get("provider"))
+                if option_provider != provider_id:
+                    failures.append(
+                        f"{provider_id}: generic Lego {script} provider binding={option_provider!r}"
+                    )
 
         recipe = isinstance(patch.get("api_recipe"), dict) and bool(patch.get("api_recipe"))
         recipe = recipe or (isinstance(model.get("apiRecipe"), dict) and bool(model.get("apiRecipe")))
