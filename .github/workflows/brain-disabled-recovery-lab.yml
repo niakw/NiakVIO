@@ -145,6 +145,17 @@ jobs:
           node scripts/health_check.mjs --deep
           test -s brain-disabled-recovery/health/health-results.json
 
+      - name: Clear residential exit before Brain model bootstrap
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ "${NIAKVIO_DISABLED_RECOVERY_RESIDENTIAL:-0}" = "1" ]; then
+            sudo tailscale set --exit-node=
+            echo "FIELD_DISABLED_RECOVERY_RESIDENTIAL_BOOTSTRAP isolated=true"
+          else
+            echo "FIELD_DISABLED_RECOVERY_RESIDENTIAL_BOOTSTRAP isolated=false"
+          fi
+
       - name: Build clean Brain reconstruction stage
         shell: bash
         env:
@@ -256,6 +267,23 @@ jobs:
           tail -80 brain-disabled-recovery/brain-llm/llama-server.log || true
           echo "FIELD_DISABLED_RECOVERY_LLM_SERVER available=false" >&2
           exit 1
+
+      - name: Restore residential exit for provider recovery replay
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ "${NIAKVIO_DISABLED_RECOVERY_RESIDENTIAL:-0}" = "1" ]; then
+            for attempt in 1 2 3 4 5; do
+              if sudo tailscale set --exit-node="$TS_EXIT_NODE" --exit-node-allow-lan-access=false >/dev/null 2>&1; then
+                echo "FIELD_DISABLED_RECOVERY_RESIDENTIAL_RESTORED active=true"
+                exit 0
+              fi
+              sleep "$((attempt * 2))"
+            done
+            echo "FIELD_DISABLED_RECOVERY_RESIDENTIAL_RESTORED active=false" >&2
+            exit 1
+          fi
+          echo "FIELD_DISABLED_RECOVERY_RESIDENTIAL_RESTORED active=false skipped=true"
 
       - id: brain_guidance
         name: Synthesize disabled-provider guidance through Brain LLM
