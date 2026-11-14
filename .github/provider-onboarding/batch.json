@@ -1,5 +1,5 @@
 {
-  "requestVersion": 13,
+  "requestVersion": 14,
   "source": "NiakVIO-GLOBAL-FINAL-STRICT-TOP20-2026-09-11(5).xlsx",
   "activationPolicy": "bulk_offline_contract_live_unverified",
   "allowReplaceExisting": true,
@@ -1161,8 +1161,8 @@
       "inventory_score": 83
     },
     {
-      "id": "coflix",
-      "name": "Coflix",
+      "id": "kordoz",
+      "name": "Kordoz / Limdav",
       "scope": "france",
       "types": [
         "movie",
@@ -1177,15 +1177,15 @@
         "m3u8"
       ],
       "strategy": "mixed_embed_resolver",
-      "direct": "https://coflix.red/",
-      "hub": "https://coflix.domains/",
+      "direct": "https://limdav.com",
       "replace_existing": true,
-      "inventory_rank": 5,
-      "inventory_score": 95
+      "inventory_rank": 19,
+      "inventory_score": 83,
+      "domain_evidence": "https://kordoz.com/"
     },
     {
-      "id": "vostfree",
-      "name": "VostFree",
+      "id": "anisama",
+      "name": "Anisama",
       "scope": "france",
       "types": [
         "anime"
@@ -1198,10 +1198,10 @@
         "m3u8"
       ],
       "strategy": "mixed_embed_resolver",
-      "direct": "https://vostfree.ws/",
-      "replace_existing": true,
-      "inventory_rank": 31,
-      "inventory_score": 76
+      "direct": "https://anisama.fr/",
+      "replace_existing": false,
+      "external_replacement": true,
+      "domain_evidence": "https://anisama.fr/"
     },
     {
       "id": "dessinanime",
