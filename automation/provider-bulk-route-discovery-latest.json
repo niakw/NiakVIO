@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "requestVersion": 33,
+  "requestVersion": 36,
   "source": "NiakVIO-GLOBAL-FINAL-STRICT-TOP20-2026-09-11(5).xlsx",
   "transportProfiles": [
     "residential-exit"
@@ -8,31 +8,31 @@
   "shardArtifactCount": 16,
   "expectedShardCount": 16,
   "completeShardSet": true,
-  "candidateCount": 91,
-  "qualifiedCount": 22,
-  "selectedCount": 22,
+  "candidateCount": 69,
+  "qualifiedCount": 4,
+  "selectedCount": 4,
   "standbyQualifiedCount": 0,
-  "deferredCount": 69,
+  "deferredCount": 65,
   "qualifiedScopes": {
-    "observedGlobal": 18,
-    "observedFrance": 4,
-    "selectedGlobal": 18,
-    "selectedGlobalSharedToFrance": 1,
-    "selectedFranceOnly": 4,
-    "selectedFrance": 5
+    "observedGlobal": 2,
+    "observedFrance": 2,
+    "selectedGlobal": 2,
+    "selectedGlobalSharedToFrance": 0,
+    "selectedFranceOnly": 2,
+    "selectedFrance": 2
   },
   "currentActiveBeforeWave": {
-    "global": 27,
-    "france": 30,
+    "global": 44,
+    "france": 36,
     "globalLanes": {
-      "movie": 22,
-      "tv": 21,
-      "anime": 23
+      "movie": 36,
+      "tv": 32,
+      "anime": 32
     },
     "franceLanes": {
-      "movie": 18,
-      "tv": 17,
-      "anime": 21
+      "movie": 23,
+      "tv": 22,
+      "anime": 24
     }
   },
   "providers": [
@@ -93,23 +93,6 @@
       "reason": "provider_probe_budget_exhausted"
     },
     {
-      "provider": "moviebite",
-      "scope": "global",
-      "direct": "https://moviebite.org",
-      "transport": "residential-exit",
-      "probeAttempted": true,
-      "probeReachedSite": true,
-      "probeReturnCode": 0,
-      "probeBudgetExhausted": false,
-      "routePatterns": [
-        "/search/{slug}",
-        "/recherche/{slug}"
-      ],
-      "routeCount": 2,
-      "qualified": true,
-      "reason": "observed_identity_executable_routes"
-    },
-    {
       "provider": "nomorflix",
       "scope": "global",
       "direct": "https://nomorflix.cc",
@@ -138,37 +121,9 @@
       "reason": "provider_probe_budget_exhausted"
     },
     {
-      "provider": "frenchstream",
-      "scope": "france",
-      "direct": "https://fs16.lol/",
-      "transport": "residential-exit",
-      "probeAttempted": true,
-      "probeReachedSite": true,
-      "probeReturnCode": 0,
-      "probeBudgetExhausted": true,
-      "routePatterns": [],
-      "routeCount": 0,
-      "qualified": false,
-      "reason": "provider_probe_budget_exhausted"
-    },
-    {
       "provider": "dessinanime",
       "scope": "france",
       "direct": "https://dessinanime.net/",
-      "transport": "residential-exit",
-      "probeAttempted": true,
-      "probeReachedSite": true,
-      "probeReturnCode": 0,
-      "probeBudgetExhausted": true,
-      "routePatterns": [],
-      "routeCount": 0,
-      "qualified": false,
-      "reason": "provider_probe_budget_exhausted"
-    },
-    {
-      "provider": "moiflix",
-      "scope": "france",
-      "direct": "https://moiflix.fans/",
       "transport": "residential-exit",
       "probeAttempted": true,
       "probeReachedSite": true,
@@ -224,20 +179,6 @@
       "reason": "provider_probe_budget_exhausted"
     },
     {
-      "provider": "overlook",
-      "scope": "global",
-      "direct": "https://overlook.cx",
-      "transport": "residential-exit",
-      "probeAttempted": true,
-      "probeReachedSite": true,
-      "probeReturnCode": 0,
-      "probeBudgetExhausted": true,
-      "routePatterns": [],
-      "routeCount": 0,
-      "qualified": false,
-      "reason": "provider_probe_budget_exhausted"
-    },
-    {
       "provider": "vidsrc",
       "scope": "global",
       "direct": "https://vidsrc.sh/",
@@ -278,23 +219,6 @@
       "routeCount": 0,
       "qualified": false,
       "reason": "provider_probe_budget_exhausted"
-    },
-    {
-      "provider": "hexa",
-      "scope": "global",
-      "direct": "https://hexa.su",
-      "transport": "residential-exit",
-      "probeAttempted": true,
-      "probeReachedSite": true,
-      "probeReturnCode": 0,
-      "probeBudgetExhausted": false,
-      "routePatterns": [
-        "/search/{slug}",
-        "/recherche/{slug}"
-      ],
-      "routeCount": 2,
-      "qualified": true,
-      "reason": "observed_identity_executable_routes"
     },
     {
       "provider": "meowtv",
@@ -521,22 +445,6 @@
       "reason": "provider_probe_budget_exhausted"
     },
     {
-      "provider": "pstream",
-      "scope": "global",
-      "direct": "https://pstream.cfd/",
-      "transport": "residential-exit",
-      "probeAttempted": true,
-      "probeReachedSite": true,
-      "probeReturnCode": 0,
-      "probeBudgetExhausted": false,
-      "routePatterns": [
-        "/media/anilist-anime-113415-{slug}"
-      ],
-      "routeCount": 1,
-      "qualified": true,
-      "reason": "observed_identity_executable_routes"
-    },
-    {
       "provider": "streamaggregator",
       "scope": "global",
       "direct": "https://streamaggregator.in",
@@ -621,23 +529,6 @@
       "reason": "provider_probe_budget_exhausted"
     },
     {
-      "provider": "french-anime",
-      "scope": "france",
-      "direct": "https://french-anime.com",
-      "transport": "residential-exit",
-      "probeAttempted": true,
-      "probeReachedSite": true,
-      "probeReturnCode": 0,
-      "probeBudgetExhausted": false,
-      "routePatterns": [
-        "/?s={query}",
-        "/?q={query}"
-      ],
-      "routeCount": 2,
-      "qualified": true,
-      "reason": "observed_identity_executable_routes"
-    },
-    {
       "provider": "cineflux",
       "scope": "france",
       "direct": "https://cineflux.wiki/",
@@ -673,11 +564,11 @@
       "probeAttempted": true,
       "probeReachedSite": false,
       "probeReturnCode": 0,
-      "probeBudgetExhausted": false,
+      "probeBudgetExhausted": true,
       "routePatterns": [],
       "routeCount": 0,
       "qualified": false,
-      "reason": "network_or_site_unreached"
+      "reason": "provider_probe_budget_exhausted"
     },
     {
       "provider": "cineplateforme",
@@ -720,22 +611,6 @@
       "routeCount": 0,
       "qualified": false,
       "reason": "provider_probe_budget_exhausted"
-    },
-    {
-      "provider": "voirserie",
-      "scope": "france",
-      "direct": "https://www.voirserie.org/",
-      "transport": "residential-exit",
-      "probeAttempted": true,
-      "probeReachedSite": true,
-      "probeReturnCode": 0,
-      "probeBudgetExhausted": false,
-      "routePatterns": [
-        "/recherche?q={query}"
-      ],
-      "routeCount": 1,
-      "qualified": true,
-      "reason": "observed_identity_executable_routes"
     },
     {
       "provider": "vombam",
@@ -911,64 +786,6 @@
       "reason": "provider_probe_budget_exhausted"
     },
     {
-      "provider": "rivestream-app",
-      "scope": "global",
-      "direct": "https://www.rivestream.app",
-      "transport": "residential-exit",
-      "probeAttempted": true,
-      "probeReachedSite": true,
-      "probeReturnCode": 0,
-      "probeBudgetExhausted": true,
-      "routePatterns": [
-        "/search/multi?query={query}",
-        "/search/keyword?query={query}",
-        "/search/movie?query={query}",
-        "/search/tv?query={query}",
-        "/search/collection?query={query}",
-        "/api/search?query={query}",
-        "/api/search-with-title?query={query}"
-      ],
-      "routeCount": 7,
-      "qualified": true,
-      "reason": "observed_identity_executable_routes"
-    },
-    {
-      "provider": "rivestream-ru",
-      "scope": "global",
-      "direct": "https://rivestream.ru",
-      "transport": "residential-exit",
-      "probeAttempted": true,
-      "probeReachedSite": true,
-      "probeReturnCode": 0,
-      "probeBudgetExhausted": true,
-      "routePatterns": [
-        "/search/multi?query={query}",
-        "/search/keyword?query={query}",
-        "/search/movie?query={query}",
-        "/search/tv?query={query}",
-        "/search/collection?query={query}",
-        "/api/search?query={query}",
-        "/api/search-with-title?query={query}"
-      ],
-      "routeCount": 7,
-      "qualified": true,
-      "reason": "observed_identity_executable_routes"
-    },
-    {
-      "provider": "stigstream",
-      "scope": "france",
-      "direct": "https://stigstream.ru",
-      "transport": "residential-exit",
-      "probeAttempted": true,
-      "probeReachedSite": true,
-      "probeReturnCode": 0,
-      "probeBudgetExhausted": true,
-      "routePatterns": [],
-      "routeCount": 0,
-      "qualified": false,
-      "reason": "provider_probe_budget_exhausted"
-    },
-    {
       "provider": "wowfilms0626",
       "scope": "france",
       "direct": "https://wowfilms0626c.site",
@@ -1064,23 +881,6 @@
       "reason": "network_or_site_unreached"
     },
     {
-      "provider": "ihavenotv",
-      "scope": "global",
-      "direct": "https://ihavenotv.com",
-      "transport": "residential-exit",
-      "probeAttempted": true,
-      "probeReachedSite": true,
-      "probeReturnCode": 0,
-      "probeBudgetExhausted": false,
-      "routePatterns": [
-        "/?s={query}",
-        "/?q={query}"
-      ],
-      "routeCount": 2,
-      "qualified": true,
-      "reason": "observed_identity_executable_routes"
-    },
-    {
       "provider": "kickassanime",
       "scope": "global",
       "direct": "https://kaa.lt",
@@ -1095,22 +895,6 @@
       "reason": "provider_probe_budget_exhausted"
     },
     {
-      "provider": "reanime-to",
-      "scope": "global",
-      "direct": "https://reanime.to",
-      "transport": "residential-exit",
-      "probeAttempted": true,
-      "probeReachedSite": true,
-      "probeReturnCode": 0,
-      "probeBudgetExhausted": false,
-      "routePatterns": [
-        "/search?q={query}"
-      ],
-      "routeCount": 1,
-      "qualified": true,
-      "reason": "observed_identity_executable_routes"
-    },
-    {
       "provider": "onetouch-tv",
       "scope": "global",
       "direct": "https://onetouchtv.xyz",
@@ -1123,22 +907,6 @@
       "routeCount": 0,
       "qualified": false,
       "reason": "provider_probe_budget_exhausted"
-    },
-    {
-      "provider": "flixhq",
-      "scope": "global",
-      "direct": "https://flixhq.vc/",
-      "transport": "residential-exit",
-      "probeAttempted": true,
-      "probeReachedSite": true,
-      "probeReturnCode": 0,
-      "probeBudgetExhausted": false,
-      "routePatterns": [
-        "/search?keyword={query}"
-      ],
-      "routeCount": 1,
-      "qualified": true,
-      "reason": "observed_identity_executable_routes"
     },
     {
       "provider": "m4ufree",
@@ -1197,55 +965,6 @@
       "reason": "provider_probe_budget_exhausted"
     },
     {
-      "provider": "topcartoons",
-      "scope": "global",
-      "direct": "https://www.topcartoons.tv",
-      "transport": "residential-exit",
-      "probeAttempted": true,
-      "probeReachedSite": true,
-      "probeReturnCode": 0,
-      "probeBudgetExhausted": false,
-      "routePatterns": [
-        "/?s={query}"
-      ],
-      "routeCount": 1,
-      "qualified": true,
-      "reason": "observed_identity_executable_routes"
-    },
-    {
-      "provider": "videasy",
-      "scope": "global",
-      "transport": "retained-v3-rag",
-      "probeAttempted": false,
-      "probeReachedSite": false,
-      "routePatterns": [
-        "/seed?mediaId={id}"
-      ],
-      "routeCount": 1,
-      "qualified": true,
-      "reason": "retained_identity_route_plan_host_matched",
-      "retainedRouteSources": [
-        "provider-old/providers/videasy--nuvio--52945d975aea9f83.js"
-      ],
-      "liveProof": false
-    },
-    {
-      "provider": "vidlink",
-      "scope": "global",
-      "direct": "https://vidlink.pro",
-      "transport": "residential-exit",
-      "probeAttempted": true,
-      "probeReachedSite": true,
-      "probeReturnCode": 0,
-      "probeBudgetExhausted": true,
-      "routePatterns": [
-        "/movie/{tmdbId}"
-      ],
-      "routeCount": 1,
-      "qualified": true,
-      "reason": "observed_identity_executable_routes"
-    },
-    {
       "provider": "vidnest",
       "scope": "global",
       "direct": "https://vidnest.fun",
@@ -1267,11 +986,11 @@
       "probeAttempted": true,
       "probeReachedSite": true,
       "probeReturnCode": 0,
-      "probeBudgetExhausted": true,
+      "probeBudgetExhausted": false,
       "routePatterns": [],
       "routeCount": 0,
       "qualified": false,
-      "reason": "provider_probe_budget_exhausted"
+      "reason": "reachable_no_identity_route_observed"
     },
     {
       "provider": "anilight",
@@ -1288,71 +1007,6 @@
       "reason": "reachable_no_identity_route_observed"
     },
     {
-      "provider": "documentary-area",
-      "scope": "global",
-      "direct": "https://www.documentarymania.com",
-      "transport": "residential-exit",
-      "probeAttempted": true,
-      "probeReachedSite": true,
-      "probeReturnCode": 0,
-      "probeBudgetExhausted": false,
-      "routePatterns": [
-        "/results.php?search={query}"
-      ],
-      "routeCount": 1,
-      "qualified": true,
-      "reason": "observed_identity_executable_routes"
-    },
-    {
-      "provider": "fsharetv",
-      "scope": "global",
-      "direct": "https://fsharetv.co/",
-      "transport": "residential-exit",
-      "probeAttempted": true,
-      "probeReachedSite": true,
-      "probeReturnCode": 0,
-      "probeBudgetExhausted": false,
-      "routePatterns": [
-        "/movie/{slug}-episode-1-tt0816692"
-      ],
-      "routeCount": 1,
-      "qualified": true,
-      "reason": "observed_identity_executable_routes"
-    },
-    {
-      "provider": "aniflix-uno",
-      "scope": "global",
-      "direct": "https://aniflix.uno",
-      "transport": "residential-exit",
-      "probeAttempted": true,
-      "probeReachedSite": true,
-      "probeReturnCode": 0,
-      "probeBudgetExhausted": true,
-      "routePatterns": [
-        "/?query={query}"
-      ],
-      "routeCount": 1,
-      "qualified": true,
-      "reason": "observed_identity_executable_routes"
-    },
-    {
-      "provider": "anidb",
-      "scope": "global",
-      "direct": "https://anidb.pics",
-      "transport": "residential-exit",
-      "probeAttempted": true,
-      "probeReachedSite": true,
-      "probeReturnCode": 0,
-      "probeBudgetExhausted": false,
-      "routePatterns": [
-        "/watch/${slug}",
-        "/?search={query}"
-      ],
-      "routeCount": 2,
-      "qualified": true,
-      "reason": "observed_identity_executable_routes"
-    },
-    {
       "provider": "animejlprovider",
       "scope": "global",
       "direct": "https://www.anime-jl.net",
@@ -1363,22 +1017,6 @@
       "probeBudgetExhausted": false,
       "routePatterns": [
         "/animes?q={query}"
-      ],
-      "routeCount": 1,
-      "qualified": true,
-      "reason": "observed_identity_executable_routes"
-    },
-    {
-      "provider": "rarefilmm",
-      "scope": "global",
-      "direct": "https://rarefilmm.com/",
-      "transport": "residential-exit",
-      "probeAttempted": true,
-      "probeReachedSite": true,
-      "probeReturnCode": 0,
-      "probeBudgetExhausted": false,
-      "routePatterns": [
-        "/?s={query}"
       ],
       "routeCount": 1,
       "qualified": true,

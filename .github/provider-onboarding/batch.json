@@ -1,11 +1,11 @@
 {
-  "requestVersion": 36,
+  "requestVersion": 37,
   "source": "NiakVIO-GLOBAL-FINAL-STRICT-TOP20-2026-09-11(5).xlsx",
   "activationPolicy": "bulk_offline_contract_live_unverified",
   "allowReplaceExisting": true,
   "targetActive": {
-    "global": 44,
-    "france": 36
+    "global": 46,
+    "france": 38
   },
   "validationPolicy": {
     "githubNetworkFailuresAreInconclusive": true,
@@ -19,56 +19,94 @@
   "policy": "Reach exactly 60 active Global and 60 active France. GitHub/WAF network rejection is inconclusive; exact-byte offline activation stays live-unverified. Explicit current-domain migrations/shutdowns are applied before publication.",
   "providers": [
     {
-      "id": "rivestream-app",
-      "name": "Rive / RiveStream",
+      "id": "watchott",
+      "name": "Watchott",
       "scope": "global",
-      "direct": "https://www.rivestream.app",
+      "direct": "https://watchott.org",
       "types": [
         "movie",
         "tv",
         "anime"
       ],
-      "inventory_rank": 4,
-      "inventory_score": 93,
-      "grade": "A",
+      "inventory_rank": 67,
+      "inventory_score": 83,
+      "grade": "A-",
       "workbookSheet": "Global",
+      "routeDiscoveryLastReason": "probe_shard_missing_or_timeout",
       "routes": [
-        "/search/multi?query={query}",
-        "/search/keyword?query={query}",
-        "/search/movie?query={query}",
-        "/search/tv?query={query}",
-        "/search/collection?query={query}",
-        "/api/search?query={query}",
-        "/api/search-with-title?query={query}"
+        "/movie/{tmdbId}-{slug}",
+        "/tv/212171-{slug}-ella",
+        "/movie/529107-inside-{slug}",
+        "/tv/198237-{slug}-wanderer",
+        "/movie/649745-{slug}-wandering",
+        "/movie/398188-{slug}-wars",
+        "/movie/287954-lolita-from-{slug}-space",
+        "/movie/1786250-short-cuts-{slug}",
+        "/movie/336592-the-science-of-{slug}",
+        "/movie/1282990-{slug}-interference",
+        "/movie/1443305-container-{slug}",
+        "/movie/1391726-{slug}-stella",
+        "/movie/1450827-{slug}-political-prisoner",
+        "/movie/1642987-primus-{slug}-drum-derby",
+        "/movie/301959-{slug}-nolan-s-odyssey",
+        "/movie/716603-only-{slug}-pinball-lives-forever",
+        "/movie/460616-{slug}-civil-war-shadows-of-the-empire",
+        "/movie/660698-faster-than-light-the-dream-of-{slug}-flight",
+        "/movie/552531-the-prom-goer-s-{slug}-excursion",
+        "/movie/763179-cosmic-journey-the-voyager-{slug}-mission-and-message",
+        "/tv/{tmdbId}-{slug}",
+        "/movie/559969-el-camino-a-{slug}-movie",
+        "/tv/337563-{slug}-original-minisodes",
+        "/tv/232533-{slug}-fortune-teller"
       ],
       "routeDiscoveryEvidence": {
         "transport": "residential-exit",
         "reason": "observed_identity_executable_routes",
-        "routeCount": 7
+        "routeCount": 24
       }
     },
     {
-      "id": "overlook",
-      "name": "Overlook",
+      "id": "animejlprovider",
+      "name": "AnimeJL",
       "scope": "global",
+      "direct": "https://www.anime-jl.net",
       "types": [
-        "movie",
-        "tv",
         "anime"
       ],
+      "inventory_rank": 213,
+      "inventory_score": 60,
+      "grade": "B",
+      "workbookSheet": "Global",
+      "routeDiscoveryLastReason": "probe_shard_missing_or_timeout",
+      "routes": [
+        "/animes?q={query}"
+      ],
+      "routeDiscoveryEvidence": {
+        "transport": "residential-exit",
+        "reason": "observed_identity_executable_routes",
+        "routeCount": 1
+      }
+    },
+    {
+      "id": "webflix",
+      "name": "Webflix",
+      "scope": "france",
+      "types": [
+        "movie",
+        "tv"
+      ],
       "languages": [
-        "en"
+        "fr"
       ],
       "formats": [
         "mp4",
         "m3u8"
       ],
       "strategy": "mixed_embed_resolver",
-      "direct": "https://overlook.cx",
+      "direct": "https://webflix.art/",
       "replace_existing": false,
-      "inventory_rank": 7,
-      "inventory_score": 90,
-      "routeDiscoveryLastReason": "reachable_no_identity_route_observed",
+      "inventory_rank": 44,
+      "inventory_score": 68,
       "routes": [
         "/api/search?q={query}"
       ],
@@ -76,473 +114,12 @@
         "transport": "residential-exit",
         "reason": "observed_identity_executable_routes",
         "routeCount": 1
-      }
-    },
-    {
-      "id": "hexa",
-      "name": "Hexa",
-      "scope": "global",
-      "types": [
-        "movie",
-        "tv",
-        "anime"
-      ],
-      "languages": [
-        "en"
-      ],
-      "formats": [
-        "mp4",
-        "m3u8"
-      ],
-      "strategy": "mixed_embed_resolver",
-      "direct": "https://hexa.su",
-      "replace_existing": false,
-      "inventory_rank": 17,
-      "inventory_score": 88,
-      "routeDiscoveryLastReason": "reachable_no_identity_route_observed",
-      "routes": [
-        "/search/{slug}",
-        "/recherche/{slug}"
-      ],
-      "routeDiscoveryEvidence": {
-        "transport": "residential-exit",
-        "reason": "observed_identity_executable_routes",
-        "routeCount": 2
-      }
-    },
-    {
-      "id": "rivestream-ru",
-      "name": "Rive alt RU",
-      "scope": "global",
-      "direct": "https://rivestream.ru",
-      "types": [
-        "movie",
-        "tv",
-        "anime"
-      ],
-      "inventory_rank": 21,
-      "inventory_score": 88,
-      "grade": "A-",
-      "workbookSheet": "Global",
-      "routes": [
-        "/search/multi?query={query}",
-        "/search/keyword?query={query}",
-        "/search/movie?query={query}",
-        "/search/tv?query={query}",
-        "/search/collection?query={query}",
-        "/api/search?query={query}",
-        "/api/search-with-title?query={query}"
-      ],
-      "routeDiscoveryEvidence": {
-        "transport": "residential-exit",
-        "reason": "observed_identity_executable_routes",
-        "routeCount": 7
-      }
-    },
-    {
-      "id": "moviebite",
-      "name": "MovieBite",
-      "scope": "global",
-      "types": [
-        "movie",
-        "tv",
-        "anime"
-      ],
-      "languages": [
-        "en"
-      ],
-      "formats": [
-        "mp4",
-        "m3u8"
-      ],
-      "strategy": "mixed_embed_resolver",
-      "direct": "https://moviebite.org",
-      "replace_existing": false,
-      "inventory_rank": 49,
-      "inventory_score": 83,
-      "routes": [
-        "/search/{slug}",
-        "/recherche/{slug}"
-      ],
-      "routeDiscoveryEvidence": {
-        "transport": "residential-exit",
-        "reason": "observed_identity_executable_routes",
-        "routeCount": 2
       },
-      "routeDiscoveryLastReason": "reachable_no_identity_route_observed"
+      "routeDiscoveryLastReason": "probe_shard_missing_or_timeout"
     },
     {
-      "id": "pstream",
-      "name": "PStream",
-      "scope": "global",
-      "types": [
-        "movie",
-        "tv",
-        "anime"
-      ],
-      "languages": [
-        "en"
-      ],
-      "formats": [
-        "mp4",
-        "m3u8"
-      ],
-      "strategy": "mixed_embed_resolver",
-      "direct": "https://pstream.cfd/",
-      "replace_existing": false,
-      "inventory_rank": 59,
-      "inventory_score": 83,
-      "routeDiscoveryLastReason": "network_or_site_unreached",
-      "routes": [
-        "/media/anilist-anime-113415-{slug}"
-      ],
-      "routeDiscoveryEvidence": {
-        "transport": "residential-exit",
-        "reason": "observed_identity_executable_routes",
-        "routeCount": 1
-      }
-    },
-    {
-      "id": "ihavenotv",
-      "name": "IHaveNoTV",
-      "scope": "global",
-      "direct": "https://ihavenotv.com",
-      "types": [
-        "movie",
-        "tv"
-      ],
-      "inventory_rank": 69,
-      "inventory_score": 82,
-      "grade": "A-",
-      "workbookSheet": "Global",
-      "routes": [
-        "/?s={query}",
-        "/?q={query}"
-      ],
-      "routeDiscoveryEvidence": {
-        "transport": "residential-exit",
-        "reason": "observed_identity_executable_routes",
-        "routeCount": 2
-      }
-    },
-    {
-      "id": "reanime-to",
-      "name": "Re:ANIME",
-      "scope": "global",
-      "direct": "https://reanime.to",
-      "types": [
-        "anime"
-      ],
-      "inventory_rank": 71,
-      "inventory_score": 82,
-      "grade": "A-",
-      "workbookSheet": "Global",
-      "routes": [
-        "/search?q={query}"
-      ],
-      "routeDiscoveryEvidence": {
-        "transport": "residential-exit",
-        "reason": "observed_identity_executable_routes",
-        "routeCount": 1
-      }
-    },
-    {
-      "id": "flixhq",
-      "name": "FlixHQ",
-      "scope": "global",
-      "direct": "https://flixhq.vc/",
-      "types": [
-        "movie",
-        "tv"
-      ],
-      "inventory_rank": 81,
-      "inventory_score": 78,
-      "grade": "B+",
-      "workbookSheet": "Global",
-      "routes": [
-        "/search?keyword={query}"
-      ],
-      "routeDiscoveryEvidence": {
-        "transport": "residential-exit",
-        "reason": "observed_identity_executable_routes",
-        "routeCount": 1
-      }
-    },
-    {
-      "id": "topcartoons",
-      "name": "TopCartoons",
-      "scope": "global",
-      "direct": "https://www.topcartoons.tv",
-      "types": [
-        "movie",
-        "tv"
-      ],
-      "inventory_rank": 96,
-      "inventory_score": 73,
-      "grade": "B",
-      "workbookSheet": "Global",
-      "routes": [
-        "/?s={query}"
-      ],
-      "routeDiscoveryEvidence": {
-        "transport": "residential-exit",
-        "reason": "observed_identity_executable_routes",
-        "routeCount": 1
-      }
-    },
-    {
-      "id": "videasy",
-      "name": "VidEasy",
-      "scope": "global",
-      "direct": "https://www.vidking.net",
-      "types": [
-        "movie",
-        "tv"
-      ],
-      "inventory_rank": 97,
-      "inventory_score": 73,
-      "grade": "B",
-      "workbookSheet": "Global",
-      "languages": [
-        "en",
-        "de",
-        "it",
-        "fr",
-        "hi",
-        "es",
-        "pt"
-      ],
-      "vf": true,
-      "metadataSource": "upstream-lkg/manifests/yoru-2b8f1aaaf1f3dd86.json",
-      "metadataNote": "Pinned Yoru manifest declares French among VidEasy content languages; Global identity should also project to VF.",
-      "routes": [
-        "/seed?mediaId={id}"
-      ],
-      "routeDiscoveryEvidence": {
-        "transport": "retained-v3-rag",
-        "reason": "retained_identity_route_plan_host_matched",
-        "routeCount": 1
-      }
-    },
-    {
-      "id": "vidlink",
-      "name": "VidLink",
-      "scope": "global",
-      "direct": "https://vidlink.pro",
-      "types": [
-        "movie",
-        "tv"
-      ],
-      "inventory_rank": 99,
-      "inventory_score": 73,
-      "grade": "B",
-      "workbookSheet": "Global",
-      "routes": [
-        "/movie/{tmdbId}",
-        "/tv/{tmdbId}/{season}/{episode}"
-      ],
-      "routeDiscoveryEvidence": {
-        "transport": "residential-exit",
-        "reason": "observed_identity_executable_routes",
-        "routeCount": 2
-      }
-    },
-    {
-      "id": "documentary-area",
-      "name": "Documentary Area",
-      "scope": "global",
-      "direct": "https://www.documentarymania.com",
-      "types": [
-        "movie"
-      ],
-      "inventory_rank": 115,
-      "inventory_score": 67,
-      "grade": "B",
-      "workbookSheet": "Global",
-      "routes": [
-        "/results.php?search={query}"
-      ],
-      "routeDiscoveryEvidence": {
-        "transport": "residential-exit",
-        "reason": "observed_identity_executable_routes",
-        "routeCount": 1
-      }
-    },
-    {
-      "id": "fsharetv",
-      "name": "FshareTV",
-      "scope": "global",
-      "direct": "https://fsharetv.co/",
-      "types": [
-        "movie"
-      ],
-      "inventory_rank": 131,
-      "inventory_score": 66,
-      "grade": "B",
-      "workbookSheet": "Global",
-      "routes": [
-        "/movie/{slug}-episode-1-tt0816692"
-      ],
-      "routeDiscoveryEvidence": {
-        "transport": "residential-exit",
-        "reason": "observed_identity_executable_routes",
-        "routeCount": 1
-      }
-    },
-    {
-      "id": "aniflix-uno",
-      "name": "AniFlix",
-      "scope": "global",
-      "direct": "https://aniflix.uno",
-      "types": [
-        "anime"
-      ],
-      "inventory_rank": 170,
-      "inventory_score": 65,
-      "grade": "B",
-      "workbookSheet": "Global",
-      "routes": [
-        "/?s={query}",
-        "/?q={query}"
-      ],
-      "routeDiscoveryEvidence": {
-        "transport": "residential-exit",
-        "reason": "observed_identity_executable_routes",
-        "routeCount": 2
-      }
-    },
-    {
-      "id": "anidb",
-      "name": "AniDB",
-      "scope": "global",
-      "direct": "https://anidb.pics",
-      "types": [
-        "anime"
-      ],
-      "inventory_rank": 210,
-      "inventory_score": 61,
-      "grade": "B",
-      "workbookSheet": "Global",
-      "routes": [
-        "/watch/${slug}",
-        "/?search={query}"
-      ],
-      "routeDiscoveryEvidence": {
-        "transport": "residential-exit",
-        "reason": "observed_identity_executable_routes",
-        "routeCount": 2
-      }
-    },
-    {
-      "id": "rarefilmm",
-      "name": "Rarefilmm",
-      "scope": "global",
-      "direct": "https://rarefilmm.com/",
-      "types": [
-        "movie"
-      ],
-      "inventory_rank": 251,
-      "inventory_score": 54,
-      "grade": "B",
-      "workbookSheet": "Global",
-      "routes": [
-        "/?s={query}"
-      ],
-      "routeDiscoveryEvidence": {
-        "transport": "residential-exit",
-        "reason": "observed_identity_executable_routes",
-        "routeCount": 1
-      }
-    },
-    {
-      "id": "frenchstream",
-      "name": "French-stream",
-      "scope": "france",
-      "types": [
-        "movie",
-        "tv",
-        "anime"
-      ],
-      "languages": [
-        "fr"
-      ],
-      "formats": [
-        "mp4",
-        "m3u8"
-      ],
-      "strategy": "mixed_embed_resolver",
-      "direct": "https://fs16.lol/",
-      "replace_existing": false,
-      "inventory_rank": 1,
-      "inventory_score": 103,
-      "routes": [
-        "/search/{slug}",
-        "/recherche/{slug}"
-      ],
-      "routeDiscoveryEvidence": {
-        "transport": "residential-exit",
-        "reason": "observed_identity_executable_routes",
-        "routeCount": 2
-      },
-      "routeDiscoveryLastReason": "reachable_no_identity_route_observed"
-    },
-    {
-      "id": "stigstream",
-      "name": "Stigstream",
-      "scope": "france",
-      "direct": "https://stigstream.ru",
-      "types": [
-        "movie",
-        "tv",
-        "anime"
-      ],
-      "inventory_rank": 23,
-      "inventory_score": 83,
-      "grade": "A-",
-      "workbookSheet": "France",
-      "routes": [
-        "/tv/{tmdbId}",
-        "/watch/{tmdbId}"
-      ],
-      "routeDiscoveryEvidence": {
-        "transport": "residential-exit",
-        "reason": "observed_identity_executable_routes",
-        "routeCount": 2
-      }
-    },
-    {
-      "id": "french-anime",
-      "name": "French Anime",
-      "scope": "france",
-      "types": [
-        "anime"
-      ],
-      "languages": [
-        "fr"
-      ],
-      "formats": [
-        "mp4",
-        "m3u8"
-      ],
-      "strategy": "mixed_embed_resolver",
-      "direct": "https://french-anime.com",
-      "replace_existing": false,
-      "inventory_rank": 28,
-      "inventory_score": 78,
-      "routeDiscoveryLastReason": "network_or_site_unreached",
-      "routes": [
-        "/?s={query}",
-        "/?q={query}"
-      ],
-      "routeDiscoveryEvidence": {
-        "transport": "residential-exit",
-        "reason": "observed_identity_executable_routes",
-        "routeCount": 2
-      }
-    },
-    {
-      "id": "moiflix",
-      "name": "Moiflix",
+      "id": "zone-telechargement",
+      "name": "Zone-Téléchargement",
       "scope": "france",
       "types": [
         "movie",
@@ -556,48 +133,21 @@
         "m3u8"
       ],
       "strategy": "mixed_embed_resolver",
-      "direct": "https://moiflix.fans/",
+      "direct": "https://www.zone-telechargement.rentals/",
       "replace_existing": false,
-      "inventory_rank": 40,
-      "inventory_score": 68,
-      "routes": [
-        "/search/{slug}"
-      ],
-      "routeDiscoveryEvidence": {
-        "transport": "residential-exit",
-        "reason": "observed_identity_executable_routes",
-        "routeCount": 1
-      },
-      "routeDiscoveryLastReason": "reachable_no_identity_route_observed"
-    },
-    {
-      "id": "voirserie",
-      "name": "VoirSerie",
-      "scope": "france",
-      "types": [
-        "movie",
-        "tv"
-      ],
-      "languages": [
-        "fr"
-      ],
-      "formats": [
-        "mp4",
-        "m3u8"
-      ],
-      "strategy": "mixed_embed_resolver",
-      "direct": "https://www.voirserie.org/",
-      "replace_existing": false,
-      "inventory_rank": 61,
+      "inventory_rank": 66,
       "inventory_score": 64,
-      "routeDiscoveryLastReason": "network_or_site_unreached",
+      "routeDiscoveryLastReason": "probe_shard_missing_or_timeout",
       "routes": [
-        "/recherche?q={query}"
+        "/?search={query}",
+        "/?p=films&search={query}",
+        "/?s={query}&search={query}",
+        "/?p=404&search={query}"
       ],
       "routeDiscoveryEvidence": {
         "transport": "residential-exit",
         "reason": "observed_identity_executable_routes",
-        "routeCount": 1
+        "routeCount": 4
       }
     }
   ],
@@ -633,7 +183,7 @@
         "reason": "existing_identity_executable_route_plan",
         "routeCount": 1
       },
-      "routeDiscoveryLastReason": "reachable_no_identity_route_observed"
+      "routeDiscoveryLastReason": "provider_probe_budget_exhausted"
     },
     {
       "id": "openflix",
@@ -664,7 +214,7 @@
         "reason": "existing_identity_executable_route_plan",
         "routeCount": 1
       },
-      "routeDiscoveryLastReason": "reachable_no_identity_route_observed"
+      "routeDiscoveryLastReason": "provider_probe_budget_exhausted"
     },
     {
       "id": "animeo",
@@ -724,7 +274,7 @@
         "reason": "observed_executable_routes",
         "routeCount": 1
       },
-      "routeDiscoveryLastReason": "probe_shard_missing_or_timeout"
+      "routeDiscoveryLastReason": "provider_probe_budget_exhausted"
     },
     {
       "id": "nomorflix",
@@ -755,7 +305,7 @@
         "reason": "observed_executable_routes",
         "routeCount": 1
       },
-      "routeDiscoveryLastReason": "reachable_no_identity_route_observed"
+      "routeDiscoveryLastReason": "provider_probe_budget_exhausted"
     },
     {
       "id": "svstream",
@@ -786,7 +336,7 @@
         "reason": "observed_executable_routes",
         "routeCount": 1
       },
-      "routeDiscoveryLastReason": "reachable_no_identity_route_observed"
+      "routeDiscoveryLastReason": "provider_probe_budget_exhausted"
     },
     {
       "id": "dessinanime",
@@ -826,37 +376,7 @@
         "reason": "observed_executable_routes",
         "routeCount": 10
       },
-      "routeDiscoveryLastReason": "probe_shard_missing_or_timeout"
-    },
-    {
-      "id": "webflix",
-      "name": "Webflix",
-      "scope": "france",
-      "types": [
-        "movie",
-        "tv"
-      ],
-      "languages": [
-        "fr"
-      ],
-      "formats": [
-        "mp4",
-        "m3u8"
-      ],
-      "strategy": "mixed_embed_resolver",
-      "direct": "https://webflix.art/",
-      "replace_existing": false,
-      "inventory_rank": 44,
-      "inventory_score": 68,
-      "routes": [
-        "/api/push/subscribe"
-      ],
-      "routeDiscoveryEvidence": {
-        "transport": "github-hosted",
-        "reason": "observed_executable_routes",
-        "routeCount": 1
-      },
-      "routeDiscoveryLastReason": "probe_shard_missing_or_timeout"
+      "routeDiscoveryLastReason": "provider_probe_budget_exhausted"
     },
     {
       "id": "myfluneo",
@@ -888,7 +408,7 @@
         "reason": "observed_executable_routes",
         "routeCount": 2
       },
-      "routeDiscoveryLastReason": "probe_shard_missing_or_timeout"
+      "routeDiscoveryLastReason": "provider_probe_budget_exhausted"
     },
     {
       "id": "kisskh",
@@ -911,7 +431,7 @@
       "replace_existing": false,
       "inventory_rank": 2,
       "inventory_score": 100,
-      "routeDiscoveryLastReason": "reachable_no_identity_route_observed"
+      "routeDiscoveryLastReason": "provider_probe_budget_exhausted"
     },
     {
       "id": "vidsrc",
@@ -933,7 +453,7 @@
       "replace_existing": false,
       "inventory_rank": 9,
       "inventory_score": 90,
-      "routeDiscoveryLastReason": "reachable_no_identity_route_observed"
+      "routeDiscoveryLastReason": "provider_probe_budget_exhausted"
     },
     {
       "id": "cinejoy",
@@ -956,7 +476,7 @@
       "replace_existing": false,
       "inventory_rank": 12,
       "inventory_score": 88,
-      "routeDiscoveryLastReason": "reachable_no_identity_route_observed"
+      "routeDiscoveryLastReason": "provider_probe_budget_exhausted"
     },
     {
       "id": "flickystream",
@@ -979,7 +499,7 @@
       "replace_existing": false,
       "inventory_rank": 15,
       "inventory_score": 88,
-      "routeDiscoveryLastReason": "reachable_no_identity_route_observed"
+      "routeDiscoveryLastReason": "provider_probe_budget_exhausted"
     },
     {
       "id": "meowtv",
@@ -1002,7 +522,7 @@
       "replace_existing": false,
       "inventory_rank": 19,
       "inventory_score": 88,
-      "routeDiscoveryLastReason": "reachable_no_identity_route_observed"
+      "routeDiscoveryLastReason": "provider_probe_budget_exhausted"
     },
     {
       "id": "willow",
@@ -1025,7 +545,7 @@
       "replace_existing": false,
       "inventory_rank": 23,
       "inventory_score": 88,
-      "routeDiscoveryLastReason": "probe_shard_missing_or_timeout"
+      "routeDiscoveryLastReason": "provider_probe_budget_exhausted"
     },
     {
       "id": "7movies",
@@ -1071,7 +591,7 @@
       "replace_existing": false,
       "inventory_rank": 30,
       "inventory_score": 83,
-      "routeDiscoveryLastReason": "reachable_no_identity_route_observed"
+      "routeDiscoveryLastReason": "provider_probe_budget_exhausted"
     },
     {
       "id": "bcine",
@@ -1094,7 +614,7 @@
       "replace_existing": false,
       "inventory_rank": 32,
       "inventory_score": 83,
-      "routeDiscoveryLastReason": "network_or_site_unreached"
+      "routeDiscoveryLastReason": "provider_probe_budget_exhausted"
     },
     {
       "id": "bingey",
@@ -1140,7 +660,7 @@
       "replace_existing": false,
       "inventory_rank": 35,
       "inventory_score": 83,
-      "routeDiscoveryLastReason": "probe_shard_missing_or_timeout"
+      "routeDiscoveryLastReason": "provider_probe_budget_exhausted"
     },
     {
       "id": "cineflix",
@@ -1163,7 +683,7 @@
       "replace_existing": false,
       "inventory_rank": 36,
       "inventory_score": 83,
-      "routeDiscoveryLastReason": "network_or_site_unreached"
+      "routeDiscoveryLastReason": "provider_probe_budget_exhausted"
     },
     {
       "id": "cinepro",
@@ -1186,7 +706,7 @@
       "replace_existing": false,
       "inventory_rank": 38,
       "inventory_score": 83,
-      "routeDiscoveryLastReason": "probe_shard_missing_or_timeout"
+      "routeDiscoveryLastReason": "provider_probe_budget_exhausted"
     },
     {
       "id": "cinezo",
@@ -1209,7 +729,7 @@
       "replace_existing": false,
       "inventory_rank": 39,
       "inventory_score": 83,
-      "routeDiscoveryLastReason": "probe_shard_missing_or_timeout"
+      "routeDiscoveryLastReason": "provider_probe_budget_exhausted"
     },
     {
       "id": "coreflix",
@@ -1232,7 +752,7 @@
       "replace_existing": false,
       "inventory_rank": 40,
       "inventory_score": 83,
-      "routeDiscoveryLastReason": "reachable_no_identity_route_observed"
+      "routeDiscoveryLastReason": "provider_probe_budget_exhausted"
     },
     {
       "id": "ffmovies",
@@ -1255,7 +775,7 @@
       "replace_existing": false,
       "inventory_rank": 44,
       "inventory_score": 83,
-      "routeDiscoveryLastReason": "reachable_no_identity_route_observed"
+      "routeDiscoveryLastReason": "provider_probe_budget_exhausted"
     },
     {
       "id": "frame",
@@ -1278,7 +798,7 @@
       "replace_existing": false,
       "inventory_rank": 46,
       "inventory_score": 83,
-      "routeDiscoveryLastReason": "reachable_no_identity_route_observed"
+      "routeDiscoveryLastReason": "provider_probe_budget_exhausted"
     },
     {
       "id": "hivex",
@@ -1301,7 +821,7 @@
       "replace_existing": false,
       "inventory_rank": 47,
       "inventory_score": 83,
-      "routeDiscoveryLastReason": "reachable_no_identity_route_observed"
+      "routeDiscoveryLastReason": "provider_probe_budget_exhausted"
     },
     {
       "id": "moonflix",
@@ -1324,7 +844,7 @@
       "replace_existing": false,
       "inventory_rank": 48,
       "inventory_score": 83,
-      "routeDiscoveryLastReason": "reachable_no_identity_route_observed"
+      "routeDiscoveryLastReason": "provider_probe_budget_exhausted"
     },
     {
       "id": "phantomflix",
@@ -1347,7 +867,7 @@
       "replace_existing": false,
       "inventory_rank": 53,
       "inventory_score": 83,
-      "routeDiscoveryLastReason": "network_or_site_unreached"
+      "routeDiscoveryLastReason": "provider_probe_budget_exhausted"
     },
     {
       "id": "streamaggregator",
@@ -1370,7 +890,7 @@
       "replace_existing": false,
       "inventory_rank": 60,
       "inventory_score": 83,
-      "routeDiscoveryLastReason": "probe_shard_missing_or_timeout"
+      "routeDiscoveryLastReason": "provider_probe_budget_exhausted"
     },
     {
       "id": "tonkacine",
@@ -1393,7 +913,7 @@
       "replace_existing": false,
       "inventory_rank": 62,
       "inventory_score": 83,
-      "routeDiscoveryLastReason": "reachable_no_identity_route_observed"
+      "routeDiscoveryLastReason": "provider_probe_budget_exhausted"
     },
     {
       "id": "vidplay",
@@ -1416,7 +936,7 @@
       "replace_existing": false,
       "inventory_rank": 64,
       "inventory_score": 83,
-      "routeDiscoveryLastReason": "reachable_no_identity_route_observed"
+      "routeDiscoveryLastReason": "provider_probe_budget_exhausted"
     },
     {
       "id": "vivarium",
@@ -1439,7 +959,7 @@
       "replace_existing": false,
       "inventory_rank": 65,
       "inventory_score": 83,
-      "routeDiscoveryLastReason": "reachable_no_identity_route_observed"
+      "routeDiscoveryLastReason": "provider_probe_budget_exhausted"
     },
     {
       "id": "aether",
@@ -1462,7 +982,7 @@
       "replace_existing": false,
       "inventory_rank": 14,
       "inventory_score": 83,
-      "routeDiscoveryLastReason": "reachable_no_identity_route_observed"
+      "routeDiscoveryLastReason": "provider_probe_budget_exhausted"
     },
     {
       "id": "kordoz",
@@ -1486,7 +1006,7 @@
       "inventory_rank": 19,
       "inventory_score": 83,
       "domain_evidence": "https://kordoz.com/",
-      "routeDiscoveryLastReason": "probe_shard_missing_or_timeout"
+      "routeDiscoveryLastReason": "provider_probe_budget_exhausted"
     },
     {
       "id": "cineflux",
@@ -1509,7 +1029,7 @@
       "replace_existing": false,
       "inventory_rank": 29,
       "inventory_score": 76,
-      "routeDiscoveryLastReason": "probe_shard_missing_or_timeout"
+      "routeDiscoveryLastReason": "provider_probe_budget_exhausted"
     },
     {
       "id": "cinelibre",
@@ -1531,7 +1051,7 @@
       "replace_existing": false,
       "inventory_rank": 37,
       "inventory_score": 71,
-      "routeDiscoveryLastReason": "probe_shard_missing_or_timeout"
+      "routeDiscoveryLastReason": "provider_probe_budget_exhausted"
     },
     {
       "id": "cinemaos",
@@ -1553,7 +1073,7 @@
       "replace_existing": false,
       "inventory_rank": 47,
       "inventory_score": 64,
-      "routeDiscoveryLastReason": "network_or_site_unreached"
+      "routeDiscoveryLastReason": "provider_probe_budget_exhausted"
     },
     {
       "id": "cineplateforme",
@@ -1575,7 +1095,7 @@
       "replace_existing": false,
       "inventory_rank": 48,
       "inventory_score": 64,
-      "routeDiscoveryLastReason": "reachable_no_identity_route_observed"
+      "routeDiscoveryLastReason": "provider_probe_budget_exhausted"
     },
     {
       "id": "dpstream",
@@ -1597,7 +1117,7 @@
       "replace_existing": false,
       "inventory_rank": 50,
       "inventory_score": 64,
-      "routeDiscoveryLastReason": "reachable_no_identity_route_observed"
+      "routeDiscoveryLastReason": "provider_probe_budget_exhausted"
     },
     {
       "id": "motomaz",
@@ -1619,7 +1139,7 @@
       "replace_existing": false,
       "inventory_rank": 54,
       "inventory_score": 64,
-      "routeDiscoveryLastReason": "network_or_site_unreached"
+      "routeDiscoveryLastReason": "provider_probe_budget_exhausted"
     },
     {
       "id": "vombam",
@@ -1641,7 +1161,7 @@
       "replace_existing": false,
       "inventory_rank": 62,
       "inventory_score": 64,
-      "routeDiscoveryLastReason": "reachable_no_identity_route_observed"
+      "routeDiscoveryLastReason": "provider_probe_budget_exhausted"
     },
     {
       "id": "wavewatch",
@@ -1663,29 +1183,7 @@
       "replace_existing": false,
       "inventory_rank": 63,
       "inventory_score": 64,
-      "routeDiscoveryLastReason": "reachable_no_identity_route_observed"
-    },
-    {
-      "id": "zone-telechargement",
-      "name": "Zone-Téléchargement",
-      "scope": "france",
-      "types": [
-        "movie",
-        "tv"
-      ],
-      "languages": [
-        "fr"
-      ],
-      "formats": [
-        "mp4",
-        "m3u8"
-      ],
-      "strategy": "mixed_embed_resolver",
-      "direct": "https://www.zone-telechargement.rentals/",
-      "replace_existing": false,
-      "inventory_rank": 66,
-      "inventory_score": 64,
-      "routeDiscoveryLastReason": "probe_shard_missing_or_timeout"
+      "routeDiscoveryLastReason": "provider_probe_budget_exhausted"
     },
     {
       "id": "animeko",
@@ -1748,7 +1246,7 @@
       "replace_existing": false,
       "inventory_rank": 81,
       "inventory_score": 52,
-      "routeDiscoveryLastReason": "network_or_site_unreached"
+      "routeDiscoveryLastReason": "provider_probe_budget_exhausted"
     },
     {
       "id": "cinestream",
@@ -1771,7 +1269,7 @@
       "replace_existing": true,
       "inventory_rank": 2,
       "inventory_score": 99,
-      "routeDiscoveryLastReason": "network_or_site_unreached"
+      "routeDiscoveryLastReason": "provider_probe_budget_exhausted"
     },
     {
       "id": "yablom",
@@ -1794,7 +1292,7 @@
       "replace_existing": true,
       "inventory_rank": 4,
       "inventory_score": 97,
-      "routeDiscoveryLastReason": "probe_shard_missing_or_timeout"
+      "routeDiscoveryLastReason": "provider_probe_budget_exhausted"
     },
     {
       "id": "cpasmal",
@@ -1817,7 +1315,7 @@
       "replace_existing": true,
       "inventory_rank": 9,
       "inventory_score": 88,
-      "routeDiscoveryLastReason": "reachable_no_identity_route_observed"
+      "routeDiscoveryLastReason": "provider_probe_budget_exhausted"
     },
     {
       "id": "nakastream",
@@ -1840,7 +1338,7 @@
       "replace_existing": true,
       "inventory_rank": 11,
       "inventory_score": 86,
-      "routeDiscoveryLastReason": "probe_shard_missing_or_timeout"
+      "routeDiscoveryLastReason": "provider_probe_budget_exhausted"
     },
     {
       "id": "dotriv",
@@ -1863,7 +1361,7 @@
       "replace_existing": true,
       "inventory_rank": 15,
       "inventory_score": 83,
-      "routeDiscoveryLastReason": "probe_shard_missing_or_timeout"
+      "routeDiscoveryLastReason": "provider_probe_budget_exhausted"
     },
     {
       "id": "ilmiv",
@@ -1886,7 +1384,7 @@
       "replace_existing": true,
       "inventory_rank": 17,
       "inventory_score": 83,
-      "routeDiscoveryLastReason": "reachable_no_identity_route_observed"
+      "routeDiscoveryLastReason": "provider_probe_budget_exhausted"
     },
     {
       "id": "wowfilms0626",
@@ -1902,7 +1400,7 @@
       "inventory_score": 83,
       "grade": "A-",
       "workbookSheet": "France",
-      "routeDiscoveryLastReason": "reachable_no_identity_route_observed"
+      "routeDiscoveryLastReason": "provider_probe_budget_exhausted"
     },
     {
       "id": "spenflix",
@@ -1918,7 +1416,7 @@
       "inventory_score": 83,
       "grade": "A-",
       "workbookSheet": "Global",
-      "routeDiscoveryLastReason": "reachable_no_identity_route_observed"
+      "routeDiscoveryLastReason": "provider_probe_budget_exhausted"
     },
     {
       "id": "stellar",
@@ -1934,23 +1432,7 @@
       "inventory_score": 83,
       "grade": "A-",
       "workbookSheet": "Global",
-      "routeDiscoveryLastReason": "reachable_no_identity_route_observed"
-    },
-    {
-      "id": "watchott",
-      "name": "Watchott",
-      "scope": "global",
-      "direct": "https://watchott.org",
-      "types": [
-        "movie",
-        "tv",
-        "anime"
-      ],
-      "inventory_rank": 67,
-      "inventory_score": 83,
-      "grade": "A-",
-      "workbookSheet": "Global",
-      "routeDiscoveryLastReason": "probe_shard_missing_or_timeout"
+      "routeDiscoveryLastReason": "provider_probe_budget_exhausted"
     },
     {
       "id": "zxcstream",
@@ -1980,7 +1462,7 @@
       "inventory_score": 82,
       "grade": "A-",
       "workbookSheet": "Global",
-      "routeDiscoveryLastReason": "reachable_no_identity_route_observed"
+      "routeDiscoveryLastReason": "provider_probe_budget_exhausted"
     },
     {
       "id": "onetouch-tv",
@@ -1995,7 +1477,7 @@
       "inventory_score": 79,
       "grade": "B+",
       "workbookSheet": "Global",
-      "routeDiscoveryLastReason": "probe_shard_missing_or_timeout"
+      "routeDiscoveryLastReason": "provider_probe_budget_exhausted"
     },
     {
       "id": "m4ufree",
@@ -2010,7 +1492,7 @@
       "inventory_score": 78,
       "grade": "B+",
       "workbookSheet": "Global",
-      "routeDiscoveryLastReason": "probe_shard_missing_or_timeout"
+      "routeDiscoveryLastReason": "network_or_site_unreached"
     },
     {
       "id": "zoechip",
@@ -2025,7 +1507,7 @@
       "inventory_score": 78,
       "grade": "B+",
       "workbookSheet": "Global",
-      "routeDiscoveryLastReason": "probe_shard_missing_or_timeout"
+      "routeDiscoveryLastReason": "network_or_site_unreached"
     },
     {
       "id": "anizone",
@@ -2054,7 +1536,7 @@
       "inventory_score": 73,
       "grade": "B",
       "workbookSheet": "Global",
-      "routeDiscoveryLastReason": "reachable_no_identity_route_observed"
+      "routeDiscoveryLastReason": "provider_probe_budget_exhausted"
     },
     {
       "id": "vidnest",
@@ -2069,7 +1551,7 @@
       "inventory_score": 73,
       "grade": "B",
       "workbookSheet": "Global",
-      "routeDiscoveryLastReason": "reachable_no_identity_route_observed"
+      "routeDiscoveryLastReason": "provider_probe_budget_exhausted"
     },
     {
       "id": "xpass",
@@ -2098,21 +1580,7 @@
       "inventory_score": 67,
       "grade": "B",
       "workbookSheet": "Global",
-      "routeDiscoveryLastReason": "probe_shard_missing_or_timeout"
-    },
-    {
-      "id": "animejlprovider",
-      "name": "AnimeJL",
-      "scope": "global",
-      "direct": "https://www.anime-jl.net",
-      "types": [
-        "anime"
-      ],
-      "inventory_rank": 213,
-      "inventory_score": 60,
-      "grade": "B",
-      "workbookSheet": "Global",
-      "routeDiscoveryLastReason": "probe_shard_missing_or_timeout"
+      "routeDiscoveryLastReason": "reachable_no_identity_route_observed"
     },
     {
       "id": "animoflix",
@@ -2134,21 +1602,21 @@
       "sourceManifest": "upstream-lkg/manifests/gowaru-c063207a4facc7a5.json",
       "retainedKnowledge": "provider-old/animoflix--base--9eef980cbac68086.js",
       "sourceNote": "Pinned Gowaru manifest declares French movie/TV; retained NiakVIO ProviderBase records knownSite animoflix.to and historical route/origin knowledge. Candidate remains non-active until normal route/onboarding proof.",
-      "routeDiscoveryLastReason": "probe_shard_missing_or_timeout"
+      "routeDiscoveryLastReason": "provider_probe_budget_exhausted"
     }
   ],
   "routeDiscoveryWave": {
-    "sourceRequestVersion": 33,
-    "qualified": 22,
-    "selected": 22,
+    "sourceRequestVersion": 36,
+    "qualified": 4,
+    "selected": 4,
     "standbyQualified": 0,
-    "deferred": 69,
+    "deferred": 65,
     "transports": [
       "residential-exit"
     ],
-    "shardArtifactCount": 12,
+    "shardArtifactCount": 16,
     "expectedShardCount": 16,
-    "completeShardSet": false,
+    "completeShardSet": true,
     "activationRequiresExecutablePlan": true
   },
   "handoff": {
