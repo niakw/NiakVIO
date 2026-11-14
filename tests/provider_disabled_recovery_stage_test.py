@@ -44,7 +44,7 @@ assert 'next_action="transport_inconclusive_replay"' in classifier
 assert "steps.brain_guidance.outputs.has_guidance == 'true'" in workflow
 assert "publicationAuthority" in classifier and "directMutationAuthority" in classifier
 assert "id-token: write" in workflow
-assert 'r.get("canonical_id")' in workflow
+assert 'row.get("canonical_id")' in classifier
 assert "--ephemeral-overrides-output staging-disabled-recovery-reconstruction/provider-overrides.ephemeral.json" in workflow
 assert "--overrides staging-disabled-recovery-reconstruction/provider-overrides.ephemeral.json" in workflow
 assert "--config staging-disabled-recovery-reconstruction/provider-overrides.ephemeral.json" in workflow
