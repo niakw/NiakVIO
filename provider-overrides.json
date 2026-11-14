@@ -12037,13 +12037,11 @@
         "/download/{identifier}/{file}"
       ],
       "identity_input": {
-        "mode": "tmdb_title_year",
-        "requires_tmdb_before_run": true,
+        "mode": "tmdb_direct",
+        "requires_tmdb_before_run": false,
         "required_fields": [
           "tmdbId",
-          "mediaType",
-          "title",
-          "year"
+          "mediaType"
         ]
       }
     }
