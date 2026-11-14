@@ -142,24 +142,7 @@ def render(state: dict[str, Any]) -> str:
 
     residential = state.get("residentialExitNodeEvidence") if isinstance(state.get("residentialExitNodeEvidence"), dict) else {}
     residential_notice = ""
-    attempt = state.get("lastRepairAttempt") if isinstance(state.get("lastRepairAttempt"), dict) else {}
-    attempt_notice = ""
-    if attempt:
-        attempt_notice = (
-            "Latest Repair/FORCE attempt: **run "
-            + str(attempt.get("runId") or "unknown")
-            + "** · selected **"
-            + str(len(attempt.get("selectedProviders") or []))
-            + "** · candidates **"
-            + str(len(attempt.get("candidateProviders") or []))
-            + "** · validated **"
-            + str(len(attempt.get("validatedProviders") or []))
-            + "** · Learning debt recorded **"
-            + str(len(attempt.get("deferredToLearningSlotProviders") or []))
-            + "** · result **"
-            + str(attempt.get("noProgressReason") or ("validated" if attempt.get("publicationAllowed") is True else "no validated publication"))
-            + "**."
-        )
+    attempt_notice = census.repair_attempt_notice(census.historical_repair_attempt(state), run_id)
     if residential.get("enabled") is True:
         if residential.get("available") is True:
             residential_notice = "Residential harness: **available** · private exit compared where matched."
@@ -249,7 +232,13 @@ def main() -> int:
     ap.add_argument("--status", type=Path, required=True)
     ap.add_argument("--output", type=Path, required=True)
     args = ap.parse_args()
-    text = render(load(args.status))
+    state = load(args.status)
+    summary_path = args.status.with_name("provider-fast-repair-summary.json")
+    if not census.historical_repair_attempt(state) and summary_path.is_file():
+        attempt = census.historical_repair_attempt(state, load(summary_path))
+        if attempt:
+            state = {**state, "lastRepairAttempt": attempt}
+    text = render(state)
     args.output.write_text(text, encoding="utf-8")
     print(f"FIELD_PROVIDER_CENSUS_STATE_MARKDOWN output={args.output}")
     return 0

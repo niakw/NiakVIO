@@ -533,3 +533,27 @@ except ValueError:
 else:
     raise AssertionError("inconsistent census SHA accepted")
 print("Current census fresh-versus-retained summary contract passed")
+
+
+# A new census must not erase last Repair activity or reinterpret it as proof.
+from render_provider_census_status import historical_repair_attempt, repair_attempt_notice
+from render_provider_census_status_from_state import render as render_state
+
+fast = {"repairRunId": "old-attempt", "sourceCensusRunId": "old-census",
+        "selectedProviders": ["example"], "candidateProviders": [], "validatedProviders": [],
+        "learnHandoffProviders": ["example"], "brainAcceptedRepairCount": 0,
+        "brainNoProgressReason": "experiment_exhausted", "publicationAllowed": False}
+attempt = historical_repair_attempt({}, fast)
+assert attempt["runId"] == "old-attempt" and attempt["validatedProviders"] == []
+assert attempt["sourceCensusRunId"] == "old-census"
+assert historical_repair_attempt({}, {"repairRunId": "malformed"}) == {}
+canonical = {**attempt, "runId": "canonical-force"}
+assert historical_repair_attempt({"lastRepairAttempt": canonical}, fast) == canonical
+notice = repair_attempt_notice(attempt, "new-census")
+assert "source census old-census; historical attempt, not current census proof" in notice
+assert "validated **0**" in notice
+state = {"runId": "new-census", "triggerSha": "new-sha", "providers": [],
+         "repairQueue": [], "lastRepairAttempt": attempt}
+assert notice in render_state(state)
+assert state["repairQueue"] == [] and state["providers"] == []
+print("Historical Repair attempt reporting provenance passed")

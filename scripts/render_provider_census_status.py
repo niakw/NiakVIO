@@ -924,6 +924,54 @@ def build_status_rows(
     return out
 
 
+def historical_repair_attempt(baseline: dict[str, Any] | None, fast_summary: dict[str, Any] | None = None) -> dict[str, Any]:
+    """Read display-only attempt metadata; never derive current proof or queues."""
+    prior = (baseline or {}).get("lastRepairAttempt")
+    if isinstance(prior, dict) and prior.get("runId"):
+        return dict(prior)
+    summary = fast_summary or {}
+    if not summary.get("repairRunId") or not summary.get("sourceCensusRunId"):
+        return {}
+    fields = {
+        "selectedProviders": "selectedProviders",
+        "candidateProviders": "candidateProviders",
+        "validatedProviders": "validatedProviders",
+        "deferredToLearningSlotProviders": "learnHandoffProviders",
+    }
+    if any(not isinstance(summary.get(value), list) for value in fields.values()):
+        return {}
+    return {
+        "runId": str(summary["repairRunId"]),
+        "sourceCensusRunId": str(summary["sourceCensusRunId"]),
+        **{key: list(summary[value]) for key, value in fields.items()},
+        "noProgressReason": summary.get("brainNoProgressReason"),
+        "acceptedRepairCount": summary.get("brainAcceptedRepairCount"),
+        "timeBudgetExhausted": summary.get("brainTimeBudgetExhausted") is True,
+        "publicationAllowed": summary.get("publicationAllowed") is True,
+    }
+
+
+def repair_attempt_notice(attempt: dict[str, Any], census_run: str) -> str:
+    if not attempt.get("runId"):
+        return ""
+    source_run = str(attempt.get("sourceCensusRunId") or "")
+    scope = ("source census " + source_run) if source_run else "source census unknown"
+    if source_run != census_run:
+        scope += "; historical attempt, not current census proof"
+    def count(key: str) -> int:
+        values = attempt.get(key)
+        return len(values) if isinstance(values, list) else 0
+    return (
+        "Latest Repair/FORCE attempt: **run " + str(attempt["runId"])
+        + "** · selected **" + str(count("selectedProviders"))
+        + "** · candidates **" + str(count("candidateProviders"))
+        + "** · validated **" + str(count("validatedProviders"))
+        + "** · Learning debt recorded **" + str(count("deferredToLearningSlotProviders"))
+        + "** · result **" + str(attempt.get("noProgressReason") or "no recorded reason")
+        + "** (" + scope + ")."
+    )
+
+
 def render(
     report: dict[str, Any],
     *,
@@ -1008,6 +1056,7 @@ def render(
         "",
         f"Latest provider census state: **{summary}** across **{len(rows)} providers**.",
         f"Evidence: run {run_id or 'local'} · SHA {short_sha} · scope **{scope}**.",
+        *([attempt_notice] if (attempt_notice := repair_attempt_notice(historical_repair_attempt(baseline), str(run_id))) else []),
         f"Symptomatic providers: **{len(symptomatic)}** · automated repair queue: **{len(repair_queue)}** · lifecycle disabled: **{len(lifecycle_disabled_queue)}** · authority rediscovery: **{len(authority_rediscovery_queue)}** · harness mismatch: **{len(harness_mismatch_queue)}** · environment blocked: **{len(environment_blocked_queue)}**.",
         "",
         "## Status semantics",
@@ -1091,6 +1140,14 @@ def main() -> int:
     report = load(args.report)
     history = load(args.history) if args.history.is_file() else {}
     baseline = load(args.baseline_status) if args.baseline_status.is_file() else {}
+    # Recover lost display metadata from the already-persisted sibling summary.
+    # An existing canonical Repair/FORCE attempt always takes precedence.
+    summary_path = args.baseline_status.with_name("provider-fast-repair-summary.json")
+    attempt = historical_repair_attempt(baseline)
+    if not attempt and summary_path.is_file():
+        attempt = historical_repair_attempt(baseline, load(summary_path))
+    if attempt:
+        baseline = {**baseline, "lastRepairAttempt": attempt}
     candidate_evidence = load(args.candidate_evidence) if args.candidate_evidence.is_file() else {}
     repair_candidate_evidence = (
         load(args.repair_candidate_evidence)
@@ -1181,6 +1238,8 @@ def main() -> int:
                 and row.get("authorityRepairEligible") is not False
             ),
         }
+        if attempt:
+            payload["lastRepairAttempt"] = attempt  # Historical, display-only metadata.
         args.json_output.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(f"PROVIDER_CENSUS_STATUS_WRITTEN output={args.output}")
     return 0
