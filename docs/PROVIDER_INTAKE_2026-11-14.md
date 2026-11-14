@@ -39,3 +39,14 @@ Source code is upstream *diagnostic input*, **not** an executable provider bundl
 - A successful CI workflow is not a native decoding proof.
 
 Goal: prove a representative source per failure/runtime family before broad promotion. Persist useful positive and negative source patterns for Brain/Learning.
+
+
+## Résultat réel — A/B terminal source du 14 novembre 2026
+
+- [Run #43538083385](https://github.com/niakw/NiakVIO/actions/runs/43538083385) : deux jobs (France et Global) **success**, 14 modules amont testés sur un corpus de 2 fixtures par genre.
+- Global : **TopCartoons 1/2 anime** avec média terminal de type `video` sur *Dan Da Dan S01E01* ; les sept autres (KissKH, VidSrc, Reanime, AniZone, VidLink, Cineby, CinemaCity) ont **0 média terminal vérifié** sur ce corpus.
+- France : **FrenchStream 2/4** (film *Thor* et série *Mr. Robot S01E01*, tous deux HLS) ; **Movix 3/4** (films *Spider-Man: Homecoming* et *Deadpool*, série *Le Jeu de la dame S01E01*, HLS) ; French-Anime, Dulourd, Franime et Nakios **0 média terminal vérifié**.
+- **Important :** les résultats ci-dessus sont du code *amont* exécuté dans un worker GitHub, pas la version Provider v3 publiée, et sans validation d'identité terminale/bonne saison, langue, qualité ni décodage client. **0 provider promu** dans le manifest de production pour ce test. Au total 5 épreuves terminales positives sur 46 épreuves (2 films+2 séries pour 8 mixtes, etc.) — compter comme observations, pas comme cinq nouveaux flux fiables.
+- Artefacts : `provider-intake-global-43538083385` et `provider-intake-france-43538083385` (détails HTTP, sans URL de stream). Résumé durable `automation/evidence/provider-intake-terminal-2026-11-14.json`.
+- Les scores du fichier `automation/provider-intake-top-global-france.json` sont corrigés selon les nombres exacts du classeur septembre, sans interpréter un score comme une preuve fonctionnelle.
+- Le dépôt conserve d'anciens Lego NiakVIO pour FrenchStream (`frenchstream_exact_runtime_v3.py`) et Movix (`movix_runtime_v1.py`) et des bases historiques `provider-old/`. Ils doivent servir de connaissances Brain pour reconstruction, **pas** être réactivés tels quels.

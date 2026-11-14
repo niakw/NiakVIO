@@ -2310,3 +2310,12 @@ Head `fcf49a5b5049f849f5ef558994cdfda4c5db8bfb` aligns Fast/Learning test oracle
 - Evidence: census 43460048984 SHA 87542719 (AllAnime CHAIN REACHED, 4 work /45 misses ; MalluMV CHAIN REACHED, 1 work /42 misses), availability-report.json horodaté 2026-11-13T23:50Z `no_streams` pour chacun, Fast Repair #43536125705 2026-11-14: AllAnime 4/4, MalluMV 4/4, **0 stream**. Fast Repair a produit **0 nouvelle réparation acceptée** sur 13 sélectionnés.
 - `provider-hubs.json` conserve source et expérience, mais marque `manual_off_reason` et `lifecycle_selection` pour la cohorte réversible ; déclencheur `.github/triggers/provider-disabled-lifecycle`. Les autres providers, y compris FULL historiques et WAF/Client-blocked, ne sont pas désactivés.
 - Attente: workflow Provider Disabled Lifecycle vert; vérifier exact SHA, effectivité manifest Global/VF, déplacement de bytes, ledger, 7 jours rétention et CI non-régression. Puis continuer la sélection des remplaçants sous forme de Provider v3 + tests terminal, pas d'inclusion non validée directe.
+
+
+## 2026-11-14 — Premier test terminal séparé Global/France (observations persistées)
+
+- Workflow `PROVIDERS - Global France Intake Terminal Probe` #43538083385 testé sur SHA `12eac8dd`: matrice Global 8/8 et France 6/6, tous deux jobs succès. Sources Nuvio pin SHA, via sandbox Node et vérificateur HLS/media, 2 fixtures par lane.
+- **Source POSITIF mais NiakVIO NON validé :** Global `topcartoons` 1/2 anime (Dan Da Dan S01E01, response video), France `frenchstream` 2/4 (Thor et Mr Robot S01E01, HLS), `movix` 3/4 (Spiderman Homecoming, Deadpool, Queen's Gambit S01E01, HLS). Onze autres zéro terminal sur les fixtures.
+- Codes réutilisables déjà présents : `scripts/provider_patches/frenchstream_exact_runtime_v3.py`, `scripts/provider_patches/movix_runtime_v1.py`; preuves négatives antérieures ne doivent pas supprimer les expérimentations positives. Voir `automation/evidence/provider-intake-terminal-2026-11-14.json`.
+- **AUCUNE PROMOTION** : pas d'identité exacte ni de validation 1080/2160, langue, épisodes, Native TV/Mobile/Desktop. Ne pas compter 3 nouveaux providers actifs ou fonctionnels. Nouvelle publication doit passer par Brain / Provider v3 + bytes matérialisés et re-test réels.
+- La règle de scoring initiale avait recopié 6 scores inexacts du classeur ; corrigée à l'identique du tableur, les rangs étaient corrects. Ne jamais utiliser score d'inventaire comme note de qualité actuelle.
