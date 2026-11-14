@@ -18,6 +18,8 @@ from typing import Any
 
 from PIL import Image, ImageDraw, ImageFont, ImageOps
 
+from add_provider import sync_global_vf_projection
+
 ROOT = Path(__file__).resolve().parents[1]
 MANIFEST = ROOT / "manifest.json"
 VF_MANIFEST = ROOT / "vf/manifest.json"
@@ -448,6 +450,31 @@ def main() -> int:
                 offline_fallback=args.offline_fallback,
             )
         )
+
+    # Branding owns name/logo presentation, but a Global provider projected into
+    # VF is still the same provider identity. Reproject the complete Global row
+    # after branding so VF cannot retain stale metadata while only its filename
+    # path differs by "../".
+    shared_vf_ids = {
+        canonical_id(row.get("id"))
+        for row in vf_manifest.get("scrapers") or []
+        if isinstance(row, dict) and str(row.get("id") or "").strip()
+        and canonical_id(row.get("id")) in general_ids
+    }
+    general_by_id = {
+        canonical_id(row.get("id")): row
+        for row in manifest.get("scrapers") or []
+        if isinstance(row, dict) and str(row.get("id") or "").strip()
+    }
+    for provider_id in targets:
+        row = general_by_id.get(provider_id)
+        if row is not None and provider_id in shared_vf_ids:
+            sync_global_vf_projection(
+                vf_manifest,
+                row,
+                provider_id,
+                include_vf=True,
+            )
 
     present = set(index.get("providers") or {})
     missing = sorted(set(manifest_ids) - present)
