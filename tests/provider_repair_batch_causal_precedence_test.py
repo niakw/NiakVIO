@@ -52,8 +52,32 @@ assert mod.action_for_row(allwish_like,"none","waf_challenge")[0]=="learning"
 network_only={**allwish_like,"dominantIssue":"provider_network_exception"}
 assert mod.action_for_row(network_only,"none","network_exception")[0]=="learning"
 
+
+# Explicit current census causal queues outrank semantic depth. A provider can
+# reach CHAIN and still be owned by authority rediscovery; that must not leak
+# into provider mutation. Environment ownership is equally explicit.
+chain_row={"status":"CHAIN REACHED","repairEligible":False}
+assert mod.causal_scope_for_row(
+    "authority",chain_row,"chain","network_zero_result",dynamic_debt=None,brain_required=True,
+    authority_rediscovery={"authority"},environment_owned=set(),
+)[0]=="transport"
+assert mod.causal_scope_for_row(
+    "environment",chain_row,"chain","waf_challenge",dynamic_debt=None,brain_required=True,
+    authority_rediscovery=set(),environment_owned={"environment"},
+)[0]=="harness-compatibility"
+assert mod.causal_scope_for_row(
+    "repair",{"status":"PROVIDER JS BROKEN","repairEligible":True},"none","provider_returned_wrong_content",
+    dynamic_debt=None,brain_required=True,authority_rediscovery=set(),environment_owned=set(),
+)[0]=="learning"
+assert mod.causal_scope_for_row(
+    "green",{"status":"FULL OK","repairEligible":False},"chain","none",dynamic_debt={"missing":1},brain_required=False,
+    authority_rediscovery=set(),environment_owned=set(),
+)[0]=="variant-coverage"
+
 source=SCRIPT.read_text(encoding="utf-8")
 assert "Final causal status is stronger than an older dominantIssue" in source
 assert "residential full-provider replay disproved transport ownership" in source
 assert "issue-only WAF/network text cannot recreate harness or transport ownership" in source
+assert "authorityRediscoveryQueue" in source
+assert "causal queue overlap authority/environment" in source
 print("provider repair batch causal precedence contract passed")
