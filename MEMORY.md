@@ -1,3 +1,10 @@
+## 2026-11-14 — Production active contract now rejects fresh PARTIAL rows
+
+- Full active replay 43603937483 on a51be853 completed across 8/8 shards and persisted 6ecc8d50: 10 FULL OK, hindmoviez PARTIAL OK with only TV freshly verified, wookafr CANDIDATE OK with timeout×2, 34 disabled. This is fresh current-byte evidence, not carried history.
+- Bulk Activation 43604282875 selected exactly the one pending FULL candidate internet-archive and passed exact-byte activation selection/config/minimizer/bulk tests, then failed production_active_provider_freshness_test because hindmoviez is still active without fresh FULL proof. No activation commit was published. The gate correctly prevented mixing a new good provider with an incomplete active baseline.
+- Generalize the existing lifecycle rule: freshly tested PARTIAL OK + Brain symptom + repairEligible is current-architecture-nonfunctional for production, just like current CANDIDATE/REGRESSION/NO PROOF. FULL remains the only active health status. Historical/untested PARTIAL evidence is not disabled by this rule. The lifecycle remains reversible and preserves disabled bytes/experience.
+- This should retire hindmoviez and wookafr through the normal authority/lifecycle transaction, then force a fresh active-cohort replay before retrying Internet Archive. No provider bytes are manually repaired or activation gate weakened by this commit.
+
 ## 2026-11-14 — Force full 12-active replay after lifecycle
 
 - Lifecycle commit fcc4d8a8 disabled voiranime-homes with auto_off_current_architecture_nonfunctional and seven-day retention (purgeAfter 2026-11-21). Current Global manifest is 12 active / 34 disabled; Internet Archive remains pending disabled with isolated fresh FULL movie proof run 43600537871 on source 7c51e342.

@@ -476,6 +476,7 @@ def classify(
 
 CURRENT_NONFUNCTIONAL_STATUSES = {
     "REGRESSION PROVIDER",
+    "PARTIAL OK",
     "CANDIDATE OK",
     "ROUTE PROVEN",
     "CHAIN REACHED",
@@ -488,8 +489,10 @@ def current_architecture_nonfunctional(row: dict[str, Any] | None) -> bool:
 
     Historical/untested rows are not withdrawn by this rule. A provider must
     have been exercised by the current canonical census and still be a Repair
-    symptom. CANDIDATE OK is deliberately non-production: it proves a sandbox
-    candidate, not the published active bytes.
+    symptom. Production requires every declared lane to retain terminal verified
+    playback, so a freshly tested PARTIAL OK row is also nonfunctional for the
+    active contract. CANDIDATE OK is deliberately non-production: it proves a
+    sandbox candidate, not the published active bytes.
     """
     if not isinstance(row, dict):
         return False

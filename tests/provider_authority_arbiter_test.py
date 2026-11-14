@@ -263,9 +263,9 @@ print("provider authority arbiter contract ok")
 def census(status, *, tested=True, brain=True, repair=True):
     return {"status":status,"testedThisRun":tested,"brainCheckRequired":brain,"repairEligible":repair}
 
-for status in ("REGRESSION PROVIDER","CANDIDATE OK","ROUTE PROVEN","CHAIN REACHED","NO PROOF"):
+for status in ("REGRESSION PROVIDER","PARTIAL OK","CANDIDATE OK","ROUTE PROVEN","CHAIN REACHED","NO PROOF"):
     assert module.current_architecture_nonfunctional(census(status)) is True, status
-for status in ("FULL OK","PARTIAL OK","DISABLED"):
+for status in ("FULL OK","DISABLED"):
     assert module.current_architecture_nonfunctional(census(status)) is False, status
 assert module.current_architecture_nonfunctional(census("ROUTE PROVEN",tested=False)) is False
 assert module.current_architecture_nonfunctional(census("NO PROOF",brain=False)) is False
