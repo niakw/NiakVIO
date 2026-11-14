@@ -27,11 +27,14 @@ WRAPPER = r'''
     var id=s((o&&(o.tmdbId||o.tmdb_id||o.id))||(typeof first==="string"?first:"")||ctx.tmdbId).replace(/^tmdb:/i,"").split(":")[0];
     var type=s((o&&(o.canonicalMediaType||o.mediaType||o.type))||ctx.canonicalMediaType||args[1]||"movie").toLowerCase();
     if(type==="series")type="tv";
+    var meta=(o&&o.tmdbMetadata)||ctx.tmdbMetadata||{};
     return {
       id:id,
       type:type==="movie"?"movie":"tv",
       season:Number((o&&o.season)!=null?o.season:(args[2]!=null?args[2]:ctx.season))||1,
-      episode:Number((o&&o.episode)!=null?o.episode:(args[3]!=null?args[3]:ctx.episode))||1
+      episode:Number((o&&o.episode)!=null?o.episode:(args[3]!=null?args[3]:ctx.episode))||1,
+      title:s((o&&(o.title||o.name))||meta.title||meta.name||meta.original_title||meta.original_name||""),
+      year:Number((o&&o.year)||meta.year||String(meta.release_date||"").slice(0,4)||0)||0
     };
   }
   function headers(){
@@ -42,10 +45,44 @@ WRAPPER = r'''
       "User-Agent":c.userAgent
     };
   }
-  async function jsonGet(path){
-    var response=await g.fetch(c.base+path,{headers:headers(),redirect:"follow"});
+  async function responseGet(url,referer,accept){
+    var response=await g.fetch(url,{headers:{
+      "Accept":accept||"text/html,application/xhtml+xml,*/*",
+      "Accept-Language":"fr-FR,fr;q=0.9,en;q=0.7",
+      "Referer":referer||c.base+"/",
+      "User-Agent":c.userAgent
+    },redirect:"follow"});
     if(!response||!response.ok)throw new Error("webflix_http_"+String(response&&response.status||0));
+    return response;
+  }
+  async function jsonGet(path){
+    var response=await responseGet(c.base+path,c.base+"/","application/json,text/plain,*/*");
     return await response.json();
+  }
+  async function textGet(url,referer){
+    var response=await responseGet(url,referer,"text/html,application/xhtml+xml,*/*");
+    return {url:s(response.url||url),text:await response.text()};
+  }
+  function norm(v){
+    return s(v).normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase()
+      .replace(/&[^;]+;/g," ").replace(/[^a-z0-9]+/g," ").trim();
+  }
+  function attr(html,name){
+    var re=new RegExp("\\b"+name+"\\s*=\\s*[\"']([^\"']+)[\"']","i"),m=re.exec(html||"");
+    return m?s(m[1]).replace(/&amp;/gi,"&"):"";
+  }
+  function pageTitle(html){
+    var m=/<title[^>]*>([\s\S]{0,500}?)<\/title\s*>/i.exec(html||"");
+    return m?s(m[1]).replace(/<[^>]+>/g," ").replace(/&amp;/gi,"&"):"";
+  }
+  function iframeUrl(html,base){
+    var m=/<iframe\b[^>]*\bsrc\s*=\s*[\"']([^\"']+)[\"'][^>]*>/i.exec(html||"");
+    if(!m)return "";
+    try{return new URL(s(m[1]).replace(/&amp;/gi,"&"),base).toString()}catch(_e){return ""}
+  }
+  function hlsUrl(html){
+    var m=/(https?:\/\/[^"'<>\s]+\.m3u8(?:\?[^"'<>\s]*)?)/i.exec(html||"");
+    return m?s(m[1]).replace(/&amp;/gi,"&"):"";
   }
   function mediaUrl(row){
     var u=s(row&&row.url);
@@ -72,10 +109,47 @@ WRAPPER = r'''
   }
   async function movie(q){
     var data=await jsonGet("/api/fastflux?type=movie&tmdb_id="+encodeURIComponent(q.id));
-    if(!data||data.success!==true||data.available!==true||!data.data)return [];
-    var returned=s(data.data.tmdb_id);
-    if(returned&&returned!==q.id)return [];
-    return stream(data.data,q,"FastFlux");
+    if(data&&data.success===true&&data.available===true&&data.data){
+      var returned=s(data.data.tmdb_id);
+      if(!returned||returned===q.id){
+        var primary=stream(data.data,q,"FastFlux");
+        // The current Webflix movie FastFlux can expose a series-shaped S01/E01
+        // storage path.  Preserve Core's fail-closed behavior and only use the
+        // direct file when it is not structurally episode-shaped.
+        if(primary.length&&!/(?:\/|[-_.])S0*1(?:\/|[-_.]).*E0*1\b/i.test(s(data.data.url)))return primary;
+      }
+    }
+
+    // Residential oracle: Webflix exposes a TMDB-bound signed Vidzy path.
+    var pathData=await jsonGet(
+      "/api/player-embed/vidzy-path?kind=movie&tmdbId="+encodeURIComponent(q.id)+"&lang=vf"
+    );
+    var signedPath=s(pathData&&pathData.url);
+    if(!/^\/api\/v\/z\/[A-Za-z0-9_-]+$/.test(signedPath))return [];
+    var shell=await textGet(c.base+signedPath,c.base+"/");
+    if(!shell||!shell.text)return [];
+    var finalUrl=s(shell.url);
+    if(finalUrl.indexOf("/movie/"+q.id+"/")<0)return [];
+    var shellTitle=pageTitle(shell.text);
+    if(q.title&&norm(shellTitle).indexOf(norm(q.title))<0)return [];
+    if(q.year&&shellTitle&&shellTitle.indexOf(String(q.year))<0)return [];
+    var frame=iframeUrl(shell.text,finalUrl);if(!/^https?:\/\//i.test(frame))return [];
+    var player=await textGet(frame,finalUrl);if(!player||!player.text)return [];
+    var playerTitle="";
+    var tm=/\btitle\s*:\s*[\"']([^\"']+)[\"']/i.exec(player.text);
+    if(tm)playerTitle=s(tm[1]);
+    if(q.title&&playerTitle&&norm(playerTitle).indexOf(norm(q.title))<0)return [];
+    if(q.year&&playerTitle&&playerTitle.indexOf(String(q.year))<0)return [];
+    var hls=hlsUrl(player.text);if(!hls)return [];
+    return [{
+      name:"Webflix - Vidzy",
+      title:"Webflix"+(shellTitle?" | "+shellTitle:""),
+      url:hls,
+      quality:"1080p",
+      language:"fr",
+      provider:"webflix",
+      headers:{"Referer":frame,"User-Agent":c.userAgent,"Accept":"application/vnd.apple.mpegurl,*/*;q=0.8"}
+    }];
   }
   async function episode(q){
     var discovery=await jsonGet("/api/series-season-discovery?tmdb_id="+encodeURIComponent(q.id));
@@ -140,7 +214,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
         data={
             "runtimeFamily": "tmdb-direct-fastflux-v1",
             "identity": "requested-tmdb-id-plus-exact-tv-season-episode",
-            "terminal": "direct-mp4-or-hls-only",
+            "terminal": "direct-mp4-or-tmdb-signed-vidzy-hls",
             "challengeSolver": False,
             "upstreamJsExecuted": False,
             "legacyExecutableSeed": False,
