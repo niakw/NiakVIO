@@ -1,22 +1,69 @@
 {
-  "providerCount": 1,
-  "newProviderCount": 0,
-  "replaceProviderCount": 1,
-  "newProviders": [],
+  "providerCount": 40,
+  "newProviderCount": 35,
+  "replaceProviderCount": 5,
+  "newProviders": [
+    "67movies",
+    "animeonsen",
+    "anisama",
+    "arrowtv",
+    "boredflix",
+    "chillflix",
+    "cinegram",
+    "cinemabz",
+    "cinematheque-de-bretagne",
+    "cinetimes",
+    "corsflix",
+    "dulourd",
+    "emnexmovies",
+    "fawesome",
+    "fexini",
+    "film-a-revoir",
+    "flixer",
+    "franime",
+    "fullanime",
+    "hianime",
+    "latestmovies",
+    "movish",
+    "movy",
+    "nakios",
+    "neonflix",
+    "primewire",
+    "sadisflix",
+    "showbox",
+    "shuttletv",
+    "skstream",
+    "vuflix",
+    "watch-cartoon-online",
+    "waveanime",
+    "youtitou",
+    "zone-streaming"
+  ],
   "replaceProviders": [
-    "internet-archive"
+    "1jour1film0626",
+    "frembed",
+    "kidraz",
+    "movix-fr",
+    "neobam"
   ],
   "strategies": {
-    "open_archive_public_domain": 1
+    "mixed_embed_resolver": 40
   },
   "declaredTypeCounts": {
-    "movie": 1
+    "anime": 31,
+    "movie": 32,
+    "tv": 31
   },
   "scopeCounts": {
-    "global": 1
+    "france": 23,
+    "global": 17
   },
   "safePendingRestageProviders": [
-    "internet-archive"
+    "1jour1film0626",
+    "frembed",
+    "kidraz",
+    "movix-fr",
+    "neobam"
   ],
   "schemaVersion": 1,
   "request": ".github/provider-onboarding/batch.json",
@@ -27,16 +74,577 @@
   "nextStage": "sharded census -> repair batches -> proof-driven activation",
   "providers": [
     {
-      "id": "internet-archive",
-      "name": "Internet Archive — Public Domain",
+      "id": "corsflix",
+      "name": "CorsFlix",
+      "types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "strategy": "mixed_embed_resolver",
+      "site": "https://watch.corsflix.net",
+      "scope": "global",
+      "pendingFilename": "provider-disabled/corsflix--nuvio--e915be1e775c2005.js",
+      "pendingSha256": "e915be1e775c2005ba15f2fcfd6d497f92b43d33be6e83dffa11b70df6c6177b",
+      "pendingFixedPoint": true
+    },
+    {
+      "id": "emnexmovies",
+      "name": "EmnexMovies",
+      "types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "strategy": "mixed_embed_resolver",
+      "site": "https://emnexmovies.tech",
+      "scope": "global",
+      "pendingFilename": "provider-disabled/emnexmovies--nuvio--af6ce14b3d9edfd7.js",
+      "pendingSha256": "af6ce14b3d9edfd7a6fb74db0971881e803dbc1f3475751061c447214fff8507",
+      "pendingFixedPoint": true
+    },
+    {
+      "id": "latestmovies",
+      "name": "LatestMovies",
+      "types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "strategy": "mixed_embed_resolver",
+      "site": "https://latestmovies.net",
+      "scope": "global",
+      "pendingFilename": "provider-disabled/latestmovies--nuvio--c25124230f09f7ff.js",
+      "pendingSha256": "c25124230f09f7ff70a47926521d4db3d45a0262ad0cdff2c32be1c9dec85423",
+      "pendingFixedPoint": true
+    },
+    {
+      "id": "movy",
+      "name": "Movy",
+      "types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "strategy": "mixed_embed_resolver",
+      "site": "https://www.movy.sx",
+      "scope": "global",
+      "pendingFilename": "provider-disabled/movy--nuvio--bc93a4ed2785e5aa.js",
+      "pendingSha256": "bc93a4ed2785e5aa3b4ab7ff2d3266b391f98a2389ff68a2d9fae860643a04a7",
+      "pendingFixedPoint": true
+    },
+    {
+      "id": "arrowtv",
+      "name": "ArrowTV",
+      "types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "strategy": "mixed_embed_resolver",
+      "site": "https://arrowtv.net",
+      "scope": "global",
+      "pendingFilename": "provider-disabled/arrowtv--nuvio--da95147442cc93ea.js",
+      "pendingSha256": "da95147442cc93eaf682419f231b9b59d440a94a587ad621121ccc2d038647a1",
+      "pendingFixedPoint": true
+    },
+    {
+      "id": "chillflix",
+      "name": "Chillflix",
+      "types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "strategy": "mixed_embed_resolver",
+      "site": "https://chillflix.lol",
+      "scope": "global",
+      "pendingFilename": "provider-disabled/chillflix--nuvio--099c07b44004acb1.js",
+      "pendingSha256": "099c07b44004acb172a6f3071da64a9cd99499ba7eb2a2f13fa4f640f838ee1f",
+      "pendingFixedPoint": true
+    },
+    {
+      "id": "neonflix",
+      "name": "Neonflix",
+      "types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "strategy": "mixed_embed_resolver",
+      "site": "https://neonflix.st",
+      "scope": "global",
+      "pendingFilename": "provider-disabled/neonflix--nuvio--98910ed514d732f3.js",
+      "pendingSha256": "98910ed514d732f35aecac9fb884efb0e77b5f6fddca1d14b3edc03143fe529a",
+      "pendingFixedPoint": true
+    },
+    {
+      "id": "boredflix",
+      "name": "BoredFlix",
+      "types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "strategy": "mixed_embed_resolver",
+      "site": "https://boredflix.to/",
+      "scope": "global",
+      "pendingFilename": "provider-disabled/boredflix--nuvio--a1d33ad4b3577572.js",
+      "pendingSha256": "a1d33ad4b3577572fe742ed18e9a69430a9626d62a95b65fa5009a6ba138139f",
+      "pendingFixedPoint": true
+    },
+    {
+      "id": "fexini",
+      "name": "Fexini",
+      "types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "strategy": "mixed_embed_resolver",
+      "site": "https://fexini.net/",
+      "scope": "france",
+      "pendingFilename": "provider-disabled/fexini--nuvio--bdf3e90033885e53.js",
+      "pendingSha256": "bdf3e90033885e53cc380e8b54adb3f34b7d4147320e7e106399dcdd059356be",
+      "pendingFixedPoint": true
+    },
+    {
+      "id": "showbox",
+      "name": "ShowBox",
+      "types": [
+        "movie",
+        "tv"
+      ],
+      "strategy": "mixed_embed_resolver",
+      "site": "https://showbox.media/",
+      "scope": "france",
+      "pendingFilename": "provider-disabled/showbox--nuvio--522268dde7e15598.js",
+      "pendingSha256": "522268dde7e15598e3997fbaf6dbf383587c972553bf6a0962cecc451754cf48",
+      "pendingFixedPoint": true
+    },
+    {
+      "id": "fullanime",
+      "name": "FullAnime",
+      "types": [
+        "anime"
+      ],
+      "strategy": "mixed_embed_resolver",
+      "site": "https://www.fullanime.fr",
+      "scope": "france",
+      "pendingFilename": "provider-disabled/fullanime--nuvio--8671a37bdb51cd42.js",
+      "pendingSha256": "8671a37bdb51cd42e9fb3b82868a0ead644b8d4e5a9da92ce1ccb26ec4118888",
+      "pendingFixedPoint": true
+    },
+    {
+      "id": "animeonsen",
+      "name": "AnimeOnsen",
+      "types": [
+        "anime"
+      ],
+      "strategy": "mixed_embed_resolver",
+      "site": "https://www.animeonsen.xyz/",
+      "scope": "france",
+      "pendingFilename": "provider-disabled/animeonsen--nuvio--343d4ff2098a7e36.js",
+      "pendingSha256": "343d4ff2098a7e367efbc78e57a57298488f0a5783ccea83487083bfe60bb1cc",
+      "pendingFixedPoint": true
+    },
+    {
+      "id": "shuttletv",
+      "name": "ShuttleTV",
+      "types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "strategy": "mixed_embed_resolver",
+      "site": "https://shuttletv.pk",
+      "scope": "global",
+      "pendingFilename": "provider-disabled/shuttletv--nuvio--a61a6149235e6463.js",
+      "pendingSha256": "a61a6149235e64630740de84d7bea5e02e32173b3750961dad87122e874cfadb",
+      "pendingFixedPoint": true
+    },
+    {
+      "id": "primewire",
+      "name": "PrimeWire",
+      "types": [
+        "movie",
+        "tv"
+      ],
+      "strategy": "mixed_embed_resolver",
+      "site": "https://primewire.pw",
+      "scope": "global",
+      "pendingFilename": "provider-disabled/primewire--nuvio--0844cc491916a621.js",
+      "pendingSha256": "0844cc491916a621819fbabe922e7b70f358769693d9409a9c0bf437b970ec10",
+      "pendingFixedPoint": true
+    },
+    {
+      "id": "67movies",
+      "name": "67Movies",
+      "types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "strategy": "mixed_embed_resolver",
+      "site": "https://67movies.st",
+      "scope": "global",
+      "pendingFilename": "provider-disabled/67movies--nuvio--7a0804a6d5b1d83d.js",
+      "pendingSha256": "7a0804a6d5b1d83d062844b744f9109b3e334fb14169cb0ecaddb96b36c6a328",
+      "pendingFixedPoint": true
+    },
+    {
+      "id": "neobam",
+      "name": "Neobam",
+      "types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "strategy": "mixed_embed_resolver",
+      "site": "https://www.neobam.fr/",
+      "scope": "france",
+      "pendingFilename": "provider-disabled/neobam--nuvio--478081e7b2ab4d0e.js",
+      "pendingSha256": "478081e7b2ab4d0ed397cfba3c8f9411dda3e09b4c3140318968b82e46ce0800",
+      "pendingFixedPoint": true
+    },
+    {
+      "id": "frembed",
+      "name": "Frembed",
+      "types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "strategy": "mixed_embed_resolver",
+      "site": "https://frembed.surf",
+      "scope": "france",
+      "pendingFilename": "provider-disabled/frembed--nuvio--48bb6d652693bbcf.js",
+      "pendingSha256": "48bb6d652693bbcf387062436ae904ff3964adffa958497b899305341655281d",
+      "pendingFixedPoint": true
+    },
+    {
+      "id": "watch-cartoon-online",
+      "name": "Watch Cartoon Online",
+      "types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "strategy": "mixed_embed_resolver",
+      "site": "https://www.wco.tv",
+      "scope": "global",
+      "pendingFilename": "provider-disabled/watch-cartoon-online--nuvio--896fd2825f59b98e.js",
+      "pendingSha256": "896fd2825f59b98ece2c2c4f96dec48521ceb31ab97e4cda928d41e9ff5a69fc",
+      "pendingFixedPoint": true
+    },
+    {
+      "id": "cinemabz",
+      "name": "Cinema BZ",
+      "types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "strategy": "mixed_embed_resolver",
+      "site": "https://cinema.army",
+      "scope": "global",
+      "pendingFilename": "provider-disabled/cinemabz--nuvio--d8e2c82aaf9ea34d.js",
+      "pendingSha256": "d8e2c82aaf9ea34dc56dac1c7208d88df4c64ecd4cfae39a2972171bcb047aa4",
+      "pendingFixedPoint": true
+    },
+    {
+      "id": "flixer",
+      "name": "Flixer",
+      "types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "strategy": "mixed_embed_resolver",
+      "site": "https://flixer.gd",
+      "scope": "global",
+      "pendingFilename": "provider-disabled/flixer--nuvio--5d49686596e6ef1e.js",
+      "pendingSha256": "5d49686596e6ef1e6706be244b1cfa9bb9e00f753c9684047e4b1a610a4fac37",
+      "pendingFixedPoint": true
+    },
+    {
+      "id": "cinegram",
+      "name": "Cinegram",
+      "types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "strategy": "mixed_embed_resolver",
+      "site": "https://cinegram.tv",
+      "scope": "global",
+      "pendingFilename": "provider-disabled/cinegram--nuvio--ac471b073503f9eb.js",
+      "pendingSha256": "ac471b073503f9ebe19d439eed2e620f1d1680d426590744caf5f069c148bbba",
+      "pendingFixedPoint": true
+    },
+    {
+      "id": "movish",
+      "name": "Movish",
+      "types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "strategy": "mixed_embed_resolver",
+      "site": "https://movish.to",
+      "scope": "global",
+      "pendingFilename": "provider-disabled/movish--nuvio--de12090536d2ac4a.js",
+      "pendingSha256": "de12090536d2ac4a023e6b9a6ea229f582d7e66b3474c2e5f6b6d7064c074d2e",
+      "pendingFixedPoint": true
+    },
+    {
+      "id": "vuflix",
+      "name": "Vuflix",
+      "types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "strategy": "mixed_embed_resolver",
+      "site": "https://vuflix.co",
+      "scope": "global",
+      "pendingFilename": "provider-disabled/vuflix--nuvio--4849368aa6d4545b.js",
+      "pendingSha256": "4849368aa6d4545bf02e78ead8d4b7461c4400202f4f60e3558e90cf097c0d67",
+      "pendingFixedPoint": true
+    },
+    {
+      "id": "anisama",
+      "name": "Anisama",
+      "types": [
+        "anime"
+      ],
+      "strategy": "mixed_embed_resolver",
+      "site": "https://anisama.fr/",
+      "scope": "france",
+      "pendingFilename": "provider-disabled/anisama--nuvio--f6abda56ee3bcaf2.js",
+      "pendingSha256": "f6abda56ee3bcaf2338d53dd459cf252da025083305e7c9bd4c54e6e5137d880",
+      "pendingFixedPoint": true
+    },
+    {
+      "id": "zone-streaming",
+      "name": "Zone-Streaming",
+      "types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "strategy": "mixed_embed_resolver",
+      "site": "https://www.zone-streaming.fr/",
+      "scope": "france",
+      "pendingFilename": "provider-disabled/zone-streaming--nuvio--cd8a087906f9f286.js",
+      "pendingSha256": "cd8a087906f9f286b4b3a9081b1e9fc5fa0fb289c47f84297966622b46b5ee7a",
+      "pendingFixedPoint": true
+    },
+    {
+      "id": "dulourd",
+      "name": "DuLourd",
+      "types": [
+        "tv",
+        "anime"
+      ],
+      "strategy": "mixed_embed_resolver",
+      "site": "https://www.dulourd.hair",
+      "scope": "france",
+      "pendingFilename": "provider-disabled/dulourd--nuvio--1b06ad29002ad2e2.js",
+      "pendingSha256": "1b06ad29002ad2e2353750efa2f007fdbd31b7cdbc764dfd4be7ad57e02b6350",
+      "pendingFixedPoint": true
+    },
+    {
+      "id": "franime",
+      "name": "FrAnime",
+      "types": [
+        "anime"
+      ],
+      "strategy": "mixed_embed_resolver",
+      "site": "https://franime.fr",
+      "scope": "france",
+      "pendingFilename": "provider-disabled/franime--nuvio--36922a9379bca25b.js",
+      "pendingSha256": "36922a9379bca25b0f175a1bbc8ceae35a63564a68f46643fe6e5cce64ec6b47",
+      "pendingFixedPoint": true
+    },
+    {
+      "id": "nakios",
+      "name": "Nakios",
+      "types": [
+        "movie",
+        "tv"
+      ],
+      "strategy": "mixed_embed_resolver",
+      "site": "https://nakios.live/",
+      "scope": "france",
+      "pendingFilename": "provider-disabled/nakios--nuvio--bb37dfab21484768.js",
+      "pendingSha256": "bb37dfab21484768163d6f9d7d0687634eca2eaff5a98432efd36ccbea444c83",
+      "pendingFixedPoint": true
+    },
+    {
+      "id": "fawesome",
+      "name": "Fawesome",
+      "types": [
+        "movie",
+        "tv"
+      ],
+      "strategy": "mixed_embed_resolver",
+      "site": "https://fawesome.tv",
+      "scope": "france",
+      "pendingFilename": "provider-disabled/fawesome--nuvio--d4e483e67a3c8df9.js",
+      "pendingSha256": "d4e483e67a3c8df99fcdb98ad6a385b9191c1c20efa65b5a34cfab011af7d933",
+      "pendingFixedPoint": true
+    },
+    {
+      "id": "cinetimes",
+      "name": "CineTimes",
+      "types": [
+        "movie",
+        "tv"
+      ],
+      "strategy": "mixed_embed_resolver",
+      "site": "https://cinetimes.org/en/",
+      "scope": "france",
+      "pendingFilename": "provider-disabled/cinetimes--nuvio--6f1e73650c04612b.js",
+      "pendingSha256": "6f1e73650c04612b772da0e95fad5c7620e28288746c88d573e78bff0d408bca",
+      "pendingFixedPoint": true
+    },
+    {
+      "id": "sadisflix",
+      "name": "SadisFlix",
+      "types": [
+        "movie",
+        "tv"
+      ],
+      "strategy": "mixed_embed_resolver",
+      "site": "https://sadisflix-officiel.cfd",
+      "scope": "france",
+      "pendingFilename": "provider-disabled/sadisflix--nuvio--79aaedf6394bdf2d.js",
+      "pendingSha256": "79aaedf6394bdf2d6669393b84f3851ab9928ba07f4869fae14a4df003d9b000",
+      "pendingFixedPoint": true
+    },
+    {
+      "id": "skstream",
+      "name": "SKStream",
+      "types": [
+        "movie",
+        "tv"
+      ],
+      "strategy": "mixed_embed_resolver",
+      "site": "https://wvw.skstream.rip/",
+      "scope": "france",
+      "pendingFilename": "provider-disabled/skstream--nuvio--7567eb31c5c8dfc4.js",
+      "pendingSha256": "7567eb31c5c8dfc4e98f570725d330e9b54d5c0031eb65e8f428ce1ac1d50909",
+      "pendingFixedPoint": true
+    },
+    {
+      "id": "youtitou",
+      "name": "YouTitou",
+      "types": [
+        "anime"
+      ],
+      "strategy": "mixed_embed_resolver",
+      "site": "https://youtitou.com/",
+      "scope": "france",
+      "pendingFilename": "provider-disabled/youtitou--nuvio--74c15afa56dd0bad.js",
+      "pendingSha256": "74c15afa56dd0bad50e0f1306905ac08eba509768d72a394f59e9693d2919290",
+      "pendingFixedPoint": true
+    },
+    {
+      "id": "waveanime",
+      "name": "WaveAnime",
+      "types": [
+        "anime"
+      ],
+      "strategy": "mixed_embed_resolver",
+      "site": "https://waveanime.fr",
+      "scope": "france",
+      "pendingFilename": "provider-disabled/waveanime--nuvio--2e7f77b5ebf9079c.js",
+      "pendingSha256": "2e7f77b5ebf9079caf8d78c0408b6e41764c0a524906b9b70e82fdb8f619350e",
+      "pendingFixedPoint": true
+    },
+    {
+      "id": "cinematheque-de-bretagne",
+      "name": "Cinémathèque de Bretagne",
       "types": [
         "movie"
       ],
-      "strategy": "open_archive_public_domain",
-      "site": "https://archive.org",
-      "scope": "global",
-      "pendingFilename": "provider-disabled/internet-archive--nuvio--8872a408be60d6d0.js",
-      "pendingSha256": "8872a408be60d6d034c9891c9f49cd4f84857057101d809cf1b763feb184b1de",
+      "strategy": "mixed_embed_resolver",
+      "site": "https://www.cinematheque-bretagne.bzh",
+      "scope": "france",
+      "pendingFilename": "provider-disabled/cinematheque-de-bretagne--nuvio--26df2d5fcde637de.js",
+      "pendingSha256": "26df2d5fcde637de434dc0fadcf026e10aa7e8d7f0021638762cd48d072b4989",
+      "pendingFixedPoint": true
+    },
+    {
+      "id": "film-a-revoir",
+      "name": "Film à Revoir",
+      "types": [
+        "movie"
+      ],
+      "strategy": "mixed_embed_resolver",
+      "site": "https://filmarevoirnad.blogspot.com",
+      "scope": "france",
+      "pendingFilename": "provider-disabled/film-a-revoir--nuvio--54cb3676934df2dc.js",
+      "pendingSha256": "54cb3676934df2dc1336f1e9b5672fc2620f991cd46ca3ea95f012f80ab819a9",
+      "pendingFixedPoint": true
+    },
+    {
+      "id": "hianime",
+      "name": "HiAnime",
+      "types": [
+        "anime"
+      ],
+      "strategy": "mixed_embed_resolver",
+      "site": "https://hianime.at/",
+      "scope": "france",
+      "pendingFilename": "provider-disabled/hianime--nuvio--3c8184082d62241f.js",
+      "pendingSha256": "3c8184082d62241f773c5dd5af9627a4d0299477bb99c2faf664f2416222ab8e",
+      "pendingFixedPoint": true
+    },
+    {
+      "id": "movix-fr",
+      "name": "Movix",
+      "types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "strategy": "mixed_embed_resolver",
+      "site": "https://movix.zip/",
+      "scope": "france",
+      "pendingFilename": "provider-disabled/movix-fr--nuvio--8eab7cbc2b8bc457.js",
+      "pendingSha256": "8eab7cbc2b8bc457b4836ae0890c31f254be274d15fc8def61ff60aad5d5e746",
+      "pendingFixedPoint": true
+    },
+    {
+      "id": "1jour1film0626",
+      "name": "1jour1film0626",
+      "types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "strategy": "mixed_embed_resolver",
+      "site": "https://1jour1film1026.monster",
+      "scope": "france",
+      "pendingFilename": "provider-disabled/1jour1film0626--nuvio--3e1bad7cad47d760.js",
+      "pendingSha256": "3e1bad7cad47d7602054af7795992618fa574dc96442a237cd4e8103e5e228eb",
+      "pendingFixedPoint": true
+    },
+    {
+      "id": "kidraz",
+      "name": "Kidraz",
+      "types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "strategy": "mixed_embed_resolver",
+      "site": "https://fronav.com",
+      "scope": "france",
+      "pendingFilename": "provider-disabled/kidraz--nuvio--ad16ca8575bd6869.js",
+      "pendingSha256": "ad16ca8575bd6869e9970da7410582e037c97eff0babfbd69b69c0e0080fd1d0",
       "pendingFixedPoint": true
     }
   ]

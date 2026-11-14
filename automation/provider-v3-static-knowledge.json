@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "providerCount": 42,
+  "providerCount": 59,
   "source": "niakvio.provider-contract-local-enricher",
   "role": "durable-structured-provider-data",
   "legacyProviderJsExecuted": false,
@@ -266944,6 +266944,1484 @@
       ],
       "legacyProviderJsExecuted": false,
       "upstreamJsExecuted": false
+    },
+    "corsflix": {
+      "model": {
+        "apiRecipe": null,
+        "authoring": "niakvio-owned-v3",
+        "displayName": "CorsFlix",
+        "domainSubstitutions": {},
+        "externalIdentityPlan": [],
+        "fixedApi": null,
+        "identityInput": {
+          "mode": "tmdb_direct",
+          "requiredFields": [
+            "tmdbId",
+            "mediaType"
+          ],
+          "requiresTmdbBeforeRun": false
+        },
+        "knownSite": "https://watch.corsflix.net",
+        "modelSchemaVersion": 4,
+        "observedUrls": [
+          "https://watch.corsflix.net"
+        ],
+        "officialApi": null,
+        "officialHub": null,
+        "officialSite": "https://watch.corsflix.net",
+        "origins": [
+          "https://watch.corsflix.net"
+        ],
+        "outputLanguageRules": [],
+        "outputUrlHostRewrites": [],
+        "proofDetailBases": [],
+        "proofProtectedHosts": [],
+        "proofSearchBases": [],
+        "providerValuePlan": [],
+        "reconstructionState": "learning-clean-seed",
+        "routePlanVersion": 3,
+        "routeProofVersion": 0,
+        "routes": [
+          "/movies/{tmdbId}-{slug}",
+          "/tv?s={query}",
+          "/search?q={query}",
+          "/tv/search?q={query}"
+        ],
+        "runtimeDiscovery": false,
+        "runtimeRole": "reader",
+        "searchRequestPlan": [],
+        "sourceRuntimeFamily": "unknown",
+        "strategy": "mixed_embed_resolver",
+        "strictHtmlIdentity": false,
+        "strictIdentity": false,
+        "supportedTypes": [
+          "movie",
+          "tv",
+          "anime"
+        ],
+        "upstreamCodeEmbedded": false,
+        "upstreamCodeExecuted": false
+      },
+      "knowledge": {
+        "hosts": [
+          "watch.corsflix.net"
+        ],
+        "routes": [
+          "/movies/{tmdbId}-{slug}",
+          "/tv?s={query}",
+          "/search?q={query}",
+          "/tv/search?q={query}"
+        ],
+        "routeFragments": [],
+        "observedUrls": [
+          "https://watch.corsflix.net"
+        ],
+        "decodedStaticStringCount": 0,
+        "runtimeFamily": "unknown"
+      },
+      "sources": [
+        {
+          "source": "activation-static-config",
+          "sourceName": "NiakVIO exact managed Provider CONFIG",
+          "upstreamId": "corsflix",
+          "manifestOrigin": "",
+          "upstreamSha256": "",
+          "upstreamKnowledgeSource": "managed-config-lego",
+          "codeRole": "knowledge-only",
+          "codeExecuted": false
+        }
+      ],
+      "legacyProviderJsExecuted": false,
+      "upstreamJsExecuted": false
+    },
+    "emnexmovies": {
+      "model": {
+        "apiRecipe": null,
+        "authoring": "niakvio-owned-v3",
+        "displayName": "EmnexMovies",
+        "domainSubstitutions": {},
+        "externalIdentityPlan": [],
+        "fixedApi": null,
+        "identityInput": {
+          "mode": "tmdb_direct",
+          "requiredFields": [
+            "tmdbId",
+            "mediaType"
+          ],
+          "requiresTmdbBeforeRun": false
+        },
+        "knownSite": "https://emnexmovies.tech",
+        "modelSchemaVersion": 4,
+        "observedUrls": [
+          "https://emnexmovies.tech"
+        ],
+        "officialApi": null,
+        "officialHub": null,
+        "officialSite": "https://emnexmovies.tech",
+        "origins": [
+          "https://emnexmovies.tech"
+        ],
+        "outputLanguageRules": [],
+        "outputUrlHostRewrites": [],
+        "proofDetailBases": [],
+        "proofProtectedHosts": [],
+        "proofSearchBases": [],
+        "providerValuePlan": [],
+        "reconstructionState": "learning-clean-seed",
+        "routePlanVersion": 3,
+        "routeProofVersion": 0,
+        "routes": [
+          "/movie/{tmdbId}-{slug}",
+          "/tv/212171-{slug}-ella",
+          "/movie/529107-inside-{slug}",
+          "/tv/198237-{slug}-wanderer",
+          "/movie/649745-{slug}-wandering",
+          "/movie/398188-{slug}-wars",
+          "/movie/287954-lolita-from-{slug}-space",
+          "/movie/1786250-short-cuts-{slug}",
+          "/movie/336592-the-science-of-{slug}",
+          "/movie/1282990-{slug}-interference",
+          "/movie/1443305-container-{slug}",
+          "/movie/1391726-{slug}-stella",
+          "/movie/1450827-{slug}-political-prisoner",
+          "/movie/1642987-primus-{slug}-drum-derby",
+          "/movie/301959-{slug}-nolan-s-odyssey",
+          "/movie/716603-only-{slug}-pinball-lives-forever",
+          "/movie/460616-{slug}-civil-war-shadows-of-the-empire",
+          "/movie/660698-faster-than-light-the-dream-of-{slug}-flight",
+          "/movie/552531-the-prom-goer-s-{slug}-excursion",
+          "/movie/763179-cosmic-journey-the-voyager-{slug}-mission-and-message",
+          "/tv/{tmdbId}-{slug}",
+          "/movie/559969-el-camino-a-{slug}-movie",
+          "/tv/337563-{slug}-original-minisodes",
+          "/tv/232533-{slug}-fortune-teller"
+        ],
+        "runtimeDiscovery": false,
+        "runtimeRole": "reader",
+        "searchRequestPlan": [],
+        "sourceRuntimeFamily": "unknown",
+        "strategy": "mixed_embed_resolver",
+        "strictHtmlIdentity": false,
+        "strictIdentity": false,
+        "supportedTypes": [
+          "movie",
+          "tv",
+          "anime"
+        ],
+        "upstreamCodeEmbedded": false,
+        "upstreamCodeExecuted": false
+      },
+      "knowledge": {
+        "hosts": [
+          "emnexmovies.tech"
+        ],
+        "routes": [
+          "/movie/{tmdbId}-{slug}",
+          "/tv/212171-{slug}-ella",
+          "/movie/529107-inside-{slug}",
+          "/tv/198237-{slug}-wanderer",
+          "/movie/649745-{slug}-wandering",
+          "/movie/398188-{slug}-wars",
+          "/movie/287954-lolita-from-{slug}-space",
+          "/movie/1786250-short-cuts-{slug}",
+          "/movie/336592-the-science-of-{slug}",
+          "/movie/1282990-{slug}-interference",
+          "/movie/1443305-container-{slug}",
+          "/movie/1391726-{slug}-stella",
+          "/movie/1450827-{slug}-political-prisoner",
+          "/movie/1642987-primus-{slug}-drum-derby",
+          "/movie/301959-{slug}-nolan-s-odyssey",
+          "/movie/716603-only-{slug}-pinball-lives-forever",
+          "/movie/460616-{slug}-civil-war-shadows-of-the-empire",
+          "/movie/660698-faster-than-light-the-dream-of-{slug}-flight",
+          "/movie/552531-the-prom-goer-s-{slug}-excursion",
+          "/movie/763179-cosmic-journey-the-voyager-{slug}-mission-and-message",
+          "/tv/{tmdbId}-{slug}",
+          "/movie/559969-el-camino-a-{slug}-movie",
+          "/tv/337563-{slug}-original-minisodes",
+          "/tv/232533-{slug}-fortune-teller"
+        ],
+        "routeFragments": [],
+        "observedUrls": [
+          "https://emnexmovies.tech"
+        ],
+        "decodedStaticStringCount": 0,
+        "runtimeFamily": "unknown"
+      },
+      "sources": [
+        {
+          "source": "activation-static-config",
+          "sourceName": "NiakVIO exact managed Provider CONFIG",
+          "upstreamId": "emnexmovies",
+          "manifestOrigin": "",
+          "upstreamSha256": "",
+          "upstreamKnowledgeSource": "managed-config-lego",
+          "codeRole": "knowledge-only",
+          "codeExecuted": false
+        }
+      ],
+      "legacyProviderJsExecuted": false,
+      "upstreamJsExecuted": false
+    },
+    "latestmovies": {
+      "model": {
+        "apiRecipe": null,
+        "authoring": "niakvio-owned-v3",
+        "displayName": "LatestMovies",
+        "domainSubstitutions": {},
+        "externalIdentityPlan": [],
+        "fixedApi": null,
+        "identityInput": {
+          "mode": "tmdb_direct",
+          "requiredFields": [
+            "tmdbId",
+            "mediaType"
+          ],
+          "requiresTmdbBeforeRun": false
+        },
+        "knownSite": "https://latestmovies.net",
+        "modelSchemaVersion": 4,
+        "observedUrls": [
+          "https://latestmovies.net"
+        ],
+        "officialApi": null,
+        "officialHub": null,
+        "officialSite": "https://latestmovies.net",
+        "origins": [
+          "https://latestmovies.net"
+        ],
+        "outputLanguageRules": [],
+        "outputUrlHostRewrites": [],
+        "proofDetailBases": [],
+        "proofProtectedHosts": [],
+        "proofSearchBases": [],
+        "providerValuePlan": [],
+        "reconstructionState": "learning-clean-seed",
+        "routePlanVersion": 3,
+        "routeProofVersion": 0,
+        "routes": [
+          "/tv/{tmdbId}"
+        ],
+        "runtimeDiscovery": false,
+        "runtimeRole": "reader",
+        "searchRequestPlan": [],
+        "sourceRuntimeFamily": "unknown",
+        "strategy": "mixed_embed_resolver",
+        "strictHtmlIdentity": false,
+        "strictIdentity": false,
+        "supportedTypes": [
+          "movie",
+          "tv",
+          "anime"
+        ],
+        "upstreamCodeEmbedded": false,
+        "upstreamCodeExecuted": false
+      },
+      "knowledge": {
+        "hosts": [
+          "latestmovies.net"
+        ],
+        "routes": [
+          "/tv/{tmdbId}"
+        ],
+        "routeFragments": [],
+        "observedUrls": [
+          "https://latestmovies.net"
+        ],
+        "decodedStaticStringCount": 0,
+        "runtimeFamily": "unknown"
+      },
+      "sources": [
+        {
+          "source": "activation-static-config",
+          "sourceName": "NiakVIO exact managed Provider CONFIG",
+          "upstreamId": "latestmovies",
+          "manifestOrigin": "",
+          "upstreamSha256": "",
+          "upstreamKnowledgeSource": "managed-config-lego",
+          "codeRole": "knowledge-only",
+          "codeExecuted": false
+        }
+      ],
+      "legacyProviderJsExecuted": false,
+      "upstreamJsExecuted": false
+    },
+    "movy": {
+      "model": {
+        "apiRecipe": null,
+        "authoring": "niakvio-owned-v3",
+        "displayName": "Movy",
+        "domainSubstitutions": {},
+        "externalIdentityPlan": [],
+        "fixedApi": null,
+        "identityInput": {
+          "mode": "tmdb_direct",
+          "requiredFields": [
+            "tmdbId",
+            "mediaType"
+          ],
+          "requiresTmdbBeforeRun": false
+        },
+        "knownSite": "https://www.movy.sx",
+        "modelSchemaVersion": 4,
+        "observedUrls": [
+          "https://www.movy.sx"
+        ],
+        "officialApi": null,
+        "officialHub": null,
+        "officialSite": "https://www.movy.sx",
+        "origins": [
+          "https://www.movy.sx"
+        ],
+        "outputLanguageRules": [],
+        "outputUrlHostRewrites": [],
+        "proofDetailBases": [],
+        "proofProtectedHosts": [],
+        "proofSearchBases": [],
+        "providerValuePlan": [],
+        "reconstructionState": "learning-clean-seed",
+        "routePlanVersion": 3,
+        "routeProofVersion": 0,
+        "routes": [
+          "/movie/{tmdbId}",
+          "/tv/{tmdbId}"
+        ],
+        "runtimeDiscovery": false,
+        "runtimeRole": "reader",
+        "searchRequestPlan": [],
+        "sourceRuntimeFamily": "unknown",
+        "strategy": "mixed_embed_resolver",
+        "strictHtmlIdentity": false,
+        "strictIdentity": false,
+        "supportedTypes": [
+          "movie",
+          "tv",
+          "anime"
+        ],
+        "upstreamCodeEmbedded": false,
+        "upstreamCodeExecuted": false
+      },
+      "knowledge": {
+        "hosts": [
+          "www.movy.sx"
+        ],
+        "routes": [
+          "/movie/{tmdbId}",
+          "/tv/{tmdbId}"
+        ],
+        "routeFragments": [],
+        "observedUrls": [
+          "https://www.movy.sx"
+        ],
+        "decodedStaticStringCount": 0,
+        "runtimeFamily": "unknown"
+      },
+      "sources": [
+        {
+          "source": "activation-static-config",
+          "sourceName": "NiakVIO exact managed Provider CONFIG",
+          "upstreamId": "movy",
+          "manifestOrigin": "",
+          "upstreamSha256": "",
+          "upstreamKnowledgeSource": "managed-config-lego",
+          "codeRole": "knowledge-only",
+          "codeExecuted": false
+        }
+      ],
+      "legacyProviderJsExecuted": false,
+      "upstreamJsExecuted": false
+    },
+    "arrowtv": {
+      "model": {
+        "apiRecipe": null,
+        "authoring": "niakvio-owned-v3",
+        "displayName": "ArrowTV",
+        "domainSubstitutions": {},
+        "externalIdentityPlan": [],
+        "fixedApi": null,
+        "identityInput": {
+          "mode": "tmdb_direct",
+          "requiredFields": [
+            "tmdbId",
+            "mediaType"
+          ],
+          "requiresTmdbBeforeRun": false
+        },
+        "knownSite": "https://arrowtv.net",
+        "modelSchemaVersion": 4,
+        "observedUrls": [
+          "https://arrowtv.net"
+        ],
+        "officialApi": null,
+        "officialHub": null,
+        "officialSite": "https://arrowtv.net",
+        "origins": [
+          "https://arrowtv.net"
+        ],
+        "outputLanguageRules": [],
+        "outputUrlHostRewrites": [],
+        "proofDetailBases": [],
+        "proofProtectedHosts": [],
+        "proofSearchBases": [],
+        "providerValuePlan": [],
+        "reconstructionState": "learning-clean-seed",
+        "routePlanVersion": 3,
+        "routeProofVersion": 0,
+        "routes": [
+          "/movie/{tmdbId}",
+          "/tv/{tmdbId}"
+        ],
+        "runtimeDiscovery": false,
+        "runtimeRole": "reader",
+        "searchRequestPlan": [],
+        "sourceRuntimeFamily": "unknown",
+        "strategy": "mixed_embed_resolver",
+        "strictHtmlIdentity": false,
+        "strictIdentity": false,
+        "supportedTypes": [
+          "movie",
+          "tv",
+          "anime"
+        ],
+        "upstreamCodeEmbedded": false,
+        "upstreamCodeExecuted": false
+      },
+      "knowledge": {
+        "hosts": [
+          "arrowtv.net"
+        ],
+        "routes": [
+          "/movie/{tmdbId}",
+          "/tv/{tmdbId}"
+        ],
+        "routeFragments": [],
+        "observedUrls": [
+          "https://arrowtv.net"
+        ],
+        "decodedStaticStringCount": 0,
+        "runtimeFamily": "unknown"
+      },
+      "sources": [
+        {
+          "source": "activation-static-config",
+          "sourceName": "NiakVIO exact managed Provider CONFIG",
+          "upstreamId": "arrowtv",
+          "manifestOrigin": "",
+          "upstreamSha256": "",
+          "upstreamKnowledgeSource": "managed-config-lego",
+          "codeRole": "knowledge-only",
+          "codeExecuted": false
+        }
+      ],
+      "legacyProviderJsExecuted": false,
+      "upstreamJsExecuted": false
+    },
+    "chillflix": {
+      "model": {
+        "apiRecipe": null,
+        "authoring": "niakvio-owned-v3",
+        "displayName": "Chillflix",
+        "domainSubstitutions": {},
+        "externalIdentityPlan": [],
+        "fixedApi": null,
+        "identityInput": {
+          "mode": "tmdb_direct",
+          "requiredFields": [
+            "tmdbId",
+            "mediaType"
+          ],
+          "requiresTmdbBeforeRun": false
+        },
+        "knownSite": "https://chillflix.lol",
+        "modelSchemaVersion": 4,
+        "observedUrls": [
+          "https://chillflix.lol"
+        ],
+        "officialApi": null,
+        "officialHub": null,
+        "officialSite": "https://chillflix.lol",
+        "origins": [
+          "https://chillflix.lol"
+        ],
+        "outputLanguageRules": [],
+        "outputUrlHostRewrites": [],
+        "proofDetailBases": [],
+        "proofProtectedHosts": [],
+        "proofSearchBases": [],
+        "providerValuePlan": [],
+        "reconstructionState": "learning-clean-seed",
+        "routePlanVersion": 3,
+        "routeProofVersion": 0,
+        "routes": [
+          "/tv/291507?play=true&s={query}&e={episode}",
+          "/tv/303044?play=true&s={query}&e={episode}"
+        ],
+        "runtimeDiscovery": false,
+        "runtimeRole": "reader",
+        "searchRequestPlan": [],
+        "sourceRuntimeFamily": "unknown",
+        "strategy": "mixed_embed_resolver",
+        "strictHtmlIdentity": false,
+        "strictIdentity": false,
+        "supportedTypes": [
+          "movie",
+          "tv",
+          "anime"
+        ],
+        "upstreamCodeEmbedded": false,
+        "upstreamCodeExecuted": false
+      },
+      "knowledge": {
+        "hosts": [
+          "chillflix.lol"
+        ],
+        "routes": [
+          "/tv/291507?play=true&s={query}&e={episode}",
+          "/tv/303044?play=true&s={query}&e={episode}"
+        ],
+        "routeFragments": [],
+        "observedUrls": [
+          "https://chillflix.lol"
+        ],
+        "decodedStaticStringCount": 0,
+        "runtimeFamily": "unknown"
+      },
+      "sources": [
+        {
+          "source": "activation-static-config",
+          "sourceName": "NiakVIO exact managed Provider CONFIG",
+          "upstreamId": "chillflix",
+          "manifestOrigin": "",
+          "upstreamSha256": "",
+          "upstreamKnowledgeSource": "managed-config-lego",
+          "codeRole": "knowledge-only",
+          "codeExecuted": false
+        }
+      ],
+      "legacyProviderJsExecuted": false,
+      "upstreamJsExecuted": false
+    },
+    "neonflix": {
+      "model": {
+        "apiRecipe": null,
+        "authoring": "niakvio-owned-v3",
+        "displayName": "Neonflix",
+        "domainSubstitutions": {},
+        "externalIdentityPlan": [],
+        "fixedApi": null,
+        "identityInput": {
+          "mode": "tmdb_direct",
+          "requiredFields": [
+            "tmdbId",
+            "mediaType"
+          ],
+          "requiresTmdbBeforeRun": false
+        },
+        "knownSite": "https://neonflix.st",
+        "modelSchemaVersion": 4,
+        "observedUrls": [
+          "https://neonflix.st"
+        ],
+        "officialApi": null,
+        "officialHub": null,
+        "officialSite": "https://neonflix.st",
+        "origins": [
+          "https://neonflix.st"
+        ],
+        "outputLanguageRules": [],
+        "outputUrlHostRewrites": [],
+        "proofDetailBases": [],
+        "proofProtectedHosts": [],
+        "proofSearchBases": [],
+        "providerValuePlan": [],
+        "reconstructionState": "learning-clean-seed",
+        "routePlanVersion": 3,
+        "routeProofVersion": 0,
+        "routes": [
+          "/tv/{tmdbId}"
+        ],
+        "runtimeDiscovery": false,
+        "runtimeRole": "reader",
+        "searchRequestPlan": [],
+        "sourceRuntimeFamily": "unknown",
+        "strategy": "mixed_embed_resolver",
+        "strictHtmlIdentity": false,
+        "strictIdentity": false,
+        "supportedTypes": [
+          "movie",
+          "tv",
+          "anime"
+        ],
+        "upstreamCodeEmbedded": false,
+        "upstreamCodeExecuted": false
+      },
+      "knowledge": {
+        "hosts": [
+          "neonflix.st"
+        ],
+        "routes": [
+          "/tv/{tmdbId}"
+        ],
+        "routeFragments": [],
+        "observedUrls": [
+          "https://neonflix.st"
+        ],
+        "decodedStaticStringCount": 0,
+        "runtimeFamily": "unknown"
+      },
+      "sources": [
+        {
+          "source": "activation-static-config",
+          "sourceName": "NiakVIO exact managed Provider CONFIG",
+          "upstreamId": "neonflix",
+          "manifestOrigin": "",
+          "upstreamSha256": "",
+          "upstreamKnowledgeSource": "managed-config-lego",
+          "codeRole": "knowledge-only",
+          "codeExecuted": false
+        }
+      ],
+      "legacyProviderJsExecuted": false,
+      "upstreamJsExecuted": false
+    },
+    "boredflix": {
+      "model": {
+        "apiRecipe": null,
+        "authoring": "niakvio-owned-v3",
+        "displayName": "BoredFlix",
+        "domainSubstitutions": {},
+        "externalIdentityPlan": [],
+        "fixedApi": null,
+        "identityInput": {
+          "mode": "tmdb_direct",
+          "requiredFields": [
+            "tmdbId",
+            "mediaType"
+          ],
+          "requiresTmdbBeforeRun": false
+        },
+        "knownSite": "https://boredflix.to/",
+        "modelSchemaVersion": 4,
+        "observedUrls": [
+          "https://boredflix.to/"
+        ],
+        "officialApi": null,
+        "officialHub": null,
+        "officialSite": "https://boredflix.to/",
+        "origins": [
+          "https://boredflix.to"
+        ],
+        "outputLanguageRules": [],
+        "outputUrlHostRewrites": [],
+        "proofDetailBases": [],
+        "proofProtectedHosts": [],
+        "proofSearchBases": [],
+        "providerValuePlan": [],
+        "reconstructionState": "learning-clean-seed",
+        "routePlanVersion": 3,
+        "routeProofVersion": 0,
+        "routes": [
+          "/?s={query}",
+          "/search?q={query}"
+        ],
+        "runtimeDiscovery": false,
+        "runtimeRole": "reader",
+        "searchRequestPlan": [],
+        "sourceRuntimeFamily": "unknown",
+        "strategy": "mixed_embed_resolver",
+        "strictHtmlIdentity": false,
+        "strictIdentity": false,
+        "supportedTypes": [
+          "movie",
+          "tv",
+          "anime"
+        ],
+        "upstreamCodeEmbedded": false,
+        "upstreamCodeExecuted": false
+      },
+      "knowledge": {
+        "hosts": [
+          "boredflix.to"
+        ],
+        "routes": [
+          "/?s={query}",
+          "/search?q={query}"
+        ],
+        "routeFragments": [],
+        "observedUrls": [
+          "https://boredflix.to/"
+        ],
+        "decodedStaticStringCount": 0,
+        "runtimeFamily": "unknown"
+      },
+      "sources": [
+        {
+          "source": "activation-static-config",
+          "sourceName": "NiakVIO exact managed Provider CONFIG",
+          "upstreamId": "boredflix",
+          "manifestOrigin": "",
+          "upstreamSha256": "",
+          "upstreamKnowledgeSource": "managed-config-lego",
+          "codeRole": "knowledge-only",
+          "codeExecuted": false
+        }
+      ],
+      "legacyProviderJsExecuted": false,
+      "upstreamJsExecuted": false
+    },
+    "shuttletv": {
+      "model": {
+        "apiRecipe": null,
+        "authoring": "niakvio-owned-v3",
+        "displayName": "ShuttleTV",
+        "domainSubstitutions": {},
+        "externalIdentityPlan": [],
+        "fixedApi": null,
+        "identityInput": {
+          "mode": "tmdb_direct",
+          "requiredFields": [
+            "tmdbId",
+            "mediaType"
+          ],
+          "requiresTmdbBeforeRun": false
+        },
+        "knownSite": "https://shuttletv.pk",
+        "modelSchemaVersion": 4,
+        "observedUrls": [
+          "https://shuttletv.pk"
+        ],
+        "officialApi": null,
+        "officialHub": null,
+        "officialSite": "https://shuttletv.pk",
+        "origins": [
+          "https://shuttletv.pk"
+        ],
+        "outputLanguageRules": [],
+        "outputUrlHostRewrites": [],
+        "proofDetailBases": [],
+        "proofProtectedHosts": [],
+        "proofSearchBases": [],
+        "providerValuePlan": [],
+        "reconstructionState": "learning-clean-seed",
+        "routePlanVersion": 3,
+        "routeProofVersion": 0,
+        "routes": [
+          "/recherche?q={query}",
+          "/recherche?query={query}"
+        ],
+        "runtimeDiscovery": false,
+        "runtimeRole": "reader",
+        "searchRequestPlan": [],
+        "sourceRuntimeFamily": "unknown",
+        "strategy": "mixed_embed_resolver",
+        "strictHtmlIdentity": false,
+        "strictIdentity": false,
+        "supportedTypes": [
+          "movie",
+          "tv",
+          "anime"
+        ],
+        "upstreamCodeEmbedded": false,
+        "upstreamCodeExecuted": false
+      },
+      "knowledge": {
+        "hosts": [
+          "shuttletv.pk"
+        ],
+        "routes": [
+          "/recherche?q={query}",
+          "/recherche?query={query}"
+        ],
+        "routeFragments": [],
+        "observedUrls": [
+          "https://shuttletv.pk"
+        ],
+        "decodedStaticStringCount": 0,
+        "runtimeFamily": "unknown"
+      },
+      "sources": [
+        {
+          "source": "activation-static-config",
+          "sourceName": "NiakVIO exact managed Provider CONFIG",
+          "upstreamId": "shuttletv",
+          "manifestOrigin": "",
+          "upstreamSha256": "",
+          "upstreamKnowledgeSource": "managed-config-lego",
+          "codeRole": "knowledge-only",
+          "codeExecuted": false
+        }
+      ],
+      "legacyProviderJsExecuted": false,
+      "upstreamJsExecuted": false
+    },
+    "primewire": {
+      "model": {
+        "apiRecipe": null,
+        "authoring": "niakvio-owned-v3",
+        "displayName": "PrimeWire",
+        "domainSubstitutions": {},
+        "externalIdentityPlan": [],
+        "fixedApi": null,
+        "identityInput": {
+          "mode": "tmdb_direct",
+          "requiredFields": [
+            "tmdbId",
+            "mediaType"
+          ],
+          "requiresTmdbBeforeRun": false
+        },
+        "knownSite": "https://primewire.pw",
+        "modelSchemaVersion": 4,
+        "observedUrls": [
+          "https://primewire.pw"
+        ],
+        "officialApi": null,
+        "officialHub": null,
+        "officialSite": "https://primewire.pw",
+        "origins": [
+          "https://primewire.pw"
+        ],
+        "outputLanguageRules": [],
+        "outputUrlHostRewrites": [],
+        "proofDetailBases": [],
+        "proofProtectedHosts": [],
+        "proofSearchBases": [],
+        "providerValuePlan": [],
+        "reconstructionState": "learning-clean-seed",
+        "routePlanVersion": 3,
+        "routeProofVersion": 0,
+        "routes": [
+          "/movie/{tmdbId}"
+        ],
+        "runtimeDiscovery": false,
+        "runtimeRole": "reader",
+        "searchRequestPlan": [],
+        "sourceRuntimeFamily": "unknown",
+        "strategy": "mixed_embed_resolver",
+        "strictHtmlIdentity": false,
+        "strictIdentity": false,
+        "supportedTypes": [
+          "movie",
+          "tv"
+        ],
+        "upstreamCodeEmbedded": false,
+        "upstreamCodeExecuted": false
+      },
+      "knowledge": {
+        "hosts": [
+          "primewire.pw"
+        ],
+        "routes": [
+          "/movie/{tmdbId}"
+        ],
+        "routeFragments": [],
+        "observedUrls": [
+          "https://primewire.pw"
+        ],
+        "decodedStaticStringCount": 0,
+        "runtimeFamily": "unknown"
+      },
+      "sources": [
+        {
+          "source": "activation-static-config",
+          "sourceName": "NiakVIO exact managed Provider CONFIG",
+          "upstreamId": "primewire",
+          "manifestOrigin": "",
+          "upstreamSha256": "",
+          "upstreamKnowledgeSource": "managed-config-lego",
+          "codeRole": "knowledge-only",
+          "codeExecuted": false
+        }
+      ],
+      "legacyProviderJsExecuted": false,
+      "upstreamJsExecuted": false
+    },
+    "67movies": {
+      "model": {
+        "apiRecipe": null,
+        "authoring": "niakvio-owned-v3",
+        "displayName": "67Movies",
+        "domainSubstitutions": {},
+        "externalIdentityPlan": [],
+        "fixedApi": null,
+        "identityInput": {
+          "mode": "tmdb_direct",
+          "requiredFields": [
+            "tmdbId",
+            "mediaType"
+          ],
+          "requiresTmdbBeforeRun": false
+        },
+        "knownSite": "https://67movies.st",
+        "modelSchemaVersion": 4,
+        "observedUrls": [
+          "https://67movies.st"
+        ],
+        "officialApi": null,
+        "officialHub": null,
+        "officialSite": "https://67movies.st",
+        "origins": [
+          "https://67movies.st"
+        ],
+        "outputLanguageRules": [],
+        "outputUrlHostRewrites": [],
+        "proofDetailBases": [],
+        "proofProtectedHosts": [],
+        "proofSearchBases": [],
+        "providerValuePlan": [],
+        "reconstructionState": "learning-clean-seed",
+        "routePlanVersion": 3,
+        "routeProofVersion": 0,
+        "routes": [
+          "/?s={query}"
+        ],
+        "runtimeDiscovery": false,
+        "runtimeRole": "reader",
+        "searchRequestPlan": [],
+        "sourceRuntimeFamily": "unknown",
+        "strategy": "mixed_embed_resolver",
+        "strictHtmlIdentity": false,
+        "strictIdentity": false,
+        "supportedTypes": [
+          "movie",
+          "tv",
+          "anime"
+        ],
+        "upstreamCodeEmbedded": false,
+        "upstreamCodeExecuted": false
+      },
+      "knowledge": {
+        "hosts": [
+          "67movies.st"
+        ],
+        "routes": [
+          "/?s={query}"
+        ],
+        "routeFragments": [],
+        "observedUrls": [
+          "https://67movies.st"
+        ],
+        "decodedStaticStringCount": 0,
+        "runtimeFamily": "unknown"
+      },
+      "sources": [
+        {
+          "source": "activation-static-config",
+          "sourceName": "NiakVIO exact managed Provider CONFIG",
+          "upstreamId": "67movies",
+          "manifestOrigin": "",
+          "upstreamSha256": "",
+          "upstreamKnowledgeSource": "managed-config-lego",
+          "codeRole": "knowledge-only",
+          "codeExecuted": false
+        }
+      ],
+      "legacyProviderJsExecuted": false,
+      "upstreamJsExecuted": false
+    },
+    "watch-cartoon-online": {
+      "model": {
+        "apiRecipe": null,
+        "authoring": "niakvio-owned-v3",
+        "displayName": "Watch Cartoon Online",
+        "domainSubstitutions": {},
+        "externalIdentityPlan": [],
+        "fixedApi": null,
+        "identityInput": {
+          "mode": "tmdb_direct",
+          "requiredFields": [
+            "tmdbId",
+            "mediaType"
+          ],
+          "requiresTmdbBeforeRun": false
+        },
+        "knownSite": "https://www.wco.tv",
+        "modelSchemaVersion": 4,
+        "observedUrls": [
+          "https://www.wco.tv"
+        ],
+        "officialApi": null,
+        "officialHub": null,
+        "officialSite": "https://www.wco.tv",
+        "origins": [
+          "https://www.wco.tv"
+        ],
+        "outputLanguageRules": [],
+        "outputUrlHostRewrites": [],
+        "proofDetailBases": [],
+        "proofProtectedHosts": [],
+        "proofSearchBases": [],
+        "providerValuePlan": [],
+        "reconstructionState": "learning-clean-seed",
+        "routePlanVersion": 3,
+        "routeProofVersion": 0,
+        "routes": [
+          "/?s={query}"
+        ],
+        "runtimeDiscovery": false,
+        "runtimeRole": "reader",
+        "searchRequestPlan": [],
+        "sourceRuntimeFamily": "unknown",
+        "strategy": "mixed_embed_resolver",
+        "strictHtmlIdentity": false,
+        "strictIdentity": false,
+        "supportedTypes": [
+          "movie",
+          "tv",
+          "anime"
+        ],
+        "upstreamCodeEmbedded": false,
+        "upstreamCodeExecuted": false
+      },
+      "knowledge": {
+        "hosts": [
+          "www.wco.tv"
+        ],
+        "routes": [
+          "/?s={query}"
+        ],
+        "routeFragments": [],
+        "observedUrls": [
+          "https://www.wco.tv"
+        ],
+        "decodedStaticStringCount": 0,
+        "runtimeFamily": "unknown"
+      },
+      "sources": [
+        {
+          "source": "activation-static-config",
+          "sourceName": "NiakVIO exact managed Provider CONFIG",
+          "upstreamId": "watch-cartoon-online",
+          "manifestOrigin": "",
+          "upstreamSha256": "",
+          "upstreamKnowledgeSource": "managed-config-lego",
+          "codeRole": "knowledge-only",
+          "codeExecuted": false
+        }
+      ],
+      "legacyProviderJsExecuted": false,
+      "upstreamJsExecuted": false
+    },
+    "cinemabz": {
+      "model": {
+        "apiRecipe": null,
+        "authoring": "niakvio-owned-v3",
+        "displayName": "Cinema BZ",
+        "domainSubstitutions": {},
+        "externalIdentityPlan": [],
+        "fixedApi": null,
+        "identityInput": {
+          "mode": "tmdb_direct",
+          "requiredFields": [
+            "tmdbId",
+            "mediaType"
+          ],
+          "requiresTmdbBeforeRun": false
+        },
+        "knownSite": "https://cinema.army",
+        "modelSchemaVersion": 4,
+        "observedUrls": [
+          "https://cinema.army"
+        ],
+        "officialApi": null,
+        "officialHub": null,
+        "officialSite": "https://cinema.army",
+        "origins": [
+          "https://cinema.army"
+        ],
+        "outputLanguageRules": [],
+        "outputUrlHostRewrites": [],
+        "proofDetailBases": [],
+        "proofProtectedHosts": [],
+        "proofSearchBases": [],
+        "providerValuePlan": [],
+        "reconstructionState": "learning-clean-seed",
+        "routePlanVersion": 3,
+        "routeProofVersion": 0,
+        "routes": [
+          "/api/tv/{tmdbId}"
+        ],
+        "runtimeDiscovery": false,
+        "runtimeRole": "reader",
+        "searchRequestPlan": [],
+        "sourceRuntimeFamily": "unknown",
+        "strategy": "mixed_embed_resolver",
+        "strictHtmlIdentity": false,
+        "strictIdentity": false,
+        "supportedTypes": [
+          "movie",
+          "tv",
+          "anime"
+        ],
+        "upstreamCodeEmbedded": false,
+        "upstreamCodeExecuted": false
+      },
+      "knowledge": {
+        "hosts": [
+          "cinema.army"
+        ],
+        "routes": [
+          "/api/tv/{tmdbId}"
+        ],
+        "routeFragments": [],
+        "observedUrls": [
+          "https://cinema.army"
+        ],
+        "decodedStaticStringCount": 0,
+        "runtimeFamily": "unknown"
+      },
+      "sources": [
+        {
+          "source": "activation-static-config",
+          "sourceName": "NiakVIO exact managed Provider CONFIG",
+          "upstreamId": "cinemabz",
+          "manifestOrigin": "",
+          "upstreamSha256": "",
+          "upstreamKnowledgeSource": "managed-config-lego",
+          "codeRole": "knowledge-only",
+          "codeExecuted": false
+        }
+      ],
+      "legacyProviderJsExecuted": false,
+      "upstreamJsExecuted": false
+    },
+    "flixer": {
+      "model": {
+        "apiRecipe": null,
+        "authoring": "niakvio-owned-v3",
+        "displayName": "Flixer",
+        "domainSubstitutions": {},
+        "externalIdentityPlan": [],
+        "fixedApi": null,
+        "identityInput": {
+          "mode": "tmdb_direct",
+          "requiredFields": [
+            "tmdbId",
+            "mediaType"
+          ],
+          "requiresTmdbBeforeRun": false
+        },
+        "knownSite": "https://flixer.gd",
+        "modelSchemaVersion": 4,
+        "observedUrls": [
+          "https://flixer.gd"
+        ],
+        "officialApi": null,
+        "officialHub": null,
+        "officialSite": "https://flixer.gd",
+        "origins": [
+          "https://flixer.gd"
+        ],
+        "outputLanguageRules": [],
+        "outputUrlHostRewrites": [],
+        "proofDetailBases": [],
+        "proofProtectedHosts": [],
+        "proofSearchBases": [],
+        "providerValuePlan": [],
+        "reconstructionState": "learning-clean-seed",
+        "routePlanVersion": 3,
+        "routeProofVersion": 0,
+        "routes": [
+          "/?s={query}",
+          "/search?q={query}"
+        ],
+        "runtimeDiscovery": false,
+        "runtimeRole": "reader",
+        "searchRequestPlan": [],
+        "sourceRuntimeFamily": "unknown",
+        "strategy": "mixed_embed_resolver",
+        "strictHtmlIdentity": false,
+        "strictIdentity": false,
+        "supportedTypes": [
+          "movie",
+          "tv",
+          "anime"
+        ],
+        "upstreamCodeEmbedded": false,
+        "upstreamCodeExecuted": false
+      },
+      "knowledge": {
+        "hosts": [
+          "flixer.gd"
+        ],
+        "routes": [
+          "/?s={query}",
+          "/search?q={query}"
+        ],
+        "routeFragments": [],
+        "observedUrls": [
+          "https://flixer.gd"
+        ],
+        "decodedStaticStringCount": 0,
+        "runtimeFamily": "unknown"
+      },
+      "sources": [
+        {
+          "source": "activation-static-config",
+          "sourceName": "NiakVIO exact managed Provider CONFIG",
+          "upstreamId": "flixer",
+          "manifestOrigin": "",
+          "upstreamSha256": "",
+          "upstreamKnowledgeSource": "managed-config-lego",
+          "codeRole": "knowledge-only",
+          "codeExecuted": false
+        }
+      ],
+      "legacyProviderJsExecuted": false,
+      "upstreamJsExecuted": false
+    },
+    "cinegram": {
+      "model": {
+        "apiRecipe": null,
+        "authoring": "niakvio-owned-v3",
+        "displayName": "Cinegram",
+        "domainSubstitutions": {},
+        "externalIdentityPlan": [],
+        "fixedApi": null,
+        "identityInput": {
+          "mode": "tmdb_direct",
+          "requiredFields": [
+            "tmdbId",
+            "mediaType"
+          ],
+          "requiresTmdbBeforeRun": false
+        },
+        "knownSite": "https://cinegram.tv",
+        "modelSchemaVersion": 4,
+        "observedUrls": [
+          "https://cinegram.tv"
+        ],
+        "officialApi": null,
+        "officialHub": null,
+        "officialSite": "https://cinegram.tv",
+        "origins": [
+          "https://cinegram.tv"
+        ],
+        "outputLanguageRules": [],
+        "outputUrlHostRewrites": [],
+        "proofDetailBases": [],
+        "proofProtectedHosts": [],
+        "proofSearchBases": [],
+        "providerValuePlan": [],
+        "reconstructionState": "learning-clean-seed",
+        "routePlanVersion": 3,
+        "routeProofVersion": 0,
+        "routes": [
+          "/?s={query}",
+          "/index.php?do=search&subaction=search&story={query}"
+        ],
+        "runtimeDiscovery": false,
+        "runtimeRole": "reader",
+        "searchRequestPlan": [],
+        "sourceRuntimeFamily": "unknown",
+        "strategy": "mixed_embed_resolver",
+        "strictHtmlIdentity": false,
+        "strictIdentity": false,
+        "supportedTypes": [
+          "movie",
+          "tv",
+          "anime"
+        ],
+        "upstreamCodeEmbedded": false,
+        "upstreamCodeExecuted": false
+      },
+      "knowledge": {
+        "hosts": [
+          "cinegram.tv"
+        ],
+        "routes": [
+          "/?s={query}",
+          "/index.php?do=search&subaction=search&story={query}"
+        ],
+        "routeFragments": [],
+        "observedUrls": [
+          "https://cinegram.tv"
+        ],
+        "decodedStaticStringCount": 0,
+        "runtimeFamily": "unknown"
+      },
+      "sources": [
+        {
+          "source": "activation-static-config",
+          "sourceName": "NiakVIO exact managed Provider CONFIG",
+          "upstreamId": "cinegram",
+          "manifestOrigin": "",
+          "upstreamSha256": "",
+          "upstreamKnowledgeSource": "managed-config-lego",
+          "codeRole": "knowledge-only",
+          "codeExecuted": false
+        }
+      ],
+      "legacyProviderJsExecuted": false,
+      "upstreamJsExecuted": false
+    },
+    "movish": {
+      "model": {
+        "apiRecipe": null,
+        "authoring": "niakvio-owned-v3",
+        "displayName": "Movish",
+        "domainSubstitutions": {},
+        "externalIdentityPlan": [],
+        "fixedApi": null,
+        "identityInput": {
+          "mode": "tmdb_direct",
+          "requiredFields": [
+            "tmdbId",
+            "mediaType"
+          ],
+          "requiresTmdbBeforeRun": false
+        },
+        "knownSite": "https://movish.to",
+        "modelSchemaVersion": 4,
+        "observedUrls": [
+          "https://movish.to"
+        ],
+        "officialApi": null,
+        "officialHub": null,
+        "officialSite": "https://movish.to",
+        "origins": [
+          "https://movish.to"
+        ],
+        "outputLanguageRules": [],
+        "outputUrlHostRewrites": [],
+        "proofDetailBases": [],
+        "proofProtectedHosts": [],
+        "proofSearchBases": [],
+        "providerValuePlan": [],
+        "reconstructionState": "learning-clean-seed",
+        "routePlanVersion": 3,
+        "routeProofVersion": 0,
+        "routes": [
+          "/search?q={query}"
+        ],
+        "runtimeDiscovery": false,
+        "runtimeRole": "reader",
+        "searchRequestPlan": [],
+        "sourceRuntimeFamily": "unknown",
+        "strategy": "mixed_embed_resolver",
+        "strictHtmlIdentity": false,
+        "strictIdentity": false,
+        "supportedTypes": [
+          "movie",
+          "tv",
+          "anime"
+        ],
+        "upstreamCodeEmbedded": false,
+        "upstreamCodeExecuted": false
+      },
+      "knowledge": {
+        "hosts": [
+          "movish.to"
+        ],
+        "routes": [
+          "/search?q={query}"
+        ],
+        "routeFragments": [],
+        "observedUrls": [
+          "https://movish.to"
+        ],
+        "decodedStaticStringCount": 0,
+        "runtimeFamily": "unknown"
+      },
+      "sources": [
+        {
+          "source": "activation-static-config",
+          "sourceName": "NiakVIO exact managed Provider CONFIG",
+          "upstreamId": "movish",
+          "manifestOrigin": "",
+          "upstreamSha256": "",
+          "upstreamKnowledgeSource": "managed-config-lego",
+          "codeRole": "knowledge-only",
+          "codeExecuted": false
+        }
+      ],
+      "legacyProviderJsExecuted": false,
+      "upstreamJsExecuted": false
+    },
+    "vuflix": {
+      "model": {
+        "apiRecipe": null,
+        "authoring": "niakvio-owned-v3",
+        "displayName": "Vuflix",
+        "domainSubstitutions": {},
+        "externalIdentityPlan": [],
+        "fixedApi": null,
+        "identityInput": {
+          "mode": "tmdb_direct",
+          "requiredFields": [
+            "tmdbId",
+            "mediaType"
+          ],
+          "requiresTmdbBeforeRun": false
+        },
+        "knownSite": "https://vuflix.co",
+        "modelSchemaVersion": 4,
+        "observedUrls": [
+          "https://vuflix.co"
+        ],
+        "officialApi": null,
+        "officialHub": null,
+        "officialSite": "https://vuflix.co",
+        "origins": [
+          "https://vuflix.co"
+        ],
+        "outputLanguageRules": [],
+        "outputUrlHostRewrites": [],
+        "proofDetailBases": [],
+        "proofProtectedHosts": [],
+        "proofSearchBases": [],
+        "providerValuePlan": [],
+        "reconstructionState": "learning-clean-seed",
+        "routePlanVersion": 3,
+        "routeProofVersion": 0,
+        "routes": [
+          "/search?q={query}",
+          "/search?keyword={query}"
+        ],
+        "runtimeDiscovery": false,
+        "runtimeRole": "reader",
+        "searchRequestPlan": [],
+        "sourceRuntimeFamily": "unknown",
+        "strategy": "mixed_embed_resolver",
+        "strictHtmlIdentity": false,
+        "strictIdentity": false,
+        "supportedTypes": [
+          "movie",
+          "tv",
+          "anime"
+        ],
+        "upstreamCodeEmbedded": false,
+        "upstreamCodeExecuted": false
+      },
+      "knowledge": {
+        "hosts": [
+          "vuflix.co"
+        ],
+        "routes": [
+          "/search?q={query}",
+          "/search?keyword={query}"
+        ],
+        "routeFragments": [],
+        "observedUrls": [
+          "https://vuflix.co"
+        ],
+        "decodedStaticStringCount": 0,
+        "runtimeFamily": "unknown"
+      },
+      "sources": [
+        {
+          "source": "activation-static-config",
+          "sourceName": "NiakVIO exact managed Provider CONFIG",
+          "upstreamId": "vuflix",
+          "manifestOrigin": "",
+          "upstreamSha256": "",
+          "upstreamKnowledgeSource": "managed-config-lego",
+          "codeRole": "knowledge-only",
+          "codeExecuted": false
+        }
+      ],
+      "legacyProviderJsExecuted": false,
+      "upstreamJsExecuted": false
     }
   },
   "gowaruSourceRef": "c3ce6f43a1ba8ccf2f3838b5cd9db40745c33fa2",
@@ -266959,7 +268437,7 @@
     "mode": "niakvio-local-data",
     "externalProviderRepositoriesRequired": false,
     "providerJavaScriptExecuted": false,
-    "providerCount": 42,
+    "providerCount": 59,
     "seedCount": 6,
     "prunedRouteCount": 476,
     "canonicalRouteData": "providers.<id>.model.routeData",
@@ -266968,7 +268446,7 @@
   "routeReconstruction": {
     "version": 1,
     "canonicalRouteData": "providers.<id>.model.routeData",
-    "providerCount": 42,
+    "providerCount": 59,
     "routeCount": 401,
     "httpProvenRouteCount": 6,
     "unknownProviders": [
@@ -266979,7 +268457,7 @@
   },
   "routeRecovery": {
     "schemaVersion": 5,
-    "providerCount": 42,
+    "providerCount": 59,
     "provenRouteCount": 0,
     "apiRecipeCount": 0,
     "authority": "upstream-or-native-provider-runtime-http-proof",

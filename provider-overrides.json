@@ -10451,226 +10451,30 @@
       "manual_off_reason": "manual_off_zero_playable_anime_2026-11-14"
     },
     "fullanime": {
-      "capability": "mixed_embed_resolver",
-      "identity_input": {
-        "mode": "catalog_search",
-        "requires_tmdb_before_run": true,
-        "required_fields": [
-          "title",
-          "mediaType"
-        ]
-      },
       "notes": [
-        "Clean Provider v3 adapter re-implements the current provider transport contract from structured upstream knowledge; upstream JavaScript remains knowledge-only.",
-        "Core resolves TMDB metadata before provider network calls; this anime-semantic provider accepts the Nuvio tv transport alias but never maps anime to movie.",
-        "Provider-specific runtime is bounded to the provider catalogue/API routes below; stream/player recovery remains in shared Core where applicable.",
-        "Authoritative semantic contract is anime-only; tv is transport compatibility and movie must never be manufactured for anime-first providers."
+        "Created by the NiakVIO full-auto provider onboarding workflow from structured route knowledge only.",
+        "Activation remains disabled until the onboarding quick Lab proves the provider on every requested runtime group.",
+        "Activated from exact-byte offline Provider v3 contract proof because GitHub-hosted network/WAF checks are non-authoritative; live native validation remains pending."
       ],
+      "replacements": {},
+      "runtime_domain_replacements": {},
+      "route_replacements": {},
+      "profiles": [],
+      "capability": "mixed_embed_resolver",
+      "official_hub": null,
       "official_site": "https://www.fullanime.fr",
       "published_types": [
         "anime"
       ],
+      "manifest_overrides": {
+        "enabled": true,
+        "disabledPlatforms": []
+      },
       "learned_routes": [
         "/search?s={query}",
         "/voir-anime/{slug}",
         "/voir-anime/{slug}/episode/{episode}"
-      ],
-      "provider_lego_scripts": [
-        "scripts/provider_patches/fullanime_runtime_v1.py"
-      ],
-      "provider_lego_options": {
-        "scripts/provider_patches/fullanime_runtime_v1.py": {
-          "base": "https://www.fullanime.fr"
-        }
-      },
-      "candidate_learned_routes": [
-        "/search?s={query}",
-        "/voir-anime/{slug}",
-        "/voir-anime/{slug}/episode/{episode}",
-        "/episode",
-        "/embed",
-        "/search?s={query}&_t=",
-        "/voir-anime/{slug}-vostfr",
-        "/voir-anime/{season}"
-      ],
-      "candidate_config_reconciliation": {
-        "version": 3,
-        "route_plan_source": "provider-overrides",
-        "current_config_route_count": 3,
-        "recognition_seed_present": false,
-        "materialization_integrity_state": "matched",
-        "materialization_is_route_source": false,
-        "live_validated_route_count_preserved": 0,
-        "stale_candidate_count_suppressed": 0,
-        "new_routes_require_live_proof": true,
-        "recognition_seed_is_http_proof": false
-      },
-      "live_route_gate": {
-        "completion_state": "declared-types-qualified",
-        "effective_coverage_ratio": 1,
-        "required_coverage_ratio": 1,
-        "declared_type_coverage_ratio": 1,
-        "required_types": [
-          "anime"
-        ],
-        "validated_types": [
-          "anime"
-        ],
-        "missing_types": [],
-        "provider_request_count": 5,
-        "live_validated_route_count": 2,
-        "execution_plan_route_count": 3,
-        "runtime_derived_route_count": 0,
-        "runtime_derived_routes_persisted": false,
-        "safe_runtime_derived_route_count": 0,
-        "safe_runtime_derived_routes_promoted": 0,
-        "runtime_observed_url_count": 5,
-        "runtime_observed_origin_count": 1,
-        "runtime_observations_persisted_as_provider_data": false,
-        "blocked_plan_preserved": false,
-        "declared_types_are_gate_denominator": true,
-        "sequential": true
-      },
-      "route_proof_version": 5,
-      "route_proof": {
-        "version": 5,
-        "authority": "observed-provider-http-request",
-        "staticCandidatesExecutable": false,
-        "providerSource": {
-          "kind": "upstream",
-          "sourceId": "gowaru",
-          "sha256": "de303c47d50ceecc2f8f2e7d78483f5af93927fff51d3edcf6e2dad28b11c511",
-          "providerUrl": "https://raw.githubusercontent.com/Gowaru/gowaru-nuvio-providers/refs/heads/main/providers/fullanime.js",
-          "wantedSha256": "de303c47d50ceecc2f8f2e7d78483f5af93927fff51d3edcf6e2dad28b11c511",
-          "capturedAt": "2026-09-01T19:52:18+00:00",
-          "currentSha256": "de303c47d50ceecc2f8f2e7d78483f5af93927fff51d3edcf6e2dad28b11c511",
-          "mode": "lkg-current-byte-exact"
-        },
-        "provenRouteCount": 0,
-        "genericExecutionRouteCount": 0,
-        "runtimePlanPreserved": true,
-        "runtimePlanRouteCount": 3,
-        "lastRepairProbe": {
-          "status": "no-proven-route",
-          "positiveExecutionEvidence": false
-        },
-        "normalRuntimeEntryPlanTarget": 3,
-        "runtimeEntryPlanOptimization": "compact-simple-alternatives-preserve-complex-graphs",
-        "runtimePlanRouteCountBeforeOptimization": 3,
-        "runtimePlanSemanticLanes": [],
-        "runtimePlanTargetExceeded": false,
-        "runtimePlanExceptionReason": "",
-        "runtimeFanoutPreserved": false,
-        "evidenceRouteCount": 0,
-        "evidenceRoutesAreNotPlanCount": true,
-        "normalStructuredRuntimePlanTarget": 3,
-        "structuredRuntimePlanPolicy": "merge-equivalent-preserve-distinct-evidence-backed-plans",
-        "structuredRuntimePlanAudit": {
-          "searchRequestPlan": {
-            "before": 0,
-            "afterMerge": 0,
-            "after": 0,
-            "coveredLanes": [],
-            "merged": false,
-            "capped": false,
-            "normalTarget": 3,
-            "targetExceeded": false,
-            "exceptionReason": ""
-          },
-          "providerValuePlan": {
-            "before": 0,
-            "afterMerge": 0,
-            "after": 0,
-            "coveredLanes": [],
-            "merged": false,
-            "capped": false,
-            "normalTarget": 3,
-            "targetExceeded": false,
-            "exceptionReason": ""
-          },
-          "externalIdentityPlan": {
-            "before": 0,
-            "afterMerge": 0,
-            "after": 0,
-            "coveredLanes": [],
-            "merged": false,
-            "capped": false,
-            "normalTarget": 3,
-            "targetExceeded": false,
-            "exceptionReason": ""
-          }
-        },
-        "canonicalExecutionAuthorityPolicy": "preferred-order-only-preserve-all-proven-authorities",
-        "canonicalExecutionAuthority": {
-          "candidateCount": 3,
-          "preferredCount": 1,
-          "selectedCount": 1,
-          "supportedLanes": [
-            "anime"
-          ],
-          "coveredLanes": [
-            "anime"
-          ],
-          "missingLanes": [],
-          "preferredOwners": [
-            "route"
-          ],
-          "owners": [
-            "route"
-          ],
-          "destructiveFiltering": false,
-          "allEvidenceBackedAuthoritiesPreserved": true
-        },
-        "canonicalExecutionPreference": [
-          {
-            "owner": "route",
-            "index": 0,
-            "lanes": [
-              "anime"
-            ],
-            "route": "/search?s={query}"
-          }
-        ]
-      },
-      "manifest_overrides": {
-        "enabled": false
-      },
-      "route_data_state": "off",
-      "repair_disposition": {
-        "schemaVersion": 1,
-        "authority": "provider-repair-disposition-v1",
-        "activationState": "disabled",
-        "activationAuthority": "provider-folder-lifecycle",
-        "declaredHub": null,
-        "forcedEnabled": false,
-        "routeDataState": "off",
-        "requiredLanes": [
-          "anime"
-        ],
-        "currentVerifiedLanes": [],
-        "exactLockedLanes": [],
-        "provenLanes": [],
-        "missingLanes": [
-          "anime"
-        ],
-        "completeCapabilityProof": false,
-        "recoveryStatus": "no-proven-route",
-        "provenRouteCount": 0,
-        "terminalState": null,
-        "quarantined": false,
-        "reasonCodes": [
-          "manual_off_no_current_hub_authority"
-        ],
-        "laneStatuses": {
-          "anime": [
-            "no_streams"
-          ]
-        },
-        "evidenceDestructive": false
-      },
-      "activation_eligible": false,
-      "manual_off_date": "2026-09-15",
-      "manual_off_reason": "manual_off_no_current_hub_authority"
+      ]
     },
     "mallumv": {
       "notes": [
@@ -11142,206 +10946,29 @@
       "activation_eligible": false
     },
     "showbox": {
-      "capability": "html_scraper",
-      "candidate_config_reconciliation": {
-        "version": 3,
-        "route_plan_source": "embedded-provider-js",
-        "current_config_route_count": 2,
-        "recognition_seed_present": false,
-        "materialization_integrity_state": "matched",
-        "materialization_is_route_source": false,
-        "live_validated_route_count_preserved": 0,
-        "stale_candidate_count_suppressed": 0,
-        "new_routes_require_live_proof": true,
-        "recognition_seed_is_http_proof": false
+      "notes": [
+        "Created by the NiakVIO full-auto provider onboarding workflow from structured route knowledge only.",
+        "Activation remains disabled until the onboarding quick Lab proves the provider on every requested runtime group.",
+        "Activated from exact-byte offline Provider v3 contract proof because GitHub-hosted network/WAF checks are non-authoritative; live native validation remains pending."
+      ],
+      "replacements": {},
+      "runtime_domain_replacements": {},
+      "route_replacements": {},
+      "profiles": [],
+      "capability": "mixed_embed_resolver",
+      "official_hub": null,
+      "official_site": "https://showbox.media/",
+      "published_types": [
+        "movie",
+        "tv"
+      ],
+      "manifest_overrides": {
+        "enabled": true,
+        "disabledPlatforms": []
       },
       "learned_routes": [
-        "/?tmdbId={tmdbId}&type=movie",
-        "/?tmdbId={tmdbId}&type=tv&season={season}&episode={episode}"
-      ],
-      "live_route_gate": {
-        "completion_state": "declared-types-qualified",
-        "effective_coverage_ratio": 1,
-        "required_coverage_ratio": 1,
-        "declared_type_coverage_ratio": 1,
-        "required_types": [
-          "movie",
-          "tv"
-        ],
-        "validated_types": [
-          "movie",
-          "tv"
-        ],
-        "missing_types": [],
-        "provider_request_count": 10,
-        "live_validated_route_count": 3,
-        "execution_plan_route_count": 2,
-        "runtime_derived_route_count": 3,
-        "runtime_derived_routes_persisted": false,
-        "safe_runtime_derived_route_count": 2,
-        "safe_runtime_derived_routes_promoted": 2,
-        "runtime_observed_url_count": 6,
-        "runtime_observed_origin_count": 1,
-        "runtime_observations_persisted_as_provider_data": false,
-        "blocked_plan_preserved": false,
-        "declared_types_are_gate_denominator": true,
-        "sequential": true
-      },
-      "candidate_learned_routes": [
-        "/?tmdbId={tmdbId}&type=movie",
-        "/?tmdbId={tmdbId}&type=tv&season={season}&episode={episode}",
-        "/file/file_share_list?share_key=",
-        "/api/media"
-      ],
-      "route_proof_version": 5,
-      "route_proof": {
-        "version": 5,
-        "authority": "observed-provider-http-request",
-        "staticCandidatesExecutable": false,
-        "providerSource": {
-          "kind": "upstream",
-          "sourceId": "aio",
-          "sha256": "b90ce3c9aceca167d9f97d57ba2487029b0dd75e61abc4d7e8ad1dd97864a1d5",
-          "providerUrl": "https://raw.githubusercontent.com/NuvioPlugin/All-in-One-Nuvio/refs/heads/main/providers/showbox.js",
-          "wantedSha256": "b90ce3c9aceca167d9f97d57ba2487029b0dd75e61abc4d7e8ad1dd97864a1d5",
-          "capturedAt": "2026-09-01T19:53:09+00:00",
-          "currentSha256": "b90ce3c9aceca167d9f97d57ba2487029b0dd75e61abc4d7e8ad1dd97864a1d5",
-          "mode": "lkg-current-byte-exact"
-        },
-        "provenRouteCount": 0,
-        "genericExecutionRouteCount": 0,
-        "runtimePlanPreserved": true,
-        "runtimePlanRouteCount": 2,
-        "lastRepairProbe": {
-          "status": "no-proven-route",
-          "positiveExecutionEvidence": false
-        },
-        "normalRuntimeEntryPlanTarget": 3,
-        "runtimeEntryPlanOptimization": "compact-simple-alternatives-preserve-complex-graphs",
-        "runtimePlanRouteCountBeforeOptimization": 2,
-        "runtimePlanSemanticLanes": [],
-        "runtimePlanTargetExceeded": false,
-        "runtimePlanExceptionReason": "",
-        "runtimeFanoutPreserved": false,
-        "evidenceRouteCount": 0,
-        "evidenceRoutesAreNotPlanCount": true,
-        "normalStructuredRuntimePlanTarget": 3,
-        "structuredRuntimePlanPolicy": "merge-equivalent-preserve-distinct-evidence-backed-plans",
-        "structuredRuntimePlanAudit": {
-          "searchRequestPlan": {
-            "before": 0,
-            "afterMerge": 0,
-            "after": 0,
-            "coveredLanes": [],
-            "merged": false,
-            "capped": false,
-            "normalTarget": 3,
-            "targetExceeded": false,
-            "exceptionReason": ""
-          },
-          "providerValuePlan": {
-            "before": 0,
-            "afterMerge": 0,
-            "after": 0,
-            "coveredLanes": [],
-            "merged": false,
-            "capped": false,
-            "normalTarget": 3,
-            "targetExceeded": false,
-            "exceptionReason": ""
-          },
-          "externalIdentityPlan": {
-            "before": 0,
-            "afterMerge": 0,
-            "after": 0,
-            "coveredLanes": [],
-            "merged": false,
-            "capped": false,
-            "normalTarget": 3,
-            "targetExceeded": false,
-            "exceptionReason": ""
-          }
-        },
-        "canonicalExecutionAuthorityPolicy": "preferred-order-only-preserve-all-proven-authorities",
-        "canonicalExecutionAuthority": {
-          "candidateCount": 2,
-          "preferredCount": 1,
-          "selectedCount": 1,
-          "supportedLanes": [
-            "movie",
-            "tv"
-          ],
-          "coveredLanes": [
-            "movie",
-            "tv"
-          ],
-          "missingLanes": [],
-          "preferredOwners": [
-            "route"
-          ],
-          "owners": [
-            "route"
-          ],
-          "destructiveFiltering": false,
-          "allEvidenceBackedAuthoritiesPreserved": true
-        },
-        "canonicalExecutionPreference": [
-          {
-            "owner": "route",
-            "index": 0,
-            "lanes": [
-              "movie",
-              "tv"
-            ],
-            "route": "/?tmdbId={tmdbId}&type=movie"
-          }
-        ]
-      },
-      "manifest_overrides": {
-        "enabled": false
-      },
-      "route_data_state": "off",
-      "repair_disposition": {
-        "schemaVersion": 1,
-        "authority": "provider-repair-disposition-v1",
-        "activationState": "enabled",
-        "activationAuthority": "provider-folder-lifecycle",
-        "declaredHub": null,
-        "forcedEnabled": true,
-        "routeDataState": "repair",
-        "requiredLanes": [
-          "movie",
-          "tv"
-        ],
-        "currentVerifiedLanes": [],
-        "exactLockedLanes": [],
-        "provenLanes": [],
-        "missingLanes": [
-          "movie",
-          "tv"
-        ],
-        "completeCapabilityProof": false,
-        "recoveryStatus": "no-proven-route",
-        "provenRouteCount": 0,
-        "terminalState": null,
-        "quarantined": false,
-        "reasonCodes": [
-          "declared_lane_unproven",
-          "quick_provider-network-zero-result",
-          "recovery_no-proven-route"
-        ],
-        "laneStatuses": {
-          "movie": [
-            "no_streams"
-          ],
-          "tv": [
-            "no_streams"
-          ]
-        },
-        "evidenceDestructive": false
-      },
-      "activation_eligible": false,
-      "manual_off_reason": "manual_off_no_current_authority_search_only"
+        "/search?keyword={query}"
+      ]
     },
     "vidlove": {
       "capability": "html_scraper",
@@ -11740,7 +11367,8 @@
     "movix-fr": {
       "notes": [
         "Created by the NiakVIO full-auto provider onboarding workflow from structured route knowledge only.",
-        "Activation remains disabled until the onboarding quick Lab proves the provider on every requested runtime group."
+        "Activation remains disabled until the onboarding quick Lab proves the provider on every requested runtime group.",
+        "Activated from exact-byte offline Provider v3 contract proof because GitHub-hosted network/WAF checks are non-authoritative; live native validation remains pending."
       ],
       "replacements": {},
       "runtime_domain_replacements": {},
@@ -11755,9 +11383,12 @@
         "anime"
       ],
       "manifest_overrides": {
-        "enabled": false,
+        "enabled": true,
         "disabledPlatforms": []
-      }
+      },
+      "learned_routes": [
+        "/?s={query}"
+      ]
     },
     "yablom": {
       "notes": [
@@ -11828,13 +11459,14 @@
     "frembed": {
       "notes": [
         "Created by the NiakVIO full-auto provider onboarding workflow from structured route knowledge only.",
-        "Activation remains disabled until the onboarding quick Lab proves the provider on every requested runtime group."
+        "Activation remains disabled until the onboarding quick Lab proves the provider on every requested runtime group.",
+        "Activated from exact-byte offline Provider v3 contract proof because GitHub-hosted network/WAF checks are non-authoritative; live native validation remains pending."
       ],
       "replacements": {},
       "runtime_domain_replacements": {},
       "route_replacements": {},
       "profiles": [],
-      "capability": "html_scraper",
+      "capability": "mixed_embed_resolver",
       "official_hub": null,
       "official_site": "https://frembed.surf",
       "published_types": [
@@ -11843,9 +11475,12 @@
         "anime"
       ],
       "manifest_overrides": {
-        "enabled": false,
+        "enabled": true,
         "disabledPlatforms": []
-      }
+      },
+      "learned_routes": [
+        "/embed/movie/{tmdbId}"
+      ]
     },
     "nakastream": {
       "notes": [
@@ -11872,24 +11507,28 @@
     "1jour1film0626": {
       "notes": [
         "Created by the NiakVIO full-auto provider onboarding workflow from structured route knowledge only.",
-        "Activation remains disabled until the onboarding quick Lab proves the provider on every requested runtime group."
+        "Activation remains disabled until the onboarding quick Lab proves the provider on every requested runtime group.",
+        "Activated from exact-byte offline Provider v3 contract proof because GitHub-hosted network/WAF checks are non-authoritative; live native validation remains pending."
       ],
       "replacements": {},
       "runtime_domain_replacements": {},
       "route_replacements": {},
       "profiles": [],
-      "capability": "html_scraper",
+      "capability": "mixed_embed_resolver",
       "official_hub": null,
-      "official_site": "https://1jour1film0626.site",
+      "official_site": "https://1jour1film1026.monster",
       "published_types": [
         "movie",
         "tv",
         "anime"
       ],
       "manifest_overrides": {
-        "enabled": false,
+        "enabled": true,
         "disabledPlatforms": []
-      }
+      },
+      "learned_routes": [
+        "/index.php?do=search&subaction=search&story={query}"
+      ]
     },
     "dotriv": {
       "notes": [
@@ -11938,24 +11577,29 @@
     "kidraz": {
       "notes": [
         "Created by the NiakVIO full-auto provider onboarding workflow from structured route knowledge only.",
-        "Activation remains disabled until the onboarding quick Lab proves the provider on every requested runtime group."
+        "Activation remains disabled until the onboarding quick Lab proves the provider on every requested runtime group.",
+        "Activated from exact-byte offline Provider v3 contract proof because GitHub-hosted network/WAF checks are non-authoritative; live native validation remains pending."
       ],
       "replacements": {},
       "runtime_domain_replacements": {},
       "route_replacements": {},
       "profiles": [],
-      "capability": "html_scraper",
+      "capability": "mixed_embed_resolver",
       "official_hub": null,
-      "official_site": "https://www.kidraz.com",
+      "official_site": "https://fronav.com",
       "published_types": [
         "movie",
         "tv",
         "anime"
       ],
       "manifest_overrides": {
-        "enabled": false,
+        "enabled": true,
         "disabledPlatforms": []
-      }
+      },
+      "learned_routes": [
+        "/?s={query}",
+        "/index.php?do=search&subaction=search&story={query}"
+      ]
     },
     "kordoz": {
       "notes": [
@@ -11982,24 +11626,28 @@
     "neobam": {
       "notes": [
         "Created by the NiakVIO full-auto provider onboarding workflow from structured route knowledge only.",
-        "Activation remains disabled until the onboarding quick Lab proves the provider on every requested runtime group."
+        "Activation remains disabled until the onboarding quick Lab proves the provider on every requested runtime group.",
+        "Activated from exact-byte offline Provider v3 contract proof because GitHub-hosted network/WAF checks are non-authoritative; live native validation remains pending."
       ],
       "replacements": {},
       "runtime_domain_replacements": {},
       "route_replacements": {},
       "profiles": [],
-      "capability": "html_scraper",
+      "capability": "mixed_embed_resolver",
       "official_hub": null,
-      "official_site": "https://neobam.com",
+      "official_site": "https://www.neobam.fr/",
       "published_types": [
         "movie",
         "tv",
         "anime"
       ],
       "manifest_overrides": {
-        "enabled": false,
+        "enabled": true,
         "disabledPlatforms": []
-      }
+      },
+      "learned_routes": [
+        "/?s={query}"
+      ]
     },
     "internet-archive": {
       "notes": [
@@ -12045,6 +11693,884 @@
           "mediaType"
         ]
       }
+    },
+    "corsflix": {
+      "notes": [
+        "Created by the NiakVIO full-auto provider onboarding workflow from structured route knowledge only.",
+        "Activation remains disabled until the onboarding quick Lab proves the provider on every requested runtime group.",
+        "Activated from exact-byte offline Provider v3 contract proof because GitHub-hosted network/WAF checks are non-authoritative; live native validation remains pending."
+      ],
+      "replacements": {},
+      "runtime_domain_replacements": {},
+      "route_replacements": {},
+      "profiles": [],
+      "capability": "mixed_embed_resolver",
+      "official_hub": null,
+      "official_site": "https://watch.corsflix.net",
+      "published_types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "manifest_overrides": {
+        "enabled": true,
+        "disabledPlatforms": []
+      },
+      "learned_routes": [
+        "/movies/{tmdbId}-{slug}",
+        "/tv?s={query}",
+        "/search?q={query}",
+        "/tv/search?q={query}"
+      ]
+    },
+    "emnexmovies": {
+      "notes": [
+        "Created by the NiakVIO full-auto provider onboarding workflow from structured route knowledge only.",
+        "Activation remains disabled until the onboarding quick Lab proves the provider on every requested runtime group.",
+        "Activated from exact-byte offline Provider v3 contract proof because GitHub-hosted network/WAF checks are non-authoritative; live native validation remains pending."
+      ],
+      "replacements": {},
+      "runtime_domain_replacements": {},
+      "route_replacements": {},
+      "profiles": [],
+      "capability": "mixed_embed_resolver",
+      "official_hub": null,
+      "official_site": "https://emnexmovies.tech",
+      "published_types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "manifest_overrides": {
+        "enabled": true,
+        "disabledPlatforms": []
+      },
+      "learned_routes": [
+        "/movie/{tmdbId}-{slug}",
+        "/tv/212171-{slug}-ella",
+        "/movie/529107-inside-{slug}",
+        "/tv/198237-{slug}-wanderer",
+        "/movie/649745-{slug}-wandering",
+        "/movie/398188-{slug}-wars",
+        "/movie/287954-lolita-from-{slug}-space",
+        "/movie/1786250-short-cuts-{slug}",
+        "/movie/336592-the-science-of-{slug}",
+        "/movie/1282990-{slug}-interference",
+        "/movie/1443305-container-{slug}",
+        "/movie/1391726-{slug}-stella",
+        "/movie/1450827-{slug}-political-prisoner",
+        "/movie/1642987-primus-{slug}-drum-derby",
+        "/movie/301959-{slug}-nolan-s-odyssey",
+        "/movie/716603-only-{slug}-pinball-lives-forever",
+        "/movie/460616-{slug}-civil-war-shadows-of-the-empire",
+        "/movie/660698-faster-than-light-the-dream-of-{slug}-flight",
+        "/movie/552531-the-prom-goer-s-{slug}-excursion",
+        "/movie/763179-cosmic-journey-the-voyager-{slug}-mission-and-message",
+        "/tv/{tmdbId}-{slug}",
+        "/movie/559969-el-camino-a-{slug}-movie",
+        "/tv/337563-{slug}-original-minisodes",
+        "/tv/232533-{slug}-fortune-teller"
+      ]
+    },
+    "latestmovies": {
+      "notes": [
+        "Created by the NiakVIO full-auto provider onboarding workflow from structured route knowledge only.",
+        "Activation remains disabled until the onboarding quick Lab proves the provider on every requested runtime group.",
+        "Activated from exact-byte offline Provider v3 contract proof because GitHub-hosted network/WAF checks are non-authoritative; live native validation remains pending."
+      ],
+      "replacements": {},
+      "runtime_domain_replacements": {},
+      "route_replacements": {},
+      "profiles": [],
+      "capability": "mixed_embed_resolver",
+      "official_hub": null,
+      "official_site": "https://latestmovies.net",
+      "published_types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "manifest_overrides": {
+        "enabled": true,
+        "disabledPlatforms": []
+      },
+      "learned_routes": [
+        "/play?id={tmdbId}&type={media}&title=Breaking%20Bad&poster=%2FanFx9aTOOYqgS3v7x3R84Kz67ly.jpg&backdrop=%2FtsRy63Mu5cu8etL1X7ZLyf7UP1M.jpg",
+        "/tv/{tmdbId}"
+      ]
+    },
+    "movy": {
+      "notes": [
+        "Created by the NiakVIO full-auto provider onboarding workflow from structured route knowledge only.",
+        "Activation remains disabled until the onboarding quick Lab proves the provider on every requested runtime group.",
+        "Activated from exact-byte offline Provider v3 contract proof because GitHub-hosted network/WAF checks are non-authoritative; live native validation remains pending."
+      ],
+      "replacements": {},
+      "runtime_domain_replacements": {},
+      "route_replacements": {},
+      "profiles": [],
+      "capability": "mixed_embed_resolver",
+      "official_hub": null,
+      "official_site": "https://www.movy.sx",
+      "published_types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "manifest_overrides": {
+        "enabled": true,
+        "disabledPlatforms": []
+      },
+      "learned_routes": [
+        "/movie/{tmdbId}",
+        "/tv/{tmdbId}"
+      ]
+    },
+    "arrowtv": {
+      "notes": [
+        "Created by the NiakVIO full-auto provider onboarding workflow from structured route knowledge only.",
+        "Activation remains disabled until the onboarding quick Lab proves the provider on every requested runtime group.",
+        "Activated from exact-byte offline Provider v3 contract proof because GitHub-hosted network/WAF checks are non-authoritative; live native validation remains pending."
+      ],
+      "replacements": {},
+      "runtime_domain_replacements": {},
+      "route_replacements": {},
+      "profiles": [],
+      "capability": "mixed_embed_resolver",
+      "official_hub": null,
+      "official_site": "https://arrowtv.net",
+      "published_types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "manifest_overrides": {
+        "enabled": true,
+        "disabledPlatforms": []
+      },
+      "learned_routes": [
+        "/movie/{tmdbId}",
+        "/tv/{tmdbId}"
+      ]
+    },
+    "chillflix": {
+      "notes": [
+        "Created by the NiakVIO full-auto provider onboarding workflow from structured route knowledge only.",
+        "Activation remains disabled until the onboarding quick Lab proves the provider on every requested runtime group.",
+        "Activated from exact-byte offline Provider v3 contract proof because GitHub-hosted network/WAF checks are non-authoritative; live native validation remains pending."
+      ],
+      "replacements": {},
+      "runtime_domain_replacements": {},
+      "route_replacements": {},
+      "profiles": [],
+      "capability": "mixed_embed_resolver",
+      "official_hub": null,
+      "official_site": "https://chillflix.lol",
+      "published_types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "manifest_overrides": {
+        "enabled": true,
+        "disabledPlatforms": []
+      },
+      "learned_routes": [
+        "/tv/291507?play=true&s={query}&e={episode}",
+        "/tv/303044?play=true&s={query}&e={episode}"
+      ]
+    },
+    "neonflix": {
+      "notes": [
+        "Created by the NiakVIO full-auto provider onboarding workflow from structured route knowledge only.",
+        "Activation remains disabled until the onboarding quick Lab proves the provider on every requested runtime group.",
+        "Activated from exact-byte offline Provider v3 contract proof because GitHub-hosted network/WAF checks are non-authoritative; live native validation remains pending."
+      ],
+      "replacements": {},
+      "runtime_domain_replacements": {},
+      "route_replacements": {},
+      "profiles": [],
+      "capability": "mixed_embed_resolver",
+      "official_hub": null,
+      "official_site": "https://neonflix.st",
+      "published_types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "manifest_overrides": {
+        "enabled": true,
+        "disabledPlatforms": []
+      },
+      "learned_routes": [
+        "/tv/{tmdbId}"
+      ]
+    },
+    "boredflix": {
+      "notes": [
+        "Created by the NiakVIO full-auto provider onboarding workflow from structured route knowledge only.",
+        "Activation remains disabled until the onboarding quick Lab proves the provider on every requested runtime group.",
+        "Activated from exact-byte offline Provider v3 contract proof because GitHub-hosted network/WAF checks are non-authoritative; live native validation remains pending."
+      ],
+      "replacements": {},
+      "runtime_domain_replacements": {},
+      "route_replacements": {},
+      "profiles": [],
+      "capability": "mixed_embed_resolver",
+      "official_hub": null,
+      "official_site": "https://boredflix.to/",
+      "published_types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "manifest_overrides": {
+        "enabled": true,
+        "disabledPlatforms": []
+      },
+      "learned_routes": [
+        "/?s={query}",
+        "/search?q={query}"
+      ]
+    },
+    "fexini": {
+      "notes": [
+        "Created by the NiakVIO full-auto provider onboarding workflow from structured route knowledge only.",
+        "Activation remains disabled until the onboarding quick Lab proves the provider on every requested runtime group.",
+        "Activated from exact-byte offline Provider v3 contract proof because GitHub-hosted network/WAF checks are non-authoritative; live native validation remains pending."
+      ],
+      "replacements": {},
+      "runtime_domain_replacements": {},
+      "route_replacements": {},
+      "profiles": [],
+      "capability": "mixed_embed_resolver",
+      "official_hub": null,
+      "official_site": "https://fexini.net/",
+      "published_types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "manifest_overrides": {
+        "enabled": true,
+        "disabledPlatforms": []
+      },
+      "learned_routes": [
+        "/series/{slug}"
+      ]
+    },
+    "animeonsen": {
+      "notes": [
+        "Created by the NiakVIO full-auto provider onboarding workflow from structured route knowledge only.",
+        "Activation remains disabled until the onboarding quick Lab proves the provider on every requested runtime group.",
+        "Activated from exact-byte offline Provider v3 contract proof because GitHub-hosted network/WAF checks are non-authoritative; live native validation remains pending."
+      ],
+      "replacements": {},
+      "runtime_domain_replacements": {},
+      "route_replacements": {},
+      "profiles": [],
+      "capability": "mixed_embed_resolver",
+      "official_hub": null,
+      "official_site": "https://www.animeonsen.xyz/",
+      "published_types": [
+        "anime"
+      ],
+      "manifest_overrides": {
+        "enabled": true,
+        "disabledPlatforms": []
+      },
+      "learned_routes": [
+        "/?s={query}",
+        "/search?q={query}"
+      ]
+    },
+    "shuttletv": {
+      "notes": [
+        "Created by the NiakVIO full-auto provider onboarding workflow from structured route knowledge only.",
+        "Activation remains disabled until the onboarding quick Lab proves the provider on every requested runtime group.",
+        "Activated from exact-byte offline Provider v3 contract proof because GitHub-hosted network/WAF checks are non-authoritative; live native validation remains pending."
+      ],
+      "replacements": {},
+      "runtime_domain_replacements": {},
+      "route_replacements": {},
+      "profiles": [],
+      "capability": "mixed_embed_resolver",
+      "official_hub": null,
+      "official_site": "https://shuttletv.pk",
+      "published_types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "manifest_overrides": {
+        "enabled": true,
+        "disabledPlatforms": []
+      },
+      "learned_routes": [
+        "/recherche?q={query}",
+        "/recherche?query={query}"
+      ]
+    },
+    "primewire": {
+      "notes": [
+        "Created by the NiakVIO full-auto provider onboarding workflow from structured route knowledge only.",
+        "Activation remains disabled until the onboarding quick Lab proves the provider on every requested runtime group.",
+        "Activated from exact-byte offline Provider v3 contract proof because GitHub-hosted network/WAF checks are non-authoritative; live native validation remains pending."
+      ],
+      "replacements": {},
+      "runtime_domain_replacements": {},
+      "route_replacements": {},
+      "profiles": [],
+      "capability": "mixed_embed_resolver",
+      "official_hub": null,
+      "official_site": "https://primewire.pw",
+      "published_types": [
+        "movie",
+        "tv"
+      ],
+      "manifest_overrides": {
+        "enabled": true,
+        "disabledPlatforms": []
+      },
+      "learned_routes": [
+        "/movie/{tmdbId}"
+      ]
+    },
+    "67movies": {
+      "notes": [
+        "Created by the NiakVIO full-auto provider onboarding workflow from structured route knowledge only.",
+        "Activation remains disabled until the onboarding quick Lab proves the provider on every requested runtime group.",
+        "Activated from exact-byte offline Provider v3 contract proof because GitHub-hosted network/WAF checks are non-authoritative; live native validation remains pending."
+      ],
+      "replacements": {},
+      "runtime_domain_replacements": {},
+      "route_replacements": {},
+      "profiles": [],
+      "capability": "mixed_embed_resolver",
+      "official_hub": null,
+      "official_site": "https://67movies.st",
+      "published_types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "manifest_overrides": {
+        "enabled": true,
+        "disabledPlatforms": []
+      },
+      "learned_routes": [
+        "/?s={query}"
+      ]
+    },
+    "watch-cartoon-online": {
+      "notes": [
+        "Created by the NiakVIO full-auto provider onboarding workflow from structured route knowledge only.",
+        "Activation remains disabled until the onboarding quick Lab proves the provider on every requested runtime group.",
+        "Activated from exact-byte offline Provider v3 contract proof because GitHub-hosted network/WAF checks are non-authoritative; live native validation remains pending."
+      ],
+      "replacements": {},
+      "runtime_domain_replacements": {},
+      "route_replacements": {},
+      "profiles": [],
+      "capability": "mixed_embed_resolver",
+      "official_hub": null,
+      "official_site": "https://www.wco.tv",
+      "published_types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "manifest_overrides": {
+        "enabled": true,
+        "disabledPlatforms": []
+      },
+      "learned_routes": [
+        "/?s={query}"
+      ]
+    },
+    "cinemabz": {
+      "notes": [
+        "Created by the NiakVIO full-auto provider onboarding workflow from structured route knowledge only.",
+        "Activation remains disabled until the onboarding quick Lab proves the provider on every requested runtime group.",
+        "Activated from exact-byte offline Provider v3 contract proof because GitHub-hosted network/WAF checks are non-authoritative; live native validation remains pending."
+      ],
+      "replacements": {},
+      "runtime_domain_replacements": {},
+      "route_replacements": {},
+      "profiles": [],
+      "capability": "mixed_embed_resolver",
+      "official_hub": null,
+      "official_site": "https://cinema.army",
+      "published_types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "manifest_overrides": {
+        "enabled": true,
+        "disabledPlatforms": []
+      },
+      "learned_routes": [
+        "/api/tv/{tmdbId}"
+      ]
+    },
+    "flixer": {
+      "notes": [
+        "Created by the NiakVIO full-auto provider onboarding workflow from structured route knowledge only.",
+        "Activation remains disabled until the onboarding quick Lab proves the provider on every requested runtime group.",
+        "Activated from exact-byte offline Provider v3 contract proof because GitHub-hosted network/WAF checks are non-authoritative; live native validation remains pending."
+      ],
+      "replacements": {},
+      "runtime_domain_replacements": {},
+      "route_replacements": {},
+      "profiles": [],
+      "capability": "mixed_embed_resolver",
+      "official_hub": null,
+      "official_site": "https://flixer.gd",
+      "published_types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "manifest_overrides": {
+        "enabled": true,
+        "disabledPlatforms": []
+      },
+      "learned_routes": [
+        "/?s={query}",
+        "/search?q={query}"
+      ]
+    },
+    "cinegram": {
+      "notes": [
+        "Created by the NiakVIO full-auto provider onboarding workflow from structured route knowledge only.",
+        "Activation remains disabled until the onboarding quick Lab proves the provider on every requested runtime group.",
+        "Activated from exact-byte offline Provider v3 contract proof because GitHub-hosted network/WAF checks are non-authoritative; live native validation remains pending."
+      ],
+      "replacements": {},
+      "runtime_domain_replacements": {},
+      "route_replacements": {},
+      "profiles": [],
+      "capability": "mixed_embed_resolver",
+      "official_hub": null,
+      "official_site": "https://cinegram.tv",
+      "published_types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "manifest_overrides": {
+        "enabled": true,
+        "disabledPlatforms": []
+      },
+      "learned_routes": [
+        "/?s={query}",
+        "/index.php?do=search&subaction=search&story={query}"
+      ]
+    },
+    "movish": {
+      "notes": [
+        "Created by the NiakVIO full-auto provider onboarding workflow from structured route knowledge only.",
+        "Activation remains disabled until the onboarding quick Lab proves the provider on every requested runtime group.",
+        "Activated from exact-byte offline Provider v3 contract proof because GitHub-hosted network/WAF checks are non-authoritative; live native validation remains pending."
+      ],
+      "replacements": {},
+      "runtime_domain_replacements": {},
+      "route_replacements": {},
+      "profiles": [],
+      "capability": "mixed_embed_resolver",
+      "official_hub": null,
+      "official_site": "https://movish.to",
+      "published_types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "manifest_overrides": {
+        "enabled": true,
+        "disabledPlatforms": []
+      },
+      "learned_routes": [
+        "/search?q={query}"
+      ]
+    },
+    "vuflix": {
+      "notes": [
+        "Created by the NiakVIO full-auto provider onboarding workflow from structured route knowledge only.",
+        "Activation remains disabled until the onboarding quick Lab proves the provider on every requested runtime group.",
+        "Activated from exact-byte offline Provider v3 contract proof because GitHub-hosted network/WAF checks are non-authoritative; live native validation remains pending."
+      ],
+      "replacements": {},
+      "runtime_domain_replacements": {},
+      "route_replacements": {},
+      "profiles": [],
+      "capability": "mixed_embed_resolver",
+      "official_hub": null,
+      "official_site": "https://vuflix.co",
+      "published_types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "manifest_overrides": {
+        "enabled": true,
+        "disabledPlatforms": []
+      },
+      "learned_routes": [
+        "/search?q={query}",
+        "/search?keyword={query}"
+      ]
+    },
+    "anisama": {
+      "notes": [
+        "Created by the NiakVIO full-auto provider onboarding workflow from structured route knowledge only.",
+        "Activation remains disabled until the onboarding quick Lab proves the provider on every requested runtime group.",
+        "Activated from exact-byte offline Provider v3 contract proof because GitHub-hosted network/WAF checks are non-authoritative; live native validation remains pending."
+      ],
+      "replacements": {},
+      "runtime_domain_replacements": {},
+      "route_replacements": {},
+      "profiles": [],
+      "capability": "mixed_embed_resolver",
+      "official_hub": null,
+      "official_site": "https://anisama.fr/",
+      "published_types": [
+        "anime"
+      ],
+      "manifest_overrides": {
+        "enabled": true,
+        "disabledPlatforms": []
+      },
+      "learned_routes": [
+        "/?s={query}",
+        "/recherche?q={query}"
+      ]
+    },
+    "zone-streaming": {
+      "notes": [
+        "Created by the NiakVIO full-auto provider onboarding workflow from structured route knowledge only.",
+        "Activation remains disabled until the onboarding quick Lab proves the provider on every requested runtime group.",
+        "Activated from exact-byte offline Provider v3 contract proof because GitHub-hosted network/WAF checks are non-authoritative; live native validation remains pending."
+      ],
+      "replacements": {},
+      "runtime_domain_replacements": {},
+      "route_replacements": {},
+      "profiles": [],
+      "capability": "mixed_embed_resolver",
+      "official_hub": null,
+      "official_site": "https://www.zone-streaming.fr/",
+      "published_types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "manifest_overrides": {
+        "enabled": true,
+        "disabledPlatforms": []
+      },
+      "learned_routes": [
+        "/?s={query}",
+        "/index.php?do=search&subaction=search&story={query}"
+      ]
+    },
+    "dulourd": {
+      "notes": [
+        "Created by the NiakVIO full-auto provider onboarding workflow from structured route knowledge only.",
+        "Activation remains disabled until the onboarding quick Lab proves the provider on every requested runtime group.",
+        "Activated from exact-byte offline Provider v3 contract proof because GitHub-hosted network/WAF checks are non-authoritative; live native validation remains pending."
+      ],
+      "replacements": {},
+      "runtime_domain_replacements": {},
+      "route_replacements": {},
+      "profiles": [],
+      "capability": "mixed_embed_resolver",
+      "official_hub": null,
+      "official_site": "https://www.dulourd.hair",
+      "published_types": [
+        "tv",
+        "anime"
+      ],
+      "manifest_overrides": {
+        "enabled": true,
+        "disabledPlatforms": []
+      },
+      "learned_routes": [
+        "/index.php?do=search&subaction=search&story={query}"
+      ]
+    },
+    "franime": {
+      "notes": [
+        "Created by the NiakVIO full-auto provider onboarding workflow from structured route knowledge only.",
+        "Activation remains disabled until the onboarding quick Lab proves the provider on every requested runtime group.",
+        "Activated from exact-byte offline Provider v3 contract proof because GitHub-hosted network/WAF checks are non-authoritative; live native validation remains pending."
+      ],
+      "replacements": {},
+      "runtime_domain_replacements": {},
+      "route_replacements": {},
+      "profiles": [],
+      "capability": "mixed_embed_resolver",
+      "official_hub": null,
+      "official_site": "https://franime.fr",
+      "published_types": [
+        "anime"
+      ],
+      "manifest_overrides": {
+        "enabled": true,
+        "disabledPlatforms": []
+      },
+      "learned_routes": [
+        "/?s={query}",
+        "/recherche?q={query}"
+      ]
+    },
+    "nakios": {
+      "notes": [
+        "Created by the NiakVIO full-auto provider onboarding workflow from structured route knowledge only.",
+        "Activation remains disabled until the onboarding quick Lab proves the provider on every requested runtime group.",
+        "Activated from exact-byte offline Provider v3 contract proof because GitHub-hosted network/WAF checks are non-authoritative; live native validation remains pending."
+      ],
+      "replacements": {},
+      "runtime_domain_replacements": {},
+      "route_replacements": {},
+      "profiles": [],
+      "capability": "mixed_embed_resolver",
+      "official_hub": null,
+      "official_site": "https://nakios.live/",
+      "published_types": [
+        "movie",
+        "tv"
+      ],
+      "manifest_overrides": {
+        "enabled": true,
+        "disabledPlatforms": []
+      },
+      "learned_routes": [
+        "/?s={query}"
+      ]
+    },
+    "fawesome": {
+      "notes": [
+        "Created by the NiakVIO full-auto provider onboarding workflow from structured route knowledge only.",
+        "Activation remains disabled until the onboarding quick Lab proves the provider on every requested runtime group.",
+        "Activated from exact-byte offline Provider v3 contract proof because GitHub-hosted network/WAF checks are non-authoritative; live native validation remains pending."
+      ],
+      "replacements": {},
+      "runtime_domain_replacements": {},
+      "route_replacements": {},
+      "profiles": [],
+      "capability": "mixed_embed_resolver",
+      "official_hub": null,
+      "official_site": "https://fawesome.tv",
+      "published_types": [
+        "movie",
+        "tv"
+      ],
+      "manifest_overrides": {
+        "enabled": true,
+        "disabledPlatforms": []
+      },
+      "learned_routes": [
+        "/?s={query}",
+        "/search?q={query}"
+      ]
+    },
+    "cinetimes": {
+      "notes": [
+        "Created by the NiakVIO full-auto provider onboarding workflow from structured route knowledge only.",
+        "Activation remains disabled until the onboarding quick Lab proves the provider on every requested runtime group.",
+        "Activated from exact-byte offline Provider v3 contract proof because GitHub-hosted network/WAF checks are non-authoritative; live native validation remains pending."
+      ],
+      "replacements": {},
+      "runtime_domain_replacements": {},
+      "route_replacements": {},
+      "profiles": [],
+      "capability": "mixed_embed_resolver",
+      "official_hub": null,
+      "official_site": "https://cinetimes.org/en/",
+      "published_types": [
+        "movie",
+        "tv"
+      ],
+      "manifest_overrides": {
+        "enabled": true,
+        "disabledPlatforms": []
+      },
+      "learned_routes": [
+        "/?s={query}",
+        "/search?query={query}"
+      ]
+    },
+    "sadisflix": {
+      "notes": [
+        "Created by the NiakVIO full-auto provider onboarding workflow from structured route knowledge only.",
+        "Activation remains disabled until the onboarding quick Lab proves the provider on every requested runtime group.",
+        "Activated from exact-byte offline Provider v3 contract proof because GitHub-hosted network/WAF checks are non-authoritative; live native validation remains pending."
+      ],
+      "replacements": {},
+      "runtime_domain_replacements": {},
+      "route_replacements": {},
+      "profiles": [],
+      "capability": "mixed_embed_resolver",
+      "official_hub": null,
+      "official_site": "https://sadisflix-officiel.cfd",
+      "published_types": [
+        "movie",
+        "tv"
+      ],
+      "manifest_overrides": {
+        "enabled": true,
+        "disabledPlatforms": []
+      },
+      "learned_routes": [
+        "/search?q={query}"
+      ]
+    },
+    "skstream": {
+      "notes": [
+        "Created by the NiakVIO full-auto provider onboarding workflow from structured route knowledge only.",
+        "Activation remains disabled until the onboarding quick Lab proves the provider on every requested runtime group.",
+        "Activated from exact-byte offline Provider v3 contract proof because GitHub-hosted network/WAF checks are non-authoritative; live native validation remains pending."
+      ],
+      "replacements": {},
+      "runtime_domain_replacements": {},
+      "route_replacements": {},
+      "profiles": [],
+      "capability": "mixed_embed_resolver",
+      "official_hub": null,
+      "official_site": "https://wvw.skstream.rip/",
+      "published_types": [
+        "movie",
+        "tv"
+      ],
+      "manifest_overrides": {
+        "enabled": true,
+        "disabledPlatforms": []
+      },
+      "learned_routes": [
+        "/?s={query}"
+      ]
+    },
+    "youtitou": {
+      "notes": [
+        "Created by the NiakVIO full-auto provider onboarding workflow from structured route knowledge only.",
+        "Activation remains disabled until the onboarding quick Lab proves the provider on every requested runtime group.",
+        "Activated from exact-byte offline Provider v3 contract proof because GitHub-hosted network/WAF checks are non-authoritative; live native validation remains pending."
+      ],
+      "replacements": {},
+      "runtime_domain_replacements": {},
+      "route_replacements": {},
+      "profiles": [],
+      "capability": "mixed_embed_resolver",
+      "official_hub": null,
+      "official_site": "https://youtitou.com/",
+      "published_types": [
+        "anime"
+      ],
+      "manifest_overrides": {
+        "enabled": true,
+        "disabledPlatforms": []
+      },
+      "learned_routes": [
+        "/?s={query}"
+      ]
+    },
+    "waveanime": {
+      "notes": [
+        "Created by the NiakVIO full-auto provider onboarding workflow from structured route knowledge only.",
+        "Activation remains disabled until the onboarding quick Lab proves the provider on every requested runtime group.",
+        "Activated from exact-byte offline Provider v3 contract proof because GitHub-hosted network/WAF checks are non-authoritative; live native validation remains pending."
+      ],
+      "replacements": {},
+      "runtime_domain_replacements": {},
+      "route_replacements": {},
+      "profiles": [],
+      "capability": "mixed_embed_resolver",
+      "official_hub": null,
+      "official_site": "https://waveanime.fr",
+      "published_types": [
+        "anime"
+      ],
+      "manifest_overrides": {
+        "enabled": true,
+        "disabledPlatforms": []
+      },
+      "learned_routes": [
+        "/?s={query}"
+      ]
+    },
+    "cinematheque-de-bretagne": {
+      "notes": [
+        "Created by the NiakVIO full-auto provider onboarding workflow from structured route knowledge only.",
+        "Activation remains disabled until the onboarding quick Lab proves the provider on every requested runtime group.",
+        "Activated from exact-byte offline Provider v3 contract proof because GitHub-hosted network/WAF checks are non-authoritative; live native validation remains pending."
+      ],
+      "replacements": {},
+      "runtime_domain_replacements": {},
+      "route_replacements": {},
+      "profiles": [],
+      "capability": "mixed_embed_resolver",
+      "official_hub": null,
+      "official_site": "https://www.cinematheque-bretagne.bzh",
+      "published_types": [
+        "movie"
+      ],
+      "manifest_overrides": {
+        "enabled": true,
+        "disabledPlatforms": []
+      },
+      "learned_routes": [
+        "/?s={query}",
+        "/index.php?do=search&subaction=search&story={query}"
+      ]
+    },
+    "film-a-revoir": {
+      "notes": [
+        "Created by the NiakVIO full-auto provider onboarding workflow from structured route knowledge only.",
+        "Activation remains disabled until the onboarding quick Lab proves the provider on every requested runtime group.",
+        "Activated from exact-byte offline Provider v3 contract proof because GitHub-hosted network/WAF checks are non-authoritative; live native validation remains pending."
+      ],
+      "replacements": {},
+      "runtime_domain_replacements": {},
+      "route_replacements": {},
+      "profiles": [],
+      "capability": "mixed_embed_resolver",
+      "official_hub": null,
+      "official_site": "https://filmarevoirnad.blogspot.com",
+      "published_types": [
+        "movie"
+      ],
+      "manifest_overrides": {
+        "enabled": true,
+        "disabledPlatforms": []
+      },
+      "learned_routes": [
+        "/search?q={query}"
+      ]
+    },
+    "hianime": {
+      "notes": [
+        "Created by the NiakVIO full-auto provider onboarding workflow from structured route knowledge only.",
+        "Activation remains disabled until the onboarding quick Lab proves the provider on every requested runtime group.",
+        "Activated from exact-byte offline Provider v3 contract proof because GitHub-hosted network/WAF checks are non-authoritative; live native validation remains pending."
+      ],
+      "replacements": {},
+      "runtime_domain_replacements": {},
+      "route_replacements": {},
+      "profiles": [],
+      "capability": "mixed_embed_resolver",
+      "official_hub": null,
+      "official_site": "https://hianime.at/",
+      "published_types": [
+        "anime"
+      ],
+      "manifest_overrides": {
+        "enabled": true,
+        "disabledPlatforms": []
+      },
+      "learned_routes": [
+        "/?s={query}",
+        "/search?q={query}"
+      ]
     }
   },
   "route_override_defaults": {
@@ -13037,20 +13563,17 @@
     },
     "fullanime": {
       "strategy": "mixed_embed_resolver",
-      "validation": "provider_native_and_final_direct_media",
-      "allow_html_url": false,
-      "requires_direct_media": true,
+      "validation": "bulk_offline_contract_live_unverified",
+      "allow_html_url": true,
+      "requires_direct_media": false,
       "observed_origins": [
         "https://www.fullanime.fr"
       ],
+      "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true,
       "catalogue_types": [
         "anime"
-      ],
-      "request_type_aliases": {
-        "anime": "tv"
-      },
-      "identity_request_source": "original_nuvio_request"
+      ]
     },
     "mallumv": {
       "strategy": "html_scraper",
@@ -13082,16 +13605,19 @@
       "strict_playback_validation": true
     },
     "showbox": {
-      "strategy": "html_scraper",
-      "validation": "provider_native",
+      "strategy": "mixed_embed_resolver",
+      "validation": "bulk_offline_contract_live_unverified",
       "allow_html_url": true,
       "requires_direct_media": false,
       "observed_origins": [
-        "https://www.febbox.com",
-        "https://old.invalid"
+        "https://showbox.media"
       ],
       "generated_from_manifest": true,
-      "generated_from_manifest_or_stage": true
+      "generated_from_manifest_or_stage": true,
+      "catalogue_types": [
+        "movie",
+        "tv"
+      ]
     },
     "vidlove": {
       "strategy": "html_scraper",
@@ -13186,7 +13712,7 @@
     },
     "movix-fr": {
       "strategy": "mixed_embed_resolver",
-      "validation": "bulk_onboarding_pending",
+      "validation": "bulk_offline_contract_live_unverified",
       "allow_html_url": true,
       "requires_direct_media": false,
       "observed_origins": [
@@ -13249,8 +13775,8 @@
       ]
     },
     "frembed": {
-      "strategy": "html_scraper",
-      "validation": "bulk_onboarding_pending",
+      "strategy": "mixed_embed_resolver",
+      "validation": "bulk_offline_contract_live_unverified",
       "allow_html_url": true,
       "requires_direct_media": false,
       "observed_origins": [
@@ -13281,12 +13807,12 @@
       ]
     },
     "1jour1film0626": {
-      "strategy": "html_scraper",
-      "validation": "bulk_onboarding_pending",
+      "strategy": "mixed_embed_resolver",
+      "validation": "bulk_offline_contract_live_unverified",
       "allow_html_url": true,
       "requires_direct_media": false,
       "observed_origins": [
-        "https://1jour1film0626.site"
+        "https://1jour1film1026.monster"
       ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true,
@@ -13329,12 +13855,12 @@
       ]
     },
     "kidraz": {
-      "strategy": "html_scraper",
-      "validation": "bulk_onboarding_pending",
+      "strategy": "mixed_embed_resolver",
+      "validation": "bulk_offline_contract_live_unverified",
       "allow_html_url": true,
       "requires_direct_media": false,
       "observed_origins": [
-        "https://www.kidraz.com"
+        "https://fronav.com"
       ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true,
@@ -13361,12 +13887,12 @@
       ]
     },
     "neobam": {
-      "strategy": "html_scraper",
-      "validation": "bulk_onboarding_pending",
+      "strategy": "mixed_embed_resolver",
+      "validation": "bulk_offline_contract_live_unverified",
       "allow_html_url": true,
       "requires_direct_media": false,
       "observed_origins": [
-        "https://neobam.com"
+        "https://www.neobam.fr"
       ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true,
@@ -13388,6 +13914,511 @@
       "generated_from_manifest_or_stage": true,
       "catalogue_types": [
         "movie"
+      ]
+    },
+    "corsflix": {
+      "strategy": "mixed_embed_resolver",
+      "validation": "bulk_offline_contract_live_unverified",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://watch.corsflix.net"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true,
+      "catalogue_types": [
+        "movie",
+        "tv",
+        "anime"
+      ]
+    },
+    "emnexmovies": {
+      "strategy": "mixed_embed_resolver",
+      "validation": "bulk_offline_contract_live_unverified",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://emnexmovies.tech"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true,
+      "catalogue_types": [
+        "movie",
+        "tv",
+        "anime"
+      ]
+    },
+    "latestmovies": {
+      "strategy": "mixed_embed_resolver",
+      "validation": "bulk_offline_contract_live_unverified",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://latestmovies.net"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true,
+      "catalogue_types": [
+        "movie",
+        "tv",
+        "anime"
+      ]
+    },
+    "movy": {
+      "strategy": "mixed_embed_resolver",
+      "validation": "bulk_offline_contract_live_unverified",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://www.movy.sx"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true,
+      "catalogue_types": [
+        "movie",
+        "tv",
+        "anime"
+      ]
+    },
+    "arrowtv": {
+      "strategy": "mixed_embed_resolver",
+      "validation": "bulk_offline_contract_live_unverified",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://arrowtv.net"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true,
+      "catalogue_types": [
+        "movie",
+        "tv",
+        "anime"
+      ]
+    },
+    "chillflix": {
+      "strategy": "mixed_embed_resolver",
+      "validation": "bulk_offline_contract_live_unverified",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://chillflix.lol"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true,
+      "catalogue_types": [
+        "movie",
+        "tv",
+        "anime"
+      ]
+    },
+    "neonflix": {
+      "strategy": "mixed_embed_resolver",
+      "validation": "bulk_offline_contract_live_unverified",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://neonflix.st"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true,
+      "catalogue_types": [
+        "movie",
+        "tv",
+        "anime"
+      ]
+    },
+    "boredflix": {
+      "strategy": "mixed_embed_resolver",
+      "validation": "bulk_offline_contract_live_unverified",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://boredflix.to"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true,
+      "catalogue_types": [
+        "movie",
+        "tv",
+        "anime"
+      ]
+    },
+    "fexini": {
+      "strategy": "mixed_embed_resolver",
+      "validation": "bulk_offline_contract_live_unverified",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://fexini.net"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true,
+      "catalogue_types": [
+        "movie",
+        "tv",
+        "anime"
+      ]
+    },
+    "animeonsen": {
+      "strategy": "mixed_embed_resolver",
+      "validation": "bulk_offline_contract_live_unverified",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://www.animeonsen.xyz"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true,
+      "catalogue_types": [
+        "anime"
+      ]
+    },
+    "shuttletv": {
+      "strategy": "mixed_embed_resolver",
+      "validation": "bulk_offline_contract_live_unverified",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://shuttletv.pk"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true,
+      "catalogue_types": [
+        "movie",
+        "tv",
+        "anime"
+      ]
+    },
+    "primewire": {
+      "strategy": "mixed_embed_resolver",
+      "validation": "bulk_offline_contract_live_unverified",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://primewire.pw"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true,
+      "catalogue_types": [
+        "movie",
+        "tv"
+      ]
+    },
+    "67movies": {
+      "strategy": "mixed_embed_resolver",
+      "validation": "bulk_offline_contract_live_unverified",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://67movies.st"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true,
+      "catalogue_types": [
+        "movie",
+        "tv",
+        "anime"
+      ]
+    },
+    "watch-cartoon-online": {
+      "strategy": "mixed_embed_resolver",
+      "validation": "bulk_offline_contract_live_unverified",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://www.wco.tv"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true,
+      "catalogue_types": [
+        "movie",
+        "tv",
+        "anime"
+      ]
+    },
+    "cinemabz": {
+      "strategy": "mixed_embed_resolver",
+      "validation": "bulk_offline_contract_live_unverified",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://cinema.army"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true,
+      "catalogue_types": [
+        "movie",
+        "tv",
+        "anime"
+      ]
+    },
+    "flixer": {
+      "strategy": "mixed_embed_resolver",
+      "validation": "bulk_offline_contract_live_unverified",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://flixer.gd"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true,
+      "catalogue_types": [
+        "movie",
+        "tv",
+        "anime"
+      ]
+    },
+    "cinegram": {
+      "strategy": "mixed_embed_resolver",
+      "validation": "bulk_offline_contract_live_unverified",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://cinegram.tv"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true,
+      "catalogue_types": [
+        "movie",
+        "tv",
+        "anime"
+      ]
+    },
+    "movish": {
+      "strategy": "mixed_embed_resolver",
+      "validation": "bulk_offline_contract_live_unverified",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://movish.to"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true,
+      "catalogue_types": [
+        "movie",
+        "tv",
+        "anime"
+      ]
+    },
+    "vuflix": {
+      "strategy": "mixed_embed_resolver",
+      "validation": "bulk_offline_contract_live_unverified",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://vuflix.co"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true,
+      "catalogue_types": [
+        "movie",
+        "tv",
+        "anime"
+      ]
+    },
+    "anisama": {
+      "strategy": "mixed_embed_resolver",
+      "validation": "bulk_offline_contract_live_unverified",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://anisama.fr"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true,
+      "catalogue_types": [
+        "anime"
+      ]
+    },
+    "zone-streaming": {
+      "strategy": "mixed_embed_resolver",
+      "validation": "bulk_offline_contract_live_unverified",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://www.zone-streaming.fr"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true,
+      "catalogue_types": [
+        "movie",
+        "tv",
+        "anime"
+      ]
+    },
+    "dulourd": {
+      "strategy": "mixed_embed_resolver",
+      "validation": "bulk_offline_contract_live_unverified",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://www.dulourd.hair"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true,
+      "catalogue_types": [
+        "tv",
+        "anime"
+      ]
+    },
+    "franime": {
+      "strategy": "mixed_embed_resolver",
+      "validation": "bulk_offline_contract_live_unverified",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://franime.fr"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true,
+      "catalogue_types": [
+        "anime"
+      ]
+    },
+    "nakios": {
+      "strategy": "mixed_embed_resolver",
+      "validation": "bulk_offline_contract_live_unverified",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://nakios.live"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true,
+      "catalogue_types": [
+        "movie",
+        "tv"
+      ]
+    },
+    "fawesome": {
+      "strategy": "mixed_embed_resolver",
+      "validation": "bulk_offline_contract_live_unverified",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://fawesome.tv"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true,
+      "catalogue_types": [
+        "movie",
+        "tv"
+      ]
+    },
+    "cinetimes": {
+      "strategy": "mixed_embed_resolver",
+      "validation": "bulk_offline_contract_live_unverified",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://cinetimes.org"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true,
+      "catalogue_types": [
+        "movie",
+        "tv"
+      ]
+    },
+    "sadisflix": {
+      "strategy": "mixed_embed_resolver",
+      "validation": "bulk_offline_contract_live_unverified",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://sadisflix-officiel.cfd"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true,
+      "catalogue_types": [
+        "movie",
+        "tv"
+      ]
+    },
+    "skstream": {
+      "strategy": "mixed_embed_resolver",
+      "validation": "bulk_offline_contract_live_unverified",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://wvw.skstream.rip"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true,
+      "catalogue_types": [
+        "movie",
+        "tv"
+      ]
+    },
+    "youtitou": {
+      "strategy": "mixed_embed_resolver",
+      "validation": "bulk_offline_contract_live_unverified",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://youtitou.com"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true,
+      "catalogue_types": [
+        "anime"
+      ]
+    },
+    "waveanime": {
+      "strategy": "mixed_embed_resolver",
+      "validation": "bulk_offline_contract_live_unverified",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://waveanime.fr"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true,
+      "catalogue_types": [
+        "anime"
+      ]
+    },
+    "cinematheque-de-bretagne": {
+      "strategy": "mixed_embed_resolver",
+      "validation": "bulk_offline_contract_live_unverified",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://www.cinematheque-bretagne.bzh"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true,
+      "catalogue_types": [
+        "movie"
+      ]
+    },
+    "film-a-revoir": {
+      "strategy": "mixed_embed_resolver",
+      "validation": "bulk_offline_contract_live_unverified",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://filmarevoirnad.blogspot.com"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true,
+      "catalogue_types": [
+        "movie"
+      ]
+    },
+    "hianime": {
+      "strategy": "mixed_embed_resolver",
+      "validation": "bulk_offline_contract_live_unverified",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://hianime.at"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true,
+      "catalogue_types": [
+        "anime"
       ]
     }
   },
