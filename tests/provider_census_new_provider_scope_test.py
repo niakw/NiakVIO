@@ -24,8 +24,10 @@ with tempfile.TemporaryDirectory() as td:
     ]}),encoding="utf-8")
     old_manifest=mod.MANIFEST
     old_pending=mod.pending_provider_ids
+    old_france_only=mod.france_only_catalog_rows
     mod.MANIFEST=manifest
     mod.pending_provider_ids=lambda:{"brand-new"}
+    mod.france_only_catalog_rows=lambda **kwargs:[]
     try:
         selected,scope=mod._scope_provider_filter("unresolved",status,[])
         assert scope=="unresolved"
@@ -41,5 +43,6 @@ with tempfile.TemporaryDirectory() as td:
     finally:
         mod.MANIFEST=old_manifest
         mod.pending_provider_ids=old_pending
+        mod.france_only_catalog_rows=old_france_only
 
 print("New onboarding pending scope requires explicit census authority")
