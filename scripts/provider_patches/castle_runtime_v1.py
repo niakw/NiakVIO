@@ -288,7 +288,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
         out.push({
           name:"Castle - "+quality,
           sourceLabel:"Castle "+label,
-          title:meta.title+(meta.type==="tv"&&meta.season&&meta.episode?" S"+String(meta.season).padStart(2,"0")+"E"+String(meta.episode).padStart(2,"0"):(meta.year?" ("+meta.year+")":"")),
+          title:meta.title+(meta.type==="tv"&&Number.isInteger(meta.season)&&meta.season>=0&&meta.episode>=1?" S"+String(meta.season).padStart(2,"0")+"E"+String(meta.episode).padStart(2,"0"):(meta.year?" ("+meta.year+")":"")),
           url:url,
           quality:quality,
           language:s(language),
@@ -318,7 +318,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
     var found=await search(sec,meta.year?meta.title+" "+meta.year:meta.title);
     var movieId=strictMovieId(found,meta);if(!movieId)return [];
     var detail=await details(sec,movieId),activeMovieId=movieId;
-    if(meta.type==="tv"&&meta.season&&meta.episode){
+    if(meta.type==="tv"&&Number.isInteger(meta.season)&&meta.season>=0&&meta.episode>=1){
       var root=dataBlock(detail),season=rows(root.seasons).find(function(x){return Number(x&&x.number)===meta.season});
       if(season&&season.movieId&&s(season.movieId)!==movieId){
         activeMovieId=s(season.movieId);
@@ -326,7 +326,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
       }
     }
     var data=dataBlock(detail),episodes=rows(data.episodes),episodeRow=null;
-    if(meta.type==="tv"&&meta.episode){
+    if(meta.type==="tv"&&meta.episode>=1){
       episodeRow=episodes.find(function(x){return Number(x&&x.number)===meta.episode})||null;
     }else{
       episodeRow=episodes.length?episodes[0]:null;
