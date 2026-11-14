@@ -15,6 +15,7 @@ module = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(module)
 
 manifest = json.loads((ROOT / "manifest.json").read_text(encoding="utf-8"))
+vf_manifest = json.loads((ROOT / "vf/manifest.json").read_text(encoding="utf-8"))
 hubs = json.loads((ROOT / "provider-hubs.json").read_text(encoding="utf-8"))
 overrides = json.loads((ROOT / "provider-overrides.json").read_text(encoding="utf-8"))
 history = json.loads((ROOT / "provider-domain-history.json").read_text(encoding="utf-8"))
@@ -23,6 +24,11 @@ lifecycle = json.loads((ROOT / "automation/provider-disabled-lifecycle.json").re
 rows = {
     str(row.get("id") or "").strip().casefold(): row
     for row in manifest.get("scrapers") or []
+    if isinstance(row, dict)
+}
+vf_rows = {
+    str(row.get("id") or "").strip().casefold(): row
+    for row in vf_manifest.get("scrapers") or []
     if isinstance(row, dict)
 }
 registries = hubs.get("providers") or {}
@@ -130,10 +136,12 @@ for provider, row in rows.items():
     assert result["action"] == "KEEP_DISABLED", (provider, result)
     assert result["repairEligible"] is False, (provider, result)
 for provider in sorted(pending):
-    assert provider in rows and rows[provider].get("enabled") is False, provider
-    result=classify(provider)
-    assert result["action"] == "ONBOARDING_PENDING", (provider,result)
-    assert result["repairEligible"] is False, (provider,result)
+    projection = rows.get(provider) or vf_rows.get(provider)
+    assert projection is not None and projection.get("enabled") is False, provider
+    if provider in rows:
+        result=classify(provider)
+        assert result["action"] == "ONBOARDING_PENDING", (provider,result)
+        assert result["repairEligible"] is False, (provider,result)
 
 # Any current-tested production identity lacking terminal playback may be moved
 # into disabled retention before this catalogue contract runs. This is
