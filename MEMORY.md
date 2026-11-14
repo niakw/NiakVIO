@@ -1,3 +1,9 @@
+## 2026-11-14 — Routine architecture validation publication boundary fixed
+
+- Workflow Gate 43572363983 exposed a real consequence of moving architecture validation from manual/FORCE-only to every successful Learning run: the "Open or refresh Brain architecture PR" step had relied on the old job-level manual condition and only retained NIAKVIO_ALLOW_BRAIN_PROPOSAL_PR + non-FORCE checks. If that repository variable were enabled, routine Learning could have opened/refreshed a review PR without publish_proposal=true.
+- Add the explicit workflow_dispatch + github.event.inputs.publish_proposal == true gate directly to the PR step. Routine Learning can now validate/materialize its architecture artifact in the ephemeral runner only; no PR or production write is authorized. Direct main promotion remains architecture_force-only. The previously-updated hygiene test is intentionally retained to enforce this boundary.
+- Re-run exact SHA required.
+
 ## 2026-11-14 — Stale hygiene assertion updated for routine architecture validation
 
 - Workflow Gate 43572158240 on d9d89b12 failed only in tests/repository_hygiene_contract_test.py: the test still required the architecture validation *job itself* to be workflow_dispatch/FORCE-only. That directly contradicted the new Brain invariant that every successful Learning experiment must validate its architecture artifact.

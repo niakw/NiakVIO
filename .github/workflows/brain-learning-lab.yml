@@ -1770,7 +1770,7 @@ jobs:
           fi
 
       - name: Open or refresh Brain architecture PR
-        if: steps.architecture.outputs.has_changes == 'true' && steps.materialize-architecture.outputs.has_diff == 'true' && needs.experiment.outputs.architecture_force != 'true' && vars.NIAKVIO_ALLOW_BRAIN_PROPOSAL_PR == 'true'
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.publish_proposal == 'true' && steps.architecture.outputs.has_changes == 'true' && steps.materialize-architecture.outputs.has_diff == 'true' && needs.experiment.outputs.architecture_force != 'true' && vars.NIAKVIO_ALLOW_BRAIN_PROPOSAL_PR == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
           BRANCH: brain-architecture/proposal
