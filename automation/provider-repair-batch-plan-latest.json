@@ -1,17 +1,22 @@
 {
   "schemaVersion": 1,
-  "sourceRunId": "43636868845",
-  "sourceTriggerSha": "c32e3d94dc8c522b499d388cf14ac6612424cb07",
-  "unresolvedProviderCount": 18,
-  "dynamicVariantProviderCount": 1,
+  "sourceRunId": "43639803583",
+  "sourceTriggerSha": "b44a64068eb1a50ba72082f608c52bd2d14b0c03",
+  "unresolvedProviderCount": 40,
+  "dynamicVariantProviderCount": 5,
   "dynamicVariantProviders": [
-    "papadustream"
+    "cinemabz",
+    "movix-fr",
+    "nakios",
+    "papadustream",
+    "sadisflix"
   ],
   "lifecycleSuppressedDynamicProviders": [
     "animevostfr",
     "hindmoviez"
   ],
   "dynamicVariantCurrentObservedProviders": [
+    "1jour1film0626",
     "4khdhub",
     "67movies",
     "allanime",
@@ -20,26 +25,39 @@
     "anime-sama",
     "anime-ultime",
     "animekai",
+    "animeonsen",
     "animesalt",
     "animesama-co",
     "animesultra",
     "animevost-fr",
     "animevostfr",
+    "anisama",
     "arrowtv",
     "boredflix",
     "castle",
     "chillflix",
     "cinegram",
     "cinemabz",
+    "cinematheque-de-bretagne",
+    "cinetimes",
     "coflix",
     "corsflix",
+    "dulourd",
     "emnexmovies",
+    "fawesome",
+    "fexini",
+    "film-a-revoir",
     "flemmix",
     "flixer",
+    "franime",
+    "frembed",
     "french-manga",
+    "fullanime",
+    "hianime",
     "hindmoviez",
     "internet-archive",
     "kehflix",
+    "kidraz",
     "kurage",
     "latestmovies",
     "mallumv",
@@ -47,17 +65,23 @@
     "movieshunt",
     "moviesmod",
     "movish",
+    "movix-fr",
     "movy",
     "mugiwarastream",
+    "nakios",
     "neko-sama",
+    "neobam",
     "neonflix",
     "papadustream",
     "persianstremio",
     "playimdb",
     "primewire",
     "purstream",
+    "sadisflix",
     "sekai",
+    "showbox",
     "shuttletv",
+    "skstream",
     "streamzo",
     "uhdmovies",
     "vidfast",
@@ -69,11 +93,14 @@
     "vostfree",
     "vuflix",
     "watch-cartoon-online",
+    "waveanime",
     "wookafr",
-    "yflix"
+    "yflix",
+    "youtitou",
+    "zone-streaming"
   ],
-  "dynamicVariantFallbackUsed": false,
-  "groupCount": 6,
+  "dynamicVariantFallbackUsed": true,
+  "groupCount": 8,
   "executionModel": {
     "default": "family/signature batch",
     "liveProbeConcurrency": "audit_provider_quick_yield ThreadPool",
@@ -92,29 +119,36 @@
         "chain"
       ],
       "dominantIssues": [
+        "network_exception",
         "network_zero_result",
         "waf_challenge"
       ],
       "harnessTransportClasses": [],
       "transportSignature": "not-applicable",
-      "providerCount": 10,
+      "providerCount": 14,
       "providers": [
         "boredflix",
         "cinemabz",
+        "cinematheque-de-bretagne",
         "corsflix",
         "emnexmovies",
+        "hianime",
         "latestmovies",
         "movish",
         "movy",
         "neonflix",
         "primewire",
-        "vuflix"
+        "showbox",
+        "vuflix",
+        "zone-streaming"
       ],
       "action": "apply/test shared terminal-player extraction profile to the whole capability family",
       "selectionAuthorities": [
         "provider-census-status.json:brainCheckRequired"
       ],
-      "dynamicVariantProviders": [],
+      "dynamicVariantProviders": [
+        "cinemabz"
+      ],
       "executionPolicy": "batch-first",
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
@@ -126,54 +160,35 @@
       ],
       "capabilityStrategy": "mixed_embed_resolver",
       "evidenceDepths": [
+        "chain",
         "lookup"
       ],
       "dominantIssues": [
-        "network_zero_result"
+        "network_zero_result",
+        "provider_returned_wrong_content"
       ],
       "harnessTransportClasses": [],
       "transportSignature": "not-applicable",
-      "providerCount": 3,
+      "providerCount": 10,
       "providers": [
         "67movies",
+        "fawesome",
+        "fexini",
         "flixer",
-        "shuttletv"
+        "frembed",
+        "kidraz",
+        "neobam",
+        "sadisflix",
+        "shuttletv",
+        "youtitou"
       ],
       "action": "queue by signature for Brain learning; provider-local repair only after shared profiles fail",
       "selectionAuthorities": [
         "provider-census-status.json:brainCheckRequired"
       ],
-      "dynamicVariantProviders": [],
-      "executionPolicy": "batch-first",
-      "providerLocalFallback": "only-after-shared-profile-failure"
-    },
-    {
-      "groupId": "harness-compatibility|mixed_embed_resolver|residential-exit-all-challenged",
-      "repairScope": "harness-compatibility",
-      "runtimeFamilies": [
-        "mixed_embed_resolver"
+      "dynamicVariantProviders": [
+        "sadisflix"
       ],
-      "capabilityStrategy": "mixed_embed_resolver",
-      "evidenceDepths": [
-        "none"
-      ],
-      "dominantIssues": [
-        "waf_challenge"
-      ],
-      "harnessTransportClasses": [
-        "residential-exit-all-challenged"
-      ],
-      "transportSignature": "residential-exit-all-challenged",
-      "providerCount": 2,
-      "providers": [
-        "chillflix",
-        "cinegram"
-      ],
-      "action": "compare browser/native/residential transport and route client-owned gaps away from provider mutation",
-      "selectionAuthorities": [
-        "provider-census-status.json:brainCheckRequired"
-      ],
-      "dynamicVariantProviders": [],
       "executionPolicy": "batch-first",
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
@@ -185,6 +200,7 @@
       ],
       "capabilityStrategy": "mixed_embed_resolver",
       "evidenceDepths": [
+        "lookup",
         "none"
       ],
       "dominantIssues": [
@@ -194,9 +210,46 @@
         "no-transport-evidence"
       ],
       "transportSignature": "no-transport-evidence",
-      "providerCount": 1,
+      "providerCount": 8,
       "providers": [
-        "watch-cartoon-online"
+        "cinetimes",
+        "dulourd",
+        "film-a-revoir",
+        "franime",
+        "fullanime",
+        "skstream",
+        "watch-cartoon-online",
+        "waveanime"
+      ],
+      "action": "compare browser/native/residential transport and route client-owned gaps away from provider mutation",
+      "selectionAuthorities": [
+        "provider-census-status.json:brainCheckRequired"
+      ],
+      "dynamicVariantProviders": [],
+      "executionPolicy": "batch-first",
+      "providerLocalFallback": "only-after-shared-profile-failure"
+    },
+    {
+      "groupId": "harness-compatibility|mixed_embed_resolver|github-all-transports-challenged",
+      "repairScope": "harness-compatibility",
+      "runtimeFamilies": [
+        "mixed_embed_resolver"
+      ],
+      "capabilityStrategy": "mixed_embed_resolver",
+      "evidenceDepths": [
+        "none"
+      ],
+      "dominantIssues": [
+        "waf_challenge"
+      ],
+      "harnessTransportClasses": [
+        "github-all-transports-challenged"
+      ],
+      "transportSignature": "github-all-transports-challenged",
+      "providerCount": 2,
+      "providers": [
+        "1jour1film0626",
+        "animeonsen"
       ],
       "action": "compare browser/native/residential transport and route client-owned gaps away from provider mutation",
       "selectionAuthorities": [
@@ -223,9 +276,70 @@
         "residential-exit-inconclusive"
       ],
       "transportSignature": "residential-exit-inconclusive",
+      "providerCount": 2,
+      "providers": [
+        "arrowtv",
+        "cinegram"
+      ],
+      "action": "compare browser/native/residential transport and route client-owned gaps away from provider mutation",
+      "selectionAuthorities": [
+        "provider-census-status.json:brainCheckRequired"
+      ],
+      "dynamicVariantProviders": [],
+      "executionPolicy": "batch-first",
+      "providerLocalFallback": "only-after-shared-profile-failure"
+    },
+    {
+      "groupId": "variant-coverage|mixed_embed_resolver",
+      "repairScope": "variant-coverage",
+      "runtimeFamilies": [
+        "mixed_embed_resolver"
+      ],
+      "capabilityStrategy": "mixed_embed_resolver",
+      "evidenceDepths": [
+        "chain"
+      ],
+      "dominantIssues": [
+        "network_zero_result"
+      ],
+      "harnessTransportClasses": [],
+      "transportSignature": "not-applicable",
+      "providerCount": 2,
+      "providers": [
+        "movix-fr",
+        "nakios"
+      ],
+      "action": "current execution proves playable output but fewer variants than the provider announced; keep publication authority unchanged and send completeness repair to Brain Learning",
+      "selectionAuthorities": [
+        "provider-census-sharded-latest.json:dynamic-variant-debt"
+      ],
+      "dynamicVariantProviders": [
+        "movix-fr",
+        "nakios"
+      ],
+      "executionPolicy": "batch-first",
+      "providerLocalFallback": "only-after-shared-profile-failure"
+    },
+    {
+      "groupId": "harness-compatibility|mixed_embed_resolver|residential-exit-all-challenged",
+      "repairScope": "harness-compatibility",
+      "runtimeFamilies": [
+        "mixed_embed_resolver"
+      ],
+      "capabilityStrategy": "mixed_embed_resolver",
+      "evidenceDepths": [
+        "none"
+      ],
+      "dominantIssues": [
+        "waf_challenge"
+      ],
+      "harnessTransportClasses": [
+        "residential-exit-all-challenged"
+      ],
+      "transportSignature": "residential-exit-all-challenged",
       "providerCount": 1,
       "providers": [
-        "arrowtv"
+        "chillflix"
       ],
       "action": "compare browser/native/residential transport and route client-owned gaps away from provider mutation",
       "selectionAuthorities": [

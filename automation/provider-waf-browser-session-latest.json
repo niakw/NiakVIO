@@ -3,49 +3,15 @@
   "mode": "ordinary-headless-browser-session-no-challenge-solver",
   "browserAvailable": true,
   "browserExecutable": "google-chrome",
-  "targetCount": 31,
+  "targetCount": 35,
   "providerFilter": [],
-  "attemptsPerTarget": 1,
-  "clientProfileMatrixEnabled": true,
+  "attemptsPerTarget": 2,
+  "clientProfileMatrixEnabled": false,
   "clientProfiles": [
     {
       "id": "github-default-browser",
       "transportApproximation": "GitHub-hosted Chromium",
       "userAgent": "browser-default"
-    },
-    {
-      "id": "nuvio-tv-ua-browser",
-      "transportApproximation": "GitHub-hosted Chromium with audited NuvioTV default UA only",
-      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-      "nativeContract": {
-        "httpStack": "OkHttp",
-        "proxyPolicy": "Proxy.NO_PROXY",
-        "dnsPolicy": "IPv4FirstDns",
-        "redirects": "HTTP+SSL enabled"
-      }
-    },
-    {
-      "id": "nuvio-tv-okhttp-jvm",
-      "transportApproximation": "GitHub JVM OkHttp 4.12.0 with audited NuvioTV PluginRuntime policy",
-      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-      "nativeContractApproximation": {
-        "httpStack": "OkHttp 4.12.0",
-        "proxyPolicy": "Proxy.NO_PROXY",
-        "dnsPolicy": "IPv4FirstDns",
-        "redirects": "HTTP+SSL enabled",
-        "tlsRuntime": "GitHub JVM, not Android device"
-      }
-    },
-    {
-      "id": "nuvio-tv-direct-http-approx",
-      "transportApproximation": "GitHub libcurl with IPv4, NO_PROXY, redirects and audited NuvioTV UA",
-      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-      "nativeContractApproximation": {
-        "httpStack": "libcurl-not-OkHttp",
-        "proxyPolicy": "NO_PROXY",
-        "dnsPolicy": "IPv4 only",
-        "redirects": "enabled"
-      }
     }
   ],
   "limitations": [
@@ -56,11 +22,164 @@
     "exact failed provider GET replay is transport differential evidence only; it cannot grant playback proof"
   ],
   "counts": {
-    "browser_challenge_persisted": 24,
+    "browser_challenge_persisted": 28,
     "browser_content_reached": 6,
     "browser_inconclusive": 1
   },
   "rows": [
+    {
+      "provider": "1jour1film0626",
+      "lane": "anime",
+      "publicUrl": "https://1jour1film1026.monster/",
+      "host": "1jour1film1026.monster",
+      "path": "/",
+      "method": "GET",
+      "fetchStatus": 403,
+      "challenge": "cloudflare",
+      "seedKind": null,
+      "seedRoute": null,
+      "outcome": "browser_challenge_persisted",
+      "attemptCount": 2,
+      "attempts": [
+        {
+          "attempt": 1,
+          "outcome": "browser_timeout"
+        },
+        {
+          "attempt": 2,
+          "outcome": "browser_challenge_persisted",
+          "exitCode": 0
+        }
+      ],
+      "ordinarySessionReused": true,
+      "clientProfileMatrix": [
+        {
+          "profile": "github-default-browser",
+          "userAgent": null,
+          "outcome": "browser_challenge_persisted",
+          "attemptCount": 2,
+          "attempts": [
+            {
+              "attempt": 1,
+              "outcome": "browser_timeout"
+            },
+            {
+              "attempt": 2,
+              "outcome": "browser_challenge_persisted",
+              "exitCode": 0
+            }
+          ],
+          "ordinarySessionReused": true
+        }
+      ],
+      "directHttpProfile": null,
+      "okHttpJvmProfile": null,
+      "contentProfiles": [],
+      "nativeTvTransportStillUnproven": true,
+      "durationMs": 23184
+    },
+    {
+      "provider": "1jour1film0626",
+      "lane": "movie",
+      "publicUrl": "https://1jour1film1026.monster/",
+      "host": "1jour1film1026.monster",
+      "path": "/",
+      "method": "GET",
+      "fetchStatus": 403,
+      "challenge": "cloudflare",
+      "seedKind": null,
+      "seedRoute": null,
+      "outcome": "browser_challenge_persisted",
+      "attemptCount": 2,
+      "attempts": [
+        {
+          "attempt": 1,
+          "outcome": "browser_timeout"
+        },
+        {
+          "attempt": 2,
+          "outcome": "browser_challenge_persisted",
+          "exitCode": 0
+        }
+      ],
+      "ordinarySessionReused": true,
+      "clientProfileMatrix": [
+        {
+          "profile": "github-default-browser",
+          "userAgent": null,
+          "outcome": "browser_challenge_persisted",
+          "attemptCount": 2,
+          "attempts": [
+            {
+              "attempt": 1,
+              "outcome": "browser_timeout"
+            },
+            {
+              "attempt": 2,
+              "outcome": "browser_challenge_persisted",
+              "exitCode": 0
+            }
+          ],
+          "ordinarySessionReused": true
+        }
+      ],
+      "directHttpProfile": null,
+      "okHttpJvmProfile": null,
+      "contentProfiles": [],
+      "nativeTvTransportStillUnproven": true,
+      "durationMs": 32115
+    },
+    {
+      "provider": "1jour1film0626",
+      "lane": "tv",
+      "publicUrl": "https://1jour1film1026.monster/",
+      "host": "1jour1film1026.monster",
+      "path": "/",
+      "method": "GET",
+      "fetchStatus": 403,
+      "challenge": "cloudflare",
+      "seedKind": null,
+      "seedRoute": null,
+      "outcome": "browser_challenge_persisted",
+      "attemptCount": 2,
+      "attempts": [
+        {
+          "attempt": 1,
+          "outcome": "browser_timeout"
+        },
+        {
+          "attempt": 2,
+          "outcome": "browser_challenge_persisted",
+          "exitCode": 0
+        }
+      ],
+      "ordinarySessionReused": true,
+      "clientProfileMatrix": [
+        {
+          "profile": "github-default-browser",
+          "userAgent": null,
+          "outcome": "browser_challenge_persisted",
+          "attemptCount": 2,
+          "attempts": [
+            {
+              "attempt": 1,
+              "outcome": "browser_timeout"
+            },
+            {
+              "attempt": 2,
+              "outcome": "browser_challenge_persisted",
+              "exitCode": 0
+            }
+          ],
+          "ordinarySessionReused": true
+        }
+      ],
+      "directHttpProfile": null,
+      "okHttpJvmProfile": null,
+      "contentProfiles": [],
+      "nativeTvTransportStillUnproven": true,
+      "durationMs": 23186
+    },
     {
       "provider": "allwish",
       "lane": "movie",
@@ -112,7 +231,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 14459
+      "durationMs": 2366
     },
     {
       "provider": "allwish",
@@ -165,7 +284,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 14454,
+      "durationMs": 4047,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_challenge_persisted",
@@ -194,6 +313,59 @@
         },
         "contentProfiles": []
       }
+    },
+    {
+      "provider": "animeonsen",
+      "lane": "anime",
+      "publicUrl": "https://www.animeonsen.xyz/",
+      "host": "www.animeonsen.xyz",
+      "path": "/",
+      "method": "GET",
+      "fetchStatus": 403,
+      "challenge": "cloudflare",
+      "seedKind": null,
+      "seedRoute": null,
+      "outcome": "browser_challenge_persisted",
+      "attemptCount": 2,
+      "attempts": [
+        {
+          "attempt": 1,
+          "outcome": "browser_challenge_persisted",
+          "exitCode": 0
+        },
+        {
+          "attempt": 2,
+          "outcome": "browser_challenge_persisted",
+          "exitCode": 0
+        }
+      ],
+      "ordinarySessionReused": true,
+      "clientProfileMatrix": [
+        {
+          "profile": "github-default-browser",
+          "userAgent": null,
+          "outcome": "browser_challenge_persisted",
+          "attemptCount": 2,
+          "attempts": [
+            {
+              "attempt": 1,
+              "outcome": "browser_challenge_persisted",
+              "exitCode": 0
+            },
+            {
+              "attempt": 2,
+              "outcome": "browser_challenge_persisted",
+              "exitCode": 0
+            }
+          ],
+          "ordinarySessionReused": true
+        }
+      ],
+      "directHttpProfile": null,
+      "okHttpJvmProfile": null,
+      "contentProfiles": [],
+      "nativeTvTransportStillUnproven": true,
+      "durationMs": 2691
     },
     {
       "provider": "animesalt",
@@ -246,7 +418,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 14503,
+      "durationMs": 3557,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_challenge_persisted",
@@ -588,7 +760,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 3298,
+      "durationMs": 3669,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_challenge_persisted",
@@ -669,7 +841,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 3286,
+      "durationMs": 4978,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_timeout",
@@ -750,7 +922,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 3509,
+      "durationMs": 4183,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_timeout",
@@ -831,7 +1003,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 3765,
+      "durationMs": 4137,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_challenge_persisted",
@@ -912,7 +1084,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 3146,
+      "durationMs": 3529,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_challenge_persisted",
@@ -993,7 +1165,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 3325,
+      "durationMs": 3602,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_challenge_persisted",
@@ -1074,7 +1246,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 3592,
+      "durationMs": 4265,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_challenge_persisted",
@@ -1155,7 +1327,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 3603,
+      "durationMs": 3261,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_timeout",
@@ -1236,7 +1408,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 3260,
+      "durationMs": 3000,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_timeout",
@@ -4212,81 +4384,28 @@
       "cookiesPersisted": false
     },
     "lastAttempt": {
-      "available": true,
-      "providerCount": 30,
+      "available": false,
+      "providerCount": 0,
       "refreshedProviders": [
+        "1jour1film0626",
         "allwish",
+        "animeonsen",
         "animesalt",
-        "animesultra",
-        "animevost-fr",
         "arrowtv",
         "chillflix",
-        "cinegram",
-        "coflix",
-        "corsflix",
-        "flemmix",
-        "kehflix",
-        "mallumv",
-        "moviebox",
-        "moviesmod",
-        "vidfast",
-        "vidrock",
-        "vostfree",
-        "yflix"
+        "cinegram"
       ],
-      "replayedProviders": [
-        "67movies",
-        "allwish",
-        "anime-ultime",
-        "animesalt",
-        "animesultra",
-        "animevost-fr",
-        "arrowtv",
-        "boredflix",
-        "chillflix",
-        "cinegram",
-        "cinemabz",
-        "coflix",
-        "corsflix",
-        "emnexmovies",
-        "flemmix",
-        "flixer",
-        "latestmovies",
-        "mallumv",
-        "moviebox",
-        "moviesmod",
-        "movish",
-        "movy",
-        "neonflix",
-        "primewire",
-        "shuttletv",
-        "vidfast",
-        "vostfree",
-        "vuflix",
-        "watch-cartoon-online",
-        "yflix"
-      ]
+      "replayedProviders": []
     }
   },
   "lastRefreshProviderFilter": [
+    "1jour1film0626",
     "allwish",
+    "animeonsen",
     "animesalt",
-    "animesultra",
-    "animevost-fr",
     "arrowtv",
     "chillflix",
-    "cinegram",
-    "coflix",
-    "corsflix",
-    "flemmix",
-    "kehflix",
-    "mallumv",
-    "moviebox",
-    "moviesmod",
-    "vidfast",
-    "vidrock",
-    "vostfree",
-    "yflix"
+    "cinegram"
   ],
   "residentialExitNodeLastAttempt": {
     "enabled": true,
