@@ -119,7 +119,7 @@ def useful_absolute_urls(text: str) -> list[str]:
     return out
 
 
-SEARCH_FORM_KEYS = {"s", "q", "query", "keyword", "search", "story"}
+SEARCH_FORM_KEYS = {"s", "q", "query", "keyword", "search", "story", "term", "search_query", "search_term", "text", "title"}
 
 class _SearchFormParser(HTMLParser):
     def __init__(self) -> None:

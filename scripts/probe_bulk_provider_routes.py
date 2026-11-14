@@ -33,7 +33,7 @@ from provider_base_store import provider_model_route_kind, provider_route_is_ide
 from provider_patch_blocks import decode_managed_data
 
 SENSITIVE_KEYS = {"k","key","token","sig","signature","auth","authorization","expires","expiry","exp"}
-SEARCH_KEYS = {"s","q","query","keyword","search","story"}
+SEARCH_KEYS = {"s","q","query","keyword","search","story","term","search_query","search_term","text","title"}
 TMDB_KEYS = {"tmdb","tmdbid","tmdb_id","tmdb-id"}
 IMDB_KEYS = {"imdb","imdbid","imdb_id","imdb-id"}
 MEDIA_KEYS = {"media","media_type","mediatype","type"}
@@ -277,17 +277,37 @@ def probe_common_identity_routes(
     lane = str(fixture.get("mediaType") or "movie").casefold()
     search_routes = [
         "/?s={query}",
+        "/?q={query}",
+        "/?query={query}",
+        "/?keyword={query}",
         "/search?q={query}",
         "/search?query={query}",
         "/search?keyword={query}",
+        "/search/{slug}",
+        "/find?q={query}",
+        "/find?query={query}",
+        "/browse?search={query}",
         "/recherche?q={query}",
         "/recherche?query={query}",
+        "/recherche/{slug}",
+        "/api/search?q={query}",
+        "/api/search?query={query}",
+        "/api/search?keyword={query}",
+        "/api/v1/search?q={query}",
+        "/api/v1/search?query={query}",
         "/index.php?do=search&subaction=search&story={query}",
     ]
     direct_routes = [
         f"/{lane}/{{tmdbId}}",
+        f"/watch/{{tmdbId}}",
+        f"/play/{{tmdbId}}",
+        f"/embed/{{tmdbId}}",
         f"/embed/{lane}/{{tmdbId}}",
         f"/api/{lane}/{{tmdbId}}",
+        f"/api/stream/{{tmdbId}}",
+        f"/api/streams/{{tmdbId}}",
+        f"/api/source/{{tmdbId}}",
+        f"/api/sources/{{tmdbId}}",
         f"/api/sources/{lane}/{{tmdbId}}",
     ]
     if lane in {"tv", "anime"}:

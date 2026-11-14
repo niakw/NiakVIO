@@ -21,6 +21,10 @@ assert site_probe.search_form_routes(
     "https://demo.example/",
 ) == ["/index.php?story={query}"]
 assert site_probe.search_form_routes(
+    '<form method="get" action="/find"><input name="term"></form>',
+    "https://demo.example/",
+) == ["/find?term={query}"]
+assert site_probe.search_form_routes(
     '<form method="post" action="/search"><input name="q"></form>',
     "https://demo.example/",
 ) == []
@@ -32,6 +36,11 @@ assert site_probe.search_form_routes(
 fixture={"title":"Interstellar","tmdbId":"157336","mediaType":"movie"}
 assert probe.route_pattern("/search?q=",fixture)=="/search?q={query}"
 assert probe.route_pattern("/api?m=search&q=",fixture)=="/api?m=search&q={query}"
+assert probe.route_pattern("/api/search?term=",fixture)=="/api/search?term={query}"
+assert probe.route_pattern("/search/interstellar",fixture)=="/search/{slug}"
+common_source=inspect.getsource(probe.probe_common_identity_routes)
+for token in ('"/search/{slug}"','"/api/search?q={query}"','f"/watch/{{tmdbId}}"'):
+    assert token in common_source, token
 assert probe.route_pattern("/title/movie/157336-interstellar",fixture)=="/title/movie/{tmdbId}-{slug}"
 assert probe.route_pattern("/api/streams/movie?token=secret&q=",fixture)==""
 assert probe.route_pattern("/",fixture)==""
