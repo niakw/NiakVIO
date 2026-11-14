@@ -1,3 +1,11 @@
+## 2026-11-14 — Internet Archive fixed-point proof accepted; activation harness corrected
+
+- Bulk Onboarding 43600172150 succeeded and published 7c51e342. Stage validation reported PENDING_PROVIDER_MINIMIZER_OK for internet-archive. The staged artifact is provider-disabled/internet-archive--nuvio--8872a408be60d6d0.js and is exactly one physical line; the same transaction restored all 13 active Provider v3 bundles to minimizer fixed-point.
+- Pending sharded census 43600537871 succeeded on source 7c51e342 with counts 14 FULL / 33 DISABLED and fresh Internet Archive movie-lane terminal proof; the isolated evidence commit is 715cfe83. Production canonical evidence was not replaced by this pending-only proof.
+- Bulk Activation 43600657395 selected exactly one provider (internet-archive), rebuilt a 14-active manifest, passed published config and the 14-provider minimizer test, then stopped before commit because provider_bulk_activation_test.py direct-loaded activate_bulk_proven_providers.py without scripts/ on sys.path. No activation was published by the failed run. Fix landed in 22a63e30.
+- Activation is now additionally bound to the exact provider artifact stored at the pending census trigger SHA via git-show + SHA-256, verifies ProviderBase SHA before any move, and refuses proof-source byte drift. After a successful activation, Provider Census - Sharded runs scope=all to freshly revalidate the complete active cohort.
+- A full pre-activation census was explicitly queued by 60aad9b so the existing 13 active providers remain fresh before Internet Archive promotion. GitHub/WAF-only transport failures remain environment/harness evidence and are not treated as provider-code failure when stronger residential/native evidence exists.
+
 ## 2026-11-14 — First new provider passes fresh terminal proof; exact-byte activation convergence
 
 - Pending census 43598921818 on 2f8bd2c7 produced fresh accepted playback for `internet-archive`: FULL OK, testedThisRun=true, currentVerifiedLanes=[movie], brainCheckRequired=false, repairEligible=false, acceptedPlayableProviderCount=1. Canonical production remains the separately proven 13 active providers until activation.
