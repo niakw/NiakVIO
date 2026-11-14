@@ -1,3 +1,8 @@
+## 2026-11-14 — Runtime-scope test fallout after pending isolation
+
+- Provider Disabled Lifecycle 43582833517 executed the new control-plane correctly before its test failure: active=32, lifecycle-disabled=9, pending=17, catalogue-visible=58, runtime-visible=41, archived_now=0. The failure was a stale route-reconstructor assertion still comparing the 41-row static/runtime model to Global-visible cardinality 45.
+- Align route reconstruction/Core metadata contracts to runtime-visible authority. Also exclude pending onboarding identities from the sequential live reconstruction queue, preventing a separate live reconstruction path from probing staged candidates before an explicit activation workflow. No provider bytes, routes, status or activation changed. Exact-SHA rerun required.
+
 ## 2026-11-14 — Bulk pending is catalogue staging, not runtime/lifecycle authority
 
 - Bulk publication 2f6f0c0d staged 17 candidates physically under provider-disabled/ (4 Global + 13 France-only) with activation_mode=bulk_onboarding_pending and no activation attempt. Current active production lanes after regression withdrawal are Global movie17/tv16/anime19 and France movie7/tv7/anime16; this is declared coverage, not playback proof.

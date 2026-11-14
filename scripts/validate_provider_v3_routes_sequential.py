@@ -32,6 +32,7 @@ from typing import Any, Iterable
 
 from provider_route_proof import filter_recipe_by_live_routes
 from rotating_corpus import default_seed, select_fixtures
+from current_provider_scope import pending_provider_ids
 
 from validate_provider_v3_routes_live import (
     CORPUS,
@@ -138,12 +139,15 @@ def build_provider_queue() -> tuple[list[dict[str, Any]], int]:
     by_slug = {row["slug"]: row for row in fixtures}
     queue: list[dict[str, Any]] = []
     provider_count = 0
+    pending = pending_provider_ids()
     for manifest_row in manifest.get("scrapers") or []:
         if not isinstance(manifest_row, dict):
             continue
         provider_id = canonical(manifest_row.get("id"))
         filename = str(manifest_row.get("filename") or "").strip()
         if not provider_id or not filename or not (ROOT / filename).is_file():
+            continue
+        if provider_id in pending:
             continue
         provider_count += 1
         supported = semantic_types(manifest_row)
