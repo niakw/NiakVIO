@@ -76,11 +76,19 @@ if codeql.count('- provider-disabled/**') < 2:
     errors.append('codeql.yml: provider-disabled/** must be excluded from maintained Python and JS Core analysis')
 if 'startswith("provider-disabled/")' not in codeql:
     errors.append('codeql.yml: alert cleanup must be scoped to provider-disabled/** only')
-# A legacy high alert under an old analysis key cannot be automatically
-# closed by a new category, even with fixed source. Require its exact ID.
-if 'CodeQL · JS Legacy Category Reconciliation' not in codeql or \
-        'category: ".github/workflows/codeql.yml:analyze"' not in codeql:
-    errors.append('codeql.yml: old CodeQL category reconciliation must use the exact historical analysis key')
+# A stale legacy analysis configuration must not be recreated just to retire
+# an old alert. The dedicated cleanup workflow deletes only that obsolete
+# configuration after a clean exact-SHA maintained JS Core analysis.
+if 'CodeQL · JS Legacy Category Reconciliation' in codeql or \
+        'category: ".github/workflows/codeql.yml:analyze"' in codeql:
+    errors.append('codeql.yml: obsolete monolithic JS category must not be recreated')
+retire = (WORKFLOWS / 'retire-stale-codeql-2531.yml').read_text(encoding='utf-8')
+if 'delete_stale_codeql_2531_configuration.py' not in retire:
+    errors.append('retire-stale-codeql-2531.yml: stale configuration deletion script is required')
+cleanup = (ROOT / 'scripts' / 'delete_stale_codeql_2531_configuration.py').read_text(encoding='utf-8')
+for marker in ('code-scanning/analyses', '"DELETE"', 'confirm_delete=true', 'scope:core'):
+    if marker not in cleanup:
+        errors.append(f'delete_stale_codeql_2531_configuration.py: missing fail-closed marker {marker}')
 if "Bulk dismissal requested by the repository owner" in codeql:
     errors.append('codeql.yml: blanket CodeQL alert dismissal is forbidden')
 
