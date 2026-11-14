@@ -7,6 +7,8 @@ export const PROVIDER_SCRAPER_ALLOWED_FIELDS = new Set([
   "id", "name", "description", "version", "author", "supportedTypes",
   "filename", "enabled", "logo", "contentLanguage", "formats", "limited",
   "supportsExternalPlayer", "disabledPlatforms", "hasSettings", "notes",
+  // Explicit NiakVIO lifecycle metadata, never arbitrary upstream fields.
+  "disabledReason", "disabledAt", "purgeAfter", "lifecycleState",
 ]);
 
 export function canonicalProviderId(value) {

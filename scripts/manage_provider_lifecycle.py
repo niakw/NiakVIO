@@ -175,17 +175,11 @@ def update_projection(path: Path, root_rows: dict[str, dict[str, Any]], archived
             continue
         canonical = root_rows.get(pid)
         if canonical is not None:
-            row["enabled"] = canonical.get("enabled") is not False
-            source = current_asset(canonical)
-            row["filename"] = relative_filename(path, source)
-            if canonical.get("disabledAt"):
-                row["disabledAt"] = canonical["disabledAt"]
-                row["purgeAfter"] = canonical.get("purgeAfter")
-                row["lifecycleState"] = canonical.get("lifecycleState")
-            else:
-                row.pop("disabledAt", None)
-                row.pop("purgeAfter", None)
-                row.pop("lifecycleState", None)
+            # A derived row is a projection, not an independent metadata authority.
+            # Copy the whole row so versions, disable reasons and cleared fields
+            # cannot drift from the published source.
+            row = dict(canonical)
+            row["filename"] = relative_filename(path, current_asset(canonical))
         out.append(row)
     doc["scrapers"] = out
     dump_json(path, doc)
@@ -217,17 +211,15 @@ def update_provider_catalog(root_rows: dict[str, dict[str, Any]], archived: set[
             continue
         canonical = root_rows.get(pid)
         if canonical is not None:
-            scraper["enabled"] = canonical.get("enabled") is not False
-            scraper["filename"] = canonical.get("filename")
+            # Match engine_v2's canonicalizePublishedScraper: the catalog keeps
+            # semantic types, not transport aliases, and exact published DATA.
+            scraper = dict(canonical)
+            scraper["disabledPlatforms"] = []
+            semantic = scraper.pop("canonicalSupportedTypes", None)
+            if isinstance(semantic, list) and semantic:
+                scraper["supportedTypes"] = list(semantic)
             entry["scraper"] = scraper
-            if canonical.get("disabledAt"):
-                entry["lifecycle"] = {
-                    "state": "disabled-retained",
-                    "disabledAt": canonical["disabledAt"],
-                    "purgeAfter": canonical.get("purgeAfter"),
-                }
-            else:
-                entry.pop("lifecycle", None)
+            entry.pop("lifecycle", None)  # canonical row + lifecycle ledger own this state
         providers.append(entry)
     doc["providers"] = providers
 
@@ -391,6 +383,7 @@ def apply_lifecycle(root: Path = ROOT, *, day: date, apply: bool = False) -> dic
                 asset = current_asset(row)
                 if DISABLED_DIR.resolve() in asset.parents:
                     row["filename"] = (ACTIVE_DIR / asset.name).relative_to(ROOT).as_posix()
+                row.pop("disabledReason", None)
                 row.pop("disabledAt", None)
                 row.pop("purgeAfter", None)
                 row.pop("lifecycleState", None)
@@ -429,6 +422,7 @@ def apply_lifecycle(root: Path = ROOT, *, day: date, apply: bool = False) -> dic
         disabled_asset = DISABLED_DIR / source.name
         if source.parent == ACTIVE_DIR.resolve() or source.parent == DISABLED_DIR.resolve():
             row["filename"] = disabled_asset.relative_to(ROOT).as_posix()
+        row["disabledReason"] = reason
         row["disabledAt"] = disabled_at
         row["purgeAfter"] = purge_day.isoformat()
         row["lifecycleState"] = "disabled-retained"

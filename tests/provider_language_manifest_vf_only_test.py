@@ -182,3 +182,56 @@ with tempfile.TemporaryDirectory(prefix="niakvio-vf-targeted-sync-") as director
         raise AssertionError("France-only ID leaked into Global")
 
 print("Targeted VF synchronization authority contract passed")
+
+
+# Lifecycle projection must preserve exact shared metadata and clear old
+# disabled fields on re-enable. The catalog stores the same semantic row
+# as the Node round-trip, not stale versions or a duplicate lifecycle wrapper.
+import manage_provider_lifecycle as lifecycle
+from unittest.mock import patch
+
+with tempfile.TemporaryDirectory(prefix="niakvio-lifecycle-projection-") as directory:
+    root = Path(directory)
+    (root / "vf").mkdir()
+    source = {
+        "id": "shared-fixture", "version": "2.0.0", "enabled": False,
+        "filename": "provider-disabled/shared-fixture.js",
+        "supportedTypes": ["anime", "tv"], "canonicalSupportedTypes": ["anime"],
+        "disabledPlatforms": [], "disabledReason": "synthetic",
+        "disabledAt": "2026-11-14", "purgeAfter": "2026-11-21",
+        "lifecycleState": "disabled-retained",
+    }
+    projected = root / "vf/manifest.json"
+    stale = {"id": source["id"], "version": "1.0.0", "enabled": True,
+             "filename": "../providers/shared-fixture.js"}
+    projected.write_text(json.dumps({"scrapers": [stale]}), encoding="utf-8")
+    catalog_path = root / "provider_catalog.json"
+    catalog_path.write_text(json.dumps({
+        "providers": [{"canonicalId": source["id"], "scraper": stale,
+                       "projections": {"general": True, "vf": True},
+                       "lifecycle": {"state": "stale"}}],
+        "manifestOrder": {"general": [source["id"]], "vf": [source["id"]]},
+    }), encoding="utf-8")
+    with patch.object(lifecycle, "ROOT", root):
+        lifecycle.update_projection(projected, {source["id"]: source}, set())
+        lifecycle.update_provider_catalog({source["id"]: source}, set())
+        assert json.loads(projected.read_text())["scrapers"] == [
+            {**source, "filename": "../" + source["filename"]}
+        ]
+        entry = json.loads(catalog_path.read_text())["providers"][0]
+        expected = {k: v for k, v in source.items() if k != "canonicalSupportedTypes"}
+        expected["supportedTypes"] = ["anime"]
+        assert entry["scraper"] == expected
+        assert "lifecycle" not in entry
+        active = {k: v for k, v in source.items() if k not in
+                  ("disabledReason", "disabledAt", "purgeAfter", "lifecycleState")}
+        active.update(enabled=True, filename="providers/shared-fixture.js", version="2.0.1")
+        lifecycle.update_projection(projected, {source["id"]: active}, set())
+        lifecycle.update_provider_catalog({source["id"]: active}, set())
+        assert json.loads(projected.read_text())["scrapers"] == [
+            {**active, "filename": "../" + active["filename"]}
+        ]
+        row = json.loads(catalog_path.read_text())["providers"][0]["scraper"]
+        assert row["version"] == "2.0.1" and row["enabled"] is True
+        assert not any(k in row for k in ("disabledReason", "disabledAt", "purgeAfter", "lifecycleState"))
+print("Lifecycle projection metadata/reenable contract passed")
