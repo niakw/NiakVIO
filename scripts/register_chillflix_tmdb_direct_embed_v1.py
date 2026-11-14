@@ -34,6 +34,7 @@ def apply_document(data: dict) -> bool:
         "movieEmbedTemplate": "/embed/movie/{tmdbId}",
         "tvEmbedTemplate": "/embed/tv/{tmdbId}/{season}/{episode}",
         "parentOriginParam": "parent_origin",
+        "tvAutoNextParam": "autonext",
         "maxDepth": 2,
         "maxStreams": 8,
     }
