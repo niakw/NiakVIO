@@ -173,6 +173,16 @@ jobs:
           git diff --cached --check
           git commit -m 'chore: apply provider disabled retention lifecycle'
           transition_sha="$(git rev-parse HEAD)"
+          transition_base="$(git rev-parse HEAD^)"
+          git fetch origin "${{ github.ref_name }}"
+          remote_sha="$(git rev-parse "origin/${{ github.ref_name }}")"
+          if [ "$remote_sha" != "$transition_base" ]; then
+            echo "FIELD_PROVIDER_LIFECYCLE_SUPERSEDED base=$transition_base remote=$remote_sha"
+            gh workflow run provider-disabled-lifecycle.yml \
+              --repo "$GITHUB_REPOSITORY" \
+              --ref "${{ github.ref_name }}"
+            exit 0
+          fi
           git push origin HEAD:${{ github.ref_name }}
           gh workflow run release-finalize.yml \
             --repo "$GITHUB_REPOSITORY" \
