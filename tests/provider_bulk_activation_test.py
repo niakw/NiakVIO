@@ -84,6 +84,16 @@ with tempfile.TemporaryDirectory() as td:
     overrides=json.loads(paths["OVERRIDES"].read_text(encoding="utf-8"))
     provenance=json.loads(paths["PROVENANCE"].read_text(encoding="utf-8"))
     catalog=json.loads(paths["CATALOG"].read_text(encoding="utf-8"))
+    # Capture filesystem postconditions while TemporaryDirectory still exists.
+    # JSON assertions can run after cleanup; path-existence assertions cannot.
+    filesystem_postconditions={
+        "a_provider":(td/"providers/a.js").is_file(),
+        "a_base":(td/"provider-bases/a--base.js").is_file(),
+        "d_provider":(td/"providers/d.js").is_file(),
+        "d_base":(td/"provider-bases/d--base.js").is_file(),
+        "b_pending":(td/"provider-disabled/b.js").is_file(),
+        "c_pending":(td/"provider-disabled/c.js").is_file(),
+    }
 
 assert activation["activatedProviders"]==["a","d"]
 assert activation["activationCount"]==2
@@ -105,9 +115,9 @@ assert provenance["providers"]["a"]["bulk_activation_proof"]["providerSha256"]==
 assert provenance["providers"]["d"]["bulk_activation_proof"]["scope"]=="france"
 assert provenance["providers"]["a"]["published_filename"]=="providers/a.js"
 assert provenance["providers"]["d"]["published_filename"]=="providers/d.js"
-assert (td/"providers/a.js").is_file() and (td/"provider-bases/a--base.js").is_file()
-assert (td/"providers/d.js").is_file() and (td/"provider-bases/d--base.js").is_file()
-assert (td/"provider-disabled/b.js").is_file() and (td/"provider-disabled/c.js").is_file()
+assert filesystem_postconditions["a_provider"] and filesystem_postconditions["a_base"], filesystem_postconditions
+assert filesystem_postconditions["d_provider"] and filesystem_postconditions["d_base"], filesystem_postconditions
+assert filesystem_postconditions["b_pending"] and filesystem_postconditions["c_pending"], filesystem_postconditions
 cat={x["canonicalId"]:x for x in catalog["providers"]}
 assert cat["d"]["scraper"]["enabled"] is True
 assert cat["d"]["scraper"]["filename"]=="providers/d.js"

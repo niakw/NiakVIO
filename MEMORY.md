@@ -1,3 +1,10 @@
+## 2026-11-14 — Bulk Activation false negative: synthetic temp directory lifetime
+
+- Bulk Activation 43601477153 on cc9de8ef selected exactly one real pending provider (internet-archive), reported activated=1, rebuilt 14 ProviderBases cleanly and passed provider-v3 minimizer fixed-point for all 14 active bundles. It then failed only in tests/provider_bulk_activation_test.py line 108.
+- Root cause is test-only: filesystem existence assertions were dedented outside tempfile.TemporaryDirectory(), so the temporary tree had already been deleted. The JSON state assertions loaded before cleanup still passed, which is why the failure appeared only at the first path assertion.
+- Capture provider/base move postconditions inside the temporary-directory lifetime and assert those booleans afterward. Do not weaken the activation contract: active provider+base must exist and blocked pending artifacts must remain disabled. No provider bytes, proof, manifest or acceptance rule changed by this fix.
+- Internet Archive still has fresh pending FULL movie proof from run 43600537871; production activation remains unclaimed until the corrected exact-SHA activation workflow commits it and the post-activation full active cohort census passes.
+
 ## 2026-11-14 — Internet Archive fixed-point proof accepted; activation harness corrected
 
 - Bulk Onboarding 43600172150 succeeded and published 7c51e342. Stage validation reported PENDING_PROVIDER_MINIMIZER_OK for internet-archive. The staged artifact is provider-disabled/internet-archive--nuvio--8872a408be60d6d0.js and is exactly one physical line; the same transaction restored all 13 active Provider v3 bundles to minimizer fixed-point.
