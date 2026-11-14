@@ -22,6 +22,7 @@ HUBS=ROOT/"provider-hubs.json"
 STATUS=ROOT/"automation/provider-census-status.json"
 OUTPUT=ROOT/"automation/provider-bulk-activation-latest.json"
 STATIC_KNOWLEDGE=ROOT/"automation/provider-v3-static-knowledge.json"
+VERSION_FLOORS=ROOT/"provider-version-floors.json"
 
 def load(path:Path, default:Any)->Any:
     if not path.is_file():
@@ -34,6 +35,58 @@ def write(path:Path, value:Any)->None:
 
 def norm(value:Any)->str:
     return re.sub(r"[^a-z0-9._-]+","-",str(value or "").strip().casefold()).strip("-")
+
+
+def _semver(value:Any)->tuple[int,int,int] | None:
+    match=re.fullmatch(r"(\d+)\.(\d+)\.(\d+)",str(value or "").strip())
+    return tuple(int(part) for part in match.groups()) if match else None
+
+
+def load_version_floor_payload()->dict[str,Any]:
+    payload=load(VERSION_FLOORS,{"schema_version":1,"providers":{}})
+    if not isinstance(payload,dict) or int(payload.get("schema_version") or 0)!=1:
+        raise RuntimeError("provider version floor registry schema is invalid")
+    if not isinstance(payload.get("providers"),dict):
+        raise RuntimeError("provider version floor registry providers map is invalid")
+    return payload
+
+
+def ensure_activation_version_floor(
+    provider_id:str,
+    manifest_row:dict[str,Any],
+    floor_payload:dict[str,Any],
+)->dict[str,Any]:
+    """Seed a first-exposure floor and keep activation strictly above retained history."""
+    pid=norm(provider_id)
+    providers=floor_payload.get("providers")
+    if not isinstance(providers,dict):
+        raise RuntimeError("provider version floor registry providers map is invalid")
+    current_text=str(manifest_row.get("version") or "").strip()
+    current=_semver(current_text)
+    if current is None:
+        raise RuntimeError(f"{pid}: activation provider version is not semver: {current_text!r}")
+    floor_text=str(providers.get(pid) or "").strip()
+    floor=_semver(floor_text) if floor_text else None
+    seeded=False
+    bumped=False
+    if floor is None:
+        floor_text="0.0.0"
+        floor=(0,0,0)
+        providers[pid]=floor_text
+        seeded=True
+    if current <= floor:
+        base=max(current,floor)
+        current_text=f"{base[0]}.{base[1]}.{base[2]+1}"
+        manifest_row["version"]=current_text
+        bumped=True
+    return {
+        "provider":pid,
+        "floor":floor_text,
+        "version":current_text,
+        "seeded":seeded,
+        "bumped":bumped,
+    }
+
 
 
 def proof_source_artifact_digest(trigger_sha:str, relative:str)->str:
@@ -123,6 +176,8 @@ def main()->int:
     provenance=load(PROVENANCE,{"providers":{}})
     hubs=load(HUBS,{"providers":{}})
     static_knowledge=load(STATIC_KNOWLEDGE,{"schemaVersion":1,"providers":{}})
+    version_floor_payload=load_version_floor_payload()
+    version_floor_updates=[]
 
     status_map={
         norm(row.get("provider")):row
@@ -222,6 +277,9 @@ def main()->int:
             )
         if active_sha!=pending_sha:
             raise RuntimeError(f"{pid}: activation changed provider bytes after proof")
+        version_floor_updates.append(
+            ensure_activation_version_floor(pid,manifest_row,version_floor_payload)
+        )
         manifest_row["enabled"]=True
         # provider_catalog.json is the projection authority. Global activation
         # must advance its scraper copy before render-manifests-from-catalog.
@@ -264,6 +322,7 @@ def main()->int:
         "activationScopes":{pid:("global" if pid in manifest_map else "france") for pid in activated},
         "blockedCount":len(blocked),
         "blockedProviders":blocked,
+        "versionFloorUpdates":version_floor_updates,
         "policy":"fresh FULL OK (testedThisRun) + every declared lane currently verified + no remaining Brain check",
         "dryRun":bool(args.dry_run),
     }
@@ -273,6 +332,7 @@ def main()->int:
         write(OVERRIDES,overrides)
         write(PROVENANCE,provenance)
         write(HUBS,hubs)
+        write(VERSION_FLOORS,version_floor_payload)
         refresh_static_counts(static_knowledge)
         write(STATIC_KNOWLEDGE,static_knowledge)
     write(args.output,payload)
