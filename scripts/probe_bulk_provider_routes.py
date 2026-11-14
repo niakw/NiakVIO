@@ -149,11 +149,33 @@ def _host_key(value: Any) -> str:
     return host[4:] if host.startswith("www.") else host
 
 
-def retained_v3_routes(row: dict[str, Any]) -> tuple[list[str], list[str]]:
-    """Reuse only exact managed Provider-v3 route DATA on the same current host.
+def _decode_owned_provider_model(text: str, config_id: str) -> dict[str, Any] | None:
+    """Statically decode NiakVIO-owned Provider DATA without executing archived JS."""
+    try:
+        managed = decode_managed_data(text, config_id)
+    except ValueError:
+        managed = None
+    if isinstance(managed, dict):
+        return managed
+    marker = "const NIAKVIO_PROVIDER_MODEL = Object.freeze("
+    pos = text.find(marker)
+    if pos < 0:
+        return None
+    raw = text[pos + len(marker):].lstrip()
+    try:
+        value, _end = json.JSONDecoder().raw_decode(raw)
+    except (json.JSONDecodeError, TypeError):
+        return None
+    return value if isinstance(value, dict) else None
 
-    Historical JS is never executed. Relative routes are accepted only when the
-    old managed CONFIG binds the same canonical host as today's intake origin.
+
+def retained_v3_routes(row: dict[str, Any]) -> tuple[list[str], list[str]]:
+    """Reuse statically decoded NiakVIO-owned route DATA on the same current host.
+
+    Historical JS is never executed. Both managed Provider-v3 archives and older
+    NiakVIO-owned ProviderBase DATA are read as JSON only. Relative routes are
+    accepted only when the archived DATA binds the same canonical host as today's
+    intake origin and the current identity-aware publication contract accepts them.
     """
     pid = norm(row.get("id") or row.get("provider"))
     current_host = _host_key(row.get("direct") or row.get("direct_url"))
@@ -162,12 +184,15 @@ def retained_v3_routes(row: dict[str, Any]) -> tuple[list[str], list[str]]:
     routes: list[str] = []
     sources: list[str] = []
     config_id = f"PROVIDER.{pid.upper()}.CONFIG.V1"
-    archive = ROOT / "provider-old" / "providers"
-    for path in sorted(archive.glob(f"{pid}--nuvio--*.js")):
+    archives = [
+        *(ROOT / "provider-old" / "providers").glob(f"{pid}--nuvio--*.js"),
+        *(ROOT / "provider-old").glob(f"{pid}--base--*.js"),
+    ]
+    for path in sorted(set(archives)):
         try:
             text = path.read_text(encoding="utf-8", errors="strict")
-            model = decode_managed_data(text, config_id)
-        except (OSError, UnicodeError, ValueError):
+            model = _decode_owned_provider_model(text, config_id)
+        except (OSError, UnicodeError):
             continue
         if not isinstance(model, dict):
             continue
