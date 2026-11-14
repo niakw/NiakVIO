@@ -146,7 +146,12 @@ route_count = len(all_routes)
 assert provider_count == len(scope_ids())
 assert "animetsu" not in scope_ids()
 assert "showbox" not in scope_ids()
-assert "videasy" not in scope_ids()
+# VidEasy was historically archived but has been reintroduced as current active
+# Provider-v3 authority. Historical Hub membership plus current activation must
+# therefore include it in native declared-route coverage rather than exclude it.
+assert "videasy" in scope_ids()
+videasy_routes = {route_type for provider, route_type in all_routes if provider.casefold() == "videasy"}
+assert {"movie", "tv"} <= videasy_routes, videasy_routes
 assert catalogue_count >= provider_count and disabled_count >= 0
 assert route_count == sum(counts.values())
 assert all(counts[kind] > 0 for kind in TYPES), counts
