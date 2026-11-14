@@ -223,6 +223,10 @@ def main()->int:
         if active_sha!=pending_sha:
             raise RuntimeError(f"{pid}: activation changed provider bytes after proof")
         manifest_row["enabled"]=True
+        # provider_catalog.json is the projection authority. Global activation
+        # must advance its scraper copy before render-manifests-from-catalog.
+        if isinstance(catalog_entry,dict):
+            catalog_entry["scraper"]=dict(manifest_row)
         patch.setdefault("manifest_overrides",{})["enabled"]=True
         capability=capabilities.get(pid)
         if isinstance(capability,dict):
