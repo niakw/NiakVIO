@@ -71,6 +71,19 @@ with tempfile.TemporaryDirectory() as directory:
     )
     assert [row["id"] for row in vf["scrapers"]] == ["fr-domain"]
 
+    # Default projection is deterministic and must never perform live homepage
+    # classification. Non-French domains with no persisted language evidence
+    # stay out of VF until an observation workflow persists that evidence.
+    network_only = bundle(root, "network-only", 'const BASE = "https://example.com/api";')
+    vf = module.build_manifest(
+        {"name": "test", "version": "1.0.0", "scrapers": [network_only]},
+        {"network-only": "other"},
+        {"vf"},
+        "VF uniquement",
+        root=root,
+    )
+    assert vf["scrapers"] == []
+
     # Explicit non-French metadata must never be overridden by a French-looking domain.
     explicit_en = dict(fr_domain)
     explicit_en["id"] = "explicit-en"
