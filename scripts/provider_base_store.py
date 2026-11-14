@@ -719,6 +719,46 @@ def build_provider_data_model(
     }
 
 
+def provider_model_route_kind(route: Any) -> str:
+    """Python mirror of ProviderBase _routeKind() for publication gates."""
+    value = str(route or "").strip().casefold()
+    if not value or re.search(r"/(?:track|report|warm|dead|working|ad-link|fp)(?:[/?#]|$)", value, re.I):
+        return "ignore"
+    if re.search(r"/(?:search|recherche)(?:[/?#]|$)|[?&](?:s|q|query|keyword)=", value, re.I):
+        return "search"
+    if re.search(r"/(?:api)(?:[./?#]|$)", value, re.I):
+        return "api"
+    if re.search(r"/(?:player|embed|play)(?:[/?#]|$)", value, re.I):
+        return "player"
+    if (
+        re.search(r"{(?:tmdb_?id|imdb_?id|id|slug|title)}", value, re.I)
+        or re.search(r"/(?:title|movie|film|series|tv|show|watch|media)(?:[/?#]|$)", value, re.I)
+    ):
+        return "detail"
+    return "ignore"
+
+
+def provider_model_has_executable_plan(model: Any) -> bool:
+    """Match the clean ProviderBase _runtimePlanAvailable() contract.
+
+    A public origin or strategy label is discovery knowledge, not an executable
+    request plan. Publication/activation must require provider-owned route or
+    request-plan DATA that the runtime can actually consume.
+    """
+    if not isinstance(model, dict):
+        return False
+    if isinstance(model.get("apiRecipe"), dict):
+        return True
+    for key in ("providerValuePlan", "searchRequestPlan", "externalIdentityPlan"):
+        value = model.get(key)
+        if isinstance(value, list) and value:
+            return True
+    return any(
+        provider_model_route_kind(route) in {"search", "detail", "player", "api"}
+        for route in (model.get("routes") or [])
+    )
+
+
 def provider_data_sha256(model: dict[str, Any]) -> str:
     payload = json.dumps(model, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
     return hashlib.sha256(payload.encode("utf-8")).hexdigest()
