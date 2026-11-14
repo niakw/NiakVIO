@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import argparse
 import copy
+import hashlib
 import json
 from pathlib import Path
 from typing import Any
@@ -25,11 +26,12 @@ from urllib.parse import urlparse
 
 from current_provider_scope import active_provider_rows
 from provider_base_store import canonical_id
-from provider_patch_blocks import decode_managed_data
+from provider_patch_blocks import decode_managed_data, validate_managed_fixes
 
 ROOT = Path(__file__).resolve().parents[1]
 OVERRIDES = ROOT / "provider-overrides.json"
 STATIC = ROOT / "automation/provider-v3-static-knowledge.json"
+MATERIALIZATION = ROOT / "provider-v3-materialization.json"
 
 OPEN_ARCHIVE_PROVIDER = "internet-archive"
 OPEN_ARCHIVE_STRATEGY = "open_archive_public_domain"
@@ -227,6 +229,72 @@ def _open_archive_patch(model: dict[str, Any], types: list[str], *, enabled: boo
     }
 
 
+def _materialization_row_from_bundle(provider_id: str, bundle: Path, model: dict[str, Any]) -> dict[str, Any]:
+    raw = bundle.read_bytes()
+    digest = hashlib.sha256(raw).hexdigest()
+    text = raw.decode("utf-8")
+    fix_ids = validate_managed_fixes(text)
+    core_ids = [fix_id for fix_id in fix_ids if fix_id.startswith("CORE.")]
+    data_digest = hashlib.sha256(
+        json.dumps(model, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    ).hexdigest()
+    return {
+        "provider": canonical_id(provider_id),
+        "file": bundle.relative_to(ROOT).as_posix(),
+        "sha256": digest,
+        "providerDataSha256": data_digest,
+        "baseStrippedGeneratedCore": False,
+        "fixIds": fix_ids,
+        "coreCount": len(core_ids),
+        "applied": [],
+        "deviceSpecificJs": False,
+        "devices": ["tv", "mobile", "desktop"],
+        "legacyProviderJsExecuted": False,
+        "upstreamJsExecuted": False,
+        "staticAuthorityReconciledProviders": [canonical_id(provider_id)],
+        "materializationRecoveredFromExactPublishedBytes": True,
+        "minimizer": {
+            "enabled": True,
+            "savedBytes": 0,
+            "transformedLines": 0,
+            "skippedReason": "published-byte-recovery",
+        },
+    }
+
+
+def reconcile_materialization_from_active_bundles(*, apply: bool) -> dict[str, Any]:
+    doc = load(MATERIALIZATION, {"schemaVersion": 3, "providers": []})
+    rows = [row for row in doc.get("providers") or [] if isinstance(row, dict)]
+    by_id = {canonical_id(row.get("provider")): row for row in rows if canonical_id(row.get("provider"))}
+    recovered: list[str] = []
+    for row in active_provider_rows():
+        pid = canonical_id(row.get("id"))
+        if not pid or pid in by_id:
+            continue
+        bundle = (ROOT / str(row.get("filename") or "")).resolve()
+        model = decode_exact_model(pid, bundle)
+        item = _materialization_row_from_bundle(pid, bundle, model)
+        rows.append(item)
+        by_id[pid] = item
+        recovered.append(pid)
+    if recovered:
+        doc["providers"] = rows
+        doc["providerCount"] = len(rows)
+        if "expectedProviderCount" in doc:
+            doc["expectedProviderCount"] = len(rows)
+        doc["activeProviderIdentityCount"] = len(active_provider_rows())
+        doc["staticKnowledgeProviderCount"] = max(
+            int(doc.get("staticKnowledgeProviderCount") or 0),
+            len(active_provider_rows()),
+        )
+        doc["targetedPublicationReconciledProviders"] = sorted(set(
+            [str(x) for x in doc.get("targetedPublicationReconciledProviders") or []] + recovered
+        ))
+        if apply:
+            write(MATERIALIZATION, doc)
+    return {"recoveredCount": len(recovered), "recovered": recovered}
+
+
 def reconcile_active_global(*, apply: bool) -> dict[str, Any]:
     overrides = load(OVERRIDES, {"provider_patches": {}, "provider_capabilities": {}})
     static = load(STATIC, {"schemaVersion": 1, "providers": {}})
@@ -277,9 +345,12 @@ def reconcile_active_global(*, apply: bool) -> dict[str, Any]:
     if apply and recovered:
         write(OVERRIDES, overrides)
         write(STATIC, static)
+    materialization = reconcile_materialization_from_active_bundles(apply=apply)
     return {
         "recoveredCount": len(recovered),
         "recovered": recovered,
+        "materializationRecoveredCount": materialization["recoveredCount"],
+        "materializationRecovered": materialization["recovered"],
         "activeGlobal": len(active_provider_rows()),
         "apply": bool(apply),
     }
@@ -293,10 +364,13 @@ def main() -> int:
     print(
         "PROVIDER_STATIC_AUTHORITY_RECONCILE_OK "
         f"active_global={result['activeGlobal']} recovered={result['recoveredCount']} "
+        f"materialization_recovered={result['materializationRecoveredCount']} "
         f"mode={'apply' if args.apply else 'check'}"
     )
     for row in result["recovered"]:
         print(f"FIELD_PROVIDER_STATIC_AUTHORITY_RECOVERED provider={row['provider']} authority={row['authority']}")
+    for provider in result["materializationRecovered"]:
+        print(f"FIELD_PROVIDER_MATERIALIZATION_RECOVERED provider={provider} source=exact-published-bytes")
     return 0
 
 
