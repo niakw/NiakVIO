@@ -64,6 +64,7 @@ const LLM_ADVISOR_PROFILES = new Set([
   "retained_candidate_replay_v1",
   "player_media_extractor_v1",
   "search_contract_inference_v1",
+  "identity_alias_search_traversal_v1",
   "adaptive_runtime_recovery",
 ]);
 const POST_EXHAUSTION_STRATEGIES = {
