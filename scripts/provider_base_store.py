@@ -728,7 +728,7 @@ def provider_model_route_kind(route: Any) -> str:
     value = str(route or "").strip().casefold()
     if not value or re.search(r"/(?:track|report|warm|dead|working|ad-link|fp)(?:[/?#]|$)", value, re.I):
         return "ignore"
-    if re.search(r"/(?:search|recherche)(?:[/?#]|$)|[?&](?:s|q|query|keyword)=", value, re.I):
+    if re.search(r"/(?:search|recherche)(?:[/?#]|$)|[?&](?:s|q|query|keyword|search|story)=", value, re.I):
         return "search"
     if re.search(r"/(?:api)(?:[./?#]|$)", value, re.I):
         return "api"
@@ -1458,7 +1458,7 @@ function _routeKind(route) {
   // Search semantics are more specific than a generic /api prefix. A route
   // such as /api?m=search&q={query} must carry Core title metadata instead of
   // falling into _apiUrls(), where title is intentionally empty for ID routes.
-  if (/\/(?:search|recherche)(?:[/?#]|$)|[?&](?:s|q|query|keyword)=/i.test(value)) return "search";
+  if (/\/(?:search|recherche)(?:[/?#]|$)|[?&](?:s|q|query|keyword|search|story)=/i.test(value)) return "search";
   if (/\/(?:api)(?:[./?#]|$)/i.test(value)) return "api";
   if (/\/(?:player|embed|play)(?:[/?#]|$)/i.test(value)) return "player";
   if (/\{(?:tmdb_?id|imdb_?id|id|slug|title)\}/i.test(value) || /\/(?:title|movie|film|series|tv|show|watch|media)(?:[/?#]|$)/i.test(value)) return "detail";
