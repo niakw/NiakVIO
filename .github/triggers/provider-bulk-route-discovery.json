@@ -1,12 +1,12 @@
 {
   "schemaVersion": 1,
-  "requestVersion": 38,
-  "reason": "replay_60_60_with_shared_global_vf_capacity_accounting",
+  "requestVersion": 39,
+  "reason": "replay_60_60_with_total_provider_probe_budget",
   "source": "NiakVIO-GLOBAL-FINAL-STRICT-TOP20-2026-09-11(5).xlsx",
   "policy": "residential_when_available_github_failure_is_transport_only",
   "requestedDate": "2026-11-14",
-  "attempt": 19,
-  "retryReason": "route selector must reserve France capacity for multilingual Global providers before selecting France-only rows",
+  "attempt": 20,
+  "retryReason": "route discovery now enforces provider-timeout as a total provider budget, including generic fallback",
   "pipelineFixes": [
     "e828ba0f4da9d64e6450fe5e9fb20c4b799a3a33",
     "a7efa8048c5f7fd7a1788a31bab55a5251d143e4",
@@ -14,7 +14,11 @@
     "d707a96ee36d1d5e3292582bb65fc115a7445cca",
     "06108cf39673c5dbe7d2c7877bd5463258554f59",
     "4b96ac04bf4aa6b753ce6bb7374a356636b94a6e",
-    "b848a291d89fa9078795fb0ec86adfc5307842d6"
+    "b848a291d89fa9078795fb0ec86adfc5307842d6",
+    "f27a63f8c4cb6480bdbe3eff910db8a1e7306fc9",
+    "fb4bb26b5058126e2a504b23db98250ef532a7f4",
+    "2baf01cc38ec36f53e2376a366e80645dbd72c35",
+    "73b6dd50422c06eeffab303fe61538012b80b3f9"
   ],
   "shardCount": 16
 }
