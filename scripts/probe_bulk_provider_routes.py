@@ -404,6 +404,219 @@ def probe_common_identity_routes(
     return accepted
 
 
+
+def _bounded_get(url: str, *, timeout: float, max_bytes: int = 2_500_000) -> tuple[int, bytes, str]:
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 Chrome/151 Safari/537.36",
+        "Accept": "text/html,application/javascript,application/json;q=0.9,*/*;q=0.7",
+    }
+    req = urllib.request.Request(url, headers=headers, method="GET")
+    try:
+        with urllib.request.urlopen(req, timeout=max(0.5, min(float(timeout), 10.0))) as response:
+            status = int(getattr(response, "status", 200) or 200)
+            final_url = str(getattr(response, "geturl", lambda: url)() or url)
+            return status, response.read(max(1, int(max_bytes))), final_url
+    except urllib.error.HTTPError as exc:
+        try:
+            body = exc.read(min(max(1, int(max_bytes)), 262_144))
+        except Exception:
+            body = b""
+        return int(exc.code or 0), body, url
+    except (urllib.error.URLError, TimeoutError, OSError, ValueError):
+        return 0, b"", url
+
+
+def _template_js_route(raw: Any, fixture: dict[str, Any]) -> str:
+    """Convert a bounded first-party JS route literal into Provider-v3 DATA."""
+    value = html.unescape(str(raw or "").strip()).replace("\\/", "/")
+    if not value or len(value) > 700:
+        return ""
+
+    replacements = (
+        (r"(?i)((?:tmdb(?:_?id)?|tmdb-id)=)\$\{[^}]+\}", r"\1{tmdbId}"),
+        (r"(?i)((?:season)=)\$\{[^}]+\}", r"\1{season}"),
+        (r"(?i)((?:episode|ep)=)\$\{[^}]+\}", r"\1{episode}"),
+        (r"(?i)((?:media|media_type|mediatype|type)=)\$\{[^}]+\}", r"\1{media}"),
+        (r"(?i)((?:q|query|keyword|search|story|term|title)=)\$\{[^}]+\}", r"\1{query}"),
+    )
+    for pattern, replacement in replacements:
+        value = re.sub(pattern, replacement, value)
+
+    value = re.sub(r"\$\{[^}]*tmdb[^}]*\}", "{tmdbId}", value, flags=re.I)
+    value = re.sub(r"\$\{[^}]*season[^}]*\}", "{season}", value, flags=re.I)
+    value = re.sub(r"\$\{[^}]*(?:episode|\bep\b)[^}]*\}", "{episode}", value, flags=re.I)
+    value = re.sub(r"\$\{[^}]*(?:query|search|title)[^}]*\}", "{query}", value, flags=re.I)
+    value = re.sub(r"\$\{[^}]*(?:media|type)[^}]*\}", "{media}", value, flags=re.I)
+
+    value = re.sub(
+        r"(?i)(/(?:movie|movies|film|films|tv|series|show|anime|embed)/(?:movie/|tv/|anime/)?)\$\{[^}]+\}",
+        r"\1{tmdbId}",
+        value,
+    )
+    value = re.sub(
+        r"(?i)(/(?:tv|series|show|anime)/\{tmdbId\}/)\$\{[^}]+\}/\$\{[^}]+\}",
+        r"\1{season}/{episode}",
+        value,
+    )
+    value = re.sub(
+        r"(?i)(/embed/(?:tv|anime)/\{tmdbId\}/)\$\{[^}]+\}/\$\{[^}]+\}",
+        r"\1{season}/{episode}",
+        value,
+    )
+    if "$" + "{" in value:
+        return ""
+    return route_pattern(value, fixture)
+
+
+def _js_route_templates(text: str, fixture: dict[str, Any], *, origin_host: str) -> list[str]:
+    """Extract identity-aware first-party routes from static SPA JS."""
+    if not text:
+        return []
+    values: list[str] = []
+    literal_re = re.compile(
+        r'''(?:"([^"\r\n]{3,700})"|'([^'\r\n]{3,700})'|\x60([^\x60]{3,900})\x60)'''
+    )
+    interesting = re.compile(
+        r"(?i)(?:/api/|/embed/|/source|/stream|/player|tmdb|imdb|season|episode|/movie/|/tv/|/anime/)"
+    )
+    for match in literal_re.finditer(text[:3_000_000]):
+        raw = next((part for part in match.groups() if part is not None), "")
+        if not interesting.search(raw):
+            continue
+        candidate = raw.replace("\\/", "/")
+        try:
+            parsed = urlsplit(candidate)
+        except ValueError:
+            continue
+        if parsed.scheme and parsed.netloc:
+            host = _host_key(candidate)
+            if not host or host != origin_host:
+                continue
+        pattern = _template_js_route(candidate, fixture)
+        if not pattern or not identity_route_candidate(pattern):
+            continue
+        if pattern not in values:
+            values.append(pattern)
+        if len(values) >= 32:
+            break
+    return values
+
+
+def _identity_bound_api_response(body: bytes, route: str, fixture: dict[str, Any]) -> bool:
+    if _identity_response(body, fixture, direct_media_route=True):
+        return True
+    if not body or "{tmdbId}" not in route:
+        return False
+    lane = str(fixture.get("mediaType") or "movie").casefold()
+    if lane in {"tv", "anime"} and ("{season}" not in route or "{episode}" not in route):
+        return False
+    lowered = body[:1_500_000].decode("utf-8", errors="ignore").casefold()
+    media_markers = (
+        '"url"', '"src"', '"source"', '"sources"', '"stream"', '"streams"',
+        ".m3u8", ".mp4", "/embed/", "playlist",
+    )
+    return any(marker in lowered for marker in media_markers)
+
+
+def probe_spa_bundle_identity_routes(
+    direct: str,
+    fixture: dict[str, Any],
+    *,
+    timeout: int,
+    deadline: float | None = None,
+) -> list[str]:
+    """Inspect static first-party SPA bundles, then verify discovered routes live."""
+    remaining = (deadline - time.monotonic()) if deadline is not None else float(timeout)
+    if remaining <= 0.5:
+        return []
+    status, body, final_url = _bounded_get(
+        direct,
+        timeout=min(float(timeout), remaining),
+        max_bytes=700_000,
+    )
+    if status <= 0 or status >= 500 or not body:
+        return []
+    html_text = body.decode("utf-8", errors="ignore")
+    origin_host = _host_key(final_url or direct)
+    if not origin_host:
+        return []
+
+    srcs: list[str] = []
+    for match in re.finditer(
+        r'''<script\b[^>]*\bsrc\s*=\s*["']([^"']+)["'][^>]*>''',
+        html_text,
+        flags=re.I,
+    ):
+        src = html.unescape(match.group(1).strip())
+        absolute = urllib.parse.urljoin(final_url or direct, src)
+        if _host_key(absolute) != origin_host:
+            continue
+        if not re.search(r"\.m?js(?:[?#]|$)", absolute, flags=re.I):
+            continue
+        if absolute not in srcs:
+            srcs.append(absolute)
+        if len(srcs) >= 6:
+            break
+
+    candidates = _js_route_templates(html_text, fixture, origin_host=origin_host)
+    for src in srcs:
+        remaining = (deadline - time.monotonic()) if deadline is not None else float(timeout)
+        if remaining <= 0.5:
+            break
+        js_status, js_body, _ = _bounded_get(
+            src,
+            timeout=min(float(timeout), remaining),
+            max_bytes=3_000_000,
+        )
+        if js_status <= 0 or js_status >= 500 or not js_body:
+            continue
+        for pattern in _js_route_templates(
+            js_body.decode("utf-8", errors="ignore"),
+            fixture,
+            origin_host=origin_host,
+        ):
+            if pattern not in candidates:
+                candidates.append(pattern)
+            if len(candidates) >= 48:
+                break
+        if len(candidates) >= 48:
+            break
+
+    accepted: list[str] = []
+    headers = {
+        "User-Agent": "NiakVIO/5 provider-route-discovery-spa",
+        "Accept": "application/json,text/html;q=0.9,*/*;q=0.7",
+        "Referer": final_url or direct,
+    }
+    for route in candidates:
+        remaining = (deadline - time.monotonic()) if deadline is not None else float(timeout)
+        if remaining <= 0.5:
+            break
+        rendered = _render_route(route, fixture)
+        url = rendered if re.match(r"^https?://", rendered) else urllib.parse.urljoin(
+            (final_url or direct).rstrip("/") + "/", rendered.lstrip("/")
+        )
+        if _host_key(url) != origin_host:
+            continue
+        try:
+            req = urllib.request.Request(url, headers=headers, method="GET")
+            request_timeout = max(0.5, min(float(timeout), 8.0, remaining))
+            with urllib.request.urlopen(req, timeout=request_timeout) as response:
+                response_status = int(getattr(response, "status", 200) or 200)
+                if response_status >= 400:
+                    continue
+                response_body = response.read(1_500_000)
+        except (urllib.error.URLError, TimeoutError, OSError, ValueError):
+            continue
+        if _identity_bound_api_response(response_body, route, fixture):
+            if route not in accepted:
+                accepted.append(route)
+        if len(accepted) >= 4:
+            break
+    return accepted
+
+
+
 def observed_candidates(report: dict[str, Any]) -> list[Any]:
     values: list[Any] = []
     for row in report.get("route_hints") or []:
@@ -571,6 +784,20 @@ def main() -> int:
                 if len(patterns) >= 24:
                     break
 
+        if not patterns:
+            for fixture in fixtures:
+                if provider_deadline - time.monotonic() <= 0.5:
+                    break
+                for route in probe_spa_bundle_identity_routes(
+                    direct,
+                    fixture,
+                    timeout=args.timeout,
+                    deadline=provider_deadline,
+                ):
+                    if route not in patterns and identity_route_candidate(route):
+                        patterns.append(route)
+                if len(patterns) >= 4:
+                    break
         if not patterns:
             for fixture in fixtures:
                 if provider_deadline - time.monotonic() <= 0.5:
