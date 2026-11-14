@@ -139,6 +139,8 @@ jobs:
           NUVIO_HEALTH_RESULTS_FILENAME: health-results.json
           NUVIO_HEALTH_PROVIDER_FILTER: ${{ steps.target.outputs.provider }}
           NUVIO_WORKER_MEMORY_MB: "768"
+          TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+          TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
         run: |
           set -euo pipefail
           mkdir -p brain-disabled-recovery/health
