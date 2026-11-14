@@ -1,5 +1,5 @@
 {
-  "requestVersion": 31,
+  "requestVersion": 32,
   "source": "NiakVIO-GLOBAL-FINAL-STRICT-TOP20-2026-09-11(5).xlsx",
   "activationPolicy": "bulk_offline_contract_live_unverified",
   "allowReplaceExisting": true,
@@ -2781,8 +2781,8 @@
     "activationRequiresExecutablePlan": true
   },
   "handoff": {
-    "reason": "replay_on_current_lifecycle_head_with_exact_active_byte_guard",
-    "previousRequestVersion": 30,
+    "reason": "replay_after_fresh_regression_lifecycle_and_active_byte_guard",
+    "previousRequestVersion": 31,
     "retryAfterContractFix": "bare-search-not-identity-aware",
     "retryAfterActivationDiagnostics": true,
     "partialActivationAllowed": true,
@@ -2799,6 +2799,8 @@
       "france": 7
     },
     "activeByteGuardFix": "581bee29",
-    "activeByteGuardTest": "211822c8"
+    "activeByteGuardTest": "211822c8",
+    "lifecycleSha": "3618b5a1f683d8316e07a60837489e9fdf5d8cbf",
+    "activeByteGuard": "581bee29593a8adc7e5d6f86bc9c3a1925938f0f"
   }
 }
