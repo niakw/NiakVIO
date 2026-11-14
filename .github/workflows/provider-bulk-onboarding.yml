@@ -191,7 +191,32 @@ jobs:
           print(int(value.get("activationCount") or 0))
           PY
           )"
-          test "$count" -eq "${{ steps.summary.outputs.provider_count || 0 }}" || true
+          expected="$(python - <<'PY'
+          import json
+          value=json.load(open("automation/provider-bulk-onboarding-stage.json", encoding="utf-8"))
+          print(int(value.get("providerCount") or 0))
+          PY
+          )"
+          test "$count" -eq "$expected"
+          python - <<'PY'
+          import json, os
+          request=json.load(open(os.environ["REQUEST"], encoding="utf-8"))
+          targets=request.get("targetActive") if isinstance(request,dict) else {}
+          expected_global=int((targets or {}).get("global") or 0)
+          expected_france=int((targets or {}).get("france") or 0)
+          global_manifest=json.load(open("manifest.json", encoding="utf-8"))
+          france_manifest=json.load(open("vf/manifest.json", encoding="utf-8"))
+          actual_global=sum(1 for row in global_manifest.get("scrapers") or [] if isinstance(row,dict) and row.get("enabled") is not False)
+          actual_france=sum(1 for row in france_manifest.get("scrapers") or [] if isinstance(row,dict) and row.get("enabled") is not False)
+          if expected_global <= 0 or expected_france <= 0:
+              raise SystemExit("targetActive.global and targetActive.france are required for offline bulk activation")
+          if (actual_global,actual_france)!=(expected_global,expected_france):
+              raise SystemExit(
+                  f"production active target mismatch: Global {actual_global}/{expected_global}, "
+                  f"France {actual_france}/{expected_france}"
+              )
+          print(f"PROVIDER_ACTIVE_TARGET_OK global={actual_global} france={actual_france}")
+          PY
           echo "activation_count=$count" >> "$GITHUB_OUTPUT"
 
       - id: summary
