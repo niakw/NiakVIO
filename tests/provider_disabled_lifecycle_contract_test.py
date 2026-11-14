@@ -99,7 +99,12 @@ assert 'git push origin HEAD:${{ github.ref_name }}' in commit_block
 assert "gh workflow run release-finalize.yml" in commit_block
 assert '-f expected_sha="$transition_sha"' in commit_block
 assert "FIELD_PROVIDER_LIFECYCLE_RELEASE_FINALIZE_DISPATCH sha=$transition_sha" in commit_block
+assert 'transition_base="$(git rev-parse HEAD^)"' in commit_block
+assert 'git fetch origin "${{ github.ref_name }}"' in commit_block
+assert "FIELD_PROVIDER_LIFECYCLE_SUPERSEDED" in commit_block
+assert "gh workflow run provider-disabled-lifecycle.yml" in commit_block
 no_change=commit_block.index("PROVIDER_LIFECYCLE_NO_CHANGE")
+retry=commit_block.index("gh workflow run provider-disabled-lifecycle.yml")
 dispatch=commit_block.index("gh workflow run release-finalize.yml")
-assert no_change < dispatch
-print("provider lifecycle exact release-finalization handoff contract passed")
+assert no_change < retry < dispatch
+print("provider lifecycle exact release-finalization and stale-run replay contract passed")
