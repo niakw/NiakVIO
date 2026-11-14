@@ -1,0 +1,122 @@
+{
+  "schemaVersion": 1,
+  "observedAt": "2026-11-14",
+  "purpose": "External/non-GitHub domain evidence for the 60 Global / 60 France cohort. GitHub/WAF failures remain inconclusive; explicit migrations, redirects and shutdown notices are actionable.",
+  "observations": [
+    {
+      "provider": "yablom",
+      "scope": "france",
+      "oldDirect": "https://yablom.com",
+      "recommendedDirect": "https://trimav.com",
+      "verdict": "migrated",
+      "evidence": "https://yablom.com/",
+      "note": "Current Yablom page explicitly announces migration to trimav.com."
+    },
+    {
+      "provider": "wiflix",
+      "scope": "france",
+      "oldDirect": "https://flemmix.cafe/",
+      "recommendedAction": "replace identity with current Flemmix authority or refresh current terminal before activation",
+      "verdict": "old_domain_blocked",
+      "evidence": "https://ww1.wiflix-adresses.fun/",
+      "note": "Official-address page lists flemmix.cafe among old ISP-blocked domains."
+    },
+    {
+      "provider": "primewire",
+      "scope": "global",
+      "oldDirect": "https://primewire.nexus",
+      "recommendedDirect": "https://primewire.pw",
+      "verdict": "hub_not_terminal",
+      "evidence": "https://primewire.nexus/",
+      "note": "Nexus is the status/domain hub; primewire.pw is listed as newest active content domain."
+    },
+    {
+      "provider": "shuttletv",
+      "scope": "global",
+      "oldDirect": "https://shuttletv.su",
+      "recommendedDirect": "https://shuttletv.pk",
+      "verdict": "redirected",
+      "evidence": "https://shuttletv.su/",
+      "note": "Current endpoint redirects users to shuttletv.pk."
+    },
+    {
+      "provider": "cinejoy",
+      "scope": "global",
+      "oldDirect": "https://cinejoy.to",
+      "recommendedDirect": "https://cinejoy.pk",
+      "verdict": "redirected",
+      "evidence": "https://cinejoy.to/",
+      "note": "Current endpoint redirects to cinejoy.pk."
+    },
+    {
+      "provider": "vivarium",
+      "scope": "global",
+      "oldDirect": "https://vivarium.wtf",
+      "recommendedDirect": "https://vivarium.su",
+      "verdict": "redirected_live_unverified",
+      "evidence": "https://vivarium.wtf/",
+      "note": "Observed redirect to vivarium.su; terminal remains live-unverified."
+    },
+    {
+      "provider": "stellar",
+      "scope": "global",
+      "oldDirect": "https://stellar.gdn",
+      "recommendedAction": "retire_and_replace",
+      "verdict": "discontinued",
+      "evidence": "https://stellar.gdn/",
+      "note": "Current page explicitly says Service Discontinued / operations permanently terminated."
+    },
+    {
+      "provider": "spenflix",
+      "scope": "global",
+      "oldDirect": "https://watch.spencerdevs.xyz",
+      "recommendedAction": "retire_and_replace",
+      "verdict": "not_launched",
+      "evidence": "https://watch.spencerdevs.xyz/",
+      "note": "Redirects to SpenFlix App page marked COMING SOON."
+    },
+    {
+      "provider": "vidsrc",
+      "scope": "global",
+      "currentDirect": "https://vidsrc2.ru/",
+      "preferredDirect": "https://vidsrc.sh/",
+      "verdict": "live_secondary_primary_changed",
+      "evidence": "https://vidsrc.domains/",
+      "note": "Official domain list says vidsrc2.ru is live and vidsrc.sh is current primary."
+    },
+    {
+      "provider": "nakios",
+      "scope": "france",
+      "currentDirect": "https://nakios.live/",
+      "verdict": "externally_reachable_catalog",
+      "evidence": "https://nakios.live/",
+      "note": "External fetch exposes current movie/series catalogue and official-address link."
+    }
+  ],
+  "replacementCandidates": [
+    {
+      "id": "pstream",
+      "scope": "global",
+      "direct": "https://pstream.cfd/",
+      "types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "externalEvidence": "https://pstream.cfd/",
+      "reason": "Current catalogue page reachable; suitable replacement for discontinued/non-launched Global candidate."
+    },
+    {
+      "id": "boredflix",
+      "scope": "global",
+      "direct": "https://boredflix.to/",
+      "types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "externalEvidence": "https://boredflix.to/",
+      "reason": "Current catalogue page reachable with Movies/TV/Anime lanes."
+    }
+  ]
+}
