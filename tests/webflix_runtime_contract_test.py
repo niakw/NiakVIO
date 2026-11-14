@@ -58,7 +58,7 @@ print("WEBFLIX_RUNTIME_CONTRACT_OK routes=2 active_lane=tv challenge_solver=fals
 
 for required in (
     "/api/player-embed/vidzy-path?kind=movie&tmdbId=",
-    "/api/v/z/",
+    "signedPath",
     "Webflix - Vidzy",
     "direct-mp4-or-tmdb-signed-vidzy-hls",
 ):
