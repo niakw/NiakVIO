@@ -1,3 +1,8 @@
+## 2026-11-14 — Census retry requested after lifecycle-aware MovieBox contract fix
+
+- The MovieBox test correction triggers Core/Non-Regression but is not itself a current-byte census push path. Add a second comment-only census workflow marker to rerun the exact current-byte census after the preflight contract fix.
+- No provider bytes, manifests, activation or proof criteria changed.
+
 ## 2026-11-14 — MovieBox contract respects lifecycle-disabled runtime state
 
 - Post-release census 43589271099 on 1e0430bd stopped before live probing in Validate current provider contracts. The failure was provider_moviebox_vidsrcme_runtime_contract_test.py requiring override route_data_state="repair" although MovieBox is now lifecycle-disabled in manifest.json and its executable override correctly has route_data_state="off", enabled=false, activation_eligible=false.
