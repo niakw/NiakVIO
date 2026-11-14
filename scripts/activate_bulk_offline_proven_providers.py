@@ -16,7 +16,13 @@ import subprocess
 from pathlib import Path
 from typing import Any
 
-from activate_bulk_proven_providers import pending_artifact_digest, restore_pending_artifacts
+from activate_bulk_proven_providers import (
+    VERSION_FLOORS,
+    ensure_activation_version_floor,
+    load_version_floor_payload,
+    pending_artifact_digest,
+    restore_pending_artifacts,
+)
 from reconcile_provider_static_authority import persist_static_from_bundle, refresh_static_counts
 from provider_base_store import provider_model_has_executable_plan, provider_model_has_identity_execution_plan
 from provider_patch_blocks import decode_managed_data
@@ -174,6 +180,8 @@ def main() -> int:
     provenance = load(PROVENANCE, {"providers": {}})
     hubs = load(HUBS, {"providers": {}})
     static_knowledge = load(STATIC_KNOWLEDGE, {"schemaVersion": 1, "providers": {}})
+    version_floor_payload = load_version_floor_payload()
+    version_floor_updates: list[dict[str, Any]] = []
 
     manifest_map = {
         norm(row.get("id")): row
@@ -335,6 +343,9 @@ def main() -> int:
         if active_sha != exact_sha:
             raise RuntimeError(f"{pid}: activation changed exact provider bytes")
 
+        version_floor_updates.append(
+            ensure_activation_version_floor(pid, manifest_row, version_floor_payload)
+        )
         manifest_row["enabled"] = True
         # provider_catalog.json is the projection authority. For Global rows
         # manifest_row comes from manifest.json, so explicitly advance the
@@ -402,6 +413,7 @@ def main() -> int:
             "blockedCount": len(blocked),
             "blockedProviders": blocked,
             "providers": [],
+            "versionFloorUpdates": version_floor_updates,
             "targetActive": targets,
             "activeBefore": active_before,
             "activeAfter": current_active,
@@ -420,6 +432,7 @@ def main() -> int:
         "blockedCount": len(blocked),
         "blockedProviders": blocked,
         "providers": proof_rows,
+        "versionFloorUpdates": version_floor_updates,
         "targetActive": targets,
         "activeBefore": active_before,
         "activeAfter": current_active,
@@ -435,6 +448,7 @@ def main() -> int:
         write(OVERRIDES, overrides)
         write(PROVENANCE, provenance)
         write(HUBS, hubs)
+        write(VERSION_FLOORS, version_floor_payload)
         refresh_static_counts(static_knowledge)
         write(STATIC_KNOWLEDGE, static_knowledge)
     write(args.output, payload)
