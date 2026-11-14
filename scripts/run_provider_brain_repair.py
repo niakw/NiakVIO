@@ -254,6 +254,7 @@ META_GAP_FAILURE_FAMILIES = {
     "provider_transport_gap": "route-terminal",
     "transport_blocked": "route-terminal",
     "search_gap": "route-terminal",
+    "content_identity_gap": "content-identity",
     "chain_terminal_gap": "terminal-media",
     "media_extraction_gap": "terminal-media",
     "variant_coverage_gap": "terminal-media",
@@ -264,6 +265,7 @@ META_GAP_PROFILE_BY_FAILURE = {
     "provider_transport_gap": "provider_origin_failover_v1",
     "transport_blocked": "provider_origin_failover_v1",
     "search_gap": "search_contract_inference_v1",
+    "content_identity_gap": "identity_alias_search_traversal_v1",
     "chain_terminal_gap": "chain_terminal_extractor_v1",
     "media_extraction_gap": "player_media_extractor_v1",
     "variant_coverage_gap": "player_media_extractor_v1",
@@ -300,6 +302,15 @@ def _rebind_meta_gap_experiment(experiment: dict[str, Any], failure_class: str) 
         next_value["sessionBootstrap"] = True
         next_value["responseSalvage"] = True
         next_value["documentRequestMining"] = True
+    elif current == "content_identity_gap":
+        next_value["routePolicy"] = "owned_plus_peer_generic"
+        next_value["recipePolicy"] = "current_plus_provider_peer"
+        next_value["roleOrder"] = ["search", "detail", "api", "episode", "player", "source", "other"]
+        next_value["terminalOnly"] = False
+        next_value["aliasSearch"] = True
+        next_value["responseSalvage"] = True
+        next_value["documentRequestMining"] = True
+        next_value["sessionBootstrap"] = False
     elif current in {"route_proven_gap", "search_gap"}:
         next_value["routePolicy"] = "owned_plus_peer_generic"
         next_value["recipePolicy"] = "current_plus_provider_peer"
@@ -361,6 +372,13 @@ def _rotate_meta_gap_experiment(
             next_value["routePolicy"] = routes[step % len(routes)]
             next_value["recipePolicy"] = recipes[(step + 1) % len(recipes)]
             next_value["sessionBootstrap"] = True if step % 2 == 0 else bool(next_value.get("sessionBootstrap"))
+        elif current == "content_identity_gap":
+            routes = ["owned_plus_peer_generic", "owned_only", "owned_plus_peer"]
+            recipes = ["current_plus_provider_peer", "current_plus_provider", "current_only"]
+            next_value["routePolicy"] = routes[step % len(routes)]
+            next_value["recipePolicy"] = recipes[step % len(recipes)]
+            next_value["aliasSearch"] = True
+            next_value["terminalOnly"] = False
         elif current in {"route_proven_gap", "search_gap"}:
             routes = ["owned_plus_peer_generic", "owned_plus_peer", "owned_only"]
             recipes = ["current_plus_provider_peer", "current_plus_provider", "current_only"]
