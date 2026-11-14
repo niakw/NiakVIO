@@ -1,3 +1,10 @@
+## 2026-11-14 — Current census causal queues outrank semantic depth; wrong content is an identity failure
+
+Repair ownership is assigned from the current census before semantic depth. A provider in `authorityRediscoveryQueue` belongs to Domain Refresh even if an old replay reached CHAIN; a provider in the environment/transport queues belongs to harness/client analysis; only the disjoint Repair cohort may enter provider mutation/Learning. Queue overlap between authority and environment is an error. A later batch/execution plan must validate against the same causal queue that selected it so an authority-debt sibling cannot block unrelated Repair work through a generic queue-mismatch.
+
+`provider_returned_wrong_content`, `wrong_content`, `content_identity_mismatch` and equivalent identity contradictions form the generic `content_identity_gap` family. This failure outranks CHAIN/terminal depth: reaching a player or playable media for the wrong title/season/episode is not terminal progress. The primary executor is `identity_alias_search_traversal_v1`, with bounded search/detail/API/episode traversal and existing playback/identity gates. Terminal extraction remains downstream and never repairs identity by itself.
+
+NiakVIO-Brain-LLM uses the same causal prior (`content-identity-gap` → provider layer → bind catalogue result to requested identity), bounded alias-first advisor experiment and guidance mapping. Model guidance is prior-only: it still requires compilation, materialization, execution of the exact resulting bytes, correct content identity, playable terminal media, non-regression and persisted experience before publication.
 ## 2026-11-14 — Disabled recovery requires terminal identity proof per declared lane
 
 A disabled-provider recovery observation may be aggregate-health `healthy` while still lacking identity authority for one declared semantic lane. Aggregate stream or identity counters are therefore diagnostic only: they never authorize reactivation of a multi-lane provider.
