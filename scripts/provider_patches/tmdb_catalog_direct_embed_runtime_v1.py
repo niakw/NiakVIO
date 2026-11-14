@@ -16,10 +16,12 @@ WRAPPER = r'''
 /* NIAKVIO_PROVIDER_RUNTIME_RESOLVER_V1 */
 ;(function(g,c){"use strict";
 function s(v){return String(v==null?"":v).trim()}
+function seasonCoord(v){if(v==null||s(v)==="")return 1;var n=Number(v);return Number.isInteger(n)&&n>=0?n:1}
+function episodeCoord(v){if(v==null||s(v)==="")return 1;var n=Number(v);return Number.isInteger(n)&&n>=1?n:1}
 function req(args){var first=args[0],o=first&&typeof first==="object"&&!Array.isArray(first)?first:null,ctx={};try{ctx=g&&g.__nuvioMediaContext||{}}catch(_e){}
  var semantic=s((o&&(o.semanticType||o.canonicalMediaType||o.mediaType||o.type))||ctx.semanticType||ctx.canonicalMediaType||args[1]||"movie").toLowerCase();if(semantic==="series")semantic="tv";if(semantic!=="movie"&&semantic!=="tv"&&semantic!=="anime")return null;
  var id=s((o&&(o.tmdbId||o.tmdb_id||o.id))||(typeof first==="string"?first:"")||ctx.tmdbId).replace(/^tmdb:/i,"").split(":")[0];if(!/^\d+$/.test(id))return null;
- return{semantic:semantic,transport:semantic==="movie"?"movie":"tv",tmdbId:id,season:Number((o&&o.season)!=null?o.season:(args[2]!=null?args[2]:ctx.season))||1,episode:Number((o&&o.episode)!=null?o.episode:(args[3]!=null?args[3]:ctx.episode))||1,metadata:(o&&(o.tmdbMetadata||o.tmdb_metadata||o.metadata))||ctx.tmdbMetadata||null}}
+ return{semantic:semantic,transport:semantic==="movie"?"movie":"tv",tmdbId:id,season:seasonCoord((o&&o.season)!=null?o.season:(args[2]!=null?args[2]:ctx.season)),episode:episodeCoord((o&&o.episode)!=null?o.episode:(args[3]!=null?args[3]:ctx.episode)),metadata:(o&&(o.tmdbMetadata||o.tmdb_metadata||o.metadata))||ctx.tmdbMetadata||null}}
 function projected(row){if(row&&row.state==="ok"&&row.metadata)row=row.metadata;return row&&typeof row==="object"?row:null}
 async function metadata(q){var row=projected(q.metadata);if(row)return row;try{var fn=g&&g.__nuvioCoreGetTmdbDataV1;if(typeof fn==="function"){var r=await fn({tmdbId:q.tmdbId,mediaType:q.transport,tmdbNamespace:q.transport});return projected(r)}}catch(_e){}return null}
 function title(md){return s(md&&(md.title||md.name||md.original_title||md.original_name))}
