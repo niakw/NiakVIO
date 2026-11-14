@@ -69,3 +69,10 @@ assert "github.event.workflow_run.conclusion == 'success'" in activation
 assert "scripts/reapply_published_overrides.py" not in activation
 assert "Never rebuild/reapply provider code here" in activation
 print("Bulk activation preserves exact replayed pending bytes and converges from workflow_run")
+
+assert "PROVIDER - Bulk Activation" in sharded
+assert 'census_scope="all"' in sharded
+assert "proof_source_artifact_digest" in script
+assert "pending_proof_source_byte_drift" in script
+assert "pending ProviderBase hash mismatch" in script
+print("Bulk activation exact-source proof -> full-cohort revalidation contract passed")
