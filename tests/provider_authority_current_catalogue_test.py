@@ -36,8 +36,26 @@ def classify(provider: str) -> dict:
         histories.get(provider) if isinstance(histories.get(provider), dict) else {},
     )
 
+# The backend capability is the normal expectation, unless an explicitly
+# reviewed, evidence-backed low-yield phase-out overrides publication.
+# Do not silently reinterpret unrelated backend failures as terminal removal.
+PHASE_OUT_2026_11_14 = {
+    "yflix": "manual_off_zero_playable_movie_tv_2026-11-14",
+    "animevost-fr": "manual_off_zero_playable_anime_2026-11-14",
+}
+
+def expected_phase_out_action(provider: str, otherwise: str) -> str:
+    registry = registries.get(provider) or {}
+    manual = str(registry.get("manual_off_reason") or "")
+    if not manual:
+        return otherwise
+    assert manual == PHASE_OUT_2026_11_14[provider], (provider, manual)
+    if provider not in rows:
+        return "KEEP_DISABLED"
+    return "KEEP_DISABLED" if rows[provider].get("enabled") is False else "DISABLE_MANUAL_POLICY"
+
 expected = {
-    "yflix": "KEEP_BACKEND",
+    "yflix": expected_phase_out_action("yflix", "KEEP_BACKEND"),
     "persianstremio": "KEEP_BACKEND",
     "vidfast": "KEEP_ROUTE_AUTHORITY",
     "kurage": "KEEP_DIRECT",
@@ -58,6 +76,24 @@ expected = {
     "desiflix": "KEEP_DISABLED",
 }
 archived = lifecycle.get("archived") if isinstance(lifecycle.get("archived"), dict) else {}
+
+# Independently protect the French-only anime retirement from accidental
+# reactivation: before the lifecycle transaction it must request manual disable;
+# afterwards it must be disabled-retained or archived with matching evidence.
+for provider, reason in PHASE_OUT_2026_11_14.items():
+    registry = registries.get(provider) or {}
+    if registry.get("manual_off_reason") != reason:
+        continue
+    if provider in rows:
+        action = expected_phase_out_action(provider, "KEEP_DIAGNOSTIC")
+        result = classify(provider)
+        assert result["action"] == action, (provider, action, result)
+        assert result["repairEligible"] is False, (provider, result)
+    else:
+        record = archived.get(provider) or {}
+        assert record.get("state") == "archived-provider-old", (provider, record)
+        assert record.get("reason") == reason, (provider, record)
+
 for provider, action in expected.items():
     if provider not in rows:
         record = archived.get(provider) if isinstance(archived.get(provider), dict) else None
