@@ -1,5 +1,5 @@
 {
-  "requestVersion": 38,
+  "requestVersion": 39,
   "source": "NiakVIO-GLOBAL-FINAL-STRICT-TOP20-2026-09-11(5).xlsx",
   "activationPolicy": "bulk_offline_contract_live_unverified",
   "allowReplaceExisting": true,
@@ -18,54 +18,6 @@
   },
   "policy": "Reach exactly 60 active Global and 60 active France. GitHub/WAF network rejection is inconclusive; exact-byte offline activation stays live-unverified. Explicit current-domain migrations/shutdowns are applied before publication.",
   "providers": [
-    {
-      "id": "watchott",
-      "name": "Watchott",
-      "scope": "global",
-      "direct": "https://watchott.org",
-      "types": [
-        "movie",
-        "tv",
-        "anime"
-      ],
-      "inventory_rank": 67,
-      "inventory_score": 83,
-      "grade": "A-",
-      "workbookSheet": "Global",
-      "routeDiscoveryLastReason": "mac_identity_bound_reusable_routes",
-      "routes": [
-        "/search?q={query}",
-        "/movie/{tmdbId}-{slug}",
-        "/tv/{tmdbId}-{slug}"
-      ],
-      "routeDiscoveryEvidence": {
-        "transport": "mac-residential",
-        "reason": "mac_identity_bound_reusable_routes",
-        "routeCount": 3
-      }
-    },
-    {
-      "id": "animejlprovider",
-      "name": "AnimeJL",
-      "scope": "global",
-      "direct": "https://www.anime-jl.net",
-      "types": [
-        "anime"
-      ],
-      "inventory_rank": 213,
-      "inventory_score": 60,
-      "grade": "B",
-      "workbookSheet": "Global",
-      "routeDiscoveryLastReason": "probe_shard_missing_or_timeout",
-      "routes": [
-        "/animes?q={query}"
-      ],
-      "routeDiscoveryEvidence": {
-        "transport": "residential-exit",
-        "reason": "observed_identity_executable_routes",
-        "routeCount": 1
-      }
-    },
     {
       "id": "webflix",
       "name": "Webflix",
@@ -1627,5 +1579,6 @@
     "catalogCanonicalizationContract": "cc5bc8d23cd64ef86520a5cf128592f303ed52f1",
     "exact60CeilingFix": "c0c08f6933a3e5d8bf0f88d16ef3030ad0720080",
     "exact60CeilingContract": "e455b81216c6537e4447eae2fbe80f57d39e06ca"
-  }
+  },
+  "notes": " Post-activation replay: Watchott and AnimeJL were already published and are removed from the pending onboarding transaction; their current bytes are handled by normal provider materialization/publication."
 }
