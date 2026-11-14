@@ -4,7 +4,7 @@ export const BRAIN_CONTROL_PLANE_VERSION = 7;
 
 export const FAILURE_CLASSES = Object.freeze([
   "healthy", "not_invoked", "dns_unreachable", "transport_blocked", "search_gap",
-  "identity_mismatch", "detail_gap", "episode_gap", "player_gap",
+  "identity_mismatch", "content_identity_gap", "detail_gap", "episode_gap", "player_gap",
   "media_extraction_gap", "playback_context_gap", "media_validation_gap",
   "playback_http_access", "playback_http_gone", "playback_rate_limited",
   "playback_http_upstream", "playback_http_response", "playback_timeout",
@@ -34,6 +34,9 @@ export const REPAIR_RECIPES = Object.freeze({
   ],
   identity_mismatch: [
     recipe("tighten-identity-match", ["identity"], ["require correct title/TMDB/year", "require correct season/episode when episodic", "reject near-title collisions"]),
+  ],
+  content_identity_gap: [
+    recipe("repair-content-identity-selection", ["identity", "search", "detail"], ["expand same-provider identity aliases", "bind the selected search/detail result to requested TMDB/title/year", "require exact season/episode identity when episodic", "reject playable wrong-content candidates before terminal promotion"]),
   ],
   detail_gap: [recipe("repair-detail-resolution", ["detail", "parser"], ["inspect result href/id", "follow canonical detail URL", "use structured data before brittle selectors"])],
   episode_gap: [
