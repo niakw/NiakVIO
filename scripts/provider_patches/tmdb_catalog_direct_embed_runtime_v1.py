@@ -70,8 +70,9 @@ async function resolve(args,_ctx){var q=req(args);if(q===null)return null;if(!q)
  var dr=await get(detail,ref);if(!dr.ok)return[];
  var idNeedle=new RegExp("(?:data-(?:id|hist-id)|/(?:movie|tv)/)\\s*[\"']?"+q.tmdbId+"(?:[\"'/?#&\\s]|$)","i");if(!idNeedle.test(dr.text)&&dr.url.indexOf("/"+q.transport+"/"+q.tmdbId)<0)return[];
  if(c.directDetailIdentity&&!cardIdentity(dr.text,q)&&dr.url.indexOf("/"+q.transport+"/"+q.tmdbId)<0)return[];
- var direct=await directJsonSources(q,dr.url||detail);if(direct.length)return direct;
- var embed=embedUrl(q,dr.text);return await terminal(embed,dr.url||detail,q)}
+ var embed=embedUrl(q,dr.text);
+ var direct=await directJsonSources(q,embed);if(direct.length)return direct;
+ return await terminal(embed,dr.url||detail,q)}
 try{if(g)g.__niakvioProviderRuntimeResolverV1={provider:c.provider,resolve:resolve}}catch(_e){}
 })(typeof globalThis!=="undefined"?globalThis:this,CONFIG_PLACEHOLDER);
 '''
