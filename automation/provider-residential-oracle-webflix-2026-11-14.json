@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "provider": "webflix",
+  "observedAt": "2026-11-14",
+  "transport": "physical-mac-residential",
+  "bridgeRepository": "niakw/NiakGH-MacBridge",
+  "bridgeRuns": [
+    43649703460,
+    43649792760
+  ],
+  "claims": {
+    "movie": {
+      "requestIdentity": {
+        "tmdbId": "157336",
+        "mediaType": "movie"
+      },
+      "endpointTemplate": "/api/fastflux?type=movie&tmdb_id={tmdbId}",
+      "httpStatus": 200,
+      "responseIdentityBound": true,
+      "terminalCandidateKind": "direct-mp4",
+      "terminalCandidateObserved": true
+    },
+    "tv": {
+      "requestIdentity": {
+        "tmdbId": "1396",
+        "mediaType": "tv",
+        "season": 1,
+        "episode": 1
+      },
+      "discoveryTemplate": "/api/series-season-discovery?tmdb_id={tmdbId}",
+      "endpointTemplate": "/api/fastflux?type=episode&tmdb_id={tmdbId}&season={season}&episode={episode}",
+      "httpStatus": 200,
+      "responseIdentityBound": true,
+      "seasonEpisodeBound": true,
+      "terminalCandidateKind": "direct-mp4",
+      "terminalCandidateObserved": true
+    }
+  },
+  "routeProofVersion": 5,
+  "fullPlaybackPromoted": false,
+  "nativeDecodedPlaybackProven": false,
+  "note": "Route/identity/terminal-candidate proof only. No endpoint media URL is persisted and no FULL OK/native decoded playback claim is made."
+}
