@@ -477,7 +477,9 @@ def stage(request_path: Path, *, bulk: bool = False) -> dict[str, Any]:
             raise ValueError("open_archive_public_domain requires the official https://archive.org origin")
         if types != ["movie"]:
             raise ValueError("open_archive_public_domain currently supports the movie lane only")
-        lego = "scripts/provider_patches/open_archive_public_domain_runtime_v1.py"
+        if provider_id != "internet-archive":
+            raise ValueError("open_archive_public_domain requires a provider-scoped Lego binding")
+        lego = "scripts/provider_patches/internet_archive_public_domain_runtime_v1.py"
         patch = overrides["provider_patches"][provider_id]
         patch["notes"].append(
             "Runtime searches only explicitly public-domain Internet Archive movie items and rechecks per-item license metadata before returning direct media."

@@ -1,3 +1,10 @@
+## 2026-11-14 — Open-archive Lego ownership corrected without weakening v3 isolation
+
+- Bulk onboarding run 43595865731 on 3b372980 failed before publication exactly at v3 Lego ownership: internet-archive could not use a generic MANAGED_FIX_ID outside PROVIDER.INTERNET-ARCHIVE.*. This is a valid isolation barrier and must remain strict.
+- Split the implementation into a reusable shared module with no ownership claim plus a thin Internet Archive binding owning PROVIDER.INTERNET-ARCHIVE.OPEN_ARCHIVE.RUNTIME.V1. add_provider binds the open_archive_public_domain strategy only to that provider-scoped wrapper; future archive providers require their own thin ownership binding while reusing the same implementation. No relaxation in apply_provider_overrides.
+- Provider Site Probe 43595865589 also failed independently because its legacy single-provider request still targets a now-disabled provider (kehflix) whose providers/ path violates the current disabled lifecycle. Do not interpret that as Internet Archive evidence.
+- Re-run exact-SHA Core and bulk onboarding required; no provider was staged or activated by the failed run.
+
 ## 2026-11-14 — Authorized open-archive onboarding strategy and first candidate
 
 - After the lifecycle cleanup, production remains 13 active providers with fresh FULL proof; the dedicated Provider Disabled Lifecycle 43595236196 succeeded on 4f5e073e. Lifecycle automation subsequently advanced main with retention/release bookkeeping only.

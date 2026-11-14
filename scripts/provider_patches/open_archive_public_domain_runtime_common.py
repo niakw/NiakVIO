@@ -7,7 +7,6 @@ from typing import Any
 
 from provider_patch_blocks import replace_managed_fix
 
-MANAGED_FIX_ID = "PROVIDER.OPEN_ARCHIVE.PUBLIC_DOMAIN.RUNTIME.V1"
 MARKER = "NIAKVIO_OPEN_ARCHIVE_PUBLIC_DOMAIN_RUNTIME_V1"
 
 WRAPPER = r'''
@@ -101,7 +100,12 @@ try{if(g)g.__niakvioProviderRuntimeResolverV1={provider:c.provider,resolve:resol
 '''
 
 
-def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> str:
+def apply_runtime(
+    text: str,
+    *,
+    managed_fix_id: str,
+    options: dict[str, Any] | None = None,
+) -> str:
     cfg = dict(options or {})
     base = str(cfg.get("base") or "https://archive.org").rstrip("/")
     if base != "https://archive.org":
@@ -116,7 +120,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
     wrapper = WRAPPER.replace("CONFIG_PLACEHOLDER", json.dumps(payload, ensure_ascii=False, separators=(",", ":")))
     return replace_managed_fix(
         text,
-        MANAGED_FIX_ID,
+        managed_fix_id,
         wrapper,
         data={
             "runtime": payload,
@@ -132,4 +136,4 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
 
 
 if __name__ == "__main__":
-    raise SystemExit("patch module only")
+    raise SystemExit("shared patch implementation only")

@@ -8,8 +8,8 @@ import tempfile
 from pathlib import Path
 
 ROOT=Path(__file__).resolve().parents[1]
-path=ROOT/"scripts/provider_patches/open_archive_public_domain_runtime_v1.py"
-spec=importlib.util.spec_from_file_location("open_archive_public_domain_runtime_v1",path)
+path=ROOT/"scripts/provider_patches/internet_archive_public_domain_runtime_v1.py"
+spec=importlib.util.spec_from_file_location("internet_archive_public_domain_runtime_v1",path)
 assert spec and spec.loader
 mod=importlib.util.module_from_spec(spec); spec.loader.exec_module(mod)
 
