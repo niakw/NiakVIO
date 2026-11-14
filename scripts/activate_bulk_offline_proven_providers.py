@@ -18,6 +18,8 @@ from typing import Any
 
 from activate_bulk_proven_providers import pending_artifact_digest, restore_pending_artifacts
 from reconcile_provider_static_authority import persist_static_from_bundle, refresh_static_counts
+from provider_base_store import provider_model_has_executable_plan
+from provider_patch_blocks import decode_managed_data
 
 ROOT = Path(__file__).resolve().parents[1]
 MANIFEST = ROOT / "manifest.json"
@@ -211,6 +213,22 @@ def main() -> int:
             blocked.append({"provider": pid, "reason": "provider_v3_contract_missing", "missing": missing_contract})
             continue
 
+        try:
+            model = decode_managed_data(
+                pending_path.read_text(encoding="utf-8", errors="strict"),
+                f"PROVIDER.{pid.upper()}.CONFIG.V1",
+            )
+        except ValueError as exc:
+            blocked.append({"provider": pid, "reason": "provider_v3_config_invalid", "detail": str(exc)})
+            continue
+        if not provider_model_has_executable_plan(model):
+            blocked.append({
+                "provider": pid,
+                "reason": "provider_v3_executable_plan_missing",
+                "strategy": str((model or {}).get("strategy") or ""),
+            })
+            continue
+
         direct = str(request_row.get("direct") or request_row.get("direct_url") or "").strip()
         if not re.match(r"^https?://[^/\s]+", direct):
             blocked.append({"provider": pid, "reason": "direct_public_origin_missing"})
@@ -270,6 +288,7 @@ def main() -> int:
             "minimizerFixedPoint": True,
             "nodeSyntax": "passed",
             "providerV3Contract": "passed",
+            "providerExecutablePlan": "passed",
             "directOriginSyntax": "passed",
             "networkValidation": "not_authoritative_in_github_waf_limited",
             "livePlaybackValidated": False,
