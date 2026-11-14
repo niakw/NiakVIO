@@ -1,3 +1,9 @@
+## 2026-11-14 — Bulk branding generalized to Global + France-only with offline fallback
+
+- Onboarding retry 43579669402 staged all 17 candidates successfully into provider-disabled/, then catalog bootstrap failed closed because committed branding coverage did not know the new identities. This is the expected catalogue safety invariant; no batch was published.
+- provider_branding_assets now treats current branding authority as Global rows plus exact VF-only rows. Add --offline-fallback to generate deterministic local WebP placeholders and committed name/emoji entries without network discovery. The normal one-provider branding path keeps its existing network/logo discovery behavior.
+- Bulk onboarding installs the same pinned Pillow 12.3.0 already used by the standard Add Provider workflow, generates offline placeholder assets for each request row, validates logo + branding contracts, and packages assets/providers atomically with the disabled provider transaction. Branding tests now require coverage of the Global + France-only visible union while permitting retained historical asset rows. Exact-SHA retry required.
+
 ## 2026-11-14 — Bulk pending providers made physically non-executable
 
 - Retry onboarding run 43579306546 again staged all 17 candidates, then current_provider_scope correctly rejected sflix: enabled=false while its generated artifact remained under providers/. This exposed an older contradiction in bulk onboarding: logical pending/disabled state did not match filesystem activation authority.

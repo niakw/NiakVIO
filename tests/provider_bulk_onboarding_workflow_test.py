@@ -34,11 +34,15 @@ for forbidden in (
     "resolve_provider_hubs.py",
     "resolve_provider_hub_search_fallback.py",
     "probe_provider_site_structure.py",
-    "provider_branding_assets.py",
     "nuvio_client_lab.cjs",
 ):
     assert forbidden not in bulk, forbidden
 assert "networkDiscoveryExecuted" in stage and "False" in stage
+assert "provider_branding_assets.py" in bulk
+assert "--offline-fallback" in bulk
+assert '"Pillow==12.3.0"' in bulk
+assert "provider_logo_asset_contract_test.py" in bulk
+assert "assets/providers" in bulk
 assert "nativeLabExecuted" in stage
 assert "activationAttempted" in stage
 assert "add_provider.stage(request,bulk=True)" in stage.replace(" ", "")

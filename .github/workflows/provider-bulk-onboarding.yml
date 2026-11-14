@@ -45,7 +45,12 @@ jobs:
           node-version: '24'
           package-manager-cache: false
 
-      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Install pinned runtime and image dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm ci --ignore-scripts --no-audit --no-fund
+          python -m pip install --disable-pip-version-check --no-input "Pillow==12.3.0"
 
       - name: Resolve bulk request
         shell: bash
@@ -80,6 +85,29 @@ jobs:
           if [ "$ALLOW_REPLACE" = "true" ]; then args+=(--allow-replace-existing); fi
           python scripts/stage_provider_batch.py "${args[@]}"
 
+      - name: Generate deterministic offline branding placeholders
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json, os, subprocess, sys
+          from pathlib import Path
+          request=Path(os.environ["REQUEST"])
+          raw=json.loads(request.read_text(encoding="utf-8"))
+          rows=raw.get("providers") if isinstance(raw,dict) else raw
+          for row in rows or []:
+              if not isinstance(row,dict):
+                  continue
+              pid=str(row.get("id") or "").strip()
+              name=str(row.get("name") or pid).strip()
+              if not pid:
+                  continue
+              subprocess.run([
+                  sys.executable,"scripts/provider_branding_assets.py",
+                  "--mode","only","--provider",pid,"--name",name,"--offline-fallback",
+              ],check=True)
+          PY
+
       - name: Rebuild one publication after the whole batch
         shell: bash
         run: |
@@ -100,6 +128,8 @@ jobs:
           python -m py_compile scripts/add_provider.py scripts/stage_provider_batch.py scripts/audit_provider_quick_yield.py scripts/merge_provider_census_shards.py
           python tests/provider_bulk_onboarding_test.py
           python tests/provider_bulk_onboarding_workflow_test.py
+          python tests/provider_logo_asset_contract_test.py
+          python tests/provider_branding_contract_test.py
           python tests/provider_clean_reconstruction_contract_test.py
           python tests/provider_js_lego_ownership_test.py
           python tests/provider_census_new_provider_scope_test.py
@@ -122,7 +152,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          git add             manifest.json vf/manifest.json no-anime/manifest.json vf-no-anime/manifest.json             provider_catalog.json PROVENANCE.json provider-overrides.json provider-hubs.json provider-type-policy.json             provider-bases providers provider-disabled automation/provider-bulk-onboarding-stage.json
+          git add             manifest.json vf/manifest.json no-anime/manifest.json vf-no-anime/manifest.json             provider_catalog.json PROVENANCE.json provider-overrides.json provider-hubs.json provider-type-policy.json             provider-bases providers provider-disabled assets/providers automation/provider-bulk-onboarding-stage.json
           mkdir -p .provider-onboarding
           git rev-parse HEAD > .provider-onboarding/bulk-base-sha.txt
           git diff --cached --binary --full-index > .provider-onboarding/bulk-provider-transaction.patch

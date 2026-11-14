@@ -20,6 +20,7 @@ from PIL import Image, ImageDraw, ImageFont, ImageOps
 
 ROOT = Path(__file__).resolve().parents[1]
 MANIFEST = ROOT / "manifest.json"
+VF_MANIFEST = ROOT / "vf/manifest.json"
 HUBS = ROOT / "provider-hubs.json"
 INDEX = ROOT / "assets/providers/index.json"
 EMOJIS = ROOT / "assets/providers/emojis.json"
@@ -258,6 +259,7 @@ def process_provider(
     explicit_site: str = "",
     explicit_logo: str = "",
     explicit_emoji: str = "",
+    offline_fallback: bool = False,
 ) -> dict[str, Any]:
     rows = [row for row in manifest.get("scrapers") or [] if isinstance(row, dict)]
     row = next((item for item in rows if canonical_id(item.get("id")) == provider_id), None)
@@ -276,13 +278,17 @@ def process_provider(
     )
 
     candidates: list[tuple[str, str]] = []
-    if explicit_logo:
-        candidates.append(("explicit_logo", explicit_logo))
-    existing_source = str(existing_index.get("sourceUrl") or "").strip()
-    if existing_source:
-        candidates.append(("previous_sourceUrl", existing_source))
-    page_candidates, failures = page_icon_candidates(site)
-    candidates.extend(("page_icon", url) for url in page_candidates)
+    failures: list[str] = []
+    if not offline_fallback:
+        if explicit_logo:
+            candidates.append(("explicit_logo", explicit_logo))
+        existing_source = str(existing_index.get("sourceUrl") or "").strip()
+        if existing_source:
+            candidates.append(("previous_sourceUrl", existing_source))
+        page_candidates, failures = page_icon_candidates(site)
+        candidates.extend(("page_icon", url) for url in page_candidates)
+    else:
+        failures.append("offline_fallback_requested")
 
     deduped: list[tuple[str, str]] = []
     seen: set[str] = set()
@@ -390,9 +396,11 @@ def main() -> int:
     parser.add_argument("--site", default="")
     parser.add_argument("--logo-url", default="")
     parser.add_argument("--emoji", default="")
+    parser.add_argument("--offline-fallback", action="store_true")
     args = parser.parse_args()
 
     manifest = load_json(MANIFEST, {})
+    vf_manifest = load_json(VF_MANIFEST, {"scrapers": []})
     hubs = load_json(HUBS, {})
     index = load_json(INDEX, {})
     emojis = load_json(EMOJIS, {})
@@ -408,7 +416,15 @@ def main() -> int:
     emojis.setdefault("generationMode", "one-shot-preserve-semantic-else-initial")
     emojis.setdefault("providers", {})
 
-    rows = [row for row in manifest.get("scrapers") or [] if isinstance(row, dict) and str(row.get("id") or "").strip()]
+    general_rows = [row for row in manifest.get("scrapers") or [] if isinstance(row, dict) and str(row.get("id") or "").strip()]
+    general_ids = {canonical_id(row["id"]) for row in general_rows}
+    vf_only_rows = [
+        row for row in vf_manifest.get("scrapers") or []
+        if isinstance(row, dict) and str(row.get("id") or "").strip()
+        and canonical_id(row["id"]) not in general_ids
+    ]
+    rows = [*general_rows, *vf_only_rows]
+    visible_manifest = {"scrapers": rows}
     manifest_ids = [canonical_id(row["id"]) for row in rows]
     if args.mode == "only":
         provider_id = canonical_id(args.provider)
@@ -421,7 +437,7 @@ def main() -> int:
         results.append(
             process_provider(
                 provider_id,
-                manifest,
+                visible_manifest,
                 hubs,
                 index,
                 emojis,
@@ -429,6 +445,7 @@ def main() -> int:
                 explicit_site=args.site if len(targets) == 1 else "",
                 explicit_logo=args.logo_url if len(targets) == 1 else "",
                 explicit_emoji=args.emoji if len(targets) == 1 else "",
+                offline_fallback=args.offline_fallback,
             )
         )
 
@@ -442,6 +459,7 @@ def main() -> int:
     index["nativeStreamLogoTarget"] = "96x96"
 
     write_json(MANIFEST, manifest)
+    write_json(VF_MANIFEST, vf_manifest)
     write_json(INDEX, index)
     write_json(EMOJIS, emojis)
 

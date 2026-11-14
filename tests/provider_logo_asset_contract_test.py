@@ -18,16 +18,17 @@ TARGETS = {
 }
 
 manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
+vf_manifest = json.loads((ROOT/"vf/manifest.json").read_text(encoding="utf-8"))
 index = json.loads(INDEX.read_text(encoding="utf-8"))
 emojis = json.loads(EMOJIS.read_text(encoding="utf-8"))
-rows = [row for row in manifest.get("scrapers") or [] if isinstance(row, dict)]
+general_rows = [row for row in manifest.get("scrapers") or [] if isinstance(row, dict)]
+general_ids = {str(row.get("id") or "").strip().casefold() for row in general_rows}
+vf_only_rows = [row for row in vf_manifest.get("scrapers") or [] if isinstance(row,dict) and str(row.get("id") or "").strip().casefold() not in general_ids]
+rows = [*general_rows,*vf_only_rows]
 manifest_ids = {str(row.get("id") or "").strip().casefold() for row in rows}
 providers = index.get("providers")
 assert isinstance(providers, dict)
-assert set(providers) == manifest_ids, {
-    "missing": sorted(manifest_ids - set(providers)),
-    "unknown": sorted(set(providers) - manifest_ids),
-}
+assert manifest_ids <= set(providers), {"missing": sorted(manifest_ids - set(providers))}
 assert index.get("futurePolicy") == "committed-assets-only-no-network-regeneration"
 assert index.get("format") == "webp-lossless"
 assert set(index.get("targets") or []) == set(TARGETS)

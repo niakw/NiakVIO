@@ -14,15 +14,22 @@ BRANDING_FILE = ROOT / "assets/providers/emojis.json"
 PATCH_FILE = ROOT / "scripts/provider_patches/global_provider_branding_v1.py"
 
 manifest = json.loads((ROOT / "manifest.json").read_text(encoding="utf-8"))
+vf_manifest = json.loads((ROOT / "vf/manifest.json").read_text(encoding="utf-8"))
 branding = json.loads(BRANDING_FILE.read_text(encoding="utf-8"))
 assert branding.get("policy") == "committed-provider-default-emoji"
 rows = branding.get("providers")
 assert isinstance(rows, dict)
-manifest_ids = {
+general_ids = {
     str(row.get("id") or "").strip().casefold()
     for row in manifest.get("scrapers") or []
     if isinstance(row, dict) and str(row.get("id") or "").strip()
 }
+manifest_ids = set(general_ids)
+manifest_ids.update(
+    str(row.get("id") or "").strip().casefold()
+    for row in vf_manifest.get("scrapers") or []
+    if isinstance(row,dict) and str(row.get("id") or "").strip().casefold() not in general_ids
+)
 assert manifest_ids <= set(rows), sorted(manifest_ids - set(rows))
 assert len(manifest_ids) > 0
 for provider_id, row in rows.items():
