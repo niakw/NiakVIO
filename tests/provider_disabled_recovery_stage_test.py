@@ -25,6 +25,11 @@ assert 'next_action="bounded_learning_repair"' in workflow
 assert 'next_action="transport_inconclusive_replay"' in workflow
 assert "steps.brain_guidance.outputs.has_guidance == 'true'" in workflow
 assert "publicationAuthority" in workflow and "directMutationAuthority" in workflow
+assert "id-token: write" in workflow
+assert 'r.get("canonical_id")' in workflow
+assert "--ephemeral-overrides-output staging-disabled-recovery-reconstruction/provider-overrides.ephemeral.json" in workflow
+assert "--overrides staging-disabled-recovery-reconstruction/provider-overrides.ephemeral.json" in workflow
+assert "--config staging-disabled-recovery-reconstruction/provider-overrides.ephemeral.json" in workflow
 queue=json.loads((ROOT/"automation/provider-disabled-recovery-queue.json").read_text(encoding="utf-8"))
 assert queue.get("proofAuthority") is False
 assert queue.get("executionAuthority") is False
