@@ -126,6 +126,35 @@ try:
 
         caps = after.get("provider_capabilities") or {}
         assert "alpha" in caps, "target provider capability not refreshed"
+
+        # Disabled-recovery/diagnostic staging may need the generated profile
+        # transiently to repatch its candidate, but production authority must
+        # be restored byte-for-byte afterwards.
+        before_ephemeral = OVERRIDES.read_bytes()
+        completed = subprocess.run(
+            [
+                sys.executable,
+                str(SCRIPTS / "build_provider_runtime_profiles.py"),
+                "--stage",
+                str(stage),
+                "--apply-stage",
+                "--provider",
+                "alpha",
+                "--ephemeral-overrides",
+            ],
+            cwd=ROOT,
+            capture_output=True,
+            text=True,
+            check=False,
+            timeout=40,
+        )
+        assert completed.returncode == 0, (
+            f"ephemeral targeted profile refresh failed: stdout={completed.stdout[-3000:]} "
+            f"stderr={completed.stderr[-5000:]}"
+        )
+        assert OVERRIDES.read_bytes() == before_ephemeral, "ephemeral profile refresh mutated production overrides"
+        updated_registry = json.loads(registry_path.read_text(encoding="utf-8"))
+        assert any(row["canonical_id"] == "alpha" for row in updated_registry["candidates"])
 finally:
     OVERRIDES.write_bytes(original_overrides)
 
