@@ -60,6 +60,7 @@ jobs:
       shard_count: ${{ steps.pin.outputs.shard_count }}
       shards_json: ${{ steps.pin.outputs.shards_json }}
       target_providers: ${{ steps.pin.outputs.target_providers }}
+      allow_pending_targets: ${{ steps.pin.outputs.allow_pending_targets }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
@@ -90,6 +91,8 @@ jobs:
           explicit_trigger=false
           census_scope="unresolved"
           target_providers=""
+          allow_pending_targets=false
+          source_workflow="${{ github.event.workflow_run.name }}"
           if [[ " $changed_paths " == *" .github/triggers/provider-census-sharded.json "* ]]; then
             explicit_trigger=true
             trigger_scope="$(python - <<'PY'
@@ -121,11 +124,46 @@ jobs:
           print(",".join(rows))
           PY
             )"
+            allow_pending_targets="$(python - <<\'PY\'
+          import json
+          from pathlib import Path
+          p=Path(".github/triggers/provider-census-sharded.json")
+          try:
+              d=json.loads(p.read_text(encoding="utf-8"))
+          except Exception:
+              d={}
+          print("true" if d.get("allowPendingTargets") is True else "false")
+          PY
+            )"
+          elif [ "$GITHUB_EVENT_NAME" = "workflow_run" ] && [ "$source_workflow" = "PROVIDER - Bulk Onboarding" ]; then
+            target_providers="$(python - <<\'PY\'
+          import json
+          from pathlib import Path
+          p=Path("automation/provider-bulk-onboarding-stage.json")
+          d=json.loads(p.read_text(encoding="utf-8")) if p.is_file() else {}
+          rows=[]
+          for row in d.get("providers") or []:
+              if not isinstance(row,dict):
+                  continue
+              pid=str(row.get("id") or "").strip().casefold().replace("_","-")
+              if pid and pid not in rows:
+                  rows.append(pid)
+          print(",".join(rows))
+          PY
+            )"
+            test -n "$target_providers"
+            allow_pending_targets=true
+            census_scope="unresolved"
           elif [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ]; then
             census_scope="${{ inputs.scope }}"
           fi
           echo "census_scope=$census_scope" >> "$GITHUB_OUTPUT"
           echo "target_providers=$target_providers" >> "$GITHUB_OUTPUT"
+          if [ "$allow_pending_targets" = "true" ] && [ -z "$target_providers" ]; then
+            echo "allowPendingTargets requires explicit targetProviders" >&2
+            exit 3
+          fi
+          echo "allow_pending_targets=$allow_pending_targets" >> "$GITHUB_OUTPUT"
           if [ -n "$target_providers" ]; then
             target_count="$(python -c 'import sys; print(len([x for x in sys.argv[1].split(",") if x]))' "$target_providers")"
             if [ "$target_count" -le 4 ]; then shard_count=1; else shard_count=2; fi
@@ -166,6 +204,7 @@ jobs:
       CENSUS_SCOPE: ${{ needs.prepare.outputs.census_scope }}
       HEAD_MESSAGE: ${{ github.event.head_commit.message || '' }}
       TARGET_PROVIDERS: ${{ needs.prepare.outputs.target_providers }}
+      ALLOW_PENDING_TARGETS: ${{ needs.prepare.outputs.allow_pending_targets }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
@@ -187,20 +226,42 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          python scripts/materialize_provider_base_v3_store.py
-          if [ -n "$TARGET_PROVIDERS" ]; then
-            IFS=',' read -r -a target_rows <<< "$TARGET_PROVIDERS"
-            for provider in "${target_rows[@]}"; do
-              provider="$(printf '%s' "$provider" | xargs)"
-              [ -z "$provider" ] && continue
-              python scripts/reconcile_provider_domain_metadata.py --rebuild --provider "$provider"
-              python scripts/materialize_provider_v3_one.py "$provider"
-            done
-            echo "FIELD_SHARDED_TARGET_MATERIALIZATION providers=$TARGET_PROVIDERS mode=targeted"
+          if [ "$ALLOW_PENDING_TARGETS" = "true" ]; then
+            python - <<\'PY\'
+          import json, os, sys
+          from pathlib import Path
+          sys.path.insert(0, str(Path("scripts").resolve()))
+          from current_provider_scope import pending_provider_ids
+          targets={x.strip().casefold().replace("_","-") for x in os.environ["TARGET_PROVIDERS"].split(",") if x.strip()}
+          pending=pending_provider_ids()
+          if not targets or not targets <= pending:
+              raise SystemExit(f"pending census target mismatch targets={sorted(targets)} pending={sorted(pending)}")
+          manifest=json.loads(Path("manifest.json").read_text(encoding="utf-8"))
+          rows={str(r.get("id") or "").strip().casefold().replace("_","-"):r for r in manifest.get("scrapers") or [] if isinstance(r,dict)}
+          for pid in sorted(targets):
+              row=rows.get(pid) or {}
+              filename=str(row.get("filename") or "")
+              if row.get("enabled") is not False or not filename.startswith("provider-disabled/") or not Path(filename).is_file():
+                  raise SystemExit(f"{pid}: pending staged bytes are not immutable provider-disabled authority")
+          print("FIELD_SHARDED_PENDING_BYTES_VERIFIED providers="+",".join(sorted(targets)))
+          PY
+            echo "FIELD_SHARDED_TARGET_MATERIALIZATION providers=$TARGET_PROVIDERS mode=pending-exact-staged-bytes"
           else
-            python scripts/reconcile_provider_domain_metadata.py --rebuild
-            python scripts/materialize_provider_v3_all.py
-            echo "FIELD_SHARDED_TARGET_MATERIALIZATION providers=all mode=global"
+            python scripts/materialize_provider_base_v3_store.py
+            if [ -n "$TARGET_PROVIDERS" ]; then
+              IFS=\',\' read -r -a target_rows <<< "$TARGET_PROVIDERS"
+              for provider in "${target_rows[@]}"; do
+                provider="$(printf \'%s\' "$provider" | xargs)"
+                [ -z "$provider" ] && continue
+                python scripts/reconcile_provider_domain_metadata.py --rebuild --provider "$provider"
+                python scripts/materialize_provider_v3_one.py "$provider"
+              done
+              echo "FIELD_SHARDED_TARGET_MATERIALIZATION providers=$TARGET_PROVIDERS mode=targeted"
+            else
+              python scripts/reconcile_provider_domain_metadata.py --rebuild
+              python scripts/materialize_provider_v3_all.py
+              echo "FIELD_SHARDED_TARGET_MATERIALIZATION providers=all mode=global"
+            fi
           fi
           python scripts/generate_language_manifests.py --manifest manifest.json --report health-report.json
           python scripts/validate_published_provider_config.py
@@ -220,6 +281,9 @@ jobs:
           )
           if [ -n "$TARGET_PROVIDERS" ]; then
             args+=(--provider "$TARGET_PROVIDERS")
+            if [ "$ALLOW_PENDING_TARGETS" = "true" ]; then
+              args+=(--allow-pending-targets)
+            fi
           elif [ "$GITHUB_EVENT_NAME" = "push" ] && [[ "$HEAD_MESSAGE" == provider:\ bulk\ activate\ * ]]; then
             providers="$(python - <<'PY'
           import json

@@ -1,3 +1,9 @@
+## 2026-11-14 — Pending onboarding sharded handoff wired and targeted replay requested
+
+- Wire Provider Census - Sharded to an explicit pending-proof mode. Bulk-Onboarding workflow_run derives only the committed stage ledger identities; repository trigger may opt in only with allowPendingTargets=true plus explicit targets. Empty/mass pending scope fails closed.
+- In pending mode the shard verifies each target is still a pending identity, enabled=false, under provider-disabled/, and that its exact file exists. It deliberately skips reconciliation/materialization so the bytes being tested are exactly the staged bytes. audit_provider_quick_yield receives --allow-pending-targets only alongside explicit --provider targets.
+- Replaced the sharded trigger with a one-provider Internet Archive targeted replay. No active cohort provider is included and no activation is authorized by the trigger itself. Fresh terminal FULL evidence is still required for bulk activation.
+
 ## 2026-11-14 — Pending onboarding proof semantics separated from lifecycle disable
 
 - Sharded census 43596683352 persisted 13/46 from 703ae697 but omitted Internet Archive entirely. Generic root cause: pending_provider_ids() was blocked by explicit census selection and build_tasks, while authority classified all enabled=false rows as lifecycle KEEP_DISABLED. A staged candidate therefore could not earn the fresh FULL proof required by activation.

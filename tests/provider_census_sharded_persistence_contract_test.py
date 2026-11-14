@@ -20,6 +20,9 @@ required = [
     "shard_count: ${{ steps.pin.outputs.shard_count }}",
     "shards_json: ${{ steps.pin.outputs.shards_json }}",
     "target_providers: ${{ steps.pin.outputs.target_providers }}",
+    "allow_pending_targets: ${{ steps.pin.outputs.allow_pending_targets }}",
+    "FIELD_SHARDED_PENDING_BYTES_VERIFIED",
+    "--allow-pending-targets",
     "fromJSON(needs.prepare.outputs.shards_json)",
     '--shard-count "${{ needs.prepare.outputs.shard_count }}"',
     "TARGET_PROVIDERS: ${{ needs.prepare.outputs.target_providers }}",
@@ -127,6 +130,13 @@ for marker in (
     'shard_count=4',
     'if [ -n "$TARGET_PROVIDERS" ]; then',
     'args+=(--provider "$TARGET_PROVIDERS")',
+    'ALLOW_PENDING_TARGETS: ${{ needs.prepare.outputs.allow_pending_targets }}',
     'expected="${{ needs.prepare.outputs.shard_count }}"',
 ):
     assert marker in workflow, f"missing bounded sharded census latency contract: {marker}"
+
+# Pending onboarding proof is explicitly targeted and never rematerializes/promotes staged bytes.
+assert 'mode=pending-exact-staged-bytes' in workflow
+assert 'allowPendingTargets requires explicit targetProviders' in workflow
+assert 'source_workflow\" = \"PROVIDER - Bulk Onboarding' in workflow
+print("pending onboarding sharded proof handoff contract passed")
