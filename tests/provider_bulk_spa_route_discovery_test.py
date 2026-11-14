@@ -17,7 +17,7 @@ dollar = "$"
 
 assert module._template_js_route(
     "/api/source?tmdb_id=" + dollar + "{id}&type=movie", movie
-) == "/api/source?tmdb_id={tmdbId}&type=movie"
+) == "/api/source?tmdb_id={tmdbId}&type={media}"
 
 assert module._template_js_route(
     "/embed/tv/" + dollar + "{id}/" + dollar + "{season}/" + dollar + "{episode}", tv
