@@ -31,6 +31,8 @@ assert "\n  push:" in event_block
 assert "branches: [main]" in event_block
 assert "paths:" in event_block
 assert ".github/provider-onboarding/batch.json" in event_block
+assert "group: niakvio-provider-bulk-onboarding-main" in bulk
+assert "cancel-in-progress: true" in bulk
 
 # High-volume stage is deliberately local/offline and proof-neutral.
 for forbidden in (
