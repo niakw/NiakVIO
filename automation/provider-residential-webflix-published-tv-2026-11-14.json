@@ -1,0 +1,84 @@
+{
+  "schema_version": 1,
+  "provider": "webflix",
+  "provider_path": "providers/webflix-e067b294eea3f5b3.js",
+  "catalog_enabled": true,
+  "fixture": {
+    "tmdbId": "1396",
+    "mediaType": "tv",
+    "title": "Breaking Bad",
+    "season": 1,
+    "episode": 1
+  },
+  "worker_exit_code": 0,
+  "ok": true,
+  "stream_count": 1,
+  "raw_stream_count": 1,
+  "provider_server_accessible": true,
+  "provider_server_successful_response": true,
+  "provider_server_hosts": [
+    "cdn80.zen-blk.store",
+    "webflix.art"
+  ],
+  "provider_server_http_statuses": [
+    200,
+    206
+  ],
+  "error_code": null,
+  "streams": [
+    {
+      "host": "cdn80.zen-blk.store",
+      "quality": null,
+      "language": "fr",
+      "size": "📺 S01E01\n🌐 French · Dub\n🎞️ MP4",
+      "subtitle_count": 0,
+      "audio_track_count": 0,
+      "has_headers": true
+    }
+  ],
+  "invocation_diagnostics": [
+    {
+      "profile": "empty",
+      "stream_count": 1,
+      "attempts": [
+        {
+          "name": "positional_with_settings",
+          "inferred_mode": "positional",
+          "result": "streams",
+          "stream_count": 1,
+          "provider_observations": 3,
+          "error_code": null
+        }
+      ]
+    }
+  ],
+  "network_observations": [
+    {
+      "stage": "episode",
+      "host": "webflix.art",
+      "method": "GET",
+      "path_pattern": "/api/series-season-discovery?tmdb_id={value}",
+      "status": 200,
+      "ok": true,
+      "error_code": null
+    },
+    {
+      "stage": "media",
+      "host": "cdn80.zen-blk.store",
+      "method": "GET",
+      "path_pattern": "/series/VF/Breaking-Bad/S01/Breaking-Bad-S01-E01.mp4",
+      "status": 206,
+      "ok": true,
+      "error_code": null
+    },
+    {
+      "stage": "content_lookup",
+      "host": "cdn80.zen-blk.store",
+      "method": "GET",
+      "path_pattern": "/series/VF/Breaking-Bad/S01/Breaking-Bad-S01-E01.mp4?ff={value}",
+      "status": 206,
+      "ok": true,
+      "error_code": null
+    }
+  ]
+}
