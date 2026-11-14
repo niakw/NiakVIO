@@ -3440,6 +3440,691 @@
       "legacy_search_refresh": false,
       "search_role": "supplementary",
       "registry_state": "unresolved"
+    },
+    "sflix": {
+      "id": "sflix",
+      "name": "SFlix",
+      "manifest_status": "Bulk Onboarding",
+      "category": "International",
+      "hub": null,
+      "direct": "https://sflix.today/",
+      "telegram": null,
+      "api": null,
+      "source": "provider_onboarding_workflow",
+      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "aliases": [
+        "SFlix",
+        "SflixProvider"
+      ],
+      "direct_candidates": [
+        "https://sflix.today/"
+      ],
+      "allowed_terminal_hosts": [
+        "sflix.today"
+      ],
+      "search_queries": [
+        "\"SFlix\" official domain",
+        "https://sflix.today/"
+      ],
+      "sources": [
+        {
+          "type": "search",
+          "query": "\"SFlix\" official domain",
+          "priority": 35,
+          "purpose": "Fallback route discovery"
+        },
+        {
+          "type": "search",
+          "query": "https://sflix.today/",
+          "priority": 35,
+          "purpose": "Fallback route discovery"
+        }
+      ],
+      "search_confirmation_runs": 2
+    },
+    "rivestream": {
+      "id": "rivestream",
+      "name": "Rive",
+      "manifest_status": "Bulk Onboarding",
+      "category": "International",
+      "hub": null,
+      "direct": "https://www.rivestream.app",
+      "telegram": null,
+      "api": null,
+      "source": "provider_onboarding_workflow",
+      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "aliases": [
+        "Rive",
+        "RiveStream"
+      ],
+      "direct_candidates": [
+        "https://www.rivestream.app"
+      ],
+      "allowed_terminal_hosts": [
+        "www.rivestream.app"
+      ],
+      "search_queries": [
+        "\"Rive\" official domain",
+        "https://www.rivestream.app"
+      ],
+      "sources": [
+        {
+          "type": "search",
+          "query": "\"Rive\" official domain",
+          "priority": 35,
+          "purpose": "Fallback route discovery"
+        },
+        {
+          "type": "search",
+          "query": "https://www.rivestream.app",
+          "priority": 35,
+          "purpose": "Fallback route discovery"
+        }
+      ],
+      "search_confirmation_runs": 2
+    },
+    "vidsrc2": {
+      "id": "vidsrc2",
+      "name": "VidSrcProvider",
+      "manifest_status": "Bulk Onboarding",
+      "category": "International",
+      "hub": null,
+      "direct": "https://vidsrc2.ru/",
+      "telegram": null,
+      "api": null,
+      "source": "provider_onboarding_workflow",
+      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "aliases": [
+        "VidSrcProvider",
+        "VidSrc"
+      ],
+      "direct_candidates": [
+        "https://vidsrc2.ru/"
+      ],
+      "allowed_terminal_hosts": [
+        "vidsrc2.ru"
+      ],
+      "search_queries": [
+        "\"VidSrcProvider\" official domain",
+        "https://vidsrc2.ru/"
+      ],
+      "sources": [
+        {
+          "type": "search",
+          "query": "\"VidSrcProvider\" official domain",
+          "priority": 35,
+          "purpose": "Fallback route discovery"
+        },
+        {
+          "type": "search",
+          "query": "https://vidsrc2.ru/",
+          "priority": 35,
+          "purpose": "Fallback route discovery"
+        }
+      ],
+      "search_confirmation_runs": 2
+    },
+    "asiaflix": {
+      "id": "asiaflix",
+      "name": "AsiaFlixProvider",
+      "manifest_status": "Bulk Onboarding",
+      "category": "International",
+      "hub": null,
+      "direct": "https://asiaflix.net",
+      "telegram": null,
+      "api": null,
+      "source": "provider_onboarding_workflow",
+      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "aliases": [
+        "AsiaFlixProvider"
+      ],
+      "direct_candidates": [
+        "https://asiaflix.net"
+      ],
+      "allowed_terminal_hosts": [
+        "asiaflix.net"
+      ],
+      "search_queries": [
+        "\"AsiaFlixProvider\" official domain",
+        "https://asiaflix.net"
+      ],
+      "sources": [
+        {
+          "type": "search",
+          "query": "\"AsiaFlixProvider\" official domain",
+          "priority": 35,
+          "purpose": "Fallback route discovery"
+        },
+        {
+          "type": "search",
+          "query": "https://asiaflix.net",
+          "priority": 35,
+          "purpose": "Fallback route discovery"
+        }
+      ],
+      "search_confirmation_runs": 2
+    },
+    "cinestream": {
+      "id": "cinestream",
+      "name": "Cinestream",
+      "manifest_status": "Bulk Onboarding",
+      "category": "VF",
+      "hub": null,
+      "direct": "https://cinestream.info",
+      "telegram": null,
+      "api": null,
+      "source": "provider_onboarding_workflow",
+      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "aliases": [
+        "Cinestream"
+      ],
+      "direct_candidates": [
+        "https://cinestream.info"
+      ],
+      "allowed_terminal_hosts": [
+        "cinestream.info"
+      ],
+      "search_queries": [
+        "\"Cinestream\" official domain",
+        "https://cinestream.info"
+      ],
+      "sources": [
+        {
+          "type": "search",
+          "query": "\"Cinestream\" official domain",
+          "priority": 35,
+          "purpose": "Fallback route discovery"
+        },
+        {
+          "type": "search",
+          "query": "https://cinestream.info",
+          "priority": 35,
+          "purpose": "Fallback route discovery"
+        }
+      ],
+      "search_confirmation_runs": 2
+    },
+    "movix-fr": {
+      "id": "movix-fr",
+      "name": "movix",
+      "manifest_status": "Bulk Onboarding",
+      "category": "VF",
+      "hub": null,
+      "direct": "https://movix.zip/",
+      "telegram": null,
+      "api": null,
+      "source": "provider_onboarding_workflow",
+      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "aliases": [
+        "movix"
+      ],
+      "direct_candidates": [
+        "https://movix.zip/"
+      ],
+      "allowed_terminal_hosts": [
+        "movix.zip"
+      ],
+      "search_queries": [
+        "\"movix\" official domain",
+        "https://movix.zip/"
+      ],
+      "sources": [
+        {
+          "type": "search",
+          "query": "\"movix\" official domain",
+          "priority": 35,
+          "purpose": "Fallback route discovery"
+        },
+        {
+          "type": "search",
+          "query": "https://movix.zip/",
+          "priority": 35,
+          "purpose": "Fallback route discovery"
+        }
+      ],
+      "search_confirmation_runs": 2
+    },
+    "yablom": {
+      "id": "yablom",
+      "name": "yablom",
+      "manifest_status": "Bulk Onboarding",
+      "category": "VF",
+      "hub": null,
+      "direct": "https://yablom.com",
+      "telegram": null,
+      "api": null,
+      "source": "provider_onboarding_workflow",
+      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "aliases": [
+        "yablom",
+        "yablom.com"
+      ],
+      "direct_candidates": [
+        "https://yablom.com"
+      ],
+      "allowed_terminal_hosts": [
+        "yablom.com"
+      ],
+      "search_queries": [
+        "\"yablom\" official domain",
+        "https://yablom.com"
+      ],
+      "sources": [
+        {
+          "type": "search",
+          "query": "\"yablom\" official domain",
+          "priority": 35,
+          "purpose": "Fallback route discovery"
+        },
+        {
+          "type": "search",
+          "query": "https://yablom.com",
+          "priority": 35,
+          "purpose": "Fallback route discovery"
+        }
+      ],
+      "search_confirmation_runs": 2
+    },
+    "myfluneo": {
+      "id": "myfluneo",
+      "name": "myfluneo",
+      "manifest_status": "Bulk Onboarding",
+      "category": "VF",
+      "hub": null,
+      "direct": "https://myfluneo.eu",
+      "telegram": null,
+      "api": null,
+      "source": "provider_onboarding_workflow",
+      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "aliases": [
+        "myfluneo",
+        "Fluneo"
+      ],
+      "direct_candidates": [
+        "https://myfluneo.eu"
+      ],
+      "allowed_terminal_hosts": [
+        "myfluneo.eu"
+      ],
+      "search_queries": [
+        "\"myfluneo\" official domain",
+        "https://myfluneo.eu"
+      ],
+      "sources": [
+        {
+          "type": "search",
+          "query": "\"myfluneo\" official domain",
+          "priority": 35,
+          "purpose": "Fallback route discovery"
+        },
+        {
+          "type": "search",
+          "query": "https://myfluneo.eu",
+          "priority": 35,
+          "purpose": "Fallback route discovery"
+        }
+      ],
+      "search_confirmation_runs": 2
+    },
+    "cpasmal": {
+      "id": "cpasmal",
+      "name": "CpasMal",
+      "manifest_status": "Bulk Onboarding",
+      "category": "VF",
+      "hub": null,
+      "direct": "https://www.cpasmal.rip/",
+      "telegram": null,
+      "api": null,
+      "source": "provider_onboarding_workflow",
+      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "aliases": [
+        "CpasMal"
+      ],
+      "direct_candidates": [
+        "https://www.cpasmal.rip/"
+      ],
+      "allowed_terminal_hosts": [
+        "www.cpasmal.rip"
+      ],
+      "search_queries": [
+        "\"CpasMal\" official domain",
+        "https://www.cpasmal.rip/"
+      ],
+      "sources": [
+        {
+          "type": "search",
+          "query": "\"CpasMal\" official domain",
+          "priority": 35,
+          "purpose": "Fallback route discovery"
+        },
+        {
+          "type": "search",
+          "query": "https://www.cpasmal.rip/",
+          "priority": 35,
+          "purpose": "Fallback route discovery"
+        }
+      ],
+      "search_confirmation_runs": 2
+    },
+    "frembed": {
+      "id": "frembed",
+      "name": "frembed",
+      "manifest_status": "Bulk Onboarding",
+      "category": "VF",
+      "hub": null,
+      "direct": "https://frembed.surf",
+      "telegram": null,
+      "api": null,
+      "source": "provider_onboarding_workflow",
+      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "aliases": [
+        "frembed"
+      ],
+      "direct_candidates": [
+        "https://frembed.surf"
+      ],
+      "allowed_terminal_hosts": [
+        "frembed.surf"
+      ],
+      "search_queries": [
+        "\"frembed\" official domain",
+        "https://frembed.surf"
+      ],
+      "sources": [
+        {
+          "type": "search",
+          "query": "\"frembed\" official domain",
+          "priority": 35,
+          "purpose": "Fallback route discovery"
+        },
+        {
+          "type": "search",
+          "query": "https://frembed.surf",
+          "priority": 35,
+          "purpose": "Fallback route discovery"
+        }
+      ],
+      "search_confirmation_runs": 2
+    },
+    "nakastream": {
+      "id": "nakastream",
+      "name": "NakaStream",
+      "manifest_status": "Bulk Onboarding",
+      "category": "VF",
+      "hub": null,
+      "direct": "https://nakastream.tv",
+      "telegram": null,
+      "api": null,
+      "source": "provider_onboarding_workflow",
+      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "aliases": [
+        "NakaStream"
+      ],
+      "direct_candidates": [
+        "https://nakastream.tv"
+      ],
+      "allowed_terminal_hosts": [
+        "nakastream.tv"
+      ],
+      "search_queries": [
+        "\"NakaStream\" official domain",
+        "https://nakastream.tv"
+      ],
+      "sources": [
+        {
+          "type": "search",
+          "query": "\"NakaStream\" official domain",
+          "priority": 35,
+          "purpose": "Fallback route discovery"
+        },
+        {
+          "type": "search",
+          "query": "https://nakastream.tv",
+          "priority": 35,
+          "purpose": "Fallback route discovery"
+        }
+      ],
+      "search_confirmation_runs": 2
+    },
+    "1jour1film0626": {
+      "id": "1jour1film0626",
+      "name": "1jour1film0626",
+      "manifest_status": "Bulk Onboarding",
+      "category": "VF",
+      "hub": null,
+      "direct": "https://1jour1film0626.site",
+      "telegram": null,
+      "api": null,
+      "source": "provider_onboarding_workflow",
+      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "aliases": [
+        "1jour1film0626"
+      ],
+      "direct_candidates": [
+        "https://1jour1film0626.site"
+      ],
+      "allowed_terminal_hosts": [
+        "1jour1film0626.site"
+      ],
+      "search_queries": [
+        "\"1jour1film0626\" official domain",
+        "https://1jour1film0626.site"
+      ],
+      "sources": [
+        {
+          "type": "search",
+          "query": "\"1jour1film0626\" official domain",
+          "priority": 35,
+          "purpose": "Fallback route discovery"
+        },
+        {
+          "type": "search",
+          "query": "https://1jour1film0626.site",
+          "priority": 35,
+          "purpose": "Fallback route discovery"
+        }
+      ],
+      "search_confirmation_runs": 2
+    },
+    "dotriv": {
+      "id": "dotriv",
+      "name": "Dotriv",
+      "manifest_status": "Bulk Onboarding",
+      "category": "VF",
+      "hub": null,
+      "direct": "https://dotriv.com",
+      "telegram": null,
+      "api": null,
+      "source": "provider_onboarding_workflow",
+      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "aliases": [
+        "Dotriv"
+      ],
+      "direct_candidates": [
+        "https://dotriv.com"
+      ],
+      "allowed_terminal_hosts": [
+        "dotriv.com"
+      ],
+      "search_queries": [
+        "\"Dotriv\" official domain",
+        "https://dotriv.com"
+      ],
+      "sources": [
+        {
+          "type": "search",
+          "query": "\"Dotriv\" official domain",
+          "priority": 35,
+          "purpose": "Fallback route discovery"
+        },
+        {
+          "type": "search",
+          "query": "https://dotriv.com",
+          "priority": 35,
+          "purpose": "Fallback route discovery"
+        }
+      ],
+      "search_confirmation_runs": 2
+    },
+    "ilmiv": {
+      "id": "ilmiv",
+      "name": "ILMIV",
+      "manifest_status": "Bulk Onboarding",
+      "category": "VF",
+      "hub": null,
+      "direct": "https://ilmiv.com",
+      "telegram": null,
+      "api": null,
+      "source": "provider_onboarding_workflow",
+      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "aliases": [
+        "ILMIV"
+      ],
+      "direct_candidates": [
+        "https://ilmiv.com"
+      ],
+      "allowed_terminal_hosts": [
+        "ilmiv.com"
+      ],
+      "search_queries": [
+        "\"ILMIV\" official domain",
+        "https://ilmiv.com"
+      ],
+      "sources": [
+        {
+          "type": "search",
+          "query": "\"ILMIV\" official domain",
+          "priority": 35,
+          "purpose": "Fallback route discovery"
+        },
+        {
+          "type": "search",
+          "query": "https://ilmiv.com",
+          "priority": 35,
+          "purpose": "Fallback route discovery"
+        }
+      ],
+      "search_confirmation_runs": 2
+    },
+    "kidraz": {
+      "id": "kidraz",
+      "name": "kidraz",
+      "manifest_status": "Bulk Onboarding",
+      "category": "VF",
+      "hub": null,
+      "direct": "https://www.kidraz.com",
+      "telegram": null,
+      "api": null,
+      "source": "provider_onboarding_workflow",
+      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "aliases": [
+        "kidraz"
+      ],
+      "direct_candidates": [
+        "https://www.kidraz.com"
+      ],
+      "allowed_terminal_hosts": [
+        "www.kidraz.com"
+      ],
+      "search_queries": [
+        "\"kidraz\" official domain",
+        "https://www.kidraz.com"
+      ],
+      "sources": [
+        {
+          "type": "search",
+          "query": "\"kidraz\" official domain",
+          "priority": 35,
+          "purpose": "Fallback route discovery"
+        },
+        {
+          "type": "search",
+          "query": "https://www.kidraz.com",
+          "priority": 35,
+          "purpose": "Fallback route discovery"
+        }
+      ],
+      "search_confirmation_runs": 2
+    },
+    "kordoz": {
+      "id": "kordoz",
+      "name": "Kordoz",
+      "manifest_status": "Bulk Onboarding",
+      "category": "VF",
+      "hub": null,
+      "direct": "https://www.kordoz.com",
+      "telegram": null,
+      "api": null,
+      "source": "provider_onboarding_workflow",
+      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "aliases": [
+        "Kordoz"
+      ],
+      "direct_candidates": [
+        "https://www.kordoz.com"
+      ],
+      "allowed_terminal_hosts": [
+        "www.kordoz.com"
+      ],
+      "search_queries": [
+        "\"Kordoz\" official domain",
+        "https://www.kordoz.com"
+      ],
+      "sources": [
+        {
+          "type": "search",
+          "query": "\"Kordoz\" official domain",
+          "priority": 35,
+          "purpose": "Fallback route discovery"
+        },
+        {
+          "type": "search",
+          "query": "https://www.kordoz.com",
+          "priority": 35,
+          "purpose": "Fallback route discovery"
+        }
+      ],
+      "search_confirmation_runs": 2
+    },
+    "neobam": {
+      "id": "neobam",
+      "name": "neobam",
+      "manifest_status": "Bulk Onboarding",
+      "category": "VF",
+      "hub": null,
+      "direct": "https://neobam.com",
+      "telegram": null,
+      "api": null,
+      "source": "provider_onboarding_workflow",
+      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "aliases": [
+        "neobam"
+      ],
+      "direct_candidates": [
+        "https://neobam.com"
+      ],
+      "allowed_terminal_hosts": [
+        "neobam.com"
+      ],
+      "search_queries": [
+        "\"neobam\" official domain",
+        "https://neobam.com"
+      ],
+      "sources": [
+        {
+          "type": "search",
+          "query": "\"neobam\" official domain",
+          "priority": 35,
+          "purpose": "Fallback route discovery"
+        },
+        {
+          "type": "search",
+          "query": "https://neobam.com",
+          "priority": 35,
+          "purpose": "Fallback route discovery"
+        }
+      ],
+      "search_confirmation_runs": 2
     }
   },
   "resolution_policy": {
