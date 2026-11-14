@@ -5,7 +5,7 @@ import sys
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str((ROOT / "scripts").resolve()))
 
-from provider_base_store import provider_model_has_executable_plan, provider_model_has_identity_execution_plan, provider_model_route_kind, provider_route_is_identity_aware
+from provider_base_store import provider_model_has_executable_plan, provider_model_has_identity_execution_plan, provider_model_route_kind, provider_route_has_fixed_content_identity, provider_route_is_identity_aware
 
 direct_only = {
     "providerId": "direct-only",
@@ -38,6 +38,14 @@ assert provider_model_has_identity_execution_plan({**direct_only, "routes": ["/e
 assert provider_model_has_identity_execution_plan({**direct_only, "routes": ["/series"]}) is False
 assert provider_model_has_identity_execution_plan({**direct_only, "routes": ["/search"]}) is False
 assert provider_model_has_identity_execution_plan({**direct_only, "routes": ["/movie/{tmdbId}"]}) is True
+assert provider_route_has_fixed_content_identity("/movie/157336-interstellar") is True
+assert provider_route_has_fixed_content_identity("/tv/1399-breaking-bad?s={query}") is True
+assert provider_route_has_fixed_content_identity("/embed/157336?parent_origin=x") is True
+assert provider_route_has_fixed_content_identity("/movie/{tmdbId}-{slug}") is False
+assert provider_route_has_fixed_content_identity("/watch/{binding:contentId}") is False
+assert provider_route_has_fixed_content_identity("/api/source/12345") is False
+assert provider_route_is_identity_aware("/movie/157336-{slug}") is False
+assert provider_route_is_identity_aware("/tv/1399-breaking-bad?q={query}") is False
 assert provider_route_is_identity_aware("/api/session-handoff/issue") is False
 assert provider_route_is_identity_aware("/search?q={query}") is True
 assert provider_route_is_identity_aware("/index.php?do=search&subaction=search&story={query}") is True
@@ -60,6 +68,11 @@ assert "provider_v3_executable_plan_missing" in activation
 assert "provider_v3_identity_execution_plan_missing" in activation
 assert '"providerExecutablePlan": "passed"' in activation
 assert '"providerIdentityExecutionPlan": "passed"' in activation
+
+materializer = (ROOT / "scripts" / "materialize_provider_v3_all.py").read_text(encoding="utf-8")
+assert "provider_route_has_fixed_content_identity" in materializer
+assert "not provider_route_has_fixed_content_identity(value)" in materializer
+assert "not provider_route_has_fixed_content_identity(item)" in materializer
 
 base = (ROOT / "scripts" / "provider_base_store.py").read_text(encoding="utf-8")
 runtime = base.split("function _runtimePlanAvailable() {", 1)[1].split("\n}", 1)[0]
