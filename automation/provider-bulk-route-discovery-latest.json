@@ -1,16 +1,16 @@
 {
   "schemaVersion": 1,
-  "requestVersion": 18,
+  "requestVersion": 20,
   "source": "NiakVIO-GLOBAL-FINAL-STRICT-TOP20-2026-09-11(5).xlsx",
   "transportProfiles": [
     "github-hosted"
   ],
   "candidateCount": 101,
-  "qualifiedCount": 15,
-  "deferredCount": 86,
+  "qualifiedCount": 40,
+  "deferredCount": 61,
   "qualifiedScopes": {
-    "global": 9,
-    "france": 6
+    "global": 17,
+    "france": 23
   },
   "currentActiveBeforeWave": {
     "global": 11,
@@ -24,30 +24,16 @@
       "probeAttempted": false,
       "probeReachedSite": true,
       "routePatterns": [
-        "/search",
-        "/search?rating=7.3..10",
-        "/search?with_runtime=95..300",
-        "/search?with_genres=27",
-        "/search?release_date=2026-08-14..2026-11-14",
-        "/search?release_date=2026-11-15..2027-02-14",
-        "/search?sort_by=vote_count.desc",
         "/movies/{tmdbId}-{slug}",
-        "/search?with_keywords=210024",
-        "/search?with_companies=174",
-        "/search?with_companies=521",
         "/tv?s={query}",
         "/search?q={query}",
-        "/tv/search?q={query}",
-        "/search?release_date=2026-11-15..2027-12-31",
-        "/tv/search?sort_by=vote_count.desc",
-        "/search?with_genres=16",
-        "/search?with_cast=6384",
-        "/search?watch_providers=8",
-        "/search?vote_count=10000"
+        "/tv/search?q={query}"
       ],
-      "routeCount": 20,
+      "routeCount": 4,
       "qualified": true,
-      "reason": "existing_identity_executable_route_plan"
+      "reason": "existing_identity_executable_route_plan",
+      "retainedRouteSources": [],
+      "liveProof": null
     },
     {
       "provider": "emnexmovies",
@@ -90,15 +76,15 @@
     {
       "provider": "flikhub",
       "scope": "global",
-      "transport": "request-existing",
-      "probeAttempted": false,
+      "direct": "https://www.flikhub.net",
+      "transport": "github-hosted",
+      "probeAttempted": true,
       "probeReachedSite": true,
-      "routePatterns": [
-        "/search"
-      ],
-      "routeCount": 1,
-      "qualified": true,
-      "reason": "existing_identity_executable_route_plan"
+      "probeReturnCode": 0,
+      "routePatterns": [],
+      "routeCount": 0,
+      "qualified": false,
+      "reason": "reachable_no_identity_route_observed"
     },
     {
       "provider": "latestmovies",
@@ -112,7 +98,9 @@
       ],
       "routeCount": 2,
       "qualified": true,
-      "reason": "existing_identity_executable_route_plan"
+      "reason": "existing_identity_executable_route_plan",
+      "retainedRouteSources": [],
+      "liveProof": null
     },
     {
       "provider": "movy",
@@ -126,7 +114,9 @@
       ],
       "routeCount": 2,
       "qualified": true,
-      "reason": "existing_identity_executable_route_plan"
+      "reason": "existing_identity_executable_route_plan",
+      "retainedRouteSources": [],
+      "liveProof": null
     },
     {
       "provider": "arrowtv",
@@ -140,7 +130,9 @@
       ],
       "routeCount": 2,
       "qualified": true,
-      "reason": "existing_identity_executable_route_plan"
+      "reason": "existing_identity_executable_route_plan",
+      "retainedRouteSources": [],
+      "liveProof": null
     },
     {
       "provider": "chillflix",
@@ -149,52 +141,58 @@
       "probeAttempted": false,
       "probeReachedSite": true,
       "routePatterns": [
-        "/search",
         "/tv/291507?play=true&s={query}&e={episode}",
         "/tv/303044?play=true&s={query}&e={episode}"
       ],
-      "routeCount": 3,
+      "routeCount": 2,
       "qualified": true,
-      "reason": "existing_identity_executable_route_plan"
+      "reason": "existing_identity_executable_route_plan",
+      "retainedRouteSources": [],
+      "liveProof": null
     },
     {
       "provider": "neonflix",
       "scope": "global",
-      "transport": "request-existing",
-      "probeAttempted": false,
+      "direct": "https://neonflix.st",
+      "transport": "github-hosted",
+      "probeAttempted": true,
       "probeReachedSite": true,
+      "probeReturnCode": 0,
       "routePatterns": [
-        "/search"
+        "/tv/{tmdbId}"
       ],
       "routeCount": 1,
       "qualified": true,
-      "reason": "existing_identity_executable_route_plan"
+      "reason": "observed_identity_executable_routes"
     },
     {
       "provider": "boredflix",
       "scope": "global",
-      "transport": "request-existing",
-      "probeAttempted": false,
+      "direct": "https://boredflix.to/",
+      "transport": "github-hosted",
+      "probeAttempted": true,
       "probeReachedSite": true,
+      "probeReturnCode": 0,
       "routePatterns": [
-        "/search"
+        "/?s={query}",
+        "/search?q={query}"
       ],
-      "routeCount": 1,
+      "routeCount": 2,
       "qualified": true,
-      "reason": "existing_identity_executable_route_plan"
+      "reason": "observed_identity_executable_routes"
     },
     {
       "provider": "openflix",
       "scope": "france",
-      "transport": "request-existing",
-      "probeAttempted": false,
+      "direct": "https://openflix.pro",
+      "transport": "github-hosted",
+      "probeAttempted": true,
       "probeReachedSite": true,
-      "routePatterns": [
-        "/search"
-      ],
-      "routeCount": 1,
-      "qualified": true,
-      "reason": "existing_identity_executable_route_plan"
+      "probeReturnCode": 0,
+      "routePatterns": [],
+      "routeCount": 0,
+      "qualified": false,
+      "reason": "reachable_no_identity_route_observed"
     },
     {
       "provider": "fexini",
@@ -207,59 +205,76 @@
       ],
       "routeCount": 1,
       "qualified": true,
-      "reason": "existing_identity_executable_route_plan"
+      "reason": "existing_identity_executable_route_plan",
+      "retainedRouteSources": [],
+      "liveProof": null
     },
     {
       "provider": "showbox",
       "scope": "france",
-      "transport": "request-existing",
-      "probeAttempted": false,
+      "direct": "https://showbox.media/",
+      "transport": "github-hosted",
+      "probeAttempted": true,
       "probeReachedSite": true,
+      "probeReturnCode": 0,
       "routePatterns": [
-        "/search"
+        "/search?keyword={query}"
       ],
       "routeCount": 1,
       "qualified": true,
-      "reason": "existing_identity_executable_route_plan"
+      "reason": "observed_identity_executable_routes"
     },
     {
       "provider": "fullanime",
       "scope": "france",
-      "transport": "request-existing",
+      "transport": "retained-v3-rag",
       "probeAttempted": false,
-      "probeReachedSite": true,
+      "probeReachedSite": false,
       "routePatterns": [
-        "/search"
+        "/search?s={query}",
+        "/voir-anime/{slug}",
+        "/voir-anime/{slug}/episode/{episode}"
       ],
-      "routeCount": 1,
+      "routeCount": 3,
       "qualified": true,
-      "reason": "existing_identity_executable_route_plan"
+      "reason": "retained_identity_route_plan_host_matched",
+      "retainedRouteSources": [
+        "provider-old/providers/fullanime--nuvio--0071d9ee70b5783c.js",
+        "provider-old/providers/fullanime--nuvio--973aa6a02057909b.js",
+        "provider-old/providers/fullanime--nuvio--b51adb6e3c249389.js",
+        "provider-old/providers/fullanime--nuvio--c68ebc1d6108d765.js",
+        "provider-old/providers/fullanime--nuvio--c6e85cfb4dae2e7c.js"
+      ],
+      "liveProof": false
     },
     {
       "provider": "animeo",
       "scope": "france",
-      "transport": "request-existing",
-      "probeAttempted": false,
+      "direct": "https://animeovf.fr/",
+      "transport": "github-hosted",
+      "probeAttempted": true,
       "probeReachedSite": true,
-      "routePatterns": [
-        "/search"
-      ],
-      "routeCount": 1,
-      "qualified": true,
-      "reason": "existing_identity_executable_route_plan"
+      "probeReturnCode": 0,
+      "routePatterns": [],
+      "routeCount": 0,
+      "qualified": false,
+      "reason": "reachable_no_identity_route_observed"
     },
     {
       "provider": "animeonsen",
       "scope": "france",
-      "transport": "request-existing",
-      "probeAttempted": false,
+      "direct": "https://www.animeonsen.xyz/",
+      "transport": "github-hosted",
+      "probeAttempted": true,
       "probeReachedSite": true,
+      "probeReturnCode": 0,
       "routePatterns": [
-        "/search"
+        "/?s={query}",
+        "/search?q={query}"
       ],
-      "routeCount": 1,
+      "routeCount": 2,
       "qualified": true,
-      "reason": "existing_identity_executable_route_plan"
+      "reason": "observed_identity_executable_routes"
     },
     {
       "provider": "shuttletv",
@@ -269,10 +284,13 @@
       "probeAttempted": true,
       "probeReachedSite": true,
       "probeReturnCode": 0,
-      "routePatterns": [],
-      "routeCount": 0,
-      "qualified": false,
-      "reason": "reachable_no_identity_route_observed"
+      "routePatterns": [
+        "/recherche?q={query}",
+        "/recherche?query={query}"
+      ],
+      "routeCount": 2,
+      "qualified": true,
+      "reason": "observed_identity_executable_routes"
     },
     {
       "provider": "primewire",
@@ -282,10 +300,12 @@
       "probeAttempted": true,
       "probeReachedSite": true,
       "probeReturnCode": 0,
-      "routePatterns": [],
-      "routeCount": 0,
-      "qualified": false,
-      "reason": "reachable_no_identity_route_observed"
+      "routePatterns": [
+        "/movie/{tmdbId}"
+      ],
+      "routeCount": 1,
+      "qualified": true,
+      "reason": "observed_identity_executable_routes"
     },
     {
       "provider": "67movies",
@@ -295,10 +315,12 @@
       "probeAttempted": true,
       "probeReachedSite": true,
       "probeReturnCode": 0,
-      "routePatterns": [],
-      "routeCount": 0,
-      "qualified": false,
-      "reason": "reachable_no_identity_route_observed"
+      "routePatterns": [
+        "/?s={query}"
+      ],
+      "routeCount": 1,
+      "qualified": true,
+      "reason": "observed_identity_executable_routes"
     },
     {
       "provider": "diostream",
@@ -412,10 +434,12 @@
       "probeAttempted": true,
       "probeReachedSite": true,
       "probeReturnCode": 0,
-      "routePatterns": [],
-      "routeCount": 0,
-      "qualified": false,
-      "reason": "reachable_no_identity_route_observed"
+      "routePatterns": [
+        "/?s={query}"
+      ],
+      "routeCount": 1,
+      "qualified": true,
+      "reason": "observed_identity_executable_routes"
     },
     {
       "provider": "myfluneo",
@@ -438,10 +462,12 @@
       "probeAttempted": true,
       "probeReachedSite": true,
       "probeReturnCode": 0,
-      "routePatterns": [],
-      "routeCount": 0,
-      "qualified": false,
-      "reason": "reachable_no_identity_route_observed"
+      "routePatterns": [
+        "/embed/movie/{tmdbId}"
+      ],
+      "routeCount": 1,
+      "qualified": true,
+      "reason": "observed_identity_executable_routes"
     },
     {
       "provider": "kisskh",
@@ -464,10 +490,12 @@
       "probeAttempted": true,
       "probeReachedSite": true,
       "probeReturnCode": 0,
-      "routePatterns": [],
-      "routeCount": 0,
-      "qualified": false,
-      "reason": "reachable_no_identity_route_observed"
+      "routePatterns": [
+        "/?s={query}"
+      ],
+      "routeCount": 1,
+      "qualified": true,
+      "reason": "observed_identity_executable_routes"
     },
     {
       "provider": "cinemabz",
@@ -477,10 +505,12 @@
       "probeAttempted": true,
       "probeReachedSite": true,
       "probeReturnCode": 0,
-      "routePatterns": [],
-      "routeCount": 0,
-      "qualified": false,
-      "reason": "reachable_no_identity_route_observed"
+      "routePatterns": [
+        "/api/tv/{tmdbId}"
+      ],
+      "routeCount": 1,
+      "qualified": true,
+      "reason": "observed_identity_executable_routes"
     },
     {
       "provider": "flixer",
@@ -490,10 +520,13 @@
       "probeAttempted": true,
       "probeReachedSite": true,
       "probeReturnCode": 0,
-      "routePatterns": [],
-      "routeCount": 0,
-      "qualified": false,
-      "reason": "reachable_no_identity_route_observed"
+      "routePatterns": [
+        "/?s={query}",
+        "/search?q={query}"
+      ],
+      "routeCount": 2,
+      "qualified": true,
+      "reason": "observed_identity_executable_routes"
     },
     {
       "provider": "overlook",
@@ -529,10 +562,13 @@
       "probeAttempted": true,
       "probeReachedSite": true,
       "probeReturnCode": 0,
-      "routePatterns": [],
-      "routeCount": 0,
-      "qualified": false,
-      "reason": "reachable_no_identity_route_observed"
+      "routePatterns": [
+        "/?s={query}",
+        "/index.php?do=search&subaction=search&story={query}"
+      ],
+      "routeCount": 2,
+      "qualified": true,
+      "reason": "observed_identity_executable_routes"
     },
     {
       "provider": "cinejoy",
@@ -776,10 +812,12 @@
       "probeAttempted": true,
       "probeReachedSite": true,
       "probeReturnCode": 0,
-      "routePatterns": [],
-      "routeCount": 0,
-      "qualified": false,
-      "reason": "reachable_no_identity_route_observed"
+      "routePatterns": [
+        "/search?q={query}"
+      ],
+      "routeCount": 1,
+      "qualified": true,
+      "reason": "observed_identity_executable_routes"
     },
     {
       "provider": "phantomflix",
@@ -867,10 +905,13 @@
       "probeAttempted": true,
       "probeReachedSite": true,
       "probeReturnCode": 0,
-      "routePatterns": [],
-      "routeCount": 0,
-      "qualified": false,
-      "reason": "reachable_no_identity_route_observed"
+      "routePatterns": [
+        "/search?q={query}",
+        "/search?keyword={query}"
+      ],
+      "routeCount": 2,
+      "qualified": true,
+      "reason": "observed_identity_executable_routes"
     },
     {
       "provider": "aether",
@@ -906,10 +947,13 @@
       "probeAttempted": true,
       "probeReachedSite": true,
       "probeReturnCode": 0,
-      "routePatterns": [],
-      "routeCount": 0,
-      "qualified": false,
-      "reason": "reachable_no_identity_route_observed"
+      "routePatterns": [
+        "/?s={query}",
+        "/recherche?q={query}"
+      ],
+      "routeCount": 2,
+      "qualified": true,
+      "reason": "observed_identity_executable_routes"
     },
     {
       "provider": "french-anime",
@@ -945,10 +989,13 @@
       "probeAttempted": true,
       "probeReachedSite": true,
       "probeReturnCode": 0,
-      "routePatterns": [],
-      "routeCount": 0,
-      "qualified": false,
-      "reason": "reachable_no_identity_route_observed"
+      "routePatterns": [
+        "/?s={query}",
+        "/index.php?do=search&subaction=search&story={query}"
+      ],
+      "routeCount": 2,
+      "qualified": true,
+      "reason": "observed_identity_executable_routes"
     },
     {
       "provider": "dulourd",
@@ -958,10 +1005,12 @@
       "probeAttempted": true,
       "probeReachedSite": true,
       "probeReturnCode": 0,
-      "routePatterns": [],
-      "routeCount": 0,
-      "qualified": false,
-      "reason": "reachable_no_identity_route_observed"
+      "routePatterns": [
+        "/index.php?do=search&subaction=search&story={query}"
+      ],
+      "routeCount": 1,
+      "qualified": true,
+      "reason": "observed_identity_executable_routes"
     },
     {
       "provider": "cinelibre",
@@ -984,10 +1033,13 @@
       "probeAttempted": true,
       "probeReachedSite": true,
       "probeReturnCode": 0,
-      "routePatterns": [],
-      "routeCount": 0,
-      "qualified": false,
-      "reason": "reachable_no_identity_route_observed"
+      "routePatterns": [
+        "/?s={query}",
+        "/recherche?q={query}"
+      ],
+      "routeCount": 2,
+      "qualified": true,
+      "reason": "observed_identity_executable_routes"
     },
     {
       "provider": "nakios",
@@ -997,10 +1049,12 @@
       "probeAttempted": true,
       "probeReachedSite": true,
       "probeReturnCode": 0,
-      "routePatterns": [],
-      "routeCount": 0,
-      "qualified": false,
-      "reason": "reachable_no_identity_route_observed"
+      "routePatterns": [
+        "/?s={query}"
+      ],
+      "routeCount": 1,
+      "qualified": true,
+      "reason": "observed_identity_executable_routes"
     },
     {
       "provider": "fawesome",
@@ -1010,10 +1064,13 @@
       "probeAttempted": true,
       "probeReachedSite": true,
       "probeReturnCode": 0,
-      "routePatterns": [],
-      "routeCount": 0,
-      "qualified": false,
-      "reason": "reachable_no_identity_route_observed"
+      "routePatterns": [
+        "/?s={query}",
+        "/search?q={query}"
+      ],
+      "routeCount": 2,
+      "qualified": true,
+      "reason": "observed_identity_executable_routes"
     },
     {
       "provider": "cinemaos",
@@ -1049,10 +1106,13 @@
       "probeAttempted": true,
       "probeReachedSite": true,
       "probeReturnCode": 0,
-      "routePatterns": [],
-      "routeCount": 0,
-      "qualified": false,
-      "reason": "reachable_no_identity_route_observed"
+      "routePatterns": [
+        "/?s={query}",
+        "/search?query={query}"
+      ],
+      "routeCount": 2,
+      "qualified": true,
+      "reason": "observed_identity_executable_routes"
     },
     {
       "provider": "dpstream",
@@ -1088,10 +1148,12 @@
       "probeAttempted": true,
       "probeReachedSite": true,
       "probeReturnCode": 0,
-      "routePatterns": [],
-      "routeCount": 0,
-      "qualified": false,
-      "reason": "reachable_no_identity_route_observed"
+      "routePatterns": [
+        "/search?q={query}"
+      ],
+      "routeCount": 1,
+      "qualified": true,
+      "reason": "observed_identity_executable_routes"
     },
     {
       "provider": "skstream",
@@ -1101,10 +1163,12 @@
       "probeAttempted": true,
       "probeReachedSite": true,
       "probeReturnCode": 0,
-      "routePatterns": [],
-      "routeCount": 0,
-      "qualified": false,
-      "reason": "reachable_no_identity_route_observed"
+      "routePatterns": [
+        "/?s={query}"
+      ],
+      "routeCount": 1,
+      "qualified": true,
+      "reason": "observed_identity_executable_routes"
     },
     {
       "provider": "voirserie",
@@ -1153,10 +1217,12 @@
       "probeAttempted": true,
       "probeReachedSite": true,
       "probeReturnCode": 0,
-      "routePatterns": [],
-      "routeCount": 0,
-      "qualified": false,
-      "reason": "reachable_no_identity_route_observed"
+      "routePatterns": [
+        "/?s={query}"
+      ],
+      "routeCount": 1,
+      "qualified": true,
+      "reason": "observed_identity_executable_routes"
     },
     {
       "provider": "zone-telechargement",
@@ -1179,10 +1245,12 @@
       "probeAttempted": true,
       "probeReachedSite": true,
       "probeReturnCode": 0,
-      "routePatterns": [],
-      "routeCount": 0,
-      "qualified": false,
-      "reason": "reachable_no_identity_route_observed"
+      "routePatterns": [
+        "/?s={query}"
+      ],
+      "routeCount": 1,
+      "qualified": true,
+      "reason": "observed_identity_executable_routes"
     },
     {
       "provider": "animeko",
@@ -1205,10 +1273,13 @@
       "probeAttempted": true,
       "probeReachedSite": true,
       "probeReturnCode": 0,
-      "routePatterns": [],
-      "routeCount": 0,
-      "qualified": false,
-      "reason": "reachable_no_identity_route_observed"
+      "routePatterns": [
+        "/?s={query}",
+        "/index.php?do=search&subaction=search&story={query}"
+      ],
+      "routeCount": 2,
+      "qualified": true,
+      "reason": "observed_identity_executable_routes"
     },
     {
       "provider": "film-a-revoir",
@@ -1218,10 +1289,12 @@
       "probeAttempted": true,
       "probeReachedSite": true,
       "probeReturnCode": 0,
-      "routePatterns": [],
-      "routeCount": 0,
-      "qualified": false,
-      "reason": "reachable_no_identity_route_observed"
+      "routePatterns": [
+        "/search?q={query}"
+      ],
+      "routeCount": 1,
+      "qualified": true,
+      "reason": "observed_identity_executable_routes"
     },
     {
       "provider": "fankai",
@@ -1244,10 +1317,13 @@
       "probeAttempted": true,
       "probeReachedSite": true,
       "probeReturnCode": 0,
-      "routePatterns": [],
-      "routeCount": 0,
-      "qualified": false,
-      "reason": "reachable_no_identity_route_observed"
+      "routePatterns": [
+        "/?s={query}",
+        "/search?q={query}"
+      ],
+      "routeCount": 2,
+      "qualified": true,
+      "reason": "observed_identity_executable_routes"
     },
     {
       "provider": "tenshitv",
@@ -1283,10 +1359,12 @@
       "probeAttempted": true,
       "probeReachedSite": true,
       "probeReturnCode": 0,
-      "routePatterns": [],
-      "routeCount": 0,
-      "qualified": false,
-      "reason": "reachable_no_identity_route_observed"
+      "routePatterns": [
+        "/?s={query}"
+      ],
+      "routeCount": 1,
+      "qualified": true,
+      "reason": "observed_identity_executable_routes"
     },
     {
       "provider": "yablom",
@@ -1335,10 +1413,12 @@
       "probeAttempted": true,
       "probeReachedSite": true,
       "probeReturnCode": 0,
-      "routePatterns": [],
-      "routeCount": 0,
-      "qualified": false,
-      "reason": "reachable_no_identity_route_observed"
+      "routePatterns": [
+        "/index.php?do=search&subaction=search&story={query}"
+      ],
+      "routeCount": 1,
+      "qualified": true,
+      "reason": "observed_identity_executable_routes"
     },
     {
       "provider": "dotriv",
@@ -1374,10 +1454,13 @@
       "probeAttempted": true,
       "probeReachedSite": true,
       "probeReturnCode": 0,
-      "routePatterns": [],
-      "routeCount": 0,
-      "qualified": false,
-      "reason": "reachable_no_identity_route_observed"
+      "routePatterns": [
+        "/?s={query}",
+        "/index.php?do=search&subaction=search&story={query}"
+      ],
+      "routeCount": 2,
+      "qualified": true,
+      "reason": "observed_identity_executable_routes"
     }
   ]
 }
