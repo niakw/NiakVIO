@@ -18,7 +18,7 @@ from typing import Any
 
 from activate_bulk_proven_providers import pending_artifact_digest, restore_pending_artifacts
 from reconcile_provider_static_authority import persist_static_from_bundle, refresh_static_counts
-from provider_base_store import provider_model_has_executable_plan
+from provider_base_store import provider_model_has_executable_plan, provider_model_has_identity_execution_plan
 from provider_patch_blocks import decode_managed_data
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -228,6 +228,13 @@ def main() -> int:
                 "strategy": str((model or {}).get("strategy") or ""),
             })
             continue
+        if not provider_model_has_identity_execution_plan(model):
+            blocked.append({
+                "provider": pid,
+                "reason": "provider_v3_identity_execution_plan_missing",
+                "strategy": str((model or {}).get("strategy") or ""),
+            })
+            continue
 
         direct = str(request_row.get("direct") or request_row.get("direct_url") or "").strip()
         if not re.match(r"^https?://[^/\s]+", direct):
@@ -289,6 +296,7 @@ def main() -> int:
             "nodeSyntax": "passed",
             "providerV3Contract": "passed",
             "providerExecutablePlan": "passed",
+            "providerIdentityExecutionPlan": "passed",
             "directOriginSyntax": "passed",
             "networkValidation": "not_authoritative_in_github_waf_limited",
             "livePlaybackValidated": False,
