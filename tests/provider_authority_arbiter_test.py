@@ -255,3 +255,32 @@ assert "PROVIDER_AUTHORITY_BACKEND_SCOPE_V1" in SCRIPT.read_text(encoding="utf-8
 assert "PROVIDER_AUTHORITY_DIRECT_PROOF_V1" in SCRIPT.read_text(encoding="utf-8")
 assert module.ROOT.joinpath("scripts/manage_provider_lifecycle.py").read_text(encoding="utf-8").find("RETENTION_DAYS = 7")>=0
 print("provider authority arbiter contract ok")
+
+
+# Current canonical census evidence controls production activation. Tested
+# published bytes without terminal verified playback must enter disabled
+# retention; historical/untested evidence does not trigger withdrawal.
+def census(status, *, tested=True, brain=True, repair=True):
+    return {"status":status,"testedThisRun":tested,"brainCheckRequired":brain,"repairEligible":repair}
+
+for status in ("REGRESSION PROVIDER","CANDIDATE OK","ROUTE PROVEN","CHAIN REACHED","NO PROOF"):
+    assert module.current_architecture_nonfunctional(census(status)) is True, status
+for status in ("FULL OK","PARTIAL OK","DISABLED"):
+    assert module.current_architecture_nonfunctional(census(status)) is False, status
+assert module.current_architecture_nonfunctional(census("ROUTE PROVEN",tested=False)) is False
+assert module.current_architecture_nonfunctional(census("NO PROOF",brain=False)) is False
+assert module.current_architecture_nonfunctional(census("CANDIDATE OK",repair=False)) is False
+
+manifest_row=row(True)
+registry=reg()
+nonfunctional_patch=patch()
+reason=module.apply_disable(manifest_row,registry,nonfunctional_patch,"DISABLE_ARCHITECTURE_NONFUNCTIONAL")
+assert reason=="auto_off_current_architecture_nonfunctional"
+assert manifest_row["enabled"] is False
+assert nonfunctional_patch["manifest_overrides"]["enabled"] is False
+assert nonfunctional_patch["route_data_state"]=="off"
+assert nonfunctional_patch["activation_eligible"] is False
+assert "manual_off_reason" not in nonfunctional_patch
+assert registry["manifest_status"]=="Désactivé"
+assert "manual_off_reason" not in registry
+print("current tested nonfunctional active-provider withdrawal contract passed")

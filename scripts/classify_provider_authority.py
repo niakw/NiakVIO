@@ -459,11 +459,27 @@ def classify(
     }
 
 
-def current_architecture_regression(row: dict[str, Any] | None) -> bool:
+CURRENT_NONFUNCTIONAL_STATUSES = {
+    "REGRESSION PROVIDER",
+    "CANDIDATE OK",
+    "ROUTE PROVEN",
+    "CHAIN REACHED",
+    "NO PROOF",
+}
+
+
+def current_architecture_nonfunctional(row: dict[str, Any] | None) -> bool:
+    """Fail closed for current active bytes with no terminal verified playback.
+
+    Historical/untested rows are not withdrawn by this rule. A provider must
+    have been exercised by the current canonical census and still be a Repair
+    symptom. CANDIDATE OK is deliberately non-production: it proves a sandbox
+    candidate, not the published active bytes.
+    """
     if not isinstance(row, dict):
         return False
     return (
-        str(row.get("status") or "") == "REGRESSION PROVIDER"
+        str(row.get("status") or "") in CURRENT_NONFUNCTIONAL_STATUSES
         and row.get("testedThisRun") is True
         and row.get("brainCheckRequired") is True
         and row.get("repairEligible") is True
@@ -482,8 +498,8 @@ def apply_disable(
         reason = "auto_off_upstream_shutdown"
     elif action == "DISABLE_AUTHORITY_EXHAUSTED":
         reason = "auto_off_domain_authority_exhausted"
-    elif action == "DISABLE_ARCHITECTURE_REGRESSION":
-        reason = "auto_off_current_architecture_regression"
+    elif action == "DISABLE_ARCHITECTURE_NONFUNCTIONAL":
+        reason = "auto_off_current_architecture_nonfunctional"
     elif action == "DISABLE_MANUAL_POLICY":
         reason = str(
             patch.get("manual_off_reason")
@@ -499,13 +515,13 @@ def apply_disable(
     patch["manifest_overrides"] = manifest_overrides
     patch["route_data_state"] = "off"
     patch["activation_eligible"] = False
-    if action != "DISABLE_ARCHITECTURE_REGRESSION":
+    if action != "DISABLE_ARCHITECTURE_NONFUNCTIONAL":
         patch["manual_off_reason"] = reason
     else:
         patch.pop("manual_off_reason", None)
     registry["manifest_status"] = "Désactivé"
     registry["activation_eligible"] = False
-    if action != "DISABLE_ARCHITECTURE_REGRESSION":
+    if action != "DISABLE_ARCHITECTURE_NONFUNCTIONAL":
         registry["manual_off_reason"] = reason
     else:
         registry.pop("manual_off_reason", None)
@@ -544,17 +560,21 @@ def main() -> int:
         hist = histories.get(provider) if isinstance(histories.get(provider), dict) else {}
         result = classify(provider, manifest_row, registry, patch, hist)
         census_row = census_by_provider.get(provider)
-        if manifest_row.get("enabled") is not False and current_architecture_regression(census_row):
+        if manifest_row.get("enabled") is not False and current_architecture_nonfunctional(census_row):
+            current_status = str(census_row.get("status") or "")
             result = {
                 **result,
-                "action": "DISABLE_ARCHITECTURE_REGRESSION",
+                "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
                 "repairEligible": False,
                 "confidence": "current-census",
-                "authorityClass": "current-architecture-regression",
-                "reasons": list(result.get("reasons") or []) + ["current_census_regression_provider"],
+                "authorityClass": "current-architecture-nonfunctional",
+                "reasons": list(result.get("reasons") or []) + [
+                    "current_census_tested_without_terminal_verified_playback",
+                    "current_status:" + current_status,
+                ],
             }
         if args.apply_safe_disables and result["action"] in {
-            "DISABLE_SOURCE_REMOVED", "DISABLE_UPSTREAM_SHUTDOWN", "DISABLE_AUTHORITY_EXHAUSTED", "DISABLE_MANUAL_POLICY", "DISABLE_ARCHITECTURE_REGRESSION"
+            "DISABLE_SOURCE_REMOVED", "DISABLE_UPSTREAM_SHUTDOWN", "DISABLE_AUTHORITY_EXHAUSTED", "DISABLE_MANUAL_POLICY", "DISABLE_ARCHITECTURE_NONFUNCTIONAL"
         } and manifest_row.get("enabled") is not False:
             reason = apply_disable(manifest_row, registry, patch, result["action"])
             registries[provider] = registry
@@ -575,7 +595,8 @@ def main() -> int:
             "apiBackendMayOperateWithoutHomepage": True,
             "manualOffEntersDisabledRetentionImmediately": True,
             "effectiveOperatorShutdownEntersDisabledRetentionImmediately": True,
-            "currentTestedRegressionEntersDisabledRetention": True,
+            "currentTestedNonfunctionalEntersDisabledRetention": True,
+            "terminalPlaybackRequiredForActiveCurrentBytes": True,
         },
         "providerCount": len(results),
         "repairEligible": sorted(row["provider"] for row in results if row.get("repairEligible") is True),

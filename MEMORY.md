@@ -1,3 +1,9 @@
+## 2026-11-14 — Active production now requires current terminal playback proof
+
+- Canonical census on 6f726cfc/43583704544 has 28 Global-active rows: 13 FULL with fresh tested verified lanes, 5 CANDIDATE OK, 9 ROUTE PROVEN and 1 NO PROOF. The 15 non-FULL active rows were all testedThisRun=true and remain Repair symptoms; CANDIDATE OK proves only an unpublished candidate, ROUTE PROVEN proves routes without terminal media, and NO PROOF has no positive runtime proof.
+- User policy is explicit: providers that do not function in the current architecture must be disabled rather than left active. Generalize the existing fresh-regression withdrawal rule to all current tested nonfunctional production states (REGRESSION PROVIDER, CANDIDATE OK, ROUTE PROVEN, CHAIN REACHED, NO PROOF) while preserving FULL/PARTIAL and any untested historical row. Disable reason is auto_off_current_architecture_nonfunctional; rows remain in normal disabled retention for Repair/retest and are not deleted.
+- This change only contracts production availability; it does not enable/stage any provider, change proof criteria, or manufacture successful playback. Provider Disabled Lifecycle is push-triggered by this authority script and must materialize exact identities atomically. Exact-SHA CI/lifecycle validation pending.
+
 ## 2026-11-14 — Catalogue, runtime, pending and native scopes documented as distinct authorities
 
 - Persist the structural distinction introduced by bulk onboarding: Global catalogue visible (`visible_provider_ids`), active execution (`active_provider_ids`), non-executable bulk pending (`pending_provider_ids`) and runtime-ledger scope (`runtime_visible_provider_ids = visible - pending`). France-only lifecycle authority remains catalog-owned and cannot leak into Global.
