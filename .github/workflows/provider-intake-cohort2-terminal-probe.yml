@@ -1,0 +1,60 @@
+name: PROVIDERS - Global France Intake Cohort 2
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'automation/provider-intake-cohort2-global-france.json'
+      - '.github/workflows/provider-intake-cohort2-terminal-probe.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: niakvio-intake-cohort2-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  probe:
+    name: Cohort 2 ${{ matrix.region }} — read-only
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        region: [global, france]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - name: Install locked sandbox worker
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Validate pinned candidate sources and region separation
+        run: |
+          python -m py_compile scripts/probe_provider_intake.py
+          python scripts/probe_provider_intake.py --input automation/provider-intake-cohort2-global-france.json \
+            --region ${{ matrix.region }} --dry-run
+      - name: Probe 3 film/TV/anime fixtures per declared lane
+        run: |
+          python scripts/probe_provider_intake.py \
+            --input automation/provider-intake-cohort2-global-france.json \
+            --region ${{ matrix.region }} --samples-per-lane 3 \
+            --timeout 28 --max-workers 5 \
+            --output automation/provider-intake-cohort2-${{ matrix.region }}-result.json
+      - name: Retain sanitized evidence, never stream URLs
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: provider-intake-cohort2-${{ matrix.region }}-${{ github.run_id }}
+          path: automation/provider-intake-cohort2-${{ matrix.region }}-result.json
+          retention-days: 14
+          if-no-files-found: warn
