@@ -67,6 +67,10 @@ for pid,row in disabled.items():
 workflow=(ROOT/".github/workflows/provider-disabled-lifecycle.yml").read_text(encoding="utf-8")
 assert "- 'automation/provider-census-status.json'" in workflow, "fresh canonical census must trigger lifecycle"
 assert "python scripts/reconcile_provider_static_authority.py --apply" in workflow, "lifecycle must self-heal exact managed static authority before projection"
+reconcile_pos=workflow.index("python scripts/reconcile_provider_static_authority.py --apply")
+classify_pos=workflow.index("python scripts/classify_provider_authority.py --apply-safe-disables")
+manage_pos=workflow.index("python scripts/manage_provider_lifecycle.py --apply")
+assert reconcile_pos < classify_pos < manage_pos, "active authority must reconcile before a fresh safe-disable row is moved by lifecycle"
 assert "python scripts/build_provider_disabled_recovery_queue.py" in workflow, "lifecycle must preserve eligible auto-disabled Brain recovery debt"
 
 with tempfile.TemporaryDirectory(prefix="provider-lifecycle-prefix-") as tmp:
