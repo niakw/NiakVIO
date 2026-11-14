@@ -39,8 +39,11 @@ assert probe.route_pattern("/api?m=search&q=",fixture)=="/api?m=search&q={query}
 assert probe.route_pattern("/api/search?term=",fixture)=="/api/search?term={query}"
 assert probe.route_pattern("/search/interstellar",fixture)=="/search/{slug}"
 common_source=inspect.getsource(probe.probe_common_identity_routes)
-for token in ('"/search/{slug}"','"/api/search?q={query}"','f"/watch/{{tmdbId}}"'):
+for token in ('"/search/{slug}"','"/api/search?q={query}"','f"/watch/{{tmdbId}}"',"deadline: float | None = None","remaining = (deadline - time.monotonic())"):
     assert token in common_source, token
+probe_main_source=inspect.getsource(probe.main)
+for token in ("provider_deadline = time.monotonic() + max(10.0, float(args.provider_timeout))",'"probeBudgetExhausted": budget_exhausted',"provider_probe_budget_exhausted"):
+    assert token in probe_main_source, token
 assert probe.route_pattern("/title/movie/157336-interstellar",fixture)=="/title/movie/{tmdbId}-{slug}"
 assert probe.route_pattern("/api/streams/movie?token=secret&q=",fixture)==""
 assert probe.route_pattern("/",fixture)==""
