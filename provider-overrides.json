@@ -11996,6 +11996,53 @@
         "enabled": false,
         "disabledPlatforms": []
       }
+    },
+    "internet-archive": {
+      "notes": [
+        "Created by the NiakVIO full-auto provider onboarding workflow from structured route knowledge only.",
+        "Activation remains disabled until the onboarding quick Lab proves the provider on every requested runtime group.",
+        "Runtime searches only explicitly public-domain Internet Archive movie items and rechecks per-item license metadata before returning direct media."
+      ],
+      "replacements": {},
+      "runtime_domain_replacements": {},
+      "route_replacements": {},
+      "profiles": [],
+      "capability": "open_archive_public_domain",
+      "official_hub": null,
+      "official_site": "https://archive.org",
+      "published_types": [
+        "movie"
+      ],
+      "manifest_overrides": {
+        "enabled": false,
+        "disabledPlatforms": []
+      },
+      "provider_lego_scripts": [
+        "scripts/provider_patches/internet_archive_public_domain_runtime_v1.py"
+      ],
+      "provider_lego_options": {
+        "scripts/provider_patches/internet_archive_public_domain_runtime_v1.py": {
+          "base": "https://archive.org",
+          "provider": "internet-archive",
+          "name": "Internet Archive — Public Domain",
+          "max_streams": 4
+        }
+      },
+      "learned_routes": [
+        "/advancedsearch.php",
+        "/metadata/{identifier}",
+        "/download/{identifier}/{file}"
+      ],
+      "identity_input": {
+        "mode": "tmdb_title_year",
+        "requires_tmdb_before_run": true,
+        "required_fields": [
+          "tmdbId",
+          "mediaType",
+          "title",
+          "year"
+        ]
+      }
     }
   },
   "route_override_defaults": {
@@ -13325,6 +13372,20 @@
         "movie",
         "tv",
         "anime"
+      ]
+    },
+    "internet-archive": {
+      "strategy": "open_archive_public_domain",
+      "validation": "bulk_onboarding_pending",
+      "allow_html_url": false,
+      "requires_direct_media": true,
+      "observed_origins": [
+        "https://archive.org"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true,
+      "catalogue_types": [
+        "movie"
       ]
     }
   },

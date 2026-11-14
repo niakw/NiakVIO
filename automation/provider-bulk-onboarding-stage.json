@@ -1,39 +1,19 @@
 {
-  "providerCount": 17,
-  "newProviderCount": 17,
+  "providerCount": 1,
+  "newProviderCount": 1,
   "replaceProviderCount": 0,
   "newProviders": [
-    "1jour1film0626",
-    "asiaflix",
-    "cinestream",
-    "cpasmal",
-    "dotriv",
-    "frembed",
-    "ilmiv",
-    "kidraz",
-    "kordoz",
-    "movix-fr",
-    "myfluneo",
-    "nakastream",
-    "neobam",
-    "rivestream",
-    "sflix",
-    "vidsrc2",
-    "yablom"
+    "internet-archive"
   ],
   "replaceProviders": [],
   "strategies": {
-    "html_scraper": 10,
-    "mixed_embed_resolver": 7
+    "open_archive_public_domain": 1
   },
   "declaredTypeCounts": {
-    "anime": 16,
-    "movie": 17,
-    "tv": 17
+    "movie": 1
   },
   "scopeCounts": {
-    "france": 13,
-    "global": 4
+    "global": 1
   },
   "schemaVersion": 1,
   "request": ".github/provider-onboarding/batch.json",
@@ -44,190 +24,13 @@
   "nextStage": "sharded census -> repair batches -> proof-driven activation",
   "providers": [
     {
-      "id": "sflix",
-      "name": "SFlix",
+      "id": "internet-archive",
+      "name": "Internet Archive — Public Domain",
       "types": [
-        "movie",
-        "tv",
-        "anime"
+        "movie"
       ],
-      "strategy": "mixed_embed_resolver",
-      "site": "https://sflix.today/"
-    },
-    {
-      "id": "rivestream",
-      "name": "Rive",
-      "types": [
-        "movie",
-        "tv",
-        "anime"
-      ],
-      "strategy": "html_scraper",
-      "site": "https://www.rivestream.app"
-    },
-    {
-      "id": "vidsrc2",
-      "name": "VidSrcProvider",
-      "types": [
-        "movie",
-        "tv"
-      ],
-      "strategy": "mixed_embed_resolver",
-      "site": "https://vidsrc2.ru/"
-    },
-    {
-      "id": "asiaflix",
-      "name": "AsiaFlixProvider",
-      "types": [
-        "movie",
-        "tv",
-        "anime"
-      ],
-      "strategy": "mixed_embed_resolver",
-      "site": "https://asiaflix.net"
-    },
-    {
-      "id": "cinestream",
-      "name": "Cinestream",
-      "types": [
-        "movie",
-        "tv",
-        "anime"
-      ],
-      "strategy": "mixed_embed_resolver",
-      "site": "https://cinestream.info"
-    },
-    {
-      "id": "movix-fr",
-      "name": "movix",
-      "types": [
-        "movie",
-        "tv",
-        "anime"
-      ],
-      "strategy": "mixed_embed_resolver",
-      "site": "https://movix.zip/"
-    },
-    {
-      "id": "yablom",
-      "name": "yablom",
-      "types": [
-        "movie",
-        "tv",
-        "anime"
-      ],
-      "strategy": "mixed_embed_resolver",
-      "site": "https://yablom.com"
-    },
-    {
-      "id": "myfluneo",
-      "name": "myfluneo",
-      "types": [
-        "movie",
-        "tv",
-        "anime"
-      ],
-      "strategy": "html_scraper",
-      "site": "https://myfluneo.eu"
-    },
-    {
-      "id": "cpasmal",
-      "name": "CpasMal",
-      "types": [
-        "movie",
-        "tv",
-        "anime"
-      ],
-      "strategy": "mixed_embed_resolver",
-      "site": "https://www.cpasmal.rip/"
-    },
-    {
-      "id": "frembed",
-      "name": "frembed",
-      "types": [
-        "movie",
-        "tv",
-        "anime"
-      ],
-      "strategy": "html_scraper",
-      "site": "https://frembed.surf"
-    },
-    {
-      "id": "nakastream",
-      "name": "NakaStream",
-      "types": [
-        "movie",
-        "tv",
-        "anime"
-      ],
-      "strategy": "html_scraper",
-      "site": "https://nakastream.tv"
-    },
-    {
-      "id": "1jour1film0626",
-      "name": "1jour1film0626",
-      "types": [
-        "movie",
-        "tv",
-        "anime"
-      ],
-      "strategy": "html_scraper",
-      "site": "https://1jour1film0626.site"
-    },
-    {
-      "id": "dotriv",
-      "name": "Dotriv",
-      "types": [
-        "movie",
-        "tv",
-        "anime"
-      ],
-      "strategy": "html_scraper",
-      "site": "https://dotriv.com"
-    },
-    {
-      "id": "ilmiv",
-      "name": "ILMIV",
-      "types": [
-        "movie",
-        "tv",
-        "anime"
-      ],
-      "strategy": "html_scraper",
-      "site": "https://ilmiv.com"
-    },
-    {
-      "id": "kidraz",
-      "name": "kidraz",
-      "types": [
-        "movie",
-        "tv",
-        "anime"
-      ],
-      "strategy": "html_scraper",
-      "site": "https://www.kidraz.com"
-    },
-    {
-      "id": "kordoz",
-      "name": "Kordoz",
-      "types": [
-        "movie",
-        "tv",
-        "anime"
-      ],
-      "strategy": "html_scraper",
-      "site": "https://www.kordoz.com"
-    },
-    {
-      "id": "neobam",
-      "name": "neobam",
-      "types": [
-        "movie",
-        "tv",
-        "anime"
-      ],
-      "strategy": "html_scraper",
-      "site": "https://neobam.com"
+      "strategy": "open_archive_public_domain",
+      "site": "https://archive.org"
     }
   ]
 }

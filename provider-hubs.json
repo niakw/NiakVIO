@@ -4143,6 +4143,40 @@
         }
       ],
       "search_confirmation_runs": 2
+    },
+    "internet-archive": {
+      "id": "internet-archive",
+      "name": "Internet Archive — Public Domain",
+      "manifest_status": "Bulk Onboarding",
+      "category": "International",
+      "hub": null,
+      "direct": "https://archive.org",
+      "telegram": null,
+      "api": "https://archive.org",
+      "source": "provider_onboarding_workflow",
+      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "aliases": [
+        "Internet Archive",
+        "InternetArchiveProvider"
+      ],
+      "direct_candidates": [
+        "https://archive.org"
+      ],
+      "allowed_terminal_hosts": [
+        "archive.org"
+      ],
+      "search_queries": [
+        "Internet Archive public domain movies"
+      ],
+      "sources": [
+        {
+          "type": "search",
+          "query": "Internet Archive public domain movies",
+          "priority": 35,
+          "purpose": "Fallback route discovery"
+        }
+      ],
+      "search_confirmation_runs": 2
     }
   },
   "resolution_policy": {
