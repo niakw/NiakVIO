@@ -561,17 +561,21 @@ def materialize_one(
             for value in (identity.get("required_fields") or [])
             if str(value).strip()
         }
-        france_owned_tmdb_lego = bool(
-            entry_authority == "france-only-catalog"
-            and scripts
+        # Provider-owned runtime Legos are executable authority in their own
+        # right when the structured identity contract is explicit. This applies
+        # equally to Global and France-only projections; restricting it to the
+        # France catalogue made valid Global manual-oracle Legos impossible to
+        # rematerialize even though compose_provider_bundle executes them.
+        provider_owned_identity_lego = bool(
+            scripts
             and all(value.startswith("scripts/provider_patches/") for value in scripts)
-            and str(identity.get("mode") or "").strip().casefold() == "tmdb_direct"
+            and str(identity.get("mode") or "").strip().casefold() in {"tmdb_direct", "catalog_search"}
             and identity.get("requires_tmdb_before_run") is True
             and {"tmdbId", "mediaType"} <= required_identity
         )
-        if not allmat.provider_model_has_executable_plan(model) and not france_owned_tmdb_lego:
+        if not allmat.provider_model_has_executable_plan(model) and not provider_owned_identity_lego:
             raise ValueError(f"{provider_id}: projection-only DATA lacks executable plan")
-        if not allmat.provider_model_has_identity_execution_plan(model) and not france_owned_tmdb_lego:
+        if not allmat.provider_model_has_identity_execution_plan(model) and not provider_owned_identity_lego:
             raise ValueError(f"{provider_id}: projection-only DATA lacks identity execution plan")
     seed = allmat.build_clean_provider_seed(
         provider_id,
