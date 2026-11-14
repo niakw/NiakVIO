@@ -3,9 +3,12 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "scripts"))
+sys.path.insert(0, str(ROOT / "scripts" / "provider_patches"))
 PATCH = ROOT / "scripts/provider_patches/webflix_runtime_v1.py"
 
 spec = importlib.util.spec_from_file_location("webflix_runtime_v1", PATCH)
