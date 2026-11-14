@@ -234,6 +234,11 @@ def main() -> int:
             raise RuntimeError(f"{pid}: activation changed exact provider bytes")
 
         manifest_row["enabled"] = True
+        # provider_catalog.json is the projection authority. For Global rows
+        # manifest_row comes from manifest.json, so explicitly advance the
+        # catalog scraper to the exact activated row before any rerender.
+        if isinstance(catalog_entry, dict):
+            catalog_entry["scraper"] = dict(manifest_row)
         patch.setdefault("manifest_overrides", {})["enabled"] = True
         notes = patch.setdefault("notes", [])
         offline_note = (
