@@ -146,6 +146,7 @@ jobs:
     timeout-minutes: 15
     permissions:
       contents: write
+      actions: write
     env:
       SOURCE_SHA: ${{ needs.prepare.outputs.source_sha }}
       SOURCE_REQUEST_VERSION: ${{ needs.prepare.outputs.request_version }}
@@ -184,8 +185,9 @@ jobs:
           retention-days: 8
           if-no-files-found: error
 
-      - name: Persist evidence and qualified activation wave
-        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+      - id: persist
+        name: Persist evidence and qualified activation wave
+        if: ${{ github.ref == 'refs/heads/main' }}
         shell: bash
         run: |
           set -euo pipefail
@@ -193,6 +195,7 @@ jobs:
           git reset --hard origin/main
           mkdir -p automation .github/provider-onboarding
           cp /tmp/provider-bulk-route-discovery-latest.json automation/provider-bulk-route-discovery-latest.json
+          rm -f /tmp/provider-bulk-route-dispatch
           python - <<'PY'
           import json, os, shutil
           from pathlib import Path
@@ -208,8 +211,14 @@ jobs:
               print("FIELD_BULK_ROUTE_PERSIST batch_changed=false reason=no-qualified-routes")
           else:
               shutil.copyfile(next_batch,current)
+              Path("/tmp/provider-bulk-route-dispatch").write_text(str(qualified), encoding="utf-8")
               print(f"FIELD_BULK_ROUTE_PERSIST batch_changed=true qualified={qualified}")
           PY
+          if [ -f /tmp/provider-bulk-route-dispatch ]; then
+            echo "dispatch=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "dispatch=false" >> "$GITHUB_OUTPUT"
+          fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add automation/provider-bulk-route-discovery-latest.json .github/provider-onboarding/batch.json
@@ -219,3 +228,15 @@ jobs:
             git commit -m "ci(provider): persist executable bulk route discovery"
             git push origin HEAD:main
           fi
+
+      - name: Dispatch qualified bulk onboarding
+        if: ${{ steps.persist.outputs.dispatch == 'true' }}
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh workflow run provider-bulk-onboarding.yml --ref main \
+            -f request_path=.github/provider-onboarding/batch.json \
+            -f allow_replace_existing=true
+          echo "FIELD_BULK_ROUTE_HANDOFF dispatched=provider-bulk-onboarding"
