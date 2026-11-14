@@ -165,30 +165,9 @@ jobs:
                 - automation/evidence/**
             category: "/language:javascript-typescript/scope:core"
 
-          # Transitional reconciliation of legacy monolithic JS CodeQL
-          # category. Alert #2531 originates under the old unscoped category
-          # (analysis_key .github/workflows/codeql.yml:analyze); a clean Core
-          # scan under scope:core cannot automatically close that alert.
-          # Run corrected maintained source once under its original category
-          # so GitHub itself records "fixed" or keeps the alert actionable.
-          # No alert is dismissed or severity suppressed by this lane.
-          - check_name: "CodeQL · JS Legacy Category Reconciliation"
-            language: javascript-typescript
-            config: |
-              paths-ignore:
-                - providers/**
-                - provider-bases/**
-                - provider-disabled/**
-                - provider-old/**
-                - upstream-lkg/**
-                - audit/**
-                - automation/evidence/**
-            # Match the EXACT historical CodeQL analysis_key for stale
-            # test-only #2531 so this maintained-source scan can close it
-            # automatically. A language suffix creates a different analysis
-            # origin and leaves the old alert open indefinitely.
-            # No queries, severity or maintained-source checks are suppressed.
-            category: ".github/workflows/codeql.yml:analyze"
+          # The historic monolithic JS category is intentionally NOT rerun.
+          # SEC - Retire verified stale CodeQL category deletes that obsolete
+          # configuration after an exact-SHA scope:core scan succeeds.
 
           - check_name: "CodeQL · JS ProviderBase"
             language: javascript-typescript
