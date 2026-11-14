@@ -1,13 +1,13 @@
 {
   "schemaVersion": 2,
   "scope": "all",
-  "reason": "Refresh active baseline after live-unverified transport overlay before exact-60 continuation",
-  "requestedAt": "2026-11-14T21:19:00+01:00",
-  "validation": "fresh-current-active-full-scope-before-next-bulk-activation",
+  "reason": "Build byte-bound all-scope production freshness ledger after separating unresolved Repair state",
+  "requestedAt": "2026-11-14T21:31:00+01:00",
+  "validation": "byte-bound-all-scope-freshness-ledger",
   "source": "NiakVIO exact 60/60 continuation",
   "targetProviders": [],
   "allowPendingTargets": false,
-  "requiredEvidence": "Fresh current-byte replay for every active provider; retain offline-live-unverified distinction and never convert GitHub/WAF transport failure into provider breakage",
-  "retryRevision": 6,
-  "fullRefreshRevision": 6
+  "requiredEvidence": "8-shard full current-byte replay; stamp exact active Provider SHA-256 into provider-census-all-status-latest.json; unresolved/targeted runs must not replace it",
+  "retryRevision": 7,
+  "fullRefreshRevision": 7
 }
