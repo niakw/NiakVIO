@@ -1,3 +1,9 @@
+## 2026-11-14 — Lifecycle publication now hands exact SHA to release finalization
+
+- Release-finalize 43588137631 completed successfully and atomically published 6d08a469, release 5.21.144. Global is 45 visible / 13 active; France is 34 visible / 10 active; Nuvio client state schema v2 records 58 union-visible identities and 13 first-class France-only identities. The active Global canonical lane counts are movie=6, tv=6, anime=9; France active counts movie=4, tv=4, anime=8.
+- Close the lifecycle transaction gap: when Provider Disabled Lifecycle actually commits a transition, capture that exact commit SHA after the commit, push it, then dispatch release-finalize.yml with expected_sha=<transition SHA>. Add actions:write only for this first-party workflow dispatch. No-change lifecycle exits before dispatch. This ensures minimizer/projections/version/cache IDs/Hub transport/hashes follow every material activation/retention transition instead of requiring a manual trigger.
+- Regression requires exact SHA handoff and ordering. No provider activation or source integration is introduced by this control-plane change.
+
 ## 2026-11-14 — Exact release retry after projection-union integrity fix
 
 - Trigger release finalization again from c6372a3e after correcting the last observed VF-subset assumption. The prior run reached and passed minimizer, release version/cache synchronization, generation staging, Hub transport build and native transport tests before the stale projection-scope assertion.

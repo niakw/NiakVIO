@@ -82,3 +82,18 @@ print(
     f"provider disabled lifecycle contract passed active={len(active)} "
     f"disabled={len(disabled)} pending={len(pending)} retention={RETENTION_DAYS} vf_only={len(vf_only_rows)}"
 )
+
+# A lifecycle mutation changes executable/manifests and must hand the exact
+# transition SHA to release finalization. A no-op lifecycle must not dispatch.
+assert "actions: write" in workflow
+commit_block=workflow.split("- name: Commit lifecycle transition if needed",1)[1]
+assert 'GH_TOKEN: ${{ github.token }}' in commit_block
+assert 'transition_sha="$(git rev-parse HEAD)"' in commit_block
+assert 'git push origin HEAD:${{ github.ref_name }}' in commit_block
+assert "gh workflow run release-finalize.yml" in commit_block
+assert '-f expected_sha="$transition_sha"' in commit_block
+assert "FIELD_PROVIDER_LIFECYCLE_RELEASE_FINALIZE_DISPATCH sha=$transition_sha" in commit_block
+no_change=commit_block.index("PROVIDER_LIFECYCLE_NO_CHANGE")
+dispatch=commit_block.index("gh workflow run release-finalize.yml")
+assert no_change < dispatch
+print("provider lifecycle exact release-finalization handoff contract passed")

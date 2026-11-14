@@ -21,6 +21,7 @@ on:
 
 permissions:
   contents: write
+  actions: write
 
 concurrency:
   group: provider-disabled-lifecycle-${{ github.ref }}
@@ -142,6 +143,8 @@ jobs:
           git diff --check
 
       - name: Commit lifecycle transition if needed
+        env:
+          GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
           set -euo pipefail
@@ -158,4 +161,10 @@ jobs:
           fi
           git diff --cached --check
           git commit -m 'chore: apply provider disabled retention lifecycle'
+          transition_sha="$(git rev-parse HEAD)"
           git push origin HEAD:${{ github.ref_name }}
+          gh workflow run release-finalize.yml \
+            --repo "$GITHUB_REPOSITORY" \
+            --ref "${{ github.ref_name }}" \
+            -f expected_sha="$transition_sha"
+          echo "FIELD_PROVIDER_LIFECYCLE_RELEASE_FINALIZE_DISPATCH sha=$transition_sha"
