@@ -1,3 +1,8 @@
+## 2026-11-14 — Lifecycle regression disable test contract corrected
+
+- Provider Disabled Lifecycle 43578790742 correctly classified and applied five current regressions in its workspace (FIELD_PROVIDER_AUTHORITY disabled_now=5; lifecycle active=32 disabled=9) but failed before commit because provider_authority_current_catalogue_test.py still hard-coded historical KEEP_* expectations for identities now disabled by current census policy.
+- Catalogue test now treats any manifest-disabled row as KEEP_DISABLED before historical baseline expectations and adds a generic current-census regression assertion. No provider-specific bypass and no status weakening. Re-run lifecycle required to publish the already-observed five transitions.
+
 ## 2026-11-14 — Current tested architecture regressions enter disabled retention
 
 - User explicitly requested that existing NiakVIO providers which do not function in the current architecture stop remaining active in production manifests. Add a narrow lifecycle input from the authoritative provider census: only status REGRESSION PROVIDER + testedThisRun=true + brainCheckRequired=true + repairEligible=true is converted to DISABLE_ARCHITECTURE_REGRESSION by --apply-safe-disables.

@@ -42,6 +42,8 @@ def classify(provider: str) -> dict:
 def expected_with_lifecycle(provider: str, baseline: str) -> str:
     if provider not in rows:
         return baseline
+    if rows[provider].get("enabled") is False:
+        return "KEEP_DISABLED"
     registry = registries.get(provider) or {}
     patch = patches.get(provider) or {}
     reason = str(registry.get("manual_off_reason") or patch.get("manual_off_reason") or "").strip()
@@ -110,6 +112,24 @@ for provider, baseline_action in expected.items():
     if action.startswith("KEEP_") and action != "KEEP_DISABLED":
         assert result["repairEligible"] is True, (provider, result)
     if action in {"KEEP_DISABLED", "REDISCOVER_SEARCH", "DISABLE_MANUAL_POLICY"}:
+        assert result["repairEligible"] is False, (provider, result)
+
+# Current tested regressions may be moved into disabled retention by the
+# lifecycle before this catalogue contract runs. This is status-driven, not a
+# provider-specific exception list.
+census = json.loads((ROOT / "automation/provider-census-status.json").read_text(encoding="utf-8"))
+for proof in census.get("providers") or []:
+    if not isinstance(proof, dict):
+        continue
+    provider = str(proof.get("provider") or "").strip().casefold().replace("_", "-")
+    if (
+        proof.get("status") == "REGRESSION PROVIDER"
+        and proof.get("testedThisRun") is True
+        and provider in rows
+        and rows[provider].get("enabled") is False
+    ):
+        result = classify(provider)
+        assert result["action"] == "KEEP_DISABLED", (provider, result)
         assert result["repairEligible"] is False, (provider, result)
 
 # An explicit-current site is allowed while Domain has no persisted contradiction.
