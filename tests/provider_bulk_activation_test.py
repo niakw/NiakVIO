@@ -7,6 +7,7 @@ import sys
 import tempfile
 
 ROOT=Path(__file__).resolve().parents[1]
+sys.path.insert(0,str((ROOT/"scripts").resolve()))
 module_path=ROOT/"scripts/activate_bulk_proven_providers.py"
 spec=importlib.util.spec_from_file_location("activate_bulk_proven_providers_test",module_path)
 mod=importlib.util.module_from_spec(spec); spec.loader.exec_module(mod)
