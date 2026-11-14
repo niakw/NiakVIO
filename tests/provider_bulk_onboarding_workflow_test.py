@@ -48,13 +48,13 @@ assert "--offline-fallback" in bulk
 assert '"Pillow==12.3.0"' in bulk
 assert "provider_logo_asset_contract_test.py" in bulk
 assert "provider_base_store.py validate" in bulk
-for token in ("scripts/finalize_provider_v3_minimizer.py --check","tests/provider_v3_minimizer_published_test.py","tests/provider_pending_minimizer_test.py"):
+for token in ("tests/provider_v3_minimizer_published_test.py","tests/provider_pending_minimizer_test.py"):
     assert token in bulk, token
 reconcile_block=bulk.split("Reconcile pending publication without rewriting active bytes",1)[1].split("- name: Validate bulk onboarding contracts",1)[0]
 assert "python scripts/reapply_published_overrides.py" not in reconcile_block
-assert "python scripts/finalize_provider_v3_minimizer.py\n" not in reconcile_block
-assert "python scripts/finalize_provider_v3_minimizer.py --check" in reconcile_block
-assert bulk.index("python scripts/finalize_provider_v3_minimizer.py --check") < bulk.index("python scripts/generate_language_manifests.py")
+assert "python scripts/finalize_provider_v3_minimizer.py" not in reconcile_block
+assert "python tests/provider_v3_minimizer_published_test.py" in reconcile_block
+assert "publication fingerprint stale" in reconcile_block
 assert "provider_clean_reconstruction_contract_test.py" not in bulk
 assert "materialize_provider_base_v3_store.py" not in bulk
 assert "assets/providers" in bulk
