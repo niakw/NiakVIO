@@ -23,6 +23,7 @@ from provider_patch_blocks import decode_managed_data
 
 ROOT = Path(__file__).resolve().parents[1]
 MANIFEST = ROOT / "manifest.json"
+VF_MANIFEST = ROOT / "vf" / "manifest.json"
 CATALOG = ROOT / "provider_catalog.json"
 OVERRIDES = ROOT / "provider-overrides.json"
 PROVENANCE = ROOT / "PROVENANCE.json"
@@ -48,6 +49,56 @@ def write(path: Path, value: Any) -> None:
 
 def norm(value: Any) -> str:
     return re.sub(r"[^a-z0-9._-]+", "-", str(value or "").strip().casefold()).strip("-")
+
+
+TARGET_ACTIVE = 60
+
+
+def active_count(manifest: dict[str, Any]) -> int:
+    return sum(
+        1 for row in manifest.get("scrapers") or []
+        if isinstance(row, dict) and row.get("enabled") is not False
+    )
+
+
+def activation_targets(request: dict[str, Any]) -> dict[str, int]:
+    raw=request.get("targetActive") if isinstance(request.get("targetActive"), dict) else {}
+    out: dict[str, int] = {}
+    for scope in ("global", "france"):
+        try:
+            value=int(raw.get(scope) or 0)
+        except (TypeError, ValueError):
+            value=0
+        if value <= 0 or value > TARGET_ACTIVE:
+            raise RuntimeError(f"targetActive.{scope} must be within 1..{TARGET_ACTIVE}")
+        out[scope]=value
+    return out
+
+
+def projection_impact(scope: str, catalog_entry: dict[str, Any] | None) -> dict[str, int]:
+    impact={"global": 0, "france": 0}
+    if scope == "france":
+        impact["france"]=1
+        return impact
+    if scope != "global":
+        return impact
+    impact["global"]=1
+    projections=(catalog_entry or {}).get("projections") if isinstance(catalog_entry, dict) else {}
+    if isinstance(projections, dict) and projections.get("vf") is True:
+        impact["france"]=1
+    return impact
+
+
+def capacity_block_reason(
+    current: dict[str, int], targets: dict[str, int], impact: dict[str, int]
+) -> str | None:
+    exceeded=[
+        scope for scope in ("global", "france")
+        if int(current.get(scope) or 0) + int(impact.get(scope) or 0) > int(targets.get(scope) or 0)
+    ]
+    if not exceeded:
+        return None
+    return "projection_target_capacity_reached:" + ",".join(exceeded)
 
 
 def node_syntax_ok(path: Path) -> tuple[bool, str]:
@@ -117,6 +168,7 @@ def main() -> int:
         raise RuntimeError("request/stage provider identity set mismatch")
 
     manifest = load(MANIFEST, {"scrapers": []})
+    vf_manifest = load(VF_MANIFEST, {"scrapers": []})
     catalog = load(CATALOG, {"providers": []})
     overrides = load(OVERRIDES, {})
     provenance = load(PROVENANCE, {"providers": {}})
@@ -137,6 +189,18 @@ def main() -> int:
     patches = overrides.get("provider_patches") if isinstance(overrides.get("provider_patches"), dict) else {}
     capabilities = overrides.get("provider_capabilities") if isinstance(overrides.get("provider_capabilities"), dict) else {}
     hub_map = hubs.get("providers") if isinstance(hubs.get("providers"), dict) else {}
+
+    targets = activation_targets(request)
+    current_active = {
+        "global": active_count(manifest),
+        "france": active_count(vf_manifest),
+    }
+    active_before = dict(current_active)
+    for scope in ("global", "france"):
+        if current_active[scope] > targets[scope]:
+            raise RuntimeError(
+                f"current active {scope}={current_active[scope]} already exceeds request target {targets[scope]}"
+            )
 
     activated: list[str] = []
     blocked: list[dict[str, Any]] = []
@@ -241,6 +305,19 @@ def main() -> int:
             blocked.append({"provider": pid, "reason": "direct_public_origin_missing"})
             continue
 
+        impact = projection_impact(scope, catalog_entry)
+        capacity_reason = capacity_block_reason(current_active, targets, impact)
+        if capacity_reason:
+            blocked.append({
+                "provider": pid,
+                "reason": "projection_target_capacity_reached",
+                "details": capacity_reason,
+                "impact": impact,
+                "active": dict(current_active),
+                "targets": dict(targets),
+            })
+            continue
+
         try:
             active_relative = restore_pending_artifacts(pid, manifest_row, prov, dry_run=args.dry_run)
         except RuntimeError as exc:
@@ -308,6 +385,8 @@ def main() -> int:
         prov["bulk_offline_activation_proof"] = proof
         activated.append(pid)
         proof_rows.append({"provider": pid, **proof})
+        for projection in ("global", "france"):
+            current_active[projection] += int(impact.get(projection) or 0)
 
     activation_scopes = {
         "global": sum(1 for row in proof_rows if str(row.get("scope") or "").casefold() == "global"),
@@ -323,6 +402,9 @@ def main() -> int:
             "blockedCount": len(blocked),
             "blockedProviders": blocked,
             "providers": [],
+            "targetActive": targets,
+            "activeBefore": active_before,
+            "activeAfter": current_active,
             "dryRun": bool(args.dry_run),
         }
         write(args.output, payload)
@@ -338,6 +420,9 @@ def main() -> int:
         "blockedCount": len(blocked),
         "blockedProviders": blocked,
         "providers": proof_rows,
+        "targetActive": targets,
+        "activeBefore": active_before,
+        "activeAfter": current_active,
         "networkPolicy": (
             "GitHub-hosted WAF/network failures are inconclusive. This proof covers exact generated bytes, "
             "syntax and Provider v3 contract only; FULL OK still requires live/native validation."
