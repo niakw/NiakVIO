@@ -72,6 +72,15 @@
       "pipelineStage": "global_invariants",
       "profiles": []
     },
+    "content_identity_gap": {
+      "scope": "capability",
+      "repairType": "catalogue_identity_resolution",
+      "engine": "catalogue_resolution_policy",
+      "pipelineStage": "capability_engine",
+      "profiles": [
+        "adaptive_runtime_recovery"
+      ]
+    },
     "short_media": {
       "scope": "global",
       "repairType": "media_identity_guard",
