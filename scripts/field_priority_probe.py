@@ -243,9 +243,27 @@ def supports(row: dict[str, Any], fixture: dict[str, Any]) -> bool:
     return media_type in types
 
 
-def probe(row: dict[str, Any], fixture: dict[str, Any], timeout: int) -> dict[str, Any]:
+def resolve_provider_path(manifest_path: Path, row: dict[str, Any]) -> Path:
+    filename = str(row.get("filename") or "").strip()
+    if not filename:
+        raise ValueError("provider filename missing")
+    candidate = (manifest_path.parent / filename).resolve()
+    if candidate != ROOT and ROOT not in candidate.parents:
+        raise ValueError(f"provider path escapes repository: {filename}")
+    if not candidate.is_file():
+        raise ValueError(f"provider file missing: {filename}")
+    return candidate
+
+
+def probe(
+    row: dict[str, Any],
+    fixture: dict[str, Any],
+    timeout: int,
+    manifest_path: Path,
+) -> dict[str, Any]:
     filename = str(row.get("filename") or "")
-    strict = run_once(filename, fixture, timeout, 1)
+    provider_path = resolve_provider_path(manifest_path, row)
+    strict = run_once(provider_path, fixture, timeout, 1)
     diagnostic = None
     if strict.get("stream_count", 0) <= 0 and bool(row.get("hasSettings")):
         diagnostic = run_once(provider_path, fixture, timeout, 4)
@@ -266,10 +284,38 @@ def main() -> int:
     parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
     parser.add_argument("--workers", type=int, default=10)
     parser.add_argument("--timeout", type=int, default=12)
+    parser.add_argument("--manifest", type=Path, default=MANIFEST)
+    parser.add_argument(
+        "--providers",
+        default="",
+        help="Comma-separated canonical provider IDs to probe. Empty means all enabled providers.",
+    )
     args = parser.parse_args()
 
-    manifest = load_json(MANIFEST)
-    rows = [row for row in manifest.get("scrapers") or [] if isinstance(row, dict) and row.get("enabled") is True]
+    manifest_path = args.manifest if args.manifest.is_absolute() else (ROOT / args.manifest)
+    manifest_path = manifest_path.resolve()
+    if manifest_path != ROOT and ROOT not in manifest_path.parents:
+        raise SystemExit(f"manifest escapes repository: {manifest_path}")
+    manifest = load_json(manifest_path)
+    requested = {
+        canonical(value)
+        for value in str(args.providers or "").split(",")
+        if canonical(value)
+    }
+    rows = [
+        row
+        for row in manifest.get("scrapers") or []
+        if isinstance(row, dict)
+        and row.get("enabled") is True
+        and (not requested or canonical(row.get("id")) in requested)
+    ]
+    if requested:
+        selected = {canonical(row.get("id")) for row in rows}
+        missing = sorted(requested - selected)
+        if missing:
+            raise SystemExit(
+                f"requested enabled providers missing from manifest: {','.join(missing)}"
+            )
     workers = max(1, min(12, int(args.workers)))
     timeout = max(8, min(20, int(args.timeout)))
     jobs: list[tuple[dict[str, Any], dict[str, Any]]] = []
