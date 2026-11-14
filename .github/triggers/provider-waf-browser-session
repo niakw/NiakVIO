@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "requestedAt": "2026-11-14T21:15:00+01:00",
+  "requestedAt": "2026-11-14T21:25:00+01:00",
   "targetProviders": [
     "arrowtv",
     "chillflix",
@@ -16,7 +16,8 @@
     "67movies"
   ],
   "reuseExistingEvidence": false,
-  "reason": "Qualify first 12/17 bulk_offline_contract_live_unverified active providers through exact-byte residential full-provider replay. Transport authority is separated from Repair authority; observation-only, no provider mutation or FULL promotion without terminal identity proof.",
-  "sourceSha": "84b8704847f12b496e46a5cbc203a418fc4c0e4f",
-  "cohort": "offline-live-unverified-1-of-2"
+  "reason": "Retry first 12/17 exact-byte offline-live-unverified cohort after current activation ledger schema fix; require non-zero residential full-provider selection and keep transport authority separate from Repair.",
+  "sourceSha": "6f5af84690eec9d971efea7b029cd63369f1008f",
+  "cohort": "offline-live-unverified-1-of-2-retry-ledger-schema",
+  "requestVersion": 2
 }
