@@ -131,7 +131,7 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p automation
-          python scripts/probe_bulk_provider_routes.py             --request .github/provider-onboarding/batch.json             --output "automation/provider-bulk-route-discovery-shard-${{ matrix.shard }}.json"             --shard-count 16             --shard-index "${{ matrix.shard }}"             --timeout 8             --max-chunks 8             --max-runtime-chunks 8             --provider-timeout 140
+          python scripts/probe_bulk_provider_routes.py             --request .github/provider-onboarding/batch.json             --output "automation/provider-bulk-route-discovery-shard-${{ matrix.shard }}.json"             --shard-count 16             --shard-index "${{ matrix.shard }}"             --timeout 8             --max-chunks 8             --max-runtime-chunks 8             --provider-timeout 45
 
       - name: Upload route-discovery shard
         if: always()
