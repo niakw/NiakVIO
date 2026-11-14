@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "sourceRunId": "43634408521",
-  "sourceTriggerSha": "c5218f7476c23d47c3e6e1050f86788c528faa1b",
+  "sourceRunId": "43635105039",
+  "sourceTriggerSha": "37f98b6783fdc425673e3fc77fc374a549adfcd8",
   "unresolvedProviderCount": 18,
   "dynamicVariantProviderCount": 1,
   "dynamicVariantProviders": [
@@ -16,6 +16,7 @@
     "67movies",
     "allanime",
     "allwish",
+    "anikototv",
     "anime-sama",
     "anime-ultime",
     "animekai",
@@ -26,6 +27,7 @@
     "animevostfr",
     "arrowtv",
     "boredflix",
+    "castle",
     "chillflix",
     "cinegram",
     "cinemabz",
@@ -34,7 +36,9 @@
     "emnexmovies",
     "flemmix",
     "flixer",
+    "french-manga",
     "hindmoviez",
+    "internet-archive",
     "kehflix",
     "kurage",
     "latestmovies",
@@ -44,11 +48,17 @@
     "moviesmod",
     "movish",
     "movy",
+    "mugiwarastream",
+    "neko-sama",
     "neonflix",
+    "papadustream",
     "persianstremio",
     "playimdb",
     "primewire",
+    "purstream",
+    "sekai",
     "shuttletv",
+    "streamzo",
     "uhdmovies",
     "vidfast",
     "vidlove",
@@ -63,7 +73,7 @@
     "yflix"
   ],
   "dynamicVariantFallbackUsed": true,
-  "groupCount": 2,
+  "groupCount": 5,
   "executionModel": {
     "default": "family/signature batch",
     "liveProbeConcurrency": "audit_provider_quick_yield ThreadPool",
@@ -72,8 +82,46 @@
   },
   "groups": [
     {
-      "groupId": "learning|mixed_embed_resolver",
-      "repairScope": "learning",
+      "groupId": "terminal-extraction|mixed_embed_resolver",
+      "repairScope": "terminal-extraction",
+      "runtimeFamilies": [
+        "mixed_embed_resolver"
+      ],
+      "capabilityStrategy": "mixed_embed_resolver",
+      "evidenceDepths": [
+        "chain"
+      ],
+      "dominantIssues": [
+        "network_http_error",
+        "network_zero_result",
+        "waf_challenge"
+      ],
+      "harnessTransportClasses": [],
+      "transportSignature": "not-applicable",
+      "providerCount": 10,
+      "providers": [
+        "boredflix",
+        "cinemabz",
+        "corsflix",
+        "emnexmovies",
+        "latestmovies",
+        "movish",
+        "movy",
+        "neonflix",
+        "primewire",
+        "vuflix"
+      ],
+      "action": "apply/test shared terminal-player extraction profile to the whole capability family",
+      "selectionAuthorities": [
+        "provider-census-status.json:brainCheckRequired"
+      ],
+      "dynamicVariantProviders": [],
+      "executionPolicy": "batch-first",
+      "providerLocalFallback": "only-after-shared-profile-failure"
+    },
+    {
+      "groupId": "harness-compatibility|mixed_embed_resolver|github-all-transports-challenged",
+      "repairScope": "harness-compatibility",
       "runtimeFamilies": [
         "mixed_embed_resolver"
       ],
@@ -82,31 +130,77 @@
         "none"
       ],
       "dominantIssues": [
-        "gate_runtime_plan_missing"
+        "waf_challenge"
+      ],
+      "harnessTransportClasses": [
+        "github-all-transports-challenged"
+      ],
+      "transportSignature": "github-all-transports-challenged",
+      "providerCount": 3,
+      "providers": [
+        "arrowtv",
+        "chillflix",
+        "cinegram"
+      ],
+      "action": "compare browser/native/residential transport and route client-owned gaps away from provider mutation",
+      "selectionAuthorities": [
+        "provider-census-status.json:brainCheckRequired"
+      ],
+      "dynamicVariantProviders": [],
+      "executionPolicy": "batch-first",
+      "providerLocalFallback": "only-after-shared-profile-failure"
+    },
+    {
+      "groupId": "learning|mixed_embed_resolver",
+      "repairScope": "learning",
+      "runtimeFamilies": [
+        "mixed_embed_resolver"
+      ],
+      "capabilityStrategy": "mixed_embed_resolver",
+      "evidenceDepths": [
+        "lookup"
+      ],
+      "dominantIssues": [
+        "network_zero_result"
       ],
       "harnessTransportClasses": [],
       "transportSignature": "not-applicable",
-      "providerCount": 17,
+      "providerCount": 3,
       "providers": [
         "67movies",
-        "arrowtv",
-        "boredflix",
-        "chillflix",
-        "cinegram",
-        "cinemabz",
-        "corsflix",
-        "emnexmovies",
         "flixer",
-        "latestmovies",
-        "movish",
-        "movy",
-        "neonflix",
-        "primewire",
-        "shuttletv",
-        "vuflix",
-        "watch-cartoon-online"
+        "shuttletv"
       ],
       "action": "queue by signature for Brain learning; provider-local repair only after shared profiles fail",
+      "selectionAuthorities": [
+        "provider-census-status.json:brainCheckRequired"
+      ],
+      "dynamicVariantProviders": [],
+      "executionPolicy": "batch-first",
+      "providerLocalFallback": "only-after-shared-profile-failure"
+    },
+    {
+      "groupId": "harness-compatibility|mixed_embed_resolver|no-transport-evidence",
+      "repairScope": "harness-compatibility",
+      "runtimeFamilies": [
+        "mixed_embed_resolver"
+      ],
+      "capabilityStrategy": "mixed_embed_resolver",
+      "evidenceDepths": [
+        "none"
+      ],
+      "dominantIssues": [
+        "waf_challenge"
+      ],
+      "harnessTransportClasses": [
+        "no-transport-evidence"
+      ],
+      "transportSignature": "no-transport-evidence",
+      "providerCount": 1,
+      "providers": [
+        "watch-cartoon-online"
+      ],
+      "action": "compare browser/native/residential transport and route client-owned gaps away from provider mutation",
       "selectionAuthorities": [
         "provider-census-status.json:brainCheckRequired"
       ],
