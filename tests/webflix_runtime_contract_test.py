@@ -52,3 +52,12 @@ assert len(routes) == 3
 assert all("{tmdbId}" in route for route in routes)
 
 print("WEBFLIX_RUNTIME_CONTRACT_OK routes=3 challenge_solver=false")
+
+
+for required in (
+    "/api/player-embed/vidzy-path?kind=movie&tmdbId=",
+    "/api/v/z/",
+    "Webflix - Vidzy",
+    "direct-mp4-or-tmdb-signed-vidzy-hls",
+):
+    assert required in text, required
