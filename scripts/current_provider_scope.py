@@ -23,6 +23,7 @@ assert ACTIVE_DIR.name == "providers"
 DISABLED_DIR = (ROOT / "provider-disabled").resolve()
 OLD_DIR = (ROOT / "provider-old").resolve()
 MANIFEST = ROOT / "manifest.json"
+VF_MANIFEST = ROOT / "vf" / "manifest.json"
 PROVENANCE = ROOT / "PROVENANCE.json"
 
 
@@ -234,3 +235,32 @@ def audit_projection_scope(root: Path = ROOT) -> dict[str, int]:
         "union_visible": len(union),
         "union_active": sum(enabled for _, enabled in union.values()),
     }
+
+def projection_visible_provider_ids(root: Path = ROOT) -> set[str]:
+    """Union of Global and France projection identities after integrity validation."""
+    root = root.resolve()
+    audit_projection_scope(root)
+    result: set[str] = set()
+    for relative in ("manifest.json", "vf/manifest.json"):
+        payload = json.loads((root / relative).read_text(encoding="utf-8"))
+        rows = payload.get("scrapers")
+        if not isinstance(rows, list):
+            raise RuntimeError(f"{relative}: missing scraper list")
+        local: set[str] = set()
+        for row in rows:
+            if not isinstance(row, dict):
+                raise RuntimeError(f"{relative}: invalid provider row")
+            provider = cid(row.get("id"))
+            if not provider or provider in local:
+                raise RuntimeError(f"{relative}: empty or duplicate provider id: {provider}")
+            local.add(provider)
+        result.update(local)
+    return result
+
+
+def projection_runtime_visible_provider_ids(root: Path = ROOT) -> set[str]:
+    """Current Global+France identities excluding onboarding-pending rows."""
+    if root.resolve() != ROOT.resolve():
+        raise RuntimeError("projection runtime scope currently requires repository root authority")
+    return projection_visible_provider_ids(root) - pending_provider_ids()
+
