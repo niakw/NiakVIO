@@ -9354,7 +9354,7 @@
     "yflix": {
       "capability": "mixed_embed_resolver",
       "manifest_overrides": {
-        "enabled": true
+        "enabled": false
       },
       "candidate_config_reconciliation": {
         "version": 3,
@@ -9496,7 +9496,7 @@
           }
         ]
       },
-      "route_data_state": "repair",
+      "route_data_state": "off",
       "repair_disposition": {
         "schemaVersion": 1,
         "authority": "provider-repair-disposition-v1",
@@ -9593,7 +9593,9 @@
         "movie",
         "tv"
       ],
-      "official_site": "https://1moviesz.to"
+      "official_site": "https://1moviesz.to",
+      "activation_eligible": false,
+      "manual_off_reason": "manual_off_zero_playable_movie_tv_2026-11-14"
     },
     "allanime": {
       "capability": "direct_media",
@@ -10380,9 +10382,9 @@
         ]
       },
       "manifest_overrides": {
-        "enabled": true
+        "enabled": false
       },
-      "route_data_state": "repair",
+      "route_data_state": "off",
       "repair_disposition": {
         "schemaVersion": 1,
         "authority": "provider-repair-disposition-v1",
@@ -10416,7 +10418,9 @@
           ]
         },
         "evidenceDestructive": false
-      }
+      },
+      "activation_eligible": false,
+      "manual_off_reason": "manual_off_zero_playable_anime_2026-11-14"
     },
     "fullanime": {
       "capability": "mixed_embed_resolver",

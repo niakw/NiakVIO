@@ -23,7 +23,6 @@
     "animesalt",
     "animesama-co",
     "animesultra",
-    "animevost-fr",
     "animevostfr",
     "castle",
     "coflix",
@@ -52,11 +51,16 @@
     "voiranime-homes",
     "voiranime-rip",
     "vostfree",
-    "wookafr",
+    "wookafr"
+  ],
+  "repairBlocked": [
+    "animevost-fr",
     "yflix"
   ],
-  "repairBlocked": [],
-  "disabledNow": [],
+  "disabledNow": [
+    "animevost-fr",
+    "yflix"
+  ],
   "providers": [
     {
       "provider": "anime-sama",
@@ -446,18 +450,15 @@
     },
     {
       "provider": "yflix",
-      "action": "KEEP_BACKEND",
-      "repairEligible": true,
-      "confidence": "high",
-      "authorityClass": "api-or-backend",
+      "action": "DISABLE_MANUAL_POLICY",
+      "repairEligible": false,
+      "confidence": "terminal",
+      "authorityClass": "manual-off",
       "failureCount": 0,
-      "backendUrls": [
-        "https://enc-dec.app/api",
-        "https://enc-dec.app/db/flix"
-      ],
       "reasons": [
-        "structured_backend_authority"
-      ]
+        "manual_off_zero_playable_movie_tv_2026-11-14"
+      ],
+      "appliedDisableReason": "manual_off_zero_playable_movie_tv_2026-11-14"
     },
     {
       "provider": "allanime",
@@ -498,17 +499,15 @@
     },
     {
       "provider": "animevost-fr",
-      "action": "KEEP_BACKEND",
-      "repairEligible": true,
-      "confidence": "high",
-      "authorityClass": "api-or-backend",
+      "action": "DISABLE_MANUAL_POLICY",
+      "repairEligible": false,
+      "confidence": "terminal",
+      "authorityClass": "manual-off",
       "failureCount": 0,
-      "backendUrls": [
-        "https://animevost.fr"
-      ],
       "reasons": [
-        "structured_backend_authority"
-      ]
+        "manual_off_zero_playable_anime_2026-11-14"
+      ],
+      "appliedDisableReason": "manual_off_zero_playable_anime_2026-11-14"
     },
     {
       "provider": "mallumv",
