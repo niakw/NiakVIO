@@ -279,6 +279,12 @@ def main() -> int:
         action="store_true",
         help="Temporarily expose generated profiles to stage reapply, then restore production provider-overrides.json.",
     )
+    parser.add_argument(
+        "--ephemeral-overrides-output",
+        type=Path,
+        default=None,
+        help="Optional sandbox copy of the generated override state before production overrides are restored.",
+    )
     args = parser.parse_args()
     target_ids = {str(value or "").strip().casefold() for value in args.provider if str(value or "").strip()}
 
@@ -337,7 +343,14 @@ def main() -> int:
             "last_refresh_scope": "full",
         }
     original_overrides = OVR.read_bytes() if OVR.exists() else None
-    OVR.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    generated_overrides = json.dumps(data, ensure_ascii=False, indent=2) + "\n"
+    OVR.write_text(generated_overrides, encoding="utf-8")
+    if args.ephemeral_overrides_output is not None:
+        output = args.ephemeral_overrides_output
+        if not output.is_absolute():
+            output = (ROOT / output).resolve()
+        output.parent.mkdir(parents=True, exist_ok=True)
+        output.write_text(generated_overrides, encoding="utf-8")
 
     repatched = 0
     try:
