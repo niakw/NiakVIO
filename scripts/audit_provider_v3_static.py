@@ -113,7 +113,16 @@ for row in rows:
     if exact_recovery and isinstance(static_row.get("model"),dict):
         recovered_expected = json.loads(json.dumps(static_row["model"]))
         recovered_expected["providerId"] = pid
-        expected_data = recovered_expected
+        # Recovery authority is transitional: accept the exact recovered CONFIG
+        # only while those exact bytes are still published. Once the canonical
+        # finalizer deterministically rematerializes the provider from current
+        # patch/capability/static inputs, the current projection becomes the
+        # authority instead of pinning publication forever to recovery bytes.
+        if DOMAIN_ONLY:
+            if _domain_projection(data) == _domain_projection(recovered_expected):
+                expected_data = recovered_expected
+        elif data == recovered_expected:
+            expected_data = recovered_expected
     if DOMAIN_ONLY:
         published_domain=_domain_projection(data)
         expected_domain=_domain_projection(expected_data)
