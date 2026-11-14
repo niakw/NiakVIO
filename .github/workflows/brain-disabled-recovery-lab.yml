@@ -240,10 +240,16 @@ jobs:
             -hf 'Qwen/Qwen2.5-Coder-3B-Instruct-GGUF:Q4_K_M' \
             --host 127.0.0.1 --port 8080 -c 8192 -np 1 \
             > brain-disabled-recovery/brain-llm/llama-server.log 2>&1 &
-          for _ in $(seq 1 90); do
+          server_pid=$!
+          for _ in $(seq 1 300); do
             if curl -fsS http://127.0.0.1:8080/health >/dev/null 2>&1; then
               echo "FIELD_DISABLED_RECOVERY_LLM_SERVER available=true model=qwen2.5-coder-3b"
               exit 0
+            fi
+            if ! kill -0 "$server_pid" >/dev/null 2>&1; then
+              tail -120 brain-disabled-recovery/brain-llm/llama-server.log || true
+              echo "FIELD_DISABLED_RECOVERY_LLM_SERVER available=false reason=process_exited" >&2
+              exit 1
             fi
             sleep 2
           done
