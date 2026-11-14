@@ -66,6 +66,8 @@ Sources principales :
 
 `providers/*.js` est une **sortie runtime adressée par contenu**, jamais une seed de reconstruction. Les bundles historiques/upstream servent uniquement de connaissance et de provenance.
 
+Les projections de production ont des scopes distincts. `manifest.json` reste l’autorité **Global** ; `provider_catalog.json` peut porter une identité `{general:false,vf:true}` qui n’existe que dans la projection France. Le lifecycle courant raisonne sur l’union Global + France-only cataloguée pour disabled/re-enable/archive et pour les ledgers static/materialization, mais **ne doit jamais réinjecter une ligne France-only dans Global**. Les collisions d’identité Global/France-only sont fail-closed. `vf/manifest.json` et `vf-no-anime/manifest.json` restent des projections dérivées, jamais une deuxième autorité indépendante.
+
 Le ProviderBase canonique porte `NIAKVIO_PROVIDER_BASE_OWNED_V3`.
 
 ## 3. Envelope et ownership
@@ -257,6 +259,8 @@ Le finalizer n’est ni une autorité de découverte, ni un moteur Learning, ni 
 - les essais restent sandboxés ;
 - les preuves doivent être sanitizées ;
 - les mutations du Learning normal deviennent des propositions reviewables ;
+- chaque expérience Learning réussie valide systématiquement l’artifact de proposition d’architecture et ses contrats, même lorsque zéro publication n’est demandée ;
+- cette validation routine reste éphémère/review-only : l’ouverture ou le rafraîchissement d’une PR d’architecture exige explicitement `workflow_dispatch` + `publish_proposal=true` + `NIAKVIO_ALLOW_BRAIN_PROPOSAL_PR=true` ;
 - l’exception `architecture_force=true` reste FORCE-owned : `publish_proposal=false`, aucun PR/branche FORCE, patch structurel allowlisté validé puis commit lease-guarded directement sur `main` ;
 - `brain-learning/proposals` n’est pas une autorité de publication ;
 - aucune mutation ne contourne les gates d’identité, sécurité, reconstruction et release.

@@ -1,3 +1,10 @@
+## 2026-11-14 — Architecture documentation synchronized with Brain/lifecycle control-plane changes
+
+- ARCHITECTURE.md now states that manifest.json is Global-only, provider_catalog may own France-only identities, lifecycle/static/materialization authority is their union, and France-only rows must never leak into Global.
+- Learning architecture now documents mandatory validation after every successful experiment while retaining manual PR publication and FORCE-only direct-main promotion boundaries.
+- BRAIN_REPAIR_ARCHITECTURE.md carries the same invariants so future Repair/Learning changes cannot rely on the obsolete “routine proposal generated but not validated” behavior.
+- Documentation-only alignment; no provider bytes or activation changed.
+
 ## 2026-11-14 — Lifecycle workflow now validates the full Global + France-only union
 
 - Dedicated lifecycle run 43572290222 on 9522f1fd succeeded with no repository mutation, but its inline directory/static/materialization assertions still used current_provider_scope's intentionally Global-only counts. That would reject a future valid France-only lifecycle row after static/materialization had correctly expanded to the union. The workflow also did not directly execute the new France-only synthetic lifecycle test.
