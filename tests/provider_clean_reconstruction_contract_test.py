@@ -86,6 +86,13 @@ assert coverage["disabled_visible"]==disabled_provider_count(), coverage
 
 materializer=(SCRIPTS/"materialize_provider_v3_all.py").read_text(encoding="utf-8")
 store_materializer=(SCRIPTS/"materialize_provider_base_v3_store.py").read_text(encoding="utf-8")
+base_store_source=(SCRIPTS/"provider_base_store.py").read_text(encoding="utf-8")
+repair_legacy_source=base_store_source.split("def repair_legacy_bases()",1)[1].split("def repair_derived_base_tails()",1)[0]
+repair_derived_source=base_store_source.split("def repair_derived_base_tails()",1)[1].split("def migrate_existing()",1)[0]
+assert "active_provider_rows()" in repair_legacy_source
+assert "manifest.get(\"scrapers\")" not in repair_legacy_source
+assert "active_provider_rows()" in repair_derived_source
+assert "manifest.get(\"scrapers\")" not in repair_derived_source
 manual=(ROOT/".github/workflows/provider-v3-reconstruct-all.yml").read_text(encoding="utf-8")
 routine=(ROOT/".github/workflows/sync.yml").read_text(encoding="utf-8")
 learn=(ROOT/".github/workflows/brain-learning-lab.yml").read_text(encoding="utf-8")

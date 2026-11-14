@@ -4781,7 +4781,6 @@ def repair_legacy_bases() -> dict[str, Any]:
     reconstructed independently, validated in Learning/Lab, materialized as a
     ProviderBase, and recorded with CLEAN_RECONSTRUCTION_SOURCE.
     """
-    manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
     provenance = json.loads(PROVENANCE.read_text(encoding="utf-8"))
     rows = provenance.get("providers")
     if not isinstance(rows, dict):
@@ -4792,9 +4791,7 @@ def repair_legacy_bases() -> dict[str, Any]:
     clean_reconstructed = 0
     marked_at = datetime.now(timezone.utc).isoformat()
 
-    for entry in manifest.get("scrapers") or []:
-        if not isinstance(entry, dict):
-            continue
+    for entry in active_provider_rows():
         provider_id = canonical_id(str(entry.get("id") or ""))
         if not provider_id:
             continue
@@ -4855,7 +4852,6 @@ def repair_derived_base_tails() -> dict[str, Any]:
     provider logic. If a previously verified canonical base must change, its
     clean proof is invalidated and it returns to pending canonical Deep proof.
     """
-    manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
     provenance = json.loads(PROVENANCE.read_text(encoding="utf-8"))
     rows = provenance.get("providers")
     if not isinstance(rows, dict):
@@ -4865,9 +4861,7 @@ def repair_derived_base_tails() -> dict[str, Any]:
     invalidated: list[str] = []
     repaired_at = datetime.now(timezone.utc).isoformat()
 
-    for entry in manifest.get("scrapers") or []:
-        if not isinstance(entry, dict):
-            continue
+    for entry in active_provider_rows():
         provider_id = canonical_id(str(entry.get("id") or ""))
         if not provider_id:
             continue
@@ -4917,8 +4911,8 @@ def repair_derived_base_tails() -> dict[str, Any]:
 
     provider_ids = [
         canonical_id(str(entry.get("id") or ""))
-        for entry in manifest.get("scrapers") or []
-        if isinstance(entry, dict) and canonical_id(str(entry.get("id") or ""))
+        for entry in active_provider_rows()
+        if canonical_id(str(entry.get("id") or ""))
     ]
     clean_count = sum(1 for provider_id in provider_ids if is_clean_reconstructed(rows.get(provider_id)))
     store = provenance.get("provider_base_store")

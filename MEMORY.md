@@ -1,3 +1,9 @@
+## 2026-11-14 — ProviderBase maintenance aligned with disabled lifecycle
+
+- Bulk onboarding run 43579074333 successfully staged all 17 requested candidates in its workspace, then failed after staging in provider_base_store.repair_legacy_bases(): uhdmovies durable base was no longer under provider-bases/ because lifecycle had correctly moved it to provider-disabled/provider-bases/.
+- Root cause: repair_legacy_bases() and repair_derived_base_tails() iterated every row in manifest.json even though disabled ProviderBase artifacts are deliberately outside the executable ProviderBase store. validate_all() already used active_provider_rows(), so maintenance and validation disagreed.
+- Align both maintenance operations with active_provider_rows(). Disabled retained bytes/provenance are left untouched; active ProviderBase integrity rules remain unchanged. Extend clean-reconstruction contract to reject future all-manifest iteration in these two maintenance functions. The failed onboarding published nothing; rerun required after exact-SHA CI.
+
 ## 2026-11-14 — Spreadsheet-selected 20/20/20 recovery cohort prepared
 
 - User supplied NiakVIO-GLOBAL-FINAL-STRICT-TOP20-2026-09-11(4).xlsx. Selection uses the Global and France inventory rows as candidate metadata only; their sheet status is NON VÉRIFIÉ — LOCAL UNIQUEMENT, so no row is activated from spreadsheet rank alone.
