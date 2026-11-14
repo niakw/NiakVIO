@@ -26,7 +26,7 @@ function projected(row){if(row&&row.state==="ok"&&row.metadata)row=row.metadata;
 async function metadata(q){var row=projected(q.metadata);if(row)return row;try{var fn=g&&g.__nuvioCoreGetTmdbDataV1;if(typeof fn==="function"){var r=await fn({tmdbId:q.tmdbId,mediaType:q.transport,tmdbNamespace:q.transport});return projected(r)}}catch(_e){}return null}
 function title(md){return s(md&&(md.title||md.name||md.original_title||md.original_name))}
 function enc(v){return encodeURIComponent(s(v))}
-function fill(t,q,md){return s(t).replace(/\{tmdbId\}|\{id\}/g,q.tmdbId).replace(/\{season\}/g,String(q.season)).replace(/\{episode\}/g,String(q.episode)).replace(/\{query\}/g,enc(title(md)))}
+function fill(t,q,md){return s(t).replace(/\{tmdbId\}|\{id\}/g,q.tmdbId).replace(/\{transport\}|\{mediaType\}|\{type\}/g,q.transport).replace(/\{season\}/g,String(q.season)).replace(/\{episode\}/g,String(q.episode)).replace(/\{query\}/g,enc(title(md)))}
 function headers(ref){var h={"User-Agent":c.userAgent,"Accept":"text/html,application/xhtml+xml,*/*","Accept-Language":"en-US,en;q=0.9,fr;q=0.7"};if(ref)h.Referer=ref;return h}
 async function get(url,ref){try{var r=await g.fetch(url,{headers:headers(ref),redirect:"follow"});var t=await r.text();return{ok:!!r.ok,status:Number(r.status)||0,url:s(r.url)||url,text:t||""}}catch(_e){return{ok:false,status:0,url:url,text:""}}}
 function cardIdentity(html,q){var id=q.tmdbId,type=q.transport==="movie"?"movie":"tv";
