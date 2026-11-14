@@ -747,3 +747,12 @@ three-stream cap; no extra URLs outside the nominated candidates are probed.
 The wider observation cannot grant publication or falsely report 4K without
 validated terminal bytes, measured height and film/episode identity. This fixes
 a diagnostic sampling bias, not the provider's video qualities by itself.
+
+
+## WAF-limited bulk activation
+
+Production onboarding has an explicit `bulk_offline_contract_live_unverified` path for cohorts whose live probes cannot be treated as authoritative from GitHub-hosted runners because provider WAF / anti-bot layers reject CI egress.
+
+This path is intentionally weaker than `FULL OK` and cannot manufacture runtime evidence. Activation requires the exact post-rebuild Provider v3 bytes, minimizer fixed-point, Node syntax, provider identity/ownership contract, a valid declared public origin, and exact provenance hashes. Activated rows remain `live_unverified`, `strict_activation_eligible=false`, `runtime_evidence_eligible=false`, with `live_native_validation_pending`. Only a later WAF-capable/native replay may promote the provider to `FULL OK`.
+
+Portfolio publication targets are 60 active Global and 60 active France providers. France-only identities remain first-class catalog rows (`general=false, vf=true`) and must never leak into Global.
