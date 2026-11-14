@@ -507,6 +507,12 @@ def stage(request_path: Path, *, bulk: bool = False) -> dict[str, Any]:
             "requires_tmdb_before_run": False,
             "required_fields": ["tmdbId", "mediaType"],
         }
+    if routes:
+        # Route discovery is durable provider knowledge. Persist it in the
+        # canonical patch so rebuild/finalize cannot silently erase an
+        # executable plan that was present in the initial onboarding model.
+        overrides["provider_patches"][provider_id]["learned_routes"] = routes[:24]
+
     overrides["provider_capabilities"][provider_id] = {
         "strategy": strategy,
         "validation": "bulk_onboarding_pending" if bulk else "onboarding_pending",
