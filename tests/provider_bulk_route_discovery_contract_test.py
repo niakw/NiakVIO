@@ -125,6 +125,7 @@ for token in (
     "actions: write",
     "gh workflow run provider-bulk-onboarding.yml --ref main",
     "FIELD_BULK_ROUTE_HANDOFF dispatched=provider-bulk-onboarding",
+    "github.event_name == 'push' && github.sha || 'main'",
 ):
     assert token in workflow, token
 
