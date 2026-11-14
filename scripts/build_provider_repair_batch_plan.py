@@ -174,6 +174,14 @@ def main()->int:
                         if isinstance(row,dict) and str(row.get("status") or "").strip().casefold()=="disabled")
     disabled_dynamic=sorted(set(completeness_debt)&disabled_ids)
     completeness_debt={provider:debt for provider,debt in completeness_debt.items() if provider not in disabled_ids}
+    authority_rediscovery={cid(value) for value in status.get("authorityRediscoveryQueue") or [] if cid(value)}-disabled_ids
+    environment_owned={cid(value) for value in [
+        *(status.get("environmentQueue") or []),
+        *(status.get("targetedTransportBlockedQueue") or []),
+    ] if cid(value)}-disabled_ids
+    overlap=authority_rediscovery & environment_owned
+    if overlap:
+        raise RuntimeError(f"causal queue overlap authority/environment: {sorted(overlap)}")
     patches=overrides.get("provider_patches") if isinstance(overrides.get("provider_patches"),dict) else {}
     caps=overrides.get("provider_capabilities") if isinstance(overrides.get("provider_capabilities"),dict) else {}
     groups:dict[tuple[str,...],list[dict[str,Any]]]=defaultdict(list)
@@ -194,7 +202,17 @@ def main()->int:
         strategy=scalar(cap.get("strategy") or patch.get("capability"))
         depth=depth_class(list(row.get("evidenceDepth") or []))
         issue=issue_class(scalar(row.get("dominantIssue")))
-        if dynamic_debt and not brain_required:
+        if pid in authority_rediscovery:
+            scope,action=(
+                "transport",
+                "current census authority is unresolved; refresh provider-owned domain/backend authority before any provider mutation",
+            )
+        elif pid in environment_owned:
+            scope,action=(
+                "harness-compatibility",
+                "current census assigns transport/harness ownership; compare browser/native/residential transport before any provider mutation",
+            )
+        elif dynamic_debt and not brain_required:
             scope,action=(
                 "variant-coverage",
                 "current execution proves playable output but fewer variants than the provider announced; keep publication authority unchanged and send completeness repair to Brain Learning",
