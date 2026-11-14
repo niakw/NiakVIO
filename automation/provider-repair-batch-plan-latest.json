@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "sourceRunId": "43603416122",
-  "sourceTriggerSha": "fcc4d8a890ea91908524cbc263b4ce37216f77a9",
-  "unresolvedProviderCount": 2,
+  "sourceRunId": "43603937483",
+  "sourceTriggerSha": "a51be853a03f86a85f2f5d4cdce7096b3a182b87",
+  "unresolvedProviderCount": 3,
   "dynamicVariantProviderCount": 2,
   "dynamicVariantProviders": [
     "hindmoviez",
@@ -15,6 +15,7 @@
     "4khdhub",
     "allanime",
     "allwish",
+    "anikototv",
     "anime-sama",
     "anime-ultime",
     "animekai",
@@ -23,27 +24,38 @@
     "animesultra",
     "animevost-fr",
     "animevostfr",
+    "castle",
     "coflix",
     "flemmix",
+    "french-manga",
+    "hindmoviez",
     "kehflix",
     "kurage",
     "mallumv",
     "moviebox",
     "movieshunt",
     "moviesmod",
+    "mugiwarastream",
+    "neko-sama",
+    "papadustream",
     "persianstremio",
     "playimdb",
+    "purstream",
+    "sekai",
+    "streamzo",
     "uhdmovies",
     "vidfast",
     "vidlove",
     "vidrock",
     "voiranime",
     "voiranime-homes",
+    "voiranime-rip",
     "vostfree",
+    "wookafr",
     "yflix"
   ],
   "dynamicVariantFallbackUsed": true,
-  "groupCount": 2,
+  "groupCount": 3,
   "executionModel": {
     "default": "family/signature batch",
     "liveProbeConcurrency": "audit_provider_quick_yield ThreadPool",
@@ -51,6 +63,33 @@
     "providerLocalRepair": "exception path only"
   },
   "groups": [
+    {
+      "groupId": "candidate-replay|mixed_embed_resolver",
+      "repairScope": "candidate-replay",
+      "runtimeFamilies": [
+        "wookafr-current-multiplayer-v2"
+      ],
+      "capabilityStrategy": "mixed_embed_resolver",
+      "evidenceDepths": [
+        "lookup"
+      ],
+      "dominantIssues": [
+        "timeout"
+      ],
+      "harnessTransportClasses": [],
+      "transportSignature": "not-applicable",
+      "providerCount": 1,
+      "providers": [
+        "wookafr"
+      ],
+      "action": "replay/rematerialize retained candidate knowledge against current bytes before new mutation",
+      "selectionAuthorities": [
+        "provider-census-status.json:brainCheckRequired"
+      ],
+      "dynamicVariantProviders": [],
+      "executionPolicy": "batch-first",
+      "providerLocalFallback": "only-after-shared-profile-failure"
+    },
     {
       "groupId": "variant-coverage|direct_media",
       "repairScope": "variant-coverage",
@@ -62,7 +101,7 @@
         "lookup"
       ],
       "dominantIssues": [
-        "none"
+        "provider_returned_streams"
       ],
       "harnessTransportClasses": [],
       "transportSignature": "not-applicable",
