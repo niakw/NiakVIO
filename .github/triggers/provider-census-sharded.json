@@ -1,11 +1,25 @@
 {
   "schemaVersion": 1,
   "scope": "all",
-  "reason": "Full production-runtime census after bulk-pending isolation; validate existing runtime providers without executing staged pending candidates",
-  "requestedAt": "2026-11-14T10:42:00+01:00",
-  "validation": "post-bulk-pending-runtime-isolation-full-production-replay",
-  "source": "NiakVIO bulk onboarding control-plane validation",
-  "targetProviders": [],
-  "supersedesRun": "43581916640",
-  "requiredEvidence": "Current runtime provider census must complete; pending onboarding identities remain non-executable and excluded from live probing"
+  "reason": "Exact post-release playback revalidation of every currently active Global provider after lifecycle cleanup and Provider v3 minimization",
+  "requestedAt": "2026-11-14T11:23:00+01:00",
+  "validation": "post-release-active-cohort-terminal-replay",
+  "source": "NiakVIO truthful production cohort validation",
+  "targetProviders": [
+    "anikototv",
+    "castle",
+    "french-manga",
+    "hindmoviez",
+    "mugiwarastream",
+    "neko-sama",
+    "papadustream",
+    "purstream",
+    "sekai",
+    "streamzo",
+    "voiranime-homes",
+    "voiranime-rip",
+    "wookafr"
+  ],
+  "supersedesRun": "43583704544",
+  "requiredEvidence": "Each of the 13 active identities must be probed on current materialized bytes; route/candidate/history alone cannot preserve active functional status"
 }

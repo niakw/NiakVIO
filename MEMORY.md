@@ -1,3 +1,9 @@
+## 2026-11-14 — Sharded exact replay requested for all 13 active providers
+
+- The ordinary current-byte census defaults to unresolved scope and therefore cannot establish fresh playback for carried/active FULL rows. Use the existing explicit sharded trigger with scope=all and targetProviders set to the exact 13 enabled Global identities from the current manifest.
+- Targets: anikototv, castle, french-manga, hindmoviez, mugiwarastream, neko-sama, papadustream, purstream, sekai, streamzo, voiranime-homes, voiranime-rip, wookafr. Disabled and bulk-pending identities are intentionally excluded.
+- This is read/test authority only. Any active row that fails current terminal/identity proof must be handled by the existing lifecycle policy rather than preserved by historical status.
+
 ## 2026-11-14 — Census retry requested after lifecycle-aware MovieBox contract fix
 
 - The MovieBox test correction triggers Core/Non-Regression but is not itself a current-byte census push path. Add a second comment-only census workflow marker to rerun the exact current-byte census after the preflight contract fix.
