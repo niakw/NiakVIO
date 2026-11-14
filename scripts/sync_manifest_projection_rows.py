@@ -4,7 +4,7 @@ from __future__ import annotations
 import argparse, json
 from pathlib import Path
 from typing import Any
-from generate_language_manifests import build_no_anime_manifest, nested_entry
+from generate_language_manifests import build_no_anime_manifest, nested_entry, france_only_catalog_rows
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -16,19 +16,34 @@ def load(path: Path) -> dict[str, Any]:
 def canonical(value: object) -> str:
     return str(value or '').strip().casefold()
 
-def synced_vf(root_manifest: dict[str, Any], current_vf: dict[str, Any]) -> dict[str, Any]:
+def synced_vf(root_manifest: dict[str, Any], current_vf: dict[str, Any], *, root: Path = ROOT) -> dict[str, Any]:
+    """Refresh shared rows and retain canonical VF-only rows without Global leakage."""
     root_rows={canonical(row.get('id')):row for row in root_manifest.get('scrapers') or [] if isinstance(row,dict) and canonical(row.get('id'))}
+    france_rows={canonical(row.get('id')):row for row in france_only_catalog_rows(root=root)}
+    if root_rows.keys() & france_rows.keys():
+        raise SystemExit('France-only catalog provider duplicated in Global')
     rows=[]
+    seen=set()
     for old in current_vf.get('scrapers') or []:
         if not isinstance(old,dict): continue
-        source=root_rows.get(canonical(old.get('id')))
-        if source is None: raise SystemExit(f'VF projection contains provider absent from root: {old.get("id")}')
+        identity=canonical(old.get('id'))
+        if not identity or identity in seen:
+            raise SystemExit(f'VF projection contains empty or duplicate identity: {identity}')
+        seen.add(identity)
+        if identity in france_rows:
+            # Use canonical DATA rather than stale nested publication bytes.
+            # Append exclusive rows in the same order as the full generator.
+            continue
+        source=root_rows.get(identity)
+        if source is None:
+            raise SystemExit(f'VF projection contains provider absent from root and France-only catalog: {old.get("id")}')
         rows.append(nested_entry(source))
+    rows.extend(nested_entry(row) for row in france_rows.values())
     return {'name':f"{root_manifest.get('name','NiakVIO')} — VF uniquement",'version':root_manifest.get('version'),'scrapers':rows}
 
 def expected_all() -> dict[Path,dict[str,Any]]:
     root=load(ROOT/'manifest.json')
-    vf=synced_vf(root,load(ROOT/'vf/manifest.json'))
+    vf=synced_vf(root,load(ROOT/'vf/manifest.json'),root=ROOT)
     return {
         Path('vf/manifest.json'):vf,
         Path('no-anime/manifest.json'):build_no_anime_manifest(root),

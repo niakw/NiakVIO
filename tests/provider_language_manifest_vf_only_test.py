@@ -137,3 +137,48 @@ assert actual_scope["union_visible"] == (
     actual_scope["global_only"] + actual_scope["france_only"] + actual_scope["shared"]
 )
 print("Projection filesystem scope audit passed:", actual_scope)
+
+
+# Targeted projection sync must obey the same France-only authority as the
+# complete deterministic rebuild, and reject unknown or leaked identities.
+from sync_manifest_projection_rows import synced_vf
+
+with tempfile.TemporaryDirectory(prefix="niakvio-vf-targeted-sync-") as directory:
+    root = Path(directory)
+    general = {"name": "Synthetic", "version": "1.2.3", "scrapers": [
+        {"id": "shared", "filename": "providers/shared.js", "enabled": True,
+         "contentLanguage": ["fr", "en"], "supportedTypes": ["movie"]},
+        {"id": "global", "filename": "providers/global.js", "enabled": True,
+         "contentLanguage": ["en"], "supportedTypes": ["movie"]},
+    ]}
+    french = {"id": "fr-only", "filename": "provider-disabled/fr-only.js",
+              "enabled": False, "contentLanguage": ["fr"], "supportedTypes": ["movie"]}
+    sample_catalog(root, french)
+    stale = {"scrapers": [
+        {"id": "FR-ONLY", "filename": "../providers/stale.js", "enabled": True},
+        {"id": "SHARED", "filename": "../providers/stale-shared.js", "enabled": False},
+    ]}
+    full = build_manifest(general, {}, {"vf"}, "VF uniquement", root=root)
+    assert synced_vf(general, stale, root=root) == full
+    assert synced_vf(general, {"scrapers": [stale["scrapers"][1]]}, root=root) == full
+    assert synced_vf(general, full, root=root) == full
+    assert [row["id"] for row in general["scrapers"]] == ["shared", "global"]
+    for invalid in (
+        {"scrapers": [{"id": "unknown"}]},
+        {"scrapers": [{"id": "shared"}, {"id": "SHARED"}]},
+    ):
+        try:
+            synced_vf(general, invalid, root=root)
+        except SystemExit:
+            pass
+        else:
+            raise AssertionError("unowned or duplicate VF entry accepted")
+    leaked = {**general, "scrapers": [*general["scrapers"], french]}
+    try:
+        synced_vf(leaked, stale, root=root)
+    except SystemExit:
+        pass
+    else:
+        raise AssertionError("France-only ID leaked into Global")
+
+print("Targeted VF synchronization authority contract passed")
