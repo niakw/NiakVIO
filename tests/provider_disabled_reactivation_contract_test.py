@@ -99,6 +99,9 @@ with tempfile.TemporaryDirectory() as td:
     # Aggregate identity counts are insufficient: each declared lane must own
     # at least one playable payload-verified identity match.
     health["results"][0]["tests"][1]["host_results"][0]["content_identity_status"]="unknown"
+    (root/"brain-disabled-recovery/health/health-results.json").write_text(
+        json.dumps(health), encoding="utf-8"
+    )
     try:
         mod.validate_recovery(root,"demo",root,proof_run_id="42",proof_head_sha="abc123")
     except RuntimeError as exc:
@@ -106,6 +109,9 @@ with tempfile.TemporaryDirectory() as td:
     else:
         raise AssertionError("per-lane identity proof was accepted")
     health["results"][0]["tests"][1]["host_results"][0]["content_identity_status"]="match"
+    (root/"brain-disabled-recovery/health/health-results.json").write_text(
+        json.dumps(health), encoding="utf-8"
+    )
 
     # Exact-byte drift must invalidate the proof before any activation write.
     asset.write_text("console.log('drift')\n",encoding="utf-8")
