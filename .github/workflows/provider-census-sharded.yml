@@ -527,6 +527,14 @@ jobs:
           else
             echo "FIELD_SHARDED_GLOBAL_FANOUT retained=true replaced=false scope=$CENSUS_SCOPE run=$run_id"
           fi
+          if [ "$CENSUS_SCOPE" = "all" ] && [ "$ALLOW_PENDING_TARGETS" != "true" ]; then
+            python scripts/stamp_provider_census_artifact_hashes.py \
+              --status /tmp/provider-census-status.json \
+              --manifest manifest.json \
+              --vf-manifest vf/manifest.json \
+              --output automation/provider-census-all-status-latest.json
+            echo "FIELD_SHARDED_ALL_SCOPE_FRESHNESS_LEDGER updated=true run=$run_id"
+          fi
           if [ "$ALLOW_PENDING_TARGETS" = "true" ]; then
             test -n "$TARGET_PROVIDERS"
             cp /tmp/provider-census-sharded.json "automation/provider-onboarding-pending-census-${run_id}.json"
@@ -597,6 +605,9 @@ jobs:
             git add \
               automation/provider-census-sharded-latest.json \
               automation/provider-census-sharded-latest-summary.json
+            if [ "$ALLOW_PENDING_TARGETS" != "true" ]; then
+              git add automation/provider-census-all-status-latest.json
+            fi
           fi
           if git diff --cached --quiet; then
             echo "FIELD_SHARDED_CENSUS_NO_CHANGES"
