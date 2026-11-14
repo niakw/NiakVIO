@@ -12971,7 +12971,6 @@
       "official_hub": null,
       "official_site": "https://webflix.art/",
       "published_types": [
-        "movie",
         "tv"
       ],
       "manifest_overrides": {
@@ -12983,7 +12982,6 @@
         ]
       },
       "learned_routes": [
-        "/api/fastflux?type=movie&tmdb_id={tmdbId}",
         "/api/series-season-discovery?tmdb_id={tmdbId}",
         "/api/fastflux?type=episode&tmdb_id={tmdbId}&season={season}&episode={episode}"
       ],
@@ -13001,7 +12999,24 @@
             "identity": "tmdb+title+year"
           }
         }
-      }
+      },
+      "provider_lego_scripts": [
+        "scripts/provider_patches/webflix_runtime_v1.py"
+      ],
+      "provider_lego_options": {
+        "scripts/provider_patches/webflix_runtime_v1.py": {
+          "base": "https://webflix.art"
+        }
+      },
+      "identity_input": {
+        "mode": "tmdb_direct",
+        "requires_tmdb_before_run": true,
+        "required_fields": [
+          "tmdbId",
+          "mediaType"
+        ]
+      },
+      "route_proof_version": 5
     },
     "zone-telechargement": {
       "notes": [
@@ -15222,7 +15237,7 @@
     },
     "webflix": {
       "strategy": "api_stream_resolver",
-      "validation": "bulk_offline_contract_live_unverified",
+      "validation": "residential_tv_terminal_proven_movie_pending",
       "allow_html_url": false,
       "requires_direct_media": true,
       "observed_origins": [
@@ -15231,7 +15246,6 @@
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true,
       "catalogue_types": [
-        "movie",
         "tv"
       ]
     },
