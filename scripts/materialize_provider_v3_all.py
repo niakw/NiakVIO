@@ -194,6 +194,12 @@ def identity_input(
             ),
         }
     mode = str(raw.get("mode") or "tmdb_direct").strip().casefold()
+    # Pre-Provider-v3 onboarding briefly emitted tmdb_title_year for
+    # title/year-hydrated catalogue resolvers. Preserve that execution meaning
+    # during migration instead of letting stale structured DATA abort a full
+    # rematerialization transaction.
+    legacy_aliases = {"tmdb_title_year": "catalog_search"}
+    mode = legacy_aliases.get(mode, mode)
     if mode not in {"tmdb_direct", "catalog_search", "external_id"}:
         raise ValueError(f"invalid identity mode: {mode}")
     required = [
