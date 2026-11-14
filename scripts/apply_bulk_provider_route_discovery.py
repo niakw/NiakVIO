@@ -73,6 +73,33 @@ def current_active_state() -> dict[str, dict[str, Any]]:
     return state
 
 
+def projects_to_vf(row: dict[str, Any]) -> bool:
+    scope = str(row.get("scope") or "global").strip().casefold()
+    if scope == "france":
+        return True
+    raw_vf = row.get("vf")
+    if isinstance(raw_vf, bool):
+        return raw_vf
+    if str(raw_vf or "").strip().casefold() in {"1","true","yes","on","oui"}:
+        return True
+    languages = row.get("languages") or row.get("contentLanguage") or []
+    return any(str(value or "").strip().casefold().startswith("fr") for value in languages)
+
+
+def state_after_shared_global(current: dict[str, Any], rows: list[dict[str, Any]]) -> dict[str, Any]:
+    next_state = {
+        "active": int(current.get("active") or 0),
+        "lanes": {lane: int((current.get("lanes") or {}).get(lane) or 0) for lane in LANES},
+    }
+    for row in rows:
+        if not projects_to_vf(row):
+            continue
+        next_state["active"] += 1
+        for lane in _types(row):
+            next_state["lanes"][lane] += 1
+    return next_state
+
+
 def _types(row: dict[str, Any]) -> set[str]:
     return {
         str(value).strip().casefold()
@@ -218,8 +245,9 @@ def main() -> int:
     selected_global, standby_global = select_to_target(
         qualified_global, scope="global", current=active_state["global"]
     )
+    france_after_shared_global = state_after_shared_global(active_state["france"], selected_global)
     selected_france, standby_france = select_to_target(
-        qualified_france, scope="france", current=active_state["france"]
+        qualified_france, scope="france", current=france_after_shared_global
     )
     selected = selected_global + selected_france
     standby = standby_global + standby_france
@@ -229,7 +257,9 @@ def main() -> int:
         deferred.append(held)
 
     global_add = len(selected_global)
-    france_add = len(selected_france)
+    shared_global_vf = [row for row in selected_global if projects_to_vf(row)]
+    france_only_add = len(selected_france)
+    france_add = len(shared_global_vf) + france_only_add
     current_global = int(active_state["global"]["active"])
     current_france = int(active_state["france"]["active"])
 
@@ -250,6 +280,8 @@ def main() -> int:
             "observedGlobal": len(qualified_global),
             "observedFrance": len(qualified_france),
             "selectedGlobal": global_add,
+            "selectedGlobalSharedToFrance": len(shared_global_vf),
+            "selectedFranceOnly": france_only_add,
             "selectedFrance": france_add,
         },
         "currentActiveBeforeWave": {
