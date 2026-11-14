@@ -519,6 +519,10 @@ def _normalize_identity_input(value: Any) -> dict[str, Any]:
     """Normalize the explicit DATA execution contract; runtime never infers it."""
     raw = value if isinstance(value, dict) else {}
     mode = str(raw.get("mode") or "tmdb_direct").strip().casefold()
+    # Legacy structured DATA used tmdb_title_year for catalogue resolvers that
+    # require Core-hydrated title/year metadata. Normalize it at the clean
+    # ProviderBase boundary; runtime still sees only the canonical schema.
+    mode = {"tmdb_title_year": "catalog_search"}.get(mode, mode)
     if mode not in {"tmdb_direct", "catalog_search", "external_id"}:
         raise ValueError(f"invalid provider identityInput.mode: {mode}")
     required = bool(raw.get("requiresTmdbBeforeRun", mode != "tmdb_direct"))
