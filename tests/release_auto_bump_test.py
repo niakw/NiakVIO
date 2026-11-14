@@ -85,7 +85,15 @@ with tempfile.TemporaryDirectory() as tmp:
                     "filename": "../providers/demo-new.js",
                     "enabled": True,
                     "supportedTypes": ["movie"],
-                }
+                },
+                {
+                    "id": "FRANCE-ONLY",
+                    "name": "France Only",
+                    "version": "3.2.1",
+                    "filename": "../provider-disabled/france-only.js",
+                    "enabled": False,
+                    "supportedTypes": ["movie", "tv"],
+                },
             ],
         },
     )
@@ -133,6 +141,11 @@ with tempfile.TemporaryDirectory() as tmp:
     assert vf["name"] == "NiakVIO v5.19.4 — VF uniquement"
     assert vf["scrapers"][0]["version"] == "1.0.1"
     assert vf["scrapers"][0]["id"] == rows["demo"]["id"]
+    vf_by_id = {row["id"].casefold(): row for row in vf["scrapers"]}
+    assert vf_by_id["france-only"]["version"] == "3.2.1"
+    assert vf_by_id["france-only"]["filename"] == "../provider-disabled/france-only.js"
+    assert vf_by_id["france-only"]["enabled"] is False
+    assert "france-only" not in rows
 
     assert json.loads((root / "package.json").read_text())["version"] == "5.19.4"
     lock = json.loads((root / "package-lock.json").read_text())

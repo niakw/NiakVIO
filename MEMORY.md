@@ -1,3 +1,9 @@
+## 2026-11-14 — Release finalizer now supports first-class France-only rows
+
+- Exact release-finalize run 43586059001 on e5e82899 successfully minimized all 13 active production bundles (13 changed, 457662 bytes saved, 82280 transformed lines), then proved fixed-point/Node parse and static active=13. It failed only at release-version synchronization because nuvio_client_activation_ids.py still required every VF row to exist in Global; current VF contains legitimate first-class France-only pending identities such as cinestream.
+- Generalize Nuvio client activation identity state to the union of Global plus VF-only rows. Shared rows still inherit Global id/version/path; VF-only transitions own their case-toggle/version state in VF and never enter manifest.json. Preserve active_count as Global compatibility metric and add vf_active_count/visible_count/france_only_count diagnostics. Relative disabled paths now normalize correctly.
+- Generalize sync_release_versions VF projection sync to preserve first-class VF-only rows while shared rows remain sourced from Global; VF no-anime remains sourced from the full VF projection. Invalid/duplicate projection identities still fail closed. Synthetic tests cover a VF-only disabled->enabled cache transition and release versioning without Global leakage. Exact CI/release retry required.
+
 ## 2026-11-14 — Current-tested nonfunctional cohort withdrawn from production
 
 - Provider Disabled Lifecycle 43585932732 succeeded and published 5261b714. Authority disabled exactly 15 previously active current-tested rows without terminal playback proof. Global production is now 13 active, all from the current FULL cohort; declared lanes movie=6, tv=6, anime=9. France projection is 10 active with movie=4, tv=4, anime=8. Lifecycle retained-disabled authority is 28 identities; bulk-pending staging remains separate/non-executable.

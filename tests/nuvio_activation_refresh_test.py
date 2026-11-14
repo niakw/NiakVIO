@@ -24,7 +24,17 @@ with tempfile.TemporaryDirectory() as tmp:
             {"id": "streamzo", "version": "1.0.0", "enabled": False, "filename": "providers/streamzo.js", "supportedTypes": ["movie", "tv", "anime"]},
         ],
     }
-    vf = {"version": "1.2.3", "scrapers": [dict(main["scrapers"][0]), dict(main["scrapers"][1])]}
+    france_only = {
+        "id": "cinestream",
+        "version": "3.0.0",
+        "enabled": False,
+        "filename": "../provider-disabled/cinestream.js",
+        "supportedTypes": ["movie", "tv"],
+    }
+    vf = {
+        "version": "1.2.3",
+        "scrapers": [dict(main["scrapers"][0]), dict(main["scrapers"][1]), france_only],
+    }
     (root / "manifest.json").write_text(json.dumps(main), encoding="utf-8")
     (root / "vf" / "manifest.json").write_text(json.dumps(vf), encoding="utf-8")
 
@@ -41,6 +51,13 @@ with tempfile.TemporaryDirectory() as tmp:
         assert by_id["goated"]["version"] == "1.0.1"
         assert by_id["streamzo"]["id"] == "streamzo"
         assert first["active_count"] == 1
+        assert first["vf_active_count"] == 1
+        assert first["visible_count"] == 3
+        assert first["france_only_count"] == 1
+        first_vf = json.loads((root / "vf" / "manifest.json").read_text())
+        first_fr = next(row for row in first_vf["scrapers"] if row["id"].casefold() == "cinestream")
+        assert first_fr["id"] == "cinestream"
+        assert first_fr["filename"] == "../provider-disabled/cinestream.js"
 
         # A normal code/version refresh keeps the client identity stable.
         module.apply_policy(bootstrap_active=False)
@@ -65,6 +82,25 @@ with tempfile.TemporaryDirectory() as tmp:
         vf_by_id = {row["id"].casefold(): row for row in third_vf["scrapers"]}
         assert vf_by_id["streamzo"]["id"] == "STREAMZO"
         assert vf_by_id["streamzo"]["version"] == "1.0.1"
+
+        # France-only disabled -> enabled receives the same cache-invalidating
+        # client identity without appearing in Global.
+        vf_by_id["cinestream"]["enabled"] = True
+        (root / "vf" / "manifest.json").write_text(json.dumps(third_vf), encoding="utf-8")
+        fourth = module.apply_policy(bootstrap_active=False)
+        fourth_main = json.loads((root / "manifest.json").read_text())
+        assert all(row["id"].casefold() != "cinestream" for row in fourth_main["scrapers"])
+        fourth_vf = json.loads((root / "vf" / "manifest.json").read_text())
+        fourth_fr = next(row for row in fourth_vf["scrapers"] if row["id"].casefold() == "cinestream")
+        assert fourth_fr["id"] == "CINESTREAM"
+        assert fourth_fr["version"] == "3.0.1"
+        assert fourth["activation_transitions"] == ["cinestream"]
+        assert fourth["active_count"] == 2
+        assert fourth["vf_active_count"] == 3
+        state = json.loads((root / "nuvio-client-id-state.json").read_text())
+        assert state["providers"]["cinestream"] == {
+            "client_id": "CINESTREAM", "enabled": True, "scope": "france"
+        }
     finally:
         module.ROOT, module.STATE_PATH, module.MAIN_PATH, module.VF_PATH = old
 

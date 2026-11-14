@@ -226,21 +226,37 @@ def finalize_provider_versions(previous_path: pathlib.Path, manifest_path: pathl
         elif current_version is None or current_version < old_version:
             row["version"] = format_semver(old_version)
 
-    def sync_projection(path: pathlib.Path, source_by_id: dict[str, dict[str, Any]], label: str) -> None:
+    def sync_projection(
+        path: pathlib.Path,
+        source_by_id: dict[str, dict[str, Any]],
+        label: str,
+        *,
+        allow_projection_only: bool = False,
+    ) -> None:
         if not path.exists():
             return
         projection = load(path)
+        seen: set[str] = set()
         for row in [item for item in projection.get("scrapers", []) if isinstance(item, dict)]:
             cid = canonical_id(row.get("id"))
+            if not cid or cid in seen:
+                raise RuntimeError(f"{label} invalid or duplicate provider id: {row.get('id')!r}")
+            seen.add(cid)
             source = source_by_id.get(cid)
             if source is None:
+                if allow_projection_only:
+                    # First-class France-only identity. Its row/version/path are
+                    # owned by VF/catalogue authority and must not leak into Global.
+                    if parse_semver(row.get("version")) is None:
+                        row["version"] = "1.0.0"
+                    continue
                 raise RuntimeError(f"{label} provider absent from source manifest: {cid}")
             row["id"] = source.get("id")
             row["version"] = source.get("version")
             row["filename"] = vf_filename(source.get("filename"))
         dump(path, projection)
 
-    sync_projection(vf_path, current_by_id, "VF")
+    sync_projection(vf_path, current_by_id, "VF", allow_projection_only=True)
     vf = load(vf_path)
     vf_by_id = {
         canonical_id(row.get("id")): row

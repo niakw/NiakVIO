@@ -61,7 +61,7 @@ def vf_filename(value: object) -> str:
     filename = str(value or "").strip()
     if not filename or filename.startswith(("http://", "https://", "../")):
         return filename
-    if filename.startswith("providers/"):
+    if filename.startswith(("providers/", "provider-disabled/")):
         return f"../{filename}"
     return filename
 
@@ -70,24 +70,23 @@ def apply_policy(*, bootstrap_active: bool = False) -> dict[str, Any]:
     main = load(MAIN_PATH)
     vf = load(VF_PATH)
     state = load(STATE_PATH) if STATE_PATH.exists() else {
-        "schema_version": 1,
+        "schema_version": 2,
         "strategy": "case-toggle-on-disabled-to-enabled",
         "providers": {},
     }
     providers_state = state.setdefault("providers", {})
 
     main_rows = [row for row in main.get("scrapers", []) if isinstance(row, dict)]
-    seen: set[str] = set()
+    vf_rows = [row for row in vf.get("scrapers", []) if isinstance(row, dict)]
     changed_ids: list[str] = []
     activation_transitions: list[str] = []
     main_by_canonical: dict[str, dict[str, Any]] = {}
+    visible_ids: set[str] = set()
 
-    for row in main_rows:
+    def apply_identity(row: dict[str, Any], *, scope: str) -> str:
         canonical = canonical_id(row.get("id"))
-        if not canonical or canonical in seen:
-            raise RuntimeError(f"invalid or duplicate provider id: {row.get('id')!r}")
-        seen.add(canonical)
-        main_by_canonical[canonical] = row
+        if not canonical:
+            raise RuntimeError("provider without client identity")
         enabled = row.get("enabled") is True
         previous = providers_state.get(canonical)
 
@@ -114,18 +113,35 @@ def apply_policy(*, bootstrap_active: bool = False) -> dict[str, Any]:
         providers_state[canonical] = {
             "client_id": desired_id,
             "enabled": enabled,
+            "scope": scope,
         }
+        visible_ids.add(canonical)
+        return canonical
 
-    for canonical in sorted(set(providers_state) - set(main_by_canonical)):
-        providers_state.pop(canonical, None)
-
-    # VF is a functional projection of principal; its relative bundle path is
-    # intentionally different because vf/manifest.json is one directory lower.
-    for row in [item for item in vf.get("scrapers", []) if isinstance(item, dict)]:
+    for row in main_rows:
         canonical = canonical_id(row.get("id"))
+        if not canonical or canonical in main_by_canonical:
+            raise RuntimeError(f"invalid or duplicate provider id: {row.get('id')!r}")
+        apply_identity(row, scope="global")
+        main_by_canonical[canonical] = row
+
+    # VF contains shared Global rows plus first-class France-only rows. Shared
+    # rows inherit the Global client identity; a France-only row owns its own
+    # activation transition and must never be forced into manifest.json.
+    vf_seen: set[str] = set()
+    france_only_count = 0
+    for row in vf_rows:
+        canonical = canonical_id(row.get("id"))
+        if not canonical or canonical in vf_seen:
+            raise RuntimeError(f"invalid or duplicate VF provider id: {row.get('id')!r}")
+        vf_seen.add(canonical)
         source = main_by_canonical.get(canonical)
         if source is None:
-            raise RuntimeError(f"VF provider absent from principal manifest: {canonical}")
+            france_only_count += 1
+            apply_identity(row, scope="france")
+            continue
+
+        visible_ids.add(canonical)
         row["id"] = source["id"]
         row["version"] = source.get("version")
         row["filename"] = vf_filename(source.get("filename"))
@@ -146,10 +162,17 @@ def apply_policy(*, bootstrap_active: bool = False) -> dict[str, Any]:
             else:
                 row.pop(optional, None)
 
-    state["schema_version"] = 1
+    for canonical in sorted(set(providers_state) - visible_ids):
+        providers_state.pop(canonical, None)
+
+    state["schema_version"] = 2
     state["strategy"] = "case-toggle-on-disabled-to-enabled"
     state["manifest_url"] = "https://raw.githubusercontent.com/niakw/Niakvio/refs/heads/main/manifest.json"
+    state["vf_manifest_url"] = "https://raw.githubusercontent.com/niakw/Niakvio/refs/heads/main/vf/manifest.json"
     state["active_count"] = sum(1 for row in main_rows if row.get("enabled") is True)
+    state["vf_active_count"] = sum(1 for row in vf_rows if row.get("enabled") is True)
+    state["visible_count"] = len(visible_ids)
+    state["france_only_count"] = france_only_count
 
     dump(MAIN_PATH, main)
     dump(VF_PATH, vf)
@@ -159,6 +182,9 @@ def apply_policy(*, bootstrap_active: bool = False) -> dict[str, Any]:
         "changed_ids": sorted(set(changed_ids)),
         "activation_transitions": sorted(set(activation_transitions)),
         "active_count": state["active_count"],
+        "vf_active_count": state["vf_active_count"],
+        "visible_count": state["visible_count"],
+        "france_only_count": state["france_only_count"],
     }
 
 
