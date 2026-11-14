@@ -15215,10 +15215,10 @@
       ]
     },
     "webflix": {
-      "strategy": "mixed_embed_resolver",
-      "validation": "bulk_onboarding_pending",
-      "allow_html_url": true,
-      "requires_direct_media": false,
+      "strategy": "api_stream_resolver",
+      "validation": "residential_runtime_oracle",
+      "allow_html_url": false,
+      "requires_direct_media": true,
       "observed_origins": [
         "https://webflix.art"
       ],
