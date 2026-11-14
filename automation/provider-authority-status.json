@@ -24,8 +24,7 @@
     "papadustream",
     "purstream",
     "sekai",
-    "streamzo",
-    "voiranime-rip"
+    "streamzo"
   ],
   "repairBlocked": [
     "4khdhub",
@@ -61,11 +60,14 @@
     "vidsrc2",
     "voiranime",
     "voiranime-homes",
+    "voiranime-rip",
     "vostfree",
     "wookafr",
     "yflix"
   ],
-  "disabledNow": [],
+  "disabledNow": [
+    "voiranime-rip"
+  ],
   "providers": [
     {
       "provider": "anime-sama",
@@ -409,15 +411,18 @@
     },
     {
       "provider": "voiranime-rip",
-      "action": "KEEP_DIRECT",
-      "repairEligible": true,
-      "confidence": "medium",
-      "authorityClass": "direct",
+      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "repairEligible": false,
+      "confidence": "current-census",
+      "authorityClass": "current-architecture-nonfunctional",
       "failureCount": 0,
       "reasons": [
         "curated_direct",
-        "existing_positive_route_prior"
-      ]
+        "existing_positive_route_prior",
+        "current_census_tested_without_terminal_verified_playback",
+        "current_status:REGRESSION PROVIDER"
+      ],
+      "appliedDisableReason": "auto_off_current_architecture_nonfunctional"
     },
     {
       "provider": "vostfree",

@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "authority": "brain-disabled-recovery-lab-v1",
   "sourceLifecycleUpdatedAt": "2026-11-14",
-  "sourceCensusRunId": "43603937483",
+  "sourceCensusRunId": "43629759862",
   "proofAuthority": false,
   "executionAuthority": false,
   "publicationAuthority": false,
@@ -10,7 +10,7 @@
     "auto_off_current_architecture_regression",
     "auto_off_current_architecture_nonfunctional"
   ],
-  "eligibleCount": 27,
+  "eligibleCount": 28,
   "providers": [
     {
       "provider": "4khdhub",
@@ -255,10 +255,10 @@
       ],
       "asset": "provider-disabled/hindmoviez--nuvio--514500222905430a.js",
       "assetSha256": "514500222905430ab4b72b81d588056d4d09067ccb5bc9e3e8d1037068d71cc6",
-      "lastCensusStatus": "PARTIAL OK",
-      "lastDominantIssue": "provider_returned_streams",
+      "lastCensusStatus": "DISABLED",
+      "lastDominantIssue": "none",
       "lastLaneVerdicts": [
-        "movie=returned_unplayable/provider_returned_streams",
+        "movie=OK",
         "tv=OK"
       ],
       "brainLabEligible": true,
@@ -300,9 +300,9 @@
       "asset": "provider-disabled/kurage--nuvio--36032908e53441dd.js",
       "assetSha256": "36032908e53441dda2bc53432c4227533d4889e2d85a801bc61d546a987723eb",
       "lastCensusStatus": "DISABLED",
-      "lastDominantIssue": "none",
+      "lastDominantIssue": "provider_network_exception",
       "lastLaneVerdicts": [
-        "anime=OK"
+        "anime=no_streams/provider_network_exception"
       ],
       "brainLabEligible": true,
       "productionExecutionAllowed": false,
@@ -361,9 +361,9 @@
       "asset": "provider-disabled/moviesmod--nuvio--5f6249d3d8efc0ea.js",
       "assetSha256": "5f6249d3d8efc0eaa90000e2b8ead601fdfccda1a2b1a495f89c35e4f2df3e09",
       "lastCensusStatus": "DISABLED",
-      "lastDominantIssue": "provider_network_zero_result, provider_waf_challenge",
+      "lastDominantIssue": "provider_waf_challenge×2",
       "lastLaneVerdicts": [
-        "movie=no_streams/provider_network_zero_result",
+        "movie=no_streams/provider_waf_challenge",
         "tv=no_streams/provider_waf_challenge"
       ],
       "brainLabEligible": true,
@@ -529,9 +529,30 @@
       "asset": "provider-disabled/voiranime-homes--nuvio--3121af19024f1f37.js",
       "assetSha256": "3121af19024f1f37b2df44c2bb1a372c3e50d40a76746a64fbab83c78f2f67b5",
       "lastCensusStatus": "DISABLED",
-      "lastDominantIssue": "none",
+      "lastDominantIssue": "provider_network_http_error",
       "lastLaneVerdicts": [
-        "anime=OK"
+        "anime=no_streams/provider_network_http_error"
+      ],
+      "brainLabEligible": true,
+      "productionExecutionAllowed": false,
+      "publicationAllowed": false
+    },
+    {
+      "provider": "voiranime-rip",
+      "family": "current-architecture-nonfunctional",
+      "disabledReason": "auto_off_current_architecture_nonfunctional",
+      "disabledAt": "2026-11-14",
+      "purgeAfter": "2026-11-21",
+      "scopes": [
+        "france",
+        "global"
+      ],
+      "asset": "provider-disabled/voiranime-rip--nuvio--3053949c679b347d.js",
+      "assetSha256": "3053949c679b347d45d29861cea8587dded41ba50f467268dbe5a64b6e18fa2c",
+      "lastCensusStatus": "REGRESSION PROVIDER",
+      "lastDominantIssue": "provider_network_http_error",
+      "lastLaneVerdicts": [
+        "anime=no_streams/provider_network_http_error"
       ],
       "brainLabEligible": true,
       "productionExecutionAllowed": false,
@@ -570,11 +591,11 @@
       ],
       "asset": "provider-disabled/wookafr--nuvio--c9d61c4e59fd5794.js",
       "assetSha256": "c9d61c4e59fd5794f8166f7a2b11868b87b771241bb9137dfcaf0cd10be53c1f",
-      "lastCensusStatus": "CANDIDATE OK",
-      "lastDominantIssue": "timeout×2",
+      "lastCensusStatus": "DISABLED",
+      "lastDominantIssue": "none",
       "lastLaneVerdicts": [
-        "movie=timeout",
-        "tv=timeout"
+        "movie=OK",
+        "tv=OK"
       ],
       "brainLabEligible": true,
       "productionExecutionAllowed": false,
