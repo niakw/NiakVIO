@@ -81,6 +81,26 @@ assert selected == [] and [row["id"] for row in standby] == ["overflow"]
 assert apply_mod.TARGET_ACTIVE == 60
 assert apply_mod.TARGET_LANE == 20
 
+# Reserve intake is a non-active extension of the route-discovery pool; it must
+# be deduplicated against the live batch rather than bypassing normal probing.
+reserve_path=ROOT/"automation/provider-intake-reserve-contract-test.json"
+try:
+    reserve_path.write_text(json.dumps({
+        "providers":[
+            {"id":"reserve-new","scope":"global","direct":"https://reserve.example","types":["movie","tv","anime"]},
+            {"id":"existing","scope":"global","direct":"https://duplicate.example","types":["movie"]},
+        ]
+    }),encoding="utf-8")
+    rows=apply_mod.source_rows({
+        "providers":[{"id":"existing","scope":"global","direct":"https://existing.example","types":["movie"]}],
+        "deferredProviders":[],
+    })
+    by_id={row["id"]:row for row in rows}
+    assert "reserve-new" in by_id
+    assert by_id["existing"]["direct"] == "https://existing.example"
+finally:
+    reserve_path.unlink(missing_ok=True)
+
 request={
     "providers":[{"id":"a","direct":"https://a.invalid"}],
     "deferredProviders":[{"id":"b","direct":"https://b.invalid"},{"id":"a","direct":"https://duplicate.invalid"}],
