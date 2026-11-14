@@ -97,7 +97,7 @@ ProviderBase v3 + structured DATA + owned Bloc + NiakVIO-safe minimizer
 
 Une reconstruction complète :
 
-- couvre les 46 Provider Objects Hub ;
+- couvre le scope Provider v3 courant dérivé dynamiquement de l’autorité catalogue/runtime, sans cardinalité Hub historique figée ;
 - s’exécute uniquement sur une branche non-main ;
 - ne seed jamais depuis les bundles publiés/upstream ;
 - valide sécurité/type/plan/minimizer ;

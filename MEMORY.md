@@ -1,3 +1,8 @@
+## 2026-11-14 — Validation documentation no longer hard-codes the retired 46-provider Hub
+
+- CORE Verify 43586782164 on a9ceb28a passed the Global/France-only pending-scope assertion and then failed only because VALIDATION.md still said a full Provider v3 rebuild “covers 46 Provider Objects Hub”. The same document already defines current scope dynamically and treats Hub-46 as historical compatibility evidence.
+- Replace that stale reconstruction cardinality with the current catalogue/runtime authority. No runtime, provider, proof or activation behavior changed.
+
 ## 2026-11-14 — Documentation scope test no longer assumes all pending rows are Global
 
 - CORE Verify 43586631876 on 491f0e54 stopped in provider_v3_documentation_contract_test.py because PENDING_IDS is catalogue-wide (Global + France-only) while the test required every pending id to appear in manifest.json. This directly contradicted the first-class VF-only architecture.
