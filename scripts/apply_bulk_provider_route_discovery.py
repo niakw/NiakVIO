@@ -305,9 +305,13 @@ def main() -> int:
     next_request["requestVersion"] = int(version or 0) + 1
     next_request["providers"] = selected
     next_request["deferredProviders"] = deferred
+    # targetActive is a publication ceiling, not the expected cardinality of
+    # this micro-wave. Keep the product target stable at exact 60/60 so a
+    # shared Global->VF addition cannot consume the temporary France ceiling
+    # before France-only candidates in the same batch are evaluated.
     next_request["targetActive"] = {
-        "global": current_global + global_add,
-        "france": current_france + france_add,
+        "global": TARGET_ACTIVE,
+        "france": TARGET_ACTIVE,
     }
     next_request["routeDiscoveryWave"] = {
         "sourceRequestVersion": version,
