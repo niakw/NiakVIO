@@ -55,6 +55,36 @@ def normalized_scope(value: Any) -> str:
     raise ValueError(f"unsupported provider manifest scope: {value}")
 
 
+def sync_global_vf_projection(
+    vf_manifest: dict[str, Any],
+    entry: dict[str, Any],
+    provider_id: str,
+    *,
+    include_vf: bool,
+) -> dict[str, Any]:
+    """Project one Global identity into VF without creating a duplicate provider identity."""
+    rows = vf_manifest.setdefault("scrapers", [])
+    matches = [
+        index for index, row in enumerate(rows)
+        if isinstance(row, dict) and norm_id(row.get("id")) == provider_id
+    ]
+    if len(matches) > 1:
+        raise ValueError(f"{provider_id}: duplicate VF projection rows")
+    if not include_vf:
+        if matches:
+            rows.pop(matches[0])
+        return vf_manifest
+    projected = dict(entry)
+    filename = str(projected.get("filename") or "").strip()
+    if filename and not filename.startswith("../"):
+        projected["filename"] = "../" + filename
+    if matches:
+        rows[matches[0]] = projected
+    else:
+        rows.append(projected)
+    return vf_manifest
+
+
 def staged_existing_entry(
     provider_id: str,
     manifest: dict[str, Any],
@@ -631,6 +661,14 @@ def stage(request_path: Path, *, bulk: bool = False) -> dict[str, Any]:
     else:
         scrapers.append(entry)
     write_json(target_manifest_path, target_manifest)
+    if scope == "global":
+        sync_global_vf_projection(
+            vf_manifest,
+            entry,
+            provider_id,
+            include_vf=vf,
+        )
+        write_json(VF_MANIFEST, vf_manifest)
 
     provenance = load_json(PROVENANCE, {})
     providers = provenance.setdefault("providers", {})
