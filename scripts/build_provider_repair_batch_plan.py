@@ -119,6 +119,35 @@ def action_for_row(row:dict[str,Any], depth:str, issue:str)->tuple[str,str]:
         )
     return action_for(status,depth,issue)
 
+def causal_scope_for_row(
+    provider:str,
+    row:dict[str,Any],
+    depth:str,
+    issue:str,
+    *,
+    dynamic_debt:dict[str,Any] | None,
+    brain_required:bool,
+    authority_rediscovery:set[str],
+    environment_owned:set[str],
+)->tuple[str,str]:
+    if provider in authority_rediscovery:
+        return (
+            "transport",
+            "current census authority is unresolved; refresh provider-owned domain/backend authority before any provider mutation",
+        )
+    if provider in environment_owned:
+        return (
+            "harness-compatibility",
+            "current census assigns transport/harness ownership; compare browser/native/residential transport before any provider mutation",
+        )
+    if dynamic_debt and not brain_required:
+        return (
+            "variant-coverage",
+            "current execution proves playable output but fewer variants than the provider announced; keep publication authority unchanged and send completeness repair to Brain Learning",
+        )
+    return action_for_row(row,depth,issue)
+
+
 def depth_class(values:list[str])->str:
     lowered={str(v).split("=",1)[-1].strip().lower() for v in values if str(v).strip()}
     if "chain_reached" in lowered: return "chain"
@@ -202,23 +231,13 @@ def main()->int:
         strategy=scalar(cap.get("strategy") or patch.get("capability"))
         depth=depth_class(list(row.get("evidenceDepth") or []))
         issue=issue_class(scalar(row.get("dominantIssue")))
-        if pid in authority_rediscovery:
-            scope,action=(
-                "transport",
-                "current census authority is unresolved; refresh provider-owned domain/backend authority before any provider mutation",
-            )
-        elif pid in environment_owned:
-            scope,action=(
-                "harness-compatibility",
-                "current census assigns transport/harness ownership; compare browser/native/residential transport before any provider mutation",
-            )
-        elif dynamic_debt and not brain_required:
-            scope,action=(
-                "variant-coverage",
-                "current execution proves playable output but fewer variants than the provider announced; keep publication authority unchanged and send completeness repair to Brain Learning",
-            )
-        else:
-            scope,action=action_for_row(row,depth,issue)
+        scope,action=causal_scope_for_row(
+            pid,row,depth,issue,
+            dynamic_debt=dynamic_debt,
+            brain_required=brain_required,
+            authority_rediscovery=authority_rediscovery,
+            environment_owned=environment_owned,
+        )
         # Normal provider failures batch broadly by repair scope + capability.
         # Harness failures are different: transport causality is already known
         # here, so browser-only/TLS divergence must never share an experiment
