@@ -72,4 +72,14 @@ assert 'message.startswith("provider: bulk stage ")' in targeted
 assert 'message.startswith("provider: bulk activate ")' in targeted
 assert "if: ${{ needs.size.outputs.should_run == 'true' }}" in targeted
 assert "ci(census-sharded):" in census
+# A single bad provider must not roll back other exact-byte eligible members of a large wave.
+assert 'test "$count" -gt 0' in bulk
+assert 'test "$count" -le "$expected"' in bulk
+assert 'PROVIDER_ACTIVE_TARGET_PROGRESS' in bulk
+assert 'test "$count" -eq "$expected"' not in bulk
+activation=(ROOT/"scripts/activate_bulk_offline_proven_providers.py").read_text(encoding="utf-8")
+assert '"blockedProviders": blocked' in activation
+assert 'if not activated:' in activation
+assert 'offline activation produced zero eligible providers' in activation
+assert 'offline activation is atomic' not in activation
 print("Bulk onboarding -> sharded census + deferred 60/60 continuation architecture passed")
