@@ -1,5 +1,5 @@
 {
-  "requestVersion": 29,
+  "requestVersion": 30,
   "source": "NiakVIO-GLOBAL-FINAL-STRICT-TOP20-2026-09-11(5).xlsx",
   "activationPolicy": "bulk_offline_contract_live_unverified",
   "allowReplaceExisting": true,
@@ -2781,8 +2781,8 @@
     "activationRequiresExecutablePlan": true
   },
   "handoff": {
-    "reason": "retry_after_preserving_unrelated_active_exact_bytes",
-    "previousRequestVersion": 28,
+    "reason": "retry_after_provider_local_fingerprint_decoupling",
+    "previousRequestVersion": 29,
     "retryAfterContractFix": "bare-search-not-identity-aware",
     "retryAfterActivationDiagnostics": true,
     "partialActivationAllowed": true,
@@ -2791,6 +2791,8 @@
     "activeBytePreservationFix": "88e9df0c",
     "activeBytePreservationTest": "1d631a75",
     "activeExactBytePreservationFix": "88e9df0c5862a9e33c9078aa1eb0a96649baa6c7",
-    "workflowContractFix": "1d631a75435558b44d7b244ed8470119e8ccb1a0"
+    "workflowContractFix": "1d631a75435558b44d7b244ed8470119e8ccb1a0",
+    "fingerprintDecouplingFix": "1a30735f",
+    "fingerprintDecouplingTest": "dc39e6c0"
   }
 }
