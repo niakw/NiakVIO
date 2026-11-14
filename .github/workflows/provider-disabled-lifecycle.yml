@@ -55,6 +55,8 @@ jobs:
           python tests/provider_v3_local_recognition_contract_test.py
           python tests/provider_disabled_lifecycle_contract_test.py
           python tests/provider_language_manifest_vf_only_test.py
+          python scripts/build_provider_disabled_recovery_queue.py
+          python tests/provider_disabled_brain_recovery_queue_test.py
           python scripts/audit_provider_v3_static.py
           python - <<'PY'
           import json
@@ -153,6 +155,7 @@ jobs:
           git add manifest.json vf/manifest.json no-anime/manifest.json vf-no-anime/manifest.json \
             manifest-hub46.json native-hub46/manifest.json provider_catalog.json \
             automation/provider-disabled-lifecycle.json automation/provider-authority-status.json \
+            automation/provider-disabled-recovery-queue.json \
             automation/provider-v3-static-knowledge.json provider-v3-materialization.json \
             provider-overrides.json provider-hubs.json providers provider-disabled provider-bases provider-old
           if git diff --cached --quiet; then
