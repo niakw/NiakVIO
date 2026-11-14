@@ -5,9 +5,10 @@ import argparse
 import html
 import json
 import re
+from html.parser import HTMLParser
 from pathlib import Path
 from typing import Any
-from urllib.parse import parse_qs, quote, urlencode, urljoin, urlsplit
+from urllib.parse import parse_qs, parse_qsl, quote, urlencode, urljoin, urlsplit, urlunsplit
 from urllib.request import Request, urlopen
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -116,6 +117,80 @@ def useful_absolute_urls(text: str) -> list[str]:
         if len(out) >= 40:
             break
     return out
+
+
+SEARCH_FORM_KEYS = {"s", "q", "query", "keyword", "search", "story"}
+
+class _SearchFormParser(HTMLParser):
+    def __init__(self) -> None:
+        super().__init__(convert_charrefs=True)
+        self.forms: list[dict[str, Any]] = []
+        self.current: dict[str, Any] | None = None
+
+    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        values = {str(k).casefold(): str(v or "") for k, v in attrs}
+        if tag.casefold() == "form":
+            self.current = {
+                "action": values.get("action", ""),
+                "method": values.get("method", "get").casefold() or "get",
+                "inputs": [],
+            }
+        elif tag.casefold() in {"input", "select", "textarea"} and self.current is not None:
+            name = values.get("name", "").strip()
+            if name:
+                self.current["inputs"].append(name)
+
+    def handle_endtag(self, tag: str) -> None:
+        if tag.casefold() == "form" and self.current is not None:
+            self.forms.append(self.current)
+            self.current = None
+
+
+def search_form_routes(text: str, base_url: str) -> list[str]:
+    """Extract same-origin GET search forms as identity-aware route templates.
+
+    This is static HTML observation only. POST forms are not converted into GET
+    routes because the current route contract cannot encode their body semantics.
+    """
+    parser = _SearchFormParser()
+    try:
+        parser.feed(text)
+    except Exception:
+        return []
+    try:
+        base = urlsplit(base_url)
+        origin = f"{base.scheme}://{base.netloc}"
+    except ValueError:
+        return []
+    out: list[str] = []
+    for form in parser.forms[:24]:
+        if str(form.get("method") or "get").casefold() != "get":
+            continue
+        key = next(
+            (str(name) for name in form.get("inputs") or [] if str(name).casefold() in SEARCH_FORM_KEYS),
+            "",
+        )
+        if not key:
+            continue
+        action = urljoin(base_url, str(form.get("action") or "") or base_url)
+        if not same_origin(action, origin):
+            continue
+        try:
+            parsed = urlsplit(action)
+        except ValueError:
+            continue
+        pairs = [
+            (k, v)
+            for k, v in parse_qsl(parsed.query, keep_blank_values=True)
+            if k.casefold() not in {"k", "key", "token", "sig", "signature", "auth", "authorization"}
+            and k.casefold() != key.casefold()
+        ]
+        pairs.append((key, "{query}"))
+        query = urlencode(pairs, doseq=True).replace("%7Bquery%7D", "{query}")
+        route = urlunsplit(("", "", parsed.path or "/", query, ""))
+        if route not in out:
+            out.append(route[:260])
+    return out[:12]
 
 
 def discover_routes(text: str) -> list[str]:
@@ -331,11 +406,15 @@ def main() -> int:
                 priority = (100 if page_is_detail else 10) + (20 if u.lower().endswith(".js") else 0)
                 chunk_priority[u] = max(priority, chunk_priority.get(u, 0))
         hints = discover_routes(text)
+        form_hints = search_form_routes(text, final)
         useful_abs = useful_absolute_urls(text)
-        for value in hints:
+        for value in [*hints, *form_hints]:
             if value not in route_seen:
                 route_seen.add(value)
-                report["route_hints"].append({"source": "html", "value": value})
+                report["route_hints"].append({
+                    "source": "html-form" if value in form_hints else "html",
+                    "value": value,
+                })
         report["pages"].append({
             "url": page,
             "ok": True,
