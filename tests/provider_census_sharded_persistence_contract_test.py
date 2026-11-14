@@ -140,3 +140,19 @@ assert 'mode=pending-exact-staged-bytes' in workflow
 assert 'allowPendingTargets requires explicit targetProviders' in workflow
 assert 'source_workflow\" = \"PROVIDER - Bulk Onboarding' in workflow
 print("pending onboarding sharded proof handoff contract passed")
+
+# Pending onboarding evidence is isolated from canonical production freshness.
+for marker in (
+    "automation/provider-onboarding-pending-status-latest.json",
+    "automation/provider-onboarding-pending-census-latest.json",
+    "FIELD_PENDING_ONBOARDING_PROOF_ISOLATED",
+    'if [ "$ALLOW_PENDING_TARGETS" = "true" ]; then',
+    '-f target_providers="$TARGET_PROVIDERS"',
+    '-f allow_pending_targets="$ALLOW_PENDING_TARGETS"',
+):
+    assert marker in workflow, marker
+pending_branch=workflow.index('FIELD_PENDING_ONBOARDING_PROOF_ISOLATED')
+canonical_copy=workflow.index('cp /tmp/provider-census-status.json automation/provider-census-status.json')
+assert pending_branch < canonical_copy
+assert "steps.persist.outputs.pending != 'true'" in workflow
+print("pending onboarding proof remains isolated from canonical active freshness")

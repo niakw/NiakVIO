@@ -11,7 +11,7 @@ script=(ROOT/"scripts/activate_bulk_proven_providers.py").read_text(encoding="ut
 onboard=(ROOT/"scripts/add_provider.py").read_text(encoding="utf-8")
 
 for token in (
-    "automation/provider-census-status.json",
+    "automation/provider-onboarding-pending-status-latest.json",
     "scripts/activate_bulk_proven_providers.py",
     "automation/provider-bulk-activation-latest.json",
     "provider: bulk activate $ACTIVATION_COUNT full-ok",
@@ -55,3 +55,9 @@ assert '"$count" -gt 120' in mono
 for workflow in (targeted,domains):
     assert "provider: bulk activate " in workflow
 print("Bulk proof-driven activation -> targeted sharded reproof contract passed")
+
+assert "providerSha256" in script
+assert "pending_artifact_hash_mismatch" in script
+assert "onboarding-pending-status" in script
+assert "automation/provider-onboarding-pending-status-latest.json" in sharded
+print("Bulk activation is byte-bound to isolated pending census proof")

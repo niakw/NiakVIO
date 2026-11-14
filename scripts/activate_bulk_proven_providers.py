@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import re
 from pathlib import Path
@@ -154,6 +155,12 @@ def main()->int:
         except RuntimeError as exc:
             blocked.append({"provider":pid,"reason":"pending_artifact_state_invalid","detail":str(exc)})
             continue
+        active_path=ROOT/active_relative
+        active_sha=hashlib.sha256(active_path.read_bytes()).hexdigest()
+        recorded_sha=str(prov.get("sha256") or "").strip().casefold()
+        if len(recorded_sha)==64 and recorded_sha!=active_sha:
+            blocked.append({"provider":pid,"reason":"pending_artifact_hash_mismatch"})
+            continue
         manifest_row["enabled"]=True
         patch.setdefault("manifest_overrides",{})["enabled"]=True
         capability=capabilities.get(pid)
@@ -177,6 +184,8 @@ def main()->int:
             "status":"FULL OK",
             "declaredLanes":sorted(declared),
             "verifiedLanes":sorted(verified),
+            "providerSha256":active_sha,
+            "proofSource":"onboarding-pending-status",
         }
         activated.append(pid)
 

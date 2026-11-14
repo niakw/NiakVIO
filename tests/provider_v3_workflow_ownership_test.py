@@ -203,6 +203,7 @@ for required in (
     '"provider_count": provider_count',
 ):
     assert required in quick_yield, f"quick-yield census must remain current-manifest scoped: {required}"
-assert "--all" not in quick_yield, "quick-yield census must not grow a historical-provider switch"
+import re
+assert re.search(r"(?<![A-Za-z0-9_-])--all(?![A-Za-z0-9_-])", quick_yield) is None, "quick-yield census must not grow a historical-provider switch"
 
 print("provider v3 workflow ownership contract passed: CORE verify-only + Brain evidence + one Repair engine + current-provider-scoped atomic Domain Refresh publication + current-provider four-version non-regression gate")

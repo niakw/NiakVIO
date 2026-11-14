@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 from pathlib import Path
+import hashlib
 import importlib.util
 import json
 import sys
@@ -92,6 +93,8 @@ assert overrides["provider_patches"]["a"]["manifest_overrides"]["enabled"] is Tr
 assert overrides["provider_capabilities"]["a"]["validation"]=="bulk_census_full_ok"
 assert provenance["providers"]["a"]["activation_mode"]=="bulk_census_full_ok"
 assert provenance["providers"]["a"]["bulk_activation_proof"]["runId"]==77
+assert provenance["providers"]["a"]["bulk_activation_proof"]["proofSource"]=="onboarding-pending-status"
+assert provenance["providers"]["a"]["bulk_activation_proof"]["providerSha256"]==hashlib.sha256(b"provider-a").hexdigest()
 assert provenance["providers"]["d"]["bulk_activation_proof"]["scope"]=="france"
 assert provenance["providers"]["a"]["published_filename"]=="providers/a.js"
 assert provenance["providers"]["d"]["published_filename"]=="providers/d.js"

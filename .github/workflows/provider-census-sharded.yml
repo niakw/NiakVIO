@@ -12,7 +12,17 @@ on:
           - unresolved
           - all
       persist:
-        description: Persist validated census as canonical authority
+        description: Persist validated census evidence
+        required: false
+        default: false
+        type: boolean
+      target_providers:
+        description: Optional comma-separated explicit providers
+        required: false
+        default: ''
+        type: string
+      allow_pending_targets:
+        description: Permit only explicitly targeted onboarding-pending bytes
         required: false
         default: false
         type: boolean
@@ -124,7 +134,7 @@ jobs:
           print(",".join(rows))
           PY
             )"
-            allow_pending_targets="$(python - <<\'PY\'
+            allow_pending_targets="$(python - <<'PY'
           import json
           from pathlib import Path
           p=Path(".github/triggers/provider-census-sharded.json")
@@ -136,7 +146,7 @@ jobs:
           PY
             )"
           elif [ "$GITHUB_EVENT_NAME" = "workflow_run" ] && [ "$source_workflow" = "PROVIDER - Bulk Onboarding" ]; then
-            target_providers="$(python - <<\'PY\'
+            target_providers="$(python - <<'PY'
           import json
           from pathlib import Path
           p=Path("automation/provider-bulk-onboarding-stage.json")
@@ -156,6 +166,8 @@ jobs:
             census_scope="unresolved"
           elif [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ]; then
             census_scope="${{ inputs.scope }}"
+            target_providers="${{ inputs.target_providers }}"
+            allow_pending_targets="${{ inputs.allow_pending_targets }}"
           fi
           echo "census_scope=$census_scope" >> "$GITHUB_OUTPUT"
           echo "target_providers=$target_providers" >> "$GITHUB_OUTPUT"
@@ -227,7 +239,7 @@ jobs:
         run: |
           set -euo pipefail
           if [ "$ALLOW_PENDING_TARGETS" = "true" ]; then
-            python - <<\'PY\'
+            python - <<'PY'
           import json, os, sys
           from pathlib import Path
           sys.path.insert(0, str(Path("scripts").resolve()))
@@ -249,9 +261,9 @@ jobs:
           else
             python scripts/materialize_provider_base_v3_store.py
             if [ -n "$TARGET_PROVIDERS" ]; then
-              IFS=\',\' read -r -a target_rows <<< "$TARGET_PROVIDERS"
+              IFS=',' read -r -a target_rows <<< "$TARGET_PROVIDERS"
               for provider in "${target_rows[@]}"; do
-                provider="$(printf \'%s\' "$provider" | xargs)"
+                provider="$(printf '%s' "$provider" | xargs)"
                 [ -z "$provider" ] && continue
                 python scripts/reconcile_provider_domain_metadata.py --rebuild --provider "$provider"
                 python scripts/materialize_provider_v3_one.py "$provider"
@@ -468,6 +480,8 @@ jobs:
         env:
           SOURCE_SHA: ${{ needs.prepare.outputs.source_sha }}
           CENSUS_SCOPE: ${{ needs.prepare.outputs.census_scope }}
+          TARGET_PROVIDERS: ${{ needs.prepare.outputs.target_providers }}
+          ALLOW_PENDING_TARGETS: ${{ needs.prepare.outputs.allow_pending_targets }}
         run: |
           set -euo pipefail
           run_id="$GITHUB_RUN_ID"
@@ -506,33 +520,44 @@ jobs:
           else
             echo "FIELD_SHARDED_GLOBAL_FANOUT retained=true replaced=false scope=$CENSUS_SCOPE run=$run_id"
           fi
-          cp /tmp/provider-census-status.json automation/provider-census-status.json
-          # Rebuild the durable batch plan after syncing to current main so the
-          # latest Brain control-plane consumes the exact sharded evidence just
-          # measured, including dynamic completeness debt from otherwise-green
-          # providers. The pre-reset plan remains an artifact only.
-          batch_args=(python scripts/build_provider_repair_batch_plan.py
-            --status /tmp/provider-census-status.json
-            --sharded-census /tmp/provider-census-sharded.json
-            --overrides provider-overrides.json
-            --output automation/provider-repair-batch-plan-latest.json)
-          if [ -s automation/provider-census-sharded-latest.json ]; then
-            batch_args+=(--fallback-sharded-census automation/provider-census-sharded-latest.json)
-          fi
-          "${batch_args[@]}"
-          cp /tmp/provider-census-proof-history.json automation/provider-census-proof-history.json
-          cp /tmp/provider-authority-status.json automation/provider-authority-status.json
-          cp /tmp/provider-waf-browser-session-sharded.json "automation/provider-waf-browser-session-${run_id}.json"
-          if [ -s automation/provider-waf-browser-session-latest.json ]; then
-            python scripts/merge_waf_latest_evidence.py \
-              --previous automation/provider-waf-browser-session-latest.json \
-              --current /tmp/provider-waf-browser-session-sharded.json \
-              --output /tmp/provider-waf-browser-session-latest-merged.json
-            mv /tmp/provider-waf-browser-session-latest-merged.json automation/provider-waf-browser-session-latest.json
+          if [ "$ALLOW_PENDING_TARGETS" = "true" ]; then
+            test -n "$TARGET_PROVIDERS"
+            cp /tmp/provider-census-sharded.json "automation/provider-onboarding-pending-census-${run_id}.json"
+            cp /tmp/provider-census-sharded.json automation/provider-onboarding-pending-census-latest.json
+            cp /tmp/provider-census-status.json "automation/provider-onboarding-pending-status-${run_id}.json"
+            cp /tmp/provider-census-status.json automation/provider-onboarding-pending-status-latest.json
+            cp /tmp/provider-census-proof-history.json automation/provider-census-proof-history.json
+            echo "FIELD_PENDING_ONBOARDING_PROOF_ISOLATED run=$run_id providers=$TARGET_PROVIDERS canonical_status_preserved=true"
           else
-            cp /tmp/provider-waf-browser-session-sharded.json automation/provider-waf-browser-session-latest.json
+            cp /tmp/provider-census-status.json automation/provider-census-status.json
+            # Rebuild the durable batch plan after syncing to current main so the
+            # latest Brain control-plane consumes the exact sharded evidence just
+            # measured, including dynamic completeness debt from otherwise-green
+            # providers. The pre-reset plan remains an artifact only.
+            batch_args=(python scripts/build_provider_repair_batch_plan.py
+              --status /tmp/provider-census-status.json
+              --sharded-census /tmp/provider-census-sharded.json
+              --overrides provider-overrides.json
+              --output automation/provider-repair-batch-plan-latest.json)
+            if [ -s automation/provider-census-sharded-latest.json ]; then
+              batch_args+=(--fallback-sharded-census automation/provider-census-sharded-latest.json)
+            fi
+            "${batch_args[@]}"
+            cp /tmp/provider-authority-status.json automation/provider-authority-status.json
           fi
-          cp /tmp/PROVIDER_CENSUS_STATUS.md PROVIDER_CENSUS_STATUS.md
+          cp /tmp/provider-waf-browser-session-sharded.json "automation/provider-waf-browser-session-${run_id}.json"
+          if [ "$ALLOW_PENDING_TARGETS" != "true" ]; then
+            if [ -s automation/provider-waf-browser-session-latest.json ]; then
+              python scripts/merge_waf_latest_evidence.py \
+                --previous automation/provider-waf-browser-session-latest.json \
+                --current /tmp/provider-waf-browser-session-sharded.json \
+                --output /tmp/provider-waf-browser-session-latest-merged.json
+              mv /tmp/provider-waf-browser-session-latest-merged.json automation/provider-waf-browser-session-latest.json
+            else
+              cp /tmp/provider-waf-browser-session-sharded.json automation/provider-waf-browser-session-latest.json
+            fi
+            cp /tmp/PROVIDER_CENSUS_STATUS.md PROVIDER_CENSUS_STATUS.md
+          fi
           verified="$(python - <<'PY'
           import json
           d=json.load(open("/tmp/provider-census-sharded-summary.json"))
@@ -541,15 +566,26 @@ jobs:
           )"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add \
-            "automation/provider-census-sharded-${run_id}.json" \
-            automation/provider-census-status.json \
-            automation/provider-repair-batch-plan-latest.json \
-            automation/provider-census-proof-history.json \
-            automation/provider-authority-status.json \
-            "automation/provider-waf-browser-session-${run_id}.json" \
-            automation/provider-waf-browser-session-latest.json \
-            PROVIDER_CENSUS_STATUS.md
+          if [ "$ALLOW_PENDING_TARGETS" = "true" ]; then
+            git add \
+              "automation/provider-census-sharded-${run_id}.json" \
+              "automation/provider-onboarding-pending-census-${run_id}.json" \
+              automation/provider-onboarding-pending-census-latest.json \
+              "automation/provider-onboarding-pending-status-${run_id}.json" \
+              automation/provider-onboarding-pending-status-latest.json \
+              automation/provider-census-proof-history.json \
+              "automation/provider-waf-browser-session-${run_id}.json"
+          else
+            git add \
+              "automation/provider-census-sharded-${run_id}.json" \
+              automation/provider-census-status.json \
+              automation/provider-repair-batch-plan-latest.json \
+              automation/provider-census-proof-history.json \
+              automation/provider-authority-status.json \
+              "automation/provider-waf-browser-session-${run_id}.json" \
+              automation/provider-waf-browser-session-latest.json \
+              PROVIDER_CENSUS_STATUS.md
+          fi
           if [ "$CENSUS_SCOPE" = "all" ]; then
             git add \
               automation/provider-census-sharded-latest.json \
@@ -558,7 +594,11 @@ jobs:
           if git diff --cached --quiet; then
             echo "FIELD_SHARDED_CENSUS_NO_CHANGES"
           else
-            git commit -m "ci(census-sharded): persist ${verified} from ${SOURCE_SHA:0:12}"
+            if [ "$ALLOW_PENDING_TARGETS" = "true" ]; then
+              git commit -m "ci(onboarding-proof): persist ${verified} pending from ${SOURCE_SHA:0:12}"
+            else
+              git commit -m "ci(census-sharded): persist ${verified} from ${SOURCE_SHA:0:12}"
+            fi
             git fetch origin main
             remote_head="$(git rev-parse origin/main)"
             if [ "$remote_head" != "$persist_base" ]; then
@@ -581,6 +621,7 @@ jobs:
             fi
           fi
           echo "stale=false" >> "$GITHUB_OUTPUT"
+          echo "pending=$ALLOW_PENDING_TARGETS" >> "$GITHUB_OUTPUT"
           echo "ok=true" >> "$GITHUB_OUTPUT"
 
       - name: Requeue census on current main after concurrent advance
@@ -588,6 +629,8 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           CENSUS_SCOPE: ${{ needs.prepare.outputs.census_scope }}
+          TARGET_PROVIDERS: ${{ needs.prepare.outputs.target_providers }}
+          ALLOW_PENDING_TARGETS: ${{ needs.prepare.outputs.allow_pending_targets }}
         shell: bash
         run: |
           set -euo pipefail
@@ -595,11 +638,13 @@ jobs:
             --repo "$GITHUB_REPOSITORY" \
             --ref main \
             -f scope="${CENSUS_SCOPE:-unresolved}" \
-            -f persist=true
+            -f persist=true \
+            -f target_providers="$TARGET_PROVIDERS" \
+            -f allow_pending_targets="$ALLOW_PENDING_TARGETS"
           echo "FIELD_SHARDED_CENSUS_REQUEUE source_run=${GITHUB_RUN_ID} scope=${CENSUS_SCOPE:-unresolved} reason=concurrent-main-advance"
 
       - name: Continue Brain Autopilot from fresh census
-        if: ${{ steps.persist.outputs.ok == 'true' }}
+        if: ${{ steps.persist.outputs.ok == 'true' && steps.persist.outputs.pending != 'true' }}
         env:
           GH_TOKEN: ${{ github.token }}
         shell: bash

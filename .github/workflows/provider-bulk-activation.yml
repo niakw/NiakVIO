@@ -4,7 +4,7 @@ on:
   push:
     branches: [main]
     paths:
-      - 'automation/provider-census-status.json'
+      - 'automation/provider-onboarding-pending-status-latest.json'
 
 permissions:
   contents: write
@@ -39,7 +39,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          python scripts/activate_bulk_proven_providers.py             --status automation/provider-census-status.json             --output automation/provider-bulk-activation-latest.json
+          python scripts/activate_bulk_proven_providers.py             --status automation/provider-onboarding-pending-status-latest.json             --output automation/provider-bulk-activation-latest.json
           count="$(python - <<'PY'
           import json
           d=json.load(open("automation/provider-bulk-activation-latest.json", encoding="utf-8"))
