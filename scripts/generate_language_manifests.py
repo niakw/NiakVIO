@@ -367,7 +367,7 @@ def build_manifest(
     name_suffix: str,
     *,
     root: Path = ROOT,
-    homepage_fetcher: Callable[[str], str] = fetch_public_homepage,
+    homepage_fetcher: Callable[[str], str] | None = None,
 ) -> dict[str, Any]:
     normalized_language_by_id = {
         str(provider_id).casefold(): str(group).casefold()
@@ -389,10 +389,17 @@ def build_manifest(
         no_observed_language = observed_group in {"", "other", "unknown", "unclassified", "none"}
         inferred_fr = False
         if not observed_accepted and not declared_fr and no_declared_language and no_observed_language:
+            # Manifest projection must be deterministic. A live homepage fetch
+            # during validation can make VF membership vary with network/WAF
+            # state. Domain evidence remains deterministic; homepage evidence is
+            # used only when an explicit fetcher is supplied by an observation
+            # workflow/test and should then be persisted as metadata before
+            # publication.
+            fetcher = homepage_fetcher or (lambda _url: "")
             inferred_fr = infer_french_from_domain_or_homepage(
                 entry,
                 root=root,
-                homepage_fetcher=homepage_fetcher,
+                homepage_fetcher=fetcher,
             )
 
         if not observed_accepted and not declared_fr and not inferred_fr:
