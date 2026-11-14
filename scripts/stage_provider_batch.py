@@ -8,7 +8,9 @@ belong to the sharded census / batch-repair / proof-driven activation pipeline.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
+import subprocess
 import tempfile
 from collections import Counter
 from pathlib import Path
@@ -16,6 +18,7 @@ from typing import Any
 
 import add_provider
 import provider_base_store
+from provider_v3_minimizer import minimize_text, validate_transform
 
 ROOT=Path(__file__).resolve().parents[1]
 DEFAULT_REQUEST=ROOT/".github/provider-onboarding/batch.json"
@@ -110,6 +113,70 @@ def preflight(rows:list[dict[str,Any]], allow_replace_existing:bool)->dict[str,A
     }
 
 
+
+def finalize_staged_pending_bundle(provider_id:str, scope:str)->dict[str,Any]:
+    """Put a staged pending provider at the exact safe minimizer fixed-point."""
+    manifest_path=add_provider.VF_MANIFEST if scope=="france" else add_provider.MANIFEST
+    manifest=add_provider.load_json(manifest_path,{"scrapers":[]})
+    rows=[
+        row for row in manifest.get("scrapers") or []
+        if isinstance(row,dict) and add_provider.norm_id(row.get("id"))==provider_id
+    ]
+    if len(rows)!=1:
+        raise ValueError(f"{provider_id}: pending manifest row is not unique in {scope}")
+    row=rows[0]
+    if row.get("enabled") is not False:
+        raise ValueError(f"{provider_id}: pending minimizer refuses an enabled provider")
+    relative=str(row.get("filename") or "").strip()
+    local_relative=relative[3:] if relative.startswith("../") else relative
+    if not local_relative.startswith("provider-disabled/"):
+        raise ValueError(f"{provider_id}: pending minimizer path is not provider-disabled: {relative}")
+    source=(ROOT/local_relative).resolve()
+    disabled_root=(ROOT/"provider-disabled").resolve()
+    if disabled_root not in source.parents or not source.is_file():
+        raise ValueError(f"{provider_id}: unsafe or missing pending provider path")
+    original=source.read_text(encoding="utf-8")
+    result=minimize_text(original)
+    validate_transform(original,result.text)
+    minimized=result.text.encode("utf-8")
+    with tempfile.NamedTemporaryFile("wb",suffix=".js",delete=False) as fh:
+        fh.write(minimized)
+        check_path=Path(fh.name)
+    try:
+        proc=subprocess.run(["node","--check",str(check_path)],cwd=ROOT,text=True,capture_output=True,timeout=30,check=False)
+        if proc.returncode!=0:
+            raise ValueError(f"{provider_id}: minimized pending JS parse failed: {proc.stdout}{proc.stderr}")
+    finally:
+        check_path.unlink(missing_ok=True)
+    digest=hashlib.sha256(minimized).hexdigest()
+    target=source.with_name(f"{provider_id}--nuvio--{digest[:16]}.js")
+    if target.exists() and target.read_bytes()!=minimized:
+        raise ValueError(f"{provider_id}: pending minimizer content-address collision")
+    target.write_bytes(minimized)
+    if target!=source:
+        source.unlink()
+    target_relative=target.relative_to(ROOT).as_posix()
+    row["filename"]=("../"+target_relative) if scope=="france" else target_relative
+    add_provider.write_json(manifest_path,manifest)
+    provenance=add_provider.load_json(add_provider.PROVENANCE,{"providers":{}})
+    meta=(provenance.get("providers") or {}).get(provider_id)
+    if not isinstance(meta,dict):
+        raise ValueError(f"{provider_id}: missing provenance during pending minimizer")
+    meta["published_filename"]=target_relative
+    meta["sha256"]=digest
+    if "patched_sha256" in meta:
+        meta["patched_sha256"]=digest
+    meta["pending_minimizer"]={
+        "schemaVersion":1,
+        "fixedPoint":True,
+        "sha256":digest,
+        "savedBytes":int(result.saved_bytes),
+        "transformedLines":int(result.transformed_lines),
+    }
+    add_provider.write_json(add_provider.PROVENANCE,provenance)
+    return {"filename":target_relative,"sha256":digest,"savedBytes":int(result.saved_bytes)}
+
+
 def main()->int:
     ap=argparse.ArgumentParser(description="Bulk-stage providers as disabled/pending")
     ap.add_argument("--request",type=Path,default=DEFAULT_REQUEST)
@@ -142,12 +209,17 @@ def main()->int:
             request=temp/f"{index:04d}-{row['id']}.json"
             request.write_text(json.dumps(row,ensure_ascii=False,indent=2)+"\n",encoding="utf-8")
             normalized=add_provider.stage(request,bulk=True)
+            fixed=finalize_staged_pending_bundle(normalized["id"],normalized["scope"])
             staged.append({
                 "id":normalized["id"],
                 "name":normalized["name"],
                 "types":normalized["types"],
                 "strategy":normalized["strategy"],
                 "site":normalized.get("site") or None,
+                "scope":normalized["scope"],
+                "pendingFilename":fixed["filename"],
+                "pendingSha256":fixed["sha256"],
+                "pendingFixedPoint":True,
             })
     # The ordinary one-provider path repairs the base store after each stage.
     # Bulk mode defers that O(N) repository sweep and performs it exactly once.
