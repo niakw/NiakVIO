@@ -66,7 +66,12 @@ const provider=require(process.argv[2]);
   if(rows.length!==1)throw new Error("strict V8 did not drop dead row: "+JSON.stringify(rows));
   const row=rows[0];
   if(row.quality!=="1080p")throw new Error("strongest quality evidence lost: "+JSON.stringify(row));
-  if(row.language!=="Hindi")throw new Error("detailed language evidence lost: "+JSON.stringify(row));
+  // Core V25+ uses canonical language codes in structured fields and the
+  // localized human-readable name in presentation. Preserve both; VO is not
+  // sufficient evidence for a specific language on its own.
+  if(row.language!=="hi"||row.presentationFacts?.language!=="hi")throw new Error("canonical Hindi evidence lost: "+JSON.stringify(row));
+  if(!row.description.includes("Hindi")||!row.badgeIds.includes("lang-hi")||!row.displayBadges.includes("HI")||row.badgeIds.includes("vo"))throw new Error("detailed Hindi display evidence lost: "+JSON.stringify(row));
+  if(row.sourceLanguage!=="VO"||!String(row.sourceTitle||"").includes("Hindi"))throw new Error("raw language provenance lost: "+JSON.stringify(row));
   if(!/1080p/i.test(String(row.title||"")))throw new Error("normalized title missing recovered quality: "+JSON.stringify(row));
   console.log("MANUAL_TV_V34_RUNTIME_OK rows=1 quality="+row.quality+" language="+row.language);
 })().catch(e=>{console.error(e);process.exit(1)});
@@ -87,7 +92,7 @@ mugiwara = (ROOT / "scripts/provider_patches/mugiwarastream_packed_runtime_v1.py
 revision = __import__("re").search(r'REVISION\s*=\s*"[^"]*-v(\d+)"', presentation_source)
 assert revision and int(revision.group(1)) >= 22, revision.group(0) if revision else None
 assert 'best=Math.max(best,Number(m[1]||0))' in presentation_source
-assert '["hindi","Hindi"]' in presentation_source
+assert '["hindi","hi"]' in presentation_source
 assert "NIAKVIO_PROVIDER_ROUTE_MEDIA_COMPAT_V34" in provider_base
 assert "_spv34RouteMediaCompatible(route, mediaType)" in provider_base
 selection = __import__("re").search(
