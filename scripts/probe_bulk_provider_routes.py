@@ -109,7 +109,7 @@ def route_pattern(raw: Any, fixture: dict[str, Any]) -> str:
     tmdb_id = str(fixture.get("tmdbId") or "")
     title_slug = slug(str(fixture.get("title") or ""))
     if tmdb_id:
-        path = re.sub(rf"(?<!\d){re.escape(tmdb_id)}(?!\d)", "{{tmdbId}}", path)
+        path = re.sub(rf"(?<!\d){re.escape(tmdb_id)}(?!\d)", "{tmdbId}", path)
     if title_slug and title_slug in path.casefold():
         path = re.sub(re.escape(title_slug), "{slug}", path, flags=re.I)
     templated_query = _template_query(query, fixture)
