@@ -11,6 +11,7 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_REQUEST = ROOT / ".github/provider-onboarding/batch.json"
 DEFAULT_EVIDENCE = ROOT / "automation/provider-bulk-route-discovery-latest.json"
+RESERVE_GLOB = "provider-intake-reserve-*.json"
 
 
 def load(path: Path) -> Any:
@@ -96,8 +97,9 @@ def select_to_target(
 def source_rows(request: dict[str, Any]) -> list[dict[str, Any]]:
     out: list[dict[str, Any]] = []
     seen: set[str] = set()
-    for section in ("providers", "deferredProviders"):
-        for row in request.get(section) or []:
+
+    def add(values: Any) -> None:
+        for row in values or []:
             if not isinstance(row, dict):
                 continue
             pid = norm(row.get("id") or row.get("provider"))
@@ -105,6 +107,16 @@ def source_rows(request: dict[str, Any]) -> list[dict[str, Any]]:
                 continue
             seen.add(pid)
             out.append(dict(row))
+
+    for section in ("providers", "deferredProviders"):
+        add(request.get(section))
+    for path in sorted((ROOT / "automation").glob(RESERVE_GLOB)):
+        try:
+            reserve = load(path)
+        except Exception:
+            continue
+        if isinstance(reserve, dict):
+            add(reserve.get("providers"))
     return out
 
 
