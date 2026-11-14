@@ -1,15 +1,15 @@
 {
   "schemaVersion": 1,
-  "sourceRunId": "43603937483",
-  "sourceTriggerSha": "a51be853a03f86a85f2f5d4cdce7096b3a182b87",
-  "unresolvedProviderCount": 3,
-  "dynamicVariantProviderCount": 2,
+  "sourceRunId": "43629759862",
+  "sourceTriggerSha": "91e0d2fa629b3c232a7be6fbcd3347891ed5b137",
+  "unresolvedProviderCount": 2,
+  "dynamicVariantProviderCount": 1,
   "dynamicVariantProviders": [
-    "hindmoviez",
     "papadustream"
   ],
   "lifecycleSuppressedDynamicProviders": [
-    "animevostfr"
+    "animevostfr",
+    "hindmoviez"
   ],
   "dynamicVariantCurrentObservedProviders": [
     "4khdhub",
@@ -29,6 +29,7 @@
     "flemmix",
     "french-manga",
     "hindmoviez",
+    "internet-archive",
     "kehflix",
     "kurage",
     "mallumv",
@@ -55,7 +56,7 @@
     "yflix"
   ],
   "dynamicVariantFallbackUsed": true,
-  "groupCount": 3,
+  "groupCount": 2,
   "executionModel": {
     "default": "family/signature batch",
     "liveProbeConcurrency": "audit_provider_quick_yield ThreadPool",
@@ -64,58 +65,29 @@
   },
   "groups": [
     {
-      "groupId": "candidate-replay|mixed_embed_resolver",
-      "repairScope": "candidate-replay",
+      "groupId": "transport|mixed_embed_resolver",
+      "repairScope": "transport",
       "runtimeFamilies": [
-        "wookafr-current-multiplayer-v2"
+        "search-episode-embed"
       ],
       "capabilityStrategy": "mixed_embed_resolver",
       "evidenceDepths": [
         "lookup"
       ],
       "dominantIssues": [
-        "timeout"
+        "network_http_error"
       ],
       "harnessTransportClasses": [],
       "transportSignature": "not-applicable",
       "providerCount": 1,
       "providers": [
-        "wookafr"
+        "voiranime-rip"
       ],
-      "action": "replay/rematerialize retained candidate knowledge against current bytes before new mutation",
+      "action": "refresh transport authority before provider-local code changes",
       "selectionAuthorities": [
         "provider-census-status.json:brainCheckRequired"
       ],
       "dynamicVariantProviders": [],
-      "executionPolicy": "batch-first",
-      "providerLocalFallback": "only-after-shared-profile-failure"
-    },
-    {
-      "groupId": "variant-coverage|direct_media",
-      "repairScope": "variant-coverage",
-      "runtimeFamilies": [
-        "direct_media"
-      ],
-      "capabilityStrategy": "direct_media",
-      "evidenceDepths": [
-        "lookup"
-      ],
-      "dominantIssues": [
-        "provider_returned_streams"
-      ],
-      "harnessTransportClasses": [],
-      "transportSignature": "not-applicable",
-      "providerCount": 1,
-      "providers": [
-        "hindmoviez"
-      ],
-      "action": "current execution proves playable output but fewer variants than the provider announced; keep publication authority unchanged and send completeness repair to Brain Learning",
-      "selectionAuthorities": [
-        "provider-census-sharded-latest.json:dynamic-variant-debt"
-      ],
-      "dynamicVariantProviders": [
-        "hindmoviez"
-      ],
       "executionPolicy": "batch-first",
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
