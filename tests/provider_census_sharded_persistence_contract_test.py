@@ -155,4 +155,7 @@ pending_branch=workflow.index('FIELD_PENDING_ONBOARDING_PROOF_ISOLATED')
 canonical_copy=workflow.index('cp /tmp/provider-census-status.json automation/provider-census-status.json')
 assert pending_branch < canonical_copy
 assert "steps.persist.outputs.pending != 'true'" in workflow
+assert "FIELD_SHARDED_ALL_SCOPE_FRESHNESS_LEDGER" in workflow
+assert "stamp_provider_census_artifact_hashes.py" in workflow
+assert "provider-census-all-status-latest.json" in workflow
 print("pending onboarding proof remains isolated from canonical active freshness")
