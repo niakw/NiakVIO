@@ -476,7 +476,6 @@ actual_overrides = json.loads((ROOT / "provider-overrides.json").read_text(encod
 route_proven_real_provider_ids = {
     "4khdhub": {"movie", "tv"},
     "animetsu": {"anime"},
-    "showbox": {"movie", "tv"},
 }
 for pid, expected_lanes in route_proven_real_provider_ids.items():
     patch = actual_overrides["provider_patches"][pid]
@@ -486,6 +485,15 @@ for pid, expected_lanes in route_proven_real_provider_ids.items():
     assert set(gate["validated_types"]) == expected_lanes, (pid, gate)
     assert gate.get("missing_types") == [], (pid, gate)
     assert int(gate.get("live_validated_route_count") or 0) > 0, (pid, gate)
+
+# Offline/WAF-limited activation is execution authority, not a fabricated
+# live route proof. ShowBox intentionally carries an identity-aware learned
+# route and the live_unverified capability marker without live_route_gate.
+showbox_patch = actual_overrides["provider_patches"]["showbox"]
+showbox_capability = actual_overrides["provider_capabilities"]["showbox"]
+assert showbox_capability["validation"] == "bulk_offline_contract_live_unverified"
+assert showbox_patch.get("live_route_gate") is None
+assert any("{query}" in str(route) for route in showbox_patch.get("learned_routes") or [])
 
 print("provider census status/state-machine markdown contract passed")
 
