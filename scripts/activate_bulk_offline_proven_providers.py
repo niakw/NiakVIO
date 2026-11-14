@@ -189,10 +189,13 @@ def main() -> int:
             continue
         staged_sha = str(staged_row.get("pendingSha256") or "").strip().casefold()
         recorded_sha = str(prov.get("sha256") or "").strip().casefold()
-        if not re.fullmatch(r"[0-9a-f]{64}", staged_sha) or exact_sha != staged_sha:
-            blocked.append({"provider": pid, "reason": "stage_exact_byte_hash_mismatch"})
+        if not re.fullmatch(r"[0-9a-f]{64}", staged_sha):
+            blocked.append({"provider": pid, "reason": "stage_initial_hash_missing"})
             continue
-        if recorded_sha and exact_sha != recorded_sha:
+        # Publication rebuild/minimization is allowed to update the staged bytes
+        # after the initial stage summary. The current provenance hash is the
+        # authoritative exact byte binding at activation time.
+        if not re.fullmatch(r"[0-9a-f]{64}", recorded_sha) or exact_sha != recorded_sha:
             blocked.append({"provider": pid, "reason": "provenance_exact_byte_hash_mismatch"})
             continue
 
@@ -248,7 +251,8 @@ def main() -> int:
             "schemaVersion": 1,
             "scope": scope,
             "providerSha256": active_sha,
-            "pendingSha256": staged_sha,
+            "pendingSha256": active_sha,
+            "stageInitialSha256": staged_sha,
             "minimizerFixedPoint": True,
             "nodeSyntax": "passed",
             "providerV3Contract": "passed",
