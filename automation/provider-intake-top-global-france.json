@@ -1,0 +1,226 @@
+{
+  "schemaVersion": 1,
+  "sourceWorkbook": "NiakVIO-GLOBAL-FINAL-STRICT-TOP20-2026-09-11(2).xlsx",
+  "sourceWorkbookDate": "2026-09-11",
+  "publication": "read-only-intake-do-not-auto-enable",
+  "target": {
+    "global": {
+      "movie": 20,
+      "tv": 20,
+      "anime": 20
+    },
+    "france": {
+      "movie": 20,
+      "tv": 20,
+      "anime": 20
+    }
+  },
+  "notes": "Ranks/scores originate in the 2026-09-11 workbook. Network status and functional playback must be independently tested on this run. Sources pinned to full immutable commits. Shared/duplicate IDs between Global and France forbidden.",
+  "providers": [
+    {
+      "id": "kisskh",
+      "region": "global",
+      "lanes": [
+        "movie",
+        "tv"
+      ],
+      "inventoryRank": 2,
+      "inventoryScore": 100,
+      "source": {
+        "repository": "NuvioPlugin/All-in-One-Nuvio",
+        "sha": "3f09a6ff4360498895e622877af7a32212f75038",
+        "file": "providers/kisskh.js"
+      }
+    },
+    {
+      "id": "vidsrc",
+      "region": "global",
+      "lanes": [
+        "movie",
+        "tv"
+      ],
+      "inventoryRank": 9,
+      "inventoryScore": 90,
+      "source": {
+        "repository": "NuvioPlugin/All-in-One-Nuvio",
+        "sha": "3f09a6ff4360498895e622877af7a32212f75038",
+        "file": "providers/vidsrc.js"
+      }
+    },
+    {
+      "id": "reanime",
+      "region": "global",
+      "lanes": [
+        "anime"
+      ],
+      "inventoryRank": 71,
+      "inventoryScore": 83,
+      "source": {
+        "repository": "NuvioPlugin/All-in-One-Nuvio",
+        "sha": "3f09a6ff4360498895e622877af7a32212f75038",
+        "file": "providers/reanime.js"
+      }
+    },
+    {
+      "id": "anizone",
+      "region": "global",
+      "lanes": [
+        "anime"
+      ],
+      "inventoryRank": 90,
+      "inventoryScore": 83,
+      "source": {
+        "repository": "NuvioPlugin/All-in-One-Nuvio",
+        "sha": "3f09a6ff4360498895e622877af7a32212f75038",
+        "file": "providers/anizone.js"
+      }
+    },
+    {
+      "id": "topcartoons",
+      "region": "global",
+      "lanes": [
+        "anime"
+      ],
+      "inventoryRank": 96,
+      "inventoryScore": 83,
+      "source": {
+        "repository": "NuvioPlugin/All-in-One-Nuvio",
+        "sha": "3f09a6ff4360498895e622877af7a32212f75038",
+        "file": "providers/topcartoons.js"
+      }
+    },
+    {
+      "id": "vidlink",
+      "region": "global",
+      "lanes": [
+        "movie",
+        "tv"
+      ],
+      "inventoryRank": 99,
+      "inventoryScore": 83,
+      "source": {
+        "repository": "NuvioPlugin/All-in-One-Nuvio",
+        "sha": "3f09a6ff4360498895e622877af7a32212f75038",
+        "file": "providers/vidlink.js"
+      }
+    },
+    {
+      "id": "cineby",
+      "region": "global",
+      "lanes": [
+        "movie",
+        "tv"
+      ],
+      "inventoryRank": 106,
+      "inventoryScore": 78,
+      "source": {
+        "repository": "NuvioPlugin/All-in-One-Nuvio",
+        "sha": "3f09a6ff4360498895e622877af7a32212f75038",
+        "file": "providers/cineby.js"
+      }
+    },
+    {
+      "id": "cinemacity",
+      "region": "global",
+      "lanes": [
+        "movie",
+        "tv"
+      ],
+      "inventoryRank": 125,
+      "inventoryScore": 76,
+      "source": {
+        "repository": "NuvioPlugin/All-in-One-Nuvio",
+        "sha": "3f09a6ff4360498895e622877af7a32212f75038",
+        "file": "providers/cinemacity.js"
+      }
+    },
+    {
+      "id": "frenchstream",
+      "region": "france",
+      "lanes": [
+        "movie",
+        "tv"
+      ],
+      "inventoryRank": 1,
+      "inventoryScore": 103,
+      "source": {
+        "repository": "Gowaru/gowaru-nuvio-providers",
+        "sha": "66494c595865fd2e6d664876935d577389eb23b6",
+        "file": "providers/frenchstream.js"
+      }
+    },
+    {
+      "id": "movix",
+      "region": "france",
+      "lanes": [
+        "movie",
+        "tv"
+      ],
+      "inventoryRank": 3,
+      "inventoryScore": 97,
+      "source": {
+        "repository": "Gowaru/gowaru-nuvio-providers",
+        "sha": "66494c595865fd2e6d664876935d577389eb23b6",
+        "file": "providers/movix.js"
+      }
+    },
+    {
+      "id": "french-anime",
+      "region": "france",
+      "lanes": [
+        "anime"
+      ],
+      "inventoryRank": 28,
+      "inventoryScore": 78,
+      "source": {
+        "repository": "Gowaru/gowaru-nuvio-providers",
+        "sha": "66494c595865fd2e6d664876935d577389eb23b6",
+        "file": "providers/french-anime.js"
+      }
+    },
+    {
+      "id": "dulourd",
+      "region": "france",
+      "lanes": [
+        "tv",
+        "anime"
+      ],
+      "inventoryRank": 34,
+      "inventoryScore": 73,
+      "source": {
+        "repository": "Gowaru/gowaru-nuvio-providers",
+        "sha": "66494c595865fd2e6d664876935d577389eb23b6",
+        "file": "providers/dulourd.js"
+      }
+    },
+    {
+      "id": "franime",
+      "region": "france",
+      "lanes": [
+        "anime"
+      ],
+      "inventoryRank": 39,
+      "inventoryScore": 70,
+      "source": {
+        "repository": "Gowaru/gowaru-nuvio-providers",
+        "sha": "66494c595865fd2e6d664876935d577389eb23b6",
+        "file": "providers/franime.js"
+      }
+    },
+    {
+      "id": "nakios",
+      "region": "france",
+      "lanes": [
+        "movie",
+        "tv"
+      ],
+      "inventoryRank": 41,
+      "inventoryScore": 70,
+      "source": {
+        "repository": "Gowaru/gowaru-nuvio-providers",
+        "sha": "66494c595865fd2e6d664876935d577389eb23b6",
+        "file": "providers/nakios.js"
+      }
+    }
+  ]
+}

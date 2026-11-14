@@ -1,0 +1,59 @@
+name: PROVIDERS - Global France Intake Terminal Probe
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'automation/provider-intake-top-global-france.json'
+      - 'scripts/probe_provider_intake.py'
+      - '.github/workflows/provider-intake-terminal-probe.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: niakvio-intake-probe-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  probe:
+    name: Read-only terminal probe ${{ matrix.region }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    strategy:
+      fail-fast: false
+      matrix:
+        region: [global, france]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - name: Install locked worker libraries
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Validate regional contracts and immutable source refs
+        run: |
+          python -m py_compile scripts/probe_provider_intake.py
+          python scripts/probe_provider_intake.py --dry-run --region ${{ matrix.region }}
+      - name: Probe upstream sandbox and terminal media (no publication)
+        run: |
+          python scripts/probe_provider_intake.py \
+            --region ${{ matrix.region }} \
+            --samples-per-lane 2 --timeout 25 --max-workers 4 \
+            --output automation/provider-intake-${{ matrix.region }}-result.json
+      - name: Upload sanitized evidence
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: provider-intake-${{ matrix.region }}-${{ github.run_id }}
+          path: automation/provider-intake-${{ matrix.region }}-result.json
+          retention-days: 14
+          if-no-files-found: warn
