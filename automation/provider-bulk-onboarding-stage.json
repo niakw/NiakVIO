@@ -1,28 +1,27 @@
 {
-  "providerCount": 4,
-  "newProviderCount": 4,
-  "replaceProviderCount": 0,
-  "newProviders": [
-    "animejlprovider",
-    "watchott",
+  "providerCount": 2,
+  "newProviderCount": 0,
+  "replaceProviderCount": 2,
+  "newProviders": [],
+  "replaceProviders": [
     "webflix",
     "zone-telechargement"
   ],
-  "replaceProviders": [],
   "strategies": {
-    "html_scraper": 2,
-    "mixed_embed_resolver": 2
+    "api_stream_resolver": 1,
+    "mixed_embed_resolver": 1
   },
   "declaredTypeCounts": {
-    "anime": 2,
-    "movie": 3,
-    "tv": 3
+    "movie": 2,
+    "tv": 2
   },
   "scopeCounts": {
-    "france": 2,
-    "global": 2
+    "france": 2
   },
-  "safePendingRestageProviders": [],
+  "safePendingRestageProviders": [
+    "webflix",
+    "zone-telechargement"
+  ],
   "schemaVersion": 1,
   "request": ".github/provider-onboarding/batch.json",
   "mode": "staged-disabled-pending",
@@ -32,45 +31,17 @@
   "nextStage": "sharded census -> repair batches -> proof-driven activation",
   "providers": [
     {
-      "id": "watchott",
-      "name": "Watchott",
-      "types": [
-        "movie",
-        "tv",
-        "anime"
-      ],
-      "strategy": "html_scraper",
-      "site": "https://watchott.org",
-      "scope": "global",
-      "pendingFilename": "provider-disabled/watchott--nuvio--7671f653747d04c3.js",
-      "pendingSha256": "7671f653747d04c3411782ba713cb5355600f3049c68dc4dfc5a774461e9faf7",
-      "pendingFixedPoint": true
-    },
-    {
-      "id": "animejlprovider",
-      "name": "AnimeJL",
-      "types": [
-        "anime"
-      ],
-      "strategy": "html_scraper",
-      "site": "https://www.anime-jl.net",
-      "scope": "global",
-      "pendingFilename": "provider-disabled/animejlprovider--nuvio--1606673e3b4efa68.js",
-      "pendingSha256": "1606673e3b4efa6843af3dfec230d3924bfeb52b8f85b29ea488cc3f94cb8655",
-      "pendingFixedPoint": true
-    },
-    {
       "id": "webflix",
       "name": "Webflix",
       "types": [
         "movie",
         "tv"
       ],
-      "strategy": "mixed_embed_resolver",
+      "strategy": "api_stream_resolver",
       "site": "https://webflix.art/",
       "scope": "france",
-      "pendingFilename": "provider-disabled/webflix--nuvio--77f578a29c77bbb8.js",
-      "pendingSha256": "77f578a29c77bbb8013b2e86515cf9ae68aa0f21ba11f845018d17c149c51414",
+      "pendingFilename": "provider-disabled/webflix--nuvio--2d9dd125d1671967.js",
+      "pendingSha256": "2d9dd125d16719674be2de7cb726a3341b43a7bf6f2e03ca628d67aaf57e746f",
       "pendingFixedPoint": true
     },
     {
@@ -83,8 +54,8 @@
       "strategy": "mixed_embed_resolver",
       "site": "https://www.zone-telechargement.rentals/",
       "scope": "france",
-      "pendingFilename": "provider-disabled/zone-telechargement--nuvio--b601e6c86132abc5.js",
-      "pendingSha256": "b601e6c86132abc57885fbb6ba2d997e2dec4e94a800f172771f1ba2f08b0ca7",
+      "pendingFilename": "provider-disabled/zone-telechargement--nuvio--27f9e85511a72896.js",
+      "pendingSha256": "27f9e85511a72896880605c391ce3b0492db2e425b09fb351bfa810dd5e9f25c",
       "pendingFixedPoint": true
     }
   ]

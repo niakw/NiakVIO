@@ -12960,10 +12960,7 @@
       "notes": [
         "Created by the NiakVIO full-auto provider onboarding workflow from structured route knowledge only.",
         "Activation remains disabled until the onboarding quick Lab proves the provider on every requested runtime group.",
-        "Mac residential oracle 2026-11-14 proved Webflix FastFlux movie and episode APIs return direct MP4 candidates for exact requested TMDB/season/episode.",
-        "Provider-owned Webflix runtime uses only public deterministic JSON APIs; no challenge solver or upstream JS execution.",
-        "TV identity is bound by discovery response tmdb_id plus exact season/episode key before terminal media is returned.",
-        "MAC_ROUTE_PROOF_V5_2026_11_14: physical Mac runs 43649703460/43649792760 proved TMDB-bound movie and exact TV season/episode FastFlux JSON plus direct MP4 response; route proof is provider-owned and does not imply native decoded playback/FULL OK."
+        "Activated from exact-byte offline Provider v3 contract proof because GitHub-hosted network/WAF checks are non-authoritative; live native validation remains pending."
       ],
       "replacements": {},
       "runtime_domain_replacements": {},
@@ -12977,90 +12974,24 @@
         "tv"
       ],
       "manifest_overrides": {
-        "enabled": false,
-        "disabledPlatforms": []
+        "enabled": true,
+        "disabledPlatforms": [],
+        "formats": [
+          "mp4",
+          "m3u8"
+        ]
       },
       "learned_routes": [
         "/api/fastflux?type=movie&tmdb_id={tmdbId}",
         "/api/series-season-discovery?tmdb_id={tmdbId}",
         "/api/fastflux?type=episode&tmdb_id={tmdbId}&season={season}&episode={episode}"
-      ],
-      "official_api": "https://webflix.art",
-      "provider_lego_scripts": [
-        "scripts/provider_patches/webflix_runtime_v1.py"
-      ],
-      "provider_lego_options": {
-        "scripts/provider_patches/webflix_runtime_v1.py": {
-          "base": "https://webflix.art"
-        }
-      },
-      "identity_input": {
-        "mode": "tmdb_direct",
-        "requires_tmdb_before_run": true,
-        "required_fields": [
-          "tmdbId",
-          "mediaType"
-        ]
-      },
-      "route_proof_version": 5,
-      "candidate_learned_routes": [
-        "/api/fastflux?type=movie&tmdb_id={tmdbId}",
-        "/api/series-season-discovery?tmdb_id={tmdbId}",
-        "/api/fastflux?type=episode&tmdb_id={tmdbId}&season={season}&episode={episode}"
-      ],
-      "route_proof": {
-        "version": 5,
-        "authority": "mac-residential-provider-http-request",
-        "evidenceRun": "NiakGH-MacBridge/43649703460",
-        "terminalRun": "NiakGH-MacBridge/43649792760",
-        "provenRouteCount": 3,
-        "evidenceRouteCount": 3,
-        "runtimePlanPreserved": true,
-        "runtimePlanRouteCount": 3,
-        "supportedLanes": [
-          "movie",
-          "tv"
-        ],
-        "coveredLanes": [
-          "movie",
-          "tv"
-        ],
-        "missingLanes": [],
-        "identityBinding": "movie=tmdb_id; tv=tmdb_id+season+episode",
-        "terminalEvidence": "direct MP4 HTTP 200 with byte length matching API metadata",
-        "lastRepairProbe": {
-          "status": "proven",
-          "positiveExecutionEvidence": true
-        },
-        "canonicalExecutionAuthorityPolicy": "preferred-order-only-preserve-all-proven-authorities",
-        "canonicalExecutionAuthority": {
-          "candidateCount": 3,
-          "preferredCount": 3,
-          "selectedCount": 3,
-          "supportedLanes": [
-            "movie",
-            "tv"
-          ],
-          "coveredLanes": [
-            "movie",
-            "tv"
-          ],
-          "missingLanes": [],
-          "preferredOwners": [
-            "route"
-          ],
-          "owners": [
-            "route"
-          ],
-          "destructiveFiltering": false,
-          "allEvidenceBackedAuthoritiesPreserved": true
-        }
-      }
+      ]
     },
     "zone-telechargement": {
       "notes": [
         "Created by the NiakVIO full-auto provider onboarding workflow from structured route knowledge only.",
-        "Activation remains disabled until the onboarding quick Lab proves the provider on every requested runtime group."
+        "Activation remains disabled until the onboarding quick Lab proves the provider on every requested runtime group.",
+        "Activated from exact-byte offline Provider v3 contract proof because GitHub-hosted network/WAF checks are non-authoritative; live native validation remains pending."
       ],
       "replacements": {},
       "runtime_domain_replacements": {},
@@ -13074,8 +13005,12 @@
         "tv"
       ],
       "manifest_overrides": {
-        "enabled": false,
-        "disabledPlatforms": []
+        "enabled": true,
+        "disabledPlatforms": [],
+        "formats": [
+          "mp4",
+          "m3u8"
+        ]
       },
       "learned_routes": [
         "/?search={query}",
@@ -15271,7 +15206,7 @@
     },
     "webflix": {
       "strategy": "api_stream_resolver",
-      "validation": "residential_route_proof_v5_pending_native_playback",
+      "validation": "bulk_offline_contract_live_unverified",
       "allow_html_url": false,
       "requires_direct_media": true,
       "observed_origins": [
@@ -15286,7 +15221,7 @@
     },
     "zone-telechargement": {
       "strategy": "mixed_embed_resolver",
-      "validation": "bulk_onboarding_pending",
+      "validation": "bulk_offline_contract_live_unverified",
       "allow_html_url": true,
       "requires_direct_media": false,
       "observed_origins": [

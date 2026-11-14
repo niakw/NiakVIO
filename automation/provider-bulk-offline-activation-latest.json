@@ -1,57 +1,42 @@
 {
   "schemaVersion": 1,
   "mode": "bulk_offline_contract_live_unverified",
-  "requestedCount": 4,
+  "requestedCount": 2,
   "activationCount": 2,
   "activationScopes": {
-    "global": 2,
-    "france": 0
+    "global": 0,
+    "france": 2
   },
-  "blockedCount": 2,
-  "blockedProviders": [
+  "blockedCount": 0,
+  "blockedProviders": [],
+  "providers": [
     {
       "provider": "webflix",
-      "reason": "projection_target_capacity_reached",
-      "details": "projection_target_capacity_reached:france",
-      "impact": {
-        "global": 0,
-        "france": 1
-      },
-      "active": {
-        "global": 46,
-        "france": 38
-      },
-      "targets": {
-        "global": 46,
-        "france": 38
-      }
+      "schemaVersion": 1,
+      "scope": "france",
+      "providerSha256": "2d9dd125d16719674be2de7cb726a3341b43a7bf6f2e03ca628d67aaf57e746f",
+      "pendingSha256": "2d9dd125d16719674be2de7cb726a3341b43a7bf6f2e03ca628d67aaf57e746f",
+      "stageInitialSha256": "2d9dd125d16719674be2de7cb726a3341b43a7bf6f2e03ca628d67aaf57e746f",
+      "minimizerFixedPoint": true,
+      "nodeSyntax": "passed",
+      "providerV3Contract": "passed",
+      "providerExecutablePlan": "passed",
+      "providerIdentityExecutionPlan": "passed",
+      "directOriginSyntax": "passed",
+      "networkValidation": "not_authoritative_in_github_waf_limited",
+      "livePlaybackValidated": false,
+      "fullOkClaimed": false,
+      "inventorySource": "NiakVIO-GLOBAL-FINAL-STRICT-TOP20-2026-09-11(5).xlsx",
+      "inventoryRank": 44,
+      "inventoryScore": 68
     },
     {
       "provider": "zone-telechargement",
-      "reason": "projection_target_capacity_reached",
-      "details": "projection_target_capacity_reached:france",
-      "impact": {
-        "global": 0,
-        "france": 1
-      },
-      "active": {
-        "global": 46,
-        "france": 38
-      },
-      "targets": {
-        "global": 46,
-        "france": 38
-      }
-    }
-  ],
-  "providers": [
-    {
-      "provider": "watchott",
       "schemaVersion": 1,
-      "scope": "global",
-      "providerSha256": "7671f653747d04c3411782ba713cb5355600f3049c68dc4dfc5a774461e9faf7",
-      "pendingSha256": "7671f653747d04c3411782ba713cb5355600f3049c68dc4dfc5a774461e9faf7",
-      "stageInitialSha256": "7671f653747d04c3411782ba713cb5355600f3049c68dc4dfc5a774461e9faf7",
+      "scope": "france",
+      "providerSha256": "27f9e85511a72896880605c391ce3b0492db2e425b09fb351bfa810dd5e9f25c",
+      "pendingSha256": "27f9e85511a72896880605c391ce3b0492db2e425b09fb351bfa810dd5e9f25c",
+      "stageInitialSha256": "27f9e85511a72896880605c391ce3b0492db2e425b09fb351bfa810dd5e9f25c",
       "minimizerFixedPoint": true,
       "nodeSyntax": "passed",
       "providerV3Contract": "passed",
@@ -62,40 +47,20 @@
       "livePlaybackValidated": false,
       "fullOkClaimed": false,
       "inventorySource": "NiakVIO-GLOBAL-FINAL-STRICT-TOP20-2026-09-11(5).xlsx",
-      "inventoryRank": 67,
-      "inventoryScore": 83
-    },
-    {
-      "provider": "animejlprovider",
-      "schemaVersion": 1,
-      "scope": "global",
-      "providerSha256": "1606673e3b4efa6843af3dfec230d3924bfeb52b8f85b29ea488cc3f94cb8655",
-      "pendingSha256": "1606673e3b4efa6843af3dfec230d3924bfeb52b8f85b29ea488cc3f94cb8655",
-      "stageInitialSha256": "1606673e3b4efa6843af3dfec230d3924bfeb52b8f85b29ea488cc3f94cb8655",
-      "minimizerFixedPoint": true,
-      "nodeSyntax": "passed",
-      "providerV3Contract": "passed",
-      "providerExecutablePlan": "passed",
-      "providerIdentityExecutionPlan": "passed",
-      "directOriginSyntax": "passed",
-      "networkValidation": "not_authoritative_in_github_waf_limited",
-      "livePlaybackValidated": false,
-      "fullOkClaimed": false,
-      "inventorySource": "NiakVIO-GLOBAL-FINAL-STRICT-TOP20-2026-09-11(5).xlsx",
-      "inventoryRank": 213,
-      "inventoryScore": 60
+      "inventoryRank": 66,
+      "inventoryScore": 64
     }
   ],
   "versionFloorUpdates": [
     {
-      "provider": "watchott",
+      "provider": "webflix",
       "floor": "0.0.0",
       "version": "1.0.0",
       "seeded": true,
       "bumped": false
     },
     {
-      "provider": "animejlprovider",
+      "provider": "zone-telechargement",
       "floor": "0.0.0",
       "version": "1.0.0",
       "seeded": true,
@@ -103,12 +68,12 @@
     }
   ],
   "targetActive": {
-    "global": 46,
-    "france": 38
+    "global": 60,
+    "france": 60
   },
   "activeBefore": {
-    "global": 44,
-    "france": 38
+    "global": 46,
+    "france": 36
   },
   "activeAfter": {
     "global": 46,

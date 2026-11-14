@@ -69637,23 +69637,17 @@
     },
     "webflix": {
       "id": "webflix",
-      "published_filename": "provider-disabled/webflix--nuvio--77f578a29c77bbb8.js",
-      "sha256": "77f578a29c77bbb8013b2e86515cf9ae68aa0f21ba11f845018d17c149c51414",
-      "patched_sha256": "77f578a29c77bbb8013b2e86515cf9ae68aa0f21ba11f845018d17c149c51414",
+      "published_filename": "providers/webflix--nuvio--2d9dd125d1671967.js",
+      "sha256": "2d9dd125d16719674be2de7cb726a3341b43a7bf6f2e03ca628d67aaf57e746f",
+      "patched_sha256": "2d9dd125d16719674be2de7cb726a3341b43a7bf6f2e03ca628d67aaf57e746f",
       "base_filename": "provider-bases/webflix--base--7c925f6a07ae3d37.js",
       "base_sha256": "7c925f6a07ae3d37a833b9a636972b8a42338718224962ef7172c0f80686afa3",
       "base_source": "niakvio-clean-reconstruction-v3",
       "clean_reconstruction_required": false,
       "clean_reconstruction_verified": true,
       "clean_reconstruction_authoring_version": 3,
-      "clean_reconstruction_verified_at": "2026-11-14T22:21:15.185210+00:00",
+      "clean_reconstruction_verified_at": "2026-11-14T23:00:54.685954+00:00",
       "local_patches": [
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_catalogue_alias_recovery_v2.py",
-          "phase": "discovery",
-          "scope": "global_catalogue_resolution"
-        },
         {
           "type": "patch_script",
           "path": "scripts/provider_patches/global_media_enrichment_v1.py",
@@ -69713,6 +69707,12 @@
           "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
           "phase": "discovery",
           "scope": "global_runtime_media_safety"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_provider_branding_v1.py",
+          "phase": "discovery",
+          "scope": "global_provider_branding"
         },
         {
           "type": "patch_script",
@@ -69734,38 +69734,57 @@
       "source_license_evidence": "LICENSE",
       "upstream_id": "webflix",
       "upstream_filename": null,
-      "checked_at": "2026-11-14T22:21:15.185226+00:00",
-      "check_mode": "bulk_onboarding_pending",
-      "check_status": "pending",
+      "checked_at": "2026-11-14T23:00:54.685981+00:00",
+      "check_mode": "bulk_offline_contract_live_unverified",
+      "check_status": "live_unverified",
       "health_score": 0,
-      "activation_eligible": false,
+      "activation_eligible": true,
       "strict_activation_eligible": false,
       "runtime_evidence_eligible": false,
-      "activation_mode": "bulk_onboarding_pending",
+      "activation_mode": "bulk_offline_contract_live_unverified",
       "activation_blockers": [
-        "bulk_census_full_ok_required"
+        "live_native_validation_pending"
       ],
-      "onboarding_rebuild": false,
+      "onboarding_rebuild": true,
       "pending_minimizer": {
         "schemaVersion": 1,
         "fixedPoint": true,
-        "sha256": "77f578a29c77bbb8013b2e86515cf9ae68aa0f21ba11f845018d17c149c51414",
+        "sha256": "2d9dd125d16719674be2de7cb726a3341b43a7bf6f2e03ca628d67aaf57e746f",
         "savedBytes": 35390,
-        "transformedLines": 6257
+        "transformedLines": 6236
+      },
+      "bulk_offline_activation_proof": {
+        "schemaVersion": 1,
+        "scope": "france",
+        "providerSha256": "2d9dd125d16719674be2de7cb726a3341b43a7bf6f2e03ca628d67aaf57e746f",
+        "pendingSha256": "2d9dd125d16719674be2de7cb726a3341b43a7bf6f2e03ca628d67aaf57e746f",
+        "stageInitialSha256": "2d9dd125d16719674be2de7cb726a3341b43a7bf6f2e03ca628d67aaf57e746f",
+        "minimizerFixedPoint": true,
+        "nodeSyntax": "passed",
+        "providerV3Contract": "passed",
+        "providerExecutablePlan": "passed",
+        "providerIdentityExecutionPlan": "passed",
+        "directOriginSyntax": "passed",
+        "networkValidation": "not_authoritative_in_github_waf_limited",
+        "livePlaybackValidated": false,
+        "fullOkClaimed": false,
+        "inventorySource": "NiakVIO-GLOBAL-FINAL-STRICT-TOP20-2026-09-11(5).xlsx",
+        "inventoryRank": 44,
+        "inventoryScore": 68
       }
     },
     "zone-telechargement": {
       "id": "zone-telechargement",
-      "published_filename": "provider-disabled/zone-telechargement--nuvio--b601e6c86132abc5.js",
-      "sha256": "b601e6c86132abc57885fbb6ba2d997e2dec4e94a800f172771f1ba2f08b0ca7",
-      "patched_sha256": "b601e6c86132abc57885fbb6ba2d997e2dec4e94a800f172771f1ba2f08b0ca7",
+      "published_filename": "providers/zone-telechargement--nuvio--27f9e85511a72896.js",
+      "sha256": "27f9e85511a72896880605c391ce3b0492db2e425b09fb351bfa810dd5e9f25c",
+      "patched_sha256": "27f9e85511a72896880605c391ce3b0492db2e425b09fb351bfa810dd5e9f25c",
       "base_filename": "provider-bases/zone-telechargement--base--7c925f6a07ae3d37.js",
       "base_sha256": "7c925f6a07ae3d37a833b9a636972b8a42338718224962ef7172c0f80686afa3",
       "base_source": "niakvio-clean-reconstruction-v3",
       "clean_reconstruction_required": false,
       "clean_reconstruction_verified": true,
       "clean_reconstruction_authoring_version": 3,
-      "clean_reconstruction_verified_at": "2026-11-14T22:21:21.447363+00:00",
+      "clean_reconstruction_verified_at": "2026-11-14T23:01:01.251638+00:00",
       "local_patches": [
         {
           "type": "patch_script",
@@ -69835,6 +69854,12 @@
         },
         {
           "type": "patch_script",
+          "path": "scripts/provider_patches/global_provider_branding_v1.py",
+          "phase": "discovery",
+          "scope": "global_provider_branding"
+        },
+        {
+          "type": "patch_script",
           "path": "scripts/provider_patches/global_stream_score_v1.py",
           "phase": "discovery",
           "scope": "global_stream_score"
@@ -69853,24 +69878,43 @@
       "source_license_evidence": "LICENSE",
       "upstream_id": "zone-telechargement",
       "upstream_filename": null,
-      "checked_at": "2026-11-14T22:21:21.447382+00:00",
-      "check_mode": "bulk_onboarding_pending",
-      "check_status": "pending",
+      "checked_at": "2026-11-14T23:01:01.251654+00:00",
+      "check_mode": "bulk_offline_contract_live_unverified",
+      "check_status": "live_unverified",
       "health_score": 0,
-      "activation_eligible": false,
+      "activation_eligible": true,
       "strict_activation_eligible": false,
       "runtime_evidence_eligible": false,
-      "activation_mode": "bulk_onboarding_pending",
+      "activation_mode": "bulk_offline_contract_live_unverified",
       "activation_blockers": [
-        "bulk_census_full_ok_required"
+        "live_native_validation_pending"
       ],
-      "onboarding_rebuild": false,
+      "onboarding_rebuild": true,
       "pending_minimizer": {
         "schemaVersion": 1,
         "fixedPoint": true,
-        "sha256": "b601e6c86132abc57885fbb6ba2d997e2dec4e94a800f172771f1ba2f08b0ca7",
-        "savedBytes": 35390,
-        "transformedLines": 6257
+        "sha256": "27f9e85511a72896880605c391ce3b0492db2e425b09fb351bfa810dd5e9f25c",
+        "savedBytes": 35391,
+        "transformedLines": 6280
+      },
+      "bulk_offline_activation_proof": {
+        "schemaVersion": 1,
+        "scope": "france",
+        "providerSha256": "27f9e85511a72896880605c391ce3b0492db2e425b09fb351bfa810dd5e9f25c",
+        "pendingSha256": "27f9e85511a72896880605c391ce3b0492db2e425b09fb351bfa810dd5e9f25c",
+        "stageInitialSha256": "27f9e85511a72896880605c391ce3b0492db2e425b09fb351bfa810dd5e9f25c",
+        "minimizerFixedPoint": true,
+        "nodeSyntax": "passed",
+        "providerV3Contract": "passed",
+        "providerExecutablePlan": "passed",
+        "providerIdentityExecutionPlan": "passed",
+        "directOriginSyntax": "passed",
+        "networkValidation": "not_authoritative_in_github_waf_limited",
+        "livePlaybackValidated": false,
+        "fullOkClaimed": false,
+        "inventorySource": "NiakVIO-GLOBAL-FINAL-STRICT-TOP20-2026-09-11(5).xlsx",
+        "inventoryRank": 66,
+        "inventoryScore": 64
       }
     }
   },
