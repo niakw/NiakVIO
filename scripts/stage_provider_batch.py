@@ -114,6 +114,20 @@ def preflight(rows:list[dict[str,Any]], allow_replace_existing:bool)->dict[str,A
 
 
 
+def sync_finalized_shared_vf_filename(provider_id:str, target_relative:str)->None:
+    vf_manifest=add_provider.load_json(add_provider.VF_MANIFEST,{"scrapers":[]})
+    matches=[
+        row for row in vf_manifest.get("scrapers") or []
+        if isinstance(row,dict) and add_provider.norm_id(row.get("id"))==provider_id
+    ]
+    if len(matches)>1:
+        raise ValueError(f"{provider_id}: duplicate shared VF projection during pending finalization")
+    if not matches:
+        return
+    matches[0]["filename"]="../"+target_relative
+    add_provider.write_json(add_provider.VF_MANIFEST,vf_manifest)
+
+
 def finalize_staged_pending_bundle(provider_id:str, scope:str)->dict[str,Any]:
     """Put a staged pending provider at the exact safe minimizer fixed-point."""
     manifest_path=add_provider.VF_MANIFEST if scope=="france" else add_provider.MANIFEST
@@ -158,6 +172,8 @@ def finalize_staged_pending_bundle(provider_id:str, scope:str)->dict[str,Any]:
     target_relative=target.relative_to(ROOT).as_posix()
     row["filename"]=("../"+target_relative) if scope=="france" else target_relative
     add_provider.write_json(manifest_path,manifest)
+    if scope=="global":
+        sync_finalized_shared_vf_filename(provider_id,target_relative)
     provenance=add_provider.load_json(add_provider.PROVENANCE,{"providers":{}})
     meta=(provenance.get("providers") or {}).get(provider_id)
     if not isinstance(meta,dict):
