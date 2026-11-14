@@ -1,3 +1,9 @@
+## 2026-11-14 — Production freshness enforced inside bulk activation transaction
+
+- Exact SHA 44018ca0: Core Workflow Gate 43594393157, Core Verify & Publish 43594393163, Provider Non-Regression 43594393096, Brain Branch Maintenance 43594393144 and CodeQL 43594393108 succeeded. The fresh-FULL activation contract is therefore validated on current main. Security legacy alert retirement remains separate and unresolved.
+- Bulk activation previously rebuilt/validated publication after selecting candidates but did not execute the new active-provider freshness invariant inside the same transaction. Add production_active_provider_freshness_test.py to the post-activation validation phase so a newly enabled Global or France-only row cannot be committed if the authoritative census proof is absent, carried-only, incomplete by lane, or repair-eligible.
+- No provider bytes, enabled flags, manifest membership or census evidence changed.
+
 ## 2026-11-14 — Bulk activation now rejects carried FULL evidence
 
 - Production freshness gate work exposed a separate activation gap: activate_bulk_proven_providers.py required FULL OK and currentVerifiedLanes, but did not require testedThisRun=true. A retained historical FULL row could therefore satisfy activation if its old verified lanes remained in state.

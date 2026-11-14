@@ -17,6 +17,7 @@ for token in (
     "provider: bulk activate $ACTIVATION_COUNT full-ok",
     "scripts/reapply_published_overrides.py",
     "scripts/validate_published_provider_config.py",
+    "tests/production_active_provider_freshness_test.py",
     "provider_catalog.json",
 ):
     assert token in activation, token
