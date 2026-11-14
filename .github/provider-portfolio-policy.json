@@ -1,14 +1,16 @@
 {
   "schema_version": 3,
   "mode": "quality_and_coverage_first",
-  "purpose": "Keep a compact high-quality provider core without sacrificing unique catalogue coverage. Unsafe providers are quarantined; safe rare providers are preserved, and rare providers with incomplete native support become repair priorities rather than deletion candidates.",
+  "purpose": "Maintain 60 active Global and 60 active France providers while preserving proof quality: GitHub/WAF network rejection is inconclusive, exact-byte offline activations stay live-unverified, and only native/live replay can earn FULL OK.",
   "portfolio": {
-    "target_unique_active": 36,
-    "normal_max_unique_active": 45,
-    "hard_max_unique_active": 60,
-    "minimum_vf_unique": 10,
-    "minimum_anime_specialists": 5,
-    "minimum_movie_tv_core": 10
+    "target_unique_active": 120,
+    "normal_max_unique_active": 120,
+    "hard_max_unique_active": 120,
+    "minimum_vf_unique": 60,
+    "minimum_anime_specialists": 20,
+    "minimum_movie_tv_core": 20,
+    "target_global_active": 60,
+    "target_france_active": 60
   },
   "eligibility": {
     "minimum_relevant_executions": 6,
@@ -51,11 +53,22 @@
   },
   "selection": {
     "unsafe_never_active": true,
-    "insufficient_evidence_stays_lab_only_unless_rare_coverage_requires_repair": true,
+    "insufficient_evidence_stays_lab_only_unless_rare_coverage_requires_repair": false,
     "prefer_unique_catalogue_coverage_over_duplicate_sources": true,
     "rare_cross_platform_coverage_overrides_normal_portfolio_cap": true,
     "rare_partial_platform_coverage_becomes_repair_priority": true,
     "disabled_providers_remain_testable": true,
-    "policy_target_10_sources_3_vf_remains_non_blocking": true
+    "policy_target_10_sources_3_vf_remains_non_blocking": true,
+    "explicit_offline_contract_activation_allowed": true,
+    "offline_contract_never_counts_as_full_ok": true,
+    "github_waf_network_failure_is_inconclusive": true
+  },
+  "offline_contract_activation": {
+    "mode": "bulk_offline_contract_live_unverified",
+    "exact_byte_proof_required": true,
+    "node_syntax_required": true,
+    "provider_v3_contract_required": true,
+    "live_native_validation_pending": true,
+    "full_ok_requires_live_native_replay": true
   }
 }
