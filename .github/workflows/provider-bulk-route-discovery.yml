@@ -1,0 +1,221 @@
+name: PROVIDER - Bulk Route Discovery
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/triggers/provider-bulk-route-discovery.json'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: niakvio-provider-bulk-route-discovery-main
+  cancel-in-progress: true
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    outputs:
+      source_sha: ${{ steps.scope.outputs.source_sha }}
+      should_run: ${{ steps.scope.outputs.should_run }}
+      request_version: ${{ steps.scope.outputs.request_version }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: main
+          fetch-depth: 1
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0
+        with:
+          python-version: '3.12'
+      - name: Validate route-discovery contracts
+        run: |
+          python -m py_compile scripts/probe_bulk_provider_routes.py scripts/apply_bulk_provider_route_discovery.py
+          python tests/provider_bulk_route_discovery_contract_test.py
+      - id: scope
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY' >> "$GITHUB_OUTPUT"
+          import json, subprocess
+          from pathlib import Path
+          request=json.loads(Path(".github/provider-onboarding/batch.json").read_text(encoding="utf-8"))
+          rows=[]
+          seen=set()
+          for section in ("providers","deferredProviders"):
+              for row in request.get(section) or []:
+                  if not isinstance(row,dict):
+                      continue
+                  pid=str(row.get("id") or row.get("provider") or "").strip().lower()
+                  if pid and pid not in seen:
+                      seen.add(pid); rows.append(row)
+          print("source_sha="+subprocess.check_output(["git","rev-parse","HEAD"],text=True).strip())
+          print("request_version="+str(request.get("requestVersion") or 0))
+          print("should_run="+("true" if rows else "false"))
+          PY
+
+  shard:
+    needs: prepare
+    if: ${{ needs.prepare.outputs.should_run == 'true' }}
+    name: Route discovery shard ${{ matrix.shard }} of 8
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1, 2, 3, 4, 5, 6, 7]
+    env:
+      TS_OAUTH_CLIENT_ID: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+      TS_AUDIENCE: ${{ secrets.TS_AUDIENCE }}
+      TS_EXIT_NODE: ${{ secrets.TS_EXIT_NODE }}
+      TS_TAG_NAME: ${{ secrets.TS_TAG_NAME }}
+      SOURCE_SHA: ${{ needs.prepare.outputs.source_sha }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ needs.prepare.outputs.source_sha }}
+          fetch-depth: 1
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0
+        with:
+          python-version: '3.12'
+
+      - name: Normalize optional residential Tailscale tag
+        if: ${{ env.TS_OAUTH_CLIENT_ID != '' && env.TS_AUDIENCE != '' && env.TS_EXIT_NODE != '' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          raw="${TS_TAG_NAME:-niakvio-ci}"
+          case "$raw" in
+            tag:*) normalized="$raw" ;;
+            *) normalized="tag:$raw" ;;
+          esac
+          printf 'TS_ACTION_TAG=%s\n' "$normalized" >> "$GITHUB_ENV"
+
+      - name: Connect optional residential transport
+        id: tailscale_connect
+        continue-on-error: true
+        timeout-minutes: 4
+        if: ${{ env.TS_OAUTH_CLIENT_ID != '' && env.TS_AUDIENCE != '' && env.TS_EXIT_NODE != '' }}
+        uses: tailscale/github-action@064b10558093f38325e838ddea35486bdc6b1d5c
+        with:
+          oauth-client-id: ${{ env.TS_OAUTH_CLIENT_ID }}
+          audience: ${{ env.TS_AUDIENCE }}
+          tags: ${{ env.TS_ACTION_TAG }}
+          version: '1.94.2'
+          args: --accept-dns=false
+
+      - name: Select optional residential exit
+        id: residential_exit
+        continue-on-error: true
+        if: ${{ steps.tailscale_connect.outcome == 'success' && env.TS_EXIT_NODE != '' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          for attempt in 1 2 3 4 5; do
+            if sudo tailscale set --exit-node="$TS_EXIT_NODE" --exit-node-allow-lan-access=false >/dev/null 2>&1; then
+              echo "NIAKVIO_BULK_ROUTE_DISCOVERY_RESIDENTIAL=1" >> "$GITHUB_ENV"
+              echo "FIELD_BULK_ROUTE_RESIDENTIAL active=true"
+              exit 0
+            fi
+            sleep "$((attempt * 2))"
+          done
+          echo "FIELD_BULK_ROUTE_RESIDENTIAL active=false" >&2
+          exit 1
+
+      - name: Probe candidate route structure
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p automation
+          python scripts/probe_bulk_provider_routes.py             --request .github/provider-onboarding/batch.json             --output "automation/provider-bulk-route-discovery-shard-${{ matrix.shard }}.json"             --shard-count 8             --shard-index "${{ matrix.shard }}"             --timeout 8             --max-chunks 8             --max-runtime-chunks 8             --provider-timeout 140
+
+      - name: Upload route-discovery shard
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: provider-bulk-route-discovery-shard-${{ matrix.shard }}
+          path: automation/provider-bulk-route-discovery-shard-${{ matrix.shard }}.json
+          retention-days: 8
+          if-no-files-found: error
+
+  merge:
+    needs: [prepare, shard]
+    if: ${{ always() && needs.prepare.result == 'success' && needs.prepare.outputs.should_run == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+    env:
+      SOURCE_SHA: ${{ needs.prepare.outputs.source_sha }}
+      SOURCE_REQUEST_VERSION: ${{ needs.prepare.outputs.request_version }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ needs.prepare.outputs.source_sha }}
+          fetch-depth: 0
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0
+        with:
+          python-version: '3.12'
+      - name: Download route-discovery shards
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
+        with:
+          pattern: provider-bulk-route-discovery-shard-*
+          path: shards
+          merge-multiple: true
+      - name: Merge sanitized evidence and build next executable wave
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t files < <(find shards -maxdepth 1 -type f -name 'provider-bulk-route-discovery-shard-*.json' | sort -V)
+          if [ "${#files[@]}" -ne 8 ]; then
+            echo "Expected 8 route-discovery shards, found ${#files[@]}" >&2
+            exit 1
+          fi
+          python scripts/apply_bulk_provider_route_discovery.py "${files[@]}"             --request .github/provider-onboarding/batch.json             --evidence automation/provider-bulk-route-discovery-latest.json             --output-request .github/provider-onboarding/batch.json
+          cp automation/provider-bulk-route-discovery-latest.json /tmp/provider-bulk-route-discovery-latest.json
+          cp .github/provider-onboarding/batch.json /tmp/provider-bulk-route-next-batch.json
+
+      - name: Upload merged route evidence
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: provider-bulk-route-discovery-merged-${{ github.run_id }}
+          path: automation/provider-bulk-route-discovery-latest.json
+          retention-days: 8
+          if-no-files-found: error
+
+      - name: Persist evidence and qualified activation wave
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin main
+          git reset --hard origin/main
+          mkdir -p automation .github/provider-onboarding
+          cp /tmp/provider-bulk-route-discovery-latest.json automation/provider-bulk-route-discovery-latest.json
+          python - <<'PY'
+          import json, os, shutil
+          from pathlib import Path
+          current=Path(".github/provider-onboarding/batch.json")
+          next_batch=Path("/tmp/provider-bulk-route-next-batch.json")
+          cur=json.loads(current.read_text(encoding="utf-8"))
+          evidence=json.loads(Path("/tmp/provider-bulk-route-discovery-latest.json").read_text(encoding="utf-8"))
+          source_version=evidence.get("requestVersion")
+          qualified=int(evidence.get("qualifiedCount") or 0)
+          if cur.get("requestVersion") != source_version:
+              print(f"FIELD_BULK_ROUTE_PERSIST stale=true current={cur.get('requestVersion')} source={source_version}")
+          elif qualified <= 0:
+              print("FIELD_BULK_ROUTE_PERSIST batch_changed=false reason=no-qualified-routes")
+          else:
+              shutil.copyfile(next_batch,current)
+              print(f"FIELD_BULK_ROUTE_PERSIST batch_changed=true qualified={qualified}")
+          PY
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add automation/provider-bulk-route-discovery-latest.json .github/provider-onboarding/batch.json
+          if git diff --cached --quiet; then
+            echo "FIELD_BULK_ROUTE_PERSIST already_current=true"
+          else
+            git commit -m "ci(provider): persist executable bulk route discovery"
+            git push origin HEAD:main
+          fi
