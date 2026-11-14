@@ -1,3 +1,10 @@
+## 2026-11-14 — Publication contract recognizes the authorized open-archive strategy
+
+- Core Verify & Publish 43601924892 on 381ef595 failed in the exact strategy-plan contract because tests/provider_v3_strategy_plan_contract_test.py rejected internet-archive capability=open_archive_public_domain as unsupported.
+- This is schema drift, not a provider/runtime failure: add_provider.py already restricts that strategy to provider id internet-archive, official archive.org origin and movie-only; its provider-scoped Lego and runtime test are present, and pending exact bytes already earned fresh FULL movie proof.
+- Add open_archive_public_domain to the strategy-plan allowlist so the existing generic executable-plan checks (provider Lego ownership, base/origin/route evidence and activation state) evaluate it instead of rejecting the strategy name before those checks. No acceptance criterion, provider byte, manifest activation or WAF behavior changed.
+- The synthetic Bulk Activation tempfile lifetime fix remains required and separate. Exact-SHA CI must pass before retrying production activation.
+
 ## 2026-11-14 — Bulk Activation false negative: synthetic temp directory lifetime
 
 - Bulk Activation 43601477153 on cc9de8ef selected exactly one real pending provider (internet-archive), reported activated=1, rebuilt 14 ProviderBases cleanly and passed provider-v3 minimizer fixed-point for all 14 active bundles. It then failed only in tests/provider_bulk_activation_test.py line 108.

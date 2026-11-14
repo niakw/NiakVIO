@@ -36,6 +36,7 @@ ALLOWED = {
     "html_scraper",
     "direct_media",
     "api_stream_resolver",
+    "open_archive_public_domain",
     "iframe_player",
     "quarantined",
 }
