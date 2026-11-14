@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from pathlib import Path
 import importlib.util
+import inspect
 import json
 import sys
 
@@ -56,7 +57,7 @@ legacy_model = probe._decode_owned_provider_model(
     "PROVIDER.LEGACY.CONFIG.V1",
 )
 assert legacy_model == {"providerId":"legacy","officialSite":"https://legacy.example","routes":["/movie/{tmdbId}"]}
-assert "provider-old" in probe.retained_v3_routes.__doc__
+assert "provider-old" in inspect.getsource(probe.retained_v3_routes)
 
 apply_path=ROOT/"scripts/apply_bulk_provider_route_discovery.py"
 apply_spec=importlib.util.spec_from_file_location("bulk_route_apply_test",apply_path)
