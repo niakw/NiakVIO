@@ -18,7 +18,10 @@ for token in (
     "provider-bulk-onboarding-transaction-${{ github.run_id }}",
     "git diff --cached --binary --full-index",
     "git apply --3way --index",
-    "provider: bulk stage $PROVIDER_COUNT pending",
+    "provider: bulk activate $PROVIDER_COUNT offline-unverified",
+    "actions: write",
+    "gh workflow run provider-bulk-route-discovery.yml --ref main",
+    "FIELD_BULK_CONTINUATION",
 ):
     assert token in bulk, token
 
@@ -69,4 +72,4 @@ assert 'message.startswith("provider: bulk stage ")' in targeted
 assert 'message.startswith("provider: bulk activate ")' in targeted
 assert "if: ${{ needs.size.outputs.should_run == 'true' }}" in targeted
 assert "ci(census-sharded):" in census
-print("Bulk onboarding -> sharded census architecture passed")
+print("Bulk onboarding -> sharded census + deferred 60/60 continuation architecture passed")
