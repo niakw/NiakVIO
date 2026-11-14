@@ -59,6 +59,24 @@ try:
         )
         mod.LOCAL_FORCE_RESULTS_DIR = root
         mod.LLM_GUIDANCE_PATH = None
+        # Unit-test coexistence with meta-gap guidance deterministically. The
+        # repository's live repairQueue may legitimately be empty after lifecycle
+        # disables and must not decide whether this isolated test passes.
+        original_meta = mod.synthesize_meta_gap_rows
+        mod.synthesize_meta_gap_rows = lambda **_kwargs: [{
+            "providerId": "synthetic-repairable",
+            "failureClass": "search_gap",
+            "targetLayer": "provider",
+            "strategy": "meta_gap_search_contract_inference",
+            "profile": "search_contract_inference_v1",
+            "confidence": 0.9,
+            "priorOnly": True,
+            "experiment": {"routePolicy": "owned_only"},
+            "experimentFingerprint": "c" * 64,
+            "guidanceKind": "meta-gap-synthesis",
+            "localForceAmbiguous": False,
+            "sourceSha": "b" * 40,
+        }]
 
         os.environ.pop("NUVIO_BRAIN_PLANNER_MODE", None)
         assert mod.planner_llm_guidance() == []
@@ -78,6 +96,7 @@ try:
         assert loaded["guidanceKind"] == "local-force-baseline-coincident"
         assert loaded["sourceSha"] == "b" * 40
 finally:
+    mod.synthesize_meta_gap_rows = original_meta
     if old_mode is None:
         os.environ.pop("NUVIO_BRAIN_PLANNER_MODE", None)
     else:

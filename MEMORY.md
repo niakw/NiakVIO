@@ -1,3 +1,8 @@
+## 2026-11-14 — Local FORCE prior unit test decoupled from live disabled lifecycle
+
+- Core Workflow Gate 43594037231 on 3c427649 reached and executed the new production-active freshness test successfully, then failed later in brain_local_force_learning_prior_test.py. The test expected a live meta-gap row from the repository repairQueue, but the truthful current lifecycle has repairQueue=[] after nonfunctional providers were disabled; synthesize_meta_gap_rows correctly returned no live meta-gap work.
+- Keep the intended unit invariant—local FORCE prior can coexist with meta-gap guidance—but inject the meta-gap row deterministically inside the test instead of depending on mutable production census state. Runtime behavior is unchanged. New exact-SHA Workflow Gate required.
+
 ## 2026-11-14 — Production active-provider freshness gate
 
 - Current production state on 8e9194e2 is intentionally reduced to 13 active Global providers and 10 active VF providers. All 13 active Global identities are FULL OK, tested in the latest census, and every declared lane is currently verified; the other current catalogue entries are disabled/retained. This is the truthful baseline before any new onboarding.
