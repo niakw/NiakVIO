@@ -2823,16 +2823,16 @@ Measured clean V3 oracle #43539920416 showed a **provider transport differential
 - The projection audit is wired into the existing structural test called by CORE Verify; awaiting CI evidence on this commit. No new provider publication or native playback validation is claimed.
 
 
-### 2026-11-14 — 60 Global / 60 France bulk cohort (in progress)
+### 2026-11-14 — 60 Global / 60 France bulk cohort (active execution)
 
-- User target is explicit: **60 active providers in `manifest.json` and 60 active providers in `vf/manifest.json`**, keeping the existing production install URLs.
-- Inventory authority: `NiakVIO-GLOBAL-FINAL-STRICT-TOP20-2026-09-11(5).xlsx`.
-- Baseline before the cohort: Global 11 active / 46 rows; France 8 active / 34 rows.
-- Request commit: `064d0f0f5636fdf0a5788280bd89fcb9e422d298`.
-- Bulk Onboarding run: `43605764304` (trigger SHA above).
-- Requested transaction: **101 provider operations = 49 Global + 52 France**, including 11 explicit France-only replacements/restages. With the baseline this is designed to reach exactly 60 active Global and 60 active France.
-- Type support in the requested additions already exceeds the 20/20/20 floor: Global additions support movie=49, tv=49, anime=47; France additions support movie=40, tv=39, anime=32.
-- GitHub-hosted network rejection is now treated as **inconclusive**, not as proof that a provider is broken. New activation mode `bulk_offline_contract_live_unverified` requires exact post-rebuild bytes, minimizer fixed-point, Node syntax, Provider v3 identity/ownership contract, valid public-origin syntax, and provenance hash binding.
-- This offline mode **must never be labelled FULL OK**. It persists `live_unverified`, `strict_activation_eligible=false`, `runtime_evidence_eligible=false`, blocker `live_native_validation_pending`; later WAF-capable/native replay is still required for real playback validation.
-- Infrastructure commits before request: `53cf80e`, `689916c`, `2c28b86`, `789ed9d`, `33be9dd`; architecture note `2b46a59`.
-- Status at this checkpoint: bulk run is still executing; no claim yet that manifests reached 60/60.
+- Target remains exact: **60 active Global in `manifest.json` and 60 active France in `vf/manifest.json`**, preserving the production manifest URLs.
+- Baseline observed before cohort: Global 11 active, France 8 active.
+- Inventory authority: `NiakVIO-GLOBAL-FINAL-STRICT-TOP20-2026-09-11(5).xlsx`; stale domains are refreshed with external/non-GitHub evidence in `automation/provider-domain-refresh-2026-11-14.json`.
+- GitHub/WAF failures are explicitly **inconclusive**. `bulk_offline_contract_live_unverified` may activate exact Provider-v3 bytes only after fixed-point minimization + Node syntax + Provider-v3 contract + provenance hash; it persists `live_unverified` and never claims FULL OK.
+- Run `43605764304` on request SHA `064d0f0f5636fdf0a5788280bd89fcb9e422d298`: preflight + staging + branding passed; publication rebuild failed before publish on `internet-archive: structured DATA incomplete during final publication`. Publish job skipped, so the 101-provider transaction did not reach production.
+- Root cause is generic activation/persistence drift: a clean Provider-v3 can become active while `provider-overrides` / capabilities / `provider-v3-static-knowledge` are not all persisted. `internet-archive` exposed it first; fixing only that provider would leave future activations vulnerable.
+- Infrastructure fix: `scripts/reconcile_provider_static_authority.py` recovers missing current Global structured authority only from exact managed CONFIG bytes, with fail-closed provider-specific Lego recovery; both strict and WAF-aware activation paths now persist Global static authority from exact activated bytes. Open Archive identity schema was normalized to supported `tmdb_direct`.
+- Run `43607404372` on SHA `7e5e5338c3ae72c4b90c8c2bd8da06cdb1a60865`: failed safely in preflight because `coflix` is an existing Global/shared identity and cannot be duplicated France-only. Publish skipped.
+- Cohort corrected: no France row now collides with a Global ID. Stale/invalid candidates removed or migrated, including Stellar discontinued, SpenFlix coming-soon, Stigstream redirect-to-directory, Wowfilms redirect-to-another-provider, Wiflix stale Flemmix domain; replacements/current authorities include PStream, BoredFlix, Neobam, Kordoz→Limdav, Anisama and the dated migrations recorded in the domain-refresh evidence file.
+- Current request SHA: `7b38b048ad71578f2dee04df9894b6f29538d0ca`; transaction remains **101 operations = 49 Global + 52 France**, designed to add exactly +49 Global and +52 France from the 11/8 baseline.
+- Current run: `43607641124`. Preflight is green; provider staging is running. No 60/60 completion claim until publication, manifest counts, bytes, gates and remote HEAD are verified.
