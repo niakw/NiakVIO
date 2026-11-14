@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "providerCount": 41,
+  "providerCount": 42,
   "source": "niakvio.provider-contract-local-enricher",
   "role": "durable-structured-provider-data",
   "legacyProviderJsExecuted": false,
@@ -266857,6 +266857,93 @@
           "status": "recognized"
         }
       }
+    },
+    "internet-archive": {
+      "model": {
+        "apiRecipe": null,
+        "authoring": "niakvio-owned-v3",
+        "displayName": "Internet Archive — Public Domain",
+        "domainSubstitutions": {},
+        "externalIdentityPlan": [],
+        "fixedApi": null,
+        "identityInput": {
+          "mode": "tmdb_direct",
+          "requiredFields": [
+            "tmdbId",
+            "mediaType"
+          ],
+          "requiresTmdbBeforeRun": false
+        },
+        "knownSite": "https://archive.org",
+        "modelSchemaVersion": 4,
+        "observedUrls": [
+          "https://archive.org",
+          "https://archive.org"
+        ],
+        "officialApi": "https://archive.org",
+        "officialHub": null,
+        "officialSite": "https://archive.org",
+        "origins": [
+          "https://archive.org"
+        ],
+        "outputLanguageRules": [],
+        "outputUrlHostRewrites": [],
+        "proofDetailBases": [],
+        "proofProtectedHosts": [],
+        "proofSearchBases": [],
+        "providerValuePlan": [],
+        "reconstructionState": "learning-clean-seed",
+        "routePlanVersion": 3,
+        "routeProofVersion": 0,
+        "routes": [
+          "/advancedsearch.php",
+          "/metadata/{identifier}",
+          "/download/{identifier}/{file}"
+        ],
+        "runtimeDiscovery": false,
+        "runtimeRole": "reader",
+        "searchRequestPlan": [],
+        "sourceRuntimeFamily": "unknown",
+        "strategy": "open_archive_public_domain",
+        "strictHtmlIdentity": false,
+        "strictIdentity": false,
+        "supportedTypes": [
+          "movie"
+        ],
+        "upstreamCodeEmbedded": false,
+        "upstreamCodeExecuted": false
+      },
+      "knowledge": {
+        "hosts": [
+          "archive.org"
+        ],
+        "routes": [
+          "/advancedsearch.php",
+          "/metadata/{identifier}",
+          "/download/{identifier}/{file}"
+        ],
+        "routeFragments": [],
+        "observedUrls": [
+          "https://archive.org",
+          "https://archive.org"
+        ],
+        "decodedStaticStringCount": 0,
+        "runtimeFamily": "unknown"
+      },
+      "sources": [
+        {
+          "source": "current-published-config-recovery",
+          "sourceName": "NiakVIO exact managed Provider CONFIG",
+          "upstreamId": "internet-archive",
+          "manifestOrigin": "",
+          "upstreamSha256": "",
+          "upstreamKnowledgeSource": "managed-config-lego",
+          "codeRole": "knowledge-only",
+          "codeExecuted": false
+        }
+      ],
+      "legacyProviderJsExecuted": false,
+      "upstreamJsExecuted": false
     }
   },
   "gowaruSourceRef": "c3ce6f43a1ba8ccf2f3838b5cd9db40745c33fa2",
@@ -266872,7 +266959,7 @@
     "mode": "niakvio-local-data",
     "externalProviderRepositoriesRequired": false,
     "providerJavaScriptExecuted": false,
-    "providerCount": 41,
+    "providerCount": 42,
     "seedCount": 6,
     "prunedRouteCount": 476,
     "canonicalRouteData": "providers.<id>.model.routeData",
@@ -266881,7 +266968,7 @@
   "routeReconstruction": {
     "version": 1,
     "canonicalRouteData": "providers.<id>.model.routeData",
-    "providerCount": 41,
+    "providerCount": 42,
     "routeCount": 401,
     "httpProvenRouteCount": 6,
     "unknownProviders": [
@@ -266892,7 +266979,7 @@
   },
   "routeRecovery": {
     "schemaVersion": 5,
-    "providerCount": 41,
+    "providerCount": 42,
     "provenRouteCount": 0,
     "apiRecipeCount": 0,
     "authority": "upstream-or-native-provider-runtime-http-proof",

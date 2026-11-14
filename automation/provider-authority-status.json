@@ -65,9 +65,7 @@
     "wookafr",
     "yflix"
   ],
-  "disabledNow": [
-    "hindmoviez"
-  ],
+  "disabledNow": [],
   "providers": [
     {
       "provider": "anime-sama",
@@ -129,20 +127,14 @@
     },
     {
       "provider": "hindmoviez",
-      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "action": "KEEP_DISABLED",
       "repairEligible": false,
-      "confidence": "current-census",
-      "authorityClass": "current-architecture-nonfunctional",
+      "confidence": "terminal",
+      "authorityClass": "disabled",
       "failureCount": 0,
-      "backendUrls": [
-        "https://hindmovie.icu/wp-json/wp/v2/posts"
-      ],
       "reasons": [
-        "structured_backend_authority",
-        "current_census_tested_without_terminal_verified_playback",
-        "current_status:PARTIAL OK"
-      ],
-      "appliedDisableReason": "auto_off_current_architecture_nonfunctional"
+        "already_disabled"
+      ]
     },
     {
       "provider": "4khdhub",
@@ -583,13 +575,14 @@
     },
     {
       "provider": "internet-archive",
-      "action": "ONBOARDING_PENDING",
+      "action": "REDISCOVER_SEARCH",
       "repairEligible": false,
-      "confidence": "onboarding-pending",
-      "authorityClass": "onboarding-pending",
+      "confidence": "low",
+      "authorityClass": "unproven-direct-candidate",
       "failureCount": 0,
       "reasons": [
-        "bulk_onboarding_pending"
+        "direct_candidate_unproven",
+        "search_supplement_only"
       ]
     }
   ]

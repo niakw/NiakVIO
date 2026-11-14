@@ -2,9 +2,9 @@
   "schemaVersion": 3,
   "sourceSha": "e936461a168ba840640fb196bd27b6cf43b791ea",
   "context": "workspace",
-  "generation": "b25899c2562cead49918281ac444ed80fcb93dda0b21625591c4ca9480d0eda8",
-  "providerCount": 41,
-  "expectedProviderCount": 41,
+  "generation": "4b1eb05d846872c38a946b2088ca25b35f46b639b5f2cd419600f9a5dc31f906",
+  "providerCount": 42,
+  "expectedProviderCount": 42,
   "providers": [
     {
       "provider": "anime-sama",
@@ -4680,6 +4680,50 @@
         "transformedLines": 0,
         "skippedReason": ""
       }
+    },
+    {
+      "provider": "internet-archive",
+      "file": "providers/internet-archive--nuvio--8872a408be60d6d0.js",
+      "sha256": "8872a408be60d6d034c9891c9f49cd4f84857057101d809cf1b763feb184b1de",
+      "providerDataSha256": "085dfa4b7d46e1f093f7848adf3942e6404c935e99bfb366bc30a46a10c14ac7",
+      "baseStrippedGeneratedCore": false,
+      "fixIds": [
+        "CORE.HLS_RUNTIME_INTEGRITY.V1",
+        "CORE.MEDIA_TYPE_RESOLUTION.V1",
+        "CORE.PROVIDER_BRANDING.V1",
+        "CORE.PROVIDER_RUNTIME_DISPATCH.V1",
+        "CORE.PROVIDER_SECURITY_BOUNDARY.V1",
+        "CORE.RUNTIME_COMPAT.V1",
+        "CORE.RUNTIME_MEDIA_SAFETY.V4",
+        "CORE.STREAM_FACTS.V1",
+        "CORE.STREAM_IDENTITY.V1",
+        "CORE.STREAM_PRESENTATION.V1",
+        "CORE.STREAM_SANITIZER.V6",
+        "CORE.STREAM_SCORE.V1",
+        "CORE.TELEMETRY.V1",
+        "PROVIDER.INTERNET-ARCHIVE.CONFIG.V1",
+        "PROVIDER.INTERNET-ARCHIVE.OPEN_ARCHIVE.RUNTIME.V1"
+      ],
+      "coreCount": 13,
+      "applied": [],
+      "deviceSpecificJs": false,
+      "devices": [
+        "tv",
+        "mobile",
+        "desktop"
+      ],
+      "legacyProviderJsExecuted": false,
+      "upstreamJsExecuted": false,
+      "staticAuthorityReconciledProviders": [
+        "internet-archive"
+      ],
+      "materializationRecoveredFromExactPublishedBytes": true,
+      "minimizer": {
+        "enabled": true,
+        "savedBytes": 0,
+        "transformedLines": 0,
+        "skippedReason": "published-byte-recovery"
+      }
     }
   ],
   "devicePolicy": {
@@ -4697,13 +4741,14 @@
   "legacyProviderJsExecuted": false,
   "upstreamJsExecuted": false,
   "staticKnowledgeFile": "automation/provider-v3-static-knowledge.json",
-  "staticKnowledgeProviderCount": 41,
+  "staticKnowledgeProviderCount": 42,
   "domainAuthorityOnlyUpdate": true,
   "domainAuthorityUpdatedProviders": [
     "anime-sama",
     "hindmoviez"
   ],
   "targetedPublicationReconciledProviders": [
+    "internet-archive",
     "kehflix",
     "vidlove"
   ],
@@ -4711,7 +4756,7 @@
     "anime-sama",
     "hindmoviez"
   ],
-  "activeProviderIdentityCount": 10,
+  "activeProviderIdentityCount": 11,
   "lifecycleScopeReconciled": true,
   "lifecycleReconciledArchivedProviders": []
 }
