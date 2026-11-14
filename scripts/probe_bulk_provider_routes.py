@@ -251,16 +251,46 @@ def _identity_response(body: bytes, fixture: dict[str, Any], *, direct_media_rou
     if not body:
         return False
     text = body[:1_500_000].decode("utf-8", errors="ignore")
-    norm = _norm_text(text)
     title = _norm_text(fixture.get("title"))
-    if title and title in norm:
-        return True
+    tmdb = str(fixture.get("tmdbId") or "").strip()
+    lowered = text.casefold()
+
     if direct_media_route:
-        lowered = text.casefold()
-        tmdb = str(fixture.get("tmdbId") or "")
         media_markers = (".m3u8", ".mp4", '"stream"', '"streams"', '"url"', "playlist")
         if tmdb and tmdb in text and any(marker in lowered for marker in media_markers):
             return True
+        return False
+
+    # Search-route qualification must prove a catalogue/result identity, not merely
+    # reflect the query in <title>, canonical URL, meta description, form value or
+    # a generic "Search: <query>" heading.
+    if tmdb:
+        tmdb_patterns = (
+            rf'data-(?:id|tmdb|tmdb-id)\s*=\s*["\']{re.escape(tmdb)}["\']',
+            rf'href\s*=\s*["\'][^"\']*{re.escape(tmdb)}[^"\']*["\']',
+        )
+        if any(re.search(pattern, text, flags=re.I) for pattern in tmdb_patterns):
+            return True
+
+    if not title:
+        return False
+
+    anchor_re = re.compile(r"<a\b([^>]*)>([\s\S]{0,5000}?)</a\s*>", re.I)
+    title_attr_re = re.compile(r"""\btitle\s*=\s*["']([^"']+)["']""", re.I)
+    tag_re = re.compile(r"<[^>]+>")
+    for match in anchor_re.finditer(text):
+        attrs = match.group(1) or ""
+        body_text = html.unescape(tag_re.sub(" ", match.group(2) or ""))
+        labels = [body_text]
+        title_attr = title_attr_re.search(attrs)
+        if title_attr:
+            labels.append(html.unescape(title_attr.group(1)))
+        for label in labels:
+            normalized = _norm_text(
+                re.sub(r"\b(?:online\s+free|watch\s+online|stream\s+online)\b.*$", "", label, flags=re.I)
+            )
+            if normalized == title:
+                return True
     return False
 
 
