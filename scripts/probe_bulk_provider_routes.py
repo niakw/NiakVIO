@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import argparse
 import html
+import http.client
 import json
 import os
 import re
@@ -393,7 +394,7 @@ def probe_common_identity_routes(
                 if status >= 400:
                     continue
                 body = response.read(1_500_000)
-        except (urllib.error.URLError, TimeoutError, OSError, ValueError):
+        except (urllib.error.URLError, TimeoutError, OSError, ValueError, http.client.InvalidURL):
             continue
         if _identity_response(body, fixture, direct_media_route=direct_media):
             accepted.append(route)
@@ -493,13 +494,40 @@ def _js_route_templates(text: str, fixture: dict[str, Any], *, origin_host: str)
             if not host or host != origin_host:
                 continue
         pattern = _template_js_route(candidate, fixture)
-        if not pattern or not identity_route_candidate(pattern):
+        if not pattern or not _safe_spa_route_candidate(pattern) or not identity_route_candidate(pattern):
             continue
         if pattern not in values:
             values.append(pattern)
         if len(values) >= 32:
             break
     return values
+
+
+
+def _safe_spa_route_candidate(value: Any) -> bool:
+    raw = str(value or "").strip()
+    if not raw or len(raw) > 420:
+        return False
+    if any(ord(ch) < 32 or ch.isspace() for ch in raw):
+        return False
+    if any(token in raw for token in ("<", ">", '"', "'", "\x60", "\\n", "\\r", "\\t")):
+        return False
+    if not (raw.startswith("/") or re.match(r"^https?://", raw, flags=re.I)):
+        return False
+    placeholders = set(re.findall(r"\{[^{}]+\}", raw))
+    allowed = {"{tmdbId}", "{imdbId}", "{season}", "{episode}", "{media}", "{query}", "{slug}", "{title}"}
+    if not placeholders.issubset(allowed):
+        return False
+    stripped = re.sub(r"\{[^{}]+\}", "X", raw)
+    if not re.fullmatch(r"[A-Za-z0-9:/?&=._%+\-~,\[\]@!$()*;X]+", stripped):
+        return False
+    try:
+        parsed = urlsplit(raw)
+    except ValueError:
+        return False
+    if parsed.scheme and parsed.scheme not in {"http", "https"}:
+        return False
+    return True
 
 
 def _identity_bound_api_response(body: bytes, route: str, fixture: dict[str, Any]) -> bool:
@@ -593,6 +621,8 @@ def probe_spa_bundle_identity_routes(
         if remaining <= 0.5:
             break
         rendered = _render_route(route, fixture)
+        if not _safe_spa_route_candidate(rendered):
+            continue
         url = rendered if re.match(r"^https?://", rendered) else urllib.parse.urljoin(
             (final_url or direct).rstrip("/") + "/", rendered.lstrip("/")
         )
