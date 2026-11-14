@@ -65,7 +65,7 @@ def read_candidates(path: Path) -> list[dict[str, Any]]:
             raise ValueError(f"unknown upstream repository: {pid}")
         if not re.fullmatch(r"[a-f0-9]{40}", ref):
             raise ValueError(f"upstream commit is not immutably pinned: {pid}")
-        if not re.fullmatch(r"providers/[a-z0-9][a-z0-9-]*\\.js", filename):
+        if not re.fullmatch(r"providers/[a-z0-9][a-z0-9-]*[.]js", filename):
             raise ValueError(f"unsafe source path: {pid}")
         if filename != f"providers/{pid}.js":
             raise ValueError(f"source filename mismatches candidate ID: {pid}")
