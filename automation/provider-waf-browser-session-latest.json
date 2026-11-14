@@ -23,8 +23,8 @@
   ],
   "counts": {
     "browser_challenge_persisted": 16,
-    "browser_content_reached": 6,
-    "browser_inconclusive": 1
+    "browser_content_reached": 5,
+    "browser_inconclusive": 2
   },
   "rows": [
     {
@@ -78,7 +78,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 14947
+      "durationMs": 5359
     },
     {
       "provider": "allwish",
@@ -131,7 +131,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 14888,
+      "durationMs": 5426,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_challenge_persisted",
@@ -212,7 +212,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 15729,
+      "durationMs": 5547,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_challenge_persisted",
@@ -935,7 +935,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 3730
+      "durationMs": 4024
     },
     {
       "provider": "flemmix",
@@ -988,25 +988,30 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 4614
+      "durationMs": 3563
     },
     {
       "provider": "kehflix",
       "lane": "anime",
-      "publicUrl": "https://kehflix.com/api/streams/tv",
+      "publicUrl": "https://kehflix.com/api/streams/episode",
       "host": "kehflix.com",
-      "path": "/api/streams/tv",
+      "path": "/api/streams/episode",
       "method": "GET",
       "fetchStatus": 403,
       "challenge": "cloudflare",
       "seedKind": null,
       "seedRoute": null,
-      "outcome": "browser_content_reached",
-      "attemptCount": 1,
+      "outcome": "browser_inconclusive",
+      "attemptCount": 2,
       "attempts": [
         {
           "attempt": 1,
-          "outcome": "browser_content_reached",
+          "outcome": "browser_inconclusive",
+          "exitCode": 0
+        },
+        {
+          "attempt": 2,
+          "outcome": "browser_inconclusive",
           "exitCode": 0
         }
       ],
@@ -1015,12 +1020,17 @@
         {
           "profile": "github-default-browser",
           "userAgent": null,
-          "outcome": "browser_content_reached",
-          "attemptCount": 1,
+          "outcome": "browser_inconclusive",
+          "attemptCount": 2,
           "attempts": [
             {
               "attempt": 1,
-              "outcome": "browser_content_reached",
+              "outcome": "browser_inconclusive",
+              "exitCode": 0
+            },
+            {
+              "attempt": 2,
+              "outcome": "browser_inconclusive",
               "exitCode": 0
             }
           ],
@@ -1029,18 +1039,16 @@
       ],
       "directHttpProfile": null,
       "okHttpJvmProfile": null,
-      "contentProfiles": [
-        "github-default-browser"
-      ],
+      "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 1832
+      "durationMs": 2740
     },
     {
       "provider": "kehflix",
       "lane": "movie",
-      "publicUrl": "https://kehflix.com/title/movie/693134-dune-2",
+      "publicUrl": "https://kehflix.com/title/movie/810693-gekijo-ban-jujutsu-kaisen-0",
       "host": "kehflix.com",
-      "path": "/title/movie/693134-dune-2",
+      "path": "/title/movie/810693-gekijo-ban-jujutsu-kaisen-0",
       "method": "GET",
       "fetchStatus": 403,
       "challenge": "cloudflare",
@@ -1086,7 +1094,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 2154
+      "durationMs": 2183
     },
     {
       "provider": "kehflix",
@@ -1139,7 +1147,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 2394
+      "durationMs": 2280
     },
     {
       "provider": "mallumv",
@@ -1250,9 +1258,9 @@
     {
       "provider": "moviesmod",
       "lane": "movie",
-      "publicUrl": "https://moviesmod.ai.in/search/Shutter%20Island",
+      "publicUrl": "https://moviesmod.ai.in/search/Captain%20America%20%3A%20First%20Avenger",
       "host": "moviesmod.ai.in",
-      "path": "/search/Shutter%20Island",
+      "path": "/search/Captain%20America%20%3A%20First%20Avenger",
       "method": "GET",
       "fetchStatus": 403,
       "challenge": "cloudflare",
@@ -1298,14 +1306,14 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 4875
+      "durationMs": 4183
     },
     {
       "provider": "moviesmod",
       "lane": "tv",
-      "publicUrl": "https://moviesmod.ai.in/search/Silo%201",
+      "publicUrl": "https://moviesmod.ai.in/search/Stranger%20Things%201",
       "host": "moviesmod.ai.in",
-      "path": "/search/Silo%201",
+      "path": "/search/Stranger%20Things%201",
       "method": "GET",
       "fetchStatus": 403,
       "challenge": "cloudflare",
@@ -1351,7 +1359,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 4702
+      "durationMs": 3935
     },
     {
       "provider": "vidfast",
@@ -1725,7 +1733,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 3956,
+      "durationMs": 3423,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_challenge_persisted",
