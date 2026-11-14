@@ -17,6 +17,7 @@ assert.equal(classifyFailure({ contractDrift: true }), "runtime_contract_drift")
 assert.equal(classifyFailure({ audioTrackGap: true }), "audio_track_gap");
 assert.equal(classifyFailure({ forcedFailureClass: "route_proven_gap", invoked: true }), "route_proven_gap");
 assert.equal(classifyFailure({ forcedFailureClass: "chain_terminal_gap", invoked: true }), "chain_terminal_gap");
+assert.equal(classifyFailure({ forcedFailureClass: "content_identity_gap", invoked: true }), "content_identity_gap");
 assert.equal(classifyFailure({ forcedFailureClass: "candidate_replay_gap", invoked: true }), "candidate_replay_gap");
 assert.equal(classifyFailure({ forcedFailureClass: "provider_transport_gap", invoked: true }), "provider_transport_gap");
 assert.equal(classifyFailure({ forcedFailureClass: "variant_coverage_gap", invoked: true }), "variant_coverage_gap");
