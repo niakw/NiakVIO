@@ -41,6 +41,7 @@ on:
       - 'tests/workflow_security_policy_test.py'
       - 'tests/provider_tmdb_runtime_key_contract_test.py'
       - 'tests/provider_html_filter_security_test.py'
+      - 'tests/provider_bulk_spa_route_discovery_test.py'
 
 permissions:
   contents: read
@@ -95,6 +96,7 @@ jobs:
           python tests/workflow_security_policy_test.py
           python tests/provider_tmdb_runtime_key_contract_test.py
           python tests/provider_html_filter_security_test.py --published
+          python tests/provider_bulk_spa_route_discovery_test.py
           python scripts/normalize_published_security_finalization.py --check
 
       - name: Scan all published providers for known unsafe shapes
