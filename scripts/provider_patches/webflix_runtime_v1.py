@@ -71,9 +71,24 @@ WRAPPER = r'''
     var re=new RegExp("\\b"+name+"\\s*=\\s*[\"']([^\"']+)[\"']","i"),m=re.exec(html||"");
     return m?s(m[1]).replace(/&amp;/gi,"&"):"";
   }
+  function visibleText(v){
+    var src=s(v),out="",inTag=false,quote="";
+    for(var i=0;i<src.length;i++){
+      var ch=src[i];
+      if(inTag){
+        if(quote){if(ch===quote)quote="";}
+        else if(ch==="\""||ch==="'")quote=ch;
+        else if(ch===">"){inTag=false;out+=" ";}
+        continue;
+      }
+      if(ch==="<"){inTag=true;quote="";continue;}
+      out+=ch;
+    }
+    return out.replace(/&amp;/gi,"&").replace(/\s+/g," ").trim();
+  }
   function pageTitle(html){
     var m=/<title[^>]*>([\s\S]{0,500}?)<\/title\s*>/i.exec(html||"");
-    return m?s(m[1]).replace(/<[^>]+>/g," ").replace(/&amp;/gi,"&"):"";
+    return m?visibleText(m[1]):"";
   }
   function iframeUrl(html,base){
     var m=/<iframe\b[^>]*\bsrc\s*=\s*[\"']([^\"']+)[\"'][^>]*>/i.exec(html||"");
