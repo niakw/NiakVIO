@@ -145,6 +145,21 @@ def observed_candidates(report: dict[str, Any]) -> list[Any]:
     return values
 
 
+def active_provider_ids() -> set[str]:
+    ids: set[str] = set()
+    for relative in ("manifest.json", "vf/manifest.json"):
+        path = ROOT / relative
+        if not path.is_file():
+            continue
+        payload = load(path)
+        for row in payload.get("scrapers") or []:
+            if isinstance(row, dict) and row.get("enabled") is not False:
+                pid = norm(row.get("id"))
+                if pid:
+                    ids.add(pid)
+    return ids
+
+
 def provider_rows(request: dict[str, Any]) -> list[dict[str, Any]]:
     rows: list[dict[str, Any]] = []
     seen: set[str] = set()
@@ -175,7 +190,11 @@ def main() -> int:
     request = load(args.request)
     if not isinstance(request, dict):
         raise SystemExit("bulk route discovery request must be an object")
-    rows = provider_rows(request)
+    active = active_provider_ids()
+    rows = [
+        row for row in provider_rows(request)
+        if norm(row.get("id") or row.get("provider")) not in active
+    ]
     selected = [row for index, row in enumerate(rows) if index % args.shard_count == args.shard_index]
     transport = "residential-exit" if os.environ.get("NIAKVIO_BULK_ROUTE_DISCOVERY_RESIDENTIAL") == "1" else "github-hosted"
     results: list[dict[str, Any]] = []
