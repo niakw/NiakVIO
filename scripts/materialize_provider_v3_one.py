@@ -477,11 +477,33 @@ def materialize_one(
     patch = patches.get(provider_id)
     capability = capabilities.get(provider_id)
     static_row = static_rows.get(provider_id)
-    if not isinstance(patch, dict) or not isinstance(capability, dict) or not isinstance(static_row, dict):
+    if not isinstance(patch, dict) or not isinstance(capability, dict):
         raise ValueError(f"{provider_id}: incomplete structured DATA")
+    # A newly onboarded provider can already have canonical provider-owned DATA
+    # (catalog row + override/capability + Lego/routes) before the next static
+    # knowledge census has observed it.  Static knowledge is historical/RAG
+    # input, not publication authority.  Projection-only materialization may
+    # therefore build from the explicit current DATA without inventing static
+    # history; Repair/Domain flows remain strict and require their normal
+    # reconciliation evidence.
+    if not isinstance(static_row, dict):
+        if not preserve_structured_data:
+            raise ValueError(f"{provider_id}: static knowledge missing outside projection-only materialization")
+        static_row = {
+            "model": {},
+            "knowledge": {},
+            "sources": [],
+            "legacyProviderJsExecuted": False,
+            "upstreamJsExecuted": False,
+        }
 
     allmat.normalize_anime_transport_compatibility(entry)
     model = allmat.provider_model(provider_id, patch, capability, static_row)
+    if preserve_structured_data:
+        if not allmat.provider_model_has_executable_plan(model):
+            raise ValueError(f"{provider_id}: projection-only DATA lacks executable plan")
+        if not allmat.provider_model_has_identity_execution_plan(model):
+            raise ValueError(f"{provider_id}: projection-only DATA lacks identity execution plan")
     seed = allmat.build_clean_provider_seed(
         provider_id,
         entry,
