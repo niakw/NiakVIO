@@ -1,3 +1,8 @@
+## 2026-11-14 — Explicit full runtime census requested after pending isolation
+
+- Provider Overrides Gate 43583562600 is green on 0239e19b after the pending-staging strategy contract fix.
+- Trigger a scope=all sharded census from current main to prove that the existing runtime cohort can materialize and execute while 17 bulk-pending catalogue rows remain non-executable/excluded. This is validation of production runtime/control-plane only, not an activation attempt for pending providers.
+
 ## 2026-11-14 — Provider Overrides push trigger covered stale test incompletely
 
 - The pending-staging strategy fix e2a7f3fc changed tests/provider_v3_strategy_plan_contract_test.py, but Provider Overrides Gate only listed that test for pull_request, not push, so main could not prove the exact correction.
