@@ -133,7 +133,8 @@ assert provider_ids.count("a")==1 and provider_ids.count("b")==1, provider_ids
 workflow=(ROOT/".github/workflows/provider-bulk-route-discovery.yml").read_text(encoding="utf-8")
 for token in (
     "matrix:",
-    "shard: [0, 1, 2, 3, 4, 5, 6, 7]",
+    "--shard-count 16",
+    "shard: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]",
     "tailscale/github-action@064b10558093f38325e838ddea35486bdc6b1d5c",
     'sudo tailscale set --exit-node="$TS_EXIT_NODE" --exit-node-allow-lan-access=false',
     "NIAKVIO_BULK_ROUTE_DISCOVERY_RESIDENTIAL=1",
@@ -146,7 +147,7 @@ for token in (
     "FIELD_BULK_ROUTE_HANDOFF dispatched=provider-bulk-onboarding",
     "github.event_name == 'push' && github.sha || 'main'",
     "Partial route-discovery merge:",
-    "--expected-shards 8",
+    "--expected-shards 16",
 ):
     assert token in workflow, token
 
