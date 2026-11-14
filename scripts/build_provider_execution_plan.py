@@ -216,6 +216,7 @@ def build(batch:dict[str,Any],status:dict[str,Any],dynamic_repair:set[str] | Non
         ]
         if str(x).strip()
     }
+    current_authority={str(x).strip().casefold() for x in status.get("authorityRediscoveryQueue") or [] if str(x).strip()}
     executions=[]
     provider_owner:dict[str,str]={}
     status_rows={cid(row.get("provider")):row for row in status.get("providers") or [] if isinstance(row,dict) and cid(row.get("provider"))}
@@ -224,6 +225,7 @@ def build(batch:dict[str,Any],status:dict[str,Any],dynamic_repair:set[str] | Non
     disabled.update(pid for pid,row in status_rows.items() if str(row.get("status") or "").strip().casefold()=="disabled")
     current_repair-=disabled
     current_environment-=disabled
+    current_authority-=disabled
     current_dynamic-=disabled
     for group in batch.get("groups") or []:
         if not isinstance(group,dict):
@@ -256,7 +258,9 @@ def build(batch:dict[str,Any],status:dict[str,Any],dynamic_repair:set[str] | Non
                 "authorityQualified":authority_qualified,
                 **route,
             }
-            if row["lane"]=="CORE_CLIENT_LEARNING":
+            if row["lane"]=="DOMAIN_REFRESH":
+                unexpected=[p for p in partition_providers if p not in current_authority]
+            elif row["lane"]=="CORE_CLIENT_LEARNING":
                 unexpected=[p for p in partition_providers if p not in current_environment]
             elif row["repairScope"]=="variant-coverage":
                 unexpected=[p for p in partition_providers if p not in current_dynamic]
