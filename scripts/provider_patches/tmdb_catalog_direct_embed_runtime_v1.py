@@ -45,10 +45,14 @@ function embedUrl(q,html){var template=q.transport==="movie"?c.movieEmbedTemplat
  return root+(query?"?"+query:"")}
 async function terminal(seed,referer,q){var rows=[];try{if(typeof _crawlDirectMedia==="function")rows=await _crawlDirectMedia([seed],referer,c.maxDepth)}catch(_e){rows=[]}if(!Array.isArray(rows))return[];var out=[],seen={};for(var i=0;i<rows.length&&out.length<c.maxStreams;i++){var row=rows[i]||{},u=s(row.url);if(!/^https?:\/\//i.test(u)||seen[u])continue;seen[u]=1;var x=Object.assign({},row);x.provider=c.provider;x.name=x.name||c.name;x.title=x.title||c.name;x.headers=Object.assign({"Referer":referer,"User-Agent":c.userAgent},x.headers||{});if(q.transport==="tv"){x.season=q.season;x.episode=q.episode}out.push(x)}return out}
 async function resolve(args,_ctx){var q=req(args);if(q===null)return null;if(!q)return[];var md=await metadata(q),want=title(md);if(!want)return[];
- var search=fill(c.searchTemplate,q,md);if(!/^https?:/i.test(search))search=c.siteBase+(search.charAt(0)==="/"?search:"/"+search);
- var sr=await get(search,c.siteBase+"/");if(!sr.ok||!cardIdentity(sr.text,q))return[];
- var detail=detailUrl(q),dr=await get(detail,search);if(!dr.ok)return[];
+ var detail=detailUrl(q),ref=c.siteBase+"/";
+ if(!c.directDetailIdentity){
+  var search=fill(c.searchTemplate,q,md);if(!/^https?:/i.test(search))search=c.siteBase+(search.charAt(0)==="/"?search:"/"+search);
+  var sr=await get(search,c.siteBase+"/");if(!sr.ok||!cardIdentity(sr.text,q))return[];ref=search;
+ }
+ var dr=await get(detail,ref);if(!dr.ok)return[];
  var idNeedle=new RegExp("(?:data-(?:id|hist-id)|/(?:movie|tv)/)\\s*[\"']?"+q.tmdbId+"(?:[\"'/?#&\\s]|$)","i");if(!idNeedle.test(dr.text)&&dr.url.indexOf("/"+q.transport+"/"+q.tmdbId)<0)return[];
+ if(c.directDetailIdentity&&!cardIdentity(dr.text,q)&&dr.url.indexOf("/"+q.transport+"/"+q.tmdbId)<0)return[];
  var embed=embedUrl(q,dr.text);return await terminal(embed,dr.url||detail,q)}
 try{if(g)g.__niakvioProviderRuntimeResolverV1={provider:c.provider,resolve:resolve}}catch(_e){}
 })(typeof globalThis!=="undefined"?globalThis:this,CONFIG_PLACEHOLDER);
