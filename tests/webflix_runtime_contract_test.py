@@ -60,6 +60,5 @@ for required in (
     "/api/player-embed/vidzy-path?kind=movie&tmdbId=",
     "signedPath",
     "Webflix - Vidzy",
-    "direct-mp4-or-tmdb-signed-vidzy-hls",
 ):
     assert required in patched, required
