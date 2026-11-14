@@ -1,3 +1,9 @@
+## 2026-11-14 — Spreadsheet-selected 20/20/20 recovery cohort prepared
+
+- User supplied NiakVIO-GLOBAL-FINAL-STRICT-TOP20-2026-09-11(4).xlsx. Selection uses the Global and France inventory rows as candidate metadata only; their sheet status is NON VÉRIFIÉ — LOCAL UNIQUEMENT, so no row is activated from spreadsheet rank alone.
+- To restore declared 20/20/20 after disabling five current regressions, prepare a minimal 17-candidate cohort: 4 Global (sflix, rivestream, vidsrc2, asiaflix) and 13 France-only (cinestream, movix-fr, yablom, myfluneo, cpasmal, frembed, nakastream, 1jour1film0626, dotriv, ilmiv, kidraz, kordoz, neobam). Existing/archived identities such as showbox, kisskh and french-stream are deliberately not duplicated.
+- Bulk onboarding remains proof-neutral: entries stage disabled/pending and can activate only after current FULL OK on all declared lanes with no Brain check. Add main push trigger limited to .github/provider-onboarding/batch.json so the repository connector can execute the same validated workflow without weakening its activation gate.
+
 ## 2026-11-14 — Lifecycle regression disable test contract corrected
 
 - Provider Disabled Lifecycle 43578790742 correctly classified and applied five current regressions in its workspace (FIELD_PROVIDER_AUTHORITY disabled_now=5; lifecycle active=32 disabled=9) but failed before commit because provider_authority_current_catalogue_test.py still hard-coded historical KEEP_* expectations for identities now disabled by current census policy.

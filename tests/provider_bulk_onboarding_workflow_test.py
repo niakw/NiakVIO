@@ -24,7 +24,9 @@ for token in (
 
 event_block=bulk.split("\npermissions:",1)[0]
 assert "workflow_dispatch:" in event_block
-assert "\n  push:" not in event_block
+assert "\n  push:" in event_block
+assert "branches: [main]" in event_block
+assert "paths:" in event_block
 assert ".github/provider-onboarding/batch.json" in event_block
 
 # High-volume stage is deliberately local/offline and proof-neutral.
