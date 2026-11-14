@@ -228,6 +228,25 @@ assert manual_patch["route_data_state"]=="off",manual_patch
 assert manual_registry["manifest_status"]=="Désactivé",manual_registry
 assert manual_registry["activation_eligible"] is False,manual_registry
 
+# A current census regression is eligible for disabled retention only when it
+# was actually tested in that census and still requires Brain repair.
+regression = {
+    "provider":"demo","status":"REGRESSION PROVIDER","testedThisRun":True,
+    "brainCheckRequired":True,"repairEligible":True,
+}
+assert module.current_architecture_regression(regression) is True
+assert module.current_architecture_regression({**regression,"testedThisRun":False}) is False
+assert module.current_architecture_regression({**regression,"status":"ROUTE PROVEN"}) is False
+manifest_row=row(True)
+registry=reg()
+regression_patch=patch()
+reason=module.apply_disable(manifest_row,registry,regression_patch,"DISABLE_ARCHITECTURE_REGRESSION")
+assert reason=="auto_off_current_architecture_regression"
+assert manifest_row["enabled"] is False
+assert regression_patch["manifest_overrides"]["enabled"] is False
+assert "manual_off_reason" not in regression_patch
+assert "manual_off_reason" not in registry
+
 # Existing manual lifecycle decisions remain terminal.
 r=module.classify("demo",row(False),reg(),patch(manual_off_reason="manual_off_test"),{})
 assert r["action"]=="KEEP_DISABLED",r

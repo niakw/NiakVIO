@@ -30,6 +30,7 @@ OVERRIDES = ROOT / "provider-overrides.json"
 MANIFEST = ROOT / "manifest.json"
 HISTORY = ROOT / "provider-domain-history.json"
 OUTPUT = ROOT / "automation/provider-authority-status.json"
+CENSUS_STATUS = ROOT / "automation/provider-census-status.json"
 
 REMOVED_SOURCE_STATES = {"removed", "dead", "retired", "graveyard", "compromised"}
 NON_PROVIDER_AUTHORITY_HOSTS = {
@@ -458,6 +459,17 @@ def classify(
     }
 
 
+def current_architecture_regression(row: dict[str, Any] | None) -> bool:
+    if not isinstance(row, dict):
+        return False
+    return (
+        str(row.get("status") or "") == "REGRESSION PROVIDER"
+        and row.get("testedThisRun") is True
+        and row.get("brainCheckRequired") is True
+        and row.get("repairEligible") is True
+    )
+
+
 def apply_disable(
     row: dict[str, Any],
     registry: dict[str, Any],
@@ -470,6 +482,8 @@ def apply_disable(
         reason = "auto_off_upstream_shutdown"
     elif action == "DISABLE_AUTHORITY_EXHAUSTED":
         reason = "auto_off_domain_authority_exhausted"
+    elif action == "DISABLE_ARCHITECTURE_REGRESSION":
+        reason = "auto_off_current_architecture_regression"
     elif action == "DISABLE_MANUAL_POLICY":
         reason = str(
             patch.get("manual_off_reason")
@@ -485,10 +499,16 @@ def apply_disable(
     patch["manifest_overrides"] = manifest_overrides
     patch["route_data_state"] = "off"
     patch["activation_eligible"] = False
-    patch["manual_off_reason"] = reason
+    if action != "DISABLE_ARCHITECTURE_REGRESSION":
+        patch["manual_off_reason"] = reason
+    else:
+        patch.pop("manual_off_reason", None)
     registry["manifest_status"] = "Désactivé"
     registry["activation_eligible"] = False
-    registry["manual_off_reason"] = reason
+    if action != "DISABLE_ARCHITECTURE_REGRESSION":
+        registry["manual_off_reason"] = reason
+    else:
+        registry.pop("manual_off_reason", None)
     return reason
 
 
@@ -502,9 +522,15 @@ def main() -> int:
     overrides = load(OVERRIDES, {"provider_patches": {}})
     manifest = load(MANIFEST, {"scrapers": []})
     history = load(HISTORY, {"providers": {}})
+    census = load(CENSUS_STATUS, {"providers": []})
     registries = hubs.setdefault("providers", {})
     patches = overrides.setdefault("provider_patches", {})
     histories = history.get("providers") if isinstance(history.get("providers"), dict) else {}
+    census_by_provider = {
+        cid(row.get("provider")): row
+        for row in census.get("providers") or []
+        if isinstance(row, dict) and cid(row.get("provider"))
+    }
 
     rows = [row for row in manifest.get("scrapers") or [] if isinstance(row, dict)]
     results: list[dict[str, Any]] = []
@@ -517,8 +543,18 @@ def main() -> int:
         patch = patches.get(provider) if isinstance(patches.get(provider), dict) else {}
         hist = histories.get(provider) if isinstance(histories.get(provider), dict) else {}
         result = classify(provider, manifest_row, registry, patch, hist)
+        census_row = census_by_provider.get(provider)
+        if manifest_row.get("enabled") is not False and current_architecture_regression(census_row):
+            result = {
+                **result,
+                "action": "DISABLE_ARCHITECTURE_REGRESSION",
+                "repairEligible": False,
+                "confidence": "current-census",
+                "authorityClass": "current-architecture-regression",
+                "reasons": list(result.get("reasons") or []) + ["current_census_regression_provider"],
+            }
         if args.apply_safe_disables and result["action"] in {
-            "DISABLE_SOURCE_REMOVED", "DISABLE_UPSTREAM_SHUTDOWN", "DISABLE_AUTHORITY_EXHAUSTED", "DISABLE_MANUAL_POLICY"
+            "DISABLE_SOURCE_REMOVED", "DISABLE_UPSTREAM_SHUTDOWN", "DISABLE_AUTHORITY_EXHAUSTED", "DISABLE_MANUAL_POLICY", "DISABLE_ARCHITECTURE_REGRESSION"
         } and manifest_row.get("enabled") is not False:
             reason = apply_disable(manifest_row, registry, patch, result["action"])
             registries[provider] = registry
@@ -539,6 +575,7 @@ def main() -> int:
             "apiBackendMayOperateWithoutHomepage": True,
             "manualOffEntersDisabledRetentionImmediately": True,
             "effectiveOperatorShutdownEntersDisabledRetentionImmediately": True,
+            "currentTestedRegressionEntersDisabledRetention": True,
         },
         "providerCount": len(results),
         "repairEligible": sorted(row["provider"] for row in results if row.get("repairEligible") is True),

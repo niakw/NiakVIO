@@ -1,3 +1,9 @@
+## 2026-11-14 — Current tested architecture regressions enter disabled retention
+
+- User explicitly requested that existing NiakVIO providers which do not function in the current architecture stop remaining active in production manifests. Add a narrow lifecycle input from the authoritative provider census: only status REGRESSION PROVIDER + testedThisRun=true + brainCheckRequired=true + repairEligible=true is converted to DISABLE_ARCHITECTURE_REGRESSION by --apply-safe-disables.
+- The disable reason is auto_off_current_architecture_regression. Unlike operator/manual shutdown, it does not create manual_off_reason, so a future proof-driven activation can re-enable it; current provider bytes move through the normal 7-day disabled retention lifecycle. ROUTE PROVEN, CANDIDATE OK, WAF/NO PROOF and carried FULL/PARTIAL are not disabled by this rule.
+- Current census identifies five enabled Global regressions before this change: uhdmovies, animekai, vidrock, anime-ultime and vidlove. Lifecycle workflow triggered by this script change must be inspected before claiming they moved. No direct provider repair was made.
+
 ## 2026-11-14 — Bulk onboarding/activation now models France-only as a first-class scope
 
 - User batch requires Global candidates to remain Global and France candidates to exist only in France. Existing bulk onboarding staged exclusively into manifest.json; France-only identities could not enter the high-volume path, while bulk activation only mutated Global manifest rows.
