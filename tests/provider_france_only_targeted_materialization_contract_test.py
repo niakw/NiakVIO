@@ -16,6 +16,10 @@ for marker in (
     'projections.get("general") is not False',
     'allmat.write_json(PROVIDER_CATALOG, catalog)',
     '"entryAuthority": entry_authority',
+    'if not isinstance(static_row, dict):',
+    'if not preserve_structured_data:',
+    'projection-only DATA lacks executable plan',
+    'projection-only DATA lacks identity execution plan',
 ):
     assert marker in source, marker
 
