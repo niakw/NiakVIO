@@ -1,0 +1,101 @@
+{
+  "schema_version": 1,
+  "provider": "chillflix",
+  "provider_path": "providers/chillflix-588fcd374860a66b.js",
+  "catalog_enabled": true,
+  "fixture": {
+    "tmdbId": "46296",
+    "mediaType": "tv",
+    "title": "Spartacus",
+    "season": 0,
+    "episode": 1
+  },
+  "worker_exit_code": 0,
+  "ok": true,
+  "stream_count": 1,
+  "raw_stream_count": 1,
+  "provider_server_accessible": true,
+  "provider_server_successful_response": true,
+  "provider_server_hosts": [
+    "www.chillflix.lol",
+    "www.chillflix.pw"
+  ],
+  "provider_server_http_statuses": [
+    200,
+    404
+  ],
+  "error_code": null,
+  "streams": [
+    {
+      "host": "www.chillflix.pw",
+      "quality": "1080p",
+      "language": "en",
+      "size": "📺 Spartacus • 2010 • S00E01\n🌐 English",
+      "subtitle_count": 0,
+      "audio_track_count": 0,
+      "has_headers": true
+    }
+  ],
+  "invocation_diagnostics": [
+    {
+      "profile": "empty",
+      "stream_count": 1,
+      "attempts": [
+        {
+          "name": "positional_with_settings",
+          "inferred_mode": "positional",
+          "result": "empty",
+          "stream_count": 0,
+          "provider_observations": 0,
+          "error_code": null
+        },
+        {
+          "name": "object",
+          "inferred_mode": "positional",
+          "result": "streams",
+          "stream_count": 1,
+          "provider_observations": 4,
+          "error_code": null
+        }
+      ]
+    }
+  ],
+  "network_observations": [
+    {
+      "stage": "content_lookup",
+      "host": "www.chillflix.lol",
+      "method": "GET",
+      "path_pattern": "/tv/{id}",
+      "status": 200,
+      "ok": true,
+      "error_code": null
+    },
+    {
+      "stage": "player",
+      "host": "www.chillflix.pw",
+      "method": "GET",
+      "path_pattern": "/api/cinepro/sources?episode={value}&provider={value}&season={value}&tmdbId={value}&type={value}",
+      "status": 200,
+      "ok": true,
+      "error_code": null
+    },
+    {
+      "stage": "player",
+      "host": "www.chillflix.pw",
+      "method": "GET",
+      "path_pattern": "/embed/tv/{id}/{id}/{id}?autonext={value}&autoplay={value}&parent_origin={value}&pcv={value}&title={value}&watchparty={value}",
+      "status": 404,
+      "ok": false,
+      "error_code": null
+    },
+    {
+      "stage": "media",
+      "host": "www.chillflix.pw",
+      "method": "GET",
+      "path_pattern": "/api/cinepro/proxy?pns={value}&pt={value}&px={value}",
+      "status": 200,
+      "ok": true,
+      "error_code": null
+    }
+  ]
+}

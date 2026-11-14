@@ -1,0 +1,83 @@
+{
+  "schema_version": 1,
+  "provider": "chillflix",
+  "provider_path": "providers/chillflix-588fcd374860a66b.js",
+  "catalog_enabled": true,
+  "fixture": {
+    "tmdbId": "401905",
+    "mediaType": "movie",
+    "title": "Fahrenheit 451",
+    "season": null,
+    "episode": null
+  },
+  "worker_exit_code": 0,
+  "ok": true,
+  "stream_count": 0,
+  "raw_stream_count": 0,
+  "provider_server_accessible": true,
+  "provider_server_successful_response": true,
+  "provider_server_hosts": [
+    "vip.1x2.space",
+    "www.chillflix.lol",
+    "www.chillflix.pw"
+  ],
+  "provider_server_http_statuses": [
+    200,
+    403
+  ],
+  "error_code": null,
+  "streams": [],
+  "invocation_diagnostics": [
+    {
+      "profile": "empty",
+      "stream_count": 0,
+      "attempts": [
+        {
+          "name": "positional_with_settings",
+          "inferred_mode": "positional",
+          "result": "empty",
+          "stream_count": 0,
+          "provider_observations": 0,
+          "error_code": null
+        },
+        {
+          "name": "object",
+          "inferred_mode": "positional",
+          "result": "empty",
+          "stream_count": 0,
+          "provider_observations": 3,
+          "error_code": null
+        }
+      ]
+    }
+  ],
+  "network_observations": [
+    {
+      "stage": "content_lookup",
+      "host": "www.chillflix.lol",
+      "method": "GET",
+      "path_pattern": "/movie/{id}",
+      "status": 200,
+      "ok": true,
+      "error_code": null
+    },
+    {
+      "stage": "player",
+      "host": "www.chillflix.pw",
+      "method": "GET",
+      "path_pattern": "/api/cinepro/sources?episode={value}&provider={value}&season={value}&tmdbId={value}&type={value}",
+      "status": 200,
+      "ok": true,
+      "error_code": null
+    },
+    {
+      "stage": "content_lookup",
+      "host": "vip.1x2.space",
+      "method": "GET",
+      "path_pattern": "/playlist/{token}/master.m3u8",
+      "status": 403,
+      "ok": false,
+      "error_code": null
+    }
+  ]
+}
