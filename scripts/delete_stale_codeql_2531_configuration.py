@@ -8,9 +8,14 @@ configuration clean.
 """
 from __future__ import annotations
 
+import sys
 import time
+from pathlib import Path
 from urllib.error import HTTPError
 
+SCRIPT_DIR = Path(__file__).resolve().parent
+if str(SCRIPT_DIR) not in sys.path:
+    sys.path.insert(0, str(SCRIPT_DIR))
 import retire_stale_codeql_2531 as guard
 
 REPO = guard.REPO
