@@ -274,6 +274,11 @@ def main() -> int:
     parser.add_argument("--stage", default=None, help="Also profile candidates in this staging directory.")
     parser.add_argument("--apply-stage", action="store_true", help="Reapply generated profiles to staged candidates immediately.")
     parser.add_argument("--provider", action="append", default=[], help="Limit stage/profile refresh to provider id (repeatable).")
+    parser.add_argument(
+        "--ephemeral-overrides",
+        action="store_true",
+        help="Temporarily expose generated profiles to stage reapply, then restore production provider-overrides.json.",
+    )
     args = parser.parse_args()
     target_ids = {str(value or "").strip().casefold() for value in args.provider if str(value or "").strip()}
 
@@ -331,13 +336,21 @@ def main() -> int:
             "provider_backend_isolation": True,
             "last_refresh_scope": "full",
         }
+    original_overrides = OVR.read_bytes() if OVR.exists() else None
     OVR.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
     repatched = 0
-    if args.apply_stage:
-        if stage_path is None or registry is None:
-            raise SystemExit("--apply-stage requires --stage with candidates.json")
-        repatched = reapply_stage(stage_path, registry, target_ids or None)
+    try:
+        if args.apply_stage:
+            if stage_path is None or registry is None:
+                raise SystemExit("--apply-stage requires --stage with candidates.json")
+            repatched = reapply_stage(stage_path, registry, target_ids or None)
+    finally:
+        if args.ephemeral_overrides:
+            if original_overrides is None:
+                OVR.unlink(missing_ok=True)
+            else:
+                OVR.write_bytes(original_overrides)
 
     print(
         f"provider runtime profiles generated: {count} (staged={staged_count}, repatched={repatched}, "
