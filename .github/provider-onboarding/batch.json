@@ -1,5 +1,5 @@
 {
-  "requestVersion": 26,
+  "requestVersion": 27,
   "source": "NiakVIO-GLOBAL-FINAL-STRICT-TOP20-2026-09-11(5).xlsx",
   "activationPolicy": "bulk_offline_contract_live_unverified",
   "allowReplaceExisting": true,
@@ -2781,10 +2781,12 @@
     "activationRequiresExecutablePlan": true
   },
   "handoff": {
-    "reason": "retry_after_superseding_stale_bulk_run",
-    "previousRequestVersion": 25,
+    "reason": "retry_after_route_persistence_and_dle_story_contract_fix",
+    "previousRequestVersion": 26,
     "retryAfterContractFix": "bare-search-not-identity-aware",
     "retryAfterActivationDiagnostics": true,
-    "partialActivationAllowed": true
+    "partialActivationAllowed": true,
+    "routeKnowledgePersistenceFix": "4e54c667",
+    "dleStoryExecutionFix": "69a480c3"
   }
 }
