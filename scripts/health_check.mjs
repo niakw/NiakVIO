@@ -1118,6 +1118,69 @@ function fixtureKey(fixture) {
   ].join(':');
 }
 
+const fixtureDurationCache = new Map();
+
+async function hydrateFixtureExpectedDuration(fixture) {
+  const configured = Number(fixture?.expectedDurationMinutes || 0);
+  if (Number.isFinite(configured) && configured > 0) {
+    return { ...fixture, expectedDurationSource: fixture.expectedDurationSource || 'configured' };
+  }
+
+  const tmdbId = String(fixture?.tmdbId || '').trim();
+  const accessToken = String(process.env.TMDB_ACCESS_TOKEN || '').trim();
+  const apiKey = String(process.env.TMDB_API_KEY || '').trim();
+  if (!tmdbId || (!accessToken && !apiKey)) return { ...fixture };
+
+  const category = String(fixture?.category || fixture?.mediaType || '').toLowerCase();
+  const season = Number(fixture?.season);
+  const episode = Number(fixture?.episode);
+  const episodic = Number.isInteger(season) && season >= 0 && Number.isInteger(episode) && episode > 0;
+  const cacheKey = [category, tmdbId, episodic ? season : '', episodic ? episode : ''].join(':');
+  if (fixtureDurationCache.has(cacheKey)) {
+    const cached = fixtureDurationCache.get(cacheKey);
+    return cached ? { ...fixture, expectedDurationMinutes: cached, expectedDurationSource: 'tmdb-runtime' } : { ...fixture };
+  }
+
+  try {
+    const pathName = category === 'movie' && !episodic
+      ? '/3/movie/' + encodeURIComponent(tmdbId)
+      : episodic
+        ? '/3/tv/' + encodeURIComponent(tmdbId) + '/season/' + season + '/episode/' + episode
+        : '/3/tv/' + encodeURIComponent(tmdbId);
+    const url = new URL('https://api.themoviedb.org' + pathName);
+    const headers = { Accept: 'application/json' };
+    if (accessToken) headers.Authorization = 'Bearer ' + accessToken;
+    else url.searchParams.set('api_key', apiKey);
+
+    const response = await fetch(url, {
+      method: 'GET',
+      headers,
+      redirect: 'error',
+      signal: timeoutSignal(5000),
+    });
+    if (!response.ok) {
+      fixtureDurationCache.set(cacheKey, null);
+      return { ...fixture };
+    }
+    const payload = await response.json();
+    let runtime = Number(payload?.runtime || 0);
+    if (!(runtime > 0) && Array.isArray(payload?.episode_run_time)) {
+      runtime = Number(payload.episode_run_time.find((value) => Number(value) > 0) || 0);
+    }
+    if (!(runtime > 0)) runtime = Number(payload?.last_episode_to_air?.runtime || 0);
+    if (!Number.isFinite(runtime) || runtime <= 0 || runtime > 600) {
+      fixtureDurationCache.set(cacheKey, null);
+      return { ...fixture };
+    }
+    const rounded = Math.round(runtime);
+    fixtureDurationCache.set(cacheKey, rounded);
+    return { ...fixture, expectedDurationMinutes: rounded, expectedDurationSource: 'tmdb-runtime' };
+  } catch {
+    fixtureDurationCache.set(cacheKey, null);
+    return { ...fixture };
+  }
+}
+
 function fixturesForCandidate(candidate) {
   const profile = candidateProfile(candidate);
   const limit = Math.max(1, Number(modeConfig.fixture_limit || 1));
@@ -1547,16 +1610,18 @@ async function testCandidate(candidate) {
   const { profile, fixtures, fallbackFixtures } = fixturesForCandidate(candidate);
 
   async function executeFixture(fixture, fixturePhase) {
+    const hydratedFixture = await hydrateFixtureExpectedDuration(fixture);
     const normalizedFixture = {
-      tmdbId: String(fixture.tmdbId),
-      mediaType: fixture.mediaType,
-      season: fixture.season ?? null,
-      episode: fixture.episode ?? null,
-      label: fixture.label || String(fixture.tmdbId),
-      title: fixture.title || fixture.label || null,
-      year: fixture.year ?? null,
-      category: fixture.category || fixture.mediaType || 'unknown',
-      expectedDurationMinutes: fixture.expectedDurationMinutes ?? null,
+      tmdbId: String(hydratedFixture.tmdbId),
+      mediaType: hydratedFixture.mediaType,
+      season: hydratedFixture.season ?? null,
+      episode: hydratedFixture.episode ?? null,
+      label: hydratedFixture.label || String(hydratedFixture.tmdbId),
+      title: hydratedFixture.title || hydratedFixture.label || null,
+      year: hydratedFixture.year ?? null,
+      category: hydratedFixture.category || hydratedFixture.mediaType || 'unknown',
+      expectedDurationMinutes: hydratedFixture.expectedDurationMinutes ?? null,
+      expectedDurationSource: hydratedFixture.expectedDurationSource ?? null,
     };
     const worker = await runWorker(candidate, normalizedFixture);
     const streams = Array.isArray(worker.streams) ? worker.streams : [];
