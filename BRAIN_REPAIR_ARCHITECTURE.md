@@ -1,3 +1,9 @@
+## 2026-11-14 — Disabled recovery requires terminal identity proof per declared lane
+
+A disabled-provider recovery observation may be aggregate-health `healthy` while still lacking identity authority for one declared semantic lane. Aggregate stream or identity counters are therefore diagnostic only: they never authorize reactivation of a multi-lane provider.
+
+The recovery disposition is now produced by `scripts/classify_disabled_recovery_disposition.py`. For every declared lane it requires at least one terminal stream with playback verified, payload verified, content identity `match` and no duration identity contradiction. Only complete per-lane coverage may set `currentDisabledHealthHealthy=true` and request `exact_playback_identity_replay`. Aggregate health with a missing identity lane becomes `identity_inconclusive_replay`: provider bytes remain unchanged, Brain mutation guidance remains absent unless an actual causal repair is found, and lifecycle reactivation remains fail-closed. The downstream reactivation transaction independently rechecks the same exact-byte/per-lane proof before moving any provider back to production.
+
 ## 2026-11-14 — Routine architecture validation and France-only lifecycle authority
 
 A successful Learning experiment always validates the generated Brain architecture proposal artifact. Routine Learning may materialize that proposal only inside the ephemeral validation workspace and run the architecture contracts; it gains no PR or production-write authority. Review publication remains gated by an explicit manual `publish_proposal=true` dispatch plus the repository allow variable. Direct `main` promotion remains exclusive to the existing `architecture_force=true` transaction and its separate proof/replay gates. This closes the previous gap where routine Learning could generate architecture proposals that were never exercised by the validation job.
