@@ -1502,10 +1502,15 @@ def apply_overrides(
                 raise ValueError(
                     f"provider={provider_id} v3 Lego has no MANAGED_FIX_ID: {patch_script}"
                 )
-            if not managed_fix_id.startswith(expected_prefix):
+            generic_reusable = (
+                managed_fix_id.startswith("PROVIDER.GENERIC.")
+                and bool(getattr(module, "GENERIC_REUSABLE", False))
+            )
+            if not managed_fix_id.startswith(expected_prefix) and not generic_reusable:
                 raise ValueError(
                     f"provider={provider_id} v3 Lego ownership must start with "
-                    f"{expected_prefix}: {patch_script} owns {managed_fix_id}"
+                    f"{expected_prefix} or declare GENERIC_REUSABLE under PROVIDER.GENERIC.: "
+                    f"{patch_script} owns {managed_fix_id}"
                 )
             options = provider_lego_options.get(patch_script)
             if options is None:
@@ -1515,6 +1520,14 @@ def apply_overrides(
                     f"provider_patches.{provider_id}.provider_lego_options[{patch_script!r}] "
                     "must be an object"
                 )
+            if generic_reusable:
+                option_provider = str(options.get("provider") or "").strip().casefold().replace("_", "-")
+                canonical_provider = str(provider_id).strip().casefold().replace("_", "-")
+                if option_provider != canonical_provider:
+                    raise ValueError(
+                        f"provider={provider_id} generic Lego {patch_script} must bind "
+                        f"provider option to the current provider, got {option_provider!r}"
+                    )
             before = text
             text = _apply_patch_script(
                 text,
