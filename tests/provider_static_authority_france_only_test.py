@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 import importlib.util
+import sys
 from pathlib import Path
 
 ROOT=Path(__file__).resolve().parents[1]
+sys.path.insert(0, str((ROOT/"scripts").resolve()))
 path=ROOT/"scripts/reconcile_provider_static_authority.py"
 spec=importlib.util.spec_from_file_location("reconcile_provider_static_authority_france",path)
 assert spec and spec.loader
