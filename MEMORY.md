@@ -1,3 +1,9 @@
+## 2026-11-14 — Release projection integrity now uses Global + France-only union authority
+
+- Release-finalize 43587482341 on c811dd7c passed the 13-provider minimizer fixed point, synchronized release/cache versions with first-class VF-only support, staged provider generation, rebuilt the active Hub transport and validated its 13 pinned provider URLs. It then failed in release_projection_scope_test.py because that legacy test still required every VF identity and every provider_catalog identity to belong to manifest.json.
+- Replace the obsolete subset invariant with the actual projection contract: Global visible is owned by manifest.json; exact VF-only identities are read from source-of-truth provider_catalog via france_only_catalog_rows(); provider_catalog must equal their disjoint union; VF may contain a Global subset plus the complete France-only set; no-anime remains Global-only; vf-no-anime remains a VF subset; active Hub/native transports remain exact Global-active scope. Archive leakage and version equality still fail closed.
+- No provider activation or proof criteria changed. The failed finalizer did not publish its staged generation.
+
 ## 2026-11-14 — Release finalization retriggered on corrected Global + VF-only control plane
 
 - Previous finalization 43586059001 proved minimizer fixed-point for all 13 active providers but stopped at the obsolete VF-subset versioning assumption. The version/cache tooling, pending-scope documentation and strict fixture tests have since been corrected; Workflow Gate on a9ceb28a independently passed release version synchronization before encountering the later fixture-shape test.
