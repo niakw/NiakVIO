@@ -22,6 +22,7 @@ from pathlib import Path
 from typing import Any
 
 from generate_language_manifests import france_only_catalog_rows
+from current_provider_scope import pending_provider_ids
 
 ROOT = Path(__file__).resolve().parents[1]
 ACTIVE_DIR = ROOT / "providers"
@@ -385,6 +386,7 @@ def apply_lifecycle(root: Path = ROOT, *, day: date, apply: bool = False) -> dic
     if len(root_by_id) != len(rows):
         raise RuntimeError("manifest provider ids must be unique and non-empty")
     by_id = lifecycle_catalog_rows(root_by_id, root=ROOT)
+    pending_ids = pending_provider_ids() & set(by_id)
 
     disabled_state = state["disabled"]
     archived_state = state["archived"]
@@ -395,6 +397,20 @@ def apply_lifecycle(root: Path = ROOT, *, day: date, apply: bool = False) -> dic
     for pid, row in list(by_id.items()):
         enabled = row.get("enabled") is not False
         record = disabled_state.get(pid) if isinstance(disabled_state.get(pid), dict) else None
+
+        if pid in pending_ids:
+            if enabled:
+                raise RuntimeError(f"{pid}: bulk pending provider cannot be enabled before activation")
+            asset = current_asset(row)
+            if DISABLED_DIR.resolve() not in asset.parents:
+                raise RuntimeError(f"{pid}: bulk pending provider must remain under provider-disabled/")
+            # Pending onboarding is not a failed-provider retention state. If an
+            # older lifecycle pass temporarily classified it as disabled, remove
+            # only those lifecycle fields while preserving the exact pending bytes.
+            for key in ("disabledReason", "disabledAt", "purgeAfter", "lifecycleState"):
+                row.pop(key, None)
+            disabled_state.pop(pid, None)
+            continue
 
         if enabled:
             if record is not None or str(row.get("filename") or "").startswith("provider-disabled/"):
@@ -468,6 +484,8 @@ def apply_lifecycle(root: Path = ROOT, *, day: date, apply: bool = False) -> dic
 
     active_ids = {pid for pid, row in by_id.items() if row.get("enabled") is not False}
     disabled_ids = {pid for pid, row in by_id.items() if row.get("enabled") is False}
+    lifecycle_disabled_ids = disabled_ids - pending_ids
+    runtime_visible_ids = active_ids | lifecycle_disabled_ids
 
     if apply:
         # Global remains Global-only. France-only rows live in catalog/projections.
@@ -477,9 +495,9 @@ def apply_lifecycle(root: Path = ROOT, *, day: date, apply: bool = False) -> dic
         for path in ACTIVE_ONLY_MANIFESTS:
             update_active_only_manifest(path, active_ids)
         update_provider_catalog(by_id, archived_now)
-        static_result = reconcile_static_knowledge(active_ids | disabled_ids, apply=True)
+        static_result = reconcile_static_knowledge(runtime_visible_ids, apply=True)
         materialization_result = reconcile_materialization_report(
-            active_ids | disabled_ids,
+            runtime_visible_ids,
             active_ids,
             static_provider_count=int(static_result["providerCount"]),
             apply=True,
@@ -488,9 +506,9 @@ def apply_lifecycle(root: Path = ROOT, *, day: date, apply: bool = False) -> dic
         dump_json(STATE_PATH, state)
 
     if not apply:
-        static_result = reconcile_static_knowledge(active_ids | disabled_ids, apply=False)
+        static_result = reconcile_static_knowledge(runtime_visible_ids, apply=False)
         materialization_result = reconcile_materialization_report(
-            active_ids | disabled_ids,
+            runtime_visible_ids,
             active_ids,
             static_provider_count=int(static_result["providerCount"]),
             apply=False,
@@ -500,13 +518,16 @@ def apply_lifecycle(root: Path = ROOT, *, day: date, apply: bool = False) -> dic
         "day": day.isoformat(),
         "retentionDays": RETENTION_DAYS,
         "active": sorted(active_ids),
-        "disabled": sorted(disabled_ids),
+        "disabled": sorted(lifecycle_disabled_ids),
+        "pending": sorted(pending_ids),
         "newlyDisabled": sorted(newly_disabled),
         "reenabled": sorted(reenabled),
         "archivedNow": sorted(archived_now),
         "activeCount": len(active_ids),
-        "disabledCount": len(disabled_ids),
+        "disabledCount": len(lifecycle_disabled_ids),
+        "pendingCount": len(pending_ids),
         "visibleCount": len(active_ids | disabled_ids),
+        "runtimeVisibleCount": len(runtime_visible_ids),
         "staticKnowledgeProviderCount": int(static_result["providerCount"]),
         "staticKnowledgeRemoved": list(static_result["removed"]),
         "materializationProviderCount": int(materialization_result["providerCount"]),
@@ -526,7 +547,9 @@ def main() -> int:
         "PROVIDER_LIFECYCLE_OK",
         f"active={report['activeCount']}",
         f"disabled={report['disabledCount']}",
+        f"pending={report['pendingCount']}",
         f"visible={report['visibleCount']}",
+        f"runtime_visible={report['runtimeVisibleCount']}",
         f"archived_now={len(report['archivedNow'])}",
         f"static_removed={len(report['staticKnowledgeRemoved'])}",
         f"materialization_removed={len(report['materializationRemoved'])}",

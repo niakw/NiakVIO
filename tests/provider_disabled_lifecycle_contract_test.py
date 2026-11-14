@@ -8,6 +8,7 @@ from pathlib import Path
 ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 from manage_provider_lifecycle import RETENTION_DAYS
+from current_provider_scope import pending_provider_ids
 
 manifest=json.loads((ROOT/"manifest.json").read_text(encoding="utf-8"))
 vf_manifest=json.loads((ROOT/"vf/manifest.json").read_text(encoding="utf-8"))
@@ -20,10 +21,12 @@ vf_only_rows=[
     if str(row.get("id") or "").strip().casefold().replace("_","-") not in root_ids
 ]
 visible_rows=[*root_rows,*vf_only_rows]
-disabled={
+all_disabled={
     str(row.get("id") or "").strip().casefold().replace("_","-"):row
     for row in visible_rows if row.get("enabled") is False
 }
+pending=pending_provider_ids() & set(all_disabled)
+disabled={pid:row for pid,row in all_disabled.items() if pid not in pending}
 active={
     str(row.get("id") or "").strip().casefold().replace("_","-"):row
     for row in visible_rows if row.get("enabled") is not False
@@ -31,7 +34,8 @@ active={
 ledger=state.get("disabled") or {}
 assert state.get("retentionDays") == RETENTION_DAYS
 assert set(disabled)==set(ledger), (set(disabled),set(ledger))
-assert not (set(active)&set(disabled))
+assert not (set(active)&set(all_disabled))
+assert pending.isdisjoint(ledger)
 
 for row in root_rows:
     pid=str(row.get("id") or "").strip().casefold().replace("_","-")
@@ -48,6 +52,10 @@ for row in vf_only_rows:
     assert filename.startswith(expected_prefix), (pid,filename)
     assert ((ROOT/"vf")/filename).resolve().is_file(), pid
 
+for pid in pending:
+    row=all_disabled[pid]
+    assert not row.get("disabledAt") and not row.get("purgeAfter"), (pid,row)
+
 for pid,row in disabled.items():
     disabled_at=date.fromisoformat(str(row.get("disabledAt")))
     purge_after=date.fromisoformat(str(row.get("purgeAfter")))
@@ -57,5 +65,5 @@ for pid,row in disabled.items():
 
 print(
     f"provider disabled lifecycle contract passed active={len(active)} "
-    f"disabled={len(disabled)} retention={RETENTION_DAYS} vf_only={len(vf_only_rows)}"
+    f"disabled={len(disabled)} pending={len(pending)} retention={RETENTION_DAYS} vf_only={len(vf_only_rows)}"
 )

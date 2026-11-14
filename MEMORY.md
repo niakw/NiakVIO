@@ -1,3 +1,10 @@
+## 2026-11-14 — Bulk pending is catalogue staging, not runtime/lifecycle authority
+
+- Bulk publication 2f6f0c0d staged 17 candidates physically under provider-disabled/ (4 Global + 13 France-only) with activation_mode=bulk_onboarding_pending and no activation attempt. Current active production lanes after regression withdrawal are Global movie17/tv16/anime19 and France movie7/tv7/anime16; this is declared coverage, not playback proof.
+- Sharded census runs 43580937478, 43581909093 and 43581916640 all failed before network probing: sanitize_provider_v3_execution_routes_v1 required static knowledge for 45 Global-visible rows while the runtime ledger correctly still contains 41 pre-staging identities. The four extra identities were bulk pending. This is a staging/runtime scope bug, not provider failure.
+- Define bulk pending from durable PROVENANCE activation_mode. Pending remains catalogue-visible and physically disabled, but is excluded from current runtime/static/materialization authority and from quick-yield census targets; explicit probing of a pending id fails closed. Lifecycle does not give pending rows disabledAt/purgeAfter or archive them after seven days. Runtime ledgers continue to cover active + genuine lifecycle-disabled identities only. No pending provider is enabled, probed, repaired or promoted by this change.
+- Updated lifecycle, sanitizer, quick-yield and recognition contracts plus the lifecycle workflow's union assertions. Exact-SHA CI and a fresh sharded production census are required before declaring the control-plane repaired.
+
 ## 2026-11-14 — Bulk validation isolated from pre-existing active ProviderBase template drift
 
 - Bulk retry 43579984626 passed 17/17 staging, 17/17 offline branding, catalogue/manifests reconstruction and published-config validation. It then failed only because provider_clean_reconstruction_contract_test compares all active ProviderBase bytes against the latest common template.

@@ -11,6 +11,7 @@ on:
       - '.github/triggers/provider-disabled-lifecycle'
       - 'scripts/classify_provider_authority.py'
       - 'scripts/manage_provider_lifecycle.py'
+      - 'scripts/current_provider_scope.py'
       - 'tests/provider_authority_arbiter_test.py'
       - 'tests/provider_authority_current_catalogue_test.py'
       - 'tests/provider_route_reconstructor_test.py'
@@ -67,6 +68,7 @@ jobs:
               disabled_provider_ids,
               visible_provider_count,
               audit_projection_scope,
+              pending_provider_ids,
           )
           from manage_provider_lifecycle import lifecycle_catalog_rows, rows_by_id
 
@@ -94,28 +96,34 @@ jobs:
           active_union={pid for pid,row in catalog_rows.items() if row.get('enabled') is not False}
           disabled_union={pid for pid,row in catalog_rows.items() if row.get('enabled') is False}
           visible_ids=active_union | disabled_union
+          pending_union=pending_provider_ids() & visible_ids
+          assert pending_union <= disabled_union, (sorted(pending_union), sorted(disabled_union))
+          runtime_visible_ids=visible_ids - pending_union
 
           knowledge=json.loads((root/'automation/provider-v3-static-knowledge.json').read_text(encoding='utf-8'))
           materialization=json.loads((root/'provider-v3-materialization.json').read_text(encoding='utf-8'))
           knowledge_ids={str(value).strip().casefold().replace('_','-') for value in (knowledge.get('providers') or {})}
-          assert knowledge_ids == visible_ids, (sorted(knowledge_ids-visible_ids), sorted(visible_ids-knowledge_ids))
-          assert int(knowledge.get('providerCount') or 0) == len(visible_ids)
+          assert knowledge_ids == runtime_visible_ids, (sorted(knowledge_ids-runtime_visible_ids), sorted(runtime_visible_ids-knowledge_ids))
+          assert int(knowledge.get('providerCount') or 0) == len(runtime_visible_ids)
           for section in ('contractRecognition','routeReconstruction','routeRecovery'):
               row=knowledge.get(section)
               if isinstance(row,dict) and 'providerCount' in row:
-                  assert int(row.get('providerCount') or 0) == len(visible_ids), (section,row.get('providerCount'),len(visible_ids))
+                  assert int(row.get('providerCount') or 0) == len(runtime_visible_ids), (section,row.get('providerCount'),len(runtime_visible_ids))
           materialization_ids={str(row.get('provider') or '').strip().casefold().replace('_','-') for row in materialization.get('providers') or [] if isinstance(row,dict)}
-          assert materialization_ids == visible_ids, (sorted(materialization_ids-visible_ids), sorted(visible_ids-materialization_ids))
-          assert int(materialization.get('providerCount') or 0) == len(visible_ids)
-          assert int(materialization.get('expectedProviderCount') or len(visible_ids)) == len(visible_ids)
+          assert materialization_ids == runtime_visible_ids, (sorted(materialization_ids-runtime_visible_ids), sorted(runtime_visible_ids-materialization_ids))
+          assert int(materialization.get('providerCount') or 0) == len(runtime_visible_ids)
+          assert int(materialization.get('expectedProviderCount') or len(runtime_visible_ids)) == len(runtime_visible_ids)
           assert int(materialization.get('activeProviderIdentityCount') or 0) == len(active_union)
-          assert int(materialization.get('staticKnowledgeProviderCount') or 0) == len(visible_ids)
+          assert int(materialization.get('staticKnowledgeProviderCount') or 0) == len(runtime_visible_ids)
 
           for pid,row in root_rows.items():
               filename=str(row.get('filename') or '')
               if row.get('enabled') is False:
                   assert filename.startswith('provider-disabled/'), (pid, filename)
-                  assert row.get('disabledAt') and row.get('purgeAfter')
+                  if pid in pending_union:
+                      assert not row.get('disabledAt') and not row.get('purgeAfter'), (pid,row)
+                  else:
+                      assert row.get('disabledAt') and row.get('purgeAfter')
               else:
                   assert filename.startswith('providers/'), (pid, filename)
 
@@ -125,6 +133,8 @@ jobs:
               f'global_disabled={len(manifest_disabled)}',
               f'union_active={len(active_union)}',
               f'union_disabled={len(disabled_union)}',
+              f'pending={len(pending_union)}',
+              f'runtime_visible={len(runtime_visible_ids)}',
               f'vf_only={len(vf_only)}',
           )
           PY

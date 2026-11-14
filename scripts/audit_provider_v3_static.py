@@ -7,7 +7,7 @@ from provider_patch_blocks import decode_managed_data, owned_span, validate_mana
 from provider_base_store import build_provider_data_model
 from materialize_provider_v3_all import provider_model, normalize_anime_transport_compatibility
 from provider_v3_filename_policy import matches_provider_v3_filename
-from current_provider_scope import active_provider_ids, visible_provider_count
+from current_provider_scope import active_provider_ids, runtime_visible_provider_count
 
 ROOT=Path(__file__).resolve().parents[1]
 DOMAIN_ONLY="--domain-only" in sys.argv
@@ -116,7 +116,7 @@ for row in rows:
         raise AssertionError((pid,"provider-data-drift",diff))
 
 assert set(rb)==seen
-visible=visible_provider_count()
+visible=runtime_visible_provider_count()
 assert int(material.get("providerCount") or 0)==visible, (material.get("providerCount"),visible)
 if "expectedProviderCount" in material:
     assert int(material.get("expectedProviderCount") or 0)==visible, (material.get("expectedProviderCount"),visible)

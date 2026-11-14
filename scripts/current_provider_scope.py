@@ -23,6 +23,7 @@ assert ACTIVE_DIR.name == "providers"
 DISABLED_DIR = (ROOT / "provider-disabled").resolve()
 OLD_DIR = (ROOT / "provider-old").resolve()
 MANIFEST = ROOT / "manifest.json"
+PROVENANCE = ROOT / "PROVENANCE.json"
 
 
 def cid(value: Any) -> str:
@@ -112,6 +113,39 @@ def visible_provider_ids() -> set[str]:
     if len(ids) != len(visible_provider_rows()):
         raise RuntimeError("visible provider identity collision")
     return ids
+
+
+def pending_provider_ids() -> set[str]:
+    """Bulk-staged candidates are catalogue-visible but not runtime authority.
+
+    Pending artifacts deliberately live under provider-disabled/ until a separate
+    proof-driven activation transaction moves their exact bytes into providers/.
+    They therefore must not enlarge execution/static/materialization authority or
+    enter disabled-retention simply because they are visible in a projection.
+    """
+    if not PROVENANCE.is_file():
+        return set()
+    raw = json.loads(PROVENANCE.read_text(encoding="utf-8"))
+    providers = raw.get("providers") if isinstance(raw, dict) else {}
+    if not isinstance(providers, dict):
+        raise RuntimeError("PROVENANCE providers map is invalid")
+    return {
+        cid(provider)
+        for provider, row in providers.items()
+        if cid(provider)
+        and isinstance(row, dict)
+        and str(row.get("activation_mode") or "").strip() == "bulk_onboarding_pending"
+        and row.get("activation_eligible") is not True
+    }
+
+
+def runtime_visible_provider_ids() -> set[str]:
+    """Global visible identities that are legitimate current runtime/ledger scope."""
+    return visible_provider_ids() - pending_provider_ids()
+
+
+def runtime_visible_provider_count() -> int:
+    return len(runtime_visible_provider_ids())
 
 
 def active_provider_count() -> int:

@@ -9,7 +9,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
-from current_provider_scope import visible_provider_count  # noqa: E402
+from current_provider_scope import runtime_visible_provider_count  # noqa: E402
 
 WORKFLOW = ROOT / ".github/workflows/provider-v3-reconstruct-all.yml"
 ENTRY = ROOT / "scripts/enrich_provider_v3_static_knowledge.py"
@@ -97,7 +97,7 @@ assert any(
 ), uhd
 
 providers = knowledge.get("providers")
-assert isinstance(providers, dict) and len(providers) == visible_provider_count()
+assert isinstance(providers, dict) and len(providers) == runtime_visible_provider_count()
 assert knowledge.get("legacyProviderJsExecuted") is False
 assert knowledge.get("upstreamJsExecuted") is False
 

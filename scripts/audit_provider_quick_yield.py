@@ -21,6 +21,7 @@ if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
 from rotating_corpus import default_seed, provider_census_candidates
+from current_provider_scope import pending_provider_ids
 
 ROOT = Path(__file__).resolve().parents[1]
 MANIFEST = ROOT / "manifest.json"
@@ -249,12 +250,15 @@ def build_tasks(provider_filter: set[str] | None = None, *, history: dict[str, A
 
     tasks: list[dict[str, Any]] = []
     providers = 0
+    pending = pending_provider_ids()
     for row in manifest.get("scrapers") or []:
         if not isinstance(row, dict):
             continue
         provider_id = str(row.get("id") or "").strip().casefold()
         filename = str(row.get("filename") or "").strip()
         if not provider_id or not filename or not (ROOT / filename).is_file():
+            continue
+        if provider_id in pending:
             continue
         if provider_filter is not None and provider_id not in provider_filter:
             continue
@@ -860,10 +864,12 @@ def _shard_filter(provider_filter: set[str] | None, shard_count: int, shard_inde
         raise ValueError(f"shard index {shard_index} outside [0,{shard_count})")
     if provider_filter is None:
         manifest = load(MANIFEST)
+        pending = pending_provider_ids()
         provider_filter = {
             str(row.get("id") or "").strip().casefold()
             for row in manifest.get("scrapers") or []
             if isinstance(row, dict) and str(row.get("id") or "").strip()
+            and str(row.get("id") or "").strip().casefold() not in pending
         }
     return {provider for provider in provider_filter if _provider_shard(provider, shard_count) == shard_index}
 
@@ -875,7 +881,11 @@ def _scope_provider_filter(scope: str, status_file: Path, explicit: list[str]) -
         for value in str(item or "").split(",")
         if str(value or "").strip()
     }
+    pending = pending_provider_ids()
     if requested:
+        blocked = sorted(requested & pending)
+        if blocked:
+            raise ValueError("pending onboarding providers are non-executable census targets: " + ",".join(blocked))
         return requested, "explicit"
     if scope == "all":
         return None, "all"
@@ -903,6 +913,7 @@ def _scope_provider_filter(scope: str, status_file: Path, explicit: list[str]) -
         str(row.get("id") or "").strip().casefold()
         for row in manifest.get("scrapers") or []
         if isinstance(row, dict) and str(row.get("id") or "").strip()
+        and str(row.get("id") or "").strip().casefold() not in pending
     }
     unresolved.update(current - known)
     return unresolved, "unresolved"

@@ -14,10 +14,11 @@ mod = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(mod)
 
 
-from current_provider_scope import visible_provider_count
+from current_provider_scope import pending_provider_ids, runtime_visible_provider_count
 
 tasks, provider_count = mod.build_tasks()
-assert provider_count == visible_provider_count(), (provider_count, visible_provider_count())
+assert provider_count == runtime_visible_provider_count(), (provider_count, runtime_visible_provider_count())
+assert not ({row.get("provider_id") for row in tasks} & pending_provider_ids())
 
 
 def task(provider: str, semantic: str) -> dict:
