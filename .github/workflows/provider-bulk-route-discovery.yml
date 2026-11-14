@@ -108,7 +108,7 @@ jobs:
       - name: Select optional residential exit
         id: residential_exit
         continue-on-error: true
-        if: ${{ steps.tailscale_connect.outcome == 'success' && env.TS_EXIT_NODE != '' }}
+        if: ${{ env.TS_EXIT_NODE != '' }}
         shell: bash
         run: |
           set -euo pipefail
