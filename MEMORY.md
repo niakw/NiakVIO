@@ -1,3 +1,9 @@
+## 2026-11-15 — Learning clean reconstruction now uses the Global + France catalogue union
+
+- Brain Learning runs 43767643223 and 43768412945 correctly selected/staged a batch, then clean reconstruction dropped the same France-only identities because `discover_candidates.py` built its local baseline from Global `manifest.json` only. Exact catalogue inspection confirmed all nine providers named by the latest failure are `{general:false,vf:true}` active rows in `provider_catalog.json`.
+- ProviderBase remains a derived NiakVIO artifact. Discovery now takes local baseline metadata from the authoritative catalogue union and treats the current content-addressed provider bytes as static knowledge only while `build_clean_provider_seed` + structured DATA create the clean executable seed. No provider-specific ProviderBase is authored by hand.
+- New regression `tests/learning_catalog_union_reconstruction_test.py` checks a synthetic Global/VF-only catalogue and the live repository invariant that every active France-only local provider is present in the reconstruction baseline. Full Workflow Gate / Learning replay still required before claiming the nine-provider stage is fixed.
+
 ## 2026-11-15 — Workflow security policy aligned with targeted stale-alert retirement
 
 - CORE Workflow Gate 43764800576 and Provider Non-Regression 43764800564 failed before provider execution because `tests/workflow_security_policy_test.py` still required the obsolete full-history CodeQL analysis-deletion helper after the workflow had moved to the narrower exact-alert retirement path.

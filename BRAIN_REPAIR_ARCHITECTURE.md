@@ -1,3 +1,7 @@
+## 2026-11-15 — ProviderBase derivation must consume the catalogue union
+
+ProviderBase is derived from NiakVIO's structured provider object (DATA/capability/owned Lego) and must not be manually authored as a prerequisite to Brain Learning. Clean reconstruction uses `provider_catalog.json` as the projection authority so Global and strict France-only providers enter the same baseline. Current provider or upstream JavaScript may contribute bounded static knowledge only; it is never the executable seed. A reconstruction stage that loses a catalogue-owned provider is a pipeline failure, not a provider repair failure.
+
 ## 2026-11-15 — Pinned external Brain source reference
 
 The public `niakw/NiakVIO-Brain-LLM` repository is referenced through the Git submodule `brain-llm/`. The parent repository records an exact external commit; the initial pin is `ffe1444c74529c3641d065711bb5dc434f8dd013`. This is a source-inspection and reproducibility reference only. The existing in-tree runtime, integration boundaries and acceptance checks remain authoritative. Submodule initialization is explicit (`git submodule update --init brain-llm`); changing its pin does not by itself publish providers or change a client-visible release. No automatic submodule checkout or execution is added to workflows.

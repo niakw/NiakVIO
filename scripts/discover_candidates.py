@@ -735,6 +735,50 @@ def clean_provider_model(
     }
 
 
+
+def local_catalog_baseline_entries(root: Path = ROOT) -> list[dict[str, Any]]:
+    """Return the current local Provider v3 catalogue union, including France-only rows.
+
+    provider_catalog.json is the projection authority for Global + VF ownership.
+    The returned rows are metadata only; executable bytes remain the current local
+    content-addressed provider artifact and are treated as knowledge input when a
+    clean ProviderBase seed is rebuilt.
+    """
+    path = root / "provider_catalog.json"
+    try:
+        catalog = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise RuntimeError(f"invalid provider_catalog.json: {exc}") from exc
+    providers = catalog.get("providers") if isinstance(catalog, dict) else None
+    if not isinstance(providers, list):
+        raise RuntimeError("provider_catalog.json: providers list required")
+    output: list[dict[str, Any]] = []
+    seen: set[str] = set()
+    for record in providers:
+        if not isinstance(record, dict):
+            continue
+        provider_id = canonical_id(str(record.get("canonicalId") or ""))
+        scraper = record.get("scraper") if isinstance(record.get("scraper"), dict) else {}
+        projections = record.get("projections") if isinstance(record.get("projections"), dict) else {}
+        if not provider_id or not (projections.get("general") is True or projections.get("vf") is True):
+            continue
+        if provider_id in seen:
+            raise RuntimeError(f"provider_catalog.json: duplicate canonical provider {provider_id}")
+        row = dict(scraper)
+        row["id"] = provider_id
+        filename = str(row.get("filename") or "").strip()
+        if filename.startswith("../"):
+            filename = filename[3:]
+        row["filename"] = filename
+        row["_catalog_projections"] = {
+            "general": projections.get("general") is True,
+            "vf": projections.get("vf") is True,
+        }
+        output.append(row)
+        seen.add(provider_id)
+    return output
+
+
 def reconstruction_manifest_entry(
     provider_id: str,
     entry: dict[str, Any],
@@ -1182,16 +1226,12 @@ def main() -> int:
 
     write_pending(upstream_lkg_pending, stage)
 
-    # Stage the currently published artifacts as low-priority baseline variants.
-    # They are executed by the exact same movie/TV/anime health checks as fresh
-    # upstream candidates. When an upstream update regresses to zero streams,
-    # the last working local artifact can therefore win promotion instead of
-    # being overwritten and pruned before the regression is visible in Nuvio.
-    manifest_path = ROOT / "manifest.json"
-    try:
-        published_manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError):
-        published_manifest = {"scrapers": []}
+    # Stage the current local catalogue union as low-priority baseline variants.
+    # provider_catalog.json owns Global + France-only projection membership; using
+    # manifest.json alone silently dropped VF-only providers from Learning.
+    # Current provider bytes are static-knowledge input only when a clean seed is
+    # required; ProviderBase remains deterministically derived from NiakVIO DATA.
+    published_rows = local_catalog_baseline_entries(ROOT)
     baseline_dir = providers_dir / "published-baseline"
     baseline_dir.mkdir(parents=True, exist_ok=True)
     try:
@@ -1200,7 +1240,7 @@ def main() -> int:
         lkg_registry = {"providers": {}}
     lkg_records = lkg_registry.get("providers", {}) if isinstance(lkg_registry, dict) else {}
     known_keys = {str(item.get("key")) for item in candidates}
-    for entry in published_manifest.get("scrapers", []):
+    for entry in published_rows:
         if not isinstance(entry, dict):
             continue
         provider_id = canonical_id(str(entry.get("id") or entry.get("name") or ""))
@@ -1310,7 +1350,7 @@ def main() -> int:
     # manifest has moved to another hash. The pruner also retains these files.
     existing_entries = {
         canonical_id(str(entry.get("id") or entry.get("name") or "")): entry
-        for entry in published_manifest.get("scrapers", []) if isinstance(entry, dict)
+        for entry in published_rows if isinstance(entry, dict)
     }
     for provider_id, record in sorted(lkg_records.items() if isinstance(lkg_records, dict) else []):
         provider_id = canonical_id(str(provider_id))
