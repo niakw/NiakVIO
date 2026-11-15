@@ -83,12 +83,23 @@ if 'CodeQL · JS Legacy Category Reconciliation' in codeql or \
         'category: ".github/workflows/codeql.yml:analyze"' in codeql:
     errors.append('codeql.yml: obsolete monolithic JS category must not be recreated')
 retire = (WORKFLOWS / 'retire-stale-codeql-2531.yml').read_text(encoding='utf-8')
-if 'delete_stale_codeql_2531_configuration.py' not in retire:
-    errors.append('retire-stale-codeql-2531.yml: stale configuration deletion script is required')
-cleanup = (ROOT / 'scripts' / 'delete_stale_codeql_2531_configuration.py').read_text(encoding='utf-8')
-for marker in ('code-scanning/analyses', '"DELETE"', 'confirm_delete=true', 'scope:core'):
+if 'retire_stale_codeql_2531.py' not in retire:
+    errors.append('retire-stale-codeql-2531.yml: targeted stale-alert retirement script is required')
+if 'delete_stale_codeql_2531_configuration.py' in retire:
+    errors.append('retire-stale-codeql-2531.yml: unbounded stale-analysis deletion must not be automatic')
+cleanup = (ROOT / 'scripts' / 'retire_stale_codeql_2531.py').read_text(encoding='utf-8')
+for marker in (
+    'verify_current_source()',
+    'scan_source_sha()',
+    'evidence_only_drift',
+    'code-scanning/analyses',
+    'scope:core',
+    '"PATCH"',
+    'dismissed_reason',
+    'dismissed_comment',
+):
     if marker not in cleanup:
-        errors.append(f'delete_stale_codeql_2531_configuration.py: missing fail-closed marker {marker}')
+        errors.append(f'retire_stale_codeql_2531.py: missing fail-closed marker {marker}')
 if "Bulk dismissal requested by the repository owner" in codeql:
     errors.append('codeql.yml: blanket CodeQL alert dismissal is forbidden')
 

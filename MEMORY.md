@@ -1,3 +1,9 @@
+## 2026-11-15 — Workflow security policy aligned with targeted stale-alert retirement
+
+- CORE Workflow Gate 43764800576 and Provider Non-Regression 43764800564 failed before provider execution because `tests/workflow_security_policy_test.py` still required the obsolete full-history CodeQL analysis-deletion helper after the workflow had moved to the narrower exact-alert retirement path.
+- Align the policy test to require `retire_stale_codeql_2531.py`, exact-source/workflow-run binding, evidence-only drift checking, current JS Core analysis proof, PATCH dismissal metadata and explicit absence of the full-history deletion helper from automatic workflow authority. No provider bytes, manifest, scanner query, severity or publication gate changed.
+- Exact-SHA CI must turn green before this contract fix is considered validated.
+
 ## 2026-11-15 — Targeted CodeQL #2531 retirement replaces unbounded analysis deletion
 
 - Repeated stale-category jobs failed while enumerating >4,000 historical CodeQL analyses. The repository already contains a narrower fail-closed retirement path: verify the exact current source, bind the successful CodeQL workflow-run SHA, require a current maintained JS Core analysis, reject any other current High/Critical Core finding, verify the exact historical #2531 identity, then request dismissal as a historical test-only finding and rerun Final Gate.
