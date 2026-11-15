@@ -65,9 +65,14 @@ def legacy_js_categories(rows: list[dict]) -> dict[str, list[dict]]:
 
 
 def list_main_analyses() -> list[dict]:
+    # The configuration we are retiring is historical. GitHub's default
+    # analysis listing is newest-first, which forced us to walk thousands of
+    # maintained analyses before reaching the obsolete category. Query oldest
+    # first so the stale configuration is found within a bounded window.
     rows = guard.read_pages(
-        "repos/" + REPO + "/code-scanning/analyses?ref=" + MAIN_REF,
-        max_pages=80,
+        "repos/" + REPO + "/code-scanning/analyses?ref=" + MAIN_REF
+        + "&sort=created&direction=asc",
+        max_pages=40,
     )
     if not all(isinstance(row, dict) for row in rows):
         raise RuntimeError("Invalid CodeQL analysis listing")
