@@ -6,24 +6,63 @@ from current_provider_scope import active_provider_rows
 
 ROOT=Path(__file__).resolve().parents[1]
 
+def canonical_id(value)->str:
+    return str(value or "").strip().casefold().replace("_","-")
+
+def normalize_projection_row(row:dict, *, france:bool)->dict:
+    current=dict(row)
+    filename=str(current.get("filename") or "").strip()
+    if france and filename.startswith("../"):
+        filename=filename[3:]
+    current["filename"]=filename
+    return current
+
+def projection_rows(manifest_path:Path, france_manifest_path:Path|None=None)->dict[str,dict]:
+    payload=json.loads(manifest_path.read_text(encoding="utf-8"))
+    by_id={}
+    for row in payload.get("scrapers") or []:
+        if not isinstance(row,dict):
+            continue
+        pid=canonical_id(row.get("id"))
+        if not pid or pid in by_id:
+            raise SystemExit(f"invalid/duplicate provider id in {manifest_path}: {pid}")
+        by_id[pid]=normalize_projection_row(row,france=False)
+    if france_manifest_path is None and manifest_path.resolve()==(ROOT/"manifest.json").resolve():
+        france_manifest_path=ROOT/"vf"/"manifest.json"
+    if france_manifest_path is not None and france_manifest_path.is_file():
+        vf=json.loads(france_manifest_path.read_text(encoding="utf-8"))
+        seen=set()
+        for row in vf.get("scrapers") or []:
+            if not isinstance(row,dict):
+                continue
+            pid=canonical_id(row.get("id"))
+            if not pid or pid in seen:
+                raise SystemExit(f"invalid/duplicate provider id in {france_manifest_path}: {pid}")
+            seen.add(pid)
+            projected=normalize_projection_row(row,france=True)
+            existing=by_id.get(pid)
+            if existing is not None:
+                if (bool(existing.get("enabled") is not False) != bool(projected.get("enabled") is not False)
+                    or str(existing.get("filename") or "") != str(projected.get("filename") or "")):
+                    raise SystemExit(f"{pid}: Global/France projection asset or enabled-state mismatch")
+                continue
+            by_id[pid]=projected
+    return by_id
+
 def main()->int:
     p=argparse.ArgumentParser()
     p.add_argument("--manifest",type=Path,default=ROOT/"manifest.json")
     p.add_argument("--stage",type=Path,default=ROOT/"staging-published")
+    p.add_argument("--france-manifest",type=Path,default=None,help="Optional France projection for targeted union tests.")
     p.add_argument("--provider",action="append",default=[],help="Optional exact provider id filter; may be repeated.")
     args=p.parse_args()
-    requested={str(x or "").strip().casefold().replace("_","-") for x in args.provider if str(x or "").strip()}
+    requested={canonical_id(x) for x in args.provider if str(x or "").strip()}
     # Targeted Learning must scale with the requested cohort, not the full
     # catalogue. When explicit providers are supplied, validate only those
     # manifest rows/files. Full physical-folder validation remains the default
     # unfiltered publication contract.
     if requested:
-        payload=json.loads(args.manifest.read_text(encoding="utf-8"))
-        by_id={
-            str(row.get("id") or "").strip().casefold().replace("_","-"): row
-            for row in payload.get("scrapers") or []
-            if isinstance(row,dict) and str(row.get("id") or "").strip()
-        }
+        by_id=projection_rows(args.manifest,args.france_manifest)
         missing=sorted(requested-set(by_id))
         if missing: raise SystemExit("published provider stage missing requested ids: "+",".join(missing))
         rows=[]

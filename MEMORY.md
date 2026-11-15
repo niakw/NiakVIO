@@ -1,3 +1,9 @@
+## 2026-11-15 — Brain Fast-Handoff targeted stage includes France-only runtime identities
+
+- Learning run 43727221123 failed before provider/model execution because its target cohort included France-only identities while `build_published_provider_stage.py` searched only Global `manifest.json`. Missing requested IDs included 1jour1film0626, cinematheque-de-bretagne, cinetimes, dulourd, fawesome, fexini, film-a-revoir, frembed, frenchstream, kidraz, movix-fr, nakios, neobam, voirserie, youtitou and zone-telechargement.
+- Targeted published-stage selection now uses the Global+France projection union, normalizes France `../providers/...` paths to repository-root `providers/...`, and fails closed if a shared Global/France identity disagrees on enabled state or asset.
+- Unfiltered publication staging remains Global active authority. Regression covers France-only inclusion and projection-drift rejection. This repairs Brain staging scope only; no provider mutation, playback success or activation is claimed.
+
 ## 2026-11-15 — Release finalizer reconciles exact CONFIG authority before materialization
 
 - Verify & Publish on the preceding production state failed because active Chillflix `providers/chillflix-32ceb4b6c511b1cb.js` was not a minimizer fixed-point (35,621 bytes removable). The current Global manifest exposes 46 active identities while the retained materialization report describes 42 providers from an older workspace generation and omits Chillflix plus other currently active identities.

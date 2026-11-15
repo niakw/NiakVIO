@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import importlib.util
 import json
 import subprocess
 import sys
@@ -8,6 +9,33 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 
 ROOT=Path(__file__).resolve().parents[1]
+sys.path.insert(0,str(ROOT/"scripts"))
+spec=importlib.util.spec_from_file_location("published_stage_builder",ROOT/"scripts"/"build_published_provider_stage.py")
+module=importlib.util.module_from_spec(spec)
+assert spec and spec.loader
+spec.loader.exec_module(module)
+
+with TemporaryDirectory() as td:
+    td=Path(td)
+    general=td/"manifest.json"
+    france=td/"vf.json"
+    general.write_text(json.dumps({"scrapers":[{"id":"shared","enabled":True,"filename":"providers/shared.js"}]})+"\n",encoding="utf-8")
+    france.write_text(json.dumps({"scrapers":[
+        {"id":"shared","enabled":True,"filename":"../providers/shared.js"},
+        {"id":"fr-only","enabled":True,"filename":"../providers/fr-only.js"}
+    ]})+"\n",encoding="utf-8")
+    union=module.projection_rows(general,france)
+    assert set(union)=={"shared","fr-only"}
+    assert union["fr-only"]["filename"]=="providers/fr-only.js"
+    bad=td/"vf-bad.json"
+    bad.write_text(json.dumps({"scrapers":[{"id":"shared","enabled":True,"filename":"../providers/other.js"}]})+"\n",encoding="utf-8")
+    try:
+        module.projection_rows(general,bad)
+    except SystemExit as exc:
+        assert "projection asset or enabled-state mismatch" in str(exc)
+    else:
+        raise AssertionError("shared Global/France drift must fail closed")
+
 manifest=json.loads((ROOT/"manifest.json").read_text(encoding="utf-8"))
 rows=[
     row for row in manifest.get("scrapers") or []
@@ -37,6 +65,7 @@ with TemporaryDirectory() as td:
 source=(ROOT/"scripts"/"build_published_provider_stage.py").read_text(encoding="utf-8")
 assert "if requested:" in source
 assert "rows=active_provider_rows()" in source
+assert "projection_rows(args.manifest,args.france_manifest)" in source
 assert source.index("if requested:") < source.index("rows=active_provider_rows()")
 workflow=(ROOT/".github/workflows/brain-learning-lab.yml").read_text(encoding="utf-8")
 assert 'timeout --signal=TERM --kill-after=5s 30s "${args[@]}"' in workflow
