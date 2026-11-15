@@ -74,18 +74,24 @@ assert plan["dynamicVariantProviderCount"]==2
 assert plan["dynamicVariantProviders"]==["carry","green"]
 assert plan["dynamicVariantCurrentObservedProviders"]==["cleared","green"]
 assert plan["dynamicVariantFallbackUsed"] is True
-assert plan["groupCount"]==5
+assert plan["groupCount"]==6
 groups={row["repairScope"]:row for row in plan["groups"] if row["repairScope"]!="harness-compatibility"}
 harness={row["transportSignature"]:row for row in plan["groups"] if row["repairScope"]=="harness-compatibility"}
 assert groups["terminal-extraction"]["providers"]==["a","b"]
+assert groups["terminal-extraction"]["runtimeFamilySignature"]=="catalogue-html-embed"
 assert groups["terminal-extraction"]["providerLocalFallback"]=="only-after-shared-profile-failure"
 assert harness["residential-exit-all-challenged"]["providers"]==["c"]
 assert harness["browser-profile-only"]["providers"]==["d"]
 assert harness["residential-exit-all-challenged"]["harnessTransportClasses"]==["residential-exit-all-challenged"]
 assert harness["browser-profile-only"]["harnessTransportClasses"]==["browser-profile-only"]
-assert groups["transport"]["providers"]==["e","f"]
-assert groups["transport"]["evidenceDepths"]==["lookup","none"]
-assert groups["transport"]["dominantIssues"]==["network_exception","network_http_error"]
+transport=[row for row in plan["groups"] if row["repairScope"]=="transport"]
+assert {row["runtimeFamilySignature"]:row["providers"] for row in transport}=={
+    "site-html":["e"], "alternate-html":["f"]
+}
+assert {row["runtimeFamilySignature"] for row in transport}=={"site-html","alternate-html"}
+assert all(row["transportSignature"]=="not-applicable" for row in transport)
+assert sorted({depth for row in transport for depth in row["evidenceDepths"]})==["lookup","none"]
+assert sorted({issue for row in transport for issue in row["dominantIssues"]})==["network_exception","network_http_error"]
 assert groups["variant-coverage"]["providers"]==["carry","green"]
 assert groups["variant-coverage"]["dynamicVariantProviders"]==["carry","green"]
 assert "cleared" not in plan["dynamicVariantProviders"]

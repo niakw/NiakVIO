@@ -1,3 +1,9 @@
+## 2026-11-16 — Runtime topology is part of Brain repair-family identity
+
+- The coarse batch planner previously grouped provider-owned failures by repair scope + capability strategy while keeping source runtime family only as metadata. That allowed different provider topologies to share one Learning oracle before any proof that their executable mechanisms were equivalent.
+- Provider-owned repair groups now include a normalized runtime-family signature when known. Harness-owned failures continue to group by transport signature because client/transport causality outranks parser topology there. Unknown runtime families remain together under an explicit `unknown` bucket rather than creating provider-local noise.
+- Regression coverage now proves two transport providers with the same capability strategy but different runtime families split into distinct causal groups, while same-family terminal providers stay batched. This is scheduling/causal classification only; no provider bytes, manifests, network access, acceptance threshold or playback authority changed.
+
 ## 2026-11-16 — Evidence-ranked causal-family oracle selection
 
 - ProviderBase reconstruction now consumes the Global + France catalogue union; a missing derived base is treated as a pipeline failure, never a provider-specific authoring task.

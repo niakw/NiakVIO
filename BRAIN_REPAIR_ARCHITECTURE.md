@@ -1,3 +1,7 @@
+## 2026-11-16 — Provider topology participates in causal-family grouping
+
+For provider-owned failures, a shared repair scope and capability label are insufficient to establish a reusable oracle. The batch-plan identity includes the known source runtime family so HTML/catalogue, API-oriented and other distinct provider mechanisms do not inherit one another's Learning result by default. Harness-owned failures remain keyed by the already-proved transport signature. Unknown topology remains a bounded shared bucket until better evidence exists. A family oracle still transfers strategy context only; each sibling needs independent materialized-byte and playback/identity validation.
+
 ## 2026-11-16 — Causal-family oracle quality is evidence-ranked
 
 An explicit Learning cohort is an eligibility boundary, not an execution order. For each repair family, select a representative with the strongest current provider-side observation: prefer an observed failing provider that does not require route rediscovery, has successful/accessibile provider-server evidence, and has bounded host evidence. Do not choose a healthy sibling as the repair oracle solely because its transport is cleaner. Keep every non-selected sibling pending; oracle memory is reusable strategy context only, never publication authority.

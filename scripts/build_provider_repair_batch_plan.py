@@ -244,7 +244,16 @@ def main()->int:
         # family with "challenged even through residential exit". Mixing those
         # signatures teaches contradictory client strategies.
         harness_class=scalar(row.get("harnessTransportClass"), "not-applicable")
-        key=(scope,strategy,harness_class) if scope=="harness-compatibility" else (scope,strategy)
+        runtime_family_key = family if family not in {"unknown", "none", "not-applicable"} else "unknown"
+        # Provider-owned repair families must preserve runtime topology. The same
+        # capability strategy over HTML, JSON/API or other provider families is
+        # not evidence that one oracle applies to every topology. Harness-owned
+        # failures remain grouped by transport signature instead.
+        key=(
+            (scope,strategy,"harness:"+harness_class)
+            if scope=="harness-compatibility"
+            else (scope,strategy,"runtime:"+runtime_family_key)
+        )
         groups[key].append({
             "provider":pid,
             "status":scalar(row.get("status")),
@@ -265,7 +274,17 @@ def main()->int:
     out_groups=[]
     for key,members in groups.items():
         scope,strategy=key[:2]
-        transport_signature=(key[2] if len(key)>2 else "not-applicable")
+        signature_key = key[2] if len(key)>2 else ""
+        transport_signature=(
+            signature_key.split(":",1)[1]
+            if signature_key.startswith("harness:")
+            else "not-applicable"
+        )
+        runtime_family_signature=(
+            signature_key.split(":",1)[1]
+            if signature_key.startswith("runtime:")
+            else "not-applicable"
+        )
         providers=sorted(m["provider"] for m in members)
         families=sorted({scalar(m.get("runtimeFamily")) for m in members})
         depths=sorted({scalar(m.get("evidenceDepth")) for m in members})
@@ -282,6 +301,7 @@ def main()->int:
             "groupId":"|".join(key),
             "repairScope":scope,
             "runtimeFamilies":families,
+            "runtimeFamilySignature":runtime_family_signature,
             "capabilityStrategy":strategy,
             "evidenceDepths":depths,
             "dominantIssues":issues,
