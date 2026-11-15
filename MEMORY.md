@@ -1,3 +1,10 @@
+## 2026-11-15 — Current-head release retry after Chillflix publication-order diagnosis
+
+- Physical-Mac replay on NiakVIO `99682195` proved current production bytes are functionally poor on the user's three fixtures: Spartacus S00E01 0 terminal providers, Fahrenheit 451 (2018) 0, VisionQuest S01E01 2 (Chillflix, Webflix). This is real current-byte evidence, not a hosted-network inference.
+- Historical/current comparison isolated Chillflix publication drift: exact source DATA and Lego are unchanged from `373924ae`, where targeted materialization produced `providers/chillflix-671804b880ee45c4.js` and Mac replay returned terminal streams for Spartacus, VisionQuest and Fahrenheit. Current manifest still serves `providers/chillflix-32ceb4b6c511b1cb.js`; current all-provider Mac replay gives only VisionQuest for Chillflix.
+- Release workflow bug: offline proof was re-signed before a later reapply/minimizer/publication reconciliation, allowing proof/hash/filename to become stale again. Commit `012b242` adds a second exact-byte rebind after `reconcile_active_provider_publication.py` and regression ordering checks. Commit `6b6941d` separately scales stale CodeQL history pagination; no release gate is weakened.
+- Trigger a fresh canonical finalization from current main. Success must produce a new content-addressed Chillflix filename and synchronized provider/manifest version bump through normal release logic; do not manually edit manifest versions.
+
 ## 2026-11-15 — Bounded stale-CodeQL history scan raised to repository scale
 
 - Stale-category retirement repeatedly fails with `Security listing exceeded bounded pages` while enumerating main CodeQL analyses oldest-first. The previous bound was 40 pages × 100 = 4,000 analyses; this repository's current history exceeds that bound.
