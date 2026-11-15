@@ -1,3 +1,9 @@
+## 2026-11-15 — Canonical release retry with both publication fixes
+
+- Source main `b944bef3d038726b5e2b73a7c99e5ce47be7922f` includes the Chillflix final-proof rebind ordering fix and the corrected Global+France static-knowledge audit scope. Trigger a fresh canonical finalizer rather than weakening Workflow Gate.
+- The previous writer 43759341588 proved it can reach 46/46 active materialization and active-publication fixed point, but its source SHA lacked the corrected projection scope audit. This retry must pass that audit and all later integrity/version/freshness stages before publication.
+- Client-visible manifest/provider versions remain unchanged until the finalizer commits a successful synchronized release.
+
 ## 2026-11-15 — Static audit must use Global+France runtime-visible authority
 
 - Release finalizer run 43759341588 reached 46/46 active materialization and publication fixed-point, then failed in `audit_provider_v3_static.py` with `staticKnowledgeProviderCount=108` versus legacy Global-only visible count 78.

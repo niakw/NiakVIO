@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
-  "requested_at": "2026-11-15T21:49:00+01:00",
-  "source_main_sha": "6b6941da0468a6fc880c5b3219964d0e07617cd7",
-  "accepted_main_sha": "6b6941da0468a6fc880c5b3219964d0e07617cd7",
+  "requested_at": "2026-11-15T22:20:00+01:00",
+  "source_main_sha": "b944bef3d038726b5e2b73a7c99e5ce47be7922f",
+  "accepted_main_sha": "b944bef3d038726b5e2b73a7c99e5ce47be7922f",
   "target_release": "auto",
-  "reason": "Finalize current main after fixing final offline-proof rebind ordering. Canonical Chillflix DATA/Lego still rematerializes to the Mac-proven 671804b generation while production manifest still points to 32ceb4. Finalizer must rebuild exact Provider-v3 bytes, rebind offline proof after final publication reconciliation, bump provider+manifest versions, rebuild projections/hashes, and publish atomically without weakening playback/freshness gates."
+  "reason": "Retry canonical release after two generic pipeline fixes: final offline proof rebind after active publication reconciliation, and static-knowledge audit against the Global+France runtime-visible union. Preserve Mac-proven Chillflix DATA/Lego; rematerialize exact bytes, validate freshness/static authority, bump provider+manifest versions and publish atomically."
 }
