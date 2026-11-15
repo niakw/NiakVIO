@@ -19,6 +19,9 @@ for token in (
     "git diff --cached --binary --full-index",
     "git apply --3way --index",
     "provider: bulk activate $PROVIDER_COUNT offline-unverified",
+    "provider: bulk stage $PROVIDER_COUNT pending candidates",
+    "FIELD_BULK_PUBLICATION_SUMMARY",
+    "publication_mode",
     "actions: write",
     "gh workflow run provider-bulk-route-discovery.yml --ref main",
     "FIELD_BULK_CONTINUATION",
@@ -89,6 +92,9 @@ assert "ci(census-sharded):" in census
 # A single bad provider must not roll back other exact-byte eligible members of a large wave.
 assert 'test "$count" -gt 0' in bulk
 assert 'test "$count" -le "$expected"' in bulk
+assert 'publish_count="$staged"' in bulk
+assert 'activation_mode=stage-only' in bulk
+assert 'automation/provider-bulk-onboarding-stage.json' in bulk
 assert 'PROVIDER_ACTIVE_TARGET_PROGRESS' in bulk
 assert 'test "$count" -eq "$expected"' not in bulk
 activation=(ROOT/"scripts/activate_bulk_offline_proven_providers.py").read_text(encoding="utf-8")
