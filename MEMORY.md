@@ -1,3 +1,9 @@
+## 2026-11-16 — Evidence-ranked causal-family oracle selection
+
+- ProviderBase reconstruction now consumes the Global + France catalogue union; a missing derived base is treated as a pipeline failure, never a provider-specific authoring task.
+- Learning's explicit cohort frontier now chooses the most useful current witness inside each causal family instead of accepting caller order blindly. Ranking is fail-closed and diagnostic-only: non-healthy, no route rediscovery, successful/accessibile server evidence, and richer bounded host evidence are preferred. Healthy siblings are not used as repair oracles merely because they have cleaner transport.
+- Synthetic tests cover a noisy first provider, a stronger observed failure, a healthy sibling, and deterministic fallback without diagnostics. Siblings remain pending and still require their own compile/apply/materialize/execute/identity/playback/non-regression validation before publication. No provider bytes, manifest, domain, request logic or acceptance threshold changed.
+
 ## 2026-11-15 — Causal-family oracle replay after ProviderBase catalogue-union repair
 
 - Brain main `cb1fddf4ee8b06be9a29bb0a69f1210d925cb93e` has green CI 43769592169 and green read-only security inventory. NiakVIO clean reconstruction now derives ProviderBase candidates from the Global + France catalogue union; Learning run 43771652298 proved the former missing-provider stage can pass, but it started from pre-frontier scheduling.

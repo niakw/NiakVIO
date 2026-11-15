@@ -71,7 +71,7 @@ for needle in (
 # previously crashed before provider 1 because causal_waves read fair_handoff
 # before the local had been assigned. Keep the runtime dependency order locked.
 fair_assignment = source.index("fair_handoff = bool(handoff_priority) and not bool(args.provider)")
-frontier_assignment = source.index("family_frontier, family_deferred = causal_family_frontier(order, batch_plan)")
+frontier_assignment = source.index("family_frontier, family_deferred = causal_family_frontier(order, batch_plan, by_id)")
 wave_assignment = source.index("causal_waves = causal_family_waves(full_handoff_order, batch_plan, max_parallel=4) if fair_handoff else []")
 assert fair_assignment < frontier_assignment < wave_assignment, (fair_assignment, frontier_assignment, wave_assignment)
 assert "fastRepairHandoffDeferredFamilySiblings" in source
@@ -81,6 +81,40 @@ assert "family_deferred = []" not in source
 assert 'p.add_argument("--provider-filter", default=""' in source
 assert 'requested_set = set(explicit_cohort)' in source
 assert 'queue["explicitLearningCohort"] = explicit_cohort' in source
+
+# One family oracle is chosen from the strongest current observation, not
+# merely the first provider in caller order. The cohort itself remains intact.
+plan = {
+    "groups": [{
+        "groupId": "family-a",
+        "providers": ["first-noisy", "second-observed", "third-healthy"],
+    }]
+}
+provider_info = {
+    "first-noisy": {
+        "status": "runtime_error", "score": 90, "needs_route_search": True,
+        "server_accessible": False, "server_successful_response": False, "host_count": 0,
+    },
+    "second-observed": {
+        "status": "no_streams", "score": 35, "needs_route_search": False,
+        "server_accessible": True, "server_successful_response": True, "host_count": 2,
+    },
+    "third-healthy": {
+        "status": "healthy", "score": 0, "needs_route_search": False,
+        "server_accessible": True, "server_successful_response": True, "host_count": 3,
+    },
+}
+frontier, deferred = mod.causal_family_frontier(
+    ["first-noisy", "second-observed", "third-healthy"], plan, provider_info
+)
+assert frontier == ["second-observed"], (frontier, deferred)
+assert deferred == ["first-noisy", "third-healthy"], (frontier, deferred)
+
+# Missing diagnostics stay deterministic and preserve caller order.
+frontier, deferred = mod.causal_family_frontier(["alpha", "beta"], {
+    "groups": [{"groupId": "family-b", "providers": ["alpha", "beta"]}]
+})
+assert frontier == ["alpha"] and deferred == ["beta"], (frontier, deferred)
 
 workflow = (ROOT / ".github/workflows/brain-learning-lab.yml").read_text(encoding="utf-8")
 assert 'TARGET_PROVIDER_COHORT: ${{ steps.learning-slot.outputs.provider_filter || \'\' }}' in workflow

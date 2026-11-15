@@ -1,3 +1,7 @@
+## 2026-11-16 — Causal-family oracle quality is evidence-ranked
+
+An explicit Learning cohort is an eligibility boundary, not an execution order. For each repair family, select a representative with the strongest current provider-side observation: prefer an observed failing provider that does not require route rediscovery, has successful/accessibile provider-server evidence, and has bounded host evidence. Do not choose a healthy sibling as the repair oracle solely because its transport is cleaner. Keep every non-selected sibling pending; oracle memory is reusable strategy context only, never publication authority.
+
 ## 2026-11-15 — Explicit Learning cohort now uses family oracles instead of serial sibling replay
 
 - Current targeted Learning cohort contains 12 providers but only three causal groups in `provider-repair-batch-plan-latest.json`: 8 × `learning|mixed_embed_resolver`, 3 × `variant-coverage|mixed_embed_resolver`, 1 × `variant-coverage|html_scraper`.

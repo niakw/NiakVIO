@@ -614,14 +614,15 @@ def causal_family_waves(
 def causal_family_frontier(
     order: list[str],
     batch_plan: dict[str, Any],
+    provider_info: dict[str, dict[str, Any]] | None = None,
 ) -> tuple[list[str], list[str]]:
-    """Select one Learning representative per causal family for this phase.
+    """Select one evidence-strong Learning oracle per causal family.
 
-    Fast-Handoff Learning exists to discover a materially new strategy, not to
-    serially replay the same hypothesis across every sibling. One representative
-    per family is enough to produce cross-provider memory; siblings remain
-    pending and return through canonical Repair, which must still prove each
-    provider independently before publication.
+    The explicit cohort remains the eligibility boundary. Within each causal
+    family prefer a provider whose current observation already reached the
+    provider server and does not require route rediscovery. This reduces the
+    chance that transport noise, not the causal family, determines the learned
+    strategy. Siblings stay pending and still require independent Repair proof.
     """
     groups = batch_plan.get("groups") if isinstance(batch_plan.get("groups"), list) else []
     provider_group: dict[str, str] = {}
@@ -636,16 +637,41 @@ def causal_family_frontier(
             if provider and provider not in provider_group:
                 provider_group[provider] = group_id
 
-    seen_families: set[str] = set()
-    frontier: list[str] = []
-    deferred: list[str] = []
-    for provider in unique(order):
+    info = provider_info if isinstance(provider_info, dict) else {}
+    family_order: list[str] = []
+    members: dict[str, list[str]] = {}
+    ordered = unique(order)
+    for provider in ordered:
         group_id = provider_group.get(provider) or f"provider-local:{provider}"
-        if group_id in seen_families:
-            deferred.append(provider)
-            continue
-        seen_families.add(group_id)
-        frontier.append(provider)
+        if group_id not in members:
+            members[group_id] = []
+            family_order.append(group_id)
+        members[group_id].append(provider)
+
+    def oracle_rank(provider: str, position: int) -> tuple[Any, ...]:
+        row = info.get(provider) if isinstance(info.get(provider), dict) else {}
+        status = str(row.get("status") or "").strip().casefold()
+        return (
+            status == "healthy",
+            bool(row.get("needs_route_search", True)),
+            row.get("server_successful_response") is not True,
+            row.get("server_accessible") is not True,
+            -max(0, int(row.get("host_count") or 0)),
+            max(0, int(row.get("score") or 0)),
+            position,
+        )
+
+    frontier: list[str] = []
+    for group_id in family_order:
+        group_members = members[group_id]
+        chosen = min(
+            enumerate(group_members),
+            key=lambda item: oracle_rank(item[1], item[0]),
+        )[1]
+        frontier.append(chosen)
+
+    chosen_set = set(frontier)
+    deferred = [provider for provider in ordered if provider not in chosen_set]
     return frontier, deferred
 
 
@@ -1451,7 +1477,7 @@ def main() -> int:
     family_frontier: list[str] = []
     family_deferred: list[str] = []
     if fair_handoff:
-        family_frontier, family_deferred = causal_family_frontier(order, batch_plan)
+        family_frontier, family_deferred = causal_family_frontier(order, batch_plan, by_id)
         # The caller's explicit cohort is an eligibility boundary, not an
         # instruction to replay every sibling serially. Execute one oracle per
         # causal family first; preserve all siblings as pending so canonical
