@@ -101,6 +101,7 @@ jobs:
           python3 scripts/finalize_provider_v3_minimizer.py --check
           python3 scripts/resign_active_offline_provider_proofs.py \
             --previous-manifest "$RUNNER_TEMP/published-manifest-baseline.json" \
+            --previous-vf-manifest "$RUNNER_TEMP/published-vf-manifest-baseline.json" \
             --apply
           python3 scripts/reapply_published_overrides.py --check
           python3 tests/published_s00_identity_rollout_test.py
