@@ -149,7 +149,13 @@ def rebind_one(
     }
 
 
-def rebind(root: Path, requested: set[str] | None = None, *, apply: bool) -> dict[str, Any]:
+def rebind(
+    root: Path,
+    requested: set[str] | None = None,
+    *,
+    apply: bool,
+    previous_manifest: Path | None = None,
+) -> dict[str, Any]:
     provenance_path = root / "PROVENANCE.json"
     provenance = load(provenance_path, {})
     prov_rows = provenance.get("providers")
@@ -157,6 +163,15 @@ def rebind(root: Path, requested: set[str] | None = None, *, apply: bool) -> dic
         raise RuntimeError("PROVENANCE.json providers map missing")
 
     rows = active_rows(root)
+    previous_files: dict[str, str] = {}
+    if previous_manifest is not None:
+        previous = load(previous_manifest, {})
+        previous_files = {
+            canon(row.get("id")): str(row.get("filename") or "").strip()
+            for row in previous.get("scrapers") or []
+            if isinstance(row, dict) and canon(row.get("id"))
+        }
+
     selected: list[tuple[str, dict[str, Any], str, dict[str, Any]]] = []
     for pid, (row, scope) in sorted(rows.items()):
         prov = prov_rows.get(pid)
@@ -164,13 +179,18 @@ def rebind(root: Path, requested: set[str] | None = None, *, apply: bool) -> dic
             continue
         if requested is not None and pid not in requested:
             continue
+        if previous_manifest is not None:
+            previous_file = previous_files.get(pid, "")
+            current_file = str(row.get("filename") or "").strip()
+            if previous_file == current_file:
+                continue
         selected.append((pid, row, scope, prov))
 
     if requested is not None:
         missing = sorted(requested - {pid for pid, *_ in selected})
         if missing:
             raise RuntimeError("requested active offline providers not eligible: " + ",".join(missing))
-    if not selected:
+    if not selected and requested is not None:
         raise RuntimeError("no active offline-contract providers selected")
 
     results = [rebind_one(root, pid, row, scope, prov) for pid, row, scope, prov in selected]
@@ -193,9 +213,16 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--providers", default="")
     ap.add_argument("--apply", action="store_true")
+    ap.add_argument("--previous-manifest", type=Path)
     args = ap.parse_args()
     requested = {canon(v) for v in str(args.providers or "").split(",") if canon(v)}
-    result = rebind(ROOT, requested or None, apply=bool(args.apply))
+    previous_manifest = args.previous_manifest.resolve() if args.previous_manifest else None
+    result = rebind(
+        ROOT,
+        requested or None,
+        apply=bool(args.apply),
+        previous_manifest=previous_manifest,
+    )
     print(
         "FIELD_ACTIVE_OFFLINE_PROOF_REBOUND "
         f"providers={result['providerCount']} changed={result['changedCount']} "
