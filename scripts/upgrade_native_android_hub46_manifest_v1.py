@@ -32,7 +32,7 @@ def patch_prebuild() -> bool:
         validate_prebuild(text)
         return False
     anchor = 'TARGET_MANIFEST="${NIAKVIO_TARGET_MANIFEST:-manifest.json}"\n'
-    replacement = '''TARGET_MANIFEST="${NIAKVIO_TARGET_MANIFEST:-manifest.json}"\n# NATIVE_ANDROID_HUB46_PREBUILD_V1\n# Keep prebuild repository resolution on the same physical Hub-46 manifest as the\n# runtime suite even when historical workflow env still says manifest.json.\nif [[ -n "${NIAKVIO_PROVIDER_SCOPE_MATRIX:-}" && -f "${NIAKVIO}/native-hub46/manifest.json" ]]; then\n  TARGET_MANIFEST="native-hub46/manifest.json"\n  echo "FIELD_NATIVE_PHYSICAL_PROVIDER_SCOPE phase=prebuild manifest=$TARGET_MANIFEST providers=46 authority=${NIAKVIO_PROVIDER_SCOPE_MATRIX}"\nfi\n'''
+    replacement = '''TARGET_MANIFEST="${NIAKVIO_TARGET_MANIFEST:-manifest.json}"\n# NATIVE_ANDROID_HUB46_PREBUILD_V1\n# Keep prebuild repository resolution on the same physical Hub-46 manifest as the\n# runtime suite even when historical workflow env still says manifest.json.\nif [[ -n "${NIAKVIO_PROVIDER_SCOPE_MATRIX:-}" && -f "${NIAKVIO}/native-hub46/manifest.json" ]]; then\n  TARGET_MANIFEST="native-hub46/manifest.json"\n  echo "FIELD_NATIVE_PHYSICAL_PROVIDER_SCOPE phase=prebuild manifest=$TARGET_MANIFEST providers=current-active authority=${NIAKVIO_PROVIDER_SCOPE_MATRIX}"\nfi\n'''
     # PREBUILD defines NIAKVIO only after TARGET_MANIFEST in historical layout, so
     # move the block to immediately after NIAKVIO assignment if needed.
     if text.count(anchor) != 1:
@@ -41,7 +41,7 @@ def patch_prebuild() -> bool:
     niak_anchor = 'NIAKVIO="${WORKSPACE}/niakvio"\n'
     if text.count(niak_anchor) != 1:
         raise AssertionError(f"android Hub46 prebuild NiakVIO anchor count={text.count(niak_anchor)}")
-    block = '''NIAKVIO="${WORKSPACE}/niakvio"\n# NATIVE_ANDROID_HUB46_PREBUILD_V1\n# Keep prebuild repository resolution on the same physical Hub-46 manifest as the\n# runtime suite even when historical workflow env still says manifest.json.\nif [[ -n "${NIAKVIO_PROVIDER_SCOPE_MATRIX:-}" && -f "${NIAKVIO}/native-hub46/manifest.json" ]]; then\n  TARGET_MANIFEST="native-hub46/manifest.json"\n  echo "FIELD_NATIVE_PHYSICAL_PROVIDER_SCOPE phase=prebuild manifest=$TARGET_MANIFEST providers=46 authority=${NIAKVIO_PROVIDER_SCOPE_MATRIX}"\nfi\n'''
+    block = '''NIAKVIO="${WORKSPACE}/niakvio"\n# NATIVE_ANDROID_HUB46_PREBUILD_V1\n# Keep prebuild repository resolution on the same physical Hub-46 manifest as the\n# runtime suite even when historical workflow env still says manifest.json.\nif [[ -n "${NIAKVIO_PROVIDER_SCOPE_MATRIX:-}" && -f "${NIAKVIO}/native-hub46/manifest.json" ]]; then\n  TARGET_MANIFEST="native-hub46/manifest.json"\n  echo "FIELD_NATIVE_PHYSICAL_PROVIDER_SCOPE phase=prebuild manifest=$TARGET_MANIFEST providers=current-active authority=${NIAKVIO_PROVIDER_SCOPE_MATRIX}"\nfi\n'''
     text = text.replace(niak_anchor, block, 1)
     PREBUILD.write_text(text, encoding="utf-8")
     validate_prebuild(text)
@@ -67,7 +67,7 @@ def validate_prebuild(text: str | None = None) -> None:
         PREBUILD_MARKER,
         'NIAKVIO_PROVIDER_SCOPE_MATRIX:-',
         'TARGET_MANIFEST="native-hub46/manifest.json"',
-        'phase=prebuild manifest=$TARGET_MANIFEST providers=46',
+        'phase=prebuild manifest=$TARGET_MANIFEST providers=current-active',
     )
     missing = [needle for needle in required if needle not in value]
     if missing:
