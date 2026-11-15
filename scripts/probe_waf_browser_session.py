@@ -342,10 +342,34 @@ def extract_status_targets(
 
 
 def browser_binary() -> str:
-    for name in ("google-chrome", "google-chrome-stable", "chromium", "chromium-browser"):
+    for name in (
+        "brave-browser",
+        "brave",
+        "google-chrome",
+        "google-chrome-stable",
+        "chromium",
+        "chromium-browser",
+    ):
         found = shutil.which(name)
         if found:
             return found
+
+    # Homebrew casks and ordinary macOS application installs do not normally
+    # expose a browser binary on PATH. Prefer Brave when the user has it
+    # installed, then Chrome/Chromium. Safari is intentionally excluded:
+    # this diagnostic uses Chromium headless flags and must not pretend that
+    # Safari exercised the same browser path.
+    mac_candidates = (
+        Path("/Applications/Brave Browser.app/Contents/MacOS/Brave Browser"),
+        Path.home() / "Applications/Brave Browser.app/Contents/MacOS/Brave Browser",
+        Path("/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"),
+        Path.home() / "Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+        Path("/Applications/Chromium.app/Contents/MacOS/Chromium"),
+        Path.home() / "Applications/Chromium.app/Contents/MacOS/Chromium",
+    )
+    for candidate in mac_candidates:
+        if candidate.is_file():
+            return str(candidate)
     return ""
 
 
