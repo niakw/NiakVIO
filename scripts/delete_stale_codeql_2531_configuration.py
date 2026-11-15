@@ -67,7 +67,7 @@ def legacy_js_categories(rows: list[dict]) -> dict[str, list[dict]]:
 def list_main_analyses() -> list[dict]:
     rows = guard.read_pages(
         "repos/" + REPO + "/code-scanning/analyses?ref=" + MAIN_REF,
-        max_pages=20,
+        max_pages=80,
     )
     if not all(isinstance(row, dict) for row in rows):
         raise RuntimeError("Invalid CodeQL analysis listing")
