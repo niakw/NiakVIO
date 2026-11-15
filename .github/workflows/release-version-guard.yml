@@ -1,0 +1,44 @@
+name: CORE - Manifest Version Guard
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/release-version-guard.yml'
+      - 'scripts/check_direct_manifest_version_bumps.py'
+      - 'tests/direct_manifest_version_bump_guard_test.py'
+      - 'manifest.json'
+      - 'vf/manifest.json'
+      - 'no-anime/manifest.json'
+      - 'vf-no-anime/manifest.json'
+      - 'providers/**'
+      - 'provider-disabled/**'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: manifest-version-guard-main
+  cancel-in-progress: true
+
+jobs:
+  guard:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact main commit
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Validate guard contract
+        run: python3 tests/direct_manifest_version_bump_guard_test.py
+
+      - name: Enforce direct publication cache bumps
+        if: ${{ github.event_name == 'push' && github.event.before != '0000000000000000000000000000000000000000' }}
+        env:
+          BASE_SHA: ${{ github.event.before }}
+        run: python3 scripts/check_direct_manifest_version_bumps.py --base "$BASE_SHA"
