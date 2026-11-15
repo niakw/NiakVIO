@@ -825,6 +825,7 @@ def materialize_all(
         "generation": generation,
         "providerCount": len(report_rows),
         "activeProviderIdentityCount": len(active_ids),
+        "expectedProviderCount": len(active_ids),
         "byteValidationConcurrency": validation_workers,
         "providers": report_rows,
         "devicePolicy": {
