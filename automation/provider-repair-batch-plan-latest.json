@@ -124,7 +124,7 @@
     "zone-telechargement"
   ],
   "dynamicVariantFallbackUsed": false,
-  "groupCount": 10,
+  "groupCount": 11,
   "executionModel": {
     "default": "family/signature batch",
     "liveProbeConcurrency": "audit_provider_quick_yield ThreadPool",
@@ -285,30 +285,27 @@
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
     {
-      "groupId": "harness-compatibility|mixed_embed_resolver|residential-exit-inconclusive",
+      "groupId": "harness-compatibility|mixed_embed_resolver|residential-exit-all-challenged",
       "repairScope": "harness-compatibility",
       "runtimeFamilies": [
         "mixed_embed_resolver"
       ],
       "capabilityStrategy": "mixed_embed_resolver",
       "evidenceDepths": [
-        "lookup",
         "none"
       ],
       "dominantIssues": [
         "waf_challenge"
       ],
       "harnessTransportClasses": [
-        "residential-exit-inconclusive"
+        "residential-exit-all-challenged"
       ],
-      "transportSignature": "residential-exit-inconclusive",
-      "providerCount": 6,
+      "transportSignature": "residential-exit-all-challenged",
+      "providerCount": 4,
       "providers": [
         "animeonsen",
-        "franime",
         "french-anime",
         "fullanime",
-        "moiflix",
         "waveanime"
       ],
       "action": "current census assigns transport/harness ownership; compare browser/native/residential transport before any provider mutation",
@@ -343,6 +340,37 @@
         "zone-streaming"
       ],
       "action": "apply/test shared terminal-player extraction profile to the whole capability family",
+      "selectionAuthorities": [
+        "provider-census-status.json:brainCheckRequired"
+      ],
+      "dynamicVariantProviders": [],
+      "executionPolicy": "batch-first",
+      "providerLocalFallback": "only-after-shared-profile-failure"
+    },
+    {
+      "groupId": "harness-compatibility|mixed_embed_resolver|residential-exit-inconclusive",
+      "repairScope": "harness-compatibility",
+      "runtimeFamilies": [
+        "mixed_embed_resolver"
+      ],
+      "capabilityStrategy": "mixed_embed_resolver",
+      "evidenceDepths": [
+        "lookup",
+        "none"
+      ],
+      "dominantIssues": [
+        "waf_challenge"
+      ],
+      "harnessTransportClasses": [
+        "residential-exit-inconclusive"
+      ],
+      "transportSignature": "residential-exit-inconclusive",
+      "providerCount": 2,
+      "providers": [
+        "franime",
+        "moiflix"
+      ],
+      "action": "current census assigns transport/harness ownership; compare browser/native/residential transport before any provider mutation",
       "selectionAuthorities": [
         "provider-census-status.json:brainCheckRequired"
       ],
