@@ -11633,7 +11633,8 @@
         "NIAKVIO_CHILLFLIX_TMDB_DIRECT_EMBED_ORACLE_V1: physical-Mac oracle proves TMDB-bound /movie/{id} and /tv/{id} pages plus chillflix.pw direct embed templates; fixed TV routes removed.",
         "NIAKVIO_PHYSICAL_MAC_ROUTE_PROOF_V5: exact identity-aware search route returned HTTP 200 from physical Mac; terminal media remains separately fail-closed.",
         "NIAKVIO_CHILLFLIX_DIRECT_DETAIL_V2: physical-Mac detail URLs are TMDB-bound and embed routes for VisionQuest/Fahrenheit return HTTP 200; bypass broken search endpoint, keep terminal playback fail-closed.",
-        "NIAKVIO_CHILLFLIX_ORDERED_SOURCE_V3: physical-Mac evidence proves NovaHD returns Chillflix proxy HLS for VisionQuest while Rive direct CDN 403s outside browser; prefer NovaHD, retain Rive fallback."
+        "NIAKVIO_CHILLFLIX_ORDERED_SOURCE_V3: physical-Mac evidence proves NovaHD returns Chillflix proxy HLS for VisionQuest while Rive direct CDN 403s outside browser; prefer NovaHD, retain Rive fallback.",
+        "NIAKVIO_CHILLFLIX_PLAYER_CACHE_V4: physical Brave oracle on Fahrenheit 451 proves the same-origin stream-cache returns player-context CinePro proxy sources, including 1080p/French variants; runtime probes cache before external source fallbacks."
       ],
       "replacements": {},
       "runtime_domain_replacements": {},
@@ -11672,6 +11673,7 @@
           "maxStreams": 8,
           "directDetailIdentity": true,
           "directJsonSourceTemplates": [
+            "/api/stream-cache?type={transport}&tmdbId={tmdbId}&season={season}&episode={episode}",
             "/api/cinepro/sources?type={transport}&tmdbId={tmdbId}&season={season}&episode={episode}&provider=novahd",
             "/api/cinepro/sources?type={transport}&tmdbId={tmdbId}&season={season}&episode={episode}&provider=rivestream"
           ]
