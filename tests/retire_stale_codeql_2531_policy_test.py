@@ -9,15 +9,16 @@ codeql=(ROOT/".github/workflows/codeql.yml").read_text()
 
 assert "LEGACY_ALERT=2531" in guard
 assert 'LEGACY_KEY=".github/workflows/codeql.yml:analyze"' in guard
-assert "verify_current_source()" in cleanup
-assert "scan_source_sha()" in cleanup
-assert "evidence_only_drift" in cleanup
-assert "scope:core" in cleanup
-assert "code-scanning/analyses" in cleanup
-assert '"DELETE"' in cleanup
-assert "confirm_delete=true" in cleanup
-assert "dismissed_comment" not in cleanup
-assert "delete_stale_codeql_2531_configuration.py" in workflow
+assert "verify_current_source()" in guard
+assert "scan_source_sha()" in guard
+assert "evidence_only_drift" in guard
+assert "scope:core" in guard
+assert "code-scanning/analyses" in guard
+assert '"PATCH"' in guard
+assert "dismissed_reason" in guard
+assert "dismissed_comment" in guard
+assert "retire_stale_codeql_2531.py" in workflow
+assert "delete_stale_codeql_2531_configuration.py" not in workflow
 assert "security-events: write" in workflow
 assert "github.event.workflow_run.conclusion == 'success'" in workflow
 assert "pull_request_target" not in workflow

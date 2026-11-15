@@ -1,3 +1,9 @@
+## 2026-11-15 — Targeted CodeQL #2531 retirement replaces unbounded analysis deletion
+
+- Repeated stale-category jobs failed while enumerating >4,000 historical CodeQL analyses. The repository already contains a narrower fail-closed retirement path: verify the exact current source, bind the successful CodeQL workflow-run SHA, require a current maintained JS Core analysis, reject any other current High/Critical Core finding, verify the exact historical #2531 identity, then request dismissal as a historical test-only finding and rerun Final Gate.
+- Workflow `.github/workflows/retire-stale-codeql-2531.yml` now invokes `retire_stale_codeql_2531.py` instead of deleting entire historical analysis categories. No scanner query, current-source exclusion, provider finding or security gate is weakened. The old category-deletion helper remains in-tree as historical tooling but is no longer the automatic cleanup authority.
+- Validation pending on this commit; do not claim alert closure until GitHub reports #2531 non-open and Final Gate succeeds.
+
 ## 2026-11-15 — Canonical release retry with both publication fixes
 
 - Source main `b944bef3d038726b5e2b73a7c99e5ce47be7922f` includes the Chillflix final-proof rebind ordering fix and the corrected Global+France static-knowledge audit scope. Trigger a fresh canonical finalizer rather than weakening Workflow Gate.
