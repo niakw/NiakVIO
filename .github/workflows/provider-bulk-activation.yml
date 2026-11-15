@@ -67,6 +67,12 @@ jobs:
           node engine_v2/scripts/bootstrap-provider-catalog.mjs
           node engine_v2/scripts/render-manifests-from-catalog.mjs
           python scripts/provider_base_store.py repair-legacy
+          # Activation preserves exact replayed JS bytes. Reconcile only the
+          # structured/static/materialization ledgers from those exact published
+          # CONFIG blocks; do not rebuild or execute provider code here.
+          python scripts/reconcile_provider_static_authority.py --apply
+          python tests/provider_static_authority_france_only_test.py
+          python scripts/validate_provider_materialization_authority.py
           python scripts/validate_published_provider_config.py
           python tests/provider_v3_minimizer_published_test.py
           python tests/provider_bulk_activation_test.py
@@ -80,7 +86,7 @@ jobs:
           ACTIVATION_COUNT: ${{ steps.activation.outputs.count }}
         run: |
           set -euo pipefail
-          git add             manifest.json vf/manifest.json no-anime/manifest.json vf-no-anime/manifest.json             provider_catalog.json PROVENANCE.json provider-overrides.json provider-hubs.json             provider-bases providers provider-disabled automation/provider-bulk-activation-latest.json
+          git add             manifest.json vf/manifest.json no-anime/manifest.json vf-no-anime/manifest.json             provider_catalog.json PROVENANCE.json provider-overrides.json provider-hubs.json             automation/provider-v3-static-knowledge.json provider-v3-materialization.json             provider-bases providers provider-disabled automation/provider-bulk-activation-latest.json
           git diff --cached --quiet && exit 0
           git config user.name "niakvio-provider-bulk-activation"
           git config user.email "actions@users.noreply.github.com"

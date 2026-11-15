@@ -627,17 +627,6 @@ def materialize_one(
     allmat.normalize_anime_transport_compatibility(entry)
     model = allmat.provider_model(provider_id, patch, capability, static_row)
     if preserve_structured_data:
-        scripts = [
-            str(value).strip()
-            for value in (patch.get("provider_lego_scripts") or [])
-            if str(value).strip()
-        ]
-        identity = patch.get("identity_input") if isinstance(patch.get("identity_input"), dict) else {}
-        required_identity = {
-            str(value).strip()
-            for value in (identity.get("required_fields") or [])
-            if str(value).strip()
-        }
         # Provider-owned runtime Legos are executable authority in their own
         # right when the structured identity contract is explicit. This applies
         # equally to Global and France-only projections; restricting it to the
@@ -646,17 +635,7 @@ def materialize_one(
         # external_id is also a metadata-preflight mode: Core supplies external
         # IDs before execution, so an owned Lego must not be rejected merely
         # because its executable plan lives in that Lego instead of route DATA.
-        provider_owned_identity_lego = bool(
-            scripts
-            and all(value.startswith("scripts/provider_patches/") for value in scripts)
-            and str(identity.get("mode") or "").strip().casefold() in {
-                "tmdb_direct",
-                "catalog_search",
-                "external_id",
-            }
-            and identity.get("requires_tmdb_before_run") is True
-            and {"tmdbId", "mediaType"} <= required_identity
-        )
+        provider_owned_identity_lego = allmat.provider_patch_has_owned_identity_lego_execution(patch)
         if not allmat.provider_model_has_executable_plan(model) and not provider_owned_identity_lego:
             raise ValueError(f"{provider_id}: projection-only DATA lacks executable plan")
         if not allmat.provider_model_has_identity_execution_plan(model) and not provider_owned_identity_lego:

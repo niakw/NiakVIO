@@ -74,6 +74,35 @@ assert "provider_route_has_fixed_content_identity" in materializer
 assert "not provider_route_has_fixed_content_identity(value)" in materializer
 assert "not provider_route_has_fixed_content_identity(item)" in materializer
 
+import materialize_provider_v3_all as materializer_module
+
+owned_external_patch = {
+    "capability": "api_stream_resolver",
+    "official_site": "https://www.example.invalid",
+    "official_api": "https://api.example.invalid",
+    "learned_routes": [
+        "/seed?mediaId={tmdbId}",
+        "/miami/sources",
+    ],
+    "provider_lego_scripts": ["scripts/provider_patches/example_external_id_runtime_v1.py"],
+    "identity_input": {
+        "mode": "external_id",
+        "requires_tmdb_before_run": True,
+        "required_fields": ["tmdbId", "mediaType", "imdbId"],
+    },
+}
+assert materializer_module.provider_patch_has_owned_identity_lego_execution(owned_external_patch)
+owned_external_model = materializer_module.provider_model(
+    "example-owned-lego",
+    owned_external_patch,
+    {"strategy": "api_stream_resolver", "validation": "physical_mac_terminal_oracle"},
+    {"model": {}},
+)
+assert "/seed?mediaId={tmdbId}" in owned_external_model["routes"], owned_external_model
+assert provider_model_has_executable_plan(owned_external_model)
+assert provider_model_has_identity_execution_plan(owned_external_model)
+assert owned_external_model["routeProofVersion"] == 0
+
 base = (ROOT / "scripts" / "provider_base_store.py").read_text(encoding="utf-8")
 runtime = base.split("function _runtimePlanAvailable() {", 1)[1].split("\n}", 1)[0]
 for token in (

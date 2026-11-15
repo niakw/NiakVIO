@@ -281,6 +281,38 @@ def _api_recipe_execution_allowed(recipe: dict[str, Any] | None) -> bool:
     return True
 
 
+def provider_patch_has_owned_identity_lego_execution(patch: dict[str, Any]) -> bool:
+    """Return whether current provider-owned Lego + identity DATA is executable authority.
+
+    This is execution authority only. It does not create route-proof/runtime
+    evidence or claim playback. The same predicate is shared by full and
+    targeted materialization so canonical rebuilds cannot strip a runtime that
+    targeted publication already validated.
+    """
+    scripts = [
+        str(value).strip()
+        for value in (patch.get("provider_lego_scripts") or [])
+        if str(value).strip()
+    ]
+    identity = patch.get("identity_input") if isinstance(patch.get("identity_input"), dict) else {}
+    required = {
+        str(value).strip()
+        for value in (identity.get("required_fields") or [])
+        if str(value).strip()
+    }
+    return bool(
+        scripts
+        and all(value.startswith("scripts/provider_patches/") for value in scripts)
+        and str(identity.get("mode") or "").strip().casefold() in {
+            "tmdb_direct",
+            "catalog_search",
+            "external_id",
+        }
+        and identity.get("requires_tmdb_before_run") is True
+        and {"tmdbId", "mediaType"} <= required
+    )
+
+
 def provider_model(
     provider_id: str,
     patch: dict[str, Any],
@@ -381,12 +413,22 @@ def provider_model(
         and provider_model_has_executable_plan(offline_route_model)
         and provider_model_has_identity_execution_plan(offline_route_model)
     )
+    owned_identity_lego_routes_executable = bool(
+        provider_patch_has_owned_identity_lego_execution(patch)
+        and patch_routes
+        and provider_model_has_executable_plan(offline_route_model)
+        and provider_model_has_identity_execution_plan(offline_route_model)
+    )
 
     routes: list[str] = []
-    route_values = patch_routes if (patch_has_execution_authority or offline_routes_executable) else [
+    route_values = patch_routes if (
+        patch_has_execution_authority
+        or offline_routes_executable
+        or owned_identity_lego_routes_executable
+    ) else [
         *(patch.get("learned_routes") or []), *(static_model.get("routes") or [])
     ]
-    if proof_version >= 5 or offline_routes_executable:
+    if proof_version >= 5 or offline_routes_executable or owned_identity_lego_routes_executable:
         for value in route_values:
             item = str(value).strip()
             if (

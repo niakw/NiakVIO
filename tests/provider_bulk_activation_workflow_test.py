@@ -19,6 +19,10 @@ for token in (
     "scripts/validate_published_provider_config.py",
     "tests/production_active_provider_freshness_test.py",
     "provider_catalog.json",
+    "scripts/reconcile_provider_static_authority.py --apply",
+    "scripts/validate_provider_materialization_authority.py",
+    "automation/provider-v3-static-knowledge.json",
+    "provider-v3-materialization.json",
 ):
     assert token in activation, token
 
