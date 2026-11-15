@@ -30,6 +30,7 @@ jobs:
     timeout-minutes: 35
     outputs:
       provider_count: ${{ steps.summary.outputs.provider_count }}
+      publication_mode: ${{ steps.summary.outputs.publication_mode }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
@@ -191,6 +192,8 @@ jobs:
           )"
           if [ "$mode" != "bulk_offline_contract_live_unverified" ]; then
             echo "activation_count=0" >> "$GITHUB_OUTPUT"
+            echo "activation_mode=stage-only" >> "$GITHUB_OUTPUT"
+            echo "FIELD_BULK_ACTIVATION skipped=true mode=${mode:-stage-only}"
             exit 0
           fi
           python scripts/activate_bulk_offline_proven_providers.py \
@@ -243,26 +246,44 @@ jobs:
           )
           PY
           echo "activation_count=$count" >> "$GITHUB_OUTPUT"
+          echo "activation_mode=offline-live-unverified" >> "$GITHUB_OUTPUT"
 
       - id: summary
-        name: Export batch size
+        name: Export batch publication size
         shell: bash
+        env:
+          ACTIVATION_COUNT: ${{ steps.offline_activation.outputs.activation_count }}
+          ACTIVATION_MODE: ${{ steps.offline_activation.outputs.activation_mode }}
         run: |
           set -euo pipefail
-          count="$(python - <<'PY'
+          staged="$(python - <<'PY'
           import json
-          value=json.load(open("automation/provider-bulk-offline-activation-latest.json", encoding="utf-8"))
-          print(int(value.get("activationCount") or 0))
+          value=json.load(open("automation/provider-bulk-onboarding-stage.json", encoding="utf-8"))
+          print(int(value.get("providerCount") or 0))
           PY
           )"
-          test "$count" -gt 0
-          echo "provider_count=$count" >> "$GITHUB_OUTPUT"
+          test "$staged" -gt 0
+          activation_count="${ACTIVATION_COUNT:-0}"
+          mode="${ACTIVATION_MODE:-stage-only}"
+          if [ "$mode" = "offline-live-unverified" ]; then
+            test "$activation_count" -gt 0
+            test "$activation_count" -le "$staged"
+            publish_count="$activation_count"
+          else
+            publish_count="$staged"
+          fi
+          echo "provider_count=$publish_count" >> "$GITHUB_OUTPUT"
+          echo "publication_mode=$mode" >> "$GITHUB_OUTPUT"
+          echo "FIELD_BULK_PUBLICATION_SUMMARY staged=$staged activated=$activation_count mode=$mode"
 
       - name: Package one atomic bulk transaction
         shell: bash
         run: |
           set -euo pipefail
-          git add             manifest.json vf/manifest.json no-anime/manifest.json vf-no-anime/manifest.json             provider_catalog.json PROVENANCE.json provider-overrides.json provider-hubs.json provider-type-policy.json automation/provider-v3-static-knowledge.json             provider-bases providers provider-disabled assets/providers automation/provider-bulk-onboarding-stage.json automation/provider-bulk-offline-activation-latest.json
+          git add             manifest.json vf/manifest.json no-anime/manifest.json vf-no-anime/manifest.json             provider_catalog.json PROVENANCE.json provider-overrides.json provider-hubs.json provider-type-policy.json automation/provider-v3-static-knowledge.json             provider-bases providers provider-disabled assets/providers automation/provider-bulk-onboarding-stage.json
+          if [ -f automation/provider-bulk-offline-activation-latest.json ]; then
+            git add automation/provider-bulk-offline-activation-latest.json
+          fi
           mkdir -p .provider-onboarding
           git rev-parse HEAD > .provider-onboarding/bulk-base-sha.txt
           git diff --cached --binary --full-index > .provider-onboarding/bulk-provider-transaction.patch
@@ -305,6 +326,7 @@ jobs:
         shell: bash
         env:
           PROVIDER_COUNT: ${{ needs.stage.outputs.provider_count }}
+          PUBLICATION_MODE: ${{ needs.stage.outputs.publication_mode }}
         run: |
           set -euo pipefail
           BASE_SHA="$(tr -d '\r\n' < checked-transaction/bulk-base-sha.txt)"
@@ -333,7 +355,12 @@ jobs:
               echo "published_sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
               exit 0
             fi
-            git commit -m "provider: bulk activate $PROVIDER_COUNT offline-unverified"
+            if [ "$PUBLICATION_MODE" = "offline-live-unverified" ]; then
+              message="provider: bulk activate $PROVIDER_COUNT offline-unverified"
+            else
+              message="provider: bulk stage $PROVIDER_COUNT pending candidates"
+            fi
+            git commit -m "$message"
             if git push origin HEAD:main; then
               echo "published_sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
               exit 0
