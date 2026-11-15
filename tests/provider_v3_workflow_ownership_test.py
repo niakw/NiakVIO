@@ -146,6 +146,8 @@ assert "group: niakvio-core-release-mutation-main" in domain
 assert "cancel-in-progress: false" in domain
 assert "group: niakvio-core-release-mutation-main" in finalizer
 assert "cancel-in-progress: false" in finalizer
+assert "python3 scripts/reconcile_provider_static_authority.py --apply" in finalizer
+assert finalizer.index("python3 scripts/reconcile_provider_static_authority.py --apply") < finalizer.index("python3 scripts/materialize_provider_v3_all.py")
 # Release jobs can queue behind read-only evidence; pin executable input at
 # event SHA then merge ONLY explicitly approved non-executable drift.
 assert "inputs.expected_sha || github.sha" in finalizer

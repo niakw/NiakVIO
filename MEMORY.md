@@ -1,3 +1,9 @@
+## 2026-11-15 — Release finalizer reconciles exact CONFIG authority before materialization
+
+- Verify & Publish on the preceding production state failed because active Chillflix `providers/chillflix-32ceb4b6c511b1cb.js` was not a minimizer fixed-point (35,621 bytes removable). The current Global manifest exposes 46 active identities while the retained materialization report describes 42 providers from an older workspace generation and omits Chillflix plus other currently active identities.
+- The existing `reconcile_provider_static_authority.py` reconstructs missing durable static/materialization authority from exact managed Provider CONFIG bytes without HTTP or provider execution. `CORE - Finalize Accepted Release` now executes it after durable override reapplication and before `materialize_provider_v3_all.py`.
+- Workflow ownership regression enforces this ordering. This is a generic pipeline fix, not a hand-edit of Chillflix. Provider/manifest cache versions remain owned by accepted release finalization after exact final bytes are generated and verified.
+
 ## 2026-11-15 — Security revocation of nine retained historical bundles
 
 - Pre-change authority: `6dc063d210dd7c01405de52afd3b1e493e6ee879`. Exact-SHA CodeQL inventory 43716697923 succeeded (377 open High findings; 21 findings on nine present unreferenced snapshots, 355 findings on absent snapshots, one on a previously corrected test). Security Final Gate 43716968670 succeeded. All nine paths were marked `referenced: false` in the retention ledger; the inventory found zero release-referenced or pinned-path matches. Six current manifests, provider-lkg.json and SHA256SUMS.json contained none of these filenames.

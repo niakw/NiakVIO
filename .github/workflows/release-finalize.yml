@@ -17,6 +17,7 @@ on:
       - 'scripts/provider_base_store.py'
       - 'scripts/reapply_published_overrides.py'
       - 'scripts/materialize_provider_v3_all.py'
+      - 'scripts/reconcile_provider_static_authority.py'
       - 'scripts/audit_provider_v3_static.py'
       - 'scripts/release_version_baseline.py'
       - 'scripts/sync_release_versions.py'
@@ -93,6 +94,10 @@ jobs:
         run: |
           set -euo pipefail
           python3 scripts/reapply_published_overrides.py
+          # Exact managed CONFIG bytes may exist before durable static knowledge
+          # catches up after activation. Reconcile that authority first so the
+          # canonical materializer cannot operate on a stale provider ledger.
+          python3 scripts/reconcile_provider_static_authority.py --apply
           # Rebuild the complete Provider-v3 authority ledger from the exact
           # active production scope before static audit. Targeted workflows may
           # legitimately leave a partial materialization report on main.
