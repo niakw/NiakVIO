@@ -43,6 +43,31 @@ FIXTURES: dict[str, dict[str, Any]] = {
         "title": "Fahrenheit 451",
         "year": 2018,
     },
+    "interstellar_2014": {
+        "tmdbId": "157336",
+        "mediaType": "movie",
+        "category": "movie",
+        "title": "Interstellar",
+        "year": 2014,
+    },
+    "breaking_bad_s01e01": {
+        "tmdbId": "1396",
+        "mediaType": "tv",
+        "category": "tv",
+        "title": "Breaking Bad",
+        "year": 2008,
+        "season": 1,
+        "episode": 1,
+    },
+    "jujutsu_kaisen_s01e01": {
+        "tmdbId": "95479",
+        "mediaType": "anime",
+        "category": "anime",
+        "title": "Jujutsu Kaisen",
+        "year": 2020,
+        "season": 1,
+        "episode": 1,
+    },
 }
 
 
@@ -129,7 +154,9 @@ def main() -> int:
             lane = fixture["mediaType"]
             if lane == "movie" and "movie" not in lanes:
                 continue
-            if lane == "tv" and not ({"tv", "anime"} & lanes):
+            if lane == "tv" and "tv" not in lanes:
+                continue
+            if lane == "anime" and "anime" not in lanes:
                 continue
             tasks.append((provider_id, fixture_id, path, fixture))
 
