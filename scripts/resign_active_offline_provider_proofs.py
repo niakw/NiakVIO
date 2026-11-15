@@ -174,7 +174,10 @@ def rebind(
     apply: bool,
     previous_manifest: Path | None = None,
     previous_vf_manifest: Path | None = None,
+    scope_filter: str | None = None,
 ) -> dict[str, Any]:
+    if scope_filter not in {None, "global", "france"}:
+        raise ValueError(f"invalid offline proof scope filter: {scope_filter}")
     provenance_path = root / "PROVENANCE.json"
     provenance = load(provenance_path, {})
     prov_rows = provenance.get("providers")
@@ -203,6 +206,8 @@ def rebind(
     for pid, (row, scope) in sorted(rows.items()):
         prov = prov_rows.get(pid)
         if not isinstance(prov, dict) or prov.get("activation_mode") != MODE:
+            continue
+        if scope_filter is not None and scope != scope_filter:
             continue
         if requested is not None and pid not in requested:
             continue
@@ -243,6 +248,7 @@ def main() -> int:
     ap.add_argument("--apply", action="store_true")
     ap.add_argument("--previous-manifest", type=Path)
     ap.add_argument("--previous-vf-manifest", type=Path)
+    ap.add_argument("--scope", choices=("all", "global", "france"), default="all")
     args = ap.parse_args()
     requested = {canon(v) for v in str(args.providers or "").split(",") if canon(v)}
     previous_manifest = args.previous_manifest.resolve() if args.previous_manifest else None
@@ -253,6 +259,7 @@ def main() -> int:
         apply=bool(args.apply),
         previous_manifest=previous_manifest,
         previous_vf_manifest=previous_vf_manifest,
+        scope_filter=None if args.scope == "all" else args.scope,
     )
     print(
         "FIELD_ACTIVE_OFFLINE_PROOF_REBOUND "
