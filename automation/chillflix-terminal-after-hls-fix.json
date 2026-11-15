@@ -1,0 +1,91 @@
+{
+  "schema_version": 1,
+  "providers_requested": [
+    "chillflix"
+  ],
+  "providers_tested": [
+    "chillflix"
+  ],
+  "fixtures": [
+    "spartacus_s00e01",
+    "visionquest_s01e01",
+    "fahrenheit_451_2018"
+  ],
+  "summary": {
+    "spartacus_s00e01": {
+      "tested": 1,
+      "terminal_positive_providers": 1,
+      "terminal_positive_streams": 1,
+      "providers": [
+        "chillflix"
+      ]
+    },
+    "visionquest_s01e01": {
+      "tested": 1,
+      "terminal_positive_providers": 1,
+      "terminal_positive_streams": 1,
+      "providers": [
+        "chillflix"
+      ]
+    },
+    "fahrenheit_451_2018": {
+      "tested": 1,
+      "terminal_positive_providers": 0,
+      "terminal_positive_streams": 0,
+      "providers": []
+    }
+  },
+  "results": [
+    {
+      "provider": "chillflix",
+      "fixture": "fahrenheit_451_2018",
+      "stream_count": 0,
+      "candidate_stream_count": 0,
+      "raw_stream_count": 0,
+      "terminal_verified": false,
+      "terminal_reasons": [],
+      "terminal_media_duration_seconds": [],
+      "http_statuses": [
+        200,
+        403
+      ],
+      "timeout": false,
+      "error_class": null
+    },
+    {
+      "provider": "chillflix",
+      "fixture": "spartacus_s00e01",
+      "stream_count": 1,
+      "candidate_stream_count": 1,
+      "raw_stream_count": 1,
+      "terminal_verified": true,
+      "terminal_reasons": [
+        "hls_segment_media"
+      ],
+      "terminal_media_duration_seconds": [],
+      "http_statuses": [
+        200,
+        404
+      ],
+      "timeout": false,
+      "error_class": null
+    },
+    {
+      "provider": "chillflix",
+      "fixture": "visionquest_s01e01",
+      "stream_count": 1,
+      "candidate_stream_count": 1,
+      "raw_stream_count": 1,
+      "terminal_verified": true,
+      "terminal_reasons": [
+        "hls_segment_media"
+      ],
+      "terminal_media_duration_seconds": [],
+      "http_statuses": [
+        200
+      ],
+      "timeout": false,
+      "error_class": null
+    }
+  ]
+}
