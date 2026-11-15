@@ -32,10 +32,11 @@ permissions:
   contents: write
 
 concurrency:
-  group: niakvio-core-release-mutation-main-v2
-  # A newer release-authority change supersedes an older queued/running generation.
-  # The workflow still pins and verifies its exact accepted SHA before publication.
-  cancel-in-progress: true
+  # Release finalization and Domain Refresh are both production writers and must
+  # never execute concurrently. Stale finalizers fail closed at the exact-SHA /
+  # executable-drift publication gate instead of cancelling another writer.
+  group: niakvio-core-release-mutation-main
+  cancel-in-progress: false
 
 jobs:
   finalize:
