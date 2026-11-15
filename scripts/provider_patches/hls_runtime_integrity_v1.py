@@ -110,7 +110,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
         payload_config.update(
             {
                 "inspectMasterFacts": True,
-                "implementationRevision": "native-master-facts-late-batch-v15",
+                "implementationRevision": "native-master-sibling-fallback-v16",
             }
         )
     payload = json.dumps(payload_config, separators=(",", ":"))
@@ -256,11 +256,33 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
     if(kind==="master"){
       if(config.inspectMasterFacts)facts=masterFacts(body);
       var variants=variantUris(body,base);if(!variants.length)return {state:"invalid",reason:"master_without_variants"};
-      var child=await fetchBounded(variants[0],stream,referer,false,config.nativeProbeTimeoutMs||config.timeoutMs);
-      if(child.state==="invalid")return child;if(child.state!=="ok")return {state:"unknown",reason:child.reason||"variant_fetch_unknown"};
-      body=await responseText(child);kind=playlistKind(body);base=child.url||variants[0];
-      if(kind==="invalid"||kind==="header_only")return {state:"invalid",reason:"variant_"+kind};
-      if(kind==="master")return {state:"unknown",reason:"nested_master"};
+      var firstUnknown=null,firstInvalid=null;
+      for(var vi=0;vi<variants.length;vi++){
+        var child=await fetchBounded(variants[vi],stream,referer,false,config.nativeProbeTimeoutMs||config.timeoutMs);
+        if(child.state==="invalid"){if(!firstInvalid)firstInvalid=child;continue}
+        if(child.state!=="ok"){if(!firstUnknown)firstUnknown={state:"unknown",reason:child.reason||"variant_fetch_unknown"};continue}
+        var childBody=await responseText(child),childKind=playlistKind(childBody),childBase=child.url||variants[vi];
+        if(childKind==="invalid"||childKind==="header_only"){
+          if(!firstInvalid)firstInvalid={state:"invalid",reason:"variant_"+childKind};
+          continue;
+        }
+        if(childKind==="master"){
+          if(!firstUnknown)firstUnknown={state:"unknown",reason:"nested_master"};
+          continue;
+        }
+        var childTiny=shortMediaDuration(childBody);
+        if(childTiny){
+          if(!firstInvalid)firstInvalid={state:"invalid",reason:"vod_duration_too_short",durationSeconds:childTiny};
+          continue;
+        }
+        var childProof=await proveMediaPlaylist(childBody,childBase,stream,referer);
+        if(childProof.state==="valid"){if(facts)childProof.facts=facts;return childProof}
+        if(childProof.state==="invalid"){if(!firstInvalid)firstInvalid=childProof}
+        else if(!firstUnknown)firstUnknown=childProof;
+      }
+      var masterFailure=firstUnknown||firstInvalid||{state:"unknown",reason:"variants_unverified"};
+      if(facts)masterFailure.facts=facts;
+      return masterFailure;
     }
     var tiny=shortMediaDuration(body);if(tiny)return {state:"invalid",reason:"vod_duration_too_short",durationSeconds:tiny};
     var proof=await proveMediaPlaylist(body,base,stream,referer);if(facts)proof.facts=facts;return proof;
