@@ -46,7 +46,7 @@ assert "NUVIO_HLS_RUNTIME_INTEGRITY_V1" in wrapped
 # Native first-segment/VOD proof is enabled by default and is the current
 # strongest revision for the default HLS guard. Older v5 was only the base
 # recovery layer before native proof was added.
-assert "native-master-facts-late-batch-v15" in wrapped
+assert "native-master-sibling-fallback-v16" in wrapped
 assert '"probeFirstSegmentNative":true' in wrapped
 assert 'typeof setTimeout==="function"' in wrapped
 assert 'typeof clearTimeout==="function"' in wrapped
@@ -134,7 +134,7 @@ assert ordered.count(hls_end) == 1
 assert ordered.rfind(hls_begin) > ordered.rfind("streamzo #1")
 # Strict final-output flags must survive even though the implementation revision
 # is then upgraded by the default native first-segment proof layer.
-assert "native-master-facts-late-batch-v15" in ordered
+assert "native-master-sibling-fallback-v16" in ordered
 assert '"probeAllUrls":true' in ordered
 assert '"failClosedUnknown":true' in ordered
 run_node(r'''
@@ -173,6 +173,37 @@ function segmentBytes(){var a=new Uint8Array(32768);for(var i=0;i<a.length;i+=18
 globalThis.fetch=async function(url,init){var u=String(url);if(u.endsWith("master.m3u8"))return {ok:true,status:200,url:u,headers:{get:function(){return "application/vnd.apple.mpegurl"}},text:async function(){return master}};if(u.endsWith("video.m3u8"))return {ok:true,status:200,url:u,headers:{get:function(){return "application/vnd.apple.mpegurl"}},text:async function(){return media}};if(u.includes("seg-"))return {ok:true,status:206,url:u,headers:{get:function(){return "video/mp2t"}},arrayBuffer:async function(){return segmentBytes()}};return {ok:false,status:404,url:u,headers:{get:function(){return "text/plain"}}}};
 ''' + network_wrapped + r'''
 (async function(){var rows=await globalThis.getStreams("1","movie");if(rows.length!==1)throw new Error("native HLS row dropped");var e=rows[0].__nuvioStreamNetworkEvidenceV1;if(!e||e.source!=="hls-first-segment-probe-v13")throw new Error("missing segment network evidence: "+JSON.stringify(rows[0]));if(!(e.sampleMbps>0)||e.sampleBytes<32768)throw new Error("invalid segment throughput evidence: "+JSON.stringify(e));if(e.segmentSuccessRatio!==1)throw new Error("segment success ratio missing: "+JSON.stringify(e))})().catch(function(e){console.error(e);process.exit(1)});
+''')
+
+
+# A master can contain CDN/quality siblings with different access outcomes.
+# One blocked sibling must not discard the stream when another sibling reaches
+# an actual media segment. This mirrors the physical-Mac Movy/Fahrenheit trace:
+# master 200 -> sibling 403 + sibling 200 -> MPEG-TS segment 200.
+sibling_wrapped = integrity.apply(
+    r'''globalThis.getStreams=async function(){return [{url:"https://media.test/mixed-master.m3u8",type:"hls",headers:{Referer:"https://www.movy.sx/"}}]};''',
+    {"timeout_ms": 2000, "max_children": 2, "native_probe_timeout_ms": 1500},
+)
+run_node(r'''
+globalThis.__native_fetch=function(){};
+let calls=[];
+const master="#EXTM3U\n#EXT-X-STREAM-INF:BANDWIDTH=6000000\nblocked.m3u8\n#EXT-X-STREAM-INF:BANDWIDTH=3000000\ngood.m3u8\n";
+const media="#EXTM3U\n#EXT-X-TARGETDURATION:120\n#EXTINF:120,\nseg.ts\n#EXT-X-ENDLIST\n";
+function tsBytes(){var a=new Uint8Array(376);a[0]=0x47;a[188]=0x47;return a.buffer}
+globalThis.fetch=async function(url,init){
+  var u=String(url);calls.push(u);
+  if(u.endsWith("mixed-master.m3u8"))return {ok:true,status:200,url:u,headers:{get:function(){return "application/vnd.apple.mpegurl"}},text:async function(){return master}};
+  if(u.endsWith("blocked.m3u8"))return {ok:false,status:403,url:u,headers:{get:function(){return "text/html"}},text:async function(){return "blocked"}};
+  if(u.endsWith("good.m3u8"))return {ok:true,status:200,url:u,headers:{get:function(){return "application/vnd.apple.mpegurl"}},text:async function(){return media}};
+  if(u.endsWith("seg.ts"))return {ok:true,status:200,url:u,headers:{get:function(){return "video/mp2t"}},arrayBuffer:async function(){return tsBytes()}};
+  return {ok:false,status:404,url:u,headers:{get:function(){return "text/plain"}}};
+};
+''' + sibling_wrapped + r'''
+(async function(){
+  var rows=await globalThis.getStreams("401905","movie");
+  if(!Array.isArray(rows)||rows.length!==1)throw new Error("playable HLS sibling was discarded: "+JSON.stringify(rows));
+  if(!calls.some(function(u){return u.endsWith("blocked.m3u8")})||!calls.some(function(u){return u.endsWith("good.m3u8")})||!calls.some(function(u){return u.endsWith("seg.ts")}))throw new Error("sibling fan-out incomplete: "+JSON.stringify(calls));
+})().catch(function(e){console.error(e);process.exit(1)});
 ''')
 
 print("HLS playback integrity tests passed")
