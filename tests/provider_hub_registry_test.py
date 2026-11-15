@@ -308,15 +308,10 @@ _allwish_candidates, preferred = resolver.choose_official(
 )
 assert preferred == 'https://all-wish.me'
 
-assert hubs['anidb']['hub'] == 'https://tbcpl.click/'
-anidb_html = '''
-<a data-category="anime" data-name="anidb" href="https://anidb.pics"
-   target="_blank" title="AniDB"><span>anidb.pics</span></a>
-'''
-_anidb_candidates, preferred = resolver.choose_official(
-    'anidb', hubs['anidb'], hubs['anidb']['hub'], anidb_html
-)
-assert preferred == 'https://anidb.pics'
+assert not hubs['anidb'].get('hub')
+assert resolver.host(hubs['anidb']['direct_fallback']) == 'anidb.pics'
+assert {resolver.host(url) for url in hubs['anidb']['direct_candidates']} == {'anidb.pics'}
+assert hubs['anidb']['search_role'] == 'supplementary'
 
 assert hubs['cinefreak']['resolver'] == 'latest_telegram_domain'
 cinefreak_html = '''
