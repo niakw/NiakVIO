@@ -109,6 +109,8 @@ jobs:
             --previous-vf-manifest "$RUNNER_TEMP/published-vf-manifest-baseline.json" \
             --scope global \
             --apply
+          python3 scripts/reconcile_release_manifest_types.py
+          python3 tests/release_manifest_type_reconcile_test.py
           python3 scripts/reapply_published_overrides.py --check
           python3 tests/published_s00_identity_rollout_test.py
           python3 tests/provider_v3_minimizer_contract_test.py
