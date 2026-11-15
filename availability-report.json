@@ -1,6 +1,6 @@
 {
   "schema_version": 63,
-  "generated_at": "2026-11-15T15:45:39.860152+00:00",
+  "generated_at": "2026-11-15T21:08:37.445532+00:00",
   "test_environment": "github-actions-node",
   "checked_providers": 46,
   "status_counts": {
@@ -2339,17 +2339,21 @@
     },
     {
       "id": "papadustream",
-      "status": "no_streams",
+      "status": "healthy",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
-      "consecutive_successes": 0,
-      "hosts": [],
-      "response_categories": [],
+      "consecutive_successes": 1,
+      "hosts": [
+        "u14.vidzy.org"
+      ],
+      "response_categories": [
+        "playable"
+      ],
       "host_health": {
         "papadustream.club": {
-          "last_checked_at": "2026-11-15T06:53:03.425850+00:00",
+          "last_checked_at": "2026-11-15T21:08:37.445532+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -2360,7 +2364,7 @@
           "consecutive_blocked": 0
         },
         "papadustream-v2.watch": {
-          "last_checked_at": "2026-11-15T06:53:03.425850+00:00",
+          "last_checked_at": "2026-11-15T21:08:37.445532+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -2371,14 +2375,25 @@
           "consecutive_blocked": 0
         },
         "www.papadustream.club": {
-          "last_checked_at": "2026-11-15T06:53:03.425850+00:00",
-          "last_category": "playable",
-          "reachable": true,
-          "http_status": 200,
-          "latency_ms": 224,
+          "last_checked_at": "2026-11-15T21:08:37.445532+00:00",
+          "last_category": "not_returned",
+          "reachable": false,
+          "http_status": null,
+          "latency_ms": null,
           "kind": "hls",
           "consecutive_hard_failures": 0,
-          "consecutive_successes": 3,
+          "consecutive_successes": 0,
+          "consecutive_blocked": 0
+        },
+        "u14.vidzy.org": {
+          "last_checked_at": "2026-11-15T21:08:37.445532+00:00",
+          "last_category": "playable",
+          "reachable": true,
+          "http_status": 206,
+          "latency_ms": 900,
+          "kind": "hls",
+          "consecutive_hard_failures": 0,
+          "consecutive_successes": 1,
           "consecutive_blocked": 0
         }
       },
@@ -2565,18 +2580,14 @@
     },
     {
       "id": "sekai",
-      "status": "healthy",
+      "status": "no_streams",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
-      "consecutive_successes": 2,
-      "hosts": [
-        "1.mugiwara.one"
-      ],
-      "response_categories": [
-        "playable"
-      ],
+      "consecutive_successes": 0,
+      "hosts": [],
+      "response_categories": [],
       "host_health": {
         "4.mugiwara.one": {
           "last_checked_at": "2026-11-15T15:45:39.860152+00:00",
