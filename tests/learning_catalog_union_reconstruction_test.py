@@ -68,3 +68,11 @@ assert 'for entry in published_rows:' in source
 assert 'published_manifest.get("scrapers", [])' not in source
 
 print(f"Learning catalogue-union clean reconstruction test passed france_only={len(expected_france)}")
+
+# Targeted fast reconstruction must be able to exclude all external upstreams.
+source = (ROOT / "scripts" / "discover_candidates.py").read_text(encoding="utf-8")
+assert '"--local-catalog-only"' in source
+assert 'config = {**config, "upstreams": {}}' in source
+workflow = (ROOT / ".github" / "workflows" / "brain-learning-lab.yml").read_text(encoding="utf-8")
+assert "args+=(--local-catalog-only)" in workflow
+assert workflow.index("args+=(--local-catalog-only)") > workflow.index('if [ "$FAST_HANDOFF" = "true" ]')

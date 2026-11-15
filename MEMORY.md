@@ -1,3 +1,9 @@
+## 2026-11-16 — Targeted ProviderBase reconstruction is local structured-authority first
+
+- Fast-Handoff Learning now invokes `discover_candidates --local-catalog-only --clean-reconstruction` for its exact provider cohort. This mode is accepted only with at least one explicit `--provider` and clean reconstruction; it zeroes the external-upstream source set before discovery, while preserving the existing Global+France `provider_catalog.json` baseline and deterministic ProviderBase generation.
+- This enforces the intended ownership boundary: ProviderBase is a derived NiakVIO artefact, not something that must already exist in an external repository or be hand-authored provider by provider. External repositories remain optional knowledge/discovery inputs outside targeted Learning.
+- The catalogue-union regression test now asserts the local-only CLI/workflow contract. No provider bytes, route logic, activation state or playback acceptance rule changed. Fresh CI pending. Brain Learning run 43774049543 is independently in progress on the immediately preceding reconstruction architecture and already passed its clean ProviderBase stage.
+
 ## 2026-11-16 — Release finalizer duplicate-tail parse failure removed
 
 - Exact pre-change HEAD `1f8168ef4d643220755bb27770fa6a11f9b876bf`: push run 43775504286 created no jobs and GitHub exposed the workflow by path rather than its declared name, consistent with an invalid workflow file. Inspection found an accidentally duplicated tail beginning at line 317 after the complete atomic publish step; the first orphan line had insufficient block-scalar indentation and invalidated YAML parsing.

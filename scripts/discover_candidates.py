@@ -939,6 +939,11 @@ def main() -> int:
         help="Build reconstruction-required providers from a fresh NiakVIO seed instead of compatibility LKG bytes.",
     )
     parser.add_argument(
+        "--local-catalog-only",
+        action="store_true",
+        help="Targeted clean reconstruction from NiakVIO local catalogue/structured authority only; do not inspect external upstream manifests.",
+    )
+    parser.add_argument(
         "--force-clean-reconstruction",
         action="append",
         default=[],
@@ -955,9 +960,16 @@ def main() -> int:
     args = parser.parse_args()
     forced_reconstruction_ids = {canonical_id(value) for value in args.force_clean_reconstruction if canonical_id(value)}
     requested_provider_ids = {canonical_id(value) for value in args.provider if canonical_id(value)}
+    if args.local_catalog_only and (not args.clean_reconstruction or not requested_provider_ids):
+        parser.error("--local-catalog-only requires --clean-reconstruction and at least one --provider")
 
     config = load_discovery_config()
-    targeted_network = bool(requested_provider_ids)
+    if args.local_catalog_only:
+        # Fast Learning rebuilds ProviderBase from NiakVIO-owned local authority.
+        # External repositories remain optional knowledge sources for discovery,
+        # never a prerequisite for a targeted clean reconstruction.
+        config = {**config, "upstreams": {}}
+    targeted_network = bool(requested_provider_ids) and not args.local_catalog_only
     manifest_attempts = 1 if targeted_network else 3
     manifest_timeout = 12 if targeted_network else 35
     provider_attempts = 2 if targeted_network else 3
@@ -1433,6 +1445,7 @@ def main() -> int:
         "excluded": excluded,
         "upstreams": upstream_reports,
         "errors": errors,
+        "local_catalog_only": bool(args.local_catalog_only),
         "candidates": candidates,
     }
     (stage / "candidates.json").write_text(
