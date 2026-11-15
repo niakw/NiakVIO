@@ -560,10 +560,11 @@ def stage(request_path: Path, *, bulk: bool = False) -> dict[str, Any]:
             "required_fields": ["tmdbId", "mediaType"],
         }
     if routes:
-        # Route discovery is durable provider knowledge. Persist it in the
-        # canonical patch so rebuild/finalize cannot silently erase an
-        # executable plan that was present in the initial onboarding model.
-        overrides["provider_patches"][provider_id]["learned_routes"] = routes[:24]
+        # Inventory/onboarding routes are durable *candidate* knowledge only.
+        # They have not yet proved whether an observed/site numeric identity is
+        # TMDB, IMDb or provider-local. Never let a structured inventory hint
+        # become executable authority before causal runtime proof promotes it.
+        overrides["provider_patches"][provider_id]["candidate_learned_routes"] = routes[:24]
 
     overrides["provider_capabilities"][provider_id] = {
         "strategy": strategy,
@@ -652,7 +653,9 @@ def stage(request_path: Path, *, bulk: bool = False) -> dict[str, Any]:
         "officialApi": api or None,
         "origins": origins,
         "observedUrls": [value for value in (api, direct) if value],
-        "routes": routes,
+        "routes": [],
+        "candidateRoutes": routes,
+        "staticCandidatesExecutable": False,
     }
     base_relative, base_sha, _stripped = base_store.persist_clean_provider_seed(
         provider_id,
