@@ -34,6 +34,18 @@ _first_reapply = workflow.index("python3 scripts/reapply_published_overrides.py"
 _first_hub46 = workflow.index("python3 scripts/generate_hub46_manifest.py")
 _prune = workflow.index("python3 scripts/prune_unreferenced_providers.py")
 assert _first_reapply < _first_hub46 < _prune
+# A late authority/type reconciliation is followed by one bounded reapply.
+# Reapply emits canonical readable bytes, so the main finalizer must restore
+# the minimizer fixed point before asking reapply --check to certify the final
+# manifest/provenance bytes. This matches temp recovery and prevents the
+# 2026-11-15 46-provider expanded-byte publication failure.
+_type_reconcile = workflow.index("python3 scripts/reconcile_release_manifest_types.py")
+_late_reapply = workflow.index("python3 scripts/reapply_published_overrides.py", _type_reconcile)
+_late_minimize = workflow.index("python3 scripts/finalize_provider_v3_minimizer.py", _late_reapply)
+_late_minimize_check = workflow.index("python3 scripts/finalize_provider_v3_minimizer.py --check", _late_minimize)
+_late_reapply_check = workflow.index("python3 scripts/reapply_published_overrides.py --check", _late_minimize_check)
+_published_minimizer_test = workflow.index("python3 tests/provider_v3_minimizer_published_test.py", _late_reapply_check)
+assert _type_reconcile < _late_reapply < _late_minimize < _late_minimize_check < _late_reapply_check < _published_minimizer_test
 assert workflow.count("python3 scripts/generate_hub46_manifest.py") >= 2
 assert "Stage provider generation locally" in workflow
 assert "Unexpected path changed by provider-generation finalization" in workflow

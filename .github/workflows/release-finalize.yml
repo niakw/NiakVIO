@@ -122,6 +122,11 @@ jobs:
           # reapply pass. Reapply once against that final durable authority,
           # then require the check pass to prove a true fixed point.
           python3 scripts/reapply_published_overrides.py
+          # Reapply reconstructs canonical readable provider bytes. Restore the
+          # publication minimizer fixed point before asserting the override
+          # fixed point, exactly as the recovery finalizer already does.
+          python3 scripts/finalize_provider_v3_minimizer.py
+          python3 scripts/finalize_provider_v3_minimizer.py --check
           python3 scripts/reapply_published_overrides.py --check
           python3 tests/published_s00_identity_rollout_test.py
           python3 tests/provider_v3_minimizer_contract_test.py
