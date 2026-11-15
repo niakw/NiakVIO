@@ -53,10 +53,14 @@ async function directJsonSources(q,referer){
    var h=headers(referer);h["Origin"]=c.embedBase;h["Accept"]="application/json,text/plain,*/*";
    var r=await g.fetch(url,{headers:h,redirect:"follow"});if(!r||!r.ok)continue;
    var body=await r.json(),rows=body&&Array.isArray(body.sources)?body.sources:[],out=[],seen={};
+   var filter=s(c.directJsonProviderFilter).toLowerCase();
    for(var i=0;i<rows.length&&out.length<c.maxStreams;i++){
-    var row=rows[i]||{},u=s(row.url);if(!/^https?:\/\//i.test(u)||seen[u])continue;seen[u]=1;
+    var row=rows[i]||{},u=s(row.url);
     var ph=row.clientPlaybackHeaders&&typeof row.clientPlaybackHeaders==="object"?row.clientPlaybackHeaders:{};
     var p=row.provider&&typeof row.provider==="object"?row.provider:{};
+    var backend=s(p.id||p.name).toLowerCase();
+    if(filter&&backend!==filter)continue;
+    if(!/^https?:\/\//i.test(u)||seen[u])continue;seen[u]=1;
     var x={url:u,provider:c.provider,name:c.name+(p.name?" · "+s(p.name):""),title:c.name,quality:s(row.quality||"Auto"),headers:Object.assign({"Referer":referer,"User-Agent":c.userAgent},ph)};
     if(q.transport==="tv"){x.season=q.season;x.episode=q.episode}out.push(x);
    }
@@ -100,6 +104,7 @@ def apply_owned(
         "tvAutoNextParam": "",
         "directJsonSourceTemplate": "",
         "directJsonSourceTemplates": [],
+        "directJsonProviderFilter": "",
         "maxDepth": 2,
         "maxStreams": 8,
         "userAgent": (
