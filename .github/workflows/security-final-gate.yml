@@ -255,6 +255,12 @@ jobs:
               rule=row.get('rule') or {}
               severity=str(rule.get('security_severity_level') or rule.get('severity') or '').lower()
               instance=row.get('most_recent_instance') or {}
+              # Open-alert inventory is historical. The release gate is for the
+              # exact CodeQL analysis that just succeeded on this SHA, so stale
+              # instances from older commits/categories must not block current
+              # publication merely because their path still exists.
+              if str(instance.get('commit_sha') or '') != os.environ.get('GITHUB_SHA',''):
+                  continue
               location=instance.get('location') or {}
               path=str(location.get('path') or '')
               if severity not in {'high','critical'}:
