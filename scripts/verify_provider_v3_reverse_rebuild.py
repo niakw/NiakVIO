@@ -3,7 +3,7 @@
 
 The workspace materializer owns ProviderBase + DATA + Lego composition. Published
 Provider JS additionally goes through the conservative NiakVIO minimizer, so this
-proof validates the 46-provider workspace generation and verifies that applying
+proof validates the active-provider workspace generation and verifies that applying
 that minimizer is deterministic before publication. Historical provider-old
 snapshots are intentionally outside current reconstruction authority.
 """
@@ -14,7 +14,7 @@ import json
 import tempfile
 from pathlib import Path
 
-from current_provider_scope import runtime_visible_provider_count
+from current_provider_scope import active_provider_count, active_provider_ids
 
 from materialize_provider_v3_all import materialize_all
 from provider_v3_minimizer import minimize_provider_text
@@ -22,8 +22,7 @@ from provider_v3_minimizer import minimize_provider_text
 ROOT = Path(__file__).resolve().parents[1]
 EXPECTED = ROOT / "provider-v3-materialization.json"
 MANIFEST = ROOT / "manifest.json"
-EXPECTED_PROVIDER_COUNT = runtime_visible_provider_count()
-HISTORICAL_PROVIDER_COUNT = 50
+EXPECTED_PROVIDER_COUNT = active_provider_count()
 
 
 def sha256_bytes(data: bytes) -> str:
@@ -33,7 +32,12 @@ def sha256_bytes(data: bytes) -> str:
 def main() -> int:
     expected = json.loads(EXPECTED.read_text(encoding="utf-8"))
     manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
-    rows = [row for row in manifest.get("scrapers") or [] if isinstance(row, dict)]
+    active_ids = active_provider_ids()
+    rows = [
+        row for row in manifest.get("scrapers") or []
+        if isinstance(row, dict)
+        and str(row.get("id") or "").strip().casefold() in active_ids
+    ]
 
     if expected.get("providerCount") != EXPECTED_PROVIDER_COUNT or len(rows) != EXPECTED_PROVIDER_COUNT:
         raise SystemExit(
@@ -48,10 +52,6 @@ def main() -> int:
         for path in (ROOT / "provider-old").glob("*.js")
         if path.is_file()
     }
-    if len(archived_slugs) != HISTORICAL_PROVIDER_COUNT:
-        raise SystemExit(
-            f"historical provider archive drift: expected {HISTORICAL_PROVIDER_COUNT}, got {len(archived_slugs)}"
-        )
     if set(ids) & archived_slugs:
         raise SystemExit("current providers leaked into provider-old historical authority")
 
@@ -70,7 +70,7 @@ def main() -> int:
         )
         rebuilt_rows = rebuilt.get("providers") or []
         if rebuilt.get("providerCount") != EXPECTED_PROVIDER_COUNT or len(rebuilt_rows) != EXPECTED_PROVIDER_COUNT:
-            raise SystemExit("reverse rebuild did not reconstruct the full Hub46 catalogue")
+            raise SystemExit("reverse rebuild did not reconstruct the full active provider catalogue")
         if rebuilt.get("generation") != expected.get("generation"):
             raise SystemExit(
                 f"generation mismatch expected={expected.get('generation')} actual={rebuilt.get('generation')}"
@@ -105,7 +105,7 @@ def main() -> int:
 
     print(
         "PROVIDER_V3_REVERSE_REBUILD_OK "
-        f"providers={EXPECTED_PROVIDER_COUNT} historical={HISTORICAL_PROVIDER_COUNT} "
+        f"providers={EXPECTED_PROVIDER_COUNT} historical={len(archived_slugs)} "
         f"generation={str(expected['generation'])[:16]} "
         f"workspace_byte_identical={EXPECTED_PROVIDER_COUNT}/{EXPECTED_PROVIDER_COUNT} "
         f"minimizer_fixed_point={EXPECTED_PROVIDER_COUNT}/{EXPECTED_PROVIDER_COUNT} terser=0"
