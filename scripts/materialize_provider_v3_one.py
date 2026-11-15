@@ -17,10 +17,86 @@ from pathlib import Path
 
 import materialize_provider_v3_all as allmat
 from provider_security_hardening import assert_hardened, harden_bytes
+from current_provider_scope import active_provider_ids
 
 ROOT = Path(__file__).resolve().parents[1]
 REGISTRY = ROOT / "provider-hubs.json"
 PROVIDER_CATALOG = ROOT / "provider_catalog.json"
+
+
+def _materialization_generation(rows: list[dict[str, object]]) -> str:
+    aggregate = hashlib.sha256()
+    for row in rows:
+        provider_id = allmat.canonical_id(str(row.get("provider") or ""))
+        digest = str(row.get("sha256") or "").strip().casefold()
+        if not provider_id or len(digest) != 64:
+            raise ValueError(f"invalid targeted materialization row: {provider_id!r}")
+        aggregate.update(provider_id.encode("utf-8"))
+        aggregate.update(bytes.fromhex(digest))
+    return aggregate.hexdigest()
+
+
+def upsert_materialization_report(report: dict[str, object]) -> dict[str, object]:
+    """Keep targeted materialization ledger truthful and incrementally repairable.
+
+    Full materialization owns the canonical complete ledger. Targeted
+    materialization must nevertheless publish its exact row so reconciliation
+    can converge without requiring stale historical rows. Inactive/stale rows
+    are dropped, while expectedProviderCount remains the real active scope;
+    therefore a partial ledger can never masquerade as complete.
+    """
+    path = allmat.DEFAULT_REPORT
+    if path.is_file():
+        document = allmat.load(path)
+    else:
+        document = {
+            "schemaVersion": 3,
+            "providers": [],
+            "devicePolicy": {
+                "providerJsIsDeviceAgnostic": True,
+                "devices": ["tv", "mobile", "desktop"],
+                "perDeviceProviderForkAllowed": False,
+                "clientManifestProjectionAllowed": True,
+            },
+            "legacyProviderJsExecuted": False,
+            "upstreamJsExecuted": False,
+        }
+    active = set(active_provider_ids())
+    existing = [
+        dict(row)
+        for row in (document.get("providers") or [])
+        if isinstance(row, dict)
+        and allmat.canonical_id(str(row.get("provider") or "")) in active
+    ]
+    provider_id = allmat.canonical_id(str(report.get("provider") or ""))
+    replaced = False
+    rows: list[dict[str, object]] = []
+    for row in existing:
+        if allmat.canonical_id(str(row.get("provider") or "")) == provider_id:
+            rows.append(dict(report))
+            replaced = True
+        else:
+            rows.append(row)
+    if not replaced:
+        rows.append(dict(report))
+    document["schemaVersion"] = 3
+    document["sourceSha"] = os.environ.get("GITHUB_SHA") or str(document.get("sourceSha") or "")
+    document["context"] = allmat.materialization_context()
+    document["providers"] = rows
+    document["providerCount"] = len(rows)
+    document["activeProviderIdentityCount"] = len(active)
+    document["expectedProviderCount"] = len(active)
+    document["generation"] = _materialization_generation(rows)
+    document["publication"] = allmat.materialization_context() in {"release", "main"}
+    document["mainTouched"] = allmat.materialization_context() == "main"
+    targeted = [
+        allmat.canonical_id(str(value or ""))
+        for value in (document.get("targetedMaterializedProviders") or [])
+        if allmat.canonical_id(str(value or ""))
+    ]
+    document["targetedMaterializedProviders"] = sorted(set(targeted + [provider_id]))
+    allmat.write_json(path, document)
+    return document
 
 
 def _host(value: object) -> str:
@@ -753,9 +829,11 @@ def materialize_one(
         "domainSubstitutionReconciledProviders": changed_domains,
         "minimizer": minimizer_report,
     }
+    ledger = upsert_materialization_report(report)
     print(
         "FIELD_PROVIDER_V3_ONE_MATERIALIZED "
-        f"provider={provider_id} sha256={digest[:16]} file={relative}"
+        f"provider={provider_id} sha256={digest[:16]} file={relative} "
+        f"ledger={ledger.get('providerCount')}/{ledger.get('expectedProviderCount')}"
     )
     return report
 
