@@ -12,6 +12,7 @@ import argparse
 import copy
 import hashlib
 import json
+import os
 import urllib.parse
 from pathlib import Path
 
