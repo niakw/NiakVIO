@@ -36,6 +36,7 @@ def apply_document(data: dict) -> bool:
         "api_base": "https://api.wecollege.net",
         "origin": "https://www.movy.sx",
         "referer": "https://www.movy.sx/",
+        "double_encode_title": True,
         "endpoints": [
             {"label": "Miami", "path": "miami/sources"},
             {"label": "Boise", "path": "boise/sources"},
@@ -97,6 +98,8 @@ def validate_document(data: dict) -> None:
     options = (row.get("provider_lego_options") or {}).get(LEGO) or {}
     if options.get("api_base") != "https://api.wecollege.net":
         raise AssertionError("Movy API base drift")
+    if options.get("double_encode_title") is not True:
+        raise AssertionError("Movy double title encoding drift")
     paths = [str(x.get("path") or "") for x in options.get("endpoints") or [] if isinstance(x, dict)]
     if paths != ["miami/sources", "boise/sources", "nashville/sources"]:
         raise AssertionError(f"Movy endpoint order drift: {paths!r}")
