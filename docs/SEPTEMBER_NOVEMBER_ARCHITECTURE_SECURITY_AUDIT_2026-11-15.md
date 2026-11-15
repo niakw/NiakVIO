@@ -55,3 +55,12 @@ All 46 September census identities still appear in November census. Of the 27 hi
 ## Verification status
 
 This comparison does not execute external provider traffic, claim playback or authorize changes to production manifests. Only the maintained-source URL-assertion hardening is included. Revisit exact-SHA CodeQL, full contract test and the branch state before closing the work.
+
+## 2026-11-15 — Complete read-only CodeQL inventory follow-up
+
+- Run [43716033052](https://github.com/niakw/NiakVIO/actions/runs/43716033052) on `4d210228b2017afc5cd7f1b18a718d1a5e43f0c1` completed successfully; six reference-classification assertions passed, 377 unique open High alert IDs exported, nine pinned paths and zero unresolved manifest references. Dependabot and secret-scanning remain unavailable/unverified.
+- Current classification: 376 unreferenced provider-snapshot alerts, one maintained-source alert (#2531), zero release-referenced/pinned-path-match/lifecycle-archive alerts. The 376 alerts cover 115 distinct snapshot paths; comparison with the exact-SHA providers directory found 355 alerts on 106 absent paths and 21 alerts on nine present paths. An absent path on this tree does not establish historical release inaccessibility.
+- Rule totals: double escaping 204; insecure randomness 148; missing regexp anchor 21; bad tag filtering 3; incomplete URL substring sanitization 1. #2531's current test uses exact URL-origin equality; the earlier category-retirement job still fails on bounded pagination. Do not dismiss findings or delete scanner analyses on the basis of this inventory.
+- Prior exact-SHA Final Gate 43715324619 reported 377 open, zero current high/critical and zero current-provider high/critical after #2918's test correction. Core Workflow Gate and Verify & Publish remained red. Brain's obsolete fix branch is now absent, independently verified; this assistant did not execute its deletion.
+- September 11 CodeQL included separate generated-provider shards. September 30 and November use maintained JS Core and ProviderBase categories. That coverage change predates the end-of-September baseline and is not a demonstrated Codex regression. A green maintained-source scan is not equivalent to full historical snapshot coverage. No new release or playback proof.
+
