@@ -68,7 +68,18 @@ def provider_scope_ids() -> set[str] | None:
         raise SystemExit(
             f"native provider scope invalid: ids={len(ids)} expected={expected} file={scope_path}"
         )
-    print(f"FIELD_NATIVE_PROVIDER_SCOPE file={scope_path.relative_to(ROOT)} providers={len(ids)}")
+    policy = str(data.get("scopePolicy") or "").strip().casefold()
+    historical_evidence = (
+        policy in {"historical-evidence-only", "dynamic-active-hub-authority"}
+        or scope_path.name == "hub-lab-matrix-46.json"
+    )
+    if historical_evidence:
+        print(
+            f"FIELD_NATIVE_PROVIDER_SCOPE file={scope_path.relative_to(ROOT)} providers={len(ids)} "
+            "mode=evidence-only execution_authority=current-active-manifest"
+        )
+        return None
+    print(f"FIELD_NATIVE_PROVIDER_SCOPE file={scope_path.relative_to(ROOT)} providers={len(ids)} mode=strict")
     return ids
 
 
