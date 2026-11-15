@@ -1,3 +1,9 @@
+## 2026-11-15 — Release projection contract distinguishes identity history from executable archive paths
+
+- Finalizer 43729947324 reached a staged 5.21.147 generation, rebound 36 exact-byte offline proofs (including Chillflix), materialized all 46 active Global providers and then failed only in `tests/release_projection_scope_test.py` because four reactivated identities (anidb, kisskh, topcartoons, vidlink) also have historical generations in `provider-old/`.
+- The old contract incorrectly equated identity overlap with execution of archived bytes. Preserve the 50 historical identities, but validate the actual release boundary by rejecting any `provider-old/` filename in Global, VF, no-anime, VF-no-anime, Hub46/native Hub46 and provider_catalog projections. This allows a current identity to retain old snapshots without permitting those archived artifacts into production.
+- No provider bytes, manifest row, activation state, playback evidence or version is changed by this contract correction. Fresh Workflow/Finalizer validation remains required; Chillflix proof still must be rebound to the exact final bytes before publication.
+
 ## 2026-11-15 — Release finalizer sibling-import failure fixed
 
 - Finalizer 43727118367 completed the expensive Provider-v3 rebuild successfully: 46/46 materialized, 46/46 minimizer fixed-point, Chillflix rebound to generated exact bytes `providers/chillflix--nuvio--3aae091915c24514.js`, then failed only when `tests/reconcile_active_provider_publication_test.py` imported the release helper through `importlib`.

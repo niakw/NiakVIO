@@ -23,13 +23,26 @@ def canonical(value: object) -> str:
     return str(value or "").strip().casefold().replace("_", "-")
 
 
-def manifest_ids(path: Path) -> list[str]:
+def manifest_rows(path: Path) -> list[dict]:
     doc = load(path)
-    rows = doc.get("scrapers") or []
-    ids = [canonical(row.get("id")) for row in rows if isinstance(row, dict)]
+    return [row for row in doc.get("scrapers") or [] if isinstance(row, dict)]
+
+
+def manifest_ids(path: Path) -> list[str]:
+    rows = manifest_rows(path)
+    ids = [canonical(row.get("id")) for row in rows]
     assert all(ids), f"{path}: empty provider id"
     assert len(ids) == len(set(ids)), f"{path}: duplicate provider ids"
     return ids
+
+
+def assert_no_archive_paths(path: Path) -> None:
+    leaked = [
+        str(row.get("filename") or "")
+        for row in manifest_rows(path)
+        if "provider-old/" in str(row.get("filename") or "").replace("\\", "/")
+    ]
+    assert not leaked, f"{path}: archived provider path leaked into published projection: {leaked}"
 
 
 def archived_ids() -> set[str]:
@@ -56,7 +69,11 @@ assert root_set == visible_set, (
     f"missing={sorted(visible_set-root_set)} extra={sorted(root_set-visible_set)}"
 )
 assert len(archive) == HISTORICAL_COUNT, f"provider-old historical scope drift: {len(archive)} != {HISTORICAL_COUNT}"
-assert root_set.isdisjoint(archive), f"current/historical overlap: {sorted(root_set & archive)}"
+# A currently-visible provider may legitimately have older generations preserved
+# under provider-old/. Identity overlap is therefore expected after reactivation.
+# The release invariant is path-based: no current projection may execute an
+# archived provider-old artifact.
+assert_no_archive_paths(ROOT / "manifest.json")
 
 root_version = str(load(ROOT / "manifest.json").get("version") or "")
 france_only_rows = france_only_catalog_rows(root=ROOT)
@@ -87,8 +104,7 @@ assert vf_no_anime_ids <= vf_ids, (
 for relative in ("vf/manifest.json", "no-anime/manifest.json", "vf-no-anime/manifest.json"):
     projection = load(ROOT / relative)
     ids = set(manifest_ids(ROOT / relative))
-    archived_leak = sorted(ids & archive)
-    assert not archived_leak, f"{relative}: historical providers leaked into published projection: {archived_leak}"
+    assert_no_archive_paths(ROOT / relative)
     assert str(projection.get("version") or "") == root_version, (
         f"{relative}: version drift {projection.get('version')!r} != {root_version!r}"
     )
@@ -104,7 +120,7 @@ for relative in ("manifest-hub46.json", "native-hub46/manifest.json"):
         f"actual={len(ids)} expected={len(active_set)} "
         f"missing={sorted(active_set-set(ids))} extra={sorted(set(ids)-active_set)}"
     )
-    assert not (set(ids) & archive), f"{relative}: historical provider leaked into active projection"
+    assert_no_archive_paths(path)
     assert str(projection.get("version") or "") == root_version, (
         f"{relative}: version drift {projection.get('version')!r} != {root_version!r}"
     )
@@ -117,7 +133,13 @@ assert len(catalog_ids) == len(union_visible), (
 assert set(catalog_ids) == union_visible, (
     "provider_catalog membership differs from Global + France-only union"
 )
-assert not (set(catalog_ids) & archive), "historical provider leaked into provider_catalog"
+catalog_rows = [row for row in catalog.get("providers") or [] if isinstance(row, dict)]
+catalog_archive_paths = [
+    str((row.get("manifest") or {}).get("filename") or row.get("filename") or "")
+    for row in catalog_rows
+    if "provider-old/" in str((row.get("manifest") or {}).get("filename") or row.get("filename") or "").replace("\\", "/")
+]
+assert not catalog_archive_paths, f"historical provider path leaked into provider_catalog: {catalog_archive_paths}"
 
 print(
     "release projection scope passed: "
