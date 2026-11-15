@@ -14,11 +14,12 @@
     "terminalPlaybackRequiredForActiveCurrentBytes": true,
     "bulkOnboardingPendingGetsTargetedProofWithoutRuntimeAuthority": true
   },
-  "providerCount": 82,
+  "providerCount": 95,
   "repairEligible": [
     "anikototv",
     "castle",
     "french-manga",
+    "movy",
     "mugiwarastream",
     "neko-sama",
     "papadustream",
@@ -29,6 +30,8 @@
   "repairBlocked": [
     "4khdhub",
     "67movies",
+    "7movies",
+    "all-you-can-watch",
     "allanime",
     "allwish",
     "anidb",
@@ -44,15 +47,20 @@
     "animevostfr",
     "arrowtv",
     "asiaflix",
+    "bcine",
     "boredflix",
     "chillflix",
     "cinegram",
+    "cinejoy",
     "cinemabz",
     "coflix",
     "corsflix",
+    "diostream",
     "documentary-area",
     "emnexmovies",
     "flemmix",
+    "flickystream",
+    "flikhub",
     "flixer",
     "flixhq",
     "fsharetv",
@@ -61,16 +69,19 @@
     "ihavenotv",
     "internet-archive",
     "kehflix",
+    "kickassanime",
+    "kisskh",
     "kurage",
     "latestmovies",
     "mallumv",
+    "meowtv",
     "moviebite",
     "moviebox",
     "movieshunt",
     "moviesmod",
     "movish",
-    "movy",
     "neonflix",
+    "nomorflix",
     "overlook",
     "persianstremio",
     "playimdb",
@@ -83,6 +94,7 @@
     "rivestream-ru",
     "sflix",
     "shuttletv",
+    "svstream",
     "topcartoons",
     "uhdmovies",
     "videasy",
@@ -98,6 +110,7 @@
     "vuflix",
     "watch-cartoon-online",
     "watchott",
+    "willow",
     "wookafr",
     "yflix"
   ],
@@ -658,14 +671,16 @@
     },
     {
       "provider": "movy",
-      "action": "REDISCOVER_SEARCH",
-      "repairEligible": false,
-      "confidence": "low",
-      "authorityClass": "unproven-direct-candidate",
+      "action": "KEEP_BACKEND",
+      "repairEligible": true,
+      "confidence": "high",
+      "authorityClass": "api-or-backend",
       "failureCount": 0,
+      "backendUrls": [
+        "https://api.wecollege.net"
+      ],
       "reasons": [
-        "direct_candidate_unproven",
-        "search_supplement_only"
+        "structured_backend_authority"
       ]
     },
     {
@@ -1050,6 +1065,149 @@
       "reasons": [
         "direct_candidate_unproven",
         "search_supplement_only"
+      ]
+    },
+    {
+      "provider": "flickystream",
+      "action": "ONBOARDING_PENDING",
+      "repairEligible": false,
+      "confidence": "onboarding-pending",
+      "authorityClass": "onboarding-pending",
+      "failureCount": 0,
+      "reasons": [
+        "bulk_onboarding_pending"
+      ]
+    },
+    {
+      "provider": "flikhub",
+      "action": "ONBOARDING_PENDING",
+      "repairEligible": false,
+      "confidence": "onboarding-pending",
+      "authorityClass": "onboarding-pending",
+      "failureCount": 0,
+      "reasons": [
+        "bulk_onboarding_pending"
+      ]
+    },
+    {
+      "provider": "diostream",
+      "action": "ONBOARDING_PENDING",
+      "repairEligible": false,
+      "confidence": "onboarding-pending",
+      "authorityClass": "onboarding-pending",
+      "failureCount": 0,
+      "reasons": [
+        "bulk_onboarding_pending"
+      ]
+    },
+    {
+      "provider": "nomorflix",
+      "action": "ONBOARDING_PENDING",
+      "repairEligible": false,
+      "confidence": "onboarding-pending",
+      "authorityClass": "onboarding-pending",
+      "failureCount": 0,
+      "reasons": [
+        "bulk_onboarding_pending"
+      ]
+    },
+    {
+      "provider": "svstream",
+      "action": "ONBOARDING_PENDING",
+      "repairEligible": false,
+      "confidence": "onboarding-pending",
+      "authorityClass": "onboarding-pending",
+      "failureCount": 0,
+      "reasons": [
+        "bulk_onboarding_pending"
+      ]
+    },
+    {
+      "provider": "kisskh",
+      "action": "ONBOARDING_PENDING",
+      "repairEligible": false,
+      "confidence": "onboarding-pending",
+      "authorityClass": "onboarding-pending",
+      "failureCount": 0,
+      "reasons": [
+        "bulk_onboarding_pending"
+      ]
+    },
+    {
+      "provider": "cinejoy",
+      "action": "ONBOARDING_PENDING",
+      "repairEligible": false,
+      "confidence": "onboarding-pending",
+      "authorityClass": "onboarding-pending",
+      "failureCount": 0,
+      "reasons": [
+        "bulk_onboarding_pending"
+      ]
+    },
+    {
+      "provider": "meowtv",
+      "action": "ONBOARDING_PENDING",
+      "repairEligible": false,
+      "confidence": "onboarding-pending",
+      "authorityClass": "onboarding-pending",
+      "failureCount": 0,
+      "reasons": [
+        "bulk_onboarding_pending"
+      ]
+    },
+    {
+      "provider": "willow",
+      "action": "ONBOARDING_PENDING",
+      "repairEligible": false,
+      "confidence": "onboarding-pending",
+      "authorityClass": "onboarding-pending",
+      "failureCount": 0,
+      "reasons": [
+        "bulk_onboarding_pending"
+      ]
+    },
+    {
+      "provider": "7movies",
+      "action": "ONBOARDING_PENDING",
+      "repairEligible": false,
+      "confidence": "onboarding-pending",
+      "authorityClass": "onboarding-pending",
+      "failureCount": 0,
+      "reasons": [
+        "bulk_onboarding_pending"
+      ]
+    },
+    {
+      "provider": "all-you-can-watch",
+      "action": "ONBOARDING_PENDING",
+      "repairEligible": false,
+      "confidence": "onboarding-pending",
+      "authorityClass": "onboarding-pending",
+      "failureCount": 0,
+      "reasons": [
+        "bulk_onboarding_pending"
+      ]
+    },
+    {
+      "provider": "bcine",
+      "action": "ONBOARDING_PENDING",
+      "repairEligible": false,
+      "confidence": "onboarding-pending",
+      "authorityClass": "onboarding-pending",
+      "failureCount": 0,
+      "reasons": [
+        "bulk_onboarding_pending"
+      ]
+    },
+    {
+      "provider": "kickassanime",
+      "action": "ONBOARDING_PENDING",
+      "repairEligible": false,
+      "confidence": "onboarding-pending",
+      "authorityClass": "onboarding-pending",
+      "failureCount": 0,
+      "reasons": [
+        "bulk_onboarding_pending"
       ]
     }
   ]
