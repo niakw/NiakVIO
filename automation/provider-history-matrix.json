@@ -1,7 +1,7 @@
 {
   "schemaVersion": 3,
-  "providerCount": 41,
-  "currentManifestVersion": "5.21.134",
+  "providerCount": 82,
+  "currentManifestVersion": "5.21.146",
   "snapshotRefs": {
     "tag_5_21_0": {
       "ref": "5.21.0",
@@ -23,12 +23,12 @@
   "classificationCounts": {
     "CANDIDATE_GREEN": 2,
     "CURRENT_RED": 6,
-    "HISTORICAL_GREEN_UNRETESTED": 2,
+    "HISTORICAL_GREEN_UNRETESTED": 3,
     "LEARN": 13,
     "PARTIAL": 1,
     "PARTIAL_PROTECT": 2,
     "PROTECT": 2,
-    "UNVERIFIED": 12,
+    "UNVERIFIED": 52,
     "UPSTREAM_DRIFT": 1
   },
   "desktopMacFieldObservation": "No provider returned a visible result on Desktop macOS in the user's current field test.",
@@ -49,9 +49,9 @@
         "5.21.0": "1.0.37 / `4efd8276edad3398`",
         "5.21.16": "1.0.46 / `e70dc206194911cc`",
         "5.21.36": "1.0.60 / `18a059512a0cbd33`",
-        "5.21.134": "1.0.100 / `eca7e5aae12dd62b`"
+        "5.21.146": "1.0.105 / `c36aa30eaa709878`"
       },
-      "retainedGenerationCount": 10,
+      "retainedGenerationCount": 0,
       "publishedBaselineRetained": false,
       "historical52136": {
         "movie": "zero",
@@ -84,7 +84,7 @@
           "label": "no-streams",
           "source": "5.21.36 provider-v3-quick-yield"
         },
-        "5.21.134": {
+        "5.21.146": {
           "icon": "🔴",
           "label": "published-red",
           "source": "published-byte-guard"
@@ -153,6 +153,106 @@
           "en"
         ],
         "lostLanguages": [],
+        "disabledAfterHistoricalEnabled": true
+      },
+      "nonRegressionStatus": "NO_HISTORICAL_GREEN",
+      "publicationProofRequired": false,
+      "externalDriftAccepted": false
+    },
+    {
+      "provider": "67movies",
+      "name": "🎬 67Movies",
+      "types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "languages": [
+        "en"
+      ],
+      "family": "—",
+      "snapshots": {
+        "5.21.0": "—",
+        "5.21.16": "—",
+        "5.21.36": "—",
+        "5.21.146": "1.0.0 / `7a0804a6d5b1d83d`"
+      },
+      "retainedGenerationCount": 0,
+      "publishedBaselineRetained": false,
+      "historical52136": {},
+      "currentPublishedGuard": {},
+      "currentTvField": [],
+      "learnOwned": false,
+      "priority": false,
+      "vfRegressionGuard": false,
+      "classification": "UNVERIFIED",
+      "historyVerdict": "No current positive evidence is recorded.",
+      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "⚪",
+          "label": "no-report",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "⚪",
+          "label": "no-report",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "⚪",
+          "label": "no-proof",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.146": {
+          "icon": "⚪",
+          "label": "current-unverified",
+          "source": "no-current-proof"
+        }
+      },
+      "regressionWatch": false,
+      "historicalPositiveVersions": [],
+      "historicalVerifiedLanes": [],
+      "currentVerifiedLanes": [],
+      "explicitCurrentFailedLanes": [],
+      "missingHistoricalVerifiedLanes": [],
+      "contractDrift": {
+        "historicalSemanticTypes": {
+          "5.21.0": [],
+          "5.21.16": [],
+          "5.21.36": []
+        },
+        "historicalSemanticTypeSources": {
+          "5.21.0": "unproven-transport-only",
+          "5.21.16": "unproven-transport-only",
+          "5.21.36": "unproven-transport-only"
+        },
+        "historicalTransportTypes": {
+          "5.21.0": [],
+          "5.21.16": [],
+          "5.21.36": []
+        },
+        "semanticTypeFloor": [],
+        "currentSemanticTypes": [
+          "anime",
+          "movie",
+          "tv"
+        ],
+        "currentSemanticTypeSource": "supportedTypes-current-fallback",
+        "lostSemanticTypes": [],
+        "blockingLostSemanticTypes": [],
+        "unprovedSemanticReclassificationTypes": [],
+        "historicalFormats": [],
+        "currentFormats": [
+          "m3u8",
+          "mp4"
+        ],
+        "hlsM3u8Lost": false,
+        "historicalLanguages": [],
+        "currentLanguages": [
+          "en"
+        ],
+        "lostLanguages": [],
         "disabledAfterHistoricalEnabled": false
       },
       "nonRegressionStatus": "NO_HISTORICAL_GREEN",
@@ -174,9 +274,9 @@
         "5.21.0": "1.0.21 / `7947316d3cbed215`",
         "5.21.16": "1.0.23 / `7947316d3cbed215`",
         "5.21.36": "1.0.30 / `4309c59ca0f5eaa8`",
-        "5.21.134": "1.0.72 / `2712c2a7cfff63ee`"
+        "5.21.146": "1.0.77 / `0539ecc5f76224b0`"
       },
-      "retainedGenerationCount": 10,
+      "retainedGenerationCount": 0,
       "publishedBaselineRetained": false,
       "historical52136": {
         "anime": "zero"
@@ -205,7 +305,7 @@
           "label": "no-streams",
           "source": "5.21.36 provider-v3-quick-yield"
         },
-        "5.21.134": {
+        "5.21.146": {
           "icon": "🟠",
           "label": "learn-debt",
           "source": "repair-handoff"
@@ -299,9 +399,9 @@
         "5.21.0": "1.0.29 / `dd80ecdd13bc9c0f`",
         "5.21.16": "1.0.59 / `4840bc8a37b320d2`",
         "5.21.36": "1.0.73 / `fae84d4c01870beb`",
-        "5.21.134": "1.0.110 / `ee9aeb311d107c2b`"
+        "5.21.146": "1.0.115 / `e067beed64be354d`"
       },
-      "retainedGenerationCount": 10,
+      "retainedGenerationCount": 0,
       "publishedBaselineRetained": false,
       "historical52136": {
         "movie": "verified",
@@ -331,7 +431,7 @@
           "label": "verified",
           "source": "5.21.36 provider-v3-quick-yield"
         },
-        "5.21.134": {
+        "5.21.146": {
           "icon": "⚪",
           "label": "current-untested",
           "source": "no-current-proof"
@@ -416,6 +516,216 @@
       "externalDriftAccepted": false
     },
     {
+      "provider": "anidb",
+      "name": "🗃️ AniDB",
+      "types": [
+        "anime"
+      ],
+      "languages": [],
+      "family": "—",
+      "snapshots": {
+        "5.21.0": "1.0.19 / `7d30eadae7b68fd3`",
+        "5.21.16": "1.0.25 / `89ff5c2b651efeb5`",
+        "5.21.36": "1.0.39 / `52a2a7f89dc7e84a`",
+        "5.21.146": "1.0.31 / `1323b5ec0e9c40ca`"
+      },
+      "retainedGenerationCount": 0,
+      "publishedBaselineRetained": false,
+      "historical52136": {
+        "anime": "zero"
+      },
+      "currentPublishedGuard": {},
+      "currentTvField": [],
+      "learnOwned": false,
+      "priority": false,
+      "vfRegressionGuard": false,
+      "classification": "UNVERIFIED",
+      "historyVerdict": "No current positive evidence is recorded.",
+      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "🔴",
+          "label": "runtime-error",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "⚪",
+          "label": "provider-unreachable/inconclusive",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "🔴",
+          "label": "no-streams",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.146": {
+          "icon": "⚪",
+          "label": "current-unverified",
+          "source": "no-current-proof"
+        }
+      },
+      "regressionWatch": false,
+      "historicalPositiveVersions": [],
+      "historicalVerifiedLanes": [],
+      "currentVerifiedLanes": [],
+      "explicitCurrentFailedLanes": [],
+      "missingHistoricalVerifiedLanes": [],
+      "contractDrift": {
+        "historicalSemanticTypes": {
+          "5.21.0": [],
+          "5.21.16": [
+            "anime"
+          ],
+          "5.21.36": [
+            "anime"
+          ]
+        },
+        "historicalSemanticTypeSources": {
+          "5.21.0": "5.21.0-fixture-types-unproven-transport-only",
+          "5.21.16": "canonicalSupportedTypes",
+          "5.21.36": "canonicalSupportedTypes"
+        },
+        "historicalTransportTypes": {
+          "5.21.0": [
+            "anime"
+          ],
+          "5.21.16": [
+            "anime",
+            "movie",
+            "tv"
+          ],
+          "5.21.36": [
+            "anime",
+            "movie",
+            "tv"
+          ]
+        },
+        "semanticTypeFloor": [
+          "anime"
+        ],
+        "currentSemanticTypes": [
+          "anime"
+        ],
+        "currentSemanticTypeSource": "canonicalSupportedTypes",
+        "lostSemanticTypes": [],
+        "blockingLostSemanticTypes": [],
+        "unprovedSemanticReclassificationTypes": [],
+        "historicalFormats": [
+          "m3u8",
+          "mp4"
+        ],
+        "currentFormats": [
+          "m3u8",
+          "mp4"
+        ],
+        "hlsM3u8Lost": false,
+        "historicalLanguages": [
+          "en",
+          "ja",
+          "ko"
+        ],
+        "currentLanguages": [],
+        "lostLanguages": [
+          "en",
+          "ja",
+          "ko"
+        ],
+        "disabledAfterHistoricalEnabled": false
+      },
+      "nonRegressionStatus": "NO_HISTORICAL_GREEN",
+      "publicationProofRequired": false,
+      "externalDriftAccepted": false
+    },
+    {
+      "provider": "aniflix-uno",
+      "name": "🎬 AniFlix",
+      "types": [
+        "anime"
+      ],
+      "languages": [],
+      "family": "—",
+      "snapshots": {
+        "5.21.0": "—",
+        "5.21.16": "—",
+        "5.21.36": "—",
+        "5.21.146": "1.0.0 / `d766a00a72e57f41`"
+      },
+      "retainedGenerationCount": 0,
+      "publishedBaselineRetained": false,
+      "historical52136": {},
+      "currentPublishedGuard": {},
+      "currentTvField": [],
+      "learnOwned": false,
+      "priority": false,
+      "vfRegressionGuard": false,
+      "classification": "UNVERIFIED",
+      "historyVerdict": "No current positive evidence is recorded.",
+      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "⚪",
+          "label": "no-report",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "⚪",
+          "label": "no-report",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "⚪",
+          "label": "no-proof",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.146": {
+          "icon": "⚪",
+          "label": "current-unverified",
+          "source": "no-current-proof"
+        }
+      },
+      "regressionWatch": false,
+      "historicalPositiveVersions": [],
+      "historicalVerifiedLanes": [],
+      "currentVerifiedLanes": [],
+      "explicitCurrentFailedLanes": [],
+      "missingHistoricalVerifiedLanes": [],
+      "contractDrift": {
+        "historicalSemanticTypes": {
+          "5.21.0": [],
+          "5.21.16": [],
+          "5.21.36": []
+        },
+        "historicalSemanticTypeSources": {
+          "5.21.0": "unproven-transport-only",
+          "5.21.16": "unproven-transport-only",
+          "5.21.36": "unproven-transport-only"
+        },
+        "historicalTransportTypes": {
+          "5.21.0": [],
+          "5.21.16": [],
+          "5.21.36": []
+        },
+        "semanticTypeFloor": [],
+        "currentSemanticTypes": [
+          "anime"
+        ],
+        "currentSemanticTypeSource": "canonicalSupportedTypes",
+        "lostSemanticTypes": [],
+        "blockingLostSemanticTypes": [],
+        "unprovedSemanticReclassificationTypes": [],
+        "historicalFormats": [],
+        "currentFormats": [],
+        "hlsM3u8Lost": false,
+        "historicalLanguages": [],
+        "currentLanguages": [],
+        "lostLanguages": [],
+        "disabledAfterHistoricalEnabled": false
+      },
+      "nonRegressionStatus": "NO_HISTORICAL_GREEN",
+      "publicationProofRequired": false,
+      "externalDriftAccepted": false
+    },
+    {
       "provider": "anikototv",
       "name": "📺 AnikotoTV",
       "types": [
@@ -430,7 +740,7 @@
         "5.21.0": "1.0.56 / `08d395095a632a46`",
         "5.21.16": "1.0.87 / `8aadc05c38391372`",
         "5.21.36": "1.0.101 / `a7618bce82d44808`",
-        "5.21.134": "1.0.139 / `710a9a30b4b57aac`"
+        "5.21.146": "1.0.148 / `97fcf275bf862640`"
       },
       "retainedGenerationCount": 10,
       "publishedBaselineRetained": false,
@@ -462,7 +772,7 @@
           "label": "no-streams",
           "source": "5.21.36 provider-v3-quick-yield"
         },
-        "5.21.134": {
+        "5.21.146": {
           "icon": "⚪",
           "label": "current-unverified",
           "source": "no-current-proof"
@@ -552,9 +862,9 @@
         "5.21.0": "1.1.91 / `10e285fc12662f4d`",
         "5.21.16": "1.1.122 / `c77fc61495dd1d49`",
         "5.21.36": "1.1.140 / `24dc0903ba664a12`",
-        "5.21.134": "1.1.188 / `04574da17c9ae174`"
+        "5.21.146": "1.1.195 / `6f4de85fc5103e71`"
       },
-      "retainedGenerationCount": 10,
+      "retainedGenerationCount": 0,
       "publishedBaselineRetained": false,
       "historical52136": {
         "anime": "verified",
@@ -592,7 +902,7 @@
           "label": "partial",
           "source": "5.21.36 provider-v3-quick-yield"
         },
-        "5.21.134": {
+        "5.21.146": {
           "icon": "🟡",
           "label": "field-green/partial",
           "source": "field+published-guard"
@@ -667,7 +977,7 @@
           "fr"
         ],
         "lostLanguages": [],
-        "disabledAfterHistoricalEnabled": false
+        "disabledAfterHistoricalEnabled": true
       },
       "nonRegressionStatus": "NO_HISTORICAL_GREEN",
       "publicationProofRequired": false,
@@ -687,9 +997,9 @@
         "5.21.0": "0.0.28 / `bcfadc4b5a25574a`",
         "5.21.16": "0.0.58 / `9917da85493786d9`",
         "5.21.36": "0.0.72 / `a97f953068636cc7`",
-        "5.21.134": "0.0.109 / `194ceccc97e8e190`"
+        "5.21.146": "0.0.114 / `a4c9aed162c187c4`"
       },
-      "retainedGenerationCount": 10,
+      "retainedGenerationCount": 0,
       "publishedBaselineRetained": false,
       "historical52136": {
         "anime": "zero",
@@ -720,7 +1030,7 @@
           "label": "no-streams",
           "source": "5.21.36 provider-v3-quick-yield"
         },
-        "5.21.134": {
+        "5.21.146": {
           "icon": "🟠",
           "label": "learn-debt",
           "source": "repair-handoff"
@@ -793,6 +1103,95 @@
       "externalDriftAccepted": false
     },
     {
+      "provider": "animejlprovider",
+      "name": "🌸 AnimeJL",
+      "types": [
+        "anime"
+      ],
+      "languages": [],
+      "family": "—",
+      "snapshots": {
+        "5.21.0": "—",
+        "5.21.16": "—",
+        "5.21.36": "—",
+        "5.21.146": "1.0.0 / `1606673e3b4efa68`"
+      },
+      "retainedGenerationCount": 0,
+      "publishedBaselineRetained": false,
+      "historical52136": {},
+      "currentPublishedGuard": {},
+      "currentTvField": [],
+      "learnOwned": false,
+      "priority": false,
+      "vfRegressionGuard": false,
+      "classification": "UNVERIFIED",
+      "historyVerdict": "No current positive evidence is recorded.",
+      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "⚪",
+          "label": "no-report",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "⚪",
+          "label": "no-report",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "⚪",
+          "label": "no-proof",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.146": {
+          "icon": "⚪",
+          "label": "current-unverified",
+          "source": "no-current-proof"
+        }
+      },
+      "regressionWatch": false,
+      "historicalPositiveVersions": [],
+      "historicalVerifiedLanes": [],
+      "currentVerifiedLanes": [],
+      "explicitCurrentFailedLanes": [],
+      "missingHistoricalVerifiedLanes": [],
+      "contractDrift": {
+        "historicalSemanticTypes": {
+          "5.21.0": [],
+          "5.21.16": [],
+          "5.21.36": []
+        },
+        "historicalSemanticTypeSources": {
+          "5.21.0": "unproven-transport-only",
+          "5.21.16": "unproven-transport-only",
+          "5.21.36": "unproven-transport-only"
+        },
+        "historicalTransportTypes": {
+          "5.21.0": [],
+          "5.21.16": [],
+          "5.21.36": []
+        },
+        "semanticTypeFloor": [],
+        "currentSemanticTypes": [
+          "anime"
+        ],
+        "currentSemanticTypeSource": "canonicalSupportedTypes",
+        "lostSemanticTypes": [],
+        "blockingLostSemanticTypes": [],
+        "unprovedSemanticReclassificationTypes": [],
+        "historicalFormats": [],
+        "currentFormats": [],
+        "hlsM3u8Lost": false,
+        "historicalLanguages": [],
+        "currentLanguages": [],
+        "lostLanguages": [],
+        "disabledAfterHistoricalEnabled": false
+      },
+      "nonRegressionStatus": "NO_HISTORICAL_GREEN",
+      "publicationProofRequired": false,
+      "externalDriftAccepted": false
+    },
+    {
       "provider": "animekai",
       "name": "🐉 AnimeKai",
       "types": [
@@ -806,9 +1205,9 @@
         "5.21.0": "1.0.28 / `a240cb19bce3a1ec`",
         "5.21.16": "1.0.59 / `f36ee061425c160d`",
         "5.21.36": "1.0.78 / `29d0be2d7a992800`",
-        "5.21.134": "1.0.115 / `8b20db6f7c06578f`"
+        "5.21.146": "1.0.120 / `345fa9166ae73ef5`"
       },
-      "retainedGenerationCount": 10,
+      "retainedGenerationCount": 0,
       "publishedBaselineRetained": false,
       "historical52136": {
         "anime": "zero"
@@ -837,7 +1236,7 @@
           "label": "no-streams",
           "source": "5.21.36 provider-v3-quick-yield"
         },
-        "5.21.134": {
+        "5.21.146": {
           "icon": "🟠",
           "label": "learn-debt",
           "source": "repair-handoff"
@@ -906,7 +1305,7 @@
           "en"
         ],
         "lostLanguages": [],
-        "disabledAfterHistoricalEnabled": false
+        "disabledAfterHistoricalEnabled": true
       },
       "nonRegressionStatus": "NO_HISTORICAL_GREEN",
       "publicationProofRequired": false,
@@ -928,9 +1327,9 @@
         "5.21.0": "1.0.25 / `412e95313f655028`",
         "5.21.16": "1.0.32 / `4bee389bf085824a`",
         "5.21.36": "1.0.46 / `f89d520cc66a908e`",
-        "5.21.134": "1.0.87 / `ceb5924bba4fe522`"
+        "5.21.146": "1.0.92 / `d52f0307383a61cc`"
       },
-      "retainedGenerationCount": 10,
+      "retainedGenerationCount": 0,
       "publishedBaselineRetained": false,
       "historical52136": {
         "anime": "zero",
@@ -961,7 +1360,7 @@
           "label": "no-streams",
           "source": "5.21.36 provider-v3-quick-yield"
         },
-        "5.21.134": {
+        "5.21.146": {
           "icon": "🟠",
           "label": "learn-debt",
           "source": "repair-handoff"
@@ -1033,7 +1432,7 @@
           "ja"
         ],
         "lostLanguages": [],
-        "disabledAfterHistoricalEnabled": false
+        "disabledAfterHistoricalEnabled": true
       },
       "nonRegressionStatus": "NO_HISTORICAL_GREEN",
       "publicationProofRequired": false,
@@ -1053,9 +1452,9 @@
         "5.21.0": "1.0.37 / `21c48b781f50cc44`",
         "5.21.16": "1.0.56 / `767e940fab243e49`",
         "5.21.36": "1.0.74 / `f72d5dd0221bdd2b`",
-        "5.21.134": "1.0.117 / `2e05140a8bcc2d50`"
+        "5.21.146": "1.0.122 / `5539a8514eec84ed`"
       },
-      "retainedGenerationCount": 10,
+      "retainedGenerationCount": 0,
       "publishedBaselineRetained": false,
       "historical52136": {
         "anime": "zero",
@@ -1088,7 +1487,7 @@
           "label": "no-streams",
           "source": "5.21.36 provider-v3-quick-yield"
         },
-        "5.21.134": {
+        "5.21.146": {
           "icon": "🔴",
           "label": "published-red",
           "source": "published-byte-guard"
@@ -1160,7 +1559,7 @@
           "fr"
         ],
         "lostLanguages": [],
-        "disabledAfterHistoricalEnabled": false
+        "disabledAfterHistoricalEnabled": true
       },
       "nonRegressionStatus": "NO_HISTORICAL_GREEN",
       "publicationProofRequired": false,
@@ -1180,9 +1579,9 @@
         "5.21.0": "1.0.53 / `afc39c0d373675e5`",
         "5.21.16": "1.0.61 / `5d47d365269607fd`",
         "5.21.36": "1.0.79 / `1ec689e62432d1a4`",
-        "5.21.134": "1.0.118 / `9b0addd187dc9d88`"
+        "5.21.146": "1.0.123 / `7fab3872ae437175`"
       },
-      "retainedGenerationCount": 10,
+      "retainedGenerationCount": 0,
       "publishedBaselineRetained": false,
       "historical52136": {
         "anime": "zero",
@@ -1212,7 +1611,7 @@
           "label": "no-streams",
           "source": "5.21.36 provider-v3-quick-yield"
         },
-        "5.21.134": {
+        "5.21.146": {
           "icon": "🟠",
           "label": "learn-debt",
           "source": "repair-handoff"
@@ -1281,7 +1680,7 @@
           "fr"
         ],
         "lostLanguages": [],
-        "disabledAfterHistoricalEnabled": false
+        "disabledAfterHistoricalEnabled": true
       },
       "nonRegressionStatus": "NO_HISTORICAL_GREEN",
       "publicationProofRequired": false,
@@ -1301,9 +1700,9 @@
         "5.21.0": "—",
         "5.21.16": "0.0.25 / `644a80e107ed66cc`",
         "5.21.36": "0.0.39 / `80fa3a00000fc600`",
-        "5.21.134": "0.0.76 / `7227c91fc1ac2791`"
+        "5.21.146": "0.0.81 / `a47f44cd69693435`"
       },
-      "retainedGenerationCount": 10,
+      "retainedGenerationCount": 0,
       "publishedBaselineRetained": false,
       "historical52136": {
         "anime": "zero",
@@ -1333,7 +1732,7 @@
           "label": "no-streams",
           "source": "5.21.36 provider-v3-quick-yield"
         },
-        "5.21.134": {
+        "5.21.146": {
           "icon": "🟠",
           "label": "learn-debt",
           "source": "repair-handoff"
@@ -1419,9 +1818,9 @@
         "5.21.0": "1.1.74 / `493f59d8056b0179`",
         "5.21.16": "1.1.85 / `67e363cfbe37ba09`",
         "5.21.36": "1.1.103 / `666957ed184dffbd`",
-        "5.21.134": "1.1.148 / `c52ead0b22d7092a`"
+        "5.21.146": "1.1.153 / `16f430998bd11e96`"
       },
-      "retainedGenerationCount": 10,
+      "retainedGenerationCount": 0,
       "publishedBaselineRetained": false,
       "historical52136": {
         "anime": "zero",
@@ -1451,7 +1850,7 @@
           "label": "no-streams",
           "source": "5.21.36 provider-v3-quick-yield"
         },
-        "5.21.134": {
+        "5.21.146": {
           "icon": "🟡",
           "label": "candidate-green",
           "source": "recent-reconstruction"
@@ -1520,6 +1919,303 @@
           "fr"
         ],
         "lostLanguages": [],
+        "disabledAfterHistoricalEnabled": true
+      },
+      "nonRegressionStatus": "NO_HISTORICAL_GREEN",
+      "publicationProofRequired": false,
+      "externalDriftAccepted": false
+    },
+    {
+      "provider": "arrowtv",
+      "name": "📺 ArrowTV",
+      "types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "languages": [
+        "en"
+      ],
+      "family": "—",
+      "snapshots": {
+        "5.21.0": "—",
+        "5.21.16": "—",
+        "5.21.36": "—",
+        "5.21.146": "1.0.0 / `da95147442cc93ea`"
+      },
+      "retainedGenerationCount": 0,
+      "publishedBaselineRetained": false,
+      "historical52136": {},
+      "currentPublishedGuard": {},
+      "currentTvField": [],
+      "learnOwned": false,
+      "priority": false,
+      "vfRegressionGuard": false,
+      "classification": "UNVERIFIED",
+      "historyVerdict": "No current positive evidence is recorded.",
+      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "⚪",
+          "label": "no-report",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "⚪",
+          "label": "no-report",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "⚪",
+          "label": "no-proof",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.146": {
+          "icon": "⚪",
+          "label": "current-unverified",
+          "source": "no-current-proof"
+        }
+      },
+      "regressionWatch": false,
+      "historicalPositiveVersions": [],
+      "historicalVerifiedLanes": [],
+      "currentVerifiedLanes": [],
+      "explicitCurrentFailedLanes": [],
+      "missingHistoricalVerifiedLanes": [],
+      "contractDrift": {
+        "historicalSemanticTypes": {
+          "5.21.0": [],
+          "5.21.16": [],
+          "5.21.36": []
+        },
+        "historicalSemanticTypeSources": {
+          "5.21.0": "unproven-transport-only",
+          "5.21.16": "unproven-transport-only",
+          "5.21.36": "unproven-transport-only"
+        },
+        "historicalTransportTypes": {
+          "5.21.0": [],
+          "5.21.16": [],
+          "5.21.36": []
+        },
+        "semanticTypeFloor": [],
+        "currentSemanticTypes": [
+          "anime",
+          "movie",
+          "tv"
+        ],
+        "currentSemanticTypeSource": "supportedTypes-current-fallback",
+        "lostSemanticTypes": [],
+        "blockingLostSemanticTypes": [],
+        "unprovedSemanticReclassificationTypes": [],
+        "historicalFormats": [],
+        "currentFormats": [
+          "m3u8",
+          "mp4"
+        ],
+        "hlsM3u8Lost": false,
+        "historicalLanguages": [],
+        "currentLanguages": [
+          "en"
+        ],
+        "lostLanguages": [],
+        "disabledAfterHistoricalEnabled": false
+      },
+      "nonRegressionStatus": "NO_HISTORICAL_GREEN",
+      "publicationProofRequired": false,
+      "externalDriftAccepted": false
+    },
+    {
+      "provider": "asiaflix",
+      "name": "🎬 AsiaFlixProvider",
+      "types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "languages": [
+        "en"
+      ],
+      "family": "—",
+      "snapshots": {
+        "5.21.0": "—",
+        "5.21.16": "—",
+        "5.21.36": "—",
+        "5.21.146": "1.0.0 / `20710bcb86621f65`"
+      },
+      "retainedGenerationCount": 0,
+      "publishedBaselineRetained": false,
+      "historical52136": {},
+      "currentPublishedGuard": {},
+      "currentTvField": [],
+      "learnOwned": false,
+      "priority": false,
+      "vfRegressionGuard": false,
+      "classification": "UNVERIFIED",
+      "historyVerdict": "No current positive evidence is recorded.",
+      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "⚪",
+          "label": "no-report",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "⚪",
+          "label": "no-report",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "⚪",
+          "label": "no-proof",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.146": {
+          "icon": "⚪",
+          "label": "current-unverified",
+          "source": "no-current-proof"
+        }
+      },
+      "regressionWatch": false,
+      "historicalPositiveVersions": [],
+      "historicalVerifiedLanes": [],
+      "currentVerifiedLanes": [],
+      "explicitCurrentFailedLanes": [],
+      "missingHistoricalVerifiedLanes": [],
+      "contractDrift": {
+        "historicalSemanticTypes": {
+          "5.21.0": [],
+          "5.21.16": [],
+          "5.21.36": []
+        },
+        "historicalSemanticTypeSources": {
+          "5.21.0": "unproven-transport-only",
+          "5.21.16": "unproven-transport-only",
+          "5.21.36": "unproven-transport-only"
+        },
+        "historicalTransportTypes": {
+          "5.21.0": [],
+          "5.21.16": [],
+          "5.21.36": []
+        },
+        "semanticTypeFloor": [],
+        "currentSemanticTypes": [
+          "anime",
+          "movie",
+          "tv"
+        ],
+        "currentSemanticTypeSource": "supportedTypes-current-fallback",
+        "lostSemanticTypes": [],
+        "blockingLostSemanticTypes": [],
+        "unprovedSemanticReclassificationTypes": [],
+        "historicalFormats": [],
+        "currentFormats": [],
+        "hlsM3u8Lost": false,
+        "historicalLanguages": [],
+        "currentLanguages": [
+          "en"
+        ],
+        "lostLanguages": [],
+        "disabledAfterHistoricalEnabled": false
+      },
+      "nonRegressionStatus": "NO_HISTORICAL_GREEN",
+      "publicationProofRequired": false,
+      "externalDriftAccepted": false
+    },
+    {
+      "provider": "boredflix",
+      "name": "🎬 BoredFlix",
+      "types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "languages": [
+        "en"
+      ],
+      "family": "—",
+      "snapshots": {
+        "5.21.0": "—",
+        "5.21.16": "—",
+        "5.21.36": "—",
+        "5.21.146": "1.0.0 / `a1d33ad4b3577572`"
+      },
+      "retainedGenerationCount": 0,
+      "publishedBaselineRetained": false,
+      "historical52136": {},
+      "currentPublishedGuard": {},
+      "currentTvField": [],
+      "learnOwned": false,
+      "priority": false,
+      "vfRegressionGuard": false,
+      "classification": "UNVERIFIED",
+      "historyVerdict": "No current positive evidence is recorded.",
+      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "⚪",
+          "label": "no-report",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "⚪",
+          "label": "no-report",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "⚪",
+          "label": "no-proof",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.146": {
+          "icon": "⚪",
+          "label": "current-unverified",
+          "source": "no-current-proof"
+        }
+      },
+      "regressionWatch": false,
+      "historicalPositiveVersions": [],
+      "historicalVerifiedLanes": [],
+      "currentVerifiedLanes": [],
+      "explicitCurrentFailedLanes": [],
+      "missingHistoricalVerifiedLanes": [],
+      "contractDrift": {
+        "historicalSemanticTypes": {
+          "5.21.0": [],
+          "5.21.16": [],
+          "5.21.36": []
+        },
+        "historicalSemanticTypeSources": {
+          "5.21.0": "unproven-transport-only",
+          "5.21.16": "unproven-transport-only",
+          "5.21.36": "unproven-transport-only"
+        },
+        "historicalTransportTypes": {
+          "5.21.0": [],
+          "5.21.16": [],
+          "5.21.36": []
+        },
+        "semanticTypeFloor": [],
+        "currentSemanticTypes": [
+          "anime",
+          "movie",
+          "tv"
+        ],
+        "currentSemanticTypeSource": "supportedTypes-current-fallback",
+        "lostSemanticTypes": [],
+        "blockingLostSemanticTypes": [],
+        "unprovedSemanticReclassificationTypes": [],
+        "historicalFormats": [],
+        "currentFormats": [
+          "m3u8",
+          "mp4"
+        ],
+        "hlsM3u8Lost": false,
+        "historicalLanguages": [],
+        "currentLanguages": [
+          "en"
+        ],
+        "lostLanguages": [],
         "disabledAfterHistoricalEnabled": false
       },
       "nonRegressionStatus": "NO_HISTORICAL_GREEN",
@@ -1541,7 +2237,7 @@
         "5.21.0": "2.0.35 / `defbe2701a5eb904`",
         "5.21.16": "2.0.65 / `e588cade899cccbf`",
         "5.21.36": "2.0.79 / `f9f1396b0939f955`",
-        "5.21.134": "2.0.116 / `abf39dfab678181e`"
+        "5.21.146": "2.0.125 / `6f0a1357280474a6`"
       },
       "retainedGenerationCount": 10,
       "publishedBaselineRetained": false,
@@ -1582,7 +2278,7 @@
           "label": "verified",
           "source": "5.21.36 provider-v3-quick-yield"
         },
-        "5.21.134": {
+        "5.21.146": {
           "icon": "🟢",
           "label": "field-verified",
           "source": "current-TV-field"
@@ -1666,6 +2362,304 @@
       "externalDriftAccepted": false
     },
     {
+      "provider": "chillflix",
+      "name": "🎬 Chillflix",
+      "types": [
+        "movie",
+        "tv"
+      ],
+      "languages": [
+        "en"
+      ],
+      "family": "—",
+      "snapshots": {
+        "5.21.0": "—",
+        "5.21.16": "—",
+        "5.21.36": "—",
+        "5.21.146": "1.0.0 / `32ceb4b6c511b1cb`"
+      },
+      "retainedGenerationCount": 0,
+      "publishedBaselineRetained": false,
+      "historical52136": {},
+      "currentPublishedGuard": {},
+      "currentTvField": [],
+      "learnOwned": false,
+      "priority": false,
+      "vfRegressionGuard": false,
+      "classification": "UNVERIFIED",
+      "historyVerdict": "No current positive evidence is recorded.",
+      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "⚪",
+          "label": "no-report",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "⚪",
+          "label": "no-report",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "⚪",
+          "label": "no-proof",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.146": {
+          "icon": "⚪",
+          "label": "current-unverified",
+          "source": "no-current-proof"
+        }
+      },
+      "regressionWatch": false,
+      "historicalPositiveVersions": [],
+      "historicalVerifiedLanes": [],
+      "currentVerifiedLanes": [],
+      "explicitCurrentFailedLanes": [],
+      "missingHistoricalVerifiedLanes": [],
+      "contractDrift": {
+        "historicalSemanticTypes": {
+          "5.21.0": [],
+          "5.21.16": [],
+          "5.21.36": []
+        },
+        "historicalSemanticTypeSources": {
+          "5.21.0": "unproven-transport-only",
+          "5.21.16": "unproven-transport-only",
+          "5.21.36": "unproven-transport-only"
+        },
+        "historicalTransportTypes": {
+          "5.21.0": [],
+          "5.21.16": [],
+          "5.21.36": []
+        },
+        "semanticTypeFloor": [],
+        "currentSemanticTypes": [
+          "movie",
+          "tv"
+        ],
+        "currentSemanticTypeSource": "supportedTypes-current-fallback",
+        "lostSemanticTypes": [],
+        "blockingLostSemanticTypes": [],
+        "unprovedSemanticReclassificationTypes": [],
+        "historicalFormats": [],
+        "currentFormats": [
+          "m3u8",
+          "mp4"
+        ],
+        "hlsM3u8Lost": false,
+        "historicalLanguages": [],
+        "currentLanguages": [
+          "en"
+        ],
+        "lostLanguages": [],
+        "disabledAfterHistoricalEnabled": false
+      },
+      "nonRegressionStatus": "NO_HISTORICAL_GREEN",
+      "publicationProofRequired": false,
+      "externalDriftAccepted": false
+    },
+    {
+      "provider": "cinegram",
+      "name": "🎬 Cinegram",
+      "types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "languages": [
+        "en"
+      ],
+      "family": "—",
+      "snapshots": {
+        "5.21.0": "—",
+        "5.21.16": "—",
+        "5.21.36": "—",
+        "5.21.146": "1.0.0 / `ac471b073503f9eb`"
+      },
+      "retainedGenerationCount": 0,
+      "publishedBaselineRetained": false,
+      "historical52136": {},
+      "currentPublishedGuard": {},
+      "currentTvField": [],
+      "learnOwned": false,
+      "priority": false,
+      "vfRegressionGuard": false,
+      "classification": "UNVERIFIED",
+      "historyVerdict": "No current positive evidence is recorded.",
+      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "⚪",
+          "label": "no-report",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "⚪",
+          "label": "no-report",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "⚪",
+          "label": "no-proof",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.146": {
+          "icon": "⚪",
+          "label": "current-unverified",
+          "source": "no-current-proof"
+        }
+      },
+      "regressionWatch": false,
+      "historicalPositiveVersions": [],
+      "historicalVerifiedLanes": [],
+      "currentVerifiedLanes": [],
+      "explicitCurrentFailedLanes": [],
+      "missingHistoricalVerifiedLanes": [],
+      "contractDrift": {
+        "historicalSemanticTypes": {
+          "5.21.0": [],
+          "5.21.16": [],
+          "5.21.36": []
+        },
+        "historicalSemanticTypeSources": {
+          "5.21.0": "unproven-transport-only",
+          "5.21.16": "unproven-transport-only",
+          "5.21.36": "unproven-transport-only"
+        },
+        "historicalTransportTypes": {
+          "5.21.0": [],
+          "5.21.16": [],
+          "5.21.36": []
+        },
+        "semanticTypeFloor": [],
+        "currentSemanticTypes": [
+          "anime",
+          "movie",
+          "tv"
+        ],
+        "currentSemanticTypeSource": "supportedTypes-current-fallback",
+        "lostSemanticTypes": [],
+        "blockingLostSemanticTypes": [],
+        "unprovedSemanticReclassificationTypes": [],
+        "historicalFormats": [],
+        "currentFormats": [
+          "m3u8",
+          "mp4"
+        ],
+        "hlsM3u8Lost": false,
+        "historicalLanguages": [],
+        "currentLanguages": [
+          "en"
+        ],
+        "lostLanguages": [],
+        "disabledAfterHistoricalEnabled": false
+      },
+      "nonRegressionStatus": "NO_HISTORICAL_GREEN",
+      "publicationProofRequired": false,
+      "externalDriftAccepted": false
+    },
+    {
+      "provider": "cinemabz",
+      "name": "🎬 Cinema BZ",
+      "types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "languages": [
+        "en"
+      ],
+      "family": "—",
+      "snapshots": {
+        "5.21.0": "—",
+        "5.21.16": "—",
+        "5.21.36": "—",
+        "5.21.146": "1.0.0 / `d8e2c82aaf9ea34d`"
+      },
+      "retainedGenerationCount": 0,
+      "publishedBaselineRetained": false,
+      "historical52136": {},
+      "currentPublishedGuard": {},
+      "currentTvField": [],
+      "learnOwned": false,
+      "priority": false,
+      "vfRegressionGuard": false,
+      "classification": "UNVERIFIED",
+      "historyVerdict": "No current positive evidence is recorded.",
+      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "⚪",
+          "label": "no-report",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "⚪",
+          "label": "no-report",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "⚪",
+          "label": "no-proof",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.146": {
+          "icon": "⚪",
+          "label": "current-unverified",
+          "source": "no-current-proof"
+        }
+      },
+      "regressionWatch": false,
+      "historicalPositiveVersions": [],
+      "historicalVerifiedLanes": [],
+      "currentVerifiedLanes": [],
+      "explicitCurrentFailedLanes": [],
+      "missingHistoricalVerifiedLanes": [],
+      "contractDrift": {
+        "historicalSemanticTypes": {
+          "5.21.0": [],
+          "5.21.16": [],
+          "5.21.36": []
+        },
+        "historicalSemanticTypeSources": {
+          "5.21.0": "unproven-transport-only",
+          "5.21.16": "unproven-transport-only",
+          "5.21.36": "unproven-transport-only"
+        },
+        "historicalTransportTypes": {
+          "5.21.0": [],
+          "5.21.16": [],
+          "5.21.36": []
+        },
+        "semanticTypeFloor": [],
+        "currentSemanticTypes": [
+          "anime",
+          "movie",
+          "tv"
+        ],
+        "currentSemanticTypeSource": "supportedTypes-current-fallback",
+        "lostSemanticTypes": [],
+        "blockingLostSemanticTypes": [],
+        "unprovedSemanticReclassificationTypes": [],
+        "historicalFormats": [],
+        "currentFormats": [
+          "m3u8",
+          "mp4"
+        ],
+        "hlsM3u8Lost": false,
+        "historicalLanguages": [],
+        "currentLanguages": [
+          "en"
+        ],
+        "lostLanguages": [],
+        "disabledAfterHistoricalEnabled": false
+      },
+      "nonRegressionStatus": "NO_HISTORICAL_GREEN",
+      "publicationProofRequired": false,
+      "externalDriftAccepted": false
+    },
+    {
       "provider": "coflix",
       "name": "🎥 Coflix",
       "types": [
@@ -1681,9 +2675,9 @@
         "5.21.0": "1.0.48 / `d6d16a8e29693c08`",
         "5.21.16": "1.0.60 / `9b13b0c422060699`",
         "5.21.36": "1.0.74 / `2a490577b4b8277f`",
-        "5.21.134": "1.0.123 / `4c7d44469e454b46`"
+        "5.21.146": "1.0.129 / `b91ea1216034d130`"
       },
-      "retainedGenerationCount": 10,
+      "retainedGenerationCount": 0,
       "publishedBaselineRetained": false,
       "historical52136": {
         "anime": "zero",
@@ -1714,7 +2708,7 @@
           "label": "no-streams",
           "source": "5.21.36 provider-v3-quick-yield"
         },
-        "5.21.134": {
+        "5.21.146": {
           "icon": "🟠",
           "label": "learn-debt",
           "source": "repair-handoff"
@@ -1788,6 +2782,295 @@
           "fr"
         ],
         "lostLanguages": [],
+        "disabledAfterHistoricalEnabled": true
+      },
+      "nonRegressionStatus": "NO_HISTORICAL_GREEN",
+      "publicationProofRequired": false,
+      "externalDriftAccepted": false
+    },
+    {
+      "provider": "corsflix",
+      "name": "🎬 CorsFlix",
+      "types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "languages": [
+        "en"
+      ],
+      "family": "—",
+      "snapshots": {
+        "5.21.0": "—",
+        "5.21.16": "—",
+        "5.21.36": "—",
+        "5.21.146": "1.0.0 / `e915be1e775c2005`"
+      },
+      "retainedGenerationCount": 0,
+      "publishedBaselineRetained": false,
+      "historical52136": {},
+      "currentPublishedGuard": {},
+      "currentTvField": [],
+      "learnOwned": false,
+      "priority": false,
+      "vfRegressionGuard": false,
+      "classification": "UNVERIFIED",
+      "historyVerdict": "No current positive evidence is recorded.",
+      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "⚪",
+          "label": "no-report",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "⚪",
+          "label": "no-report",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "⚪",
+          "label": "no-proof",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.146": {
+          "icon": "⚪",
+          "label": "current-unverified",
+          "source": "no-current-proof"
+        }
+      },
+      "regressionWatch": false,
+      "historicalPositiveVersions": [],
+      "historicalVerifiedLanes": [],
+      "currentVerifiedLanes": [],
+      "explicitCurrentFailedLanes": [],
+      "missingHistoricalVerifiedLanes": [],
+      "contractDrift": {
+        "historicalSemanticTypes": {
+          "5.21.0": [],
+          "5.21.16": [],
+          "5.21.36": []
+        },
+        "historicalSemanticTypeSources": {
+          "5.21.0": "unproven-transport-only",
+          "5.21.16": "unproven-transport-only",
+          "5.21.36": "unproven-transport-only"
+        },
+        "historicalTransportTypes": {
+          "5.21.0": [],
+          "5.21.16": [],
+          "5.21.36": []
+        },
+        "semanticTypeFloor": [],
+        "currentSemanticTypes": [
+          "anime",
+          "movie",
+          "tv"
+        ],
+        "currentSemanticTypeSource": "supportedTypes-current-fallback",
+        "lostSemanticTypes": [],
+        "blockingLostSemanticTypes": [],
+        "unprovedSemanticReclassificationTypes": [],
+        "historicalFormats": [],
+        "currentFormats": [
+          "m3u8",
+          "mp4"
+        ],
+        "hlsM3u8Lost": false,
+        "historicalLanguages": [],
+        "currentLanguages": [
+          "en"
+        ],
+        "lostLanguages": [],
+        "disabledAfterHistoricalEnabled": false
+      },
+      "nonRegressionStatus": "NO_HISTORICAL_GREEN",
+      "publicationProofRequired": false,
+      "externalDriftAccepted": false
+    },
+    {
+      "provider": "documentary-area",
+      "name": "🔗 Documentary Area",
+      "types": [
+        "movie"
+      ],
+      "languages": [],
+      "family": "—",
+      "snapshots": {
+        "5.21.0": "—",
+        "5.21.16": "—",
+        "5.21.36": "—",
+        "5.21.146": "1.0.0 / `98b015b55a6cd778`"
+      },
+      "retainedGenerationCount": 0,
+      "publishedBaselineRetained": false,
+      "historical52136": {},
+      "currentPublishedGuard": {},
+      "currentTvField": [],
+      "learnOwned": false,
+      "priority": false,
+      "vfRegressionGuard": false,
+      "classification": "UNVERIFIED",
+      "historyVerdict": "No current positive evidence is recorded.",
+      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "⚪",
+          "label": "no-report",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "⚪",
+          "label": "no-report",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "⚪",
+          "label": "no-proof",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.146": {
+          "icon": "⚪",
+          "label": "current-unverified",
+          "source": "no-current-proof"
+        }
+      },
+      "regressionWatch": false,
+      "historicalPositiveVersions": [],
+      "historicalVerifiedLanes": [],
+      "currentVerifiedLanes": [],
+      "explicitCurrentFailedLanes": [],
+      "missingHistoricalVerifiedLanes": [],
+      "contractDrift": {
+        "historicalSemanticTypes": {
+          "5.21.0": [],
+          "5.21.16": [],
+          "5.21.36": []
+        },
+        "historicalSemanticTypeSources": {
+          "5.21.0": "unproven-transport-only",
+          "5.21.16": "unproven-transport-only",
+          "5.21.36": "unproven-transport-only"
+        },
+        "historicalTransportTypes": {
+          "5.21.0": [],
+          "5.21.16": [],
+          "5.21.36": []
+        },
+        "semanticTypeFloor": [],
+        "currentSemanticTypes": [
+          "movie"
+        ],
+        "currentSemanticTypeSource": "supportedTypes-current-fallback",
+        "lostSemanticTypes": [],
+        "blockingLostSemanticTypes": [],
+        "unprovedSemanticReclassificationTypes": [],
+        "historicalFormats": [],
+        "currentFormats": [],
+        "hlsM3u8Lost": false,
+        "historicalLanguages": [],
+        "currentLanguages": [],
+        "lostLanguages": [],
+        "disabledAfterHistoricalEnabled": false
+      },
+      "nonRegressionStatus": "NO_HISTORICAL_GREEN",
+      "publicationProofRequired": false,
+      "externalDriftAccepted": false
+    },
+    {
+      "provider": "emnexmovies",
+      "name": "🎬 EmnexMovies",
+      "types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "languages": [
+        "en"
+      ],
+      "family": "—",
+      "snapshots": {
+        "5.21.0": "—",
+        "5.21.16": "—",
+        "5.21.36": "—",
+        "5.21.146": "1.0.0 / `af6ce14b3d9edfd7`"
+      },
+      "retainedGenerationCount": 0,
+      "publishedBaselineRetained": false,
+      "historical52136": {},
+      "currentPublishedGuard": {},
+      "currentTvField": [],
+      "learnOwned": false,
+      "priority": false,
+      "vfRegressionGuard": false,
+      "classification": "UNVERIFIED",
+      "historyVerdict": "No current positive evidence is recorded.",
+      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "⚪",
+          "label": "no-report",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "⚪",
+          "label": "no-report",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "⚪",
+          "label": "no-proof",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.146": {
+          "icon": "⚪",
+          "label": "current-unverified",
+          "source": "no-current-proof"
+        }
+      },
+      "regressionWatch": false,
+      "historicalPositiveVersions": [],
+      "historicalVerifiedLanes": [],
+      "currentVerifiedLanes": [],
+      "explicitCurrentFailedLanes": [],
+      "missingHistoricalVerifiedLanes": [],
+      "contractDrift": {
+        "historicalSemanticTypes": {
+          "5.21.0": [],
+          "5.21.16": [],
+          "5.21.36": []
+        },
+        "historicalSemanticTypeSources": {
+          "5.21.0": "unproven-transport-only",
+          "5.21.16": "unproven-transport-only",
+          "5.21.36": "unproven-transport-only"
+        },
+        "historicalTransportTypes": {
+          "5.21.0": [],
+          "5.21.16": [],
+          "5.21.36": []
+        },
+        "semanticTypeFloor": [],
+        "currentSemanticTypes": [
+          "anime",
+          "movie",
+          "tv"
+        ],
+        "currentSemanticTypeSource": "supportedTypes-current-fallback",
+        "lostSemanticTypes": [],
+        "blockingLostSemanticTypes": [],
+        "unprovedSemanticReclassificationTypes": [],
+        "historicalFormats": [],
+        "currentFormats": [
+          "m3u8",
+          "mp4"
+        ],
+        "hlsM3u8Lost": false,
+        "historicalLanguages": [],
+        "currentLanguages": [
+          "en"
+        ],
+        "lostLanguages": [],
         "disabledAfterHistoricalEnabled": false
       },
       "nonRegressionStatus": "NO_HISTORICAL_GREEN",
@@ -1809,9 +3092,9 @@
         "5.21.0": "1.0.54 / `dedb61d806c7c1d6`",
         "5.21.16": "1.0.64 / `18ea87541317477b`",
         "5.21.36": "1.0.79 / `653c33fa401a00d2`",
-        "5.21.134": "1.0.125 / `a7fe877f4c82358c`"
+        "5.21.146": "1.0.130 / `f566b8ccafacb3aa`"
       },
-      "retainedGenerationCount": 10,
+      "retainedGenerationCount": 0,
       "publishedBaselineRetained": false,
       "historical52136": {
         "movie": "zero",
@@ -1844,7 +3127,7 @@
           "label": "no-streams",
           "source": "5.21.36 provider-v3-quick-yield"
         },
-        "5.21.134": {
+        "5.21.146": {
           "icon": "🔴",
           "label": "published-red",
           "source": "published-byte-guard"
@@ -1915,6 +3198,197 @@
           "fr"
         ],
         "lostLanguages": [],
+        "disabledAfterHistoricalEnabled": true
+      },
+      "nonRegressionStatus": "NO_HISTORICAL_GREEN",
+      "publicationProofRequired": false,
+      "externalDriftAccepted": false
+    },
+    {
+      "provider": "flixer",
+      "name": "🎬 Flixer",
+      "types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "languages": [
+        "en"
+      ],
+      "family": "—",
+      "snapshots": {
+        "5.21.0": "—",
+        "5.21.16": "—",
+        "5.21.36": "—",
+        "5.21.146": "1.0.0 / `5d49686596e6ef1e`"
+      },
+      "retainedGenerationCount": 0,
+      "publishedBaselineRetained": false,
+      "historical52136": {},
+      "currentPublishedGuard": {},
+      "currentTvField": [],
+      "learnOwned": false,
+      "priority": false,
+      "vfRegressionGuard": false,
+      "classification": "UNVERIFIED",
+      "historyVerdict": "No current positive evidence is recorded.",
+      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "⚪",
+          "label": "no-report",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "⚪",
+          "label": "no-report",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "⚪",
+          "label": "no-proof",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.146": {
+          "icon": "⚪",
+          "label": "current-unverified",
+          "source": "no-current-proof"
+        }
+      },
+      "regressionWatch": false,
+      "historicalPositiveVersions": [],
+      "historicalVerifiedLanes": [],
+      "currentVerifiedLanes": [],
+      "explicitCurrentFailedLanes": [],
+      "missingHistoricalVerifiedLanes": [],
+      "contractDrift": {
+        "historicalSemanticTypes": {
+          "5.21.0": [],
+          "5.21.16": [],
+          "5.21.36": []
+        },
+        "historicalSemanticTypeSources": {
+          "5.21.0": "unproven-transport-only",
+          "5.21.16": "unproven-transport-only",
+          "5.21.36": "unproven-transport-only"
+        },
+        "historicalTransportTypes": {
+          "5.21.0": [],
+          "5.21.16": [],
+          "5.21.36": []
+        },
+        "semanticTypeFloor": [],
+        "currentSemanticTypes": [
+          "anime",
+          "movie",
+          "tv"
+        ],
+        "currentSemanticTypeSource": "supportedTypes-current-fallback",
+        "lostSemanticTypes": [],
+        "blockingLostSemanticTypes": [],
+        "unprovedSemanticReclassificationTypes": [],
+        "historicalFormats": [],
+        "currentFormats": [
+          "m3u8",
+          "mp4"
+        ],
+        "hlsM3u8Lost": false,
+        "historicalLanguages": [],
+        "currentLanguages": [
+          "en"
+        ],
+        "lostLanguages": [],
+        "disabledAfterHistoricalEnabled": false
+      },
+      "nonRegressionStatus": "NO_HISTORICAL_GREEN",
+      "publicationProofRequired": false,
+      "externalDriftAccepted": false
+    },
+    {
+      "provider": "flixhq",
+      "name": "🎬 FlixHQ",
+      "types": [
+        "movie",
+        "tv"
+      ],
+      "languages": [],
+      "family": "—",
+      "snapshots": {
+        "5.21.0": "—",
+        "5.21.16": "—",
+        "5.21.36": "—",
+        "5.21.146": "1.0.0 / `a8970c3a8563cac1`"
+      },
+      "retainedGenerationCount": 0,
+      "publishedBaselineRetained": false,
+      "historical52136": {},
+      "currentPublishedGuard": {},
+      "currentTvField": [],
+      "learnOwned": false,
+      "priority": false,
+      "vfRegressionGuard": false,
+      "classification": "UNVERIFIED",
+      "historyVerdict": "No current positive evidence is recorded.",
+      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "⚪",
+          "label": "no-report",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "⚪",
+          "label": "no-report",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "⚪",
+          "label": "no-proof",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.146": {
+          "icon": "⚪",
+          "label": "current-unverified",
+          "source": "no-current-proof"
+        }
+      },
+      "regressionWatch": false,
+      "historicalPositiveVersions": [],
+      "historicalVerifiedLanes": [],
+      "currentVerifiedLanes": [],
+      "explicitCurrentFailedLanes": [],
+      "missingHistoricalVerifiedLanes": [],
+      "contractDrift": {
+        "historicalSemanticTypes": {
+          "5.21.0": [],
+          "5.21.16": [],
+          "5.21.36": []
+        },
+        "historicalSemanticTypeSources": {
+          "5.21.0": "unproven-transport-only",
+          "5.21.16": "unproven-transport-only",
+          "5.21.36": "unproven-transport-only"
+        },
+        "historicalTransportTypes": {
+          "5.21.0": [],
+          "5.21.16": [],
+          "5.21.36": []
+        },
+        "semanticTypeFloor": [],
+        "currentSemanticTypes": [
+          "movie",
+          "tv"
+        ],
+        "currentSemanticTypeSource": "supportedTypes-current-fallback",
+        "lostSemanticTypes": [],
+        "blockingLostSemanticTypes": [],
+        "unprovedSemanticReclassificationTypes": [],
+        "historicalFormats": [],
+        "currentFormats": [],
+        "hlsM3u8Lost": false,
+        "historicalLanguages": [],
+        "currentLanguages": [],
+        "lostLanguages": [],
         "disabledAfterHistoricalEnabled": false
       },
       "nonRegressionStatus": "NO_HISTORICAL_GREEN",
@@ -1935,7 +3409,7 @@
         "5.21.0": "1.0.49 / `cbb3b26d43fea959`",
         "5.21.16": "1.0.83 / `02c60e53f47b6927`",
         "5.21.36": "1.0.101 / `21ccc21b1cd5e0fa`",
-        "5.21.134": "1.0.138 / `be04df20f8702f6b`"
+        "5.21.146": "1.0.147 / `8124f6bfb672c899`"
       },
       "retainedGenerationCount": 10,
       "publishedBaselineRetained": false,
@@ -1967,7 +3441,7 @@
           "label": "no-streams",
           "source": "5.21.36 provider-v3-quick-yield"
         },
-        "5.21.134": {
+        "5.21.146": {
           "icon": "🟡",
           "label": "candidate-green",
           "source": "recent-reconstruction"
@@ -2045,6 +3519,195 @@
       "externalDriftAccepted": false
     },
     {
+      "provider": "fsharetv",
+      "name": "📺 FshareTV",
+      "types": [
+        "movie"
+      ],
+      "languages": [],
+      "family": "—",
+      "snapshots": {
+        "5.21.0": "—",
+        "5.21.16": "—",
+        "5.21.36": "—",
+        "5.21.146": "1.0.0 / `7a63bf303b07f5f6`"
+      },
+      "retainedGenerationCount": 0,
+      "publishedBaselineRetained": false,
+      "historical52136": {},
+      "currentPublishedGuard": {},
+      "currentTvField": [],
+      "learnOwned": false,
+      "priority": false,
+      "vfRegressionGuard": false,
+      "classification": "UNVERIFIED",
+      "historyVerdict": "No current positive evidence is recorded.",
+      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "⚪",
+          "label": "no-report",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "⚪",
+          "label": "no-report",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "⚪",
+          "label": "no-proof",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.146": {
+          "icon": "⚪",
+          "label": "current-unverified",
+          "source": "no-current-proof"
+        }
+      },
+      "regressionWatch": false,
+      "historicalPositiveVersions": [],
+      "historicalVerifiedLanes": [],
+      "currentVerifiedLanes": [],
+      "explicitCurrentFailedLanes": [],
+      "missingHistoricalVerifiedLanes": [],
+      "contractDrift": {
+        "historicalSemanticTypes": {
+          "5.21.0": [],
+          "5.21.16": [],
+          "5.21.36": []
+        },
+        "historicalSemanticTypeSources": {
+          "5.21.0": "unproven-transport-only",
+          "5.21.16": "unproven-transport-only",
+          "5.21.36": "unproven-transport-only"
+        },
+        "historicalTransportTypes": {
+          "5.21.0": [],
+          "5.21.16": [],
+          "5.21.36": []
+        },
+        "semanticTypeFloor": [],
+        "currentSemanticTypes": [
+          "movie"
+        ],
+        "currentSemanticTypeSource": "supportedTypes-current-fallback",
+        "lostSemanticTypes": [],
+        "blockingLostSemanticTypes": [],
+        "unprovedSemanticReclassificationTypes": [],
+        "historicalFormats": [],
+        "currentFormats": [],
+        "hlsM3u8Lost": false,
+        "historicalLanguages": [],
+        "currentLanguages": [],
+        "lostLanguages": [],
+        "disabledAfterHistoricalEnabled": false
+      },
+      "nonRegressionStatus": "NO_HISTORICAL_GREEN",
+      "publicationProofRequired": false,
+      "externalDriftAccepted": false
+    },
+    {
+      "provider": "hexa",
+      "name": "🔗 Hexa",
+      "types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "languages": [
+        "en"
+      ],
+      "family": "—",
+      "snapshots": {
+        "5.21.0": "—",
+        "5.21.16": "—",
+        "5.21.36": "—",
+        "5.21.146": "1.0.0 / `aedac9288a0f6f16`"
+      },
+      "retainedGenerationCount": 0,
+      "publishedBaselineRetained": false,
+      "historical52136": {},
+      "currentPublishedGuard": {},
+      "currentTvField": [],
+      "learnOwned": false,
+      "priority": false,
+      "vfRegressionGuard": false,
+      "classification": "UNVERIFIED",
+      "historyVerdict": "No current positive evidence is recorded.",
+      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "⚪",
+          "label": "no-report",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "⚪",
+          "label": "no-report",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "⚪",
+          "label": "no-proof",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.146": {
+          "icon": "⚪",
+          "label": "current-unverified",
+          "source": "no-current-proof"
+        }
+      },
+      "regressionWatch": false,
+      "historicalPositiveVersions": [],
+      "historicalVerifiedLanes": [],
+      "currentVerifiedLanes": [],
+      "explicitCurrentFailedLanes": [],
+      "missingHistoricalVerifiedLanes": [],
+      "contractDrift": {
+        "historicalSemanticTypes": {
+          "5.21.0": [],
+          "5.21.16": [],
+          "5.21.36": []
+        },
+        "historicalSemanticTypeSources": {
+          "5.21.0": "unproven-transport-only",
+          "5.21.16": "unproven-transport-only",
+          "5.21.36": "unproven-transport-only"
+        },
+        "historicalTransportTypes": {
+          "5.21.0": [],
+          "5.21.16": [],
+          "5.21.36": []
+        },
+        "semanticTypeFloor": [],
+        "currentSemanticTypes": [
+          "anime",
+          "movie",
+          "tv"
+        ],
+        "currentSemanticTypeSource": "supportedTypes-current-fallback",
+        "lostSemanticTypes": [],
+        "blockingLostSemanticTypes": [],
+        "unprovedSemanticReclassificationTypes": [],
+        "historicalFormats": [],
+        "currentFormats": [
+          "m3u8",
+          "mp4"
+        ],
+        "hlsM3u8Lost": false,
+        "historicalLanguages": [],
+        "currentLanguages": [
+          "en"
+        ],
+        "lostLanguages": [],
+        "disabledAfterHistoricalEnabled": false
+      },
+      "nonRegressionStatus": "NO_HISTORICAL_GREEN",
+      "publicationProofRequired": false,
+      "externalDriftAccepted": false
+    },
+    {
       "provider": "hindmoviez",
       "name": "🇮🇳 HindMoviez",
       "types": [
@@ -2060,7 +3723,7 @@
         "5.21.0": "1.0.34 / `a2fad478d23b3c67`",
         "5.21.16": "1.0.56 / `2afd92f17104b65c`",
         "5.21.36": "1.0.70 / `3eb339d4e0b0bf13`",
-        "5.21.134": "1.0.121 / `4dad26f436e03521`"
+        "5.21.146": "1.0.134 / `514500222905430a`"
       },
       "retainedGenerationCount": 10,
       "publishedBaselineRetained": false,
@@ -2095,7 +3758,7 @@
           "label": "partial",
           "source": "5.21.36 provider-v3-quick-yield"
         },
-        "5.21.134": {
+        "5.21.146": {
           "icon": "🟡",
           "label": "published-partial",
           "source": "published-byte-guard"
@@ -2173,6 +3836,192 @@
           "hi"
         ],
         "lostLanguages": [],
+        "disabledAfterHistoricalEnabled": true
+      },
+      "nonRegressionStatus": "NO_HISTORICAL_GREEN",
+      "publicationProofRequired": false,
+      "externalDriftAccepted": false
+    },
+    {
+      "provider": "ihavenotv",
+      "name": "📺 IHaveNoTV",
+      "types": [
+        "movie",
+        "tv"
+      ],
+      "languages": [],
+      "family": "—",
+      "snapshots": {
+        "5.21.0": "—",
+        "5.21.16": "—",
+        "5.21.36": "—",
+        "5.21.146": "1.0.0 / `ee2e9d2ec63e6b64`"
+      },
+      "retainedGenerationCount": 0,
+      "publishedBaselineRetained": false,
+      "historical52136": {},
+      "currentPublishedGuard": {},
+      "currentTvField": [],
+      "learnOwned": false,
+      "priority": false,
+      "vfRegressionGuard": false,
+      "classification": "UNVERIFIED",
+      "historyVerdict": "No current positive evidence is recorded.",
+      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "⚪",
+          "label": "no-report",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "⚪",
+          "label": "no-report",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "⚪",
+          "label": "no-proof",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.146": {
+          "icon": "⚪",
+          "label": "current-unverified",
+          "source": "no-current-proof"
+        }
+      },
+      "regressionWatch": false,
+      "historicalPositiveVersions": [],
+      "historicalVerifiedLanes": [],
+      "currentVerifiedLanes": [],
+      "explicitCurrentFailedLanes": [],
+      "missingHistoricalVerifiedLanes": [],
+      "contractDrift": {
+        "historicalSemanticTypes": {
+          "5.21.0": [],
+          "5.21.16": [],
+          "5.21.36": []
+        },
+        "historicalSemanticTypeSources": {
+          "5.21.0": "unproven-transport-only",
+          "5.21.16": "unproven-transport-only",
+          "5.21.36": "unproven-transport-only"
+        },
+        "historicalTransportTypes": {
+          "5.21.0": [],
+          "5.21.16": [],
+          "5.21.36": []
+        },
+        "semanticTypeFloor": [],
+        "currentSemanticTypes": [
+          "movie",
+          "tv"
+        ],
+        "currentSemanticTypeSource": "supportedTypes-current-fallback",
+        "lostSemanticTypes": [],
+        "blockingLostSemanticTypes": [],
+        "unprovedSemanticReclassificationTypes": [],
+        "historicalFormats": [],
+        "currentFormats": [],
+        "hlsM3u8Lost": false,
+        "historicalLanguages": [],
+        "currentLanguages": [],
+        "lostLanguages": [],
+        "disabledAfterHistoricalEnabled": false
+      },
+      "nonRegressionStatus": "NO_HISTORICAL_GREEN",
+      "publicationProofRequired": false,
+      "externalDriftAccepted": false
+    },
+    {
+      "provider": "internet-archive",
+      "name": "🔗 Internet Archive — Public Domain",
+      "types": [
+        "movie"
+      ],
+      "languages": [
+        "en"
+      ],
+      "family": "—",
+      "snapshots": {
+        "5.21.0": "—",
+        "5.21.16": "—",
+        "5.21.36": "—",
+        "5.21.146": "1.0.0 / `8872a408be60d6d0`"
+      },
+      "retainedGenerationCount": 0,
+      "publishedBaselineRetained": false,
+      "historical52136": {},
+      "currentPublishedGuard": {},
+      "currentTvField": [],
+      "learnOwned": false,
+      "priority": false,
+      "vfRegressionGuard": false,
+      "classification": "UNVERIFIED",
+      "historyVerdict": "No current positive evidence is recorded.",
+      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "⚪",
+          "label": "no-report",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "⚪",
+          "label": "no-report",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "⚪",
+          "label": "no-proof",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.146": {
+          "icon": "⚪",
+          "label": "current-unverified",
+          "source": "no-current-proof"
+        }
+      },
+      "regressionWatch": false,
+      "historicalPositiveVersions": [],
+      "historicalVerifiedLanes": [],
+      "currentVerifiedLanes": [],
+      "explicitCurrentFailedLanes": [],
+      "missingHistoricalVerifiedLanes": [],
+      "contractDrift": {
+        "historicalSemanticTypes": {
+          "5.21.0": [],
+          "5.21.16": [],
+          "5.21.36": []
+        },
+        "historicalSemanticTypeSources": {
+          "5.21.0": "unproven-transport-only",
+          "5.21.16": "unproven-transport-only",
+          "5.21.36": "unproven-transport-only"
+        },
+        "historicalTransportTypes": {
+          "5.21.0": [],
+          "5.21.16": [],
+          "5.21.36": []
+        },
+        "semanticTypeFloor": [],
+        "currentSemanticTypes": [
+          "movie"
+        ],
+        "currentSemanticTypeSource": "supportedTypes-current-fallback",
+        "lostSemanticTypes": [],
+        "blockingLostSemanticTypes": [],
+        "unprovedSemanticReclassificationTypes": [],
+        "historicalFormats": [],
+        "currentFormats": [
+          "mp4"
+        ],
+        "hlsM3u8Lost": false,
+        "historicalLanguages": [],
+        "currentLanguages": [
+          "en"
+        ],
+        "lostLanguages": [],
         "disabledAfterHistoricalEnabled": false
       },
       "nonRegressionStatus": "NO_HISTORICAL_GREEN",
@@ -2195,9 +4044,9 @@
         "5.21.0": "—",
         "5.21.16": "1.0.17 / `bfdd46578802aeee`",
         "5.21.36": "1.0.51 / `064f32ab58f1fbf2`",
-        "5.21.134": "1.0.94 / `759e8e184a7d004d`"
+        "5.21.146": "1.0.99 / `88901229b69124f4`"
       },
-      "retainedGenerationCount": 10,
+      "retainedGenerationCount": 0,
       "publishedBaselineRetained": false,
       "historical52136": {
         "anime": "verified",
@@ -2232,7 +4081,7 @@
           "label": "verified",
           "source": "5.21.36 provider-v3-quick-yield"
         },
-        "5.21.134": {
+        "5.21.146": {
           "icon": "🔴",
           "label": "published-red",
           "source": "published-byte-guard"
@@ -2310,7 +4159,7 @@
           "fr"
         ],
         "lostLanguages": [],
-        "disabledAfterHistoricalEnabled": false
+        "disabledAfterHistoricalEnabled": true
       },
       "nonRegressionStatus": "HARD_REGRESSION",
       "publicationProofRequired": true,
@@ -2330,9 +4179,9 @@
         "5.21.0": "1.0.27 / `b5240f665eb9c297`",
         "5.21.16": "1.0.36 / `6f2d4fa552dfc8ee`",
         "5.21.36": "1.0.55 / `9ae58da956332c05`",
-        "5.21.134": "1.0.92 / `45937c9677bb5fd9`"
+        "5.21.146": "1.0.97 / `36032908e53441dd`"
       },
-      "retainedGenerationCount": 10,
+      "retainedGenerationCount": 0,
       "publishedBaselineRetained": false,
       "historical52136": {
         "anime": "zero"
@@ -2361,7 +4210,7 @@
           "label": "no-streams",
           "source": "5.21.36 provider-v3-quick-yield"
         },
-        "5.21.134": {
+        "5.21.146": {
           "icon": "⚪",
           "label": "current-unverified",
           "source": "no-current-proof"
@@ -2434,6 +4283,106 @@
         "lostLanguages": [
           "ja"
         ],
+        "disabledAfterHistoricalEnabled": true
+      },
+      "nonRegressionStatus": "NO_HISTORICAL_GREEN",
+      "publicationProofRequired": false,
+      "externalDriftAccepted": false
+    },
+    {
+      "provider": "latestmovies",
+      "name": "🎬 LatestMovies",
+      "types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "languages": [
+        "en"
+      ],
+      "family": "—",
+      "snapshots": {
+        "5.21.0": "—",
+        "5.21.16": "—",
+        "5.21.36": "—",
+        "5.21.146": "1.0.0 / `c25124230f09f7ff`"
+      },
+      "retainedGenerationCount": 0,
+      "publishedBaselineRetained": false,
+      "historical52136": {},
+      "currentPublishedGuard": {},
+      "currentTvField": [],
+      "learnOwned": false,
+      "priority": false,
+      "vfRegressionGuard": false,
+      "classification": "UNVERIFIED",
+      "historyVerdict": "No current positive evidence is recorded.",
+      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "⚪",
+          "label": "no-report",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "⚪",
+          "label": "no-report",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "⚪",
+          "label": "no-proof",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.146": {
+          "icon": "⚪",
+          "label": "current-unverified",
+          "source": "no-current-proof"
+        }
+      },
+      "regressionWatch": false,
+      "historicalPositiveVersions": [],
+      "historicalVerifiedLanes": [],
+      "currentVerifiedLanes": [],
+      "explicitCurrentFailedLanes": [],
+      "missingHistoricalVerifiedLanes": [],
+      "contractDrift": {
+        "historicalSemanticTypes": {
+          "5.21.0": [],
+          "5.21.16": [],
+          "5.21.36": []
+        },
+        "historicalSemanticTypeSources": {
+          "5.21.0": "unproven-transport-only",
+          "5.21.16": "unproven-transport-only",
+          "5.21.36": "unproven-transport-only"
+        },
+        "historicalTransportTypes": {
+          "5.21.0": [],
+          "5.21.16": [],
+          "5.21.36": []
+        },
+        "semanticTypeFloor": [],
+        "currentSemanticTypes": [
+          "anime",
+          "movie",
+          "tv"
+        ],
+        "currentSemanticTypeSource": "supportedTypes-current-fallback",
+        "lostSemanticTypes": [],
+        "blockingLostSemanticTypes": [],
+        "unprovedSemanticReclassificationTypes": [],
+        "historicalFormats": [],
+        "currentFormats": [
+          "m3u8",
+          "mp4"
+        ],
+        "hlsM3u8Lost": false,
+        "historicalLanguages": [],
+        "currentLanguages": [
+          "en"
+        ],
+        "lostLanguages": [],
         "disabledAfterHistoricalEnabled": false
       },
       "nonRegressionStatus": "NO_HISTORICAL_GREEN",
@@ -2458,9 +4407,9 @@
         "5.21.0": "1.0.33 / `b4938cac084eca0e`",
         "5.21.16": "1.0.64 / `863118576415a522`",
         "5.21.36": "1.0.77 / `4b24dd9528fa01a3`",
-        "5.21.134": "1.0.126 / `cf423a9e0431d69a`"
+        "5.21.146": "1.0.131 / `2f3b735df87106ef`"
       },
-      "retainedGenerationCount": 10,
+      "retainedGenerationCount": 0,
       "publishedBaselineRetained": false,
       "historical52136": {
         "movie": "zero"
@@ -2489,7 +4438,7 @@
           "label": "no-streams",
           "source": "5.21.36 provider-v3-quick-yield"
         },
-        "5.21.134": {
+        "5.21.146": {
           "icon": "🟠",
           "label": "learn-debt",
           "source": "repair-handoff"
@@ -2562,6 +4511,106 @@
       "externalDriftAccepted": false
     },
     {
+      "provider": "moviebite",
+      "name": "🎬 MovieBite",
+      "types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "languages": [
+        "en"
+      ],
+      "family": "—",
+      "snapshots": {
+        "5.21.0": "—",
+        "5.21.16": "—",
+        "5.21.36": "—",
+        "5.21.146": "1.0.0 / `fd89a246c574ed08`"
+      },
+      "retainedGenerationCount": 0,
+      "publishedBaselineRetained": false,
+      "historical52136": {},
+      "currentPublishedGuard": {},
+      "currentTvField": [],
+      "learnOwned": false,
+      "priority": false,
+      "vfRegressionGuard": false,
+      "classification": "UNVERIFIED",
+      "historyVerdict": "No current positive evidence is recorded.",
+      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "⚪",
+          "label": "no-report",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "⚪",
+          "label": "no-report",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "⚪",
+          "label": "no-proof",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.146": {
+          "icon": "⚪",
+          "label": "current-unverified",
+          "source": "no-current-proof"
+        }
+      },
+      "regressionWatch": false,
+      "historicalPositiveVersions": [],
+      "historicalVerifiedLanes": [],
+      "currentVerifiedLanes": [],
+      "explicitCurrentFailedLanes": [],
+      "missingHistoricalVerifiedLanes": [],
+      "contractDrift": {
+        "historicalSemanticTypes": {
+          "5.21.0": [],
+          "5.21.16": [],
+          "5.21.36": []
+        },
+        "historicalSemanticTypeSources": {
+          "5.21.0": "unproven-transport-only",
+          "5.21.16": "unproven-transport-only",
+          "5.21.36": "unproven-transport-only"
+        },
+        "historicalTransportTypes": {
+          "5.21.0": [],
+          "5.21.16": [],
+          "5.21.36": []
+        },
+        "semanticTypeFloor": [],
+        "currentSemanticTypes": [
+          "anime",
+          "movie",
+          "tv"
+        ],
+        "currentSemanticTypeSource": "supportedTypes-current-fallback",
+        "lostSemanticTypes": [],
+        "blockingLostSemanticTypes": [],
+        "unprovedSemanticReclassificationTypes": [],
+        "historicalFormats": [],
+        "currentFormats": [
+          "m3u8",
+          "mp4"
+        ],
+        "hlsM3u8Lost": false,
+        "historicalLanguages": [],
+        "currentLanguages": [
+          "en"
+        ],
+        "lostLanguages": [],
+        "disabledAfterHistoricalEnabled": false
+      },
+      "nonRegressionStatus": "NO_HISTORICAL_GREEN",
+      "publicationProofRequired": false,
+      "externalDriftAccepted": false
+    },
+    {
       "provider": "moviebox",
       "name": "📦 MovieBox",
       "types": [
@@ -2579,9 +4628,9 @@
         "5.21.0": "1.0.18 / `33507d0a8889b61b`",
         "5.21.16": "1.0.24 / `19a7b7bbaa035869`",
         "5.21.36": "1.0.31 / `474398374977be95`",
-        "5.21.134": "1.0.68 / `795db9d85e39d995`"
+        "5.21.146": "1.0.73 / `ad33248868d15bc2`"
       },
-      "retainedGenerationCount": 10,
+      "retainedGenerationCount": 0,
       "publishedBaselineRetained": false,
       "historical52136": {
         "movie": "zero",
@@ -2611,7 +4660,7 @@
           "label": "no-streams",
           "source": "5.21.36 provider-v3-quick-yield"
         },
-        "5.21.134": {
+        "5.21.146": {
           "icon": "🟠",
           "label": "learn-debt",
           "source": "repair-handoff"
@@ -2706,9 +4755,9 @@
         "5.21.0": "1.0.36 / `3aa3c567b2a014d9`",
         "5.21.16": "1.0.51 / `ff486b0ec23ca8fc`",
         "5.21.36": "1.0.64 / `e58b409178412c6e`",
-        "5.21.134": "1.0.107 / `264e07acaad58f84`"
+        "5.21.146": "1.0.112 / `0d724a8db0e3c095`"
       },
-      "retainedGenerationCount": 10,
+      "retainedGenerationCount": 0,
       "publishedBaselineRetained": false,
       "historical52136": {
         "movie": "zero"
@@ -2739,7 +4788,7 @@
           "label": "no-streams",
           "source": "5.21.36 provider-v3-quick-yield"
         },
-        "5.21.134": {
+        "5.21.146": {
           "icon": "🔴",
           "label": "published-red",
           "source": "published-byte-guard"
@@ -2801,7 +4850,7 @@
           "hi"
         ],
         "lostLanguages": [],
-        "disabledAfterHistoricalEnabled": false
+        "disabledAfterHistoricalEnabled": true
       },
       "nonRegressionStatus": "HARD_REGRESSION",
       "publicationProofRequired": true,
@@ -2822,9 +4871,9 @@
         "5.21.0": "1.0.28 / `edad1a7b333e5109`",
         "5.21.16": "1.0.36 / `ee171333c7a3c3f6`",
         "5.21.36": "1.0.50 / `64e71c321ffd0757`",
-        "5.21.134": "1.0.90 / `fd7022d0d211ddeb`"
+        "5.21.146": "1.0.95 / `5f6249d3d8efc0ea`"
       },
-      "retainedGenerationCount": 10,
+      "retainedGenerationCount": 0,
       "publishedBaselineRetained": false,
       "historical52136": {
         "movie": "zero",
@@ -2854,7 +4903,7 @@
           "label": "no-streams",
           "source": "5.21.36 provider-v3-quick-yield"
         },
-        "5.21.134": {
+        "5.21.146": {
           "icon": "🟠",
           "label": "learn-debt",
           "source": "repair-handoff"
@@ -2924,6 +4973,206 @@
           "en"
         ],
         "lostLanguages": [],
+        "disabledAfterHistoricalEnabled": true
+      },
+      "nonRegressionStatus": "NO_HISTORICAL_GREEN",
+      "publicationProofRequired": false,
+      "externalDriftAccepted": false
+    },
+    {
+      "provider": "movish",
+      "name": "🔗 Movish",
+      "types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "languages": [
+        "en"
+      ],
+      "family": "—",
+      "snapshots": {
+        "5.21.0": "—",
+        "5.21.16": "—",
+        "5.21.36": "—",
+        "5.21.146": "1.0.0 / `de12090536d2ac4a`"
+      },
+      "retainedGenerationCount": 0,
+      "publishedBaselineRetained": false,
+      "historical52136": {},
+      "currentPublishedGuard": {},
+      "currentTvField": [],
+      "learnOwned": false,
+      "priority": false,
+      "vfRegressionGuard": false,
+      "classification": "UNVERIFIED",
+      "historyVerdict": "No current positive evidence is recorded.",
+      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "⚪",
+          "label": "no-report",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "⚪",
+          "label": "no-report",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "⚪",
+          "label": "no-proof",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.146": {
+          "icon": "⚪",
+          "label": "current-unverified",
+          "source": "no-current-proof"
+        }
+      },
+      "regressionWatch": false,
+      "historicalPositiveVersions": [],
+      "historicalVerifiedLanes": [],
+      "currentVerifiedLanes": [],
+      "explicitCurrentFailedLanes": [],
+      "missingHistoricalVerifiedLanes": [],
+      "contractDrift": {
+        "historicalSemanticTypes": {
+          "5.21.0": [],
+          "5.21.16": [],
+          "5.21.36": []
+        },
+        "historicalSemanticTypeSources": {
+          "5.21.0": "unproven-transport-only",
+          "5.21.16": "unproven-transport-only",
+          "5.21.36": "unproven-transport-only"
+        },
+        "historicalTransportTypes": {
+          "5.21.0": [],
+          "5.21.16": [],
+          "5.21.36": []
+        },
+        "semanticTypeFloor": [],
+        "currentSemanticTypes": [
+          "anime",
+          "movie",
+          "tv"
+        ],
+        "currentSemanticTypeSource": "supportedTypes-current-fallback",
+        "lostSemanticTypes": [],
+        "blockingLostSemanticTypes": [],
+        "unprovedSemanticReclassificationTypes": [],
+        "historicalFormats": [],
+        "currentFormats": [
+          "m3u8",
+          "mp4"
+        ],
+        "hlsM3u8Lost": false,
+        "historicalLanguages": [],
+        "currentLanguages": [
+          "en"
+        ],
+        "lostLanguages": [],
+        "disabledAfterHistoricalEnabled": false
+      },
+      "nonRegressionStatus": "NO_HISTORICAL_GREEN",
+      "publicationProofRequired": false,
+      "externalDriftAccepted": false
+    },
+    {
+      "provider": "movy",
+      "name": "🔗 Movy",
+      "types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "languages": [
+        "en"
+      ],
+      "family": "—",
+      "snapshots": {
+        "5.21.0": "—",
+        "5.21.16": "—",
+        "5.21.36": "—",
+        "5.21.146": "1.0.0 / `bc93a4ed2785e5aa`"
+      },
+      "retainedGenerationCount": 0,
+      "publishedBaselineRetained": false,
+      "historical52136": {},
+      "currentPublishedGuard": {},
+      "currentTvField": [],
+      "learnOwned": false,
+      "priority": false,
+      "vfRegressionGuard": false,
+      "classification": "UNVERIFIED",
+      "historyVerdict": "No current positive evidence is recorded.",
+      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "⚪",
+          "label": "no-report",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "⚪",
+          "label": "no-report",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "⚪",
+          "label": "no-proof",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.146": {
+          "icon": "⚪",
+          "label": "current-unverified",
+          "source": "no-current-proof"
+        }
+      },
+      "regressionWatch": false,
+      "historicalPositiveVersions": [],
+      "historicalVerifiedLanes": [],
+      "currentVerifiedLanes": [],
+      "explicitCurrentFailedLanes": [],
+      "missingHistoricalVerifiedLanes": [],
+      "contractDrift": {
+        "historicalSemanticTypes": {
+          "5.21.0": [],
+          "5.21.16": [],
+          "5.21.36": []
+        },
+        "historicalSemanticTypeSources": {
+          "5.21.0": "unproven-transport-only",
+          "5.21.16": "unproven-transport-only",
+          "5.21.36": "unproven-transport-only"
+        },
+        "historicalTransportTypes": {
+          "5.21.0": [],
+          "5.21.16": [],
+          "5.21.36": []
+        },
+        "semanticTypeFloor": [],
+        "currentSemanticTypes": [
+          "anime",
+          "movie",
+          "tv"
+        ],
+        "currentSemanticTypeSource": "supportedTypes-current-fallback",
+        "lostSemanticTypes": [],
+        "blockingLostSemanticTypes": [],
+        "unprovedSemanticReclassificationTypes": [],
+        "historicalFormats": [],
+        "currentFormats": [
+          "m3u8",
+          "mp4"
+        ],
+        "hlsM3u8Lost": false,
+        "historicalLanguages": [],
+        "currentLanguages": [
+          "en"
+        ],
+        "lostLanguages": [],
         "disabledAfterHistoricalEnabled": false
       },
       "nonRegressionStatus": "NO_HISTORICAL_GREEN",
@@ -2944,7 +5193,7 @@
         "5.21.0": "1.0.60 / `7d28f3c2b7bc3578`",
         "5.21.16": "1.0.71 / `7192e1a89082b113`",
         "5.21.36": "1.0.89 / `d219aa0b1692c799`",
-        "5.21.134": "1.0.128 / `d1b6e46004922b66`"
+        "5.21.146": "1.0.137 / `5e0dad5a6cac3034`"
       },
       "retainedGenerationCount": 10,
       "publishedBaselineRetained": false,
@@ -2976,7 +5225,7 @@
           "label": "no-streams",
           "source": "5.21.36 provider-v3-quick-yield"
         },
-        "5.21.134": {
+        "5.21.146": {
           "icon": "⚪",
           "label": "current-unverified",
           "source": "no-current-proof"
@@ -3067,7 +5316,7 @@
         "5.21.0": "—",
         "5.21.16": "0.0.17 / `55c80ba9eebb7a65`",
         "5.21.36": "0.0.31 / `44eb233db734113d`",
-        "5.21.134": "0.0.68 / `7209583cabfe5ecb`"
+        "5.21.146": "0.0.77 / `160e2d047c21f49f`"
       },
       "retainedGenerationCount": 10,
       "publishedBaselineRetained": false,
@@ -3099,7 +5348,7 @@
           "label": "no-streams",
           "source": "5.21.36 provider-v3-quick-yield"
         },
-        "5.21.134": {
+        "5.21.146": {
           "icon": "⚪",
           "label": "current-unverified",
           "source": "no-current-proof"
@@ -3172,6 +5421,206 @@
       "externalDriftAccepted": false
     },
     {
+      "provider": "neonflix",
+      "name": "🎬 Neonflix",
+      "types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "languages": [
+        "en"
+      ],
+      "family": "—",
+      "snapshots": {
+        "5.21.0": "—",
+        "5.21.16": "—",
+        "5.21.36": "—",
+        "5.21.146": "1.0.0 / `98910ed514d732f3`"
+      },
+      "retainedGenerationCount": 0,
+      "publishedBaselineRetained": false,
+      "historical52136": {},
+      "currentPublishedGuard": {},
+      "currentTvField": [],
+      "learnOwned": false,
+      "priority": false,
+      "vfRegressionGuard": false,
+      "classification": "UNVERIFIED",
+      "historyVerdict": "No current positive evidence is recorded.",
+      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "⚪",
+          "label": "no-report",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "⚪",
+          "label": "no-report",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "⚪",
+          "label": "no-proof",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.146": {
+          "icon": "⚪",
+          "label": "current-unverified",
+          "source": "no-current-proof"
+        }
+      },
+      "regressionWatch": false,
+      "historicalPositiveVersions": [],
+      "historicalVerifiedLanes": [],
+      "currentVerifiedLanes": [],
+      "explicitCurrentFailedLanes": [],
+      "missingHistoricalVerifiedLanes": [],
+      "contractDrift": {
+        "historicalSemanticTypes": {
+          "5.21.0": [],
+          "5.21.16": [],
+          "5.21.36": []
+        },
+        "historicalSemanticTypeSources": {
+          "5.21.0": "unproven-transport-only",
+          "5.21.16": "unproven-transport-only",
+          "5.21.36": "unproven-transport-only"
+        },
+        "historicalTransportTypes": {
+          "5.21.0": [],
+          "5.21.16": [],
+          "5.21.36": []
+        },
+        "semanticTypeFloor": [],
+        "currentSemanticTypes": [
+          "anime",
+          "movie",
+          "tv"
+        ],
+        "currentSemanticTypeSource": "supportedTypes-current-fallback",
+        "lostSemanticTypes": [],
+        "blockingLostSemanticTypes": [],
+        "unprovedSemanticReclassificationTypes": [],
+        "historicalFormats": [],
+        "currentFormats": [
+          "m3u8",
+          "mp4"
+        ],
+        "hlsM3u8Lost": false,
+        "historicalLanguages": [],
+        "currentLanguages": [
+          "en"
+        ],
+        "lostLanguages": [],
+        "disabledAfterHistoricalEnabled": false
+      },
+      "nonRegressionStatus": "NO_HISTORICAL_GREEN",
+      "publicationProofRequired": false,
+      "externalDriftAccepted": false
+    },
+    {
+      "provider": "overlook",
+      "name": "🔗 Overlook",
+      "types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "languages": [
+        "en"
+      ],
+      "family": "—",
+      "snapshots": {
+        "5.21.0": "—",
+        "5.21.16": "—",
+        "5.21.36": "—",
+        "5.21.146": "1.0.0 / `5dbd35538b214075`"
+      },
+      "retainedGenerationCount": 0,
+      "publishedBaselineRetained": false,
+      "historical52136": {},
+      "currentPublishedGuard": {},
+      "currentTvField": [],
+      "learnOwned": false,
+      "priority": false,
+      "vfRegressionGuard": false,
+      "classification": "UNVERIFIED",
+      "historyVerdict": "No current positive evidence is recorded.",
+      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "⚪",
+          "label": "no-report",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "⚪",
+          "label": "no-report",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "⚪",
+          "label": "no-proof",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.146": {
+          "icon": "⚪",
+          "label": "current-unverified",
+          "source": "no-current-proof"
+        }
+      },
+      "regressionWatch": false,
+      "historicalPositiveVersions": [],
+      "historicalVerifiedLanes": [],
+      "currentVerifiedLanes": [],
+      "explicitCurrentFailedLanes": [],
+      "missingHistoricalVerifiedLanes": [],
+      "contractDrift": {
+        "historicalSemanticTypes": {
+          "5.21.0": [],
+          "5.21.16": [],
+          "5.21.36": []
+        },
+        "historicalSemanticTypeSources": {
+          "5.21.0": "unproven-transport-only",
+          "5.21.16": "unproven-transport-only",
+          "5.21.36": "unproven-transport-only"
+        },
+        "historicalTransportTypes": {
+          "5.21.0": [],
+          "5.21.16": [],
+          "5.21.36": []
+        },
+        "semanticTypeFloor": [],
+        "currentSemanticTypes": [
+          "anime",
+          "movie",
+          "tv"
+        ],
+        "currentSemanticTypeSource": "supportedTypes-current-fallback",
+        "lostSemanticTypes": [],
+        "blockingLostSemanticTypes": [],
+        "unprovedSemanticReclassificationTypes": [],
+        "historicalFormats": [],
+        "currentFormats": [
+          "m3u8",
+          "mp4"
+        ],
+        "hlsM3u8Lost": false,
+        "historicalLanguages": [],
+        "currentLanguages": [
+          "en"
+        ],
+        "lostLanguages": [],
+        "disabledAfterHistoricalEnabled": false
+      },
+      "nonRegressionStatus": "NO_HISTORICAL_GREEN",
+      "publicationProofRequired": false,
+      "externalDriftAccepted": false
+    },
+    {
       "provider": "papadustream",
       "name": "🍿 Papadustream",
       "types": [
@@ -3188,7 +5637,7 @@
         "5.21.0": "1.0.35 / `2d48289559aafe27`",
         "5.21.16": "1.0.42 / `a26d6b94f047d941`",
         "5.21.36": "1.0.56 / `6b1f7cfe1671a9db`",
-        "5.21.134": "1.0.94 / `b27be3199be61f9b`"
+        "5.21.146": "1.0.103 / `a6bcd1a96694552f`"
       },
       "retainedGenerationCount": 10,
       "publishedBaselineRetained": false,
@@ -3221,7 +5670,7 @@
           "label": "no-streams",
           "source": "5.21.36 provider-v3-quick-yield"
         },
-        "5.21.134": {
+        "5.21.146": {
           "icon": "⚪",
           "label": "current-unverified",
           "source": "no-current-proof"
@@ -3317,9 +5766,9 @@
         "5.21.0": "1.4.36 / `7e31b6eedae47728`",
         "5.21.16": "1.4.58 / `8c735f4b38215aea`",
         "5.21.36": "1.4.72 / `5aad370c42f0bc9f`",
-        "5.21.134": "1.4.109 / `de1651156a80b28d`"
+        "5.21.146": "1.4.114 / `9b47f3ce6c384c07`"
       },
-      "retainedGenerationCount": 10,
+      "retainedGenerationCount": 0,
       "publishedBaselineRetained": false,
       "historical52136": {
         "movie": "zero",
@@ -3361,7 +5810,7 @@
           "label": "no-streams",
           "source": "5.21.36 provider-v3-quick-yield"
         },
-        "5.21.134": {
+        "5.21.146": {
           "icon": "🟢",
           "label": "field-verified",
           "source": "current-TV-field"
@@ -3433,7 +5882,7 @@
           "pe"
         ],
         "lostLanguages": [],
-        "disabledAfterHistoricalEnabled": false
+        "disabledAfterHistoricalEnabled": true
       },
       "nonRegressionStatus": "NO_HISTORICAL_GREEN",
       "publicationProofRequired": false,
@@ -3455,9 +5904,9 @@
         "5.21.0": "2.0.38 / `4b88cfbf96960a88`",
         "5.21.16": "2.0.70 / `e33f87f4a7e4f3d7`",
         "5.21.36": "2.0.84 / `c7d08723d76d91ad`",
-        "5.21.134": "2.0.121 / `9a4170b8ac168d47`"
+        "5.21.146": "2.0.126 / `70748fe545c9681e`"
       },
-      "retainedGenerationCount": 10,
+      "retainedGenerationCount": 0,
       "publishedBaselineRetained": false,
       "historical52136": {
         "movie": "zero",
@@ -3487,7 +5936,7 @@
           "label": "no-streams",
           "source": "5.21.36 provider-v3-quick-yield"
         },
-        "5.21.134": {
+        "5.21.146": {
           "icon": "⚪",
           "label": "current-unverified",
           "source": "no-current-proof"
@@ -3561,10 +6010,208 @@
           "hi"
         ],
         "lostLanguages": [],
-        "disabledAfterHistoricalEnabled": false
+        "disabledAfterHistoricalEnabled": true
       },
       "nonRegressionStatus": "REVALIDATION_REQUIRED",
       "publicationProofRequired": true,
+      "externalDriftAccepted": false
+    },
+    {
+      "provider": "primewire",
+      "name": "🔗 PrimeWire",
+      "types": [
+        "movie",
+        "tv"
+      ],
+      "languages": [
+        "en"
+      ],
+      "family": "—",
+      "snapshots": {
+        "5.21.0": "—",
+        "5.21.16": "—",
+        "5.21.36": "—",
+        "5.21.146": "1.0.0 / `0844cc491916a621`"
+      },
+      "retainedGenerationCount": 0,
+      "publishedBaselineRetained": false,
+      "historical52136": {},
+      "currentPublishedGuard": {},
+      "currentTvField": [],
+      "learnOwned": false,
+      "priority": false,
+      "vfRegressionGuard": false,
+      "classification": "UNVERIFIED",
+      "historyVerdict": "No current positive evidence is recorded.",
+      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "⚪",
+          "label": "no-report",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "⚪",
+          "label": "no-report",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "⚪",
+          "label": "no-proof",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.146": {
+          "icon": "⚪",
+          "label": "current-unverified",
+          "source": "no-current-proof"
+        }
+      },
+      "regressionWatch": false,
+      "historicalPositiveVersions": [],
+      "historicalVerifiedLanes": [],
+      "currentVerifiedLanes": [],
+      "explicitCurrentFailedLanes": [],
+      "missingHistoricalVerifiedLanes": [],
+      "contractDrift": {
+        "historicalSemanticTypes": {
+          "5.21.0": [],
+          "5.21.16": [],
+          "5.21.36": []
+        },
+        "historicalSemanticTypeSources": {
+          "5.21.0": "unproven-transport-only",
+          "5.21.16": "unproven-transport-only",
+          "5.21.36": "unproven-transport-only"
+        },
+        "historicalTransportTypes": {
+          "5.21.0": [],
+          "5.21.16": [],
+          "5.21.36": []
+        },
+        "semanticTypeFloor": [],
+        "currentSemanticTypes": [
+          "movie",
+          "tv"
+        ],
+        "currentSemanticTypeSource": "supportedTypes-current-fallback",
+        "lostSemanticTypes": [],
+        "blockingLostSemanticTypes": [],
+        "unprovedSemanticReclassificationTypes": [],
+        "historicalFormats": [],
+        "currentFormats": [
+          "m3u8",
+          "mp4"
+        ],
+        "hlsM3u8Lost": false,
+        "historicalLanguages": [],
+        "currentLanguages": [
+          "en"
+        ],
+        "lostLanguages": [],
+        "disabledAfterHistoricalEnabled": false
+      },
+      "nonRegressionStatus": "NO_HISTORICAL_GREEN",
+      "publicationProofRequired": false,
+      "externalDriftAccepted": false
+    },
+    {
+      "provider": "pstream",
+      "name": "▶️ PStream",
+      "types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "languages": [
+        "en"
+      ],
+      "family": "—",
+      "snapshots": {
+        "5.21.0": "—",
+        "5.21.16": "—",
+        "5.21.36": "—",
+        "5.21.146": "1.0.0 / `84619271772ecd87`"
+      },
+      "retainedGenerationCount": 0,
+      "publishedBaselineRetained": false,
+      "historical52136": {},
+      "currentPublishedGuard": {},
+      "currentTvField": [],
+      "learnOwned": false,
+      "priority": false,
+      "vfRegressionGuard": false,
+      "classification": "UNVERIFIED",
+      "historyVerdict": "No current positive evidence is recorded.",
+      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "⚪",
+          "label": "no-report",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "⚪",
+          "label": "no-report",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "⚪",
+          "label": "no-proof",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.146": {
+          "icon": "⚪",
+          "label": "current-unverified",
+          "source": "no-current-proof"
+        }
+      },
+      "regressionWatch": false,
+      "historicalPositiveVersions": [],
+      "historicalVerifiedLanes": [],
+      "currentVerifiedLanes": [],
+      "explicitCurrentFailedLanes": [],
+      "missingHistoricalVerifiedLanes": [],
+      "contractDrift": {
+        "historicalSemanticTypes": {
+          "5.21.0": [],
+          "5.21.16": [],
+          "5.21.36": []
+        },
+        "historicalSemanticTypeSources": {
+          "5.21.0": "unproven-transport-only",
+          "5.21.16": "unproven-transport-only",
+          "5.21.36": "unproven-transport-only"
+        },
+        "historicalTransportTypes": {
+          "5.21.0": [],
+          "5.21.16": [],
+          "5.21.36": []
+        },
+        "semanticTypeFloor": [],
+        "currentSemanticTypes": [
+          "anime",
+          "movie",
+          "tv"
+        ],
+        "currentSemanticTypeSource": "supportedTypes-current-fallback",
+        "lostSemanticTypes": [],
+        "blockingLostSemanticTypes": [],
+        "unprovedSemanticReclassificationTypes": [],
+        "historicalFormats": [],
+        "currentFormats": [
+          "m3u8",
+          "mp4"
+        ],
+        "hlsM3u8Lost": false,
+        "historicalLanguages": [],
+        "currentLanguages": [
+          "en"
+        ],
+        "lostLanguages": [],
+        "disabledAfterHistoricalEnabled": false
+      },
+      "nonRegressionStatus": "NO_HISTORICAL_GREEN",
+      "publicationProofRequired": false,
       "externalDriftAccepted": false
     },
     {
@@ -3583,7 +6230,7 @@
         "5.21.0": "3.0.37 / `04678dffa0c674e9`",
         "5.21.16": "3.0.59 / `0a77b4d442370ffd`",
         "5.21.36": "3.0.73 / `27128980d2e66c10`",
-        "5.21.134": "3.0.119 / `079a2dc23051b0fd`"
+        "5.21.146": "3.0.128 / `cc163f9fb343fdc2`"
       },
       "retainedGenerationCount": 10,
       "publishedBaselineRetained": false,
@@ -3618,7 +6265,7 @@
           "label": "no-streams",
           "source": "5.21.36 provider-v3-quick-yield"
         },
-        "5.21.134": {
+        "5.21.146": {
           "icon": "🔴",
           "label": "published-red",
           "source": "published-byte-guard"
@@ -3705,6 +6352,467 @@
       "externalDriftAccepted": false
     },
     {
+      "provider": "rarefilmm",
+      "name": "🎬 Rarefilmm",
+      "types": [
+        "movie"
+      ],
+      "languages": [],
+      "family": "—",
+      "snapshots": {
+        "5.21.0": "—",
+        "5.21.16": "—",
+        "5.21.36": "—",
+        "5.21.146": "1.0.0 / `8350ff0eef07f04d`"
+      },
+      "retainedGenerationCount": 0,
+      "publishedBaselineRetained": false,
+      "historical52136": {},
+      "currentPublishedGuard": {},
+      "currentTvField": [],
+      "learnOwned": false,
+      "priority": false,
+      "vfRegressionGuard": false,
+      "classification": "UNVERIFIED",
+      "historyVerdict": "No current positive evidence is recorded.",
+      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "⚪",
+          "label": "no-report",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "⚪",
+          "label": "no-report",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "⚪",
+          "label": "no-proof",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.146": {
+          "icon": "⚪",
+          "label": "current-unverified",
+          "source": "no-current-proof"
+        }
+      },
+      "regressionWatch": false,
+      "historicalPositiveVersions": [],
+      "historicalVerifiedLanes": [],
+      "currentVerifiedLanes": [],
+      "explicitCurrentFailedLanes": [],
+      "missingHistoricalVerifiedLanes": [],
+      "contractDrift": {
+        "historicalSemanticTypes": {
+          "5.21.0": [],
+          "5.21.16": [],
+          "5.21.36": []
+        },
+        "historicalSemanticTypeSources": {
+          "5.21.0": "unproven-transport-only",
+          "5.21.16": "unproven-transport-only",
+          "5.21.36": "unproven-transport-only"
+        },
+        "historicalTransportTypes": {
+          "5.21.0": [],
+          "5.21.16": [],
+          "5.21.36": []
+        },
+        "semanticTypeFloor": [],
+        "currentSemanticTypes": [
+          "movie"
+        ],
+        "currentSemanticTypeSource": "supportedTypes-current-fallback",
+        "lostSemanticTypes": [],
+        "blockingLostSemanticTypes": [],
+        "unprovedSemanticReclassificationTypes": [],
+        "historicalFormats": [],
+        "currentFormats": [],
+        "hlsM3u8Lost": false,
+        "historicalLanguages": [],
+        "currentLanguages": [],
+        "lostLanguages": [],
+        "disabledAfterHistoricalEnabled": false
+      },
+      "nonRegressionStatus": "NO_HISTORICAL_GREEN",
+      "publicationProofRequired": false,
+      "externalDriftAccepted": false
+    },
+    {
+      "provider": "reanime-to",
+      "name": "🌸 Re:ANIME",
+      "types": [
+        "anime"
+      ],
+      "languages": [],
+      "family": "—",
+      "snapshots": {
+        "5.21.0": "—",
+        "5.21.16": "—",
+        "5.21.36": "—",
+        "5.21.146": "1.0.0 / `e79600ae8ae961e1`"
+      },
+      "retainedGenerationCount": 0,
+      "publishedBaselineRetained": false,
+      "historical52136": {},
+      "currentPublishedGuard": {},
+      "currentTvField": [],
+      "learnOwned": false,
+      "priority": false,
+      "vfRegressionGuard": false,
+      "classification": "UNVERIFIED",
+      "historyVerdict": "No current positive evidence is recorded.",
+      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "⚪",
+          "label": "no-report",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "⚪",
+          "label": "no-report",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "⚪",
+          "label": "no-proof",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.146": {
+          "icon": "⚪",
+          "label": "current-unverified",
+          "source": "no-current-proof"
+        }
+      },
+      "regressionWatch": false,
+      "historicalPositiveVersions": [],
+      "historicalVerifiedLanes": [],
+      "currentVerifiedLanes": [],
+      "explicitCurrentFailedLanes": [],
+      "missingHistoricalVerifiedLanes": [],
+      "contractDrift": {
+        "historicalSemanticTypes": {
+          "5.21.0": [],
+          "5.21.16": [],
+          "5.21.36": []
+        },
+        "historicalSemanticTypeSources": {
+          "5.21.0": "unproven-transport-only",
+          "5.21.16": "unproven-transport-only",
+          "5.21.36": "unproven-transport-only"
+        },
+        "historicalTransportTypes": {
+          "5.21.0": [],
+          "5.21.16": [],
+          "5.21.36": []
+        },
+        "semanticTypeFloor": [],
+        "currentSemanticTypes": [
+          "anime"
+        ],
+        "currentSemanticTypeSource": "canonicalSupportedTypes",
+        "lostSemanticTypes": [],
+        "blockingLostSemanticTypes": [],
+        "unprovedSemanticReclassificationTypes": [],
+        "historicalFormats": [],
+        "currentFormats": [],
+        "hlsM3u8Lost": false,
+        "historicalLanguages": [],
+        "currentLanguages": [],
+        "lostLanguages": [],
+        "disabledAfterHistoricalEnabled": false
+      },
+      "nonRegressionStatus": "NO_HISTORICAL_GREEN",
+      "publicationProofRequired": false,
+      "externalDriftAccepted": false
+    },
+    {
+      "provider": "rivestream",
+      "name": "🔗 Rive",
+      "types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "languages": [
+        "en"
+      ],
+      "family": "—",
+      "snapshots": {
+        "5.21.0": "—",
+        "5.21.16": "—",
+        "5.21.36": "—",
+        "5.21.146": "1.0.0 / `9e9a9a7868a593f1`"
+      },
+      "retainedGenerationCount": 0,
+      "publishedBaselineRetained": false,
+      "historical52136": {},
+      "currentPublishedGuard": {},
+      "currentTvField": [],
+      "learnOwned": false,
+      "priority": false,
+      "vfRegressionGuard": false,
+      "classification": "UNVERIFIED",
+      "historyVerdict": "No current positive evidence is recorded.",
+      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "⚪",
+          "label": "no-report",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "⚪",
+          "label": "no-report",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "⚪",
+          "label": "no-proof",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.146": {
+          "icon": "⚪",
+          "label": "current-unverified",
+          "source": "no-current-proof"
+        }
+      },
+      "regressionWatch": false,
+      "historicalPositiveVersions": [],
+      "historicalVerifiedLanes": [],
+      "currentVerifiedLanes": [],
+      "explicitCurrentFailedLanes": [],
+      "missingHistoricalVerifiedLanes": [],
+      "contractDrift": {
+        "historicalSemanticTypes": {
+          "5.21.0": [],
+          "5.21.16": [],
+          "5.21.36": []
+        },
+        "historicalSemanticTypeSources": {
+          "5.21.0": "unproven-transport-only",
+          "5.21.16": "unproven-transport-only",
+          "5.21.36": "unproven-transport-only"
+        },
+        "historicalTransportTypes": {
+          "5.21.0": [],
+          "5.21.16": [],
+          "5.21.36": []
+        },
+        "semanticTypeFloor": [],
+        "currentSemanticTypes": [
+          "anime",
+          "movie",
+          "tv"
+        ],
+        "currentSemanticTypeSource": "supportedTypes-current-fallback",
+        "lostSemanticTypes": [],
+        "blockingLostSemanticTypes": [],
+        "unprovedSemanticReclassificationTypes": [],
+        "historicalFormats": [],
+        "currentFormats": [],
+        "hlsM3u8Lost": false,
+        "historicalLanguages": [],
+        "currentLanguages": [
+          "en"
+        ],
+        "lostLanguages": [],
+        "disabledAfterHistoricalEnabled": false
+      },
+      "nonRegressionStatus": "NO_HISTORICAL_GREEN",
+      "publicationProofRequired": false,
+      "externalDriftAccepted": false
+    },
+    {
+      "provider": "rivestream-app",
+      "name": "▶️ Rive / RiveStream",
+      "types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "languages": [],
+      "family": "—",
+      "snapshots": {
+        "5.21.0": "—",
+        "5.21.16": "—",
+        "5.21.36": "—",
+        "5.21.146": "1.0.0 / `8647c4bc53ff9194`"
+      },
+      "retainedGenerationCount": 0,
+      "publishedBaselineRetained": false,
+      "historical52136": {},
+      "currentPublishedGuard": {},
+      "currentTvField": [],
+      "learnOwned": false,
+      "priority": false,
+      "vfRegressionGuard": false,
+      "classification": "UNVERIFIED",
+      "historyVerdict": "No current positive evidence is recorded.",
+      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "⚪",
+          "label": "no-report",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "⚪",
+          "label": "no-report",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "⚪",
+          "label": "no-proof",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.146": {
+          "icon": "⚪",
+          "label": "current-unverified",
+          "source": "no-current-proof"
+        }
+      },
+      "regressionWatch": false,
+      "historicalPositiveVersions": [],
+      "historicalVerifiedLanes": [],
+      "currentVerifiedLanes": [],
+      "explicitCurrentFailedLanes": [],
+      "missingHistoricalVerifiedLanes": [],
+      "contractDrift": {
+        "historicalSemanticTypes": {
+          "5.21.0": [],
+          "5.21.16": [],
+          "5.21.36": []
+        },
+        "historicalSemanticTypeSources": {
+          "5.21.0": "unproven-transport-only",
+          "5.21.16": "unproven-transport-only",
+          "5.21.36": "unproven-transport-only"
+        },
+        "historicalTransportTypes": {
+          "5.21.0": [],
+          "5.21.16": [],
+          "5.21.36": []
+        },
+        "semanticTypeFloor": [],
+        "currentSemanticTypes": [
+          "anime",
+          "movie",
+          "tv"
+        ],
+        "currentSemanticTypeSource": "supportedTypes-current-fallback",
+        "lostSemanticTypes": [],
+        "blockingLostSemanticTypes": [],
+        "unprovedSemanticReclassificationTypes": [],
+        "historicalFormats": [],
+        "currentFormats": [],
+        "hlsM3u8Lost": false,
+        "historicalLanguages": [],
+        "currentLanguages": [],
+        "lostLanguages": [],
+        "disabledAfterHistoricalEnabled": false
+      },
+      "nonRegressionStatus": "NO_HISTORICAL_GREEN",
+      "publicationProofRequired": false,
+      "externalDriftAccepted": false
+    },
+    {
+      "provider": "rivestream-ru",
+      "name": "🔗 Rive alt RU",
+      "types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "languages": [],
+      "family": "—",
+      "snapshots": {
+        "5.21.0": "—",
+        "5.21.16": "—",
+        "5.21.36": "—",
+        "5.21.146": "1.0.0 / `f4cc04c01f29bd4f`"
+      },
+      "retainedGenerationCount": 0,
+      "publishedBaselineRetained": false,
+      "historical52136": {},
+      "currentPublishedGuard": {},
+      "currentTvField": [],
+      "learnOwned": false,
+      "priority": false,
+      "vfRegressionGuard": false,
+      "classification": "UNVERIFIED",
+      "historyVerdict": "No current positive evidence is recorded.",
+      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "⚪",
+          "label": "no-report",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "⚪",
+          "label": "no-report",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "⚪",
+          "label": "no-proof",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.146": {
+          "icon": "⚪",
+          "label": "current-unverified",
+          "source": "no-current-proof"
+        }
+      },
+      "regressionWatch": false,
+      "historicalPositiveVersions": [],
+      "historicalVerifiedLanes": [],
+      "currentVerifiedLanes": [],
+      "explicitCurrentFailedLanes": [],
+      "missingHistoricalVerifiedLanes": [],
+      "contractDrift": {
+        "historicalSemanticTypes": {
+          "5.21.0": [],
+          "5.21.16": [],
+          "5.21.36": []
+        },
+        "historicalSemanticTypeSources": {
+          "5.21.0": "unproven-transport-only",
+          "5.21.16": "unproven-transport-only",
+          "5.21.36": "unproven-transport-only"
+        },
+        "historicalTransportTypes": {
+          "5.21.0": [],
+          "5.21.16": [],
+          "5.21.36": []
+        },
+        "semanticTypeFloor": [],
+        "currentSemanticTypes": [
+          "anime",
+          "movie",
+          "tv"
+        ],
+        "currentSemanticTypeSource": "supportedTypes-current-fallback",
+        "lostSemanticTypes": [],
+        "blockingLostSemanticTypes": [],
+        "unprovedSemanticReclassificationTypes": [],
+        "historicalFormats": [],
+        "currentFormats": [],
+        "hlsM3u8Lost": false,
+        "historicalLanguages": [],
+        "currentLanguages": [],
+        "lostLanguages": [],
+        "disabledAfterHistoricalEnabled": false
+      },
+      "nonRegressionStatus": "NO_HISTORICAL_GREEN",
+      "publicationProofRequired": false,
+      "externalDriftAccepted": false
+    },
+    {
       "provider": "sekai",
       "name": "🌏 Sekai",
       "types": [
@@ -3718,7 +6826,7 @@
         "5.21.0": "1.0.48 / `7947316d3cbed215`",
         "5.21.16": "1.0.50 / `7947316d3cbed215`",
         "5.21.36": "1.0.68 / `cbb4ec48dfa2c28d`",
-        "5.21.134": "1.0.105 / `9ed8dedad6c11475`"
+        "5.21.146": "1.0.114 / `f0de0e7591a0a456`"
       },
       "retainedGenerationCount": 10,
       "publishedBaselineRetained": false,
@@ -3750,7 +6858,7 @@
           "label": "no-streams",
           "source": "5.21.36 provider-v3-quick-yield"
         },
-        "5.21.134": {
+        "5.21.146": {
           "icon": "⚪",
           "label": "current-unverified",
           "source": "no-current-proof"
@@ -3826,6 +6934,203 @@
       "externalDriftAccepted": false
     },
     {
+      "provider": "sflix",
+      "name": "🎬 SFlix",
+      "types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "languages": [
+        "en"
+      ],
+      "family": "—",
+      "snapshots": {
+        "5.21.0": "—",
+        "5.21.16": "—",
+        "5.21.36": "—",
+        "5.21.146": "1.0.0 / `d52e0d1ac3e00bea`"
+      },
+      "retainedGenerationCount": 0,
+      "publishedBaselineRetained": false,
+      "historical52136": {},
+      "currentPublishedGuard": {},
+      "currentTvField": [],
+      "learnOwned": false,
+      "priority": false,
+      "vfRegressionGuard": false,
+      "classification": "UNVERIFIED",
+      "historyVerdict": "No current positive evidence is recorded.",
+      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "⚪",
+          "label": "no-report",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "⚪",
+          "label": "no-report",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "⚪",
+          "label": "no-proof",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.146": {
+          "icon": "⚪",
+          "label": "current-unverified",
+          "source": "no-current-proof"
+        }
+      },
+      "regressionWatch": false,
+      "historicalPositiveVersions": [],
+      "historicalVerifiedLanes": [],
+      "currentVerifiedLanes": [],
+      "explicitCurrentFailedLanes": [],
+      "missingHistoricalVerifiedLanes": [],
+      "contractDrift": {
+        "historicalSemanticTypes": {
+          "5.21.0": [],
+          "5.21.16": [],
+          "5.21.36": []
+        },
+        "historicalSemanticTypeSources": {
+          "5.21.0": "unproven-transport-only",
+          "5.21.16": "unproven-transport-only",
+          "5.21.36": "unproven-transport-only"
+        },
+        "historicalTransportTypes": {
+          "5.21.0": [],
+          "5.21.16": [],
+          "5.21.36": []
+        },
+        "semanticTypeFloor": [],
+        "currentSemanticTypes": [
+          "anime",
+          "movie",
+          "tv"
+        ],
+        "currentSemanticTypeSource": "supportedTypes-current-fallback",
+        "lostSemanticTypes": [],
+        "blockingLostSemanticTypes": [],
+        "unprovedSemanticReclassificationTypes": [],
+        "historicalFormats": [],
+        "currentFormats": [],
+        "hlsM3u8Lost": false,
+        "historicalLanguages": [],
+        "currentLanguages": [
+          "en"
+        ],
+        "lostLanguages": [],
+        "disabledAfterHistoricalEnabled": false
+      },
+      "nonRegressionStatus": "NO_HISTORICAL_GREEN",
+      "publicationProofRequired": false,
+      "externalDriftAccepted": false
+    },
+    {
+      "provider": "shuttletv",
+      "name": "📺 ShuttleTV",
+      "types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "languages": [
+        "en"
+      ],
+      "family": "—",
+      "snapshots": {
+        "5.21.0": "—",
+        "5.21.16": "—",
+        "5.21.36": "—",
+        "5.21.146": "1.0.0 / `a61a6149235e6463`"
+      },
+      "retainedGenerationCount": 0,
+      "publishedBaselineRetained": false,
+      "historical52136": {},
+      "currentPublishedGuard": {},
+      "currentTvField": [],
+      "learnOwned": false,
+      "priority": false,
+      "vfRegressionGuard": false,
+      "classification": "UNVERIFIED",
+      "historyVerdict": "No current positive evidence is recorded.",
+      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "⚪",
+          "label": "no-report",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "⚪",
+          "label": "no-report",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "⚪",
+          "label": "no-proof",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.146": {
+          "icon": "⚪",
+          "label": "current-unverified",
+          "source": "no-current-proof"
+        }
+      },
+      "regressionWatch": false,
+      "historicalPositiveVersions": [],
+      "historicalVerifiedLanes": [],
+      "currentVerifiedLanes": [],
+      "explicitCurrentFailedLanes": [],
+      "missingHistoricalVerifiedLanes": [],
+      "contractDrift": {
+        "historicalSemanticTypes": {
+          "5.21.0": [],
+          "5.21.16": [],
+          "5.21.36": []
+        },
+        "historicalSemanticTypeSources": {
+          "5.21.0": "unproven-transport-only",
+          "5.21.16": "unproven-transport-only",
+          "5.21.36": "unproven-transport-only"
+        },
+        "historicalTransportTypes": {
+          "5.21.0": [],
+          "5.21.16": [],
+          "5.21.36": []
+        },
+        "semanticTypeFloor": [],
+        "currentSemanticTypes": [
+          "anime",
+          "movie",
+          "tv"
+        ],
+        "currentSemanticTypeSource": "supportedTypes-current-fallback",
+        "lostSemanticTypes": [],
+        "blockingLostSemanticTypes": [],
+        "unprovedSemanticReclassificationTypes": [],
+        "historicalFormats": [],
+        "currentFormats": [
+          "m3u8",
+          "mp4"
+        ],
+        "hlsM3u8Lost": false,
+        "historicalLanguages": [],
+        "currentLanguages": [
+          "en"
+        ],
+        "lostLanguages": [],
+        "disabledAfterHistoricalEnabled": false
+      },
+      "nonRegressionStatus": "NO_HISTORICAL_GREEN",
+      "publicationProofRequired": false,
+      "externalDriftAccepted": false
+    },
+    {
       "provider": "streamzo",
       "name": "🌊 StreamZo",
       "types": [
@@ -3841,7 +7146,7 @@
         "5.21.0": "1.0.62 / `0e0695a6398a6732`",
         "5.21.16": "1.0.75 / `664cd45915ac001c`",
         "5.21.36": "1.0.89 / `3ab1767966d7a1bc`",
-        "5.21.134": "1.0.127 / `f3a16e146b62f5ea`"
+        "5.21.146": "1.0.136 / `d529c17128b021e0`"
       },
       "retainedGenerationCount": 10,
       "publishedBaselineRetained": false,
@@ -3883,7 +7188,7 @@
           "label": "partial",
           "source": "5.21.36 provider-v3-quick-yield"
         },
-        "5.21.134": {
+        "5.21.146": {
           "icon": "🟡",
           "label": "field-green/partial",
           "source": "field+published-guard"
@@ -3971,6 +7276,125 @@
       "externalDriftAccepted": false
     },
     {
+      "provider": "topcartoons",
+      "name": "🧸 TopCartoons",
+      "types": [
+        "movie",
+        "tv"
+      ],
+      "languages": [],
+      "family": "—",
+      "snapshots": {
+        "5.21.0": "1.0.14 / `820bdd5a5604e3c7`",
+        "5.21.16": "1.0.20 / `2c3468e6b56c3c83`",
+        "5.21.36": "1.0.27 / `bab4a32d76b15bdc`",
+        "5.21.146": "1.0.21 / `b7a97f5a7f2a2e4b`"
+      },
+      "retainedGenerationCount": 0,
+      "publishedBaselineRetained": false,
+      "historical52136": {
+        "movie": "zero",
+        "tv": "zero"
+      },
+      "currentPublishedGuard": {},
+      "currentTvField": [],
+      "learnOwned": false,
+      "priority": false,
+      "vfRegressionGuard": false,
+      "classification": "UNVERIFIED",
+      "historyVerdict": "No current positive evidence is recorded.",
+      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "🟡",
+          "label": "provider-unreachable/playable-host",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "🟡",
+          "label": "provider-unreachable/playable-host",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "🔴",
+          "label": "no-streams",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.146": {
+          "icon": "⚪",
+          "label": "current-unverified",
+          "source": "no-current-proof"
+        }
+      },
+      "regressionWatch": false,
+      "historicalPositiveVersions": [],
+      "historicalVerifiedLanes": [],
+      "currentVerifiedLanes": [],
+      "explicitCurrentFailedLanes": [],
+      "missingHistoricalVerifiedLanes": [],
+      "contractDrift": {
+        "historicalSemanticTypes": {
+          "5.21.0": [],
+          "5.21.16": [],
+          "5.21.36": [
+            "movie",
+            "tv"
+          ]
+        },
+        "historicalSemanticTypeSources": {
+          "5.21.0": "5.21.0-fixture-types-unproven-transport-only",
+          "5.21.16": "unproven-transport-only",
+          "5.21.36": "canonicalSupportedTypes"
+        },
+        "historicalTransportTypes": {
+          "5.21.0": [
+            "movie",
+            "tv"
+          ],
+          "5.21.16": [
+            "movie",
+            "tv"
+          ],
+          "5.21.36": [
+            "movie",
+            "tv"
+          ]
+        },
+        "semanticTypeFloor": [
+          "movie",
+          "tv"
+        ],
+        "currentSemanticTypes": [
+          "movie",
+          "tv"
+        ],
+        "currentSemanticTypeSource": "supportedTypes-current-fallback",
+        "lostSemanticTypes": [],
+        "blockingLostSemanticTypes": [],
+        "unprovedSemanticReclassificationTypes": [],
+        "historicalFormats": [
+          "m3u8",
+          "mp4"
+        ],
+        "currentFormats": [
+          "m3u8",
+          "mp4"
+        ],
+        "hlsM3u8Lost": false,
+        "historicalLanguages": [
+          "en"
+        ],
+        "currentLanguages": [],
+        "lostLanguages": [
+          "en"
+        ],
+        "disabledAfterHistoricalEnabled": false
+      },
+      "nonRegressionStatus": "NO_HISTORICAL_GREEN",
+      "publicationProofRequired": false,
+      "externalDriftAccepted": false
+    },
+    {
       "provider": "uhdmovies",
       "name": "📺 UHDMovies",
       "types": [
@@ -3984,9 +7408,9 @@
         "5.21.0": "1.0.17 / `faafa6b844017040`",
         "5.21.16": "1.0.49 / `41b2867bcc664c93`",
         "5.21.36": "1.0.63 / `e6f0cc34b5ce7e9e`",
-        "5.21.134": "1.0.106 / `f9e16fb8dcb009ca`"
+        "5.21.146": "1.0.111 / `2288620ddd544268`"
       },
-      "retainedGenerationCount": 10,
+      "retainedGenerationCount": 0,
       "publishedBaselineRetained": false,
       "historical52136": {
         "movie": "zero",
@@ -4019,7 +7443,7 @@
           "label": "no-streams",
           "source": "5.21.36 provider-v3-quick-yield"
         },
-        "5.21.134": {
+        "5.21.146": {
           "icon": "🔴",
           "label": "published-red",
           "source": "published-byte-guard"
@@ -4093,10 +7517,149 @@
           "en"
         ],
         "lostLanguages": [],
-        "disabledAfterHistoricalEnabled": false
+        "disabledAfterHistoricalEnabled": true
       },
       "nonRegressionStatus": "NO_HISTORICAL_GREEN",
       "publicationProofRequired": false,
+      "externalDriftAccepted": false
+    },
+    {
+      "provider": "videasy",
+      "name": "▶️ VidEasy",
+      "types": [
+        "movie",
+        "tv"
+      ],
+      "languages": [
+        "en",
+        "de",
+        "it",
+        "fr",
+        "hi",
+        "es",
+        "pt"
+      ],
+      "family": "tmdb-direct-api",
+      "snapshots": {
+        "5.21.0": "1.0.41 / `f9cb91b9df10ed43`",
+        "5.21.16": "1.0.71 / `51e53f85370dc234`",
+        "5.21.36": "1.0.85 / `5dc71b42b6b49e8a`",
+        "5.21.146": "1.0.77 / `b3c105c91cd35fa9`"
+      },
+      "retainedGenerationCount": 0,
+      "publishedBaselineRetained": false,
+      "historical52136": {
+        "movie": "wrong-content",
+        "tv": "verified"
+      },
+      "currentPublishedGuard": {},
+      "currentTvField": [],
+      "learnOwned": false,
+      "priority": false,
+      "vfRegressionGuard": false,
+      "classification": "HISTORICAL_GREEN_UNRETESTED",
+      "historyVerdict": "5.21.36 census had at least one verified lane; no newer published-byte guard is recorded here.",
+      "action": "Retest published bytes before touching route/data.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "🟢",
+          "label": "healthy",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "🟡",
+          "label": "provider-unreachable/playable-host",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "🟡",
+          "label": "partial",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.146": {
+          "icon": "⚪",
+          "label": "current-untested",
+          "source": "no-current-proof"
+        }
+      },
+      "regressionWatch": false,
+      "historicalPositiveVersions": [
+        "5.21.0"
+      ],
+      "historicalVerifiedLanes": [
+        "tv"
+      ],
+      "currentVerifiedLanes": [],
+      "explicitCurrentFailedLanes": [],
+      "missingHistoricalVerifiedLanes": [
+        "tv"
+      ],
+      "contractDrift": {
+        "historicalSemanticTypes": {
+          "5.21.0": [],
+          "5.21.16": [],
+          "5.21.36": [
+            "movie",
+            "tv"
+          ]
+        },
+        "historicalSemanticTypeSources": {
+          "5.21.0": "5.21.0-fixture-types-unproven-transport-only",
+          "5.21.16": "unproven-transport-only",
+          "5.21.36": "canonicalSupportedTypes"
+        },
+        "historicalTransportTypes": {
+          "5.21.0": [
+            "movie",
+            "tv"
+          ],
+          "5.21.16": [
+            "movie",
+            "tv"
+          ],
+          "5.21.36": [
+            "movie",
+            "tv"
+          ]
+        },
+        "semanticTypeFloor": [
+          "movie",
+          "tv"
+        ],
+        "currentSemanticTypes": [
+          "movie",
+          "tv"
+        ],
+        "currentSemanticTypeSource": "supportedTypes-current-fallback",
+        "lostSemanticTypes": [],
+        "blockingLostSemanticTypes": [],
+        "unprovedSemanticReclassificationTypes": [],
+        "historicalFormats": [
+          "m3u8",
+          "mp4"
+        ],
+        "currentFormats": [
+          "m3u8",
+          "mp4"
+        ],
+        "hlsM3u8Lost": false,
+        "historicalLanguages": [
+          "en"
+        ],
+        "currentLanguages": [
+          "de",
+          "en",
+          "es",
+          "fr",
+          "hi",
+          "it",
+          "pt"
+        ],
+        "lostLanguages": [],
+        "disabledAfterHistoricalEnabled": false
+      },
+      "nonRegressionStatus": "REVALIDATION_REQUIRED",
+      "publicationProofRequired": true,
       "externalDriftAccepted": false
     },
     {
@@ -4114,9 +7677,9 @@
         "5.21.0": "1.0.21 / `3b6bb9c6bb0550a7`",
         "5.21.16": "1.0.27 / `8c06edeea58a8ebb`",
         "5.21.36": "1.0.41 / `ee6dbe52b16e6f16`",
-        "5.21.134": "1.0.81 / `31e27066cae81d47`"
+        "5.21.146": "1.0.86 / `177fa2f62fb34e93`"
       },
-      "retainedGenerationCount": 10,
+      "retainedGenerationCount": 0,
       "publishedBaselineRetained": false,
       "historical52136": {
         "movie": "zero",
@@ -4146,7 +7709,7 @@
           "label": "no-streams",
           "source": "5.21.36 provider-v3-quick-yield"
         },
-        "5.21.134": {
+        "5.21.146": {
           "icon": "🟠",
           "label": "learn-debt",
           "source": "repair-handoff"
@@ -4214,6 +7777,125 @@
           "en"
         ],
         "lostLanguages": [],
+        "disabledAfterHistoricalEnabled": true
+      },
+      "nonRegressionStatus": "NO_HISTORICAL_GREEN",
+      "publicationProofRequired": false,
+      "externalDriftAccepted": false
+    },
+    {
+      "provider": "vidlink",
+      "name": "🔗 VidLink",
+      "types": [
+        "movie",
+        "tv"
+      ],
+      "languages": [],
+      "family": "—",
+      "snapshots": {
+        "5.21.0": "1.0.19 / `9888346d4f502171`",
+        "5.21.16": "1.0.25 / `e886f51e981f1ab9`",
+        "5.21.36": "1.0.39 / `cf373568cce2fbf8`",
+        "5.21.146": "1.0.31 / `2f00b10f33fb8207`"
+      },
+      "retainedGenerationCount": 0,
+      "publishedBaselineRetained": false,
+      "historical52136": {
+        "movie": "zero",
+        "tv": "zero"
+      },
+      "currentPublishedGuard": {},
+      "currentTvField": [],
+      "learnOwned": false,
+      "priority": false,
+      "vfRegressionGuard": false,
+      "classification": "UNVERIFIED",
+      "historyVerdict": "No current positive evidence is recorded.",
+      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "🔴",
+          "label": "no-streams",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "⚪",
+          "label": "provider-unreachable/inconclusive",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "🔴",
+          "label": "no-streams",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.146": {
+          "icon": "⚪",
+          "label": "current-unverified",
+          "source": "no-current-proof"
+        }
+      },
+      "regressionWatch": false,
+      "historicalPositiveVersions": [],
+      "historicalVerifiedLanes": [],
+      "currentVerifiedLanes": [],
+      "explicitCurrentFailedLanes": [],
+      "missingHistoricalVerifiedLanes": [],
+      "contractDrift": {
+        "historicalSemanticTypes": {
+          "5.21.0": [],
+          "5.21.16": [],
+          "5.21.36": [
+            "movie",
+            "tv"
+          ]
+        },
+        "historicalSemanticTypeSources": {
+          "5.21.0": "5.21.0-fixture-types-unproven-transport-only",
+          "5.21.16": "unproven-transport-only",
+          "5.21.36": "canonicalSupportedTypes"
+        },
+        "historicalTransportTypes": {
+          "5.21.0": [
+            "movie",
+            "tv"
+          ],
+          "5.21.16": [
+            "movie",
+            "tv"
+          ],
+          "5.21.36": [
+            "movie",
+            "tv"
+          ]
+        },
+        "semanticTypeFloor": [
+          "movie",
+          "tv"
+        ],
+        "currentSemanticTypes": [
+          "movie",
+          "tv"
+        ],
+        "currentSemanticTypeSource": "supportedTypes-current-fallback",
+        "lostSemanticTypes": [],
+        "blockingLostSemanticTypes": [],
+        "unprovedSemanticReclassificationTypes": [],
+        "historicalFormats": [
+          "m3u8",
+          "mp4"
+        ],
+        "currentFormats": [
+          "m3u8",
+          "mp4"
+        ],
+        "hlsM3u8Lost": false,
+        "historicalLanguages": [
+          "en"
+        ],
+        "currentLanguages": [],
+        "lostLanguages": [
+          "en"
+        ],
         "disabledAfterHistoricalEnabled": false
       },
       "nonRegressionStatus": "NO_HISTORICAL_GREEN",
@@ -4235,9 +7917,9 @@
         "5.21.0": "1.0.30 / `f0abcd1a8ab6c822`",
         "5.21.16": "1.0.60 / `efb1712141d044d6`",
         "5.21.36": "1.0.74 / `849bb6600299c982`",
-        "5.21.134": "1.0.111 / `b4c7d2524ff9834e`"
+        "5.21.146": "1.0.116 / `90e05ff6c956501e`"
       },
-      "retainedGenerationCount": 10,
+      "retainedGenerationCount": 0,
       "publishedBaselineRetained": false,
       "historical52136": {
         "movie": "zero",
@@ -4267,7 +7949,7 @@
           "label": "no-streams",
           "source": "5.21.36 provider-v3-quick-yield"
         },
-        "5.21.134": {
+        "5.21.146": {
           "icon": "⚪",
           "label": "current-unverified",
           "source": "no-current-proof"
@@ -4358,9 +8040,9 @@
         "5.21.0": "1.0.24 / `e4f457c7daea80f5`",
         "5.21.16": "1.0.55 / `8e310b567b0fe5a6`",
         "5.21.36": "1.0.69 / `c8939c8fd386a8e5`",
-        "5.21.134": "1.0.117 / `4176371e61a1bcde`"
+        "5.21.146": "1.0.122 / `5d90f291dc66d601`"
       },
-      "retainedGenerationCount": 10,
+      "retainedGenerationCount": 0,
       "publishedBaselineRetained": false,
       "historical52136": {
         "movie": "zero",
@@ -4390,7 +8072,7 @@
           "label": "no-streams",
           "source": "5.21.36 provider-v3-quick-yield"
         },
-        "5.21.134": {
+        "5.21.146": {
           "icon": "⚪",
           "label": "current-unverified",
           "source": "no-current-proof"
@@ -4458,6 +8140,101 @@
           "en"
         ],
         "lostLanguages": [],
+        "disabledAfterHistoricalEnabled": true
+      },
+      "nonRegressionStatus": "NO_HISTORICAL_GREEN",
+      "publicationProofRequired": false,
+      "externalDriftAccepted": false
+    },
+    {
+      "provider": "vidsrc2",
+      "name": "🔗 VidSrcProvider",
+      "types": [
+        "movie",
+        "tv"
+      ],
+      "languages": [
+        "en"
+      ],
+      "family": "—",
+      "snapshots": {
+        "5.21.0": "—",
+        "5.21.16": "—",
+        "5.21.36": "—",
+        "5.21.146": "1.0.0 / `cd0631f6bcb6e8f2`"
+      },
+      "retainedGenerationCount": 0,
+      "publishedBaselineRetained": false,
+      "historical52136": {},
+      "currentPublishedGuard": {},
+      "currentTvField": [],
+      "learnOwned": false,
+      "priority": false,
+      "vfRegressionGuard": false,
+      "classification": "UNVERIFIED",
+      "historyVerdict": "No current positive evidence is recorded.",
+      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "⚪",
+          "label": "no-report",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "⚪",
+          "label": "no-report",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "⚪",
+          "label": "no-proof",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.146": {
+          "icon": "⚪",
+          "label": "current-unverified",
+          "source": "no-current-proof"
+        }
+      },
+      "regressionWatch": false,
+      "historicalPositiveVersions": [],
+      "historicalVerifiedLanes": [],
+      "currentVerifiedLanes": [],
+      "explicitCurrentFailedLanes": [],
+      "missingHistoricalVerifiedLanes": [],
+      "contractDrift": {
+        "historicalSemanticTypes": {
+          "5.21.0": [],
+          "5.21.16": [],
+          "5.21.36": []
+        },
+        "historicalSemanticTypeSources": {
+          "5.21.0": "unproven-transport-only",
+          "5.21.16": "unproven-transport-only",
+          "5.21.36": "unproven-transport-only"
+        },
+        "historicalTransportTypes": {
+          "5.21.0": [],
+          "5.21.16": [],
+          "5.21.36": []
+        },
+        "semanticTypeFloor": [],
+        "currentSemanticTypes": [
+          "movie",
+          "tv"
+        ],
+        "currentSemanticTypeSource": "supportedTypes-current-fallback",
+        "lostSemanticTypes": [],
+        "blockingLostSemanticTypes": [],
+        "unprovedSemanticReclassificationTypes": [],
+        "historicalFormats": [],
+        "currentFormats": [],
+        "hlsM3u8Lost": false,
+        "historicalLanguages": [],
+        "currentLanguages": [
+          "en"
+        ],
+        "lostLanguages": [],
         "disabledAfterHistoricalEnabled": false
       },
       "nonRegressionStatus": "NO_HISTORICAL_GREEN",
@@ -4478,9 +8255,9 @@
         "5.21.0": "1.2.52 / `1aaecd3076ce5d80`",
         "5.21.16": "1.2.69 / `9908ca75a64f9ab4`",
         "5.21.36": "1.2.87 / `5d089315b3c068e4`",
-        "5.21.134": "1.2.128 / `1e28736b3a1005e6`"
+        "5.21.146": "1.2.133 / `3a975c32e8632841`"
       },
-      "retainedGenerationCount": 10,
+      "retainedGenerationCount": 0,
       "publishedBaselineRetained": false,
       "historical52136": {
         "anime": "zero",
@@ -4510,7 +8287,7 @@
           "label": "no-streams",
           "source": "5.21.36 provider-v3-quick-yield"
         },
-        "5.21.134": {
+        "5.21.146": {
           "icon": "⚪",
           "label": "current-unverified",
           "source": "no-current-proof"
@@ -4581,7 +8358,7 @@
           "fr"
         ],
         "lostLanguages": [],
-        "disabledAfterHistoricalEnabled": false
+        "disabledAfterHistoricalEnabled": true
       },
       "nonRegressionStatus": "NO_HISTORICAL_GREEN",
       "publicationProofRequired": false,
@@ -4601,7 +8378,7 @@
         "5.21.0": "0.0.27 / `3bf64d238ad99eba`",
         "5.21.16": "0.0.58 / `b40415f60370ad0b`",
         "5.21.36": "0.0.72 / `b018e6aa40f1f817`",
-        "5.21.134": "0.0.109 / `7a990c7df4bf63c9`"
+        "5.21.146": "0.0.118 / `3121af19024f1f37`"
       },
       "retainedGenerationCount": 10,
       "publishedBaselineRetained": false,
@@ -4633,7 +8410,7 @@
           "label": "no-streams",
           "source": "5.21.36 provider-v3-quick-yield"
         },
-        "5.21.134": {
+        "5.21.146": {
           "icon": "⚪",
           "label": "current-unverified",
           "source": "no-current-proof"
@@ -4701,7 +8478,7 @@
           "fr"
         ],
         "lostLanguages": [],
-        "disabledAfterHistoricalEnabled": false
+        "disabledAfterHistoricalEnabled": true
       },
       "nonRegressionStatus": "NO_HISTORICAL_GREEN",
       "publicationProofRequired": false,
@@ -4721,7 +8498,7 @@
         "5.21.0": "1.0.42 / `bfdd8bc581e9191d`",
         "5.21.16": "1.0.61 / `4d13882f91995cea`",
         "5.21.36": "1.0.79 / `f3d824fc948eed41`",
-        "5.21.134": "1.0.116 / `61e1e6837d0106fb`"
+        "5.21.146": "1.0.125 / `3053949c679b347d`"
       },
       "retainedGenerationCount": 10,
       "publishedBaselineRetained": false,
@@ -4753,7 +8530,7 @@
           "label": "no-streams",
           "source": "5.21.36 provider-v3-quick-yield"
         },
-        "5.21.134": {
+        "5.21.146": {
           "icon": "⚪",
           "label": "current-unverified",
           "source": "no-current-proof"
@@ -4822,7 +8599,7 @@
           "fr"
         ],
         "lostLanguages": [],
-        "disabledAfterHistoricalEnabled": false
+        "disabledAfterHistoricalEnabled": true
       },
       "nonRegressionStatus": "NO_HISTORICAL_GREEN",
       "publicationProofRequired": false,
@@ -4842,9 +8619,9 @@
         "5.21.0": "1.1.70 / `1286c275654dac3a`",
         "5.21.16": "1.1.76 / `7a20c3198fde3b19`",
         "5.21.36": "1.1.94 / `76c5fe1fbcad7173`",
-        "5.21.134": "1.1.132 / `db882a0f14e60b18`"
+        "5.21.146": "1.1.137 / `0db9a4fe4e45088c`"
       },
-      "retainedGenerationCount": 10,
+      "retainedGenerationCount": 0,
       "publishedBaselineRetained": false,
       "historical52136": {
         "anime": "zero",
@@ -4874,7 +8651,7 @@
           "label": "no-streams",
           "source": "5.21.36 provider-v3-quick-yield"
         },
-        "5.21.134": {
+        "5.21.146": {
           "icon": "🟠",
           "label": "learn-debt",
           "source": "repair-handoff"
@@ -4943,6 +8720,299 @@
           "fr"
         ],
         "lostLanguages": [],
+        "disabledAfterHistoricalEnabled": true
+      },
+      "nonRegressionStatus": "NO_HISTORICAL_GREEN",
+      "publicationProofRequired": false,
+      "externalDriftAccepted": false
+    },
+    {
+      "provider": "vuflix",
+      "name": "🎬 Vuflix",
+      "types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "languages": [
+        "en"
+      ],
+      "family": "—",
+      "snapshots": {
+        "5.21.0": "—",
+        "5.21.16": "—",
+        "5.21.36": "—",
+        "5.21.146": "1.0.0 / `4849368aa6d4545b`"
+      },
+      "retainedGenerationCount": 0,
+      "publishedBaselineRetained": false,
+      "historical52136": {},
+      "currentPublishedGuard": {},
+      "currentTvField": [],
+      "learnOwned": false,
+      "priority": false,
+      "vfRegressionGuard": false,
+      "classification": "UNVERIFIED",
+      "historyVerdict": "No current positive evidence is recorded.",
+      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "⚪",
+          "label": "no-report",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "⚪",
+          "label": "no-report",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "⚪",
+          "label": "no-proof",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.146": {
+          "icon": "⚪",
+          "label": "current-unverified",
+          "source": "no-current-proof"
+        }
+      },
+      "regressionWatch": false,
+      "historicalPositiveVersions": [],
+      "historicalVerifiedLanes": [],
+      "currentVerifiedLanes": [],
+      "explicitCurrentFailedLanes": [],
+      "missingHistoricalVerifiedLanes": [],
+      "contractDrift": {
+        "historicalSemanticTypes": {
+          "5.21.0": [],
+          "5.21.16": [],
+          "5.21.36": []
+        },
+        "historicalSemanticTypeSources": {
+          "5.21.0": "unproven-transport-only",
+          "5.21.16": "unproven-transport-only",
+          "5.21.36": "unproven-transport-only"
+        },
+        "historicalTransportTypes": {
+          "5.21.0": [],
+          "5.21.16": [],
+          "5.21.36": []
+        },
+        "semanticTypeFloor": [],
+        "currentSemanticTypes": [
+          "anime",
+          "movie",
+          "tv"
+        ],
+        "currentSemanticTypeSource": "supportedTypes-current-fallback",
+        "lostSemanticTypes": [],
+        "blockingLostSemanticTypes": [],
+        "unprovedSemanticReclassificationTypes": [],
+        "historicalFormats": [],
+        "currentFormats": [
+          "m3u8",
+          "mp4"
+        ],
+        "hlsM3u8Lost": false,
+        "historicalLanguages": [],
+        "currentLanguages": [
+          "en"
+        ],
+        "lostLanguages": [],
+        "disabledAfterHistoricalEnabled": false
+      },
+      "nonRegressionStatus": "NO_HISTORICAL_GREEN",
+      "publicationProofRequired": false,
+      "externalDriftAccepted": false
+    },
+    {
+      "provider": "watch-cartoon-online",
+      "name": "🔗 Watch Cartoon Online",
+      "types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "languages": [
+        "en"
+      ],
+      "family": "—",
+      "snapshots": {
+        "5.21.0": "—",
+        "5.21.16": "—",
+        "5.21.36": "—",
+        "5.21.146": "1.0.0 / `896fd2825f59b98e`"
+      },
+      "retainedGenerationCount": 0,
+      "publishedBaselineRetained": false,
+      "historical52136": {},
+      "currentPublishedGuard": {},
+      "currentTvField": [],
+      "learnOwned": false,
+      "priority": false,
+      "vfRegressionGuard": false,
+      "classification": "UNVERIFIED",
+      "historyVerdict": "No current positive evidence is recorded.",
+      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "⚪",
+          "label": "no-report",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "⚪",
+          "label": "no-report",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "⚪",
+          "label": "no-proof",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.146": {
+          "icon": "⚪",
+          "label": "current-unverified",
+          "source": "no-current-proof"
+        }
+      },
+      "regressionWatch": false,
+      "historicalPositiveVersions": [],
+      "historicalVerifiedLanes": [],
+      "currentVerifiedLanes": [],
+      "explicitCurrentFailedLanes": [],
+      "missingHistoricalVerifiedLanes": [],
+      "contractDrift": {
+        "historicalSemanticTypes": {
+          "5.21.0": [],
+          "5.21.16": [],
+          "5.21.36": []
+        },
+        "historicalSemanticTypeSources": {
+          "5.21.0": "unproven-transport-only",
+          "5.21.16": "unproven-transport-only",
+          "5.21.36": "unproven-transport-only"
+        },
+        "historicalTransportTypes": {
+          "5.21.0": [],
+          "5.21.16": [],
+          "5.21.36": []
+        },
+        "semanticTypeFloor": [],
+        "currentSemanticTypes": [
+          "anime",
+          "movie",
+          "tv"
+        ],
+        "currentSemanticTypeSource": "supportedTypes-current-fallback",
+        "lostSemanticTypes": [],
+        "blockingLostSemanticTypes": [],
+        "unprovedSemanticReclassificationTypes": [],
+        "historicalFormats": [],
+        "currentFormats": [
+          "m3u8",
+          "mp4"
+        ],
+        "hlsM3u8Lost": false,
+        "historicalLanguages": [],
+        "currentLanguages": [
+          "en"
+        ],
+        "lostLanguages": [],
+        "disabledAfterHistoricalEnabled": false
+      },
+      "nonRegressionStatus": "NO_HISTORICAL_GREEN",
+      "publicationProofRequired": false,
+      "externalDriftAccepted": false
+    },
+    {
+      "provider": "watchott",
+      "name": "🔗 Watchott",
+      "types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "languages": [],
+      "family": "—",
+      "snapshots": {
+        "5.21.0": "—",
+        "5.21.16": "—",
+        "5.21.36": "—",
+        "5.21.146": "1.0.0 / `7671f653747d04c3`"
+      },
+      "retainedGenerationCount": 0,
+      "publishedBaselineRetained": false,
+      "historical52136": {},
+      "currentPublishedGuard": {},
+      "currentTvField": [],
+      "learnOwned": false,
+      "priority": false,
+      "vfRegressionGuard": false,
+      "classification": "UNVERIFIED",
+      "historyVerdict": "No current positive evidence is recorded.",
+      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "⚪",
+          "label": "no-report",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "⚪",
+          "label": "no-report",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "⚪",
+          "label": "no-proof",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.146": {
+          "icon": "⚪",
+          "label": "current-unverified",
+          "source": "no-current-proof"
+        }
+      },
+      "regressionWatch": false,
+      "historicalPositiveVersions": [],
+      "historicalVerifiedLanes": [],
+      "currentVerifiedLanes": [],
+      "explicitCurrentFailedLanes": [],
+      "missingHistoricalVerifiedLanes": [],
+      "contractDrift": {
+        "historicalSemanticTypes": {
+          "5.21.0": [],
+          "5.21.16": [],
+          "5.21.36": []
+        },
+        "historicalSemanticTypeSources": {
+          "5.21.0": "unproven-transport-only",
+          "5.21.16": "unproven-transport-only",
+          "5.21.36": "unproven-transport-only"
+        },
+        "historicalTransportTypes": {
+          "5.21.0": [],
+          "5.21.16": [],
+          "5.21.36": []
+        },
+        "semanticTypeFloor": [],
+        "currentSemanticTypes": [
+          "anime",
+          "movie",
+          "tv"
+        ],
+        "currentSemanticTypeSource": "supportedTypes-current-fallback",
+        "lostSemanticTypes": [],
+        "blockingLostSemanticTypes": [],
+        "unprovedSemanticReclassificationTypes": [],
+        "historicalFormats": [],
+        "currentFormats": [],
+        "hlsM3u8Lost": false,
+        "historicalLanguages": [],
+        "currentLanguages": [],
+        "lostLanguages": [],
         "disabledAfterHistoricalEnabled": false
       },
       "nonRegressionStatus": "NO_HISTORICAL_GREEN",
@@ -4964,7 +9034,7 @@
         "5.21.0": "1.0.42 / `06c24d8c26c50df0`",
         "5.21.16": "1.0.50 / `73c72bc655edc9ea`",
         "5.21.36": "1.0.64 / `3c1ac476d5c5e692`",
-        "5.21.134": "1.0.144 / `a5649ce47029b9d7`"
+        "5.21.146": "1.0.153 / `c9d61c4e59fd5794`"
       },
       "retainedGenerationCount": 10,
       "publishedBaselineRetained": false,
@@ -4996,7 +9066,7 @@
           "label": "verified",
           "source": "5.21.36 provider-v3-quick-yield"
         },
-        "5.21.134": {
+        "5.21.146": {
           "icon": "⚪",
           "label": "current-untested",
           "source": "no-current-proof"
@@ -5072,7 +9142,7 @@
           "fr"
         ],
         "lostLanguages": [],
-        "disabledAfterHistoricalEnabled": false
+        "disabledAfterHistoricalEnabled": true
       },
       "nonRegressionStatus": "REVALIDATION_REQUIRED",
       "publicationProofRequired": true,
@@ -5093,9 +9163,9 @@
         "5.21.0": "1.1.21 / `5bc4a93d15c1f685`",
         "5.21.16": "1.1.27 / `f6ff420bc7d5882a`",
         "5.21.36": "1.1.41 / `e76f97e3ced0e815`",
-        "5.21.134": "1.1.79 / `18521e205e412995`"
+        "5.21.146": "1.1.84 / `d9a87c04b9e1aa32`"
       },
-      "retainedGenerationCount": 10,
+      "retainedGenerationCount": 0,
       "publishedBaselineRetained": false,
       "historical52136": {
         "movie": "zero",
@@ -5125,7 +9195,7 @@
           "label": "no-streams",
           "source": "5.21.36 provider-v3-quick-yield"
         },
-        "5.21.134": {
+        "5.21.146": {
           "icon": "🟠",
           "label": "learn-debt",
           "source": "repair-handoff"
@@ -5193,7 +9263,7 @@
           "en"
         ],
         "lostLanguages": [],
-        "disabledAfterHistoricalEnabled": false
+        "disabledAfterHistoricalEnabled": true
       },
       "nonRegressionStatus": "NO_HISTORICAL_GREEN",
       "publicationProofRequired": false,
@@ -5218,7 +9288,7 @@
       "5.21.16",
       "5.21.36"
     ],
-    "current": "5.21.134",
+    "current": "5.21.146",
     "crossVersionFallbackAllowed": false,
     "historicalTransportTypesMayCreateSemanticFloor": false,
     "historicalGreenMayBecomeUnknownSilently": false,
@@ -5230,11 +9300,11 @@
   },
   "nonRegressionStatusCounts": {
     "HARD_REGRESSION": 3,
-    "NO_HISTORICAL_GREEN": 31,
+    "NO_HISTORICAL_GREEN": 71,
     "PARTIAL_REGRESSION": 1,
     "PARTIAL_REVALIDATION": 1,
     "PRESERVED": 1,
-    "REVALIDATION_REQUIRED": 4
+    "REVALIDATION_REQUIRED": 5
   },
   "hardRegressionProviders": [
     "kehflix",
@@ -5249,6 +9319,7 @@
     "anikototv",
     "french-manga",
     "playimdb",
+    "videasy",
     "wookafr"
   ],
   "contractRegressionProviders": [],
@@ -5261,6 +9332,7 @@
     "playimdb",
     "purstream",
     "streamzo",
+    "videasy",
     "wookafr"
   ]
 }
