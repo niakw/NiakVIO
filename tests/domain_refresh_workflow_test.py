@@ -253,8 +253,8 @@ legacy_config = {
 merged = module._authoritative_hub_configs(legacy_config)
 french = merged["frenchstream"]
 assert not french.get("hub"), french
-assert resolver.host(french["direct_fallback"]) == "fs16.lol", french
-assert {resolver.host(url) for url in french.get("direct_candidates") or []} == {"fs16.lol"}, french
+assert module.resolver.host(french["direct_fallback"]) == "fs16.lol", french
+assert {module.resolver.host(url) for url in french.get("direct_candidates") or []} == {"fs16.lol"}, french
 assert "fstream.top" in french.get("blocked_hosts", []), french
 assert all(row.get("url") != "https://legacy.invalid/" for row in french.get("sources") or []), french
 assert any(
