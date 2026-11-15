@@ -249,13 +249,21 @@ def finalize(*, check: bool) -> dict[str, Any]:
                 expected_stale = True
                 row["sha256"] = digest
             fixed = row.get("final_fixed_point")
-            if isinstance(fixed, dict):
-                if str(fixed.get("sha256") or "").casefold() != digest:
-                    expected_stale = True
-                    fixed["sha256"] = digest
-                if fixed.get("one_physical_line") is not True:
-                    expected_stale = True
-                    fixed["one_physical_line"] = True
+            expected_fixed = {
+                "schema_version": 1,
+                "verified": True,
+                "tool": "raw-bytes",
+                "mangle": False,
+                "one_physical_line": True,
+                "sha256": digest,
+            }
+            if not isinstance(fixed, dict):
+                fixed = {}
+            next_fixed = dict(fixed)
+            next_fixed.update(expected_fixed)
+            if fixed != next_fixed:
+                expected_stale = True
+                row["final_fixed_point"] = next_fixed
 
         if expected_stale:
             stale = True
