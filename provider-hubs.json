@@ -2765,27 +2765,33 @@
     },
     "kisskh": {
       "id": "kisskh",
-      "name": "Kisskh",
-      "manifest_status": "Désactivé",
+      "name": "KissKH",
+      "manifest_status": "Bulk Onboarding",
       "category": "International",
       "hub": null,
-      "direct": null,
-      "source": "curated_user_registry",
+      "direct": "https://kisskh.co",
+      "telegram": null,
+      "api": null,
+      "source": "provider_onboarding_workflow",
       "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
       "aliases": [
         "kisskh"
       ],
-      "direct_candidates": [],
-      "allowed_terminal_hosts": [],
+      "direct_candidates": [
+        "https://kisskh.co"
+      ],
+      "allowed_terminal_hosts": [
+        "kisskh.co"
+      ],
       "search_queries": [
-        "\"Kisskh\" official streaming site"
+        "\"KissKH\" official domain"
       ],
       "sources": [
         {
           "type": "search",
-          "query": "\"Kisskh\" official streaming site",
-          "priority": 25,
-          "purpose": "Conservative fallback discovery; requires consecutive runtime validation before activation"
+          "query": "\"KissKH\" official domain",
+          "priority": 35,
+          "purpose": "Fallback route discovery"
         }
       ],
       "search_confirmation_runs": 2
@@ -5791,6 +5797,633 @@
         {
           "type": "search",
           "query": "\"Zone-Téléchargement\" official domain",
+          "priority": 35,
+          "purpose": "Fallback route discovery"
+        }
+      ],
+      "search_confirmation_runs": 2
+    },
+    "flickystream": {
+      "id": "flickystream",
+      "name": "FlickyStream",
+      "manifest_status": "Bulk Onboarding",
+      "category": "International",
+      "hub": null,
+      "direct": "https://flickystream.mov",
+      "telegram": null,
+      "api": null,
+      "source": "provider_onboarding_workflow",
+      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "aliases": [
+        "flickystream"
+      ],
+      "direct_candidates": [
+        "https://flickystream.mov"
+      ],
+      "allowed_terminal_hosts": [
+        "flickystream.mov"
+      ],
+      "search_queries": [
+        "\"FlickyStream\" official domain"
+      ],
+      "sources": [
+        {
+          "type": "search",
+          "query": "\"FlickyStream\" official domain",
+          "priority": 35,
+          "purpose": "Fallback route discovery"
+        }
+      ],
+      "search_confirmation_runs": 2
+    },
+    "dpstream": {
+      "id": "dpstream",
+      "name": "DPStream",
+      "manifest_status": "Bulk Onboarding",
+      "category": "VF",
+      "hub": null,
+      "direct": "https://dpstream.fyi/",
+      "telegram": null,
+      "api": null,
+      "source": "provider_onboarding_workflow",
+      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "aliases": [
+        "dpstream"
+      ],
+      "direct_candidates": [
+        "https://dpstream.fyi/"
+      ],
+      "allowed_terminal_hosts": [
+        "dpstream.fyi"
+      ],
+      "search_queries": [
+        "\"DPStream\" official domain"
+      ],
+      "sources": [
+        {
+          "type": "search",
+          "query": "\"DPStream\" official domain",
+          "priority": 35,
+          "purpose": "Fallback route discovery"
+        }
+      ],
+      "search_confirmation_runs": 2
+    },
+    "flikhub": {
+      "id": "flikhub",
+      "name": "FlikHub",
+      "manifest_status": "Bulk Onboarding",
+      "category": "International",
+      "hub": null,
+      "direct": "https://www.flikhub.net",
+      "telegram": null,
+      "api": null,
+      "source": "provider_onboarding_workflow",
+      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "aliases": [
+        "flikhub"
+      ],
+      "direct_candidates": [
+        "https://www.flikhub.net"
+      ],
+      "allowed_terminal_hosts": [
+        "www.flikhub.net"
+      ],
+      "search_queries": [
+        "\"FlikHub\" official domain"
+      ],
+      "sources": [
+        {
+          "type": "search",
+          "query": "\"FlikHub\" official domain",
+          "priority": 35,
+          "purpose": "Fallback route discovery"
+        }
+      ],
+      "search_confirmation_runs": 2
+    },
+    "openflix": {
+      "id": "openflix",
+      "name": "OpenFlix",
+      "manifest_status": "Bulk Onboarding",
+      "category": "VF",
+      "hub": null,
+      "direct": "https://openflix.pro",
+      "telegram": null,
+      "api": null,
+      "source": "provider_onboarding_workflow",
+      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "aliases": [
+        "openflix"
+      ],
+      "direct_candidates": [
+        "https://openflix.pro"
+      ],
+      "allowed_terminal_hosts": [
+        "openflix.pro"
+      ],
+      "search_queries": [
+        "\"OpenFlix\" official domain"
+      ],
+      "sources": [
+        {
+          "type": "search",
+          "query": "\"OpenFlix\" official domain",
+          "priority": 35,
+          "purpose": "Fallback route discovery"
+        }
+      ],
+      "search_confirmation_runs": 2
+    },
+    "diostream": {
+      "id": "diostream",
+      "name": "DioStream",
+      "manifest_status": "Bulk Onboarding",
+      "category": "International",
+      "hub": null,
+      "direct": "https://diostream.cc",
+      "telegram": null,
+      "api": null,
+      "source": "provider_onboarding_workflow",
+      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "aliases": [
+        "diostream"
+      ],
+      "direct_candidates": [
+        "https://diostream.cc"
+      ],
+      "allowed_terminal_hosts": [
+        "diostream.cc"
+      ],
+      "search_queries": [
+        "\"DioStream\" official domain"
+      ],
+      "sources": [
+        {
+          "type": "search",
+          "query": "\"DioStream\" official domain",
+          "priority": 35,
+          "purpose": "Fallback route discovery"
+        }
+      ],
+      "search_confirmation_runs": 2
+    },
+    "nomorflix": {
+      "id": "nomorflix",
+      "name": "Nomorflix",
+      "manifest_status": "Bulk Onboarding",
+      "category": "International",
+      "hub": null,
+      "direct": "https://nomorflix.cc",
+      "telegram": null,
+      "api": null,
+      "source": "provider_onboarding_workflow",
+      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "aliases": [
+        "nomorflix"
+      ],
+      "direct_candidates": [
+        "https://nomorflix.cc"
+      ],
+      "allowed_terminal_hosts": [
+        "nomorflix.cc"
+      ],
+      "search_queries": [
+        "\"Nomorflix\" official domain"
+      ],
+      "sources": [
+        {
+          "type": "search",
+          "query": "\"Nomorflix\" official domain",
+          "priority": 35,
+          "purpose": "Fallback route discovery"
+        }
+      ],
+      "search_confirmation_runs": 2
+    },
+    "svstream": {
+      "id": "svstream",
+      "name": "SvStream",
+      "manifest_status": "Bulk Onboarding",
+      "category": "International",
+      "hub": null,
+      "direct": "https://svstream.cc",
+      "telegram": null,
+      "api": null,
+      "source": "provider_onboarding_workflow",
+      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "aliases": [
+        "svstream"
+      ],
+      "direct_candidates": [
+        "https://svstream.cc"
+      ],
+      "allowed_terminal_hosts": [
+        "svstream.cc"
+      ],
+      "search_queries": [
+        "\"SvStream\" official domain"
+      ],
+      "sources": [
+        {
+          "type": "search",
+          "query": "\"SvStream\" official domain",
+          "priority": 35,
+          "purpose": "Fallback route discovery"
+        }
+      ],
+      "search_confirmation_runs": 2
+    },
+    "dessinanime": {
+      "id": "dessinanime",
+      "name": "Dessinanime",
+      "manifest_status": "Bulk Onboarding",
+      "category": "VF",
+      "hub": null,
+      "direct": "https://dessinanime.net/",
+      "telegram": null,
+      "api": null,
+      "source": "provider_onboarding_workflow",
+      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "aliases": [
+        "dessinanime"
+      ],
+      "direct_candidates": [
+        "https://dessinanime.net/"
+      ],
+      "allowed_terminal_hosts": [
+        "dessinanime.net"
+      ],
+      "search_queries": [
+        "\"Dessinanime\" official domain"
+      ],
+      "sources": [
+        {
+          "type": "search",
+          "query": "\"Dessinanime\" official domain",
+          "priority": 35,
+          "purpose": "Fallback route discovery"
+        }
+      ],
+      "search_confirmation_runs": 2
+    },
+    "cinejoy": {
+      "id": "cinejoy",
+      "name": "Cinejoy",
+      "manifest_status": "Bulk Onboarding",
+      "category": "International",
+      "hub": null,
+      "direct": "https://cinejoy.pk",
+      "telegram": null,
+      "api": null,
+      "source": "provider_onboarding_workflow",
+      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "aliases": [
+        "cinejoy"
+      ],
+      "direct_candidates": [
+        "https://cinejoy.pk"
+      ],
+      "allowed_terminal_hosts": [
+        "cinejoy.pk"
+      ],
+      "search_queries": [
+        "\"Cinejoy\" official domain"
+      ],
+      "sources": [
+        {
+          "type": "search",
+          "query": "\"Cinejoy\" official domain",
+          "priority": 35,
+          "purpose": "Fallback route discovery"
+        }
+      ],
+      "search_confirmation_runs": 2
+    },
+    "meowtv": {
+      "id": "meowtv",
+      "name": "MeowTV",
+      "manifest_status": "Bulk Onboarding",
+      "category": "International",
+      "hub": null,
+      "direct": "https://meowtv.ru",
+      "telegram": null,
+      "api": null,
+      "source": "provider_onboarding_workflow",
+      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "aliases": [
+        "meowtv"
+      ],
+      "direct_candidates": [
+        "https://meowtv.ru"
+      ],
+      "allowed_terminal_hosts": [
+        "meowtv.ru"
+      ],
+      "search_queries": [
+        "\"MeowTV\" official domain"
+      ],
+      "sources": [
+        {
+          "type": "search",
+          "query": "\"MeowTV\" official domain",
+          "priority": 35,
+          "purpose": "Fallback route discovery"
+        }
+      ],
+      "search_confirmation_runs": 2
+    },
+    "willow": {
+      "id": "willow",
+      "name": "Willow",
+      "manifest_status": "Bulk Onboarding",
+      "category": "International",
+      "hub": null,
+      "direct": "https://willow.arlen.icu",
+      "telegram": null,
+      "api": null,
+      "source": "provider_onboarding_workflow",
+      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "aliases": [
+        "willow"
+      ],
+      "direct_candidates": [
+        "https://willow.arlen.icu"
+      ],
+      "allowed_terminal_hosts": [
+        "willow.arlen.icu"
+      ],
+      "search_queries": [
+        "\"Willow\" official domain"
+      ],
+      "sources": [
+        {
+          "type": "search",
+          "query": "\"Willow\" official domain",
+          "priority": 35,
+          "purpose": "Fallback route discovery"
+        }
+      ],
+      "search_confirmation_runs": 2
+    },
+    "7movies": {
+      "id": "7movies",
+      "name": "7Movies",
+      "manifest_status": "Bulk Onboarding",
+      "category": "International",
+      "hub": null,
+      "direct": "https://7movies.in",
+      "telegram": null,
+      "api": null,
+      "source": "provider_onboarding_workflow",
+      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "aliases": [
+        "7movies"
+      ],
+      "direct_candidates": [
+        "https://7movies.in"
+      ],
+      "allowed_terminal_hosts": [
+        "7movies.in"
+      ],
+      "search_queries": [
+        "\"7Movies\" official domain"
+      ],
+      "sources": [
+        {
+          "type": "search",
+          "query": "\"7Movies\" official domain",
+          "priority": 35,
+          "purpose": "Fallback route discovery"
+        }
+      ],
+      "search_confirmation_runs": 2
+    },
+    "all-you-can-watch": {
+      "id": "all-you-can-watch",
+      "name": "All You Can Watch",
+      "manifest_status": "Bulk Onboarding",
+      "category": "International",
+      "hub": null,
+      "direct": "https://allyoucanwatch.net",
+      "telegram": null,
+      "api": null,
+      "source": "provider_onboarding_workflow",
+      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "aliases": [
+        "all-you-can-watch"
+      ],
+      "direct_candidates": [
+        "https://allyoucanwatch.net"
+      ],
+      "allowed_terminal_hosts": [
+        "allyoucanwatch.net"
+      ],
+      "search_queries": [
+        "\"All You Can Watch\" official domain"
+      ],
+      "sources": [
+        {
+          "type": "search",
+          "query": "\"All You Can Watch\" official domain",
+          "priority": 35,
+          "purpose": "Fallback route discovery"
+        }
+      ],
+      "search_confirmation_runs": 2
+    },
+    "bcine": {
+      "id": "bcine",
+      "name": "bCine",
+      "manifest_status": "Bulk Onboarding",
+      "category": "International",
+      "hub": null,
+      "direct": "https://bcine.ru",
+      "telegram": null,
+      "api": null,
+      "source": "provider_onboarding_workflow",
+      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "aliases": [
+        "bcine"
+      ],
+      "direct_candidates": [
+        "https://bcine.ru"
+      ],
+      "allowed_terminal_hosts": [
+        "bcine.ru"
+      ],
+      "search_queries": [
+        "\"bCine\" official domain"
+      ],
+      "sources": [
+        {
+          "type": "search",
+          "query": "\"bCine\" official domain",
+          "priority": 35,
+          "purpose": "Fallback route discovery"
+        }
+      ],
+      "search_confirmation_runs": 2
+    },
+    "aether": {
+      "id": "aether",
+      "name": "Aether",
+      "manifest_status": "Bulk Onboarding",
+      "category": "VF",
+      "hub": null,
+      "direct": "https://aether.ist",
+      "telegram": null,
+      "api": null,
+      "source": "provider_onboarding_workflow",
+      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "aliases": [
+        "aether"
+      ],
+      "direct_candidates": [
+        "https://aether.ist"
+      ],
+      "allowed_terminal_hosts": [
+        "aether.ist"
+      ],
+      "search_queries": [
+        "\"Aether\" official domain"
+      ],
+      "sources": [
+        {
+          "type": "search",
+          "query": "\"Aether\" official domain",
+          "priority": 35,
+          "purpose": "Fallback route discovery"
+        }
+      ],
+      "search_confirmation_runs": 2
+    },
+    "cineflux": {
+      "id": "cineflux",
+      "name": "CineFlux",
+      "manifest_status": "Bulk Onboarding",
+      "category": "VF",
+      "hub": null,
+      "direct": "https://cineflux.wiki/",
+      "telegram": null,
+      "api": null,
+      "source": "provider_onboarding_workflow",
+      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "aliases": [
+        "cineflux"
+      ],
+      "direct_candidates": [
+        "https://cineflux.wiki/"
+      ],
+      "allowed_terminal_hosts": [
+        "cineflux.wiki"
+      ],
+      "search_queries": [
+        "\"CineFlux\" official domain"
+      ],
+      "sources": [
+        {
+          "type": "search",
+          "query": "\"CineFlux\" official domain",
+          "priority": 35,
+          "purpose": "Fallback route discovery"
+        }
+      ],
+      "search_confirmation_runs": 2
+    },
+    "animeko": {
+      "id": "animeko",
+      "name": "Animeko",
+      "manifest_status": "Bulk Onboarding",
+      "category": "VF",
+      "hub": null,
+      "direct": "https://w2.animeko.ws",
+      "telegram": null,
+      "api": null,
+      "source": "provider_onboarding_workflow",
+      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "aliases": [
+        "animeko"
+      ],
+      "direct_candidates": [
+        "https://w2.animeko.ws"
+      ],
+      "allowed_terminal_hosts": [
+        "w2.animeko.ws"
+      ],
+      "search_queries": [
+        "\"Animeko\" official domain"
+      ],
+      "sources": [
+        {
+          "type": "search",
+          "query": "\"Animeko\" official domain",
+          "priority": 35,
+          "purpose": "Fallback route discovery"
+        }
+      ],
+      "search_confirmation_runs": 2
+    },
+    "wowfilms0626": {
+      "id": "wowfilms0626",
+      "name": "wowfilms0626",
+      "manifest_status": "Bulk Onboarding",
+      "category": "International",
+      "hub": null,
+      "direct": "https://wowfilms0626c.site",
+      "telegram": null,
+      "api": null,
+      "source": "provider_onboarding_workflow",
+      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "aliases": [
+        "wowfilms0626"
+      ],
+      "direct_candidates": [
+        "https://wowfilms0626c.site"
+      ],
+      "allowed_terminal_hosts": [
+        "wowfilms0626c.site"
+      ],
+      "search_queries": [
+        "\"wowfilms0626\" official domain"
+      ],
+      "sources": [
+        {
+          "type": "search",
+          "query": "\"wowfilms0626\" official domain",
+          "priority": 35,
+          "purpose": "Fallback route discovery"
+        }
+      ],
+      "search_confirmation_runs": 2
+    },
+    "kickassanime": {
+      "id": "kickassanime",
+      "name": "KickassAnime",
+      "manifest_status": "Bulk Onboarding",
+      "category": "International",
+      "hub": null,
+      "direct": "https://kaa.lt",
+      "telegram": null,
+      "api": null,
+      "source": "provider_onboarding_workflow",
+      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "aliases": [
+        "kickassanime"
+      ],
+      "direct_candidates": [
+        "https://kaa.lt"
+      ],
+      "allowed_terminal_hosts": [
+        "kaa.lt"
+      ],
+      "search_queries": [
+        "\"KickassAnime\" official domain"
+      ],
+      "sources": [
+        {
+          "type": "search",
+          "query": "\"KickassAnime\" official domain",
           "priority": 35,
           "purpose": "Fallback route discovery"
         }
