@@ -90,6 +90,27 @@ jobs:
             --manifest vf/manifest.json \
             --output "$RUNNER_TEMP/published-vf-manifest-baseline.json"
 
+      - name: Reject executable main drift before expensive finalization
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE_SHA="$(cat "$RUNNER_TEMP/accepted-main-sha")"
+          git fetch origin main
+          CURRENT_SHA="$(git rev-parse origin/main)"
+          if [ "$CURRENT_SHA" = "$BASE_SHA" ]; then
+            echo "FIELD_RELEASE_PREFLIGHT_DRIFT state=exact base=$BASE_SHA"
+            exit 0
+          fi
+          git merge-base --is-ancestor "$BASE_SHA" "$CURRENT_SHA" || {
+            echo "FIELD_RELEASE_PREFLIGHT_BLOCKED reason=non_descendant_main base=$BASE_SHA current=$CURRENT_SHA" >&2
+            exit 1
+          }
+          git diff --name-status "$BASE_SHA" "$CURRENT_SHA" > "$RUNNER_TEMP/release-preflight-drift.txt"
+          python3 scripts/domain_refresh_publication_drift_gate.py --drift-file "$RUNNER_TEMP/release-preflight-drift.txt" || {
+            echo "FIELD_RELEASE_PREFLIGHT_BLOCKED reason=executable_main_drift base=$BASE_SHA current=$CURRENT_SHA" >&2
+            exit 1
+          }
+          echo "FIELD_RELEASE_PREFLIGHT_DRIFT state=evidence_only base=$BASE_SHA current=$CURRENT_SHA"
       - name: Reapply durable provider patches, minimize and rebuild current projections
         shell: bash
         run: |
