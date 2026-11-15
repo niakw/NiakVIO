@@ -6,9 +6,9 @@ import sys
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
-from current_provider_scope import active_provider_count
+from current_provider_scope import visible_provider_count
 
-EXPECTED = active_provider_count()
+EXPECTED = visible_provider_count()
 CANONICAL = {"movie", "tv", "anime"}
 TRANSPORT = CANONICAL
 
@@ -44,7 +44,7 @@ for provider in catalog.get("providers") or []:
         f"provider_catalog.json:{provider_id}",
         CANONICAL,
     )
-assert len(semantics) == CURRENT_PROVIDER_COUNT, len(semantics)
+assert len(semantics) == EXPECTED, (len(semantics), EXPECTED)
 
 projected = 0
 anime_only = 0
@@ -82,9 +82,9 @@ for relative in ("manifest.json", "vf/manifest.json", "no-anime/manifest.json", 
         projected += 1
         anime_only += int(canonical == ["anime"])
         canonical_movie_anime += int("movie" in canonical and "anime" in canonical)
-    assert ids <= set(semantics), f"{relative}: projection escaped current Hub46"
+    assert ids <= set(semantics), f"{relative}: projection escaped current visible catalogue"
 
-assert projected >= CURRENT_PROVIDER_COUNT
+assert projected >= EXPECTED
 assert anime_only > 0
 
 materializer = (ROOT / "scripts/materialize_provider_v3_all.py").read_text(encoding="utf-8")
@@ -102,7 +102,8 @@ assert 'if "anime" in canonical and "tv" not in wanted:' in anime_transport_body
 assert 'wanted.append("tv")' in anime_transport_body
 assert 'wanted.append("series")' not in anime_transport_body
 assert '"series"' not in anime_transport_body
-assert 'expected=46' in enforcer
+assert 'expected=46' not in enforcer
+assert 'visible_provider_count()' in enforcer
 
 reapply = (ROOT / "scripts/reapply_published_overrides.py").read_text(encoding="utf-8")
 assert 'def projected_transport_types(semantic_types: object) -> list[str]:' in reapply
