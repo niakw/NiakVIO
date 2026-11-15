@@ -11575,13 +11575,14 @@
       "notes": [
         "Created by the NiakVIO full-auto provider onboarding workflow from structured route knowledge only.",
         "Activation remains disabled until the onboarding quick Lab proves the provider on every requested runtime group.",
-        "Activated from exact-byte offline Provider v3 contract proof because GitHub-hosted network/WAF checks are non-authoritative; live native validation remains pending."
+        "Activated from exact-byte offline Provider v3 contract proof because GitHub-hosted network/WAF checks are non-authoritative; live native validation remains pending.",
+        "NIAKVIO_MOVY_WECOLLEGE_ORACLE_V1: physical Mac/Brave proved reusable Wings seed + sources runtime; VisionQuest S01E01 reached 1080p HLS and Fahrenheit 451 (2018) terminal HLS. Ephemeral seed/media URLs are not persisted."
       ],
       "replacements": {},
       "runtime_domain_replacements": {},
       "route_replacements": {},
       "profiles": [],
-      "capability": "mixed_embed_resolver",
+      "capability": "api_stream_resolver",
       "official_hub": null,
       "official_site": "https://www.movy.sx",
       "published_types": [
@@ -11594,9 +11595,47 @@
         "disabledPlatforms": []
       },
       "learned_routes": [
-        "/movie/{tmdbId}",
-        "/tv/{tmdbId}"
-      ]
+        "/seed?mediaId={tmdbId}",
+        "/miami/sources",
+        "/boise/sources",
+        "/nashville/sources"
+      ],
+      "provider_lego_scripts": [
+        "scripts/provider_patches/movy_wecollege_runtime_v1.py"
+      ],
+      "provider_lego_options": {
+        "scripts/provider_patches/movy_wecollege_runtime_v1.py": {
+          "api_base": "https://api.wecollege.net",
+          "origin": "https://www.movy.sx",
+          "referer": "https://www.movy.sx/",
+          "endpoints": [
+            {
+              "label": "Miami",
+              "path": "miami/sources"
+            },
+            {
+              "label": "Boise",
+              "path": "boise/sources"
+            },
+            {
+              "label": "Nashville",
+              "path": "nashville/sources"
+            }
+          ]
+        }
+      },
+      "official_api": "https://api.wecollege.net",
+      "identity_input": {
+        "mode": "external_id",
+        "requires_tmdb_before_run": true,
+        "required_fields": [
+          "tmdbId",
+          "mediaType",
+          "title",
+          "year",
+          "imdbId"
+        ]
+      }
     },
     "arrowtv": {
       "notes": [
@@ -15040,12 +15079,13 @@
       ]
     },
     "movy": {
-      "strategy": "mixed_embed_resolver",
-      "validation": "bulk_offline_contract_live_unverified",
-      "allow_html_url": true,
-      "requires_direct_media": false,
+      "strategy": "api_stream_resolver",
+      "validation": "physical_mac_terminal_oracle_2026_11_15",
+      "allow_html_url": false,
+      "requires_direct_media": true,
       "observed_origins": [
-        "https://www.movy.sx"
+        "https://www.movy.sx",
+        "https://api.wecollege.net"
       ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true,
