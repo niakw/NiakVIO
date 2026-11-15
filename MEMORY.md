@@ -1,3 +1,10 @@
+## 2026-11-15 — Static audit must use Global+France runtime-visible authority
+
+- Release finalizer run 43759341588 reached 46/46 active materialization and publication fixed-point, then failed in `audit_provider_v3_static.py` with `staticKnowledgeProviderCount=108` versus legacy Global-only visible count 78.
+- This is a scope mismatch, not evidence that 30 static rows are stale: static/reconstruction authority is shared across the current Global + first-class France projection union, excluding onboarding-pending identities, while executable materialization remains active-Global-only.
+- Update only the static-knowledge cardinality audit to `projection_runtime_visible_provider_ids()`; keep providerCount/activeProviderIdentityCount/expectedProviderCount bound to active Global. Add a no-magic-count regression proving Global runtime identities are a subset of projection runtime identities. No provider bytes, manifest rows or validation thresholds are relaxed.
+- The finalizer still must rematerialize exact provider bytes, pass the full static audit, version/freshness gates and publish atomically before any release claim.
+
 ## 2026-11-15 — Current-head release retry after Chillflix publication-order diagnosis
 
 - Physical-Mac replay on NiakVIO `99682195` proved current production bytes are functionally poor on the user's three fixtures: Spartacus S00E01 0 terminal providers, Fahrenheit 451 (2018) 0, VisionQuest S01E01 2 (Chillflix, Webflix). This is real current-byte evidence, not a hosted-network inference.

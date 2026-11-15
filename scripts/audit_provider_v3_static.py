@@ -7,7 +7,7 @@ from provider_patch_blocks import decode_managed_data, owned_span, validate_mana
 from provider_base_store import build_provider_data_model
 from materialize_provider_v3_all import provider_model, normalize_anime_transport_compatibility
 from provider_v3_filename_policy import matches_provider_v3_filename
-from current_provider_scope import active_provider_ids, runtime_visible_provider_count
+from current_provider_scope import active_provider_ids, projection_runtime_visible_provider_ids
 
 ROOT=Path(__file__).resolve().parents[1]
 DOMAIN_ONLY="--domain-only" in sys.argv
@@ -143,9 +143,10 @@ for row in rows:
 
 assert set(rb)==seen
 # Materialization is executable authority and therefore tracks ACTIVE providers
-# only. Disabled-but-visible identities remain static/lifecycle knowledge and
-# must never inflate or pin the executable ledger.
-visible=runtime_visible_provider_count()
+# only. Static knowledge is shared authority for the current Global + France
+# runtime-visible union (including disabled-but-visible identities, excluding
+# onboarding-pending rows), so it must be audited against projection scope.
+visible=len(projection_runtime_visible_provider_ids())
 active_count=len(active)
 assert int(material.get("providerCount") or 0)==active_count, (material.get("providerCount"),active_count)
 if "activeProviderIdentityCount" in material:
