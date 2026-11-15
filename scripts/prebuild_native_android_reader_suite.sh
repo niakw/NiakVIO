@@ -11,7 +11,7 @@ NIAKVIO="${WORKSPACE}/niakvio"
 # runtime suite even when historical workflow env still says manifest.json.
 if [[ -n "${NIAKVIO_PROVIDER_SCOPE_MATRIX:-}" && -f "${NIAKVIO}/native-hub46/manifest.json" ]]; then
   TARGET_MANIFEST="native-hub46/manifest.json"
-  echo "FIELD_NATIVE_PHYSICAL_PROVIDER_SCOPE phase=prebuild manifest=$TARGET_MANIFEST providers=46 authority=${NIAKVIO_PROVIDER_SCOPE_MATRIX}"
+  echo "FIELD_NATIVE_PHYSICAL_PROVIDER_SCOPE phase=prebuild manifest=$TARGET_MANIFEST providers=current-active authority=${NIAKVIO_PROVIDER_SCOPE_MATRIX}"
 fi
 FIXTURE="${NIAKVIO_PRIMARY_FIXTURE:-sinners-2025}"
 TARGET_MANIFEST="${NIAKVIO_TARGET_MANIFEST:-manifest.json}"
