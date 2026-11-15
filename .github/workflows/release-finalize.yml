@@ -26,6 +26,7 @@ on:
       - 'tests/published_s00_identity_rollout_test.py'
       - 'scripts/finalize_provider_v3_minimizer.py'
       - 'scripts/finalize_france_only_provider_v3_minimizer.py'
+      - 'tests/provider_france_only_minimizer_test.py'
       - 'scripts/provider_v3_minimizer.py'
       - 'tests/provider_v3_minimizer_contract_test.py'
       - 'tests/provider_v3_minimizer_preview_test.py'
@@ -100,6 +101,7 @@ jobs:
           python3 scripts/validate_provider_materialization_authority.py
           python3 scripts/finalize_provider_v3_minimizer.py
           python3 scripts/finalize_provider_v3_minimizer.py --check
+          python3 tests/provider_france_only_minimizer_test.py
           python3 scripts/finalize_france_only_provider_v3_minimizer.py
           python3 scripts/finalize_france_only_provider_v3_minimizer.py --check
           python3 scripts/resign_active_offline_provider_proofs.py \
