@@ -6,9 +6,9 @@ import sys
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
-from current_provider_scope import visible_provider_count
+from current_provider_scope import projection_visible_provider_ids
 
-EXPECTED = visible_provider_count()
+EXPECTED = len(projection_visible_provider_ids())
 CANONICAL = {"movie", "tv", "anime"}
 TRANSPORT = CANONICAL
 
@@ -103,7 +103,7 @@ assert 'wanted.append("tv")' in anime_transport_body
 assert 'wanted.append("series")' not in anime_transport_body
 assert '"series"' not in anime_transport_body
 assert 'expected=46' not in enforcer
-assert 'visible_provider_count()' in enforcer
+assert 'projection_visible_provider_ids()' in enforcer
 
 reapply = (ROOT / "scripts/reapply_published_overrides.py").read_text(encoding="utf-8")
 assert 'def projected_transport_types(semantic_types: object) -> list[str]:' in reapply
