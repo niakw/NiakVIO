@@ -31,7 +31,7 @@ with tempfile.TemporaryDirectory() as tmp:
                 {
                     "id": "frdemo",
                     "enabled": True,
-                    "filename": "../providers/frdemo.js",
+                    "filename": "../providers/frdemo-new.js",
                 }
             ]
         },
@@ -68,8 +68,10 @@ with tempfile.TemporaryDirectory() as tmp:
         apply=False,
         previous_manifest=previous_global,
         previous_vf_manifest=previous_vf,
+        scope_filter="global",
     )
     assert result["providerCount"] == 0, result
     assert result["changedCount"] == 0, result
 
+assert result["providerCount"] == 0, "France-only drift must not enter a Global-only rematerialization rebind"
 print("scoped offline proof baseline test passed")
