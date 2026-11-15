@@ -1,3 +1,7 @@
+## 2026-11-15 — Run catalogue-union reconstruction before unrelated publication freshness gate
+
+- CORE Workflow Gate 43770698527 stopped on the pre-existing Chillflix active-freshness assertion before reaching the new catalogue-union reconstruction regression. Reorder only the test invocation so the ProviderBase/France-only contract executes first; the Chillflix freshness gate is unchanged and still fails closed afterward if unresolved. No provider bytes, manifest or proof authority changed.
+
 ## 2026-11-15 — Catalogue-union regression is now a mandatory gate; Brain pin advanced
 
 - Add `tests/learning_catalog_union_reconstruction_test.py` to CORE Workflow Gate so Global+France ProviderBase reconstruction coverage cannot regress silently. The test verifies synthetic projection behavior plus every currently active France-only catalogue row.
