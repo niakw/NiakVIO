@@ -393,6 +393,7 @@ def main() -> int:
     assert rows
     summary = {
         "schemaVersion": 1,
+        "scopePolicy": "historical-evidence-only",
         "hubCount": len(rows),
         "runs": RUNS,
         "platformEvidence": {
@@ -407,11 +408,11 @@ def main() -> int:
     Path(args.output_json).write_text(json.dumps(summary, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
     md = [
-        "# Matrice des 46 hubs NiakVIO — preuves Labs natives",
+        "# Matrice des hubs NiakVIO — preuves Labs natives",
         "",
         "> Générée automatiquement depuis `provider-hubs.json`, `provider-overrides.json`, `manifest.json` et les artefacts Labs exacts. Un `count > 0` n’est **jamais** considéré comme un succès TV si le lecteur ou le transport échoue.",
         "",
-        f"- Hubs non nuls étudiés : **{len(rows)}/46**.",
+        f"- Hubs non nuls étudiés : **{len(rows)}**.",
         f"- TV : run **{RUNS['tv']}** — preuve runtime sur le ref NuvioTV audité, car le HEAD officiel était cassé avant compilation.",
         f"- Desktop macOS/Windows : run **{RUNS['desktop-macos']}**.",
         f"- Android Mobile : run **{RUNS['mobile-android']}** — evidence invalide si le launcher officiel n’a pas pu démarrer.",
@@ -455,7 +456,7 @@ def main() -> int:
         "",
         "## Règles d’interprétation",
         "",
-        "Le registre de hubs est un périmètre d’audit et de découverte, **pas un gate d’activation**. La politique de publication reste 96/96 ON. Les états repair/off/quarantine restent diagnostiques et ne doivent pas écrire `enabled:false`.",
+        "Le registre de hubs est un périmètre d’audit et de découverte, **pas un gate d’activation**. Le manifest actif courant est l’autorité d’exécution et sa cardinalité est dynamique. Les états repair/off/quarantine restent diagnostiques et ne doivent pas écrire `enabled:false`.",
         "",
         "Android Mobile de ce run n’est pas utilisable pour déclarer un provider rouge si l’UI n’a pas pu être lancée. Les cellules sont donc 🟣 au lieu de transformer un défaut de harness en défaut provider.",
         "",
