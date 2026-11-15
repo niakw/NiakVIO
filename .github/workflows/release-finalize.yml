@@ -208,7 +208,7 @@ jobs:
         run: |
           set -euo pipefail
           git diff --name-only | tee "$RUNNER_TEMP/release-generation-files.txt"
-          if grep -Ev '^(PROVENANCE\.json|provider-overrides\.json|provider-v3-materialization\.json|providers/.*|manifest\.json|manifest-hub46\.json|vf/manifest\.json|no-anime/manifest\.json|vf-no-anime/manifest\.json|package\.json|package-lock\.json|sources\.json|provider_catalog\.json|provider-version-floors\.json|nuvio-client-id-state\.json|automation/provider-v3-static-knowledge\.json|automation/PLATFORM-RUNTIME-CONTRACTS\.md) "$RUNNER_TEMP/release-generation-files.txt"; then
+          if grep -Ev '^(PROVENANCE\.json|provider-overrides\.json|provider-v3-materialization\.json|providers/.*|manifest\.json|manifest-hub46\.json|vf/manifest\.json|no-anime/manifest\.json|vf-no-anime/manifest\.json|package\.json|package-lock\.json|sources\.json|provider_catalog\.json|provider-version-floors\.json|nuvio-client-id-state\.json|automation/provider-v3-static-knowledge\.json|automation/PLATFORM-RUNTIME-CONTRACTS\.md)$' "$RUNNER_TEMP/release-generation-files.txt"; then
             echo 'Unexpected path changed by provider-generation finalization' >&2
             exit 1
           fi
