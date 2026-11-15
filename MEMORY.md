@@ -1,3 +1,10 @@
+## 2026-11-15 — Release finalizer sibling-import failure fixed
+
+- Finalizer 43727118367 completed the expensive Provider-v3 rebuild successfully: 46/46 materialized, 46/46 minimizer fixed-point, Chillflix rebound to generated exact bytes `providers/chillflix--nuvio--3aae091915c24514.js`, then failed only when `tests/reconcile_active_provider_publication_test.py` imported the release helper through `importlib`.
+- Root cause: `scripts/reconcile_active_provider_publication.py` imported sibling modules before adding its own `scripts/` directory to `sys.path`. Direct script execution happened to work; importlib execution from tests did not.
+- The helper now inserts its own script directory before sibling imports, matching the targeted reconciler's import discipline. Regression asserts sibling importability. This is a release-pipeline fix; no provider logic or proof gate is weakened.
+- Because this executable change advances main, any in-flight finalizer on the previous SHA is superseded and a fresh exact-SHA release is required.
+
 ## 2026-11-15 — Brain Fast-Handoff targeted stage includes France-only runtime identities
 
 - Learning run 43727221123 failed before provider/model execution because its target cohort included France-only identities while `build_published_provider_stage.py` searched only Global `manifest.json`. Missing requested IDs included 1jour1film0626, cinematheque-de-bretagne, cinetimes, dulourd, fawesome, fexini, film-a-revoir, frembed, frenchstream, kidraz, movix-fr, nakios, neobam, voirserie, youtitou and zone-telechargement.

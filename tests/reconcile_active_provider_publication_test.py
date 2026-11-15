@@ -14,4 +14,5 @@ ids=mod.active_global_ids(ROOT)
 assert ids, "active Global provider set must be non-empty"
 assert len(ids)==len(set(ids)), "active Global IDs must be unique"
 assert "chillflix" in ids, ids
+assert str((ROOT/"scripts").resolve()) in {str(Path(p).resolve()) for p in __import__("sys").path if p}, "sibling imports must work under importlib execution"
 print(f"ACTIVE_PUBLICATION_FIXED_POINT_SCOPE_OK providers={len(ids)}")
