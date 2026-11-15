@@ -28,6 +28,7 @@ import sys
 from typing import Any
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
+VERSION_FLOORS = ROOT / "provider-version-floors.json"
 SEMVER = re.compile(r"^(\d+)\.(\d+)\.(\d+)$")
 VISIBLE_NIAKVIO_VERSION = re.compile(r"^NiakVIO(?:\s+v\d+\.\d+\.\d+)?(?=\s*(?:—|$))")
 
@@ -59,6 +60,21 @@ def bump_patch(value: object, *, fallback: tuple[int, int, int] = (1, 0, 0)) -> 
 
 def canonical_id(value: object) -> str:
     return str(value or "").strip().casefold()
+
+
+def load_provider_version_floor_payload() -> dict[str, Any]:
+    if not VERSION_FLOORS.is_file():
+        return {"schema_version": 1, "providers": {}}
+    payload = load(VERSION_FLOORS)
+    if int(payload.get("schema_version") or 0) != 1:
+        raise RuntimeError("invalid provider-version-floors.json schema")
+    providers = payload.get("providers")
+    if not isinstance(providers, dict):
+        raise RuntimeError("provider-version-floors.json providers map required")
+    for provider_id, version in providers.items():
+        if not canonical_id(provider_id) or parse_semver(version) is None:
+            raise RuntimeError(f"invalid retained provider version floor: {provider_id}={version}")
+    return payload
 
 
 def highest_historical_release(manifest_path: pathlib.Path) -> tuple[int, int, int] | None:
@@ -196,6 +212,31 @@ def finalize_provider_versions(
     vf = load(vf_path)
     previous_vf = load(previous_vf_path) if previous_vf_path is not None else {"scrapers": []}
 
+    floor_payload = load_provider_version_floor_payload()
+    floors = floor_payload.setdefault("providers", {})
+    floor_changed = False
+
+    def retained_floor(cid: str) -> tuple[int, int, int] | None:
+        return parse_semver(floors.get(cid))
+
+    def remember_previous_exposure(cid: str, old_version: tuple[int, int, int]) -> tuple[int, int, int]:
+        nonlocal floor_changed
+        existing = retained_floor(cid)
+        remembered = max(old_version, existing) if existing is not None else old_version
+        text = format_semver(remembered)
+        if str(floors.get(cid) or "") != text:
+            floors[cid] = text
+            floor_changed = True
+        return remembered
+
+    def enforce_retained_floor(cid: str, current_version: tuple[int, int, int] | None) -> tuple[tuple[int, int, int] | None, bool]:
+        floor = retained_floor(cid)
+        if floor is None:
+            return current_version, False
+        if current_version is None or current_version <= floor:
+            return (floor[0], floor[1], floor[2] + 1), True
+        return current_version, False
+
     previous_rows = {
         canonical_id(row.get("id")): row
         for row in previous.get("scrapers", [])
@@ -215,8 +256,13 @@ def finalize_provider_versions(
 
         old = previous_rows.get(cid)
         if old is None:
-            if parse_semver(row.get("version")) is None:
-                row["version"] = "1.0.0"
+            current_version = parse_semver(row.get("version"))
+            current_version, floor_recovered = enforce_retained_floor(cid, current_version)
+            if current_version is None:
+                current_version = (1, 0, 0)
+            row["version"] = format_semver(current_version)
+            if floor_recovered:
+                bumped.append(cid)
             continue
 
         old_version = parse_semver(old.get("version")) or (1, 0, 0)
@@ -224,13 +270,19 @@ def finalize_provider_versions(
         changed = comparable_provider(old) != comparable_provider(row)
 
         if changed:
-            minimum = (old_version[0], old_version[1], old_version[2] + 1)
+            remembered = remember_previous_exposure(cid, old_version)
+            minimum = (remembered[0], remembered[1], remembered[2] + 1)
             if current_version is None or current_version < minimum:
-                row["version"] = format_semver(minimum)
                 current_version = minimum
+            row["version"] = format_semver(current_version)
             bumped.append(cid)
-        elif current_version is None or current_version < old_version:
-            row["version"] = format_semver(old_version)
+        else:
+            current_version, floor_recovered = enforce_retained_floor(cid, current_version)
+            if current_version is None or current_version < old_version:
+                current_version = old_version
+            row["version"] = format_semver(current_version)
+            if floor_recovered:
+                bumped.append(cid)
 
     # France-only providers are first-class cache-visible rows even though they
     # intentionally do not exist in the Global manifest. Compare them against
@@ -253,20 +305,32 @@ def finalize_provider_versions(
 
         old = previous_vf_rows.get(cid)
         if old is None:
-            if parse_semver(row.get("version")) is None:
-                row["version"] = "1.0.0"
+            current_version = parse_semver(row.get("version"))
+            current_version, floor_recovered = enforce_retained_floor(cid, current_version)
+            if current_version is None:
+                current_version = (1, 0, 0)
+            row["version"] = format_semver(current_version)
+            if floor_recovered:
+                bumped.append(cid)
             continue
 
         old_version = parse_semver(old.get("version")) or (1, 0, 0)
         current_version = parse_semver(row.get("version"))
         changed = comparable_provider(old) != comparable_provider(row)
         if changed:
-            minimum = (old_version[0], old_version[1], old_version[2] + 1)
+            remembered = remember_previous_exposure(cid, old_version)
+            minimum = (remembered[0], remembered[1], remembered[2] + 1)
             if current_version is None or current_version < minimum:
-                row["version"] = format_semver(minimum)
+                current_version = minimum
+            row["version"] = format_semver(current_version)
             bumped.append(cid)
-        elif current_version is None or current_version < old_version:
-            row["version"] = format_semver(old_version)
+        else:
+            current_version, floor_recovered = enforce_retained_floor(cid, current_version)
+            if current_version is None or current_version < old_version:
+                current_version = old_version
+            row["version"] = format_semver(current_version)
+            if floor_recovered:
+                bumped.append(cid)
 
     dump(vf_path, vf)
 
@@ -311,6 +375,10 @@ def finalize_provider_versions(
     sync_projection(ROOT / "vf-no-anime" / "manifest.json", vf_by_id, "VF no-anime")
 
     dump(manifest_path, current)
+    if floor_changed:
+        floor_payload["source_commit"] = os.environ.get("GITHUB_SHA") or str(floor_payload.get("source_commit") or "")
+        floor_payload["source_release"] = str(previous.get("version") or floor_payload.get("source_release") or "")
+        dump(VERSION_FLOORS, floor_payload)
     return sorted(set(bumped))
 
 

@@ -123,6 +123,20 @@ with tempfile.TemporaryDirectory() as tmp:
             ],
         },
     )
+    write(
+        root / "provider-version-floors.json",
+        {
+            "schema_version": 1,
+            "purpose": "test retained exposure floor",
+            "source_commit": "test",
+            "source_release": "5.19.2",
+            "providers": {
+                "demo": "1.0.5",
+                "stable": "2.4.6",
+                "france-only": "3.2.0",
+            },
+        },
+    )
     write(root / "package.json", {"version": "5.19.3"})
     write(
         root / "package-lock.json",
@@ -168,13 +182,13 @@ with tempfile.TemporaryDirectory() as tmp:
     rows = {row["id"].casefold(): row for row in current["scrapers"]}
     assert current["version"] == "5.19.4", "client-visible generation must bump global release"
     assert current["name"] == "NiakVIO v5.19.4"
-    assert rows["demo"]["version"] == "1.0.1", "changed provider must bump its own cache version"
+    assert rows["demo"]["version"] == "1.0.6", "changed provider must recover above retained cache floor"
     assert rows["stable"]["version"] == "2.4.7", "unchanged provider must remain stable"
 
     vf = json.loads((root / "vf/manifest.json").read_text())
     assert vf["version"] == "5.19.4"
     assert vf["name"] == "NiakVIO v5.19.4 — VF uniquement"
-    assert vf["scrapers"][0]["version"] == "1.0.1"
+    assert vf["scrapers"][0]["version"] == "1.0.6"
     assert vf["scrapers"][0]["id"] == rows["demo"]["id"]
     vf_by_id = {row["id"].casefold(): row for row in vf["scrapers"]}
     assert vf_by_id["france-only"]["version"] == "3.2.2"
@@ -190,6 +204,10 @@ with tempfile.TemporaryDirectory() as tmp:
     assert sources["manifest_version"] == "5.19.4"
     assert sources["repository"]["manifest_version"] == "5.19.4"
     assert sources["repository"]["version"] == "5.19.4"
+    floors = json.loads((root / "provider-version-floors.json").read_text())
+    assert floors["providers"]["demo"] == "1.0.5"
+    assert floors["providers"]["stable"] == "2.4.6"
+    assert floors["providers"]["france-only"] == "3.2.1"
 
     # A second publication against the already-published generation must be a
     # complete no-op even when the generator strips the visible version before
@@ -224,7 +242,7 @@ with tempfile.TemporaryDirectory() as tmp:
     again_rows = {row["id"].casefold(): row for row in again["scrapers"]}
     assert again["version"] == "5.19.4"
     assert again["name"] == "NiakVIO v5.19.4"
-    assert again_rows["demo"]["version"] == "1.0.1"
+    assert again_rows["demo"]["version"] == "1.0.6"
     assert again_rows["stable"]["version"] == "2.4.7"
     again_vf = json.loads((root / "vf/manifest.json").read_text())
     assert again_vf["name"] == "NiakVIO v5.19.4 — VF uniquement"
