@@ -1,3 +1,8 @@
+## 2026-11-15 — Catalogue-union reconstruction contract passed; routine batch Learning retriggered
+
+- CORE Workflow Gate 43770877372 executed `tests/learning_catalog_union_reconstruction_test.py` before the unrelated production freshness check and reported `Learning catalogue-union clean reconstruction test passed france_only=30`. The subsequent failure remains the pre-existing Chillflix freshness assertion; the ProviderBase/France-only regression itself is green.
+- All 12 providers selected by the preceding Brain batch are present and enabled in `provider_catalog.json`; 11/12 are France-only. Trigger a fresh routine Brain Learning run on the corrected main SHA via `.github/triggers/brain-learning-reconstruction`. No architecture FORCE and no direct provider hotfix. Success still requires generated/reused strategy → compilation → applied/materialized bytes → execution → correct identity/terminal validation → non-regression → persisted memory.
+
 ## 2026-11-15 — Run catalogue-union reconstruction before unrelated publication freshness gate
 
 - CORE Workflow Gate 43770698527 stopped on the pre-existing Chillflix active-freshness assertion before reaching the new catalogue-union reconstruction regression. Reorder only the test invocation so the ProviderBase/France-only contract executes first; the Chillflix freshness gate is unchanged and still fails closed afterward if unresolved. No provider bytes, manifest or proof authority changed.
