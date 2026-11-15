@@ -325,6 +325,6 @@ historical_url,historical_bound=seen_urls[0]
 historical_query=parse_qs(urlsplit(historical_url).query)
 assert historical_query.get("sort")==["created"], historical_url
 assert historical_query.get("direction")==["asc"], historical_url
-assert historical_bound==40, historical_bound
+assert historical_bound==120, historical_bound
 
 print("CodeQL evidence-only drift regression passed")

@@ -72,7 +72,7 @@ def list_main_analyses() -> list[dict]:
     rows = guard.read_pages(
         "repos/" + REPO + "/code-scanning/analyses?ref=" + MAIN_REF
         + "&sort=created&direction=asc",
-        max_pages=40,
+        max_pages=120,
     )
     if not all(isinstance(row, dict) for row in rows):
         raise RuntimeError("Invalid CodeQL analysis listing")

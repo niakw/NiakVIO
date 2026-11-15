@@ -1,3 +1,9 @@
+## 2026-11-15 — Bounded stale-CodeQL history scan raised to repository scale
+
+- Stale-category retirement repeatedly fails with `Security listing exceeded bounded pages` while enumerating main CodeQL analyses oldest-first. The previous bound was 40 pages × 100 = 4,000 analyses; this repository's current history exceeds that bound.
+- Raise only the stale-analysis history window to 120 pages (12,000 analyses) and update its regression assertion. Alert enumeration remains separately bounded by the existing severe-alert paths. No scanner rule, dismissal policy, manifest, provider byte, or release gate is weakened.
+- This is an infrastructure cleanup fix only; actual #2531 retirement still requires exact-main maintained Core CodeQL proof and all existing drift/security checks.
+
 ## 2026-11-15 — Final offline-proof rebind must follow final publication reconciliation
 
 - Current release failures on `99682195a8fe521a13c51dc299bee1e7ec7800db`: Workflow Gate 43759341592 rejects active Chillflix because its exact-byte offline proof is stale; Verify & Publish 43759341679 sees the old `chillflix-32ceb4b6c511b1cb.js` bundle (35621 bytes). The release workflow re-bound offline proofs before a later reapply/minimizer/reconcile pass, so the proof hash/filename could become stale again.
