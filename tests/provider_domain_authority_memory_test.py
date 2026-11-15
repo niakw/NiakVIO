@@ -59,12 +59,19 @@ assert resolver.has_authoritative_hub_source(removed) is False
 
 registry=json.loads((ROOT/"provider-hubs.json").read_text(encoding="utf-8"))
 providers=registry["providers"]
-assert providers["fullanime"]["legacy_search_refresh"] is True
-assert providers["fullanime"]["manifest_status"]=="Désactivé"
+# Current onboarded rows with an explicit direct candidate may use search as a
+# deep/supplementary fallback without opting into the historical quick-refresh
+# compatibility flag. The old assertions made lifecycle validation depend on
+# stale registry shape rather than current authority semantics.
+assert providers["fullanime"].get("legacy_search_refresh") is not True
+assert providers["fullanime"]["manifest_status"]=="Active"
+assert providers["fullanime"]["direct"]=="https://www.fullanime.fr"
+assert providers["showbox"].get("legacy_search_refresh") is not True
+assert providers["showbox"]["manifest_status"]=="Active"
 assert providers["animetsu"]["hub_status"]=="removed"
 assert providers["animetsu"]["activation_eligible"] is False
 assert providers["persianstremio"]["direct_authority"]=="structured_runtime_seed"
-assert providers["showbox"]["legacy_search_refresh"] is True
+# Historical curated rows still deliberately opt into the compatibility path.
 assert providers["animesultra"]["legacy_search_refresh"] is True
 
 source=(ROOT/"scripts/resolve_provider_hubs.py").read_text(encoding="utf-8")

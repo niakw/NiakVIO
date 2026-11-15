@@ -117,6 +117,11 @@ jobs:
             --apply
           python3 scripts/reconcile_release_manifest_types.py
           python3 tests/release_manifest_type_reconcile_test.py
+          # Static-authority/materialization/type reconciliation above can
+          # legitimately change the publication contract after the first
+          # reapply pass. Reapply once against that final durable authority,
+          # then require the check pass to prove a true fixed point.
+          python3 scripts/reapply_published_overrides.py
           python3 scripts/reapply_published_overrides.py --check
           python3 tests/published_s00_identity_rollout_test.py
           python3 tests/provider_v3_minimizer_contract_test.py

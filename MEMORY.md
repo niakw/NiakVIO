@@ -1,3 +1,9 @@
+## 2026-11-15 — Release fixed-point and Domain-memory stale-contract correction
+
+- Exact source SHA `d251d84637cf0e2ef2cbf447333a2a8d0fc3b6e0` still serves manifest 5.21.146. Finalizer 43754182376 rebuilt current Provider-v3 authority and emitted new Chillflix bytes `providers/chillflix--nuvio--3aae091915c24514.js`, then its late `reapply_published_overrides.py --check` failed with `publication-contract-changed`. The first reapply pass ran before static-authority/materialization/type reconciliation, so the later durable authority edits invalidated its contract. The release workflow now performs one bounded second reapply after type reconciliation and immediately requires `--check` to prove a real fixed point; no proof or publication gate is weakened.
+- Provider Disabled Lifecycle 43754182449 completed the actual lifecycle pass, then failed only in `tests/provider_domain_authority_memory_test.py` because it still required September-era `legacy_search_refresh=true` and disabled status for FullAnime/ShowBox. Current registry rows are active onboarded direct candidates with search fallback and intentionally no legacy quick-refresh flag. The regression now asserts the current direct-authority shape while retaining the legacy assertion for AnimesUltra.
+- CORE Workflow Gate and Verify & Publish remain red until fresh exact-SHA runs pass. Chillflix's currently published 5.21.146 row still points to the old `chillflix-32ceb4b6c511b1cb.js`; do not claim the Mac-verified candidate is delivered until finalizer publication, cache/version bump and post-publication replay complete.
+
 ## 2026-11-15 — Provider-folder activation authority reconciles stale override flags
 
 - Finalizer 43751634858 passed rematerialization, exact-byte offline-proof rebind, 5.21.147 version sync, staging and release projection scope. It failed only because active provider-folder authority disagreed with stale provider_patches manifest_overrides enabled flags.
