@@ -47,6 +47,7 @@ DEFAULT_OUT = ROOT / "automation/provider-upstream-parity-v3.json"
 LANES = ("movie", "tv", "anime")
 MAX_SAMPLES_PER_LANE = 32
 PROBE_BYTES = 4096
+HLS_INITIAL_PLAYLIST_BYTES = 196_608
 MAX_TERMINAL_CANDIDATES = 4
 DEFAULT_PROBE_TIMEOUT = 12
 MIN_TERMINAL_VOD_SECONDS = 60
@@ -244,9 +245,11 @@ def _probe_terminal(stream: dict[str, Any], timeout: int) -> dict[str, Any]:
             final_url = str(response.geturl() or url)
             content_type = str(response.headers.get("content-type") or "")
             body = response.read(PROBE_BYTES)
-        kind = _media_kind(final_url, content_type, body)
+            kind = _media_kind(final_url, content_type, body)
+            if kind == "hls" and len(body) < HLS_INITIAL_PLAYLIST_BYTES:
+                body += response.read(HLS_INITIAL_PLAYLIST_BYTES - len(body))
         if kind == "hls":
-            # PARITY_DEEP_HLS_TERMINAL_V2
+            # PARITY_DEEP_HLS_TERMINAL_V3
             proof = verify_hls_terminal(
                 body,
                 final_url,
