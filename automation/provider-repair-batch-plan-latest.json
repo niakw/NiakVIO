@@ -155,7 +155,7 @@
         "residential-exit-inconclusive"
       ],
       "transportSignature": "not-applicable",
-      "providerCount": 21,
+      "providerCount": 20,
       "providers": [
         "67movies",
         "arrowtv",
@@ -170,7 +170,6 @@
         "latestmovies",
         "moviebite",
         "movish",
-        "movy",
         "neonflix",
         "overlook",
         "primewire",
@@ -286,28 +285,30 @@
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
     {
-      "groupId": "harness-compatibility|mixed_embed_resolver|residential-exit-all-challenged",
+      "groupId": "harness-compatibility|mixed_embed_resolver|residential-exit-inconclusive",
       "repairScope": "harness-compatibility",
       "runtimeFamilies": [
         "mixed_embed_resolver"
       ],
       "capabilityStrategy": "mixed_embed_resolver",
       "evidenceDepths": [
+        "lookup",
         "none"
       ],
       "dominantIssues": [
         "waf_challenge"
       ],
       "harnessTransportClasses": [
-        "residential-exit-all-challenged"
+        "residential-exit-inconclusive"
       ],
-      "transportSignature": "residential-exit-all-challenged",
-      "providerCount": 5,
+      "transportSignature": "residential-exit-inconclusive",
+      "providerCount": 6,
       "providers": [
         "animeonsen",
         "franime",
         "french-anime",
         "fullanime",
+        "moiflix",
         "waveanime"
       ],
       "action": "current census assigns transport/harness ownership; compare browser/native/residential transport before any provider mutation",
@@ -342,35 +343,6 @@
         "zone-streaming"
       ],
       "action": "apply/test shared terminal-player extraction profile to the whole capability family",
-      "selectionAuthorities": [
-        "provider-census-status.json:brainCheckRequired"
-      ],
-      "dynamicVariantProviders": [],
-      "executionPolicy": "batch-first",
-      "providerLocalFallback": "only-after-shared-profile-failure"
-    },
-    {
-      "groupId": "harness-compatibility|mixed_embed_resolver|residential-exit-inconclusive",
-      "repairScope": "harness-compatibility",
-      "runtimeFamilies": [
-        "mixed_embed_resolver"
-      ],
-      "capabilityStrategy": "mixed_embed_resolver",
-      "evidenceDepths": [
-        "lookup"
-      ],
-      "dominantIssues": [
-        "waf_challenge"
-      ],
-      "harnessTransportClasses": [
-        "residential-exit-inconclusive"
-      ],
-      "transportSignature": "residential-exit-inconclusive",
-      "providerCount": 1,
-      "providers": [
-        "moiflix"
-      ],
-      "action": "current census assigns transport/harness ownership; compare browser/native/residential transport before any provider mutation",
       "selectionAuthorities": [
         "provider-census-status.json:brainCheckRequired"
       ],
@@ -427,6 +399,33 @@
         "stigstream"
       ],
       "action": "apply/test shared terminal-player extraction profile to the whole capability family",
+      "selectionAuthorities": [
+        "provider-census-status.json:brainCheckRequired"
+      ],
+      "dynamicVariantProviders": [],
+      "executionPolicy": "batch-first",
+      "providerLocalFallback": "only-after-shared-profile-failure"
+    },
+    {
+      "groupId": "transport|api_stream_resolver",
+      "repairScope": "transport",
+      "runtimeFamilies": [
+        "api_stream_resolver"
+      ],
+      "capabilityStrategy": "api_stream_resolver",
+      "evidenceDepths": [
+        "chain"
+      ],
+      "dominantIssues": [
+        "network_zero_result"
+      ],
+      "harnessTransportClasses": [],
+      "transportSignature": "not-applicable",
+      "providerCount": 1,
+      "providers": [
+        "movy"
+      ],
+      "action": "current census authority is unresolved; refresh provider-owned domain/backend authority before any provider mutation",
       "selectionAuthorities": [
         "provider-census-status.json:brainCheckRequired"
       ],
