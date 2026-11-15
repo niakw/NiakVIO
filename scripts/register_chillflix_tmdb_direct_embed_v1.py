@@ -37,6 +37,14 @@ def apply_document(data: dict) -> bool:
         "tvAutoNextParam": "autonext",
         "maxDepth": 2,
         "maxStreams": 8,
+        "directDetailIdentity": True,
+        "directJsonSourceTemplates": [
+            "/api/stream-cache?type={transport}&tmdbId={tmdbId}&season={season}&episode={episode}",
+            "/api/cinepro/sources?type={transport}&tmdbId={tmdbId}&season={season}&episode={episode}&provider=novahd",
+            "/api/cinepro/sources?type={transport}&tmdbId={tmdbId}&season={season}&episode={episode}&provider=rivestream",
+            "/api/cinepro/sources?type={transport}&tmdbId={tmdbId}&season={season}&episode={episode}&provider=cineverse",
+            "/api/cinepro/sources?type={transport}&tmdbId={tmdbId}&season={season}&episode={episode}&provider=meowtv",
+        ],
     }
     row["provider_lego_options"] = options
 
