@@ -74,4 +74,17 @@ with tempfile.TemporaryDirectory() as tmp:
     assert result["changedCount"] == 0, result
 
 assert result["providerCount"] == 0, "France-only drift must not enter a Global-only rematerialization rebind"
+
+WORKFLOW = (ROOT / ".github" / "workflows" / "release-finalize.yml").read_text(encoding="utf-8")
+final_reconcile = WORKFLOW.index("python3 scripts/reconcile_active_provider_publication.py")
+rebind_calls = [
+    idx for idx in range(len(WORKFLOW))
+    if WORKFLOW.startswith("python3 scripts/resign_active_offline_provider_proofs.py", idx)
+]
+assert len(rebind_calls) >= 2, "release finalizer must rebind offline proofs after the final byte reconciliation"
+assert max(rebind_calls) > final_reconcile, (
+    "final offline proof rebind must happen after reconcile_active_provider_publication.py"
+)
+assert WORKFLOW.index("python3 scripts/validate_provider_materialization_authority.py", final_reconcile) > max(rebind_calls)
+
 print("scoped offline proof baseline test passed")

@@ -139,6 +139,15 @@ jobs:
           # cache/version finalization.
           python3 scripts/reconcile_active_provider_publication.py
           python3 tests/reconcile_active_provider_publication_test.py
+          # The final publication reconciler can change content-addressed filenames
+          # after the earlier offline-proof rebind. Re-sign exact offline proofs
+          # only after those final bytes/filenames exist, otherwise production
+          # freshness observes stale hashes (Chillflix regression).
+          python3 scripts/resign_active_offline_provider_proofs.py \
+            --previous-manifest "$RUNNER_TEMP/published-manifest-baseline.json" \
+            --previous-vf-manifest "$RUNNER_TEMP/published-vf-manifest-baseline.json" \
+            --scope global \
+            --apply
           python3 scripts/validate_provider_materialization_authority.py
           python3 scripts/generate_language_manifests.py --manifest manifest.json --report health-report.json
           # prune_unreferenced_providers.py treats manifest-hub46.json as a current

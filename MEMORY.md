@@ -1,3 +1,9 @@
+## 2026-11-15 — Final offline-proof rebind must follow final publication reconciliation
+
+- Current release failures on `99682195a8fe521a13c51dc299bee1e7ec7800db`: Workflow Gate 43759341592 rejects active Chillflix because its exact-byte offline proof is stale; Verify & Publish 43759341679 sees the old `chillflix-32ceb4b6c511b1cb.js` bundle (35621 bytes). The release workflow re-bound offline proofs before a later reapply/minimizer/reconcile pass, so the proof hash/filename could become stale again.
+- Fix release-finalize ordering: keep the existing early rebind for intermediate consistency, then perform a second Global offline-proof rebind immediately after `reconcile_active_provider_publication.py`, before final materialization validation. This does not claim FULL/playback; it only binds the existing live-unverified contract to the exact final bytes.
+- Extend the offline-proof scope test to require at least two rebind calls and require the final one after publication reconciliation. No manifest/provider bytes are manually edited by this commit; any client-visible bump must come from the normal finalizer after its gates pass.
+
 ## 2026-11-15 — Main release finalizer reaches override fixed point; late minimizer convergence was missing
 
 - Finalizer run `43756342398` on exact SHA `2f63fce7f87b2c947a1647d9b97de319b9100512` advanced through full 46-provider materialization, initial minimization, offline-proof rebound and release type reconciliation. The second reapply then reached `FIELD_PROVIDER_FAST_FIXED_POINT status=hit` with contract `b2ee1b4b4b66cf1c`, proving the earlier publication-contract drift was fixed.
