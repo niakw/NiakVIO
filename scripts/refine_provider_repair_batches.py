@@ -48,6 +48,7 @@ def signature(provider:str, verdict:dict[str,Any], targeted_blocked:set[str])->d
     observations=sorted(set(observations))[:24]
     key=("targeted-waf|" if transport_owned else "provider|")+";".join(stages)+"||"+";".join(observations)
     return {"key":key or "empty","debugStages":stages,"network":observations,
+            "observedHosts":sorted(hosts)[:64],
             "observedHostCount":len(hosts),"transportOwned":transport_owned}
 
 def main()->int:
@@ -71,8 +72,20 @@ def main()->int:
         details={}
         for provider in members:
             sig=signature(provider,verdict,targeted_blocked)
-            buckets[sig["key"]].append(provider)
-            details[sig["key"]]=sig
+            key=sig["key"]
+            buckets[key].append(provider)
+            if key not in details:
+                details[key]=sig
+            else:
+                # Host identity is deliberately absent from the causal key, but
+                # its diagnostic cardinality must describe the whole family,
+                # not whichever provider happened to be processed last.
+                merged_hosts=sorted({
+                    *[str(v) for v in details[key].get("observedHosts") or [] if str(v)],
+                    *[str(v) for v in sig.get("observedHosts") or [] if str(v)],
+                })[:64]
+                details[key]["observedHosts"]=merged_hosts
+                details[key]["observedHostCount"]=len(merged_hosts)
         for index,(key,providers) in enumerate(sorted(buckets.items(),key=lambda kv:(-len(kv[1]),kv[0]))):
             sig=details[key]
             transport_owned = sig.get("transportOwned") is True

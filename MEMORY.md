@@ -1,3 +1,9 @@
+## 2026-11-16 — Causal-family host metadata aggregates across members
+
+- Provider batch refinement intentionally removed exact hostnames from the causal family key so equivalent providers on different domains can share one Brain strategy. The refinement implementation still overwrote family metadata with the last member's host count, so a two-provider family could report one observed host and fail its regression contract.
+- Keep host identity out of the emitted causal signature, but aggregate the distinct host set internally across all members and publish only its bounded count. The regression test now also asserts that raw host identities do not leak into the refined family output. This preserves family generalization while keeping diagnostic evidence accurate.
+- No provider route, domain, stream extraction, activation or validation threshold changes. Fresh Non-Regression/Workflow CI pending.
+
 ## 2026-11-16 — Targeted ProviderBase reconstruction is local structured-authority first
 
 - Fast-Handoff Learning now invokes `discover_candidates --local-catalog-only --clean-reconstruction` for its exact provider cohort. This mode is accepted only with at least one explicit `--provider` and clean reconstruction; it zeroes the external-upstream source set before discovery, while preserving the existing Global+France `provider_catalog.json` baseline and deterministic ProviderBase generation.

@@ -38,6 +38,7 @@ assert value["groupCount"]==4
 groups=sorted(value["groups"],key=lambda x:-x["providerCount"])
 assert groups[0]["providers"]==["a","b"]
 assert groups[0]["observedHostCount"]==2
+assert "observedHosts" not in groups[0], "raw host identities must remain internal diagnostic aggregation only"
 assert all("site.example" not in row and "different.example" not in row for row in groups[0]["networkShape"])
 assert groups[0]["splitReason"]=="observed-signature-divergence"
 assert groups[0]["transportSignature"]=="browser-profile-only"
