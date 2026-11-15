@@ -3,7 +3,8 @@
 
 The finalizer is intentionally idempotent against the currently published manifest:
 - a client-visible generation change bumps the global release patch once;
-- an existing provider whose client-visible row changes bumps its provider patch once;
+- an existing provider whose client-visible row changes bumps its provider patch once,
+  including France-only providers absent from the Global manifest;
 - a disabled -> enabled transition still receives the case-only client-id change used
   to escape Nuvio's persisted local activation state;
 - package.json, package-lock.json, sources.json and all manifest projections are
@@ -184,11 +185,16 @@ def apply_client_activation_ids() -> dict[str, Any]:
     return module.apply_policy(bootstrap_active=False)
 
 
-def finalize_provider_versions(previous_path: pathlib.Path, manifest_path: pathlib.Path) -> list[str]:
+def finalize_provider_versions(
+    previous_path: pathlib.Path,
+    manifest_path: pathlib.Path,
+    previous_vf_path: pathlib.Path | None = None,
+) -> list[str]:
     previous = load(previous_path)
     current = load(manifest_path)
     vf_path = ROOT / "vf" / "manifest.json"
     vf = load(vf_path)
+    previous_vf = load(previous_vf_path) if previous_vf_path is not None else {"scrapers": []}
 
     previous_rows = {
         canonical_id(row.get("id")): row
@@ -225,6 +231,44 @@ def finalize_provider_versions(previous_path: pathlib.Path, manifest_path: pathl
             bumped.append(cid)
         elif current_version is None or current_version < old_version:
             row["version"] = format_semver(old_version)
+
+    # France-only providers are first-class cache-visible rows even though they
+    # intentionally do not exist in the Global manifest. Compare them against
+    # the VF baseline and bump their own provider version exactly like Global
+    # rows. This closes a client-cache hole where VF bytes could change while
+    # retaining the previous provider version.
+    previous_vf_rows = {
+        canonical_id(row.get("id")): row
+        for row in previous_vf.get("scrapers", [])
+        if isinstance(row, dict) and canonical_id(row.get("id"))
+    }
+    vf_seen: set[str] = set()
+    for row in [item for item in vf.get("scrapers", []) if isinstance(item, dict)]:
+        cid = canonical_id(row.get("id"))
+        if not cid or cid in vf_seen:
+            raise RuntimeError(f"VF invalid or duplicate provider id: {row.get('id')!r}")
+        vf_seen.add(cid)
+        if cid in current_by_id:
+            continue
+
+        old = previous_vf_rows.get(cid)
+        if old is None:
+            if parse_semver(row.get("version")) is None:
+                row["version"] = "1.0.0"
+            continue
+
+        old_version = parse_semver(old.get("version")) or (1, 0, 0)
+        current_version = parse_semver(row.get("version"))
+        changed = comparable_provider(old) != comparable_provider(row)
+        if changed:
+            minimum = (old_version[0], old_version[1], old_version[2] + 1)
+            if current_version is None or current_version < minimum:
+                row["version"] = format_semver(minimum)
+            bumped.append(cid)
+        elif current_version is None or current_version < old_version:
+            row["version"] = format_semver(old_version)
+
+    dump(vf_path, vf)
 
     def sync_projection(
         path: pathlib.Path,
@@ -274,6 +318,7 @@ def resolve_release_version(
     *,
     manifest_path: pathlib.Path,
     previous_path: pathlib.Path | None,
+    previous_vf_path: pathlib.Path | None,
     explicit_version: str | None,
 ) -> tuple[str, bool]:
     current = load(manifest_path)
@@ -308,6 +353,12 @@ def resolve_release_version(
         floor = historical_floor
 
     changed = comparable_manifest(previous) != comparable_manifest(current)
+    if previous_vf_path is not None:
+        vf_path = ROOT / "vf" / "manifest.json"
+        if vf_path.exists():
+            previous_vf = load(previous_vf_path)
+            current_vf = load(vf_path)
+            changed = changed or comparable_manifest(previous_vf) != comparable_manifest(current_vf)
     if changed:
         minimum = (floor[0], floor[1], floor[2] + 1)
         if current_version is None or current_version < minimum:
@@ -385,19 +436,29 @@ def main() -> int:
         "--previous",
         help="Previously published principal manifest. When supplied, all cache-visible versions are finalized automatically.",
     )
+    parser.add_argument(
+        "--previous-vf",
+        help="Previously published VF manifest. France-only provider changes are versioned from this baseline.",
+    )
     args = parser.parse_args()
 
     manifest_path = ROOT / args.manifest
     previous_path = pathlib.Path(args.previous).resolve() if args.previous else None
+    previous_vf_path = pathlib.Path(args.previous_vf).resolve() if args.previous_vf else None
 
     activation = apply_client_activation_ids()
     bumped_providers: list[str] = []
     if previous_path is not None:
-        bumped_providers = finalize_provider_versions(previous_path, manifest_path)
+        bumped_providers = finalize_provider_versions(
+            previous_path,
+            manifest_path,
+            previous_vf_path=previous_vf_path,
+        )
 
     version, release_changed = resolve_release_version(
         manifest_path=manifest_path,
         previous_path=previous_path,
+        previous_vf_path=previous_vf_path,
         explicit_version=args.version,
     )
     synchronize_global_version(version, manifest_path)
