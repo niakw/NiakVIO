@@ -90,6 +90,9 @@ def load_scope_ids(scope_path: Path | None) -> set[str] | None:
     expected = int(data.get("hubCount") or data.get("providerCount") or len(ids))
     if not ids or len(ids) != expected:
         raise SystemExit(f"invalid native provider scope: ids={len(ids)} expected={expected} path={path}")
+    policy = str(data.get("scopePolicy") or "").strip().casefold()
+    if policy in {"historical-evidence-only", "dynamic-active-hub-authority"} or path.name == "hub-lab-matrix-46.json":
+        return None
     return ids
 
 
