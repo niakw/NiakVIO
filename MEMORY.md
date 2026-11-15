@@ -1,3 +1,9 @@
+## 2026-11-15 — Historical snapshot security triage: physical presence and revocation
+
+- Exact tree `5ac5be29d2a816823133ebae5e8e21ce2a72a91a`: rechecked all 377 distinct alert rows from inventory 43716033052 against providers/ and provider-security-revocations.json. The 376 unreferenced snapshot alerts split into 355 alerts on 106 absent paths and 21 alerts on nine present paths. All nine present paths are absent from the 18-entry revocation ledger and from SHA256SUMS.json (55 listed files). Absence from the current checksum index is not proof that historical URLs are unreachable.
+- Read-only inventory now separates present/absent and revoked/unrevoked snapshot findings, with four synthetic state assertions and a reconciliation assertion. No alert dismissal, analysis deletion, provider modification, revocation or historical file removal is performed. Fresh workflow verification pending.
+- Existing scanner/category retirement failure is separate from source remediation; retained files must be evaluated by the owner against historical compatibility and security obligations before removal. Current-source CodeQL 43716104204 completed successfully on the pre-change SHA. No client-visible release or playback change claimed.
+
 ## 2026-11-15 — Complete read-only CodeQL inventory follow-up
 
 - Run [43716033052](https://github.com/niakw/NiakVIO/actions/runs/43716033052) on `4d210228b2017afc5cd7f1b18a718d1a5e43f0c1` completed successfully; six reference-classification assertions passed, 377 unique open High alert IDs exported, nine pinned paths and zero unresolved manifest references. Dependabot and secret-scanning remain unavailable/unverified.

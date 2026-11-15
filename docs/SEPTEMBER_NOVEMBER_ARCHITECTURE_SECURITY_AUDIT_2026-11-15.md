@@ -64,3 +64,10 @@ This comparison does not execute external provider traffic, claim playback or au
 - Prior exact-SHA Final Gate 43715324619 reported 377 open, zero current high/critical and zero current-provider high/critical after #2918's test correction. Core Workflow Gate and Verify & Publish remained red. Brain's obsolete fix branch is now absent, independently verified; this assistant did not execute its deletion.
 - September 11 CodeQL included separate generated-provider shards. September 30 and November use maintained JS Core and ProviderBase categories. That coverage change predates the end-of-September baseline and is not a demonstrated Codex regression. A green maintained-source scan is not equivalent to full historical snapshot coverage. No new release or playback proof.
 
+
+## 2026-11-15 — Historical snapshot security triage: physical presence and revocation
+
+- Exact tree `5ac5be29d2a816823133ebae5e8e21ce2a72a91a`: rechecked all 377 distinct alert rows from inventory 43716033052 against providers/ and provider-security-revocations.json. The 376 unreferenced snapshot alerts split into 355 alerts on 106 absent paths and 21 alerts on nine present paths. All nine present paths are absent from the 18-entry revocation ledger and from SHA256SUMS.json (55 listed files). Absence from the current checksum index is not proof that historical URLs are unreachable.
+- Read-only inventory now separates present/absent and revoked/unrevoked snapshot findings, with four synthetic state assertions and a reconciliation assertion. No alert dismissal, analysis deletion, provider modification, revocation or historical file removal is performed. Fresh workflow verification pending.
+- Existing scanner/category retirement failure is separate from source remediation; retained files must be evaluated by the owner against historical compatibility and security obligations before removal. Current-source CodeQL 43716104204 completed successfully on the pre-change SHA. No client-visible release or playback change claimed.
+

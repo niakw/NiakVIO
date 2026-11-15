@@ -121,6 +121,25 @@ jobs:
               scopes = {"release_referenced":0, "snapshot_unreferenced":0,
                         "maintained_source":0, "lifecycle_archive":0, "pinned_path_match":0}
               print(f"FIELD_CODEQL_REFERENCE_SCOPE sha={os.environ['GITHUB_SHA']} pinned_paths={len(pinned)} unresolved_refs={unresolved}")
+              # Track physical presence independently of manifest reachability.
+              # Open scanner findings alone never authorize deletion or dismissal.
+              revocation_file = Path("provider-security-revocations.json")
+              revoked = set()
+              if revocation_file.is_file():
+                  revocation_data = json.loads(revocation_file.read_text(encoding="utf-8"))
+                  revoked = {str(item["path"]) for item in revocation_data.get("entries", [])
+                             if isinstance(item, dict) and isinstance(item.get("path"), str)}
+              present_paths = {p.as_posix() for p in Path("providers").glob("*") if p.is_file()}
+              def legacy_snapshot_state(path, present, revocations):
+                  if path in present:
+                      return "present_revoked" if path in revocations else "present_unrevoked"
+                  return "absent_revoked" if path in revocations else "absent_unrevoked"
+              assert legacy_snapshot_state("providers/a.js", {"providers/a.js"}, set()) == "present_unrevoked"
+              assert legacy_snapshot_state("providers/a.js", {"providers/a.js"}, {"providers/a.js"}) == "present_revoked"
+              assert legacy_snapshot_state("providers/a.js", set(), {"providers/a.js"}) == "absent_revoked"
+              assert legacy_snapshot_state("providers/a.js", set(), set()) == "absent_unrevoked"
+              snapshot_states = {k: 0 for k in ("present_revoked", "present_unrevoked", "absent_revoked", "absent_unrevoked")}
+              snapshot_paths = {k: set() for k in snapshot_states}
               rules = {}
               examples = []
               for row in items:
@@ -139,12 +158,20 @@ jobs:
                   else:
                       bucket = "maintained_source"
                   scopes[bucket] += 1
+                  if bucket == "snapshot_unreferenced":
+                      state = legacy_snapshot_state(path, present_paths, revoked)
+                      snapshot_states[state] += 1
+                      snapshot_paths[state].add(path)
                   if bucket in {"release_referenced", "maintained_source"} and len(examples) < 25:
                       location = ((row.get("most_recent_instance") or {}).get("location") or {})
                       examples.append((row.get("number"), bucket, rule, path, location.get("start_line")))
               print("FIELD_CODEQL_SCOPE_TRIAGE open={} active_release_paths={} scopes={} rules={}".format(
                   len(items),len(active),json.dumps(scopes,sort_keys=True),
                   json.dumps(dict(sorted(rules.items(),key=lambda x:(-x[1],x[0]))),sort_keys=True)))
+              assert sum(snapshot_states.values()) == scopes["snapshot_unreferenced"]
+              print("FIELD_CODEQL_SNAPSHOT_PRESENCE alerts={} paths={} cases=4".format(
+                  json.dumps(snapshot_states, sort_keys=True),
+                  json.dumps({k: len(v) for k, v in snapshot_paths.items()}, sort_keys=True)))
               for alert, scope, rule, path, lineno in examples:
                   print("FIELD_CODEQL_REQUIRES_REVIEW number={} scope={} rule={} path={} line={}".format(
                       clean(alert),clean(scope),clean(rule),clean(path),clean(lineno)))
