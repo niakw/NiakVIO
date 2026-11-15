@@ -29,6 +29,9 @@ def provider_scope_ids() -> list[str]:
     expected = int(data.get("hubCount") or data.get("providerCount") or len(ids))
     if not ids or len(ids) != expected:
         raise SystemExit(f"invalid iOS provider scope: ids={len(ids)} expected={expected} path={path}")
+    policy = str(data.get("scopePolicy") or "").strip().casefold()
+    if policy in {"historical-evidence-only", "dynamic-active-hub-authority"} or path.name == "hub-lab-matrix-46.json":
+        return []
     return ids
 
 KOTLIN_TEMPLATE = r'''@file:OptIn(kotlinx.cinterop.ExperimentalForeignApi::class)
