@@ -39,6 +39,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
         "providerId": "movy",
         "providerName": "Movy",
         "installMarker": "__niakvioMovyWeCollegeWingsV1",
+        "doubleEncodeTitle": bool(cfg.get("double_encode_title", True)),
         "endpoints": list(cfg.get("endpoints") or DEFAULT_ENDPOINTS),
     }
     body = render_wings_runtime(marker=MARKER, config=runtime)
