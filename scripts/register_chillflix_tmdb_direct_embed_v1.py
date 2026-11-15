@@ -44,6 +44,9 @@ def apply_document(data: dict) -> bool:
             "/api/cinepro/sources?type={transport}&tmdbId={tmdbId}&season={season}&episode={episode}&provider=rivestream",
             "/api/cinepro/sources?type={transport}&tmdbId={tmdbId}&season={season}&episode={episode}&provider=cineverse",
             "/api/cinepro/sources?type={transport}&tmdbId={tmdbId}&season={season}&episode={episode}&provider=meowtv",
+            "/api/cinepro/sources?type={transport}&tmdbId={tmdbId}&season={season}&episode={episode}&provider=vidmoly",
+            "/api/cinepro/sources?type={transport}&tmdbId={tmdbId}&season={season}&episode={episode}&provider=cine4k",
+            "/api/cinepro/sources?type={transport}&tmdbId={tmdbId}&season={season}&episode={episode}&provider=cno",
         ],
     }
     row["provider_lego_options"] = options
