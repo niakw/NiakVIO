@@ -48,7 +48,46 @@ jobs:
           print(f"FIELD_SECURITY_ALERT_INVENTORY source={source} status=read open={len(items)} severities={json.dumps(counts,sort_keys=True)}")
           if source == "code-scanning":
               from pathlib import Path
+              from posixpath import dirname, join, normpath
+              from urllib.parse import urlsplit
+
+              def reference_path(manifest_name, value, repository, tested_sha):
+                  """Classify references only; never fetch a referenced URL."""
+                  value = str(value or "")
+                  try:
+                      ref = urlsplit(value)
+                  except ValueError:
+                      return "unknown", ""
+                  if ref.scheme or ref.netloc:
+                      pieces = ref.path.lstrip("/").split("/", 3)
+                      if (ref.scheme == "https" and ref.netloc == "raw.githubusercontent.com"
+                          and len(pieces) == 4 and "/".join(pieces[:2]).casefold() == repository.casefold()
+                          and re.fullmatch(r"[0-9a-f]{40}", pieces[2])
+                          and not ref.query and not ref.fragment):
+                          candidate = pieces[3]
+                          if normpath(candidate) == candidate and candidate.startswith(("providers/", "provider-bases/", "provider-disabled/")):
+                              return ("current" if pieces[2] == tested_sha else "pinned"), candidate
+                      return "unknown", ""
+                  if not value or ref.path.startswith("/") or ref.query or ref.fragment:
+                      return "unknown", ""
+                  candidate = normpath(join(dirname(manifest_name), ref.path))
+                  if candidate.startswith(("providers/", "provider-bases/", "provider-disabled/")):
+                      return "current", candidate
+                  return "unknown", ""
+
+              # Synthetic, network-free regression checks for reference triage.
+              demo_sha = "a" * 40
+              demo_repo = "example/demo"
+              assert reference_path("manifest.json", "providers/a.js", demo_repo, demo_sha) == ("current", "providers/a.js")
+              assert reference_path("vf/manifest.json", "../providers/a.js", demo_repo, demo_sha) == ("current", "providers/a.js")
+              assert reference_path("vf/manifest.json", "../../providers/a.js", demo_repo, demo_sha) == ("unknown", "")
+              assert reference_path("manifest.json", "https://raw.githubusercontent.com/example/demo/" + "b" * 40 + "/providers/a.js", demo_repo, demo_sha) == ("pinned", "providers/a.js")
+              assert reference_path("manifest.json", "https://raw.githubusercontent.com/example/demo/" + demo_sha + "/providers/a.js", demo_repo, demo_sha) == ("current", "providers/a.js")
+              assert reference_path("manifest.json", "https://raw.githubusercontent.com.example.invalid/example/demo/" + demo_sha + "/providers/a.js", demo_repo, demo_sha) == ("unknown", "")
+              print("FIELD_CODEQL_REFERENCE_TRIAGE_CONTRACT cases=6")
               active = set()
+              pinned = set()
+              unresolved = 0
               for manifest_name in ("manifest.json", "manifest-hub46.json",
                                     "native-hub46/manifest.json", "vf/manifest.json",
                                     "no-anime/manifest.json", "vf-no-anime/manifest.json",
@@ -62,9 +101,14 @@ jobs:
                       raise SystemExit("Invalid manifest in security triage: " + manifest_name)
                   for entry in data.get("scrapers") or []:
                       if isinstance(entry, dict):
-                          source_path = str(entry.get("filename") or "")
-                          if source_path.startswith("providers/"):
+                          kind, source_path = reference_path(
+                              manifest_name, entry.get("filename"), os.environ["GITHUB_REPOSITORY"], os.environ["GITHUB_SHA"])
+                          if kind == "current":
                               active.add(source_path)
+                          elif kind == "pinned":
+                              pinned.add(source_path)
+                          else:
+                              unresolved += 1
               provenance = Path("PROVENANCE.json")
               if provenance.is_file():
                   raw = json.loads(provenance.read_text(encoding="utf-8"))
@@ -75,17 +119,23 @@ jobs:
                               if value.startswith(("providers/", "provider-bases/")):
                                   active.add(value)
               scopes = {"release_referenced":0, "snapshot_unreferenced":0,
-                        "maintained_source":0, "lifecycle_archive":0}
+                        "maintained_source":0, "lifecycle_archive":0, "pinned_path_match":0}
+              print(f"FIELD_CODEQL_REFERENCE_SCOPE sha={os.environ['GITHUB_SHA']} pinned_paths={len(pinned)} unresolved_refs={unresolved}")
               rules = {}
               examples = []
               for row in items:
                   path = str((((row.get("most_recent_instance") or {}).get("location") or {}).get("path") or ""))
                   rule = str((row.get("rule") or {}).get("id") or "")
                   rules[rule] = rules.get(rule, 0) + 1
-                  if path.startswith(("provider-old/", "provider-disabled/", "upstream-lkg/")):
+                  if path in active:
+                      bucket = "release_referenced"
+                  elif path in pinned:
+                      # A path match is not proof of the same vulnerable bytes at a pinned SHA.
+                      bucket = "pinned_path_match"
+                  elif path.startswith(("provider-old/", "provider-disabled/", "upstream-lkg/")):
                       bucket = "lifecycle_archive"
                   elif path.startswith("providers/"):
-                      bucket = "release_referenced" if path in active else "snapshot_unreferenced"
+                      bucket = "snapshot_unreferenced"
                   else:
                       bucket = "maintained_source"
                   scopes[bucket] += 1
@@ -101,11 +151,12 @@ jobs:
               with open(os.environ["GITHUB_STEP_SUMMARY"], "a", encoding="utf-8") as summary:
                   summary.write(f"  - Release source triage: {scopes}; reviewed rules: {rules}\\n")
                   summary.write("  - **These classifications are triage only; zero alerts dismissed.**\\n")
-              for row in items[:100]:
-                  print("OPEN_CODEQL_ALERT number={} severity={} rule={} path={}".format(
+              for row in items:
+                  location = (row.get("most_recent_instance") or {}).get("location") or {}
+                  print("OPEN_CODEQL_ALERT number={} severity={} rule={} path={} line={}".format(
                       clean(row.get("number")), clean((row.get("rule") or {}).get("security_severity_level")),
-                      clean((row.get("rule") or {}).get("id")),
-                      clean((((row.get("most_recent_instance") or {}).get("location") or {}).get("path")))))
+                      clean((row.get("rule") or {}).get("id")), clean(location.get("path")),
+                      clean(location.get("start_line"))))
           if source == "dependabot":
               for row in items[:100]:
                   print("OPEN_DEPENDABOT_ALERT number={} severity={} package={}".format(

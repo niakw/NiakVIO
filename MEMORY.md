@@ -1,3 +1,10 @@
+## 2026-11-15 — Security follow-up and read-only inventory scope
+
+- Exact SHA `37029fbec9e813585440d9ebc68f2b9bf025c012`: CodeQL 43714885260, Final Gate 43715324619 and Provider Non-Regression Gate 43714885335 succeeded. Final Gate reports 377 open alerts (down from 378), zero current high/critical and zero current-provider high/critical. The previously identified #2918 is no longer listed as current High; the complete per-alert server listing has not yet been retrieved. Do not interpret a green gate as zero open alerts.
+- Brain branch listing now contains only `main` and `niakvio-guidance`; superseded `fix/brain-observed-media-bridge-contract` is absent. Deletion was not performed by this assistant.
+- Read-only alert inventory previously skipped relative VF paths and historical pinned raw references. Normalize exact repository paths, separately flag pinned path matches (not proof of byte identity), report unresolved references and tested SHA, and export all CodeQL alert metadata instead of the first 100. Six synthetic checks run in inventory; no alert dismissal, analysis retirement or scanner exclusion changed. Inventory validation pending.
+- Existing category retirement still fails on bounded pagination (43715324657); do not remove analyses simply to reduce the count. Core Workflow Gate 43714885254 and Verify & Publish 43714885251 failed (freshness proof contract and published bundle size contract respectively); neither failure is bypassed by this security-only change.
+
 ## 2026-11-15 — September comparison and exact security gate follow-up
 
 - Comparative audit: `docs/SEPTEMBER_NOVEMBER_ARCHITECTURE_SECURITY_AUDIT_2026-11-15.md`. September 30 snapshot 5.21.90 reports 27 FULL / 2 PARTIAL across 46; November 15 5.21.146 reports 13 FULL / 1 PARTIAL across 110. Same historical cohort: 9/27 remain FULL, 17 disabled, 1 regression. Different proof scopes; not a same-SHA playback comparison.
