@@ -11,6 +11,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 
+import materialize_provider_v3_one as one
 from reconcile_targeted_provider_publication import data_digest, reconcile
 
 with tempfile.TemporaryDirectory() as tmp_name:
@@ -90,8 +91,55 @@ with tempfile.TemporaryDirectory() as tmp_name:
     assert vrow["final_minimizer"]["saved_bytes"] == 7
     assert vrow["final_minimizer"]["transformed_lines"] == 3
     assert material["providerCount"] == 1
+    assert material["activeProviderIdentityCount"] == 1
     assert material["expectedProviderCount"] == 1
+    assert material["targetedPublicationComplete"] is True
     assert material["targetedPublicationFixedPointProviders"] == ["vidlove"]
     assert updates[0]["to"] == mrow["filename"]
+
+
+# Targeted materialization must upsert its exact row even when the historical
+# ledger is partial, remove inactive rows, and never claim completeness until
+# every active identity has a ledger row.
+with tempfile.TemporaryDirectory() as tmp_name:
+    root = Path(tmp_name)
+    report_path = root / "provider-v3-materialization.json"
+    report_path.write_text(json.dumps({
+        "schemaVersion": 3,
+        "providers": [
+            {"provider": "alpha", "file": "providers/alpha.js", "sha256": "1" * 64},
+            {"provider": "inactive", "file": "providers/inactive.js", "sha256": "2" * 64},
+        ],
+        "providerCount": 2,
+        "expectedProviderCount": 2,
+    }), encoding="utf-8")
+
+    old_report = one.allmat.DEFAULT_REPORT
+    old_active = one.active_provider_ids
+    try:
+        one.allmat.DEFAULT_REPORT = report_path
+        one.active_provider_ids = lambda: {"alpha", "movy", "chillflix"}
+        ledger = one.upsert_materialization_report({
+            "provider": "movy",
+            "file": "providers/movy-new.js",
+            "sha256": "3" * 64,
+            "providerDataSha256": "4" * 64,
+        })
+    finally:
+        one.allmat.DEFAULT_REPORT = old_report
+        one.active_provider_ids = old_active
+
+    rows = {row["provider"]: row for row in ledger["providers"]}
+    assert set(rows) == {"alpha", "movy"}, rows
+    assert rows["movy"]["file"] == "providers/movy-new.js"
+    assert ledger["providerCount"] == 2
+    assert ledger["activeProviderIdentityCount"] == 3
+    assert ledger["expectedProviderCount"] == 3
+    assert ledger["targetedMaterializedProviders"] == ["movy"]
+    persisted = json.loads(report_path.read_text(encoding="utf-8"))
+    assert persisted["providerCount"] == 2
+    assert persisted["expectedProviderCount"] == 3
+
+print("targeted ledger upsert passed: exact provider row persisted, stale inactive row dropped, incomplete active scope remains explicit")
 
 print("targeted provider publication reconcile passed: manifest/materialization/public bytes converge after final targeted materialization")
