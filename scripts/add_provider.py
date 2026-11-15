@@ -271,6 +271,7 @@ def relocate_bulk_pending_artifacts(
     root: Path = ROOT,
 ) -> str:
     """Move a newly staged bulk candidate out of executable directories."""
+    root = root.resolve()
     source = (root / published_relative).resolve()
     base_source = (root / base_relative).resolve()
     active = (root / "providers").resolve()
