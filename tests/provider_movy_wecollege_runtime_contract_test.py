@@ -3,8 +3,10 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import re
 import sys
 from pathlib import Path
+from urllib.parse import urlsplit
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
@@ -21,6 +23,30 @@ from register_movy_wecollege_runtime_v1 import (  # noqa: E402
     apply_document,
     validate_document,
 )
+
+
+def has_exact_url_literal(source: str, expected: str) -> bool:
+    """Compare complete quoted URL literals, never a URL substring."""
+    expected_parts = urlsplit(expected)
+    pattern = r"""(?P<quote>["'])(?P<url>https?://[^"'\s]+)(?P=quote)"""
+    for match in re.finditer(pattern, source):
+        try:
+            if urlsplit(match.group("url")) == expected_parts:
+                return True
+        except ValueError:
+            continue
+    return False
+
+
+# A lookalike host, injected userinfo or URL embedded in a different
+# origin's path must not satisfy the positive URL assertion.
+demo = "https://example.com"
+assert has_exact_url_literal(json.dumps(demo), demo)
+assert has_exact_url_literal("'https://example.com'", demo)
+assert not has_exact_url_literal('"https://example.com.invalid"', demo)
+assert not has_exact_url_literal('"https://example.com@other.invalid"', demo)
+assert not has_exact_url_literal('"https://other.invalid/https://example.com"', demo)
+assert not has_exact_url_literal('"https://[malformed"', demo)
 
 assert [x["path"] for x in DEFAULT_ENDPOINTS] == [
     "miami/sources",
@@ -52,7 +78,7 @@ assert ORACLE_MARKER in json.dumps(row)
 base = """/* STARTFIX:PROVIDER.MOVY.WECOLLEGE.WINGS.V1 */\n/* CLOSEFIX:PROVIDER.MOVY.WECOLLEGE.WINGS.V1 */\n"""
 rendered = apply(base)
 assert MARKER in rendered
-assert "https://api.wecollege.net" in rendered
+assert has_exact_url_literal(rendered, row["official_api"])
 assert "miami/sources" in rendered
 assert "boise/sources" in rendered
 assert "nashville/sources" in rendered

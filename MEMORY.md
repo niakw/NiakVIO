@@ -1,3 +1,10 @@
+## 2026-11-15 — September comparison and exact security gate follow-up
+
+- Comparative audit: `docs/SEPTEMBER_NOVEMBER_ARCHITECTURE_SECURITY_AUDIT_2026-11-15.md`. September 30 snapshot 5.21.90 reports 27 FULL / 2 PARTIAL across 46; November 15 5.21.146 reports 13 FULL / 1 PARTIAL across 110. Same historical cohort: 9/27 remain FULL, 17 disabled, 1 regression. Different proof scopes; not a same-SHA playback comparison.
+- Current security gate 43714502370 on 1da6528063e07a9bdf924453fba3bfd0713a0b9d reports 378 open alerts, one current high (#2918 in maintained test), zero current-provider high/critical. Correct the test's URL substring assertion with full parsed literal comparison and negative synthetic cases; isolated six checks passed, full repo regression and fresh CodeQL pending. No suppression/dismissal or scanning policy change. Stale category maintenance separately fails due to bounded pagination. External audit 43711225972 remains incomplete (55 maintained findings and stale scanner snapshots).
+- Brain branch `fix/brain-observed-media-bridge-contract` is explicitly superseded by merged PR #17; PR #16 closed unmerged. Branch deletion not available in current connector, no merge or ref movement attempted.
+- No new release, provider activation, terminal playback test or repair validation is claimed by this audit/security-test change.
+
 ## 2026-11-15 — External Brain source reference pinned as a Git submodule
 
 - `brain-llm/` is a Git submodule of `niakw/NiakVIO-Brain-LLM`, pinned at `ffe1444c74529c3641d065711bb5dc434f8dd013` (Brain main at inspection time). This is a source/reference link only, not a replacement for the existing in-tree runtime or an automatic change to CI execution, Repair authority, or production manifests.
