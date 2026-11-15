@@ -120,6 +120,14 @@ with TemporaryDirectory() as directory:
         mod.ROOT=original
 
 
+# Only the two canonical non-executable project state documents may drift
+# after CodeQL. Do not broaden this to arbitrary Markdown because generated or
+# executable-adjacent files must remain fail-closed.
+with patch.object(mod, "api", return_value=response(["MEMORY.md", "ARCHITECTURE.md"])):
+    assert mod.evidence_only_drift(src, head)
+with patch.object(mod, "api", return_value=response(["docs/UNKNOWN.md"])):
+    assert not mod.evidence_only_drift(src, head)
+
 # Exact current-byte census publication may land after the CodeQL source SHA.
 # Its numbered archives are immutable evidence; the latest summary is a
 # non-executable pointer. Accept those facts without allowing scripts, workflow
