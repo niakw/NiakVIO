@@ -48,6 +48,18 @@ locks = {
 }
 
 assert policy.baseline_lock_errors(manifest, locks) == []
+# Baseline cardinality is a floor, never a ceiling: adding providers is legal.
+expanded = json.loads(json.dumps(manifest))
+expanded["scrapers"].append({
+    "id": "new-provider",
+    "enabled": False,
+    "filename": "provider-disabled/new-provider--nuvio--ccc.js",
+    "canonicalSupportedTypes": ["movie"],
+})
+assert policy.baseline_lock_errors(expanded, locks) == []
+# Dropping below the captured baseline remains a regression.
+shrunk = {"version": manifest["version"], "scrapers": manifest["scrapers"][:1]}
+assert any("regressed below baseline" in value for value in policy.baseline_lock_errors(shrunk, locks))
 assert policy.fully_green_provider_ids(manifest, locks) == {"castle"}
 
 candidate = json.loads(json.dumps(manifest))
