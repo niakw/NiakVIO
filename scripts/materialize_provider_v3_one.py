@@ -643,10 +643,17 @@ def materialize_one(
         # equally to Global and France-only projections; restricting it to the
         # France catalogue made valid Global manual-oracle Legos impossible to
         # rematerialize even though compose_provider_bundle executes them.
+        # external_id is also a metadata-preflight mode: Core supplies external
+        # IDs before execution, so an owned Lego must not be rejected merely
+        # because its executable plan lives in that Lego instead of route DATA.
         provider_owned_identity_lego = bool(
             scripts
             and all(value.startswith("scripts/provider_patches/") for value in scripts)
-            and str(identity.get("mode") or "").strip().casefold() in {"tmdb_direct", "catalog_search"}
+            and str(identity.get("mode") or "").strip().casefold() in {
+                "tmdb_direct",
+                "catalog_search",
+                "external_id",
+            }
             and identity.get("requires_tmdb_before_run") is True
             and {"tmdbId", "mediaType"} <= required_identity
         )
