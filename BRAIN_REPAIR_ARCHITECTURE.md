@@ -1,3 +1,7 @@
+## 2026-11-15 — Mandatory catalogue-union reconstruction contract
+
+CORE Workflow Gate executes the catalogue-union reconstruction regression on every relevant main change. The parent repository's `brain-llm/` reference is advanced only to a Brain main SHA with its own CI and security inventory green. This keeps Brain evidence semantics and NiakVIO ProviderBase derivation reproducibly paired without granting the submodule publication authority.
+
 ## 2026-11-15 — ProviderBase derivation must consume the catalogue union
 
 ProviderBase is derived from NiakVIO's structured provider object (DATA/capability/owned Lego) and must not be manually authored as a prerequisite to Brain Learning. Clean reconstruction uses `provider_catalog.json` as the projection authority so Global and strict France-only providers enter the same baseline. Current provider or upstream JavaScript may contribute bounded static knowledge only; it is never the executable seed. A reconstruction stage that loses a catalogue-owned provider is a pipeline failure, not a provider repair failure.

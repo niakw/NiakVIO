@@ -1,3 +1,9 @@
+## 2026-11-15 — Catalogue-union regression is now a mandatory gate; Brain pin advanced
+
+- Add `tests/learning_catalog_union_reconstruction_test.py` to CORE Workflow Gate so Global+France ProviderBase reconstruction coverage cannot regress silently. The test verifies synthetic projection behavior plus every currently active France-only catalogue row.
+- Advance the `brain-llm/` submodule from `ffe1444c74529c3641d065711bb5dc434f8dd013` to Brain commit `cb1fddf4ee8b06be9a29bb0a69f1210d925cb93e`, whose Brain LLM CI 43769592169 and security inventory 43769592138 are green. The Brain change distinguishes explicit zero-result observations from missing counters.
+- Neither change publishes providers. A fresh NiakVIO Workflow Gate and Learning replay are required before the reconstruction defect is considered closed.
+
 ## 2026-11-15 — Learning clean reconstruction now uses the Global + France catalogue union
 
 - Brain Learning runs 43767643223 and 43768412945 correctly selected/staged a batch, then clean reconstruction dropped the same France-only identities because `discover_candidates.py` built its local baseline from Global `manifest.json` only. Exact catalogue inspection confirmed all nine providers named by the latest failure are `{general:false,vf:true}` active rows in `provider_catalog.json`.
