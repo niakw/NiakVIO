@@ -123,6 +123,8 @@ def verify_current_source() -> None:
 # A workflow_run is attached to the event's original source SHA, not github.sha
 # (the latter can refer to a newer default-branch commit).
 SAFE_EVIDENCE_FILES = frozenset({
+    "MEMORY.md",
+    "ARCHITECTURE.md",
     "PROVIDER_CENSUS_STATUS.md",
     "automation/brain-repair-experience.json",
     "automation/provider-brain-repair-latest.json",
