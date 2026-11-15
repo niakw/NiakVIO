@@ -18,7 +18,7 @@ from __future__ import annotations
 import json
 import re
 from pathlib import Path
-from current_provider_scope import visible_provider_count
+from current_provider_scope import projection_visible_provider_ids
 
 from capture_tmdb_core_runtime_credential import main as capture_tmdb_core_credential
 from harden_stream_presentation_metadata_fallbacks import main as harden_stream_presentation_metadata
@@ -86,7 +86,7 @@ def catalog_semantic_types() -> dict[str, list[str]]:
         if not canonical:
             raise AssertionError(f"provider_catalog.json:{provider_id}: missing canonical media types")
         result[provider_id] = canonical
-    expected = visible_provider_count()
+    expected = len(projection_visible_provider_ids())
     if len(result) != expected:
         raise AssertionError(
             f"provider_catalog.json semantic rows={len(result)} expected_visible={expected}"
