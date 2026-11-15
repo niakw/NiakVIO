@@ -22,7 +22,9 @@ for provider_id in ('frenchstream', 'movix', 'nakios', 'toflix', 'flemmix', 'woo
 # Frenchstream and Movix have separate official address sources. fstream.top is
 # only a blocked output/player host and must never become a terminal site.
 assert hubs['frenchstream']['hub'] == 'https://fstream.org/'
-assert {resolver.host(url) for url in hubs['frenchstream']['direct_candidates']} >= {'fs16.lol', 'fs03.lol'}
+french_hosts = {resolver.host(url) for url in hubs['frenchstream']['direct_candidates']}
+assert french_hosts == {'fs16.lol'}, french_hosts
+assert resolver.host(hubs['frenchstream']['direct_fallback']) == 'fs16.lol'
 assert 'fstream.top' in hubs['frenchstream']['blocked_hosts']
 assert resolver.same_brand('frenchstream', 'https://fs17.lol/', hubs['frenchstream'])
 
