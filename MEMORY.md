@@ -1,3 +1,9 @@
+## 2026-11-16 — Release finalizer duplicate-tail parse failure removed
+
+- Exact pre-change HEAD `1f8168ef4d643220755bb27770fa6a11f9b876bf`: push run 43775504286 created no jobs and GitHub exposed the workflow by path rather than its declared name, consistent with an invalid workflow file. Inspection found an accidentally duplicated tail beginning at line 317 after the complete atomic publish step; the first orphan line had insufficient block-scalar indentation and invalidated YAML parsing.
+- Remove only the duplicated tail. The canonical finalizer remains lines 1-316, including Global+France structured authority reconciliation, final offline-proof resigning, release version tests, exact Hub46 pinning, release integrity, drift gating and atomic main publication. No provider byte, manifest, Brain policy, validation threshold or release acceptance rule is weakened.
+- Validation requires a fresh release-finalize run to create normal jobs and then pass/fail on executable checks rather than YAML parsing. Brain Repair Lab 43774049543 remains independently in progress and has already passed clean ProviderBase reconstruction.
+
 ## 2026-11-16 — Global + France structured ProviderBase authority is identity-based
 
 - Pre-change exact SHA `cbf175ef0ffc12d93a822a42350f6900cd1c8fb5`: Global active **46**, France active **38**, active union **76**; projection-visible union **140**, onboarding-pending **32**, runtime-visible structured authority **108**. `automation/provider-v3-static-knowledge.json` contained **78** identities and was missing exactly **30**, all active France-only, with zero extra identities outside runtime-visible authority.
