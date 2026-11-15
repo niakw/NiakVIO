@@ -1,3 +1,9 @@
+## 2026-11-15 — Explicit Learning cohort now uses family oracles instead of serial sibling replay
+
+- Current targeted Learning cohort contains 12 providers but only three causal groups in `provider-repair-batch-plan-latest.json`: 8 × `learning|mixed_embed_resolver`, 3 × `variant-coverage|mixed_embed_resolver`, 1 × `variant-coverage|html_scraper`.
+- `run_brain_learning_queue.py` already had one-representative-per-family logic for automatic Fast-Handoff, but explicit cohorts deliberately disabled it and replayed every sibling. Treat the explicit cohort as the exact eligibility boundary instead: execute the family frontier, keep every sibling in `pendingProviders`, merge the oracle's sanitized experiment memory, then let canonical Repair/future Learning validate siblings independently. No family success grants provider publication.
+- This changes Learning scheduling only. Provider bytes, manifests, validation gates, playback authority and family definitions are unchanged. Regression contracts require that explicit siblings are deferred rather than silently dropped. Fresh CI and the next Learning run must demonstrate the 12-provider cohort reduces to its causal frontier before this is considered validated.
+
 ## 2026-11-15 — Mandatory catalogue-union reconstruction contract
 
 CORE Workflow Gate executes the catalogue-union reconstruction regression on every relevant main change. The parent repository's `brain-llm/` reference is advanced only to a Brain main SHA with its own CI and security inventory green. This keeps Brain evidence semantics and NiakVIO ProviderBase derivation reproducibly paired without granting the submodule publication authority.

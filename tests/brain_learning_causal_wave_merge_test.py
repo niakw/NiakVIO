@@ -77,7 +77,7 @@ assert fair_assignment < frontier_assignment < wave_assignment, (fair_assignment
 assert "fastRepairHandoffDeferredFamilySiblings" in source
 assert "if explicit_cohort:" in source
 assert "order = family_frontier" in source
-assert "family_deferred = []" in source
+assert "family_deferred = []" not in source
 assert 'p.add_argument("--provider-filter", default=""' in source
 assert 'requested_set = set(explicit_cohort)' in source
 assert 'queue["explicitLearningCohort"] = explicit_cohort' in source

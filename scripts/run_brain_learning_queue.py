@@ -1452,12 +1452,12 @@ def main() -> int:
     family_deferred: list[str] = []
     if fair_handoff:
         family_frontier, family_deferred = causal_family_frontier(order, batch_plan)
-        if explicit_cohort:
-            # Keep all explicitly requested providers. They remain strictly
-            # bounded by one attempt/provider, exact memory and wall-clock.
-            family_deferred = []
-        else:
-            order = family_frontier
+        # The caller's explicit cohort is an eligibility boundary, not an
+        # instruction to replay every sibling serially. Execute one oracle per
+        # causal family first; preserve all siblings as pending so canonical
+        # Repair can reuse the learned family strategy and still validate each
+        # provider independently before publication.
+        order = family_frontier
 
     queue["explicitLearningCohort"] = explicit_cohort
     queue["explicitLearningCohortCount"] = len(explicit_cohort)
@@ -1479,7 +1479,7 @@ def main() -> int:
     queue["fastRepairHandoffDeferredFamilySiblings"] = family_deferred
     queue["fastRepairHandoffDeferredFamilySiblingCount"] = len(family_deferred)
     queue["fastRepairHandoffFamilyFrontierPolicy"] = (
-        "all-explicit-targets-with-bounded-per-provider-attempts"
+        "explicit-cohort-one-representative-per-causal-family-siblings-pending"
         if explicit_cohort else "one-representative-per-causal-family-then-return-to-repair"
     )
     queue["fastRepairHandoffMaxAttemptsPerProviderThisPhase"] = 1 if fair_handoff else 0

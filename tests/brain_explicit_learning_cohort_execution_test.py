@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Explicit Brain Learning cohorts must not lose causal-family siblings."""
+"""Explicit Brain Learning cohorts execute family oracles without losing siblings."""
 from __future__ import annotations
 import ast
 from pathlib import Path
@@ -12,9 +12,9 @@ snippet = ast.get_source_segment(source, main)
 assert snippet is not None
 assert 'p.add_argument("--provider-filter", default=""' in snippet
 assert "requested_set = set(explicit_cohort)" in snippet
-assert "family_deferred = []" in snippet
-assert "else:\n            order = family_frontier" in snippet
-assert '"all-explicit-targets-with-bounded-per-provider-attempts"' in snippet
+assert "family_deferred = []" not in snippet
+assert "order = family_frontier" in snippet
+assert '"explicit-cohort-one-representative-per-causal-family-siblings-pending"' in snippet
 assert "if provider_id not in staged_candidates or provider_id not in info_by_id" in snippet
 assert "fastRepairHandoffParallelExecutionEnabled" in snippet
 assert "if fair_handoff and attempts_this_phase >= 1" in snippet
