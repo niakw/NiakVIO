@@ -19,6 +19,8 @@ on:
       - 'scripts/materialize_provider_v3_all.py'
       - 'scripts/release_version_baseline.py'
       - 'scripts/sync_release_versions.py'
+      - 'scripts/validate_provider_materialization_authority.py'
+      - 'tests/provider_materialization_authority_test.py'
       - 'tests/release_auto_bump_test.py'
       - 'tests/published_s00_identity_rollout_test.py'
       - 'scripts/finalize_provider_v3_minimizer.py'
@@ -36,7 +38,7 @@ concurrency:
   # never execute concurrently. Stale finalizers fail closed at the exact-SHA /
   # executable-drift publication gate instead of cancelling another writer.
   group: niakvio-core-release-mutation-main
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   finalize:
@@ -92,6 +94,8 @@ jobs:
           # active production scope before static audit. Targeted workflows may
           # legitimately leave a partial materialization report on main.
           python3 scripts/materialize_provider_v3_all.py
+          python3 tests/provider_materialization_authority_test.py
+          python3 scripts/validate_provider_materialization_authority.py
           python3 scripts/finalize_provider_v3_minimizer.py
           python3 scripts/finalize_provider_v3_minimizer.py --check
           python3 scripts/resign_active_offline_provider_proofs.py \
@@ -126,6 +130,7 @@ jobs:
           python3 tests/release_auto_bump_test.py
           python3 tests/provider_versioning_test.py
           python3 tests/reapply_provider_versioning_test.py
+          python3 scripts/validate_provider_materialization_authority.py
           python3 scripts/generate_hub46_manifest.py \
             --source manifest.json \
             --matrix automation/evidence/hub-lab-matrix-46.json \
