@@ -84,7 +84,8 @@ WINGS_WRAPPER = r'''
   }
   function headers(){return {"User-Agent":c.userAgent,"Accept":"*/*","Origin":c.origin,"Referer":c.referer,"Cache-Control":"no-cache, no-store, must-revalidate","Pragma":"no-cache"}}
   function query(q,seed){
-    var values={title:q.title,mediaType:q.type,year:q.year||"",episodeId:String(q.type==="tv"?q.episode:1),seasonId:String(q.type==="tv"?q.season:1),tmdbId:String(q.id),imdbId:q.imdbId||"",enc:"2",seed:seed};
+    var title=c.doubleEncodeTitle?encodeURIComponent(q.title):q.title;
+    var values={title:title,mediaType:q.type,year:q.year||"",episodeId:String(q.type==="tv"?q.episode:1),seasonId:String(q.type==="tv"?q.season:1),tmdbId:String(q.id),imdbId:q.imdbId||"",enc:"2",seed:seed};
     return Object.keys(values).map(function(k){return encodeURIComponent(k)+"="+encodeURIComponent(values[k])}).join("&");
   }
   function sources(data){
@@ -145,6 +146,7 @@ def render_wings_runtime(*, marker: str, config: dict[str, Any]) -> str:
         "providerId": str(config["providerId"]),
         "providerName": str(config["providerName"]),
         "installMarker": str(config["installMarker"]),
+        "doubleEncodeTitle": bool(config.get("doubleEncodeTitle", False)),
         "endpoints": [
             {"label": str(row["label"]), "path": str(row["path"]).lstrip("/")}
             for row in config.get("endpoints") or []
