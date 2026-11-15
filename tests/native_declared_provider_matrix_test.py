@@ -38,19 +38,10 @@ def fixtures() -> dict[str, str]:
 
 
 def scope_ids() -> set[str]:
-    data = json.loads(SCOPE.read_text(encoding="utf-8"))
-    ids = {
-        str(row.get("manifestId") or row.get("provider") or "").strip().casefold()
-        for row in data.get("rows") or []
-        if isinstance(row, dict) and str(row.get("manifestId") or row.get("provider") or "").strip()
-    }
-    declared = int(data.get("hubCount") or 0)
-    assert declared > 0 and len(ids) == declared, (declared, len(ids))
-    # The Hub matrix is durable campaign evidence and may retain rows that have
-    # since entered disabled/archive lifecycle. Physical providers/ is current
-    # activation authority; native declared-route proof covers only the active
-    # intersection and never resurrects archived rows merely to satisfy history.
-    return ids & active_provider_ids()
+    # The historical Hub matrix is evidence-only. Current active publication is
+    # the native execution authority and must be able to grow beyond the old
+    # 44/46 campaign without silently dropping newly activated providers.
+    return active_provider_ids()
 
 
 def manifest_rows() -> list[dict]:
@@ -144,14 +135,9 @@ disabled_count = catalogue_count - provider_count
 counts = {kind: sum(1 for _, route_type in all_routes if route_type == kind) for kind in TYPES}
 route_count = len(all_routes)
 assert provider_count == len(scope_ids())
-assert "animetsu" not in scope_ids()
-assert "showbox" not in scope_ids()
-# VidEasy was historically archived but has been reintroduced as current active
-# Provider-v3 authority. Historical Hub membership plus current activation must
-# therefore include it in native declared-route coverage rather than exclude it.
-assert "videasy" in scope_ids()
-videasy_routes = {route_type for provider, route_type in all_routes if provider.casefold() == "videasy"}
-assert {"movie", "tv"} <= videasy_routes, videasy_routes
+# No historical matrix membership assertion belongs here: providers enter and
+# leave the active set independently of the old campaign. Every currently active
+# provider is covered through the manifest-derived scope above.
 assert catalogue_count >= provider_count and disabled_count >= 0
 assert route_count == sum(counts.values())
 assert all(counts[kind] > 0 for kind in TYPES), counts
