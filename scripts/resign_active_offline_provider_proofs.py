@@ -9,12 +9,12 @@ content-addressed provider artifact.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import re
 from pathlib import Path
 from typing import Any
 
-from activate_bulk_proven_providers import pending_artifact_digest
 from activate_bulk_offline_proven_providers import contract_ok, node_syntax_ok
 from provider_base_store import (
     provider_model_has_executable_plan,
@@ -99,7 +99,25 @@ def rebind_one(
         raise RuntimeError(f"{pid}: offline proof must never claim runtime/FULL validation")
 
     artifact, relative = resolve_artifact(root, row.get("filename"))
-    digest = pending_artifact_digest(artifact)
+    digest = hashlib.sha256(artifact.read_bytes()).hexdigest()
+    final_minimizer = provenance_row.get("final_minimizer")
+    if not (
+        isinstance(final_minimizer, dict)
+        and int(final_minimizer.get("schema_version") or 0) == 3
+        and final_minimizer.get("production_enabled") is True
+        and final_minimizer.get("terser_allowed") is False
+        and final_minimizer.get("one_physical_line") is True
+        and str(final_minimizer.get("sha256") or "").strip().casefold() == digest
+    ):
+        raise RuntimeError(f"{pid}: current artifact lacks exact-byte final minimizer proof")
+    final_fixed = provenance_row.get("final_fixed_point")
+    if not (
+        isinstance(final_fixed, dict)
+        and final_fixed.get("verified") is True
+        and final_fixed.get("one_physical_line") is True
+        and str(final_fixed.get("sha256") or "").strip().casefold() == digest
+    ):
+        raise RuntimeError(f"{pid}: current artifact lacks exact-byte fixed-point proof")
     syntax_ok, syntax_detail = node_syntax_ok(artifact)
     if not syntax_ok:
         raise RuntimeError(f"{pid}: node syntax failed: {syntax_detail}")
