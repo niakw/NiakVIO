@@ -1,0 +1,56 @@
+{
+  "schema_version": 1,
+  "evidence_type": "physical_mac_terminal_playback",
+  "provider": "chillflix",
+  "source_sha": "373924aee2d990c545c2e8edeb4fafdf71754e38",
+  "macbridge_run_id": 43658680652,
+  "macbridge_request_id": "chillflix-current-terminal-fast-003",
+  "materialized_candidate": "providers/chillflix-671804b880ee45c4.js",
+  "security": {
+    "html_filter_security": "passed",
+    "provider_security_hardening": "passed"
+  },
+  "fixtures": {
+    "spartacus_s00e01": {
+      "tmdb_id": "46296",
+      "media_type": "tv",
+      "season": 0,
+      "episode": 1,
+      "stream_count": 1,
+      "candidate_stream_count": 1,
+      "terminal_verified": true,
+      "terminal_reason": "hls_segment_media",
+      "http_statuses": [
+        200,
+        404
+      ]
+    },
+    "visionquest_s01e01": {
+      "tmdb_id": "213375",
+      "media_type": "tv",
+      "season": 1,
+      "episode": 1,
+      "stream_count": 1,
+      "candidate_stream_count": 8,
+      "terminal_verified": true,
+      "terminal_reason": "hls_segment_media",
+      "http_statuses": [
+        200
+      ]
+    },
+    "fahrenheit_451_2018": {
+      "tmdb_id": "401905",
+      "media_type": "movie",
+      "stream_count": 1,
+      "candidate_stream_count": 6,
+      "terminal_verified": true,
+      "terminal_reason": "media",
+      "http_statuses": [
+        200,
+        206,
+        403
+      ]
+    }
+  },
+  "interpretation": "The physical Mac reaches terminal media for all three user-reported Global fixtures after Chillflix player-context stream-cache reconstruction. This is transport/playback proof for the generated candidate bytes; production visibility still requires accepted release finalization and client cache version bump."
+}
