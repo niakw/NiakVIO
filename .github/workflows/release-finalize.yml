@@ -39,7 +39,7 @@ concurrency:
   # never execute concurrently. Stale finalizers fail closed at the exact-SHA /
   # executable-drift publication gate instead of cancelling another writer.
   group: niakvio-core-release-mutation-main
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   finalize:
