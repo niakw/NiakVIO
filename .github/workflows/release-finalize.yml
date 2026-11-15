@@ -117,6 +117,13 @@ jobs:
           python3 tests/provider_v3_minimizer_preview_test.py
           python3 tests/provider_v3_minimizer_publication_pipeline_test.py
           python3 tests/provider_v3_minimizer_published_test.py
+          # Final minimization changes content-addressed filenames after the
+          # canonical materialization ledger was built. Rebind manifest,
+          # materialization and provenance to the exact final bytes before
+          # cache/version finalization.
+          python3 scripts/reconcile_active_provider_publication.py
+          python3 tests/reconcile_active_provider_publication_test.py
+          python3 scripts/validate_provider_materialization_authority.py
           python3 scripts/generate_language_manifests.py --manifest manifest.json --report health-report.json
           # prune_unreferenced_providers.py treats manifest-hub46.json as a current
           # local retention authority. Provider reapplication changes content-addressed
