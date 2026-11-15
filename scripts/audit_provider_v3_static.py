@@ -142,12 +142,26 @@ for row in rows:
         raise AssertionError((pid,"provider-data-drift",diff))
 
 assert set(rb)==seen
+# Materialization is executable authority and therefore tracks ACTIVE providers
+# only. Disabled-but-visible identities remain static/lifecycle knowledge and
+# must never inflate or pin the executable ledger.
 visible=runtime_visible_provider_count()
-assert int(material.get("providerCount") or 0)==visible, (material.get("providerCount"),visible)
+active_count=len(active)
+assert int(material.get("providerCount") or 0)==active_count, (material.get("providerCount"),active_count)
+if "activeProviderIdentityCount" in material:
+    assert int(material.get("activeProviderIdentityCount") or 0)==active_count, (
+        material.get("activeProviderIdentityCount"),active_count
+    )
 if "expectedProviderCount" in material:
-    assert int(material.get("expectedProviderCount") or 0)==visible, (material.get("expectedProviderCount"),visible)
+    assert int(material.get("expectedProviderCount") or 0)==active_count, (
+        material.get("expectedProviderCount"),active_count
+    )
+if "staticKnowledgeProviderCount" in material:
+    assert int(material.get("staticKnowledgeProviderCount") or 0)==visible, (
+        material.get("staticKnowledgeProviderCount"),visible
+    )
 print(
-    f"PROVIDER_V3_STATIC_AUDIT_OK active={len(active)} visible={visible} reconstruction=false "
+    f"PROVIDER_V3_STATIC_AUDIT_OK active={active_count} visible={visible} reconstruction=false "
     f"filename_stage=per-row workspace={stage_counts['workspace']} publication={stage_counts['publication']} "
     f"structured_data={'domain-current' if DOMAIN_ONLY else 'current'}"
 )
