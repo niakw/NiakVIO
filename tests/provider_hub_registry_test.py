@@ -610,7 +610,7 @@ assert history_registry.get('schema_version') == 1
 
 # Hub-backed history must preserve provenance, not freeze today's terminal URL.
 # The terminal may rotate at any time; the configured hub remains authoritative.
-for provider_id in ('flemmix', '1shows', 'allwish', 'anidb', 'cinefreak', 'moonflix', 'zinkmovies'):
+for provider_id in ('flemmix', '1shows', 'allwish', 'cinefreak', 'moonflix', 'zinkmovies'):
     current = ((history_registry.get('providers') or {}).get(provider_id) or {}).get('current') or {}
     assert current.get('url'), (provider_id, current)
     assert resolver.same_brand(provider_id, str(current['url']), hubs[provider_id]), (provider_id, current)
@@ -621,6 +621,12 @@ for provider_id in ('flemmix', '1shows', 'allwish', 'anidb', 'cinefreak', 'moonf
     }
     assert str(current.get('source') or '').rstrip('/') in authoritative_sources, (provider_id, current)
     assert current.get('source_type') in {'hub', 'telegram_public', 'redirect', 'curated_official_hub'}, (provider_id, current)
+
+anidb_current = ((history_registry.get('providers') or {}).get('anidb') or {}).get('current') or {}
+assert anidb_current.get('url') == 'https://anidb.pics', anidb_current
+assert anidb_current.get('source_type') == 'curated_direct', anidb_current
+assert anidb_current.get('source') == 'provider-hubs.json', anidb_current
+assert resolver.host(hubs['anidb']['direct_fallback']) == 'anidb.pics', hubs['anidb']
 
 assert hubs['animevostfr']['sources'][0]['type'] == 'redirect', hubs['animevostfr']
 assert hubs['animevostfr']['sources'][0]['url'] == 'https://v2.animevostfr.org/', hubs['animevostfr']
