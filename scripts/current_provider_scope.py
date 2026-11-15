@@ -258,6 +258,31 @@ def projection_visible_provider_ids(root: Path = ROOT) -> set[str]:
     return result
 
 
+def projection_active_provider_ids(root: Path = ROOT) -> set[str]:
+    """Active identity union across the Global and France projections."""
+    root = root.resolve()
+    audit_projection_scope(root)
+    result: set[str] = set()
+    for relative in ("manifest.json", "vf/manifest.json"):
+        payload = json.loads((root / relative).read_text(encoding="utf-8"))
+        rows = payload.get("scrapers")
+        if not isinstance(rows, list):
+            raise RuntimeError(f"{relative}: missing scraper list")
+        local: set[str] = set()
+        for row in rows:
+            if not isinstance(row, dict):
+                raise RuntimeError(f"{relative}: invalid provider row")
+            provider = cid(row.get("id"))
+            if not provider or provider in local:
+                raise RuntimeError(f"{relative}: empty or duplicate provider id: {provider}")
+            local.add(provider)
+            if row.get("enabled") is not False:
+                result.add(provider)
+    if not result:
+        raise RuntimeError("Global+France active projection union is empty")
+    return result
+
+
 def projection_runtime_visible_provider_ids(root: Path = ROOT) -> set[str]:
     """Current Global+France identities excluding onboarding-pending rows."""
     if root.resolve() != ROOT.resolve():

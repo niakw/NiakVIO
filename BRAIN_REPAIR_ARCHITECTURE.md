@@ -1,3 +1,7 @@
+## 2026-11-16 — One ProviderBase authority across Global + France
+
+ProviderBase and its materialization ledger derive from the active identity union of `manifest.json` and `vf/manifest.json`; Global-only membership is not sufficient authority. Durable structured DATA covers the runtime-visible Global+France union (visible minus onboarding-pending identities). Canonical release order is: recover exact managed CONFIG into DATA -> rebuild canonical Global bytes -> rebind the ledger to the active Global+France union -> validate exact identity/file/SHA/cardinality -> audit DATA identity coverage. A Global materializer must never erase France-only authority after it has been recovered.
+
 ## 2026-11-16 — Provider host identity is not a repair-family identity
 
 After coarse grouping by repair scope, capability and runtime topology, network refinement may split on observed behavioral shape (debug stage, HTTP method/status and normalized route shape) but not on the literal provider hostname. Hostname identity is provider-specific evidence; including it in the family key collapses shared Learning back into one-provider groups. Transport-owned/WAF classifications remain isolated by their explicit transport authority.

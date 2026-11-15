@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-"""Fail closed when published Global provider authority diverges from materialization.
+"""Fail closed when published Global+France provider authority diverges from materialization.
 
 Business invariant:
-- every Global active provider is represented exactly once in provider-v3-materialization.json;
+- every active provider in the Global+France projection union is represented exactly once in provider-v3-materialization.json;
 - no disabled provider is represented as current executable materialization authority;
 - manifest filename, materialization filename and physical bytes agree;
 - the content-addressed SHA recorded by materialization matches the actual provider bytes;
-- current cardinality fields derive from the live manifest, never from historical constants.
+- current cardinality fields derive from the live projections, never from historical constants.
 
 This is intentionally a publication invariant, not a health claim. A provider may
 still be under runtime validation, but the bytes Nuvio loads must be the same bytes
@@ -35,25 +35,50 @@ def cid(value: object) -> str:
 
 
 def active_manifest_rows(root: Path) -> dict[str, dict[str, Any]]:
-    manifest = load(root / "manifest.json")
-    rows: dict[str, dict[str, Any]] = {}
-    for row in manifest.get("scrapers") or []:
-        if not isinstance(row, dict):
-            raise RuntimeError("manifest contains invalid provider row")
-        provider = cid(row.get("id"))
-        if not provider or provider in rows:
-            raise RuntimeError(f"manifest empty/duplicate provider id: {provider!r}")
-        filename = str(row.get("filename") or "").strip().replace("\\", "/")
-        enabled = row.get("enabled") is not False
-        if enabled:
-            if not filename.startswith("providers/"):
+    """Normalize active executable rows across Global and optional France projection."""
+    projections: list[tuple[str, str]] = [("manifest.json", "")]
+    if (root / "vf" / "manifest.json").is_file():
+        projections.append(("vf/manifest.json", "../"))
+
+    states: dict[str, tuple[str, bool]] = {}
+    active: dict[str, dict[str, Any]] = {}
+    for relative, prefix in projections:
+        manifest = load(root / relative)
+        local: set[str] = set()
+        raw_rows = manifest.get("scrapers")
+        if not isinstance(raw_rows, list):
+            raise RuntimeError(f"{relative}: missing scraper list")
+        for raw in raw_rows:
+            if not isinstance(raw, dict):
+                raise RuntimeError(f"{relative}: invalid provider row")
+            provider = cid(raw.get("id"))
+            if not provider or provider in local:
+                raise RuntimeError(f"{relative}: empty/duplicate provider id: {provider!r}")
+            local.add(provider)
+            filename = str(raw.get("filename") or "").strip().replace("\\", "/")
+            if prefix:
+                if not filename.startswith(prefix):
+                    raise RuntimeError(f"{relative}: invalid projection prefix for {provider}: {filename}")
+                filename = filename[len(prefix):]
+            enabled = raw.get("enabled") is not False
+            if enabled and not filename.startswith("providers/"):
                 raise RuntimeError(f"{provider}: active provider outside providers/: {filename}")
-            rows[provider] = row
-        elif filename.startswith("providers/"):
-            raise RuntimeError(f"{provider}: disabled row still points into providers/: {filename}")
-    if not rows:
-        raise RuntimeError("manifest has zero active providers")
-    return rows
+            if not enabled and filename.startswith("providers/"):
+                raise RuntimeError(f"{provider}: disabled row still points into providers/: {filename}")
+            state = (filename, enabled)
+            if provider in states and states[provider] != state:
+                raise RuntimeError(
+                    f"projection asset or enabled state mismatch: {provider} "
+                    f"{states[provider]} != {state}"
+                )
+            states[provider] = state
+            if enabled:
+                normalized = dict(raw)
+                normalized["filename"] = filename
+                active[provider] = normalized
+    if not active:
+        raise RuntimeError("Global+France projections have zero active providers")
+    return active
 
 
 def validate(root: Path = ROOT) -> dict[str, Any]:

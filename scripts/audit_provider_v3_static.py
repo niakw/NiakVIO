@@ -7,7 +7,11 @@ from provider_patch_blocks import decode_managed_data, owned_span, validate_mana
 from provider_base_store import build_provider_data_model
 from materialize_provider_v3_all import provider_model, normalize_anime_transport_compatibility
 from provider_v3_filename_policy import matches_provider_v3_filename
-from current_provider_scope import active_provider_ids, projection_runtime_visible_provider_ids
+from current_provider_scope import (
+    active_provider_ids,
+    projection_active_provider_ids,
+    projection_runtime_visible_provider_ids,
+)
 
 ROOT=Path(__file__).resolve().parents[1]
 DOMAIN_ONLY="--domain-only" in sys.argv
@@ -36,6 +40,13 @@ assert {canon(r.get("id")) for r in rows}==active, (len(rows),len(active))
 assert {canon(r.get("provider")) for r in reports}==active, (len(reports),len(active))
 rb={canon(r.get("provider")):r for r in reports if isinstance(r,dict)}
 patches=overrides.get("provider_patches") or {}; capabilities=overrides.get("provider_capabilities") or {}; static_rows=static.get("providers") or {}; seen=set()
+runtime_visible_ids=projection_runtime_visible_provider_ids()
+static_ids={canon(value) for value in static_rows}
+assert static_ids==runtime_visible_ids, (
+    "runtime-visible-static-identity-drift",
+    sorted(runtime_visible_ids-static_ids),
+    sorted(static_ids-runtime_visible_ids),
+)
 
 # Filename stage is per-provider compatibility metadata, not activation
 # authority. During a rolling materialization/publication transition, valid
@@ -146,8 +157,8 @@ assert set(rb)==seen
 # only. Static knowledge is shared authority for the current Global + France
 # runtime-visible union (including disabled-but-visible identities, excluding
 # onboarding-pending rows), so it must be audited against projection scope.
-visible=len(projection_runtime_visible_provider_ids())
-active_count=len(active)
+visible=len(runtime_visible_ids)
+active_count=len(projection_active_provider_ids())
 assert int(material.get("providerCount") or 0)==active_count, (material.get("providerCount"),active_count)
 if "activeProviderIdentityCount" in material:
     assert int(material.get("activeProviderIdentityCount") or 0)==active_count, (

@@ -26,12 +26,16 @@ with tempfile.TemporaryDirectory() as tmp:
     disabled.mkdir()
 
     active_bytes = b"console.log('active');\n"
+    france_bytes = b"console.log('france-only');\n"
     disabled_bytes = b"console.log('disabled');\n"
     active_sha = hashlib.sha256(active_bytes).hexdigest()
+    france_sha = hashlib.sha256(france_bytes).hexdigest()
     disabled_sha = hashlib.sha256(disabled_bytes).hexdigest()
     active_file = f"providers/alpha-{active_sha[:16]}.js"
+    france_file = f"providers/gamma-{france_sha[:16]}.js"
     disabled_file = f"provider-disabled/beta-{disabled_sha[:16]}.js"
     (root / active_file).write_bytes(active_bytes)
+    (root / france_file).write_bytes(france_bytes)
     (root / disabled_file).write_bytes(disabled_bytes)
 
     dump(root / "manifest.json", {
@@ -40,18 +44,25 @@ with tempfile.TemporaryDirectory() as tmp:
             {"id": "beta", "filename": disabled_file, "enabled": False},
         ]
     })
+    dump(root / "vf" / "manifest.json", {
+        "scrapers": [
+            {"id": "alpha", "filename": "../" + active_file, "enabled": True},
+            {"id": "gamma", "filename": "../" + france_file, "enabled": True},
+        ]
+    })
     dump(root / "provider-v3-materialization.json", {
-        "providerCount": 1,
-        "activeProviderIdentityCount": 1,
-        "expectedProviderCount": 1,
+        "providerCount": 2,
+        "activeProviderIdentityCount": 2,
+        "expectedProviderCount": 2,
         "providers": [
-            {"provider": "alpha", "file": active_file, "sha256": active_sha}
+            {"provider": "alpha", "file": active_file, "sha256": active_sha},
+            {"provider": "gamma", "file": france_file, "sha256": france_sha},
         ],
     })
 
     result = validate(root)
-    assert result["activeProviderCount"] == 1
-    assert result["materializedProviderCount"] == 1
+    assert result["activeProviderCount"] == 2
+    assert result["materializedProviderCount"] == 2
 
     broken = json.loads((root / "provider-v3-materialization.json").read_text())
     broken["providers"].append({
@@ -59,8 +70,9 @@ with tempfile.TemporaryDirectory() as tmp:
         "file": disabled_file,
         "sha256": disabled_sha,
     })
-    broken["providerCount"] = 2
-    broken["expectedProviderCount"] = 2
+    broken["providerCount"] = 3
+    broken["activeProviderIdentityCount"] = 3
+    broken["expectedProviderCount"] = 3
     dump(root / "provider-v3-materialization.json", broken)
     try:
         validate(root)
@@ -70,11 +82,12 @@ with tempfile.TemporaryDirectory() as tmp:
         raise AssertionError("disabled provider materialization authority was accepted")
 
     dump(root / "provider-v3-materialization.json", {
-        "providerCount": 1,
-        "activeProviderIdentityCount": 1,
-        "expectedProviderCount": 1,
+        "providerCount": 2,
+        "activeProviderIdentityCount": 2,
+        "expectedProviderCount": 2,
         "providers": [
-            {"provider": "alpha", "file": "providers/alpha-stale000000000.js", "sha256": active_sha}
+            {"provider": "alpha", "file": "providers/alpha-stale000000000.js", "sha256": active_sha},
+            {"provider": "gamma", "file": france_file, "sha256": france_sha},
         ],
     })
     try:

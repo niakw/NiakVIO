@@ -9,7 +9,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 
-from current_provider_scope import active_provider_ids, visible_provider_ids  # noqa: E402
+from current_provider_scope import active_provider_ids, projection_active_provider_ids, visible_provider_ids  # noqa: E402
 from generate_language_manifests import france_only_catalog_rows  # noqa: E402
 
 HISTORICAL_COUNT = 50
@@ -84,7 +84,22 @@ assert france_only_set.isdisjoint(root_set), (
 )
 union_visible = root_set | france_only_set
 
+vf_rows = manifest_rows(ROOT / "vf/manifest.json")
 vf_ids = set(manifest_ids(ROOT / "vf/manifest.json"))
+global_active_projection = {
+    canonical(row.get("id")) for row in manifest_rows(ROOT / "manifest.json")
+    if row.get("enabled") is not False
+}
+vf_active_projection = {
+    canonical(row.get("id")) for row in vf_rows
+    if row.get("enabled") is not False
+}
+projection_active = projection_active_provider_ids()
+assert projection_active == global_active_projection | vf_active_projection, (
+    "Global+France active projection authority drift "
+    f"actual={len(projection_active)} "
+    f"expected={len(global_active_projection | vf_active_projection)}"
+)
 vf_only_actual = vf_ids - root_set
 assert vf_only_actual == france_only_set, (
     f"VF-only projection drift missing={sorted(france_only_set-vf_only_actual)} "
@@ -144,7 +159,8 @@ assert not catalog_archive_paths, f"historical provider path leaked into provide
 print(
     "release projection scope passed: "
     f"global_visible={len(visible_set)} france_only={len(france_only_set)} "
-    f"union_visible={len(union_visible)} active={len(active_set)} historical={len(archive)} "
+    f"union_visible={len(union_visible)} global_active={len(active_set)} "
+    f"projection_active={len(projection_active)} historical={len(archive)} "
     "vf=global-subset+france-only no-anime=global-subset vf-no-anime=vf-subset "
     "hub46/native-hub46=global-active"
 )

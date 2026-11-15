@@ -24,7 +24,11 @@ from pathlib import Path
 from typing import Any
 from urllib.parse import urlparse
 
-from current_provider_scope import active_provider_rows
+from current_provider_scope import (
+    active_provider_rows,
+    projection_active_provider_ids,
+    projection_runtime_visible_provider_ids,
+)
 from generate_language_manifests import france_only_catalog_rows
 from provider_base_store import canonical_id
 from provider_patch_blocks import decode_managed_data, validate_managed_fixes
@@ -313,36 +317,70 @@ def _materialization_row_from_bundle(provider_id: str, bundle: Path, model: dict
 
 
 def reconcile_materialization_from_active_bundles(*, apply: bool) -> dict[str, Any]:
+    """Rebind executable materialization to the exact active Global+France union."""
     doc = load(MATERIALIZATION, {"schemaVersion": 3, "providers": []})
-    rows = [row for row in doc.get("providers") or [] if isinstance(row, dict)]
-    by_id = {canonical_id(row.get("provider")): row for row in rows if canonical_id(row.get("provider"))}
+    current_rows = active_current_rows()
+    current_ids = {canonical_id(row.get("id")) for row in current_rows if canonical_id(row.get("id"))}
+    projection_ids = projection_active_provider_ids()
+    if current_ids != projection_ids:
+        raise ValueError(
+            "active current/projection identity mismatch "
+            f"missing={sorted(projection_ids-current_ids)} extra={sorted(current_ids-projection_ids)}"
+        )
+
+    raw_rows = [row for row in doc.get("providers") or [] if isinstance(row, dict)]
+    retired = sorted(
+        canonical_id(row.get("provider"))
+        for row in raw_rows
+        if canonical_id(row.get("provider")) and canonical_id(row.get("provider")) not in current_ids
+    )
+    rows = [
+        row for row in raw_rows
+        if canonical_id(row.get("provider")) in current_ids
+    ]
+    by_id = {
+        canonical_id(row.get("provider")): row
+        for row in rows if canonical_id(row.get("provider"))
+    }
+    if len(by_id) != len(rows):
+        raise ValueError("duplicate active provider materialization identity")
+
     recovered: list[str] = []
-    for row in active_current_rows():
-        pid = canonical_id(row.get("id"))
-        if not pid or pid in by_id:
-            continue
+    by_current = {
+        canonical_id(row.get("id")): row for row in current_rows
+        if canonical_id(row.get("id"))
+    }
+    for pid in sorted(current_ids - set(by_id)):
+        row = by_current[pid]
         bundle = (ROOT / str(row.get("filename") or "")).resolve()
         model = decode_exact_model(pid, bundle)
         item = _materialization_row_from_bundle(pid, bundle, model)
         rows.append(item)
         by_id[pid] = item
         recovered.append(pid)
-    if recovered:
-        doc["providers"] = rows
-        doc["providerCount"] = len(rows)
-        if "expectedProviderCount" in doc:
-            doc["expectedProviderCount"] = len(rows)
-        doc["activeProviderIdentityCount"] = len(active_current_rows())
-        doc["staticKnowledgeProviderCount"] = max(
-            int(doc.get("staticKnowledgeProviderCount") or 0),
-            len(active_current_rows()),
-        )
-        doc["targetedPublicationReconciledProviders"] = sorted(set(
-            [str(x) for x in doc.get("targetedPublicationReconciledProviders") or []] + recovered
-        ))
-        if apply:
-            write(MATERIALIZATION, doc)
-    return {"recoveredCount": len(recovered), "recovered": recovered}
+
+    rows.sort(key=lambda row: canonical_id(row.get("provider")))
+    runtime_visible = projection_runtime_visible_provider_ids()
+    doc["providers"] = rows
+    doc["providerCount"] = len(current_ids)
+    doc["expectedProviderCount"] = len(current_ids)
+    doc["activeProviderIdentityCount"] = len(current_ids)
+    doc["staticKnowledgeProviderCount"] = len(runtime_visible)
+    doc["targetedPublicationReconciledProviders"] = sorted(set(
+        [str(x) for x in doc.get("targetedPublicationReconciledProviders") or []]
+        + recovered
+    ))
+    changed = bool(recovered or retired or raw_rows != rows)
+    if apply and changed:
+        write(MATERIALIZATION, doc)
+    return {
+        "recoveredCount": len(recovered),
+        "recovered": recovered,
+        "retiredCount": len(retired),
+        "retired": retired,
+        "activeProviderIdentityCount": len(current_ids),
+        "staticKnowledgeProviderCount": len(runtime_visible),
+    }
 
 
 def reconcile_active_global(*, apply: bool) -> dict[str, Any]:
@@ -395,6 +433,15 @@ def reconcile_active_global(*, apply: bool) -> dict[str, Any]:
             recovered.append({"provider": pid, "authority": "provider-v3-static-knowledge"})
 
     refresh_static_counts(static)
+    runtime_visible = projection_runtime_visible_provider_ids()
+    static_ids = {canonical_id(value) for value in static_rows}
+    missing_runtime_static = sorted(runtime_visible - static_ids)
+    extra_runtime_static = sorted(static_ids - runtime_visible)
+    if missing_runtime_static or extra_runtime_static:
+        raise ValueError(
+            "provider-v3-static-knowledge/runtime-visible identity mismatch "
+            f"missing={missing_runtime_static} extra={extra_runtime_static}"
+        )
     if apply and (recovered or activation_reconciled):
         write(OVERRIDES, overrides)
         write(STATIC, static)
@@ -406,8 +453,12 @@ def reconcile_active_global(*, apply: bool) -> dict[str, Any]:
         "activationReconciled": activation_reconciled,
         "materializationRecoveredCount": materialization["recoveredCount"],
         "materializationRecovered": materialization["recovered"],
+        "materializationRetiredCount": materialization["retiredCount"],
+        "materializationRetired": materialization["retired"],
         "activeGlobal": len(active_provider_rows()),
         "activeCurrent": len(active_current_rows()),
+        "activeProjectionUnion": len(projection_active_provider_ids()),
+        "runtimeVisibleProjectionUnion": len(runtime_visible),
         "apply": bool(apply),
     }
 
