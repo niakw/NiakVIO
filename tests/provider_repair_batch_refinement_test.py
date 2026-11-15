@@ -18,7 +18,7 @@ verdict={
   "runId":11,
   "providers":{
     "a":{"debugStages":{"movie":"provider_network_zero_result"},"network":{"movie":[{"host":"site.example","path":"/search","method":"GET","status":200}]}},
-    "b":{"debugStages":{"movie":"provider_network_zero_result"},"network":{"movie":[{"host":"site.example","path":"/search","method":"GET","status":200}]}},
+    "b":{"debugStages":{"movie":"provider_network_zero_result"},"network":{"movie":[{"host":"different.example","path":"/search","method":"GET","status":200}]}},
     "c":{"debugStages":{"movie":"provider_network_zero_result"},"network":{"movie":[{"host":"api.example","path":"/map/157336","method":"GET","status":200}]}},
     "d":{"debugStages":{"movie":"provider_waf_challenge"},"network":{"movie":[{"host":"blocked.example","path":"/search","method":"GET","status":403}]}},
     "e":{"debugStages":{"movie":"provider_waf_challenge"},"network":{"movie":[{"host":"blocked.example","path":"/search","method":"GET","status":403}]}}
@@ -37,6 +37,8 @@ assert value["sourceRunId"]=="10"
 assert value["groupCount"]==4
 groups=sorted(value["groups"],key=lambda x:-x["providerCount"])
 assert groups[0]["providers"]==["a","b"]
+assert groups[0]["observedHostCount"]==2
+assert all("site.example" not in row and "different.example" not in row for row in groups[0]["networkShape"])
 assert groups[0]["splitReason"]=="observed-signature-divergence"
 assert groups[0]["transportSignature"]=="browser-profile-only"
 assert groups[1]["providers"] in (["c"],["d"])

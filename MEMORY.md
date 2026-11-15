@@ -1,3 +1,9 @@
+## 2026-11-16 — Network refinement no longer degenerates families by hostname
+
+- The refined repair batch signature previously embedded exact provider hostnames. That made two otherwise equivalent providers with the same runtime family, debug stage, method/status and route shape become separate groups solely because they use different domains, defeating family-oracle Learning.
+- Refined signatures now use lane + method + status + normalized route shape; exact host identity is excluded from the causal key. A bounded host count remains diagnostic metadata. Targeted transport/WAF ownership still remains a separate prefix and therefore cannot merge with provider-owned parser failures.
+- Synthetic regression changes one sibling to a different hostname and requires both to remain in one refined family while a different route shape and a targeted transport-owned sibling still split. No provider request, domain mutation, manifest or playback acceptance logic changed.
+
 ## 2026-11-16 — Runtime topology is part of Brain repair-family identity
 
 - The coarse batch planner previously grouped provider-owned failures by repair scope + capability strategy while keeping source runtime family only as metadata. That allowed different provider topologies to share one Learning oracle before any proof that their executable mechanisms were equivalent.

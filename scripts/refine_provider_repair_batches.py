@@ -26,23 +26,29 @@ def signature(provider:str, verdict:dict[str,Any], targeted_blocked:set[str])->d
         return {"key":("targeted-waf|" if transport_owned else "provider|")+"not-probed","debugStages":[],"network":[],"transportOwned":transport_owned}
     stages=sorted({str(v or "unknown") for v in (row.get("debugStages") or {}).values()})
     observations=[]
+    hosts=set()
     for lane,items in sorted((row.get("network") or {}).items()):
         for item in items or []:
             if not isinstance(item,dict): continue
             host=str(item.get("host") or "").casefold()
+            if host:
+                hosts.add(host)
             status=str(item.get("status") if item.get("status") is not None else "")
             method=str(item.get("method") or "GET").upper()
             path=str(item.get("path") or "/")
-            # Preserve route family, not fixture-specific ids/slugs.
+            # Preserve route topology, not provider identity or fixture-specific
+            # ids/slugs. Exact hostnames are evidence metadata, not a causal
+            # family key: otherwise every provider domain becomes its own group.
             parts=[p for p in path.split("/") if p]
             shape="/"+"/".join(
                 "{id}" if p.isdigit() or (len(p)>12 and any(ch.isdigit() for ch in p)) else p[:48]
                 for p in parts[:4]
             )
-            observations.append(f"{lane}:{method}:{host}:{status}:{shape}")
+            observations.append(f"{lane}:{method}:{status}:{shape}")
     observations=sorted(set(observations))[:24]
     key=("targeted-waf|" if transport_owned else "provider|")+";".join(stages)+"||"+";".join(observations)
-    return {"key":key or "empty","debugStages":stages,"network":observations,"transportOwned":transport_owned}
+    return {"key":key or "empty","debugStages":stages,"network":observations,
+            "observedHostCount":len(hosts),"transportOwned":transport_owned}
 
 def main()->int:
     ap=argparse.ArgumentParser()
@@ -83,6 +89,7 @@ def main()->int:
                 "networkSignature":key,
                 "debugStages":sig["debugStages"],
                 "networkShape":sig["network"],
+                "observedHostCount":sig.get("observedHostCount",0),
                 "splitReason":"observed-signature-divergence" if len(buckets)>1 else "shared-signature",
                 "executionPolicy":"batch-first",
             })

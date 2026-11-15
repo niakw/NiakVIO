@@ -1,3 +1,7 @@
+## 2026-11-16 — Provider host identity is not a repair-family identity
+
+After coarse grouping by repair scope, capability and runtime topology, network refinement may split on observed behavioral shape (debug stage, HTTP method/status and normalized route shape) but not on the literal provider hostname. Hostname identity is provider-specific evidence; including it in the family key collapses shared Learning back into one-provider groups. Transport-owned/WAF classifications remain isolated by their explicit transport authority.
+
 ## 2026-11-16 — Provider topology participates in causal-family grouping
 
 For provider-owned failures, a shared repair scope and capability label are insufficient to establish a reusable oracle. The batch-plan identity includes the known source runtime family so HTML/catalogue, API-oriented and other distinct provider mechanisms do not inherit one another's Learning result by default. Harness-owned failures remain keyed by the already-proved transport signature. Unknown topology remains a bounded shared bucket until better evidence exists. A family oracle still transfers strategy context only; each sibling needs independent materialized-byte and playback/identity validation.
