@@ -39,6 +39,38 @@ OPEN_ARCHIVE_STRATEGY = "open_archive_public_domain"
 OPEN_ARCHIVE_BASE = "https://archive.org"
 OPEN_ARCHIVE_LEGO = "scripts/provider_patches/internet_archive_public_domain_runtime_v1.py"
 
+def normalize_active_activation_overrides(
+    overrides: dict[str, Any],
+    rows: list[dict[str, Any]],
+) -> list[str]:
+    """Remove stale enabled flags from providers already active by lifecycle.
+
+    Provider-folder/lifecycle state is the sole activation authority. A retained
+    manifest_overrides.enabled field on an active provider is a stale second
+    authority and can re-disable that provider during later rebuilds. Other
+    manifest overrides remain untouched.
+    """
+    patches = overrides.get("provider_patches")
+    if not isinstance(patches, dict):
+        raise ValueError("provider override map required")
+    changed: list[str] = []
+    for row in rows:
+        pid = canonical_id(row.get("id"))
+        if not pid:
+            continue
+        patch = patches.get(pid)
+        if not isinstance(patch, dict):
+            continue
+        manifest_overrides = patch.get("manifest_overrides")
+        if not isinstance(manifest_overrides, dict) or "enabled" not in manifest_overrides:
+            continue
+        manifest_overrides.pop("enabled", None)
+        if not manifest_overrides:
+            patch.pop("manifest_overrides", None)
+        changed.append(pid)
+    return sorted(set(changed))
+
+
 def active_current_rows() -> list[dict[str, Any]]:
     """Return active current catalogue rows across Global + France-only authority."""
     rows = [dict(row) for row in active_provider_rows() if isinstance(row, dict)]
@@ -322,8 +354,11 @@ def reconcile_active_global(*, apply: bool) -> dict[str, Any]:
     if not isinstance(patches, dict) or not isinstance(capabilities, dict) or not isinstance(static_rows, dict):
         raise ValueError("structured provider authority maps required")
 
+    current_rows = active_current_rows()
+    activation_reconciled = normalize_active_activation_overrides(overrides, current_rows)
+
     recovered: list[dict[str, str]] = []
-    for row in active_provider_rows():
+    for row in current_rows:
         pid = canonical_id(row.get("id"))
         bundle = (ROOT / str(row.get("filename") or "")).resolve()
         text = bundle.read_text(encoding="utf-8")
@@ -360,13 +395,15 @@ def reconcile_active_global(*, apply: bool) -> dict[str, Any]:
             recovered.append({"provider": pid, "authority": "provider-v3-static-knowledge"})
 
     refresh_static_counts(static)
-    if apply and recovered:
+    if apply and (recovered or activation_reconciled):
         write(OVERRIDES, overrides)
         write(STATIC, static)
     materialization = reconcile_materialization_from_active_bundles(apply=apply)
     return {
         "recoveredCount": len(recovered),
         "recovered": recovered,
+        "activationReconciledCount": len(activation_reconciled),
+        "activationReconciled": activation_reconciled,
         "materializationRecoveredCount": materialization["recoveredCount"],
         "materializationRecovered": materialization["recovered"],
         "activeGlobal": len(active_provider_rows()),
@@ -383,11 +420,14 @@ def main() -> int:
     print(
         "PROVIDER_STATIC_AUTHORITY_RECONCILE_OK "
         f"active_global={result['activeGlobal']} active_current={result['activeCurrent']} recovered={result['recoveredCount']} "
+        f"activation_reconciled={result['activationReconciledCount']} "
         f"materialization_recovered={result['materializationRecoveredCount']} "
         f"mode={'apply' if args.apply else 'check'}"
     )
     for row in result["recovered"]:
         print(f"FIELD_PROVIDER_STATIC_AUTHORITY_RECOVERED provider={row['provider']} authority={row['authority']}")
+    for provider in result["activationReconciled"]:
+        print(f"FIELD_PROVIDER_ACTIVATION_OVERRIDE_RECONCILED provider={provider} authority=provider-folder-lifecycle")
     for provider in result["materializationRecovered"]:
         print(f"FIELD_PROVIDER_MATERIALIZATION_RECOVERED provider={provider} source=exact-published-bytes")
     return 0

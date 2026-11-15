@@ -21,6 +21,21 @@ mod.france_only_catalog_rows=lambda root=None:[
 rows=mod.active_current_rows()
 assert [mod.canonical_id(row.get("id")) for row in rows]==["global-a","fr-a"],rows
 
+# Active provider folders are activation authority. Stale lifecycle flags must
+# be removed without deleting unrelated manifest overrides.
+overrides={
+    "provider_patches":{
+        "global-a":{"manifest_overrides":{"enabled":False,"limited":True}},
+        "fr-a":{"manifest_overrides":{"enabled":True}},
+        "other":{"manifest_overrides":{"enabled":False}},
+    }
+}
+changed=mod.normalize_active_activation_overrides(overrides,rows)
+assert changed==["fr-a","global-a"],changed
+assert overrides["provider_patches"]["global-a"]["manifest_overrides"]=={"limited":True}
+assert "manifest_overrides" not in overrides["provider_patches"]["fr-a"]
+assert overrides["provider_patches"]["other"]["manifest_overrides"]["enabled"] is False
+
 mod.france_only_catalog_rows=lambda root=None:[
     {"id":"global-a","enabled":True,"filename":"providers/collision.js"},
 ]

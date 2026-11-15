@@ -1,3 +1,9 @@
+## 2026-11-15 — Provider-folder activation authority reconciles stale override flags
+
+- Finalizer 43751634858 passed rematerialization, exact-byte offline-proof rebind, 5.21.147 version sync, staging and release projection scope. It failed only because active provider-folder authority disagreed with stale provider_patches manifest_overrides enabled flags.
+- reconcile_provider_static_authority.py now removes only the redundant enabled field for providers already active by Global or France-only lifecycle authority, while preserving unrelated manifest overrides. Its recovery loop now uses active_current_rows(), matching the documented Global + France-only scope.
+- Synthetic coverage verifies stale false/true flags are removed for active rows while a non-active provider remains untouched. No provider is directly activated or disabled by this source change; canonical finalization must still rebuild and validate the release.
+
 ## 2026-11-15 — Projection-gate fixes now retrigger canonical release finalization
 
 - `release_projection_scope_test.py` is itself a final publication integrity gate, but it was not in the push-path trigger set for `CORE - Finalize Accepted Release`. The preceding contract correction therefore started read-only gates but not the finalizer that can actually publish 5.21.147.
