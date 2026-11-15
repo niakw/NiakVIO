@@ -772,3 +772,16 @@ This path is intentionally weaker than `FULL OK` and cannot manufacture runtime 
 Large onboarding waves are **proof-partitioned**, not all-or-nothing. Each candidate is independently evaluated against the same exact-byte offline contract. Eligible candidates may be published even when siblings are blocked; blocked identities remain non-active with explicit blocker evidence and continue through route discovery/Brain recovery. A wave with zero eligible providers still fails closed. This prevents one bad candidate from freezing dozens of unrelated valid integrations without weakening any per-provider proof gate.
 
 Portfolio publication targets are **exactly 60 active Global and 60 active France providers**. Route-qualified continuation waves are capacity-bounded per projection: they first fill any movie/tv/anime coverage below 20 providers, then use workbook score/rank to fill the remaining slots to 60. Qualified overflow stays non-active standby knowledge instead of pushing a manifest above 60. France-only identities remain first-class catalog rows (`general=false, vf=true`) and must never leak into Global.
+
+
+### Invariant de publication : versions cache Global / VF
+
+Toute génération client-visible est publiée atomiquement par `CORE - Finalize Accepted Release`. Le finalizer reconstruit d'abord l'autorité Provider v3 complète, exporte les baselines historiques de `manifest.json` **et** `vf/manifest.json`, puis `sync_release_versions.py` applique les invariants suivants :
+
+- changement client-visible d'un provider existant → version provider strictement supérieure ;
+- changement client-visible Global **ou VF-only** → version de release/manifest strictement supérieure ;
+- provider France-only → version calculée depuis la baseline VF, sans fuite dans Global ;
+- bytes provider content-addressed modifiés → nouveau filename/hash, jamais mutation silencieuse du même fichier ;
+- toutes les projections (`manifest.json`, `vf/manifest.json`, no-anime, VF no-anime, catalogue/package/sources) sont resynchronisées sur la même version de release.
+
+`CORE - Manifest Version Guard` contrôle également les commits directs : un changement de manifest ou de ligne provider sans bump correspondant échoue avant d'être considéré comme une publication valide. Une nouvelle génération de finalizer annule les générations supersédées ; chaque run reste néanmoins épinglé sur son SHA accepté et le drift-gate interdit la publication si des inputs exécutables ont changé entre-temps.
