@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "sourceRunId": "43656525889",
-  "sourceTriggerSha": "508a93f57c5edbbc4839c347d241273df381a419",
-  "unresolvedProviderCount": 62,
+  "sourceRunId": "43663241740",
+  "sourceTriggerSha": "f0d8185864442d0fca7774588c4077d70f94de1d",
+  "unresolvedProviderCount": 64,
   "dynamicVariantProviderCount": 3,
   "dynamicVariantProviders": [
     "movix-fr",
@@ -123,8 +123,8 @@
     "zone-streaming",
     "zone-telechargement"
   ],
-  "dynamicVariantFallbackUsed": false,
-  "groupCount": 10,
+  "dynamicVariantFallbackUsed": true,
+  "groupCount": 11,
   "executionModel": {
     "default": "family/signature batch",
     "liveProbeConcurrency": "audit_provider_quick_yield ThreadPool",
@@ -188,53 +188,6 @@
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
     {
-      "groupId": "learning|mixed_embed_resolver",
-      "repairScope": "learning",
-      "runtimeFamilies": [
-        "mixed_embed_resolver"
-      ],
-      "capabilityStrategy": "mixed_embed_resolver",
-      "evidenceDepths": [
-        "lookup",
-        "none"
-      ],
-      "dominantIssues": [
-        "network_zero_result",
-        "waf_challenge"
-      ],
-      "harnessTransportClasses": [
-        "github-all-transports-challenged",
-        "no-transport-evidence",
-        "residential-exit-inconclusive"
-      ],
-      "transportSignature": "not-applicable",
-      "providerCount": 15,
-      "providers": [
-        "1jour1film0626",
-        "cinematheque-de-bretagne",
-        "cinetimes",
-        "dulourd",
-        "fawesome",
-        "fexini",
-        "frembed",
-        "frenchstream",
-        "kidraz",
-        "neobam",
-        "sadisflix",
-        "skstream",
-        "voirserie",
-        "youtitou",
-        "zone-telechargement"
-      ],
-      "action": "final census NO PROOF remains repair/Learning-owned; issue-only WAF/network text cannot recreate harness or transport ownership",
-      "selectionAuthorities": [
-        "provider-census-status.json:brainCheckRequired"
-      ],
-      "dynamicVariantProviders": [],
-      "executionPolicy": "batch-first",
-      "providerLocalFallback": "only-after-shared-profile-failure"
-    },
-    {
       "groupId": "transport|html_scraper",
       "repairScope": "transport",
       "runtimeFamilies": [
@@ -283,6 +236,45 @@
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
     {
+      "groupId": "learning|mixed_embed_resolver",
+      "repairScope": "learning",
+      "runtimeFamilies": [
+        "mixed_embed_resolver"
+      ],
+      "capabilityStrategy": "mixed_embed_resolver",
+      "evidenceDepths": [
+        "chain",
+        "lookup"
+      ],
+      "dominantIssues": [
+        "network_zero_result"
+      ],
+      "harnessTransportClasses": [],
+      "transportSignature": "not-applicable",
+      "providerCount": 10,
+      "providers": [
+        "cinematheque-de-bretagne",
+        "fawesome",
+        "film-a-revoir",
+        "frembed",
+        "frenchstream",
+        "kidraz",
+        "movix-fr",
+        "neobam",
+        "youtitou",
+        "zone-telechargement"
+      ],
+      "action": "final census NO PROOF remains repair/Learning-owned; issue-only WAF/network text cannot recreate harness or transport ownership",
+      "selectionAuthorities": [
+        "provider-census-status.json:brainCheckRequired"
+      ],
+      "dynamicVariantProviders": [
+        "movix-fr"
+      ],
+      "executionPolicy": "batch-first",
+      "providerLocalFallback": "only-after-shared-profile-failure"
+    },
+    {
       "groupId": "harness-compatibility|mixed_embed_resolver|residential-exit-all-challenged",
       "repairScope": "harness-compatibility",
       "runtimeFamilies": [
@@ -290,6 +282,7 @@
       ],
       "capabilityStrategy": "mixed_embed_resolver",
       "evidenceDepths": [
+        "lookup",
         "none"
       ],
       "dominantIssues": [
@@ -299,10 +292,13 @@
         "residential-exit-all-challenged"
       ],
       "transportSignature": "residential-exit-all-challenged",
-      "providerCount": 3,
+      "providerCount": 6,
       "providers": [
-        "franime",
+        "animeonsen",
+        "cinetimes",
+        "french-anime",
         "fullanime",
+        "moiflix",
         "waveanime"
       ],
       "action": "current census assigns transport/harness ownership; compare browser/native/residential transport before any provider mutation",
@@ -321,7 +317,6 @@
       ],
       "capabilityStrategy": "mixed_embed_resolver",
       "evidenceDepths": [
-        "lookup",
         "none"
       ],
       "dominantIssues": [
@@ -331,10 +326,12 @@
         "residential-exit-inconclusive"
       ],
       "transportSignature": "residential-exit-inconclusive",
-      "providerCount": 2,
+      "providerCount": 4,
       "providers": [
-        "animeonsen",
-        "moiflix"
+        "1jour1film0626",
+        "dulourd",
+        "fexini",
+        "franime"
       ],
       "action": "current census assigns transport/harness ownership; compare browser/native/residential transport before any provider mutation",
       "selectionAuthorities": [
@@ -360,10 +357,12 @@
       ],
       "harnessTransportClasses": [],
       "transportSignature": "not-applicable",
-      "providerCount": 2,
+      "providerCount": 4,
       "providers": [
         "hianime",
-        "showbox"
+        "sadisflix",
+        "showbox",
+        "zone-streaming"
       ],
       "action": "apply/test shared terminal-player extraction profile to the whole capability family",
       "selectionAuthorities": [
@@ -374,39 +373,8 @@
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
     {
-      "groupId": "variant-coverage|mixed_embed_resolver",
-      "repairScope": "variant-coverage",
-      "runtimeFamilies": [
-        "mixed_embed_resolver"
-      ],
-      "capabilityStrategy": "mixed_embed_resolver",
-      "evidenceDepths": [
-        "chain"
-      ],
-      "dominantIssues": [
-        "network_zero_result"
-      ],
-      "harnessTransportClasses": [],
-      "transportSignature": "not-applicable",
-      "providerCount": 2,
-      "providers": [
-        "movix-fr",
-        "nakios"
-      ],
-      "action": "current execution proves playable output but fewer variants than the provider announced; keep publication authority unchanged and send completeness repair to Brain Learning",
-      "selectionAuthorities": [
-        "provider-census-sharded-latest.json:dynamic-variant-debt"
-      ],
-      "dynamicVariantProviders": [
-        "movix-fr",
-        "nakios"
-      ],
-      "executionPolicy": "batch-first",
-      "providerLocalFallback": "only-after-shared-profile-failure"
-    },
-    {
-      "groupId": "route-to-terminal|mixed_embed_resolver",
-      "repairScope": "route-to-terminal",
+      "groupId": "harness-compatibility|mixed_embed_resolver|native-policy-reachable",
+      "repairScope": "harness-compatibility",
       "runtimeFamilies": [
         "mixed_embed_resolver"
       ],
@@ -418,14 +386,43 @@
         "waf_challenge"
       ],
       "harnessTransportClasses": [
-        "residential-exit-native-reachable"
+        "native-policy-reachable"
       ],
-      "transportSignature": "not-applicable",
+      "transportSignature": "native-policy-reachable",
       "providerCount": 1,
       "providers": [
-        "film-a-revoir"
+        "skstream"
       ],
-      "action": "replay proven routes in batch and apply shared detail/player traversal profile",
+      "action": "current census assigns transport/harness ownership; compare browser/native/residential transport before any provider mutation",
+      "selectionAuthorities": [
+        "provider-census-status.json:brainCheckRequired"
+      ],
+      "dynamicVariantProviders": [],
+      "executionPolicy": "batch-first",
+      "providerLocalFallback": "only-after-shared-profile-failure"
+    },
+    {
+      "groupId": "harness-compatibility|mixed_embed_resolver|residential-exit-browser-reachable",
+      "repairScope": "harness-compatibility",
+      "runtimeFamilies": [
+        "mixed_embed_resolver"
+      ],
+      "capabilityStrategy": "mixed_embed_resolver",
+      "evidenceDepths": [
+        "none"
+      ],
+      "dominantIssues": [
+        "waf_challenge"
+      ],
+      "harnessTransportClasses": [
+        "residential-exit-browser-reachable"
+      ],
+      "transportSignature": "residential-exit-browser-reachable",
+      "providerCount": 1,
+      "providers": [
+        "voirserie"
+      ],
+      "action": "current census assigns transport/harness ownership; compare browser/native/residential transport before any provider mutation",
       "selectionAuthorities": [
         "provider-census-status.json:brainCheckRequired"
       ],
@@ -485,6 +482,35 @@
       ],
       "dynamicVariantProviders": [
         "papadustream"
+      ],
+      "executionPolicy": "batch-first",
+      "providerLocalFallback": "only-after-shared-profile-failure"
+    },
+    {
+      "groupId": "variant-coverage|mixed_embed_resolver",
+      "repairScope": "variant-coverage",
+      "runtimeFamilies": [
+        "mixed_embed_resolver"
+      ],
+      "capabilityStrategy": "mixed_embed_resolver",
+      "evidenceDepths": [
+        "chain"
+      ],
+      "dominantIssues": [
+        "network_zero_result"
+      ],
+      "harnessTransportClasses": [],
+      "transportSignature": "not-applicable",
+      "providerCount": 1,
+      "providers": [
+        "nakios"
+      ],
+      "action": "current execution proves playable output but fewer variants than the provider announced; keep publication authority unchanged and send completeness repair to Brain Learning",
+      "selectionAuthorities": [
+        "provider-census-sharded-latest.json:dynamic-variant-debt"
+      ],
+      "dynamicVariantProviders": [
+        "nakios"
       ],
       "executionPolicy": "batch-first",
       "providerLocalFallback": "only-after-shared-profile-failure"
