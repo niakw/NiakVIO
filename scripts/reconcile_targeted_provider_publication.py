@@ -173,7 +173,16 @@ def reconcile(
             "savedBytes": str(minimized.saved_bytes),
         })
 
-    active_ids = set(active_provider_ids())
+    if root.resolve() == ROOT.resolve():
+        active_ids = set(active_provider_ids())
+    else:
+        # Unit/workbench roots do not share the repository providers/ tree.
+        # Their local manifest is the only valid active-scope authority.
+        active_ids = {
+            cid(row.get("id"))
+            for row in manifest_rows
+            if row.get("enabled") is not False and cid(row.get("id"))
+        }
     material_rows[:] = [
         row for row in material_rows
         if cid(row.get("provider")) in active_ids
