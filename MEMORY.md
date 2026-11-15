@@ -1,3 +1,9 @@
+## 2026-11-15 — Projection-gate fixes now retrigger canonical release finalization
+
+- `release_projection_scope_test.py` is itself a final publication integrity gate, but it was not in the push-path trigger set for `CORE - Finalize Accepted Release`. The preceding contract correction therefore started read-only gates but not the finalizer that can actually publish 5.21.147.
+- Add this test file to the finalizer trigger paths. This changes orchestration only; provider bytes, manifests and playback claims remain untouched until the exact finalizer run succeeds and pushes.
+- The previous finalizer already demonstrated the full pre-publication path through 46/46 materialization, Chillflix exact-byte proof rebound and version computation 5.21.147 before the stale identity/archive assertion stopped it.
+
 ## 2026-11-15 — Release projection contract distinguishes identity history from executable archive paths
 
 - Finalizer 43729947324 reached a staged 5.21.147 generation, rebound 36 exact-byte offline proofs (including Chillflix), materialized all 46 active Global providers and then failed only in `tests/release_projection_scope_test.py` because four reactivated identities (anidb, kisskh, topcartoons, vidlink) also have historical generations in `provider-old/`.
