@@ -251,11 +251,16 @@ legacy_config = {
     "provider_patches": {},
 }
 merged = module._authoritative_hub_configs(legacy_config)
-assert merged["frenchstream"]["hub"] == "https://fstream.org/", merged["frenchstream"]
+french = merged["frenchstream"]
+assert not french.get("hub"), french
+assert resolver.host(french["direct_fallback"]) == "fs16.lol", french
+assert {resolver.host(url) for url in french.get("direct_candidates") or []} == {"fs16.lol"}, french
+assert "fstream.top" in french.get("blocked_hosts", []), french
+assert all(row.get("url") != "https://legacy.invalid/" for row in french.get("sources") or []), french
 assert any(
-    row.get("url") == "https://fstream.org/" and row.get("type") == "hub"
-    for row in merged["frenchstream"].get("sources") or []
-), merged["frenchstream"]
+    row.get("type") == "search" and row.get("query") == '"French-stream" official domain'
+    for row in french.get("sources") or []
+), french
 
 # Regression 2: a newly observed terminal becomes the registry current direct URL,
 # while older terminals remain bounded fallback/address knowledge.
