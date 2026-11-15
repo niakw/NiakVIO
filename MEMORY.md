@@ -1,3 +1,9 @@
+## 2026-11-15 — Causal-family oracle replay after ProviderBase catalogue-union repair
+
+- Brain main `cb1fddf4ee8b06be9a29bb0a69f1210d925cb93e` has green CI 43769592169 and green read-only security inventory. NiakVIO clean reconstruction now derives ProviderBase candidates from the Global + France catalogue union; Learning run 43771652298 proved the former missing-provider stage can pass, but it started from pre-frontier scheduling.
+- Re-trigger the same 12-provider eligibility cohort on NiakVIO `0f47f1c91888c80d326d99da6e6dc755fb4719ec`. The current queue logic executes one oracle per causal family and keeps siblings pending for independent canonical validation. This is a Brain/Learning scheduling experiment, not provider publication. No manifest/provider bytes are changed by the trigger.
+- Expected current frontier comes from the repository's batch-plan contract: three causal groups (8 learning/mixed_embed_resolver, 3 variant-coverage/mixed_embed_resolver, 1 variant-coverage/html_scraper). A family oracle is useful experience only after generated/reused strategy -> compile -> apply -> materialize -> execute -> identity/terminal validation -> persistence; family membership never grants playback authority.
+
 ## 2026-11-15 — Explicit Learning cohort now uses family oracles instead of serial sibling replay
 
 - Current targeted Learning cohort contains 12 providers but only three causal groups in `provider-repair-batch-plan-latest.json`: 8 × `learning|mixed_embed_resolver`, 3 × `variant-coverage|mixed_embed_resolver`, 1 × `variant-coverage|html_scraper`.
