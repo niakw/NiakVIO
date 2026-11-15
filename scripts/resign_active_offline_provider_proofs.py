@@ -155,6 +155,7 @@ def rebind(
     *,
     apply: bool,
     previous_manifest: Path | None = None,
+    previous_vf_manifest: Path | None = None,
 ) -> dict[str, Any]:
     provenance_path = root / "PROVENANCE.json"
     provenance = load(provenance_path, {})
@@ -164,11 +165,19 @@ def rebind(
 
     rows = active_rows(root)
     previous_files: dict[str, str] = {}
+    previous_vf_files: dict[str, str] = {}
     if previous_manifest is not None:
         previous = load(previous_manifest, {})
         previous_files = {
             canon(row.get("id")): str(row.get("filename") or "").strip()
             for row in previous.get("scrapers") or []
+            if isinstance(row, dict) and canon(row.get("id"))
+        }
+    if previous_vf_manifest is not None:
+        previous_vf = load(previous_vf_manifest, {})
+        previous_vf_files = {
+            canon(row.get("id")): str(row.get("filename") or "").strip()
+            for row in previous_vf.get("scrapers") or []
             if isinstance(row, dict) and canon(row.get("id"))
         }
 
@@ -179,8 +188,9 @@ def rebind(
             continue
         if requested is not None and pid not in requested:
             continue
-        if previous_manifest is not None:
-            previous_file = previous_files.get(pid, "")
+        if previous_manifest is not None or previous_vf_manifest is not None:
+            baseline = previous_files if scope == "global" else previous_vf_files
+            previous_file = baseline.get(pid, "")
             current_file = str(row.get("filename") or "").strip()
             if previous_file == current_file:
                 continue
@@ -214,14 +224,17 @@ def main() -> int:
     ap.add_argument("--providers", default="")
     ap.add_argument("--apply", action="store_true")
     ap.add_argument("--previous-manifest", type=Path)
+    ap.add_argument("--previous-vf-manifest", type=Path)
     args = ap.parse_args()
     requested = {canon(v) for v in str(args.providers or "").split(",") if canon(v)}
     previous_manifest = args.previous_manifest.resolve() if args.previous_manifest else None
+    previous_vf_manifest = args.previous_vf_manifest.resolve() if args.previous_vf_manifest else None
     result = rebind(
         ROOT,
         requested or None,
         apply=bool(args.apply),
         previous_manifest=previous_manifest,
+        previous_vf_manifest=previous_vf_manifest,
     )
     print(
         "FIELD_ACTIVE_OFFLINE_PROOF_REBOUND "
