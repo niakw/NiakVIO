@@ -1,3 +1,9 @@
+## 2026-11-15 — External Brain source reference pinned as a Git submodule
+
+- `brain-llm/` is a Git submodule of `niakw/NiakVIO-Brain-LLM`, pinned at `ffe1444c74529c3641d065711bb5dc434f8dd013` (Brain main at inspection time). This is a source/reference link only, not a replacement for the existing in-tree runtime or an automatic change to CI execution, Repair authority, or production manifests.
+- Clone/update the reference explicitly with `git submodule update --init brain-llm`. Updating the pin requires a reviewed parent-repository commit. No manifest or provider versions change from adding this reference alone.
+- At the pre-link NiakVIO main SHA `9e2eacd0c718242934ca0a868e46ccb115c7eb02`: production version 5.21.146, 46 active Global / 38 active France. The census cites run 43663241740 on f0d818586444; it is not fresh playback proof on this HEAD. Recent lifecycle (43711782764), external audit (43711225972), domain refresh (43707890774) and Learning Lab (43698686804) failed; no new repair or publication is asserted by this change.
+
 ## 2026-11-14 — Physical-Mac execution is authoritative transport evidence; Webflix TV published and terminally replayed
 
 - Production manifests are **46 active Global / 38 active France** after Bulk Onboarding publish `7c9d1b7d`. France now has exactly 60 manifest rows with 22 lifecycle-disabled rows; Global has 82 rows with 36 disabled, so the remaining 60/60 target can be reached by a mix of qualified reserve intake and proof-bound reactivation rather than inventing catalogue rows.

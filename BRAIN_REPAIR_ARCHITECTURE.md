@@ -1,3 +1,7 @@
+## 2026-11-15 — Pinned external Brain source reference
+
+The public `niakw/NiakVIO-Brain-LLM` repository is referenced through the Git submodule `brain-llm/`. The parent repository records an exact external commit; the initial pin is `ffe1444c74529c3641d065711bb5dc434f8dd013`. This is a source-inspection and reproducibility reference only. The existing in-tree runtime, integration boundaries and acceptance checks remain authoritative. Submodule initialization is explicit (`git submodule update --init brain-llm`); changing its pin does not by itself publish providers or change a client-visible release. No automatic submodule checkout or execution is added to workflows.
+
 ## 2026-11-14 — Current census causal queues outrank semantic depth; wrong content is an identity failure
 
 Repair ownership is assigned from the current census before semantic depth. A provider in `authorityRediscoveryQueue` belongs to Domain Refresh even if an old replay reached CHAIN; a provider in the environment/transport queues belongs to harness/client analysis; only the disjoint Repair cohort may enter provider mutation/Learning. Queue overlap between authority and environment is an error. A later batch/execution plan must validate against the same causal queue that selected it so an authority-debt sibling cannot block unrelated Repair work through a generic queue-mismatch.
