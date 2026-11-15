@@ -15,6 +15,7 @@ sys.path.insert(0, str(ROOT / "scripts"))
 from domain_refresh_transaction_v2 import _generation, source_qualified_provider_name
 from provider_patch_blocks import decode_managed_data, validate_managed_fixes
 from provider_v3_minimizer import minimize_text, validate_transform
+from current_provider_scope import active_provider_ids
 
 
 def load_json(path: Path) -> dict[str, Any]:
@@ -172,10 +173,18 @@ def reconcile(
             "savedBytes": str(minimized.saved_bytes),
         })
 
+    active_ids = set(active_provider_ids())
+    material_rows[:] = [
+        row for row in material_rows
+        if cid(row.get("provider")) in active_ids
+    ]
+    materialization["providers"] = material_rows
     materialization["generation"] = _generation(material_rows)
     materialization["providerCount"] = len(material_rows)
-    materialization["expectedProviderCount"] = len(material_rows)
+    materialization["activeProviderIdentityCount"] = len(active_ids)
+    materialization["expectedProviderCount"] = len(active_ids)
     materialization["targetedPublicationFixedPointProviders"] = sorted(set(requested))
+    materialization["targetedPublicationComplete"] = len(material_rows) == len(active_ids)
 
     write_json(manifest_path, manifest)
     write_json(materialization_path, materialization)
