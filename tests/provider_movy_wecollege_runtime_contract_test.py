@@ -56,6 +56,7 @@ assert "https://api.wecollege.net" in rendered
 assert "miami/sources" in rendered
 assert "boise/sources" in rendered
 assert "nashville/sources" in rendered
+assert '"doubleEncodeTitle":true' in rendered
 assert "401905" not in rendered
 assert "213375" not in rendered
 assert "goldenkite.top" not in rendered
