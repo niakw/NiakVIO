@@ -25,7 +25,7 @@ with tempfile.TemporaryDirectory() as td:
         }
     ]}),encoding="utf-8")
     subprocess.run([
-        "python",str(script),"--request",str(req),"--output",str(out),"--dry-run"
+        sys.executable,str(script),"--request",str(req),"--output",str(out),"--dry-run"
     ],cwd=ROOT,check=True)
     value=json.loads(out.read_text(encoding="utf-8"))
 
