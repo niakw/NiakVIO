@@ -1,13 +1,14 @@
 {
   "schemaVersion": 1,
-  "sourceRunId": "43727224007",
-  "sourceTriggerSha": "bba3003c3460de94ec8723f4306550c82029ee89",
-  "unresolvedProviderCount": 62,
-  "dynamicVariantProviderCount": 3,
+  "sourceRunId": "43767629808",
+  "sourceTriggerSha": "43eaf35e230fb002faa7c320144124e3f8d2e89c",
+  "unresolvedProviderCount": 64,
+  "dynamicVariantProviderCount": 4,
   "dynamicVariantProviders": [
     "movix-fr",
     "nakios",
-    "papadustream"
+    "papadustream",
+    "sadisflix"
   ],
   "lifecycleSuppressedDynamicProviders": [
     "animevostfr",
@@ -147,7 +148,6 @@
       "dominantIssues": [
         "network_http_error",
         "network_zero_result",
-        "timeout",
         "waf_challenge"
       ],
       "harnessTransportClasses": [
@@ -156,7 +156,7 @@
         "residential-exit-inconclusive"
       ],
       "transportSignature": "not-applicable",
-      "providerCount": 21,
+      "providerCount": 20,
       "providers": [
         "67movies",
         "arrowtv",
@@ -167,7 +167,6 @@
         "corsflix",
         "emnexmovies",
         "flixer",
-        "frembed",
         "hexa",
         "latestmovies",
         "moviebite",
@@ -237,43 +236,6 @@
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
     {
-      "groupId": "harness-compatibility|mixed_embed_resolver|residential-exit-inconclusive",
-      "repairScope": "harness-compatibility",
-      "runtimeFamilies": [
-        "mixed_embed_resolver"
-      ],
-      "capabilityStrategy": "mixed_embed_resolver",
-      "evidenceDepths": [
-        "lookup",
-        "none"
-      ],
-      "dominantIssues": [
-        "waf_challenge"
-      ],
-      "harnessTransportClasses": [
-        "residential-exit-inconclusive"
-      ],
-      "transportSignature": "residential-exit-inconclusive",
-      "providerCount": 8,
-      "providers": [
-        "1jour1film0626",
-        "animeonsen",
-        "fexini",
-        "franime",
-        "french-anime",
-        "fullanime",
-        "moiflix",
-        "waveanime"
-      ],
-      "action": "current census assigns transport/harness ownership; compare browser/native/residential transport before any provider mutation",
-      "selectionAuthorities": [
-        "provider-census-status.json:brainCheckRequired"
-      ],
-      "dynamicVariantProviders": [],
-      "executionPolicy": "batch-first",
-      "providerLocalFallback": "only-after-shared-profile-failure"
-    },
-    {
       "groupId": "learning|mixed_embed_resolver",
       "repairScope": "learning",
       "runtimeFamilies": [
@@ -292,14 +254,80 @@
       "providers": [
         "cinematheque-de-bretagne",
         "fawesome",
+        "frembed",
         "frenchstream",
         "kidraz",
         "neobam",
-        "skstream",
         "youtitou",
         "zone-telechargement"
       ],
       "action": "final census NO PROOF remains repair/Learning-owned; issue-only WAF/network text cannot recreate harness or transport ownership",
+      "selectionAuthorities": [
+        "provider-census-status.json:brainCheckRequired"
+      ],
+      "dynamicVariantProviders": [],
+      "executionPolicy": "batch-first",
+      "providerLocalFallback": "only-after-shared-profile-failure"
+    },
+    {
+      "groupId": "harness-compatibility|mixed_embed_resolver|residential-exit-all-challenged",
+      "repairScope": "harness-compatibility",
+      "runtimeFamilies": [
+        "mixed_embed_resolver"
+      ],
+      "capabilityStrategy": "mixed_embed_resolver",
+      "evidenceDepths": [
+        "none"
+      ],
+      "dominantIssues": [
+        "waf_challenge"
+      ],
+      "harnessTransportClasses": [
+        "residential-exit-all-challenged"
+      ],
+      "transportSignature": "residential-exit-all-challenged",
+      "providerCount": 5,
+      "providers": [
+        "animeonsen",
+        "cinetimes",
+        "french-anime",
+        "fullanime",
+        "waveanime"
+      ],
+      "action": "current census assigns transport/harness ownership; compare browser/native/residential transport before any provider mutation",
+      "selectionAuthorities": [
+        "provider-census-status.json:brainCheckRequired"
+      ],
+      "dynamicVariantProviders": [],
+      "executionPolicy": "batch-first",
+      "providerLocalFallback": "only-after-shared-profile-failure"
+    },
+    {
+      "groupId": "harness-compatibility|mixed_embed_resolver|residential-exit-inconclusive",
+      "repairScope": "harness-compatibility",
+      "runtimeFamilies": [
+        "mixed_embed_resolver"
+      ],
+      "capabilityStrategy": "mixed_embed_resolver",
+      "evidenceDepths": [
+        "lookup",
+        "none"
+      ],
+      "dominantIssues": [
+        "waf_challenge"
+      ],
+      "harnessTransportClasses": [
+        "residential-exit-inconclusive"
+      ],
+      "transportSignature": "residential-exit-inconclusive",
+      "providerCount": 4,
+      "providers": [
+        "1jour1film0626",
+        "fexini",
+        "franime",
+        "moiflix"
+      ],
+      "action": "current census assigns transport/harness ownership; compare browser/native/residential transport before any provider mutation",
       "selectionAuthorities": [
         "provider-census-status.json:brainCheckRequired"
       ],
@@ -323,10 +351,12 @@
       ],
       "harnessTransportClasses": [],
       "transportSignature": "not-applicable",
-      "providerCount": 2,
+      "providerCount": 4,
       "providers": [
+        "film-a-revoir",
         "hianime",
-        "showbox"
+        "showbox",
+        "zone-streaming"
       ],
       "action": "apply/test shared terminal-player extraction profile to the whole capability family",
       "selectionAuthorities": [
@@ -351,10 +381,11 @@
       ],
       "harnessTransportClasses": [],
       "transportSignature": "not-applicable",
-      "providerCount": 2,
+      "providerCount": 3,
       "providers": [
         "movix-fr",
-        "nakios"
+        "nakios",
+        "sadisflix"
       ],
       "action": "current execution proves playable output but fewer variants than the provider announced; keep publication authority unchanged and send completeness repair to Brain Learning",
       "selectionAuthorities": [
@@ -362,7 +393,8 @@
       ],
       "dynamicVariantProviders": [
         "movix-fr",
-        "nakios"
+        "nakios",
+        "sadisflix"
       ],
       "executionPolicy": "batch-first",
       "providerLocalFallback": "only-after-shared-profile-failure"
@@ -426,25 +458,25 @@
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
     {
-      "groupId": "harness-compatibility|mixed_embed_resolver|residential-exit-all-challenged",
+      "groupId": "harness-compatibility|mixed_embed_resolver|native-policy-reachable",
       "repairScope": "harness-compatibility",
       "runtimeFamilies": [
         "mixed_embed_resolver"
       ],
       "capabilityStrategy": "mixed_embed_resolver",
       "evidenceDepths": [
-        "none"
+        "lookup"
       ],
       "dominantIssues": [
         "waf_challenge"
       ],
       "harnessTransportClasses": [
-        "residential-exit-all-challenged"
+        "native-policy-reachable"
       ],
-      "transportSignature": "residential-exit-all-challenged",
+      "transportSignature": "native-policy-reachable",
       "providerCount": 1,
       "providers": [
-        "cinetimes"
+        "skstream"
       ],
       "action": "current census assigns transport/harness ownership; compare browser/native/residential transport before any provider mutation",
       "selectionAuthorities": [
@@ -474,35 +506,6 @@
       "providerCount": 1,
       "providers": [
         "voirserie"
-      ],
-      "action": "current census assigns transport/harness ownership; compare browser/native/residential transport before any provider mutation",
-      "selectionAuthorities": [
-        "provider-census-status.json:brainCheckRequired"
-      ],
-      "dynamicVariantProviders": [],
-      "executionPolicy": "batch-first",
-      "providerLocalFallback": "only-after-shared-profile-failure"
-    },
-    {
-      "groupId": "harness-compatibility|mixed_embed_resolver|residential-exit-native-reachable",
-      "repairScope": "harness-compatibility",
-      "runtimeFamilies": [
-        "mixed_embed_resolver"
-      ],
-      "capabilityStrategy": "mixed_embed_resolver",
-      "evidenceDepths": [
-        "lookup"
-      ],
-      "dominantIssues": [
-        "waf_challenge"
-      ],
-      "harnessTransportClasses": [
-        "residential-exit-native-reachable"
-      ],
-      "transportSignature": "residential-exit-native-reachable",
-      "providerCount": 1,
-      "providers": [
-        "film-a-revoir"
       ],
       "action": "current census assigns transport/harness ownership; compare browser/native/residential transport before any provider mutation",
       "selectionAuthorities": [
