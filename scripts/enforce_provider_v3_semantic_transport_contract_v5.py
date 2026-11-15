@@ -86,8 +86,11 @@ def catalog_semantic_types() -> dict[str, list[str]]:
         if not canonical:
             raise AssertionError(f"provider_catalog.json:{provider_id}: missing canonical media types")
         result[provider_id] = canonical
-    if len(result) != visible_provider_count():
-        raise AssertionError(f"provider_catalog.json semantic rows={len(result)} expected=46")
+    expected = visible_provider_count()
+    if len(result) != expected:
+        raise AssertionError(
+            f"provider_catalog.json semantic rows={len(result)} expected_visible={expected}"
+        )
     return result
 
 
