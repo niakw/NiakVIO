@@ -231,7 +231,13 @@ def _probe_terminal(stream: dict[str, Any], timeout: int) -> dict[str, Any]:
     if not url.startswith(("http://", "https://")):
         return {"verified": False, "kind": None, "status": None, "reason": "invalid_url"}
 
-    request = urllib.request.Request(url, headers=_safe_headers(stream.get("headers")), method="GET")
+    initial_headers = _safe_headers(stream.get("headers"))
+    # HLS proxy/player endpoints may reject byte-range negotiation on the master
+    # request even though their child playlists and media segments are range-safe.
+    # Read a bounded prefix without forcing Range; deep HLS probing adds Range
+    # only for the terminal media segment.
+    initial_headers.pop("Range", None)
+    request = urllib.request.Request(url, headers=initial_headers, method="GET")
     try:
         with urllib.request.urlopen(request, timeout=max(3, min(DEFAULT_PROBE_TIMEOUT, timeout))) as response:
             status = int(response.getcode() or 0)
