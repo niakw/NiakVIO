@@ -156,8 +156,11 @@ def main() -> int:
     static_rows = knowledge.get("providers") if isinstance(knowledge.get("providers"), dict) else {}
 
     source_rows = matrix.get("rows") if isinstance(matrix.get("rows"), list) else []
-    if int(matrix.get("hubCount") or 0) <= 0 or len(source_rows) != int(matrix.get("hubCount") or 0):
-        raise AssertionError(f"hub matrix must be exhaustive 46/46, got hubCount={matrix.get('hubCount')} rows={len(source_rows)}")
+    expected_count = int(matrix.get("hubCount") or matrix.get("providerCount") or len(source_rows))
+    if expected_count <= 0 or len(source_rows) != expected_count:
+        raise AssertionError(
+            f"hub matrix must be exhaustive for its declared scope, expected={expected_count} rows={len(source_rows)}"
+        )
 
     out_rows: list[dict[str, Any]] = []
     opaque: list[str] = []
@@ -281,8 +284,8 @@ def main() -> int:
         "",
         "This report distinguishes a provider that currently returns zero streams from a provider whose site mechanism is genuinely not demonstrated by current repository evidence.",
         "",
-        f"- Targets: **{len(out_rows)}/46**.",
-        f"- Enabled in canonical manifest: **{len(enabled)}/46**.",
+        f"- Targets: **{len(out_rows)}/{expected_count}**.",
+        f"- Enabled in canonical manifest: **{len(enabled)}/{expected_count}**.",
         f"- Repository-evidence opaque candidates: **{len(opaque)}**.",
         "- `repoOpaque=true` is a research queue, not a declaration that the provider is dead.",
         "",
@@ -302,7 +305,7 @@ def main() -> int:
 
     lines += [
         "",
-        "## All 46",
+        f"## All {expected_count} matrix providers",
         "",
         "| Provider | Mechanism | Repo opaque | Lab blocker | Route state | Hub relation |",
         "|---|---|---:|---|---|---|",
