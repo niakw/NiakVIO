@@ -25,19 +25,16 @@ os.environ["NIAKVIO_PROVIDER_SCOPE_MATRIX"] = "automation/evidence/hub-lab-matri
 sys.path.insert(0, str(ROOT / "scripts"))
 
 import prepare_native_corpus_client as client  # noqa: E402
-assert client.provider_scope_ids() == ids
+assert client.provider_scope_ids() is None
 
-# Historical September Hub-44 rows must not resurrect providers removed from
-# the current 41-provider published manifest. Preserve historical evidence in
-# the matrix while staging every current provider, with an explicit audit log.
+# Historical Hub rows are evidence only. They must neither resurrect removed
+# providers nor hide any provider present in the current active native manifest.
 current_manifest = json.loads((ROOT / "native-hub46/manifest.json").read_text(encoding="utf-8"))
 current_ids = {
     str(row.get("id") or "").strip().casefold()
     for row in current_manifest.get("scrapers", [])
     if isinstance(row, dict) and row.get("enabled") is True
 }
-assert current_ids <= ids, sorted(current_ids - ids)
-assert ids - current_ids == {"animetsu", "showbox", "videasy"}
 staged = client.manifest_providers("native-hub46/manifest.json")
 assert {row["id"].casefold() for row in staged} == current_ids
 assert len(staged) == len(current_ids)
@@ -63,12 +60,8 @@ with tempfile.TemporaryDirectory(prefix=".native-scope-contract-", dir=ROOT) as 
 
         scope["scopePolicy"] = "dynamic-active-hub-authority"
         scope_file.write_text(json.dumps(scope), encoding="utf-8")
-        try:
-            client.manifest_providers("native-hub46/manifest.json")
-        except SystemExit as error:
-            assert "omits current enabled provider(s)" in str(error), error
-        else:
-            raise AssertionError("dynamic scope unexpectedly dropped current providers")
+        dynamic_staged = client.manifest_providers("native-hub46/manifest.json")
+        assert {row["id"].casefold() for row in dynamic_staged} == current_ids
     finally:
         os.environ["NIAKVIO_PROVIDER_SCOPE_MATRIX"] = "automation/evidence/hub-lab-matrix-46.json"
 
@@ -76,7 +69,7 @@ spec = importlib.util.spec_from_file_location("native_gate", ROOT / "scripts/gat
 assert spec and spec.loader
 gate = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(gate)
-assert gate.load_scope_ids(SCOPE) == ids
+assert gate.load_scope_ids(SCOPE) is None
 
 source = (ROOT / "scripts/prepare_native_ios_reader_acceptance.py").read_text(encoding="utf-8")
 assert "scopeProviderIds" in source
