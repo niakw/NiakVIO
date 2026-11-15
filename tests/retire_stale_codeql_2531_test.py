@@ -303,4 +303,28 @@ with patch.object(mod, "verify_current_source"), \
     assert "FIELD_CODEQL_STALE_2531_DEFERRED" in buf.getvalue()
     assert calls==[("repos/"+mod.REPO+"/branches/main","GET")], calls
 
+
+# The deletion helper must enumerate the historical configuration oldest-first.
+# Otherwise thousands of maintained analyses can exhaust the bounded traversal
+# before the obsolete category is ever reached.
+delete_spec=importlib.util.spec_from_file_location(
+    "delete_stale_codeql_2531_configuration",
+    root/"scripts/delete_stale_codeql_2531_configuration.py",
+)
+assert delete_spec and delete_spec.loader
+delete_mod=importlib.util.module_from_spec(delete_spec)
+delete_spec.loader.exec_module(delete_mod)
+seen_urls=[]
+def historical_pages(path, max_pages=0, **kwargs):
+    seen_urls.append((path,max_pages))
+    return []
+with patch.object(delete_mod.guard,"read_pages",side_effect=historical_pages):
+    assert delete_mod.list_main_analyses()==[]
+assert len(seen_urls)==1
+historical_url,historical_bound=seen_urls[0]
+historical_query=parse_qs(urlsplit(historical_url).query)
+assert historical_query.get("sort")==["created"], historical_url
+assert historical_query.get("direction")==["asc"], historical_url
+assert historical_bound==40, historical_bound
+
 print("CodeQL evidence-only drift regression passed")
