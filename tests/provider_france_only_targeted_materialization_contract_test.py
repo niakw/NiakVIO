@@ -18,7 +18,7 @@ for marker in (
     '"entryAuthority": entry_authority',
     'provider_owned_identity_lego = bool(',
     'value.startswith("scripts/provider_patches/")',
-    '{"tmdb_direct", "catalog_search"}',
+    '{"tmdb_direct", "catalog_search", "external_id"}',
     'identity.get("requires_tmdb_before_run") is True',
     '{"tmdbId", "mediaType"} <= required_identity',
     'if not isinstance(static_row, dict):',
@@ -46,4 +46,5 @@ for record in catalog.get("providers") or []:
         france_only.append(cid)
 
 assert "webflix" in france_only
+assert '"external_id"' in source, "external-id metadata-preflight provider Legos must remain target-materializable"
 print(f"FRANCE_ONLY_TARGETED_MATERIALIZATION_CONTRACT_OK providers={len(france_only)}")
