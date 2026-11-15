@@ -1,3 +1,9 @@
+## 2026-11-15 — Replace full-catalog Learning replay with exact 12-provider batch
+
+- Push-triggered Learning run 43771096222 started without `target_providers`, so it entered the full-catalog stage even though Autopilot had already selected a 12-provider BRAIN_LEARNING cohort. Update the trigger to the exact Autopilot cohort: cinematheque-de-bretagne,fawesome,frembed,frenchstream,kidraz,neobam,youtitou,zone-telechargement,papadustream,movix-fr,nakios,sadisflix.
+- The workflow already validates targeted cohorts against the checked-out census/batch plan and fails closed on disabled/out-of-scope providers. The new push intentionally supersedes the slower full-catalog replay; no provider implementation is edited manually. Budget 120 minutes permits bounded continuation while keeping the same exact cohort.
+- Catalogue-union reconstruction contract remains green (`france_only=30`) before the unrelated Chillflix freshness gate.
+
 ## 2026-11-15 — Catalogue-union reconstruction contract passed; routine batch Learning retriggered
 
 - CORE Workflow Gate 43770877372 executed `tests/learning_catalog_union_reconstruction_test.py` before the unrelated production freshness check and reported `Learning catalogue-union clean reconstruction test passed france_only=30`. The subsequent failure remains the pre-existing Chillflix freshness assertion; the ProviderBase/France-only regression itself is green.

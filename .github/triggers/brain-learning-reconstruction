@@ -1,13 +1,17 @@
-Brain-first batch Learning replay after catalogue-union ProviderBase reconstruction fix.
-source_main_parent_sha: 924985184855b94f3a83447c6d923d11ee0b570e
+Brain-first targeted batch Learning replay after catalogue-union ProviderBase reconstruction fix.
+source_main_parent_sha: cbda56f73199d5dde1d922c43ce4ee1db9a8fe9f
 source_brain_main_sha: cb1fddf4ee8b06be9a29bb0a69f1210d925cb93e
+source_autopilot_run: 43768371527
 validated_contract_run: 43770877372
 validated_contract: learning_catalog_union_reconstruction_test.py
 validated_contract_result: passed france_only=30
 requested_at: 2026-11-15
-execution_mode: routine-batch-learning
+budget_minutes: 120
+execution_mode: targeted-batch-learning
+target_provider:
+target_providers: cinematheque-de-bretagne,fawesome,frembed,frenchstream,kidraz,neobam,youtitou,zone-telechargement,papadustream,movix-fr,nakios,sadisflix
 architecture_force: false
 publication_policy: no provider publication without exact materialized-byte identity/playback proof and nonregression
-reason: Previous Learning batch staged 12 providers but clean reconstruction dropped France-only identities because discover_candidates used Global manifest only. provider_catalog Global+VF union is now the baseline authority; rerun the batch so ProviderBase is derived automatically from NiakVIO structured provider objects rather than created manually.
-expected_scope: causal family wave across current Learning queue; preserve topology diversity; no provider-specific hotfix
+reason: Autopilot selected this 12-provider BRAIN_LEARNING cohort; previous Learning lost France-only identities during clean reconstruction because discover_candidates used Global manifest only. provider_catalog Global+VF union is now the baseline authority. Re-run the same cohort so ProviderBase is derived automatically from NiakVIO structured provider objects.
+expected_scope: same 12-provider causal-family wave; preserve topology diversity; no provider-specific hotfix
 required_evidence: selected-family;generated-or-reused-strategy;compiled;applied;materialized;executed;identity-correct;terminal-validated;nonregression;memory-persisted
