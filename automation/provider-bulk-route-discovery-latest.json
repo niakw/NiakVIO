@@ -1,22 +1,22 @@
 {
   "schemaVersion": 1,
-  "requestVersion": 42,
+  "requestVersion": 44,
   "source": "NiakVIO-GLOBAL-FINAL-STRICT-TOP20-2026-09-11(5).xlsx",
   "transportProfiles": [
     "residential-exit"
   ],
-  "shardArtifactCount": 11,
+  "shardArtifactCount": 16,
   "expectedShardCount": 16,
-  "completeShardSet": false,
-  "candidateCount": 44,
-  "qualifiedCount": 2,
-  "selectedCount": 2,
+  "completeShardSet": true,
+  "candidateCount": 65,
+  "qualifiedCount": 3,
+  "selectedCount": 3,
   "standbyQualifiedCount": 0,
-  "deferredCount": 63,
+  "deferredCount": 62,
   "qualifiedScopes": {
-    "observedGlobal": 1,
+    "observedGlobal": 2,
     "observedFrance": 1,
-    "selectedGlobal": 1,
+    "selectedGlobal": 2,
     "selectedGlobalSharedToFrance": 0,
     "selectedFranceOnly": 1,
     "selectedFrance": 1
@@ -27,15 +27,65 @@
     "globalLanes": {
       "movie": 37,
       "tv": 33,
-      "anime": 34
+      "anime": 33
     },
     "franceLanes": {
-      "movie": 25,
+      "movie": 24,
       "tv": 24,
       "anime": 24
     }
   },
   "providers": [
+    {
+      "provider": "flickystream",
+      "scope": "global",
+      "transport": "request-existing",
+      "probeAttempted": false,
+      "probeReachedSite": true,
+      "routePatterns": [
+        "),c(`/anime/{tmdbId}`,{state:{backgroundLocation:u}})},className:",
+        "/genre/movie/{tmdbId}",
+        "/anime/{tmdbId}",
+        ",children:(u=s.data)==null?void%200%3Au.genres.map%28g=%3Ef.jsx%28yr%2C{to%3A%60%2Fgenre%2Fmovie%2F{tmdbId}%60%2Cchildren%3Af.jsx%28tt%2C{variant%3A"
+      ],
+      "routeCount": 4,
+      "qualified": true,
+      "reason": "existing_identity_executable_route_plan",
+      "retainedRouteSources": [],
+      "liveProof": null
+    },
+    {
+      "provider": "dpstream",
+      "scope": "france",
+      "transport": "request-existing",
+      "probeAttempted": false,
+      "probeReachedSite": true,
+      "routePatterns": [
+        "?oe=%60https%3A%2F%2Fwww.vidking.net%2Fembed%2Ftv%2F{tmdbId}%2F{season}%2F{episode}%60%3AY.id%3D%3D%3D",
+        "?oe=%60https%3A%2F%2Fvidsrc.io%2Fembed%2Ftv%3Ftmdb%3D{tmdbId}&season={season}&episode={episode}",
+        "?oe=%60https%3A%2F%2Fplayer.vidplus.to%2Fembed%2Ftv%2F{tmdbId}%2F{season}%2F{episode}%3Fautoplay%3Dtrue&autonext=true&nextbutton=true&poster=true&title={query}&watchparty=false&primarycolor=6C63FF&secondarycolor=9F9BFF&iconcolor=FFFFFF%60%3AY.id%3D%3D%3D",
+        "?oe=%60https%3A%2F%2Fwww.vidking.net%2Fembed%2Fmovie%2F{tmdbId}%60%3AY.id%3D%3D%3D"
+      ],
+      "routeCount": 4,
+      "qualified": true,
+      "reason": "existing_identity_executable_route_plan",
+      "retainedRouteSources": [],
+      "liveProof": null
+    },
+    {
+      "provider": "flikhub",
+      "scope": "global",
+      "direct": "https://www.flikhub.net",
+      "transport": "residential-exit",
+      "probeAttempted": true,
+      "probeReachedSite": true,
+      "probeReturnCode": 0,
+      "probeBudgetExhausted": true,
+      "routePatterns": [],
+      "routeCount": 0,
+      "qualified": false,
+      "reason": "provider_probe_budget_exhausted"
+    },
     {
       "provider": "openflix",
       "scope": "france",
@@ -51,23 +101,23 @@
       "reason": "provider_probe_budget_exhausted"
     },
     {
-      "provider": "animeo",
-      "scope": "france",
-      "direct": "https://animeovf.fr/",
+      "provider": "diostream",
+      "scope": "global",
+      "direct": "https://diostream.cc",
       "transport": "residential-exit",
       "probeAttempted": true,
       "probeReachedSite": true,
       "probeReturnCode": 0,
-      "probeBudgetExhausted": false,
+      "probeBudgetExhausted": true,
       "routePatterns": [],
       "routeCount": 0,
       "qualified": false,
-      "reason": "reachable_no_identity_route_observed"
+      "reason": "provider_probe_budget_exhausted"
     },
     {
-      "provider": "diostream",
+      "provider": "nomorflix",
       "scope": "global",
-      "direct": "https://diostream.cc",
+      "direct": "https://nomorflix.cc",
       "transport": "residential-exit",
       "probeAttempted": true,
       "probeReachedSite": true,
@@ -107,20 +157,6 @@
       "reason": "provider_probe_budget_exhausted"
     },
     {
-      "provider": "myfluneo",
-      "scope": "france",
-      "direct": "https://myfluneo.eu",
-      "transport": "residential-exit",
-      "probeAttempted": true,
-      "probeReachedSite": true,
-      "probeReturnCode": 0,
-      "probeBudgetExhausted": true,
-      "routePatterns": [],
-      "routeCount": 0,
-      "qualified": false,
-      "reason": "provider_probe_budget_exhausted"
-    },
-    {
       "provider": "kisskh",
       "scope": "global",
       "direct": "https://kisskh.co",
@@ -135,21 +171,34 @@
       "reason": "provider_probe_budget_exhausted"
     },
     {
-      "provider": "flickystream",
+      "provider": "cinejoy",
       "scope": "global",
-      "direct": "https://flickystream.mov",
+      "direct": "https://cinejoy.pk",
+      "transport": "residential-exit",
+      "probeAttempted": true,
+      "probeReachedSite": true,
+      "probeReturnCode": 0,
+      "probeBudgetExhausted": true,
+      "routePatterns": [],
+      "routeCount": 0,
+      "qualified": false,
+      "reason": "provider_probe_budget_exhausted"
+    },
+    {
+      "provider": "meowtv",
+      "scope": "global",
+      "direct": "https://meowtv.ru",
       "transport": "residential-exit",
       "probeAttempted": true,
       "probeReachedSite": true,
       "probeReturnCode": 0,
       "probeBudgetExhausted": false,
       "routePatterns": [
-        "),c(`/anime/{tmdbId}`,{state:{backgroundLocation:u}})},className:",
-        "/genre/movie/{tmdbId}",
-        "/anime/{tmdbId}",
-        ",children:(u=s.data)==null?void%200%3Au.genres.map%28g=%3Ef.jsx%28yr%2C{to%3A%60%2Fgenre%2Fmovie%2F{tmdbId}%60%2Cchildren%3Af.jsx%28tt%2C{variant%3A"
+        "/play/movie/{tmdbId}",
+        "/play/tv/{tmdbId}/{season}/{episode}",
+        "/anime/{tmdbId}"
       ],
-      "routeCount": 4,
+      "routeCount": 3,
       "qualified": true,
       "reason": "observed_identity_executable_routes"
     },
@@ -196,6 +245,132 @@
       "reason": "provider_probe_budget_exhausted"
     },
     {
+      "provider": "bcine",
+      "scope": "global",
+      "direct": "https://bcine.ru",
+      "transport": "residential-exit",
+      "probeAttempted": true,
+      "probeReachedSite": false,
+      "probeReturnCode": 0,
+      "probeBudgetExhausted": true,
+      "routePatterns": [],
+      "routeCount": 0,
+      "qualified": false,
+      "reason": "provider_probe_budget_exhausted"
+    },
+    {
+      "provider": "aether",
+      "scope": "france",
+      "direct": "https://aether.ist",
+      "transport": "residential-exit",
+      "probeAttempted": true,
+      "probeReachedSite": true,
+      "probeReturnCode": 0,
+      "probeBudgetExhausted": true,
+      "routePatterns": [],
+      "routeCount": 0,
+      "qualified": false,
+      "reason": "provider_probe_budget_exhausted"
+    },
+    {
+      "provider": "cineflux",
+      "scope": "france",
+      "direct": "https://cineflux.wiki/",
+      "transport": "residential-exit",
+      "probeAttempted": true,
+      "probeReachedSite": false,
+      "probeReturnCode": 0,
+      "probeBudgetExhausted": true,
+      "routePatterns": [],
+      "routeCount": 0,
+      "qualified": false,
+      "reason": "provider_probe_budget_exhausted"
+    },
+    {
+      "provider": "animeko",
+      "scope": "france",
+      "direct": "https://w2.animeko.ws",
+      "transport": "residential-exit",
+      "probeAttempted": true,
+      "probeReachedSite": false,
+      "probeReturnCode": 0,
+      "probeBudgetExhausted": false,
+      "routePatterns": [],
+      "routeCount": 0,
+      "qualified": false,
+      "reason": "network_or_site_unreached"
+    },
+    {
+      "provider": "wowfilms0626",
+      "scope": "france",
+      "direct": "https://wowfilms0626c.site",
+      "transport": "residential-exit",
+      "probeAttempted": true,
+      "probeReachedSite": true,
+      "probeReturnCode": 0,
+      "probeBudgetExhausted": true,
+      "routePatterns": [],
+      "routeCount": 0,
+      "qualified": false,
+      "reason": "provider_probe_budget_exhausted"
+    },
+    {
+      "provider": "kickassanime",
+      "scope": "global",
+      "direct": "https://kaa.lt",
+      "transport": "residential-exit",
+      "probeAttempted": true,
+      "probeReachedSite": true,
+      "probeReturnCode": 0,
+      "probeBudgetExhausted": true,
+      "routePatterns": [],
+      "routeCount": 0,
+      "qualified": false,
+      "reason": "provider_probe_budget_exhausted"
+    },
+    {
+      "provider": "animeo",
+      "scope": "france",
+      "direct": "https://animeovf.fr/",
+      "transport": "residential-exit",
+      "probeAttempted": true,
+      "probeReachedSite": true,
+      "probeReturnCode": 0,
+      "probeBudgetExhausted": false,
+      "routePatterns": [],
+      "routeCount": 0,
+      "qualified": false,
+      "reason": "reachable_no_identity_route_observed"
+    },
+    {
+      "provider": "myfluneo",
+      "scope": "france",
+      "direct": "https://myfluneo.eu",
+      "transport": "residential-exit",
+      "probeAttempted": true,
+      "probeReachedSite": true,
+      "probeReturnCode": 0,
+      "probeBudgetExhausted": true,
+      "routePatterns": [],
+      "routeCount": 0,
+      "qualified": false,
+      "reason": "provider_probe_budget_exhausted"
+    },
+    {
+      "provider": "vidsrc",
+      "scope": "global",
+      "direct": "https://vidsrc.sh/",
+      "transport": "residential-exit",
+      "probeAttempted": true,
+      "probeReachedSite": true,
+      "probeReturnCode": 0,
+      "probeBudgetExhausted": true,
+      "routePatterns": [],
+      "routeCount": 0,
+      "qualified": false,
+      "reason": "provider_probe_budget_exhausted"
+    },
+    {
       "provider": "bingey",
       "scope": "global",
       "direct": "https://www.bingey.cfd",
@@ -230,6 +405,20 @@
       "transport": "residential-exit",
       "probeAttempted": true,
       "probeReachedSite": false,
+      "probeReturnCode": 0,
+      "probeBudgetExhausted": true,
+      "routePatterns": [],
+      "routeCount": 0,
+      "qualified": false,
+      "reason": "provider_probe_budget_exhausted"
+    },
+    {
+      "provider": "cinepro",
+      "scope": "global",
+      "direct": "https://cineby.gdn",
+      "transport": "residential-exit",
+      "probeAttempted": true,
+      "probeReachedSite": true,
       "probeReturnCode": 0,
       "probeBudgetExhausted": true,
       "routePatterns": [],
@@ -294,9 +483,51 @@
       "reason": "provider_probe_budget_exhausted"
     },
     {
+      "provider": "hivex",
+      "scope": "global",
+      "direct": "https://hivex.stream",
+      "transport": "residential-exit",
+      "probeAttempted": true,
+      "probeReachedSite": true,
+      "probeReturnCode": 0,
+      "probeBudgetExhausted": true,
+      "routePatterns": [],
+      "routeCount": 0,
+      "qualified": false,
+      "reason": "provider_probe_budget_exhausted"
+    },
+    {
+      "provider": "moonflix",
+      "scope": "global",
+      "direct": "https://moonflix.website",
+      "transport": "residential-exit",
+      "probeAttempted": true,
+      "probeReachedSite": true,
+      "probeReturnCode": 0,
+      "probeBudgetExhausted": true,
+      "routePatterns": [],
+      "routeCount": 0,
+      "qualified": false,
+      "reason": "provider_probe_budget_exhausted"
+    },
+    {
       "provider": "phantomflix",
       "scope": "global",
       "direct": "https://phantomflix.net",
+      "transport": "residential-exit",
+      "probeAttempted": true,
+      "probeReachedSite": false,
+      "probeReturnCode": 0,
+      "probeBudgetExhausted": true,
+      "routePatterns": [],
+      "routeCount": 0,
+      "qualified": false,
+      "reason": "provider_probe_budget_exhausted"
+    },
+    {
+      "provider": "streamaggregator",
+      "scope": "global",
+      "direct": "https://streamaggregator.in",
       "transport": "residential-exit",
       "probeAttempted": true,
       "probeReachedSite": false,
@@ -364,12 +595,12 @@
       "reason": "provider_probe_budget_exhausted"
     },
     {
-      "provider": "cineflux",
+      "provider": "cinelibre",
       "scope": "france",
-      "direct": "https://cineflux.wiki/",
+      "direct": "https://cinelibre.fr",
       "transport": "residential-exit",
       "probeAttempted": true,
-      "probeReachedSite": false,
+      "probeReachedSite": true,
       "probeReturnCode": 0,
       "probeBudgetExhausted": true,
       "routePatterns": [],
@@ -378,12 +609,12 @@
       "reason": "provider_probe_budget_exhausted"
     },
     {
-      "provider": "cinelibre",
+      "provider": "cinemaos",
       "scope": "france",
-      "direct": "https://cinelibre.fr",
+      "direct": "https://cinemaos.live/",
       "transport": "residential-exit",
       "probeAttempted": true,
-      "probeReachedSite": true,
+      "probeReachedSite": false,
       "probeReturnCode": 0,
       "probeBudgetExhausted": true,
       "routePatterns": [],
@@ -404,25 +635,6 @@
       "routeCount": 0,
       "qualified": false,
       "reason": "provider_probe_budget_exhausted"
-    },
-    {
-      "provider": "dpstream",
-      "scope": "france",
-      "direct": "https://dpstream.fyi/",
-      "transport": "residential-exit",
-      "probeAttempted": true,
-      "probeReachedSite": true,
-      "probeReturnCode": 0,
-      "probeBudgetExhausted": false,
-      "routePatterns": [
-        "?oe=%60https%3A%2F%2Fwww.vidking.net%2Fembed%2Ftv%2F{tmdbId}%2F{season}%2F{episode}%60%3AY.id%3D%3D%3D",
-        "?oe=%60https%3A%2F%2Fvidsrc.io%2Fembed%2Ftv%3Ftmdb%3D{tmdbId}&season={season}&episode={episode}",
-        "?oe=%60https%3A%2F%2Fplayer.vidplus.to%2Fembed%2Ftv%2F{tmdbId}%2F{season}%2F{episode}%3Fautoplay%3Dtrue&autonext=true&nextbutton=true&poster=true&title={query}&watchparty=false&primarycolor=6C63FF&secondarycolor=9F9BFF&iconcolor=FFFFFF%60%3AY.id%3D%3D%3D",
-        "?oe=%60https%3A%2F%2Fwww.vidking.net%2Fembed%2Fmovie%2F{tmdbId}%60%3AY.id%3D%3D%3D"
-      ],
-      "routeCount": 4,
-      "qualified": true,
-      "reason": "observed_identity_executable_routes"
     },
     {
       "provider": "motomaz",
@@ -453,6 +665,20 @@
       "reason": "provider_probe_budget_exhausted"
     },
     {
+      "provider": "wavewatch",
+      "scope": "france",
+      "direct": "https://wavewatch.icu/",
+      "transport": "residential-exit",
+      "probeAttempted": true,
+      "probeReachedSite": true,
+      "probeReturnCode": 0,
+      "probeBudgetExhausted": true,
+      "routePatterns": [],
+      "routeCount": 0,
+      "qualified": false,
+      "reason": "provider_probe_budget_exhausted"
+    },
+    {
       "provider": "fankai",
       "scope": "france",
       "direct": "https://fankai.fr/",
@@ -465,6 +691,20 @@
       "routeCount": 0,
       "qualified": false,
       "reason": "reachable_no_identity_route_observed"
+    },
+    {
+      "provider": "tenshitv",
+      "scope": "france",
+      "direct": "https://tenshitv.com/",
+      "transport": "residential-exit",
+      "probeAttempted": true,
+      "probeReachedSite": false,
+      "probeReturnCode": 0,
+      "probeBudgetExhausted": true,
+      "routePatterns": [],
+      "routeCount": 0,
+      "qualified": false,
+      "reason": "provider_probe_budget_exhausted"
     },
     {
       "provider": "cinestream",
@@ -509,6 +749,20 @@
       "reason": "provider_probe_budget_exhausted"
     },
     {
+      "provider": "nakastream",
+      "scope": "france",
+      "direct": "https://nakastream.tv",
+      "transport": "residential-exit",
+      "probeAttempted": true,
+      "probeReachedSite": true,
+      "probeReturnCode": 0,
+      "probeBudgetExhausted": true,
+      "routePatterns": [],
+      "routeCount": 0,
+      "qualified": false,
+      "reason": "provider_probe_budget_exhausted"
+    },
+    {
       "provider": "dotriv",
       "scope": "france",
       "direct": "https://dotriv.com",
@@ -537,9 +791,9 @@
       "reason": "provider_probe_budget_exhausted"
     },
     {
-      "provider": "wowfilms0626",
-      "scope": "france",
-      "direct": "https://wowfilms0626c.site",
+      "provider": "spenflix",
+      "scope": "global",
+      "direct": "https://watch.spencerdevs.xyz",
       "transport": "residential-exit",
       "probeAttempted": true,
       "probeReachedSite": true,
@@ -579,20 +833,6 @@
       "reason": "network_or_site_unreached"
     },
     {
-      "provider": "kickassanime",
-      "scope": "global",
-      "direct": "https://kaa.lt",
-      "transport": "residential-exit",
-      "probeAttempted": true,
-      "probeReachedSite": true,
-      "probeReturnCode": 0,
-      "probeBudgetExhausted": false,
-      "routePatterns": [],
-      "routeCount": 0,
-      "qualified": false,
-      "reason": "reachable_no_identity_route_observed"
-    },
-    {
       "provider": "onetouch-tv",
       "scope": "global",
       "direct": "https://onetouchtv.xyz",
@@ -607,9 +847,51 @@
       "reason": "provider_probe_budget_exhausted"
     },
     {
+      "provider": "m4ufree",
+      "scope": "global",
+      "direct": "https://m4ufree.im/",
+      "transport": "residential-exit",
+      "probeAttempted": true,
+      "probeReachedSite": false,
+      "probeReturnCode": 0,
+      "probeBudgetExhausted": false,
+      "routePatterns": [],
+      "routeCount": 0,
+      "qualified": false,
+      "reason": "network_or_site_unreached"
+    },
+    {
+      "provider": "zoechip",
+      "scope": "global",
+      "direct": "https://zoechip.onl/",
+      "transport": "residential-exit",
+      "probeAttempted": true,
+      "probeReachedSite": false,
+      "probeReturnCode": 0,
+      "probeBudgetExhausted": false,
+      "routePatterns": [],
+      "routeCount": 0,
+      "qualified": false,
+      "reason": "network_or_site_unreached"
+    },
+    {
       "provider": "anizone",
       "scope": "global",
       "direct": "https://anizone.to",
+      "transport": "residential-exit",
+      "probeAttempted": true,
+      "probeReachedSite": true,
+      "probeReturnCode": 0,
+      "probeBudgetExhausted": false,
+      "routePatterns": [],
+      "routeCount": 0,
+      "qualified": false,
+      "reason": "reachable_no_identity_route_observed"
+    },
+    {
+      "provider": "streamflix",
+      "scope": "global",
+      "direct": "https://streamflix.mom",
       "transport": "residential-exit",
       "probeAttempted": true,
       "probeReachedSite": true,
@@ -642,11 +924,11 @@
       "probeAttempted": true,
       "probeReachedSite": true,
       "probeReturnCode": 0,
-      "probeBudgetExhausted": true,
+      "probeBudgetExhausted": false,
       "routePatterns": [],
       "routeCount": 0,
       "qualified": false,
-      "reason": "provider_probe_budget_exhausted"
+      "reason": "reachable_no_identity_route_observed"
     },
     {
       "provider": "anilight",
@@ -661,6 +943,20 @@
       "routeCount": 0,
       "qualified": false,
       "reason": "reachable_no_identity_route_observed"
+    },
+    {
+      "provider": "animoflix",
+      "scope": "france",
+      "direct": "https://animoflix.to",
+      "transport": "residential-exit",
+      "probeAttempted": true,
+      "probeReachedSite": true,
+      "probeReturnCode": 0,
+      "probeBudgetExhausted": true,
+      "routePatterns": [],
+      "routeCount": 0,
+      "qualified": false,
+      "reason": "provider_probe_budget_exhausted"
     }
   ]
 }
