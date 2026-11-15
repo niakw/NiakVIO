@@ -132,17 +132,29 @@ def main() -> int:
     parser.add_argument("--output", default="automation/user-fixture-terminal-matrix.json")
     parser.add_argument("--workers", type=int, default=6)
     parser.add_argument("--timeout", type=int, default=35)
+    parser.add_argument(
+        "--include-disabled",
+        action="store_true",
+        help="Observation-only: allow explicitly requested provider-disabled rows without changing activation.",
+    )
     args = parser.parse_args()
 
     rows = provider_rows()
     requested = {cid(v) for v in args.providers.split(",") if cid(v)}
-    providers = sorted(pid for pid, row in rows.items() if row.get("enabled") is not False and (not requested or pid in requested))
+    if args.include_disabled and not requested:
+        raise SystemExit("--include-disabled requires an explicit --providers allowlist")
+    providers = sorted(
+        pid
+        for pid, row in rows.items()
+        if (not requested or pid in requested)
+        and (args.include_disabled or row.get("enabled") is not False)
+    )
     fixture_ids = [v.strip() for v in args.fixtures.split(",") if v.strip()]
     unknown = [v for v in fixture_ids if v not in FIXTURES]
     if unknown:
         raise SystemExit("unknown fixtures: " + ",".join(unknown))
     if not providers:
-        raise SystemExit("no active providers selected")
+        raise SystemExit("no providers selected for requested observation scope")
 
     tasks: list[tuple[str, str, Path, dict[str, Any]]] = []
     for provider_id in providers:
@@ -206,6 +218,8 @@ def main() -> int:
         "schema_version": 1,
         "providers_requested": sorted(requested),
         "providers_tested": providers,
+        "include_disabled": bool(args.include_disabled),
+        "activation_mutated": False,
         "fixtures": fixture_ids,
         "summary": summary,
         "results": sorted(results, key=lambda r: (r["fixture"], r["provider"])),
