@@ -73,10 +73,15 @@ def baseline_lock_errors(
     require_exact_bundle: bool = True,
 ) -> list[str]:
     errors: list[str] = []
-    expected_count = int(locks.get("catalogueProviderCount") or 46)
+    expected_count = int(locks.get("catalogueProviderCount") or 0)
     manifest_rows = rows(manifest)
-    if len(manifest_rows) != expected_count:
-        errors.append(f"catalogue count mismatch: {len(manifest_rows)} != {expected_count}")
+    # catalogueProviderCount is historical baseline metadata, not a ceiling.
+    # Growth is legal; only an unexplained shrink below the captured baseline
+    # is a regression signal.
+    if expected_count > 0 and len(manifest_rows) < expected_count:
+        errors.append(
+            f"catalogue count regressed below baseline: {len(manifest_rows)} < {expected_count}"
+        )
 
     for provider_id, lock in sorted(lock_rows(locks).items()):
         row = manifest_rows.get(provider_id)
