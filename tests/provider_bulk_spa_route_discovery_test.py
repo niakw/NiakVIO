@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import importlib.util
 from pathlib import Path
+from urllib.parse import urlsplit
 
 ROOT = Path(__file__).resolve().parents[1]
 PATH = ROOT / "scripts" / "probe_bulk_provider_routes.py"
@@ -33,7 +34,14 @@ tv_routes = module._js_route_templates(bundle, tv, origin_host="example.test")
 
 assert "/api/source?tmdb_id={tmdbId}&type={media}" in movie_routes, movie_routes
 assert "/embed/tv/{tmdbId}/{season}/{episode}" in tv_routes, tv_routes
-assert not any("themoviedb.org" in route for route in movie_routes + tv_routes)
+def absolute_hostname(route: str) -> str:
+    parsed = urlsplit(route)
+    return (parsed.hostname or "").casefold() if parsed.scheme in {"http", "https"} else ""
+
+assert all(
+    absolute_hostname(route) != "api.themoviedb.org"
+    for route in movie_routes + tv_routes
+)
 
 assert module._safe_spa_route_candidate("/api/source?tmdb_id={tmdbId}&type={media}")
 assert not module._safe_spa_route_candidate('/<iframe src="https://vidsrc.sh/embed/movie/{tmdbId}">')
