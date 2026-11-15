@@ -71,3 +71,21 @@ This comparison does not execute external provider traffic, claim playback or au
 - Read-only inventory now separates present/absent and revoked/unrevoked snapshot findings, with four synthetic state assertions and a reconciliation assertion. No alert dismissal, analysis deletion, provider modification, revocation or historical file removal is performed. Fresh workflow verification pending.
 - Existing scanner/category retirement failure is separate from source remediation; retained files must be evaluated by the owner against historical compatibility and security obligations before removal. Current-source CodeQL 43716104204 completed successfully on the pre-change SHA. No client-visible release or playback change claimed.
 
+
+## 2026-11-15 — Security revocation of nine retained historical bundles
+
+- Pre-change authority: `6dc063d210dd7c01405de52afd3b1e493e6ee879`. Exact-SHA CodeQL inventory 43716697923 succeeded (377 open High findings; 21 findings on nine present unreferenced snapshots, 355 findings on absent snapshots, one on a previously corrected test). Security Final Gate 43716968670 succeeded. All nine paths were marked `referenced: false` in the retention ledger; the inventory found zero release-referenced or pinned-path matches. Six current manifests, provider-lkg.json and SHA256SUMS.json contained none of these filenames.
+- Apply the existing security-revocation-overrides-generation-retention policy: conservatively revoke nine exact historical bundle paths associated with scanner findings, remove those paths from the current tree and retention ledger atomically, and record all 21 alert IDs. Do not dismiss findings or delete analysis records. No current manifest or executable provider is changed. Older caches pointing to the retired main-branch URLs may need refreshing; old immutable Git commit URLs are not revoked by this operation. This is not proof of exploitation, actual code repair or server-side alert closure.
+- Fresh exact-SHA CI and alert state remain to be verified. No provider activation, playback or Brain repair is asserted.
+
+| Revoked historical path | CodeQL IDs |
+| --- | --- |
+| `providers/anikototv--nuvio--13e07dfed89f7cdb.js` | #2844, #2840 |
+| `providers/castle--nuvio--54edf2b1d0fa1785.js` | #2889, #2887 |
+| `providers/french-manga--nuvio--26f0858b4d902c78.js` | #2904, #2902 |
+| `providers/mugiwarastream--nuvio--155b18313644c23f.js` | #2695, #2692 |
+| `providers/neko-sama--nuvio--c1affe06450da279.js` | #2742, #2702, #2699 |
+| `providers/papadustream--nuvio--184868ea21a93673.js` | #2710, #2707, #2705 |
+| `providers/purstream--nuvio--f05b40cb6ff33e38.js` | #2724, #2722 |
+| `providers/sekai--nuvio--d207db1f3823c2cc.js` | #2579, #2574 |
+| `providers/streamzo--nuvio--17fc1884018ef64b.js` | #2589, #2586, #2583 |

@@ -1,3 +1,9 @@
+## 2026-11-15 — Security revocation of nine retained historical bundles
+
+- Pre-change authority: `6dc063d210dd7c01405de52afd3b1e493e6ee879`. Exact-SHA CodeQL inventory 43716697923 succeeded (377 open High findings; 21 findings on nine present unreferenced snapshots, 355 findings on absent snapshots, one on a previously corrected test). Security Final Gate 43716968670 succeeded. All nine paths were marked `referenced: false` in the retention ledger; the inventory found zero release-referenced or pinned-path matches. Six current manifests, provider-lkg.json and SHA256SUMS.json contained none of these filenames.
+- Apply the existing security-revocation-overrides-generation-retention policy: conservatively revoke nine exact historical bundle paths associated with scanner findings, remove those paths from the current tree and retention ledger atomically, and record all 21 alert IDs. Do not dismiss findings or delete analysis records. No current manifest or executable provider is changed. Older caches pointing to the retired main-branch URLs may need refreshing; old immutable Git commit URLs are not revoked by this operation. This is not proof of exploitation, actual code repair or server-side alert closure.
+- Fresh exact-SHA CI and alert state remain to be verified. No provider activation, playback or Brain repair is asserted.
+
 ## 2026-11-15 — Historical snapshot security triage: physical presence and revocation
 
 - Exact tree `5ac5be29d2a816823133ebae5e8e21ce2a72a91a`: rechecked all 377 distinct alert rows from inventory 43716033052 against providers/ and provider-security-revocations.json. The 376 unreferenced snapshot alerts split into 355 alerts on 106 absent paths and 21 alerts on nine present paths. All nine present paths are absent from the 18-entry revocation ledger and from SHA256SUMS.json (55 listed files). Absence from the current checksum index is not proof that historical URLs are unreachable.
