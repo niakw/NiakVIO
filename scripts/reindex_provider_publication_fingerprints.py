@@ -11,6 +11,7 @@ from typing import Any
 ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT/"scripts"))
 
+from current_provider_scope import projection_active_provider_rows  # noqa: E402
 from reapply_published_overrides import (  # noqa: E402
     PUBLICATION_CONTRACT_SCHEMA,
     provider_build_input_sha,
@@ -19,7 +20,6 @@ from reapply_published_overrides import (  # noqa: E402
     resolve_runtime_base,
 )
 
-MANIFEST=ROOT/"manifest.json"
 OVERRIDES=ROOT/"provider-overrides.json"
 PROVENANCE=ROOT/"PROVENANCE.json"
 
@@ -32,7 +32,6 @@ def load(path: Path) -> dict[str, Any]:
 
 
 def main() -> int:
-    manifest=load(MANIFEST)
     config=load(OVERRIDES)
     provenance=load(PROVENANCE)
     rows=provenance.get("providers")
@@ -43,7 +42,8 @@ def main() -> int:
     checked=0
     byte_proof_before: dict[str,str]={}
 
-    for entry in manifest.get("scrapers") or []:
+    active_rows=projection_active_provider_rows()
+    for entry in active_rows:
         if not isinstance(entry,dict):
             continue
         provider_id=str(entry.get("id") or "").strip().casefold()
@@ -92,7 +92,7 @@ def main() -> int:
 
     # Fingerprint migration is metadata-only. Re-read every published byte after
     # the write and prove the provider assets themselves did not move.
-    for entry in manifest.get("scrapers") or []:
+    for entry in active_rows:
         if not isinstance(entry,dict):
             continue
         provider_id=str(entry.get("id") or "").strip().casefold()
