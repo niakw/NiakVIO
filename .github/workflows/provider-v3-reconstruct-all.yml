@@ -8,6 +8,10 @@ on:
         required: false
         default: false
         type: boolean
+  push:
+    branches: [main]
+    paths:
+      - '.github/triggers/provider-v3-reconstruct-all.json'
 
 permissions:
   contents: write
