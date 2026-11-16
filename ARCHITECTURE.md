@@ -201,6 +201,8 @@ La DATA statique et les ledgers peuvent conserver l’union **runtime-visible Gl
 
 Les migrations historiques du ProviderBase/Core sont des **planchers sémantiques**. Sur les octets courants elles doivent être au fixed-point : les relancer ne doit pas réécrire le générateur ou le Core pour les ramener vers une ancienne forme source. Les extensions compatibles restent autorisées, tandis que la disparition d’un invariant historique obligatoire reste fail-closed.
 
+Le seul matérialiseur ProviderBase courant est `scripts/materialize_provider_base_v3_store.py`, sur l’union active **Global + France**. Les anciens points d’entrée de migration, notamment `materialize_provider_base_identity_only.py`, ne possèdent plus d’autorité autonome : ils doivent déléguer au matérialiseur canonique et ne peuvent ni recalculer un scope Global-only ni rejouer isolément une ancienne révision runtime.
+
 Interdictions :
 
 - seed depuis `providers/*.js` ;
