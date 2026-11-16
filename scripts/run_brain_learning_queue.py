@@ -771,6 +771,32 @@ def exhausted_repair_providers(memory: dict[str, Any], policy: dict[str, Any]) -
     })
 
 
+def exhausted_handoff_repair_providers(
+    handoff_rows: dict[str, Any],
+    current_repair: set[str],
+    info_by_id: dict[str, dict[str, Any]],
+    staged_candidates: dict[str, dict[str, Any]],
+) -> list[str]:
+    """Treat Fast Repair's explicit exhausted-strategy handoff as architecture debt.
+
+    The handoff registry is written from Fast Repair's own deferred/exhausted
+    result, so it is stronger than inferring exhaustion from an ordinary failed
+    Learning lab. Only current census Repair providers that remain LEARN-owned,
+    pending, and explicitly tagged brain-strategy-exhausted qualify.
+    """
+    return sorted([
+        provider_id
+        for provider_id in unique(list(handoff_rows.keys()))
+        if provider_id in current_repair
+        and provider_id in info_by_id
+        and provider_id in staged_candidates
+        and isinstance(handoff_rows.get(provider_id), dict)
+        and str(handoff_rows[provider_id].get("owner") or "") == "LEARN"
+        and str(handoff_rows[provider_id].get("status") or "") == "pending"
+        and str(handoff_rows[provider_id].get("reason") or "") == "brain-strategy-exhausted"
+    ])
+
+
 def current_repair_priority(
     exhausted: list[str],
     census: dict[str, Any],
@@ -1394,12 +1420,12 @@ def main() -> int:
                 "explicit Learning cohort lacks current staged/health evidence: "
                 + ",".join(unavailable)
             )
-    repair_deferred = exhausted_repair_providers(
+    memory_exhausted = exhausted_repair_providers(
         load_json(ROOT / "automation" / "brain-repair-memory.json", {}),
         load_json(ROOT / "engine_v2" / "config" / "brain-policy.json", {}),
     )
     census_repair, repair_deferred, census_repair_authority = current_repair_priority(
-        repair_deferred,
+        memory_exhausted,
         load_json(ROOT / "automation" / "provider-census-status.json", {}),
         info_by_id,
         staged_candidates,
@@ -1407,6 +1433,16 @@ def main() -> int:
     handoff_state = load_json(ROOT / "automation" / "provider-repair-learn-handoff-v1.json", {})
     handoff_rows = handoff_state.get("providers") if isinstance(handoff_state.get("providers"), dict) else {}
     current_repair_set = set(census_repair)
+    handoff_exhausted = exhausted_handoff_repair_providers(
+        handoff_rows,
+        current_repair_set,
+        info_by_id,
+        staged_candidates,
+    )
+    # Negative experiment memory can be sparse or absent on the publication
+    # branch. Fast Repair's explicit exhausted-strategy handoff is therefore an
+    # independent architecture-debt authority, not merely a scheduling hint.
+    repair_deferred = unique([*repair_deferred, *handoff_exhausted])
     handoff_priority = [
         provider_id
         for provider_id in unique(list(handoff_rows.keys()))
@@ -1490,6 +1526,8 @@ def main() -> int:
     queue["fastRepairHandoffProviders"] = handoff_priority
     queue["fastRepairHandoffProviderCount"] = len(handoff_priority)
     queue["fastRepairHandoffAuthority"] = "provider-repair-learn-handoff-v1.json"
+    queue["fastRepairExhaustedHandoffProviders"] = handoff_exhausted
+    queue["fastRepairExhaustedHandoffProviderCount"] = len(handoff_exhausted)
     queue["fastRepairHandoffCausalBatchOrder"] = causal_group_order
     queue["fastRepairHandoffCausalBatchCount"] = len(causal_group_order)
     queue["fastRepairHandoffOrderingPolicy"] = "causal-batch-round-robin"
@@ -1513,6 +1551,10 @@ def main() -> int:
     queue["deferredRepairProviders"] = repair_deferred
     queue["deferredRepairProviderCount"] = len(repair_deferred)
     queue["deferredRepairReason"] = "repair_experiment_variants_exhausted_new_strategy_required"
+    queue["deferredRepairAuthorities"] = [
+        "brain-repair-memory.json",
+        "provider-repair-learn-handoff-v1.json",
+    ]
     queue["censusRepairProviders"] = census_repair
     queue["censusRepairProviderCount"] = len(census_repair)
     queue["censusRepairAuthority"] = census_repair_authority

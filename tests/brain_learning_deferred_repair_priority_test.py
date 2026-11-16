@@ -109,11 +109,55 @@ ordered = mod.authoritative_learning_order(
 )
 assert ordered == ["other", "wookafr", "1shows", "animepahe"], ordered
 
+
+handoff_rows = {
+    "exhausted-a": {
+        "owner": "LEARN",
+        "status": "pending",
+        "reason": "brain-strategy-exhausted",
+    },
+    "unresolved-b": {
+        "owner": "LEARN",
+        "status": "pending",
+        "reason": "brain-unresolved",
+    },
+    "resolved-c": {
+        "owner": "LEARN",
+        "status": "complete",
+        "reason": "brain-strategy-exhausted",
+    },
+    "not-current": {
+        "owner": "LEARN",
+        "status": "pending",
+        "reason": "brain-strategy-exhausted",
+    },
+}
+handoff_exhausted = mod.exhausted_handoff_repair_providers(
+    handoff_rows,
+    {"exhausted-a", "unresolved-b", "resolved-c"},
+    {
+        "exhausted-a": {"status": "no_streams"},
+        "unresolved-b": {"status": "no_streams"},
+        "resolved-c": {"status": "healthy"},
+        "not-current": {"status": "no_streams"},
+    },
+    {
+        "exhausted-a": {"canonical_id": "exhausted-a"},
+        "unresolved-b": {"canonical_id": "unresolved-b"},
+        "resolved-c": {"canonical_id": "resolved-c"},
+        "not-current": {"canonical_id": "not-current"},
+    },
+)
+assert handoff_exhausted == ["exhausted-a"], handoff_exhausted
+
 source = (ROOT / "scripts" / "run_brain_learning_queue.py").read_text(encoding="utf-8")
 assert "authoritative_learning_order(" in source
 assert "current census is the first Learning authority" in source
 assert "fastRepairHandoffProviders" in source
 assert "provider-repair-learn-handoff-v1.json" in source
+assert "fastRepairExhaustedHandoffProviders" in source
+assert "deferredRepairAuthorities" in source
+assert "brain-strategy-exhausted" in source
 assert "fastRepairHandoffMaxAttemptsPerProviderThisPhase" in source
 assert "FIELD_BRAIN_HANDOFF_FAIR_SHARE" in source
 assert "FIELD_BRAIN_HANDOFF_SLICE_EXHAUSTED" in source

@@ -3349,3 +3349,10 @@ Measured clean V3 oracle #43539920416 showed a **provider transport differential
 - Route reconstruction, local recognition, Core-metadata sanitization and Gowaru static-plan finalization now share the same canonical static scope. This is an authority/scope correction, not provider functional proof.
 - Workflow Gate `43793434834` separately remained fail-closed on Chillflix because current published bytes lack fresh exact-byte production proof; that gate was deliberately not weakened.
 
+## 2026-11-16 — Fast Repair exhausted handoff now feeds Brain architecture debt
+
+- Learning phase 2 run `43793210364` completed sandbox, architecture validation, memory publication and recensus successfully, but produced **0 provider proposals**, **0 reconstruction candidates**, and FORCE skipped with `no-force-promotable-blueprint`. The exact queue artifact still had `frenchstream,hianime,stigstream` in retry/pending with `deferredRepairProviders=[]`.
+- Fast Repair run `43791384502` had already persisted those same providers in `automation/provider-repair-learn-handoff-v1.json` as `owner=LEARN,status=pending,reason=brain-strategy-exhausted`. Meanwhile `automation/brain-repair-memory.json` on main is an empty file, so the old Learning path could never recover that exhausted authority through `exhausted_repair_providers()`.
+- Fix: Learning now treats the explicit current Fast Repair handoff reason `brain-strategy-exhausted` as an independent architecture-debt authority, intersected with the current census Repair set and staged/current provider evidence. Ordinary `brain-unresolved`, completed, stale, or non-current handoff rows do **not** become exhausted architecture debt.
+- This repairs the Brain handoff pipeline only. It does not declare Frenchstream, Hianime or Stigstream repaired; the next Learning/FORCE replay must still produce a provider-local executable strategy, materialize it, execute current bytes and pass playback/identity/non-regression gates.
+
