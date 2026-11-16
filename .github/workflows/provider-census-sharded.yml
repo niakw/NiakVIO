@@ -26,6 +26,11 @@ on:
         required: false
         default: false
         type: boolean
+      expected_sha:
+        description: Optional exact SHA required for dispatched census
+        required: false
+        default: ''
+        type: string
   workflow_run:
     workflows:
       - PROVIDER - Bulk Onboarding
@@ -72,8 +77,22 @@ jobs:
           # Push-triggered census must pin the exact trigger commit. Checking
           # out moving main here can silently lose an explicit trigger when
           # another persistence commit lands before prepare starts.
-          ref: ${{ github.event_name == 'push' && github.sha || 'main' }}
+          ref: ${{ (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.sha || 'main' }}
           fetch-depth: 0
+      - name: Require expected dispatch SHA
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.expected_sha != '' }}
+        shell: bash
+        env:
+          EXPECTED_SHA: ${{ inputs.expected_sha }}
+        run: |
+          set -euo pipefail
+          ACTUAL_SHA="$(git rev-parse HEAD)"
+          test "$GITHUB_SHA" = "$EXPECTED_SHA" && test "$ACTUAL_SHA" = "$EXPECTED_SHA" || {
+            echo "FIELD_SHARDED_CENSUS_EXPECTED_SHA_MISMATCH expected=$EXPECTED_SHA event=$GITHUB_SHA checkout=$ACTUAL_SHA" >&2
+            exit 1
+          }
+          echo "FIELD_SHARDED_CENSUS_EXPECTED_SHA_OK sha=$ACTUAL_SHA"
+
       - name: Validate sharded census persistence contract
         run: |
           python tests/provider_census_sharded_persistence_contract_test.py
