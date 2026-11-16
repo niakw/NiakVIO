@@ -15,7 +15,8 @@ runtime_gate = workflow.index("python3 scripts/runtime_contract_gate.py", runtim
 runtime_matrix = workflow.index("python3 scripts/nuvio_runtime_compatibility.py", runtime_gate)
 runtime_policy = workflow.index("python3 scripts/validate_platform_runtime_policy.py", runtime_matrix)
 portable_gate = workflow.index("python3 tests/nuvio_portable_stream_result_contract_test.py", runtime_policy)
-metier_docs = workflow.index("python3 tests/provider_v3_documentation_contract_test.py", portable_gate)
+clean_base = workflow.index("python3 tests/provider_clean_reconstruction_contract_test.py", portable_gate)
+metier_docs = workflow.index("python3 tests/provider_v3_documentation_contract_test.py", clean_base)
 metier_plans = workflow.index("python3 tests/provider_v3_strategy_plan_contract_test.py", metier_docs)
 cardinality = workflow.index("python3 tests/provider_cardinality_source_of_truth_test.py", metier_plans)
 semantic_transport = workflow.index("python3 tests/provider_anime_semantic_transport_contract_test.py", cardinality)
@@ -58,7 +59,7 @@ sync3_check = workflow.index("python3 scripts/sync_manifest_projection_rows.py -
 final_reconcile = workflow.index("python3 scripts/reconcile_active_provider_publication.py", sync3_check)
 
 assert reapply < sync < sync_check < reconcile < materialize < sync2 < sync2_check < second_reconcile < validate
-assert runtime_step < upstream_guard < runtime_render < runtime_gate < runtime_matrix < runtime_policy < portable_gate
+assert runtime_step < upstream_guard < runtime_render < runtime_gate < runtime_matrix < runtime_policy < portable_gate < clean_base
 assert portable_gate < metier_docs < metier_plans < cardinality < semantic_transport < multiplicity < season_zero < five_labs < native_scope
 assert native_scope < presentation < metadata < score < hls_facts < hls_integrity < hls_presentation < multi_variant < telemetry < core_ownership < step
 assert release_types < reapply2 < minimize2 < minimize2_check < sync3 < sync3_check < final_reconcile
@@ -75,6 +76,8 @@ for required in (
     "'automation/platform-runtime-contracts.json'",
     "'scripts/check_nuvio_client_upstreams.py'",
     "'scripts/runtime_contract_gate.py'",
+    "'scripts/materialize_provider_base_v3_store.py'",
+    "'tests/provider_clean_reconstruction_contract_test.py'",
     "'scripts/verify_provider_v3_reverse_rebuild.py'",
     "'scripts/generate_release_hashes.py'",
     "'automation/provider-v3-architecture.json'",
