@@ -77,6 +77,12 @@ module.exports={getStreams:async()=>[{
   format:'HLS',
   url:'https://media.example/master.m3u8',
   headers:{Referer:'https://provider.example/watch/42','User-Agent':'Neutral-UA'},
+  subtitles:[{
+    url:'https://subs.example/interstellar-fr.vtt',
+    language:'fr',
+    name:'French',
+    headers:{Referer:'https://provider.example/watch/42','X-Subtitle-Token':'opaque-token'}
+  }],
   opaqueProviderField:'keep-me'
 }]};
 '''
@@ -145,6 +151,13 @@ assert row.get("format") == "HLS", row
 assert row.get("url") == "https://media.example/master.m3u8", row
 assert row.get("headers", {}).get("Referer") == "https://provider.example/watch/42", row
 assert row.get("headers", {}).get("User-Agent") == "Neutral-UA", row
+subtitles = row.get("subtitles") or []
+assert len(subtitles) == 1, row
+assert subtitles[0].get("url") == "https://subs.example/interstellar-fr.vtt", row
+assert subtitles[0].get("language") == "fr", row
+assert subtitles[0].get("name") == "French", row
+assert subtitles[0].get("headers", {}).get("Referer") == "https://provider.example/watch/42", row
+assert subtitles[0].get("headers", {}).get("X-Subtitle-Token") == "opaque-token", row
 assert row.get("opaqueProviderField") == "keep-me", row
 
 # Legacy client compatibility may mirror presentation into size, but original
