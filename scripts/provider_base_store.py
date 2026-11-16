@@ -1877,7 +1877,10 @@ function _recipeValue(row, fields) {
 function _collectionMediaType(key) {
   const value = _text(key).toLowerCase().replace(/[^a-z0-9]+/g, "");
   if (["movie","movies","film","films"].includes(value)) return "movie";
-  if (["tv","tvs","series","show","shows","anime","animes","episode","episodes"].includes(value)) return "tv";
+  if (["tv","tvs","series","show","shows"].includes(value)) return "tv";
+  if (["anime","animes"].includes(value)) return "anime";
+  // episode/episodes is not a semantic media type; inherit the enclosing
+  // movie/tv/anime collection instead of silently forcing TV.
   return "";
 }
 function _recipeObjects(value, out, inheritedMedia) {
@@ -1904,11 +1907,12 @@ function _recipeObjects(value, out, inheritedMedia) {
 function _recipeMediaType(row, recipe) {
   const raw = _recipeValue(row, recipe.typeFields || ["type","media_type","mediaType","kind","category"]).toLowerCase();
   if (raw) {
-    if (["tv","series","show","anime","episode"].includes(raw)) return "tv";
+    if (["tv","series","show"].includes(raw)) return "tv";
+    if (raw === "anime") return "anime";
     if (["movie","film"].includes(raw)) return "movie";
   }
   const inherited = _text(row && row.__nuvioCollectionMediaType).toLowerCase();
-  return inherited === "movie" || inherited === "tv" ? inherited : "";
+  return ["movie","tv","anime"].includes(inherited) ? inherited : "";
 }
 /* NIAKVIO_PROVIDER_BASE_SHARED_IDENTITY_POLICY_V9 */
 function _identityPolicy() {
@@ -2843,14 +2847,11 @@ function _spv18ValueUrls(value, base, out) {
 /* NIAKVIO_PROVIDER_CORRELATED_VALUE_SEMANTIC_LANE_V18_5 */
 function _spv185PlanLaneAllowed(lanes, mediaType) {
   if (!Array.isArray(lanes) || !lanes.length) return true;
-  const type = _text(mediaType).trim().toLowerCase();
-  if (lanes.includes(type)) return true;
-  const semantic = Array.isArray(NIAKVIO_PROVIDER_MODEL.supportedTypes)
-    ? NIAKVIO_PROVIDER_MODEL.supportedTypes.map(value => _text(value).trim().toLowerCase())
-    : [];
-  if (!semantic.includes("anime")) return false;
-  return (type === "tv" && lanes.includes("anime")) ||
-    (type === "anime" && lanes.includes("tv"));
+  let type = _text(mediaType).trim().toLowerCase();
+  if (type === "series" || type === "show" || type === "other") type = "tv";
+  // Plan semanticTypes are canonical DATA. Explicit provider transport aliases
+  // have already been applied by Core to mediaType before ProviderBase runs.
+  return lanes.includes(type);
 }
 /* NIAKVIO_PROVIDER_VALUE_TRACE_HISTORY_V21 */
 function _spv184Trace(stage, mediaType, providerId, stepIndex, route) {
