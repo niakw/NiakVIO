@@ -3393,3 +3393,10 @@ Measured clean V3 oracle #43539920416 showed a **provider transport differential
 - Projection Reconcile now runs this deterministic static reconciliation before `audit_provider_v3_static.py` and stages `automation/provider-v3-static-knowledge.json` (plus any deterministic activation-authority normalization) in the same atomic publication transaction.
 - No provider gains functional/playback status from this recovery. It restores Brain reconstruction authority from already-published exact bytes; provider execution and publication proofs remain separate.
 
+## 2026-11-16 — Projection workflow syntax restored before replay
+
+- Trigger commit `ecbeadeac` did **not** create a Projection Reconcile run. Inspection showed the workflow file itself had been malformed by the static-authority staging edit: the staged-path `grep -Ev` guard lost its closing `$'; then` and duplicated the publication/finalization tail.
+- No provider bytes or ledgers were published by that malformed trigger.
+- The workflow was rebuilt from the last known-good `ed062c18` definition, then the intended static-authority reconciliation/staging changes were reapplied narrowly. Contract tests now require exactly one Build/Publish/Finalize block and the complete staged-path guard terminator.
+- Projection replay must be launched again from the repaired workflow HEAD; no success is inferred from the absent run.
+

@@ -71,3 +71,10 @@ assert classify_drift(known_evidence) == (True, []), "census evidence cannot sta
 for source in ("provider-overrides.json", "manifest.json", "scripts/provider_base_store.py",
                "automation/provider-v3-static-knowledge.json", ".github/workflows/provider-projection-reconcile.yml"):
     assert classify_drift([*known_evidence, source]) == (False, [source]), source
+
+# The workflow is transaction-critical; duplicated or truncated tail blocks can
+# make GitHub reject the YAML before any run is created.
+assert wf.count("- name: Build atomic provider publication") == 1
+assert wf.count("- name: Publish exact reconciled projection") == 1
+assert wf.count("- name: Finalize integrity and dispatch exact-head validation") == 1
+assert "nuvio-client-id-state\\.json)$'; then" in wf
