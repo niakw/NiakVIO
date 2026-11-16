@@ -949,14 +949,16 @@
     },
     {
       "provider": "topcartoons",
-      "action": "REDISCOVER_SEARCH",
+      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
       "repairEligible": false,
-      "confidence": "low",
-      "authorityClass": "unproven-direct-candidate",
+      "confidence": "current-census",
+      "authorityClass": "current-architecture-nonfunctional",
       "failureCount": 0,
       "reasons": [
         "direct_candidate_unproven",
-        "search_supplement_only"
+        "search_supplement_only",
+        "current_census_tested_without_terminal_verified_playback",
+        "current_status:PARTIAL OK"
       ]
     },
     {

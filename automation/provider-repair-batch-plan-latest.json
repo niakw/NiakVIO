@@ -1,10 +1,11 @@
 {
   "schemaVersion": 1,
-  "sourceRunId": "43767629808",
-  "sourceTriggerSha": "43eaf35e230fb002faa7c320144124e3f8d2e89c",
+  "sourceRunId": "43787101494",
+  "sourceTriggerSha": "0c9256da2d9ee12ac6ae828f78c7453118cdd3e2",
   "unresolvedProviderCount": 64,
-  "dynamicVariantProviderCount": 4,
+  "dynamicVariantProviderCount": 5,
   "dynamicVariantProviders": [
+    "cinemabz",
     "movix-fr",
     "nakios",
     "papadustream",
@@ -22,7 +23,6 @@
     "allwish",
     "anidb",
     "aniflix-uno",
-    "anikototv",
     "anime-sama",
     "anime-ultime",
     "animejlprovider",
@@ -33,10 +33,8 @@
     "animesultra",
     "animevost-fr",
     "animevostfr",
-    "anisama",
     "arrowtv",
     "boredflix",
-    "castle",
     "chillflix",
     "cinegram",
     "cinemabz",
@@ -56,7 +54,6 @@
     "franime",
     "frembed",
     "french-anime",
-    "french-manga",
     "frenchstream",
     "fsharetv",
     "fullanime",
@@ -64,7 +61,6 @@
     "hianime",
     "hindmoviez",
     "ihavenotv",
-    "internet-archive",
     "kehflix",
     "kidraz",
     "kurage",
@@ -76,32 +72,22 @@
     "movieshunt",
     "moviesmod",
     "movish",
-    "movix-fr",
     "movy",
-    "mugiwarastream",
-    "nakios",
-    "neko-sama",
     "neobam",
     "neonflix",
     "overlook",
-    "papadustream",
     "persianstremio",
     "playimdb",
     "primewire",
     "pstream",
-    "purstream",
     "rarefilmm",
     "reanime-to",
     "rivestream-app",
     "rivestream-ru",
-    "sadisflix",
-    "sekai",
     "showbox",
     "shuttletv",
     "skstream",
     "stigstream",
-    "streamzo",
-    "topcartoons",
     "uhdmovies",
     "videasy",
     "vidfast",
@@ -117,7 +103,6 @@
     "watch-cartoon-online",
     "watchott",
     "waveanime",
-    "webflix",
     "wookafr",
     "yflix",
     "youtitou",
@@ -125,7 +110,7 @@
     "zone-telechargement"
   ],
   "dynamicVariantFallbackUsed": true,
-  "groupCount": 13,
+  "groupCount": 12,
   "executionModel": {
     "default": "family/signature batch",
     "liveProbeConcurrency": "audit_provider_quick_yield ThreadPool",
@@ -134,11 +119,12 @@
   },
   "groups": [
     {
-      "groupId": "transport|mixed_embed_resolver",
+      "groupId": "transport|mixed_embed_resolver|runtime:mixed_embed_resolver",
       "repairScope": "transport",
       "runtimeFamilies": [
         "mixed_embed_resolver"
       ],
+      "runtimeFamilySignature": "mixed_embed_resolver",
       "capabilityStrategy": "mixed_embed_resolver",
       "evidenceDepths": [
         "chain",
@@ -183,16 +169,19 @@
       "selectionAuthorities": [
         "provider-census-status.json:brainCheckRequired"
       ],
-      "dynamicVariantProviders": [],
+      "dynamicVariantProviders": [
+        "cinemabz"
+      ],
       "executionPolicy": "batch-first",
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
     {
-      "groupId": "transport|html_scraper",
+      "groupId": "transport|html_scraper|runtime:html_scraper",
       "repairScope": "transport",
       "runtimeFamilies": [
         "html_scraper"
       ],
+      "runtimeFamilySignature": "html_scraper",
       "capabilityStrategy": "html_scraper",
       "evidenceDepths": [
         "chain",
@@ -236,11 +225,12 @@
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
     {
-      "groupId": "learning|mixed_embed_resolver",
+      "groupId": "learning|mixed_embed_resolver|runtime:mixed_embed_resolver",
       "repairScope": "learning",
       "runtimeFamilies": [
         "mixed_embed_resolver"
       ],
+      "runtimeFamilySignature": "mixed_embed_resolver",
       "capabilityStrategy": "mixed_embed_resolver",
       "evidenceDepths": [
         "lookup"
@@ -250,14 +240,16 @@
       ],
       "harnessTransportClasses": [],
       "transportSignature": "not-applicable",
-      "providerCount": 8,
+      "providerCount": 10,
       "providers": [
         "cinematheque-de-bretagne",
         "fawesome",
+        "film-a-revoir",
         "frembed",
         "frenchstream",
         "kidraz",
         "neobam",
+        "skstream",
         "youtitou",
         "zone-telechargement"
       ],
@@ -270,11 +262,12 @@
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
     {
-      "groupId": "harness-compatibility|mixed_embed_resolver|residential-exit-all-challenged",
+      "groupId": "harness-compatibility|mixed_embed_resolver|harness:residential-exit-all-challenged",
       "repairScope": "harness-compatibility",
       "runtimeFamilies": [
         "mixed_embed_resolver"
       ],
+      "runtimeFamilySignature": "not-applicable",
       "capabilityStrategy": "mixed_embed_resolver",
       "evidenceDepths": [
         "none"
@@ -303,11 +296,12 @@
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
     {
-      "groupId": "harness-compatibility|mixed_embed_resolver|residential-exit-inconclusive",
+      "groupId": "harness-compatibility|mixed_embed_resolver|harness:residential-exit-inconclusive",
       "repairScope": "harness-compatibility",
       "runtimeFamilies": [
         "mixed_embed_resolver"
       ],
+      "runtimeFamilySignature": "not-applicable",
       "capabilityStrategy": "mixed_embed_resolver",
       "evidenceDepths": [
         "lookup",
@@ -336,11 +330,12 @@
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
     {
-      "groupId": "terminal-extraction|mixed_embed_resolver",
+      "groupId": "terminal-extraction|mixed_embed_resolver|runtime:mixed_embed_resolver",
       "repairScope": "terminal-extraction",
       "runtimeFamilies": [
         "mixed_embed_resolver"
       ],
+      "runtimeFamilySignature": "mixed_embed_resolver",
       "capabilityStrategy": "mixed_embed_resolver",
       "evidenceDepths": [
         "chain"
@@ -351,9 +346,8 @@
       ],
       "harnessTransportClasses": [],
       "transportSignature": "not-applicable",
-      "providerCount": 4,
+      "providerCount": 3,
       "providers": [
-        "film-a-revoir",
         "hianime",
         "showbox",
         "zone-streaming"
@@ -367,11 +361,12 @@
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
     {
-      "groupId": "variant-coverage|mixed_embed_resolver",
+      "groupId": "variant-coverage|mixed_embed_resolver|runtime:mixed_embed_resolver",
       "repairScope": "variant-coverage",
       "runtimeFamilies": [
         "mixed_embed_resolver"
       ],
+      "runtimeFamilySignature": "mixed_embed_resolver",
       "capabilityStrategy": "mixed_embed_resolver",
       "evidenceDepths": [
         "chain"
@@ -400,11 +395,12 @@
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
     {
-      "groupId": "harness-compatibility|api_stream_resolver|no-transport-evidence",
+      "groupId": "harness-compatibility|api_stream_resolver|harness:no-transport-evidence",
       "repairScope": "harness-compatibility",
       "runtimeFamilies": [
         "api_stream_resolver"
       ],
+      "runtimeFamilySignature": "not-applicable",
       "capabilityStrategy": "api_stream_resolver",
       "evidenceDepths": [
         "none"
@@ -429,11 +425,12 @@
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
     {
-      "groupId": "harness-compatibility|mixed_embed_resolver|github-all-transports-challenged",
+      "groupId": "harness-compatibility|mixed_embed_resolver|harness:github-all-transports-challenged",
       "repairScope": "harness-compatibility",
       "runtimeFamilies": [
         "mixed_embed_resolver"
       ],
+      "runtimeFamilySignature": "not-applicable",
       "capabilityStrategy": "mixed_embed_resolver",
       "evidenceDepths": [
         "none"
@@ -458,40 +455,12 @@
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
     {
-      "groupId": "harness-compatibility|mixed_embed_resolver|native-policy-reachable",
+      "groupId": "harness-compatibility|mixed_embed_resolver|harness:residential-exit-browser-reachable",
       "repairScope": "harness-compatibility",
       "runtimeFamilies": [
         "mixed_embed_resolver"
       ],
-      "capabilityStrategy": "mixed_embed_resolver",
-      "evidenceDepths": [
-        "lookup"
-      ],
-      "dominantIssues": [
-        "waf_challenge"
-      ],
-      "harnessTransportClasses": [
-        "native-policy-reachable"
-      ],
-      "transportSignature": "native-policy-reachable",
-      "providerCount": 1,
-      "providers": [
-        "skstream"
-      ],
-      "action": "current census assigns transport/harness ownership; compare browser/native/residential transport before any provider mutation",
-      "selectionAuthorities": [
-        "provider-census-status.json:brainCheckRequired"
-      ],
-      "dynamicVariantProviders": [],
-      "executionPolicy": "batch-first",
-      "providerLocalFallback": "only-after-shared-profile-failure"
-    },
-    {
-      "groupId": "harness-compatibility|mixed_embed_resolver|residential-exit-browser-reachable",
-      "repairScope": "harness-compatibility",
-      "runtimeFamilies": [
-        "mixed_embed_resolver"
-      ],
+      "runtimeFamilySignature": "not-applicable",
       "capabilityStrategy": "mixed_embed_resolver",
       "evidenceDepths": [
         "none"
@@ -516,11 +485,12 @@
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
     {
-      "groupId": "terminal-extraction|html_scraper",
+      "groupId": "terminal-extraction|html_scraper|runtime:html_scraper",
       "repairScope": "terminal-extraction",
       "runtimeFamilies": [
         "html_scraper"
       ],
+      "runtimeFamilySignature": "html_scraper",
       "capabilityStrategy": "html_scraper",
       "evidenceDepths": [
         "chain"
@@ -543,11 +513,12 @@
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
     {
-      "groupId": "variant-coverage|html_scraper",
+      "groupId": "variant-coverage|html_scraper|runtime:html_scraper",
       "repairScope": "variant-coverage",
       "runtimeFamilies": [
         "html_scraper"
       ],
+      "runtimeFamilySignature": "html_scraper",
       "capabilityStrategy": "html_scraper",
       "evidenceDepths": [
         "chain"
