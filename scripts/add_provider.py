@@ -801,7 +801,9 @@ def stage(request_path: Path, *, bulk: bool = False) -> dict[str, Any]:
 def refresh(provider_id: str) -> dict[str, Any]:
     provider_id = norm_id(provider_id)
     current = load_json(WORK / "current.json", {})
-    manifest = load_json(MANIFEST, {})
+    scope = normalized_scope(current.get("scope") or "global")
+    target_manifest_path = VF_MANIFEST if scope == "france" else MANIFEST
+    manifest = load_json(target_manifest_path, {})
     entry = next(
         (
             row for row in manifest.get("scrapers") or []
@@ -810,7 +812,7 @@ def refresh(provider_id: str) -> dict[str, Any]:
         None,
     )
     if not isinstance(entry, dict):
-        raise ValueError(f"{provider_id}: missing manifest row during route refresh")
+        raise ValueError(f"{provider_id}: missing staged {scope} manifest row during route refresh")
 
     hubs = load_json(HUBS, {})
     hub_row = (hubs.get("providers") or {}).get(provider_id)
@@ -874,8 +876,10 @@ def refresh(provider_id: str) -> dict[str, Any]:
         model,
         base_relative,
     )
-    entry["filename"] = published_relative
-    write_json(MANIFEST, manifest)
+    entry["filename"] = (
+        "../" + published_relative if scope == "france" else published_relative
+    )
+    write_json(target_manifest_path, manifest)
 
     provenance = load_json(PROVENANCE, {})
     row = (provenance.get("providers") or {}).get(provider_id)
@@ -913,7 +917,7 @@ def refresh(provider_id: str) -> dict[str, Any]:
     write_json(WORK / "current.json", current)
     print(
         "FIELD_PROVIDER_ONBOARDING_REFRESH "
-        f"id={provider_id} direct={bool(direct)} hub={bool(hub)} telegram={bool(telegram)} "
+        f"id={provider_id} scope={scope} direct={bool(direct)} hub={bool(hub)} telegram={bool(telegram)} "
         f"routes={len(routes)} observed_urls={len(observed_urls)} base={base_relative}"
     )
     return current
