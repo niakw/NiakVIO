@@ -3,6 +3,12 @@ name: SEC - Final Gate
 
 on:
   workflow_dispatch:
+    inputs:
+      expected_sha:
+        description: Optional exact SHA required for dispatched final security gate
+        required: false
+        default: ""
+        type: string
   # Run after the CodeQL result for the exact main SHA is known.
   workflow_run:
     workflows: ["SEC - CodeQL"]
@@ -62,6 +68,19 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
+      - name: Require expected dispatch SHA
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.expected_sha != '' }}
+        shell: bash
+        env:
+          EXPECTED_SHA: ${{ inputs.expected_sha }}
+        run: |
+          set -euo pipefail
+          test "$GITHUB_SHA" = "$EXPECTED_SHA" || {
+            echo "FIELD_SECURITY_FINAL_EXPECTED_SHA_MISMATCH expected=$EXPECTED_SHA actual=$GITHUB_SHA" >&2
+            exit 1
+          }
+          echo "FIELD_SECURITY_FINAL_EXPECTED_SHA_OK sha=$GITHUB_SHA"
+
       - name: Announce issue 69 security gate
         env:
           GH_TOKEN: ${{ github.token }}
