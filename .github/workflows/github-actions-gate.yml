@@ -112,6 +112,12 @@ on:
       - "tests/native_evidence_codegen_pipeline_test.py"
       - "tests/workflow_security_policy_test.py"
   workflow_dispatch:
+    inputs:
+      expected_sha:
+        description: Optional exact SHA required for dispatched validation
+        required: false
+        default: ""
+        type: string
 
 permissions:
   contents: read
@@ -126,6 +132,19 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
+      - name: Require expected dispatch SHA
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.expected_sha != '' }}
+        shell: bash
+        env:
+          EXPECTED_SHA: ${{ inputs.expected_sha }}
+        run: |
+          set -euo pipefail
+          test "$GITHUB_SHA" = "$EXPECTED_SHA" || {
+            echo "FIELD_WORKFLOW_GATE_EXPECTED_SHA_MISMATCH expected=$EXPECTED_SHA actual=$GITHUB_SHA" >&2
+            exit 1
+          }
+          echo "FIELD_WORKFLOW_GATE_EXPECTED_SHA_OK sha=$GITHUB_SHA"
+
       - name: Checkout repository with candidate major
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
