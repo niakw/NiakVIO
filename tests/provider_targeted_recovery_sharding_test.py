@@ -37,6 +37,10 @@ assert "must-not-persist" not in repr((shape,html_shape))
 assert 'ap.add_argument("--provider",action="append",default=[])' in source
 assert "targets &= requested" in source
 assert '"requestedProviders":sorted(requested)' in source
+workflow=(ROOT/".github/workflows/provider-targeted-recovery-sharded.yml").read_text(encoding="utf-8")
+assert "projection_runtime_visible_provider_count" in workflow
+assert "provider_count>120" not in workflow, "historical campaign cardinality must not gate current recovery"
+assert "provider_count>0 and unresolved" in workflow
 
 assert mod.compact_network_path("/plain/123/item")=="/plain/{id}/item"
 opaque_path=mod.compact_network_path("/payload/%7B%22token%22%3A%22example-secret-value%22%7D/stream")
