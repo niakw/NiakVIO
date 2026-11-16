@@ -33,6 +33,8 @@ manual = (ROOT / ".github/workflows/provider-v3-reconstruct-all.yml").read_text(
 machine = json.loads((ROOT / "automation/provider-v3-architecture.json").read_text(encoding="utf-8"))
 validation_machine = json.loads((ROOT / "VALIDATION.json").read_text(encoding="utf-8"))
 sources_machine = json.loads((ROOT / "sources.json").read_text(encoding="utf-8"))
+platform_runtime_machine = json.loads((ROOT / "automation/platform-runtime-contracts.json").read_text(encoding="utf-8"))
+renderer_source = (ROOT / "scripts/render_platform_runtime_contracts.py").read_text(encoding="utf-8")
 manifest = json.loads((ROOT / "manifest.json").read_text(encoding="utf-8"))
 provider_catalog = json.loads((ROOT / "provider_catalog.json").read_text(encoding="utf-8"))
 
@@ -251,6 +253,8 @@ assert machine["provider_scopes"]["native_acceptance_includes_france_only"] is T
 assert machine["provider_scopes"]["availability_active"] == "scripts/current_provider_scope.py:projection_active_provider_ids"
 assert machine["provider_scopes"]["availability_report_visible"] == "scripts/current_provider_scope.py:projection_visible_provider_ids"
 
+assert platform_runtime_machine["schema_version"] == 3
+assert 'data.get("schema_version") != 3' in renderer_source
 assert validation_machine["schema_version"] >= 73
 runtime_contract = validation_machine["nuvio_runtime_contract"]
 assert runtime_contract["current_audited_refs_must_match"] is True
