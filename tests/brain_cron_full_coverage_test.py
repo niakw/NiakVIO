@@ -102,7 +102,7 @@ def main() -> int:
     assert "byId.size!==expected.size" not in workflow, "Learning must allow clean discovery candidates beyond the current catalogue"
     assert "' extra='+extraIds.length" in workflow, "Learning clean reconstruction must report discovery superset size"
     assert "--reserve-minutes 5" in workflow, "Learning finalization reserve disappeared"
-    assert "--stream-safety-cap 2" in workflow, "bounded quick Learning stream cap disappeared"
+    assert "--stream-safety-cap 40" in workflow, "Learning must allow full bounded variant coverage"
     assert 'timeout --signal=TERM --kill-after=30s "${hard_seconds}s" "${args[@]}"' in workflow, "Learning queue lost the outer hard process-tree deadline"
     assert "FIELD_BRAIN_QUEUE_HARD_TIMEOUT" in workflow, "Learning queue hard-timeout telemetry disappeared"
     for marker in (
@@ -238,7 +238,10 @@ def main() -> int:
     assert '"provider_timeout_ms": 12000' in queue_source
     assert '"retry_provider_timeouts": False' in queue_source
     assert '"max_settings_profiles": 1' in queue_source
-    assert '"max_streams_per_runtime": max(1, min(int(stream_cap), 2))' in queue_source
+    assert "learning_stream_probe_policy" in queue_source
+    assert "requires_full_variant_probe" in queue_source
+    assert '"probe_all_streams": probe_all_streams' in queue_source
+    assert '"all_streams_safety_cap": stream_probe_cap if probe_all_streams else 40' in queue_source
     assert '"playback_timeout_ms": 5000' in queue_source
     assert 'summary["warmSession"] = True' in queue_source
     assert '"coreIsAuthoritative": False' in queue_source, "Core evidence must remain a hypothesis in Learning"
