@@ -2172,7 +2172,10 @@ async function _resolveApiRecipe(meta, mediaType, season, episode) {
     const streams = [];
     const sources = Array.isArray(recipe.sources) && recipe.sources.length ? recipe.sources.slice(0, 12) : [null];
     const batchSize = Math.max(1, Math.min(Number(recipe.sourceBatchSize || 4) || 4, 6));
-    const minStreamsBeforeStop = Math.max(1, Math.min(Number(recipe.minStreamsBeforeStop || 1) || 1, 20));
+    /* NIAKVIO_PROVIDER_API_RECIPE_SOURCE_COVERAGE_V27 */
+    // A declared source list is a bounded variant frontier, not a first-success
+    // fallback chain. Exhaust the selected sources on the first working origin
+    // (up to the shared 40-playback-identity cap) before trying a failover base.
     for (const base of bases.slice(0, 2)) {
       for (let offset = 0; offset < sources.length; offset += batchSize) {
         const batch = sources.slice(offset, offset + batchSize);
@@ -2199,11 +2202,11 @@ async function _resolveApiRecipe(meta, mediaType, season, episode) {
           }
         }));
         for (const rows of batchRows) streams.push(...rows);
-        if (streams.length >= minStreamsBeforeStop) break;
+        if (_dedupeStreamRows(streams).length >= 40) break;
       }
       if (streams.length) break;
     }
-    return streams.slice(0, 40);
+    return _dedupeStreamRows(streams).slice(0, 40);
   }
 
   if (!recipe.searchRoute && !typedResolverOrigin) return [];
