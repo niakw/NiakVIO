@@ -20,7 +20,10 @@ IDENTITY_CAPABILITY = "media_identity_hydration"
 IDENTITY_CONTEXT_PATH = "__nuvioMediaContext.tmdbMetadata.external_ids.imdb_id"
 IDENTITY_CACHE_GLOBAL = "__nuvioTmdbMetadataCacheV1"
 REQUIRED_RESULT_FIELDS = frozenset(
-    {"url", "headers", "type", "quality", "language", "seeders", "peers", "infoHash", "subtitles"}
+    {
+        "title", "name", "url", "quality", "size", "language", "provider",
+        "type", "seeders", "peers", "infoHash", "headers", "subtitles",
+    }
 )
 
 
@@ -93,6 +96,19 @@ def validate_contract_files() -> dict:
 
     _validate_identity_contract(platform, clients)
 
+    portable_fields = {
+        str(value).strip()
+        for value in platform.get("portable_provider_result_fields") or []
+        if str(value).strip()
+    }
+    if portable_fields != REQUIRED_RESULT_FIELDS:
+        raise ValueError(
+            "portable provider result ABI drift: "
+            f"actual={sorted(portable_fields)} expected={sorted(REQUIRED_RESULT_FIELDS)}"
+        )
+    if not str(platform.get("portable_presentation_rule") or "").strip():
+        raise ValueError("portable provider presentation rule missing")
+
     for key, client in clients.items():
         if not isinstance(client, dict):
             raise ValueError(f"invalid client contract: {key}")
@@ -111,6 +127,13 @@ def validate_contract_files() -> dict:
             raise ValueError(f"{key}: subtitles are not preserved")
         if _state(client, "torrent_fields") in {"absent", "incompatible"}:
             raise ValueError(f"{key}: torrent metadata projection drifted")
+        for capability in (
+            "stream_title_projection",
+            "stream_description_projection",
+            "stream_badge_projection",
+        ):
+            if _state(client, capability) in {"absent", "incompatible", "audit-required"}:
+                raise ValueError(f"{key}: portable presentation capability drifted: {capability}")
 
     tv = clients["android-tv"]
     if _state(tv, "text_codec") not in {"absent", "incompatible"}:
