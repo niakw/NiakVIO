@@ -82,6 +82,14 @@ on:
         required: false
         default: ""
         type: string
+      scope:
+        description: Publication scope (Global or strict France-only)
+        required: false
+        default: global
+        type: choice
+        options:
+          - global
+          - france
       vf:
         description: Force inclusion in VF projection
         required: false
@@ -154,6 +162,7 @@ jobs:
           INPUT_STRATEGY: ${{ inputs.strategy || 'html_scraper' }}
           INPUT_CATEGORY: ${{ inputs.category || '' }}
           INPUT_DESCRIPTION: ${{ inputs.description || '' }}
+          INPUT_SCOPE: ${{ inputs.scope || 'global' }}
           INPUT_VF: "${{ inputs.vf || false }}"
           INPUT_REPLACE_EXISTING: "${{ inputs.replace_existing || false }}"
         run: |
@@ -179,6 +188,7 @@ jobs:
               "strategy": os.environ["INPUT_STRATEGY"],
               "category": os.environ["INPUT_CATEGORY"],
               "description": os.environ["INPUT_DESCRIPTION"],
+              "scope": os.environ["INPUT_SCOPE"],
               "vf": os.environ["INPUT_VF"],
               "replace_existing": os.environ["INPUT_REPLACE_EXISTING"],
           }
