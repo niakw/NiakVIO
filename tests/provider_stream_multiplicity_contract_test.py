@@ -39,6 +39,10 @@ assert "if (episodeHop.length) return episodeHop" not in base
 assert "if (streams.length) return streams.slice(0, 40);" not in base
 assert "if (explicitCrawled.length) return explicitCrawled" not in base
 assert "return resolvedPlanStreams.slice(0, 40);" in base
+assert "NIAKVIO_PROVIDER_API_RECIPE_SOURCE_COVERAGE_V27" in base
+assert "minStreamsBeforeStop" not in base
+assert "if (_dedupeStreamRows(streams).length >= 40) break;" in base
+assert "return _dedupeStreamRows(streams).slice(0, 40);" in base
 
 # Core: validation capacity must match the runtime output contract. Dedupe is by
 # exact playback identity (URL + request headers), not bare URL.
