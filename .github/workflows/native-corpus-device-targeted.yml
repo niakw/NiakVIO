@@ -99,7 +99,7 @@ jobs:
           if residential and not providers:
               raise SystemExit("residential native transport proof requires explicit target provider(s)")
 
-          manifest = json.loads(Path("manifest.json").read_text(encoding="utf-8"))
+          manifest = json.loads(Path("manifest-hub46.json").read_text(encoding="utf-8"))
           available = {
               str(row.get("id") or "").strip().lower(): row
               for row in manifest.get("scrapers") or []
@@ -178,7 +178,7 @@ jobs:
           from pathlib import Path
 
           root = Path(os.environ["GITHUB_WORKSPACE"]) / "niakvio"
-          manifest = json.loads((root / "manifest.json").read_text(encoding="utf-8"))
+          manifest = json.loads((root / "manifest-hub46.json").read_text(encoding="utf-8"))
           wanted = os.environ["TARGET_PROVIDER"].strip().lower()
           row = next(
               (
@@ -269,20 +269,20 @@ jobs:
               git clone --filter=blob:none --no-checkout https://github.com/NuvioMedia/NuvioDesktop.git nuvio-desktop
               git -C nuvio-desktop checkout "$NUVIO_DESKTOP_SHA"
               touch nuvio-desktop/local.properties
-              python3 niakvio/scripts/prepare_native_corpus_client.py desktop --fixture interstellar --workspace "$GITHUB_WORKSPACE"
+              python3 niakvio/scripts/prepare_native_corpus_client.py desktop --fixture interstellar --workspace "$GITHUB_WORKSPACE" --manifest native-hub46/manifest.json
               ;;
             mobile)
               git clone --filter=blob:none --no-checkout https://github.com/NuvioMedia/NuvioMobile.git nuvio-mobile
               git -C nuvio-mobile checkout "$NUVIO_MOBILE_SHA"
               touch nuvio-mobile/local.properties
-              python3 niakvio/scripts/prepare_native_corpus_client.py mobile --fixture interstellar --workspace "$GITHUB_WORKSPACE"
+              python3 niakvio/scripts/prepare_native_corpus_client.py mobile --fixture interstellar --workspace "$GITHUB_WORKSPACE" --manifest native-hub46/manifest.json
               python3 niakvio/scripts/harden_nuvio_mobile_device_test.py "$GITHUB_WORKSPACE/nuvio-mobile"
               ;;
             tv)
               git clone --filter=blob:none --no-checkout https://github.com/NuvioMedia/NuvioTV.git nuvio-tv
               git -C nuvio-tv checkout "$NUVIO_TV_SHA"
               touch nuvio-tv/local.properties nuvio-tv/local.dev.properties
-              python3 niakvio/scripts/prepare_native_corpus_client.py tv --fixture interstellar --workspace "$GITHUB_WORKSPACE"
+              python3 niakvio/scripts/prepare_native_corpus_client.py tv --fixture interstellar --workspace "$GITHUB_WORKSPACE" --manifest native-hub46/manifest.json
               ;;
           esac
 
