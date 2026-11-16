@@ -1,3 +1,9 @@
+## 2026-11-16 — Fresh representative Fast Repair replay triggered on latest census
+
+- Latest authoritative sharded census is run `43852026874`; current representative statuses are deliberately heterogeneous: `frenchstream` = NO PROOF / Brain check required, `hianime` = CHAIN REACHED / terminal-extraction debt, `stigstream` = CHAIN REACHED / Repair-eligible. `movy` remains harness-compatibility-owned (native-policy-reachable) and is excluded from provider Repair until transport ownership changes.
+- Refreshed `.github/triggers/provider-fast-repair.json` on main in commit `43d783ef07170b3b2ec7cd11adc20591ccddb42c`, pinned to census `43852026874` and source pipeline `fcc23415fb7483bdfabff1b69da619b9098456ef`. The run must prove Brain generation -> application -> exact-byte materialization -> Global+France publication reconcile -> independent terminal/identity replay -> persistence; workflow success alone is not acceptance.
+- Brain-LLM guidance is being replayed in parallel on the exact NiakVIO trigger SHA. No new provider repair has been accepted or validated at the time of this entry.
+
 ## 2026-11-16 — Targeted Recovery rematerializes accepted France-only DATA without static-memory prerequisite
 
 - Targeted Recovery run `43852064421` on `19c2240819ff91e19f1cfc75adcb943dcbc98cda` failed **before provider execution** while rematerializing `frenchstream`: `static knowledge missing outside projection-only materialization`. The provider was not the failing component; the diagnostic workflow incorrectly invoked strict Repair/Domain rematerialization even though its purpose is to reconstruct already accepted current projection bytes for observation.
