@@ -1,3 +1,9 @@
+## 2026-11-16 — Targeted/refined probe artifacts are explicit Fast stale causal inputs
+
+- The first stale-requeue hardening compared a richer canonical census projection, but the full targeted network/debug evidence is intentionally stored in `automation/provider-targeted-regression-recovery-latest.json` and `automation/provider-repair-batch-refined-latest.json`; the census only carries a bounded transport summary. A future probe can therefore change provider-owned hosts/routes/stages without necessarily changing the census summary.
+- Commit `a83b5f5f` adds both targeted/refined artifacts to the Fast Repair stale causal-drift boundary. Commit `1901ee89` pins this in the separation contract. A concurrent targeted probe can no longer be discarded merely because NO PROOF/CHAIN REACHED stayed unchanged.
+- This is conservative orchestration: a changed targeted/refined artifact forces replay on current main; publication/terminal/identity thresholds remain unchanged. Current in-flight Fast run `43854162789` predates these commits and must stale-requeue onto the corrected workflow.
+
 ## 2026-11-16 — Fast stale requeue now treats targeted causal evidence as semantic drift
 
 - Targeted Recovery run `43854495472` on `108a508d384f3222915e4332468bd23cd3cc2db0` finally persisted the current-census three-provider evidence after the neutral-drift race fixes. It rematerialized/reconciled all three representatives and recorded provider-owned observations: `frenchstream` reaches `fs16.lol` HTML HTTP 200 on search/filter routes with a player marker, `hianime` reaches `hianime.at` HTML HTTP 200 on root/search, and `stigstream` times out in anime/movie/tv. No provider returned verified/playable terminal media (`verifiedProviderCount=0`), so this is causal evidence only.
