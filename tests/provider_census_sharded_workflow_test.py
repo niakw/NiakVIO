@@ -46,6 +46,12 @@ assert "permissions:\n  contents: write\n  actions: write" in text
 assert "permissions:\n      contents: write" in text
 assert '"$count" -gt 120' not in text, "historical Global catalogue size must not suppress causal census refresh"
 assert "projection_runtime_visible_provider_count" in text
+push_block = text.split("  push:", 1)[1].split("\npermissions:", 1)[0]
+assert "'scripts/provider_base_store.py'" not in push_block
+assert "'provider_catalog.json'" not in push_block
+assert "'.github/workflows/provider-census-sharded.yml'" in push_block
+assert "'.github/triggers/provider-census-sharded.json'" in push_block
+assert "routing=explicit-or-event" in text
 assert 'source_workflow="${{ github.event.workflow_run.name }}"' in text
 assert '[ "$source_workflow" = "PROVIDER - Bulk Activation" ]' in text
 assert text.count("provider-census-shard-${{ matrix.shard }}") >= 2
