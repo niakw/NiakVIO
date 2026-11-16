@@ -1,3 +1,12 @@
+## 2026-11-16 — NiakVIO métier fixed-point audit found and removed a real route-plan stream truncation
+
+- The exact release finalizer reached current Nuvio ABI/projection validation and then failed `tests/provider_stream_multiplicity_contract_test.py` on a real ProviderBase defect, not a stale assertion: `_resolveProviderValuePlan()` still returned immediately from the first direct-media, episode-hop or crawled-media success inside a multi-step route plan.
+- That early return contradicted the restored September-equivalent/current V26 business rule: discover/aggregate bounded reader, source, language and quality variants first, deduplicate by playback identity, then apply the final output cap.
+- `4b134945` changes the structured provider-value route executor to accumulate direct media, exact episode-hop media, crawled media and correlated player fallbacks in `planStreams`, deduplicate with `_dedupeStreamRows`, and only terminate early once the 40-distinct-playback-identity bound is actually full. A successful plan still terminates before alternate plans, preserving bounded request economics; it no longer terminates on the first successful step.
+- `9fc08c7a` strengthens the multiplicity regression so direct/episode/crawl first-success returns cannot silently return. No provider-specific route or fixture exception was added.
+- Earlier in the same métier pass, the NuvioTV contract was corrected to retire the long-deleted historical `nuvio_tv_direct_media_v2.py` authority and bind positive TV proof to the exact official four-positional-argument NuvioTV ABI; the iOS workflow null top-level `env:` mapping was removed; Global+France active native/Repair scope and current Desktop runtime refs were realigned.
+- This remains NiakVIO base work, not Brain Repair. A fresh exact-HEAD Workflow Gate, Verify & Publish, non-regression gate, release finalizer/reverse rebuild and all five current-client Native Labs are still required before the base is certified.
+
 ## 2026-11-16 — Platform runtime schema v3 is executable release authority, not a stale v2 renderer assumption
 
 - Release finalizer run `43908174054` reached the current Nuvio upstream freshness check. Mobile and TV matched their accepted heads; Desktop advanced from accepted `913c84787f8d...` to `226bbbec1bec...` and was classified `safe_advance_available` with no hard/semantic runtime contract drift. That notice did **not** cause the job failure.
