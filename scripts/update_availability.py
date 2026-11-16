@@ -21,6 +21,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from current_provider_scope import projection_visible_provider_rows
+
 ROOT = Path(__file__).resolve().parents[1]
 MANIFEST_PATH = ROOT / "manifest.json"
 NEXT_MANIFEST_PATH = ROOT / "manifest.next.json"
@@ -76,6 +78,8 @@ def file_sha(entry: dict[str, Any]) -> str | None:
 
 def main() -> int:
     manifest = load_json(MANIFEST_PATH, {"scrapers": []})
+    global_original_rows = [dict(row) for row in manifest.get("scrapers", []) if isinstance(row, dict)]
+    global_ids = {canonical_id(str(row.get("id", ""))) for row in global_original_rows}
     config = load_json(CONFIG_PATH, {})
     sources = load_json(SOURCES_PATH, {})
     results = load_json(RESULTS_PATH, {})
@@ -97,13 +101,17 @@ def main() -> int:
     report_items: list[dict[str, Any]] = []
     now = datetime.now(timezone.utc).isoformat()
     changed = False
-    new_entries = []
+    global_updates: dict[str, dict[str, Any]] = {}
+    global_removed: set[str] = set()
 
-    for original in manifest.get("scrapers", []):
+    for original in projection_visible_provider_rows():
         entry = dict(original)
         cid = canonical_id(str(entry.get("id", "")))
+        is_global = cid in global_ids
         if cid in explicit_excluded:
-            changed = True
+            if is_global:
+                changed = True
+                global_removed.add(cid)
             report_items.append({"id": cid, "status": "excluded", "action": "removed-disallowed-p2p"})
             continue
 
@@ -130,7 +138,8 @@ def main() -> int:
                 "response_categories": old.get("response_categories", []),
                 "host_health": old.get("host_health", {}),
             })
-            new_entries.append(entry)
+            if is_global:
+                global_updates[cid] = entry
             continue
 
         status = result.get("status", "runtime_error")
@@ -164,6 +173,7 @@ def main() -> int:
             and hard_failures >= disable_after
             and failure_window_satisfied
             and entry.get("enabled", False)
+            and is_global
         ):
             entry["enabled"] = False
             auto_disabled = True
@@ -175,6 +185,7 @@ def main() -> int:
             and successes >= reenable_after
             and not entry.get("enabled", False)
             and activation_eligible
+            and is_global
         ):
             entry["enabled"] = True
             auto_disabled = False
@@ -269,8 +280,14 @@ def main() -> int:
             "activation_eligible": activation_eligible,
             "activation_mode": activation_mode,
         })
-        new_entries.append(entry)
+        if is_global:
+            global_updates[cid] = entry
 
+    new_entries = [
+        global_updates.get(canonical_id(str(original.get("id", ""))), dict(original))
+        for original in global_original_rows
+        if canonical_id(str(original.get("id", ""))) not in global_removed
+    ]
     new_manifest = {**manifest, "scrapers": new_entries}
     public_report = {
         "schema_version": 63,
@@ -314,7 +331,7 @@ def main() -> int:
     if report_snapshot != previous_snapshot or not REPORT_PATH.exists():
         atomic_write_json(REPORT_PATH, public_report)
     atomic_write_json(NEXT_MANIFEST_PATH, new_manifest)
-    print(f"Availability report prepared for {len(report_items)} providers; manifest changed={changed}.")
+    print(f"Availability report prepared for {len(report_items)} Global+France providers; manifest changed={changed}.")
     return 0
 
 
