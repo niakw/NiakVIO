@@ -1,3 +1,10 @@
+## 2026-11-16 — Persisted provider catalogue fixed point restored on main
+
+- Current main still carried the production mismatch exposed by Workflow Gate even after the generic transaction code was repaired: `manifest.json` / `vf/manifest.json` referenced the new provider generations while all projected `provider_catalog.json` scraper mirrors were stale.
+- Commit `8f8d5c85` reconstructs the catalogue mirrors directly from the current published projections, preserving catalogue policy/projection membership/order and normalizing France paths/canonical media semantics exactly like the canonical catalogue builder. This is an infrastructure authority reconciliation, not provider-specific Repair.
+- Immediate read-back validation after the commit reports **0 projection parity errors**, exact catalogue order for both projections, 95 Global rows, 67 VF rows, 140 catalogue objects and release `5.21.147`. Global/VF filenames, versions, enabled state and semantic types now agree with their catalogue records.
+- Generic recurrence prevention remains in `e857af48` / `05862f4e` with regressions `e6421b31` / `42cd7b1f`; the fresh CI/reconcile/finalizer chain must still prove these invariants from exact current bytes.
+
 ## 2026-11-16 — Global publication now keeps provider_catalog atomic with manifests
 
 - Exact Workflow Gate run `43939677853` exposed production-significant publication drift after the DATA-first projection rebuild: dozens of Global rows pointed at new content-addressed provider bytes in `manifest.json` while `provider_catalog.json` still pointed at the previous artifacts; Cinegram also retained stale canonical media types in the catalogue.
