@@ -171,8 +171,9 @@ class ProductionFreshnessAuthority:
             return True, "disabled-recovery-exact-byte"
 
         prov = self.provenance.get(provider) or {}
-        offline_scope = str((prov.get("bulk_offline_activation_proof") or {}).get("scope") or "")
-        expected_scope = "global" if projection == "global" else offline_scope
+        if projection not in {"global", "france"}:
+            return False, "invalid-projection-scope"
+        expected_scope = projection
         if exact_offline_contract(prov, digest, expected_scope):
             return True, "offline-contract-exact-byte"
 
