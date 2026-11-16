@@ -1,5 +1,5 @@
 {
-  "schema_version": 73,
+  "schema_version": 74,
   "release": "dynamic",
   "release_authority": "manifest.json:version",
   "candidate_track": "main",
@@ -87,7 +87,9 @@
     "route_regression_self_test": true,
     "published_override_regressions": true,
     "reverse_rebuild_required": true,
-    "release_integrity_required": true
+    "release_integrity_required": true,
+    "clean_provider_base_matches_current_common_source": true,
+    "common_provider_source_migrations_validation_only": true
   },
   "domain_refresh": {
     "authority": "scripts/domain_refresh_transaction_v2.py",
@@ -140,7 +142,9 @@
     "requires_current_nuvio_client_refs": true,
     "native_proof_transitive_between_clients": false,
     "post_finalization_native_certification_workflow": ".github/workflows/release-candidate-validation.yml",
-    "requires_final_native_hub46_manifest_regeneration": true
+    "requires_final_native_hub46_manifest_regeneration": true,
+    "requires_clean_provider_base_current_source": true,
+    "requires_common_source_migration_fixed_point": true
   },
   "limitations": [
     "A CI IP can be blocked while a residential IP works.",
