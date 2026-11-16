@@ -68,7 +68,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
             for key, value in (cfg.get("request_type_aliases") or {}).items()
             if str(key).strip() and str(value).strip()
         },
-        "revision": "tmdb-data-contract-launch-gate-v34-anime-pre-network-semantic-gate",
+        "revision": "tmdb-data-contract-launch-gate-v35-canonical-anime-provider-abi",
     }
     serialized = json.dumps(payload, separators=(",", ":"))
     marker = f"{MARKER}:{hashlib.sha256(serialized.encode()).hexdigest()[:12]}"
@@ -106,10 +106,12 @@ function providerTransport(canonical,namespace){
   var mapped=s(map[canonical]).toLowerCase();
   if(mapped==="tmdb_namespace")return namespace==="movie"?"movie":"tv";
   if(mapped)return alias(mapped);
-  // Anime is semantic, not a TMDB namespace. Once authoritative metadata has
-  // classified the work as anime, preserve its real TV/movie namespace for the
-  // provider API. The semantic capability gate still rejects non-anime works.
-  if(canonical==="anime")return namespace==="movie"?"movie":"tv";
+  /* NUVIO_GLOBAL_CANONICAL_ANIME_PROVIDER_ABI_V35 */
+  // Official Nuvio calls providers with canonical anime. Core must preserve
+  // that ABI by default. A provider/site that really transports anime as
+  // tv/movie must declare requestTypeAliases (or adapt inside ProviderBase);
+  // TMDB namespace is identity metadata, never an implicit provider type alias.
+  if(canonical==="anime")return"anime";
   return canonical==="movie"?"movie":"tv";
 }
 function namespaceCandidates(v,season,episode){
