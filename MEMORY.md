@@ -1,3 +1,10 @@
+## 2026-11-16 — Presentation metadata migration now recognizes current Core supersets
+
+- Reconstruction run `43926074302` on `84b6db8a` passed the repaired finalization migration but then failed in the semantic/transport preparation step because `harden_stream_presentation_metadata_fallbacks.py` still required the historical exact `providerName` source string.
+- Current Stream Presentation V34 already preserves the intended fallback semantics and extends them with richer technical-label detection (including 8K/4320p and additional resolutions). Reverting that function to the old anchor would have been a regression. Commit `dfa8e2ce` therefore treats the historical migration as a semantic floor: canonical `cleanProviderLabel -> providerName` and metadata-first `mediaLine` behavior satisfy it even when later Core revisions add safe presentation logic.
+- Commit `5aecbfc4` adds a fixed-point regression that runs the migration against committed Core bytes and requires **zero byte mutation**; `bb4b1d13` wires that regression into the main Workflow Gate.
+- Run `43926074302` produced no accepted reconstruction. A fresh reconstruction on a descendant SHA is required before current ProviderBase assets or release bytes can be called rebuilt.
+
 ## 2026-11-16 — Reconstruction finalization gate accepts safe monotone state extensions
 
 - Clean Provider-v3 reconstruction run `43925314282` on `8579b320` failed before materialization in `upgrade_provider_v3_finalization_v1.py`: its V1 validator required the historical three-state source literal for `blocked_recipe_plan`, while current sequential validation legitimately extends that fail-closed family with `resample-required`.
