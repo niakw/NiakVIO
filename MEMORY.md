@@ -1,3 +1,9 @@
+## 2026-11-16 — Replay same 12-provider family cohort after causal-frontier NameError fix
+
+- Source `f393255d4d532480fd0ad73a720473c06505cbd4` fixes the Learning queue crash observed in run 43783417705 after successful 12/12 published staging, 12/12 clean ProviderBase reconstruction and Brain advisor family-wave selection (9 LLM targets → 7 representatives, 2 deferred siblings). The failure was an undefined `by_id` local at the NiakVIO caller; the queue's actual health evidence map is `info_by_id`.
+- Refresh only the official `.github/triggers/brain-learning-reconstruction` trigger for the same 12-provider eligibility cohort. No provider-specific manual repair is introduced; the run must demonstrate family strategy generation/reuse, exact materialization/execution and downstream proof before any repair is accepted.
+- Brain main remains `7b4cb144591f9714f7b29bf4e727d141108b0151` with green Brain CI 43783148306 at trigger time. ProviderBase remains derived from structured NiakVIO authority.
+
 ## 2026-11-16 — Family Learning NameError fixed after 12/12 ProviderBase reconstruction
 
 - Brain Repair Lab 43783417705 on `15c6e39152105b8aadad127a1beaf9df24faf6c2` proved the selected structured cohort survives both stages: published stage 12/12 and clean ProviderBase reconstruction 12/12. Brain `7b4cb144...` then reduced nine LLM targets to seven repair-family representatives and produced compact advisor output before the NiakVIO queue crashed.
