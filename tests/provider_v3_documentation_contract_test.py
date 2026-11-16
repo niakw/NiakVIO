@@ -9,7 +9,7 @@ import sys
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
-from current_provider_scope import active_provider_count, pending_provider_ids, projection_active_provider_count, projection_runtime_visible_provider_count, runtime_visible_provider_count, visible_provider_count
+from current_provider_scope import active_provider_count, pending_provider_ids, projection_active_provider_count, projection_runtime_visible_provider_count, projection_visible_provider_rows, runtime_visible_provider_count, visible_provider_count
 
 ACTIVE_EXPECTED = active_provider_count()
 VISIBLE_EXPECTED = visible_provider_count()
@@ -34,6 +34,7 @@ machine = json.loads((ROOT / "automation/provider-v3-architecture.json").read_te
 validation_machine = json.loads((ROOT / "VALIDATION.json").read_text(encoding="utf-8"))
 sources_machine = json.loads((ROOT / "sources.json").read_text(encoding="utf-8"))
 manifest = json.loads((ROOT / "manifest.json").read_text(encoding="utf-8"))
+provider_catalog = json.loads((ROOT / "provider_catalog.json").read_text(encoding="utf-8"))
 
 for required in (
     "NIAKVIO_PROVIDER_BASE_OWNED_V3",
@@ -158,6 +159,7 @@ assert machine["route_recognition"]["france_only_publication_authority"] == "pro
 
 assert machine["routine"]["quick"]["repair_allowed"] is False
 assert machine["routine"]["quick"]["provider_reconstruction_allowed"] is False
+assert provider_catalog["policy"]["quickRefreshMayRepairAndPublish"] is False
 assert machine["routine"]["deep"]["repair_allowed"] is False
 assert machine["routine"]["deep"]["provider_reconstruction_allowed"] is False
 assert machine["manual_reconstruction"]["main_write_allowed"] is False
@@ -315,7 +317,9 @@ assert all(
 assert RUNTIME_VISIBLE_EXPECTED == VISIBLE_EXPECTED - len(global_pending_ids)
 canonical_valid = {"movie", "tv", "anime"}
 transport_valid = canonical_valid
-for row in rows:
+projection_rows = projection_visible_provider_rows()
+assert projection_rows, "Global+France projection union must not be empty"
+for row in projection_rows:
     provider = str(row.get("id") or "<unknown>")
     transport = {str(v).strip().lower() for v in (row.get("supportedTypes") or []) if str(v).strip()}
     canonical = {str(v).strip().lower() for v in (row.get("canonicalSupportedTypes") or transport) if str(v).strip()}
