@@ -72,7 +72,7 @@ assert '["git", "show", "HEAD:manifest.json"]' in validator_source
 assert 'NUVIO_PUBLISHED_MANIFEST_BASELINE' in validator_source
 
 
-def run_validator(*, manifest_rows, report_rows, mode='deep', safety=None, authority_active=None, authority_visible=None):
+def run_validator(*, manifest_rows, report_rows, mode='deep', safety=None, authority_active=None, authority_visible=None, vf_rows=None, projection_authority_active=None, projection_authority_visible=None):
     with tempfile.TemporaryDirectory() as tmp:
         root = Path(tmp)
         (root / 'vf').mkdir()
@@ -83,9 +83,8 @@ def run_validator(*, manifest_rows, report_rows, mode='deep', safety=None, autho
         }), encoding='utf-8')
         manifest = {'scrapers': manifest_rows}
         (root / 'manifest.json').write_text(json.dumps(manifest), encoding='utf-8')
-        # The projection may contain only the same fixture providers here; the
-        # validator's concern is activation parity for ids present in both.
-        (root / 'vf' / 'manifest.json').write_text(json.dumps(manifest), encoding='utf-8')
+        vf_rows = list(vf_rows if vf_rows is not None else manifest_rows)
+        (root / 'vf' / 'manifest.json').write_text(json.dumps({'scrapers': vf_rows}), encoding='utf-8')
         (root / 'health-report.json').write_text(json.dumps({
             'test_mode': mode,
             'providers': report_rows,
@@ -108,9 +107,25 @@ def run_validator(*, manifest_rows, report_rows, mode='deep', safety=None, autho
             path.write_text(content, encoding='utf-8')
         authority_active = set(authority_active if authority_active is not None else [str(row.get('id') or '').casefold() for row in manifest_rows if row.get('enabled') is True])
         authority_visible = set(authority_visible if authority_visible is not None else [str(row.get('id') or '').casefold() for row in manifest_rows])
+        projection_rows = list(manifest_rows) + list(vf_rows)
+        projection_authority_active = set(
+            projection_authority_active
+            if projection_authority_active is not None
+            else [str(row.get('id') or '').casefold() for row in projection_rows if row.get('enabled') is True]
+        )
+        projection_authority_visible = set(
+            projection_authority_visible
+            if projection_authority_visible is not None
+            else [str(row.get('id') or '').casefold() for row in projection_rows]
+        )
         script = validator_source.replace(
-            'from current_provider_scope import active_provider_ids, visible_provider_ids',
-            f'def active_provider_ids():\n    return {authority_active!r}\n\ndef visible_provider_ids():\n    return {authority_visible!r}',
+            'from current_provider_scope import active_provider_ids, projection_active_provider_ids, projection_visible_provider_ids, visible_provider_ids',
+            (
+                f'def active_provider_ids():\n    return {authority_active!r}\n\n'
+                f'def projection_active_provider_ids():\n    return {projection_authority_active!r}\n\n'
+                f'def projection_visible_provider_ids():\n    return {projection_authority_visible!r}\n\n'
+                f'def visible_provider_ids():\n    return {authority_visible!r}'
+            ),
         ).replace(
             'ROOT = Path(__file__).resolve().parents[1]',
             f'ROOT = Path({str(root)!r})',
@@ -141,8 +156,33 @@ result = run_validator(
     authority_visible={'a', 'b'},
 )
 assert result.returncode == 1
-assert 'manifest activation differs from providers/ authority' in result.stderr
+assert 'Global manifest activation differs from providers/ authority' in result.stderr
 assert 'non-target provider unexpectedly enabled: b' in result.stderr
+
+# France-only providers are first-class activation authority. They must not be
+# silently omitted or disabled merely because they are absent from manifest.json.
+result = run_validator(
+    manifest_rows=[{'id': 'a', 'enabled': True}, {'id': 'b', 'enabled': False}],
+    vf_rows=[{'id': 'a', 'enabled': True}, {'id': 'fr-only', 'enabled': True}],
+    report_rows=[],
+    authority_active={'a'},
+    authority_visible={'a', 'b'},
+    projection_authority_active={'a', 'fr-only'},
+    projection_authority_visible={'a', 'b', 'fr-only'},
+)
+assert result.returncode == 0, result.stderr
+
+result = run_validator(
+    manifest_rows=[{'id': 'a', 'enabled': True}, {'id': 'b', 'enabled': False}],
+    vf_rows=[{'id': 'a', 'enabled': True}, {'id': 'fr-only', 'enabled': False}],
+    report_rows=[],
+    authority_active={'a'},
+    authority_visible={'a', 'b'},
+    projection_authority_active={'a', 'fr-only'},
+    projection_authority_visible={'a', 'b', 'fr-only'},
+)
+assert result.returncode == 1
+assert 'Global+France activation differs from publication authority' in result.stderr
 
 # official_hub itself is not activation authority; registry-only targets are legal.
 assert 'FIELD_ACTIVATION_SCOPE_REGISTRY_ONLY' in validator_source
