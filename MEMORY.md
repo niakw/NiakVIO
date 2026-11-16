@@ -1,3 +1,10 @@
+## 2026-11-16 — Runtime-family sanitizer is clean; reconstruction test import path repaired
+
+- Reconstruction run `43927767181` on `782072c9` proved the common runtime-family correction: static authority reached 75/75 active identities, candidate preparation produced 675 routes / 18 recipes, local recognition covered 108 runtime-visible providers, and the sanitizer completed with `providers=108 family_derived=67 active_unknown=0`.
+- The run then failed before the next contract because `tests/provider_v3_core_metadata_route_sanitizer_test.py` imported `current_provider_scope` before adding `scripts/` to `sys.path`. This is a test harness defect, not a Provider DATA failure.
+- Commit `01dcc2de` moves the path bootstrap before the imports. No provider bytes, routes, families, proof thresholds or activation state changed.
+- Run `43927767181` produced no accepted reconstruction. A fresh exact-source replay must continue beyond the sanitizer/test stage before ProviderBase materialization or reverse rebuild can be claimed.
+
 ## 2026-11-16 — Open-archive runtime gets a generic current Provider-v3 topology
 
 - Clean reconstruction run `43926873111` on `8ed509bf` passed source-plan, ProviderBase runtime, finalization, semantic/transport and Global+France static-authority gates, then failed during Provider DATA sanitization with `active Provider DATA still has unknown sourceRuntimeFamily: internet-archive`.
