@@ -1,3 +1,10 @@
+## 2026-11-16 — Current Nuvio heads re-audited before NiakVIO release certification
+
+- NiakVIO métier remains the priority before Brain Repair. The official client heads moved after the earlier ABI audit: NuvioMobile `cmp-rewrite` is now `fc05fe8e516a5bd749c8a4e7b1c05143acd3f031`; NuvioTV `dev` is now `2c853c1786743822c5ec7932e855529e0c731221`; NuvioDesktop remains `913c84787f8d866a2eea69f57813843a68020c49`.
+- Exact commit comparison shows Mobile changed only Android MPV player integration/dependency code; no provider/plugin/runtime bridge, getStreams, result mapping, headers, subtitles or TMDB bridge path changed. TV changed episode-rating alignment plus app version `1.2.0-beta.2` / code `1079`; no PluginRuntime/PluginManager/provider transport path changed. These are reader/UI-side advances, not shared provider ABI changes.
+- Current audited refs were advanced consistently across `automation/nuvio-client-upstreams.json`, `automation/platform-runtime-contracts.json`, `automation/nuvio-client-compatibility-matrix.json`, `automation/nuvio-tv-runtime-contract.json`, `sources.json` and the rendered `automation/PLATFORM-RUNTIME-CONTRACTS.md`.
+- This source audit does not replace native execution proof. Release certification still requires the canonical finalizer on a descendant SHA, reverse byte-identical Provider-v3 proof, regenerated integrity inventories, then independent Android TV / Android / iOS / macOS / Windows Native Labs.
+
 ## 2026-11-16 — NiakVIO métier authority cleanup before Brain: native scope, Repair scope, Availability, Domain and media ABI
 
 - Priority remains NiakVIO structure before Brain. The audit found several current paths still carrying September campaign cardinality/scope as executable authority even though Provider v3 itself had already moved to a Global+France projection model.
