@@ -99,7 +99,7 @@ assert.throws(
 
 assert.equal(catalog.policy.repairBeforeTriage, true);
 assert.equal(catalog.policy.retainLastKnownGoodOnInconclusive, true);
-assert.equal(catalog.policy.quickRefreshMayRepairAndPublish, true);
+assert.equal(catalog.policy.quickRefreshMayRepairAndPublish, false);
 
 const rendered = manifestsFromCatalog(catalog);
 assert.deepEqual(rendered.general, general, "general manifest must round-trip byte-semantically through catalog");
