@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Rotating upstream-vs-NiakVIO parity for the active Hub-46 campaign.
+"""Rotating upstream-vs-NiakVIO parity for the current active projection union.
 
 A title is a catalogue sample, never a provider-health verdict. For each declared
 semantic lane this harness rotates through the recent global pool and stops early
@@ -68,6 +68,14 @@ def scope_ids(path: Path) -> set[str]:
     expected = int(data.get("hubCount") or data.get("providerCount") or len(ids))
     if not ids or len(ids) != expected:
         raise SystemExit(f"parity scope invalid: ids={len(ids)} expected={expected} path={path}")
+
+    # The legacy Hub-46 matrix is retained as evidence/provenance only. Current
+    # parity must follow the same active Global+France authority as native Labs,
+    # materialization and release publication; otherwise newly activated or
+    # France-only providers silently disappear from regression diagnostics.
+    policy = str(data.get("scopePolicy") or "").strip().casefold()
+    if policy in {"historical-evidence-only", "dynamic-active-hub-authority"} or path.name == "hub-lab-matrix-46.json":
+        return set(projection_active_provider_ids())
     return ids
 
 
