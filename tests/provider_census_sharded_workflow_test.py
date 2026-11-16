@@ -32,6 +32,8 @@ required=[
     "provider:\\ bulk\\ activate\\ *",
     'args+=(--provider "$providers")',
     "ci(census-sharded): persist",
+    "preserve_newer_repair_attempt",
+    "FIELD_SHARDED_CENSUS_REPAIR_ATTEMPT_MERGE",
     "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
     "actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9",
     "actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333",
