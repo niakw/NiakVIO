@@ -9,6 +9,11 @@ on:
         default: quick
         type: choice
         options: [quick, deep]
+      expected_sha:
+        description: Optional exact SHA required for dispatched validation
+        required: false
+        default: ""
+        type: string
   pull_request:
     branches: [main]
     paths:
@@ -122,6 +127,22 @@ jobs:
           ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
           fetch-depth: 0
           persist-credentials: false
+      - name: Require expected dispatch SHA
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.expected_sha != '' }}
+        shell: bash
+        env:
+          EXPECTED_SHA: ${{ inputs.expected_sha }}
+        run: |
+          set -euo pipefail
+          test "$GITHUB_SHA" = "$EXPECTED_SHA" || {
+            echo "FIELD_PROVIDER_VERIFY_EXPECTED_SHA_MISMATCH expected=$EXPECTED_SHA actual=$GITHUB_SHA" >&2
+            exit 1
+          }
+          test "$(git rev-parse HEAD)" = "$EXPECTED_SHA" || {
+            echo "Checked-out validation SHA does not match expected dispatch SHA." >&2
+            exit 1
+          }
+          echo "FIELD_PROVIDER_VERIFY_EXPECTED_SHA_OK sha=$GITHUB_SHA"
 
       - name: Select Quick or Deep
         id: mode
