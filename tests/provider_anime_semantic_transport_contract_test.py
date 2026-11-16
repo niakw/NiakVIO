@@ -113,6 +113,15 @@ assert 'transport.append("tv")' in reapply_transport_body
 assert 'transport.append("series")' not in reapply_transport_body
 assert '"series"' not in reapply_transport_body
 
+reconciler = (ROOT / "scripts/reconcile_provider_catalog_media_types.py").read_text(encoding="utf-8")
+assert 'provider_catalog.json must remain sourceOfTruth' in reconciler
+assert 'ROOT / "vf" / "manifest.json": ("vf", False)' in reconciler
+assert 'ROOT / "vf-no-anime" / "manifest.json": ("vf", True)' in reconciler
+assert 'visible_provider_count' not in reconciler
+assert 'TRANSPORT = CANONICAL | {"series"}' not in reconciler
+assert 'out.append("series")' not in reconciler
+assert 'no_series_synthesis=true' in reconciler
+
 machine = json.loads((ROOT / "automation/provider-v3-architecture.json").read_text(encoding="utf-8"))
 assert machine["media_types"]["anime_only_transport_compatibility"] == ["anime", "tv"]
 
