@@ -1,3 +1,10 @@
+## 2026-11-16 — Reconstruction finalization gate accepts safe monotone state extensions
+
+- Clean Provider-v3 reconstruction run `43925314282` on `8579b320` failed before materialization in `upgrade_provider_v3_finalization_v1.py`: its V1 validator required the historical three-state source literal for `blocked_recipe_plan`, while current sequential validation legitimately extends that fail-closed family with `resample-required`.
+- This was a migration-validator drift, not provider failure. Commit `a30d1997` changes the V1 validator from exact-source equality to a semantic floor: `terminal-blocked`, `terminal-unreachable` and `disabled-unqualified` remain mandatory, while later safe states may extend the set. Existing destructive-route guards remain unchanged.
+- Commit `44f65e3a` adds the current Provider-v3 finalization plan regression to the main Workflow Gate, so this migration/runtime compatibility is checked before the much longer reconstruction workflow.
+- The failed run produced no accepted reconstruction. A fresh exact-source reconstruction is required before ProviderBase regeneration, reverse rebuild or release certification can be claimed.
+
 ## 2026-11-16 — ProviderBase V34 helper deduplicated and uniqueness made a reconstruction invariant
 
 - NiakVIO-first métier inspection of current main found a common-runtime generation defect after V34 persistence: `scripts/provider_base_store.py` contained **six identical declarations** of `_spv34RouteMediaCompatible(route, mediaType)`. Because ProviderBase is common generated infrastructure, this duplication propagated into current `provider-bases/` outputs; it was not a provider-local defect and must not be hidden with per-provider edits.
