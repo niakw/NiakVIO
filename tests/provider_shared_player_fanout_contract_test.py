@@ -45,9 +45,11 @@ for relative in sorted(local_paths):
         for pattern in forbidden:
             assert pattern not in source, f"{relative}: local multi-player cap regressed via {pattern}"
 
-# Current server-enumeration runtimes must also not stop before the shared
-# fanout budget merely because a historical default used five servers.
-vidrock=(ROOT/"scripts/provider_patches/vidrock_runtime_v1.py").read_text(encoding="utf-8")
-assert 'maxStreams": max(1, min(12, int(cfg.get("max_streams") or 12)))' in vidrock
+# Provider-local historical caps are normalized generically during materialization;
+# a single runtime must not define the production fleet policy.
+apply_source=(ROOT/"scripts/apply_provider_overrides.py").read_text(encoding="utf-8")
+assert "PROVIDER_STREAM_OUTPUT_CAP = 40" in apply_source
+assert "_normalize_provider_stream_output_options" in apply_source
+assert "_normalize_provider_owned_stream_output_cap" in apply_source
 
 print(f"Provider global multiflux preservation contract passed: provider_local_blobs={len(local_paths)}")
