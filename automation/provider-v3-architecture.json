@@ -1,5 +1,5 @@
 {
-  "schema_version": 10,
+  "schema_version": 11,
   "branch_contract": "provider-v3-clean-architecture",
   "provider_source_of_truth": {
     "runtime_artifacts": "providers/*.js",
@@ -379,6 +379,9 @@
     "historical_platform_matrix_authority": false,
     "france_only_projection_authority": "provider_catalog.json projections general=false,vf=true",
     "native_labs_use_latest_official_head": true,
-    "native_proof_transitive_between_clients": false
+    "native_proof_transitive_between_clients": false,
+    "release_upstream_head_gate": "scripts/check_nuvio_client_upstreams.py",
+    "release_requires_current_official_heads": true,
+    "network_verification_inconclusive_blocks_release": true
   }
 }
