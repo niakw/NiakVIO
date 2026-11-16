@@ -58,7 +58,7 @@
     "materialization_mode": "owned-common-v3-skeleton",
     "provider_js_seed_used": false,
     "upstream_js_seed_used": false,
-    "materialized_at": "2026-09-12T22:01:49.362715+00:00",
+    "materialized_at": "2026-11-16T18:06:45.153854+00:00",
     "runtime_reader_version": 10,
     "execution_route_sanitizer_version": 1,
     "html_text_hardening": "deterministic-scanner-v1",
@@ -66,8 +66,9 @@
     "episode_identity_guard": "v22.1",
     "manual_tv_live_regressions": "v34",
     "mugiwara_episode_fail_closed": "v2",
-    "stream_sanitizer": "v8",
-    "scope_authority": "scripts/current_provider_scope.py:projection_active_provider_ids"
+    "stream_sanitizer": "v10",
+    "scope_authority": "scripts/current_provider_scope.py:projection_active_provider_ids",
+    "historical_static_knowledge_retained": 33
   },
   "providers": {
     "1shows": {
@@ -3663,8 +3664,8 @@
         "aio"
       ],
       "publication_mode": "strict_existing_provider_refresh",
-      "base_filename": "provider-bases/anidb--base--7c925f6a07ae3d37.js",
-      "base_sha256": "7c925f6a07ae3d37a833b9a636972b8a42338718224962ef7172c0f80686afa3",
+      "base_filename": "provider-bases/anidb--base--bcbf24023905f51f.js",
+      "base_sha256": "bcbf24023905f51f6eca3417947b4b700107cc1b90694e0d512fa5c40a403e28",
       "base_source": "niakvio-clean-reconstruction-v3",
       "base_migrated_at": "2026-08-28T23:38:51.049902+00:00",
       "base_migration_stripped_generated_core": false,
@@ -3699,7 +3700,7 @@
       "published_runtime_base_source": "canonical-providerbase",
       "legacy_base_filename_before_clean_v3": "provider-bases/anidb--base--6dd44d56f896df3f.js",
       "legacy_base_sha256_before_clean_v3": "6dd44d56f896df3ff26e968b8f5947615ec8c47f5ba263c3cf136f8d4ab8adfa",
-      "clean_reconstruction_verified_at": "2026-11-14T22:04:16.652088+00:00",
+      "clean_reconstruction_verified_at": "2026-11-16T18:06:45.153854+00:00",
       "provider_base_role": "canonical-v3-common-skeleton",
       "upstream_code_executed_for_reconstruction": false,
       "onboarding_rebuild": false,
@@ -3728,15 +3729,17 @@
         "inventorySource": "NiakVIO-GLOBAL-FINAL-STRICT-TOP20-2026-09-11(5).xlsx",
         "inventoryRank": 210,
         "inventoryScore": 61
-      }
+      },
+      "legacy_provider_js_role": "knowledge-only",
+      "legacy_provider_js_executed_for_reconstruction": false
     },
     "anikototv": {
       "id": "anikototv",
       "published_filename": "providers/anikototv--nuvio--97fcf275bf862640.js",
       "sha256": "97fcf275bf86264028b2f5635198a8e7415a3d80117ccb2f77e66eed1ef9b2df",
       "patched_sha256": "97fcf275bf86264028b2f5635198a8e7415a3d80117ccb2f77e66eed1ef9b2df",
-      "base_filename": "provider-bases/anikototv--base--ede6ce28ae5b4a72.js",
-      "base_sha256": "ede6ce28ae5b4a72c7225411187d64c44b4099629e3badb44fa0c370a6b15313",
+      "base_filename": "provider-bases/anikototv--base--bcbf24023905f51f.js",
+      "base_sha256": "bcbf24023905f51f6eca3417947b4b700107cc1b90694e0d512fa5c40a403e28",
       "base_source": "niakvio-clean-reconstruction-v3",
       "base_migration_stripped_generated_core": false,
       "upstream_sha256": "4b75a13ad9f3a9e7c067e8cbd18a66830cce4ad0d7e75ed28eca66cf1ed32b5d",
@@ -4368,7 +4371,7 @@
       "published_runtime_base_source": "canonical-providerbase",
       "legacy_base_filename_before_clean_v3": "provider-bases/anikototv--base--b0db6e72d5207ca1.js",
       "legacy_base_sha256_before_clean_v3": "b0db6e72d5207ca1eda9a79ba31ad439fc9eeda811ba820f76203b16ddf3e730",
-      "clean_reconstruction_verified_at": "2026-09-12T22:01:49.362715+00:00",
+      "clean_reconstruction_verified_at": "2026-11-16T18:06:45.153854+00:00",
       "provider_base_role": "canonical-v3-common-skeleton",
       "upstream_code_executed_for_reconstruction": false,
       "final_minimizer": {
@@ -4383,7 +4386,9 @@
         "skipped_reason": "",
         "sha256": "97fcf275bf86264028b2f5635198a8e7415a3d80117ccb2f77e66eed1ef9b2df"
       },
-      "provider_policy_sha256": "7b3f8631a9381d1be4e597233eeafccb25593f9934c37b9eb8b75fe1ca83a29d"
+      "provider_policy_sha256": "7b3f8631a9381d1be4e597233eeafccb25593f9934c37b9eb8b75fe1ca83a29d",
+      "legacy_provider_js_role": "knowledge-only",
+      "legacy_provider_js_executed_for_reconstruction": false
     },
     "anime-sama": {
       "id": "anime-sama",
@@ -13985,8 +13990,8 @@
       "published_filename": "providers/castle--nuvio--6f0a1357280474a6.js",
       "sha256": "6f0a1357280474a62eafab63034110b6ee587ade8d16d1e63dd81a64e96c503c",
       "patched_sha256": "6f0a1357280474a62eafab63034110b6ee587ade8d16d1e63dd81a64e96c503c",
-      "base_filename": "provider-bases/castle--base--ede6ce28ae5b4a72.js",
-      "base_sha256": "ede6ce28ae5b4a72c7225411187d64c44b4099629e3badb44fa0c370a6b15313",
+      "base_filename": "provider-bases/castle--base--bcbf24023905f51f.js",
+      "base_sha256": "bcbf24023905f51f6eca3417947b4b700107cc1b90694e0d512fa5c40a403e28",
       "base_source": "niakvio-clean-reconstruction-v3",
       "base_migration_stripped_generated_core": false,
       "upstream_sha256": "1b23fb0b7740e707fb2e3c5f6f69ca51c4bb4fc6afc8f1ae851af22e3f66bb89",
@@ -14588,7 +14593,7 @@
       "published_runtime_base_source": "canonical-providerbase",
       "legacy_base_filename_before_clean_v3": "provider-bases/castle--base--58f00754c8307e44.js",
       "legacy_base_sha256_before_clean_v3": "58f00754c8307e44d9ff9cd6b39ff1e4d8d4b278ca5b88d8b47256f64b0612c6",
-      "clean_reconstruction_verified_at": "2026-09-12T22:01:49.362715+00:00",
+      "clean_reconstruction_verified_at": "2026-11-16T18:06:45.153854+00:00",
       "provider_base_role": "canonical-v3-common-skeleton",
       "upstream_code_executed_for_reconstruction": false,
       "final_minimizer": {
@@ -14603,7 +14608,9 @@
         "skipped_reason": "",
         "sha256": "6f0a1357280474a62eafab63034110b6ee587ade8d16d1e63dd81a64e96c503c"
       },
-      "provider_policy_sha256": "a76d09f311ab3baf115c0a8178901eba1c464cc2c741fd3e394cb8976ec118b3"
+      "provider_policy_sha256": "a76d09f311ab3baf115c0a8178901eba1c464cc2c741fd3e394cb8976ec118b3",
+      "legacy_provider_js_role": "knowledge-only",
+      "legacy_provider_js_executed_for_reconstruction": false
     },
     "cineby": {
       "id": "cineby",
@@ -20808,8 +20815,8 @@
         "gowaru"
       ],
       "publication_mode": "strict_existing_provider_refresh",
-      "base_filename": "provider-bases/dulourd--base--7c925f6a07ae3d37.js",
-      "base_sha256": "7c925f6a07ae3d37a833b9a636972b8a42338718224962ef7172c0f80686afa3",
+      "base_filename": "provider-bases/dulourd--base--bcbf24023905f51f.js",
+      "base_sha256": "bcbf24023905f51f6eca3417947b4b700107cc1b90694e0d512fa5c40a403e28",
       "base_source": "niakvio-clean-reconstruction-v3",
       "base_migrated_at": "2026-08-28T23:38:52.088871+00:00",
       "base_migration_stripped_generated_core": false,
@@ -20847,7 +20854,7 @@
       "published_runtime_base_source": "canonical-providerbase",
       "legacy_base_filename_before_clean_v3": "provider-bases/dulourd--base--d357625ff1d2c328.js",
       "legacy_base_sha256_before_clean_v3": "d357625ff1d2c328e6b6dae3c1eee970374ba9d8f83c92b4dbb04ba8426a80c6",
-      "clean_reconstruction_verified_at": "2026-11-14T19:35:11.379600+00:00",
+      "clean_reconstruction_verified_at": "2026-11-16T18:06:45.153854+00:00",
       "provider_base_role": "canonical-v3-common-skeleton",
       "upstream_code_executed_for_reconstruction": false,
       "onboarding_rebuild": false,
@@ -23597,8 +23604,8 @@
       "published_filename": "providers/french-manga--nuvio--8124f6bfb672c899.js",
       "sha256": "8124f6bfb672c89951f483f867da05015d2d816a3899705b85f80ed50eca021b",
       "patched_sha256": "8124f6bfb672c89951f483f867da05015d2d816a3899705b85f80ed50eca021b",
-      "base_filename": "provider-bases/french-manga--base--ede6ce28ae5b4a72.js",
-      "base_sha256": "ede6ce28ae5b4a72c7225411187d64c44b4099629e3badb44fa0c370a6b15313",
+      "base_filename": "provider-bases/french-manga--base--bcbf24023905f51f.js",
+      "base_sha256": "bcbf24023905f51f6eca3417947b4b700107cc1b90694e0d512fa5c40a403e28",
       "base_source": "niakvio-clean-reconstruction-v3",
       "base_migration_stripped_generated_core": false,
       "upstream_sha256": "fb23979ac0089b09eb706a4b0649ced3b76595ce04258e513b3599bc0ad60860",
@@ -24351,7 +24358,7 @@
       ],
       "legacy_base_filename_before_clean_v3": "provider-bases/french-manga--base--d6d38e26408f4245.js",
       "legacy_base_sha256_before_clean_v3": "d6d38e26408f42451afa32450faf2ff64b6f3b97d09eb3e49208e8d383eb030a",
-      "clean_reconstruction_verified_at": "2026-09-12T22:01:49.362715+00:00",
+      "clean_reconstruction_verified_at": "2026-11-16T18:06:45.153854+00:00",
       "provider_base_role": "canonical-v3-common-skeleton",
       "upstream_code_executed_for_reconstruction": false,
       "final_minimizer": {
@@ -24366,15 +24373,17 @@
         "skipped_reason": "",
         "sha256": "8124f6bfb672c89951f483f867da05015d2d816a3899705b85f80ed50eca021b"
       },
-      "provider_policy_sha256": "fd0c8a60225a48abd2684897f1f06979b4b559412393783e6bc8c88665f935d8"
+      "provider_policy_sha256": "fd0c8a60225a48abd2684897f1f06979b4b559412393783e6bc8c88665f935d8",
+      "legacy_provider_js_role": "knowledge-only",
+      "legacy_provider_js_executed_for_reconstruction": false
     },
     "fullanime": {
       "id": "fullanime",
       "published_filename": "providers/fullanime--nuvio--8671a37bdb51cd42.js",
       "sha256": "8671a37bdb51cd42e9fb3b82868a0ead644b8d4e5a9da92ce1ccb26ec4118888",
       "patched_sha256": "8671a37bdb51cd42e9fb3b82868a0ead644b8d4e5a9da92ce1ccb26ec4118888",
-      "base_filename": "provider-bases/fullanime--base--7c925f6a07ae3d37.js",
-      "base_sha256": "7c925f6a07ae3d37a833b9a636972b8a42338718224962ef7172c0f80686afa3",
+      "base_filename": "provider-bases/fullanime--base--bcbf24023905f51f.js",
+      "base_sha256": "bcbf24023905f51f6eca3417947b4b700107cc1b90694e0d512fa5c40a403e28",
       "base_source": "niakvio-clean-reconstruction-v3",
       "base_migration_stripped_generated_core": false,
       "upstream_sha256": "de303c47d50ceecc2f8f2e7d78483f5af93927fff51d3edcf6e2dad28b11c511",
@@ -24710,7 +24719,7 @@
       "published_runtime_base_source": "canonical-providerbase",
       "legacy_base_filename_before_clean_v3": "provider-bases/fullanime--base--6e0a65077081f6be.js",
       "legacy_base_sha256_before_clean_v3": "6e0a65077081f6be5cf27782e7ab5eed061a23d5015ed122a61433cf856d3b54",
-      "clean_reconstruction_verified_at": "2026-11-14T19:34:25.388841+00:00",
+      "clean_reconstruction_verified_at": "2026-11-16T18:06:45.153854+00:00",
       "provider_base_role": "canonical-v3-common-skeleton",
       "upstream_code_executed_for_reconstruction": false,
       "final_minimizer": {
@@ -28084,8 +28093,8 @@
       ],
       "preserved_candidate_key": "aio:hianime",
       "preserved_candidate_sha256": "4f7097596216111642904561327d95396d608afdeaece67a99b3cf951556aa44",
-      "base_filename": "provider-bases/hianime--base--7c925f6a07ae3d37.js",
-      "base_sha256": "7c925f6a07ae3d37a833b9a636972b8a42338718224962ef7172c0f80686afa3",
+      "base_filename": "provider-bases/hianime--base--bcbf24023905f51f.js",
+      "base_sha256": "bcbf24023905f51f6eca3417947b4b700107cc1b90694e0d512fa5c40a403e28",
       "base_source": "niakvio-clean-reconstruction-v3",
       "base_migrated_at": "2026-08-28T23:38:52.212730+00:00",
       "base_migration_stripped_generated_core": false,
@@ -28123,7 +28132,7 @@
       "published_runtime_base_source": "canonical-providerbase",
       "legacy_base_filename_before_clean_v3": "provider-bases/hianime--base--a2621761a809f112.js",
       "legacy_base_sha256_before_clean_v3": "a2621761a809f112cba9c768371766e2883d0b771f9cac37933a15508e93889a",
-      "clean_reconstruction_verified_at": "2026-11-14T19:35:45.614144+00:00",
+      "clean_reconstruction_verified_at": "2026-11-16T18:06:45.153854+00:00",
       "provider_base_role": "canonical-v3-common-skeleton",
       "upstream_code_executed_for_reconstruction": false,
       "onboarding_rebuild": false,
@@ -36154,8 +36163,8 @@
       "published_filename": "providers/mugiwarastream--nuvio--5e0dad5a6cac3034.js",
       "sha256": "5e0dad5a6cac30345e2983f7fb1b6bc06ba2f906937af4b7ac902134f3eb12ca",
       "patched_sha256": "5e0dad5a6cac30345e2983f7fb1b6bc06ba2f906937af4b7ac902134f3eb12ca",
-      "base_filename": "provider-bases/mugiwarastream--base--ede6ce28ae5b4a72.js",
-      "base_sha256": "ede6ce28ae5b4a72c7225411187d64c44b4099629e3badb44fa0c370a6b15313",
+      "base_filename": "provider-bases/mugiwarastream--base--bcbf24023905f51f.js",
+      "base_sha256": "bcbf24023905f51f6eca3417947b4b700107cc1b90694e0d512fa5c40a403e28",
       "base_source": "niakvio-clean-reconstruction-v3",
       "base_migration_stripped_generated_core": false,
       "upstream_sha256": "5a40753288d49d5f72c3fc3baf5687e1775f8d7d18b6eece77fb30dc397607c1",
@@ -36866,7 +36875,7 @@
       "published_runtime_base_source": "canonical-providerbase",
       "legacy_base_filename_before_clean_v3": "provider-bases/mugiwarastream--base--2c84c059e745a649.js",
       "legacy_base_sha256_before_clean_v3": "2c84c059e745a6494fa4d3e9a47cf41a0bad0bbd78ee1c0d100c18c5dc02c1e3",
-      "clean_reconstruction_verified_at": "2026-09-12T22:01:49.362715+00:00",
+      "clean_reconstruction_verified_at": "2026-11-16T18:06:45.153854+00:00",
       "provider_base_role": "canonical-v3-common-skeleton",
       "upstream_code_executed_for_reconstruction": false,
       "final_minimizer": {
@@ -36881,7 +36890,9 @@
         "skipped_reason": "",
         "sha256": "5e0dad5a6cac30345e2983f7fb1b6bc06ba2f906937af4b7ac902134f3eb12ca"
       },
-      "provider_policy_sha256": "02c959936abf45bbc5eb2d340188e72b64b2ba9d3ce36cb7002d770368391526"
+      "provider_policy_sha256": "02c959936abf45bbc5eb2d340188e72b64b2ba9d3ce36cb7002d770368391526",
+      "legacy_provider_js_role": "knowledge-only",
+      "legacy_provider_js_executed_for_reconstruction": false
     },
     "mycima": {
       "id": "mycima",
@@ -37502,8 +37513,8 @@
       "published_filename": "providers/nakios--nuvio--bb37dfab21484768.js",
       "sha256": "bb37dfab21484768163d6f9d7d0687634eca2eaff5a98432efd36ccbea444c83",
       "patched_sha256": "bb37dfab21484768163d6f9d7d0687634eca2eaff5a98432efd36ccbea444c83",
-      "base_filename": "provider-bases/nakios--base--7c925f6a07ae3d37.js",
-      "base_sha256": "7c925f6a07ae3d37a833b9a636972b8a42338718224962ef7172c0f80686afa3",
+      "base_filename": "provider-bases/nakios--base--bcbf24023905f51f.js",
+      "base_sha256": "bcbf24023905f51f6eca3417947b4b700107cc1b90694e0d512fa5c40a403e28",
       "base_source": "niakvio-clean-reconstruction-v3",
       "base_migration_stripped_generated_core": true,
       "upstream_sha256": "15a425be580c06f5ad5d5b2dc7747859ecc86b9dbac832e5c6357c6454c7eaa1",
@@ -37845,7 +37856,7 @@
       ],
       "legacy_base_filename_before_clean_v3": "provider-bases/nakios--base--bf3997723e29be23.js",
       "legacy_base_sha256_before_clean_v3": "bf3997723e29be238ee59ed90c4ed685dd393e2c794379d8fd39605ef3593e6d",
-      "clean_reconstruction_verified_at": "2026-11-14T19:35:17.693193+00:00",
+      "clean_reconstruction_verified_at": "2026-11-16T18:06:45.153854+00:00",
       "provider_base_role": "canonical-v3-common-skeleton",
       "upstream_code_executed_for_reconstruction": false,
       "onboarding_rebuild": false,
@@ -37881,8 +37892,8 @@
       "published_filename": "providers/neko-sama--nuvio--160e2d047c21f49f.js",
       "sha256": "160e2d047c21f49f3f92a07d1c20740504e5b3ef817cd70d93efd3d6435bcfeb",
       "patched_sha256": "160e2d047c21f49f3f92a07d1c20740504e5b3ef817cd70d93efd3d6435bcfeb",
-      "base_filename": "provider-bases/neko-sama--base--ede6ce28ae5b4a72.js",
-      "base_sha256": "ede6ce28ae5b4a72c7225411187d64c44b4099629e3badb44fa0c370a6b15313",
+      "base_filename": "provider-bases/neko-sama--base--bcbf24023905f51f.js",
+      "base_sha256": "bcbf24023905f51f6eca3417947b4b700107cc1b90694e0d512fa5c40a403e28",
       "base_source": "niakvio-clean-reconstruction-v3",
       "base_migration_stripped_generated_core": false,
       "upstream_sha256": "495ca8a7bf58d51cd3dbf2b1257e8cf5e1048c4f975eedc78716f70dbeab0aa6",
@@ -38500,7 +38511,7 @@
       "published_runtime_base_source": "canonical-providerbase",
       "legacy_base_filename_before_clean_v3": "provider-bases/neko-sama--base--57432ecd16d016c8.js",
       "legacy_base_sha256_before_clean_v3": "57432ecd16d016c88426929168be245dd8f804e1838e7e1454fc9659074f8d69",
-      "clean_reconstruction_verified_at": "2026-09-12T22:01:49.362715+00:00",
+      "clean_reconstruction_verified_at": "2026-11-16T18:06:45.153854+00:00",
       "provider_base_role": "canonical-v3-common-skeleton",
       "upstream_code_executed_for_reconstruction": false,
       "final_minimizer": {
@@ -38515,7 +38526,9 @@
         "skipped_reason": "",
         "sha256": "160e2d047c21f49f3f92a07d1c20740504e5b3ef817cd70d93efd3d6435bcfeb"
       },
-      "provider_policy_sha256": "8e80e9331ec5ebe8d4e454b1f03fdde6121d177f285f0af1e120c3dc78d09e0a"
+      "provider_policy_sha256": "8e80e9331ec5ebe8d4e454b1f03fdde6121d177f285f0af1e120c3dc78d09e0a",
+      "legacy_provider_js_role": "knowledge-only",
+      "legacy_provider_js_executed_for_reconstruction": false
     },
     "onlykdrama": {
       "id": "onlykdrama",
@@ -39919,8 +39932,8 @@
       ],
       "preserved_candidate_key": "gowaru:papadustream",
       "preserved_candidate_sha256": "d8700b83ae5641549ee44a2a03a17f659e357c33790007007233d6c63441fb2b",
-      "base_filename": "provider-bases/papadustream--base--ede6ce28ae5b4a72.js",
-      "base_sha256": "ede6ce28ae5b4a72c7225411187d64c44b4099629e3badb44fa0c370a6b15313",
+      "base_filename": "provider-bases/papadustream--base--bcbf24023905f51f.js",
+      "base_sha256": "bcbf24023905f51f6eca3417947b4b700107cc1b90694e0d512fa5c40a403e28",
       "base_source": "niakvio-clean-reconstruction-v3",
       "base_migrated_at": "2026-08-28T23:38:52.738245+00:00",
       "base_migration_stripped_generated_core": false,
@@ -39956,7 +39969,7 @@
       "published_runtime_base_source": "canonical-providerbase",
       "legacy_base_filename_before_clean_v3": "provider-bases/papadustream--base--a9a2d6b0f6744e75.js",
       "legacy_base_sha256_before_clean_v3": "a9a2d6b0f6744e750d657acd9d47cd1de239cb02d88721012e60ec62d1f090ac",
-      "clean_reconstruction_verified_at": "2026-09-12T22:01:49.362715+00:00",
+      "clean_reconstruction_verified_at": "2026-11-16T18:06:45.153854+00:00",
       "provider_base_role": "canonical-v3-common-skeleton",
       "upstream_code_executed_for_reconstruction": false,
       "final_minimizer": {
@@ -39971,7 +39984,9 @@
         "skipped_reason": "",
         "sha256": "a6bcd1a96694552f93639952baf57638c975f44464c926a9e21bd3b66ebf821f"
       },
-      "provider_policy_sha256": "1f2f22e4df97c8daa4e8128912c03079217bbd6c11a371bef55cebc3521b840d"
+      "provider_policy_sha256": "1f2f22e4df97c8daa4e8128912c03079217bbd6c11a371bef55cebc3521b840d",
+      "legacy_provider_js_role": "knowledge-only",
+      "legacy_provider_js_executed_for_reconstruction": false
     },
     "peachify": {
       "id": "peachify",
@@ -41801,8 +41816,8 @@
       "published_filename": "providers/purstream--nuvio--cc163f9fb343fdc2.js",
       "sha256": "cc163f9fb343fdc2fb9b4d82d63f8a5c284d9aae841f354edf43372346db5b7a",
       "patched_sha256": "cc163f9fb343fdc2fb9b4d82d63f8a5c284d9aae841f354edf43372346db5b7a",
-      "base_filename": "provider-bases/purstream--base--ede6ce28ae5b4a72.js",
-      "base_sha256": "ede6ce28ae5b4a72c7225411187d64c44b4099629e3badb44fa0c370a6b15313",
+      "base_filename": "provider-bases/purstream--base--bcbf24023905f51f.js",
+      "base_sha256": "bcbf24023905f51f6eca3417947b4b700107cc1b90694e0d512fa5c40a403e28",
       "base_source": "niakvio-clean-reconstruction-v3",
       "base_migration_stripped_generated_core": false,
       "upstream_sha256": "baa08ef3c1e0d7e6e7b84dbadd8280d86d1fdbc84f2ef5d5e61094c86cfc8473",
@@ -42452,7 +42467,7 @@
       "published_runtime_base_source": "canonical-providerbase",
       "legacy_base_filename_before_clean_v3": "provider-bases/purstream--base--068652a732445be3.js",
       "legacy_base_sha256_before_clean_v3": "068652a732445be33983297d6b722a43f9c006ef1efc01f9ff7082366c1fe9aa",
-      "clean_reconstruction_verified_at": "2026-09-12T22:01:49.362715+00:00",
+      "clean_reconstruction_verified_at": "2026-11-16T18:06:45.153854+00:00",
       "provider_base_role": "canonical-v3-common-skeleton",
       "upstream_code_executed_for_reconstruction": false,
       "final_minimizer": {
@@ -42467,7 +42482,9 @@
         "skipped_reason": "",
         "sha256": "cc163f9fb343fdc2fb9b4d82d63f8a5c284d9aae841f354edf43372346db5b7a"
       },
-      "provider_policy_sha256": "7adcc6b3ef417671d93e2813c614051696caf23dba96acb0b455119e9c8ee495"
+      "provider_policy_sha256": "7adcc6b3ef417671d93e2813c614051696caf23dba96acb0b455119e9c8ee495",
+      "legacy_provider_js_role": "knowledge-only",
+      "legacy_provider_js_executed_for_reconstruction": false
     },
     "sekai": {
       "id": "sekai",
@@ -43014,8 +43031,8 @@
       "preserved_reason": "ci_uncertain_kept_last_published_artifact",
       "preserved_candidate_key": "gowaru:sekai",
       "preserved_candidate_sha256": "bb03b18e86b82ceae6b4c7c95e983234d716158dcf61fe0ec5501a4317011ae6",
-      "base_filename": "provider-bases/sekai--base--ede6ce28ae5b4a72.js",
-      "base_sha256": "ede6ce28ae5b4a72c7225411187d64c44b4099629e3badb44fa0c370a6b15313",
+      "base_filename": "provider-bases/sekai--base--bcbf24023905f51f.js",
+      "base_sha256": "bcbf24023905f51f6eca3417947b4b700107cc1b90694e0d512fa5c40a403e28",
       "base_source": "niakvio-clean-reconstruction-v3",
       "base_migrated_at": "2026-08-28T23:38:53.929205+00:00",
       "base_migration_stripped_generated_core": false,
@@ -43057,7 +43074,7 @@
       "publication_mode": "strict_existing_provider_refresh",
       "legacy_base_filename_before_clean_v3": "provider-bases/sekai--base--19250839788dd615.js",
       "legacy_base_sha256_before_clean_v3": "19250839788dd615d3bff927eb9a1aa03687a302ef1c6b11193403c15ef5c098",
-      "clean_reconstruction_verified_at": "2026-09-12T22:01:49.362715+00:00",
+      "clean_reconstruction_verified_at": "2026-11-16T18:06:45.153854+00:00",
       "provider_base_role": "canonical-v3-common-skeleton",
       "upstream_code_executed_for_reconstruction": false,
       "final_minimizer": {
@@ -43072,15 +43089,17 @@
         "skipped_reason": "",
         "sha256": "f0de0e7591a0a4569ff9141f58b7b0ac0ca4a287b68d9d422cae6133e58ce313"
       },
-      "provider_policy_sha256": "8074f5fd1f529d67493fcb35807467c0744e232facdc492e7a5c9c92edb44371"
+      "provider_policy_sha256": "8074f5fd1f529d67493fcb35807467c0744e232facdc492e7a5c9c92edb44371",
+      "legacy_provider_js_role": "knowledge-only",
+      "legacy_provider_js_executed_for_reconstruction": false
     },
     "showbox": {
       "id": "showbox",
       "published_filename": "providers/showbox--nuvio--522268dde7e15598.js",
       "sha256": "522268dde7e15598e3997fbaf6dbf383587c972553bf6a0962cecc451754cf48",
       "patched_sha256": "522268dde7e15598e3997fbaf6dbf383587c972553bf6a0962cecc451754cf48",
-      "base_filename": "provider-bases/showbox--base--7c925f6a07ae3d37.js",
-      "base_sha256": "7c925f6a07ae3d37a833b9a636972b8a42338718224962ef7172c0f80686afa3",
+      "base_filename": "provider-bases/showbox--base--bcbf24023905f51f.js",
+      "base_sha256": "bcbf24023905f51f6eca3417947b4b700107cc1b90694e0d512fa5c40a403e28",
       "base_source": "niakvio-clean-reconstruction-v3",
       "base_migration_stripped_generated_core": false,
       "upstream_sha256": "b90ce3c9aceca167d9f97d57ba2487029b0dd75e61abc4d7e8ad1dd97864a1d5",
@@ -43414,7 +43433,7 @@
       "published_runtime_base_source": "canonical-providerbase",
       "legacy_base_filename_before_clean_v3": "provider-bases/showbox--base--c84506a914d3ecd5.js",
       "legacy_base_sha256_before_clean_v3": "c84506a914d3ecd5442fb9d120e841ef7ea9b3719fa5f15d5566944b05d0a4de",
-      "clean_reconstruction_verified_at": "2026-11-14T19:34:22.007375+00:00",
+      "clean_reconstruction_verified_at": "2026-11-16T18:06:45.153854+00:00",
       "provider_base_role": "canonical-v3-common-skeleton",
       "upstream_code_executed_for_reconstruction": false,
       "final_minimizer": {
@@ -44970,8 +44989,8 @@
       "preserved_candidate_key": "gowaru:streamzo",
       "preserved_candidate_sha256": "8dde898c3e637bbfdf21ed5fbbbae0ded1011367088f0332277d8363a765ad8d",
       "publication_mode": "strict_existing_provider_refresh",
-      "base_filename": "provider-bases/streamzo--base--ede6ce28ae5b4a72.js",
-      "base_sha256": "ede6ce28ae5b4a72c7225411187d64c44b4099629e3badb44fa0c370a6b15313",
+      "base_filename": "provider-bases/streamzo--base--bcbf24023905f51f.js",
+      "base_sha256": "bcbf24023905f51f6eca3417947b4b700107cc1b90694e0d512fa5c40a403e28",
       "base_source": "niakvio-clean-reconstruction-v3",
       "base_migrated_at": "2026-08-28T23:38:52.906948+00:00",
       "base_migration_stripped_generated_core": false,
@@ -45007,7 +45026,7 @@
       "published_runtime_base_source": "canonical-providerbase",
       "legacy_base_filename_before_clean_v3": "provider-bases/streamzo--base--6960007e96a48a9a.js",
       "legacy_base_sha256_before_clean_v3": "6960007e96a48a9a582c1d7c2a4df0596eedbe5b7b3f665177a0667dc28e2e10",
-      "clean_reconstruction_verified_at": "2026-09-12T22:01:49.362715+00:00",
+      "clean_reconstruction_verified_at": "2026-11-16T18:06:45.153854+00:00",
       "provider_base_role": "canonical-v3-common-skeleton",
       "upstream_code_executed_for_reconstruction": false,
       "final_minimizer": {
@@ -45022,7 +45041,9 @@
         "skipped_reason": "",
         "sha256": "d529c17128b021e048f1c523ff635eb325a8827fae03e1b49bf694696fff9a29"
       },
-      "provider_policy_sha256": "dc91454dfb3d1a24a047cd2255ba1dc58341782dae79a914203121bec91fd239"
+      "provider_policy_sha256": "dc91454dfb3d1a24a047cd2255ba1dc58341782dae79a914203121bec91fd239",
+      "legacy_provider_js_role": "knowledge-only",
+      "legacy_provider_js_executed_for_reconstruction": false
     },
     "toflix": {
       "id": "toflix",
@@ -45839,8 +45860,8 @@
       "preserved_reason": "ci_uncertain_kept_last_conclusive_safety_quarantine",
       "preserved_candidate_key": "aio:topcartoons",
       "preserved_candidate_sha256": "59845506324f340029548247265726d6bc3c63affeb6461eac685c3f2abfbd81",
-      "base_filename": "provider-bases/topcartoons--base--7c925f6a07ae3d37.js",
-      "base_sha256": "7c925f6a07ae3d37a833b9a636972b8a42338718224962ef7172c0f80686afa3",
+      "base_filename": "provider-bases/topcartoons--base--bcbf24023905f51f.js",
+      "base_sha256": "bcbf24023905f51f6eca3417947b4b700107cc1b90694e0d512fa5c40a403e28",
       "base_source": "niakvio-clean-reconstruction-v3",
       "base_migrated_at": "2026-08-28T23:38:56.007444+00:00",
       "base_migration_stripped_generated_core": false,
@@ -45875,7 +45896,7 @@
       "published_runtime_base_source": "canonical-providerbase",
       "legacy_base_filename_before_clean_v3": "provider-bases/topcartoons--base--ce4ee43025d9d9a4.js",
       "legacy_base_sha256_before_clean_v3": "ce4ee43025d9d9a469f06650cc98ca948caa269b370d1d917aa6319e48331ba9",
-      "clean_reconstruction_verified_at": "2026-11-14T22:03:56.225152+00:00",
+      "clean_reconstruction_verified_at": "2026-11-16T18:06:45.153854+00:00",
       "provider_base_role": "canonical-v3-common-skeleton",
       "upstream_code_executed_for_reconstruction": false,
       "onboarding_rebuild": false,
@@ -45904,7 +45925,9 @@
         "inventorySource": "NiakVIO-GLOBAL-FINAL-STRICT-TOP20-2026-09-11(5).xlsx",
         "inventoryRank": 96,
         "inventoryScore": 73
-      }
+      },
+      "legacy_provider_js_role": "knowledge-only",
+      "legacy_provider_js_executed_for_reconstruction": false
     },
     "uhdmovies": {
       "id": "uhdmovies",
@@ -47352,8 +47375,8 @@
       "published_filename": "providers/videasy--nuvio--b3c105c91cd35fa9.js",
       "sha256": "b3c105c91cd35fa9d687e2140ee50f34c561f2f3ceafa1646126b14f0dae3f36",
       "patched_sha256": "b3c105c91cd35fa9d687e2140ee50f34c561f2f3ceafa1646126b14f0dae3f36",
-      "base_filename": "provider-bases/videasy--base--7c925f6a07ae3d37.js",
-      "base_sha256": "7c925f6a07ae3d37a833b9a636972b8a42338718224962ef7172c0f80686afa3",
+      "base_filename": "provider-bases/videasy--base--bcbf24023905f51f.js",
+      "base_sha256": "bcbf24023905f51f6eca3417947b4b700107cc1b90694e0d512fa5c40a403e28",
       "base_source": "niakvio-clean-reconstruction-v3",
       "base_migration_stripped_generated_core": true,
       "upstream_sha256": "8fb7fbc12e23d28185927a5a7f47fa65874ff0d1b1f3e01f4dbf9813c4fc7862",
@@ -47720,7 +47743,7 @@
       "published_runtime_base_source": "canonical-providerbase",
       "legacy_base_filename_before_clean_v3": "provider-bases/videasy--base--4efef216428ac06f.js",
       "legacy_base_sha256_before_clean_v3": "4efef216428ac06ff73ee4b0373fb465a41d0d358f7f10de2f4d7e826b6e0cdb",
-      "clean_reconstruction_verified_at": "2026-11-14T22:03:59.868577+00:00",
+      "clean_reconstruction_verified_at": "2026-11-16T18:06:45.153854+00:00",
       "provider_base_role": "canonical-v3-common-skeleton",
       "upstream_code_executed_for_reconstruction": false,
       "final_minimizer": {
@@ -47762,7 +47785,9 @@
         "inventorySource": "NiakVIO-GLOBAL-FINAL-STRICT-TOP20-2026-09-11(5).xlsx",
         "inventoryRank": 97,
         "inventoryScore": 73
-      }
+      },
+      "legacy_provider_js_role": "knowledge-only",
+      "legacy_provider_js_executed_for_reconstruction": false
     },
     "vidfast": {
       "id": "vidfast",
@@ -48819,8 +48844,8 @@
         "aio"
       ],
       "publication_mode": "strict_existing_provider_refresh",
-      "base_filename": "provider-bases/vidlink--base--7c925f6a07ae3d37.js",
-      "base_sha256": "7c925f6a07ae3d37a833b9a636972b8a42338718224962ef7172c0f80686afa3",
+      "base_filename": "provider-bases/vidlink--base--bcbf24023905f51f.js",
+      "base_sha256": "bcbf24023905f51f6eca3417947b4b700107cc1b90694e0d512fa5c40a403e28",
       "base_source": "niakvio-clean-reconstruction-v3",
       "base_migrated_at": "2026-08-28T23:38:53.021812+00:00",
       "base_migration_stripped_generated_core": false,
@@ -48855,7 +48880,7 @@
       "published_runtime_base_source": "canonical-providerbase",
       "legacy_base_filename_before_clean_v3": "provider-bases/vidlink--base--7086ccb18d73fdd7.js",
       "legacy_base_sha256_before_clean_v3": "7086ccb18d73fdd703cf6678f9c2d58ca3d09af64e5d3c394b49b258695e1e1b",
-      "clean_reconstruction_verified_at": "2026-11-14T22:04:03.277459+00:00",
+      "clean_reconstruction_verified_at": "2026-11-16T18:06:45.153854+00:00",
       "provider_base_role": "canonical-v3-common-skeleton",
       "upstream_code_executed_for_reconstruction": false,
       "onboarding_rebuild": false,
@@ -48884,7 +48909,9 @@
         "inventorySource": "NiakVIO-GLOBAL-FINAL-STRICT-TOP20-2026-09-11(5).xlsx",
         "inventoryRank": 99,
         "inventoryScore": 73
-      }
+      },
+      "legacy_provider_js_role": "knowledge-only",
+      "legacy_provider_js_executed_for_reconstruction": false
     },
     "vidlove": {
       "id": "vidlove",
@@ -54154,8 +54181,8 @@
       "published_filename": "providers/waveanime--nuvio--2e7f77b5ebf9079c.js",
       "sha256": "2e7f77b5ebf9079caf8d78c0408b6e41764c0a524906b9b70e82fdb8f619350e",
       "patched_sha256": "2e7f77b5ebf9079caf8d78c0408b6e41764c0a524906b9b70e82fdb8f619350e",
-      "base_filename": "provider-bases/waveanime--base--7c925f6a07ae3d37.js",
-      "base_sha256": "7c925f6a07ae3d37a833b9a636972b8a42338718224962ef7172c0f80686afa3",
+      "base_filename": "provider-bases/waveanime--base--bcbf24023905f51f.js",
+      "base_sha256": "bcbf24023905f51f6eca3417947b4b700107cc1b90694e0d512fa5c40a403e28",
       "base_source": "niakvio-clean-reconstruction-v3",
       "base_migration_stripped_generated_core": false,
       "upstream_sha256": "680810c31467782723f64f2325e555b069486dc3fbec0200d3a75e3035f1de5f",
@@ -54490,7 +54517,7 @@
       "published_runtime_base_source": "canonical-providerbase",
       "legacy_base_filename_before_clean_v3": "provider-bases/waveanime--base--67210064dba147a9.js",
       "legacy_base_sha256_before_clean_v3": "67210064dba147a93f94fb51428af28dbe49c515d184e34d49ed563200fb89a1",
-      "clean_reconstruction_verified_at": "2026-11-14T19:35:36.296853+00:00",
+      "clean_reconstruction_verified_at": "2026-11-16T18:06:45.153854+00:00",
       "provider_base_role": "canonical-v3-common-skeleton",
       "upstream_code_executed_for_reconstruction": false,
       "onboarding_rebuild": false,
@@ -58308,8 +58335,8 @@
       ],
       "preserved_candidate_key": "gowaru:frenchstream",
       "preserved_candidate_sha256": "21215d1a41dccd4b25da2cea38237bc8a57c57a54b6934fb07ec8e9c045a6542",
-      "base_filename": "provider-bases/frenchstream--base--7c925f6a07ae3d37.js",
-      "base_sha256": "7c925f6a07ae3d37a833b9a636972b8a42338718224962ef7172c0f80686afa3",
+      "base_filename": "provider-bases/frenchstream--base--bcbf24023905f51f.js",
+      "base_sha256": "bcbf24023905f51f6eca3417947b4b700107cc1b90694e0d512fa5c40a403e28",
       "base_source": "niakvio-clean-reconstruction-v3",
       "base_migrated_at": "2026-08-28T23:38:55.864906+00:00",
       "base_migration_stripped_generated_core": false,
@@ -58347,7 +58374,7 @@
       "published_runtime_base_source": "canonical-providerbase",
       "legacy_base_filename_before_clean_v3": "provider-bases/frenchstream--base--9bf284d143c73640.js",
       "legacy_base_sha256_before_clean_v3": "9bf284d143c73640960d31bba4ce797802baa2f6abeacc98ee97ff3e839500e0",
-      "clean_reconstruction_verified_at": "2026-11-14T22:04:23.327191+00:00",
+      "clean_reconstruction_verified_at": "2026-11-16T18:06:45.153854+00:00",
       "provider_base_role": "canonical-v3-common-skeleton",
       "upstream_code_executed_for_reconstruction": false,
       "onboarding_rebuild": false,
@@ -61163,13 +61190,13 @@
       "published_filename": "providers/movix-fr--nuvio--8eab7cbc2b8bc457.js",
       "sha256": "8eab7cbc2b8bc457b4836ae0890c31f254be274d15fc8def61ff60aad5d5e746",
       "patched_sha256": "8eab7cbc2b8bc457b4836ae0890c31f254be274d15fc8def61ff60aad5d5e746",
-      "base_filename": "provider-bases/movix-fr--base--7c925f6a07ae3d37.js",
-      "base_sha256": "7c925f6a07ae3d37a833b9a636972b8a42338718224962ef7172c0f80686afa3",
+      "base_filename": "provider-bases/movix-fr--base--bcbf24023905f51f.js",
+      "base_sha256": "bcbf24023905f51f6eca3417947b4b700107cc1b90694e0d512fa5c40a403e28",
       "base_source": "niakvio-clean-reconstruction-v3",
       "clean_reconstruction_required": false,
       "clean_reconstruction_verified": true,
       "clean_reconstruction_authoring_version": 3,
-      "clean_reconstruction_verified_at": "2026-11-14T19:35:48.787383+00:00",
+      "clean_reconstruction_verified_at": "2026-11-16T18:06:45.153854+00:00",
       "local_patches": [
         {
           "type": "patch_script",
@@ -61300,7 +61327,14 @@
         "inventorySource": "NiakVIO-GLOBAL-FINAL-STRICT-TOP20-2026-09-11(5).xlsx",
         "inventoryRank": 3,
         "inventoryScore": 97
-      }
+      },
+      "legacy_base_filename_before_clean_v3": "provider-bases/movix-fr--base--7c925f6a07ae3d37.js",
+      "legacy_base_sha256_before_clean_v3": "7c925f6a07ae3d37a833b9a636972b8a42338718224962ef7172c0f80686afa3",
+      "clean_reconstruction_candidate": false,
+      "provider_base_role": "canonical-v3-common-skeleton",
+      "legacy_provider_js_role": "knowledge-only",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "upstream_code_executed_for_reconstruction": false
     },
     "yablom": {
       "id": "yablom",
@@ -61643,13 +61677,13 @@
       "published_filename": "providers/frembed--nuvio--48bb6d652693bbcf.js",
       "sha256": "48bb6d652693bbcf387062436ae904ff3964adffa958497b899305341655281d",
       "patched_sha256": "48bb6d652693bbcf387062436ae904ff3964adffa958497b899305341655281d",
-      "base_filename": "provider-bases/frembed--base--7c925f6a07ae3d37.js",
-      "base_sha256": "7c925f6a07ae3d37a833b9a636972b8a42338718224962ef7172c0f80686afa3",
+      "base_filename": "provider-bases/frembed--base--bcbf24023905f51f.js",
+      "base_sha256": "bcbf24023905f51f6eca3417947b4b700107cc1b90694e0d512fa5c40a403e28",
       "base_source": "niakvio-clean-reconstruction-v3",
       "clean_reconstruction_required": false,
       "clean_reconstruction_verified": true,
       "clean_reconstruction_authoring_version": 3,
-      "clean_reconstruction_verified_at": "2026-11-14T19:34:43.970835+00:00",
+      "clean_reconstruction_verified_at": "2026-11-16T18:06:45.153854+00:00",
       "local_patches": [
         {
           "type": "patch_script",
@@ -61780,7 +61814,14 @@
         "inventorySource": "NiakVIO-GLOBAL-FINAL-STRICT-TOP20-2026-09-11(5).xlsx",
         "inventoryRank": 10,
         "inventoryScore": 86
-      }
+      },
+      "legacy_base_filename_before_clean_v3": "provider-bases/frembed--base--7c925f6a07ae3d37.js",
+      "legacy_base_sha256_before_clean_v3": "7c925f6a07ae3d37a833b9a636972b8a42338718224962ef7172c0f80686afa3",
+      "clean_reconstruction_candidate": false,
+      "provider_base_role": "canonical-v3-common-skeleton",
+      "legacy_provider_js_role": "knowledge-only",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "upstream_code_executed_for_reconstruction": false
     },
     "nakastream": {
       "id": "nakastream",
@@ -61899,13 +61940,13 @@
       "published_filename": "providers/1jour1film0626--nuvio--3e1bad7cad47d760.js",
       "sha256": "3e1bad7cad47d7602054af7795992618fa574dc96442a237cd4e8103e5e228eb",
       "patched_sha256": "3e1bad7cad47d7602054af7795992618fa574dc96442a237cd4e8103e5e228eb",
-      "base_filename": "provider-bases/1jour1film0626--base--7c925f6a07ae3d37.js",
-      "base_sha256": "7c925f6a07ae3d37a833b9a636972b8a42338718224962ef7172c0f80686afa3",
+      "base_filename": "provider-bases/1jour1film0626--base--bcbf24023905f51f.js",
+      "base_sha256": "bcbf24023905f51f6eca3417947b4b700107cc1b90694e0d512fa5c40a403e28",
       "base_source": "niakvio-clean-reconstruction-v3",
       "clean_reconstruction_required": false,
       "clean_reconstruction_verified": true,
       "clean_reconstruction_authoring_version": 3,
-      "clean_reconstruction_verified_at": "2026-11-14T19:35:52.095294+00:00",
+      "clean_reconstruction_verified_at": "2026-11-16T18:06:45.153854+00:00",
       "local_patches": [
         {
           "type": "patch_script",
@@ -62036,7 +62077,14 @@
         "inventorySource": "NiakVIO-GLOBAL-FINAL-STRICT-TOP20-2026-09-11(5).xlsx",
         "inventoryRank": 13,
         "inventoryScore": 83
-      }
+      },
+      "legacy_base_filename_before_clean_v3": "provider-bases/1jour1film0626--base--7c925f6a07ae3d37.js",
+      "legacy_base_sha256_before_clean_v3": "7c925f6a07ae3d37a833b9a636972b8a42338718224962ef7172c0f80686afa3",
+      "clean_reconstruction_candidate": false,
+      "provider_base_role": "canonical-v3-common-skeleton",
+      "legacy_provider_js_role": "knowledge-only",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "upstream_code_executed_for_reconstruction": false
     },
     "dotriv": {
       "id": "dotriv",
@@ -62267,13 +62315,13 @@
       "published_filename": "providers/kidraz--nuvio--ad16ca8575bd6869.js",
       "sha256": "ad16ca8575bd6869e9970da7410582e037c97eff0babfbd69b69c0e0080fd1d0",
       "patched_sha256": "ad16ca8575bd6869e9970da7410582e037c97eff0babfbd69b69c0e0080fd1d0",
-      "base_filename": "provider-bases/kidraz--base--7c925f6a07ae3d37.js",
-      "base_sha256": "7c925f6a07ae3d37a833b9a636972b8a42338718224962ef7172c0f80686afa3",
+      "base_filename": "provider-bases/kidraz--base--bcbf24023905f51f.js",
+      "base_sha256": "bcbf24023905f51f6eca3417947b4b700107cc1b90694e0d512fa5c40a403e28",
       "base_source": "niakvio-clean-reconstruction-v3",
       "clean_reconstruction_required": false,
       "clean_reconstruction_verified": true,
       "clean_reconstruction_authoring_version": 3,
-      "clean_reconstruction_verified_at": "2026-11-14T19:35:55.395886+00:00",
+      "clean_reconstruction_verified_at": "2026-11-16T18:06:45.153854+00:00",
       "local_patches": [
         {
           "type": "patch_script",
@@ -62404,7 +62452,14 @@
         "inventorySource": "NiakVIO-GLOBAL-FINAL-STRICT-TOP20-2026-09-11(5).xlsx",
         "inventoryRank": 18,
         "inventoryScore": 83
-      }
+      },
+      "legacy_base_filename_before_clean_v3": "provider-bases/kidraz--base--7c925f6a07ae3d37.js",
+      "legacy_base_sha256_before_clean_v3": "7c925f6a07ae3d37a833b9a636972b8a42338718224962ef7172c0f80686afa3",
+      "clean_reconstruction_candidate": false,
+      "provider_base_role": "canonical-v3-common-skeleton",
+      "legacy_provider_js_role": "knowledge-only",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "upstream_code_executed_for_reconstruction": false
     },
     "kordoz": {
       "id": "kordoz",
@@ -62523,13 +62578,13 @@
       "published_filename": "providers/neobam--nuvio--478081e7b2ab4d0e.js",
       "sha256": "478081e7b2ab4d0ed397cfba3c8f9411dda3e09b4c3140318968b82e46ce0800",
       "patched_sha256": "478081e7b2ab4d0ed397cfba3c8f9411dda3e09b4c3140318968b82e46ce0800",
-      "base_filename": "provider-bases/neobam--base--7c925f6a07ae3d37.js",
-      "base_sha256": "7c925f6a07ae3d37a833b9a636972b8a42338718224962ef7172c0f80686afa3",
+      "base_filename": "provider-bases/neobam--base--bcbf24023905f51f.js",
+      "base_sha256": "bcbf24023905f51f6eca3417947b4b700107cc1b90694e0d512fa5c40a403e28",
       "base_source": "niakvio-clean-reconstruction-v3",
       "clean_reconstruction_required": false,
       "clean_reconstruction_verified": true,
       "clean_reconstruction_authoring_version": 3,
-      "clean_reconstruction_verified_at": "2026-11-14T19:34:40.755791+00:00",
+      "clean_reconstruction_verified_at": "2026-11-16T18:06:45.153854+00:00",
       "local_patches": [
         {
           "type": "patch_script",
@@ -62660,20 +62715,27 @@
         "inventorySource": "NiakVIO-GLOBAL-FINAL-STRICT-TOP20-2026-09-11(5).xlsx",
         "inventoryRank": 21,
         "inventoryScore": 83
-      }
+      },
+      "legacy_base_filename_before_clean_v3": "provider-bases/neobam--base--7c925f6a07ae3d37.js",
+      "legacy_base_sha256_before_clean_v3": "7c925f6a07ae3d37a833b9a636972b8a42338718224962ef7172c0f80686afa3",
+      "clean_reconstruction_candidate": false,
+      "provider_base_role": "canonical-v3-common-skeleton",
+      "legacy_provider_js_role": "knowledge-only",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "upstream_code_executed_for_reconstruction": false
     },
     "internet-archive": {
       "id": "internet-archive",
       "published_filename": "providers/internet-archive--nuvio--8872a408be60d6d0.js",
       "sha256": "8872a408be60d6d034c9891c9f49cd4f84857057101d809cf1b763feb184b1de",
       "patched_sha256": "8872a408be60d6d034c9891c9f49cd4f84857057101d809cf1b763feb184b1de",
-      "base_filename": "provider-bases/internet-archive--base--733c668675009335.js",
-      "base_sha256": "733c6686750093357c7e708588c003fd515a63ef9a512cfdd6a87b5199fe1102",
+      "base_filename": "provider-bases/internet-archive--base--bcbf24023905f51f.js",
+      "base_sha256": "bcbf24023905f51f6eca3417947b4b700107cc1b90694e0d512fa5c40a403e28",
       "base_source": "niakvio-clean-reconstruction-v3",
       "clean_reconstruction_required": false,
       "clean_reconstruction_verified": true,
       "clean_reconstruction_authoring_version": 3,
-      "clean_reconstruction_verified_at": "2026-11-14T13:31:50.434515+00:00",
+      "clean_reconstruction_verified_at": "2026-11-16T18:06:45.153854+00:00",
       "local_patches": [
         {
           "type": "provider_lego",
@@ -62797,20 +62859,27 @@
         ],
         "providerSha256": "8872a408be60d6d034c9891c9f49cd4f84857057101d809cf1b763feb184b1de",
         "proofSource": "onboarding-pending-status"
-      }
+      },
+      "legacy_base_filename_before_clean_v3": "provider-bases/internet-archive--base--733c668675009335.js",
+      "legacy_base_sha256_before_clean_v3": "733c6686750093357c7e708588c003fd515a63ef9a512cfdd6a87b5199fe1102",
+      "clean_reconstruction_candidate": false,
+      "provider_base_role": "canonical-v3-common-skeleton",
+      "legacy_provider_js_role": "knowledge-only",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "upstream_code_executed_for_reconstruction": false
     },
     "corsflix": {
       "id": "corsflix",
       "published_filename": "providers/corsflix--nuvio--e915be1e775c2005.js",
       "sha256": "e915be1e775c2005ba15f2fcfd6d497f92b43d33be6e83dffa11b70df6c6177b",
       "patched_sha256": "e915be1e775c2005ba15f2fcfd6d497f92b43d33be6e83dffa11b70df6c6177b",
-      "base_filename": "provider-bases/corsflix--base--7c925f6a07ae3d37.js",
-      "base_sha256": "7c925f6a07ae3d37a833b9a636972b8a42338718224962ef7172c0f80686afa3",
+      "base_filename": "provider-bases/corsflix--base--bcbf24023905f51f.js",
+      "base_sha256": "bcbf24023905f51f6eca3417947b4b700107cc1b90694e0d512fa5c40a403e28",
       "base_source": "niakvio-clean-reconstruction-v3",
       "clean_reconstruction_required": false,
       "clean_reconstruction_verified": true,
       "clean_reconstruction_authoring_version": 3,
-      "clean_reconstruction_verified_at": "2026-11-14T19:33:53.975435+00:00",
+      "clean_reconstruction_verified_at": "2026-11-16T18:06:45.153854+00:00",
       "local_patches": [
         {
           "type": "patch_script",
@@ -62935,20 +63004,27 @@
         "inventorySource": "NiakVIO-GLOBAL-FINAL-STRICT-TOP20-2026-09-11(5).xlsx",
         "inventoryRank": 13,
         "inventoryScore": 88
-      }
+      },
+      "legacy_base_filename_before_clean_v3": "provider-bases/corsflix--base--7c925f6a07ae3d37.js",
+      "legacy_base_sha256_before_clean_v3": "7c925f6a07ae3d37a833b9a636972b8a42338718224962ef7172c0f80686afa3",
+      "clean_reconstruction_candidate": false,
+      "provider_base_role": "canonical-v3-common-skeleton",
+      "legacy_provider_js_role": "knowledge-only",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "upstream_code_executed_for_reconstruction": false
     },
     "emnexmovies": {
       "id": "emnexmovies",
       "published_filename": "providers/emnexmovies--nuvio--af6ce14b3d9edfd7.js",
       "sha256": "af6ce14b3d9edfd7a6fb74db0971881e803dbc1f3475751061c447214fff8507",
       "patched_sha256": "af6ce14b3d9edfd7a6fb74db0971881e803dbc1f3475751061c447214fff8507",
-      "base_filename": "provider-bases/emnexmovies--base--7c925f6a07ae3d37.js",
-      "base_sha256": "7c925f6a07ae3d37a833b9a636972b8a42338718224962ef7172c0f80686afa3",
+      "base_filename": "provider-bases/emnexmovies--base--bcbf24023905f51f.js",
+      "base_sha256": "bcbf24023905f51f6eca3417947b4b700107cc1b90694e0d512fa5c40a403e28",
       "base_source": "niakvio-clean-reconstruction-v3",
       "clean_reconstruction_required": false,
       "clean_reconstruction_verified": true,
       "clean_reconstruction_authoring_version": 3,
-      "clean_reconstruction_verified_at": "2026-11-14T19:33:57.079885+00:00",
+      "clean_reconstruction_verified_at": "2026-11-16T18:06:45.153854+00:00",
       "local_patches": [
         {
           "type": "patch_script",
@@ -63073,20 +63149,27 @@
         "inventorySource": "NiakVIO-GLOBAL-FINAL-STRICT-TOP20-2026-09-11(5).xlsx",
         "inventoryRank": 14,
         "inventoryScore": 88
-      }
+      },
+      "legacy_base_filename_before_clean_v3": "provider-bases/emnexmovies--base--7c925f6a07ae3d37.js",
+      "legacy_base_sha256_before_clean_v3": "7c925f6a07ae3d37a833b9a636972b8a42338718224962ef7172c0f80686afa3",
+      "clean_reconstruction_candidate": false,
+      "provider_base_role": "canonical-v3-common-skeleton",
+      "legacy_provider_js_role": "knowledge-only",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "upstream_code_executed_for_reconstruction": false
     },
     "latestmovies": {
       "id": "latestmovies",
       "published_filename": "providers/latestmovies--nuvio--c25124230f09f7ff.js",
       "sha256": "c25124230f09f7ff70a47926521d4db3d45a0262ad0cdff2c32be1c9dec85423",
       "patched_sha256": "c25124230f09f7ff70a47926521d4db3d45a0262ad0cdff2c32be1c9dec85423",
-      "base_filename": "provider-bases/latestmovies--base--7c925f6a07ae3d37.js",
-      "base_sha256": "7c925f6a07ae3d37a833b9a636972b8a42338718224962ef7172c0f80686afa3",
+      "base_filename": "provider-bases/latestmovies--base--bcbf24023905f51f.js",
+      "base_sha256": "bcbf24023905f51f6eca3417947b4b700107cc1b90694e0d512fa5c40a403e28",
       "base_source": "niakvio-clean-reconstruction-v3",
       "clean_reconstruction_required": false,
       "clean_reconstruction_verified": true,
       "clean_reconstruction_authoring_version": 3,
-      "clean_reconstruction_verified_at": "2026-11-14T19:34:00.263541+00:00",
+      "clean_reconstruction_verified_at": "2026-11-16T18:06:45.153854+00:00",
       "local_patches": [
         {
           "type": "patch_script",
@@ -63211,20 +63294,27 @@
         "inventorySource": "NiakVIO-GLOBAL-FINAL-STRICT-TOP20-2026-09-11(5).xlsx",
         "inventoryRank": 18,
         "inventoryScore": 88
-      }
+      },
+      "legacy_base_filename_before_clean_v3": "provider-bases/latestmovies--base--7c925f6a07ae3d37.js",
+      "legacy_base_sha256_before_clean_v3": "7c925f6a07ae3d37a833b9a636972b8a42338718224962ef7172c0f80686afa3",
+      "clean_reconstruction_candidate": false,
+      "provider_base_role": "canonical-v3-common-skeleton",
+      "legacy_provider_js_role": "knowledge-only",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "upstream_code_executed_for_reconstruction": false
     },
     "movy": {
       "id": "movy",
       "published_filename": "providers/movy--nuvio--bc93a4ed2785e5aa.js",
       "sha256": "bc93a4ed2785e5aa3b4ab7ff2d3266b391f98a2389ff68a2d9fae860643a04a7",
       "patched_sha256": "bc93a4ed2785e5aa3b4ab7ff2d3266b391f98a2389ff68a2d9fae860643a04a7",
-      "base_filename": "provider-bases/movy--base--7c925f6a07ae3d37.js",
-      "base_sha256": "7c925f6a07ae3d37a833b9a636972b8a42338718224962ef7172c0f80686afa3",
+      "base_filename": "provider-bases/movy--base--bcbf24023905f51f.js",
+      "base_sha256": "bcbf24023905f51f6eca3417947b4b700107cc1b90694e0d512fa5c40a403e28",
       "base_source": "niakvio-clean-reconstruction-v3",
       "clean_reconstruction_required": false,
       "clean_reconstruction_verified": true,
       "clean_reconstruction_authoring_version": 3,
-      "clean_reconstruction_verified_at": "2026-11-14T19:34:03.464323+00:00",
+      "clean_reconstruction_verified_at": "2026-11-16T18:06:45.153854+00:00",
       "local_patches": [
         {
           "type": "patch_script",
@@ -63349,20 +63439,27 @@
         "inventorySource": "NiakVIO-GLOBAL-FINAL-STRICT-TOP20-2026-09-11(5).xlsx",
         "inventoryRank": 20,
         "inventoryScore": 88
-      }
+      },
+      "legacy_base_filename_before_clean_v3": "provider-bases/movy--base--7c925f6a07ae3d37.js",
+      "legacy_base_sha256_before_clean_v3": "7c925f6a07ae3d37a833b9a636972b8a42338718224962ef7172c0f80686afa3",
+      "clean_reconstruction_candidate": false,
+      "provider_base_role": "canonical-v3-common-skeleton",
+      "legacy_provider_js_role": "knowledge-only",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "upstream_code_executed_for_reconstruction": false
     },
     "arrowtv": {
       "id": "arrowtv",
       "published_filename": "providers/arrowtv--nuvio--da95147442cc93ea.js",
       "sha256": "da95147442cc93eaf682419f231b9b59d440a94a587ad621121ccc2d038647a1",
       "patched_sha256": "da95147442cc93eaf682419f231b9b59d440a94a587ad621121ccc2d038647a1",
-      "base_filename": "provider-bases/arrowtv--base--7c925f6a07ae3d37.js",
-      "base_sha256": "7c925f6a07ae3d37a833b9a636972b8a42338718224962ef7172c0f80686afa3",
+      "base_filename": "provider-bases/arrowtv--base--bcbf24023905f51f.js",
+      "base_sha256": "bcbf24023905f51f6eca3417947b4b700107cc1b90694e0d512fa5c40a403e28",
       "base_source": "niakvio-clean-reconstruction-v3",
       "clean_reconstruction_required": false,
       "clean_reconstruction_verified": true,
       "clean_reconstruction_authoring_version": 3,
-      "clean_reconstruction_verified_at": "2026-11-14T19:34:06.479506+00:00",
+      "clean_reconstruction_verified_at": "2026-11-16T18:06:45.153854+00:00",
       "local_patches": [
         {
           "type": "patch_script",
@@ -63487,7 +63584,14 @@
         "inventorySource": "NiakVIO-GLOBAL-FINAL-STRICT-TOP20-2026-09-11(5).xlsx",
         "inventoryRank": 31,
         "inventoryScore": 83
-      }
+      },
+      "legacy_base_filename_before_clean_v3": "provider-bases/arrowtv--base--7c925f6a07ae3d37.js",
+      "legacy_base_sha256_before_clean_v3": "7c925f6a07ae3d37a833b9a636972b8a42338718224962ef7172c0f80686afa3",
+      "clean_reconstruction_candidate": false,
+      "provider_base_role": "canonical-v3-common-skeleton",
+      "legacy_provider_js_role": "knowledge-only",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "upstream_code_executed_for_reconstruction": false
     },
     "chillflix": {
       "id": "chillflix",
@@ -63632,13 +63736,13 @@
       "published_filename": "providers/neonflix--nuvio--98910ed514d732f3.js",
       "sha256": "98910ed514d732f35aecac9fb884efb0e77b5f6fddca1d14b3edc03143fe529a",
       "patched_sha256": "98910ed514d732f35aecac9fb884efb0e77b5f6fddca1d14b3edc03143fe529a",
-      "base_filename": "provider-bases/neonflix--base--7c925f6a07ae3d37.js",
-      "base_sha256": "7c925f6a07ae3d37a833b9a636972b8a42338718224962ef7172c0f80686afa3",
+      "base_filename": "provider-bases/neonflix--base--bcbf24023905f51f.js",
+      "base_sha256": "bcbf24023905f51f6eca3417947b4b700107cc1b90694e0d512fa5c40a403e28",
       "base_source": "niakvio-clean-reconstruction-v3",
       "clean_reconstruction_required": false,
       "clean_reconstruction_verified": true,
       "clean_reconstruction_authoring_version": 3,
-      "clean_reconstruction_verified_at": "2026-11-14T19:34:12.640022+00:00",
+      "clean_reconstruction_verified_at": "2026-11-16T18:06:45.153854+00:00",
       "local_patches": [
         {
           "type": "patch_script",
@@ -63763,20 +63867,27 @@
         "inventorySource": "NiakVIO-GLOBAL-FINAL-STRICT-TOP20-2026-09-11(5).xlsx",
         "inventoryRank": 51,
         "inventoryScore": 83
-      }
+      },
+      "legacy_base_filename_before_clean_v3": "provider-bases/neonflix--base--7c925f6a07ae3d37.js",
+      "legacy_base_sha256_before_clean_v3": "7c925f6a07ae3d37a833b9a636972b8a42338718224962ef7172c0f80686afa3",
+      "clean_reconstruction_candidate": false,
+      "provider_base_role": "canonical-v3-common-skeleton",
+      "legacy_provider_js_role": "knowledge-only",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "upstream_code_executed_for_reconstruction": false
     },
     "boredflix": {
       "id": "boredflix",
       "published_filename": "providers/boredflix--nuvio--a1d33ad4b3577572.js",
       "sha256": "a1d33ad4b3577572fe742ed18e9a69430a9626d62a95b65fa5009a6ba138139f",
       "patched_sha256": "a1d33ad4b3577572fe742ed18e9a69430a9626d62a95b65fa5009a6ba138139f",
-      "base_filename": "provider-bases/boredflix--base--7c925f6a07ae3d37.js",
-      "base_sha256": "7c925f6a07ae3d37a833b9a636972b8a42338718224962ef7172c0f80686afa3",
+      "base_filename": "provider-bases/boredflix--base--bcbf24023905f51f.js",
+      "base_sha256": "bcbf24023905f51f6eca3417947b4b700107cc1b90694e0d512fa5c40a403e28",
       "base_source": "niakvio-clean-reconstruction-v3",
       "clean_reconstruction_required": false,
       "clean_reconstruction_verified": true,
       "clean_reconstruction_authoring_version": 3,
-      "clean_reconstruction_verified_at": "2026-11-14T19:34:15.717265+00:00",
+      "clean_reconstruction_verified_at": "2026-11-16T18:06:45.153854+00:00",
       "local_patches": [
         {
           "type": "patch_script",
@@ -63901,20 +64012,27 @@
         "inventorySource": "NiakVIO-GLOBAL-FINAL-STRICT-TOP20-2026-09-11(5).xlsx",
         "inventoryRank": 36,
         "inventoryScore": 82
-      }
+      },
+      "legacy_base_filename_before_clean_v3": "provider-bases/boredflix--base--7c925f6a07ae3d37.js",
+      "legacy_base_sha256_before_clean_v3": "7c925f6a07ae3d37a833b9a636972b8a42338718224962ef7172c0f80686afa3",
+      "clean_reconstruction_candidate": false,
+      "provider_base_role": "canonical-v3-common-skeleton",
+      "legacy_provider_js_role": "knowledge-only",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "upstream_code_executed_for_reconstruction": false
     },
     "fexini": {
       "id": "fexini",
       "published_filename": "providers/fexini--nuvio--bdf3e90033885e53.js",
       "sha256": "bdf3e90033885e53cc380e8b54adb3f34b7d4147320e7e106399dcdd059356be",
       "patched_sha256": "bdf3e90033885e53cc380e8b54adb3f34b7d4147320e7e106399dcdd059356be",
-      "base_filename": "provider-bases/fexini--base--7c925f6a07ae3d37.js",
-      "base_sha256": "7c925f6a07ae3d37a833b9a636972b8a42338718224962ef7172c0f80686afa3",
+      "base_filename": "provider-bases/fexini--base--bcbf24023905f51f.js",
+      "base_sha256": "bcbf24023905f51f6eca3417947b4b700107cc1b90694e0d512fa5c40a403e28",
       "base_source": "niakvio-clean-reconstruction-v3",
       "clean_reconstruction_required": false,
       "clean_reconstruction_verified": true,
       "clean_reconstruction_authoring_version": 3,
-      "clean_reconstruction_verified_at": "2026-11-14T19:34:18.759593+00:00",
+      "clean_reconstruction_verified_at": "2026-11-16T18:06:45.153854+00:00",
       "local_patches": [
         {
           "type": "patch_script",
@@ -64039,20 +64157,27 @@
         "inventorySource": "NiakVIO-GLOBAL-FINAL-STRICT-TOP20-2026-09-11(5).xlsx",
         "inventoryRank": 30,
         "inventoryScore": 76
-      }
+      },
+      "legacy_base_filename_before_clean_v3": "provider-bases/fexini--base--7c925f6a07ae3d37.js",
+      "legacy_base_sha256_before_clean_v3": "7c925f6a07ae3d37a833b9a636972b8a42338718224962ef7172c0f80686afa3",
+      "clean_reconstruction_candidate": false,
+      "provider_base_role": "canonical-v3-common-skeleton",
+      "legacy_provider_js_role": "knowledge-only",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "upstream_code_executed_for_reconstruction": false
     },
     "animeonsen": {
       "id": "animeonsen",
       "published_filename": "providers/animeonsen--nuvio--343d4ff2098a7e36.js",
       "sha256": "343d4ff2098a7e367efbc78e57a57298488f0a5783ccea83487083bfe60bb1cc",
       "patched_sha256": "343d4ff2098a7e367efbc78e57a57298488f0a5783ccea83487083bfe60bb1cc",
-      "base_filename": "provider-bases/animeonsen--base--7c925f6a07ae3d37.js",
-      "base_sha256": "7c925f6a07ae3d37a833b9a636972b8a42338718224962ef7172c0f80686afa3",
+      "base_filename": "provider-bases/animeonsen--base--bcbf24023905f51f.js",
+      "base_sha256": "bcbf24023905f51f6eca3417947b4b700107cc1b90694e0d512fa5c40a403e28",
       "base_source": "niakvio-clean-reconstruction-v3",
       "clean_reconstruction_required": false,
       "clean_reconstruction_verified": true,
       "clean_reconstruction_authoring_version": 3,
-      "clean_reconstruction_verified_at": "2026-11-14T19:34:28.416427+00:00",
+      "clean_reconstruction_verified_at": "2026-11-16T18:06:45.153854+00:00",
       "local_patches": [
         {
           "type": "patch_script",
@@ -64177,20 +64302,27 @@
         "inventorySource": "NiakVIO-GLOBAL-FINAL-STRICT-TOP20-2026-09-11(5).xlsx",
         "inventoryRank": 78,
         "inventoryScore": 52
-      }
+      },
+      "legacy_base_filename_before_clean_v3": "provider-bases/animeonsen--base--7c925f6a07ae3d37.js",
+      "legacy_base_sha256_before_clean_v3": "7c925f6a07ae3d37a833b9a636972b8a42338718224962ef7172c0f80686afa3",
+      "clean_reconstruction_candidate": false,
+      "provider_base_role": "canonical-v3-common-skeleton",
+      "legacy_provider_js_role": "knowledge-only",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "upstream_code_executed_for_reconstruction": false
     },
     "shuttletv": {
       "id": "shuttletv",
       "published_filename": "providers/shuttletv--nuvio--a61a6149235e6463.js",
       "sha256": "a61a6149235e64630740de84d7bea5e02e32173b3750961dad87122e874cfadb",
       "patched_sha256": "a61a6149235e64630740de84d7bea5e02e32173b3750961dad87122e874cfadb",
-      "base_filename": "provider-bases/shuttletv--base--7c925f6a07ae3d37.js",
-      "base_sha256": "7c925f6a07ae3d37a833b9a636972b8a42338718224962ef7172c0f80686afa3",
+      "base_filename": "provider-bases/shuttletv--base--bcbf24023905f51f.js",
+      "base_sha256": "bcbf24023905f51f6eca3417947b4b700107cc1b90694e0d512fa5c40a403e28",
       "base_source": "niakvio-clean-reconstruction-v3",
       "clean_reconstruction_required": false,
       "clean_reconstruction_verified": true,
       "clean_reconstruction_authoring_version": 3,
-      "clean_reconstruction_verified_at": "2026-11-14T19:34:31.393751+00:00",
+      "clean_reconstruction_verified_at": "2026-11-16T18:06:45.153854+00:00",
       "local_patches": [
         {
           "type": "patch_script",
@@ -64315,20 +64447,27 @@
         "inventorySource": "NiakVIO-GLOBAL-FINAL-STRICT-TOP20-2026-09-11(5).xlsx",
         "inventoryRank": 22,
         "inventoryScore": 88
-      }
+      },
+      "legacy_base_filename_before_clean_v3": "provider-bases/shuttletv--base--7c925f6a07ae3d37.js",
+      "legacy_base_sha256_before_clean_v3": "7c925f6a07ae3d37a833b9a636972b8a42338718224962ef7172c0f80686afa3",
+      "clean_reconstruction_candidate": false,
+      "provider_base_role": "canonical-v3-common-skeleton",
+      "legacy_provider_js_role": "knowledge-only",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "upstream_code_executed_for_reconstruction": false
     },
     "primewire": {
       "id": "primewire",
       "published_filename": "providers/primewire--nuvio--0844cc491916a621.js",
       "sha256": "0844cc491916a621819fbabe922e7b70f358769693d9409a9c0bf437b970ec10",
       "patched_sha256": "0844cc491916a621819fbabe922e7b70f358769693d9409a9c0bf437b970ec10",
-      "base_filename": "provider-bases/primewire--base--7c925f6a07ae3d37.js",
-      "base_sha256": "7c925f6a07ae3d37a833b9a636972b8a42338718224962ef7172c0f80686afa3",
+      "base_filename": "provider-bases/primewire--base--bcbf24023905f51f.js",
+      "base_sha256": "bcbf24023905f51f6eca3417947b4b700107cc1b90694e0d512fa5c40a403e28",
       "base_source": "niakvio-clean-reconstruction-v3",
       "clean_reconstruction_required": false,
       "clean_reconstruction_verified": true,
       "clean_reconstruction_authoring_version": 3,
-      "clean_reconstruction_verified_at": "2026-11-14T19:34:34.373998+00:00",
+      "clean_reconstruction_verified_at": "2026-11-16T18:06:45.153854+00:00",
       "local_patches": [
         {
           "type": "patch_script",
@@ -64453,20 +64592,27 @@
         "inventorySource": "NiakVIO-GLOBAL-FINAL-STRICT-TOP20-2026-09-11(5).xlsx",
         "inventoryRank": 26,
         "inventoryScore": 85
-      }
+      },
+      "legacy_base_filename_before_clean_v3": "provider-bases/primewire--base--7c925f6a07ae3d37.js",
+      "legacy_base_sha256_before_clean_v3": "7c925f6a07ae3d37a833b9a636972b8a42338718224962ef7172c0f80686afa3",
+      "clean_reconstruction_candidate": false,
+      "provider_base_role": "canonical-v3-common-skeleton",
+      "legacy_provider_js_role": "knowledge-only",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "upstream_code_executed_for_reconstruction": false
     },
     "67movies": {
       "id": "67movies",
       "published_filename": "providers/67movies--nuvio--7a0804a6d5b1d83d.js",
       "sha256": "7a0804a6d5b1d83d062844b744f9109b3e334fb14169cb0ecaddb96b36c6a328",
       "patched_sha256": "7a0804a6d5b1d83d062844b744f9109b3e334fb14169cb0ecaddb96b36c6a328",
-      "base_filename": "provider-bases/67movies--base--7c925f6a07ae3d37.js",
-      "base_sha256": "7c925f6a07ae3d37a833b9a636972b8a42338718224962ef7172c0f80686afa3",
+      "base_filename": "provider-bases/67movies--base--bcbf24023905f51f.js",
+      "base_sha256": "bcbf24023905f51f6eca3417947b4b700107cc1b90694e0d512fa5c40a403e28",
       "base_source": "niakvio-clean-reconstruction-v3",
       "clean_reconstruction_required": false,
       "clean_reconstruction_verified": true,
       "clean_reconstruction_authoring_version": 3,
-      "clean_reconstruction_verified_at": "2026-11-14T19:34:37.416627+00:00",
+      "clean_reconstruction_verified_at": "2026-11-16T18:06:45.153854+00:00",
       "local_patches": [
         {
           "type": "patch_script",
@@ -64591,20 +64737,27 @@
         "inventorySource": "NiakVIO-GLOBAL-FINAL-STRICT-TOP20-2026-09-11(5).xlsx",
         "inventoryRank": 27,
         "inventoryScore": 83
-      }
+      },
+      "legacy_base_filename_before_clean_v3": "provider-bases/67movies--base--7c925f6a07ae3d37.js",
+      "legacy_base_sha256_before_clean_v3": "7c925f6a07ae3d37a833b9a636972b8a42338718224962ef7172c0f80686afa3",
+      "clean_reconstruction_candidate": false,
+      "provider_base_role": "canonical-v3-common-skeleton",
+      "legacy_provider_js_role": "knowledge-only",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "upstream_code_executed_for_reconstruction": false
     },
     "watch-cartoon-online": {
       "id": "watch-cartoon-online",
       "published_filename": "providers/watch-cartoon-online--nuvio--896fd2825f59b98e.js",
       "sha256": "896fd2825f59b98ece2c2c4f96dec48521ceb31ab97e4cda928d41e9ff5a69fc",
       "patched_sha256": "896fd2825f59b98ece2c2c4f96dec48521ceb31ab97e4cda928d41e9ff5a69fc",
-      "base_filename": "provider-bases/watch-cartoon-online--base--7c925f6a07ae3d37.js",
-      "base_sha256": "7c925f6a07ae3d37a833b9a636972b8a42338718224962ef7172c0f80686afa3",
+      "base_filename": "provider-bases/watch-cartoon-online--base--bcbf24023905f51f.js",
+      "base_sha256": "bcbf24023905f51f6eca3417947b4b700107cc1b90694e0d512fa5c40a403e28",
       "base_source": "niakvio-clean-reconstruction-v3",
       "clean_reconstruction_required": false,
       "clean_reconstruction_verified": true,
       "clean_reconstruction_authoring_version": 3,
-      "clean_reconstruction_verified_at": "2026-11-14T19:34:46.969328+00:00",
+      "clean_reconstruction_verified_at": "2026-11-16T18:06:45.153854+00:00",
       "local_patches": [
         {
           "type": "patch_script",
@@ -64729,20 +64882,27 @@
         "inventorySource": "NiakVIO-GLOBAL-FINAL-STRICT-TOP20-2026-09-11(5).xlsx",
         "inventoryRank": 3,
         "inventoryScore": 94
-      }
+      },
+      "legacy_base_filename_before_clean_v3": "provider-bases/watch-cartoon-online--base--7c925f6a07ae3d37.js",
+      "legacy_base_sha256_before_clean_v3": "7c925f6a07ae3d37a833b9a636972b8a42338718224962ef7172c0f80686afa3",
+      "clean_reconstruction_candidate": false,
+      "provider_base_role": "canonical-v3-common-skeleton",
+      "legacy_provider_js_role": "knowledge-only",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "upstream_code_executed_for_reconstruction": false
     },
     "cinemabz": {
       "id": "cinemabz",
       "published_filename": "providers/cinemabz--nuvio--d8e2c82aaf9ea34d.js",
       "sha256": "d8e2c82aaf9ea34dc56dac1c7208d88df4c64ecd4cfae39a2972171bcb047aa4",
       "patched_sha256": "d8e2c82aaf9ea34dc56dac1c7208d88df4c64ecd4cfae39a2972171bcb047aa4",
-      "base_filename": "provider-bases/cinemabz--base--7c925f6a07ae3d37.js",
-      "base_sha256": "7c925f6a07ae3d37a833b9a636972b8a42338718224962ef7172c0f80686afa3",
+      "base_filename": "provider-bases/cinemabz--base--bcbf24023905f51f.js",
+      "base_sha256": "bcbf24023905f51f6eca3417947b4b700107cc1b90694e0d512fa5c40a403e28",
       "base_source": "niakvio-clean-reconstruction-v3",
       "clean_reconstruction_required": false,
       "clean_reconstruction_verified": true,
       "clean_reconstruction_authoring_version": 3,
-      "clean_reconstruction_verified_at": "2026-11-14T19:34:49.929131+00:00",
+      "clean_reconstruction_verified_at": "2026-11-16T18:06:45.153854+00:00",
       "local_patches": [
         {
           "type": "patch_script",
@@ -64867,20 +65027,27 @@
         "inventorySource": "NiakVIO-GLOBAL-FINAL-STRICT-TOP20-2026-09-11(5).xlsx",
         "inventoryRank": 5,
         "inventoryScore": 91
-      }
+      },
+      "legacy_base_filename_before_clean_v3": "provider-bases/cinemabz--base--7c925f6a07ae3d37.js",
+      "legacy_base_sha256_before_clean_v3": "7c925f6a07ae3d37a833b9a636972b8a42338718224962ef7172c0f80686afa3",
+      "clean_reconstruction_candidate": false,
+      "provider_base_role": "canonical-v3-common-skeleton",
+      "legacy_provider_js_role": "knowledge-only",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "upstream_code_executed_for_reconstruction": false
     },
     "flixer": {
       "id": "flixer",
       "published_filename": "providers/flixer--nuvio--5d49686596e6ef1e.js",
       "sha256": "5d49686596e6ef1e6706be244b1cfa9bb9e00f753c9684047e4b1a610a4fac37",
       "patched_sha256": "5d49686596e6ef1e6706be244b1cfa9bb9e00f753c9684047e4b1a610a4fac37",
-      "base_filename": "provider-bases/flixer--base--7c925f6a07ae3d37.js",
-      "base_sha256": "7c925f6a07ae3d37a833b9a636972b8a42338718224962ef7172c0f80686afa3",
+      "base_filename": "provider-bases/flixer--base--bcbf24023905f51f.js",
+      "base_sha256": "bcbf24023905f51f6eca3417947b4b700107cc1b90694e0d512fa5c40a403e28",
       "base_source": "niakvio-clean-reconstruction-v3",
       "clean_reconstruction_required": false,
       "clean_reconstruction_verified": true,
       "clean_reconstruction_authoring_version": 3,
-      "clean_reconstruction_verified_at": "2026-11-14T19:34:52.973921+00:00",
+      "clean_reconstruction_verified_at": "2026-11-16T18:06:45.153854+00:00",
       "local_patches": [
         {
           "type": "patch_script",
@@ -65005,20 +65172,27 @@
         "inventorySource": "NiakVIO-GLOBAL-FINAL-STRICT-TOP20-2026-09-11(5).xlsx",
         "inventoryRank": 6,
         "inventoryScore": 90
-      }
+      },
+      "legacy_base_filename_before_clean_v3": "provider-bases/flixer--base--7c925f6a07ae3d37.js",
+      "legacy_base_sha256_before_clean_v3": "7c925f6a07ae3d37a833b9a636972b8a42338718224962ef7172c0f80686afa3",
+      "clean_reconstruction_candidate": false,
+      "provider_base_role": "canonical-v3-common-skeleton",
+      "legacy_provider_js_role": "knowledge-only",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "upstream_code_executed_for_reconstruction": false
     },
     "cinegram": {
       "id": "cinegram",
       "published_filename": "providers/cinegram--nuvio--ac471b073503f9eb.js",
       "sha256": "ac471b073503f9ebe19d439eed2e620f1d1680d426590744caf5f069c148bbba",
       "patched_sha256": "ac471b073503f9ebe19d439eed2e620f1d1680d426590744caf5f069c148bbba",
-      "base_filename": "provider-bases/cinegram--base--7c925f6a07ae3d37.js",
-      "base_sha256": "7c925f6a07ae3d37a833b9a636972b8a42338718224962ef7172c0f80686afa3",
+      "base_filename": "provider-bases/cinegram--base--bcbf24023905f51f.js",
+      "base_sha256": "bcbf24023905f51f6eca3417947b4b700107cc1b90694e0d512fa5c40a403e28",
       "base_source": "niakvio-clean-reconstruction-v3",
       "clean_reconstruction_required": false,
       "clean_reconstruction_verified": true,
       "clean_reconstruction_authoring_version": 3,
-      "clean_reconstruction_verified_at": "2026-11-14T19:34:55.927715+00:00",
+      "clean_reconstruction_verified_at": "2026-11-16T18:06:45.153854+00:00",
       "local_patches": [
         {
           "type": "patch_script",
@@ -65143,20 +65317,27 @@
         "inventorySource": "NiakVIO-GLOBAL-FINAL-STRICT-TOP20-2026-09-11(5).xlsx",
         "inventoryRank": 11,
         "inventoryScore": 88
-      }
+      },
+      "legacy_base_filename_before_clean_v3": "provider-bases/cinegram--base--7c925f6a07ae3d37.js",
+      "legacy_base_sha256_before_clean_v3": "7c925f6a07ae3d37a833b9a636972b8a42338718224962ef7172c0f80686afa3",
+      "clean_reconstruction_candidate": false,
+      "provider_base_role": "canonical-v3-common-skeleton",
+      "legacy_provider_js_role": "knowledge-only",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "upstream_code_executed_for_reconstruction": false
     },
     "movish": {
       "id": "movish",
       "published_filename": "providers/movish--nuvio--de12090536d2ac4a.js",
       "sha256": "de12090536d2ac4a023e6b9a6ea229f582d7e66b3474c2e5f6b6d7064c074d2e",
       "patched_sha256": "de12090536d2ac4a023e6b9a6ea229f582d7e66b3474c2e5f6b6d7064c074d2e",
-      "base_filename": "provider-bases/movish--base--7c925f6a07ae3d37.js",
-      "base_sha256": "7c925f6a07ae3d37a833b9a636972b8a42338718224962ef7172c0f80686afa3",
+      "base_filename": "provider-bases/movish--base--bcbf24023905f51f.js",
+      "base_sha256": "bcbf24023905f51f6eca3417947b4b700107cc1b90694e0d512fa5c40a403e28",
       "base_source": "niakvio-clean-reconstruction-v3",
       "clean_reconstruction_required": false,
       "clean_reconstruction_verified": true,
       "clean_reconstruction_authoring_version": 3,
-      "clean_reconstruction_verified_at": "2026-11-14T19:34:58.945973+00:00",
+      "clean_reconstruction_verified_at": "2026-11-16T18:06:45.153854+00:00",
       "local_patches": [
         {
           "type": "patch_script",
@@ -65281,20 +65462,27 @@
         "inventorySource": "NiakVIO-GLOBAL-FINAL-STRICT-TOP20-2026-09-11(5).xlsx",
         "inventoryRank": 50,
         "inventoryScore": 83
-      }
+      },
+      "legacy_base_filename_before_clean_v3": "provider-bases/movish--base--7c925f6a07ae3d37.js",
+      "legacy_base_sha256_before_clean_v3": "7c925f6a07ae3d37a833b9a636972b8a42338718224962ef7172c0f80686afa3",
+      "clean_reconstruction_candidate": false,
+      "provider_base_role": "canonical-v3-common-skeleton",
+      "legacy_provider_js_role": "knowledge-only",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "upstream_code_executed_for_reconstruction": false
     },
     "vuflix": {
       "id": "vuflix",
       "published_filename": "providers/vuflix--nuvio--4849368aa6d4545b.js",
       "sha256": "4849368aa6d4545bf02e78ead8d4b7461c4400202f4f60e3558e90cf097c0d67",
       "patched_sha256": "4849368aa6d4545bf02e78ead8d4b7461c4400202f4f60e3558e90cf097c0d67",
-      "base_filename": "provider-bases/vuflix--base--7c925f6a07ae3d37.js",
-      "base_sha256": "7c925f6a07ae3d37a833b9a636972b8a42338718224962ef7172c0f80686afa3",
+      "base_filename": "provider-bases/vuflix--base--bcbf24023905f51f.js",
+      "base_sha256": "bcbf24023905f51f6eca3417947b4b700107cc1b90694e0d512fa5c40a403e28",
       "base_source": "niakvio-clean-reconstruction-v3",
       "clean_reconstruction_required": false,
       "clean_reconstruction_verified": true,
       "clean_reconstruction_authoring_version": 3,
-      "clean_reconstruction_verified_at": "2026-11-14T19:35:02.036887+00:00",
+      "clean_reconstruction_verified_at": "2026-11-16T18:06:45.153854+00:00",
       "local_patches": [
         {
           "type": "patch_script",
@@ -65419,20 +65607,27 @@
         "inventorySource": "NiakVIO-GLOBAL-FINAL-STRICT-TOP20-2026-09-11(5).xlsx",
         "inventoryRank": 66,
         "inventoryScore": 83
-      }
+      },
+      "legacy_base_filename_before_clean_v3": "provider-bases/vuflix--base--7c925f6a07ae3d37.js",
+      "legacy_base_sha256_before_clean_v3": "7c925f6a07ae3d37a833b9a636972b8a42338718224962ef7172c0f80686afa3",
+      "clean_reconstruction_candidate": false,
+      "provider_base_role": "canonical-v3-common-skeleton",
+      "legacy_provider_js_role": "knowledge-only",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "upstream_code_executed_for_reconstruction": false
     },
     "anisama": {
       "id": "anisama",
       "published_filename": "providers/anisama--nuvio--f6abda56ee3bcaf2.js",
       "sha256": "f6abda56ee3bcaf2338d53dd459cf252da025083305e7c9bd4c54e6e5137d880",
       "patched_sha256": "f6abda56ee3bcaf2338d53dd459cf252da025083305e7c9bd4c54e6e5137d880",
-      "base_filename": "provider-bases/anisama--base--7c925f6a07ae3d37.js",
-      "base_sha256": "7c925f6a07ae3d37a833b9a636972b8a42338718224962ef7172c0f80686afa3",
+      "base_filename": "provider-bases/anisama--base--bcbf24023905f51f.js",
+      "base_sha256": "bcbf24023905f51f6eca3417947b4b700107cc1b90694e0d512fa5c40a403e28",
       "base_source": "niakvio-clean-reconstruction-v3",
       "clean_reconstruction_required": false,
       "clean_reconstruction_verified": true,
       "clean_reconstruction_authoring_version": 3,
-      "clean_reconstruction_verified_at": "2026-11-14T19:35:04.990101+00:00",
+      "clean_reconstruction_verified_at": "2026-11-16T18:06:45.153854+00:00",
       "local_patches": [
         {
           "type": "patch_script",
@@ -65557,20 +65752,27 @@
         "inventorySource": "NiakVIO-GLOBAL-FINAL-STRICT-TOP20-2026-09-11(5).xlsx",
         "inventoryRank": null,
         "inventoryScore": null
-      }
+      },
+      "legacy_base_filename_before_clean_v3": "provider-bases/anisama--base--7c925f6a07ae3d37.js",
+      "legacy_base_sha256_before_clean_v3": "7c925f6a07ae3d37a833b9a636972b8a42338718224962ef7172c0f80686afa3",
+      "clean_reconstruction_candidate": false,
+      "provider_base_role": "canonical-v3-common-skeleton",
+      "legacy_provider_js_role": "knowledge-only",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "upstream_code_executed_for_reconstruction": false
     },
     "zone-streaming": {
       "id": "zone-streaming",
       "published_filename": "providers/zone-streaming--nuvio--cd8a087906f9f286.js",
       "sha256": "cd8a087906f9f286b4b3a9081b1e9fc5fa0fb289c47f84297966622b46b5ee7a",
       "patched_sha256": "cd8a087906f9f286b4b3a9081b1e9fc5fa0fb289c47f84297966622b46b5ee7a",
-      "base_filename": "provider-bases/zone-streaming--base--7c925f6a07ae3d37.js",
-      "base_sha256": "7c925f6a07ae3d37a833b9a636972b8a42338718224962ef7172c0f80686afa3",
+      "base_filename": "provider-bases/zone-streaming--base--bcbf24023905f51f.js",
+      "base_sha256": "bcbf24023905f51f6eca3417947b4b700107cc1b90694e0d512fa5c40a403e28",
       "base_source": "niakvio-clean-reconstruction-v3",
       "clean_reconstruction_required": false,
       "clean_reconstruction_verified": true,
       "clean_reconstruction_authoring_version": 3,
-      "clean_reconstruction_verified_at": "2026-11-14T19:35:08.151970+00:00",
+      "clean_reconstruction_verified_at": "2026-11-16T18:06:45.153854+00:00",
       "local_patches": [
         {
           "type": "patch_script",
@@ -65695,20 +65897,27 @@
         "inventorySource": "NiakVIO-GLOBAL-FINAL-STRICT-TOP20-2026-09-11(5).xlsx",
         "inventoryRank": 32,
         "inventoryScore": 76
-      }
+      },
+      "legacy_base_filename_before_clean_v3": "provider-bases/zone-streaming--base--7c925f6a07ae3d37.js",
+      "legacy_base_sha256_before_clean_v3": "7c925f6a07ae3d37a833b9a636972b8a42338718224962ef7172c0f80686afa3",
+      "clean_reconstruction_candidate": false,
+      "provider_base_role": "canonical-v3-common-skeleton",
+      "legacy_provider_js_role": "knowledge-only",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "upstream_code_executed_for_reconstruction": false
     },
     "franime": {
       "id": "franime",
       "published_filename": "providers/franime--nuvio--36922a9379bca25b.js",
       "sha256": "36922a9379bca25b0f175a1bbc8ceae35a63564a68f46643fe6e5cce64ec6b47",
       "patched_sha256": "36922a9379bca25b0f175a1bbc8ceae35a63564a68f46643fe6e5cce64ec6b47",
-      "base_filename": "provider-bases/franime--base--7c925f6a07ae3d37.js",
-      "base_sha256": "7c925f6a07ae3d37a833b9a636972b8a42338718224962ef7172c0f80686afa3",
+      "base_filename": "provider-bases/franime--base--bcbf24023905f51f.js",
+      "base_sha256": "bcbf24023905f51f6eca3417947b4b700107cc1b90694e0d512fa5c40a403e28",
       "base_source": "niakvio-clean-reconstruction-v3",
       "clean_reconstruction_required": false,
       "clean_reconstruction_verified": true,
       "clean_reconstruction_authoring_version": 3,
-      "clean_reconstruction_verified_at": "2026-11-14T19:35:14.454093+00:00",
+      "clean_reconstruction_verified_at": "2026-11-16T18:06:45.153854+00:00",
       "local_patches": [
         {
           "type": "patch_script",
@@ -65833,20 +66042,27 @@
         "inventorySource": "NiakVIO-GLOBAL-FINAL-STRICT-TOP20-2026-09-11(5).xlsx",
         "inventoryRank": 39,
         "inventoryScore": 69
-      }
+      },
+      "legacy_base_filename_before_clean_v3": "provider-bases/franime--base--7c925f6a07ae3d37.js",
+      "legacy_base_sha256_before_clean_v3": "7c925f6a07ae3d37a833b9a636972b8a42338718224962ef7172c0f80686afa3",
+      "clean_reconstruction_candidate": false,
+      "provider_base_role": "canonical-v3-common-skeleton",
+      "legacy_provider_js_role": "knowledge-only",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "upstream_code_executed_for_reconstruction": false
     },
     "fawesome": {
       "id": "fawesome",
       "published_filename": "providers/fawesome--nuvio--d4e483e67a3c8df9.js",
       "sha256": "d4e483e67a3c8df99fcdb98ad6a385b9191c1c20efa65b5a34cfab011af7d933",
       "patched_sha256": "d4e483e67a3c8df99fcdb98ad6a385b9191c1c20efa65b5a34cfab011af7d933",
-      "base_filename": "provider-bases/fawesome--base--7c925f6a07ae3d37.js",
-      "base_sha256": "7c925f6a07ae3d37a833b9a636972b8a42338718224962ef7172c0f80686afa3",
+      "base_filename": "provider-bases/fawesome--base--bcbf24023905f51f.js",
+      "base_sha256": "bcbf24023905f51f6eca3417947b4b700107cc1b90694e0d512fa5c40a403e28",
       "base_source": "niakvio-clean-reconstruction-v3",
       "clean_reconstruction_required": false,
       "clean_reconstruction_verified": true,
       "clean_reconstruction_authoring_version": 3,
-      "clean_reconstruction_verified_at": "2026-11-14T19:35:20.807324+00:00",
+      "clean_reconstruction_verified_at": "2026-11-16T18:06:45.153854+00:00",
       "local_patches": [
         {
           "type": "patch_script",
@@ -65971,20 +66187,27 @@
         "inventorySource": "NiakVIO-GLOBAL-FINAL-STRICT-TOP20-2026-09-11(5).xlsx",
         "inventoryRank": 45,
         "inventoryScore": 66
-      }
+      },
+      "legacy_base_filename_before_clean_v3": "provider-bases/fawesome--base--7c925f6a07ae3d37.js",
+      "legacy_base_sha256_before_clean_v3": "7c925f6a07ae3d37a833b9a636972b8a42338718224962ef7172c0f80686afa3",
+      "clean_reconstruction_candidate": false,
+      "provider_base_role": "canonical-v3-common-skeleton",
+      "legacy_provider_js_role": "knowledge-only",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "upstream_code_executed_for_reconstruction": false
     },
     "cinetimes": {
       "id": "cinetimes",
       "published_filename": "providers/cinetimes--nuvio--6f1e73650c04612b.js",
       "sha256": "6f1e73650c04612b772da0e95fad5c7620e28288746c88d573e78bff0d408bca",
       "patched_sha256": "6f1e73650c04612b772da0e95fad5c7620e28288746c88d573e78bff0d408bca",
-      "base_filename": "provider-bases/cinetimes--base--7c925f6a07ae3d37.js",
-      "base_sha256": "7c925f6a07ae3d37a833b9a636972b8a42338718224962ef7172c0f80686afa3",
+      "base_filename": "provider-bases/cinetimes--base--bcbf24023905f51f.js",
+      "base_sha256": "bcbf24023905f51f6eca3417947b4b700107cc1b90694e0d512fa5c40a403e28",
       "base_source": "niakvio-clean-reconstruction-v3",
       "clean_reconstruction_required": false,
       "clean_reconstruction_verified": true,
       "clean_reconstruction_authoring_version": 3,
-      "clean_reconstruction_verified_at": "2026-11-14T19:35:23.869575+00:00",
+      "clean_reconstruction_verified_at": "2026-11-16T18:06:45.153854+00:00",
       "local_patches": [
         {
           "type": "patch_script",
@@ -66109,20 +66332,27 @@
         "inventorySource": "NiakVIO-GLOBAL-FINAL-STRICT-TOP20-2026-09-11(5).xlsx",
         "inventoryRank": 49,
         "inventoryScore": 64
-      }
+      },
+      "legacy_base_filename_before_clean_v3": "provider-bases/cinetimes--base--7c925f6a07ae3d37.js",
+      "legacy_base_sha256_before_clean_v3": "7c925f6a07ae3d37a833b9a636972b8a42338718224962ef7172c0f80686afa3",
+      "clean_reconstruction_candidate": false,
+      "provider_base_role": "canonical-v3-common-skeleton",
+      "legacy_provider_js_role": "knowledge-only",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "upstream_code_executed_for_reconstruction": false
     },
     "sadisflix": {
       "id": "sadisflix",
       "published_filename": "providers/sadisflix--nuvio--79aaedf6394bdf2d.js",
       "sha256": "79aaedf6394bdf2d6669393b84f3851ab9928ba07f4869fae14a4df003d9b000",
       "patched_sha256": "79aaedf6394bdf2d6669393b84f3851ab9928ba07f4869fae14a4df003d9b000",
-      "base_filename": "provider-bases/sadisflix--base--7c925f6a07ae3d37.js",
-      "base_sha256": "7c925f6a07ae3d37a833b9a636972b8a42338718224962ef7172c0f80686afa3",
+      "base_filename": "provider-bases/sadisflix--base--bcbf24023905f51f.js",
+      "base_sha256": "bcbf24023905f51f6eca3417947b4b700107cc1b90694e0d512fa5c40a403e28",
       "base_source": "niakvio-clean-reconstruction-v3",
       "clean_reconstruction_required": false,
       "clean_reconstruction_verified": true,
       "clean_reconstruction_authoring_version": 3,
-      "clean_reconstruction_verified_at": "2026-11-14T19:35:26.894438+00:00",
+      "clean_reconstruction_verified_at": "2026-11-16T18:06:45.153854+00:00",
       "local_patches": [
         {
           "type": "patch_script",
@@ -66247,20 +66477,27 @@
         "inventorySource": "NiakVIO-GLOBAL-FINAL-STRICT-TOP20-2026-09-11(5).xlsx",
         "inventoryRank": 58,
         "inventoryScore": 64
-      }
+      },
+      "legacy_base_filename_before_clean_v3": "provider-bases/sadisflix--base--7c925f6a07ae3d37.js",
+      "legacy_base_sha256_before_clean_v3": "7c925f6a07ae3d37a833b9a636972b8a42338718224962ef7172c0f80686afa3",
+      "clean_reconstruction_candidate": false,
+      "provider_base_role": "canonical-v3-common-skeleton",
+      "legacy_provider_js_role": "knowledge-only",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "upstream_code_executed_for_reconstruction": false
     },
     "skstream": {
       "id": "skstream",
       "published_filename": "providers/skstream--nuvio--7567eb31c5c8dfc4.js",
       "sha256": "7567eb31c5c8dfc4e98f570725d330e9b54d5c0031eb65e8f428ce1ac1d50909",
       "patched_sha256": "7567eb31c5c8dfc4e98f570725d330e9b54d5c0031eb65e8f428ce1ac1d50909",
-      "base_filename": "provider-bases/skstream--base--7c925f6a07ae3d37.js",
-      "base_sha256": "7c925f6a07ae3d37a833b9a636972b8a42338718224962ef7172c0f80686afa3",
+      "base_filename": "provider-bases/skstream--base--bcbf24023905f51f.js",
+      "base_sha256": "bcbf24023905f51f6eca3417947b4b700107cc1b90694e0d512fa5c40a403e28",
       "base_source": "niakvio-clean-reconstruction-v3",
       "clean_reconstruction_required": false,
       "clean_reconstruction_verified": true,
       "clean_reconstruction_authoring_version": 3,
-      "clean_reconstruction_verified_at": "2026-11-14T19:35:29.911039+00:00",
+      "clean_reconstruction_verified_at": "2026-11-16T18:06:45.153854+00:00",
       "local_patches": [
         {
           "type": "patch_script",
@@ -66385,20 +66622,27 @@
         "inventorySource": "NiakVIO-GLOBAL-FINAL-STRICT-TOP20-2026-09-11(5).xlsx",
         "inventoryRank": 60,
         "inventoryScore": 64
-      }
+      },
+      "legacy_base_filename_before_clean_v3": "provider-bases/skstream--base--7c925f6a07ae3d37.js",
+      "legacy_base_sha256_before_clean_v3": "7c925f6a07ae3d37a833b9a636972b8a42338718224962ef7172c0f80686afa3",
+      "clean_reconstruction_candidate": false,
+      "provider_base_role": "canonical-v3-common-skeleton",
+      "legacy_provider_js_role": "knowledge-only",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "upstream_code_executed_for_reconstruction": false
     },
     "youtitou": {
       "id": "youtitou",
       "published_filename": "providers/youtitou--nuvio--74c15afa56dd0bad.js",
       "sha256": "74c15afa56dd0bad50e0f1306905ac08eba509768d72a394f59e9693d2919290",
       "patched_sha256": "74c15afa56dd0bad50e0f1306905ac08eba509768d72a394f59e9693d2919290",
-      "base_filename": "provider-bases/youtitou--base--7c925f6a07ae3d37.js",
-      "base_sha256": "7c925f6a07ae3d37a833b9a636972b8a42338718224962ef7172c0f80686afa3",
+      "base_filename": "provider-bases/youtitou--base--bcbf24023905f51f.js",
+      "base_sha256": "bcbf24023905f51f6eca3417947b4b700107cc1b90694e0d512fa5c40a403e28",
       "base_source": "niakvio-clean-reconstruction-v3",
       "clean_reconstruction_required": false,
       "clean_reconstruction_verified": true,
       "clean_reconstruction_authoring_version": 3,
-      "clean_reconstruction_verified_at": "2026-11-14T19:35:32.931301+00:00",
+      "clean_reconstruction_verified_at": "2026-11-16T18:06:45.153854+00:00",
       "local_patches": [
         {
           "type": "patch_script",
@@ -66523,20 +66767,27 @@
         "inventorySource": "NiakVIO-GLOBAL-FINAL-STRICT-TOP20-2026-09-11(5).xlsx",
         "inventoryRank": 65,
         "inventoryScore": 64
-      }
+      },
+      "legacy_base_filename_before_clean_v3": "provider-bases/youtitou--base--7c925f6a07ae3d37.js",
+      "legacy_base_sha256_before_clean_v3": "7c925f6a07ae3d37a833b9a636972b8a42338718224962ef7172c0f80686afa3",
+      "clean_reconstruction_candidate": false,
+      "provider_base_role": "canonical-v3-common-skeleton",
+      "legacy_provider_js_role": "knowledge-only",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "upstream_code_executed_for_reconstruction": false
     },
     "cinematheque-de-bretagne": {
       "id": "cinematheque-de-bretagne",
       "published_filename": "providers/cinematheque-de-bretagne--nuvio--26df2d5fcde637de.js",
       "sha256": "26df2d5fcde637de434dc0fadcf026e10aa7e8d7f0021638762cd48d072b4989",
       "patched_sha256": "26df2d5fcde637de434dc0fadcf026e10aa7e8d7f0021638762cd48d072b4989",
-      "base_filename": "provider-bases/cinematheque-de-bretagne--base--7c925f6a07ae3d37.js",
-      "base_sha256": "7c925f6a07ae3d37a833b9a636972b8a42338718224962ef7172c0f80686afa3",
+      "base_filename": "provider-bases/cinematheque-de-bretagne--base--bcbf24023905f51f.js",
+      "base_sha256": "bcbf24023905f51f6eca3417947b4b700107cc1b90694e0d512fa5c40a403e28",
       "base_source": "niakvio-clean-reconstruction-v3",
       "clean_reconstruction_required": false,
       "clean_reconstruction_verified": true,
       "clean_reconstruction_authoring_version": 3,
-      "clean_reconstruction_verified_at": "2026-11-14T19:35:39.337122+00:00",
+      "clean_reconstruction_verified_at": "2026-11-16T18:06:45.153854+00:00",
       "local_patches": [
         {
           "type": "patch_script",
@@ -66661,20 +66912,27 @@
         "inventorySource": "NiakVIO-GLOBAL-FINAL-STRICT-TOP20-2026-09-11(5).xlsx",
         "inventoryRank": 74,
         "inventoryScore": 59
-      }
+      },
+      "legacy_base_filename_before_clean_v3": "provider-bases/cinematheque-de-bretagne--base--7c925f6a07ae3d37.js",
+      "legacy_base_sha256_before_clean_v3": "7c925f6a07ae3d37a833b9a636972b8a42338718224962ef7172c0f80686afa3",
+      "clean_reconstruction_candidate": false,
+      "provider_base_role": "canonical-v3-common-skeleton",
+      "legacy_provider_js_role": "knowledge-only",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "upstream_code_executed_for_reconstruction": false
     },
     "film-a-revoir": {
       "id": "film-a-revoir",
       "published_filename": "providers/film-a-revoir--nuvio--54cb3676934df2dc.js",
       "sha256": "54cb3676934df2dc1336f1e9b5672fc2620f991cd46ca3ea95f012f80ab819a9",
       "patched_sha256": "54cb3676934df2dc1336f1e9b5672fc2620f991cd46ca3ea95f012f80ab819a9",
-      "base_filename": "provider-bases/film-a-revoir--base--7c925f6a07ae3d37.js",
-      "base_sha256": "7c925f6a07ae3d37a833b9a636972b8a42338718224962ef7172c0f80686afa3",
+      "base_filename": "provider-bases/film-a-revoir--base--bcbf24023905f51f.js",
+      "base_sha256": "bcbf24023905f51f6eca3417947b4b700107cc1b90694e0d512fa5c40a403e28",
       "base_source": "niakvio-clean-reconstruction-v3",
       "clean_reconstruction_required": false,
       "clean_reconstruction_verified": true,
       "clean_reconstruction_authoring_version": 3,
-      "clean_reconstruction_verified_at": "2026-11-14T19:35:42.406477+00:00",
+      "clean_reconstruction_verified_at": "2026-11-16T18:06:45.153854+00:00",
       "local_patches": [
         {
           "type": "patch_script",
@@ -66799,20 +67057,27 @@
         "inventorySource": "NiakVIO-GLOBAL-FINAL-STRICT-TOP20-2026-09-11(5).xlsx",
         "inventoryRank": 75,
         "inventoryScore": 59
-      }
+      },
+      "legacy_base_filename_before_clean_v3": "provider-bases/film-a-revoir--base--7c925f6a07ae3d37.js",
+      "legacy_base_sha256_before_clean_v3": "7c925f6a07ae3d37a833b9a636972b8a42338718224962ef7172c0f80686afa3",
+      "clean_reconstruction_candidate": false,
+      "provider_base_role": "canonical-v3-common-skeleton",
+      "legacy_provider_js_role": "knowledge-only",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "upstream_code_executed_for_reconstruction": false
     },
     "rivestream-app": {
       "id": "rivestream-app",
       "published_filename": "providers/rivestream-app--nuvio--8647c4bc53ff9194.js",
       "sha256": "8647c4bc53ff9194c0bdb8a986ac3433e165d28a71d5b0eb90acd2d084909f09",
       "patched_sha256": "8647c4bc53ff9194c0bdb8a986ac3433e165d28a71d5b0eb90acd2d084909f09",
-      "base_filename": "provider-bases/rivestream-app--base--7c925f6a07ae3d37.js",
-      "base_sha256": "7c925f6a07ae3d37a833b9a636972b8a42338718224962ef7172c0f80686afa3",
+      "base_filename": "provider-bases/rivestream-app--base--bcbf24023905f51f.js",
+      "base_sha256": "bcbf24023905f51f6eca3417947b4b700107cc1b90694e0d512fa5c40a403e28",
       "base_source": "niakvio-clean-reconstruction-v3",
       "clean_reconstruction_required": false,
       "clean_reconstruction_verified": true,
       "clean_reconstruction_authoring_version": 3,
-      "clean_reconstruction_verified_at": "2026-11-14T22:03:26.730452+00:00",
+      "clean_reconstruction_verified_at": "2026-11-16T18:06:45.153854+00:00",
       "local_patches": [
         {
           "type": "patch_script",
@@ -66937,20 +67202,27 @@
         "inventorySource": "NiakVIO-GLOBAL-FINAL-STRICT-TOP20-2026-09-11(5).xlsx",
         "inventoryRank": 4,
         "inventoryScore": 93
-      }
+      },
+      "legacy_base_filename_before_clean_v3": "provider-bases/rivestream-app--base--7c925f6a07ae3d37.js",
+      "legacy_base_sha256_before_clean_v3": "7c925f6a07ae3d37a833b9a636972b8a42338718224962ef7172c0f80686afa3",
+      "clean_reconstruction_candidate": false,
+      "provider_base_role": "canonical-v3-common-skeleton",
+      "legacy_provider_js_role": "knowledge-only",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "upstream_code_executed_for_reconstruction": false
     },
     "overlook": {
       "id": "overlook",
       "published_filename": "providers/overlook--nuvio--5dbd35538b214075.js",
       "sha256": "5dbd35538b2140755069061bd866e34f9a331fa839e0b1d10b3a8bd25e86da5e",
       "patched_sha256": "5dbd35538b2140755069061bd866e34f9a331fa839e0b1d10b3a8bd25e86da5e",
-      "base_filename": "provider-bases/overlook--base--7c925f6a07ae3d37.js",
-      "base_sha256": "7c925f6a07ae3d37a833b9a636972b8a42338718224962ef7172c0f80686afa3",
+      "base_filename": "provider-bases/overlook--base--bcbf24023905f51f.js",
+      "base_sha256": "bcbf24023905f51f6eca3417947b4b700107cc1b90694e0d512fa5c40a403e28",
       "base_source": "niakvio-clean-reconstruction-v3",
       "clean_reconstruction_required": false,
       "clean_reconstruction_verified": true,
       "clean_reconstruction_authoring_version": 3,
-      "clean_reconstruction_verified_at": "2026-11-14T22:03:29.966938+00:00",
+      "clean_reconstruction_verified_at": "2026-11-16T18:06:45.153854+00:00",
       "local_patches": [
         {
           "type": "patch_script",
@@ -67075,20 +67347,27 @@
         "inventorySource": "NiakVIO-GLOBAL-FINAL-STRICT-TOP20-2026-09-11(5).xlsx",
         "inventoryRank": 7,
         "inventoryScore": 90
-      }
+      },
+      "legacy_base_filename_before_clean_v3": "provider-bases/overlook--base--7c925f6a07ae3d37.js",
+      "legacy_base_sha256_before_clean_v3": "7c925f6a07ae3d37a833b9a636972b8a42338718224962ef7172c0f80686afa3",
+      "clean_reconstruction_candidate": false,
+      "provider_base_role": "canonical-v3-common-skeleton",
+      "legacy_provider_js_role": "knowledge-only",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "upstream_code_executed_for_reconstruction": false
     },
     "hexa": {
       "id": "hexa",
       "published_filename": "providers/hexa--nuvio--aedac9288a0f6f16.js",
       "sha256": "aedac9288a0f6f1673dc31c7c329ec6847e7dc09380597efee1a75c2368bc119",
       "patched_sha256": "aedac9288a0f6f1673dc31c7c329ec6847e7dc09380597efee1a75c2368bc119",
-      "base_filename": "provider-bases/hexa--base--7c925f6a07ae3d37.js",
-      "base_sha256": "7c925f6a07ae3d37a833b9a636972b8a42338718224962ef7172c0f80686afa3",
+      "base_filename": "provider-bases/hexa--base--bcbf24023905f51f.js",
+      "base_sha256": "bcbf24023905f51f6eca3417947b4b700107cc1b90694e0d512fa5c40a403e28",
       "base_source": "niakvio-clean-reconstruction-v3",
       "clean_reconstruction_required": false,
       "clean_reconstruction_verified": true,
       "clean_reconstruction_authoring_version": 3,
-      "clean_reconstruction_verified_at": "2026-11-14T22:03:33.182724+00:00",
+      "clean_reconstruction_verified_at": "2026-11-16T18:06:45.153854+00:00",
       "local_patches": [
         {
           "type": "patch_script",
@@ -67213,20 +67492,27 @@
         "inventorySource": "NiakVIO-GLOBAL-FINAL-STRICT-TOP20-2026-09-11(5).xlsx",
         "inventoryRank": 17,
         "inventoryScore": 88
-      }
+      },
+      "legacy_base_filename_before_clean_v3": "provider-bases/hexa--base--7c925f6a07ae3d37.js",
+      "legacy_base_sha256_before_clean_v3": "7c925f6a07ae3d37a833b9a636972b8a42338718224962ef7172c0f80686afa3",
+      "clean_reconstruction_candidate": false,
+      "provider_base_role": "canonical-v3-common-skeleton",
+      "legacy_provider_js_role": "knowledge-only",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "upstream_code_executed_for_reconstruction": false
     },
     "rivestream-ru": {
       "id": "rivestream-ru",
       "published_filename": "providers/rivestream-ru--nuvio--f4cc04c01f29bd4f.js",
       "sha256": "f4cc04c01f29bd4f427c85e1d90127bf2d8307eca437b5848b353d8e74564013",
       "patched_sha256": "f4cc04c01f29bd4f427c85e1d90127bf2d8307eca437b5848b353d8e74564013",
-      "base_filename": "provider-bases/rivestream-ru--base--7c925f6a07ae3d37.js",
-      "base_sha256": "7c925f6a07ae3d37a833b9a636972b8a42338718224962ef7172c0f80686afa3",
+      "base_filename": "provider-bases/rivestream-ru--base--bcbf24023905f51f.js",
+      "base_sha256": "bcbf24023905f51f6eca3417947b4b700107cc1b90694e0d512fa5c40a403e28",
       "base_source": "niakvio-clean-reconstruction-v3",
       "clean_reconstruction_required": false,
       "clean_reconstruction_verified": true,
       "clean_reconstruction_authoring_version": 3,
-      "clean_reconstruction_verified_at": "2026-11-14T22:03:36.418554+00:00",
+      "clean_reconstruction_verified_at": "2026-11-16T18:06:45.153854+00:00",
       "local_patches": [
         {
           "type": "patch_script",
@@ -67351,20 +67637,27 @@
         "inventorySource": "NiakVIO-GLOBAL-FINAL-STRICT-TOP20-2026-09-11(5).xlsx",
         "inventoryRank": 21,
         "inventoryScore": 88
-      }
+      },
+      "legacy_base_filename_before_clean_v3": "provider-bases/rivestream-ru--base--7c925f6a07ae3d37.js",
+      "legacy_base_sha256_before_clean_v3": "7c925f6a07ae3d37a833b9a636972b8a42338718224962ef7172c0f80686afa3",
+      "clean_reconstruction_candidate": false,
+      "provider_base_role": "canonical-v3-common-skeleton",
+      "legacy_provider_js_role": "knowledge-only",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "upstream_code_executed_for_reconstruction": false
     },
     "moviebite": {
       "id": "moviebite",
       "published_filename": "providers/moviebite--nuvio--fd89a246c574ed08.js",
       "sha256": "fd89a246c574ed08b345a609297d2c43f548fc1ef8d426087305ef896f0b3f53",
       "patched_sha256": "fd89a246c574ed08b345a609297d2c43f548fc1ef8d426087305ef896f0b3f53",
-      "base_filename": "provider-bases/moviebite--base--7c925f6a07ae3d37.js",
-      "base_sha256": "7c925f6a07ae3d37a833b9a636972b8a42338718224962ef7172c0f80686afa3",
+      "base_filename": "provider-bases/moviebite--base--bcbf24023905f51f.js",
+      "base_sha256": "bcbf24023905f51f6eca3417947b4b700107cc1b90694e0d512fa5c40a403e28",
       "base_source": "niakvio-clean-reconstruction-v3",
       "clean_reconstruction_required": false,
       "clean_reconstruction_verified": true,
       "clean_reconstruction_authoring_version": 3,
-      "clean_reconstruction_verified_at": "2026-11-14T22:03:39.598934+00:00",
+      "clean_reconstruction_verified_at": "2026-11-16T18:06:45.153854+00:00",
       "local_patches": [
         {
           "type": "patch_script",
@@ -67489,20 +67782,27 @@
         "inventorySource": "NiakVIO-GLOBAL-FINAL-STRICT-TOP20-2026-09-11(5).xlsx",
         "inventoryRank": 49,
         "inventoryScore": 83
-      }
+      },
+      "legacy_base_filename_before_clean_v3": "provider-bases/moviebite--base--7c925f6a07ae3d37.js",
+      "legacy_base_sha256_before_clean_v3": "7c925f6a07ae3d37a833b9a636972b8a42338718224962ef7172c0f80686afa3",
+      "clean_reconstruction_candidate": false,
+      "provider_base_role": "canonical-v3-common-skeleton",
+      "legacy_provider_js_role": "knowledge-only",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "upstream_code_executed_for_reconstruction": false
     },
     "pstream": {
       "id": "pstream",
       "published_filename": "providers/pstream--nuvio--84619271772ecd87.js",
       "sha256": "84619271772ecd872a0464f4274ae2192a3cecfdc1bfce8d5afe5431d974b681",
       "patched_sha256": "84619271772ecd872a0464f4274ae2192a3cecfdc1bfce8d5afe5431d974b681",
-      "base_filename": "provider-bases/pstream--base--7c925f6a07ae3d37.js",
-      "base_sha256": "7c925f6a07ae3d37a833b9a636972b8a42338718224962ef7172c0f80686afa3",
+      "base_filename": "provider-bases/pstream--base--bcbf24023905f51f.js",
+      "base_sha256": "bcbf24023905f51f6eca3417947b4b700107cc1b90694e0d512fa5c40a403e28",
       "base_source": "niakvio-clean-reconstruction-v3",
       "clean_reconstruction_required": false,
       "clean_reconstruction_verified": true,
       "clean_reconstruction_authoring_version": 3,
-      "clean_reconstruction_verified_at": "2026-11-14T22:03:42.880940+00:00",
+      "clean_reconstruction_verified_at": "2026-11-16T18:06:45.153854+00:00",
       "local_patches": [
         {
           "type": "patch_script",
@@ -67627,20 +67927,27 @@
         "inventorySource": "NiakVIO-GLOBAL-FINAL-STRICT-TOP20-2026-09-11(5).xlsx",
         "inventoryRank": 59,
         "inventoryScore": 83
-      }
+      },
+      "legacy_base_filename_before_clean_v3": "provider-bases/pstream--base--7c925f6a07ae3d37.js",
+      "legacy_base_sha256_before_clean_v3": "7c925f6a07ae3d37a833b9a636972b8a42338718224962ef7172c0f80686afa3",
+      "clean_reconstruction_candidate": false,
+      "provider_base_role": "canonical-v3-common-skeleton",
+      "legacy_provider_js_role": "knowledge-only",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "upstream_code_executed_for_reconstruction": false
     },
     "ihavenotv": {
       "id": "ihavenotv",
       "published_filename": "providers/ihavenotv--nuvio--ee2e9d2ec63e6b64.js",
       "sha256": "ee2e9d2ec63e6b6483874da3efe913b52ab91cb309cfaa2f4ab5881429218b2f",
       "patched_sha256": "ee2e9d2ec63e6b6483874da3efe913b52ab91cb309cfaa2f4ab5881429218b2f",
-      "base_filename": "provider-bases/ihavenotv--base--7c925f6a07ae3d37.js",
-      "base_sha256": "7c925f6a07ae3d37a833b9a636972b8a42338718224962ef7172c0f80686afa3",
+      "base_filename": "provider-bases/ihavenotv--base--bcbf24023905f51f.js",
+      "base_sha256": "bcbf24023905f51f6eca3417947b4b700107cc1b90694e0d512fa5c40a403e28",
       "base_source": "niakvio-clean-reconstruction-v3",
       "clean_reconstruction_required": false,
       "clean_reconstruction_verified": true,
       "clean_reconstruction_authoring_version": 3,
-      "clean_reconstruction_verified_at": "2026-11-14T22:03:46.082326+00:00",
+      "clean_reconstruction_verified_at": "2026-11-16T18:06:45.153854+00:00",
       "local_patches": [
         {
           "type": "patch_script",
@@ -67765,20 +68072,27 @@
         "inventorySource": "NiakVIO-GLOBAL-FINAL-STRICT-TOP20-2026-09-11(5).xlsx",
         "inventoryRank": 69,
         "inventoryScore": 82
-      }
+      },
+      "legacy_base_filename_before_clean_v3": "provider-bases/ihavenotv--base--7c925f6a07ae3d37.js",
+      "legacy_base_sha256_before_clean_v3": "7c925f6a07ae3d37a833b9a636972b8a42338718224962ef7172c0f80686afa3",
+      "clean_reconstruction_candidate": false,
+      "provider_base_role": "canonical-v3-common-skeleton",
+      "legacy_provider_js_role": "knowledge-only",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "upstream_code_executed_for_reconstruction": false
     },
     "reanime-to": {
       "id": "reanime-to",
       "published_filename": "providers/reanime-to--nuvio--e79600ae8ae961e1.js",
       "sha256": "e79600ae8ae961e18624004ff7e781425f38e525ef890e051d26d6a671c38c3d",
       "patched_sha256": "e79600ae8ae961e18624004ff7e781425f38e525ef890e051d26d6a671c38c3d",
-      "base_filename": "provider-bases/reanime-to--base--7c925f6a07ae3d37.js",
-      "base_sha256": "7c925f6a07ae3d37a833b9a636972b8a42338718224962ef7172c0f80686afa3",
+      "base_filename": "provider-bases/reanime-to--base--bcbf24023905f51f.js",
+      "base_sha256": "bcbf24023905f51f6eca3417947b4b700107cc1b90694e0d512fa5c40a403e28",
       "base_source": "niakvio-clean-reconstruction-v3",
       "clean_reconstruction_required": false,
       "clean_reconstruction_verified": true,
       "clean_reconstruction_authoring_version": 3,
-      "clean_reconstruction_verified_at": "2026-11-14T22:03:49.285810+00:00",
+      "clean_reconstruction_verified_at": "2026-11-16T18:06:45.153854+00:00",
       "local_patches": [
         {
           "type": "patch_script",
@@ -67903,20 +68217,27 @@
         "inventorySource": "NiakVIO-GLOBAL-FINAL-STRICT-TOP20-2026-09-11(5).xlsx",
         "inventoryRank": 71,
         "inventoryScore": 82
-      }
+      },
+      "legacy_base_filename_before_clean_v3": "provider-bases/reanime-to--base--7c925f6a07ae3d37.js",
+      "legacy_base_sha256_before_clean_v3": "7c925f6a07ae3d37a833b9a636972b8a42338718224962ef7172c0f80686afa3",
+      "clean_reconstruction_candidate": false,
+      "provider_base_role": "canonical-v3-common-skeleton",
+      "legacy_provider_js_role": "knowledge-only",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "upstream_code_executed_for_reconstruction": false
     },
     "flixhq": {
       "id": "flixhq",
       "published_filename": "providers/flixhq--nuvio--a8970c3a8563cac1.js",
       "sha256": "a8970c3a8563cac1ecc20f5da7af2f8ef7e72df0871b5385a7ab898bffc9ca12",
       "patched_sha256": "a8970c3a8563cac1ecc20f5da7af2f8ef7e72df0871b5385a7ab898bffc9ca12",
-      "base_filename": "provider-bases/flixhq--base--7c925f6a07ae3d37.js",
-      "base_sha256": "7c925f6a07ae3d37a833b9a636972b8a42338718224962ef7172c0f80686afa3",
+      "base_filename": "provider-bases/flixhq--base--bcbf24023905f51f.js",
+      "base_sha256": "bcbf24023905f51f6eca3417947b4b700107cc1b90694e0d512fa5c40a403e28",
       "base_source": "niakvio-clean-reconstruction-v3",
       "clean_reconstruction_required": false,
       "clean_reconstruction_verified": true,
       "clean_reconstruction_authoring_version": 3,
-      "clean_reconstruction_verified_at": "2026-11-14T22:03:52.580952+00:00",
+      "clean_reconstruction_verified_at": "2026-11-16T18:06:45.153854+00:00",
       "local_patches": [
         {
           "type": "patch_script",
@@ -68041,20 +68362,27 @@
         "inventorySource": "NiakVIO-GLOBAL-FINAL-STRICT-TOP20-2026-09-11(5).xlsx",
         "inventoryRank": 81,
         "inventoryScore": 78
-      }
+      },
+      "legacy_base_filename_before_clean_v3": "provider-bases/flixhq--base--7c925f6a07ae3d37.js",
+      "legacy_base_sha256_before_clean_v3": "7c925f6a07ae3d37a833b9a636972b8a42338718224962ef7172c0f80686afa3",
+      "clean_reconstruction_candidate": false,
+      "provider_base_role": "canonical-v3-common-skeleton",
+      "legacy_provider_js_role": "knowledge-only",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "upstream_code_executed_for_reconstruction": false
     },
     "documentary-area": {
       "id": "documentary-area",
       "published_filename": "providers/documentary-area--nuvio--98b015b55a6cd778.js",
       "sha256": "98b015b55a6cd778d04adcef40eea91d2e899239c8b406ed00d65c89b1ed95e8",
       "patched_sha256": "98b015b55a6cd778d04adcef40eea91d2e899239c8b406ed00d65c89b1ed95e8",
-      "base_filename": "provider-bases/documentary-area--base--7c925f6a07ae3d37.js",
-      "base_sha256": "7c925f6a07ae3d37a833b9a636972b8a42338718224962ef7172c0f80686afa3",
+      "base_filename": "provider-bases/documentary-area--base--bcbf24023905f51f.js",
+      "base_sha256": "bcbf24023905f51f6eca3417947b4b700107cc1b90694e0d512fa5c40a403e28",
       "base_source": "niakvio-clean-reconstruction-v3",
       "clean_reconstruction_required": false,
       "clean_reconstruction_verified": true,
       "clean_reconstruction_authoring_version": 3,
-      "clean_reconstruction_verified_at": "2026-11-14T22:04:06.632285+00:00",
+      "clean_reconstruction_verified_at": "2026-11-16T18:06:45.153854+00:00",
       "local_patches": [
         {
           "type": "patch_script",
@@ -68179,20 +68507,27 @@
         "inventorySource": "NiakVIO-GLOBAL-FINAL-STRICT-TOP20-2026-09-11(5).xlsx",
         "inventoryRank": 115,
         "inventoryScore": 67
-      }
+      },
+      "legacy_base_filename_before_clean_v3": "provider-bases/documentary-area--base--7c925f6a07ae3d37.js",
+      "legacy_base_sha256_before_clean_v3": "7c925f6a07ae3d37a833b9a636972b8a42338718224962ef7172c0f80686afa3",
+      "clean_reconstruction_candidate": false,
+      "provider_base_role": "canonical-v3-common-skeleton",
+      "legacy_provider_js_role": "knowledge-only",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "upstream_code_executed_for_reconstruction": false
     },
     "fsharetv": {
       "id": "fsharetv",
       "published_filename": "providers/fsharetv--nuvio--7a63bf303b07f5f6.js",
       "sha256": "7a63bf303b07f5f64438c9e946cb05e8d2ecd42f6f69fff8ede3edc0b33d94a8",
       "patched_sha256": "7a63bf303b07f5f64438c9e946cb05e8d2ecd42f6f69fff8ede3edc0b33d94a8",
-      "base_filename": "provider-bases/fsharetv--base--7c925f6a07ae3d37.js",
-      "base_sha256": "7c925f6a07ae3d37a833b9a636972b8a42338718224962ef7172c0f80686afa3",
+      "base_filename": "provider-bases/fsharetv--base--bcbf24023905f51f.js",
+      "base_sha256": "bcbf24023905f51f6eca3417947b4b700107cc1b90694e0d512fa5c40a403e28",
       "base_source": "niakvio-clean-reconstruction-v3",
       "clean_reconstruction_required": false,
       "clean_reconstruction_verified": true,
       "clean_reconstruction_authoring_version": 3,
-      "clean_reconstruction_verified_at": "2026-11-14T22:04:09.926917+00:00",
+      "clean_reconstruction_verified_at": "2026-11-16T18:06:45.153854+00:00",
       "local_patches": [
         {
           "type": "patch_script",
@@ -68317,20 +68652,27 @@
         "inventorySource": "NiakVIO-GLOBAL-FINAL-STRICT-TOP20-2026-09-11(5).xlsx",
         "inventoryRank": 131,
         "inventoryScore": 66
-      }
+      },
+      "legacy_base_filename_before_clean_v3": "provider-bases/fsharetv--base--7c925f6a07ae3d37.js",
+      "legacy_base_sha256_before_clean_v3": "7c925f6a07ae3d37a833b9a636972b8a42338718224962ef7172c0f80686afa3",
+      "clean_reconstruction_candidate": false,
+      "provider_base_role": "canonical-v3-common-skeleton",
+      "legacy_provider_js_role": "knowledge-only",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "upstream_code_executed_for_reconstruction": false
     },
     "aniflix-uno": {
       "id": "aniflix-uno",
       "published_filename": "providers/aniflix-uno--nuvio--d766a00a72e57f41.js",
       "sha256": "d766a00a72e57f41dd1b46370fc0491e8341dc7f4b63c843052f53678c6bdd1c",
       "patched_sha256": "d766a00a72e57f41dd1b46370fc0491e8341dc7f4b63c843052f53678c6bdd1c",
-      "base_filename": "provider-bases/aniflix-uno--base--7c925f6a07ae3d37.js",
-      "base_sha256": "7c925f6a07ae3d37a833b9a636972b8a42338718224962ef7172c0f80686afa3",
+      "base_filename": "provider-bases/aniflix-uno--base--bcbf24023905f51f.js",
+      "base_sha256": "bcbf24023905f51f6eca3417947b4b700107cc1b90694e0d512fa5c40a403e28",
       "base_source": "niakvio-clean-reconstruction-v3",
       "clean_reconstruction_required": false,
       "clean_reconstruction_verified": true,
       "clean_reconstruction_authoring_version": 3,
-      "clean_reconstruction_verified_at": "2026-11-14T22:04:13.169432+00:00",
+      "clean_reconstruction_verified_at": "2026-11-16T18:06:45.153854+00:00",
       "local_patches": [
         {
           "type": "patch_script",
@@ -68455,20 +68797,27 @@
         "inventorySource": "NiakVIO-GLOBAL-FINAL-STRICT-TOP20-2026-09-11(5).xlsx",
         "inventoryRank": 170,
         "inventoryScore": 65
-      }
+      },
+      "legacy_base_filename_before_clean_v3": "provider-bases/aniflix-uno--base--7c925f6a07ae3d37.js",
+      "legacy_base_sha256_before_clean_v3": "7c925f6a07ae3d37a833b9a636972b8a42338718224962ef7172c0f80686afa3",
+      "clean_reconstruction_candidate": false,
+      "provider_base_role": "canonical-v3-common-skeleton",
+      "legacy_provider_js_role": "knowledge-only",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "upstream_code_executed_for_reconstruction": false
     },
     "rarefilmm": {
       "id": "rarefilmm",
       "published_filename": "providers/rarefilmm--nuvio--8350ff0eef07f04d.js",
       "sha256": "8350ff0eef07f04d5d7c3ba83ab9e270683afacff7a7fc631579eb5f9dfb8bdb",
       "patched_sha256": "8350ff0eef07f04d5d7c3ba83ab9e270683afacff7a7fc631579eb5f9dfb8bdb",
-      "base_filename": "provider-bases/rarefilmm--base--7c925f6a07ae3d37.js",
-      "base_sha256": "7c925f6a07ae3d37a833b9a636972b8a42338718224962ef7172c0f80686afa3",
+      "base_filename": "provider-bases/rarefilmm--base--bcbf24023905f51f.js",
+      "base_sha256": "bcbf24023905f51f6eca3417947b4b700107cc1b90694e0d512fa5c40a403e28",
       "base_source": "niakvio-clean-reconstruction-v3",
       "clean_reconstruction_required": false,
       "clean_reconstruction_verified": true,
       "clean_reconstruction_authoring_version": 3,
-      "clean_reconstruction_verified_at": "2026-11-14T22:04:19.947176+00:00",
+      "clean_reconstruction_verified_at": "2026-11-16T18:06:45.153854+00:00",
       "local_patches": [
         {
           "type": "patch_script",
@@ -68593,20 +68942,27 @@
         "inventorySource": "NiakVIO-GLOBAL-FINAL-STRICT-TOP20-2026-09-11(5).xlsx",
         "inventoryRank": 251,
         "inventoryScore": 54
-      }
+      },
+      "legacy_base_filename_before_clean_v3": "provider-bases/rarefilmm--base--7c925f6a07ae3d37.js",
+      "legacy_base_sha256_before_clean_v3": "7c925f6a07ae3d37a833b9a636972b8a42338718224962ef7172c0f80686afa3",
+      "clean_reconstruction_candidate": false,
+      "provider_base_role": "canonical-v3-common-skeleton",
+      "legacy_provider_js_role": "knowledge-only",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "upstream_code_executed_for_reconstruction": false
     },
     "stigstream": {
       "id": "stigstream",
       "published_filename": "providers/stigstream--nuvio--5705ac9ca7db4c33.js",
       "sha256": "5705ac9ca7db4c33af662593920f6705b3cbcbc4883a1665347efa7a39182201",
       "patched_sha256": "5705ac9ca7db4c33af662593920f6705b3cbcbc4883a1665347efa7a39182201",
-      "base_filename": "provider-bases/stigstream--base--7c925f6a07ae3d37.js",
-      "base_sha256": "7c925f6a07ae3d37a833b9a636972b8a42338718224962ef7172c0f80686afa3",
+      "base_filename": "provider-bases/stigstream--base--bcbf24023905f51f.js",
+      "base_sha256": "bcbf24023905f51f6eca3417947b4b700107cc1b90694e0d512fa5c40a403e28",
       "base_source": "niakvio-clean-reconstruction-v3",
       "clean_reconstruction_required": false,
       "clean_reconstruction_verified": true,
       "clean_reconstruction_authoring_version": 3,
-      "clean_reconstruction_verified_at": "2026-11-14T22:04:26.496132+00:00",
+      "clean_reconstruction_verified_at": "2026-11-16T18:06:45.153854+00:00",
       "local_patches": [
         {
           "type": "patch_script",
@@ -68731,20 +69087,27 @@
         "inventorySource": "NiakVIO-GLOBAL-FINAL-STRICT-TOP20-2026-09-11(5).xlsx",
         "inventoryRank": 23,
         "inventoryScore": 83
-      }
+      },
+      "legacy_base_filename_before_clean_v3": "provider-bases/stigstream--base--7c925f6a07ae3d37.js",
+      "legacy_base_sha256_before_clean_v3": "7c925f6a07ae3d37a833b9a636972b8a42338718224962ef7172c0f80686afa3",
+      "clean_reconstruction_candidate": false,
+      "provider_base_role": "canonical-v3-common-skeleton",
+      "legacy_provider_js_role": "knowledge-only",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "upstream_code_executed_for_reconstruction": false
     },
     "french-anime": {
       "id": "french-anime",
       "published_filename": "providers/french-anime--nuvio--3f4be7e21036b0af.js",
       "sha256": "3f4be7e21036b0af01868bf92cda57f72d0dc00c09818bbf79bb7f41e1b4f0ac",
       "patched_sha256": "3f4be7e21036b0af01868bf92cda57f72d0dc00c09818bbf79bb7f41e1b4f0ac",
-      "base_filename": "provider-bases/french-anime--base--7c925f6a07ae3d37.js",
-      "base_sha256": "7c925f6a07ae3d37a833b9a636972b8a42338718224962ef7172c0f80686afa3",
+      "base_filename": "provider-bases/french-anime--base--bcbf24023905f51f.js",
+      "base_sha256": "bcbf24023905f51f6eca3417947b4b700107cc1b90694e0d512fa5c40a403e28",
       "base_source": "niakvio-clean-reconstruction-v3",
       "clean_reconstruction_required": false,
       "clean_reconstruction_verified": true,
       "clean_reconstruction_authoring_version": 3,
-      "clean_reconstruction_verified_at": "2026-11-14T22:04:29.843828+00:00",
+      "clean_reconstruction_verified_at": "2026-11-16T18:06:45.153854+00:00",
       "local_patches": [
         {
           "type": "patch_script",
@@ -68869,20 +69232,27 @@
         "inventorySource": "NiakVIO-GLOBAL-FINAL-STRICT-TOP20-2026-09-11(5).xlsx",
         "inventoryRank": 28,
         "inventoryScore": 78
-      }
+      },
+      "legacy_base_filename_before_clean_v3": "provider-bases/french-anime--base--7c925f6a07ae3d37.js",
+      "legacy_base_sha256_before_clean_v3": "7c925f6a07ae3d37a833b9a636972b8a42338718224962ef7172c0f80686afa3",
+      "clean_reconstruction_candidate": false,
+      "provider_base_role": "canonical-v3-common-skeleton",
+      "legacy_provider_js_role": "knowledge-only",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "upstream_code_executed_for_reconstruction": false
     },
     "moiflix": {
       "id": "moiflix",
       "published_filename": "providers/moiflix--nuvio--b0e0396f8d6ee5f3.js",
       "sha256": "b0e0396f8d6ee5f32a083d5d8548914f142fabbf479dc2cf4b07ff702ac9b1e7",
       "patched_sha256": "b0e0396f8d6ee5f32a083d5d8548914f142fabbf479dc2cf4b07ff702ac9b1e7",
-      "base_filename": "provider-bases/moiflix--base--7c925f6a07ae3d37.js",
-      "base_sha256": "7c925f6a07ae3d37a833b9a636972b8a42338718224962ef7172c0f80686afa3",
+      "base_filename": "provider-bases/moiflix--base--bcbf24023905f51f.js",
+      "base_sha256": "bcbf24023905f51f6eca3417947b4b700107cc1b90694e0d512fa5c40a403e28",
       "base_source": "niakvio-clean-reconstruction-v3",
       "clean_reconstruction_required": false,
       "clean_reconstruction_verified": true,
       "clean_reconstruction_authoring_version": 3,
-      "clean_reconstruction_verified_at": "2026-11-14T22:04:33.142587+00:00",
+      "clean_reconstruction_verified_at": "2026-11-16T18:06:45.153854+00:00",
       "local_patches": [
         {
           "type": "patch_script",
@@ -69007,20 +69377,27 @@
         "inventorySource": "NiakVIO-GLOBAL-FINAL-STRICT-TOP20-2026-09-11(5).xlsx",
         "inventoryRank": 40,
         "inventoryScore": 68
-      }
+      },
+      "legacy_base_filename_before_clean_v3": "provider-bases/moiflix--base--7c925f6a07ae3d37.js",
+      "legacy_base_sha256_before_clean_v3": "7c925f6a07ae3d37a833b9a636972b8a42338718224962ef7172c0f80686afa3",
+      "clean_reconstruction_candidate": false,
+      "provider_base_role": "canonical-v3-common-skeleton",
+      "legacy_provider_js_role": "knowledge-only",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "upstream_code_executed_for_reconstruction": false
     },
     "voirserie": {
       "id": "voirserie",
       "published_filename": "providers/voirserie--nuvio--edfbc45f4fcc51d1.js",
       "sha256": "edfbc45f4fcc51d11a03ae66b2e1d15c673f3b7c4ede6da6fef49bc299c8134c",
       "patched_sha256": "edfbc45f4fcc51d11a03ae66b2e1d15c673f3b7c4ede6da6fef49bc299c8134c",
-      "base_filename": "provider-bases/voirserie--base--7c925f6a07ae3d37.js",
-      "base_sha256": "7c925f6a07ae3d37a833b9a636972b8a42338718224962ef7172c0f80686afa3",
+      "base_filename": "provider-bases/voirserie--base--bcbf24023905f51f.js",
+      "base_sha256": "bcbf24023905f51f6eca3417947b4b700107cc1b90694e0d512fa5c40a403e28",
       "base_source": "niakvio-clean-reconstruction-v3",
       "clean_reconstruction_required": false,
       "clean_reconstruction_verified": true,
       "clean_reconstruction_authoring_version": 3,
-      "clean_reconstruction_verified_at": "2026-11-14T22:04:36.400668+00:00",
+      "clean_reconstruction_verified_at": "2026-11-16T18:06:45.153854+00:00",
       "local_patches": [
         {
           "type": "patch_script",
@@ -69145,20 +69522,27 @@
         "inventorySource": "NiakVIO-GLOBAL-FINAL-STRICT-TOP20-2026-09-11(5).xlsx",
         "inventoryRank": 61,
         "inventoryScore": 64
-      }
+      },
+      "legacy_base_filename_before_clean_v3": "provider-bases/voirserie--base--7c925f6a07ae3d37.js",
+      "legacy_base_sha256_before_clean_v3": "7c925f6a07ae3d37a833b9a636972b8a42338718224962ef7172c0f80686afa3",
+      "clean_reconstruction_candidate": false,
+      "provider_base_role": "canonical-v3-common-skeleton",
+      "legacy_provider_js_role": "knowledge-only",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "upstream_code_executed_for_reconstruction": false
     },
     "watchott": {
       "id": "watchott",
       "published_filename": "providers/watchott--nuvio--7671f653747d04c3.js",
       "sha256": "7671f653747d04c3411782ba713cb5355600f3049c68dc4dfc5a774461e9faf7",
       "patched_sha256": "7671f653747d04c3411782ba713cb5355600f3049c68dc4dfc5a774461e9faf7",
-      "base_filename": "provider-bases/watchott--base--7c925f6a07ae3d37.js",
-      "base_sha256": "7c925f6a07ae3d37a833b9a636972b8a42338718224962ef7172c0f80686afa3",
+      "base_filename": "provider-bases/watchott--base--bcbf24023905f51f.js",
+      "base_sha256": "bcbf24023905f51f6eca3417947b4b700107cc1b90694e0d512fa5c40a403e28",
       "base_source": "niakvio-clean-reconstruction-v3",
       "clean_reconstruction_required": false,
       "clean_reconstruction_verified": true,
       "clean_reconstruction_authoring_version": 3,
-      "clean_reconstruction_verified_at": "2026-11-14T22:21:02.555668+00:00",
+      "clean_reconstruction_verified_at": "2026-11-16T18:06:45.153854+00:00",
       "local_patches": [
         {
           "type": "patch_script",
@@ -69283,20 +69667,27 @@
         "inventorySource": "NiakVIO-GLOBAL-FINAL-STRICT-TOP20-2026-09-11(5).xlsx",
         "inventoryRank": 67,
         "inventoryScore": 83
-      }
+      },
+      "legacy_base_filename_before_clean_v3": "provider-bases/watchott--base--7c925f6a07ae3d37.js",
+      "legacy_base_sha256_before_clean_v3": "7c925f6a07ae3d37a833b9a636972b8a42338718224962ef7172c0f80686afa3",
+      "clean_reconstruction_candidate": false,
+      "provider_base_role": "canonical-v3-common-skeleton",
+      "legacy_provider_js_role": "knowledge-only",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "upstream_code_executed_for_reconstruction": false
     },
     "animejlprovider": {
       "id": "animejlprovider",
       "published_filename": "providers/animejlprovider--nuvio--1606673e3b4efa68.js",
       "sha256": "1606673e3b4efa6843af3dfec230d3924bfeb52b8f85b29ea488cc3f94cb8655",
       "patched_sha256": "1606673e3b4efa6843af3dfec230d3924bfeb52b8f85b29ea488cc3f94cb8655",
-      "base_filename": "provider-bases/animejlprovider--base--7c925f6a07ae3d37.js",
-      "base_sha256": "7c925f6a07ae3d37a833b9a636972b8a42338718224962ef7172c0f80686afa3",
+      "base_filename": "provider-bases/animejlprovider--base--bcbf24023905f51f.js",
+      "base_sha256": "bcbf24023905f51f6eca3417947b4b700107cc1b90694e0d512fa5c40a403e28",
       "base_source": "niakvio-clean-reconstruction-v3",
       "clean_reconstruction_required": false,
       "clean_reconstruction_verified": true,
       "clean_reconstruction_authoring_version": 3,
-      "clean_reconstruction_verified_at": "2026-11-14T22:21:08.821077+00:00",
+      "clean_reconstruction_verified_at": "2026-11-16T18:06:45.153854+00:00",
       "local_patches": [
         {
           "type": "patch_script",
@@ -69421,20 +69812,27 @@
         "inventorySource": "NiakVIO-GLOBAL-FINAL-STRICT-TOP20-2026-09-11(5).xlsx",
         "inventoryRank": 213,
         "inventoryScore": 60
-      }
+      },
+      "legacy_base_filename_before_clean_v3": "provider-bases/animejlprovider--base--7c925f6a07ae3d37.js",
+      "legacy_base_sha256_before_clean_v3": "7c925f6a07ae3d37a833b9a636972b8a42338718224962ef7172c0f80686afa3",
+      "clean_reconstruction_candidate": false,
+      "provider_base_role": "canonical-v3-common-skeleton",
+      "legacy_provider_js_role": "knowledge-only",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "upstream_code_executed_for_reconstruction": false
     },
     "webflix": {
       "id": "webflix",
       "published_filename": "providers/webflix--nuvio--2d9dd125d1671967.js",
       "sha256": "2d9dd125d16719674be2de7cb726a3341b43a7bf6f2e03ca628d67aaf57e746f",
       "patched_sha256": "2d9dd125d16719674be2de7cb726a3341b43a7bf6f2e03ca628d67aaf57e746f",
-      "base_filename": "provider-bases/webflix--base--7c925f6a07ae3d37.js",
-      "base_sha256": "7c925f6a07ae3d37a833b9a636972b8a42338718224962ef7172c0f80686afa3",
+      "base_filename": "provider-bases/webflix--base--bcbf24023905f51f.js",
+      "base_sha256": "bcbf24023905f51f6eca3417947b4b700107cc1b90694e0d512fa5c40a403e28",
       "base_source": "niakvio-clean-reconstruction-v3",
       "clean_reconstruction_required": false,
       "clean_reconstruction_verified": true,
       "clean_reconstruction_authoring_version": 3,
-      "clean_reconstruction_verified_at": "2026-11-14T23:00:54.685954+00:00",
+      "clean_reconstruction_verified_at": "2026-11-16T18:06:45.153854+00:00",
       "local_patches": [
         {
           "type": "patch_script",
@@ -69559,20 +69957,27 @@
         "inventorySource": "NiakVIO-GLOBAL-FINAL-STRICT-TOP20-2026-09-11(5).xlsx",
         "inventoryRank": 44,
         "inventoryScore": 68
-      }
+      },
+      "legacy_base_filename_before_clean_v3": "provider-bases/webflix--base--7c925f6a07ae3d37.js",
+      "legacy_base_sha256_before_clean_v3": "7c925f6a07ae3d37a833b9a636972b8a42338718224962ef7172c0f80686afa3",
+      "clean_reconstruction_candidate": false,
+      "provider_base_role": "canonical-v3-common-skeleton",
+      "legacy_provider_js_role": "knowledge-only",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "upstream_code_executed_for_reconstruction": false
     },
     "zone-telechargement": {
       "id": "zone-telechargement",
       "published_filename": "providers/zone-telechargement--nuvio--27f9e85511a72896.js",
       "sha256": "27f9e85511a72896880605c391ce3b0492db2e425b09fb351bfa810dd5e9f25c",
       "patched_sha256": "27f9e85511a72896880605c391ce3b0492db2e425b09fb351bfa810dd5e9f25c",
-      "base_filename": "provider-bases/zone-telechargement--base--7c925f6a07ae3d37.js",
-      "base_sha256": "7c925f6a07ae3d37a833b9a636972b8a42338718224962ef7172c0f80686afa3",
+      "base_filename": "provider-bases/zone-telechargement--base--bcbf24023905f51f.js",
+      "base_sha256": "bcbf24023905f51f6eca3417947b4b700107cc1b90694e0d512fa5c40a403e28",
       "base_source": "niakvio-clean-reconstruction-v3",
       "clean_reconstruction_required": false,
       "clean_reconstruction_verified": true,
       "clean_reconstruction_authoring_version": 3,
-      "clean_reconstruction_verified_at": "2026-11-14T23:01:01.251638+00:00",
+      "clean_reconstruction_verified_at": "2026-11-16T18:06:45.153854+00:00",
       "local_patches": [
         {
           "type": "patch_script",
@@ -69703,7 +70108,14 @@
         "inventorySource": "NiakVIO-GLOBAL-FINAL-STRICT-TOP20-2026-09-11(5).xlsx",
         "inventoryRank": 66,
         "inventoryScore": 64
-      }
+      },
+      "legacy_base_filename_before_clean_v3": "provider-bases/zone-telechargement--base--7c925f6a07ae3d37.js",
+      "legacy_base_sha256_before_clean_v3": "7c925f6a07ae3d37a833b9a636972b8a42338718224962ef7172c0f80686afa3",
+      "clean_reconstruction_candidate": false,
+      "provider_base_role": "canonical-v3-common-skeleton",
+      "legacy_provider_js_role": "knowledge-only",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "upstream_code_executed_for_reconstruction": false
     },
     "flickystream": {
       "id": "flickystream",
