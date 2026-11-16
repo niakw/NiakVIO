@@ -58,6 +58,19 @@ jobs:
         run: |
           set -euo pipefail
           python scripts/enforce_provider_v3_semantic_transport_contract_v5.py
+      - name: Require source migrations to be fixed-point
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Reconstruction validates the checked-in NiakVIO source. Historical
+          # migration entry points may assert/normalize an already accepted
+          # contract, but they must not silently create the source being tested.
+          if ! git diff --exit-code; then
+            echo "Provider-v3 source migrations changed checked-in authority; persist/review that migration before reconstruction." >&2
+            git diff --stat >&2
+            exit 1
+          fi
+          echo "FIELD_PROVIDER_SOURCE_MIGRATION_FIXED_POINT changed=false"
       - name: Reconcile exact Global+France structured authority
         shell: bash
         run: |
