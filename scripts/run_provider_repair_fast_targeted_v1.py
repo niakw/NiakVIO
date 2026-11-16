@@ -20,7 +20,7 @@ import sys
 from pathlib import Path
 from typing import Any
 
-from current_provider_scope import active_provider_ids, visible_provider_ids
+from current_provider_scope import projection_active_provider_ids, projection_visible_provider_ids, projection_visible_provider_rows
 
 ROOT = Path(__file__).resolve().parents[1]
 MANIFEST = ROOT / "manifest.json"
@@ -193,15 +193,14 @@ def main() -> int:
     )
     args = parser.parse_args()
 
-    manifest = load(MANIFEST)
-    catalogue_rows = [row for row in manifest.get("scrapers") or [] if isinstance(row, dict) and cid(row.get("id"))]
+    catalogue_rows = projection_visible_provider_rows()
     catalogue = [cid(row.get("id")) for row in catalogue_rows]
     if len(catalogue) != len(set(catalogue)):
         raise SystemExit("provider catalogue contains duplicate ids")
-    visible = visible_provider_ids()
+    visible = projection_visible_provider_ids()
     if set(catalogue) != visible:
         raise SystemExit("manifest/folder provider identity mismatch")
-    active = active_provider_ids()
+    active = projection_active_provider_ids()
     matrix = load(HUB_MATRIX)
     matrix_ids = {cid(row.get("manifestId") or row.get("provider")) for row in matrix.get("rows") or [] if isinstance(row, dict) and cid(row.get("manifestId") or row.get("provider"))}
     if matrix_ids != active:
