@@ -1,3 +1,9 @@
+## 2026-11-16 — Batch diagnostic regression now checks canonical behavior, not a workflow label
+
+- Exact Workflow Gate run `43932200646` on `d7ae21d8` passed the repository syntax gate, Nuvio runtime contract and the long architecture suite through Provider-v3 finalization. It then failed only because `provider_v3_batch_diagnostic_contract_test.py` required the literal step label `Reconstruct all active providers sequentially live`, while the canonical workflow names that step `Reconstruct and validate all active providers sequentially live`.
+- The same test already requires the executable authority itself: `reconstruct_provider_v3_sequential_live.py --minimum-coverage 0.75`, reverse byte-identical verification, direct-main mutation denial, artifact upload and optional non-main commit. Commit `ecf2b78f` removes the label-only assertion and updates the diagnostic summary to the current non-publishing workbench/canonical-sequential contract.
+- No provider, DATA, Core, route, manifest, proof threshold or lifecycle state changed. The still-running reconstruction from `d7ae21d8` is retained as a diagnostic for deeper runtime blockers; final certification will require a fresh exact-head reconstruction after architecture/test churn stops.
+
 ## 2026-11-16 — Batch-workbench contract syntax repaired before exact replay
 
 - Workflow Gate run `43931759860` on `2e28c88e` failed in the repository-wide Python syntax pass before any métier contract ran: the prior stale-workflow test edit had accidentally persisted literal `\\n` characters between four Python statements.
