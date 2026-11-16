@@ -27,7 +27,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 sys.path.insert(0, str(ROOT / "scripts" / "provider_patches"))
 
-from current_provider_scope import (projection_active_provider_ids, projection_disabled_provider_ids, projection_visible_provider_ids, projection_visible_provider_rows, pending_provider_ids)
+from current_provider_scope import (projection_active_provider_ids, projection_disabled_provider_rows, projection_visible_provider_ids, projection_visible_provider_rows, pending_provider_ids)
 HUB46 = ROOT / "automation" / "evidence" / "hub-lab-matrix-46.json"
 LIFECYCLE = ROOT / "automation" / "provider-disabled-lifecycle.json"
 ALLOWED = {
@@ -182,7 +182,7 @@ def main() -> int:
     targets = hub46_targets()
     visible_ids = projection_visible_provider_ids()
     active_ids = projection_active_provider_ids()
-    disabled_ids = projection_disabled_provider_ids()
+    disabled_ids = {cid(row.get("id")) for row in projection_disabled_provider_rows() if cid(row.get("id"))}
     pending_ids = pending_provider_ids() & visible_ids
     assert pending_ids <= disabled_ids, (sorted(pending_ids), sorted(disabled_ids))
     lifecycle = json.loads(LIFECYCLE.read_text(encoding="utf-8"))
