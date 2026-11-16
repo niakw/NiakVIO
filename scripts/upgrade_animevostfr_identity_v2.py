@@ -52,10 +52,10 @@ def project_manifest_anime_only() -> None:
     if not isinstance(row, dict):
         raise SystemExit("animevostfr manifest row missing")
 
-    # Canonical capability is anime only. Nuvio transport still needs tv/series
-    # aliases, but those aliases must never resurrect a semantic movie lane.
+    # Canonical capability is anime only. Nuvio publishes only the tv launch
+    # alias; request aliases such as series are normalized by Core at runtime.
     row["canonicalSupportedTypes"] = ["anime"]
-    row["supportedTypes"] = ["anime", "tv", "series"]
+    row["supportedTypes"] = ["anime", "tv"]
     MANIFEST.write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
 
