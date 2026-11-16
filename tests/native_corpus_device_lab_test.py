@@ -9,7 +9,7 @@ from urllib.parse import urlsplit
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
-from current_provider_scope import active_provider_count, visible_provider_count
+from current_provider_scope import projection_active_provider_count, projection_active_provider_ids, visible_provider_count
 
 TV_READER = ROOT / ".github/workflows/native-mobile-android-reader.yml"
 MOBILE_ANDROID = TV_READER
@@ -65,9 +65,11 @@ collection_analyzer = COLLECTION_ANALYZER.read_text(encoding="utf-8")
 summarizer = SUMMARIZER.read_text(encoding="utf-8")
 corpus = json.loads(CORPUS.read_text(encoding="utf-8"))
 manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
+native_manifest = json.loads((ROOT / "native-hub46/manifest.json").read_text(encoding="utf-8"))
 
 acceptance = corpus.get("native_reader_acceptance") or {}
 assert acceptance.get("provider_scope") == "declared-type"
+assert acceptance.get("include_disabled") is False
 assert acceptance.get("one_fixture_per_type_per_provider") is True
 assert acceptance.get("fixture_by_type") == {
     "movie": "interstellar",
@@ -256,8 +258,8 @@ for suite, client in ((mobile_suite,"MOBILE"),(tv_suite,"TV")):
 for required in ("repeatedContradictions","repeatedTransportFailures","repeatedSlow","providerRuntimeErrors","repeatedReaderFailures"):
     assert required in summarizer
 
-# Staging covers the visible catalogue (active + explicitly disabled retained
-# rows). Execution/lab scope remains active_provider_count().
+# Generic Global staging may retain visible disabled rows for diagnostics, but
+# release/native execution authority is the active Global+France projection union.
 stageable=[]
 seen=set()
 for row in manifest.get("scrapers",[]):
@@ -271,9 +273,19 @@ for row in manifest.get("scrapers",[]):
         stageable.append(pid)
 assert len(stageable) == visible_provider_count(), (len(stageable), visible_provider_count())
 
+native_ids={
+    str(row.get("id") or "").strip().casefold().replace("_","-")
+    for row in native_manifest.get("scrapers",[])
+    if isinstance(row,dict) and row.get("enabled") is True
+}
+assert native_ids == projection_active_provider_ids(), (
+    len(native_ids), projection_active_provider_count()
+)
+assert len(native_ids) == projection_active_provider_count()
+
 print(
     "native device lab contract passed: "
-    f"providers={len(stageable)} active={active_provider_count()} type_bounded_1_1_1=true rotating_fixtures=true "
+    f"global_visible_staging={len(stageable)} native_active_union={len(native_ids)} type_bounded_1_1_1=true rotating_fixtures=true "
     "tv_single_job=true android_tv_mobile_combined=true mobile_ios_separate=true "
     "brain_decoupled=true desktop_native=true targeted_manual=true"
 )
