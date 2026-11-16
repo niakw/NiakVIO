@@ -151,6 +151,18 @@ function detailedLanguage(r,fallback){
 def patch_provider_base() -> bool:
     text = PROVIDER_BASE.read_text(encoding="utf-8")
     before = text
+    helper_signature = "function _spv34RouteMediaCompatible(route, mediaType) {"
+    gate_marker = "NIAKVIO_PROVIDER_ROUTE_MEDIA_COMPAT_V34"
+    gate_call = 'if (kind === "api" && !_spv34RouteMediaCompatible(route, mediaType)) continue;'
+    helper_count = text.count(helper_signature)
+    marker_count = text.count(gate_marker)
+    if helper_count == 1 and marker_count == 1 and gate_call in text:
+        return False
+    if helper_count or marker_count:
+        raise AssertionError(
+            "partial/duplicate V34 ProviderBase migration "
+            f"helpers={helper_count} markers={marker_count} gate_call={gate_call in text}"
+        )
     learned = r'''
 function _spv34RouteMediaCompatible(route, mediaType) {
   const desired = _mediaNamespace(mediaType);
@@ -230,6 +242,10 @@ def validate() -> None:
     for source, needle in required:
         if needle not in source:
             raise AssertionError(f"V34 missing {needle}")
+    if base.count("function _spv34RouteMediaCompatible(route, mediaType) {") != 1:
+        raise AssertionError("V34 route/media helper must be defined exactly once")
+    if base.count("NIAKVIO_PROVIDER_ROUTE_MEDIA_COMPAT_V34") != 1:
+        raise AssertionError("V34 route/media gate marker must appear exactly once")
     generic_window = base[base.index("NIAKVIO_PROVIDER_ROUTE_MEDIA_COMPAT_V34") - 800:base.index("NIAKVIO_PROVIDER_ROUTE_MEDIA_COMPAT_V34") + 800].casefold()
     for forbidden in ("moviebox", "hindmoviez", "castle", "interstellar", "ragna", "hell mode"):
         if forbidden in generic_window:
