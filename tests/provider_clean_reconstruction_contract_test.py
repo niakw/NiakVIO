@@ -93,6 +93,7 @@ assert coverage["disabled_visible"]==projection_disabled_provider_count(), cover
 
 materializer=(SCRIPTS/"materialize_provider_v3_all.py").read_text(encoding="utf-8")
 store_materializer=(SCRIPTS/"materialize_provider_base_v3_store.py").read_text(encoding="utf-8")
+identity_compat=(SCRIPTS/"materialize_provider_base_identity_only.py").read_text(encoding="utf-8")
 base_store_source=(SCRIPTS/"provider_base_store.py").read_text(encoding="utf-8")
 repair_legacy_source=base_store_source.split("def repair_legacy_bases()",1)[1].split("def repair_derived_base_tails()",1)[0]
 repair_derived_source=base_store_source.split("def repair_derived_base_tails()",1)[1].split("def migrate_existing()",1)[0]
@@ -124,6 +125,17 @@ assert "python scripts/reconcile_provider_static_authority.py --apply" in manual
 assert manual.index("python scripts/reconcile_provider_static_authority.py --apply") < manual.index("python scripts/enrich_provider_v3_static_knowledge.py")
 assert "python tests/provider_static_authority_france_only_test.py" in manual
 assert "verify_provider_v3_reverse_rebuild.py" in manual
+
+# The historical identity-only entry point must not retain independent
+# reconstruction authority. In particular, it may not regress to the old
+# Global-only cardinality or replay runtime-v5 without the cumulative current
+# ProviderBase preparation owned by the canonical store materializer.
+assert "materialize_provider_base_v3_store.py" in identity_compat
+assert "active_provider_count" not in identity_compat
+assert "upgrade_provider_base_runtime_v5.py" not in identity_compat
+assert "manifest.json" not in identity_compat
+assert "IDENTITY_ONLY_PROVIDER_BASE_COMPAT" in identity_compat
+
 assert "materialize_provider_v3_all.py" not in routine
 assert "verify_provider_v3_reverse_rebuild.py" not in routine
 assert "run_brain_learning_queue.py" in learn
