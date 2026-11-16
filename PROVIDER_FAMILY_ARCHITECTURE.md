@@ -605,3 +605,6 @@ while common traversal, media proof, safety, identity, presentation and telemetr
 8. Un provider peut changer de famille de réparation lorsque les preuves évoluent.
 9. Un provider peut utiliser plusieurs Blocs de famille mais garde une DATA et un runtime personnel identifiables.
 10. La matérialisation finale réinjecte toujours les Blocs Core canoniques dans leur ordre défini.
+11. Une famille de runtime multi-player/multi-server doit énumérer ses lecteurs/sources/qualités annoncés avant le cap final ; un sibling ne peut pas réintroduire un first-success return qui masque les variantes.
+12. La multiplicité n'est pas transitive comme preuve : chaque URL/headers de playback reste validée indépendamment, même si la famille a déjà prouvé le mécanisme d'extraction.
+13. Les coordonnées épisodiques conservent `season=0` ; une famille TV/anime ne peut pas normaliser S0 vers S1.
