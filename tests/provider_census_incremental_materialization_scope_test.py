@@ -40,6 +40,7 @@ def docs(overrides):
         "provider-hubs.json": blank_hubs,
         "automation/provider-v3-static-knowledge.json": blank_static,
         "manifest.json": blank_manifest,
+        "vf/manifest.json": blank_manifest,
     }
 
 mode, providers, _ = mod.classify(
@@ -86,6 +87,20 @@ before_docs["manifest.json"] = before_manifest
 after_docs["manifest.json"] = after_manifest
 mode, providers, _ = mod.classify(["manifest.json"], before_docs, after_docs)
 assert mode == "providers" and providers == ["alpha"], (mode, providers)
+
+before_vf_docs = docs(base_overrides)
+after_vf_docs = docs(base_overrides)
+before_vf_docs["vf/manifest.json"] = before_manifest
+after_vf_docs["vf/manifest.json"] = after_manifest
+mode, providers, _ = mod.classify(["vf/manifest.json"], before_vf_docs, after_vf_docs)
+assert mode == "providers" and providers == ["alpha"], (mode, providers)
+
+mode, providers, _ = mod.classify(
+    ["provider_catalog.json"],
+    docs(base_overrides),
+    docs(base_overrides),
+)
+assert mode == "all" and providers == [], (mode, providers)
 
 mode, providers, _ = mod.classify(
     ["scripts/provider_base_store.py"],
