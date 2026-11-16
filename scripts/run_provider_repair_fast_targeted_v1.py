@@ -31,7 +31,6 @@ TARGET_REPORT = ROOT / "automation" / "provider-repair-fast-targeted.json"
 MERGED_REPORT = ROOT / "automation" / "provider-repair-fast-merged.json"
 YIELD_REPORT = ROOT / "automation" / "provider-repair-fast-yield.json"
 SUMMARY = ROOT / "automation" / "provider-repair-fast-summary.json"
-HUB_MATRIX = ROOT / "automation" / "evidence" / "hub-lab-matrix-46.json"
 
 
 def load(path: Path) -> dict[str, Any]:
@@ -201,16 +200,6 @@ def main() -> int:
     if set(catalogue) != visible:
         raise SystemExit("manifest/folder provider identity mismatch")
     active = projection_active_provider_ids()
-    matrix = load(HUB_MATRIX)
-    matrix_ids = {cid(row.get("manifestId") or row.get("provider")) for row in matrix.get("rows") or [] if isinstance(row, dict) and cid(row.get("manifestId") or row.get("provider"))}
-    if matrix_ids != active:
-        print(
-            "FIELD_PROVIDER_FAST_MATRIX_STALE "
-            f"matrix_only={','.join(sorted(matrix_ids-active)) or '-'} "
-            f"active_only={','.join(sorted(active-matrix_ids)) or '-'}",
-            flush=True,
-        )
-
     skip_path = args.skip_file if args.skip_file.is_absolute() else ROOT / args.skip_file
     skip_cfg = load(skip_path)
     skipped = {cid(value) for value in (skip_cfg.get("providers") or {}).keys() if cid(value)}
