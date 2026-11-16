@@ -1282,18 +1282,18 @@ function _spv241ExplicitPlayerPayloadUrls(text, base) {
   return _uniq(out).slice(0, 48);
 }
 /* NIAKVIO_PROVIDER_ADAPTIVE_PLAYER_FANOUT_V25 */
+/* NIAKVIO_PROVIDER_MULTI_VARIANT_FANOUT_V26 */
 async function _crawlDirectMedia(seedUrls, referer, maxDepth) {
   const rankedSeeds = _spv187PrioritizedPlayerRoutes(seedUrls).filter(_crawlEligible).sort((a,b)=>_spv187QueueScore(b)-_spv187QueueScore(a));
-  // Small pages keep the historical budget. Dense multi-player pages get a
-  // wider initial window so a working host cannot be truncated behind several
-  // dead/blocked embeds. The cap remains bounded for runtime predictability.
-  const seedCap = Math.min(16, Math.max(8, rankedSeeds.length));
+  // Enumerate bounded announced readers/sources before the final stream cap.
+  // A page may legitimately expose 20+ language/server/quality choices.
+  const seedCap = Math.min(32, Math.max(8, rankedSeeds.length));
   const queue = rankedSeeds.slice(0, seedCap).map(url => ({ url, depth: 0, referer }));
   const seen = new Set();
   const streams = [];
   let requests = 0;
-  const requestBudget = Math.min(18, Math.max(10, queue.length + 4));
-  while (queue.length && requests < requestBudget && streams.length < 12) {
+  const requestBudget = Math.min(32, Math.max(12, queue.length + 8));
+  while (queue.length && requests < requestBudget && streams.length < 40) {
     queue.sort((a,b)=>_spv187QueueScore(b.url)-_spv187QueueScore(a.url));
     const row = queue.shift();
     if (!row || seen.has(row.url)) continue;
@@ -1312,47 +1312,37 @@ async function _crawlDirectMedia(seedUrls, referer, maxDepth) {
       let urls = [];
       let playerText = "";
       if (contentType.includes("json")) {
-        urls = _jsonUrls(await response.json());
+        const jsonValue = await response.json();
+        urls = _jsonUrls(jsonValue);
+        streams.push(..._spv26JsonMediaRows(jsonValue, responseUrl, responseUrl));
       } else {
         playerText = await response.text();
         const decodedPlayerText = _spv186UnpackPackedPlayer(playerText);
+        streams.push(..._spv26ExplicitMediaRows(decodedPlayerText, responseUrl, responseUrl));
         /* NIAKVIO_PROVIDER_EXPLICIT_PLAYER_PRIORITY_V24_3 */
         const explicitPlayerUrls = _spv241ExplicitPlayerPayloadUrls(decodedPlayerText, responseUrl);
         const ordinaryPlayerUrls = _extractUrls(decodedPlayerText, responseUrl);
         urls = _uniq(explicitPlayerUrls.concat(ordinaryPlayerUrls));
-        if (explicitPlayerUrls.length) {
-          const explicitDirect = explicitPlayerUrls.filter(_directMedia);
-          if (explicitDirect.length) {
-            streams.push(..._streams(explicitDirect, responseUrl));
-            continue;
+        if (explicitPlayerUrls.length && row.depth < Math.max(0, Number(maxDepth) || 0)) {
+          for (const nested of explicitPlayerUrls.filter(_crawlEligible).slice(0, 24)) {
+            const next = _crawlCanonical(nested);
+            if (next && !seen.has(next)) queue.push({ url: next, depth: row.depth + 1, referer: responseUrl });
           }
-          if (row.depth < Math.max(0, Number(maxDepth) || 0)) {
-            for (const nested of explicitPlayerUrls.filter(_crawlEligible).slice(0, 8)) {
-              const next = _crawlCanonical(nested);
-              if (next && !seen.has(next)) queue.push({ url: next, depth: row.depth + 1, referer: responseUrl });
-            }
-          }
-          // An explicit player handoff outranks incidental raw download links
-          // present elsewhere in the same HTML page. Process queued players
-          // before considering those ordinary direct-looking links.
-          if (queue.length) continue;
         }
       }
       const decodedObfuscatedHls = playerText
         ? _spv21DecodedObfuscatedHls(playerText, responseUrl) : "";
       if (decodedObfuscatedHls) {
         streams.push(..._streams([decodedObfuscatedHls], responseUrl));
-        continue;
       }
       // Never promote the known content-shape decoy as a direct stream.
       urls = urls.filter(url => !/\/troll\/master\.m3u8(?:[?#]|$)/i.test(_text(url)));
       const direct = urls.filter(_directMedia);
       if (direct.length) {
         streams.push(..._streams(direct, responseUrl));
-        continue;
       }
       const formRequest = playerText ? _spv188PlayerForm(playerText, responseUrl) : null;
-      if (formRequest && requests < 10) {
+      if (formRequest && requests < requestBudget) {
         try {
           requests += 1;
           const postResponse = await fetch(formRequest.url, {
@@ -1369,14 +1359,12 @@ async function _crawlDirectMedia(seedUrls, referer, maxDepth) {
             const postUrl = _text(postResponse.url || formRequest.url);
             const postText = await postResponse.text();
             const postDecoded = _spv186UnpackPackedPlayer(postText);
+            streams.push(..._spv26ExplicitMediaRows(postDecoded, postUrl, postUrl));
             const postUrls = _extractUrls(postDecoded, postUrl);
             const postDirect = postUrls.filter(_directMedia);
-            if (postDirect.length) {
-              streams.push(..._streams(postDirect, postUrl));
-              continue;
-            }
+            if (postDirect.length) streams.push(..._streams(postDirect, postUrl));
             if (row.depth < Math.max(0, Number(maxDepth) || 0)) {
-              for (const nested of postUrls.filter(_crawlEligible).slice(0, 6)) {
+              for (const nested of postUrls.filter(_crawlEligible).slice(0, 16)) {
                 const next = _crawlCanonical(nested);
                 if (next && !seen.has(next)) queue.push({ url: next, depth: row.depth + 1, referer: postUrl });
               }
@@ -1384,20 +1372,17 @@ async function _crawlDirectMedia(seedUrls, referer, maxDepth) {
           }
         } catch (_) {}
       }
-      // The same opaque player id is often exposed under a landing/embed path
-      // and a canonical /v/ player path. Try only this bounded same-origin
-      // representation change; it does not consume recursive crawl depth.
       for (const variant of _spv187PlayerRouteVariants(responseUrl)) {
         if (!seen.has(variant)) queue.push({ url: variant, depth: row.depth, referer: responseUrl });
       }
       if (row.depth < Math.max(0, Number(maxDepth) || 0)) {
-        for (const next of _uniq(urls.map(_crawlCanonical)).filter(Boolean).filter(next=>_crawlFollowable(next,responseUrl)).sort((a,b)=>_crawlUrlScore(b)-_crawlUrlScore(a)).slice(0, 4)) {
+        for (const next of _uniq(urls.map(_crawlCanonical)).filter(Boolean).filter(next=>_crawlFollowable(next,responseUrl)).sort((a,b)=>_crawlUrlScore(b)-_crawlUrlScore(a)).slice(0, 16)) {
           if (!seen.has(next)) queue.push({ url: next, depth: row.depth + 1, referer: responseUrl });
         }
       }
     } catch (_) {}
   }
-  return streams.slice(0, 40);
+  return _dedupeStreamRows(streams).slice(0, 40);
 }
 function _candidateScore(url, meta) {
   let parsed;
@@ -1842,6 +1827,14 @@ function _outputLanguage(url) {
   } catch (_) {}
   return "";
 }
+function _outputQuality(value) {
+  const source = _text(value).toLowerCase();
+  if (/(?:^|[^0-9])(?:2160p?|4k|uhd)(?:[^0-9]|$)/i.test(source)) return "2160p";
+  const match = source.match(/(?:^|[^0-9])(1440|1080|720|576|540|480|360)p?(?:[^0-9]|$)/i);
+  if (match) return match[1] + "p";
+  if (/(?:^|[^a-z])fhd(?:[^a-z]|$)/i.test(source)) return "1080p";
+  return "";
+}
 function _streams(urls, referer, extraHeaders) {
   const headers = Object.assign({}, extraHeaders || {});
   if (referer) headers.Referer = referer;
@@ -1853,14 +1846,44 @@ function _streams(urls, referer, extraHeaders) {
     .slice(0, 40)
     .map((url, index) => {
       const language = _outputLanguage(url);
+      const quality = _outputQuality(url);
       return {
         name: NIAKVIO_PROVIDER_MODEL.displayName,
         title: NIAKVIO_PROVIDER_MODEL.displayName + (index ? " #" + (index + 1) : ""),
         url,
+        quality: quality || undefined,
         language: language || undefined,
         headers: hasHeaders ? Object.assign({}, headers) : undefined
       };
     });
+}
+/* NIAKVIO_PROVIDER_STREAM_MULTIPLICITY_V26 */
+function _streamPlaybackKey(stream) {
+  if (!stream || typeof stream !== "object") return "";
+  const headers = Object.assign(
+    {},
+    stream.headers && typeof stream.headers === "object" ? stream.headers : {},
+    stream.behaviorHints && stream.behaviorHints.proxyHeaders &&
+      stream.behaviorHints.proxyHeaders.request &&
+      typeof stream.behaviorHints.proxyHeaders.request === "object"
+      ? stream.behaviorHints.proxyHeaders.request : {}
+  );
+  const normalizedHeaders = Object.keys(headers).sort().map(key =>
+    key.toLowerCase() + ":" + _text(headers[key])
+  ).join("|");
+  return _text(stream.url).trim() + "|" + normalizedHeaders;
+}
+function _dedupeStreamRows(rows) {
+  const out = [];
+  const seen = new Set();
+  for (const row of rows || []) {
+    const key = _streamPlaybackKey(row);
+    if (!key || seen.has(key)) continue;
+    seen.add(key);
+    out.push(row);
+    if (out.length >= 40) break;
+  }
+  return out;
 }
 function _recipeValue(row, fields) {
   if (!row || typeof row !== "object") return "";
@@ -2517,38 +2540,44 @@ function _spv22EpisodeLinks(html, base, season, episode) {
     .sort((a,b)=>b.strength-a.strength)
     .filter(row => row.url && !seen.has(row.url) && seen.add(row.url))
     .map(row => row.url)
-    .slice(0, 4);
+    .slice(0, 16);
 }
 async function _spv22ResolveEpisodeHop(html, detailUrl, mediaType, season, episode) {
   if (_text(mediaType).toLowerCase() === "movie" || season == null || episode == null) return [];
   const episodeLinks = _spv22EpisodeLinks(html, detailUrl, season, episode);
   if (!episodeLinks.length) return [];
   const fallbacks = [];
-  for (const episodeUrl of episodeLinks.slice(0, 3)) {
+  const streams = [];
+  for (const episodeUrl of episodeLinks.slice(0, 12)) {
     try {
       const response = await _fetch(episodeUrl, { headers: { Referer: _text(detailUrl) } });
       const responseUrl = _text(response.url || episodeUrl);
       const body = await response.text();
+      streams.push(..._spv26ExplicitMediaRows(body, responseUrl, responseUrl));
       const candidates = _uniq([
         ..._spv15ExplicitPlayerAttrs(body, responseUrl),
         ..._extractUrls(body, responseUrl)
       ]);
       const direct = candidates.filter(_directMedia);
-      if (direct.length) return _streams(direct, responseUrl).slice(0, 40);
+      if (direct.length) streams.push(..._streams(direct, responseUrl));
       const players = candidates
         .filter(_crawlEligible)
         .sort((a,b)=>_crawlUrlScore(b)-_crawlUrlScore(a))
-        .slice(0, 10);
-      if (!players.length) continue;
-      const crawled = await _crawlDirectMedia(players, responseUrl, 3);
-      if (crawled.length) return crawled.slice(0, 40);
-      for (const candidate of players) {
-        if (_directMedia(candidate) || !_spv216PlayerFallbackEligible(candidate)) continue;
-        if (!fallbacks.some(row => row.url === candidate)) fallbacks.push({ url: candidate, referer: responseUrl });
+        .slice(0, 24);
+      if (players.length) {
+        const crawled = await _crawlDirectMedia(players, responseUrl, 3);
+        if (crawled.length) streams.push(...crawled);
+        for (const candidate of players) {
+          if (_directMedia(candidate) || !_spv216PlayerFallbackEligible(candidate)) continue;
+          if (!fallbacks.some(row => row.url === candidate)) fallbacks.push({ url: candidate, referer: responseUrl });
+        }
       }
     } catch (_) {}
+    if (streams.length >= 40) break;
   }
-  return _spv216FallbackStreams(fallbacks).slice(0, 12);
+  const deduped = _dedupeStreamRows(streams);
+  if (deduped.length) return deduped.slice(0, 40);
+  return _spv216FallbackStreams(fallbacks).slice(0, 40);
 }
 async function _resolveHtml(meta, mediaType, season, episode) {
   if (!meta || (!meta.title && !meta.tmdbId)) return [];
@@ -2587,12 +2616,12 @@ async function _resolveHtml(meta, mediaType, season, episode) {
         : { marked: false, matches: false };
       if (episodeTableState.marked && !episodeTableState.matches && !(detailEpisodeMarker.marked && detailEpisodeMarker.matches)) continue;
       const episodeHop = await _spv22ResolveEpisodeHop(html, resolvedDetailUrl, mediaType, season, episode);
-      if (episodeHop.length) return episodeHop.slice(0, 40);
+      if (episodeHop.length) streams.push(...episodeHop);
       if (episodeTableState.marked && !(detailEpisodeMarker.marked && detailEpisodeMarker.matches)) continue;
       const explicitPlayers = _spv15ExplicitPlayerAttrs(html, resolvedDetailUrl);
       if (explicitPlayers.length) {
         const explicitCrawled = await _crawlDirectMedia(explicitPlayers, response.url || detailUrl, 3);
-        if (explicitCrawled.length) return explicitCrawled.slice(0, 40);
+        if (explicitCrawled.length) streams.push(...explicitCrawled);
       }
       let urls = _uniq([
         ...explicitPlayers,
@@ -2613,7 +2642,7 @@ async function _resolveHtml(meta, mediaType, season, episode) {
       }
       const direct = urls.filter(_directMedia);
       if (direct.length) streams.push(..._streams(direct, response.url || detailUrl));
-      if (!direct.length && /iframe|mixed_embed|html_scraper|direct_media/i.test(NIAKVIO_PROVIDER_MODEL.strategy)) {
+      if (/iframe|mixed_embed|html_scraper|direct_media/i.test(NIAKVIO_PROVIDER_MODEL.strategy)) {
         const discoveredNested = _uniq(urls.filter(_crawlEligible).sort((a,b)=>_crawlUrlScore(b)-_crawlUrlScore(a))).slice(0, 10);
         if (discoveredNested.length) {
           const runtimeCandidates = _uniq([
@@ -2658,9 +2687,9 @@ async function _resolveHtml(meta, mediaType, season, episode) {
         }
       }
     } catch (_) {}
-    if (streams.length >= 12) break;
+    if (streams.length >= 40) break;
   }
-  return streams.slice(0, 40);
+  return _dedupeStreamRows(streams).slice(0, 40);
 }
 /* NIAKVIO_PROVIDER_BASE_STRUCTURED_EXTERNAL_ID_V13 */
 function _externalEpisodeMarker(url, season, episode) {
@@ -4122,6 +4151,80 @@ function _spv15ExplicitPlayerAttrs(html, base) {
     if (out.length >= 32) break;
   }
   return _uniq(out);
+}
+/* NIAKVIO_PROVIDER_EXPLICIT_MEDIA_VARIANTS_V26 */
+function _spv26Quality(value) {
+  return _outputQuality(value);
+}
+function _spv26ExplicitMediaRows(html, base, referer) {
+  const source = _embeddedText(html).slice(0, 1048576);
+  const rows = [];
+  const tagRe = /<(?:source|video)\b([^>]{0,3000})>/gi;
+  let match, scanned = 0;
+  while ((match = tagRe.exec(source)) !== null && scanned++ < 160) {
+    const attrs = _text(match[1]);
+    const src = attrs.match(/\b(?:src|data-src|file|url)\s*=\s*["']([^"']{1,2000})["']/i);
+    if (!src) continue;
+    const url = _absolute(src[1], base);
+    if (!url || !_directMedia(url)) continue;
+    const label = attrs.match(/\b(?:label|res|resolution|quality|data-quality|data-res)\s*=\s*["']?([^"'\s>]{1,80})/i);
+    const row = _streams([url], referer || base)[0];
+    if (!row) continue;
+    const quality = _spv26Quality(label && label[1]);
+    if (quality) row.quality = quality;
+    row.sourceUrl = base;
+    rows.push(row);
+    if (rows.length >= 40) break;
+  }
+  const objectRe = /(?:file|src|url)\s*[:=]\s*["']([^"']{1,2000})["'][\s\S]{0,180}?(?:label|quality|res(?:olution)?)\s*[:=]\s*["']?([^"',}<\s]{1,80})/gi;
+  scanned = 0;
+  while ((match = objectRe.exec(source)) !== null && scanned++ < 160) {
+    const url = _absolute(match[1], base);
+    if (!url || !_directMedia(url)) continue;
+    const row = _streams([url], referer || base)[0];
+    if (!row) continue;
+    const quality = _spv26Quality(match[2]);
+    if (quality) row.quality = quality;
+    row.sourceUrl = base;
+    rows.push(row);
+    if (rows.length >= 40) break;
+  }
+  return _dedupeStreamRows(rows);
+}
+function _spv26JsonMediaRows(value, base, referer, out) {
+  out = out || [];
+  if (out.length >= 40) return out;
+  if (Array.isArray(value)) {
+    for (const child of value) {
+      _spv26JsonMediaRows(child, base, referer, out);
+      if (out.length >= 40) break;
+    }
+    return out;
+  }
+  if (!value || typeof value !== "object") return out;
+  let raw = "";
+  for (const key of ["url","file","src","stream","stream_url","streamUrl","source","source_url","sourceUrl"]) {
+    if (typeof value[key] === "string" && value[key]) { raw = value[key]; break; }
+  }
+  if (raw) {
+    const url = _absolute(raw, base);
+    if (url && _directMedia(url)) {
+      const row = _streams([url], referer || base)[0];
+      if (row) {
+        const quality = _spv26Quality(
+          value.quality || value.label || value.resolution || value.res || value.height || ""
+        );
+        if (quality) row.quality = quality;
+        row.sourceUrl = base;
+        out.push(row);
+      }
+    }
+  }
+  for (const child of Object.values(value)) {
+    if (child && typeof child === "object") _spv26JsonMediaRows(child, base, referer, out);
+    if (out.length >= 40) break;
+  }
+  return _dedupeStreamRows(out);
 }
 /* NIAKVIO_PROVIDER_SEARCH_DETAIL_BRIDGE_V17 */
 function _spv17CurrentResponseUrl(value, base) {
