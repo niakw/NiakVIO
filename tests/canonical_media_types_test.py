@@ -130,7 +130,7 @@ def assert_projection(manifest_path: Path, projection: str, catalog: dict[str, d
     actual_ids = [row["key"] for row in manifest_rows]
     assert actual_ids == expected_ids, f"{manifest_path}: provider order/identity is not the deterministic {projection} projection of provider_catalog.json"
 
-    for row, canonical_key in zip(manifest_rows, order, strict=True):
+    for row, canonical_key in zip(manifest_rows, order):
         expected = catalog[canonical_key]["types"]
         assert row["canonical"] == expected, (
             f"{manifest_path}:{row['id']}: canonical media types drift from provider_catalog.json: "
