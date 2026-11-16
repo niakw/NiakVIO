@@ -31,8 +31,11 @@ def dump(path: Path, value: dict) -> None:
 
 
 def upgrade_platform(data: dict) -> None:
-    if data.get("schema_version") != 2:
-        raise SystemExit("platform-runtime-contracts schema_version must remain 2")
+    schema_version = data.get("schema_version")
+    if schema_version not in {2, 3}:
+        raise SystemExit(
+            f"platform-runtime-contracts unsupported schema_version {schema_version!r}; expected 2 or 3"
+        )
     order = list(data.get("capability_order") or [])
     if CAPABILITY not in order:
         try:
