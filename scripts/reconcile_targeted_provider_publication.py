@@ -49,9 +49,11 @@ def reconcile(
     sync_projections: Callable[[bool], Any] | None = None,
 ) -> list[dict[str, str]]:
     manifest_path = root / "manifest.json"
+    catalog_path = root / "provider_catalog.json"
     materialization_path = root / "provider-v3-materialization.json"
     provenance_path = root / "PROVENANCE.json"
     manifest = load_json(manifest_path)
+    catalog = load_json(catalog_path) if catalog_path.is_file() else None
     materialization = load_json(materialization_path)
     provenance = load_json(provenance_path) if provenance_path.is_file() else None
     provenance_rows = provenance.get("providers") if isinstance(provenance, dict) else None
@@ -67,16 +69,43 @@ def reconcile(
         if isinstance(row, dict) and cid(row.get("provider"))
     ]
     manifest_by_id = {cid(row.get("id")): row for row in manifest_rows}
+    publication_by_id: dict[str, tuple[dict[str, Any], str]] = {
+        provider_id: (row, "global-manifest")
+        for provider_id, row in manifest_by_id.items()
+    }
+    if isinstance(catalog, dict):
+        for record in catalog.get("providers") or []:
+            if not isinstance(record, dict):
+                continue
+            scraper = record.get("scraper")
+            projections = record.get("projections")
+            provider_id = cid(
+                record.get("canonicalId")
+                or (scraper or {}).get("id") if isinstance(scraper, dict) else ""
+            )
+            if (
+                not provider_id
+                or not isinstance(scraper, dict)
+                or not isinstance(projections, dict)
+                or projections.get("general") is not False
+                or projections.get("vf") is not True
+            ):
+                continue
+            if provider_id in publication_by_id:
+                raise RuntimeError(
+                    f"{provider_id}: France-only catalog identity collides with Global manifest"
+                )
+            publication_by_id[provider_id] = (scraper, "france-only-catalog")
     material_by_id = {cid(row.get("provider")): row for row in material_rows}
 
     requested = [cid(value) for value in provider_ids if cid(value)]
-    unknown = sorted(set(requested) - set(manifest_by_id))
+    unknown = sorted(set(requested) - set(publication_by_id))
     if unknown:
-        raise RuntimeError("unknown manifest providers: " + ",".join(unknown))
+        raise RuntimeError("unknown published providers: " + ",".join(unknown))
 
     updates: list[dict[str, str]] = []
     for provider_id in requested:
-        manifest_row = manifest_by_id[provider_id]
+        manifest_row, entry_authority = publication_by_id[provider_id]
         material_row = material_by_id.get(provider_id)
         if material_row is None:
             raise RuntimeError(f"{provider_id}: materialization row missing")
@@ -167,6 +196,7 @@ def reconcile(
 
         updates.append({
             "provider": provider_id,
+            "authority": entry_authority,
             "from": current_rel,
             "to": new_rel,
             "sha256": digest,
@@ -181,9 +211,9 @@ def reconcile(
         # Unit/workbench roots do not share the repository providers/ tree.
         # Their local manifest is the only valid active-scope authority.
         active_ids = {
-            cid(row.get("id"))
-            for row in manifest_rows
-            if row.get("enabled") is not False and cid(row.get("id"))
+            provider_id
+            for provider_id, (row, _authority) in publication_by_id.items()
+            if row.get("enabled") is not False
         }
     material_rows[:] = [
         row for row in material_rows
@@ -198,6 +228,8 @@ def reconcile(
     materialization["targetedPublicationComplete"] = len(material_rows) == len(active_ids)
 
     write_json(manifest_path, manifest)
+    if isinstance(catalog, dict):
+        write_json(catalog_path, catalog)
     write_json(materialization_path, materialization)
     if isinstance(provenance, dict):
         write_json(provenance_path, provenance)
