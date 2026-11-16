@@ -183,11 +183,13 @@ v20_published = sum(
     for row in published
 )
 
-# Provider-owned TV runtimes must not undo the Core's S00 contract by using
-# JavaScript truthiness (0 || 1). Scan every declared Lego used by an active
-# TV provider in either the Global or France projection.
+# Provider-owned episodic runtimes must not undo the Core's S00 contract by
+# using JavaScript truthiness (0 || 1). Scan every declared Bloc used by an
+# active canonical TV or anime provider in either Global or France. Anime must
+# be included because its provider ABI is canonical anime, not an implicit TV
+# rewrite, while specials/season-zero coordinates remain valid.
 overrides = json.loads((ROOT / "provider-overrides.json").read_text(encoding="utf-8"))
-active_tv: set[str] = set()
+active_episodic: set[str] = set()
 for manifest_path in (ROOT / "manifest.json", ROOT / "vf/manifest.json"):
     projection = json.loads(manifest_path.read_text(encoding="utf-8"))
     for row in projection.get("scrapers", []):
@@ -197,21 +199,21 @@ for manifest_path in (ROOT / "manifest.json", ROOT / "vf/manifest.json"):
             str(value).strip().casefold()
             for value in (row.get("canonicalSupportedTypes") or row.get("supportedTypes") or [])
         }
-        if "tv" in types:
-            active_tv.add(str(row.get("id") or row.get("name") or "").strip().casefold())
+        if "tv" in types or "anime" in types:
+            active_episodic.add(str(row.get("id") or row.get("name") or "").strip().casefold())
 
 unsafe_patterns = (
     re.compile(r"season\s*:\s*Number\([^\n;]*\)\s*\|\|\s*1"),
     re.compile(r"\bq\.season\s*\|\|\s*1\b"),
     re.compile(r"\b(?:row|x)\.season\s*=\s*Number\([^\n;]*\)\s*\|\|\s*1"),
 )
-checked_tv_legos: list[str] = []
+checked_episodic_legos: list[str] = []
 for provider_id, patch in (overrides.get("provider_patches") or {}).items():
-    if str(provider_id).casefold() not in active_tv or not isinstance(patch, dict):
+    if str(provider_id).casefold() not in active_episodic or not isinstance(patch, dict):
         continue
     for relative in patch.get("provider_lego_scripts") or []:
         lego_path = ROOT / str(relative)
-        assert lego_path.is_file(), (provider_id, "missing TV Lego", relative)
+        assert lego_path.is_file(), (provider_id, "missing episodic Bloc", relative)
         lego = lego_path.read_text(encoding="utf-8")
         for pattern in unsafe_patterns:
             assert not pattern.search(lego), (
@@ -220,11 +222,11 @@ for provider_id, patch in (overrides.get("provider_patches") or {}).items():
                 "TV season zero is still collapsed to season one",
                 pattern.pattern,
             )
-        checked_tv_legos.append(str(relative))
-assert checked_tv_legos, "no active TV provider Lego checked for season-zero preservation"
+        checked_episodic_legos.append(str(relative))
+assert checked_episodic_legos, "no active episodic provider Bloc checked for season-zero preservation"
 print(
     f"SPECIAL_SEASON_ZERO_IDENTITY_SOURCE_OK published={len(published)} retained_disabled={len(disabled)} "
     f"v20_published={v20_published} pending_rematerialization={len(published)-v20_published} "
-    f"tv_legos_s00_safe={len(checked_tv_legos)} "
+    f"episodic_blocs_s00_safe={len(checked_episodic_legos)} "
     "source_v20_media_url_consistency_only; no live terminal playback inferred"
 )
