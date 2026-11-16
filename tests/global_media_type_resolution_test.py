@@ -21,6 +21,13 @@ assert 'media: _mediaNamespace(mediaType)' in provider_base_source
 assert 'type: _mediaNamespace(mediaType)' in provider_base_source
 assert 'media: mediaType === "movie" ? "movie" : "tv"' not in provider_base_source
 assert 'type: mediaType === "movie" ? "movie" : "tv"' not in provider_base_source
+recipe_media = provider_base_source.split("function _collectionMediaType", 1)[1].split("/* NIAKVIO_PROVIDER_BASE_SHARED_IDENTITY_POLICY_V9 */", 1)[0]
+assert 'if (["anime","animes"].includes(value)) return "anime";' in recipe_media
+assert 'if (raw === "anime") return "anime";' in recipe_media
+assert '["tv","series","show","anime","episode"].includes(raw)' not in recipe_media
+plan_lane = provider_base_source.split("function _spv185PlanLaneAllowed", 1)[1].split("/* NIAKVIO_PROVIDER_VALUE_TRACE_HISTORY_V21 */", 1)[0]
+assert 'semantic.includes("anime")' not in plan_lane
+assert 'return lanes.includes(type);' in plan_lane
 route_compat = provider_base_source.split("function _spv34RouteMediaCompatible", 1)[1].split("function _learnedUrls", 1)[0]
 assert 'actual === "series" || actual === "anime"' not in route_compat
 assert 'if (actual === "series") actual = "tv";' in route_compat
