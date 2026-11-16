@@ -1,5 +1,5 @@
 {
-  "schema_version": 74,
+  "schema_version": 75,
   "release": "dynamic",
   "release_authority": "manifest.json:version",
   "candidate_track": "main",
@@ -235,6 +235,12 @@
     "upstream_head_gate": "scripts/check_nuvio_client_upstreams.py",
     "network_verification_inconclusive_blocks_release": true,
     "subtitle_specific_headers_preserved": true,
-    "anime_tv_launch_alias_is_compatibility_only": true
+    "anime_tv_launch_alias_is_compatibility_only": true,
+    "provider_transport_separate_from_tmdb_namespace": true,
+    "tmdb_identity_namespace_values": [
+      "movie",
+      "tv"
+    ],
+    "tmdb_namespace_must_not_rewrite_provider_transport": true
   }
 }
