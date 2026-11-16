@@ -98,6 +98,11 @@ assert 'transition_sha="$(git rev-parse HEAD)"' in commit_block
 assert 'git push origin HEAD:${{ github.ref_name }}' in commit_block
 assert "gh workflow run release-finalize.yml" in commit_block
 assert '-f expected_sha="$transition_sha"' in commit_block
+assert '-f post_census=true' in commit_block
+assert 'id: commit' in workflow
+assert 'echo "changed=false" >> "$GITHUB_OUTPUT"' in commit_block
+assert 'FIELD_PROVIDER_LIFECYCLE_AUTOPILOT stable_catalogue=true' in workflow
+assert 'gh workflow run provider-brain-autopilot.yml' in workflow
 assert "FIELD_PROVIDER_LIFECYCLE_RELEASE_FINALIZE_DISPATCH sha=$transition_sha" in commit_block
 assert 'transition_base="$(git rev-parse HEAD^)"' in commit_block
 assert 'git fetch origin "${{ github.ref_name }}"' in commit_block
