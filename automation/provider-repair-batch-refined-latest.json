@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
-  "sourceRunId": "43852026874",
-  "sourceTriggerSha": "f5878a818bdc7cc0de49f4adf9824426304ed3bd",
-  "sourcePlanRunId": "43852026874",
-  "sourceVerdictRunId": "43854495472",
+  "sourceRunId": "43855893372",
+  "sourceTriggerSha": "75f010ed8be65cbfd0ae6815ae46d532a27e8aed",
+  "sourcePlanRunId": "43855893372",
+  "sourceVerdictRunId": "43857227000",
   "providerCount": 62,
   "groupCount": 15,
   "groups": [
@@ -19,11 +19,13 @@
         "none"
       ],
       "dominantIssues": [
+        "network_exception",
+        "network_http_error",
         "network_zero_result",
         "timeout",
         "waf_challenge"
       ],
-      "providerCount": 21,
+      "providerCount": 20,
       "providers": [
         "67movies",
         "arrowtv",
@@ -35,7 +37,6 @@
         "emnexmovies",
         "flixer",
         "hexa",
-        "kidraz",
         "latestmovies",
         "moviebite",
         "movish",
@@ -97,6 +98,35 @@
       "executionPolicy": "batch-first"
     },
     {
+      "groupId": "learning|mixed_embed_resolver|runtime:mixed_embed_resolver#r1",
+      "parentGroupId": "learning|mixed_embed_resolver|runtime:mixed_embed_resolver",
+      "repairScope": "learning",
+      "capabilityStrategy": "mixed_embed_resolver",
+      "transportSignature": "not-applicable",
+      "evidenceDepths": [
+        "lookup"
+      ],
+      "dominantIssues": [
+        "network_zero_result"
+      ],
+      "providerCount": 7,
+      "providers": [
+        "cinematheque-de-bretagne",
+        "fawesome",
+        "frembed",
+        "kidraz",
+        "neobam",
+        "youtitou",
+        "zone-telechargement"
+      ],
+      "networkSignature": "provider|not-probed",
+      "debugStages": [],
+      "networkShape": [],
+      "observedHostCount": 0,
+      "splitReason": "observed-signature-divergence",
+      "executionPolicy": "batch-first"
+    },
+    {
       "groupId": "harness-compatibility|mixed_embed_resolver|harness:residential-exit-all-challenged#r1",
       "parentGroupId": "harness-compatibility|mixed_embed_resolver|harness:residential-exit-all-challenged",
       "repairScope": "harness-compatibility",
@@ -125,33 +155,6 @@
       "executionPolicy": "batch-first"
     },
     {
-      "groupId": "learning|mixed_embed_resolver|runtime:mixed_embed_resolver#r1",
-      "parentGroupId": "learning|mixed_embed_resolver|runtime:mixed_embed_resolver",
-      "repairScope": "learning",
-      "capabilityStrategy": "mixed_embed_resolver",
-      "transportSignature": "not-applicable",
-      "evidenceDepths": [
-        "lookup"
-      ],
-      "dominantIssues": [
-        "network_zero_result"
-      ],
-      "providerCount": 5,
-      "providers": [
-        "fawesome",
-        "frembed",
-        "neobam",
-        "youtitou",
-        "zone-telechargement"
-      ],
-      "networkSignature": "provider|not-probed",
-      "debugStages": [],
-      "networkShape": [],
-      "observedHostCount": 0,
-      "splitReason": "observed-signature-divergence",
-      "executionPolicy": "batch-first"
-    },
-    {
       "groupId": "harness-compatibility|mixed_embed_resolver|harness:residential-exit-inconclusive#r1",
       "parentGroupId": "harness-compatibility|mixed_embed_resolver|harness:residential-exit-inconclusive",
       "repairScope": "harness-compatibility",
@@ -176,31 +179,6 @@
       "networkShape": [],
       "observedHostCount": 0,
       "splitReason": "shared-signature",
-      "executionPolicy": "batch-first"
-    },
-    {
-      "groupId": "terminal-extraction|mixed_embed_resolver|runtime:mixed_embed_resolver#r1",
-      "parentGroupId": "terminal-extraction|mixed_embed_resolver|runtime:mixed_embed_resolver",
-      "repairScope": "terminal-extraction",
-      "capabilityStrategy": "mixed_embed_resolver",
-      "transportSignature": "not-applicable",
-      "evidenceDepths": [
-        "chain"
-      ],
-      "dominantIssues": [
-        "network_zero_result",
-        "waf_challenge"
-      ],
-      "providerCount": 2,
-      "providers": [
-        "cinematheque-de-bretagne",
-        "showbox"
-      ],
-      "networkSignature": "provider|not-probed",
-      "debugStages": [],
-      "networkShape": [],
-      "observedHostCount": 0,
-      "splitReason": "observed-signature-divergence",
       "executionPolicy": "batch-first"
     },
     {
@@ -335,18 +313,23 @@
       "providers": [
         "frenchstream"
       ],
-      "networkSignature": "provider|provider_network_zero_result||anime:GET:200:/search/dan-da-dan;anime:GET:200:/xfsearch/date-de-sortie/{id};anime:GET:200:/xfsearch/lang/Danois;anime:GET:200:/{id}/tv/{id};movie:GET:200:/search/avatar;movie:GET:200:/{id}/movie/{id};tv:GET:200:/search/pablo-escobar-le-patron-du-mal;tv:GET:200:/{id}/tv/{id}",
+      "networkSignature": "provider|provider_network_zero_result||anime:GET:200:/search/super-dragon-ball-heroes;anime:GET:200:/xfsearch/ftagz/superhero;anime:GET:200:/xfsearch/xx89/supernatural;anime:GET:200:/{id}/tv/{id};movie:GET:200:/films/romances;movie:GET:200:/romance-series-;movie:GET:200:/search/spider-man-homecoming;movie:GET:200:/xfsearch/lang/Allemand;movie:GET:200:/xfsearch/xx89/romance;movie:GET:200:/{id}/movie/{id};tv:GET:200:/search/adolescence;tv:GET:200:/xfsearch/date-de-sortie/{id};tv:GET:200:/{id}/tv/{id}",
       "debugStages": [
         "provider_network_zero_result"
       ],
       "networkShape": [
-        "anime:GET:200:/search/dan-da-dan",
-        "anime:GET:200:/xfsearch/date-de-sortie/{id}",
-        "anime:GET:200:/xfsearch/lang/Danois",
+        "anime:GET:200:/search/super-dragon-ball-heroes",
+        "anime:GET:200:/xfsearch/ftagz/superhero",
+        "anime:GET:200:/xfsearch/xx89/supernatural",
         "anime:GET:200:/{id}/tv/{id}",
-        "movie:GET:200:/search/avatar",
+        "movie:GET:200:/films/romances",
+        "movie:GET:200:/romance-series-",
+        "movie:GET:200:/search/spider-man-homecoming",
+        "movie:GET:200:/xfsearch/lang/Allemand",
+        "movie:GET:200:/xfsearch/xx89/romance",
         "movie:GET:200:/{id}/movie/{id}",
-        "tv:GET:200:/search/pablo-escobar-le-patron-du-mal",
+        "tv:GET:200:/search/adolescence",
+        "tv:GET:200:/xfsearch/date-de-sortie/{id}",
         "tv:GET:200:/{id}/tv/{id}"
       ],
       "observedHostCount": 2,
@@ -379,6 +362,30 @@
       "executionPolicy": "batch-first"
     },
     {
+      "groupId": "terminal-extraction|mixed_embed_resolver|runtime:mixed_embed_resolver#r1",
+      "parentGroupId": "terminal-extraction|mixed_embed_resolver|runtime:mixed_embed_resolver",
+      "repairScope": "terminal-extraction",
+      "capabilityStrategy": "mixed_embed_resolver",
+      "transportSignature": "not-applicable",
+      "evidenceDepths": [
+        "chain"
+      ],
+      "dominantIssues": [
+        "network_zero_result",
+        "waf_challenge"
+      ],
+      "providerCount": 1,
+      "providers": [
+        "showbox"
+      ],
+      "networkSignature": "provider|not-probed",
+      "debugStages": [],
+      "networkShape": [],
+      "observedHostCount": 0,
+      "splitReason": "observed-signature-divergence",
+      "executionPolicy": "batch-first"
+    },
+    {
       "groupId": "terminal-extraction|mixed_embed_resolver|runtime:mixed_embed_resolver#r2",
       "parentGroupId": "terminal-extraction|mixed_embed_resolver|runtime:mixed_embed_resolver",
       "repairScope": "terminal-extraction",
@@ -395,16 +402,12 @@
       "providers": [
         "hianime"
       ],
-      "networkSignature": "provider|provider_network_zero_result||anime:GET:200:/;anime:GET:200:/search;anime:GET:200:/{id}/tv/{id}",
+      "networkSignature": "provider|timeout||",
       "debugStages": [
-        "provider_network_zero_result"
+        "timeout"
       ],
-      "networkShape": [
-        "anime:GET:200:/",
-        "anime:GET:200:/search",
-        "anime:GET:200:/{id}/tv/{id}"
-      ],
-      "observedHostCount": 2,
+      "networkShape": [],
+      "observedHostCount": 0,
       "splitReason": "observed-signature-divergence",
       "executionPolicy": "batch-first"
     },
