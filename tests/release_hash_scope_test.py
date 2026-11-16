@@ -20,6 +20,9 @@ assert ".github/workflows/tmp-" in module.IGNORED_PREFIXES
 assert "automation/platform-runtime-contracts.json" in module.CORE_FILES
 assert "automation/nuvio-tv-runtime-contract.json" in module.CORE_FILES
 assert "automation/nuvio-client-upstreams.json" in module.CORE_FILES
+assert "automation/nuvio-client-compatibility-matrix.json" in module.CORE_FILES
+assert "scripts/runtime_contract_gate.py" in module.CORE_FILES
+assert "scripts/nuvio_runtime_compatibility.py" in module.CORE_FILES
 assert "automation/nuvio-client-safety-findings.json" in module.CORE_FILES
 assert "scripts/check_nuvio_client_upstreams.py" in module.CORE_FILES
 assert "scripts/sync_release_versions.py" in module.CORE_FILES
