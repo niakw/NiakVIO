@@ -281,6 +281,14 @@ def projection_active_provider_rows(root: Path = ROOT) -> list[dict[str, Any]]:
     return rows
 
 
+def projection_disabled_provider_rows(root: Path = ROOT) -> list[dict[str, Any]]:
+    """Disabled rows across Global+France, including lifecycle-retained catalogue rows."""
+    return [
+        row for row in projection_visible_provider_rows(root)
+        if row.get("enabled") is False
+    ]
+
+
 def projection_runtime_visible_provider_rows(root: Path = ROOT) -> list[dict[str, Any]]:
     """Canonical runtime-visible rows across Global+France, excluding pending."""
     if root.resolve() != ROOT.resolve():
@@ -315,4 +323,9 @@ def projection_runtime_visible_provider_count(root: Path = ROOT) -> int:
 def projection_active_provider_count(root: Path = ROOT) -> int:
     """Count exact executable active identities across Global+France projections."""
     return len(projection_active_provider_ids(root))
+
+
+def projection_disabled_provider_count(root: Path = ROOT) -> int:
+    """Count disabled visible identities across Global+France projections."""
+    return len(projection_disabled_provider_rows(root))
 
