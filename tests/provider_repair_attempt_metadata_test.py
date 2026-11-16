@@ -78,4 +78,29 @@ with tempfile.TemporaryDirectory() as td:
     assert "individual validation **not recorded**" in notice
     assert "source census unknown" in notice
 
+# A source-pinned census may finish after a newer Repair persisted on main.
+# Publication must retain the newer numeric GitHub run instead of regressing
+# Brain activity memory to the census source snapshot.
+sys.path.insert(0,str(ROOT/"scripts"))
+from persist_provider_repair_attempt_metadata import preserve_newer_repair_attempt
+
+candidate={"lastRepairAttempt":{"runId":"43580198030","noProgressReason":"old"}}
+current={"lastRepairAttempt":{"runId":"43787089404","noProgressReason":"canonical-failure"}}
+assert preserve_newer_repair_attempt(candidate,current) is True
+assert candidate["lastRepairAttempt"]["runId"]=="43787089404"
+assert candidate["lastRepairAttempt"]["noProgressReason"]=="canonical-failure"
+
+already_new={"lastRepairAttempt":{"runId":"43799999999"}}
+assert preserve_newer_repair_attempt(already_new,current) is False
+assert already_new["lastRepairAttempt"]["runId"]=="43799999999"
+
+missing={}
+assert preserve_newer_repair_attempt(missing,current) is True
+assert missing["lastRepairAttempt"]["runId"]=="43787089404"
+
+ambiguous={"lastRepairAttempt":{"runId":"manual-force"}}
+assert preserve_newer_repair_attempt(ambiguous,current) is False
+assert ambiguous["lastRepairAttempt"]["runId"]=="manual-force"
+print("newer durable Repair attempt survives stale census publication")
+
 print("provider Repair attempt metadata persistence contract passed")
