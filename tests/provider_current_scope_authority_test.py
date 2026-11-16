@@ -11,6 +11,7 @@ files = {
     "fast_repair": ROOT / "scripts/run_provider_repair_fast_targeted_v1.py",
     "disposition": ROOT / "scripts/finalize_provider_repair_disposition_v1_impl.py",
     "activation": ROOT / "scripts/validate_activation_preservation.py",
+    "cross_playback": ROOT / "scripts/check_cross_provider_playback.py",
 }
 
 sources = {name: path.read_text(encoding="utf-8") for name, path in files.items()}
@@ -41,5 +42,11 @@ assert "Global+France projection authority" in activation
 assert "HUB_MATRIX" not in activation
 assert "hub-lab-matrix-46.json" not in activation
 assert "FIELD_ACTIVATION_SCOPE_REGISTRY_ONLY" in activation
+
+cross_playback = sources["cross_playback"]
+assert "projection_active_provider_rows" in cross_playback
+assert "projection_active_provider_rows(repo_root)" in cross_playback
+assert "verifier.load(repo_root / 'manifest.json')" not in cross_playback
+assert "published_provider_contract" in cross_playback
 
 print("provider current-scope authority contract passed: no historical Hub46 execution authority")
