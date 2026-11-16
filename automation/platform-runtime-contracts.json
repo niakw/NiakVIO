@@ -948,5 +948,21 @@
         "classification": "native positives; matrix coverage red"
       }
     ]
-  }
+  },
+  "portable_provider_result_fields": [
+    "title",
+    "name",
+    "url",
+    "quality",
+    "size",
+    "language",
+    "provider",
+    "type",
+    "seeders",
+    "peers",
+    "infoHash",
+    "headers",
+    "subtitles"
+  ],
+  "portable_presentation_rule": "Critical provider identity, quality, language, request-header and subtitle facts must survive through fields parsed by every official Nuvio runtime. Rich NiakVIO-only fields such as badgeIds/displayBadges/presentationFacts may remain additive only; they cannot be the sole carrier of a user-visible or playback-critical fact. Technical description is mirrored through size and branded label through both name and title."
 }
