@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import copy
 import json
 from pathlib import Path
 from typing import Any
@@ -17,6 +18,40 @@ def load(path: Path) -> dict[str, Any]:
     if not isinstance(value,dict):
         raise ValueError(f"{path}: expected JSON object")
     return value
+
+
+def _github_run_number(attempt: object) -> int | None:
+    if not isinstance(attempt,dict):
+        return None
+    value=str(attempt.get("runId") or "").strip()
+    return int(value) if value.isdigit() else None
+
+
+def preserve_newer_repair_attempt(
+    candidate_state: dict[str, Any],
+    current_state: dict[str, Any],
+) -> bool:
+    """Keep newer durable GitHub Repair activity across stale census publication.
+
+    Sharded census jobs are source-pinned, then rebase their persistence step on
+    current main. Their measured provider evidence may be valid while their
+    display-only lastRepairAttempt was captured before a concurrent Repair
+    finished. Only monotonic numeric GitHub run IDs are ordered here; ambiguous
+    non-numeric fixture/manual IDs are left untouched rather than guessed.
+    """
+    current=current_state.get("lastRepairAttempt")
+    if not isinstance(current,dict) or not current.get("runId"):
+        return False
+    candidate=candidate_state.get("lastRepairAttempt")
+    if not isinstance(candidate,dict) or not candidate.get("runId"):
+        candidate_state["lastRepairAttempt"]=copy.deepcopy(current)
+        return True
+    current_run=_github_run_number(current)
+    candidate_run=_github_run_number(candidate)
+    if current_run is None or candidate_run is None or current_run <= candidate_run:
+        return False
+    candidate_state["lastRepairAttempt"]=copy.deepcopy(current)
+    return True
 
 
 def main() -> int:
