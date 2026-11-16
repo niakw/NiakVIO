@@ -36,14 +36,14 @@ def patch() -> bool:
         # Preserve those bytes semantically; only restore the durable marker.
         text = text.replace(CURRENT_NO_MARKER, CURRENT_WITH_MARKER, 1)
     else:
-        episodic_guard = 'if(q.type!==\"movie\")return[]'
+        episodic_guard = 'if(q.type!=="movie")return[]'
         raise AssertionError(
             "Mugiwara episodic fail-closed behavior/anchor missing: "
             f"legacy={text.count(OLD)} current={text.count(CURRENT_NO_MARKER)} "
-            f"episodic_guards={text.count('if(q.type!==\"movie\")return[]')}"
+            f"episodic_guards={text.count(episodic_guard)}"
         )
     TARGET.write_text(text, encoding="utf-8")
-            f"episodic_guards={text.count(episodic_guard)}"
+    validate(text)
     return True
 
 
