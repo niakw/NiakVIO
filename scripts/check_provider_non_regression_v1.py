@@ -7,7 +7,7 @@ import subprocess
 from pathlib import Path
 from typing import Any
 
-from current_provider_scope import active_provider_ids
+from current_provider_scope import projection_active_provider_ids, projection_visible_provider_rows
 
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_MATRIX = ROOT / "automation" / "provider-history-matrix.json"
@@ -22,7 +22,7 @@ GREEN = "🟢"
 
 
 def canon(value: Any) -> str:
-    return str(value or "").strip().casefold()
+    return str(value or "").strip().casefold().replace("_", "-")
 
 
 def load(path: Path) -> dict[str, Any]:
@@ -199,7 +199,7 @@ def verified_lanes_from_quick(data: dict[str, Any]) -> dict[str, set[str]]:
 
 def provider_ids(matrix: dict[str, Any]) -> list[str]:
     historical = {canon(row.get("provider")) for row in matrix.get("providers") or [] if canon(row.get("provider"))}
-    return sorted(historical & active_provider_ids())
+    return sorted(historical & projection_active_provider_ids())
 
 
 def matrix_rows(matrix: dict[str, Any]) -> dict[str, dict[str, Any]]:
@@ -211,11 +211,10 @@ def matrix_rows(matrix: dict[str, Any]) -> dict[str, dict[str, Any]]:
 
 
 def current_activation_debt() -> dict[str, dict[str, Any]]:
-    manifest = load(CURRENT_MANIFEST)
     overrides = load(CURRENT_OVERRIDES)
     rows = {
         canon(row.get("id")): row
-        for row in manifest.get("scrapers") or []
+        for row in projection_visible_provider_rows()
         if isinstance(row, dict) and canon(row.get("id"))
     }
     patches = overrides.get("provider_patches") if isinstance(overrides.get("provider_patches"), dict) else {}
@@ -293,6 +292,10 @@ GLOBAL_PREFIXES = (
 )
 GLOBAL_EXACT = {
     "manifest.json",
+    "vf/manifest.json",
+    "no-anime/manifest.json",
+    "vf-no-anime/manifest.json",
+    "provider_catalog.json",
     "provider-v3-quick-yield.json",
     "package.json",
     "package-lock.json",
