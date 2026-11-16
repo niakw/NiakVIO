@@ -34,6 +34,20 @@ on:
       - 'tests/provider_anime_semantic_transport_contract_test.py'
       - 'tests/native_five_lab_coverage_test.py'
       - 'tests/native_hub46_scope_contract_test.py'
+      - 'engine_v2/src/stream-presentation.mjs'
+      - 'engine_v2/tests/stream-presentation.test.mjs'
+      - 'scripts/provider_patches/global_stream_presentation_v1.py'
+      - 'scripts/provider_patches/global_stream_score_v1.py'
+      - 'scripts/provider_patches/hls_runtime_integrity_v1.py'
+      - 'scripts/provider_patches/stream_output_sanitizer_v10.py'
+      - 'tests/global_stream_presentation_test.py'
+      - 'tests/global_stream_metadata_preservation_contract_test.py'
+      - 'tests/global_stream_presentation_pipeline_test.py'
+      - 'tests/stream_score_contract_test.py'
+      - 'tests/hls_master_facts_short_test.py'
+      - 'tests/hls_playback_integrity_test.py'
+      - 'tests/hls_presentation_badge_integration_test.py'
+      - 'tests/stream_output_sanitizer_multi_variant_test.py'
       - 'scripts/generate_hub46_manifest.py'
       - 'scripts/build_hub46_native_manifest.py'
       - 'tests/provider_stream_multiplicity_contract_test.py'
@@ -184,6 +198,14 @@ jobs:
           python3 tests/special_season_zero_identity_test.py
           python3 tests/native_five_lab_coverage_test.py
           python3 tests/native_hub46_scope_contract_test.py
+          python3 tests/global_stream_presentation_test.py
+          python3 tests/global_stream_metadata_preservation_contract_test.py
+          python3 tests/global_stream_presentation_pipeline_test.py
+          python3 tests/stream_score_contract_test.py
+          python3 tests/hls_master_facts_short_test.py
+          python3 tests/hls_playback_integrity_test.py
+          python3 tests/hls_presentation_badge_integration_test.py
+          python3 tests/stream_output_sanitizer_multi_variant_test.py
           python3 tests/language_manifest_metadata_consistency_test.py
 
       - name: Reapply durable provider patches, minimize and rebuild current projections
