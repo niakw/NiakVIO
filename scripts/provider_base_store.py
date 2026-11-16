@@ -4512,6 +4512,8 @@ async function _spv4PlayEpisode(detailUrl, html, meta, mediaType, season, episod
   const actionRoute = _spv4Routes().find(value => /controller\.php\?mod=playepisode/i.test(value));
   if (!actionRoute) return [];
   const actionUrls = _spv4Expand(actionRoute, meta, {}, mediaType, season, episode);
+  /* NIAKVIO_PROVIDER_DLE_PLAYER_COVERAGE_V29 */
+  const streams = [];
   for (const actionUrl of actionUrls.slice(0, 2)) {
     for (const pair of pairs.slice(0, 4)) {
       try {
@@ -4527,13 +4529,14 @@ async function _spv4PlayEpisode(detailUrl, html, meta, mediaType, season, episod
         const text = await response.text();
         const urls = _spv4AttrUrls(text, response.url || actionUrl);
         const direct = _spv4DirectStreams(urls, pageUrl);
-        if (direct.length) return direct;
+        if (direct.length) streams.push(...direct);
         const nested = await _spv4NestedStreams(urls, pageUrl);
-        if (nested.length) return nested;
+        if (nested.length) streams.push(...nested);
+        if (_dedupeStreamRows(streams).length >= 40) return _dedupeStreamRows(streams).slice(0, 40);
       } catch (_) {}
     }
   }
-  return [];
+  return _dedupeStreamRows(streams).slice(0, 40);
 }
 function _spv4SagaTargets(episode) {
   const out = [];
@@ -4592,6 +4595,8 @@ async function _spv5Stremio(tmdbId, mediaType, season, episode) {
     const low = _text(route).toLowerCase();
     return /\/stream\//.test(low) && (type === "movie" ? /\/stream\/movie\//.test(low) : /\/stream\/(?:series|tv)\//.test(low));
   });
+  /* NIAKVIO_PROVIDER_STREMIO_COVERAGE_V29 */
+  const streams = [];
   for (const route of routes.slice(0, 4)) {
     for (const target of _spv4Expand(route, {tmdbId:_text(tmdbId),title:""}, {providerId:_text(tmdbId)}, type, season, episode).slice(0,3)) {
       try {
@@ -4605,11 +4610,12 @@ async function _spv5Stremio(tmdbId, mediaType, season, episode) {
           const url=_spv5SafeHttpStreamUrl(row.url || row.streamUrl || row.stream_url || "");
           if (url) urls.push(url);
         }
-        if (urls.length) return _streams(urls, response.url || target).slice(0,20);
+        if (urls.length) streams.push(..._streams(urls, response.url || target));
+        if (_dedupeStreamRows(streams).length >= 40) return _dedupeStreamRows(streams).slice(0, 40);
       } catch (_) {}
     }
   }
-  return [];
+  return _dedupeStreamRows(streams).slice(0, 40);
 }
 async function _spv5DleFilmApi(detailUrl, html, meta, mediaType, season, episode) {
   if (mediaType !== "movie") return [];
@@ -4619,6 +4625,8 @@ async function _spv5DleFilmApi(detailUrl, html, meta, mediaType, season, episode
   if (!idMatch) return [];
   let targets = _spv4Expand(route, meta, {providerId:idMatch[1]}, mediaType, season, episode);
   targets = targets.map(value => /[?&]id=\d+/i.test(value) ? value : value + (value.includes("?") ? "&" : "?") + "id=" + encodeURIComponent(idMatch[1]));
+  /* NIAKVIO_PROVIDER_DLE_FILM_API_COVERAGE_V29 */
+  const streams = [];
   for (const target of targets.slice(0,3)) {
     try {
       const response = await _fetch(target,{headers:{"X-Requested-With":"XMLHttpRequest",Referer:detailUrl}});
@@ -4626,11 +4634,12 @@ async function _spv5DleFilmApi(detailUrl, html, meta, mediaType, season, episode
       let urls=[];
       if (ct.includes("json")) { const value=await response.json(); urls=_uniq(_sourceUrls(value,response.url||target).concat(_jsonUrls(value))); }
       else { const raw=await response.text(); try{const value=JSON.parse(raw);urls=_uniq(_sourceUrls(value,response.url||target).concat(_jsonUrls(value)))}catch(_){urls=_spv4AttrUrls(raw,response.url||target)} }
-      const direct=_spv4DirectStreams(urls,detailUrl); if (direct.length) return direct;
-      const nested=await _spv4NestedStreams(urls,detailUrl); if (nested.length) return nested;
+      const direct=_spv4DirectStreams(urls,detailUrl); if (direct.length) streams.push(...direct);
+      const nested=await _spv4NestedStreams(urls,detailUrl); if (nested.length) streams.push(...nested);
+      if (_dedupeStreamRows(streams).length >= 40) return _dedupeStreamRows(streams).slice(0, 40);
     } catch (_) {}
   }
-  return [];
+  return _dedupeStreamRows(streams).slice(0, 40);
 }
 async function _spv4ResolveDetail(detailUrl, meta, mediaType, season, episode, family) {
   let response, html;
@@ -4716,9 +4725,13 @@ async function _spv4ResolveDetail(detailUrl, meta, mediaType, season, episode, f
   while ((sm = sibRe.exec(html)) !== null) numeric.push("https://video.sibnet.ru/shell.php?videoid=" + sm[1]);
   urls = urls.concat(numeric);
 
+  /* NIAKVIO_PROVIDER_DETAIL_STREAM_COVERAGE_V29 */
+  const streams = [];
   const direct = _spv4DirectStreams(urls, base);
-  if (direct.length) return direct;
-  return _spv4NestedStreams(urls, base);
+  if (direct.length) streams.push(...direct);
+  const nested = await _spv4NestedStreams(urls, base);
+  if (nested.length) streams.push(...nested);
+  return _dedupeStreamRows(streams).slice(0, 40);
 }
 function _spv7ProviderSiteBases() {
   return _uniq([NIAKVIO_PROVIDER_MODEL.officialSite, NIAKVIO_PROVIDER_MODEL.knownSite])
