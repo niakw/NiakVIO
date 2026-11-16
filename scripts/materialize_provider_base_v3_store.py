@@ -21,7 +21,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
-from current_provider_scope import active_provider_ids
+from current_provider_scope import projection_active_provider_ids, projection_active_provider_rows
 OVERRIDES = ROOT / "provider-overrides.json"
 CURRENT_RUNTIME_READER_VERSION = 10
 
@@ -72,7 +72,6 @@ def main() -> int:
         provider_base_store_metadata,
     )
 
-    manifest = load(MANIFEST)
     overrides = load(OVERRIDES)
     provenance = load(PROVENANCE)
     patches = overrides.get("provider_patches")
@@ -81,13 +80,10 @@ def main() -> int:
     if not isinstance(patches, dict) or not isinstance(capabilities, dict) or not isinstance(rows, dict):
         raise SystemExit("ProviderBase v3 store requires patches/capabilities/provenance maps")
 
-    current_ids = active_provider_ids()
-    entries = [
-        row for row in manifest.get("scrapers") or []
-        if isinstance(row, dict) and canonical_id(str(row.get("id") or "")) in current_ids
-    ]
+    current_ids = projection_active_provider_ids()
+    entries = projection_active_provider_rows()
     if not entries or {canonical_id(str(entry.get("id") or "")) for entry in entries} != current_ids:
-        raise SystemExit("ProviderBase v3 active identity set differs from providers/ authority")
+        raise SystemExit("ProviderBase v3 active identity set differs from Global+France execution authority")
     static_knowledge = load(ROOT / "automation" / "provider-v3-static-knowledge.json")
     static_rows = static_knowledge.get("providers")
     if not isinstance(static_rows, dict):
