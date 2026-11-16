@@ -65,18 +65,18 @@ def _validate_identity_contract(platform: dict, clients: dict) -> None:
     if identity.get("user_tmdb_credential_required") is not False:
         raise ValueError("runtime identity hydration must not require an end-user TMDB credential")
     if identity.get("secret_projection_to_provider_javascript") is not False:
-        raise ValueError("TMDB secret projection into provider JavaScript is forbidden for identity hydration")
+        raise ValueError("TMDB credential must not be embedded in published provider bytes")
     timing = str(identity.get("cache_population_timing") or "").casefold()
     if "after" not in timing or "before getstreams" not in timing:
         raise ValueError("host metadata cache timing must remain after Core init and before getStreams")
 
     for key, client in clients.items():
         state = _state(client, IDENTITY_CAPABILITY)
-        if key == "android-tv":
-            if state not in {"native", "bridge"}:
-                raise ValueError("android-tv: equivalent TMDB/IMDb identity hydration must remain available")
-        elif state not in {"absent", "bridge", "native"}:
-            raise ValueError(f"{key}: invalid media identity hydration state {state!r}")
+        if state not in {"native", "bridge"}:
+            raise ValueError(
+                f"{key}: current official runtime must expose equivalent TMDB/IMDb "
+                f"identity hydration, got {state!r}"
+            )
 
 
 def validate_contract_files() -> dict:
@@ -103,8 +103,8 @@ def validate_contract_files() -> dict:
         tags = client.get("platform_tags") or []
         if not isinstance(tags, list) or not all(isinstance(tag, str) and tag.strip() for tag in tags):
             raise ValueError(f"{key}: invalid platform_tags")
-        if key != "android-tv" and _state(client, "tmdb_api_key") != "absent":
-            raise ValueError(f"{key}: TMDB_API_KEY global must remain absent")
+        if _state(client, "tmdb_api_key") not in {"native", "bridge"}:
+            raise ValueError(f"{key}: current runtime TMDB_API_KEY capability missing")
         if _state(client, "stream_headers") in {"absent", "incompatible"}:
             raise ValueError(f"{key}: stream headers are not preserved")
         if _state(client, "subtitles") in {"absent", "incompatible"}:
@@ -113,8 +113,6 @@ def validate_contract_files() -> dict:
             raise ValueError(f"{key}: torrent metadata projection drifted")
 
     tv = clients["android-tv"]
-    if _state(tv, "tmdb_api_key") not in {"native", "bridge"}:
-        raise ValueError("android-tv: TMDB_API_KEY runtime global must remain available")
     if _state(tv, "text_codec") not in {"absent", "incompatible"}:
         raise ValueError("android-tv: generated providers must not require TextEncoder/TextDecoder")
     if _state(tv, "webassembly") not in {"absent", "incompatible"}:
@@ -155,11 +153,8 @@ def validate_contract_files() -> dict:
         if contract.get("tmdb_secret_projection_required") is not False:
             raise ValueError(f"{key}: TMDB secret projection into provider JS must remain false")
         status = str(contract.get("identity_hydration_status") or "")
-        if key == "nuvio-tv":
-            if status != "equivalent-runtime-metadata-bridge":
-                raise ValueError("nuvio-tv: equivalent identity hydration status drifted")
-        elif status not in {"client-gap-host-bridge-required", "canonical-host-bridge"}:
-            raise ValueError(f"{key}: invalid identity hydration status {status!r}")
+        if status not in {"equivalent-runtime-tmdb-key-bridge", "canonical-host-bridge"}:
+            raise ValueError(f"{key}: invalid current identity hydration status {status!r}")
         capabilities = {str(value).strip() for value in client.get("brain_capabilities") or [] if str(value).strip()}
         if "series" not in capabilities:
             raise ValueError(f"{key}: series transport capability missing")
