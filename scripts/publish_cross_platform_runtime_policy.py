@@ -52,7 +52,7 @@ def main() -> int:
         raise SystemExit("platform matrix must probe the general manifest")
 
     clients = contracts.get("clients") or {}
-    expected = {"android", "ios", "windows", "macos", "linux"}
+    expected = {"android", "android-tv", "ios", "windows", "macos", "linux"}
     if set(clients) != expected:
         raise SystemExit(f"platform contract mismatch: {sorted(clients)}")
     if any((clients[name] or {}).get("plugin_runtime") != "quickjs-positional-getStreams" for name in expected):
@@ -78,10 +78,12 @@ def main() -> int:
                 managed.setdefault(provider_id, []).append(token)
 
     policy = {
-        "schema_version": 4,
+        "schema_version": 5,
+        "authority": "current-release-observation-only",
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "source_matrix": str(MATRIX.relative_to(ROOT)),
         "source_release": matrix.get("release"),
+        "current_release": main_doc.get("version"),
         "contract_file": str(CONTRACTS.relative_to(ROOT)),
         "runtime_profiles": list(PROFILE_TOKEN),
         "desktop_platforms": ["windows", "macos", "linux"],
