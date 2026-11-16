@@ -12,7 +12,7 @@ from pathlib import Path
 from typing import Any
 from urllib.parse import urlsplit
 
-from current_provider_scope import active_provider_rows, disabled_provider_rows
+from current_provider_scope import projection_active_provider_rows, projection_disabled_provider_rows
 
 from apply_provider_overrides import apply_overrides, _strip_generated_core_tail
 from provider_byte_stability import split_owned_prefix_bootstraps
@@ -5004,7 +5004,7 @@ def repair_legacy_bases() -> dict[str, Any]:
     clean_reconstructed = 0
     marked_at = datetime.now(timezone.utc).isoformat()
 
-    for entry in active_provider_rows():
+    for entry in projection_active_provider_rows():
         provider_id = canonical_id(str(entry.get("id") or ""))
         if not provider_id:
             continue
@@ -5074,7 +5074,7 @@ def repair_derived_base_tails() -> dict[str, Any]:
     invalidated: list[str] = []
     repaired_at = datetime.now(timezone.utc).isoformat()
 
-    for entry in active_provider_rows():
+    for entry in projection_active_provider_rows():
         provider_id = canonical_id(str(entry.get("id") or ""))
         if not provider_id:
             continue
@@ -5124,7 +5124,7 @@ def repair_derived_base_tails() -> dict[str, Any]:
 
     provider_ids = [
         canonical_id(str(entry.get("id") or ""))
-        for entry in active_provider_rows()
+        for entry in projection_active_provider_rows()
         if canonical_id(str(entry.get("id") or ""))
     ]
     clean_count = sum(1 for provider_id in provider_ids if is_clean_reconstructed(rows.get(provider_id)))
@@ -5175,8 +5175,8 @@ def validate_all(*, validate_artifacts: bool = False) -> dict[str, Any]:
     """
     provenance = json.loads(PROVENANCE.read_text(encoding="utf-8"))
     rows = provenance.get("providers") or {}
-    active_entries = active_provider_rows()
-    disabled_entries = disabled_provider_rows()
+    active_entries = projection_active_provider_rows()
+    disabled_entries = projection_disabled_provider_rows()
     checked = 0
     bases: set[str] = set()
     for entry in active_entries:
