@@ -132,12 +132,12 @@ for required in (
     "project_domain_owned_provider_legos",
     "domain refresh changed bytes beyond CONFIG + authorized provider host projection",
     '"core_mutation": False',
-    "active_provider_ids",
+    "projection_active_provider_ids",
     "current_provider_ids",
     "if provider_id not in current_provider_ids:",
     "domain refresh refuses historical/non-current provider selection",
-    'materialization["providerCount"] = CURRENT_PROVIDER_COUNT',
-    'materialization["expectedProviderCount"] = CURRENT_PROVIDER_COUNT',
+    'materialization["providerCount"] = len(active_ids)',
+    'materialization["expectedProviderCount"] = len(active_ids)',
     '"scope_provider_count": len(selected or current_provider_ids)',
 ):
     assert required in transaction, f"Domain Refresh current-provider scope missing: {required}"
