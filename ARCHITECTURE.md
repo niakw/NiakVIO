@@ -162,6 +162,8 @@ Inversement, un provider canonique `movie + tv` ne devient pas anime-compatible 
 
 `tv` est l’unique alias de sélection/lancement synthétique ajouté à un provider anime-only. `series`, `show` et `movie` ne sont jamais ajoutés comme aliases synthétiques. Le contrat runtime partagé accepte `movie|tv|anime` et conserve `anime` pour une œuvre canoniquement anime.
 
+Le **transport provider** et le **namespace TMDB** sont deux axes distincts. ProviderBase reçoit et conserve `movie|tv|anime` (après éventuel `requestTypeAliases` explicite appliqué par le Core), tandis que l’identité TMDB reste strictement `movie|tv`. Une œuvre anime peut donc utiliser `tmdbNamespace=tv` pour ses métadonnées tout en envoyant `mediaType=anime` au provider. Le namespace TMDB ne doit jamais réécrire implicitement le transport provider.
+
 ## 6. Contrat runtime
 
 Signature conceptuelle :
