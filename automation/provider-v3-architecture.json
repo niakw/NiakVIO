@@ -1,5 +1,5 @@
 {
-  "schema_version": 8,
+  "schema_version": 9,
   "branch_contract": "provider-v3-clean-architecture",
   "provider_source_of_truth": {
     "runtime_artifacts": "providers/*.js",
@@ -334,5 +334,37 @@
       "tests/stream_output_sanitizer_multi_variant_test.py",
       "tests/special_season_zero_identity_test.py"
     ]
+  },
+  "nuvio_runtime_contract": {
+    "audit_authority": "automation/nuvio-client-compatibility-matrix.json + automation/nuvio-client-upstreams.json",
+    "cross_file_ref_gate": "scripts/check_nuvio_client_upstreams.py",
+    "executable_gate": "scripts/runtime_contract_gate.py",
+    "official_client_families": [
+      "NuvioMobile",
+      "NuvioDesktop",
+      "NuvioTV"
+    ],
+    "provider_call_signature": "getStreams(tmdbId, mediaType, season, episode)",
+    "provider_result_portable_fields": [
+      "title",
+      "name",
+      "url",
+      "quality",
+      "size",
+      "language",
+      "provider",
+      "type",
+      "seeders",
+      "peers",
+      "infoHash",
+      "headers",
+      "subtitles"
+    ],
+    "presentation_contract": "critical playback/user facts must survive portable fields; badgeIds/displayBadges/presentationFacts are additive only",
+    "tmdb_identity_contract": "official runtime capability -> Core metadata cache -> TMDB/IMDb identity; never credential in published provider bytes",
+    "historical_platform_matrix_authority": false,
+    "france_only_projection_authority": "provider_catalog.json projections general=false,vf=true",
+    "native_labs_use_latest_official_head": true,
+    "native_proof_transitive_between_clients": false
   }
 }
