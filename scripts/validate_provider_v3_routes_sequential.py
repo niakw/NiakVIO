@@ -32,11 +32,10 @@ from typing import Any, Iterable
 
 from provider_route_proof import filter_recipe_by_live_routes
 from rotating_corpus import default_seed, select_fixtures
-from current_provider_scope import pending_provider_ids
+from current_provider_scope import projection_runtime_visible_provider_count, projection_runtime_visible_provider_rows
 
 from validate_provider_v3_routes_live import (
     CORPUS,
-    EXPECTED,
     KNOWLEDGE,
     MANIFEST,
     OUTPUT,
@@ -55,6 +54,7 @@ from validate_provider_v3_routes_live import (
 )
 
 ROOT = Path(__file__).resolve().parents[1]
+EXPECTED = projection_runtime_visible_provider_count()
 DEFAULT_MIN_COVERAGE = 0.75  # diagnostic compatibility only; type gate is always 100%.
 # PROVIDER_V3_SEMANTIC_FIXTURE_FALLBACKS_V1
 # A declared lane is a provider capability, not a promise that one particular
@@ -134,20 +134,14 @@ def fixture_rows() -> list[dict[str, Any]]:
 
 
 def build_provider_queue() -> tuple[list[dict[str, Any]], int]:
-    manifest = load(MANIFEST)
     fixtures = fixture_rows()
     by_slug = {row["slug"]: row for row in fixtures}
     queue: list[dict[str, Any]] = []
     provider_count = 0
-    pending = pending_provider_ids()
-    for manifest_row in manifest.get("scrapers") or []:
-        if not isinstance(manifest_row, dict):
-            continue
+    for manifest_row in projection_runtime_visible_provider_rows():
         provider_id = canonical(manifest_row.get("id"))
         filename = str(manifest_row.get("filename") or "").strip()
         if not provider_id or not filename or not (ROOT / filename).is_file():
-            continue
-        if provider_id in pending:
             continue
         provider_count += 1
         supported = semantic_types(manifest_row)
