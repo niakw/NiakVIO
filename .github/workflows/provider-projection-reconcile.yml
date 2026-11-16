@@ -229,9 +229,88 @@ jobs:
           fi
           echo "FIELD_PROVIDER_PROJECTION_PUBLISHED baseline=$GITHUB_SHA final=$(git rev-parse HEAD) providers=${{ steps.drift.outputs.providers }}"
 
-      - name: Report no-op
+      - name: Reconcile durable static authority at projection fixed point
         if: steps.drift.outputs.count == '0'
-        run: echo "FIELD_PROVIDER_PROJECTION_RECONCILE drift=0 publication=noop"
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Byte/projection fixed point does not imply that durable structured
+          # Provider DATA is at its own fixed point. Reconcile this authority
+          # independently so stale family/CONFIG metadata cannot survive merely
+          # because published provider bytes are already current.
+          git diff --quiet || {
+            echo "Static-authority reconciliation started from a dirty checkout." >&2
+            git --no-pager diff --name-only >&2
+            exit 1
+          }
+          python scripts/reconcile_provider_static_authority.py --apply
+          python scripts/sanitize_provider_v3_core_metadata_routes.py
+          python tests/provider_static_authority_france_only_test.py
+          python tests/provider_v3_core_metadata_route_sanitizer_test.py
+          python scripts/audit_provider_v3_static.py
+          git diff --check
+
+          changed="$(git diff --name-only)"
+          if [ -z "$changed" ]; then
+            echo "FIELD_PROVIDER_STATIC_AUTHORITY_FIXED_POINT changed=0"
+            exit 0
+          fi
+          if printf '%s\n' "$changed" | grep -Ev '^(automation/provider-v3-static-knowledge\.json|provider-v3-materialization\.json)      - name: Finalize integrity and dispatch exact-head validation
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Actions-authored pushes do not recursively trigger ordinary push
+          # workflows. Projection publication therefore owns explicit exact-head
+          # handoff to census, CORE Quick and the final security gate.
+          BASE_SHA="$(git rev-parse HEAD)"
+          python scripts/generate_release_hashes.py
+          python scripts/validate_release_integrity.py
+          python tests/release_hash_scope_test.py
+
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add FILE-HASHES.json PATCH-SHA256SUMS.txt SHA256SUMS.json
+          if ! git diff --cached --quiet; then
+            git commit -m "chore(release): refresh post-reconcile integrity"
+            git fetch origin main
+            CURRENT_SHA="$(git rev-parse origin/main)"
+            if [ "$CURRENT_SHA" != "$BASE_SHA" ]; then
+              echo "FIELD_PROVIDER_PROJECTION_VALIDATION_SKIPPED reason=main_advanced baseline=$BASE_SHA current=$CURRENT_SHA"
+              exit 1
+            fi
+            git push origin HEAD:main
+          fi
+
+          FINAL_SHA="$(git rev-parse HEAD)"
+          echo "FIELD_PROVIDER_PROJECTION_VALIDATION_DISPATCH sha=$FINAL_SHA"
+          gh workflow run temp-current-bytes-full-provider-census.yml --repo "$GITHUB_REPOSITORY" --ref main
+          gh workflow run sync.yml --repo "$GITHUB_REPOSITORY" --ref main -f mode=quick
+          gh workflow run codeql.yml --repo "$GITHUB_REPOSITORY" --ref main
+          gh workflow run security-final-gate.yml --repo "$GITHUB_REPOSITORY" --ref main
+; then
+            echo "Static-authority reconciliation mutated a forbidden path." >&2
+            exit 1
+          fi
+
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add automation/provider-v3-static-knowledge.json provider-v3-materialization.json
+          git commit -m "fix(provider-v3): reconcile durable static authority"
+
+          git fetch --no-tags origin main
+          CURRENT_SHA="$(git rev-parse origin/main)"
+          if [ "$CURRENT_SHA" != "$GITHUB_SHA" ]; then
+            echo "FIELD_PROVIDER_STATIC_AUTHORITY_PUBLISH_BLOCKED reason=main_advanced baseline=$GITHUB_SHA current=$CURRENT_SHA" >&2
+            exit 1
+          fi
+          git push origin HEAD:main
+          echo "FIELD_PROVIDER_STATIC_AUTHORITY_PUBLISHED baseline=$GITHUB_SHA final=$(git rev-parse HEAD)"
+
+      - name: Report projection byte no-op
+        if: steps.drift.outputs.count == '0'
+        run: echo "FIELD_PROVIDER_PROJECTION_RECONCILE drift=0 bytes=noop static_authority=checked"
 
       - name: Finalize integrity and dispatch exact-head validation
         env:
