@@ -10,6 +10,22 @@ sys.path.insert(0, str(ROOT / "scripts"))
 from provider_production_freshness import ProductionFreshnessAuthority, load
 
 authority = ProductionFreshnessAuthority(ROOT)
+workflow = (ROOT / ".github" / "workflows" / "github-actions-gate.yml").read_text(encoding="utf-8")
+for dependency in (
+    "PROVENANCE.json",
+    "provider-v3-materialization.json",
+    "automation/provider-v3-static-knowledge.json",
+    "automation/provider-census-all-status-latest.json",
+    "automation/provider-onboarding-pending-status-latest.json",
+    "automation/provider-disabled-reactivation-ledger.json",
+    "providers/**",
+    "provider-bases/**",
+    "vf/manifest.json",
+    "manifest-hub46.json",
+    "native-hub46/manifest.json",
+):
+    assert workflow.count(f'- "{dependency}"') >= 2, dependency
+
 offline_seen = 0
 reactivated_seen = 0
 pending_seen = 0
