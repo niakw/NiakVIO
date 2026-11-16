@@ -16,9 +16,8 @@ from apply_provider_overrides import CANONICAL_CORE_MANAGED_ORDER, apply_overrid
 from provider_base_store import CLEAN_RECONSTRUCTION_EXCLUDED_PATCH_SCRIPTS, canonical_id, requires_clean_reconstruction, resolve_runtime_base
 from provider_patch_blocks import begin_marker, end_marker, owned_span, validate_managed_fixes
 from provider_security_hardening import harden_bytes
-from current_provider_scope import active_provider_ids
+from current_provider_scope import projection_active_provider_rows, projection_visible_provider_rows
 
-MANIFEST = json.loads((ROOT / "manifest.json").read_text(encoding="utf-8"))
 PROVENANCE = json.loads((ROOT / "PROVENANCE.json").read_text(encoding="utf-8"))
 ROWS = PROVENANCE.get("providers") or {}
 FORCE_TRIGGER = ROOT / ".github" / "triggers" / "force-clean-provider-reconstruction.json"
@@ -170,15 +169,15 @@ def main() -> int:
     if args.stage and args.published:
         raise SystemExit("--stage and --published are mutually exclusive")
     staged = stage_rows(args.stage.resolve()) if args.stage else {}
-    active = active_provider_ids()
+    entries = (
+        projection_active_provider_rows()
+        if args.published
+        else projection_visible_provider_rows()
+    )
 
-    for entry in MANIFEST.get("scrapers") or []:
-        if not isinstance(entry, dict):
-            continue
+    for entry in entries:
         provider_id = canonical_id(str(entry.get("id") or ""))
         if not provider_id:
-            continue
-        if args.published and provider_id not in active:
             continue
 
         row = ROWS.get(provider_id)
@@ -300,14 +299,7 @@ def main() -> int:
             applied_script_counts[script] = applied_script_counts.get(script, 0) + 1
         checked += 1
 
-    expected = (
-        len(active)
-        if args.published
-        else len([
-            x for x in MANIFEST.get("scrapers") or []
-            if isinstance(x, dict) and str(x.get("id") or "").strip()
-        ])
-    )
+    expected = len(entries)
     if args.published:
         if args.require_all and checked != expected:
             portfolio_errors.append(f"published audit incomplete: checked={checked} expected={expected}")
