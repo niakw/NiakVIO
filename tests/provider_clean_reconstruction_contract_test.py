@@ -119,6 +119,19 @@ for forbidden in (
 ):
     assert forbidden not in store_materializer
 
+for token in (
+    "SOURCE_MIGRATION_PATHS",
+    "_source_migration_snapshot",
+    "ProviderBase source migrations are not fixed-point on checked-in authority",
+    'ROOT / "scripts" / "provider_base_store.py"',
+    'ROOT / "scripts" / "apply_provider_overrides.py"',
+    'ROOT / "scripts" / "provider_patches" / "global_stream_presentation_v1.py"',
+    'ROOT / "scripts" / "provider_patches" / "mugiwarastream_packed_runtime_v1.py"',
+):
+    assert token in store_materializer, f"canonical ProviderBase materializer lost source fixed-point guard: {token}"
+assert store_materializer.index("sanitize_provider_v3_execution_routes_v1.py") < store_materializer.index("before = _source_migration_snapshot()")
+assert store_materializer.index("before = _source_migration_snapshot()") < store_materializer.index("upgrade_provider_base_runtime_v5.py")
+
 assert "materialize_provider_base_v3_store.py" in manual
 assert "materialize_provider_v3_all.py" in manual
 assert "python scripts/reconcile_provider_static_authority.py --apply" in manual
