@@ -14,7 +14,9 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 PLATFORM_PATH = ROOT / "automation" / "platform-runtime-contracts.json"
 MATRIX_PATH = ROOT / "automation" / "nuvio-client-compatibility-matrix.json"
-RUNTIME_TRANSPORT_TYPES = frozenset({"movie", "tv", "series"})
+PUBLISHED_SUPPORTED_TYPES = frozenset({"movie", "tv", "anime"})
+PROVIDER_RUNTIME_REQUEST_TYPES = frozenset({"movie", "tv"})
+TV_INPUT_ALIASES = frozenset({"series", "show", "other"})
 EXPECTED_SIGNATURE = "getStreams(tmdbId, mediaType, season, episode)"
 IDENTITY_CAPABILITY = "media_identity_hydration"
 IDENTITY_CONTEXT_PATH = "__nuvioMediaContext.tmdbMetadata.external_ids.imdb_id"
@@ -96,6 +98,16 @@ def validate_contract_files() -> dict:
 
     _validate_identity_contract(platform, clients)
 
+    media_boundary = platform.get("media_type_boundary") or {}
+    if set(media_boundary.get("published_supported_types") or []) != PUBLISHED_SUPPORTED_TYPES:
+        raise ValueError("published supportedTypes boundary drifted")
+    if set(media_boundary.get("provider_runtime_request_types") or []) != PROVIDER_RUNTIME_REQUEST_TYPES:
+        raise ValueError("provider runtime request media types drifted")
+    if set(media_boundary.get("tv_input_aliases") or []) != TV_INPUT_ALIASES:
+        raise ValueError("TV input alias boundary drifted")
+    if media_boundary.get("anime_provider_runtime_type") != "tv":
+        raise ValueError("anime provider runtime mapping must remain anime -> tv")
+
     portable_fields = {
         str(value).strip()
         for value in platform.get("portable_provider_result_fields") or []
@@ -154,10 +166,19 @@ def validate_contract_files() -> dict:
     matrix_policy = matrix.get("policy") or {}
     if not str(matrix_policy.get("media_identity_contract") or "").strip():
         raise ValueError("compatibility matrix missing durable media_identity_contract policy")
+    matrix_media = matrix_policy.get("media_type_boundary") or {}
+    if set(matrix_media.get("published_supported_types") or []) != PUBLISHED_SUPPORTED_TYPES:
+        raise ValueError("compatibility matrix published media types drifted")
+    if set(matrix_media.get("provider_runtime_request_types") or []) != PROVIDER_RUNTIME_REQUEST_TYPES:
+        raise ValueError("compatibility matrix provider runtime types drifted")
+    if set(matrix_media.get("tv_input_aliases") or []) != TV_INPUT_ALIASES:
+        raise ValueError("compatibility matrix TV input aliases drifted")
+    if matrix_media.get("anime_provider_runtime_type") != "tv":
+        raise ValueError("compatibility matrix anime runtime mapping drifted")
 
     universe = {str(value).strip() for value in matrix.get("capability_universe") or [] if str(value).strip()}
     if "series" not in universe:
-        raise ValueError("compatibility matrix must retain series transport capability")
+        raise ValueError("compatibility matrix must retain series reasoning/input-alias capability")
 
     for key, client in matrix_clients.items():
         contract = client.get("provider_contract") or {}
@@ -185,7 +206,9 @@ def validate_contract_files() -> dict:
     return {
         "platform_clients": len(clients),
         "matrix_clients": len(matrix_clients),
-        "runtime_transport_types": sorted(RUNTIME_TRANSPORT_TYPES),
+        "published_supported_types": sorted(PUBLISHED_SUPPORTED_TYPES),
+        "provider_runtime_request_types": sorted(PROVIDER_RUNTIME_REQUEST_TYPES),
+        "tv_input_aliases": sorted(TV_INPUT_ALIASES),
         "required_result_fields": sorted(REQUIRED_RESULT_FIELDS),
         "identity_context": IDENTITY_CONTEXT_PATH,
         "identity_cache": IDENTITY_CACHE_GLOBAL,
@@ -197,7 +220,9 @@ def main() -> int:
     print(
         "runtime contract gate passed: "
         f"platform_clients={summary['platform_clients']} matrix_clients={summary['matrix_clients']} "
-        f"runtime_transport_types={','.join(summary['runtime_transport_types'])} "
+        f"published_types={','.join(summary['published_supported_types'])} "
+        f"runtime_types={','.join(summary['provider_runtime_request_types'])} "
+        f"tv_aliases={','.join(summary['tv_input_aliases'])} "
         f"identity_cache={summary['identity_cache']}"
     )
     return 0
