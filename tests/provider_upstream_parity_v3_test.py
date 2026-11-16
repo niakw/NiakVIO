@@ -19,9 +19,11 @@ spec.loader.exec_module(parity)
 
 matrix_scope = parity.scope_ids(ROOT / "automation/evidence/hub-lab-matrix-46.json")
 scope = matrix_scope & projection_active_provider_ids()
-assert scope, "historical parity campaign lost all active providers"
-assert scope <= projection_active_provider_ids()
-assert len(scope) <= len(matrix_scope)
+assert scope, "current parity campaign lost all active providers"
+assert matrix_scope == projection_active_provider_ids(), (
+    "historical Hub-46 evidence must not truncate the current Global+France parity scope"
+)
+assert scope == projection_active_provider_ids()
 
 
 def result(streams: int = 0, *, timeout: bool = False, error: str | None = None, statuses=None):
