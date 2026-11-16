@@ -1,3 +1,16 @@
+## 2026-11-16 — Sequential validator migrations are semantic floors, not source snapshots
+
+- Current reconstruction advanced through active-only live-route scope and then failed in `provider_v3_finalization_plan_test.py`: the historical preserve-validated-DATA V3 migration still demanded the exact three-state `blockedNon2xxPlanPreserved` source literal. Current validator legitimately extends both non-2xx preservation predicates with `resample-required`.
+- Commit `d3d43ed1` makes that migration validate the historical minimum state set (`terminal-blocked`, `terminal-unreachable`, `disabled-unqualified`) as a subset for both execution-plan predicates, preserving future safe completion-state extensions.
+- Commit `11a640a6` strengthens `provider_v3_finalization_plan_test.py`: all four historical sequential-validator migrations must leave the committed validator bytes unchanged and report no mutation before the behavioral tests run. Tests may no longer silently repair current source.
+- This is reconstruction/harness integrity only; the failed run published no provider bytes. Fresh exact-source Workflow Gate and reconstruction are required.
+
+## 2026-11-16 — Live route scope separates 75 active probes from 108 durable knowledge rows
+
+- Exact-source reconstruction proved the repaired runtime/static stages: `providers=108`, `routeful=108`, `active_unknown=0`; live validation unit and sequential-live tests passed after candidate restoration dropped from the old all-knowledge 675 routes to **79 active routes / 5 active recipes**.
+- The previous validator had conflated the 75 active Global+France projection with 108 runtime-visible knowledge rows. Commit `fe0a07bf` confines candidate restoration/promotion to active IDs while leaving disabled-retained knowledge untouched; `490614cb` proves a retained row is not erased by absence of a live task; `15aaa0f5` gates this in Workflow Gate.
+- `ARCHITECTURE.md` now explicitly separates runtime-visible durable DATA from active-only network validation and removes the frozen historical-provider count from reconstruction policy.
+
 ## 2026-11-16 — Live route validation is active-only; disabled-retained knowledge is no longer erased
 
 - Reconstruction on the current métier path reached a new scope contradiction after static knowledge passed 108/108 providers: `validate_provider_v3_routes_live.py` builds live tasks from the 75 active Global+France identities but required the entire 108-row runtime-visible knowledge map to have the same cardinality. Worse, it iterated all knowledge rows; disabled-retained providers with no live task could have their durable routes emptied as "candidate-not-executed".
