@@ -8,6 +8,18 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 BASE = ROOT / "scripts" / "provider_base_store.py"
 text = BASE.read_text(encoding="utf-8")
+before = text
+upgrade = subprocess.run(
+    ["python3", str(ROOT / "scripts" / "upgrade_provider_episode_identity_guard_v22_1.py")],
+    cwd=ROOT,
+    text=True,
+    capture_output=True,
+    check=True,
+    timeout=10,
+)
+assert "PROVIDER_EPISODE_IDENTITY_GUARD_V22_1_OK" in upgrade.stdout
+assert BASE.read_text(encoding="utf-8") == before, "V22.1 upgrader must be idempotent on current ProviderBase"
+text = BASE.read_text(encoding="utf-8")
 
 required = (
     "NIAKVIO_PROVIDER_EPISODE_IDENTITY_GUARD_V22_1",
