@@ -5,6 +5,7 @@ import json
 from pathlib import Path
 
 from rotating_corpus import rotated_candidates, select_fixtures
+from native_regression_fixtures import mandatory_fixture_rows
 
 ROOT = Path(__file__).resolve().parents[1]
 CONFIG = ROOT / ".github" / "triggers" / "nuvio-client-lab.json"
@@ -76,6 +77,7 @@ private data class Fixture(
     val mediaType: String,
     val season: Int? = null,
     val episode: Int? = null,
+    val mandatoryRegression: Boolean = false,
 )
 
 @Serializable
@@ -230,7 +232,7 @@ private suspend fun runLab(manifestUrl: String) {
     resumedFixtures.forEach { fixture ->
         val selectedBase = iosProviders.filter { provider ->
             val key = provider.id.lowercase() + "|" + fixture.mediaType
-            key !in terminalProviders && provider.supportedTypes.any { type ->
+            (fixture.mandatoryRegression || key !in terminalProviders) && provider.supportedTypes.any { type ->
                 normalizedType(type) == fixture.mediaType
             }
         }
@@ -306,7 +308,8 @@ private suspend fun runLab(manifestUrl: String) {
                 } else {
                     terminalProviders += providerLaneKey
                 }
-                rows.firstOrNull()?.let { row ->
+                val playerRows = if (learning) rows.take(1) else rows.take(40)
+                playerRows.forEach { row ->
                     val (playerState, durationSeconds, host) = probeProductionPlayer(row, playerTimeoutMs)
                     emit(
                         "FIELD_NATIVE_IOS_PLAYER",
@@ -387,6 +390,17 @@ def fixture_rows() -> list[dict]:
                     "episode": fixture.get("episode"),
                 }
             )
+    for fixture in mandatory_fixture_rows():
+        rows.append(
+            {
+                "slug": fixture["slug"],
+                "tmdbId": str(fixture.get("tmdbId") or ""),
+                "mediaType": str(fixture.get("mediaType") or "tv"),
+                "season": fixture.get("season"),
+                "episode": fixture.get("episode"),
+                "mandatoryRegression": True,
+            }
+        )
     return rows
 
 
@@ -402,12 +416,13 @@ def kotlin_fixture_list(rows: list[dict]) -> str:
         season = "null" if row["season"] is None else str(int(row["season"]))
         episode = "null" if row["episode"] is None else str(int(row["episode"]))
         values.append(
-            "Fixture(slug = {slug}, tmdbId = {tmdb}, mediaType = {kind}, season = {season}, episode = {episode})".format(
+            "Fixture(slug = {slug}, tmdbId = {tmdb}, mediaType = {kind}, season = {season}, episode = {episode}, mandatoryRegression = {mandatory})".format(
                 slug=json.dumps(row["slug"]),
                 tmdb=json.dumps(row["tmdbId"]),
                 kind=json.dumps(row["mediaType"]),
                 season=season,
                 episode=episode,
+                mandatory="true" if row.get("mandatoryRegression") else "false",
             )
         )
     return "listOf(\n    " + ",\n    ".join(values) + "\n)"
