@@ -940,7 +940,10 @@ def finalize(provider_id: str, report_path: Path) -> bool:
     safety_pass = bool((report.get("policy") or {}).get("safety_blocking_pass", True))
     active = all_playable and safety_pass
 
-    manifest = load_json(MANIFEST, {})
+    current = load_json(WORK / "current.json", {})
+    scope = normalized_scope(current.get("scope") or "global")
+    target_manifest_path = VF_MANIFEST if scope == "france" else MANIFEST
+    manifest = load_json(target_manifest_path, {})
     row = next(
         (
             item for item in manifest.get("scrapers") or []
@@ -949,9 +952,11 @@ def finalize(provider_id: str, report_path: Path) -> bool:
         None,
     )
     if not isinstance(row, dict):
-        raise ValueError(f"{provider_id}: missing staged manifest row during finalize")
+        raise ValueError(
+            f"{provider_id}: missing staged {scope} manifest row during finalize"
+        )
     row["enabled"] = active
-    write_json(MANIFEST, manifest)
+    write_json(target_manifest_path, manifest)
 
     overrides = load_json(OVERRIDES, {})
     patch = (overrides.get("provider_patches") or {}).get(provider_id)
@@ -960,7 +965,9 @@ def finalize(provider_id: str, report_path: Path) -> bool:
     patch.setdefault("manifest_overrides", {})["enabled"] = active
     capability = (overrides.get("provider_capabilities") or {}).get(provider_id)
     if isinstance(capability, dict):
-        capability["validation"] = "onboarding_quick_pass" if active else "onboarding_pending_learning"
+        capability["validation"] = (
+            "onboarding_quick_live_unverified" if active else "onboarding_pending_learning"
+        )
     write_json(OVERRIDES, overrides)
 
     provenance = load_json(PROVENANCE, {})
@@ -969,16 +976,30 @@ def finalize(provider_id: str, report_path: Path) -> bool:
         raise ValueError(f"{provider_id}: missing provenance during finalize")
     prov["checked_at"] = iso_now()
     prov["check_mode"] = "onboarding_quick"
-    prov["check_status"] = "healthy" if active else "pending_learning"
+    prov["check_status"] = "live_unverified" if active else "pending_learning"
+    # A bounded onboarding Lab may grant executable activation authority for
+    # the exact tested bundle, but it is not FULL/native proof. Strict/runtime
+    # evidence authority stays false until the canonical current-byte/native
+    # validation stack promotes the provider.
     prov["activation_eligible"] = active
-    prov["strict_activation_eligible"] = active
-    prov["runtime_evidence_eligible"] = active
-    prov["activation_mode"] = "onboarding_quick_pass" if active else "onboarding_pending_learning"
-    prov["activation_blockers"] = [] if active else ["onboarding_quick_lab_not_fully_playable"]
+    prov["strict_activation_eligible"] = False
+    prov["runtime_evidence_eligible"] = False
+    prov["activation_mode"] = (
+        "onboarding_quick_live_unverified" if active else "onboarding_pending_learning"
+    )
+    prov["activation_blockers"] = (
+        ["live_native_validation_pending"]
+        if active
+        else ["onboarding_quick_lab_not_fully_playable"]
+    )
     prov["onboarding_quick_lab"] = {
         "requested_clients": requested,
         "all_playable": all_playable,
         "safety_pass": safety_pass,
+        "scope": scope,
+        "full_ok_claimed": False,
+        "strict_activation_eligible": False,
+        "runtime_evidence_eligible": False,
         "client_verdicts": {
             client: str((clients.get(client) or {}).get("verdict") or "no_report")
             for client in requested
@@ -989,6 +1010,7 @@ def finalize(provider_id: str, report_path: Path) -> bool:
     print(
         "FIELD_PROVIDER_ONBOARDING_FINAL "
         f"id={provider_id} active={str(active).lower()} "
+        f"scope={scope} authority={'live_unverified' if active else 'pending'} "
         f"safety={str(safety_pass).lower()} "
         f"clients={','.join(requested)}"
     )
