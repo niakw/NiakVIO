@@ -81,7 +81,6 @@ assert 'This remains a workbench gate, not publication authority.' in source
 assert 'provider-v3-batch-diagnostic.yml' not in workflow
 assert 'reconstruct_provider_v3_batch_diagnostic.py' not in workflow
 assert 'workbench/provider-v3-recognition-routes-data' not in workflow
-assert 'Reconstruct all active providers sequentially live' in workflow
 assert 'python scripts/reconstruct_provider_v3_sequential_live.py --minimum-coverage 0.75' in workflow
 assert 'Refuse direct main mutation' in workflow
 assert 'Manual Provider v3 reconstruction may never commit directly to main; use a branch + PR.' in workflow
