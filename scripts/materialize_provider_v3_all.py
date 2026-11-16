@@ -680,6 +680,7 @@ def strict_projection(
 def materialize_all(
     *,
     source_manifest_path: Path = DEFAULT_SOURCE_MANIFEST,
+    source_catalog_path: Path | None = None,
     overrides_path: Path = DEFAULT_OVERRIDES,
     output_dir: Path = DEFAULT_OUT,
     report_path: Path = DEFAULT_REPORT,
@@ -688,6 +689,13 @@ def materialize_all(
     project_ids: list[str] | None = None,
 ) -> dict[str, Any]:
     manifest = load(source_manifest_path)
+    if source_catalog_path is None and source_manifest_path.resolve() == DEFAULT_SOURCE_MANIFEST.resolve():
+        source_catalog_path = DEFAULT_SOURCE_CATALOG
+    catalog = (
+        load(source_catalog_path)
+        if source_catalog_path is not None and source_catalog_path.is_file()
+        else None
+    )
     overrides = load(overrides_path)
     static_knowledge = load(static_knowledge_path)
     static_rows = static_knowledge.get("providers")
@@ -703,17 +711,17 @@ def materialize_all(
     context = materialization_context()
     minimize_enabled = final_minimizer_enabled(context)
 
-    active_ids = active_provider_ids()
-    rows = [
-        row for row in manifest.get("scrapers") or []
-        if isinstance(row, dict)
-        and canonical_id(str(row.get("id") or "")) in active_ids
-    ]
+    validate_repository_scope = source_manifest_path.resolve() == DEFAULT_SOURCE_MANIFEST.resolve()
+    rows, authority_by_id = active_materialization_rows(
+        manifest,
+        catalog,
+        validate_repository_scope=validate_repository_scope,
+    )
     ids = [canonical_id(str(row.get("id") or "")) for row in rows]
-    if not rows or len(set(ids)) != len(ids) or set(ids) != active_ids:
+    active_ids = set(ids)
+    if not rows or len(set(ids)) != len(ids):
         raise ValueError(
-            f"global v3 active identity mismatch rows={len(rows)} unique={len(set(ids))} "
-            f"folder_active={len(active_ids)}"
+            f"Global+France active identity mismatch rows={len(rows)} unique={len(set(ids))}"
         )
 
     patch_ids = {canonical_id(v) for v in patches}
@@ -853,6 +861,7 @@ def materialize_all(
             pending_validation.append({
                 "provider_id": provider_id,
                 "entry": entry,
+                "authority": authority_by_id[provider_id],
                 "bundle": bundle,
                 "data": data,
                 "stripped": stripped,
@@ -890,6 +899,14 @@ def materialize_all(
 
             entry["filename"] = relative
             entry["version"] = base_version(entry.get("version"))
+            authority_name, authority_row = pending["authority"]
+            if authority_name == "france-only-catalog":
+                # Keep catalogue semantics untouched; only publication identity
+                # belongs to this materialization transaction.
+                authority_row["filename"] = relative
+                authority_row["version"] = base_version(authority_row.get("version"))
+            elif authority_name != "global-manifest":
+                raise ValueError(f"{provider_id}: unknown materialization authority {authority_name!r}")
 
             aggregate.update(provider_id.encode("utf-8"))
             aggregate.update(bytes.fromhex(digest))
@@ -935,6 +952,8 @@ def materialize_all(
         "for TV, Mobile and Desktop; client manifests only project these same bytes."
     )
     write_json(source_manifest_path, manifest)
+    if catalog is not None and source_catalog_path is not None:
+        write_json(source_catalog_path, catalog)
 
     context = str(os.environ.get("NUVIO_PROVIDER_V3_CONTEXT") or "workspace").strip().casefold()
     if context not in {"workspace", "release", "main"}:
@@ -970,7 +989,14 @@ def materialize_all(
             raise ValueError("project manifest requested without project ids")
         write_json(
             project_manifest_path,
-            strict_projection(manifest, ids_for_projection, generation),
+            strict_projection(
+                {
+                    "version": manifest.get("version"),
+                    "scrapers": rows,
+                },
+                ids_for_projection,
+                generation,
+            ),
         )
 
     return report
@@ -979,6 +1005,7 @@ def materialize_all(
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--source-manifest", type=Path, default=DEFAULT_SOURCE_MANIFEST)
+    parser.add_argument("--source-catalog", type=Path)
     parser.add_argument("--overrides", type=Path, default=DEFAULT_OVERRIDES)
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUT)
     parser.add_argument("--report", type=Path, default=DEFAULT_REPORT)
@@ -994,6 +1021,11 @@ def main() -> int:
     ]
     report = materialize_all(
         source_manifest_path=args.source_manifest.resolve(),
+        source_catalog_path=(
+            args.source_catalog.resolve()
+            if args.source_catalog is not None
+            else None
+        ),
         overrides_path=args.overrides.resolve(),
         output_dir=args.output_dir.resolve(),
         report_path=args.report.resolve(),
