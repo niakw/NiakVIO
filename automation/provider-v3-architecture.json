@@ -121,7 +121,10 @@
     "published_or_upstream_js_seed_allowed": false,
     "executable_plan_gate": "tests/provider_v3_strategy_plan_contract_test.py",
     "security_html_filter_gate": "tests/provider_html_filter_security_test.py --published",
-    "provider_scope_authority": "scripts/current_provider_scope.py:active_provider_ids"
+    "provider_scope_authority": "scripts/current_provider_scope.py:projection_active_provider_ids",
+    "sequential_audit_scope_authority": "scripts/current_provider_scope.py:projection_runtime_visible_provider_ids",
+    "global_publication_authority": "manifest.json",
+    "france_only_publication_authority": "provider_catalog.json projections general=false,vf=true"
   },
   "native_labs": [
     "TVAndroid",
