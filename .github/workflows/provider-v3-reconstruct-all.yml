@@ -140,8 +140,8 @@ jobs:
           python - <<'PY'
           import json
           from pathlib import Path
-          from scripts.current_provider_scope import projection_runtime_visible_provider_count
-          expected=projection_runtime_visible_provider_count()
+          from scripts.current_provider_scope import projection_active_provider_count
+          expected=projection_active_provider_count()
           report=json.loads(Path("provider-v3-live-route-validation.json").read_text(encoding="utf-8"))
           assert report.get("providerCount") == expected, (report.get("providerCount"), expected)
           assert report.get("completedProviderCount") == expected, (report.get("completedProviderCount"), expected)
