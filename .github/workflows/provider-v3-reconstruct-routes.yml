@@ -1,4 +1,4 @@
-name: MANUAL - Reconstruct Provider Routes 96/96
+name: MANUAL - Reconstruct Provider Routes
 
 on:
   workflow_dispatch:
@@ -37,7 +37,7 @@ jobs:
           python tests/provider_contract_recognizer_test.py
           python tests/provider_route_reconstructor_test.py
           python tests/provider_v3_local_recognition_contract_test.py
-      - name: Reconstruct route DATA only for all 96 Provider Objects
+      - name: Reconstruct route DATA only for current Global France Provider Objects
         run: |
           set -euo pipefail
           python scripts/provider_route_reconstructor.py
@@ -46,15 +46,17 @@ jobs:
           python - <<'PY'
           import json
           from pathlib import Path
+          from scripts.current_provider_scope import projection_runtime_visible_provider_count
 
+          expected = projection_runtime_visible_provider_count()
           value = json.loads(Path('automation/provider-v3-static-knowledge.json').read_text(encoding='utf-8'))
           report = value.get('routeReconstruction') or {}
           providers = value.get('providers') or {}
 
-          assert report.get('providerCount') == 96, report
+          assert report.get('providerCount') == expected, (report, expected)
           assert report.get('fullProviderReconstructionInvoked') is False, report
           assert report.get('providerJavaScriptExecuted') is False, report
-          assert len(providers) == 96, len(providers)
+          assert len(providers) == expected, (len(providers), expected)
 
           reported_without_routes = sorted(report.get('unknownProviders') or [])
           observed_without_routes = []
@@ -81,7 +83,7 @@ jobs:
           # promoted to live validity and are never committed from this job.
           print(
               'FIELD_ROUTE_RECONSTRUCTION '
-              f"providers=96 routes={report.get('routeCount')} "
+              f"providers={expected} routes={report.get('routeCount')} "
               f"httpProven={report.get('httpProvenRouteCount')} "
               f"noDurableRoutes={len(observed_without_routes)} providerRebuild=false"
           )
