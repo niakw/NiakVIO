@@ -942,6 +942,7 @@ def main() -> int:
         "tests/provider_repair_merge_catalogue_presence_test.py",
         "tests/provider_route_recovery_apply_scope_test.py",
         "tests/provider_route_proof_manifest_current_scope_test.py",
+        "tests/route_proof_manifest_policy_test.py",
         "tests/provider_repair_merge_typed_recipe_test.py",
         "tests/provider_repair_v7_typed_resolver_test.py",
         "tests/provider_repair_v8_partial_typed_resolver_test.py",
