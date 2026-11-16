@@ -62,6 +62,7 @@ assert ADD.index("Rebuild publication after exact verification") < ADD.index("Re
 assert "Stage clean NiakVIO ProviderBase and structured route knowledge" in ADD
 assert "python scripts/add_provider.py stage --request" in ADD
 assert "base_store.persist_clean_provider_seed(" in SCRIPT
+assert '"require_identity_match": True' in SCRIPT
 assert "materialize_onboarding_bundle(" in SCRIPT
 assert SCRIPT.index("base_store.persist_clean_provider_seed(") < SCRIPT.index("materialize_onboarding_bundle(")
 assert '"clean_reconstruction_required": False' in SCRIPT
@@ -82,6 +83,7 @@ assert 'prov["runtime_evidence_eligible"] = False' in finalize_body
 assert '"onboarding_quick_live_unverified" if active' in finalize_body
 assert '["live_native_validation_pending"]' in finalize_body
 assert '"full_ok_claimed": False' in finalize_body
+assert 'int((clients.get(client) or {}).get("identity_match_count") or 0) > 0' in finalize_body
 
 assert "site_structure_knowledge()" in SCRIPT
 assert "VOLATILE_ROUTE_QUERY_KEYS" in SCRIPT
