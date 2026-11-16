@@ -398,9 +398,35 @@ jobs:
           git fetch origin main
           remote_main="$(git rev-parse origin/main)"
           source_sha="$(python -c 'import json; d=json.load(open("'"$verdict_tmp"'")); print(str(d.get("triggerSha") or ""))')"
-          if [ -z "$source_sha" ] || [ "$source_sha" != "$remote_main" ]; then
-            echo "FIELD_TARGETED_RECOVERY_STALE_NOT_PERSISTED source=${source_sha:-missing} remote=$remote_main"
+          if [ -z "$source_sha" ]; then
+            echo "FIELD_TARGETED_RECOVERY_STALE_NOT_PERSISTED source=missing remote=$remote_main"
             exit 0
+          fi
+          if [ "$source_sha" != "$remote_main" ]; then
+            source_census="$(python -c 'import json; d=json.load(open("'"$verdict_tmp"'")); print(str(d.get("sourceCensusRunId") or ""))')"
+            remote_census="$(git show "$remote_main:automation/provider-census-status.json" | python -c 'import json,sys; d=json.load(sys.stdin); print(str(d.get("runId") or ""))')"
+            neutral_drift=true
+            neutral_paths=()
+            if ! git merge-base --is-ancestor "$source_sha" "$remote_main"; then
+              neutral_drift=false
+            else
+              while IFS= read -r changed_path; do
+                [ -z "$changed_path" ] && continue
+                neutral_paths+=("$changed_path")
+                case "$changed_path" in
+                  .github/triggers/provider-fast-repair.json) ;;
+                  *) neutral_drift=false ;;
+                esac
+              done < <(git diff --name-only "$source_sha" "$remote_main")
+            fi
+            if [ -z "$source_census" ] || [ "$source_census" != "$remote_census" ]; then
+              neutral_drift=false
+            fi
+            if [ "$neutral_drift" != "true" ]; then
+              echo "FIELD_TARGETED_RECOVERY_STALE_NOT_PERSISTED source=$source_sha remote=$remote_main source_census=${source_census:-missing} remote_census=${remote_census:-missing}"
+              exit 0
+            fi
+            echo "FIELD_TARGETED_RECOVERY_NEUTRAL_DRIFT_REBASE source=$source_sha remote=$remote_main census=$source_census paths=${neutral_paths[*]:-none}"
           fi
           git reset --hard origin/main
           mkdir -p automation

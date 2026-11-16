@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "requestedAt": "2026-11-16T11:59:00+01:00",
+  "requestedAt": "2026-11-16T12:04:00+01:00",
   "sourceCensusRunId": "43852026874",
   "targetProviders": [
     "frenchstream",
@@ -8,6 +8,6 @@
     "stigstream"
   ],
   "diagnosticOnly": true,
-  "reason": "Replay representative targeted probes on the latest sharded-census epoch 43852026874 after the projection-only rematerialization fix. Require exact current provider-owned network/response evidence and preserve fail-closed publication rules.",
-  "retry": 3
+  "reason": "Retry current-epoch targeted probes after hardening evidence persistence against neutral concurrent Fast-Repair trigger commits. Neutral rebase is allowed only when source is an ancestor, census runId is unchanged and every intervening path is the Fast-Repair trigger; provider/runtime/evidence drift remains fail-closed.",
+  "retry": 4
 }

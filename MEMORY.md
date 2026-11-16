@@ -1,3 +1,10 @@
+## 2026-11-16 — Targeted evidence persistence tolerates only proven neutral Fast-trigger races
+
+- Targeted Recovery run `43853507438` on `fcc23415fb7483bdfabff1b69da619b9098456ef` successfully rematerialized and probed all three representatives after the France-only projection fix: `providers=3 verified=0`, and transport merge updated all three rows. Its persistence was nevertheless discarded because main advanced to `43d783ef07170b3b2ec7cd11adc20591ccddb42c` during the 90-second probe.
+- The exact source→remote diff was only `.github/triggers/provider-fast-repair.json`; no provider bytes, runtime, census state or evidence code changed. Treating that control-plane trigger edit as executable drift causes needless probe loops and throws away current observations.
+- Targeted persistence now permits a rebase only when (1) the probe source is an ancestor of remote main, (2) the verdict's `sourceCensusRunId` exactly equals remote canonical census `runId`, and (3) **every** intervening changed path is the Fast-Repair trigger. Any provider/runtime/workflow/census/evidence drift still fails closed with `FIELD_TARGETED_RECOVERY_STALE_NOT_PERSISTED`. Accepted neutral rebases emit `FIELD_TARGETED_RECOVERY_NEUTRAL_DRIFT_REBASE`.
+- This is persistence/race hardening only. Run `43853507438` proved the probe path but no terminal media (`verified=0`); a fresh current-epoch replay must persist its detailed evidence before Brain guidance treats it as current.
+
 ## 2026-11-16 — Fresh representative Fast Repair replay triggered on latest census
 
 - Latest authoritative sharded census is run `43852026874`; current representative statuses are deliberately heterogeneous: `frenchstream` = NO PROOF / Brain check required, `hianime` = CHAIN REACHED / terminal-extraction debt, `stigstream` = CHAIN REACHED / Repair-eligible. `movy` remains harness-compatibility-owned (native-policy-reachable) and is excluded from provider Repair until transport ownership changes.
