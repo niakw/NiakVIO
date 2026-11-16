@@ -52,6 +52,18 @@ jobs:
       - name: Install locked tooling
         run: npm ci --ignore-scripts --no-audit --no-fund
 
+      - name: Prepare canonical durable static authority
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Structured Provider DATA is an input to published provider bytes.
+          # Finalize it before detecting byte drift so reconstruction consumes
+          # the same authority that the post-publication audit will enforce.
+          python scripts/reconcile_provider_static_authority.py --apply
+          python scripts/sanitize_provider_v3_core_metadata_routes.py
+          python tests/provider_static_authority_france_only_test.py
+          python tests/provider_v3_core_metadata_route_sanitizer_test.py
+          git diff --check
       - name: Detect exact published projection drift
         id: drift
         shell: bash
@@ -60,6 +72,7 @@ jobs:
           python -m py_compile scripts/detect_provider_projection_drift.py scripts/materialize_provider_v3_one.py scripts/reconcile_targeted_provider_publication.py scripts/reindex_provider_publication_fingerprints.py
           python tests/provider_projection_drift_detector_test.py
           python tests/publication_contract_fingerprint_test.py
+          python tests/provider_publication_fingerprint_union_test.py
           python tests/provider_projection_reconcile_workflow_test.py
           python scripts/detect_provider_projection_drift.py --output "$RUNNER_TEMP/projection-drift.before.json"
           python - <<'PY' >> "$GITHUB_OUTPUT"
@@ -108,11 +121,19 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          # Publication fingerprints are projection metadata. Rebuilt bytes must
-          # be reindexed before the drift detector can judge the new fixed point;
-          # otherwise the detector compares fresh bytes to the pre-rebuild build
-          # fingerprint and falsely reopens every provider.
+          python scripts/validate_published_provider_config.py
+          # Reconcile rebuilt CONFIG back into durable authority, then apply the
+          # generic Core/TMDB/runtime-family sanitizer. These operations must be
+          # idempotent here because the same authority was prepared pre-detection.
+          python scripts/reconcile_provider_static_authority.py --apply
+          python scripts/sanitize_provider_v3_core_metadata_routes.py
+          python tests/provider_static_authority_france_only_test.py
+          python tests/provider_v3_core_metadata_route_sanitizer_test.py
+
+          # Fingerprints are derived metadata over the FINAL structured DATA +
+          # exact Global+France provider bytes. Reindex only after both settle.
           python scripts/reindex_provider_publication_fingerprints.py
+          python tests/provider_publication_fingerprint_union_test.py
           python scripts/detect_provider_projection_drift.py --output "$RUNNER_TEMP/projection-drift.after.json"
           python - <<'PY'
           import json, os
@@ -121,18 +142,11 @@ jobs:
           assert int(d.get("providerCount") or 0)==0,d
           print("FIELD_PROVIDER_PROJECTION_FIXED_POINT providers=0")
           PY
-          python scripts/validate_published_provider_config.py
-          # Provider CONFIG bytes are the exact, non-network oracle for durable
-          # Brain static knowledge. Reconcile the whole runtime-visible
-          # Global+France union (including retained disabled) before audit.
-          python scripts/reconcile_provider_static_authority.py --apply
-          python tests/provider_static_authority_france_only_test.py
           python scripts/audit_provider_v3_static.py
           python scripts/reapply_published_overrides.py --check
           python tests/published_provider_lego_contract_test.py
           python tests/provider_js_lego_ownership_test.py
           git diff --check
-
       - name: Build atomic provider publication
         if: steps.drift.outputs.count != '0'
         id: publication
@@ -234,15 +248,14 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          # Byte/projection fixed point does not imply that durable structured
-          # Provider DATA is at its own fixed point. Reconcile this authority
-          # independently so stale family/CONFIG metadata cannot survive merely
-          # because published provider bytes are already current.
-          git diff --quiet || {
-            echo "Static-authority reconciliation started from a dirty checkout." >&2
-            git --no-pager diff --name-only >&2
+          # Pre-detection DATA preparation may legitimately leave only durable
+          # static/materialization metadata dirty when no active provider bytes
+          # depend on the change. Never allow any other no-byte publication.
+          changed_before="$(git diff --name-only)"
+          if [ -n "$changed_before" ] && printf '%s\n' "$changed_before" | grep -Ev '^(automation/provider-v3-static-knowledge\.json|provider-v3-materialization\.json)$'; then
+            echo "Static-authority preparation mutated a forbidden path." >&2
             exit 1
-          }
+          fi
           python scripts/reconcile_provider_static_authority.py --apply
           python scripts/sanitize_provider_v3_core_metadata_routes.py
           python tests/provider_static_authority_france_only_test.py
@@ -273,7 +286,6 @@ jobs:
           fi
           git push origin HEAD:main
           echo "FIELD_PROVIDER_STATIC_AUTHORITY_PUBLISHED baseline=$GITHUB_SHA final=$(git rev-parse HEAD)"
-
       - name: Report projection byte no-op
         if: steps.drift.outputs.count == '0'
         run: echo "FIELD_PROVIDER_PROJECTION_RECONCILE drift=0 bytes=noop static_authority=checked"
