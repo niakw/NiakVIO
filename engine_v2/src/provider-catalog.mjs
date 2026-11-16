@@ -80,7 +80,7 @@ export function buildCatalogFromPublished({ generalManifest, vfManifest }) {
     policy: {
       repairBeforeTriage: true,
       retainLastKnownGoodOnInconclusive: true,
-      quickRefreshMayRepairAndPublish: true,
+      quickRefreshMayRepairAndPublish: false,
       deepRefreshRebuildsKnowledge: true,
     },
     manifestMeta: {
@@ -208,7 +208,7 @@ export function validateProviderCatalog(catalog) {
   const policy = catalog.policy ?? {};
   if (policy.repairBeforeTriage !== true) throw new Error("catalog policy must keep repair-before-triage");
   if (policy.retainLastKnownGoodOnInconclusive !== true) throw new Error("catalog policy must retain LKG on inconclusive evidence");
-  if (policy.quickRefreshMayRepairAndPublish !== true) throw new Error("quick refresh must be allowed to repair and publish");
+  if (policy.quickRefreshMayRepairAndPublish !== false) throw new Error("routine quick refresh must not repair or publish provider mutations");
 
   return catalog;
 }
