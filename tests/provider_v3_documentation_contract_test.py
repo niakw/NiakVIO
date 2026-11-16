@@ -9,7 +9,7 @@ import sys
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
-from current_provider_scope import active_provider_count, pending_provider_ids, runtime_visible_provider_count, visible_provider_count
+from current_provider_scope import active_provider_count, pending_provider_ids, projection_active_provider_count, projection_runtime_visible_provider_count, runtime_visible_provider_count, visible_provider_count
 
 ACTIVE_EXPECTED = active_provider_count()
 VISIBLE_EXPECTED = visible_provider_count()
@@ -31,6 +31,7 @@ engine = (ROOT / "engine_v2/README.md").read_text(encoding="utf-8")
 sync = (ROOT / ".github/workflows/sync.yml").read_text(encoding="utf-8")
 manual = (ROOT / ".github/workflows/provider-v3-reconstruct-all.yml").read_text(encoding="utf-8")
 machine = json.loads((ROOT / "automation/provider-v3-architecture.json").read_text(encoding="utf-8"))
+validation_machine = json.loads((ROOT / "VALIDATION.json").read_text(encoding="utf-8"))
 manifest = json.loads((ROOT / "manifest.json").read_text(encoding="utf-8"))
 
 for required in (
@@ -121,7 +122,7 @@ assert "active==expected" in manual
 assert "==46" not in manual and "46/46" not in manual
 
 
-assert machine["schema_version"] >= 6
+assert machine["schema_version"] >= 7
 source = machine["provider_source_of_truth"]
 assert source["canonical_provider_base_marker"] == "NIAKVIO_PROVIDER_BASE_OWNED_V3"
 assert source["legacy_provider_js_seed_allowed"] is False
@@ -143,7 +144,7 @@ assert scopes["global_runtime_visible"] == "scripts/current_provider_scope.py:ru
 assert scopes["pending_is_executable"] is False
 assert scopes["pending_is_lifecycle_retention"] is False
 assert scopes["france_only_must_not_leak_global"] is True
-assert machine["provider_source_of_truth"]["runtime_ledger_scope_authority"] == "scripts/current_provider_scope.py:runtime_visible_provider_ids"
+assert machine["provider_source_of_truth"]["runtime_ledger_scope_authority"] == "scripts/current_provider_scope.py:projection_runtime_visible_provider_ids"
 assert machine["route_recognition"]["provider_scope_authority"] == "scripts/current_provider_scope.py:runtime_visible_provider_ids"
 
 assert machine["routine"]["quick"]["repair_allowed"] is False
@@ -209,11 +210,11 @@ assert machine["security_html_filtering"]["regex_html_stripping_allowed"] is Fal
 
 lab = machine["native_lab_contract"]
 assert "provider_count" not in lab
-assert lab["provider_scope_authority"] == "scripts/current_provider_scope.py:active_provider_ids"
+assert lab["provider_scope_authority"] == "scripts/current_provider_scope.py:projection_active_provider_ids"
 assert lab["historical_provider_count"] == HISTORICAL_PROVIDER_COUNT
 assert lab["historical_provider_directory"] == "provider-old"
-assert lab["route_matrix_source"] == "manifest.json:scrapers[*].supportedTypes"
-assert lab["semantic_capability_source"] == "manifest.json:scrapers[*].canonicalSupportedTypes"
+assert lab["route_matrix_sources"] == ["manifest.json:scrapers[*].supportedTypes", "vf/manifest.json:scrapers[*].supportedTypes"]
+assert lab["semantic_capability_sources"] == ["manifest.json:scrapers[*].canonicalSupportedTypes", "vf/manifest.json:scrapers[*].canonicalSupportedTypes"]
 assert lab["declared_route_counts_are_dynamic"] is True
 assert "declared_routes" not in lab
 assert "declared_routes_by_type" not in lab
@@ -222,6 +223,24 @@ assert lab["reader_outcomes_are_observational"] is True
 assert lab["external_nuvio_repo_repairs_allowed"] is False
 assert lab["external_build_dependency_packaging_repairs_allowed"] is False
 assert lab["test_plumbing_must_not_change_official_runtime_behavior"] is True
+assert machine["provider_scopes"]["projection_active"] == "scripts/current_provider_scope.py:projection_active_provider_ids"
+assert machine["provider_scopes"]["projection_runtime_visible"] == "scripts/current_provider_scope.py:projection_runtime_visible_provider_ids"
+assert machine["provider_scopes"]["native_acceptance"] == "scripts/current_provider_scope.py:projection_active_provider_ids"
+assert machine["provider_scopes"]["native_acceptance_includes_france_only"] is True
+
+assert validation_machine["schema_version"] >= 67
+assert validation_machine["release_authority"] == "manifest.json:version"
+catalogue_contract = validation_machine["catalogue"]
+assert catalogue_contract["cardinality_policy"] == "derived-never-frozen"
+assert catalogue_contract["projection_active_authority"] == "scripts/current_provider_scope.py:projection_active_provider_ids"
+assert catalogue_contract["native_lab_scope_authority"] == "scripts/current_provider_scope.py:projection_active_provider_ids"
+assert catalogue_contract["france_only_first_class"] is True
+for stale_count in ("provider_objects", "active_provider_objects", "physical_native_lab_scope", "historical_recovery_census"):
+    assert stale_count not in catalogue_contract
+assert validation_machine["core_contract"]["stream_sanitizer"] == "strict_v10"
+assert validation_machine["native_transport"]["scope"] == "Global+France active projection union"
+assert projection_active_provider_count() >= ACTIVE_EXPECTED
+assert projection_runtime_visible_provider_count() >= RUNTIME_VISIBLE_EXPECTED
 
 rows = manifest.get("scrapers") or []
 assert len(rows) == VISIBLE_EXPECTED
