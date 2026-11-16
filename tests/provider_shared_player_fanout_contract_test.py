@@ -9,20 +9,22 @@ base=(ROOT/"scripts/provider_base_store.py").read_text(encoding="utf-8")
 # to the shared crawler receives the same bounded multi-player fanout.
 required=[
     "NIAKVIO_PROVIDER_ADAPTIVE_PLAYER_FANOUT_V25",
-    "const seedCap = Math.min(16, Math.max(8, rankedSeeds.length));",
-    "const requestBudget = Math.min(18, Math.max(10, queue.length + 4));",
-    "while (queue.length && requests < requestBudget && streams.length < 12)",
-    "return streams.slice(0, 40);",
+    "NIAKVIO_PROVIDER_MULTI_VARIANT_FANOUT_V26",
+    "const seedCap = Math.min(32, Math.max(8, rankedSeeds.length));",
+    "const requestBudget = Math.min(32, Math.max(12, queue.length + 8));",
+    "while (queue.length && requests < requestBudget && streams.length < 40)",
+    "return _dedupeStreamRows(streams).slice(0, 40);",
 ]
 for needle in required:
     assert needle in base, needle
 
 assert "slice(0, 8).map(url => ({ url, depth: 0, referer }))" not in base
 assert "while (queue.length && requests < 10 && streams.length < 12)" not in base
+assert "streams.length < 12" not in base
 
 # Provider-local runtimes may adapt site-specific player discovery, but they
-# must not silently truncate a shared-crawler result below the common 12-stream
-# fanout. This scans the actual provider-local Blocs materialized for the
+# must not silently truncate a shared-crawler result below the common 40-stream
+# playback-identity cap. This scans the actual provider-local Blocs materialized for the
 # current provider set instead of naming one or two providers.
 materialization=json.loads((ROOT/"provider-v3-materialization.json").read_text(encoding="utf-8"))
 local_paths=set()
