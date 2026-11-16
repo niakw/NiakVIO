@@ -21,7 +21,6 @@ jobs:
     env:
       TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
       TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
-      NIAKVIO_PROVIDER_SCOPE_MATRIX: automation/evidence/hub-lab-matrix-46.json
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
@@ -45,7 +44,6 @@ jobs:
         run: |
           set -euo pipefail
           python3 scripts/run_provider_upstream_parity_v3.py \
-            --scope-matrix automation/evidence/hub-lab-matrix-46.json \
             --provider anikototv \
             --samples-per-lane 8 \
             --workers 1 \
