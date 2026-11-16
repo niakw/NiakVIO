@@ -38,7 +38,7 @@ from typing import Any
 import run_provider_upstream_parity as parity
 import run_provider_upstream_parity_v2 as parity_v2
 from rotating_corpus import default_seed, select_fixtures
-from current_provider_scope import active_provider_ids
+from current_provider_scope import projection_active_provider_ids
 from parity_hls_terminal_probe import verify_hls_terminal
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -603,7 +603,7 @@ def main() -> int:
     if not scope_path.is_absolute():
         scope_path = ROOT / scope_path
     matrix_scoped = scope_ids(scope_path)
-    active = active_provider_ids()
+    active = projection_active_provider_ids()
     scoped = matrix_scoped & active
     inactive_matrix_providers = sorted(matrix_scoped - active)
     if not scoped:
