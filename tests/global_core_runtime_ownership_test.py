@@ -111,6 +111,13 @@ for row in rows:
     missing_ledger = sorted(set(REQUIRED_GLOBAL_CORE_IDS) - ledger_fix_ids)
     assert not missing_ledger, (provider_id, "materialization-ledger", missing_ledger)
 
+    sanitizer_start = text.find("/* STARTFIX:CORE.STREAM_SANITIZER.V6 */")
+    sanitizer_close = text.find("/* CLOSEFIX:CORE.STREAM_SANITIZER.V6 */", sanitizer_start)
+    assert sanitizer_start >= 0 and sanitizer_close > sanitizer_start, provider_id
+    sanitizer_region = text[sanitizer_start:sanitizer_close]
+    assert '"probeAllUrls":true' in sanitizer_region, (provider_id, "probeAllUrls")
+    assert '"maxProbes":40' in sanitizer_region, (provider_id, "maxProbes", sanitizer_region[:500])
+
     positions = {}
     for fix_id in REQUIRED_GLOBAL_CORE_IDS:
         start_marker = f"/* STARTFIX:{fix_id} */"
