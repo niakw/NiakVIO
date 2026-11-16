@@ -7,11 +7,10 @@ text=(ROOT/".github/workflows/provider-census-sharded.yml").read_text(encoding="
 required=[
     "workflow_run:",
     "PROVIDER - Bulk Onboarding",
+    "PROVIDER - Bulk Activation",
     "source_sha: ${{ steps.pin.outputs.sha }}",
     "should_run: ${{ steps.pin.outputs.should_run }}",
     "ref: ${{ needs.prepare.outputs.source_sha }}",
-    'head_message="$(git log -1 --pretty=%s)"',
-    '[[ "$head_message" == provider:\\ bulk\\ activate\\ * ]]',
     "shards_json: ${{ steps.pin.outputs.shards_json }}",
     "shard_count: ${{ steps.pin.outputs.shard_count }}",
     "target_providers: ${{ steps.pin.outputs.target_providers }}",
@@ -47,6 +46,9 @@ assert "permissions:\n  contents: write\n  actions: write" in text
 assert "permissions:\n      contents: write" in text
 assert '"$count" -gt 120' not in text, "historical Global catalogue size must not suppress causal census refresh"
 assert "projection_runtime_visible_provider_count" in text
+assert 'source_workflow="${{ github.event.workflow_run.name }}"' in text
+assert '[ "$source_workflow" = "PROVIDER - Bulk Activation" ]' in text
+assert 'head_message="$(git log -1 --pretty=%s)"' not in text
 assert text.count("provider-census-shard-${{ matrix.shard }}") >= 2
 print("Provider sharded census workflow contract passed")
 
