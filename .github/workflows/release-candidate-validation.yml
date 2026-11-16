@@ -2,6 +2,12 @@ name: CORE - Release Candidate Validation
 
 on:
   workflow_dispatch:
+    inputs:
+      expected_sha:
+        description: Exact finalized main SHA to certify; fail if main moved
+        required: false
+        default: ""
+        type: string
   push:
     branches:
       - main
@@ -67,9 +73,19 @@ jobs:
           python tests/provider_anime_semantic_transport_contract_test.py
       - name: Commit normalized source and derived artifacts when required
         id: finalize
+        env:
+          EXPECTED_SHA: ${{ github.event_name == 'workflow_dispatch' && inputs.expected_sha || '' }}
         shell: bash
         run: |
           set -euo pipefail
+          if [ -n "$EXPECTED_SHA" ]; then
+            ACTUAL_SHA="$(git rev-parse HEAD)"
+            test "$ACTUAL_SHA" = "$EXPECTED_SHA" || {
+              echo "release certification SHA mismatch expected=$EXPECTED_SHA actual=$ACTUAL_SHA" >&2
+              exit 1
+            }
+            echo "FIELD_RELEASE_CERTIFICATION_SHA_BOUND expected=$EXPECTED_SHA actual=$ACTUAL_SHA"
+          fi
           if [ "$GITHUB_REF_NAME" = "main" ]; then
             test -z "$(git status --porcelain)" || {
               echo 'main validation checkout is unexpectedly dirty' >&2
