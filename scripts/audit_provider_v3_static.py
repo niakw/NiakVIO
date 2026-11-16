@@ -108,16 +108,20 @@ for row in rows:
     normalize_anime_transport_compatibility(entry)
     current_model=provider_model(pid,patch,capability,static_row)
     expected_data=build_provider_data_model(pid,entry,known_site=current_model.get("knownSite"),provider_model=current_model)
-    # A legacy activation may have published valid NiakVIO-owned Provider-v3
-    # bytes before persisting all structured ledgers. reconcile_provider_static_authority
-    # recovers the exact CONFIG as migration authority without executing JS.
+    # A legacy migration or a proof-bound activation may publish valid
+    # NiakVIO-owned Provider-v3 bytes whose exact managed CONFIG is the persisted
+    # static authority. Both recovery paths decode that CONFIG without executing
+    # provider JS; neither may invent a replacement model during audit.
     # Until that provider is deliberately rematerialized and replayed, audit the
     # recovered current bytes against that exact CONFIG rather than inventing a
     # different configuration and invalidating the only published proof.
     recovery_sources = static_row.get("sources") if isinstance(static_row,dict) else []
     exact_recovery = any(
         isinstance(source,dict)
-        and str(source.get("source") or "") == "current-published-config-recovery"
+        and str(source.get("source") or "") in {
+            "current-published-config-recovery",
+            "activation-static-config",
+        }
         and str(source.get("upstreamKnowledgeSource") or "") == "managed-config-lego"
         for source in (recovery_sources or [])
     )
