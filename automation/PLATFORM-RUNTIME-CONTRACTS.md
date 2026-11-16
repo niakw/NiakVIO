@@ -47,7 +47,7 @@ Le paramètre positionnel `tmdbId` de `getStreams(tmdbId, mediaType, season, epi
 - Cache metadata partagé canonique : `__nuvioTmdbMetadataCacheV1` avec entrée `{state:"ok",metadata:{external_ids:{imdb_id:"tt..."}}}`.
 - Timing d'un bridge host : after provider/Core bundle initialization and before getStreams invocation when supplied by the host.
 - Une clé/credential TMDB fournie par l'utilisateur n'est **jamais** une précondition de compatibilité NiakVIO.
-- Un secret TMDB ne doit pas être projeté dans le JavaScript provider uniquement pour reconstruire l'identité IMDb.
+- Un secret TMDB ne doit jamais être embarqué dans les octets publiés du provider uniquement pour reconstruire l'identité IMDb ; une capacité runtime officielle reste distincte du code provider.
 - Un client peut fournir une capacité équivalente d'hydratation, mais la disponibilité d'un seul TMDB ID ne permet jamais de conclure que l'identité dual-ID est disponible.
 
 ## Révisions auditées
@@ -77,8 +77,8 @@ Le paramètre positionnel `tmdbId` de `getStreams(tmdbId, mediaType, season, epi
 - **Android et Android TV forcent `Proxy.NO_PROXY`; Desktop ne le force pas.** C'est une différence de transport silencieuse : un provider peut attraper une erreur réseau et retourner `[]` sans exception JavaScript visible.
 - **Desktop utilise un bridge `__native_fetch` asynchrone**, alors que Mobile et TV appellent leur pont natif de manière bloquante derrière l'API JavaScript `fetch`.
 - **iOS utilise Ktor/Darwin**, contrairement à l'OkHttp d'Android, Desktop et TV. Les comportements réseau propres à la plateforme doivent donc rester audités séparément.
-- **TV injecte `TMDB_API_KEY` dans le runtime plugin; Mobile/Desktop ne l'exposent pas comme global runtime.** TV dispose donc actuellement d'une capacité équivalente d'hydratation TMDB→metadata/external_ids→IMDb ; Mobile/Desktop ont un gap host-side documenté. Les providers partagés ne doivent toutefois jamais dépendre de `TMDB_API_KEY`.
-- **Le cache `__nuvioTmdbMetadataCacheV1` est initialisé par Core pendant l'évaluation du bundle et `__nuvioMediaContext` est réécrit pendant la résolution.** Un bridge host dual-ID doit donc alimenter le contrat canonique après l'initialisation Core et avant `getStreams`, sinon son identité peut être écrasée avant le provider.
+- **Les trois familles officielles exposent désormais une capacité runtime `TMDB_API_KEY`.** TV l'injecte depuis BuildConfig ; Mobile/Desktop passent par `__get_tmdb_api_key` → `TmdbSettingsRepository.effectiveApiKey()` avec fallback build. NiakVIO Core peut l'utiliser pour hydrater son cache TMDB/IMDb, mais les providers partagés ne doivent jamais embarquer ni exiger directement une credential.
+- **Le cache `__nuvioTmdbMetadataCacheV1` est initialisé par Core pendant l'évaluation du bundle et `__nuvioMediaContext` est réécrit pendant la résolution.** L'hydratation courante doit donc se faire dans cette frontière Core à partir d'une capacité runtime auditée (ou d'un contexte host canonique futur), avant que le provider consomme l'identité.
 - **Les six clients conservent désormais les sous-titres retournés par le provider.** TV a ajouté `LocalScraperResult.subtitles` depuis l'audit précédent.
 - **Mobile/Desktop ne conservent pas `description` depuis le JSON provider** : leur `StreamItem.description` est reconstruit depuis `quality + size + language`. TV projette également `Stream.description` depuis `LocalScraperResult.size`. NiakVIO utilise donc `size` comme tunnel de description technique complète.
 - **Mobile/Desktop privilégient `name` à `title` pour le label plugin.** NiakVIO doit donc écrire `Provider - Qualité` dans les deux champs ; TV conserve les deux et évite de dupliquer la qualité lorsqu'elle est déjà présente.
