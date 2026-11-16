@@ -228,8 +228,12 @@ jobs:
         env:
           GLOBALPING_API_TOKEN: ${{ secrets.GLOBALPING_API_TOKEN }}
         run: |
+          python scripts/generate_hub46_manifest.py \
+            --source manifest.json \
+            --vf-source vf/manifest.json \
+            --output "$RUNNER_TEMP/domain-observation-manifest.json"
           node scripts/provider_dns_preflight.mjs \
-            --manifest manifest.json \
+            --manifest "$RUNNER_TEMP/domain-observation-manifest.json" \
             --providers "$TARGET_PROVIDERS" \
             --hub-report health-output/provider-hub-report.json \
             --config domain-observation-config.json \
