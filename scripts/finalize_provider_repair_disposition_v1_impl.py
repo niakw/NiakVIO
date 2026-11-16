@@ -21,10 +21,11 @@ from collections import Counter, defaultdict
 from pathlib import Path
 from typing import Any
 
-from current_provider_scope import active_provider_ids, disabled_provider_ids, visible_provider_ids
+from current_provider_scope import projection_active_provider_ids, projection_visible_provider_ids
 
 ROOT = Path(__file__).resolve().parents[1]
 MANIFEST = ROOT / "manifest.json"
+CATALOG = ROOT / "provider_catalog.json"
 OVERRIDES = ROOT / "provider-overrides.json"
 KNOWLEDGE = ROOT / "automation" / "provider-v3-static-knowledge.json"
 LOCKS = ROOT / "automation" / "provider-live-baseline-locks.json"
@@ -46,6 +47,39 @@ def load(path: Path, default: Any | None = None) -> Any:
 def write(path: Path, value: Any) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(value, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+
+
+def publication_rows(
+    manifest: dict[str, Any],
+    catalog: dict[str, Any] | None,
+) -> dict[str, dict[str, Any]]:
+    """Mutable current catalogue rows without leaking France-only into Global."""
+    rows: dict[str, dict[str, Any]] = {}
+    for row in manifest.get("scrapers") or []:
+        if not isinstance(row, dict):
+            raise SystemExit("manifest provider row must be an object")
+        provider = cid(row.get("id"))
+        if not provider or provider in rows:
+            raise SystemExit(f"manifest provider ids must be unique and non-empty: {provider!r}")
+        rows[provider] = row
+
+    if isinstance(catalog, dict):
+        for record in catalog.get("providers") or []:
+            if not isinstance(record, dict):
+                continue
+            scraper = record.get("scraper")
+            projections = record.get("projections")
+            if not isinstance(scraper, dict) or not isinstance(projections, dict):
+                continue
+            if projections.get("general") is not False or projections.get("vf") is not True:
+                continue
+            provider = cid(record.get("canonicalId") or scraper.get("id"))
+            if not provider:
+                raise SystemExit("France-only catalogue row has no provider id")
+            if provider in rows:
+                raise SystemExit(f"{provider}: France-only identity collides with Global manifest")
+            rows[provider] = scraper
+    return rows
 
 
 def cid(value: object) -> str:
@@ -195,6 +229,8 @@ def main() -> int:
     args = parser.parse_args()
 
     manifest = load(args.manifest)
+    repository_scope = args.manifest.resolve() == MANIFEST.resolve()
+    catalog = load(CATALOG) if repository_scope else None
     overrides = load(args.overrides)
     knowledge = load(args.knowledge)
     locks = load(args.locks, {"providers": {}})
@@ -202,15 +238,23 @@ def main() -> int:
     quick = load(args.quick_yield)
     hub_matrix = load(args.hub_matrix)
     matrix_ids = {cid(row.get("manifestId")) for row in hub_matrix.get("rows") or [] if isinstance(row, dict) and cid(row.get("manifestId"))}
-    rows = [row for row in manifest.get("scrapers") or [] if isinstance(row, dict)]
-    manifest_rows = {cid(row.get("id")): row for row in rows if cid(row.get("id"))}
-    if len(manifest_rows) != len(rows):
-        raise SystemExit("manifest provider ids must be unique and non-empty")
-    active_ids = active_provider_ids()
-    disabled_ids = disabled_provider_ids()
-    visible_ids = visible_provider_ids()
+    manifest_rows = publication_rows(manifest, catalog)
+    if repository_scope:
+        active_ids = projection_active_provider_ids()
+        visible_ids = projection_visible_provider_ids()
+    else:
+        visible_ids = set(manifest_rows)
+        active_ids = {
+            provider for provider, row in manifest_rows.items()
+            if row.get("enabled") is not False
+        }
+    disabled_ids = visible_ids - active_ids
     if set(manifest_rows) != visible_ids:
-        raise SystemExit("manifest/folder identity mismatch before repair disposition")
+        raise SystemExit(
+            "Global+France publication identity mismatch before repair disposition "
+            f"missing={sorted(visible_ids-set(manifest_rows))} "
+            f"extra={sorted(set(manifest_rows)-visible_ids)}"
+        )
     if matrix_ids != active_ids:
         print(f"PROVIDER_REPAIR_DISPOSITION_MATRIX_STALE matrix={len(matrix_ids)} active={len(active_ids)}")
 
@@ -365,6 +409,10 @@ def main() -> int:
     }
 
     write(args.manifest, manifest)
+    if repository_scope and catalog is not None:
+        write(CATALOG, catalog)
+        from sync_manifest_projection_rows import sync as sync_manifest_projections
+        sync_manifest_projections(check=False)
     write(args.overrides, overrides)
     write(args.knowledge, knowledge)
     write(args.output, summary)
