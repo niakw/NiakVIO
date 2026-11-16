@@ -36,7 +36,6 @@ PARITY_REPORT = ROOT / "automation/provider-repair-batch-parity.json"
 OUT_DEFAULT = ROOT / "automation/provider-repair-batch-quarantine.json"
 RUNNER = ROOT / "scripts/run_provider_repair_fast_targeted_v20.py"
 PARITY = ROOT / "scripts/run_provider_upstream_parity_v3.py"
-DEFAULT_SCOPE = "automation/evidence/hub-lab-matrix-46.json"
 
 
 def cid(value: object) -> str:
@@ -146,18 +145,19 @@ def run_parity(
     workers: int,
     timeout: int,
     seed: str,
-    scope_matrix: str,
+    scope_matrix: str | None,
 ) -> tuple[int, dict[str, Any]]:
     cmd = [
         sys.executable,
         str(PARITY),
-        "--scope-matrix", scope_matrix,
         "--samples-per-lane", str(samples),
         "--workers", str(workers),
         "--timeout", str(timeout),
         "--seed", seed,
         "--out", str(PARITY_REPORT.relative_to(ROOT)),
     ]
+    if scope_matrix:
+        cmd.extend(["--scope-matrix", scope_matrix])
     for provider in providers:
         cmd.extend(["--provider", provider])
     print(
@@ -196,7 +196,7 @@ def main() -> int:
     parser.add_argument("--parity-workers", type=int, default=12)
     parser.add_argument("--parity-timeout", type=int, default=25)
     parser.add_argument("--parity-seed", default="20260913-batch-quarantine")
-    parser.add_argument("--scope-matrix", default=DEFAULT_SCOPE)
+    parser.add_argument("--scope-matrix", default=None, help="Optional explicit parity subset; omitted means current active Global+France union.")
     parser.add_argument("--output", default=str(OUT_DEFAULT.relative_to(ROOT)))
     parser.add_argument("--max-rounds", type=int, default=0)
     args = parser.parse_args()
@@ -282,7 +282,7 @@ def main() -> int:
             workers=max(1, min(16, int(args.parity_workers))),
             timeout=max(5, min(60, int(args.parity_timeout))),
             seed=str(args.parity_seed),
-            scope_matrix=str(args.scope_matrix),
+            scope_matrix=str(args.scope_matrix) if args.scope_matrix else None,
         )
         if parity_rc != 0 or not parity_report:
             round_row["parityReturnCode"] = parity_rc
