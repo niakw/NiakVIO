@@ -1,3 +1,7 @@
+## 2026-11-16 — Repair activity metadata is monotonic across source-pinned census publication
+
+A source-pinned sharded census may finish after a newer canonical Repair/FORCE run has already persisted on `main`. Provider evidence from the source-pinned census remains valid, but its display/control-plane `lastRepairAttempt` snapshot is not allowed to move backwards. The persistence phase now compares numeric GitHub run IDs after rebasing on current `origin/main` and carries forward a strictly newer durable Repair attempt before publishing the census. Ambiguous non-numeric IDs are never guessed. This preserves Brain execution history without promoting provider proof, changing repair eligibility, or fabricating playback evidence.
+
 ## 2026-11-16 — Materialization identity presence is insufficient; exact current bytes own the ledger
 
 The Global+France materialization ledger is executable authority and must match the current content-addressed bundle for every active identity. A row with the right provider ID but stale `file`, `sha256` or `providerDataSha256` is invalid authority, not harmless history. Reconciliation therefore has two operations: recover a missing active identity, or rebind an existing stale identity from the exact current NiakVIO-owned CONFIG bytes. Final release publication runs the complete union rebind after both Global and France-only minimizers reach fixed point. Historical diagnostics may be preserved, but they cannot override exact current byte identity.
