@@ -279,5 +279,5 @@ jobs:
               for workflow, run_id, conclusion in failures:
                   print(f'RUN_FAILED workflow={workflow} id={run_id} conclusion={conclusion}')
               raise SystemExit(1)
-          print('RELEASE_CANDIDATE_VALIDATION_GREEN providers=46 historical=50 platforms=5 verify=quick security=codeql+external')
+          print('RELEASE_CANDIDATE_VALIDATION_GREEN providers=dynamic-projection-union historical=50 platforms=5 verify=quick security=codeql+external')
           PY
