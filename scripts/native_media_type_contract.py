@@ -124,12 +124,14 @@ def provider_runtime_media_type(
     category: Any = None,
     metadata: dict[str, Any] | None = None,
 ) -> str:
-    canonical = canonical_media_type(value, category=category, metadata=metadata)
-    return "tv" if canonical == "anime" else canonical
+    # Official Nuvio Mobile/Desktop and current TV pass canonical anime through
+    # the positional plugin ABI. The additional "tv" manifest capability is a
+    # launch/selection compatibility alias only, never the canonical anime
+    # request value.
+    return canonical_media_type(value, category=category, metadata=metadata)
 
 
 def fixture_runtime_media_type(fixture: dict[str, Any]) -> str:
-    # Provider selection still consumes fixture_media_type() so anime-only
-    # providers remain eligible. The Nuvio plugin ABI itself is movie|tv.
-    logical = fixture_media_type(fixture)
-    return "tv" if logical == "anime" else logical
+    # Native evidence must execute the same canonical request value that the
+    # official clients pass to getStreams. Anime therefore remains "anime".
+    return fixture_media_type(fixture)
