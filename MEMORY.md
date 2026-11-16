@@ -1,3 +1,10 @@
+## 2026-11-16 — Fast Brain targeted stage no longer drops France-only providers
+
+- While validating the representative cohort `frenchstream`, `hianime`, `movy`, `stigstream`, source inspection found a generic Brain pipeline mismatch before interpreting the run: the census/repair queue is Global+France aware, but `scripts/stage_published.py` iterated only Global `manifest.json`. Three of the four representatives are France-only, so they could be selected and then silently disappear from the exact-byte stage; the old targeted path still returned exit 0 when candidate count was zero.
+- Commit `ec0bb61f` makes targeted staging resolve the same Global+France executable projection via the existing published-stage union resolver. Explicit targets must exist, be active Provider v3, normalize to repository `providers/` bytes, and each requested ID must actually materialize or the stage fails closed. Unfiltered availability staging is intentionally unchanged.
+- Regression `tests/provider_brain_targeted_projection_union_test.py` covers Global + France-only selection, path normalization, missing target rejection and disabled France-only rejection. The test is wired into Fast Repair and Workflow Gate (`81cce7f1`, `a7115d70`).
+- The earlier four-family run triggered from `61725a15` is not valid evidence for this correction because it is source-pinned before `ec0bb61f`. A fresh four-family Fast Repair must run on the corrected staging SHA and prove Brain generation/application/materialization/replay independently.
+
 ## 2026-11-16 — Prevent stale census publication from erasing newer Repair history
 
 - Current census at `955d58fa60371f85d1cd09c56699f43c96e739b8` exposed a persistence regression: `lastRepairAttempt` had fallen back to historical run `43580198030` even though run `43787089404` had already been persisted by commit `9a6201a9`. The later source-pinned sharded census reset to current `origin/main` before publication but then copied its older `/tmp/provider-census-status.json` wholesale, erasing the newer Repair activity metadata.
