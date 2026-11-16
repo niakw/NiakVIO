@@ -62,4 +62,6 @@ assert "provider_count>120" in sharded
 assert "scripts/nuvio_tv_probe_tmdb_ci.cjs" in mono
 assert "scripts/nuvio_tv_probe_tmdb_ci.cjs" in sharded
 assert "ThreadPoolExecutor" not in mono
+assert "tmp/provider-max-repair-proof-20260919" not in mono
+assert "Persist structured Provider CONFIG drifts on repair branch" not in mono
 print("Provider targeted recovery workflow size routing passed")
