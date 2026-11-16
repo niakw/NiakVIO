@@ -1074,7 +1074,7 @@
       "routeTemplates": [
         "/?s={query}"
       ],
-      "status": "NO PROOF",
+      "status": "PROVIDER NETWORK BLOCKED",
       "strategy": "mixed_embed_resolver"
     },
     "7movies": {
@@ -1298,7 +1298,7 @@
     "aniflix-uno": {
       "domainMemory": true,
       "evidenceDepth": [
-        "anime=none"
+        "anime=lookup_only"
       ],
       "hasApiRecipe": false,
       "hasProviderValuePlan": false,
@@ -1325,7 +1325,7 @@
         "/?s={query}",
         "/?q={query}"
       ],
-      "status": "HARNESS/ENV BLOCKED",
+      "status": "NO PROOF",
       "strategy": "html_scraper"
     },
     "anikototv": {
@@ -2571,7 +2571,7 @@
     "animevostfr": {
       "domainMemory": true,
       "evidenceDepth": [
-        "anime=lookup_only"
+        "anime=chain_reached"
       ],
       "hasApiRecipe": false,
       "hasProviderValuePlan": false,
@@ -3228,7 +3228,7 @@
     "cinematheque-de-bretagne": {
       "domainMemory": true,
       "evidenceDepth": [
-        "movie=chain_reached"
+        "movie=lookup_only"
       ],
       "hasApiRecipe": false,
       "hasProviderValuePlan": false,
@@ -3255,7 +3255,7 @@
         "/?s={query}",
         "/index.php?do=search&subaction=search&story={query}"
       ],
-      "status": "CHAIN REACHED",
+      "status": "NO PROOF",
       "strategy": "mixed_embed_resolver"
     },
     "cinestream": {
@@ -6512,9 +6512,9 @@
     "moviebite": {
       "domainMemory": true,
       "evidenceDepth": [
-        "anime=lookup_only",
-        "movie=lookup_only",
-        "tv=lookup_only"
+        "anime=none",
+        "movie=none",
+        "tv=none"
       ],
       "hasApiRecipe": false,
       "hasProviderValuePlan": false,
@@ -6544,14 +6544,14 @@
         "/search/{slug}",
         "/recherche/{slug}"
       ],
-      "status": "NO PROOF",
+      "status": "PROVIDER NETWORK BLOCKED",
       "strategy": "mixed_embed_resolver"
     },
     "moviebox": {
       "domainMemory": true,
       "evidenceDepth": [
-        "movie=lookup_only",
-        "tv=lookup_only"
+        "movie=none",
+        "tv=none"
       ],
       "hasApiRecipe": false,
       "hasProviderValuePlan": false,
@@ -9314,7 +9314,7 @@
       "routeTemplates": [
         "/?s={query}"
       ],
-      "status": "NO PROOF",
+      "status": "HARNESS MISMATCH",
       "strategy": "mixed_embed_resolver"
     },
     "stigstream": {
@@ -10868,9 +10868,9 @@
     "watchott": {
       "domainMemory": true,
       "evidenceDepth": [
-        "anime=lookup_only",
-        "movie=lookup_only",
-        "tv=lookup_only"
+        "anime=none",
+        "movie=none",
+        "tv=none"
       ],
       "hasApiRecipe": false,
       "hasProviderValuePlan": false,
@@ -10999,8 +10999,8 @@
     "wookafr": {
       "domainMemory": true,
       "evidenceDepth": [
-        "movie=lookup_only",
-        "tv=chain_reached"
+        "movie=chain_reached",
+        "tv=lookup_only"
       ],
       "hasApiRecipe": false,
       "hasProviderValuePlan": false,
@@ -11837,8 +11837,8 @@
     "requiresDeepValidation": true
   },
   "schemaVersion": 2,
-  "sourceRunId": "43794096301",
-  "sourceSha": "280a566b2afb54ec9950c91f058bdfd4677129ef",
+  "sourceRunId": "43855893372",
+  "sourceSha": "75f010ed8be65cbfd0ae6815ae46d532a27e8aed",
   "strategyPatterns": {
     "api_stream_resolver": {
       "commonRequestRecipes": [],
@@ -11856,12 +11856,12 @@
         },
         {
           "providerSupport": 1,
-          "role": "other",
+          "role": "detail",
           "supportRatio": 0.5
         },
         {
           "providerSupport": 1,
-          "role": "detail",
+          "role": "other",
           "supportRatio": 0.5
         },
         {
@@ -11890,11 +11890,6 @@
       "routeFamilies": [
         {
           "providerSupport": 2,
-          "role": "search",
-          "supportRatio": 0.6667
-        },
-        {
-          "providerSupport": 2,
           "role": "detail",
           "supportRatio": 0.6667
         },
@@ -11904,13 +11899,18 @@
           "supportRatio": 0.6667
         },
         {
-          "providerSupport": 1,
-          "role": "episode",
-          "supportRatio": 0.3333
+          "providerSupport": 2,
+          "role": "search",
+          "supportRatio": 0.6667
         },
         {
           "providerSupport": 1,
           "role": "other",
+          "supportRatio": 0.3333
+        },
+        {
+          "providerSupport": 1,
+          "role": "episode",
           "supportRatio": 0.3333
         },
         {
@@ -11997,12 +11997,12 @@
         },
         {
           "providerSupport": 1,
-          "role": "search",
+          "role": "api",
           "supportRatio": 1.0
         },
         {
           "providerSupport": 1,
-          "role": "api",
+          "role": "search",
           "supportRatio": 1.0
         }
       ]
@@ -12017,12 +12017,12 @@
       "routeFamilies": [
         {
           "providerSupport": 1,
-          "role": "other",
+          "role": "source",
           "supportRatio": 1.0
         },
         {
           "providerSupport": 1,
-          "role": "source",
+          "role": "other",
           "supportRatio": 1.0
         }
       ]
