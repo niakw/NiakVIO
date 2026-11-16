@@ -1,3 +1,12 @@
+## 2026-11-16 — Native acceptance transport restored to the full Global+France projection union
+
+- NiakVIO-first métier audit found a production-significant scope drift: `manifest-hub46.json` and `native-hub46/manifest.json` still contained only 9 active providers while current authority exposes 45 active Global and 38 active VF rows = **75 unique active Global+France identities**. TV, Android, iOS and Desktop native workflows consume `native-hub46/manifest.json`, so this stale transport could make native acceptance appear complete while exercising only a small historical subset.
+- `99ec9039` regenerated `manifest-hub46.json` from the exact current Global+France active union. `1a3f46cf` rebuilt the immutable native transport with all 75 rows pinned to provider-source SHA `99ec9039d3ae270054fe93d20cdc53c08350a224`. No provider code, DATA, route, activation or proof was modified.
+- `fa94c107` changed the declared-provider native matrix regression itself from Global-only `active_provider_ids()` / `manifest.json` to `projection_active_provider_ids()` / `manifest-hub46.json`, so France-only providers cannot disappear from the regression denominator.
+- The old doc-migration helper still encoded 46 as current policy. `ecf30731` retires those frozen 44/46/96 statements in generated documentation, and `3b776026` aligns the media-type transport contract with dynamic projection-union authority.
+- Release trigger `5328e39e` requests a fresh canonical finalizer from the corrected 75-provider transport. It must still prove current Nuvio ABI, projection parity, Provider-v3 fixed point, reverse byte-identical rebuild, regenerated integrity inventories and then five independent current-client Native Lab verdicts. Until those complete, NiakVIO métier structure is improved but not certified.
+- Brain work remains intentionally secondary; earlier Repair outcomes using the 9-provider native transport cannot certify the corrected NiakVIO base.
+
 ## 2026-11-16 — Release transaction now owns Nuvio ABI, reverse rebuild and integrity seal
 
 - The NiakVIO-first métier audit exposed a release-integrity gap after the current Nuvio contract realignment: `SHA256SUMS.json`, `FILE-HASHES.json` and `PATCH-SHA256SUMS.txt` cover durable runtime authority, but the canonical finalizer did not itself gate the current Nuvio ABI or execute the reverse byte-identical Provider-v3 proof before resealing those inventories.
