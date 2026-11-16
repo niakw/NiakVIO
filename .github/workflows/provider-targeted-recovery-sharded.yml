@@ -54,12 +54,13 @@ jobs:
           set -euo pipefail
           python tests/provider_targeted_recovery_sharding_test.py
           python - <<'PY' >> "$GITHUB_OUTPUT"
-          import json
+          import json,sys
           from pathlib import Path
-          manifest=json.loads(Path("manifest.json").read_text(encoding="utf-8"))
+          sys.path.insert(0,str(Path("scripts").resolve()))
+          from current_provider_scope import projection_runtime_visible_provider_count
           status_path=Path("automation/provider-census-status.json")
           status=json.loads(status_path.read_text(encoding="utf-8")) if status_path.is_file() else {}
-          provider_count=len([x for x in manifest.get("scrapers") or [] if isinstance(x,dict)])
+          provider_count=projection_runtime_visible_provider_count()
           unresolved=[
               x for x in status.get("providers") or []
               if isinstance(x,dict) and str(x.get("status") or "") not in {"FULL OK","PARTIAL OK"}
