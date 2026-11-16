@@ -42,9 +42,10 @@ from apply_provider_overrides import apply_overrides  # noqa: E402
 from provider_patch_blocks import owned_span, validate_managed_fixes  # noqa: E402
 from provider_byte_stability import verify_bytes  # noqa: E402
 from provider_v3_minimizer import minimize_text, validate_transform  # noqa: E402
-from current_provider_scope import active_provider_ids  # noqa: E402
+from current_provider_scope import projection_active_provider_ids  # noqa: E402
 
 DEFAULT_SOURCE_MANIFEST = ROOT / "manifest.json"
+DEFAULT_SOURCE_CATALOG = ROOT / "provider_catalog.json"
 DEFAULT_OVERRIDES = ROOT / "provider-overrides.json"
 DEFAULT_STATIC_KNOWLEDGE = ROOT / "automation" / "provider-v3-static-knowledge.json"
 DEFAULT_OUT = ROOT / "providers"
@@ -587,6 +588,67 @@ def base_version(value: object) -> str:
         if token in raw:
             return raw.split(token, 1)[0]
     return raw
+
+
+def active_materialization_rows(
+    manifest: dict[str, Any],
+    catalog: dict[str, Any] | None,
+    *,
+    validate_repository_scope: bool,
+) -> tuple[list[dict[str, Any]], dict[str, tuple[str, dict[str, Any]]]]:
+    """Build the active Global+France materialization input without leaking projections.
+
+    Global rows are materialized directly from manifest.json. Strict France-only
+    rows are copied from provider_catalog.json so transport projection can be
+    applied to the working copy without polluting the catalogue's semantic
+    supportedTypes. Only filename/version are written back to the France-only
+    catalogue authority after bytes are produced.
+    """
+    rows_by_id: dict[str, dict[str, Any]] = {}
+    authority: dict[str, tuple[str, dict[str, Any]]] = {}
+
+    for row in manifest.get("scrapers") or []:
+        if not isinstance(row, dict) or row.get("enabled") is False:
+            continue
+        provider_id = canonical_id(str(row.get("id") or ""))
+        if not provider_id or provider_id in rows_by_id:
+            raise ValueError(f"invalid/duplicate active Global provider id: {provider_id!r}")
+        rows_by_id[provider_id] = row
+        authority[provider_id] = ("global-manifest", row)
+
+    if isinstance(catalog, dict):
+        for record in catalog.get("providers") or []:
+            if not isinstance(record, dict):
+                continue
+            scraper = record.get("scraper")
+            projections = record.get("projections")
+            if not isinstance(scraper, dict) or not isinstance(projections, dict):
+                continue
+            if projections.get("general") is not False or projections.get("vf") is not True:
+                continue
+            if scraper.get("enabled") is False:
+                continue
+            provider_id = canonical_id(str(record.get("canonicalId") or scraper.get("id") or ""))
+            if not provider_id:
+                raise ValueError("France-only catalogue row has no provider id")
+            if provider_id in rows_by_id:
+                raise ValueError(f"{provider_id}: France-only identity collides with Global")
+            # Materialization mutates supportedTypes into the Nuvio transport
+            # surface. Keep that mutation off the canonical semantic catalogue.
+            rows_by_id[provider_id] = dict(scraper)
+            authority[provider_id] = ("france-only-catalog", scraper)
+
+    active_ids = set(rows_by_id)
+    if validate_repository_scope:
+        expected = set(projection_active_provider_ids())
+        if active_ids != expected:
+            raise ValueError(
+                "Global+France active materialization scope mismatch "
+                f"missing={sorted(expected-active_ids)} extra={sorted(active_ids-expected)}"
+            )
+
+    rows = [rows_by_id[provider_id] for provider_id in sorted(active_ids)]
+    return rows, authority
 
 
 def strict_projection(
