@@ -118,10 +118,11 @@ assert "NIAKVIO_TARGET_FIXTURES=$ROTATED_FIXTURES" in tv_reader
 assert "NIAKVIO_TV_PRIORITY_APPEND: \"1\"" in tv_reader
 assert "NIAKVIO_TV_ROUTE_TIMEOUT_MINUTES: \"45\"" in tv_reader
 assert 'NIAKVIO_ANDROID_PROVIDER_TIMEOUT_MS: "25000"' in tv_reader
-assert "--streams all" in tv_reader
 assert "NIAKVIO_PRIMARY_STREAM_SCOPE: all" in tv_reader
 assert "NIAKVIO_REGRESSION_STREAM_SCOPE: all" in tv_reader
-assert "--streams all" in tv_reader.split("\n  mobile-android-reader:", 1)[0]
+assert '--streams "$STREAM_SCOPE"' in tv_suite
+assert 'STREAM_SCOPE="$PRIMARY_STREAM_SCOPE"' in tv_suite
+assert 'STREAM_SCOPE="$REGRESSION_STREAM_SCOPE"' in tv_suite
 assert "--streams all" in tv_reader.split("\n  mobile-android-reader:", 1)[1]
 assert "native-tv-full-${{ github.run_id }}" in tv_reader
 
