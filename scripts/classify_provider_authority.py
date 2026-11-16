@@ -31,6 +31,7 @@ ROOT = Path(__file__).resolve().parents[1]
 HUBS = ROOT / "provider-hubs.json"
 OVERRIDES = ROOT / "provider-overrides.json"
 MANIFEST = ROOT / "manifest.json"
+CATALOG = ROOT / "provider_catalog.json"
 HISTORY = ROOT / "provider-domain-history.json"
 OUTPUT = ROOT / "automation/provider-authority-status.json"
 CENSUS_STATUS = ROOT / "automation/provider-census-status.json"
@@ -57,6 +58,44 @@ def load(path: Path, default: Any) -> Any:
 def write(path: Path, value: Any) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(value, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+
+
+def publication_rows(
+    manifest: dict[str, Any],
+    catalog: dict[str, Any],
+) -> dict[str, tuple[dict[str, Any], str]]:
+    """Mutable current Global+France authority without projection leakage."""
+    rows: dict[str, tuple[dict[str, Any], str]] = {}
+    for row in manifest.get("scrapers") or []:
+        if not isinstance(row, dict):
+            raise RuntimeError("manifest provider row must be an object")
+        provider = cid(row.get("id"))
+        if not provider or provider in rows:
+            raise RuntimeError(f"Global manifest identity invalid/duplicate: {provider!r}")
+        rows[provider] = (row, "global")
+
+    if catalog:
+        if catalog.get("sourceOfTruth") is not True:
+            raise RuntimeError("provider_catalog.json must remain sourceOfTruth")
+        providers = catalog.get("providers")
+        if not isinstance(providers, list):
+            raise RuntimeError("provider_catalog.json providers must be a list")
+        for record in providers:
+            if not isinstance(record, dict):
+                continue
+            scraper = record.get("scraper")
+            projections = record.get("projections")
+            if not isinstance(scraper, dict) or not isinstance(projections, dict):
+                continue
+            if projections.get("general") is not False or projections.get("vf") is not True:
+                continue
+            provider = cid(record.get("canonicalId") or scraper.get("id"))
+            if not provider:
+                raise RuntimeError("France-only catalogue row has no provider identity")
+            if provider in rows:
+                raise RuntimeError(f"{provider}: France-only identity collides with Global")
+            rows[provider] = (scraper, "france")
+    return rows
 
 
 def cid(value: object) -> str:
@@ -563,6 +602,7 @@ def main() -> int:
     hubs = load(HUBS, {"providers": {}})
     overrides = load(OVERRIDES, {"provider_patches": {}})
     manifest = load(MANIFEST, {"scrapers": []})
+    catalog = load(CATALOG, {"sourceOfTruth": True, "providers": []})
     history = load(HISTORY, {"providers": {}})
     census = load(CENSUS_STATUS, {"providers": []})
     registries = hubs.setdefault("providers", {})
@@ -579,13 +619,11 @@ def main() -> int:
         if isinstance(row, dict) and cid(row.get("provider"))
     }
 
-    rows = [row for row in manifest.get("scrapers") or [] if isinstance(row, dict)]
+    scoped_rows = publication_rows(manifest, catalog)
     results: list[dict[str, Any]] = []
     disabled_now: list[str] = []
-    for manifest_row in rows:
-        provider = cid(manifest_row.get("id"))
-        if not provider:
-            continue
+    for provider in sorted(scoped_rows):
+        manifest_row, projection = scoped_rows[provider]
         registry = registries.get(provider) if isinstance(registries.get(provider), dict) else {}
         patch = patches.get(provider) if isinstance(patches.get(provider), dict) else {}
         hist = histories.get(provider) if isinstance(histories.get(provider), dict) else {}
@@ -603,7 +641,7 @@ def main() -> int:
         ):
             production_authorized, production_proof_authority = production_freshness.authorize(
                 manifest_row,
-                "global",
+                projection,
             )
         if manifest_row.get("enabled") is not False and not production_authorized:
             current_status = str((census_row or {}).get("status") or "")
@@ -646,6 +684,7 @@ def main() -> int:
             "bulkOnboardingPendingGetsTargetedProofWithoutRuntimeAuthority": True,
         },
         "providerCount": len(results),
+        "projectionScope": "Global+France visible union",
         "repairEligible": sorted(row["provider"] for row in results if row.get("repairEligible") is True),
         "repairBlocked": sorted(row["provider"] for row in results if row.get("repairEligible") is not True),
         "disabledNow": sorted(disabled_now),
@@ -655,6 +694,7 @@ def main() -> int:
     write(output, report)
     if args.apply_safe_disables:
         write(MANIFEST, manifest)
+        write(CATALOG, catalog)
         write(HUBS, hubs)
         write(OVERRIDES, overrides)
     print(
