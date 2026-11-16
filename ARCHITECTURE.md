@@ -355,7 +355,7 @@ Invariants :
 - les sous-titres gardent leurs headers propres et les headers du média restent distincts ;
 - une preuve NuvioMobile n'est pas une preuve NuvioDesktop ou NuvioTV : les cinq Labs restent indépendants.
 
-L'ancien `automation/platform-runtime-matrix.json` 5.20.27 est conservé uniquement comme **preuve historique**. Il n'a plus d'autorité sur le scope courant, `disabledPlatforms`, la quarantaine, Repair ou la publication. Toute nouvelle politique cross-platform autoritative doit provenir d'une observation de la release courante et des clients courants.
+Avant toute finalisation de release, `scripts/check_nuvio_client_upstreams.py` doit aussi revalider les **HEAD officiels courants**. Un drift contractuel ou sémantique non audité bloque la certification ; une vérification upstream réseau inconclusive bloque également le finalizer. La cohérence interne des SHA enregistrés dans NiakVIO n'est donc jamais suffisante à elle seule pour déclarer l'ABI courante.\n\nL'ancien `automation/platform-runtime-matrix.json` 5.20.27 est conservé uniquement comme **preuve historique**. Il n'a plus d'autorité sur le scope courant, `disabledPlatforms`, la quarantaine, Repair ou la publication. Toute nouvelle politique cross-platform autoritative doit provenir d'une observation de la release courante et des clients courants.
 
 Gates : `scripts/runtime_contract_gate.py`, `scripts/validate_platform_runtime_policy.py`, `tests/platform_runtime_projection_authority_test.py`, `tests/nuvio_portable_stream_result_contract_test.py`.
 
