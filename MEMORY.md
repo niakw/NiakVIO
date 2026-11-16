@@ -1,3 +1,9 @@
+## 2026-11-16 — Release finalizer dependency trigger completeness
+
+- The canonical finalizer calls `reconcile_active_provider_publication.py`, which delegates to `reconcile_targeted_provider_publication.py`. These executable transaction components were missing from the workflow's push-path dependency list, so changing publication authority could leave the finalizer unexercised on the exact new HEAD.
+- Add both reconcilers and their targeted/union regression tests to the finalizer trigger paths. This does not change provider bytes or acceptance logic; it ensures the complete release transaction is rerun whenever its authority-preservation code changes.
+- Fresh finalizer result is required before considering the Global+France ProviderBase authority fix complete.
+
 ## 2026-11-16 — Targeted publication preserves Global+France materialization authority
 
 - Exact source before change: `463c3da9f10951aed9da462bafec4785acc62578`. `reconcile_targeted_provider_publication.py` finalized requested Global providers and then filtered `provider-v3-materialization.json` through `active_provider_ids()`, which is the legacy Global execution scope. That silently removed France-only materialization rows after the earlier union reconstruction.
