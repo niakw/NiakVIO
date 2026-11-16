@@ -99,7 +99,7 @@ jobs:
           python scripts/sync_release_versions.py --manifest manifest.json --previous "$RUNNER_TEMP/manifest.before.json"
           python scripts/generate_hub46_manifest.py \
             --source manifest.json \
-            --matrix automation/evidence/hub-lab-matrix-46.json \
+            --vf-source vf/manifest.json \
             --output manifest-hub46.json
           python scripts/prune_unreferenced_providers.py
 
