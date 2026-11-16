@@ -24,7 +24,11 @@ on:
       - 'scripts/provider_engine_normalizer.py'
       - 'scripts/provider_byte_stability.py'
       - 'automation/provider-v3-static-knowledge.json'
+      - 'provider_catalog.json'
       - 'manifest.json'
+      - 'vf/manifest.json'
+      - 'scripts/current_provider_scope.py'
+      - 'scripts/classify_provider_authority.py'
       - 'scripts/render_provider_census_status.py'
       - 'scripts/update_provider_census_proof_history.py'
       - 'scripts/audit_provider_quick_yield.py'
@@ -66,7 +70,11 @@ on:
       - 'scripts/provider_engine_normalizer.py'
       - 'scripts/provider_byte_stability.py'
       - 'automation/provider-v3-static-knowledge.json'
+      - 'provider_catalog.json'
       - 'manifest.json'
+      - 'vf/manifest.json'
+      - 'scripts/current_provider_scope.py'
+      - 'scripts/classify_provider_authority.py'
       - 'scripts/probe_waf_browser_session.py'
       - 'tests/provider_waf_browser_session_test.py'
       - 'tests/allanime_site_runtime_contract_test.py'
@@ -111,9 +119,11 @@ jobs:
         run: |
           set -euo pipefail
           count="$(python - <<'PY'
-          import json
-          d=json.load(open("manifest.json", encoding="utf-8"))
-          print(len([x for x in d.get("scrapers") or [] if isinstance(x,dict)]))
+          import sys
+          from pathlib import Path
+          sys.path.insert(0, str(Path("scripts").resolve()))
+          from current_provider_scope import projection_runtime_visible_provider_count
+          print(projection_runtime_visible_provider_count())
           PY
           )"
           echo "provider_count=$count" >> "$GITHUB_OUTPUT"
@@ -121,22 +131,21 @@ jobs:
           use_sharded=false
           should_run=true
           projection_drift=0
-          if [ "$count" -gt 120 ]; then
-            use_sharded=true
-            should_run=false
-          else
-            python scripts/detect_provider_projection_drift.py               --output "$RUNNER_TEMP/provider-projection-drift-pre-census.json"
-            projection_drift="$(python - <<'PY'
+          python scripts/detect_provider_projection_drift.py \
+            --output "$RUNNER_TEMP/provider-projection-drift-pre-census.json"
+          projection_drift="$(python - <<'PY'
           import json, os
           from pathlib import Path
           p=Path(os.environ["RUNNER_TEMP"])/"provider-projection-drift-pre-census.json"
           d=json.loads(p.read_text(encoding="utf-8"))
           print(int(d.get("providerCount") or 0))
           PY
-            )"
-            if [ "$projection_drift" -gt 0 ]; then
-              should_run=false
-            fi
+          )"
+          if [ "$projection_drift" -gt 0 ]; then
+            should_run=false
+          elif [ "$count" -gt 120 ]; then
+            use_sharded=true
+            should_run=false
           fi
           if [ "$GITHUB_EVENT_NAME" = "push" ]; then
             case "$message" in
@@ -148,10 +157,19 @@ jobs:
           echo "use_sharded=$use_sharded" >> "$GITHUB_OUTPUT"
           echo "should_run=$should_run" >> "$GITHUB_OUTPUT"
           echo "projection_drift=$projection_drift" >> "$GITHUB_OUTPUT"
-          echo "FIELD_CENSUS_SCALE providers=$count use_sharded=$use_sharded should_run=$should_run projection_drift=$projection_drift"
+          echo "FIELD_CENSUS_SCALE providers=$count use_sharded=$use_sharded should_run=$should_run projection_drift=$projection_drift authority=projection-runtime-visible"
           if [ "$projection_drift" -gt 0 ] && [ "$GITHUB_EVENT_NAME" != "pull_request" ]; then
-            gh workflow run provider-projection-reconcile.yml               --repo "$GITHUB_REPOSITORY"               --ref main
+            gh workflow run provider-projection-reconcile.yml \
+              --repo "$GITHUB_REPOSITORY" \
+              --ref main
             echo "FIELD_CENSUS_PROJECTION_HANDOFF drift=$projection_drift workflow=provider-projection-reconcile.yml"
+          elif [ "$use_sharded" = "true" ] && [ "$GITHUB_EVENT_NAME" != "pull_request" ]; then
+            gh workflow run provider-census-sharded.yml \
+              --repo "$GITHUB_REPOSITORY" \
+              --ref main \
+              -f scope=unresolved \
+              -f persist=true
+            echo "FIELD_CENSUS_SHARDED_HANDOFF providers=$count workflow=provider-census-sharded.yml authority=projection-runtime-visible"
           fi
 
   census:
