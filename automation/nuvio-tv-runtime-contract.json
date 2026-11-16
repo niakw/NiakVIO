@@ -6,7 +6,7 @@
   "runtime_contract": "getStreams(tmdbId, mediaType, season, episode) plus global SCRAPER_ID, SCRAPER_SETTINGS and runtime TMDB_API_KEY",
   "source_repository": "NuvioMedia/NuvioTV",
   "source_branch": "dev",
-  "source_ref": "60eb9602a4276b7e98ea04381626e22cc82de0ed",
+  "source_ref": "2c853c1786743822c5ec7932e855529e0c731221",
   "runtime_source": "app/src/full/java/com/nuvio/tv/core/plugin/PluginRuntime.kt",
   "settings_source": "app/src/main/java/com/nuvio/tv/data/local/PluginDataStore.kt",
   "stream_repository_source": "app/src/main/java/com/nuvio/tv/data/repository/StreamRepositoryImpl.kt",
@@ -55,7 +55,7 @@
   "audit": {
     "date": "2026-11-16",
     "previous_ref": "23d1fe478e380860dae3eb41c8770533361a0cc5",
-    "audited_ref": "60eb9602a4276b7e98ea04381626e22cc82de0ed",
+    "audited_ref": "2c853c1786743822c5ec7932e855529e0c731221",
     "hard_contract_paths_changed": true,
     "plugin_runtime_positional_getstreams_unchanged": true,
     "provider_stream_repository_contract_unchanged": false,
@@ -68,10 +68,10 @@
       "TextEncoder/TextDecoder and WebAssembly remain absent from the current TV PluginRuntime"
     ],
     "runtime_reproof_required": true,
-    "runtime_reproof_reason": "Source ABI audit is current at 60eb9602a427; a fresh Android-TV Native Lab is still required to certify real current-client execution and playback."
+    "runtime_reproof_reason": "Source ABI audit is current at 2c853c178674; a fresh Android-TV Native Lab is still required to certify real current-client execution and playback."
   },
   "notes": [
-    "NuvioTV source contract re-audited on 2026-11-16 at 60eb9602a4276b7e98ea04381626e22cc82de0ed.",
+    "NuvioTV source contract re-audited on 2026-11-16 at 2c853c1786743822c5ec7932e855529e0c731221.",
     "NuvioTV provider compatibility is a distinct runtime family from Nuvio Mobile and Nuvio Desktop.",
     "The source_ref is the exact official NuvioTV commit most recently source-audited against this contract.",
     "Provider extraction uses positional getStreams and preserves returned URL/header material; main playback networking consumes behaviorHints/proxyHeaders.",
