@@ -2325,6 +2325,7 @@ async function _resolveApi(tmdbId, mediaType, season, episode) {
   }
   return _streams(streams, _searchBases()[0] || "");
 }
+/* NIAKVIO_PROVIDER_RUNTIME_PLAYER_COVERAGE_V27 */
 async function _resolveRuntimeApi(playerUrls, mediaType, tmdbId, season, episode) {
   const streams = [];
   for (const playerUrl of _uniq(playerUrls).slice(0, 3)) {
@@ -2345,14 +2346,15 @@ async function _resolveRuntimeApi(playerUrls, mediaType, tmdbId, season, episode
           if (direct.length) streams.push(..._streams(direct, row.referer));
         }
       } catch (_) {}
-      if (streams.length) break;
+      if (_dedupeStreamRows(streams).length >= 40) break;
     }
-    if (streams.length) break;
+    if (_dedupeStreamRows(streams).length >= 40) break;
   }
-  return streams.slice(0, 40);
+  return _dedupeStreamRows(streams).slice(0, 40);
 }
 async function _resolveKnownPlayer(tmdbId, mediaType, season, episode) {
   const known = _directPlayerUrls(tmdbId, mediaType).slice(0, 2);
+  const streams = [];
   for (const playerUrl of known) {
     try {
       const response = await _fetch(playerUrl);
@@ -2364,12 +2366,13 @@ async function _resolveKnownPlayer(tmdbId, mediaType, season, episode) {
         ..._extractUrls(text, responseUrl).filter(_playerLike)
       ]).slice(0, 3);
       const runtime = await _resolveRuntimeApi(candidates, mediaType, tmdbId, season, episode);
-      if (runtime.length) return runtime;
+      if (runtime.length) streams.push(...runtime);
       const direct = _extractUrls(text, responseUrl).filter(_directMedia);
-      if (direct.length) return _streams(direct, responseUrl).slice(0, 12);
+      if (direct.length) streams.push(..._streams(direct, responseUrl));
+      if (_dedupeStreamRows(streams).length >= 40) break;
     } catch (_) {}
   }
-  return [];
+  return _dedupeStreamRows(streams).slice(0, 40);
 }
 function _htmlVisibleText(value) {
   const source = _text(value);
