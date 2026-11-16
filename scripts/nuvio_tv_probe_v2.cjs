@@ -46,30 +46,70 @@ async function invokeLikeProviderWorker(provider, fixture, settings) {
   const data = { ...fixture, id: positional[0], tmdbId: positional[0],
     mediaType: positional[1], type: positional[1], category: fixture.category || positional[1],
     season: positional[2], episode: positional[3], settings };
-  const mode = inferInvocationMode(fn);
-  const attempts = mode === 'object'
-    ? [{ name: 'object', run: () => fn.call(provider, data) },
-       { name: 'positional_with_settings', run: () => fn.call(provider, ...positional, settings) }]
-    : [{ name: 'positional_with_settings', run: () => fn.call(provider, ...positional, settings) },
-       { name: 'object', run: () => fn.call(provider, data) }];
   const diagnostics = [];
   let lastEmpty = [];
+
+  // Exact official NuvioTV ABI: four positional arguments. SCRAPER_SETTINGS is
+  // already installed as a runtime global and must not be smuggled as arg #5.
+  const before = upstreamRequestCount;
+  try {
+    const value = await fn.call(provider, ...positional);
+    const rows = rowsFrom(value);
+    const reachedUpstream = upstreamRequestCount > before;
+    diagnostics.push({
+      name: 'nuvio_tv_positional',
+      count: rows.length,
+      reached_upstream: reachedUpstream,
+      authoritative: true,
+    });
+    if (rows.length || reachedUpstream) return { value, diagnostics, authoritative: true };
+    lastEmpty = value;
+  } catch (error) {
+    const reachedUpstream = upstreamRequestCount > before;
+    diagnostics.push({
+      name: 'nuvio_tv_positional',
+      error: String(error?.message || error).slice(0, 180),
+      reached_upstream: reachedUpstream,
+      authoritative: true,
+    });
+    if (reachedUpstream) throw error;
+  }
+
+  // Legacy/object conventions are diagnostic only. They can explain why a
+  // ProviderBase wrapper differs from the real TV runtime, but can never grant
+  // NuvioTV compatibility/playback authority.
+  const mode = inferInvocationMode(fn);
+  const attempts = mode === 'object'
+    ? [{ name: 'diagnostic_object', run: () => fn.call(provider, data) },
+       { name: 'diagnostic_positional_with_settings', run: () => fn.call(provider, ...positional, settings) }]
+    : [{ name: 'diagnostic_object', run: () => fn.call(provider, data) },
+       { name: 'diagnostic_positional_with_settings', run: () => fn.call(provider, ...positional, settings) }];
   for (const attempt of attempts) {
-    const before = upstreamRequestCount;
+    const fallbackBefore = upstreamRequestCount;
     try {
       const value = await attempt.run();
       const rows = rowsFrom(value);
-      const reachedUpstream = upstreamRequestCount > before;
-      diagnostics.push({ name: attempt.name, count: rows.length, reached_upstream: reachedUpstream });
-      if (rows.length || reachedUpstream) return { value, diagnostics };
+      const reachedUpstream = upstreamRequestCount > fallbackBefore;
+      diagnostics.push({
+        name: attempt.name,
+        count: rows.length,
+        reached_upstream: reachedUpstream,
+        authoritative: false,
+      });
+      if (rows.length || reachedUpstream) return { value, diagnostics, authoritative: false };
       lastEmpty = value;
     } catch (error) {
-      const reachedUpstream = upstreamRequestCount > before;
-      diagnostics.push({ name: attempt.name, error: String(error?.message || error).slice(0, 180), reached_upstream: reachedUpstream });
-      if (reachedUpstream) throw error;
+      const reachedUpstream = upstreamRequestCount > fallbackBefore;
+      diagnostics.push({
+        name: attempt.name,
+        error: String(error?.message || error).slice(0, 180),
+        reached_upstream: reachedUpstream,
+        authoritative: false,
+      });
+      if (reachedUpstream) return { value: [], diagnostics, authoritative: false };
     }
   }
-  return { value: lastEmpty, diagnostics };
+  return { value: lastEmpty, diagnostics, authoritative: false };
 }
 
 class MemoryStorage {
@@ -318,10 +358,12 @@ async function main() {
   let raw;
   let runtimeError = null;
   let invocationDiagnostics = [];
+  let invocationAuthoritative = false;
   try {
     const result = await invokeLikeProviderWorker(provider, fixture, settings);
     raw = result.value;
     invocationDiagnostics = result.diagnostics;
+    invocationAuthoritative = result.authoritative === true;
   } catch (error) {
     runtimeError = `${error?.name || 'Error'}: ${error?.message || error}`;
     raw = [];
@@ -360,9 +402,10 @@ async function main() {
     && identityContradictions.length === 0
     && identityUnknown.length === 0;
   process.stdout.write(JSON.stringify({
-    ok: !runtimeError && strictComplete,
+    ok: !runtimeError && invocationAuthoritative && strictComplete,
     duration_ms: Date.now() - started,
     runtime_error: runtimeError,
+    invocation_authoritative: invocationAuthoritative,
     invocation_diagnostics: invocationDiagnostics,
     raw_stream_count: rows.length,
     playable_stream_count: playable.length,
@@ -372,7 +415,7 @@ async function main() {
     identity_contradiction_count: identityContradictions.length,
     streams: inspected,
   }) + '\n');
-  process.exitCode = !runtimeError && strictComplete ? 0 : 2;
+  process.exitCode = !runtimeError && invocationAuthoritative && strictComplete ? 0 : 2;
 }
 
 main().catch((error) => {
