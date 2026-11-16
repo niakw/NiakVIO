@@ -13,6 +13,8 @@ import json
 from pathlib import Path
 from typing import Any
 
+from current_provider_scope import projection_active_provider_rows
+
 from normalize_provider_branding_pipeline import assert_contract as assert_branding_pipeline_contract
 from normalize_provider_branding_pipeline import normalize as normalize_branding_pipeline
 from normalize_stream_presentation_v12 import assert_contract as assert_stream_presentation_contract
@@ -20,7 +22,6 @@ from normalize_stream_presentation_v12 import normalize as normalize_stream_pres
 
 ROOT = Path(__file__).resolve().parents[1]
 OVERRIDES = ROOT / "provider-overrides.json"
-MANIFEST = ROOT / "manifest.json"
 PROVIDER_BRANDING = ROOT / "assets/providers/emojis.json"
 DESKTOP_COMPAT = ROOT / "scripts/publish_desktop_runtime_compat.py"
 APPLY_OVERRIDES = ROOT / "scripts/apply_provider_overrides.py"
@@ -126,23 +127,26 @@ def normalize_source_files(*, apply: bool) -> list[str]:
 
 
 def _assert_branding_inventory() -> None:
-    manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
     branding = json.loads(PROVIDER_BRANDING.read_text(encoding="utf-8"))
     if branding.get("policy") != "committed-provider-default-emoji":
         raise ValueError("provider branding policy must be committed-provider-default-emoji")
     rows = branding.get("providers")
     if not isinstance(rows, dict):
         raise ValueError("provider branding providers must be an object")
-    manifest_ids = {
-        str(row.get("id") or "").strip().casefold()
-        for row in (manifest.get("scrapers") or [])
+    projection_ids = {
+        str(row.get("id") or "").strip().casefold().replace("_", "-")
+        for row in projection_active_provider_rows()
         if isinstance(row, dict) and str(row.get("id") or "").strip()
     }
-    branding_ids = {str(value).strip().casefold() for value in rows}
-    missing = sorted(manifest_ids - branding_ids)
+    branding_ids = {
+        str(value).strip().casefold().replace("_", "-")
+        for value in rows
+        if str(value).strip()
+    }
+    missing = sorted(projection_ids - branding_ids)
     if missing:
         raise ValueError(
-            "provider branding coverage mismatch: "
+            "provider branding Global+France coverage mismatch: "
             f"missing={','.join(missing)}"
         )
     for provider_id, row in rows.items():
