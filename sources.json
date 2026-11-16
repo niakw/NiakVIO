@@ -1,12 +1,11 @@
 {
-  "schema_version": 68,
+  "schema_version": 69,
   "repository": {
     "name": "NiakVIO",
     "manifest_version": "5.21.146",
     "description": "NiakVIO-owned provider catalogue and routing policy. ProviderBase, structured DATA, owned Lego, official address discovery and validated runtime observations are the operational sources of truth. External provider repositories are not required for ordinary reconstruction or playback."
   },
   "selection_policy": {
-    "catalogue_provider_count": 96,
     "provider_identity": "case-insensitive canonical provider id",
     "include_disabled_providers_in_structural_validation": true,
     "include_unconfirmed_providers_disabled": true,
@@ -21,11 +20,6 @@
     "minimum_healthy_fixtures": 1,
     "publish_unconfirmed_providers_disabled": true,
     "minimum_distinct_hosts": 1,
-    "minimum_effective_height": 720,
-    "accepted_languages": [
-      "fr",
-      "en"
-    ],
     "minimum_consecutive_deep_passes": 1,
     "quick_checks_are_report_only": true,
     "deep_checks_required_for_manifest_publication": true,
@@ -36,7 +30,7 @@
     "inconclusive_checks_do_not_count_as_confirmed_failure": true,
     "generic_inconclusive_new_providers_remain_disabled": true,
     "previous_strict_validation_has_finite_inconclusive_grace": true,
-    "runtime_check": "one representative provider request and at most one playable stream",
+    "runtime_check": "bounded full declared reader/source/quality enumeration up to 40 playback identities; positive proof remains per validated playable identity",
     "server_accessibility": "any HTTP response from a non-infrastructure provider host; DNS/connection/timeout failures remain inaccessible",
     "metadata_curation": "NiakVIO provider metadata and durable recognition DATA are authoritative; external duplicate declarations are not runtime inputs",
     "minimum_manifest_curation_score": 5,
@@ -72,7 +66,15 @@
     "duplicate_policy": "reject later duplicate DATA rows once a canonical NiakVIO provider id is materialized",
     "external_provider_repository_required": false,
     "external_provider_code_executed": false,
-    "route_authority": "NiakVIO durable DATA plus validated NiakVIO recognition and runtime observations"
+    "route_authority": "NiakVIO durable DATA plus validated NiakVIO recognition and runtime observations",
+    "catalogue_scope_authority": "scripts/current_provider_scope.py:projection_visible_provider_ids",
+    "executable_scope_authority": "scripts/current_provider_scope.py:projection_active_provider_ids",
+    "catalogue_cardinality_policy": "derived-never-frozen",
+    "stream_multiplicity_policy": "coverage-before-final-cap",
+    "stream_dedupe_identity": "url+required_request_headers",
+    "first_playable_stream_ends_discovery": false,
+    "minimum_effective_height_authority": "health-config.json:activation.minimum_effective_height",
+    "language_evidence_authority": "health-config.json activation plus observed stream/player metadata"
   },
   "exclusions": {
     "provider_ids": [
