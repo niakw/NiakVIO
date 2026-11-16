@@ -695,18 +695,19 @@ jobs:
             -f allow_pending_targets="$ALLOW_PENDING_TARGETS"
           echo "FIELD_SHARDED_CENSUS_REQUEUE source_run=${GITHUB_RUN_ID} scope=${CENSUS_SCOPE:-unresolved} reason=concurrent-main-advance"
 
-      - name: Continue Brain Autopilot from fresh census
+      - name: Continue Provider Lifecycle from fresh census
         if: ${{ steps.persist.outputs.ok == 'true' && steps.persist.outputs.pending != 'true' }}
         env:
           GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
           set -euo pipefail
-          if gh workflow run provider-brain-autopilot.yml \
-            --repo "$GITHUB_REPOSITORY" --ref main -f dry_run=false; then
-            echo "FIELD_SHARDED_CENSUS_AUTOPILOT event_driven=false source_run=${GITHUB_RUN_ID} trigger=workflow_dispatch dispatched=true"
+          if gh workflow run provider-disabled-lifecycle.yml \
+            --repo "$GITHUB_REPOSITORY" --ref main; then
+            echo "FIELD_SHARDED_CENSUS_LIFECYCLE event_driven=false source_run=${GITHUB_RUN_ID} trigger=workflow_dispatch dispatched=true"
           else
-            echo "FIELD_SHARDED_CENSUS_AUTOPILOT event_driven=false source_run=${GITHUB_RUN_ID} trigger=workflow_dispatch dispatched=false reason=token-dispatch-denied"
-            echo "Autopilot dispatch is best-effort after successful census persistence; workflow_run/manual convergence remains authoritative."
+            echo "FIELD_SHARDED_CENSUS_LIFECYCLE event_driven=false source_run=${GITHUB_RUN_ID} trigger=workflow_dispatch dispatched=false reason=token-dispatch-denied"
+            echo "Lifecycle dispatch failed after successful census persistence; Brain Autopilot must not run on an unstabilized active catalogue."
+            exit 1
           fi
 
