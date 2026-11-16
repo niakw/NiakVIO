@@ -24,6 +24,8 @@ for required in (
     "materialize_provider_base_v3_store.py",
     "provider_base_store.py validate",
     "provider_clean_reconstruction_contract_test.py",
+    "provider_stream_multiplicity_contract_test.py",
+    "global_core_runtime_ownership_test.py",
     "provider_static_authority_france_only_test.py",
     "automation/provider-v3-static-knowledge.json",
     "reapply_published_overrides.py --check",
