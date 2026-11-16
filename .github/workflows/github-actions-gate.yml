@@ -147,7 +147,10 @@ jobs:
           PY
 
       - name: Enforce executable multi-device runtime contract
-        run: python3 scripts/runtime_contract_gate.py
+        run: |
+          python3 scripts/runtime_contract_gate.py
+          python3 tests/platform_runtime_projection_authority_test.py
+          python3 tests/nuvio_portable_stream_result_contract_test.py
 
       - name: Validate workflow architecture contracts
         run: |
