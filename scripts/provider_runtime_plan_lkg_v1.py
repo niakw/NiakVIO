@@ -3,7 +3,7 @@
 
 This is runtime-plan LKG, not route proof:
 - only a provider with at least one clean baseline playable+verified lane is eligible;
-- the current manifest bundle must match provider-v3-materialization.json exactly;
+- the current Global+France published bundle must match provider-v3-materialization.json exactly;
 - embedded runtime plan fields are captured as an opaque, already-published plan;
 - apply restores only missing plan pieces when repair DATA became poorer;
 - no routeData, validationState, executedEvidence, or HTTP proof is created.
@@ -21,6 +21,8 @@ import os
 import re
 from pathlib import Path
 from typing import Any
+
+from current_provider_scope import projection_active_provider_rows
 
 ROOT = Path(__file__).resolve().parents[1]
 MANIFEST = ROOT / "manifest.json"
@@ -133,6 +135,24 @@ def manifest_index(value: dict[str, Any]) -> dict[str, dict[str, Any]]:
     return out
 
 
+def publication_manifest_index(
+    *,
+    root: Path,
+    manifest_path: Path,
+    manifest: dict[str, Any],
+    projection_rows_fn=projection_active_provider_rows,
+) -> dict[str, dict[str, Any]]:
+    """Return current published rows for runtime-plan capture.
+
+    On the real repository, the default manifest is only the Global projection,
+    so capture must use the canonical active Global+France union. Explicit
+    custom roots/manifests remain isolated-test authority.
+    """
+    if root.resolve() == ROOT.resolve() and manifest_path.resolve() == MANIFEST.resolve():
+        return manifest_index({"scrapers": projection_rows_fn(root)})
+    return manifest_index(manifest)
+
+
 def capture(
     *,
     root: Path,
@@ -145,7 +165,11 @@ def capture(
     manifest = load(manifest_path)
     materialization = load(materialization_path)
     clean = clean_verified_lanes(baseline)
-    manifests = manifest_index(manifest)
+    manifests = publication_manifest_index(
+        root=root,
+        manifest_path=manifest_path,
+        manifest=manifest,
+    )
     materialized = materialization_index(materialization)
 
     providers: dict[str, Any] = {}
