@@ -2307,6 +2307,7 @@ async function _resolveApiRecipe(meta, mediaType, season, episode) {
   }
   return [];
 }
+/* NIAKVIO_PROVIDER_API_ROUTE_COVERAGE_V30 */
 async function _resolveApi(tmdbId, mediaType, season, episode) {
   const streams = [];
   for (const url of _apiUrls(tmdbId, mediaType, season, episode).slice(0, 4)) {
@@ -2321,9 +2322,9 @@ async function _resolveApi(tmdbId, mediaType, season, episode) {
         streams.push(..._extractUrls(text, response.url || url).filter(_directMedia));
       }
     } catch (_) {}
-    if (streams.length) break;
+    if (_uniq(streams).length >= 40) break;
   }
-  return _streams(streams, _searchBases()[0] || "");
+  return _streams(_uniq(streams).slice(0, 40), _searchBases()[0] || "");
 }
 /* NIAKVIO_PROVIDER_RUNTIME_PLAYER_COVERAGE_V27 */
 async function _resolveRuntimeApi(playerUrls, mediaType, tmdbId, season, episode) {
