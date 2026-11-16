@@ -117,8 +117,32 @@ with tempfile.TemporaryDirectory() as td:
 # The shared fix must exist in every *published* provider bundle, not just
 # the source compiler or a hand-picked fixture. This is a static check only:
 # alternate-catalogue episode equivalence and terminal playback need live proof.
-manifest = json.loads((ROOT / "manifest.json").read_text(encoding="utf-8"))
-visible = [row for row in manifest.get("scrapers", []) if isinstance(row, dict)]
+def projection_rows(path: Path, nested: bool) -> list[dict]:
+    doc = json.loads(path.read_text(encoding="utf-8"))
+    out = []
+    for raw in doc.get("scrapers", []):
+        if not isinstance(raw, dict):
+            continue
+        row = dict(raw)
+        filename = str(row.get("filename") or "")
+        if nested and filename.startswith("../"):
+            filename = filename[3:]
+        row["filename"] = filename
+        out.append(row)
+    return out
+
+visible_by_id: dict[str, dict] = {}
+for manifest_path, nested in ((ROOT / "manifest.json", False), (ROOT / "vf/manifest.json", True)):
+    for row in projection_rows(manifest_path, nested):
+        provider_id = str(row.get("id") or "").strip().casefold().replace("_", "-")
+        assert provider_id
+        previous = visible_by_id.get(provider_id)
+        if previous is not None:
+            assert previous == row, ("Global/VF S00 projection drift", provider_id)
+        else:
+            visible_by_id[provider_id] = row
+
+visible = list(visible_by_id.values())
 published = [row for row in visible if row.get("enabled") is not False]
 disabled = [row for row in visible if row.get("enabled") is False]
 assert published, "no active published providers"
@@ -127,6 +151,8 @@ for row in disabled:
     filename = str(row.get("filename") or "")
     assert filename.startswith("provider-disabled/") and ".." not in Path(filename).parts, (row.get("id"), filename)
     assert (ROOT / filename).is_file(), ("retained disabled artifact missing", filename)
+    # A shared Global/VF identity was collapsed above; distinct IDs must never
+    # share one managed artifact.
     assert filename not in seen_paths, ("duplicate disabled provider", filename)
     seen_paths.add(filename)
 for row in published:
@@ -142,8 +168,6 @@ for row in published:
         "_spv251SeasonEpisodeScopedValue",
     ):
         assert required in published_js, (filename, required)
-    # Source gate recognizes historical v17/v18 and reports rollout debt;
-    # release-only check requires v20 on every published bundle.
     assert any(
         revision in published_js for revision in (
             "cross-client-player-page-identity-v17-s00-identity",
