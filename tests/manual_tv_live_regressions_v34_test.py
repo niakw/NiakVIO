@@ -13,6 +13,11 @@ sys.path.insert(0, str(ROOT / "scripts" / "provider_patches"))
 
 subprocess.run([sys.executable, "scripts/upgrade_mugiwara_episode_failclosed_v2.py"], cwd=ROOT, check=True)
 subprocess.run([sys.executable, "scripts/upgrade_manual_tv_live_regressions_v34.py"], cwd=ROOT, check=True)
+provider_base_after_first = (ROOT / "scripts/provider_base_store.py").read_bytes()
+subprocess.run([sys.executable, "scripts/upgrade_manual_tv_live_regressions_v34.py"], cwd=ROOT, check=True)
+assert (ROOT / "scripts/provider_base_store.py").read_bytes() == provider_base_after_first, (
+    "V34 ProviderBase migration must be byte-idempotent on reapplication"
+)
 
 
 def load(path: Path, name: str):
@@ -93,7 +98,8 @@ revision = __import__("re").search(r'REVISION\s*=\s*"[^"]*-v(\d+)"', presentatio
 assert revision and int(revision.group(1)) >= 22, revision.group(0) if revision else None
 assert 'best=Math.max(best,Number(m[1]||0))' in presentation_source
 assert '["hindi","hi"]' in presentation_source
-assert "NIAKVIO_PROVIDER_ROUTE_MEDIA_COMPAT_V34" in provider_base
+assert provider_base.count("NIAKVIO_PROVIDER_ROUTE_MEDIA_COMPAT_V34") == 1
+assert provider_base.count("function _spv34RouteMediaCompatible(route, mediaType) {") == 1
 assert "_spv34RouteMediaCompatible(route, mediaType)" in provider_base
 selection = __import__("re").search(
     r'GLOBAL_STREAM_SANITIZER = "scripts/provider_patches/stream_output_sanitizer_v(\d+)\.py"',
