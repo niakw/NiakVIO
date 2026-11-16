@@ -47,6 +47,7 @@ on:
       - 'scripts/render_provider_census_status.py'
       - 'scripts/classify_provider_authority.py'
       - 'scripts/probe_waf_browser_session.py'
+      - '.github/workflows/provider-census-sharded.yml'
       - 'provider_catalog.json'
       - '.github/triggers/provider-census-sharded.json'
 
@@ -91,9 +92,11 @@ jobs:
           set -euo pipefail
           echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
           count="$(python - <<'PY'
-          import json
-          d=json.load(open("manifest.json", encoding="utf-8"))
-          print(len([x for x in d.get("scrapers") or [] if isinstance(x,dict)]))
+          import sys
+          from pathlib import Path
+          sys.path.insert(0, str(Path("scripts").resolve()))
+          from current_provider_scope import projection_runtime_visible_provider_count
+          print(projection_runtime_visible_provider_count())
           PY
           )"
           echo "provider_count=$count" >> "$GITHUB_OUTPUT"
@@ -195,12 +198,15 @@ jobs:
           echo "shard_count=$shard_count" >> "$GITHUB_OUTPUT"
           echo "shards_json=$shards_json" >> "$GITHUB_OUTPUT"
           echo "FIELD_SHARDED_CENSUS_PARTITION scope=$census_scope targets=${target_providers:-none} shard_count=$shard_count"
-          if [ "$GITHUB_EVENT_NAME" != "push" ] || [ "$count" -gt 120 ] || [[ "$head_message" == provider:\ bulk\ activate\ * ]] || [ "$explicit_trigger" = "true" ]; then
+          # Every push reaching this workflow already matched a causal path in
+          # the on.push.paths allowlist. Never self-cancel that evidence refresh
+          # based on a historical Global-only catalogue-size threshold.
+          if [ "$GITHUB_EVENT_NAME" != "push" ] || [ -n "$changed_paths" ]; then
             echo "should_run=true" >> "$GITHUB_OUTPUT"
-            echo "FIELD_SHARDED_CENSUS_PREPARE should_run=true explicit_trigger=$explicit_trigger provider_count=$count"
+            echo "FIELD_SHARDED_CENSUS_PREPARE should_run=true explicit_trigger=$explicit_trigger provider_count=$count authority=projection-runtime-visible"
           else
             echo "should_run=false" >> "$GITHUB_OUTPUT"
-            echo "FIELD_SHARDED_CENSUS_PREPARE should_run=false explicit_trigger=$explicit_trigger provider_count=$count"
+            echo "FIELD_SHARDED_CENSUS_PREPARE should_run=false explicit_trigger=$explicit_trigger provider_count=$count reason=no-causal-push-diff"
           fi
 
   shard:
