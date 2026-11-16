@@ -1,3 +1,11 @@
+## 2026-11-16 — Global publication now keeps provider_catalog atomic with manifests
+
+- Exact Workflow Gate run `43939677853` exposed production-significant publication drift after the DATA-first projection rebuild: dozens of Global rows pointed at new content-addressed provider bytes in `manifest.json` while `provider_catalog.json` still pointed at the previous artifacts; Cinegram also retained stale canonical media types in the catalogue.
+- Root cause was generic. `reconcile_targeted_provider_publication.py` updated Global manifest/materialization/provenance rows but only treated strict France-only catalogue rows as publication authority. Global catalogue mirrors were loaded and written back unchanged. Commit `e857af48` makes Global targeted publication update the matching catalogue scraper atomically, including canonical semantic types, filename, enabled state, version and empty platform exclusions; missing/duplicate catalogue authority now fails closed.
+- Regression commit `e6421b31` adds an explicit stale Global catalogue fixture and proves manifest/materialization/catalogue converge without leaking transport aliases into semantic `supportedTypes`.
+- A second post-publication divergence existed in release version finalization: `sync_release_versions.py` could bump final provider versions after targeted reconciliation without mirroring the final projected row into the catalogue. Commit `05862f4e` adds final manifest→catalogue projection-row synchronization; `42cd7b1f` tests normalized filename, semantic types, provider version and platform-field parity.
+- Trigger commit `96592875` requests a fresh exact-head Projection Reconcile after these fixes. No provider-specific Repair or playback claim is made; this is NiakVIO métier publication-authority repair.
+
 ## 2026-11-16 — Native stream-scope security regression now follows executed TV semantics
 
 - Security Final Gate run `43939271080` on `2400032a` failed in `tests/native_corpus_device_lab_test.py`, not in a security hardening rule: the regression still required literal `--streams all` in the TV bootstrap command.
