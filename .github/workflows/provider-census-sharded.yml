@@ -518,6 +518,37 @@ jobs:
           git reset --hard origin/main
           persist_base="$(git rev-parse HEAD)"
           echo "FIELD_SHARDED_CENSUS_PERSIST_BASE source=${SOURCE_SHA:0:12} base=${persist_base:0:12}"
+          # Provider evidence is measured on SOURCE_SHA, but Repair/FORCE activity
+          # is durable control-plane history. A concurrent newer Repair may have
+          # landed on main while this source-pinned census was running; never
+          # regress that activity metadata when publishing otherwise-valid census.
+          python - <<'PY'
+          import json
+          import sys
+          from pathlib import Path
+          sys.path.insert(0, str(Path("scripts").resolve()))
+          from persist_provider_repair_attempt_metadata import preserve_newer_repair_attempt
+
+          candidate_path=Path("/tmp/provider-census-status.json")
+          current_path=Path("automation/provider-census-status.json")
+          candidate=json.loads(candidate_path.read_text(encoding="utf-8"))
+          current=(
+              json.loads(current_path.read_text(encoding="utf-8"))
+              if current_path.is_file()
+              else {}
+          )
+          changed=preserve_newer_repair_attempt(candidate,current)
+          if changed:
+              candidate_path.write_text(
+                  json.dumps(candidate,ensure_ascii=False,indent=2)+"\n",
+                  encoding="utf-8",
+              )
+          attempt=candidate.get("lastRepairAttempt") or {}
+          print(
+              "FIELD_SHARDED_CENSUS_REPAIR_ATTEMPT_MERGE "
+              f"preserved={str(changed).lower()} run={attempt.get('runId') or 'none'}"
+          )
+          PY
           mkdir -p automation
           cp /tmp/provider-census-sharded.json "automation/provider-census-sharded-${run_id}.json"
           if [ "$CENSUS_SCOPE" = "all" ]; then
