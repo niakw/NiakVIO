@@ -8,6 +8,11 @@ on:
       - automation/provider-fast-trigger.json
       - scripts/provider_parallel_sweep_plan_v1.py
       - tests/provider_parallel_sweep_projection_scope_test.py
+      - tests/provider_current_scope_authority_test.py
+      - scripts/run_provider_repair_pipeline_v6.py
+      - scripts/run_provider_repair_fast_targeted_v1.py
+      - scripts/finalize_provider_repair_disposition_v1_impl.py
+      - scripts/validate_activation_preservation.py
   workflow_dispatch:
 
 permissions:
@@ -36,6 +41,8 @@ jobs:
         run: python3 tests/workflow_security_policy_test.py
       - name: Validate current executable sweep scope
         run: python tests/provider_parallel_sweep_projection_scope_test.py
+      - name: Validate current Repair scope authority
+        run: python tests/provider_current_scope_authority_test.py
       - name: Build deterministic six-batch matrix
         id: plan
         shell: bash
