@@ -41,8 +41,13 @@ with tempfile.TemporaryDirectory() as tmp:
         text=True,
         check=True,
     )
-    assert "movix_current=false" in proc.stdout, proc.stdout
+    assert "targeted=1 processed=1 proven=1" in proc.stdout, proc.stdout
+    assert "provider_specific_rules=0" in proc.stdout, proc.stdout
     assert json.loads(manifest.read_text(encoding="utf-8"))["scrapers"][0]["enabled"] is True
     assert json.loads(overrides.read_text(encoding="utf-8"))["provider_patches"]["anime-sama"]["manifest_overrides"]["enabled"] is True
+    health_row = json.loads(health.read_text(encoding="utf-8"))["providers"][0]
+    assert health_row["id"] == "anime-sama"
+    assert health_row["enabled"] is True
+    assert health_row["evidence"]["proven_route_count"] == 1
 
-print("route-proof manifest policy current-scope test passed: archived Movix cannot block current catalogue")
+print("route-proof manifest policy current-scope test passed: arbitrary provider diagnostic, activation preserved")
