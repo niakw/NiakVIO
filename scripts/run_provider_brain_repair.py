@@ -1408,6 +1408,13 @@ def materialize(provider_ids: set[str] | list[str]) -> None:
             "scripts/materialize_provider_v3_one.py",
             provider_id,
         )
+    reconcile = [
+        sys.executable,
+        "scripts/reconcile_targeted_provider_publication.py",
+    ]
+    for provider_id in targets:
+        reconcile.extend(["--provider", provider_id])
+    run(*reconcile)
     run(sys.executable, "scripts/validate_published_provider_config.py")
 
 
