@@ -4,8 +4,8 @@
 This migration owns no provider-specific fixture rule. It tightens three shared
 contracts:
 1. presentation uses the strongest explicit quality and detailed language fact;
-2. learned API routes with a literal movie/tv discriminator must match the
-   requested transport namespace;
+2. learned API routes with a literal movie/tv/anime discriminator must match
+   the already-resolved provider transport media type;
 3. the terminal stream sanitizer is at least V8, where only positive media proof
    is publishable. Newer Core sanitizers retain that V8 floor and must never be
    downgraded by this historical migration.
@@ -185,7 +185,7 @@ function _spv34RouteMediaCompatible(route, mediaType) {
   const match = source.match(/(?:[?&](?:type|media|m)=)(movie|tv|series|anime)(?=&|#|$)/i);
   if (!match) return true;
   let actual = _text(match[1]).toLowerCase();
-  if (actual === "series" || actual === "anime") actual = "tv";
+  if (actual === "series") actual = "tv";
   return actual === desired;
 }
 function _learnedUrls(kind, meta, mediaType, season, episode) {
@@ -270,6 +270,11 @@ def validate() -> None:
         raise AssertionError("V34 route/media helper must be defined exactly once")
     if base.count("NIAKVIO_PROVIDER_ROUTE_MEDIA_COMPAT_V34") != 1:
         raise AssertionError("V34 route/media gate marker must appear exactly once")
+    route_helper = base.split("function _spv34RouteMediaCompatible(route, mediaType) {", 1)[1].split("function _learnedUrls", 1)[0]
+    if 'actual === "series" || actual === "anime"' in route_helper:
+        raise AssertionError("V34 route/media helper retained implicit anime->TV transport alias")
+    if 'if (actual === "series") actual = "tv";' not in route_helper:
+        raise AssertionError("V34 route/media helper lost series input normalization")
     generic_window = base[base.index("NIAKVIO_PROVIDER_ROUTE_MEDIA_COMPAT_V34") - 800:base.index("NIAKVIO_PROVIDER_ROUTE_MEDIA_COMPAT_V34") + 800].casefold()
     for forbidden in ("moviebox", "hindmoviez", "castle", "interstellar", "ragna", "hell mode"):
         if forbidden in generic_window:
