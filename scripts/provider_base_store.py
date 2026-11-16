@@ -3777,6 +3777,8 @@ async function _resolveSearchRequestPlan(meta, mediaType, season, episode) {
     episode,
     source: null
   };
+  /* NIAKVIO_PROVIDER_PLAN_STREAM_COVERAGE_V28 */
+  const planStreams = [];
   for (const plan of plans.slice(0, 6)) {
     const lanes = Array.isArray(plan && plan.semanticTypes) ? plan.semanticTypes : [];
     if (!_spv185PlanLaneAllowed(lanes, mediaType)) continue;
@@ -3795,7 +3797,10 @@ async function _resolveSearchRequestPlan(meta, mediaType, season, episode) {
       const directUrls = typeof payload.value === "string"
         ? _extractUrls(payload.value, payload.base).filter(_directMedia)
         : _sourceUrls(payload.value, payload.base).filter(_directMedia);
-      if (directUrls.length) return _streams(_uniq(directUrls), payload.base || url).slice(0, 40);
+      if (directUrls.length) {
+        planStreams.push(..._streams(_uniq(directUrls), payload.base || url));
+        if (_dedupeStreamRows(planStreams).length >= 40) return _dedupeStreamRows(planStreams).slice(0, 40);
+      }
 
       const details = typeof payload.value === "string"
         ? _spv4HtmlDetails(payload.value, payload.base, meta, mediaType, season)
@@ -3810,7 +3815,8 @@ async function _resolveSearchRequestPlan(meta, mediaType, season, episode) {
           );
       if (details.length) {
         const family = _spv4Family();
-        for (const detailUrl of _uniq(details).slice(0, 8)) {
+        const boundedDetails = _uniq(details).slice(0, 8);
+        for (const detailUrl of boundedDetails) {
           const detailStreams = await _spv4ResolveDetail(
             detailUrl,
             meta,
@@ -3819,14 +3825,16 @@ async function _resolveSearchRequestPlan(meta, mediaType, season, episode) {
             episode,
             family
           );
-          if (Array.isArray(detailStreams) && detailStreams.length) return detailStreams.slice(0, 40);
+          if (Array.isArray(detailStreams) && detailStreams.length) planStreams.push(...detailStreams);
+          if (_dedupeStreamRows(planStreams).length >= 40) return _dedupeStreamRows(planStreams).slice(0, 40);
         }
-        const crawled = await _crawlDirectMedia(_uniq(details).slice(0, 8), payload.base || url, 3);
-        if (crawled.length) return crawled.slice(0, 40);
+        const crawled = await _crawlDirectMedia(boundedDetails, payload.base || url, 3);
+        if (crawled.length) planStreams.push(...crawled);
+        if (_dedupeStreamRows(planStreams).length >= 40) return _dedupeStreamRows(planStreams).slice(0, 40);
       }
     } catch (_) {}
   }
-  return [];
+  return _dedupeStreamRows(planStreams).slice(0, 40);
 }
 async function _resolveExternalIdentityPlan(meta, mediaType, season, episode) {
   const plans = Array.isArray(NIAKVIO_PROVIDER_MODEL.externalIdentityPlan)
@@ -3843,6 +3851,8 @@ async function _resolveExternalIdentityPlan(meta, mediaType, season, episode) {
     episode,
     source: null
   };
+  /* NIAKVIO_PROVIDER_EXTERNAL_IDENTITY_COVERAGE_V28 */
+  const planStreams = [];
   for (const plan of plans.slice(0, 4)) {
     const base = _substituteDomain(_text(plan && plan.base));
     const route = _text(plan && plan.route);
@@ -3869,17 +3879,19 @@ async function _resolveExternalIdentityPlan(meta, mediaType, season, episode) {
           if (!marked.length) selected = [];
         }
         if (selected.length) {
-          return _streams(selected, payload.base || url, _externalPlaybackHeaders(requestSpec)).slice(0, 40);
+          planStreams.push(..._streams(selected, payload.base || url, _externalPlaybackHeaders(requestSpec)));
+          if (_dedupeStreamRows(planStreams).length >= 40) return _dedupeStreamRows(planStreams).slice(0, 40);
         }
       }
       const nested = _uniq(urls.filter(_crawlEligible)).slice(0, 10);
       if (nested.length) {
         const crawled = await _crawlDirectMedia(nested, payload.base || url, 2);
-        if (crawled.length) return crawled;
+        if (crawled.length) planStreams.push(...crawled);
+        if (_dedupeStreamRows(planStreams).length >= 40) return _dedupeStreamRows(planStreams).slice(0, 40);
       }
     } catch (_) {}
   }
-  return [];
+  return _dedupeStreamRows(planStreams).slice(0, 40);
 }
 async function getStreams(tmdbId, mediaType, season, episode) {
   const type = String(mediaType || "movie").toLowerCase();
@@ -4841,10 +4853,13 @@ if (tv.length) return tv;
 const details = family === "dle-film-api"
 ? await _spv7DleFindDetails(meta, type, season, episode)
 : await _spv4FindDetails(meta, type, season, episode, family);
+const familyStreams = [];
 for (const detail of details.slice(0, 8)) {
 const streams = await _spv4ResolveDetail(detail, meta, type, season, episode, family);
-if (streams.length) return streams;
+if (streams.length) familyStreams.push(...streams);
+if (_dedupeStreamRows(familyStreams).length >= 40) break;
 }
+if (familyStreams.length) return _dedupeStreamRows(familyStreams).slice(0, 40);
 }
 }
 const primary = await getStreams(tmdbId, type, season, episode);
