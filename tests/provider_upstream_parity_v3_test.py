@@ -7,7 +7,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
-from current_provider_scope import active_provider_count, active_provider_ids
+from current_provider_scope import projection_active_provider_count, projection_active_provider_ids
 
 spec = importlib.util.spec_from_file_location(
     "provider_upstream_parity_v3",
@@ -18,9 +18,9 @@ parity = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(parity)
 
 matrix_scope = parity.scope_ids(ROOT / "automation/evidence/hub-lab-matrix-46.json")
-scope = matrix_scope & active_provider_ids()
+scope = matrix_scope & projection_active_provider_ids()
 assert scope, "historical parity campaign lost all active providers"
-assert scope <= active_provider_ids()
+assert scope <= projection_active_provider_ids()
 assert len(scope) <= len(matrix_scope)
 
 
@@ -121,4 +121,4 @@ row = parity.run_lane(
 assert row["status"] == "RESAMPLE", row
 assert len(row["samples"]) == 3, row
 
-print(f"provider upstream parity v3 tests passed: active_campaign_scope={len(scope)} active_catalogue={active_provider_count()} clean-miss=RESAMPLE")
+print(f"provider upstream parity v3 tests passed: active_campaign_scope={len(scope)} active_catalogue={projection_active_provider_count()} clean-miss=RESAMPLE")
