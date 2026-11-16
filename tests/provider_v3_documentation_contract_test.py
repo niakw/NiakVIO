@@ -307,6 +307,11 @@ assert "catalogue_provider_count" not in source_policy
 assert source_policy["catalogue_scope_authority"] == "scripts/current_provider_scope.py:projection_visible_provider_ids"
 assert source_policy["executable_scope_authority"] == "scripts/current_provider_scope.py:projection_active_provider_ids"
 assert source_policy["catalogue_cardinality_policy"] == "derived-never-frozen"
+assert source_policy["content_type_inference"] == (
+    "Canonical capability is movie|tv|anime. Anime-only publication adds only the tv launch alias; "
+    "series/show/other are client input aliases normalized to tv and are never published supportedTypes. "
+    "Movie transport requires canonical movie capability."
+)
 assert source_policy["stream_multiplicity_policy"] == "coverage-before-final-cap"
 assert source_policy["stream_dedupe_identity"] == "url+required_request_headers"
 assert source_policy["first_playable_stream_ends_discovery"] is False
