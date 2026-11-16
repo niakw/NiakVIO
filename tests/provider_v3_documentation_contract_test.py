@@ -152,7 +152,9 @@ domain_refresh = machine["domain_refresh"]
 assert domain_refresh["provider_scope_authority"] == "scripts/current_provider_scope.py:projection_active_provider_ids"
 assert domain_refresh["global_publication_authority"] == "manifest.json"
 assert domain_refresh["france_only_publication_authority"] == "provider_catalog.json projections general=false,vf=true"
-assert machine["route_recognition"]["provider_scope_authority"] == "scripts/current_provider_scope.py:runtime_visible_provider_ids"
+assert machine["route_recognition"]["provider_scope_authority"] == "scripts/current_provider_scope.py:projection_runtime_visible_provider_ids"
+assert machine["route_recognition"]["global_publication_authority"] == "manifest.json"
+assert machine["route_recognition"]["france_only_publication_authority"] == "provider_catalog.json projections general=false,vf=true"
 
 assert machine["routine"]["quick"]["repair_allowed"] is False
 assert machine["routine"]["quick"]["provider_reconstruction_allowed"] is False
