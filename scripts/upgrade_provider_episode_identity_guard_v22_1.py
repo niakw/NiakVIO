@@ -102,9 +102,23 @@ def patch() -> bool:
       if (episodeTableState.marked && !(detailEpisodeMarker.marked && detailEpisodeMarker.matches)) continue;
       const explicitPlayers = _spv15ExplicitPlayerAttrs(html, resolvedDetailUrl);
 '''
-    if new_flow not in text:
+    flow_contract = (
+        "const resolvedDetailUrl = response.url || detailUrl;",
+        "const detailEpisodeMarker = _spv22EpisodeMarker(resolvedDetailUrl, season, episode);",
+        "detailEpisodeMarker.marked && !detailEpisodeMarker.matches",
+        "_spv221EpisodeTableState(html, resolvedDetailUrl, season, episode)",
+        "episodeTableState.marked && !episodeTableState.matches",
+        "_spv22ResolveEpisodeHop(html, resolvedDetailUrl, mediaType, season, episode)",
+        "episodeTableState.marked && !(detailEpisodeMarker.marked && detailEpisodeMarker.matches)",
+        "_spv15ExplicitPlayerAttrs(html, resolvedDetailUrl)",
+    )
+    if not all(needle in text for needle in flow_contract):
         if text.count(old_flow) != 1:
-            raise AssertionError(f"resolveHtml episode flow anchor count={text.count(old_flow)}")
+            missing = [needle for needle in flow_contract if needle not in text]
+            raise AssertionError(
+                "resolveHtml episode flow contract incomplete "
+                f"missing={missing} legacy_anchor_count={text.count(old_flow)}"
+            )
         text = text.replace(old_flow, new_flow, 1)
         changed = True
 
