@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Rebuild the current Hub46 workspace generation and prove deterministic bytes.
+"""Rebuild the current active Global+France Provider-v3 generation and prove deterministic bytes.
 
 The workspace materializer owns ProviderBase + DATA + Lego composition. Published
 Provider JS additionally goes through the conservative NiakVIO minimizer, so this
