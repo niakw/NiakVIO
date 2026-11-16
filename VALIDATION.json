@@ -1,5 +1,5 @@
 {
-  "schema_version": 67,
+  "schema_version": 68,
   "release": "dynamic",
   "release_authority": "manifest.json:version",
   "candidate_track": "main",
@@ -142,5 +142,29 @@
     "A clean zero-stream result is catalogue uncertainty and must not be promoted to a provider regression without upstream-positive comparison evidence.",
     "Workflow success, CHAIN REACHED, a generated repair, or an URL alone is not playable/identity proof.",
     "The five Native Labs are authoritative only after the current Global+France active projection union has completed its declared route matrix."
-  ]
+  ],
+  "stream_multiplicity": {
+    "runtime_output_cap": 40,
+    "terminal_validation_cap": 40,
+    "probe_all_streams": true,
+    "sampling": "spread",
+    "native_probe_batch": 4,
+    "dimensions": [
+      "reader",
+      "server",
+      "source",
+      "language",
+      "quality"
+    ],
+    "dedupe_identity": "url+required_request_headers",
+    "first_success_does_not_end_discovery": true,
+    "explicit_quality_requires_media_evidence": true
+  },
+  "special_episodes": {
+    "season_zero_valid": true,
+    "season_zero_fallback_to_one": false,
+    "mandatory_native_fixture": "spartacus-s00e01",
+    "mandatory_native_fixture_tmdb_id": "46296",
+    "mandatory_across_five_labs": true
+  }
 }
