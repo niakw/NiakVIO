@@ -160,6 +160,8 @@ jobs:
           PY
           python scripts/audit_provider_v3_static.py
           python scripts/reapply_published_overrides.py --check
+          python tests/provider_stream_multiplicity_contract_test.py
+          python tests/global_core_runtime_ownership_test.py
           python tests/published_provider_lego_contract_test.py
           python tests/provider_js_lego_ownership_test.py
           git diff --check
