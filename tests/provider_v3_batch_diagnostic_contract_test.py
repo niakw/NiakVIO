@@ -5,7 +5,10 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 source = (ROOT / "scripts" / "reconstruct_provider_v3_batch_diagnostic.py").read_text(encoding="utf-8")
 validator = (ROOT / "scripts" / "validate_provider_v3_routes_sequential.py").read_text(encoding="utf-8")
-legacy_workflow = ROOT / ".github" / "workflows" / "provider-v3-batch-diagnostic.yml"\ncanonical_workflow_path = ROOT / ".github" / "workflows" / "provider-v3-reconstruct-all.yml"\nassert not legacy_workflow.exists(), "retired batch-diagnostic workflow must not regain execution authority"\nworkflow = canonical_workflow_path.read_text(encoding="utf-8")
+legacy_workflow = ROOT / ".github" / "workflows" / "provider-v3-batch-diagnostic.yml"
+canonical_workflow_path = ROOT / ".github" / "workflows" / "provider-v3-reconstruct-all.yml"
+assert not legacy_workflow.exists(), "retired batch-diagnostic workflow must not regain execution authority"
+workflow = canonical_workflow_path.read_text(encoding="utf-8")
 
 assert 'parser.add_argument("--start-index"' in source
 assert 'parser.add_argument("--count"' in source
