@@ -26,7 +26,6 @@ from provider_patch_blocks import (
 
 ROOT = Path(__file__).resolve().parents[1]
 BASES = ROOT / "provider-bases"
-MANIFEST = ROOT / "manifest.json"
 PROVENANCE = ROOT / "PROVENANCE.json"
 QUARANTINE_PATCH = "scripts/provider_patches/quarantine_provider_v1.py"
 
