@@ -55,6 +55,18 @@ assert 'steps.drift.outputs.count != \'0\'' in wf
 assert "Projection reconcile staged a forbidden path." in wf
 assert "PROVENANCE.json provider-overrides.json provider-v3-materialization.json" in wf
 assert "automation/provider-v3-static-knowledge.json" in wf
+assert "Reconcile durable static authority at projection fixed point" in wf
+static_fixed=wf.split("- name: Reconcile durable static authority at projection fixed point",1)[1].split("- name: Report projection byte no-op",1)[0]
+assert "if: steps.drift.outputs.count == '0'" in static_fixed
+assert "python scripts/reconcile_provider_static_authority.py --apply" in static_fixed
+assert "python scripts/sanitize_provider_v3_core_metadata_routes.py" in static_fixed
+assert "python tests/provider_v3_core_metadata_route_sanitizer_test.py" in static_fixed
+assert "Static-authority reconciliation mutated a forbidden path." in static_fixed
+assert "automation/provider-v3-static-knowledge\\.json|provider-v3-materialization\\.json" in static_fixed
+assert 'CURRENT_SHA="$(git rev-parse origin/main)"' in static_fixed
+assert 'if [ "$CURRENT_SHA" != "$GITHUB_SHA" ]; then' in static_fixed
+assert "git push origin HEAD:main" in static_fixed
+assert "FIELD_PROVIDER_STATIC_AUTHORITY_PUBLISHED" in static_fixed
 print("provider projection reconcile workflow contract passed")
 
 from sys import path as _pythonpath
@@ -77,4 +89,6 @@ for source in ("provider-overrides.json", "manifest.json", "scripts/provider_bas
 assert wf.count("- name: Build atomic provider publication") == 1
 assert wf.count("- name: Publish exact reconciled projection") == 1
 assert wf.count("- name: Finalize integrity and dispatch exact-head validation") == 1
+assert wf.count("- name: Reconcile durable static authority at projection fixed point") == 1
+assert wf.count("- name: Report projection byte no-op") == 1
 assert "nuvio-client-id-state\\.json)$'; then" in wf
