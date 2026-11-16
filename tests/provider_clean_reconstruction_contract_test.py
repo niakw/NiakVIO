@@ -131,6 +131,8 @@ for token in (
     assert token in store_materializer, f"canonical ProviderBase materializer lost source fixed-point guard: {token}"
 assert store_materializer.index("sanitize_provider_v3_execution_routes_v1.py") < store_materializer.index("before = _source_migration_snapshot()")
 assert store_materializer.index("before = _source_migration_snapshot()") < store_materializer.index("upgrade_provider_base_runtime_v5.py")
+assert 'store["provider_media_transport"] = "canonical-anime-v32"' in store_materializer
+assert 'store["html_search_identity_coverage"] = "v33"' in store_materializer
 
 assert "materialize_provider_base_v3_store.py" in manual
 assert "materialize_provider_v3_all.py" in manual
