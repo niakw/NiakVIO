@@ -44,11 +44,20 @@ for path in sorted([*WORKFLOWS.glob('*.yml'), *WORKFLOWS.glob('*.yaml')]):
 
 security_gate = (WORKFLOWS / 'security-final-gate.yml').read_text(encoding='utf-8')
 if 'exact 92-provider scan' in security_gate or 'expected=92' in security_gate or 'len(rows) != 92' in security_gate:
-    errors.append('security-final-gate.yml: published provider count must be derived from manifest.json, never hard-coded')
+    errors.append('security-final-gate.yml: published provider count must be derived from current projection authority, never hard-coded')
 if 'expected=len(rows)' not in security_gate:
     errors.append('security-final-gate.yml: exhaustive scan must derive expected count from published rows')
 if "if checked != expected:" not in security_gate:
     errors.append('security-final-gate.yml: exhaustive scan completion check is required')
+if security_gate.count('from current_provider_scope import projection_visible_provider_rows') < 1:
+    errors.append('security-final-gate.yml: byte-level security scan must use Global+France visible projection authority')
+if 'active_rows=projection_active_provider_rows()' not in security_gate:
+    errors.append('security-final-gate.yml: CodeQL release scope must use active Global+France projection authority')
+if "canonical_id not in active_ids" not in security_gate:
+    errors.append('security-final-gate.yml: inactive provenance must not widen CodeQL release-reachable ProviderBase scope')
+for required_path in ("vf/manifest.json", "provider_catalog.json", "scripts/current_provider_scope.py"):
+    if f"- '{required_path}'" not in security_gate:
+        errors.append(f"security-final-gate.yml: Global+France security trigger missing {required_path}")
 
 if "FIELD_CODEQL_FULL_WORKFLOW state=completed:success" not in security_gate or \
         "Wait for complete CodeQL workflow on exact tested main SHA" not in security_gate or \
