@@ -1,3 +1,10 @@
+## 2026-11-16 — Native stream-scope security regression now follows executed TV semantics
+
+- Security Final Gate run `43939271080` on `2400032a` failed in `tests/native_corpus_device_lab_test.py`, not in a security hardening rule: the regression still required literal `--streams all` in the TV bootstrap command.
+- Current TV execution is two-phase. The bootstrap prepares one initial generated test with a bounded `--streams 2`, while `run_native_corpus_tv_suite.sh` regenerates every executed fixture using `--streams "$STREAM_SCOPE"`; the workflow sets both primary and regression scopes to `all`. Treating the bootstrap command as execution authority was therefore a stale test assumption.
+- Commit `0ce46d96` removes the label/literal bootstrap assertion and instead requires the actual TV suite to consume primary/regression `STREAM_SCOPE` dynamically. Mobile retains its explicit `--streams all` preparation. No provider bytes, Core stream limit, Native runtime, security rule or acceptance threshold changed.
+- The projection fixed-point replay that started on parent `2400032a` is now source-stale relative to this test-only commit. Fresh exact-head Security Final Gate plus projection/finalizer validation must supersede parent-run evidence before NiakVIO métier certification.
+
 ## 2026-11-16 — Projection fixed point is DATA-first and fingerprints the Global+France union
 
 - Projection Reconcile run `43935148378` on `b1186923` successfully rebuilt its drifted provider bytes, then failed the fixed-point detector with **30 remaining providers**. Every remaining row had `changedKeys=[]` and only `publication-build-input-drift` (`buildContractSchema`, `providerPolicy`, `buildInput`). The 30 identities are exactly the active France-only cohort.
