@@ -1,3 +1,17 @@
+## 2026-11-16 — Projection fixed point is DATA-first and fingerprints the Global+France union
+
+- Projection Reconcile run `43935148378` on `b1186923` successfully rebuilt its drifted provider bytes, then failed the fixed-point detector with **30 remaining providers**. Every remaining row had `changedKeys=[]` and only `publication-build-input-drift` (`buildContractSchema`, `providerPolicy`, `buildInput`). The 30 identities are exactly the active France-only cohort.
+- Root cause 1: `scripts/reindex_provider_publication_fingerprints.py` iterated root `manifest.json` directly, so only the 45 Global providers received current publication fingerprints. Commit `04984a3f` moves reindex authority to `projection_active_provider_rows()`; `tests/provider_publication_fingerprint_union_test.py` proves both Global and France-only rows are fingerprinted while provider bytes remain unchanged.
+- Root cause 2: Projection Reconcile finalized durable structured Provider DATA **after** detecting/rebuilding provider bytes. That permits runtime-family/CONFIG authority to change after byte selection and either leaves DATA unpersisted or immediately makes the rebuilt bytes/fingerprints stale. Commit `a2d33b9f` makes the transaction DATA-first: reconcile + generic Core/TMDB/runtime-family sanitizer before drift detection; rebuild from that exact authority; reconcile/sanitize again after rebuild; only then reindex fingerprints, require zero drift, audit and publish. The no-byte path may persist only the explicit static/materialization authority files.
+- `e4a7c1a9` locks this ordering in the projection workflow contract. This is infrastructure/authority repair, not a provider-specific runtime patch and not playback proof.
+- The same audit found current persisted static DATA has 67 derivable non-quarantined `sourceRuntimeFamily=unknown` rows. Generic derivation yields 48 `catalogue-html-embed`, 14 `catalogue-html`, 3 `catalogue-json-html-detail`, 1 `tmdb-direct-api`, 1 `open-archive-public-domain`, and 0 unresolved. A fresh Projection Reconcile must now materialize those families and any resulting provider bytes atomically before the base is considered fixed.
+
+## 2026-11-16 — Current Gowaru source-plan contract follows provenance, not a historical named cohort
+
+- Full Provider-v3 reconstruction run `43932200740` reached 108/108 structured authority, 75/75 clean ProviderBase, five-Lab static coverage and minimizer checks before failing the Source Plan V4 regression on `dulourd`.
+- `dulourd` is no longer a Gowaru-backed authority row; its current source is `current-runtime-visible-config-recovery`. The other current Gowaru rows retain the pinned source ref `c3ce6f43a1ba8ccf2f3838b5cd9db40745c33fa2`.
+- Commit `adbd5565` replaces the frozen ten-provider list with exact equality between rows whose current `sources[].source == gowaru` and rows carrying that Gowaru `sourceKnowledgeRef`. Current provenance therefore decides the cohort; a stale historical name cannot force false source authority.
+
 ## 2026-11-16 — Batch diagnostic regression now checks canonical behavior, not a workflow label
 
 - Exact Workflow Gate run `43932200646` on `d7ae21d8` passed the repository syntax gate, Nuvio runtime contract and the long architecture suite through Provider-v3 finalization. It then failed only because `provider_v3_batch_diagnostic_contract_test.py` required the literal step label `Reconstruct all active providers sequentially live`, while the canonical workflow names that step `Reconstruct and validate all active providers sequentially live`.
