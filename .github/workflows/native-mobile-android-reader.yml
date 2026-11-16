@@ -198,7 +198,7 @@ jobs:
           set -euo pipefail
           python3 niakvio/scripts/gate_native_declared_provider_matrix.py \
             --client tv \
-            --manifest niakvio/manifest.json \
+            --manifest niakvio/native-hub46/manifest.json \
             --corpus niakvio/.github/triggers/nuvio-client-lab.json \
             "$GITHUB_WORKSPACE"/tv-native-corpus-*.log
       - name: Diagnose complete TV evidence
@@ -316,7 +316,7 @@ jobs:
           set -euo pipefail
           python3 niakvio/scripts/gate_native_declared_provider_matrix.py \
             --client mobile \
-            --manifest niakvio/manifest.json \
+            --manifest niakvio/native-hub46/manifest.json \
             --corpus niakvio/.github/triggers/nuvio-client-lab.json \
             "$GITHUB_WORKSPACE"/mobile-native-corpus-*.log
       - name: Diagnose complete Mobile Android evidence
