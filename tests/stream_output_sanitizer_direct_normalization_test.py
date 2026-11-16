@@ -184,10 +184,9 @@ module.exports={getStreams:async function(){return [
     all_bad_payload = json.loads(process.stdout.strip())
     assert all_bad_payload["rows"] == [], all_bad_payload["rows"]
 
-    # Native runtime: probes are serialized. Once the provider-wide deadline is
-    # consumed by the first synchronous-host-like request, no second network call
-    # is started. A conclusive 403 is removed; the unprobed-after-deadline row is
-    # kept as transport-uncertain rather than guessed dead.
+    # Native runtime: candidates are started in a small bounded batch so a slow
+    # first reader cannot starve sibling server/quality variants. The provider
+    # deadline still prevents starting later batches.
     native_source = r'''
 module.exports={getStreams:async function(){return [
   {name:"first-403",url:"https://native.example/first.mp4"},
@@ -218,7 +217,7 @@ sandbox.fetch=async function(url){
   active--;
   const u=String(url);
   if(u.indexOf('/first.mp4')>=0)return {ok:false,status:403,url:u,headers:{get:()=>''},body:{getReader:()=>({read:async()=>({done:true}),cancel:async()=>{}})}};
-  throw new Error('second native fetch must not start after provider deadline');
+  throw new Error('second variant transport inconclusive');
 };
 vm.runInNewContext(source,sandbox,{timeout:5000});
 sandbox.module.exports.getStreams({tmdbId:'1',mediaType:'movie'}).then(rows=>{
@@ -236,8 +235,8 @@ sandbox.module.exports.getStreams({tmdbId:'1',mediaType:'movie'}).then(rows=>{
         )
     assert process.returncode == 0, process.stderr
     native_payload = json.loads(process.stdout.strip())
-    assert native_payload["calls"] == 1, native_payload
-    assert native_payload["maxActive"] == 1, native_payload
+    assert native_payload["calls"] == 2, native_payload
+    assert native_payload["maxActive"] == 2, native_payload
     assert [row["name"] for row in native_payload["rows"]] == ["second-uncertain"], native_payload
 
     print("stream output sanitizer direct normalization tests passed")
