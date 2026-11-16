@@ -32,6 +32,7 @@ sync = (ROOT / ".github/workflows/sync.yml").read_text(encoding="utf-8")
 manual = (ROOT / ".github/workflows/provider-v3-reconstruct-all.yml").read_text(encoding="utf-8")
 machine = json.loads((ROOT / "automation/provider-v3-architecture.json").read_text(encoding="utf-8"))
 validation_machine = json.loads((ROOT / "VALIDATION.json").read_text(encoding="utf-8"))
+sources_machine = json.loads((ROOT / "sources.json").read_text(encoding="utf-8"))
 manifest = json.loads((ROOT / "manifest.json").read_text(encoding="utf-8"))
 
 for required in (
@@ -255,6 +256,15 @@ assert validation_machine["stream_multiplicity"]["first_success_does_not_end_dis
 assert validation_machine["special_episodes"]["season_zero_valid"] is True
 assert validation_machine["special_episodes"]["season_zero_fallback_to_one"] is False
 assert validation_machine["special_episodes"]["mandatory_native_fixture"] == "spartacus-s00e01"
+source_policy = sources_machine["selection_policy"]
+assert "catalogue_provider_count" not in source_policy
+assert source_policy["catalogue_scope_authority"] == "scripts/current_provider_scope.py:projection_visible_provider_ids"
+assert source_policy["executable_scope_authority"] == "scripts/current_provider_scope.py:projection_active_provider_ids"
+assert source_policy["catalogue_cardinality_policy"] == "derived-never-frozen"
+assert source_policy["stream_multiplicity_policy"] == "coverage-before-final-cap"
+assert source_policy["stream_dedupe_identity"] == "url+required_request_headers"
+assert source_policy["first_playable_stream_ends_discovery"] is False
+assert "at most one playable stream" not in source_policy["runtime_check"]
 assert projection_active_provider_count() >= ACTIVE_EXPECTED
 assert projection_runtime_visible_provider_count() >= RUNTIME_VISIBLE_EXPECTED
 
