@@ -27,9 +27,9 @@ def main() -> int:
         "episode": 0,
     }
     assert fixture_media_type(anime) == "anime"
-    assert fixture_runtime_media_type(anime) == "tv"
+    assert fixture_runtime_media_type(anime) == "anime"
     values = common_fixture_values(anime)
-    assert values["media_type"] == '"tv"'
+    assert values["media_type"] == '"anime"'
     assert values["season"] == "0"
     assert values["episode"] == "0"
     assert values["provider_timeout_ms"] == "25000"
@@ -81,7 +81,7 @@ def main() -> int:
             assert "].map(_text).filter(Boolean)).slice(0, 3);" in base_text, provider_id
             assert "const candidates = baseList.slice(0, 3);" in base_text, provider_id
 
-    print("native runtime settlement contract passed: budget=25s anime_runtime=tv zero=0/0 aliases=3x3")
+    print("native runtime settlement contract passed: budget=25s anime_runtime=anime zero=0/0 aliases=3x3")
     return 0
 
 
