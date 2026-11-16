@@ -5,7 +5,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 source = (ROOT / "scripts" / "reconstruct_provider_v3_batch_diagnostic.py").read_text(encoding="utf-8")
 validator = (ROOT / "scripts" / "validate_provider_v3_routes_sequential.py").read_text(encoding="utf-8")
-workflow = (ROOT / ".github" / "workflows" / "provider-v3-batch-diagnostic.yml").read_text(encoding="utf-8")
+legacy_workflow = ROOT / ".github" / "workflows" / "provider-v3-batch-diagnostic.yml"\ncanonical_workflow_path = ROOT / ".github" / "workflows" / "provider-v3-reconstruct-all.yml"\nassert not legacy_workflow.exists(), "retired batch-diagnostic workflow must not regain execution authority"\nworkflow = canonical_workflow_path.read_text(encoding="utf-8")
 
 assert 'parser.add_argument("--start-index"' in source
 assert 'parser.add_argument("--count"' in source
@@ -70,23 +70,22 @@ assert blocked_match, "blocked non-2xx preservation predicate missing"
 blocked_states = set(re.findall(r'["\']([^"\']+)["\']', blocked_match.group("body")))
 assert {"terminal-blocked", "terminal-unreachable", "disabled-unqualified"} <= blocked_states, blocked_states
 
-# A successful recognition slice is not allowed to exist only inside a runner
-# artifact. Persist canonical DATA, the exact per-run report and MEMORY state in
-# Git before the next batch can become authoritative. Generated bundles remain
-# outside this checkpoint, and a dirty generated worktree must not break rebase.
-assert 'Persist validated Provider route and DATA state' in workflow
-assert 'automation/provider-v3-batch-checkpoints' in workflow
-assert 'git add automation/provider-v3-static-knowledge.json provider-overrides.json "${checkpoint}" MEMORY.md' in workflow
-assert "automation/provider-v3-static-knowledge\\.json|provider-overrides\\.json|MEMORY\\.md|automation/provider-v3-batch-checkpoints/" in workflow
-assert "data: persist live-validated Provider routes, DATA and batch evidence" in workflow
-assert "GITHUB_RUN_ID" in workflow and "route-data-checkpoint" in workflow
-assert 'git stash push --include-untracked' in workflow
-assert 'git fetch origin workbench/provider-v3-recognition-routes-data' in workflow
-assert 'git rebase origin/workbench/provider-v3-recognition-routes-data' in workflow
-assert 'FIELD_PROVIDER_ROUTE_DATA_PERSIST changed=true' in workflow
-persist_at = workflow.index('Persist validated Provider route and DATA state')
-upload_at = workflow.index('Upload provider repair-first evidence')
-assert persist_at < upload_at, "validated route/DATA must persist before artifact-only fallback"
+# The batch diagnostic script is retained only as a bounded workbench helper.
+# September's dedicated workbench workflow and direct route/DATA persistence branch
+# are retired. Canonical reconstruction owns live sequencing and may only commit
+# explicitly to a non-main branch after reverse/materialization validation.
+assert 'This remains a workbench gate, not publication authority.' in source
+assert 'provider-v3-batch-diagnostic.yml' not in workflow
+assert 'reconstruct_provider_v3_batch_diagnostic.py' not in workflow
+assert 'workbench/provider-v3-recognition-routes-data' not in workflow
+assert 'Reconstruct all active providers sequentially live' in workflow
+assert 'python scripts/reconstruct_provider_v3_sequential_live.py --minimum-coverage 0.75' in workflow
+assert 'Refuse direct main mutation' in workflow
+assert 'Manual Provider v3 reconstruction may never commit directly to main; use a branch + PR.' in workflow
+assert 'python scripts/verify_provider_v3_reverse_rebuild.py' in workflow
+assert 'actions/upload-artifact@' in workflow
+assert 'Commit verified reconstruction to selected branch' in workflow
+assert 'git push origin "HEAD:${GITHUB_REF_NAME}"' in workflow
 
 print(
     "PROVIDER_V3_BATCH_DIAGNOSTIC_CONTRACT_OK "
