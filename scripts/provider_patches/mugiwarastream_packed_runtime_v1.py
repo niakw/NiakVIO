@@ -23,13 +23,14 @@ WRAPPER = r'''
 /* NIAKVIO_PROVIDER_RUNTIME_RESOLVER_V1 */
 ;(function(g,c){"use strict";
   function s(v){return String(v==null?"":v).trim()}
+  function coord(v,f,min){var n=Number(v);return Number.isFinite(n)&&n>=min?Math.floor(n):f}
   function parseValue(v){var x=v;for(var i=0;i<3&&typeof x==="string";i++){var t=s(x);if(!t||t==="$undefined")break;try{x=JSON.parse(t)}catch(_e){break}}return x}
   function norm(v){return s(v).normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"")}
   function requestArgs(a){
     var first=a[0],obj=first&&typeof first==="object"&&!Array.isArray(first)?first:null,ctx={};try{ctx=g.__nuvioMediaContext||{}}catch(_e){}
     var type=s((obj&&(obj.canonicalMediaType||obj.semanticType||obj.mediaType||obj.type))||a[1]||ctx.canonicalMediaType||ctx.mediaType||"").toLowerCase();
     if(type==="series")type="tv";/* NIAKVIO_MUGIWARA_TV_TRANSPORT_IS_ANIME_V1 */if(type==="tv")type="anime";if(type!=="anime"&&type!=="movie")return null;
-    return {type:type,tmdbId:s((obj&&(obj.tmdbId||obj.id))||first||ctx.tmdbId),season:Number((obj&&obj.season)||a[2]||ctx.season)||1,episode:Number((obj&&obj.episode)||a[3]||ctx.episode)||1};
+    var rawSeason=obj&&obj.season!=null?obj.season:(a[2]!=null?a[2]:(ctx.season!=null?ctx.season:1)),rawEpisode=obj&&obj.episode!=null?obj.episode:(a[3]!=null?a[3]:(ctx.episode!=null?ctx.episode:1));return {type:type,tmdbId:s((obj&&(obj.tmdbId||obj.id))||first||ctx.tmdbId),season:coord(rawSeason,1,0),episode:coord(rawEpisode,1,1)};
   }
   function isMugi(u){try{var h=new URL(String(u||"")).hostname.toLowerCase();return h==="mugiwara-no-streaming.com"||h==="www.mugiwara-no-streaming.com"}catch(_e){return false}}
   function headers(ref,accept){return {"User-Agent":c.ua,"Accept":accept||"text/html,*/*","Accept-Language":"fr-FR,fr;q=0.9,en-US;q=0.8,en;q=0.7","Referer":ref||c.base+"/"}}
