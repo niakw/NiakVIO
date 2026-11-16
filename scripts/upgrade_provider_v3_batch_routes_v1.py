@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Idempotently wire current clean-v3 route Lego for the #9-#18 provider batch.
+"""Idempotently preserve current clean-v3 route Lego for the historical #9-#18 batch.
 
 Historical providers may remain in knowledge/provenance, but this migration only
 mutates providers present in the current manifest. Transport aliases never create
@@ -17,7 +17,7 @@ MANIFEST = ROOT / "manifest.json"
 
 DESIFLIX = "scripts/provider_patches/desiflix_runtime_v1.py"
 ALLMOVIELAND = "scripts/provider_patches/allmovieland_runtime_v1.py"
-ANIKOTOTV = "scripts/provider_patches/anikototv_runtime_v1.py"
+ANIKOTOTV = "scripts/provider_patches/anikototv_runtime_v2.py"
 
 
 def _load() -> dict[str, Any]:
@@ -105,23 +105,17 @@ def patch() -> bool:
         anikoto = _row(patches, "anikototv")
         anikoto["published_types"] = ["anime"]
         anikoto["learned_routes"] = [
-            "/search?keyword={query}",
-            "/watch/{slug}",
-            "/ajax/episode/list/{id}",
-            "/ajax/server/list?servers={id}",
-            "/ajax/server?get={id}",
+            "/api/v2/tmdb?id={tmdbId}&s={season}&e={episode}",
+            "/stream/{identityKind}/{identityId}/{episode}/{mode}",
+            "/stream/getSources?id={id}",
         ]
         _set_legos(
             anikoto,
             ANIKOTOTV,
             {
-                "mirrors": [
-                    "https://anikototv.to",
-                    "https://anikoto.cz",
-                    "https://anikoto.me",
-                    "https://anikoto.net",
-                    "https://anikototv.se",
-                ]
+                "mapping": "https://arm.haglund.dev/api/v2/tmdb",
+                "domain": "megaplay.buzz",
+                "modes": ["sub", "dub"],
             },
         )
 
@@ -170,16 +164,27 @@ def validate() -> None:
             raise AssertionError("allmovieland: dynamic traversal URL leaked into stable DATA")
 
     if "anikototv" in current:
-        ani_routes = [str(v).lower() for v in patches["anikototv"]["learned_routes"]]
-        if any("/v4/" in v or v.startswith("/api/") for v in ani_routes):
-            raise AssertionError("anikototv: wrapper/obsolete route survived native-site migration")
-        for required in (
-            "/ajax/episode/list/{id}",
-            "/ajax/server/list?servers={id}",
-            "/ajax/server?get={id}",
+        ani_routes = [str(v) for v in patches["anikototv"]["learned_routes"]]
+        expected_routes = [
+            "/api/v2/tmdb?id={tmdbId}&s={season}&e={episode}",
+            "/stream/{identityKind}/{identityId}/{episode}/{mode}",
+            "/stream/getSources?id={id}",
+        ]
+        if ani_routes != expected_routes:
+            raise AssertionError(f"anikototv: current Runtime V2 routes mismatch: {ani_routes}")
+        if any(
+            token in route.lower()
+            for route in ani_routes
+            for token in ("/ajax/", "/search", "/watch/")
         ):
-            if required not in ani_routes:
-                raise AssertionError(f"anikototv: native AJAX route missing: {required}")
+            raise AssertionError("anikototv: retired native-site route returned to execution authority")
+        opts = patches["anikototv"].get("provider_lego_options", {}).get(ANIKOTOTV, {})
+        if opts != {
+            "mapping": "https://arm.haglund.dev/api/v2/tmdb",
+            "domain": "megaplay.buzz",
+            "modes": ["sub", "dub"],
+        }:
+            raise AssertionError(f"anikototv: Runtime V2 options mismatch: {opts}")
 
 
 def main() -> int:
