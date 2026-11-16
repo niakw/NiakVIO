@@ -289,3 +289,13 @@ def projection_runtime_visible_provider_ids(root: Path = ROOT) -> set[str]:
         raise RuntimeError("projection runtime scope currently requires repository root authority")
     return projection_visible_provider_ids(root) - pending_provider_ids()
 
+
+def projection_runtime_visible_provider_count(root: Path = ROOT) -> int:
+    """Count canonical Global+France static/runtime-visible identities."""
+    return len(projection_runtime_visible_provider_ids(root))
+
+
+def projection_active_provider_count(root: Path = ROOT) -> int:
+    """Count exact executable active identities across Global+France projections."""
+    return len(projection_active_provider_ids(root))
+
