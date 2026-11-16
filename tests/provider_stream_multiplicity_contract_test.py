@@ -53,6 +53,27 @@ assert "if (direct.length) return _streams" not in known_player
 assert "streams.push(...runtime)" in known_player
 assert "streams.push(..._streams(direct, responseUrl))" in known_player
 
+assert "NIAKVIO_PROVIDER_PLAN_STREAM_COVERAGE_V28" in base
+search_plan = base.split("async function _resolveSearchRequestPlan", 1)[1].split("async function _resolveExternalIdentityPlan", 1)[0]
+assert "if (Array.isArray(detailStreams) && detailStreams.length) return detailStreams" not in search_plan
+assert "if (crawled.length) return crawled" not in search_plan
+assert "planStreams.push(...detailStreams)" in search_plan
+assert "planStreams.push(...crawled)" in search_plan
+assert "return _dedupeStreamRows(planStreams).slice(0, 40);" in search_plan
+
+assert "NIAKVIO_PROVIDER_EXTERNAL_IDENTITY_COVERAGE_V28" in base
+external_plan = base.split("async function _resolveExternalIdentityPlan", 1)[1].split("async function getStreams", 1)[0]
+assert "return _streams(selected" not in external_plan
+assert "if (crawled.length) return crawled" not in external_plan
+assert "planStreams.push(..._streams(selected" in external_plan
+assert "planStreams.push(...crawled)" in external_plan
+assert "return _dedupeStreamRows(planStreams).slice(0, 40);" in external_plan
+
+family_path = base.split('if (family && family !== "unknown") {', 1)[1].split("const primary = await getStreams", 1)[0]
+assert "if (streams.length) return streams;" not in family_path
+assert "familyStreams.push(...streams)" in family_path
+assert "return _dedupeStreamRows(familyStreams).slice(0, 40);" in family_path
+
 # Core: validation capacity must match the runtime output contract. Dedupe is by
 # exact playback identity (URL + request headers), not bare URL.
 assert 'min(int(options.get("max_probes", 6)), 40)' in sanitizer
