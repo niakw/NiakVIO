@@ -290,6 +290,7 @@ jobs:
             cp manifest.json "$RUNNER_TEMP/provider-preflight-manifest.json"
             python scripts/materialize_provider_v3_all.py \
               --source-manifest "$RUNNER_TEMP/provider-preflight-manifest.json" \
+              --source-catalog provider_catalog.json \
               --output-dir "$RUNNER_TEMP/provider-preflight-artifacts" \
               --report "$RUNNER_TEMP/provider-preflight-materialization.json"
             echo "FIELD_PROVIDER_PREFLIGHT_MATERIALIZATION mode=$preflight_mode skipped=false"
