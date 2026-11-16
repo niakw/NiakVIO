@@ -15,7 +15,7 @@ import time
 from pathlib import Path
 from typing import Any
 
-from current_provider_scope import active_provider_ids, visible_provider_ids
+from current_provider_scope import projection_active_provider_ids, projection_visible_provider_ids, projection_visible_provider_rows
 
 ROOT = Path(__file__).resolve().parents[1]
 MANIFEST = ROOT / "manifest.json"
@@ -734,21 +734,20 @@ def main() -> int:
         os.environ["NUVIO_BRAIN_FORCE_PREFERRED_PROFILE"] = preferred
         print("FIELD_PROVIDER_FORCE_PREFERRED requested="+preferred+" mode=force providers=1", flush=True)
 
-    manifest = load(MANIFEST)
     skip_path = args.skip_file if args.skip_file.is_absolute() else ROOT / args.skip_file
     skip_cfg = load(skip_path)
     skipped = {cid(value) for value in (skip_cfg.get("providers") or {}).keys() if cid(value)}
-    catalogue_rows = [row for row in manifest.get("scrapers") or [] if isinstance(row, dict) and cid(row.get("id"))]
+    catalogue_rows = projection_visible_provider_rows()
     catalogue = [cid(row.get("id")) for row in catalogue_rows]
     if len(catalogue) != len(set(catalogue)):
         raise SystemExit("provider catalogue contains duplicate ids")
-    visible = visible_provider_ids()
+    visible = projection_visible_provider_ids()
     if set(catalogue) != visible:
         raise SystemExit(
             "manifest/folder provider identity mismatch: "
             f"manifest_only={sorted(set(catalogue)-visible)} folder_only={sorted(visible-set(catalogue))}"
         )
-    active_ids = active_provider_ids()
+    active_ids = projection_active_provider_ids()
     active_catalogue = [cid(row.get("id")) for row in catalogue_rows if cid(row.get("id")) in active_ids]
     matrix = load(HUB_MATRIX)
     matrix_ids = {cid(row.get("manifestId") or row.get("provider")) for row in matrix.get("rows") or [] if isinstance(row, dict) and cid(row.get("manifestId") or row.get("provider"))}
