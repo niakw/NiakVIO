@@ -1,3 +1,10 @@
+## 2026-11-16 — Prevent stale census publication from erasing newer Repair history
+
+- Current census at `955d58fa60371f85d1cd09c56699f43c96e739b8` exposed a persistence regression: `lastRepairAttempt` had fallen back to historical run `43580198030` even though run `43787089404` had already been persisted by commit `9a6201a9`. The later source-pinned sharded census reset to current `origin/main` before publication but then copied its older `/tmp/provider-census-status.json` wholesale, erasing the newer Repair activity metadata.
+- This is a Brain/control-plane race, not a provider failure. `persist_provider_repair_attempt_metadata.py` now provides a fail-closed monotonic merge for numeric GitHub run IDs. `provider-census-sharded.yml` applies it after rebasing onto current main and before publishing measured census state. Missing attempt metadata is also recovered from current main; incomparable non-numeric IDs are left untouched.
+- Regression coverage verifies newer `43787089404` survives an older `43580198030` candidate, a genuinely newer candidate is retained, missing metadata is restored, and ambiguous manual IDs are not reordered. Workflow contract coverage requires the merge marker.
+- A fresh source-pinned census is required to prove the workflow path in Actions. This correction preserves Repair history only; it does not itself validate a provider repair or playback.
+
 ## 2026-11-16 — Final materialization authority now rebinds stale Global+France rows
 
 - Release-finalizer run `43785917996` on `0c9256da2d9ee12ac6ae828f78c7453118cdd3e2` progressed past the projection-order bug and then failed strict authority validation on France-only `webflix`: current manifest bytes were `providers/webflix--nuvio--dd733731a8e8a915.js` while the materialization ledger still named `providers/webflix-e067b294eea3f5b3.js`.
