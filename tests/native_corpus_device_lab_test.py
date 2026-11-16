@@ -113,13 +113,13 @@ for workflow in (tv_reader, mobile_android, mobile_ios, desktop_reader):
 assert "matrix:" not in tv_reader
 assert tv_reader.count("tv-route-reader:") == 1
 assert "NIAKVIO_TARGET_FIXTURES=$ROTATED_FIXTURES" in tv_reader
-assert "NIAKVIO_TV_PRIORITY_APPEND: \"0\"" in tv_reader
+assert "NIAKVIO_TV_PRIORITY_APPEND: \"1\"" in tv_reader
 assert "NIAKVIO_TV_ROUTE_TIMEOUT_MINUTES: \"45\"" in tv_reader
 assert 'NIAKVIO_ANDROID_PROVIDER_TIMEOUT_MS: "25000"' in tv_reader
-assert "--streams 2" in tv_reader
-assert 'NIAKVIO_PRIMARY_STREAM_SCOPE: "2"' in tv_reader
-assert 'NIAKVIO_REGRESSION_STREAM_SCOPE: "2"' in tv_reader
-assert "--streams all" not in tv_reader.split("\n  mobile-android-reader:", 1)[0]
+assert "--streams all" in tv_reader
+assert "NIAKVIO_PRIMARY_STREAM_SCOPE: all" in tv_reader
+assert "NIAKVIO_REGRESSION_STREAM_SCOPE: all" in tv_reader
+assert "--streams all" in tv_reader.split("\n  mobile-android-reader:", 1)[0]
 assert "--streams all" in tv_reader.split("\n  mobile-android-reader:", 1)[1]
 assert "native-tv-full-${{ github.run_id }}" in tv_reader
 
@@ -169,6 +169,11 @@ assert 'reason=log_idle_timeout' in ios_suite
 assert 'mode == "learning" || mode == "quick"' in prepare_ios
 assert "prepare_native_ios_reader_acceptance.py" in mobile_ios
 assert "run_native_corpus_ios_suite.sh" in mobile_ios
+assert "native_regression_fixtures.py" in (ROOT / "scripts/run_native_corpus_tv_suite.sh").read_text(encoding="utf-8")
+assert "native_regression_fixtures.py" in (ROOT / "scripts/run_native_corpus_mobile_suite.sh").read_text(encoding="utf-8")
+assert "native_regression_fixtures.py" in (ROOT / "scripts/run_native_corpus_desktop_suite.sh").read_text(encoding="utf-8")
+assert "mandatory_fixture_rows" in prepare_ios
+assert "rows.take(40)" in prepare_ios
 assert "provider_hard_timeout_ms=" in (ROOT / "scripts/prepare_native_corpus_validation.py").read_text(encoding="utf-8")
 assert 'execute = "PluginRuntime().executePlugin"' in (ROOT / "scripts/prepare_native_corpus_validation.py").read_text(encoding="utf-8")
 assert "analyze_native_ios_results.py" in mobile_ios
