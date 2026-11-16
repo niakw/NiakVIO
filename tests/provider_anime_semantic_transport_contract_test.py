@@ -96,12 +96,15 @@ assert 'for compatible in ("tv", "movie"):' not in materializer
 assert 'wanted = ["anime", "tv", "movie"]' not in materializer
 
 enforcer = (ROOT / "scripts/enforce_provider_v3_semantic_transport_contract_v5.py").read_text(encoding="utf-8")
-assert 'def anime_transport(canonical: list[str]) -> list[str]:' in enforcer
-anime_transport_body = enforcer.split('def anime_transport(canonical: list[str]) -> list[str]:', 1)[1].split('\ndef catalog_semantic_types()', 1)[0]
-assert 'if "anime" in canonical and "tv" not in wanted:' in anime_transport_body
-assert 'wanted.append("tv")' in anime_transport_body
-assert 'wanted.append("series")' not in anime_transport_body
-assert '"series"' not in anime_transport_body
+assert 'def project_launch_types(canonical: list[str]) -> list[str]:' in enforcer
+launch_projection_body = enforcer.split('def project_launch_types(canonical: list[str]) -> list[str]:', 1)[1].split('\ndef catalog_semantic_types()', 1)[0]
+assert 'if "anime" in canonical and "tv" not in wanted:' in launch_projection_body
+assert 'wanted.append("tv")' in launch_projection_body
+assert 'wanted.append("series")' not in launch_projection_body
+assert 'def normalized_launch_types(values: object) -> list[str]:' in enforcer
+assert 'def normalized_transport_types(values: object) -> list[str]:' not in enforcer
+assert 'supportedTypes launch aliases only' in enforcer
+assert '"series"' not in launch_projection_body
 assert 'expected=46' not in enforcer
 assert 'projection_visible_provider_ids()' in enforcer
 
