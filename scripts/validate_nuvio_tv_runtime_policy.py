@@ -92,6 +92,9 @@ def main() -> int:
     errors: list[str] = []
     contract = load(CONTRACT_PATH)
 
+    if contract.get("schema_version") != 4:
+        errors.append(f"NuvioTV runtime contract schema mismatch: {contract.get('schema_version')!r}")
+
     expected = {
         "client": "NuvioTV",
         "platform": "android-tv",
@@ -115,9 +118,7 @@ def main() -> int:
 
     required = {
         "probe": contract.get("probe"),
-        "promoter": contract.get("promoter"),
-        "patch": contract.get("direct_media_patch"),
-        "report": contract.get("promotion_report"),
+        "media_safety": contract.get("media_safety_authority"),
     }
     paths: dict[str, Path] = {}
     for label, relative in required.items():
@@ -126,12 +127,29 @@ def main() -> int:
         if not path.is_file():
             errors.append(f"missing NuvioTV {label}: {relative}")
 
+    historical = contract.get("historical_direct_media_promotion") or {}
+    if historical.get("authority") is not False:
+        errors.append("historical NuvioTV direct-media promotion must be non-authoritative")
+    retired_patch = str(historical.get("retired_patch") or "")
+    if not retired_patch:
+        errors.append("missing retired NuvioTV patch provenance")
+    elif (ROOT / retired_patch).exists():
+        errors.append(f"retired NuvioTV direct-media patch unexpectedly restored: {retired_patch}")
+    promoter = str(historical.get("promoter") or "")
+    for workflow in (ROOT / ".github" / "workflows").glob("*.yml"):
+        workflow_text = workflow.read_text(encoding="utf-8", errors="replace")
+        if promoter and promoter in workflow_text:
+            errors.append(f"historical NuvioTV promoter became workflow-authoritative: {workflow.name}")
+        if retired_patch and retired_patch in workflow_text:
+            errors.append(f"retired NuvioTV patch became workflow-authoritative: {workflow.name}")
+
     if paths.get("probe") and paths["probe"].is_file():
         text = paths["probe"].read_text(encoding="utf-8", errors="replace")
         markers = (
             "SCRAPER_SETTINGS",
             "Android TV",
-            "provider.getStreams(String(fixture.tmdbId",
+            "nuvio_tv_positional",
+            "invocation_authoritative",
             "starts_extm3u",
             "binary_signature",
             "<MPD",
@@ -141,39 +159,15 @@ def main() -> int:
             if marker not in text:
                 errors.append(f"NuvioTV probe missing marker: {marker}")
 
-    if paths.get("patch") and paths["patch"].is_file():
-        text = paths["patch"].read_text(encoding="utf-8", errors="replace")
-        markers = (
-            "NUVIO_TV_DIRECT_MEDIA_V2",
-            "SCRAPER_SETTINGS",
-            "async function(tmdbId,mediaType,season,episode)",
-            "#EXTM3U",
-            "<MPD",
-        )
-        for marker in markers:
+    if paths.get("media_safety") and paths["media_safety"].is_file():
+        text = paths["media_safety"].read_text(encoding="utf-8", errors="replace")
+        for marker in (
+            "NUVIO_STREAM_OUTPUT_NETWORK_EVIDENCE_V10",
+            "NUVIO_STREAM_OUTPUT_STRICT_PROBE_V8",
+            "clearPrivateProofs",
+        ):
             if marker not in text:
-                errors.append(f"NuvioTV direct-media patch missing marker: {marker}")
-
-    if paths.get("promoter") and paths["promoter"].is_file():
-        text = paths["promoter"].read_text(encoding="utf-8", errors="replace")
-        markers = (
-            "nuvio_tv_probe_v2.cjs",
-            "nuvio_tv_direct_media_v2.py",
-            "NuvioTV four positional args plus global SCRAPER_SETTINGS",
-            "strictly_better",
-        )
-        for marker in markers:
-            if marker not in text:
-                errors.append(f"NuvioTV promoter missing marker: {marker}")
-
-    if paths.get("report") and paths["report"].is_file():
-        report = load(paths["report"])
-        if report.get("contract") != "NuvioTV four positional args plus global SCRAPER_SETTINGS":
-            errors.append("NuvioTV historical promotion report contract mismatch")
-        if report.get("media_gate") != "#EXTM3U, DASH MPD, or real video container signature":
-            errors.append("NuvioTV historical promotion report media gate mismatch")
-        if not report_has_playable_evidence(report):
-            errors.append("NuvioTV promotion report has no strict playable-media evidence")
+                errors.append(f"NuvioTV shared media-safety authority missing marker: {marker}")
 
     main_doc = load(MAIN_PATH)
     vf_doc = load(VF_PATH)
