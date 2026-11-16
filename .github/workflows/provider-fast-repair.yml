@@ -90,6 +90,7 @@ jobs:
           set -euo pipefail
           python -m py_compile             scripts/run_provider_fast_repair.py             scripts/run_provider_retest.py             scripts/run_provider_brain_repair.py             scripts/brain_repair_runtime.py             scripts/sanitize_brain_learning_memory.py             scripts/import_external_brain_llm_guidance.py             scripts/import_persistent_brain_learning_guidance.py             scripts/compile_brain_accepted_program_v3.py             scripts/recover_brain_positive_program_memory.py
           python tests/provider_fast_repair_separation_test.py
+          python tests/provider_brain_targeted_projection_union_test.py
           python tests/provider_retest_scope_test.py
           python tests/provider_remat_test_separation_test.py
           python tests/provider_repair_learn_handoff_v1_test.py
