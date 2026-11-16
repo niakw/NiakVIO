@@ -242,8 +242,10 @@ assert machine["provider_scopes"]["projection_active"] == "scripts/current_provi
 assert machine["provider_scopes"]["projection_runtime_visible"] == "scripts/current_provider_scope.py:projection_runtime_visible_provider_ids"
 assert machine["provider_scopes"]["native_acceptance"] == "scripts/current_provider_scope.py:projection_active_provider_ids"
 assert machine["provider_scopes"]["native_acceptance_includes_france_only"] is True
+assert machine["provider_scopes"]["availability_active"] == "scripts/current_provider_scope.py:projection_active_provider_ids"
+assert machine["provider_scopes"]["availability_report_visible"] == "scripts/current_provider_scope.py:projection_visible_provider_ids"
 
-assert validation_machine["schema_version"] >= 69
+assert validation_machine["schema_version"] >= 70
 runtime_contract = validation_machine["nuvio_runtime_contract"]
 assert runtime_contract["current_audited_refs_must_match"] is True
 assert runtime_contract["positional_get_streams_signature"] == "getStreams(tmdbId, mediaType, season, episode)"
@@ -268,6 +270,8 @@ catalogue_contract = validation_machine["catalogue"]
 assert catalogue_contract["cardinality_policy"] == "derived-never-frozen"
 assert catalogue_contract["projection_active_authority"] == "scripts/current_provider_scope.py:projection_active_provider_ids"
 assert catalogue_contract["native_lab_scope_authority"] == "scripts/current_provider_scope.py:projection_active_provider_ids"
+assert catalogue_contract["availability_active_scope_authority"] == "scripts/current_provider_scope.py:projection_active_provider_ids"
+assert catalogue_contract["availability_report_scope_authority"] == "scripts/current_provider_scope.py:projection_visible_provider_ids"
 assert catalogue_contract["france_only_first_class"] is True
 for stale_count in ("provider_objects", "active_provider_objects", "physical_native_lab_scope", "historical_recovery_census"):
     assert stale_count not in catalogue_contract
