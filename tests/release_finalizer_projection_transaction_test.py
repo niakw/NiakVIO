@@ -19,6 +19,15 @@ multiplicity = workflow.index("python3 tests/provider_stream_multiplicity_contra
 season_zero = workflow.index("python3 tests/special_season_zero_identity_test.py", multiplicity)
 five_labs = workflow.index("python3 tests/native_five_lab_coverage_test.py", season_zero)
 native_scope = workflow.index("python3 tests/native_hub46_scope_contract_test.py", five_labs)
+presentation = workflow.index("python3 tests/global_stream_presentation_test.py", native_scope)
+metadata = workflow.index("python3 tests/global_stream_metadata_preservation_contract_test.py", presentation)
+score = workflow.index("python3 tests/stream_score_contract_test.py", metadata)
+hls_facts = workflow.index("python3 tests/hls_master_facts_short_test.py", score)
+hls_integrity = workflow.index("python3 tests/hls_playback_integrity_test.py", hls_facts)
+hls_presentation = workflow.index("python3 tests/hls_presentation_badge_integration_test.py", hls_integrity)
+multi_variant = workflow.index("python3 tests/stream_output_sanitizer_multi_variant_test.py", hls_presentation)
+telemetry = workflow.index("python3 tests/global_telemetry_contract_test.py", multi_variant)
+core_ownership = workflow.index("python3 tests/global_core_runtime_ownership_test.py", telemetry)
 
 step = workflow.index("- name: Reapply durable provider patches, minimize and rebuild current projections")
 reapply = workflow.index("python3 scripts/reapply_published_overrides.py", step)
@@ -46,7 +55,8 @@ final_reconcile = workflow.index("python3 scripts/reconcile_active_provider_publ
 
 assert reapply < sync < sync_check < reconcile < materialize < sync2 < sync2_check < second_reconcile < validate
 assert runtime_step < runtime_render < runtime_gate < runtime_matrix < runtime_policy < portable_gate
-assert portable_gate < metier_docs < metier_plans < cardinality < semantic_transport < multiplicity < season_zero < five_labs < native_scope < step
+assert portable_gate < metier_docs < metier_plans < cardinality < semantic_transport < multiplicity < season_zero < five_labs < native_scope
+assert native_scope < presentation < metadata < score < hls_facts < hls_integrity < hls_presentation < multi_variant < telemetry < core_ownership < step
 assert release_types < reapply2 < minimize2 < minimize2_check < sync3 < sync3_check < final_reconcile
 reverse_rebuild = workflow.index("python3 scripts/verify_provider_v3_reverse_rebuild.py", final_reconcile)
 finalize_versions = workflow.index("- name: Finalize synchronized release and provider cache versions", reverse_rebuild)
@@ -70,6 +80,15 @@ for required in (
     "'tests/provider_anime_semantic_transport_contract_test.py'",
     "'tests/native_five_lab_coverage_test.py'",
     "'tests/native_hub46_scope_contract_test.py'",
+    "'tests/global_stream_presentation_test.py'",
+    "'tests/global_stream_metadata_preservation_contract_test.py'",
+    "'tests/stream_score_contract_test.py'",
+    "'tests/hls_master_facts_short_test.py'",
+    "'tests/hls_playback_integrity_test.py'",
+    "'tests/hls_presentation_badge_integration_test.py'",
+    "'tests/stream_output_sanitizer_multi_variant_test.py'",
+    "'tests/global_telemetry_contract_test.py'",
+    "'tests/global_core_runtime_ownership_test.py'",
 ):
     assert required in workflow, required
 print("release finalizer projection transaction ordering passed")
