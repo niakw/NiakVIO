@@ -74,6 +74,34 @@ assert "if (streams.length) return streams;" not in family_path
 assert "familyStreams.push(...streams)" in family_path
 assert "return _dedupeStreamRows(familyStreams).slice(0, 40);" in family_path
 
+assert "NIAKVIO_PROVIDER_DLE_PLAYER_COVERAGE_V29" in base
+play_episode = base.split("async function _spv4PlayEpisode", 1)[1].split("function _spv4SagaTargets", 1)[0]
+assert "if (direct.length) return direct;" not in play_episode
+assert "if (nested.length) return nested;" not in play_episode
+assert "streams.push(...direct)" in play_episode
+assert "streams.push(...nested)" in play_episode
+
+assert "NIAKVIO_PROVIDER_STREMIO_COVERAGE_V29" in base
+stremio = base.split("async function _spv5Stremio", 1)[1].split("async function _spv5DleFilmApi", 1)[0]
+assert "if (urls.length) return _streams" not in stremio
+assert "streams.push(..._streams(urls" in stremio
+assert "return _dedupeStreamRows(streams).slice(0, 40);" in stremio
+
+assert "NIAKVIO_PROVIDER_DLE_FILM_API_COVERAGE_V29" in base
+film_api = base.split("async function _spv5DleFilmApi", 1)[1].split("async function _spv4ResolveDetail", 1)[0]
+assert "if (direct.length) return direct;" not in film_api
+assert "if (nested.length) return nested;" not in film_api
+assert "streams.push(...direct)" in film_api
+assert "streams.push(...nested)" in film_api
+
+assert "NIAKVIO_PROVIDER_DETAIL_STREAM_COVERAGE_V29" in base
+detail = base.split("async function _spv4ResolveDetail", 1)[1].split("function _spv7ProviderSiteBases", 1)[0]
+assert "const direct = _spv4DirectStreams(urls, base);" in detail
+assert "if (direct.length) return direct;" not in detail
+assert "streams.push(...direct)" in detail
+assert "streams.push(...nested)" in detail
+assert "return _dedupeStreamRows(streams).slice(0, 40);" in detail
+
 # Core: validation capacity must match the runtime output contract. Dedupe is by
 # exact playback identity (URL + request headers), not bare URL.
 assert 'min(int(options.get("max_probes", 6)), 40)' in sanitizer
