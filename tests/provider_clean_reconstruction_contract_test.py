@@ -118,6 +118,11 @@ assert "materialize_provider_v3_all.py" not in routine
 assert "verify_provider_v3_reverse_rebuild.py" not in routine
 assert "run_brain_learning_queue.py" in learn
 
+# The initial published-stage builder is already local and must not receive
+# discover_candidates.py-specific CLI flags.
+published_stage=learn.split("      - name: Build isolated current provider stage",1)[1].split("      - name:",1)[0]
+assert "build_published_provider_stage.py --stage staging" in published_stage
+assert "args+=(--local-catalog-only)" not in published_stage
 # Fast-Handoff reconstruction must derive ProviderBase from local structured authority.
 learn_stage=learn.split("      - name: Build clean ProviderBase reconstruction stage",1)[1].split("      - name:",1)[0]
 assert "--clean-reconstruction" in learn_stage

@@ -568,9 +568,8 @@ jobs:
             for provider in "${providers[@]}"; do
               [ -z "$provider" ] || args+=(--provider "$provider")
             done
-            # Fast-Handoff ProviderBase is derived from NiakVIO's structured
-            # catalogue/DATA authority. External upstreams are not a prerequisite.
-            args+=(--local-catalog-only)
+            # This builder already reads only the exact current Global+France
+            # published catalogue. External discovery is not part of this stage.
             timeout --signal=TERM --kill-after=5s 30s "${args[@]}"
             python - staging/candidates.json "${#providers[@]}" <<'PY'
           import json,sys

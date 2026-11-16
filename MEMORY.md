@@ -1,3 +1,9 @@
+## 2026-11-16 — Fast-Handoff published-stage CLI drift fixed before ProviderBase replay
+
+- Brain Repair Lab 43781978883 bound to NiakVIO `7af34100984c80b86bc7f8aae13c4f3faedcec4a` and correctly resolved Brain-LLM `cb1fddf4ee8b06be9a29bb0a69f1210d925cb93e`. It parsed the exact 12-provider trigger cohort and then failed in `Build isolated current provider stage` before any provider observation: `build_published_provider_stage.py` rejected the accidental `--local-catalog-only` argument.
+- That flag belongs only to `discover_candidates.py` during clean ProviderBase reconstruction. The published-stage builder already reads exact current Global+France catalogue bytes and has no external-discovery path, so its unsupported flag is removed. The reconstruction stage keeps `--local-catalog-only`.
+- The Provider v3 reconstruction contract now asserts both sides of this boundary. No provider bytes, manifests, activation state, validation thresholds or playback claims changed. A fresh trigger is required.
+
 ## 2026-11-16 — Triggered causal-family Learning after ProviderBase wiring fix
 
 - Source parent `3f28a81e376d37a58770f9cef8046471ed9716a9` passed Provider Non-Regression 43781828694. Workflow Gate 43781828750 reached architecture contracts and then failed on the pre-existing Chillflix freshness gate; no failure from the ProviderBase workflow contract was reported.
