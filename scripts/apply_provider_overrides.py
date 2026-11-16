@@ -1851,8 +1851,12 @@ def apply_overrides(
                 sanitizer_options.setdefault(key, value)
             sanitizer_options["probe_direct_media"] = True
             sanitizer_options["probe_all_urls"] = True
+            # The runtime contract allows up to 40 distinct playback identities.
+            # Do not silently collapse a 10-20 reader/source/quality fan-out to
+            # the historical eight-probe window. The sanitizer remains bounded
+            # and fail-closed; the provider deadline stops pathological tails.
             sanitizer_options["max_probes"] = max(
-                1, min(int(sanitizer_options.get("max_probes") or 8), 8)
+                1, min(int(sanitizer_options.get("max_probes") or 40), 40)
             )
             sanitizer_options.setdefault("probe_timeout_ms", 6500)
             sanitizer_options.setdefault("min_vod_duration_seconds", 60)
