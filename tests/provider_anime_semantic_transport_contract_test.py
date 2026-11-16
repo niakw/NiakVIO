@@ -105,6 +105,16 @@ assert '"series"' not in anime_transport_body
 assert 'expected=46' not in enforcer
 assert 'projection_visible_provider_ids()' in enforcer
 
+media_migration = enforcer.split('def patch_media_transport() -> bool:', 1)[1].split('\ndef patch_materializer() -> bool:', 1)[0]
+assert 'NUVIO_GLOBAL_CANONICAL_ANIME_PROVIDER_ABI_V35' in media_migration
+assert 'if(canonical==="anime")return"anime";' in media_migration
+assert 'tmdb-data-contract-launch-gate-v35-canonical-anime-provider-abi' in media_migration
+assert 'if(canonical==="anime")return namespace==="movie"?"movie":"tv";' not in media_migration
+assert 'if(semantic.indexOf(ns)>=0)return ns;' not in media_migration
+assert 'anime semantic/TV transport split failed' not in enforcer
+assert 'canonical anime provider ABI lost' in enforcer
+assert 'declared anime->tv provider alias not honored' in enforcer
+
 reapply = (ROOT / "scripts/reapply_published_overrides.py").read_text(encoding="utf-8")
 assert 'def projected_transport_types(semantic_types: object) -> list[str]:' in reapply
 reapply_transport_body = reapply.split('def projected_transport_types(semantic_types: object) -> list[str]:', 1)[1].split('\ndef semantic_manifest_types(', 1)[0]
