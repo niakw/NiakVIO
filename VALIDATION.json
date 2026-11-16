@@ -1,5 +1,5 @@
 {
-  "schema_version": 68,
+  "schema_version": 69,
   "release": "dynamic",
   "release_authority": "manifest.json:version",
   "candidate_track": "main",
@@ -166,5 +166,42 @@
     "mandatory_native_fixture": "spartacus-s00e01",
     "mandatory_native_fixture_tmdb_id": "46296",
     "mandatory_across_five_labs": true
+  },
+  "nuvio_runtime_contract": {
+    "authority_files": [
+      "automation/nuvio-client-upstreams.json",
+      "automation/nuvio-client-compatibility-matrix.json",
+      "automation/platform-runtime-contracts.json",
+      "automation/nuvio-tv-runtime-contract.json",
+      "sources.json"
+    ],
+    "current_audited_refs_must_match": true,
+    "client_families": [
+      "NuvioMobile",
+      "NuvioDesktop",
+      "NuvioTV"
+    ],
+    "positional_get_streams_signature": "getStreams(tmdbId, mediaType, season, episode)",
+    "runtime_tmdb_capability_required": true,
+    "credential_embedding_in_provider_bytes_allowed": false,
+    "portable_provider_result_fields": [
+      "title",
+      "name",
+      "url",
+      "quality",
+      "size",
+      "language",
+      "provider",
+      "type",
+      "seeders",
+      "peers",
+      "infoHash",
+      "headers",
+      "subtitles"
+    ],
+    "rich_fields_are_additive_only": true,
+    "historical_platform_matrix_is_current_authority": false,
+    "france_only_projection_is_first_class": true,
+    "native_platform_proof_is_independent": true
   }
 }
