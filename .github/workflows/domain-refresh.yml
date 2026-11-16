@@ -281,7 +281,7 @@ jobs:
           python scripts/audit_provider_v3_static.py --domain-only
           python scripts/generate_hub46_manifest.py \
             --source manifest.json \
-            --matrix automation/evidence/hub-lab-matrix-46.json \
+            --vf-source vf/manifest.json \
             --output manifest-hub46.json
           python scripts/prune_unreferenced_providers.py
 
