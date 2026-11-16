@@ -138,9 +138,10 @@ media = machine["media_types"]
 assert media["semantic_field"] == "canonicalSupportedTypes"
 assert media["transport_field"] == "supportedTypes"
 assert media["anime_only_transport_compatibility"] == ["anime", "tv"]
-assert media["provider_runtime_request_values"] == ["movie", "tv"]
+assert media["provider_runtime_request_values"] == ["movie", "tv", "anime"]
 assert media["tv_input_aliases"] == ["series", "show", "other"]
-assert media["anime_provider_runtime_type"] == "tv"
+assert media["anime_provider_runtime_type"] == "anime"
+assert media["anime_tv_launch_alias_is_compatibility_only"] is True
 assert media["series_published_supported_type"] is False
 assert media["transport_aliases_do_not_expand_semantic_capability"] is True
 assert media["capability_gate_before_provider_network"] is True
