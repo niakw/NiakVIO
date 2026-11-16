@@ -26,11 +26,27 @@ with tempfile.TemporaryDirectory(prefix="bulk-active-byte-guard-") as tmp:
     assert all(len(row["sha256"]) == 64 for row in protected)
     mod.verify(baseline)
 
+    manifest=json.loads((ROOT/"manifest.json").read_text(encoding="utf-8"))
+    active=next(
+        row for row in manifest.get("scrapers") or []
+        if isinstance(row,dict) and row.get("enabled") is True and row.get("id")
+    )
+    single=Path(tmp)/"single.json"
+    single.write_text(json.dumps({"id":active["id"],"name":"single-target"}),encoding="utf-8")
+    single_baseline=Path(tmp)/"single-baseline.json"
+    single_payload=mod.capture(single,single_baseline)
+    assert single_payload["requestTargets"]==[mod.canon(active["id"])]
+    assert all(row["provider"]!=mod.canon(active["id"]) for row in single_payload["protected"])
+    mod.verify(single_baseline)
+
 workflow = (ROOT / ".github/workflows/provider-bulk-onboarding.yml").read_text(encoding="utf-8")
+single_workflow = (ROOT / ".github/workflows/add-provider.yml").read_text(encoding="utf-8")
 assert "verify_unrelated_active_provider_bytes.py" in workflow
 assert "--capture" in workflow and "--verify" in workflow
+assert "verify_unrelated_active_provider_bytes.py" in single_workflow
+assert "--capture" in single_workflow and "--verify" in single_workflow
 assert "provider_v3_minimizer_published_test.py" not in workflow, (
     "bulk onboarding must not demand a fleet-wide minimizer rewrite of proof-bound active bytes"
 )
 assert "provider_pending_minimizer_test.py" in workflow
-print("bulk onboarding active exact-byte stability contract passed")
+print("single + bulk onboarding active exact-byte stability contract passed")
