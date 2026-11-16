@@ -32,8 +32,6 @@ concurrency:
   group: native-mobile-ios-reader-${{ github.event_name == 'workflow_dispatch' && github.run_id || 'main' }}
   cancel-in-progress: ${{ github.event_name != 'workflow_dispatch' }}
 
-env:
-
 jobs:
   resolve:
     runs-on: ubuntu-latest
