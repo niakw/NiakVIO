@@ -6,7 +6,6 @@
       "anikototv",
       "anisama",
       "castle",
-      "french-anime",
       "french-manga",
       "internet-archive",
       "movix-fr",
@@ -19,7 +18,8 @@
       "sekai",
       "streamzo",
       "topcartoons",
-      "webflix"
+      "webflix",
+      "zone-streaming"
     ],
     "version": 1
   },
@@ -997,7 +997,7 @@
       "routeTemplates": [
         "/index.php?do=search&subaction=search&story={query}"
       ],
-      "status": "NO PROOF",
+      "status": "HARNESS/ENV BLOCKED",
       "strategy": "mixed_embed_resolver"
     },
     "4khdhub": {
@@ -4135,7 +4135,7 @@
       "routeTemplates": [
         "/results.php?search={query}"
       ],
-      "status": "NO PROOF",
+      "status": "PROVIDER NETWORK BLOCKED",
       "strategy": "html_scraper"
     },
     "dotriv": {
@@ -4737,7 +4737,7 @@
         "anime"
       ],
       "officialHost": "french-anime.com",
-      "operational": true,
+      "operational": false,
       "peerRequestRecipes": [],
       "peerRouteTemplates": [
         "/?s={query}",
@@ -4755,7 +4755,7 @@
         "/?s={query}",
         "/?q={query}"
       ],
-      "status": "FULL OK",
+      "status": "HARNESS/ENV BLOCKED",
       "strategy": "mixed_embed_resolver"
     },
     "french-manga": {
@@ -6920,7 +6920,7 @@
         "/boise/sources",
         "/nashville/sources"
       ],
-      "status": "NO PROOF",
+      "status": "HARNESS MISMATCH",
       "strategy": "api_stream_resolver"
     },
     "mugiwarastream": {
@@ -10365,7 +10365,7 @@
     "voiranime-homes": {
       "domainMemory": true,
       "evidenceDepth": [
-        "anime=lookup_only"
+        "anime=none"
       ],
       "hasApiRecipe": true,
       "hasProviderValuePlan": false,
@@ -11760,7 +11760,7 @@
         "tv"
       ],
       "officialHost": "www.zone-streaming.fr",
-      "operational": false,
+      "operational": true,
       "peerRequestRecipes": [],
       "peerRouteTemplates": [
         "/?s={query}",
@@ -11778,7 +11778,7 @@
         "/?s={query}",
         "/index.php?do=search&subaction=search&story={query}"
       ],
-      "status": "CHAIN REACHED",
+      "status": "PARTIAL OK",
       "strategy": "mixed_embed_resolver"
     },
     "zone-telechargement": {
@@ -11837,8 +11837,8 @@
     "requiresDeepValidation": true
   },
   "schemaVersion": 2,
-  "sourceRunId": "43787101494",
-  "sourceSha": "0c9256da2d9ee12ac6ae828f78c7453118cdd3e2",
+  "sourceRunId": "43789755892",
+  "sourceSha": "7d303c00586a2caa0da097ab2e68b9daf3841ec7",
   "strategyPatterns": {
     "api_stream_resolver": {
       "commonRequestRecipes": [],
@@ -11851,17 +11851,17 @@
       "routeFamilies": [
         {
           "providerSupport": 1,
-          "role": "search",
-          "supportRatio": 0.5
-        },
-        {
-          "providerSupport": 1,
           "role": "other",
           "supportRatio": 0.5
         },
         {
           "providerSupport": 1,
           "role": "detail",
+          "supportRatio": 0.5
+        },
+        {
+          "providerSupport": 1,
+          "role": "search",
           "supportRatio": 0.5
         },
         {
@@ -11890,11 +11890,6 @@
       "routeFamilies": [
         {
           "providerSupport": 2,
-          "role": "search",
-          "supportRatio": 0.6667
-        },
-        {
-          "providerSupport": 2,
           "role": "detail",
           "supportRatio": 0.6667
         },
@@ -11904,18 +11899,23 @@
           "supportRatio": 0.6667
         },
         {
+          "providerSupport": 2,
+          "role": "search",
+          "supportRatio": 0.6667
+        },
+        {
           "providerSupport": 1,
           "role": "episode",
           "supportRatio": 0.3333
         },
         {
           "providerSupport": 1,
-          "role": "player",
+          "role": "other",
           "supportRatio": 0.3333
         },
         {
           "providerSupport": 1,
-          "role": "other",
+          "role": "player",
           "supportRatio": 0.3333
         }
       ]
@@ -11940,14 +11940,14 @@
       "greenProviders": [
         "anikototv",
         "anisama",
-        "french-anime",
         "french-manga",
         "movix-fr",
         "mugiwarastream",
         "nakios",
         "neko-sama",
         "sadisflix",
-        "streamzo"
+        "streamzo",
+        "zone-streaming"
       ],
       "routeFamilies": [
         {
@@ -11992,7 +11992,7 @@
       "routeFamilies": [
         {
           "providerSupport": 1,
-          "role": "search",
+          "role": "api",
           "supportRatio": 1.0
         },
         {
@@ -12002,7 +12002,7 @@
         },
         {
           "providerSupport": 1,
-          "role": "api",
+          "role": "search",
           "supportRatio": 1.0
         }
       ]

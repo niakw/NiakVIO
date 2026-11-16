@@ -9,18 +9,17 @@
   "deferredLearningProviders": [
     "frenchstream",
     "hianime",
-    "movy",
     "stigstream"
   ],
-  "effectiveWaves": 1,
-  "elapsedSeconds": 128.345,
+  "effectiveWaves": 2,
+  "elapsedSeconds": 393.663,
   "executionModel": "family-batched-multi-wave-brain-repair",
   "experienceMemory": {
     "operationalProviderCount": 17,
     "providerCount": 142,
     "schemaVersion": 2,
-    "sourceRunId": "43787101494",
-    "sourceSha": "0c9256da2d9ee12ac6ae828f78c7453118cdd3e2",
+    "sourceRunId": "43789755892",
+    "sourceSha": "7d303c00586a2caa0da097ab2e68b9daf3841ec7",
     "strategyCount": 5
   },
   "fixedInLabProviders": [],
@@ -31,12 +30,11 @@
   "initialStatuses": {
     "frenchstream": "NO PROOF",
     "hianime": "CHAIN REACHED",
-    "movy": "NO PROOF",
     "stigstream": "CHAIN REACHED"
   },
   "labOnlyWithoutCompiledRepairProviders": [],
   "maxRoundsPerBatch": 3,
-  "maxWaves": 1,
+  "maxWaves": 2,
   "noProgressReason": "experiment_variants_exhausted",
   "positiveProgramRecovery": {
     "durableProviders": [],
@@ -44,22 +42,17 @@
     "recoveredRecordCount": 0,
     "reportCount": 112
   },
-  "processedProviderCount": 4,
+  "processedProviderCount": 3,
   "processedProviders": [
     "frenchstream",
     "hianime",
-    "movy",
     "stigstream"
   ],
   "providerSpecificRules": false,
   "rawLabAcceptedCount": 0,
   "rawLabAcceptedRepairs": [],
-  "remainingProviders": [
-    "frenchstream",
-    "hianime",
-    "stigstream"
-  ],
-  "requestedWaves": 1,
+  "remainingProviders": [],
+  "requestedWaves": 2,
   "resumeRecommended": false,
   "safety": {
     "acceptedMutationRequiresStrictImprovement": true,
@@ -74,18 +67,17 @@
     "wafEnvironmentExcludedByDefault": true
   },
   "schemaVersion": 1,
-  "selectedProviderCount": 4,
+  "selectedProviderCount": 3,
   "selectedProviders": [
     "frenchstream",
     "hianime",
-    "movy",
     "stigstream"
   ],
   "selectionSource": "automation/provider-census-status.json:repairQueue",
   "shardCount": 1,
   "shardIndex": 0,
   "skippedEnvironmentProviders": [],
-  "sourceCensusRunId": "43787101494",
+  "sourceCensusRunId": "43789755892",
   "timeBudgetExhausted": false,
   "timeBudgetSeconds": 1200,
   "unvisitedProviders": [],
@@ -105,60 +97,140 @@
           "brain": {
             "attemptDiagnostics": [
               {
-                "parentSha256": "bc93a4ed2785e5aa3b4ab7ff2d3266b391f98a2389ff68a2d9fae860643a04a7",
+                "parentSha256": "1c415541fa19de347dc05374ea2c652dfe9e44e3e4ebc93e52d421dcd8df37e0",
                 "phase": "attempts",
                 "profile": "adaptive_runtime_recovery",
-                "provider": "movy",
+                "provider": "frenchstream",
                 "reasonCode": "",
-                "repairSha256": "32a86c953a25baef56402bfe06114716005331d66f743eec154a7abb434b8ad4",
+                "repairSha256": "7932cfc6d40aec8c28a7fea728d86f6462149fcfd6b1fbef56e7bff638bb4f8d",
                 "round": 1,
                 "status": "generated"
               },
               {
-                "parentSha256": "",
-                "phase": "exploration_progress",
-                "profile": "adaptive_runtime_recovery",
-                "provider": "movy",
-                "reasonCode": "sandbox_diagnostic_progress",
-                "repairSha256": "32a86c953a25baef56402bfe06114716005331d66f743eec154a7abb434b8ad4",
-                "round": 1,
-                "status": ""
-              },
-              {
-                "parentSha256": "32a86c953a25baef56402bfe06114716005331d66f743eec154a7abb434b8ad4",
+                "parentSha256": "3c8184082d62241f773c5dd5af9627a4d0299477bb99c2faf664f2416222ab8e",
                 "phase": "attempts",
                 "profile": "adaptive_runtime_recovery",
-                "provider": "movy",
+                "provider": "hianime",
                 "reasonCode": "",
-                "repairSha256": "9d0fb80f6c6c8cf280012c4679ea1ff610e50e931a81dbe77be37d8006009b30",
-                "round": 2,
+                "repairSha256": "a95512f990b954eeddce3c2ef6bf4e2c530a09ea55a1ae581c4d22b99945a6a3",
+                "round": 1,
+                "status": "generated"
+              },
+              {
+                "parentSha256": "5705ac9ca7db4c33af662593920f6705b3cbcbc4883a1665347efa7a39182201",
+                "phase": "attempts",
+                "profile": "adaptive_runtime_recovery",
+                "provider": "stigstream",
+                "reasonCode": "",
+                "repairSha256": "91c865e88bc48c3995426914a8cb9056efb75386537b7bd0508fe3065915c5bb",
+                "round": 1,
                 "status": "generated"
               },
               {
                 "parentSha256": "",
                 "phase": "rejected",
                 "profile": "adaptive_runtime_recovery",
-                "provider": "movy",
+                "provider": "hianime",
+                "reasonCode": "required_category_playable_proof",
+                "repairSha256": "",
+                "round": 1,
+                "status": "no_streams"
+              },
+              {
+                "parentSha256": "",
+                "phase": "rejected",
+                "profile": "adaptive_runtime_recovery",
+                "provider": "stigstream",
+                "reasonCode": "required_category_playable_proof",
+                "repairSha256": "",
+                "round": 1,
+                "status": "no_streams"
+              },
+              {
+                "parentSha256": "",
+                "phase": "exploration_progress",
+                "profile": "adaptive_runtime_recovery",
+                "provider": "frenchstream",
+                "reasonCode": "sandbox_diagnostic_progress",
+                "repairSha256": "7932cfc6d40aec8c28a7fea728d86f6462149fcfd6b1fbef56e7bff638bb4f8d",
+                "round": 1,
+                "status": ""
+              },
+              {
+                "parentSha256": "7932cfc6d40aec8c28a7fea728d86f6462149fcfd6b1fbef56e7bff638bb4f8d",
+                "phase": "attempts",
+                "profile": "adaptive_runtime_recovery",
+                "provider": "frenchstream",
+                "reasonCode": "",
+                "repairSha256": "53b9491f2a15864fb40d7bd99bd3ea51a59565576c0d0f390a75eec734d32af2",
+                "round": 2,
+                "status": "generated"
+              },
+              {
+                "parentSha256": "3c8184082d62241f773c5dd5af9627a4d0299477bb99c2faf664f2416222ab8e",
+                "phase": "attempts",
+                "profile": "adaptive_runtime_recovery",
+                "provider": "hianime",
+                "reasonCode": "identical_repair_already_retested",
+                "repairSha256": "a95512f990b954eeddce3c2ef6bf4e2c530a09ea55a1ae581c4d22b99945a6a3",
+                "round": 2,
+                "status": "skipped"
+              },
+              {
+                "parentSha256": "5705ac9ca7db4c33af662593920f6705b3cbcbc4883a1665347efa7a39182201",
+                "phase": "attempts",
+                "profile": "adaptive_runtime_recovery",
+                "provider": "stigstream",
+                "reasonCode": "identical_repair_already_retested",
+                "repairSha256": "91c865e88bc48c3995426914a8cb9056efb75386537b7bd0508fe3065915c5bb",
+                "round": 2,
+                "status": "skipped"
+              },
+              {
+                "parentSha256": "",
+                "phase": "rejected",
+                "profile": "adaptive_runtime_recovery",
+                "provider": "frenchstream",
                 "reasonCode": "required_category_playable_proof",
                 "repairSha256": "",
                 "round": 2,
                 "status": "no_streams"
               },
               {
-                "parentSha256": "32a86c953a25baef56402bfe06114716005331d66f743eec154a7abb434b8ad4",
+                "parentSha256": "7932cfc6d40aec8c28a7fea728d86f6462149fcfd6b1fbef56e7bff638bb4f8d",
                 "phase": "attempts",
                 "profile": "adaptive_runtime_recovery",
-                "provider": "movy",
+                "provider": "frenchstream",
                 "reasonCode": "",
-                "repairSha256": "017057c044b8984c958dd560a9c0e2737d261973dc5b052ed751d5dcce6ec493",
+                "repairSha256": "8e3b0dd834581d7e3378c3976ea48ce38cba6973010a390f94a3b73540fe8780",
                 "round": 3,
                 "status": "generated"
+              },
+              {
+                "parentSha256": "3c8184082d62241f773c5dd5af9627a4d0299477bb99c2faf664f2416222ab8e",
+                "phase": "attempts",
+                "profile": "adaptive_runtime_recovery",
+                "provider": "hianime",
+                "reasonCode": "brain_repair_loop_detected",
+                "repairSha256": "",
+                "round": 3,
+                "status": "not_generated"
+              },
+              {
+                "parentSha256": "5705ac9ca7db4c33af662593920f6705b3cbcbc4883a1665347efa7a39182201",
+                "phase": "attempts",
+                "profile": "adaptive_runtime_recovery",
+                "provider": "stigstream",
+                "reasonCode": "brain_repair_loop_detected",
+                "repairSha256": "",
+                "round": 3,
+                "status": "not_generated"
               },
               {
                 "parentSha256": "",
                 "phase": "rejected",
                 "profile": "adaptive_runtime_recovery",
-                "provider": "movy",
+                "provider": "frenchstream",
                 "reasonCode": "required_category_playable_proof",
                 "repairSha256": "",
                 "round": 3,
@@ -168,7 +240,7 @@
             "harnessDifferentialProviders": [],
             "learnedEvents": 0,
             "plans": {
-              "published:movy": {
+              "published:frenchstream": {
                 "action": "probe-targeted-repair",
                 "allowedProfiles": [
                   "adaptive_runtime_recovery"
@@ -241,7 +313,171 @@
                 "postExhaustionSourceFailureClass": "",
                 "postExhaustionStrategyMethod": "",
                 "postExhaustionStrategyProfile": "",
-                "providerId": "movy",
+                "providerId": "frenchstream",
+                "providerPositiveProgramProductionRescue": false,
+                "providerPositiveProgramReplay": false,
+                "repairScope": "capability",
+                "repairType": "terminal_media_resolution",
+                "signature": "c92d106e5a46a2b33459e485",
+                "strategyEscalated": false,
+                "targetCategories": []
+              },
+              "published:hianime": {
+                "action": "probe-targeted-repair",
+                "allowedProfiles": [
+                  "adaptive_runtime_recovery"
+                ],
+                "baseExperimentExhausted": false,
+                "exitReason": null,
+                "experimentExhausted": false,
+                "experimentGeneration": 1,
+                "experimentVariant": 0,
+                "experimentVariantCount": 5,
+                "explorationChainEnabled": true,
+                "explorationModeEnabled": true,
+                "failureClass": "media_extraction_gap",
+                "forcePreferredRequested": "",
+                "forcePreferredSelected": false,
+                "hypotheses": [
+                  {
+                    "confidence": 0,
+                    "id": "capture-media-network",
+                    "learned": false,
+                    "maturity": null,
+                    "profile": null,
+                    "transferScore": 0
+                  },
+                  {
+                    "confidence": 0,
+                    "id": "inspect-player-javascript",
+                    "learned": false,
+                    "maturity": null,
+                    "profile": null,
+                    "transferScore": 0
+                  }
+                ],
+                "learningDisposition": "core_repair_only",
+                "llmAdvisorApplied": false,
+                "llmAdvisorConfidence": 0,
+                "llmAdvisorExperiment": {},
+                "llmAdvisorExperimentFingerprint": "",
+                "llmAdvisorExplorationRescue": false,
+                "llmAdvisorFailureCompatibility": "",
+                "llmAdvisorGuidanceKind": "",
+                "llmAdvisorProfile": "",
+                "llmAdvisorRescue": false,
+                "llmAdvisorSourceFailureClass": "",
+                "llmAdvisorStrategy": "",
+                "metaGapEscalated": false,
+                "negativeMemoryMatches": 0,
+                "positiveProgramFingerprint": "",
+                "postExhaustionCandidateProfiles": [
+                  "player_protocol_family_replay_v1",
+                  "media_response_shape_inference_v1",
+                  "runtime_response_salvage_v1",
+                  "document_request_contract_mining_v1",
+                  "terminal_transition_graph_v1",
+                  "terminal_transition_graph_v2",
+                  "terminal_transition_graph_v3",
+                  "terminal_transition_graph_v4",
+                  "terminal_transition_graph_v5",
+                  "terminal_transition_graph_v6",
+                  "terminal_transition_graph_v7",
+                  "terminal_transition_graph_v8",
+                  "terminal_transition_graph_v9",
+                  "terminal_transition_graph_v10",
+                  "terminal_transition_graph_v11",
+                  "terminal_transition_graph_v12",
+                  "terminal_transition_graph_v13",
+                  "terminal_transition_graph_v14",
+                  "terminal_request_program_inference_v1"
+                ],
+                "postExhaustionSourceFailureClass": "",
+                "postExhaustionStrategyMethod": "",
+                "postExhaustionStrategyProfile": "",
+                "providerId": "hianime",
+                "providerPositiveProgramProductionRescue": false,
+                "providerPositiveProgramReplay": false,
+                "repairScope": "capability",
+                "repairType": "terminal_media_resolution",
+                "signature": "a785dfba11870ff6a60308c5",
+                "strategyEscalated": false,
+                "targetCategories": []
+              },
+              "published:stigstream": {
+                "action": "probe-targeted-repair",
+                "allowedProfiles": [
+                  "adaptive_runtime_recovery"
+                ],
+                "baseExperimentExhausted": false,
+                "exitReason": null,
+                "experimentExhausted": false,
+                "experimentGeneration": 1,
+                "experimentVariant": 0,
+                "experimentVariantCount": 5,
+                "explorationChainEnabled": true,
+                "explorationModeEnabled": true,
+                "failureClass": "media_extraction_gap",
+                "forcePreferredRequested": "",
+                "forcePreferredSelected": false,
+                "hypotheses": [
+                  {
+                    "confidence": 0,
+                    "id": "capture-media-network",
+                    "learned": false,
+                    "maturity": null,
+                    "profile": null,
+                    "transferScore": 0
+                  },
+                  {
+                    "confidence": 0,
+                    "id": "inspect-player-javascript",
+                    "learned": false,
+                    "maturity": null,
+                    "profile": null,
+                    "transferScore": 0
+                  }
+                ],
+                "learningDisposition": "core_repair_only",
+                "llmAdvisorApplied": false,
+                "llmAdvisorConfidence": 0,
+                "llmAdvisorExperiment": {},
+                "llmAdvisorExperimentFingerprint": "",
+                "llmAdvisorExplorationRescue": false,
+                "llmAdvisorFailureCompatibility": "",
+                "llmAdvisorGuidanceKind": "",
+                "llmAdvisorProfile": "",
+                "llmAdvisorRescue": false,
+                "llmAdvisorSourceFailureClass": "",
+                "llmAdvisorStrategy": "",
+                "metaGapEscalated": false,
+                "negativeMemoryMatches": 0,
+                "positiveProgramFingerprint": "",
+                "postExhaustionCandidateProfiles": [
+                  "player_protocol_family_replay_v1",
+                  "media_response_shape_inference_v1",
+                  "runtime_response_salvage_v1",
+                  "document_request_contract_mining_v1",
+                  "terminal_transition_graph_v1",
+                  "terminal_transition_graph_v2",
+                  "terminal_transition_graph_v3",
+                  "terminal_transition_graph_v4",
+                  "terminal_transition_graph_v5",
+                  "terminal_transition_graph_v6",
+                  "terminal_transition_graph_v7",
+                  "terminal_transition_graph_v8",
+                  "terminal_transition_graph_v9",
+                  "terminal_transition_graph_v10",
+                  "terminal_transition_graph_v11",
+                  "terminal_transition_graph_v12",
+                  "terminal_transition_graph_v13",
+                  "terminal_transition_graph_v14",
+                  "terminal_request_program_inference_v1"
+                ],
+                "postExhaustionSourceFailureClass": "",
+                "postExhaustionStrategyMethod": "",
+                "postExhaustionStrategyProfile": "",
+                "providerId": "stigstream",
                 "providerPositiveProgramProductionRescue": false,
                 "providerPositiveProgramReplay": false,
                 "repairScope": "capability",
@@ -257,20 +493,14 @@
           "capabilityStrategy": "mixed",
           "crossWaveExplorationCarryoverApplied": [],
           "crossWaveExplorationCarryoverCaptured": [
-            "movy"
+            "frenchstream"
           ],
           "deferredToLearning": [
-            "movy"
+            "frenchstream",
+            "hianime",
+            "stigstream"
           ],
           "familyGroups": [
-            {
-              "capabilityStrategy": "api_stream_resolver",
-              "groupId": "learning|api_stream_resolver|runtime:api_stream_resolver",
-              "providers": [
-                "movy"
-              ],
-              "repairScope": "learning"
-            },
             {
               "capabilityStrategy": "mixed_embed_resolver",
               "groupId": "learning|mixed_embed_resolver|runtime:mixed_embed_resolver",
@@ -298,14 +528,15 @@
           ],
           "fixedInLab": [],
           "genericLearningHandoff": [
-            "movy"
+            "frenchstream",
+            "hianime",
+            "stigstream"
           ],
           "groupId": "packed",
           "harnessDifferentialProviders": [],
-          "healthConcurrency": 4,
-          "providerCount": 4,
+          "healthConcurrency": 3,
+          "providerCount": 3,
           "providers": [
-            "movy",
             "frenchstream",
             "stigstream",
             "hianime"
@@ -316,18 +547,20 @@
       ],
       "compileRejectedToLearning": [],
       "deferredToLearning": [
-        "movy"
+        "frenchstream",
+        "hianime",
+        "stigstream"
       ],
-      "deferredToLearningCount": 1,
+      "deferredToLearningCount": 3,
       "durableMaterializeTargets": [],
       "experimentMemoryAdvanced": true,
       "fixedInLab": [],
       "fixedInLabCount": 0,
-      "inputProviderCount": 4,
+      "inputProviderCount": 3,
       "labOnlyWithoutCompiledRepair": [],
       "rawFixedInLab": [],
       "rawLabAcceptedCount": 0,
-      "remainingProviderCount": 3,
+      "remainingProviderCount": 0,
       "timeBudgetExhausted": false,
       "wave": 1
     }
