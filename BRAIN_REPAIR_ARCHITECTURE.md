@@ -1,3 +1,11 @@
+## 2026-11-16 — Accepted Brain repairs publish one Global+France fixed-point transaction
+
+Fast Brain Repair selection, staging, materialization, replay and publication now share the same executable projection authority. Explicit France-only providers are staged from the Global+France union; targeted materialization retains the union ledger; accepted targets are finalized through `reconcile_targeted_provider_publication.py`; and the validated Fast Repair commit persists the provider bytes together with `provider_catalog.json`, Global/VF manifests, derived no-anime manifests, provenance and materialization state.
+
+A Brain candidate is therefore not publishable merely because a working-tree replay succeeds. The exact provider bytes and the manifest/catalog projection that references them must reach the same publication fixed point. The Global manifest remains pure: France-only providers keep canonical authority in `provider_catalog.json` with `general=false`, `vf=true`.
+
+Sharded census persistence separately treats `lastRepairAttempt` as monotonic control-plane history. Run 43789755892 proved the JSON merge (`preserved=true run=43789934091`); the human Markdown had still been copied from the pre-merge snapshot, so census publication now renders `PROVIDER_CENSUS_STATUS.md` from the merged canonical JSON instead of copying stale Markdown.
+
 ## 2026-11-16 — Targeted Brain staging owns the Global+France executable union
 
 The Brain census and repair queue can contain France-only active identities, so the exact-byte staging boundary used by Fast Repair must resolve the same Global+France projection union. `stage_published.py` previously iterated only `manifest.json`; an explicit France-only target could therefore be selected by the Brain, stage zero candidates, and still return success because a target filter was present. Targeted staging now reuses the projection-union resolver, requires every requested identity to exist and be active Provider v3, normalizes France `../providers/...` paths to repository authority, and fails closed if any requested target is not actually materialized. Unfiltered availability staging remains Global-scoped to avoid changing unrelated availability semantics. This is a Brain pipeline correction; no provider-specific source or proof is fabricated.
