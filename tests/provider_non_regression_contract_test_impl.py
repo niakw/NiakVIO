@@ -93,6 +93,12 @@ assert 'route_state = "repair"' in finalizer
 assert 'route_state = "off"' in finalizer
 assert '"activeBrokenProviderAllowed": True' in finalizer
 assert '"forceAllProvidersEnabled": False' in finalizer
+assert "projection_active_provider_ids" in finalizer
+assert "projection_visible_provider_ids" in finalizer
+assert "provider_catalog.json" in finalizer
+assert "publication_rows(" in finalizer
+assert "sync_manifest_projection_rows" in finalizer
+assert "active_provider_ids" not in finalizer
 for token in (
     "def apply_current_stream_proof(",
     'proof.get("laneProofs")',
