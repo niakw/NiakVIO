@@ -29,6 +29,12 @@ assert france_only <= planned_set, (
     + ",".join(sorted(france_only))
 )
 
+workflow = (ROOT / ".github" / "workflows" / "provider-repair-parallel-sweep.yml").read_text(encoding="utf-8")
+assert "projection_active_provider_rows" in workflow
+assert "projection_active_provider_ids" in workflow
+assert 'Path("manifest.json").read_text' not in workflow, "parallel Repair sweep must not regress to Global-only scope"
+assert "parallel sweep projection drift" in workflow
+
 print(
     "provider parallel sweep projection scope passed "
     f"providers={len(planned_set)} global={len(global_only)} france_only={len(france_only)}"
