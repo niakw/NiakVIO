@@ -130,6 +130,37 @@ assert spec is not None and spec.loader is not None
 module = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(module)
 
+# Domain Refresh executes against the same active Global+France authority as
+# materialization/native acceptance. France-only rows stay catalogue-owned and
+# must never be copied into manifest.json merely to make Domain Refresh work.
+from current_provider_scope import projection_active_provider_ids
+domain_manifest, domain_catalog, domain_publication = module.active_publication_documents()
+assert set(domain_publication) == set(projection_active_provider_ids())
+global_ids = {
+    module.canonical(row.get("id"))
+    for row in domain_manifest.get("scrapers") or []
+    if isinstance(row, dict) and module.canonical(row.get("id"))
+}
+france_only_active = {
+    provider_id
+    for provider_id, (_row, authority) in domain_publication.items()
+    if authority == "france-only-catalog"
+}
+assert france_only_active, "Domain Refresh must retain active France-only identities"
+assert france_only_active.isdisjoint(global_ids), france_only_active & global_ids
+assert all(
+    str(row.get("filename") or "").startswith("providers/")
+    for provider_id, (row, authority) in domain_publication.items()
+    if authority == "france-only-catalog"
+), "France-only canonical catalogue filenames must remain repository-relative"
+
+source_scope = source
+assert "projection_active_provider_ids" in source_scope
+assert "runtime_visible_provider_ids" not in source_scope
+assert "CURRENT_PROVIDER_COUNT" not in source_scope
+assert "active_provider_ids()" not in source_scope
+assert 'write(CATALOG_PATH, catalog)' in source_scope
+
 # Regression 0: domain projection may update an explicit old->current host inside
 # provider-owned runtime Lego, while leaving Core and unrelated provider bytes
 # exactly unchanged.
