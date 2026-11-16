@@ -156,6 +156,7 @@ def main() -> int:
         }, changed
         assert all(module.path_matches(path, ["runtime/"]) for path in changed if path != "README.md")
     assert '"warning" if args.no_fail else "error"' in source
+    assert 'if (failures or report["inconclusive"]) and not args.no_fail:' in source
     assert '"--no-fail"' in brain_source
     repair_workflow = (ROOT / ".github/workflows/provider-recognition-repair-v6.yml").read_text(encoding="utf-8")
     assert "check_nuvio_client_upstreams.py --no-fail --paths-only" in repair_workflow
