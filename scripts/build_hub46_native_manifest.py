@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build the physical Hub-46 manifest consumed by official native clients.
+"""Build the immutable current native manifest consumed by official Nuvio clients.
 
 Official Nuvio clients derive relative plugin URLs by stripping the literal suffix
 ``/manifest.json`` from the repository URL. A root file named
@@ -11,8 +11,9 @@ every provider filename to an absolute raw-GitHub URL pinned to one immutable
 provider-source SHA. The transport manifest itself may live at
 ``native-hub46/manifest.json`` without copying provider bundles into that directory.
 
-The result is exactly the Hub-46 set; the global 96-provider catalogue remains
-untouched.
+The result is exactly the active provider set supplied by the current
+Global+France projection-union source manifest. The historical Hub-46 filename
+is retained only for transport compatibility; cardinality is never policy.
 """
 from __future__ import annotations
 
@@ -25,7 +26,6 @@ from typing import Any
 from urllib.parse import urlparse
 
 ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_SCOPE = ROOT / "automation" / "evidence" / "hub-lab-matrix-46.json"
 DEFAULT_SOURCE = ROOT / "manifest-hub46.json"
 DEFAULT_OUTPUT = ROOT / "native-hub46" / "manifest.json"
 SHA_RE = re.compile(r"^[0-9a-f]{40}$")
@@ -127,7 +127,7 @@ def build(
     extra = sorted(seen - scoped)
     if missing or extra or len(selected) != len(scoped):
         raise SystemExit(
-            f"physical Hub-46 mismatch selected={len(selected)} missing={','.join(missing)} extra={','.join(extra)}"
+            f"physical native projection mismatch selected={len(selected)} missing={','.join(missing)} extra={','.join(extra)}"
         )
 
     out = dict(source)
@@ -139,7 +139,7 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--provider-sha", required=True)
     parser.add_argument("--repository", default="niakw/NiakVIO")
-    parser.add_argument("--scope-matrix", type=Path, default=DEFAULT_SCOPE)
+    parser.add_argument("--scope-matrix", type=Path, default=None, help="deprecated compatibility argument; source manifest is authority")
     parser.add_argument("--source", type=Path, default=DEFAULT_SOURCE)
     parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
     parser.add_argument("--no-git-verify", action="store_true")
@@ -161,7 +161,7 @@ def main() -> int:
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(
-        "FIELD_NATIVE_HUB46_TRANSPORT_BUILT "
+        "FIELD_NATIVE_PROJECTION_TRANSPORT_BUILT "
         f"providers={len(payload.get('scrapers') or [])} provider_sha={args.provider_sha} output={output.relative_to(ROOT)} "
         "terminal_name=manifest.json absolute_provider_urls=true"
     )
