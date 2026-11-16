@@ -115,13 +115,13 @@ assert ".github/triggers/provider-v3-reconstruct-all.json" in manual
 assert 'GITHUB_REF_NAME}" != "main"' in manual
 assert "python scripts/materialize_provider_v3_all.py" in manual
 assert "python scripts/verify_provider_v3_reverse_rebuild.py" in manual
-# Full reconstruction has two explicit projection-union denominators:
-# runtime-visible for sequential audit (including disabled lifecycle rows), and
-# active for the final executable materialization/reverse proof.
-assert "from scripts.current_provider_scope import projection_runtime_visible_provider_count" in manual
-assert "expected=projection_runtime_visible_provider_count()" in manual
+# Full reconstruction is an executable transaction over the active
+# Global+France projection union. Disabled lifecycle rows stay census/Repair
+# evidence and are not reconstructed as release candidates.
+assert "from scripts.current_provider_scope import projection_active_provider_count" in manual
+assert manual.count("expected=projection_active_provider_count()") >= 2
 assert "from scripts.current_provider_scope import projection_active_provider_count, projection_active_provider_ids" in manual
-assert "expected=projection_active_provider_count()" in manual
+assert "projection_runtime_visible_provider_count" not in manual
 assert 'report.get("providerCount") == expected' in manual
 assert 'report.get("completedProviderCount") == expected' in manual
 assert 'r.get("providerCount")==expected' in manual
