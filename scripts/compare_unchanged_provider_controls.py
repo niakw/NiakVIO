@@ -22,6 +22,42 @@ def git_bytes(ref: str, path: str) -> bytes:
     return subprocess.check_output(['git', 'show', f'{ref}:{path}'], cwd=ROOT)
 
 
+def projection_manifest(global_manifest: dict, vf_manifest: dict) -> dict:
+    """Build the canonical active Global+France projection view.
+
+    Shared identities must reference the same normalized provider bytes. Strict
+    France-only rows stay out of Global while remaining first-class controls.
+    """
+    by_id: dict[str, dict] = {}
+    for payload, prefix, label in (
+        (global_manifest, '', 'global'),
+        (vf_manifest, '../', 'france'),
+    ):
+        rows = payload.get('scrapers') if isinstance(payload, dict) else None
+        if not isinstance(rows, list):
+            raise ValueError(f'{label}_manifest_contract')
+        for row in rows:
+            if not isinstance(row, dict) or row.get('enabled') is False:
+                continue
+            provider = cid(row.get('id'))
+            filename = str(row.get('filename') or '').strip().replace('\\\\', '/')
+            if not provider or not filename:
+                raise ValueError(f'{label}_manifest_contract')
+            if prefix:
+                if not filename.startswith(prefix):
+                    raise ValueError(f'{provider}: invalid France projection path')
+                filename = filename[len(prefix):]
+            normalized = dict(row)
+            normalized['filename'] = filename
+            previous = by_id.get(provider)
+            if previous is not None:
+                if str(previous.get('filename') or '') != filename:
+                    raise ValueError(f'{provider}: Global/France published asset mismatch')
+                continue
+            by_id[provider] = normalized
+    return {'scrapers': [by_id[provider] for provider in sorted(by_id)]}
+
+
 def published_bytes(manifest: dict, provider: str, ref: str | None) -> tuple[str, bytes]:
     rows = [row for row in manifest.get('scrapers', [])
             if cid(row.get('id')) == provider and row.get('enabled') is True]
@@ -44,8 +80,14 @@ def compare(base_ref: str, providers: set[str], output: Path) -> dict:
     if not re.fullmatch(r'[0-9a-f]{40}', base_ref):
         raise ValueError('baseline must be an exact commit SHA')
     head = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True).strip()
-    baseline_manifest = json.loads(git_bytes(base_ref, 'manifest.json'))
-    current_manifest = census.load(ROOT / 'manifest.json')
+    baseline_manifest = projection_manifest(
+        json.loads(git_bytes(base_ref, 'manifest.json')),
+        json.loads(git_bytes(base_ref, 'vf/manifest.json')),
+    )
+    current_manifest = projection_manifest(
+        census.load(ROOT / 'manifest.json'),
+        census.load(ROOT / 'vf/manifest.json'),
+    )
     history = census.load(ROOT / 'automation/provider-census-proof-history.json')
     tasks, count = census.build_tasks(providers, history=history)
     if count != len(providers) or not tasks:
