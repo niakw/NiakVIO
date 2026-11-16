@@ -29,8 +29,16 @@ assert ".slice(0, 16)" in base, "nested/player episode fanout must exceed legacy
 assert "streams.push(..._spv26ExplicitMediaRows" in base
 assert "_spv26JsonMediaRows" in base
 assert "if (!direct.length && /iframe|mixed_embed|html_scraper|direct_media/i.test" not in base
+assert "const planStreams = [];" in base
+assert "if (direct.length) planStreams.push(..._streams(direct, payload.base || stepUrl));" in base
+assert "if (episodeHop.length) planStreams.push(...episodeHop);" in base
+assert "if (crawledStreams.length) planStreams.push(...crawledStreams);" in base
+assert "if (fallbackStreams.length) planStreams.push(...fallbackStreams);" in base
+assert "return _streams(direct, payload.base || stepUrl)" not in base
 assert "if (episodeHop.length) return episodeHop" not in base
+assert "if (streams.length) return streams.slice(0, 40);" not in base
 assert "if (explicitCrawled.length) return explicitCrawled" not in base
+assert "return resolvedPlanStreams.slice(0, 40);" in base
 
 # Core: validation capacity must match the runtime output contract. Dedupe is by
 # exact playback identity (URL + request headers), not bare URL.
