@@ -79,9 +79,11 @@ jobs:
           python scripts/select_provider_materialization_scope.py --base "$base" --head HEAD --output /tmp/provider-materialization-scope.json
           python - <<'PY' >> "$GITHUB_OUTPUT"
           import json,os,subprocess,sys
-          d=json.load(open("manifest.json",encoding="utf-8"))
+          from pathlib import Path
+          sys.path.insert(0,str(Path("scripts").resolve()))
+          from current_provider_scope import projection_runtime_visible_provider_count
           scope=json.load(open("/tmp/provider-materialization-scope.json",encoding="utf-8"))
-          count=len([x for x in d.get("scrapers") or [] if isinstance(x,dict)])
+          count=projection_runtime_visible_provider_count()
           message=subprocess.check_output(["git","log","-1","--pretty=%s"],text=True).strip()
           bulk_push=(
               os.environ.get("GITHUB_EVENT_NAME")=="push"
