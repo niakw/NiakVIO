@@ -11,6 +11,22 @@ assert 'if [ "$projection_drift" -gt 0 ]; then' in scale
 assert "should_run=false" in scale
 assert "FIELD_CENSUS_PROJECTION_HANDOFF" in scale
 assert "gh workflow run provider-projection-reconcile.yml" in scale
+assert "projection_runtime_visible_provider_count" in scale
+assert 'elif [ "$count" -gt 120 ]; then' in scale
+assert "FIELD_CENSUS_SHARDED_HANDOFF" in scale
+assert "gh workflow run provider-census-sharded.yml" in scale
+assert "-f scope=unresolved" in scale
+assert "-f persist=true" in scale
+
+push_block=wf.split("  push:",1)[1].split("  pull_request:",1)[0]
+for authority_path in (
+    "'provider_catalog.json'",
+    "'manifest.json'",
+    "'vf/manifest.json'",
+    "'scripts/current_provider_scope.py'",
+    "'scripts/provider_base_store.py'",
+):
+    assert authority_path in push_block, authority_path
 
 census_header=wf.split("  census:",1)[1].split("    steps:",1)[0]
 assert "needs.scale.outputs.should_run == 'true'" in census_header
