@@ -1503,6 +1503,24 @@ function _spv34RouteMediaCompatible(route, mediaType) {
   if (actual === "series" || actual === "anime") actual = "tv";
   return actual === desired;
 }
+function _spv34RouteMediaCompatible(route, mediaType) {
+  const desired = _mediaNamespace(mediaType);
+  const source = _text(route);
+  const match = source.match(/(?:[?&](?:type|media|m)=)(movie|tv|series|anime)(?=&|#|$)/i);
+  if (!match) return true;
+  let actual = _text(match[1]).toLowerCase();
+  if (actual === "series" || actual === "anime") actual = "tv";
+  return actual === desired;
+}
+function _spv34RouteMediaCompatible(route, mediaType) {
+  const desired = _mediaNamespace(mediaType);
+  const source = _text(route);
+  const match = source.match(/(?:[?&](?:type|media|m)=)(movie|tv|series|anime)(?=&|#|$)/i);
+  if (!match) return true;
+  let actual = _text(match[1]).toLowerCase();
+  if (actual === "series" || actual === "anime") actual = "tv";
+  return actual === desired;
+}
 function _learnedUrls(kind, meta, mediaType, season, episode) {
   const out = [];
   const bases = kind === "api" ? _apiBases() : _searchBases();
