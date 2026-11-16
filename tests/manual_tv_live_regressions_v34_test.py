@@ -106,6 +106,9 @@ assert '["hindi","hi"]' in presentation_source
 assert provider_base.count("NIAKVIO_PROVIDER_ROUTE_MEDIA_COMPAT_V34") == 1
 assert provider_base.count("function _spv34RouteMediaCompatible(route, mediaType) {") == 1
 assert "_spv34RouteMediaCompatible(route, mediaType)" in provider_base
+route_helper = provider_base.split("function _spv34RouteMediaCompatible(route, mediaType) {", 1)[1].split("function _learnedUrls", 1)[0]
+assert 'if (actual === "series") actual = "tv";' in route_helper
+assert 'actual === "series" || actual === "anime"' not in route_helper
 selection = __import__("re").search(
     r'GLOBAL_STREAM_SANITIZER = "scripts/provider_patches/stream_output_sanitizer_v(\d+)\.py"',
     compositor,
