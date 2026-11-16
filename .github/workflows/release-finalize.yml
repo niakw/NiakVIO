@@ -16,6 +16,7 @@ on:
       - 'scripts/provider_patches/**'
       - 'scripts/provider_base_store.py'
       - 'scripts/reapply_published_overrides.py'
+      - 'scripts/sync_manifest_projection_rows.py'
       - 'scripts/materialize_provider_v3_all.py'
       - 'scripts/reconcile_provider_static_authority.py'
       - 'scripts/audit_provider_v3_static.py'
@@ -116,6 +117,12 @@ jobs:
         run: |
           set -euo pipefail
           python3 scripts/reapply_published_overrides.py
+          # Reapply can rotate content-addressed Global filenames. VF/no-anime
+          # are derived projections, so synchronize them before any union audit.
+          # ProviderBase remains derived from structured authority; this only
+          # restores the same object/file identity across projections.
+          python3 scripts/sync_manifest_projection_rows.py
+          python3 scripts/sync_manifest_projection_rows.py --check
           # Exact managed CONFIG bytes may exist before durable static knowledge
           # catches up after activation. Reconcile that authority first so the
           # canonical materializer cannot operate on a stale provider ledger.

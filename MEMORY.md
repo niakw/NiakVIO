@@ -1,3 +1,9 @@
+## 2026-11-16 — Release finalizer projection transaction ordering
+
+- Exact source before change: `52120f8afd2028a28d05e39b576f9f46fb7ffd52`. The release finalizer could run `reapply_published_overrides.py`, rotate Global content-addressed filenames, and then immediately call the Global+France authority reconciler while VF still referenced the pre-reapply filename. Run 43776454236 failed this way on Purstream with `projection asset or enabled state mismatch`.
+- ProviderBase remains derived from structured NiakVIO authority. The finalizer now synchronizes VF/no-anime projections immediately after the first Global reapply and checks the projection fixed point before any Global+France static/materialization audit. A dedicated transaction-order regression test prevents moving the union audit before projection synchronization.
+- This is pipeline infrastructure only: no provider-specific source, route, manifest activation state or playback claim is changed. Fresh CI/finalizer evidence is required before calling the release path repaired.
+
 ## 2026-11-16 — Causal-family host metadata aggregates across members
 
 - Provider batch refinement intentionally removed exact hostnames from the causal family key so equivalent providers on different domains can share one Brain strategy. The refinement implementation still overwrote family metadata with the last member's host count, so a two-provider family could report one observed host and fail its regression contract.

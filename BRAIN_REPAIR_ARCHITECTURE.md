@@ -1,3 +1,9 @@
+## 2026-11-16 — Release finalizer projection transaction ordering
+
+- Exact source before change: `52120f8afd2028a28d05e39b576f9f46fb7ffd52`. The release finalizer could run `reapply_published_overrides.py`, rotate Global content-addressed filenames, and then immediately call the Global+France authority reconciler while VF still referenced the pre-reapply filename. Run 43776454236 failed this way on Purstream with `projection asset or enabled state mismatch`.
+- ProviderBase remains derived from structured NiakVIO authority. The finalizer now synchronizes VF/no-anime projections immediately after the first Global reapply and checks the projection fixed point before any Global+France static/materialization audit. A dedicated transaction-order regression test prevents moving the union audit before projection synchronization.
+- This is pipeline infrastructure only: no provider-specific source, route, manifest activation state or playback claim is changed. Fresh CI/finalizer evidence is required before calling the release path repaired.
+
 ## 2026-11-16 — One ProviderBase authority across Global + France
 
 ProviderBase and its materialization ledger derive from the active identity union of `manifest.json` and `vf/manifest.json`; Global-only membership is not sufficient authority. Durable structured DATA covers the runtime-visible Global+France union (visible minus onboarding-pending identities). Canonical release order is: recover exact managed CONFIG into DATA -> rebuild canonical Global bytes -> rebind the ledger to the active Global+France union -> validate exact identity/file/SHA/cardinality -> audit DATA identity coverage. A Global materializer must never erase France-only authority after it has been recovered.
