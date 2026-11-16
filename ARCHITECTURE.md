@@ -273,6 +273,7 @@ Contrat :
 - le transport Hub-46 épinglé, les hashes et l’intégrité de release sont ensuite reconstruits et validés ;
 - les commits de génération et de pinning sont préparés localement, puis publiés atomiquement uniquement si `origin/main` pointe toujours sur le SHA de base accepté ; tout mouvement concurrent de `main` fait échouer la transaction ;
 - une génération déjà finalisée peut rester un no-op ; aucune version provider/cache ne doit être inventée lorsque les bytes publiés n’ont pas changé.
+- après publication atomique, le finalizer déclenche la pile permanente `release-candidate-validation.yml` avec le **SHA final exact** ; cette pile refuse de certifier si `main` ne pointe plus sur ce SHA et exécute les cinq Labs indépendants sur le transport natif épinglé. Une validation pré-finalizer ou sur un autre SHA ne certifie jamais les bytes finalement publiés.
 
 Le finalizer n’est ni une autorité de découverte, ni un moteur Learning, ni une reconstruction complète : sa rematérialisation éventuelle est strictement bornée aux patches durables et à la génération courante acceptée, dans la transaction atomique de release.
 
