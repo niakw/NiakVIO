@@ -59,7 +59,13 @@ assert.deepEqual(inferSupportedTypes(mixed), ['movie', 'tv', 'anime']);
 // category. The preceding availability run falsely sampled Breaking Bad on
 // AnimeKai/Anime-Ultime despite their canonical anime-only declarations.
 const manifest = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'manifest.json'), 'utf8'));
-const canonicalRows = manifest.scrapers.filter(row =>
+const vfManifest = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'vf', 'manifest.json'), 'utf8'));
+const publishedById = new Map();
+for (const row of [...manifest.scrapers, ...vfManifest.scrapers]) {
+  const id = String(row?.id ?? '').toLowerCase();
+  if (id && !publishedById.has(id)) publishedById.set(id, row);
+}
+const canonicalRows = [...publishedById.values()].filter(row =>
   Array.isArray(row.canonicalSupportedTypes) && row.canonicalSupportedTypes.length > 0);
 assert.ok(canonicalRows.length >= 10, 'missing current canonical catalogue test cohort');
 for (const row of canonicalRows) {
@@ -95,4 +101,4 @@ assert.deepEqual(inferSupportedTypes({
   canonical_metadata: { sources: ['independent-live-variant'], canonicalSupportedTypes: ['tv'] },
 }), ['tv', 'anime']);
 
-console.log('provider semantic/transport fixture inference tests passed (current manifest + live source authority)');
+console.log('provider semantic/transport fixture inference tests passed (Global+France published union + live source authority)');
