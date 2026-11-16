@@ -22,10 +22,10 @@
     "exact failed provider GET replay is transport differential evidence only; it cannot grant playback proof"
   ],
   "counts": {
-    "browser_challenge_persisted": 39,
+    "browser_challenge_persisted": 38,
     "browser_content_reached": 12,
     "browser_inconclusive": 1,
-    "browser_timeout": 2
+    "browser_timeout": 3
   },
   "rows": [
     {
@@ -79,7 +79,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 15147,
+      "durationMs": 17684,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_challenge_persisted",
@@ -160,7 +160,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 15123,
+      "durationMs": 17698,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_challenge_persisted",
@@ -241,7 +241,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 15474,
+      "durationMs": 17651,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_challenge_persisted",
@@ -416,18 +416,16 @@
       "challenge": "cloudflare",
       "seedKind": null,
       "seedRoute": null,
-      "outcome": "browser_challenge_persisted",
+      "outcome": "browser_timeout",
       "attemptCount": 2,
       "attempts": [
         {
           "attempt": 1,
-          "outcome": "browser_challenge_persisted",
-          "exitCode": 0
+          "outcome": "browser_timeout"
         },
         {
           "attempt": 2,
-          "outcome": "browser_challenge_persisted",
-          "exitCode": 0
+          "outcome": "browser_timeout"
         }
       ],
       "ordinarySessionReused": true,
@@ -435,18 +433,16 @@
         {
           "profile": "github-default-browser",
           "userAgent": null,
-          "outcome": "browser_challenge_persisted",
+          "outcome": "browser_timeout",
           "attemptCount": 2,
           "attempts": [
             {
               "attempt": 1,
-              "outcome": "browser_challenge_persisted",
-              "exitCode": 0
+              "outcome": "browser_timeout"
             },
             {
               "attempt": 2,
-              "outcome": "browser_challenge_persisted",
-              "exitCode": 0
+              "outcome": "browser_timeout"
             }
           ],
           "ordinarySessionReused": true
@@ -456,7 +452,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 4923
+      "durationMs": 40074
     },
     {
       "provider": "animejlprovider",
@@ -509,7 +505,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 4373
+      "durationMs": 2954
     },
     {
       "provider": "animeonsen",
@@ -562,7 +558,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 4687,
+      "durationMs": 3129,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_challenge_persisted",
@@ -643,7 +639,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 5423,
+      "durationMs": 3407,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_challenge_persisted",
@@ -985,7 +981,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 4684,
+      "durationMs": 2993,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_challenge_persisted",
@@ -1066,7 +1062,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 4584,
+      "durationMs": 2740,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_timeout",
@@ -1147,7 +1143,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 4780,
+      "durationMs": 2540,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_timeout",
@@ -1180,9 +1176,9 @@
     {
       "provider": "chillflix",
       "lane": "movie",
-      "publicUrl": "https://www.chillflix.lol/movie/27205",
+      "publicUrl": "https://www.chillflix.lol/movie/315635",
       "host": "www.chillflix.lol",
-      "path": "/movie/27205",
+      "path": "/movie/315635",
       "method": "GET",
       "fetchStatus": 403,
       "challenge": "cloudflare",
@@ -1228,14 +1224,14 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 4735
+      "durationMs": 2951
     },
     {
       "provider": "chillflix",
       "lane": "tv",
-      "publicUrl": "https://www.chillflix.lol/tv/94997",
+      "publicUrl": "https://www.chillflix.lol/tv/93405",
       "host": "www.chillflix.lol",
-      "path": "/tv/94997",
+      "path": "/tv/93405",
       "method": "GET",
       "fetchStatus": 403,
       "challenge": "cloudflare",
@@ -1281,7 +1277,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 4678
+      "durationMs": 2929
     },
     {
       "provider": "cinegram",
@@ -1334,7 +1330,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 4372,
+      "durationMs": 2797,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_timeout",
@@ -1415,7 +1411,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 5071,
+      "durationMs": 3206,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_challenge_persisted",
@@ -1496,7 +1492,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 5362,
+      "durationMs": 2747,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_challenge_persisted",
@@ -1909,10 +1905,10 @@
     },
     {
       "provider": "corsflix",
-      "lane": "anime",
-      "publicUrl": "https://www.themoviedb.org/movie/94664-igy-jottem/watch",
+      "lane": "tv",
+      "publicUrl": "https://www.themoviedb.org/movie/76669-winnie-the-pooh-a-valentine-for-you/watch",
       "host": "www.themoviedb.org",
-      "path": "/movie/94664-igy-jottem/watch",
+      "path": "/movie/76669-winnie-the-pooh-a-valentine-for-you/watch",
       "method": "GET",
       "fetchStatus": 403,
       "challenge": "generic",
@@ -1950,7 +1946,7 @@
         "github-default-browser"
       ],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 2127
+      "durationMs": 1468
     },
     {
       "provider": "dulourd",
