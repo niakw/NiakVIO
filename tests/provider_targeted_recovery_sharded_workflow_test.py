@@ -53,6 +53,12 @@ for needle in [
 ]:
     assert needle in sharded, needle
 
+assert "projection_runtime_visible_provider_count" in mono
+assert 'open("manifest.json",encoding="utf-8")' not in mono
+assert "projection_runtime_visible_provider_count" in sharded
+assert 'manifest=json.loads(Path("manifest.json")' not in sharded
+assert "count<=120" in mono
+assert "provider_count>120" in sharded
 assert "scripts/nuvio_tv_probe_tmdb_ci.cjs" in mono
 assert "scripts/nuvio_tv_probe_tmdb_ci.cjs" in sharded
 assert "ThreadPoolExecutor" not in mono
