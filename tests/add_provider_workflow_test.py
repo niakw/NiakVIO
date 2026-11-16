@@ -6,7 +6,7 @@ ADD = (ROOT / ".github/workflows/add-provider.yml").read_text(encoding="utf-8")
 BRANDING = (ROOT / ".github/workflows/provider-branding-assets.yml").read_text(encoding="utf-8")
 SCRIPT = (ROOT / "scripts/add_provider.py").read_text(encoding="utf-8")
 
-for token in ("provider_id:", "hub:", "direct:", "telegram:", "api:", "search_queries:", "routes:", "types:", "replace_existing:"):
+for token in ("provider_id:", "hub:", "direct:", "telegram:", "api:", "search_queries:", "routes:", "types:", "scope:", "replace_existing:"):
     assert token in ADD, token
 
 dispatch_inputs = ADD.split("permissions:", 1)[0]
@@ -15,6 +15,9 @@ assert "emoji:" not in dispatch_inputs
 assert "logo_url = normalized_url" not in SCRIPT
 assert 'request.get("emoji")' not in SCRIPT
 assert 'request.get("replace_existing")' in SCRIPT
+assert 'inputs.scope' in ADD
+assert 'INPUT_SCOPE' in ADD
+assert '"scope": os.environ["INPUT_SCOPE"]' in ADD
 assert "provider already exists" in SCRIPT
 assert "and not replace_existing" in SCRIPT
 stage_body = SCRIPT.split("def stage(", 1)[1].split("\ndef refresh(", 1)[0]
