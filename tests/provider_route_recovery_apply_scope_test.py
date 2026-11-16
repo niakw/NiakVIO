@@ -12,7 +12,7 @@ import apply_provider_route_recovery_report as apply_report  # noqa: E402
 import current_provider_scope as scope  # noqa: E402
 import recover_provider_routes_from_upstreams as recovery  # noqa: E402
 
-ids = sorted(scope.active_provider_ids())
+ids = sorted(scope.projection_active_provider_ids())
 assert ids
 report = {
     "schemaVersion": recovery.PROOF_VERSION,
