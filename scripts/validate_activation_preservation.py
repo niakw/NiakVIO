@@ -5,7 +5,7 @@ NIAKVIO_PROVIDER_FOLDER_ACTIVATION_AUTHORITY_V1
 
 Publication activation and runtime route confidence are separate concerns:
 
-* current visible providers are the identities referenced from providers/ and provider-disabled/;
+* current visible providers are the Global + France projection union referenced from providers/ and provider-disabled/;
 * ``official_hub`` is discovery/address metadata only and never an ON/OFF switch;
 * Repair/health evidence controls route/DATA state (on/repair/off), not catalogue
   visibility;
@@ -26,7 +26,7 @@ import os
 import re
 import subprocess
 from pathlib import Path
-from current_provider_scope import active_provider_ids, visible_provider_ids
+from current_provider_scope import active_provider_ids, projection_active_provider_ids, projection_visible_provider_ids, visible_provider_ids
 from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -408,21 +408,42 @@ def validate() -> list[str]:
     errors: list[str] = []
     expected_active = active_provider_ids()
     expected_visible = visible_provider_ids()
+    expected_projection_active = projection_active_provider_ids()
+    expected_projection_visible = projection_visible_provider_ids()
+    projection_visible = set(main_rows) | set(vf_rows)
+    projection_active = active | {
+        provider_id
+        for provider_id, row in vf_rows.items()
+        if row.get("enabled") is True
+    }
     if set(main_rows) != expected_visible:
         errors.append(
-            "canonical catalogue differs from current provider folders: "
+            "canonical Global catalogue differs from current provider folders: "
             f"manifest_only={sorted(set(main_rows)-expected_visible)} folder_only={sorted(expected_visible-set(main_rows))}"
         )
     if active != expected_active:
         errors.append(
-            "manifest activation differs from providers/ authority: "
+            "Global manifest activation differs from providers/ authority: "
             f"manifest_only={sorted(active-expected_active)} folder_only={sorted(expected_active-active)}"
         )
-    target = set(expected_active)
+    if projection_visible != expected_projection_visible:
+        errors.append(
+            "Global+France visible projection differs from publication authority: "
+            f"projection_only={sorted(projection_visible-expected_projection_visible)} "
+            f"authority_only={sorted(expected_projection_visible-projection_visible)}"
+        )
+    if projection_active != expected_projection_active:
+        errors.append(
+            "Global+France activation differs from publication authority: "
+            f"projection_only={sorted(projection_active-expected_projection_active)} "
+            f"authority_only={sorted(expected_projection_active-projection_active)}"
+        )
+    target = set(expected_projection_active)
+    global_target = set(expected_active)
 
-    missing = sorted(target - set(main_rows))
-    extra = sorted(active - target)
-    disabled_target = sorted(target - active)
+    missing = sorted(global_target - set(main_rows))
+    extra = sorted(active - global_target)
+    disabled_target = sorted(global_target - active)
     if missing:
         errors.append("active-scope target missing from canonical catalogue: " + ",".join(missing))
     if disabled_target:
@@ -433,7 +454,7 @@ def validate() -> list[str]:
     for provider_id, patch in sorted(patches_by_id.items()):
         mo = patch.get("manifest_overrides") if isinstance(patch.get("manifest_overrides"), dict) else {}
         if "enabled" in mo and bool(mo.get("enabled")) != (provider_id in target):
-            errors.append(f"override activation mismatch for provider-folder authority: {provider_id}")
+            errors.append(f"override activation mismatch for Global+France projection authority: {provider_id}")
 
     mismatched = sorted(
         provider_id
@@ -446,7 +467,7 @@ def validate() -> list[str]:
 
     registry_only = sorted(
         provider_id
-        for provider_id in active
+        for provider_id in expected_projection_active
         if not declared_hub_enabled(patches_by_id.get(provider_id))
     )
     if registry_only:
@@ -462,8 +483,8 @@ def main() -> int:
     errors = validate()
     if errors:
         raise SystemExit("provider activation preservation failed:\n- " + "\n- ".join(errors))
-    active_count = sum(1 for row in rows(load(MAIN)).values() if row.get("enabled") is True)
-    print(f"provider activation preservation passed ({active_count} enabled; provider-folder authority)")
+    active_count = len(projection_active_provider_ids())
+    print(f"provider activation preservation passed ({active_count} enabled; Global+France projection authority)")
     return 0
 
 
