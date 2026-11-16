@@ -203,6 +203,8 @@ Les migrations historiques du ProviderBase/Core sont des **planchers sémantique
 
 Le seul matérialiseur ProviderBase courant est `scripts/materialize_provider_base_v3_store.py`, sur l’union active **Global + France**. Les anciens points d’entrée de migration, notamment `materialize_provider_base_identity_only.py`, ne possèdent plus d’autorité autonome : ils doivent déléguer au matérialiseur canonique et ne peuvent ni recalculer un scope Global-only ni rejouer isolément une ancienne révision runtime.
 
+Le matérialiseur peut normaliser la DATA structurée avant composition, mais ses migrations du **runtime commun** sont validation-only : si elles changent `provider_base_store.py`, le compositor Core partagé ou un Lego runtime accepté, la matérialisation échoue. Une migration de source doit être revue et persistée séparément avant de pouvoir servir de base à Reconstruction, Non-Regression ou Repair.
+
 Interdictions :
 
 - seed depuis `providers/*.js` ;
