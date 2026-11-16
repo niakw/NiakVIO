@@ -7,6 +7,11 @@ on:
     paths:
       - '.github/workflows/provider-quality-deep-diagnostic.yml'
       - 'scripts/summarize_provider_quality_probe.py'
+      - 'scripts/select_provider_quality_diagnostic_cohort.py'
+      - 'scripts/current_provider_scope.py'
+      - 'provider_catalog.json'
+      - 'manifest.json'
+      - 'vf/manifest.json'
       - 'tests/provider_quality_deep_probe_test.py'
       - 'scripts/health_check.mjs'
       - 'tests/deep_stream_sampling_test.py'
@@ -21,23 +26,39 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  prepare:
+    name: Select current quality cohort
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      matrix: ${{ steps.cohort.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0
+        with:
+          python-version: '3.12'
+      - name: Derive active runtime-family representatives
+        id: cohort
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          matrix="$(python scripts/select_provider_quality_diagnostic_cohort.py --max-providers 8 --github-matrix)"
+          python -c 'import json,sys; x=json.loads(sys.argv[1]); assert 1 <= len(x["include"]) <= 8' "$matrix"
+          echo "matrix=$matrix" >> "$GITHUB_OUTPUT"
+
   quality:
+    needs: prepare
     name: Quality ${{ matrix.provider }} (${{ matrix.family }})
     runs-on: ubuntu-latest
     timeout-minutes: 35
     strategy:
       fail-fast: false
       max-parallel: 4
-      matrix:
-        include:
-          - { provider: castle, family: api-tv-movie }
-          - { provider: purstream, family: site-player }
-          - { provider: hindmoviez, family: quality-fanout }
-          - { provider: streamzo, family: anime-catalogue }
-          - { provider: 4khdhub, family: html-download }
-          - { provider: uhdmovies, family: download-mirrors }
-          - { provider: allanime, family: anime-api }
-          - { provider: moviesmod, family: player-page }
+      matrix: ${{ fromJSON(needs.prepare.outputs.matrix) }}
     env:
       TARGET_PROVIDER: ${{ matrix.provider }}
     steps:
