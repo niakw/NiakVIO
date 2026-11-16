@@ -12,6 +12,7 @@ import subprocess
 from pathlib import Path
 
 import evaluate_brain_llm_force_candidates as verifier
+from current_provider_scope import projection_active_provider_rows
 
 ROOT = Path(__file__).resolve().parents[1]
 PROVIDERS = ('animevostfr', 'anime-sama', 'french-manga', 'neko-sama', 'voiranime',
@@ -162,9 +163,8 @@ def staged_hash(provider, stage, repo_root=ROOT):
     registry = verifier.load(stage / 'candidates.json')
     candidates = [row for row in registry.get('candidates', [])
                   if verifier.canon(row.get('canonical_id')) == provider]
-    manifest = verifier.load(repo_root / 'manifest.json')
-    entries = [row for row in manifest.get('scrapers', [])
-               if verifier.canon(row.get('id')) == provider and row.get('enabled') is True]
+    entries = [row for row in projection_active_provider_rows(repo_root)
+               if verifier.canon(row.get('id')) == provider]
     if len(candidates) != 1 or len(entries) != 1:
         raise ValueError('published_provider_contract')
     staged = (stage / candidates[0]['local_path']).resolve()
