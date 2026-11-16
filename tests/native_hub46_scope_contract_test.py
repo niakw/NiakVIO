@@ -84,15 +84,16 @@ workflow_paths = (
 legacy_fixed_trio = "interstellar breaking-bad-s01e01 jujutsu-kaisen-s01e01"
 for workflow in workflow_paths:
     text = workflow.read_text(encoding="utf-8")
-    assert "NIAKVIO_PROVIDER_SCOPE_MATRIX: automation/evidence/hub-lab-matrix-46.json" in text, workflow
-    assert "--scope-matrix" in text, workflow
-    assert "automation/evidence/hub-lab-matrix-46.json" in text, workflow
     assert "native-hub46/manifest.json" in text, workflow
+    assert "NIAKVIO_PROVIDER_SCOPE_MATRIX:" not in text, workflow
+    assert "--scope-matrix" not in text, workflow
     assert legacy_fixed_trio not in text, workflow
 
 android_workflow = workflow_paths[1].read_text(encoding="utf-8")
 assert "--manifest manifest.json" not in android_workflow
+assert "--manifest niakvio/manifest.json" not in android_workflow
 assert "NIAKVIO_TARGET_MANIFEST: manifest.json" not in android_workflow
+assert android_workflow.count("--manifest niakvio/native-hub46/manifest.json") >= 2
 
 assert "rotating_corpus.py" in workflow_paths[0].read_text(encoding="utf-8")
 assert "FIELD_ROTATING_CORPUS client=tv" in workflow_paths[1].read_text(encoding="utf-8")
