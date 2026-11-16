@@ -44,7 +44,7 @@ PLAYER_PROBES="${NIAKVIO_PLAYER_PROBES:-1}"
 READER_ACCEPTANCE="${NIAKVIO_READER_ACCEPTANCE:-0}"
 PRIMARY_FIXTURE="${NIAKVIO_PRIMARY_FIXTURE:-interstellar}"
 PRIMARY_STREAM_SCOPE="${NIAKVIO_PRIMARY_STREAM_SCOPE:-all}"
-REGRESSION_STREAM_SCOPE="${NIAKVIO_REGRESSION_STREAM_SCOPE:-2}"
+REGRESSION_STREAM_SCOPE="${NIAKVIO_REGRESSION_STREAM_SCOPE:-all}"
 TV_PRIORITY_APPEND="${NIAKVIO_TV_PRIORITY_APPEND:-0}"
 ROUTE_TIMEOUT_MINUTES="${NIAKVIO_TV_ROUTE_TIMEOUT_MINUTES:-45}"
 CHECKPOINT_ROOT="${NIAKVIO_TV_CHECKPOINT_DIR:-${EVIDENCE_ROOT}/checkpoints}"
@@ -78,6 +78,19 @@ elif [[ -n "$TARGET_FIXTURE" && "$TARGET_FIXTURE" != "all" ]]; then
   FIXTURES=("$TARGET_FIXTURE")
 else
   FIXTURES=("${DEFAULT_FIXTURES[@]}")
+fi
+
+# Mandatory regressions are additive to rotating discovery and must not be
+# skipped after a positive result in the same lane.
+if [[ -z "$TARGET_FIXTURES" && ( -z "$TARGET_FIXTURE" || "$TARGET_FIXTURE" = "all" ) && "$READER_ACCEPTANCE" = "1" ]]; then
+  while IFS= read -r mandatory_fixture; do
+    [[ -z "$mandatory_fixture" ]] && continue
+    present=false
+    for existing_fixture in "${FIXTURES[@]}"; do
+      if [[ "$existing_fixture" = "$mandatory_fixture" ]]; then present=true; break; fi
+    done
+    if [[ "$present" != "true" ]]; then FIXTURES+=("$mandatory_fixture"); fi
+  done < <(python3 "${NIAKVIO}/scripts/native_regression_fixtures.py")
 fi
 
 # TV is the primary user-impact signal. On the production manifest baseline, always
