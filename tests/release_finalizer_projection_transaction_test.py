@@ -6,7 +6,7 @@ ROOT = Path(__file__).resolve().parents[1]
 assert not (ROOT / ".github/workflows/temp-release-finalize-recovery.yml").exists(), "retired temporary release bypass returned"
 assert not (ROOT / ".github/triggers/temp-release-finalize-recovery.json").exists(), "retired temporary release trigger returned"
 workflow = (ROOT / ".github" / "workflows" / "release-finalize.yml").read_text(encoding="utf-8")
-
+assert "NUVIO_SKIP_CLIENT_UPSTREAM_GUARD" not in workflow, "release finalizer may not bypass current Nuvio upstream freshness"\n
 runtime_step = workflow.index("- name: Validate current Nuvio métier ABI and projection authority")
 upstream_guard = workflow.index(
     'python3 scripts/check_nuvio_client_upstreams.py --output "$RUNNER_TEMP/nuvio-client-upstream-status.json"',
