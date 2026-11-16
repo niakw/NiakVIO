@@ -195,7 +195,11 @@ Règles :
 
 ## 7. Reconstruction complète
 
-La reconstruction courante de **tous les providers actifs du scope exact** appartient à `.github/workflows/provider-v3-reconstruct-all.yml`. Le scope vient de `scripts/current_provider_scope.py`. Elle travaille sur le SHA sélectionné et, lorsqu’un commit de reconstruction est demandé, **refuse toute écriture directe sur `main`** : la cible doit être une branche non-main explicite. Les 50 providers historiques restent des connaissances archivées, jamais des sorties de la reconstruction courante.
+La reconstruction courante de **tous les providers actifs du scope exact** appartient à `.github/workflows/provider-v3-reconstruct-all.yml`. Le scope vient de `scripts/current_provider_scope.py`. Elle travaille sur le SHA sélectionné et, lorsqu’un commit de reconstruction est demandé, **refuse toute écriture directe sur `main`** : la cible doit être une branche non-main explicite. Les providers historiques restent des connaissances archivées, jamais des sorties de la reconstruction courante.
+
+La DATA statique et les ledgers peuvent conserver l’union **runtime-visible Global + France** (actifs + disabled-retained, pending exclus) afin de préserver l’expérience et permettre une réactivation sûre. En revanche, la **validation réseau live** et la restauration de candidats exécutables sont strictement bornées à `projection_active_provider_ids()`. Un provider disabled-retained sans tâche live conserve ses routes/recettes durables ; l’absence d’exécution dans un run actif ne peut jamais effacer sa connaissance historique.
+
+Les migrations historiques du ProviderBase/Core sont des **planchers sémantiques**. Sur les octets courants elles doivent être au fixed-point : les relancer ne doit pas réécrire le générateur ou le Core pour les ramener vers une ancienne forme source. Les extensions compatibles restent autorisées, tandis que la disparition d’un invariant historique obligatoire reste fail-closed.
 
 Interdictions :
 
