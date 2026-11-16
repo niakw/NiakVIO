@@ -13,7 +13,7 @@ import argparse
 import copy
 import json
 from pathlib import Path
-from current_provider_scope import active_provider_count
+from current_provider_scope import projection_runtime_visible_provider_count
 from typing import Any
 
 import provider_contract_recognizer as recognizer
@@ -26,7 +26,7 @@ ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_KNOWLEDGE = ROOT / "automation" / "provider-v3-static-knowledge.json"
 DEFAULT_SEEDS = ROOT / "automation" / "provider-v3-recognition-seeds.json"
 OVERRIDES = ROOT / "provider-overrides.json"
-EXPECTED = active_provider_count()
+EXPECTED = projection_runtime_visible_provider_count()
 EXECUTABLE_ROLES = {"api", "search", "detail", "player", "source", "episode-index"}
 
 install_route_guard(recognizer)
