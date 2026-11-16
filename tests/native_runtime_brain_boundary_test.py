@@ -10,7 +10,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 SCOPE = ROOT / "scripts/scope_native_reader_learning_runtime.py"
 WORKFLOWS = [
-    ROOT / ".github/workflows/native-tv-route-reader.yml",
+    # Android workflow owns two independent first-class jobs: TVAndroid and
+    # MobileAndroid. The retired native-tv-route-reader.yml must never return.
     ROOT / ".github/workflows/native-mobile-android-reader.yml",
     ROOT / ".github/workflows/native-mobile-ios-reader.yml",
     ROOT / ".github/workflows/native-desktop-reader-acceptance.yml",
@@ -19,6 +20,9 @@ BRAIN = ROOT / ".github/workflows/brain-learning-lab.yml"
 
 scope = SCOPE.read_text(encoding="utf-8")
 workflows = [path.read_text(encoding="utf-8") for path in WORKFLOWS]
+assert not (ROOT / ".github/workflows/native-tv-route-reader.yml").exists()
+assert "tv-route-reader:" in workflows[0]
+assert "mobile-android-reader:" in workflows[0]
 brain = BRAIN.read_text(encoding="utf-8")
 for required in (
     "gate_native_cross_client_runtime.cjs",
