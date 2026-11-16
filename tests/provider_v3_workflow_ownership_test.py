@@ -99,6 +99,10 @@ for required in ("materialize_provider_v3_all.py","verify_provider_v3_reverse_re
     assert required in manual
 assert "Refuse direct main mutation" in manual
 assert "NUVIO_PROVIDER_V3_CONTEXT: workspace" in manual
+assert "Require source migrations to be fixed-point" in manual
+assert "FIELD_PROVIDER_SOURCE_MIGRATION_FIXED_POINT changed=false" in manual
+assert "git diff --exit-code" in manual
+assert manual.index("Require source migrations to be fixed-point") < manual.index("Reconcile exact Global+France structured authority")
 
 # Domain Refresh owns only address authority and its bounded provider-owned
 # projection: CONFIG DATA plus explicit old-host -> current-host rewrites inside
