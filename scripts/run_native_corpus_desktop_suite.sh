@@ -38,7 +38,7 @@ if [[ -n "${NIAKVIO_PROVIDER_SCOPE_MATRIX:-}" && -f "${NIAKVIO}/native-hub46/man
 fi
 PRIMARY_FIXTURE="${NIAKVIO_PRIMARY_FIXTURE:-interstellar}"
 PRIMARY_STREAM_SCOPE="${NIAKVIO_PRIMARY_STREAM_SCOPE:-all}"
-REGRESSION_STREAM_SCOPE="${NIAKVIO_REGRESSION_STREAM_SCOPE:-2}"
+REGRESSION_STREAM_SCOPE="${NIAKVIO_REGRESSION_STREAM_SCOPE:-all}"
 SOURCE_SHA="${NIAKVIO_SOURCE_SHA:-$(git -C "$NIAKVIO" rev-parse HEAD)}"
 SOURCE_REPOSITORY="${GITHUB_REPOSITORY:-niakw/NiakVIO}"
 source "$REPOSITORY_RESOLVER"
@@ -62,6 +62,16 @@ if [[ -n "$TARGET_FIXTURE" && "$TARGET_FIXTURE" != "all" ]]; then
   FIXTURES=("$TARGET_FIXTURE")
 else
   FIXTURES=("${DEFAULT_FIXTURES[@]}")
+fi
+if [[ -z "$TARGET_FIXTURE" || "$TARGET_FIXTURE" = "all" ]]; then
+  while IFS= read -r mandatory_fixture; do
+    [[ -z "$mandatory_fixture" ]] && continue
+    present=false
+    for existing_fixture in "${FIXTURES[@]}"; do
+      if [[ "$existing_fixture" = "$mandatory_fixture" ]]; then present=true; break; fi
+    done
+    if [[ "$present" != "true" ]]; then FIXTURES+=("$mandatory_fixture"); fi
+  done < <(python3 "${NIAKVIO}/scripts/native_regression_fixtures.py")
 fi
 
 python3 "$INSTRUMENTER" "$DESKTOP_ROOT" || exit $?
