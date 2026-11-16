@@ -7,10 +7,9 @@ from the published catalogue. Runtime behavior can still fail closed when no rel
 route exists.
 
 The public function name is retained because release-integrity validation imports it.
-Legacy proof-v5 disable records are now explicitly rejected rather than granted a
-special disablement exception. The legacy activation validator still carries the old
-96-provider catalogue floor; this compatibility adapter ignores only that stale legacy cardinality error;
-current folder/manifest identity is validated independently.
+Legacy proof-v5 disable records are explicitly rejected rather than granted a
+special disablement exception. Current publication/folder identity and cardinality
+are derived dynamically by the activation validator.
 """
 from __future__ import annotations
 
@@ -24,7 +23,6 @@ LEGACY_ROUTE_PROOF_DISABLE_ACTION = "published-disabled-no-proven-route"
 ROUTE_PROOF_DISABLE_ACTION = LEGACY_ROUTE_PROOF_DISABLE_ACTION
 ROUTE_PROOF_FAILED_GATE = "route_proof_no_proven_route"
 ROUTE_PROOF_AUTHORITY = "provider-route-recovery-v5"
-LEGACY_CATALOGUE_COUNT_ERROR = "canonical catalogue must contain 96 providers"
 
 
 def conclusive_disablement_with_route_proof(
@@ -55,9 +53,7 @@ def validate() -> list[str]:
     finally:
         legacy.conclusive_disablement = original
 
-    # The legacy 96-row error is obsolete. Current identity/folder coherence is
-    # validated independently; route proof never owns provider cardinality.
-    return [error for error in errors if not str(error).startswith(LEGACY_CATALOGUE_COUNT_ERROR)]
+    return errors
 
 
 if __name__ == "__main__":
