@@ -1,3 +1,10 @@
+## 2026-11-16 — Freshness authority now retriggers the Workflow Gate
+
+- Workflow Gate on the restored catalogue fixed point reached `production_active_provider_freshness_test.py` and correctly rejected Purstream: its last FULL proof is bound to provider SHA `cc163f9f...`, while the current materialized bundle is `8df7099f...`. Because shared Core bytes changed, that historical FULL result is not transferable; this is real exact-byte proof debt, not a test defect.
+- Audit then exposed an orchestration gap: the gate consumed `automation/provider-census-all-status-latest.json`, pending/reactivation ledgers, provenance and exact provider bytes, but changes to those authorities did not themselves trigger `github-actions-gate.yml`. A successful fresh census could therefore resolve the proof debt without automatically superseding the stale Gate failure.
+- Commit `8d3c994f` adds all production-freshness/runtime-authority inputs to both push and PR path triggers: census/pending/reactivation ledgers, provenance, materialization/static authority, provider/provider-base bytes, VF and native projection transports. Commit `0c9ffccf` locks those dependencies in the production-freshness regression.
+- No freshness threshold was weakened and no historical proof was rebound to new bytes. The in-flight current-byte census must still produce the proof; once persisted, Workflow Gate now reruns automatically.
+
 ## 2026-11-16 — Persisted provider catalogue fixed point restored on main
 
 - Current main still carried the production mismatch exposed by Workflow Gate even after the generic transaction code was repaired: `manifest.json` / `vf/manifest.json` referenced the new provider generations while all projected `provider_catalog.json` scraper mirrors were stale.
