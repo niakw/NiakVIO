@@ -4491,12 +4491,13 @@ async function _spv4FullStory(detailUrl, meta, mediaType, season, episode) {
       const cpRe = /id\s*=\s*["']content_player_(\d+)[a-z]*["'][^>]*>\s*(\d+)\s*</gi;
       let cp;
       while ((cp = cpRe.exec(html)) !== null) players.push(cp[2]);
+      /* NIAKVIO_PROVIDER_DLE_FULL_STORY_EPISODE_VARIANT_COVERAGE_V34 */
+      const streams = [];
       const index = epNumbers.indexOf(wanted);
       if (index >= 0 && index < players.length && /^\d+$/.test(players[index])) {
-        return _streams(["https://video.sibnet.ru/shell.php?videoid=" + players[index]], detailUrl).slice(0, 4);
+        streams.push(..._streams(["https://video.sibnet.ru/shell.php?videoid=" + players[index]], detailUrl));
       }
       /* NIAKVIO_PROVIDER_DLE_FULL_STORY_COVERAGE_V31 */
-      const streams = [];
       const urls = _spv4AttrUrls(html, target);
       const direct = _spv4DirectStreams(urls, target);
       if (direct.length) streams.push(...direct);
