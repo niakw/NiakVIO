@@ -10,7 +10,9 @@ import current_provider_scope as scope  # noqa: E402
 
 audit = (ROOT / "scripts" / "audit_provider_v3_static.py").read_text(encoding="utf-8")
 assert "projection_runtime_visible_provider_ids" in audit
-assert "visible=len(projection_runtime_visible_provider_ids())" in audit
+assert "projection_active_provider_rows()" in audit
+assert "active_provider_ids" not in audit
+assert 'manifest.get("scrapers")' not in audit
 assert "runtime_visible_provider_count" not in audit
 
 global_runtime = scope.runtime_visible_provider_ids()
