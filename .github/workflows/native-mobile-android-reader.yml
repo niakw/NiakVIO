@@ -148,8 +148,8 @@ jobs:
             echo "NIAKVIO_TARGET_FIXTURES=$ROTATED_FIXTURES"
             echo "NIAKVIO_PRIMARY_FIXTURE=$PRIMARY_FIXTURE"
           } >> "$GITHUB_ENV"
-          echo "FIELD_ROTATING_CORPUS client=tv fixtures=$ROTATED_FIXTURES scope=46"
-          python3 niakvio/scripts/prepare_native_reader_acceptance.py tv --fixture "$PRIMARY_FIXTURE" --workspace "$GITHUB_WORKSPACE" --manifest manifest.json --provider declared-type --streams 2 --initial
+          echo "FIELD_ROTATING_CORPUS client=tv fixtures=$ROTATED_FIXTURES scope=projection-union"
+          python3 niakvio/scripts/prepare_native_reader_acceptance.py tv --fixture "$PRIMARY_FIXTURE" --workspace "$GITHUB_WORKSPACE" --manifest native-hub46/manifest.json --provider declared-type --streams 2 --initial
       - name: Restore TV Android prebuild cache
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9
         with:
@@ -162,7 +162,7 @@ jobs:
       - name: Prebuild TV reader once before QEMU
         shell: bash
         env:
-          NIAKVIO_TARGET_MANIFEST: manifest.json
+          NIAKVIO_TARGET_MANIFEST: native-hub46/manifest.json
           NIAKVIO_TARGET_PROVIDER: declared-type
           NIAKVIO_PRIMARY_STREAM_SCOPE: all
         run: bash niakvio/scripts/prebuild_native_android_reader_suite.sh tv
@@ -174,7 +174,7 @@ jobs:
         uses: ReactiveCircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d
         env:
           NIAKVIO_TARGET_PROVIDER: declared-type
-          NIAKVIO_TARGET_MANIFEST: manifest.json
+          NIAKVIO_TARGET_MANIFEST: native-hub46/manifest.json
           NIAKVIO_READER_ACCEPTANCE: "1"
           NIAKVIO_TV_PRIORITY_APPEND: "1"
           NIAKVIO_TV_ROUTE_TIMEOUT_MINUTES: "45"
@@ -270,8 +270,8 @@ jobs:
             echo "NIAKVIO_TARGET_FIXTURES=$ROTATED_FIXTURES"
             echo "NIAKVIO_PRIMARY_FIXTURE=$PRIMARY_FIXTURE"
           } >> "$GITHUB_ENV"
-          echo "FIELD_ROTATING_CORPUS client=mobile fixtures=$ROTATED_FIXTURES scope=46"
-          python3 niakvio/scripts/prepare_native_reader_acceptance.py mobile --fixture "$PRIMARY_FIXTURE" --workspace "$GITHUB_WORKSPACE" --manifest manifest.json --provider declared-type --streams all --initial
+          echo "FIELD_ROTATING_CORPUS client=mobile fixtures=$ROTATED_FIXTURES scope=projection-union"
+          python3 niakvio/scripts/prepare_native_reader_acceptance.py mobile --fixture "$PRIMARY_FIXTURE" --workspace "$GITHUB_WORKSPACE" --manifest native-hub46/manifest.json --provider declared-type --streams all --initial
       - name: Restore Mobile Android prebuild cache
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9
         with:
@@ -285,7 +285,7 @@ jobs:
       - name: Prebuild Mobile Android reader once before QEMU
         shell: bash
         env:
-          NIAKVIO_TARGET_MANIFEST: manifest.json
+          NIAKVIO_TARGET_MANIFEST: native-hub46/manifest.json
           NIAKVIO_TARGET_PROVIDER: declared-type
           NIAKVIO_PRIMARY_STREAM_SCOPE: all
         run: bash niakvio/scripts/prebuild_native_android_reader_suite.sh mobile
@@ -297,7 +297,7 @@ jobs:
         uses: ReactiveCircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d
         env:
           NIAKVIO_TARGET_PROVIDER: declared-type
-          NIAKVIO_TARGET_MANIFEST: manifest.json
+          NIAKVIO_TARGET_MANIFEST: native-hub46/manifest.json
           NIAKVIO_READER_ACCEPTANCE: "1"
           NIAKVIO_PRIMARY_STREAM_SCOPE: all
           NIAKVIO_REGRESSION_STREAM_SCOPE: all
