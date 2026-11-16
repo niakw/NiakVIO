@@ -602,7 +602,10 @@ jobs:
             else
               cp /tmp/provider-waf-browser-session-sharded.json automation/provider-waf-browser-session-latest.json
             fi
-            cp /tmp/PROVIDER_CENSUS_STATUS.md PROVIDER_CENSUS_STATUS.md
+            python scripts/render_provider_census_status_from_state.py \
+              --status automation/provider-census-status.json \
+              --output PROVIDER_CENSUS_STATUS.md
+            echo "FIELD_SHARDED_CENSUS_STATUS_RENDER source=canonical-merged-state"
           fi
           verified="$(python - <<'PY'
           import json
