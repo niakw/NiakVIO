@@ -924,12 +924,22 @@ function _extractUrls(text, base) {
   }
   return _uniq(out);
 }
+/* NIAKVIO_PROVIDER_CANONICAL_MEDIA_TRANSPORT_V32 */
 function _mediaNamespace(mediaType) {
+  // This helper is provider transport, not TMDB identity namespace. Core has
+  // already applied any explicit requestTypeAliases before invoking ProviderBase.
+  // Preserve canonical anime by default, matching the official Nuvio ABI.
+  let value = _text(mediaType || "movie").toLowerCase();
+  if (value === "series" || value === "show" || value === "other") value = "tv";
+  if (value === "anime") return "anime";
+  return value === "movie" ? "movie" : "tv";
+}
+function _tmdbNamespace(mediaType) {
   try {
     const ctx = typeof globalThis !== "undefined" ? globalThis.__nuvioMediaContext : null;
     if (ctx && (ctx.tmdbNamespace === "movie" || ctx.tmdbNamespace === "tv")) return ctx.tmdbNamespace;
   } catch (_) {}
-  return mediaType === "movie" ? "movie" : "tv";
+  return _mediaNamespace(mediaType) === "movie" ? "movie" : "tv";
 }
 function _playerLike(url) {
   try {
@@ -1431,7 +1441,7 @@ function _expandLearnedRoute(pattern, meta, mediaType, season, episode, bases) {
   const imdbId = _text(meta && meta.imdbId);
   const title = _text(meta && meta.title);
   const slug = _slug(title);
-  const transport = mediaType === "movie" ? "movie" : "tv";
+  const transport = _mediaNamespace(mediaType);
   route = route.replace(/\{tmdb_?id\}/gi, encodeURIComponent(id));
   route = route.replace(/\{imdb_?id\}/gi, encodeURIComponent(imdbId));
   // {id} has no universal meaning across providers. It can be a provider
@@ -1473,7 +1483,7 @@ function _spv34RouteMediaCompatible(route, mediaType) {
   const match = source.match(/(?:[?&](?:type|media|m)=)(movie|tv|series|anime)(?=&|#|$)/i);
   if (!match) return true;
   let actual = _text(match[1]).toLowerCase();
-  if (actual === "series" || actual === "anime") actual = "tv";
+  if (actual === "series") actual = "tv";
   return actual === desired;
 }
 function _learnedUrls(kind, meta, mediaType, season, episode) {
@@ -1529,7 +1539,7 @@ async function _fetch(url, options) {
 }
 async function _tmdb(tmdbId, mediaType) {
   if (!tmdbId) return null;
-  const type = _mediaNamespace(mediaType);
+  const type = _tmdbNamespace(mediaType);
   const identity = type + ":" + String(tmdbId || "");
   function project(row) {
     if (!row || typeof row !== "object") return null;
@@ -1688,9 +1698,8 @@ function _runtimeApiUrls(playerUrl, mediaType, tmdbId, season, episode) {
   let player;
   try { player = new URL(playerUrl); } catch (_) { return []; }
   const out = [];
-  // Transport-level player media values are commonly movie/tv even when
-  // Nuvio's semantic type is anime. Preserve anime as a Nuvio type, but route
-  // episodic/anime players through the site's TV transport convention.
+  // Provider media is canonical movie/tv/anime unless Core already applied an
+  // explicit provider requestTypeAlias. TMDB namespace must not rewrite it.
   const desiredMedia = _mediaNamespace(mediaType);
   const observedMedia = _text(player.searchParams.get("m") || player.searchParams.get("media") || player.searchParams.get("type")).toLowerCase();
   for (const pattern of NIAKVIO_PROVIDER_MODEL.routes || []) {
