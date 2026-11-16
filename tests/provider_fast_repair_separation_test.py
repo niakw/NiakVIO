@@ -105,7 +105,8 @@ for required in (
     assert required in workflow, required
 # Evidence-only workflow/census history must not restart the exact same
 # 0-accepted Fast cohort. Changed Brain memory, executable sources, target
-# trigger or semantic provider status must still authorize a retry.
+# trigger, semantic provider status or bounded causal evidence must authorize
+# a retry even when the top-level status string remains unchanged.
 assert "FIELD_PROVIDER_FAST_REPAIR_REQUEUE skipped=no_executable_or_causal_evidence_drift" in workflow
 assert 'git merge-base --is-ancestor "$GITHUB_SHA" "$remote_main"' in workflow
 assert 'git diff --quiet "$GITHUB_SHA" "$remote_main" --' in workflow
@@ -113,6 +114,19 @@ assert "automation/brain-repair-memory.json" in workflow
 assert "automation/brain-positive-program-memory.json" in workflow
 assert "automation/provider-repair-candidate-evidence.json" in workflow
 assert "automation/provider-census-status.json" in workflow
+for causal_field in (
+    "latestLaneVerdicts",
+    "evidenceDepth",
+    "harnessTransportClass",
+    "brainCheckRequired",
+    "repairEligible",
+    "authorityAction",
+    "authorityClass",
+    "targetedTransportClass",
+    "targetedTransportEvidence",
+):
+    assert causal_field in workflow, causal_field
+assert "causal_census_jq=" in workflow
 assert 'old_census" = "$new_census"' in workflow
 assert ".github/triggers/provider-fast-repair.json; then" in workflow
 assert workflow.index("skipped=no_executable_or_causal_evidence_drift") < workflow.index("requeue_target_provider=")
