@@ -12,6 +12,16 @@ import apply_provider_route_recovery_report as apply_report  # noqa: E402
 import merge_provider_repair_report_v6 as merge_report  # noqa: E402
 
 
+# Default repository authority must be the Global+France active projection union,
+# not root manifest.json. Inject the projection resolver so this remains an
+# isolated unit test without depending on the live catalogue.
+projection_ids = merge_report.publication_active_ids(
+    merge_report.DEFAULT_MANIFEST,
+    {"scrapers": [{"id": "global-only", "enabled": True, "filename": "providers/global.js"}]},
+    projection_ids_fn=lambda: ["global-only", "france-only"],
+)
+assert projection_ids == ["global-only", "france-only"], projection_ids
+
 baseline = {
     "schemaVersion": 5,
     "providers": [{
