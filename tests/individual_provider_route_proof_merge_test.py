@@ -13,7 +13,7 @@ module = importlib.util.module_from_spec(spec)
 assert spec and spec.loader
 spec.loader.exec_module(module)
 
-active = sorted(module.current_scope.active_provider_ids())
+active = sorted(module.current_scope.projection_active_provider_ids())
 assert active
 with tempfile.TemporaryDirectory(prefix="niakvio-individual-merge-") as tmp:
     root = Path(tmp)
