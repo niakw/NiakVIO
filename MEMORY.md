@@ -1,3 +1,10 @@
+## 2026-11-16 — Release fixed-point scope test follows current Global authority
+
+- Release finalizer run `43872548151` reached the corrected métier transaction far enough to prove 45 active Global providers were rematerialized, the Global+France materialization authority reached **75/75 active identities**, projection parity returned to zero drift, and both Global/France minimizers reached fixed point. It then failed in `tests/reconcile_active_provider_publication_test.py` because that regression still hard-coded historical witness `chillflix`, which is no longer part of the active Global scope.
+- This was a stale-test failure after successful publication reconciliation, not a provider/runtime failure. Commit `64e6ce8b` replaces the named-provider assertion with exact equality against `current_provider_scope.active_provider_ids()`, preserving non-empty/unique scope and union-materialization rebind checks without freezing catalogue membership.
+- Commit `f1467b94` adds that executed regression test to `release-finalize.yml` push dependencies. Any future change to the test that can make the canonical release transaction pass/fail now replays the finalizer on the exact changed SHA instead of leaving the transaction unexercised.
+- Brain Repair remains secondary. The next release-finalizer result must pass this derived-scope gate and complete final exact-byte publication/reverse-rebuild checks before five-Native-Lab certification is interpreted.
+
 ## 2026-11-16 — NiakVIO métier baseline restored before Brain: projection union, stream multiplicity and S00
 
 - September baseline comparison exposed current-machine drift that could invalidate Repair conclusions even when provider code was unchanged. The active architecture still preserves Provider v3 / ProviderBase + structured DATA + owned Provider/Core Blocs, but `VALIDATION.json` still carried frozen September counts (46/44/96), `sources.json` still declared `at most one playable stream`, and the five Native Labs used Global `active_provider_ids` while France-only providers are now first-class executable projection rows.
