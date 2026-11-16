@@ -95,6 +95,6 @@ print(
     "validated_data_retained=true provider_authority_demoted=true "
     "failed_live_execution_data=false failed_live_metadata=false "
     "blocked_non2xx_plan=terminal-only continue_after_provider_failure=true "
-    "route_data_persisted=true report_checkpointed=true memory_checkpointed=true "
+    "batch_workbench_only=true canonical_sequential_authority=true direct_main_persistence=false "
     "publication_gate=false final_bundle_reprobe=true"
 )
