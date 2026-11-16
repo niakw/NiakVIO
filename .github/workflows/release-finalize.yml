@@ -20,6 +20,12 @@ on:
       # Core/ProviderBase edits must reach published bundles, not stop at source tests.
       - 'scripts/provider_patches/**'
       - 'scripts/provider_base_store.py'
+      - 'scripts/apply_provider_overrides.py'
+      - 'scripts/generate_hub46_manifest.py'
+      - 'scripts/build_hub46_native_manifest.py'
+      - 'tests/provider_stream_multiplicity_contract_test.py'
+      - 'tests/stream_output_sanitizer_multi_variant_test.py'
+      - 'tests/special_season_zero_identity_test.py'
       - 'scripts/reapply_published_overrides.py'
       - 'scripts/sync_manifest_projection_rows.py'
       - 'scripts/materialize_provider_v3_all.py'
