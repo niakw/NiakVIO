@@ -77,6 +77,7 @@ module.exports={getStreams:async()=>[{
   format:'HLS',
   url:'https://media.example/master.m3u8',
   headers:{Referer:'https://provider.example/watch/42','User-Agent':'Neutral-UA'},
+  behaviorHints:{audioDelayMs:125,audioDelayLanguage:'fr',proxyHeaders:{request:{Referer:'https://provider.example/watch/42'}}},
   subtitles:[{
     url:'https://subs.example/interstellar-fr.vtt',
     language:'fr',
@@ -151,6 +152,10 @@ assert row.get("format") == "HLS", row
 assert row.get("url") == "https://media.example/master.m3u8", row
 assert row.get("headers", {}).get("Referer") == "https://provider.example/watch/42", row
 assert row.get("headers", {}).get("User-Agent") == "Neutral-UA", row
+behavior_hints = row.get("behaviorHints") or {}
+assert behavior_hints.get("audioDelayMs") == 125, row
+assert behavior_hints.get("audioDelayLanguage") == "fr", row
+assert behavior_hints.get("proxyHeaders", {}).get("request", {}).get("Referer") == "https://provider.example/watch/42", row
 subtitles = row.get("subtitles") or []
 assert len(subtitles) == 1, row
 assert subtitles[0].get("url") == "https://subs.example/interstellar-fr.vtt", row
