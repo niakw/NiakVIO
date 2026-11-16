@@ -13,6 +13,7 @@ sys.path.insert(0, str(ROOT / "scripts"))
 SCRIPT = ROOT / "scripts" / "check_nuvio_client_upstreams.py"
 BRAIN_GUARD = ROOT / "scripts" / "guard_nuvio_client_brain_compat.py"
 CONFIG = ROOT / "automation" / "nuvio-client-upstreams.json"
+ENGINE_CONFIG = ROOT / "engine_v2" / "config" / "nuvio-clients.json"
 SOURCES = ROOT / "sources.json"
 DESKTOP_CANARY = ROOT / ".github" / "workflows" / "native-desktop-reader-acceptance.yml"
 
@@ -123,6 +124,26 @@ def main() -> int:
     current_sources = json.loads(SOURCES.read_text(encoding="utf-8"))
     assert module.validate_config(current_config) == []
     assert module.validate_sources(current_config, current_sources) == []
+
+    # Engine-v2's manual contract watcher is a derived view of the canonical
+    # Nuvio audit. It must never retain an older accepted HEAD or a narrower
+    # contract-path surface than the release authority.
+    engine_config = json.loads(ENGINE_CONFIG.read_text(encoding="utf-8"))
+    assert engine_config["policy"]["authority"] == "derived-current-nuvio-audit"
+    assert engine_config["policy"]["authority_source"] == "automation/nuvio-client-upstreams.json"
+    for engine_id, canonical_id in {
+        "mobile": "nuvio-mobile",
+        "desktop": "nuvio-desktop",
+        "tv": "nuvio-tv",
+    }.items():
+        derived = engine_config["clients"][engine_id]
+        canonical = current_config["clients"][canonical_id]
+        assert derived["accepted_ref"] == canonical["verified_ref"], (engine_id, derived["accepted_ref"], canonical["verified_ref"])
+        assert derived["observed_head"] == canonical["verified_ref"], engine_id
+        assert derived["audited_ref"] == canonical["verified_ref"], engine_id
+        assert derived["contract_paths"] == canonical["contract_paths"], engine_id
+        assert derived["semantic_paths"] == canonical["semantic_review_paths"], engine_id
+    assert engine_config["clients"]["tv"]["supports_subtitles_in_plugin_result"] is True
 
     # The Desktop upstream checker must not compare every blob just to learn
     # names. Git's rename detector may lazily fetch an entire filtered client
