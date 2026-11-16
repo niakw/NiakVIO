@@ -134,9 +134,9 @@ with tempfile.TemporaryDirectory(prefix="niakvio-onboard-finalize-france-") as t
         "providers":[{
             "id":"france-new",
             "clients":{
-                "tv":{"verdict":"playable","identity_contradiction_count":0},
-                "desktop":{"verdict":"playable","identity_contradiction_count":0},
-                "mobile":{"verdict":"playable","identity_contradiction_count":0},
+                "tv":{"verdict":"playable","identity_match_count":1,"identity_contradiction_count":0},
+                "desktop":{"verdict":"playable","identity_match_count":1,"identity_contradiction_count":0},
+                "mobile":{"verdict":"playable","identity_match_count":1,"identity_contradiction_count":0},
             },
         }],
         "policy":{"safety_blocking_pass":True},
@@ -170,6 +170,48 @@ with tempfile.TemporaryDirectory(prefix="niakvio-onboard-finalize-france-") as t
     assert proof["full_ok_claimed"] is False
 
 print("Single-provider France-only finalize + live-unverified authority contract passed")
+
+# Transport-playable output without positive content identity remains pending.
+with tempfile.TemporaryDirectory(prefix="niakvio-onboard-identity-unknown-") as td:
+    root=Path(td); work=root/".provider-onboarding"; work.mkdir()
+    manifest=root/"manifest.json"; vf_manifest=root/"vf/manifest.json"; vf_manifest.parent.mkdir()
+    overrides=root/"provider-overrides.json"; provenance=root/"PROVENANCE.json"
+    manifest.write_text(json.dumps({"scrapers":[]}),encoding="utf-8")
+    vf_manifest.write_text(json.dumps({"scrapers":[{"id":"identity-unknown","enabled":False}]}),encoding="utf-8")
+    overrides.write_text(json.dumps({
+        "provider_patches":{"identity-unknown":{"manifest_overrides":{"enabled":False}}},
+        "provider_capabilities":{"identity-unknown":{"validation":"onboarding_pending"}},
+    }),encoding="utf-8")
+    provenance.write_text(json.dumps({"providers":{"identity-unknown":{"activation_mode":"onboarding_pending"}}}),encoding="utf-8")
+    (work/"current.json").write_text(json.dumps({"id":"identity-unknown","scope":"france"}),encoding="utf-8")
+    report=root/"report.json"
+    report.write_text(json.dumps({
+        "clients":["tv","desktop","mobile"],
+        "providers":[{"id":"identity-unknown","clients":{
+            "tv":{"verdict":"playable","identity_match_count":0,"identity_contradiction_count":0},
+            "desktop":{"verdict":"playable","identity_match_count":0,"identity_contradiction_count":0},
+            "mobile":{"verdict":"playable","identity_match_count":0,"identity_contradiction_count":0},
+        }}],
+        "policy":{"safety_blocking_pass":True},
+    }),encoding="utf-8")
+    old=(add_provider_module.WORK,add_provider_module.MANIFEST,add_provider_module.VF_MANIFEST,
+         add_provider_module.OVERRIDES,add_provider_module.PROVENANCE)
+    add_provider_module.WORK=work; add_provider_module.MANIFEST=manifest
+    add_provider_module.VF_MANIFEST=vf_manifest; add_provider_module.OVERRIDES=overrides
+    add_provider_module.PROVENANCE=provenance
+    try:
+        assert add_provider_module.finalize("identity-unknown",report) is False
+    finally:
+        (add_provider_module.WORK,add_provider_module.MANIFEST,add_provider_module.VF_MANIFEST,
+         add_provider_module.OVERRIDES,add_provider_module.PROVENANCE)=old
+    assert json.loads(vf_manifest.read_text(encoding="utf-8"))["scrapers"][0]["enabled"] is False
+    prov=json.loads(provenance.read_text(encoding="utf-8"))["providers"]["identity-unknown"]
+    assert prov["check_status"]=="pending_learning"
+    assert prov["activation_eligible"] is False
+    assert prov["strict_activation_eligible"] is False
+    assert prov["runtime_evidence_eligible"] is False
+
+print("Onboarding playable-without-identity remains pending")
 
 pending_manifest={"scrapers":[{"id":"pending-demo","enabled":False,"filename":"provider-disabled/pending-demo.js"},{"id":"disabled-demo","enabled":False,"filename":"provider-disabled/disabled-demo.js"},{"id":"active-demo","enabled":True,"filename":"providers/active-demo.js"}]}
 pending_provenance={"providers":{"pending-demo":{"activation_mode":"bulk_onboarding_pending"},"disabled-demo":{"activation_mode":"disabled_retained"},"active-demo":{"activation_mode":"bulk_onboarding_pending"}}}
