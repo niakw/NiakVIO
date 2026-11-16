@@ -48,6 +48,14 @@ assert "python scripts/validate_release_integrity.py" in text
 assert 'git rev-parse HEAD > "$RUNNER_TEMP/domain-base-sha"' in text
 assert 'PROVIDER_SHA="$(git rev-parse HEAD)"' in text
 assert 'BASE_SHA="$(cat "$RUNNER_TEMP/domain-base-sha")"' in text
+assert text.count("NUVIO_SKIP_CLIENT_UPSTREAM_GUARD: '1'") == 1, "Domain Refresh may scope the client-head bypass only to its domain-only release projection step"
+domain_release_step = text.index("- name: Reproject, pin Hub46 transport and validate release")
+domain_publish_step = text.index("- name: Publish authoritative domain transaction", domain_release_step)
+domain_release_block = text[domain_release_step:domain_publish_step]
+assert "NUVIO_SKIP_CLIENT_UPSTREAM_GUARD: '1'" in domain_release_block
+assert "python scripts/sync_release_versions.py" in domain_release_block
+assert "NUVIO_SKIP_CLIENT_UPSTREAM_GUARD" not in text[:domain_release_step]
+
 assert "NUVIO_SKIP_ACTIVATION_PRESERVATION: '1'" not in text, "Domain Refresh is address authority and must preserve catalogue activation"
 assert 'os.environ.get("NUVIO_SKIP_ACTIVATION_PRESERVATION") != "1"' in validator
 assert "FIELD_RELEASE_INTEGRITY activation_preservation=skipped owner=domain_refresh" in validator
