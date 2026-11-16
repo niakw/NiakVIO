@@ -1,3 +1,10 @@
+## 2026-11-16 — Fast Repair 43854162789 generated all three representative patches but validated none; fresh census replay queued
+
+- Fast Repair run `43854162789` on source census `43852026874` completed SUCCESS as a workflow but **0 repairs were accepted**: `brainAcceptedRepairCount=0`, no candidate/retested/validated providers, publication false. The run ended `time_budget_exhausted_during_batch`, not because generation was absent.
+- The sandbox artifact proves generated current-byte attempts for all three representatives. `frenchstream` generated multiple distinct repair SHA256 values and reached `sandbox_diagnostic_progress`, but every executable attempt still ended `required_category_playable_proof/no_streams`. `hianime` and `stigstream` generated repairs too, then repeated identical already-retested candidates / loop detection and still failed required playable proof. The planner classified all three as `media_extraction_gap`.
+- This is important negative Brain experience: generation/application reached the sandbox boundary, but terminal extraction/playback proof remains the causal frontier. Do not count workflow SUCCESS, generated SHA, or sandbox progress as a provider repair.
+- The stale run correctly yielded to the newer census `43855893372`; a fresh Fast Repair run `43857205429` is queued and current targeted observation run `43857227000` is refreshing `frenchstream,hianime,stigstream` on that census. Brain-LLM exact-byte frontier reuse can carry executed player progress only when current provider bytes and current provider-owned network evidence still match.
+
 ## 2026-11-16 — Targeted/refined probe artifacts are explicit Fast stale causal inputs
 
 - The first stale-requeue hardening compared a richer canonical census projection, but the full targeted network/debug evidence is intentionally stored in `automation/provider-targeted-regression-recovery-latest.json` and `automation/provider-repair-batch-refined-latest.json`; the census only carries a bounded transport summary. A future probe can therefore change provider-owned hosts/routes/stages without necessarily changing the census summary.
