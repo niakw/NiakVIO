@@ -63,6 +63,6 @@ catalog_changed = mod.reconcile_catalog(catalog, catalog_config)
 assert catalog_changed == ["fr-only", "purstream"], catalog_changed
 catalog_rows = {row["canonicalId"]: row["scraper"] for row in catalog["providers"]}
 assert catalog_rows["purstream"]["supportedTypes"] == ["movie", "tv"]
-assert catalog_rows["fr-only"]["supportedTypes"] == ["anime", "tv"]
-assert catalog_rows["fr-only"]["canonicalSupportedTypes"] == ["anime"]
+assert catalog_rows["fr-only"]["supportedTypes"] == ["anime"]
+assert "canonicalSupportedTypes" not in catalog_rows["fr-only"]
 print("RELEASE_MANIFEST_TYPE_RECONCILE_OK")
