@@ -1,3 +1,10 @@
+## 2026-11-16 — Reconstruction fixed-point blockers were stale September migrations, not current provider authority
+
+- Exact reconstruction run `43975456077` failed at `Require source migrations to be fixed-point` with an 8-line `provider-overrides.json` drift. The diff identified two stale migration owners.
+- Kehflix: `upgrade_kehflix_terminal_domain_v1.py` still encoded the September-14 observation `kehflix.wiki` as canonical runtime terminal. Current registry/history authority is newer: September 18 keeps `kehflix.wiki` as the authoritative address hub but promotes `kehflix.com` as the runtime terminal. Commits `14b3cdf8` / `540dd47f` make the migration preserve that authority, keep both `.lol` and hub `.wiki` substitutions pointed to `.com`, and preserve historical terminal proof instead of rewriting it.
+- AnikotoTV: `upgrade_provider_v3_batch_routes_v1.py` still reinstalled the retired search/watch/AJAX routes and Runtime V1. Current Provider DATA explicitly retired those routes on September 19 and owns Runtime V2: TMDB mapping -> MegaPlay stream page -> `/stream/getSources`. Commit `50b3bf7d` makes the historical batch migration idempotent against that Runtime V2 authority and fails if retired AJAX/search/watch routes return.
+- These are reconstruction/migration corrections, not provider-specific Repair. Fresh exact-head reconstruction must now prove that all source migrations produce zero checked-in authority drift before downstream materialization/release/native proof.
+
 ## 2026-11-16 — Domain Refresh Nuvio bypass is explicitly transaction-scoped
 
 - After removing the release-finalizer-wide Nuvio upstream bypass, the remaining `NUVIO_SKIP_CLIENT_UPSTREAM_GUARD=1` in Domain Refresh was audited separately. It is intentionally local to the step that calls `sync_release_versions.py`: Domain Refresh owns provider address authority only and must not auto-accept a newly advanced Nuvio client head while publishing an unrelated domain rotation.
