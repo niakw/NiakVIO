@@ -137,6 +137,10 @@ media = machine["media_types"]
 assert media["semantic_field"] == "canonicalSupportedTypes"
 assert media["transport_field"] == "supportedTypes"
 assert media["anime_only_transport_compatibility"] == ["anime", "tv"]
+assert media["provider_runtime_request_values"] == ["movie", "tv"]
+assert media["tv_input_aliases"] == ["series", "show", "other"]
+assert media["anime_provider_runtime_type"] == "tv"
+assert media["series_published_supported_type"] is False
 assert media["transport_aliases_do_not_expand_semantic_capability"] is True
 assert media["capability_gate_before_provider_network"] is True
 
@@ -245,7 +249,7 @@ assert machine["provider_scopes"]["native_acceptance_includes_france_only"] is T
 assert machine["provider_scopes"]["availability_active"] == "scripts/current_provider_scope.py:projection_active_provider_ids"
 assert machine["provider_scopes"]["availability_report_visible"] == "scripts/current_provider_scope.py:projection_visible_provider_ids"
 
-assert validation_machine["schema_version"] >= 70
+assert validation_machine["schema_version"] >= 71
 runtime_contract = validation_machine["nuvio_runtime_contract"]
 assert runtime_contract["current_audited_refs_must_match"] is True
 assert runtime_contract["positional_get_streams_signature"] == "getStreams(tmdbId, mediaType, season, episode)"
@@ -255,6 +259,11 @@ assert runtime_contract["rich_fields_are_additive_only"] is True
 assert runtime_contract["historical_platform_matrix_is_current_authority"] is False
 assert runtime_contract["france_only_projection_is_first_class"] is True
 assert runtime_contract["native_platform_proof_is_independent"] is True
+assert runtime_contract["published_supported_types"] == ["movie", "tv", "anime"]
+assert runtime_contract["provider_runtime_request_types"] == ["movie", "tv"]
+assert runtime_contract["tv_input_aliases"] == ["series", "show", "other"]
+assert runtime_contract["anime_provider_runtime_type"] == "tv"
+assert runtime_contract["series_published_supported_type"] is False
 assert runtime_contract["portable_provider_result_fields"] == [
     "title", "name", "url", "quality", "size", "language", "provider",
     "type", "seeders", "peers", "infoHash", "headers", "subtitles",
