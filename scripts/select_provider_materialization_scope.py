@@ -20,6 +20,7 @@ GLOBAL_PROVIDER_INPUTS = {
     "scripts/provider_patch_blocks.py",
     "scripts/provider_engine_normalizer.py",
     "scripts/provider_byte_stability.py",
+    "provider_catalog.json",
 }
 PROVIDER_MAP_FILES = {
     "provider-overrides.json": ("provider_patches", "provider_capabilities"),
@@ -28,6 +29,7 @@ PROVIDER_MAP_FILES = {
 }
 PROVIDER_LIST_FILES = {
     "manifest.json": ("scrapers", "id"),
+    "vf/manifest.json": ("scrapers", "id"),
 }
 NEUTRAL_PREFIXES = (".github/", "tests/")
 NEUTRAL_FILES = {
