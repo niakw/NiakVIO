@@ -111,15 +111,17 @@ assert "NUVIO_PROVIDER_V3_CONTEXT: workspace" in manual
 assert 'GITHUB_REF_NAME}" != "main"' in manual
 assert "python scripts/materialize_provider_v3_all.py" in manual
 assert "python scripts/verify_provider_v3_reverse_rebuild.py" in manual
-# The current active manifest has changed independently of the historical
-# 46-provider census. A full reconstruction workflow must derive its
-# denominator from the same physical source as its live-route validator.
-assert "from scripts.current_provider_scope import active_provider_count" in manual
-assert "expected=active_provider_count()" in manual
+# Full reconstruction has two explicit projection-union denominators:
+# runtime-visible for sequential audit (including disabled lifecycle rows), and
+# active for the final executable materialization/reverse proof.
+assert "from scripts.current_provider_scope import projection_runtime_visible_provider_count" in manual
+assert "expected=projection_runtime_visible_provider_count()" in manual
+assert "from scripts.current_provider_scope import projection_active_provider_count, projection_active_provider_ids" in manual
+assert "expected=projection_active_provider_count()" in manual
 assert 'report.get("providerCount") == expected' in manual
 assert 'report.get("completedProviderCount") == expected' in manual
 assert 'r.get("providerCount")==expected' in manual
-assert "active==expected" in manual
+assert "material_ids==active_ids" in manual
 assert "==46" not in manual and "46/46" not in manual
 
 
@@ -158,7 +160,10 @@ assert machine["routine"]["deep"]["repair_allowed"] is False
 assert machine["routine"]["deep"]["provider_reconstruction_allowed"] is False
 assert machine["manual_reconstruction"]["main_write_allowed"] is False
 assert "expected_provider_count" not in machine["manual_reconstruction"]
-assert machine["manual_reconstruction"]["provider_scope_authority"] == "scripts/current_provider_scope.py:active_provider_ids"
+assert machine["manual_reconstruction"]["provider_scope_authority"] == "scripts/current_provider_scope.py:projection_active_provider_ids"
+assert machine["manual_reconstruction"]["sequential_audit_scope_authority"] == "scripts/current_provider_scope.py:projection_runtime_visible_provider_ids"
+assert machine["manual_reconstruction"]["global_publication_authority"] == "manifest.json"
+assert machine["manual_reconstruction"]["france_only_publication_authority"] == "provider_catalog.json projections general=false,vf=true"
 assert machine["manual_reconstruction"]["historical_provider_count"] == HISTORICAL_PROVIDER_COUNT
 assert machine["manual_reconstruction"]["historical_provider_directory"] == "provider-old"
 assert machine["native_labs"] == [
