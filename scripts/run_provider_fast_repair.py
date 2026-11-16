@@ -72,6 +72,7 @@ def selected_targets(
     *,
     architecture_force: bool = False,
     completeness: set[str] | None = None,
+    allow_stale_requested: bool = False,
 ) -> list[str]:
     queue = {cid(value) for value in status.get("repairQueue") or [] if cid(value)}
     if requested:
@@ -79,12 +80,16 @@ def selected_targets(
         if architecture_force:
             allowed.update(completeness or set())
         missing = sorted(requested - allowed)
-        if missing:
+        if missing and not allow_stale_requested:
             scope = "current repairQueue or FORCE completeness debt" if architecture_force else "current repairQueue"
             raise ValueError(
                 f"explicit provider is not in {scope}: " + ",".join(missing)
             )
-        return sorted(requested)
+        # Automatic cohorts are a snapshot. Revalidate against the checkout's
+        # current census and drop only providers that ceased to be eligible;
+        # never repair outside the current queue just because an older planner
+        # selected them.
+        return sorted(requested & allowed)
     return sorted(queue)
 
 
@@ -110,12 +115,24 @@ def main() -> int:
     batch_plan = load(BATCH_PLAN) if BATCH_PLAN.is_file() else {}
     completeness = dynamic_completeness_targets(status_before, batch_plan)
     requested = {cid(value) for value in args.provider if cid(value)}
+    queue_now = {cid(value) for value in status_before.get("repairQueue") or [] if cid(value)}
+    allowed_now = set(queue_now)
+    if args.architecture_force:
+        allowed_now.update(completeness)
+    stale_requested = sorted(requested - allowed_now)
     targets = selected_targets(
         status_before,
         requested,
         architecture_force=args.architecture_force,
         completeness=completeness,
+        allow_stale_requested=True,
     )
+    if stale_requested:
+        print(
+            "FIELD_PROVIDER_FAST_REPAIR_STALE_TARGETS "
+            f"skipped={','.join(stale_requested)} remaining={','.join(targets) or 'none'}",
+            flush=True,
+        )
     if not targets:
         payload = {
             "schemaVersion": 1,
@@ -123,10 +140,19 @@ def main() -> int:
             "candidateProviders": [],
             "retestedProviders": [],
             "validatedProviders": [],
-            "message": "current repairQueue is empty",
+            "staleRequestedProviders": stale_requested,
+            "message": (
+                "requested providers are no longer repair-eligible"
+                if requested
+                else "current repairQueue is empty"
+            ),
         }
         SUMMARY.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
-        print("FIELD_PROVIDER_FAST_REPAIR_EMPTY repair_queue=0", flush=True)
+        print(
+            "FIELD_PROVIDER_FAST_REPAIR_EMPTY "
+            f"repair_queue={len(queue_now)} stale_requested={len(stale_requested)}",
+            flush=True,
+        )
         return 0
 
     brain_cmd = [

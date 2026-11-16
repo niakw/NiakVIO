@@ -21,6 +21,12 @@ status = {
 }
 assert mod.selected_targets(status, set()) == ["a", "b"]
 assert mod.selected_targets(status, {"b"}) == ["b"]
+assert mod.selected_targets(
+    status, {"b", "c"}, allow_stale_requested=True
+) == ["b"]
+assert mod.selected_targets(
+    status, {"c"}, allow_stale_requested=True
+) == []
 assert mod.dynamic_completeness_targets(status, {"dynamicVariantProviders":["c"]}) == {"c"}
 assert mod.selected_targets(
     status, {"c"}, architecture_force=True, completeness={"c"}
@@ -48,6 +54,7 @@ for required in (
     "default=1",
     "--architecture-force",
     "dynamicVariantProviders",
+    "FIELD_PROVIDER_FAST_REPAIR_STALE_TARGETS",
 ):
     assert required in source, required
 for forbidden in (

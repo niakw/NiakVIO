@@ -3363,3 +3363,9 @@ Measured clean V3 oracle #43539920416 showed a **provider transport differential
 - Fix: provider-owned Lego execution now validates required fields by identity mode. `catalog_search` requires `title+mediaType`; the previous minimum for `tmdb_direct` and `external_id` remains `tmdbId+mediaType`. TMDB preflight remains mandatory for this provider-owned-Lego authority, and negative tests reject catalogue Legos lacking title or preflight.
 - This only makes canonical rematerialization consistent with the declared identity contract. It does not create route proof, terminal playback proof or permission to activate/publish a provider that lacks those independent authorities. Projection Reconcile must still reach a fixed point before its drift is considered resolved.
 
+## 2026-11-16 — Fast Repair revalidates stale automatic cohorts at execution time
+
+- Fast Repair run `43794815667` was dispatched with `hianime,showbox,stigstream,zone-streaming`; by worker startup, `zone-streaming` was no longer in the current `repairQueue`. The previous all-or-nothing explicit-target validator raised before Brain ran, discarding the three still-valid providers.
+- Fix: automatic/script execution revalidates every requested provider against the checkout's current Repair/FORCE eligibility, emits `FIELD_PROVIDER_FAST_REPAIR_STALE_TARGETS`, drops only stale targets and continues with the still-current cohort. The reusable selector remains fail-closed by default, so direct callers/tests still reject out-of-scope explicit providers unless they deliberately opt into stale-snapshot reconciliation.
+- If every requested target has become ineligible, Fast Repair exits as a no-op with the stale target list instead of repairing outside current authority. This changes orchestration resilience only; it grants no provider proof or publication authority.
+
