@@ -116,6 +116,9 @@ def main() -> int:
     assert '"--depth=1024"' in source
     assert "changed_tree_paths(work" in source
     assert "patch_files = [name for name in files if path_matches(name, patch_rules)]" in source
+    assert "COMPATIBILITY_MATRIX" in source
+    assert 'matrix_row.get("current_audited")' in source
+    assert module.validate_config(json.loads(CONFIG.read_text(encoding="utf-8"))) == []
 
     # The Desktop upstream checker must not compare every blob just to learn
     # names. Git's rename detector may lazily fetch an entire filtered client
