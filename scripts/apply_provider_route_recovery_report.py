@@ -37,16 +37,16 @@ def provider_rows_for_apply(report: dict[str, Any]) -> list[dict[str, Any]]:
 
 
 def validate_report_scope(value: dict[str, object]) -> list[dict[str, object]]:
-    expected_ids = current_scope.active_provider_ids()
+    expected_ids = current_scope.projection_active_provider_ids()
     expected_count = len(expected_ids)
     if int(value.get("providerCount") or 0) != expected_count:
         raise SystemExit(
-            f"route recovery providerCount={value.get('providerCount')}, expected_current_active={expected_count}"
+            f"route recovery providerCount={value.get('providerCount')}, expected_projection_active={expected_count}"
         )
     catalogue_count = int(value.get("catalogueProviderCount") or expected_count)
     if catalogue_count != expected_count:
         raise SystemExit(
-            f"route recovery catalogueProviderCount={catalogue_count}, expected_current_active={expected_count}"
+            f"route recovery catalogueProviderCount={catalogue_count}, expected_projection_active={expected_count}"
         )
     providers = value.get("providers") if isinstance(value.get("providers"), list) else []
     provider_ids = [
@@ -56,14 +56,14 @@ def validate_report_scope(value: dict[str, object]) -> list[dict[str, object]]:
     ]
     if len(providers) != expected_count or len(provider_ids) != expected_count:
         raise SystemExit(
-            f"route recovery providers rows={len(providers)}, expected_current_active={expected_count}"
+            f"route recovery providers rows={len(providers)}, expected_projection_active={expected_count}"
         )
     if len(provider_ids) != len(set(provider_ids)):
         raise SystemExit("route recovery report contains duplicate provider ids")
     observed = set(provider_ids)
     if observed != expected_ids:
         raise SystemExit(
-            "route recovery active identity mismatch: "
+            "route recovery projection-active identity mismatch: "
             f"missing={sorted(expected_ids-observed)} extra={sorted(observed-expected_ids)}"
         )
     return providers
