@@ -1,3 +1,10 @@
+## 2026-11-16 — Live route validation is active-only; disabled-retained knowledge is no longer erased
+
+- Reconstruction on the current métier path reached a new scope contradiction after static knowledge passed 108/108 providers: `validate_provider_v3_routes_live.py` builds live tasks from the 75 active Global+France identities but required the entire 108-row runtime-visible knowledge map to have the same cardinality. Worse, it iterated all knowledge rows; disabled-retained providers with no live task could have their durable routes emptied as "candidate-not-executed".
+- Commit `fe0a07bf` makes candidate restoration and live promotion explicitly active-scoped. Production authority is `projection_active_provider_ids()`; every active identity must exist in static knowledge, while disabled-retained/runtime-visible rows remain untouched.
+- Commit `490614cb` replaces the historical synthetic 96-provider fixture with an explicit active set and proves a disabled-retained row and its override remain byte/structure-identical when no active live task exists. Commit `15aaa0f5` adds this scope contract to the main Workflow Gate so it fails quickly instead of only inside full reconstruction.
+- This changes validation ownership, not provider health. A fresh exact-source reconstruction must now prove active live traversal, preserve retained knowledge, then proceed to ProviderBase materialization and reverse rebuild.
+
 ## 2026-11-16 — Current static-knowledge contract no longer reimports retired September witnesses
 
 - Reconstruction run `43928159568` on `96856a3e` passed the runtime-family sanitizer and its regression (`providers=108 active_unknown=0`), then failed in `provider_v3_static_knowledge_contract_test.py` because the test still required retired provider `vegamovies` to exist in the exact current Global+France runtime-visible knowledge set.
