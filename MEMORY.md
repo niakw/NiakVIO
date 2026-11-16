@@ -1,3 +1,9 @@
+## 2026-11-16 — Release freshness regression test syntax repaired before replay
+
+- Exact-head Workflow Gate run `43975309456` correctly failed in the repository Python syntax pass because the newly added release-freshness assertion in `tests/release_finalizer_projection_transaction_test.py` contained a literal `\\n` token at end of the Python statement.
+- Commit `1f2921fd` rewrites that assertion as valid Python without changing its contract: the canonical release finalizer must not contain `NUVIO_SKIP_CLIENT_UPSTREAM_GUARD`.
+- The reconstruction started from the bad test SHA is superseded for certification. A new exact-head reconstruction/gate replay is required; no provider/runtime result is inferred from the syntax failure.
+
 ## 2026-11-16 — Canonical release no longer bypasses current Nuvio upstream freshness
 
 - NiakVIO métier audit found a direct contradiction between machine/documented release policy and the canonical writer: `.github/workflows/release-finalize.yml` still exported `NUVIO_SKIP_CLIENT_UPSTREAM_GUARD=1` at job scope. The explicit `check_nuvio_client_upstreams.py` step still ran, but later `validate_platform_runtime_policy.py` and `sync_release_versions.py` could skip/refrain from the same upstream guard through that inherited environment, so the release transaction was not uniformly fail-closed on current client freshness.
