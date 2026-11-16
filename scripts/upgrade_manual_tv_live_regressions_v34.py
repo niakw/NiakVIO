@@ -85,6 +85,21 @@ def replace_function(text: str, name: str, replacement: str) -> str:
     return text[:start] + replacement.strip() + text[end:]
 
 
+def remove_all_functions(text: str, name: str) -> str:
+    """Remove every existing generated copy of one JS helper.
+
+    Historical V34 runs inserted the helper immediately before _learnedUrls while
+    replacing only the _learnedUrls function span. Replaying the migration could
+    therefore prepend another identical helper on every pass. Canonical migrations
+    must be idempotent, so collapse all previous generated declarations before
+    installing the single authoritative copy.
+    """
+    while re.search(rf"function\s+{re.escape(name)}\s*\([^)]*\)\s*\{{", text):
+        start, end = function_span(text, name)
+        text = text[:start] + text[end:]
+    return text
+
+
 def _presentation_revision(text: str) -> int:
     match = re.search(r'REVISION\s*=\s*"[^"]*-v(\d+)"', text)
     return int(match.group(1)) if match else 0
@@ -185,6 +200,7 @@ function _learnedUrls(kind, meta, mediaType, season, episode) {
   return _uniq(out);
 }
 '''
+    text = remove_all_functions(text, "_spv34RouteMediaCompatible")
     text = replace_function(text, "_learnedUrls", learned)
     if text != before:
         PROVIDER_BASE.write_text(text, encoding="utf-8")
@@ -242,6 +258,14 @@ def validate() -> None:
     for source, needle in required:
         if needle not in source:
             raise AssertionError(f"V34 missing {needle}")
+    helper = "function _spv34RouteMediaCompatible(route, mediaType) {"
+    if base.count(helper) != 1:
+        raise AssertionError(f"V34 route/media helper must be unique, got {base.count(helper)}")
+    if base.count("NIAKVIO_PROVIDER_ROUTE_MEDIA_COMPAT_V34") != 1:
+        raise AssertionError(
+            "V34 route/media compatibility binding must be unique, "
+            f"got {base.count('NIAKVIO_PROVIDER_ROUTE_MEDIA_COMPAT_V34')}"
+        )
     if base.count("function _spv34RouteMediaCompatible(route, mediaType) {") != 1:
         raise AssertionError("V34 route/media helper must be defined exactly once")
     if base.count("NIAKVIO_PROVIDER_ROUTE_MEDIA_COMPAT_V34") != 1:
