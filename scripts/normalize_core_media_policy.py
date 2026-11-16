@@ -63,6 +63,22 @@ def _normalize_global_tail(value: dict[str, Any], changed: list[str]) -> None:
         playback["global_discovery_hooks"] = normalized
         changed.append("playback_integrity_policy.global_discovery_hooks:security_tail")
 
+    terminal = playback.get("terminal_stream_sanitizer")
+    if not isinstance(terminal, dict):
+        raise ValueError("playback_integrity_policy.terminal_stream_sanitizer must be an object")
+    expected_patch = "scripts/provider_patches/stream_output_sanitizer_v10.py"
+    if terminal.get("patch") != expected_patch:
+        terminal["patch"] = expected_patch
+        changed.append("playback_integrity_policy.terminal_stream_sanitizer.patch:v10")
+    options = terminal.get("options")
+    if not isinstance(options, dict):
+        options = {}
+        terminal["options"] = options
+        changed.append("playback_integrity_policy.terminal_stream_sanitizer.options")
+    if int(options.get("max_probes") or 0) != 40:
+        options["max_probes"] = 40
+        changed.append("playback_integrity_policy.terminal_stream_sanitizer.options.max_probes:40")
+
 
 
 def normalize(value: dict[str, Any]) -> tuple[dict[str, Any], list[str]]:
