@@ -42,19 +42,6 @@ def load(path: Path) -> dict[str, Any]:
     return value
 
 
-def scope_ids(path: Path) -> set[str]:
-    data = load(path)
-    rows = data.get("rows") if isinstance(data.get("rows"), list) else []
-    ids = {
-        cid(row.get("manifestId") or row.get("provider"))
-        for row in rows
-        if isinstance(row, dict) and cid(row.get("manifestId") or row.get("provider"))
-    }
-    expected = int(data.get("hubCount") or data.get("providerCount") or len(ids))
-    if expected <= 0 or len(ids) != expected:
-        raise SystemExit(f"Hub-46 scope mismatch: ids={len(ids)} expected={expected}")
-    return ids
-
 
 def provider_repo_path(filename: object, repository: str) -> str:
     raw = str(filename or "").strip()
