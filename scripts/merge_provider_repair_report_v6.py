@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
 """Merge targeted route proof with historical evidence for current active providers.
 
-Provider cardinality is never policy. The executable Repair scope is the set of
-manifest rows that are enabled and whose current artifact lives in providers/.
-Disabled-retained providers remain visible in manifest.json but are not Repair
-obligations; provider-old entries are absent from the current catalogue.
+Provider cardinality is never policy. The executable Repair scope is the active
+Global+France projection union. Strict France-only identities are first-class
+Repair obligations; disabled-retained and provider-old entries are not.
 """
 from __future__ import annotations
 
@@ -16,8 +15,10 @@ from pathlib import Path
 from typing import Any
 
 import provider_route_proof_lkg as route_lkg
+from current_provider_scope import projection_active_provider_ids
 
 ROOT = Path(__file__).resolve().parents[1]
+DEFAULT_MANIFEST = ROOT / "manifest.json"
 CATALOGUE_PRESENCE_ONLY_POLICY = "catalogue-presence-only"
 
 
@@ -85,6 +86,29 @@ def current_active_ids(manifest: dict[str, Any]) -> list[str]:
     return ids
 
 
+def publication_active_ids(
+    manifest_path: Path,
+    manifest: dict[str, Any],
+    *,
+    projection_ids_fn=projection_active_provider_ids,
+) -> list[str]:
+    """Resolve canonical Repair scope.
+
+    The repository's default manifest is only the Global projection. Repair
+    authority is the active Global+France union, including strict France-only
+    providers. Explicit custom manifests remain supported for isolated tests.
+    """
+    if manifest_path.resolve() == DEFAULT_MANIFEST.resolve():
+        ids = [str(value).strip().casefold().replace("_", "-") for value in projection_ids_fn()]
+        ids = [value for value in ids if value]
+        if not ids:
+            raise SystemExit("current active Global+France provider scope is empty")
+        if len(ids) != len(set(ids)):
+            raise SystemExit("current active Global+France provider scope contains duplicate ids")
+        return ids
+    return current_active_ids(manifest)
+
+
 def catalogue_presence_only_row(provider_id: str) -> dict[str, Any]:
     """Represent current catalogue membership without inventing route proof.
 
@@ -133,8 +157,9 @@ def main() -> int:
 
     baseline = load(ROOT / args.baseline)
     targeted = load(ROOT / args.targeted)
-    manifest = load(ROOT / args.manifest)
-    catalogue_ids = current_active_ids(manifest)
+    manifest_path = args.manifest if args.manifest.is_absolute() else ROOT / args.manifest
+    manifest = load(manifest_path)
+    catalogue_ids = publication_active_ids(manifest_path, manifest)
     catalogue_set = set(catalogue_ids)
 
     rows, missing_baseline = baseline_rows_for_catalogue(baseline, catalogue_ids)
@@ -186,7 +211,7 @@ def main() -> int:
     merged.update({
         "providerCount": len(catalogue_ids),
         "catalogueProviderCount": len(catalogue_ids),
-        "scopeAuthority": "manifest.json enabled rows under providers/",
+        "scopeAuthority": "Global+France active projection union",
         "providersWithProvenRoutes": len(proven),
         "provenRouteCount": sum(len(row.get("routes") or []) for row in merged_rows),
         "simpleApiRecipeCount": sum(1 for row in merged_rows if isinstance(row.get("apiRecipe"), dict)),
