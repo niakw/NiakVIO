@@ -92,6 +92,9 @@ assert "if (direct.length) return direct;" not in full_story
 assert "if (nested.length) return nested;" not in full_story
 assert "streams.push(...direct)" in full_story
 assert "streams.push(...nested)" in full_story
+assert "NIAKVIO_PROVIDER_DLE_FULL_STORY_EPISODE_VARIANT_COVERAGE_V34" in full_story
+assert 'return _streams(["https://video.sibnet.ru/shell.php?videoid="' not in full_story
+assert 'streams.push(..._streams(["https://video.sibnet.ru/shell.php?videoid="' in full_story
 
 assert "NIAKVIO_PROVIDER_DLE_PLAYER_COVERAGE_V29" in base
 play_episode = base.split("async function _spv4PlayEpisode", 1)[1].split("function _spv4SagaTargets", 1)[0]
