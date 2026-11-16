@@ -15,6 +15,8 @@ module=importlib.util.module_from_spec(spec)
 assert spec and spec.loader
 spec.loader.exec_module(module)
 
+from current_provider_scope import projection_active_provider_ids
+
 with TemporaryDirectory() as td:
     td=Path(td)
     general=td/"manifest.json"
@@ -61,12 +63,26 @@ with TemporaryDirectory() as td:
     assert candidates[0].get("published_exact_bytes") is True
     assert candidates[0].get("repair_allowed") is False
 
+with TemporaryDirectory() as td:
+    stage=Path(td)/"stage-all"
+    subprocess.run([
+        sys.executable,
+        str(ROOT/"scripts"/"build_published_provider_stage.py"),
+        "--stage",str(stage),
+    ],check=True,cwd=ROOT)
+    data=json.loads((stage/"candidates.json").read_text(encoding="utf-8"))
+    candidates=data.get("candidates") or []
+    actual={str(row.get("canonical_id") or "").casefold().replace("_","-") for row in candidates}
+    expected=projection_active_provider_ids()
+    assert actual==expected,(sorted(actual-expected),sorted(expected-actual))
+    assert len(candidates)==len(expected)
 
 source=(ROOT/"scripts"/"build_published_provider_stage.py").read_text(encoding="utf-8")
 assert "if requested:" in source
-assert "rows=active_provider_rows()" in source
+assert "rows=projection_active_provider_rows()" in source
+assert "active_provider_rows" not in source
 assert "projection_rows(args.manifest,args.france_manifest)" in source
-assert source.index("if requested:") < source.index("rows=active_provider_rows()")
+assert source.index("if requested:") < source.index("rows=projection_active_provider_rows()")
 workflow=(ROOT/".github/workflows/brain-learning-lab.yml").read_text(encoding="utf-8")
 assert 'timeout --signal=TERM --kill-after=5s 30s "${args[@]}"' in workflow
 
