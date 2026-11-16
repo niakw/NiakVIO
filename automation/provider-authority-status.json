@@ -10,7 +10,7 @@
     "apiBackendMayOperateWithoutHomepage": true,
     "manualOffEntersDisabledRetentionImmediately": true,
     "effectiveOperatorShutdownEntersDisabledRetentionImmediately": true,
-    "currentTestedNonfunctionalEntersDisabledRetention": true,
+    "currentByteUnprovenEntersDisabledRetention": true,
     "terminalPlaybackRequiredForActiveCurrentBytes": true,
     "bulkOnboardingPendingGetsTargetedProofWithoutRuntimeAuthority": true
   },
@@ -697,14 +697,17 @@
     },
     {
       "provider": "chillflix",
-      "action": "REDISCOVER_SEARCH",
+      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
       "repairEligible": false,
-      "confidence": "low",
-      "authorityClass": "unproven-direct-candidate",
+      "confidence": "current-byte-production-proof",
+      "authorityClass": "current-architecture-nonfunctional",
       "failureCount": 0,
       "reasons": [
         "direct_candidate_unproven",
-        "search_supplement_only"
+        "search_supplement_only",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:HARNESS/ENV BLOCKED"
       ]
     },
     {
@@ -949,16 +952,14 @@
     },
     {
       "provider": "topcartoons",
-      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "action": "REDISCOVER_SEARCH",
       "repairEligible": false,
-      "confidence": "current-census",
-      "authorityClass": "current-architecture-nonfunctional",
+      "confidence": "low",
+      "authorityClass": "unproven-direct-candidate",
       "failureCount": 0,
       "reasons": [
         "direct_candidate_unproven",
-        "search_supplement_only",
-        "current_census_tested_without_terminal_verified_playback",
-        "current_status:PARTIAL OK"
+        "search_supplement_only"
       ]
     },
     {
