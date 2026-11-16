@@ -7,20 +7,21 @@ import sys
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
-from current_provider_scope import active_provider_count
+from current_provider_scope import (
+    projection_runtime_visible_provider_count,
+    projection_runtime_visible_provider_ids,
+)
 
-MANIFEST = ROOT / "manifest.json"
 OVERRIDES = ROOT / "provider-overrides.json"
 KNOWLEDGE = ROOT / "automation" / "provider-v3-static-knowledge.json"
 SEEDS = ROOT / "automation" / "provider-v3-recognition-seeds.json"
-EXPECTED = active_provider_count()
+EXPECTED = projection_runtime_visible_provider_count()
 
 
 def canonical(value: object) -> str:
     return "".join(ch for ch in str(value or "").strip().casefold() if ch.isalnum() or ch in "-_")
 
 
-manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
 overrides = json.loads(OVERRIDES.read_text(encoding="utf-8"))
 knowledge = json.loads(KNOWLEDGE.read_text(encoding="utf-8"))
 seeds = json.loads(SEEDS.read_text(encoding="utf-8"))
@@ -31,19 +32,18 @@ assert knowledge.get("legacyProviderJsExecuted") is False
 assert knowledge.get("upstreamJsExecuted") is False
 assert knowledge.get("role") == "durable-structured-provider-data"
 
-manifest_ids = {
-    canonical(row.get("id"))
-    for row in manifest.get("scrapers") or []
-    if isinstance(row, dict)
-}
+runtime_ids = projection_runtime_visible_provider_ids()
 providers = knowledge.get("providers")
 assert isinstance(providers, dict)
-assert manifest_ids == set(providers), (sorted(manifest_ids - set(providers)), sorted(set(providers) - manifest_ids))
+assert runtime_ids == set(providers), (
+    sorted(runtime_ids - set(providers)),
+    sorted(set(providers) - runtime_ids),
+)
 
 patches = overrides.get("provider_patches") or {}
 unusable = []
 routeful = 0
-for provider_id in sorted(manifest_ids):
+for provider_id in sorted(runtime_ids):
     row = providers[provider_id]
     assert row.get("legacyProviderJsExecuted") is False
     assert row.get("upstreamJsExecuted") is False
