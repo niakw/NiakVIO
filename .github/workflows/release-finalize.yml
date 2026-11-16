@@ -57,6 +57,7 @@ on:
       - 'automation/nuvio-client-upstreams.json'
       - 'automation/nuvio-client-compatibility-matrix.json'
       - 'automation/platform-runtime-contracts.json'
+      - 'automation/PLATFORM-RUNTIME-CONTRACTS.md'
       - 'automation/nuvio-tv-runtime-contract.json'
       - 'automation/platform-runtime-matrix.json'
       - 'automation/platform-runtime-policy.json'
@@ -153,6 +154,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          python3 scripts/render_platform_runtime_contracts.py
+          python3 scripts/render_platform_runtime_contracts.py --check
           python3 scripts/runtime_contract_gate.py
           python3 scripts/nuvio_runtime_compatibility.py
           python3 scripts/validate_platform_runtime_policy.py
