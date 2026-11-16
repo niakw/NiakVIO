@@ -32,7 +32,6 @@ LOCKS = ROOT / "automation" / "provider-live-baseline-locks.json"
 RECOVERY = ROOT / "automation" / "provider-route-recovery-v6-targeted.json"
 QUICK = ROOT / "provider-v3-quick-yield.json"
 OUTPUT = ROOT / "automation" / "provider-repair-disposition.json"
-HUB_MATRIX = ROOT / "automation" / "evidence" / "hub-lab-matrix-46.json"
 TERMINAL = {"terminal-blocked", "terminal-unreachable"}
 
 
@@ -225,7 +224,7 @@ def main() -> int:
     parser.add_argument("--recovery", type=Path, default=RECOVERY)
     parser.add_argument("--quick-yield", type=Path, default=QUICK)
     parser.add_argument("--output", type=Path, default=OUTPUT)
-    parser.add_argument("--hub-matrix", type=Path, default=HUB_MATRIX)
+    parser.add_argument("--hub-matrix", type=Path, default=None, help="Deprecated compatibility input; current scope is derived from publication authority.")
     args = parser.parse_args()
 
     manifest = load(args.manifest)
@@ -236,8 +235,6 @@ def main() -> int:
     locks = load(args.locks, {"providers": {}})
     recovery = load(args.recovery, {"providers": []})
     quick = load(args.quick_yield)
-    hub_matrix = load(args.hub_matrix)
-    matrix_ids = {cid(row.get("manifestId")) for row in hub_matrix.get("rows") or [] if isinstance(row, dict) and cid(row.get("manifestId"))}
     manifest_rows = publication_rows(manifest, catalog)
     if repository_scope:
         active_ids = projection_active_provider_ids()
@@ -255,9 +252,6 @@ def main() -> int:
             f"missing={sorted(visible_ids-set(manifest_rows))} "
             f"extra={sorted(set(manifest_rows)-visible_ids)}"
         )
-    if matrix_ids != active_ids:
-        print(f"PROVIDER_REPAIR_DISPOSITION_MATRIX_STALE matrix={len(matrix_ids)} active={len(active_ids)}")
-
     patches = overrides.get("provider_patches") if isinstance(overrides.get("provider_patches"), dict) else {}
     static = knowledge.get("providers") if isinstance(knowledge.get("providers"), dict) else {}
     recovered = recovery_rows(recovery)
