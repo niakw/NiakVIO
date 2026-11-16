@@ -1,5 +1,5 @@
 {
-  "schema_version": 9,
+  "schema_version": 10,
   "branch_contract": "provider-v3-clean-architecture",
   "provider_source_of_truth": {
     "runtime_artifacts": "providers/*.js",
@@ -278,11 +278,12 @@
       "iframe_player",
       "quarantined"
     ],
-    "provider_scope_authority": "scripts/current_provider_scope.py:visible_provider_ids",
-    "runtime_scope_authority": "scripts/current_provider_scope.py:runtime_visible_provider_ids",
+    "provider_scope_authority": "scripts/current_provider_scope.py:projection_visible_provider_ids",
+    "runtime_scope_authority": "scripts/current_provider_scope.py:projection_runtime_visible_provider_ids",
     "pending_scope_authority": "scripts/current_provider_scope.py:pending_provider_ids",
     "pending_staging_is_executable": false,
-    "pending_staging_requires_lifecycle_timestamps": false
+    "pending_staging_requires_lifecycle_timestamps": false,
+    "france_only_first_class": true
   },
   "security_html_filtering": {
     "codeql_rule_family": "Bad HTML filtering regexp",
