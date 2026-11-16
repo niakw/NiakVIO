@@ -18,7 +18,7 @@ from pathlib import Path
 
 import materialize_provider_v3_all as allmat
 from provider_security_hardening import assert_hardened, harden_bytes
-from current_provider_scope import active_provider_ids
+from current_provider_scope import projection_active_provider_ids
 
 ROOT = Path(__file__).resolve().parents[1]
 REGISTRY = ROOT / "provider-hubs.json"
@@ -62,7 +62,7 @@ def upsert_materialization_report(report: dict[str, object]) -> dict[str, object
             "legacyProviderJsExecuted": False,
             "upstreamJsExecuted": False,
         }
-    active = set(active_provider_ids())
+    active = set(projection_active_provider_ids())
     existing = [
         dict(row)
         for row in (document.get("providers") or [])
