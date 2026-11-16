@@ -57,8 +57,37 @@ def main() -> int:
         for path in (ROOT / "provider-old").glob("*.js")
         if path.is_file()
     }
-    if set(ids) & archived_slugs:
-        raise SystemExit("current providers leaked into provider-old historical authority")
+    # Historical snapshots may legitimately share an identity with a current
+    # provider after reactivation.  Publication authority is path/byte based,
+    # not identity-name exclusive: every active identity must resolve to the
+    # current providers/ tree, while provider-old/ remains provenance only.
+    current_rows: dict[str, dict] = {
+        str(row.get("id") or "").strip().casefold().replace("_", "-"): row
+        for row in manifest.get("scrapers") or []
+        if isinstance(row, dict)
+    }
+    for record in catalog.get("providers") or []:
+        if not isinstance(record, dict):
+            continue
+        scraper = record.get("scraper")
+        if not isinstance(scraper, dict):
+            continue
+        provider_id = str(
+            record.get("canonicalId") or scraper.get("id") or ""
+        ).strip().casefold().replace("_", "-")
+        if provider_id and provider_id not in current_rows:
+            current_rows[provider_id] = scraper
+    for provider_id in ids:
+        row = current_rows.get(provider_id)
+        if not isinstance(row, dict):
+            raise SystemExit(f"{provider_id}: active projection row missing")
+        filename = str(row.get("filename") or "").replace("\\", "/")
+        while filename.startswith("../"):
+            filename = filename[3:]
+        if not filename.startswith("providers/"):
+            raise SystemExit(
+                f"{provider_id}: active projection must execute providers/ bytes, got {filename!r}"
+            )
 
     with tempfile.TemporaryDirectory(prefix="niakvio-v3-rebuild-") as tmp_raw:
         tmp = Path(tmp_raw)
