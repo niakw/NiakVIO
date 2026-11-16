@@ -15,6 +15,8 @@ import json
 from pathlib import Path
 from typing import Any
 
+from current_provider_scope import projection_active_provider_rows
+
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_MANIFEST = ROOT / "manifest.json"
 DEFAULT_REPORT = ROOT / "provider-v3-live-route-validation.json"
@@ -37,10 +39,17 @@ def main() -> int:
     parser.add_argument("--report", type=Path, default=DEFAULT_REPORT)
     args = parser.parse_args()
 
-    manifest = load(args.manifest.resolve())
+    manifest_path = args.manifest.resolve()
     report = load(args.report.resolve())
-    rows = [row for row in manifest.get("scrapers") or [] if isinstance(row, dict)]
-    active = {cid(row.get("id")) for row in rows if row.get("enabled") is not False and cid(row.get("id"))}
+    if manifest_path == DEFAULT_MANIFEST.resolve():
+        rows = projection_active_provider_rows()
+    else:
+        manifest = load(manifest_path)
+        rows = [
+            row for row in manifest.get("scrapers") or []
+            if isinstance(row, dict) and row.get("enabled") is not False
+        ]
+    active = {cid(row.get("id")) for row in rows if cid(row.get("id"))}
     reports = {
         cid(row.get("providerId")): row
         for row in report.get("providers") or []
