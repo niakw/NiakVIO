@@ -119,6 +119,32 @@ assert not materializer_module.provider_patch_has_owned_identity_lego_execution(
     },
 })
 
+owned_tmdb_direct_patch = {
+    "provider_lego_scripts": ["scripts/provider_patches/example_tmdb_direct_runtime_v1.py"],
+    "identity_input": {
+        "mode": "tmdb_direct",
+        "requires_tmdb_before_run": False,
+        "required_fields": ["tmdbId", "mediaType"],
+    },
+}
+assert materializer_module.provider_patch_has_owned_identity_lego_execution(owned_tmdb_direct_patch)
+assert not materializer_module.provider_patch_has_owned_identity_lego_execution({
+    **owned_tmdb_direct_patch,
+    "identity_input": {
+        "mode": "tmdb_direct",
+        "requires_tmdb_before_run": True,
+        "required_fields": ["tmdbId", "mediaType"],
+    },
+})
+assert not materializer_module.provider_patch_has_owned_identity_lego_execution({
+    **owned_tmdb_direct_patch,
+    "identity_input": {
+        "mode": "tmdb_direct",
+        "requires_tmdb_before_run": False,
+        "required_fields": ["mediaType"],
+    },
+})
+
 owned_external_model = materializer_module.provider_model(
     "example-owned-lego",
     owned_external_patch,

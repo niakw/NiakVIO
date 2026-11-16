@@ -3369,3 +3369,10 @@ Measured clean V3 oracle #43539920416 showed a **provider transport differential
 - Fix: automatic/script execution revalidates every requested provider against the checkout's current Repair/FORCE eligibility, emits `FIELD_PROVIDER_FAST_REPAIR_STALE_TARGETS`, drops only stale targets and continues with the still-current cohort. The reusable selector remains fail-closed by default, so direct callers/tests still reject out-of-scope explicit providers unless they deliberately opt into stale-snapshot reconciliation.
 - If every requested target has become ineligible, Fast Repair exits as a no-op with the stale target list instead of repairing outside current authority. This changes orchestration resilience only; it grants no provider proof or publication authority.
 
+## 2026-11-16 — Direct TMDB provider-owned Legos do not require metadata preflight
+
+- Projection Reconcile `43795074775` proved the catalogue-search fix by materializing French-Manga as `providers/french-manga-730009eb33882e84.js`, then exposed the next common contract mismatch at Internet Archive: `projection-only DATA lacks executable plan`.
+- Internet Archive has a provider-owned runtime Lego and explicit `identity_input.mode=tmdb_direct`, `required_fields=[tmdbId,mediaType]`, `requires_tmdb_before_run=false`. That is a valid direct Core identity contract: no title/external-ID hydration is needed because the runtime receives TMDB identity directly.
+- Fix: provider-owned Lego execution now validates both required fields and preflight semantics per identity mode. `tmdb_direct` requires no metadata preflight; `catalog_search` and the existing `external_id` path still require it. Negative tests reject inverted preflight semantics and missing identity fields.
+- This grants only structured execution-plan authority to a declared provider-owned Lego. Projection fixed point, exact bytes, playback/identity evidence and publication gates remain independent.
+

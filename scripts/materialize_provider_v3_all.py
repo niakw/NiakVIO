@@ -311,12 +311,21 @@ def provider_patch_has_owned_identity_lego_execution(patch: dict[str, Any]) -> b
         # may require additional IDs (IMDb, etc.) in their own DATA.
         "external_id": {"tmdbId", "mediaType"},
     }
+    preflight_required_by_mode = {
+        # Direct TMDB execution already receives tmdbId+mediaType from Core.
+        "tmdb_direct": False,
+        # Search/external modes need the declared metadata-hydration preflight.
+        "catalog_search": True,
+        "external_id": True,
+    }
     required_identity = required_by_mode.get(mode)
+    expected_preflight = preflight_required_by_mode.get(mode)
     return bool(
         scripts
         and all(value.startswith("scripts/provider_patches/") for value in scripts)
         and required_identity is not None
-        and identity.get("requires_tmdb_before_run") is True
+        and expected_preflight is not None
+        and (identity.get("requires_tmdb_before_run") is True) == expected_preflight
         and required_identity <= required
     )
 
