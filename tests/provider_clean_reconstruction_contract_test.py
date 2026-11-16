@@ -51,6 +51,16 @@ if "upstream_js_seed_used" in store:
     assert store.get("upstream_js_seed_used") is False
 
 expected=base_store.build_clean_provider_seed("ignored")
+expected_text=expected.decode("utf-8", errors="strict")
+v34_helper="function _spv34RouteMediaCompatible(route, mediaType) {"
+assert expected_text.count(v34_helper)==1, (
+    "ProviderBase common runtime must define the V34 route/media compatibility helper exactly once",
+    expected_text.count(v34_helper),
+)
+assert expected_text.count("NIAKVIO_PROVIDER_ROUTE_MEDIA_COMPAT_V34")==1, (
+    "ProviderBase common runtime must bind the V34 route/media compatibility gate exactly once",
+    expected_text.count("NIAKVIO_PROVIDER_ROUTE_MEDIA_COMPAT_V34"),
+)
 expected_sha=hashlib.sha256(expected).hexdigest()
 seen_paths=set()
 for pid in provider_ids:
