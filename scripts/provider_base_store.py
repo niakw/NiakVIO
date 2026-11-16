@@ -3650,6 +3650,7 @@ async function _resolveProviderValuePlan(meta, mediaType, season, episode) {
       const valueSteps = (plan.steps || []).slice(0, 8);
       const completedSteps = new Set();
       const playerFallbacks = [];
+      const planStreams = [];
       for (let dependencyPass = 0; dependencyPass < valueSteps.length + 1; dependencyPass += 1) {
         let progressed = false;
         for (let stepIndex = 0; stepIndex < valueSteps.length; stepIndex += 1) {
@@ -3746,15 +3747,15 @@ async function _resolveProviderValuePlan(meta, mediaType, season, episode) {
           ]);
         }
         const direct = urls.filter(_directMedia);
-        if (direct.length) return _streams(direct, payload.base || stepUrl).slice(0, 40);
+        if (direct.length) planStreams.push(..._streams(direct, payload.base || stepUrl));
         if (typeof scopedPayloadValue === "string") {
           const episodeHop = await _spv22ResolveEpisodeHop(scopedPayloadValue, payload.base || stepUrl, mediaType, season, episode);
-          if (episodeHop.length) return episodeHop.slice(0, 40);
+          if (episodeHop.length) planStreams.push(...episodeHop);
         }
         const crawl = urls.filter(_crawlEligible).sort((a,b)=>_crawlUrlScore(b)-_crawlUrlScore(a));
         if (crawl.length) {
-          const streams = await _crawlDirectMedia(crawl.slice(0, 10), payload.base || stepUrl, 3);
-          if (streams.length) return streams.slice(0, 40);
+          const crawledStreams = await _crawlDirectMedia(crawl.slice(0, 10), payload.base || stepUrl, 3);
+          if (crawledStreams.length) planStreams.push(...crawledStreams);
           // V21.12: a successful HTTP player page is still a valid native-player
           // fallback when this exact URL came from the proof-correlated response.
           // Direct media remains on the ordinary probed path and is never marked.
@@ -3766,13 +3767,17 @@ async function _resolveProviderValuePlan(meta, mediaType, season, episode) {
             }
           }
         }
+        const boundedPlanStreams = _dedupeStreamRows(planStreams);
+        if (boundedPlanStreams.length >= 40) return boundedPlanStreams.slice(0, 40);
         }
         if (!progressed) break;
       }
       if (playerFallbacks.length) {
         const fallbackStreams = _spv216FallbackStreams(playerFallbacks);
-        if (fallbackStreams.length) return fallbackStreams;
+        if (fallbackStreams.length) planStreams.push(...fallbackStreams);
       }
+      const resolvedPlanStreams = _dedupeStreamRows(planStreams);
+      if (resolvedPlanStreams.length) return resolvedPlanStreams.slice(0, 40);
     } catch (_) {}
   }
   return [];
