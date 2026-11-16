@@ -790,28 +790,25 @@ def rebuild_provider_configs(provider_ids: list[str]) -> list[dict[str, str]]:
     """Rebuild only Domain-owned CONFIG DATA for changed providers, preserving Core and non-domain DATA."""
     if not provider_ids:
         return []
-    manifest = load(MANIFEST_PATH)
+    manifest, catalog, publication_by_id = active_publication_documents()
     overrides = load(CONFIG_PATH)
     materialization = load(MATERIALIZATION_PATH)
     static = load(STATIC_KNOWLEDGE_PATH)
 
-    runtime_ids = runtime_visible_provider_ids()
-    manifest_rows = [row for row in manifest.get("scrapers") or [] if isinstance(row, dict) and canonical(row.get("id")) in runtime_ids]
+    active_ids = set(publication_by_id)
     material_rows = [row for row in materialization.get("providers") or [] if isinstance(row, dict)]
-    manifest_ids = {canonical(row.get("id")) for row in manifest_rows if canonical(row.get("id"))}
     material_ids = {canonical(row.get("provider")) for row in material_rows if canonical(row.get("provider"))}
-    if len(manifest_rows) != CURRENT_PROVIDER_COUNT or len(material_rows) != CURRENT_PROVIDER_COUNT:
+    if len(material_rows) != len(active_ids):
         raise RuntimeError(
-            f"domain publication requires current visible identity state: "
-            f"manifest={len(manifest_rows)} materialization={len(material_rows)}"
+            "domain publication requires complete active Global+France materialization: "
+            f"publication={len(active_ids)} materialization={len(material_rows)}"
         )
-    if len(manifest_ids) != CURRENT_PROVIDER_COUNT or material_ids != manifest_ids:
+    if material_ids != active_ids:
         raise RuntimeError(
-            "domain publication current provider identity mismatch: "
-            f"manifest={len(manifest_ids)} materialization={len(material_ids)}"
+            "domain publication active identity mismatch: "
+            f"missing={sorted(active_ids-material_ids)} extra={sorted(material_ids-active_ids)}"
         )
 
-    manifest_by_id = {canonical(row.get("id")): row for row in manifest_rows}
     material_by_id = {canonical(row.get("provider")): row for row in material_rows}
     patches = overrides.get("provider_patches") or {}
     capabilities = overrides.get("provider_capabilities") or {}
@@ -819,7 +816,9 @@ def rebuild_provider_configs(provider_ids: list[str]) -> list[dict[str, str]]:
     updates: list[dict[str, str]] = []
 
     for provider_id in sorted(set(canonical(value) for value in provider_ids if canonical(value))):
-        entry = manifest_by_id.get(provider_id)
+        publication = publication_by_id.get(provider_id)
+        entry = publication[0] if publication is not None else None
+        entry_authority = publication[1] if publication is not None else ""
         report = material_by_id.get(provider_id)
         patch = patches.get(provider_id)
         capability = capabilities.get(provider_id)
@@ -895,6 +894,8 @@ def rebuild_provider_configs(provider_ids: list[str]) -> list[dict[str, str]]:
         new_path = ROOT / new_rel
         new_path.write_bytes(raw)
         entry["filename"] = new_rel
+        if entry_authority not in {"global-manifest", "france-only-catalog"}:
+            raise RuntimeError(f"{provider_id}: unknown publication authority {entry_authority!r}")
         report["file"] = new_rel
         report["sha256"] = digest
         report["providerDataSha256"] = _data_digest(data)
@@ -908,11 +909,13 @@ def rebuild_provider_configs(provider_ids: list[str]) -> list[dict[str, str]]:
         })
 
     materialization["generation"] = _generation(material_rows)
-    materialization["providerCount"] = CURRENT_PROVIDER_COUNT
-    materialization["expectedProviderCount"] = CURRENT_PROVIDER_COUNT
+    materialization["providerCount"] = len(active_ids)
+    materialization["activeProviderIdentityCount"] = len(active_ids)
+    materialization["expectedProviderCount"] = len(active_ids)
     materialization["domainAuthorityOnlyUpdate"] = True
     materialization["domainAuthorityUpdatedProviders"] = [row["provider"] for row in updates]
     write(MANIFEST_PATH, manifest)
+    write(CATALOG_PATH, catalog)
     write(MATERIALIZATION_PATH, materialization)
     return updates
 
@@ -937,8 +940,8 @@ def main() -> int:
     if not isinstance(history_rows, dict):
         raise SystemExit("provider-domain-history.json providers must be object")
 
-    manifest_scope = load(MANIFEST_PATH)
-    current_provider_ids = active_provider_ids()
+    _manifest_scope, _catalog_scope, active_publication = active_publication_documents()
+    current_provider_ids = set(active_publication)
     if not current_provider_ids:
         raise SystemExit("domain refresh has no active providers")
 
