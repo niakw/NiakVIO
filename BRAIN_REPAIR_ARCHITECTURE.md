@@ -1580,3 +1580,7 @@ independent production acceptance.
 
 The causal execution plan assigns exactly one owner lane to each provider and rejects conflicting ownership before dispatch. Operational serialization must therefore protect a lane from duplicate in-flight work without turning an unrelated provider cohort into a global mutex. In particular, a targeted `DOMAIN_REFRESH` cohort may run beside a disjoint `FAST_REPAIR` cohort; a provider that actually needs fresh domain authority remains exclusively owned by Domain Refresh and cannot simultaneously enter Fast Repair. This changes orchestration throughput only: provider mutation, exact-byte materialization, playable-media/identity proof, non-regression and publication authority remain fail-closed.
 
+### 2026-11-16 — Static knowledge scope is the Global+France runtime-visible union
+
+Canonical `automation/provider-v3-static-knowledge.json` is keyed by the current Global+France projection union after onboarding-pending identities are removed. Consumers of that knowledge use `projection_runtime_visible_provider_ids/count`, not the legacy Global-only `runtime_visible_provider_ids/count`. Executable byte authority is deliberately narrower: `provider-v3-materialization.json` contains only the active Global+France union and uses `projection_active_provider_ids/count`. Global-only helpers remain valid only for workflows whose declared contract is the root Global manifest.
+

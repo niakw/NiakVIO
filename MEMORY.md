@@ -3342,3 +3342,10 @@ Measured clean V3 oracle #43539920416 showed a **provider transport differential
 - Fix: lifecycle now projects/removes materialization rows against `active_ids` only, while keeping `staticKnowledgeProviderCount` bound to the wider runtime-visible static scope. The lifecycle workflow and regression contract enforce the same split. The two malformed census tests are repaired without changing census semantics.
 - No provider is declared repaired or newly functional by this infrastructure correction. Provider success still requires Brain generation/application, exact-byte rematerialization, real playback/identity validation and publication on the tested SHA.
 
+## 2026-11-16 — Canonical static authority consumers use Global+France scope
+
+- Lifecycle run `43793394873` proved the active-only materialization correction itself: `PROVIDER_LIFECYCLE_OK active=75 disabled=33 pending=32 visible=140 runtime_visible=108 materialization_removed=1`. It then failed only because local-recognition compared canonical static knowledge (108 Global+France runtime-visible identities) with the legacy Global-only `runtime_visible_provider_count()` (78).
+- Commits `ad237379` and `d815da9c` add explicit `projection_runtime_visible_provider_count()` / `projection_active_provider_count()` helpers and migrate canonical static-knowledge/reconstruction consumers to the Global+France runtime-visible authority. Legacy Global helpers remain unchanged for genuinely Global-only workflows.
+- Route reconstruction, local recognition, Core-metadata sanitization and Gowaru static-plan finalization now share the same canonical static scope. This is an authority/scope correction, not provider functional proof.
+- Workflow Gate `43793434834` separately remained fail-closed on Chillflix because current published bytes lack fresh exact-byte production proof; that gate was deliberately not weakened.
+
