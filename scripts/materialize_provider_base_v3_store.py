@@ -198,6 +198,7 @@ def main() -> int:
     store["mugiwara_episode_fail_closed"] = "v2"
     store["provider_media_transport"] = "canonical-anime-v32"
     store["html_search_identity_coverage"] = "v33"
+    store["dle_episode_variant_coverage"] = "v34"
     sanitizer_version = current_stream_sanitizer_version()
     store["stream_sanitizer"] = f"v{sanitizer_version}"
     store["historical_static_knowledge_retained"] = max(0, len(static_rows) - len(current_ids))
@@ -210,7 +211,7 @@ def main() -> int:
         f"provider_js_seed=false upstream_js_seed=false runtime_reader=v{CURRENT_RUNTIME_READER_VERSION} "
         "route_sanitizer=v1 html_text_hardening=deterministic-scanner-v1 "
         f"movie_identity=v21.10 episode_identity=v22.1 manual_tv=v34 mugiwara_episode=v2 "
-        f"provider_media=canonical-anime-v32 html_search=v33 sanitizer=v{sanitizer_version}"
+        f"provider_media=canonical-anime-v32 html_search=v33 dle_episode_variants=v34 sanitizer=v{sanitizer_version}"
     )
     return 0
 
