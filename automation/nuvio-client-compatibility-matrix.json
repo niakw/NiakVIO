@@ -201,7 +201,7 @@
         "version_code": 17
       },
       "current_audited": {
-        "ref": "913c84787f8d866a2eea69f57813843a68020c49",
+        "ref": "8e779958a5f4e11f069c9edf62208600305946f9",
         "version_name": "0.1.36-alpha",
         "version_code": 36
       },
@@ -218,7 +218,7 @@
           "composeApp/src/commonMain/kotlin/com/nuvio/app/features/plugins/PluginModels.kt",
           "composeApp/src/fullCommonMain/kotlin/com/nuvio/app/features/plugins/PluginRepository.kt"
         ],
-        "audited_change": "2026-11-16 exact source re-audit at Dev 913c84787f8d: PluginModels.kt and StreamFetchSupport.kt are byte-identical to the September audited generation. PluginRuntime was refactored into shared HostFunctions/JsBindings but retains positional getStreams(tmdbId, mediaType, season, episode), full-list JSON result mapping, main headers and subtitle-specific headers. Desktop now injects global TMDB_API_KEY from TmdbSettingsRepository.effectiveApiKey(), with build TmdbConfig fallback. Reader/session lifecycle defects remain client-owned and cannot be reclassified as provider failure.",
+        "audited_change": "2026-11-16 exact source re-audit at Dev 8e779958a5f4: the 50-commit advance changes no configured provider/plugin/streams contract path. Player semantic changes add reusable bounded source fallback and next-episode selection; direct source playback still preserves StreamItem identity plus sanitized request/response proxy headers. Positional getStreams(tmdbId, mediaType, season, episode), full-list mapping, subtitles and TMDB_API_KEY hydration remain unchanged. macOS/Windows native execution is still required independently.",
         "runtime_validation": "execute the exact official Desktop runtime and re-prove macOS/Windows reader behavior; Mobile success is not Desktop proof",
         "runtime_family_equivalent_to_sibling_clients": false,
         "official_getStreams_error_behavior": "application runtime catches JavaScript getStreams errors and captures []",
