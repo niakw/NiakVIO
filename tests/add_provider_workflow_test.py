@@ -50,6 +50,16 @@ assert "Package validated provider transaction" in ADD
 assert "Download validated provider transaction" in ADD
 assert "git diff --cached --binary --full-index" in ADD
 assert "git apply --3way --index" in ADD
+# ProviderBase is derived automatically by NiakVIO onboarding. A provider may
+# never enter catalogue staging with a manually-authored/missing base prerequisite.
+assert "Stage clean NiakVIO ProviderBase and structured route knowledge" in ADD
+assert "python scripts/add_provider.py stage --request" in ADD
+assert "base_store.persist_clean_provider_seed(" in SCRIPT
+assert "materialize_onboarding_bundle(" in SCRIPT
+assert SCRIPT.index("base_store.persist_clean_provider_seed(") < SCRIPT.index("materialize_onboarding_bundle(")
+assert '"clean_reconstruction_required": False' in SCRIPT
+assert '"clean_reconstruction_verified": True' in SCRIPT
+
 assert "site_structure_knowledge()" in SCRIPT
 assert "VOLATILE_ROUTE_QUERY_KEYS" in SCRIPT
 assert 'report.get("runtime_routes")' in SCRIPT
