@@ -1,13 +1,13 @@
 {
   "schemaVersion": 2,
   "scope": "all",
-  "reason": "Full Global + France-only replay after sharding fix a1668e40",
-  "requestedAt": "2026-11-14T21:49:00+01:00",
-  "validation": "byte-bound-all-scope-global-plus-france-only-sharded-union",
-  "source": "exact-60-60-continuation",
+  "reason": "Validate monotonic Repair activity merge after source-pinned census persistence race fix",
+  "requestedAt": "2026-11-16T02:20:00+01:00",
+  "validation": "byte-bound-all-scope-global-plus-france-only-sharded-union-plus-monotonic-repair-attempt",
+  "source": "brain-control-plane-persistence-revalidation",
   "targetProviders": [],
   "allowPendingTargets": false,
-  "requiredEvidence": "Every non-pending Global and France-only runtime identity must appear in exactly one shard, then receive byte-bound freshness or explicit current verdict",
-  "retryRevision": 9,
-  "fullRefreshRevision": 9
+  "requiredEvidence": "Full current catalogue census must publish without regressing lastRepairAttempt from a newer canonical Repair/FORCE run; provider evidence remains byte-bound and proof thresholds unchanged",
+  "retryRevision": 10,
+  "fullRefreshRevision": 10
 }
