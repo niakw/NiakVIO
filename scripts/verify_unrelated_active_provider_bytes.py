@@ -1,10 +1,5 @@
 #!/usr/bin/env python3
-"""Capture/verify proof-bound active provider bytes across bulk onboarding.
-
-Bulk onboarding may create/replace only request targets. Existing active providers
-outside the request are publication evidence and must not be rematerialized merely
-to satisfy a global formatting/minimizer invariant.
-"""
+"""Capture/verify proof-bound active provider bytes across provider onboarding.\n\nSingle or bulk onboarding may create/replace only request targets. Existing active\nproviders outside the request are publication evidence and must not be rematerialized\nmerely to satisfy a global formatting/minimizer invariant.\n"""
 from __future__ import annotations
 
 import argparse
@@ -32,11 +27,19 @@ def digest(path: Path) -> str:
 
 def request_targets(path: Path) -> set[str]:
     raw = load(path)
-    rows = raw.get("providers") if isinstance(raw, dict) else raw
+    if isinstance(raw, dict):
+        if isinstance(raw.get("providers"), list):
+            rows = raw.get("providers") or []
+        elif raw.get("id") or raw.get("provider"):
+            rows = [raw]
+        else:
+            rows = []
+    else:
+        rows = raw if isinstance(raw, list) else []
     return {
-        canon(row.get("id"))
-        for row in (rows or [])
-        if isinstance(row, dict) and canon(row.get("id"))
+        canon(row.get("id") or row.get("provider"))
+        for row in rows
+        if isinstance(row, dict) and canon(row.get("id") or row.get("provider"))
     }
 
 
