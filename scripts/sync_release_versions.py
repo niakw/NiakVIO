@@ -62,6 +62,61 @@ def canonical_id(value: object) -> str:
     return str(value or "").strip().casefold()
 
 
+def sync_provider_catalog_projection_rows(manifest_path: pathlib.Path) -> None:
+    """Keep provider_catalog's published scraper mirror aligned with final manifests."""
+    catalog_path = ROOT / "provider_catalog.json"
+    vf_path = ROOT / "vf" / "manifest.json"
+    if not catalog_path.exists() or not vf_path.exists():
+        return
+
+    general = load(manifest_path)
+    vf = load(vf_path)
+    catalog = load(catalog_path)
+    general_by_id = {
+        canonical_id(row.get("id")): row
+        for row in general.get("scrapers") or []
+        if isinstance(row, dict) and canonical_id(row.get("id"))
+    }
+    vf_by_id = {
+        canonical_id(row.get("id")): row
+        for row in vf.get("scrapers") or []
+        if isinstance(row, dict) and canonical_id(row.get("id"))
+    }
+
+    for record in catalog.get("providers") or []:
+        if not isinstance(record, dict):
+            continue
+        scraper = record.get("scraper")
+        projections = record.get("projections")
+        if not isinstance(scraper, dict) or not isinstance(projections, dict):
+            continue
+        cid = canonical_id(record.get("canonicalId") or scraper.get("id"))
+        if not cid:
+            continue
+        source = general_by_id.get(cid) if projections.get("general") is True else vf_by_id.get(cid)
+        if not isinstance(source, dict):
+            # Pending/non-runtime catalogue rows are intentionally not projected.
+            continue
+
+        scraper["id"] = source.get("id")
+        scraper["version"] = source.get("version")
+        scraper["enabled"] = source.get("enabled")
+        semantic = source.get("canonicalSupportedTypes")
+        if not isinstance(semantic, list) or not semantic:
+            semantic = source.get("supportedTypes") or []
+        scraper["supportedTypes"] = list(semantic)
+
+        filename = str(source.get("filename") or "").strip().replace("\\", "/")
+        while filename.startswith("../"):
+            filename = filename[3:]
+        if not filename:
+            raise RuntimeError(f"{cid}: projected provider filename missing during catalog sync")
+        scraper["filename"] = filename
+        scraper["disabledPlatforms"] = []
+
+    dump(catalog_path, catalog)
+
+
 def load_provider_version_floor_payload() -> dict[str, Any]:
     if not VERSION_FLOORS.is_file():
         return {"schema_version": 1, "providers": {}}
@@ -530,6 +585,7 @@ def main() -> int:
         explicit_version=args.version,
     )
     synchronize_global_version(version, manifest_path)
+    sync_provider_catalog_projection_rows(manifest_path)
 
     auto_accept_safe_nuvio_client_heads()
 
