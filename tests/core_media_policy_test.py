@@ -37,6 +37,12 @@ assert changed == [], changed
 assert source_changes == [], source_changes
 module.assert_policy(normalized)
 
+source = SCRIPT.read_text(encoding="utf-8")
+branding_body = source.split("def _assert_branding_inventory() -> None:", 1)[1].split("\ndef _assert_branding_pipeline_order", 1)[0]
+assert "projection_active_provider_rows()" in branding_body
+assert 'MANIFEST.read_text' not in branding_body
+module._assert_branding_inventory()
+
 row = normalized["provider_patches"]["purstream"]
 active_scripts = {str(value) for value in row.get("patch_scripts", [])}
 active_options = {str(value) for value in (row.get("patch_script_options") or {})}
