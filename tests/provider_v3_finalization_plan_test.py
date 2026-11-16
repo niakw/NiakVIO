@@ -15,10 +15,22 @@ from upgrade_provider_v3_redirect_route_match_v1 import patch as patch_redirect_
 from upgrade_provider_v3_http_block_classification_v1 import patch as patch_http_block_classification  # noqa: E402
 from upgrade_provider_v3_defer_finalization_preserve_validated_data_v3 import patch_validator as patch_failed_live_execution_data  # noqa: E402
 
-patch_finalizer()
-patch_redirect_route_match()
-patch_http_block_classification()
-patch_failed_live_execution_data()
+validator_path = ROOT / "scripts" / "validate_provider_v3_routes_sequential.py"
+validator_before = validator_path.read_bytes()
+migration_changes = [
+    patch_finalizer(),
+    patch_redirect_route_match(),
+    patch_http_block_classification(),
+    patch_failed_live_execution_data(),
+]
+validator_after = validator_path.read_bytes()
+assert validator_after == validator_before, (
+    "committed sequential validator must already satisfy all historical migration floors"
+)
+assert not any(migration_changes), (
+    "historical sequential-validator migrations must be fixed-point checks on current main",
+    migration_changes,
+)
 
 from validate_provider_v3_routes_sequential import evaluate_provider, finalize_provider, should_pass  # noqa: E402
 
