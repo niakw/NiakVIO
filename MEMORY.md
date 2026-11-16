@@ -1,3 +1,11 @@
+## 2026-11-16 — Final materialization authority now rebinds stale Global+France rows
+
+- Release-finalizer run `43785917996` on `0c9256da2d9ee12ac6ae828f78c7453118cdd3e2` progressed past the projection-order bug and then failed strict authority validation on France-only `webflix`: current manifest bytes were `providers/webflix--nuvio--dd733731a8e8a915.js` while the materialization ledger still named `providers/webflix-e067b294eea3f5b3.js`.
+- Root cause is generic: `reconcile_materialization_from_active_bundles()` repaired missing identities but trusted every existing provider ID even when its content-addressed file/hash/CONFIG digest had rotated. France-only final minimization could therefore leave a present-but-stale executable-authority row.
+- The reconciler now recomputes exact file SHA, CONFIG digest and managed-fix authority for every active Global+France identity, recovers missing rows and explicitly rebinds stale rows while preserving non-authoritative historical diagnostics such as applied-Lego metadata. `reconcile_active_provider_publication.py` performs this complete union rebind after final Global publication reconciliation.
+- Regression coverage exercises a stale France-only row and the final union rebind contract. These tests and the release-finalizer projection transaction test are wired into Workflow Gate.
+- This is ledger/publication authority repair only. It does not claim Webflix or any other provider is playable.
+
 ## 2026-11-16 — Repair route merge tolerates stale historical catalogue without inventing proof
 
 - Brain Learning run `43785085475` successfully returned its 12-provider cohort to canonical Repair, but Repair run `43787089404` failed before candidate application even though targeted Papadustream route recovery produced six proven routes. The failure was generic: `merge_provider_repair_report_v6.py` required the historical V5 route report to contain every currently active Global provider.

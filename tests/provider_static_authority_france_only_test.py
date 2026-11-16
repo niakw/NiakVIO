@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 import importlib.util
+import json
 import sys
+import tempfile
 from pathlib import Path
 
 ROOT=Path(__file__).resolve().parents[1]
@@ -46,4 +48,58 @@ except ValueError as exc:
 else:
     raise AssertionError("France-only/Global collision was accepted")
 
-print("provider static authority covers Global + France-only current catalogue")
+with tempfile.TemporaryDirectory(prefix="niakvio-static-authority-") as tmp_name:
+    temp_root = Path(tmp_name)
+    (temp_root / "providers").mkdir(parents=True)
+    current_bundle = temp_root / "providers" / "fr-a--current.js"
+    current_bundle.write_text("current-bytes", encoding="utf-8")
+    materialization = temp_root / "provider-v3-materialization.json"
+    materialization.write_text(json.dumps({
+        "schemaVersion": 3,
+        "providers": [{
+            "provider": "fr-a",
+            "file": "providers/fr-a--old.js",
+            "sha256": "old",
+            "providerDataSha256": "old-data",
+            "applied": ["historic-diagnostic"],
+        }],
+    }), encoding="utf-8")
+
+    mod.ROOT = temp_root
+    mod.MATERIALIZATION = materialization
+    mod.active_current_rows = lambda: [{
+        "id": "fr-a",
+        "enabled": True,
+        "filename": "providers/fr-a--current.js",
+    }]
+    mod.projection_active_provider_ids = lambda: {"fr-a"}
+    mod.projection_runtime_visible_provider_ids = lambda: {"fr-a"}
+    mod.decode_exact_model = lambda provider_id, bundle: {"providerId": provider_id}
+    mod._materialization_row_from_bundle = lambda provider_id, bundle, model: {
+        "provider": provider_id,
+        "file": "providers/fr-a--current.js",
+        "sha256": "current",
+        "providerDataSha256": "current-data",
+        "applied": [],
+        "fixIds": [],
+        "coreCount": 0,
+        "baseStrippedGeneratedCore": False,
+        "deviceSpecificJs": False,
+        "devices": ["tv", "mobile", "desktop"],
+        "legacyProviderJsExecuted": False,
+        "upstreamJsExecuted": False,
+        "staticAuthorityReconciledProviders": [provider_id],
+        "minimizer": {"enabled": True},
+    }
+    rebound = mod.reconcile_materialization_from_active_bundles(apply=True)
+    assert rebound["recoveredCount"] == 0, rebound
+    assert rebound["reboundCount"] == 1, rebound
+    assert rebound["rebound"] == ["fr-a"], rebound
+    stored = json.loads(materialization.read_text(encoding="utf-8"))["providers"][0]
+    assert stored["file"] == "providers/fr-a--current.js", stored
+    assert stored["sha256"] == "current", stored
+    assert stored["providerDataSha256"] == "current-data", stored
+    assert stored["applied"] == ["historic-diagnostic"], stored
+    assert stored["materializationReboundFromExactPublishedBytes"] is True, stored
+
+print("provider static authority covers Global + France-only current catalogue and stale-byte rebound")

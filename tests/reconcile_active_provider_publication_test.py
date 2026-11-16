@@ -15,4 +15,7 @@ assert ids, "active Global provider set must be non-empty"
 assert len(ids)==len(set(ids)), "active Global IDs must be unique"
 assert "chillflix" in ids, ids
 assert str((ROOT/"scripts").resolve()) in {str(Path(p).resolve()) for p in __import__("sys").path if p}, "sibling imports must work under importlib execution"
-print(f"ACTIVE_PUBLICATION_FIXED_POINT_SCOPE_OK providers={len(ids)}")
+source=(ROOT/"scripts"/"reconcile_active_provider_publication.py").read_text(encoding="utf-8")
+assert "reconcile_materialization_from_active_bundles(apply=True)" in source
+assert "union_rebound=" in source
+print(f"ACTIVE_PUBLICATION_FIXED_POINT_SCOPE_OK providers={len(ids)} union_materialization_rebind=true")

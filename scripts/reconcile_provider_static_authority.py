@@ -316,8 +316,62 @@ def _materialization_row_from_bundle(provider_id: str, bundle: Path, model: dict
     }
 
 
+def _materialization_row_matches_bundle(
+    row: dict[str, Any],
+    expected: dict[str, Any],
+) -> bool:
+    """Exact executable authority is file + bytes + structured CONFIG digest."""
+    return all(
+        str(row.get(key) or "") == str(expected.get(key) or "")
+        for key in ("file", "sha256", "providerDataSha256")
+    )
+
+
+def _rebind_materialization_row(
+    previous: dict[str, Any],
+    expected: dict[str, Any],
+) -> dict[str, Any]:
+    """Refresh exact-byte authority without discarding historical diagnostics."""
+    out = copy.deepcopy(previous)
+    for key in (
+        "provider",
+        "file",
+        "sha256",
+        "providerDataSha256",
+        "baseStrippedGeneratedCore",
+        "fixIds",
+        "coreCount",
+        "deviceSpecificJs",
+        "devices",
+        "legacyProviderJsExecuted",
+        "upstreamJsExecuted",
+    ):
+        out[key] = copy.deepcopy(expected.get(key))
+    reconciled = {
+        canonical_id(value)
+        for value in [
+            *(out.get("staticAuthorityReconciledProviders") or []),
+            *(expected.get("staticAuthorityReconciledProviders") or []),
+        ]
+        if canonical_id(value)
+    }
+    out["staticAuthorityReconciledProviders"] = sorted(reconciled)
+    out["materializationReboundFromExactPublishedBytes"] = True
+    if not isinstance(out.get("minimizer"), dict):
+        out["minimizer"] = copy.deepcopy(expected.get("minimizer") or {})
+    if not isinstance(out.get("applied"), list):
+        out["applied"] = copy.deepcopy(expected.get("applied") or [])
+    return out
+
+
 def reconcile_materialization_from_active_bundles(*, apply: bool) -> dict[str, Any]:
-    """Rebind executable materialization to the exact active Global+France union."""
+    """Rebind executable materialization to the exact active Global+France union.
+
+    Existing rows are not assumed current merely because their provider identity
+    is present. Content-addressed filenames can rotate during Global or
+    France-only minimization, so stale file/hash/CONFIG-digest rows are rebound
+    from the exact current published bundle.
+    """
     doc = load(MATERIALIZATION, {"schemaVersion": 3, "providers": []})
     current_rows = active_current_rows()
     current_ids = {canonical_id(row.get("id")) for row in current_rows if canonical_id(row.get("id"))}
@@ -334,32 +388,40 @@ def reconcile_materialization_from_active_bundles(*, apply: bool) -> dict[str, A
         for row in raw_rows
         if canonical_id(row.get("provider")) and canonical_id(row.get("provider")) not in current_ids
     )
-    rows = [
+    existing_rows = [
         row for row in raw_rows
         if canonical_id(row.get("provider")) in current_ids
     ]
     by_id = {
         canonical_id(row.get("provider")): row
-        for row in rows if canonical_id(row.get("provider"))
+        for row in existing_rows if canonical_id(row.get("provider"))
     }
-    if len(by_id) != len(rows):
+    if len(by_id) != len(existing_rows):
         raise ValueError("duplicate active provider materialization identity")
 
     recovered: list[str] = []
+    rebound: list[str] = []
     by_current = {
         canonical_id(row.get("id")): row for row in current_rows
         if canonical_id(row.get("id"))
     }
-    for pid in sorted(current_ids - set(by_id)):
+    rows: list[dict[str, Any]] = []
+    for pid in sorted(current_ids):
         row = by_current[pid]
         bundle = (ROOT / str(row.get("filename") or "")).resolve()
         model = decode_exact_model(pid, bundle)
-        item = _materialization_row_from_bundle(pid, bundle, model)
+        expected = _materialization_row_from_bundle(pid, bundle, model)
+        previous = by_id.get(pid)
+        if previous is None:
+            item = expected
+            recovered.append(pid)
+        elif not _materialization_row_matches_bundle(previous, expected):
+            item = _rebind_materialization_row(previous, expected)
+            rebound.append(pid)
+        else:
+            item = previous
         rows.append(item)
-        by_id[pid] = item
-        recovered.append(pid)
 
-    rows.sort(key=lambda row: canonical_id(row.get("provider")))
     runtime_visible = projection_runtime_visible_provider_ids()
     doc["providers"] = rows
     doc["providerCount"] = len(current_ids)
@@ -369,19 +431,21 @@ def reconcile_materialization_from_active_bundles(*, apply: bool) -> dict[str, A
     doc["targetedPublicationReconciledProviders"] = sorted(set(
         [str(x) for x in doc.get("targetedPublicationReconciledProviders") or []]
         + recovered
+        + rebound
     ))
-    changed = bool(recovered or retired or raw_rows != rows)
+    changed = bool(recovered or rebound or retired or raw_rows != rows)
     if apply and changed:
         write(MATERIALIZATION, doc)
     return {
         "recoveredCount": len(recovered),
         "recovered": recovered,
+        "reboundCount": len(rebound),
+        "rebound": rebound,
         "retiredCount": len(retired),
         "retired": retired,
         "activeProviderIdentityCount": len(current_ids),
         "staticKnowledgeProviderCount": len(runtime_visible),
     }
-
 
 def reconcile_active_global(*, apply: bool) -> dict[str, Any]:
     overrides = load(OVERRIDES, {"provider_patches": {}, "provider_capabilities": {}})
@@ -453,6 +517,8 @@ def reconcile_active_global(*, apply: bool) -> dict[str, Any]:
         "activationReconciled": activation_reconciled,
         "materializationRecoveredCount": materialization["recoveredCount"],
         "materializationRecovered": materialization["recovered"],
+        "materializationReboundCount": materialization["reboundCount"],
+        "materializationRebound": materialization["rebound"],
         "materializationRetiredCount": materialization["retiredCount"],
         "materializationRetired": materialization["retired"],
         "activeGlobal": len(active_provider_rows()),
@@ -473,6 +539,7 @@ def main() -> int:
         f"active_global={result['activeGlobal']} active_current={result['activeCurrent']} recovered={result['recoveredCount']} "
         f"activation_reconciled={result['activationReconciledCount']} "
         f"materialization_recovered={result['materializationRecoveredCount']} "
+        f"materialization_rebound={result['materializationReboundCount']} "
         f"mode={'apply' if args.apply else 'check'}"
     )
     for row in result["recovered"]:
@@ -481,6 +548,8 @@ def main() -> int:
         print(f"FIELD_PROVIDER_ACTIVATION_OVERRIDE_RECONCILED provider={provider} authority=provider-folder-lifecycle")
     for provider in result["materializationRecovered"]:
         print(f"FIELD_PROVIDER_MATERIALIZATION_RECOVERED provider={provider} source=exact-published-bytes")
+    for provider in result["materializationRebound"]:
+        print(f"FIELD_PROVIDER_MATERIALIZATION_REBOUND provider={provider} source=exact-current-published-bytes")
     return 0
 
 
