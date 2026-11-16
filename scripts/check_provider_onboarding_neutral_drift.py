@@ -29,7 +29,10 @@ NEUTRAL_PREFIXES = (
 
 
 def normalize_path(value: str) -> str:
-    return value.strip().replace("\\", "/").lstrip("./")
+    path = value.strip().replace("\\", "/")
+    while path.startswith("./"):
+        path = path[2:]
+    return path.lstrip("/")
 
 
 def is_neutral_path(value: str) -> bool:
