@@ -18,6 +18,8 @@ required = (
     'sudo tailscale set --exit-node="$TS_EXIT_NODE" --exit-node-allow-lan-access=false',
     "FIELD_NATIVE_RESIDENTIAL_EXIT active=true",
     "native-target-provider-scope.json",
+    "manifest-hub46.json",
+    "--manifest native-hub46/manifest.json",
     "NIAKVIO_PROVIDER_SCOPE_MATRIX=",
     "NIAKVIO_TARGET_PROVIDER=",
     'if residential and not providers:',
@@ -43,5 +45,8 @@ assert exit_node < desktop_runtime < mobile_runtime < tv_runtime
 
 assert "continue-on-error: true" not in workflow[connect:exit_node], "native residential connection must fail closed"
 assert "matrix.residential == true" in workflow
+assert 'Path("manifest.json").read_text' not in workflow, "target resolution must not fall back to Global-only manifest"
+assert 'root / "manifest.json"' not in workflow, "target scope must use the Global+France projection transport"
+assert workflow.count("--manifest native-hub46/manifest.json") == 3, "all three native client preparations must use the pinned union transport"
 
 print("native targeted residential transport workflow contract passed")
