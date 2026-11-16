@@ -53,7 +53,8 @@ assert "python scripts/validate_release_integrity.py" in publisher
 assert "materialize_provider_v3_all.py" not in wf
 assert 'steps.drift.outputs.count != \'0\'' in wf
 assert "Projection reconcile staged a forbidden path." in wf
-assert "PROVENANCE.json provider-overrides.json provider-v3-materialization.json" not in wf
+assert "PROVENANCE.json provider-overrides.json provider-v3-materialization.json" in wf
+assert "automation/provider-v3-static-knowledge.json" in wf
 print("provider projection reconcile workflow contract passed")
 
 from sys import path as _pythonpath
