@@ -1,3 +1,9 @@
+## 2026-11-16 — Targeted publication preserves Global+France materialization authority
+
+- Exact source before change: `463c3da9f10951aed9da462bafec4785acc62578`. `reconcile_targeted_provider_publication.py` finalized requested Global providers and then filtered `provider-v3-materialization.json` through `active_provider_ids()`, which is the legacy Global execution scope. That silently removed France-only materialization rows after the earlier union reconstruction.
+- The publication reconciler now retains `projection_active_provider_ids()`, i.e. the executable Global+France union. Requested publication remains bounded to the explicitly targeted providers; the broader set is used only as retention authority for existing materialization rows. A repository regression test requires a non-empty France-only cohort and forbids a return to Global-only filtering.
+- This is a pipeline/authority correction, not a provider-specific repair. ProviderBase remains derived automatically from structured NiakVIO authority. No provider source, route, activation state or proof is manually fabricated. Fresh release-finalizer and materialization validation remain required.
+
 ## 2026-11-16 — Release finalizer projection transaction ordering
 
 - Exact source before change: `52120f8afd2028a28d05e39b576f9f46fb7ffd52`. The release finalizer could run `reapply_published_overrides.py`, rotate Global content-addressed filenames, and then immediately call the Global+France authority reconciler while VF still referenced the pre-reapply filename. Run 43776454236 failed this way on Purstream with `projection asset or enabled state mismatch`.

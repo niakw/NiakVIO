@@ -15,7 +15,7 @@ sys.path.insert(0, str(ROOT / "scripts"))
 from domain_refresh_transaction_v2 import _generation, source_qualified_provider_name
 from provider_patch_blocks import decode_managed_data, validate_managed_fixes
 from provider_v3_minimizer import minimize_text, validate_transform
-from current_provider_scope import active_provider_ids
+from current_provider_scope import projection_active_provider_ids
 
 
 def load_json(path: Path) -> dict[str, Any]:
@@ -174,7 +174,9 @@ def reconcile(
         })
 
     if root.resolve() == ROOT.resolve():
-        active_ids = set(active_provider_ids())
+        active_ids = set(projection_active_provider_ids())
+        # Materialization is authority for the executable Global+France union.
+        # Targeting only Global publication must never retire France-only rows.
     else:
         # Unit/workbench roots do not share the repository providers/ tree.
         # Their local manifest is the only valid active-scope authority.
