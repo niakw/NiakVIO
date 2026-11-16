@@ -30,7 +30,7 @@ from pathlib import Path
 from typing import Any
 
 from provider_route_proof import derive_task_routes, route_role, unique
-from current_provider_scope import active_provider_ids
+from current_provider_scope import projection_active_provider_ids, projection_visible_provider_rows
 from rotating_corpus import default_seed, rotated_candidates
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -228,17 +228,14 @@ def lkg_rows() -> dict[tuple[str, str], list[tuple[str, dict[str, Any]]]]:
 
 
 def manifest_catalog() -> dict[str, dict[str, Any]]:
-    value = load(MANIFEST)
-    out = {}
-    for row in value.get("scrapers") or []:
-        if not isinstance(row, dict):
-            continue
+    """Current Global+France catalogue with repository-relative provider assets."""
+    out: dict[str, dict[str, Any]] = {}
+    for row in projection_visible_provider_rows():
         provider_id = cid(row.get("id"))
         filename = str(row.get("filename") or "")
         if provider_id and filename:
             out[provider_id] = {"entry": row, "path": ROOT / filename}
     return out
-
 
 def semantic_types(row: dict[str, Any]) -> list[str]:
     values = row.get("canonicalSupportedTypes") or row.get("supportedTypes") or []
@@ -1525,7 +1522,7 @@ def main() -> int:
     args = parser.parse_args()
 
     all_local = manifest_catalog()
-    active = active_provider_ids()
+    active = projection_active_provider_ids()
     if args.apply and args.include_disabled:
         raise SystemExit("--include-disabled is report-only; disabled providers require an explicit reactivation decision")
     local = all_local if args.include_disabled else {
