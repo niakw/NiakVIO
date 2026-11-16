@@ -31,7 +31,6 @@ from typing import Any
 from assert_active_provider_live_coverage import main as active_coverage_main
 from materialize_provider_v3_one import materialize_one
 from validate_provider_v3_routes_live import (
-    EXPECTED,
     KNOWLEDGE,
     OUTPUT,
     OVERRIDES,
@@ -43,6 +42,7 @@ from validate_provider_v3_routes_live import (
     write,
 )
 from validate_provider_v3_routes_sequential import (
+    EXPECTED,
     build_provider_queue,
     evaluate_provider,
     finalize_provider,
