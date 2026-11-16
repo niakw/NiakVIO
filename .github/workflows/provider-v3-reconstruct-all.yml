@@ -58,6 +58,15 @@ jobs:
         run: |
           set -euo pipefail
           python scripts/enforce_provider_v3_semantic_transport_contract_v5.py
+      - name: Reconcile exact Global+France structured authority
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Current NiakVIO-owned CONFIG bytes are the non-network recovery
+          # oracle for missing static rows. This step never executes provider JS.
+          python scripts/reconcile_provider_static_authority.py --apply
+          python tests/provider_static_authority_france_only_test.py
+
       - name: Enrich durable Provider DATA from NiakVIO-owned knowledge
         shell: bash
         run: |
