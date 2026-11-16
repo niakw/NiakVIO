@@ -15,7 +15,7 @@ ROOT = Path(__file__).resolve().parents[1]
 PLATFORM_PATH = ROOT / "automation" / "platform-runtime-contracts.json"
 MATRIX_PATH = ROOT / "automation" / "nuvio-client-compatibility-matrix.json"
 PUBLISHED_SUPPORTED_TYPES = frozenset({"movie", "tv", "anime"})
-PROVIDER_RUNTIME_REQUEST_TYPES = frozenset({"movie", "tv"})
+PROVIDER_RUNTIME_REQUEST_TYPES = frozenset({"movie", "tv", "anime"})
 TV_INPUT_ALIASES = frozenset({"series", "show", "other"})
 EXPECTED_SIGNATURE = "getStreams(tmdbId, mediaType, season, episode)"
 IDENTITY_CAPABILITY = "media_identity_hydration"
@@ -105,8 +105,10 @@ def validate_contract_files() -> dict:
         raise ValueError("provider runtime request media types drifted")
     if set(media_boundary.get("tv_input_aliases") or []) != TV_INPUT_ALIASES:
         raise ValueError("TV input alias boundary drifted")
-    if media_boundary.get("anime_provider_runtime_type") != "tv":
-        raise ValueError("anime provider runtime mapping must remain anime -> tv")
+    if media_boundary.get("anime_provider_runtime_type") != "anime":
+        raise ValueError("anime provider runtime mapping must preserve canonical anime")
+    if media_boundary.get("anime_tv_launch_alias_is_compatibility_only") is not True:
+        raise ValueError("anime TV launch alias must remain compatibility-only")
 
     portable_fields = {
         str(value).strip()
@@ -173,8 +175,10 @@ def validate_contract_files() -> dict:
         raise ValueError("compatibility matrix provider runtime types drifted")
     if set(matrix_media.get("tv_input_aliases") or []) != TV_INPUT_ALIASES:
         raise ValueError("compatibility matrix TV input aliases drifted")
-    if matrix_media.get("anime_provider_runtime_type") != "tv":
+    if matrix_media.get("anime_provider_runtime_type") != "anime":
         raise ValueError("compatibility matrix anime runtime mapping drifted")
+    if matrix_media.get("anime_tv_launch_alias_is_compatibility_only") is not True:
+        raise ValueError("compatibility matrix anime TV alias authority drifted")
 
     universe = {str(value).strip() for value in matrix.get("capability_universe") or [] if str(value).strip()}
     if "series" not in universe:
