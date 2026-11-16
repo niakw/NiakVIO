@@ -13,7 +13,7 @@ sys.path.insert(0, str(ROOT / "scripts"))
 from provider_security_hardening import MARKER, harden_text, known_unsafe_findings
 from harden_staged_provider_security import harden_stage
 from provider_patches.global_provider_security_hardening_v1 import harden_bundle
-from current_provider_scope import active_provider_ids
+from current_provider_scope import projection_active_provider_ids
 
 
 def js_ok(text: str) -> None:
@@ -276,7 +276,7 @@ print("staged provider security validation-only tests passed")
 # Therefore its source must itself already be a security fixed point; otherwise a
 # second published hardening pass mutates the final bundle.
 overrides = json.loads((ROOT / "provider-overrides.json").read_text(encoding="utf-8"))
-active = active_provider_ids()
+active = projection_active_provider_ids()
 source_errors = []
 checked_lego_scripts = set()
 for provider_id in sorted(active):
