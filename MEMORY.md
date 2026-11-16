@@ -1,3 +1,10 @@
+## 2026-11-16 — Anime migration regression now distinguishes detector text from executable transport
+
+- Reconstruction run `43976748312` passed clean ProviderBase materialization and most architecture contracts, then failed `provider_anime_semantic_transport_contract_test.py` because the test searched the entire validation-only migration function for the retired anime→TMDB transport literal. The migration intentionally stores that exact literal in its `forbidden` tuple so it can reject a future regression; it never executes or writes that transport and returns `False`.
+- Commit `bd7d9f95` moves the negative assertion to the actual `providerTransport()` body in `global_media_type_resolution_v1.py`, while requiring the migration to retain the forbidden signature as a detector and remain validation-only.
+- Independent active episodic-Bloc scan after `f6c8bfe` covers 68 active canonical TV/anime providers and 10 current provider-local runtime scripts. After the S00 fixes, zero declared active Blocs match the forbidden `season:Number(...) || 1`, `q.season || 1` or `Math.max(1, season)` collapse patterns.
+- This removes a false regression gate without weakening the runtime contract. Fresh exact-head reconstruction/projection still must execute the widened S00 test and rematerialize changed provider bytes.
+
 ## 2026-11-16 — Active episodic provider Blocs now preserve S00 and AniKoto Runtime V1 is retired
 
 - The NiakVIO-first métier audit extended the existing season-zero contract from canonical TV-only provider Blocs to **all active episodic TV + anime Blocs**. The previous regression denominator missed anime-only providers because `canonicalSupportedTypes=[anime]` is semantically correct even when `supportedTypes` also exposes the TV launch alias.
