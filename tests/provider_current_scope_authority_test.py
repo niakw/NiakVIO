@@ -12,6 +12,7 @@ files = {
     "disposition": ROOT / "scripts/finalize_provider_repair_disposition_v1_impl.py",
     "activation": ROOT / "scripts/validate_activation_preservation.py",
     "cross_playback": ROOT / "scripts/check_cross_provider_playback.py",
+    "compare_controls": ROOT / "scripts/compare_unchanged_provider_controls.py",
 }
 
 sources = {name: path.read_text(encoding="utf-8") for name, path in files.items()}
@@ -48,5 +49,11 @@ assert "projection_active_provider_rows" in cross_playback
 assert "projection_active_provider_rows(repo_root)" in cross_playback
 assert "verifier.load(repo_root / 'manifest.json')" not in cross_playback
 assert "published_provider_contract" in cross_playback
+
+compare_controls = sources["compare_controls"]
+assert "vf/manifest.json" in compare_controls
+assert "projection_manifest(" in compare_controls
+assert "Global+France projection view" in compare_controls
+assert "git_bytes(base_ref, 'vf/manifest.json')" in compare_controls
 
 print("provider current-scope authority contract passed: no historical Hub46 execution authority")
