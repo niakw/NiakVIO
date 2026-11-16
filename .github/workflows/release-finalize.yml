@@ -55,6 +55,8 @@ on:
       - 'scripts/provider_patches/global_telemetry_v1.py'
       - 'tests/global_telemetry_contract_test.py'
       - 'tests/global_core_runtime_ownership_test.py'
+      - 'tests/core_media_policy_test.py'
+      - 'scripts/normalize_core_media_policy.py'
       - 'scripts/generate_hub46_manifest.py'
       - 'scripts/build_hub46_native_manifest.py'
       - 'tests/provider_stream_multiplicity_contract_test.py'
@@ -221,6 +223,7 @@ jobs:
           python3 tests/stream_output_sanitizer_multi_variant_test.py
           python3 tests/global_telemetry_contract_test.py
           python3 tests/global_core_runtime_ownership_test.py
+          python3 tests/core_media_policy_test.py
           python3 tests/language_manifest_metadata_consistency_test.py
 
       - name: Reapply durable provider patches, minimize and rebuild current projections
