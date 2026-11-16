@@ -18,6 +18,22 @@ SANITIZER_BASE = (ROOT / "scripts/provider_patches/stream_output_sanitizer.py").
 SANITIZER_V10 = (ROOT / "scripts/provider_patches/stream_output_sanitizer_v10.py").read_text(encoding="utf-8")
 STREAM_SCORE = (ROOT / "scripts/provider_patches/global_stream_score_v1.py").read_text(encoding="utf-8")
 TELEMETRY = (ROOT / "scripts/provider_patches/global_telemetry_v1.py").read_text(encoding="utf-8")
+MATERIALIZATION = json.loads((ROOT / "provider-v3-materialization.json").read_text(encoding="utf-8"))
+
+REQUIRED_GLOBAL_CORE_IDS = (
+    "CORE.HLS_RUNTIME_INTEGRITY.V1",
+    "CORE.PROVIDER_SECURITY_BOUNDARY.V1",
+    "CORE.RUNTIME_COMPAT.V1",
+    "CORE.STREAM_FACTS.V1",
+    "CORE.STREAM_IDENTITY.V1",
+    "CORE.MEDIA_TYPE_RESOLUTION.V1",
+    "CORE.STREAM_PRESENTATION.V1",
+    "CORE.STREAM_SANITIZER.V6",
+    "CORE.RUNTIME_MEDIA_SAFETY.V4",
+    "CORE.STREAM_SCORE.V1",
+    "CORE.TELEMETRY.V1",
+)
+
 
 CORE_RUNTIME = "scripts/provider_patches/global_runtime_compat_v1.py"
 CORE_DESKTOP = "scripts/provider_patches/desktop_runtime_compat_v1.py"
@@ -73,6 +89,15 @@ for forbidden in ("streamflix", "movix", "vidrock", "cineby", "coflix"):
 
 rows = projection_active_provider_rows()
 assert len(rows) == projection_active_provider_count()
+materialized = {
+    str(row.get("provider") or "").strip().casefold().replace("_", "-"): row
+    for row in MATERIALIZATION.get("providers") or []
+    if isinstance(row, dict)
+}
+assert set(materialized) == {
+    str(row.get("id") or "").strip().casefold().replace("_", "-")
+    for row in rows
+}, (len(materialized), len(rows))
 for row in rows:
     provider_id = str(row.get("id") or "")
     path = ROOT / str(row.get("filename") or "")
@@ -80,21 +105,41 @@ for row in rows:
     text = path.read_text(encoding="utf-8")
     boundary = text.find("/* NUVIO_GLOBAL_CORE_START_BOUNDARY_V1 */")
     assert boundary >= 0, provider_id
-    runtime_at = text.find("/* STARTFIX:CORE.RUNTIME_COMPAT.V1 */")
-    sanitizer_at = text.find("/* STARTFIX:CORE.STREAM_SANITIZER.V6 */")
-    score_at = text.find("/* STARTFIX:CORE.STREAM_SCORE.V1 */")
-    telemetry_at = text.find("/* STARTFIX:CORE.TELEMETRY.V1 */")
-    assert runtime_at > boundary, provider_id
-    assert sanitizer_at > boundary, provider_id
-    assert score_at > sanitizer_at, provider_id
-    assert telemetry_at > score_at, provider_id
-    assert text.count("/* STARTFIX:CORE.RUNTIME_COMPAT.V1 */") == 1, provider_id
-    assert text.count("/* CLOSEFIX:CORE.RUNTIME_COMPAT.V1 */") == 1, provider_id
-    assert text.count("/* STARTFIX:CORE.STREAM_SANITIZER.V6 */") == 1, provider_id
-    assert text.count("/* CLOSEFIX:CORE.STREAM_SANITIZER.V6 */") == 1, provider_id
-    assert text.count("/* STARTFIX:CORE.STREAM_SCORE.V1 */") == 1, provider_id
-    assert text.count("/* CLOSEFIX:CORE.STREAM_SCORE.V1 */") == 1, provider_id
-    assert text.count("/* STARTFIX:CORE.TELEMETRY.V1 */") == 1, provider_id
-    assert text.count("/* CLOSEFIX:CORE.TELEMETRY.V1 */") == 1, provider_id
+    canonical_provider_id = provider_id.strip().casefold().replace("_", "-")
+    ledger = materialized[canonical_provider_id]
+    ledger_fix_ids = set(ledger.get("fixIds") or [])
+    missing_ledger = sorted(set(REQUIRED_GLOBAL_CORE_IDS) - ledger_fix_ids)
+    assert not missing_ledger, (provider_id, "materialization-ledger", missing_ledger)
 
-print(f"GLOBAL_CORE_RUNTIME_OWNERSHIP_OK providers={len(rows)} scope=Global+France timers=core 403=core sanitizer_v10=network-evidence stream_score=core telemetry=core provider_specific_runtime_hacks=forbidden")
+    positions = {}
+    for fix_id in REQUIRED_GLOBAL_CORE_IDS:
+        start_marker = f"/* STARTFIX:{fix_id} */"
+        close_marker = f"/* CLOSEFIX:{fix_id} */"
+        assert text.count(start_marker) == 1, (provider_id, start_marker, text.count(start_marker))
+        assert text.count(close_marker) == 1, (provider_id, close_marker, text.count(close_marker))
+        positions[fix_id] = text.find(start_marker)
+        assert positions[fix_id] > boundary, (provider_id, fix_id, positions[fix_id], boundary)
+
+    # These are output/request wrappers whose ordering is itself part of the
+    # shared Core ABI. HLS/security run before host compatibility; normalized
+    # facts/identity/media type precede presentation; terminal validation and
+    # safety precede scoring; telemetry remains the outermost observer.
+    ordered = (
+        "CORE.HLS_RUNTIME_INTEGRITY.V1",
+        "CORE.PROVIDER_SECURITY_BOUNDARY.V1",
+        "CORE.RUNTIME_COMPAT.V1",
+        "CORE.STREAM_FACTS.V1",
+        "CORE.STREAM_IDENTITY.V1",
+        "CORE.MEDIA_TYPE_RESOLUTION.V1",
+        "CORE.STREAM_PRESENTATION.V1",
+        "CORE.STREAM_SANITIZER.V6",
+        "CORE.RUNTIME_MEDIA_SAFETY.V4",
+        "CORE.STREAM_SCORE.V1",
+        "CORE.TELEMETRY.V1",
+    )
+    assert [positions[key] for key in ordered] == sorted(positions[key] for key in ordered), (
+        provider_id,
+        [(key, positions[key]) for key in ordered],
+    )
+
+print(f"GLOBAL_CORE_RUNTIME_OWNERSHIP_OK providers={len(rows)} scope=Global+France required_core={len(REQUIRED_GLOBAL_CORE_IDS)} timers=core 403=core facts=core identity=core hls=core presentation=core sanitizer_v10=network-evidence stream_score=core telemetry=core provider_specific_runtime_hacks=forbidden")
