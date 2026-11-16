@@ -1,3 +1,10 @@
+## 2026-11-16 — Onboarding freshness path normalization and architecture terminology fixed
+
+- Provider Non-Regression on source `54f69b69` exposed a real neutral-drift classifier bug: `normalize_path(...).lstrip("./")` removed the leading dot from `.github/triggers/**`, so explicit control triggers documented as neutral were misclassified as executable drift. Commit `99846d60` strips only repeated leading `./` pairs and leading slashes, preserving dot-prefixed repository paths; workflows/tests remain blocking.
+- Verify & Publish on the same source failed the documentation contract because `ARCHITECTURE.md` contained one residual `Lego` term while the canonical repository terminology is `Bloc`. Commit `f65fcce0` changes only that architecture term; provider_lego_* implementation field names remain compatibility schema and are not renamed.
+- The deterministic migration consolidator run `43976135835` succeeded and persisted commit `ca04ab5f`, materializing the current Kehflix static authority instead of the stale September migration output.
+- Fresh exact-head reconstruction/gates remain required after these source/test fixes; no provider playback or FULL status is promoted.
+
 ## 2026-11-16 — Reconstruction fixed-point blockers were stale September migrations, not current provider authority
 
 - Exact reconstruction run `43975456077` failed at `Require source migrations to be fixed-point` with an 8-line `provider-overrides.json` drift. The diff identified two stale migration owners.
