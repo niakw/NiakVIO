@@ -42,7 +42,6 @@ from current_provider_scope import projection_active_provider_ids
 from parity_hls_terminal_probe import verify_hls_terminal
 
 ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_SCOPE = ROOT / "automation/evidence/hub-lab-matrix-46.json"
 DEFAULT_OUT = ROOT / "automation/provider-upstream-parity-v3.json"
 LANES = ("movie", "tv", "anime")
 MAX_SAMPLES_PER_LANE = 32
@@ -602,18 +601,23 @@ def main() -> int:
     parser.add_argument(
         "--scope-matrix",
         type=Path,
-        default=Path(os.environ.get("NIAKVIO_PROVIDER_SCOPE_MATRIX", str(DEFAULT_SCOPE))),
+        default=Path(os.environ["NIAKVIO_PROVIDER_SCOPE_MATRIX"]) if os.environ.get("NIAKVIO_PROVIDER_SCOPE_MATRIX") else None,
+        help="Optional explicit diagnostic subset. Omitted means the current active Global+France projection union.",
     )
     parser.add_argument("--seed", default=None)
     args = parser.parse_args()
 
-    scope_path = args.scope_matrix
-    if not scope_path.is_absolute():
-        scope_path = ROOT / scope_path
-    matrix_scoped = scope_ids(scope_path)
     active = projection_active_provider_ids()
-    scoped = matrix_scoped & active
-    inactive_matrix_providers = sorted(matrix_scoped - active)
+    if args.scope_matrix is not None:
+        scope_path = args.scope_matrix
+        if not scope_path.is_absolute():
+            scope_path = ROOT / scope_path
+        explicit_scope = scope_ids(scope_path)
+        scoped = explicit_scope & active
+        inactive_matrix_providers = sorted(explicit_scope - active)
+    else:
+        scoped = set(active)
+        inactive_matrix_providers = []
     if not scoped:
         raise SystemExit("parity campaign has no currently active providers")
     local_all = parity.local_catalog()
@@ -621,7 +625,7 @@ def main() -> int:
     missing_local = sorted(scoped - set(local))
     if missing_local or len(local) != len(scoped):
         raise SystemExit(
-            f"Hub-46 parity local scope mismatch local={len(local)} expected={len(scoped)} missing={','.join(missing_local)}"
+            f"current parity local scope mismatch local={len(local)} expected={len(scoped)} missing={','.join(missing_local)}"
         )
 
     upstreams, source_errors = parity_v2.upstream_catalog()
