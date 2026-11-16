@@ -34,6 +34,8 @@ required=[
     "ci(census-sharded): persist",
     "preserve_newer_repair_attempt",
     "FIELD_SHARDED_CENSUS_REPAIR_ATTEMPT_MERGE",
+    "render_provider_census_status_from_state.py",
+    "FIELD_SHARDED_CENSUS_STATUS_RENDER",
     "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
     "actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9",
     "actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333",
@@ -56,3 +58,9 @@ assert 'args+=(--provider "$TARGET_PROVIDERS")' in text
 assert 'python scripts/materialize_provider_v3_one.py "$provider"' in text
 assert 'FIELD_SHARDED_TARGET_MATERIALIZATION providers=$TARGET_PROVIDERS mode=targeted' in text
 assert 'FIELD_SHARDED_TARGET_MATERIALIZATION providers=all mode=global' in text
+
+# The persistence phase may merge newer Brain activity after the sharded status
+# was rendered. Never publish the pre-merge Markdown snapshot over canonical JSON.
+assert "cp /tmp/PROVIDER_CENSUS_STATUS.md PROVIDER_CENSUS_STATUS.md" not in workflow, (
+    "stale pre-merge dashboard copy must never overwrite canonical merged state"
+)
