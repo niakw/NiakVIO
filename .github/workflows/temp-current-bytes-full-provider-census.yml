@@ -8,6 +8,11 @@ on:
         required: false
         default: ""
         type: string
+      expected_sha:
+        description: Optional exact SHA required for dispatched validation
+        required: false
+        default: ""
+        type: string
   push:
     branches: [main]
     paths:
@@ -114,6 +119,18 @@ jobs:
         with:
           ref: ${{ github.sha }}
           fetch-depth: 1
+      - name: Require expected dispatch SHA
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.expected_sha != '' }}
+        shell: bash
+        env:
+          EXPECTED_SHA: ${{ inputs.expected_sha }}
+        run: |
+          set -euo pipefail
+          test "$GITHUB_SHA" = "$EXPECTED_SHA" || {
+            echo "FIELD_CENSUS_EXPECTED_SHA_MISMATCH expected=$EXPECTED_SHA actual=$GITHUB_SHA" >&2
+            exit 1
+          }
+          echo "FIELD_CENSUS_EXPECTED_SHA_OK sha=$GITHUB_SHA"
       - id: decide
         shell: bash
         run: |
