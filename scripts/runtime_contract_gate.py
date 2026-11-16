@@ -174,7 +174,7 @@ def validate_contract_files() -> dict:
         if contract.get("user_tmdb_credential_required") is not False:
             raise ValueError(f"{key}: end-user TMDB credential must not be required")
         if contract.get("tmdb_secret_projection_required") is not False:
-            raise ValueError(f"{key}: TMDB secret projection into provider JS must remain false")
+            raise ValueError(f"{key}: TMDB credential embedding in published provider bytes must remain false")
         status = str(contract.get("identity_hydration_status") or "")
         if status not in {"equivalent-runtime-tmdb-key-bridge", "canonical-host-bridge"}:
             raise ValueError(f"{key}: invalid current identity hydration status {status!r}")
