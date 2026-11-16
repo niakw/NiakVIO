@@ -161,7 +161,7 @@ source_scope = source
 assert "projection_active_provider_ids" in source_scope
 assert "runtime_visible_provider_ids" not in source_scope
 assert "CURRENT_PROVIDER_COUNT" not in source_scope
-assert "active_provider_ids()" not in source_scope
+assert re.search(r"(?<!projection_)\\bactive_provider_ids\\(\\)", source_scope) is None
 assert 'write(CATALOG_PATH, catalog)' in source_scope
 
 # Regression 0: domain projection may update an explicit old->current host inside
