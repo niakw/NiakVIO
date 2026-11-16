@@ -152,15 +152,15 @@ Un provider anime-only peut exposer les alias de lancement épisodiques sans inv
 
 Cela permet :
 
-- anime épisodique via transport `tv` ;
-- namespace `anime` lorsqu’il est exposé par le client ;
+- namespace `anime` comme valeur canonique transmise à `getStreams` lorsque le client connaît l’œuvre comme anime ;
+- alias de **sélection/lancement** `tv` pour les surfaces épisodiques qui arrivent sous une forme TV/series ; cet alias ne transforme jamais une requête anime canonique en `tv` dans le harness NiakVIO ;
 - transport `movie` **uniquement** pour un provider qui déclare réellement une capacité canonique `movie` ; il ne doit jamais être ajouté artificiellement à un provider anime-only.
 
 **Cela n’ajoute jamais une capacité canonique `movie` ou `tv`.** Le Core doit rejeter une œuvre non-anime sur un provider anime-only après classification autoritative, avant le réseau provider lorsque l’information nécessaire est déjà disponible.
 
 Inversement, un provider canonique `movie + tv` ne devient pas anime-compatible par simple alias de transport.
 
-`tv` est l’unique alias de transport synthétique ajouté à un provider anime-only. `series`, `show` et `movie` ne sont jamais ajoutés comme aliases synthétiques.
+`tv` est l’unique alias de sélection/lancement synthétique ajouté à un provider anime-only. `series`, `show` et `movie` ne sont jamais ajoutés comme aliases synthétiques. Le contrat runtime partagé accepte `movie|tv|anime` et conserve `anime` pour une œuvre canoniquement anime.
 
 ## 6. Contrat runtime
 
