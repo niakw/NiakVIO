@@ -60,12 +60,12 @@ Critical provider identity, quality, language, request-header and subtitle facts
 
 | Device | Dépôt / branche | Révision auditée | État | Transport runtime |
 | --- | --- | --- | --- | --- |
-| Android | `NuvioMedia/NuvioMobile` / `cmp-rewrite` | `04cfe4af95261873412c33791546a53e2b37e786` | **audited** | `composeApp/src/androidMain/kotlin/com/nuvio/app/features/addons/AddonPlatform.android.kt` |
-| iOS | `NuvioMedia/NuvioMobile` / `cmp-rewrite` | `04cfe4af95261873412c33791546a53e2b37e786` | **audited** | `composeApp/src/iosMain/kotlin/com/nuvio/app/features/addons/AddonPlatform.ios.kt` |
+| Android | `NuvioMedia/NuvioMobile` / `cmp-rewrite` | `fc05fe8e516a5bd749c8a4e7b1c05143acd3f031` | **audited** | `composeApp/src/androidMain/kotlin/com/nuvio/app/features/addons/AddonPlatform.android.kt` |
+| iOS | `NuvioMedia/NuvioMobile` / `cmp-rewrite` | `fc05fe8e516a5bd749c8a4e7b1c05143acd3f031` | **audited** | `composeApp/src/iosMain/kotlin/com/nuvio/app/features/addons/AddonPlatform.ios.kt` |
 | macOS | `NuvioMedia/NuvioDesktop` / `Dev` | `913c84787f8d866a2eea69f57813843a68020c49` | **audited** | `composeApp/src/desktopMain/kotlin/com/nuvio/app/features/addons/AddonPlatform.desktop.kt` |
 | Windows | `NuvioMedia/NuvioDesktop` / `Dev` | `913c84787f8d866a2eea69f57813843a68020c49` | **audited** | `composeApp/src/desktopMain/kotlin/com/nuvio/app/features/addons/AddonPlatform.desktop.kt` |
 | Linux | `NuvioMedia/NuvioDesktop` / `Dev` | `913c84787f8d866a2eea69f57813843a68020c49` | **audited** | `composeApp/src/desktopMain/kotlin/com/nuvio/app/features/addons/AddonPlatform.desktop.kt` |
-| Android TV | `NuvioMedia/NuvioTV` / `dev` | `60eb9602a4276b7e98ea04381626e22cc82de0ed` | **audited** | `app/src/full/java/com/nuvio/tv/core/plugin/PluginRuntime.kt` |
+| Android TV | `NuvioMedia/NuvioTV` / `dev` | `2c853c1786743822c5ec7932e855529e0c731221` | **audited** | `app/src/full/java/com/nuvio/tv/core/plugin/PluginRuntime.kt` |
 
 ## Lecture des états
 
