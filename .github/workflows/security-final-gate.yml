@@ -201,7 +201,7 @@ jobs:
             exit 1
           fi
 
-      # Release scope: active manifest/provenance references only; historical immutable artifacts remain visible to CodeQL.
+      # Release scope: active Global+France projection/provenance references only; historical immutable artifacts remain visible to CodeQL.
       - name: Gate release-reachable high and critical CodeQL alerts on main
         env:
           GH_TOKEN: ${{ github.token }}
@@ -214,28 +214,34 @@ jobs:
             "repos/${GITHUB_REPOSITORY}/code-scanning/alerts?state=open&ref=refs/heads/main&per_page=100" \
             --slurp > "$RUNNER_TEMP/codeql-open.json"
           python - <<'PY'
-          import json, os
+          import json, os, sys
           from pathlib import Path
+          sys.path.insert(0, str(Path('scripts').resolve()))
+          from current_provider_scope import projection_active_provider_rows
           pages=json.loads(Path(os.environ['RUNNER_TEMP']+'/codeql-open.json').read_text())
           alerts=[row for page in pages for row in (page if isinstance(page,list) else []) if isinstance(row,dict)]
 
-          active_provider_paths=set()
-          for manifest_path in (Path('manifest.json'),Path('vf/manifest.json'),Path('vostfr/manifest.json')):
-              if not manifest_path.is_file():
-                  continue
-              payload=json.loads(manifest_path.read_text(encoding='utf-8'))
-              for entry in payload.get('scrapers') or []:
-                  if isinstance(entry,dict):
-                      filename=str(entry.get('filename') or '')
-                      if filename.startswith('providers/'):
-                          active_provider_paths.add(filename)
+          active_rows=projection_active_provider_rows()
+          active_ids={
+              str(row.get('id') or '').strip().casefold().replace('_','-')
+              for row in active_rows
+              if isinstance(row,dict) and str(row.get('id') or '').strip()
+          }
+          active_provider_paths={
+              str(row.get('filename') or '').strip()
+              for row in active_rows
+              if isinstance(row,dict) and str(row.get('filename') or '').startswith('providers/')
+          }
 
           active_base_paths=set()
           provenance_path=Path('PROVENANCE.json')
           if provenance_path.is_file():
               provenance=json.loads(provenance_path.read_text(encoding='utf-8'))
-              for provider_row in (provenance.get('providers') or {}).values():
+              for provider_id, provider_row in (provenance.get('providers') or {}).items():
                   if not isinstance(provider_row,dict):
+                      continue
+                  canonical_id=str(provider_id or '').strip().casefold().replace('_','-')
+                  if canonical_id not in active_ids:
                       continue
                   base=str(provider_row.get('base_filename') or '')
                   published=str(provider_row.get('published_filename') or '')
