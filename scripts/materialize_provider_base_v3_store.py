@@ -65,7 +65,6 @@ def main() -> int:
     from provider_base_store import (
         CLEAN_RECONSTRUCTION_AUTHORING_VERSION,
         CLEAN_RECONSTRUCTION_SOURCE,
-        MANIFEST,
         PROVENANCE,
         canonical_id,
         persist_clean_provider_seed,
