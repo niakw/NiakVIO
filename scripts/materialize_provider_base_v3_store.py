@@ -40,9 +40,38 @@ def current_stream_sanitizer_version() -> int:
     return version
 
 
+SOURCE_MIGRATION_PATHS = (
+    ROOT / "scripts" / "provider_base_store.py",
+    ROOT / "scripts" / "apply_provider_overrides.py",
+    ROOT / "scripts" / "provider_patches" / "global_stream_presentation_v1.py",
+    ROOT / "scripts" / "provider_patches" / "mugiwarastream_packed_runtime_v1.py",
+)
+
+
+def _source_migration_snapshot() -> dict[Path, bytes]:
+    missing = [path for path in SOURCE_MIGRATION_PATHS if not path.is_file()]
+    if missing:
+        raise SystemExit(
+            "ProviderBase source-migration authority missing: "
+            + ",".join(str(path.relative_to(ROOT)) for path in missing)
+        )
+    return {path: path.read_bytes() for path in SOURCE_MIGRATION_PATHS}
+
+
 def prepare_runtime() -> None:
-    commands = (
-        ROOT / "scripts" / "sanitize_provider_v3_execution_routes_v1.py",
+    # Structured DATA sanitization is a normal materialization input and may
+    # converge provider-v3-static-knowledge.json. Common runtime/source
+    # migrations are different: routine materialization may validate them but
+    # must never silently manufacture source that is absent from the checked-in
+    # revision.
+    subprocess.run(
+        [sys.executable, str(ROOT / "scripts" / "sanitize_provider_v3_execution_routes_v1.py")],
+        cwd=ROOT,
+        check=True,
+    )
+
+    before = _source_migration_snapshot()
+    source_migrations = (
         ROOT / "scripts" / "upgrade_provider_base_runtime_v5.py",
         ROOT / "scripts" / "upgrade_provider_base_runtime_v10.py",
         ROOT / "scripts" / "harden_provider_base_html_text.py",
@@ -51,8 +80,19 @@ def prepare_runtime() -> None:
         ROOT / "scripts" / "upgrade_mugiwara_episode_failclosed_v2.py",
         ROOT / "scripts" / "upgrade_manual_tv_live_regressions_v34.py",
     )
-    for script in commands:
+    for script in source_migrations:
         subprocess.run([sys.executable, str(script)], cwd=ROOT, check=True)
+
+    changed = [
+        str(path.relative_to(ROOT))
+        for path, raw in before.items()
+        if path.read_bytes() != raw
+    ]
+    if changed:
+        raise SystemExit(
+            "ProviderBase source migrations are not fixed-point on checked-in authority: "
+            + ",".join(changed)
+        )
 
 
 def main() -> int:
