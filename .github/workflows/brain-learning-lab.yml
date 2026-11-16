@@ -1076,7 +1076,7 @@ jobs:
             --output-dir brain-sandbox/health-output
             --budget-minutes "${{ steps.learning-slot.outputs.budget_minutes }}"
             --reserve-minutes 5
-            --stream-safety-cap 2)
+            --stream-safety-cap 40)
           if [ -n "$TARGET_PROVIDER" ]; then args+=(--provider "$TARGET_PROVIDER"); fi
           if [ -n "$TARGET_PROVIDER_COHORT" ]; then args+=(--provider-filter "$TARGET_PROVIDER_COHORT"); fi
           budget_minutes="${{ steps.learning-slot.outputs.budget_minutes }}"
