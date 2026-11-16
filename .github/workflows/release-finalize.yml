@@ -7,6 +7,11 @@ on:
         description: Exact accepted main SHA to finalize
         required: true
         type: string
+      post_census:
+        description: Re-census exact finalized bytes before Brain Autopilot
+        required: false
+        default: false
+        type: boolean
   push:
     branches: [main]
     paths:
@@ -42,6 +47,7 @@ on:
 
 permissions:
   contents: write
+  actions: write
 
 concurrency:
   # Release finalization and Domain Refresh are both production writers and must
@@ -335,3 +341,17 @@ jobs:
           done
           echo 'FIELD_RELEASE_PUBLISH_BLOCKED reason=remote_did_not_converge' >&2
           exit 1
+
+      - name: Re-census lifecycle-finalized bytes before Brain
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.post_census == true }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh workflow run provider-census-sharded.yml \
+            --repo "$GITHUB_REPOSITORY" \
+            --ref main \
+            -f scope=all \
+            -f persist=true
+          echo "FIELD_RELEASE_POST_CENSUS_DISPATCH source_run=${GITHUB_RUN_ID} scope=all dispatched=true"
