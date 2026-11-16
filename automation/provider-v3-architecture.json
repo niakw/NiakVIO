@@ -1,5 +1,5 @@
 {
-  "schema_version": 7,
+  "schema_version": 8,
   "branch_contract": "provider-v3-clean-architecture",
   "provider_source_of_truth": {
     "runtime_artifacts": "providers/*.js",
@@ -299,5 +299,32 @@
     "projection_runtime_visible": "scripts/current_provider_scope.py:projection_runtime_visible_provider_ids",
     "native_acceptance": "scripts/current_provider_scope.py:projection_active_provider_ids",
     "native_acceptance_includes_france_only": true
+  },
+  "stream_multiplicity_contract": {
+    "provider_runtime_output_cap": 40,
+    "enumerate_announced_variants_before_final_cap": true,
+    "dimensions": [
+      "reader",
+      "server",
+      "source",
+      "language",
+      "quality"
+    ],
+    "first_success_short_circuit_allowed": false,
+    "dedupe_key": "url+required_request_headers",
+    "terminal_validation_max_playback_identities": 40,
+    "native_probe_batch": 4,
+    "explicit_quality_requires_media_evidence": true,
+    "measured_hls_quality_overrides_claimed_quality": true,
+    "mandatory_regression_fixtures": [
+      "spartacus-s00e01"
+    ],
+    "season_zero_is_valid": true,
+    "season_zero_may_fallback_to_one": false,
+    "tests": [
+      "tests/provider_stream_multiplicity_contract_test.py",
+      "tests/stream_output_sanitizer_multi_variant_test.py",
+      "tests/special_season_zero_identity_test.py"
+    ]
   }
 }
