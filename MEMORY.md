@@ -1,3 +1,11 @@
+## 2026-11-16 — Repair runtime-plan and route-merge authority now include strict France-only providers
+
+- NiakVIO-first architecture audit found two remaining Global-only boundaries inside the canonical Repair pipeline even though target selection/materialization already used the Global+France union. `provider_runtime_plan_lkg_v1.py` captured baseline-verified runtime plans from root `manifest.json` only, and `merge_provider_repair_report_v6.py` derived current-active cardinality from the same Global projection. A France-only target such as Frenchstream/HiAnime/Stigstream could therefore enter Repair correctly but lose its published-plan prior or be rejected as outside the merge scope before Brain/application.
+- Commit `1f6e858f` makes V6 merge use `projection_active_provider_ids()` whenever the canonical repository manifest is requested; explicit custom manifests remain supported for isolated tests. `scopeAuthority` now records the Global+France active projection union.
+- Commit `e505faeb` makes runtime-plan LKG capture index the canonical active Global+France rows on the real repository, with normalized France provider paths; explicit temporary roots/manifests retain their isolated behavior.
+- Regression commits `1b546e9a` and `44804507` add synthetic strict-France-only witnesses to both boundaries. No route, proof, provider byte or playback result is fabricated; France-only providers merely stop disappearing before ordinary Repair validation.
+- The projection/reconstruction runs that started on `95f53e3` / `61a4b20` are retained as diagnostics but are superseded for exact-head certification by these NiakVIO control-plane fixes. Fresh gates are required before returning priority to Brain-LLM.
+
 ## 2026-11-16 — Anime migration regression now distinguishes detector text from executable transport
 
 - Reconstruction run `43976748312` passed clean ProviderBase materialization and most architecture contracts, then failed `provider_anime_semantic_transport_contract_test.py` because the test searched the entire validation-only migration function for the retired anime→TMDB transport literal. The migration intentionally stores that exact literal in its `forbidden` tuple so it can reject a future regression; it never executes or writes that transport and returns `False`.
