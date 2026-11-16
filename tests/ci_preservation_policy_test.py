@@ -145,7 +145,7 @@ assert 'manifest activation differs from providers/ authority' in result.stderr
 assert 'non-target provider unexpectedly enabled: b' in result.stderr
 
 # official_hub itself is not activation authority; registry-only targets are legal.
-assert 'FIELD_ACTIVATION_HUB46_REGISTRY_ONLY' in validator_source
+assert 'FIELD_ACTIVATION_SCOPE_REGISTRY_ONLY' in validator_source
 
 
 # Verified manifest-language fallback regression tests.
