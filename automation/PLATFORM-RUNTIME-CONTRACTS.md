@@ -108,7 +108,7 @@ Le check CI `python3 scripts/render_platform_runtime_contracts.py --check` garan
 - Repository : `composeApp/src/fullCommonMain/kotlin/com/nuvio/app/features/plugins/PluginRepository.kt`
 - Transport : `composeApp/src/androidMain/kotlin/com/nuvio/app/features/addons/AddonPlatform.android.kt`
 - Modèle de résultat : `composeApp/src/commonMain/kotlin/com/nuvio/app/features/plugins/PluginModels.kt`
-- Note d'audit : Exact current-source re-audit at NuvioMobile 04cfe4af9526. PluginModels and StreamFetchSupport remain byte-identical to the September audited ABI. PluginRuntime is refactored through HostFunctions/JsBindings but preserves positional getStreams, full result-list mapping, stream/subtitle headers and now exposes TMDB_API_KEY from TmdbSettingsRepository.effectiveApiKey().
+- Note d'audit : Exact current-source re-audit at NuvioMobile fc05fe8e516a. Provider/runtime bridge paths remain byte-identical to the prior audit and preserve positional getStreams, full result-list mapping, stream/subtitle headers and the TMDB_API_KEY bridge. The only new Mobile diff is Android MPV player integration/dependency code.
 
 ### iOS
 
@@ -116,7 +116,7 @@ Le check CI `python3 scripts/render_platform_runtime_contracts.py --check` garan
 - Repository : `composeApp/src/fullCommonMain/kotlin/com/nuvio/app/features/plugins/PluginRepository.kt`
 - Transport : `composeApp/src/iosMain/kotlin/com/nuvio/app/features/addons/AddonPlatform.ios.kt`
 - Modèle de résultat : `composeApp/src/commonMain/kotlin/com/nuvio/app/features/plugins/PluginModels.kt`
-- Note d'audit : Exact current-source re-audit at NuvioMobile 04cfe4af9526. PluginModels and StreamFetchSupport remain byte-identical to the September audited ABI. PluginRuntime is refactored through HostFunctions/JsBindings but preserves positional getStreams, full result-list mapping, stream/subtitle headers and now exposes TMDB_API_KEY from TmdbSettingsRepository.effectiveApiKey().
+- Note d'audit : Exact current-source re-audit at NuvioMobile fc05fe8e516a. Provider/runtime bridge paths remain byte-identical to the prior audit and preserve positional getStreams, full result-list mapping, stream/subtitle headers and the TMDB_API_KEY bridge. The only new Mobile diff is Android MPV player integration/dependency code.
 
 ### macOS
 
@@ -148,7 +148,7 @@ Le check CI `python3 scripts/render_platform_runtime_contracts.py --check` garan
 - Repository : `app/src/full/java/com/nuvio/tv/core/plugin/PluginManager.kt`
 - Transport : `app/src/full/java/com/nuvio/tv/core/plugin/PluginRuntime.kt`
 - Modèle de résultat : `app/src/main/java/com/nuvio/tv/domain/model/Plugin.kt`
-- Note d'audit : Exact current-source re-audit at NuvioTV 60eb9602a427. Positional getStreams, BuildConfig TMDB_API_KEY injection, stream/subtitle header preservation and the QuickJS runtime contract remain. Native fetch adds explicit body-kind/redirect handling and result projection adds audioDelayMs/audioDelayLanguage without breaking the shared provider ABI.
+- Note d'audit : Exact current-source re-audit at NuvioTV 2c853c178674. Positional getStreams, BuildConfig TMDB_API_KEY injection, stream/subtitle header preservation and the QuickJS runtime contract remain unchanged. The new TV commits only adjust episode-ratings alignment and bump the app to 1.2.0-beta.2; provider/plugin/runtime transport paths are unchanged.
 
 ## Évidence croisée Native + tests utilisateur
 
