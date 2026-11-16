@@ -108,6 +108,7 @@ with tempfile.TemporaryDirectory() as tmp_name:
         "schemaVersion": 3,
         "providers": [
             {"provider": "alpha", "file": "providers/alpha.js", "sha256": "1" * 64},
+            {"provider": "fr-only", "file": "providers/fr-only.js", "sha256": "5" * 64},
             {"provider": "inactive", "file": "providers/inactive.js", "sha256": "2" * 64},
         ],
         "providerCount": 2,
@@ -115,10 +116,10 @@ with tempfile.TemporaryDirectory() as tmp_name:
     }), encoding="utf-8")
 
     old_report = one.allmat.DEFAULT_REPORT
-    old_active = one.active_provider_ids
+    old_active = one.projection_active_provider_ids
     try:
         one.allmat.DEFAULT_REPORT = report_path
-        one.active_provider_ids = lambda: {"alpha", "movy", "chillflix"}
+        one.projection_active_provider_ids = lambda: {"alpha", "movy", "chillflix", "fr-only"}
         ledger = one.upsert_materialization_report({
             "provider": "movy",
             "file": "providers/movy-new.js",
@@ -127,18 +128,19 @@ with tempfile.TemporaryDirectory() as tmp_name:
         })
     finally:
         one.allmat.DEFAULT_REPORT = old_report
-        one.active_provider_ids = old_active
+        one.projection_active_provider_ids = old_active
 
     rows = {row["provider"]: row for row in ledger["providers"]}
-    assert set(rows) == {"alpha", "movy"}, rows
+    assert set(rows) == {"alpha", "fr-only", "movy"}, rows
     assert rows["movy"]["file"] == "providers/movy-new.js"
-    assert ledger["providerCount"] == 2
-    assert ledger["activeProviderIdentityCount"] == 3
-    assert ledger["expectedProviderCount"] == 3
+    assert rows["fr-only"]["file"] == "providers/fr-only.js", "France-only active row retained"
+    assert ledger["providerCount"] == 3
+    assert ledger["activeProviderIdentityCount"] == 4
+    assert ledger["expectedProviderCount"] == 4
     assert ledger["targetedMaterializedProviders"] == ["movy"]
     persisted = json.loads(report_path.read_text(encoding="utf-8"))
-    assert persisted["providerCount"] == 2
-    assert persisted["expectedProviderCount"] == 3
+    assert persisted["providerCount"] == 3
+    assert persisted["expectedProviderCount"] == 4
 
 print("targeted ledger upsert passed: exact provider row persisted, stale inactive row dropped, incomplete active scope remains explicit")
 
