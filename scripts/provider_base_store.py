@@ -4482,11 +4482,14 @@ async function _spv4FullStory(detailUrl, meta, mediaType, season, episode) {
       if (index >= 0 && index < players.length && /^\d+$/.test(players[index])) {
         return _streams(["https://video.sibnet.ru/shell.php?videoid=" + players[index]], detailUrl).slice(0, 4);
       }
+      /* NIAKVIO_PROVIDER_DLE_FULL_STORY_COVERAGE_V31 */
+      const streams = [];
       const urls = _spv4AttrUrls(html, target);
       const direct = _spv4DirectStreams(urls, target);
-      if (direct.length) return direct;
+      if (direct.length) streams.push(...direct);
       const nested = await _spv4NestedStreams(urls, target);
-      if (nested.length) return nested;
+      if (nested.length) streams.push(...nested);
+      if (streams.length) return _dedupeStreamRows(streams).slice(0, 40);
     } catch (_) {}
   }
   return [];
