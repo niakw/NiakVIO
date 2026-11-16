@@ -29,7 +29,7 @@ from typing import Any
 import materialize_provider_v3_all as allmat
 import refresh_authoritative_hub_domains as refresh
 import resolve_provider_hubs as resolver
-from current_provider_scope import active_provider_ids, runtime_visible_provider_count, runtime_visible_provider_ids
+from current_provider_scope import projection_active_provider_ids
 from provider_patch_blocks import (
     decode_managed_data,
     owned_span,
@@ -43,10 +43,10 @@ CONFIG_PATH = ROOT / "provider-overrides.json"
 REGISTRY_PATH = ROOT / "provider-hubs.json"
 HISTORY_PATH = ROOT / "provider-domain-history.json"
 MANIFEST_PATH = ROOT / "manifest.json"
+CATALOG_PATH = ROOT / "provider_catalog.json"
 MATERIALIZATION_PATH = ROOT / "provider-v3-materialization.json"
 STATIC_KNOWLEDGE_PATH = ROOT / "automation" / "provider-v3-static-knowledge.json"
 PROVIDERS_DIR = ROOT / "providers"
-CURRENT_PROVIDER_COUNT = runtime_visible_provider_count()
 
 DOMAIN_PATCH_FIELDS = {
     "official_site",
@@ -78,6 +78,65 @@ def write(path: Path, value: Any) -> None:
 
 def canonical(value: object) -> str:
     return str(value or "").strip().casefold()
+
+
+def active_publication_documents() -> tuple[
+    dict[str, Any],
+    dict[str, Any],
+    dict[str, tuple[dict[str, Any], str]],
+]:
+    """Resolve exact active Global+France publication rows.
+
+    Global publication authority remains manifest.json. Strict France-only
+    identities remain first-class rows in provider_catalog.json and are never
+    inserted into Global. The materialization ledger is the active union, so
+    Domain Refresh must use the same identity set before it can rewrite CONFIG
+    bytes or judge publication drift.
+    """
+    manifest = load(MANIFEST_PATH)
+    catalog = load(CATALOG_PATH)
+    publication: dict[str, tuple[dict[str, Any], str]] = {}
+
+    for row in manifest.get("scrapers") or []:
+        if not isinstance(row, dict):
+            continue
+        provider_id = canonical(row.get("id"))
+        if not provider_id:
+            continue
+        if provider_id in publication:
+            raise RuntimeError(f"duplicate Global provider identity: {provider_id}")
+        publication[provider_id] = (row, "global-manifest")
+
+    for record in catalog.get("providers") or []:
+        if not isinstance(record, dict):
+            continue
+        scraper = record.get("scraper")
+        projections = record.get("projections")
+        if not isinstance(scraper, dict) or not isinstance(projections, dict):
+            continue
+        if projections.get("general") is not False or projections.get("vf") is not True:
+            continue
+        provider_id = canonical(record.get("canonicalId") or scraper.get("id"))
+        if not provider_id:
+            raise RuntimeError("France-only catalogue row has no provider identity")
+        if provider_id in publication:
+            raise RuntimeError(
+                f"{provider_id}: France-only catalogue identity collides with Global"
+            )
+        publication[provider_id] = (scraper, "france-only-catalog")
+
+    active_ids = set(projection_active_provider_ids())
+    missing = sorted(active_ids - set(publication))
+    if missing:
+        raise RuntimeError(
+            "Domain Refresh active projection authority missing providers: "
+            + ",".join(missing)
+        )
+    active_publication = {
+        provider_id: publication[provider_id]
+        for provider_id in sorted(active_ids)
+    }
+    return manifest, catalog, active_publication
 
 
 def domain_host(value: object) -> str:
