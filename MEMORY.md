@@ -1,3 +1,9 @@
+## 2026-11-16 — Canonical release no longer bypasses current Nuvio upstream freshness
+
+- NiakVIO métier audit found a direct contradiction between machine/documented release policy and the canonical writer: `.github/workflows/release-finalize.yml` still exported `NUVIO_SKIP_CLIENT_UPSTREAM_GUARD=1` at job scope. The explicit `check_nuvio_client_upstreams.py` step still ran, but later `validate_platform_runtime_policy.py` and `sync_release_versions.py` could skip/refrain from the same upstream guard through that inherited environment, so the release transaction was not uniformly fail-closed on current client freshness.
+- Commit `bce15d66` removes the job-wide bypass. Commit `6080613a` adds a regression to `tests/release_finalizer_projection_transaction_test.py` forbidding `NUVIO_SKIP_CLIENT_UPSTREAM_GUARD` in the canonical finalizer. Domain Refresh keeps its separately scoped bypass until its own transaction is audited; this change is release-finalizer-only.
+- No provider proof, playback or FULL status is promoted. A fresh exact-head reconstruction/finalizer must prove that current Nuvio upstream verification, ProviderBase/Core fixed point, reverse rebuild, release integrity and five-client native certification all complete without the bypass.
+
 ## 2026-11-16 — Final September writer retired; Core V10 policy and CI are now single-source
 
 - The remaining September-only direct writer `publish-final-seven-audit-short.yml` was retired in `de18915c` and its return is forbidden by `13b960fa`. Its 2026-09-15 seven-provider audit JSON remains durable historical evidence; only the manually dispatchable workflow that could republish frozen evidence onto current `main` was removed.
