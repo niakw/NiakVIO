@@ -13,6 +13,7 @@ sys.path.insert(0, str(ROOT / "scripts"))
 SCRIPT = ROOT / "scripts" / "check_nuvio_client_upstreams.py"
 BRAIN_GUARD = ROOT / "scripts" / "guard_nuvio_client_brain_compat.py"
 CONFIG = ROOT / "automation" / "nuvio-client-upstreams.json"
+SOURCES = ROOT / "sources.json"
 DESKTOP_CANARY = ROOT / ".github" / "workflows" / "native-desktop-reader-acceptance.yml"
 
 spec = importlib.util.spec_from_file_location("nuvio_client_upstream_guard", SCRIPT)
@@ -118,7 +119,10 @@ def main() -> int:
     assert "patch_files = [name for name in files if path_matches(name, patch_rules)]" in source
     assert "COMPATIBILITY_MATRIX" in source
     assert 'matrix_row.get("current_audited")' in source
-    assert module.validate_config(json.loads(CONFIG.read_text(encoding="utf-8"))) == []
+    current_config = json.loads(CONFIG.read_text(encoding="utf-8"))
+    current_sources = json.loads(SOURCES.read_text(encoding="utf-8"))
+    assert module.validate_config(current_config) == []
+    assert module.validate_sources(current_config, current_sources) == []
 
     # The Desktop upstream checker must not compare every blob just to learn
     # names. Git's rename detector may lazily fetch an entire filtered client
