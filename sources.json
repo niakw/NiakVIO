@@ -14,8 +14,8 @@
     "preserve_external_enabled_state": false,
     "auto_disable_only_after_repeated_confirmed_media_endpoint_outages": true,
     "strict_health_activation": true,
-    "enabled_status": "healthy or curated reachable",
-    "minimum_score_enabled": 70,
+    "enabled_status": "provider-folder lifecycle with proof-driven activation; first activation requires current provider access and verified playable payload",
+    "minimum_score_enabled": 55,
     "minimum_reachable_streams": 1,
     "minimum_healthy_fixtures": 1,
     "publish_unconfirmed_providers_disabled": true,
@@ -74,7 +74,9 @@
     "stream_dedupe_identity": "url+required_request_headers",
     "first_playable_stream_ends_discovery": false,
     "minimum_effective_height_authority": "health-config.json:activation.minimum_effective_height",
-    "language_evidence_authority": "health-config.json activation plus observed stream/player metadata"
+    "language_evidence_authority": "health-config.json activation plus observed stream/player metadata",
+    "activation_authority": "providers/ vs provider-disabled/ lifecycle plus explicit proof-driven onboarding/reactivation transactions",
+    "quick_deep_mutation_authority": false
   },
   "exclusions": {
     "provider_ids": [
