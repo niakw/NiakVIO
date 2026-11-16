@@ -14,7 +14,7 @@ spec = importlib.util.spec_from_file_location("prepare_native_reader_acceptance"
 mod = importlib.util.module_from_spec(spec)
 assert spec.loader is not None
 spec.loader.exec_module(mod)
-from scripts.current_provider_scope import projection_active_provider_ids
+from current_provider_scope import projection_active_provider_ids
 
 
 def source(client: str) -> str:
