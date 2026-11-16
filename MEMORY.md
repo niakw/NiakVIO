@@ -1,3 +1,11 @@
+## 2026-11-16 — Active episodic provider Blocs now preserve S00 and AniKoto Runtime V1 is retired
+
+- The NiakVIO-first métier audit extended the existing season-zero contract from canonical TV-only provider Blocs to **all active episodic TV + anime Blocs**. The previous regression denominator missed anime-only providers because `canonicalSupportedTypes=[anime]` is semantically correct even when `supportedTypes` also exposes the TV launch alias.
+- Active runtime inspection found three provider Blocs still collapsing `season=0` through JavaScript truthiness: AniKotoTV Runtime V2, MugiwaraStream and Sekai. Commits `e968d4a2`, `4fd04791` and `1ff93412` replace truthy fallbacks with explicit non-negative coordinate handling: season accepts zero, episode remains >=1.
+- The same audit found AniKotoTV still executed **both Runtime V2 and retired Runtime V1** because the historical batch migration appended V2 without removing V1. Commit `7cceed5a` makes that migration remove the V1 Bloc/options and require unique V2 authority. `7022a17b` widens the generic S00 scanner to active TV+anime Blocs and `1b0bc05d` locks AniKoto V2-only DATA authority.
+- Canonical migration consolidation run `43978462774` completed SUCCESS and persisted `f6c8bfe19988aae60dfa014d9c4080cbc5d61530`. Read-back proves AniKotoTV now has exactly one executable provider Bloc, `anikototv_runtime_v2.py`, no V1 options, and only the current TMDB mapping -> MegaPlay -> getSources routes.
+- This is base/runtime-contract correction, not a Brain repair and not playback proof. Provider bytes must be rematerialized from this exact authority, then reverse rebuild/current-byte census/finalizer/native S00 proof must pass before certification.
+
 ## 2026-11-16 — September métier parity audit is now versioned
 
 - `docs/audits/NIAKVIO_METIER_SEPTEMBER_PARITY_2026-11-16.md` records the source-backed structural comparison against September ref `ee746ed5...`.
