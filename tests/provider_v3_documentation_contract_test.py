@@ -125,7 +125,7 @@ assert "material_ids==active_ids" in manual
 assert "==46" not in manual and "46/46" not in manual
 
 
-assert machine["schema_version"] >= 8
+assert machine["schema_version"] >= 10
 source = machine["provider_source_of_truth"]
 assert source["canonical_provider_base_marker"] == "NIAKVIO_PROVIDER_BASE_OWNED_V3"
 assert source["legacy_provider_js_seed_allowed"] is False
@@ -210,11 +210,12 @@ assert "quarantined" not in machine["provider_plan_contract"]
 
 plan = machine["provider_plan_contract"]
 assert "catalogue_provider_count" not in plan
-assert plan["provider_scope_authority"] == "scripts/current_provider_scope.py:visible_provider_ids"
+assert plan["provider_scope_authority"] == "scripts/current_provider_scope.py:projection_visible_provider_ids"
 assert plan["historical_provider_count"] == HISTORICAL_PROVIDER_COUNT
 assert plan["historical_provider_directory"] == "provider-old"
 assert plan["disabled_providers_are_audited"] is True
-assert plan["runtime_scope_authority"] == "scripts/current_provider_scope.py:runtime_visible_provider_ids"
+assert plan["runtime_scope_authority"] == "scripts/current_provider_scope.py:projection_runtime_visible_provider_ids"
+assert plan["france_only_first_class"] is True
 assert plan["pending_scope_authority"] == "scripts/current_provider_scope.py:pending_provider_ids"
 assert plan["pending_staging_is_executable"] is False
 assert plan["pending_staging_requires_lifecycle_timestamps"] is False
