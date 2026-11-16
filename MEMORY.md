@@ -1,3 +1,10 @@
+## 2026-11-16 — Retired batch workbench workflow no longer blocks canonical reconstruction
+
+- Exact-head Workflow Gate run `43930687745` failed after the current Provider-v3 finalization contract passed because `tests/provider_v3_batch_diagnostic_contract_test.py` still opened the deleted `.github/workflows/provider-v3-batch-diagnostic.yml`.
+- That stale test also required direct persistence through `workbench/provider-v3-recognition-routes-data`, while current architecture/documentation explicitly forbids that historical workbench branch as execution authority. The canonical owner is `.github/workflows/provider-v3-reconstruct-all.yml`: live providers advance sequentially through `reconstruct_provider_v3_sequential_live.py`, reverse rebuild is mandatory, artifacts are uploaded, and an optional commit is allowed only to an explicitly selected non-main branch.
+- Commit `c96e0b9b` keeps the bounded batch diagnostic script as a non-publishing workbench helper but replaces the obsolete workflow/persistence assertions with canonical reconstruction, reverse-proof and direct-main-denial assertions. No provider bytes, routes, DATA, proof thresholds or activation state changed.
+- Fresh exact-head Workflow Gate and reconstruction remain required; do not interpret the former missing-workflow failure as a provider or runtime failure.
+
 ## 2026-11-16 — Sequential validator migrations are semantic floors, not source snapshots
 
 - Current reconstruction advanced through active-only live-route scope and then failed in `provider_v3_finalization_plan_test.py`: the historical preserve-validated-DATA V3 migration still demanded the exact three-state `blockedNon2xxPlanPreserved` source literal. Current validator legitimately extends both non-2xx preservation predicates with `resample-required`.
