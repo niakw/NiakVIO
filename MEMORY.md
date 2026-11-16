@@ -1,3 +1,8 @@
+## 2026-11-16 — Triggered causal-family Learning after ProviderBase wiring fix
+
+- Source parent `3f28a81e376d37a58770f9cef8046471ed9716a9` passed Provider Non-Regression 43781828694. Workflow Gate 43781828750 reached architecture contracts and then failed on the pre-existing Chillflix freshness gate; no failure from the ProviderBase workflow contract was reported.
+- Refresh the official `.github/triggers/brain-learning-reconstruction` cohort trigger for the existing 12-provider causal-family frontier. The run must prove that all selected NiakVIO objects survive into the clean reconstruction stage before any repair result is interpreted. This trigger does not authorize provider publication or bypass identity/playback gates.
+
 ## 2026-11-16 — Fast-Handoff ProviderBase reconstruction restored to structured NiakVIO authority
 
 - Brain Learning runs 43767643223 and 43768412945 observed 11/11 then 12/12 selected published identities, but the later clean reconstruction stage lost most of the same providers before ProviderBase materialization. Root cause in workflow wiring: the initial Fast-Handoff stage already used local structured authority, while the clean ProviderBase stage invoked `discover_candidates.py --clean-reconstruction` without `--local-catalog-only`, reintroducing external discovery as an accidental prerequisite.
