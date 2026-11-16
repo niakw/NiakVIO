@@ -14,86 +14,123 @@
     "terminalPlaybackRequiredForActiveCurrentBytes": true,
     "bulkOnboardingPendingGetsTargetedProofWithoutRuntimeAuthority": true
   },
-  "providerCount": 95,
-  "repairEligible": [
-    "anikototv",
-    "castle",
-    "french-manga",
-    "movy",
-    "mugiwarastream",
-    "neko-sama",
-    "papadustream",
-    "purstream",
-    "sekai",
-    "streamzo"
-  ],
+  "providerCount": 140,
+  "projectionScope": "Global+France visible union",
+  "repairEligible": [],
   "repairBlocked": [
+    "1jour1film0626",
     "4khdhub",
     "67movies",
     "7movies",
+    "aether",
     "all-you-can-watch",
     "allanime",
     "allwish",
     "anidb",
     "aniflix-uno",
+    "anikototv",
     "anime-sama",
     "anime-ultime",
     "animejlprovider",
     "animekai",
+    "animeko",
+    "animeonsen",
     "animesalt",
     "animesama-co",
     "animesultra",
     "animevost-fr",
     "animevostfr",
+    "anisama",
     "arrowtv",
     "asiaflix",
     "bcine",
     "boredflix",
+    "castle",
     "chillflix",
+    "cineflux",
     "cinegram",
     "cinejoy",
     "cinemabz",
+    "cinematheque-de-bretagne",
+    "cinestream",
+    "cinetimes",
     "coflix",
     "corsflix",
+    "cpasmal",
+    "dessinanime",
     "diostream",
     "documentary-area",
+    "dotriv",
+    "dpstream",
+    "dulourd",
     "emnexmovies",
+    "fawesome",
+    "fexini",
+    "film-a-revoir",
     "flemmix",
     "flickystream",
     "flikhub",
     "flixer",
     "flixhq",
+    "franime",
+    "frembed",
+    "french-anime",
+    "french-manga",
+    "frenchstream",
     "fsharetv",
+    "fullanime",
     "hexa",
+    "hianime",
     "hindmoviez",
     "ihavenotv",
+    "ilmiv",
     "internet-archive",
     "kehflix",
     "kickassanime",
+    "kidraz",
     "kisskh",
+    "kordoz",
     "kurage",
     "latestmovies",
     "mallumv",
     "meowtv",
+    "moiflix",
     "moviebite",
     "moviebox",
     "movieshunt",
     "moviesmod",
     "movish",
+    "movix-fr",
+    "movy",
+    "mugiwarastream",
+    "myfluneo",
+    "nakastream",
+    "nakios",
+    "neko-sama",
+    "neobam",
     "neonflix",
     "nomorflix",
+    "openflix",
     "overlook",
+    "papadustream",
     "persianstremio",
     "playimdb",
     "primewire",
     "pstream",
+    "purstream",
     "rarefilmm",
     "reanime-to",
     "rivestream",
     "rivestream-app",
     "rivestream-ru",
+    "sadisflix",
+    "sekai",
     "sflix",
+    "showbox",
     "shuttletv",
+    "skstream",
+    "stigstream",
+    "streamzo",
     "svstream",
     "topcartoons",
     "uhdmovies",
@@ -106,83 +143,37 @@
     "voiranime",
     "voiranime-homes",
     "voiranime-rip",
+    "voirserie",
     "vostfree",
     "vuflix",
     "watch-cartoon-online",
     "watchott",
+    "waveanime",
+    "webflix",
     "willow",
     "wookafr",
-    "yflix"
+    "wowfilms0626",
+    "yablom",
+    "yflix",
+    "youtitou",
+    "zone-streaming",
+    "zone-telechargement"
   ],
   "disabledNow": [],
   "providers": [
     {
-      "provider": "anime-sama",
-      "action": "KEEP_DISABLED",
+      "provider": "1jour1film0626",
+      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
       "repairEligible": false,
-      "confidence": "terminal",
-      "authorityClass": "disabled",
+      "confidence": "current-byte-production-proof",
+      "authorityClass": "current-architecture-nonfunctional",
       "failureCount": 0,
       "reasons": [
-        "already_disabled"
-      ]
-    },
-    {
-      "provider": "purstream",
-      "action": "KEEP_BACKEND",
-      "repairEligible": true,
-      "confidence": "high",
-      "authorityClass": "api-or-backend",
-      "failureCount": 0,
-      "backendUrls": [
-        "https://api.purstream.ad/api/v1"
-      ],
-      "reasons": [
-        "structured_backend_authority"
-      ]
-    },
-    {
-      "provider": "flemmix",
-      "action": "KEEP_DISABLED",
-      "repairEligible": false,
-      "confidence": "terminal",
-      "authorityClass": "disabled",
-      "failureCount": 0,
-      "reasons": [
-        "already_disabled"
-      ]
-    },
-    {
-      "provider": "uhdmovies",
-      "action": "KEEP_DISABLED",
-      "repairEligible": false,
-      "confidence": "terminal",
-      "authorityClass": "disabled",
-      "failureCount": 0,
-      "reasons": [
-        "already_disabled"
-      ]
-    },
-    {
-      "provider": "movieshunt",
-      "action": "KEEP_DISABLED",
-      "repairEligible": false,
-      "confidence": "terminal",
-      "authorityClass": "disabled",
-      "failureCount": 0,
-      "reasons": [
-        "already_disabled"
-      ]
-    },
-    {
-      "provider": "hindmoviez",
-      "action": "KEEP_DISABLED",
-      "repairEligible": false,
-      "confidence": "terminal",
-      "authorityClass": "disabled",
-      "failureCount": 0,
-      "reasons": [
-        "already_disabled"
+        "direct_candidate_unproven",
+        "search_supplement_only",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:HARNESS/ENV BLOCKED"
       ]
     },
     {
@@ -197,7 +188,66 @@
       ]
     },
     {
-      "provider": "persianstremio",
+      "provider": "67movies",
+      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "repairEligible": false,
+      "confidence": "current-byte-production-proof",
+      "authorityClass": "current-architecture-nonfunctional",
+      "failureCount": 0,
+      "reasons": [
+        "direct_candidate_unproven",
+        "search_supplement_only",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:PROVIDER NETWORK BLOCKED"
+      ]
+    },
+    {
+      "provider": "7movies",
+      "action": "ONBOARDING_PENDING",
+      "repairEligible": false,
+      "confidence": "onboarding-pending",
+      "authorityClass": "onboarding-pending",
+      "failureCount": 0,
+      "reasons": [
+        "bulk_onboarding_pending"
+      ]
+    },
+    {
+      "provider": "aether",
+      "action": "ONBOARDING_PENDING",
+      "repairEligible": false,
+      "confidence": "onboarding-pending",
+      "authorityClass": "onboarding-pending",
+      "failureCount": 0,
+      "reasons": [
+        "bulk_onboarding_pending"
+      ]
+    },
+    {
+      "provider": "all-you-can-watch",
+      "action": "ONBOARDING_PENDING",
+      "repairEligible": false,
+      "confidence": "onboarding-pending",
+      "authorityClass": "onboarding-pending",
+      "failureCount": 0,
+      "reasons": [
+        "bulk_onboarding_pending"
+      ]
+    },
+    {
+      "provider": "allanime",
+      "action": "KEEP_DISABLED",
+      "repairEligible": false,
+      "confidence": "terminal",
+      "authorityClass": "disabled",
+      "failureCount": 0,
+      "reasons": [
+        "manual_off_zero_playable_anime_2026-11-14_cohort2"
+      ]
+    },
+    {
+      "provider": "allwish",
       "action": "KEEP_DISABLED",
       "repairEligible": false,
       "confidence": "terminal",
@@ -208,25 +258,84 @@
       ]
     },
     {
-      "provider": "kehflix",
-      "action": "KEEP_DISABLED",
+      "provider": "anidb",
+      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
       "repairEligible": false,
-      "confidence": "terminal",
-      "authorityClass": "disabled",
+      "confidence": "current-byte-production-proof",
+      "authorityClass": "current-architecture-nonfunctional",
       "failureCount": 0,
       "reasons": [
-        "already_disabled"
+        "direct_candidate_unproven",
+        "search_supplement_only",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:CHAIN REACHED"
+      ]
+    },
+    {
+      "provider": "aniflix-uno",
+      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "repairEligible": false,
+      "confidence": "current-byte-production-proof",
+      "authorityClass": "current-architecture-nonfunctional",
+      "failureCount": 0,
+      "reasons": [
+        "direct_candidate_unproven",
+        "search_supplement_only",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:NO PROOF"
       ]
     },
     {
       "provider": "anikototv",
-      "action": "KEEP_ROUTE_AUTHORITY",
-      "repairEligible": true,
-      "confidence": "high",
-      "authorityClass": "hub-or-redirect",
+      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "repairEligible": false,
+      "confidence": "current-byte-production-proof",
+      "authorityClass": "current-architecture-nonfunctional",
       "failureCount": 0,
       "reasons": [
-        "authoritative_route_source"
+        "authoritative_route_source",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:FULL OK"
+      ]
+    },
+    {
+      "provider": "anime-sama",
+      "action": "KEEP_DISABLED",
+      "repairEligible": false,
+      "confidence": "terminal",
+      "authorityClass": "disabled",
+      "failureCount": 0,
+      "reasons": [
+        "already_disabled"
+      ]
+    },
+    {
+      "provider": "anime-ultime",
+      "action": "KEEP_DISABLED",
+      "repairEligible": false,
+      "confidence": "terminal",
+      "authorityClass": "disabled",
+      "failureCount": 0,
+      "reasons": [
+        "already_disabled"
+      ]
+    },
+    {
+      "provider": "animejlprovider",
+      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "repairEligible": false,
+      "confidence": "current-byte-production-proof",
+      "authorityClass": "current-architecture-nonfunctional",
+      "failureCount": 0,
+      "reasons": [
+        "direct_candidate_unproven",
+        "search_supplement_only",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:HARNESS/ENV BLOCKED"
       ]
     },
     {
@@ -238,6 +347,32 @@
       "failureCount": 0,
       "reasons": [
         "already_disabled"
+      ]
+    },
+    {
+      "provider": "animeko",
+      "action": "ONBOARDING_PENDING",
+      "repairEligible": false,
+      "confidence": "onboarding-pending",
+      "authorityClass": "onboarding-pending",
+      "failureCount": 0,
+      "reasons": [
+        "bulk_onboarding_pending"
+      ]
+    },
+    {
+      "provider": "animeonsen",
+      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "repairEligible": false,
+      "confidence": "current-byte-production-proof",
+      "authorityClass": "current-architecture-nonfunctional",
+      "failureCount": 0,
+      "reasons": [
+        "direct_candidate_unproven",
+        "search_supplement_only",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:HARNESS/ENV BLOCKED"
       ]
     },
     {
@@ -274,6 +409,17 @@
       ]
     },
     {
+      "provider": "animevost-fr",
+      "action": "KEEP_DISABLED",
+      "repairEligible": false,
+      "confidence": "terminal",
+      "authorityClass": "disabled",
+      "failureCount": 0,
+      "reasons": [
+        "manual_off_zero_playable_anime_2026-11-14"
+      ]
+    },
+    {
       "provider": "animevostfr",
       "action": "KEEP_DISABLED",
       "repairEligible": false,
@@ -285,17 +431,191 @@
       ]
     },
     {
+      "provider": "anisama",
+      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "repairEligible": false,
+      "confidence": "current-byte-production-proof",
+      "authorityClass": "current-architecture-nonfunctional",
+      "failureCount": 0,
+      "reasons": [
+        "direct_candidate_unproven",
+        "search_supplement_only",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:FULL OK"
+      ]
+    },
+    {
+      "provider": "arrowtv",
+      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "repairEligible": false,
+      "confidence": "current-byte-production-proof",
+      "authorityClass": "current-architecture-nonfunctional",
+      "failureCount": 0,
+      "reasons": [
+        "direct_candidate_unproven",
+        "search_supplement_only",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:HARNESS/ENV BLOCKED"
+      ]
+    },
+    {
+      "provider": "asiaflix",
+      "action": "ONBOARDING_PENDING",
+      "repairEligible": false,
+      "confidence": "onboarding-pending",
+      "authorityClass": "onboarding-pending",
+      "failureCount": 0,
+      "reasons": [
+        "bulk_onboarding_pending"
+      ]
+    },
+    {
+      "provider": "bcine",
+      "action": "ONBOARDING_PENDING",
+      "repairEligible": false,
+      "confidence": "onboarding-pending",
+      "authorityClass": "onboarding-pending",
+      "failureCount": 0,
+      "reasons": [
+        "bulk_onboarding_pending"
+      ]
+    },
+    {
+      "provider": "boredflix",
+      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "repairEligible": false,
+      "confidence": "current-byte-production-proof",
+      "authorityClass": "current-architecture-nonfunctional",
+      "failureCount": 0,
+      "reasons": [
+        "direct_candidate_unproven",
+        "search_supplement_only",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:CHAIN REACHED"
+      ]
+    },
+    {
       "provider": "castle",
-      "action": "KEEP_BACKEND",
-      "repairEligible": true,
-      "confidence": "high",
-      "authorityClass": "api-or-backend",
+      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "repairEligible": false,
+      "confidence": "current-byte-production-proof",
+      "authorityClass": "current-architecture-nonfunctional",
       "failureCount": 0,
       "backendUrls": [
         "https://api.hlowb.com"
       ],
       "reasons": [
-        "structured_backend_authority"
+        "structured_backend_authority",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:FULL OK"
+      ]
+    },
+    {
+      "provider": "chillflix",
+      "action": "KEEP_DISABLED",
+      "repairEligible": false,
+      "confidence": "terminal",
+      "authorityClass": "disabled",
+      "failureCount": 0,
+      "reasons": [
+        "already_disabled"
+      ]
+    },
+    {
+      "provider": "cineflux",
+      "action": "ONBOARDING_PENDING",
+      "repairEligible": false,
+      "confidence": "onboarding-pending",
+      "authorityClass": "onboarding-pending",
+      "failureCount": 0,
+      "reasons": [
+        "bulk_onboarding_pending"
+      ]
+    },
+    {
+      "provider": "cinegram",
+      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "repairEligible": false,
+      "confidence": "current-byte-production-proof",
+      "authorityClass": "current-architecture-nonfunctional",
+      "failureCount": 0,
+      "reasons": [
+        "direct_candidate_unproven",
+        "search_supplement_only",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:HARNESS/ENV BLOCKED"
+      ]
+    },
+    {
+      "provider": "cinejoy",
+      "action": "ONBOARDING_PENDING",
+      "repairEligible": false,
+      "confidence": "onboarding-pending",
+      "authorityClass": "onboarding-pending",
+      "failureCount": 0,
+      "reasons": [
+        "bulk_onboarding_pending"
+      ]
+    },
+    {
+      "provider": "cinemabz",
+      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "repairEligible": false,
+      "confidence": "current-byte-production-proof",
+      "authorityClass": "current-architecture-nonfunctional",
+      "failureCount": 0,
+      "reasons": [
+        "direct_candidate_unproven",
+        "search_supplement_only",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:CHAIN REACHED"
+      ]
+    },
+    {
+      "provider": "cinematheque-de-bretagne",
+      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "repairEligible": false,
+      "confidence": "current-byte-production-proof",
+      "authorityClass": "current-architecture-nonfunctional",
+      "failureCount": 0,
+      "reasons": [
+        "direct_candidate_unproven",
+        "search_supplement_only",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:NO PROOF"
+      ]
+    },
+    {
+      "provider": "cinestream",
+      "action": "ONBOARDING_PENDING",
+      "repairEligible": false,
+      "confidence": "onboarding-pending",
+      "authorityClass": "onboarding-pending",
+      "failureCount": 0,
+      "reasons": [
+        "bulk_onboarding_pending"
+      ]
+    },
+    {
+      "provider": "cinetimes",
+      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "repairEligible": false,
+      "confidence": "current-byte-production-proof",
+      "authorityClass": "current-architecture-nonfunctional",
+      "failureCount": 0,
+      "reasons": [
+        "direct_candidate_unproven",
+        "search_supplement_only",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:HARNESS/ENV BLOCKED"
       ]
     },
     {
@@ -310,19 +630,565 @@
       ]
     },
     {
+      "provider": "corsflix",
+      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "repairEligible": false,
+      "confidence": "current-byte-production-proof",
+      "authorityClass": "current-architecture-nonfunctional",
+      "failureCount": 0,
+      "reasons": [
+        "direct_candidate_unproven",
+        "search_supplement_only",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:CHAIN REACHED"
+      ]
+    },
+    {
+      "provider": "cpasmal",
+      "action": "ONBOARDING_PENDING",
+      "repairEligible": false,
+      "confidence": "onboarding-pending",
+      "authorityClass": "onboarding-pending",
+      "failureCount": 0,
+      "reasons": [
+        "bulk_onboarding_pending"
+      ]
+    },
+    {
+      "provider": "dessinanime",
+      "action": "ONBOARDING_PENDING",
+      "repairEligible": false,
+      "confidence": "onboarding-pending",
+      "authorityClass": "onboarding-pending",
+      "failureCount": 0,
+      "reasons": [
+        "bulk_onboarding_pending"
+      ]
+    },
+    {
+      "provider": "diostream",
+      "action": "ONBOARDING_PENDING",
+      "repairEligible": false,
+      "confidence": "onboarding-pending",
+      "authorityClass": "onboarding-pending",
+      "failureCount": 0,
+      "reasons": [
+        "bulk_onboarding_pending"
+      ]
+    },
+    {
+      "provider": "documentary-area",
+      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "repairEligible": false,
+      "confidence": "current-byte-production-proof",
+      "authorityClass": "current-architecture-nonfunctional",
+      "failureCount": 0,
+      "reasons": [
+        "direct_candidate_unproven",
+        "search_supplement_only",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:PROVIDER NETWORK BLOCKED"
+      ]
+    },
+    {
+      "provider": "dotriv",
+      "action": "ONBOARDING_PENDING",
+      "repairEligible": false,
+      "confidence": "onboarding-pending",
+      "authorityClass": "onboarding-pending",
+      "failureCount": 0,
+      "reasons": [
+        "bulk_onboarding_pending"
+      ]
+    },
+    {
+      "provider": "dpstream",
+      "action": "ONBOARDING_PENDING",
+      "repairEligible": false,
+      "confidence": "onboarding-pending",
+      "authorityClass": "onboarding-pending",
+      "failureCount": 0,
+      "reasons": [
+        "bulk_onboarding_pending"
+      ]
+    },
+    {
+      "provider": "dulourd",
+      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "repairEligible": false,
+      "confidence": "current-byte-production-proof",
+      "authorityClass": "current-architecture-nonfunctional",
+      "failureCount": 0,
+      "reasons": [
+        "direct_candidate_unproven",
+        "search_supplement_only",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:HARNESS/ENV BLOCKED"
+      ]
+    },
+    {
+      "provider": "emnexmovies",
+      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "repairEligible": false,
+      "confidence": "current-byte-production-proof",
+      "authorityClass": "current-architecture-nonfunctional",
+      "failureCount": 0,
+      "reasons": [
+        "direct_candidate_unproven",
+        "search_supplement_only",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:PROVIDER NETWORK BLOCKED"
+      ]
+    },
+    {
+      "provider": "fawesome",
+      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "repairEligible": false,
+      "confidence": "current-byte-production-proof",
+      "authorityClass": "current-architecture-nonfunctional",
+      "failureCount": 0,
+      "reasons": [
+        "direct_candidate_unproven",
+        "search_supplement_only",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:NO PROOF"
+      ]
+    },
+    {
+      "provider": "fexini",
+      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "repairEligible": false,
+      "confidence": "current-byte-production-proof",
+      "authorityClass": "current-architecture-nonfunctional",
+      "failureCount": 0,
+      "reasons": [
+        "direct_candidate_unproven",
+        "search_supplement_only",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:HARNESS/ENV BLOCKED"
+      ]
+    },
+    {
+      "provider": "film-a-revoir",
+      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "repairEligible": false,
+      "confidence": "current-byte-production-proof",
+      "authorityClass": "current-architecture-nonfunctional",
+      "failureCount": 0,
+      "reasons": [
+        "direct_candidate_unproven",
+        "search_supplement_only",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:HARNESS MISMATCH"
+      ]
+    },
+    {
+      "provider": "flemmix",
+      "action": "KEEP_DISABLED",
+      "repairEligible": false,
+      "confidence": "terminal",
+      "authorityClass": "disabled",
+      "failureCount": 0,
+      "reasons": [
+        "already_disabled"
+      ]
+    },
+    {
+      "provider": "flickystream",
+      "action": "ONBOARDING_PENDING",
+      "repairEligible": false,
+      "confidence": "onboarding-pending",
+      "authorityClass": "onboarding-pending",
+      "failureCount": 0,
+      "reasons": [
+        "bulk_onboarding_pending"
+      ]
+    },
+    {
+      "provider": "flikhub",
+      "action": "ONBOARDING_PENDING",
+      "repairEligible": false,
+      "confidence": "onboarding-pending",
+      "authorityClass": "onboarding-pending",
+      "failureCount": 0,
+      "reasons": [
+        "bulk_onboarding_pending"
+      ]
+    },
+    {
+      "provider": "flixer",
+      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "repairEligible": false,
+      "confidence": "current-byte-production-proof",
+      "authorityClass": "current-architecture-nonfunctional",
+      "failureCount": 0,
+      "reasons": [
+        "direct_candidate_unproven",
+        "search_supplement_only",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:NO PROOF"
+      ]
+    },
+    {
+      "provider": "flixhq",
+      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "repairEligible": false,
+      "confidence": "current-byte-production-proof",
+      "authorityClass": "current-architecture-nonfunctional",
+      "failureCount": 0,
+      "reasons": [
+        "direct_candidate_unproven",
+        "search_supplement_only",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:HARNESS/ENV BLOCKED"
+      ]
+    },
+    {
+      "provider": "franime",
+      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "repairEligible": false,
+      "confidence": "current-byte-production-proof",
+      "authorityClass": "current-architecture-nonfunctional",
+      "failureCount": 0,
+      "reasons": [
+        "direct_candidate_unproven",
+        "search_supplement_only",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:HARNESS/ENV BLOCKED"
+      ]
+    },
+    {
+      "provider": "frembed",
+      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "repairEligible": false,
+      "confidence": "current-byte-production-proof",
+      "authorityClass": "current-architecture-nonfunctional",
+      "failureCount": 0,
+      "reasons": [
+        "direct_candidate_unproven",
+        "search_supplement_only",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:NO PROOF"
+      ]
+    },
+    {
+      "provider": "french-anime",
+      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "repairEligible": false,
+      "confidence": "current-byte-production-proof",
+      "authorityClass": "current-architecture-nonfunctional",
+      "failureCount": 0,
+      "reasons": [
+        "direct_candidate_unproven",
+        "search_supplement_only",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:HARNESS/ENV BLOCKED"
+      ]
+    },
+    {
       "provider": "french-manga",
-      "action": "KEEP_DIRECT",
-      "repairEligible": true,
-      "confidence": "medium",
-      "authorityClass": "direct",
+      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "repairEligible": false,
+      "confidence": "current-byte-production-proof",
+      "authorityClass": "current-architecture-nonfunctional",
       "failureCount": 0,
       "reasons": [
         "curated_direct",
-        "existing_positive_route_prior"
+        "existing_positive_route_prior",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:FULL OK"
+      ]
+    },
+    {
+      "provider": "frenchstream",
+      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "repairEligible": false,
+      "confidence": "current-byte-production-proof",
+      "authorityClass": "current-architecture-nonfunctional",
+      "failureCount": 0,
+      "reasons": [
+        "direct_candidate_unproven",
+        "search_supplement_only",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:NO PROOF"
+      ]
+    },
+    {
+      "provider": "fsharetv",
+      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "repairEligible": false,
+      "confidence": "current-byte-production-proof",
+      "authorityClass": "current-architecture-nonfunctional",
+      "failureCount": 0,
+      "reasons": [
+        "direct_candidate_unproven",
+        "search_supplement_only",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:CHAIN REACHED"
+      ]
+    },
+    {
+      "provider": "fullanime",
+      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "repairEligible": false,
+      "confidence": "current-byte-production-proof",
+      "authorityClass": "current-architecture-nonfunctional",
+      "failureCount": 0,
+      "reasons": [
+        "direct_candidate_unproven",
+        "search_supplement_only",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:HARNESS/ENV BLOCKED"
+      ]
+    },
+    {
+      "provider": "hexa",
+      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "repairEligible": false,
+      "confidence": "current-byte-production-proof",
+      "authorityClass": "current-architecture-nonfunctional",
+      "failureCount": 0,
+      "reasons": [
+        "direct_candidate_unproven",
+        "search_supplement_only",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:NO PROOF"
+      ]
+    },
+    {
+      "provider": "hianime",
+      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "repairEligible": false,
+      "confidence": "current-byte-production-proof",
+      "authorityClass": "current-architecture-nonfunctional",
+      "failureCount": 0,
+      "reasons": [
+        "direct_candidate_unproven",
+        "search_supplement_only",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:CHAIN REACHED"
+      ]
+    },
+    {
+      "provider": "hindmoviez",
+      "action": "KEEP_DISABLED",
+      "repairEligible": false,
+      "confidence": "terminal",
+      "authorityClass": "disabled",
+      "failureCount": 0,
+      "reasons": [
+        "already_disabled"
+      ]
+    },
+    {
+      "provider": "ihavenotv",
+      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "repairEligible": false,
+      "confidence": "current-byte-production-proof",
+      "authorityClass": "current-architecture-nonfunctional",
+      "failureCount": 0,
+      "reasons": [
+        "direct_candidate_unproven",
+        "search_supplement_only",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:HARNESS/ENV BLOCKED"
+      ]
+    },
+    {
+      "provider": "ilmiv",
+      "action": "ONBOARDING_PENDING",
+      "repairEligible": false,
+      "confidence": "onboarding-pending",
+      "authorityClass": "onboarding-pending",
+      "failureCount": 0,
+      "reasons": [
+        "bulk_onboarding_pending"
+      ]
+    },
+    {
+      "provider": "internet-archive",
+      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "repairEligible": false,
+      "confidence": "current-byte-production-proof",
+      "authorityClass": "current-architecture-nonfunctional",
+      "failureCount": 0,
+      "reasons": [
+        "direct_candidate_unproven",
+        "search_supplement_only",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:FULL OK"
+      ]
+    },
+    {
+      "provider": "kehflix",
+      "action": "KEEP_DISABLED",
+      "repairEligible": false,
+      "confidence": "terminal",
+      "authorityClass": "disabled",
+      "failureCount": 0,
+      "reasons": [
+        "already_disabled"
+      ]
+    },
+    {
+      "provider": "kickassanime",
+      "action": "ONBOARDING_PENDING",
+      "repairEligible": false,
+      "confidence": "onboarding-pending",
+      "authorityClass": "onboarding-pending",
+      "failureCount": 0,
+      "reasons": [
+        "bulk_onboarding_pending"
+      ]
+    },
+    {
+      "provider": "kidraz",
+      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "repairEligible": false,
+      "confidence": "current-byte-production-proof",
+      "authorityClass": "current-architecture-nonfunctional",
+      "failureCount": 0,
+      "reasons": [
+        "direct_candidate_unproven",
+        "search_supplement_only",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:NO PROOF"
+      ]
+    },
+    {
+      "provider": "kisskh",
+      "action": "ONBOARDING_PENDING",
+      "repairEligible": false,
+      "confidence": "onboarding-pending",
+      "authorityClass": "onboarding-pending",
+      "failureCount": 0,
+      "reasons": [
+        "bulk_onboarding_pending"
+      ]
+    },
+    {
+      "provider": "kordoz",
+      "action": "ONBOARDING_PENDING",
+      "repairEligible": false,
+      "confidence": "onboarding-pending",
+      "authorityClass": "onboarding-pending",
+      "failureCount": 0,
+      "reasons": [
+        "bulk_onboarding_pending"
       ]
     },
     {
       "provider": "kurage",
+      "action": "KEEP_DISABLED",
+      "repairEligible": false,
+      "confidence": "terminal",
+      "authorityClass": "disabled",
+      "failureCount": 0,
+      "reasons": [
+        "already_disabled"
+      ]
+    },
+    {
+      "provider": "latestmovies",
+      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "repairEligible": false,
+      "confidence": "current-byte-production-proof",
+      "authorityClass": "current-architecture-nonfunctional",
+      "failureCount": 0,
+      "reasons": [
+        "direct_candidate_unproven",
+        "search_supplement_only",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:CHAIN REACHED"
+      ]
+    },
+    {
+      "provider": "mallumv",
+      "action": "KEEP_DISABLED",
+      "repairEligible": false,
+      "confidence": "terminal",
+      "authorityClass": "disabled",
+      "failureCount": 0,
+      "reasons": [
+        "manual_off_zero_playable_movie_2026-11-14_cohort2"
+      ]
+    },
+    {
+      "provider": "meowtv",
+      "action": "ONBOARDING_PENDING",
+      "repairEligible": false,
+      "confidence": "onboarding-pending",
+      "authorityClass": "onboarding-pending",
+      "failureCount": 0,
+      "reasons": [
+        "bulk_onboarding_pending"
+      ]
+    },
+    {
+      "provider": "moiflix",
+      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "repairEligible": false,
+      "confidence": "current-byte-production-proof",
+      "authorityClass": "current-architecture-nonfunctional",
+      "failureCount": 0,
+      "reasons": [
+        "direct_candidate_unproven",
+        "search_supplement_only",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:HARNESS/ENV BLOCKED"
+      ]
+    },
+    {
+      "provider": "moviebite",
+      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "repairEligible": false,
+      "confidence": "current-byte-production-proof",
+      "authorityClass": "current-architecture-nonfunctional",
+      "failureCount": 0,
+      "reasons": [
+        "direct_candidate_unproven",
+        "search_supplement_only",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:PROVIDER NETWORK BLOCKED"
+      ]
+    },
+    {
+      "provider": "moviebox",
+      "action": "KEEP_DISABLED",
+      "repairEligible": false,
+      "confidence": "terminal",
+      "authorityClass": "disabled",
+      "failureCount": 0,
+      "reasons": [
+        "already_disabled"
+      ]
+    },
+    {
+      "provider": "movieshunt",
       "action": "KEEP_DISABLED",
       "repairEligible": false,
       "confidence": "terminal",
@@ -344,37 +1210,208 @@
       ]
     },
     {
-      "provider": "mugiwarastream",
-      "action": "KEEP_ROUTE_AUTHORITY",
-      "repairEligible": true,
-      "confidence": "high",
-      "authorityClass": "hub-or-redirect",
+      "provider": "movish",
+      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "repairEligible": false,
+      "confidence": "current-byte-production-proof",
+      "authorityClass": "current-architecture-nonfunctional",
       "failureCount": 0,
       "reasons": [
-        "authoritative_route_source"
+        "direct_candidate_unproven",
+        "search_supplement_only",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:CHAIN REACHED"
+      ]
+    },
+    {
+      "provider": "movix-fr",
+      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "repairEligible": false,
+      "confidence": "current-byte-production-proof",
+      "authorityClass": "current-architecture-nonfunctional",
+      "failureCount": 0,
+      "reasons": [
+        "direct_candidate_unproven",
+        "search_supplement_only",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:PARTIAL OK"
+      ]
+    },
+    {
+      "provider": "movy",
+      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "repairEligible": false,
+      "confidence": "current-byte-production-proof",
+      "authorityClass": "current-architecture-nonfunctional",
+      "failureCount": 0,
+      "backendUrls": [
+        "https://api.wecollege.net"
+      ],
+      "reasons": [
+        "structured_backend_authority",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:HARNESS MISMATCH"
+      ]
+    },
+    {
+      "provider": "mugiwarastream",
+      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "repairEligible": false,
+      "confidence": "current-byte-production-proof",
+      "authorityClass": "current-architecture-nonfunctional",
+      "failureCount": 0,
+      "reasons": [
+        "authoritative_route_source",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:FULL OK"
+      ]
+    },
+    {
+      "provider": "myfluneo",
+      "action": "ONBOARDING_PENDING",
+      "repairEligible": false,
+      "confidence": "onboarding-pending",
+      "authorityClass": "onboarding-pending",
+      "failureCount": 0,
+      "reasons": [
+        "bulk_onboarding_pending"
+      ]
+    },
+    {
+      "provider": "nakastream",
+      "action": "ONBOARDING_PENDING",
+      "repairEligible": false,
+      "confidence": "onboarding-pending",
+      "authorityClass": "onboarding-pending",
+      "failureCount": 0,
+      "reasons": [
+        "bulk_onboarding_pending"
+      ]
+    },
+    {
+      "provider": "nakios",
+      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "repairEligible": false,
+      "confidence": "current-byte-production-proof",
+      "authorityClass": "current-architecture-nonfunctional",
+      "failureCount": 0,
+      "reasons": [
+        "direct_candidate_unproven",
+        "search_supplement_only",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:PARTIAL OK"
       ]
     },
     {
       "provider": "neko-sama",
-      "action": "KEEP_PROVEN_SITE",
-      "repairEligible": true,
-      "confidence": "medium",
-      "authorityClass": "structured-site-plus-route-proof",
+      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "repairEligible": false,
+      "confidence": "current-byte-production-proof",
+      "authorityClass": "current-architecture-nonfunctional",
       "failureCount": 0,
       "reasons": [
         "structured_official_site",
-        "existing_positive_route_prior"
+        "existing_positive_route_prior",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:FULL OK"
+      ]
+    },
+    {
+      "provider": "neobam",
+      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "repairEligible": false,
+      "confidence": "current-byte-production-proof",
+      "authorityClass": "current-architecture-nonfunctional",
+      "failureCount": 0,
+      "reasons": [
+        "direct_candidate_unproven",
+        "search_supplement_only",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:NO PROOF"
+      ]
+    },
+    {
+      "provider": "neonflix",
+      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "repairEligible": false,
+      "confidence": "current-byte-production-proof",
+      "authorityClass": "current-architecture-nonfunctional",
+      "failureCount": 0,
+      "reasons": [
+        "direct_candidate_unproven",
+        "search_supplement_only",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:CHAIN REACHED"
+      ]
+    },
+    {
+      "provider": "nomorflix",
+      "action": "ONBOARDING_PENDING",
+      "repairEligible": false,
+      "confidence": "onboarding-pending",
+      "authorityClass": "onboarding-pending",
+      "failureCount": 0,
+      "reasons": [
+        "bulk_onboarding_pending"
+      ]
+    },
+    {
+      "provider": "openflix",
+      "action": "ONBOARDING_PENDING",
+      "repairEligible": false,
+      "confidence": "onboarding-pending",
+      "authorityClass": "onboarding-pending",
+      "failureCount": 0,
+      "reasons": [
+        "bulk_onboarding_pending"
+      ]
+    },
+    {
+      "provider": "overlook",
+      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "repairEligible": false,
+      "confidence": "current-byte-production-proof",
+      "authorityClass": "current-architecture-nonfunctional",
+      "failureCount": 0,
+      "reasons": [
+        "direct_candidate_unproven",
+        "search_supplement_only",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:NO PROOF"
       ]
     },
     {
       "provider": "papadustream",
-      "action": "KEEP_ROUTE_AUTHORITY",
-      "repairEligible": true,
-      "confidence": "high",
-      "authorityClass": "hub-or-redirect",
+      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "repairEligible": false,
+      "confidence": "current-byte-production-proof",
+      "authorityClass": "current-architecture-nonfunctional",
       "failureCount": 0,
       "reasons": [
-        "authoritative_route_source"
+        "authoritative_route_source",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:FULL OK"
+      ]
+    },
+    {
+      "provider": "persianstremio",
+      "action": "KEEP_DISABLED",
+      "repairEligible": false,
+      "confidence": "terminal",
+      "authorityClass": "disabled",
+      "failureCount": 0,
+      "reasons": [
+        "already_disabled"
       ]
     },
     {
@@ -389,31 +1426,319 @@
       ]
     },
     {
+      "provider": "primewire",
+      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "repairEligible": false,
+      "confidence": "current-byte-production-proof",
+      "authorityClass": "current-architecture-nonfunctional",
+      "failureCount": 0,
+      "reasons": [
+        "direct_candidate_unproven",
+        "search_supplement_only",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:CHAIN REACHED"
+      ]
+    },
+    {
+      "provider": "pstream",
+      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "repairEligible": false,
+      "confidence": "current-byte-production-proof",
+      "authorityClass": "current-architecture-nonfunctional",
+      "failureCount": 0,
+      "reasons": [
+        "direct_candidate_unproven",
+        "search_supplement_only",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:NO PROOF"
+      ]
+    },
+    {
+      "provider": "purstream",
+      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "repairEligible": false,
+      "confidence": "current-byte-production-proof",
+      "authorityClass": "current-architecture-nonfunctional",
+      "failureCount": 0,
+      "backendUrls": [
+        "https://api.purstream.ad/api/v1"
+      ],
+      "reasons": [
+        "structured_backend_authority",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:FULL OK"
+      ]
+    },
+    {
+      "provider": "rarefilmm",
+      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "repairEligible": false,
+      "confidence": "current-byte-production-proof",
+      "authorityClass": "current-architecture-nonfunctional",
+      "failureCount": 0,
+      "reasons": [
+        "direct_candidate_unproven",
+        "search_supplement_only",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:CHAIN REACHED"
+      ]
+    },
+    {
+      "provider": "reanime-to",
+      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "repairEligible": false,
+      "confidence": "current-byte-production-proof",
+      "authorityClass": "current-architecture-nonfunctional",
+      "failureCount": 0,
+      "reasons": [
+        "direct_candidate_unproven",
+        "search_supplement_only",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:HARNESS/ENV BLOCKED"
+      ]
+    },
+    {
+      "provider": "rivestream",
+      "action": "ONBOARDING_PENDING",
+      "repairEligible": false,
+      "confidence": "onboarding-pending",
+      "authorityClass": "onboarding-pending",
+      "failureCount": 0,
+      "reasons": [
+        "bulk_onboarding_pending"
+      ]
+    },
+    {
+      "provider": "rivestream-app",
+      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "repairEligible": false,
+      "confidence": "current-byte-production-proof",
+      "authorityClass": "current-architecture-nonfunctional",
+      "failureCount": 0,
+      "reasons": [
+        "direct_candidate_unproven",
+        "search_supplement_only",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:PROVIDER NETWORK BLOCKED"
+      ]
+    },
+    {
+      "provider": "rivestream-ru",
+      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "repairEligible": false,
+      "confidence": "current-byte-production-proof",
+      "authorityClass": "current-architecture-nonfunctional",
+      "failureCount": 0,
+      "reasons": [
+        "direct_candidate_unproven",
+        "search_supplement_only",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:PROVIDER NETWORK BLOCKED"
+      ]
+    },
+    {
+      "provider": "sadisflix",
+      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "repairEligible": false,
+      "confidence": "current-byte-production-proof",
+      "authorityClass": "current-architecture-nonfunctional",
+      "failureCount": 0,
+      "reasons": [
+        "direct_candidate_unproven",
+        "search_supplement_only",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:PARTIAL OK"
+      ]
+    },
+    {
       "provider": "sekai",
-      "action": "KEEP_DIRECT",
-      "repairEligible": true,
-      "confidence": "medium",
-      "authorityClass": "direct",
+      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "repairEligible": false,
+      "confidence": "current-byte-production-proof",
+      "authorityClass": "current-architecture-nonfunctional",
       "failureCount": 0,
       "reasons": [
         "curated_direct",
-        "existing_positive_route_prior"
+        "existing_positive_route_prior",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:FULL OK"
+      ]
+    },
+    {
+      "provider": "sflix",
+      "action": "ONBOARDING_PENDING",
+      "repairEligible": false,
+      "confidence": "onboarding-pending",
+      "authorityClass": "onboarding-pending",
+      "failureCount": 0,
+      "reasons": [
+        "bulk_onboarding_pending"
+      ]
+    },
+    {
+      "provider": "showbox",
+      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "repairEligible": false,
+      "confidence": "current-byte-production-proof",
+      "authorityClass": "current-architecture-nonfunctional",
+      "failureCount": 0,
+      "reasons": [
+        "direct_candidate_unproven",
+        "search_supplement_only",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:CHAIN REACHED"
+      ]
+    },
+    {
+      "provider": "shuttletv",
+      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "repairEligible": false,
+      "confidence": "current-byte-production-proof",
+      "authorityClass": "current-architecture-nonfunctional",
+      "failureCount": 0,
+      "reasons": [
+        "direct_candidate_unproven",
+        "search_supplement_only",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:NO PROOF"
+      ]
+    },
+    {
+      "provider": "skstream",
+      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "repairEligible": false,
+      "confidence": "current-byte-production-proof",
+      "authorityClass": "current-architecture-nonfunctional",
+      "failureCount": 0,
+      "reasons": [
+        "direct_candidate_unproven",
+        "search_supplement_only",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:HARNESS MISMATCH"
+      ]
+    },
+    {
+      "provider": "stigstream",
+      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "repairEligible": false,
+      "confidence": "current-byte-production-proof",
+      "authorityClass": "current-architecture-nonfunctional",
+      "failureCount": 0,
+      "reasons": [
+        "direct_candidate_unproven",
+        "search_supplement_only",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:CHAIN REACHED"
       ]
     },
     {
       "provider": "streamzo",
-      "action": "KEEP_DIRECT",
-      "repairEligible": true,
-      "confidence": "medium",
-      "authorityClass": "direct",
+      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "repairEligible": false,
+      "confidence": "current-byte-production-proof",
+      "authorityClass": "current-architecture-nonfunctional",
       "failureCount": 0,
       "reasons": [
         "curated_direct",
-        "existing_positive_route_prior"
+        "existing_positive_route_prior",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:FULL OK"
+      ]
+    },
+    {
+      "provider": "svstream",
+      "action": "ONBOARDING_PENDING",
+      "repairEligible": false,
+      "confidence": "onboarding-pending",
+      "authorityClass": "onboarding-pending",
+      "failureCount": 0,
+      "reasons": [
+        "bulk_onboarding_pending"
+      ]
+    },
+    {
+      "provider": "topcartoons",
+      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "repairEligible": false,
+      "confidence": "current-byte-production-proof",
+      "authorityClass": "current-architecture-nonfunctional",
+      "failureCount": 0,
+      "reasons": [
+        "direct_candidate_unproven",
+        "search_supplement_only",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:PARTIAL OK"
+      ]
+    },
+    {
+      "provider": "uhdmovies",
+      "action": "KEEP_DISABLED",
+      "repairEligible": false,
+      "confidence": "terminal",
+      "authorityClass": "disabled",
+      "failureCount": 0,
+      "reasons": [
+        "already_disabled"
+      ]
+    },
+    {
+      "provider": "videasy",
+      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "repairEligible": false,
+      "confidence": "current-byte-production-proof",
+      "authorityClass": "current-architecture-nonfunctional",
+      "failureCount": 0,
+      "reasons": [
+        "direct_candidate_unproven",
+        "search_supplement_only",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:REGRESSION PROVIDER"
       ]
     },
     {
       "provider": "vidfast",
+      "action": "KEEP_DISABLED",
+      "repairEligible": false,
+      "confidence": "terminal",
+      "authorityClass": "disabled",
+      "failureCount": 0,
+      "reasons": [
+        "already_disabled"
+      ]
+    },
+    {
+      "provider": "vidlink",
+      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "repairEligible": false,
+      "confidence": "current-byte-production-proof",
+      "authorityClass": "current-architecture-nonfunctional",
+      "failureCount": 0,
+      "reasons": [
+        "direct_candidate_unproven",
+        "search_supplement_only",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:CHAIN REACHED"
+      ]
+    },
+    {
+      "provider": "vidlove",
       "action": "KEEP_DISABLED",
       "repairEligible": false,
       "confidence": "terminal",
@@ -432,6 +1757,17 @@
       "failureCount": 0,
       "reasons": [
         "already_disabled"
+      ]
+    },
+    {
+      "provider": "vidsrc2",
+      "action": "ONBOARDING_PENDING",
+      "repairEligible": false,
+      "confidence": "onboarding-pending",
+      "authorityClass": "onboarding-pending",
+      "failureCount": 0,
+      "reasons": [
+        "bulk_onboarding_pending"
       ]
     },
     {
@@ -468,6 +1804,21 @@
       ]
     },
     {
+      "provider": "voirserie",
+      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "repairEligible": false,
+      "confidence": "current-byte-production-proof",
+      "authorityClass": "current-architecture-nonfunctional",
+      "failureCount": 0,
+      "reasons": [
+        "direct_candidate_unproven",
+        "search_supplement_only",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:HARNESS MISMATCH"
+      ]
+    },
+    {
       "provider": "vostfree",
       "action": "KEEP_DISABLED",
       "repairEligible": false,
@@ -479,679 +1830,78 @@
       ]
     },
     {
-      "provider": "wookafr",
-      "action": "KEEP_DISABLED",
+      "provider": "vuflix",
+      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
       "repairEligible": false,
-      "confidence": "terminal",
-      "authorityClass": "disabled",
-      "failureCount": 0,
-      "reasons": [
-        "already_disabled"
-      ]
-    },
-    {
-      "provider": "yflix",
-      "action": "KEEP_DISABLED",
-      "repairEligible": false,
-      "confidence": "terminal",
-      "authorityClass": "disabled",
-      "failureCount": 0,
-      "reasons": [
-        "manual_off_zero_playable_movie_tv_2026-11-14"
-      ]
-    },
-    {
-      "provider": "allanime",
-      "action": "KEEP_DISABLED",
-      "repairEligible": false,
-      "confidence": "terminal",
-      "authorityClass": "disabled",
-      "failureCount": 0,
-      "reasons": [
-        "manual_off_zero_playable_anime_2026-11-14_cohort2"
-      ]
-    },
-    {
-      "provider": "allwish",
-      "action": "KEEP_DISABLED",
-      "repairEligible": false,
-      "confidence": "terminal",
-      "authorityClass": "disabled",
-      "failureCount": 0,
-      "reasons": [
-        "already_disabled"
-      ]
-    },
-    {
-      "provider": "anime-ultime",
-      "action": "KEEP_DISABLED",
-      "repairEligible": false,
-      "confidence": "terminal",
-      "authorityClass": "disabled",
-      "failureCount": 0,
-      "reasons": [
-        "already_disabled"
-      ]
-    },
-    {
-      "provider": "animevost-fr",
-      "action": "KEEP_DISABLED",
-      "repairEligible": false,
-      "confidence": "terminal",
-      "authorityClass": "disabled",
-      "failureCount": 0,
-      "reasons": [
-        "manual_off_zero_playable_anime_2026-11-14"
-      ]
-    },
-    {
-      "provider": "mallumv",
-      "action": "KEEP_DISABLED",
-      "repairEligible": false,
-      "confidence": "terminal",
-      "authorityClass": "disabled",
-      "failureCount": 0,
-      "reasons": [
-        "manual_off_zero_playable_movie_2026-11-14_cohort2"
-      ]
-    },
-    {
-      "provider": "moviebox",
-      "action": "KEEP_DISABLED",
-      "repairEligible": false,
-      "confidence": "terminal",
-      "authorityClass": "disabled",
-      "failureCount": 0,
-      "reasons": [
-        "already_disabled"
-      ]
-    },
-    {
-      "provider": "vidlove",
-      "action": "KEEP_DISABLED",
-      "repairEligible": false,
-      "confidence": "terminal",
-      "authorityClass": "disabled",
-      "failureCount": 0,
-      "reasons": [
-        "already_disabled"
-      ]
-    },
-    {
-      "provider": "sflix",
-      "action": "ONBOARDING_PENDING",
-      "repairEligible": false,
-      "confidence": "onboarding-pending",
-      "authorityClass": "onboarding-pending",
-      "failureCount": 0,
-      "reasons": [
-        "bulk_onboarding_pending"
-      ]
-    },
-    {
-      "provider": "rivestream",
-      "action": "ONBOARDING_PENDING",
-      "repairEligible": false,
-      "confidence": "onboarding-pending",
-      "authorityClass": "onboarding-pending",
-      "failureCount": 0,
-      "reasons": [
-        "bulk_onboarding_pending"
-      ]
-    },
-    {
-      "provider": "vidsrc2",
-      "action": "ONBOARDING_PENDING",
-      "repairEligible": false,
-      "confidence": "onboarding-pending",
-      "authorityClass": "onboarding-pending",
-      "failureCount": 0,
-      "reasons": [
-        "bulk_onboarding_pending"
-      ]
-    },
-    {
-      "provider": "asiaflix",
-      "action": "ONBOARDING_PENDING",
-      "repairEligible": false,
-      "confidence": "onboarding-pending",
-      "authorityClass": "onboarding-pending",
-      "failureCount": 0,
-      "reasons": [
-        "bulk_onboarding_pending"
-      ]
-    },
-    {
-      "provider": "internet-archive",
-      "action": "REDISCOVER_SEARCH",
-      "repairEligible": false,
-      "confidence": "low",
-      "authorityClass": "unproven-direct-candidate",
+      "confidence": "current-byte-production-proof",
+      "authorityClass": "current-architecture-nonfunctional",
       "failureCount": 0,
       "reasons": [
         "direct_candidate_unproven",
-        "search_supplement_only"
-      ]
-    },
-    {
-      "provider": "corsflix",
-      "action": "REDISCOVER_SEARCH",
-      "repairEligible": false,
-      "confidence": "low",
-      "authorityClass": "unproven-direct-candidate",
-      "failureCount": 0,
-      "reasons": [
-        "direct_candidate_unproven",
-        "search_supplement_only"
-      ]
-    },
-    {
-      "provider": "emnexmovies",
-      "action": "REDISCOVER_SEARCH",
-      "repairEligible": false,
-      "confidence": "low",
-      "authorityClass": "unproven-direct-candidate",
-      "failureCount": 0,
-      "reasons": [
-        "direct_candidate_unproven",
-        "search_supplement_only"
-      ]
-    },
-    {
-      "provider": "latestmovies",
-      "action": "REDISCOVER_SEARCH",
-      "repairEligible": false,
-      "confidence": "low",
-      "authorityClass": "unproven-direct-candidate",
-      "failureCount": 0,
-      "reasons": [
-        "direct_candidate_unproven",
-        "search_supplement_only"
-      ]
-    },
-    {
-      "provider": "movy",
-      "action": "KEEP_BACKEND",
-      "repairEligible": true,
-      "confidence": "high",
-      "authorityClass": "api-or-backend",
-      "failureCount": 0,
-      "backendUrls": [
-        "https://api.wecollege.net"
-      ],
-      "reasons": [
-        "structured_backend_authority"
-      ]
-    },
-    {
-      "provider": "arrowtv",
-      "action": "REDISCOVER_SEARCH",
-      "repairEligible": false,
-      "confidence": "low",
-      "authorityClass": "unproven-direct-candidate",
-      "failureCount": 0,
-      "reasons": [
-        "direct_candidate_unproven",
-        "search_supplement_only"
-      ]
-    },
-    {
-      "provider": "chillflix",
-      "action": "KEEP_DISABLED",
-      "repairEligible": false,
-      "confidence": "terminal",
-      "authorityClass": "disabled",
-      "failureCount": 0,
-      "reasons": [
-        "already_disabled"
-      ]
-    },
-    {
-      "provider": "neonflix",
-      "action": "REDISCOVER_SEARCH",
-      "repairEligible": false,
-      "confidence": "low",
-      "authorityClass": "unproven-direct-candidate",
-      "failureCount": 0,
-      "reasons": [
-        "direct_candidate_unproven",
-        "search_supplement_only"
-      ]
-    },
-    {
-      "provider": "boredflix",
-      "action": "REDISCOVER_SEARCH",
-      "repairEligible": false,
-      "confidence": "low",
-      "authorityClass": "unproven-direct-candidate",
-      "failureCount": 0,
-      "reasons": [
-        "direct_candidate_unproven",
-        "search_supplement_only"
-      ]
-    },
-    {
-      "provider": "shuttletv",
-      "action": "REDISCOVER_SEARCH",
-      "repairEligible": false,
-      "confidence": "low",
-      "authorityClass": "unproven-direct-candidate",
-      "failureCount": 0,
-      "reasons": [
-        "direct_candidate_unproven",
-        "search_supplement_only"
-      ]
-    },
-    {
-      "provider": "primewire",
-      "action": "REDISCOVER_SEARCH",
-      "repairEligible": false,
-      "confidence": "low",
-      "authorityClass": "unproven-direct-candidate",
-      "failureCount": 0,
-      "reasons": [
-        "direct_candidate_unproven",
-        "search_supplement_only"
-      ]
-    },
-    {
-      "provider": "67movies",
-      "action": "REDISCOVER_SEARCH",
-      "repairEligible": false,
-      "confidence": "low",
-      "authorityClass": "unproven-direct-candidate",
-      "failureCount": 0,
-      "reasons": [
-        "direct_candidate_unproven",
-        "search_supplement_only"
+        "search_supplement_only",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:CHAIN REACHED"
       ]
     },
     {
       "provider": "watch-cartoon-online",
-      "action": "REDISCOVER_SEARCH",
+      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
       "repairEligible": false,
-      "confidence": "low",
-      "authorityClass": "unproven-direct-candidate",
+      "confidence": "current-byte-production-proof",
+      "authorityClass": "current-architecture-nonfunctional",
       "failureCount": 0,
       "reasons": [
         "direct_candidate_unproven",
-        "search_supplement_only"
-      ]
-    },
-    {
-      "provider": "cinemabz",
-      "action": "REDISCOVER_SEARCH",
-      "repairEligible": false,
-      "confidence": "low",
-      "authorityClass": "unproven-direct-candidate",
-      "failureCount": 0,
-      "reasons": [
-        "direct_candidate_unproven",
-        "search_supplement_only"
-      ]
-    },
-    {
-      "provider": "flixer",
-      "action": "REDISCOVER_SEARCH",
-      "repairEligible": false,
-      "confidence": "low",
-      "authorityClass": "unproven-direct-candidate",
-      "failureCount": 0,
-      "reasons": [
-        "direct_candidate_unproven",
-        "search_supplement_only"
-      ]
-    },
-    {
-      "provider": "cinegram",
-      "action": "REDISCOVER_SEARCH",
-      "repairEligible": false,
-      "confidence": "low",
-      "authorityClass": "unproven-direct-candidate",
-      "failureCount": 0,
-      "reasons": [
-        "direct_candidate_unproven",
-        "search_supplement_only"
-      ]
-    },
-    {
-      "provider": "movish",
-      "action": "REDISCOVER_SEARCH",
-      "repairEligible": false,
-      "confidence": "low",
-      "authorityClass": "unproven-direct-candidate",
-      "failureCount": 0,
-      "reasons": [
-        "direct_candidate_unproven",
-        "search_supplement_only"
-      ]
-    },
-    {
-      "provider": "vuflix",
-      "action": "REDISCOVER_SEARCH",
-      "repairEligible": false,
-      "confidence": "low",
-      "authorityClass": "unproven-direct-candidate",
-      "failureCount": 0,
-      "reasons": [
-        "direct_candidate_unproven",
-        "search_supplement_only"
-      ]
-    },
-    {
-      "provider": "rivestream-app",
-      "action": "REDISCOVER_SEARCH",
-      "repairEligible": false,
-      "confidence": "low",
-      "authorityClass": "unproven-direct-candidate",
-      "failureCount": 0,
-      "reasons": [
-        "direct_candidate_unproven",
-        "search_supplement_only"
-      ]
-    },
-    {
-      "provider": "overlook",
-      "action": "REDISCOVER_SEARCH",
-      "repairEligible": false,
-      "confidence": "low",
-      "authorityClass": "unproven-direct-candidate",
-      "failureCount": 0,
-      "reasons": [
-        "direct_candidate_unproven",
-        "search_supplement_only"
-      ]
-    },
-    {
-      "provider": "hexa",
-      "action": "REDISCOVER_SEARCH",
-      "repairEligible": false,
-      "confidence": "low",
-      "authorityClass": "unproven-direct-candidate",
-      "failureCount": 0,
-      "reasons": [
-        "direct_candidate_unproven",
-        "search_supplement_only"
-      ]
-    },
-    {
-      "provider": "rivestream-ru",
-      "action": "REDISCOVER_SEARCH",
-      "repairEligible": false,
-      "confidence": "low",
-      "authorityClass": "unproven-direct-candidate",
-      "failureCount": 0,
-      "reasons": [
-        "direct_candidate_unproven",
-        "search_supplement_only"
-      ]
-    },
-    {
-      "provider": "moviebite",
-      "action": "REDISCOVER_SEARCH",
-      "repairEligible": false,
-      "confidence": "low",
-      "authorityClass": "unproven-direct-candidate",
-      "failureCount": 0,
-      "reasons": [
-        "direct_candidate_unproven",
-        "search_supplement_only"
-      ]
-    },
-    {
-      "provider": "pstream",
-      "action": "REDISCOVER_SEARCH",
-      "repairEligible": false,
-      "confidence": "low",
-      "authorityClass": "unproven-direct-candidate",
-      "failureCount": 0,
-      "reasons": [
-        "direct_candidate_unproven",
-        "search_supplement_only"
-      ]
-    },
-    {
-      "provider": "ihavenotv",
-      "action": "REDISCOVER_SEARCH",
-      "repairEligible": false,
-      "confidence": "low",
-      "authorityClass": "unproven-direct-candidate",
-      "failureCount": 0,
-      "reasons": [
-        "direct_candidate_unproven",
-        "search_supplement_only"
-      ]
-    },
-    {
-      "provider": "reanime-to",
-      "action": "REDISCOVER_SEARCH",
-      "repairEligible": false,
-      "confidence": "low",
-      "authorityClass": "unproven-direct-candidate",
-      "failureCount": 0,
-      "reasons": [
-        "direct_candidate_unproven",
-        "search_supplement_only"
-      ]
-    },
-    {
-      "provider": "flixhq",
-      "action": "REDISCOVER_SEARCH",
-      "repairEligible": false,
-      "confidence": "low",
-      "authorityClass": "unproven-direct-candidate",
-      "failureCount": 0,
-      "reasons": [
-        "direct_candidate_unproven",
-        "search_supplement_only"
-      ]
-    },
-    {
-      "provider": "topcartoons",
-      "action": "REDISCOVER_SEARCH",
-      "repairEligible": false,
-      "confidence": "low",
-      "authorityClass": "unproven-direct-candidate",
-      "failureCount": 0,
-      "reasons": [
-        "direct_candidate_unproven",
-        "search_supplement_only"
-      ]
-    },
-    {
-      "provider": "videasy",
-      "action": "REDISCOVER_SEARCH",
-      "repairEligible": false,
-      "confidence": "low",
-      "authorityClass": "unproven-direct-candidate",
-      "failureCount": 0,
-      "reasons": [
-        "direct_candidate_unproven",
-        "search_supplement_only"
-      ]
-    },
-    {
-      "provider": "vidlink",
-      "action": "REDISCOVER_SEARCH",
-      "repairEligible": false,
-      "confidence": "low",
-      "authorityClass": "unproven-direct-candidate",
-      "failureCount": 0,
-      "reasons": [
-        "direct_candidate_unproven",
-        "search_supplement_only"
-      ]
-    },
-    {
-      "provider": "documentary-area",
-      "action": "REDISCOVER_SEARCH",
-      "repairEligible": false,
-      "confidence": "low",
-      "authorityClass": "unproven-direct-candidate",
-      "failureCount": 0,
-      "reasons": [
-        "direct_candidate_unproven",
-        "search_supplement_only"
-      ]
-    },
-    {
-      "provider": "fsharetv",
-      "action": "REDISCOVER_SEARCH",
-      "repairEligible": false,
-      "confidence": "low",
-      "authorityClass": "unproven-direct-candidate",
-      "failureCount": 0,
-      "reasons": [
-        "direct_candidate_unproven",
-        "search_supplement_only"
-      ]
-    },
-    {
-      "provider": "aniflix-uno",
-      "action": "REDISCOVER_SEARCH",
-      "repairEligible": false,
-      "confidence": "low",
-      "authorityClass": "unproven-direct-candidate",
-      "failureCount": 0,
-      "reasons": [
-        "direct_candidate_unproven",
-        "search_supplement_only"
-      ]
-    },
-    {
-      "provider": "anidb",
-      "action": "REDISCOVER_SEARCH",
-      "repairEligible": false,
-      "confidence": "low",
-      "authorityClass": "unproven-direct-candidate",
-      "failureCount": 0,
-      "reasons": [
-        "direct_candidate_unproven",
-        "search_supplement_only"
-      ]
-    },
-    {
-      "provider": "rarefilmm",
-      "action": "REDISCOVER_SEARCH",
-      "repairEligible": false,
-      "confidence": "low",
-      "authorityClass": "unproven-direct-candidate",
-      "failureCount": 0,
-      "reasons": [
-        "direct_candidate_unproven",
-        "search_supplement_only"
+        "search_supplement_only",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:HARNESS/ENV BLOCKED"
       ]
     },
     {
       "provider": "watchott",
-      "action": "REDISCOVER_SEARCH",
+      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
       "repairEligible": false,
-      "confidence": "low",
-      "authorityClass": "unproven-direct-candidate",
+      "confidence": "current-byte-production-proof",
+      "authorityClass": "current-architecture-nonfunctional",
       "failureCount": 0,
       "reasons": [
         "direct_candidate_unproven",
-        "search_supplement_only"
+        "search_supplement_only",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:PROVIDER NETWORK BLOCKED"
       ]
     },
     {
-      "provider": "animejlprovider",
-      "action": "REDISCOVER_SEARCH",
+      "provider": "waveanime",
+      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
       "repairEligible": false,
-      "confidence": "low",
-      "authorityClass": "unproven-direct-candidate",
+      "confidence": "current-byte-production-proof",
+      "authorityClass": "current-architecture-nonfunctional",
       "failureCount": 0,
       "reasons": [
         "direct_candidate_unproven",
-        "search_supplement_only"
+        "search_supplement_only",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:HARNESS/ENV BLOCKED"
       ]
     },
     {
-      "provider": "flickystream",
-      "action": "ONBOARDING_PENDING",
+      "provider": "webflix",
+      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
       "repairEligible": false,
-      "confidence": "onboarding-pending",
-      "authorityClass": "onboarding-pending",
+      "confidence": "current-byte-production-proof",
+      "authorityClass": "current-architecture-nonfunctional",
       "failureCount": 0,
       "reasons": [
-        "bulk_onboarding_pending"
-      ]
-    },
-    {
-      "provider": "flikhub",
-      "action": "ONBOARDING_PENDING",
-      "repairEligible": false,
-      "confidence": "onboarding-pending",
-      "authorityClass": "onboarding-pending",
-      "failureCount": 0,
-      "reasons": [
-        "bulk_onboarding_pending"
-      ]
-    },
-    {
-      "provider": "diostream",
-      "action": "ONBOARDING_PENDING",
-      "repairEligible": false,
-      "confidence": "onboarding-pending",
-      "authorityClass": "onboarding-pending",
-      "failureCount": 0,
-      "reasons": [
-        "bulk_onboarding_pending"
-      ]
-    },
-    {
-      "provider": "nomorflix",
-      "action": "ONBOARDING_PENDING",
-      "repairEligible": false,
-      "confidence": "onboarding-pending",
-      "authorityClass": "onboarding-pending",
-      "failureCount": 0,
-      "reasons": [
-        "bulk_onboarding_pending"
-      ]
-    },
-    {
-      "provider": "svstream",
-      "action": "ONBOARDING_PENDING",
-      "repairEligible": false,
-      "confidence": "onboarding-pending",
-      "authorityClass": "onboarding-pending",
-      "failureCount": 0,
-      "reasons": [
-        "bulk_onboarding_pending"
-      ]
-    },
-    {
-      "provider": "kisskh",
-      "action": "ONBOARDING_PENDING",
-      "repairEligible": false,
-      "confidence": "onboarding-pending",
-      "authorityClass": "onboarding-pending",
-      "failureCount": 0,
-      "reasons": [
-        "bulk_onboarding_pending"
-      ]
-    },
-    {
-      "provider": "cinejoy",
-      "action": "ONBOARDING_PENDING",
-      "repairEligible": false,
-      "confidence": "onboarding-pending",
-      "authorityClass": "onboarding-pending",
-      "failureCount": 0,
-      "reasons": [
-        "bulk_onboarding_pending"
-      ]
-    },
-    {
-      "provider": "meowtv",
-      "action": "ONBOARDING_PENDING",
-      "repairEligible": false,
-      "confidence": "onboarding-pending",
-      "authorityClass": "onboarding-pending",
-      "failureCount": 0,
-      "reasons": [
-        "bulk_onboarding_pending"
+        "direct_candidate_unproven",
+        "search_supplement_only",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:FULL OK"
       ]
     },
     {
@@ -1166,7 +1916,18 @@
       ]
     },
     {
-      "provider": "7movies",
+      "provider": "wookafr",
+      "action": "KEEP_DISABLED",
+      "repairEligible": false,
+      "confidence": "terminal",
+      "authorityClass": "disabled",
+      "failureCount": 0,
+      "reasons": [
+        "already_disabled"
+      ]
+    },
+    {
+      "provider": "wowfilms0626",
       "action": "ONBOARDING_PENDING",
       "repairEligible": false,
       "confidence": "onboarding-pending",
@@ -1177,7 +1938,7 @@
       ]
     },
     {
-      "provider": "all-you-can-watch",
+      "provider": "yablom",
       "action": "ONBOARDING_PENDING",
       "repairEligible": false,
       "confidence": "onboarding-pending",
@@ -1188,25 +1949,59 @@
       ]
     },
     {
-      "provider": "bcine",
-      "action": "ONBOARDING_PENDING",
+      "provider": "yflix",
+      "action": "KEEP_DISABLED",
       "repairEligible": false,
-      "confidence": "onboarding-pending",
-      "authorityClass": "onboarding-pending",
+      "confidence": "terminal",
+      "authorityClass": "disabled",
       "failureCount": 0,
       "reasons": [
-        "bulk_onboarding_pending"
+        "manual_off_zero_playable_movie_tv_2026-11-14"
       ]
     },
     {
-      "provider": "kickassanime",
-      "action": "ONBOARDING_PENDING",
+      "provider": "youtitou",
+      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
       "repairEligible": false,
-      "confidence": "onboarding-pending",
-      "authorityClass": "onboarding-pending",
+      "confidence": "current-byte-production-proof",
+      "authorityClass": "current-architecture-nonfunctional",
       "failureCount": 0,
       "reasons": [
-        "bulk_onboarding_pending"
+        "direct_candidate_unproven",
+        "search_supplement_only",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:NO PROOF"
+      ]
+    },
+    {
+      "provider": "zone-streaming",
+      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "repairEligible": false,
+      "confidence": "current-byte-production-proof",
+      "authorityClass": "current-architecture-nonfunctional",
+      "failureCount": 0,
+      "reasons": [
+        "direct_candidate_unproven",
+        "search_supplement_only",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:PARTIAL OK"
+      ]
+    },
+    {
+      "provider": "zone-telechargement",
+      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "repairEligible": false,
+      "confidence": "current-byte-production-proof",
+      "authorityClass": "current-architecture-nonfunctional",
+      "failureCount": 0,
+      "reasons": [
+        "direct_candidate_unproven",
+        "search_supplement_only",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:NO PROOF"
       ]
     }
   ]

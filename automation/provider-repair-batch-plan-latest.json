@@ -1,13 +1,14 @@
 {
   "schemaVersion": 1,
-  "sourceRunId": "43855893372",
-  "sourceTriggerSha": "75f010ed8be65cbfd0ae6815ae46d532a27e8aed",
-  "unresolvedProviderCount": 62,
-  "dynamicVariantProviderCount": 3,
+  "sourceRunId": "43940930866",
+  "sourceTriggerSha": "8f8d5c852a0ee989f98e18fdb2edfdf2e1660f28",
+  "unresolvedProviderCount": 61,
+  "dynamicVariantProviderCount": 4,
   "dynamicVariantProviders": [
     "movix-fr",
     "nakios",
-    "papadustream"
+    "papadustream",
+    "stigstream"
   ],
   "lifecycleSuppressedDynamicProviders": [
     "animevostfr",
@@ -107,7 +108,7 @@
     "zone-telechargement"
   ],
   "dynamicVariantFallbackUsed": true,
-  "groupCount": 13,
+  "groupCount": 5,
   "executionModel": {
     "default": "family/signature batch",
     "liveProbeConcurrency": "audit_provider_quick_yield ThreadPool",
@@ -129,7 +130,6 @@
         "none"
       ],
       "dominantIssues": [
-        "network_exception",
         "network_http_error",
         "network_zero_result",
         "timeout",
@@ -137,32 +137,57 @@
       ],
       "harnessTransportClasses": [
         "github-all-transports-challenged",
+        "native-policy-reachable",
         "no-transport-evidence",
+        "residential-exit-all-challenged",
+        "residential-exit-browser-reachable",
         "residential-exit-inconclusive"
       ],
       "transportSignature": "not-applicable",
-      "providerCount": 20,
+      "providerCount": 42,
       "providers": [
+        "1jour1film0626",
         "67movies",
+        "animeonsen",
         "arrowtv",
         "boredflix",
-        "chillflix",
         "cinegram",
         "cinemabz",
+        "cinematheque-de-bretagne",
+        "cinetimes",
         "corsflix",
+        "dulourd",
         "emnexmovies",
+        "fawesome",
+        "fexini",
+        "film-a-revoir",
         "flixer",
+        "franime",
+        "frembed",
+        "french-anime",
+        "frenchstream",
+        "fullanime",
         "hexa",
+        "hianime",
+        "kidraz",
         "latestmovies",
+        "moiflix",
         "moviebite",
         "movish",
+        "neobam",
         "neonflix",
         "overlook",
         "primewire",
         "pstream",
+        "showbox",
         "shuttletv",
+        "skstream",
+        "voirserie",
         "vuflix",
-        "watch-cartoon-online"
+        "watch-cartoon-online",
+        "waveanime",
+        "youtitou",
+        "zone-telechargement"
       ],
       "action": "current census authority is unresolved; refresh provider-owned domain/backend authority before any provider mutation",
       "selectionAuthorities": [
@@ -197,7 +222,7 @@
         "no-transport-evidence"
       ],
       "transportSignature": "not-applicable",
-      "providerCount": 14,
+      "providerCount": 15,
       "providers": [
         "anidb",
         "aniflix-uno",
@@ -210,6 +235,7 @@
         "reanime-to",
         "rivestream-app",
         "rivestream-ru",
+        "stigstream",
         "videasy",
         "vidlink",
         "watchott"
@@ -218,141 +244,9 @@
       "selectionAuthorities": [
         "provider-census-status.json:brainCheckRequired"
       ],
-      "dynamicVariantProviders": [],
-      "executionPolicy": "batch-first",
-      "providerLocalFallback": "only-after-shared-profile-failure"
-    },
-    {
-      "groupId": "learning|mixed_embed_resolver|runtime:mixed_embed_resolver",
-      "repairScope": "learning",
-      "runtimeFamilies": [
-        "mixed_embed_resolver"
+      "dynamicVariantProviders": [
+        "stigstream"
       ],
-      "runtimeFamilySignature": "mixed_embed_resolver",
-      "capabilityStrategy": "mixed_embed_resolver",
-      "evidenceDepths": [
-        "lookup"
-      ],
-      "dominantIssues": [
-        "network_zero_result"
-      ],
-      "harnessTransportClasses": [],
-      "transportSignature": "not-applicable",
-      "providerCount": 8,
-      "providers": [
-        "cinematheque-de-bretagne",
-        "fawesome",
-        "frembed",
-        "frenchstream",
-        "kidraz",
-        "neobam",
-        "youtitou",
-        "zone-telechargement"
-      ],
-      "action": "final census NO PROOF remains repair/Learning-owned; issue-only WAF/network text cannot recreate harness or transport ownership",
-      "selectionAuthorities": [
-        "provider-census-status.json:brainCheckRequired"
-      ],
-      "dynamicVariantProviders": [],
-      "executionPolicy": "batch-first",
-      "providerLocalFallback": "only-after-shared-profile-failure"
-    },
-    {
-      "groupId": "harness-compatibility|mixed_embed_resolver|harness:residential-exit-all-challenged",
-      "repairScope": "harness-compatibility",
-      "runtimeFamilies": [
-        "mixed_embed_resolver"
-      ],
-      "runtimeFamilySignature": "not-applicable",
-      "capabilityStrategy": "mixed_embed_resolver",
-      "evidenceDepths": [
-        "none"
-      ],
-      "dominantIssues": [
-        "waf_challenge"
-      ],
-      "harnessTransportClasses": [
-        "residential-exit-all-challenged"
-      ],
-      "transportSignature": "residential-exit-all-challenged",
-      "providerCount": 6,
-      "providers": [
-        "animeonsen",
-        "cinetimes",
-        "fexini",
-        "franime",
-        "fullanime",
-        "waveanime"
-      ],
-      "action": "current census assigns transport/harness ownership; compare browser/native/residential transport before any provider mutation",
-      "selectionAuthorities": [
-        "provider-census-status.json:brainCheckRequired"
-      ],
-      "dynamicVariantProviders": [],
-      "executionPolicy": "batch-first",
-      "providerLocalFallback": "only-after-shared-profile-failure"
-    },
-    {
-      "groupId": "harness-compatibility|mixed_embed_resolver|harness:residential-exit-inconclusive",
-      "repairScope": "harness-compatibility",
-      "runtimeFamilies": [
-        "mixed_embed_resolver"
-      ],
-      "runtimeFamilySignature": "not-applicable",
-      "capabilityStrategy": "mixed_embed_resolver",
-      "evidenceDepths": [
-        "lookup",
-        "none"
-      ],
-      "dominantIssues": [
-        "waf_challenge"
-      ],
-      "harnessTransportClasses": [
-        "residential-exit-inconclusive"
-      ],
-      "transportSignature": "residential-exit-inconclusive",
-      "providerCount": 4,
-      "providers": [
-        "1jour1film0626",
-        "dulourd",
-        "french-anime",
-        "moiflix"
-      ],
-      "action": "current census assigns transport/harness ownership; compare browser/native/residential transport before any provider mutation",
-      "selectionAuthorities": [
-        "provider-census-status.json:brainCheckRequired"
-      ],
-      "dynamicVariantProviders": [],
-      "executionPolicy": "batch-first",
-      "providerLocalFallback": "only-after-shared-profile-failure"
-    },
-    {
-      "groupId": "terminal-extraction|mixed_embed_resolver|runtime:mixed_embed_resolver",
-      "repairScope": "terminal-extraction",
-      "runtimeFamilies": [
-        "mixed_embed_resolver"
-      ],
-      "runtimeFamilySignature": "mixed_embed_resolver",
-      "capabilityStrategy": "mixed_embed_resolver",
-      "evidenceDepths": [
-        "chain"
-      ],
-      "dominantIssues": [
-        "network_zero_result",
-        "waf_challenge"
-      ],
-      "harnessTransportClasses": [],
-      "transportSignature": "not-applicable",
-      "providerCount": 2,
-      "providers": [
-        "hianime",
-        "showbox"
-      ],
-      "action": "apply/test shared terminal-player extraction profile to the whole capability family",
-      "selectionAuthorities": [
-        "provider-census-status.json:brainCheckRequired"
-      ],
-      "dynamicVariantProviders": [],
       "executionPolicy": "batch-first",
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
@@ -389,12 +283,12 @@
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
     {
-      "groupId": "harness-compatibility|api_stream_resolver|harness:native-policy-reachable",
-      "repairScope": "harness-compatibility",
+      "groupId": "transport|api_stream_resolver|runtime:api_stream_resolver",
+      "repairScope": "transport",
       "runtimeFamilies": [
         "api_stream_resolver"
       ],
-      "runtimeFamilySignature": "not-applicable",
+      "runtimeFamilySignature": "api_stream_resolver",
       "capabilityStrategy": "api_stream_resolver",
       "evidenceDepths": [
         "none"
@@ -405,130 +299,12 @@
       "harnessTransportClasses": [
         "native-policy-reachable"
       ],
-      "transportSignature": "native-policy-reachable",
+      "transportSignature": "not-applicable",
       "providerCount": 1,
       "providers": [
         "movy"
       ],
-      "action": "current census assigns transport/harness ownership; compare browser/native/residential transport before any provider mutation",
-      "selectionAuthorities": [
-        "provider-census-status.json:brainCheckRequired"
-      ],
-      "dynamicVariantProviders": [],
-      "executionPolicy": "batch-first",
-      "providerLocalFallback": "only-after-shared-profile-failure"
-    },
-    {
-      "groupId": "harness-compatibility|mixed_embed_resolver|harness:native-policy-reachable",
-      "repairScope": "harness-compatibility",
-      "runtimeFamilies": [
-        "mixed_embed_resolver"
-      ],
-      "runtimeFamilySignature": "not-applicable",
-      "capabilityStrategy": "mixed_embed_resolver",
-      "evidenceDepths": [
-        "lookup"
-      ],
-      "dominantIssues": [
-        "waf_challenge"
-      ],
-      "harnessTransportClasses": [
-        "native-policy-reachable"
-      ],
-      "transportSignature": "native-policy-reachable",
-      "providerCount": 1,
-      "providers": [
-        "skstream"
-      ],
-      "action": "current census assigns transport/harness ownership; compare browser/native/residential transport before any provider mutation",
-      "selectionAuthorities": [
-        "provider-census-status.json:brainCheckRequired"
-      ],
-      "dynamicVariantProviders": [],
-      "executionPolicy": "batch-first",
-      "providerLocalFallback": "only-after-shared-profile-failure"
-    },
-    {
-      "groupId": "harness-compatibility|mixed_embed_resolver|harness:residential-exit-browser-reachable",
-      "repairScope": "harness-compatibility",
-      "runtimeFamilies": [
-        "mixed_embed_resolver"
-      ],
-      "runtimeFamilySignature": "not-applicable",
-      "capabilityStrategy": "mixed_embed_resolver",
-      "evidenceDepths": [
-        "none"
-      ],
-      "dominantIssues": [
-        "waf_challenge"
-      ],
-      "harnessTransportClasses": [
-        "residential-exit-browser-reachable"
-      ],
-      "transportSignature": "residential-exit-browser-reachable",
-      "providerCount": 1,
-      "providers": [
-        "voirserie"
-      ],
-      "action": "current census assigns transport/harness ownership; compare browser/native/residential transport before any provider mutation",
-      "selectionAuthorities": [
-        "provider-census-status.json:brainCheckRequired"
-      ],
-      "dynamicVariantProviders": [],
-      "executionPolicy": "batch-first",
-      "providerLocalFallback": "only-after-shared-profile-failure"
-    },
-    {
-      "groupId": "harness-compatibility|mixed_embed_resolver|harness:residential-exit-native-reachable",
-      "repairScope": "harness-compatibility",
-      "runtimeFamilies": [
-        "mixed_embed_resolver"
-      ],
-      "runtimeFamilySignature": "not-applicable",
-      "capabilityStrategy": "mixed_embed_resolver",
-      "evidenceDepths": [
-        "lookup"
-      ],
-      "dominantIssues": [
-        "waf_challenge"
-      ],
-      "harnessTransportClasses": [
-        "residential-exit-native-reachable"
-      ],
-      "transportSignature": "residential-exit-native-reachable",
-      "providerCount": 1,
-      "providers": [
-        "film-a-revoir"
-      ],
-      "action": "current census assigns transport/harness ownership; compare browser/native/residential transport before any provider mutation",
-      "selectionAuthorities": [
-        "provider-census-status.json:brainCheckRequired"
-      ],
-      "dynamicVariantProviders": [],
-      "executionPolicy": "batch-first",
-      "providerLocalFallback": "only-after-shared-profile-failure"
-    },
-    {
-      "groupId": "terminal-extraction|html_scraper|runtime:html_scraper",
-      "repairScope": "terminal-extraction",
-      "runtimeFamilies": [
-        "html_scraper"
-      ],
-      "runtimeFamilySignature": "html_scraper",
-      "capabilityStrategy": "html_scraper",
-      "evidenceDepths": [
-        "chain"
-      ],
-      "dominantIssues": [
-        "timeout"
-      ],
-      "harnessTransportClasses": [],
-      "transportSignature": "not-applicable",
-      "providerCount": 1,
-      "providers": [
-        "stigstream"
-      ],
-      "action": "apply/test shared terminal-player extraction profile to the whole capability family",
+      "action": "current census authority is unresolved; refresh provider-owned domain/backend authority before any provider mutation",
       "selectionAuthorities": [
         "provider-census-status.json:brainCheckRequired"
       ],
