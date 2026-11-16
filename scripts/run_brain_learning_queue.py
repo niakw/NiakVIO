@@ -1174,6 +1174,28 @@ def summarize_lab(report: dict[str, Any], provider_id: str, fixture: dict[str, A
         "allReturnedStreams": all(bool(x.get("probeCoverageComplete")) for x in clients.values()) if clients else False,
     }
 
+def requires_full_variant_probe(plan: dict[str, Any] | None) -> bool:
+    """Return true only for Learning experiments whose causal debt is variant loss."""
+    if not isinstance(plan, dict):
+        return False
+    failure = str(plan.get("failureClass") or "").strip().casefold()
+    group = str(plan.get("groupId") or plan.get("causalGroup") or "").strip().casefold()
+    stage = str(plan.get("observedPipelineStage") or "").strip().casefold()
+    return (
+        failure == "variant_coverage_gap"
+        or group.startswith("variant-coverage|")
+        or stage in {"variant_coverage_gap", "variant-coverage"}
+    )
+
+
+def learning_stream_probe_policy(stream_cap: int, full_variant_probe: bool) -> tuple[int, bool]:
+    """Keep ordinary Learning cheap, but never study variant debt through two streams."""
+    bounded = max(1, min(int(stream_cap), 40))
+    if full_variant_probe:
+        return bounded, True
+    return min(bounded, 2), False
+
+
 def run_lab(
     session: LearningLabSession,
     provider_id: str,
@@ -1183,9 +1205,14 @@ def run_lab(
     run_dir: Path,
     deadline: float,
     stream_cap: int,
+    full_variant_probe: bool = False,
 ) -> dict[str, Any]:
     report_path = run_dir / "targeted-lab.json"
     markdown_path = run_dir / "targeted-lab.md"
+    stream_probe_cap, probe_all_streams = learning_stream_probe_policy(
+        stream_cap,
+        full_variant_probe,
+    )
     config: dict[str, Any] = {
         "providers": provider_id,
         "clients": ["tv", "desktop", "mobile"],
@@ -1202,8 +1229,9 @@ def run_lab(
         "provider_timeout_ms": 12000,
         "retry_provider_timeouts": False,
         "max_settings_profiles": 1,
-        "max_streams_per_runtime": max(1, min(int(stream_cap), 2)),
-        "probe_all_streams": False,
+        "max_streams_per_runtime": stream_probe_cap,
+        "probe_all_streams": probe_all_streams,
+        "all_streams_safety_cap": stream_probe_cap if probe_all_streams else 40,
         "playback_timeout_ms": 5000,
         "stream_sampling": "spread",
         "provider_concurrency": 1,
@@ -1221,7 +1249,9 @@ def run_lab(
     summary["warmSession"] = True
     summary["providerTimeoutMs"] = 12000
     summary["playbackTimeoutMs"] = 5000
-    summary["streamProbeCap"] = max(1, min(int(stream_cap), 2))
+    summary["streamProbeCap"] = stream_probe_cap
+    summary["probeAllStreams"] = probe_all_streams
+    summary["variantCoverageProbe"] = bool(full_variant_probe)
     return summary
 
 def repair_method_fingerprints(report: dict[str, Any], attempted_profiles: list[str]) -> list[str]:
@@ -1384,7 +1414,7 @@ def main() -> int:
     p.add_argument("--provider-filter", default="", help="Explicit, comma-separated Learning cohort from the caller; never silently narrow it to family representatives.")
     p.add_argument("--budget-minutes", type=int, default=60)
     p.add_argument("--reserve-minutes", type=int, default=5)
-    p.add_argument("--stream-safety-cap", type=int, default=2)
+    p.add_argument("--stream-safety-cap", type=int, default=40)
     args = p.parse_args()
 
     stage = args.stage.resolve()
@@ -1705,6 +1735,7 @@ def main() -> int:
                         attempt_dir,
                         provider_deadline,
                         args.stream_safety_cap,
+                        requires_full_variant_probe(provider_plan),
                     )
                 except BudgetExhausted as error:
                     state["lastStatus"] = "fair_share_slice_exhausted"
