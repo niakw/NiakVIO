@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Reconcile architecture docs with isolated candidate repair and adaptive Hub-46 Labs."""
+"""Historical doc migration kept compatible with current projection-union authority."""
 from __future__ import annotations
 
 from pathlib import Path
@@ -23,7 +23,7 @@ def main() -> int:
     original = text
 
     old_rebuild = (
-        "La reconstruction 96/96 appartient à `.github/workflows/provider-v3-reconstruct-all.yml`. "
+        "La reconstruction du scope actif courant appartient à `.github/workflows/provider-v3-reconstruct-all.yml`. "
         "Règle d’exploitation courante : **`main` est l’unique cible d’écriture active**. Le workflow "
         "peut utiliser un workspace runner et des artifacts éphémères, mais il ne doit pas créer ou "
         "maintenir une branche workbench persistante par défaut.\n"
@@ -55,7 +55,7 @@ def main() -> int:
     new_labs = (
         "Règles :\n\n"
         "- chaque device est une preuve indépendante ;\n"
-        "- le catalogue reste 96 Provider Objects, tandis que la campagne d’acceptation native physique courante utilise le scope explicite **Hub-46** de `automation/evidence/hub-lab-matrix-46.json` et son transport `native-hub46/manifest.json` ;\n"
+        "- le dénominateur natif courant est dérivé de l’union active **Global + France-only** via `projection_active_provider_ids`; `native-hub46/manifest.json` n’est qu’un chemin de transport historique et `automation/evidence/hub-lab-matrix-46.json` une preuve historique ;\n"
         "- la matrice de routes est dérivée du scope/manifest courant et de ses `supportedTypes`, pas d’un nombre historique de routes figé ;\n"
         "- le corpus ordinaire possède exactement trois réserves globales récentes `movie` / `tv` / `anime` dans `.github/triggers/rotating-popular-corpus.json` ;\n"
         "- un Lab démarre avec **1 movie + 1 TV + 1 anime** ; les autres œuvres sont une réserve adaptative, pas un batch fixe ;\n"
@@ -81,7 +81,7 @@ def main() -> int:
     text = replace_once(text, old_branch, new_branch, "publication branch policy")
 
     PATH.write_text(text, encoding="utf-8")
-    print(f"CANDIDATE_HUB46_ARCH_V1_OK changed={str(text != original).lower()} main_production=true candidate_branch_explicit=true hub46=true adaptive_1_1_1=true")
+    print(f"CANDIDATE_HUB46_ARCH_V1_OK changed={str(text != original).lower()} main_production=true candidate_branch_explicit=true projection_union=true adaptive_1_1_1=true")
     return 0
 
 
