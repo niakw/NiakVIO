@@ -268,7 +268,7 @@ Contrat :
 
 - en lancement manuel, l’entrée obligatoire est `expected_sha` ; sur push de son trigger permanent, le SHA d’événement joue le même rôle ;
 - le checkout doit correspondre exactement au SHA accepté et une baseline de génération de release est exportée avant toute mutation ;
-- les patches providers durables sont réappliqués sur le **scope actif courant dérivé dynamiquement** (`current_provider_scope.py`) — 42 actifs lors de la publication Stream Score, tandis que le census suivait alors 46 providers dont 4 désactivés — puis le minimizer NiakVIO est amené à son fixed-point et vérifié ; les projections de manifests sont reconstruites et les générations non référencées sont prunées ;
+- les patches providers durables sont réappliqués sur le **scope actif courant dérivé dynamiquement** (`current_provider_scope.py`) ; aucun ancien décompte de providers n’est une autorité de release. Le minimizer NiakVIO est ensuite amené à son fixed-point et vérifié, les projections de manifests sont reconstruites et les générations non référencées sont prunées ;
 - les versions provider/manifest/cache/release ne sont synchronisées qu’après stabilisation de cette génération exacte ;
 - le transport Hub-46 épinglé, les hashes et l’intégrité de release sont ensuite reconstruits et validés ;
 - les commits de génération et de pinning sont préparés localement, puis publiés atomiquement uniquement si `origin/main` pointe toujours sur le SHA de base accepté ; tout mouvement concurrent de `main` fait échouer la transaction ;
@@ -339,6 +339,25 @@ Règles :
 - le plumbing de test est autorisé uniquement s’il expose le chemin officiel sans changer le comportement production ni réparer le défaut observé.
 
 Le trigger commun est `.github/triggers/full-native-lab-validation.json`.
+
+### Contrat ABI officiel Nuvio
+
+Le contrat Provider v3 doit être compatible avec les **sources officielles actuelles** de NuvioMobile, NuvioDesktop et NuvioTV, pas seulement avec un snapshot historique. Les SHAs audités sont centralisés dans `automation/nuvio-client-upstreams.json`, `automation/nuvio-client-compatibility-matrix.json`, `automation/platform-runtime-contracts.json`, `automation/nuvio-tv-runtime-contract.json` et `sources.json` ; `scripts/check_nuvio_client_upstreams.py` impose leur cohérence.
+
+Invariants :
+
+- l'appel reste `getStreams(tmdbId, mediaType, season, episode)` ;
+- les runtimes officiels actuels exposent une capacité TMDB au host plugin : NuvioTV via son runtime natif, Mobile/Desktop via `__get_tmdb_api_key` et `TmdbSettingsRepository.effectiveApiKey()` ;
+- cette capacité appartient au **runtime/Core** : une credential TMDB n'est jamais embarquée dans les bytes publiés du provider et une clé utilisateur n'est pas une précondition lorsque le build officiel fournit son fallback ;
+- Core hydrate l'identité canonique TMDB ↔ IMDb dans sa frontière propre ; le seul `tmdbId` positionnel n'est jamais traité comme identité média complète ;
+- l'ABI de résultat portable partagé est `title`, `name`, `url`, `quality`, `size`, `language`, `provider`, `type`, `seeders`, `peers`, `infoHash`, `headers`, `subtitles` ;
+- `badgeIds`, `displayBadges`, `presentationFacts` et autres enrichissements NiakVIO restent additifs : une information critique de lecture ou visible par l'utilisateur doit également survivre dans l'ABI portable. Stream Presentation reflète donc le label dans `title/name` et la description technique dans `size` ;
+- les sous-titres gardent leurs headers propres et les headers du média restent distincts ;
+- une preuve NuvioMobile n'est pas une preuve NuvioDesktop ou NuvioTV : les cinq Labs restent indépendants.
+
+L'ancien `automation/platform-runtime-matrix.json` 5.20.27 est conservé uniquement comme **preuve historique**. Il n'a plus d'autorité sur le scope courant, `disabledPlatforms`, la quarantaine, Repair ou la publication. Toute nouvelle politique cross-platform autoritative doit provenir d'une observation de la release courante et des clients courants.
+
+Gates : `scripts/runtime_contract_gate.py`, `scripts/validate_platform_runtime_policy.py`, `tests/platform_runtime_projection_authority_test.py`, `tests/nuvio_portable_stream_result_contract_test.py`.
 
 ## 12. Minimizer NiakVIO
 
