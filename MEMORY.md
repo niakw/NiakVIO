@@ -1,3 +1,7 @@
+## 2026-11-16 — Retry causal-family Learning after published-stage CLI fix
+
+- Trigger source parent `3adaa44c03e00cb7426c512aeb31fa13587bb0ba`. Retry the same 12-provider eligibility cohort after the initial published stage was restored to its supported local-builder CLI. Expected progression is exact 12/12 staging, exact 12/12 clean reconstruction staging, then one representative per causal family. Publication remains prohibited without downstream exact-byte identity/playback/non-regression proof.
+
 ## 2026-11-16 — Fast-Handoff published-stage CLI drift fixed before ProviderBase replay
 
 - Brain Repair Lab 43781978883 bound to NiakVIO `7af34100984c80b86bc7f8aae13c4f3faedcec4a` and correctly resolved Brain-LLM `cb1fddf4ee8b06be9a29bb0a69f1210d925cb93e`. It parsed the exact 12-provider trigger cohort and then failed in `Build isolated current provider stage` before any provider observation: `build_published_provider_stage.py` rejected the accidental `--local-catalog-only` argument.
