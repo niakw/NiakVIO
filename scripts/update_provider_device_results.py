@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Merge native-reader evidence and render the README provider showcase.
 
-The visible inventory is derived from enabled scrapers in the general manifest,
-so it cannot silently drift from the plugin users actually load. Native-reader
+The visible inventory is derived from the active Global + France-only projection
+union, matching the exact provider scope exercised by native acceptance. Native-reader
 proofs are crossed onto that inventory as they arrive; missing proof stays unknown
 rather than being misreported as a provider failure.
 
@@ -18,6 +18,8 @@ import json
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
+
+from current_provider_scope import projection_active_provider_rows
 
 ROOT = Path(__file__).resolve().parents[1]
 START = "<!-- NIAKVIO_PROVIDER_RESULTS_START -->"
@@ -183,7 +185,10 @@ def media_icon(value: str) -> str:
 
 
 def active_providers() -> list[dict[str, Any]]:
-    manifest = load_json(ROOT / "manifest.json", {})
+    # Native acceptance is the active Global + France-only executable union.
+    # Do not drop a France-only provider merely because it is absent from the
+    # general manifest: its positive native proof is first-class project evidence.
+    provider_rows = projection_active_provider_rows()
     logo_index = load_json(ROOT / "assets" / "providers" / "index.json", {})
     branding_index = load_json(ROOT / "assets" / "providers" / "emojis.json", {})
     indexed = logo_index.get("providers") if isinstance(logo_index, dict) else {}
@@ -193,7 +198,7 @@ def active_providers() -> list[dict[str, Any]]:
     if not isinstance(branding, dict):
         branding = {}
     rows: list[dict[str, Any]] = []
-    for scraper in manifest.get("scrapers") or []:
+    for scraper in provider_rows:
         if not isinstance(scraper, dict) or scraper.get("enabled") is not True:
             continue
         provider_id = str(scraper.get("id") or "").strip()
@@ -369,7 +374,7 @@ def render(results: dict[str, Any]) -> str:
         "",
         "> **Cadre des œuvres citées :** les titres/épisodes du tableau sont des **fixtures de test**, pas un catalogue ni une offre de contenu. Les résultats décrivent uniquement une observation technique sanitizée. Voir [`TESTING_NOTICE.md`](TESTING_NOTICE.md) et [`DISCLAIMER.md`](DISCLAIMER.md).",
         "",
-        f"**{len(verified)} providers** disposent actuellement d'au moins une preuve lecteur native conservée, sur **{len(verified_cases)} cas de lecture distincts** et **{len(device_coverage)} {platform_label}** déjà représentée{'s' if len(device_coverage) != 1 else ''}. L'inventaire complet reste synchronisé automatiquement sur `manifest.json`.",
+        f"**{len(verified)} providers** disposent actuellement d'au moins une preuve lecteur native conservée, sur **{len(verified_cases)} cas de lecture distincts** et **{len(device_coverage)} {platform_label}** déjà représentée{'s' if len(device_coverage) != 1 else ''}. L'inventaire complet reste synchronisé automatiquement sur l'autorité Global + France.",
         "",
         "### 📡 Couverture des lecteurs officiels",
         "",
@@ -470,7 +475,7 @@ def render(results: dict[str, Any]) -> str:
             "",
             "**Lecture de la vitrine :** `✅` signifie *preuve positive conservée*, jamais simple détection d'URL. Les résultats affichés restent fixes tant qu'une nouvelle preuve native plus récente ne vient pas les compléter ; un run inconclusif ne détruit pas une preuve saine existante.",
             "",
-            "Source machine : [`automation/provider-device-results.json`](automation/provider-device-results.json) · Inventaire : [`manifest.json`](manifest.json) · Les prochains Deep/Brain/Labs enrichissent automatiquement cette vitrine uniquement avec des preuves positives qualifiées.",
+            "Source machine : [`automation/provider-device-results.json`](automation/provider-device-results.json) · Inventaire : [`provider_catalog.json`](provider_catalog.json) + [`manifest.json`](manifest.json) + [`vf/manifest.json`](vf/manifest.json) · Les prochains Deep/Brain/Labs enrichissent automatiquement cette vitrine uniquement avec des preuves positives qualifiées.",
             END,
         ]
     )
