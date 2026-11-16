@@ -122,7 +122,7 @@ assert "active==expected" in manual
 assert "==46" not in manual and "46/46" not in manual
 
 
-assert machine["schema_version"] >= 7
+assert machine["schema_version"] >= 8
 source = machine["provider_source_of_truth"]
 assert source["canonical_provider_base_marker"] == "NIAKVIO_PROVIDER_BASE_OWNED_V3"
 assert source["legacy_provider_js_seed_allowed"] is False
@@ -228,7 +228,7 @@ assert machine["provider_scopes"]["projection_runtime_visible"] == "scripts/curr
 assert machine["provider_scopes"]["native_acceptance"] == "scripts/current_provider_scope.py:projection_active_provider_ids"
 assert machine["provider_scopes"]["native_acceptance_includes_france_only"] is True
 
-assert validation_machine["schema_version"] >= 67
+assert validation_machine["schema_version"] >= 68
 assert validation_machine["release_authority"] == "manifest.json:version"
 catalogue_contract = validation_machine["catalogue"]
 assert catalogue_contract["cardinality_policy"] == "derived-never-frozen"
@@ -239,6 +239,22 @@ for stale_count in ("provider_objects", "active_provider_objects", "physical_nat
     assert stale_count not in catalogue_contract
 assert validation_machine["core_contract"]["stream_sanitizer"] == "strict_v10"
 assert validation_machine["native_transport"]["scope"] == "Global+France active projection union"
+stream_contract = machine["stream_multiplicity_contract"]
+assert stream_contract["provider_runtime_output_cap"] == 40
+assert stream_contract["terminal_validation_max_playback_identities"] == 40
+assert stream_contract["enumerate_announced_variants_before_final_cap"] is True
+assert stream_contract["first_success_short_circuit_allowed"] is False
+assert stream_contract["dedupe_key"] == "url+required_request_headers"
+assert stream_contract["native_probe_batch"] == 4
+assert stream_contract["mandatory_regression_fixtures"] == ["spartacus-s00e01"]
+assert stream_contract["season_zero_is_valid"] is True
+assert stream_contract["season_zero_may_fallback_to_one"] is False
+assert validation_machine["stream_multiplicity"]["runtime_output_cap"] == 40
+assert validation_machine["stream_multiplicity"]["terminal_validation_cap"] == 40
+assert validation_machine["stream_multiplicity"]["first_success_does_not_end_discovery"] is True
+assert validation_machine["special_episodes"]["season_zero_valid"] is True
+assert validation_machine["special_episodes"]["season_zero_fallback_to_one"] is False
+assert validation_machine["special_episodes"]["mandatory_native_fixture"] == "spartacus-s00e01"
 assert projection_active_provider_count() >= ACTIVE_EXPECTED
 assert projection_runtime_visible_provider_count() >= RUNTIME_VISIBLE_EXPECTED
 
