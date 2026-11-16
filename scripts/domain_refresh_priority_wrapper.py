@@ -7,8 +7,8 @@ must never recreate work for archived providers. Inside the current registry,
 the authoritative hub resolver still owns trust scoring; this wrapper only
 breaks equal-score ties using explicit semantic labels, chronological Telegram\nevidence, and provider-brand labels.
 
-When an applied transaction records fresh domain history, the same current-46
-sanitizer used by the workflow is run once more before control returns. Resolvers
+When an applied transaction records fresh domain history, the same current
+projection-union-safe sanitizer used by the workflow is run once more before control returns. Resolvers
 may legitimately observe template/constructor URLs while discovering a terminal,
 but those values must never survive as persisted LKG history.
 
