@@ -2571,6 +2571,10 @@ async function _resolveHtml(meta, mediaType, season, episode) {
   if (!meta || (!meta.title && !meta.tmdbId)) return [];
   const candidates = [];
   if (meta.title) {
+    /* NIAKVIO_PROVIDER_HTML_SEARCH_CANDIDATE_COVERAGE_V33 */
+    // Search-page candidates are hypotheses only; strict title/year/episode
+    // identity is checked on the detail page below. Do not let candidates from
+    // the first bounded search endpoint suppress the second endpoint.
     for (const searchUrl of _searchUrls(meta, mediaType, season, episode).slice(0, 2)) {
       try {
         const response = await _fetch(searchUrl);
@@ -2586,7 +2590,6 @@ async function _resolveHtml(meta, mediaType, season, episode) {
           .map(row => row.url);
         candidates.push(...urls);
       } catch (_) {}
-      if (candidates.length) break;
     }
   }
   candidates.push(..._learnedUrls("detail", meta, mediaType, season, episode));
