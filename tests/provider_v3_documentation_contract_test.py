@@ -127,7 +127,7 @@ assert "material_ids==active_ids" in manual
 assert "==46" not in manual and "46/46" not in manual
 
 
-assert machine["schema_version"] >= 10
+assert machine["schema_version"] >= 13
 source = machine["provider_source_of_truth"]
 assert source["canonical_provider_base_marker"] == "NIAKVIO_PROVIDER_BASE_OWNED_V3"
 assert source["legacy_provider_js_seed_allowed"] is False
@@ -251,7 +251,7 @@ assert machine["provider_scopes"]["native_acceptance_includes_france_only"] is T
 assert machine["provider_scopes"]["availability_active"] == "scripts/current_provider_scope.py:projection_active_provider_ids"
 assert machine["provider_scopes"]["availability_report_visible"] == "scripts/current_provider_scope.py:projection_visible_provider_ids"
 
-assert validation_machine["schema_version"] >= 72
+assert validation_machine["schema_version"] >= 73
 runtime_contract = validation_machine["nuvio_runtime_contract"]
 assert runtime_contract["current_audited_refs_must_match"] is True
 assert runtime_contract["official_head_freshness_required_before_release"] is True
@@ -265,9 +265,10 @@ assert runtime_contract["historical_platform_matrix_is_current_authority"] is Fa
 assert runtime_contract["france_only_projection_is_first_class"] is True
 assert runtime_contract["native_platform_proof_is_independent"] is True
 assert runtime_contract["published_supported_types"] == ["movie", "tv", "anime"]
-assert runtime_contract["provider_runtime_request_types"] == ["movie", "tv"]
+assert runtime_contract["provider_runtime_request_types"] == ["movie", "tv", "anime"]
 assert runtime_contract["tv_input_aliases"] == ["series", "show", "other"]
-assert runtime_contract["anime_provider_runtime_type"] == "tv"
+assert runtime_contract["anime_provider_runtime_type"] == "anime"
+assert runtime_contract["anime_tv_launch_alias_is_compatibility_only"] is True
 assert runtime_contract["series_published_supported_type"] is False
 assert runtime_contract["portable_provider_result_fields"] == [
     "title", "name", "url", "quality", "size", "language", "provider",
