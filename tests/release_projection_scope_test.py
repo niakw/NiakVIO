@@ -130,10 +130,10 @@ for relative in ("manifest-hub46.json", "native-hub46/manifest.json"):
     path = ROOT / relative
     projection = load(path)
     ids = manifest_ids(path)
-    assert set(ids) == active_set, (
-        f"{relative}: active membership drift "
-        f"actual={len(ids)} expected={len(active_set)} "
-        f"missing={sorted(active_set-set(ids))} extra={sorted(set(ids)-active_set)}"
+    assert set(ids) == projection_active, (
+        f"{relative}: Global+France active membership drift "
+        f"actual={len(ids)} expected={len(projection_active)} "
+        f"missing={sorted(projection_active-set(ids))} extra={sorted(set(ids)-projection_active)}"
     )
     assert_no_archive_paths(path)
     assert str(projection.get("version") or "") == root_version, (
