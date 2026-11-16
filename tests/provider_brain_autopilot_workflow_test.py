@@ -115,9 +115,10 @@ assert 'complete-cloud-convergence:' in learn
 assert 'FIELD_BRAIN_CLOUD_CONVERGENCE next=census' in learn
 assert '-f scope=unresolved -f persist=true' in learn
 assert '-f architecture_force="$ARCHITECTURE_FORCE"' in learn
-assert 'FIELD_SHARDED_CENSUS_AUTOPILOT event_driven=false' in census
+assert 'FIELD_SHARDED_CENSUS_LIFECYCLE event_driven=false' in census
 assert 'trigger=workflow_dispatch' in census
-assert 'gh workflow run provider-brain-autopilot.yml' in census
+assert 'gh workflow run provider-disabled-lifecycle.yml' in census
+assert 'gh workflow run provider-brain-autopilot.yml' not in census
 
 print("provider Brain Autopilot cloud convergence contract passed")
 
