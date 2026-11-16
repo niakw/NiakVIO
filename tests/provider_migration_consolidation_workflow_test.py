@@ -37,6 +37,7 @@ for retired in (
     "provider-parity-order-bias-short.yml",
     "provider-parity-deep-hls-terminal-short.yml",
     "provider-parity-local-only-publish-short.yml",
+    "publish-final-seven-audit-short.yml",
 ):
     assert not (ROOT / ".github/workflows" / retired).exists(), retired
 
