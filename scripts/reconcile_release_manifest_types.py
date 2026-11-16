@@ -2,7 +2,7 @@
 """Reassert authoritative semantic/transport types after release rematerialization.
 
 This step is intentionally projection-authority-only: provider bytes and proof ledgers are not
-rewritten. Global manifest rows and provider_catalog scraper mirrors are updated atomically. It closes release-order drift where deterministic rebuild/minimizer/proof
+rewritten. Global manifest rows receive transport projection while provider_catalog keeps semantic-only capabilities. It closes release-order drift where deterministic rebuild/minimizer/proof
 steps can leave a manifest row with stale transport aliases even though
 provider-overrides.json still owns the accepted published_types contract.
 """
@@ -37,12 +37,25 @@ def reconcile_document(manifest: dict[str, Any], config: dict[str, Any]) -> list
     return sorted(set(changed))
 
 
-def reconcile_catalog(catalog: dict[str, Any], config: dict[str, Any]) -> list[str]:
-    """Apply the same authoritative type projection to every catalog scraper.
+def apply_catalog_semantic_types(entry: dict[str, Any], semantic_types: object) -> bool:
+    """Store canonical capability in catalog without client transport aliases."""
+    semantic: list[str] = []
+    for value in semantic_types if isinstance(semantic_types, list) else []:
+        item = str(value or "").strip().casefold()
+        if item in {"movie", "tv", "anime"} and item not in semantic:
+            semantic.append(item)
+    before_supported = entry.get("supportedTypes")
+    had_canonical = "canonicalSupportedTypes" in entry
+    entry["supportedTypes"] = semantic
+    entry.pop("canonicalSupportedTypes", None)
+    return before_supported != semantic or had_canonical
 
-    Global catalog rows mirror manifest authority; strict France-only rows own
-    their VF projection directly. Both must consume the same provider override
-    contract before derived manifests are regenerated.
+
+def reconcile_catalog(catalog: dict[str, Any], config: dict[str, Any]) -> list[str]:
+    """Apply authoritative semantic capability to every catalog scraper.
+
+    Global and strict France-only catalog rows are source capability authority.
+    Transport-only aliases such as anime->tv belong only to rendered manifests.
     """
     changed: list[str] = []
     for record in catalog.get("providers") or []:
@@ -55,7 +68,7 @@ def reconcile_catalog(catalog: dict[str, Any], config: dict[str, Any]) -> list[s
         if not provider_id:
             continue
         authoritative = configured_authoritative_types(config, provider_id)
-        if authoritative and apply_manifest_type_projection(scraper, authoritative):
+        if authoritative and apply_catalog_semantic_types(scraper, authoritative):
             changed.append(provider_id)
     return sorted(set(changed))
 
@@ -71,8 +84,8 @@ def main() -> int:
     if catalog_changed:
         CATALOG.write_text(json.dumps(catalog, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
-    # Reproject Global-owned rows plus strict France-only catalog rows only
-    # after both primary authorities consume the same type contract.
+    # Reproject Global transport rows plus strict France-only semantic catalog rows
+    # only after both primary authorities consume the same type contract.
     from sync_manifest_projection_rows import sync
     sync(check=False)
 
