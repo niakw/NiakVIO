@@ -20,6 +20,8 @@ on:
       # Core/ProviderBase edits must reach published bundles, not stop at source tests.
       - 'scripts/provider_patches/**'
       - 'scripts/provider_base_store.py'
+      - 'scripts/materialize_provider_base_v3_store.py'
+      - 'tests/provider_clean_reconstruction_contract_test.py'
       - 'scripts/current_provider_scope.py'
       - 'scripts/apply_provider_overrides.py'
       - 'engine_v2/src/provider-catalog.mjs'
@@ -196,6 +198,7 @@ jobs:
           python3 scripts/validate_nuvio_tv_runtime_policy.py
           python3 tests/platform_runtime_projection_authority_test.py
           python3 tests/nuvio_portable_stream_result_contract_test.py
+          python3 tests/provider_clean_reconstruction_contract_test.py
           python3 tests/provider_v3_documentation_contract_test.py
           python3 tests/provider_v3_strategy_plan_contract_test.py
           python3 tests/final_published_provider_config_test.py
