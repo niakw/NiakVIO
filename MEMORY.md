@@ -1,3 +1,11 @@
+## 2026-11-16 — HD/4K diagnostic no longer samples a mostly disabled September cohort
+
+- The NiakVIO-first quality audit found that the read-only Deep HD/4K workflow still hard-coded eight named providers from an older campaign. Five of the eight are currently disabled (`hindmoviez`, `4khdhub`, `uhdmovies`, `allanime`, `moviesmod`), so the scheduled diagnostic could spend most of its jobs on non-executable rows and no longer represent current architecture quality coverage.
+- Commit `3131dffb` adds `select_provider_quality_diagnostic_cohort.py`. It reads the exact active Global+France projection, extracts `sourceRuntimeFamily` from the published Provider-v3 bytes, keeps the strongest current-evidence representative per family, then greedily preserves movie/tv/anime and Global/VF projection diversity. The selection is bounded to eight and grants no transitive proof.
+- Commit `d93a619f` replaces the static Actions matrix with a prepare job using that exact-head selector and makes current scope/catalog/manifests retrigger the diagnostic. Commit `28265693` locks active membership, unique runtime-family sampling, movie/tv/anime coverage and forbids the disabled frozen matrix from returning.
+- Commit `ab28a4ae` updates `ARCHITECTURE.md`: the HD/4K oracle is a dynamic current-runtime-family sample, not a frozen eight-provider campaign.
+- This fixes diagnostic representativeness only. Positive 1080p/4K still requires measured playable media + content identity; the default production/Repair Deep path keeps its bounded economics and no provider is promoted by this workflow.
+
 ## 2026-11-16 — Current Nuvio stream ABI rechecked; TV additive behavior hints are now regression-tested
 
 - Direct GitHub source verification confirms the stored audited refs are still the exact official heads: NuvioMobile `fc05fe8e516a5bd749c8a4e7b1c05143acd3f031`, NuvioDesktop `3020193d8303c38ce88381f0a2a613b389219e62`, NuvioTV `2c853c1786743822c5ec7932e855529e0c731221`. The same refs are consistent across upstream, platform-runtime, compatibility and `sources.json` authorities.
