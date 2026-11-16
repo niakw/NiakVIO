@@ -1,3 +1,11 @@
+## 2026-11-16 — Historical migrations are aligned with ProviderBase V32/V34 instead of reintroducing anime→TV
+
+- The ProviderBase source is now canonical `movie|tv|anime`, but two historical migration owners still encoded the previous implicit anime↔TV behavior. That matters because canonical reconstruction executes migrations as **fixed-point validators** before it certifies source bytes.
+- Commit `2fbb9911` updates the V18.5 correlated-value semantic-lane migration/validator to normalize only `series|show|other -> tv` and then require exact canonical lane equality; `5d2f0c92` updates its regression. The migration no longer requires or installs a TV↔anime proof-plan bridge.
+- Commit `d4ee8e22` updates the manual-TV V34 migration template so learned API routes normalize only `series -> tv`; `c93b604b` makes the live-regression test prove byte-idempotence and reject an implicit `anime -> tv` helper. V17 chain diagnostics/comments were aligned in `51e66700`, and the published-supportedTypes comment now explicitly distinguishes the TV **launch alias** from provider runtime transport.
+- The DLE exact-episode fix is also part of the shared runtime contract: `312fd07f` aggregates the exact Sibnet mapping with other direct/nested sources from the same episode page instead of returning one stream immediately; `fd254748` locks it. Canonical ProviderBase provenance now records `dle_episode_variant_coverage=v34` (`e52e5a46`, `ac6c850b`).
+- No V32/V33/V34 provider result is certified until the canonical 75-provider materialization proves these migrations are no-ops on checked-in source and rotates the downstream Provider-v3 bytes.
+
 ## 2026-11-16 — ProviderBase V32/V33 removes remaining implicit anime aliases and pre-identity search truncation
 
 - After the Core/Native media-axis correction, the shared ProviderBase still contained several independent implicit aliases. Structured route placeholders `{media}/{type}` used `movie ? movie : tv`; API-recipe collection/type inference classified `anime` as `tv`; provider-value plans could cross-select a TV lane for an anime request (and vice versa) merely because the provider supported anime. Those shortcuts bypassed the explicit Core `requestTypeAliases` authority.
