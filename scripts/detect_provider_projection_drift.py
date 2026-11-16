@@ -12,7 +12,7 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 
-from current_provider_scope import active_provider_ids  # noqa: E402
+from current_provider_scope import projection_active_provider_rows  # noqa: E402
 from materialize_provider_v3_all import (  # noqa: E402
     normalize_anime_transport_compatibility,
     provider_model,
@@ -79,11 +79,9 @@ def diff_keys(published: dict[str, Any], expected: dict[str, Any]) -> list[str]:
 
 
 def detect() -> dict[str, Any]:
-    manifest = load(MANIFEST)
     overrides = load(OVERRIDES)
     static = load(STATIC)
     provenance = load(PROVENANCE)
-    active = active_provider_ids()
     patches = overrides.get("provider_patches") or {}
     capabilities = overrides.get("provider_capabilities") or {}
     static_rows = static.get("providers") or {}
@@ -102,11 +100,9 @@ def detect() -> dict[str, Any]:
     )
 
     rows: list[dict[str, Any]] = []
-    for entry in manifest.get("scrapers") or []:
-        if not isinstance(entry, dict):
-            continue
+    for entry in projection_active_provider_rows():
         provider_id = cid(entry.get("id"))
-        if not provider_id or provider_id not in active:
+        if not provider_id:
             continue
         rel = str(entry.get("filename") or "").strip()
         path = ROOT / rel
