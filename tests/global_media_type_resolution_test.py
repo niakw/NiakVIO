@@ -17,6 +17,10 @@ assert 'function _tmdbNamespace(mediaType)' in provider_transport
 assert 'return _mediaNamespace(mediaType) === "movie" ? "movie" : "tv";' in provider_transport
 assert 'const type = _tmdbNamespace(mediaType);' in provider_base_source
 assert 'const transport = _mediaNamespace(mediaType);' in provider_base_source
+assert 'media: _mediaNamespace(mediaType)' in provider_base_source
+assert 'type: _mediaNamespace(mediaType)' in provider_base_source
+assert 'media: mediaType === "movie" ? "movie" : "tv"' not in provider_base_source
+assert 'type: mediaType === "movie" ? "movie" : "tv"' not in provider_base_source
 route_compat = provider_base_source.split("function _spv34RouteMediaCompatible", 1)[1].split("function _learnedUrls", 1)[0]
 assert 'actual === "series" || actual === "anime"' not in route_compat
 assert 'if (actual === "series") actual = "tv";' in route_compat
