@@ -84,6 +84,37 @@ def validate_matrix() -> list[str]:
                     f"min={minimum} baseline={baseline_code} current={current_code} max={maximum}"
                 )
 
+            features = row.get("versioned_features") or []
+            if not isinstance(features, list):
+                errors.append(f"{client_id}: versioned_features must be an array")
+            else:
+                feature_ids: set[str] = set()
+                for feature in features:
+                    if not isinstance(feature, dict):
+                        errors.append(f"{client_id}: versioned feature is not an object")
+                        continue
+                    feature_id = str(feature.get("id") or "").strip()
+                    if not feature_id:
+                        errors.append(f"{client_id}: versioned feature missing id")
+                        continue
+                    if feature_id in feature_ids:
+                        errors.append(f"{client_id}: duplicate versioned feature {feature_id}")
+                    feature_ids.add(feature_id)
+                    try:
+                        feature_min = int(feature.get("min_version_code"))
+                    except (TypeError, ValueError):
+                        errors.append(f"{client_id}:{feature_id}: invalid min_version_code")
+                        continue
+                    if not (minimum <= feature_min <= maximum):
+                        errors.append(
+                            f"{client_id}:{feature_id}: min_version_code {feature_min} outside "
+                            f"audited range {minimum}..{maximum}"
+                        )
+                    if feature.get("brain_provider_mutation_required") not in {True, False}:
+                        errors.append(
+                            f"{client_id}:{feature_id}: brain_provider_mutation_required must be boolean"
+                        )
+
         capabilities = {
             str(value)
             for value in row.get("brain_capabilities") or []
