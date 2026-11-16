@@ -79,7 +79,7 @@ jobs:
           python tests/provider_projection_reconcile_workflow_test.py
           python scripts/detect_provider_projection_drift.py --output "$RUNNER_TEMP/projection-drift.before.json"
           python - <<'PY' >> "$GITHUB_OUTPUT"
-          import json, os, subprocess
+          import json, os, subprocess, sys
           from pathlib import Path
           d=json.loads((Path(os.environ["RUNNER_TEMP"])/"projection-drift.before.json").read_text())
           providers=sorted({str(x or "").strip().lower() for x in d.get("providers") or [] if str(x or "").strip()})
@@ -88,10 +88,14 @@ jobs:
               text=True,
           ).strip().splitlines()
           if durable_base_changes and not providers:
-              raise SystemExit(
-                  "ProviderBase durable store changed without provider projection drift: "
-                  + ",".join(durable_base_changes[:12])
-              )
+              sys.path.insert(0, "scripts")
+              from current_provider_scope import projection_active_provider_ids
+              providers=sorted(projection_active_provider_ids())
+              if not providers:
+                  raise SystemExit("ProviderBase durable store changed but active projection union is empty")
+              print("provider_base_forced=true")
+          else:
+              print("provider_base_forced=false")
           print("count="+str(len(providers)))
           print("providers="+",".join(providers))
           PY
