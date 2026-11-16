@@ -8,7 +8,7 @@ import sys
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
-from current_provider_scope import active_provider_count, active_provider_ids
+from current_provider_scope import projection_active_provider_count, projection_active_provider_ids
 
 BUILDER = ROOT / "scripts" / "build_hub46_native_manifest.py"
 
@@ -26,7 +26,7 @@ scope = {
     for row in source.get("scrapers") or []
     if isinstance(row, dict) and module.cid(row.get("id"))
 }
-assert scope == active_provider_ids(), (len(scope), active_provider_count())
+assert scope == projection_active_provider_ids(), (len(scope), projection_active_provider_count())
 provider_sha = "1" * 40
 payload = module.build(
     source,
@@ -102,6 +102,6 @@ for row in pinned_rows:
 
 print(
     "NATIVE_HUB46_TRANSPORT_MANIFEST_OK "
-    f"providers={active_provider_count()} terminal=manifest.json "
+    f"providers={projection_active_provider_count()} terminal=manifest.json "
     "pinned_provider_urls=true pinned_blobs_exist=true android_prebuild=nested"
 )
