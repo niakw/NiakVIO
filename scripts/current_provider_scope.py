@@ -236,58 +236,75 @@ def audit_projection_scope(root: Path = ROOT) -> dict[str, int]:
         "union_active": sum(enabled for _, enabled in union.values()),
     }
 
-def projection_visible_provider_ids(root: Path = ROOT) -> set[str]:
-    """Union of Global and France projection identities after integrity validation."""
+def projection_visible_provider_rows(root: Path = ROOT) -> list[dict[str, Any]]:
+    """Canonical rows for the Global+France visible union.
+
+    Shared identities use the Global row. France-only rows use the VF projection
+    with its "../" transport path normalized back to repository-relative form.
+    This is a read-only execution view; it never copies France-only identities
+    into manifest.json.
+    """
     root = root.resolve()
     audit_projection_scope(root)
-    result: set[str] = set()
-    for relative in ("manifest.json", "vf/manifest.json"):
+    by_id: dict[str, dict[str, Any]] = {}
+    for relative, prefix in (("manifest.json", ""), ("vf/manifest.json", "../")):
         payload = json.loads((root / relative).read_text(encoding="utf-8"))
         rows = payload.get("scrapers")
         if not isinstance(rows, list):
             raise RuntimeError(f"{relative}: missing scraper list")
-        local: set[str] = set()
         for row in rows:
             if not isinstance(row, dict):
                 raise RuntimeError(f"{relative}: invalid provider row")
             provider = cid(row.get("id"))
-            if not provider or provider in local:
-                raise RuntimeError(f"{relative}: empty or duplicate provider id: {provider}")
-            local.add(provider)
-        result.update(local)
-    return result
+            if not provider:
+                raise RuntimeError(f"{relative}: empty provider id")
+            if provider in by_id:
+                continue
+            normalized = dict(row)
+            filename = str(normalized.get("filename") or "")
+            if prefix:
+                if not filename.startswith(prefix):
+                    raise RuntimeError(f"{relative}: incorrect projection path: {provider}")
+                normalized["filename"] = filename[len(prefix):]
+            by_id[provider] = normalized
+    return [by_id[provider] for provider in sorted(by_id)]
+
+
+def projection_active_provider_rows(root: Path = ROOT) -> list[dict[str, Any]]:
+    """Canonical active rows across Global+France."""
+    rows = [
+        row for row in projection_visible_provider_rows(root)
+        if row.get("enabled") is not False
+    ]
+    if not rows:
+        raise RuntimeError("Global+France active projection union is empty")
+    return rows
+
+
+def projection_runtime_visible_provider_rows(root: Path = ROOT) -> list[dict[str, Any]]:
+    """Canonical runtime-visible rows across Global+France, excluding pending."""
+    if root.resolve() != ROOT.resolve():
+        raise RuntimeError("projection runtime scope currently requires repository root authority")
+    pending = pending_provider_ids()
+    return [
+        row for row in projection_visible_provider_rows(root)
+        if cid(row.get("id")) not in pending
+    ]
+
+
+def projection_visible_provider_ids(root: Path = ROOT) -> set[str]:
+    """Union of Global and France projection identities after integrity validation."""
+    return {cid(row.get("id")) for row in projection_visible_provider_rows(root)}
 
 
 def projection_active_provider_ids(root: Path = ROOT) -> set[str]:
     """Active identity union across the Global and France projections."""
-    root = root.resolve()
-    audit_projection_scope(root)
-    result: set[str] = set()
-    for relative in ("manifest.json", "vf/manifest.json"):
-        payload = json.loads((root / relative).read_text(encoding="utf-8"))
-        rows = payload.get("scrapers")
-        if not isinstance(rows, list):
-            raise RuntimeError(f"{relative}: missing scraper list")
-        local: set[str] = set()
-        for row in rows:
-            if not isinstance(row, dict):
-                raise RuntimeError(f"{relative}: invalid provider row")
-            provider = cid(row.get("id"))
-            if not provider or provider in local:
-                raise RuntimeError(f"{relative}: empty or duplicate provider id: {provider}")
-            local.add(provider)
-            if row.get("enabled") is not False:
-                result.add(provider)
-    if not result:
-        raise RuntimeError("Global+France active projection union is empty")
-    return result
+    return {cid(row.get("id")) for row in projection_active_provider_rows(root)}
 
 
 def projection_runtime_visible_provider_ids(root: Path = ROOT) -> set[str]:
     """Current Global+France identities excluding onboarding-pending rows."""
-    if root.resolve() != ROOT.resolve():
-        raise RuntimeError("projection runtime scope currently requires repository root authority")
-    return projection_visible_provider_ids(root) - pending_provider_ids()
+    return {cid(row.get("id")) for row in projection_runtime_visible_provider_rows(root)}
 
 
 def projection_runtime_visible_provider_count(root: Path = ROOT) -> int:
