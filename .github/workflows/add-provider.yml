@@ -331,12 +331,13 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          python -m py_compile             scripts/add_provider.py             scripts/provider_branding_assets.py             scripts/run_brain_learning_queue.py             scripts/prepare_native_ios_reader_acceptance.py             scripts/probe_provider_site_structure.py             scripts/verify_unrelated_active_provider_bytes.py
+          python -m py_compile             scripts/add_provider.py             scripts/provider_branding_assets.py             scripts/run_brain_learning_queue.py             scripts/prepare_native_ios_reader_acceptance.py             scripts/probe_provider_site_structure.py             scripts/verify_unrelated_active_provider_bytes.py             scripts/check_provider_onboarding_neutral_drift.py
           node --check scripts/nuvio_client_lab.cjs
           node --check scripts/nuvio_client_lab_session.cjs
           python tests/add_provider_workflow_test.py
           python tests/provider_bulk_onboarding_test.py
           python tests/provider_bulk_active_byte_stability_test.py
+          python tests/provider_onboarding_publish_drift_test.py
           python tests/provider_clean_reconstruction_contract_test.py
           python tests/provider_logo_asset_contract_test.py
           python tests/provider_branding_contract_test.py
@@ -422,6 +423,7 @@ jobs:
             echo "Validated onboarding base $BASE_SHA is not an ancestor of current main." >&2
             exit 3
           }
+          python scripts/check_provider_onboarding_neutral_drift.py --base "$BASE_SHA" --head HEAD
           if [ ! -s checked-transaction/provider-transaction.patch ]; then
             echo "FIELD_PROVIDER_ONBOARDING_PUBLISH provider=$PROVIDER_ID state=noop"
             exit 0
@@ -435,6 +437,7 @@ jobs:
           git config user.email "actions@users.noreply.github.com"
           git commit -m "provider: add $PROVIDER_ID"
           git fetch origin main
+          python scripts/check_provider_onboarding_neutral_drift.py --base "$BASE_SHA" --head origin/main
           git rebase origin/main
           git push origin HEAD:main
           echo "FIELD_PROVIDER_ONBOARDING_PUBLISH provider=$PROVIDER_ID state=published sha=$(git rev-parse HEAD)"
