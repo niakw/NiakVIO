@@ -129,7 +129,7 @@ assert "material_ids==active_ids" in manual
 assert "==46" not in manual and "46/46" not in manual
 
 
-assert machine["schema_version"] >= 14
+assert machine["schema_version"] >= 15
 source = machine["provider_source_of_truth"]
 assert source["canonical_provider_base_marker"] == "NIAKVIO_PROVIDER_BASE_OWNED_V3"
 assert source["legacy_provider_js_seed_allowed"] is False
@@ -148,6 +148,9 @@ assert media["provider_runtime_request_values"] == ["movie", "tv", "anime"]
 assert media["tv_input_aliases"] == ["series", "show", "other"]
 assert media["anime_provider_runtime_type"] == "anime"
 assert media["anime_tv_launch_alias_is_compatibility_only"] is True
+assert media["provider_transport_separate_from_tmdb_namespace"] is True
+assert media["tmdb_identity_namespace_values"] == ["movie", "tv"]
+assert media["tmdb_namespace_must_not_rewrite_provider_transport"] is True
 assert media["series_published_supported_type"] is False
 assert media["transport_aliases_do_not_expand_semantic_capability"] is True
 assert media["capability_gate_before_provider_network"] is True
@@ -262,7 +265,7 @@ assert machine["provider_scopes"]["availability_report_visible"] == "scripts/cur
 
 assert platform_runtime_machine["schema_version"] == 3
 assert 'data.get("schema_version") != 3' in renderer_source
-assert validation_machine["schema_version"] >= 74
+assert validation_machine["schema_version"] >= 75
 assert validation_machine["checks"]["clean_provider_base_matches_current_common_source"] is True
 assert validation_machine["checks"]["common_provider_source_migrations_validation_only"] is True
 assert validation_machine["final_certification"]["requires_clean_provider_base_current_source"] is True
@@ -284,6 +287,9 @@ assert runtime_contract["provider_runtime_request_types"] == ["movie", "tv", "an
 assert runtime_contract["tv_input_aliases"] == ["series", "show", "other"]
 assert runtime_contract["anime_provider_runtime_type"] == "anime"
 assert runtime_contract["anime_tv_launch_alias_is_compatibility_only"] is True
+assert runtime_contract["provider_transport_separate_from_tmdb_namespace"] is True
+assert runtime_contract["tmdb_identity_namespace_values"] == ["movie", "tv"]
+assert runtime_contract["tmdb_namespace_must_not_rewrite_provider_transport"] is True
 assert runtime_contract["series_published_supported_type"] is False
 assert runtime_contract["portable_provider_result_fields"] == [
     "title", "name", "url", "quality", "size", "language", "provider",
