@@ -38,6 +38,7 @@ for required in (
     "FIELD_PROVIDER_PROJECTION_PUBLISH_BLOCKED reason=executable_main_drift",
     "git push origin HEAD:main",
     "temp-current-bytes-full-provider-census.yml",
+    'gh workflow run github-actions-gate.yml --repo "$GITHUB_REPOSITORY" --ref main',
     "--preserve-structured-data",
     "Projection reconcile mutated accepted provider-overrides.json.",
 ):
