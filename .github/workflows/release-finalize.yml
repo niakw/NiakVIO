@@ -184,6 +184,10 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          # A release may only certify the stored ABI after proving that the
+          # official client branches are still reachable and have no unreviewed
+          # contract/semantic drift from the accepted refs.
+          python3 scripts/check_nuvio_client_upstreams.py --output "$RUNNER_TEMP/nuvio-client-upstream-status.json"
           python3 scripts/render_platform_runtime_contracts.py
           python3 scripts/render_platform_runtime_contracts.py --check
           python3 scripts/runtime_contract_gate.py
