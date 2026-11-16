@@ -13,6 +13,7 @@ visible fixture-by-fixture in Actions logs.
 """
 from __future__ import annotations
 
+import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -304,7 +305,6 @@ def validate_finalizer(text: str) -> None:
         'runtimeObservationsPersistedAsProviderData": False',
         'execution_plan_set = set(model.get("routes") or [])',
         'PROVIDER_V3_ROUTE_PROOF_AUTHORITY_V5',
-        'blocked_recipe_plan = completion_state in {"terminal-blocked", "terminal-unreachable", "disabled-unqualified"}',
         'model["apiRecipe"] = copy.deepcopy(candidate_model_recipe)',
         'patch["api_recipe"] = copy.deepcopy(candidate_recipe)',
         'filter_recipe_by_live_routes(candidate_model_recipe, live_set)',
@@ -319,6 +319,25 @@ def validate_finalizer(text: str) -> None:
     for needle in required:
         if needle not in text:
             raise AssertionError(f"Provider v3 finalization v1 missing: {needle}")
+
+    # This V1 migration is a minimum semantic floor, not the authority for all
+    # future completion states. Later revisions may extend the blocked-plan
+    # family (for example resample-required) without invalidating V1. Require
+    # the historical fail-closed states as a subset instead of matching the
+    # old source text byte-for-byte.
+    blocked_match = re.search(
+        r'blocked_recipe_plan\s*=\s*completion_state\s+in\s+\{(?P<body>[^}]*)\}',
+        text,
+    )
+    if not blocked_match:
+        raise AssertionError("Provider v3 finalization v1 missing blocked_recipe_plan predicate")
+    blocked_states = set(re.findall(r'["\']([^"\']+)["\']', blocked_match.group("body")))
+    required_blocked_states = {"terminal-blocked", "terminal-unreachable", "disabled-unqualified"}
+    if not required_blocked_states <= blocked_states:
+        raise AssertionError(
+            "Provider v3 finalization v1 lost required blocked-plan states: "
+            f"required={sorted(required_blocked_states)} actual={sorted(blocked_states)}"
+        )
     forbidden = (
         'model["routeData"] = copy.deepcopy(evaluation["liveRouteData"])',
         'model["routes"] = list(evaluation["liveRoutes"])',
