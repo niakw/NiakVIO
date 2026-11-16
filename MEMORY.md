@@ -1,3 +1,10 @@
+## 2026-11-16 — Current static-knowledge contract no longer reimports retired September witnesses
+
+- Reconstruction run `43928159568` on `96856a3e` passed the runtime-family sanitizer and its regression (`providers=108 active_unknown=0`), then failed in `provider_v3_static_knowledge_contract_test.py` because the test still required retired provider `vegamovies` to exist in the exact current Global+France runtime-visible knowledge set.
+- The same hard-coded witness tuple also contained `animezey` and `4khdhubnew`, which are no longer present in the current catalogue. Requiring them contradicts the test's stronger invariant immediately above: static knowledge identities must equal `projection_runtime_visible_provider_ids()`; retired observations belong to archive/provenance, not current execution authority.
+- Commit `e759bd0e` removes those retired identities and the obsolete VegaMovies current-domain assertions while retaining current active/disabled-retained witnesses, including 4KHDHub's seed-vs-durable-route evidence contract.
+- No historical evidence is deleted and no provider is activated. A fresh reconstruction is required to prove the exact current static-knowledge set proceeds to live validation/materialization.
+
 ## 2026-11-16 — Current Global+France providers regain durable version floors
 
 - Workflow Gate `43927767184` exposed a release-authority gap after the catalogue expansion: 20 current runtime-visible providers had no entry in `provider-version-floors.json`. Without a floor, byte-changing reapplication could not prove monotonic provider versions against already exposed client-cache versions.
