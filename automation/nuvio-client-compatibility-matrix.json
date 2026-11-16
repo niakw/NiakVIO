@@ -201,13 +201,13 @@
         "version_code": 17
       },
       "current_audited": {
-        "ref": "8e779958a5f4e11f069c9edf62208600305946f9",
-        "version_name": "0.1.36-alpha",
-        "version_code": 36
+        "ref": "3020193d8303c38ce88381f0a2a613b389219e62",
+        "version_name": "0.1.37-alpha",
+        "version_code": 37
       },
       "supported_version_code": {
         "min": 17,
-        "max": 36
+        "max": 37
       },
       "provider_contract": {
         "runtime": "quickjs-positional-getStreams",
@@ -218,7 +218,7 @@
           "composeApp/src/commonMain/kotlin/com/nuvio/app/features/plugins/PluginModels.kt",
           "composeApp/src/fullCommonMain/kotlin/com/nuvio/app/features/plugins/PluginRepository.kt"
         ],
-        "audited_change": "2026-11-16 exact source re-audit at Dev 8e779958a5f4: the 50-commit advance changes no configured provider/plugin/streams contract path. Player semantic changes add reusable bounded source fallback and next-episode selection; direct source playback still preserves StreamItem identity plus sanitized request/response proxy headers. Positional getStreams(tmdbId, mediaType, season, episode), full-list mapping, subtitles and TMDB_API_KEY hydration remain unchanged. macOS/Windows native execution is still required independently.",
+        "audited_change": "2026-11-16 exact current-source audit at Dev 3020193d8303. Since 8e779958a5f4, upstream changed only DesktopVersion.properties (0.1.37-alpha / 37) and DesktopDetailHero UI. No configured provider/plugin/streams contract path or player semantic-review path changed; positional getStreams, full result-list mapping, request/response headers, subtitles and the runtime TMDB_API_KEY bridge remain intact. macOS/Windows reader execution remains independently required.",
         "runtime_validation": "execute the exact official Desktop runtime and re-prove macOS/Windows reader behavior; Mobile success is not Desktop proof",
         "runtime_family_equivalent_to_sibling_clients": false,
         "official_getStreams_error_behavior": "application runtime catches JavaScript getStreams errors and captures []",
