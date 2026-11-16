@@ -6,7 +6,7 @@ ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT/"scripts"))
 from provider_base_store import canonical_id
 from provider_patch_blocks import decode_managed_data
-from current_provider_scope import active_provider_rows, disabled_provider_rows
+from current_provider_scope import projection_active_provider_rows, projection_disabled_provider_rows
 DECL="const NIAKVIO_PROVIDER_MODEL = Object.freeze("
 
 def validate_bundle(text:str,provider_id:str)->None:
@@ -21,7 +21,7 @@ def validate_bundle(text:str,provider_id:str)->None:
  if text.count("/* BEGIN NIAKVIO_PROVIDER */")!=1 or text.count("/* END NIAKVIO_PROVIDER */")!=1: raise ValueError(f"{canonical}: Provider envelope cardinality invalid")
 
 def validate_manifest(path:Path)->None:
- if path.resolve()==(ROOT/"manifest.json").resolve(): rows=active_provider_rows()+disabled_provider_rows()
+ if path.resolve()==(ROOT/"manifest.json").resolve(): rows=projection_active_provider_rows()+projection_disabled_provider_rows()
  else:
   payload=json.loads(path.read_text(encoding="utf-8")); rows=[r for r in payload.get("scrapers") or [] if isinstance(r,dict)]
  seen=set(); active=disabled=0
@@ -37,7 +37,7 @@ def validate_manifest(path:Path)->None:
    active+=1
   if not bundle.is_file(): raise ValueError(f"{provider_id}: bundle missing: {relative}")
   validate_bundle(bundle.read_text(encoding="utf-8"),provider_id)
- print(f"final published Provider CONFIG tests passed active={active} disabled={disabled} visible={len(rows)}")
+ print(f"final published Provider CONFIG tests passed active={active} disabled={disabled} visible={len(rows)} scope=Global+France")
 
 def main()->int:
  parser=argparse.ArgumentParser(); parser.add_argument("--manifest",type=Path,default=ROOT/"manifest.json"); parser.add_argument("--expected",type=int,default=None,help="deprecated compatibility argument; cardinality is derived from provider identities")
