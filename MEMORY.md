@@ -3335,3 +3335,10 @@ Measured clean V3 oracle #43539920416 showed a **provider transport differential
 - Fix: Domain Refresh and Fast Repair may execute concurrently only through the already disjoint current causal plan; Fast Repair remains serialized against another in-flight Fast Repair run and all ordinary candidate/playback/publication gates remain unchanged. A regression test rejects restoration of the global Domain/Fast mutex.
 - This increases repair throughput but is **not** provider proof. No provider is called repaired by this change; the current Brain Learning/Guidance runs must still generate, execute, rematerialize and validate exact bytes before publication.
 
+## 2026-11-16 — Lifecycle materialization authority is active-only
+
+- Runs `43792939599`, `43792955839` and `43792955902` exposed three independent regressions on the current Global+France convergence path: lifecycle failed on 32 retained-disabled identities absent from executable materialization, Workflow Gate hit a literal `\\n` syntax error in the sharded-census persistence contract, and Non-Regression referenced an undefined `workflow` variable.
+- Root cause of the lifecycle failure was an authority-layer conflation: static Brain knowledge legitimately spans active + retained-disabled runtime-visible identities, but `provider-v3-materialization.json` is exact executable byte authority and canonically contains only active Global+France identities. Requiring disabled identities in that ledger contradicted `reconcile_provider_static_authority.py` and the materialization validator.
+- Fix: lifecycle now projects/removes materialization rows against `active_ids` only, while keeping `staticKnowledgeProviderCount` bound to the wider runtime-visible static scope. The lifecycle workflow and regression contract enforce the same split. The two malformed census tests are repaired without changing census semantics.
+- No provider is declared repaired or newly functional by this infrastructure correction. Provider success still requires Brain generation/application, exact-byte rematerialization, real playback/identity validation and publication on the tested SHA.
+

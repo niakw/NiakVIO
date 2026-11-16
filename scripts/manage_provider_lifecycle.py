@@ -333,26 +333,30 @@ def reconcile_static_knowledge(visible_ids: set[str], *, apply: bool) -> dict[st
 
 
 def reconcile_materialization_report(
-    visible_ids: set[str],
     active_ids: set[str],
     *,
     static_provider_count: int,
     apply: bool,
 ) -> dict[str, Any]:
-    """Project the existing deterministic byte ledger onto the current catalogue."""
+    """Project executable byte authority onto the current active catalogue only.
+
+    Static knowledge intentionally spans retained disabled providers so Brain can
+    learn/recover them, but provider-v3-materialization.json is executable
+    authority and must never retain disabled rows.
+    """
     import hashlib
 
     doc = load_json(MATERIALIZATION_PATH)
     raw_rows = [row for row in doc.get("providers") or [] if isinstance(row, dict)]
     by_id = {cid(row.get("provider")): row for row in raw_rows if cid(row.get("provider"))}
-    missing = sorted(visible_ids - set(by_id))
+    missing = sorted(active_ids - set(by_id))
     if missing:
-        raise RuntimeError("visible providers missing from materialization ledger: " + ",".join(missing))
+        raise RuntimeError("active providers missing from materialization ledger: " + ",".join(missing))
 
-    rows = [row for row in raw_rows if cid(row.get("provider")) in visible_ids]
+    rows = [row for row in raw_rows if cid(row.get("provider")) in active_ids]
     row_ids = {cid(row.get("provider")) for row in rows}
-    if row_ids != visible_ids:
-        raise RuntimeError("materialization/current catalogue identity mismatch after lifecycle reconcile")
+    if row_ids != active_ids:
+        raise RuntimeError("materialization/active catalogue identity mismatch after lifecycle reconcile")
 
     aggregate = hashlib.sha256()
     for row in rows:
@@ -363,7 +367,7 @@ def reconcile_materialization_report(
         aggregate.update(provider.encode("utf-8"))
         aggregate.update(bytes.fromhex(digest))
 
-    removed = sorted(set(by_id) - visible_ids)
+    removed = sorted(set(by_id) - active_ids)
     doc["providers"] = rows
     doc["providerCount"] = len(rows)
     if "expectedProviderCount" in doc:
@@ -501,7 +505,6 @@ def apply_lifecycle(root: Path = ROOT, *, day: date, apply: bool = False) -> dic
         update_provider_catalog(by_id, archived_now)
         static_result = reconcile_static_knowledge(runtime_visible_ids, apply=True)
         materialization_result = reconcile_materialization_report(
-            runtime_visible_ids,
             active_ids,
             static_provider_count=int(static_result["providerCount"]),
             apply=True,
@@ -512,7 +515,6 @@ def apply_lifecycle(root: Path = ROOT, *, day: date, apply: bool = False) -> dic
     if not apply:
         static_result = reconcile_static_knowledge(runtime_visible_ids, apply=False)
         materialization_result = reconcile_materialization_report(
-            runtime_visible_ids,
             active_ids,
             static_provider_count=int(static_result["providerCount"]),
             apply=False,

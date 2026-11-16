@@ -123,9 +123,11 @@ jobs:
               if isinstance(row,dict) and 'providerCount' in row:
                   assert int(row.get('providerCount') or 0) == len(runtime_visible_ids), (section,row.get('providerCount'),len(runtime_visible_ids))
           materialization_ids={str(row.get('provider') or '').strip().casefold().replace('_','-') for row in materialization.get('providers') or [] if isinstance(row,dict)}
-          assert materialization_ids == runtime_visible_ids, (sorted(materialization_ids-runtime_visible_ids), sorted(runtime_visible_ids-materialization_ids))
-          assert int(materialization.get('providerCount') or 0) == len(runtime_visible_ids)
-          assert int(materialization.get('expectedProviderCount') or len(runtime_visible_ids)) == len(runtime_visible_ids)
+          # Static knowledge remains available for retained disabled providers,
+          # but executable materialization authority is active-only.
+          assert materialization_ids == active_union, (sorted(materialization_ids-active_union), sorted(active_union-materialization_ids))
+          assert int(materialization.get('providerCount') or 0) == len(active_union)
+          assert int(materialization.get('expectedProviderCount') or len(active_union)) == len(active_union)
           assert int(materialization.get('activeProviderIdentityCount') or 0) == len(active_union)
           assert int(materialization.get('staticKnowledgeProviderCount') or 0) == len(runtime_visible_ids)
 

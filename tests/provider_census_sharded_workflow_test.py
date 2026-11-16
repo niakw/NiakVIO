@@ -61,6 +61,6 @@ assert 'FIELD_SHARDED_TARGET_MATERIALIZATION providers=all mode=global' in text
 
 # The persistence phase may merge newer Brain activity after the sharded status
 # was rendered. Never publish the pre-merge Markdown snapshot over canonical JSON.
-assert "cp /tmp/PROVIDER_CENSUS_STATUS.md PROVIDER_CENSUS_STATUS.md" not in workflow, (
+assert "cp /tmp/PROVIDER_CENSUS_STATUS.md PROVIDER_CENSUS_STATUS.md" not in text, (
     "stale pre-merge dashboard copy must never overwrite canonical merged state"
 )

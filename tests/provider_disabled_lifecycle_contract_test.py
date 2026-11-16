@@ -72,6 +72,16 @@ classify_pos=workflow.index("python scripts/classify_provider_authority.py --app
 manage_pos=workflow.index("python scripts/manage_provider_lifecycle.py --apply")
 assert reconcile_pos < classify_pos < manage_pos, "active authority must reconcile before a fresh safe-disable row is moved by lifecycle"
 assert "python scripts/build_provider_disabled_recovery_queue.py" in workflow, "lifecycle must preserve eligible auto-disabled Brain recovery debt"
+# Retained disabled providers stay in static Brain knowledge, not in executable
+# materialization authority. This keeps lifecycle aligned with the canonical
+# Global+France active byte ledger.
+lifecycle_source=(ROOT/"scripts/manage_provider_lifecycle.py").read_text(encoding="utf-8")
+assert "active providers missing from materialization ledger" in lifecycle_source
+assert "visible providers missing from materialization ledger" not in lifecycle_source
+assert "materialization_ids == active_union" in workflow
+assert "materialization_ids == runtime_visible_ids" not in workflow
+assert "staticKnowledgeProviderCount" in workflow
+
 
 with tempfile.TemporaryDirectory(prefix="provider-lifecycle-prefix-") as tmp:
     folder=Path(tmp)
