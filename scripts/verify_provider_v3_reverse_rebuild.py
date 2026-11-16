@@ -14,7 +14,7 @@ import json
 import tempfile
 from pathlib import Path
 
-from current_provider_scope import active_provider_count, active_provider_ids
+from current_provider_scope import projection_active_provider_count, projection_active_provider_ids
 
 from materialize_provider_v3_all import materialize_all
 from provider_v3_minimizer import minimize_provider_text
@@ -22,7 +22,8 @@ from provider_v3_minimizer import minimize_provider_text
 ROOT = Path(__file__).resolve().parents[1]
 EXPECTED = ROOT / "provider-v3-materialization.json"
 MANIFEST = ROOT / "manifest.json"
-EXPECTED_PROVIDER_COUNT = active_provider_count()
+CATALOG = ROOT / "provider_catalog.json"
+EXPECTED_PROVIDER_COUNT = projection_active_provider_count()
 
 
 def sha256_bytes(data: bytes) -> str:
@@ -32,20 +33,24 @@ def sha256_bytes(data: bytes) -> str:
 def main() -> int:
     expected = json.loads(EXPECTED.read_text(encoding="utf-8"))
     manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
-    active_ids = active_provider_ids()
-    rows = [
-        row for row in manifest.get("scrapers") or []
-        if isinstance(row, dict)
-        and str(row.get("id") or "").strip().casefold() in active_ids
-    ]
+    catalog = json.loads(CATALOG.read_text(encoding="utf-8"))
+    active_ids = projection_active_provider_ids()
+    ids = sorted(active_ids)
 
-    if expected.get("providerCount") != EXPECTED_PROVIDER_COUNT or len(rows) != EXPECTED_PROVIDER_COUNT:
+    if expected.get("providerCount") != EXPECTED_PROVIDER_COUNT:
         raise SystemExit(
             f"Provider v3 reverse rebuild requires exactly {EXPECTED_PROVIDER_COUNT} current providers"
         )
-    ids = [str(row.get("id") or "").strip().casefold() for row in rows]
-    if any(not provider_id for provider_id in ids) or len(set(ids)) != EXPECTED_PROVIDER_COUNT:
-        raise SystemExit(f"Provider v3 reverse rebuild requires {EXPECTED_PROVIDER_COUNT} unique non-empty provider ids")
+    expected_ids = {
+        str(row.get("provider") or "").strip().casefold().replace("_", "-")
+        for row in expected.get("providers") or []
+        if isinstance(row, dict)
+    }
+    if expected_ids != active_ids or len(expected_ids) != EXPECTED_PROVIDER_COUNT:
+        raise SystemExit(
+            "Provider v3 reverse rebuild materialization authority differs from "
+            "the active Global+France projection union"
+        )
 
     archived_slugs = {
         path.name.split("--", 1)[0].casefold()
@@ -58,12 +63,18 @@ def main() -> int:
     with tempfile.TemporaryDirectory(prefix="niakvio-v3-rebuild-") as tmp_raw:
         tmp = Path(tmp_raw)
         tmp_manifest = tmp / "manifest.json"
+        tmp_catalog = tmp / "provider_catalog.json"
         tmp_manifest.write_text(
             json.dumps(manifest, ensure_ascii=False, indent=2) + "\n",
             encoding="utf-8",
         )
+        tmp_catalog.write_text(
+            json.dumps(catalog, ensure_ascii=False, indent=2) + "\n",
+            encoding="utf-8",
+        )
         rebuilt = materialize_all(
             source_manifest_path=tmp_manifest,
+            source_catalog_path=tmp_catalog,
             overrides_path=ROOT / "provider-overrides.json",
             output_dir=tmp / "providers",
             report_path=tmp / "report.json",
@@ -82,8 +93,8 @@ def main() -> int:
             for row in (expected.get("providers") or [])
             if isinstance(row, dict)
         }
-        if set(actual_by_id) != set(ids) or set(expected_by_id) != set(ids):
-            raise SystemExit("reverse rebuild provider ids differ from current manifest/report")
+        if set(actual_by_id) != active_ids or set(expected_by_id) != active_ids:
+            raise SystemExit("reverse rebuild provider ids differ from current Global+France authority")
 
         for provider_id in ids:
             actual = actual_by_id[provider_id]
