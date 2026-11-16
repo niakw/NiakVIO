@@ -8,8 +8,8 @@ from provider_base_store import build_provider_data_model
 from materialize_provider_v3_all import provider_model, normalize_anime_transport_compatibility
 from provider_v3_filename_policy import matches_provider_v3_filename
 from current_provider_scope import (
-    active_provider_ids,
     projection_active_provider_ids,
+    projection_active_provider_rows,
     projection_runtime_visible_provider_ids,
 )
 
@@ -32,11 +32,11 @@ def _domain_projection(value):
     }
 
 def load(p): return json.loads(Path(p).read_text(encoding="utf-8"))
-def canon(v): return str(v or "").strip().casefold()
+def canon(v): return str(v or "").strip().casefold().replace("_","-")
 
-manifest=load(ROOT/"manifest.json"); overrides=load(ROOT/"provider-overrides.json"); material=load(ROOT/"provider-v3-materialization.json"); static=load(ROOT/"automation/provider-v3-static-knowledge.json")
-active=active_provider_ids(); rows=[r for r in manifest.get("scrapers") or [] if isinstance(r,dict) and canon(r.get("id")) in active]; reports=[r for r in material.get("providers") or [] if isinstance(r,dict) and canon(r.get("provider")) in active]
-assert {canon(r.get("id")) for r in rows}==active, (len(rows),len(active))
+overrides=load(ROOT/"provider-overrides.json"); material=load(ROOT/"provider-v3-materialization.json"); static=load(ROOT/"automation/provider-v3-static-knowledge.json")
+rows=projection_active_provider_rows(); active={canon(r.get("id")) for r in rows}; reports=[r for r in material.get("providers") or [] if isinstance(r,dict) and canon(r.get("provider")) in active]
+assert active==projection_active_provider_ids(), (len(active),len(projection_active_provider_ids()))
 assert {canon(r.get("provider")) for r in reports}==active, (len(reports),len(active))
 rb={canon(r.get("provider")):r for r in reports if isinstance(r,dict)}
 patches=overrides.get("provider_patches") or {}; capabilities=overrides.get("provider_capabilities") or {}; static_rows=static.get("providers") or {}; seen=set()
@@ -162,7 +162,7 @@ assert set(rb)==seen
 # runtime-visible union (including disabled-but-visible identities, excluding
 # onboarding-pending rows), so it must be audited against projection scope.
 visible=len(runtime_visible_ids)
-active_count=len(projection_active_provider_ids())
+active_count=len(active)
 assert int(material.get("providerCount") or 0)==active_count, (material.get("providerCount"),active_count)
 if "activeProviderIdentityCount" in material:
     assert int(material.get("activeProviderIdentityCount") or 0)==active_count, (
