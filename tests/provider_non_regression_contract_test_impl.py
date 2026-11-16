@@ -149,6 +149,16 @@ assert "build_provider_history_matrix_v3.py" in history
 assert "python scripts/build_provider_history_matrix_v3.py" in history
 assert "python scripts/build_provider_history_matrix_v2.py\n" not in history
 
+for trigger_path in (
+    "'manifest.json'",
+    "'vf/manifest.json'",
+    "'provider_catalog.json'",
+    "'scripts/current_provider_scope.py'",
+):
+    assert trigger_path in history, (
+        f"provider history matrix must refresh when current projection authority changes: {trigger_path}"
+    )
+
 for token in (
     "python scripts/build_provider_history_matrix_v3.py",
     "python scripts/check_provider_non_regression_v1.py",
