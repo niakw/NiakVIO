@@ -164,7 +164,7 @@ jobs:
         env:
           NIAKVIO_TARGET_MANIFEST: manifest.json
           NIAKVIO_TARGET_PROVIDER: declared-type
-          NIAKVIO_PRIMARY_STREAM_SCOPE: "2"
+          NIAKVIO_PRIMARY_STREAM_SCOPE: all
         run: bash niakvio/scripts/prebuild_native_android_reader_suite.sh tv
       - name: Enable KVM
         run: if [ -e /dev/kvm ]; then sudo chmod 666 /dev/kvm || true; fi
@@ -176,12 +176,12 @@ jobs:
           NIAKVIO_TARGET_PROVIDER: declared-type
           NIAKVIO_TARGET_MANIFEST: manifest.json
           NIAKVIO_READER_ACCEPTANCE: "1"
-          NIAKVIO_TV_PRIORITY_APPEND: "0"
+          NIAKVIO_TV_PRIORITY_APPEND: "1"
           NIAKVIO_TV_ROUTE_TIMEOUT_MINUTES: "45"
           NIAKVIO_TV_CHECKPOINT_DIR: ${{ github.workspace }}/native-evidence/tv/checkpoints
           NIAKVIO_TV_RESUME_CHECKPOINT_DIR: ${{ github.workspace }}/native-evidence/tv/checkpoints
           NIAKVIO_PRIMARY_STREAM_SCOPE: "2"
-          NIAKVIO_REGRESSION_STREAM_SCOPE: "2"
+          NIAKVIO_REGRESSION_STREAM_SCOPE: all
         with:
           api-level: 31
           target: android-tv
