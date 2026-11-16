@@ -17,6 +17,10 @@ from provider_patch_blocks import render_managed_fix
 
 assert mod.config_fix_id("anime-sama")=="PROVIDER.ANIME-SAMA.CONFIG.V1"
 assert mod.diff_keys({"a":1,"b":2},{"a":1,"b":3,"c":4})==["b","c"]
+source=SCRIPT.read_text(encoding="utf-8")
+assert "projection_active_provider_rows" in source
+assert "active_provider_ids" not in source
+assert 'manifest.get("scrapers")' not in source
 
 with tempfile.TemporaryDirectory() as td:
     root=Path(td)
@@ -62,7 +66,7 @@ with tempfile.TemporaryDirectory() as td:
     ])
     (root/"providers/alpha.js").write_text(stale,encoding="utf-8")
 
-    old=(mod.ROOT,mod.MANIFEST,mod.OVERRIDES,mod.STATIC,mod.PROVENANCE,mod.active_provider_ids,
+    old=(mod.ROOT,mod.MANIFEST,mod.OVERRIDES,mod.STATIC,mod.PROVENANCE,mod.projection_active_provider_rows,
          mod.normalize_anime_transport_compatibility,mod.provider_model,mod.build_provider_data_model,
          mod.publication_contract_sha,mod.provider_policy_sha,mod.provider_build_input_sha,mod.resolve_runtime_base)
     try:
@@ -71,7 +75,9 @@ with tempfile.TemporaryDirectory() as td:
         mod.OVERRIDES=root/"provider-overrides.json"
         mod.STATIC=root/"automation/provider-v3-static-knowledge.json"
         mod.PROVENANCE=root/"PROVENANCE.json"
-        mod.active_provider_ids=lambda:{"alpha"}
+        mod.projection_active_provider_rows=lambda:[{
+            "id":"alpha","filename":"providers/alpha.js","name":"Alpha","supportedTypes":["movie"]
+        }]
         mod.normalize_anime_transport_compatibility=lambda entry:None
         mod.provider_model=lambda *_args,**_kwargs:{"knownSite":"https://new.example"}
         mod.build_provider_data_model=lambda *_args,**_kwargs:{"providerId":"alpha","officialSite":"https://new.example"}
@@ -125,7 +131,7 @@ with tempfile.TemporaryDirectory() as td:
         assert "publication-build-input-drift" in build_row["reasons"],build_row
         assert "publicationContract" in build_row["changedBuildInputs"],build_row
     finally:
-        (mod.ROOT,mod.MANIFEST,mod.OVERRIDES,mod.STATIC,mod.PROVENANCE,mod.active_provider_ids,
+        (mod.ROOT,mod.MANIFEST,mod.OVERRIDES,mod.STATIC,mod.PROVENANCE,mod.projection_active_provider_rows,
          mod.normalize_anime_transport_compatibility,mod.provider_model,mod.build_provider_data_model,
          mod.publication_contract_sha,mod.provider_policy_sha,mod.provider_build_input_sha,mod.resolve_runtime_base)=old
 
