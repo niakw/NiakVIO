@@ -20,6 +20,14 @@ for marker in (
 ):
     assert marker in wf,marker
 
+for retired in (
+    "repair-anime-semantic-gate-20260914.yml",
+    "dle-anime-two-provider-repair-short.yml",
+    "french-manga-dle-repair-short.yml",
+    "voiranime-homes-dle-repair-short.yml",
+):
+    assert not (ROOT / ".github/workflows" / retired).exists(), retired
+
 # Consolidation is source/DATA-only. Publication remains owned by the normal
 # reconstruction/census lanes so this one-shot workflow cannot bypass current-byte proof.
 for forbidden in (
