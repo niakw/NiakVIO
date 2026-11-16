@@ -149,6 +149,10 @@ assert "build_provider_history_matrix_v3.py" in history
 assert "python scripts/build_provider_history_matrix_v3.py" in history
 assert "python scripts/build_provider_history_matrix_v2.py\n" not in history
 
+assert nonreg.count("- 'vf/manifest.json'") >= 2, (
+    "provider non-regression push/PR triggers must include the France projection"
+)
+
 for trigger_path in (
     "'manifest.json'",
     "'vf/manifest.json'",
