@@ -1,3 +1,10 @@
+## 2026-11-16 — ProviderBase V27 removes two remaining first-success stream truncations
+
+- NiakVIO-first multiplicity audit found two generic truncation paths left after the earlier V26/provider-value-plan repair. In `_resolveApiRecipe(...)` direct-route recipes, up to twelve explicitly declared sources were batched but the default `minStreamsBeforeStop=1` stopped after the first successful batch. In `_resolveRuntimeApi` / `_resolveKnownPlayer`, execution stopped after the first runtime API/player returning any stream. Both could suppress later server/language/quality variants while still reporting a superficially successful provider.
+- Commit `ac99f9bd` makes a declared direct-route source list a bounded coverage frontier: exhaust the selected sources on the first working origin, dedupe playback rows and stop only at the shared 40-identity cap; alternate origins remain failover rather than fan-out. `3611b3a3` locks this and forbids the obsolete `minStreamsBeforeStop` path.
+- Commit `db7396d1` similarly aggregates bounded runtime API/player results across up to three player candidates / four runtime routes and two known player pages, with deduplication and the same 40-identity cap. `3f0309d1` forbids the historical first-success breaks/returns in those helpers.
+- These are generic ProviderBase architecture corrections motivated by the observed loss of flux/quality diversity, not provider-specific Repair. Existing request/frontier bounds and final Core validation remain fail-closed; fresh reconstruction, exact-byte census, finalizer and five-client Labs are required before declaring runtime improvement.
+
 ## 2026-11-16 — Freshness authority now retriggers the Workflow Gate
 
 - Workflow Gate on the restored catalogue fixed point reached `production_active_provider_freshness_test.py` and correctly rejected Purstream: its last FULL proof is bound to provider SHA `cc163f9f...`, while the current materialized bundle is `8df7099f...`. Because shared Core bytes changed, that historical FULL result is not transferable; this is real exact-byte proof debt, not a test defect.
