@@ -76,13 +76,13 @@ for required_convergence in (
     "inputs.persist == true",
     'id: persist',
     'echo "ok=true" >> "$GITHUB_OUTPUT"',
-    "Continue Brain Autopilot from fresh census",
-    "FIELD_SHARDED_CENSUS_AUTOPILOT",
+    "Continue Provider Lifecycle from fresh census",
+    "FIELD_SHARDED_CENSUS_LIFECYCLE",
     "event_driven=false",
     "trigger=workflow_dispatch",
-    "gh workflow run provider-brain-autopilot.yml",
+    "gh workflow run provider-disabled-lifecycle.yml",
     "dispatched=false reason=token-dispatch-denied",
-    "Autopilot dispatch is best-effort after successful census persistence",
+    "Brain Autopilot must not run on an unstabilized active catalogue",
 ):
     assert required_convergence in workflow, f"missing sharded census convergence contract: {required_convergence}"
 
@@ -103,7 +103,7 @@ merge_start = workflow.index("  merge:")
 merge_steps = workflow.index("    steps:", merge_start)
 merge_header = workflow[merge_start:merge_steps]
 assert "contents: write" in merge_header
-assert "actions: write" in merge_header, "census merge must be allowed to dispatch Brain Autopilot after persisted evidence"
+assert "actions: write" in merge_header, "census merge must be allowed to dispatch Provider Lifecycle after persisted evidence"
 
 assert "automation/provider-waf-browser-session-effective.json" in workflow
 probe_pos = workflow.index("python scripts/probe_waf_browser_session.py")
@@ -118,7 +118,7 @@ assert "--status automation/provider-census-sharded-status.json" in workflow
 
 print("provider sharded census authority persistence contract passed")
 
-assert "gh workflow run provider-brain-autopilot.yml" in workflow
+assert "gh workflow run provider-disabled-lifecycle.yml" in workflow\nassert "gh workflow run provider-brain-autopilot.yml" not in workflow
 
 
 # Targeted/partial validation must not pay the eight-shard full-census cost.
