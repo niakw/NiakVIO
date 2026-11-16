@@ -13,6 +13,9 @@ on:
       - 'scripts/update_provider_device_results.py'
       - 'automation/provider-device-results.json'
       - 'manifest.json'
+      - 'vf/manifest.json'
+      - 'provider_catalog.json'
+      - 'scripts/current_provider_scope.py'
       - 'assets/providers/index.json'
       - 'assets/providers/emojis.json'
       - '.github/workflows/provider-results-readme-sync.yml'
@@ -125,9 +128,9 @@ jobs:
             exit 1
           fi
           python - <<'PY'
-          import json, re
-          manifest = json.load(open('manifest.json', encoding='utf-8'))
-          expected = sum(1 for row in manifest.get('scrapers', []) if isinstance(row, dict) and row.get('enabled') is True)
+          import re
+          from scripts.current_provider_scope import projection_active_provider_count
+          expected = projection_active_provider_count()
           readme = open('README.fr.md', encoding='utf-8').read()
           match = re.search(r'PROVIDERS_ACTIFS-(\d+)-16a34a', readme)
           if not match:
@@ -138,7 +141,7 @@ jobs:
           disclosure = f'Voir les {expected} providers actifs'
           if disclosure not in readme:
               raise SystemExit(f'README disclosure drift: expected {disclosure!r}')
-          print(f'FIELD_README_MANIFEST_SYNC active={expected}')
+          print(f'FIELD_README_PROJECTION_SYNC active={expected} authority=global+france')
           PY
 
       - name: Publish result showcase only when changed
