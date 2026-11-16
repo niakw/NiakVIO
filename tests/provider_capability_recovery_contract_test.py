@@ -41,8 +41,12 @@ allanime=(ROOT/"scripts/provider_patches/allanime_site_runtime_v1.py").read_text
 for token in ("f4662f4b7510b26795dd53ef824a0bf1740fbbc5d1273fab18222ac831bca8d0", "d405d0edd690624b66baba3068e0edc3ac90f1597d898a1ec8db4e5c43c00fec", "aaReq", "AES-GCM", "AES-CTR", '"https://api.mkissa.net/api"', '"https://mkissa.to"', '"https://allmanga.to"', '"https://youtu-chan.com"'):
     assert token in allanime, token
 
+anikoto_cfg=over["provider_patches"]["anikototv"]
+assert anikoto_cfg["provider_lego_scripts"]==["scripts/provider_patches/anikototv_runtime_v2.py"], anikoto_cfg.get("provider_lego_scripts")
+assert "scripts/provider_patches/anikototv_runtime_v1.py" not in anikoto_cfg.get("provider_lego_options", {})
+
 anikoto=(ROOT/"scripts/provider_patches/anikototv_runtime_v2.py").read_text(encoding="utf-8")
-for token in ("NIAKVIO_ANIKOTOTV_RUNTIME_V3", "https://arm.haglund.dev/api/v2/tmdb", "megaplay.buzz", "/stream/getSources?id=", "AES-CBC", "j&&j.enc", "await sourceFile(j)", '"semanticLanes": ["anime"]'):
+for token in ("NIAKVIO_ANIKOTOTV_RUNTIME_V3", "https://arm.haglund.dev/api/v2/tmdb", "megaplay.buzz", "/stream/getSources?id=", "AES-CBC", "j&&j.enc", "await sourceFile(j)", '"semanticLanes": ["anime"]', "season:coord(rawSeason,1,0)"):
     assert token in anikoto, token
 for stale in ("/ajax/anime/search", "/ajax/episode/list/", "/ajax/server/list", "/ajax/server?get="):
     assert stale not in anikoto, stale
