@@ -19,7 +19,8 @@ assert "provider already exists" in SCRIPT
 assert "and not replace_existing" in SCRIPT
 stage_body = SCRIPT.split("def stage(", 1)[1].split("\ndef refresh(", 1)[0]
 assert stage_body.index("manifest = load_json(MANIFEST, {})") < stage_body.index("description = str(")
-assert stage_body.index("existing_entry = next(") < stage_body.index("existing_entry = existing_entry if isinstance(existing_entry, dict) else {}")
+assert "existing_entry = staged_existing_entry(" in stage_body
+assert 'target_manifest = vf_manifest if scope == "france" else manifest' in stage_body
 
 assert "Delegate automatic defaults to Provider branding assets engine" in ADD
 assert "scripts/provider_branding_assets.py" in ADD
@@ -59,6 +60,16 @@ assert "materialize_onboarding_bundle(" in SCRIPT
 assert SCRIPT.index("base_store.persist_clean_provider_seed(") < SCRIPT.index("materialize_onboarding_bundle(")
 assert '"clean_reconstruction_required": False' in SCRIPT
 assert '"clean_reconstruction_verified": True' in SCRIPT
+
+finalize_body = SCRIPT.split("def finalize(", 1)[1].split("\ndef main()", 1)[0]
+assert 'scope = normalized_scope(current.get("scope") or "global")' in finalize_body
+assert 'target_manifest_path = VF_MANIFEST if scope == "france" else MANIFEST' in finalize_body
+assert 'prov["check_status"] = "live_unverified" if active else "pending_learning"' in finalize_body
+assert 'prov["strict_activation_eligible"] = False' in finalize_body
+assert 'prov["runtime_evidence_eligible"] = False' in finalize_body
+assert '"onboarding_quick_live_unverified" if active' in finalize_body
+assert '["live_native_validation_pending"]' in finalize_body
+assert '"full_ok_claimed": False' in finalize_body
 
 assert "site_structure_knowledge()" in SCRIPT
 assert "VOLATILE_ROUTE_QUERY_KEYS" in SCRIPT
