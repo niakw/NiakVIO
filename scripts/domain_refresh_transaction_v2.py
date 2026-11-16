@@ -710,21 +710,17 @@ def provider_domain_projection_drift_ids(provider_ids: list[str]) -> list[str]:
     if not wanted:
         return []
 
-    manifest = load(MANIFEST_PATH)
+    _manifest, _catalog, publication_by_id = active_publication_documents()
     overrides = load(CONFIG_PATH)
     static = load(STATIC_KNOWLEDGE_PATH)
-    manifest_by_id = {
-        canonical(row.get("id")): row
-        for row in manifest.get("scrapers") or []
-        if isinstance(row, dict) and canonical(row.get("id"))
-    }
     patches = overrides.get("provider_patches") or {}
     capabilities = overrides.get("provider_capabilities") or {}
     static_rows = static.get("providers") or {}
     drift: list[str] = []
 
     for provider_id in wanted:
-        entry = manifest_by_id.get(provider_id)
+        publication = publication_by_id.get(provider_id)
+        entry = publication[0] if publication is not None else None
         patch = patches.get(provider_id) if isinstance(patches, dict) else None
         capability = capabilities.get(provider_id) if isinstance(capabilities, dict) else None
         static_row = static_rows.get(provider_id) if isinstance(static_rows, dict) else None
@@ -763,17 +759,13 @@ def provider_domain_runtime_projection_drift_ids(provider_ids: list[str]) -> lis
     wanted = sorted(set(canonical(value) for value in provider_ids if canonical(value)))
     if not wanted:
         return []
-    manifest = load(MANIFEST_PATH)
+    _manifest, _catalog, publication_by_id = active_publication_documents()
     overrides = load(CONFIG_PATH)
-    manifest_by_id = {
-        canonical(row.get("id")): row
-        for row in manifest.get("scrapers") or []
-        if isinstance(row, dict) and canonical(row.get("id"))
-    }
     patches = overrides.get("provider_patches") or {}
     drift: list[str] = []
     for provider_id in wanted:
-        entry = manifest_by_id.get(provider_id)
+        publication = publication_by_id.get(provider_id)
+        entry = publication[0] if publication is not None else None
         patch = patches.get(provider_id) if isinstance(patches, dict) else None
         if not isinstance(entry, dict) or not isinstance(patch, dict):
             continue
