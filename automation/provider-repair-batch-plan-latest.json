@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "sourceRunId": "43789755892",
-  "sourceTriggerSha": "7d303c00586a2caa0da097ab2e68b9daf3841ec7",
-  "unresolvedProviderCount": 62,
+  "sourceRunId": "43791368666",
+  "sourceTriggerSha": "07201ed93653cabc21478d83b8b6deec6258cc1a",
+  "unresolvedProviderCount": 64,
   "dynamicVariantProviderCount": 4,
   "dynamicVariantProviders": [
     "cinemabz",
@@ -125,7 +125,7 @@
     "zone-telechargement"
   ],
   "dynamicVariantFallbackUsed": true,
-  "groupCount": 11,
+  "groupCount": 13,
   "executionModel": {
     "default": "family/signature batch",
     "liveProbeConcurrency": "audit_provider_quick_yield ThreadPool",
@@ -248,6 +248,7 @@
       "runtimeFamilySignature": "mixed_embed_resolver",
       "capabilityStrategy": "mixed_embed_resolver",
       "evidenceDepths": [
+        "chain",
         "lookup"
       ],
       "dominantIssues": [
@@ -255,16 +256,15 @@
       ],
       "harnessTransportClasses": [],
       "transportSignature": "not-applicable",
-      "providerCount": 10,
+      "providerCount": 9,
       "providers": [
-        "cinematheque-de-bretagne",
         "fawesome",
-        "film-a-revoir",
         "frembed",
         "frenchstream",
         "kidraz",
+        "movix-fr",
         "neobam",
-        "skstream",
+        "sadisflix",
         "youtitou",
         "zone-telechargement"
       ],
@@ -272,7 +272,9 @@
       "selectionAuthorities": [
         "provider-census-status.json:brainCheckRequired"
       ],
-      "dynamicVariantProviders": [],
+      "dynamicVariantProviders": [
+        "movix-fr"
+      ],
       "executionPolicy": "batch-first",
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
@@ -298,7 +300,7 @@
       "providers": [
         "animeonsen",
         "cinetimes",
-        "dulourd",
+        "fexini",
         "franime",
         "fullanime",
         "waveanime"
@@ -333,7 +335,7 @@
       "providerCount": 4,
       "providers": [
         "1jour1film0626",
-        "fexini",
+        "dulourd",
         "french-anime",
         "moiflix"
       ],
@@ -362,10 +364,12 @@
       ],
       "harnessTransportClasses": [],
       "transportSignature": "not-applicable",
-      "providerCount": 2,
+      "providerCount": 4,
       "providers": [
+        "cinematheque-de-bretagne",
         "hianime",
-        "showbox"
+        "showbox",
+        "zone-streaming"
       ],
       "action": "apply/test shared terminal-player extraction profile to the whole capability family",
       "selectionAuthorities": [
@@ -376,34 +380,62 @@
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
     {
-      "groupId": "variant-coverage|mixed_embed_resolver|runtime:mixed_embed_resolver",
-      "repairScope": "variant-coverage",
+      "groupId": "harness-compatibility|api_stream_resolver|harness:native-policy-reachable",
+      "repairScope": "harness-compatibility",
+      "runtimeFamilies": [
+        "api_stream_resolver"
+      ],
+      "runtimeFamilySignature": "not-applicable",
+      "capabilityStrategy": "api_stream_resolver",
+      "evidenceDepths": [
+        "none"
+      ],
+      "dominantIssues": [
+        "waf_challenge"
+      ],
+      "harnessTransportClasses": [
+        "native-policy-reachable"
+      ],
+      "transportSignature": "native-policy-reachable",
+      "providerCount": 1,
+      "providers": [
+        "movy"
+      ],
+      "action": "current census assigns transport/harness ownership; compare browser/native/residential transport before any provider mutation",
+      "selectionAuthorities": [
+        "provider-census-status.json:brainCheckRequired"
+      ],
+      "dynamicVariantProviders": [],
+      "executionPolicy": "batch-first",
+      "providerLocalFallback": "only-after-shared-profile-failure"
+    },
+    {
+      "groupId": "harness-compatibility|mixed_embed_resolver|harness:native-policy-reachable",
+      "repairScope": "harness-compatibility",
       "runtimeFamilies": [
         "mixed_embed_resolver"
       ],
-      "runtimeFamilySignature": "mixed_embed_resolver",
+      "runtimeFamilySignature": "not-applicable",
       "capabilityStrategy": "mixed_embed_resolver",
       "evidenceDepths": [
-        "chain"
+        "lookup"
       ],
       "dominantIssues": [
-        "network_zero_result"
+        "waf_challenge"
       ],
-      "harnessTransportClasses": [],
-      "transportSignature": "not-applicable",
-      "providerCount": 2,
+      "harnessTransportClasses": [
+        "native-policy-reachable"
+      ],
+      "transportSignature": "native-policy-reachable",
+      "providerCount": 1,
       "providers": [
-        "movix-fr",
-        "nakios"
+        "skstream"
       ],
-      "action": "current execution proves playable output but fewer variants than the provider announced; keep publication authority unchanged and send completeness repair to Brain Learning",
+      "action": "current census assigns transport/harness ownership; compare browser/native/residential transport before any provider mutation",
       "selectionAuthorities": [
-        "provider-census-sharded-latest.json:dynamic-variant-debt"
+        "provider-census-status.json:brainCheckRequired"
       ],
-      "dynamicVariantProviders": [
-        "movix-fr",
-        "nakios"
-      ],
+      "dynamicVariantProviders": [],
       "executionPolicy": "batch-first",
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
@@ -428,6 +460,36 @@
       "providerCount": 1,
       "providers": [
         "voirserie"
+      ],
+      "action": "current census assigns transport/harness ownership; compare browser/native/residential transport before any provider mutation",
+      "selectionAuthorities": [
+        "provider-census-status.json:brainCheckRequired"
+      ],
+      "dynamicVariantProviders": [],
+      "executionPolicy": "batch-first",
+      "providerLocalFallback": "only-after-shared-profile-failure"
+    },
+    {
+      "groupId": "harness-compatibility|mixed_embed_resolver|harness:residential-exit-native-reachable",
+      "repairScope": "harness-compatibility",
+      "runtimeFamilies": [
+        "mixed_embed_resolver"
+      ],
+      "runtimeFamilySignature": "not-applicable",
+      "capabilityStrategy": "mixed_embed_resolver",
+      "evidenceDepths": [
+        "lookup"
+      ],
+      "dominantIssues": [
+        "waf_challenge"
+      ],
+      "harnessTransportClasses": [
+        "residential-exit-native-reachable"
+      ],
+      "transportSignature": "residential-exit-native-reachable",
+      "providerCount": 1,
+      "providers": [
+        "film-a-revoir"
       ],
       "action": "current census assigns transport/harness ownership; compare browser/native/residential transport before any provider mutation",
       "selectionAuthorities": [
@@ -466,36 +528,6 @@
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
     {
-      "groupId": "transport|api_stream_resolver|runtime:api_stream_resolver",
-      "repairScope": "transport",
-      "runtimeFamilies": [
-        "api_stream_resolver"
-      ],
-      "runtimeFamilySignature": "api_stream_resolver",
-      "capabilityStrategy": "api_stream_resolver",
-      "evidenceDepths": [
-        "none"
-      ],
-      "dominantIssues": [
-        "waf_challenge"
-      ],
-      "harnessTransportClasses": [
-        "native-policy-reachable"
-      ],
-      "transportSignature": "not-applicable",
-      "providerCount": 1,
-      "providers": [
-        "movy"
-      ],
-      "action": "current census authority is unresolved; refresh provider-owned domain/backend authority before any provider mutation",
-      "selectionAuthorities": [
-        "provider-census-status.json:brainCheckRequired"
-      ],
-      "dynamicVariantProviders": [],
-      "executionPolicy": "batch-first",
-      "providerLocalFallback": "only-after-shared-profile-failure"
-    },
-    {
       "groupId": "variant-coverage|html_scraper|runtime:html_scraper",
       "repairScope": "variant-coverage",
       "runtimeFamilies": [
@@ -521,6 +553,36 @@
       ],
       "dynamicVariantProviders": [
         "papadustream"
+      ],
+      "executionPolicy": "batch-first",
+      "providerLocalFallback": "only-after-shared-profile-failure"
+    },
+    {
+      "groupId": "variant-coverage|mixed_embed_resolver|runtime:mixed_embed_resolver",
+      "repairScope": "variant-coverage",
+      "runtimeFamilies": [
+        "mixed_embed_resolver"
+      ],
+      "runtimeFamilySignature": "mixed_embed_resolver",
+      "capabilityStrategy": "mixed_embed_resolver",
+      "evidenceDepths": [
+        "chain"
+      ],
+      "dominantIssues": [
+        "network_zero_result"
+      ],
+      "harnessTransportClasses": [],
+      "transportSignature": "not-applicable",
+      "providerCount": 1,
+      "providers": [
+        "nakios"
+      ],
+      "action": "current execution proves playable output but fewer variants than the provider announced; keep publication authority unchanged and send completeness repair to Brain Learning",
+      "selectionAuthorities": [
+        "provider-census-sharded-latest.json:dynamic-variant-debt"
+      ],
+      "dynamicVariantProviders": [
+        "nakios"
       ],
       "executionPolicy": "batch-first",
       "providerLocalFallback": "only-after-shared-profile-failure"
