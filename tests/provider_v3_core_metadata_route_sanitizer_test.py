@@ -70,6 +70,11 @@ def unit_contract() -> None:
         "sourceRuntimeFamily": "unknown",
         "routes": [],
     }) == "unknown"
+    assert derive_runtime_family({
+        "strategy": "open_archive_public_domain",
+        "sourceRuntimeFamily": "unknown",
+        "routes": [],
+    }) == "open-archive-public-domain"
     stale = {
         "strategy": "mixed_embed_resolver",
         "sourceRuntimeFamily": "tmdb-direct-api",
@@ -119,7 +124,7 @@ def main() -> int:
     assert not active_unknown, "active Provider DATA still has unknown family: " + repr(active_unknown)
     print(
         "PROVIDER_V3_CORE_METADATA_ROUTE_SANITIZER_TEST_OK "
-        "providers=96 tmdb_owner=core active_unknown=0"
+        f"providers={len(providers)} tmdb_owner=core active_unknown=0"
     )
     return 0
 
