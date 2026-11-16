@@ -4023,8 +4023,8 @@ function _spv4Expand(pattern, meta, vars, mediaType, season, episode) {
     tmdb_id: meta && meta.tmdbId,
     imdbid: meta && meta.imdbId,
     imdb_id: meta && meta.imdbId,
-    media: mediaType === "movie" ? "movie" : "tv",
-    type: mediaType === "movie" ? "movie" : "tv",
+    media: _mediaNamespace(mediaType),
+    type: _mediaNamespace(mediaType),
     season,
     episode
   };
