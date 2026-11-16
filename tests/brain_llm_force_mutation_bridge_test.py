@@ -576,6 +576,7 @@ with tempfile.TemporaryDirectory() as tmp:
     seed = build_clean_provider_seed('demo').decode()
     real_find = ('playerText = await response.text(); '
                  'const decodedPlayerText = _spv186UnpackPackedPlayer(playerText); '
+                 'streams.push(..._spv26ExplicitMediaRows(decodedPlayerText, responseUrl, responseUrl)); '
                  '/* NIAKVIO_PROVIDER_EXPLICIT_PLAYER_PRIORITY_V24_3 */ '
                  'const explicitPlayerUrls = _spv241ExplicitPlayerPayloadUrls(decodedPlayerText, responseUrl);')
     anchor = runtime_anchor(seed, real_find)
