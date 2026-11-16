@@ -166,6 +166,29 @@ def validate_config(config: dict[str, Any]) -> list[str]:
     return errors
 
 
+def validate_sources(config: dict[str, Any], sources: dict[str, Any]) -> list[str]:
+    errors: list[str] = []
+    configured = config.get("clients") or {}
+    root = sources.get("nuvio_client_compatibility") or {}
+    states = root.get("clients") or {}
+    for key, row in configured.items():
+        contract_ref = str((row or {}).get("verified_ref") or "")
+        state = states.get(key)
+        if not isinstance(state, dict):
+            errors.append(f"{key}: sources compatibility state missing")
+            continue
+        source_contract = str(state.get("contract_ref") or "")
+        accepted = str(state.get("accepted_ref") or "")
+        if source_contract != contract_ref:
+            errors.append(
+                f"{key}: sources contract_ref differs from audited verified_ref "
+                f"{source_contract!r} != {contract_ref!r}"
+            )
+        if len(accepted) != 40:
+            errors.append(f"{key}: sources accepted_ref must be a full 40-character SHA")
+    return errors
+
+
 def repo_url(repository: str) -> str:
     return f"https://github.com/{repository}.git"
 
@@ -575,7 +598,7 @@ def main() -> int:
 
     config = load(config_path)
     sources = load(sources_path) if sources_path.is_file() else {}
-    config_errors = validate_config(config)
+    config_errors = validate_config(config) + validate_sources(config, sources)
     if config_errors:
         for error in config_errors:
             annotation("error", "Nuvio client upstream configuration", error)
