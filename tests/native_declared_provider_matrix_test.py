@@ -13,10 +13,10 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 
 from rotating_corpus import select_fixtures  # noqa: E402
-from current_provider_scope import active_provider_ids  # noqa: E402
+from current_provider_scope import projection_active_provider_ids  # noqa: E402
 
 GATE = ROOT / "scripts/gate_native_declared_provider_matrix.py"
-MANIFEST = ROOT / "manifest.json"
+MANIFEST = ROOT / "manifest-hub46.json"
 CORPUS = ROOT / ".github/triggers/nuvio-client-lab.json"
 SCOPE = ROOT / "automation/evidence/hub-lab-matrix-46.json"
 TYPES = ("movie", "tv", "anime")
@@ -38,10 +38,10 @@ def fixtures() -> dict[str, str]:
 
 
 def scope_ids() -> set[str]:
-    # The historical Hub matrix is evidence-only. Current active publication is
-    # the native execution authority and must be able to grow beyond the old
-    # 44/46 campaign without silently dropping newly activated providers.
-    return active_provider_ids()
+    # The historical Hub matrix is evidence-only. Native acceptance is the
+    # current active Global + France-only projection union and must never fall
+    # back to Global-only membership or the old 44/46 campaign.
+    return projection_active_provider_ids()
 
 
 def manifest_rows() -> list[dict]:
