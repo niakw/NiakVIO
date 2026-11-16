@@ -19,6 +19,17 @@ def write_json(path: Path, value) -> None:
     path.write_text(json.dumps(value, indent=2) + "\n", encoding="utf-8")
 
 
+projection_index = mod.publication_manifest_index(
+    root=mod.ROOT,
+    manifest_path=mod.MANIFEST,
+    manifest={"scrapers": []},
+    projection_rows_fn=lambda _root: [
+        {"id": "global-only", "filename": "providers/global.js", "enabled": True},
+        {"id": "france-only", "filename": "providers/france.js", "enabled": True},
+    ],
+)
+assert set(projection_index) == {"global-only", "france-only"}, projection_index
+
 with tempfile.TemporaryDirectory() as tmp:
     root = Path(tmp)
     (root / "providers").mkdir()
