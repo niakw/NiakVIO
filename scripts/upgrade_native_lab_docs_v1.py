@@ -35,9 +35,9 @@ def main() -> int:
         "NiakVIO merely to manufacture green CI.\n\n"
         f"<!-- {MARKER} -->\n"
         "### Native acceptance scope and adaptive sampling\n\n"
-        "The current executable catalogue contains **46 Provider Objects**. Final native acceptance uses the "
-        "explicit physical **Hub-46** scope from `automation/evidence/hub-lab-matrix-46.json`; the 50 historical "
-        "providers remain archived knowledge/provenance outside the current manifest.\n\n"
+        "The current native acceptance denominator is derived dynamically from the active **Global + France-only** "
+        "projection union (`scripts/current_provider_scope.py:projection_active_provider_ids`). The historical "
+        "`automation/evidence/hub-lab-matrix-46.json` remains evidence only; no 44/46/96 cardinality is runtime policy.\n\n"
         "The ordinary Lab corpus is not a fixed batch. `.github/triggers/rotating-popular-corpus.json` "
         "owns exactly three recent global reserves — **movie, TV and anime** — currently 32 works per "
         "lane, constrained to 2010 through the previous calendar year. A native campaign starts with "
@@ -65,9 +65,9 @@ def main() -> int:
         "fabriquer une CI verte.\n\n"
         f"<!-- {MARKER} -->\n"
         "### Scope d’acceptation native et échantillonnage adaptatif\n\n"
-        "Le catalogue exécutable courant contient **46 Provider Objects**. L’acceptation native finale utilise le "
-        "scope physique explicite **Hub-46** défini par `automation/evidence/hub-lab-matrix-46.json` ; les 50 "
-        "providers historiques restent archivés comme connaissance/provenance hors du manifest courant.\n\n"
+        "Le dénominateur d’acceptation native courant est dérivé dynamiquement de l’union active **Global + France-only** "
+        "(`scripts/current_provider_scope.py:projection_active_provider_ids`). Le fichier historique "
+        "`automation/evidence/hub-lab-matrix-46.json` reste une preuve uniquement ; aucune cardinalité 44/46/96 n’est une politique runtime.\n\n"
         "Le corpus Lab ordinaire n’est pas un batch fixe. `.github/triggers/rotating-popular-corpus.json` "
         "porte exactement trois réserves globales récentes — **movie, TV et anime** — actuellement 32 "
         "œuvres par lane, bornées de 2010 à l’année civile précédente. Une campagne native démarre avec "
@@ -103,11 +103,10 @@ def main() -> int:
         "historique dans la documentation.\n"
     )
     coverage_new = (
-        "Le catalogue exécutable courant contient **46 providers**. La campagne d’acceptation native finale utilise "
-        "le scope physique **Hub-46** dérivé de `automation/evidence/hub-lab-matrix-46.json` et transporté "
-        "par `native-hub46/manifest.json`. Les 50 providers historiques restent archivés hors du manifest courant "
-        "et du dénominateur physique du Lab. Le nombre de routes est calculé depuis le scope "
-        "courant et ses `supportedTypes` ; il ne doit pas être recopié comme constante historique.\n"
+        "Le scope d’acceptation native final est l’union active **Global + France-only**, dérivée par "
+        "`scripts/current_provider_scope.py:projection_active_provider_ids` et transportée par le chemin historique "
+        "`native-hub46/manifest.json`. Le nom Hub-46 reste un nom de compatibilité seulement. Le nombre de providers "
+        "et de routes est calculé depuis les projections courantes et leurs `supportedTypes` ; aucune cardinalité historique ne doit devenir une constante.\n"
     )
     if replace_once(validation, coverage_old, coverage_new, "VALIDATION 96 vs Hub46"):
         if str(validation.relative_to(ROOT)) not in changed:
