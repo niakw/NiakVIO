@@ -2,7 +2,7 @@
 """Plan deterministic parallel Provider sweeps without conflating tested and green.
 
 Selection authority:
-- manifest.json defines the current 46-row recoverable catalogue and enabled executable subset;
+- the current active Global + France-only projection union defines the executable sweep catalogue;
 - provider-repair-skip.json contains only already accepted green providers;
 - provider-sweep-recent-v1.json prevents immediate duplicate automatic work but
   does not declare anything healthy;
@@ -23,16 +23,14 @@ import argparse
 import json
 from pathlib import Path
 
-from current_provider_scope import active_provider_count
+from current_provider_scope import projection_active_provider_ids, projection_active_provider_rows
 from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
-MANIFEST = ROOT / "manifest.json"
 SKIP = ROOT / "automation" / "provider-repair-skip.json"
 RECENT = ROOT / "automation" / "provider-sweep-recent-v1.json"
 TRIGGER = ROOT / "automation" / "provider-fast-trigger.json"
 LEARN_HANDOFF = ROOT / "automation" / "provider-repair-learn-handoff-v1.json"
-EXPECTED = active_provider_count()
 
 
 def cid(value: object) -> str:
@@ -58,15 +56,17 @@ def unique(values: list[str]) -> list[str]:
 
 
 def catalogue() -> list[str]:
-    manifest = load(MANIFEST)
-    rows = [row for row in manifest.get("scrapers") or [] if isinstance(row, dict) and cid(row.get("id"))]
-    ids = [cid(row.get("id")) for row in rows]
-    if len(ids) != EXPECTED or len(set(ids)) != EXPECTED:
-        raise SystemExit(f"provider catalogue must be exactly {EXPECTED} unique ids, got {len(ids)}/{len(set(ids))}")
-    active = [cid(row.get("id")) for row in rows if row.get("enabled") is True]
-    if not active:
-        raise SystemExit("provider executable scope is empty")
-    return active
+    rows = projection_active_provider_rows()
+    ids = [cid(row.get("id")) for row in rows if isinstance(row, dict) and cid(row.get("id"))]
+    expected = projection_active_provider_ids()
+    if not ids or len(ids) != len(set(ids)):
+        raise SystemExit(f"provider executable scope must contain unique ids, got {len(ids)}/{len(set(ids))}")
+    if set(ids) != expected:
+        raise SystemExit(
+            "provider executable projection mismatch "
+            f"missing={sorted(expected-set(ids))} extra={sorted(set(ids)-expected)}"
+        )
+    return ids
 
 
 def plan(limit: int, batch_size: int) -> dict[str, Any]:
