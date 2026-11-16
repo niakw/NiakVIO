@@ -27,7 +27,6 @@ jobs:
     env:
       TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
       TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
-      NIAKVIO_PROVIDER_SCOPE_MATRIX: automation/evidence/hub-lab-matrix-46.json
       NIAKVIO_PARITY_SAMPLES_PER_LANE: '3'
       NIAKVIO_PARITY_WORKERS: '8'
       NIAKVIO_PARITY_TIMEOUT: '25'
@@ -54,7 +53,6 @@ jobs:
         run: |
           set -euo pipefail
           python3 scripts/run_provider_upstream_parity_v3.py \
-            --scope-matrix automation/evidence/hub-lab-matrix-46.json \
             --out automation/provider-upstream-parity-v3.json
       - name: Publish parity summary
         if: always()
