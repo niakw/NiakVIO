@@ -247,6 +247,19 @@ Exemple contractuel : `RESOLUTION=1440x720` doit produire **720p**, et un placeh
 
 Le catalogue StreamBadge public actuel est **v10** : les quatre snapshots Fusion/Dark/Light/Transparent sont versionnés ensemble et restent immuables après publication. Les huit badges Stream Score sont placés en premier dans l’ordre public. Les versions antérieures restent disponibles pour compatibilité.
 
+### Multiplicité lecteurs / sources / qualités
+
+Une œuvre peut légitimement produire plusieurs flux indépendants. NiakVIO traite donc comme dimensions de résultat distinctes : **lecteur**, **serveur/source**, **langue** et **qualité**.
+
+- une page annonçant plusieurs lecteurs/serveurs doit être parcourue de manière bornée **avant** le cap final de résultats ; le premier lecteur fonctionnel n'autorise pas à ignorer les suivants ;
+- un même lecteur peut exposer plusieurs médias/qualités ; chaque URL média réellement distincte reste une variante, avec sa qualité uniquement lorsqu'elle est explicitement observée ou mesurée ;
+- deux rows partageant la même URL mais exigeant des headers de lecture différents (`Referer`, `Origin`, etc.) sont deux **identités de playback** et ne doivent pas être dédupliquées par URL seule ;
+- le runtime ProviderBase et le Core terminal partagent un plafond borné de **40 identités de playback** ; la couverture précède ce cap, elle ne le remplace pas par un ancien plafond intermédiaire 8/12/16 ;
+- le sanitizer Core valide les identités retenues de façon fail-closed ; une variante non testée n'est jamais une preuve positive ;
+- pour HLS, les faits mesurés (résolution/variant effectivement sélectionné) priment sur une qualité annoncée par l'UI du site.
+
+Le contrat de non-régression est `tests/provider_stream_multiplicity_contract_test.py` et son test d'exécution Core est `tests/stream_output_sanitizer_multi_variant_test.py`.
+
 ### Finalisation d’une release acceptée
 
 `.github/workflows/release-finalize.yml` est la transaction explicite de finalisation après acceptation de la pile de validation.
@@ -315,7 +328,9 @@ Surface exacte :
 Règles :
 
 - chaque device est une preuve indépendante ;
-- la matrice de routes est dérivée du manifest courant, pas d’un nombre figé dans la documentation ;
+- le dénominateur courant est l'union active **Global + France-only** (`projection_active_provider_ids`), jamais le seul manifest Global ni un ancien Hub-46 figé ;
+- la matrice de routes est dérivée des projections courantes Global + France et de leurs `supportedTypes`, pas d’un nombre figé dans la documentation ;
+- la régression épisodique `spartacus-s00e01` est additive au corpus adaptatif sur les cinq Labs : un succès S1/TV ordinaire ne peut pas la court-circuiter ;
 - `canonicalSupportedTypes` porte la sémantique, `supportedTypes` la surface de lancement testée ;
 - providers désactivés restent auditables ;
 - les Labs utilisent les bytes NiakVIO candidats exacts ;
@@ -451,6 +466,10 @@ Cette frontière évite deux anti-patterns :
 21. Une qualité inconnue ne doit jamais apparaître dans le titre ; seule la meilleure qualité réellement prouvée peut suffixer le nom provider.
 22. Stream Score est Core-global, provider-agnostic et evidence-gated : aucun grade sans preuve réseau suffisante ; le badge de score, lorsqu’il existe, reste le premier badge visible.
 23. Le score réseau ne fabrique jamais des stalls : HLS mesure des segments réels et leur taux de succès ; les stalls/rebuffering du player ne comptent que si une télémétrie hôte réelle est fournie.
+24. Une page multi-lecteurs/multi-sources doit être énumérée avant le cap final ; le premier résultat ne termine pas la découverte des variantes annoncées.
+25. La déduplication terminale se fait par identité de playback (URL + headers requis), pas par URL seule ; les qualités explicites distinctes restent distinctes tant que leur média l'est.
+26. La saison `0` est une coordonnée épisodique valide : aucun fallback implicite vers S1 n'est autorisé, et S00 doit être couvert par la régression native obligatoire.
+27. Les cinq Labs couvrent l'union active Global + France-only ; un provider France-only actif ne peut pas rester hors certification Nuvio.
 
 ## Références
 
