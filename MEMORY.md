@@ -1,3 +1,10 @@
+## 2026-11-16 — Canonical ProviderBase materialization no longer mutates common source
+
+- The earlier reconstruction-only fixed-point barrier was insufficient because `materialize_provider_base_v3_store.py` is also called by Non-Regression, Projection Reconcile and Repair. Its `prepare_runtime()` still executed cumulative historical source migrations before composing ProviderBase, so those callers could validate a runtime common source that existed only as an uncommitted workspace mutation.
+- Commit `d8d4916a` separates allowed structured-DATA sanitization from common source migrations. The materializer snapshots the shared ProviderBase/compositor/presentation and accepted Mugiwara runtime Lego, executes the compatibility migrations only as validators, and fails if any of those source bytes change. A source migration must now be reviewed/persisted separately before routine materialization can consume it.
+- Commit `ba8be640` locks the source-purity guard and ordering in the clean reconstruction contract. Commit `f8bbcef2` documents the validation-only source-migration boundary in `ARCHITECTURE.md`.
+- This strengthens every caller of the canonical materializer; it does not claim the current source is already fixed-point until the exact-head workflows execute the new guard.
+
 ## 2026-11-16 — Reconstruction may no longer certify workspace-only source migrations
 
 - The canonical reconstruction workflow still invoked the cumulative source-plan/runtime/finalization migration entry points before rebuilding Provider v3. Those entry points are valid compatibility/fixed-point checkers, but the workflow did not prove they were no-ops before continuing. A stale checked-in source could therefore be silently rewritten in the runner and then validated as if those bytes were the exact repository source.
