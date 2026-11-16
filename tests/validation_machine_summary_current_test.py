@@ -30,9 +30,18 @@ assert validation["native_sampling"]["initial_fixtures_per_lane"] == 1
 assert validation["native_sampling"]["fixed_batch"] is False
 assert validation["native_sampling"]["rotate_only_on_clean_zero_streams"] is True
 assert validation["core_contract"]["timeout_seconds"] == 25
-assert validation["final_certification"]["status"] == "pending_frozen_candidate_sha"
-assert validation["final_certification"]["requires_five_native_platforms"] is True
-assert validation["final_certification"]["requires_final_native_hub46_manifest_regeneration"] is True
+certification = validation["final_certification"]
+assert certification["status"] == "pending_current_projection_union_five_native_lab_verdicts"
+assert certification["requires_five_native_platforms"] is True
+assert certification["requires_projection_union_coverage"] is True
+assert certification["requires_fixed_point_and_reverse_rebuild"] is True
+assert certification["requires_immutable_pinned_native_transport"] is True
+assert certification["requires_exact_final_release_sha_native_labs"] is True
+assert certification["requires_current_nuvio_client_refs"] is True
+assert certification["native_proof_transitive_between_clients"] is False
+assert certification["post_finalization_native_certification_workflow"] == ".github/workflows/release-candidate-validation.yml"
+assert certification["requires_final_native_hub46_manifest_regeneration"] is True
+assert validation["nuvio_runtime_contract"]["subtitle_specific_headers_preserved"] is True
 
 print(
     "VALIDATION_MACHINE_SUMMARY_CURRENT_OK "
