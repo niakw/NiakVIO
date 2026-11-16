@@ -6,9 +6,9 @@ import json
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
-from current_provider_scope import active_provider_ids
+from current_provider_scope import projection_active_provider_ids
 
-ACTIVE_PROVIDER_IDS = active_provider_ids()
+ACTIVE_PROVIDER_IDS = projection_active_provider_ids()
 android = (ROOT / ".github/workflows/native-mobile-android-reader.yml").read_text(encoding="utf-8")
 ios = (ROOT / ".github/workflows/native-mobile-ios-reader.yml").read_text(encoding="utf-8")
 desktop = (ROOT / ".github/workflows/native-desktop-reader-acceptance.yml").read_text(encoding="utf-8")
@@ -43,13 +43,28 @@ platforms = ["TVAndroid", "MobileAndroid", "MobileIOS", "DesktopMACOS", "Desktop
 assert len(platforms) == 5 and len(set(platforms)) == 5
 
 manifest = json.loads((ROOT / "manifest.json").read_text(encoding="utf-8"))
-rows = [
-    row
-    for row in manifest.get("scrapers") or []
-    if isinstance(row, dict)
-    and str(row.get("id") or "").strip().casefold() in ACTIVE_PROVIDER_IDS
-]
-row_ids = {str(row.get("id") or "").strip().casefold() for row in rows}
+vf_manifest = json.loads((ROOT / "vf/manifest.json").read_text(encoding="utf-8"))
+rows_by_id = {}
+for document in (manifest, vf_manifest):
+    for row in document.get("scrapers") or []:
+        if not isinstance(row, dict) or row.get("enabled") is False:
+            continue
+        provider_id = str(row.get("id") or "").strip().casefold().replace("_", "-")
+        if provider_id not in ACTIVE_PROVIDER_IDS:
+            continue
+        previous = rows_by_id.get(provider_id)
+        if previous is not None:
+            def normalized(value):
+                value = dict(value)
+                filename = str(value.get("filename") or "")
+                if filename.startswith("../"):
+                    value["filename"] = filename[3:]
+                return value
+            assert normalized(previous) == normalized(row), provider_id
+        else:
+            rows_by_id[provider_id] = row
+rows = list(rows_by_id.values())
+row_ids = set(rows_by_id)
 assert row_ids == ACTIVE_PROVIDER_IDS, (
     sorted(row_ids - ACTIVE_PROVIDER_IDS),
     sorted(ACTIVE_PROVIDER_IDS - row_ids),
