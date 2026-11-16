@@ -4,22 +4,22 @@
     "maxNearestPeers": 3,
     "providerIds": [
       "anikototv",
-      "anime-sama",
+      "anisama",
       "castle",
+      "french-anime",
       "french-manga",
-      "hindmoviez",
-      "kurage",
+      "internet-archive",
+      "movix-fr",
       "mugiwarastream",
+      "nakios",
       "neko-sama",
       "papadustream",
-      "playimdb",
       "purstream",
+      "sadisflix",
       "sekai",
       "streamzo",
-      "voiranime",
-      "voiranime-homes",
-      "voiranime-rip",
-      "wookafr"
+      "topcartoons",
+      "webflix"
     ],
     "version": 1
   },
@@ -963,8 +963,43 @@
     }
   ],
   "operationalProviderCount": 17,
-  "providerCount": 46,
+  "providerCount": 142,
   "providers": {
+    "1jour1film0626": {
+      "domainMemory": true,
+      "evidenceDepth": [
+        "anime=none",
+        "movie=none",
+        "tv=none"
+      ],
+      "hasApiRecipe": false,
+      "hasProviderValuePlan": false,
+      "hasSearchRequestPlan": false,
+      "mediaTypes": [
+        "anime",
+        "movie",
+        "tv"
+      ],
+      "officialHost": "1jour1film1026.monster",
+      "operational": false,
+      "peerRequestRecipes": [],
+      "peerRouteTemplates": [
+        "/index.php?do=search&subaction=search&story={query}"
+      ],
+      "providerLegoScripts": [],
+      "recipeMethods": [],
+      "recipeResponses": [],
+      "recipeRoles": [],
+      "requestRecipes": [],
+      "routeFamilies": [
+        "search"
+      ],
+      "routeTemplates": [
+        "/index.php?do=search&subaction=search&story={query}"
+      ],
+      "status": "NO PROOF",
+      "strategy": "mixed_embed_resolver"
+    },
     "4khdhub": {
       "domainMemory": true,
       "evidenceDepth": [
@@ -1004,8 +1039,118 @@
         "/{slug}-series-1385/",
         "/el-camino-a-{slug}-movie-movie-1175/"
       ],
-      "status": "ROUTE PROVEN",
+      "status": "DISABLED",
       "strategy": "html_scraper"
+    },
+    "67movies": {
+      "domainMemory": true,
+      "evidenceDepth": [
+        "anime=lookup_only",
+        "movie=lookup_only",
+        "tv=lookup_only"
+      ],
+      "hasApiRecipe": false,
+      "hasProviderValuePlan": false,
+      "hasSearchRequestPlan": false,
+      "mediaTypes": [
+        "anime",
+        "movie",
+        "tv"
+      ],
+      "officialHost": "67movies.st",
+      "operational": false,
+      "peerRequestRecipes": [],
+      "peerRouteTemplates": [
+        "/?s={query}"
+      ],
+      "providerLegoScripts": [],
+      "recipeMethods": [],
+      "recipeResponses": [],
+      "recipeRoles": [],
+      "requestRecipes": [],
+      "routeFamilies": [
+        "search"
+      ],
+      "routeTemplates": [
+        "/?s={query}"
+      ],
+      "status": "NO PROOF",
+      "strategy": "mixed_embed_resolver"
+    },
+    "7movies": {
+      "domainMemory": true,
+      "evidenceDepth": [],
+      "hasApiRecipe": false,
+      "hasProviderValuePlan": false,
+      "hasSearchRequestPlan": false,
+      "mediaTypes": [
+        "anime",
+        "movie",
+        "tv"
+      ],
+      "officialHost": "7movies.in",
+      "operational": false,
+      "peerRequestRecipes": [],
+      "peerRouteTemplates": [],
+      "providerLegoScripts": [],
+      "recipeMethods": [],
+      "recipeResponses": [],
+      "recipeRoles": [],
+      "requestRecipes": [],
+      "routeFamilies": [],
+      "routeTemplates": [],
+      "status": "UNKNOWN",
+      "strategy": "mixed_embed_resolver"
+    },
+    "aether": {
+      "domainMemory": true,
+      "evidenceDepth": [],
+      "hasApiRecipe": false,
+      "hasProviderValuePlan": false,
+      "hasSearchRequestPlan": false,
+      "mediaTypes": [
+        "anime",
+        "movie",
+        "tv"
+      ],
+      "officialHost": "aether.ist",
+      "operational": false,
+      "peerRequestRecipes": [],
+      "peerRouteTemplates": [],
+      "providerLegoScripts": [],
+      "recipeMethods": [],
+      "recipeResponses": [],
+      "recipeRoles": [],
+      "requestRecipes": [],
+      "routeFamilies": [],
+      "routeTemplates": [],
+      "status": "UNKNOWN",
+      "strategy": "mixed_embed_resolver"
+    },
+    "all-you-can-watch": {
+      "domainMemory": true,
+      "evidenceDepth": [],
+      "hasApiRecipe": false,
+      "hasProviderValuePlan": false,
+      "hasSearchRequestPlan": false,
+      "mediaTypes": [
+        "anime",
+        "movie",
+        "tv"
+      ],
+      "officialHost": "allyoucanwatch.net",
+      "operational": false,
+      "peerRequestRecipes": [],
+      "peerRouteTemplates": [],
+      "providerLegoScripts": [],
+      "recipeMethods": [],
+      "recipeResponses": [],
+      "recipeRoles": [],
+      "requestRecipes": [],
+      "routeFamilies": [],
+      "routeTemplates": [],
+      "status": "UNKNOWN",
+      "strategy": "mixed_embed_resolver"
     },
     "allanime": {
       "domainMemory": true,
@@ -1071,8 +1216,8 @@
     "allwish": {
       "domainMemory": true,
       "evidenceDepth": [
-        "movie=none",
-        "tv=none"
+        "movie=lookup_only",
+        "tv=lookup_only"
       ],
       "hasApiRecipe": false,
       "hasProviderValuePlan": false,
@@ -1113,7 +1258,74 @@
         "/filter?keyword={query}",
         "/watch/{slug}/ep-{episode}"
       ],
-      "status": "NO PROOF",
+      "status": "DISABLED",
+      "strategy": "html_scraper"
+    },
+    "anidb": {
+      "domainMemory": true,
+      "evidenceDepth": [
+        "anime=chain_reached"
+      ],
+      "hasApiRecipe": false,
+      "hasProviderValuePlan": false,
+      "hasSearchRequestPlan": false,
+      "mediaTypes": [
+        "anime"
+      ],
+      "officialHost": "anidb.pics",
+      "operational": false,
+      "peerRequestRecipes": [],
+      "peerRouteTemplates": [
+        "/watch/${slug}",
+        "/?search={query}"
+      ],
+      "providerLegoScripts": [],
+      "recipeMethods": [],
+      "recipeResponses": [],
+      "recipeRoles": [],
+      "requestRecipes": [],
+      "routeFamilies": [
+        "player",
+        "search"
+      ],
+      "routeTemplates": [
+        "/watch/${slug}",
+        "/?search={query}"
+      ],
+      "status": "CHAIN REACHED",
+      "strategy": "html_scraper"
+    },
+    "aniflix-uno": {
+      "domainMemory": true,
+      "evidenceDepth": [
+        "anime=none"
+      ],
+      "hasApiRecipe": false,
+      "hasProviderValuePlan": false,
+      "hasSearchRequestPlan": false,
+      "mediaTypes": [
+        "anime"
+      ],
+      "officialHost": "aniflix.uno",
+      "operational": false,
+      "peerRequestRecipes": [],
+      "peerRouteTemplates": [
+        "/?s={query}",
+        "/?q={query}"
+      ],
+      "providerLegoScripts": [],
+      "recipeMethods": [],
+      "recipeResponses": [],
+      "recipeRoles": [],
+      "requestRecipes": [],
+      "routeFamilies": [
+        "search"
+      ],
+      "routeTemplates": [
+        "/?s={query}",
+        "/?q={query}"
+      ],
+      "status": "HARNESS/ENV BLOCKED",
       "strategy": "html_scraper"
     },
     "anikototv": {
@@ -1179,7 +1391,7 @@
     "anime-sama": {
       "domainMemory": true,
       "evidenceDepth": [
-        "anime=chain_reached"
+        "anime=lookup_only"
       ],
       "hasApiRecipe": false,
       "hasProviderValuePlan": false,
@@ -1188,7 +1400,7 @@
         "anime"
       ],
       "officialHost": "animes-sama.fr",
-      "operational": true,
+      "operational": false,
       "peerRequestRecipes": [
         {
           "body": {},
@@ -1422,7 +1634,7 @@
         "/catalogue/{slug}/saison1/vostfr/episodes.js",
         "/catalogue/{slug}/saison1/vf/episodes.js"
       ],
-      "status": "FULL OK",
+      "status": "DISABLED",
       "strategy": "mixed_embed_resolver"
     },
     "anime-ultime": {
@@ -1462,8 +1674,39 @@
         "/meta/series/tt12343534.json",
         "/MenuSearch.html"
       ],
-      "status": "REGRESSION PROVIDER",
+      "status": "DISABLED",
       "strategy": "mixed_embed_resolver"
+    },
+    "animejlprovider": {
+      "domainMemory": true,
+      "evidenceDepth": [
+        "anime=none"
+      ],
+      "hasApiRecipe": false,
+      "hasProviderValuePlan": false,
+      "hasSearchRequestPlan": false,
+      "mediaTypes": [
+        "anime"
+      ],
+      "officialHost": "www.anime-jl.net",
+      "operational": false,
+      "peerRequestRecipes": [],
+      "peerRouteTemplates": [
+        "/animes?q={query}"
+      ],
+      "providerLegoScripts": [],
+      "recipeMethods": [],
+      "recipeResponses": [],
+      "recipeRoles": [],
+      "requestRecipes": [],
+      "routeFamilies": [
+        "search"
+      ],
+      "routeTemplates": [
+        "/animes?q={query}"
+      ],
+      "status": "HARNESS/ENV BLOCKED",
+      "strategy": "html_scraper"
     },
     "animekai": {
       "domainMemory": true,
@@ -1728,7 +1971,63 @@
         "/download/{slug}-tv/ep-1",
         "/download/{slug}-tv/ep-2"
       ],
-      "status": "REGRESSION PROVIDER",
+      "status": "DISABLED",
+      "strategy": "mixed_embed_resolver"
+    },
+    "animeko": {
+      "domainMemory": true,
+      "evidenceDepth": [],
+      "hasApiRecipe": false,
+      "hasProviderValuePlan": false,
+      "hasSearchRequestPlan": false,
+      "mediaTypes": [
+        "anime"
+      ],
+      "officialHost": "w2.animeko.ws",
+      "operational": false,
+      "peerRequestRecipes": [],
+      "peerRouteTemplates": [],
+      "providerLegoScripts": [],
+      "recipeMethods": [],
+      "recipeResponses": [],
+      "recipeRoles": [],
+      "requestRecipes": [],
+      "routeFamilies": [],
+      "routeTemplates": [],
+      "status": "UNKNOWN",
+      "strategy": "mixed_embed_resolver"
+    },
+    "animeonsen": {
+      "domainMemory": true,
+      "evidenceDepth": [
+        "anime=none"
+      ],
+      "hasApiRecipe": false,
+      "hasProviderValuePlan": false,
+      "hasSearchRequestPlan": false,
+      "mediaTypes": [
+        "anime"
+      ],
+      "officialHost": "www.animeonsen.xyz",
+      "operational": false,
+      "peerRequestRecipes": [],
+      "peerRouteTemplates": [
+        "/?s={query}",
+        "/search?q={query}"
+      ],
+      "providerLegoScripts": [],
+      "recipeMethods": [],
+      "recipeResponses": [],
+      "recipeRoles": [],
+      "requestRecipes": [],
+      "routeFamilies": [
+        "search"
+      ],
+      "routeTemplates": [
+        "/?s={query}",
+        "/search?q={query}"
+      ],
+      "status": "HARNESS/ENV BLOCKED",
       "strategy": "mixed_embed_resolver"
     },
     "animesalt": {
@@ -1768,7 +2067,7 @@
         "/episode/[^\\x22]*",
         "/player/index.php?data="
       ],
-      "status": "ROUTE PROVEN",
+      "status": "DISABLED",
       "strategy": "html_scraper"
     },
     "animesama-co": {
@@ -1911,7 +2210,7 @@
         "/api/v2/themoviedb?id={tmdbId}",
         "/meta/series/tt12343534.json"
       ],
-      "status": "CANDIDATE OK",
+      "status": "DISABLED",
       "strategy": "mixed_embed_resolver"
     },
     "animesultra": {
@@ -1959,7 +2258,7 @@
         "/api/v2/themoviedb?id={tmdbId}",
         "/meta/series/tt12343534.json"
       ],
-      "status": "ROUTE PROVEN",
+      "status": "DISABLED",
       "strategy": "mixed_embed_resolver"
     },
     "animetsu": {
@@ -2533,7 +2832,165 @@
         "/episode/{slug}-1-episode-1/",
         "/episode/{slug}-2-saison-1-episode-1/"
       ],
-      "status": "CANDIDATE OK",
+      "status": "DISABLED",
+      "strategy": "mixed_embed_resolver"
+    },
+    "anisama": {
+      "domainMemory": true,
+      "evidenceDepth": [
+        "anime=chain_reached"
+      ],
+      "hasApiRecipe": false,
+      "hasProviderValuePlan": false,
+      "hasSearchRequestPlan": false,
+      "mediaTypes": [
+        "anime"
+      ],
+      "officialHost": "anisama.fr",
+      "operational": true,
+      "peerRequestRecipes": [],
+      "peerRouteTemplates": [
+        "/?s={query}",
+        "/recherche?q={query}"
+      ],
+      "providerLegoScripts": [],
+      "recipeMethods": [],
+      "recipeResponses": [],
+      "recipeRoles": [],
+      "requestRecipes": [],
+      "routeFamilies": [
+        "search"
+      ],
+      "routeTemplates": [
+        "/?s={query}",
+        "/recherche?q={query}"
+      ],
+      "status": "FULL OK",
+      "strategy": "mixed_embed_resolver"
+    },
+    "arrowtv": {
+      "domainMemory": true,
+      "evidenceDepth": [
+        "anime=none",
+        "movie=none",
+        "tv=none"
+      ],
+      "hasApiRecipe": false,
+      "hasProviderValuePlan": false,
+      "hasSearchRequestPlan": false,
+      "mediaTypes": [
+        "anime",
+        "movie",
+        "tv"
+      ],
+      "officialHost": "arrowtv.net",
+      "operational": false,
+      "peerRequestRecipes": [],
+      "peerRouteTemplates": [
+        "/movie/{tmdbId}",
+        "/tv/{tmdbId}"
+      ],
+      "providerLegoScripts": [],
+      "recipeMethods": [],
+      "recipeResponses": [],
+      "recipeRoles": [],
+      "requestRecipes": [],
+      "routeFamilies": [
+        "detail",
+        "other"
+      ],
+      "routeTemplates": [
+        "/movie/{tmdbId}",
+        "/tv/{tmdbId}"
+      ],
+      "status": "HARNESS/ENV BLOCKED",
+      "strategy": "mixed_embed_resolver"
+    },
+    "asiaflix": {
+      "domainMemory": true,
+      "evidenceDepth": [],
+      "hasApiRecipe": false,
+      "hasProviderValuePlan": false,
+      "hasSearchRequestPlan": false,
+      "mediaTypes": [
+        "anime",
+        "movie",
+        "tv"
+      ],
+      "officialHost": "asiaflix.net",
+      "operational": false,
+      "peerRequestRecipes": [],
+      "peerRouteTemplates": [],
+      "providerLegoScripts": [],
+      "recipeMethods": [],
+      "recipeResponses": [],
+      "recipeRoles": [],
+      "requestRecipes": [],
+      "routeFamilies": [],
+      "routeTemplates": [],
+      "status": "UNKNOWN",
+      "strategy": "mixed_embed_resolver"
+    },
+    "bcine": {
+      "domainMemory": true,
+      "evidenceDepth": [],
+      "hasApiRecipe": false,
+      "hasProviderValuePlan": false,
+      "hasSearchRequestPlan": false,
+      "mediaTypes": [
+        "anime",
+        "movie",
+        "tv"
+      ],
+      "officialHost": "bcine.ru",
+      "operational": false,
+      "peerRequestRecipes": [],
+      "peerRouteTemplates": [],
+      "providerLegoScripts": [],
+      "recipeMethods": [],
+      "recipeResponses": [],
+      "recipeRoles": [],
+      "requestRecipes": [],
+      "routeFamilies": [],
+      "routeTemplates": [],
+      "status": "UNKNOWN",
+      "strategy": "mixed_embed_resolver"
+    },
+    "boredflix": {
+      "domainMemory": true,
+      "evidenceDepth": [
+        "anime=chain_reached",
+        "movie=chain_reached",
+        "tv=chain_reached"
+      ],
+      "hasApiRecipe": false,
+      "hasProviderValuePlan": false,
+      "hasSearchRequestPlan": false,
+      "mediaTypes": [
+        "anime",
+        "movie",
+        "tv"
+      ],
+      "officialHost": "boredflix.to",
+      "operational": false,
+      "peerRequestRecipes": [],
+      "peerRouteTemplates": [
+        "/?s={query}",
+        "/search?q={query}"
+      ],
+      "providerLegoScripts": [],
+      "recipeMethods": [],
+      "recipeResponses": [],
+      "recipeRoles": [],
+      "requestRecipes": [],
+      "routeFamilies": [
+        "search"
+      ],
+      "routeTemplates": [
+        "/?s={query}",
+        "/search?q={query}"
+      ],
+      "status": "CHAIN REACHED",
       "strategy": "mixed_embed_resolver"
     },
     "castle": {
@@ -2617,6 +3074,249 @@
       ],
       "status": "FULL OK",
       "strategy": "api_stream_resolver"
+    },
+    "chillflix": {
+      "domainMemory": true,
+      "evidenceDepth": [
+        "movie=none",
+        "tv=none"
+      ],
+      "hasApiRecipe": false,
+      "hasProviderValuePlan": false,
+      "hasSearchRequestPlan": false,
+      "mediaTypes": [
+        "movie",
+        "tv"
+      ],
+      "officialHost": "chillflix.lol",
+      "operational": false,
+      "peerRequestRecipes": [],
+      "peerRouteTemplates": [
+        "/movie/{tmdbId}",
+        "/tv/{tmdbId}"
+      ],
+      "providerLegoScripts": [
+        "chillflix_tmdb_direct_embed_runtime_v1.py"
+      ],
+      "recipeMethods": [],
+      "recipeResponses": [],
+      "recipeRoles": [],
+      "requestRecipes": [],
+      "routeFamilies": [
+        "detail",
+        "other"
+      ],
+      "routeTemplates": [
+        "/movie/{tmdbId}",
+        "/tv/{tmdbId}"
+      ],
+      "status": "HARNESS/ENV BLOCKED",
+      "strategy": "mixed_embed_resolver"
+    },
+    "cineflux": {
+      "domainMemory": true,
+      "evidenceDepth": [],
+      "hasApiRecipe": false,
+      "hasProviderValuePlan": false,
+      "hasSearchRequestPlan": false,
+      "mediaTypes": [
+        "anime",
+        "movie",
+        "tv"
+      ],
+      "officialHost": "cineflux.wiki",
+      "operational": false,
+      "peerRequestRecipes": [],
+      "peerRouteTemplates": [],
+      "providerLegoScripts": [],
+      "recipeMethods": [],
+      "recipeResponses": [],
+      "recipeRoles": [],
+      "requestRecipes": [],
+      "routeFamilies": [],
+      "routeTemplates": [],
+      "status": "UNKNOWN",
+      "strategy": "mixed_embed_resolver"
+    },
+    "cinegram": {
+      "domainMemory": true,
+      "evidenceDepth": [
+        "movie=none"
+      ],
+      "hasApiRecipe": false,
+      "hasProviderValuePlan": false,
+      "hasSearchRequestPlan": false,
+      "mediaTypes": [
+        "movie"
+      ],
+      "officialHost": "cinegram.tv",
+      "operational": false,
+      "peerRequestRecipes": [],
+      "peerRouteTemplates": [],
+      "providerLegoScripts": [
+        "cinegram_runtime_v1.py"
+      ],
+      "recipeMethods": [],
+      "recipeResponses": [],
+      "recipeRoles": [],
+      "requestRecipes": [],
+      "routeFamilies": [],
+      "routeTemplates": [],
+      "status": "HARNESS/ENV BLOCKED",
+      "strategy": "mixed_embed_resolver"
+    },
+    "cinejoy": {
+      "domainMemory": true,
+      "evidenceDepth": [],
+      "hasApiRecipe": false,
+      "hasProviderValuePlan": false,
+      "hasSearchRequestPlan": false,
+      "mediaTypes": [
+        "anime",
+        "movie",
+        "tv"
+      ],
+      "officialHost": "cinejoy.pk",
+      "operational": false,
+      "peerRequestRecipes": [],
+      "peerRouteTemplates": [],
+      "providerLegoScripts": [],
+      "recipeMethods": [],
+      "recipeResponses": [],
+      "recipeRoles": [],
+      "requestRecipes": [],
+      "routeFamilies": [],
+      "routeTemplates": [],
+      "status": "UNKNOWN",
+      "strategy": "mixed_embed_resolver"
+    },
+    "cinemabz": {
+      "domainMemory": true,
+      "evidenceDepth": [
+        "anime=chain_reached",
+        "movie=chain_reached",
+        "tv=chain_reached"
+      ],
+      "hasApiRecipe": false,
+      "hasProviderValuePlan": false,
+      "hasSearchRequestPlan": false,
+      "mediaTypes": [
+        "anime",
+        "movie",
+        "tv"
+      ],
+      "officialHost": "cinema.army",
+      "operational": false,
+      "peerRequestRecipes": [],
+      "peerRouteTemplates": [
+        "/api/tv/{tmdbId}"
+      ],
+      "providerLegoScripts": [],
+      "recipeMethods": [],
+      "recipeResponses": [],
+      "recipeRoles": [],
+      "requestRecipes": [],
+      "routeFamilies": [
+        "api"
+      ],
+      "routeTemplates": [
+        "/api/tv/{tmdbId}"
+      ],
+      "status": "CHAIN REACHED",
+      "strategy": "mixed_embed_resolver"
+    },
+    "cinematheque-de-bretagne": {
+      "domainMemory": true,
+      "evidenceDepth": [
+        "movie=lookup_only"
+      ],
+      "hasApiRecipe": false,
+      "hasProviderValuePlan": false,
+      "hasSearchRequestPlan": false,
+      "mediaTypes": [
+        "movie"
+      ],
+      "officialHost": "www.cinematheque-bretagne.bzh",
+      "operational": false,
+      "peerRequestRecipes": [],
+      "peerRouteTemplates": [
+        "/?s={query}",
+        "/index.php?do=search&subaction=search&story={query}"
+      ],
+      "providerLegoScripts": [],
+      "recipeMethods": [],
+      "recipeResponses": [],
+      "recipeRoles": [],
+      "requestRecipes": [],
+      "routeFamilies": [
+        "search"
+      ],
+      "routeTemplates": [
+        "/?s={query}",
+        "/index.php?do=search&subaction=search&story={query}"
+      ],
+      "status": "NO PROOF",
+      "strategy": "mixed_embed_resolver"
+    },
+    "cinestream": {
+      "domainMemory": true,
+      "evidenceDepth": [],
+      "hasApiRecipe": false,
+      "hasProviderValuePlan": false,
+      "hasSearchRequestPlan": false,
+      "mediaTypes": [
+        "anime",
+        "movie",
+        "tv"
+      ],
+      "officialHost": "cinestream.info",
+      "operational": false,
+      "peerRequestRecipes": [],
+      "peerRouteTemplates": [],
+      "providerLegoScripts": [],
+      "recipeMethods": [],
+      "recipeResponses": [],
+      "recipeRoles": [],
+      "requestRecipes": [],
+      "routeFamilies": [],
+      "routeTemplates": [],
+      "status": "UNKNOWN",
+      "strategy": "mixed_embed_resolver"
+    },
+    "cinetimes": {
+      "domainMemory": true,
+      "evidenceDepth": [
+        "movie=none",
+        "tv=none"
+      ],
+      "hasApiRecipe": false,
+      "hasProviderValuePlan": false,
+      "hasSearchRequestPlan": false,
+      "mediaTypes": [
+        "movie",
+        "tv"
+      ],
+      "officialHost": "cinetimes.org",
+      "operational": false,
+      "peerRequestRecipes": [],
+      "peerRouteTemplates": [
+        "/?s={query}",
+        "/search?query={query}"
+      ],
+      "providerLegoScripts": [],
+      "recipeMethods": [],
+      "recipeResponses": [],
+      "recipeRoles": [],
+      "requestRecipes": [],
+      "routeFamilies": [
+        "search"
+      ],
+      "routeTemplates": [
+        "/?s={query}",
+        "/search?query={query}"
+      ],
+      "status": "HARNESS/ENV BLOCKED",
+      "strategy": "mixed_embed_resolver"
     },
     "coflix": {
       "domainMemory": true,
@@ -3114,7 +3814,74 @@
         "/meta/series/tt12343534.json",
         "/episode/{slug}-saison-{season}-episode-{episode}/"
       ],
-      "status": "CANDIDATE OK",
+      "status": "DISABLED",
+      "strategy": "mixed_embed_resolver"
+    },
+    "corsflix": {
+      "domainMemory": true,
+      "evidenceDepth": [
+        "anime=chain_reached",
+        "movie=chain_reached",
+        "tv=chain_reached"
+      ],
+      "hasApiRecipe": false,
+      "hasProviderValuePlan": false,
+      "hasSearchRequestPlan": false,
+      "mediaTypes": [
+        "anime",
+        "movie",
+        "tv"
+      ],
+      "officialHost": "watch.corsflix.net",
+      "operational": false,
+      "peerRequestRecipes": [],
+      "peerRouteTemplates": [
+        "/movies/{tmdbId}-{slug}",
+        "/tv?s={query}",
+        "/search?q={query}",
+        "/tv/search?q={query}"
+      ],
+      "providerLegoScripts": [],
+      "recipeMethods": [],
+      "recipeResponses": [],
+      "recipeRoles": [],
+      "requestRecipes": [],
+      "routeFamilies": [
+        "detail",
+        "search"
+      ],
+      "routeTemplates": [
+        "/movies/{tmdbId}-{slug}",
+        "/tv?s={query}",
+        "/search?q={query}",
+        "/tv/search?q={query}"
+      ],
+      "status": "CHAIN REACHED",
+      "strategy": "mixed_embed_resolver"
+    },
+    "cpasmal": {
+      "domainMemory": true,
+      "evidenceDepth": [],
+      "hasApiRecipe": false,
+      "hasProviderValuePlan": false,
+      "hasSearchRequestPlan": false,
+      "mediaTypes": [
+        "anime",
+        "movie",
+        "tv"
+      ],
+      "officialHost": "www.cpasmal.rip",
+      "operational": false,
+      "peerRequestRecipes": [],
+      "peerRouteTemplates": [],
+      "providerLegoScripts": [],
+      "recipeMethods": [],
+      "recipeResponses": [],
+      "recipeRoles": [],
+      "requestRecipes": [],
+      "routeFamilies": [],
+      "routeTemplates": [],
+      "status": "UNKNOWN",
       "strategy": "mixed_embed_resolver"
     },
     "desiflix": {
@@ -3271,6 +4038,370 @@
       "status": "DISABLED",
       "strategy": "html_scraper"
     },
+    "dessinanime": {
+      "domainMemory": true,
+      "evidenceDepth": [],
+      "hasApiRecipe": false,
+      "hasProviderValuePlan": false,
+      "hasSearchRequestPlan": false,
+      "mediaTypes": [
+        "anime",
+        "movie",
+        "tv"
+      ],
+      "officialHost": "dessinanime.net",
+      "operational": false,
+      "peerRequestRecipes": [],
+      "peerRouteTemplates": [],
+      "providerLegoScripts": [],
+      "recipeMethods": [],
+      "recipeResponses": [],
+      "recipeRoles": [],
+      "requestRecipes": [],
+      "routeFamilies": [
+        "detail"
+      ],
+      "routeTemplates": [
+        "/movie/f0uvM3AAsdrmLtbXHh1YGKcD4EttSppn",
+        "/movie/JSAVQlaSeRFet8uzVoCypijNk8WJgQH4",
+        "/movie/BGjjI4M22tJXQT90FlnMbHT0OP77UJlK",
+        "/movie/Pxus9SmeguD0lynhDkGHZfwSROnq5X6l",
+        "/movie/ko3EijqyluJExbCywmpFLVNOU4NECZEf",
+        "/movie/cEGnx8Wm9JSsCgCaB8FvfYwqDKfiIbfI",
+        "/movie/WgeaBXDefLipRNdGCJiQOckcNLnRtBeB",
+        "/movie/AcbtO682dMmPl6vwbsVOHT4yud2S4zFu",
+        "/movie/iWv9CxfguAMFqdYJHJrlgwZLcstJzbn5",
+        "/movie/vekxOLljlkTbpqfCNCsRQyqKEmXIAQVU"
+      ],
+      "status": "UNKNOWN",
+      "strategy": "mixed_embed_resolver"
+    },
+    "diostream": {
+      "domainMemory": true,
+      "evidenceDepth": [],
+      "hasApiRecipe": false,
+      "hasProviderValuePlan": false,
+      "hasSearchRequestPlan": false,
+      "mediaTypes": [
+        "anime",
+        "movie",
+        "tv"
+      ],
+      "officialHost": "diostream.cc",
+      "operational": false,
+      "peerRequestRecipes": [],
+      "peerRouteTemplates": [
+        "/embed/sw.js"
+      ],
+      "providerLegoScripts": [],
+      "recipeMethods": [],
+      "recipeResponses": [],
+      "recipeRoles": [],
+      "requestRecipes": [],
+      "routeFamilies": [
+        "player"
+      ],
+      "routeTemplates": [
+        "/embed/sw.js"
+      ],
+      "status": "UNKNOWN",
+      "strategy": "mixed_embed_resolver"
+    },
+    "documentary-area": {
+      "domainMemory": true,
+      "evidenceDepth": [
+        "movie=lookup_only"
+      ],
+      "hasApiRecipe": false,
+      "hasProviderValuePlan": false,
+      "hasSearchRequestPlan": false,
+      "mediaTypes": [
+        "movie"
+      ],
+      "officialHost": "www.documentarymania.com",
+      "operational": false,
+      "peerRequestRecipes": [],
+      "peerRouteTemplates": [
+        "/results.php?search={query}"
+      ],
+      "providerLegoScripts": [],
+      "recipeMethods": [],
+      "recipeResponses": [],
+      "recipeRoles": [],
+      "requestRecipes": [],
+      "routeFamilies": [
+        "search"
+      ],
+      "routeTemplates": [
+        "/results.php?search={query}"
+      ],
+      "status": "NO PROOF",
+      "strategy": "html_scraper"
+    },
+    "dotriv": {
+      "domainMemory": true,
+      "evidenceDepth": [],
+      "hasApiRecipe": false,
+      "hasProviderValuePlan": false,
+      "hasSearchRequestPlan": false,
+      "mediaTypes": [
+        "anime",
+        "movie",
+        "tv"
+      ],
+      "officialHost": "dotriv.com",
+      "operational": false,
+      "peerRequestRecipes": [],
+      "peerRouteTemplates": [],
+      "providerLegoScripts": [],
+      "recipeMethods": [],
+      "recipeResponses": [],
+      "recipeRoles": [],
+      "requestRecipes": [],
+      "routeFamilies": [],
+      "routeTemplates": [],
+      "status": "UNKNOWN",
+      "strategy": "html_scraper"
+    },
+    "dpstream": {
+      "domainMemory": true,
+      "evidenceDepth": [],
+      "hasApiRecipe": false,
+      "hasProviderValuePlan": false,
+      "hasSearchRequestPlan": false,
+      "mediaTypes": [
+        "movie",
+        "tv"
+      ],
+      "officialHost": "dpstream.fyi",
+      "operational": false,
+      "peerRequestRecipes": [],
+      "peerRouteTemplates": [],
+      "providerLegoScripts": [],
+      "recipeMethods": [],
+      "recipeResponses": [],
+      "recipeRoles": [],
+      "requestRecipes": [],
+      "routeFamilies": [],
+      "routeTemplates": [],
+      "status": "UNKNOWN",
+      "strategy": "mixed_embed_resolver"
+    },
+    "dulourd": {
+      "domainMemory": true,
+      "evidenceDepth": [
+        "anime=none",
+        "tv=none"
+      ],
+      "hasApiRecipe": false,
+      "hasProviderValuePlan": false,
+      "hasSearchRequestPlan": false,
+      "mediaTypes": [
+        "anime",
+        "tv"
+      ],
+      "officialHost": "www.dulourd.hair",
+      "operational": false,
+      "peerRequestRecipes": [],
+      "peerRouteTemplates": [
+        "/index.php?do=search&subaction=search&story={query}"
+      ],
+      "providerLegoScripts": [],
+      "recipeMethods": [],
+      "recipeResponses": [],
+      "recipeRoles": [],
+      "requestRecipes": [],
+      "routeFamilies": [
+        "search"
+      ],
+      "routeTemplates": [
+        "/index.php?do=search&subaction=search&story={query}"
+      ],
+      "status": "HARNESS/ENV BLOCKED",
+      "strategy": "mixed_embed_resolver"
+    },
+    "emnexmovies": {
+      "domainMemory": true,
+      "evidenceDepth": [
+        "anime=none",
+        "movie=none",
+        "tv=none"
+      ],
+      "hasApiRecipe": false,
+      "hasProviderValuePlan": false,
+      "hasSearchRequestPlan": false,
+      "mediaTypes": [
+        "anime",
+        "movie",
+        "tv"
+      ],
+      "officialHost": "emnexmovies.tech",
+      "operational": false,
+      "peerRequestRecipes": [],
+      "peerRouteTemplates": [
+        "/movie/{tmdbId}-{slug}",
+        "/tv/212171-{slug}-ella",
+        "/movie/529107-inside-{slug}",
+        "/tv/198237-{slug}-wanderer",
+        "/movie/649745-{slug}-wandering",
+        "/movie/398188-{slug}-wars",
+        "/movie/287954-lolita-from-{slug}-space",
+        "/movie/1786250-short-cuts-{slug}",
+        "/movie/336592-the-science-of-{slug}",
+        "/movie/1282990-{slug}-interference",
+        "/movie/1443305-container-{slug}",
+        "/movie/1391726-{slug}-stella",
+        "/movie/1450827-{slug}-political-prisoner",
+        "/movie/1642987-primus-{slug}-drum-derby",
+        "/movie/301959-{slug}-nolan-s-odyssey",
+        "/movie/716603-only-{slug}-pinball-lives-forever",
+        "/movie/460616-{slug}-civil-war-shadows-of-the-empire",
+        "/movie/660698-faster-than-light-the-dream-of-{slug}-flight",
+        "/movie/552531-the-prom-goer-s-{slug}-excursion",
+        "/movie/763179-cosmic-journey-the-voyager-{slug}-mission-and-message",
+        "/tv/{tmdbId}-{slug}",
+        "/movie/559969-el-camino-a-{slug}-movie",
+        "/tv/337563-{slug}-original-minisodes",
+        "/tv/232533-{slug}-fortune-teller"
+      ],
+      "providerLegoScripts": [],
+      "recipeMethods": [],
+      "recipeResponses": [],
+      "recipeRoles": [],
+      "requestRecipes": [],
+      "routeFamilies": [
+        "detail"
+      ],
+      "routeTemplates": [
+        "/movie/{tmdbId}-{slug}",
+        "/tv/212171-{slug}-ella",
+        "/movie/529107-inside-{slug}",
+        "/tv/198237-{slug}-wanderer",
+        "/movie/649745-{slug}-wandering",
+        "/movie/398188-{slug}-wars",
+        "/movie/287954-lolita-from-{slug}-space",
+        "/movie/1786250-short-cuts-{slug}",
+        "/movie/336592-the-science-of-{slug}",
+        "/movie/1282990-{slug}-interference",
+        "/movie/1443305-container-{slug}",
+        "/movie/1391726-{slug}-stella",
+        "/movie/1450827-{slug}-political-prisoner",
+        "/movie/1642987-primus-{slug}-drum-derby",
+        "/movie/301959-{slug}-nolan-s-odyssey",
+        "/movie/716603-only-{slug}-pinball-lives-forever",
+        "/movie/460616-{slug}-civil-war-shadows-of-the-empire",
+        "/movie/660698-faster-than-light-the-dream-of-{slug}-flight",
+        "/movie/552531-the-prom-goer-s-{slug}-excursion",
+        "/movie/763179-cosmic-journey-the-voyager-{slug}-mission-and-message",
+        "/tv/{tmdbId}-{slug}",
+        "/movie/559969-el-camino-a-{slug}-movie",
+        "/tv/337563-{slug}-original-minisodes",
+        "/tv/232533-{slug}-fortune-teller"
+      ],
+      "status": "PROVIDER NETWORK BLOCKED",
+      "strategy": "mixed_embed_resolver"
+    },
+    "fawesome": {
+      "domainMemory": true,
+      "evidenceDepth": [
+        "movie=lookup_only",
+        "tv=lookup_only"
+      ],
+      "hasApiRecipe": false,
+      "hasProviderValuePlan": false,
+      "hasSearchRequestPlan": false,
+      "mediaTypes": [
+        "movie",
+        "tv"
+      ],
+      "officialHost": "fawesome.tv",
+      "operational": false,
+      "peerRequestRecipes": [],
+      "peerRouteTemplates": [
+        "/?s={query}",
+        "/search?q={query}"
+      ],
+      "providerLegoScripts": [],
+      "recipeMethods": [],
+      "recipeResponses": [],
+      "recipeRoles": [],
+      "requestRecipes": [],
+      "routeFamilies": [
+        "search"
+      ],
+      "routeTemplates": [
+        "/?s={query}",
+        "/search?q={query}"
+      ],
+      "status": "NO PROOF",
+      "strategy": "mixed_embed_resolver"
+    },
+    "fexini": {
+      "domainMemory": true,
+      "evidenceDepth": [
+        "anime=none",
+        "movie=none",
+        "tv=none"
+      ],
+      "hasApiRecipe": false,
+      "hasProviderValuePlan": false,
+      "hasSearchRequestPlan": false,
+      "mediaTypes": [
+        "anime",
+        "movie",
+        "tv"
+      ],
+      "officialHost": "fexini.net",
+      "operational": false,
+      "peerRequestRecipes": [],
+      "peerRouteTemplates": [
+        "/series/{slug}"
+      ],
+      "providerLegoScripts": [],
+      "recipeMethods": [],
+      "recipeResponses": [],
+      "recipeRoles": [],
+      "requestRecipes": [],
+      "routeFamilies": [
+        "detail"
+      ],
+      "routeTemplates": [
+        "/series/{slug}"
+      ],
+      "status": "HARNESS/ENV BLOCKED",
+      "strategy": "mixed_embed_resolver"
+    },
+    "film-a-revoir": {
+      "domainMemory": true,
+      "evidenceDepth": [
+        "movie=lookup_only"
+      ],
+      "hasApiRecipe": false,
+      "hasProviderValuePlan": false,
+      "hasSearchRequestPlan": false,
+      "mediaTypes": [
+        "movie"
+      ],
+      "officialHost": "filmarevoirnad.blogspot.com",
+      "operational": false,
+      "peerRequestRecipes": [],
+      "peerRouteTemplates": [
+        "/search?q={query}"
+      ],
+      "providerLegoScripts": [],
+      "recipeMethods": [],
+      "recipeResponses": [],
+      "recipeRoles": [],
+      "requestRecipes": [],
+      "routeFamilies": [
+        "search"
+      ],
+      "routeTemplates": [
+        "/search?q={query}"
+      ],
+      "status": "NO PROOF",
+      "strategy": "mixed_embed_resolver"
+    },
     "flemmix": {
       "domainMemory": true,
       "evidenceDepth": [
@@ -3389,7 +4520,242 @@
         "/films/{slug}",
         "/api/v2/themoviedb?id={tmdbId}"
       ],
-      "status": "ROUTE PROVEN",
+      "status": "DISABLED",
+      "strategy": "mixed_embed_resolver"
+    },
+    "flickystream": {
+      "domainMemory": true,
+      "evidenceDepth": [],
+      "hasApiRecipe": false,
+      "hasProviderValuePlan": false,
+      "hasSearchRequestPlan": false,
+      "mediaTypes": [
+        "anime",
+        "movie",
+        "tv"
+      ],
+      "officialHost": "flickystream.mov",
+      "operational": false,
+      "peerRequestRecipes": [],
+      "peerRouteTemplates": [
+        "/genre/movie/{tmdbId}",
+        "/anime/{tmdbId}"
+      ],
+      "providerLegoScripts": [],
+      "recipeMethods": [],
+      "recipeResponses": [],
+      "recipeRoles": [],
+      "requestRecipes": [],
+      "routeFamilies": [
+        "detail"
+      ],
+      "routeTemplates": [
+        "/genre/movie/{tmdbId}",
+        "/anime/{tmdbId}"
+      ],
+      "status": "UNKNOWN",
+      "strategy": "mixed_embed_resolver"
+    },
+    "flikhub": {
+      "domainMemory": true,
+      "evidenceDepth": [],
+      "hasApiRecipe": false,
+      "hasProviderValuePlan": false,
+      "hasSearchRequestPlan": false,
+      "mediaTypes": [
+        "anime",
+        "movie",
+        "tv"
+      ],
+      "officialHost": "www.flikhub.net",
+      "operational": false,
+      "peerRequestRecipes": [],
+      "peerRouteTemplates": [
+        "/search"
+      ],
+      "providerLegoScripts": [],
+      "recipeMethods": [],
+      "recipeResponses": [],
+      "recipeRoles": [],
+      "requestRecipes": [],
+      "routeFamilies": [
+        "search"
+      ],
+      "routeTemplates": [
+        "/search"
+      ],
+      "status": "UNKNOWN",
+      "strategy": "mixed_embed_resolver"
+    },
+    "flixer": {
+      "domainMemory": true,
+      "evidenceDepth": [
+        "anime=lookup_only",
+        "movie=lookup_only",
+        "tv=lookup_only"
+      ],
+      "hasApiRecipe": false,
+      "hasProviderValuePlan": false,
+      "hasSearchRequestPlan": false,
+      "mediaTypes": [
+        "anime",
+        "movie",
+        "tv"
+      ],
+      "officialHost": "flixer.gd",
+      "operational": false,
+      "peerRequestRecipes": [],
+      "peerRouteTemplates": [
+        "/?s={query}",
+        "/search?q={query}"
+      ],
+      "providerLegoScripts": [],
+      "recipeMethods": [],
+      "recipeResponses": [],
+      "recipeRoles": [],
+      "requestRecipes": [],
+      "routeFamilies": [
+        "search"
+      ],
+      "routeTemplates": [
+        "/?s={query}",
+        "/search?q={query}"
+      ],
+      "status": "NO PROOF",
+      "strategy": "mixed_embed_resolver"
+    },
+    "flixhq": {
+      "domainMemory": true,
+      "evidenceDepth": [
+        "movie=lookup_only",
+        "tv=lookup_only"
+      ],
+      "hasApiRecipe": false,
+      "hasProviderValuePlan": false,
+      "hasSearchRequestPlan": false,
+      "mediaTypes": [
+        "movie",
+        "tv"
+      ],
+      "officialHost": "flixhq.vc",
+      "operational": false,
+      "peerRequestRecipes": [],
+      "peerRouteTemplates": [
+        "/search?keyword={query}"
+      ],
+      "providerLegoScripts": [],
+      "recipeMethods": [],
+      "recipeResponses": [],
+      "recipeRoles": [],
+      "requestRecipes": [],
+      "routeFamilies": [
+        "search"
+      ],
+      "routeTemplates": [
+        "/search?keyword={query}"
+      ],
+      "status": "HARNESS/ENV BLOCKED",
+      "strategy": "html_scraper"
+    },
+    "franime": {
+      "domainMemory": true,
+      "evidenceDepth": [
+        "anime=none"
+      ],
+      "hasApiRecipe": false,
+      "hasProviderValuePlan": false,
+      "hasSearchRequestPlan": false,
+      "mediaTypes": [
+        "anime"
+      ],
+      "officialHost": "franime.fr",
+      "operational": false,
+      "peerRequestRecipes": [],
+      "peerRouteTemplates": [
+        "/?s={query}",
+        "/recherche?q={query}"
+      ],
+      "providerLegoScripts": [],
+      "recipeMethods": [],
+      "recipeResponses": [],
+      "recipeRoles": [],
+      "requestRecipes": [],
+      "routeFamilies": [
+        "search"
+      ],
+      "routeTemplates": [
+        "/?s={query}",
+        "/recherche?q={query}"
+      ],
+      "status": "HARNESS/ENV BLOCKED",
+      "strategy": "mixed_embed_resolver"
+    },
+    "frembed": {
+      "domainMemory": true,
+      "evidenceDepth": [
+        "anime=lookup_only",
+        "movie=lookup_only",
+        "tv=lookup_only"
+      ],
+      "hasApiRecipe": false,
+      "hasProviderValuePlan": false,
+      "hasSearchRequestPlan": false,
+      "mediaTypes": [
+        "anime",
+        "movie",
+        "tv"
+      ],
+      "officialHost": "frembed.surf",
+      "operational": false,
+      "peerRequestRecipes": [],
+      "peerRouteTemplates": [
+        "/embed/movie/{tmdbId}"
+      ],
+      "providerLegoScripts": [],
+      "recipeMethods": [],
+      "recipeResponses": [],
+      "recipeRoles": [],
+      "requestRecipes": [],
+      "routeFamilies": [
+        "player"
+      ],
+      "routeTemplates": [
+        "/embed/movie/{tmdbId}"
+      ],
+      "status": "NO PROOF",
+      "strategy": "mixed_embed_resolver"
+    },
+    "french-anime": {
+      "domainMemory": true,
+      "evidenceDepth": [
+        "anime=none"
+      ],
+      "hasApiRecipe": false,
+      "hasProviderValuePlan": false,
+      "hasSearchRequestPlan": false,
+      "mediaTypes": [
+        "anime"
+      ],
+      "officialHost": "french-anime.com",
+      "operational": true,
+      "peerRequestRecipes": [],
+      "peerRouteTemplates": [
+        "/?s={query}",
+        "/?q={query}"
+      ],
+      "providerLegoScripts": [],
+      "recipeMethods": [],
+      "recipeResponses": [],
+      "recipeRoles": [],
+      "requestRecipes": [],
+      "routeFamilies": [
+        "search"
+      ],
+      "routeTemplates": [
+        "/?s={query}",
+        "/?q={query}"
+      ],
+      "status": "FULL OK",
       "strategy": "mixed_embed_resolver"
     },
     "french-manga": {
@@ -3602,6 +4968,406 @@
       "status": "FULL OK",
       "strategy": "mixed_embed_resolver"
     },
+    "frenchstream": {
+      "domainMemory": true,
+      "evidenceDepth": [
+        "anime=lookup_only",
+        "movie=lookup_only",
+        "tv=lookup_only"
+      ],
+      "hasApiRecipe": false,
+      "hasProviderValuePlan": false,
+      "hasSearchRequestPlan": false,
+      "mediaTypes": [
+        "anime",
+        "movie",
+        "tv"
+      ],
+      "officialHost": "fs16.lol",
+      "operational": false,
+      "peerRequestRecipes": [
+        {
+          "body": {},
+          "bodyKind": "none",
+          "executable": true,
+          "headerNames": [
+            "accept",
+            "accept-language",
+            "origin",
+            "referer",
+            "user-agent"
+          ],
+          "method": "GET",
+          "response": "json",
+          "role": "detail",
+          "route": "/engine/ajax/film_api.php?id={id}",
+          "semanticType": "movie",
+          "streamProof": true
+        },
+        {
+          "body": {},
+          "bodyKind": "none",
+          "executable": true,
+          "headerNames": [
+            "accept",
+            "accept-language",
+            "origin",
+            "referer",
+            "user-agent"
+          ],
+          "method": "GET",
+          "response": "html-or-text",
+          "role": "detail",
+          "route": "/index.php?newsid={id}",
+          "semanticType": "tv",
+          "streamProof": true
+        }
+      ],
+      "peerRouteTemplates": [
+        "/search/{slug}",
+        "/recherche/{slug}"
+      ],
+      "providerLegoScripts": [],
+      "recipeMethods": [
+        "GET",
+        "POST"
+      ],
+      "recipeResponses": [
+        "html-or-text",
+        "json"
+      ],
+      "recipeRoles": [
+        "detail",
+        "player"
+      ],
+      "requestRecipes": [
+        {
+          "body": {
+            "do": "search",
+            "story": "{query}",
+            "subaction": "search"
+          },
+          "bodyKind": "form",
+          "executable": true,
+          "headerNames": [
+            "accept",
+            "accept-language",
+            "content-type",
+            "origin",
+            "referer",
+            "user-agent"
+          ],
+          "method": "POST",
+          "origin": "https://french-stream.one",
+          "response": "html-or-text",
+          "role": "detail",
+          "route": "/index.php",
+          "semanticType": "movie",
+          "streamProof": true
+        },
+        {
+          "body": {},
+          "bodyKind": "none",
+          "executable": true,
+          "headerNames": [
+            "accept",
+            "accept-language",
+            "origin",
+            "referer",
+            "user-agent"
+          ],
+          "method": "GET",
+          "origin": "https://french-stream.one",
+          "response": "json",
+          "role": "detail",
+          "route": "/engine/ajax/film_api.php?id={id}",
+          "semanticType": "movie",
+          "streamProof": true
+        },
+        {
+          "body": {},
+          "bodyKind": "none",
+          "executable": true,
+          "headerNames": [
+            "accept-language",
+            "referer",
+            "user-agent"
+          ],
+          "method": "GET",
+          "origin": "https://fsvid.lol",
+          "response": "html-or-text",
+          "role": "player",
+          "route": "/embed-i7jlzamu3m0c.html",
+          "semanticType": "movie",
+          "streamProof": true
+        },
+        {
+          "body": {},
+          "bodyKind": "none",
+          "executable": true,
+          "headerNames": [
+            "accept-language",
+            "referer",
+            "user-agent"
+          ],
+          "method": "GET",
+          "origin": "https://fsvid.lol",
+          "response": "html-or-text",
+          "role": "player",
+          "route": "/embed-z1z459jn60rq.html",
+          "semanticType": "movie",
+          "streamProof": true
+        },
+        {
+          "body": {
+            "do": "search",
+            "story": "{query}",
+            "subaction": "search"
+          },
+          "bodyKind": "form",
+          "executable": true,
+          "headerNames": [
+            "accept",
+            "accept-language",
+            "content-type",
+            "origin",
+            "referer",
+            "user-agent"
+          ],
+          "method": "POST",
+          "origin": "https://french-stream.one",
+          "response": "html-or-text",
+          "role": "detail",
+          "route": "/index.php",
+          "semanticType": "tv",
+          "streamProof": true
+        },
+        {
+          "body": {},
+          "bodyKind": "none",
+          "executable": true,
+          "headerNames": [
+            "accept",
+            "accept-language",
+            "origin",
+            "referer",
+            "user-agent"
+          ],
+          "method": "GET",
+          "origin": "https://french-stream.one",
+          "response": "html-or-text",
+          "role": "detail",
+          "route": "/index.php?newsid={id}",
+          "semanticType": "tv",
+          "streamProof": true
+        },
+        {
+          "body": {},
+          "bodyKind": "none",
+          "executable": true,
+          "headerNames": [
+            "accept",
+            "accept-language",
+            "origin",
+            "referer",
+            "user-agent"
+          ],
+          "method": "GET",
+          "origin": "https://french-stream.one",
+          "response": "json",
+          "role": "detail",
+          "route": "/data/eps_9561.txt?v=59636093",
+          "semanticType": "tv",
+          "streamProof": true
+        },
+        {
+          "body": {},
+          "bodyKind": "none",
+          "executable": true,
+          "headerNames": [
+            "accept-language",
+            "referer",
+            "user-agent"
+          ],
+          "method": "GET",
+          "origin": "https://vidzy.live",
+          "response": "html-or-text",
+          "role": "player",
+          "route": "/embed-967motolp596.html",
+          "semanticType": "tv",
+          "streamProof": true
+        },
+        {
+          "body": {},
+          "bodyKind": "none",
+          "executable": true,
+          "headerNames": [
+            "accept-language",
+            "referer",
+            "user-agent"
+          ],
+          "method": "GET",
+          "origin": "https://uqload.co",
+          "response": "html-or-text",
+          "role": "player",
+          "route": "/embed-1k2pzypa60vc.html",
+          "semanticType": "tv",
+          "streamProof": true
+        },
+        {
+          "body": {},
+          "bodyKind": "none",
+          "executable": true,
+          "headerNames": [
+            "accept-language",
+            "referer",
+            "user-agent"
+          ],
+          "method": "GET",
+          "origin": "https://fsvid.lol",
+          "response": "html-or-text",
+          "role": "player",
+          "route": "/embed-lwa4enepfqwt.html",
+          "semanticType": "tv",
+          "streamProof": true
+        },
+        {
+          "body": {},
+          "bodyKind": "none",
+          "executable": true,
+          "headerNames": [
+            "accept",
+            "accept-language",
+            "origin",
+            "referer",
+            "user-agent"
+          ],
+          "method": "GET",
+          "origin": "https://french-stream.one",
+          "response": "json",
+          "role": "detail",
+          "route": "/data/eps_15128496.txt?v=59636093",
+          "semanticType": "tv",
+          "streamProof": true
+        },
+        {
+          "body": {},
+          "bodyKind": "none",
+          "executable": true,
+          "headerNames": [
+            "accept-language",
+            "referer",
+            "user-agent"
+          ],
+          "method": "GET",
+          "origin": "https://uqload.co",
+          "response": "html-or-text",
+          "role": "player",
+          "route": "/embed-x5zgpbe8gt5v.html",
+          "semanticType": "tv",
+          "streamProof": true
+        },
+        {
+          "body": {},
+          "bodyKind": "none",
+          "executable": true,
+          "headerNames": [
+            "accept-language",
+            "referer",
+            "user-agent"
+          ],
+          "method": "GET",
+          "origin": "https://vidzy.live",
+          "response": "html-or-text",
+          "role": "player",
+          "route": "/embed-bwbgf7hh8ltq.html",
+          "semanticType": "tv",
+          "streamProof": true
+        },
+        {
+          "body": {},
+          "bodyKind": "none",
+          "executable": true,
+          "headerNames": [
+            "accept-language",
+            "referer",
+            "user-agent"
+          ],
+          "method": "GET",
+          "origin": "https://fsvid.lol",
+          "response": "html-or-text",
+          "role": "player",
+          "route": "/embed-nec4kkz9gx85.html",
+          "semanticType": "tv",
+          "streamProof": true
+        },
+        {
+          "body": {
+            "do": "search",
+            "story": "{query}",
+            "subaction": "search"
+          },
+          "bodyKind": "form",
+          "executable": true,
+          "headerNames": [
+            "accept",
+            "accept-language",
+            "content-type",
+            "origin",
+            "referer",
+            "user-agent"
+          ],
+          "method": "POST",
+          "origin": "https://french-stream.one",
+          "response": "html-or-text",
+          "role": "detail",
+          "route": "/index.php",
+          "semanticType": "anime",
+          "streamProof": false
+        }
+      ],
+      "routeFamilies": [
+        "detail",
+        "search"
+      ],
+      "routeTemplates": [
+        "/search/{slug}",
+        "/recherche/{slug}"
+      ],
+      "status": "NO PROOF",
+      "strategy": "mixed_embed_resolver"
+    },
+    "fsharetv": {
+      "domainMemory": true,
+      "evidenceDepth": [
+        "movie=chain_reached"
+      ],
+      "hasApiRecipe": false,
+      "hasProviderValuePlan": false,
+      "hasSearchRequestPlan": false,
+      "mediaTypes": [
+        "movie"
+      ],
+      "officialHost": "fsharetv.co",
+      "operational": false,
+      "peerRequestRecipes": [],
+      "peerRouteTemplates": [
+        "/movie/{slug}-episode-1-tt0816692"
+      ],
+      "providerLegoScripts": [],
+      "recipeMethods": [],
+      "recipeResponses": [],
+      "recipeRoles": [],
+      "requestRecipes": [],
+      "routeFamilies": [
+        "episode"
+      ],
+      "routeTemplates": [
+        "/movie/{slug}-episode-1-tt0816692"
+      ],
+      "status": "CHAIN REACHED",
+      "strategy": "html_scraper"
+    },
     "fullanime": {
       "domainMemory": true,
       "evidenceDepth": [
@@ -3619,15 +5385,9 @@
       "peerRouteTemplates": [
         "/search?s={query}",
         "/voir-anime/{slug}",
-        "/voir-anime/{slug}/episode/{episode}",
-        "/embed",
-        "/search?s={query}&_t=",
-        "/voir-anime/{slug}-vostfr",
-        "/voir-anime/{season}"
+        "/voir-anime/{slug}/episode/{episode}"
       ],
-      "providerLegoScripts": [
-        "fullanime_runtime_v1.py"
-      ],
+      "providerLegoScripts": [],
       "recipeMethods": [],
       "recipeResponses": [],
       "recipeRoles": [],
@@ -3635,20 +5395,85 @@
       "routeFamilies": [
         "detail",
         "episode",
-        "player",
         "search"
       ],
       "routeTemplates": [
         "/search?s={query}",
         "/voir-anime/{slug}",
-        "/voir-anime/{slug}/episode/{episode}",
-        "/episode",
-        "/embed",
-        "/search?s={query}&_t=",
-        "/voir-anime/{slug}-vostfr",
-        "/voir-anime/{season}"
+        "/voir-anime/{slug}/episode/{episode}"
       ],
-      "status": "DISABLED",
+      "status": "HARNESS/ENV BLOCKED",
+      "strategy": "mixed_embed_resolver"
+    },
+    "hexa": {
+      "domainMemory": true,
+      "evidenceDepth": [
+        "anime=lookup_only",
+        "movie=lookup_only",
+        "tv=lookup_only"
+      ],
+      "hasApiRecipe": false,
+      "hasProviderValuePlan": false,
+      "hasSearchRequestPlan": false,
+      "mediaTypes": [
+        "anime",
+        "movie",
+        "tv"
+      ],
+      "officialHost": "hexa.su",
+      "operational": false,
+      "peerRequestRecipes": [],
+      "peerRouteTemplates": [
+        "/search/{slug}",
+        "/recherche/{slug}"
+      ],
+      "providerLegoScripts": [],
+      "recipeMethods": [],
+      "recipeResponses": [],
+      "recipeRoles": [],
+      "requestRecipes": [],
+      "routeFamilies": [
+        "detail",
+        "search"
+      ],
+      "routeTemplates": [
+        "/search/{slug}",
+        "/recherche/{slug}"
+      ],
+      "status": "NO PROOF",
+      "strategy": "mixed_embed_resolver"
+    },
+    "hianime": {
+      "domainMemory": true,
+      "evidenceDepth": [
+        "anime=chain_reached"
+      ],
+      "hasApiRecipe": false,
+      "hasProviderValuePlan": false,
+      "hasSearchRequestPlan": false,
+      "mediaTypes": [
+        "anime"
+      ],
+      "officialHost": "hianime.at",
+      "operational": false,
+      "peerRequestRecipes": [],
+      "peerRouteTemplates": [
+        "/?s={query}",
+        "/search?q={query}"
+      ],
+      "providerLegoScripts": [],
+      "recipeMethods": [],
+      "recipeResponses": [],
+      "recipeRoles": [],
+      "requestRecipes": [],
+      "routeFamilies": [
+        "search"
+      ],
+      "routeTemplates": [
+        "/?s={query}",
+        "/search?q={query}"
+      ],
+      "status": "CHAIN REACHED",
       "strategy": "mixed_embed_resolver"
     },
     "hindmoviez": {
@@ -3662,7 +5487,7 @@
       "hasSearchRequestPlan": false,
       "mediaTypes": [],
       "officialHost": "v4.hindmovie.im",
-      "operational": true,
+      "operational": false,
       "peerRequestRecipes": [
         {
           "body": {},
@@ -3890,8 +5715,102 @@
         "/wp-json/wp/v2/posts?search={query}",
         "/wp-json/wp/v2/posts?search={imdbId}&per_page=100"
       ],
-      "status": "PARTIAL OK",
+      "status": "DISABLED",
       "strategy": "direct_media"
+    },
+    "ihavenotv": {
+      "domainMemory": true,
+      "evidenceDepth": [
+        "movie=none",
+        "tv=none"
+      ],
+      "hasApiRecipe": false,
+      "hasProviderValuePlan": false,
+      "hasSearchRequestPlan": false,
+      "mediaTypes": [
+        "movie",
+        "tv"
+      ],
+      "officialHost": "ihavenotv.com",
+      "operational": false,
+      "peerRequestRecipes": [],
+      "peerRouteTemplates": [
+        "/?s={query}",
+        "/?q={query}"
+      ],
+      "providerLegoScripts": [],
+      "recipeMethods": [],
+      "recipeResponses": [],
+      "recipeRoles": [],
+      "requestRecipes": [],
+      "routeFamilies": [
+        "search"
+      ],
+      "routeTemplates": [
+        "/?s={query}",
+        "/?q={query}"
+      ],
+      "status": "HARNESS/ENV BLOCKED",
+      "strategy": "html_scraper"
+    },
+    "ilmiv": {
+      "domainMemory": true,
+      "evidenceDepth": [],
+      "hasApiRecipe": false,
+      "hasProviderValuePlan": false,
+      "hasSearchRequestPlan": false,
+      "mediaTypes": [
+        "anime",
+        "movie",
+        "tv"
+      ],
+      "officialHost": "ilmiv.com",
+      "operational": false,
+      "peerRequestRecipes": [],
+      "peerRouteTemplates": [],
+      "providerLegoScripts": [],
+      "recipeMethods": [],
+      "recipeResponses": [],
+      "recipeRoles": [],
+      "requestRecipes": [],
+      "routeFamilies": [],
+      "routeTemplates": [],
+      "status": "UNKNOWN",
+      "strategy": "html_scraper"
+    },
+    "internet-archive": {
+      "domainMemory": true,
+      "evidenceDepth": [
+        "movie=chain_reached"
+      ],
+      "hasApiRecipe": false,
+      "hasProviderValuePlan": false,
+      "hasSearchRequestPlan": false,
+      "mediaTypes": [
+        "movie"
+      ],
+      "officialHost": "archive.org",
+      "operational": true,
+      "peerRequestRecipes": [],
+      "peerRouteTemplates": [],
+      "providerLegoScripts": [
+        "internet_archive_public_domain_runtime_v1.py"
+      ],
+      "recipeMethods": [],
+      "recipeResponses": [],
+      "recipeRoles": [],
+      "requestRecipes": [],
+      "routeFamilies": [
+        "other",
+        "source"
+      ],
+      "routeTemplates": [
+        "/advancedsearch.php",
+        "/metadata/{identifier}",
+        "/download/{identifier}/{file}"
+      ],
+      "status": "FULL OK",
+      "strategy": "open_archive_public_domain"
     },
     "kehflix": {
       "domainMemory": true,
@@ -4255,7 +6174,117 @@
         "/api/streams/warm",
         "/episode/"
       ],
-      "status": "ROUTE PROVEN",
+      "status": "DISABLED",
+      "strategy": "html_scraper"
+    },
+    "kickassanime": {
+      "domainMemory": true,
+      "evidenceDepth": [],
+      "hasApiRecipe": false,
+      "hasProviderValuePlan": false,
+      "hasSearchRequestPlan": false,
+      "mediaTypes": [
+        "anime"
+      ],
+      "officialHost": "kaa.lt",
+      "operational": false,
+      "peerRequestRecipes": [],
+      "peerRouteTemplates": [],
+      "providerLegoScripts": [],
+      "recipeMethods": [],
+      "recipeResponses": [],
+      "recipeRoles": [],
+      "requestRecipes": [],
+      "routeFamilies": [],
+      "routeTemplates": [],
+      "status": "UNKNOWN",
+      "strategy": "html_scraper"
+    },
+    "kidraz": {
+      "domainMemory": true,
+      "evidenceDepth": [
+        "anime=lookup_only",
+        "movie=lookup_only",
+        "tv=lookup_only"
+      ],
+      "hasApiRecipe": false,
+      "hasProviderValuePlan": false,
+      "hasSearchRequestPlan": false,
+      "mediaTypes": [
+        "anime",
+        "movie",
+        "tv"
+      ],
+      "officialHost": "fronav.com",
+      "operational": false,
+      "peerRequestRecipes": [],
+      "peerRouteTemplates": [
+        "/?s={query}",
+        "/index.php?do=search&subaction=search&story={query}"
+      ],
+      "providerLegoScripts": [],
+      "recipeMethods": [],
+      "recipeResponses": [],
+      "recipeRoles": [],
+      "requestRecipes": [],
+      "routeFamilies": [
+        "search"
+      ],
+      "routeTemplates": [
+        "/?s={query}",
+        "/index.php?do=search&subaction=search&story={query}"
+      ],
+      "status": "NO PROOF",
+      "strategy": "mixed_embed_resolver"
+    },
+    "kisskh": {
+      "domainMemory": true,
+      "evidenceDepth": [],
+      "hasApiRecipe": false,
+      "hasProviderValuePlan": false,
+      "hasSearchRequestPlan": false,
+      "mediaTypes": [
+        "anime",
+        "movie",
+        "tv"
+      ],
+      "officialHost": "kisskh.co",
+      "operational": false,
+      "peerRequestRecipes": [],
+      "peerRouteTemplates": [],
+      "providerLegoScripts": [],
+      "recipeMethods": [],
+      "recipeResponses": [],
+      "recipeRoles": [],
+      "requestRecipes": [],
+      "routeFamilies": [],
+      "routeTemplates": [],
+      "status": "UNKNOWN",
+      "strategy": "mixed_embed_resolver"
+    },
+    "kordoz": {
+      "domainMemory": true,
+      "evidenceDepth": [],
+      "hasApiRecipe": false,
+      "hasProviderValuePlan": false,
+      "hasSearchRequestPlan": false,
+      "mediaTypes": [
+        "anime",
+        "movie",
+        "tv"
+      ],
+      "officialHost": "www.kordoz.com",
+      "operational": false,
+      "peerRequestRecipes": [],
+      "peerRouteTemplates": [],
+      "providerLegoScripts": [],
+      "recipeMethods": [],
+      "recipeResponses": [],
+      "recipeRoles": [],
+      "requestRecipes": [],
+      "routeFamilies": [],
+      "routeTemplates": [],
+      "status": "UNKNOWN",
       "strategy": "html_scraper"
     },
     "kurage": {
@@ -4270,7 +6299,7 @@
         "anime"
       ],
       "officialHost": "kurage.live",
-      "operational": true,
+      "operational": false,
       "peerRequestRecipes": [],
       "peerRouteTemplates": [
         "/?tmdbId={tmdbId}&type=tv&season={season}&episode={episode}",
@@ -4295,8 +6324,45 @@
         "/api/v2",
         "/api/trpc/catalog.anilistInfo,episodes.source,episodes.source?batch=1&input="
       ],
-      "status": "FULL OK",
+      "status": "DISABLED",
       "strategy": "html_scraper"
+    },
+    "latestmovies": {
+      "domainMemory": true,
+      "evidenceDepth": [
+        "anime=chain_reached",
+        "movie=chain_reached",
+        "tv=chain_reached"
+      ],
+      "hasApiRecipe": false,
+      "hasProviderValuePlan": false,
+      "hasSearchRequestPlan": false,
+      "mediaTypes": [
+        "anime",
+        "movie",
+        "tv"
+      ],
+      "officialHost": "latestmovies.net",
+      "operational": false,
+      "peerRequestRecipes": [],
+      "peerRouteTemplates": [
+        "/play?id={tmdbId}&type={media}&title=Breaking%20Bad&poster=%2FanFx9aTOOYqgS3v7x3R84Kz67ly.jpg&backdrop=%2FtsRy63Mu5cu8etL1X7ZLyf7UP1M.jpg",
+        "/tv/{tmdbId}"
+      ],
+      "providerLegoScripts": [],
+      "recipeMethods": [],
+      "recipeResponses": [],
+      "recipeRoles": [],
+      "requestRecipes": [],
+      "routeFamilies": [
+        "other"
+      ],
+      "routeTemplates": [
+        "/play?id={tmdbId}&type={media}&title=Breaking%20Bad&poster=%2FanFx9aTOOYqgS3v7x3R84Kz67ly.jpg&backdrop=%2FtsRy63Mu5cu8etL1X7ZLyf7UP1M.jpg",
+        "/tv/{tmdbId}"
+      ],
+      "status": "CHAIN REACHED",
+      "strategy": "mixed_embed_resolver"
     },
     "mallumv": {
       "domainMemory": true,
@@ -4385,6 +6451,102 @@
       "status": "DISABLED",
       "strategy": "html_scraper"
     },
+    "meowtv": {
+      "domainMemory": true,
+      "evidenceDepth": [],
+      "hasApiRecipe": false,
+      "hasProviderValuePlan": false,
+      "hasSearchRequestPlan": false,
+      "mediaTypes": [
+        "anime",
+        "movie",
+        "tv"
+      ],
+      "officialHost": "meowtv.ru",
+      "operational": false,
+      "peerRequestRecipes": [],
+      "peerRouteTemplates": [],
+      "providerLegoScripts": [],
+      "recipeMethods": [],
+      "recipeResponses": [],
+      "recipeRoles": [],
+      "requestRecipes": [],
+      "routeFamilies": [],
+      "routeTemplates": [],
+      "status": "UNKNOWN",
+      "strategy": "mixed_embed_resolver"
+    },
+    "moiflix": {
+      "domainMemory": true,
+      "evidenceDepth": [
+        "movie=lookup_only",
+        "tv=lookup_only"
+      ],
+      "hasApiRecipe": false,
+      "hasProviderValuePlan": false,
+      "hasSearchRequestPlan": false,
+      "mediaTypes": [
+        "movie",
+        "tv"
+      ],
+      "officialHost": "moiflix.fans",
+      "operational": false,
+      "peerRequestRecipes": [],
+      "peerRouteTemplates": [
+        "/search/{slug}"
+      ],
+      "providerLegoScripts": [],
+      "recipeMethods": [],
+      "recipeResponses": [],
+      "recipeRoles": [],
+      "requestRecipes": [],
+      "routeFamilies": [
+        "search"
+      ],
+      "routeTemplates": [
+        "/search/{slug}"
+      ],
+      "status": "HARNESS/ENV BLOCKED",
+      "strategy": "mixed_embed_resolver"
+    },
+    "moviebite": {
+      "domainMemory": true,
+      "evidenceDepth": [
+        "anime=lookup_only",
+        "movie=lookup_only",
+        "tv=lookup_only"
+      ],
+      "hasApiRecipe": false,
+      "hasProviderValuePlan": false,
+      "hasSearchRequestPlan": false,
+      "mediaTypes": [
+        "anime",
+        "movie",
+        "tv"
+      ],
+      "officialHost": "moviebite.org",
+      "operational": false,
+      "peerRequestRecipes": [],
+      "peerRouteTemplates": [
+        "/search/{slug}",
+        "/recherche/{slug}"
+      ],
+      "providerLegoScripts": [],
+      "recipeMethods": [],
+      "recipeResponses": [],
+      "recipeRoles": [],
+      "requestRecipes": [],
+      "routeFamilies": [
+        "detail",
+        "search"
+      ],
+      "routeTemplates": [
+        "/search/{slug}",
+        "/recherche/{slug}"
+      ],
+      "status": "NO PROOF",
+      "strategy": "mixed_embed_resolver"
+    },
     "moviebox": {
       "domainMemory": true,
       "evidenceDepth": [
@@ -4430,7 +6592,7 @@
         "/vs_src.php?type={mediaType}&id={tmdbId}",
         "/vs_src.php?type=tv&id={tmdbId}&season={season}&episode={episode}"
       ],
-      "status": "ROUTE PROVEN",
+      "status": "DISABLED",
       "strategy": "html_scraper"
     },
     "movieshunt": {
@@ -4539,7 +6701,7 @@
         "/?s={query}",
         "/search.html?q={query}"
       ],
-      "status": "CANDIDATE OK",
+      "status": "DISABLED",
       "strategy": "direct_media"
     },
     "moviesmod": {
@@ -4647,8 +6809,119 @@
         "/download-batman-and-harley-quinn-2017-english-480p-720p-1080p/",
         "/movies/latest-released/"
       ],
-      "status": "ROUTE PROVEN",
+      "status": "DISABLED",
       "strategy": "html_scraper"
+    },
+    "movish": {
+      "domainMemory": true,
+      "evidenceDepth": [
+        "anime=chain_reached",
+        "movie=chain_reached",
+        "tv=chain_reached"
+      ],
+      "hasApiRecipe": false,
+      "hasProviderValuePlan": false,
+      "hasSearchRequestPlan": false,
+      "mediaTypes": [
+        "anime",
+        "movie",
+        "tv"
+      ],
+      "officialHost": "movish.to",
+      "operational": false,
+      "peerRequestRecipes": [],
+      "peerRouteTemplates": [
+        "/search?q={query}"
+      ],
+      "providerLegoScripts": [],
+      "recipeMethods": [],
+      "recipeResponses": [],
+      "recipeRoles": [],
+      "requestRecipes": [],
+      "routeFamilies": [
+        "search"
+      ],
+      "routeTemplates": [
+        "/search?q={query}"
+      ],
+      "status": "CHAIN REACHED",
+      "strategy": "mixed_embed_resolver"
+    },
+    "movix-fr": {
+      "domainMemory": true,
+      "evidenceDepth": [
+        "anime=chain_reached",
+        "movie=chain_reached",
+        "tv=chain_reached"
+      ],
+      "hasApiRecipe": false,
+      "hasProviderValuePlan": false,
+      "hasSearchRequestPlan": false,
+      "mediaTypes": [
+        "anime",
+        "movie",
+        "tv"
+      ],
+      "officialHost": "movix.zip",
+      "operational": true,
+      "peerRequestRecipes": [],
+      "peerRouteTemplates": [
+        "/?s={query}"
+      ],
+      "providerLegoScripts": [],
+      "recipeMethods": [],
+      "recipeResponses": [],
+      "recipeRoles": [],
+      "requestRecipes": [],
+      "routeFamilies": [
+        "search"
+      ],
+      "routeTemplates": [
+        "/?s={query}"
+      ],
+      "status": "PARTIAL OK",
+      "strategy": "mixed_embed_resolver"
+    },
+    "movy": {
+      "domainMemory": true,
+      "evidenceDepth": [
+        "anime=none",
+        "movie=none",
+        "tv=none"
+      ],
+      "hasApiRecipe": false,
+      "hasProviderValuePlan": false,
+      "hasSearchRequestPlan": false,
+      "mediaTypes": [
+        "anime",
+        "movie",
+        "tv"
+      ],
+      "officialHost": "www.movy.sx",
+      "operational": false,
+      "peerRequestRecipes": [],
+      "peerRouteTemplates": [
+        "/seed?mediaId={tmdbId}"
+      ],
+      "providerLegoScripts": [
+        "movy_wecollege_runtime_v1.py"
+      ],
+      "recipeMethods": [],
+      "recipeResponses": [],
+      "recipeRoles": [],
+      "requestRecipes": [],
+      "routeFamilies": [
+        "api",
+        "other"
+      ],
+      "routeTemplates": [
+        "/seed?mediaId={tmdbId}",
+        "/miami/sources",
+        "/boise/sources",
+        "/nashville/sources"
+      ],
+      "status": "NO PROOF",
+      "strategy": "api_stream_resolver"
     },
     "mugiwarastream": {
       "domainMemory": true,
@@ -5425,6 +7698,208 @@
       "status": "FULL OK",
       "strategy": "mixed_embed_resolver"
     },
+    "myfluneo": {
+      "domainMemory": true,
+      "evidenceDepth": [],
+      "hasApiRecipe": false,
+      "hasProviderValuePlan": false,
+      "hasSearchRequestPlan": false,
+      "mediaTypes": [
+        "anime",
+        "movie",
+        "tv"
+      ],
+      "officialHost": "myfluneo.eu",
+      "operational": false,
+      "peerRequestRecipes": [],
+      "peerRouteTemplates": [],
+      "providerLegoScripts": [],
+      "recipeMethods": [],
+      "recipeResponses": [],
+      "recipeRoles": [],
+      "requestRecipes": [],
+      "routeFamilies": [],
+      "routeTemplates": [],
+      "status": "UNKNOWN",
+      "strategy": "html_scraper"
+    },
+    "nakastream": {
+      "domainMemory": true,
+      "evidenceDepth": [],
+      "hasApiRecipe": false,
+      "hasProviderValuePlan": false,
+      "hasSearchRequestPlan": false,
+      "mediaTypes": [
+        "anime",
+        "movie",
+        "tv"
+      ],
+      "officialHost": "nakastream.tv",
+      "operational": false,
+      "peerRequestRecipes": [],
+      "peerRouteTemplates": [],
+      "providerLegoScripts": [],
+      "recipeMethods": [],
+      "recipeResponses": [],
+      "recipeRoles": [],
+      "requestRecipes": [],
+      "routeFamilies": [],
+      "routeTemplates": [],
+      "status": "UNKNOWN",
+      "strategy": "html_scraper"
+    },
+    "nakios": {
+      "domainMemory": true,
+      "evidenceDepth": [
+        "movie=chain_reached",
+        "tv=chain_reached"
+      ],
+      "hasApiRecipe": false,
+      "hasProviderValuePlan": false,
+      "hasSearchRequestPlan": false,
+      "mediaTypes": [
+        "movie",
+        "tv"
+      ],
+      "officialHost": "nakios.live",
+      "operational": true,
+      "peerRequestRecipes": [
+        {
+          "body": {},
+          "bodyKind": "none",
+          "executable": true,
+          "headerNames": [
+            "accept",
+            "accept-language",
+            "origin",
+            "referer",
+            "user-agent"
+          ],
+          "method": "GET",
+          "response": "json",
+          "role": "search",
+          "route": "/api/search/multi?query={query}",
+          "semanticType": "movie",
+          "streamProof": false
+        },
+        {
+          "body": {},
+          "bodyKind": "none",
+          "executable": true,
+          "headerNames": [
+            "accept",
+            "accept-language",
+            "origin",
+            "referer",
+            "user-agent"
+          ],
+          "method": "GET",
+          "response": "json",
+          "role": "search",
+          "route": "/api/search/multi?query={query}",
+          "semanticType": "tv",
+          "streamProof": false
+        },
+        {
+          "body": {},
+          "bodyKind": "none",
+          "executable": true,
+          "headerNames": [
+            "accept",
+            "accept-language",
+            "origin",
+            "referer",
+            "user-agent"
+          ],
+          "method": "GET",
+          "response": "json",
+          "role": "search",
+          "route": "/api/search/multi?query={query}",
+          "semanticType": "anime",
+          "streamProof": false
+        }
+      ],
+      "peerRouteTemplates": [
+        "/?s={query}"
+      ],
+      "providerLegoScripts": [],
+      "recipeMethods": [
+        "GET"
+      ],
+      "recipeResponses": [
+        "json"
+      ],
+      "recipeRoles": [
+        "search"
+      ],
+      "requestRecipes": [
+        {
+          "body": {},
+          "bodyKind": "none",
+          "executable": true,
+          "headerNames": [
+            "accept",
+            "accept-language",
+            "origin",
+            "referer",
+            "user-agent"
+          ],
+          "method": "GET",
+          "origin": "https://api.nakios.store",
+          "response": "json",
+          "role": "search",
+          "route": "/api/search/multi?query={query}",
+          "semanticType": "movie",
+          "streamProof": false
+        },
+        {
+          "body": {},
+          "bodyKind": "none",
+          "executable": true,
+          "headerNames": [
+            "accept",
+            "accept-language",
+            "origin",
+            "referer",
+            "user-agent"
+          ],
+          "method": "GET",
+          "origin": "https://api.nakios.store",
+          "response": "json",
+          "role": "search",
+          "route": "/api/search/multi?query={query}",
+          "semanticType": "tv",
+          "streamProof": false
+        },
+        {
+          "body": {},
+          "bodyKind": "none",
+          "executable": true,
+          "headerNames": [
+            "accept",
+            "accept-language",
+            "origin",
+            "referer",
+            "user-agent"
+          ],
+          "method": "GET",
+          "origin": "https://api.nakios.store",
+          "response": "json",
+          "role": "search",
+          "route": "/api/search/multi?query={query}",
+          "semanticType": "anime",
+          "streamProof": false
+        }
+      ],
+      "routeFamilies": [
+        "search"
+      ],
+      "routeTemplates": [
+        "/?s={query}"
+      ],
+      "status": "PARTIAL OK",
+      "strategy": "mixed_embed_resolver"
+    },
     "neko-sama": {
       "domainMemory": true,
       "evidenceDepth": [
@@ -5490,6 +7965,173 @@
         "/?s={query}"
       ],
       "status": "FULL OK",
+      "strategy": "mixed_embed_resolver"
+    },
+    "neobam": {
+      "domainMemory": true,
+      "evidenceDepth": [
+        "anime=lookup_only",
+        "movie=lookup_only",
+        "tv=lookup_only"
+      ],
+      "hasApiRecipe": false,
+      "hasProviderValuePlan": false,
+      "hasSearchRequestPlan": false,
+      "mediaTypes": [
+        "anime",
+        "movie",
+        "tv"
+      ],
+      "officialHost": "www.neobam.fr",
+      "operational": false,
+      "peerRequestRecipes": [],
+      "peerRouteTemplates": [
+        "/?s={query}"
+      ],
+      "providerLegoScripts": [],
+      "recipeMethods": [],
+      "recipeResponses": [],
+      "recipeRoles": [],
+      "requestRecipes": [],
+      "routeFamilies": [
+        "search"
+      ],
+      "routeTemplates": [
+        "/?s={query}"
+      ],
+      "status": "NO PROOF",
+      "strategy": "mixed_embed_resolver"
+    },
+    "neonflix": {
+      "domainMemory": true,
+      "evidenceDepth": [
+        "anime=chain_reached",
+        "movie=chain_reached",
+        "tv=chain_reached"
+      ],
+      "hasApiRecipe": false,
+      "hasProviderValuePlan": false,
+      "hasSearchRequestPlan": false,
+      "mediaTypes": [
+        "anime",
+        "movie",
+        "tv"
+      ],
+      "officialHost": "neonflix.st",
+      "operational": false,
+      "peerRequestRecipes": [],
+      "peerRouteTemplates": [
+        "/tv/{tmdbId}"
+      ],
+      "providerLegoScripts": [],
+      "recipeMethods": [],
+      "recipeResponses": [],
+      "recipeRoles": [],
+      "requestRecipes": [],
+      "routeFamilies": [
+        "other"
+      ],
+      "routeTemplates": [
+        "/tv/{tmdbId}"
+      ],
+      "status": "CHAIN REACHED",
+      "strategy": "mixed_embed_resolver"
+    },
+    "nomorflix": {
+      "domainMemory": true,
+      "evidenceDepth": [],
+      "hasApiRecipe": false,
+      "hasProviderValuePlan": false,
+      "hasSearchRequestPlan": false,
+      "mediaTypes": [
+        "anime",
+        "movie",
+        "tv"
+      ],
+      "officialHost": "nomorflix.cc",
+      "operational": false,
+      "peerRequestRecipes": [],
+      "peerRouteTemplates": [
+        "/embed/sw.js"
+      ],
+      "providerLegoScripts": [],
+      "recipeMethods": [],
+      "recipeResponses": [],
+      "recipeRoles": [],
+      "requestRecipes": [],
+      "routeFamilies": [
+        "player"
+      ],
+      "routeTemplates": [
+        "/embed/sw.js"
+      ],
+      "status": "UNKNOWN",
+      "strategy": "mixed_embed_resolver"
+    },
+    "openflix": {
+      "domainMemory": true,
+      "evidenceDepth": [],
+      "hasApiRecipe": false,
+      "hasProviderValuePlan": false,
+      "hasSearchRequestPlan": false,
+      "mediaTypes": [
+        "anime",
+        "movie",
+        "tv"
+      ],
+      "officialHost": "openflix.pro",
+      "operational": false,
+      "peerRequestRecipes": [],
+      "peerRouteTemplates": [
+        "/search"
+      ],
+      "providerLegoScripts": [],
+      "recipeMethods": [],
+      "recipeResponses": [],
+      "recipeRoles": [],
+      "requestRecipes": [],
+      "routeFamilies": [
+        "search"
+      ],
+      "routeTemplates": [
+        "/search"
+      ],
+      "status": "UNKNOWN",
+      "strategy": "mixed_embed_resolver"
+    },
+    "overlook": {
+      "domainMemory": true,
+      "evidenceDepth": [
+        "anime=lookup_only",
+        "movie=lookup_only",
+        "tv=lookup_only"
+      ],
+      "hasApiRecipe": false,
+      "hasProviderValuePlan": false,
+      "hasSearchRequestPlan": false,
+      "mediaTypes": [
+        "anime",
+        "movie",
+        "tv"
+      ],
+      "officialHost": "overlook.cx",
+      "operational": false,
+      "peerRequestRecipes": [],
+      "peerRouteTemplates": [
+        "/api/search?q={query}"
+      ],
+      "providerLegoScripts": [],
+      "recipeMethods": [],
+      "recipeResponses": [],
+      "recipeRoles": [],
+      "requestRecipes": [],
+      "routeFamilies": [
+        "search"
+      ],
+      "routeTemplates": [
+        "/api/search?q={query}"
+      ],
+      "status": "NO PROOF",
       "strategy": "mixed_embed_resolver"
     },
     "papadustream": {
@@ -5811,7 +8453,7 @@
         "/stream/series/",
         "/stream/movie/tt0816692.json"
       ],
-      "status": "CANDIDATE OK",
+      "status": "DISABLED",
       "strategy": "direct_media"
     },
     "playimdb": {
@@ -5825,7 +8467,7 @@
       "hasSearchRequestPlan": false,
       "mediaTypes": [],
       "officialHost": "nextgencloudfabric.com",
-      "operational": true,
+      "operational": false,
       "peerRequestRecipes": [
         {
           "body": {},
@@ -6000,8 +8642,76 @@
         "/api.php?tmdb={tmdbId}&type=movie",
         "/api.php?tmdb={tmdbId}&type=tv&season={season}&episode={episode}"
       ],
-      "status": "FULL OK",
+      "status": "DISABLED",
       "strategy": "direct_media"
+    },
+    "primewire": {
+      "domainMemory": true,
+      "evidenceDepth": [
+        "movie=chain_reached",
+        "tv=chain_reached"
+      ],
+      "hasApiRecipe": false,
+      "hasProviderValuePlan": false,
+      "hasSearchRequestPlan": false,
+      "mediaTypes": [
+        "movie",
+        "tv"
+      ],
+      "officialHost": "primewire.pw",
+      "operational": false,
+      "peerRequestRecipes": [],
+      "peerRouteTemplates": [
+        "/movie/{tmdbId}"
+      ],
+      "providerLegoScripts": [],
+      "recipeMethods": [],
+      "recipeResponses": [],
+      "recipeRoles": [],
+      "requestRecipes": [],
+      "routeFamilies": [
+        "detail"
+      ],
+      "routeTemplates": [
+        "/movie/{tmdbId}"
+      ],
+      "status": "CHAIN REACHED",
+      "strategy": "mixed_embed_resolver"
+    },
+    "pstream": {
+      "domainMemory": true,
+      "evidenceDepth": [
+        "anime=lookup_only",
+        "movie=lookup_only",
+        "tv=lookup_only"
+      ],
+      "hasApiRecipe": false,
+      "hasProviderValuePlan": false,
+      "hasSearchRequestPlan": false,
+      "mediaTypes": [
+        "anime",
+        "movie",
+        "tv"
+      ],
+      "officialHost": "pstream.cfd",
+      "operational": false,
+      "peerRequestRecipes": [],
+      "peerRouteTemplates": [
+        "/media/anilist-anime-113415-{slug}"
+      ],
+      "providerLegoScripts": [],
+      "recipeMethods": [],
+      "recipeResponses": [],
+      "recipeRoles": [],
+      "requestRecipes": [],
+      "routeFamilies": [
+        "detail"
+      ],
+      "routeTemplates": [
+        "/media/anilist-anime-113415-{slug}"
+      ],
+      "status": "NO PROOF",
+      "strategy": "mixed_embed_resolver"
     },
     "purstream": {
       "domainMemory": true,
@@ -6156,6 +8866,220 @@
       "status": "FULL OK",
       "strategy": "official_domain_hub"
     },
+    "rarefilmm": {
+      "domainMemory": true,
+      "evidenceDepth": [
+        "movie=chain_reached"
+      ],
+      "hasApiRecipe": false,
+      "hasProviderValuePlan": false,
+      "hasSearchRequestPlan": false,
+      "mediaTypes": [
+        "movie"
+      ],
+      "officialHost": "rarefilmm.com",
+      "operational": false,
+      "peerRequestRecipes": [],
+      "peerRouteTemplates": [
+        "/?s={query}"
+      ],
+      "providerLegoScripts": [],
+      "recipeMethods": [],
+      "recipeResponses": [],
+      "recipeRoles": [],
+      "requestRecipes": [],
+      "routeFamilies": [
+        "search"
+      ],
+      "routeTemplates": [
+        "/?s={query}"
+      ],
+      "status": "CHAIN REACHED",
+      "strategy": "html_scraper"
+    },
+    "reanime-to": {
+      "domainMemory": true,
+      "evidenceDepth": [
+        "anime=none"
+      ],
+      "hasApiRecipe": false,
+      "hasProviderValuePlan": false,
+      "hasSearchRequestPlan": false,
+      "mediaTypes": [
+        "anime"
+      ],
+      "officialHost": "reanime.to",
+      "operational": false,
+      "peerRequestRecipes": [],
+      "peerRouteTemplates": [
+        "/search?q={query}"
+      ],
+      "providerLegoScripts": [],
+      "recipeMethods": [],
+      "recipeResponses": [],
+      "recipeRoles": [],
+      "requestRecipes": [],
+      "routeFamilies": [
+        "search"
+      ],
+      "routeTemplates": [
+        "/search?q={query}"
+      ],
+      "status": "HARNESS/ENV BLOCKED",
+      "strategy": "html_scraper"
+    },
+    "rivestream": {
+      "domainMemory": true,
+      "evidenceDepth": [],
+      "hasApiRecipe": false,
+      "hasProviderValuePlan": false,
+      "hasSearchRequestPlan": false,
+      "mediaTypes": [
+        "anime",
+        "movie",
+        "tv"
+      ],
+      "officialHost": "www.rivestream.app",
+      "operational": false,
+      "peerRequestRecipes": [],
+      "peerRouteTemplates": [],
+      "providerLegoScripts": [],
+      "recipeMethods": [],
+      "recipeResponses": [],
+      "recipeRoles": [],
+      "requestRecipes": [],
+      "routeFamilies": [],
+      "routeTemplates": [],
+      "status": "UNKNOWN",
+      "strategy": "html_scraper"
+    },
+    "rivestream-app": {
+      "domainMemory": true,
+      "evidenceDepth": [
+        "anime=none",
+        "movie=none",
+        "tv=none"
+      ],
+      "hasApiRecipe": false,
+      "hasProviderValuePlan": false,
+      "hasSearchRequestPlan": false,
+      "mediaTypes": [
+        "anime",
+        "movie",
+        "tv"
+      ],
+      "officialHost": "www.rivestream.app",
+      "operational": false,
+      "peerRequestRecipes": [],
+      "peerRouteTemplates": [
+        "/search/multi?query={query}",
+        "/search/keyword?query={query}",
+        "/search/movie?query={query}",
+        "/search/tv?query={query}",
+        "/search/collection?query={query}",
+        "/api/search?query={query}",
+        "/api/search-with-title?query={query}"
+      ],
+      "providerLegoScripts": [],
+      "recipeMethods": [],
+      "recipeResponses": [],
+      "recipeRoles": [],
+      "requestRecipes": [],
+      "routeFamilies": [
+        "search"
+      ],
+      "routeTemplates": [
+        "/search/multi?query={query}",
+        "/search/keyword?query={query}",
+        "/search/movie?query={query}",
+        "/search/tv?query={query}",
+        "/search/collection?query={query}",
+        "/api/search?query={query}",
+        "/api/search-with-title?query={query}"
+      ],
+      "status": "PROVIDER NETWORK BLOCKED",
+      "strategy": "html_scraper"
+    },
+    "rivestream-ru": {
+      "domainMemory": true,
+      "evidenceDepth": [
+        "anime=none",
+        "movie=none",
+        "tv=none"
+      ],
+      "hasApiRecipe": false,
+      "hasProviderValuePlan": false,
+      "hasSearchRequestPlan": false,
+      "mediaTypes": [
+        "anime",
+        "movie",
+        "tv"
+      ],
+      "officialHost": "rivestream.ru",
+      "operational": false,
+      "peerRequestRecipes": [],
+      "peerRouteTemplates": [
+        "/search/multi?query={query}",
+        "/search/keyword?query={query}",
+        "/search/movie?query={query}",
+        "/search/tv?query={query}",
+        "/search/collection?query={query}",
+        "/api/search?query={query}",
+        "/api/search-with-title?query={query}"
+      ],
+      "providerLegoScripts": [],
+      "recipeMethods": [],
+      "recipeResponses": [],
+      "recipeRoles": [],
+      "requestRecipes": [],
+      "routeFamilies": [
+        "search"
+      ],
+      "routeTemplates": [
+        "/search/multi?query={query}",
+        "/search/keyword?query={query}",
+        "/search/movie?query={query}",
+        "/search/tv?query={query}",
+        "/search/collection?query={query}",
+        "/api/search?query={query}",
+        "/api/search-with-title?query={query}"
+      ],
+      "status": "PROVIDER NETWORK BLOCKED",
+      "strategy": "html_scraper"
+    },
+    "sadisflix": {
+      "domainMemory": true,
+      "evidenceDepth": [
+        "movie=chain_reached",
+        "tv=lookup_only"
+      ],
+      "hasApiRecipe": false,
+      "hasProviderValuePlan": false,
+      "hasSearchRequestPlan": false,
+      "mediaTypes": [
+        "movie",
+        "tv"
+      ],
+      "officialHost": "sadisflix-officiel.cfd",
+      "operational": true,
+      "peerRequestRecipes": [],
+      "peerRouteTemplates": [
+        "/search?q={query}"
+      ],
+      "providerLegoScripts": [],
+      "recipeMethods": [],
+      "recipeResponses": [],
+      "recipeRoles": [],
+      "requestRecipes": [],
+      "routeFamilies": [
+        "search"
+      ],
+      "routeTemplates": [
+        "/search?q={query}"
+      ],
+      "status": "PARTIAL OK",
+      "strategy": "mixed_embed_resolver"
+    },
     "sekai": {
       "domainMemory": true,
       "evidenceDepth": [
@@ -6265,23 +9189,49 @@
       "status": "FULL OK",
       "strategy": "html_scraper"
     },
+    "sflix": {
+      "domainMemory": true,
+      "evidenceDepth": [],
+      "hasApiRecipe": false,
+      "hasProviderValuePlan": false,
+      "hasSearchRequestPlan": false,
+      "mediaTypes": [
+        "anime",
+        "movie",
+        "tv"
+      ],
+      "officialHost": "sflix.today",
+      "operational": false,
+      "peerRequestRecipes": [],
+      "peerRouteTemplates": [],
+      "providerLegoScripts": [],
+      "recipeMethods": [],
+      "recipeResponses": [],
+      "recipeRoles": [],
+      "requestRecipes": [],
+      "routeFamilies": [],
+      "routeTemplates": [],
+      "status": "UNKNOWN",
+      "strategy": "mixed_embed_resolver"
+    },
     "showbox": {
-      "domainMemory": false,
+      "domainMemory": true,
       "evidenceDepth": [
-        "movie=lookup_only",
-        "tv=lookup_only"
+        "movie=chain_reached",
+        "tv=chain_reached"
       ],
       "hasApiRecipe": false,
       "hasProviderValuePlan": false,
       "hasSearchRequestPlan": false,
-      "mediaTypes": [],
-      "officialHost": null,
+      "mediaTypes": [
+        "movie",
+        "tv"
+      ],
+      "officialHost": "showbox.media",
       "operational": false,
       "peerRequestRecipes": [],
       "peerRouteTemplates": [
-        "/?tmdbId={tmdbId}&type=movie",
-        "/?tmdbId={tmdbId}&type=tv&season={season}&episode={episode}",
-        "/api/media"
+        "/search?keyword={query}"
       ],
       "providerLegoScripts": [],
       "recipeMethods": [],
@@ -6289,18 +9239,120 @@
       "recipeRoles": [],
       "requestRecipes": [],
       "routeFamilies": [
-        "api",
-        "episode",
-        "other",
-        "source"
+        "search"
       ],
       "routeTemplates": [
-        "/?tmdbId={tmdbId}&type=movie",
-        "/?tmdbId={tmdbId}&type=tv&season={season}&episode={episode}",
-        "/file/file_share_list?share_key=",
-        "/api/media"
+        "/search?keyword={query}"
       ],
-      "status": "DISABLED",
+      "status": "CHAIN REACHED",
+      "strategy": "mixed_embed_resolver"
+    },
+    "shuttletv": {
+      "domainMemory": true,
+      "evidenceDepth": [
+        "anime=lookup_only",
+        "movie=lookup_only",
+        "tv=lookup_only"
+      ],
+      "hasApiRecipe": false,
+      "hasProviderValuePlan": false,
+      "hasSearchRequestPlan": false,
+      "mediaTypes": [
+        "anime",
+        "movie",
+        "tv"
+      ],
+      "officialHost": "shuttletv.pk",
+      "operational": false,
+      "peerRequestRecipes": [],
+      "peerRouteTemplates": [
+        "/recherche?q={query}",
+        "/recherche?query={query}"
+      ],
+      "providerLegoScripts": [],
+      "recipeMethods": [],
+      "recipeResponses": [],
+      "recipeRoles": [],
+      "requestRecipes": [],
+      "routeFamilies": [
+        "search"
+      ],
+      "routeTemplates": [
+        "/recherche?q={query}",
+        "/recherche?query={query}"
+      ],
+      "status": "NO PROOF",
+      "strategy": "mixed_embed_resolver"
+    },
+    "skstream": {
+      "domainMemory": true,
+      "evidenceDepth": [
+        "movie=lookup_only",
+        "tv=lookup_only"
+      ],
+      "hasApiRecipe": false,
+      "hasProviderValuePlan": false,
+      "hasSearchRequestPlan": false,
+      "mediaTypes": [
+        "movie",
+        "tv"
+      ],
+      "officialHost": "wvw.skstream.rip",
+      "operational": false,
+      "peerRequestRecipes": [],
+      "peerRouteTemplates": [
+        "/?s={query}"
+      ],
+      "providerLegoScripts": [],
+      "recipeMethods": [],
+      "recipeResponses": [],
+      "recipeRoles": [],
+      "requestRecipes": [],
+      "routeFamilies": [
+        "search"
+      ],
+      "routeTemplates": [
+        "/?s={query}"
+      ],
+      "status": "NO PROOF",
+      "strategy": "mixed_embed_resolver"
+    },
+    "stigstream": {
+      "domainMemory": true,
+      "evidenceDepth": [
+        "anime=chain_reached",
+        "movie=chain_reached",
+        "tv=chain_reached"
+      ],
+      "hasApiRecipe": false,
+      "hasProviderValuePlan": false,
+      "hasSearchRequestPlan": false,
+      "mediaTypes": [
+        "anime",
+        "movie",
+        "tv"
+      ],
+      "officialHost": "stigstream.ru",
+      "operational": false,
+      "peerRequestRecipes": [],
+      "peerRouteTemplates": [
+        "/tv/{tmdbId}",
+        "/watch/{tmdbId}"
+      ],
+      "providerLegoScripts": [],
+      "recipeMethods": [],
+      "recipeResponses": [],
+      "recipeRoles": [],
+      "requestRecipes": [],
+      "routeFamilies": [
+        "other",
+        "player"
+      ],
+      "routeTemplates": [
+        "/tv/{tmdbId}",
+        "/watch/{tmdbId}"
+      ],
+      "status": "CHAIN REACHED",
       "strategy": "html_scraper"
     },
     "streamzo": {
@@ -6617,6 +9669,144 @@
       "status": "FULL OK",
       "strategy": "mixed_embed_resolver"
     },
+    "svstream": {
+      "domainMemory": true,
+      "evidenceDepth": [],
+      "hasApiRecipe": false,
+      "hasProviderValuePlan": false,
+      "hasSearchRequestPlan": false,
+      "mediaTypes": [
+        "anime",
+        "movie",
+        "tv"
+      ],
+      "officialHost": "svstream.cc",
+      "operational": false,
+      "peerRequestRecipes": [],
+      "peerRouteTemplates": [
+        "/embed/sw.js"
+      ],
+      "providerLegoScripts": [],
+      "recipeMethods": [],
+      "recipeResponses": [],
+      "recipeRoles": [],
+      "requestRecipes": [],
+      "routeFamilies": [
+        "player"
+      ],
+      "routeTemplates": [
+        "/embed/sw.js"
+      ],
+      "status": "UNKNOWN",
+      "strategy": "mixed_embed_resolver"
+    },
+    "topcartoons": {
+      "domainMemory": true,
+      "evidenceDepth": [
+        "movie=lookup_only",
+        "tv=lookup_only"
+      ],
+      "hasApiRecipe": false,
+      "hasProviderValuePlan": false,
+      "hasSearchRequestPlan": false,
+      "mediaTypes": [
+        "movie",
+        "tv"
+      ],
+      "officialHost": "www.topcartoons.tv",
+      "operational": true,
+      "peerRequestRecipes": [
+        {
+          "body": {},
+          "bodyKind": "none",
+          "executable": true,
+          "headerNames": [
+            "accept-language",
+            "referer",
+            "user-agent"
+          ],
+          "method": "GET",
+          "response": "html-or-text",
+          "role": "search",
+          "route": "/?s={query}",
+          "semanticType": "movie",
+          "streamProof": true
+        },
+        {
+          "body": {},
+          "bodyKind": "none",
+          "executable": true,
+          "headerNames": [
+            "accept-language",
+            "referer",
+            "user-agent"
+          ],
+          "method": "GET",
+          "response": "html-or-text",
+          "role": "search",
+          "route": "/?s={query}",
+          "semanticType": "tv",
+          "streamProof": true
+        }
+      ],
+      "peerRouteTemplates": [
+        "/?s={query}"
+      ],
+      "providerLegoScripts": [],
+      "recipeMethods": [
+        "GET"
+      ],
+      "recipeResponses": [
+        "html-or-text"
+      ],
+      "recipeRoles": [
+        "search"
+      ],
+      "requestRecipes": [
+        {
+          "body": {},
+          "bodyKind": "none",
+          "executable": true,
+          "headerNames": [
+            "accept-language",
+            "referer",
+            "user-agent"
+          ],
+          "method": "GET",
+          "origin": "https://www.topcartoons.tv",
+          "response": "html-or-text",
+          "role": "search",
+          "route": "/?s={query}",
+          "semanticType": "movie",
+          "streamProof": true
+        },
+        {
+          "body": {},
+          "bodyKind": "none",
+          "executable": true,
+          "headerNames": [
+            "accept-language",
+            "referer",
+            "user-agent"
+          ],
+          "method": "GET",
+          "origin": "https://www.topcartoons.tv",
+          "response": "html-or-text",
+          "role": "search",
+          "route": "/?s={query}",
+          "semanticType": "tv",
+          "streamProof": true
+        }
+      ],
+      "routeFamilies": [
+        "search"
+      ],
+      "routeTemplates": [
+        "/?s={query}"
+      ],
+      "status": "PARTIAL OK",
+      "strategy": "html_scraper"
+    },
     "uhdmovies": {
       "domainMemory": true,
       "evidenceDepth": [
@@ -6704,7 +9894,7 @@
         "/download-{slug}-hindi-1080p-2160p/",
         "/download-el-caminoa-{slug}-movie-2019-english-audio-1080p-10bit-2160p-4k-hevc-bluray-web-dl-esubs/"
       ],
-      "status": "REGRESSION PROVIDER",
+      "status": "DISABLED",
       "strategy": "html_scraper"
     },
     "videasy": {
@@ -6716,7 +9906,10 @@
       "hasApiRecipe": false,
       "hasProviderValuePlan": false,
       "hasSearchRequestPlan": false,
-      "mediaTypes": [],
+      "mediaTypes": [
+        "movie",
+        "tv"
+      ],
       "officialHost": "www.vidking.net",
       "operational": false,
       "peerRequestRecipes": [
@@ -6760,9 +9953,7 @@
       "peerRouteTemplates": [
         "/seed?mediaId={id}"
       ],
-      "providerLegoScripts": [
-        "videasy_runtime_v1.py"
-      ],
+      "providerLegoScripts": [],
       "recipeMethods": [
         "GET"
       ],
@@ -6813,21 +10004,13 @@
         }
       ],
       "routeFamilies": [
-        "episode",
         "other"
       ],
       "routeTemplates": [
-        "/seed?mediaId={id}",
-        "/cdn/sources-with-title",
-        "/lamovie/sources-with-title",
-        "/m4uhd/sources-with-title",
-        "/r6/ma9yIsUHLd1oEUKmveBRD6CL9aSh9fi08J7f9fAYJaJBpCdYD0B-GAdVd7Zg6lACo8F67V8n20Xhl51_593TUkhcd9hFZcoR7LlT9DOAAq0slTZjhKqJapt6Dq7jqdYGFf9Z_L8IdXpyDJsvmSQGn5NfBmisKFsxcmff3eNEETzYsgKsXvNAYtY4LbNo74mcgDqsljw0_F9ocjFPncBGZEAzKIei4FVvrz8bhn56qyD_zSEKvabAZfGQIO4laN-4Ge1sK8w3NF6ZLOGZGaTKIDIPA7qVsJ0KlN_BKTarQfMsqY0NBWsh_xl3cOQd4ufbrWESo1OM_7jNaHJw-mCyww.m3u8",
-        "/r6/ma9yIsUHLd1oEUKmveBRD6CL9aSh9fi08J7f9fAYJaJBpCdYD0B-GAdVd7Zg6lACo8F67V8n20Xhl51_593TUkhcd9hFZcoR7LlT9DOAAq1w4cHUWuKab880sETptIBQ5-_lu748gx7O67ccaeDUQqHTO9bp2zglrIT5deqYTYiuSTq9wkUY5QcJ-4kXKyRiEYsKsUJp92hn_ArYIoEihBiQDJ_a2ulLoEF6VSdaULUK-ANgN7Mo09GoAiYFtzsVgWkeg7zU4AfWyn1oOTaFU1AotCkNSRMmDEbvicFNWIXl_MQaEMcc4zVSWEjWnKnPrgymA4eHCTPHRK2T1g_4Iw.m3u8",
-        "/episode/",
-        "/sources-with-title"
+        "/seed?mediaId={id}"
       ],
-      "status": "DISABLED",
-      "strategy": "api_stream_resolver"
+      "status": "REGRESSION PROVIDER",
+      "strategy": "html_scraper"
     },
     "vidfast": {
       "domainMemory": true,
@@ -6882,8 +10065,44 @@
         "/movie/{tmdbId}/",
         "/tv/{tmdbId}/{season}/{episode}/"
       ],
-      "status": "ROUTE PROVEN",
+      "status": "DISABLED",
       "strategy": "iframe_player"
+    },
+    "vidlink": {
+      "domainMemory": true,
+      "evidenceDepth": [
+        "movie=chain_reached",
+        "tv=chain_reached"
+      ],
+      "hasApiRecipe": false,
+      "hasProviderValuePlan": false,
+      "hasSearchRequestPlan": false,
+      "mediaTypes": [
+        "movie",
+        "tv"
+      ],
+      "officialHost": "vidlink.pro",
+      "operational": false,
+      "peerRequestRecipes": [],
+      "peerRouteTemplates": [
+        "/movie/{tmdbId}",
+        "/tv/{tmdbId}/{season}/{episode}"
+      ],
+      "providerLegoScripts": [],
+      "recipeMethods": [],
+      "recipeResponses": [],
+      "recipeRoles": [],
+      "requestRecipes": [],
+      "routeFamilies": [
+        "detail",
+        "episode"
+      ],
+      "routeTemplates": [
+        "/movie/{tmdbId}",
+        "/tv/{tmdbId}/{season}/{episode}"
+      ],
+      "status": "CHAIN REACHED",
+      "strategy": "html_scraper"
     },
     "vidlove": {
       "domainMemory": true,
@@ -6962,7 +10181,7 @@
         "/?tmdbId={tmdbId}&type=movie",
         "/?tmdbId={tmdbId}&type=tv&season={season}&episode={episode}"
       ],
-      "status": "REGRESSION PROVIDER",
+      "status": "DISABLED",
       "strategy": "html_scraper"
     },
     "vidrock": {
@@ -7002,13 +10221,37 @@
         "/api/movie/{tmdbId}",
         "/api/tv/{tmdbId}/1/1"
       ],
-      "status": "REGRESSION PROVIDER",
+      "status": "DISABLED",
       "strategy": "html_scraper"
+    },
+    "vidsrc2": {
+      "domainMemory": true,
+      "evidenceDepth": [],
+      "hasApiRecipe": false,
+      "hasProviderValuePlan": false,
+      "hasSearchRequestPlan": false,
+      "mediaTypes": [
+        "movie",
+        "tv"
+      ],
+      "officialHost": "vidsrc2.ru",
+      "operational": false,
+      "peerRequestRecipes": [],
+      "peerRouteTemplates": [],
+      "providerLegoScripts": [],
+      "recipeMethods": [],
+      "recipeResponses": [],
+      "recipeRoles": [],
+      "requestRecipes": [],
+      "routeFamilies": [],
+      "routeTemplates": [],
+      "status": "UNKNOWN",
+      "strategy": "mixed_embed_resolver"
     },
     "voiranime": {
       "domainMemory": true,
       "evidenceDepth": [
-        "anime=chain_reached"
+        "anime=none"
       ],
       "hasApiRecipe": false,
       "hasProviderValuePlan": false,
@@ -7017,7 +10260,7 @@
         "anime"
       ],
       "officialHost": "voir-anime.to",
-      "operational": true,
+      "operational": false,
       "peerRequestRecipes": [
         {
           "body": {},
@@ -7116,7 +10359,7 @@
         "/engine/ajax/manga_episodes_api.php?id={id}",
         "/anime/{slug}/{episode}/?host={reader}"
       ],
-      "status": "FULL OK",
+      "status": "DISABLED",
       "strategy": "mixed_embed_resolver"
     },
     "voiranime-homes": {
@@ -7131,7 +10374,7 @@
         "anime"
       ],
       "officialHost": "voiranime.homes",
-      "operational": true,
+      "operational": false,
       "peerRequestRecipes": [
         {
           "body": {},
@@ -7322,7 +10565,7 @@
         "/api/v2/themoviedb?id={tmdbId}",
         "/meta/series/tt12343534.json"
       ],
-      "status": "FULL OK",
+      "status": "DISABLED",
       "strategy": "mixed_embed_resolver"
     },
     "voiranime-rip": {
@@ -7337,7 +10580,7 @@
         "anime"
       ],
       "officialHost": "voiranime.rip",
-      "operational": true,
+      "operational": false,
       "peerRequestRecipes": [],
       "peerRouteTemplates": [
         "/{slug}/",
@@ -7441,7 +10684,40 @@
         "/api/v2/themoviedb?id={tmdbId}",
         "/meta/series/tt12343534.json"
       ],
-      "status": "FULL OK",
+      "status": "DISABLED",
+      "strategy": "mixed_embed_resolver"
+    },
+    "voirserie": {
+      "domainMemory": true,
+      "evidenceDepth": [
+        "movie=none",
+        "tv=none"
+      ],
+      "hasApiRecipe": false,
+      "hasProviderValuePlan": false,
+      "hasSearchRequestPlan": false,
+      "mediaTypes": [
+        "movie",
+        "tv"
+      ],
+      "officialHost": "www.voirserie.org",
+      "operational": false,
+      "peerRequestRecipes": [],
+      "peerRouteTemplates": [
+        "/recherche?q={query}"
+      ],
+      "providerLegoScripts": [],
+      "recipeMethods": [],
+      "recipeResponses": [],
+      "recipeRoles": [],
+      "requestRecipes": [],
+      "routeFamilies": [
+        "search"
+      ],
+      "routeTemplates": [
+        "/recherche?q={query}"
+      ],
+      "status": "HARNESS MISMATCH",
       "strategy": "mixed_embed_resolver"
     },
     "vostfree": {
@@ -7514,7 +10790,210 @@
         "/api/v2/themoviedb?id={tmdbId}",
         "/meta/series/tt12343534.json"
       ],
-      "status": "ROUTE PROVEN",
+      "status": "DISABLED",
+      "strategy": "mixed_embed_resolver"
+    },
+    "vuflix": {
+      "domainMemory": true,
+      "evidenceDepth": [
+        "anime=chain_reached",
+        "movie=chain_reached",
+        "tv=chain_reached"
+      ],
+      "hasApiRecipe": false,
+      "hasProviderValuePlan": false,
+      "hasSearchRequestPlan": false,
+      "mediaTypes": [
+        "anime",
+        "movie",
+        "tv"
+      ],
+      "officialHost": "vuflix.co",
+      "operational": false,
+      "peerRequestRecipes": [],
+      "peerRouteTemplates": [
+        "/search?q={query}",
+        "/search?keyword={query}"
+      ],
+      "providerLegoScripts": [],
+      "recipeMethods": [],
+      "recipeResponses": [],
+      "recipeRoles": [],
+      "requestRecipes": [],
+      "routeFamilies": [
+        "search"
+      ],
+      "routeTemplates": [
+        "/search?q={query}",
+        "/search?keyword={query}"
+      ],
+      "status": "CHAIN REACHED",
+      "strategy": "mixed_embed_resolver"
+    },
+    "watch-cartoon-online": {
+      "domainMemory": true,
+      "evidenceDepth": [
+        "anime=none",
+        "movie=none",
+        "tv=none"
+      ],
+      "hasApiRecipe": false,
+      "hasProviderValuePlan": false,
+      "hasSearchRequestPlan": false,
+      "mediaTypes": [
+        "anime",
+        "movie",
+        "tv"
+      ],
+      "officialHost": "www.wco.tv",
+      "operational": false,
+      "peerRequestRecipes": [],
+      "peerRouteTemplates": [
+        "/?s={query}"
+      ],
+      "providerLegoScripts": [],
+      "recipeMethods": [],
+      "recipeResponses": [],
+      "recipeRoles": [],
+      "requestRecipes": [],
+      "routeFamilies": [
+        "search"
+      ],
+      "routeTemplates": [
+        "/?s={query}"
+      ],
+      "status": "HARNESS/ENV BLOCKED",
+      "strategy": "mixed_embed_resolver"
+    },
+    "watchott": {
+      "domainMemory": true,
+      "evidenceDepth": [
+        "anime=lookup_only",
+        "movie=lookup_only",
+        "tv=lookup_only"
+      ],
+      "hasApiRecipe": false,
+      "hasProviderValuePlan": false,
+      "hasSearchRequestPlan": false,
+      "mediaTypes": [
+        "anime",
+        "movie",
+        "tv"
+      ],
+      "officialHost": "watchott.org",
+      "operational": false,
+      "peerRequestRecipes": [],
+      "peerRouteTemplates": [
+        "/search?q={query}",
+        "/movie/{tmdbId}-{slug}",
+        "/tv/{tmdbId}-{slug}"
+      ],
+      "providerLegoScripts": [],
+      "recipeMethods": [],
+      "recipeResponses": [],
+      "recipeRoles": [],
+      "requestRecipes": [],
+      "routeFamilies": [
+        "detail",
+        "search"
+      ],
+      "routeTemplates": [
+        "/search?q={query}",
+        "/movie/{tmdbId}-{slug}",
+        "/tv/{tmdbId}-{slug}"
+      ],
+      "status": "PROVIDER NETWORK BLOCKED",
+      "strategy": "html_scraper"
+    },
+    "waveanime": {
+      "domainMemory": true,
+      "evidenceDepth": [
+        "anime=none"
+      ],
+      "hasApiRecipe": false,
+      "hasProviderValuePlan": false,
+      "hasSearchRequestPlan": false,
+      "mediaTypes": [
+        "anime"
+      ],
+      "officialHost": "waveanime.fr",
+      "operational": false,
+      "peerRequestRecipes": [],
+      "peerRouteTemplates": [
+        "/?s={query}"
+      ],
+      "providerLegoScripts": [],
+      "recipeMethods": [],
+      "recipeResponses": [],
+      "recipeRoles": [],
+      "requestRecipes": [],
+      "routeFamilies": [
+        "search"
+      ],
+      "routeTemplates": [
+        "/?s={query}"
+      ],
+      "status": "HARNESS/ENV BLOCKED",
+      "strategy": "mixed_embed_resolver"
+    },
+    "webflix": {
+      "domainMemory": true,
+      "evidenceDepth": [
+        "tv=lookup_only"
+      ],
+      "hasApiRecipe": false,
+      "hasProviderValuePlan": false,
+      "hasSearchRequestPlan": false,
+      "mediaTypes": [
+        "tv"
+      ],
+      "officialHost": "webflix.art",
+      "operational": true,
+      "peerRequestRecipes": [],
+      "peerRouteTemplates": [
+        "/api/series-season-discovery?tmdb_id={tmdbId}",
+        "/api/fastflux?type=episode&tmdb_id={tmdbId}&season={season}&episode={episode}"
+      ],
+      "providerLegoScripts": [
+        "webflix_runtime_v1.py"
+      ],
+      "recipeMethods": [],
+      "recipeResponses": [],
+      "recipeRoles": [],
+      "requestRecipes": [],
+      "routeFamilies": [
+        "episode"
+      ],
+      "routeTemplates": [
+        "/api/series-season-discovery?tmdb_id={tmdbId}",
+        "/api/fastflux?type=episode&tmdb_id={tmdbId}&season={season}&episode={episode}"
+      ],
+      "status": "FULL OK",
+      "strategy": "api_stream_resolver"
+    },
+    "willow": {
+      "domainMemory": true,
+      "evidenceDepth": [],
+      "hasApiRecipe": false,
+      "hasProviderValuePlan": false,
+      "hasSearchRequestPlan": false,
+      "mediaTypes": [
+        "anime",
+        "movie",
+        "tv"
+      ],
+      "officialHost": "willow.arlen.icu",
+      "operational": false,
+      "peerRequestRecipes": [],
+      "peerRouteTemplates": [],
+      "providerLegoScripts": [],
+      "recipeMethods": [],
+      "recipeResponses": [],
+      "recipeRoles": [],
+      "requestRecipes": [],
+      "routeFamilies": [],
+      "routeTemplates": [],
+      "status": "UNKNOWN",
       "strategy": "mixed_embed_resolver"
     },
     "wookafr": {
@@ -7531,7 +11010,7 @@
         "tv"
       ],
       "officialHost": "wookafr.boston",
-      "operational": true,
+      "operational": false,
       "peerRequestRecipes": [
         {
           "body": {},
@@ -7951,7 +11430,57 @@
         "/streaming/aventure/{slug}/",
         "/streaming/episodes/{slug}-saison-1-episode-1/"
       ],
-      "status": "FULL OK",
+      "status": "DISABLED",
+      "strategy": "mixed_embed_resolver"
+    },
+    "wowfilms0626": {
+      "domainMemory": true,
+      "evidenceDepth": [],
+      "hasApiRecipe": false,
+      "hasProviderValuePlan": false,
+      "hasSearchRequestPlan": false,
+      "mediaTypes": [
+        "anime",
+        "movie",
+        "tv"
+      ],
+      "officialHost": "wowfilms0626c.site",
+      "operational": false,
+      "peerRequestRecipes": [],
+      "peerRouteTemplates": [],
+      "providerLegoScripts": [],
+      "recipeMethods": [],
+      "recipeResponses": [],
+      "recipeRoles": [],
+      "requestRecipes": [],
+      "routeFamilies": [],
+      "routeTemplates": [],
+      "status": "UNKNOWN",
+      "strategy": "html_scraper"
+    },
+    "yablom": {
+      "domainMemory": true,
+      "evidenceDepth": [],
+      "hasApiRecipe": false,
+      "hasProviderValuePlan": false,
+      "hasSearchRequestPlan": false,
+      "mediaTypes": [
+        "anime",
+        "movie",
+        "tv"
+      ],
+      "officialHost": "yablom.com",
+      "operational": false,
+      "peerRequestRecipes": [],
+      "peerRouteTemplates": [],
+      "providerLegoScripts": [],
+      "recipeMethods": [],
+      "recipeResponses": [],
+      "recipeRoles": [],
+      "requestRecipes": [],
+      "routeFamilies": [],
+      "routeTemplates": [],
+      "status": "UNKNOWN",
       "strategy": "mixed_embed_resolver"
     },
     "yflix": {
@@ -8183,6 +11712,113 @@
       ],
       "status": "DISABLED",
       "strategy": "mixed_embed_resolver"
+    },
+    "youtitou": {
+      "domainMemory": true,
+      "evidenceDepth": [
+        "anime=lookup_only"
+      ],
+      "hasApiRecipe": false,
+      "hasProviderValuePlan": false,
+      "hasSearchRequestPlan": false,
+      "mediaTypes": [
+        "anime"
+      ],
+      "officialHost": "youtitou.com",
+      "operational": false,
+      "peerRequestRecipes": [],
+      "peerRouteTemplates": [
+        "/?s={query}"
+      ],
+      "providerLegoScripts": [],
+      "recipeMethods": [],
+      "recipeResponses": [],
+      "recipeRoles": [],
+      "requestRecipes": [],
+      "routeFamilies": [
+        "search"
+      ],
+      "routeTemplates": [
+        "/?s={query}"
+      ],
+      "status": "NO PROOF",
+      "strategy": "mixed_embed_resolver"
+    },
+    "zone-streaming": {
+      "domainMemory": true,
+      "evidenceDepth": [
+        "anime=chain_reached",
+        "movie=chain_reached",
+        "tv=chain_reached"
+      ],
+      "hasApiRecipe": false,
+      "hasProviderValuePlan": false,
+      "hasSearchRequestPlan": false,
+      "mediaTypes": [
+        "anime",
+        "movie",
+        "tv"
+      ],
+      "officialHost": "www.zone-streaming.fr",
+      "operational": false,
+      "peerRequestRecipes": [],
+      "peerRouteTemplates": [
+        "/?s={query}",
+        "/index.php?do=search&subaction=search&story={query}"
+      ],
+      "providerLegoScripts": [],
+      "recipeMethods": [],
+      "recipeResponses": [],
+      "recipeRoles": [],
+      "requestRecipes": [],
+      "routeFamilies": [
+        "search"
+      ],
+      "routeTemplates": [
+        "/?s={query}",
+        "/index.php?do=search&subaction=search&story={query}"
+      ],
+      "status": "CHAIN REACHED",
+      "strategy": "mixed_embed_resolver"
+    },
+    "zone-telechargement": {
+      "domainMemory": true,
+      "evidenceDepth": [
+        "movie=lookup_only",
+        "tv=lookup_only"
+      ],
+      "hasApiRecipe": false,
+      "hasProviderValuePlan": false,
+      "hasSearchRequestPlan": false,
+      "mediaTypes": [
+        "movie",
+        "tv"
+      ],
+      "officialHost": "www.zone-telechargement.rentals",
+      "operational": false,
+      "peerRequestRecipes": [],
+      "peerRouteTemplates": [
+        "/?search={query}",
+        "/?p=films&search={query}",
+        "/?s={query}&search={query}",
+        "/?p=404&search={query}"
+      ],
+      "providerLegoScripts": [],
+      "recipeMethods": [],
+      "recipeResponses": [],
+      "recipeRoles": [],
+      "requestRecipes": [],
+      "routeFamilies": [
+        "search"
+      ],
+      "routeTemplates": [
+        "/?search={query}",
+        "/?p=films&search={query}",
+        "/?s={query}&search={query}",
+        "/?p=404&search={query}"
+      ],
+      "status": "NO PROOF",
+      "strategy": "mixed_embed_resolver"
     }
   },
   "role": "repair-prior-only",
@@ -8201,48 +11837,18 @@
     "requiresDeepValidation": true
   },
   "schemaVersion": 2,
-  "sourceRunId": "43577236590",
-  "sourceSha": "9ca7a7db691ae95cc26aa0e8fd9a7aaacf866ac1",
+  "sourceRunId": "43787101494",
+  "sourceSha": "0c9256da2d9ee12ac6ae828f78c7453118cdd3e2",
   "strategyPatterns": {
     "api_stream_resolver": {
       "commonRequestRecipes": [],
       "commonRouteTemplates": [],
-      "greenProviderCount": 1,
-      "greenProviders": [
-        "castle"
-      ],
-      "routeFamilies": [
-        {
-          "providerSupport": 1,
-          "role": "detail",
-          "supportRatio": 1.0
-        },
-        {
-          "providerSupport": 1,
-          "role": "other",
-          "supportRatio": 1.0
-        },
-        {
-          "providerSupport": 1,
-          "role": "search",
-          "supportRatio": 1.0
-        }
-      ]
-    },
-    "direct_media": {
-      "commonRequestRecipes": [],
-      "commonRouteTemplates": [],
       "greenProviderCount": 2,
       "greenProviders": [
-        "hindmoviez",
-        "playimdb"
+        "castle",
+        "webflix"
       ],
       "routeFamilies": [
-        {
-          "providerSupport": 1,
-          "role": "detail",
-          "supportRatio": 0.5
-        },
         {
           "providerSupport": 1,
           "role": "search",
@@ -8251,16 +11857,16 @@
         {
           "providerSupport": 1,
           "role": "other",
+          "supportRatio": 0.5
+        },
+        {
+          "providerSupport": 1,
+          "role": "detail",
           "supportRatio": 0.5
         },
         {
           "providerSupport": 1,
           "role": "episode",
-          "supportRatio": 0.5
-        },
-        {
-          "providerSupport": 1,
-          "role": "player",
           "supportRatio": 0.5
         }
       ]
@@ -8277,24 +11883,14 @@
       ],
       "greenProviderCount": 3,
       "greenProviders": [
-        "kurage",
         "papadustream",
-        "sekai"
+        "sekai",
+        "topcartoons"
       ],
       "routeFamilies": [
         {
-          "providerSupport": 3,
-          "role": "api",
-          "supportRatio": 1.0
-        },
-        {
           "providerSupport": 2,
-          "role": "other",
-          "supportRatio": 0.6667
-        },
-        {
-          "providerSupport": 2,
-          "role": "episode",
+          "role": "search",
           "supportRatio": 0.6667
         },
         {
@@ -8303,156 +11899,86 @@
           "supportRatio": 0.6667
         },
         {
+          "providerSupport": 2,
+          "role": "api",
+          "supportRatio": 0.6667
+        },
+        {
           "providerSupport": 1,
-          "role": "search",
+          "role": "episode",
           "supportRatio": 0.3333
         },
         {
           "providerSupport": 1,
           "role": "player",
+          "supportRatio": 0.3333
+        },
+        {
+          "providerSupport": 1,
+          "role": "other",
           "supportRatio": 0.3333
         }
       ]
     },
     "mixed_embed_resolver": {
-      "commonRequestRecipes": [
-        {
-          "body": {},
-          "bodyKind": "none",
-          "executable": true,
-          "headerNames": [
-            "accept-language",
-            "referer",
-            "user-agent"
-          ],
-          "method": "GET",
-          "providerSupport": 2,
-          "response": "html-or-text",
-          "role": "player",
-          "route": "/embed/wa805bkcrb02",
-          "semanticType": "anime",
-          "streamProof": true,
-          "supportRatio": 0.2
-        },
-        {
-          "body": {},
-          "bodyKind": "none",
-          "executable": true,
-          "headerNames": [
-            "accept-language",
-            "referer",
-            "user-agent"
-          ],
-          "method": "GET",
-          "providerSupport": 2,
-          "response": "html-or-text",
-          "role": "player",
-          "route": "/embed/ihd7l819etlv",
-          "semanticType": "anime",
-          "streamProof": true,
-          "supportRatio": 0.2
-        },
-        {
-          "body": {},
-          "bodyKind": "none",
-          "executable": true,
-          "headerNames": [
-            "accept",
-            "accept-language",
-            "referer",
-            "user-agent"
-          ],
-          "method": "GET",
-          "providerSupport": 2,
-          "response": "json",
-          "role": "detail",
-          "route": "/engine/ajax/manga_episodes_api.php?id={id}",
-          "semanticType": "anime",
-          "streamProof": true,
-          "supportRatio": 0.2
-        }
-      ],
+      "commonRequestRecipes": [],
       "commonRouteTemplates": [
         {
           "providerSupport": 6,
-          "role": "api",
-          "route": "/api/v2/themoviedb?id={tmdbId}",
-          "supportRatio": 0.6
-        },
-        {
-          "providerSupport": 5,
           "role": "search",
           "route": "/?s={query}",
-          "supportRatio": 0.5
-        },
-        {
-          "providerSupport": 3,
-          "role": "episode",
-          "route": "/engine/ajax/manga_episodes_api.php?id={id}",
-          "supportRatio": 0.3
+          "supportRatio": 0.6
         },
         {
           "providerSupport": 2,
           "role": "detail",
           "route": "/{slug}",
           "supportRatio": 0.2
-        },
-        {
-          "providerSupport": 2,
-          "role": "detail",
-          "route": "/anime/{slug}/",
-          "supportRatio": 0.2
-        },
-        {
-          "providerSupport": 2,
-          "role": "player",
-          "route": "/embed",
-          "supportRatio": 0.2
         }
       ],
       "greenProviderCount": 10,
       "greenProviders": [
         "anikototv",
-        "anime-sama",
+        "anisama",
+        "french-anime",
         "french-manga",
+        "movix-fr",
         "mugiwarastream",
+        "nakios",
         "neko-sama",
-        "streamzo",
-        "voiranime",
-        "voiranime-homes",
-        "voiranime-rip",
-        "wookafr"
+        "sadisflix",
+        "streamzo"
       ],
       "routeFamilies": [
         {
           "providerSupport": 9,
-          "role": "detail",
-          "supportRatio": 0.9
-        },
-        {
-          "providerSupport": 9,
-          "role": "episode",
-          "supportRatio": 0.9
-        },
-        {
-          "providerSupport": 7,
-          "role": "api",
-          "supportRatio": 0.7
-        },
-        {
-          "providerSupport": 7,
           "role": "search",
-          "supportRatio": 0.7
-        },
-        {
-          "providerSupport": 5,
-          "role": "other",
-          "supportRatio": 0.5
+          "supportRatio": 0.9
         },
         {
           "providerSupport": 4,
-          "role": "player",
+          "role": "episode",
           "supportRatio": 0.4
+        },
+        {
+          "providerSupport": 4,
+          "role": "detail",
+          "supportRatio": 0.4
+        },
+        {
+          "providerSupport": 3,
+          "role": "player",
+          "supportRatio": 0.3
+        },
+        {
+          "providerSupport": 2,
+          "role": "api",
+          "supportRatio": 0.2
+        },
+        {
+          "providerSupport": 2,
+          "role": "other",
+          "supportRatio": 0.2
         }
       ]
     },
@@ -8471,12 +11997,32 @@
         },
         {
           "providerSupport": 1,
-          "role": "api",
+          "role": "episode",
           "supportRatio": 1.0
         },
         {
           "providerSupport": 1,
-          "role": "episode",
+          "role": "api",
+          "supportRatio": 1.0
+        }
+      ]
+    },
+    "open_archive_public_domain": {
+      "commonRequestRecipes": [],
+      "commonRouteTemplates": [],
+      "greenProviderCount": 1,
+      "greenProviders": [
+        "internet-archive"
+      ],
+      "routeFamilies": [
+        {
+          "providerSupport": 1,
+          "role": "other",
+          "supportRatio": 1.0
+        },
+        {
+          "providerSupport": 1,
+          "role": "source",
           "supportRatio": 1.0
         }
       ]
