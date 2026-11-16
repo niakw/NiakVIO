@@ -30,16 +30,16 @@ assert 'result["probe_attempt"] = attempt' in source
 assert "runtime_recovered_types" in source
 assert "FIELD_PROVIDER_FIXTURE_SKIPPED_TYPE_ALREADY_PROVED" in source
 from validate_provider_v3_routes_sequential import build_provider_queue, SEMANTIC_FIXTURE_FALLBACKS
-from current_provider_scope import projection_runtime_visible_provider_count, projection_runtime_visible_provider_ids
+from current_provider_scope import projection_active_provider_count, projection_active_provider_ids
 assert len(SEMANTIC_FIXTURE_FALLBACKS["movie"]) >= 4
 queue_rows, queue_count = build_provider_queue()
-assert queue_count == projection_runtime_visible_provider_count(), (
-    queue_count, projection_runtime_visible_provider_count()
+assert queue_count == projection_active_provider_count(), (
+    queue_count, projection_active_provider_count()
 )
-assert {row["provider_id"] for row in queue_rows} == projection_runtime_visible_provider_ids()
+assert {row["provider_id"] for row in queue_rows} == projection_active_provider_ids()
 lifecycle = json.loads((ROOT / "automation/provider-disabled-lifecycle.json").read_text(encoding="utf-8"))
 archived = lifecycle.get("archived") if isinstance(lifecycle.get("archived"), dict) else {}
-if "desiflix" in projection_runtime_visible_provider_ids():
+if "desiflix" in projection_active_provider_ids():
     desiflix = next(row for row in queue_rows if row["provider_id"] == "desiflix")
     desiflix_movies = [task["fixture_slug"] for task in desiflix["tasks"] if task["semantic_type"] == "movie"]
     assert "interstellar" in desiflix_movies
