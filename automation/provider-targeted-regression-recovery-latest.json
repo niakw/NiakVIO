@@ -4,26 +4,526 @@
   "groupResults": [
     {
       "contradictionProviders": [],
-      "groupId": "route-to-terminal|html_scraper",
+      "groupId": "learning|mixed_embed_resolver|runtime:mixed_embed_resolver",
       "playableProviders": [],
       "providerCount": 1,
       "providers": [
-        "4khdhub"
+        "frenchstream"
       ],
-      "repairScope": "route-to-terminal",
+      "repairScope": "learning",
+      "verifiedProviders": []
+    },
+    {
+      "contradictionProviders": [],
+      "groupId": "terminal-extraction|mixed_embed_resolver|runtime:mixed_embed_resolver",
+      "playableProviders": [],
+      "providerCount": 1,
+      "providers": [
+        "hianime"
+      ],
+      "repairScope": "terminal-extraction",
+      "verifiedProviders": []
+    },
+    {
+      "contradictionProviders": [],
+      "groupId": "terminal-extraction|html_scraper|runtime:html_scraper",
+      "playableProviders": [],
+      "providerCount": 1,
+      "providers": [
+        "stigstream"
+      ],
+      "repairScope": "terminal-extraction",
       "verifiedProviders": []
     }
   ],
   "maxWorkers": 20,
-  "providerEvidenceCount": 1,
+  "providerEvidenceCount": 3,
   "providers": {
-    "4khdhub": {
+    "frenchstream": {
       "contradictions": 0,
       "debugStages": {
+        "anime": "provider_network_zero_result",
         "movie": "provider_network_zero_result",
         "tv": "provider_network_zero_result"
       },
       "network": {
+        "anime": [
+          {
+            "host": "api.themoviedb.org",
+            "method": "GET",
+            "path": "/{id}/tv/{id}",
+            "shape": {
+              "keys": [
+                "adult",
+                "backdrop_path",
+                "created_by",
+                "episode_run_time",
+                "first_air_date",
+                "genres",
+                "homepage",
+                "id",
+                "in_production",
+                "languages",
+                "last_air_date",
+                "last_episode_to_air",
+                "name",
+                "next_episode_to_air",
+                "networks",
+                "number_of_episodes"
+              ],
+              "kind": "json",
+              "top": "object"
+            },
+            "status": 200
+          },
+          {
+            "host": "fs16.lol",
+            "method": "GET",
+            "path": "/search/dan-da-dan",
+            "shape": {
+              "anchors": 99,
+              "classFacts": [
+                {
+                  "count": 12,
+                  "nestedAnchors": 24,
+                  "selfHref": 0,
+                  "signals": [],
+                  "tags": [
+                    "i",
+                    "span"
+                  ],
+                  "token": "fa"
+                },
+                {
+                  "count": 12,
+                  "nestedAnchors": 24,
+                  "selfHref": 0,
+                  "signals": [
+                    "year"
+                  ],
+                  "tags": [
+                    "span"
+                  ],
+                  "token": "ignore-select"
+                },
+                {
+                  "count": 12,
+                  "nestedAnchors": 24,
+                  "selfHref": 0,
+                  "signals": [
+                    "year"
+                  ],
+                  "tags": [
+                    "span"
+                  ],
+                  "token": "ratingtypeplusminus"
+                },
+                {
+                  "count": 12,
+                  "nestedAnchors": 24,
+                  "selfHref": 0,
+                  "signals": [
+                    "year"
+                  ],
+                  "tags": [
+                    "span"
+                  ],
+                  "token": "ratingplus"
+                },
+                {
+                  "count": 12,
+                  "nestedAnchors": 24,
+                  "selfHref": 0,
+                  "signals": [
+                    "year"
+                  ],
+                  "tags": [
+                    "i",
+                    "span"
+                  ],
+                  "token": "fa-play-circle3"
+                },
+                {
+                  "count": 12,
+                  "nestedAnchors": 24,
+                  "selfHref": 0,
+                  "signals": [
+                    "year"
+                  ],
+                  "tags": [
+                    "span"
+                  ],
+                  "token": "film-version"
+                },
+                {
+                  "count": 12,
+                  "nestedAnchors": 24,
+                  "selfHref": 12,
+                  "signals": [
+                    "year"
+                  ],
+                  "tags": [
+                    "a"
+                  ],
+                  "token": "img-box"
+                },
+                {
+                  "count": 12,
+                  "nestedAnchors": 24,
+                  "selfHref": 0,
+                  "signals": [
+                    "year"
+                  ],
+                  "tags": [
+                    "span"
+                  ],
+                  "token": "info-button"
+                }
+              ],
+              "classTokens": [
+                "fa",
+                "ignore-select",
+                "ratingtypeplusminus",
+                "ratingplus",
+                "fa-play-circle3",
+                "film-version",
+                "img-box",
+                "info-button",
+                "nl",
+                "short",
+                "short-in",
+                "short-poster",
+                "short-year",
+                "with-mask",
+                "fx-center",
+                "fx-col"
+              ],
+              "forms": 3,
+              "idTokens": [
+                "vote-num-id-15122737",
+                "vote-num-id-15137032",
+                "vote-num-id-15140556",
+                "vote-num-id-15140933",
+                "vote-num-id-15141249",
+                "vote-num-id-15141307",
+                "vote-num-id-15141336",
+                "vote-num-id-15141363",
+                "vote-num-id-15141446",
+                "vote-num-id-15141449",
+                "vote-num-id-15141450",
+                "vote-num-id-15141454"
+              ],
+              "iframes": 0,
+              "kind": "html",
+              "markers": [
+                "player"
+              ],
+              "sampleBytes": 65536,
+              "scripts": 10,
+              "sources": 0,
+              "videos": 0
+            },
+            "status": 200
+          },
+          {
+            "host": "fs16.lol",
+            "method": "GET",
+            "path": "/xfsearch/lang/Danois",
+            "shape": {
+              "anchors": 99,
+              "classFacts": [
+                {
+                  "count": 12,
+                  "nestedAnchors": 24,
+                  "selfHref": 0,
+                  "signals": [],
+                  "tags": [
+                    "i",
+                    "span"
+                  ],
+                  "token": "fa"
+                },
+                {
+                  "count": 12,
+                  "nestedAnchors": 24,
+                  "selfHref": 0,
+                  "signals": [
+                    "year"
+                  ],
+                  "tags": [
+                    "span"
+                  ],
+                  "token": "ignore-select"
+                },
+                {
+                  "count": 12,
+                  "nestedAnchors": 24,
+                  "selfHref": 0,
+                  "signals": [
+                    "year"
+                  ],
+                  "tags": [
+                    "span"
+                  ],
+                  "token": "ratingtypeplusminus"
+                },
+                {
+                  "count": 12,
+                  "nestedAnchors": 24,
+                  "selfHref": 0,
+                  "signals": [
+                    "year"
+                  ],
+                  "tags": [
+                    "span"
+                  ],
+                  "token": "ratingplus"
+                },
+                {
+                  "count": 12,
+                  "nestedAnchors": 24,
+                  "selfHref": 0,
+                  "signals": [
+                    "year"
+                  ],
+                  "tags": [
+                    "i",
+                    "span"
+                  ],
+                  "token": "fa-play-circle3"
+                },
+                {
+                  "count": 12,
+                  "nestedAnchors": 24,
+                  "selfHref": 0,
+                  "signals": [
+                    "year"
+                  ],
+                  "tags": [
+                    "span"
+                  ],
+                  "token": "film-quality"
+                },
+                {
+                  "count": 12,
+                  "nestedAnchors": 24,
+                  "selfHref": 0,
+                  "signals": [
+                    "year"
+                  ],
+                  "tags": [
+                    "span"
+                  ],
+                  "token": "film-version"
+                },
+                {
+                  "count": 12,
+                  "nestedAnchors": 24,
+                  "selfHref": 12,
+                  "signals": [
+                    "year"
+                  ],
+                  "tags": [
+                    "a"
+                  ],
+                  "token": "img-box"
+                }
+              ],
+              "classTokens": [
+                "fa",
+                "ignore-select",
+                "ratingtypeplusminus",
+                "ratingplus",
+                "fa-play-circle3",
+                "film-quality",
+                "film-version",
+                "img-box",
+                "info-button",
+                "nl",
+                "short",
+                "short-in",
+                "short-poster",
+                "short-year",
+                "with-mask",
+                "fx-center"
+              ],
+              "forms": 3,
+              "idTokens": [
+                "vote-num-id-15119330",
+                "vote-num-id-15120472",
+                "vote-num-id-15121220",
+                "vote-num-id-15121543",
+                "vote-num-id-15121575",
+                "vote-num-id-15123291",
+                "vote-num-id-15123508",
+                "vote-num-id-15124422",
+                "vote-num-id-15126060",
+                "vote-num-id-15126124",
+                "vote-num-id-15127396",
+                "vote-num-id-15135858"
+              ],
+              "iframes": 0,
+              "kind": "html",
+              "markers": [
+                "player"
+              ],
+              "sampleBytes": 65536,
+              "scripts": 10,
+              "sources": 0,
+              "videos": 0
+            },
+            "status": 200
+          },
+          {
+            "host": "fs16.lol",
+            "method": "GET",
+            "path": "/xfsearch/date-de-sortie/{id}",
+            "shape": {
+              "anchors": 99,
+              "classFacts": [
+                {
+                  "count": 12,
+                  "nestedAnchors": 24,
+                  "selfHref": 0,
+                  "signals": [],
+                  "tags": [
+                    "i",
+                    "span"
+                  ],
+                  "token": "fa"
+                },
+                {
+                  "count": 12,
+                  "nestedAnchors": 24,
+                  "selfHref": 0,
+                  "signals": [
+                    "year"
+                  ],
+                  "tags": [
+                    "span"
+                  ],
+                  "token": "ignore-select"
+                },
+                {
+                  "count": 12,
+                  "nestedAnchors": 24,
+                  "selfHref": 0,
+                  "signals": [
+                    "year"
+                  ],
+                  "tags": [
+                    "span"
+                  ],
+                  "token": "ratingtypeplusminus"
+                },
+                {
+                  "count": 12,
+                  "nestedAnchors": 24,
+                  "selfHref": 0,
+                  "signals": [
+                    "year"
+                  ],
+                  "tags": [
+                    "span"
+                  ],
+                  "token": "ratingplus"
+                },
+                {
+                  "count": 11,
+                  "nestedAnchors": 24,
+                  "selfHref": 0,
+                  "signals": [
+                    "year"
+                  ],
+                  "tags": [
+                    "i",
+                    "span"
+                  ],
+                  "token": "fa-play-circle3"
+                },
+                {
+                  "count": 11,
+                  "nestedAnchors": 24,
+                  "selfHref": 0,
+                  "signals": [
+                    "year"
+                  ],
+                  "tags": [
+                    "span"
+                  ],
+                  "token": "info-button"
+                },
+                {
+                  "count": 11,
+                  "nestedAnchors": 24,
+                  "selfHref": 0,
+                  "signals": [
+                    "year"
+                  ],
+                  "tags": [
+                    "div"
+                  ],
+                  "token": "nl"
+                },
+                {
+                  "count": 11,
+                  "nestedAnchors": 24,
+                  "selfHref": 0,
+                  "signals": [
+                    "year"
+                  ],
+                  "tags": [
+                    "div"
+                  ],
+                  "token": "short"
+                }
+              ],
+              "classTokens": [
+                "fa",
+                "ignore-select",
+                "ratingtypeplusminus",
+                "ratingplus",
+                "fa-play-circle3",
+                "info-button",
+                "nl",
+                "short",
+                "short-in",
+                "short-year",
+                "film-quality",
+                "film-version",
+                "fx-center",
+                "fx-col",
+                "fx-middle",
+                "img-box"
+              ],
+              "forms": 3,
+              "idTokens": [
+                "vote-num-id-15118389",
+                "vote-num-id-15139893",
+                "vote-num-id-15139907",
+                "vote-num-id-15139945",
+                "vote-num-id-15140046",
+                "vote-num-id-15140136",
+                "vote-num-id-15140600",
+                "vote-num-id-15140744",
+                "vote-num-id-15140868",
+                "vote-num-id-15140873",
+                "customYearInput",
+                "desc-15118389"
+              ],
+              "iframes": 0,
+              "kind": "html",
+              "markers": [
+                "player"
+              ],
+              "sampleBytes": 65536,
+              "scripts": 10,
+              "sources": 0,
+              "videos": 0
+            },
+            "status": 200
+          }
+        ],
         "movie": [
           {
             "host": "api.themoviedb.org",
@@ -54,182 +554,149 @@
             "status": 200
           },
           {
-            "host": "4khdhub.one",
+            "host": "fs16.lol",
             "method": "GET",
-            "path": "/",
+            "path": "/search/avatar",
             "shape": {
-              "anchors": 42,
+              "anchors": 99,
               "classFacts": [
                 {
                   "count": 12,
                   "nestedAnchors": 24,
                   "selfHref": 0,
+                  "signals": [],
+                  "tags": [
+                    "i",
+                    "span"
+                  ],
+                  "token": "fa"
+                },
+                {
+                  "count": 12,
+                  "nestedAnchors": 24,
+                  "selfHref": 0,
                   "signals": [
-                    "movie",
-                    "series",
-                    "1080p",
                     "year"
                   ],
                   "tags": [
                     "span"
                   ],
-                  "token": "movie-card-format"
+                  "token": "ignore-select"
+                },
+                {
+                  "count": 12,
+                  "nestedAnchors": 24,
+                  "selfHref": 0,
+                  "signals": [
+                    "year"
+                  ],
+                  "tags": [
+                    "span"
+                  ],
+                  "token": "ratingtypeplusminus"
+                },
+                {
+                  "count": 12,
+                  "nestedAnchors": 24,
+                  "selfHref": 0,
+                  "signals": [
+                    "year"
+                  ],
+                  "tags": [
+                    "span"
+                  ],
+                  "token": "ratingplus"
+                },
+                {
+                  "count": 12,
+                  "nestedAnchors": 24,
+                  "selfHref": 0,
+                  "signals": [
+                    "year"
+                  ],
+                  "tags": [
+                    "i",
+                    "span"
+                  ],
+                  "token": "fa-play-circle3"
+                },
+                {
+                  "count": 12,
+                  "nestedAnchors": 24,
+                  "selfHref": 0,
+                  "signals": [
+                    "year"
+                  ],
+                  "tags": [
+                    "span"
+                  ],
+                  "token": "film-version"
                 },
                 {
                   "count": 12,
                   "nestedAnchors": 24,
                   "selfHref": 12,
                   "signals": [
-                    "movie",
-                    "series",
-                    "4k",
                     "year"
                   ],
                   "tags": [
                     "a"
                   ],
-                  "token": "dropdown-item"
+                  "token": "img-box"
                 },
                 {
                   "count": 12,
                   "nestedAnchors": 24,
-                  "selfHref": 1,
+                  "selfHref": 0,
                   "signals": [
-                    "movie",
-                    "series",
-                    "1080p",
                     "year"
                   ],
                   "tags": [
-                    "a",
-                    "div",
                     "span"
                   ],
-                  "token": "movie-card"
-                },
-                {
-                  "count": 12,
-                  "nestedAnchors": 24,
-                  "selfHref": 0,
-                  "signals": [
-                    "movie",
-                    "series",
-                    "1080p",
-                    "year",
-                    "4k"
-                  ],
-                  "tags": [
-                    "div"
-                  ],
-                  "token": "movie-card-content"
-                },
-                {
-                  "count": 12,
-                  "nestedAnchors": 24,
-                  "selfHref": 0,
-                  "signals": [
-                    "movie",
-                    "series",
-                    "1080p",
-                    "year",
-                    "4k"
-                  ],
-                  "tags": [
-                    "div"
-                  ],
-                  "token": "movie-card-formats"
-                },
-                {
-                  "count": 12,
-                  "nestedAnchors": 24,
-                  "selfHref": 0,
-                  "signals": [
-                    "movie",
-                    "series",
-                    "1080p",
-                    "year",
-                    "4k"
-                  ],
-                  "tags": [
-                    "div"
-                  ],
-                  "token": "movie-card-image"
-                },
-                {
-                  "count": 12,
-                  "nestedAnchors": 24,
-                  "selfHref": 0,
-                  "signals": [
-                    "movie",
-                    "series",
-                    "1080p",
-                    "year",
-                    "4k"
-                  ],
-                  "tags": [
-                    "p"
-                  ],
-                  "token": "movie-card-meta"
-                },
-                {
-                  "count": 12,
-                  "nestedAnchors": 24,
-                  "selfHref": 0,
-                  "signals": [
-                    "movie",
-                    "series",
-                    "1080p",
-                    "year",
-                    "4k"
-                  ],
-                  "tags": [
-                    "div"
-                  ],
-                  "token": "movie-card-overlay"
+                  "token": "info-button"
                 }
               ],
               "classTokens": [
-                "movie-card-format",
-                "dropdown-item",
-                "movie-card",
-                "movie-card-content",
-                "movie-card-formats",
-                "movie-card-image",
-                "movie-card-meta",
-                "movie-card-overlay",
-                "movie-card-title",
-                "quality-badges",
-                "nav-item",
-                "nav-link",
-                "sr-only",
-                "dropdown-menu",
-                "space-y-4",
-                "pagination-container"
+                "fa",
+                "ignore-select",
+                "ratingtypeplusminus",
+                "ratingplus",
+                "fa-play-circle3",
+                "film-version",
+                "img-box",
+                "info-button",
+                "nl",
+                "short",
+                "short-in",
+                "short-poster",
+                "short-year",
+                "with-mask",
+                "fx-center",
+                "fx-col"
               ],
-              "forms": 1,
+              "forms": 3,
               "idTokens": [
-                "back-to-top",
-                "close-mobile-menu",
-                "close-search",
-                "current-year",
-                "logo",
-                "main-nav",
-                "menu-toggle",
-                "mobile-menu-backdrop",
-                "search",
-                "search-backdrop",
-                "search-overlay",
-                "search-toggle"
+                "vote-num-id-15122737",
+                "vote-num-id-15137032",
+                "vote-num-id-15140556",
+                "vote-num-id-15140933",
+                "vote-num-id-15141249",
+                "vote-num-id-15141307",
+                "vote-num-id-15141336",
+                "vote-num-id-15141363",
+                "vote-num-id-15141446",
+                "vote-num-id-15141449",
+                "vote-num-id-15141450",
+                "vote-num-id-15141454"
               ],
               "iframes": 0,
               "kind": "html",
               "markers": [
-                "json-ld",
-                "download",
-                "episode"
+                "player"
               ],
-              "sampleBytes": 40708,
-              "scripts": 16,
+              "sampleBytes": 65536,
+              "scripts": 10,
               "sources": 0,
               "videos": 0
             },
@@ -266,171 +733,149 @@
             "status": 200
           },
           {
-            "host": "4khdhub.one",
+            "host": "fs16.lol",
             "method": "GET",
-            "path": "/",
+            "path": "/search/pablo-escobar-le-patron-du-mal",
             "shape": {
-              "anchors": 31,
+              "anchors": 99,
               "classFacts": [
+                {
+                  "count": 12,
+                  "nestedAnchors": 24,
+                  "selfHref": 0,
+                  "signals": [],
+                  "tags": [
+                    "i",
+                    "span"
+                  ],
+                  "token": "fa"
+                },
+                {
+                  "count": 12,
+                  "nestedAnchors": 24,
+                  "selfHref": 0,
+                  "signals": [
+                    "year"
+                  ],
+                  "tags": [
+                    "span"
+                  ],
+                  "token": "ignore-select"
+                },
+                {
+                  "count": 12,
+                  "nestedAnchors": 24,
+                  "selfHref": 0,
+                  "signals": [
+                    "year"
+                  ],
+                  "tags": [
+                    "span"
+                  ],
+                  "token": "ratingtypeplusminus"
+                },
+                {
+                  "count": 12,
+                  "nestedAnchors": 24,
+                  "selfHref": 0,
+                  "signals": [
+                    "year"
+                  ],
+                  "tags": [
+                    "span"
+                  ],
+                  "token": "ratingplus"
+                },
+                {
+                  "count": 12,
+                  "nestedAnchors": 24,
+                  "selfHref": 0,
+                  "signals": [
+                    "year"
+                  ],
+                  "tags": [
+                    "i",
+                    "span"
+                  ],
+                  "token": "fa-play-circle3"
+                },
+                {
+                  "count": 12,
+                  "nestedAnchors": 24,
+                  "selfHref": 0,
+                  "signals": [
+                    "year"
+                  ],
+                  "tags": [
+                    "span"
+                  ],
+                  "token": "film-version"
+                },
                 {
                   "count": 12,
                   "nestedAnchors": 24,
                   "selfHref": 12,
                   "signals": [
-                    "movie",
-                    "series",
-                    "4k",
                     "year"
                   ],
                   "tags": [
                     "a"
                   ],
-                  "token": "dropdown-item"
+                  "token": "img-box"
                 },
                 {
-                  "count": 10,
+                  "count": 12,
                   "nestedAnchors": 24,
                   "selfHref": 0,
                   "signals": [
-                    "movie",
-                    "4k",
-                    "1080p",
                     "year"
                   ],
                   "tags": [
                     "span"
                   ],
-                  "token": "movie-card-format"
-                },
-                {
-                  "count": 7,
-                  "nestedAnchors": 24,
-                  "selfHref": 0,
-                  "signals": [
-                    "movie",
-                    "series",
-                    "4k"
-                  ],
-                  "tags": [
-                    "li"
-                  ],
-                  "token": "nav-item"
-                },
-                {
-                  "count": 7,
-                  "nestedAnchors": 24,
-                  "selfHref": 7,
-                  "signals": [
-                    "movie",
-                    "series",
-                    "4k",
-                    "year"
-                  ],
-                  "tags": [
-                    "a"
-                  ],
-                  "token": "nav-link"
-                },
-                {
-                  "count": 4,
-                  "nestedAnchors": 15,
-                  "selfHref": 0,
-                  "signals": [
-                    "movie",
-                    "series",
-                    "4k",
-                    "season",
-                    "1080p",
-                    "year"
-                  ],
-                  "tags": [
-                    "span"
-                  ],
-                  "token": "sr-only"
-                },
-                {
-                  "count": 3,
-                  "nestedAnchors": 24,
-                  "selfHref": 0,
-                  "signals": [
-                    "movie",
-                    "series",
-                    "4k"
-                  ],
-                  "tags": [
-                    "ul"
-                  ],
-                  "token": "dropdown-menu"
-                },
-                {
-                  "count": 3,
-                  "nestedAnchors": 11,
-                  "selfHref": 0,
-                  "signals": [
-                    "movie",
-                    "year"
-                  ],
-                  "tags": [
-                    "div"
-                  ],
-                  "token": "space-y-4"
-                },
-                {
-                  "count": 2,
-                  "nestedAnchors": 12,
-                  "selfHref": 0,
-                  "signals": [
-                    "movie",
-                    "year"
-                  ],
-                  "tags": [
-                    "div"
-                  ],
-                  "token": "pagination-container"
+                  "token": "info-button"
                 }
               ],
               "classTokens": [
-                "dropdown-item",
-                "movie-card-format",
-                "nav-item",
-                "nav-link",
-                "sr-only",
-                "dropdown-menu",
-                "space-y-4",
-                "pagination-container",
-                "card-grid",
-                "container",
-                "dark",
-                "fixed",
-                "flex-1",
-                "header",
-                "latest-releases",
-                "latest-releases-header"
+                "fa",
+                "ignore-select",
+                "ratingtypeplusminus",
+                "ratingplus",
+                "fa-play-circle3",
+                "film-version",
+                "img-box",
+                "info-button",
+                "nl",
+                "short",
+                "short-in",
+                "short-poster",
+                "short-year",
+                "with-mask",
+                "fx-center",
+                "fx-col"
               ],
-              "forms": 1,
+              "forms": 3,
               "idTokens": [
-                "back-to-top",
-                "close-mobile-menu",
-                "close-search",
-                "current-year",
-                "logo",
-                "main-nav",
-                "menu-toggle",
-                "mobile-menu-backdrop",
-                "search",
-                "search-backdrop",
-                "search-overlay",
-                "search-toggle"
+                "vote-num-id-15122737",
+                "vote-num-id-15137032",
+                "vote-num-id-15140556",
+                "vote-num-id-15140933",
+                "vote-num-id-15141249",
+                "vote-num-id-15141307",
+                "vote-num-id-15141336",
+                "vote-num-id-15141363",
+                "vote-num-id-15141446",
+                "vote-num-id-15141449",
+                "vote-num-id-15141450",
+                "vote-num-id-15141454"
               ],
               "iframes": 0,
               "kind": "html",
               "markers": [
-                "json-ld",
-                "download",
-                "episode"
+                "player"
               ],
-              "sampleBytes": 21957,
-              "scripts": 16,
+              "sampleBytes": 65536,
+              "scripts": 10,
               "sources": 0,
               "videos": 0
             },
@@ -442,57 +887,578 @@
       "probeErrors": {},
       "safeDiagnostics": [],
       "sampleTitles": {
+        "anime": [
+          "Jujutsu Kaisen",
+          "Mushoku Tensei: Jobless Reincarnation",
+          "Failure Frame: I Became the Strongest and Annihilated Everything with Low-Level Spells",
+          "Hell Teacher: Jigoku Sensei Nube",
+          "Tokyo Ghoul",
+          "Attack on Titan",
+          "Demon Slayer: Kimetsu no Yaiba",
+          "Dan Da Dan"
+        ],
         "movie": [
-          "Sinners",
           "Interstellar",
           "Mon ninja et moi 3",
-          "The Colony"
+          "The Colony",
+          "Sinners",
+          "Deadpool",
+          "Inception",
+          "The Dark Knight",
+          "Avatar"
         ],
         "tv": [
           "Breaking Bad",
-          "Revenant"
+          "Revenant",
+          "Cobra Kai",
+          "Stranger Things",
+          "Vikings",
+          "The Boys",
+          "Wednesday",
+          "Pablo Escobar: The Drug Lord"
         ]
       },
       "statuses": {
+        "anime": "no_streams",
         "movie": "no_streams",
         "tv": "no_streams"
+      },
+      "verifiedLanes": []
+    },
+    "hianime": {
+      "contradictions": 0,
+      "debugStages": {
+        "anime": "provider_network_zero_result"
+      },
+      "network": {
+        "anime": [
+          {
+            "host": "api.themoviedb.org",
+            "method": "GET",
+            "path": "/{id}/tv/{id}",
+            "shape": {
+              "keys": [
+                "adult",
+                "backdrop_path",
+                "created_by",
+                "episode_run_time",
+                "first_air_date",
+                "genres",
+                "homepage",
+                "id",
+                "in_production",
+                "languages",
+                "last_air_date",
+                "last_episode_to_air",
+                "name",
+                "next_episode_to_air",
+                "networks",
+                "number_of_episodes"
+              ],
+              "kind": "json",
+              "top": "object"
+            },
+            "status": 200
+          },
+          {
+            "host": "hianime.at",
+            "method": "GET",
+            "path": "/",
+            "shape": {
+              "anchors": 30,
+              "classFacts": [
+                {
+                  "count": 12,
+                  "nestedAnchors": 24,
+                  "selfHref": 10,
+                  "signals": [],
+                  "tags": [
+                    "a",
+                    "div"
+                  ],
+                  "token": "item"
+                },
+                {
+                  "count": 12,
+                  "nestedAnchors": 24,
+                  "selfHref": 0,
+                  "signals": [
+                    "movie",
+                    "series",
+                    "season"
+                  ],
+                  "tags": [
+                    "i",
+                    "span"
+                  ],
+                  "token": "mr-2"
+                },
+                {
+                  "count": 12,
+                  "nestedAnchors": 24,
+                  "selfHref": 0,
+                  "signals": [
+                    "season",
+                    "movie"
+                  ],
+                  "tags": [
+                    "div"
+                  ],
+                  "token": "align-items-center"
+                },
+                {
+                  "count": 12,
+                  "nestedAnchors": 24,
+                  "selfHref": 0,
+                  "signals": [
+                    "season",
+                    "movie"
+                  ],
+                  "tags": [
+                    "div"
+                  ],
+                  "token": "d-flex"
+                },
+                {
+                  "count": 8,
+                  "nestedAnchors": 24,
+                  "selfHref": 0,
+                  "signals": [
+                    "movie",
+                    "series",
+                    "season"
+                  ],
+                  "tags": [
+                    "i"
+                  ],
+                  "token": "fas"
+                },
+                {
+                  "count": 7,
+                  "nestedAnchors": 24,
+                  "selfHref": 0,
+                  "signals": [
+                    "movie",
+                    "download"
+                  ],
+                  "tags": [
+                    "div"
+                  ],
+                  "token": "clearfix"
+                },
+                {
+                  "count": 7,
+                  "nestedAnchors": 24,
+                  "selfHref": 0,
+                  "signals": [
+                    "season",
+                    "movie"
+                  ],
+                  "tags": [
+                    "i",
+                    "div"
+                  ],
+                  "token": "ml-4"
+                },
+                {
+                  "count": 6,
+                  "nestedAnchors": 23,
+                  "selfHref": 0,
+                  "signals": [
+                    "season",
+                    "movie"
+                  ],
+                  "tags": [
+                    "div"
+                  ],
+                  "token": "cn-owner"
+                }
+              ],
+              "classTokens": [
+                "item",
+                "mr-2",
+                "align-items-center",
+                "d-flex",
+                "fas",
+                "clearfix",
+                "ml-4",
+                "cn-owner",
+                "cx-emblem",
+                "cx-name",
+                "d-inline",
+                "dot",
+                "fa-comment",
+                "gi-stats",
+                "gi-top",
+                "item-name"
+              ],
+              "forms": 1,
+              "idTokens": [
+                "action-button",
+                "mw-top",
+                "search-form",
+                "xfooter-about",
+                "xheader",
+                "xheader_browser",
+                "xheader_menu",
+                "xmain-wrapper",
+                "xsearch",
+                "xwrapper"
+              ],
+              "iframes": 0,
+              "kind": "html",
+              "markers": [
+                "json-ld",
+                "download",
+                "episode"
+              ],
+              "sampleBytes": 35088,
+              "scripts": 6,
+              "sources": 0,
+              "videos": 0
+            },
+            "status": 200
+          },
+          {
+            "host": "hianime.at",
+            "method": "GET",
+            "path": "/search",
+            "shape": {
+              "anchors": 99,
+              "classFacts": [
+                {
+                  "count": 12,
+                  "nestedAnchors": 24,
+                  "selfHref": 11,
+                  "signals": [
+                    "movie",
+                    "series"
+                  ],
+                  "tags": [
+                    "a",
+                    "div"
+                  ],
+                  "token": "nav-link"
+                },
+                {
+                  "count": 12,
+                  "nestedAnchors": 24,
+                  "selfHref": 0,
+                  "signals": [
+                    "movie",
+                    "series"
+                  ],
+                  "tags": [
+                    "li"
+                  ],
+                  "token": "nav-item"
+                },
+                {
+                  "count": 12,
+                  "nestedAnchors": 24,
+                  "selfHref": 0,
+                  "signals": [
+                    "movie",
+                    "series"
+                  ],
+                  "tags": [
+                    "i"
+                  ],
+                  "token": "fas"
+                },
+                {
+                  "count": 12,
+                  "nestedAnchors": 24,
+                  "selfHref": 0,
+                  "signals": [
+                    "movie",
+                    "season"
+                  ],
+                  "tags": [
+                    "div"
+                  ],
+                  "token": "clearfix"
+                },
+                {
+                  "count": 10,
+                  "nestedAnchors": 24,
+                  "selfHref": 0,
+                  "signals": [
+                    "movie",
+                    "series"
+                  ],
+                  "tags": [
+                    "i"
+                  ],
+                  "token": "mr-2"
+                },
+                {
+                  "count": 10,
+                  "nestedAnchors": 24,
+                  "selfHref": 0,
+                  "signals": [
+                    "movie",
+                    "series"
+                  ],
+                  "tags": [
+                    "div"
+                  ],
+                  "token": "name"
+                },
+                {
+                  "count": 9,
+                  "nestedAnchors": 24,
+                  "selfHref": 7,
+                  "signals": [
+                    "movie",
+                    "series"
+                  ],
+                  "tags": [
+                    "a",
+                    "div"
+                  ],
+                  "token": "hst-item"
+                },
+                {
+                  "count": 8,
+                  "nestedAnchors": 24,
+                  "selfHref": 7,
+                  "signals": [
+                    "movie"
+                  ],
+                  "tags": [
+                    "div",
+                    "a"
+                  ],
+                  "token": "dropdown-item"
+                }
+              ],
+              "classTokens": [
+                "nav-link",
+                "nav-item",
+                "fas",
+                "clearfix",
+                "mr-2",
+                "name",
+                "hst-item",
+                "dropdown-item",
+                "ni-head",
+                "cmb-item",
+                "custom-select",
+                "hst-icon",
+                "nl-item",
+                "nli-select",
+                "btn",
+                "fab"
+              ],
+              "forms": 2,
+              "idTokens": [
+                "cate-filter",
+                "filter-block",
+                "filter-form",
+                "header",
+                "header_right",
+                "logo",
+                "main-content",
+                "main-wrapper",
+                "mobile_menu",
+                "mobile_search",
+                "pick_menu",
+                "search"
+              ],
+              "iframes": 0,
+              "kind": "html",
+              "markers": [],
+              "sampleBytes": 65536,
+              "scripts": 5,
+              "sources": 0,
+              "videos": 0
+            },
+            "status": 200
+          }
+        ]
+      },
+      "playableLanes": [],
+      "probeErrors": {},
+      "safeDiagnostics": [],
+      "sampleTitles": {
+        "anime": [
+          "Jujutsu Kaisen",
+          "Mushoku Tensei: Jobless Reincarnation",
+          "Failure Frame: I Became the Strongest and Annihilated Everything with Low-Level Spells",
+          "Hell Teacher: Jigoku Sensei Nube",
+          "Demon Slayer: Kimetsu no Yaiba",
+          "Attack on Titan",
+          "High School DxD",
+          "Solo Leveling"
+        ]
+      },
+      "statuses": {
+        "anime": "no_streams"
+      },
+      "verifiedLanes": []
+    },
+    "stigstream": {
+      "contradictions": 0,
+      "debugStages": {
+        "anime": "timeout",
+        "movie": "timeout",
+        "tv": "timeout"
+      },
+      "network": {
+        "anime": [],
+        "movie": [],
+        "tv": []
+      },
+      "playableLanes": [],
+      "probeErrors": {},
+      "safeDiagnostics": [],
+      "sampleTitles": {
+        "anime": [
+          "Jujutsu Kaisen",
+          "Gachiakuta",
+          "Record of Ragnarok",
+          "Maid Sama!",
+          "The Seven Deadly Sins",
+          "MASHLE: MAGIC AND MUSCLES"
+        ],
+        "movie": [
+          "Interstellar",
+          "Avatar: The Way of Water",
+          "Inception",
+          "Mad Max: Fury Road",
+          "Tenet",
+          "The Batman"
+        ],
+        "tv": [
+          "Breaking Bad",
+          "Adolescence",
+          "Game of Thrones",
+          "The Last of Us",
+          "Peaky Blinders",
+          "Stranger Things",
+          "Riverdale"
+        ]
+      },
+      "statuses": {
+        "anime": "timeout",
+        "movie": "timeout",
+        "tv": "timeout"
       },
       "verifiedLanes": []
     }
   },
   "requestedProviders": [
-    "4khdhub"
+    "frenchstream",
+    "hianime",
+    "stigstream"
   ],
   "retainedProviderCount": 0,
   "retainedProviders": [],
-  "runId": "36605262984",
+  "runId": "43854495472",
   "schemaVersion": 3,
-  "selectedProviderCount": 1,
+  "selectedProviderCount": 3,
   "selectedProviders": [
-    "4khdhub"
+    "frenchstream",
+    "hianime",
+    "stigstream"
   ],
   "shardCount": 1,
   "shardIndex": 0,
   "skippedEnvironmentProviders": [
+    "1jour1film0626",
+    "4khdhub",
+    "67movies",
     "allanime",
     "allwish",
+    "anidb",
+    "aniflix-uno",
+    "anime-sama",
     "anime-ultime",
+    "animejlprovider",
+    "animekai",
+    "animeonsen",
     "animesalt",
+    "animesama-co",
     "animesultra",
     "animetsu",
     "animevost-fr",
+    "animevostfr",
+    "arrowtv",
+    "boredflix",
+    "chillflix",
+    "cinegram",
+    "cinemabz",
+    "cinematheque-de-bretagne",
+    "cinetimes",
+    "coflix",
+    "corsflix",
     "desiflix",
+    "documentary-area",
+    "dulourd",
+    "emnexmovies",
+    "fawesome",
+    "fexini",
+    "film-a-revoir",
     "flemmix",
+    "flixer",
+    "flixhq",
+    "franime",
+    "frembed",
+    "french-anime",
+    "fsharetv",
     "fullanime",
+    "hexa",
+    "hindmoviez",
+    "ihavenotv",
+    "kehflix",
+    "kidraz",
+    "kurage",
+    "latestmovies",
     "mallumv",
+    "moiflix",
+    "moviebite",
     "moviebox",
+    "movieshunt",
     "moviesmod",
+    "movish",
+    "movy",
+    "neobam",
+    "neonflix",
+    "overlook",
+    "persianstremio",
+    "playimdb",
+    "primewire",
+    "pstream",
+    "rarefilmm",
+    "reanime-to",
+    "rivestream-app",
+    "rivestream-ru",
     "showbox",
+    "shuttletv",
+    "skstream",
+    "uhdmovies",
+    "videasy",
     "vidfast",
-    "yflix"
+    "vidlink",
+    "vidlove",
+    "vidrock",
+    "voiranime",
+    "voiranime-homes",
+    "voiranime-rip",
+    "voirserie",
+    "vostfree",
+    "vuflix",
+    "watch-cartoon-online",
+    "watchott",
+    "waveanime",
+    "wookafr",
+    "yflix",
+    "youtitou",
+    "zone-telechargement"
   ],
-  "sourceCensusRunId": "36547529107",
-  "triggerSha": "172d48acc15aff23968928269476bd653b652476",
+  "sourceCensusRunId": "43852026874",
+  "triggerSha": "108a508d384f3222915e4332468bd23cd3cc2db0",
   "verifiedProviderCount": 0,
   "verifiedProviders": []
 }
