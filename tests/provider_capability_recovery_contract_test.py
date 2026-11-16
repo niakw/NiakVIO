@@ -47,4 +47,11 @@ for token in ("NIAKVIO_ANIKOTOTV_RUNTIME_V3", "https://arm.haglund.dev/api/v2/tm
 for stale in ("/ajax/anime/search", "/ajax/episode/list/", "/ajax/server/list", "/ajax/server?get="):
     assert stale not in anikoto, stale
 
+anikoto_migration=(ROOT/"scripts/upgrade_provider_v3_batch_routes_v1.py").read_text(encoding="utf-8")
+assert 'ANIKOTOTV = "scripts/provider_patches/anikototv_runtime_v2.py"' in anikoto_migration
+for token in ('/api/v2/tmdb?id={tmdbId}&s={season}&e={episode}', '/stream/{identityKind}/{identityId}/{episode}/{mode}', '/stream/getSources?id={id}'):
+    assert token in anikoto_migration, token
+for stale in ('/search?keyword={query}', '/watch/{slug}', '/ajax/episode/list/{id}', '/ajax/server/list?servers={id}', '/ajax/server?get={id}'):
+    assert stale not in anikoto_migration, stale
+
 print("AnimeVOST-FR, UHDMovies, VidFast, YFlix, AllAnime and AniKotoTV capability contracts passed")
