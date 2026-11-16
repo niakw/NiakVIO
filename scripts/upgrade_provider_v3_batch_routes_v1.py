@@ -18,6 +18,7 @@ MANIFEST = ROOT / "manifest.json"
 DESIFLIX = "scripts/provider_patches/desiflix_runtime_v1.py"
 ALLMOVIELAND = "scripts/provider_patches/allmovieland_runtime_v1.py"
 ANIKOTOTV = "scripts/provider_patches/anikototv_runtime_v2.py"
+ANIKOTOTV_LEGACY = "scripts/provider_patches/anikototv_runtime_v1.py"
 
 
 def _load() -> dict[str, Any]:
@@ -103,6 +104,18 @@ def patch() -> bool:
 
     if "anikototv" in current:
         anikoto = _row(patches, "anikototv")
+        # Runtime V1 is historical knowledge only. Leaving it after V2 makes both
+        # provider-owned Blocs executable in sequence and can reintroduce retired
+        # AJAX/search behavior after the current MegaPlay runtime.
+        scripts = [
+            str(v)
+            for v in anikoto.get("provider_lego_scripts") or []
+            if str(v).strip() and str(v) != ANIKOTOTV_LEGACY
+        ]
+        anikoto["provider_lego_scripts"] = scripts
+        lego_options = anikoto.get("provider_lego_options")
+        if isinstance(lego_options, dict):
+            lego_options.pop(ANIKOTOTV_LEGACY, None)
         anikoto["published_types"] = ["anime"]
         anikoto["learned_routes"] = [
             "/api/v2/tmdb?id={tmdbId}&s={season}&e={episode}",
@@ -178,7 +191,15 @@ def validate() -> None:
             for token in ("/ajax/", "/search", "/watch/")
         ):
             raise AssertionError("anikototv: retired native-site route returned to execution authority")
-        opts = patches["anikototv"].get("provider_lego_options", {}).get(ANIKOTOTV, {})
+        scripts = [str(v) for v in patches["anikototv"].get("provider_lego_scripts") or []]
+        if ANIKOTOTV not in scripts or ANIKOTOTV_LEGACY in scripts:
+            raise AssertionError(f"anikototv: executable runtime authority must be V2-only: {scripts}")
+        if scripts.count(ANIKOTOTV) != 1:
+            raise AssertionError(f"anikototv: Runtime V2 must be unique: {scripts}")
+        opts_map = patches["anikototv"].get("provider_lego_options", {})
+        if ANIKOTOTV_LEGACY in opts_map:
+            raise AssertionError("anikototv: retired Runtime V1 options remain executable authority")
+        opts = opts_map.get(ANIKOTOTV, {})
         if opts != {
             "mapping": "https://arm.haglund.dev/api/v2/tmdb",
             "domain": "megaplay.buzz",
