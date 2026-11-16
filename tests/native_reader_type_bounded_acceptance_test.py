@@ -14,6 +14,7 @@ spec = importlib.util.spec_from_file_location("prepare_native_reader_acceptance"
 mod = importlib.util.module_from_spec(spec)
 assert spec.loader is not None
 spec.loader.exec_module(mod)
+from scripts.current_provider_scope import projection_active_provider_ids
 
 
 def source(client: str) -> str:
@@ -50,26 +51,32 @@ assert fixture_ids == [
 ], fixture_ids
 assert "4khdhubnew" not in fixture_ids
 
-# Canonical acceptance is exhaustive by declared type, not by repeating every
-# provider on every work. A provider is selected once for each type it declares.
-manifest_all = mod.client_prepare.manifest_providers("manifest.json")
-assert len(manifest_all) >= 90, len(manifest_all)
+# Canonical release acceptance is exhaustive over the active Global+France
+# projection union, not the wider visible catalogue. Disabled providers remain
+# repair/diagnostic evidence and must not become release-certification rows.
+native_manifest = "native-hub46/manifest.json"
+manifest_all = mod.client_prepare.manifest_providers(native_manifest)
+manifest_ids = {str(row["id"]).strip().casefold().replace("_", "-") for row in manifest_all}
+assert manifest_ids == projection_active_provider_ids(), (
+    len(manifest_ids), len(projection_active_provider_ids())
+)
+assert manifest_all and all(bool(row.get("enabled")) for row in manifest_all)
 for slug, media_type in (
     ("interstellar", "movie"),
     ("breaking-bad-s01e01", "tv"),
     ("jujutsu-kaisen-s01e01", "anime"),
 ):
-    selected = mod.select_providers("manifest.json", slug, "declared-type")
+    selected = mod.select_providers(native_manifest, slug, "declared-type")
     assert selected, (slug, media_type)
     assert all(media_type in row.get("supportedTypes", []) for row in selected), (slug, media_type)
+    assert all(bool(row.get("enabled")) for row in selected), (slug, "release scope contains disabled provider")
     assert len({str(row["id"]).casefold() for row in selected}) == len(selected)
-    # Disabled providers are still legitimate Learning/acceptance evidence when
-    # they declare the tested type.
-    assert any(not bool(row.get("enabled")) for row in selected), (slug, "disabled coverage")
 
-# The explicit all mode remains available only for manual diagnostics.
+# The explicit all mode remains available for manual diagnostics, including the
+# wider visible Global catalogue when that manifest is explicitly requested.
+visible_all = mod.client_prepare.manifest_providers("manifest.json")
 selected_all = mod.select_providers("manifest.json", "interstellar", "all")
-assert len(selected_all) == len(manifest_all)
+assert len(selected_all) == len(visible_all)
 
 config = json.loads((ROOT / ".github/triggers/nuvio-client-lab.json").read_text(encoding="utf-8"))
 acceptance = config["native_reader_acceptance"]
@@ -80,7 +87,7 @@ assert acceptance["fixture_by_type"] == {
     "tv": "breaking-bad-s01e01",
     "anime": "jujutsu-kaisen-s01e01",
 }
-assert acceptance["include_disabled"] is True
+assert acceptance["include_disabled"] is False
 assert acceptance["publication_requires_fresh_reader_proof"] is True
 assert config["provider_timeout_ms"] == 25000
 assert config["retry_provider_timeouts"] is False
