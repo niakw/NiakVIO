@@ -118,7 +118,8 @@ assert "--status automation/provider-census-sharded-status.json" in workflow
 
 print("provider sharded census authority persistence contract passed")
 
-assert "gh workflow run provider-disabled-lifecycle.yml" in workflow\nassert "gh workflow run provider-brain-autopilot.yml" not in workflow
+assert "gh workflow run provider-disabled-lifecycle.yml" in workflow
+assert "gh workflow run provider-brain-autopilot.yml" not in workflow
 
 
 # Targeted/partial validation must not pay the eight-shard full-census cost.
