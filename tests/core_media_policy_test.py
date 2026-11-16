@@ -37,6 +37,13 @@ assert changed == [], changed
 assert source_changes == [], source_changes
 module.assert_policy(normalized)
 
+for provider_id, row in (normalized.get("provider_patches") or {}).items():
+    if not isinstance(row, dict):
+        continue
+    stream_options = ((row.get("core_options") or {}).get("stream_sanitizer") or {})
+    if isinstance(stream_options, dict) and "max_probes" in stream_options:
+        assert int(stream_options.get("max_probes") or 0) == 40, (provider_id, stream_options)
+
 source = SCRIPT.read_text(encoding="utf-8")
 branding_body = source.split("def _assert_branding_inventory() -> None:", 1)[1].split("\ndef _assert_branding_pipeline_order", 1)[0]
 assert "projection_active_provider_rows()" in branding_body
