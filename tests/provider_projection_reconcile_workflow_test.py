@@ -79,7 +79,9 @@ assert "PROVENANCE.json provider-overrides.json provider-v3-materialization.json
 assert "automation/provider-v3-static-knowledge.json provider-bases/" in wf
 assert "provider-bases/[^/]+" in wf
 assert '"git","diff","--name-only","--","PROVENANCE.json","provider-bases/"' in wf
-assert "ProviderBase durable store changed without provider projection drift" in wf
+assert "from current_provider_scope import projection_active_provider_ids" in wf
+assert 'print("provider_base_forced=true")' in wf
+assert "ProviderBase durable store changed but active projection union is empty" in wf
 assert "automation/provider-v3-static-knowledge.json" in wf
 assert "Reconcile durable static authority at projection fixed point" in wf
 static_fixed=wf.split("- name: Reconcile durable static authority at projection fixed point",1)[1].split("- name: Report projection byte no-op",1)[0]
