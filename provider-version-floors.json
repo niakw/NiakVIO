@@ -135,7 +135,27 @@
     "youtitou": "0.0.0",
     "zinkmovies": "1.0.29",
     "zone-streaming": "0.0.0",
-    "webflix": "1.0.1"
+    "webflix": "1.0.1",
+    "aniflix-uno": "1.0.0",
+    "animejlprovider": "1.0.0",
+    "documentary-area": "1.0.0",
+    "flixhq": "1.0.0",
+    "french-anime": "1.0.0",
+    "fsharetv": "1.0.0",
+    "hexa": "1.0.0",
+    "ihavenotv": "1.0.0",
+    "moiflix": "1.0.0",
+    "moviebite": "1.0.0",
+    "overlook": "1.0.0",
+    "pstream": "1.0.0",
+    "rarefilmm": "1.0.0",
+    "reanime-to": "1.0.0",
+    "rivestream-app": "1.0.0",
+    "rivestream-ru": "1.0.0",
+    "stigstream": "1.0.0",
+    "voirserie": "1.0.0",
+    "watchott": "1.0.0",
+    "zone-telechargement": "1.0.0"
   },
   "historical_backfills": {
     "videasy": {
@@ -144,5 +164,34 @@
       "source_release": "5.21.90",
       "reason": "September 30 production manifest exposed 1.0.118; prevent client-cache version rollback."
     }
-  }
+  },
+  "runtime_visible_backfills": [
+    {
+      "source_commit": "96856a3eada3a776c0c645a170b106db249cf5ca",
+      "source_release": "5.21.146",
+      "providers": [
+        "aniflix-uno",
+        "animejlprovider",
+        "documentary-area",
+        "flixhq",
+        "french-anime",
+        "fsharetv",
+        "hexa",
+        "ihavenotv",
+        "moiflix",
+        "moviebite",
+        "overlook",
+        "pstream",
+        "rarefilmm",
+        "reanime-to",
+        "rivestream-app",
+        "rivestream-ru",
+        "stigstream",
+        "voirserie",
+        "watchott",
+        "zone-telechargement"
+      ],
+      "reason": "Current Global+France runtime-visible providers were already exposed at 1.0.0 without durable version floors; record the highest exposed version before the next byte-changing publication."
+    }
+  ]
 }
