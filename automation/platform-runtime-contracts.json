@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "audited_at": "2026-09-16",
+  "audited_at": "2026-11-16",
   "capability_state_vocabulary": [
     "native",
     "bridge",
@@ -52,10 +52,10 @@
       "external_player_hint_preserved": false,
       "source_repository": "NuvioMedia/NuvioMobile",
       "source_branch": "cmp-rewrite",
-      "source_ref": "68337ffac8578b986d0c3f6e432abf75f4a33521",
+      "source_ref": "04cfe4af95261873412c33791546a53e2b37e786",
       "audit_status": "audited",
-      "audited_at": "2026-09-06",
-      "audit_note": "Re-audited at cmp-rewrite HEAD 68337ffac857. No PluginRuntime, PluginRepository or PluginModels changes since the 3 September provider-contract audit; Android player/download/UI changes are reader-only evidence.",
+      "audited_at": "2026-11-16",
+      "audit_note": "Exact current-source re-audit at NuvioMobile 04cfe4af9526. PluginModels and StreamFetchSupport remain byte-identical to the September audited ABI. PluginRuntime is refactored through HostFunctions/JsBindings but preserves positional getStreams, full result-list mapping, stream/subtitle headers and now exposes TMDB_API_KEY from TmdbSettingsRepository.effectiveApiKey().",
       "platform_source": "composeApp/src/androidFull/kotlin/com/nuvio/app/features/plugins/PluginPlatform.android.kt",
       "runtime_source": "composeApp/src/fullCommonMain/kotlin/com/nuvio/app/features/plugins/runtime/PluginRuntime.kt",
       "repository_source": "composeApp/src/fullCommonMain/kotlin/com/nuvio/app/features/plugins/PluginRepository.kt",
@@ -79,8 +79,8 @@
           "detail": "SCRAPER_SETTINGS injected"
         },
         "tmdb_api_key": {
-          "state": "absent",
-          "detail": "no TMDB_API_KEY runtime global"
+          "state": "bridge",
+          "detail": "HostFunctions __get_tmdb_api_key → TmdbSettingsRepository.effectiveApiKey(); JsBindings assigns globalThis.TMDB_API_KEY with build TmdbConfig fallback"
         },
         "fetch_bridge": {
           "state": "bridge",
@@ -171,8 +171,8 @@
           "detail": "runtime result keeps raw headers; behaviorHints is downstream"
         },
         "media_identity_hydration": {
-          "state": "absent",
-          "detail": "Current official runtime forwards only the positional TMDB id and exposes no host-populated canonical TMDB/IMDb metadata context/cache; identity hydration is a documented client gap."
+          "state": "bridge",
+          "detail": "NiakVIO Core can hydrate its canonical __nuvioTmdbMetadataCacheV1 from the audited runtime TMDB_API_KEY bridge; no key is embedded in published provider bytes and no end-user key is required when the build fallback is configured."
         }
       }
     },
@@ -186,10 +186,10 @@
       "external_player_hint_preserved": false,
       "source_repository": "NuvioMedia/NuvioMobile",
       "source_branch": "cmp-rewrite",
-      "source_ref": "68337ffac8578b986d0c3f6e432abf75f4a33521",
+      "source_ref": "04cfe4af95261873412c33791546a53e2b37e786",
       "audit_status": "audited",
-      "audited_at": "2026-09-06",
-      "audit_note": "Re-audited at cmp-rewrite HEAD 68337ffac857. No PluginRuntime, PluginRepository or PluginModels changes since the 3 September provider-contract audit; iOS player/UI changes are reader-only evidence.",
+      "audited_at": "2026-11-16",
+      "audit_note": "Exact current-source re-audit at NuvioMobile 04cfe4af9526. PluginModels and StreamFetchSupport remain byte-identical to the September audited ABI. PluginRuntime is refactored through HostFunctions/JsBindings but preserves positional getStreams, full result-list mapping, stream/subtitle headers and now exposes TMDB_API_KEY from TmdbSettingsRepository.effectiveApiKey().",
       "platform_source": "composeApp/src/iosFull/kotlin/com/nuvio/app/features/plugins/PluginPlatform.ios.kt",
       "runtime_source": "composeApp/src/fullCommonMain/kotlin/com/nuvio/app/features/plugins/runtime/PluginRuntime.kt",
       "repository_source": "composeApp/src/fullCommonMain/kotlin/com/nuvio/app/features/plugins/PluginRepository.kt",
@@ -213,8 +213,8 @@
           "detail": "SCRAPER_SETTINGS injected"
         },
         "tmdb_api_key": {
-          "state": "absent",
-          "detail": "no TMDB_API_KEY runtime global"
+          "state": "bridge",
+          "detail": "HostFunctions __get_tmdb_api_key → TmdbSettingsRepository.effectiveApiKey(); JsBindings assigns globalThis.TMDB_API_KEY with build TmdbConfig fallback"
         },
         "fetch_bridge": {
           "state": "bridge",
@@ -305,8 +305,8 @@
           "detail": "runtime result keeps raw headers; behaviorHints is downstream"
         },
         "media_identity_hydration": {
-          "state": "absent",
-          "detail": "Current official runtime forwards only the positional TMDB id and exposes no host-populated canonical TMDB/IMDb metadata context/cache; identity hydration is a documented client gap."
+          "state": "bridge",
+          "detail": "NiakVIO Core can hydrate its canonical __nuvioTmdbMetadataCacheV1 from the audited runtime TMDB_API_KEY bridge; no key is embedded in published provider bytes and no end-user key is required when the build fallback is configured."
         }
       }
     },
@@ -322,10 +322,10 @@
       "external_player_hint_preserved": false,
       "source_repository": "NuvioMedia/NuvioDesktop",
       "source_branch": "Dev",
-      "source_ref": "323c1037f3c0fbe0ebe255b77d42331c3fdeb2d7",
+      "source_ref": "913c84787f8d866a2eea69f57813843a68020c49",
       "audit_status": "audited",
-      "audited_at": "2026-09-06",
-      "audit_note": "Re-audited at Dev HEAD 323c1037f3c0. Provider ABI/runtime/fetch projection is unchanged; a separate StreamsRepository/PlayerStreamsRepository readiness-invalidation bug can leave a visible repository with zero app-selected providers until a request-key change forces reload.",
+      "audited_at": "2026-11-16",
+      "audit_note": "Exact current-source re-audit at NuvioDesktop 913c84787f8d. PluginModels and StreamFetchSupport remain byte-identical to the September audited ABI. PluginRuntime is refactored through HostFunctions/JsBindings but preserves positional getStreams, full result-list mapping, stream/subtitle headers and now exposes TMDB_API_KEY from TmdbSettingsRepository.effectiveApiKey(). Native reader/session behavior still requires platform-specific proof.",
       "platform_source": "composeApp/src/desktopMain/kotlin/com/nuvio/app/features/plugins/PluginPlatform.desktop.kt",
       "runtime_source": "composeApp/src/fullCommonMain/kotlin/com/nuvio/app/features/plugins/runtime/PluginRuntime.kt",
       "repository_source": "composeApp/src/fullCommonMain/kotlin/com/nuvio/app/features/plugins/PluginRepository.kt",
@@ -349,8 +349,8 @@
           "detail": "SCRAPER_SETTINGS injected"
         },
         "tmdb_api_key": {
-          "state": "absent",
-          "detail": "no TMDB_API_KEY runtime global"
+          "state": "bridge",
+          "detail": "HostFunctions __get_tmdb_api_key → TmdbSettingsRepository.effectiveApiKey(); JsBindings assigns globalThis.TMDB_API_KEY with build TmdbConfig fallback"
         },
         "fetch_bridge": {
           "state": "bridge",
@@ -441,8 +441,8 @@
           "detail": "runtime result keeps raw headers; behaviorHints is downstream"
         },
         "media_identity_hydration": {
-          "state": "absent",
-          "detail": "Current official runtime forwards only the positional TMDB id and exposes no host-populated canonical TMDB/IMDb metadata context/cache; identity hydration is a documented client gap."
+          "state": "bridge",
+          "detail": "NiakVIO Core can hydrate its canonical __nuvioTmdbMetadataCacheV1 from the audited runtime TMDB_API_KEY bridge; no key is embedded in published provider bytes and no end-user key is required when the build fallback is configured."
         }
       },
       "stream_session_teardown_guaranteed": false,
@@ -460,10 +460,10 @@
       "external_player_hint_preserved": false,
       "source_repository": "NuvioMedia/NuvioDesktop",
       "source_branch": "Dev",
-      "source_ref": "323c1037f3c0fbe0ebe255b77d42331c3fdeb2d7",
+      "source_ref": "913c84787f8d866a2eea69f57813843a68020c49",
       "audit_status": "audited",
-      "audited_at": "2026-09-06",
-      "audit_note": "Re-audited at Dev HEAD 323c1037f3c0. Provider ABI/runtime/fetch projection is unchanged; a separate StreamsRepository/PlayerStreamsRepository readiness-invalidation bug can leave a visible repository with zero app-selected providers until a request-key change forces reload.",
+      "audited_at": "2026-11-16",
+      "audit_note": "Exact current-source re-audit at NuvioDesktop 913c84787f8d. PluginModels and StreamFetchSupport remain byte-identical to the September audited ABI. PluginRuntime is refactored through HostFunctions/JsBindings but preserves positional getStreams, full result-list mapping, stream/subtitle headers and now exposes TMDB_API_KEY from TmdbSettingsRepository.effectiveApiKey(). Native reader/session behavior still requires platform-specific proof.",
       "platform_source": "composeApp/src/desktopMain/kotlin/com/nuvio/app/features/plugins/PluginPlatform.desktop.kt",
       "runtime_source": "composeApp/src/fullCommonMain/kotlin/com/nuvio/app/features/plugins/runtime/PluginRuntime.kt",
       "repository_source": "composeApp/src/fullCommonMain/kotlin/com/nuvio/app/features/plugins/PluginRepository.kt",
@@ -487,8 +487,8 @@
           "detail": "SCRAPER_SETTINGS injected"
         },
         "tmdb_api_key": {
-          "state": "absent",
-          "detail": "no TMDB_API_KEY runtime global"
+          "state": "bridge",
+          "detail": "HostFunctions __get_tmdb_api_key → TmdbSettingsRepository.effectiveApiKey(); JsBindings assigns globalThis.TMDB_API_KEY with build TmdbConfig fallback"
         },
         "fetch_bridge": {
           "state": "bridge",
@@ -579,8 +579,8 @@
           "detail": "runtime result keeps raw headers; behaviorHints is downstream"
         },
         "media_identity_hydration": {
-          "state": "absent",
-          "detail": "Current official runtime forwards only the positional TMDB id and exposes no host-populated canonical TMDB/IMDb metadata context/cache; identity hydration is a documented client gap."
+          "state": "bridge",
+          "detail": "NiakVIO Core can hydrate its canonical __nuvioTmdbMetadataCacheV1 from the audited runtime TMDB_API_KEY bridge; no key is embedded in published provider bytes and no end-user key is required when the build fallback is configured."
         }
       },
       "stream_session_teardown_guaranteed": false,
@@ -598,10 +598,10 @@
       "external_player_hint_preserved": false,
       "source_repository": "NuvioMedia/NuvioDesktop",
       "source_branch": "Dev",
-      "source_ref": "323c1037f3c0fbe0ebe255b77d42331c3fdeb2d7",
+      "source_ref": "913c84787f8d866a2eea69f57813843a68020c49",
       "audit_status": "audited",
-      "audited_at": "2026-09-06",
-      "audit_note": "Re-audited at Dev HEAD 323c1037f3c0. Provider ABI/runtime/fetch projection is unchanged; Linux shares the desktop provider runtime but remains outside the five mandatory native release Labs.",
+      "audited_at": "2026-11-16",
+      "audit_note": "Exact current-source re-audit at NuvioDesktop 913c84787f8d. PluginModels and StreamFetchSupport remain byte-identical to the September audited ABI. PluginRuntime is refactored through HostFunctions/JsBindings but preserves positional getStreams, full result-list mapping, stream/subtitle headers and now exposes TMDB_API_KEY from TmdbSettingsRepository.effectiveApiKey(). Native reader/session behavior still requires platform-specific proof.",
       "platform_source": "composeApp/src/desktopMain/kotlin/com/nuvio/app/features/plugins/PluginPlatform.desktop.kt",
       "runtime_source": "composeApp/src/fullCommonMain/kotlin/com/nuvio/app/features/plugins/runtime/PluginRuntime.kt",
       "repository_source": "composeApp/src/fullCommonMain/kotlin/com/nuvio/app/features/plugins/PluginRepository.kt",
@@ -625,8 +625,8 @@
           "detail": "SCRAPER_SETTINGS injected"
         },
         "tmdb_api_key": {
-          "state": "absent",
-          "detail": "no TMDB_API_KEY runtime global"
+          "state": "bridge",
+          "detail": "HostFunctions __get_tmdb_api_key → TmdbSettingsRepository.effectiveApiKey(); JsBindings assigns globalThis.TMDB_API_KEY with build TmdbConfig fallback"
         },
         "fetch_bridge": {
           "state": "bridge",
@@ -717,8 +717,8 @@
           "detail": "runtime result keeps raw headers; behaviorHints is downstream"
         },
         "media_identity_hydration": {
-          "state": "absent",
-          "detail": "Current official runtime forwards only the positional TMDB id and exposes no host-populated canonical TMDB/IMDb metadata context/cache; identity hydration is a documented client gap."
+          "state": "bridge",
+          "detail": "NiakVIO Core can hydrate its canonical __nuvioTmdbMetadataCacheV1 from the audited runtime TMDB_API_KEY bridge; no key is embedded in published provider bytes and no end-user key is required when the build fallback is configured."
         }
       },
       "stream_session_teardown_guaranteed": false,
@@ -735,10 +735,10 @@
       "external_player_hint_preserved": false,
       "source_repository": "NuvioMedia/NuvioTV",
       "source_branch": "dev",
-      "source_ref": "23d1fe478e380860dae3eb41c8770533361a0cc5",
+      "source_ref": "60eb9602a4276b7e98ea04381626e22cc82de0ed",
       "audit_status": "audited",
-      "audited_at": "2026-09-06",
-      "audit_note": "Re-audited at dev HEAD 23d1fe478e38 / 0.9.0-beta. Positional getStreams and network/runtime globals remain stable. Subtitle projection changed additively: subtitle-specific headers are now part of the TV result model and must survive NiakVIO projection; fresh Android-TV runtime re-proof remains required.",
+      "audited_at": "2026-11-16",
+      "audit_note": "Exact current-source re-audit at NuvioTV 60eb9602a427. Positional getStreams, BuildConfig TMDB_API_KEY injection, stream/subtitle header preservation and the QuickJS runtime contract remain. Native fetch adds explicit body-kind/redirect handling and result projection adds audioDelayMs/audioDelayLanguage without breaking the shared provider ABI.",
       "platform_source": "app/src/full/java/com/nuvio/tv/core/plugin/PluginRuntime.kt",
       "runtime_source": "app/src/full/java/com/nuvio/tv/core/plugin/PluginRuntime.kt",
       "repository_source": "app/src/full/java/com/nuvio/tv/core/plugin/PluginManager.kt",
@@ -855,7 +855,7 @@
         },
         "media_identity_hydration": {
           "state": "bridge",
-          "detail": "Equivalent Core hydration available through the audited TV TMDB runtime bridge; Core can resolve TMDB metadata/external_ids and derive IMDb without a user-supplied key."
+          "detail": "NiakVIO Core can hydrate its canonical __nuvioTmdbMetadataCacheV1 from the audited TV runtime TMDB_API_KEY; no key is embedded in published provider bytes."
         }
       },
       "stream_session_teardown_guaranteed": false,
@@ -889,7 +889,7 @@
     "cache_population_timing": "after provider/Core bundle initialization and before getStreams invocation when supplied by the host",
     "user_tmdb_credential_required": false,
     "secret_projection_to_provider_javascript": false,
-    "rule": "Preserve TMDB and IMDb identity as one media identity contract. A client may provide equivalent hydration through a host metadata bridge or an audited runtime metadata capability, but must not require an end-user TMDB credential."
+    "rule": "Preserve TMDB and IMDb as one media identity contract. Current official clients may expose an audited runtime TMDB key capability that lets NiakVIO Core hydrate its own canonical metadata cache; the credential must never be embedded in published provider bytes, and an end-user credential must not be required when the official build supplies its fallback."
   },
   "observed_native_differences": {
     "evidence_date": "2026-09-16",
