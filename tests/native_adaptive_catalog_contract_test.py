@@ -35,6 +35,9 @@ assert "FIELD_NATIVE_IOS_CATALOG_MISS" in ios_prepare
 assert "terminalProviders" in ios_prepare
 assert "rotated_candidates" in ios_prepare
 assert "fixed_batch=false" in ios_prepare
+assert "mandatory_fixture_rows" in ios_prepare
+assert "mandatoryRegression" in ios_prepare
+assert "fixture.mandatoryRegression || key !in terminalProviders" in ios_prepare
 
 ios_runner = (ROOT / "scripts/run_native_corpus_ios_suite.sh").read_text(encoding="utf-8")
 assert "native-hub46/manifest.json" in ios_runner
