@@ -414,7 +414,7 @@ jobs:
                 [ -z "$changed_path" ] && continue
                 neutral_paths+=("$changed_path")
                 case "$changed_path" in
-                  .github/triggers/provider-fast-repair.json) ;;
+                  .github/triggers/provider-fast-repair.json|MEMORY.md) ;;
                   *) neutral_drift=false ;;
                 esac
               done < <(git diff --name-only "$source_sha" "$remote_main")

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "requestedAt": "2026-11-16T12:04:00+01:00",
+  "requestedAt": "2026-11-16T12:07:00+01:00",
   "sourceCensusRunId": "43852026874",
   "targetProviders": [
     "frenchstream",
@@ -8,6 +8,6 @@
     "stigstream"
   ],
   "diagnosticOnly": true,
-  "reason": "Retry current-epoch targeted probes after hardening evidence persistence against neutral concurrent Fast-Repair trigger commits. Neutral rebase is allowed only when source is an ancestor, census runId is unchanged and every intervening path is the Fast-Repair trigger; provider/runtime/evidence drift remains fail-closed.",
-  "retry": 4
+  "reason": "Replay current-epoch targeted probes with neutral-drift persistence hardened for the only observed non-executable concurrent paths: Fast-Repair trigger metadata and MEMORY.md. Same-census/ancestor constraints remain mandatory; any provider/runtime/workflow/census change still fails closed.",
+  "retry": 5
 }

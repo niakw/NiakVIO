@@ -24,7 +24,7 @@ for needle in [
     "FIELD_TARGETED_RECOVERY_STALE_NOT_PERSISTED",
     "FIELD_TARGETED_RECOVERY_NEUTRAL_DRIFT_REBASE",
     'git merge-base --is-ancestor "$source_sha" "$remote_main"',
-    '.github/triggers/provider-fast-repair.json) ;;',
+    '.github/triggers/provider-fast-repair.json|MEMORY.md) ;;',
     'source_census="$(python -c',
     'remote_census="$(git show "$remote_main:automation/provider-census-status.json"',
     '".github/triggers/provider-targeted-recovery.json"',

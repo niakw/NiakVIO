@@ -1,3 +1,8 @@
+## 2026-11-16 — Targeted neutral-drift allowlist includes documentation-only MEMORY updates
+
+- A second concurrent main advance, `634a2391c5a7df577ca8e25c4c99607feccbdd06`, changed only `MEMORY.md` after the Fast trigger update. Targeted Recovery does not execute or derive provider authority from `MEMORY.md`, so discarding a same-census provider probe solely for that documentation commit is unnecessary.
+- The neutral rebase allowlist is therefore still deliberately tiny: only `.github/triggers/provider-fast-repair.json` and `MEMORY.md`. Source ancestry and exact census-run equality remain mandatory. Provider manifests/catalogs/bytes, overrides, runtime scripts, workflows, evidence files and census changes are not neutral.
+
 ## 2026-11-16 — Targeted evidence persistence tolerates only proven neutral Fast-trigger races
 
 - Targeted Recovery run `43853507438` on `fcc23415fb7483bdfabff1b69da619b9098456ef` successfully rematerialized and probed all three representatives after the France-only projection fix: `providers=3 verified=0`, and transport merge updated all three rows. Its persistence was nevertheless discarded because main advanced to `43d783ef07170b3b2ec7cd11adc20591ccddb42c` during the 90-second probe.
