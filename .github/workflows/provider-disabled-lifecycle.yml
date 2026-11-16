@@ -154,6 +154,7 @@ jobs:
           git diff --check
 
       - name: Commit lifecycle transition if needed
+        id: commit
         env:
           GH_TOKEN: ${{ github.token }}
         shell: bash
@@ -169,6 +170,7 @@ jobs:
             provider-overrides.json provider-hubs.json providers provider-disabled provider-bases provider-old
           if git diff --cached --quiet; then
             echo PROVIDER_LIFECYCLE_NO_CHANGE
+            echo "changed=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
           git diff --cached --check
@@ -179,14 +181,30 @@ jobs:
           remote_sha="$(git rev-parse "origin/${{ github.ref_name }}")"
           if [ "$remote_sha" != "$transition_base" ]; then
             echo "FIELD_PROVIDER_LIFECYCLE_SUPERSEDED base=$transition_base remote=$remote_sha"
+            echo "changed=superseded" >> "$GITHUB_OUTPUT"
             gh workflow run provider-disabled-lifecycle.yml \
               --repo "$GITHUB_REPOSITORY" \
               --ref "${{ github.ref_name }}"
             exit 0
           fi
           git push origin HEAD:${{ github.ref_name }}
+          echo "changed=true" >> "$GITHUB_OUTPUT"
           gh workflow run release-finalize.yml \
             --repo "$GITHUB_REPOSITORY" \
             --ref "${{ github.ref_name }}" \
-            -f expected_sha="$transition_sha"
-          echo "FIELD_PROVIDER_LIFECYCLE_RELEASE_FINALIZE_DISPATCH sha=$transition_sha"
+            -f expected_sha="$transition_sha" \
+            -f post_census=true
+          echo "FIELD_PROVIDER_LIFECYCLE_RELEASE_FINALIZE_DISPATCH sha=$transition_sha post_census=true"
+
+      - name: Continue Brain Autopilot after stable no-op lifecycle
+        if: ${{ steps.commit.outputs.changed == 'false' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh workflow run provider-brain-autopilot.yml \
+            --repo "$GITHUB_REPOSITORY" \
+            --ref "${{ github.ref_name }}" \
+            -f dry_run=false
+          echo "FIELD_PROVIDER_LIFECYCLE_AUTOPILOT stable_catalogue=true source_run=${GITHUB_RUN_ID} dispatched=true"
