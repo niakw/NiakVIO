@@ -14,6 +14,8 @@ from current_provider_scope import projection_runtime_visible_provider_count  # 
 WORKFLOW = ROOT / ".github/workflows/provider-v3-reconstruct-all.yml"
 ENTRY = ROOT / "scripts/enrich_provider_v3_static_knowledge.py"
 LOCAL = ROOT / "scripts/provider_contract_local_enricher.py"
+RECOGNIZER = ROOT / "scripts/provider_contract_recognizer.py"
+PROMOTER = ROOT / "scripts/promote_provider_v3_static_knowledge.py"
 ROUTES = ROOT / "scripts/provider_route_reconstructor.py"
 SEEDS = ROOT / "automation/provider-v3-recognition-seeds.json"
 KNOWLEDGE = ROOT / "automation/provider-v3-static-knowledge.json"
@@ -21,6 +23,8 @@ KNOWLEDGE = ROOT / "automation/provider-v3-static-knowledge.json"
 workflow = WORKFLOW.read_text(encoding="utf-8")
 entry = ENTRY.read_text(encoding="utf-8")
 local = LOCAL.read_text(encoding="utf-8")
+recognizer = RECOGNIZER.read_text(encoding="utf-8")
+promoter = PROMOTER.read_text(encoding="utf-8")
 route_reconstructor = ROUTES.read_text(encoding="utf-8")
 seeds = json.loads(SEEDS.read_text(encoding="utf-8"))
 knowledge = json.loads(KNOWLEDGE.read_text(encoding="utf-8"))
@@ -59,6 +63,15 @@ for source_name, source in (("local", local), ("routes", route_reconstructor)):
     ):
         assert not re.search(pattern, source, re.M), f"{source_name} recognition regained network capability: {pattern}"
     assert "raw.githubusercontent.com" not in source
+
+# Static knowledge is canonical Global+France runtime-visible authority, not the
+# root Global active subset. This must stay aligned across producer + consumers.
+for source_name, source in (("local", local), ("recognizer", recognizer)):
+    assert "projection_runtime_visible_provider_count" in source, source_name
+    assert "EXPECTED = active_provider_count()" not in source, source_name
+assert "projection_runtime_visible_provider_rows" in promoter
+assert "projection_runtime_visible_provider_count" in promoter
+assert 'MANIFEST = ROOT / "manifest.json"' not in promoter
 
 assert "externalRepositories=0" in local
 assert 'model["routeData"]' in route_reconstructor
