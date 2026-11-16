@@ -266,7 +266,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **kwargs: Any) -> st
     re=/https?:\/\/[^\s"'<>\\]+/gi;
     while((match=re.exec(value))!==null)push(match[0],false);
     rows.sort(function(a,b){return a.direct-b.direct});
-    return rows.slice(0,2).map(function(row){return row.url});
+    return rows.slice(0,16).map(function(row){return row.url});
   }
 '''
     if helpers not in patched:
@@ -346,7 +346,14 @@ def apply(text: str, options: dict[str, Any] | None = None, **kwargs: Any) -> st
     # actual Nuvio reader use the same request contract.
     legacy_loop = "        var stream=result[i],url=urlOf(stream);\n"
     fail_closed_loop = "        var stream=rows[i],url=urlOf(stream);\n"
-    if legacy_loop in patched:
+    playback_identity_loop = "        var stream=rows[i],url=urlOf(stream),identity=playbackKey(stream,url);\n"
+    if playback_identity_loop in patched:
+        patched = patched.replace(
+            playback_identity_loop,
+            "        var stream=rows[i];syncPlaybackHeaders(stream);var url=urlOf(stream),identity=playbackKey(stream,url);\n",
+            1,
+        )
+    elif legacy_loop in patched:
         patched = patched.replace(
             legacy_loop,
             "        var stream=result[i];syncPlaybackHeaders(stream);var url=urlOf(stream);\n",
