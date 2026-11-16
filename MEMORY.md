@@ -1,3 +1,9 @@
+## 2026-11-16 — Domain Refresh Nuvio bypass is explicitly transaction-scoped
+
+- After removing the release-finalizer-wide Nuvio upstream bypass, the remaining `NUVIO_SKIP_CLIENT_UPSTREAM_GUARD=1` in Domain Refresh was audited separately. It is intentionally local to the step that calls `sync_release_versions.py`: Domain Refresh owns provider address authority only and must not auto-accept a newly advanced Nuvio client head while publishing an unrelated domain rotation.
+- Commit `565216fe` strengthens `tests/domain_refresh_workflow_test.py`: exactly one client-head bypass is allowed in the Domain Refresh workflow, it must live inside `Reproject, pin Hub46 transport and validate release`, and no earlier Domain Refresh step may inherit it. The canonical release finalizer remains forbidden from using the bypass.
+- This preserves the ownership split: full release certification must prove current official Nuvio heads; Domain Refresh must keep pinned audited client ABI unchanged while mutating only authorized provider-domain state. No provider playback/proof status changes.
+
 ## 2026-11-16 — Release freshness regression test syntax repaired before replay
 
 - Exact-head Workflow Gate run `43975309456` correctly failed in the repository Python syntax pass because the newly added release-freshness assertion in `tests/release_finalizer_projection_transaction_test.py` contained a literal `\\n` token at end of the Python statement.
