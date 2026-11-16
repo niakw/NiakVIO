@@ -106,6 +106,11 @@ def main() -> int:
         type=Path,
         help="Optional JSON file containing target ids under a 'targets' array.",
     )
+    parser.add_argument(
+        "--projection-union",
+        action="store_true",
+        help="Stage every active Global + France-only provider instead of the legacy Global-only default.",
+    )
     args = parser.parse_args()
 
     manifest = json.loads(MANIFEST_PATH.read_text(encoding="utf-8"))
@@ -127,15 +132,20 @@ def main() -> int:
 
     candidates: list[dict[str, Any]] = []
     excluded: list[dict[str, str]] = []
-    entries = (
-        targeted_projection_entries(
+    if included_ids is not None:
+        entries = targeted_projection_entries(
             included_ids,
             manifest_path=MANIFEST_PATH,
             france_manifest_path=ROOT / "vf" / "manifest.json",
         )
-        if included_ids is not None
-        else [row for row in manifest.get("scrapers", []) if isinstance(row, dict)]
-    )
+    elif args.projection_union:
+        entries = [
+            row
+            for row in projection_rows(MANIFEST_PATH, ROOT / "vf" / "manifest.json").values()
+            if isinstance(row, dict) and row.get("enabled") is not False
+        ]
+    else:
+        entries = [row for row in manifest.get("scrapers", []) if isinstance(row, dict)]
     for entry in entries:
         if not isinstance(entry, dict) or not entry.get("id") or not entry.get("filename"):
             continue
@@ -191,7 +201,7 @@ def main() -> int:
         json.dumps(registry, ensure_ascii=False, indent=2) + "\n",
         encoding="utf-8",
     )
-    scope = "targeted" if included_ids is not None else "all published"
+    scope = "targeted" if included_ids is not None else ("projection-union" if args.projection_union else "all published")
     print(f"Staged {len(candidates)} {scope} providers; excluded {len(excluded)} P2P/torrent entries.")
     return 0 if candidates or included_ids is not None else 1
 
