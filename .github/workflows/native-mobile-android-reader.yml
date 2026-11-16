@@ -20,7 +20,6 @@ concurrency:
 env:
   NIAKVIO_SKIP_ANDROID_PREBUILD: "1"
   NIAKVIO_ANDROID_PROVIDER_TIMEOUT_MS: "25000"
-  NIAKVIO_PROVIDER_SCOPE_MATRIX: automation/evidence/hub-lab-matrix-46.json
 
 jobs:
   resolve_tv:
@@ -193,7 +192,7 @@ jobs:
           emulator-boot-timeout: 600
           emulator-options: ${{ steps.avd-cache.outputs.cache-hit == 'true' && '-no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim' || '-no-snapshot-load -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim' }}
           script: bash "$GITHUB_WORKSPACE/niakvio/scripts/run_native_corpus_tv_suite.sh"
-      - name: Verify exhaustive TV Hub-46 provider matrix
+      - name: Verify exhaustive TV projection-union provider matrix
         shell: bash
         run: |
           set -euo pipefail
@@ -201,7 +200,6 @@ jobs:
             --client tv \
             --manifest niakvio/manifest.json \
             --corpus niakvio/.github/triggers/nuvio-client-lab.json \
-            --scope-matrix niakvio/automation/evidence/hub-lab-matrix-46.json \
             "$GITHUB_WORKSPACE"/tv-native-corpus-*.log
       - name: Diagnose complete TV evidence
         if: always()
@@ -312,7 +310,7 @@ jobs:
           emulator-boot-timeout: 600
           emulator-options: ${{ steps.avd-cache.outputs.cache-hit == 'true' && '-no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim' || '-no-snapshot-load -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim' }}
           script: bash "$GITHUB_WORKSPACE/niakvio/scripts/run_native_corpus_mobile_suite.sh"
-      - name: Verify exhaustive Mobile Android Hub-46 provider matrix
+      - name: Verify exhaustive Mobile Android projection-union provider matrix
         shell: bash
         run: |
           set -euo pipefail
@@ -320,7 +318,6 @@ jobs:
             --client mobile \
             --manifest niakvio/manifest.json \
             --corpus niakvio/.github/triggers/nuvio-client-lab.json \
-            --scope-matrix niakvio/automation/evidence/hub-lab-matrix-46.json \
             "$GITHUB_WORKSPACE"/mobile-native-corpus-*.log
       - name: Diagnose complete Mobile Android evidence
         if: always()
