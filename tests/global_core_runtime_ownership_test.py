@@ -28,6 +28,7 @@ REQUIRED_GLOBAL_CORE_IDS = (
     "CORE.STREAM_IDENTITY.V1",
     "CORE.MEDIA_TYPE_RESOLUTION.V1",
     "CORE.STREAM_PRESENTATION.V1",
+    "CORE.PROVIDER_BRANDING.V1",
     "CORE.STREAM_SANITIZER.V6",
     "CORE.RUNTIME_MEDIA_SAFETY.V4",
     "CORE.STREAM_SCORE.V1",
@@ -48,6 +49,7 @@ assert 'GLOBAL_RUNTIME_COMPAT = "scripts/provider_patches/global_runtime_compat_
 assert 'GLOBAL_DESKTOP_RUNTIME_COMPAT = "scripts/provider_patches/desktop_runtime_compat_v1.py"' in APPLY
 assert 'GLOBAL_STREAM_SANITIZER = "scripts/provider_patches/stream_output_sanitizer_v10.py"' in APPLY
 assert 'GLOBAL_STREAM_SCORE = "scripts/provider_patches/global_stream_score_v1.py"' in APPLY
+assert 'GLOBAL_PROVIDER_BRANDING = "scripts/provider_patches/global_provider_branding_v1.py"' in APPLY
 assert 'GLOBAL_TELEMETRY = "scripts/provider_patches/global_telemetry_v1.py"' in APPLY
 assert 'GLOBAL_RUNTIME_MEDIA_SAFETY = "scripts/provider_patches/runtime_capability_media_safety_v4.py"' in APPLY
 assert "provider_patches.{provider_id}.patch_scripts contains Core-global modules" in APPLY
@@ -141,6 +143,7 @@ for row in rows:
         "CORE.STREAM_PRESENTATION.V1",
         "CORE.STREAM_SANITIZER.V6",
         "CORE.RUNTIME_MEDIA_SAFETY.V4",
+        "CORE.PROVIDER_BRANDING.V1",
         "CORE.STREAM_SCORE.V1",
         "CORE.TELEMETRY.V1",
     )
@@ -149,4 +152,4 @@ for row in rows:
         [(key, positions[key]) for key in ordered],
     )
 
-print(f"GLOBAL_CORE_RUNTIME_OWNERSHIP_OK providers={len(rows)} scope=Global+France required_core={len(REQUIRED_GLOBAL_CORE_IDS)} timers=core 403=core facts=core identity=core hls=core presentation=core sanitizer_v10=network-evidence stream_score=core telemetry=core provider_specific_runtime_hacks=forbidden")
+print(f"GLOBAL_CORE_RUNTIME_OWNERSHIP_OK providers={len(rows)} scope=Global+France required_core={len(REQUIRED_GLOBAL_CORE_IDS)} timers=core 403=core facts=core identity=core hls=core presentation=core branding=core sanitizer_v10=network-evidence stream_score=core telemetry=core provider_specific_runtime_hacks=forbidden")
