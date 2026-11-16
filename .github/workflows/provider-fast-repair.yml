@@ -510,8 +510,13 @@ jobs:
                  provider-v3-quick-yield.json \
                  .github/workflows/provider-fast-repair.yml \
                  .github/triggers/provider-fast-repair.json; then
-              old_census="$(git show "$GITHUB_SHA:automation/provider-census-status.json" 2>/dev/null | jq -c '{repairQueue:(.repairQueue // [] | sort), statuses:(.providers // [] | map({provider,status}) | sort_by(.provider))}' || true)"
-              new_census="$(git show "$remote_main:automation/provider-census-status.json" 2>/dev/null | jq -c '{repairQueue:(.repairQueue // [] | sort), statuses:(.providers // [] | map({provider,status}) | sort_by(.provider))}' || true)"
+              # Compare the bounded causal census surface, not only the display
+              # status. Targeted recovery may deepen provider-owned evidence
+              # without changing NO PROOF/CHAIN REACHED, and that must requeue
+              # Brain rather than being mistaken for metadata-only drift.
+              causal_census_jq='{repairQueue:(.repairQueue // [] | sort), providers:(.providers // [] | map({provider,status,latestLaneVerdicts:(.latestLaneVerdicts // []),evidenceDepth:(.evidenceDepth // []),harnessTransportClass:(.harnessTransportClass // ""),brainCheckRequired:(.brainCheckRequired // false),repairEligible:(.repairEligible // false),authorityAction:(.authorityAction // ""),authorityClass:(.authorityClass // ""),targetedTransportClass:(.targetedTransportClass // ""),targetedTransportEvidence:(.targetedTransportEvidence // [])}) | sort_by(.provider))}'
+              old_census="$(git show "$GITHUB_SHA:automation/provider-census-status.json" 2>/dev/null | jq -c "$causal_census_jq" || true)"
+              new_census="$(git show "$remote_main:automation/provider-census-status.json" 2>/dev/null | jq -c "$causal_census_jq" || true)"
               if [ -n "$old_census" ] && [ "$old_census" = "$new_census" ]; then
                 echo "FIELD_PROVIDER_FAST_REPAIR_REQUEUE skipped=no_executable_or_causal_evidence_drift source=$GITHUB_SHA remote=$remote_main learning_dispatched=true"
                 exit 0
