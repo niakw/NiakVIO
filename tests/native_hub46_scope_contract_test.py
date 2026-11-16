@@ -87,10 +87,15 @@ for workflow in workflow_paths:
     assert "NIAKVIO_PROVIDER_SCOPE_MATRIX: automation/evidence/hub-lab-matrix-46.json" in text, workflow
     assert "--scope-matrix" in text, workflow
     assert "automation/evidence/hub-lab-matrix-46.json" in text, workflow
+    assert "native-hub46/manifest.json" in text, workflow
     assert legacy_fixed_trio not in text, workflow
+
+android_workflow = workflow_paths[1].read_text(encoding="utf-8")
+assert "--manifest manifest.json" not in android_workflow
+assert "NIAKVIO_TARGET_MANIFEST: manifest.json" not in android_workflow
 
 assert "rotating_corpus.py" in workflow_paths[0].read_text(encoding="utf-8")
 assert "FIELD_ROTATING_CORPUS client=tv" in workflow_paths[1].read_text(encoding="utf-8")
 assert "FIELD_ROTATING_CORPUS client=mobile" in workflow_paths[1].read_text(encoding="utf-8")
 
-print(f"native active-scope rotating execution contract tests passed: providers={declared} workflows=3")
+print(f"native projection-union rotating execution contract tests passed: current={len(current_ids)} historical_matrix={declared} workflows=3")
