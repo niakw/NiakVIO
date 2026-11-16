@@ -249,9 +249,12 @@ assert machine["provider_scopes"]["native_acceptance_includes_france_only"] is T
 assert machine["provider_scopes"]["availability_active"] == "scripts/current_provider_scope.py:projection_active_provider_ids"
 assert machine["provider_scopes"]["availability_report_visible"] == "scripts/current_provider_scope.py:projection_visible_provider_ids"
 
-assert validation_machine["schema_version"] >= 71
+assert validation_machine["schema_version"] >= 72
 runtime_contract = validation_machine["nuvio_runtime_contract"]
 assert runtime_contract["current_audited_refs_must_match"] is True
+assert runtime_contract["official_head_freshness_required_before_release"] is True
+assert runtime_contract["upstream_head_gate"] == "scripts/check_nuvio_client_upstreams.py"
+assert runtime_contract["network_verification_inconclusive_blocks_release"] is True
 assert runtime_contract["positional_get_streams_signature"] == "getStreams(tmdbId, mediaType, season, episode)"
 assert runtime_contract["runtime_tmdb_capability_required"] is True
 assert runtime_contract["credential_embedding_in_provider_bytes_allowed"] is False
@@ -272,6 +275,9 @@ machine_runtime = machine["nuvio_runtime_contract"]
 assert machine_runtime["provider_call_signature"] == "getStreams(tmdbId, mediaType, season, episode)"
 assert machine_runtime["historical_platform_matrix_authority"] is False
 assert machine_runtime["native_labs_use_latest_official_head"] is True
+assert machine_runtime["release_upstream_head_gate"] == "scripts/check_nuvio_client_upstreams.py"
+assert machine_runtime["release_requires_current_official_heads"] is True
+assert machine_runtime["network_verification_inconclusive_blocks_release"] is True
 assert machine_runtime["native_proof_transitive_between_clients"] is False
 assert machine_runtime["france_only_projection_authority"] == "provider_catalog.json projections general=false,vf=true"
 assert validation_machine["release_authority"] == "manifest.json:version"
