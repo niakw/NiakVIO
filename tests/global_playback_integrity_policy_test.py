@@ -47,6 +47,10 @@ assert policy.get("native_hls_probe_policy") == "bounded_native_hls_playlist_seg
 assert policy.get("post_media_discovery_hooks") == [
     "scripts/provider_patches/hls_runtime_integrity_v1.py",
 ]
+terminal = policy.get("terminal_stream_sanitizer") or {}
+assert terminal.get("patch") == "scripts/provider_patches/stream_output_sanitizer_v10.py", terminal
+terminal_options = terminal.get("options") or {}
+assert int(terminal_options.get("max_probes") or 0) == 40, terminal_options
 hls_global = policy.get("hls_runtime_options") or {}
 assert hls_global.get("inspect_master_facts") is True, hls_global
 assert hls_global.get("drop_unprobed_hls_after_budget") is True, hls_global
