@@ -1,5 +1,5 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "policy": {
     "shared_bundle_rule": "A Brain/Core provider mutation must be compatible with every supported official Nuvio client generation because the published provider bundle is shared across clients.",
     "selection_rule": "Prefer runtime capability detection inside generated provider code; use client version/ref gates only when a behavior cannot be detected safely at runtime.",
@@ -10,7 +10,25 @@
     "runtime_error_observability": "Official clients may intentionally collapse getStreams JavaScript exceptions into an empty result for application resilience. Native Labs must preserve those exceptions as diagnostic evidence and must not classify the resulting empty application value as a successful runtime execution.",
     "cross_client_divergence": "A single provider/client discrepancy remains Brain evidence. A systematic client-wide empty/runtime-error pattern while an official peer succeeds is a blocking runtime-contract failure.",
     "client_session_lifecycle_faults": "Cross-work stream loading exhaustion or recovery after restarting the client is client-runtime lifecycle evidence, never provider disablement proof by itself.",
-    "media_identity_contract": "The positional getStreams(tmdbId, mediaType, season, episode) argument is transport, not the full media identity. NiakVIO's canonical IMDb metadata path is __nuvioMediaContext.tmdbMetadata.external_ids.imdb_id and its shared metadata cache is __nuvioTmdbMetadataCacheV1. Equivalent client hydration is allowed, but no end-user TMDB credential may be required and no TMDB secret may be projected into provider JavaScript solely to recover IMDb identity."
+    "media_identity_contract": "The positional getStreams(tmdbId, mediaType, season, episode) argument is transport, not the full media identity. NiakVIO's canonical IMDb metadata path is __nuvioMediaContext.tmdbMetadata.external_ids.imdb_id and its shared metadata cache is __nuvioTmdbMetadataCacheV1. Equivalent client hydration is allowed, but no end-user TMDB credential may be required and no TMDB secret may be projected into provider JavaScript solely to recover IMDb identity.",
+    "media_type_boundary": {
+      "published_supported_types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "provider_runtime_request_types": [
+        "movie",
+        "tv"
+      ],
+      "tv_input_aliases": [
+        "series",
+        "show",
+        "other"
+      ],
+      "anime_provider_runtime_type": "tv",
+      "series_capability_meaning": "client/input/family reasoning capability only; never a published supportedTypes value"
+    }
   },
   "capability_universe": [
     "invocation",
