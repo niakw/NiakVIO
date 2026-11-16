@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import copy
 import hashlib
 import json
 import sys
@@ -42,6 +43,65 @@ def data_digest(data: dict[str, Any]) -> str:
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
 
+CATALOG_SCRAPER_FIELDS = (
+    "id",
+    "name",
+    "description",
+    "version",
+    "author",
+    "supportedTypes",
+    "filename",
+    "enabled",
+    "logo",
+    "contentLanguage",
+    "formats",
+    "limited",
+    "supportsExternalPlayer",
+    "disabledPlatforms",
+    "hasSettings",
+    "notes",
+    "disabledReason",
+    "disabledAt",
+    "purgeAfter",
+    "lifecycleState",
+)
+
+
+def sync_global_catalog_scraper(
+    provider_id: str,
+    manifest_row: dict[str, Any],
+    catalog_record: dict[str, Any],
+) -> None:
+    """Mirror one Global published row into provider_catalog without transport aliases."""
+    projections = catalog_record.get("projections")
+    scraper = catalog_record.get("scraper")
+    if not isinstance(projections, dict) or projections.get("general") is not True:
+        raise RuntimeError(f"{provider_id}: Global manifest identity lacks general catalogue authority")
+    if not isinstance(scraper, dict):
+        raise RuntimeError(f"{provider_id}: provider_catalog scraper row missing")
+
+    for key in CATALOG_SCRAPER_FIELDS:
+        if key in {"supportedTypes", "filename", "disabledPlatforms"}:
+            continue
+        if key in manifest_row:
+            scraper[key] = copy.deepcopy(manifest_row[key])
+        else:
+            scraper.pop(key, None)
+
+    semantic = manifest_row.get("canonicalSupportedTypes")
+    if not isinstance(semantic, list) or not semantic:
+        semantic = manifest_row.get("supportedTypes") or []
+    scraper["supportedTypes"] = copy.deepcopy(semantic)
+
+    filename = str(manifest_row.get("filename") or "").strip().replace("\\", "/")
+    while filename.startswith("../"):
+        filename = filename[3:]
+    if not filename:
+        raise RuntimeError(f"{provider_id}: Global manifest filename missing")
+    scraper["filename"] = filename
+    scraper["disabledPlatforms"] = []
+
+
 def reconcile(
     root: Path,
     provider_ids: list[str],
@@ -73,6 +133,7 @@ def reconcile(
         provider_id: (row, "global-manifest")
         for provider_id, row in manifest_by_id.items()
     }
+    catalog_record_by_id: dict[str, dict[str, Any]] = {}
     if isinstance(catalog, dict):
         for record in catalog.get("providers") or []:
             if not isinstance(record, dict):
@@ -81,8 +142,12 @@ def reconcile(
             projections = record.get("projections")
             provider_id = cid(
                 record.get("canonicalId")
-                or (scraper or {}).get("id") if isinstance(scraper, dict) else ""
+                or ((scraper or {}).get("id") if isinstance(scraper, dict) else "")
             )
+            if provider_id:
+                if provider_id in catalog_record_by_id:
+                    raise RuntimeError(f"{provider_id}: duplicate provider_catalog identity")
+                catalog_record_by_id[provider_id] = record
             if (
                 not provider_id
                 or not isinstance(scraper, dict)
@@ -165,6 +230,12 @@ def reconcile(
         material_row["file"] = new_rel
         material_row["sha256"] = digest
         material_row["providerDataSha256"] = data_digest(data)
+
+        if isinstance(catalog, dict) and entry_authority == "global-manifest":
+            catalog_record = catalog_record_by_id.get(provider_id)
+            if catalog_record is None:
+                raise RuntimeError(f"{provider_id}: Global manifest identity missing from provider_catalog")
+            sync_global_catalog_scraper(provider_id, manifest_row, catalog_record)
 
         if isinstance(provenance_rows, dict):
             provenance_row = provenance_rows.get(provider_id)
