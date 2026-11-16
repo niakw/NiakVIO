@@ -1,5 +1,5 @@
 {
-  "schema_version": 69,
+  "schema_version": 70,
   "release": "dynamic",
   "release_authority": "manifest.json:version",
   "candidate_track": "main",
@@ -19,7 +19,9 @@
     "native_lab_scope_authority": "scripts/current_provider_scope.py:projection_active_provider_ids",
     "native_transport_source": "manifest-hub46.json",
     "native_transport_manifest": "native-hub46/manifest.json",
-    "disabled_and_pending_rows_remain_auditable": true
+    "disabled_and_pending_rows_remain_auditable": true,
+    "availability_active_scope_authority": "scripts/current_provider_scope.py:projection_active_provider_ids",
+    "availability_report_scope_authority": "scripts/current_provider_scope.py:projection_visible_provider_ids"
   },
   "native_sampling": {
     "authority": ".github/triggers/rotating-popular-corpus.json",
