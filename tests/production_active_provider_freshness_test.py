@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import hashlib
+import json
 import sys
+import tempfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -58,6 +61,54 @@ for manifest_path, projection in (
 assert int(authority.all_scope_state.get("artifactHashSchemaVersion") or 0) >= 1, (
     "missing byte-bound all-scope freshness ledger"
 )
+
+# Offline proof scope is projection authority, not self-declared metadata.
+with tempfile.TemporaryDirectory(prefix="niakvio-freshness-scope-") as tmp:
+    root = Path(tmp)
+    (root / "providers").mkdir()
+    data = b"synthetic exact provider bytes"
+    artifact = root / "providers" / "demo.js"
+    artifact.write_bytes(data)
+    digest = hashlib.sha256(data).hexdigest()
+    proof = {
+        "schemaVersion": 1,
+        "scope": "global",
+        "providerSha256": digest,
+        "pendingSha256": digest,
+        "minimizerFixedPoint": True,
+        "nodeSyntax": "passed",
+        "providerV3Contract": "passed",
+        "directOriginSyntax": "passed",
+        "networkValidation": "not_authoritative_in_github_waf_limited",
+        "livePlaybackValidated": False,
+        "fullOkClaimed": False,
+    }
+    provenance = {
+        "providers": {
+            "demo": {
+                "activation_mode": "bulk_offline_contract_live_unverified",
+                "check_mode": "bulk_offline_contract_live_unverified",
+                "check_status": "live_unverified",
+                "activation_eligible": True,
+                "strict_activation_eligible": False,
+                "runtime_evidence_eligible": False,
+                "activation_blockers": ["live_native_validation_pending"],
+                "sha256": digest,
+                "bulk_offline_activation_proof": proof,
+            }
+        }
+    }
+    (root / "PROVENANCE.json").write_text(json.dumps(provenance), encoding="utf-8")
+    synthetic = ProductionFreshnessAuthority(root)
+    global_row = {"id": "demo", "canonicalSupportedTypes": ["movie"], "filename": "providers/demo.js"}
+    allowed, proof_authority = synthetic.authorize(global_row, "global")
+    assert allowed and proof_authority == "offline-contract-exact-byte", proof_authority
+    france_row = {"id": "demo", "canonicalSupportedTypes": ["movie"], "filename": "../providers/demo.js"}
+    allowed, proof_authority = synthetic.authorize(france_row, "france")
+    assert not allowed and proof_authority == "no-current-byte-production-proof", proof_authority
+    allowed, proof_authority = synthetic.authorize(global_row, "unknown")
+    assert not allowed and proof_authority == "invalid-projection-scope", proof_authority
+
 print(
     "Production active providers require shared byte-bound all-scope FULL OK or exact-byte "
     "activation authority; "
