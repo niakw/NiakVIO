@@ -50,6 +50,12 @@ Le paramètre positionnel `tmdbId` de `getStreams(tmdbId, mediaType, season, epi
 - Un secret TMDB ne doit jamais être embarqué dans les octets publiés du provider uniquement pour reconstruire l'identité IMDb ; une capacité runtime officielle reste distincte du code provider.
 - Un client peut fournir une capacité équivalente d'hydratation, mais la disponibilité d'un seul TMDB ID ne permet jamais de conclure que l'identité dual-ID est disponible.
 
+## ABI portable de sortie provider
+
+Champs consommables sur toutes les familles Nuvio officielles : `title`, `name`, `url`, `quality`, `size`, `language`, `provider`, `type`, `seeders`, `peers`, `infoHash`, `headers`, `subtitles`.
+
+Critical provider identity, quality, language, request-header and subtitle facts must survive through fields parsed by every official Nuvio runtime. Rich NiakVIO-only fields such as badgeIds/displayBadges/presentationFacts may remain additive only; they cannot be the sole carrier of a user-visible or playback-critical fact. Technical description is mirrored through size and branded label through both name and title.
+
 ## Révisions auditées
 
 | Device | Dépôt / branche | Révision auditée | État | Transport runtime |
