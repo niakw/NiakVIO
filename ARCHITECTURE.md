@@ -790,10 +790,12 @@ disabling, playable-media or correct HD/4K proof.
 ### Deep 1080p / 4K gap oracle (2026-11-14)
 The authenticated availability artifact records upstream announced heights, raw
 returned heights and measured playable dimensions independently. Its 1-stream
-budget is insufficient to pronounce absent 1080p/4K. A separate eight-family
-read-only Deep workflow tests a bounded, quality-aware candidate set with current
-TMDB identity and media/duration validation, and emits only source SHA, provider
-bundle digest, media-type category, counts and quality-height tiers. Its positive
+budget is insufficient to pronounce absent 1080p/4K. A separate read-only Deep workflow derives up to eight representatives from the
+**current active Global+France bytes**, one per published `sourceRuntimeFamily`,
+while preserving movie/tv/anime and projection diversity. It tests a bounded,
+quality-aware candidate set with current TMDB identity and media/duration
+validation, and emits only source SHA, provider bundle digest, media-type
+category, counts and quality-height tiers. Its positive
 HD/4K signal requires both measured height and verified content identity, never
 an advertised tag alone. This oracle cannot write provider code or alter the
 manifest; Brain repair must still generate and replay an improvement.
