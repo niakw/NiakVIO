@@ -1,3 +1,10 @@
+## 2026-11-16 — Open-archive runtime gets a generic current Provider-v3 topology
+
+- Clean reconstruction run `43926873111` on `8ed509bf` passed source-plan, ProviderBase runtime, finalization, semantic/transport and Global+France static-authority gates, then failed during Provider DATA sanitization with `active Provider DATA still has unknown sourceRuntimeFamily: internet-archive`.
+- The provider already has an explicit `open_archive_public_domain` strategy, archive.org-only authority, movie-only capability and a dedicated provider-owned runtime resolver. The defect was therefore common taxonomy: `derive_runtime_family()` had no mechanism family for that strategy and could not classify a valid resolver with zero generic catalogue routes.
+- Commit `dedb73d3` adds the provider-agnostic family `open-archive-public-domain` from strategy authority only; no provider ID, route, fixture or playback proof is invented. Commit `534e386e` locks that mapping and removes the stale hard-coded `providers=96` diagnostic in favor of the current dynamic provider count. Commit `0da0faf2` executes the sanitizer/taxonomy regression in the main Workflow Gate.
+- Run `43926873111` produced no accepted reconstruction. The next exact-source run must pass this DATA/topology stage before materialization, reverse rebuild and release certification can be interpreted.
+
 ## 2026-11-16 — Presentation migration preserves current age/language rendering
 
 - Reconstruction run `43926609162` on `e367a2f9` advanced through the prior migration fixes, then the historical presentation hardener rejected two obsolete source literals: direct `🔞 + f.ageRating` and the old French-flag language line.
