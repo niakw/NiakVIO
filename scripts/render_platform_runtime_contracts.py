@@ -50,8 +50,8 @@ PORTABLE_PROVIDER_RESULT_FIELDS = (
 
 def load_contract() -> dict:
     data = json.loads(CONTRACT.read_text(encoding="utf-8"))
-    if data.get("schema_version") != 2:
-        raise SystemExit("platform runtime contract schema_version must be 2")
+    if data.get("schema_version") != 3:
+        raise SystemExit("platform runtime contract schema_version must be 3")
     clients = data.get("clients")
     if not isinstance(clients, dict) or not clients:
         raise SystemExit("platform runtime contract requires clients")
