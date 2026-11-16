@@ -2,6 +2,11 @@ name: PROVIDERS - Projection Reconcile
 
 on:
   workflow_dispatch:
+    inputs:
+      expected_sha:
+        description: Exact main SHA to reconcile
+        required: true
+        type: string
   push:
     branches: [main]
     paths:
@@ -36,9 +41,22 @@ jobs:
 
       - name: Require exact trigger head
         shell: bash
+        env:
+          EXPECTED_SHA: ${{ inputs.expected_sha || '' }}
         run: |
           set -euo pipefail
           test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          if [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ]; then
+            test -n "$EXPECTED_SHA" || {
+              echo "Manual Projection Reconcile requires expected_sha." >&2
+              exit 1
+            }
+            test "$GITHUB_SHA" = "$EXPECTED_SHA" || {
+              echo "FIELD_PROVIDER_PROJECTION_EXPECTED_SHA_MISMATCH expected=$EXPECTED_SHA actual=$GITHUB_SHA" >&2
+              exit 1
+            }
+            echo "FIELD_PROVIDER_PROJECTION_EXPECTED_SHA_OK sha=$GITHUB_SHA"
+          fi
 
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0
         with:
