@@ -9,8 +9,13 @@ patterns=[
  re.compile(r"(?:exactly|expected|requires?)\s+(?:44|46|96)[ -](?:provider|row)",re.I),
 ]
 bad=[]
-for root in (ROOT/"scripts",ROOT/"tests"):
- for path in root.rglob("*.py"):
+scan_paths=[
+ *list((ROOT/"scripts").rglob("*.py")),
+ *list((ROOT/"tests").rglob("*.py")),
+ *list((ROOT/".github"/"workflows").glob("*.yml")),
+ *list((ROOT/".github"/"workflows").glob("*.yaml")),
+]
+for path in scan_paths:
   text=path.read_text(encoding="utf-8")
   for pat in patterns:
    for match in pat.finditer(text):
@@ -25,4 +30,7 @@ for root in (ROOT/"scripts",ROOT/"tests"):
         continue
     bad.append(f"{path.relative_to(ROOT)}:{line}: {snippet}")
 assert not bad,"hard-coded current provider cardinality remains:\n"+"\n".join(bad)
-print("provider cardinality source-of-truth contract passed scope=all-python-scripts-tests")
+assert not (ROOT/".github/workflows/main-route-proof-reconstruction.yml").exists(), (
+    "superseded 96-provider route reconstruction workflow must stay retired"
+)
+print("provider cardinality source-of-truth contract passed scope=scripts+tests+workflows")
