@@ -109,6 +109,7 @@ assert "run_adaptive_quick_repair.py" not in sync
 assert "run_adaptive_deep_repair.py" not in sync
 
 assert "NUVIO_PROVIDER_V3_CONTEXT: workspace" in manual
+assert ".github/triggers/provider-v3-reconstruct-all.json" in manual
 assert 'GITHUB_REF_NAME}" != "main"' in manual
 assert "python scripts/materialize_provider_v3_all.py" in manual
 assert "python scripts/verify_provider_v3_reverse_rebuild.py" in manual
