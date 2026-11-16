@@ -1,3 +1,7 @@
+## 2026-11-16 — Every final Global byte rewrite must precede union audit with projection parity
+
+The canonical release transaction has three separate points that can rotate Global content-addressed provider filenames: initial durable reapply, canonical Global materialization, and the final durable reapply/minimizer fixed-point pass after structured authority/type reconciliation. Each point must be followed by deterministic VF/no-anime projection synchronization before any Global+France union authority audit. Run 43780182607 exposed the missing third barrier when the final publication reconciler failed on `sekai`; the provider was only the first stale projection witness. The finalizer now syncs and checks projections immediately before `reconcile_active_provider_publication.py`. This is a publication-transaction invariant, not provider repair or playback authority.
+
 ## 2026-11-16 — Family-oracle reduction occurs before expensive advisor calls
 
 Fast-Handoff Learning may opt the non-mutating Brain advisor into repair-family wave selection. One representative per repair family receives expensive model planning first; sibling providers stay pending and must later pass their own canonical materialization, identity, terminal media and non-regression proof. This is an efficiency/generalization boundary, not transitive repair authority.

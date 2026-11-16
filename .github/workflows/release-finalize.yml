@@ -173,6 +173,12 @@ jobs:
           python3 tests/provider_v3_minimizer_preview_test.py
           python3 tests/provider_v3_minimizer_publication_pipeline_test.py
           python3 tests/provider_v3_minimizer_published_test.py
+          # The second reapply/minimizer rotates Global content-addressed
+          # filenames one last time. Re-establish derived VF/no-anime parity
+          # before the final Global+France publication reconciler audits the
+          # active projection union.
+          python3 scripts/sync_manifest_projection_rows.py
+          python3 scripts/sync_manifest_projection_rows.py --check
           # Final minimization changes content-addressed filenames after the
           # canonical materialization ledger was built. Rebind manifest,
           # materialization and provenance to the exact final bytes before

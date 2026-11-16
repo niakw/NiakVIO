@@ -1,3 +1,9 @@
+## 2026-11-16 — Final publication reconcile resyncs projections after the second reapply
+
+- Release finalizer run 43780182607 on `a75e4fd040eb09c2324628a848979c6c29c5813d` passed canonical Global materialization (46 providers), restored the executable Global+France authority (76 active identities, including 30 recovered France-only rows), reached minimizer fixed points and rebound offline proofs. It then performed the intended second durable reapply/minimizer pass, which rotated Global content-addressed filenames again.
+- The final `reconcile_active_provider_publication.py` immediately audited `projection_active_provider_ids()` while VF/no-anime still referenced the previous filenames and failed on the first witness, `sekai`, with `projection asset or enabled state mismatch`. Sekai is not the root cause; the release transaction lacked a projection barrier after its final Global byte rewrite.
+- Add a third deterministic `sync_manifest_projection_rows.py` + `--check` barrier after the second reapply/minimizer and before final active publication reconciliation. The regression contract now pins all three ordering barriers. No provider-specific mutation, activation, playback claim or proof threshold is weakened. A fresh finalizer on the exact corrected SHA is required before the publication path is considered repaired.
+
 ## 2026-11-16 — Replay same 12-provider family cohort after causal-frontier NameError fix
 
 - Source `f393255d4d532480fd0ad73a720473c06505cbd4` fixes the Learning queue crash observed in run 43783417705 after successful 12/12 published staging, 12/12 clean ProviderBase reconstruction and Brain advisor family-wave selection (9 LLM targets → 7 representatives, 2 deferred siblings). The failure was an undefined `by_id` local at the NiakVIO caller; the queue's actual health evidence map is `info_by_id`.
