@@ -124,6 +124,26 @@ def normalize(value: dict[str, Any]) -> tuple[dict[str, Any], list[str]]:
         changed.append("provider_patches.purstream.notes")
 
     _normalize_global_tail(value, changed)
+
+    for provider_id, provider_row in providers.items():
+        if not isinstance(provider_row, dict):
+            continue
+        core_options = provider_row.get("core_options")
+        if not isinstance(core_options, dict):
+            continue
+        sanitizer_options = core_options.get("stream_sanitizer")
+        if not isinstance(sanitizer_options, dict) or "max_probes" not in sanitizer_options:
+            continue
+        try:
+            current_cap = int(sanitizer_options.get("max_probes") or 0)
+        except (TypeError, ValueError):
+            current_cap = 0
+        if current_cap > 0 and current_cap != 40:
+            sanitizer_options["max_probes"] = 40
+            changed.append(
+                f"provider_patches.{provider_id}.core_options.stream_sanitizer.max_probes:40"
+            )
+
     return value, changed
 
 
