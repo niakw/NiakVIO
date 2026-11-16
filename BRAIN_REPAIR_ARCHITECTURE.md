@@ -1,3 +1,7 @@
+## 2026-11-16 — Family-oracle reduction occurs before expensive advisor calls
+
+Fast-Handoff Learning may opt the non-mutating Brain advisor into repair-family wave selection. One representative per repair family receives expensive model planning first; sibling providers stay pending and must later pass their own canonical materialization, identity, terminal media and non-regression proof. This is an efficiency/generalization boundary, not transitive repair authority.
+
 ## 2026-11-16 — ProviderBase is derived, never a Learning prerequisite
 
 Targeted Brain Learning must reconstruct ProviderBase from the selected NiakVIO structured objects (catalogue + DATA + owned Lego) without requiring external upstream discovery. The Fast-Handoff clean-reconstruction stage therefore runs in local-catalog-only mode for its exact provider cohort. External sources may supply bounded observations elsewhere, but absence from an upstream discovery pass cannot remove an already-selected NiakVIO object from ProviderBase generation. Canonical validation, materialization, exact-byte replay and publication remain downstream authorities.

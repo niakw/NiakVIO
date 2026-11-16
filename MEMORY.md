@@ -1,3 +1,9 @@
+## 2026-11-16 — Fast-Handoff advisor now opts into Brain family-wave planning
+
+- Brain main `7b4cb144591f9714f7b29bf4e727d141108b0151` passed Brain LLM CI 43783148306 and supports the exact NiakVIO caller shape `--mode brain --advisor-only --advisor-family-wave`.
+- Wire the Learning advisor call to that opt-in so future Fast-Handoff runs reduce duplicate sibling planning before local LLM calls. This is planning-only: deferred siblings remain eligible, unmodified and independently validated by canonical Repair. The currently running Learning 43782282464 is pinned to the older Brain SHA `cb1fddf...` and therefore remains a clean before/after comparison.
+- No trigger file is changed here, so this commit does not start or cancel a Brain Repair Lab run. No provider bytes, manifests or publication authority changed.
+
 ## 2026-11-16 — Retry causal-family Learning after published-stage CLI fix
 
 - Trigger source parent `3adaa44c03e00cb7426c512aeb31fa13587bb0ba`. Retry the same 12-provider eligibility cohort after the initial published stage was restored to its supported local-builder CLI. Expected progression is exact 12/12 staging, exact 12/12 clean reconstruction staging, then one representative per causal family. Publication remains prohibited without downstream exact-byte identity/playback/non-regression proof.

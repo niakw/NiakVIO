@@ -38,6 +38,7 @@ for required in (
     '--workers "$model_workers"',
     "model_workers=2",
     "--advisor-only",
+    "--advisor-family-wave",
     "--max-hypotheses 1",
     "max_tokens=160",
     "max_tokens=256",
@@ -132,3 +133,9 @@ print("Brain LLM Learning workflow interpolation contract passed")
 assert 'FIELD_BRAIN_LLM_TARGETED_BUDGET' in workflow
 assert 'model_timeout=180' in workflow
 assert 'model_workers=1' in workflow
+
+# Fast-Handoff advisor work must reduce to repair-family oracles before LLM calls.
+planner_call=workflow.split("args=(python brain-llm/scripts/plan_batch_from_checkout.py",1)[1].split('"${args[@]}"',1)[0]
+assert "--mode brain" in planner_call
+assert "--advisor-only" in planner_call
+assert "--advisor-family-wave" in planner_call
