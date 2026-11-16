@@ -19,7 +19,6 @@
     "anikototv",
     "castle",
     "french-manga",
-    "movy",
     "mugiwarastream",
     "neko-sama",
     "papadustream",
@@ -80,6 +79,7 @@
     "movieshunt",
     "moviesmod",
     "movish",
+    "movy",
     "neonflix",
     "nomorflix",
     "overlook",
@@ -671,16 +671,18 @@
     },
     {
       "provider": "movy",
-      "action": "KEEP_BACKEND",
-      "repairEligible": true,
-      "confidence": "high",
-      "authorityClass": "api-or-backend",
+      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "repairEligible": false,
+      "confidence": "current-census",
+      "authorityClass": "current-architecture-nonfunctional",
       "failureCount": 0,
       "backendUrls": [
         "https://api.wecollege.net"
       ],
       "reasons": [
-        "structured_backend_authority"
+        "structured_backend_authority",
+        "current_census_tested_without_terminal_verified_playback",
+        "current_status:NO PROOF"
       ]
     },
     {
@@ -949,16 +951,14 @@
     },
     {
       "provider": "topcartoons",
-      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "action": "REDISCOVER_SEARCH",
       "repairEligible": false,
-      "confidence": "current-census",
-      "authorityClass": "current-architecture-nonfunctional",
+      "confidence": "low",
+      "authorityClass": "unproven-direct-candidate",
       "failureCount": 0,
       "reasons": [
         "direct_candidate_unproven",
-        "search_supplement_only",
-        "current_census_tested_without_terminal_verified_playback",
-        "current_status:PARTIAL OK"
+        "search_supplement_only"
       ]
     },
     {
