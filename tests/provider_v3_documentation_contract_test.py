@@ -240,7 +240,26 @@ assert machine["provider_scopes"]["projection_runtime_visible"] == "scripts/curr
 assert machine["provider_scopes"]["native_acceptance"] == "scripts/current_provider_scope.py:projection_active_provider_ids"
 assert machine["provider_scopes"]["native_acceptance_includes_france_only"] is True
 
-assert validation_machine["schema_version"] >= 68
+assert validation_machine["schema_version"] >= 69
+runtime_contract = validation_machine["nuvio_runtime_contract"]
+assert runtime_contract["current_audited_refs_must_match"] is True
+assert runtime_contract["positional_get_streams_signature"] == "getStreams(tmdbId, mediaType, season, episode)"
+assert runtime_contract["runtime_tmdb_capability_required"] is True
+assert runtime_contract["credential_embedding_in_provider_bytes_allowed"] is False
+assert runtime_contract["rich_fields_are_additive_only"] is True
+assert runtime_contract["historical_platform_matrix_is_current_authority"] is False
+assert runtime_contract["france_only_projection_is_first_class"] is True
+assert runtime_contract["native_platform_proof_is_independent"] is True
+assert runtime_contract["portable_provider_result_fields"] == [
+    "title", "name", "url", "quality", "size", "language", "provider",
+    "type", "seeders", "peers", "infoHash", "headers", "subtitles",
+]
+machine_runtime = machine["nuvio_runtime_contract"]
+assert machine_runtime["provider_call_signature"] == "getStreams(tmdbId, mediaType, season, episode)"
+assert machine_runtime["historical_platform_matrix_authority"] is False
+assert machine_runtime["native_labs_use_latest_official_head"] is True
+assert machine_runtime["native_proof_transitive_between_clients"] is False
+assert machine_runtime["france_only_projection_authority"] == "provider_catalog.json projections general=false,vf=true"
 assert validation_machine["release_authority"] == "manifest.json:version"
 catalogue_contract = validation_machine["catalogue"]
 assert catalogue_contract["cardinality_policy"] == "derived-never-frozen"
