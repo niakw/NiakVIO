@@ -1,3 +1,10 @@
+## 2026-11-16 — September métier parity audit is now versioned
+
+- `docs/audits/NIAKVIO_METIER_SEPTEMBER_PARITY_2026-11-16.md` records the source-backed structural comparison against September ref `ee746ed5...`.
+- Named-function inventory shows ProviderBase 206 -> 219 functions with **zero September functions missing**; `apply_provider_overrides.py`, `materialize_provider_v3_all.py`, `current_provider_scope.py`, media-type Core and StreamScore likewise retain every September named function inspected.
+- Stream Presentation's historical local `isVf/isVfq` helpers were not lost functionality: current language projection explicitly handles VF/VFF/VFQ/VOSTFR/VO plus structured locale codes, audio roles and subtitle tracks.
+- This is structural parity evidence only. Current exact-byte projection, reverse rebuild, census/finalizer and five Native Labs remain mandatory before the NiakVIO base is certified.
+
 ## 2026-11-16 — Reconstruction stream-scope regression aligned with canonical anime provider ABI
 
 - Exact reconstruction run `43976374227` passed the repaired source-migration fixed point and failed later in `tests/provider_stream_scope_architecture_test.py`. The failure was a stale assertion requiring canonical anime to be rewritten to the TMDB movie/tv namespace before provider execution.
