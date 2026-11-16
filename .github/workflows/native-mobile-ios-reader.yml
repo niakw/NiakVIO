@@ -33,7 +33,6 @@ concurrency:
   cancel-in-progress: ${{ github.event_name != 'workflow_dispatch' }}
 
 env:
-  NIAKVIO_PROVIDER_SCOPE_MATRIX: automation/evidence/hub-lab-matrix-46.json
 
 jobs:
   resolve:
@@ -173,7 +172,7 @@ jobs:
             exit 2
           fi
           bash niakvio/scripts/run_native_corpus_ios_suite.sh
-      - name: Verify exhaustive iOS Hub-46 provider matrix
+      - name: Verify exhaustive iOS projection-union provider matrix
         if: ${{ github.event_name == 'schedule' || inputs.mode != 'only' }}
         shell: bash
         run: |
@@ -182,7 +181,6 @@ jobs:
             --client ios \
             --manifest niakvio/native-hub46/manifest.json \
             --corpus niakvio/.github/triggers/nuvio-client-lab.json \
-            --scope-matrix niakvio/automation/evidence/hub-lab-matrix-46.json \
             "$GITHUB_WORKSPACE/mobile-ios-native-corpus.log"
       - name: Build sanitized iOS reader diagnoses
         if: ${{ always() && (github.event_name == 'schedule' || inputs.mode != 'only') }}
